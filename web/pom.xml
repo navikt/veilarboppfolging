@@ -5,11 +5,11 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>no.nav.fo</groupId>
-        <artifactId>veil-arb-situasjon</artifactId>
+        <artifactId>veilarbsituasjon</artifactId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>veil-arb-situasjon-web</artifactId>
+    <artifactId>veilarbsituasjon-web</artifactId>
     <name>${project.artifactId}</name>
 
     <dependencies>
