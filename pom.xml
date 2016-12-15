@@ -8,7 +8,8 @@
     <version>0.0.1-SNAPSHOT</version>
     <modules>
         <module>web</module>
-        <!--<module>jee</module>-->
+        <module>ear</module>
+        <module>config</module>
     </modules>
     <packaging>pom</packaging>
 
@@ -28,29 +29,46 @@
 
         <jetty.version>9.3.14.***REMOVED***28</jetty.version>
         <spring.version>4.3.4.RELEASE</spring.version>
+        <javax.version>3.1.0</javax.version>
+        <common-jetty.version>2.0.11</common-jetty.version>
     </properties>
 
-    <dependencies>
+    <dependencyManagement>
+        <dependencies>
+            <!--Spring-->
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-context</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-web</artifactId>
+                <version>${spring.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-webmvc</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
 
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-context</artifactId>
-            <version>${spring.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-web</artifactId>
-            <version>${spring.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>no.nav.sbl.dialogarena</groupId>
-            <artifactId>common-jetty</artifactId>
-            <version>2.0.11</version>
-            <scope>test</scope>
-        </dependency>
+            <!--Javax-->
+            <dependency>
+                <groupId>javax.servlet</groupId>
+                <artifactId>javax.servlet-api</artifactId>
+                <version>${javax.version}</version>
+            </dependency>
 
-    </dependencies>
+            <!--Common-Jetty-->
+            <dependency>
+                <groupId>no.nav.sbl.dialogarena</groupId>
+                <artifactId>common-jetty</artifactId>
+                <version>${common-jetty.version}</version>
+                <scope>test</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
 
 </project>
