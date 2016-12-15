@@ -1,4 +1,4 @@
-package no.nav.veilarbsituasjon;
+package no.nav.fo.veilarbsituasjon;
 
 
 import javax.servlet.http.*;
