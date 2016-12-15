@@ -4,10 +4,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>no.nav.fo</groupId>
-    <artifactId>veil-arb-situasjon</artifactId>
+    <artifactId>veilarbsituasjon</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <modules>
         <module>web</module>
+        <!--<module>jee</module>-->
     </modules>
     <packaging>pom</packaging>
 
@@ -40,6 +41,7 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-web</artifactId>
             <version>${spring.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>no.nav.sbl.dialogarena</groupId>
@@ -47,6 +49,7 @@
             <version>2.0.11</version>
             <scope>test</scope>
         </dependency>
+
     </dependencies>
 
 
