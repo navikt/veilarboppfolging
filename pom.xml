@@ -40,12 +40,23 @@
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-context</artifactId>
                 <version>${spring.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-web</artifactId>
                 <version>${spring.version}</version>
-                <scope>provided</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.springframework</groupId>
@@ -69,6 +80,12 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+
+    <scm>
+        <developerConnection>scm:git:http://stash.devillo.no/scm/fo/veilarbsituasjon.git</developerConnection>
+        <url>http://stash.devillo.no/projects/FO/repos/veilarbsituasjon/browse</url>
+        <tag>HEAD</tag>
+    </scm>
 
 
 </project>
