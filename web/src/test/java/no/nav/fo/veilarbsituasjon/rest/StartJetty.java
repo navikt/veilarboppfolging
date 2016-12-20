@@ -1,4 +1,4 @@
-package no.nav.fo.veilarbsituasjon;
+package no.nav.fo.veilarbsituasjon.rest;
 
 import no.nav.sbl.dialogarena.common.jetty.Jetty;
 
@@ -10,7 +10,7 @@ public class StartJetty {
 
     public static void main(String[] args) throws Exception {
         Jetty jetty = usingWar()
-                .at("/modia")
+                .at("/veilarbsituasjon")
                 .port(PORT)
                 .buildJetty();
         jetty.startAnd(first(waitFor(gotKeypress())).then(jetty.stop));
