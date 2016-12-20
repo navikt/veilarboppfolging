@@ -18,20 +18,16 @@
 
     <context-param>
         <param-name>contextConfigLocation</param-name>
-        <param-value>no.nav.fo.veilarbsituasjon.config.ApplicationConfig</param-value>
+        <param-value>no.nav.fo.veilarbsituasjon.rest.config.ApplicationConfig</param-value>
     </context-param>
 
     <servlet>
-        <servlet-name>rest</servlet-name>
+        <servlet-name>veilArbSituasjonAPI</servlet-name>
         <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
         <load-on-startup>1</load-on-startup>
-        <!--<init-param>-->
-            <!--<param-name>contextConfigLocation</param-name>-->
-            <!--<param-value>src/main/java/no/nav/fo/veilarbsituasjon/config/ApplicationConfig.java</param-value>-->
-        <!--</init-param>-->
     </servlet>
     <servlet-mapping>
-        <servlet-name>rest</servlet-name>
-        <url-pattern>/rest/*</url-pattern>
+        <servlet-name>veilArbSituasjonAPI</servlet-name>
+        <url-pattern>/*</url-pattern>
     </servlet-mapping>
 </web-app>

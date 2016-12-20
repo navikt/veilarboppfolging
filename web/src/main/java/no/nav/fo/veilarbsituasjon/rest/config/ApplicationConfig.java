@@ -1,4 +1,4 @@
-package no.nav.fo.veilarbsituasjon.config;
+package no.nav.fo.veilarbsituasjon.rest.config;
 
 import org.springframework.context.annotation.*;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
@@ -7,6 +7,5 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 @EnableWebMvc
 @ComponentScan(basePackages = "no.nav.fo.veilarbsituasjon")
 public class ApplicationConfig {
-
 
 }

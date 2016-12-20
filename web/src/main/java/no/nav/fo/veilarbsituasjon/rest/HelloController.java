@@ -1,4 +1,4 @@
-package no.nav.fo.veilarbsituasjon;
+package no.nav.fo.veilarbsituasjon.rest;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -6,8 +6,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class HelloController {
 
-    @RequestMapping("/hello")
+    @RequestMapping("/veilarbsituasjon")
     public String index() {
-        return "Greetings from Modia Ytelseoversikt";
+        return "Greetings from VeilArbSituasjon";
     }
 }

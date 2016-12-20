@@ -11,4 +11,6 @@
         <ear groupId="no.nav.fo" artifactId="veilarbsituasjon-ear"/>
     </artifacts>
 
+    <loadBalancer isAlive="veilarbsituasjon/internal/isAlive" />
+
 </application>
