@@ -1,4 +1,4 @@
-package no.nav.veilarbsituasjon.rest;
+/*package no.nav.veilarbsituasjon.rest;
 
 
 import org.springframework.boot.SpringApplication;
@@ -10,3 +10,4 @@ public class Application {
         SpringApplication.run(Application.class, args);
     }
 }
+*/
