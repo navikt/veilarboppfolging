@@ -9,6 +9,6 @@ public class InternalRessurs {
 
     @RequestMapping(value="/isAlive", method = RequestMethod.GET, produces = "application/json")
     public String isAlive() {
-        return "{status: \"ok\", message: \"VeilArbSituasjon fungerer\"}";
+        return "Application: UP";
     }
 }
