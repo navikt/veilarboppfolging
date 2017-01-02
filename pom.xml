@@ -32,6 +32,7 @@
         <javax.version>3.1.0</javax.version>
         <common-jetty.version>2.0.11</common-jetty.version>
         <slf4j.version>1.7.15</slf4j.version>
+        <jackson.version>2.7.2</jackson.version>
 
     </properties>
 
@@ -84,8 +85,13 @@
 
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-core</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-databind</artifactId>
-                <version>2.8.4</version>
+                <version>${jackson.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
