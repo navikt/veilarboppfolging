@@ -9,11 +9,6 @@
         <ear groupId="no.nav.fo" artifactId="veilarbsituasjon-ear"/>
     </artifacts>
 
-    <selftest>
-        <path>veilarbsituasjon/internal/isAlive</path>
-        <humanReadablePath>/veilarbsituasjon/internal/isAlive</humanReadablePath>
-    </selftest>
-
     <loadBalancer isAlive="veilarbsituasjon/internal/isAlive" />
 
 </application>
