@@ -11,4 +11,6 @@
 
     <loadBalancer isAlive="veilarbsituasjon/internal/isAlive" />
 
+    <logging serviceCalls="true" />
+
 </application>
