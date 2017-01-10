@@ -11,4 +11,8 @@
 
     <loadBalancer isAlive="veilarbsituasjon/internal/isAlive" />
 
+    <security serviceUserResourceAlias="srvveilarbsituasjon">
+        <logins/>
+    </security>
+
 </application>
