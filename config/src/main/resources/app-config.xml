@@ -21,4 +21,8 @@
         <webservice alias="virksomhet:Ytelseskontrakt_v3" mapToProperty="ytelseskontrakt.endpoint.url"/>
     </resources>
 
+    <exposed-services>
+        <exposedRest path="/veilarbsituasjon" name="veilArbSituasjonAPI"/>
+    </exposed-services>
+
 </application>
