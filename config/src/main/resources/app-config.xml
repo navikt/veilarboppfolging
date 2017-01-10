@@ -17,4 +17,8 @@
 
     <logging serviceCalls="true" />
 
+    <resources>
+        <webservice alias="virksomhet:Ytelseskontrakt_v3" mapToProperty="ytelseskontrakt.endpoint.url"/>
+    </resources>
+
 </application>
