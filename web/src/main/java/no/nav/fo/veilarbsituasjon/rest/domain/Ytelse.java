@@ -13,25 +13,25 @@ public class Ytelse {
         this.datoTil = datoTil;
     }
 
-    private String ytelseType;
+    final private String ytelseType;
 
-    public String getYtelseType() {
+    final public String getYtelseType() {
         return ytelseType;
     }
 
-    public String getStatus() {
+    final public String getStatus() {
         return status;
     }
 
-    public LocalDate getDatoMottatt() {
+    final public LocalDate getDatoMottatt() {
         return datoMottatt;
     }
 
-    public LocalDate getDatoFra() {
+    final public LocalDate getDatoFra() {
         return datoFra;
     }
 
-    public LocalDate getDatoTil() {
+    final public LocalDate getDatoTil() {
         return datoTil;
     }
 
@@ -39,7 +39,6 @@ public class Ytelse {
     private LocalDate datoMottatt;
     private LocalDate datoFra;
     private LocalDate datoTil;
-
 
 
 }
