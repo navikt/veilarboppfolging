@@ -2,9 +2,8 @@ package no.nav.fo.veilarbsituasjon.rest;
 
 import no.nav.fo.veilarbsituasjon.rest.domain.Ytelse;
 import no.nav.fo.veilarbsituasjon.services.YtelseskontraktService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
 import org.slf4j.Logger;
+import org.springframework.web.bind.annotation.*;
 
 import javax.xml.datatype.*;
 import java.time.*;
@@ -18,8 +17,11 @@ import static org.slf4j.LoggerFactory.getLogger;
 public class YtelseRessurs {
     private static final Logger LOG = getLogger(YtelseRessurs.class);
 
-    @Autowired
-    YtelseskontraktService ytelseskontraktService;
+    private YtelseskontraktService ytelseskontraktService;
+
+    public YtelseRessurs(YtelseskontraktService ytelseskontraktService) {
+        this.ytelseskontraktService = ytelseskontraktService;
+    }
 
     @RequestMapping(value = "/ytelser", method = RequestMethod.GET, produces = "application/json")
     public List<Ytelse> getYtelser(@PathVariable String fnr) {

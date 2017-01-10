@@ -7,7 +7,6 @@ import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeRequest;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeResponse;
 import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 
@@ -18,8 +17,11 @@ public class YtelseskontraktService {
     private static final Logger LOG = getLogger(YtelseskontraktService.class);
 
 
-    @Autowired
-    private YtelseskontraktV3 ytelseskontraktV3;
+    private final YtelseskontraktV3 ytelseskontraktV3;
+
+    public YtelseskontraktService(YtelseskontraktV3 ytelseskontraktV3) {
+        this.ytelseskontraktV3 = ytelseskontraktV3;
+    }
 
     public void hentYtelseskontraktListe(XMLGregorianCalendar periodeFom, XMLGregorianCalendar periodeTom, String personId) {
         final WSPeriode periode = new WSPeriode();
