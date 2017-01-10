@@ -5,6 +5,11 @@ import java.time.LocalDate;
 
 public class Ytelse {
 
+    private String status;
+    private LocalDate datoMottatt;
+    private LocalDate datoFra;
+    private LocalDate datoTil;
+
     public Ytelse(String ytelseType, String status, LocalDate datoMottatt, LocalDate datoFra, LocalDate datoTil) {
         this.ytelseType = ytelseType;
         this.status = status;
@@ -34,11 +39,6 @@ public class Ytelse {
     final public LocalDate getDatoTil() {
         return datoTil;
     }
-
-    private String status;
-    private LocalDate datoMottatt;
-    private LocalDate datoFra;
-    private LocalDate datoTil;
 
 
 }

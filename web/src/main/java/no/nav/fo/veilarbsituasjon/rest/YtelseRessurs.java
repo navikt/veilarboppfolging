@@ -30,8 +30,8 @@ public class YtelseRessurs {
         XMLGregorianCalendar fom = convertDateToXMLGregorianCalendar(periodeFom);
         XMLGregorianCalendar tom = convertDateToXMLGregorianCalendar(periodeTom);
 
-        ytelseskontraktService.hentYtelseskontraktListe(fom, tom, fnr);
         LOG.info("Henter ytelse for {}", fnr);
+        ytelseskontraktService.hentYtelseskontraktListe(fom, tom, fnr);
         return Arrays.asList(new Ytelse("Arbeidsavklaringspenger", "Aktiv", LocalDate.now(), LocalDate.of(2016, Month.APRIL, 14), LocalDate.of(2017, Month.APRIL, 14)));
     }
 
