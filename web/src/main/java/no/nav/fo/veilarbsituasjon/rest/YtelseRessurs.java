@@ -17,7 +17,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 public class YtelseRessurs {
     private static final Logger LOG = getLogger(YtelseRessurs.class);
 
-    private YtelseskontraktService ytelseskontraktService;
+    final private YtelseskontraktService ytelseskontraktService;
 
     public YtelseRessurs(YtelseskontraktService ytelseskontraktService) {
         this.ytelseskontraktService = ytelseskontraktService;
