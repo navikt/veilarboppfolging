@@ -16,7 +16,6 @@ public class YtelseskontraktService {
 
     private static final Logger LOG = getLogger(YtelseskontraktService.class);
 
-
     private final YtelseskontraktV3 ytelseskontraktV3;
 
     public YtelseskontraktService(YtelseskontraktV3 ytelseskontraktV3) {
@@ -35,6 +34,7 @@ public class YtelseskontraktService {
             final WSHentYtelseskontraktListeResponse response = ytelseskontraktV3.hentYtelseskontraktListe(request);
 //            response.getYtelseskontraktListe().stream().forEach(WSYtelseskontrakt);
         } catch (HentYtelseskontraktListeSikkerhetsbegrensning hentYtelseskontraktListeSikkerhetsbegrensning) {
+            LOG.error("hentYtelseskontraktListeSikkerhetsbegrensning på riktigt!");
             hentYtelseskontraktListeSikkerhetsbegrensning.printStackTrace();
         }
     }
