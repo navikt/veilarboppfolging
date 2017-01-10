@@ -1,10 +1,10 @@
 package no.nav.fo.veilarbsituasjon.rest;
 
 import no.nav.fo.veilarbsituasjon.rest.domain.Ytelse;
-import org.slf4j.Logger;
 import no.nav.fo.veilarbsituasjon.services.YtelseskontraktService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.slf4j.Logger;
 
 import javax.xml.datatype.*;
 import java.time.*;
@@ -29,7 +29,7 @@ public class YtelseRessurs {
         XMLGregorianCalendar tom = convertDateToXMLGregorianCalendar(periodeTom);
 
         ytelseskontraktService.hentYtelseskontraktListe(fom, tom, fnr);
-        LOG.error("Henter ytelse for {}", fnr);
+        LOG.info("Henter ytelse for {}", fnr);
         return Arrays.asList(new Ytelse("Arbeidsavklaringspenger", "Aktiv", LocalDate.now(), LocalDate.of(2016, Month.APRIL, 14), LocalDate.of(2017, Month.APRIL, 14)));
     }
 
