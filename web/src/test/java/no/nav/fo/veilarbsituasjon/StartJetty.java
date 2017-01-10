@@ -1,4 +1,4 @@
-package no.nav.fo.veilarbsituasjon.rest;
+package no.nav.fo.veilarbsituasjon;
 
 import no.nav.modig.core.context.StaticSubjectHandler;
 import no.nav.sbl.dialogarena.common.jetty.Jetty;
