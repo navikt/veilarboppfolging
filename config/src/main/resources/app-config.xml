@@ -19,6 +19,7 @@
 
     <resources>
         <webservice alias="virksomhet:Ytelseskontrakt_v3" mapToProperty="ytelseskontrakt.endpoint"/>
+        <applicationCertificate alias="srvveilarbsituasjon"/>
     </resources>
 
     <exposed-services>
