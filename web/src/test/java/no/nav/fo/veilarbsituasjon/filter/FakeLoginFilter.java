@@ -1,4 +1,4 @@
-package no.nav.fo.veilarbsituasjon.utils;
+package no.nav.fo.veilarbsituasjon.filter;
 
 
 import no.nav.modig.core.context.SubjectHandlerUtils;
