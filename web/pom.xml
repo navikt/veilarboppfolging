@@ -91,14 +91,15 @@
             <groupId>no.nav.modig</groupId>
             <artifactId>modig-security-ws</artifactId>
         </dependency>
-        <dependency>
-            <groupId>no.nav.modig</groupId>
-            <artifactId>modig-security-loginmodule</artifactId>
-        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>no.nav.modig</groupId>-->
+            <!--<artifactId>modig-security-loginmodule</artifactId>-->
+        <!--</dependency>-->
         <dependency>
             <groupId>no.nav.modig</groupId>
             <artifactId>modig-security-loginmodule</artifactId>
             <type>test-jar</type>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.cxf</groupId>
