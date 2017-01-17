@@ -18,6 +18,7 @@
     <logging serviceCalls="true" />
 
     <resources>
+        <applicationProperties alias="veilarbsituasjon.properties"/>
         <webservice alias="virksomhet:Ytelseskontrakt_v3" mapToProperty="ytelseskontrakt.endpoint"/>
         <applicationCertificate alias="srvveilarbsituasjon"/>
     </resources>
