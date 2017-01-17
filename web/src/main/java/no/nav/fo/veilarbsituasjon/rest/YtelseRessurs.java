@@ -9,6 +9,7 @@ import javax.xml.datatype.*;
 import java.time.*;
 import java.util.*;
 
+import static no.nav.fo.veilarbsituasjon.utils.CalendarConverter.convertDateToXMLGregorianCalendar;
 import static org.slf4j.LoggerFactory.getLogger;
 
 
@@ -35,15 +36,5 @@ public class YtelseRessurs {
         return Arrays.asList(new Ytelse("Arbeidsavklaringspenger", "Aktiv", LocalDate.now(), LocalDate.of(2016, Month.APRIL, 14), LocalDate.of(2017, Month.APRIL, 14)));
     }
 
-    private XMLGregorianCalendar convertDateToXMLGregorianCalendar(LocalDate date) {
-        GregorianCalendar gregorianCalendar = GregorianCalendar.from(date.atStartOfDay(ZoneId.systemDefault()));
-        XMLGregorianCalendar xmlGregorianCalendar = null;
-        try {
-            xmlGregorianCalendar = DatatypeFactory.newInstance().newXMLGregorianCalendar(gregorianCalendar);
-        } catch (DatatypeConfigurationException e) {
-            e.printStackTrace();
-        }
-        return xmlGregorianCalendar;
 
-    }
 }
