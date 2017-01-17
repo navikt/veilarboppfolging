@@ -25,8 +25,8 @@ public class YtelseRessurs {
 
     @RequestMapping(value = "/ytelser", method = RequestMethod.GET, produces = "application/json")
     public YtelseskontraktResponse getYtelser(@PathVariable String fnr) {
-        LocalDate periodeFom = LocalDate.of(2005, 10, 10);
-        LocalDate periodeTom = LocalDate.now();
+        LocalDate periodeFom = LocalDate.now().minusMonths(2);
+        LocalDate periodeTom = LocalDate.now().plusMonths(1);
         XMLGregorianCalendar fom = convertDateToXMLGregorianCalendar(periodeFom);
         XMLGregorianCalendar tom = convertDateToXMLGregorianCalendar(periodeTom);
 
