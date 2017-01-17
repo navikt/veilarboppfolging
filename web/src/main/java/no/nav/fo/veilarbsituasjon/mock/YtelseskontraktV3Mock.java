@@ -98,8 +98,8 @@ public class YtelseskontraktV3Mock implements YtelseskontraktV3 {
         wsVedtak.setVedtaksperiode(wsPeriode);
 
         wsVedtak.setStatus("Iverksatt");
-        wsVedtak.setVedtakstype("Ung ufør / Stans");
-        wsVedtak.setAktivitetsfase("Ikke spesif. aktivitetsfase");
+        wsVedtak.setVedtakstype("Arbeidsavklaringspenger / Stans");
+        wsVedtak.setAktivitetsfase("Arbeidsutprøving");
         wsVedtak.setDagsats(1269);
         vedtak.add(wsVedtak);
     }
