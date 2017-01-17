@@ -2,8 +2,6 @@ package no.nav.fo.veilarbsituasjon.config;
 
 
 import no.nav.fo.veilarbsituasjon.mock.YtelseskontraktV3Mock;
-import no.nav.modig.security.ws.SystemSAMLOutInterceptor;
-import no.nav.modig.security.ws.UserSAMLOutInterceptor;
 import no.nav.sbl.dialogarena.common.cxf.CXFClient;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3;
 import org.slf4j.Logger;

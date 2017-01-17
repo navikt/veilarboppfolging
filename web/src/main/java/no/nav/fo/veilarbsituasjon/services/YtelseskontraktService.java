@@ -1,6 +1,8 @@
 package no.nav.fo.veilarbsituasjon.services;
 
 
+import no.nav.fo.veilarbsituasjon.rest.domain.YtelseskontraktMapper;
+import no.nav.fo.veilarbsituasjon.rest.domain.YtelseskontraktResponse;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.HentYtelseskontraktListeSikkerhetsbegrensning;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt.WSPeriode;
@@ -22,7 +24,7 @@ public class YtelseskontraktService {
         this.ytelseskontraktV3 = ytelseskontraktV3;
     }
 
-    public void hentYtelseskontraktListe(XMLGregorianCalendar periodeFom, XMLGregorianCalendar periodeTom, String personId) {
+    public YtelseskontraktResponse hentYtelseskontraktListe(XMLGregorianCalendar periodeFom, XMLGregorianCalendar periodeTom, String personId) {
         final WSPeriode periode = new WSPeriode();
         periode.setFom(periodeFom);
         periode.setTom(periodeTom);
@@ -30,12 +32,17 @@ public class YtelseskontraktService {
                 .withPeriode(periode)
                 .withPersonidentifikator(personId);
         try {
-            LOG.info("Sender request til Ytelsekontrakt_v3");
+            LOG.info("Sender request til Ytelseskontrakt_v3");
             final WSHentYtelseskontraktListeResponse response = ytelseskontraktV3.hentYtelseskontraktListe(request);
-//            response.getYtelseskontraktListe().stream().forEach(WSYtelseskontrakt);
+
+            return YtelseskontraktMapper.mapWsResponseToResponse(response);
+
         } catch (HentYtelseskontraktListeSikkerhetsbegrensning hentYtelseskontraktListeSikkerhetsbegrensning) {
             LOG.error("hentYtelseskontraktListeSikkerhetsbegrensning på riktigt!");
             hentYtelseskontraktListeSikkerhetsbegrensning.printStackTrace();
         }
+        return null;
     }
+
+
 }

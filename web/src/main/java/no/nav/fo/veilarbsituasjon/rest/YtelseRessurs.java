@@ -1,13 +1,12 @@
 package no.nav.fo.veilarbsituasjon.rest;
 
-import no.nav.fo.veilarbsituasjon.rest.domain.Ytelse;
+import no.nav.fo.veilarbsituasjon.rest.domain.YtelseskontraktResponse;
 import no.nav.fo.veilarbsituasjon.services.YtelseskontraktService;
 import org.slf4j.Logger;
 import org.springframework.web.bind.annotation.*;
 
 import javax.xml.datatype.*;
 import java.time.*;
-import java.util.*;
 
 import static no.nav.fo.veilarbsituasjon.utils.CalendarConverter.convertDateToXMLGregorianCalendar;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -25,15 +24,14 @@ public class YtelseRessurs {
     }
 
     @RequestMapping(value = "/ytelser", method = RequestMethod.GET, produces = "application/json")
-    public List<Ytelse> getYtelser(@PathVariable String fnr) {
+    public YtelseskontraktResponse getYtelser(@PathVariable String fnr) {
         LocalDate periodeFom = LocalDate.of(2005, 10, 10);
         LocalDate periodeTom = LocalDate.now();
         XMLGregorianCalendar fom = convertDateToXMLGregorianCalendar(periodeFom);
         XMLGregorianCalendar tom = convertDateToXMLGregorianCalendar(periodeTom);
 
         LOG.info("Henter ytelse for {}", fnr);
-        ytelseskontraktService.hentYtelseskontraktListe(fom, tom, fnr);
-        return Arrays.asList(new Ytelse("Arbeidsavklaringspenger", "Aktiv", LocalDate.now(), LocalDate.of(2016, Month.APRIL, 14), LocalDate.of(2017, Month.APRIL, 14)));
+        return ytelseskontraktService.hentYtelseskontraktListe(fom, tom, fnr);
     }
 
 
