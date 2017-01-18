@@ -3,7 +3,7 @@ package no.nav.fo.veilarbsituasjon.config;
 import no.nav.modig.security.ws.attributes.SAMLAttributes;
 
 
-public class MockSAMLOutInterceptor implements SAMLAttributes {
+class MockSAMLOutInterceptor implements SAMLAttributes {
 
     @Override
     public String getUid() {
@@ -17,7 +17,7 @@ public class MockSAMLOutInterceptor implements SAMLAttributes {
 
     @Override
     public String getIdentType() {
-        return "Internbruker";
+        return "InternBruker";
     }
 
     @Override
