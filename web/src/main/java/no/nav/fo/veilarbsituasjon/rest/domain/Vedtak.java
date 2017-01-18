@@ -5,7 +5,7 @@ class Vedtak {
     private String vedtakstype;
     private String status;
     private String aktivitetsfase;
-    private String rettighetsGruppe;
+    private String rettighetsgruppe;
 
     public String getVedtakstype() {
         return vedtakstype;
@@ -19,8 +19,8 @@ class Vedtak {
         return aktivitetsfase;
     }
 
-    public String getRettighetsGruppe() {
-        return rettighetsGruppe;
+    public String getRettighetsgruppe() {
+        return rettighetsgruppe;
     }
 
     Vedtak withVedtakstype(String vedtakstype) {
@@ -39,6 +39,6 @@ class Vedtak {
     }
 
     void setRettighetsgruppe(String rettighetsGruppe) {
-        this.rettighetsGruppe = rettighetsGruppe;
+        this.rettighetsgruppe = rettighetsGruppe;
     }
 }
