@@ -1,4 +1,4 @@
-package no.nav.fo.veilarbsituasjon.config;
+package no.nav.fo.veilarbsituasjon.mock;
 
 import no.nav.modig.security.ws.attributes.SAMLAttributes;
 

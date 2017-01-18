@@ -1,5 +1,6 @@
-package no.nav.fo.veilarbsituasjon.config;
+package no.nav.fo.veilarbsituasjon.mock;
 
+import no.nav.fo.veilarbsituasjon.mock.MockSAMLOutInterceptor;
 import no.nav.modig.security.ws.AbstractSAMLOutInterceptor;
 import no.nav.modig.security.ws.SAMLCallbackHandler;
 
