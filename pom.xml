@@ -172,13 +172,6 @@
                 <version>${modig-testcertificates.version}</version>
                 <scope>test</scope>
             </dependency>
-            <dependency>
-                <groupId>no.nav.modig</groupId>
-                <artifactId>modig-security-loginmodule</artifactId>
-                <version>${modig-security.version}</version>
-                <type>test-jar</type>
-                <scope>test</scope>
-            </dependency>
 
             <!--logging-->
             <dependency>
@@ -222,11 +215,6 @@
                 <artifactId>xml-apis</artifactId>
                 <version>${xml-apis.version}</version>
                 <scope>provided</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-jaas</artifactId>
-                <version>${jetty-jaas.version}</version>
             </dependency>
 
             <dependency>
