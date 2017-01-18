@@ -8,7 +8,7 @@ class Ytelseskontrakt {
     private String status;
 
     private String ytelsestype;
-    private Dato datoMottat;
+    private Dato datoMottatt;
     private Dato datoFra;
     private Dato datoTil;
 
@@ -20,8 +20,8 @@ class Ytelseskontrakt {
         return status;
     }
 
-    public Dato getDatoMottat() {
-        return datoMottat;
+    public Dato getDatoMottatt() {
+        return datoMottatt;
     }
 
     public Dato getDatoFra() {
@@ -44,7 +44,7 @@ class Ytelseskontrakt {
     }
 
     Ytelseskontrakt withDatoMottat(XMLGregorianCalendar datoKravMottatt) {
-        datoMottat = new Dato(datoKravMottatt.getYear(), datoKravMottatt.getMonth(), datoKravMottatt.getDay());
+        datoMottatt = new Dato(datoKravMottatt.getYear(), datoKravMottatt.getMonth(), datoKravMottatt.getDay());
         return this;
     }
 
