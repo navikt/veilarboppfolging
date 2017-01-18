@@ -33,6 +33,4 @@ public class YtelseRessurs {
         LOG.info("Henter ytelse for {}", fnr);
         return ytelseskontraktService.hentYtelseskontraktListe(fom, tom, fnr);
     }
-
-
 }
