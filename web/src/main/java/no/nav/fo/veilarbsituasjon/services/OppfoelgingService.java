@@ -1,5 +1,6 @@
 package no.nav.fo.veilarbsituasjon.services;
 
+import no.nav.fo.veilarbsituasjon.rest.domain.OppfoelgingMapper;
 import no.nav.fo.veilarbsituasjon.rest.domain.OppfoelgingskontraktResponse;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.HentOppfoelgingskontraktListeSikkerhetsbegrensning;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
@@ -23,11 +24,13 @@ public class OppfoelgingService {
         periode.setTom(tom);
         request.setPeriode(periode);
         request.setPersonidentifikator(fnr);
+        WSHentOppfoelgingskontraktListeResponse response = null;
         try {
-            final WSHentOppfoelgingskontraktListeResponse response = oppfoelgingPortType.hentOppfoelgingskontraktListe(request);
+            response = oppfoelgingPortType.hentOppfoelgingskontraktListe(request);
         } catch (HentOppfoelgingskontraktListeSikkerhetsbegrensning hentOppfoelgingskontraktListeSikkerhetsbegrensning) {
             hentOppfoelgingskontraktListeSikkerhetsbegrensning.printStackTrace();
         }
-        return null;
+
+        return OppfoelgingMapper.tilOppfoelgingskontrakt(response);
     }
 }
