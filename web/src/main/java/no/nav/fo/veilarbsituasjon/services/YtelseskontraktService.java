@@ -35,7 +35,7 @@ public class YtelseskontraktService {
             LOG.info("Sender request til Ytelseskontrakt_v3");
             final WSHentYtelseskontraktListeResponse response = ytelseskontraktV3.hentYtelseskontraktListe(request);
 
-            return YtelseskontraktMapper.mapWsResponseToResponse(response);
+            return YtelseskontraktMapper.tilYtelseskontrakt(response);
 
         } catch (HentYtelseskontraktListeSikkerhetsbegrensning hentYtelseskontraktListeSikkerhetsbegrensning) {
             LOG.error("hentYtelseskontraktListeSikkerhetsbegrensning på riktigt!");
