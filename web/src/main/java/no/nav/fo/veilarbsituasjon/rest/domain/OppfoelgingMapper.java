@@ -20,9 +20,11 @@ public class OppfoelgingMapper {
     }
 
     private static Function<WSOppfoelgingskontrakt, Oppfoelgingskontrakt> tilOppfoelgingskontrakt =
-            wsOppfoelgingskontrakt -> new Oppfoelgingskontrakt().withInnsatsgruppe(wsOppfoelgingskontrakt
-                    .getGjelderBruker()
-                    .getServicegruppe()
-                    .stream()
-                    .map(WSServiceGruppe::getServiceGruppe).collect(Collectors.toList()));
+            wsOppfoelgingskontrakt -> new Oppfoelgingskontrakt()
+                    .withInnsatsgruppe(wsOppfoelgingskontrakt
+                            .getGjelderBruker()
+                            .getServicegruppe()
+                            .stream()
+                            .map(WSServiceGruppe::getServiceGruppe).collect(Collectors.toList()))
+                    .withStatus(wsOppfoelgingskontrakt.getStatus());
 }

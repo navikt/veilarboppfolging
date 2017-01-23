@@ -38,9 +38,9 @@
         <modig-security.version>1.0.30</modig-security.version>
         <logback.version>1.1.6</logback.version>
 
-        <ytelseskontrakt-v3-tjenestespesifikasjon.version>1.0.0-SNAPSHOT
+        <ytelseskontrakt-v3-tjenestespesifikasjon.version>1.0.0
         </ytelseskontrakt-v3-tjenestespesifikasjon.version>
-        <oppfoelging-v1-tjenestespesifikasjon.version>1.0.0-SNAPSHOT
+        <oppfoelging-v1-tjenestespesifikasjon.version>1.0.5
         </oppfoelging-v1-tjenestespesifikasjon.version>
     </properties>
 
