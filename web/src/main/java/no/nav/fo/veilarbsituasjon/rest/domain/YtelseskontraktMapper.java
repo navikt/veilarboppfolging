@@ -52,12 +52,12 @@ public class YtelseskontraktMapper {
                 .map(WSRettighetsgruppe::getRettighetsGruppe).orElse("");
     }
 
-    private static Function<WSVedtak, Vedtak> wsVedtakToVedtak = wsVedtak -> new Vedtak()
+    private static final Function<WSVedtak, Vedtak> wsVedtakToVedtak = wsVedtak -> new Vedtak()
             .withVedtakstype(wsVedtak.getVedtakstype())
             .withStatus(wsVedtak.getStatus())
             .withAktivitetsfase(wsVedtak.getAktivitetsfase());
 
-    private static Function<WSYtelseskontrakt, Ytelseskontrakt> wsYtelseskontraktToYtelseskontrakt = wsYtelseskontrakt -> {
+    private static final Function<WSYtelseskontrakt, Ytelseskontrakt> wsYtelseskontraktToYtelseskontrakt = wsYtelseskontrakt -> {
         final Optional<XMLGregorianCalendar> fomGyldighetsperiode = Optional.ofNullable(wsYtelseskontrakt.getFomGyldighetsperiode());
         final Optional<XMLGregorianCalendar> tomGyldighetsperiode = Optional.ofNullable(wsYtelseskontrakt.getTomGyldighetsperiode());
 

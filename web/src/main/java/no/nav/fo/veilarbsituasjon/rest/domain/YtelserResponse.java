@@ -3,6 +3,7 @@ package no.nav.fo.veilarbsituasjon.rest.domain;
 
 import java.util.List;
 
+@SuppressWarnings("unused")
 public class YtelserResponse {
     private List<Vedtak> vedtaksliste;
     private List<Ytelseskontrakt> ytelser;
