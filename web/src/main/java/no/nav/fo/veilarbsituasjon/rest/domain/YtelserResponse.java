@@ -1,12 +1,15 @@
 package no.nav.fo.veilarbsituasjon.rest.domain;
 
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.List;
 
 @SuppressWarnings("unused")
 public class YtelserResponse {
     private List<Vedtak> vedtaksliste;
     private List<Ytelseskontrakt> ytelser;
+    @JsonProperty("oppfolgingskontrakter")
     private List<Oppfoelgingskontrakt> oppfoelgingskontrakter;
 
     public YtelserResponse withVedtaksliste(List<Vedtak> vedtaksliste) {
