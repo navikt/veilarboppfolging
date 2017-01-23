@@ -48,9 +48,7 @@ public class ArenaServiceConfig {
         LOG.info("URL for Oppfoelging_V1 er {}", url);
         return new CXFClient<>(OppfoelgingPortType.class)
                 .address(url);
-
     }
-
 
     @Bean
     Pingable ytelseskontraktPing() {
@@ -61,6 +59,19 @@ public class ArenaServiceConfig {
                 return lyktes("YTELSESKONTRAKT_V3");
             } catch (Exception e) {
                 return feilet("YTELSESKONTRAKT_V3", e);
+            }
+        };
+    }
+
+    @Bean
+    Pingable oppfoelgingPing() {
+        final OppfoelgingPortType oppfoelgingPing = oppfoelgingPortType().withOutInterceptor(new SystemSAMLOutInterceptor()).ikkeMaskerSecurityHeader().build();
+        return () -> {
+            try {
+                oppfoelgingPing.ping();
+                return lyktes("OPPFOELGING_V1");
+            } catch (Exception e) {
+                return feilet("OPPFOELGING_V1", e);
             }
         };
     }
