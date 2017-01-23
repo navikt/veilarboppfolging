@@ -10,18 +10,28 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class OppfoelgingV1Mock implements OppfoelgingPortType {
+
+    final private String[] muligStatus = {"Aktiv", "LUKKET"};
+    final private String[] muligServicegruppe = {"Ikke vurdert", "Standardinnsats"};
+
     @Override
     public WSHentOppfoelgingskontraktListeResponse hentOppfoelgingskontraktListe(WSHentOppfoelgingskontraktListeRequest request) throws HentOppfoelgingskontraktListeSikkerhetsbegrensning {
         WSHentOppfoelgingskontraktListeResponse response = new WSHentOppfoelgingskontraktListeResponse()
                 .withOppfoelgingskontraktListe(new ArrayList<>());
-        final WSOppfoelgingskontrakt wsOppfoelgingskontrakt = new WSOppfoelgingskontrakt();
-        final WSBruker bruker = new WSBruker();
-        final List<WSServiceGruppe> servicegrupper = bruker.getServicegruppe();
-        final WSServiceGruppe wsServiceGruppe = new WSServiceGruppe();
-        wsServiceGruppe.setServiceGruppe("Ikke vurdert");
-        servicegrupper.add(wsServiceGruppe);
-        wsOppfoelgingskontrakt.setGjelderBruker(bruker);
-        response.getOppfoelgingskontraktListe().add(wsOppfoelgingskontrakt);
+
+        for (String status : muligStatus) {
+            for (String servicegruppe : muligServicegruppe) {
+                final WSOppfoelgingskontrakt wsOppfoelgingskontrakt = new WSOppfoelgingskontrakt();
+                wsOppfoelgingskontrakt.setStatus(status);
+                final WSBruker bruker = new WSBruker();
+                final List<WSServiceGruppe> servicegrupper = bruker.getServicegruppe();
+                final WSServiceGruppe wsServiceGruppe = new WSServiceGruppe();
+                wsServiceGruppe.setServiceGruppe(servicegruppe);
+                servicegrupper.add(wsServiceGruppe);
+                wsOppfoelgingskontrakt.setGjelderBruker(bruker);
+                response.getOppfoelgingskontraktListe().add(wsOppfoelgingskontrakt);
+            }
+        }
         return response;
     }
 

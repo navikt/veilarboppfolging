@@ -45,8 +45,6 @@ public class ArenaServiceConfig {
         final String url = getProperty("oppfoelging.endpoint.url");
         LOG.info("URL for Oppfoelging_V1 er {}", url);
         return new CXFClient<>(OppfoelgingPortType.class)
-                .endpointName(new QName("http://nav.no/tjeneste/virksomhet/oppfoelging/v1/", "Oppfoelging_v1"))
-                .serviceName(new QName("http://nav.no/tjeneste/virksomhet/oppfoelging/v1/", "Oppfoelging_v1"))
                 .address(url);
 
     }
