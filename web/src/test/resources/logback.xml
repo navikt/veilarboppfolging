@@ -13,4 +13,6 @@
 
     <logger name="org.apache.cxf" level="INFO" />
     <logger name="org.springframework" level="ERROR" />
+    <logger name="no.nav.fo" level="DEBUG" />
+    <logger name="no.nav.modig.security" level="DEBUG" />
 </configuration>
