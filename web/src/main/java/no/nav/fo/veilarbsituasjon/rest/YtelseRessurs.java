@@ -16,6 +16,8 @@ import static org.slf4j.LoggerFactory.getLogger;
 @RequestMapping("/person/{fnr}")
 public class YtelseRessurs {
     private static final Logger LOG = getLogger(YtelseRessurs.class);
+    private static final int MANEDER_BAK_I_TID = 2;
+    private static final int MANEDER_FREM_I_TID = 1;
 
     final private YtelseskontraktService ytelseskontraktService;
 
@@ -25,8 +27,8 @@ public class YtelseRessurs {
 
     @RequestMapping(value = "/ytelser", method = RequestMethod.GET, produces = "application/json")
     public YtelseskontraktResponse getYtelser(@PathVariable String fnr) {
-        LocalDate periodeFom = LocalDate.now().minusMonths(2);
-        LocalDate periodeTom = LocalDate.now().plusMonths(1);
+        LocalDate periodeFom = LocalDate.now().minusMonths(MANEDER_BAK_I_TID);
+        LocalDate periodeTom = LocalDate.now().plusMonths(MANEDER_FREM_I_TID);
         XMLGregorianCalendar fom = convertDateToXMLGregorianCalendar(periodeFom);
         XMLGregorianCalendar tom = convertDateToXMLGregorianCalendar(periodeTom);
 
