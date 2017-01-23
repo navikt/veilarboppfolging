@@ -40,7 +40,7 @@
 
         <ytelseskontrakt-v3-tjenestespesifikasjon.version>1.0.0
         </ytelseskontrakt-v3-tjenestespesifikasjon.version>
-        <oppfoelging-v1-tjenestespesifikasjon.version>1.0.5
+        <oppfoelging-v1-tjenestespesifikasjon.version>1.0.6
         </oppfoelging-v1-tjenestespesifikasjon.version>
 
         <common-jetty.version>2.0.11</common-jetty.version>
