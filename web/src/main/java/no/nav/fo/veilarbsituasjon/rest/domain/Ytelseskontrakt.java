@@ -43,7 +43,7 @@ class Ytelseskontrakt {
         return this;
     }
 
-    Ytelseskontrakt withDatoMottat(XMLGregorianCalendar datoKravMottatt) {
+    Ytelseskontrakt withDatoMottatt(XMLGregorianCalendar datoKravMottatt) {
         datoMottatt = new Dato(datoKravMottatt.getYear(), datoKravMottatt.getMonth(), datoKravMottatt.getDay());
         return this;
     }
