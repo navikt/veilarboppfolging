@@ -2,6 +2,7 @@ package no.nav.fo.veilarbsituasjon.rest.domain;
 
 import java.util.List;
 
+@SuppressWarnings("unused")
 class Oppfoelgingskontrakt {
     private List<String> insatsgrupper;
     private String status;
@@ -14,7 +15,7 @@ class Oppfoelgingskontrakt {
         return status;
     }
 
-    public Oppfoelgingskontrakt withStatus(String status) {
+    Oppfoelgingskontrakt withStatus(String status) {
         this.status = status;
         return this;
     }

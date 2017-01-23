@@ -19,7 +19,7 @@ public class OppfoelgingMapper {
         return new OppfoelgingskontraktResponse(oppfoelgingskontrakter);
     }
 
-    private static Function<WSOppfoelgingskontrakt, Oppfoelgingskontrakt> tilOppfoelgingskontrakt =
+    private final static Function<WSOppfoelgingskontrakt, Oppfoelgingskontrakt> tilOppfoelgingskontrakt =
             wsOppfoelgingskontrakt -> new Oppfoelgingskontrakt()
                     .withInnsatsgruppe(wsOppfoelgingskontrakt
                             .getGjelderBruker()
