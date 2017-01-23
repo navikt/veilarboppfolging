@@ -4,11 +4,11 @@ import java.util.List;
 
 @SuppressWarnings("unused")
 class Oppfoelgingskontrakt {
-    private List<String> insatsgrupper;
+    private List<String> innsatsgrupper;
     private String status;
 
-    public List<String> getInsatsgrupper() {
-        return insatsgrupper;
+    public List<String> getInnsatsgrupper() {
+        return innsatsgrupper;
     }
 
     public String getStatus() {
@@ -21,7 +21,7 @@ class Oppfoelgingskontrakt {
     }
 
     Oppfoelgingskontrakt withInnsatsgruppe(List<String> insatsgrupper) {
-        this.insatsgrupper = insatsgrupper;
+        this.innsatsgrupper = insatsgrupper;
         return this;
     }
 }
