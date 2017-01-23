@@ -1,7 +1,5 @@
-package no.nav.fo.veilarbsituasjon.rest.config;
+package no.nav.fo.veilarbsituasjon.config;
 
-import no.nav.fo.veilarbsituasjon.config.ArenaServiceConfig;
-import no.nav.fo.veilarbsituasjon.config.ServiceConfig;
 import org.springframework.context.annotation.*;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
