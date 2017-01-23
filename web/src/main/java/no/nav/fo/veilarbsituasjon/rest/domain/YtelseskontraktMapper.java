@@ -31,7 +31,8 @@ public class YtelseskontraktMapper {
                 .flatMap(Collection::stream)
                 .collect(Collectors.toList());
 
-        final List<Vedtak> vedtakList = wsVedtakList.stream().map(wsVedtakToVedtak)
+        final List<Vedtak> vedtakList = wsVedtakList.stream()
+                .map(wsVedtakToVedtak)
                 .collect(Collectors.toList());
 
         setRettighetsgruppePaVedtak(response, vedtakList);
@@ -63,7 +64,7 @@ public class YtelseskontraktMapper {
         final Ytelseskontrakt ytelseskontrakt = new Ytelseskontrakt()
                 .withYtelsestype(wsYtelseskontrakt.getYtelsestype())
                 .withStatus(wsYtelseskontrakt.getStatus())
-                .withDatoMottat(wsYtelseskontrakt.getDatoKravMottatt());
+                .withDatoMottatt(wsYtelseskontrakt.getDatoKravMottatt());
 
         fomGyldighetsperiode.ifPresent(ytelseskontrakt::setDatoFra);
         tomGyldighetsperiode.ifPresent(ytelseskontrakt::setDatoTil);

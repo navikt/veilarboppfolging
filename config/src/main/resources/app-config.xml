@@ -5,6 +5,12 @@
              http://maven.adeo.no/xsd/appconfig.xsd ">
 
     <name>veilarbsituasjon</name>
+
+    <selftest>
+        <path>veilarbsituasjon/internal/selftest</path>
+        <humanReadablePath>veilarbsituasjon/internal/selftest</humanReadablePath>
+    </selftest>
+
     <artifacts>
         <ear groupId="no.nav.fo" artifactId="veilarbsituasjon-ear"/>
     </artifacts>
