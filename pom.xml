@@ -30,11 +30,23 @@
         <jetty.version>9.3.14.***REMOVED***28</jetty.version>
         <spring.version>4.3.4.RELEASE</spring.version>
         <javax.version>3.1.0</javax.version>
-        <common-jetty.version>2.0.11</common-jetty.version>
-        <slf4j.version>1.7.15</slf4j.version>
         <jackson.version>2.7.2</jackson.version>
+        <slf4j.version>1.7.15</slf4j.version>
+        <modig-log.version>1.1.3</modig-log.version>
         <logback.version>1.1.6</logback.version>
+        <modig-security.version>1.0.30</modig-security.version>
+        <modig-testcertificates.version>1.1.0</modig-testcertificates.version>
+        <ytelseskontrakt-v3-tjenestespesifikasjon.version>1.0.0-SNAPSHOT
+        </ytelseskontrakt-v3-tjenestespesifikasjon.version>
 
+        <common-jetty.version>2.0.11</common-jetty.version>
+        <common-cxf.version>3.1.21</common-cxf.version>
+        <common-web.version>3.1.2</common-web.version>
+        <common-types.version>1.2</common-types.version>
+
+        <jetty-jaas.version>9.0.5.v20130815</jetty-jaas.version>
+        <xml-apis.version>1.4.01</xml-apis.version>
+        <cxf-api.version>2.7.6</cxf-api.version>
     </properties>
 
     <dependencyManagement>
@@ -67,12 +79,97 @@
                 <artifactId>spring-webmvc</artifactId>
                 <version>${spring.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-beans</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
 
-            <!--Common-Jetty-->
+            <!--Common-->
             <dependency>
                 <groupId>no.nav.sbl.dialogarena</groupId>
                 <artifactId>common-jetty</artifactId>
                 <version>${common-jetty.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>no.nav.sbl.dialogarena</groupId>
+                <artifactId>common-cxf</artifactId>
+                <version>${common-cxf.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>com.sun.xml.bind</groupId>
+                        <artifactId>jaxb-impl</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>no.nav.sbl.dialogarena</groupId>
+                <artifactId>common-types</artifactId>
+                <version>${common-types.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>no.nav.sbl.dialogarena</groupId>
+                <artifactId>common-web</artifactId>
+                <version>${common-web.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>no.nav.sbl.dialogarena</groupId>
+                <artifactId>ytelseskontrakt-v3-tjenestespesifikasjon</artifactId>
+                <version>${ytelseskontrakt-v3-tjenestespesifikasjon.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>no.nav.modig</groupId>
+                <artifactId>modig-security-core</artifactId>
+                <version>${modig-security.version}</version>
+                <scope>test</scope>
+                <type>test-jar</type>
+            </dependency>
+            <dependency>
+                <groupId>no.nav.modig</groupId>
+                <artifactId>modig-security-sts</artifactId>
+                <version>${modig-security.version}</version>
+                <scope>runtime</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>com.sun.xml.bind</groupId>
+                        <artifactId>jaxb-impl</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>no.nav.modig</groupId>
+                <artifactId>modig-log-filter</artifactId>
+                <version>${modig-log.version}</version>
+                <scope>runtime</scope>
+            </dependency>
+            <dependency>
+                <groupId>no.nav.modig</groupId>
+                <artifactId>modig-security-ws</artifactId>
+                <version>${modig-security.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.sun.xml.bind</groupId>
+                        <artifactId>jaxb-impl</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>no.nav.modig</groupId>
+                <artifactId>modig-testcertificates</artifactId>
+                <version>${modig-testcertificates.version}</version>
                 <scope>test</scope>
             </dependency>
 
@@ -106,11 +203,26 @@
                 <artifactId>jackson-databind</artifactId>
                 <version>${jackson.version}</version>
             </dependency>
+
+
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-api</artifactId>
+                <version>${cxf-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>xml-apis</groupId>
+                <artifactId>xml-apis</artifactId>
+                <version>${xml-apis.version}</version>
+                <scope>provided</scope>
+            </dependency>
+
             <dependency>
                 <groupId>javax.servlet</groupId>
                 <artifactId>javax.servlet-api</artifactId>
                 <version>${javax.version}</version>
             </dependency>
+
         </dependencies>
     </dependencyManagement>
 

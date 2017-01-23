@@ -5,12 +5,32 @@
              http://maven.adeo.no/xsd/appconfig.xsd ">
 
     <name>veilarbsituasjon</name>
+
+    <selftest>
+        <path>veilarbsituasjon/internal/selftest</path>
+        <humanReadablePath>veilarbsituasjon/internal/selftest</humanReadablePath>
+    </selftest>
+
     <artifacts>
         <ear groupId="no.nav.fo" artifactId="veilarbsituasjon-ear"/>
     </artifacts>
 
     <loadBalancer isAlive="veilarbsituasjon/internal/isAlive" />
 
+    <security serviceUserResourceAlias="srvveilarbsituasjon">
+        <logins/>
+    </security>
+
     <logging serviceCalls="true" />
+
+    <resources>
+        <applicationProperties alias="veilarbsituasjon.properties"/>
+        <webservice alias="virksomhet:Ytelseskontrakt_v3" mapToProperty="ytelseskontrakt.endpoint"/>
+        <applicationCertificate alias="srvveilarbsituasjon"/>
+    </resources>
+
+    <exposed-services>
+        <exposedRest path="/veilarbsituasjon" name="veilArbSituasjonAPI"/>
+    </exposed-services>
 
 </application>
