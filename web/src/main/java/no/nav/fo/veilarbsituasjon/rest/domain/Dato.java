@@ -1,6 +1,7 @@
 package no.nav.fo.veilarbsituasjon.rest.domain;
 
 
+@SuppressWarnings("unused")
 class Dato {
 
     private final int year;

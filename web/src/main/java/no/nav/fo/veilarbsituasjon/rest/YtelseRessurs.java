@@ -1,12 +1,13 @@
 package no.nav.fo.veilarbsituasjon.rest;
 
-import no.nav.fo.veilarbsituasjon.rest.domain.YtelseskontraktResponse;
+import no.nav.fo.veilarbsituasjon.rest.domain.*;
+import no.nav.fo.veilarbsituasjon.services.OppfoelgingService;
 import no.nav.fo.veilarbsituasjon.services.YtelseskontraktService;
 import org.slf4j.Logger;
 import org.springframework.web.bind.annotation.*;
 
-import javax.xml.datatype.*;
-import java.time.*;
+import javax.xml.datatype.XMLGregorianCalendar;
+import java.time.LocalDate;
 
 import static no.nav.fo.veilarbsituasjon.utils.CalendarConverter.convertDateToXMLGregorianCalendar;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -20,19 +21,29 @@ public class YtelseRessurs {
     private static final int MANEDER_FREM_I_TID = 1;
 
     final private YtelseskontraktService ytelseskontraktService;
+    final private OppfoelgingService oppfoelgingService;
 
-    public YtelseRessurs(YtelseskontraktService ytelseskontraktService) {
+
+    public YtelseRessurs(YtelseskontraktService ytelseskontraktService, OppfoelgingService oppfoelgingService) {
         this.ytelseskontraktService = ytelseskontraktService;
+        this.oppfoelgingService = oppfoelgingService;
     }
 
     @RequestMapping(value = "/ytelser", method = RequestMethod.GET, produces = "application/json")
-    public YtelseskontraktResponse getYtelser(@PathVariable String fnr) {
+    public YtelserResponse getYtelser(@PathVariable String fnr) {
         LocalDate periodeFom = LocalDate.now().minusMonths(MANEDER_BAK_I_TID);
         LocalDate periodeTom = LocalDate.now().plusMonths(MANEDER_FREM_I_TID);
         XMLGregorianCalendar fom = convertDateToXMLGregorianCalendar(periodeFom);
         XMLGregorianCalendar tom = convertDateToXMLGregorianCalendar(periodeTom);
 
         LOG.info("Henter ytelse for {}", fnr);
-        return ytelseskontraktService.hentYtelseskontraktListe(fom, tom, fnr);
+        final YtelseskontraktResponse ytelseskontraktResponse = ytelseskontraktService.hentYtelseskontraktListe(fom, tom, fnr);
+        final OppfoelgingskontraktResponse oppfoelgingskontraktResponse = oppfoelgingService.hentOppfoelgingskontraktListe(fom, tom, fnr);
+
+        return new YtelserResponse()
+                .withVedtaksliste(ytelseskontraktResponse.getVedtaksliste())
+                .withYtelser(ytelseskontraktResponse.getYtelser())
+                .withInnsatsgruppe(oppfoelgingskontraktResponse.getOppfoelgingskontrakter());
+
     }
 }
