@@ -26,6 +26,7 @@
     <resources>
         <applicationProperties alias="veilarbsituasjon.properties"/>
         <webservice alias="virksomhet:Ytelseskontrakt_v3" mapToProperty="ytelseskontrakt.endpoint"/>
+        <webservice alias="virksomhet:Oppfolging_v1" mapToProperty="oppfoelging.endpoint"/>
         <applicationCertificate alias="srvveilarbsituasjon"/>
     </resources>
 

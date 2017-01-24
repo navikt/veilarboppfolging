@@ -3,6 +3,7 @@ package no.nav.fo.veilarbsituasjon.rest.domain;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 
+@SuppressWarnings("unused")
 class Ytelseskontrakt {
 
     private String status;
