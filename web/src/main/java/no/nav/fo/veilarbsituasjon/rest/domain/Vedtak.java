@@ -2,7 +2,7 @@ package no.nav.fo.veilarbsituasjon.rest.domain;
 
 
 @SuppressWarnings("unused")
-class Vedtak {
+public class Vedtak {
     private String vedtakstype;
     private String status;
     private String aktivitetsfase;
@@ -24,22 +24,22 @@ class Vedtak {
         return rettighetsgruppe;
     }
 
-    Vedtak withVedtakstype(String vedtakstype) {
+    public Vedtak withVedtakstype(String vedtakstype) {
         this.vedtakstype = vedtakstype;
         return this;
     }
 
-    Vedtak withStatus(String status) {
+    public Vedtak withStatus(String status) {
         this.status = status;
         return this;
     }
 
-    Vedtak withAktivitetsfase(String aktivitetsfase) {
+    public Vedtak withAktivitetsfase(String aktivitetsfase) {
         this.aktivitetsfase = aktivitetsfase;
         return this;
     }
 
-    void setRettighetsgruppe(String rettighetsGruppe) {
+    public void setRettighetsgruppe(String rettighetsGruppe) {
         this.rettighetsgruppe = rettighetsGruppe;
     }
 }

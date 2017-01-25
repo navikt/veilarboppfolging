@@ -24,15 +24,19 @@ public class OppfoelgingV1Mock implements OppfoelgingPortType {
                 final WSOppfoelgingskontrakt wsOppfoelgingskontrakt = new WSOppfoelgingskontrakt();
                 wsOppfoelgingskontrakt.setStatus(status);
                 final WSBruker bruker = new WSBruker();
-                final List<WSServiceGruppe> servicegrupper = bruker.getServicegruppe();
-                final WSServiceGruppe wsServiceGruppe = new WSServiceGruppe();
-                wsServiceGruppe.setServiceGruppe(servicegruppe);
-                servicegrupper.add(wsServiceGruppe);
+                leggTilServiceGrupperForBruker(servicegruppe, bruker);
                 wsOppfoelgingskontrakt.setGjelderBruker(bruker);
                 response.getOppfoelgingskontraktListe().add(wsOppfoelgingskontrakt);
             }
         }
         return response;
+    }
+
+    private void leggTilServiceGrupperForBruker(String servicegruppe, WSBruker bruker) {
+        final List<WSServiceGruppe> servicegrupper = bruker.getServicegruppe();
+        final WSServiceGruppe wsServiceGruppe = new WSServiceGruppe();
+        wsServiceGruppe.setServiceGruppe(servicegruppe);
+        servicegrupper.add(wsServiceGruppe);
     }
 
     @Override
