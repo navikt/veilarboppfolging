@@ -51,6 +51,8 @@
         <xml-apis.version>1.4.01</xml-apis.version>
         <cxf-api.version>2.7.6</cxf-api.version>
         <jackson-annotations.version>2.8.4</jackson-annotations.version>
+        <springfox-swagger2.version>2.6.1</springfox-swagger2.version>
+        <springfox-swagger-ui.version>2.5.0</springfox-swagger-ui.version>
     </properties>
 
     <dependencyManagement>
@@ -238,7 +240,32 @@
                 <artifactId>javax.servlet-api</artifactId>
                 <version>${javax.version}</version>
             </dependency>
-
+            <dependency>
+                <groupId>io.springfox</groupId>
+                <artifactId>springfox-swagger2</artifactId>
+                <version>${springfox-swagger2.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.springfox</groupId>
+                <artifactId>springfox-swagger-ui</artifactId>
+                <version>${springfox-swagger-ui.version}</version>
+                <scope>runtime</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.springfox</groupId>
+                <artifactId>springfox-core</artifactId>
+                <version>${springfox-swagger2.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.springfox</groupId>
+                <artifactId>springfox-spi</artifactId>
+                <version>${springfox-swagger2.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.springfox</groupId>
+                <artifactId>springfox-spring-web</artifactId>
+                <version>${springfox-swagger2.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
