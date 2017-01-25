@@ -1,6 +1,6 @@
 package no.nav.fo.veilarbsituasjon.services;
 
-import no.nav.fo.veilarbsituasjon.rest.domain.OppfoelgingMapper;
+import no.nav.fo.veilarbsituasjon.mappers.OppfoelgingMapper;
 import no.nav.fo.veilarbsituasjon.rest.domain.OppfoelgingskontraktResponse;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.HentOppfoelgingskontraktListeSikkerhetsbegrensning;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;

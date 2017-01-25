@@ -16,6 +16,8 @@ import static org.slf4j.LoggerFactory.getLogger;
 @RequestMapping("/person/{fnr}")
 public class OppfoelgingRessurs {
     private static final Logger LOG = getLogger(OppfoelgingRessurs.class);
+    private static final int MANEDER_BAK_I_TID = 2;
+    private static final int MANEDER_FREM_I_TID = 1;
 
     private final OppfoelgingService oppfoelgingService;
 
@@ -25,8 +27,8 @@ public class OppfoelgingRessurs {
 
     @RequestMapping(value = "/oppfoelging", method = RequestMethod.GET, produces = "application/json")
     public OppfoelgingskontraktResponse getOppfoelging(@PathVariable String fnr){
-        LocalDate periodeFom = LocalDate.of(2005, 10, 10);
-        LocalDate periodeTom = LocalDate.now();
+        LocalDate periodeFom = LocalDate.now().minusMonths(MANEDER_BAK_I_TID);
+        LocalDate periodeTom = LocalDate.now().plusMonths(MANEDER_FREM_I_TID);
         XMLGregorianCalendar fom = convertDateToXMLGregorianCalendar(periodeFom);
         XMLGregorianCalendar tom = convertDateToXMLGregorianCalendar(periodeTom);
 
