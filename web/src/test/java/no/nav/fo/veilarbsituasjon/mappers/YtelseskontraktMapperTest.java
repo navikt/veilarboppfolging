@@ -1,76 +1,96 @@
 package no.nav.fo.veilarbsituasjon.mappers;
 
-import no.nav.fo.veilarbsituasjon.mock.YtelseskontraktV3Mock;
-import no.nav.fo.veilarbsituasjon.rest.domain.Ytelseskontrakt;
-import no.nav.fo.veilarbsituasjon.rest.domain.YtelseskontraktResponse;
+import no.nav.fo.veilarbsituasjon.rest.domain.*;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.HentOppfoelgingskontraktListeSikkerhetsbegrensning;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.HentYtelseskontraktListeSikkerhetsbegrensning;
-import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3;
-import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt.WSPeriode;
-import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeRequest;
-import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeResponse;
-import org.junit.Before;
 import org.junit.Test;
 
-import javax.xml.datatype.XMLGregorianCalendar;
-import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
+import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
-import static no.nav.fo.veilarbsituasjon.utils.CalendarConverter.convertDateToXMLGregorianCalendar;
+import static no.nav.fo.veilarbsituasjon.mappers.ActualYtelseskontraktResponse.getKomplettResponse;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 
 public class YtelseskontraktMapperTest {
 
-    private static final int MANEDER_BAK_I_TID = 2;
-    private static final int MANEDER_FREM_I_TID = 1;
+
     private static final int ANTALL_YTELSER = 2;
     private static final int ANTALL_VEDTAK = 3;
 
-    private YtelseskontraktResponse response;
-
-
-    @Before
-    public void setup() throws HentOppfoelgingskontraktListeSikkerhetsbegrensning, HentYtelseskontraktListeSikkerhetsbegrensning {
-        YtelseskontraktV3 ytelseskontraktMock = new YtelseskontraktV3Mock();
-
-        final WSHentYtelseskontraktListeRequest request = getWSHentYtelseskontraktListeRequest();
-
-        final WSHentYtelseskontraktListeResponse rawResponse = ytelseskontraktMock.hentYtelseskontraktListe(request);
-        this.response = YtelseskontraktMapper.tilYtelseskontrakt(rawResponse);
-
-    }
 
     @Test
-    public void inneholderListeMedYtelser() throws Exception {
+    public void inneholderListeMedYtelser() throws HentOppfoelgingskontraktListeSikkerhetsbegrensning, HentYtelseskontraktListeSikkerhetsbegrensning {
+        YtelseskontraktResponse response = getKomplettResponse();
+
         assertThat(response.getYtelser().size(), is(ANTALL_YTELSER));
     }
 
     @Test
-    public void inneholderListeMedVedtak() {
+    public void inneholderListeMedVedtak() throws HentOppfoelgingskontraktListeSikkerhetsbegrensning, HentYtelseskontraktListeSikkerhetsbegrensning {
+        YtelseskontraktResponse response = getKomplettResponse();
+
         assertThat(response.getVedtaksliste().size(), is(ANTALL_VEDTAK));
     }
 
     @Test
-    public void ytelserHarStatus() {
-        response.getYtelser().stream().map(Ytelseskontrakt::getStatus).collect(toList());
+    public void inneholderRiktigeYtelser() throws HentOppfoelgingskontraktListeSikkerhetsbegrensning, HentYtelseskontraktListeSikkerhetsbegrensning {
+        YtelseskontraktResponse response = getKomplettResponse();
+
+        List<Ytelseskontrakt> expectedYtelser = ExpectedYtelseskontrakt.getExpectedYtelseskontrakter();
+
+        assertThat(response.getYtelser(), is((expectedYtelser)));
+    }
+
+    @Test
+    public void ytelserHarStatus() throws HentOppfoelgingskontraktListeSikkerhetsbegrensning, HentYtelseskontraktListeSikkerhetsbegrensning {
+        final YtelseskontraktResponse komplettResponse = getKomplettResponse();
+
+        final List<String> statusListe = komplettResponse.getYtelser().stream().map(Ytelseskontrakt::getStatus).collect(toList());
+        final List<String> expectedStatusListe = new ArrayList<>(asList("Aktiv", "Lukket"));
+
+        assertThat(statusListe, is(expectedStatusListe));
+    }
+
+    @Test
+    public void inneholderRiktigeVedtak() throws HentOppfoelgingskontraktListeSikkerhetsbegrensning, HentYtelseskontraktListeSikkerhetsbegrensning {
+        YtelseskontraktResponse response = getKomplettResponse();
+
+        List<Vedtak> expectedVedtak = ExpectedYtelseskontrakt.getExpectedVedtak();
+
+        assertThat(response.getVedtaksliste(), is((expectedVedtak)));
+    }
+
+    @Test
+    public void håndtererManglandeVedtakstype() throws HentOppfoelgingskontraktListeSikkerhetsbegrensning, HentYtelseskontraktListeSikkerhetsbegrensning {
+        YtelseskontraktResponse response = ActualYtelseskontraktResponse.getResponseUtenVedtakstype();
+
+        List<Vedtak> expectedVedtak = ExpectedYtelseskontrakt.getExpectedVedtakUtenVedtaksgruppe();
+
+        assertThat(response.getVedtaksliste(), is((expectedVedtak)));
 
     }
 
-    private WSHentYtelseskontraktListeRequest getWSHentYtelseskontraktListeRequest() {
-        String personId = "***REMOVED***";
+    @Test
+    public void håndtererManglandeAktivitetsfase() throws HentOppfoelgingskontraktListeSikkerhetsbegrensning, HentYtelseskontraktListeSikkerhetsbegrensning {
+        YtelseskontraktResponse response = ActualYtelseskontraktResponse.getResponseUtenAktivitetsfase();
 
-        LocalDate periodeFom = LocalDate.now().minusMonths(MANEDER_BAK_I_TID);
-        LocalDate periodeTom = LocalDate.now().plusMonths(MANEDER_FREM_I_TID);
-        XMLGregorianCalendar fom = convertDateToXMLGregorianCalendar(periodeFom);
-        XMLGregorianCalendar tom = convertDateToXMLGregorianCalendar(periodeTom);
-        final WSPeriode periode = new WSPeriode();
-        periode.setFom(fom);
-        periode.setTom(tom);
-        return new WSHentYtelseskontraktListeRequest()
-                .withPeriode(periode)
-                .withPersonidentifikator(personId);
+        List<Vedtak> expectedVedtak = ExpectedYtelseskontrakt.getExpectedVedtakUtenAktivitetsfase();
+
+        assertThat(response.getVedtaksliste(), is((expectedVedtak)));
     }
+
+    @Test
+    public void håndtererManglandeRettighetsgruppe() throws HentOppfoelgingskontraktListeSikkerhetsbegrensning, HentYtelseskontraktListeSikkerhetsbegrensning {
+        YtelseskontraktResponse response = ActualYtelseskontraktResponse.getResponseUtenRettighetsgruppe();
+
+        List<Vedtak> expectedVedtak = ExpectedYtelseskontrakt.getExpectedVedtakUtenRettighetsgruppe();
+
+        assertThat(response.getVedtaksliste(), is((expectedVedtak)));
+    }
+
 
 }
