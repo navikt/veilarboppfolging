@@ -48,6 +48,15 @@ public class Ytelseskontrakt {
         datoMottatt = new Dato(datoKravMottatt.getYear(), datoKravMottatt.getMonth(), datoKravMottatt.getDay());
         return this;
     }
+    public Ytelseskontrakt withDatoFra(XMLGregorianCalendar datoFra) {
+        this.datoFra = new Dato(datoFra.getYear(), datoFra.getMonth(), datoFra.getDay());
+        return this;
+    }
+
+    public Ytelseskontrakt withDatoTil(XMLGregorianCalendar datoTil) {
+        this.datoTil = new Dato(datoTil.getYear(), datoTil.getMonth(), datoTil.getDay());
+        return this;
+    }
 
     public void setDatoFra(XMLGregorianCalendar datoFra) {
         this.datoFra = new Dato(datoFra.getYear(), datoFra.getMonth(), datoFra.getDay());
@@ -56,4 +65,20 @@ public class Ytelseskontrakt {
     public void setDatoTil(XMLGregorianCalendar datoTil) {
         this.datoTil = new Dato(datoTil.getYear(), datoTil.getMonth(), datoTil.getDay());
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Ytelseskontrakt that = (Ytelseskontrakt) o;
+
+        if (!getStatus().equals(that.getStatus())) return false;
+        if (!getYtelsestype().equals(that.getYtelsestype())) return false;
+        if (!getDatoMottatt().equals(that.getDatoMottatt())) return false;
+        if (getDatoFra() != null ? !getDatoFra().equals(that.getDatoFra()) : that.getDatoFra() != null) return false;
+        return getDatoTil() != null ? getDatoTil().equals(that.getDatoTil()) : that.getDatoTil() == null;
+
+    }
+
 }
