@@ -39,7 +39,29 @@ public class Vedtak {
         return this;
     }
 
+    public Vedtak withRettighetsgruppe(String rettighetsGruppe) {
+        this.rettighetsgruppe = rettighetsGruppe;
+        return this;
+    }
+
     public void setRettighetsgruppe(String rettighetsGruppe) {
         this.rettighetsgruppe = rettighetsGruppe;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Vedtak vedtak = (Vedtak) o;
+
+        if (getVedtakstype() != null ? !getVedtakstype().equals(vedtak.getVedtakstype()) : vedtak.getVedtakstype() != null)
+            return false;
+        if (!getStatus().equals(vedtak.getStatus())) return false;
+        if (getAktivitetsfase() != null ? !getAktivitetsfase().equals(vedtak.getAktivitetsfase()) : vedtak.getAktivitetsfase() != null)
+            return false;
+        return getRettighetsgruppe() != null ? getRettighetsgruppe().equals(vedtak.getRettighetsgruppe()) : vedtak.getRettighetsgruppe() == null;
+
+    }
+
 }
