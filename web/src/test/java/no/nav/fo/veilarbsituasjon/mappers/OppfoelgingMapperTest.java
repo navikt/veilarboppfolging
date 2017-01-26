@@ -7,7 +7,6 @@ import no.nav.tjeneste.virksomhet.oppfoelging.v1.HentOppfoelgingskontraktListeSi
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.informasjon.WSPeriode;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.WSHentOppfoelgingskontraktListeRequest;
-import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.WSHentOppfoelgingskontraktListeResponse;
 import org.junit.Test;
 
 import javax.xml.datatype.XMLGregorianCalendar;
@@ -16,13 +15,9 @@ import java.util.*;
 
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
-import static no.nav.fo.veilarbsituasjon.mock.OppfoelgingV1Mock.leggTilStatusOgServicegruppePaResponse;
 import static no.nav.fo.veilarbsituasjon.utils.CalendarConverter.convertDateToXMLGregorianCalendar;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 
 public class OppfoelgingMapperTest {
@@ -72,47 +67,12 @@ public class OppfoelgingMapperTest {
 
     }
 
-    @Test(expected = NullPointerException.class)
-    public void manglandeStatusGirException() throws HentOppfoelgingskontraktListeSikkerhetsbegrensning {
-        OppfoelgingPortType oppfoelgingPortTypeMock = mock(OppfoelgingPortType.class);
-        when(oppfoelgingPortTypeMock.hentOppfoelgingskontraktListe(any(WSHentOppfoelgingskontraktListeRequest.class)))
-                .thenReturn(getResponseUtenStatus());
-        getOppfoelgingskontrakter(oppfoelgingPortTypeMock);
-    }
-
-    @Test(expected = NullPointerException.class)
-    public void manglandeServicegruppeGirException() throws HentOppfoelgingskontraktListeSikkerhetsbegrensning {
-        OppfoelgingPortType oppfoelgingPortTypeMock = mock(OppfoelgingPortType.class);
-        when(oppfoelgingPortTypeMock.hentOppfoelgingskontraktListe(any(WSHentOppfoelgingskontraktListeRequest.class)))
-                .thenReturn(getResponseUtenServicegruppe());
-        getOppfoelgingskontrakter(oppfoelgingPortTypeMock);
-    }
-
     private List<Oppfoelgingskontrakt> getOppfoelgingskontrakter(OppfoelgingPortType oppfoelgingMock) throws HentOppfoelgingskontraktListeSikkerhetsbegrensning {
         final WSHentOppfoelgingskontraktListeRequest request = getWsHentOppfoelgingskontraktListeRequest();
 
         final OppfoelgingskontraktResponse response = OppfoelgingMapper.tilOppfoelgingskontrakt(oppfoelgingMock.hentOppfoelgingskontraktListe(request));
 
         return response.getOppfoelgingskontrakter();
-    }
-
-    private WSHentOppfoelgingskontraktListeResponse getResponseUtenServicegruppe() {
-        WSHentOppfoelgingskontraktListeResponse response = new WSHentOppfoelgingskontraktListeResponse()
-                .withOppfoelgingskontraktListe(new ArrayList<>());
-        final String serviceGruppe = null;
-        final String status = "Aktiv";
-        leggTilStatusOgServicegruppePaResponse(response, serviceGruppe, status);
-        return response;
-    }
-
-    private WSHentOppfoelgingskontraktListeResponse getResponseUtenStatus() {
-        WSHentOppfoelgingskontraktListeResponse response = new WSHentOppfoelgingskontraktListeResponse()
-                .withOppfoelgingskontraktListe(new ArrayList<>());
-        final String serviceGruppe = "Standardinnsats";
-        final String status = null;
-        leggTilStatusOgServicegruppePaResponse(response, serviceGruppe, status);
-        return response;
-
     }
 
     private WSHentOppfoelgingskontraktListeRequest getWsHentOppfoelgingskontraktListeRequest() {
