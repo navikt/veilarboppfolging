@@ -11,8 +11,8 @@ import java.util.List;
 
 public class OppfoelgingV1Mock implements OppfoelgingPortType {
 
-    final private String[] muligStatus = {"Aktiv", "LUKKET"};
-    final private String[] muligServicegruppe = {"Ikke vurdert", "Standardinnsats"};
+    final private static String[] muligStatus = {"Aktiv", "LUKKET"};
+    final private static String[] muligServicegruppe = {"Ikke vurdert", "Standardinnsats"};
 
     @Override
     public WSHentOppfoelgingskontraktListeResponse hentOppfoelgingskontraktListe(WSHentOppfoelgingskontraktListeRequest request) throws HentOppfoelgingskontraktListeSikkerhetsbegrensning {
