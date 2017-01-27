@@ -1,7 +1,7 @@
 package no.nav.fo.veilarbsituasjon.services;
 
 
-import no.nav.fo.veilarbsituasjon.rest.domain.YtelseskontraktMapper;
+import no.nav.fo.veilarbsituasjon.mappers.YtelseskontraktMapper;
 import no.nav.fo.veilarbsituasjon.rest.domain.YtelseskontraktResponse;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.HentYtelseskontraktListeSikkerhetsbegrensning;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3;

@@ -21,18 +21,32 @@ public class OppfoelgingV1Mock implements OppfoelgingPortType {
 
         for (String status : muligStatus) {
             for (String servicegruppe : muligServicegruppe) {
-                final WSOppfoelgingskontrakt wsOppfoelgingskontrakt = new WSOppfoelgingskontrakt();
-                wsOppfoelgingskontrakt.setStatus(status);
-                final WSBruker bruker = new WSBruker();
-                final List<WSServiceGruppe> servicegrupper = bruker.getServicegruppe();
-                final WSServiceGruppe wsServiceGruppe = new WSServiceGruppe();
-                wsServiceGruppe.setServiceGruppe(servicegruppe);
-                servicegrupper.add(wsServiceGruppe);
-                wsOppfoelgingskontrakt.setGjelderBruker(bruker);
-                response.getOppfoelgingskontraktListe().add(wsOppfoelgingskontrakt);
+                leggTilStatusOgServicegruppePaResponse(response, status, servicegruppe);
             }
         }
         return response;
+    }
+
+    public static void leggTilStatusOgServicegruppePaResponse(WSHentOppfoelgingskontraktListeResponse response, String status, String servicegruppe) {
+        final WSOppfoelgingskontrakt wsOppfoelgingskontrakt = new WSOppfoelgingskontrakt();
+
+        if (!status.isEmpty()) {
+            wsOppfoelgingskontrakt.setStatus(status);
+        }
+        final WSBruker bruker = new WSBruker();
+
+        if (!servicegruppe.isEmpty()) {
+            leggTilServiceGrupperForBruker(servicegruppe, bruker);
+        }
+        wsOppfoelgingskontrakt.setGjelderBruker(bruker);
+        response.getOppfoelgingskontraktListe().add(wsOppfoelgingskontrakt);
+    }
+
+    private static void leggTilServiceGrupperForBruker(String servicegruppe, WSBruker bruker) {
+        final List<WSServiceGruppe> servicegrupper = bruker.getServicegruppe();
+        final WSServiceGruppe wsServiceGruppe = new WSServiceGruppe();
+        wsServiceGruppe.setServiceGruppe(servicegruppe);
+        servicegrupper.add(wsServiceGruppe);
     }
 
     @Override

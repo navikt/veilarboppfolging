@@ -2,7 +2,7 @@ package no.nav.fo.veilarbsituasjon.rest.domain;
 
 
 @SuppressWarnings("unused")
-class Vedtak {
+public class Vedtak {
     private String vedtakstype;
     private String status;
     private String aktivitetsfase;
@@ -24,22 +24,44 @@ class Vedtak {
         return rettighetsgruppe;
     }
 
-    Vedtak withVedtakstype(String vedtakstype) {
+    public Vedtak withVedtakstype(String vedtakstype) {
         this.vedtakstype = vedtakstype;
         return this;
     }
 
-    Vedtak withStatus(String status) {
+    public Vedtak withStatus(String status) {
         this.status = status;
         return this;
     }
 
-    Vedtak withAktivitetsfase(String aktivitetsfase) {
+    public Vedtak withAktivitetsfase(String aktivitetsfase) {
         this.aktivitetsfase = aktivitetsfase;
         return this;
     }
 
-    void setRettighetsgruppe(String rettighetsGruppe) {
+    public Vedtak withRettighetsgruppe(String rettighetsGruppe) {
+        this.rettighetsgruppe = rettighetsGruppe;
+        return this;
+    }
+
+    public void setRettighetsgruppe(String rettighetsGruppe) {
         this.rettighetsgruppe = rettighetsGruppe;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Vedtak vedtak = (Vedtak) o;
+
+        if (getVedtakstype() != null ? !getVedtakstype().equals(vedtak.getVedtakstype()) : vedtak.getVedtakstype() != null)
+            return false;
+        if (!getStatus().equals(vedtak.getStatus())) return false;
+        if (getAktivitetsfase() != null ? !getAktivitetsfase().equals(vedtak.getAktivitetsfase()) : vedtak.getAktivitetsfase() != null)
+            return false;
+        return getRettighetsgruppe() != null ? getRettighetsgruppe().equals(vedtak.getRettighetsgruppe()) : vedtak.getRettighetsgruppe() == null;
+
+    }
+
 }

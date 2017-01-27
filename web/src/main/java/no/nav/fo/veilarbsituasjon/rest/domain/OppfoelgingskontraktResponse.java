@@ -10,7 +10,7 @@ public class OppfoelgingskontraktResponse {
     @JsonProperty("oppfolgingskontrakter")
     private final List<Oppfoelgingskontrakt> oppfoelgingskontrakter;
 
-    OppfoelgingskontraktResponse(List<Oppfoelgingskontrakt> oppfoelgingskontraktListe) {
+    public OppfoelgingskontraktResponse(List<Oppfoelgingskontrakt> oppfoelgingskontraktListe) {
 
         this.oppfoelgingskontrakter = oppfoelgingskontraktListe;
     }
