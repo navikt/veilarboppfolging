@@ -1,6 +1,8 @@
-package no.nav.fo.veilarbsituasjon.rest.domain;
+package no.nav.fo.veilarbsituasjon.mappers;
 
 
+import no.nav.fo.veilarbsituasjon.rest.domain.Oppfoelgingskontrakt;
+import no.nav.fo.veilarbsituasjon.rest.domain.OppfoelgingskontraktResponse;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.informasjon.WSOppfoelgingskontrakt;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.informasjon.WSServiceGruppe;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.WSHentOppfoelgingskontraktListeResponse;

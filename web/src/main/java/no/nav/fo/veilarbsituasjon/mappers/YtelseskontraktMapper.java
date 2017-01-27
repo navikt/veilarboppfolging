@@ -1,5 +1,6 @@
-package no.nav.fo.veilarbsituasjon.rest.domain;
+package no.nav.fo.veilarbsituasjon.mappers;
 
+import no.nav.fo.veilarbsituasjon.rest.domain.*;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt.*;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeResponse;
 

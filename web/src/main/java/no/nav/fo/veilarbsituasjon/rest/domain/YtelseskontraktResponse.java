@@ -7,7 +7,7 @@ public class YtelseskontraktResponse {
     private final List<Vedtak> vedtaksliste;
     private final List<Ytelseskontrakt> ytelser;
 
-    YtelseskontraktResponse(List<Vedtak> vedtaksliste, List<Ytelseskontrakt> ytelser) {
+    public YtelseskontraktResponse(List<Vedtak> vedtaksliste, List<Ytelseskontrakt> ytelser) {
 
         this.vedtaksliste = vedtaksliste;
         this.ytelser = ytelser;

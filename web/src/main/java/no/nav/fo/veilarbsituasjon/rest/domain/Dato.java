@@ -26,4 +26,18 @@ class Dato {
     public int getDay() {
         return day;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Dato dato = (Dato) o;
+
+        if (getYear() != dato.getYear()) return false;
+        if (getMonth() != dato.getMonth()) return false;
+        return getDay() == dato.getDay();
+
+    }
+
 }
