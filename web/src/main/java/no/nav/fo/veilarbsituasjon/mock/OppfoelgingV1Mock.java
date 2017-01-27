@@ -27,7 +27,7 @@ public class OppfoelgingV1Mock implements OppfoelgingPortType {
         return response;
     }
 
-    public static void leggTilStatusOgServicegruppePaResponse(WSHentOppfoelgingskontraktListeResponse response, String status, String servicegruppe) {
+    private static void leggTilStatusOgServicegruppePaResponse(WSHentOppfoelgingskontraktListeResponse response, String status, String servicegruppe) {
         final WSOppfoelgingskontrakt wsOppfoelgingskontrakt = new WSOppfoelgingskontrakt();
 
         if (!status.isEmpty()) {
