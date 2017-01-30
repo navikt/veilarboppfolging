@@ -1,5 +1,6 @@
 package no.nav.fo.veilarbsituasjon.config;
 
+import no.nav.fo.veilarbsituasjon.services.AktoerIdService;
 import no.nav.fo.veilarbsituasjon.services.OppfoelgingService;
 import no.nav.fo.veilarbsituasjon.services.YtelseskontraktService;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
@@ -27,4 +28,7 @@ public class ServiceConfig {
     OppfoelgingService oppfoelgingService() {
         return new OppfoelgingService(oppfoelgingPortType);
     }
+
+    @Bean
+    AktoerIdService aktoerIdService() { return new AktoerIdService(); }
 }

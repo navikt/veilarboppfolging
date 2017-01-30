@@ -17,7 +17,7 @@ class StartJetty {
         Jetty jetty = usingWar()
                 .at("/veilarbsituasjon")
                 .port(PORT)
-                .loadProperties("/environment-test.properties")
+                .loadProperties("/jetty-test.properties")
                 .overrideWebXml()
                 .buildJetty();
         jetty.startAnd(first(waitFor(gotKeypress())).then(jetty.stop));
