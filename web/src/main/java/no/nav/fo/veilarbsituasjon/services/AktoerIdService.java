@@ -1,21 +1,28 @@
 package no.nav.fo.veilarbsituasjon.services;
 
 
+import no.nav.fo.veilarbsituasjon.domain.AktoerIdToVeileder;
+import no.nav.fo.veilarbsituasjon.repository.AktoerIdToVeilederDAO;
 import no.nav.tjeneste.virksomhet.aktoer.v2.AktoerV2;
 import no.nav.tjeneste.virksomhet.aktoer.v2.HentAktoerIdForIdentPersonIkkeFunnet;
 import no.nav.tjeneste.virksomhet.aktoer.v2.meldinger.WSHentAktoerIdForIdentRequest;
 import org.slf4j.Logger;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
+@Transactional
 public class AktoerIdService {
 
     private static final Logger LOG = getLogger(AktoerIdService.class);
 
     @Inject
     private AktoerV2 aktoerV2;
+
+    @Inject
+    private AktoerIdToVeilederDAO aktoerIdToVeilederDAO;
 
     public String findAktoerId(String fnr) {
 
@@ -28,5 +35,9 @@ public class AktoerIdService {
             LOG.error("AktoerId ikke funnet", e);
             return null;
         }
+    }
+
+    public AktoerIdToVeileder saveOrUpdateAktoerIdToVeileder(AktoerIdToVeileder aktoerIdToVeileder) {
+        return aktoerIdToVeilederDAO.opprettEllerOppdaterAktoerIdToVeileder(aktoerIdToVeileder);
     }
 }

@@ -1,0 +1,62 @@
+package no.nav.fo.veilarbsituasjon.config;
+
+import no.nav.fo.veilarbsituasjon.domain.AktoerIdToVeileder;
+import no.nav.fo.veilarbsituasjon.repository.AktoerIdToVeilederDAO;
+import org.hibernate.SessionFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.jdbc.datasource.lookup.JndiDataSourceLookup;
+import org.springframework.orm.hibernate4.HibernateTransactionManager;
+import org.springframework.orm.hibernate4.LocalSessionFactoryBuilder;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
+
+import javax.sql.DataSource;
+import java.util.Properties;
+
+@Configuration
+@EnableTransactionManagement
+public class DatabaseConfig {
+
+    @Bean
+    public DataSource dataSource() {
+        JndiDataSourceLookup dataSourceLookup = new JndiDataSourceLookup();
+        dataSourceLookup.setResourceRef(true);
+        return dataSourceLookup.getDataSource("jdbc/veilarbsituasjonDS");
+    }
+
+    @Bean(name = "sessionFactory")
+    public SessionFactory getSessionFactory() {
+        LocalSessionFactoryBuilder sessionBuilder = new LocalSessionFactoryBuilder(dataSource());
+        sessionBuilder.addAnnotatedClasses(AktoerIdToVeileder.class);
+        sessionBuilder.addProperties(hibernateProperties());
+        return sessionBuilder.buildSessionFactory();
+
+    }
+
+    @Bean
+    @Autowired
+    public HibernateTransactionManager transactionManager(SessionFactory sessionFactory) {
+        HibernateTransactionManager txManager = new HibernateTransactionManager();
+        txManager.setSessionFactory(sessionFactory);
+        return txManager;
+    }
+
+    @Bean
+    public AktoerIdToVeilederDAO aktoerIdToVeilederDAO() {
+        return new AktoerIdToVeilederDAO();
+    }
+
+
+    private Properties hibernateProperties() {
+        Properties hibernate = new Properties();
+        hibernate.setProperty("hibernate.dialect", "org.hibernate.dialect.Oracle10gDialect");
+        hibernate.setProperty("hibernate.show_sql", "false");
+        hibernate.setProperty("hibernate.format_sql", "true");
+        hibernate.setProperty("hibernate.jdbc.fetch_size", "100");
+        return hibernate;
+    }
+
+
+
+}
