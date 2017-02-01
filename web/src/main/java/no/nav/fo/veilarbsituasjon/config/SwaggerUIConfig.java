@@ -4,7 +4,7 @@ import org.springframework.context.annotation.*;
 import org.springframework.web.servlet.config.annotation.*;
 
 @EnableWebMvc
-@ComponentScan(basePackages = "no.nav.fo.veilarbsituasjon")
+//@ComponentScan(basePackages = "no.nav.fo.veilarbsituasjon")
 @Import(SwaggerConfig.class)
 @Configuration
 public class SwaggerUIConfig extends WebMvcConfigurerAdapter {

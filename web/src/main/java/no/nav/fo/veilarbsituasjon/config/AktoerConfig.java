@@ -24,9 +24,9 @@ public class AktoerConfig {
         return () -> {
             try {
                 factory().ping();
-                return lyktes("Aktoer V2");
+                return lyktes("AKTOER_V2");
             } catch (Exception e) {
-                return feilet("Aktoer V2", e);
+                return feilet("AKTOER_V2", e);
             }
         };
     }

@@ -2,6 +2,9 @@ package no.nav.fo.veilarbsituasjon.config;
 
 import no.nav.fo.veilarbsituasjon.domain.AktoerIdToVeileder;
 import no.nav.fo.veilarbsituasjon.repository.AktoerIdToVeilederDAO;
+import no.nav.sbl.dialogarena.common.integrasjon.utils.RowMapper;
+import no.nav.sbl.dialogarena.common.integrasjon.utils.SQL;
+import no.nav.sbl.dialogarena.types.Pingable;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -57,6 +60,15 @@ public class DatabaseConfig {
         return hibernate;
     }
 
-
-
+    @Bean
+    public Pingable dbPinger(final DataSource ds) {
+        return () -> {
+            try {
+                SQL.query(ds, new RowMapper.IntMapper(), "select count(1) from dual");
+                return Pingable.Ping.lyktes("DATABASE");
+            } catch (Exception e) {
+                return Pingable.Ping.feilet("DATABASE", e);
+            }
+        };
+    }
 }

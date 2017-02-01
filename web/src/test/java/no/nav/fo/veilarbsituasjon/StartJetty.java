@@ -2,6 +2,7 @@ package no.nav.fo.veilarbsituasjon;
 
 import no.nav.modig.core.context.StaticSubjectHandler;
 import no.nav.sbl.dialogarena.common.jetty.Jetty;
+import org.apache.activemq.broker.BrokerService;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import javax.sql.DataSource;
@@ -18,6 +19,12 @@ class StartJetty {
 
     public static void main(String[] args) throws Exception {
         setProperty(SUBJECTHANDLER_KEY, StaticSubjectHandler.class.getName());
+
+        final BrokerService broker = new BrokerService();
+        broker.getSystemUsage().getTempUsage().setLimit(100 * 1024 * 1024);
+        broker.getSystemUsage().getStoreUsage().setLimit(100 * 1024 * 1024);
+        broker.addConnector("tcp://localhost:61616");
+        broker.start();
 
         Jetty jetty = usingWar()
                 .at("/veilarbsituasjon")
