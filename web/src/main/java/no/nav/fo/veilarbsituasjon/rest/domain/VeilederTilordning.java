@@ -3,7 +3,7 @@ package no.nav.fo.veilarbsituasjon.rest.domain;
 public class VeilederTilordning {
 
     private String identVeileder;
-    private String fodselsnummerOppfolgingsbruker;
+    private String fodselsnummerBruker;
 
     public String getIdentVeileder() {
         return identVeileder;
@@ -14,12 +14,12 @@ public class VeilederTilordning {
         return this;
     }
 
-    public String getFodselsnummerOppfolgingsbruker() {
-        return fodselsnummerOppfolgingsbruker;
+    public String getFodselsnummerBruker() {
+        return fodselsnummerBruker;
     }
 
-    public VeilederTilordning setFodselsnummerOppfolgingsbruker(String fodselsnummerOppfolgingsbruker) {
-        this.fodselsnummerOppfolgingsbruker = fodselsnummerOppfolgingsbruker;
+    public VeilederTilordning setFodselsnummerBruker(String fodselsnummerBruker) {
+        this.fodselsnummerBruker = fodselsnummerBruker;
         return this;
     }
 }
