@@ -48,6 +48,7 @@ public class Ytelseskontrakt {
         datoMottatt = new Dato(datoKravMottatt.getYear(), datoKravMottatt.getMonth(), datoKravMottatt.getDay());
         return this;
     }
+
     public Ytelseskontrakt withDatoFra(XMLGregorianCalendar datoFra) {
         this.datoFra = new Dato(datoFra.getYear(), datoFra.getMonth(), datoFra.getDay());
         return this;
@@ -79,6 +80,16 @@ public class Ytelseskontrakt {
         if (getDatoFra() != null ? !getDatoFra().equals(that.getDatoFra()) : that.getDatoFra() != null) return false;
         return getDatoTil() != null ? getDatoTil().equals(that.getDatoTil()) : that.getDatoTil() == null;
 
+    }
+
+    @Override
+    public int hashCode() {
+        int result = getStatus() != null ? getStatus().hashCode() : 0;
+        result = 31 * result + (getYtelsestype() != null ? getYtelsestype().hashCode() : 0);
+        result = 31 * result + (getDatoMottatt() != null ? getDatoMottatt().hashCode() : 0);
+        result = 31 * result + (getDatoFra() != null ? getDatoFra().hashCode() : 0);
+        result = 31 * result + (getDatoTil() != null ? getDatoTil().hashCode() : 0);
+        return result;
     }
 
 }
