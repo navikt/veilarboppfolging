@@ -102,7 +102,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.cxf</groupId>
-            <artifactId>cxf-core</artifactId>
+            <artifactId>cxf-api</artifactId>
         </dependency>
         <dependency>
             <groupId>xml-apis</groupId>
