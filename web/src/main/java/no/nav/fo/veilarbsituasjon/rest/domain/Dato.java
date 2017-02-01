@@ -40,4 +40,11 @@ class Dato {
 
     }
 
+    @Override
+    public int hashCode() {
+        int result = getYear();
+        result = 31 * result + getMonth();
+        result = 31 * result + getDay();
+        return result;
+    }
 }

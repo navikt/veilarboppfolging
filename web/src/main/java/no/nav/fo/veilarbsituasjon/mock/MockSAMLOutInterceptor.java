@@ -7,7 +7,7 @@ class MockSAMLOutInterceptor implements SAMLAttributes {
 
     @Override
     public String getUid() {
-        return "Z990300";
+        return "Z990153";
     }
 
     @Override

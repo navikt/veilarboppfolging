@@ -64,4 +64,13 @@ public class Vedtak {
 
     }
 
+    @Override
+    public int hashCode() {
+        int result = getVedtakstype() != null ? getVedtakstype().hashCode() : 0;
+        result = 31 * result + (getStatus() != null ? getStatus().hashCode() : 0);
+        result = 31 * result + (getAktivitetsfase() != null ? getAktivitetsfase().hashCode() : 0);
+        result = 31 * result + (getRettighetsgruppe() != null ? getRettighetsgruppe().hashCode() : 0);
+        return result;
+    }
+
 }
