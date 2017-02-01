@@ -63,12 +63,14 @@ public class MessageQueueConfig {
     }
 
     @Bean
-    public Pingable.Ping ping() {
-        try {
-            connectionFactory().createConnection().close();
-            return lyktes("ENDREVEILEDER");
-        } catch (Exception e) {
-            return feilet("ENDREVEILEDER", e);
-        }
+    public Pingable jmsPinger() {
+        return () -> {
+            try {
+                connectionFactory().createConnection().close();
+                return lyktes("JMS");
+            } catch (Exception e) {
+                return feilet("JMS", e);
+            }
+        };
     }
 }
