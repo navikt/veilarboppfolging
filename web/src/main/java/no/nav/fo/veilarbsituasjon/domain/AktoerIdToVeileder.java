@@ -26,4 +26,7 @@ public class AktoerIdToVeileder {
         return this;
     }
 
+    public String toString() {
+        return "{aktoerId:"+aktoerid+",identVeileder:"+veileder+"}";
+    }
 }

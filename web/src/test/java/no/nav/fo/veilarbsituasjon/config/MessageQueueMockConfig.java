@@ -42,7 +42,7 @@ public class MessageQueueMockConfig {
         return new ActiveMQQueue("portefolje");
     }
 
-    @Bean(name = "portefoljequeue")
+    @Bean(name = "endreveilederko")
     public JmsTemplate portefoljequeue() throws NamingException {
         JmsTemplate jmsTemplate = new JmsTemplate(connectionFactory());
         jmsTemplate.setConnectionFactory(connectionFactory());

@@ -1,13 +1,12 @@
 package no.nav.fo.veilarbsituasjon.config;
 
-import no.nav.fo.veilarbsituasjon.config.mq.SituasjonMQConfig;
 import no.nav.sbl.dialogarena.types.Pingable;
 import org.slf4j.Logger;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 import org.springframework.jms.annotation.EnableJms;
 import org.springframework.jms.config.DefaultJmsListenerContainerFactory;
+import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.support.destination.DestinationResolver;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.jta.JtaTransactionManager;
@@ -23,9 +22,6 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 @Configuration
 @EnableJms
-@Import({
-        SituasjonMQConfig.class
-})
 public class MessageQueueConfig {
 
     private static final Logger LOG = getLogger(MessageQueueConfig.class);
@@ -60,6 +56,19 @@ public class MessageQueueConfig {
             }
             return null;
         };
+    }
+
+    @Bean
+    public Destination endreVeilederKo() throws NamingException {
+        return (Destination) new InitialContext().lookup("java:jboss/jms/endreVeilederKo");
+    }
+
+    @Bean(name = "endreveilederko")
+    public JmsTemplate endreVeilederQueue() throws NamingException {
+        JmsTemplate jmsTemplate = new JmsTemplate();
+        jmsTemplate.setDefaultDestination(endreVeilederKo());
+        jmsTemplate.setConnectionFactory(connectionFactory());
+        return jmsTemplate;
     }
 
     @Bean
