@@ -27,7 +27,7 @@ public class PortefoljeRessurs {
             }
             return new ResponseEntity<Object>("Veiledere tilordnet", HttpStatus.OK);
         } catch ( Exception e) {
-            return new ResponseEntity<Object>("Done", HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<Object>("Kunne ikke tilordne veileder", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }
