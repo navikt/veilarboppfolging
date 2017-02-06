@@ -7,9 +7,8 @@ import no.nav.tjeneste.virksomhet.aktoer.v2.AktoerV2;
 import no.nav.tjeneste.virksomhet.aktoer.v2.HentAktoerIdForIdentPersonIkkeFunnet;
 import no.nav.tjeneste.virksomhet.aktoer.v2.meldinger.WSHentAktoerIdForIdentRequest;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
-
-import javax.inject.Inject;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -18,10 +17,10 @@ public class AktoerIdService {
 
     private static final Logger LOG = getLogger(AktoerIdService.class);
 
-    @Inject
+    @Autowired
     private AktoerV2 aktoerV2;
 
-    @Inject
+    @Autowired
     private AktoerIdToVeilederDAO aktoerIdToVeilederDAO;
 
     public String findAktoerId(String fnr) {

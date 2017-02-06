@@ -3,11 +3,10 @@ package no.nav.fo.veilarbsituasjon.services;
 import no.nav.fo.veilarbsituasjon.domain.AktoerIdToVeileder;
 import no.nav.fo.veilarbsituasjon.rest.domain.VeilederTilordning;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.transaction.annotation.Transactional;
-
-import javax.inject.Inject;
-import javax.inject.Named;
 
 import static java.util.UUID.randomUUID;
 import static no.nav.fo.veilarbsituasjon.utils.JmsUtil.messageCreator;
@@ -17,11 +16,11 @@ public class EndreVeilederService {
 
     private static final Logger LOG = getLogger(EndreVeilederService.class);
 
-    @Inject
-    @Named("endreveilederko")
+    @Autowired
+    @Qualifier("endreveilederko")
     private JmsTemplate endreVeilederQueue;
 
-    @Inject
+    @Autowired
     private AktoerIdService aktoerIdService;
 
     @Transactional
