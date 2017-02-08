@@ -14,13 +14,10 @@ import static no.nav.fo.veilarbsituasjon.mappers.ActualYtelseskontraktResponse.g
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-
 public class YtelseskontraktMapperTest {
-
 
     private static final int ANTALL_YTELSER = 2;
     private static final int ANTALL_VEDTAK = 3;
-
 
     @Test
     public void inneholderListeMedYtelser() throws HentOppfoelgingskontraktListeSikkerhetsbegrensning, HentYtelseskontraktListeSikkerhetsbegrensning {
@@ -91,6 +88,5 @@ public class YtelseskontraktMapperTest {
 
         assertThat(response.getVedtaksliste(), is((expectedVedtak)));
     }
-
 
 }
