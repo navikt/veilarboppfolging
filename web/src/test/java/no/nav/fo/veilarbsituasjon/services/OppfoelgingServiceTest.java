@@ -1,38 +1,47 @@
 package no.nav.fo.veilarbsituasjon.services;
 
+import no.nav.fo.veilarbsituasjon.rest.domain.OppfoelgingskontraktResponse;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
+import no.nav.tjeneste.virksomhet.oppfoelging.v1.informasjon.WSBruker;
+import no.nav.tjeneste.virksomhet.oppfoelging.v1.informasjon.WSOppfoelgingskontrakt;
+import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.WSHentOppfoelgingskontraktListeRequest;
+import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.WSHentOppfoelgingskontraktListeResponse;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.time.LocalDate;
 
 import static no.nav.fo.veilarbsituasjon.utils.CalendarConverter.convertDateToXMLGregorianCalendar;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
+@RunWith(MockitoJUnitRunner.class)
 public class OppfoelgingServiceTest {
-
-    private static final int MANEDER_BAK_I_TID = 2;
-    private static final int MANEDER_FREM_I_TID = 1;
 
     @InjectMocks
     private OppfoelgingService oppfoelgingService;
 
     @Mock
-    OppfoelgingPortType oppfoelgingPortType;
+    private OppfoelgingPortType oppfoelgingPortType;
 
     @Test
-    public void hentOppfoelgingskontraktListe() throws Exception {
+    public void hentOppfoelgingskontraktListeReturnererEnRespons() throws Exception {
+        final XMLGregorianCalendar fom = convertDateToXMLGregorianCalendar(LocalDate.now().minusMonths(2));
+        final XMLGregorianCalendar tom = convertDateToXMLGregorianCalendar(LocalDate.now().plusMonths(1));
+        when(oppfoelgingPortType.hentOppfoelgingskontraktListe(any(WSHentOppfoelgingskontraktListeRequest.class)))
+                .thenReturn(new WSHentOppfoelgingskontraktListeResponse().withOppfoelgingskontraktListe(
+                        new WSOppfoelgingskontrakt().withGjelderBruker(new WSBruker())
+                ));
 
-        LocalDate periodeFom = LocalDate.now().minusMonths(MANEDER_BAK_I_TID);
-        LocalDate periodeTom = LocalDate.now().plusMonths(MANEDER_FREM_I_TID);
-        XMLGregorianCalendar fom = convertDateToXMLGregorianCalendar(periodeFom);
-        XMLGregorianCalendar tom = convertDateToXMLGregorianCalendar(periodeTom);
+        final OppfoelgingskontraktResponse response = oppfoelgingService.hentOppfoelgingskontraktListe(fom, tom, "***REMOVED***");
 
-//        when(oppfoelgingPortType.hentOppfoelgingskontraktListe(any(WSHentOppfoelgingskontraktListeRequest.class)))
-//                .thenReturn(new WSHentOppfoelgingskontraktListeResponse().withOppfoelgingskontraktListe());
-
-        oppfoelgingService.hentOppfoelgingskontraktListe(fom, tom, "***REMOVED***");
+        assertThat(response.getOppfoelgingskontrakter().isEmpty(), is(false));
     }
 
 }
