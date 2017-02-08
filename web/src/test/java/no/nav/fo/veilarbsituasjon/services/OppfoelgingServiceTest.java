@@ -12,7 +12,6 @@ import static no.nav.fo.veilarbsituasjon.utils.CalendarConverter.convertDateToXM
 
 public class OppfoelgingServiceTest {
 
-
     private static final int MANEDER_BAK_I_TID = 2;
     private static final int MANEDER_FREM_I_TID = 1;
 
