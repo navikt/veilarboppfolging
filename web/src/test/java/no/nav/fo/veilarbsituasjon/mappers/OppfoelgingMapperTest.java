@@ -26,7 +26,7 @@ public class OppfoelgingMapperTest {
     private static final int ANTALL_OPPFOELGINGSKONTRAKTER = 4;
 
     @Test
-    public void inneholderListeMedOppfoelgingskontrakter() throws HentOppfoelgingskontraktListeSikkerhetsbegrensning {
+    public void oppfoelgingskontrakterInneholderListeMedOppfoelgingskontrakter() throws HentOppfoelgingskontraktListeSikkerhetsbegrensning {
         OppfoelgingPortType oppfoelgingMock = new OppfoelgingV1Mock();
 
         List<Oppfoelgingskontrakt> oppfoelgingskontrakter = getOppfoelgingskontrakter(oppfoelgingMock);
