@@ -20,21 +20,21 @@ public class YtelseskontraktMapperTest {
     private static final int ANTALL_VEDTAK = 3;
 
     @Test
-    public void inneholderListeMedYtelser() throws HentOppfoelgingskontraktListeSikkerhetsbegrensning, HentYtelseskontraktListeSikkerhetsbegrensning {
+    public void responseInneholderListeMedYtelser() throws HentOppfoelgingskontraktListeSikkerhetsbegrensning, HentYtelseskontraktListeSikkerhetsbegrensning {
         YtelseskontraktResponse response = getKomplettResponse();
 
         assertThat(response.getYtelser().size(), is(ANTALL_YTELSER));
     }
 
     @Test
-    public void inneholderListeMedVedtak() throws HentOppfoelgingskontraktListeSikkerhetsbegrensning, HentYtelseskontraktListeSikkerhetsbegrensning {
+    public void responseInneholderListeMedVedtak() throws HentOppfoelgingskontraktListeSikkerhetsbegrensning, HentYtelseskontraktListeSikkerhetsbegrensning {
         YtelseskontraktResponse response = getKomplettResponse();
 
         assertThat(response.getVedtaksliste().size(), is(ANTALL_VEDTAK));
     }
 
     @Test
-    public void inneholderRiktigeYtelser() throws HentOppfoelgingskontraktListeSikkerhetsbegrensning, HentYtelseskontraktListeSikkerhetsbegrensning {
+    public void responseInneholderRiktigeYtelser() throws HentOppfoelgingskontraktListeSikkerhetsbegrensning, HentYtelseskontraktListeSikkerhetsbegrensning {
         YtelseskontraktResponse response = getKomplettResponse();
 
         List<Ytelseskontrakt> expectedYtelser = ExpectedYtelseskontrakt.getExpectedYtelseskontrakter();
@@ -43,7 +43,7 @@ public class YtelseskontraktMapperTest {
     }
 
     @Test
-    public void ytelserHarStatus() throws HentOppfoelgingskontraktListeSikkerhetsbegrensning, HentYtelseskontraktListeSikkerhetsbegrensning {
+    public void ytelserIResponseHarStatus() throws HentOppfoelgingskontraktListeSikkerhetsbegrensning, HentYtelseskontraktListeSikkerhetsbegrensning {
         final YtelseskontraktResponse komplettResponse = getKomplettResponse();
 
         final List<String> statusListe = komplettResponse.getYtelser().stream().map(Ytelseskontrakt::getStatus).collect(toList());
@@ -53,7 +53,7 @@ public class YtelseskontraktMapperTest {
     }
 
     @Test
-    public void inneholderRiktigeVedtak() throws HentOppfoelgingskontraktListeSikkerhetsbegrensning, HentYtelseskontraktListeSikkerhetsbegrensning {
+    public void responseInneholderRiktigeVedtak() throws HentOppfoelgingskontraktListeSikkerhetsbegrensning, HentYtelseskontraktListeSikkerhetsbegrensning {
         YtelseskontraktResponse response = getKomplettResponse();
 
         List<Vedtak> expectedVedtak = ExpectedYtelseskontrakt.getExpectedVedtak();
@@ -62,7 +62,7 @@ public class YtelseskontraktMapperTest {
     }
 
     @Test
-    public void håndtererManglandeVedtakstype() throws HentOppfoelgingskontraktListeSikkerhetsbegrensning, HentYtelseskontraktListeSikkerhetsbegrensning {
+    public void handtererManglendeVedtakstype() throws HentOppfoelgingskontraktListeSikkerhetsbegrensning, HentYtelseskontraktListeSikkerhetsbegrensning {
         YtelseskontraktResponse response = ActualYtelseskontraktResponse.getResponseUtenVedtakstype();
 
         List<Vedtak> expectedVedtak = ExpectedYtelseskontrakt.getExpectedVedtakUtenVedtaksgruppe();
@@ -72,7 +72,7 @@ public class YtelseskontraktMapperTest {
     }
 
     @Test
-    public void håndtererManglandeAktivitetsfase() throws HentOppfoelgingskontraktListeSikkerhetsbegrensning, HentYtelseskontraktListeSikkerhetsbegrensning {
+    public void handtererManglendeAktivitetsfase() throws HentOppfoelgingskontraktListeSikkerhetsbegrensning, HentYtelseskontraktListeSikkerhetsbegrensning {
         YtelseskontraktResponse response = ActualYtelseskontraktResponse.getResponseUtenAktivitetsfase();
 
         List<Vedtak> expectedVedtak = ExpectedYtelseskontrakt.getExpectedVedtakUtenAktivitetsfase();
@@ -81,7 +81,7 @@ public class YtelseskontraktMapperTest {
     }
 
     @Test
-    public void håndtererManglandeRettighetsgruppe() throws HentOppfoelgingskontraktListeSikkerhetsbegrensning, HentYtelseskontraktListeSikkerhetsbegrensning {
+    public void handtererManglendeRettighetsgruppe() throws HentOppfoelgingskontraktListeSikkerhetsbegrensning, HentYtelseskontraktListeSikkerhetsbegrensning {
         YtelseskontraktResponse response = ActualYtelseskontraktResponse.getResponseUtenRettighetsgruppe();
 
         List<Vedtak> expectedVedtak = ExpectedYtelseskontrakt.getExpectedVedtakUtenRettighetsgruppe();
