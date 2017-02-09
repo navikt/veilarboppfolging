@@ -45,12 +45,6 @@ public class DatabaseConfig {
         return txManager;
     }
 
-    @Bean
-    public AktoerIdToVeilederDAO aktoerIdToVeilederDAO() {
-        return new AktoerIdToVeilederDAO();
-    }
-
-
     private Properties hibernateProperties() {
         Properties hibernate = new Properties();
         hibernate.setProperty("hibernate.dialect", "org.hibernate.dialect.Oracle10gDialect");

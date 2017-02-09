@@ -3,7 +3,6 @@ package no.nav.fo.veilarbsituasjon.repository;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,8 +13,11 @@ import java.util.List;
 @Transactional
 public abstract class AbstractDAO<T> {
 
-    @Autowired
     private SessionFactory sessionFactory;
+
+    public AbstractDAO(SessionFactory sessionFactory) {
+        this.sessionFactory = sessionFactory;
+    }
 
     protected Session getSession() {
         Session session = sessionFactory.getCurrentSession();
