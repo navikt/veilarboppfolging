@@ -22,7 +22,7 @@ public class YtelserResponse {
         return this;
     }
 
-    public YtelserResponse withInnsatsgruppe(List<Oppfoelgingskontrakt> oppfoelgingskontrakter) {
+    public YtelserResponse withOppfoelgingskontrakter(List<Oppfoelgingskontrakt> oppfoelgingskontrakter) {
         this.oppfoelgingskontrakter = oppfoelgingskontrakter;
         return this;
     }
