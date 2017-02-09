@@ -44,9 +44,9 @@ public class PortefoljeRessurs {
                         .withVeileder(veilederTilordninger.get(i).getIdentVeileder())
                         .withAktoerId(aktoerId));
             }
-            return new ResponseEntity<Object>("Veiledere tilordnet", HttpStatus.OK);
+            return new ResponseEntity<>("Veiledere tilordnet", HttpStatus.OK);
         } catch ( Exception e) {
-            return new ResponseEntity<Object>("Kunne ikke tilordne veileder", HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>("Kunne ikke tilordne veileder", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
