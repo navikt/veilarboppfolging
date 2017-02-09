@@ -43,7 +43,7 @@ public class YtelseRessurs {
         return new YtelserResponse()
                 .withVedtaksliste(ytelseskontraktResponse.getVedtaksliste())
                 .withYtelser(ytelseskontraktResponse.getYtelser())
-                .withInnsatsgruppe(oppfoelgingskontraktResponse.getOppfoelgingskontrakter());
+                .withOppfoelgingskontrakter(oppfoelgingskontraktResponse.getOppfoelgingskontrakter());
 
     }
 }
