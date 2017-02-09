@@ -19,14 +19,14 @@ import static no.nav.fo.veilarbsituasjon.utils.CalendarConverter.convertDateToXM
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-
 public class OppfoelgingMapperTest {
+
     private static final int MANEDER_BAK_I_TID = 2;
     private static final int MANEDER_FREM_I_TID = 1;
     private static final int ANTALL_OPPFOELGINGSKONTRAKTER = 4;
 
     @Test
-    public void inneholderListeMedOppfoelgingskontrakter() throws HentOppfoelgingskontraktListeSikkerhetsbegrensning {
+    public void oppfoelgingskontrakterInneholderListeMedOppfoelgingskontrakter() throws HentOppfoelgingskontraktListeSikkerhetsbegrensning {
         OppfoelgingPortType oppfoelgingMock = new OppfoelgingV1Mock();
 
         List<Oppfoelgingskontrakt> oppfoelgingskontrakter = getOppfoelgingskontrakter(oppfoelgingMock);
