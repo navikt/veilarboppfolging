@@ -13,7 +13,7 @@ import java.util.List;
 @Transactional
 public abstract class AbstractDAO<T> {
 
-    private SessionFactory sessionFactory;
+    final private SessionFactory sessionFactory;
 
     public AbstractDAO(SessionFactory sessionFactory) {
         this.sessionFactory = sessionFactory;
