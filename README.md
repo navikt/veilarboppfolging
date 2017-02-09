@@ -1,4 +1,4 @@
-Applikasjonen kjører på Embedded Jetty lokalt.
+Applikasjonen kjører på Embedded Jetty lokalt. Den lokale configen legges i ApplicationMockConfig.
 Spring REST er brukt som rest-API.
 
 Applikasjonen gjør kall mot Arena og derfor så kan den kun kjøres mot mock lokalt.
