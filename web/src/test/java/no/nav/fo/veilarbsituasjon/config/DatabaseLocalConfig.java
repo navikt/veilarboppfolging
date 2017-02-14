@@ -8,15 +8,14 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jndi.JndiTemplate;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import javax.naming.NamingException;
 import javax.sql.DataSource;
+import java.io.IOException;
+import java.sql.SQLException;
 
 @Configuration
-@EnableTransactionManagement
-public class DatabaseConfig {
+public class DatabaseLocalConfig {
 
     @Bean
     public DataSource dataSource() throws ClassNotFoundException, NamingException {
@@ -24,7 +23,7 @@ public class DatabaseConfig {
     }
 
     @Bean
-    public PlatformTransactionManager transactionManager(DataSource dataSource) {
+    public DataSourceTransactionManager transactionManager(DataSource dataSource) throws IOException, SQLException {
         return new DataSourceTransactionManager(dataSource);
     }
 

@@ -1,7 +1,7 @@
 package no.nav.fo.veilarbsituasjon.rest;
 
-import no.nav.fo.veilarbsituasjon.domain.AktoerIdToVeileder;
-import no.nav.fo.veilarbsituasjon.repository.AktoerIdToVeilederDAO;
+import no.nav.fo.veilarbsituasjon.db.BrukerRepository;
+import no.nav.fo.veilarbsituasjon.domain.OppfolgingBruker;
 import no.nav.fo.veilarbsituasjon.rest.domain.VeilederTilordning;
 import no.nav.fo.veilarbsituasjon.services.AktoerIdService;
 import org.slf4j.Logger;
@@ -11,7 +11,9 @@ import org.springframework.jms.core.JmsTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import javax.jms.JMSException;
 import javax.servlet.http.HttpServletResponse;
+import java.sql.SQLException;
 import java.util.List;
 
 import static java.util.UUID.randomUUID;
@@ -27,12 +29,12 @@ public class PortefoljeRessurs {
 
     private JmsTemplate endreVelederQueue;
     private AktoerIdService aktoerIdService;
-    private AktoerIdToVeilederDAO aktoerIdToVeilederDAO;
+    private BrukerRepository brukerRepository;
 
-    public PortefoljeRessurs(JmsTemplate endreVeilederQueue, AktoerIdService aktoerIdService, AktoerIdToVeilederDAO aktoerIdToVeilederDAO) {
+    public PortefoljeRessurs(JmsTemplate endreVeilederQueue, AktoerIdService aktoerIdService, BrukerRepository brukerRepository) {
         this.endreVelederQueue = endreVeilederQueue;
         this.aktoerIdService = aktoerIdService;
-        this.aktoerIdToVeilederDAO = aktoerIdToVeilederDAO;
+        this.brukerRepository = brukerRepository;
     }
 
     @RequestMapping(value = "/", method = RequestMethod.POST, consumes = "application/json")
@@ -40,26 +42,32 @@ public class PortefoljeRessurs {
         try {
             for (int i = 0; i < veilederTilordninger.size(); i++) {
                 String aktoerId = aktoerIdService.findAktoerId(veilederTilordninger.get(i).getFodselsnummerBruker());
-                skrivTilDataBaseOgLeggPaaKo(new AktoerIdToVeileder()
+                skrivTilDataBaseOgLeggPaaKo(new OppfolgingBruker()
                         .withVeileder(veilederTilordninger.get(i).getIdentVeileder())
-                        .withAktoerId(aktoerId));
+                        .withAktoerid(aktoerId));
             }
             return new ResponseEntity<>("Veiledere tilordnet", HttpStatus.OK);
-        } catch ( Exception e) {
-            return new ResponseEntity<>("Kunne ikke tilordne veileder", HttpStatus.INTERNAL_SERVER_ERROR);
+        } catch (JMSException e) {
+            return new ResponseEntity<>("Kunne ikke legge brukere på kø ", HttpStatus.INTERNAL_SERVER_ERROR);
+
+        } catch (SQLException e) {
+            return new ResponseEntity<>("Kunne ikke skrive brukere til database ", HttpStatus.INTERNAL_SERVER_ERROR);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Kunne ikke oppdatere informasjon ", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @Transactional
-    private void skrivTilDataBaseOgLeggPaaKo(AktoerIdToVeileder aktoerIdToVeileder) {
+    private void skrivTilDataBaseOgLeggPaaKo(OppfolgingBruker bruker) throws SQLException, JMSException{
     String endringsmeldingId = randomUUID().toString();
 
     try {
-        aktoerIdToVeilederDAO.opprettEllerOppdaterAktoerIdToVeileder(aktoerIdToVeileder);
-        endreVelederQueue.send(messageCreator(aktoerIdToVeileder.toString(), endringsmeldingId));
-        LOG.debug(String.format("Veileder %s tilordnet aktoer %s", aktoerIdToVeileder.getVeileder(), aktoerIdToVeileder.getAktoerid()));
+        brukerRepository.leggTilEllerOppdaterBruker(bruker);
+        endreVelederQueue.send(messageCreator(bruker.toString(), endringsmeldingId));
+        LOG.debug(String.format("Veileder %s tilordnet aktoer %s", bruker.getVeileder(), bruker.getAktoerid()));
     }   catch(Exception e) {
-        LOG.error(String.format("Veileder %s kunne ikke tilordnet aktoer %s", aktoerIdToVeileder.getVeileder(), aktoerIdToVeileder.getAktoerid()),e);
+        LOG.error(String.format("Veileder %s kunne ikke tilordnet aktoer %s", bruker.getVeileder(), bruker.getAktoerid()),e);
+        throw e;
     }
     }
 }

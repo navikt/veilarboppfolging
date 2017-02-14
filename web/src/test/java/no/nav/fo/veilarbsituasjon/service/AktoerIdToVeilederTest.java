@@ -2,8 +2,8 @@ package no.nav.fo.veilarbsituasjon.service;
 
 
 
-import no.nav.fo.veilarbsituasjon.domain.AktoerIdToVeileder;
-import no.nav.fo.veilarbsituasjon.repository.AktoerIdToVeilederDAO;
+import no.nav.fo.veilarbsituasjon.db.BrukerRepository;
+import no.nav.fo.veilarbsituasjon.domain.OppfolgingBruker;
 import no.nav.fo.veilarbsituasjon.rest.PortefoljeRessurs;
 import no.nav.fo.veilarbsituasjon.rest.domain.VeilederTilordning;
 import no.nav.fo.veilarbsituasjon.services.AktoerIdService;
@@ -26,7 +26,7 @@ import static org.mockito.Mockito.*;
 public class AktoerIdToVeilederTest {
 
     @Mock
-    private AktoerIdToVeilederDAO aktoerIdToVeilederDAO;
+    private BrukerRepository brukerRepository;
 
     @Mock
     private JmsTemplate endreVeilederKo;
@@ -44,14 +44,14 @@ public class AktoerIdToVeilederTest {
     public void portefoljeRessursMustCallDAOwithAktoerIdToVeileder() {
 
         portefoljeRessurs.postVeilederTilordninger(veilederTilordningList(), httpServletResponse);
-        verify(aktoerIdToVeilederDAO, times(1)).opprettEllerOppdaterAktoerIdToVeileder(any(AktoerIdToVeileder.class));
+        verify(brukerRepository, times(1)).leggTilEllerOppdaterBruker(any(OppfolgingBruker.class));
     }
 
     @Test
     public void noCallToDAOWhenAktoerIdServiceFails() {
         when(aktoerIdService.findAktoerId(any(String.class))).thenThrow(new IndexOutOfBoundsException());
         portefoljeRessurs.postVeilederTilordninger(veilederTilordningList(), httpServletResponse);
-        verify(aktoerIdToVeilederDAO, never()).opprettEllerOppdaterAktoerIdToVeileder(any(AktoerIdToVeileder.class));
+        verify(brukerRepository, never()).leggTilEllerOppdaterBruker(any(OppfolgingBruker.class));
     }
 
     public List<VeilederTilordning> veilederTilordningList() {
