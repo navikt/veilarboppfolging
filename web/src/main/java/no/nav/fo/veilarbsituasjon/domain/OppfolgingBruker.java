@@ -6,10 +6,10 @@ public class OppfolgingBruker {
 
     private String aktoerid;
     private String veileder;
-    private Timestamp endret_timestamp;
+    private Timestamp endretTimestamp;
 
     public OppfolgingBruker(){
-        this.endret_timestamp = new Timestamp(System.currentTimeMillis());
+        this.endretTimestamp = new Timestamp(System.currentTimeMillis());
     }
 
     public String getAktoerid() {
@@ -30,11 +30,11 @@ public class OppfolgingBruker {
         return this;
     }
 
-    public Timestamp getEndret_date(){
-        return endret_timestamp;
+    public Timestamp getEndretTimestamp(){
+        return endretTimestamp;
     }
 
     public String toString() {
-        return "{\"aktoerid\":\""+aktoerid+"\",\"veileder\":\""+veileder+"\",\"oppdatert\":\""+endret_timestamp.toString()+"\"}";
+        return "{\"aktoerid\":\""+aktoerid+"\",\"veileder\":\""+veileder+"\",\"oppdatert\":\""+endretTimestamp.toString()+"\"}";
     }
 }
