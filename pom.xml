@@ -41,11 +41,11 @@
         <modig-security.version>1.0.30</modig-security.version>
         <modig-testcertificates.version>1.1.0</modig-testcertificates.version>
 
-        <ytelseskontrakt-v3-tjenestespesifikasjon.version>1.0.0
-        </ytelseskontrakt-v3-tjenestespesifikasjon.version>
-        <oppfoelging-v1-tjenestespesifikasjon.version>1.0.6
-        </oppfoelging-v1-tjenestespesifikasjon.version>
+
+        <ytelseskontrakt-v3-tjenestespesifikasjon.version>1.0.0</ytelseskontrakt-v3-tjenestespesifikasjon.version>
+        <oppfoelging-v1-tjenestespesifikasjon.version>1.0.6</oppfoelging-v1-tjenestespesifikasjon.version>
         <dial-nav-tjeneste-aktoer_v2.version>1.1</dial-nav-tjeneste-aktoer_v2.version>
+        <dkif-tjenestespesifikasjon.version>1.2</dkif-tjenestespesifikasjon.version>
 
 
         <common-jetty.version>2.0.11</common-jetty.version>
@@ -206,6 +206,13 @@
                 <groupId>no.nav.sbl.dialogarena</groupId>
                 <artifactId>dial-nav-tjeneste-aktoer_v2</artifactId>
                 <version>${dial-nav-tjeneste-aktoer_v2.version}</version>
+            </dependency>
+
+            <!--tjenester-->
+            <dependency>
+                <groupId>no.nav.sbl</groupId>
+                <artifactId>dkif-tjenestespesifikasjon</artifactId>
+                <version>${dkif-tjenestespesifikasjon.version}</version>
             </dependency>
 
             <!--modig-->
