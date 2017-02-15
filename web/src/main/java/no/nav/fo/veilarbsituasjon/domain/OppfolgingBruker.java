@@ -1,10 +1,16 @@
 package no.nav.fo.veilarbsituasjon.domain;
 
+import java.sql.Timestamp;
 
 public class OppfolgingBruker {
 
     private String aktoerid;
     private String veileder;
+    private Timestamp endret_timestamp;
+
+    public OppfolgingBruker(){
+        this.endret_timestamp = new Timestamp(System.currentTimeMillis());
+    }
 
     public String getAktoerid() {
         return aktoerid;
@@ -24,7 +30,11 @@ public class OppfolgingBruker {
         return this;
     }
 
+    public Timestamp getEndret_date(){
+        return endret_timestamp;
+    }
+
     public String toString() {
-        return "{aktoerid:"+aktoerid+",veileder:"+veileder+"}";
+        return "{\"aktoerid\":\""+aktoerid+"\",\"veileder\":\""+veileder+"\",\"oppdatert\":\""+endret_timestamp.toString()+"\"}";
     }
 }

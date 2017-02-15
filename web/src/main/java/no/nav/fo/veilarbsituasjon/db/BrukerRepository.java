@@ -3,6 +3,7 @@ package no.nav.fo.veilarbsituasjon.db;
 
 import no.nav.fo.veilarbsituasjon.domain.OppfolgingBruker;
 import org.springframework.jdbc.core.JdbcTemplate;
+import java.sql.Timestamp;
 
 public class BrukerRepository {
 
@@ -19,21 +20,26 @@ public class BrukerRepository {
     public void leggTilEllerOppdaterBruker(OppfolgingBruker oppfolgingBruker) {
         String aktoerid = oppfolgingBruker.getAktoerid();
         String veileder = oppfolgingBruker.getVeileder();
+        String endret_timestamp = oppfolgingBruker.getEndret_date().toString();
+        String dateFormat = "'YYYY-MM-DD HH24:MI:SS.FF'";
         String sql;
-
 
         if(eksistererAktoerID(aktoerid)){
             sql = "UPDATE AKTOER_ID_TO_VEILEDER " +
                     "SET " +
                     "VEILEDER = ? " +
-                    ",OPPDATERT = CURRENT_TIMESTAMP " +
+                    ",OPPDATERT = TO_TIMESTAMP(?,"+dateFormat+") " +
                     "WHERE AKTOERID = ?";
 
-            db.update(sql, veileder, aktoerid);
+            db.update(sql,veileder,endret_timestamp,aktoerid);
         } else {
             sql = "INSERT INTO AKTOER_ID_TO_VEILEDER  "+
-                    "VALUES (?,?,CURRENT_TIMESTAMP)";
-            db.update(sql, aktoerid, veileder);
+                    "VALUES (?,?,TO_TIMESTAMP(?,"+dateFormat+"))";
+            db.update(sql, aktoerid, veileder, endret_timestamp);
         }
+    }
+
+    private String timestampString(Timestamp ts) {
+        return "TO_TIMESTAMP('"+ts.toString()+"','YYYY-MM-DD HH24:MI:SS.FF')";
     }
 }
