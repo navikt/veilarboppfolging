@@ -1,13 +1,19 @@
 package no.nav.fo.veilarbsituasjon.rest;
 
 
-import org.springframework.web.bind.annotation.*;
+import org.springframework.stereotype.Component;
 
-@RestController
-@RequestMapping("/internal")
+import javax.ws.rs.*;
+
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+
+@Component
+@Path("/internal")
+@Produces(APPLICATION_JSON)
 public class InternalRessurs {
 
-    @RequestMapping(value="/isAlive", method = RequestMethod.GET, produces = "application/json")
+    @GET
+    @Path("/isAlive")
     public String isAlive() {
         return "Application: UP";
     }

@@ -36,7 +36,10 @@
         <slf4j.version>1.7.15</slf4j.version>
         <javax.jms-api.version>2.0.1</javax.jms-api.version>
 
-
+        <!-- Jersey -->
+        <javax.ws.rs-api.version>2.0.1</javax.ws.rs-api.version>
+        <javax.servlet-api.version>3.1.0</javax.servlet-api.version>
+        <jersey.version>2.22.2</jersey.version>
 
         <modig-security.version>1.0.30</modig-security.version>
         <modig-testcertificates.version>1.1.0</modig-testcertificates.version>
@@ -61,8 +64,6 @@
         <junit.version>4.12</junit.version>
         <mockito.version>2.2.27</mockito.version>
         <hamcrest-core.version>1.3</hamcrest-core.version>
-        <springfox-swagger2.version>2.6.1</springfox-swagger2.version>
-        <springfox-swagger-ui.version>2.5.0</springfox-swagger-ui.version>
 
         <ojdbc.version>11.2.0.3</ojdbc.version>
 
@@ -100,11 +101,6 @@
                         <artifactId>commons-logging</artifactId>
                     </exclusion>
                 </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework</groupId>
-                <artifactId>spring-webmvc</artifactId>
-                <version>${spring.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.springframework</groupId>
@@ -277,6 +273,36 @@
                 <version>${jackson-annotations.version}</version>
             </dependency>
 
+            <!--Jersey-->
+            <dependency>
+                <groupId>javax.ws.rs</groupId>
+                <artifactId>javax.ws.rs-api</artifactId>
+                <version>${javax.ws.rs-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.jersey.core</groupId>
+                <artifactId>jersey-server</artifactId>
+                <version>${jersey.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.jersey.containers</groupId>
+                <artifactId>jersey-container-servlet-core</artifactId>
+                <scope>runtime</scope>
+                <version>${jersey.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.jersey.ext</groupId>
+                <artifactId>jersey-spring3</artifactId>
+                <version>${jersey.version}</version>
+                <scope>runtime</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.jersey.media</groupId>
+                <artifactId>jersey-media-json-jackson</artifactId>
+                <scope>runtime</scope>
+                <version>${jersey.version}</version>
+            </dependency>
+
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-api</artifactId>
@@ -297,32 +323,6 @@
                 <groupId>javax.jms</groupId>
                 <artifactId>javax.jms-api</artifactId>
                 <version>${javax.jms-api.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.springfox</groupId>
-                <artifactId>springfox-swagger2</artifactId>
-                <version>${springfox-swagger2.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.springfox</groupId>
-                <artifactId>springfox-swagger-ui</artifactId>
-                <version>${springfox-swagger-ui.version}</version>
-                <scope>runtime</scope>
-            </dependency>
-            <dependency>
-                <groupId>io.springfox</groupId>
-                <artifactId>springfox-core</artifactId>
-                <version>${springfox-swagger2.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.springfox</groupId>
-                <artifactId>springfox-spi</artifactId>
-                <version>${springfox-swagger2.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.springfox</groupId>
-                <artifactId>springfox-spring-web</artifactId>
-                <version>${springfox-swagger2.version}</version>
             </dependency>
 
             <!--test-->
