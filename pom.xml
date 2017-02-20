@@ -139,6 +139,12 @@
                 </exclusions>
             </dependency>
             <dependency>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-jaas</artifactId>
+                <version>${jetty.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
                 <groupId>no.nav.sbl.dialogarena</groupId>
                 <artifactId>common-cxf</artifactId>
                 <version>${common-cxf.version}</version>
@@ -310,11 +316,7 @@
                 <artifactId>jwt-security-filter</artifactId>
                 <version>${jwt-security.version}</version>
             </dependency>
-            <dependency>
-                <groupId>no.nav.fo</groupId>
-                <artifactId>jwt-security-common</artifactId>
-                <version>${jwt-security.version}</version>
-            </dependency>
+
             <dependency>
                 <groupId>no.nav.fo</groupId>
                 <artifactId>jwt-security-loginmodule</artifactId>

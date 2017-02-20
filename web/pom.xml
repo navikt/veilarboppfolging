@@ -95,6 +95,13 @@
             <artifactId>common-jetty</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-jaas</artifactId>
+            <version>${jetty.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
             <groupId>no.nav.modig</groupId>
             <artifactId>modig-security-sts</artifactId>
         </dependency>
@@ -161,10 +168,7 @@
             <groupId>no.nav.fo</groupId>
             <artifactId>jwt-security-filter</artifactId>
         </dependency>
-        <dependency>
-            <groupId>no.nav.fo</groupId>
-            <artifactId>jwt-security-common</artifactId>
-        </dependency>
+
         <dependency>
             <groupId>no.nav.fo</groupId>
             <artifactId>jwt-security-loginmodule</artifactId>
