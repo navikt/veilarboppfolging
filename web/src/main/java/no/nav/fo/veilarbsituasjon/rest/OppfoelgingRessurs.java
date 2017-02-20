@@ -1,6 +1,8 @@
 package no.nav.fo.veilarbsituasjon.rest;
 
 
+import no.nav.fo.security.jwt.filter.JWTInAuthorizationHeaderJAAS;
+import no.nav.fo.security.jwt.filter.SessionTerminator;
 import no.nav.fo.veilarbsituasjon.rest.domain.OppfoelgingskontraktResponse;
 import no.nav.fo.veilarbsituasjon.services.OppfoelgingService;
 import org.slf4j.Logger;
@@ -17,6 +19,8 @@ import static org.slf4j.LoggerFactory.getLogger;
 @Component
 @Path("/person/{fnr}")
 @Produces(APPLICATION_JSON)
+@JWTInAuthorizationHeaderJAAS
+@SessionTerminator
 public class OppfoelgingRessurs {
     private static final Logger LOG = getLogger(OppfoelgingRessurs.class);
     private static final int MANEDER_BAK_I_TID = 2;
