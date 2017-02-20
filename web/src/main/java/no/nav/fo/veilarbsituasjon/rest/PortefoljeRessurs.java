@@ -26,12 +26,12 @@ public class PortefoljeRessurs {
     private static final Logger LOG = getLogger(PortefoljeRessurs.class);
 
 
-    private JmsTemplate endreVelederQueue;
+    private JmsTemplate endreVeilederQueue;
     private AktoerIdService aktoerIdService;
     private BrukerRepository brukerRepository;
 
     public PortefoljeRessurs(JmsTemplate endreVeilederQueue, AktoerIdService aktoerIdService, BrukerRepository brukerRepository) {
-        this.endreVelederQueue = endreVeilederQueue;
+        this.endreVeilederQueue = endreVeilederQueue;
         this.aktoerIdService = aktoerIdService;
         this.brukerRepository = brukerRepository;
     }
@@ -62,7 +62,7 @@ public class PortefoljeRessurs {
 
         try {
             brukerRepository.leggTilEllerOppdaterBruker(bruker);
-            endreVelederQueue.send(messageCreator(bruker.toString(), endringsmeldingId));
+            endreVeilederQueue.send(messageCreator(bruker.toString(), endringsmeldingId));
             LOG.debug(String.format("Veileder %s tilordnet aktoer %s", bruker.getVeileder(), bruker.getAktoerid()));
         }   catch(Exception e) {
             LOG.error(String.format("Veileder %s kunne ikke tilordnet aktoer %s", bruker.getVeileder(), bruker.getAktoerid()),e);
