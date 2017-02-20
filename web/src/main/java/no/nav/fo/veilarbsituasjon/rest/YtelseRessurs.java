@@ -1,6 +1,5 @@
 package no.nav.fo.veilarbsituasjon.rest;
 
-import no.nav.fo.security.jwt.context.SubjectHandler;
 import no.nav.fo.security.jwt.filter.JWTInAuthorizationHeaderJAAS;
 import no.nav.fo.security.jwt.filter.SessionTerminator;
 import no.nav.fo.veilarbsituasjon.rest.domain.*;
