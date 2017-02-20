@@ -41,7 +41,7 @@ public class AktivitetsplanSituasjonWebService {
 
             return wsHentDigitalKontaktinformasjonResponse;
         } catch (Exception e) {
-            LOG.error("Det skjedde en uventet feil mot DKIF. Kaster feil videre så det legger seg tilbake på kø og prøver på nytt");
+            LOG.error("Det skjedde en uventet feil mot DKIF.");
             throw new RuntimeException(e);
         }
     }
