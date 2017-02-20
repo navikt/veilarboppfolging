@@ -4,17 +4,19 @@ import no.nav.fo.veilarbsituasjon.rest.domain.*;
 import no.nav.fo.veilarbsituasjon.services.OppfoelgingService;
 import no.nav.fo.veilarbsituasjon.services.YtelseskontraktService;
 import org.slf4j.Logger;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.stereotype.Component;
 
+import javax.ws.rs.*;
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.time.LocalDate;
 
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static no.nav.fo.veilarbsituasjon.utils.CalendarConverter.convertDateToXMLGregorianCalendar;
 import static org.slf4j.LoggerFactory.getLogger;
 
-
-@RestController
-@RequestMapping("/person/{fnr}")
+@Path("/person/{fnr}")
+@Component
+@Produces(APPLICATION_JSON)
 public class YtelseRessurs {
     private static final Logger LOG = getLogger(YtelseRessurs.class);
     private static final int MANEDER_BAK_I_TID = 2;
@@ -29,8 +31,9 @@ public class YtelseRessurs {
         this.oppfoelgingService = oppfoelgingService;
     }
 
-    @RequestMapping(value = "/ytelser", method = RequestMethod.GET, produces = "application/json")
-    public YtelserResponse getYtelser(@PathVariable String fnr) {
+    @GET
+    @Path("/ytelser")
+    public YtelserResponse getYtelser(@PathParam("fnr") String fnr) {
         LocalDate periodeFom = LocalDate.now().minusMonths(MANEDER_BAK_I_TID);
         LocalDate periodeTom = LocalDate.now().plusMonths(MANEDER_FREM_I_TID);
         XMLGregorianCalendar fom = convertDateToXMLGregorianCalendar(periodeFom);
@@ -44,6 +47,6 @@ public class YtelseRessurs {
                 .withVedtaksliste(ytelseskontraktResponse.getVedtaksliste())
                 .withYtelser(ytelseskontraktResponse.getYtelser())
                 .withOppfoelgingskontrakter(oppfoelgingskontraktResponse.getOppfoelgingskontrakter());
-
     }
+
 }
