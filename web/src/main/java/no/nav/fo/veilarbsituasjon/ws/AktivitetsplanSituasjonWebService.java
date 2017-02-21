@@ -5,27 +5,33 @@ import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.DigitalKontaktinf
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.WSHentDigitalKontaktinformasjonRequest;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.WSHentDigitalKontaktinformasjonResponse;
 import org.slf4j.Logger;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.stereotype.Component;
 
-import javax.inject.Inject;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.slf4j.LoggerFactory.getLogger;
 
 // TODO dette skal bli en webservice når tjenestespesifikasjonen er klar!
-@RestController
-@RequestMapping("/ws/aktivitetsplan")
+@Component
+@Path("/ws/aktivitetsplan")
+@Produces(APPLICATION_JSON)
 public class AktivitetsplanSituasjonWebService {
 
     private static final Logger LOG = getLogger(AktivitetsplanSituasjonWebService.class);
 
-    @Inject
-    private DigitalKontaktinformasjonV1 dkifV1;
+    private final DigitalKontaktinformasjonV1 dkifV1;
 
-    @RequestMapping(value = "/{fnr}", method = RequestMethod.GET, produces = "application/json")
-    public WSHentDigitalKontaktinformasjonResponse hentOppfolgingsStatus(@PathVariable String fnr) throws Exception{
+    public AktivitetsplanSituasjonWebService(DigitalKontaktinformasjonV1 dkifV1) {
+        this.dkifV1 = dkifV1;
+    }
+
+    @GET
+    @Path("/{fnr}")
+    public WSHentDigitalKontaktinformasjonResponse hentOppfolgingsStatus(@PathParam("fnr") String fnr) throws Exception {
         try {
 
             // TODO PK-36884 hent status-flagg db
