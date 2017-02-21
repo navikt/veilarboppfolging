@@ -43,14 +43,14 @@ public class AktoerIdToVeilederTest {
     @Test
     public void portefoljeRessursMustCallDAOwithAktoerIdToVeileder() {
 
-        portefoljeRessurs.postVeilederTilordninger(veilederTilordningList(), httpServletResponse);
+        portefoljeRessurs.postVeilederTilordninger(veilederTilordningList());
         verify(brukerRepository, times(1)).leggTilEllerOppdaterBruker(any(OppfolgingBruker.class));
     }
 
     @Test
     public void noCallToDAOWhenAktoerIdServiceFails() {
         when(aktoerIdService.findAktoerId(any(String.class))).thenThrow(new IndexOutOfBoundsException());
-        portefoljeRessurs.postVeilederTilordninger(veilederTilordningList(), httpServletResponse);
+        portefoljeRessurs.postVeilederTilordninger(veilederTilordningList());
         verify(brukerRepository, never()).leggTilEllerOppdaterBruker(any(OppfolgingBruker.class));
     }
 
