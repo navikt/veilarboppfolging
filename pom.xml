@@ -128,7 +128,33 @@
                 <version>${spring.version}</version>
             </dependency>
 
-            <!--Common-->
+            <!--tjenester-->
+            <dependency>
+                <groupId>no.nav.sbl</groupId>
+                <artifactId>dkif-tjenestespesifikasjon</artifactId>
+                <version>${dkif-tjenestespesifikasjon.version}</version>
+            </dependency>
+
+            <!--logging-->
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>jcl-over-slf4j</artifactId>
+                <version>${slf4j.version}</version>
+                <scope>runtime</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${slf4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-classic</artifactId>
+                <version>${logback.version}</version>
+                <scope>runtime</scope>
+            </dependency>
+
+            <!--dialogarena-->
             <dependency>
                 <groupId>no.nav.sbl.dialogarena</groupId>
                 <artifactId>common-jetty</artifactId>
@@ -171,27 +197,6 @@
                 <artifactId>common-web</artifactId>
                 <version>${common-web.version}</version>
             </dependency>
-
-            <!--logging-->
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>jcl-over-slf4j</artifactId>
-                <version>${slf4j.version}</version>
-                <scope>runtime</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-api</artifactId>
-                <version>${slf4j.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>ch.qos.logback</groupId>
-                <artifactId>logback-classic</artifactId>
-                <version>${logback.version}</version>
-                <scope>runtime</scope>
-            </dependency>
-
-            <!--dialogarena-->
             <dependency>
                 <groupId>no.nav.sbl.dialogarena</groupId>
                 <artifactId>ytelseskontrakt-v3-tjenestespesifikasjon</artifactId>
@@ -208,12 +213,6 @@
                 <version>${dial-nav-tjeneste-aktoer_v2.version}</version>
             </dependency>
 
-            <!--tjenester-->
-            <dependency>
-                <groupId>no.nav.sbl</groupId>
-                <artifactId>dkif-tjenestespesifikasjon</artifactId>
-                <version>${dkif-tjenestespesifikasjon.version}</version>
-            </dependency>
 
             <!--modig-->
             <dependency>

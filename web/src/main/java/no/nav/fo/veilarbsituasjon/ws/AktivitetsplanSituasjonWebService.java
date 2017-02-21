@@ -25,24 +25,24 @@ public class AktivitetsplanSituasjonWebService {
     private DigitalKontaktinformasjonV1 dkifV1;
 
     @RequestMapping(value = "/{fnr}", method = RequestMethod.GET, produces = "application/json")
-    public WSHentDigitalKontaktinformasjonResponse hentOppfolgingsStatus(@PathVariable String fnr){
+    public WSHentDigitalKontaktinformasjonResponse hentOppfolgingsStatus(@PathVariable String fnr) throws Exception{
         try {
 
-            // hent status-flagg db
+            // TODO PK-36884 hent status-flagg db
 
-            // hent status ws
+            // TODO PK-36884 hent status ws
 
-            // lagre status
+            // TODO PK-36884 lagre status
 
             WSHentDigitalKontaktinformasjonRequest wsHentDigitalKontaktinformasjonRequest = new WSHentDigitalKontaktinformasjonRequest().withPersonident(fnr);
             WSHentDigitalKontaktinformasjonResponse wsHentDigitalKontaktinformasjonResponse = dkifV1.hentDigitalKontaktinformasjon(wsHentDigitalKontaktinformasjonRequest);
 
-            // hent og sett maniellflagg
+            // TODO PK-36884 hent og sett manuellflagg
 
             return wsHentDigitalKontaktinformasjonResponse;
         } catch (Exception e) {
             LOG.error("Det skjedde en uventet feil mot DKIF.");
-            throw new RuntimeException(e);
+            throw e;
         }
     }
 
