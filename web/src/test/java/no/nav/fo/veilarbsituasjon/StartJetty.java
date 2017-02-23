@@ -5,6 +5,7 @@ import no.nav.sbl.dialogarena.common.jetty.Jetty;
 import org.apache.activemq.broker.BrokerService;
 
 import static java.lang.System.setProperty;
+import static no.nav.fo.veilarbsituasjon.config.JndiLocalContextConfig.setupInMemoryDatabase;
 import static no.nav.fo.veilarbsituasjon.config.JndiLocalContextConfig.setupJndiLocalContext;
 import static no.nav.modig.core.context.SubjectHandler.SUBJECTHANDLER_KEY;
 import static no.nav.sbl.dialogarena.common.jetty.Jetty.usingWar;
@@ -15,7 +16,11 @@ class StartJetty {
 
     public static void main(String[] args) throws Exception {
         setProperty(SUBJECTHANDLER_KEY, StaticSubjectHandler.class.getName());
-        setupJndiLocalContext();
+        if (true) {
+            setupInMemoryDatabase();
+        } else {
+            setupJndiLocalContext();
+        }
 
         final BrokerService broker = new BrokerService();
         broker.getSystemUsage().getTempUsage().setLimit(100 * 1024 * 1024 * 100);

@@ -11,7 +11,9 @@ import java.util.List;
 
 public class OppfoelgingV1Mock implements OppfoelgingPortType {
 
-    final private static String[] muligStatus = {"Aktiv", "LUKKET"};
+    public static final String AKTIV_STATUS = "Aktiv";
+
+    final private static String[] muligStatus = {AKTIV_STATUS, "LUKKET"};
     final private static String[] muligServicegruppe = {"Ikke vurdert", "Standardinnsats"};
 
     @Override
