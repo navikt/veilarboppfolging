@@ -18,7 +18,9 @@
     <loadBalancer isAlive="veilarbsituasjon/internal/isAlive" />
 
     <security serviceUserResourceAlias="srvveilarbsituasjon">
-        <logins/>
+        <logins>
+            <openIdConnect moduleClass="no.nav.aura.loginModule.JWTLoginModule"/>
+        </logins>
     </security>
 
     <logging serviceCalls="true" />
@@ -39,7 +41,6 @@
         <datasource alias="veilarbsituasjonDB" xaEnabled="true" jndi="java:jboss/jdbc/veilarbsituasjonDS">
             <pool maxPoolSize="300" minPoolSize="0"/>
         </datasource>
-
 
     </resources>
 
