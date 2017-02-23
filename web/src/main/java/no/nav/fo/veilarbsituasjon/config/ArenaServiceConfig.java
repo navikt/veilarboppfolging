@@ -2,7 +2,6 @@ package no.nav.fo.veilarbsituasjon.config;
 
 
 import no.nav.fo.veilarbsituasjon.mock.*;
-import no.nav.modig.security.ws.SystemSAMLOutInterceptor;
 import no.nav.sbl.dialogarena.common.cxf.CXFClient;
 import no.nav.sbl.dialogarena.types.Pingable;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;

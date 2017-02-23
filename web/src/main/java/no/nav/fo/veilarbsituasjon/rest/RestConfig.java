@@ -6,7 +6,6 @@ public class RestConfig extends ResourceConfig {
     public RestConfig() {
         super(
                 YtelseRessurs.class,
-                InternalRessurs.class,
                 OppfoelgingRessurs.class,
                 PortefoljeRessurs.class
         );

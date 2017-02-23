@@ -31,6 +31,15 @@
     </servlet-mapping>
 
     <servlet>
+        <servlet-name>isAlive</servlet-name>
+        <servlet-class>no.nav.fo.veilarbsituasjon.selftest.IsAlive</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>isAlive</servlet-name>
+        <url-pattern>/internal/isAlive</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
         <servlet-name>restservlet</servlet-name>
         <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
         <init-param>
