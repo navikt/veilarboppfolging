@@ -6,4 +6,8 @@
         <jndi-name>java:jboss/jdbc/veilarbsituasjonDS</jndi-name>
         <res-type>javax.sql.DataSource</res-type>
     </resource-ref>
+
+    <context-root>veilarbsituasjon</context-root>
+    <security-domain>java:/jaas/NavJWT</security-domain>
+
 </jboss-web>
