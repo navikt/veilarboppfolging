@@ -27,7 +27,7 @@ class StartJetty {
                 .overrideWebXml()
                 .withLoginService(jaasLoginService)
                 .buildJetty();
-        jetty.startAnd(first(waitFor(gotKeypress())).then(jetty.stop));
+        jetty.start();
     }
 
     private static void setupBrokerService() throws Exception {
