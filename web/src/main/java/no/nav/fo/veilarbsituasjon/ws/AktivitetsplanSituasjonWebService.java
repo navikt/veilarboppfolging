@@ -3,16 +3,13 @@ package no.nav.fo.veilarbsituasjon.ws;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
+import lombok.val;
 import no.nav.fo.veilarbsituasjon.db.SituasjonRepository;
 import no.nav.fo.veilarbsituasjon.domain.Brukervilkar;
 import no.nav.fo.veilarbsituasjon.domain.Situasjon;
 import no.nav.fo.veilarbsituasjon.domain.VilkarStatus;
-import no.nav.fo.veilarbsituasjon.mock.OppfoelgingV1Mock;
 import no.nav.fo.veilarbsituasjon.services.AktoerIdService;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.DigitalKontaktinformasjonV1;
-import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.HentDigitalKontaktinformasjonKontaktinformasjonIkkeFunnet;
-import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.HentDigitalKontaktinformasjonPersonIkkeFunnet;
-import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.HentDigitalKontaktinformasjonSikkerhetsbegrensing;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.informasjon.WSKontaktinformasjon;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.WSHentDigitalKontaktinformasjonRequest;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.WSHentDigitalKontaktinformasjonResponse;
@@ -20,16 +17,12 @@ import no.nav.tjeneste.virksomhet.oppfoelging.v1.HentOppfoelgingskontraktListeSi
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.informasjon.WSOppfoelgingskontrakt;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.WSHentOppfoelgingskontraktListeRequest;
-import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.WSHentOppfoelgingskontraktListeResponse;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.ws.rs.*;
-
 import java.sql.Timestamp;
-import java.util.List;
 import java.util.Optional;
 
 import static java.lang.System.currentTimeMillis;
@@ -40,7 +33,6 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static no.nav.fo.veilarbsituasjon.domain.VilkarStatus.GODKJENNT;
 import static no.nav.fo.veilarbsituasjon.domain.VilkarStatus.IKKE_BESVART;
 import static no.nav.fo.veilarbsituasjon.mock.OppfoelgingV1Mock.AKTIV_STATUS;
-import static org.slf4j.LoggerFactory.getLogger;
 
 // TODO dette skal bli en webservice når tjenestespesifikasjonen er klar!
 @Component
@@ -48,14 +40,16 @@ import static org.slf4j.LoggerFactory.getLogger;
 @Produces(APPLICATION_JSON)
 public class AktivitetsplanSituasjonWebService {
 
-    private static final Logger LOG = getLogger(AktivitetsplanSituasjonWebService.class);
-
     private final DigitalKontaktinformasjonV1 digitalKontaktinformasjonV1;
     private final SituasjonRepository situasjonRepository;
     private final AktoerIdService aktoerIdService;
     private final OppfoelgingPortType oppfoelgingPortType;
 
-    public AktivitetsplanSituasjonWebService(DigitalKontaktinformasjonV1 digitalKontaktinformasjonV1, SituasjonRepository situasjonRepository, AktoerIdService aktoerIdService, OppfoelgingPortType oppfoelgingPortType) {
+    public AktivitetsplanSituasjonWebService(
+            DigitalKontaktinformasjonV1 digitalKontaktinformasjonV1,
+            SituasjonRepository situasjonRepository,
+            AktoerIdService aktoerIdService,
+            OppfoelgingPortType oppfoelgingPortType) {
         this.digitalKontaktinformasjonV1 = digitalKontaktinformasjonV1;
         this.situasjonRepository = situasjonRepository;
         this.aktoerIdService = aktoerIdService;
@@ -119,7 +113,7 @@ public class AktivitetsplanSituasjonWebService {
     }
 
     private boolean erUnderOppfolging(String aktorId) throws HentOppfoelgingskontraktListeSikkerhetsbegrensning {
-        WSHentOppfoelgingskontraktListeRequest wsHentOppfoelgingskontraktListeRequest = new WSHentOppfoelgingskontraktListeRequest();
+        val wsHentOppfoelgingskontraktListeRequest = new WSHentOppfoelgingskontraktListeRequest();
         wsHentOppfoelgingskontraktListeRequest.setPersonidentifikator(aktorId);
         return oppfoelgingPortType.hentOppfoelgingskontraktListe(wsHentOppfoelgingskontraktListeRequest)
                 .getOppfoelgingskontraktListe()
@@ -128,8 +122,8 @@ public class AktivitetsplanSituasjonWebService {
                 .anyMatch(status -> AKTIV_STATUS.equals(status));
     }
 
-    private boolean erReservertIKRR(String fnr) throws HentDigitalKontaktinformasjonKontaktinformasjonIkkeFunnet, HentDigitalKontaktinformasjonSikkerhetsbegrensing, HentDigitalKontaktinformasjonPersonIkkeFunnet {
-        WSHentDigitalKontaktinformasjonRequest wsHentDigitalKontaktinformasjonRequest = new WSHentDigitalKontaktinformasjonRequest().withPersonident(fnr);
+    private boolean erReservertIKRR(String fnr) throws Exception {
+        val wsHentDigitalKontaktinformasjonRequest = new WSHentDigitalKontaktinformasjonRequest().withPersonident(fnr);
         return of(digitalKontaktinformasjonV1.hentDigitalKontaktinformasjon(wsHentDigitalKontaktinformasjonRequest))
                 .map(WSHentDigitalKontaktinformasjonResponse::getDigitalKontaktinformasjon)
                 .map(WSKontaktinformasjon::getReservasjon)
@@ -146,7 +140,8 @@ public class AktivitetsplanSituasjonWebService {
     }
 
     private String hentAktorId(String fnr) {
-        return ofNullable(aktoerIdService.findAktoerId(fnr)).orElseThrow(() -> new IllegalArgumentException("Fant ikke aktør for fnr: " + fnr));
+        return ofNullable(aktoerIdService.findAktoerId(fnr))
+                .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktør for fnr: " + fnr));
     }
 
     private Optional<Brukervilkar> finnSisteVilkarStatus(Situasjon situasjon) {

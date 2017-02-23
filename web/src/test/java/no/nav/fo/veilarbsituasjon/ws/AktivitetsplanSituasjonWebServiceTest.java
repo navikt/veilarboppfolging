@@ -56,7 +56,8 @@ public class AktivitetsplanSituasjonWebServiceTest {
     @Before
     public void setup() throws Exception {
         aktivitetsplanSituasjonWebService = new AktivitetsplanSituasjonWebService(digitalKontaktinformasjonV1, situasjonRepository, aktoerIdService, oppfoelgingPortType);
-        when(oppfoelgingPortType.hentOppfoelgingskontraktListe(any(WSHentOppfoelgingskontraktListeRequest.class))).thenReturn(wsHentOppfoelgingskontraktListeResponse);
+        when(oppfoelgingPortType.hentOppfoelgingskontraktListe(any(WSHentOppfoelgingskontraktListeRequest.class)))
+                .thenReturn(wsHentOppfoelgingskontraktListeResponse);
         when(digitalKontaktinformasjonV1.hentDigitalKontaktinformasjon(any(WSHentDigitalKontaktinformasjonRequest.class)))
                 .thenReturn(new WSHentDigitalKontaktinformasjonResponse()
                         .withDigitalKontaktinformasjon(wsKontaktinformasjon));
