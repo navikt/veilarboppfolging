@@ -127,7 +127,7 @@ public class AktivitetsplanSituasjonWebService {
         return of(digitalKontaktinformasjonV1.hentDigitalKontaktinformasjon(wsHentDigitalKontaktinformasjonRequest))
                 .map(WSHentDigitalKontaktinformasjonResponse::getDigitalKontaktinformasjon)
                 .map(WSKontaktinformasjon::getReservasjon)
-                .map(StringUtils::isNotEmpty)
+                .map("true"::equalsIgnoreCase)
                 .orElse(false);
     }
 
