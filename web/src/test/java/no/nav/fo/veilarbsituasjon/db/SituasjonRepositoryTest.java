@@ -4,11 +4,9 @@ import no.nav.fo.veilarbsituasjon.IntegrasjonsTest;
 import no.nav.fo.veilarbsituasjon.domain.Brukervilkar;
 import no.nav.fo.veilarbsituasjon.domain.Situasjon;
 import no.nav.fo.veilarbsituasjon.domain.VilkarStatus;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
-
-import javax.inject.Inject;
 
 import java.sql.Timestamp;
 import java.util.Optional;
@@ -22,40 +20,38 @@ public class SituasjonRepositoryTest extends IntegrasjonsTest {
 
     private static final String AKTOR_ID = "2222";
 
-    @Inject
-    private JdbcTemplate jdbcTemplate;
+    private SituasjonRepository situasjonRepository = new SituasjonRepository(getBean(JdbcTemplate.class));
 
-    private SituasjonRepository situasjonRepository;
-
-    @Before
-    public void setup() {
-        situasjonRepository = new SituasjonRepository(jdbcTemplate);
+    @Nested
+    class hentSituasjon {
+        @Test
+        public void manglerSituasjon() throws Exception {
+            sjekkAtSituasjonMangler(hentSituasjon("ukjentAktorId"));
+            sjekkAtSituasjonMangler(hentSituasjon(null));
+        }
     }
 
-    @Test
-    public void hentSituasjon_manglerSituasjon() throws Exception {
-        sjekkAtSituasjonMangler(hentSituasjon("ukjentAktorId"));
-        sjekkAtSituasjonMangler(hentSituasjon(null));
-    }
+    @Nested
+    class oppdaterSituasjon {
+        @Test
+        public void kanHenteSammeSituasjon() throws Exception {
+            Situasjon situasjon = gittSituasjonForAktor(AKTOR_ID);
+            Optional<Situasjon> uthentetSituasjon = hentSituasjon(AKTOR_ID);
+            sjekkLikeSituasjoner(situasjon, uthentetSituasjon);
+        }
 
-    @Test
-    public void oppdaterSituasjon_kanHenteSammeSituasjon() throws Exception {
-        Situasjon situasjon = gittSituasjonForAktor(AKTOR_ID);
-        Optional<Situasjon> uthentetSituasjon = hentSituasjon(AKTOR_ID);
-        sjekkLikeSituasjoner(situasjon, uthentetSituasjon);
-    }
-
-    @Test
-    public void oppdaterSituasjon_oppdatererStatus() throws Exception {
-        Situasjon situasjon = gittSituasjonForAktor(AKTOR_ID);
-        situasjon.leggTilBrukervilkar(new Brukervilkar()
-                        .setDato(new Timestamp(currentTimeMillis()))
-                        .setTekst("hash")
-                        .setVilkarstatus(VilkarStatus.GODKJENNT)
-        );
-        situasjonRepository.oppdaterSituasjon(situasjon);
-        Optional<Situasjon> uthentetSituasjon = hentSituasjon(AKTOR_ID);
-        sjekkLikeSituasjoner(situasjon, uthentetSituasjon);
+        @Test
+        public void oppdatererStatus() throws Exception {
+            Situasjon situasjon = gittSituasjonForAktor(AKTOR_ID);
+            situasjon.leggTilBrukervilkar(new Brukervilkar()
+                    .setDato(new Timestamp(currentTimeMillis()))
+                    .setTekst("hash")
+                    .setVilkarstatus(VilkarStatus.GODKJENNT)
+            );
+            situasjonRepository.oppdaterSituasjon(situasjon);
+            Optional<Situasjon> uthentetSituasjon = hentSituasjon(AKTOR_ID);
+            sjekkLikeSituasjoner(situasjon, uthentetSituasjon);
+        }
     }
 
     private void sjekkLikeSituasjoner(Situasjon oppdatertSituasjon, Optional<Situasjon> situasjon) {

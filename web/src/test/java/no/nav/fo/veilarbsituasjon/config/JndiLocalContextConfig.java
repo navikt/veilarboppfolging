@@ -41,7 +41,7 @@ public class JndiLocalContextConfig {
         }
     }
 
-    public static void setupInMemoryDatabase() {
+    public static SingleConnectionDataSource setupInMemoryDatabase() {
         SingleConnectionDataSource ds = new SingleConnectionDataSource();
         ds.setSuppressClose(true);
         ds.setDriverClassName(org.hsqldb.jdbcDriver.class.getName());
@@ -62,6 +62,8 @@ public class JndiLocalContextConfig {
         assertThat(migrate, greaterThan(0));
 
         registerJndi(ds);
+
+        return ds;
     }
 
 }

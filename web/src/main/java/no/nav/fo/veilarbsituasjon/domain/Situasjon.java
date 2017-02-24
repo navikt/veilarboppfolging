@@ -10,12 +10,12 @@ import java.util.List;
 @Accessors(chain = true)
 public class Situasjon {
 
-    public boolean oppfolging;
-    public String aktorId;
-    public boolean manuell;
-    public List<Brukervilkar> brukervilkar = new ArrayList<>();
+    private boolean oppfolging;
+    private String aktorId;
+    private boolean manuell;
+    private List<Brukervilkar> brukervilkar = new ArrayList<>();
 
-    public Situasjon leggTilBrukervilkar(Brukervilkar brukervilkar){
+    public Situasjon leggTilBrukervilkar(Brukervilkar brukervilkar) {
         this.brukervilkar.add(brukervilkar);
         return this;
     }

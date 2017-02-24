@@ -145,7 +145,7 @@ public class AktivitetsplanSituasjonWebService {
     }
 
     private Optional<Brukervilkar> finnSisteVilkarStatus(Situasjon situasjon) {
-        return situasjon.brukervilkar.stream()
+        return situasjon.getBrukervilkar().stream()
                 .sorted(comparing(Brukervilkar::getDato).reversed())
                 .findFirst();
     }

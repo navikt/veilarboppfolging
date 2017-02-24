@@ -13,11 +13,9 @@ import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.informasjon.WSOppfoelgingskontrakt;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.WSHentOppfoelgingskontraktListeRequest;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.WSHentOppfoelgingskontraktListeResponse;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 
 import static java.util.Optional.of;
 import static no.nav.fo.veilarbsituasjon.domain.VilkarStatus.GODKJENNT;
@@ -26,24 +24,17 @@ import static no.nav.fo.veilarbsituasjon.mock.OppfoelgingV1Mock.AKTIV_STATUS;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
-
-@RunWith(MockitoJUnitRunner.class)
 public class AktivitetsplanSituasjonWebServiceTest {
 
-    @Mock
-    private DigitalKontaktinformasjonV1 digitalKontaktinformasjonV1;
-    @Mock
-    private SituasjonRepository situasjonRepository;
-    @Mock
-    private AktoerIdService aktoerIdService;
-    @Mock
-    private OppfoelgingPortType oppfoelgingPortType;
+    private DigitalKontaktinformasjonV1 digitalKontaktinformasjonV1 = mock(DigitalKontaktinformasjonV1.class);
+    private SituasjonRepository situasjonRepository = mock(SituasjonRepository.class);
+    private AktoerIdService aktoerIdService = mock(AktoerIdService.class);
+    private OppfoelgingPortType oppfoelgingPortType = mock(OppfoelgingPortType.class);
 
     private static final String FNR = "fnr";
     private static final String AKTOR_ID = "aktorId";
@@ -53,7 +44,7 @@ public class AktivitetsplanSituasjonWebServiceTest {
     private WSHentOppfoelgingskontraktListeResponse wsHentOppfoelgingskontraktListeResponse = new WSHentOppfoelgingskontraktListeResponse();
     private WSKontaktinformasjon wsKontaktinformasjon = new WSKontaktinformasjon();
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         aktivitetsplanSituasjonWebService = new AktivitetsplanSituasjonWebService(digitalKontaktinformasjonV1, situasjonRepository, aktoerIdService, oppfoelgingPortType);
         when(oppfoelgingPortType.hentOppfoelgingskontraktListe(any(WSHentOppfoelgingskontraktListeRequest.class)))
@@ -63,93 +54,98 @@ public class AktivitetsplanSituasjonWebServiceTest {
                         .withDigitalKontaktinformasjon(wsKontaktinformasjon));
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void hentOppfolgingsStatus_ukjentAktor() throws Exception {
-        hentOppfolgingStatus();
-    }
+    @Nested
+    class hentOppfolgingsStatus {
 
-    @Test
-    public void hentOppfolgingsStatus_riktigFnr() throws Exception {
-        gittAktor();
-        AktivitetsplanSituasjonWebService.OppfolgingOgVilkarStatus oppfolgingOgVilkarStatus = hentOppfolgingStatus();
-        assertThat(oppfolgingOgVilkarStatus.fnr, equalTo(FNR));
-    }
+        @Test
+        public void ukjentAktor() throws Exception {
+            assertThrows(IllegalArgumentException.class, () -> hentOppfolgingStatus());
+        }
 
-    @Test
-    public void hentOppfolgingsStatus_databaseOppdateresMedRiktigSituasjon() throws Exception {
-        gittAktor();
-        hentOppfolgingStatus();
-        verify(situasjonRepository).oppdaterSituasjon(eq(new Situasjon().setAktorId(AKTOR_ID)));
-    }
+        @Test
+        public void riktigFnr() throws Exception {
+            gittAktor();
+            AktivitetsplanSituasjonWebService.OppfolgingOgVilkarStatus oppfolgingOgVilkarStatus = hentOppfolgingStatus();
+            assertThat(oppfolgingOgVilkarStatus.fnr, equalTo(FNR));
+        }
 
-    @Test
-    public void hentOppfolgingsStatus_medReservasjon() throws Exception {
-        gittAktor();
-        gittReservasjon("reservasjon");
+        @Test
+        public void databaseOppdateresMedRiktigSituasjon() throws Exception {
+            gittAktor();
+            hentOppfolgingStatus();
+            verify(situasjonRepository).oppdaterSituasjon(eq(new Situasjon().setAktorId(AKTOR_ID)));
+        }
 
-        AktivitetsplanSituasjonWebService.OppfolgingOgVilkarStatus oppfolgingOgVilkarStatus = hentOppfolgingStatus();
+        @Test
+        public void medReservasjon() throws Exception {
+            gittAktor();
+            gittReservasjon("reservasjon");
 
-        assertThat(oppfolgingOgVilkarStatus.reservasjonKRR, is(true));
-    }
+            AktivitetsplanSituasjonWebService.OppfolgingOgVilkarStatus oppfolgingOgVilkarStatus = hentOppfolgingStatus();
 
-    @Test
-    public void hentOppfolgingsStatus_underOppfolging() throws Exception {
-        gittAktor();
-        gittOppfolgingStatus(AKTIV_STATUS);
+            assertThat(oppfolgingOgVilkarStatus.reservasjonKRR, is(true));
+        }
 
-        AktivitetsplanSituasjonWebService.OppfolgingOgVilkarStatus oppfolgingOgVilkarStatus = hentOppfolgingStatus();
+        @Test
+        public void underOppfolging() throws Exception {
+            gittAktor();
+            gittOppfolgingStatus(AKTIV_STATUS);
 
-        assertThat(oppfolgingOgVilkarStatus.underOppfolging, is(true));
-    }
+            AktivitetsplanSituasjonWebService.OppfolgingOgVilkarStatus oppfolgingOgVilkarStatus = hentOppfolgingStatus();
 
-    @Test
-    public void hentOppfolgingsStatus_aksepterVilkar() throws Exception {
-        gittAktor();
+            assertThat(oppfolgingOgVilkarStatus.underOppfolging, is(true));
+        }
 
-        assertThat(hentOppfolgingStatus().vilkarMaBesvares, is(true));
+        @Test
+        public void aksepterVilkar() throws Exception {
+            gittAktor();
 
-        besvarVilkar(GODKJENNT, hentGjeldendeVilkar());
+            assertThat(hentOppfolgingStatus().vilkarMaBesvares, is(true));
 
-        assertThat(hentOppfolgingStatus().vilkarMaBesvares, is(false));
-    }
+            besvarVilkar(GODKJENNT, hentGjeldendeVilkar());
 
-    @Test
-    public void hentOppfolgingsStatus_akseptererFeilVilkar() throws Exception {
-        gittAktor();
+            assertThat(hentOppfolgingStatus().vilkarMaBesvares, is(false));
+        }
 
-        besvarVilkar(GODKJENNT, "feilVilkar");
+        @Test
+        public void akseptererFeilVilkar() throws Exception {
+            gittAktor();
 
-        assertThat(hentOppfolgingStatus().vilkarMaBesvares, is(true));
-    }
+            besvarVilkar(GODKJENNT, "feilVilkar");
 
-    @Test
-    public void hentOppfolgingsStatus_vilkarIkkeBesvart() throws Exception {
-        gittAktor();
+            assertThat(hentOppfolgingStatus().vilkarMaBesvares, is(true));
+        }
 
-        besvarVilkar(IKKE_BESVART, hentGjeldendeVilkar());
+        @Test
+        public void vilkarIkkeBesvart() throws Exception {
+            gittAktor();
 
-        assertThat(hentOppfolgingStatus().vilkarMaBesvares, is(true));
-    }
+            besvarVilkar(IKKE_BESVART, hentGjeldendeVilkar());
 
-    @Test
-    public void hentOppfolgingsStatus_underOppfolgingOgReservert() throws Exception {
-        gittAktor();
-        gittOppfolgingStatus(AKTIV_STATUS);
-        gittReservasjon("reservasjon");
+            assertThat(hentOppfolgingStatus().vilkarMaBesvares, is(true));
+        }
 
-        AktivitetsplanSituasjonWebService.OppfolgingOgVilkarStatus oppfolgingOgVilkarStatus = hentOppfolgingStatus();
+        @Test
+        public void underOppfolgingOgReservert() throws Exception {
+            gittAktor();
+            gittOppfolgingStatus(AKTIV_STATUS);
+            gittReservasjon("reservasjon");
 
-        assertThat(oppfolgingOgVilkarStatus.manuell, is(true));
-    }
+            AktivitetsplanSituasjonWebService.OppfolgingOgVilkarStatus oppfolgingOgVilkarStatus = hentOppfolgingStatus();
 
-    @Test
-    public void hentOppfolgingsStatus_situasjonMedOppfolgingsFlaggIDatabasen() throws Exception {
-        gittAktor();
-        gittSituasjon(situasjon.setOppfolging(true));
+            assertThat(oppfolgingOgVilkarStatus.manuell, is(true));
+        }
 
-        hentOppfolgingStatus();
+        @Test
+        public void situasjonMedOppfolgingsFlaggIDatabasen() throws Exception {
+            gittAktor();
+            gittSituasjon(situasjon.setOppfolging(true));
 
-        verifyZeroInteractions(oppfoelgingPortType);
+            hentOppfolgingStatus();
+
+            verifyZeroInteractions(oppfoelgingPortType);
+        }
+
     }
 
     private void besvarVilkar(VilkarStatus godkjennt, String tekst) {
@@ -166,10 +162,6 @@ public class AktivitetsplanSituasjonWebServiceTest {
 
     private AktivitetsplanSituasjonWebService.OppfolgingOgVilkarStatus hentOppfolgingStatus() throws Exception {
         return aktivitetsplanSituasjonWebService.hentOppfolgingsStatus(FNR);
-    }
-
-    private void gittSituasjon() {
-        gittSituasjon(situasjon);
     }
 
     private void gittSituasjon(Situasjon situasjon) {

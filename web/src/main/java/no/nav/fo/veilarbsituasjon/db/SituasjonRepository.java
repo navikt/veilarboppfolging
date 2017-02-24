@@ -14,6 +14,7 @@ import java.util.Optional;
 public class SituasjonRepository {
 
     private JdbcTemplate jdbcTemplate;
+
     public SituasjonRepository(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
@@ -27,10 +28,10 @@ public class SituasjonRepository {
     }
 
     public void oppdaterSituasjon(Situasjon oppdatertSituasjon) {
-        String aktorId = oppdatertSituasjon.aktorId;
-        boolean oppfolging = oppdatertSituasjon.oppfolging;
-        boolean manuell = oppdatertSituasjon.manuell;
-        List<Brukervilkar> brukervilkar = oppdatertSituasjon.brukervilkar;
+        String aktorId = oppdatertSituasjon.getAktorId();
+        boolean oppfolging = oppdatertSituasjon.isOppfolging();
+        boolean manuell = oppdatertSituasjon.isManuell();
+        List<Brukervilkar> brukervilkar = oppdatertSituasjon.getBrukervilkar();
         if (situasjonHarAktorId(aktorId)) {
             jdbcTemplate.update("UPDATE situasjon SET oppfolging = ?, manuell = ? WHERE aktorid = ?",
                     oppfolging,
@@ -63,9 +64,9 @@ public class SituasjonRepository {
             jdbcTemplate.update(
                     "INSERT INTO brukervilkar(aktorid, dato, vilkarstatus, tekst) VALUES(?, ?, ?, ?)",
                     aktorId,
-                    vilkar.dato,
-                    vilkar.vilkarstatus.name(),
-                    vilkar.tekst
+                    vilkar.getDato(),
+                    vilkar.getVilkarstatus().name(),
+                    vilkar.getTekst()
             );
         }
     }

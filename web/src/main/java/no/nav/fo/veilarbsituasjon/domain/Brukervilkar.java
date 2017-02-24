@@ -8,7 +8,7 @@ import java.sql.Timestamp;
 @Data
 @Accessors(chain = true)
 public class Brukervilkar {
-    public Timestamp dato;
-    public VilkarStatus vilkarstatus;
-    public String tekst;
+    private Timestamp dato;
+    private VilkarStatus vilkarstatus;
+    private String tekst;
 }

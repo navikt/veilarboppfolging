@@ -4,6 +4,7 @@ import no.nav.modig.core.context.StaticSubjectHandler;
 import no.nav.sbl.dialogarena.common.jetty.Jetty;
 import org.apache.activemq.broker.BrokerService;
 
+import static java.lang.System.getProperty;
 import static java.lang.System.setProperty;
 import static no.nav.fo.veilarbsituasjon.config.JndiLocalContextConfig.setupInMemoryDatabase;
 import static no.nav.fo.veilarbsituasjon.config.JndiLocalContextConfig.setupJndiLocalContext;
@@ -16,7 +17,7 @@ class StartJetty {
 
     public static void main(String[] args) throws Exception {
         setProperty(SUBJECTHANDLER_KEY, StaticSubjectHandler.class.getName());
-        if (true) {
+        if (Boolean.parseBoolean(getProperty("lokal.database"))) {
             setupInMemoryDatabase();
         } else {
             setupJndiLocalContext();
