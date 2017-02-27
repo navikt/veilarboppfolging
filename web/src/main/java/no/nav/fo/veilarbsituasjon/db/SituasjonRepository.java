@@ -21,7 +21,7 @@ public class SituasjonRepository {
 
     public Optional<Situasjon> hentSituasjon(String aktorId) {
         List<Situasjon> situasjon = jdbcTemplate.query("SELECT * FROM situasjon WHERE aktorid = ?",
-                this::tilSituasjon,
+                (result, n) -> tilSituasjon(result),
                 aktorId
         );
         return situasjon.stream().findFirst().map(this::leggTilVilkar);
@@ -78,7 +78,7 @@ public class SituasjonRepository {
         ).isEmpty();
     }
 
-    private Situasjon tilSituasjon(ResultSet result, @SuppressWarnings("unused") int n) throws SQLException {
+    private Situasjon tilSituasjon(ResultSet result) throws SQLException {
         return new Situasjon()
                 .setAktorId(result.getString("aktorid"))
                 .setOppfolging(result.getBoolean("oppfolging"))

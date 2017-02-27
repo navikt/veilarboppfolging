@@ -10,7 +10,6 @@ import static java.lang.System.setProperty;
 import static no.nav.fo.veilarbsituasjon.config.JndiLocalContextConfig.setupInMemoryDatabase;
 import static no.nav.fo.veilarbsituasjon.config.JndiLocalContextConfig.setupJndiLocalContext;
 import static no.nav.sbl.dialogarena.common.jetty.Jetty.usingWar;
-import static no.nav.sbl.dialogarena.common.jetty.JettyStarterUtils.*;
 
 class StartJetty {
     private static final String SUBJECT_HANDLER_KEY = "no.nav.modig.core.context.subjectHandlerImplementationClass";
