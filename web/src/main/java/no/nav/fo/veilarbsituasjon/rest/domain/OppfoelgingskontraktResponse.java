@@ -8,14 +8,14 @@ import java.util.List;
 public class OppfoelgingskontraktResponse {
 
     @JsonProperty("oppfolgingskontrakter")
-    private final List<Oppfoelgingskontrakt> oppfoelgingskontrakter;
+    private final List<OppfoelgingskontraktData> oppfoelgingskontrakter;
 
-    public OppfoelgingskontraktResponse(List<Oppfoelgingskontrakt> oppfoelgingskontraktListe) {
+    public OppfoelgingskontraktResponse(List<OppfoelgingskontraktData> oppfoelgingskontraktListe) {
 
         this.oppfoelgingskontrakter = oppfoelgingskontraktListe;
     }
 
-    public List<Oppfoelgingskontrakt> getOppfoelgingskontrakter() {
+    public List<OppfoelgingskontraktData> getOppfoelgingskontrakter() {
         return oppfoelgingskontrakter;
     }
 }

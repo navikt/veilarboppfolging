@@ -3,7 +3,7 @@ package no.nav.fo.veilarbsituasjon.rest.domain;
 import java.util.List;
 
 @SuppressWarnings("unused")
-public class Oppfoelgingskontrakt {
+public class OppfoelgingskontraktData {
     private List<String> innsatsgrupper;
     private String status;
 
@@ -15,12 +15,12 @@ public class Oppfoelgingskontrakt {
         return status;
     }
 
-    public Oppfoelgingskontrakt withStatus(String status) {
+    public OppfoelgingskontraktData withStatus(String status) {
         this.status = status;
         return this;
     }
 
-    public Oppfoelgingskontrakt withInnsatsgruppe(List<String> insatsgrupper) {
+    public OppfoelgingskontraktData withInnsatsgruppe(List<String> insatsgrupper) {
         this.innsatsgrupper = insatsgrupper;
         return this;
     }

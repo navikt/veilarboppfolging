@@ -1,6 +1,7 @@
 package no.nav.fo.veilarbsituasjon.config;
 
 import no.nav.fo.veilarbsituasjon.db.BrukerRepository;
+import no.nav.fo.veilarbsituasjon.db.SituasjonRepository;
 import no.nav.fo.veilarbsituasjon.services.AktoerIdService;
 import no.nav.fo.veilarbsituasjon.services.OppfoelgingService;
 import no.nav.fo.veilarbsituasjon.services.YtelseskontraktService;
@@ -41,5 +42,9 @@ public class ServiceConfig {
 
     @Bean
     BrukerRepository brukerRepository() { return new BrukerRepository(db); }
+
+    @Bean
+    SituasjonRepository situasjonRepository() { return new SituasjonRepository(db); }
+
 
 }

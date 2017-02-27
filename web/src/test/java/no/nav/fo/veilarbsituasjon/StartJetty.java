@@ -5,17 +5,23 @@ import no.nav.sbl.dialogarena.common.jetty.Jetty;
 import org.apache.activemq.broker.BrokerService;
 import org.eclipse.jetty.jaas.JAASLoginService;
 
+import static java.lang.System.getProperty;
 import static java.lang.System.setProperty;
+import static no.nav.fo.veilarbsituasjon.config.JndiLocalContextConfig.setupInMemoryDatabase;
 import static no.nav.fo.veilarbsituasjon.config.JndiLocalContextConfig.setupJndiLocalContext;
 import static no.nav.sbl.dialogarena.common.jetty.Jetty.usingWar;
-import static no.nav.sbl.dialogarena.common.jetty.JettyStarterUtils.*;
 
 class StartJetty {
     private static final String SUBJECT_HANDLER_KEY = "no.nav.modig.core.context.subjectHandlerImplementationClass";
     private static final int PORT = 8486;
 
     public static void main(String[] args) throws Exception {
-        setupJndiLocalContext();
+        if (Boolean.parseBoolean(getProperty("lokal.database"))) {
+            setupInMemoryDatabase();
+        } else {
+            setupJndiLocalContext();
+        }
+
         setupBrokerService();
 
         JAASLoginService jaasLoginService = createJaasLoginService();

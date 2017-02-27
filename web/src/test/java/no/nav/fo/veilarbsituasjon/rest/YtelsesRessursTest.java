@@ -9,8 +9,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import java.util.Collections;
-
 import static java.util.Collections.singletonList;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
@@ -37,7 +35,7 @@ public class YtelsesRessursTest {
                 new YtelseskontraktResponse(singletonList(new Vedtak()), singletonList(new Ytelseskontrakt()))
         );
         when(oppfoelgingService.hentOppfoelgingskontraktListe(any(), any(), anyString())).thenReturn(
-                new OppfoelgingskontraktResponse(singletonList(new Oppfoelgingskontrakt()))
+                new OppfoelgingskontraktResponse(singletonList(new OppfoelgingskontraktData()))
         );
 
         final YtelserResponse ytelser = ytelseRessurs.getYtelser("***REMOVED***");
