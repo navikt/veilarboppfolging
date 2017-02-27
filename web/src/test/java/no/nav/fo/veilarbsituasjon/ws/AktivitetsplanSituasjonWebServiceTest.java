@@ -1,5 +1,6 @@
 package no.nav.fo.veilarbsituasjon.ws;
 
+import lombok.val;
 import no.nav.fo.veilarbsituasjon.db.SituasjonRepository;
 import no.nav.fo.veilarbsituasjon.domain.Brukervilkar;
 import no.nav.fo.veilarbsituasjon.domain.Situasjon;
@@ -10,9 +11,8 @@ import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.informasjon.WSKon
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.WSHentDigitalKontaktinformasjonRequest;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.WSHentDigitalKontaktinformasjonResponse;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
-import no.nav.tjeneste.virksomhet.oppfoelging.v1.informasjon.WSOppfoelgingskontrakt;
-import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.WSHentOppfoelgingskontraktListeRequest;
-import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.WSHentOppfoelgingskontraktListeResponse;
+import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingsstatusRequest;
+import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingsstatusResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -20,7 +20,6 @@ import org.junit.jupiter.api.Test;
 import static java.util.Optional.of;
 import static no.nav.fo.veilarbsituasjon.domain.VilkarStatus.GODKJENNT;
 import static no.nav.fo.veilarbsituasjon.domain.VilkarStatus.IKKE_BESVART;
-import static no.nav.fo.veilarbsituasjon.mock.OppfoelgingV1Mock.AKTIV_STATUS;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
@@ -41,14 +40,15 @@ public class AktivitetsplanSituasjonWebServiceTest {
 
     private AktivitetsplanSituasjonWebService aktivitetsplanSituasjonWebService;
     private Situasjon situasjon = new Situasjon().setAktorId(AKTOR_ID);
-    private WSHentOppfoelgingskontraktListeResponse wsHentOppfoelgingskontraktListeResponse = new WSHentOppfoelgingskontraktListeResponse();
+    private HentOppfoelgingsstatusResponse hentOppfolgingstatusResponse;
     private WSKontaktinformasjon wsKontaktinformasjon = new WSKontaktinformasjon();
 
     @BeforeEach
     public void setup() throws Exception {
         aktivitetsplanSituasjonWebService = new AktivitetsplanSituasjonWebService(digitalKontaktinformasjonV1, situasjonRepository, aktoerIdService, oppfoelgingPortType);
-        when(oppfoelgingPortType.hentOppfoelgingskontraktListe(any(WSHentOppfoelgingskontraktListeRequest.class)))
-                .thenReturn(wsHentOppfoelgingskontraktListeResponse);
+        hentOppfolgingstatusResponse = new HentOppfoelgingsstatusResponse();
+        when(oppfoelgingPortType.hentOppfoelgingsstatus(any(HentOppfoelgingsstatusRequest.class)))
+                .thenReturn(hentOppfolgingstatusResponse);
         when(digitalKontaktinformasjonV1.hentDigitalKontaktinformasjon(any(WSHentDigitalKontaktinformasjonRequest.class)))
                 .thenReturn(new WSHentDigitalKontaktinformasjonResponse()
                         .withDigitalKontaktinformasjon(wsKontaktinformasjon));
@@ -79,7 +79,7 @@ public class AktivitetsplanSituasjonWebServiceTest {
         @Test
         public void medReservasjon() throws Exception {
             gittAktor();
-            gittReservasjon("reservasjon");
+            gittReservasjon("true");
 
             AktivitetsplanSituasjonWebService.OppfolgingOgVilkarStatus oppfolgingOgVilkarStatus = hentOppfolgingStatus();
 
@@ -89,7 +89,7 @@ public class AktivitetsplanSituasjonWebServiceTest {
         @Test
         public void underOppfolging() throws Exception {
             gittAktor();
-            gittOppfolgingStatus(AKTIV_STATUS);
+            gittOppfolgingStatus("ARBS", "");
 
             AktivitetsplanSituasjonWebService.OppfolgingOgVilkarStatus oppfolgingOgVilkarStatus = hentOppfolgingStatus();
 
@@ -128,12 +128,32 @@ public class AktivitetsplanSituasjonWebServiceTest {
         @Test
         public void underOppfolgingOgReservert() throws Exception {
             gittAktor();
-            gittOppfolgingStatus(AKTIV_STATUS);
-            gittReservasjon("reservasjon");
+            gittOppfolgingStatus("ARBS", "");
+            gittReservasjon("true");
 
-            AktivitetsplanSituasjonWebService.OppfolgingOgVilkarStatus oppfolgingOgVilkarStatus = hentOppfolgingStatus();
+            val oppfolgingOgVilkarStatus = hentOppfolgingStatus();
 
             assertThat(oppfolgingOgVilkarStatus.manuell, is(true));
+        }
+
+        @Test
+        public void ikkeArbeidssokerUnderOppfolging() throws Exception {
+            gittAktor();
+            gittOppfolgingStatus("IARBS", "BATT");
+
+            val oppfolgingOgVilkarStatus = hentOppfolgingStatus();
+
+            assertThat(oppfolgingOgVilkarStatus.underOppfolging, is(true));
+        }
+
+        @Test
+        public void ikkeArbeidssokerIkkeUnderOppfolging() throws Exception {
+            gittAktor();
+            gittOppfolgingStatus("IARBS", "");
+
+            val oppfolgingOgVilkarStatus = hentOppfolgingStatus();
+
+            assertThat(oppfolgingOgVilkarStatus.underOppfolging, is(false));
         }
 
         @Test
@@ -156,8 +176,9 @@ public class AktivitetsplanSituasjonWebServiceTest {
         return aktivitetsplanSituasjonWebService.hentVilkar();
     }
 
-    private void gittOppfolgingStatus(String status) {
-        wsHentOppfoelgingskontraktListeResponse.getOppfoelgingskontraktListe().add(new WSOppfoelgingskontrakt().withStatus(status));
+    private void gittOppfolgingStatus(String formidlingskode, String kvalifiseringsgruppekode) {
+        hentOppfolgingstatusResponse.setFormidlingsgruppeKode(formidlingskode);
+        hentOppfolgingstatusResponse.setServicegruppeKode(kvalifiseringsgruppekode);
     }
 
     private AktivitetsplanSituasjonWebService.OppfolgingOgVilkarStatus hentOppfolgingStatus() throws Exception {

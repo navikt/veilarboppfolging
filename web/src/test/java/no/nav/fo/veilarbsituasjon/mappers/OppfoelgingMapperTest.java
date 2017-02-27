@@ -1,17 +1,19 @@
 package no.nav.fo.veilarbsituasjon.mappers;
 
 import no.nav.fo.veilarbsituasjon.mock.OppfoelgingV1Mock;
-import no.nav.fo.veilarbsituasjon.rest.domain.Oppfoelgingskontrakt;
+import no.nav.fo.veilarbsituasjon.rest.domain.OppfoelgingskontraktData;
 import no.nav.fo.veilarbsituasjon.rest.domain.OppfoelgingskontraktResponse;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.HentOppfoelgingskontraktListeSikkerhetsbegrensning;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
-import no.nav.tjeneste.virksomhet.oppfoelging.v1.informasjon.WSPeriode;
-import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.WSHentOppfoelgingskontraktListeRequest;
+import no.nav.tjeneste.virksomhet.oppfoelging.v1.informasjon.Periode;
+import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingskontraktListeRequest;
 import org.junit.Test;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
@@ -29,7 +31,7 @@ public class OppfoelgingMapperTest {
     public void oppfoelgingskontrakterInneholderListeMedOppfoelgingskontrakter() throws HentOppfoelgingskontraktListeSikkerhetsbegrensning {
         OppfoelgingPortType oppfoelgingMock = new OppfoelgingV1Mock();
 
-        List<Oppfoelgingskontrakt> oppfoelgingskontrakter = getOppfoelgingskontrakter(oppfoelgingMock);
+        List<OppfoelgingskontraktData> oppfoelgingskontrakter = getOppfoelgingskontrakter(oppfoelgingMock);
 
         assertThat(oppfoelgingskontrakter.size(), is(ANTALL_OPPFOELGINGSKONTRAKTER));
     }
@@ -38,10 +40,10 @@ public class OppfoelgingMapperTest {
     public void oppfoelgingskontrakterHarRiktigStatus() throws HentOppfoelgingskontraktListeSikkerhetsbegrensning {
         OppfoelgingPortType oppfoelgingMock = new OppfoelgingV1Mock();
 
-        List<Oppfoelgingskontrakt> oppfoelgingskontrakter = getOppfoelgingskontrakter(oppfoelgingMock);
+        List<OppfoelgingskontraktData> oppfoelgingskontrakter = getOppfoelgingskontrakter(oppfoelgingMock);
 
         final List statusList = oppfoelgingskontrakter.stream()
-                .map(Oppfoelgingskontrakt::getStatus)
+                .map(OppfoelgingskontraktData::getStatus)
                 .collect(toList());
 
         final List<String> expectedStatusList = new ArrayList<>(asList("Aktiv", "Aktiv", "LUKKET", "LUKKET"));
@@ -54,10 +56,10 @@ public class OppfoelgingMapperTest {
     public void oppfoelgingskontrakterHarRiktigServicegruppe() throws HentOppfoelgingskontraktListeSikkerhetsbegrensning {
         OppfoelgingPortType oppfoelgingMock = new OppfoelgingV1Mock();
 
-        List<Oppfoelgingskontrakt> oppfoelgingskontrakter = getOppfoelgingskontrakter(oppfoelgingMock);
+        List<OppfoelgingskontraktData> oppfoelgingskontrakter = getOppfoelgingskontrakter(oppfoelgingMock);
 
         final List innsatsgrupper = oppfoelgingskontrakter.stream()
-                .map(Oppfoelgingskontrakt::getInnsatsgrupper)
+                .map(OppfoelgingskontraktData::getInnsatsgrupper)
                 .flatMap(Collection::stream)
                 .collect(toList());
 
@@ -67,17 +69,17 @@ public class OppfoelgingMapperTest {
 
     }
 
-    private List<Oppfoelgingskontrakt> getOppfoelgingskontrakter(OppfoelgingPortType oppfoelgingMock) throws HentOppfoelgingskontraktListeSikkerhetsbegrensning {
-        final WSHentOppfoelgingskontraktListeRequest request = getWsHentOppfoelgingskontraktListeRequest();
+    private List<OppfoelgingskontraktData> getOppfoelgingskontrakter(OppfoelgingPortType oppfoelgingMock) throws HentOppfoelgingskontraktListeSikkerhetsbegrensning {
+        final HentOppfoelgingskontraktListeRequest request = getWsHentOppfoelgingskontraktListeRequest();
 
         final OppfoelgingskontraktResponse response = OppfoelgingMapper.tilOppfoelgingskontrakt(oppfoelgingMock.hentOppfoelgingskontraktListe(request));
 
         return response.getOppfoelgingskontrakter();
     }
 
-    private WSHentOppfoelgingskontraktListeRequest getWsHentOppfoelgingskontraktListeRequest() {
-        final WSHentOppfoelgingskontraktListeRequest request = new WSHentOppfoelgingskontraktListeRequest();
-        final WSPeriode periode = new WSPeriode();
+    private HentOppfoelgingskontraktListeRequest getWsHentOppfoelgingskontraktListeRequest() {
+        final HentOppfoelgingskontraktListeRequest request = new HentOppfoelgingskontraktListeRequest();
+        final Periode periode = new Periode();
         LocalDate periodeFom = LocalDate.now().minusMonths(MANEDER_BAK_I_TID);
         LocalDate periodeTom = LocalDate.now().plusMonths(MANEDER_FREM_I_TID);
         XMLGregorianCalendar fom = convertDateToXMLGregorianCalendar(periodeFom);

@@ -1,12 +1,14 @@
 package no.nav.fo.veilarbsituasjon.mock;
 
-import no.nav.tjeneste.virksomhet.oppfoelging.v1.HentOppfoelgingskontraktListeSikkerhetsbegrensning;
-import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
-import no.nav.tjeneste.virksomhet.oppfoelging.v1.informasjon.*;
-import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.WSHentOppfoelgingskontraktListeRequest;
-import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.WSHentOppfoelgingskontraktListeResponse;
+import no.nav.tjeneste.virksomhet.oppfoelging.v1.*;
+import no.nav.tjeneste.virksomhet.oppfoelging.v1.informasjon.Bruker;
+import no.nav.tjeneste.virksomhet.oppfoelging.v1.informasjon.Oppfoelgingskontrakt;
+import no.nav.tjeneste.virksomhet.oppfoelging.v1.informasjon.ServiceGruppe;
+import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingskontraktListeRequest;
+import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingskontraktListeResponse;
+import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingsstatusRequest;
+import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingsstatusResponse;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class OppfoelgingV1Mock implements OppfoelgingPortType {
@@ -17,9 +19,13 @@ public class OppfoelgingV1Mock implements OppfoelgingPortType {
     final private static String[] muligServicegruppe = {"Ikke vurdert", "Standardinnsats"};
 
     @Override
-    public WSHentOppfoelgingskontraktListeResponse hentOppfoelgingskontraktListe(WSHentOppfoelgingskontraktListeRequest request) throws HentOppfoelgingskontraktListeSikkerhetsbegrensning {
-        WSHentOppfoelgingskontraktListeResponse response = new WSHentOppfoelgingskontraktListeResponse()
-                .withOppfoelgingskontraktListe(new ArrayList<>());
+    public HentOppfoelgingsstatusResponse hentOppfoelgingsstatus(HentOppfoelgingsstatusRequest hentOppfoelgingsstatusRequest) throws HentOppfoelgingsstatusPersonIkkeFunnet, HentOppfoelgingsstatusSikkerhetsbegrensning, HentOppfoelgingsstatusUgyldigInput {
+        return new HentOppfoelgingsstatusResponse();
+    }
+
+    @Override
+    public HentOppfoelgingskontraktListeResponse hentOppfoelgingskontraktListe(HentOppfoelgingskontraktListeRequest request) throws HentOppfoelgingskontraktListeSikkerhetsbegrensning {
+        HentOppfoelgingskontraktListeResponse response = new HentOppfoelgingskontraktListeResponse();
 
         for (String status : muligStatus) {
             for (String servicegruppe : muligServicegruppe) {
@@ -29,13 +35,13 @@ public class OppfoelgingV1Mock implements OppfoelgingPortType {
         return response;
     }
 
-    private static void leggTilStatusOgServicegruppePaResponse(WSHentOppfoelgingskontraktListeResponse response, String status, String servicegruppe) {
-        final WSOppfoelgingskontrakt wsOppfoelgingskontrakt = new WSOppfoelgingskontrakt();
+    private static void leggTilStatusOgServicegruppePaResponse(HentOppfoelgingskontraktListeResponse response, String status, String servicegruppe) {
+        final Oppfoelgingskontrakt wsOppfoelgingskontrakt = new Oppfoelgingskontrakt();
 
         if (!status.isEmpty()) {
             wsOppfoelgingskontrakt.setStatus(status);
         }
-        final WSBruker bruker = new WSBruker();
+        final Bruker bruker = new Bruker();
 
         if (!servicegruppe.isEmpty()) {
             leggTilServiceGrupperForBruker(servicegruppe, bruker);
@@ -44,9 +50,9 @@ public class OppfoelgingV1Mock implements OppfoelgingPortType {
         response.getOppfoelgingskontraktListe().add(wsOppfoelgingskontrakt);
     }
 
-    private static void leggTilServiceGrupperForBruker(String servicegruppe, WSBruker bruker) {
-        final List<WSServiceGruppe> servicegrupper = bruker.getServicegruppe();
-        final WSServiceGruppe wsServiceGruppe = new WSServiceGruppe();
+    private static void leggTilServiceGrupperForBruker(String servicegruppe, Bruker bruker) {
+        final List<ServiceGruppe> servicegrupper = bruker.getServicegruppe();
+        final ServiceGruppe wsServiceGruppe = new ServiceGruppe();
         wsServiceGruppe.setServiceGruppe(servicegruppe);
         servicegrupper.add(wsServiceGruppe);
     }

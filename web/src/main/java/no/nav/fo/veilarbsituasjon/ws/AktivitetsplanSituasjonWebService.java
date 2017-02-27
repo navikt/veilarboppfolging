@@ -13,32 +13,35 @@ import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.DigitalKontaktinf
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.informasjon.WSKontaktinformasjon;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.WSHentDigitalKontaktinformasjonRequest;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.WSHentDigitalKontaktinformasjonResponse;
-import no.nav.tjeneste.virksomhet.oppfoelging.v1.HentOppfoelgingskontraktListeSikkerhetsbegrensning;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
-import no.nav.tjeneste.virksomhet.oppfoelging.v1.informasjon.WSOppfoelgingskontrakt;
-import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.WSHentOppfoelgingskontraktListeRequest;
-import org.apache.commons.lang3.StringUtils;
+import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingsstatusRequest;
+import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingsstatusResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.ws.rs.*;
 import java.sql.Timestamp;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 import static java.lang.System.currentTimeMillis;
+import static java.util.Arrays.asList;
 import static java.util.Comparator.comparing;
 import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static no.nav.fo.veilarbsituasjon.domain.VilkarStatus.GODKJENNT;
 import static no.nav.fo.veilarbsituasjon.domain.VilkarStatus.IKKE_BESVART;
-import static no.nav.fo.veilarbsituasjon.mock.OppfoelgingV1Mock.AKTIV_STATUS;
 
 // TODO dette skal bli en webservice når tjenestespesifikasjonen er klar!
 @Component
 @Path("/ws/aktivitetsplan")
 @Produces(APPLICATION_JSON)
 public class AktivitetsplanSituasjonWebService {
+
+    private static final Set<String> ARBEIDSOKERKODER = new HashSet<>(asList("ARBS", "RARBS", "PARBS"));
+    private static final Set<String> OPPFOLGINGKODER = new HashSet<>(asList("BATT", "BFORM", "IKVAL", "VURDU", "OPPFI"));
 
     private final DigitalKontaktinformasjonV1 digitalKontaktinformasjonV1;
     private final SituasjonRepository situasjonRepository;
@@ -112,14 +115,12 @@ public class AktivitetsplanSituasjonWebService {
                 .setStatus(opprettVilkarStatusRequest.status);
     }
 
-    private boolean erUnderOppfolging(String aktorId) throws HentOppfoelgingskontraktListeSikkerhetsbegrensning {
-        val wsHentOppfoelgingskontraktListeRequest = new WSHentOppfoelgingskontraktListeRequest();
-        wsHentOppfoelgingskontraktListeRequest.setPersonidentifikator(aktorId);
-        return oppfoelgingPortType.hentOppfoelgingskontraktListe(wsHentOppfoelgingskontraktListeRequest)
-                .getOppfoelgingskontraktListe()
-                .stream()
-                .map(WSOppfoelgingskontrakt::getStatus)
-                .anyMatch(status -> AKTIV_STATUS.equals(status));
+    private boolean erUnderOppfolging(String aktorId) throws Exception {
+        val hentOppfolgingstatusRequest = new HentOppfoelgingsstatusRequest();
+        hentOppfolgingstatusRequest.setPersonidentifikator(aktorId);
+        val oppfolgingstatus = oppfoelgingPortType.hentOppfoelgingsstatus(hentOppfolgingstatusRequest);
+
+        return erArbeidssoker(oppfolgingstatus) || erIArbeidOgHarInnsatsbehov(oppfolgingstatus);
     }
 
     private boolean erReservertIKRR(String fnr) throws Exception {
@@ -129,6 +130,14 @@ public class AktivitetsplanSituasjonWebService {
                 .map(WSKontaktinformasjon::getReservasjon)
                 .map("true"::equalsIgnoreCase)
                 .orElse(false);
+    }
+
+    private boolean erArbeidssoker(HentOppfoelgingsstatusResponse oppfolgingstatus) {
+        return ARBEIDSOKERKODER.contains(oppfolgingstatus.getFormidlingsgruppeKode());
+    }
+
+    private boolean erIArbeidOgHarInnsatsbehov(HentOppfoelgingsstatusResponse oppfolgingstatus) {
+        return OPPFOLGINGKODER.contains(oppfolgingstatus.getServicegruppeKode());
     }
 
     private String finnGjeldendeVilkar() {

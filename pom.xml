@@ -46,7 +46,7 @@
 
 
         <ytelseskontrakt-v3-tjenestespesifikasjon.version>1.0.0</ytelseskontrakt-v3-tjenestespesifikasjon.version>
-        <oppfoelging-v1-tjenestespesifikasjon.version>1.0.6</oppfoelging-v1-tjenestespesifikasjon.version>
+        <oppfoelging-v1-tjenestespesifikasjon.version>1.1.1</oppfoelging-v1-tjenestespesifikasjon.version>
         <dial-nav-tjeneste-aktoer_v2.version>1.1</dial-nav-tjeneste-aktoer_v2.version>
         <dkif-tjenestespesifikasjon.version>1.2</dkif-tjenestespesifikasjon.version>
 
@@ -217,9 +217,10 @@
                 <version>${ytelseskontrakt-v3-tjenestespesifikasjon.version}</version>
             </dependency>
             <dependency>
-                <groupId>no.nav.sbl.dialogarena</groupId>
-                <artifactId>oppfoelging-v1-tjenestespesifikasjon</artifactId>
+                <groupId>no.nav.tjenester.fim</groupId>
+                <artifactId>nav-fim-oppfoelging-v1-tjenestespesifikasjon</artifactId>
                 <version>${oppfoelging-v1-tjenestespesifikasjon.version}</version>
+                <classifier>jaxws</classifier>
             </dependency>
             <dependency>
                 <groupId>no.nav.sbl.dialogarena</groupId>

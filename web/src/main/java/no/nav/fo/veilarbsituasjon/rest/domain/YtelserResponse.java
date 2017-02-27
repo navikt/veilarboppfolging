@@ -10,7 +10,7 @@ public class YtelserResponse {
     private List<Vedtak> vedtaksliste;
     private List<Ytelseskontrakt> ytelser;
     @JsonProperty("oppfolgingskontrakter")
-    private List<Oppfoelgingskontrakt> oppfoelgingskontrakter;
+    private List<OppfoelgingskontraktData> oppfoelgingskontrakter;
 
     public YtelserResponse withVedtaksliste(List<Vedtak> vedtaksliste) {
         this.vedtaksliste = vedtaksliste;
@@ -22,7 +22,7 @@ public class YtelserResponse {
         return this;
     }
 
-    public YtelserResponse withOppfoelgingskontrakter(List<Oppfoelgingskontrakt> oppfoelgingskontrakter) {
+    public YtelserResponse withOppfoelgingskontrakter(List<OppfoelgingskontraktData> oppfoelgingskontrakter) {
         this.oppfoelgingskontrakter = oppfoelgingskontrakter;
         return this;
     }
@@ -35,7 +35,7 @@ public class YtelserResponse {
         return ytelser;
     }
 
-    public List<Oppfoelgingskontrakt> getOppfoelgingskontrakter() {
+    public List<OppfoelgingskontraktData> getOppfoelgingskontrakter() {
         return oppfoelgingskontrakter;
     }
 }

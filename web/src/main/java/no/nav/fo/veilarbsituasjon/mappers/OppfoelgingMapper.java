@@ -1,11 +1,11 @@
 package no.nav.fo.veilarbsituasjon.mappers;
 
 
-import no.nav.fo.veilarbsituasjon.rest.domain.Oppfoelgingskontrakt;
+import no.nav.fo.veilarbsituasjon.rest.domain.OppfoelgingskontraktData;
 import no.nav.fo.veilarbsituasjon.rest.domain.OppfoelgingskontraktResponse;
-import no.nav.tjeneste.virksomhet.oppfoelging.v1.informasjon.WSOppfoelgingskontrakt;
-import no.nav.tjeneste.virksomhet.oppfoelging.v1.informasjon.WSServiceGruppe;
-import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.WSHentOppfoelgingskontraktListeResponse;
+import no.nav.tjeneste.virksomhet.oppfoelging.v1.informasjon.Oppfoelgingskontrakt;
+import no.nav.tjeneste.virksomhet.oppfoelging.v1.informasjon.ServiceGruppe;
+import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingskontraktListeResponse;
 
 import java.util.List;
 import java.util.function.Function;
@@ -13,20 +13,20 @@ import java.util.stream.Collectors;
 
 public class OppfoelgingMapper {
 
-    public static OppfoelgingskontraktResponse tilOppfoelgingskontrakt(WSHentOppfoelgingskontraktListeResponse response) {
+    public static OppfoelgingskontraktResponse tilOppfoelgingskontrakt(HentOppfoelgingskontraktListeResponse response) {
 
-        final List<Oppfoelgingskontrakt> oppfoelgingskontrakter = response.getOppfoelgingskontraktListe().stream()
+        final List<OppfoelgingskontraktData> oppfoelgingskontrakter = response.getOppfoelgingskontraktListe().stream()
                 .map(tilOppfoelgingskontrakt).collect(Collectors.toList());
 
         return new OppfoelgingskontraktResponse(oppfoelgingskontrakter);
     }
 
-    private final static Function<WSOppfoelgingskontrakt, Oppfoelgingskontrakt> tilOppfoelgingskontrakt =
-            wsOppfoelgingskontrakt -> new Oppfoelgingskontrakt()
+    private final static Function<Oppfoelgingskontrakt, OppfoelgingskontraktData> tilOppfoelgingskontrakt =
+            wsOppfoelgingskontrakt -> new OppfoelgingskontraktData()
                     .withInnsatsgruppe(wsOppfoelgingskontrakt
                             .getGjelderBruker()
                             .getServicegruppe()
                             .stream()
-                            .map(WSServiceGruppe::getServiceGruppe).collect(Collectors.toList()))
+                            .map(ServiceGruppe::getServiceGruppe).collect(Collectors.toList()))
                     .withStatus(wsOppfoelgingskontrakt.getStatus());
 }
