@@ -41,8 +41,9 @@
         <javax.servlet-api.version>3.1.0</javax.servlet-api.version>
         <jersey.version>2.22.2</jersey.version>
 
-        <modig-security.version>1.0.30</modig-security.version>
+        <modig-security.version>3.0.0</modig-security.version>
         <modig-testcertificates.version>1.1.0</modig-testcertificates.version>
+        <jwt-security.version>1.0.6</jwt-security.version>
 
 
         <ytelseskontrakt-v3-tjenestespesifikasjon.version>1.0.0</ytelseskontrakt-v3-tjenestespesifikasjon.version>
@@ -52,12 +53,12 @@
 
 
         <common-jetty.version>2.0.11</common-jetty.version>
-        <common-cxf.version>3.1.22</common-cxf.version>
+        <common-cxf.version>3.1.32</common-cxf.version>
         <common-web.version>3.1.2</common-web.version>
         <common-types.version>1.2</common-types.version>
 
         <xml-apis.version>1.4.01</xml-apis.version>
-        <cxf-api.version>2.7.10</cxf-api.version>
+        <cxf-core.version>3.1.6</cxf-core.version>
         <jackson-annotations.version>2.8.4</jackson-annotations.version>
 
         <assertj.version>3.6.1</assertj.version>
@@ -180,6 +181,12 @@
                         <artifactId>jms</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-jaas</artifactId>
+                <version>${jetty.version}</version>
+                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>no.nav.sbl.dialogarena</groupId>
@@ -327,10 +334,30 @@
                 <version>${jersey.version}</version>
             </dependency>
 
+            <!-- JWT Security -->
+            <dependency>
+                <groupId>no.nav.fo</groupId>
+                <artifactId>jwt-security-filter</artifactId>
+                <version>${jwt-security.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>no.nav.fo</groupId>
+                <artifactId>jwt-security-loginmodule</artifactId>
+                <version>${jwt-security.version}</version>
+                <scope>runtime</scope>
+            </dependency>
+            <dependency>
+                <groupId>no.nav.fo</groupId>
+                <artifactId>jwt-security-common</artifactId>
+                <version>${jwt-security.version}</version>
+                <type>test-jar</type>
+            </dependency>
+
             <dependency>
                 <groupId>org.apache.cxf</groupId>
-                <artifactId>cxf-api</artifactId>
-                <version>${cxf-api.version}</version>
+                <artifactId>cxf-core</artifactId>
+                <version>${cxf-core.version}</version>
             </dependency>
             <dependency>
                 <groupId>xml-apis</groupId>
