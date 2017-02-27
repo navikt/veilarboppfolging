@@ -11,3 +11,4 @@
 .settings
 target
 *.jsp
+activemq-data/

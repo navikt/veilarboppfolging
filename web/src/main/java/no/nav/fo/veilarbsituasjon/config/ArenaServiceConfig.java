@@ -1,7 +1,8 @@
 package no.nav.fo.veilarbsituasjon.config;
 
 
-import no.nav.fo.veilarbsituasjon.mock.*;
+import no.nav.fo.veilarbsituasjon.mock.OppfoelgingV1Mock;
+import no.nav.fo.veilarbsituasjon.mock.YtelseskontraktV3Mock;
 import no.nav.modig.security.ws.SystemSAMLOutInterceptor;
 import no.nav.sbl.dialogarena.common.cxf.CXFClient;
 import no.nav.sbl.dialogarena.types.Pingable;
@@ -25,20 +26,24 @@ public class ArenaServiceConfig {
 
     @Bean
     public YtelseskontraktV3 ytelseskontraktV3() {
-        YtelseskontraktV3 prod = ytelseskontraktPortType().withOutInterceptor(new TestOutInterceptor()).ikkeMaskerSecurityHeader().build();
+        YtelseskontraktV3 prod = ytelseskontraktPortType()
+                .configureStsForOnBehalfOfWithJWT()
+                .build();
         YtelseskontraktV3 mock = new YtelseskontraktV3Mock();
         return createMetricsProxyWithInstanceSwitcher("Ytelseskontrakt-ArenaService", prod, mock, ARENASERVICE_YTELSESKONTRAKT_MOCK_KEY, YtelseskontraktV3.class);
     }
 
     private CXFClient<YtelseskontraktV3> ytelseskontraktPortType() {
         final String url = getProperty("ytelseskontrakt.endpoint.url");
-
-        return new CXFClient<>(YtelseskontraktV3.class).address(url);
+        return new CXFClient<>(YtelseskontraktV3.class)
+                .address(url);
     }
 
     @Bean
     public OppfoelgingPortType oppfoelgingV1() {
-        OppfoelgingPortType prod = oppfoelgingPortType().withOutInterceptor(new TestOutInterceptor()).build();
+        OppfoelgingPortType prod = oppfoelgingPortType()
+                .configureStsForOnBehalfOfWithJWT()
+                .build();
         OppfoelgingPortType mock = new OppfoelgingV1Mock();
         return createMetricsProxyWithInstanceSwitcher("Oppfoelging-ArenaService", prod, mock, ARENASERVICE_OPPFOELGING_MOCK_KEY, OppfoelgingPortType.class);
     }
@@ -52,7 +57,9 @@ public class ArenaServiceConfig {
 
     @Bean
     Pingable ytelseskontraktPing() {
-        final YtelseskontraktV3 ytelseskontraktPing = ytelseskontraktPortType().withOutInterceptor(new SystemSAMLOutInterceptor()).ikkeMaskerSecurityHeader().build();
+        final YtelseskontraktV3 ytelseskontraktPing = ytelseskontraktPortType()
+                .withOutInterceptor(new SystemSAMLOutInterceptor())
+                .build();
         return () -> {
             try {
                 ytelseskontraktPing.ping();
@@ -65,7 +72,12 @@ public class ArenaServiceConfig {
 
     @Bean
     Pingable oppfoelgingPing() {
-        final OppfoelgingPortType oppfoelgingPing = oppfoelgingPortType().withOutInterceptor(new SystemSAMLOutInterceptor()).ikkeMaskerSecurityHeader().build();
+        final String url = getProperty("oppfoelging.endpoint.url");
+        LOG.info("URL for Oppfoelging_V1 er {}", url);
+        OppfoelgingPortType oppfoelgingPing = oppfoelgingPortType()
+                .withOutInterceptor(new SystemSAMLOutInterceptor())
+                .build();
+
         return () -> {
             try {
                 oppfoelgingPing.ping();

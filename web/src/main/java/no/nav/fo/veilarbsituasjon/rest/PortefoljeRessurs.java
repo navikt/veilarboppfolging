@@ -1,5 +1,7 @@
 package no.nav.fo.veilarbsituasjon.rest;
 
+import no.nav.fo.security.jwt.filter.JWTInAuthorizationHeaderJAAS;
+import no.nav.fo.security.jwt.filter.SessionTerminator;
 import no.nav.fo.veilarbsituasjon.db.BrukerRepository;
 import no.nav.fo.veilarbsituasjon.domain.OppfolgingBruker;
 import no.nav.fo.veilarbsituasjon.rest.domain.VeilederTilordning;
@@ -21,6 +23,8 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 @Component
 @Path("/tilordneveileder")
+@JWTInAuthorizationHeaderJAAS
+@SessionTerminator
 public class PortefoljeRessurs {
 
     private static final Logger LOG = getLogger(PortefoljeRessurs.class);
