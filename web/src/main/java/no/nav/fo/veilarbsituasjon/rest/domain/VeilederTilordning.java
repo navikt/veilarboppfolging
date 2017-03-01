@@ -6,7 +6,7 @@ import lombok.experimental.Accessors;
 @Data
 @Accessors(chain = true)
 public class VeilederTilordning {
+    String brukerFnr;
     String fraVeilederId;
     String tilVeilederId;
-    String brukerFnr;
 }

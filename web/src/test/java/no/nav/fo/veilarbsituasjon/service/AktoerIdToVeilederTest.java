@@ -1,7 +1,6 @@
 package no.nav.fo.veilarbsituasjon.service;
 
 
-
 import no.nav.fo.veilarbsituasjon.db.BrukerRepository;
 import no.nav.fo.veilarbsituasjon.domain.OppfolgingBruker;
 import no.nav.fo.veilarbsituasjon.rest.PortefoljeRessurs;
@@ -42,21 +41,21 @@ public class AktoerIdToVeilederTest {
     @Test
     public void portefoljeRessursMustCallDAOwithAktoerIdToVeileder() {
 
-        portefoljeRessurs.postVeilederTilordninger(testData());
+        portefoljeRessurs.postVeilederTilordninger(Collections.singletonList(testData()));
         verify(brukerRepository, times(1)).leggTilEllerOppdaterBruker(any(OppfolgingBruker.class));
     }
 
     @Test
     public void noCallToDAOWhenAktoerIdServiceFails() {
         when(aktoerIdService.findAktoerId(any(String.class))).thenThrow(new IndexOutOfBoundsException());
-        portefoljeRessurs.postVeilederTilordninger(testData());
+        portefoljeRessurs.postVeilederTilordninger(Collections.singletonList(testData()));
         verify(brukerRepository, never()).leggTilEllerOppdaterBruker(any(OppfolgingBruker.class));
     }
 
     public VeilederTilordning testData() {
         return new VeilederTilordning()
-                .setFraVeileder(null)
-                .setTilVeileder("***REMOVED***")
-                .setBrukere(Collections.singletonList("12345678912"));
+                .setFraVeilederId(null)
+                .setTilVeilederId("***REMOVED***")
+                .setBrukerFnr("12345678912");
     }
 }
