@@ -77,7 +77,8 @@ public class PortefoljeRessurs {
         String endringsmeldingId = randomUUID().toString();
 
         try {
-            if (kanSetteNyVeileder(fraVeileder, bruker)) {
+            String veilederFraDb = brukerRepository.hentVeilederForAktoer(bruker.getAktoerid());
+            if (kanSetteNyVeileder(fraVeileder, bruker.getVeileder(), veilederFraDb)) {
                 brukerRepository.leggTilEllerOppdaterBruker(bruker);
                 endreVeilederQueue.send(messageCreator(bruker.toString(), endringsmeldingId));
                 LOG.debug(String.format("Veileder %s tilordnet aktoer %s", bruker.getVeileder(), bruker.getAktoerid()));
@@ -91,11 +92,10 @@ public class PortefoljeRessurs {
         }
     }
 
-    private boolean kanSetteNyVeileder(String fraVeileder, OppfolgingBruker bruker) {
-        if (bruker.getVeileder() == null) {
+    static boolean kanSetteNyVeileder(String fraVeileder, String tilVeileder, String eksisterendeVeileder) {
+        if (tilVeileder == null) {
             return false;
         }
-        String gjeldendeVeileder = brukerRepository.hentVeilederForAktoer(bruker.getAktoerid());
-        return gjeldendeVeileder == null || gjeldendeVeileder.equals(fraVeileder);
+        return eksisterendeVeileder == null || eksisterendeVeileder.equals(fraVeileder);
     }
 }
