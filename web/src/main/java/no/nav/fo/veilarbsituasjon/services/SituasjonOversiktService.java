@@ -1,5 +1,4 @@
-package no.nav.fo.veilarbsituasjon.ws;
-
+package no.nav.fo.veilarbsituasjon.services;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -8,6 +7,9 @@ import no.nav.fo.veilarbsituasjon.db.SituasjonRepository;
 import no.nav.fo.veilarbsituasjon.domain.Brukervilkar;
 import no.nav.fo.veilarbsituasjon.domain.Situasjon;
 import no.nav.fo.veilarbsituasjon.domain.VilkarStatus;
+import no.nav.fo.veilarbsituasjon.rest.domain.OppfolgingOgVilkarStatus;
+import no.nav.fo.veilarbsituasjon.rest.domain.OpprettVilkarStatusRequest;
+import no.nav.fo.veilarbsituasjon.rest.domain.OpprettVilkarStatusResponse;
 import no.nav.fo.veilarbsituasjon.services.AktoerIdService;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.DigitalKontaktinformasjonV1;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.informasjon.WSKontaktinformasjon;
@@ -19,6 +21,7 @@ import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingsstatu
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.inject.Inject;
 import javax.ws.rs.*;
 import java.sql.Timestamp;
 import java.util.HashSet;
@@ -34,35 +37,26 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static no.nav.fo.veilarbsituasjon.domain.VilkarStatus.GODKJENNT;
 import static no.nav.fo.veilarbsituasjon.domain.VilkarStatus.IKKE_BESVART;
 
-// TODO dette skal bli en webservice når tjenestespesifikasjonen er klar!
 @Component
-@Path("/ws/aktivitetsplan")
-@Produces(APPLICATION_JSON)
-public class AktivitetsplanSituasjonWebService {
+public class SituasjonOversiktService {
 
     private static final Set<String> ARBEIDSOKERKODER = new HashSet<>(asList("ARBS", "RARBS", "PARBS"));
     private static final Set<String> OPPFOLGINGKODER = new HashSet<>(asList("BATT", "BFORM", "IKVAL", "VURDU", "OPPFI"));
 
-    private final DigitalKontaktinformasjonV1 digitalKontaktinformasjonV1;
-    private final SituasjonRepository situasjonRepository;
-    private final AktoerIdService aktoerIdService;
-    private final OppfoelgingPortType oppfoelgingPortType;
+    @Inject
+    private DigitalKontaktinformasjonV1 digitalKontaktinformasjonV1;
 
-    public AktivitetsplanSituasjonWebService(
-            DigitalKontaktinformasjonV1 digitalKontaktinformasjonV1,
-            SituasjonRepository situasjonRepository,
-            AktoerIdService aktoerIdService,
-            OppfoelgingPortType oppfoelgingPortType) {
-        this.digitalKontaktinformasjonV1 = digitalKontaktinformasjonV1;
-        this.situasjonRepository = situasjonRepository;
-        this.aktoerIdService = aktoerIdService;
-        this.oppfoelgingPortType = oppfoelgingPortType;
-    }
+    @Inject
+    private SituasjonRepository situasjonRepository;
 
-    @GET
-    @Path("/{fnr}")
+    @Inject
+    private AktoerIdService aktoerIdService;
+
+    @Inject
+    private OppfoelgingPortType oppfoelgingPortType;
+
     @Transactional
-    public OppfolgingOgVilkarStatus hentOppfolgingsStatus(@PathParam("fnr") String fnr) throws Exception {
+    public OppfolgingOgVilkarStatus hentOppfolgingsStatus(String fnr) throws Exception {
         String aktorId = hentAktorId(fnr);
         Situasjon situasjon = hentSituasjon(aktorId);
 
@@ -93,13 +87,11 @@ public class AktivitetsplanSituasjonWebService {
                 .setVilkarMaBesvares(vilkarMaBesvares);
     }
 
-    @GET
-    @Path("/vilkar")
+
     public String hentVilkar() throws Exception {
         return finnGjeldendeVilkar();
     }
 
-    @POST
     public OpprettVilkarStatusResponse opprettVilkaarstatus(OpprettVilkarStatusRequest opprettVilkarStatusRequest) throws Exception {
         Situasjon situasjon = hentSituasjon(hentAktorId(opprettVilkarStatusRequest.fnr));
 
@@ -159,29 +151,10 @@ public class AktivitetsplanSituasjonWebService {
                 .findFirst();
     }
 
-    @Data
-    @Accessors(chain = true)
-    public static class OppfolgingOgVilkarStatus {
-        public String fnr;
-        public boolean reservasjonKRR;
-        public boolean manuell;
-        public boolean underOppfolging;
-        public boolean vilkarMaBesvares;
-    }
 
-    @Data
-    @Accessors(chain = true)
-    public static class OpprettVilkarStatusRequest {
-        public String fnr;
-        public VilkarStatus status;
-        public String hash;
-    }
 
-    @Data
-    @Accessors(chain = true)
-    public static class OpprettVilkarStatusResponse {
-        public String fnr;
-        public VilkarStatus status;
-    }
+
+
+
 
 }

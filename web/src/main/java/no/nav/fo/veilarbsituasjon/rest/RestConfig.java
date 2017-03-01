@@ -1,6 +1,6 @@
 package no.nav.fo.veilarbsituasjon.rest;
 
-import no.nav.fo.veilarbsituasjon.ws.AktivitetsplanSituasjonWebService;
+import no.nav.fo.veilarbsituasjon.services.SituasjonOversiktService;
 import org.glassfish.jersey.server.ResourceConfig;
 
 public class RestConfig extends ResourceConfig {
@@ -9,8 +9,7 @@ public class RestConfig extends ResourceConfig {
                 YtelseRessurs.class,
                 OppfoelgingRessurs.class,
                 PortefoljeRessurs.class,
-
-                AktivitetsplanSituasjonWebService.class
+                SituasjonOversiktService.class
         );
     }
 

@@ -1,4 +1,4 @@
-package no.nav.fo.veilarbsituasjon.service;
+package no.nav.fo.veilarbsituasjon.services;
 
 
 
