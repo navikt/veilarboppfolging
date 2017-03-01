@@ -20,7 +20,6 @@ import java.sql.SQLException;
 import java.util.List;
 
 import static java.util.UUID.randomUUID;
-import static java.util.stream.Collectors.toList;
 import static no.nav.fo.veilarbsituasjon.utils.JmsUtil.messageCreator;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -45,21 +44,16 @@ public class PortefoljeRessurs {
 
     @POST
     @Consumes("application/json")
-    public Response postVeilederTilordninger(VeilederTilordning tilordning) {
+    public Response postVeilederTilordninger(List<VeilederTilordning> tilordninger) {
         try {
 
-            List<String> aktoerIds = tilordning
-                    .getBrukere()
-                    .stream()
-                    .map(fnr -> aktoerIdService.findAktoerId(fnr))
-                    .collect(toList());
-
-            for (String aktoerId : aktoerIds) {
+            for (VeilederTilordning tilordning : tilordninger) {
+                String aktoerId = aktoerIdService.findAktoerId(tilordning.getBrukerFnr());
                 OppfolgingBruker bruker = new OppfolgingBruker()
-                        .setVeileder(tilordning.getTilVeileder())
+                        .setVeileder(tilordning.getTilVeilederId())
                         .setAktoerid(aktoerId);
 
-                skrivTilDataBaseOgLeggPaaKo(tilordning.getFraVeileder(), bruker);
+                skrivTilDataBaseOgLeggPaaKo(tilordning.getFraVeilederId(), bruker);
             }
 
             return Response.ok().entity("Veiledere tilordnet").build();
