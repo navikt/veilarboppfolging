@@ -15,8 +15,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.jms.core.JmsTemplate;
 
 import javax.servlet.http.HttpServletResponse;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collections;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
@@ -43,24 +42,21 @@ public class AktoerIdToVeilederTest {
     @Test
     public void portefoljeRessursMustCallDAOwithAktoerIdToVeileder() {
 
-        portefoljeRessurs.postVeilederTilordninger(veilederTilordningList());
+        portefoljeRessurs.postVeilederTilordninger(testData());
         verify(brukerRepository, times(1)).leggTilEllerOppdaterBruker(any(OppfolgingBruker.class));
     }
 
     @Test
     public void noCallToDAOWhenAktoerIdServiceFails() {
         when(aktoerIdService.findAktoerId(any(String.class))).thenThrow(new IndexOutOfBoundsException());
-        portefoljeRessurs.postVeilederTilordninger(veilederTilordningList());
+        portefoljeRessurs.postVeilederTilordninger(testData());
         verify(brukerRepository, never()).leggTilEllerOppdaterBruker(any(OppfolgingBruker.class));
     }
 
-    public List<VeilederTilordning> veilederTilordningList() {
-        VeilederTilordning veilederTilordning = new VeilederTilordning()
-                .setIdentVeileder("***REMOVED***")
-                .setFodselsnummerBruker("12345678912");
-        List<VeilederTilordning> veilederTilordningList =  new ArrayList<VeilederTilordning>();
-        veilederTilordningList.add(veilederTilordning);
-
-        return veilederTilordningList;
+    public VeilederTilordning testData() {
+        return new VeilederTilordning()
+                .setFraVeileder(null)
+                .setTilVeileder("***REMOVED***")
+                .setBrukere(Collections.singletonList("12345678912"));
     }
 }
