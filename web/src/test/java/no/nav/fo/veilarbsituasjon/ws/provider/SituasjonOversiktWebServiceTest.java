@@ -27,7 +27,7 @@ public class SituasjonOversiktWebServiceTest {
     @Test
     public void test() throws HentOppfoelgingsstatusSikkerhetsbegrensning {
         BehandleSituasjonV1 behandleSituasjonV1 = new CXFClient<>(BehandleSituasjonV1.class)
-                .address("http://a34duvw03129.devillo.no:32548/veilarbsituasjon/ws/Situasjon")
+                .address("http://localhost:32548/veilarbsituasjon/ws/Situasjon")
                 .build();
 
         HentOppfoelgingsstatusRequest req = new HentOppfoelgingsstatusRequest();
