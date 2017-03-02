@@ -34,12 +34,12 @@ public class SituasjonOversiktWebService implements BehandleSituasjonV1 {
 
     @Override
     public HentVilkaarsstatusResponse hentVilkaarsstatus(HentVilkaarsstatusRequest hentVilkaarsstatusRequest) throws HentVilkaarsstatusSikkerhetsbegrensning {
-        return null;
+        return new HentVilkaarsstatusResponse();
     }
 
     @Override
     public HentVilkaarsstatusListeResponse hentVilkaarsstatusListe(HentVilkaarsstatusListeRequest hentVilkaarsstatusListeRequest) throws HentVilkaarsstatusListeSikkerhetsbegrensning {
-        return null;
+        return new HentVilkaarsstatusListeResponse();
     }
 
     @Override
@@ -48,12 +48,12 @@ public class SituasjonOversiktWebService implements BehandleSituasjonV1 {
 
     @Override
     public OpprettVilkaarsstatusResponse opprettVilkaarsstatus(OpprettVilkaarsstatusRequest opprettVilkaarsstatusRequest) throws OpprettVilkaarsstatusSikkerhetsbegrensning, OpprettVilkaarsstatusUgyldigInput {
-        return null;
+        return new OpprettVilkaarsstatusResponse();
     }
 
     @Override
     public HentVilkaarResponse hentVilkaar(HentVilkaarRequest hentVilkaarRequest) throws HentVilkaarSikkerhetsbegrensning {
-        return null;
+        return new HentVilkaarResponse();
     }
 
     private HentOppfoelgingsstatusResponse mapToHentOppfoelgingsstatusResponse(OppfolgingOgVilkarStatus oppfolgingOgVilkarStatus) {

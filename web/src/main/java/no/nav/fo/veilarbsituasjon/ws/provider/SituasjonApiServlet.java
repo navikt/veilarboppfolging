@@ -12,9 +12,9 @@ public class SituasjonApiServlet extends CXFNonSpringServlet {
 
     private static void settOppEndpoints(ApplicationContext applicationContext) {
         new CXFEndpoint()
-                .address("/Aktivitet") // TODO: Finn riktig adresse
+                .address("/Situasjon")
                 .serviceBean(applicationContext.getBean(SituasjonOversiktWebService.class))
-//                .kerberosInInterceptor()
+                .kerberosInInterceptor()
                 .create();
     }
 

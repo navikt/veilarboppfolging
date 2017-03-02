@@ -1,16 +1,12 @@
 package no.nav.fo.veilarbsituasjon.services;
 
-import lombok.Data;
-import lombok.experimental.Accessors;
 import lombok.val;
 import no.nav.fo.veilarbsituasjon.db.SituasjonRepository;
 import no.nav.fo.veilarbsituasjon.domain.Brukervilkar;
 import no.nav.fo.veilarbsituasjon.domain.Situasjon;
-import no.nav.fo.veilarbsituasjon.domain.VilkarStatus;
 import no.nav.fo.veilarbsituasjon.rest.domain.OppfolgingOgVilkarStatus;
 import no.nav.fo.veilarbsituasjon.rest.domain.OpprettVilkarStatusRequest;
 import no.nav.fo.veilarbsituasjon.rest.domain.OpprettVilkarStatusResponse;
-import no.nav.fo.veilarbsituasjon.services.AktoerIdService;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.DigitalKontaktinformasjonV1;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.informasjon.WSKontaktinformasjon;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.WSHentDigitalKontaktinformasjonRequest;
@@ -22,7 +18,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
-import javax.ws.rs.*;
 import java.sql.Timestamp;
 import java.util.HashSet;
 import java.util.Optional;
@@ -33,7 +28,6 @@ import static java.util.Arrays.asList;
 import static java.util.Comparator.comparing;
 import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static no.nav.fo.veilarbsituasjon.domain.VilkarStatus.GODKJENNT;
 import static no.nav.fo.veilarbsituasjon.domain.VilkarStatus.IKKE_BESVART;
 
@@ -86,7 +80,6 @@ public class SituasjonOversiktService {
                 .setUnderOppfolging(situasjon.isOppfolging())
                 .setVilkarMaBesvares(vilkarMaBesvares);
     }
-
 
     public String hentVilkar() throws Exception {
         return finnGjeldendeVilkar();
@@ -150,11 +143,6 @@ public class SituasjonOversiktService {
                 .sorted(comparing(Brukervilkar::getDato).reversed())
                 .findFirst();
     }
-
-
-
-
-
 
 
 }

@@ -9,7 +9,7 @@ public class RestConfig extends ResourceConfig {
                 YtelseRessurs.class,
                 OppfoelgingRessurs.class,
                 PortefoljeRessurs.class,
-                SituasjonOversiktService.class
+                SituasjonOversiktRessurs.class
         );
     }
 

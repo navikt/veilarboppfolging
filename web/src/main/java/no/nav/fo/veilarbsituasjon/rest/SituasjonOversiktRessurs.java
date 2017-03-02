@@ -11,6 +11,7 @@ import javax.inject.Inject;
 import javax.ws.rs.*;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 
 @Component
 @Path("/ws/aktivitetsplan")
@@ -28,6 +29,7 @@ public class SituasjonOversiktRessurs {
 
     @GET
     @Path("/vilkar")
+    @Produces(TEXT_PLAIN)
     public String hentVilkar() throws Exception {
         return situasjonOversiktService.hentVilkar();
     }

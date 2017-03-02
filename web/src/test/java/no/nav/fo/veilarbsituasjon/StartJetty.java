@@ -11,11 +11,17 @@ import static no.nav.fo.veilarbsituasjon.config.JndiLocalContextConfig.setupInMe
 import static no.nav.fo.veilarbsituasjon.config.JndiLocalContextConfig.setupJndiLocalContext;
 import static no.nav.sbl.dialogarena.common.jetty.Jetty.usingWar;
 
-class StartJetty {
+public class StartJetty {
     private static final String SUBJECT_HANDLER_KEY = "no.nav.modig.core.context.subjectHandlerImplementationClass";
     private static final int PORT = 8486;
 
     public static void main(String[] args) throws Exception {
+
+        Jetty jetty = startJetty(PORT);
+        jetty.start();
+    }
+
+    public static Jetty startJetty(int port) throws Exception {
         if (Boolean.parseBoolean(getProperty("lokal.database"))) {
             setupInMemoryDatabase();
         } else {
@@ -25,15 +31,13 @@ class StartJetty {
         setupBrokerService();
 
         JAASLoginService jaasLoginService = createJaasLoginService();
-
-        Jetty jetty = usingWar()
+        return usingWar()
                 .at("/veilarbsituasjon")
-                .port(PORT)
+                .port(port)
                 .loadProperties("/environment-test.properties")
                 .overrideWebXml()
                 .withLoginService(jaasLoginService)
                 .buildJetty();
-        jetty.start();
     }
 
     private static void setupBrokerService() throws Exception {

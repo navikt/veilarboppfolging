@@ -15,6 +15,8 @@ import static org.hamcrest.Matchers.greaterThan;
 
 public class JndiLocalContextConfig {
 
+    private static int databaseCounter;
+
     public static void setupJndiLocalContext() {
         SingleConnectionDataSource ds = new SingleConnectionDataSource();
         ds.setUrl("jdbc:oracle:thin:@d26dbfl007.test.local:1521/t4_veilarbsituasjon");
@@ -45,7 +47,7 @@ public class JndiLocalContextConfig {
         SingleConnectionDataSource ds = new SingleConnectionDataSource();
         ds.setSuppressClose(true);
         ds.setDriverClassName(org.hsqldb.jdbcDriver.class.getName());
-        ds.setUrl("jdbc:hsqldb:mem:situasjon");
+        ds.setUrl("jdbc:hsqldb:mem:situasjon-" + databaseCounter++);
         ds.setUsername("sa");
         ds.setPassword("");
 
