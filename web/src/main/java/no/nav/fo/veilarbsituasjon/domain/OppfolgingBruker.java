@@ -1,37 +1,20 @@
 package no.nav.fo.veilarbsituasjon.domain;
 
+import lombok.Data;
+import lombok.experimental.Accessors;
+
 import java.sql.Timestamp;
 
+@Data
+@Accessors(chain = true)
 public class OppfolgingBruker {
 
-    private String aktoerid;
-    private String veileder;
-    private Timestamp endretTimestamp;
+    String aktoerid;
+    String veileder;
+    Timestamp endretTimestamp;
 
     public OppfolgingBruker(){
         this.endretTimestamp = new Timestamp(System.currentTimeMillis());
-    }
-
-    public String getAktoerid() {
-        return aktoerid;
-    }
-
-    public OppfolgingBruker withAktoerid(String aktoerid) {
-        this.aktoerid = aktoerid;
-        return this;
-    }
-
-    public String getVeileder() {
-        return veileder;
-    }
-
-    public OppfolgingBruker withVeileder(String veileder) {
-        this.veileder = veileder;
-        return this;
-    }
-
-    public Timestamp getEndretTimestamp(){
-        return endretTimestamp;
     }
 
     public String toString() {

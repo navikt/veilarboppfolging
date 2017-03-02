@@ -14,6 +14,7 @@ import static no.nav.sbl.dialogarena.common.jetty.Jetty.usingWar;
 public class StartJetty {
     private static final String SUBJECT_HANDLER_KEY = "no.nav.modig.core.context.subjectHandlerImplementationClass";
     private static final int PORT = 8486;
+    private static final int SSL_PORT = 8485;
 
     public static void main(String[] args) throws Exception {
 
@@ -34,6 +35,7 @@ public class StartJetty {
         return usingWar()
                 .at("/veilarbsituasjon")
                 .port(port)
+                .sslPort(SSL_PORT)
                 .loadProperties("/environment-test.properties")
                 .overrideWebXml()
                 .withLoginService(jaasLoginService)
