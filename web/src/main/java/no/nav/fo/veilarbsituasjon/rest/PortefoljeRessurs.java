@@ -71,15 +71,12 @@ public class PortefoljeRessurs {
         String endringsmeldingId = randomUUID().toString();
 
         try {
-            String veilederFraDb = brukerRepository.hentVeilederForAktoer(bruker.getAktoerid());
-            if (kanSetteNyVeileder(fraVeileder, bruker.getVeileder(), veilederFraDb)) {
-                brukerRepository.leggTilEllerOppdaterBruker(bruker);
-                endreVeilederQueue.send(messageCreator(bruker.toString(), endringsmeldingId));
-                LOG.debug(String.format("Veileder %s tilordnet aktoer %s", bruker.getVeileder(), bruker.getAktoerid()));
-            } else {
-                LOG.error(String.format("Forrige veileder %s samsvarer ikke med gjeldende veileder i database for aktoer %s", fraVeileder, bruker.getAktoerid()));
-                throw new RuntimeException(String.format("Forrige veileder %s samsvarer ikke med gjeldende veileder i database for aktoer %s", fraVeileder, bruker.getAktoerid()));
-            }
+            // Sjekk for kanSetteNyVeileder fjernes inntil funksjonalitet for å hente ut all tildelinger fra
+            // database for å synkronisere portefolje er implementert. Inntil den tid vil en sjekk kun medføre
+            // kompleksitet og manuell synk av data.
+            brukerRepository.leggTilEllerOppdaterBruker(bruker);
+            endreVeilederQueue.send(messageCreator(bruker.toString(), endringsmeldingId));
+            LOG.debug(String.format("Veileder %s tilordnet aktoer %s", bruker.getVeileder(), bruker.getAktoerid()));
         } catch (Exception e) {
             LOG.error(String.format("Kunne ikke tilordne veileder %s til aktoer %s", bruker.getVeileder(), bruker.getAktoerid()), e);
             throw e;
