@@ -52,7 +52,7 @@ public class AktoerIdToVeilederTest {
         verify(brukerRepository, never()).leggTilEllerOppdaterBruker(any(OppfolgingBruker.class));
     }
 
-    public VeilederTilordning testData() {
+    private VeilederTilordning testData() {
         return new VeilederTilordning()
                 .setFraVeilederId(null)
                 .setTilVeilederId("***REMOVED***")
