@@ -62,10 +62,10 @@ public class PortefoljeRessurs {
                 settVeilederDersomFraVeilederErOK(bruker, tilordning);
             }
 
-            if (feilendeTilordninger.size() > 0) {
-                return Response.ok().entity(feilendeTilordninger).build();
-            } else {
+            if (feilendeTilordninger.isEmpty()) {
                 return Response.ok().entity("Veiledere tilordnet").build();
+            } else {
+                return Response.ok().entity(feilendeTilordninger).build();
             }
 
         } catch (JMSException e) {
