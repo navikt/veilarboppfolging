@@ -4,7 +4,6 @@ import com.google.common.base.Joiner;
 import no.nav.fo.veilarbsituasjon.IntegrasjonsTest;
 import no.nav.fo.veilarbsituasjon.domain.*;
 import org.apache.commons.io.IOUtils;
-import org.assertj.core.api.Java6Assertions;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -69,7 +68,7 @@ public class RepositoryTest extends IntegrasjonsTest {
             brukerRepository.leggTilEllerOppdaterBruker(new OppfolgingBruker()
                     .setAktoerid(aktoerid)
                     .setVeileder("***REMOVED***"));
-            Java6Assertions.assertThat(brukerRepository.hentVeilederForAktoer(aktoerid)).isEqualTo("***REMOVED***");
+            assertThat(brukerRepository.hentVeilederForAktoer(aktoerid),is("***REMOVED***"));
         }
 
         @Test
@@ -82,7 +81,7 @@ public class RepositoryTest extends IntegrasjonsTest {
                     .setAktoerid(aktoerid)
                     .setVeileder("***REMOVED***"));
 
-            Java6Assertions.assertThat(brukerRepository.hentVeilederForAktoer(aktoerid)).isEqualTo("***REMOVED***");
+            assertThat(brukerRepository.hentVeilederForAktoer(aktoerid),is("***REMOVED***"));
         }
     }
 
@@ -93,7 +92,7 @@ public class RepositoryTest extends IntegrasjonsTest {
             slettAlleVeiledertilordninger();
             insertVeiledertilordninger();
             List<OppfolgingBruker> brukere = brukerRepository.hentAlleVeiledertilordninger();
-            Java6Assertions.assertThat(brukere.size()).isEqualTo(20);
+            assertThat(brukere.size(), is(20));
         }
     }
 
