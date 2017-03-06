@@ -11,10 +11,7 @@ import no.nav.tjeneste.virksomhet.behandlesituasjon.v1.meldinger.HentOppfoelging
 import no.nav.tjeneste.virksomhet.behandlesituasjon.v1.meldinger.HentVilkaarRequest;
 import no.nav.tjeneste.virksomhet.behandlesituasjon.v1.meldinger.HentVilkaarResponse;
 import org.junit.Ignore;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -23,22 +20,21 @@ public class SituasjonOversiktWebServiceTest {
     private static Jetty jetty;
     private BehandleSituasjonV1 behandleSituasjonV1;
 
-    @BeforeAll
+//    @BeforeAll
     public static void setUp() throws Exception {
         System.setProperty("lokal.database", Boolean.TRUE.toString());
         jetty = StartJetty.startJetty(32548);
         jetty.start();
     }
 
-    @BeforeEach
+//    @BeforeEach
     public void before() {
         behandleSituasjonV1 = new CXFClient<>(BehandleSituasjonV1.class)
                 .address("http://localhost:32548/veilarbsituasjon/ws/Situasjon")
                 .build();
     }
 
-    @Test
-    @Ignore
+//    @Test
     public void hentOppfolgingStatus() throws HentOppfoelgingsstatusSikkerhetsbegrensning {
         HentOppfoelgingsstatusRequest req = new HentOppfoelgingsstatusRequest();
         req.setPersonident("***REMOVED***");
@@ -46,15 +42,14 @@ public class SituasjonOversiktWebServiceTest {
         assertNotNull(res.getOppfoelgingsstatus());
     }
 
-    @Test
-    @Ignore
+//    @Test
     public void hentVilkar() throws HentVilkaarSikkerhetsbegrensning {
         HentVilkaarRequest req = new HentVilkaarRequest();
         HentVilkaarResponse hentVilkaarResponse = behandleSituasjonV1.hentVilkaar(req);
         System.out.println(hentVilkaarResponse.getVilkaarstekst());
     }
 
-    @AfterAll
+//    @AfterAll
     public static void tearDown() {
         System.setProperty("lokal.database", Boolean.FALSE.toString());
         jetty.stop.run();
