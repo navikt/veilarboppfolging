@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.jms.JMSException;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
@@ -24,7 +25,7 @@ import static no.nav.fo.veilarbsituasjon.utils.JmsUtil.messageCreator;
 import static org.slf4j.LoggerFactory.getLogger;
 
 @Component
-@Path("/tilordneveileder")
+@Path("")
 @JWTInAuthorizationHeaderJAAS
 @SessionTerminator
 public class PortefoljeRessurs {
@@ -44,6 +45,7 @@ public class PortefoljeRessurs {
 
     @POST
     @Consumes("application/json")
+    @Path("/tilordneveileder")
     public Response postVeilederTilordninger(List<VeilederTilordning> tilordninger) {
         try {
 
@@ -64,6 +66,12 @@ public class PortefoljeRessurs {
         } catch (Exception e) {
             return Response.serverError().entity("Kunne ikke tildele veileder").build();
         }
+    }
+
+    @GET
+    @Path("/sendalleveiledertilordninger")
+    public Response getSendAlleVeiledertilordninger() {
+        return Response.ok().build();
     }
 
     @Transactional
