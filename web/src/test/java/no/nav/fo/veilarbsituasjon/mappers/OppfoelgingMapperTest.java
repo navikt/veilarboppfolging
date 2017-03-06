@@ -5,8 +5,8 @@ import no.nav.fo.veilarbsituasjon.rest.domain.OppfoelgingskontraktData;
 import no.nav.fo.veilarbsituasjon.rest.domain.OppfoelgingskontraktResponse;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.HentOppfoelgingskontraktListeSikkerhetsbegrensning;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
-import no.nav.tjeneste.virksomhet.oppfoelging.v1.informasjon.Periode;
-import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingskontraktListeRequest;
+import no.nav.tjeneste.virksomhet.oppfoelging.v1.informasjon.WSPeriode;
+import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.WSHentOppfoelgingskontraktListeRequest;
 import org.junit.Test;
 
 import javax.xml.datatype.XMLGregorianCalendar;
@@ -70,25 +70,23 @@ public class OppfoelgingMapperTest {
     }
 
     private List<OppfoelgingskontraktData> getOppfoelgingskontrakter(OppfoelgingPortType oppfoelgingMock) throws HentOppfoelgingskontraktListeSikkerhetsbegrensning {
-        final HentOppfoelgingskontraktListeRequest request = getWsHentOppfoelgingskontraktListeRequest();
+        final WSHentOppfoelgingskontraktListeRequest request = getWsHentOppfoelgingskontraktListeRequest();
 
         final OppfoelgingskontraktResponse response = OppfoelgingMapper.tilOppfoelgingskontrakt(oppfoelgingMock.hentOppfoelgingskontraktListe(request));
 
         return response.getOppfoelgingskontrakter();
     }
 
-    private HentOppfoelgingskontraktListeRequest getWsHentOppfoelgingskontraktListeRequest() {
-        final HentOppfoelgingskontraktListeRequest request = new HentOppfoelgingskontraktListeRequest();
-        final Periode periode = new Periode();
+    private WSHentOppfoelgingskontraktListeRequest getWsHentOppfoelgingskontraktListeRequest() {
+        final WSHentOppfoelgingskontraktListeRequest request = new WSHentOppfoelgingskontraktListeRequest();
+        final WSPeriode periode = new WSPeriode();
+        final String fnr = "***REMOVED***";
         LocalDate periodeFom = LocalDate.now().minusMonths(MANEDER_BAK_I_TID);
         LocalDate periodeTom = LocalDate.now().plusMonths(MANEDER_FREM_I_TID);
         XMLGregorianCalendar fom = convertDateToXMLGregorianCalendar(periodeFom);
         XMLGregorianCalendar tom = convertDateToXMLGregorianCalendar(periodeTom);
-        periode.setFom(fom);
-        periode.setTom(tom);
-        request.setPeriode(periode);
-        String fnr = "***REMOVED***";
-        request.setPersonidentifikator(fnr);
+        periode.withFom(fom).withTom(tom);
+        request.withPeriode(periode).withPersonidentifikator(fnr);
         return request;
     }
 

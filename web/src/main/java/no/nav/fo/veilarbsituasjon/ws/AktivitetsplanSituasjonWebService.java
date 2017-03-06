@@ -14,8 +14,8 @@ import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.informasjon.WSKon
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.WSHentDigitalKontaktinformasjonRequest;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.WSHentDigitalKontaktinformasjonResponse;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
-import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingsstatusRequest;
-import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingsstatusResponse;
+import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.WSHentOppfoelgingsstatusRequest;
+import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.WSHentOppfoelgingsstatusResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -116,7 +116,7 @@ public class AktivitetsplanSituasjonWebService {
     }
 
     private boolean erUnderOppfolging(String aktorId) throws Exception {
-        val hentOppfolgingstatusRequest = new HentOppfoelgingsstatusRequest();
+        val hentOppfolgingstatusRequest = new WSHentOppfoelgingsstatusRequest();
         hentOppfolgingstatusRequest.setPersonidentifikator(aktorId);
         val oppfolgingstatus = oppfoelgingPortType.hentOppfoelgingsstatus(hentOppfolgingstatusRequest);
 
@@ -132,11 +132,11 @@ public class AktivitetsplanSituasjonWebService {
                 .orElse(false);
     }
 
-    private boolean erArbeidssoker(HentOppfoelgingsstatusResponse oppfolgingstatus) {
+    private boolean erArbeidssoker(WSHentOppfoelgingsstatusResponse oppfolgingstatus) {
         return ARBEIDSOKERKODER.contains(oppfolgingstatus.getFormidlingsgruppeKode());
     }
 
-    private boolean erIArbeidOgHarInnsatsbehov(HentOppfoelgingsstatusResponse oppfolgingstatus) {
+    private boolean erIArbeidOgHarInnsatsbehov(WSHentOppfoelgingsstatusResponse oppfolgingstatus) {
         return OPPFOLGINGKODER.contains(oppfolgingstatus.getServicegruppeKode());
     }
 
