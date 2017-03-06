@@ -29,10 +29,6 @@ public class BrukerRepository {
         return brukere;
     }
 
-    private Boolean eksistererAktoerID(String aktoerid) {
-        return !db.queryForList("select AKTOERID from AKTOER_ID_TO_VEILEDER where AKTOERID="+ aktoerid).isEmpty();
-    }
-
     public String hentVeilederForAktoer(String aktoerId) {
         return db.queryForList("SELECT VEILEDER FROM  AKTOER_ID_TO_VEILEDER WHERE AKTOERID = ?", aktoerId)
                 .stream()
