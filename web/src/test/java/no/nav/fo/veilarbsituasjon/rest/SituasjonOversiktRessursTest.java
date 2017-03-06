@@ -13,8 +13,8 @@ import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.informasjon.WSKon
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.WSHentDigitalKontaktinformasjonRequest;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.WSHentDigitalKontaktinformasjonResponse;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
-import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingsstatusRequest;
-import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingsstatusResponse;
+import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.WSHentOppfoelgingsstatusRequest;
+import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.WSHentOppfoelgingsstatusResponse;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -56,13 +56,13 @@ public class SituasjonOversiktRessursTest {
     private SituasjonOversiktService aktivitetsplanSituasjonWebService;
 
     private Situasjon situasjon = new Situasjon().setAktorId(AKTOR_ID);
-    private HentOppfoelgingsstatusResponse hentOppfolgingstatusResponse;
+    private WSHentOppfoelgingsstatusResponse hentOppfolgingstatusResponse;
     private WSKontaktinformasjon wsKontaktinformasjon = new WSKontaktinformasjon();
 
     @Before
     public void setup() throws Exception {
-        hentOppfolgingstatusResponse = new HentOppfoelgingsstatusResponse();
-        when(oppfoelgingPortType.hentOppfoelgingsstatus(any(HentOppfoelgingsstatusRequest.class)))
+        hentOppfolgingstatusResponse = new WSHentOppfoelgingsstatusResponse();
+        when(oppfoelgingPortType.hentOppfoelgingsstatus(any(WSHentOppfoelgingsstatusRequest.class)))
                 .thenReturn(hentOppfolgingstatusResponse);
         when(digitalKontaktinformasjonV1.hentDigitalKontaktinformasjon(any(WSHentDigitalKontaktinformasjonRequest.class)))
                 .thenReturn(new WSHentDigitalKontaktinformasjonResponse()

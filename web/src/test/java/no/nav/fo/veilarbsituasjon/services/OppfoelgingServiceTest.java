@@ -2,10 +2,10 @@ package no.nav.fo.veilarbsituasjon.services;
 
 import no.nav.fo.veilarbsituasjon.rest.domain.OppfoelgingskontraktResponse;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
-import no.nav.tjeneste.virksomhet.oppfoelging.v1.informasjon.Bruker;
-import no.nav.tjeneste.virksomhet.oppfoelging.v1.informasjon.Oppfoelgingskontrakt;
-import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingskontraktListeRequest;
-import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingskontraktListeResponse;
+import no.nav.tjeneste.virksomhet.oppfoelging.v1.informasjon.WSBruker;
+import no.nav.tjeneste.virksomhet.oppfoelging.v1.informasjon.WSOppfoelgingskontrakt;
+import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.WSHentOppfoelgingskontraktListeRequest;
+import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.WSHentOppfoelgingskontraktListeResponse;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -34,11 +34,11 @@ public class OppfoelgingServiceTest {
     public void hentOppfoelgingskontraktListeReturnererEnRespons() throws Exception {
         final XMLGregorianCalendar fom = convertDateToXMLGregorianCalendar(LocalDate.now().minusMonths(2));
         final XMLGregorianCalendar tom = convertDateToXMLGregorianCalendar(LocalDate.now().plusMonths(1));
-        HentOppfoelgingskontraktListeResponse withOppfoelgingskontraktListe = new HentOppfoelgingskontraktListeResponse();
-        Oppfoelgingskontrakt oppfoelgingskontrakt = new Oppfoelgingskontrakt();
-        oppfoelgingskontrakt.setGjelderBruker(new Bruker());
+        WSHentOppfoelgingskontraktListeResponse withOppfoelgingskontraktListe = new WSHentOppfoelgingskontraktListeResponse();
+        WSOppfoelgingskontrakt oppfoelgingskontrakt = new WSOppfoelgingskontrakt();
+        oppfoelgingskontrakt.setGjelderBruker(new WSBruker());
         withOppfoelgingskontraktListe.getOppfoelgingskontraktListe().add(oppfoelgingskontrakt);
-        when(oppfoelgingPortType.hentOppfoelgingskontraktListe(any(HentOppfoelgingskontraktListeRequest.class))).thenReturn(withOppfoelgingskontraktListe);
+        when(oppfoelgingPortType.hentOppfoelgingskontraktListe(any(WSHentOppfoelgingskontraktListeRequest.class))).thenReturn(withOppfoelgingskontraktListe);
 
         final OppfoelgingskontraktResponse response = oppfoelgingService.hentOppfoelgingskontraktListe(fom, tom, "***REMOVED***");
 

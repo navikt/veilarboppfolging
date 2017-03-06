@@ -34,11 +34,14 @@ public class SituasjonOversiktWebService implements BehandleSituasjonV1 {
 
     @Override
     public HentVilkaarsstatusResponse hentVilkaarsstatus(HentVilkaarsstatusRequest hentVilkaarsstatusRequest) throws HentVilkaarsstatusSikkerhetsbegrensning {
+
+
         return new HentVilkaarsstatusResponse();
     }
 
     @Override
     public HentVilkaarsstatusListeResponse hentVilkaarsstatusListe(HentVilkaarsstatusListeRequest hentVilkaarsstatusListeRequest) throws HentVilkaarsstatusListeSikkerhetsbegrensning {
+
         return new HentVilkaarsstatusListeResponse();
     }
 
@@ -53,7 +56,18 @@ public class SituasjonOversiktWebService implements BehandleSituasjonV1 {
 
     @Override
     public HentVilkaarResponse hentVilkaar(HentVilkaarRequest hentVilkaarRequest) throws HentVilkaarSikkerhetsbegrensning {
-        return new HentVilkaarResponse();
+
+        String vilkar;
+        try {
+            vilkar = situasjonOversiktService.hentVilkar();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        HentVilkaarResponse res = new HentVilkaarResponse();
+        res.setVilkaarstekst(vilkar);
+
+        return res;
     }
 
     private HentOppfoelgingsstatusResponse mapToHentOppfoelgingsstatusResponse(OppfolgingOgVilkarStatus oppfolgingOgVilkarStatus) {
