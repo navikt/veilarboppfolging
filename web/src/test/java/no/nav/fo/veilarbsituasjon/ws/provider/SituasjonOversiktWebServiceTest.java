@@ -10,6 +10,7 @@ import no.nav.tjeneste.virksomhet.behandlesituasjon.v1.meldinger.HentOppfoelging
 import no.nav.tjeneste.virksomhet.behandlesituasjon.v1.meldinger.HentOppfoelgingsstatusResponse;
 import no.nav.tjeneste.virksomhet.behandlesituasjon.v1.meldinger.HentVilkaarRequest;
 import no.nav.tjeneste.virksomhet.behandlesituasjon.v1.meldinger.HentVilkaarResponse;
+import org.junit.Ignore;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,6 +38,7 @@ public class SituasjonOversiktWebServiceTest {
     }
 
     @Test
+    @Ignore
     public void hentOppfolgingStatus() throws HentOppfoelgingsstatusSikkerhetsbegrensning {
         HentOppfoelgingsstatusRequest req = new HentOppfoelgingsstatusRequest();
         req.setPersonident("***REMOVED***");
@@ -45,6 +47,7 @@ public class SituasjonOversiktWebServiceTest {
     }
 
     @Test
+    @Ignore
     public void hentVilkar() throws HentVilkaarSikkerhetsbegrensning {
         HentVilkaarRequest req = new HentVilkaarRequest();
         HentVilkaarResponse hentVilkaarResponse = behandleSituasjonV1.hentVilkaar(req);
@@ -56,6 +59,4 @@ public class SituasjonOversiktWebServiceTest {
         System.setProperty("lokal.database", Boolean.FALSE.toString());
         jetty.stop.run();
     }
-
-
 }
