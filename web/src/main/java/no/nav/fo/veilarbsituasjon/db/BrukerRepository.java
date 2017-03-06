@@ -5,6 +5,11 @@ import no.nav.fo.veilarbsituasjon.domain.OppfolgingBruker;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import static no.nav.fo.veilarbsituasjon.utils.OppfolgingsbrukerUtil.mapRadTilOppfolgingsbruker;
+
 public class BrukerRepository {
 
     private JdbcTemplate db;
@@ -13,6 +18,15 @@ public class BrukerRepository {
 
     public BrukerRepository(JdbcTemplate db) {
         this.db = db;
+    }
+
+    public List<OppfolgingBruker> hentAlleVeiledertilordninger() {
+        List<OppfolgingBruker> brukere = new ArrayList<>();
+        db.setFetchSize(10000);
+        db.query(hentAlleVeiledertilordningerSQL(), rs -> {
+            brukere.add(mapRadTilOppfolgingsbruker(rs));
+        });
+        return brukere;
     }
 
     private Boolean eksistererAktoerID(String aktoerid) {
@@ -62,5 +76,9 @@ public class BrukerRepository {
                 "VEILEDER = ? " +
                 ",OPPDATERT = TO_TIMESTAMP(?,"+dateFormat+") " +
                 "WHERE AKTOERID = ?";
+    }
+
+    String hentAlleVeiledertilordningerSQL() {
+        return "SELECT AKTOERID, VEILEDER, OPPDATERT FROM AKTOER_ID_TO_VEILEDER";
     }
 }

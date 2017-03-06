@@ -1,14 +1,17 @@
 package no.nav.fo.veilarbsituasjon.db;
 
+import com.google.common.base.Joiner;
 import no.nav.fo.veilarbsituasjon.IntegrasjonsTest;
-import no.nav.fo.veilarbsituasjon.domain.Brukervilkar;
-import no.nav.fo.veilarbsituasjon.domain.Situasjon;
-import no.nav.fo.veilarbsituasjon.domain.VilkarStatus;
+import no.nav.fo.veilarbsituasjon.domain.*;
+import org.apache.commons.io.IOUtils;
+import org.assertj.core.api.Java6Assertions;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import java.io.IOException;
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.Optional;
 
 import static java.lang.System.currentTimeMillis;
@@ -16,11 +19,14 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
-public class SituasjonRepositoryTest extends IntegrasjonsTest {
+public class RepositoryTest extends IntegrasjonsTest {
 
     private static final String AKTOR_ID = "2222";
 
-    private SituasjonRepository situasjonRepository = new SituasjonRepository(getBean(JdbcTemplate.class));
+    private JdbcTemplate db = getBean(JdbcTemplate.class);
+
+    private SituasjonRepository situasjonRepository = new SituasjonRepository(db);
+    private BrukerRepository brukerRepository = new BrukerRepository(db);
 
     @Nested
     class hentSituasjon {
@@ -52,6 +58,56 @@ public class SituasjonRepositoryTest extends IntegrasjonsTest {
             Optional<Situasjon> uthentetSituasjon = hentSituasjon(AKTOR_ID);
             sjekkLikeSituasjoner(situasjon, uthentetSituasjon);
         }
+    }
+
+
+    @Nested
+    class leggTilEllerOppdaterBruker {
+        String aktoerid = "111111";
+        @Test
+        public void skalLeggeTilBruker() {
+            brukerRepository.leggTilEllerOppdaterBruker(new OppfolgingBruker()
+                    .setAktoerid(aktoerid)
+                    .setVeileder("***REMOVED***"));
+            Java6Assertions.assertThat(brukerRepository.hentVeilederForAktoer(aktoerid)).isEqualTo("***REMOVED***");
+        }
+
+        @Test
+        public void skalOppdatereBrukerDersomDenFinnes() {
+            String aktoerid = "1111111";
+            brukerRepository.leggTilEllerOppdaterBruker(new OppfolgingBruker()
+                    .setAktoerid(aktoerid)
+                    .setVeileder("***REMOVED***"));
+            brukerRepository.leggTilEllerOppdaterBruker(new OppfolgingBruker()
+                    .setAktoerid(aktoerid)
+                    .setVeileder("***REMOVED***"));
+
+            Java6Assertions.assertThat(brukerRepository.hentVeilederForAktoer(aktoerid)).isEqualTo("***REMOVED***");
+        }
+    }
+
+    @Nested
+    class hentAlleVeiledertilordninger {
+        @Test
+        public void skalReturnereAlleVeiledertilordninger() {
+            slettAlleVeiledertilordninger();
+            insertVeiledertilordninger();
+            List<OppfolgingBruker> brukere = brukerRepository.hentAlleVeiledertilordninger();
+            Java6Assertions.assertThat(brukere.size()).isEqualTo(20);
+        }
+    }
+
+    private void slettAlleVeiledertilordninger() {
+        db.update("DELETE FROM AKTOER_ID_TO_VEILEDER");
+    }
+
+    private void insertVeiledertilordninger() {
+        try {
+            db.execute(Joiner.on("\n").join(IOUtils.readLines(RepositoryTest.class.getResourceAsStream("/insert-aktoerid-veileder-testdata.sql"))));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
     private void sjekkLikeSituasjoner(Situasjon oppdatertSituasjon, Optional<Situasjon> situasjon) {

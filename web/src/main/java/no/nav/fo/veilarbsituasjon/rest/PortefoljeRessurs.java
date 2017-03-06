@@ -18,6 +18,7 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 import static java.util.UUID.randomUUID;
@@ -26,8 +27,6 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 @Component
 @Path("")
-@JWTInAuthorizationHeaderJAAS
-@SessionTerminator
 public class PortefoljeRessurs {
 
     private static final Logger LOG = getLogger(PortefoljeRessurs.class);
@@ -36,6 +35,8 @@ public class PortefoljeRessurs {
     private JmsTemplate endreVeilederQueue;
     private AktoerIdService aktoerIdService;
     private BrukerRepository brukerRepository;
+    private List<VeilederTilordning> feilendeTilordninger;
+
 
     public PortefoljeRessurs(JmsTemplate endreVeilederQueue, AktoerIdService aktoerIdService, BrukerRepository brukerRepository) {
         this.endreVeilederQueue = endreVeilederQueue;
@@ -46,7 +47,10 @@ public class PortefoljeRessurs {
     @POST
     @Consumes("application/json")
     @Path("/tilordneveileder")
+    @JWTInAuthorizationHeaderJAAS
+    @SessionTerminator
     public Response postVeilederTilordninger(List<VeilederTilordning> tilordninger) {
+        feilendeTilordninger = new ArrayList<>();
         try {
 
             for (VeilederTilordning tilordning : tilordninger) {
@@ -55,10 +59,15 @@ public class PortefoljeRessurs {
                         .setVeileder(tilordning.getTilVeilederId())
                         .setAktoerid(aktoerId);
 
-                skrivTilDataBaseOgLeggPaaKo(tilordning.getFraVeilederId(), bruker);
+                settVeilederDersomFraVeilederErOK(bruker, tilordning);
             }
 
-            return Response.ok().entity("Veiledere tilordnet").build();
+            if (feilendeTilordninger.size() > 0) {
+                return Response.ok().entity(feilendeTilordninger).build();
+            } else {
+                return Response.ok().entity("Veiledere tilordnet").build();
+            }
+
         } catch (JMSException e) {
             return Response.serverError().entity("Kunne ikke legge brukere på kø").build();
         } catch (SQLException e) {
@@ -71,23 +80,41 @@ public class PortefoljeRessurs {
     @GET
     @Path("/sendalleveiledertilordninger")
     public Response getSendAlleVeiledertilordninger() {
-        return Response.ok().build();
+        List<OppfolgingBruker> brukere = brukerRepository.hentAlleVeiledertilordninger();
+        try {
+            for (int i = 0; i < brukere.size(); i++) {
+                skrivTilDataBaseOgLeggPaaKo(brukere.get(i));
+            }
+            return Response.ok().entity("Alle veiledertilordninger sendt").build();
+        } catch(Exception e) {
+            LOG.error("Kunne ikke legge alle veiledertilordninge på ko");
+            return Response.serverError().entity("Kunne ikke sende alle veiledertilordninger").build();
+        }
     }
 
     @Transactional
-    private void skrivTilDataBaseOgLeggPaaKo(String fraVeileder, OppfolgingBruker bruker) throws SQLException, JMSException {
+    private void skrivTilDataBaseOgLeggPaaKo(OppfolgingBruker bruker) throws SQLException, JMSException {
         String endringsmeldingId = randomUUID().toString();
 
         try {
-            // Sjekk for kanSetteNyVeileder fjernes inntil funksjonalitet for å hente ut all tildelinger fra
-            // database for å synkronisere portefolje er implementert. Inntil den tid vil en sjekk kun medføre
-            // kompleksitet og manuell synk av data.
             brukerRepository.leggTilEllerOppdaterBruker(bruker);
             endreVeilederQueue.send(messageCreator(bruker.toString(), endringsmeldingId));
             LOG.debug(String.format("Veileder %s tilordnet aktoer %s", bruker.getVeileder(), bruker.getAktoerid()));
         } catch (Exception e) {
             LOG.error(String.format("Kunne ikke tilordne veileder %s til aktoer %s", bruker.getVeileder(), bruker.getAktoerid()), e);
             throw e;
+        }
+    }
+
+    private void settVeilederDersomFraVeilederErOK(OppfolgingBruker bruker, VeilederTilordning tilordning) throws SQLException, JMSException {
+        String eksisterendeVeileder = brukerRepository.hentVeilederForAktoer(bruker.getAktoerid());
+        Boolean fraVeilederErOk = eksisterendeVeileder == null || eksisterendeVeileder.equals(tilordning.getFraVeilederId());
+
+        if (fraVeilederErOk) {
+            skrivTilDataBaseOgLeggPaaKo(bruker);
+        } else {
+            feilendeTilordninger.add(tilordning);
+            LOG.info("Aktoerid %s kunne ikke tildeles ettersom fraVeileder er feil", bruker.getAktoerid());
         }
     }
 
