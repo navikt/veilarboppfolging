@@ -53,6 +53,7 @@ public class SituasjonOversiktWebServiceTest {
 
     @AfterAll
     public static void tearDown() {
+        System.setProperty("lokal.database", Boolean.TRUE.toString());
         jetty.stop.run();
     }
 
