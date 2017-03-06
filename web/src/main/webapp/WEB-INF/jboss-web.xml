@@ -8,6 +8,6 @@
     </resource-ref>
 
     <context-root>veilarbsituasjon</context-root>
-    <security-domain>java:/jaas/NavJWT</security-domain>
+    <security-domain>jaspitest</security-domain>
 
 </jboss-web>

@@ -46,10 +46,6 @@
             <param-name>javax.ws.rs.Application</param-name>
             <param-value>no.nav.fo.veilarbsituasjon.rest.RestConfig</param-value>
         </init-param>
-        <init-param>
-            <param-name>jersey.config.server.provider.packages</param-name>
-            <param-value>no.nav.fo.security.jwt.filter</param-value>
-        </init-param>
         <load-on-startup>1</load-on-startup>
         <async-supported>true</async-supported>
     </servlet>
@@ -57,5 +53,24 @@
         <servlet-name>restservlet</servlet-name>
         <url-pattern>/api/*</url-pattern>
     </servlet-mapping>
+
+    <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>Ubeskyttet</web-resource-name>
+            <url-pattern>/internal/*</url-pattern>
+        </web-resource-collection>
+    </security-constraint>
+    <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>Alt annet beskyttet</web-resource-name>
+            <url-pattern>/*</url-pattern>
+        </web-resource-collection>
+        <auth-constraint>
+            <!-- From Servlet spec 3.1 "**" means any authenticated user
+            ref: https://community.oracle.com/blogs/swchan2/2013/04/19/role-servlet-31-security-constraint -->
+            <role-name>**</role-name>
+        </auth-constraint>
+    </security-constraint>
+
 
 </web-app>

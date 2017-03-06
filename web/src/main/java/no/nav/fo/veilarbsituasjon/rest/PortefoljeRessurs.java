@@ -1,7 +1,5 @@
 package no.nav.fo.veilarbsituasjon.rest;
 
-import no.nav.fo.security.jwt.filter.JWTInAuthorizationHeaderJAAS;
-import no.nav.fo.security.jwt.filter.SessionTerminator;
 import no.nav.fo.veilarbsituasjon.db.BrukerRepository;
 import no.nav.fo.veilarbsituasjon.domain.OppfolgingBruker;
 import no.nav.fo.veilarbsituasjon.rest.domain.VeilederTilordning;
@@ -12,9 +10,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.jms.JMSException;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
 import java.sql.SQLException;
 import java.util.List;
@@ -25,8 +21,6 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 @Component
 @Path("/tilordneveileder")
-@JWTInAuthorizationHeaderJAAS
-@SessionTerminator
 public class PortefoljeRessurs {
 
     private static final Logger LOG = getLogger(PortefoljeRessurs.class);
