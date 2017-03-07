@@ -1,9 +1,11 @@
 package no.nav.fo.veilarbsituasjon;
 
-import no.nav.fo.security.jwt.context.JettySubjectHandler;
+import no.nav.sbl.dialogarena.test.SystemProperties;
+import no.nav.brukerdialog.security.context.JettySubjectHandler;
 import no.nav.sbl.dialogarena.common.jetty.Jetty;
 import org.apache.activemq.broker.BrokerService;
-import org.eclipse.jetty.jaas.JAASLoginService;
+import org.apache.geronimo.components.jaspi.AuthConfigFactoryImpl;
+import javax.security.auth.message.config.AuthConfigFactory;
 
 import static java.lang.System.getProperty;
 import static java.lang.System.setProperty;
@@ -12,7 +14,6 @@ import static no.nav.fo.veilarbsituasjon.config.JndiLocalContextConfig.setupJndi
 import static no.nav.sbl.dialogarena.common.jetty.Jetty.usingWar;
 
 class StartJetty {
-    private static final String SUBJECT_HANDLER_KEY = "no.nav.modig.core.context.subjectHandlerImplementationClass";
     private static final int PORT = 8486;
     private static final int SSL_PORT = 8485;
 
@@ -24,8 +25,7 @@ class StartJetty {
         }
 
         setupBrokerService();
-
-        JAASLoginService jaasLoginService = createJaasLoginService();
+        setupAutentisering();
 
         Jetty jetty = usingWar()
                 .at("/veilarbsituasjon")
@@ -33,7 +33,7 @@ class StartJetty {
                 .port(PORT)
                 .loadProperties("/environment-test.properties")
                 .overrideWebXml()
-                .withLoginService(jaasLoginService)
+                .configureForJaspic()
                 .buildJetty();
         jetty.start();
     }
@@ -46,10 +46,11 @@ class StartJetty {
         broker.start();
     }
 
-    private static JAASLoginService createJaasLoginService() {
-        setProperty(SUBJECT_HANDLER_KEY, JettySubjectHandler.class.getName());
-        JAASLoginService jaasLoginService = new JAASLoginService("JWT Realm");
-        jaasLoginService.setLoginModuleName("jwtLogin");
-        return jaasLoginService;
+    private static void setupAutentisering() {
+        SystemProperties.setFrom("environment-test.properties");
+        System.setProperty("develop-local", "true");
+        System.setProperty("no.nav.modig.core.context.subjectHandlerImplementationClass", JettySubjectHandler.class.getName());
+        System.setProperty("org.apache.geronimo.jaspic.configurationFile", "web/src/test/resources/jaspiconf.xml");
+        setProperty(AuthConfigFactory.DEFAULT_FACTORY_SECURITY_PROPERTY, AuthConfigFactoryImpl.class.getCanonicalName());
     }
 }
