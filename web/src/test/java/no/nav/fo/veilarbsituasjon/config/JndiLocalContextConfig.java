@@ -65,5 +65,4 @@ public class JndiLocalContextConfig {
 
         return ds;
     }
-
 }
