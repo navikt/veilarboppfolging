@@ -53,7 +53,7 @@
                      securityToken="SAML"
                      wsdlGroupId="no.nav.tjenester"
                      wsdlArtifactId="brukerdialog-behandleSituasjon-v1-tjenestespesifikasjon"
-                     wsdlVersion="${brukerdialog-behandleSituasjon-v1-tjenestespesifikasjon.version}"> 
+                     wsdlVersion="${brukerdialog-behandleSituasjon-v1-tjenestespesifikasjon.version}">
             <exportToZone>SBS</exportToZone>
         </exposedSoap>
     </exposed-services>
