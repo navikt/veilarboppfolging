@@ -8,8 +8,6 @@ import no.nav.tjeneste.virksomhet.oppfoelging.v1.informasjon.WSPeriode;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.WSHentOppfoelgingskontraktListeRequest;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.WSHentOppfoelgingskontraktListeResponse;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.WSHentOppfoelgingsstatusRequest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.ForbiddenException;
@@ -20,7 +18,6 @@ import static no.nav.fo.veilarbsituasjon.mappers.OppfolgingsstatusMapper.tilOppf
 
 public class OppfolgingService {
     private final OppfoelgingPortType oppfoelgingPortType;
-    private Logger logger = LoggerFactory.getLogger(OppfolgingService.class);
 
     public OppfolgingService(OppfoelgingPortType oppfoelgingPortType) {
         this.oppfoelgingPortType = oppfoelgingPortType;
