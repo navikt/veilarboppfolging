@@ -2,6 +2,7 @@ package no.nav.fo.veilarbsituasjon.rest;
 
 import no.nav.fo.veilarbsituasjon.db.BrukerRepository;
 import no.nav.fo.veilarbsituasjon.domain.OppfolgingBruker;
+import no.nav.fo.veilarbsituasjon.rest.domain.TilordneVeilederResponse;
 import no.nav.fo.veilarbsituasjon.rest.domain.VeilederTilordning;
 import no.nav.fo.veilarbsituasjon.services.AktoerIdService;
 import org.slf4j.Logger;
@@ -58,12 +59,16 @@ public class PortefoljeRessurs {
                 settVeilederDersomFraVeilederErOK(bruker, tilordning);
             }
 
+            TilordneVeilederResponse response =
+                    new TilordneVeilederResponse()
+                            .setFeilendeTilordninger(feilendeTilordninger);
+
             if (feilendeTilordninger.isEmpty()) {
-                return Response.ok().entity("Veiledere tilordnet").build();
+                response.setResultat("OK: Veiledere tilordnet");
+                return Response.ok().entity(response).build();
             } else {
-                Map<String,List<VeilederTilordning>> returnertMap = new HashMap<>();
-                returnertMap.put("feilendeTilordninger",feilendeTilordninger);
-                return Response.ok().entity(returnertMap).build();
+                response.setResultat("WARNING: Noen brukere kunne ikke tilordnes en veileder");
+                return Response.ok().entity(response).build();
             }
 
         } catch (JMSException e) {
