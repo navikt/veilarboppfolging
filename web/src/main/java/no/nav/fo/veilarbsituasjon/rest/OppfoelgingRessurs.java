@@ -1,6 +1,7 @@
 package no.nav.fo.veilarbsituasjon.rest;
 
 
+import no.nav.fo.veilarbsituasjon.domain.Oppfolgingsstatus;
 import no.nav.fo.veilarbsituasjon.rest.domain.OppfoelgingskontraktResponse;
 import no.nav.fo.veilarbsituasjon.services.OppfoelgingService;
 import org.slf4j.Logger;
@@ -40,4 +41,10 @@ public class OppfoelgingRessurs {
         return oppfoelgingService.hentOppfoelgingskontraktListe(fom, tom, fnr);
     }
 
+    @GET
+    @Path("/oppfoelgingsstatus")
+    public Oppfolgingsstatus getOppfoelginsstatus(@PathParam("fnr") String fnr){
+        LOG.info("Henter oppfølgingsstatus for {}", fnr);
+        return oppfoelgingService.hentOppfolgingsstatus(fnr);
+    }
 }
