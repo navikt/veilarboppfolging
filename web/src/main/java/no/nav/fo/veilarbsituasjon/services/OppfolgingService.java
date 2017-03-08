@@ -47,14 +47,11 @@ public class OppfolgingService {
         try {
             return tilOppfolgingsstatus(oppfoelgingPortType.hentOppfoelgingsstatus(request));
         } catch (HentOppfoelgingsstatusSikkerhetsbegrensning e) {
-            logger.error("Bruker har ikke tilgang til å hente oppfølgingsstatus", e);
-            throw new ForbiddenException("Ikke tilgang til ressurs.");
+            throw new ForbiddenException("Ikke tilgang til ressurs.", e);
         } catch (HentOppfoelgingsstatusUgyldigInput e) {
-            logger.error("Ugyldig input ved henting av oppfølgingsstatus", e);
-            throw new BadRequestException("Ugyldig identifikator");
+            throw new BadRequestException("Ugyldig identifikator", e);
         } catch (HentOppfoelgingsstatusPersonIkkeFunnet e) {
-            logger.error(String.format("Fant ikke oppfølgingsstatus for identifikator %s", identifikator), e);
-            throw new NotFoundException("Fant ikke person");
+            throw new NotFoundException("Fant ikke person", e);
         }
     }
 }
