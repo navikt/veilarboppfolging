@@ -40,7 +40,7 @@ public class OppfolgingService {
         return OppfolgingMapper.tilOppfolgingskontrakt(response);
     }
 
-    public Oppfolgingsstatus hentOppfolgingsstatus(String identifikator) throws ForbiddenException, NotFoundException, BadRequestException {
+    public Oppfolgingsstatus hentOppfolgingsstatus(String identifikator) {
         WSHentOppfoelgingsstatusRequest request = new WSHentOppfoelgingsstatusRequest()
                 .withPersonidentifikator(identifikator);
 
