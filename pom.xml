@@ -47,6 +47,8 @@
         <jwt-security.version>1.0.6</jwt-security.version>
         <oidc-security.version>2.0.11</oidc-security.version>
 
+        <utave.version>1.0.8</utave.version>
+
         <!--Tjenester-->
         <ytelseskontrakt-v3-tjenestespesifikasjon.version>1.0.0</ytelseskontrakt-v3-tjenestespesifikasjon.version>
         <oppfoelging-v1-tjenestespesifikasjon.version>1.1.0</oppfoelging-v1-tjenestespesifikasjon.version>
@@ -93,6 +95,17 @@
             </dependency>
 
             <!--Spring-->
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-beans</artifactId>
+                <version>${spring.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
             <dependency>
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-context</artifactId>
@@ -188,6 +201,13 @@
                 <artifactId>common-web</artifactId>
                 <version>${common-web.version}</version>
             </dependency>
+            <dependency>
+                <groupId>no.nav.sbl</groupId>
+                <artifactId>utave</artifactId>
+                <version>${utave.version}</version>
+            </dependency>
+
+
             <dependency>
                 <groupId>no.nav.sbl.dialogarena</groupId>
                 <artifactId>common-test</artifactId>

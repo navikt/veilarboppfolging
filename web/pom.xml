@@ -29,6 +29,10 @@
         <!--Spring-->
         <dependency>
             <groupId>org.springframework</groupId>
+            <artifactId>spring-beans</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
             <artifactId>spring-web</artifactId>
         </dependency>
         <dependency>
@@ -110,6 +114,10 @@
         </dependency>
 
         <!--modig-->
+        <dependency>
+            <groupId>no.nav.sbl</groupId>
+            <artifactId>utave</artifactId>
+        </dependency>
         <dependency>
             <groupId>no.nav.modig</groupId>
             <artifactId>modig-security-sts</artifactId>
