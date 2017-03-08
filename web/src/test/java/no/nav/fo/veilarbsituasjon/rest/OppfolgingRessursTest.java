@@ -1,8 +1,8 @@
 package no.nav.fo.veilarbsituasjon.rest;
 
-import no.nav.fo.veilarbsituasjon.rest.domain.OppfoelgingskontraktData;
-import no.nav.fo.veilarbsituasjon.rest.domain.OppfoelgingskontraktResponse;
-import no.nav.fo.veilarbsituasjon.services.OppfoelgingService;
+import no.nav.fo.veilarbsituasjon.rest.domain.OppfolgingskontraktData;
+import no.nav.fo.veilarbsituasjon.rest.domain.OppfolgingskontraktResponse;
+import no.nav.fo.veilarbsituasjon.services.OppfolgingService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -18,22 +18,22 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class OppfoelgingRessursTest {
+public class OppfolgingRessursTest {
 
     @InjectMocks
-    private OppfoelgingRessurs oppfoelgingRessurs;
+    private OppfolgingRessurs oppfoelgingRessurs;
 
     @Mock
-    private OppfoelgingService oppfoelgingService;
+    private OppfolgingService oppfolgingService;
 
     @Test
     public void getOppfoelgingSkalReturnereEnRespons() throws Exception {
 
-        when(oppfoelgingService.hentOppfoelgingskontraktListe(any(), any(), anyString())).thenReturn(
-                new OppfoelgingskontraktResponse(Collections.singletonList(new OppfoelgingskontraktData()))
+        when(oppfolgingService.hentOppfolgingskontraktListe(any(), any(), anyString())).thenReturn(
+                new OppfolgingskontraktResponse(Collections.singletonList(new OppfolgingskontraktData()))
         );
 
-        final OppfoelgingskontraktResponse oppfoelging = oppfoelgingRessurs.getOppfoelging("***REMOVED***");
+        final OppfolgingskontraktResponse oppfoelging = oppfoelgingRessurs.getOppfoelging("***REMOVED***");
 
         assertThat(oppfoelging.getOppfoelgingskontrakter().isEmpty(), is(false));
     }

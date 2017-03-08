@@ -6,7 +6,7 @@ import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.WSHentOppfoelgingssta
 public class OppfolgingsstatusMapper {
     public static Oppfolgingsstatus tilOppfolgingsstatus(WSHentOppfoelgingsstatusResponse response) {
         return new Oppfolgingsstatus()
-                .setOppfolginsenhet(response.getNavOppfoelgingsenhet())
+                .setOppfolgingsenhet(response.getNavOppfoelgingsenhet())
                 .setRettighetsgruppe(response.getRettighetsgruppeKode())
                 .setFormidlingsgruppe(response.getFormidlingsgruppeKode())
                 .setServicegruppe(response.getServicegruppeKode());

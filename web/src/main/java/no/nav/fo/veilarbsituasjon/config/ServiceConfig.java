@@ -3,7 +3,7 @@ package no.nav.fo.veilarbsituasjon.config;
 import no.nav.fo.veilarbsituasjon.db.BrukerRepository;
 import no.nav.fo.veilarbsituasjon.db.SituasjonRepository;
 import no.nav.fo.veilarbsituasjon.services.AktoerIdService;
-import no.nav.fo.veilarbsituasjon.services.OppfoelgingService;
+import no.nav.fo.veilarbsituasjon.services.OppfolgingService;
 import no.nav.fo.veilarbsituasjon.services.YtelseskontraktService;
 import no.nav.tjeneste.virksomhet.aktoer.v2.AktoerV2;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
@@ -33,8 +33,8 @@ public class ServiceConfig {
     }
 
     @Bean
-    OppfoelgingService oppfoelgingService() {
-        return new OppfoelgingService(oppfoelgingPortType);
+    OppfolgingService oppfolgingService() {
+        return new OppfolgingService(oppfoelgingPortType);
     }
 
     @Bean

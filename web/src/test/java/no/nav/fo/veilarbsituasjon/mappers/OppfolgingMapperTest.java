@@ -1,8 +1,8 @@
 package no.nav.fo.veilarbsituasjon.mappers;
 
 import no.nav.fo.veilarbsituasjon.mock.OppfoelgingV1Mock;
-import no.nav.fo.veilarbsituasjon.rest.domain.OppfoelgingskontraktData;
-import no.nav.fo.veilarbsituasjon.rest.domain.OppfoelgingskontraktResponse;
+import no.nav.fo.veilarbsituasjon.rest.domain.OppfolgingskontraktData;
+import no.nav.fo.veilarbsituasjon.rest.domain.OppfolgingskontraktResponse;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.HentOppfoelgingskontraktListeSikkerhetsbegrensning;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.informasjon.WSPeriode;
@@ -21,7 +21,7 @@ import static no.nav.fo.veilarbsituasjon.utils.CalendarConverter.convertDateToXM
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-public class OppfoelgingMapperTest {
+public class OppfolgingMapperTest {
 
     private static final int MANEDER_BAK_I_TID = 2;
     private static final int MANEDER_FREM_I_TID = 1;
@@ -31,7 +31,7 @@ public class OppfoelgingMapperTest {
     public void oppfoelgingskontrakterInneholderListeMedOppfoelgingskontrakter() throws HentOppfoelgingskontraktListeSikkerhetsbegrensning {
         OppfoelgingPortType oppfoelgingMock = new OppfoelgingV1Mock();
 
-        List<OppfoelgingskontraktData> oppfoelgingskontrakter = getOppfoelgingskontrakter(oppfoelgingMock);
+        List<OppfolgingskontraktData> oppfoelgingskontrakter = getOppfoelgingskontrakter(oppfoelgingMock);
 
         assertThat(oppfoelgingskontrakter.size(), is(ANTALL_OPPFOELGINGSKONTRAKTER));
     }
@@ -40,10 +40,10 @@ public class OppfoelgingMapperTest {
     public void oppfoelgingskontrakterHarRiktigStatus() throws HentOppfoelgingskontraktListeSikkerhetsbegrensning {
         OppfoelgingPortType oppfoelgingMock = new OppfoelgingV1Mock();
 
-        List<OppfoelgingskontraktData> oppfoelgingskontrakter = getOppfoelgingskontrakter(oppfoelgingMock);
+        List<OppfolgingskontraktData> oppfoelgingskontrakter = getOppfoelgingskontrakter(oppfoelgingMock);
 
         final List statusList = oppfoelgingskontrakter.stream()
-                .map(OppfoelgingskontraktData::getStatus)
+                .map(OppfolgingskontraktData::getStatus)
                 .collect(toList());
 
         final List<String> expectedStatusList = new ArrayList<>(asList("Aktiv", "Aktiv", "LUKKET", "LUKKET"));
@@ -56,10 +56,10 @@ public class OppfoelgingMapperTest {
     public void oppfoelgingskontrakterHarRiktigServicegruppe() throws HentOppfoelgingskontraktListeSikkerhetsbegrensning {
         OppfoelgingPortType oppfoelgingMock = new OppfoelgingV1Mock();
 
-        List<OppfoelgingskontraktData> oppfoelgingskontrakter = getOppfoelgingskontrakter(oppfoelgingMock);
+        List<OppfolgingskontraktData> oppfoelgingskontrakter = getOppfoelgingskontrakter(oppfoelgingMock);
 
         final List innsatsgrupper = oppfoelgingskontrakter.stream()
-                .map(OppfoelgingskontraktData::getInnsatsgrupper)
+                .map(OppfolgingskontraktData::getInnsatsgrupper)
                 .flatMap(Collection::stream)
                 .collect(toList());
 
@@ -69,10 +69,10 @@ public class OppfoelgingMapperTest {
 
     }
 
-    private List<OppfoelgingskontraktData> getOppfoelgingskontrakter(OppfoelgingPortType oppfoelgingMock) throws HentOppfoelgingskontraktListeSikkerhetsbegrensning {
+    private List<OppfolgingskontraktData> getOppfoelgingskontrakter(OppfoelgingPortType oppfoelgingMock) throws HentOppfoelgingskontraktListeSikkerhetsbegrensning {
         final WSHentOppfoelgingskontraktListeRequest request = getWsHentOppfoelgingskontraktListeRequest();
 
-        final OppfoelgingskontraktResponse response = OppfoelgingMapper.tilOppfoelgingskontrakt(oppfoelgingMock.hentOppfoelgingskontraktListe(request));
+        final OppfolgingskontraktResponse response = OppfolgingMapper.tilOppfolgingskontrakt(oppfoelgingMock.hentOppfoelgingskontraktListe(request));
 
         return response.getOppfoelgingskontrakter();
     }

@@ -1,7 +1,7 @@
 package no.nav.fo.veilarbsituasjon.services;
 
 import no.nav.fo.veilarbsituasjon.domain.Oppfolgingsstatus;
-import no.nav.fo.veilarbsituasjon.rest.domain.OppfoelgingskontraktResponse;
+import no.nav.fo.veilarbsituasjon.rest.domain.OppfolgingskontraktResponse;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.HentOppfoelgingsstatusPersonIkkeFunnet;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.HentOppfoelgingsstatusSikkerhetsbegrensning;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.HentOppfoelgingsstatusUgyldigInput;
@@ -31,10 +31,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class OppfoelgingServiceTest {
+public class OppfolgingServiceTest {
 
     @InjectMocks
-    private OppfoelgingService oppfoelgingService;
+    private OppfolgingService oppfolgingService;
 
     @Mock
     private OppfoelgingPortType oppfoelgingPortType;
@@ -49,7 +49,7 @@ public class OppfoelgingServiceTest {
         withOppfoelgingskontraktListe.getOppfoelgingskontraktListe().add(oppfoelgingskontrakt);
         when(oppfoelgingPortType.hentOppfoelgingskontraktListe(any(WSHentOppfoelgingskontraktListeRequest.class))).thenReturn(withOppfoelgingskontraktListe);
 
-        final OppfoelgingskontraktResponse response = oppfoelgingService.hentOppfoelgingskontraktListe(fom, tom, "***REMOVED***");
+        final OppfolgingskontraktResponse response = oppfolgingService.hentOppfolgingskontraktListe(fom, tom, "***REMOVED***");
 
         assertThat(response.getOppfoelgingskontrakter().isEmpty(), is(false));
     }
@@ -59,14 +59,14 @@ public class OppfoelgingServiceTest {
         when(oppfoelgingPortType.hentOppfoelgingsstatus(any())).thenReturn(
                 new WSHentOppfoelgingsstatusResponse()
                         .withFormidlingsgruppeKode("formidlingsgruppe")
-                        .withNavOppfoelgingsenhet("oppfolginsenhet")
+                        .withNavOppfoelgingsenhet("oppfolgingsenhet")
                         .withRettighetsgruppeKode("rettighetsgruppe")
                         .withServicegruppeKode("servicegruppe")
         );
 
-        Oppfolgingsstatus oppfolgingsstatus = oppfoelgingService.hentOppfolgingsstatus("1234");
+        Oppfolgingsstatus oppfolgingsstatus = oppfolgingService.hentOppfolgingsstatus("1234");
         Assertions.assertThat(oppfolgingsstatus.getFormidlingsgruppe()).isEqualTo("formidlingsgruppe");
-        Assertions.assertThat(oppfolgingsstatus.getOppfolginsenhet()).isEqualTo("oppfolginsenhet");
+        Assertions.assertThat(oppfolgingsstatus.getOppfolgingsenhet()).isEqualTo("oppfolgingsenhet");
         Assertions.assertThat(oppfolgingsstatus.getRettighetsgruppe()).isEqualTo("rettighetsgruppe");
         Assertions.assertThat(oppfolgingsstatus.getServicegruppe()).isEqualTo("servicegruppe");
     }
@@ -74,19 +74,19 @@ public class OppfoelgingServiceTest {
     @Test(expected = NotFoundException.class)
     public void skalKasteNotFoundOmPersonIkkeFunnet() throws Exception {
         when(oppfoelgingPortType.hentOppfoelgingsstatus(any())).thenThrow(new HentOppfoelgingsstatusPersonIkkeFunnet());
-        oppfoelgingService.hentOppfolgingsstatus("1234");
+        oppfolgingService.hentOppfolgingsstatus("1234");
     }
 
     @Test(expected = ForbiddenException.class)
     public void skalKasteForbiddenOmManIkkeHarTilgang() throws Exception {
         when(oppfoelgingPortType.hentOppfoelgingsstatus(any())).thenThrow(new HentOppfoelgingsstatusSikkerhetsbegrensning());
-        oppfoelgingService.hentOppfolgingsstatus("1234");
+        oppfolgingService.hentOppfolgingsstatus("1234");
     }
 
     @Test(expected = BadRequestException.class)
     public void skalKasteBadRequestOmUgyldigIdentifikator() throws Exception {
         when(oppfoelgingPortType.hentOppfoelgingsstatus(any())).thenThrow(new HentOppfoelgingsstatusUgyldigInput());
-        oppfoelgingService.hentOppfolgingsstatus("1234");
+        oppfolgingService.hentOppfolgingsstatus("1234");
     }
 
 }

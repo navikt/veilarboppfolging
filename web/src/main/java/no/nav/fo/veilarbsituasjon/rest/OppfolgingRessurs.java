@@ -2,8 +2,8 @@ package no.nav.fo.veilarbsituasjon.rest;
 
 
 import no.nav.fo.veilarbsituasjon.domain.Oppfolgingsstatus;
-import no.nav.fo.veilarbsituasjon.rest.domain.OppfoelgingskontraktResponse;
-import no.nav.fo.veilarbsituasjon.services.OppfoelgingService;
+import no.nav.fo.veilarbsituasjon.rest.domain.OppfolgingskontraktResponse;
+import no.nav.fo.veilarbsituasjon.services.OppfolgingService;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
@@ -18,33 +18,33 @@ import static org.slf4j.LoggerFactory.getLogger;
 @Component
 @Path("/person/{fnr}")
 @Produces(APPLICATION_JSON)
-public class OppfoelgingRessurs {
-    private static final Logger LOG = getLogger(OppfoelgingRessurs.class);
+public class OppfolgingRessurs {
+    private static final Logger LOG = getLogger(OppfolgingRessurs.class);
     private static final int MANEDER_BAK_I_TID = 2;
     private static final int MANEDER_FREM_I_TID = 1;
 
-    private final OppfoelgingService oppfoelgingService;
+    private final OppfolgingService oppfolgingService;
 
-    public OppfoelgingRessurs(OppfoelgingService oppfoelgingService) {
-        this.oppfoelgingService = oppfoelgingService;
+    public OppfolgingRessurs(OppfolgingService oppfolgingService) {
+        this.oppfolgingService = oppfolgingService;
     }
 
     @GET
     @Path("/oppfoelging")
-    public OppfoelgingskontraktResponse getOppfoelging(@PathParam("fnr") String fnr){
+    public OppfolgingskontraktResponse getOppfoelging(@PathParam("fnr") String fnr){
         LocalDate periodeFom = LocalDate.now().minusMonths(MANEDER_BAK_I_TID);
         LocalDate periodeTom = LocalDate.now().plusMonths(MANEDER_FREM_I_TID);
         XMLGregorianCalendar fom = convertDateToXMLGregorianCalendar(periodeFom);
         XMLGregorianCalendar tom = convertDateToXMLGregorianCalendar(periodeTom);
 
         LOG.info("Henter oppfoelging for {}", fnr);
-        return oppfoelgingService.hentOppfoelgingskontraktListe(fom, tom, fnr);
+        return oppfolgingService.hentOppfolgingskontraktListe(fom, tom, fnr);
     }
 
     @GET
     @Path("/oppfoelgingsstatus")
     public Oppfolgingsstatus getOppfoelginsstatus(@PathParam("fnr") String fnr){
         LOG.info("Henter oppfølgingsstatus for {}", fnr);
-        return oppfoelgingService.hentOppfolgingsstatus(fnr);
+        return oppfolgingService.hentOppfolgingsstatus(fnr);
     }
 }

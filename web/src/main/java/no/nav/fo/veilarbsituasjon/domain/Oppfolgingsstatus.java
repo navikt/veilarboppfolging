@@ -6,7 +6,7 @@ import lombok.experimental.Accessors;
 @Data
 @Accessors(chain = true)
 public class Oppfolgingsstatus {
-    private String oppfolginsenhet;
+    private String oppfolgingsenhet;
     private String rettighetsgruppe;
     private String formidlingsgruppe;
     private String servicegruppe;

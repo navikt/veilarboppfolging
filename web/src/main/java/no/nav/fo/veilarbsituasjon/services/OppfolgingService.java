@@ -1,14 +1,13 @@
 package no.nav.fo.veilarbsituasjon.services;
 
 import no.nav.fo.veilarbsituasjon.domain.Oppfolgingsstatus;
-import no.nav.fo.veilarbsituasjon.mappers.OppfoelgingMapper;
-import no.nav.fo.veilarbsituasjon.rest.domain.OppfoelgingskontraktResponse;
+import no.nav.fo.veilarbsituasjon.mappers.OppfolgingMapper;
+import no.nav.fo.veilarbsituasjon.rest.domain.OppfolgingskontraktResponse;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.*;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.informasjon.WSPeriode;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.WSHentOppfoelgingskontraktListeRequest;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.WSHentOppfoelgingskontraktListeResponse;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.WSHentOppfoelgingsstatusRequest;
-import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.WSHentOppfoelgingsstatusResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,15 +18,15 @@ import javax.xml.datatype.XMLGregorianCalendar;
 
 import static no.nav.fo.veilarbsituasjon.mappers.OppfolgingsstatusMapper.tilOppfolgingsstatus;
 
-public class OppfoelgingService {
+public class OppfolgingService {
     private final OppfoelgingPortType oppfoelgingPortType;
-    private Logger logger = LoggerFactory.getLogger(OppfoelgingService.class);
+    private Logger logger = LoggerFactory.getLogger(OppfolgingService.class);
 
-    public OppfoelgingService(OppfoelgingPortType oppfoelgingPortType) {
+    public OppfolgingService(OppfoelgingPortType oppfoelgingPortType) {
         this.oppfoelgingPortType = oppfoelgingPortType;
     }
 
-    public OppfoelgingskontraktResponse hentOppfoelgingskontraktListe(XMLGregorianCalendar fom, XMLGregorianCalendar tom, String fnr) {
+    public OppfolgingskontraktResponse hentOppfolgingskontraktListe(XMLGregorianCalendar fom, XMLGregorianCalendar tom, String fnr) {
         WSHentOppfoelgingskontraktListeRequest request = new WSHentOppfoelgingskontraktListeRequest();
         final WSPeriode periode = new WSPeriode().withFom(fom).withTom(tom);
         request.withPeriode(periode).withPersonidentifikator(fnr);
@@ -38,7 +37,7 @@ public class OppfoelgingService {
             hentOppfoelgingskontraktListeSikkerhetsbegrensning.printStackTrace();
         }
 
-        return OppfoelgingMapper.tilOppfoelgingskontrakt(response);
+        return OppfolgingMapper.tilOppfolgingskontrakt(response);
     }
 
     public Oppfolgingsstatus hentOppfolgingsstatus(String identifikator) throws ForbiddenException, NotFoundException, BadRequestException {

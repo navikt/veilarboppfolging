@@ -5,17 +5,17 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
 
-public class OppfoelgingskontraktResponse {
+public class OppfolgingskontraktResponse {
 
     @JsonProperty("oppfolgingskontrakter")
-    private final List<OppfoelgingskontraktData> oppfoelgingskontrakter;
+    private final List<OppfolgingskontraktData> oppfoelgingskontrakter;
 
-    public OppfoelgingskontraktResponse(List<OppfoelgingskontraktData> oppfoelgingskontraktListe) {
+    public OppfolgingskontraktResponse(List<OppfolgingskontraktData> oppfoelgingskontraktListe) {
 
         this.oppfoelgingskontrakter = oppfoelgingskontraktListe;
     }
 
-    public List<OppfoelgingskontraktData> getOppfoelgingskontrakter() {
+    public List<OppfolgingskontraktData> getOppfoelgingskontrakter() {
         return oppfoelgingskontrakter;
     }
 }

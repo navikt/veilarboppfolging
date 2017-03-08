@@ -7,9 +7,8 @@ public class RestConfig extends ResourceConfig {
     public RestConfig() {
         super(
                 YtelseRessurs.class,
-                OppfoelgingRessurs.class,
+                OppfolgingRessurs.class,
                 PortefoljeRessurs.class,
-
                 AktivitetsplanSituasjonWebService.class
         );
     }
