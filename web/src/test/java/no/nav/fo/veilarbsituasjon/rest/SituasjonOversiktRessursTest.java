@@ -2,10 +2,7 @@ package no.nav.fo.veilarbsituasjon.rest;
 
 import lombok.val;
 import no.nav.fo.veilarbsituasjon.db.SituasjonRepository;
-import no.nav.fo.veilarbsituasjon.domain.Brukervilkar;
-import no.nav.fo.veilarbsituasjon.domain.Situasjon;
-import no.nav.fo.veilarbsituasjon.domain.VilkarStatus;
-import no.nav.fo.veilarbsituasjon.rest.domain.OppfolgingOgVilkarStatus;
+import no.nav.fo.veilarbsituasjon.domain.*;
 import no.nav.fo.veilarbsituasjon.services.AktoerIdService;
 import no.nav.fo.veilarbsituasjon.services.SituasjonOversiktService;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.DigitalKontaktinformasjonV1;
@@ -20,7 +17,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import static java.util.Optional.of;
@@ -74,14 +70,14 @@ public class SituasjonOversiktRessursTest {
 
     @Test
     public void ukjentAktor() throws Exception {
-        assertThrows(IllegalArgumentException.class, () -> hentOppfolgingStatus());
+        assertThrows(IllegalArgumentException.class, this::hentOppfolgingStatus);
     }
 
     @Test
     public void riktigFnr() throws Exception {
         gittAktor();
-        OppfolgingOgVilkarStatus oppfolgingOgVilkarStatus = hentOppfolgingStatus();
-        assertThat(oppfolgingOgVilkarStatus.fnr, equalTo(FNR));
+        OppfolgingStatus oppfolgingStatus = hentOppfolgingStatus();
+        assertThat(oppfolgingStatus.fnr, equalTo(FNR));
     }
 
     @Test
@@ -96,9 +92,9 @@ public class SituasjonOversiktRessursTest {
         gittAktor();
         gittReservasjon("true");
 
-        OppfolgingOgVilkarStatus oppfolgingOgVilkarStatus = hentOppfolgingStatus();
+        OppfolgingStatus oppfolgingStatus = hentOppfolgingStatus();
 
-        assertThat(oppfolgingOgVilkarStatus.reservasjonKRR, is(true));
+        assertThat(oppfolgingStatus.reservasjonKRR, is(true));
     }
 
     @Test
@@ -106,9 +102,9 @@ public class SituasjonOversiktRessursTest {
         gittAktor();
         gittOppfolgingStatus("ARBS", "");
 
-        OppfolgingOgVilkarStatus oppfolgingOgVilkarStatus = hentOppfolgingStatus();
+        OppfolgingStatus oppfolgingStatus = hentOppfolgingStatus();
 
-        assertThat(oppfolgingOgVilkarStatus.underOppfolging, is(true));
+        assertThat(oppfolgingStatus.underOppfolging, is(true));
     }
 
     @Test
@@ -125,8 +121,8 @@ public class SituasjonOversiktRessursTest {
     @Test
     public void akseptererFeilVilkar() throws Exception {
         gittAktor();
-
-        besvarVilkar(GODKJENNT, "feilVilkar");
+        Vilkar feilVilkar = new Vilkar().setText("feilVilkar").setHash("HASH");
+        besvarVilkar(GODKJENNT, feilVilkar);
 
         assertThat(hentOppfolgingStatus().vilkarMaBesvares, is(true));
     }
@@ -183,11 +179,11 @@ public class SituasjonOversiktRessursTest {
 
 //    }
 
-    private void besvarVilkar(VilkarStatus godkjennt, String tekst) {
-        gittSituasjon(situasjon.leggTilBrukervilkar(new Brukervilkar().setTekst(tekst).setVilkarstatus(godkjennt)));
+    private void besvarVilkar(VilkarStatus godkjennt, Vilkar vilkar) {
+        gittSituasjon(situasjon.leggTilBrukervilkar(new Brukervilkar().setTekst(vilkar.getText()).setVilkarstatus(godkjennt)));
     }
 
-    private String hentGjeldendeVilkar() throws Exception {
+    private Vilkar hentGjeldendeVilkar() throws Exception {
         return aktivitetsplanSituasjonWebService.hentVilkar();
     }
 
@@ -196,7 +192,7 @@ public class SituasjonOversiktRessursTest {
         hentOppfolgingstatusResponse.setServicegruppeKode(kvalifiseringsgruppekode);
     }
 
-    private OppfolgingOgVilkarStatus hentOppfolgingStatus() throws Exception {
+    private OppfolgingStatus hentOppfolgingStatus() throws Exception {
         return aktivitetsplanSituasjonWebService.hentOppfolgingsStatus(FNR);
     }
 

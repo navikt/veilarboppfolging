@@ -1,11 +1,11 @@
-package no.nav.fo.veilarbsituasjon.rest.domain;
+package no.nav.fo.veilarbsituasjon.domain;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
 
 @Data
 @Accessors(chain = true)
-public class OppfolgingOgVilkarStatus {
+public class OppfolgingStatus {
     public String fnr;
     public boolean reservasjonKRR;
     public boolean manuell;

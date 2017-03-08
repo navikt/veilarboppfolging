@@ -2,9 +2,7 @@ package no.nav.fo.veilarbsituasjon.services;
 
 import lombok.val;
 import no.nav.fo.veilarbsituasjon.db.SituasjonRepository;
-import no.nav.fo.veilarbsituasjon.domain.Brukervilkar;
-import no.nav.fo.veilarbsituasjon.domain.Situasjon;
-import no.nav.fo.veilarbsituasjon.rest.domain.OppfolgingOgVilkarStatus;
+import no.nav.fo.veilarbsituasjon.domain.*;
 import no.nav.fo.veilarbsituasjon.rest.domain.OpprettVilkarStatusRequest;
 import no.nav.fo.veilarbsituasjon.rest.domain.OpprettVilkarStatusResponse;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.DigitalKontaktinformasjonV1;
@@ -14,6 +12,7 @@ import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.WSHentD
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.WSHentOppfoelgingsstatusRequest;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.WSHentOppfoelgingsstatusResponse;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -50,7 +49,7 @@ public class SituasjonOversiktService {
     private OppfoelgingPortType oppfoelgingPortType;
 
     @Transactional
-    public OppfolgingOgVilkarStatus hentOppfolgingsStatus(String fnr) throws Exception {
+    public OppfolgingStatus hentOppfolgingsStatus(String fnr) throws Exception {
         String aktorId = hentAktorId(fnr);
         Situasjon situasjon = hentSituasjon(aktorId);
 
@@ -73,7 +72,7 @@ public class SituasjonOversiktService {
                 .map(brukerVilkar -> !brukerVilkar.equals(gjeldendeVilkar))
                 .orElse(true);
 
-        return new OppfolgingOgVilkarStatus()
+        return new OppfolgingStatus()
                 .setFnr(fnr)
                 .setReservasjonKRR(erReservert)
                 .setManuell(situasjon.isManuell())
@@ -81,23 +80,23 @@ public class SituasjonOversiktService {
                 .setVilkarMaBesvares(vilkarMaBesvares);
     }
 
-    public String hentVilkar() throws Exception {
-        return finnGjeldendeVilkar();
+    public Vilkar hentVilkar() throws Exception {
+        val vilkar = new Vilkar();
+        vilkar.setText(finnGjeldendeVilkar());
+        vilkar.setHash(DigestUtils.sha256Hex(vilkar.getText()));
+        return vilkar;
     }
 
-    public OpprettVilkarStatusResponse opprettVilkaarstatus(OpprettVilkarStatusRequest opprettVilkarStatusRequest) throws Exception {
-        Situasjon situasjon = hentSituasjon(hentAktorId(opprettVilkarStatusRequest.fnr));
+    @Transactional
+    public OppfolgingStatus godtaVilkar(String hash, String fnr) throws Exception {
 
+        Situasjon situasjon = hentSituasjon(hentAktorId(fnr));
         situasjonRepository.oppdaterSituasjon(situasjon.leggTilBrukervilkar(new Brukervilkar()
-                        .setDato(new Timestamp(currentTimeMillis()))
-                        .setTekst(opprettVilkarStatusRequest.hash)
-                        .setVilkarstatus(opprettVilkarStatusRequest.status)
-                )
-        );
-
-        return new OpprettVilkarStatusResponse()
-                .setFnr(opprettVilkarStatusRequest.fnr)
-                .setStatus(opprettVilkarStatusRequest.status);
+                .setDato(new Timestamp(currentTimeMillis()))
+                .setTekst(hash)
+                .setVilkarstatus(VilkarStatus.GODKJENNT)
+        ));
+        return hentOppfolgingsStatus(fnr);
     }
 
     private boolean erUnderOppfolging(String aktorId) throws Exception {
@@ -125,8 +124,31 @@ public class SituasjonOversiktService {
         return OPPFOLGINGKODER.contains(oppfolgingstatus.getServicegruppeKode());
     }
 
-    private String finnGjeldendeVilkar() {
-        return "gjeldendeVilkar";
+    private String finnGjeldendeVilkar() { // TODO: Last vilkår fra riktig sted.
+        return  "<b>NB! Dette er et utkast til vilkårstekst.</b>"+
+                "<p>Privat bruk(uten oppfølging fra NAV):</p>" +
+                "<ul>" +
+                "    <li>Informasjon du legger inn blir oppbevart sikkert</li>" +
+                "    <li>Informasjon knyttes ikke til deg som person, men vil kunne bli benyttet for statistikkformål" +
+                "    </li>" +
+                "    <li>Dersom du på et senere tidspunkt ber om oppfølging fra NAV vil informasjon du legger inn i" +
+                "        aktivitetsplanen bli tilgjengelig for NAV" +
+                "    </li>" +
+                "    <li>Før du deler aktivitetsplanen med NAV kan du slette aktiviteter du ikke vil dele (?)</li>" +
+                "</ul>" +
+                "<p>Oppfølgning fra NAV:</p>" +
+                "<ul>" +
+                "    <li>Informasjon du legger inn i aktivitetsplanen er synlig for NAV</li>" +
+                "    <li><span>Informasjon du legger inn i aktivitetsplanen vil bli benyttet med følgende formål:</span>" +
+                "        <ul>" +
+                "            <li>behandle din(e) sak(er) hos NAV (informasjon du legger inn i aktivitetsplanen kan få" +
+                "betydning for ytelser du mottar fra NAV)" +
+                "            </li>" +
+                "            <li>kontrollformål</li>" +
+                "        </ul>" +
+                "    </li>" +
+                "    <li>Informasjon du legger inn i planen blir oppbevart sikkert</li>" +
+                "</ul>";
     }
 
     private Situasjon hentSituasjon(String aktorId) {

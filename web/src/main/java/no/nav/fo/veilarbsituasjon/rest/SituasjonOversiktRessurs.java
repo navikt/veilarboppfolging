@@ -1,42 +1,41 @@
 package no.nav.fo.veilarbsituasjon.rest;
 
-import no.nav.fo.veilarbsituasjon.rest.domain.OppfolgingOgVilkarStatus;
-import no.nav.fo.veilarbsituasjon.rest.domain.OpprettVilkarStatusRequest;
-import no.nav.fo.veilarbsituasjon.rest.domain.OpprettVilkarStatusResponse;
+import no.nav.fo.veilarbsituasjon.api.SituasjonOversikt;
+import no.nav.fo.veilarbsituasjon.domain.OppfolgingStatus;
+import no.nav.fo.veilarbsituasjon.domain.Vilkar;
 import no.nav.fo.veilarbsituasjon.services.SituasjonOversiktService;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
-import javax.ws.rs.*;
-
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
+import javax.inject.Provider;
+import javax.servlet.http.HttpServletRequest;
 
 @Component
-@Path("/ws/aktivitetsplan")
-@Produces(APPLICATION_JSON)
-public class SituasjonOversiktRessurs {
+public class SituasjonOversiktRessurs implements SituasjonOversikt {
 
     @Inject
     private SituasjonOversiktService situasjonOversiktService;
 
-    @GET
-    @Path("/{fnr}")
-    public OppfolgingOgVilkarStatus hentOppfolgingsStatus(@PathParam("fnr") String fnr) throws Exception {
-        return situasjonOversiktService.hentOppfolgingsStatus(fnr);
+    @Inject
+    private Provider<HttpServletRequest> requestProvider;
+
+    @Override
+    public OppfolgingStatus hentOppfolgingsStatus() throws Exception {
+        return situasjonOversiktService.hentOppfolgingsStatus(getFnr());
     }
 
-    @GET
-    @Path("/vilkar")
-    @Produces(TEXT_PLAIN)
-    public String hentVilkar() throws Exception {
+    @Override
+    public Vilkar hentVilkar() throws Exception {
         return situasjonOversiktService.hentVilkar();
     }
 
-    @POST
-    public OpprettVilkarStatusResponse opprettVilkaarstatus(OpprettVilkarStatusRequest opprettVilkarStatusRequest) throws Exception {
-        return situasjonOversiktService.opprettVilkaarstatus(opprettVilkarStatusRequest);
+    @Override
+    public OppfolgingStatus godta(String hash) throws Exception {
+        return situasjonOversiktService.godtaVilkar(hash, getFnr());
+    }
+
+    public String getFnr() {
+        return requestProvider.get().getParameter("fnr");
     }
 
 }

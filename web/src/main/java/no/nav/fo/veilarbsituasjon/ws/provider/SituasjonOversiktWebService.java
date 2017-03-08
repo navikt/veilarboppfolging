@@ -1,15 +1,14 @@
 package no.nav.fo.veilarbsituasjon.ws.provider;
 
 import lombok.val;
-import no.nav.fo.veilarbsituasjon.domain.VilkarStatus;
-import no.nav.fo.veilarbsituasjon.rest.domain.OppfolgingOgVilkarStatus;
-import no.nav.fo.veilarbsituasjon.rest.domain.OpprettVilkarStatusRequest;
-import no.nav.fo.veilarbsituasjon.rest.domain.OpprettVilkarStatusResponse;
+import no.nav.fo.veilarbsituasjon.domain.OppfolgingStatus;
+import no.nav.fo.veilarbsituasjon.domain.Vilkar;
 import no.nav.fo.veilarbsituasjon.services.SituasjonOversiktService;
 import no.nav.tjeneste.virksomhet.behandlesituasjon.v1.binding.*;
 import no.nav.tjeneste.virksomhet.behandlesituasjon.v1.informasjon.Oppfoelgingsstatus;
 import no.nav.tjeneste.virksomhet.behandlesituasjon.v1.meldinger.*;
 import org.springframework.stereotype.Service;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import javax.inject.Inject;
 import javax.jws.WebService;
@@ -23,23 +22,23 @@ public class SituasjonOversiktWebService implements BehandleSituasjonV1 {
 
     @Override
     public HentOppfoelgingsstatusResponse hentOppfoelgingsstatus(HentOppfoelgingsstatusRequest hentOppfoelgingsstatusRequest) throws HentOppfoelgingsstatusSikkerhetsbegrensning {
-        OppfolgingOgVilkarStatus oppfolgingOgVilkarStatus = null;
+        OppfolgingStatus oppfolgingStatus = null;
         try {
-            oppfolgingOgVilkarStatus = situasjonOversiktService.hentOppfolgingsStatus(hentOppfoelgingsstatusRequest.getPersonident());
+            oppfolgingStatus = situasjonOversiktService.hentOppfolgingsStatus(hentOppfoelgingsstatusRequest.getPersonident());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        return mapToHentOppfoelgingsstatusResponse(oppfolgingOgVilkarStatus);
+        return mapToHentOppfoelgingsstatusResponse(oppfolgingStatus);
     }
 
     @Override
     public HentVilkaarsstatusResponse hentVilkaarsstatus(HentVilkaarsstatusRequest hentVilkaarsstatusRequest) throws HentVilkaarsstatusSikkerhetsbegrensning {
-        return new HentVilkaarsstatusResponse(); // TODO
+        throw new NotImplementedException();
     }
 
     @Override
     public HentVilkaarsstatusListeResponse hentVilkaarsstatusListe(HentVilkaarsstatusListeRequest hentVilkaarsstatusListeRequest) throws HentVilkaarsstatusListeSikkerhetsbegrensning {
-        return new HentVilkaarsstatusListeResponse(); //TODO
+        throw new NotImplementedException();
     }
 
     @Override
@@ -49,19 +48,9 @@ public class SituasjonOversiktWebService implements BehandleSituasjonV1 {
     @Override
     public OpprettVilkaarsstatusResponse opprettVilkaarsstatus(OpprettVilkaarsstatusRequest opprettVilkaarsstatusRequest) throws OpprettVilkaarsstatusSikkerhetsbegrensning, OpprettVilkaarsstatusUgyldigInput {
 
-        OpprettVilkarStatusRequest req = new OpprettVilkarStatusRequest();
-        req.setFnr(opprettVilkaarsstatusRequest.getPersonident());
-
-        VilkarStatus vilkarStatus = VilkarStatus.valueOf(opprettVilkaarsstatusRequest.getStatus().name());
-
-        req.setStatus(vilkarStatus);
-        req.setHash(opprettVilkaarsstatusRequest.getHash());
-
-
-
-        OpprettVilkarStatusResponse opprettVilkarStatusResponse;
+        OppfolgingStatus oppfolgingStatus;
         try {
-            opprettVilkarStatusResponse = situasjonOversiktService.opprettVilkaarstatus(req);
+            oppfolgingStatus = situasjonOversiktService.godtaVilkar(opprettVilkaarsstatusRequest.getHash(), opprettVilkaarsstatusRequest.getPersonident());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -74,7 +63,7 @@ public class SituasjonOversiktWebService implements BehandleSituasjonV1 {
 
     @Override
     public HentVilkaarResponse hentVilkaar(HentVilkaarRequest hentVilkaarRequest) throws HentVilkaarSikkerhetsbegrensning {
-        String vilkar;
+        Vilkar vilkar;
         try {
             vilkar = situasjonOversiktService.hentVilkar();
         } catch (Exception e) {
@@ -83,20 +72,20 @@ public class SituasjonOversiktWebService implements BehandleSituasjonV1 {
         return mapTilHentVilkaarResponse(vilkar);
     }
 
-    public HentVilkaarResponse mapTilHentVilkaarResponse(String vilkar) {
+    public HentVilkaarResponse mapTilHentVilkaarResponse(Vilkar vilkar) {
         HentVilkaarResponse res = new HentVilkaarResponse();
-        res.setVilkaarstekst(vilkar);
-        res.setHash("ASDF");
+        res.setVilkaarstekst(vilkar.getText());
+        res.setHash(vilkar.getHash());
         return res;
     }
 
-    private HentOppfoelgingsstatusResponse mapToHentOppfoelgingsstatusResponse(OppfolgingOgVilkarStatus oppfolgingOgVilkarStatus) {
+    private HentOppfoelgingsstatusResponse mapToHentOppfoelgingsstatusResponse(OppfolgingStatus oppfolgingStatus) {
         Oppfoelgingsstatus oppfoelgingsstatus = new Oppfoelgingsstatus();
-        oppfoelgingsstatus.setErBrukerSattTilManuell(oppfolgingOgVilkarStatus.isManuell());
-        oppfoelgingsstatus.setErBrukerUnderOppfoelging(oppfolgingOgVilkarStatus.isUnderOppfolging());
-        oppfoelgingsstatus.setErReservertIKontaktOgReservasjonsregisteret(oppfolgingOgVilkarStatus.isReservasjonKRR());
-        oppfoelgingsstatus.setMaaVilkaarBesvares(oppfolgingOgVilkarStatus.isVilkarMaBesvares());
-        oppfoelgingsstatus.setPersonident(oppfolgingOgVilkarStatus.getFnr());
+        oppfoelgingsstatus.setErBrukerSattTilManuell(oppfolgingStatus.isManuell());
+        oppfoelgingsstatus.setErBrukerUnderOppfoelging(oppfolgingStatus.isUnderOppfolging());
+        oppfoelgingsstatus.setErReservertIKontaktOgReservasjonsregisteret(oppfolgingStatus.isReservasjonKRR());
+        oppfoelgingsstatus.setMaaVilkaarBesvares(oppfolgingStatus.isVilkarMaBesvares());
+        oppfoelgingsstatus.setPersonident(oppfolgingStatus.getFnr());
 
         val res = new HentOppfoelgingsstatusResponse();
         res.setOppfoelgingsstatus(oppfoelgingsstatus);

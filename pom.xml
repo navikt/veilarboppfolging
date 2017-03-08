@@ -10,6 +10,7 @@
         <module>web</module>
         <module>ear</module>
         <module>config</module>
+        <module>api</module>
     </modules>
     <packaging>pom</packaging>
 
@@ -384,6 +385,11 @@
                 <groupId>javax.jms</groupId>
                 <artifactId>javax.jms-api</artifactId>
                 <version>${javax.jms-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-codec</groupId>
+                <artifactId>commons-codec</artifactId>
+                <version>1.10</version>
             </dependency>
 
             <dependency>
