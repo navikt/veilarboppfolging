@@ -14,7 +14,9 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static java.util.UUID.randomUUID;
 import static no.nav.fo.veilarbsituasjon.utils.JmsUtil.messageCreator;
@@ -41,6 +43,7 @@ public class PortefoljeRessurs {
 
     @POST
     @Consumes("application/json")
+    @Produces("application/json")
     @Path("/tilordneveileder")
     public Response postVeilederTilordninger(List<VeilederTilordning> tilordninger) {
         feilendeTilordninger = new ArrayList<>();
@@ -58,7 +61,9 @@ public class PortefoljeRessurs {
             if (feilendeTilordninger.isEmpty()) {
                 return Response.ok().entity("Veiledere tilordnet").build();
             } else {
-                return Response.ok().entity(feilendeTilordninger).build();
+                Map<String,List<VeilederTilordning>> returnertMap = new HashMap<>();
+                returnertMap.put("feilendeTilordninger",feilendeTilordninger);
+                return Response.ok().entity(returnertMap).build();
             }
 
         } catch (JMSException e) {
