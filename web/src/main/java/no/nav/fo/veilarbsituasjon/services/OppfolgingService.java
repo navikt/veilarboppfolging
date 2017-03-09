@@ -5,18 +5,15 @@ import no.nav.fo.veilarbsituasjon.mappers.OppfolgingMapper;
 import no.nav.fo.veilarbsituasjon.rest.domain.OppfolgingskontraktResponse;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.*;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.informasjon.WSPeriode;
-import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.WSHentOppfoelgingskontraktListeRequest;
-import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.WSHentOppfoelgingskontraktListeResponse;
-import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.WSHentOppfoelgingsstatusRequest;
+import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.*;
 
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.ForbiddenException;
-import javax.ws.rs.NotFoundException;
+import javax.ws.rs.*;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import static no.nav.fo.veilarbsituasjon.mappers.OppfolgingsstatusMapper.tilOppfolgingsstatus;
 
 public class OppfolgingService {
+
     private final OppfoelgingPortType oppfoelgingPortType;
 
     public OppfolgingService(OppfoelgingPortType oppfoelgingPortType) {
@@ -27,11 +24,12 @@ public class OppfolgingService {
         WSHentOppfoelgingskontraktListeRequest request = new WSHentOppfoelgingskontraktListeRequest();
         final WSPeriode periode = new WSPeriode().withFom(fom).withTom(tom);
         request.withPeriode(periode).withPersonidentifikator(fnr);
-        WSHentOppfoelgingskontraktListeResponse response = null;
+        WSHentOppfoelgingskontraktListeResponse response;
+
         try {
             response = oppfoelgingPortType.hentOppfoelgingskontraktListe(request);
         } catch (HentOppfoelgingskontraktListeSikkerhetsbegrensning hentOppfoelgingskontraktListeSikkerhetsbegrensning) {
-            hentOppfoelgingskontraktListeSikkerhetsbegrensning.printStackTrace();
+            throw new ForbiddenException("Saksbehandler har ikke tilgang til:", hentOppfoelgingskontraktListeSikkerhetsbegrensning);
         }
 
         return OppfolgingMapper.tilOppfolgingskontrakt(response);
