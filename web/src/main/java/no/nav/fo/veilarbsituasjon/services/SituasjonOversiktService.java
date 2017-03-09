@@ -3,8 +3,7 @@ package no.nav.fo.veilarbsituasjon.services;
 import lombok.val;
 import no.nav.fo.veilarbsituasjon.db.SituasjonRepository;
 import no.nav.fo.veilarbsituasjon.domain.*;
-import no.nav.fo.veilarbsituasjon.rest.domain.OpprettVilkarStatusRequest;
-import no.nav.fo.veilarbsituasjon.rest.domain.OpprettVilkarStatusResponse;
+import no.nav.fo.veilarbsituasjon.vilkar.VilkarService;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.DigitalKontaktinformasjonV1;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.informasjon.WSKontaktinformasjon;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.WSHentDigitalKontaktinformasjonRequest;
@@ -48,6 +47,9 @@ public class SituasjonOversiktService {
     @Inject
     private OppfoelgingPortType oppfoelgingPortType;
 
+    @Inject
+    private VilkarService vilkarService;
+
     @Transactional
     public OppfolgingStatus hentOppfolgingsStatus(String fnr) throws Exception {
         String aktorId = hentAktorId(fnr);
@@ -65,7 +67,7 @@ public class SituasjonOversiktService {
             );
         }
 
-        String gjeldendeVilkar = finnGjeldendeVilkar();
+        String gjeldendeVilkar = vilkarService.getVilkar(null);
         boolean vilkarMaBesvares = finnSisteVilkarStatus(situasjon)
                 .filter(brukervilkar -> GODKJENNT.equals(brukervilkar.getVilkarstatus()))
                 .map(Brukervilkar::getTekst)
@@ -81,15 +83,14 @@ public class SituasjonOversiktService {
     }
 
     public Vilkar hentVilkar() throws Exception {
-        val vilkar = new Vilkar();
-        vilkar.setText(finnGjeldendeVilkar());
-        vilkar.setHash(DigestUtils.sha256Hex(vilkar.getText()));
-        return vilkar;
+        String vilkar = vilkarService.getVilkar(null);
+        return new Vilkar()
+                .setText(vilkar)
+                .setHash(DigestUtils.sha256Hex(vilkar));
     }
 
     @Transactional
     public OppfolgingStatus godtaVilkar(String hash, String fnr) throws Exception {
-
         Situasjon situasjon = hentSituasjon(hentAktorId(fnr));
         situasjonRepository.oppdaterSituasjon(situasjon.leggTilBrukervilkar(new Brukervilkar()
                 .setDato(new Timestamp(currentTimeMillis()))
@@ -122,33 +123,6 @@ public class SituasjonOversiktService {
 
     private boolean erIArbeidOgHarInnsatsbehov(WSHentOppfoelgingsstatusResponse oppfolgingstatus) {
         return OPPFOLGINGKODER.contains(oppfolgingstatus.getServicegruppeKode());
-    }
-
-    private String finnGjeldendeVilkar() { // TODO: Last vilkår fra riktig sted.
-        return  "<b>NB! Dette er et utkast til vilkårstekst.</b>"+
-                "<p>Privat bruk(uten oppfølging fra NAV):</p>" +
-                "<ul>" +
-                "    <li>Informasjon du legger inn blir oppbevart sikkert</li>" +
-                "    <li>Informasjon knyttes ikke til deg som person, men vil kunne bli benyttet for statistikkformål" +
-                "    </li>" +
-                "    <li>Dersom du på et senere tidspunkt ber om oppfølging fra NAV vil informasjon du legger inn i" +
-                "        aktivitetsplanen bli tilgjengelig for NAV" +
-                "    </li>" +
-                "    <li>Før du deler aktivitetsplanen med NAV kan du slette aktiviteter du ikke vil dele (?)</li>" +
-                "</ul>" +
-                "<p>Oppfølgning fra NAV:</p>" +
-                "<ul>" +
-                "    <li>Informasjon du legger inn i aktivitetsplanen er synlig for NAV</li>" +
-                "    <li><span>Informasjon du legger inn i aktivitetsplanen vil bli benyttet med følgende formål:</span>" +
-                "        <ul>" +
-                "            <li>behandle din(e) sak(er) hos NAV (informasjon du legger inn i aktivitetsplanen kan få" +
-                "betydning for ytelser du mottar fra NAV)" +
-                "            </li>" +
-                "            <li>kontrollformål</li>" +
-                "        </ul>" +
-                "    </li>" +
-                "    <li>Informasjon du legger inn i planen blir oppbevart sikkert</li>" +
-                "</ul>";
     }
 
     private Situasjon hentSituasjon(String aktorId) {
