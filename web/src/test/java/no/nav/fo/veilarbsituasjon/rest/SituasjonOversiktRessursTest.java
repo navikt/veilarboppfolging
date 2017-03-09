@@ -5,6 +5,7 @@ import no.nav.fo.veilarbsituasjon.db.SituasjonRepository;
 import no.nav.fo.veilarbsituasjon.domain.*;
 import no.nav.fo.veilarbsituasjon.services.AktoerIdService;
 import no.nav.fo.veilarbsituasjon.services.SituasjonOversiktService;
+import no.nav.fo.veilarbsituasjon.vilkar.VilkarService;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.DigitalKontaktinformasjonV1;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.informasjon.WSKontaktinformasjon;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.WSHentDigitalKontaktinformasjonRequest;
@@ -34,13 +35,16 @@ import static org.mockito.Mockito.*;
 public class SituasjonOversiktRessursTest {
 
     @Mock
-    private DigitalKontaktinformasjonV1 digitalKontaktinformasjonV1;
+    private DigitalKontaktinformasjonV1 digitalKontaktinformasjonV1Mock;
 
     @Mock
-    private SituasjonRepository situasjonRepository;
+    private SituasjonRepository situasjonRepositoryMock;
 
     @Mock
-    private AktoerIdService aktoerIdService;
+    private AktoerIdService aktoerIdServiceMcok;
+
+    @Mock
+    private VilkarService vilkarServiceMock;
 
     @Mock
     private OppfoelgingPortType oppfoelgingPortType;
@@ -49,7 +53,7 @@ public class SituasjonOversiktRessursTest {
     private static final String AKTOR_ID = "aktorId";
 
     @InjectMocks
-    private SituasjonOversiktService aktivitetsplanSituasjonWebService;
+    private SituasjonOversiktService situasjonOversiktService;
 
     private Situasjon situasjon = new Situasjon().setAktorId(AKTOR_ID);
     private WSHentOppfoelgingsstatusResponse hentOppfolgingstatusResponse;
@@ -60,13 +64,11 @@ public class SituasjonOversiktRessursTest {
         hentOppfolgingstatusResponse = new WSHentOppfoelgingsstatusResponse();
         when(oppfoelgingPortType.hentOppfoelgingsstatus(any(WSHentOppfoelgingsstatusRequest.class)))
                 .thenReturn(hentOppfolgingstatusResponse);
-        when(digitalKontaktinformasjonV1.hentDigitalKontaktinformasjon(any(WSHentDigitalKontaktinformasjonRequest.class)))
+        when(digitalKontaktinformasjonV1Mock.hentDigitalKontaktinformasjon(any(WSHentDigitalKontaktinformasjonRequest.class)))
                 .thenReturn(new WSHentDigitalKontaktinformasjonResponse()
                         .withDigitalKontaktinformasjon(wsKontaktinformasjon));
+        when(vilkarServiceMock.getVilkar(null)).thenReturn("Gjeldene Vilkar");
     }
-//
-//    @Nested
-//    class hentOppfolgingsStatus {
 
     @Test
     public void ukjentAktor() throws Exception {
@@ -84,7 +86,7 @@ public class SituasjonOversiktRessursTest {
     public void databaseOppdateresMedRiktigSituasjon() throws Exception {
         gittAktor();
         hentOppfolgingStatus();
-        verify(situasjonRepository).oppdaterSituasjon(eq(new Situasjon().setAktorId(AKTOR_ID)));
+        verify(situasjonRepositoryMock).oppdaterSituasjon(eq(new Situasjon().setAktorId(AKTOR_ID)));
     }
 
     @Test
@@ -177,14 +179,12 @@ public class SituasjonOversiktRessursTest {
         verifyZeroInteractions(oppfoelgingPortType);
     }
 
-//    }
-
     private void besvarVilkar(VilkarStatus godkjennt, Vilkar vilkar) {
         gittSituasjon(situasjon.leggTilBrukervilkar(new Brukervilkar().setTekst(vilkar.getText()).setVilkarstatus(godkjennt)));
     }
 
     private Vilkar hentGjeldendeVilkar() throws Exception {
-        return aktivitetsplanSituasjonWebService.hentVilkar();
+        return situasjonOversiktService.hentVilkar();
     }
 
     private void gittOppfolgingStatus(String formidlingskode, String kvalifiseringsgruppekode) {
@@ -193,15 +193,15 @@ public class SituasjonOversiktRessursTest {
     }
 
     private OppfolgingStatus hentOppfolgingStatus() throws Exception {
-        return aktivitetsplanSituasjonWebService.hentOppfolgingsStatus(FNR);
+        return situasjonOversiktService.hentOppfolgingsStatus(FNR);
     }
 
     private void gittSituasjon(Situasjon situasjon) {
-        when(situasjonRepository.hentSituasjon(AKTOR_ID)).thenReturn(of(situasjon));
+        when(situasjonRepositoryMock.hentSituasjon(AKTOR_ID)).thenReturn(of(situasjon));
     }
 
     private void gittAktor() {
-        when(aktoerIdService.findAktoerId(FNR)).thenReturn(AKTOR_ID);
+        when(aktoerIdServiceMcok.findAktoerId(FNR)).thenReturn(AKTOR_ID);
     }
 
     private void gittReservasjon(String reservasjon) {
