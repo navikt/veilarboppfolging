@@ -11,6 +11,7 @@
         <module>ear</module>
         <module>config</module>
         <module>api</module>
+        <module>ws</module>
     </modules>
     <packaging>pom</packaging>
 
@@ -544,6 +545,29 @@
         </dependencies>
 
     </dependencyManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.vintage</groupId>
+            <artifactId>junit-vintage-engine</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+        </dependency>
+    </dependencies>
 
     <build>
         <plugins>

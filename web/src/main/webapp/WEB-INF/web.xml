@@ -54,20 +54,10 @@
         <url-pattern>/api/*</url-pattern>
     </servlet-mapping>
 
-    <servlet>
-        <servlet-name>soapservlet</servlet-name>
-        <servlet-class>no.nav.fo.veilarbsituasjon.ws.provider.SituasjonApiServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>soapservlet</servlet-name>
-        <url-pattern>/ws/*</url-pattern>
-    </servlet-mapping>
-
     <security-constraint>
         <web-resource-collection>
             <web-resource-name>Ubeskyttet</web-resource-name>
             <url-pattern>/internal/*</url-pattern>
-            <url-pattern>/ws/*</url-pattern>
         </web-resource-collection>
     </security-constraint>
     <security-constraint>

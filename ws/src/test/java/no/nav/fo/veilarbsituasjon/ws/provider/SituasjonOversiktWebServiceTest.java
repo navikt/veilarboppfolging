@@ -1,6 +1,5 @@
 package no.nav.fo.veilarbsituasjon.ws.provider;
 
-import no.nav.fo.veilarbsituasjon.StartJetty;
 import no.nav.sbl.dialogarena.common.cxf.CXFClient;
 import no.nav.sbl.dialogarena.common.jetty.Jetty;
 import no.nav.tjeneste.virksomhet.behandlesituasjon.v1.binding.BehandleSituasjonV1;
@@ -10,9 +9,12 @@ import no.nav.tjeneste.virksomhet.behandlesituasjon.v1.meldinger.HentOppfoelging
 import no.nav.tjeneste.virksomhet.behandlesituasjon.v1.meldinger.HentOppfoelgingsstatusResponse;
 import no.nav.tjeneste.virksomhet.behandlesituasjon.v1.meldinger.HentVilkaarRequest;
 import no.nav.tjeneste.virksomhet.behandlesituasjon.v1.meldinger.HentVilkaarResponse;
-import org.junit.Ignore;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
+import static no.nav.fo.veilarbsituasjon.ws.StartJettyWS.startJetty;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class SituasjonOversiktWebServiceTest {
@@ -20,21 +22,22 @@ public class SituasjonOversiktWebServiceTest {
     private static Jetty jetty;
     private BehandleSituasjonV1 behandleSituasjonV1;
 
-//    @BeforeAll
+    @BeforeAll
     public static void setUp() throws Exception {
         System.setProperty("lokal.database", Boolean.TRUE.toString());
-        jetty = StartJetty.startJetty(32548);
+        jetty = startJetty(32548);
         jetty.start();
     }
 
-//    @BeforeEach
+    @BeforeEach
     public void before() {
         behandleSituasjonV1 = new CXFClient<>(BehandleSituasjonV1.class)
-                .address("http://localhost:32548/veilarbsituasjon/ws/Situasjon")
+                .address("http://localhost:32548/veilarbsituasjon-ws/ws/Situasjon")
+                .configureStsForSystemUser()
                 .build();
     }
 
-//    @Test
+    @Test
     public void hentOppfolgingStatus() throws HentOppfoelgingsstatusSikkerhetsbegrensning {
         HentOppfoelgingsstatusRequest req = new HentOppfoelgingsstatusRequest();
         req.setPersonident("***REMOVED***");
@@ -42,14 +45,14 @@ public class SituasjonOversiktWebServiceTest {
         assertNotNull(res.getOppfoelgingsstatus());
     }
 
-//    @Test
+    @Test
     public void hentVilkar() throws HentVilkaarSikkerhetsbegrensning {
         HentVilkaarRequest req = new HentVilkaarRequest();
         HentVilkaarResponse hentVilkaarResponse = behandleSituasjonV1.hentVilkaar(req);
         System.out.println(hentVilkaarResponse.getVilkaarstekst());
     }
 
-//    @AfterAll
+    @AfterAll
     public static void tearDown() {
         System.setProperty("lokal.database", Boolean.FALSE.toString());
         jetty.stop.run();

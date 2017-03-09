@@ -18,6 +18,9 @@
     <loadBalancer isAlive="veilarbsituasjon/internal/isAlive" />
 
     <security serviceUserResourceAlias="srvveilarbsituasjon">
+        <logins>
+            <saml/>
+        </logins>
     </security>
 
     <logging serviceCalls="true"/>
@@ -49,7 +52,7 @@
     <exposed-services>
         <exposedRest path="/veilarbsituasjon/api" name="veilArbSituasjonAPI"/>
         <exposedSoap name="BehandleSituasjonV1"
-                     path="/veilarbsituasjon/ws/Situasjon"
+                     path="/veilarbsituasjon-ws/ws/Situasjon"
                      securityToken="SAML"
                      wsdlGroupId="no.nav.tjenester"
                      wsdlArtifactId="brukerdialog-behandleSituasjon-v1-tjenestespesifikasjon"

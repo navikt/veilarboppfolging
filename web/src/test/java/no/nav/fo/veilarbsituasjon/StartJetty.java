@@ -18,12 +18,6 @@ public class StartJetty {
     private static final int SSL_PORT = 8485;
 
     public static void main(String[] args) throws Exception {
-
-        Jetty jetty = startJetty(PORT);
-        jetty.start();
-    }
-
-    public static Jetty startJetty(int port) throws Exception {
         if (Boolean.parseBoolean(getProperty("lokal.database"))) {
             setupInMemoryDatabase();
         } else {
@@ -33,17 +27,18 @@ public class StartJetty {
         setupBrokerService();
         setupAutentisering();
 
-        return usingWar()
+        Jetty jetty = usingWar()
                 .at("/veilarbsituasjon")
-                .port(port)
                 .sslPort(SSL_PORT)
+                .port(PORT)
                 .loadProperties("/environment-test.properties")
                 .overrideWebXml()
                 .configureForJaspic()
                 .buildJetty();
+        jetty.start();
     }
 
-    private static void setupBrokerService() throws Exception {
+    public static void setupBrokerService() throws Exception {
         final BrokerService broker = new BrokerService();
         broker.getSystemUsage().getTempUsage().setLimit(100 * 1024 * 1024 * 100);
         broker.getSystemUsage().getStoreUsage().setLimit(100 * 1024 * 1024 * 100);

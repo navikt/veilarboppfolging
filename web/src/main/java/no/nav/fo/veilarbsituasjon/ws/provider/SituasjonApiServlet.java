@@ -14,7 +14,7 @@ public class SituasjonApiServlet extends CXFNonSpringServlet {
         new CXFEndpoint()
                 .address("/Situasjon")
                 .serviceBean(applicationContext.getBean(SituasjonOversiktWebService.class))
-                .kerberosInInterceptor()
+//                .kerberosInInterceptor()
                 .create();
     }
 

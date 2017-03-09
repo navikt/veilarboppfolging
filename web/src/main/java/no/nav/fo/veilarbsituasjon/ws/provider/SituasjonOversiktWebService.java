@@ -1,5 +1,6 @@
 package no.nav.fo.veilarbsituasjon.ws.provider;
 
+import lombok.SneakyThrows;
 import lombok.val;
 import no.nav.fo.veilarbsituasjon.domain.OppfolgingStatus;
 import no.nav.fo.veilarbsituasjon.domain.Vilkar;
@@ -46,30 +47,23 @@ public class SituasjonOversiktWebService implements BehandleSituasjonV1 {
     }
 
     @Override
+    @SneakyThrows
     public OpprettVilkaarsstatusResponse opprettVilkaarsstatus(OpprettVilkaarsstatusRequest opprettVilkaarsstatusRequest) throws OpprettVilkaarsstatusSikkerhetsbegrensning, OpprettVilkaarsstatusUgyldigInput {
-
-        OppfolgingStatus oppfolgingStatus;
-        try {
-            oppfolgingStatus = situasjonOversiktService.godtaVilkar(opprettVilkaarsstatusRequest.getHash(), opprettVilkaarsstatusRequest.getPersonident());
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-
-        OpprettVilkaarsstatusResponse res = new OpprettVilkaarsstatusResponse();
-        res.setStatusForOppdatering(1); // TODO: Services er implementert anenrledes
-
-        return res;
+        // TODO
+        // TODO
+        // TODO
+        // TODO
+        // TODO
+        OppfolgingStatus oppfolgingStatus = situasjonOversiktService.godtaVilkar(opprettVilkaarsstatusRequest.getHash(), opprettVilkaarsstatusRequest.getPersonident());
+//        OpprettVilkaarsstatusResponse res = new OpprettVilkaarsstatusResponse();
+//        res.setStatusForOppdatering(1); // TODO: Services er implementert anenrledes
+        return new OpprettVilkaarsstatusResponse();
     }
 
     @Override
+    @SneakyThrows
     public HentVilkaarResponse hentVilkaar(HentVilkaarRequest hentVilkaarRequest) throws HentVilkaarSikkerhetsbegrensning {
-        Vilkar vilkar;
-        try {
-            vilkar = situasjonOversiktService.hentVilkar();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        return mapTilHentVilkaarResponse(vilkar);
+        return mapTilHentVilkaarResponse(situasjonOversiktService.hentVilkar());
     }
 
     public HentVilkaarResponse mapTilHentVilkaarResponse(Vilkar vilkar) {
