@@ -5,18 +5,18 @@ import no.nav.fo.veilarbsituasjon.mappers.OppfolgingMapper;
 import no.nav.fo.veilarbsituasjon.rest.domain.OppfolgingskontraktResponse;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.*;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.informasjon.WSPeriode;
-import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.WSHentOppfoelgingskontraktListeRequest;
-import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.WSHentOppfoelgingskontraktListeResponse;
-import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.WSHentOppfoelgingsstatusRequest;
+import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.*;
+import org.slf4j.Logger;
 
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.ForbiddenException;
-import javax.ws.rs.NotFoundException;
+import javax.ws.rs.*;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import static no.nav.fo.veilarbsituasjon.mappers.OppfolgingsstatusMapper.tilOppfolgingsstatus;
+import static org.slf4j.LoggerFactory.getLogger;
 
 public class OppfolgingService {
+
+    private static final Logger LOG = getLogger(OppfolgingService.class);
     private final OppfoelgingPortType oppfoelgingPortType;
 
     public OppfolgingService(OppfoelgingPortType oppfoelgingPortType) {
@@ -27,11 +27,14 @@ public class OppfolgingService {
         WSHentOppfoelgingskontraktListeRequest request = new WSHentOppfoelgingskontraktListeRequest();
         final WSPeriode periode = new WSPeriode().withFom(fom).withTom(tom);
         request.withPeriode(periode).withPersonidentifikator(fnr);
-        WSHentOppfoelgingskontraktListeResponse response = null;
+        WSHentOppfoelgingskontraktListeResponse response;
+
         try {
             response = oppfoelgingPortType.hentOppfoelgingskontraktListe(request);
         } catch (HentOppfoelgingskontraktListeSikkerhetsbegrensning hentOppfoelgingskontraktListeSikkerhetsbegrensning) {
-            hentOppfoelgingskontraktListeSikkerhetsbegrensning.printStackTrace();
+            String logMessage = "Veileder har ikke tilgang til å søke opp " + fnr;
+            LOG.warn(logMessage, hentOppfoelgingskontraktListeSikkerhetsbegrensning);
+            throw new ForbiddenException(logMessage, hentOppfoelgingskontraktListeSikkerhetsbegrensning);
         }
 
         return OppfolgingMapper.tilOppfolgingskontrakt(response);
@@ -44,11 +47,17 @@ public class OppfolgingService {
         try {
             return tilOppfolgingsstatus(oppfoelgingPortType.hentOppfoelgingsstatus(request));
         } catch (HentOppfoelgingsstatusSikkerhetsbegrensning e) {
-            throw new ForbiddenException("Ikke tilgang til ressurs.", e);
+            String logMessage = "Ikke tilgang til bruker " + identifikator;
+            LOG.warn(logMessage, e);
+            throw new ForbiddenException(logMessage, e);
         } catch (HentOppfoelgingsstatusUgyldigInput e) {
-            throw new BadRequestException("Ugyldig identifikator", e);
+            String logMessage = "Ugyldig bruker identifikator: " + identifikator;
+            LOG.warn(logMessage, e);
+            throw new BadRequestException(logMessage, e);
         } catch (HentOppfoelgingsstatusPersonIkkeFunnet e) {
-            throw new NotFoundException("Fant ikke person", e);
+            String logMessage = "Fant ikke bruker: " + identifikator;
+            LOG.warn(logMessage, e);
+            throw new NotFoundException(logMessage, e);
         }
     }
 }
