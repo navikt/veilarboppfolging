@@ -10,6 +10,7 @@ import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskont
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeResponse;
 import org.slf4j.Logger;
 
+import javax.ws.rs.ForbiddenException;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import static org.slf4j.LoggerFactory.getLogger;
@@ -38,11 +39,10 @@ public class YtelseskontraktService {
             return YtelseskontraktMapper.tilYtelseskontrakt(response);
 
         } catch (HentYtelseskontraktListeSikkerhetsbegrensning hentYtelseskontraktListeSikkerhetsbegrensning) {
-            LOG.error("hentYtelseskontraktListeSikkerhetsbegrensning på riktigt!");
-            hentYtelseskontraktListeSikkerhetsbegrensning.printStackTrace();
+            String logMessage = "Veileder har ikke tilgang til å søke opp " + personId;
+            LOG.warn(logMessage, hentYtelseskontraktListeSikkerhetsbegrensning);
+            throw new ForbiddenException(logMessage, hentYtelseskontraktListeSikkerhetsbegrensning);
         }
-        return null;
     }
-
 
 }

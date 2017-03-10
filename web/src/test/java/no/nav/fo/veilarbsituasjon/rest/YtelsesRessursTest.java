@@ -1,7 +1,7 @@
 package no.nav.fo.veilarbsituasjon.rest;
 
 import no.nav.fo.veilarbsituasjon.rest.domain.*;
-import no.nav.fo.veilarbsituasjon.services.OppfoelgingService;
+import no.nav.fo.veilarbsituasjon.services.OppfolgingService;
 import no.nav.fo.veilarbsituasjon.services.YtelseskontraktService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,7 +26,7 @@ public class YtelsesRessursTest {
     private YtelseskontraktService ytelseskontraktService;
 
     @Mock
-    private OppfoelgingService oppfoelgingService;
+    private OppfolgingService oppfolgingService;
 
     @Test
     public void getOppfoelgingSkalReturnereEnRespons() throws Exception {
@@ -34,8 +34,8 @@ public class YtelsesRessursTest {
         when(ytelseskontraktService.hentYtelseskontraktListe(any(), any(), anyString())).thenReturn(
                 new YtelseskontraktResponse(singletonList(new Vedtak()), singletonList(new Ytelseskontrakt()))
         );
-        when(oppfoelgingService.hentOppfoelgingskontraktListe(any(), any(), anyString())).thenReturn(
-                new OppfoelgingskontraktResponse(singletonList(new OppfoelgingskontraktData()))
+        when(oppfolgingService.hentOppfolgingskontraktListe(any(), any(), anyString())).thenReturn(
+                new OppfolgingskontraktResponse(singletonList(new OppfolgingskontraktData()))
         );
 
         final YtelserResponse ytelser = ytelseRessurs.getYtelser("***REMOVED***");

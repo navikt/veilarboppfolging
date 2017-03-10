@@ -1,7 +1,7 @@
 package no.nav.fo.veilarbsituasjon.rest;
 
 import no.nav.fo.veilarbsituasjon.rest.domain.*;
-import no.nav.fo.veilarbsituasjon.services.OppfoelgingService;
+import no.nav.fo.veilarbsituasjon.services.OppfolgingService;
 import no.nav.fo.veilarbsituasjon.services.YtelseskontraktService;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
@@ -23,12 +23,12 @@ public class YtelseRessurs {
     private static final int MANEDER_FREM_I_TID = 1;
 
     final private YtelseskontraktService ytelseskontraktService;
-    final private OppfoelgingService oppfoelgingService;
+    final private OppfolgingService oppfolgingService;
 
 
-    public YtelseRessurs(YtelseskontraktService ytelseskontraktService, OppfoelgingService oppfoelgingService) {
+    public YtelseRessurs(YtelseskontraktService ytelseskontraktService, OppfolgingService oppfolgingService) {
         this.ytelseskontraktService = ytelseskontraktService;
-        this.oppfoelgingService = oppfoelgingService;
+        this.oppfolgingService = oppfolgingService;
     }
 
     @GET
@@ -41,12 +41,12 @@ public class YtelseRessurs {
 
         LOG.info("Henter ytelse for {}", fnr);
         final YtelseskontraktResponse ytelseskontraktResponse = ytelseskontraktService.hentYtelseskontraktListe(fom, tom, fnr);
-        final OppfoelgingskontraktResponse oppfoelgingskontraktResponse = oppfoelgingService.hentOppfoelgingskontraktListe(fom, tom, fnr);
+        final OppfolgingskontraktResponse oppfolgingskontraktResponse = oppfolgingService.hentOppfolgingskontraktListe(fom, tom, fnr);
 
         return new YtelserResponse()
                 .withVedtaksliste(ytelseskontraktResponse.getVedtaksliste())
                 .withYtelser(ytelseskontraktResponse.getYtelser())
-                .withOppfoelgingskontrakter(oppfoelgingskontraktResponse.getOppfoelgingskontrakter());
+                .withOppfoelgingskontrakter(oppfolgingskontraktResponse.getOppfoelgingskontrakter());
     }
 
 }
