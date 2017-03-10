@@ -3,7 +3,9 @@ package no.nav.fo.veilarbsituasjon.config;
 
 import no.nav.fo.veilarbsituasjon.mock.OppfoelgingV1Mock;
 import no.nav.fo.veilarbsituasjon.mock.YtelseskontraktV3Mock;
+import no.nav.modig.core.context.SubjectHandler;
 import no.nav.modig.security.ws.SystemSAMLOutInterceptor;
+import no.nav.modig.security.ws.UserSAMLOutInterceptor;
 import no.nav.sbl.dialogarena.common.cxf.CXFClient;
 import no.nav.sbl.dialogarena.types.Pingable;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
@@ -27,7 +29,10 @@ public class ArenaServiceConfig {
     @Bean
     public YtelseskontraktV3 ytelseskontraktV3() {
         YtelseskontraktV3 prod = ytelseskontraktPortType()
-                .configureStsForOnBehalfOfWithJWT()
+
+                // test dette ?
+                .withOutInterceptor(new UserSAMLOutInterceptor())
+                //
                 .build();
         YtelseskontraktV3 mock = new YtelseskontraktV3Mock();
         return createMetricsProxyWithInstanceSwitcher("Ytelseskontrakt-ArenaService", prod, mock, ARENASERVICE_YTELSESKONTRAKT_MOCK_KEY, YtelseskontraktV3.class);
@@ -42,7 +47,11 @@ public class ArenaServiceConfig {
     @Bean
     public OppfoelgingPortType oppfoelgingV1() {
         OppfoelgingPortType prod = oppfoelgingPortType()
-                .configureStsForOnBehalfOfWithJWT()
+
+                // test dette ?
+                .withOutInterceptor(new UserSAMLOutInterceptor())
+                //
+
                 .build();
         OppfoelgingPortType mock = new OppfoelgingV1Mock();
         return createMetricsProxyWithInstanceSwitcher("Oppfoelging-ArenaService", prod, mock, ARENASERVICE_OPPFOELGING_MOCK_KEY, OppfoelgingPortType.class);
