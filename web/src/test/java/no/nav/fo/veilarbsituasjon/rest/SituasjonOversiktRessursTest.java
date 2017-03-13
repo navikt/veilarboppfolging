@@ -3,6 +3,8 @@ package no.nav.fo.veilarbsituasjon.rest;
 import lombok.val;
 import no.nav.fo.veilarbsituasjon.db.SituasjonRepository;
 import no.nav.fo.veilarbsituasjon.domain.*;
+import no.nav.fo.veilarbsituasjon.domain.OppfolgingStatusData;
+import no.nav.fo.veilarbsituasjon.rest.domain.Vilkar;
 import no.nav.fo.veilarbsituasjon.services.AktoerIdService;
 import no.nav.fo.veilarbsituasjon.services.SituasjonOversiktService;
 import no.nav.fo.veilarbsituasjon.vilkar.VilkarService;
@@ -78,8 +80,8 @@ public class SituasjonOversiktRessursTest {
     @Test
     public void riktigFnr() throws Exception {
         gittAktor();
-        OppfolgingStatus oppfolgingStatus = hentOppfolgingStatus();
-        assertThat(oppfolgingStatus.fnr, equalTo(FNR));
+        OppfolgingStatusData oppfolgingStatusData = hentOppfolgingStatus();
+        assertThat(oppfolgingStatusData.fnr, equalTo(FNR));
     }
 
     @Test
@@ -94,9 +96,9 @@ public class SituasjonOversiktRessursTest {
         gittAktor();
         gittReservasjon("true");
 
-        OppfolgingStatus oppfolgingStatus = hentOppfolgingStatus();
+        OppfolgingStatusData oppfolgingStatusData = hentOppfolgingStatus();
 
-        assertThat(oppfolgingStatus.reservasjonKRR, is(true));
+        assertThat(oppfolgingStatusData.reservasjonKRR, is(true));
     }
 
     @Test
@@ -104,9 +106,9 @@ public class SituasjonOversiktRessursTest {
         gittAktor();
         gittOppfolgingStatus("ARBS", "");
 
-        OppfolgingStatus oppfolgingStatus = hentOppfolgingStatus();
+        OppfolgingStatusData oppfolgingStatusData = hentOppfolgingStatus();
 
-        assertThat(oppfolgingStatus.underOppfolging, is(true));
+        assertThat(oppfolgingStatusData.underOppfolging, is(true));
     }
 
     @Test
@@ -123,7 +125,7 @@ public class SituasjonOversiktRessursTest {
     @Test
     public void akseptererFeilVilkar() throws Exception {
         gittAktor();
-        Vilkar feilVilkar = new Vilkar().setText("feilVilkar").setHash("HASH");
+        VilkarData feilVilkar = new VilkarData().setText("feilVilkar").setHash("HASH");
         besvarVilkar(GODKJENNT, feilVilkar);
 
         assertThat(hentOppfolgingStatus().vilkarMaBesvares, is(true));
@@ -179,11 +181,11 @@ public class SituasjonOversiktRessursTest {
         verifyZeroInteractions(oppfoelgingPortType);
     }
 
-    private void besvarVilkar(VilkarStatus godkjennt, Vilkar vilkar) {
+    private void besvarVilkar(VilkarStatus godkjennt, VilkarData vilkar) {
         gittSituasjon(situasjon.leggTilBrukervilkar(new Brukervilkar().setTekst(vilkar.getText()).setVilkarstatus(godkjennt)));
     }
 
-    private Vilkar hentGjeldendeVilkar() throws Exception {
+    private VilkarData hentGjeldendeVilkar() throws Exception {
         return situasjonOversiktService.hentVilkar();
     }
 
@@ -192,7 +194,7 @@ public class SituasjonOversiktRessursTest {
         hentOppfolgingstatusResponse.setServicegruppeKode(kvalifiseringsgruppekode);
     }
 
-    private OppfolgingStatus hentOppfolgingStatus() throws Exception {
+    private OppfolgingStatusData hentOppfolgingStatus() throws Exception {
         return situasjonOversiktService.hentOppfolgingsStatus(FNR);
     }
 

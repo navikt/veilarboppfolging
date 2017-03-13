@@ -8,15 +8,14 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-
-    <artifactId>veilarbsituasjon-web</artifactId>
-    <packaging>war</packaging>
+    <artifactId>veilarbsituasjon-common</artifactId>
 
     <dependencies>
 
         <dependency>
             <groupId>no.nav.fo</groupId>
-            <artifactId>veilarbsituasjon-common</artifactId>
+            <artifactId>veilarbsituasjon-appconfig</artifactId>
+            <scope>test</scope>
         </dependency>
 
         <!--Lombok-->
@@ -27,11 +26,13 @@
 
         <!--Spring-->
         <dependency>
-            <groupId>no.nav.fo</groupId>
-            <artifactId>veilarbsituasjon-api</artifactId>
-            <version>${project.version}</version>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-beans</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
@@ -44,21 +45,9 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-tx</artifactId>
         </dependency>
-
-        <!--Jackson-->
         <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-core</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-annotations</artifactId>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-jdbc</artifactId>
         </dependency>
 
         <!--Tjenester-->
@@ -71,6 +60,10 @@
             <artifactId>oppfoelging-v1-tjenestespesifikasjon</artifactId>
         </dependency>
         <dependency>
+            <groupId>no.nav.sbl.dialogarena</groupId>
+            <artifactId>dial-nav-tjeneste-aktoer_v2</artifactId>
+        </dependency>
+        <dependency>
             <groupId>no.nav.sbl</groupId>
             <artifactId>dkif-tjenestespesifikasjon</artifactId>
         </dependency>
@@ -79,6 +72,18 @@
         <dependency>
             <groupId>no.nav.sbl.dialogarena</groupId>
             <artifactId>common-cxf</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>no.nav.sbl.dialogarena</groupId>
+            <artifactId>common-types</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>no.nav.sbl.dialogarena</groupId>
+            <artifactId>common-integrasjonsutils</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>no.nav.sbl.dialogarena</groupId>
+            <artifactId>common-web</artifactId>
         </dependency>
         <dependency>
             <groupId>no.nav.sbl.dialogarena</groupId>
@@ -95,6 +100,10 @@
         </dependency>
 
         <!--modig-->
+        <dependency>
+            <groupId>no.nav.sbl</groupId>
+            <artifactId>utave</artifactId>
+        </dependency>
         <dependency>
             <groupId>no.nav.modig</groupId>
             <artifactId>modig-security-sts</artifactId>
@@ -113,7 +122,15 @@
             <groupId>no.nav.modig</groupId>
             <artifactId>modig-log-filter</artifactId>
         </dependency>
+        <dependency>
+            <groupId>no.nav.modig</groupId>
+            <artifactId>modig-security-ws</artifactId>
+        </dependency>
 
+        <dependency>
+            <groupId>org.apache.cxf</groupId>
+            <artifactId>cxf-core</artifactId>
+        </dependency>
         <dependency>
             <groupId>xml-apis</groupId>
             <artifactId>xml-apis</artifactId>
@@ -126,55 +143,21 @@
             <groupId>javax.jms</groupId>
             <artifactId>javax.jms-api</artifactId>
         </dependency>
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+        </dependency>
 
-        <!--Jersey-->
+        <!-- TODO OppfolgingService kaster rs-exceptions, noe som ikke er ønskelig -->
         <dependency>
             <groupId>javax.ws.rs</groupId>
             <artifactId>javax.ws.rs-api</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.glassfish.jersey.core</groupId>
-            <artifactId>jersey-server</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.jersey.containers</groupId>
-            <artifactId>jersey-container-servlet-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.jersey.ext</groupId>
-            <artifactId>jersey-spring3</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.jersey.media</groupId>
-            <artifactId>jersey-media-json-jackson</artifactId>
-        </dependency>
-
-        <!--oidc-security-->
-        <dependency>
-            <groupId>no.nav.dialogarena</groupId>
-            <artifactId>oidc-security</artifactId>
-            <type>test-jar</type>
-        </dependency>
-        <dependency>
-            <groupId>no.nav.dialogarena</groupId>
-            <artifactId>oidc-security</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.geronimo.components</groupId>
-            <artifactId>geronimo-jaspi</artifactId>
-            <scope>test</scope>
-        </dependency>
 
         <!-- Test -->
         <dependency>
-            <groupId>no.nav.fo</groupId>
-            <artifactId>veilarbsituasjon-common</artifactId>
-            <type>test-jar</type>
-        </dependency>
-        <dependency>
-            <groupId>no.nav.fo</groupId>
-            <artifactId>veilarbsituasjon-appconfig</artifactId>
-            <scope>test</scope>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>
@@ -229,4 +212,20 @@
         </dependency>
 
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-jar-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>test-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
 </project>

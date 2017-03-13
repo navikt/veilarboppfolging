@@ -7,6 +7,7 @@
     <artifactId>veilarbsituasjon</artifactId>
     <version>1.0-SNAPSHOT</version>
     <modules>
+        <module>common</module>
         <module>web</module>
         <module>ear</module>
         <module>config</module>
@@ -29,7 +30,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>1.8</java.version>
 
-        <jetty.version>9.3.14.***REMOVED***28</jetty.version>
+        <jetty.version>9.3.0.M2</jetty.version>
         <spring.version>4.3.4.RELEASE</spring.version>
         <servlet-api.version>3.1.0</servlet-api.version>
         <jackson.version>2.7.2</jackson.version>
@@ -65,7 +66,7 @@
         <common-cxf.version>3.1.33</common-cxf.version>
         <common-web.version>3.1.2</common-web.version>
         <common-types.version>1.2</common-types.version>
-        <common-test.version>1.2</common-test.version>
+        <common-test.version>2.0.3</common-test.version>
 
         <xml-apis.version>1.4.01</xml-apis.version>
         <cxf-core.version>3.1.6</cxf-core.version>
@@ -93,6 +94,24 @@
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>no.nav.fo</groupId>
+                <artifactId>veilarbsituasjon-common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>no.nav.fo</groupId>
+                <artifactId>veilarbsituasjon-common</artifactId>
+                <version>${project.version}</version>
+                <type>test-jar</type>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>no.nav.fo</groupId>
+                <artifactId>veilarbsituasjon-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
             <dependency>
                 <groupId>no.nav.fo</groupId>
                 <artifactId>veilarbsituasjon-appconfig</artifactId>
@@ -205,6 +224,12 @@
                         <artifactId>jms</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-jaas</artifactId>
+                <version>${jetty.version}</version>
+                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>no.nav.sbl.dialogarena</groupId>

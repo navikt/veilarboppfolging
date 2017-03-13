@@ -1,5 +1,6 @@
 package no.nav.fo.veilarbsituasjon.ws.provider;
 
+import no.nav.modig.core.context.StaticSubjectHandler;
 import no.nav.sbl.dialogarena.common.cxf.CXFClient;
 import no.nav.sbl.dialogarena.common.jetty.Jetty;
 import no.nav.tjeneste.virksomhet.behandlesituasjon.v1.binding.BehandleSituasjonV1;
@@ -14,7 +15,9 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static no.nav.fo.veilarbsituasjon.ws.StartJettyWS.startJetty;
+import static java.lang.System.setProperty;
+import static no.nav.fo.veilarbsituasjon.ws.StartJettyWS.jettyBuilder;
+import static no.nav.modig.core.context.SubjectHandler.SUBJECTHANDLER_KEY;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class SituasjonOversiktWebServiceTest {
@@ -24,15 +27,16 @@ public class SituasjonOversiktWebServiceTest {
 
     @BeforeAll
     public static void setUp() throws Exception {
-        System.setProperty("lokal.database", Boolean.TRUE.toString());
-        jetty = startJetty(32548);
+        setProperty(SUBJECTHANDLER_KEY, StaticSubjectHandler.class.getName());
+        setProperty("lokal.database", Boolean.TRUE.toString());
+        jetty = jettyBuilder(32548).loadProperties("/situasjonOversiktWebServiceTest.properties").buildJetty();
         jetty.start();
     }
 
     @BeforeEach
     public void before() {
         behandleSituasjonV1 = new CXFClient<>(BehandleSituasjonV1.class)
-                .address("http://localhost:32548/veilarbsituasjon-ws/ws/Situasjon")
+                .address("https://localhost:32549/veilarbsituasjon-ws/ws/Situasjon")
                 .configureStsForSystemUser()
                 .build();
     }
@@ -54,7 +58,7 @@ public class SituasjonOversiktWebServiceTest {
 
     @AfterAll
     public static void tearDown() {
-        System.setProperty("lokal.database", Boolean.FALSE.toString());
+        setProperty("lokal.database", Boolean.FALSE.toString());
         jetty.stop.run();
     }
 }
