@@ -7,6 +7,7 @@ import no.nav.fo.veilarbsituasjon.services.YtelseskontraktService;
 import no.nav.sbl.dialogarena.common.abac.pep.Pep;
 import no.nav.sbl.dialogarena.common.abac.pep.domain.response.BiasedDecisionResponse;
 import no.nav.sbl.dialogarena.common.abac.pep.domain.response.Decision;
+import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
@@ -42,7 +43,12 @@ public class YtelseRessurs {
     public YtelserResponse getYtelser(@PathParam("fnr") String fnr) {
 
         final String ident = SubjectHandler.getSubjectHandler().getUid();
-        BiasedDecisionResponse callAllowed = pep.isServiceCallAllowedWithIdent(ident, "veilarb", fnr);
+        BiasedDecisionResponse callAllowed;
+        try {
+            callAllowed = pep.isServiceCallAllowedWithIdent(ident, "veilarb", fnr);
+        } catch (PepException e) {
+            throw new InternalServerErrorException("something went wrong in PEP", e);
+        }
         if (callAllowed.getBiasedDecision().equals(Decision.Deny)) {
             throw new NotAuthorizedException(ident + " doesn't have access to " + fnr);
         }
