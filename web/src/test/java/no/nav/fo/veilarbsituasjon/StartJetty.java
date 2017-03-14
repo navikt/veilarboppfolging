@@ -15,6 +15,7 @@ import static no.nav.sbl.dialogarena.common.jetty.Jetty.usingWar;
 
 class StartJetty {
     private static final int PORT = 8486;
+    private static final int SSL_PORT = 8485;
 
     public static void main(String[] args) throws Exception {
         if (Boolean.parseBoolean(getProperty("lokal.database"))) {
@@ -28,6 +29,7 @@ class StartJetty {
 
         Jetty jetty = usingWar()
                 .at("/veilarbsituasjon")
+                .sslPort(SSL_PORT)
                 .port(PORT)
                 .loadProperties("/environment-test.properties")
                 .overrideWebXml()
