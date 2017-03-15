@@ -19,7 +19,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static java.util.UUID.randomUUID;
 import static no.nav.fo.veilarbsituasjon.utils.JmsUtil.messageCreator;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -120,7 +119,7 @@ public class PortefoljeRessurs {
     }
 
 	private void leggPaaKo(OppfolgingBruker bruker) {
-		endreVeilederQueue.send(messageCreator(bruker.toString(), randomUUID().toString()));
+		endreVeilederQueue.send(messageCreator(bruker.toString()));
 	}
 
     private void settVeilederDersomFraVeilederErOK(OppfolgingBruker bruker, VeilederTilordning tilordning) throws SQLException, JMSException {
