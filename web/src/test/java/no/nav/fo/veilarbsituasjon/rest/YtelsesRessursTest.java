@@ -4,10 +4,7 @@ import no.nav.brukerdialog.security.context.SubjectHandlerUtils;
 import no.nav.brukerdialog.security.context.ThreadLocalSubjectHandler;
 import no.nav.brukerdialog.security.domain.IdentType;
 import no.nav.fo.veilarbsituasjon.rest.domain.*;
-import no.nav.fo.veilarbsituasjon.services.OppfolgingService;
-import no.nav.fo.veilarbsituasjon.services.YtelseskontraktService;
-import no.nav.sbl.dialogarena.common.abac.pep.Pep;
-import no.nav.sbl.dialogarena.common.abac.pep.domain.response.*;
+import no.nav.fo.veilarbsituasjon.services.*;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -36,7 +33,7 @@ public class YtelsesRessursTest {
     private OppfolgingService oppfolgingService;
 
     @Mock
-    Pep pep;
+    PepClient pepClient;
 
     @BeforeClass
     public static void setup() {
@@ -56,8 +53,7 @@ public class YtelsesRessursTest {
                 new OppfolgingskontraktResponse(singletonList(new OppfolgingskontraktData()))
         );
 
-        when(pep.isServiceCallAllowedWithIdent(anyString(), anyString(), anyString()))
-                .thenReturn(new BiasedDecisionResponse(Decision.Permit, new XacmlResponse()));
+        when(pepClient.isServiceCallAllowed(anyString())).thenReturn(true);
 
         final YtelserResponse ytelser = ytelseRessurs.getYtelser("***REMOVED***");
 

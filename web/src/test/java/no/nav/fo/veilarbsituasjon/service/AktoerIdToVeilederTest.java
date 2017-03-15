@@ -6,6 +6,7 @@ import no.nav.fo.veilarbsituasjon.domain.OppfolgingBruker;
 import no.nav.fo.veilarbsituasjon.rest.PortefoljeRessurs;
 import no.nav.fo.veilarbsituasjon.rest.domain.VeilederTilordning;
 import no.nav.fo.veilarbsituasjon.services.AktoerIdService;
+import no.nav.fo.veilarbsituasjon.services.PepClient;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -38,8 +39,12 @@ public class AktoerIdToVeilederTest {
     @Mock
     HttpServletResponse httpServletResponse;
 
+    @Mock
+    PepClient pepClient;
+
     @Test
     public void portefoljeRessursMustCallDAOwithAktoerIdToVeileder() {
+        when(pepClient.isServiceCallAllowed(anyString())).thenReturn(true);
 
         portefoljeRessurs.postVeilederTilordninger(Collections.singletonList(testData()));
         verify(brukerRepository, times(1)).leggTilEllerOppdaterBruker(any(OppfolgingBruker.class));
