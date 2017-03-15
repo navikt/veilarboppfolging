@@ -1,5 +1,6 @@
 package no.nav.fo.veilarbsituasjon.ws;
 
+import no.nav.modig.core.context.JettySubjectHandler;
 import no.nav.sbl.dialogarena.common.jetty.Jetty;
 import org.eclipse.jetty.jaas.JAASLoginService;
 
@@ -27,6 +28,7 @@ public class StartJettyWS {
     }
 
     private static JAASLoginService createSAMLLoginService() {
+        System.setProperty("no.nav.modig.core.context.subjectHandlerImplementationClass", JettySubjectHandler.class.getName());
         System.setProperty("java.security.auth.login.config", StartJettyWS.class.getResource("/login.conf").toExternalForm());
         JAASLoginService jaasLoginService = new JAASLoginService("SAML Realm");
         jaasLoginService.setLoginModuleName("saml");

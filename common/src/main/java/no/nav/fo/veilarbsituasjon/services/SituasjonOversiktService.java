@@ -92,11 +92,15 @@ public class SituasjonOversiktService {
     @Transactional
     public OppfolgingStatusData godtaVilkar(String hash, String fnr) throws Exception {
         Situasjon situasjon = hentSituasjon(hentAktorId(fnr));
-        situasjonRepository.oppdaterSituasjon(situasjon.leggTilBrukervilkar(new Brukervilkar()
-                .setDato(new Timestamp(currentTimeMillis()))
-                .setTekst(hash)
-                .setVilkarstatus(VilkarStatus.GODKJENNT)
-        ));
+
+        VilkarData gjeldendeVilkar = hentVilkar();
+        if (gjeldendeVilkar.getHash().equals(hash)) {
+            situasjonRepository.oppdaterSituasjon(situasjon.leggTilBrukervilkar(new Brukervilkar()
+                    .setDato(new Timestamp(currentTimeMillis()))
+                    .setTekst(gjeldendeVilkar.getText())
+                    .setVilkarstatus(VilkarStatus.GODKJENNT)
+            ));
+        }
         return hentOppfolgingsStatus(fnr);
     }
 
