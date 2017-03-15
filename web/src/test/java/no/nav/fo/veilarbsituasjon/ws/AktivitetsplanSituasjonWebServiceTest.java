@@ -2,10 +2,9 @@ package no.nav.fo.veilarbsituasjon.ws;
 
 import lombok.val;
 import no.nav.fo.veilarbsituasjon.db.SituasjonRepository;
-import no.nav.fo.veilarbsituasjon.domain.Brukervilkar;
-import no.nav.fo.veilarbsituasjon.domain.Situasjon;
-import no.nav.fo.veilarbsituasjon.domain.VilkarStatus;
+import no.nav.fo.veilarbsituasjon.domain.*;
 import no.nav.fo.veilarbsituasjon.services.AktoerIdService;
+import no.nav.fo.veilarbsituasjon.services.PepClient;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.DigitalKontaktinformasjonV1;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.informasjon.WSKontaktinformasjon;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.WSHentDigitalKontaktinformasjonRequest;
@@ -13,9 +12,7 @@ import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.WSHentD
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.WSHentOppfoelgingsstatusRequest;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.WSHentOppfoelgingsstatusResponse;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 import static java.util.Optional.of;
 import static no.nav.fo.veilarbsituasjon.domain.VilkarStatus.GODKJENNT;
@@ -34,10 +31,11 @@ public class AktivitetsplanSituasjonWebServiceTest {
     private SituasjonRepository situasjonRepository = mock(SituasjonRepository.class);
     private AktoerIdService aktoerIdService = mock(AktoerIdService.class);
     private OppfoelgingPortType oppfoelgingPortType = mock(OppfoelgingPortType.class);
+    private PepClient pepClient = mock(PepClient.class);
 
     private static final String FNR = "fnr";
-    private static final String AKTOR_ID = "aktorId";
 
+    private static final String AKTOR_ID = "aktorId";
     private AktivitetsplanSituasjonWebService aktivitetsplanSituasjonWebService;
     private Situasjon situasjon = new Situasjon().setAktorId(AKTOR_ID);
     private WSHentOppfoelgingsstatusResponse hentOppfolgingstatusResponse;
@@ -45,7 +43,7 @@ public class AktivitetsplanSituasjonWebServiceTest {
 
     @BeforeEach
     public void setup() throws Exception {
-        aktivitetsplanSituasjonWebService = new AktivitetsplanSituasjonWebService(digitalKontaktinformasjonV1, situasjonRepository, aktoerIdService, oppfoelgingPortType);
+        aktivitetsplanSituasjonWebService = new AktivitetsplanSituasjonWebService(digitalKontaktinformasjonV1, situasjonRepository, aktoerIdService, oppfoelgingPortType, pepClient);
         hentOppfolgingstatusResponse = new WSHentOppfoelgingsstatusResponse();
         when(oppfoelgingPortType.hentOppfoelgingsstatus(any(WSHentOppfoelgingsstatusRequest.class)))
                 .thenReturn(hentOppfolgingstatusResponse);
