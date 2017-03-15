@@ -2,9 +2,8 @@ package no.nav.fo.veilarbsituasjon.config;
 
 import no.nav.fo.veilarbsituasjon.db.BrukerRepository;
 import no.nav.fo.veilarbsituasjon.db.SituasjonRepository;
-import no.nav.fo.veilarbsituasjon.services.AktoerIdService;
-import no.nav.fo.veilarbsituasjon.services.OppfolgingService;
-import no.nav.fo.veilarbsituasjon.services.YtelseskontraktService;
+import no.nav.fo.veilarbsituasjon.services.*;
+import no.nav.sbl.dialogarena.common.abac.pep.Pep;
 import no.nav.tjeneste.virksomhet.aktoer.v2.AktoerV2;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3;
@@ -19,12 +18,14 @@ public class ServiceConfig {
     private final OppfoelgingPortType oppfoelgingPortType;
     private AktoerV2 aktoerV2;
     private JdbcTemplate db;
+    private final Pep pep;
 
-    public ServiceConfig(YtelseskontraktV3 ytelseskontraktV3, OppfoelgingPortType oppfoelgingPortType, AktoerV2 aktoerV2, JdbcTemplate db) {
+    public ServiceConfig(YtelseskontraktV3 ytelseskontraktV3, OppfoelgingPortType oppfoelgingPortType, AktoerV2 aktoerV2, JdbcTemplate db, Pep pep) {
         this.ytelseskontraktV3 = ytelseskontraktV3;
         this.oppfoelgingPortType = oppfoelgingPortType;
         this.aktoerV2 = aktoerV2;
         this.db = db;
+        this.pep = pep;
     }
 
     @Bean
@@ -38,13 +39,22 @@ public class ServiceConfig {
     }
 
     @Bean
-    AktoerIdService aktoerIdService() { return new AktoerIdService(aktoerV2); }
+    AktoerIdService aktoerIdService() {
+        return new AktoerIdService(aktoerV2);
+    }
 
     @Bean
-    BrukerRepository brukerRepository() { return new BrukerRepository(db); }
+    BrukerRepository brukerRepository() {
+        return new BrukerRepository(db);
+    }
 
     @Bean
-    SituasjonRepository situasjonRepository() { return new SituasjonRepository(db); }
+    SituasjonRepository situasjonRepository() {
+        return new SituasjonRepository(db);
+    }
 
-
+    @Bean
+    PepClient pepClient() {
+        return new PepClient(pep);
+    }
 }
