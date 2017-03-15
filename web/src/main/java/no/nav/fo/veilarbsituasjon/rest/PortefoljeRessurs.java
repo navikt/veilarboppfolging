@@ -5,6 +5,7 @@ import no.nav.fo.veilarbsituasjon.domain.OppfolgingBruker;
 import no.nav.fo.veilarbsituasjon.rest.domain.TilordneVeilederResponse;
 import no.nav.fo.veilarbsituasjon.rest.domain.VeilederTilordning;
 import no.nav.fo.veilarbsituasjon.services.AktoerIdService;
+
 import org.slf4j.Logger;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Component;
@@ -13,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.jms.JMSException;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
+
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -80,15 +82,28 @@ public class PortefoljeRessurs {
     @GET
     @Path("/sendalleveiledertilordninger")
     public Response getSendAlleVeiledertilordninger() {
+        long start = System.currentTimeMillis();
+        LOG.info("Sender alle veiledertilordninger");
         List<OppfolgingBruker> brukere = brukerRepository.hentAlleVeiledertilordninger();
-        try {
-            for (OppfolgingBruker bruker : brukere) {
+        int sendt = 0;
+        int feilet = 0;
+        for (OppfolgingBruker bruker : brukere) {
+            try {
                 leggPaaKo(bruker);
+                sendt++;
+            } catch (Exception e) {
+                feilet++;
             }
-            return Response.ok().entity("Alle veiledertilordninger sendt").build();
-        } catch(Exception e) {
-            LOG.error("Kunne ikke legge alle veiledertilordninge på ko");
-            return Response.serverError().entity("Kunne ikke sende alle veiledertilordninger").build();
+        }
+        String status = String.format("Sending fullført. Sendt: %1$s/%2$s. Feilet: %3$s/%2$s. Tid brukt: %4$s ms", 
+                sendt, brukere.size(), feilet, System.currentTimeMillis() - start);
+
+        if (feilet > 0) {
+            LOG.error(status);
+            return Response.serverError().entity(status).build();
+        } else {
+            LOG.info(status);
+            return Response.ok().entity(status).build();
         }
     }
 
