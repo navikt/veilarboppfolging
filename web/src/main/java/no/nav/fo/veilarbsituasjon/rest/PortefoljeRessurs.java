@@ -5,6 +5,7 @@ import no.nav.fo.veilarbsituasjon.domain.OppfolgingBruker;
 import no.nav.fo.veilarbsituasjon.rest.domain.TilordneVeilederResponse;
 import no.nav.fo.veilarbsituasjon.rest.domain.VeilederTilordning;
 import no.nav.fo.veilarbsituasjon.services.AktoerIdService;
+import no.nav.fo.veilarbsituasjon.services.PepClient;
 import org.slf4j.Logger;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Component;
@@ -31,13 +32,15 @@ public class PortefoljeRessurs {
     private JmsTemplate endreVeilederQueue;
     private AktoerIdService aktoerIdService;
     private BrukerRepository brukerRepository;
+    private final PepClient pepClient;
     private List<VeilederTilordning> feilendeTilordninger;
 
 
-    public PortefoljeRessurs(JmsTemplate endreVeilederQueue, AktoerIdService aktoerIdService, BrukerRepository brukerRepository) {
+    public PortefoljeRessurs(JmsTemplate endreVeilederQueue, AktoerIdService aktoerIdService, BrukerRepository brukerRepository, PepClient pepClient) {
         this.endreVeilederQueue = endreVeilederQueue;
         this.aktoerIdService = aktoerIdService;
         this.brukerRepository = brukerRepository;
+        this.pepClient = pepClient;
     }
 
     @POST
@@ -49,7 +52,9 @@ public class PortefoljeRessurs {
         try {
 
             for (VeilederTilordning tilordning : tilordninger) {
-                String aktoerId = aktoerIdService.findAktoerId(tilordning.getBrukerFnr());
+                final String fnr = tilordning.getBrukerFnr();
+                pepClient.isServiceCallAllowed(fnr);
+                String aktoerId = aktoerIdService.findAktoerId(fnr);
                 OppfolgingBruker bruker = new OppfolgingBruker()
                         .setVeileder(tilordning.getTilVeilederId())
                         .setAktoerid(aktoerId);
