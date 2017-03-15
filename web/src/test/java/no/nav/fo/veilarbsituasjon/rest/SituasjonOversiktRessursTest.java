@@ -22,6 +22,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import java.sql.Timestamp;
+
+import static java.lang.System.currentTimeMillis;
 import static java.util.Optional.of;
 import static no.nav.fo.veilarbsituasjon.domain.VilkarStatus.GODKJENNT;
 import static no.nav.fo.veilarbsituasjon.domain.VilkarStatus.IKKE_BESVART;
@@ -117,7 +120,7 @@ public class SituasjonOversiktRessursTest {
 
         assertThat(hentOppfolgingStatus().vilkarMaBesvares, is(true));
 
-        besvarVilkar(GODKJENNT, hentGjeldendeVilkar());
+        besvarVilkar(GODKJENNT, hentGjeldendeVilkar().getText());
 
         assertThat(hentOppfolgingStatus().vilkarMaBesvares, is(false));
     }
@@ -126,7 +129,7 @@ public class SituasjonOversiktRessursTest {
     public void akseptererFeilVilkar() throws Exception {
         gittAktor();
         VilkarData feilVilkar = new VilkarData().setText("feilVilkar").setHash("HASH");
-        besvarVilkar(GODKJENNT, feilVilkar);
+        besvarVilkar(GODKJENNT, feilVilkar.getText());
 
         assertThat(hentOppfolgingStatus().vilkarMaBesvares, is(true));
     }
@@ -135,7 +138,7 @@ public class SituasjonOversiktRessursTest {
     public void vilkarIkkeBesvart() throws Exception {
         gittAktor();
 
-        besvarVilkar(IKKE_BESVART, hentGjeldendeVilkar());
+        besvarVilkar(IKKE_BESVART, hentGjeldendeVilkar().getText());
 
         assertThat(hentOppfolgingStatus().vilkarMaBesvares, is(true));
     }
@@ -181,8 +184,15 @@ public class SituasjonOversiktRessursTest {
         verifyZeroInteractions(oppfoelgingPortType);
     }
 
-    private void besvarVilkar(VilkarStatus godkjennt, VilkarData vilkar) {
-        gittSituasjon(situasjon.leggTilBrukervilkar(new Brukervilkar().setTekst(vilkar.getText()).setVilkarstatus(godkjennt)));
+    private void besvarVilkar(VilkarStatus vilkarStatus, String tekst) {
+        gittSituasjon(situasjon.setGjeldendeBrukervilkar(
+                new Brukervilkar(
+                        situasjon.getAktorId(),
+                        new Timestamp(currentTimeMillis()),
+                        vilkarStatus,
+                        tekst
+                ))
+        );
     }
 
     private VilkarData hentGjeldendeVilkar() throws Exception {

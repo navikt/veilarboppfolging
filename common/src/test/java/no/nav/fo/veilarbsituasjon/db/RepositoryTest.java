@@ -2,7 +2,10 @@ package no.nav.fo.veilarbsituasjon.db;
 
 import com.google.common.base.Joiner;
 import no.nav.fo.veilarbsituasjon.IntegrasjonsTest;
-import no.nav.fo.veilarbsituasjon.domain.*;
+import no.nav.fo.veilarbsituasjon.domain.Brukervilkar;
+import no.nav.fo.veilarbsituasjon.domain.OppfolgingBruker;
+import no.nav.fo.veilarbsituasjon.domain.Situasjon;
+import no.nav.fo.veilarbsituasjon.domain.VilkarStatus;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -40,35 +43,40 @@ public class RepositoryTest extends IntegrasjonsTest {
     class oppdaterSituasjon {
         @Test
         public void kanHenteSammeSituasjon() throws Exception {
-            Situasjon situasjon = gittSituasjonForAktor(AKTOR_ID);
-            Optional<Situasjon> uthentetSituasjon = hentSituasjon(AKTOR_ID);
+            Situasjon situasjon = new Situasjon().setAktorId("0001").setOppfolging(true);
+            situasjonRepository.opprettSituasjon(situasjon);
+            Optional<Situasjon> uthentetSituasjon = hentSituasjon("0001");
             sjekkLikeSituasjoner(situasjon, uthentetSituasjon);
         }
 
         @Test
         public void oppdatererStatus() throws Exception {
             Situasjon situasjon = gittSituasjonForAktor(AKTOR_ID);
-            situasjon.leggTilBrukervilkar(new Brukervilkar()
-                    .setDato(new Timestamp(currentTimeMillis()))
-                    .setTekst("hash")
-                    .setVilkarstatus(VilkarStatus.GODKJENNT)
+            situasjon.setGjeldendeBrukervilkar(
+                    new Brukervilkar(
+                            AKTOR_ID,
+                            new Timestamp(currentTimeMillis()),
+                            VilkarStatus.GODKJENNT,
+                            "Vilkårstekst"
+                    )
             );
             situasjonRepository.oppdaterSituasjon(situasjon);
+            situasjonRepository.opprettBrukervilkar(situasjon.getGjeldendeBrukervilkar());
             Optional<Situasjon> uthentetSituasjon = hentSituasjon(AKTOR_ID);
-            sjekkLikeSituasjoner(situasjon, uthentetSituasjon);
+            assertThat(situasjon.getGjeldendeBrukervilkar().getVilkarstatus(), equalTo(uthentetSituasjon.get().getGjeldendeBrukervilkar().getVilkarstatus()));
         }
     }
-
 
     @Nested
     class leggTilEllerOppdaterBruker {
         String aktoerid = "111111";
+
         @Test
         public void skalLeggeTilBruker() {
             brukerRepository.leggTilEllerOppdaterBruker(new OppfolgingBruker()
                     .setAktoerid(aktoerid)
                     .setVeileder("***REMOVED***"));
-            assertThat(brukerRepository.hentVeilederForAktoer(aktoerid),is("***REMOVED***"));
+            assertThat(brukerRepository.hentVeilederForAktoer(aktoerid), is("***REMOVED***"));
         }
 
         @Test
@@ -81,7 +89,7 @@ public class RepositoryTest extends IntegrasjonsTest {
                     .setAktoerid(aktoerid)
                     .setVeileder("***REMOVED***"));
 
-            assertThat(brukerRepository.hentVeilederForAktoer(aktoerid),is("***REMOVED***"));
+            assertThat(brukerRepository.hentVeilederForAktoer(aktoerid), is("***REMOVED***"));
         }
     }
 
@@ -109,13 +117,17 @@ public class RepositoryTest extends IntegrasjonsTest {
 
     }
 
-    private void sjekkLikeSituasjoner(Situasjon oppdatertSituasjon, Optional<Situasjon> situasjon) {
-        assertThat(oppdatertSituasjon, equalTo(situasjon.get()));
+    private void sjekkLikeSituasjoner(Situasjon oprinneligSituasjon, Optional<Situasjon> situasjon) {
+        assertThat(oprinneligSituasjon, equalTo(situasjon.get()));
     }
 
     private Situasjon gittSituasjonForAktor(String aktorId) {
         Situasjon oppdatertSituasjon = new Situasjon().setAktorId(aktorId).setOppfolging(true);
-        situasjonRepository.oppdaterSituasjon(oppdatertSituasjon);
+        if (situasjonRepository.situasjonFinnes(oppdatertSituasjon)) {
+            situasjonRepository.oppdaterSituasjon(oppdatertSituasjon);
+        } else {
+            situasjonRepository.opprettSituasjon(oppdatertSituasjon);
+        }
         return oppdatertSituasjon;
     }
 

@@ -4,6 +4,11 @@ import lombok.val;
 import no.nav.fo.veilarbsituasjon.db.SituasjonRepository;
 import no.nav.fo.veilarbsituasjon.domain.*;
 import no.nav.fo.veilarbsituasjon.vilkar.VilkarService;
+import no.nav.fo.veilarbsituasjon.domain.Brukervilkar;
+import no.nav.fo.veilarbsituasjon.domain.Situasjon;
+import no.nav.fo.veilarbsituasjon.domain.Status;
+import no.nav.fo.veilarbsituasjon.domain.VilkarStatus;
+import no.nav.fo.veilarbsituasjon.services.AktoerIdService;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.DigitalKontaktinformasjonV1;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.informasjon.WSKontaktinformasjon;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.WSHentDigitalKontaktinformasjonRequest;
@@ -23,7 +28,6 @@ import java.util.Set;
 
 import static java.lang.System.currentTimeMillis;
 import static java.util.Arrays.asList;
-import static java.util.Comparator.comparing;
 import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static no.nav.fo.veilarbsituasjon.domain.VilkarStatus.GODKJENNT;
@@ -61,9 +65,22 @@ public class SituasjonOversiktService {
 
         boolean erReservert = erReservertIKRR(fnr);
         if (erReservert && situasjon.isOppfolging()) {
-            situasjonRepository.oppdaterSituasjon(situasjon
-                    .setManuell(true)
-                    .leggTilBrukervilkar(new Brukervilkar().setVilkarstatus(IKKE_BESVART))
+            Timestamp dato = new Timestamp(currentTimeMillis());
+            situasjonRepository.opprettStatus(
+                    new Status(
+                            aktorId,
+                            true,
+                            dato,
+                            "Reservert og under oppfølging"
+                    )
+            );
+            situasjonRepository.opprettBrukervilkar(
+                    new Brukervilkar(
+                            aktorId,
+                            dato,
+                            IKKE_BESVART,
+                            ""
+                    )
             );
         }
 
@@ -77,7 +94,10 @@ public class SituasjonOversiktService {
         return new OppfolgingStatusData()
                 .setFnr(fnr)
                 .setReservasjonKRR(erReservert)
-                .setManuell(situasjon.isManuell())
+                .setManuell(Optional.ofNullable(situasjon.getGjeldendeStatus())
+                        .map(Status::isManuell)
+                        .orElse(false)
+                )
                 .setUnderOppfolging(situasjon.isOppfolging())
                 .setVilkarMaBesvares(vilkarMaBesvares);
     }
@@ -95,10 +115,12 @@ public class SituasjonOversiktService {
 
         VilkarData gjeldendeVilkar = hentVilkar();
         if (gjeldendeVilkar.getHash().equals(hash)) {
-            situasjonRepository.oppdaterSituasjon(situasjon.leggTilBrukervilkar(new Brukervilkar()
-                    .setDato(new Timestamp(currentTimeMillis()))
-                    .setTekst(gjeldendeVilkar.getText())
-                    .setVilkarstatus(VilkarStatus.GODKJENNT)
+            situasjonRepository.opprettBrukervilkar(
+                    new Brukervilkar(
+                            situasjon.getAktorId(),
+                            new Timestamp(currentTimeMillis()),
+                            VilkarStatus.GODKJENNT,
+                            hash
             ));
         }
         return hentOppfolgingsStatus(fnr);
@@ -139,9 +161,7 @@ public class SituasjonOversiktService {
     }
 
     private Optional<Brukervilkar> finnSisteVilkarStatus(Situasjon situasjon) {
-        return situasjon.getBrukervilkar().stream()
-                .sorted(comparing(Brukervilkar::getDato).reversed())
-                .findFirst();
+        return Optional.ofNullable(situasjon.getGjeldendeBrukervilkar());
     }
 
 
