@@ -144,17 +144,6 @@ public class SituasjonOversiktRessursTest {
     }
 
     @Test
-    public void underOppfolgingOgReservert() throws Exception {
-        gittAktor();
-        gittOppfolgingStatus("ARBS", "");
-        gittReservasjon("true");
-
-        val oppfolgingOgVilkarStatus = hentOppfolgingStatus();
-
-        assertThat(oppfolgingOgVilkarStatus.manuell, is(true));
-    }
-
-    @Test
     public void ikkeArbeidssokerUnderOppfolging() throws Exception {
         gittAktor();
         gittOppfolgingStatus("IARBS", "BATT");
