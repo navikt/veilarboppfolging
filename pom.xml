@@ -61,7 +61,7 @@
         <common-web.version>3.1.2</common-web.version>
         <common-types.version>1.2</common-types.version>
         <common-test.version>1.2</common-test.version>
-        <common-abac.version>1.0.24</common-abac.version>
+        <common-abac.version>1.0.26</common-abac.version>
 
         <xml-apis.version>1.4.01</xml-apis.version>
         <cxf-core.version>3.1.6</cxf-core.version>
