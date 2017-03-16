@@ -4,11 +4,6 @@ import lombok.val;
 import no.nav.fo.veilarbsituasjon.db.SituasjonRepository;
 import no.nav.fo.veilarbsituasjon.domain.*;
 import no.nav.fo.veilarbsituasjon.vilkar.VilkarService;
-import no.nav.fo.veilarbsituasjon.domain.Brukervilkar;
-import no.nav.fo.veilarbsituasjon.domain.Situasjon;
-import no.nav.fo.veilarbsituasjon.domain.Status;
-import no.nav.fo.veilarbsituasjon.domain.VilkarStatus;
-import no.nav.fo.veilarbsituasjon.services.AktoerIdService;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.DigitalKontaktinformasjonV1;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.informasjon.WSKontaktinformasjon;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.WSHentDigitalKontaktinformasjonRequest;
@@ -121,7 +116,7 @@ public class SituasjonOversiktService {
                             new Timestamp(currentTimeMillis()),
                             VilkarStatus.GODKJENNT,
                             hash
-            ));
+                    ));
         }
         return hentOppfolgingsStatus(fnr);
     }
@@ -152,7 +147,8 @@ public class SituasjonOversiktService {
     }
 
     private Situasjon hentSituasjon(String aktorId) {
-        return situasjonRepository.hentSituasjon(aktorId).orElse(new Situasjon().setAktorId(aktorId));
+        return situasjonRepository.hentSituasjon(aktorId)
+                .orElse(situasjonRepository.opprettSituasjon(new Situasjon().setAktorId(aktorId)));
     }
 
     private String hentAktorId(String fnr) {

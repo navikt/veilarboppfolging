@@ -60,7 +60,7 @@ public class SituasjonRepository {
     }
 
     @Transactional // TODO trengs egentlig denne?
-    public void opprettSituasjon(Situasjon situasjon) {
+    public Situasjon opprettSituasjon(Situasjon situasjon) {
         jdbcTemplate.update(
                 "INSERT INTO situasjon(aktorid, oppfolging, gjeldende_status, gjeldende_brukervilkar) VALUES(?, ?, ?, ?)",
                 situasjon.getAktorId(),
@@ -70,6 +70,7 @@ public class SituasjonRepository {
         );
         Optional.ofNullable(situasjon.getGjeldendeBrukervilkar()).ifPresent(this::opprettBrukervilkar);
         Optional.ofNullable(situasjon.getGjeldendeStatus()).ifPresent(this::opprettStatus);
+        return situasjon;
     }
 
     public boolean situasjonFinnes(Situasjon situasjon) {
