@@ -115,7 +115,7 @@ public class PortefoljeRessurs {
             skrivTilDataBaseOgLeggPaaKo(bruker);
         } else {
             feilendeTilordninger.add(tilordning);
-            LOG.info("Aktoerid %s kunne ikke tildeles ettersom fraVeileder er feil", bruker.getAktoerid());
+            LOG.info("Aktoerid {} kunne ikke tildeles ettersom fraVeileder er feil", bruker.getAktoerid());
         }
     }
 
