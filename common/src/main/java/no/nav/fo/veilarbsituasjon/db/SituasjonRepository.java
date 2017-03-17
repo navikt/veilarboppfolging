@@ -96,12 +96,14 @@ public class SituasjonRepository {
 
     private void opprettSituasjonBrukervilkar(Brukervilkar vilkar) {
         jdbcTemplate.update(
-                "INSERT INTO brukervilkar(id, aktorid, dato, vilkarstatus, tekst) VALUES(?, ?, ?, ?, ?)",
+                "INSERT INTO brukervilkar(id, aktorid, dato, vilkarstatus, tekst, hash) VALUES(?, ?, ?, ?, ?, ?)",
                 vilkar.getId(),
                 vilkar.getAktorId(),
                 vilkar.getDato(),
                 vilkar.getVilkarstatus().name(),
-                vilkar.getTekst()
+                vilkar.getTekst(),
+                vilkar.getHash()
+
         );
     }
 
@@ -151,7 +153,8 @@ public class SituasjonRepository {
                 result.getString("aktorid"),
                 result.getTimestamp("dato"),
                 VilkarStatus.valueOf(result.getString("vilkarstatus")),
-                result.getString("tekst")
+                result.getString("tekst"),
+                result.getString("hash")
         ).setId(result.getLong("id"));
     }
 

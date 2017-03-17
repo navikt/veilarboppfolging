@@ -74,16 +74,17 @@ public class SituasjonOversiktService {
                             aktorId,
                             dato,
                             IKKE_BESVART,
+                            "",
                             ""
                     )
             );
         }
 
-        String gjeldendeVilkar = vilkarService.getVilkar(null);
+        VilkarData gjeldendeVilkar = hentVilkar();
         boolean vilkarMaBesvares = finnSisteVilkarStatus(situasjon)
                 .filter(brukervilkar -> GODKJENNT.equals(brukervilkar.getVilkarstatus()))
-                .map(Brukervilkar::getTekst)
-                .map(brukerVilkar -> !brukerVilkar.equals(gjeldendeVilkar))
+                .map(Brukervilkar::getHash)
+                .map(brukerVilkar -> !brukerVilkar.equals(gjeldendeVilkar.getHash()))
                 .orElse(true);
 
         return new OppfolgingStatusData()
@@ -115,6 +116,7 @@ public class SituasjonOversiktService {
                             situasjon.getAktorId(),
                             new Timestamp(currentTimeMillis()),
                             VilkarStatus.GODKJENNT,
+                            gjeldendeVilkar.getText(),
                             hash
                     ));
         }

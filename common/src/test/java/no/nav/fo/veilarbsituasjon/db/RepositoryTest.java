@@ -57,7 +57,8 @@ public class RepositoryTest extends IntegrasjonsTest {
                             AKTOR_ID,
                             new Timestamp(currentTimeMillis()),
                             VilkarStatus.GODKJENNT,
-                            "Vilkårstekst"
+                            "Vilkårstekst",
+                            "Vilkårshash"
                     )
             );
             situasjonRepository.oppdaterSituasjon(situasjon);

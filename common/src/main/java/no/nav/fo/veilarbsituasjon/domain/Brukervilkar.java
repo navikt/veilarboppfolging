@@ -8,11 +8,12 @@ import java.sql.Timestamp;
 @Data
 @Accessors(chain = true)
 public class Brukervilkar {
-    public Brukervilkar(String aktorId, Timestamp dato, VilkarStatus vilkarstatus, String tekst) {
+    public Brukervilkar(String aktorId, Timestamp dato, VilkarStatus vilkarstatus, String tekst, String hash) {
         this.aktorId = aktorId;
         this.dato = dato;
         this.vilkarstatus = vilkarstatus;
         this.tekst = tekst;
+        this.hash = hash;
     }
 
     private long id;
@@ -20,4 +21,5 @@ public class Brukervilkar {
     private Timestamp dato;
     private VilkarStatus vilkarstatus;
     private String tekst;
+    private String hash;
 }
