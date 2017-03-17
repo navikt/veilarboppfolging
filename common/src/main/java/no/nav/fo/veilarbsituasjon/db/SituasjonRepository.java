@@ -151,7 +151,7 @@ public class SituasjonRepository {
     private Brukervilkar mapTilBrukervilkar(ResultSet result) {
         return new Brukervilkar(
                 result.getString("aktorid"),
-                result.getTimestamp("dato"),
+                result.getTimestamp("brukervilkar.dato"),
                 VilkarStatus.valueOf(result.getString("vilkarstatus")),
                 result.getString("tekst"),
                 result.getString("hash")
