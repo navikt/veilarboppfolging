@@ -7,6 +7,7 @@ import lombok.val;
 import no.nav.fo.veilarbsituasjon.db.SituasjonRepository;
 import no.nav.fo.veilarbsituasjon.domain.Brukervilkar;
 import no.nav.fo.veilarbsituasjon.domain.Situasjon;
+import no.nav.fo.veilarbsituasjon.domain.Status;
 import no.nav.fo.veilarbsituasjon.domain.VilkarStatus;
 import no.nav.fo.veilarbsituasjon.services.AktoerIdService;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.DigitalKontaktinformasjonV1;
@@ -27,7 +28,6 @@ import java.util.Set;
 
 import static java.lang.System.currentTimeMillis;
 import static java.util.Arrays.asList;
-import static java.util.Comparator.comparing;
 import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
@@ -67,14 +67,27 @@ public class AktivitetsplanSituasjonWebService {
         Situasjon situasjon = hentSituasjon(aktorId);
 
         if (!situasjon.isOppfolging()) {
-            situasjonRepository.oppdaterSituasjon(situasjon.setOppfolging(erUnderOppfolging(aktorId)));
+            situasjonRepository.oppdaterSituasjon(situasjon.setOppfolging(erUnderOppfolging(fnr)));
         }
 
         boolean erReservert = erReservertIKRR(fnr);
         if (erReservert && situasjon.isOppfolging()) {
-            situasjonRepository.oppdaterSituasjon(situasjon
-                    .setManuell(true)
-                    .leggTilBrukervilkar(new Brukervilkar().setVilkarstatus(IKKE_BESVART))
+            Timestamp dato = new Timestamp(currentTimeMillis());
+            situasjonRepository.opprettStatus(
+                    new Status(
+                            aktorId,
+                            true,
+                            dato,
+                            "Reservert og under oppfølging"
+                    )
+            );
+            situasjonRepository.opprettBrukervilkar(
+                    new Brukervilkar(
+                            aktorId,
+                            dato,
+                            IKKE_BESVART,
+                            ""
+                    )
             );
         }
 
@@ -88,7 +101,10 @@ public class AktivitetsplanSituasjonWebService {
         return new OppfolgingOgVilkarStatus()
                 .setFnr(fnr)
                 .setReservasjonKRR(erReservert)
-                .setManuell(situasjon.isManuell())
+                .setManuell(Optional.ofNullable(situasjon.getGjeldendeStatus())
+                        .map(Status::isManuell)
+                        .orElse(false)
+                )
                 .setUnderOppfolging(situasjon.isOppfolging())
                 .setVilkarMaBesvares(vilkarMaBesvares);
     }
@@ -103,11 +119,13 @@ public class AktivitetsplanSituasjonWebService {
     public OpprettVilkarStatusResponse opprettVilkaarstatus(OpprettVilkarStatusRequest opprettVilkarStatusRequest) throws Exception {
         Situasjon situasjon = hentSituasjon(hentAktorId(opprettVilkarStatusRequest.fnr));
 
-        situasjonRepository.oppdaterSituasjon(situasjon.leggTilBrukervilkar(new Brukervilkar()
-                        .setDato(new Timestamp(currentTimeMillis()))
-                        .setTekst(opprettVilkarStatusRequest.hash)
-                        .setVilkarstatus(opprettVilkarStatusRequest.status)
-                )
+        // TODO Hva gjør vi med hashen vs. teksten?
+        situasjonRepository.opprettBrukervilkar(
+                new Brukervilkar(
+                        situasjon.getAktorId(),
+                        new Timestamp(currentTimeMillis()),
+                        opprettVilkarStatusRequest.status,
+                        opprettVilkarStatusRequest.hash)
         );
 
         return new OpprettVilkarStatusResponse()
@@ -115,9 +133,9 @@ public class AktivitetsplanSituasjonWebService {
                 .setStatus(opprettVilkarStatusRequest.status);
     }
 
-    private boolean erUnderOppfolging(String aktorId) throws Exception {
+    private boolean erUnderOppfolging(String fnr) throws Exception {
         val hentOppfolgingstatusRequest = new WSHentOppfoelgingsstatusRequest();
-        hentOppfolgingstatusRequest.setPersonidentifikator(aktorId);
+        hentOppfolgingstatusRequest.setPersonidentifikator(fnr);
         val oppfolgingstatus = oppfoelgingPortType.hentOppfoelgingsstatus(hentOppfolgingstatusRequest);
 
         return erArbeidssoker(oppfolgingstatus) || erIArbeidOgHarInnsatsbehov(oppfolgingstatus);
@@ -154,9 +172,7 @@ public class AktivitetsplanSituasjonWebService {
     }
 
     private Optional<Brukervilkar> finnSisteVilkarStatus(Situasjon situasjon) {
-        return situasjon.getBrukervilkar().stream()
-                .sorted(comparing(Brukervilkar::getDato).reversed())
-                .findFirst();
+        return Optional.ofNullable(situasjon.getGjeldendeBrukervilkar());
     }
 
     @Data
