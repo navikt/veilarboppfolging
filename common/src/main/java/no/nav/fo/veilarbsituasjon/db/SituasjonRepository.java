@@ -26,10 +26,26 @@ public class SituasjonRepository {
 
     public Optional<Situasjon> hentSituasjon(String aktorId) {
         List<Situasjon> situasjon = jdbcTemplate.query("" +
-                        "SELECT * FROM situasjon " +
-                        "LEFT JOIN status ON situasjon.aktorid = status.aktorid " +
-                        "LEFT JOIN brukervilkar ON situasjon.aktorid = brukervilkar.aktorid " +
-                        "WHERE situasjon.aktorid = ?",
+                        "SELECT" +
+                        "  SITUASJON.AKTORID AS AKTORID, " +
+                        "  SITUASJON.OPPFOLGING AS OPPFOLGING, " +
+                        "  SITUASJON.GJELDENDE_STATUS AS GJELDENDE_STATUS, " +
+                        "  SITUASJON.GJELDENDE_BRUKERVILKAR AS GJELDENDE_BRUKERVILKAR, " +
+                        "  STATUS.ID AS STATUS_ID, " +
+                        "  STATUS.AKTORID AS STATUS_AKTORID, " +
+                        "  STATUS.MANUELL AS STATUS_MANUELL, " +
+                        "  STATUS.DATO AS STATUS_DATO, " +
+                        "  STATUS.BEGRUNNELSE AS STATUS_BEGRUNNELSE, " +
+                        "  BRUKERVILKAR.ID AS BRUKERVILKAR_ID, " +
+                        "  BRUKERVILKAR.AKTORID AS BRUKERVILKAR_AKTORID, " +
+                        "  BRUKERVILKAR.DATO AS BRUKERVILKAR_DATO, " +
+                        "  BRUKERVILKAR.VILKARSTATUS AS BRUKERVILKAR_VILKARSTATUS, " +
+                        "  BRUKERVILKAR.TEKST AS BRUKERVILKAR_TEKST, " +
+                        "  BRUKERVILKAR.HASH AS BRUKERVILKAR_HASH " +
+                        "FROM situasjon " +
+                        "LEFT JOIN status ON SITUASJON.GJELDENDE_STATUS = STATUS.ID " +
+                        "LEFT JOIN brukervilkar ON SITUASJON.GJELDENDE_BRUKERVILKAR = BRUKERVILKAR.ID " +
+                        "WHERE situasjon.aktorid = ? ",
                 (result, n) -> mapTilSituasjon(result),
                 aktorId
         );
@@ -150,23 +166,23 @@ public class SituasjonRepository {
     @SuppressWarnings("unchecked")
     private Brukervilkar mapTilBrukervilkar(ResultSet result) {
         return new Brukervilkar(
-                result.getString("aktorid"),
-                result.getTimestamp("brukervilkar.dato"),
-                VilkarStatus.valueOf(result.getString("vilkarstatus")),
-                result.getString("tekst"),
-                result.getString("hash")
-        ).setId(result.getLong("id"));
+                result.getString("AKTORID"),
+                result.getTimestamp("BRUKERVILKAR_DATO"),
+                VilkarStatus.valueOf(result.getString("BRUKERVILKAR_VILKARSTATUS")),
+                result.getString("BRUKERVILKAR_TEKST"),
+                result.getString("BRUKERVILKAR_HASH")
+        ).setId(result.getLong("BRUKERVILKAR_ID"));
     }
 
     @SneakyThrows
     @SuppressWarnings("unchecked")
     private Status mapTilStatus(ResultSet result) {
         return new Status(
-                result.getString("aktorid"),
-                result.getBoolean("manuell"),
-                result.getTimestamp("dato"),
-                result.getString("begrunnelse")
-        ).setId(result.getLong("id"));
+                result.getString("AKTORID"),
+                result.getBoolean("STATUS_MANUELL"),
+                result.getTimestamp("STATUS_DATO"),
+                result.getString("STATUS_BEGRUNNELSE")
+        ).setId(result.getLong("STATUS_ID"));
     }
 
 }

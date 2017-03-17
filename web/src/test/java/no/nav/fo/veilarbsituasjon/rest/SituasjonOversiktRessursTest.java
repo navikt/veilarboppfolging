@@ -3,8 +3,6 @@ package no.nav.fo.veilarbsituasjon.rest;
 import lombok.val;
 import no.nav.fo.veilarbsituasjon.db.SituasjonRepository;
 import no.nav.fo.veilarbsituasjon.domain.*;
-import no.nav.fo.veilarbsituasjon.domain.OppfolgingStatusData;
-import no.nav.fo.veilarbsituasjon.rest.domain.Vilkar;
 import no.nav.fo.veilarbsituasjon.services.AktoerIdService;
 import no.nav.fo.veilarbsituasjon.services.SituasjonOversiktService;
 import no.nav.fo.veilarbsituasjon.vilkar.VilkarService;
@@ -83,6 +81,8 @@ public class SituasjonOversiktRessursTest {
     @Test
     public void riktigFnr() throws Exception {
         gittAktor();
+        gittSituasjon(situasjon);
+
         OppfolgingStatusData oppfolgingStatusData = hentOppfolgingStatus();
         assertThat(oppfolgingStatusData.fnr, equalTo(FNR));
     }
@@ -90,6 +90,7 @@ public class SituasjonOversiktRessursTest {
     @Test
     public void databaseOppdateresMedRiktigSituasjon() throws Exception {
         gittAktor();
+        gittSituasjon(situasjon);
         hentOppfolgingStatus();
         verify(situasjonRepositoryMock).oppdaterSituasjon(eq(new Situasjon().setAktorId(AKTOR_ID)));
     }
@@ -97,6 +98,7 @@ public class SituasjonOversiktRessursTest {
     @Test
     public void medReservasjon() throws Exception {
         gittAktor();
+        gittSituasjon(situasjon);
         gittReservasjon("true");
 
         OppfolgingStatusData oppfolgingStatusData = hentOppfolgingStatus();
@@ -107,6 +109,7 @@ public class SituasjonOversiktRessursTest {
     @Test
     public void underOppfolging() throws Exception {
         gittAktor();
+        gittSituasjon(situasjon);
         gittOppfolgingStatus("ARBS", "");
 
         OppfolgingStatusData oppfolgingStatusData = hentOppfolgingStatus();
@@ -117,10 +120,11 @@ public class SituasjonOversiktRessursTest {
     @Test
     public void aksepterVilkar() throws Exception {
         gittAktor();
+        gittSituasjon(situasjon);
 
         assertThat(hentOppfolgingStatus().vilkarMaBesvares, is(true));
 
-        besvarVilkar(GODKJENNT, hentGjeldendeVilkar().getText());
+        besvarVilkar(GODKJENNT, hentGjeldendeVilkar());
 
         assertThat(hentOppfolgingStatus().vilkarMaBesvares, is(false));
     }
@@ -129,7 +133,7 @@ public class SituasjonOversiktRessursTest {
     public void akseptererFeilVilkar() throws Exception {
         gittAktor();
         VilkarData feilVilkar = new VilkarData().setText("feilVilkar").setHash("HASH");
-        besvarVilkar(GODKJENNT, feilVilkar.getText());
+        besvarVilkar(GODKJENNT, feilVilkar);
 
         assertThat(hentOppfolgingStatus().vilkarMaBesvares, is(true));
     }
@@ -138,7 +142,7 @@ public class SituasjonOversiktRessursTest {
     public void vilkarIkkeBesvart() throws Exception {
         gittAktor();
 
-        besvarVilkar(IKKE_BESVART, hentGjeldendeVilkar().getText());
+        besvarVilkar(IKKE_BESVART, hentGjeldendeVilkar());
 
         assertThat(hentOppfolgingStatus().vilkarMaBesvares, is(true));
     }
@@ -146,6 +150,7 @@ public class SituasjonOversiktRessursTest {
     @Test
     public void ikkeArbeidssokerUnderOppfolging() throws Exception {
         gittAktor();
+        gittSituasjon(situasjon);
         gittOppfolgingStatus("IARBS", "BATT");
 
         val oppfolgingOgVilkarStatus = hentOppfolgingStatus();
@@ -156,6 +161,7 @@ public class SituasjonOversiktRessursTest {
     @Test
     public void ikkeArbeidssokerIkkeUnderOppfolging() throws Exception {
         gittAktor();
+        gittSituasjon(situasjon);
         gittOppfolgingStatus("IARBS", "");
 
         val oppfolgingOgVilkarStatus = hentOppfolgingStatus();
@@ -173,14 +179,14 @@ public class SituasjonOversiktRessursTest {
         verifyZeroInteractions(oppfoelgingPortType);
     }
 
-    private void besvarVilkar(VilkarStatus vilkarStatus, String tekst) {
+    private void besvarVilkar(VilkarStatus vilkarStatus, VilkarData vilkar) {
         gittSituasjon(situasjon.setGjeldendeBrukervilkar(
                 new Brukervilkar(
                         situasjon.getAktorId(),
                         new Timestamp(currentTimeMillis()),
                         vilkarStatus,
-                        tekst,
-                        "hash"
+                        vilkar.getText(),
+                        vilkar.getHash()
                 ))
         );
     }
