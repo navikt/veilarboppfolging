@@ -148,7 +148,7 @@ public class SituasjonOversiktService {
 
     private Situasjon hentSituasjon(String aktorId) {
         return situasjonRepository.hentSituasjon(aktorId)
-                .orElse(situasjonRepository.opprettSituasjon(new Situasjon().setAktorId(aktorId)));
+                .orElseGet(() -> situasjonRepository.opprettSituasjon(new Situasjon().setAktorId(aktorId)));
     }
 
     private String hentAktorId(String fnr) {
