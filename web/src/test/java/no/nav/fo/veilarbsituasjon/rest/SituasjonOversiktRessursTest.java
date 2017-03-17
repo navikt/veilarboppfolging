@@ -179,7 +179,8 @@ public class SituasjonOversiktRessursTest {
                         situasjon.getAktorId(),
                         new Timestamp(currentTimeMillis()),
                         vilkarStatus,
-                        tekst
+                        tekst,
+                        "hash"
                 ))
         );
     }
