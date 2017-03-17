@@ -55,6 +55,9 @@
         <appender-ref ref="ServiceCallsFile"/>
     </logger>
 
+    <logger name="org.apache.cxf" level="DEBUG"/>
+
+    <logger name="org.springframework.jdbc.core" level="TRACE" />
 
     <logger name="org.apache.http.client.protocol.ResponseProcessCookies" level="ERROR" />
 
