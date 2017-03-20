@@ -13,6 +13,7 @@
         <module>config</module>
         <module>api</module>
         <module>ws</module>
+        <module>smoketest</module>
     </modules>
     <packaging>pom</packaging>
 
@@ -230,6 +231,11 @@
                 <artifactId>jetty-jaas</artifactId>
                 <version>${jetty.version}</version>
                 <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-util</artifactId>
+                <version>${jetty.version}</version>
             </dependency>
             <dependency>
                 <groupId>no.nav.sbl.dialogarena</groupId>

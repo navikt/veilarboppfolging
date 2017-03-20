@@ -1,6 +1,5 @@
 package no.nav.fo.veilarbsituasjon.ws;
 
-import no.nav.modig.core.context.JettySubjectHandler;
 import no.nav.modig.core.context.StaticSubjectHandler;
 import no.nav.sbl.dialogarena.common.jetty.Jetty;
 import org.eclipse.jetty.jaas.JAASLoginService;
