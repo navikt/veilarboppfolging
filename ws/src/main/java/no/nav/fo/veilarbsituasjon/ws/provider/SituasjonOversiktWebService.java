@@ -9,10 +9,12 @@ import no.nav.tjeneste.virksomhet.behandlesituasjon.v1.binding.*;
 import no.nav.tjeneste.virksomhet.behandlesituasjon.v1.informasjon.Oppfoelgingsstatus;
 import no.nav.tjeneste.virksomhet.behandlesituasjon.v1.meldinger.*;
 import org.springframework.stereotype.Service;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import javax.inject.Inject;
 import javax.jws.WebService;
+import javax.ws.rs.WebApplicationException;
+
+import static javax.ws.rs.core.Response.Status.NOT_IMPLEMENTED;
 
 @WebService
 @Service
@@ -34,12 +36,12 @@ public class SituasjonOversiktWebService implements BehandleSituasjonV1 {
 
     @Override
     public HentVilkaarsstatusResponse hentVilkaarsstatus(HentVilkaarsstatusRequest hentVilkaarsstatusRequest) throws HentVilkaarsstatusSikkerhetsbegrensning {
-        throw new NotImplementedException();
+        throw new WebApplicationException(NOT_IMPLEMENTED);
     }
 
     @Override
     public HentVilkaarsstatusListeResponse hentVilkaarsstatusListe(HentVilkaarsstatusListeRequest hentVilkaarsstatusListeRequest) throws HentVilkaarsstatusListeSikkerhetsbegrensning {
-        throw new NotImplementedException();
+        throw new WebApplicationException(NOT_IMPLEMENTED);
     }
 
     @Override
