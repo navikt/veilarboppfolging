@@ -9,6 +9,7 @@ public class RestConfig extends ResourceConfig {
                 YtelseRessurs.class,
                 OppfolgingRessurs.class,
                 PortefoljeRessurs.class,
+                VeilederRessurs.class,
                 AktivitetsplanSituasjonWebService.class
         );
     }
