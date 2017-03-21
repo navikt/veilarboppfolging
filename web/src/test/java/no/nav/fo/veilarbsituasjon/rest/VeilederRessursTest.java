@@ -29,13 +29,13 @@ public class VeilederRessursTest {
 
     @Test
     public void getVeilederSkalReturnereVeileder() throws Exception {
-
+        final String forventetIdent = "***REMOVED***";
         when(aktoerIdService.findAktoerId(anyString())).thenReturn("test-id");
-        when(brukerRepository.hentVeilederForAktoer(anyString())).thenReturn("***REMOVED***");
+        when(brukerRepository.hentVeilederForAktoer(anyString())).thenReturn(forventetIdent);
 
         final Veileder veileder = veilederRessurs.getVeileder("***REMOVED***");
         assertNotNull(veileder);
         assertNotNull(veileder.getVeilederident());
-        assertThat(veileder.getVeilederident(), is("***REMOVED***"));
+        assertThat(veileder.getVeilederident(), is(forventetIdent));
     }
 }
