@@ -1,5 +1,6 @@
 package no.nav.fo.veilarbsituasjon.rest;
 
+import no.nav.fo.veilarbsituasjon.mappers.OppfolgingMapper;
 import no.nav.fo.veilarbsituasjon.rest.domain.OppfolgingskontraktData;
 import no.nav.fo.veilarbsituasjon.rest.domain.OppfolgingskontraktResponse;
 import no.nav.fo.veilarbsituasjon.services.OppfolgingService;
@@ -14,7 +15,6 @@ import java.util.Collections;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -24,12 +24,16 @@ public class OppfolgingRessursTest {
     private OppfolgingRessurs oppfoelgingRessurs;
 
     @Mock
+    private OppfolgingMapper oppfolgingMapper;
+
+    @Mock
+    @SuppressWarnings("unused")
     private OppfolgingService oppfolgingService;
 
     @Test
     public void getOppfoelgingSkalReturnereEnRespons() throws Exception {
 
-        when(oppfolgingService.hentOppfolgingskontraktListe(any(), any(), anyString())).thenReturn(
+        when(oppfolgingMapper.tilOppfolgingskontrakt(any())).thenReturn(
                 new OppfolgingskontraktResponse(Collections.singletonList(new OppfolgingskontraktData()))
         );
 

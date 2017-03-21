@@ -2,12 +2,17 @@ package no.nav.fo.veilarbsituasjon.rest;
 
 
 import no.nav.fo.veilarbsituasjon.domain.Oppfolgingsstatus;
+import no.nav.fo.veilarbsituasjon.mappers.OppfolgingMapper;
+import no.nav.fo.veilarbsituasjon.mappers.OppfolgingsstatusMapper;
 import no.nav.fo.veilarbsituasjon.rest.domain.OppfolgingskontraktResponse;
 import no.nav.fo.veilarbsituasjon.services.OppfolgingService;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
-import javax.ws.rs.*;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.time.LocalDate;
 
@@ -24,27 +29,29 @@ public class OppfolgingRessurs {
     private static final int MANEDER_FREM_I_TID = 1;
 
     private final OppfolgingService oppfolgingService;
+    private final OppfolgingMapper oppfolgingMapper;
 
-    public OppfolgingRessurs(OppfolgingService oppfolgingService) {
+    public OppfolgingRessurs(OppfolgingService oppfolgingService, OppfolgingMapper oppfolgingMapper) {
         this.oppfolgingService = oppfolgingService;
+        this.oppfolgingMapper = oppfolgingMapper;
     }
 
     @GET
     @Path("/oppfoelging")
-    public OppfolgingskontraktResponse getOppfoelging(@PathParam("fnr") String fnr){
+    public OppfolgingskontraktResponse getOppfoelging(@PathParam("fnr") String fnr) {
         LocalDate periodeFom = LocalDate.now().minusMonths(MANEDER_BAK_I_TID);
         LocalDate periodeTom = LocalDate.now().plusMonths(MANEDER_FREM_I_TID);
         XMLGregorianCalendar fom = convertDateToXMLGregorianCalendar(periodeFom);
         XMLGregorianCalendar tom = convertDateToXMLGregorianCalendar(periodeTom);
 
         LOG.info("Henter oppfoelging for {}", fnr);
-        return oppfolgingService.hentOppfolgingskontraktListe(fom, tom, fnr);
+        return oppfolgingMapper.tilOppfolgingskontrakt(oppfolgingService.hentOppfolgingskontraktListe(fom, tom, fnr));
     }
 
     @GET
     @Path("/oppfoelgingsstatus")
-    public Oppfolgingsstatus getOppfoelginsstatus(@PathParam("fnr") String fnr){
+    public Oppfolgingsstatus getOppfoelginsstatus(@PathParam("fnr") String fnr) {
         LOG.info("Henter oppfølgingsstatus for {}", fnr);
-        return oppfolgingService.hentOppfolgingsstatus(fnr);
+        return OppfolgingsstatusMapper.tilOppfolgingsstatus(oppfolgingService.hentOppfolgingsstatus(fnr));
     }
 }

@@ -1,12 +1,19 @@
 package no.nav.fo.veilarbsituasjon.rest;
 
-import no.nav.fo.veilarbsituasjon.rest.domain.*;
+import no.nav.fo.veilarbsituasjon.mappers.OppfolgingMapper;
+import no.nav.fo.veilarbsituasjon.mappers.YtelseskontraktMapper;
+import no.nav.fo.veilarbsituasjon.rest.domain.OppfolgingskontraktResponse;
+import no.nav.fo.veilarbsituasjon.rest.domain.YtelserResponse;
+import no.nav.fo.veilarbsituasjon.rest.domain.YtelseskontraktResponse;
 import no.nav.fo.veilarbsituasjon.services.OppfolgingService;
 import no.nav.fo.veilarbsituasjon.services.YtelseskontraktService;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
-import javax.ws.rs.*;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.time.LocalDate;
 
@@ -24,11 +31,14 @@ public class YtelseRessurs {
 
     final private YtelseskontraktService ytelseskontraktService;
     final private OppfolgingService oppfolgingService;
+    final private OppfolgingMapper oppfolgingMapper;
+    final private YtelseskontraktMapper ytelseskontraktMapper;
 
-
-    public YtelseRessurs(YtelseskontraktService ytelseskontraktService, OppfolgingService oppfolgingService) {
+    public YtelseRessurs(YtelseskontraktService ytelseskontraktService, OppfolgingService oppfolgingService, OppfolgingMapper oppfolgingMapper, YtelseskontraktMapper ytelseskontraktMapper) {
         this.ytelseskontraktService = ytelseskontraktService;
         this.oppfolgingService = oppfolgingService;
+        this.oppfolgingMapper = oppfolgingMapper;
+        this.ytelseskontraktMapper = ytelseskontraktMapper;
     }
 
     @GET
@@ -40,8 +50,8 @@ public class YtelseRessurs {
         XMLGregorianCalendar tom = convertDateToXMLGregorianCalendar(periodeTom);
 
         LOG.info("Henter ytelse for {}", fnr);
-        final YtelseskontraktResponse ytelseskontraktResponse = ytelseskontraktService.hentYtelseskontraktListe(fom, tom, fnr);
-        final OppfolgingskontraktResponse oppfolgingskontraktResponse = oppfolgingService.hentOppfolgingskontraktListe(fom, tom, fnr);
+        final YtelseskontraktResponse ytelseskontraktResponse = ytelseskontraktMapper.tilYtelseskontrakt(ytelseskontraktService.hentYtelseskontraktListe(fom, tom, fnr));
+        final OppfolgingskontraktResponse oppfolgingskontraktResponse = oppfolgingMapper.tilOppfolgingskontrakt(oppfolgingService.hentOppfolgingskontraktListe(fom, tom, fnr));
 
         return new YtelserResponse()
                 .withVedtaksliste(ytelseskontraktResponse.getVedtaksliste())

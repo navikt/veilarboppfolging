@@ -18,9 +18,12 @@
     <loadBalancer isAlive="veilarbsituasjon/internal/isAlive" />
 
     <security serviceUserResourceAlias="srvveilarbsituasjon">
+        <logins>
+            <saml/>
+        </logins>
     </security>
 
-    <logging serviceCalls="true" />
+    <logging serviceCalls="true"/>
 
     <resources>
         <applicationProperties alias="veilarbsituasjon.properties"/>
@@ -37,7 +40,7 @@
         <fileLibrary mapToProperty="vilkar" alias="veilarbsituasjon.vilkar.v1"/>
 
         <queueManager xaEnabled="true" alias="mqGateway02" jndi="java:/jboss/mqConnectionFactory">
-            <queue alias="veilarbsituasjon_TILORDNEVEILEDER" jndi="java:jboss/jms/endreVeilederKo" />
+            <queue alias="veilarbsituasjon_TILORDNEVEILEDER" jndi="java:jboss/jms/endreVeilederKo"/>
         </queueManager>
 
         <datasource alias="veilarbsituasjonDB" xaEnabled="true" jndi="java:jboss/jdbc/veilarbsituasjonDS">
@@ -48,6 +51,14 @@
 
     <exposed-services>
         <exposedRest path="/veilarbsituasjon/api" name="veilArbSituasjonAPI"/>
+        <exposedSoap name="BehandleSituasjonV1"
+                     path="/veilarbsituasjon-ws/ws/Situasjon"
+                     securityToken="SAML"
+                     wsdlGroupId="no.nav.tjenester"
+                     wsdlArtifactId="brukerdialog-behandleSituasjon-v1-tjenestespesifikasjon"
+                     wsdlVersion="${brukerdialog-behandleSituasjon-v1-tjenestespesifikasjon.version}">
+            <exportToZone>SBS</exportToZone>
+        </exposedSoap>
     </exposed-services>
 
 </application>

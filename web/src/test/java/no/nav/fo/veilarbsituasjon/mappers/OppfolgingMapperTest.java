@@ -26,6 +26,7 @@ public class OppfolgingMapperTest {
     private static final int MANEDER_BAK_I_TID = 2;
     private static final int MANEDER_FREM_I_TID = 1;
     private static final int ANTALL_OPPFOELGINGSKONTRAKTER = 4;
+    private OppfolgingMapper oppfolgingMapper = new OppfolgingMapper();
 
     @Test
     public void oppfoelgingskontrakterInneholderListeMedOppfoelgingskontrakter() throws HentOppfoelgingskontraktListeSikkerhetsbegrensning {
@@ -72,7 +73,7 @@ public class OppfolgingMapperTest {
     private List<OppfolgingskontraktData> getOppfoelgingskontrakter(OppfoelgingPortType oppfoelgingMock) throws HentOppfoelgingskontraktListeSikkerhetsbegrensning {
         final WSHentOppfoelgingskontraktListeRequest request = getWsHentOppfoelgingskontraktListeRequest();
 
-        final OppfolgingskontraktResponse response = OppfolgingMapper.tilOppfolgingskontrakt(oppfoelgingMock.hentOppfoelgingskontraktListe(request));
+        final OppfolgingskontraktResponse response = oppfolgingMapper.tilOppfolgingskontrakt(oppfoelgingMock.hentOppfoelgingskontraktListe(request));
 
         return response.getOppfoelgingskontrakter();
     }

@@ -7,9 +7,13 @@
     <artifactId>veilarbsituasjon</artifactId>
     <version>1.1-SNAPSHOT</version>
     <modules>
+        <module>common</module>
         <module>web</module>
         <module>ear</module>
         <module>config</module>
+        <module>api</module>
+        <module>ws</module>
+        <module>smoketest</module>
     </modules>
     <packaging>pom</packaging>
 
@@ -27,7 +31,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>1.8</java.version>
 
-        <jetty.version>9.3.14.***REMOVED***28</jetty.version>
+        <jetty.version>9.3.0.M2</jetty.version>
         <spring.version>4.3.4.RELEASE</spring.version>
         <servlet-api.version>3.1.0</servlet-api.version>
         <jackson.version>2.7.2</jackson.version>
@@ -35,6 +39,7 @@
         <logback.version>1.1.6</logback.version>
         <slf4j.version>1.7.15</slf4j.version>
         <javax.jms-api.version>2.0.1</javax.jms-api.version>
+        <javax.inject.version>1</javax.inject.version>
 
         <!-- Jersey -->
         <javax.ws.rs-api.version>2.0.1</javax.ws.rs-api.version>
@@ -54,13 +59,15 @@
         <oppfoelging-v1-tjenestespesifikasjon.version>1.1.0</oppfoelging-v1-tjenestespesifikasjon.version>
         <dial-nav-tjeneste-aktoer_v2.version>1.1</dial-nav-tjeneste-aktoer_v2.version>
         <dkif-tjenestespesifikasjon.version>1.2</dkif-tjenestespesifikasjon.version>
+        <brukerdialog-behandleSituasjon-v1-tjenestespesifikasjon.version>1.0.0</brukerdialog-behandleSituasjon-v1-tjenestespesifikasjon.version>
+
 
         <!--NAV Felles -->
         <common-jetty.version>2.0.12</common-jetty.version>
         <common-cxf.version>3.1.33</common-cxf.version>
         <common-web.version>3.1.2</common-web.version>
         <common-types.version>1.2</common-types.version>
-        <common-test.version>1.2</common-test.version>
+        <common-test.version>2.0.3</common-test.version>
 
         <xml-apis.version>1.4.01</xml-apis.version>
         <cxf-core.version>3.1.6</cxf-core.version>
@@ -86,8 +93,26 @@
         </sonar.exclusions>
     </properties>
 
-        <dependencyManagement>
+    <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>no.nav.fo</groupId>
+                <artifactId>veilarbsituasjon-common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>no.nav.fo</groupId>
+                <artifactId>veilarbsituasjon-common</artifactId>
+                <version>${project.version}</version>
+                <type>test-jar</type>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>no.nav.fo</groupId>
+                <artifactId>veilarbsituasjon-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
             <dependency>
                 <groupId>no.nav.fo</groupId>
                 <artifactId>veilarbsituasjon-appconfig</artifactId>
@@ -150,12 +175,42 @@
                 <version>${spring.version}</version>
             </dependency>
 
-            <!--Lombok-->
             <dependency>
-                <groupId>org.projectlombok</groupId>
-                <artifactId>lombok</artifactId>
-                <version>1.12.6</version>
-                <scope>provided</scope>
+                <groupId>javax.inject</groupId>
+                <artifactId>javax.inject</artifactId>
+                <version>${javax.inject.version}</version>
+            </dependency>
+
+            <!--tjenester-->
+            <dependency>
+                <groupId>no.nav.sbl</groupId>
+                <artifactId>dkif-tjenestespesifikasjon</artifactId>
+                <version>${dkif-tjenestespesifikasjon.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>no.nav.tjenester</groupId>
+                <artifactId>brukerdialog-behandleSituasjon-v1-tjenestespesifikasjon</artifactId>
+                <version>${brukerdialog-behandleSituasjon-v1-tjenestespesifikasjon.version}</version>
+                <classifier>jaxws</classifier>
+            </dependency>
+
+            <!--logging-->
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>jcl-over-slf4j</artifactId>
+                <version>${slf4j.version}</version>
+                <scope>runtime</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${slf4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-classic</artifactId>
+                <version>${logback.version}</version>
+                <scope>runtime</scope>
             </dependency>
 
             <!--dialogarena-->
@@ -172,6 +227,17 @@
                 </exclusions>
             </dependency>
             <dependency>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-jaas</artifactId>
+                <version>${jetty.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-util</artifactId>
+                <version>${jetty.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>no.nav.sbl.dialogarena</groupId>
                 <artifactId>common-cxf</artifactId>
                 <version>${common-cxf.version}</version>
@@ -185,6 +251,11 @@
                         <artifactId>jaxb-impl</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-transports-http</artifactId>
+                <version>${cxf-core.version}</version>
             </dependency>
             <dependency>
                 <groupId>no.nav.sbl.dialogarena</groupId>
@@ -246,6 +317,11 @@
                 <version>${modig-security.version}</version>
                 <scope>test</scope>
                 <type>test-jar</type>
+            </dependency>
+            <dependency>
+                <groupId>no.nav.modig</groupId>
+                <artifactId>modig-security-core</artifactId>
+                <version>${modig-security.version}</version>
             </dependency>
             <dependency>
                 <groupId>no.nav.modig</groupId>
@@ -379,6 +455,18 @@
                 <artifactId>javax.jms-api</artifactId>
                 <version>${javax.jms-api.version}</version>
             </dependency>
+            <dependency>
+                <groupId>commons-codec</groupId>
+                <artifactId>commons-codec</artifactId>
+                <version>1.10</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>1.16.12</version>
+                <scope>provided</scope>
+            </dependency>
 
             <!--Test-->
             <dependency>
@@ -493,6 +581,29 @@
         </dependencies>
 
     </dependencyManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.vintage</groupId>
+            <artifactId>junit-vintage-engine</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+        </dependency>
+    </dependencies>
 
     <build>
         <plugins>
