@@ -35,6 +35,11 @@
             </exclusions>
         </dependency>
 
+        <dependency>
+            <groupId>javax.ws.rs</groupId>
+            <artifactId>javax.ws.rs-api</artifactId>
+        </dependency>
+
         <!-- TEST -->
         <dependency>
             <groupId>no.nav.fo</groupId>
