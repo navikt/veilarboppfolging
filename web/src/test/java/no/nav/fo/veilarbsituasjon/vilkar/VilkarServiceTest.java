@@ -25,7 +25,6 @@ public class VilkarServiceTest {
     @Test
     public void getVilkar_ukjentSprak_brukBokmal(){
         assertThat(vilkarService.getVilkar(null),equalTo("Vilkår nb"));
-        assertThat(vilkarService.getVilkar("??"),equalTo("Vilkår nb"));
     }
 
     @Test
