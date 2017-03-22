@@ -14,11 +14,11 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.jms.JMSException;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
+
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static java.util.UUID.randomUUID;
 import static no.nav.fo.veilarbsituasjon.utils.JmsUtil.messageCreator;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -62,9 +62,8 @@ public class PortefoljeRessurs {
                 settVeilederDersomFraVeilederErOK(bruker, tilordning);
             }
 
-            TilordneVeilederResponse response =
-                    new TilordneVeilederResponse()
-                            .setFeilendeTilordninger(feilendeTilordninger);
+            TilordneVeilederResponse response = new TilordneVeilederResponse()
+                .setFeilendeTilordninger(feilendeTilordninger);
 
             if (feilendeTilordninger.isEmpty()) {
                 response.setResultat("OK: Veiledere tilordnet");
@@ -86,31 +85,46 @@ public class PortefoljeRessurs {
     @GET
     @Path("/sendalleveiledertilordninger")
     public Response getSendAlleVeiledertilordninger() {
+        long start = System.currentTimeMillis();
+        LOG.info("Sender alle veiledertilordninger");
         List<OppfolgingBruker> brukere = brukerRepository.hentAlleVeiledertilordninger();
-        try {
-            for (int i = 0; i < brukere.size(); i++) {
-                skrivTilDataBaseOgLeggPaaKo(brukere.get(i));
+        int sendt = 0;
+        int feilet = 0;
+        for (OppfolgingBruker bruker : brukere) {
+            try {
+                leggPaaKo(bruker);
+                sendt++;
+            } catch (Exception e) {
+                feilet++;
             }
-            return Response.ok().entity("Alle veiledertilordninger sendt").build();
-        } catch(Exception e) {
-            LOG.error("Kunne ikke legge alle veiledertilordninge på ko");
-            return Response.serverError().entity("Kunne ikke sende alle veiledertilordninger").build();
+        }
+        String status = String.format("Sending fullført. Sendt: %1$s/%2$s. Feilet: %3$s/%2$s. Tid brukt: %4$s ms",
+                sendt, brukere.size(), feilet, System.currentTimeMillis() - start);
+
+        if (feilet > 0) {
+            LOG.error(status);
+            return Response.serverError().entity(status).build();
+        } else {
+            LOG.info(status);
+            return Response.ok().entity(status).build();
         }
     }
 
     @Transactional
     private void skrivTilDataBaseOgLeggPaaKo(OppfolgingBruker bruker) throws SQLException, JMSException {
-        String endringsmeldingId = randomUUID().toString();
-
         try {
             brukerRepository.leggTilEllerOppdaterBruker(bruker);
-            endreVeilederQueue.send(messageCreator(bruker.toString(), endringsmeldingId));
+            leggPaaKo(bruker);
             LOG.debug(String.format("Veileder %s tilordnet aktoer %s", bruker.getVeileder(), bruker.getAktoerid()));
         } catch (Exception e) {
             LOG.error(String.format("Kunne ikke tilordne veileder %s til aktoer %s", bruker.getVeileder(), bruker.getAktoerid()), e);
             throw e;
         }
     }
+
+	private void leggPaaKo(OppfolgingBruker bruker) {
+		endreVeilederQueue.send(messageCreator(bruker.toString()));
+	}
 
     private void settVeilederDersomFraVeilederErOK(OppfolgingBruker bruker, VeilederTilordning tilordning) throws SQLException, JMSException {
         String eksisterendeVeileder = brukerRepository.hentVeilederForAktoer(bruker.getAktoerid());
@@ -120,7 +134,7 @@ public class PortefoljeRessurs {
             skrivTilDataBaseOgLeggPaaKo(bruker);
         } else {
             feilendeTilordninger.add(tilordning);
-            LOG.info("Aktoerid %s kunne ikke tildeles ettersom fraVeileder er feil", bruker.getAktoerid());
+            LOG.info("Aktoerid {} kunne ikke tildeles ettersom fraVeileder er feil", bruker.getAktoerid());
         }
     }
 
