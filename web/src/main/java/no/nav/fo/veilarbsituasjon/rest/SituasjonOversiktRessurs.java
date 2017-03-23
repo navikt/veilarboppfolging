@@ -5,6 +5,7 @@ import no.nav.fo.veilarbsituasjon.domain.VilkarData;
 import no.nav.fo.veilarbsituasjon.rest.api.SituasjonOversikt;
 import no.nav.fo.veilarbsituasjon.rest.domain.OppfolgingStatus;
 import no.nav.fo.veilarbsituasjon.rest.domain.Vilkar;
+import no.nav.fo.veilarbsituasjon.services.PepClient;
 import no.nav.fo.veilarbsituasjon.services.SituasjonOversiktService;
 import org.springframework.stereotype.Component;
 
@@ -20,6 +21,9 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt {
 
     @Inject
     private Provider<HttpServletRequest> requestProvider;
+
+    @Inject
+    private PepClient pepClient;
 
     @Override
     public OppfolgingStatus hentOppfolgingsStatus() throws Exception {
@@ -37,7 +41,9 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt {
     }
 
     public String getFnr() {
-        return requestProvider.get().getParameter("fnr");
+        final String fnr = requestProvider.get().getParameter("fnr");
+        pepClient.isServiceCallAllowed(fnr);
+        return fnr;
     }
 
     private OppfolgingStatus tilDto(OppfolgingStatusData oppfolgingStatusData) {

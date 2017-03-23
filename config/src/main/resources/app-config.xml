@@ -23,6 +23,8 @@
         </logins>
     </security>
 
+    <abacSecurity serviceUserResourceAlias="srvveilarbsituasjon"/>
+
     <logging serviceCalls="true"/>
 
     <resources>
@@ -32,6 +34,7 @@
         <webservice alias="virksomhet:Oppfolging_v1" mapToProperty="oppfoelging.endpoint"/>
         <webservice alias="Aktoer_v2" mapToProperty="aktoer.endpoint"/>
         <applicationCertificate alias="srvveilarbsituasjon"/>
+        <rest alias="abac.pdp.endpoint" mapToProperty="abac.endpoint" />
         <baseUrl alias="isso-host"/>
         <baseUrl alias="isso-jwks"/>
         <baseUrl alias="isso-issuer"/>
@@ -47,6 +50,7 @@
             <pool maxPoolSize="300" minPoolSize="0"/>
         </datasource>
 
+        <ldap alias="ldap" mapToProperty="ldap"/>
     </resources>
 
     <exposed-services>
