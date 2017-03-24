@@ -70,10 +70,6 @@
             <groupId>no.nav.sbl.dialogarena</groupId>
             <artifactId>oppfoelging-v1-tjenestespesifikasjon</artifactId>
         </dependency>
-        <dependency>
-            <groupId>no.nav.sbl</groupId>
-            <artifactId>dkif-tjenestespesifikasjon</artifactId>
-        </dependency>
 
         <!--NAV felles-->
         <dependency>
