@@ -7,6 +7,8 @@ import no.nav.fo.veilarbsituasjon.services.AktoerIdService;
 import no.nav.fo.veilarbsituasjon.services.SituasjonOversiktService;
 import no.nav.fo.veilarbsituasjon.vilkar.VilkarService;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.DigitalKontaktinformasjonV1;
+import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.HentDigitalKontaktinformasjonKontaktinformasjonIkkeFunnet;
+import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.HentDigitalKontaktinformasjonPersonIkkeFunnet;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.informasjon.WSKontaktinformasjon;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.WSHentDigitalKontaktinformasjonRequest;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.WSHentDigitalKontaktinformasjonResponse;
@@ -35,7 +37,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
-public class SituasjonOversiktRessursTest {
+public class SituasjonOversiktServiceTest {
 
     @Mock
     private DigitalKontaktinformasjonV1 digitalKontaktinformasjonV1Mock;
@@ -65,6 +67,7 @@ public class SituasjonOversiktRessursTest {
     @Before
     public void setup() throws Exception {
         hentOppfolgingstatusResponse = new WSHentOppfoelgingsstatusResponse();
+        when(situasjonRepositoryMock.opprettSituasjon(any())).thenReturn(new Situasjon());
         when(oppfoelgingPortType.hentOppfoelgingsstatus(any(WSHentOppfoelgingsstatusRequest.class)))
                 .thenReturn(hentOppfolgingstatusResponse);
         when(digitalKontaktinformasjonV1Mock.hentDigitalKontaktinformasjon(any(WSHentDigitalKontaktinformasjonRequest.class)))
@@ -96,9 +99,37 @@ public class SituasjonOversiktRessursTest {
     }
 
     @Test
+    public void utenReservasjon() throws Exception {
+        gittAktor();
+
+        OppfolgingStatusData oppfolgingStatusData = hentOppfolgingStatus();
+
+        assertThat(oppfolgingStatusData.reservasjonKRR, is(false));
+    }
+
+    @Test
+    public void utenKontaktInformasjon() throws Exception {
+        gittAktor();
+        gittKRRFeil(HentDigitalKontaktinformasjonKontaktinformasjonIkkeFunnet.class);
+
+        OppfolgingStatusData oppfolgingStatusData = hentOppfolgingStatus();
+
+        assertThat(oppfolgingStatusData.reservasjonKRR, is(true));
+    }
+
+    @Test
+    public void personIkkeFunnet() throws Exception {
+        gittAktor();
+        gittKRRFeil(HentDigitalKontaktinformasjonPersonIkkeFunnet.class);
+
+        OppfolgingStatusData oppfolgingStatusData = hentOppfolgingStatus();
+
+        assertThat(oppfolgingStatusData.reservasjonKRR, is(true));
+    }
+
+    @Test
     public void medReservasjon() throws Exception {
         gittAktor();
-        gittSituasjon(situasjon);
         gittReservasjon("true");
 
         OppfolgingStatusData oppfolgingStatusData = hentOppfolgingStatus();
@@ -214,6 +245,10 @@ public class SituasjonOversiktRessursTest {
 
     private void gittReservasjon(String reservasjon) {
         wsKontaktinformasjon.setReservasjon(reservasjon);
+    }
+
+    private void gittKRRFeil(Class<? extends Exception> aClass) throws Exception{
+        when(digitalKontaktinformasjonV1Mock.hentDigitalKontaktinformasjon(any(WSHentDigitalKontaktinformasjonRequest.class))).thenThrow(aClass);
     }
 
 }
