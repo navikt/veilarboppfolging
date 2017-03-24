@@ -55,13 +55,13 @@ public class OppfolgingServiceTest {
     @Test
     public void skalMappeTilOppfolgingsstatus() throws Exception {
         when(oppfoelgingPortType.hentOppfoelgingsstatus(any())).thenReturn(lagMockResponse());
-        when(organisasjonsenhetService.hentEnhet(any())).thenReturn(new Organisasjonsenhet()
+        when(organisasjonsenhetService.hentEnhet(any())).thenReturn(new Oppfolgingsenhet()
                 .withNavn(MOCK_ENHET_NAVN)
                 .withEnhetId(MOCK_ENHET_ID));
 
         Oppfolgingsstatus oppfolgingsstatus = oppfolgingService.hentOppfolgingsstatus("1234");
         Assertions.assertThat(oppfolgingsstatus.getFormidlingsgruppe()).isEqualTo("formidlingsgruppe");
-        Assertions.assertThat(oppfolgingsstatus.getOrganisasjonsenhet().getEnhetId()).isEqualTo(MOCK_ENHET_ID);
+        Assertions.assertThat(oppfolgingsstatus.getOppfolgingsenhet().getEnhetId()).isEqualTo(MOCK_ENHET_ID);
         Assertions.assertThat(oppfolgingsstatus.getRettighetsgruppe()).isEqualTo("rettighetsgruppe");
         Assertions.assertThat(oppfolgingsstatus.getServicegruppe()).isEqualTo("servicegruppe");
     }
@@ -69,11 +69,11 @@ public class OppfolgingServiceTest {
     @Test
     public void skalHenteOrganisasjonsenhetDetaljerFraNorg() throws HentOppfoelgingsstatusUgyldigInput, HentOppfoelgingsstatusPersonIkkeFunnet, HentOppfoelgingsstatusSikkerhetsbegrensning {
         when(oppfoelgingPortType.hentOppfoelgingsstatus(any())).thenReturn(lagMockResponse());
-        when(organisasjonsenhetService.hentEnhet(any())).thenReturn(new Organisasjonsenhet().withNavn(MOCK_ENHET_NAVN));
+        when(organisasjonsenhetService.hentEnhet(any())).thenReturn(new Oppfolgingsenhet().withNavn(MOCK_ENHET_NAVN));
 
         Oppfolgingsstatus oppfolgingsstatus = oppfolgingService.hentOppfolgingsstatus("1234");
 
-        Assertions.assertThat(oppfolgingsstatus.getOrganisasjonsenhet().getNavn()).isEqualTo(MOCK_ENHET_NAVN);
+        Assertions.assertThat(oppfolgingsstatus.getOppfolgingsenhet().getNavn()).isEqualTo(MOCK_ENHET_NAVN);
     }
 
     @Test(expected = NotFoundException.class)

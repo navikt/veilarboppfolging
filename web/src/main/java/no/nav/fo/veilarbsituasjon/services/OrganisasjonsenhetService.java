@@ -1,6 +1,6 @@
 package no.nav.fo.veilarbsituasjon.services;
 
-import no.nav.fo.veilarbsituasjon.rest.domain.Organisasjonsenhet;
+import no.nav.fo.veilarbsituasjon.rest.domain.Oppfolgingsenhet;
 import no.nav.tjeneste.virksomhet.organisasjonenhet.v1.HentEnhetBolkUgyldigInput;
 import no.nav.tjeneste.virksomhet.organisasjonenhet.v1.OrganisasjonEnhetV1;
 import no.nav.tjeneste.virksomhet.organisasjonenhet.v1.informasjon.WSDetaljertEnhet;
@@ -18,11 +18,11 @@ public class OrganisasjonsenhetService {
         this.organisasjonenhetWs = organisasjonEnhetV1;
     }
 
-    public Organisasjonsenhet hentEnhet(String enhetId) {
-        Organisasjonsenhet organisasjonsenhet = new Organisasjonsenhet().withEnhetId(enhetId);
+    public Oppfolgingsenhet hentEnhet(String enhetId) {
+        Oppfolgingsenhet oppfolgingsenhet = new Oppfolgingsenhet().withEnhetId(enhetId);
         try {
             WSHentEnhetBolkResponse response = organisasjonenhetWs.hentEnhetBolk(new WSHentEnhetBolkRequest().withEnhetIdListe(enhetId));
-            return organisasjonsenhet.withNavn(getNavn(response.getEnhetListe(), enhetId));
+            return oppfolgingsenhet.withNavn(getNavn(response.getEnhetListe(), enhetId));
         } catch (HentEnhetBolkUgyldigInput hentEnhetBolkUgyldigInput) {
             throw new IllegalArgumentException(hentEnhetBolkUgyldigInput);
         }

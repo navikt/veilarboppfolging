@@ -1,9 +1,8 @@
 package no.nav.fo.veilarbsituasjon.services;
 
-import no.nav.fo.veilarbsituasjon.rest.domain.Oppfolgingsstatus;
+import no.nav.fo.veilarbsituasjon.rest.domain.*;
 import no.nav.fo.veilarbsituasjon.mappers.OppfolgingMapper;
-import no.nav.fo.veilarbsituasjon.rest.domain.OppfolgingskontraktResponse;
-import no.nav.fo.veilarbsituasjon.rest.domain.Organisasjonsenhet;
+import no.nav.fo.veilarbsituasjon.rest.domain.Oppfolgingsenhet;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.*;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.informasjon.WSPeriode;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.*;
@@ -49,9 +48,9 @@ public class OppfolgingService {
 
         try {
             WSHentOppfoelgingsstatusResponse oppfoelgingsstatus = oppfoelgingPortType.hentOppfoelgingsstatus(request);
-            Organisasjonsenhet organisasjonsenhet = organisasjonsenhetService
+            Oppfolgingsenhet oppfolgingsenhet = organisasjonsenhetService
                     .hentEnhet(oppfoelgingsstatus.getNavOppfoelgingsenhet());
-            return tilOppfolgingsstatus(oppfoelgingsstatus, organisasjonsenhet);
+            return tilOppfolgingsstatus(oppfoelgingsstatus, oppfolgingsenhet);
         } catch (HentOppfoelgingsstatusSikkerhetsbegrensning e) {
             String logMessage = "Ikke tilgang til bruker " + identifikator;
             LOG.warn(logMessage, e);

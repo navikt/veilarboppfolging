@@ -1,6 +1,6 @@
 package no.nav.fo.veilarbsituasjon.services;
 
-import no.nav.fo.veilarbsituasjon.rest.domain.Organisasjonsenhet;
+import no.nav.fo.veilarbsituasjon.rest.domain.Oppfolgingsenhet;
 import no.nav.tjeneste.virksomhet.organisasjonenhet.v1.HentEnhetBolkUgyldigInput;
 import no.nav.tjeneste.virksomhet.organisasjonenhet.v1.OrganisasjonEnhetV1;
 import no.nav.tjeneste.virksomhet.organisasjonenhet.v1.informasjon.WSDetaljertEnhet;
@@ -36,7 +36,7 @@ public class OrganisasjonsenhetServiceTest {
         when(organisasjonEnhetWebService.hentEnhetBolk(any(WSHentEnhetBolkRequest.class)))
                 .thenReturn(new WSHentEnhetBolkResponse().withEnhetListe(new WSDetaljertEnhet().withNavn(MOCK_ENHET_NAVN)));
 
-        Organisasjonsenhet enhet = organisasjonsenhetService.hentEnhet(MOCK_ENHET_ID);
+        Oppfolgingsenhet enhet = organisasjonsenhetService.hentEnhet(MOCK_ENHET_ID);
 
         assertThat(enhet.getNavn()).isEqualTo(MOCK_ENHET_NAVN);
         assertThat(enhet.getEnhetId()).isEqualTo(MOCK_ENHET_ID);

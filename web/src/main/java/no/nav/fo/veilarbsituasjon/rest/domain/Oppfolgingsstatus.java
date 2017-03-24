@@ -9,5 +9,5 @@ public class Oppfolgingsstatus {
     private String rettighetsgruppe;
     private String formidlingsgruppe;
     private String servicegruppe;
-    private Organisasjonsenhet organisasjonsenhet;
+    private Oppfolgingsenhet oppfolgingsenhet;
 }

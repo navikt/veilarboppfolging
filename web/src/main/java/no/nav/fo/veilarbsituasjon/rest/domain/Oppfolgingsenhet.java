@@ -1,15 +1,15 @@
 package no.nav.fo.veilarbsituasjon.rest.domain;
 
-public class Organisasjonsenhet {
+public class Oppfolgingsenhet {
     private String navn;
     private String enhetId;
 
-    public Organisasjonsenhet withNavn(String navn) {
+    public Oppfolgingsenhet withNavn(String navn) {
         this.navn = navn;
         return this;
     }
 
-    public Organisasjonsenhet withEnhetId(String enhetId) {
+    public Oppfolgingsenhet withEnhetId(String enhetId) {
         this.enhetId = enhetId;
         return this;
     }
