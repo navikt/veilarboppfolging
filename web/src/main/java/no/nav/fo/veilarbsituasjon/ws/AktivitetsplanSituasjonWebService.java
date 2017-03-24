@@ -5,11 +5,9 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 import lombok.val;
 import no.nav.fo.veilarbsituasjon.db.SituasjonRepository;
-import no.nav.fo.veilarbsituasjon.domain.Brukervilkar;
-import no.nav.fo.veilarbsituasjon.domain.Situasjon;
-import no.nav.fo.veilarbsituasjon.domain.Status;
-import no.nav.fo.veilarbsituasjon.domain.VilkarStatus;
+import no.nav.fo.veilarbsituasjon.domain.*;
 import no.nav.fo.veilarbsituasjon.services.AktoerIdService;
+import no.nav.fo.veilarbsituasjon.services.PepClient;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.DigitalKontaktinformasjonV1;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.informasjon.WSKontaktinformasjon;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.WSHentDigitalKontaktinformasjonRequest;
@@ -22,9 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.ws.rs.*;
 import java.sql.Timestamp;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import static java.lang.System.currentTimeMillis;
 import static java.util.Arrays.asList;
@@ -47,22 +43,27 @@ public class AktivitetsplanSituasjonWebService {
     private final SituasjonRepository situasjonRepository;
     private final AktoerIdService aktoerIdService;
     private final OppfoelgingPortType oppfoelgingPortType;
+    private final PepClient pepClient;
 
     public AktivitetsplanSituasjonWebService(
             DigitalKontaktinformasjonV1 digitalKontaktinformasjonV1,
             SituasjonRepository situasjonRepository,
             AktoerIdService aktoerIdService,
-            OppfoelgingPortType oppfoelgingPortType) {
+            OppfoelgingPortType oppfoelgingPortType,
+            PepClient pepClient) {
         this.digitalKontaktinformasjonV1 = digitalKontaktinformasjonV1;
         this.situasjonRepository = situasjonRepository;
         this.aktoerIdService = aktoerIdService;
         this.oppfoelgingPortType = oppfoelgingPortType;
+        this.pepClient = pepClient;
     }
 
     @GET
     @Path("/{fnr}")
     @Transactional
     public OppfolgingOgVilkarStatus hentOppfolgingsStatus(@PathParam("fnr") String fnr) throws Exception {
+        pepClient.isServiceCallAllowed(fnr);
+
         String aktorId = hentAktorId(fnr);
         Situasjon situasjon = hentSituasjon(aktorId);
 
@@ -117,7 +118,10 @@ public class AktivitetsplanSituasjonWebService {
 
     @POST
     public OpprettVilkarStatusResponse opprettVilkaarstatus(OpprettVilkarStatusRequest opprettVilkarStatusRequest) throws Exception {
-        Situasjon situasjon = hentSituasjon(hentAktorId(opprettVilkarStatusRequest.fnr));
+        final String fnr = opprettVilkarStatusRequest.fnr;
+        pepClient.isServiceCallAllowed(fnr);
+
+        Situasjon situasjon = hentSituasjon(hentAktorId(fnr));
 
         // TODO Hva gjør vi med hashen vs. teksten?
         situasjonRepository.opprettBrukervilkar(
@@ -129,7 +133,7 @@ public class AktivitetsplanSituasjonWebService {
         );
 
         return new OpprettVilkarStatusResponse()
-                .setFnr(opprettVilkarStatusRequest.fnr)
+                .setFnr(fnr)
                 .setStatus(opprettVilkarStatusRequest.status);
     }
 

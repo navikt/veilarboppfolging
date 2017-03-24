@@ -62,6 +62,7 @@
         <common-web.version>3.1.2</common-web.version>
         <common-types.version>1.2</common-types.version>
         <common-test.version>1.2</common-test.version>
+        <common-abac.version>1.0.39</common-abac.version>
 
         <xml-apis.version>1.4.01</xml-apis.version>
         <cxf-core.version>3.1.6</cxf-core.version>
@@ -201,6 +202,11 @@
                 <groupId>no.nav.sbl.dialogarena</groupId>
                 <artifactId>common-web</artifactId>
                 <version>${common-web.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>no.nav.sbl.dialogarena</groupId>
+                <artifactId>common-abac</artifactId>
+                <version>${common-abac.version}</version>
             </dependency>
             <dependency>
                 <groupId>no.nav.sbl</groupId>
@@ -355,7 +361,6 @@
                 <groupId>no.nav.dialogarena</groupId>
                 <artifactId>oidc-security</artifactId>
                 <version>${oidc-security.version}</version>
-                <scope>runtime</scope>
             </dependency>
             <dependency>
                 <groupId>org.apache.geronimo.components</groupId>
