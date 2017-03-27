@@ -1,5 +1,6 @@
 package no.nav.fo.veilarbsituasjon.rest;
 
+import io.swagger.annotations.Api;
 import no.nav.fo.veilarbsituasjon.db.BrukerRepository;
 import no.nav.fo.veilarbsituasjon.domain.OppfolgingBruker;
 import no.nav.fo.veilarbsituasjon.rest.domain.TilordneVeilederResponse;
@@ -24,6 +25,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 @Component
 @Path("")
+@Api
 public class PortefoljeRessurs {
 
     private static final Logger LOG = getLogger(PortefoljeRessurs.class);

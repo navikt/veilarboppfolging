@@ -43,8 +43,12 @@
         <servlet-name>restservlet</servlet-name>
         <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
         <init-param>
-            <param-name>javax.ws.rs.Application</param-name>
-            <param-value>no.nav.fo.veilarbsituasjon.rest.RestConfig</param-value>
+            <param-name>jersey.config.server.provider.packages</param-name>
+            <param-value>
+                io.swagger.jaxrs.listing,
+                no.nav.fo.veilarbsituasjon.rest,
+                no.nav.fo.veilarbsituasjon.ws
+            </param-value>
         </init-param>
         <load-on-startup>1</load-on-startup>
         <async-supported>true</async-supported>
@@ -53,6 +57,20 @@
         <servlet-name>restservlet</servlet-name>
         <url-pattern>/api/*</url-pattern>
     </servlet-mapping>
+
+    <servlet>
+        <servlet-name>Jersey2Config</servlet-name>
+        <servlet-class>io.swagger.jersey.config.JerseyJaxrsConfig</servlet-class>
+        <init-param>
+            <param-name>api.version</param-name>
+            <param-value>1.1-SNAPSHOT</param-value>
+        </init-param>
+        <init-param>
+            <param-name>swagger.api.basepath</param-name>
+            <param-value>/veilarbsituasjon/api</param-value>
+        </init-param>
+        <load-on-startup>2</load-on-startup>
+    </servlet>
 
     <security-constraint>
         <web-resource-collection>
@@ -71,6 +89,5 @@
             <role-name>**</role-name>
         </auth-constraint>
     </security-constraint>
-
 
 </web-app>

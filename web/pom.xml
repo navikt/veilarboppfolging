@@ -280,6 +280,11 @@
             <artifactId>organisasjonenhet-v1-tjenestespesifikasjon</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>io.swagger</groupId>
+            <artifactId>swagger-jersey2-jaxrs</artifactId>
+        </dependency>
+
     </dependencies>
 
 
