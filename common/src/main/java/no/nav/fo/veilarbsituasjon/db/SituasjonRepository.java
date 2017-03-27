@@ -83,8 +83,8 @@ public class SituasjonRepository {
     @Transactional
     public Situasjon opprettSituasjon(Situasjon situasjon) {
         jdbcTemplate.update(
-                "INSERT INTO situasjon(aktorid, oppfolging, gjeldende_status, gjeldende_brukervilkar, oppfolgin_utgang) " +
-                        "VALUES(?, ?, ?, ?)",
+                "INSERT INTO situasjon(aktorid, oppfolging, gjeldende_status, gjeldende_brukervilkar, oppfolging_utgang) " +
+                        "VALUES(?, ?, ?, ?, ?)",
                 situasjon.getAktorId(),
                 situasjon.isOppfolging(),
                 null,
