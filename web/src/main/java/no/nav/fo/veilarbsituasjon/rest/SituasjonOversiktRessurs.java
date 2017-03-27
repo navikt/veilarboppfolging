@@ -53,6 +53,7 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt {
                 .setReservasjonKRR(oppfolgingStatusData.reservasjonKRR)
                 .setUnderOppfolging(oppfolgingStatusData.underOppfolging)
                 .setVilkarMaBesvares(oppfolgingStatusData.vilkarMaBesvares)
+                .setOppfolgingUtgang(oppfolgingStatusData.getOppfolgingUtgang())
                 ;
     }
 
