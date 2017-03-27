@@ -11,8 +11,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+
+import static java.util.Optional.ofNullable;
 
 public class SituasjonRepository {
     private static final String DIALECT_PROPERTY = "db.dialect";
@@ -31,6 +35,7 @@ public class SituasjonRepository {
                         "  SITUASJON.OPPFOLGING AS OPPFOLGING, " +
                         "  SITUASJON.GJELDENDE_STATUS AS GJELDENDE_STATUS, " +
                         "  SITUASJON.GJELDENDE_BRUKERVILKAR AS GJELDENDE_BRUKERVILKAR, " +
+                        "  SITUASJON.OPPFOLGING_UTGANG AS OPPFOLGING_UTGANG, " +
                         "  STATUS.ID AS STATUS_ID, " +
                         "  STATUS.AKTORID AS STATUS_AKTORID, " +
                         "  STATUS.MANUELL AS STATUS_MANUELL, " +
@@ -75,12 +80,14 @@ public class SituasjonRepository {
         opprettSituasjonBrukervilkar(brukervilkar);
     }
 
-    @Transactional // TODO trengs egentlig denne?
+    @Transactional
     public Situasjon opprettSituasjon(Situasjon situasjon) {
         jdbcTemplate.update(
-                "INSERT INTO situasjon(aktorid, oppfolging, gjeldende_status, gjeldende_brukervilkar) VALUES(?, ?, ?, ?)",
+                "INSERT INTO situasjon(aktorid, oppfolging, gjeldende_status, gjeldende_brukervilkar, oppfolgin_utgang) " +
+                        "VALUES(?, ?, ?, ?)",
                 situasjon.getAktorId(),
                 situasjon.isOppfolging(),
+                null,
                 null,
                 null
         );
@@ -159,7 +166,15 @@ public class SituasjonRepository {
                                 .map(b -> b != 0 ? mapTilBrukervilkar(resultat) : null)
                                 .orElse(null)
                 )
+                .setOppfolgingUtgang(hentDato(resultat, "oppfolging_utgang"))
                 ;
+    }
+
+    private static Date hentDato(ResultSet rs, String kolonneNavn) throws SQLException {
+        return ofNullable(rs.getTimestamp(kolonneNavn))
+                .map(Timestamp::getTime)
+                .map(Date::new)
+                .orElse(null);
     }
 
     @SneakyThrows

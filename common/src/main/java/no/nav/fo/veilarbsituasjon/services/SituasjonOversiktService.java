@@ -102,6 +102,7 @@ public class SituasjonOversiktService {
                         .orElse(false)
                 )
                 .setUnderOppfolging(situasjon.isOppfolging())
+                .setOppfolgingUtgang(situasjon.getOppfolgingUtgang())
                 .setVilkarMaBesvares(vilkarMaBesvares);
     }
 

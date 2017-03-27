@@ -15,6 +15,7 @@ import javax.jws.WebService;
 import javax.ws.rs.WebApplicationException;
 
 import static javax.ws.rs.core.Response.Status.NOT_IMPLEMENTED;
+import static no.nav.fo.veilarbsituasjon.utils.DateUtils.xmlCalendar;
 
 @WebService
 @Service
@@ -78,6 +79,7 @@ public class SituasjonOversiktWebService implements BehandleSituasjonV1 {
         oppfoelgingsstatus.setErReservertIKontaktOgReservasjonsregisteret(oppfolgingStatusData.isReservasjonKRR());
         oppfoelgingsstatus.setMaaVilkaarBesvares(oppfolgingStatusData.isVilkarMaBesvares());
         oppfoelgingsstatus.setPersonident(oppfolgingStatusData.getFnr());
+        oppfoelgingsstatus.setOppfolgingUtgang(xmlCalendar(oppfolgingStatusData.getOppfolgingUtgang()));
 
         val res = new HentOppfoelgingsstatusResponse();
         res.setOppfoelgingsstatus(oppfoelgingsstatus);
