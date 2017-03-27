@@ -1,7 +1,7 @@
 package no.nav.fo.veilarbsituasjon.rest;
 
 
-import no.nav.fo.veilarbsituasjon.domain.Oppfolgingsstatus;
+import no.nav.fo.veilarbsituasjon.rest.domain.Oppfolgingsstatus;
 import no.nav.fo.veilarbsituasjon.rest.domain.OppfolgingskontraktResponse;
 import no.nav.fo.veilarbsituasjon.services.OppfolgingService;
 import no.nav.fo.veilarbsituasjon.services.PepClient;

@@ -1,8 +1,8 @@
 package no.nav.fo.veilarbsituasjon.services;
 
-import no.nav.fo.veilarbsituasjon.domain.Oppfolgingsstatus;
+import no.nav.fo.veilarbsituasjon.rest.domain.*;
 import no.nav.fo.veilarbsituasjon.mappers.OppfolgingMapper;
-import no.nav.fo.veilarbsituasjon.rest.domain.OppfolgingskontraktResponse;
+import no.nav.fo.veilarbsituasjon.rest.domain.Oppfolgingsenhet;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.*;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.informasjon.WSPeriode;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.*;
@@ -18,9 +18,11 @@ public class OppfolgingService {
 
     private static final Logger LOG = getLogger(OppfolgingService.class);
     private final OppfoelgingPortType oppfoelgingPortType;
+    private OrganisasjonsenhetService organisasjonsenhetService;
 
-    public OppfolgingService(OppfoelgingPortType oppfoelgingPortType) {
+    public OppfolgingService(OppfoelgingPortType oppfoelgingPortType, OrganisasjonsenhetService organisasjonsenhetService) {
         this.oppfoelgingPortType = oppfoelgingPortType;
+        this.organisasjonsenhetService = organisasjonsenhetService;
     }
 
     public OppfolgingskontraktResponse hentOppfolgingskontraktListe(XMLGregorianCalendar fom, XMLGregorianCalendar tom, String fnr) {
@@ -45,7 +47,10 @@ public class OppfolgingService {
                 .withPersonidentifikator(identifikator);
 
         try {
-            return tilOppfolgingsstatus(oppfoelgingPortType.hentOppfoelgingsstatus(request));
+            WSHentOppfoelgingsstatusResponse oppfoelgingsstatus = oppfoelgingPortType.hentOppfoelgingsstatus(request);
+            Oppfolgingsenhet oppfolgingsenhet = organisasjonsenhetService
+                    .hentEnhet(oppfoelgingsstatus.getNavOppfoelgingsenhet());
+            return tilOppfolgingsstatus(oppfoelgingsstatus, oppfolgingsenhet);
         } catch (HentOppfoelgingsstatusSikkerhetsbegrensning e) {
             String logMessage = "Ikke tilgang til bruker " + identifikator;
             LOG.warn(logMessage, e);
