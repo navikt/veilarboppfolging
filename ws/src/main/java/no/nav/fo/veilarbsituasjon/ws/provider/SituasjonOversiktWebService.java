@@ -79,7 +79,7 @@ public class SituasjonOversiktWebService implements BehandleSituasjonV1 {
         oppfoelgingsstatus.setErReservertIKontaktOgReservasjonsregisteret(oppfolgingStatusData.isReservasjonKRR());
         oppfoelgingsstatus.setMaaVilkaarBesvares(oppfolgingStatusData.isVilkarMaBesvares());
         oppfoelgingsstatus.setPersonident(oppfolgingStatusData.getFnr());
-        oppfoelgingsstatus.setOppfolgingUtgang(xmlCalendar(oppfolgingStatusData.getOppfolgingUtgang()));
+        oppfoelgingsstatus.setOppfoelgingUtgang(xmlCalendar(oppfolgingStatusData.getOppfolgingUtgang()));
 
         val res = new HentOppfoelgingsstatusResponse();
         res.setOppfoelgingsstatus(oppfoelgingsstatus);
