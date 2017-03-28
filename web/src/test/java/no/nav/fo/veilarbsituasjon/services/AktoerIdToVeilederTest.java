@@ -5,8 +5,6 @@ import no.nav.fo.veilarbsituasjon.db.BrukerRepository;
 import no.nav.fo.veilarbsituasjon.domain.OppfolgingBruker;
 import no.nav.fo.veilarbsituasjon.rest.PortefoljeRessurs;
 import no.nav.fo.veilarbsituasjon.rest.domain.VeilederTilordning;
-import no.nav.fo.veilarbsituasjon.services.AktoerIdService;
-import no.nav.fo.veilarbsituasjon.services.PepClient;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;

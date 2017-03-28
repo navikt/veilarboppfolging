@@ -1,19 +1,15 @@
 package no.nav.fo.veilarbsituasjon.rest;
 
 
-import no.nav.fo.veilarbsituasjon.domain.Oppfolgingsstatus;
 import no.nav.fo.veilarbsituasjon.mappers.OppfolgingMapper;
-import no.nav.fo.veilarbsituasjon.mappers.OppfolgingsstatusMapper;
-import no.nav.fo.veilarbsituasjon.rest.domain.OppfolgingskontraktResponse;
+import no.nav.fo.veilarbsituasjon.domain.OppfolgingskontraktResponse;
+import no.nav.fo.veilarbsituasjon.domain.Oppfolgingsstatus;
 import no.nav.fo.veilarbsituasjon.services.OppfolgingService;
 import no.nav.fo.veilarbsituasjon.services.PepClient;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.time.LocalDate;
 
@@ -58,6 +54,6 @@ public class OppfolgingRessurs {
         pepClient.isServiceCallAllowed(fnr);
 
         LOG.info("Henter oppfølgingsstatus for {}", fnr);
-        return OppfolgingsstatusMapper.tilOppfolgingsstatus(oppfolgingService.hentOppfolgingsstatus(fnr));
+        return oppfolgingService.hentOppfolgingsstatus(fnr);
     }
 }

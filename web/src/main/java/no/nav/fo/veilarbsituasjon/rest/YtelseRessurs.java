@@ -1,5 +1,6 @@
 package no.nav.fo.veilarbsituasjon.rest;
 
+import no.nav.fo.veilarbsituasjon.domain.OppfolgingskontraktResponse;
 import no.nav.fo.veilarbsituasjon.mappers.OppfolgingMapper;
 import no.nav.fo.veilarbsituasjon.mappers.YtelseskontraktMapper;
 import no.nav.fo.veilarbsituasjon.rest.domain.*;

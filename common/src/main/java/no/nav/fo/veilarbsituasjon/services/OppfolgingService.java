@@ -1,16 +1,14 @@
 package no.nav.fo.veilarbsituasjon.services;
 
+import no.nav.fo.veilarbsituasjon.domain.Oppfolgingsenhet;
+import no.nav.fo.veilarbsituasjon.domain.Oppfolgingsstatus;
+import no.nav.fo.veilarbsituasjon.mappers.OppfolgingsstatusMapper;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.*;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.informasjon.WSPeriode;
-import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.WSHentOppfoelgingskontraktListeRequest;
-import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.WSHentOppfoelgingskontraktListeResponse;
-import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.WSHentOppfoelgingsstatusRequest;
-import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.WSHentOppfoelgingsstatusResponse;
+import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.*;
 import org.slf4j.Logger;
 
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.ForbiddenException;
-import javax.ws.rs.NotFoundException;
+import javax.ws.rs.*;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import static org.slf4j.LoggerFactory.getLogger;
@@ -19,9 +17,11 @@ public class OppfolgingService {
 
     private static final Logger LOG = getLogger(OppfolgingService.class);
     private final OppfoelgingPortType oppfoelgingPortType;
+    private OrganisasjonsenhetService organisasjonsenhetService;
 
-    public OppfolgingService(OppfoelgingPortType oppfoelgingPortType) {
+    public OppfolgingService(OppfoelgingPortType oppfoelgingPortType, OrganisasjonsenhetService organisasjonsenhetService) {
         this.oppfoelgingPortType = oppfoelgingPortType;
+        this.organisasjonsenhetService = organisasjonsenhetService;
     }
 
     public WSHentOppfoelgingskontraktListeResponse hentOppfolgingskontraktListe(XMLGregorianCalendar fom, XMLGregorianCalendar tom, String fnr) {
@@ -41,12 +41,15 @@ public class OppfolgingService {
         return response;
     }
 
-    public WSHentOppfoelgingsstatusResponse hentOppfolgingsstatus(String identifikator) {
+    public Oppfolgingsstatus hentOppfolgingsstatus(String identifikator) {
         WSHentOppfoelgingsstatusRequest request = new WSHentOppfoelgingsstatusRequest()
                 .withPersonidentifikator(identifikator);
 
         try {
-            return oppfoelgingPortType.hentOppfoelgingsstatus(request);
+            WSHentOppfoelgingsstatusResponse oppfoelgingsstatus = oppfoelgingPortType.hentOppfoelgingsstatus(request);
+            Oppfolgingsenhet oppfolgingsenhet = organisasjonsenhetService
+                    .hentEnhet(oppfoelgingsstatus.getNavOppfoelgingsenhet());
+            return OppfolgingsstatusMapper.tilOppfolgingsstatus(oppfoelgingsstatus, oppfolgingsenhet);
         } catch (HentOppfoelgingsstatusSikkerhetsbegrensning e) {
             String logMessage = "Ikke tilgang til bruker " + identifikator;
             LOG.warn(logMessage, e);

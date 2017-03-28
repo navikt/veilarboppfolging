@@ -3,7 +3,6 @@ package no.nav.fo.veilarbsituasjon.config;
 import no.nav.modig.security.ws.SystemSAMLOutInterceptor;
 import no.nav.sbl.dialogarena.common.cxf.CXFClient;
 import no.nav.sbl.dialogarena.types.Pingable;
-import no.nav.tjeneste.virksomhet.aktoer.v2.AktoerV2;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.DigitalKontaktinformasjonV1;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

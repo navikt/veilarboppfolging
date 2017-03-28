@@ -1,8 +1,8 @@
 package no.nav.fo.veilarbsituasjon.mappers;
 
 import no.nav.fo.veilarbsituasjon.mock.OppfoelgingV1Mock;
-import no.nav.fo.veilarbsituasjon.rest.domain.OppfolgingskontraktData;
-import no.nav.fo.veilarbsituasjon.rest.domain.OppfolgingskontraktResponse;
+import no.nav.fo.veilarbsituasjon.domain.OppfolgingskontraktData;
+import no.nav.fo.veilarbsituasjon.domain.OppfolgingskontraktResponse;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.HentOppfoelgingskontraktListeSikkerhetsbegrensning;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.informasjon.WSPeriode;

@@ -2,10 +2,7 @@ package no.nav.fo.veilarbsituasjon.db;
 
 import com.google.common.base.Joiner;
 import no.nav.fo.veilarbsituasjon.IntegrasjonsTest;
-import no.nav.fo.veilarbsituasjon.domain.Brukervilkar;
-import no.nav.fo.veilarbsituasjon.domain.OppfolgingBruker;
-import no.nav.fo.veilarbsituasjon.domain.Situasjon;
-import no.nav.fo.veilarbsituasjon.domain.VilkarStatus;
+import no.nav.fo.veilarbsituasjon.domain.*;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -13,7 +10,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.io.IOException;
 import java.sql.Timestamp;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 

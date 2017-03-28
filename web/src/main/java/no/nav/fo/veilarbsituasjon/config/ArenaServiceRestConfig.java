@@ -3,7 +3,6 @@ package no.nav.fo.veilarbsituasjon.config;
 
 import no.nav.fo.veilarbsituasjon.mock.OppfoelgingV1Mock;
 import no.nav.fo.veilarbsituasjon.mock.YtelseskontraktV3Mock;
-import no.nav.modig.security.ws.UserSAMLOutInterceptor;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3;
 import org.springframework.context.annotation.Bean;

@@ -1,4 +1,4 @@
-package no.nav.fo.veilarbsituasjon.rest.domain;
+package no.nav.fo.veilarbsituasjon.domain;
 
 import java.util.List;
 
