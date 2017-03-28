@@ -29,6 +29,7 @@
         <webservice alias="virksomhet:DigitalKontakinformasjon_v1" mapToProperty="dkif.endpoint"/>
         <webservice alias="virksomhet:Ytelseskontrakt_v3" mapToProperty="ytelseskontrakt.endpoint"/>
         <webservice alias="virksomhet:Oppfolging_v1" mapToProperty="oppfoelging.endpoint"/>
+        <webservice alias="virksomhet:OrganisasjonEnhet_v1" mapToProperty="organisasjonenhet.endpoint" />
         <webservice alias="Aktoer_v2" mapToProperty="aktoer.endpoint"/>
         <applicationCertificate alias="srvveilarbsituasjon"/>
         <rest alias="abac.pdp.endpoint" mapToProperty="abac.endpoint" />
