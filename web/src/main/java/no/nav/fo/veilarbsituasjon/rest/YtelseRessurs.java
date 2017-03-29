@@ -17,7 +17,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 @Path("/person/{fnr}")
 @Component
 @Produces(APPLICATION_JSON)
-@Api
+@Api(value = "Ytelser")
 public class YtelseRessurs {
     private static final Logger LOG = getLogger(YtelseRessurs.class);
     private static final int MANEDER_BAK_I_TID = 2;

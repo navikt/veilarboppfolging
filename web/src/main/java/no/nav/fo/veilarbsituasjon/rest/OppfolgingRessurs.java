@@ -18,7 +18,7 @@ import static no.nav.fo.veilarbsituasjon.utils.CalendarConverter.convertDateToXM
 import static org.slf4j.LoggerFactory.getLogger;
 
 @Component
-@Api
+@Api(value = "Oppfølging")
 @Path("/person/{fnr}")
 @Produces(APPLICATION_JSON)
 public class OppfolgingRessurs {

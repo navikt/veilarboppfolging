@@ -25,7 +25,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 @Component
 @Path("")
-@Api
+@Api(value= "Portefolje")
 public class PortefoljeRessurs {
 
     private static final Logger LOG = getLogger(PortefoljeRessurs.class);

@@ -12,7 +12,7 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 @Component
 @Path("/person/{fnr}")
 @Produces(APPLICATION_JSON)
-@Api
+@Api(value= "Veileder")
 public class VeilederRessurs {
     private AktoerIdService aktoerIdService;
     private BrukerRepository brukerRepository;
