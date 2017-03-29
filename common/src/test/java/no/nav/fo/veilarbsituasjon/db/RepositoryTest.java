@@ -15,6 +15,7 @@ import java.util.Optional;
 
 import static java.lang.System.currentTimeMillis;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
@@ -26,6 +27,31 @@ public class RepositoryTest extends IntegrasjonsTest {
 
     private SituasjonRepository situasjonRepository = new SituasjonRepository(db);
     private BrukerRepository brukerRepository = new BrukerRepository(db);
+
+    @Nested
+    class mal {
+        @Test
+        public void opprettOghentMal() {
+            gittSituasjonForAktor(AKTOR_ID);
+            gittMal(AKTOR_ID, "Dette er et mål");
+
+            MalData mal = situasjonRepository.hentSituasjon(AKTOR_ID).get().getGjeldendeMal();
+            assertThat(mal.getAktorId(), equalTo(AKTOR_ID));
+            assertThat(mal.getMal(), equalTo("Dette er et mål"));
+        }
+
+        @Test
+        public void hentMalListe() {
+            gittSituasjonForAktor(AKTOR_ID);
+            gittMal(AKTOR_ID, "Dette er et mål");
+            gittMal(AKTOR_ID, "Dette er et oppdatert mål");
+
+            MalData mal = situasjonRepository.hentSituasjon(AKTOR_ID).get().getGjeldendeMal();
+            assertThat(mal.getMal(), equalTo("Dette er et oppdatert mål"));
+            List<MalData> malList = situasjonRepository.hentMalList(AKTOR_ID);
+            assertThat(malList.size(), greaterThan(1));
+        }
+    }
 
     @Nested
     class hentSituasjon {
@@ -137,4 +163,12 @@ public class RepositoryTest extends IntegrasjonsTest {
         return situasjonRepository.hentSituasjon(ukjentAktorId);
     }
 
+    private void gittMal(String aktorId, String mal) {
+        MalData input = new MalData()
+                .setAktorId(aktorId)
+                .setMal(mal)
+                .setEndretAv(aktorId)
+                .setDato(null);
+        situasjonRepository.opprettMal(input);
+    }
 }
