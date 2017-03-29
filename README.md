@@ -13,3 +13,11 @@ og startes på nytt.
 På veilarbsituasjon/v2/api-docs så ligger en json som beskriver rest-apiet.
 For å se en mer leslig dokumentasjon av rest-api gå på URL: veilarbsituasjon/swagger-ui.html.
 F eks https://app-t4.adeo.no/veilarbsituasjon/swagger-ui.html
+
+#### Sending av veiledertilordninger til Portefølje
+Riktig databaselink, brukernavn og passord må oppgis i metoden ``setupJndiLocalContext()`` i klassen 
+``JndiLocalContextConfig``. Gå til Fasit --> søk på veilarbsituasjonDB --> velg riktig miljø.
+
+Kjør ``https://localhost:8485/veilarbsituasjon/api/sendalleveiledertilordninger`` i nettleseren.
+
+!! OBS OBS !! Husk at veilarbportefolje og veilarbportefoljeindeks må kjøre samtidig.
