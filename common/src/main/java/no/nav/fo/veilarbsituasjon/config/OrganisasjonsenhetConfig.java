@@ -1,37 +1,33 @@
 package no.nav.fo.veilarbsituasjon.config;
 
-import no.nav.fo.veilarbsituasjon.mock.OrganisasjonEnhetMock;
+import no.nav.modig.security.ws.SystemSAMLOutInterceptor;
 import no.nav.sbl.dialogarena.common.cxf.CXFClient;
 import no.nav.sbl.dialogarena.types.Pingable;
 import no.nav.tjeneste.virksomhet.organisasjonenhet.v1.OrganisasjonEnhetV1;
+import org.apache.cxf.interceptor.LoggingOutInterceptor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import static java.lang.System.getProperty;
-import static no.nav.sbl.dialogarena.common.cxf.InstanceSwitcher.createMetricsProxyWithInstanceSwitcher;
 import static no.nav.sbl.dialogarena.types.Pingable.Ping.feilet;
 import static no.nav.sbl.dialogarena.types.Pingable.Ping.lyktes;
 
 @Configuration
 public class OrganisasjonsenhetConfig {
     private static final String ORGANISASJONSENHET_ENDPOINT_KEY = "organisasjonenhet.endpoint.url";
-    private static final String ORGANISASJONSENHET_MOCK_KEY = "organisasjonenhet.endpoint.url";
 
-    @Bean
-    public OrganisasjonEnhetV1 organisasjonEnhetPortType() {
-        OrganisasjonEnhetV1 prod = factory().configureStsForOnBehalfOfWithJWT().build();
-        OrganisasjonEnhetV1 mock = new OrganisasjonEnhetMock();
-        return createMetricsProxyWithInstanceSwitcher("Organisasjonsenhet", prod, mock, ORGANISASJONSENHET_MOCK_KEY, OrganisasjonEnhetV1.class);
-    }
-
-    private CXFClient<OrganisasjonEnhetV1> factory() {
+    public static CXFClient<OrganisasjonEnhetV1> organisasjonEnhetPortType() {
         return new CXFClient<>(OrganisasjonEnhetV1.class)
+                .withOutInterceptor(new LoggingOutInterceptor())
                 .address(getProperty(ORGANISASJONSENHET_ENDPOINT_KEY));
     }
 
     @Bean
     public Pingable organisasjonEnhetPing() {
-        final OrganisasjonEnhetV1 organisasjonEnhetV1 = factory().build();
+        final OrganisasjonEnhetV1 organisasjonEnhetV1 = organisasjonEnhetPortType()
+                .withOutInterceptor(new SystemSAMLOutInterceptor())
+                .build();
+
         return () -> {
             try {
                 organisasjonEnhetV1.ping();
