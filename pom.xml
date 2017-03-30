@@ -45,7 +45,7 @@
         <modig-security.version>3.0.1</modig-security.version>
         <modig-testcertificates.version>1.1.0</modig-testcertificates.version>
         <jwt-security.version>1.0.6</jwt-security.version>
-        <oidc-security.version>2.0.15</oidc-security.version>
+        <oidc-security.version>2.0.16</oidc-security.version>
 
         <utave.version>1.0.8</utave.version>
 
