@@ -1,8 +1,7 @@
 package no.nav.fo.veilarbsituasjon;
 
 import no.nav.brukerdialog.security.context.JettySubjectHandler;
-import no.nav.dialogarena.config.fasit.FasitUtils;
-import no.nav.dialogarena.config.fasit.ServiceUser;
+import no.nav.fo.veilarbsituasjon.config.SecurityTestConfig;
 import no.nav.sbl.dialogarena.common.jetty.Jetty;
 import no.nav.sbl.dialogarena.test.SystemProperties;
 import org.apache.geronimo.components.jaspi.AuthConfigFactoryImpl;
@@ -14,6 +13,8 @@ import static java.lang.System.setProperty;
 import static no.nav.fo.veilarbsituasjon.config.JndiLocalContextConfig.setupInMemoryDatabase;
 import static no.nav.fo.veilarbsituasjon.config.JndiLocalContextConfig.setupJndiLocalContext;
 import static no.nav.fo.veilarbsituasjon.config.MessageQueueMockConfig.setupBrokerService;
+import static no.nav.fo.veilarbsituasjon.config.SecurityTestConfig.setupLdap;
+import static no.nav.fo.veilarbsituasjon.config.SecurityTestConfig.setupSystemUser;
 import static no.nav.sbl.dialogarena.common.jetty.Jetty.usingWar;
 
 class StartJetty {
@@ -28,6 +29,7 @@ class StartJetty {
         }
 
         setupSystemUser();
+        setupLdap();
         setupBrokerService();
         setupAutentisering();
 
@@ -40,15 +42,6 @@ class StartJetty {
                 .configureForJaspic()
                 .buildJetty();
         jetty.start();
-    }
-
-    private static void setupSystemUser() {
-        ServiceUser serviceUser = FasitUtils.getServiceUser("srvveilarbsituasjon", "veilarbsituasjon", "t4");
-        System.setProperty("no.nav.abac.systemuser.username", serviceUser.username);
-        System.setProperty("no.nav.abac.systemuser.password", serviceUser.password);
-
-        System.setProperty("no.nav.modig.security.systemuser.username", serviceUser.username);
-        System.setProperty("no.nav.modig.security.systemuser.password", serviceUser.password);
     }
 
     private static void setupAutentisering() {
