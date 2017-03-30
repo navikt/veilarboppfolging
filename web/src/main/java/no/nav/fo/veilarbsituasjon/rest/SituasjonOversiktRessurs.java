@@ -63,7 +63,7 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt {
 
     private String getFnr() {
         final String fnr = requestProvider.get().getParameter("fnr");
-//        pepClient.isServiceCallAllowed(fnr);
+        pepClient.isServiceCallAllowed(fnr);
         return fnr;
     }
 

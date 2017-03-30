@@ -3,12 +3,12 @@ package no.nav.fo.veilarbsituasjon.rest.domain;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
-import java.sql.Timestamp;
+import java.util.Date;
 
 @Data
 @Accessors(chain = true)
 public class Mal {
     private String mal;
     private String endretAv;
-    private Timestamp dato;
+    private Date dato;
 }
