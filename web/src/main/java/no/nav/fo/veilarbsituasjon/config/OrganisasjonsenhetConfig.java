@@ -26,7 +26,8 @@ public class OrganisasjonsenhetConfig {
 
     private CXFClient<OrganisasjonEnhetV1> factory() {
         return new CXFClient<>(OrganisasjonEnhetV1.class)
-                .address(getProperty(ORGANISASJONSENHET_ENDPOINT_KEY));
+                .address(getProperty(ORGANISASJONSENHET_ENDPOINT_KEY))
+                .configureStsForSystemUser();
     }
 
     @Bean
