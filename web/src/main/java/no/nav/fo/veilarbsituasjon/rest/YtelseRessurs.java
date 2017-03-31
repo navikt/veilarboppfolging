@@ -1,5 +1,6 @@
 package no.nav.fo.veilarbsituasjon.rest;
 
+import io.swagger.annotations.Api;
 import no.nav.fo.veilarbsituasjon.rest.domain.*;
 import no.nav.fo.veilarbsituasjon.services.*;
 import org.slf4j.Logger;
@@ -16,6 +17,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 @Path("/person/{fnr}")
 @Component
 @Produces(APPLICATION_JSON)
+@Api(value = "Ytelser")
 public class YtelseRessurs {
     private static final Logger LOG = getLogger(YtelseRessurs.class);
     private static final int MANEDER_BAK_I_TID = 2;

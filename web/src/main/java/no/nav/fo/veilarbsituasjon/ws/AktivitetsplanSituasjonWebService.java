@@ -1,6 +1,7 @@
 package no.nav.fo.veilarbsituasjon.ws;
 
 
+import io.swagger.annotations.Api;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import lombok.val;
@@ -34,6 +35,7 @@ import static no.nav.fo.veilarbsituasjon.domain.VilkarStatus.IKKE_BESVART;
 @Component
 @Path("/ws/aktivitetsplan")
 @Produces(APPLICATION_JSON)
+@Api
 public class AktivitetsplanSituasjonWebService {
 
     private static final Set<String> ARBEIDSOKERKODER = new HashSet<>(asList("ARBS", "RARBS", "PARBS"));
