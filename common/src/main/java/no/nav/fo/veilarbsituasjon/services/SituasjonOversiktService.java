@@ -1,5 +1,9 @@
 package no.nav.fo.veilarbsituasjon.services;
 
+
+import io.swagger.annotations.Api;
+import lombok.Data;
+import lombok.experimental.Accessors;
 import lombok.val;
 import no.nav.fo.veilarbsituasjon.db.SituasjonRepository;
 import no.nav.fo.veilarbsituasjon.domain.*;
@@ -29,6 +33,7 @@ import static no.nav.fo.veilarbsituasjon.domain.VilkarStatus.IKKE_BESVART;
 import static org.slf4j.LoggerFactory.getLogger;
 
 @Component
+@Api
 public class SituasjonOversiktService {
 
     private static final Logger LOG = getLogger(SituasjonOversiktService.class);

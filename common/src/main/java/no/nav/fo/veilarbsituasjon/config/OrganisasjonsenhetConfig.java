@@ -1,6 +1,5 @@
 package no.nav.fo.veilarbsituasjon.config;
 
-import no.nav.modig.security.ws.SystemSAMLOutInterceptor;
 import no.nav.sbl.dialogarena.common.cxf.CXFClient;
 import no.nav.sbl.dialogarena.types.Pingable;
 import no.nav.tjeneste.virksomhet.organisasjonenhet.v1.OrganisasjonEnhetV1;
@@ -12,9 +11,11 @@ import static java.lang.System.getProperty;
 import static no.nav.sbl.dialogarena.types.Pingable.Ping.feilet;
 import static no.nav.sbl.dialogarena.types.Pingable.Ping.lyktes;
 
+
 @Configuration
 public class OrganisasjonsenhetConfig {
     private static final String ORGANISASJONSENHET_ENDPOINT_KEY = "organisasjonenhet.endpoint.url";
+
 
     public static CXFClient<OrganisasjonEnhetV1> organisasjonEnhetPortType() {
         return new CXFClient<>(OrganisasjonEnhetV1.class)
@@ -25,7 +26,7 @@ public class OrganisasjonsenhetConfig {
     @Bean
     public Pingable organisasjonEnhetPing() {
         final OrganisasjonEnhetV1 organisasjonEnhetV1 = organisasjonEnhetPortType()
-                .withOutInterceptor(new SystemSAMLOutInterceptor())
+                .configureStsForSystemUser()
                 .build();
 
         return () -> {

@@ -65,10 +65,10 @@
         <!--NAV Felles -->
         <common-jetty.version>2.0.12</common-jetty.version>
         <common-cxf.version>3.1.33</common-cxf.version>
-        <common-web.version>3.1.2</common-web.version>
+        <common-web.version>4.0.6</common-web.version>
         <common-types.version>1.2</common-types.version>
         <common-test.version>2.0.3</common-test.version>
-        <common-abac.version>1.0.40</common-abac.version>
+        <common-abac.version>1.0.43</common-abac.version>
 
         <xml-apis.version>1.4.01</xml-apis.version>
         <cxf-core.version>3.1.6</cxf-core.version>
@@ -85,6 +85,9 @@
 
         <ojdbc.version>11.2.0.3</ojdbc.version>
         <activemq.version>5.7.0</activemq.version>
+
+        <swagger.version>1.5.13</swagger.version>
+        <swagger-ui.version>2.2.10</swagger-ui.version>
 
         <sonar.exclusions>
             **/Swagger*,
@@ -406,6 +409,7 @@
                 <groupId>org.glassfish.jersey.core</groupId>
                 <artifactId>jersey-server</artifactId>
                 <version>${jersey.version}</version>
+                <scope>runtime</scope>
             </dependency>
             <dependency>
                 <groupId>org.glassfish.jersey.containers</groupId>
@@ -424,6 +428,25 @@
                 <artifactId>jersey-media-json-jackson</artifactId>
                 <scope>runtime</scope>
                 <version>${jersey.version}</version>
+            </dependency>
+
+            <!--Swagger-->
+            <dependency>
+                <groupId>io.swagger</groupId>
+                <artifactId>swagger-jersey2-jaxrs</artifactId>
+                <version>${swagger.version}</version>
+                <scope>runtime</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.swagger</groupId>
+                <artifactId>swagger-annotations</artifactId>
+                <version>${swagger.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.webjars</groupId>
+                <artifactId>swagger-ui</artifactId>
+                <version>${swagger-ui.version}</version>
+                <scope>runtime</scope>
             </dependency>
 
             <!--oicd-security -->
