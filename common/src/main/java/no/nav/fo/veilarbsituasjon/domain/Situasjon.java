@@ -13,4 +13,5 @@ public class Situasjon {
     private Status gjeldendeStatus;
     private Brukervilkar gjeldendeBrukervilkar;
     private Date oppfolgingUtgang;
+    private MalData gjeldendeMal;
 }

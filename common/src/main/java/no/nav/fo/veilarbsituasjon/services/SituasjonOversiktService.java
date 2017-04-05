@@ -8,7 +8,9 @@ import lombok.val;
 import no.nav.fo.veilarbsituasjon.db.SituasjonRepository;
 import no.nav.fo.veilarbsituasjon.domain.*;
 import no.nav.fo.veilarbsituasjon.vilkar.VilkarService;
-import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.*;
+import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.DigitalKontaktinformasjonV1;
+import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.HentDigitalKontaktinformasjonKontaktinformasjonIkkeFunnet;
+import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.HentDigitalKontaktinformasjonPersonIkkeFunnet;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.informasjon.WSKontaktinformasjon;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.WSHentDigitalKontaktinformasjonRequest;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.WSHentDigitalKontaktinformasjonResponse;
@@ -22,7 +24,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
 import java.sql.Timestamp;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 import static java.lang.System.currentTimeMillis;
 import static java.util.Arrays.asList;
@@ -129,6 +134,26 @@ public class SituasjonOversiktService {
                     ));
         }
         return hentOppfolgingsStatus(fnr);
+    }
+
+    public MalData hentMal(String fnr) {
+        return Optional.ofNullable(hentSituasjon(hentAktorId(fnr)).getGjeldendeMal()).orElse(new MalData());
+    }
+
+    public List<MalData> hentMalList(String fnr) {
+        return situasjonRepository.hentMalList(hentAktorId(fnr));
+    }
+
+    public MalData oppdaterMal(String mal, String fnr) {
+        String aktorId = hentAktorId(fnr);
+        Timestamp dato = new Timestamp(currentTimeMillis());
+        MalData malData = new MalData()
+                .setAktorId(aktorId)
+                .setMal(mal)
+                .setEndretAv(aktorId) //TODO: Hva hvis endres av NAV?
+                .setDato(dato);
+        situasjonRepository.opprettMal(malData);
+        return hentMal(fnr);
     }
 
     private boolean erUnderOppfolging(String fnr) throws Exception {

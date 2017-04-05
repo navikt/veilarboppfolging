@@ -2,10 +2,7 @@ package no.nav.fo.veilarbsituasjon.db;
 
 
 import lombok.SneakyThrows;
-import no.nav.fo.veilarbsituasjon.domain.Brukervilkar;
-import no.nav.fo.veilarbsituasjon.domain.Situasjon;
-import no.nav.fo.veilarbsituasjon.domain.Status;
-import no.nav.fo.veilarbsituasjon.domain.VilkarStatus;
+import no.nav.fo.veilarbsituasjon.domain.*;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,6 +33,7 @@ public class SituasjonRepository {
                         "  SITUASJON.GJELDENDE_STATUS AS GJELDENDE_STATUS, " +
                         "  SITUASJON.GJELDENDE_BRUKERVILKAR AS GJELDENDE_BRUKERVILKAR, " +
                         "  SITUASJON.OPPFOLGING_UTGANG AS OPPFOLGING_UTGANG, " +
+                        "  SITUASJON.GJELDENDE_MAL AS GJELDENDE_MAL, " +
                         "  STATUS.ID AS STATUS_ID, " +
                         "  STATUS.AKTORID AS STATUS_AKTORID, " +
                         "  STATUS.MANUELL AS STATUS_MANUELL, " +
@@ -46,10 +44,16 @@ public class SituasjonRepository {
                         "  BRUKERVILKAR.DATO AS BRUKERVILKAR_DATO, " +
                         "  BRUKERVILKAR.VILKARSTATUS AS BRUKERVILKAR_VILKARSTATUS, " +
                         "  BRUKERVILKAR.TEKST AS BRUKERVILKAR_TEKST, " +
-                        "  BRUKERVILKAR.HASH AS BRUKERVILKAR_HASH " +
+                        "  BRUKERVILKAR.HASH AS BRUKERVILKAR_HASH, " +
+                        "  MAL.ID AS MAL_ID, " +
+                        "  MAL.AKTORID AS MAL_AKTORID, " +
+                        "  MAL.MAL AS MAL_MAL, " +
+                        "  MAL.ENDRET_AV AS MAL_ENDRET_AV, " +
+                        "  MAL.DATO AS MAL_DATO " +
                         "FROM situasjon " +
                         "LEFT JOIN status ON SITUASJON.GJELDENDE_STATUS = STATUS.ID " +
                         "LEFT JOIN brukervilkar ON SITUASJON.GJELDENDE_BRUKERVILKAR = BRUKERVILKAR.ID " +
+                        "LEFT JOIN MAL ON SITUASJON.GJELDENDE_MAL = MAL.ID " +
                         "WHERE situasjon.aktorid = ? ",
                 (result, n) -> mapTilSituasjon(result),
                 aktorId
@@ -80,20 +84,43 @@ public class SituasjonRepository {
         opprettSituasjonBrukervilkar(brukervilkar);
     }
 
+    public void opprettMal(MalData mal) {
+        mal.setId(nesteFraSekvens("MAL_SEQ"));
+        oppdaterSituasjonMal(mal);
+        opprettSituasjonMal(mal);
+    }
+
     @Transactional
     public Situasjon opprettSituasjon(Situasjon situasjon) {
         jdbcTemplate.update(
-                "INSERT INTO situasjon(aktorid, oppfolging, gjeldende_status, gjeldende_brukervilkar, oppfolging_utgang) " +
-                        "VALUES(?, ?, ?, ?, ?)",
+                "INSERT INTO situasjon(aktorid, oppfolging, gjeldende_status, gjeldende_brukervilkar, oppfolging_utgang, gjeldende_mal) " +
+                        "VALUES(?, ?, ?, ?, ?, ?)",
                 situasjon.getAktorId(),
                 situasjon.isOppfolging(),
+                null,
                 null,
                 null,
                 null
         );
         Optional.ofNullable(situasjon.getGjeldendeBrukervilkar()).ifPresent(this::opprettBrukervilkar);
         Optional.ofNullable(situasjon.getGjeldendeStatus()).ifPresent(this::opprettStatus);
+        Optional.ofNullable(situasjon.getGjeldendeMal()).ifPresent(this::opprettMal);
         return situasjon;
+    }
+
+    public List<MalData> hentMalList(String aktorId) {
+        return jdbcTemplate.query("" +
+                        "SELECT" +
+                        "  ID AS MAL_ID, " +
+                        "  AKTORID AS MAL_AKTORID, " +
+                        "  MAL AS MAL_MAL, " +
+                        "  ENDRET_AV AS MAL_ENDRET_AV, " +
+                        "  DATO AS MAL_DATO " +
+                        "FROM MAL " +
+                        "WHERE AKTORID = ? " +
+                        "ORDER BY ID DESC",
+                (result, n) -> mapTilMal(result),
+                aktorId);
     }
 
     public boolean situasjonFinnes(Situasjon situasjon) {
@@ -114,6 +141,13 @@ public class SituasjonRepository {
         jdbcTemplate.update("UPDATE situasjon SET gjeldende_status = ? WHERE aktorid = ?",
                 gjeldendeStatus.getId(),
                 gjeldendeStatus.getAktorId()
+        );
+    }
+
+    private void oppdaterSituasjonMal(MalData mal) {
+        jdbcTemplate.update("UPDATE SITUASJON SET GJELDENDE_MAL = ? WHERE AKTORID = ?",
+                mal.getId(),
+                mal.getAktorId()
         );
     }
 
@@ -142,6 +176,17 @@ public class SituasjonRepository {
         );
     }
 
+    private void opprettSituasjonMal(MalData mal) {
+        jdbcTemplate.update(
+                "INSERT INTO MAL VALUES(?, ?, ?, ?, ?)",
+                mal.getId(),
+                mal.getAktorId(),
+                mal.getMal(),
+                mal.getEndretAv(),
+                mal.getDato()
+        );
+    }
+
     private long nesteFraSekvens(String sekvensNavn) {
         String sekvensQuery;
         if (HSQLDB_DIALECT.equals(System.getProperty(DIALECT_PROPERTY))) {
@@ -167,7 +212,11 @@ public class SituasjonRepository {
                                 .orElse(null)
                 )
                 .setOppfolgingUtgang(hentDato(resultat, "oppfolging_utgang"))
-                ;
+                .setGjeldendeMal(
+                        Optional.ofNullable(resultat.getLong("GJELDENDE_MAL"))
+                                .map(m -> m != 0 ? mapTilMal(resultat) : null)
+                                .orElse(null)
+                );
     }
 
     private static Date hentDato(ResultSet rs, String kolonneNavn) throws SQLException {
@@ -200,4 +249,14 @@ public class SituasjonRepository {
         ).setId(result.getLong("STATUS_ID"));
     }
 
+    @SneakyThrows
+    @SuppressWarnings("unchecked")
+    private MalData mapTilMal(ResultSet result) {
+        return new MalData()
+                .setId(result.getLong("MAL_ID"))
+                .setAktorId(result.getString("MAL_AKTORID"))
+                .setMal(result.getString("MAL_MAL"))
+                .setEndretAv(result.getString("MAL_ENDRET_AV"))
+                .setDato(result.getTimestamp("MAL_DATO"));
+    }
 }

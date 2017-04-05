@@ -1,8 +1,10 @@
 package no.nav.fo.veilarbsituasjon.rest;
 
+import no.nav.fo.veilarbsituasjon.domain.MalData;
 import no.nav.fo.veilarbsituasjon.domain.OppfolgingStatusData;
 import no.nav.fo.veilarbsituasjon.domain.VilkarData;
 import no.nav.fo.veilarbsituasjon.rest.api.SituasjonOversikt;
+import no.nav.fo.veilarbsituasjon.rest.domain.Mal;
 import no.nav.fo.veilarbsituasjon.rest.domain.OppfolgingStatus;
 import no.nav.fo.veilarbsituasjon.rest.domain.Vilkar;
 import no.nav.fo.veilarbsituasjon.services.PepClient;
@@ -12,6 +14,9 @@ import org.springframework.stereotype.Component;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
+
+import static java.util.stream.Collectors.toList;
 
 @Component
 public class SituasjonOversiktRessurs implements SituasjonOversikt {
@@ -40,7 +45,23 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt {
         return tilDto(situasjonOversiktService.godtaVilkar(hash, getFnr()));
     }
 
-    public String getFnr() {
+    @Override
+    public Mal hentMal() {
+        return tilDto(situasjonOversiktService.hentMal(getFnr()));
+    }
+
+    @Override
+    public List<Mal> hentMalListe() {
+        List<MalData> malDataList = situasjonOversiktService.hentMalList(getFnr());
+        return malDataList.stream().map(this::tilDto).collect(toList());
+    }
+
+    @Override
+    public Mal oppdaterMal(Mal mal) {
+        return tilDto(situasjonOversiktService.oppdaterMal(mal.getMal(), getFnr()));
+    }
+
+    private String getFnr() {
         final String fnr = requestProvider.get().getParameter("fnr");
         pepClient.isServiceCallAllowed(fnr);
         return fnr;
@@ -63,4 +84,10 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt {
                 .setHash(vilkarData.hash);
     }
 
+    private Mal tilDto(MalData malData) {
+        return new Mal()
+                .setMal(malData.getMal())
+                .setEndretAv(malData.getEndretAv())
+                .setDato(malData.getDato());
+    }
 }
