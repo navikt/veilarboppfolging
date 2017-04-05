@@ -60,7 +60,7 @@ public class OppfolgingService {
             throw new BadRequestException(logMessage, e);
         } catch (HentOppfoelgingsstatusPersonIkkeFunnet e) {
             String logMessage = "Fant ikke bruker: " + identifikator;
-            LOG.warn(logMessage, e);
+            LOG.debug(logMessage, e);
             throw new NotFoundException(logMessage, e);
         }
     }

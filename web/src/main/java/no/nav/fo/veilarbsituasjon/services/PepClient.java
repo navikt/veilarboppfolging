@@ -1,6 +1,7 @@
 package no.nav.fo.veilarbsituasjon.services;
 
 import no.nav.brukerdialog.security.context.SubjectHandler;
+import no.nav.brukerdialog.security.domain.OidcCredential;
 import no.nav.sbl.dialogarena.common.abac.pep.Pep;
 import no.nav.sbl.dialogarena.common.abac.pep.domain.response.BiasedDecisionResponse;
 import no.nav.sbl.dialogarena.common.abac.pep.domain.response.Decision;
@@ -24,8 +25,16 @@ public class PepClient {
     public boolean isServiceCallAllowed(String fnr) {
         final String ident = SubjectHandler.getSubjectHandler().getUid();
         BiasedDecisionResponse callAllowed;
+
+        final OidcCredential credential = (OidcCredential) SubjectHandler.getSubjectHandler().getSubject()
+                .getPublicCredentials()
+                .stream()
+                .filter(cred -> cred instanceof OidcCredential).findFirst()
+                .get();
+        final String token = credential.getToken();
+
         try {
-            callAllowed = pep.isServiceCallAllowedWithIdent(ident, "veilarb", fnr);
+            callAllowed = pep.isServiceCallAllowedWithOidcToken(token, "veilarb", fnr);
         } catch (PepException e) {
             LOG.error("Something went wrong in PEP", e);
             throw new InternalServerErrorException("something went wrong in PEP", e);

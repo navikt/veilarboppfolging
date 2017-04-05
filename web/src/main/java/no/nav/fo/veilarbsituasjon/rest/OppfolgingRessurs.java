@@ -1,9 +1,10 @@
 package no.nav.fo.veilarbsituasjon.rest;
 
 
-import no.nav.fo.veilarbsituasjon.mappers.OppfolgingMapper;
+import io.swagger.annotations.Api;
 import no.nav.fo.veilarbsituasjon.domain.OppfolgingskontraktResponse;
 import no.nav.fo.veilarbsituasjon.domain.Oppfolgingsstatus;
+import no.nav.fo.veilarbsituasjon.mappers.OppfolgingMapper;
 import no.nav.fo.veilarbsituasjon.services.OppfolgingService;
 import no.nav.fo.veilarbsituasjon.services.PepClient;
 import org.slf4j.Logger;
@@ -18,6 +19,7 @@ import static no.nav.fo.veilarbsituasjon.utils.CalendarConverter.convertDateToXM
 import static org.slf4j.LoggerFactory.getLogger;
 
 @Component
+@Api(value = "Oppfølging")
 @Path("/person/{fnr}")
 @Produces(APPLICATION_JSON)
 public class OppfolgingRessurs {
