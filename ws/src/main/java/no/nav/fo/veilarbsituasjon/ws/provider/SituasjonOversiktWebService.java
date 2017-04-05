@@ -2,10 +2,12 @@ package no.nav.fo.veilarbsituasjon.ws.provider;
 
 import lombok.SneakyThrows;
 import lombok.val;
+import no.nav.fo.veilarbsituasjon.domain.MalData;
 import no.nav.fo.veilarbsituasjon.domain.OppfolgingStatusData;
 import no.nav.fo.veilarbsituasjon.domain.VilkarData;
 import no.nav.fo.veilarbsituasjon.services.SituasjonOversiktService;
 import no.nav.tjeneste.virksomhet.behandlesituasjon.v1.binding.*;
+import no.nav.tjeneste.virksomhet.behandlesituasjon.v1.informasjon.Mal;
 import no.nav.tjeneste.virksomhet.behandlesituasjon.v1.informasjon.Oppfoelgingsstatus;
 import no.nav.tjeneste.virksomhet.behandlesituasjon.v1.meldinger.*;
 import org.springframework.stereotype.Service;
@@ -13,6 +15,8 @@ import org.springframework.stereotype.Service;
 import javax.inject.Inject;
 import javax.jws.WebService;
 import javax.ws.rs.WebApplicationException;
+
+import java.util.stream.Collectors;
 
 import static javax.ws.rs.core.Response.Status.NOT_IMPLEMENTED;
 import static no.nav.fo.veilarbsituasjon.utils.DateUtils.xmlCalendar;
@@ -65,8 +69,35 @@ public class SituasjonOversiktWebService implements BehandleSituasjonV1 {
         return mapTilHentVilkaarResponse(situasjonOversiktService.hentVilkar());
     }
 
-    public HentVilkaarResponse mapTilHentVilkaarResponse(VilkarData vilkarData) {
-        HentVilkaarResponse res = new HentVilkaarResponse();
+    @Override
+    public HentMalResponse hentMal(HentMalRequest hentMalRequest) {
+        val mal = mapTilMal(situasjonOversiktService.hentMal(hentMalRequest.getPersonident()));
+
+        val res = new HentMalResponse();
+        res.setMal(mal);
+        return res;
+    }
+
+    @Override
+    public HentMalListeResponse hentMalListe(HentMalListeRequest hentMalListeRequest) {
+        val malListe = situasjonOversiktService.hentMalList(hentMalListeRequest.getPersonident())
+                .stream()
+                .map(this::mapTilMal)
+                .collect(Collectors.toList());
+
+        val res = new HentMalListeResponse();
+        res.getMalListe().addAll(malListe);
+        return res;
+    }
+
+    @Override
+    public OpprettMalResponse opprettMal(OpprettMalRequest opprettMalRequest) {
+        situasjonOversiktService.oppdaterMal(opprettMalRequest.getMal().getMal(), opprettMalRequest.getPersonident());
+        return new OpprettMalResponse();
+    }
+
+    private HentVilkaarResponse mapTilHentVilkaarResponse(VilkarData vilkarData) {
+        val res = new HentVilkaarResponse();
         res.setVilkaarstekst(vilkarData.getText());
         res.setHash(vilkarData.getHash());
         return res;
@@ -86,4 +117,14 @@ public class SituasjonOversiktWebService implements BehandleSituasjonV1 {
 
         return res;
     }
+
+    private Mal mapTilMal(MalData malData) {
+        val mal = new Mal();
+        mal.setMal(malData.getMal());
+        mal.setEndretAv(malData.getEndretAv());
+        mal.setDato(xmlCalendar(malData.getDato()));
+
+        return mal;
+    }
+
 }
