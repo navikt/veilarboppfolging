@@ -58,6 +58,7 @@
     </logger>
 
     <logger name="org.apache" level="INFO"/>
+    <logger name="org.apache.cxf" level="WARNING"/>
 
     <logger name="org.apache.http.client.protocol.ResponseProcessCookies" level="ERROR" />
 
