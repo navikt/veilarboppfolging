@@ -41,6 +41,23 @@
         </filter>
     </appender>
 
+    <appender name="debuglog" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <File>${APP_LOG_HOME}/${MAIN_APPLICATION}_debug.log</File>
+        <encoder>
+            <pattern>${loggingPattern}</pattern>
+        </encoder>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>DEBUG</level>
+        </filter>
+        <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+            <maxIndex>10</maxIndex>
+            <FileNamePattern>${APP_LOG_HOME}/${MAIN_APPLICATION}_debug.log.%i</FileNamePattern>
+        </rollingPolicy>
+        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+            <MaxFileSize>10MB</MaxFileSize>
+        </triggeringPolicy>
+    </appender>
+
     <appender name="ServiceCallsFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${SERVICE_CALLS_HOME}/tjenestekall.log</file>
         <append>true</append>
@@ -67,5 +84,6 @@
         <appender-ref ref="SYSLOG"/>
         <appender-ref ref="infolog"/>
         <appender-ref ref="ServiceCallsFile"/>
+        <appender-ref ref="debuglog"/>
     </root>
 </configuration>
