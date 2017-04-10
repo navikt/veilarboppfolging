@@ -1,10 +1,11 @@
 package no.nav.fo.veilarbsituasjon;
 
-import no.nav.sbl.dialogarena.test.SystemProperties;
-import no.nav.brukerdialog.security.context.JettySubjectHandler;
+import no.nav.brukerdialog.security.context.InternbrukerSubjectHandler;
 import no.nav.sbl.dialogarena.common.jetty.Jetty;
+import no.nav.sbl.dialogarena.test.SystemProperties;
 import org.apache.activemq.broker.BrokerService;
 import org.apache.geronimo.components.jaspi.AuthConfigFactoryImpl;
+
 import javax.security.auth.message.config.AuthConfigFactory;
 
 import static java.lang.System.getProperty;
@@ -49,8 +50,10 @@ class StartJetty {
     private static void setupAutentisering() {
         SystemProperties.setFrom("environment-test.properties");
         System.setProperty("develop-local", "true");
-        System.setProperty("no.nav.modig.core.context.subjectHandlerImplementationClass", JettySubjectHandler.class.getName());
         System.setProperty("org.apache.geronimo.jaspic.configurationFile", "web/src/test/resources/jaspiconf.xml");
+        InternbrukerSubjectHandler.setVeilederIdent("Z990610");
+        InternbrukerSubjectHandler.setServicebruker("srvveilarbveileder");
+        setProperty("no.nav.modig.core.context.subjectHandlerImplementationClass", InternbrukerSubjectHandler.class.getName());
         setProperty(AuthConfigFactory.DEFAULT_FACTORY_SECURITY_PROPERTY, AuthConfigFactoryImpl.class.getCanonicalName());
     }
 }
