@@ -1,6 +1,7 @@
 package no.nav.fo.veilarbsituasjon.config;
 
 import no.nav.fo.veilarbsituasjon.mock.OrganisasjonEnhetMock;
+import no.nav.modig.security.ws.SystemSAMLOutInterceptor;
 import no.nav.sbl.dialogarena.common.cxf.CXFClient;
 import no.nav.sbl.dialogarena.types.Pingable;
 import no.nav.tjeneste.virksomhet.organisasjonenhet.v1.OrganisasjonEnhetV1;
@@ -27,7 +28,7 @@ public class OrganisasjonsenhetConfig {
     private CXFClient<OrganisasjonEnhetV1> factory() {
         return new CXFClient<>(OrganisasjonEnhetV1.class)
                 .address(getProperty(ORGANISASJONSENHET_ENDPOINT_KEY))
-                .configureStsForSystemUser();
+                .withOutInterceptor(new SystemSAMLOutInterceptor());
     }
 
     @Bean
