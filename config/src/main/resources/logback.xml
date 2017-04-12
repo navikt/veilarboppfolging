@@ -75,7 +75,7 @@
     </logger>
 
     <logger name="org.apache" level="INFO"/>
-    <logger name="org.apache.cxf" level="INFO"/>
+    <logger name="org.apache.cxf" level="OFF"/>
 
     <logger name="org.apache.http.client.protocol.ResponseProcessCookies" level="ERROR" />
 
