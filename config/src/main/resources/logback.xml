@@ -58,13 +58,10 @@
     </logger>
 
     <logger name="org.apache" level="INFO"/>
-    <logger name="org.apache.cxf" level="DEBUG"/>
-
-    <logger name="org.springframework.jdbc.core" level="TRACE" />
 
     <logger name="org.apache.http.client.protocol.ResponseProcessCookies" level="ERROR" />
 
-    <root level="${ROOT_LOG_LEVEL:-DEBUG}">
+    <root level="${ROOT_LOG_LEVEL:-INFO}">
         <appender-ref ref="exceptionlog"/>
         <appender-ref ref="SYSLOG"/>
         <appender-ref ref="infolog"/>
