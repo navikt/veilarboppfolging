@@ -79,7 +79,7 @@
 
     <logger name="org.apache.http.client.protocol.ResponseProcessCookies" level="ERROR" />
 
-    <root level="${ROOT_LOG_LEVEL:-DEBUG}">
+    <root level="${ROOT_LOG_LEVEL:-INFO}">
         <appender-ref ref="exceptionlog"/>
         <appender-ref ref="SYSLOG"/>
         <appender-ref ref="infolog"/>
