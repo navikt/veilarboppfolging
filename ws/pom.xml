@@ -43,6 +43,10 @@
 
         <!-- TEST -->
         <dependency>
+            <groupId>no.nav.sbl.dialogarena</groupId>
+            <artifactId>test-config</artifactId>
+        </dependency>
+        <dependency>
             <groupId>no.nav.fo</groupId>
             <artifactId>veilarbsituasjon-common</artifactId>
             <type>test-jar</type>
