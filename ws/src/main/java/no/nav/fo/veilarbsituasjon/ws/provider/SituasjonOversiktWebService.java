@@ -6,6 +6,7 @@ import no.nav.fo.veilarbsituasjon.domain.MalData;
 import no.nav.fo.veilarbsituasjon.domain.OppfolgingStatusData;
 import no.nav.fo.veilarbsituasjon.domain.VilkarData;
 import no.nav.fo.veilarbsituasjon.services.SituasjonOversiktService;
+import no.nav.fo.veilarbsituasjon.utils.StringUtils;
 import no.nav.tjeneste.virksomhet.behandlesituasjon.v1.binding.*;
 import no.nav.tjeneste.virksomhet.behandlesituasjon.v1.informasjon.Mal;
 import no.nav.tjeneste.virksomhet.behandlesituasjon.v1.informasjon.Oppfoelgingsstatus;
@@ -120,7 +121,7 @@ public class SituasjonOversiktWebService implements BehandleSituasjonV1 {
 
     private Mal mapTilMal(MalData malData) {
         val mal = new Mal();
-        mal.setMal(malData.getMal());
+        mal.setMal(StringUtils.of(malData.getMal()).orElse(""));
         mal.setEndretAv(malData.getEndretAv());
         mal.setDato(xmlCalendar(malData.getDato()));
 
