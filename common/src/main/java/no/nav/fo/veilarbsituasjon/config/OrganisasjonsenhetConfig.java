@@ -1,5 +1,6 @@
 package no.nav.fo.veilarbsituasjon.config;
 
+import no.nav.modig.security.ws.SystemSAMLOutInterceptor;
 import no.nav.sbl.dialogarena.common.cxf.CXFClient;
 import no.nav.sbl.dialogarena.types.Pingable;
 import no.nav.tjeneste.virksomhet.organisasjonenhet.v1.OrganisasjonEnhetV1;
@@ -26,7 +27,7 @@ public class OrganisasjonsenhetConfig {
     @Bean
     public Pingable organisasjonEnhetPing() {
         final OrganisasjonEnhetV1 organisasjonEnhetV1 = organisasjonEnhetPortType()
-                .configureStsForSystemUser()
+                .withOutInterceptor(new SystemSAMLOutInterceptor())
                 .build();
 
         return () -> {
