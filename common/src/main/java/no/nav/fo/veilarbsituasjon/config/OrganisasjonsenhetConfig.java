@@ -27,7 +27,7 @@ public class OrganisasjonsenhetConfig {
     @Bean
     public Pingable organisasjonEnhetPing() {
         final OrganisasjonEnhetV1 organisasjonEnhetV1 = organisasjonEnhetPortType()
-                .withOutInterceptor(new SystemSAMLOutInterceptor())
+                .configureStsForSystemUser()
                 .build();
 
         return () -> {
