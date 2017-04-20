@@ -12,7 +12,7 @@
     </root>
 
     <logger name="org.apache.cxf" level="INFO" />
-    <logger name="org.springframework" level="DEBUG" />
-    <logger name="no.nav.fo" level="DEBUG" />
-    <logger name="no.nav.modig.security" level="DEBUG" />
+    <logger name="org.springframework" level="INFO" />
+    <logger name="no.nav.fo" level="INFO" />
+    <logger name="no.nav.modig.security" level="INFO" />
 </configuration>
