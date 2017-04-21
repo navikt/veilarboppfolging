@@ -1,5 +1,6 @@
 package no.nav.fo.veilarbsituasjon.rest;
 
+import no.nav.brukerdialog.security.context.SubjectHandler;
 import no.nav.fo.veilarbsituasjon.domain.MalData;
 import no.nav.fo.veilarbsituasjon.domain.OppfolgingStatusData;
 import no.nav.fo.veilarbsituasjon.domain.VilkarData;
@@ -58,7 +59,8 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt {
 
     @Override
     public Mal oppdaterMal(Mal mal) {
-        return tilDto(situasjonOversiktService.oppdaterMal(mal.getMal(), getFnr()));
+        String uid = SubjectHandler.getSubjectHandler().getUid();
+        return tilDto(situasjonOversiktService.oppdaterMal(mal.getMal(), getFnr(), uid));
     }
 
     private String getFnr() {
@@ -87,7 +89,7 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt {
     private Mal tilDto(MalData malData) {
         return new Mal()
                 .setMal(malData.getMal())
-                .setEndretAv(malData.getEndretAv())
+                .setEndretAv(malData.getEndretAvFormattert())
                 .setDato(malData.getDato());
     }
 }

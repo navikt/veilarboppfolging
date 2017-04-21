@@ -2,8 +2,6 @@ package no.nav.fo.veilarbsituasjon.services;
 
 
 import io.swagger.annotations.Api;
-import lombok.Data;
-import lombok.experimental.Accessors;
 import lombok.val;
 import no.nav.fo.veilarbsituasjon.db.SituasjonRepository;
 import no.nav.fo.veilarbsituasjon.domain.*;
@@ -35,6 +33,7 @@ import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static no.nav.fo.veilarbsituasjon.domain.VilkarStatus.GODKJENNT;
 import static no.nav.fo.veilarbsituasjon.domain.VilkarStatus.IKKE_BESVART;
+import static no.nav.fo.veilarbsituasjon.utils.StringUtils.of;
 import static org.slf4j.LoggerFactory.getLogger;
 
 @Component
@@ -144,13 +143,13 @@ public class SituasjonOversiktService {
         return situasjonRepository.hentMalList(hentAktorId(fnr));
     }
 
-    public MalData oppdaterMal(String mal, String fnr) {
+    public MalData oppdaterMal(String mal, String fnr, String endretAv) {
         String aktorId = hentAktorId(fnr);
         Timestamp dato = new Timestamp(currentTimeMillis());
         MalData malData = new MalData()
                 .setAktorId(aktorId)
                 .setMal(mal)
-                .setEndretAv(aktorId) //TODO: Hva hvis endres av NAV?
+                .setEndretAv(of(endretAv).orElse(aktorId))
                 .setDato(dato);
         situasjonRepository.opprettMal(malData);
         return hentMal(fnr);

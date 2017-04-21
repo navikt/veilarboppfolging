@@ -15,4 +15,8 @@ public class MalData {
     private String endretAv;
     private Timestamp dato;
 
+    public String getEndretAvFormattert() {
+        return endretAv.equals(aktorId) ? "BRUKER" : "VEILEDER";
+    }
+
 }

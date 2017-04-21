@@ -93,7 +93,7 @@ public class SituasjonOversiktWebService implements BehandleSituasjonV1 {
 
     @Override
     public OpprettMalResponse opprettMal(OpprettMalRequest opprettMalRequest) {
-        situasjonOversiktService.oppdaterMal(opprettMalRequest.getMal().getMal(), opprettMalRequest.getPersonident());
+        situasjonOversiktService.oppdaterMal(opprettMalRequest.getMal().getMal(), opprettMalRequest.getPersonident(), null);
         return new OpprettMalResponse();
     }
 
@@ -122,7 +122,7 @@ public class SituasjonOversiktWebService implements BehandleSituasjonV1 {
     private Mal mapTilMal(MalData malData) {
         val mal = new Mal();
         mal.setMal(StringUtils.of(malData.getMal()).orElse(""));
-        mal.setEndretAv(malData.getEndretAv());
+        mal.setEndretAv(malData.getEndretAvFormattert());
         mal.setDato(xmlCalendar(malData.getDato()));
 
         return mal;
