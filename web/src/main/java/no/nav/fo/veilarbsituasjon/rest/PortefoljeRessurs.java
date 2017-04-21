@@ -76,13 +76,13 @@ public class PortefoljeRessurs {
             }
 
         } catch (JMSException e) {
-            LOG.error("Kunne ikke legge brukere på kø", e);
+            LOG.warn("Kunne ikke legge brukere på kø", e);
             return Response.serverError().entity("Kunne ikke legge brukere på kø").build();
         } catch (SQLException e) {
-            LOG.error("Kunne ikke skrive brukere til database", e);
+            LOG.warn("Kunne ikke skrive brukere til database", e);
             return Response.serverError().entity("Kunne ikke skrive brukere til database").build();
         } catch (Exception e) {
-            LOG.error("Kunne ikke tildele veileder", e);
+            LOG.warn("Kunne ikke tildele veileder", e);
             return Response.serverError().entity("Kunne ikke tildele veileder").build();
         }
     }
@@ -107,7 +107,7 @@ public class PortefoljeRessurs {
                 sendt, brukere.size(), feilet, System.currentTimeMillis() - start);
 
         if (feilet > 0) {
-            LOG.error(status);
+            LOG.warn(status);
             return Response.serverError().entity(status).build();
         } else {
             LOG.info(status);
