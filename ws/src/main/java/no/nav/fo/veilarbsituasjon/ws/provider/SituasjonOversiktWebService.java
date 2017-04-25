@@ -17,6 +17,8 @@ import javax.inject.Inject;
 import javax.jws.WebService;
 import javax.ws.rs.WebApplicationException;
 
+import java.sql.Timestamp;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static javax.ws.rs.core.Response.Status.NOT_IMPLEMENTED;
@@ -123,8 +125,7 @@ public class SituasjonOversiktWebService implements BehandleSituasjonV1 {
         val mal = new Mal();
         mal.setMal(StringUtils.of(malData.getMal()).orElse(""));
         mal.setEndretAv(StringUtils.of(malData.getEndretAvFormattert()).orElse(""));
-        mal.setDato(xmlCalendar(malData.getDato()));
-
+        mal.setDato(xmlCalendar(Optional.ofNullable(malData.getDato()).orElse(new Timestamp(System.currentTimeMillis()))));
         return mal;
     }
 
