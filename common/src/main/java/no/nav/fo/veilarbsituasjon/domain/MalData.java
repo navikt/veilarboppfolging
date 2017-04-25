@@ -16,7 +16,7 @@ public class MalData {
     private Timestamp dato;
 
     public String getEndretAvFormattert() {
-        return endretAv.equals(aktorId) ? "BRUKER" : "VEILEDER";
+        return endretAv == null ? null : endretAv.equals(aktorId) ? "BRUKER" : "VEILEDER";
     }
 
 }

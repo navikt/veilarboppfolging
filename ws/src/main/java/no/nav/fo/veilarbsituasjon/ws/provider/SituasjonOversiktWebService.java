@@ -122,7 +122,7 @@ public class SituasjonOversiktWebService implements BehandleSituasjonV1 {
     private Mal mapTilMal(MalData malData) {
         val mal = new Mal();
         mal.setMal(StringUtils.of(malData.getMal()).orElse(""));
-        mal.setEndretAv(malData.getEndretAvFormattert());
+        mal.setEndretAv(StringUtils.of(malData.getEndretAvFormattert()).orElse(""));
         mal.setDato(xmlCalendar(malData.getDato()));
 
         return mal;
