@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 
 import static javax.ws.rs.core.Response.Status.NOT_IMPLEMENTED;
 import static no.nav.fo.veilarbsituasjon.utils.DateUtils.xmlCalendar;
+import static no.nav.fo.veilarbsituasjon.utils.StringUtils.emptyIfNull;
 
 @WebService
 @Service
@@ -74,7 +75,8 @@ public class SituasjonOversiktWebService implements BehandleSituasjonV1 {
 
     @Override
     public HentMalResponse hentMal(HentMalRequest hentMalRequest) {
-        val mal = mapTilMal(situasjonOversiktService.hentMal(hentMalRequest.getPersonident()));
+        String personident = hentMalRequest.getPersonident();
+        val mal = mapTilMal(situasjonOversiktService.hentMal(personident),personident);
 
         val res = new HentMalResponse();
         res.setMal(mal);
@@ -83,9 +85,10 @@ public class SituasjonOversiktWebService implements BehandleSituasjonV1 {
 
     @Override
     public HentMalListeResponse hentMalListe(HentMalListeRequest hentMalListeRequest) {
-        val malListe = situasjonOversiktService.hentMalList(hentMalListeRequest.getPersonident())
+        String personident = hentMalListeRequest.getPersonident();
+        val malListe = situasjonOversiktService.hentMalList(personident)
                 .stream()
-                .map(this::mapTilMal)
+                .map(malData -> mapTilMal(malData, personident))
                 .collect(Collectors.toList());
 
         val res = new HentMalListeResponse();
@@ -121,10 +124,10 @@ public class SituasjonOversiktWebService implements BehandleSituasjonV1 {
         return res;
     }
 
-    private Mal mapTilMal(MalData malData) {
+    private Mal mapTilMal(MalData malData, String personident) {
         val mal = new Mal();
-        mal.setMal(StringUtils.of(malData.getMal()).orElse(""));
-        mal.setEndretAv(StringUtils.of(malData.getEndretAvFormattert()).orElse(""));
+        mal.setMal(emptyIfNull(malData.getMal()));
+        mal.setEndretAv(malData.erEndretAvBruker() ? personident : emptyIfNull(malData.getEndretAvFormattert()));
         mal.setDato(xmlCalendar(Optional.ofNullable(malData.getDato()).orElse(new Timestamp(System.currentTimeMillis()))));
         return mal;
     }

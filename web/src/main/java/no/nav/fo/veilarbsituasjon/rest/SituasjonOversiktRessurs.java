@@ -5,6 +5,7 @@ import no.nav.fo.veilarbsituasjon.domain.MalData;
 import no.nav.fo.veilarbsituasjon.domain.OppfolgingStatusData;
 import no.nav.fo.veilarbsituasjon.domain.VilkarData;
 import no.nav.fo.veilarbsituasjon.rest.api.SituasjonOversikt;
+import no.nav.fo.veilarbsituasjon.rest.domain.Bruker;
 import no.nav.fo.veilarbsituasjon.rest.domain.Mal;
 import no.nav.fo.veilarbsituasjon.rest.domain.OppfolgingStatus;
 import no.nav.fo.veilarbsituasjon.rest.domain.Vilkar;
@@ -30,6 +31,11 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt {
 
     @Inject
     private PepClient pepClient;
+
+    @Override
+    public Bruker hentBrukerInfo() throws Exception {
+        return new Bruker().setId(getUid());
+    }
 
     @Override
     public OppfolgingStatus hentOppfolgingsStatus() throws Exception {
@@ -59,8 +65,11 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt {
 
     @Override
     public Mal oppdaterMal(Mal mal) {
-        String uid = SubjectHandler.getSubjectHandler().getUid();
-        return tilDto(situasjonOversiktService.oppdaterMal(mal.getMal(), getFnr(), uid));
+        return tilDto(situasjonOversiktService.oppdaterMal(mal.getMal(), getFnr(), getUid()));
+    }
+
+    private String getUid() {
+        return SubjectHandler.getSubjectHandler().getUid();
     }
 
     private String getFnr() {

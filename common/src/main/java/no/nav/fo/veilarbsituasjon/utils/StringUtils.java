@@ -12,4 +12,7 @@ public class StringUtils {
         return Optional.ofNullable(string).filter(StringUtils::notNullOrEmpty);
     }
 
+    public static String emptyIfNull(String string) {
+        return of(string).orElse("");
+    }
 }

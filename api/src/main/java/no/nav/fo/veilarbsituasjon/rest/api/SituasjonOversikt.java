@@ -1,5 +1,6 @@
 package no.nav.fo.veilarbsituasjon.rest.api;
 
+import no.nav.fo.veilarbsituasjon.rest.domain.Bruker;
 import no.nav.fo.veilarbsituasjon.rest.domain.Mal;
 import no.nav.fo.veilarbsituasjon.rest.domain.OppfolgingStatus;
 import no.nav.fo.veilarbsituasjon.rest.domain.Vilkar;
@@ -12,6 +13,10 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 @Path("/situasjon")
 @Produces(APPLICATION_JSON)
 public interface SituasjonOversikt {
+
+    @GET
+    @Path("/me")
+    Bruker hentBrukerInfo() throws Exception;
 
     @GET
     OppfolgingStatus hentOppfolgingsStatus() throws Exception;
