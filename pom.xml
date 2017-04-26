@@ -42,7 +42,6 @@
         <jersey.version>2.22.2</jersey.version>
 
         <!--Security-->
-        <modig-security.version>3.0.1</modig-security.version>
         <modig-testcertificates.version>1.1.0</modig-testcertificates.version>
         <oidc-security.version>2.1.20</oidc-security.version>
 
@@ -57,7 +56,7 @@
 
         <!--NAV Felles -->
         <common-jetty.version>2.0.13</common-jetty.version>
-        <common-cxf.version>3.1.33</common-cxf.version>
+        <common-cxf.version>3.1.37</common-cxf.version>
         <common-web.version>4.0.6</common-web.version>
         <common-types.version>1.2</common-types.version>
         <common-test.version>1.2</common-test.version>
@@ -256,47 +255,9 @@
             <!--modig-->
             <dependency>
                 <groupId>no.nav.modig</groupId>
-                <artifactId>modig-security-core</artifactId>
-                <version>${modig-security.version}</version>
-                <scope>test</scope>
-                <type>test-jar</type>
-            </dependency>
-            <dependency>
-                <groupId>no.nav.modig</groupId>
-                <artifactId>modig-security-sts</artifactId>
-                <version>${modig-security.version}</version>
-                <scope>runtime</scope>
-                <exclusions>
-                    <exclusion>
-                        <groupId>commons-logging</groupId>
-                        <artifactId>commons-logging</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.sun.xml.bind</groupId>
-                        <artifactId>jaxb-impl</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>no.nav.modig</groupId>
                 <artifactId>modig-log-filter</artifactId>
                 <version>${modig-log.version}</version>
                 <scope>runtime</scope>
-            </dependency>
-            <dependency>
-                <groupId>no.nav.modig</groupId>
-                <artifactId>modig-security-ws</artifactId>
-                <version>${modig-security.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>com.sun.xml.bind</groupId>
-                        <artifactId>jaxb-impl</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>commons-logging</groupId>
-                        <artifactId>commons-logging</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
             <dependency>
                 <groupId>no.nav.modig</groupId>
@@ -395,6 +356,7 @@
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-core</artifactId>
                 <version>${cxf-core.version}</version>
+                <scope>runtime</scope>
             </dependency>
             <dependency>
                 <groupId>xml-apis</groupId>
