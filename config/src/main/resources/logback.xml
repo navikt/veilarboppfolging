@@ -76,6 +76,8 @@
 
     <logger name="org.apache" level="INFO"/>
     <logger name="org.apache.cxf" level="OFF"/>
+    <logger name="no.nav.sbl.dialogarena.common.cxf" level="OFF"/>
+
 
     <logger name="org.apache.http.client.protocol.ResponseProcessCookies" level="ERROR" />
 
