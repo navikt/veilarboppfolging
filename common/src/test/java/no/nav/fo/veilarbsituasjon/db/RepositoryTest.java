@@ -75,19 +75,19 @@ public class RepositoryTest extends IntegrasjonsTest {
         @Test
         public void oppdatererStatus() throws Exception {
             Situasjon situasjon = gittSituasjonForAktor(AKTOR_ID);
-            situasjon.setGjeldendeBrukervilkar(
-                    new Brukervilkar(
-                            AKTOR_ID,
-                            new Timestamp(currentTimeMillis()),
-                            VilkarStatus.GODKJENNT,
-                            "Vilkårstekst",
-                            "Vilkårshash"
-                    )
-            );
             situasjonRepository.oppdaterSituasjon(situasjon);
-            situasjonRepository.opprettBrukervilkar(situasjon.getGjeldendeBrukervilkar());
+
+            Brukervilkar brukervilkar = new Brukervilkar(
+                    AKTOR_ID,
+                    new Timestamp(currentTimeMillis()),
+                    VilkarStatus.GODKJENNT,
+                    "Vilkårstekst",
+                    "Vilkårshash"
+            );
+            situasjonRepository.opprettBrukervilkar(brukervilkar);
+
             Optional<Situasjon> uthentetSituasjon = hentSituasjon(AKTOR_ID);
-            assertThat(situasjon.getGjeldendeBrukervilkar().getVilkarstatus(), equalTo(uthentetSituasjon.get().getGjeldendeBrukervilkar().getVilkarstatus()));
+            assertThat(brukervilkar, equalTo(uthentetSituasjon.get().getGjeldendeBrukervilkar()));
         }
     }
 
