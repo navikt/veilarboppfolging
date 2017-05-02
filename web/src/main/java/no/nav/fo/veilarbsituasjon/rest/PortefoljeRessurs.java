@@ -15,12 +15,14 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.jms.JMSException;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
-
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
 import static no.nav.fo.veilarbsituasjon.utils.JmsUtil.messageCreator;
+import static no.nav.fo.veilarbsituasjon.utils.UrlValidator.isInvalidUrl;
 import static org.slf4j.LoggerFactory.getLogger;
 
 @Component
@@ -37,12 +39,32 @@ public class PortefoljeRessurs {
     private final PepClient pepClient;
     private List<VeilederTilordning> feilendeTilordninger;
 
+    private static String webhookUrl = "";
+
 
     public PortefoljeRessurs(JmsTemplate endreVeilederQueue, AktoerIdService aktoerIdService, BrukerRepository brukerRepository, PepClient pepClient) {
         this.endreVeilederQueue = endreVeilederQueue;
         this.aktoerIdService = aktoerIdService;
         this.brukerRepository = brukerRepository;
         this.pepClient = pepClient;
+    }
+
+    @PUT
+    @Path("/tilordning/webhook")
+    public Response putWebhook(String callbackUrl) {
+        if (webhookUrl.equals(callbackUrl)) {
+            return Response.ok().build();
+        } else if (isInvalidUrl(callbackUrl)) {
+            LOG.warn("Callback-url er angitt på et ugyldig format: {callbackUrl} ");
+            return Response.status(400).entity("Callback-url er angitt på et ugyldig format").build();
+        }
+        return createWebhook(callbackUrl);
+    }
+
+    @GET
+    @Path("/tilordning")
+    public Response getVeilederTilordninger(@QueryParam("since_id") String sinceId) {
+        return Response.ok().entity(sinceId).build();
     }
 
     @POST
@@ -124,7 +146,19 @@ public class PortefoljeRessurs {
         }
     }
 
-	private void leggPaaKo(OppfolgingBruker bruker) {
+    private Response createWebhook(String url) {
+        try {
+            URI uri = new URI("tildelinger/webhook");
+            webhookUrl = url;
+            return Response.created(uri).build();
+        } catch (URISyntaxException e) {
+            LOG.warn("Ugyldig format på url for webhook");
+            return Response.serverError().entity("Serveren oprettet url for webhook på et ugyldig format").build();
+        }
+
+    }
+
+    private void leggPaaKo(OppfolgingBruker bruker) {
 		endreVeilederQueue.send(messageCreator(bruker.toString()));
 	}
 
