@@ -1,5 +1,6 @@
 package no.nav.fo.veilarbsituasjon.config;
 
+import no.nav.fo.veilarbsituasjon.db.testdriver.TestDriver;
 import org.flywaydb.core.Flyway;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 
@@ -44,8 +45,8 @@ public class JndiLocalContextConfig {
     public static SingleConnectionDataSource setupInMemoryDatabase() {
         SingleConnectionDataSource ds = new SingleConnectionDataSource();
         ds.setSuppressClose(true);
-        ds.setDriverClassName(org.hsqldb.jdbcDriver.class.getName());
-        ds.setUrl("jdbc:hsqldb:mem:situasjon");
+        ds.setDriverClassName(TestDriver.class.getName());
+        ds.setUrl(TestDriver.URL);
         ds.setUsername("sa");
         ds.setPassword("");
 
