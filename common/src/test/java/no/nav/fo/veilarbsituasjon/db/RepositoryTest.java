@@ -1,6 +1,5 @@
 package no.nav.fo.veilarbsituasjon.db;
 
-import com.google.common.base.Joiner;
 import no.nav.fo.veilarbsituasjon.IntegrasjonsTest;
 import no.nav.fo.veilarbsituasjon.domain.*;
 import org.apache.commons.io.IOUtils;
@@ -12,11 +11,10 @@ import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static java.lang.System.currentTimeMillis;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 
 public class RepositoryTest extends IntegrasjonsTest {
@@ -134,7 +132,7 @@ public class RepositoryTest extends IntegrasjonsTest {
 
     private void insertVeiledertilordninger() {
         try {
-            db.execute(Joiner.on("\n").join(IOUtils.readLines(RepositoryTest.class.getResourceAsStream("/insert-aktoerid-veileder-testdata.sql"))));
+            db.execute(IOUtils.readLines(RepositoryTest.class.getResourceAsStream("/insert-aktoerid-veileder-testdata.sql")).stream().collect(Collectors.joining("\n")));
         } catch (IOException e) {
             e.printStackTrace();
         }
