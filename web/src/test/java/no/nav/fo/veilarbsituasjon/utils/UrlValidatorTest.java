@@ -7,12 +7,12 @@ import static org.junit.Assert.assertTrue;
 public class UrlValidatorTest {
 
     @Test
-    void shouldNotBeValid() {
+    public void shouldNotBeValid() {
         assertTrue(UrlValidator.isInvalidUrl("htp://foo.com"));
     }
 
     @Test
-    void shouldBeValid() {
+    public void shouldBeValid() {
         assertTrue(UrlValidator.isValidUrl("http://veilarb.com"));
         assertTrue(UrlValidator.isValidUrl("https://veilarb.com"));
     }
