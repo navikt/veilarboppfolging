@@ -18,6 +18,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.jdbc.BadSqlGrammarException;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.core.MessageCreator;
+import org.springframework.jms.support.converter.MessageConversionException;
 
 import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.core.Response;
@@ -269,6 +270,29 @@ public class PortefoljeRessursTest {
     }
 
     @Test
+    public void skalInneholdeFeilendeTildeligNaarLeggePaaKoFeiler() throws Exception {
+        List<VeilederTilordning> tilordninger = new ArrayList<>();
+
+        VeilederTilordning tilordningERROR1 = new VeilederTilordning().setBrukerFnr("FNR1").setFraVeilederId("FRAVEILEDER1").setTilVeilederId("TILVEILEDER1");
+        VeilederTilordning tilordningERROR2 = new VeilederTilordning().setBrukerFnr("FNR2").setFraVeilederId("FRAVEILEDER2").setTilVeilederId("TILVEILEDER2");
+
+        tilordninger.add(tilordningERROR1);
+        tilordninger.add(tilordningERROR2);
+
+        when(pepClient.isServiceCallAllowed(any(String.class))).thenReturn(true);
+        when(aktoerIdService.findAktoerId("FNR1")).thenReturn("AKTOERID1");
+        when(aktoerIdService.findAktoerId("FNR2")).thenReturn("AKTOERID2");
+
+        doThrow(MessageConversionException.class).when(jmsTemplate).send(any(MessageCreator.class));
+
+        Response response = portefoljeRessurs.postVeilederTilordninger(tilordninger);
+        List<VeilederTilordning> feilendeTilordninger = ((TilordneVeilederResponse) response.getEntity()).getFeilendeTilordninger();
+
+        assertThat(feilendeTilordninger).contains(tilordningERROR1);
+        assertThat(feilendeTilordninger).contains(tilordningERROR2);
+    }
+
+    @Test
     public void skalGiFeilmeldingTilBrukerDersomUkjentFeilOppstaar() throws Exception {
         List<VeilederTilordning> tilordninger = new ArrayList<>();
 
@@ -287,7 +311,6 @@ public class PortefoljeRessursTest {
         assertThat(feilendeTilordninger).contains(tilordningERROR1);
         assertThat(feilendeTilordninger).contains(tilordningERROR2);
     }
-
 
     class IsOppfolgingsbrukerWithAktoerId implements ArgumentMatcher<OppfolgingBruker> {
         private String aktoeridToMatch;
