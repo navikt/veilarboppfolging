@@ -4,6 +4,7 @@ import io.swagger.annotations.Api;
 import javaslang.control.Try;
 import no.nav.fo.veilarbsituasjon.db.BrukerRepository;
 import no.nav.fo.veilarbsituasjon.domain.OppfolgingBruker;
+import no.nav.fo.veilarbsituasjon.exception.HttpNotSupportedException;
 import no.nav.fo.veilarbsituasjon.rest.domain.TilordneVeilederResponse;
 import no.nav.fo.veilarbsituasjon.rest.domain.VeilederTilordning;
 import no.nav.fo.veilarbsituasjon.services.AktoerIdService;
@@ -71,13 +72,13 @@ public class PortefoljeRessurs {
                 Case(instanceOf(URISyntaxException.class),
                         Response.serverError().entity("Det skjedde en feil web opprettelsen av webhook").build()),
                 Case(instanceOf(MalformedURLException.class),
-                        Response.status(400).entity("Feil format på callback-url").build())
+                        Response.status(400).entity("Feil format på callback-url").build()),
+                Case(instanceOf(HttpNotSupportedException.class),
+                        Response.status(400).entity("Angitt url for webhook må være HTTPS").build())
         ));
 
         return Response.status(500).entity("Det har skjedd en feil på serveren").build();
     }
-
-
 
     @GET
     @Path("/tilordninger")

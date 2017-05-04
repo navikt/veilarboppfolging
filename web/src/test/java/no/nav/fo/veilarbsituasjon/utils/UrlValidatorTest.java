@@ -1,10 +1,20 @@
 package no.nav.fo.veilarbsituasjon.utils;
 
+import no.nav.fo.veilarbsituasjon.exception.HttpNotSupportedException;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class UrlValidatorTest {
+
+    @Rule
+    public ExpectedException exception = ExpectedException.none();
 
     @Test
     public void shouldNotBeValid() {
@@ -15,5 +25,23 @@ public class UrlValidatorTest {
     @Test
     public void shouldBeValid() {
         assertTrue(UrlValidator.isValidUrl("https://veilarb.com"));
+    }
+
+    @Test
+    public void shouldRecognizeHttpUrls() throws Exception {
+        assertTrue(UrlValidator.isHttp("http://"));
+        assertFalse(UrlValidator.isHttp("https://"));
+    }
+
+    @Test
+    public void shouldInvalidateMalformedUrl() throws Exception {
+        exception.expect(MalformedURLException.class);
+        UrlValidator.validateUrl("htps://");
+    }
+
+    @Test
+    public void shouldInvalidateHttpUrls() throws Exception {
+        exception.expect(HttpNotSupportedException.class);
+        UrlValidator.validateUrl("http://");
     }
 }
