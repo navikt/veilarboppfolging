@@ -15,6 +15,10 @@ class HsqlSyntaxMapper {
                 "ALTER TABLE MAL MODIFY (MAL VARCHAR2(500 CHAR))",
                 "alter table MAL alter column MAL VARCHAR2(500 CHAR)"
         );
+        map(
+            "alter table MAL modify (MAL NVARCHAR2(500))",
+            "alter table MAL alter column MAL NVARCHAR2(500)"
+        );
     }
 
     private static void map(String oracleSyntax, String hsqlSyntax) {
