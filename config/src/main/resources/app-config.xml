@@ -43,10 +43,6 @@
 
         <fileLibrary mapToProperty="vilkar" alias="veilarbsituasjon.vilkar.v1"/>
 
-        <queueManager xaEnabled="true" alias="mqGateway02" jndi="java:/jboss/mqConnectionFactory">
-            <queue alias="veilarbsituasjon_TILORDNEVEILEDER" jndi="java:jboss/jms/endreVeilederKo"/>
-        </queueManager>
-
         <datasource alias="veilarbsituasjonDB" xaEnabled="true" jndi="java:jboss/jdbc/veilarbsituasjonDS">
             <pool maxPoolSize="300" minPoolSize="0"/>
         </datasource>

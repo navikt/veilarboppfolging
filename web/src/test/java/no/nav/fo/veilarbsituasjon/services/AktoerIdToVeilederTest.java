@@ -10,7 +10,6 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.springframework.jms.core.JmsTemplate;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.Collections;
@@ -24,9 +23,6 @@ public class AktoerIdToVeilederTest {
 
     @Mock
     private BrukerRepository brukerRepository;
-
-    @Mock
-    private JmsTemplate endreVeilederKo;
 
     @Mock
     private AktoerIdService aktoerIdService;
@@ -48,7 +44,7 @@ public class AktoerIdToVeilederTest {
         verify(brukerRepository, times(1)).leggTilEllerOppdaterBruker(any(OppfolgingBruker.class));
     }
 
-    @Test
+    @Test(expected = IndexOutOfBoundsException.class)
     public void noCallToDAOWhenAktoerIdServiceFails() {
         when(aktoerIdService.findAktoerId(any(String.class))).thenThrow(new IndexOutOfBoundsException());
         portefoljeRessurs.postVeilederTilordninger(Collections.singletonList(testData()));

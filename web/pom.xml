@@ -25,6 +25,12 @@
             <artifactId>lombok</artifactId>
         </dependency>
 
+        <!-- vaivr-->
+        <dependency>
+            <groupId>io.javaslang</groupId>
+            <artifactId>javaslang</artifactId>
+        </dependency>
+
         <!--Spring-->
         <dependency>
             <groupId>no.nav.fo</groupId>
@@ -35,10 +41,6 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-jms</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
@@ -127,10 +129,6 @@
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
         </dependency>
-        <dependency>
-            <groupId>javax.jms</groupId>
-            <artifactId>javax.jms-api</artifactId>
-        </dependency>
 
         <!--Jersey-->
         <dependency>
@@ -214,11 +212,6 @@
         <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-core</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.activemq</groupId>
-            <artifactId>activemq-core</artifactId>
         </dependency>
 
         <!--Logging-->

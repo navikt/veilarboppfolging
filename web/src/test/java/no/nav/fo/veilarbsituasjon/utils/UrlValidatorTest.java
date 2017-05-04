@@ -8,12 +8,12 @@ public class UrlValidatorTest {
 
     @Test
     public void shouldNotBeValid() {
-        assertTrue(UrlValidator.isInvalidUrl("htp://foo.com"));
+        assertTrue(UrlValidator.isInvalidUrl("htp://veilarb.com"));
+        assertTrue(UrlValidator.isInvalidUrl("http://veilarb.com"));
     }
 
     @Test
     public void shouldBeValid() {
-        assertTrue(UrlValidator.isValidUrl("http://veilarb.com"));
         assertTrue(UrlValidator.isValidUrl("https://veilarb.com"));
     }
 }
