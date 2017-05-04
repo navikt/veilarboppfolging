@@ -6,6 +6,7 @@ import no.nav.fo.veilarbsituasjon.rest.domain.OppfolgingskontraktResponse;
 import no.nav.fo.veilarbsituasjon.rest.domain.Oppfolgingsstatus;
 import no.nav.fo.veilarbsituasjon.services.OppfolgingService;
 import no.nav.fo.veilarbsituasjon.services.PepClient;
+import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
@@ -36,7 +37,7 @@ public class OppfolgingRessurs {
 
     @GET
     @Path("/oppfoelging")
-    public OppfolgingskontraktResponse getOppfoelging(@PathParam("fnr") String fnr) {
+    public OppfolgingskontraktResponse getOppfoelging(@PathParam("fnr") String fnr) throws PepException {
         pepClient.isServiceCallAllowed(fnr);
 
         LocalDate periodeFom = LocalDate.now().minusMonths(MANEDER_BAK_I_TID);
@@ -50,7 +51,7 @@ public class OppfolgingRessurs {
 
     @GET
     @Path("/oppfoelgingsstatus")
-    public Oppfolgingsstatus getOppfoelginsstatus(@PathParam("fnr") String fnr) {
+    public Oppfolgingsstatus getOppfoelginsstatus(@PathParam("fnr") String fnr) throws PepException {
         pepClient.isServiceCallAllowed(fnr);
 
         LOG.info("Henter oppfølgingsstatus for {}", fnr);

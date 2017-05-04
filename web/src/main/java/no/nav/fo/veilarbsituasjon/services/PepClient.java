@@ -22,15 +22,10 @@ public class PepClient {
         this.pep = pep;
     }
 
-    public boolean isServiceCallAllowed(String fnr) {
+    public boolean isServiceCallAllowed(String fnr) throws PepException {
         BiasedDecisionResponse callAllowed;
 
-        try {
-            callAllowed = pep.isServiceCallAllowedWithOidcToken(getToken(), "veilarb", fnr);
-        } catch (PepException e) {
-            LOG.error("Something went wrong in PEP", e);
-            throw new InternalServerErrorException("something went wrong in PEP", e);
-        }
+        callAllowed = pep.isServiceCallAllowedWithOidcToken(getToken(), "veilarb", fnr);
         if (callAllowed.getBiasedDecision().equals(Decision.Deny)) {
             final String ident = SubjectHandler.getSubjectHandler().getUid();
             throw new NotAuthorizedException(ident + " doesn't have access to " + fnr);

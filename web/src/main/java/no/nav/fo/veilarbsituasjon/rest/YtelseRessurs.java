@@ -3,6 +3,7 @@ package no.nav.fo.veilarbsituasjon.rest;
 import io.swagger.annotations.Api;
 import no.nav.fo.veilarbsituasjon.rest.domain.*;
 import no.nav.fo.veilarbsituasjon.services.*;
+import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
@@ -36,7 +37,7 @@ public class YtelseRessurs {
 
     @GET
     @Path("/ytelser")
-    public YtelserResponse getYtelser(@PathParam("fnr") String fnr) {
+    public YtelserResponse getYtelser(@PathParam("fnr") String fnr) throws PepException {
 
         pepClient.isServiceCallAllowed(fnr);
 
