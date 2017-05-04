@@ -4,21 +4,24 @@ import io.swagger.annotations.Api;
 import javaslang.control.Try;
 import no.nav.fo.veilarbsituasjon.db.BrukerRepository;
 import no.nav.fo.veilarbsituasjon.domain.OppfolgingBruker;
+import no.nav.fo.veilarbsituasjon.domain.Tilordning;
 import no.nav.fo.veilarbsituasjon.exception.HttpNotSupportedException;
 import no.nav.fo.veilarbsituasjon.rest.domain.TilordneVeilederResponse;
 import no.nav.fo.veilarbsituasjon.rest.domain.VeilederTilordning;
 import no.nav.fo.veilarbsituasjon.services.AktoerIdService;
 import no.nav.fo.veilarbsituasjon.services.PepClient;
-import no.nav.fo.veilarbsituasjon.utils.UrlValidator;
+import no.nav.fo.veilarbsituasjon.services.TilordningService;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
 import java.io.OutputStreamWriter;
 import java.net.*;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import static javaslang.API.Case;
@@ -34,6 +37,8 @@ public class PortefoljeRessurs {
 
     private static final Logger LOG = getLogger(PortefoljeRessurs.class);
 
+    @Inject
+    private TilordningService tilordningService;
 
     private AktoerIdService aktoerIdService;
     private BrukerRepository brukerRepository;
@@ -82,8 +87,10 @@ public class PortefoljeRessurs {
 
     @GET
     @Path("/tilordninger")
+    @Produces("application/json")
     public Response getTilordninger(@QueryParam("since_id") String sinceId) {
-        return Response.ok().entity(sinceId).build();
+        LinkedList<Tilordning> tilordninger = tilordningService.hentTilordninger(sinceId);
+        return Response.ok().entity(tilordninger).build();
     }
 
     @POST

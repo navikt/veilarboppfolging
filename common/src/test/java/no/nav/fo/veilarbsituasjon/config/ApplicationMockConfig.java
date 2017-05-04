@@ -1,6 +1,9 @@
 package no.nav.fo.veilarbsituasjon.config;
 
 
+import no.nav.fo.veilarbsituasjon.mock.TilordningServiceMock;
+import no.nav.fo.veilarbsituasjon.services.TilordningService;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
@@ -14,4 +17,8 @@ import org.springframework.context.annotation.FilterType;
         }
 )
 public class ApplicationMockConfig {
+        @Bean
+        TilordningService tilordningService() {
+                return new TilordningServiceMock();
+        }
 }
