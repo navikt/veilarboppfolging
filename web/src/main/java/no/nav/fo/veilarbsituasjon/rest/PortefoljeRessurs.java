@@ -11,6 +11,8 @@ import no.nav.fo.veilarbsituasjon.rest.domain.VeilederTilordning;
 import no.nav.fo.veilarbsituasjon.services.AktoerIdService;
 import no.nav.fo.veilarbsituasjon.services.PepClient;
 import no.nav.fo.veilarbsituasjon.services.TilordningService;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,8 +20,9 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
-import java.io.OutputStreamWriter;
-import java.net.*;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -118,7 +121,7 @@ public class PortefoljeRessurs {
 
         if (feilendeTilordninger.isEmpty()) {
             response.setResultat("Veiledere tilordnet!");
-            activateWebhook();
+            activateWebhook(webhookUrl);
             return Response.ok().entity(response).build();
         } else {
             response.setResultat("Noen brukere kunne ikke tilordnes en veileder.");
@@ -126,16 +129,14 @@ public class PortefoljeRessurs {
         }
     }
 
-    private void activateWebhook() {
+    private void activateWebhook(String url) {
+
+        OkHttpClient okHttpClient = new OkHttpClient();
+
         Try.of(() -> {
-            URL url = new URL(webhookUrl);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setDoOutput(true);
-            connection.setRequestMethod("PUT");
-            OutputStreamWriter out = new OutputStreamWriter(connection.getOutputStream());
-            out.write("foo");
-            out.close();
-            return connection.getInputStream();
+            Request request = new Request.Builder().url(url).build();
+            okhttp3.Response response = okHttpClient.newCall(request).execute();
+            return response.body().string();
         }).onFailure(e -> {
             LOG.warn("Det skjedde en feil ved aktivering av webhook", e.getMessage());
         });
