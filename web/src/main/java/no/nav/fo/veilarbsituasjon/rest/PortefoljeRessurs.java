@@ -1,18 +1,15 @@
 package no.nav.fo.veilarbsituasjon.rest;
 
 import io.swagger.annotations.Api;
-import javaslang.control.Try;
 import no.nav.fo.veilarbsituasjon.db.BrukerRepository;
 import no.nav.fo.veilarbsituasjon.domain.OppfolgingBruker;
-import no.nav.fo.veilarbsituasjon.domain.Tilordning;
-import no.nav.fo.veilarbsituasjon.exception.HttpNotSupportedException;
 import no.nav.fo.veilarbsituasjon.rest.domain.TilordneVeilederResponse;
 import no.nav.fo.veilarbsituasjon.rest.domain.VeilederTilordning;
+import no.nav.fo.veilarbsituasjon.rest.feed.FeedProducer;
+import no.nav.fo.veilarbsituasjon.rest.feed.FeedRequest;
 import no.nav.fo.veilarbsituasjon.services.AktoerIdService;
 import no.nav.fo.veilarbsituasjon.services.PepClient;
 import no.nav.fo.veilarbsituasjon.services.TilordningService;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,17 +17,9 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
-import static javaslang.API.Case;
-import static javaslang.API.Match;
-import static javaslang.Predicates.instanceOf;
-import static no.nav.fo.veilarbsituasjon.utils.UrlValidator.validateUrl;
 import static org.slf4j.LoggerFactory.getLogger;
 
 @Component
@@ -47,53 +36,36 @@ public class PortefoljeRessurs {
     private BrukerRepository brukerRepository;
     private final PepClient pepClient;
     private List<VeilederTilordning> feilendeTilordninger;
-
-    private static String webhookUrl = "";
-
+    private FeedProducer feed;
 
     public PortefoljeRessurs(AktoerIdService aktoerIdService, BrukerRepository brukerRepository, PepClient pepClient) {
         this.aktoerIdService = aktoerIdService;
         this.brukerRepository = brukerRepository;
         this.pepClient = pepClient;
+
+        this.feed = FeedProducer
+                .builder()
+                .maxPageSize(10000)
+                .build();
     }
 
     @GET
     @Path("/tilordninger/webhook")
     public Response getWebhook() {
-        return Response.ok().entity(webhookUrl).build();
+        return feed.getWebhook();
     }
 
     @PUT
     @Path("/tilordninger/webhook")
     public Response putWebhook(String callbackUrl) {
-        if (webhookUrl.equals(callbackUrl)) {
-            return Response.ok().build();
-        }
-
-        Try.of(() -> {
-            validateUrl(callbackUrl);
-            webhookUrl = callbackUrl;
-            URI uri = new URI("tilordninger/webhook");
-            return Response.created(uri).build();
-
-        }).recover(e -> Match(e).of(
-                Case(instanceOf(URISyntaxException.class),
-                        Response.serverError().entity("Det skjedde en feil web opprettelsen av webhook").build()),
-                Case(instanceOf(MalformedURLException.class),
-                        Response.status(400).entity("Feil format på callback-url").build()),
-                Case(instanceOf(HttpNotSupportedException.class),
-                        Response.status(400).entity("Angitt url for webhook må være HTTPS").build())
-        ));
-
-        return Response.status(500).entity("Det har skjedd en feil på serveren").build();
+        return feed.createWebhook();
     }
 
     @GET
     @Path("/tilordninger")
     @Produces("application/json")
-    public Response getTilordninger(@QueryParam("since_id") String sinceId) {
-        LinkedList<Tilordning> tilordninger = tilordningService.hentTilordninger(sinceId);
-        return Response.ok().entity(tilordninger).build();
+    public Response getTilordninger(@BeanParam FeedRequest request) {
+        return feed.createFeedResponse(request, tilordningService);
     }
 
     @POST
@@ -121,7 +93,7 @@ public class PortefoljeRessurs {
 
         if (feilendeTilordninger.isEmpty()) {
             response.setResultat("Veiledere tilordnet!");
-            activateWebhook(webhookUrl);
+            feed.activateWebhook();
             return Response.ok().entity(response).build();
         } else {
             response.setResultat("Noen brukere kunne ikke tilordnes en veileder.");
@@ -129,18 +101,6 @@ public class PortefoljeRessurs {
         }
     }
 
-    private void activateWebhook(String url) {
-
-        OkHttpClient okHttpClient = new OkHttpClient();
-
-        Try.of(() -> {
-            Request request = new Request.Builder().url(url).build();
-            okhttp3.Response response = okHttpClient.newCall(request).execute();
-            return response.body().string();
-        }).onFailure(e -> {
-            LOG.warn("Det skjedde en feil ved aktivering av webhook", e.getMessage());
-        });
-    }
 
     @Transactional
     private void skrivTilDatabase(OppfolgingBruker bruker) {

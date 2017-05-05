@@ -1,4 +1,4 @@
-package no.nav.fo.veilarbsituasjon.utils;
+package no.nav.fo.veilarbsituasjon.rest.feed;
 
 import no.nav.fo.veilarbsituasjon.exception.HttpNotSupportedException;
 import org.junit.Rule;
@@ -6,7 +6,6 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import java.net.MalformedURLException;
-import java.net.URL;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;

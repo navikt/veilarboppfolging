@@ -3,11 +3,12 @@ package no.nav.fo.veilarbsituasjon.mock;
 import no.nav.fo.veilarbsituasjon.domain.Tilordning;
 import no.nav.fo.veilarbsituasjon.services.TilordningService;
 
+import java.time.LocalDateTime;
 import java.util.LinkedList;
 
 public class TilordningServiceMock implements TilordningService {
     @Override
-    public LinkedList<Tilordning> hentTilordninger(String sinceId) {
+    public LinkedList<Tilordning> hentTilordninger(LocalDateTime sinceId) {
         return testdata();
     }
 

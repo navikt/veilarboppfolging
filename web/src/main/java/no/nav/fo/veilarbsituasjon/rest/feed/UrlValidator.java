@@ -1,4 +1,4 @@
-package no.nav.fo.veilarbsituasjon.utils;
+package no.nav.fo.veilarbsituasjon.rest.feed;
 
 import no.nav.fo.veilarbsituasjon.exception.HttpNotSupportedException;
 
