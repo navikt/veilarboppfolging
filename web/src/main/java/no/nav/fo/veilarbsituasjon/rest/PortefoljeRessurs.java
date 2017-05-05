@@ -50,19 +50,19 @@ public class PortefoljeRessurs {
     }
 
     @GET
-    @Path("/tilordninger/webhook")
+    @Path("/feed/tilordninger/webhook")
     public Response getWebhook() {
         return feed.getWebhook();
     }
 
     @PUT
-    @Path("/tilordninger/webhook")
+    @Path("/feed/tilordninger/webhook")
     public Response putWebhook(String callbackUrl) {
         return feed.createWebhook();
     }
 
     @GET
-    @Path("/tilordninger")
+    @Path("/feed/tilordninger")
     @Produces("application/json")
     public Response getTilordninger(@BeanParam FeedRequest request) {
         return feed.createFeedResponse(request, tilordningService);
