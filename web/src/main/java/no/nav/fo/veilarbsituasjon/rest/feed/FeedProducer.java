@@ -19,6 +19,7 @@ import java.util.LinkedList;
 import static javaslang.API.Case;
 import static javaslang.API.Match;
 import static javaslang.Predicates.instanceOf;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static no.nav.fo.veilarbsituasjon.rest.feed.UrlValidator.validateUrl;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -37,22 +38,25 @@ public class FeedProducer {
     }
 
     public void activateWebhook() {
-
         OkHttpClient okHttpClient = new OkHttpClient();
 
         Try.of(() -> {
             Request request = new Request.Builder().url(webhookUrl).build();
             okhttp3.Response response = okHttpClient.newCall(request).execute();
             return response.body().string();
-        }).onFailure(e -> LOG.warn("Det skjedde en feil ved aktivering av webhook", e.getMessage()));
+        }).onFailure(e -> LOG.warn("Det skjedde en feil ved aktivering av webhook: {}", e.getMessage()));
     }
 
     public Response getWebhook() {
         return Response.ok().entity(webhookUrl).build();
     }
 
-    public Response createWebhook() {
-        if (webhookUrl.equals(callbackUrl)) {
+    public Response createWebhook(String callbackUrl) {
+        if (callbackUrl == null) {
+            return Response.status(BAD_REQUEST).entity("Respons må inneholde callback-url").build();
+        }
+
+        if (callbackUrl.equals(webhookUrl)) {
             return Response.ok().build();
         }
 
@@ -66,11 +70,11 @@ public class FeedProducer {
                 Case(instanceOf(URISyntaxException.class),
                         Response.serverError().entity("Det skjedde en feil web opprettelsen av webhook").build()),
                 Case(instanceOf(MalformedURLException.class),
-                        Response.status(400).entity("Feil format på callback-url").build()),
+                        Response.status(BAD_REQUEST).entity("Feil format på callback-url").build()),
                 Case(instanceOf(HttpNotSupportedException.class),
-                        Response.status(400).entity("Angitt url for webhook må være HTTPS").build())
+                        Response.status(BAD_REQUEST).entity("Angitt url for webhook må være HTTPS").build())
         ));
 
-        return Response.status(500).entity("Det skjedde en feil ved opprettelse av webhook. Prøv igjen senere").build();
+        return Response.serverError().entity("Det skjedde en feil ved opprettelse av webhook").build();
     }
 }

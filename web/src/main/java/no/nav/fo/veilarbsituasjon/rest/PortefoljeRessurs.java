@@ -58,7 +58,7 @@ public class PortefoljeRessurs {
     @PUT
     @Path("/feed/tilordninger/webhook")
     public Response putWebhook(String callbackUrl) {
-        return feed.createWebhook();
+        return feed.createWebhook(callbackUrl);
     }
 
     @GET
