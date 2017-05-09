@@ -1,14 +1,26 @@
 package no.nav.fo.veilarbsituasjon.services.impl;
 
-import no.nav.fo.veilarbsituasjon.domain.Tilordning;
+import no.nav.fo.veilarbsituasjon.db.BrukerRepository;
+import no.nav.fo.veilarbsituasjon.domain.OppfolgingBruker;
 import no.nav.fo.veilarbsituasjon.services.TilordningService;
 
+import javax.inject.Inject;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.util.LinkedList;
+import java.util.List;
 
 public class TilordningServiceImpl implements TilordningService {
+
+    private BrukerRepository brukerRepository;
+
+    @Inject
+    public TilordningServiceImpl(BrukerRepository brukerRepository) {
+        this.brukerRepository = brukerRepository;
+    }
+
     @Override
-    public LinkedList<Tilordning> hentTilordninger(LocalDateTime sinceId) {
-        return new LinkedList<>();
+    public List<OppfolgingBruker> hentTilordninger(LocalDateTime sinceId) {
+        Timestamp timestamp = Timestamp.valueOf(sinceId);
+        return brukerRepository.hentTilordningerEtterTimestamp(timestamp);
     }
 }

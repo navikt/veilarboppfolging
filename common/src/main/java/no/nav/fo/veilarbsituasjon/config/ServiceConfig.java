@@ -61,6 +61,6 @@ public class ServiceConfig {
 
     @Bean
     TilordningService tilordningService() {
-        return new TilordningServiceImpl();
+        return new TilordningServiceImpl(brukerRepository());
     }
 }

@@ -1,39 +1,41 @@
 package no.nav.fo.veilarbsituasjon.mock;
 
-import no.nav.fo.veilarbsituasjon.domain.Tilordning;
+import no.nav.fo.veilarbsituasjon.domain.OppfolgingBruker;
 import no.nav.fo.veilarbsituasjon.services.TilordningService;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.LinkedList;
+import java.util.List;
 
 public class TilordningServiceMock implements TilordningService {
     @Override
-    public LinkedList<Tilordning> hentTilordninger(LocalDateTime sinceId) {
+    public List<OppfolgingBruker> hentTilordninger(LocalDateTime sinceId) {
         return testdata();
     }
 
-    private LinkedList<Tilordning> testdata() {
+    private List<OppfolgingBruker> testdata() {
 
-        Tilordning tilordning1 = new Tilordning()
-                .setAktorId("***REMOVED***00")
-                .setVeilederId("***REMOVED***")
+        OppfolgingBruker tilordning1 = new OppfolgingBruker()
+                .setAktoerid("***REMOVED***00")
+                .setVeileder("***REMOVED***")
                 .setOppfolging(true)
-                .setSistOppdatert("2017-05-02T15:41:00+02:00");
+                .setEndretTimestamp(new Timestamp(2017, 5, 4, 0, 0, 0, 0));
 
-        Tilordning tilordning2 = new Tilordning()
-                .setAktorId("***REMOVED***01")
-                .setVeilederId("***REMOVED***")
+        OppfolgingBruker tilordning2 = new OppfolgingBruker()
+                .setAktoerid("***REMOVED***00")
+                .setVeileder("***REMOVED***")
                 .setOppfolging(true)
-                .setSistOppdatert("2017-05-03T15:41:00+02:00");
+                .setEndretTimestamp(new Timestamp(2017, 5, 4, 0, 0, 0, 0));
 
-        Tilordning tilordning3 = new Tilordning()
-                .setAktorId("***REMOVED***02")
-                .setVeilederId("***REMOVED***")
+        OppfolgingBruker tilordning3 = new OppfolgingBruker()
+                .setAktoerid("***REMOVED***00")
+                .setVeileder("***REMOVED***")
                 .setOppfolging(true)
-                .setSistOppdatert("2017-05-04T15:41:00+02:00");
+                .setEndretTimestamp(new Timestamp(2017, 5, 4, 0, 0, 0, 0));
 
 
-        LinkedList<Tilordning> tilordninger = new LinkedList<>();
+        LinkedList<OppfolgingBruker> tilordninger = new LinkedList<>();
         tilordninger.addFirst(tilordning1);
         tilordninger.addFirst(tilordning2);
         tilordninger.addFirst(tilordning3);

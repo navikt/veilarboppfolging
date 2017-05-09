@@ -2,7 +2,7 @@ package no.nav.fo.veilarbsituasjon.rest.feed;
 
 import javaslang.control.Try;
 import lombok.Builder;
-import no.nav.fo.veilarbsituasjon.domain.Tilordning;
+import no.nav.fo.veilarbsituasjon.domain.OppfolgingBruker;
 import no.nav.fo.veilarbsituasjon.exception.HttpNotSupportedException;
 import no.nav.fo.veilarbsituasjon.services.TilordningService;
 import okhttp3.OkHttpClient;
@@ -14,7 +14,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDateTime;
-import java.util.LinkedList;
+import java.util.List;
 
 import static javaslang.API.Case;
 import static javaslang.API.Match;
@@ -33,7 +33,7 @@ public class FeedProducer {
     private String callbackUrl;
 
     public Response createFeedResponse(FeedRequest request, TilordningService service) {
-        LinkedList<Tilordning> feedElements = service.hentTilordninger(LocalDateTime.now());
+        List<OppfolgingBruker> feedElements = service.hentTilordninger(LocalDateTime.now());
         return Response.ok().entity(feedElements).build();
     }
 

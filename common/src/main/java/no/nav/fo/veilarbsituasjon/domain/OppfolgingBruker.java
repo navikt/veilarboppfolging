@@ -11,6 +11,7 @@ public class OppfolgingBruker {
 
     String aktoerid;
     String veileder;
+    Boolean oppfolging;
     Timestamp endretTimestamp;
 
     public OppfolgingBruker(){
