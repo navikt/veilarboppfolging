@@ -6,7 +6,9 @@ import no.nav.fo.veilarbsituasjon.domain.*;
 import no.nav.fo.veilarbsituasjon.services.AktoerIdService;
 import no.nav.fo.veilarbsituasjon.services.SituasjonOversiktService;
 import no.nav.fo.veilarbsituasjon.vilkar.VilkarService;
-import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.*;
+import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.DigitalKontaktinformasjonV1;
+import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.HentDigitalKontaktinformasjonKontaktinformasjonIkkeFunnet;
+import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.HentDigitalKontaktinformasjonPersonIkkeFunnet;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.informasjon.WSKontaktinformasjon;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.WSHentDigitalKontaktinformasjonRequest;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.WSHentDigitalKontaktinformasjonResponse;
@@ -109,6 +111,7 @@ public class SituasjonOversiktServiceTest {
     public void utenKontaktInformasjon() throws Exception {
         gittAktor();
         gittKRRFeil(HentDigitalKontaktinformasjonKontaktinformasjonIkkeFunnet.class);
+        gittOppfolgingStatus("ARBS", "");
 
         OppfolgingStatusData oppfolgingStatusData = hentOppfolgingStatus();
 
@@ -119,6 +122,7 @@ public class SituasjonOversiktServiceTest {
     public void personIkkeFunnet() throws Exception {
         gittAktor();
         gittKRRFeil(HentDigitalKontaktinformasjonPersonIkkeFunnet.class);
+        gittOppfolgingStatus("ARBS", "");
 
         OppfolgingStatusData oppfolgingStatusData = hentOppfolgingStatus();
 
@@ -126,9 +130,10 @@ public class SituasjonOversiktServiceTest {
     }
 
     @Test
-    public void medReservasjon() throws Exception {
+    public void medReservasjonOgUnderOppfolging() throws Exception {
         gittAktor();
         gittReservasjon("true");
+        gittOppfolgingStatus("ARBS", "");
 
         OppfolgingStatusData oppfolgingStatusData = hentOppfolgingStatus();
 
