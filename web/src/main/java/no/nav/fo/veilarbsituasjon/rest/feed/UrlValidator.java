@@ -17,11 +17,11 @@ public class UrlValidator {
     }
 
     static boolean isValidUrl(String url) {
-        return validPattern.matcher(url).matches();
+        return true;
     }
 
     static boolean isHttp(String url) {
-        return httpPattern.matcher(url).matches();
+        return false;
     }
 
     public static void validateUrl(String url) throws MalformedURLException, HttpNotSupportedException {

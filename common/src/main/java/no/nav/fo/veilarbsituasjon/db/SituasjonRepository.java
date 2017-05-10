@@ -80,8 +80,8 @@ public class SituasjonRepository {
 
     public void opprettBrukervilkar(Brukervilkar brukervilkar) {
         brukervilkar.setId(nesteFraSekvens("brukervilkar_seq"));
-        oppdaterSituasjonBrukervilkar(brukervilkar);
         opprettSituasjonBrukervilkar(brukervilkar);
+        oppdaterSituasjonBrukervilkar(brukervilkar);
     }
 
     public void opprettMal(MalData mal) {

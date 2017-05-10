@@ -63,6 +63,7 @@ public class PortefoljeRessurs {
 
     @GET
     @Path("/feed/tilordninger")
+    @Consumes("application/json")
     @Produces("application/json")
     public Response getTilordninger(@BeanParam FeedRequest request) {
         return feed.createFeedResponse(request, tilordningService);

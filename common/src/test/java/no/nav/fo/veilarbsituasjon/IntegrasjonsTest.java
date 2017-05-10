@@ -1,6 +1,6 @@
 package no.nav.fo.veilarbsituasjon;
 
-import no.nav.fo.veilarbsituasjon.config.DatabaseLocalConfig;
+import no.nav.fo.veilarbsituasjon.config.DatabaseConfig;
 import no.nav.fo.veilarbsituasjon.config.JndiLocalContextConfig;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -16,7 +16,7 @@ public abstract class IntegrasjonsTest {
     @BeforeAll
     public static void setup() throws IOException {
         JndiLocalContextConfig.setupInMemoryDatabase();
-        annotationConfigApplicationContext = new AnnotationConfigApplicationContext(DatabaseLocalConfig.class);
+        annotationConfigApplicationContext = new AnnotationConfigApplicationContext(DatabaseConfig.class);
         annotationConfigApplicationContext.start();
     }
 

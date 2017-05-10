@@ -2,12 +2,11 @@ package no.nav.fo.veilarbsituasjon.rest.feed;
 
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.QueryParam;
-import java.time.LocalDateTime;
 
 public class FeedRequest {
 
     @QueryParam("since_id")
-    LocalDateTime sinceId;
+    String sinceId;
 
     @QueryParam("page_size")
     @DefaultValue("100")

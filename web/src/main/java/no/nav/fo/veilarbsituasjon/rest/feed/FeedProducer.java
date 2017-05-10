@@ -14,6 +14,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import static javaslang.API.Case;
@@ -34,8 +35,8 @@ public class FeedProducer {
 
     public Response createFeedResponse(FeedRequest request, TilordningService service) {
         int pageSize = setPageSize(request.pageSize, maxPageSize);
-        LocalDateTime sinceId = request.sinceId;
-        List<OppfolgingBruker> feedElements = service.hentTilordninger(LocalDateTime.now(), pageSize);
+        LocalDateTime sinceId = LocalDateTime.parse(request.sinceId, DateTimeFormatter.ISO_DATE_TIME);
+        List<OppfolgingBruker> feedElements = service.hentTilordninger(sinceId, pageSize);
         return Response.ok().entity(feedElements).build();
     }
 
