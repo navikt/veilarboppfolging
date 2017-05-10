@@ -19,7 +19,7 @@ public class TilordningServiceImpl implements TilordningService {
     }
 
     @Override
-    public List<OppfolgingBruker> hentTilordninger(LocalDateTime sinceId) {
+    public List<OppfolgingBruker> hentTilordninger(LocalDateTime sinceId, int pageSize) {
         Timestamp timestamp = Timestamp.valueOf(sinceId);
         return brukerRepository.hentTilordningerEtterTimestamp(timestamp);
     }

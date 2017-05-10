@@ -8,5 +8,5 @@ import java.util.List;
 
 @Service
 public interface TilordningService {
-    List<OppfolgingBruker> hentTilordninger(LocalDateTime sinceId);
+    List<OppfolgingBruker> hentTilordninger(LocalDateTime sinceId, int pageSize);
 }

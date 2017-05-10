@@ -10,7 +10,7 @@ import java.util.List;
 
 public class TilordningServiceMock implements TilordningService {
     @Override
-    public List<OppfolgingBruker> hentTilordninger(LocalDateTime sinceId) {
+    public List<OppfolgingBruker> hentTilordninger(LocalDateTime sinceId, int pageSize) {
         return testdata();
     }
 

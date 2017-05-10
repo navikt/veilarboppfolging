@@ -33,8 +33,14 @@ public class FeedProducer {
     private String callbackUrl;
 
     public Response createFeedResponse(FeedRequest request, TilordningService service) {
-        List<OppfolgingBruker> feedElements = service.hentTilordninger(LocalDateTime.now());
+        int pageSize = setPageSize(request.pageSize, maxPageSize);
+        LocalDateTime sinceId = request.sinceId;
+        List<OppfolgingBruker> feedElements = service.hentTilordninger(LocalDateTime.now(), pageSize);
         return Response.ok().entity(feedElements).build();
+    }
+
+    private static int setPageSize(int pageSize, int maxPageSize) {
+        return pageSize > maxPageSize ? maxPageSize : pageSize;
     }
 
     public void activateWebhook() {
