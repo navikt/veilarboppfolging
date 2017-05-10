@@ -69,8 +69,11 @@ public class SituasjonOversiktService {
             situasjonRepository.oppdaterSituasjon(situasjon.setOppfolging(erUnderOppfolging(fnr)));
         }
 
-        boolean erReservert = erReservertIKRR(fnr);
-        if (erReservert && situasjon.isOppfolging()) {
+        boolean erReservert = false;
+        boolean erUnderOppfolging = false;
+        if (situasjon.isOppfolging() && erReservertIKRR(fnr)) {
+            erReservert = true;
+            erUnderOppfolging = true;
             Timestamp dato = new Timestamp(currentTimeMillis());
             situasjonRepository.opprettStatus(
                     new Status(
@@ -101,9 +104,11 @@ public class SituasjonOversiktService {
         return new OppfolgingStatusData()
                 .setFnr(fnr)
                 .setReservasjonKRR(erReservert)
-                .setManuell(Optional.ofNullable(situasjon.getGjeldendeStatus())
-                        .map(Status::isManuell)
-                        .orElse(false)
+                .setManuell(erUnderOppfolging ?
+                        Optional.ofNullable(situasjon.getGjeldendeStatus())
+                                .map(Status::isManuell)
+                                .orElse(false) :
+                        false
                 )
                 .setUnderOppfolging(situasjon.isOppfolging())
                 .setOppfolgingUtgang(situasjon.getOppfolgingUtgang())
