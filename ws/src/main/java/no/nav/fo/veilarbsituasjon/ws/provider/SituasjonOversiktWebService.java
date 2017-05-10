@@ -2,6 +2,7 @@ package no.nav.fo.veilarbsituasjon.ws.provider;
 
 import lombok.SneakyThrows;
 import lombok.val;
+import no.nav.apiapp.soap.SoapTjeneste;
 import no.nav.fo.veilarbsituasjon.domain.MalData;
 import no.nav.fo.veilarbsituasjon.domain.OppfolgingStatusData;
 import no.nav.fo.veilarbsituasjon.domain.VilkarData;
@@ -25,8 +26,8 @@ import static javax.ws.rs.core.Response.Status.NOT_IMPLEMENTED;
 import static no.nav.fo.veilarbsituasjon.utils.DateUtils.xmlCalendar;
 import static no.nav.fo.veilarbsituasjon.utils.StringUtils.emptyIfNull;
 
-@WebService
 @Service
+@SoapTjeneste("/Situasjon")
 public class SituasjonOversiktWebService implements BehandleSituasjonV1 {
 
     @Inject

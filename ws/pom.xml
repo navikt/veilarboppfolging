@@ -16,6 +16,10 @@
             <groupId>no.nav.fo</groupId>
             <artifactId>veilarbsituasjon-common</artifactId>
         </dependency>
+        <dependency>
+            <groupId>no.nav.sbl.dialogarena</groupId>
+            <artifactId>api-app</artifactId>
+        </dependency>
 
         <!--Lombok-->
         <dependency>
@@ -107,10 +111,6 @@
             <artifactId>common-cxf</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.apache.cxf</groupId>
-            <artifactId>cxf-rt-transports-http</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-jaas</artifactId>
         </dependency>
@@ -125,10 +125,6 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-web</artifactId>
         </dependency>
         <dependency>
             <groupId>no.nav.sbl.dialogarena</groupId>
