@@ -34,6 +34,8 @@ import static java.util.Optional.ofNullable;
 import static no.nav.fo.veilarbsituasjon.domain.VilkarStatus.GODKJENNT;
 import static no.nav.fo.veilarbsituasjon.domain.VilkarStatus.IKKE_BESVART;
 import static no.nav.fo.veilarbsituasjon.utils.StringUtils.of;
+import static no.nav.fo.veilarbsituasjon.vilkar.VilkarService.VilkarType.PRIVAT;
+import static no.nav.fo.veilarbsituasjon.vilkar.VilkarService.VilkarType.UNDER_OPPFOLGING;
 import static org.slf4j.LoggerFactory.getLogger;
 
 @Component
@@ -62,8 +64,8 @@ public class SituasjonOversiktService {
 
     @Transactional
     public OppfolgingStatusData hentOppfolgingsStatus(String fnr) throws Exception {
-        String aktorId = hentAktorId(fnr);
-        Situasjon situasjon = hentSituasjon(aktorId);
+        Situasjon situasjon = situasjonForFnr(fnr);
+        String aktorId = situasjon.getAktorId();
 
         if (!situasjon.isOppfolging()) {
             situasjonRepository.oppdaterSituasjon(situasjon.setOppfolging(erUnderOppfolging(fnr)));
@@ -91,7 +93,7 @@ public class SituasjonOversiktService {
             );
         }
 
-        VilkarData gjeldendeVilkar = hentVilkar();
+        VilkarData gjeldendeVilkar = hentVilkar(situasjon);
         boolean vilkarMaBesvares = finnSisteVilkarStatus(situasjon)
                 .filter(brukervilkar -> GODKJENNT.equals(brukervilkar.getVilkarstatus()))
                 .map(Brukervilkar::getHash)
@@ -110,8 +112,17 @@ public class SituasjonOversiktService {
                 .setVilkarMaBesvares(vilkarMaBesvares);
     }
 
-    public VilkarData hentVilkar() throws Exception {
-        String vilkar = vilkarService.getVilkar(null);
+    public VilkarData hentVilkar(String fnr) throws Exception {
+        return hentVilkar(situasjonForFnr(fnr));
+    }
+
+    private Situasjon situasjonForFnr(String fnr) {
+        String aktorId = hentAktorId(fnr);
+        return hentSituasjon(aktorId);
+    }
+
+    public VilkarData hentVilkar(Situasjon situasjon) {
+        String vilkar = vilkarService.getVilkar(situasjon.isOppfolging()? UNDER_OPPFOLGING : PRIVAT,null);
         return new VilkarData()
                 .setText(vilkar)
                 .setHash(DigestUtils.sha256Hex(vilkar));
@@ -121,7 +132,7 @@ public class SituasjonOversiktService {
     public OppfolgingStatusData godtaVilkar(String hash, String fnr) throws Exception {
         Situasjon situasjon = hentSituasjon(hentAktorId(fnr));
 
-        VilkarData gjeldendeVilkar = hentVilkar();
+        VilkarData gjeldendeVilkar = hentVilkar(situasjon);
         if (gjeldendeVilkar.getHash().equals(hash)) {
             situasjonRepository.opprettBrukervilkar(
                     new Brukervilkar(

@@ -3,11 +3,12 @@ package no.nav.fo.veilarbsituasjon.ws.provider;
 import lombok.SneakyThrows;
 import lombok.val;
 import no.nav.apiapp.soap.SoapTjeneste;
+import no.nav.brukerdialog.security.context.SubjectHandler;
 import no.nav.fo.veilarbsituasjon.domain.MalData;
 import no.nav.fo.veilarbsituasjon.domain.OppfolgingStatusData;
 import no.nav.fo.veilarbsituasjon.domain.VilkarData;
 import no.nav.fo.veilarbsituasjon.services.SituasjonOversiktService;
-import no.nav.fo.veilarbsituasjon.utils.StringUtils;
+import no.nav.modig.core.domain.SluttBruker;
 import no.nav.tjeneste.virksomhet.behandlesituasjon.v1.binding.*;
 import no.nav.tjeneste.virksomhet.behandlesituasjon.v1.informasjon.Mal;
 import no.nav.tjeneste.virksomhet.behandlesituasjon.v1.informasjon.Oppfoelgingsstatus;
@@ -15,7 +16,6 @@ import no.nav.tjeneste.virksomhet.behandlesituasjon.v1.meldinger.*;
 import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
-import javax.jws.WebService;
 import javax.ws.rs.WebApplicationException;
 
 import java.sql.Timestamp;
@@ -71,7 +71,7 @@ public class SituasjonOversiktWebService implements BehandleSituasjonV1 {
     @Override
     @SneakyThrows
     public HentVilkaarResponse hentVilkaar(HentVilkaarRequest hentVilkaarRequest) throws HentVilkaarSikkerhetsbegrensning {
-        return mapTilHentVilkaarResponse(situasjonOversiktService.hentVilkar());
+        return mapTilHentVilkaarResponse(situasjonOversiktService.hentVilkar(getSluttbrukerFnr()));
     }
 
     @Override
@@ -101,6 +101,17 @@ public class SituasjonOversiktWebService implements BehandleSituasjonV1 {
     public OpprettMalResponse opprettMal(OpprettMalRequest opprettMalRequest) {
         situasjonOversiktService.oppdaterMal(opprettMalRequest.getMal().getMal(), opprettMalRequest.getPersonident(), null);
         return new OpprettMalResponse();
+    }
+
+    private String getSluttbrukerFnr() {
+        return SubjectHandler
+                .getSubjectHandler()
+                .getSubject()
+                .getPrincipals(SluttBruker.class)
+                .stream()
+                .findAny()
+                .map(SluttBruker::getUid)
+                .orElseThrow(RuntimeException::new);
     }
 
     private HentVilkaarResponse mapTilHentVilkaarResponse(VilkarData vilkarData) {
