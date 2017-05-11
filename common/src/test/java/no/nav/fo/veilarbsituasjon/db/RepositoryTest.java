@@ -2,6 +2,7 @@ package no.nav.fo.veilarbsituasjon.db;
 
 import no.nav.fo.veilarbsituasjon.IntegrasjonsTest;
 import no.nav.fo.veilarbsituasjon.domain.*;
+import no.nav.tjeneste.virksomhet.behandlesituasjon.v1.informasjon.Vilkaarsstatuser;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -78,7 +79,7 @@ public class RepositoryTest extends IntegrasjonsTest {
             Brukervilkar brukervilkar = new Brukervilkar(
                     AKTOR_ID,
                     new Timestamp(currentTimeMillis()),
-                    VilkarStatus.GODKJENNT,
+                    Vilkaarsstatuser.GODKJENT,
                     "Vilkårstekst",
                     "Vilkårshash"
             );

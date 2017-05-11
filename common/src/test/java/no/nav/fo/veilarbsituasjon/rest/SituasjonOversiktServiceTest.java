@@ -6,6 +6,7 @@ import no.nav.fo.veilarbsituasjon.domain.*;
 import no.nav.fo.veilarbsituasjon.services.AktoerIdService;
 import no.nav.fo.veilarbsituasjon.services.SituasjonOversiktService;
 import no.nav.fo.veilarbsituasjon.vilkar.VilkarService;
+import no.nav.tjeneste.virksomhet.behandlesituasjon.v1.informasjon.Vilkaarsstatuser;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.DigitalKontaktinformasjonV1;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.HentDigitalKontaktinformasjonKontaktinformasjonIkkeFunnet;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.HentDigitalKontaktinformasjonPersonIkkeFunnet;
@@ -23,11 +24,11 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.sql.Timestamp;
+import java.util.Optional;
 
 import static java.lang.System.currentTimeMillis;
-import static java.util.Optional.of;
-import static no.nav.fo.veilarbsituasjon.domain.VilkarStatus.GODKJENNT;
-import static no.nav.fo.veilarbsituasjon.domain.VilkarStatus.IKKE_BESVART;
+import static no.nav.tjeneste.virksomhet.behandlesituasjon.v1.informasjon.Vilkaarsstatuser.GODKJENT;
+import static no.nav.tjeneste.virksomhet.behandlesituasjon.v1.informasjon.Vilkaarsstatuser.IKKE_BESVART;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
@@ -158,7 +159,7 @@ public class SituasjonOversiktServiceTest {
 
         assertThat(hentOppfolgingStatus().vilkarMaBesvares, is(true));
 
-        besvarVilkar(GODKJENNT, hentGjeldendeVilkar());
+        besvarVilkar(GODKJENT, hentGjeldendeVilkar());
 
         assertThat(hentOppfolgingStatus().vilkarMaBesvares, is(false));
     }
@@ -167,7 +168,7 @@ public class SituasjonOversiktServiceTest {
     public void akseptererFeilVilkar() throws Exception {
         gittAktor();
         VilkarData feilVilkar = new VilkarData().setText("feilVilkar").setHash("HASH");
-        besvarVilkar(GODKJENNT, feilVilkar);
+        besvarVilkar(GODKJENT, feilVilkar);
 
         assertThat(hentOppfolgingStatus().vilkarMaBesvares, is(true));
     }
@@ -213,7 +214,7 @@ public class SituasjonOversiktServiceTest {
         verifyZeroInteractions(oppfoelgingPortType);
     }
 
-    private void besvarVilkar(VilkarStatus vilkarStatus, VilkarData vilkar) {
+    private void besvarVilkar(Vilkaarsstatuser vilkarStatus, VilkarData vilkar) {
         gittSituasjon(situasjon.setGjeldendeBrukervilkar(
                 new Brukervilkar(
                         situasjon.getAktorId(),
@@ -239,7 +240,7 @@ public class SituasjonOversiktServiceTest {
     }
 
     private void gittSituasjon(Situasjon situasjon) {
-        when(situasjonRepositoryMock.hentSituasjon(AKTOR_ID)).thenReturn(of(situasjon));
+        when(situasjonRepositoryMock.hentSituasjon(AKTOR_ID)).thenReturn(Optional.of(situasjon));
     }
 
     private void gittAktor() {

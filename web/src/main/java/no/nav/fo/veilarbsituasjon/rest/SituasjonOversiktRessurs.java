@@ -12,6 +12,7 @@ import no.nav.fo.veilarbsituasjon.rest.domain.OppfolgingStatus;
 import no.nav.fo.veilarbsituasjon.rest.domain.Vilkar;
 import no.nav.fo.veilarbsituasjon.services.PepClient;
 import no.nav.fo.veilarbsituasjon.services.SituasjonOversiktService;
+import no.nav.tjeneste.virksomhet.behandlesituasjon.v1.informasjon.Vilkaarsstatuser;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
@@ -50,7 +51,12 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt {
 
     @Override
     public OppfolgingStatus godta(String hash) throws Exception {
-        return tilDto(situasjonOversiktService.godtaVilkar(hash, getFnr()));
+        return tilDto(situasjonOversiktService.oppdaterVilkaar(hash, getFnr(), Vilkaarsstatuser.GODKJENT));
+    }
+
+    @Override
+    public OppfolgingStatus avslaa(String hash) throws Exception {
+        return tilDto(situasjonOversiktService.oppdaterVilkaar(hash, getFnr(), Vilkaarsstatuser.AVSLAATT));
     }
 
     @Override

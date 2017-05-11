@@ -3,6 +3,7 @@ package no.nav.fo.veilarbsituasjon.db;
 
 import lombok.SneakyThrows;
 import no.nav.fo.veilarbsituasjon.domain.*;
+import no.nav.tjeneste.virksomhet.behandlesituasjon.v1.informasjon.Vilkaarsstatuser;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -232,7 +233,7 @@ public class SituasjonRepository {
         return new Brukervilkar(
                 result.getString("AKTORID"),
                 result.getTimestamp("BRUKERVILKAR_DATO"),
-                VilkarStatus.valueOf(result.getString("BRUKERVILKAR_VILKARSTATUS")),
+                Vilkaarsstatuser.valueOf(result.getString("BRUKERVILKAR_VILKARSTATUS")),
                 result.getString("BRUKERVILKAR_TEKST"),
                 result.getString("BRUKERVILKAR_HASH")
         ).setId(result.getLong("BRUKERVILKAR_ID"));
