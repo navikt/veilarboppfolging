@@ -1,26 +1,23 @@
 package no.nav.fo.veilarbsituasjon.rest.feed;
 
-import javaslang.control.Try;
 import lombok.Builder;
+import lombok.SneakyThrows;
 import no.nav.fo.veilarbsituasjon.domain.OppfolgingBruker;
-import no.nav.fo.veilarbsituasjon.exception.HttpNotSupportedException;
+import no.nav.fo.veilarbsituasjon.rest.feed.exception.NoCallbackUrlException;
+import no.nav.fo.veilarbsituasjon.rest.feed.exception.NoWebhookUrlException;
 import no.nav.fo.veilarbsituasjon.services.TilordningService;
 import org.slf4j.Logger;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Response;
-import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 
-import static javaslang.API.Case;
-import static javaslang.API.Match;
-import static javaslang.Predicates.instanceOf;
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import static javax.ws.rs.HttpMethod.HEAD;
 import static no.nav.fo.veilarbsituasjon.rest.feed.UrlValidator.validateUrl;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -30,8 +27,8 @@ public class FeedProducer {
     private static final Logger LOG = getLogger(FeedProducer.class);
 
     private int maxPageSize;
-    private String webhookUrl;
-    private String callbackUrl;
+    private Optional<String> webhookUrl;
+    private Optional<String> callbackUrl;
 
     public Response createFeedResponse(FeedRequest request, TilordningService service) {
         int pageSize = setPageSize(request.pageSize, maxPageSize);
@@ -45,41 +42,32 @@ public class FeedProducer {
     }
 
     public void activateWebhook() {
-        Client client = ClientBuilder.newBuilder().build();
-        Response response = client.target(webhookUrl).request().build("HEAD").invoke();
-        if (response.getStatus() != 200) {
-            LOG.warn("Fikk respons {} ved aktivering av webhook", response.getStatus());
-        }
+        webhookUrl.ifPresent(
+                url -> {
+                    Client client = ClientBuilder.newBuilder().build();
+                    client.target(url).request().build(HEAD).invoke();
+                }
+        );
     }
 
     public Response getWebhook() {
-        return Response.ok().entity(webhookUrl).build();
+        String url = webhookUrl.orElseThrow(NoWebhookUrlException::new);
+        return Response.ok().entity(new FeedWebhookResponse().setWebhookUrl(url)).build();
     }
 
-    public Response createWebhook(String callbackUrl) {
-        if (callbackUrl == null) {
-            return Response.status(BAD_REQUEST).entity("Respons må inneholde callback-url").build();
-        }
-
+    public Response createWebhook(Optional<String> callbackUrl) {
         if (callbackUrl.equals(webhookUrl)) {
             return Response.ok().build();
         }
+        String url = callbackUrl.orElseThrow(NoCallbackUrlException::new);
+        validateUrl(url);
 
-        Try.of(() -> {
-            validateUrl(callbackUrl);
-            webhookUrl = callbackUrl;
-            URI uri = new URI("tilordninger/webhook");
-            return Response.created(uri).build();
+        webhookUrl = callbackUrl;
+        return Response.created(getUri()).build();
+    }
 
-        }).recover(e -> Match(e).of(
-                Case(instanceOf(URISyntaxException.class),
-                        Response.serverError().entity("Det skjedde en feil web opprettelsen av webhook").build()),
-                Case(instanceOf(MalformedURLException.class),
-                        Response.status(BAD_REQUEST).entity("Feil format på callback-url").build()),
-                Case(instanceOf(HttpNotSupportedException.class),
-                        Response.status(BAD_REQUEST).entity("Angitt url for webhook må være HTTPS").build())
-        ));
-
-        return Response.serverError().entity("Det skjedde en feil ved opprettelse av webhook").build();
+    @SneakyThrows
+    private URI getUri() {
+        return new URI("tilordninger/webhook");
     }
 }

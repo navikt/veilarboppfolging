@@ -5,9 +5,8 @@ import lombok.Value;
 import java.time.LocalDateTime;
 
 @Value
-class FeedElement {
+class FeedElement<T>
+{
     LocalDateTime timestamp;
-    String aktorId;
-    String veilederId;
-    boolean oppfolging;
+    T data;
 }

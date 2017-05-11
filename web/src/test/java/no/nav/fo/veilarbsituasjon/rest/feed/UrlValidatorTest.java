@@ -1,6 +1,6 @@
 package no.nav.fo.veilarbsituasjon.rest.feed;
 
-import no.nav.fo.veilarbsituasjon.exception.HttpNotSupportedException;
+import no.nav.fo.veilarbsituasjon.rest.feed.exception.HttpNotSupportedException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;

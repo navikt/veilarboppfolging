@@ -7,6 +7,7 @@ import no.nav.fo.veilarbsituasjon.rest.domain.TilordneVeilederResponse;
 import no.nav.fo.veilarbsituasjon.rest.domain.VeilederTilordning;
 import no.nav.fo.veilarbsituasjon.rest.feed.FeedProducer;
 import no.nav.fo.veilarbsituasjon.rest.feed.FeedRequest;
+import no.nav.fo.veilarbsituasjon.rest.feed.FeedWebhookRequest;
 import no.nav.fo.veilarbsituasjon.services.AktoerIdService;
 import no.nav.fo.veilarbsituasjon.services.PepClient;
 import no.nav.fo.veilarbsituasjon.services.TilordningService;
@@ -19,6 +20,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -45,7 +47,7 @@ public class PortefoljeRessurs {
 
         this.feed = FeedProducer
                 .builder()
-                .maxPageSize(10000)
+                .maxPageSize(1000)
                 .build();
     }
 
@@ -56,9 +58,12 @@ public class PortefoljeRessurs {
     }
 
     @PUT
+    @Consumes("application/json")
+    @Produces("application/json")
     @Path("/feed/tilordninger/webhook")
-    public Response putWebhook(String callbackUrl) {
-        return feed.createWebhook(callbackUrl);
+    public Response putWebhook(FeedWebhookRequest request) {
+        Optional<String> callmeMaybe = Optional.ofNullable(request.callbackUrl);
+        return feed.createWebhook(callmeMaybe);
     }
 
     @GET

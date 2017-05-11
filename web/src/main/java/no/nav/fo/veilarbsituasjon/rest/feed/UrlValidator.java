@@ -1,8 +1,9 @@
 package no.nav.fo.veilarbsituasjon.rest.feed;
 
-import no.nav.fo.veilarbsituasjon.exception.HttpNotSupportedException;
+import lombok.SneakyThrows;
+import no.nav.fo.veilarbsituasjon.rest.feed.exception.HttpNotSupportedException;
+import no.nav.fo.veilarbsituasjon.rest.feed.exception.InvalidUrlException;
 
-import java.net.MalformedURLException;
 import java.util.regex.Pattern;
 
 class UrlValidator {
@@ -24,11 +25,12 @@ class UrlValidator {
         return false;
     }
 
-    static void validateUrl(String url) throws MalformedURLException, HttpNotSupportedException {
+    @SneakyThrows
+    static void validateUrl(String url) {
         if (isHttp(url)) {
             throw new HttpNotSupportedException();
         } else if (isInvalidUrl(url)) {
-            throw new MalformedURLException();
+            throw new InvalidUrlException();
         }
     }
 }
