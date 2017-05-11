@@ -13,7 +13,6 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
@@ -32,9 +31,9 @@ public class FeedProducer {
 
     public Response createFeedResponse(FeedRequest request, TilordningService service) {
         int pageSize = setPageSize(request.pageSize, maxPageSize);
-        LocalDateTime sinceId = LocalDateTime.parse(request.sinceId, DateTimeFormatter.ISO_DATE_TIME);
+        LocalDateTime sinceId = request.sinceId;
         List<OppfolgingBruker> feedElements = service.hentTilordninger(sinceId, pageSize);
-        return Response.ok().entity(feedElements).build();
+        return Response.ok().build();
     }
 
     private static int setPageSize(int pageSize, int maxPageSize) {
