@@ -5,7 +5,7 @@ import no.nav.fo.veilarbsituasjon.exception.HttpNotSupportedException;
 import java.net.MalformedURLException;
 import java.util.regex.Pattern;
 
-public class UrlValidator {
+class UrlValidator {
     private static final String VALID_URL_PATTERN = "^https://.*";
     private static final String HTTP_URL_PATTERN = "^http://.*";
 
@@ -24,7 +24,7 @@ public class UrlValidator {
         return false;
     }
 
-    public static void validateUrl(String url) throws MalformedURLException, HttpNotSupportedException {
+    static void validateUrl(String url) throws MalformedURLException, HttpNotSupportedException {
         if (isHttp(url)) {
             throw new HttpNotSupportedException();
         } else if (isInvalidUrl(url)) {

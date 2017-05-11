@@ -43,7 +43,6 @@
         <swagger-ui.version>2.2.10</swagger-ui.version>
 
         <javaslang.version>2.1.0-alpha</javaslang.version>
-        <okhttp.version>3.6.0</okhttp.version>
 
         <sonar.exclusions>
             **/Swagger*,
@@ -121,12 +120,6 @@
                 <groupId>io.javaslang</groupId>
                 <artifactId>javaslang-match</artifactId>
                 <version>${javaslang.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.squareup.okhttp3</groupId>
-                <artifactId>okhttp</artifactId>
-                <version>${okhttp.version}</version>
             </dependency>
 
             <!--Tjenester-->

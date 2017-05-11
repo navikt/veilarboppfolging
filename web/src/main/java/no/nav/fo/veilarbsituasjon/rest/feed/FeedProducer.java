@@ -5,10 +5,10 @@ import lombok.Builder;
 import no.nav.fo.veilarbsituasjon.domain.OppfolgingBruker;
 import no.nav.fo.veilarbsituasjon.exception.HttpNotSupportedException;
 import no.nav.fo.veilarbsituasjon.services.TilordningService;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
 import org.slf4j.Logger;
 
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Response;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -45,13 +45,11 @@ public class FeedProducer {
     }
 
     public void activateWebhook() {
-        OkHttpClient okHttpClient = new OkHttpClient();
-
-        Try.of(() -> {
-            Request request = new Request.Builder().url(webhookUrl).build();
-            okhttp3.Response response = okHttpClient.newCall(request).execute();
-            return response.body().string();
-        }).onFailure(e -> LOG.warn("Det skjedde en feil ved aktivering av webhook: {}", e.getMessage()));
+        Client client = ClientBuilder.newBuilder().build();
+        Response response = client.target(webhookUrl).request().build("HEAD").invoke();
+        if (response.getStatus() != 200) {
+            LOG.warn("Fikk respons {} ved aktivering av webhook", response.getStatus());
+        }
     }
 
     public Response getWebhook() {
