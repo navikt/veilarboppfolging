@@ -5,6 +5,9 @@ import no.nav.fo.veilarbsituasjon.db.BrukerRepository;
 import no.nav.fo.veilarbsituasjon.domain.OppfolgingBruker;
 import no.nav.fo.veilarbsituasjon.rest.PortefoljeRessurs;
 import no.nav.fo.veilarbsituasjon.rest.domain.VeilederTilordning;
+import no.nav.fo.veilarbsituasjon.services.AktoerIdService;
+import no.nav.fo.veilarbsituasjon.services.PepClient;
+import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -41,9 +44,9 @@ public class AktoerIdToVeilederTest {
     PepClient pepClient;
 
     @Test
-    public void portefoljeRessursMustCallDAOwithAktoerIdToVeileder() {
+    public void portefoljeRessursMustCallDAOwithAktoerIdToVeileder() throws PepException {
         when(pepClient.isServiceCallAllowed(anyString())).thenReturn(true);
-
+        when(aktoerIdService.findAktoerId(any(String.class))).thenReturn("AKTOERID");
         portefoljeRessurs.postVeilederTilordninger(Collections.singletonList(testData()));
         verify(brukerRepository, times(1)).leggTilEllerOppdaterBruker(any(OppfolgingBruker.class));
     }

@@ -22,27 +22,25 @@ public class PepClient {
         this.pep = pep;
     }
 
-    public boolean isServiceCallAllowed(String fnr) {
-        final String ident = SubjectHandler.getSubjectHandler().getUid();
+    public boolean isServiceCallAllowed(String fnr) throws PepException {
         BiasedDecisionResponse callAllowed;
+
+        callAllowed = pep.isServiceCallAllowedWithOidcToken(getToken(), "veilarb", fnr);
+        if (callAllowed.getBiasedDecision().equals(Decision.Deny)) {
+            final String ident = SubjectHandler.getSubjectHandler().getUid();
+            throw new NotAuthorizedException(ident + " doesn't have access to " + fnr);
+        }
+        return callAllowed.getBiasedDecision().equals(Decision.Permit);
+    }
+
+    private String getToken() {
 
         final OidcCredential credential = (OidcCredential) SubjectHandler.getSubjectHandler().getSubject()
                 .getPublicCredentials()
                 .stream()
                 .filter(cred -> cred instanceof OidcCredential).findFirst()
                 .get();
-        final String token = credential.getToken();
-
-        try {
-            callAllowed = pep.isServiceCallAllowedWithOidcToken(token, "veilarb", fnr);
-        } catch (PepException e) {
-            LOG.error("Something went wrong in PEP", e);
-            throw new InternalServerErrorException("something went wrong in PEP", e);
-        }
-        if (callAllowed.getBiasedDecision().equals(Decision.Deny)) {
-            throw new NotAuthorizedException(ident + " doesn't have access to " + fnr);
-        }
-        return callAllowed.getBiasedDecision().equals(Decision.Permit);
+        return credential.getToken();
     }
 
 }

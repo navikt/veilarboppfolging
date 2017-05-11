@@ -1,5 +1,6 @@
 package no.nav.fo.veilarbsituasjon.rest;
 
+import lombok.SneakyThrows;
 import no.nav.brukerdialog.security.context.SubjectHandler;
 import no.nav.fo.veilarbsituasjon.domain.MalData;
 import no.nav.fo.veilarbsituasjon.domain.OppfolgingStatusData;
@@ -72,6 +73,7 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt {
         return SubjectHandler.getSubjectHandler().getUid();
     }
 
+    @SneakyThrows
     private String getFnr() {
         final String fnr = requestProvider.get().getParameter("fnr");
         pepClient.isServiceCallAllowed(fnr);
