@@ -71,7 +71,7 @@ public class SituasjonOversiktWebService implements BehandleSituasjonV1 {
     @Override
     @SneakyThrows
     public HentVilkaarResponse hentVilkaar(HentVilkaarRequest hentVilkaarRequest) throws HentVilkaarSikkerhetsbegrensning {
-        return mapTilHentVilkaarResponse(situasjonOversiktService.hentVilkar(getSluttbrukerFnr()));
+        return mapTilHentVilkaarResponse(situasjonOversiktService.hentVilkar(hentVilkaarRequest.getPersonident()));
     }
 
     @Override
@@ -101,17 +101,6 @@ public class SituasjonOversiktWebService implements BehandleSituasjonV1 {
     public OpprettMalResponse opprettMal(OpprettMalRequest opprettMalRequest) {
         situasjonOversiktService.oppdaterMal(opprettMalRequest.getMal().getMal(), opprettMalRequest.getPersonident(), null);
         return new OpprettMalResponse();
-    }
-
-    private String getSluttbrukerFnr() {
-        return SubjectHandler
-                .getSubjectHandler()
-                .getSubject()
-                .getPrincipals(SluttBruker.class)
-                .stream()
-                .findAny()
-                .map(SluttBruker::getUid)
-                .orElseThrow(RuntimeException::new);
     }
 
     private HentVilkaarResponse mapTilHentVilkaarResponse(VilkarData vilkarData) {
