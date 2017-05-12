@@ -67,6 +67,11 @@
             <groupId>no.nav.sbl.dialogarena</groupId>
             <artifactId>organisasjonenhet-v1-tjenestespesifikasjon</artifactId>
         </dependency>
+        <dependency>
+            <groupId>no.nav.tjenester</groupId>
+            <artifactId>brukerdialog-behandleSituasjon-v1-tjenestespesifikasjon</artifactId>
+            <classifier>jaxws</classifier>
+        </dependency>
 
         <!--NAV felles-->
         <dependency>

@@ -23,10 +23,11 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.sql.Timestamp;
+import java.util.Optional;
 
 import static java.lang.System.currentTimeMillis;
-import static java.util.Optional.of;
-import static no.nav.fo.veilarbsituasjon.domain.VilkarStatus.GODKJENNT;
+import static no.nav.fo.veilarbsituasjon.domain.VilkarStatus.AVSLATT;
+import static no.nav.fo.veilarbsituasjon.domain.VilkarStatus.GODKJENT;
 import static no.nav.fo.veilarbsituasjon.domain.VilkarStatus.IKKE_BESVART;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -158,16 +159,28 @@ public class SituasjonOversiktServiceTest {
 
         assertThat(hentOppfolgingStatus().vilkarMaBesvares, is(true));
 
-        besvarVilkar(GODKJENNT, hentGjeldendeVilkar());
+        besvarVilkar(GODKJENT, hentGjeldendeVilkar());
 
         assertThat(hentOppfolgingStatus().vilkarMaBesvares, is(false));
+    }
+
+    @Test
+    public void avslaaVilkar() throws Exception {
+        gittAktor();
+        gittSituasjon(situasjon);
+
+        assertThat(hentOppfolgingStatus().vilkarMaBesvares, is(true));
+
+        besvarVilkar(AVSLATT, hentGjeldendeVilkar());
+
+        assertThat(hentOppfolgingStatus().vilkarMaBesvares, is(true));
     }
 
     @Test
     public void akseptererFeilVilkar() throws Exception {
         gittAktor();
         VilkarData feilVilkar = new VilkarData().setText("feilVilkar").setHash("HASH");
-        besvarVilkar(GODKJENNT, feilVilkar);
+        besvarVilkar(GODKJENT, feilVilkar);
 
         assertThat(hentOppfolgingStatus().vilkarMaBesvares, is(true));
     }
@@ -239,7 +252,7 @@ public class SituasjonOversiktServiceTest {
     }
 
     private void gittSituasjon(Situasjon situasjon) {
-        when(situasjonRepositoryMock.hentSituasjon(AKTOR_ID)).thenReturn(of(situasjon));
+        when(situasjonRepositoryMock.hentSituasjon(AKTOR_ID)).thenReturn(Optional.of(situasjon));
     }
 
     private void gittAktor() {

@@ -5,6 +5,7 @@ import no.nav.brukerdialog.security.context.SubjectHandler;
 import no.nav.fo.veilarbsituasjon.domain.MalData;
 import no.nav.fo.veilarbsituasjon.domain.OppfolgingStatusData;
 import no.nav.fo.veilarbsituasjon.domain.VilkarData;
+import no.nav.fo.veilarbsituasjon.domain.VilkarStatus;
 import no.nav.fo.veilarbsituasjon.rest.api.SituasjonOversikt;
 import no.nav.fo.veilarbsituasjon.rest.domain.Bruker;
 import no.nav.fo.veilarbsituasjon.rest.domain.Mal;
@@ -50,7 +51,12 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt {
 
     @Override
     public OppfolgingStatus godta(String hash) throws Exception {
-        return tilDto(situasjonOversiktService.godtaVilkar(hash, getFnr()));
+        return tilDto(situasjonOversiktService.oppdaterVilkaar(hash, getFnr(), VilkarStatus.GODKJENT));
+    }
+
+    @Override
+    public OppfolgingStatus avslaa(String hash) throws Exception {
+        return tilDto(situasjonOversiktService.oppdaterVilkaar(hash, getFnr(), VilkarStatus.AVSLATT));
     }
 
     @Override

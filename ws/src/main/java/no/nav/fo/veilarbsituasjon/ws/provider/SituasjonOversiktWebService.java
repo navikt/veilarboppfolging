@@ -6,8 +6,8 @@ import no.nav.apiapp.soap.SoapTjeneste;
 import no.nav.fo.veilarbsituasjon.domain.MalData;
 import no.nav.fo.veilarbsituasjon.domain.OppfolgingStatusData;
 import no.nav.fo.veilarbsituasjon.domain.VilkarData;
+import no.nav.fo.veilarbsituasjon.domain.VilkarStatus;
 import no.nav.fo.veilarbsituasjon.services.SituasjonOversiktService;
-import no.nav.fo.veilarbsituasjon.utils.StringUtils;
 import no.nav.tjeneste.virksomhet.behandlesituasjon.v1.binding.*;
 import no.nav.tjeneste.virksomhet.behandlesituasjon.v1.informasjon.Mal;
 import no.nav.tjeneste.virksomhet.behandlesituasjon.v1.informasjon.Oppfoelgingsstatus;
@@ -15,7 +15,6 @@ import no.nav.tjeneste.virksomhet.behandlesituasjon.v1.meldinger.*;
 import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
-import javax.jws.WebService;
 import javax.ws.rs.WebApplicationException;
 
 import java.sql.Timestamp;
@@ -62,7 +61,7 @@ public class SituasjonOversiktWebService implements BehandleSituasjonV1 {
     @SneakyThrows
     public OpprettVilkaarsstatusResponse opprettVilkaarsstatus(OpprettVilkaarsstatusRequest opprettVilkaarsstatusRequest)
             throws OpprettVilkaarsstatusSikkerhetsbegrensning, OpprettVilkaarsstatusUgyldigInput {
-        situasjonOversiktService.godtaVilkar(opprettVilkaarsstatusRequest.getHash(), opprettVilkaarsstatusRequest.getPersonident());
+        situasjonOversiktService.oppdaterVilkaar(opprettVilkaarsstatusRequest.getHash(), opprettVilkaarsstatusRequest.getPersonident(), VilkarStatus.mapWsTilVilkarStatus(opprettVilkaarsstatusRequest.getStatus()));
 //        TODO: Skal vi returnere noe fornufig her? I Proxyen kaller vi hentOppfolgingStatus etter godta.
 //        Vi kunne returnert HentOppfoelgingsstatusResponse her
         return new OpprettVilkaarsstatusResponse();

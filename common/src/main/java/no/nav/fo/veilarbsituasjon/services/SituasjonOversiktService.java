@@ -31,7 +31,7 @@ import static java.lang.System.currentTimeMillis;
 import static java.util.Arrays.asList;
 import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
-import static no.nav.fo.veilarbsituasjon.domain.VilkarStatus.GODKJENNT;
+import static no.nav.fo.veilarbsituasjon.domain.VilkarStatus.GODKJENT;
 import static no.nav.fo.veilarbsituasjon.domain.VilkarStatus.IKKE_BESVART;
 import static no.nav.fo.veilarbsituasjon.utils.StringUtils.of;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -93,7 +93,7 @@ public class SituasjonOversiktService {
 
         VilkarData gjeldendeVilkar = hentVilkar();
         boolean vilkarMaBesvares = finnSisteVilkarStatus(situasjon)
-                .filter(brukervilkar -> GODKJENNT.equals(brukervilkar.getVilkarstatus()))
+                .filter(brukervilkar -> GODKJENT.equals(brukervilkar.getVilkarstatus()))
                 .map(Brukervilkar::getHash)
                 .map(brukerVilkar -> !brukerVilkar.equals(gjeldendeVilkar.getHash()))
                 .orElse(true);
@@ -118,7 +118,7 @@ public class SituasjonOversiktService {
     }
 
     @Transactional
-    public OppfolgingStatusData godtaVilkar(String hash, String fnr) throws Exception {
+    public OppfolgingStatusData oppdaterVilkaar(String hash, String fnr, VilkarStatus vilkarStatus) throws Exception {
         Situasjon situasjon = hentSituasjon(hentAktorId(fnr));
 
         VilkarData gjeldendeVilkar = hentVilkar();
@@ -127,7 +127,7 @@ public class SituasjonOversiktService {
                     new Brukervilkar(
                             situasjon.getAktorId(),
                             new Timestamp(currentTimeMillis()),
-                            VilkarStatus.GODKJENNT,
+                            vilkarStatus,
                             gjeldendeVilkar.getText(),
                             hash
                     ));
