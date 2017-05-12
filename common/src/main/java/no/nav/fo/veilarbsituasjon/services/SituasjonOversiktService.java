@@ -122,7 +122,7 @@ public class SituasjonOversiktService {
     }
 
     public VilkarData hentVilkar(Situasjon situasjon) {
-        String vilkar = vilkarService.getVilkar(situasjon.isOppfolging()? UNDER_OPPFOLGING : PRIVAT,null);
+        String vilkar = vilkarService.getVilkar(situasjon.isOppfolging() ? UNDER_OPPFOLGING : PRIVAT, null);
         return new VilkarData()
                 .setText(vilkar)
                 .setHash(DigestUtils.sha256Hex(vilkar));
