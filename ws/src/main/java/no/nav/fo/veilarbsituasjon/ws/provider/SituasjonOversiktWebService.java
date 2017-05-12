@@ -61,7 +61,11 @@ public class SituasjonOversiktWebService implements BehandleSituasjonV1 {
     @SneakyThrows
     public OpprettVilkaarsstatusResponse opprettVilkaarsstatus(OpprettVilkaarsstatusRequest opprettVilkaarsstatusRequest)
             throws OpprettVilkaarsstatusSikkerhetsbegrensning, OpprettVilkaarsstatusUgyldigInput {
-        situasjonOversiktService.oppdaterVilkaar(opprettVilkaarsstatusRequest.getHash(), opprettVilkaarsstatusRequest.getPersonident(), VilkarStatus.mapWsTilVilkarStatus(opprettVilkaarsstatusRequest.getStatus()));
+        situasjonOversiktService.oppdaterVilkaar(
+                opprettVilkaarsstatusRequest.getHash(),
+                opprettVilkaarsstatusRequest.getPersonident(),
+                VilkarStatus.mapWsTilVilkarStatus(opprettVilkaarsstatusRequest.getStatus())
+        );
 //        TODO: Skal vi returnere noe fornufig her? I Proxyen kaller vi hentOppfolgingStatus etter godta.
 //        Vi kunne returnert HentOppfoelgingsstatusResponse her
         return new OpprettVilkaarsstatusResponse();
