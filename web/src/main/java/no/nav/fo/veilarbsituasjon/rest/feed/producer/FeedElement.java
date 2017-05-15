@@ -5,7 +5,7 @@ import lombok.experimental.Accessors;
 
 @Data
 @Accessors(chain = true)
-public class FeedElement<T> {
-    protected String id;
-    protected T data;
+public class FeedElement<E, T> {
+    protected T id;
+    protected E element;
 }

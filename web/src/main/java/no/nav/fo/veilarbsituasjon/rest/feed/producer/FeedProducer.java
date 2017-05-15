@@ -21,7 +21,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 @Data
 @Accessors(chain = true)
-public class FeedProducer<T> {
+public class FeedProducer<E, T> {
 
     private static final Logger LOG = getLogger(FeedProducer.class);
 
@@ -29,10 +29,10 @@ public class FeedProducer<T> {
     private Optional<String> webhookUrl;
     private Optional<String> callbackUrl;
 
-    public Response createFeedResponse(FeedRequest request, FeedProvider<T> feedProvider) {
+    public Response createFeedResponse(FeedRequest request, FeedProvider<E, T> feedProvider) {
         int pageSize = setPageSize(request.pageSize, maxPageSize);
         LocalDateTime sinceId = request.sinceId;
-        List<FeedElement<T>> data = feedProvider.hentData(sinceId, pageSize);
+        List<FeedElement<E, T>> data = feedProvider.hentData(sinceId, pageSize);
         return Response.ok().entity(data).build();
     }
 

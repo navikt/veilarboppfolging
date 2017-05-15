@@ -14,7 +14,7 @@ import java.util.List;
 import static java.util.stream.Collectors.toList;
 
 @Component
-public class TilordningFeedProvider implements FeedProvider<OppfolgingBruker> {
+public class TilordningFeedProvider implements FeedProvider<OppfolgingBruker, LocalDateTime> {
 
     private BrukerRepository repository;
 
@@ -24,13 +24,13 @@ public class TilordningFeedProvider implements FeedProvider<OppfolgingBruker> {
     }
 
     @Override
-    public List<FeedElement<OppfolgingBruker>> hentData(LocalDateTime sinceId, int pageSize) {
+    public List<FeedElement<OppfolgingBruker, LocalDateTime>> hentData(LocalDateTime sinceId, int pageSize) {
         Timestamp timestamp = Timestamp.valueOf(sinceId);
 
         return repository
                 .hentTilordningerEtterTimestamp(timestamp)
                 .stream()
-                .map(b -> new FeedElement<OppfolgingBruker>().setData(b))
+                .map(b -> new FeedElement<OppfolgingBruker, LocalDateTime>().setId(b.getEndretTimestamp().toLocalDateTime()).setElement(b))
                 .collect(toList());
     }
 }
