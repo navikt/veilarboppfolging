@@ -1,9 +1,9 @@
 package no.nav.fo.veilarbsituasjon.services;
 
+import no.nav.fo.feed.producer.FeedElement;
+import no.nav.fo.feed.producer.FeedProvider;
 import no.nav.fo.veilarbsituasjon.db.BrukerRepository;
 import no.nav.fo.veilarbsituasjon.domain.OppfolgingBruker;
-import no.nav.fo.veilarbsituasjon.rest.feed.producer.FeedElement;
-import no.nav.fo.veilarbsituasjon.rest.feed.producer.FeedProvider;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;

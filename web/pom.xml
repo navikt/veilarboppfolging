@@ -18,6 +18,11 @@
             <artifactId>veilarbsituasjon-common</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>no.nav.fo</groupId>
+            <artifactId>api-app-feed</artifactId>
+        </dependency>
+
         <!--Lombok-->
         <dependency>
             <groupId>org.projectlombok</groupId>
