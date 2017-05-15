@@ -10,6 +10,7 @@
         <module>web</module>
         <module>ear</module>
         <module>config</module>
+        <module>common</module>
     </modules>
     <packaging>pom</packaging>
 
@@ -91,6 +92,18 @@
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>no.nav.fo</groupId>
+                <artifactId>veilarbsituasjon-common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>no.nav.fo</groupId>
+                <artifactId>veilarbsituasjon-common</artifactId>
+                <version>${project.version}</version>
+                <type>test-jar</type>
+                <scope>test</scope>
+            </dependency>
             <dependency>
                 <groupId>no.nav.fo</groupId>
                 <artifactId>veilarbsituasjon-appconfig</artifactId>

@@ -12,8 +12,8 @@ class HsqlSyntaxMapper {
 
     static {
         map(
-                "ALTER TABLE MAL MODIFY (MAL VARCHAR2(500 CHAR))",
-                "alter table MAL alter column MAL VARCHAR2(500 CHAR)"
+                "ALTER TABLE AKTOER_ID_TO_VEILEDER MODIFY (VEILEDER NULL)",
+                "alter table AKTOER_ID_TO_VEILEDER alter column VEILEDER VARCHAR(20)"
         );
     }
 
