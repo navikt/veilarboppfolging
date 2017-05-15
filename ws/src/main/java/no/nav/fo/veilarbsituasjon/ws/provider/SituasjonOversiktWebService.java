@@ -3,27 +3,26 @@ package no.nav.fo.veilarbsituasjon.ws.provider;
 import lombok.SneakyThrows;
 import lombok.val;
 import no.nav.apiapp.soap.SoapTjeneste;
-import no.nav.brukerdialog.security.context.SubjectHandler;
 import no.nav.fo.veilarbsituasjon.domain.MalData;
 import no.nav.fo.veilarbsituasjon.domain.OppfolgingStatusData;
 import no.nav.fo.veilarbsituasjon.domain.VilkarData;
 import no.nav.fo.veilarbsituasjon.domain.VilkarStatus;
 import no.nav.fo.veilarbsituasjon.services.SituasjonOversiktService;
-import no.nav.modig.core.domain.SluttBruker;
 import no.nav.tjeneste.virksomhet.behandlesituasjon.v1.binding.*;
 import no.nav.tjeneste.virksomhet.behandlesituasjon.v1.informasjon.Mal;
 import no.nav.tjeneste.virksomhet.behandlesituasjon.v1.informasjon.Oppfoelgingsstatus;
+import no.nav.tjeneste.virksomhet.behandlesituasjon.v1.informasjon.Vilkaarsstatuser;
 import no.nav.tjeneste.virksomhet.behandlesituasjon.v1.meldinger.*;
 import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
 import javax.ws.rs.WebApplicationException;
-
 import java.sql.Timestamp;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static javax.ws.rs.core.Response.Status.NOT_IMPLEMENTED;
+import static no.nav.fo.veilarbsituasjon.domain.VilkarStatus.*;
 import static no.nav.fo.veilarbsituasjon.utils.DateUtils.xmlCalendar;
 import static no.nav.fo.veilarbsituasjon.utils.StringUtils.emptyIfNull;
 
@@ -66,7 +65,7 @@ public class SituasjonOversiktWebService implements BehandleSituasjonV1 {
         situasjonOversiktService.oppdaterVilkaar(
                 opprettVilkaarsstatusRequest.getHash(),
                 opprettVilkaarsstatusRequest.getPersonident(),
-                VilkarStatus.mapWsTilVilkarStatus(opprettVilkaarsstatusRequest.getStatus())
+                mapWsTilVilkarStatus(opprettVilkaarsstatusRequest.getStatus())
         );
 //        TODO: Skal vi returnere noe fornufig her? I Proxyen kaller vi hentOppfolgingStatus etter godta.
 //        Vi kunne returnert HentOppfoelgingsstatusResponse her
@@ -136,6 +135,17 @@ public class SituasjonOversiktWebService implements BehandleSituasjonV1 {
         mal.setEndretAv(malData.erEndretAvBruker() ? personident : emptyIfNull(malData.getEndretAvFormattert()));
         mal.setDato(xmlCalendar(Optional.ofNullable(malData.getDato()).orElse(new Timestamp(System.currentTimeMillis()))));
         return mal;
+    }
+
+    public static VilkarStatus mapWsTilVilkarStatus(Vilkaarsstatuser vilkaarStatuser) {
+        switch (vilkaarStatuser) {
+            case AVSLAATT:
+                return AVSLATT;
+            case GODKJENT:
+                return GODKJENT;
+            default:
+                return IKKE_BESVART;
+        }
     }
 
 }
