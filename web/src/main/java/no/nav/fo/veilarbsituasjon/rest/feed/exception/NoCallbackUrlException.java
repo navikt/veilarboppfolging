@@ -1,6 +1,6 @@
 package no.nav.fo.veilarbsituasjon.rest.feed.exception;
 
-import no.nav.fo.veilarbsituasjon.rest.feed.FeedWebhookResponse;
+import no.nav.fo.veilarbsituasjon.rest.feed.producer.FeedWebhookResponse;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;

@@ -5,10 +5,7 @@ import no.nav.fo.veilarbsituasjon.domain.OppfolgingBruker;
 import no.nav.fo.veilarbsituasjon.utils.OppfolgingsbrukerUtil;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
-import javax.inject.Inject;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,9 +16,6 @@ import static no.nav.fo.veilarbsituasjon.utils.OppfolgingsbrukerUtil.mapRadTilOp
 public class BrukerRepository {
 
     private JdbcTemplate db;
-
-    @Inject
-    private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
     String dateFormat = "'YYYY-MM-DD HH24:MI:SS.FF'";
 
@@ -40,11 +34,8 @@ public class BrukerRepository {
     }
 
     public List<OppfolgingBruker> hentTilordningerEtterTimestamp(Timestamp timestamp) {
-        MapSqlParameterSource parameters = new MapSqlParameterSource();
-        parameters.addValue("timestamp", timestamp);
-
-        return namedParameterJdbcTemplate
-                .queryForList(hentVeilederTilordningerEtterTimestampSQL(), parameters)
+        return db
+                .queryForList(hentVeilederTilordningerEtterTimestampSQL(), timestamp)
                 .stream()
                 .map(OppfolgingsbrukerUtil::mapRadTilOppfolgingsbruker)
                 .collect(toList());
@@ -99,11 +90,11 @@ public class BrukerRepository {
         return "SELECT AKTOERID, VEILEDER, OPPDATERT FROM AKTOER_ID_TO_VEILEDER";
     }
 
-    String hentVeilederTilordningerEtterTimestampSQL() {
+    private String hentVeilederTilordningerEtterTimestampSQL() {
         return "SELECT AKTOERID, VEILEDER, OPPFOLGING, OPPDATERT " +
                 "FROM AKTOER_ID_TO_VEILEDER tilordning " +
                 "LEFT JOIN SITUASJON situasjon " +
-                "ON tilordning.AKTOERID = situasjon.AKTORID" +
-                "WHERE OPPDATERT > TO_TIMESTAMP((:timestamp), "+dateFormat+")";
+                "ON tilordning.AKTOERID = situasjon.AKTORID " +
+                "WHERE OPPDATERT > ?";
     }
 }

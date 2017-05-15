@@ -1,4 +1,4 @@
-package no.nav.fo.veilarbsituasjon.rest.feed;
+package no.nav.fo.veilarbsituasjon.rest.feed.producer;
 
 import lombok.Data;
 import lombok.experimental.Accessors;

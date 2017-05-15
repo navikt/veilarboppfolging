@@ -5,17 +5,16 @@ import no.nav.fo.veilarbsituasjon.db.BrukerRepository;
 import no.nav.fo.veilarbsituasjon.domain.OppfolgingBruker;
 import no.nav.fo.veilarbsituasjon.rest.domain.TilordneVeilederResponse;
 import no.nav.fo.veilarbsituasjon.rest.domain.VeilederTilordning;
-import no.nav.fo.veilarbsituasjon.rest.feed.FeedProducer;
-import no.nav.fo.veilarbsituasjon.rest.feed.FeedRequest;
-import no.nav.fo.veilarbsituasjon.rest.feed.FeedWebhookRequest;
+import no.nav.fo.veilarbsituasjon.rest.feed.producer.FeedProducer;
+import no.nav.fo.veilarbsituasjon.rest.feed.producer.FeedRequest;
+import no.nav.fo.veilarbsituasjon.rest.feed.producer.FeedWebhookRequest;
 import no.nav.fo.veilarbsituasjon.services.AktoerIdService;
 import no.nav.fo.veilarbsituasjon.services.PepClient;
-import no.nav.fo.veilarbsituasjon.services.TilordningService;
+import no.nav.fo.veilarbsituasjon.services.TilordningFeedProvider;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
@@ -31,24 +30,23 @@ public class PortefoljeRessurs {
 
     private static final Logger LOG = getLogger(PortefoljeRessurs.class);
 
-    @Inject
-    private TilordningService tilordningService;
-
     private AktoerIdService aktoerIdService;
     private BrukerRepository brukerRepository;
     private final PepClient pepClient;
     private List<VeilederTilordning> feilendeTilordninger;
-    private FeedProducer feed;
 
-    public PortefoljeRessurs(AktoerIdService aktoerIdService, BrukerRepository brukerRepository, PepClient pepClient) {
+    private FeedProducer<OppfolgingBruker> feed;
+    private TilordningFeedProvider provider;
+
+    public PortefoljeRessurs(AktoerIdService aktoerIdService, BrukerRepository brukerRepository, PepClient pepClient, TilordningFeedProvider provider) {
         this.aktoerIdService = aktoerIdService;
         this.brukerRepository = brukerRepository;
         this.pepClient = pepClient;
+        this.provider = provider;
 
-        this.feed = FeedProducer
-                .builder()
-                .maxPageSize(1000)
-                .build();
+        this.feed = new FeedProducer<OppfolgingBruker>()
+                            .setMaxPageSize(1000);
+
     }
 
     @GET
@@ -71,28 +69,28 @@ public class PortefoljeRessurs {
     @Consumes("application/json")
     @Produces("application/json")
     public Response getTilordninger(@BeanParam FeedRequest request) {
-        return feed.createFeedResponse(request, tilordningService);
+        return feed.createFeedResponse(request, provider);
     }
 
-    @POST
-    @Consumes("application/json")
-    @Produces("application/json")
-    @Path("/tilordneveileder")
-    public Response postVeilederTilordninger(List<VeilederTilordning> tilordninger) {
-        feilendeTilordninger = new ArrayList<>();
+        @POST
+        @Consumes("application/json")
+        @Produces("application/json")
+        @Path("/tilordneveileder")
+        public Response postVeilederTilordninger(List<VeilederTilordning> tilordninger) {
+            feilendeTilordninger = new ArrayList<>();
 
-        for (VeilederTilordning tilordning : tilordninger) {
+            for (VeilederTilordning tilordning : tilordninger) {
 
-            final String fnr = tilordning.getBrukerFnr();
-            pepClient.isServiceCallAllowed(fnr);
-            String aktoerId = aktoerIdService.findAktoerId(fnr);
+                final String fnr = tilordning.getBrukerFnr();
+                pepClient.isServiceCallAllowed(fnr);
+                String aktoerId = aktoerIdService.findAktoerId(fnr);
 
-            OppfolgingBruker bruker = new OppfolgingBruker()
-                    .setVeileder(tilordning.getTilVeilederId())
-                    .setAktoerid(aktoerId);
+                OppfolgingBruker bruker = new OppfolgingBruker()
+                        .setVeileder(tilordning.getTilVeilederId())
+                        .setAktoerid(aktoerId);
 
-            settVeilederDersomFraVeilederErOK(bruker, tilordning);
-        }
+                settVeilederDersomFraVeilederErOK(bruker, tilordning);
+            }
 
         TilordneVeilederResponse response = new TilordneVeilederResponse()
                 .setFeilendeTilordninger(feilendeTilordninger);

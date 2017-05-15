@@ -1,11 +1,10 @@
-package no.nav.fo.veilarbsituasjon.rest.feed;
+package no.nav.fo.veilarbsituasjon.rest.feed.producer;
 
-import lombok.Builder;
+import lombok.Data;
 import lombok.SneakyThrows;
-import no.nav.fo.veilarbsituasjon.domain.OppfolgingBruker;
+import lombok.experimental.Accessors;
 import no.nav.fo.veilarbsituasjon.rest.feed.exception.NoCallbackUrlException;
 import no.nav.fo.veilarbsituasjon.rest.feed.exception.NoWebhookUrlException;
-import no.nav.fo.veilarbsituasjon.services.TilordningService;
 import org.slf4j.Logger;
 
 import javax.ws.rs.client.Client;
@@ -17,11 +16,12 @@ import java.util.List;
 import java.util.Optional;
 
 import static javax.ws.rs.HttpMethod.HEAD;
-import static no.nav.fo.veilarbsituasjon.rest.feed.UrlValidator.validateUrl;
+import static no.nav.fo.veilarbsituasjon.rest.feed.util.UrlValidator.validateUrl;
 import static org.slf4j.LoggerFactory.getLogger;
 
-@Builder
-public class FeedProducer {
+@Data
+@Accessors(chain = true)
+public class FeedProducer<T> {
 
     private static final Logger LOG = getLogger(FeedProducer.class);
 
@@ -29,11 +29,11 @@ public class FeedProducer {
     private Optional<String> webhookUrl;
     private Optional<String> callbackUrl;
 
-    public Response createFeedResponse(FeedRequest request, TilordningService service) {
+    public Response createFeedResponse(FeedRequest request, FeedProvider<T> feedProvider) {
         int pageSize = setPageSize(request.pageSize, maxPageSize);
         LocalDateTime sinceId = request.sinceId;
-        List<OppfolgingBruker> feedElements = service.hentTilordninger(sinceId, pageSize);
-        return Response.ok().build();
+        List<FeedElement<T>> data = feedProvider.hentData(sinceId, pageSize);
+        return Response.ok().entity(data).build();
     }
 
     private static int setPageSize(int pageSize, int maxPageSize) {

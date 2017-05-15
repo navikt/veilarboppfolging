@@ -1,4 +1,4 @@
-package no.nav.fo.veilarbsituasjon.rest.feed;
+package no.nav.fo.veilarbsituasjon.rest.feed.producer;
 
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.QueryParam;

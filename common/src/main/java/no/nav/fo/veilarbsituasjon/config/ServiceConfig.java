@@ -2,8 +2,10 @@ package no.nav.fo.veilarbsituasjon.config;
 
 import no.nav.fo.veilarbsituasjon.db.BrukerRepository;
 import no.nav.fo.veilarbsituasjon.db.SituasjonRepository;
-import no.nav.fo.veilarbsituasjon.services.*;
-import no.nav.fo.veilarbsituasjon.services.impl.TilordningServiceImpl;
+import no.nav.fo.veilarbsituasjon.services.AktoerIdService;
+import no.nav.fo.veilarbsituasjon.services.OppfolgingService;
+import no.nav.fo.veilarbsituasjon.services.OrganisasjonsenhetService;
+import no.nav.fo.veilarbsituasjon.services.YtelseskontraktService;
 import no.nav.tjeneste.virksomhet.aktoer.v2.AktoerV2;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
 import no.nav.tjeneste.virksomhet.organisasjonenhet.v1.OrganisasjonEnhetV1;
@@ -57,10 +59,5 @@ public class ServiceConfig {
     @Bean
     SituasjonRepository situasjonRepository() {
         return new SituasjonRepository(db);
-    }
-
-    @Bean
-    TilordningService tilordningService() {
-        return new TilordningServiceImpl(brukerRepository());
     }
 }
