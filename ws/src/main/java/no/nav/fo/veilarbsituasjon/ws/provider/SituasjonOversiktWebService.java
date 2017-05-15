@@ -3,11 +3,13 @@ package no.nav.fo.veilarbsituasjon.ws.provider;
 import lombok.SneakyThrows;
 import lombok.val;
 import no.nav.apiapp.soap.SoapTjeneste;
+import no.nav.brukerdialog.security.context.SubjectHandler;
 import no.nav.fo.veilarbsituasjon.domain.MalData;
 import no.nav.fo.veilarbsituasjon.domain.OppfolgingStatusData;
 import no.nav.fo.veilarbsituasjon.domain.VilkarData;
 import no.nav.fo.veilarbsituasjon.domain.VilkarStatus;
 import no.nav.fo.veilarbsituasjon.services.SituasjonOversiktService;
+import no.nav.modig.core.domain.SluttBruker;
 import no.nav.tjeneste.virksomhet.behandlesituasjon.v1.binding.*;
 import no.nav.tjeneste.virksomhet.behandlesituasjon.v1.informasjon.Mal;
 import no.nav.tjeneste.virksomhet.behandlesituasjon.v1.informasjon.Oppfoelgingsstatus;
@@ -74,7 +76,7 @@ public class SituasjonOversiktWebService implements BehandleSituasjonV1 {
     @Override
     @SneakyThrows
     public HentVilkaarResponse hentVilkaar(HentVilkaarRequest hentVilkaarRequest) throws HentVilkaarSikkerhetsbegrensning {
-        return mapTilHentVilkaarResponse(situasjonOversiktService.hentVilkar());
+        return mapTilHentVilkaarResponse(situasjonOversiktService.hentVilkar(hentVilkaarRequest.getPersonident()));
     }
 
     @Override

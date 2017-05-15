@@ -46,7 +46,7 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt {
 
     @Override
     public Vilkar hentVilkar() throws Exception {
-        return tilDto(situasjonOversiktService.hentVilkar());
+        return tilDto(situasjonOversiktService.hentVilkar(getFnr()));
     }
 
     @Override

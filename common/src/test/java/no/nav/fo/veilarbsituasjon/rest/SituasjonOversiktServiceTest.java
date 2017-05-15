@@ -74,7 +74,7 @@ public class SituasjonOversiktServiceTest {
         when(digitalKontaktinformasjonV1Mock.hentDigitalKontaktinformasjon(any(WSHentDigitalKontaktinformasjonRequest.class)))
                 .thenReturn(new WSHentDigitalKontaktinformasjonResponse()
                         .withDigitalKontaktinformasjon(wsKontaktinformasjon));
-        when(vilkarServiceMock.getVilkar(null)).thenReturn("Gjeldene Vilkar");
+        when(vilkarServiceMock.getVilkar(any(VilkarService.VilkarType.class),any())).thenReturn("Gjeldene Vilkar");
     }
 
     @Test
@@ -239,7 +239,7 @@ public class SituasjonOversiktServiceTest {
     }
 
     private VilkarData hentGjeldendeVilkar() throws Exception {
-        return situasjonOversiktService.hentVilkar();
+        return situasjonOversiktService.hentVilkar(situasjon);
     }
 
     private void gittOppfolgingStatus(String formidlingskode, String kvalifiseringsgruppekode) {
