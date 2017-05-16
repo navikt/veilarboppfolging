@@ -29,16 +29,6 @@
             <artifactId>lombok</artifactId>
         </dependency>
 
-        <!-- vaivr-->
-        <dependency>
-            <groupId>io.javaslang</groupId>
-            <artifactId>javaslang</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.javaslang</groupId>
-            <artifactId>javaslang-match</artifactId>
-        </dependency>
-
         <!--Spring-->
         <dependency>
             <groupId>no.nav.fo</groupId>
