@@ -2,6 +2,7 @@ package no.nav.fo.veilarbsituasjon.rest;
 
 import lombok.SneakyThrows;
 import no.nav.brukerdialog.security.context.SubjectHandler;
+import no.nav.brukerdialog.security.domain.IdentType;
 import no.nav.fo.veilarbsituasjon.domain.MalData;
 import no.nav.fo.veilarbsituasjon.domain.OppfolgingStatusData;
 import no.nav.fo.veilarbsituasjon.domain.VilkarData;
@@ -35,8 +36,9 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt {
     private PepClient pepClient;
 
     @Override
-    public Bruker hentBrukerInfo() throws Exception {
-        return new Bruker().setId(getUid());
+    public Bruker hentBrukerInfo() throws Exception {return new Bruker()
+                .setId(getUid())
+                .setErVeileder(SubjectHandler.getSubjectHandler().getIdentType() == IdentType.InternBruker);
     }
 
     @Override
