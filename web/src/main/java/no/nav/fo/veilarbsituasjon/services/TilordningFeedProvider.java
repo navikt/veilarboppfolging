@@ -8,13 +8,14 @@ import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDateTime;
-import java.util.List;
-
-import static java.util.stream.Collectors.toList;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.stream.Stream;
 
 @Component
-public class TilordningFeedProvider implements FeedProvider<OppfolgingBruker, LocalDateTime> {
+public class TilordningFeedProvider implements FeedProvider<OppfolgingBruker> {
 
     private BrukerRepository repository;
 
@@ -24,13 +25,26 @@ public class TilordningFeedProvider implements FeedProvider<OppfolgingBruker, Lo
     }
 
     @Override
-    public List<FeedElement<OppfolgingBruker, LocalDateTime>> hentData(LocalDateTime sinceId, int pageSize) {
-        Timestamp timestamp = Timestamp.valueOf(sinceId);
+    public Stream<FeedElement<OppfolgingBruker>> fetchData(ZonedDateTime sinceId, int pageSize) {
+
+        Instant instant = Instant.from(sinceId);
+        LocalDateTime localTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
+        Timestamp timestamp = Timestamp.valueOf(localTime);
+
+        LocalDateTime localDateTime = timestamp.toLocalDateTime();
+        ZonedDateTime.of(localDateTime, ZoneId.systemDefault());
 
         return repository
                 .hentTilordningerEtterTimestamp(timestamp)
                 .stream()
-                .map(b -> new FeedElement<OppfolgingBruker, LocalDateTime>().setId(b.getEndretTimestamp().toLocalDateTime()).setElement(b))
-                .collect(toList());
+                .map(b -> new FeedElement<OppfolgingBruker>()
+                        .setId(toZonedDateTime(b.getEndretTimestamp()))
+                        .setElement(b));
     }
+
+    private ZonedDateTime toZonedDateTime(Timestamp endretTimestamp) {
+        LocalDateTime localDateTime = endretTimestamp.toLocalDateTime();
+        return ZonedDateTime.of(localDateTime, ZoneId.systemDefault());
+    }
+
 }

@@ -17,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -36,7 +35,7 @@ public class PortefoljeRessurs {
     private final PepClient pepClient;
     private List<VeilederTilordning> feilendeTilordninger;
 
-    private FeedProducer<OppfolgingBruker, LocalDateTime> feed;
+    private FeedProducer<OppfolgingBruker> feed;
     private TilordningFeedProvider provider;
 
     public PortefoljeRessurs(AktoerIdService aktoerIdService, BrukerRepository brukerRepository, PepClient pepClient, TilordningFeedProvider provider) {
@@ -45,7 +44,7 @@ public class PortefoljeRessurs {
         this.pepClient = pepClient;
         this.provider = provider;
 
-        this.feed = new FeedProducer<OppfolgingBruker, LocalDateTime>()
+        this.feed = new FeedProducer<OppfolgingBruker>()
                 .setMaxPageSize(1000);
     }
 
@@ -69,7 +68,7 @@ public class PortefoljeRessurs {
     @Consumes("application/json")
     @Produces("application/json")
     public Response getTilordninger(@BeanParam FeedRequest request) {
-        return feed.createFeedResponse(request, provider);
+        return feed.getFeedPage(request, provider);
     }
 
     @POST
