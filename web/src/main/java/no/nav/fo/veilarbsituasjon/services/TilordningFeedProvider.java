@@ -8,10 +8,7 @@ import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 import java.sql.Timestamp;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.util.stream.Stream;
 
 @Component
@@ -27,12 +24,15 @@ public class TilordningFeedProvider implements FeedProvider<OppfolgingBruker> {
     @Override
     public Stream<FeedElement<OppfolgingBruker>> fetchData(ZonedDateTime sinceId, int pageSize) {
 
+
+        ///////////////
+        //
+        //Todo: Tid er vanskelig og bør være en del av feed-biblioteket!
+        //
+        ///////////////
         Instant instant = Instant.from(sinceId);
         LocalDateTime localTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
         Timestamp timestamp = Timestamp.valueOf(localTime);
-
-        LocalDateTime localDateTime = timestamp.toLocalDateTime();
-        ZonedDateTime.of(localDateTime, ZoneId.systemDefault());
 
         return repository
                 .hentTilordningerEtterTimestamp(timestamp)
@@ -44,7 +44,6 @@ public class TilordningFeedProvider implements FeedProvider<OppfolgingBruker> {
 
     private ZonedDateTime toZonedDateTime(Timestamp endretTimestamp) {
         LocalDateTime localDateTime = endretTimestamp.toLocalDateTime();
-        return ZonedDateTime.of(localDateTime, ZoneId.systemDefault());
+        return ZonedDateTime.of(localDateTime, ZoneId.systemDefault()).withZoneSameInstant(ZoneOffset.UTC);
     }
-
 }
