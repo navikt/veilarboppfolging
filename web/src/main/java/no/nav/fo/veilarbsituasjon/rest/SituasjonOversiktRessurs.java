@@ -1,9 +1,12 @@
 package no.nav.fo.veilarbsituasjon.rest;
 
+import lombok.SneakyThrows;
 import no.nav.brukerdialog.security.context.SubjectHandler;
+import no.nav.brukerdialog.security.domain.IdentType;
 import no.nav.fo.veilarbsituasjon.domain.MalData;
 import no.nav.fo.veilarbsituasjon.domain.OppfolgingStatusData;
 import no.nav.fo.veilarbsituasjon.domain.VilkarData;
+import no.nav.fo.veilarbsituasjon.domain.VilkarStatus;
 import no.nav.fo.veilarbsituasjon.rest.api.SituasjonOversikt;
 import no.nav.fo.veilarbsituasjon.rest.domain.Bruker;
 import no.nav.fo.veilarbsituasjon.rest.domain.Mal;
@@ -33,8 +36,9 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt {
     private PepClient pepClient;
 
     @Override
-    public Bruker hentBrukerInfo() throws Exception {
-        return new Bruker().setId(getUid());
+    public Bruker hentBrukerInfo() throws Exception {return new Bruker()
+                .setId(getUid())
+                .setErVeileder(SubjectHandler.getSubjectHandler().getIdentType() == IdentType.InternBruker);
     }
 
     @Override
@@ -44,12 +48,17 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt {
 
     @Override
     public Vilkar hentVilkar() throws Exception {
-        return tilDto(situasjonOversiktService.hentVilkar());
+        return tilDto(situasjonOversiktService.hentVilkar(getFnr()));
     }
 
     @Override
     public OppfolgingStatus godta(String hash) throws Exception {
-        return tilDto(situasjonOversiktService.godtaVilkar(hash, getFnr()));
+        return tilDto(situasjonOversiktService.oppdaterVilkaar(hash, getFnr(), VilkarStatus.GODKJENT));
+    }
+
+    @Override
+    public OppfolgingStatus avslaa(String hash) throws Exception {
+        return tilDto(situasjonOversiktService.oppdaterVilkaar(hash, getFnr(), VilkarStatus.AVSLATT));
     }
 
     @Override
@@ -72,6 +81,7 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt {
         return SubjectHandler.getSubjectHandler().getUid();
     }
 
+    @SneakyThrows
     private String getFnr() {
         final String fnr = requestProvider.get().getParameter("fnr");
         pepClient.isServiceCallAllowed(fnr);

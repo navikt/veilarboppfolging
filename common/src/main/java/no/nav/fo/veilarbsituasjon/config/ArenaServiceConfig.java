@@ -1,7 +1,6 @@
 package no.nav.fo.veilarbsituasjon.config;
 
 
-import no.nav.modig.security.ws.SystemSAMLOutInterceptor;
 import no.nav.sbl.dialogarena.common.cxf.CXFClient;
 import no.nav.sbl.dialogarena.types.Pingable;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
@@ -38,7 +37,7 @@ public class ArenaServiceConfig {
     @Bean
     Pingable ytelseskontraktPing() {
         final YtelseskontraktV3 ytelseskontraktPing = ytelseskontraktPortType()
-                .withOutInterceptor(new SystemSAMLOutInterceptor())
+                .configureStsForSystemUserInFSS()
                 .build();
         return () -> {
             try {
@@ -55,7 +54,7 @@ public class ArenaServiceConfig {
         final String url = getProperty("oppfoelging.endpoint.url");
         LOG.info("URL for Oppfoelging_V1 er {}", url);
         OppfoelgingPortType oppfoelgingPing = oppfoelgingPortType()
-                .withOutInterceptor(new SystemSAMLOutInterceptor())
+                .configureStsForSystemUserInFSS()
                 .build();
 
         return () -> {
@@ -67,4 +66,5 @@ public class ArenaServiceConfig {
             }
         };
     }
+
 }

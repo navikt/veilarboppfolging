@@ -1,6 +1,5 @@
 package no.nav.fo.veilarbsituasjon.config;
 
-import no.nav.modig.security.ws.SystemSAMLOutInterceptor;
 import no.nav.sbl.dialogarena.common.cxf.CXFClient;
 import no.nav.sbl.dialogarena.types.Pingable;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.DigitalKontaktinformasjonV1;
@@ -34,7 +33,7 @@ public class DigitalKontaktinformasjonConfig {
     private DigitalKontaktinformasjonV1 factory() {
         return new CXFClient<>(DigitalKontaktinformasjonV1.class)
                 .address(getProperty("dkif.endpoint.url"))
-                .withOutInterceptor(new SystemSAMLOutInterceptor())
+                .configureStsForSystemUserInFSS()
                 .build();
     }
 }

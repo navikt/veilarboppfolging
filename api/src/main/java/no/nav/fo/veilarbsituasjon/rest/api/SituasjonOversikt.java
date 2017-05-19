@@ -29,6 +29,10 @@ public interface SituasjonOversikt {
     @Path("/godta/{hash}")
     OppfolgingStatus godta(@PathParam("hash") String hash) throws Exception;
 
+    @POST
+    @Path("/avslaa/{hash}")
+    OppfolgingStatus avslaa(@PathParam("hash") String hash) throws Exception;
+
     @GET
     @Path("/mal")
     Mal hentMal();

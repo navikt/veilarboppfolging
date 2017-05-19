@@ -8,5 +8,6 @@ import lombok.experimental.Accessors;
 public class Bruker {
 
     public String id;
+    public boolean erVeileder;
 
 }

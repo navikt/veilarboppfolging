@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.jms.JMSException;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
@@ -91,7 +92,7 @@ public class PortefoljeRessurs {
             settVeilederDersomFraVeilederErOK(bruker, tilordning);
         }
 
-        TilordneVeilederResponse response = new TilordneVeilederResponse()
+            TilordneVeilederResponse response = new TilordneVeilederResponse()
                 .setFeilendeTilordninger(feilendeTilordninger);
 
         if (feilendeTilordninger.isEmpty()) {

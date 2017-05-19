@@ -78,7 +78,7 @@ public class RepositoryTest extends IntegrasjonsTest {
             Brukervilkar brukervilkar = new Brukervilkar(
                     AKTOR_ID,
                     new Timestamp(currentTimeMillis()),
-                    VilkarStatus.GODKJENNT,
+                    VilkarStatus.GODKJENT,
                     "Vilkårstekst",
                     "Vilkårshash"
             );

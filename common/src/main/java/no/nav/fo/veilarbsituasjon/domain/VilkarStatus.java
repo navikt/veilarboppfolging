@@ -2,6 +2,6 @@ package no.nav.fo.veilarbsituasjon.domain;
 
 public enum VilkarStatus {
     AVSLATT,
-    GODKJENNT,
+    GODKJENT,
     IKKE_BESVART
 }
