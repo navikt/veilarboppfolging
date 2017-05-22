@@ -1,6 +1,6 @@
 package no.nav.fo.veilarbsituasjon.services;
 
-import no.nav.fo.feed.producer.FeedElement;
+import no.nav.fo.feed.common.FeedElement;
 import no.nav.fo.feed.producer.FeedProvider;
 import no.nav.fo.veilarbsituasjon.db.BrukerRepository;
 import no.nav.fo.veilarbsituasjon.domain.OppfolgingBruker;
@@ -22,15 +22,9 @@ public class TilordningFeedProvider implements FeedProvider<OppfolgingBruker> {
     }
 
     @Override
-    public Stream<FeedElement<OppfolgingBruker>> fetchData(ZonedDateTime sinceId, int pageSize) {
-
-
-        ///////////////
-        //
-        //Todo: Tid er vanskelig og bør være en del av feed-biblioteket!
-        //
-        ///////////////
-        Instant instant = Instant.from(sinceId);
+    public Stream<FeedElement<OppfolgingBruker>> fetchData(String sinceId, int pageSize) {
+        ZonedDateTime zoned = ZonedDateTime.parse(sinceId);
+        Instant instant = Instant.from(zoned);
         LocalDateTime localTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
         Timestamp timestamp = Timestamp.valueOf(localTime);
 
@@ -38,7 +32,7 @@ public class TilordningFeedProvider implements FeedProvider<OppfolgingBruker> {
                 .hentTilordningerEtterTimestamp(timestamp)
                 .stream()
                 .map(b -> new FeedElement<OppfolgingBruker>()
-                        .setId(toZonedDateTime(b.getEndretTimestamp()))
+                        .setId(toZonedDateTime(b.getEndretTimestamp()).toString())
                         .setElement(b));
     }
 
