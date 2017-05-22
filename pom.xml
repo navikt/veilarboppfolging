@@ -36,7 +36,7 @@
         <oppfoelging-v1-tjenestespesifikasjon.version>1.1.0</oppfoelging-v1-tjenestespesifikasjon.version>
         <dial-nav-tjeneste-aktoer_v2.version>1.1</dial-nav-tjeneste-aktoer_v2.version>
         <dkif-tjenestespesifikasjon.version>1.2</dkif-tjenestespesifikasjon.version>
-        <brukerdialog-behandleSituasjon-v1-tjenestespesifikasjon.version>1.0.5-SNAPSHOT</brukerdialog-behandleSituasjon-v1-tjenestespesifikasjon.version>
+        <brukerdialog-behandleSituasjon-v1-tjenestespesifikasjon.version>1.0.6-SNAPSHOT</brukerdialog-behandleSituasjon-v1-tjenestespesifikasjon.version>
         <organisasjonenhet-v1.version>1.0.7</organisasjonenhet-v1.version>
 
         <swagger.version>1.5.13</swagger.version>
@@ -61,8 +61,8 @@
                 <scope>import</scope>
             </dependency>
             <dependency>
-                <groupId>no.nav.fo</groupId>
-                <artifactId>api-app-feed</artifactId>
+                <groupId>no.nav.sbl.dialogarena</groupId>
+                <artifactId>feed</artifactId>
                 <version>1.0-SNAPSHOT</version>
             </dependency>
             <dependency>
