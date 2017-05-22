@@ -2,25 +2,23 @@ package no.nav.fo.veilarbsituasjon.rest;
 
 import io.swagger.annotations.Api;
 import no.nav.fo.feed.producer.FeedProducer;
-import no.nav.fo.feed.producer.FeedRequest;
-import no.nav.fo.feed.producer.FeedWebhookRequest;
 import no.nav.fo.veilarbsituasjon.db.BrukerRepository;
 import no.nav.fo.veilarbsituasjon.domain.OppfolgingBruker;
 import no.nav.fo.veilarbsituasjon.rest.domain.TilordneVeilederResponse;
 import no.nav.fo.veilarbsituasjon.rest.domain.VeilederTilordning;
 import no.nav.fo.veilarbsituasjon.services.AktoerIdService;
 import no.nav.fo.veilarbsituasjon.services.PepClient;
-import no.nav.fo.veilarbsituasjon.services.TilordningFeedProvider;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.jms.JMSException;
-import javax.ws.rs.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -37,39 +35,12 @@ public class PortefoljeRessurs {
     private List<VeilederTilordning> feilendeTilordninger;
 
     private FeedProducer<OppfolgingBruker> feed;
-    private TilordningFeedProvider provider;
 
-    public PortefoljeRessurs(AktoerIdService aktoerIdService, BrukerRepository brukerRepository, PepClient pepClient, TilordningFeedProvider provider) {
+    public PortefoljeRessurs(AktoerIdService aktoerIdService, BrukerRepository brukerRepository, PepClient pepClient, FeedProducer<OppfolgingBruker> feed) {
         this.aktoerIdService = aktoerIdService;
         this.brukerRepository = brukerRepository;
         this.pepClient = pepClient;
-        this.provider = provider;
-
-        this.feed = new FeedProducer<OppfolgingBruker>()
-                .setMaxPageSize(1000);
-    }
-
-    @GET
-    @Path("/feed/tilordninger/webhook")
-    public Response getWebhook() {
-        return feed.getWebhook();
-    }
-
-    @PUT
-    @Consumes("application/json")
-    @Produces("application/json")
-    @Path("/feed/tilordninger/webhook")
-    public Response putWebhook(FeedWebhookRequest request) {
-        Optional<String> callmeMaybe = Optional.ofNullable(request.callbackUrl);
-        return feed.createWebhook(callmeMaybe);
-    }
-
-    @GET
-    @Path("/feed/tilordninger")
-    @Consumes("application/json")
-    @Produces("application/json")
-    public Response getTilordninger(@BeanParam FeedRequest request) {
-        return feed.getFeedPage(request, provider);
+        this.feed = feed;
     }
 
     @POST
@@ -92,7 +63,7 @@ public class PortefoljeRessurs {
             settVeilederDersomFraVeilederErOK(bruker, tilordning);
         }
 
-            TilordneVeilederResponse response = new TilordneVeilederResponse()
+        TilordneVeilederResponse response = new TilordneVeilederResponse()
                 .setFeilendeTilordninger(feilendeTilordninger);
 
         if (feilendeTilordninger.isEmpty()) {
