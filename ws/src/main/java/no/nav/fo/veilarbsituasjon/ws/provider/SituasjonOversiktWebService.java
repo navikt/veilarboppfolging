@@ -3,14 +3,13 @@ package no.nav.fo.veilarbsituasjon.ws.provider;
 import lombok.SneakyThrows;
 import lombok.val;
 import no.nav.apiapp.soap.SoapTjeneste;
-import no.nav.fo.veilarbsituasjon.domain.MalData;
-import no.nav.fo.veilarbsituasjon.domain.OppfolgingStatusData;
-import no.nav.fo.veilarbsituasjon.domain.VilkarData;
-import no.nav.fo.veilarbsituasjon.domain.VilkarStatus;
+import no.nav.fo.veilarbsituasjon.domain.*;
 import no.nav.fo.veilarbsituasjon.services.SituasjonOversiktService;
+import no.nav.fo.veilarbsituasjon.utils.CalendarConverter;
 import no.nav.tjeneste.virksomhet.behandlesituasjon.v1.binding.*;
 import no.nav.tjeneste.virksomhet.behandlesituasjon.v1.informasjon.Mal;
 import no.nav.tjeneste.virksomhet.behandlesituasjon.v1.informasjon.Oppfoelgingsstatus;
+import no.nav.tjeneste.virksomhet.behandlesituasjon.v1.informasjon.Vilkaarsstatus;
 import no.nav.tjeneste.virksomhet.behandlesituasjon.v1.informasjon.Vilkaarsstatuser;
 import no.nav.tjeneste.virksomhet.behandlesituasjon.v1.meldinger.*;
 import org.springframework.stereotype.Service;
@@ -18,6 +17,7 @@ import org.springframework.stereotype.Service;
 import javax.inject.Inject;
 import javax.ws.rs.WebApplicationException;
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -51,7 +51,7 @@ public class SituasjonOversiktWebService implements BehandleSituasjonV1 {
 
     @Override
     public HentVilkaarsstatusListeResponse hentVilkaarsstatusListe(HentVilkaarsstatusListeRequest hentVilkaarsstatusListeRequest) throws HentVilkaarsstatusListeSikkerhetsbegrensning {
-        throw new WebApplicationException(NOT_IMPLEMENTED);
+        return mapToHentVilkaarsstatusListeResponse(situasjonOversiktService.hentHistoriskeVilkar(hentVilkaarsstatusListeRequest.getPersonident()));
     }
 
     @Override
@@ -65,7 +65,7 @@ public class SituasjonOversiktWebService implements BehandleSituasjonV1 {
         situasjonOversiktService.oppdaterVilkaar(
                 opprettVilkaarsstatusRequest.getHash(),
                 opprettVilkaarsstatusRequest.getPersonident(),
-                mapWsTilVilkarStatus(opprettVilkaarsstatusRequest.getStatus())
+                mapVilkaarstatuserTilVilkarStatus(opprettVilkaarsstatusRequest.getStatus())
         );
 //        TODO: Skal vi returnere noe fornufig her? I Proxyen kaller vi hentOppfolgingStatus etter godta.
 //        Vi kunne returnert HentOppfoelgingsstatusResponse her
@@ -137,7 +137,7 @@ public class SituasjonOversiktWebService implements BehandleSituasjonV1 {
         return mal;
     }
 
-    public static VilkarStatus mapWsTilVilkarStatus(Vilkaarsstatuser vilkaarStatuser) {
+    private static VilkarStatus mapVilkaarstatuserTilVilkarStatus(Vilkaarsstatuser vilkaarStatuser) {
         switch (vilkaarStatuser) {
             case AVSLAATT:
                 return AVSLATT;
@@ -148,4 +148,33 @@ public class SituasjonOversiktWebService implements BehandleSituasjonV1 {
         }
     }
 
+    private static Vilkaarsstatuser mapVilkarStatusTilVilkaarstatuser(VilkarStatus vilkarStatus) {
+        switch (vilkarStatus) {
+            case AVSLATT:
+                return Vilkaarsstatuser.AVSLAATT;
+            case GODKJENT:
+                return Vilkaarsstatuser.GODKJENT;
+            default:
+                return Vilkaarsstatuser.IKKE_BESVART;
+        }
+    }
+
+    private HentVilkaarsstatusListeResponse mapToHentVilkaarsstatusListeResponse(List<Brukervilkar> brukervilkarList) {
+        HentVilkaarsstatusListeResponse hentVilkaarsstatusListeResponse = new HentVilkaarsstatusListeResponse();
+        hentVilkaarsstatusListeResponse.getVilkaarsstatusListe().addAll(
+                brukervilkarList.stream()
+                        .map(SituasjonOversiktWebService::mapBrukervilkarToVilkaarstatus)
+                        .collect(Collectors.toList())
+        );
+        return hentVilkaarsstatusListeResponse;
+    }
+
+    private static Vilkaarsstatus mapBrukervilkarToVilkaarstatus(Brukervilkar brukervilkar) {
+        Vilkaarsstatus vilkaarsstatus = new Vilkaarsstatus();
+        vilkaarsstatus.setDato(CalendarConverter.convertTimestampToXMLGregorianCalendar((brukervilkar.getDato())));
+        vilkaarsstatus.setVilkaarstekst(brukervilkar.getTekst());
+        vilkaarsstatus.setHash(brukervilkar.getHash());
+        vilkaarsstatus.setStatus(mapVilkarStatusTilVilkaarstatuser(brukervilkar.getVilkarstatus()));
+        return vilkaarsstatus;
+    }
 }

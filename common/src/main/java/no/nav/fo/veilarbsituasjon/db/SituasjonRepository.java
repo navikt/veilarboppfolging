@@ -130,6 +130,22 @@ public class SituasjonRepository {
         ).isEmpty();
     }
 
+    public List<Brukervilkar> hentHistoriskeVilkar(String aktorId) {
+        return jdbcTemplate.query(
+                "SELECT" +
+                        "  ID AS BRUKERVILKAR_ID, " +
+                        "  AKTORID, " +
+                        "  DATO AS BRUKERVILKAR_DATO, " +
+                        "  VILKARSTATUS AS BRUKERVILKAR_VILKARSTATUS, " +
+                        "  TEKST AS BRUKERVILKAR_TEKST, " +
+                        "  HASH AS BRUKERVILKAR_HASH, " +
+                        "FROM BRUKERVILKAR " +
+                        "WHERE AKTORID = ? " +
+                        "ORDER BY DATO DESC",
+                (result, n) -> mapTilBrukervilkar(result),
+                aktorId);
+    }
+
     private void oppdaterSituasjonBrukervilkar(Brukervilkar gjeldendeBrukervilkar) {
         jdbcTemplate.update("UPDATE situasjon SET gjeldende_brukervilkar = ? WHERE aktorid = ?",
                 gjeldendeBrukervilkar.getId(),
@@ -163,7 +179,6 @@ public class SituasjonRepository {
 
         );
     }
-
 
     private void opprettSituasjonStatus(Status status) {
         jdbcTemplate.update(

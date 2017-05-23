@@ -154,6 +154,10 @@ public class SituasjonOversiktService {
         return situasjonRepository.hentMalList(hentAktorId(fnr));
     }
 
+    public List<Brukervilkar> hentHistoriskeVilkar(String fnr) {
+        return situasjonRepository.hentHistoriskeVilkar(hentAktorId(fnr));
+    }
+
     public MalData oppdaterMal(String mal, String fnr, String endretAv) {
         String aktorId = hentAktorId(fnr);
         Timestamp dato = new Timestamp(currentTimeMillis());
@@ -209,6 +213,4 @@ public class SituasjonOversiktService {
     private Optional<Brukervilkar> finnSisteVilkarStatus(Situasjon situasjon) {
         return Optional.ofNullable(situasjon.getGjeldendeBrukervilkar());
     }
-
-
 }

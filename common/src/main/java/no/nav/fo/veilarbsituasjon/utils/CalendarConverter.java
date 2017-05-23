@@ -2,7 +2,10 @@ package no.nav.fo.veilarbsituasjon.utils;
 
 import org.slf4j.Logger;
 
-import javax.xml.datatype.*;
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.GregorianCalendar;
@@ -24,4 +27,7 @@ public class CalendarConverter {
         return xmlGregorianCalendar;
     }
 
+    public static XMLGregorianCalendar convertTimestampToXMLGregorianCalendar(Timestamp timestamp) {
+        return convertDateToXMLGregorianCalendar(timestamp.toLocalDateTime().toLocalDate());
+    }
 }
