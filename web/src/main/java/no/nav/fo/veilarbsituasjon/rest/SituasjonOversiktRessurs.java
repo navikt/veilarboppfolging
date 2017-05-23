@@ -15,13 +15,13 @@ import no.nav.fo.veilarbsituasjon.rest.domain.OppfolgingStatus;
 import no.nav.fo.veilarbsituasjon.rest.domain.Vilkar;
 import no.nav.fo.veilarbsituasjon.services.PepClient;
 import no.nav.fo.veilarbsituasjon.services.SituasjonOversiktService;
-import org.apache.commons.lang3.NotImplementedException;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 
@@ -55,7 +55,10 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt {
 
     @Override
     public List<Vilkar> hentVilkaarStatusListe() {
-        throw new NotImplementedException("Not yet implemented");
+        return situasjonOversiktService.hentHistoriskeVilkar(getFnr())
+                .stream()
+                .map(this::tilDto)
+                .collect(Collectors.toList());
     }
 
     @Override
