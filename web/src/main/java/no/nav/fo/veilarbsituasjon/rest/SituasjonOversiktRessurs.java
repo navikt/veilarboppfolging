@@ -7,6 +7,7 @@ import no.nav.fo.veilarbsituasjon.domain.Brukervilkar;
 import no.nav.fo.veilarbsituasjon.domain.MalData;
 import no.nav.fo.veilarbsituasjon.domain.OppfolgingStatusData;
 import no.nav.fo.veilarbsituasjon.domain.VilkarStatus;
+import no.nav.fo.veilarbsituasjon.mappers.VilkarMapper;
 import no.nav.fo.veilarbsituasjon.rest.api.SituasjonOversikt;
 import no.nav.fo.veilarbsituasjon.rest.domain.Bruker;
 import no.nav.fo.veilarbsituasjon.rest.domain.Mal;
@@ -14,7 +15,6 @@ import no.nav.fo.veilarbsituasjon.rest.domain.OppfolgingStatus;
 import no.nav.fo.veilarbsituasjon.rest.domain.Vilkar;
 import no.nav.fo.veilarbsituasjon.services.PepClient;
 import no.nav.fo.veilarbsituasjon.services.SituasjonOversiktService;
-import no.nav.fo.veilarbsituasjon.utils.VilkarMapper;
 import org.apache.commons.lang3.NotImplementedException;
 import org.springframework.stereotype.Component;
 

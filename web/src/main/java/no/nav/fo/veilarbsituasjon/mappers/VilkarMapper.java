@@ -1,4 +1,4 @@
-package no.nav.fo.veilarbsituasjon.utils;
+package no.nav.fo.veilarbsituasjon.mappers;
 
 import no.nav.fo.veilarbsituasjon.domain.VilkarStatus;
 import no.nav.fo.veilarbsituasjon.rest.domain.VilkarStatusApi;
