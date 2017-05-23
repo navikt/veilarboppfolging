@@ -93,7 +93,7 @@ public class SituasjonOversiktService {
             );
         }
 
-        VilkarData gjeldendeVilkar = hentVilkar(situasjon);
+        Brukervilkar gjeldendeVilkar = hentVilkar(situasjon);
         boolean vilkarMaBesvares = finnSisteVilkarStatus(situasjon)
                 .filter(brukervilkar -> GODKJENT.equals(brukervilkar.getVilkarstatus()))
                 .map(Brukervilkar::getHash)
@@ -112,7 +112,7 @@ public class SituasjonOversiktService {
                 .setVilkarMaBesvares(vilkarMaBesvares);
     }
 
-    public VilkarData hentVilkar(String fnr) throws Exception {
+    public Brukervilkar hentVilkar(String fnr) throws Exception {
         return hentVilkar(situasjonForFnr(fnr));
     }
 
@@ -121,10 +121,10 @@ public class SituasjonOversiktService {
         return hentSituasjon(aktorId);
     }
 
-    public VilkarData hentVilkar(Situasjon situasjon) {
+    public Brukervilkar hentVilkar(Situasjon situasjon) {
         String vilkar = vilkarService.getVilkar(situasjon.isOppfolging() ? UNDER_OPPFOLGING : PRIVAT, null);
-        return new VilkarData()
-                .setText(vilkar)
+        return new Brukervilkar()
+                .setTekst(vilkar)
                 .setHash(DigestUtils.sha256Hex(vilkar));
     }
 
@@ -132,14 +132,14 @@ public class SituasjonOversiktService {
     public OppfolgingStatusData oppdaterVilkaar(String hash, String fnr, VilkarStatus vilkarStatus) throws Exception {
         Situasjon situasjon = hentSituasjon(hentAktorId(fnr));
 
-        VilkarData gjeldendeVilkar = hentVilkar(situasjon);
+        Brukervilkar gjeldendeVilkar = hentVilkar(situasjon);
         if (gjeldendeVilkar.getHash().equals(hash)) {
             situasjonRepository.opprettBrukervilkar(
                     new Brukervilkar(
                             situasjon.getAktorId(),
                             new Timestamp(currentTimeMillis()),
                             vilkarStatus,
-                            gjeldendeVilkar.getText(),
+                            gjeldendeVilkar.getTekst(),
                             hash
                     ));
         }

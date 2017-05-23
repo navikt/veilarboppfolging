@@ -3,9 +3,9 @@ package no.nav.fo.veilarbsituasjon.rest;
 import lombok.SneakyThrows;
 import no.nav.brukerdialog.security.context.SubjectHandler;
 import no.nav.brukerdialog.security.domain.IdentType;
+import no.nav.fo.veilarbsituasjon.domain.Brukervilkar;
 import no.nav.fo.veilarbsituasjon.domain.MalData;
 import no.nav.fo.veilarbsituasjon.domain.OppfolgingStatusData;
-import no.nav.fo.veilarbsituasjon.domain.VilkarData;
 import no.nav.fo.veilarbsituasjon.domain.VilkarStatus;
 import no.nav.fo.veilarbsituasjon.rest.api.SituasjonOversikt;
 import no.nav.fo.veilarbsituasjon.rest.domain.Bruker;
@@ -14,6 +14,7 @@ import no.nav.fo.veilarbsituasjon.rest.domain.OppfolgingStatus;
 import no.nav.fo.veilarbsituasjon.rest.domain.Vilkar;
 import no.nav.fo.veilarbsituasjon.services.PepClient;
 import no.nav.fo.veilarbsituasjon.services.SituasjonOversiktService;
+import no.nav.fo.veilarbsituasjon.utils.VilkarMapper;
 import org.apache.commons.lang3.NotImplementedException;
 import org.springframework.stereotype.Component;
 
@@ -105,10 +106,12 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt {
                 ;
     }
 
-    private Vilkar tilDto(VilkarData vilkarData) {
+    private Vilkar tilDto(Brukervilkar brukervilkar) {
         return new Vilkar()
-                .setTekst(vilkarData.text)
-                .setHash(vilkarData.hash);
+                .setTekst(brukervilkar.getTekst())
+                .setHash(brukervilkar.getHash())
+                .setDato(brukervilkar.getDato())
+                .setVilkarstatus(VilkarMapper.mapCommonVilkarStatusToVilkarStatusApi(brukervilkar.getVilkarstatus()));
     }
 
     private Mal tilDto(MalData malData) {

@@ -10,7 +10,7 @@ import java.sql.Timestamp;
 public class Vilkar {
 
     private Timestamp dato;
-    private VilkarStatus vilkarstatus;
+    private VilkarStatusApi vilkarstatus;
     private String tekst;
     private String hash;
 }

@@ -3,7 +3,10 @@ package no.nav.fo.veilarbsituasjon.ws.provider;
 import lombok.SneakyThrows;
 import lombok.val;
 import no.nav.apiapp.soap.SoapTjeneste;
-import no.nav.fo.veilarbsituasjon.domain.*;
+import no.nav.fo.veilarbsituasjon.domain.Brukervilkar;
+import no.nav.fo.veilarbsituasjon.domain.MalData;
+import no.nav.fo.veilarbsituasjon.domain.OppfolgingStatusData;
+import no.nav.fo.veilarbsituasjon.domain.VilkarStatus;
 import no.nav.fo.veilarbsituasjon.services.SituasjonOversiktService;
 import no.nav.fo.veilarbsituasjon.utils.CalendarConverter;
 import no.nav.tjeneste.virksomhet.behandlesituasjon.v1.binding.*;
@@ -107,10 +110,10 @@ public class SituasjonOversiktWebService implements BehandleSituasjonV1 {
         return new OpprettMalResponse();
     }
 
-    private HentVilkaarResponse mapTilHentVilkaarResponse(VilkarData vilkarData) {
+    private HentVilkaarResponse mapTilHentVilkaarResponse(Brukervilkar brukervilkar) {
         val res = new HentVilkaarResponse();
-        res.setVilkaarstekst(vilkarData.getText());
-        res.setHash(vilkarData.getHash());
+        res.setVilkaarstekst(brukervilkar.getTekst());
+        res.setHash(brukervilkar.getHash());
         return res;
     }
 

@@ -1,6 +1,6 @@
 package no.nav.fo.veilarbsituasjon.rest.domain;
 
-public enum VilkarStatus {
+public enum VilkarStatusApi {
     AVSLATT,
     GODKJENT,
     IKKE_BESVART
