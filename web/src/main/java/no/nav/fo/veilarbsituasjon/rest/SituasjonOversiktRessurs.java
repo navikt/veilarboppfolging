@@ -14,6 +14,7 @@ import no.nav.fo.veilarbsituasjon.rest.domain.OppfolgingStatus;
 import no.nav.fo.veilarbsituasjon.rest.domain.Vilkar;
 import no.nav.fo.veilarbsituasjon.services.PepClient;
 import no.nav.fo.veilarbsituasjon.services.SituasjonOversiktService;
+import org.apache.commons.lang3.NotImplementedException;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
@@ -49,6 +50,11 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt {
     @Override
     public Vilkar hentVilkar() throws Exception {
         return tilDto(situasjonOversiktService.hentVilkar(getFnr()));
+    }
+
+    @Override
+    public List<Vilkar> hentVilkaarStatusListe() {
+        throw new NotImplementedException("Not yet implemented");
     }
 
     @Override
@@ -101,7 +107,7 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt {
 
     private Vilkar tilDto(VilkarData vilkarData) {
         return new Vilkar()
-                .setText(vilkarData.text)
+                .setTekst(vilkarData.text)
                 .setHash(vilkarData.hash);
     }
 
