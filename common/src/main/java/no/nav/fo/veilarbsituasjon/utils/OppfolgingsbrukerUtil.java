@@ -5,6 +5,8 @@ import no.nav.fo.veilarbsituasjon.domain.OppfolgingBruker;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.Map;
 
 public class OppfolgingsbrukerUtil {
 
@@ -13,10 +15,20 @@ public class OppfolgingsbrukerUtil {
             return new OppfolgingBruker()
                     .setAktoerid(rs.getString("AKTOERID"))
                     .setVeileder(rs.getString("VEILEDER"))
+                    .setOppfolging(rs.getBoolean("OPPFOLGING"))
                     .setEndretTimestamp(rs.getTimestamp("OPPDATERT"));
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return null;
     }
+
+    public static OppfolgingBruker mapRadTilOppfolgingsbruker(Map<String, Object> rad) {
+        return new OppfolgingBruker()
+                .setAktoerid((String) rad.get("AKTOERID"))
+                .setVeileder((String) rad.get("VEILEDER"))
+                .setOppfolging((Boolean) rad.get("OPPFOLGING"))
+                .setEndretTimestamp((Timestamp) (rad.get("OPPDATERT")));
+    }
+
 }

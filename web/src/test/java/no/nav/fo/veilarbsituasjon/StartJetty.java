@@ -7,7 +7,6 @@ import static java.lang.System.getProperty;
 import static no.nav.dialogarena.config.DevelopmentSecurity.setupISSO;
 import static no.nav.fo.veilarbsituasjon.config.JndiLocalContextConfig.setupInMemoryDatabase;
 import static no.nav.fo.veilarbsituasjon.config.JndiLocalContextConfig.setupJndiLocalContext;
-import static no.nav.fo.veilarbsituasjon.config.MessageQueueMockConfig.setupBrokerService;
 import static no.nav.fo.veilarbsituasjon.config.SecurityTestConfig.setupLdap;
 import static no.nav.sbl.dialogarena.common.jetty.Jetty.usingWar;
 import static no.nav.sbl.dialogarena.common.jetty.JettyStarterUtils.*;
@@ -26,7 +25,6 @@ class StartJetty {
         }
 
         setupLdap();
-        setupBrokerService();
 
         Jetty jetty = setupISSO(usingWar()
                 .at(CONTEXT_NAME)

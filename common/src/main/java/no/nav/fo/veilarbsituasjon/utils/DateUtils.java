@@ -4,6 +4,8 @@ import lombok.SneakyThrows;
 
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
+import java.sql.Timestamp;
+import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
@@ -32,6 +34,14 @@ public class DateUtils {
                 .map(XMLGregorianCalendar::toGregorianCalendar)
                 .map(GregorianCalendar::getTime)
                 .orElse(null);
+    }
+
+    public static Timestamp toTimeStamp(String utc) {
+        return Timestamp.from(ZonedDateTime.parse(utc).toInstant());
+    }
+
+    public static ZonedDateTime toZonedDateTime(Timestamp timestamp) {
+        return ZonedDateTime.now();
     }
 
 }

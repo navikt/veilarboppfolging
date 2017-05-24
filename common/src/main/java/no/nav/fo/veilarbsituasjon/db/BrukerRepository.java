@@ -2,17 +2,21 @@ package no.nav.fo.veilarbsituasjon.db;
 
 
 import no.nav.fo.veilarbsituasjon.domain.OppfolgingBruker;
+import no.nav.fo.veilarbsituasjon.utils.OppfolgingsbrukerUtil;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
+import static java.util.stream.Collectors.toList;
 import static no.nav.fo.veilarbsituasjon.utils.OppfolgingsbrukerUtil.mapRadTilOppfolgingsbruker;
 
 public class BrukerRepository {
 
     private JdbcTemplate db;
+
     String dateFormat = "'YYYY-MM-DD HH24:MI:SS.FF'";
 
 
@@ -27,6 +31,14 @@ public class BrukerRepository {
             brukere.add(mapRadTilOppfolgingsbruker(rs));
         });
         return brukere;
+    }
+
+    public List<OppfolgingBruker> hentTilordningerEtterTimestamp(Timestamp timestamp) {
+        return db
+                .queryForList(hentVeilederTilordningerEtterTimestampSQL(), timestamp)
+                .stream()
+                .map(OppfolgingsbrukerUtil::mapRadTilOppfolgingsbruker)
+                .collect(toList());
     }
 
     public String hentVeilederForAktoer(String aktoerId) {
@@ -76,5 +88,13 @@ public class BrukerRepository {
 
     String hentAlleVeiledertilordningerSQL() {
         return "SELECT AKTOERID, VEILEDER, OPPDATERT FROM AKTOER_ID_TO_VEILEDER";
+    }
+
+    private String hentVeilederTilordningerEtterTimestampSQL() {
+        return "SELECT AKTOERID, VEILEDER, OPPFOLGING, OPPDATERT " +
+                "FROM AKTOER_ID_TO_VEILEDER tilordning " +
+                "LEFT JOIN SITUASJON situasjon " +
+                "ON tilordning.AKTOERID = situasjon.AKTORID " +
+                "WHERE OPPDATERT > ?";
     }
 }

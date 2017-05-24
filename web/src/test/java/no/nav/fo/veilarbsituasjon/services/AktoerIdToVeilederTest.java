@@ -5,15 +5,12 @@ import no.nav.fo.veilarbsituasjon.db.BrukerRepository;
 import no.nav.fo.veilarbsituasjon.domain.OppfolgingBruker;
 import no.nav.fo.veilarbsituasjon.rest.PortefoljeRessurs;
 import no.nav.fo.veilarbsituasjon.rest.domain.VeilederTilordning;
-import no.nav.fo.veilarbsituasjon.services.AktoerIdService;
-import no.nav.fo.veilarbsituasjon.services.PepClient;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.springframework.jms.core.JmsTemplate;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.Collections;
@@ -27,9 +24,6 @@ public class AktoerIdToVeilederTest {
 
     @Mock
     private BrukerRepository brukerRepository;
-
-    @Mock
-    private JmsTemplate endreVeilederKo;
 
     @Mock
     private AktoerIdService aktoerIdService;
@@ -51,9 +45,8 @@ public class AktoerIdToVeilederTest {
         verify(brukerRepository, times(1)).leggTilEllerOppdaterBruker(any(OppfolgingBruker.class));
     }
 
-    @Test
     public void noCallToDAOWhenAktoerIdServiceFails() {
-        when(aktoerIdService.findAktoerId(any(String.class))).thenThrow(new IndexOutOfBoundsException());
+        when(aktoerIdService.findAktoerId(any(String.class))).thenReturn(null);
         portefoljeRessurs.postVeilederTilordninger(Collections.singletonList(testData()));
         verify(brukerRepository, never()).leggTilEllerOppdaterBruker(any(OppfolgingBruker.class));
     }
