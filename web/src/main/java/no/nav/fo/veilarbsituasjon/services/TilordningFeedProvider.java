@@ -4,11 +4,15 @@ import no.nav.fo.feed.common.FeedElement;
 import no.nav.fo.feed.producer.FeedProvider;
 import no.nav.fo.veilarbsituasjon.db.BrukerRepository;
 import no.nav.fo.veilarbsituasjon.domain.OppfolgingBruker;
+import no.nav.fo.veilarbsituasjon.utils.DateUtils;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 import java.sql.Timestamp;
-import java.time.*;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.stream.Stream;
 
 @Component
@@ -23,10 +27,7 @@ public class TilordningFeedProvider implements FeedProvider<OppfolgingBruker> {
 
     @Override
     public Stream<FeedElement<OppfolgingBruker>> fetchData(String sinceId, int pageSize) {
-        ZonedDateTime zoned = ZonedDateTime.parse(sinceId);
-        Instant instant = Instant.from(zoned);
-        LocalDateTime localTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
-        Timestamp timestamp = Timestamp.valueOf(localTime);
+        Timestamp timestamp = DateUtils.toTimeStamp(sinceId);
 
         return repository
                 .hentTilordningerEtterTimestamp(timestamp)
