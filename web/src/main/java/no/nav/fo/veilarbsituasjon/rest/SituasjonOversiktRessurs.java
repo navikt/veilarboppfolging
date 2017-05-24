@@ -23,6 +23,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 
 @Component
@@ -114,7 +115,11 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt {
                 .setTekst(brukervilkar.getTekst())
                 .setHash(brukervilkar.getHash())
                 .setDato(brukervilkar.getDato())
-                .setVilkarstatus(VilkarMapper.mapCommonVilkarStatusToVilkarStatusApi(brukervilkar.getVilkarstatus()));
+                .setVilkarstatus(
+                        VilkarMapper.mapCommonVilkarStatusToVilkarStatusApi(
+                                ofNullable(brukervilkar.getVilkarstatus()).orElse(VilkarStatus.IKKE_BESVART)
+                        )
+                );
     }
 
     private Mal tilDto(MalData malData) {
