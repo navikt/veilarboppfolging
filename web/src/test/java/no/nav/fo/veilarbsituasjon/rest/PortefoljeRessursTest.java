@@ -1,6 +1,7 @@
 package no.nav.fo.veilarbsituasjon.rest;
 
 import no.nav.brukerdialog.security.context.ThreadLocalSubjectHandler;
+import no.nav.fo.feed.producer.FeedProducer;
 import no.nav.fo.veilarbsituasjon.db.BrukerRepository;
 import no.nav.fo.veilarbsituasjon.domain.OppfolgingBruker;
 import no.nav.fo.veilarbsituasjon.rest.domain.TilordneVeilederResponse;
@@ -44,8 +45,12 @@ public class PortefoljeRessursTest {
     @Mock
     private BrukerRepository brukerRepository;
 
+    @Mock
+    private FeedProducer<OppfolgingBruker> feed;
+
     @InjectMocks
     private PortefoljeRessurs portefoljeRessurs;
+
 
     @Before
     public void beforeAll() {
@@ -258,28 +263,6 @@ public class PortefoljeRessursTest {
         assertThat(feilendeTilordninger).contains(tilordningERROR2);
         assertThat(feilendeTilordninger).doesNotContain(tilordningOK1);
         assertThat(feilendeTilordninger).doesNotContain(tilordningOK2);
-    }
-
-    @Test
-    public void skalInneholdeFeilendeTildeligNaarLeggePaaKoFeiler() throws Exception {
-        List<VeilederTilordning> tilordninger = new ArrayList<>();
-
-        VeilederTilordning tilordningERROR1 = new VeilederTilordning().setBrukerFnr("FNR1").setFraVeilederId("FRAVEILEDER1").setTilVeilederId("TILVEILEDER1");
-        VeilederTilordning tilordningERROR2 = new VeilederTilordning().setBrukerFnr("FNR2").setFraVeilederId("FRAVEILEDER2").setTilVeilederId("TILVEILEDER2");
-
-        tilordninger.add(tilordningERROR1);
-        tilordninger.add(tilordningERROR2);
-
-        when(pepClient.isServiceCallAllowed(any(String.class))).thenReturn(true);
-        when(aktoerIdService.findAktoerId("FNR1")).thenReturn("AKTOERID1");
-        when(aktoerIdService.findAktoerId("FNR2")).thenReturn("AKTOERID2");
-
-
-        Response response = portefoljeRessurs.postVeilederTilordninger(tilordninger);
-        List<VeilederTilordning> feilendeTilordninger = ((TilordneVeilederResponse) response.getEntity()).getFeilendeTilordninger();
-
-        assertThat(feilendeTilordninger).contains(tilordningERROR1);
-        assertThat(feilendeTilordninger).contains(tilordningERROR2);
     }
 
     @Test
