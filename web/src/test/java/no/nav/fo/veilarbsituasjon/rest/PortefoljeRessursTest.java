@@ -16,9 +16,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.jdbc.BadSqlGrammarException;
-import org.springframework.jms.core.JmsTemplate;
-import org.springframework.jms.core.MessageCreator;
-import org.springframework.jms.support.converter.MessageConversionException;
 
 import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.core.Response;
@@ -29,8 +26,10 @@ import java.util.List;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PortefoljeRessursTest {
@@ -44,9 +43,6 @@ public class PortefoljeRessursTest {
 
     @Mock
     private BrukerRepository brukerRepository;
-
-    @Mock
-    private JmsTemplate jmsTemplate;
 
     @InjectMocks
     private PortefoljeRessurs portefoljeRessurs;
@@ -120,7 +116,6 @@ public class PortefoljeRessursTest {
         Response response = portefoljeRessurs.postVeilederTilordninger(tilordninger);
         List<VeilederTilordning> feilendeTilordninger = ((TilordneVeilederResponse) response.getEntity()).getFeilendeTilordninger();
 
-        verify(jmsTemplate, times(2)).send(any(MessageCreator.class));
         assertThat(feilendeTilordninger).contains(harIkkeTilgang1);
         assertThat(feilendeTilordninger).contains(harIkkeTilgang2);
         assertThat(feilendeTilordninger).doesNotContain(harTilgang1);
@@ -159,7 +154,6 @@ public class PortefoljeRessursTest {
         Response response = portefoljeRessurs.postVeilederTilordninger(tilordninger);
         List<VeilederTilordning> feilendeTilordninger = ((TilordneVeilederResponse) response.getEntity()).getFeilendeTilordninger();
 
-        verify(jmsTemplate, times(2)).send(any(MessageCreator.class));
         assertThat(feilendeTilordninger).contains(kanIkkeTilordne1);
         assertThat(feilendeTilordninger).contains(kanIkkeTilordne2);
         assertThat(feilendeTilordninger).doesNotContain(kanTilordne1);
@@ -194,7 +188,6 @@ public class PortefoljeRessursTest {
         Response response = portefoljeRessurs.postVeilederTilordninger(tilordninger);
         List<VeilederTilordning> feilendeTilordninger = ((TilordneVeilederResponse) response.getEntity()).getFeilendeTilordninger();
 
-        verify(jmsTemplate, times(2)).send(any(MessageCreator.class));
         assertThat(feilendeTilordninger).contains(tilordningERROR1);
         assertThat(feilendeTilordninger).contains(tilordningERROR2);
         assertThat(feilendeTilordninger).doesNotContain(tilordningOK1);
@@ -232,7 +225,6 @@ public class PortefoljeRessursTest {
         Response response = portefoljeRessurs.postVeilederTilordninger(tilordninger);
         List<VeilederTilordning> feilendeTilordninger = ((TilordneVeilederResponse) response.getEntity()).getFeilendeTilordninger();
 
-        verify(jmsTemplate, times(2)).send(any(MessageCreator.class));
         assertThat(feilendeTilordninger).contains(tilordningERROR1);
         assertThat(feilendeTilordninger).contains(tilordningERROR2);
         assertThat(feilendeTilordninger).doesNotContain(tilordningOK1);
@@ -262,7 +254,6 @@ public class PortefoljeRessursTest {
         Response response = portefoljeRessurs.postVeilederTilordninger(tilordninger);
         List<VeilederTilordning> feilendeTilordninger = ((TilordneVeilederResponse) response.getEntity()).getFeilendeTilordninger();
 
-        verify(jmsTemplate, times(2)).send(any(MessageCreator.class));
         assertThat(feilendeTilordninger).contains(tilordningERROR1);
         assertThat(feilendeTilordninger).contains(tilordningERROR2);
         assertThat(feilendeTilordninger).doesNotContain(tilordningOK1);
@@ -283,7 +274,6 @@ public class PortefoljeRessursTest {
         when(aktoerIdService.findAktoerId("FNR1")).thenReturn("AKTOERID1");
         when(aktoerIdService.findAktoerId("FNR2")).thenReturn("AKTOERID2");
 
-        doThrow(MessageConversionException.class).when(jmsTemplate).send(any(MessageCreator.class));
 
         Response response = portefoljeRessurs.postVeilederTilordninger(tilordninger);
         List<VeilederTilordning> feilendeTilordninger = ((TilordneVeilederResponse) response.getEntity()).getFeilendeTilordninger();
@@ -307,7 +297,6 @@ public class PortefoljeRessursTest {
         Response response = portefoljeRessurs.postVeilederTilordninger(tilordninger);
         List<VeilederTilordning> feilendeTilordninger = ((TilordneVeilederResponse) response.getEntity()).getFeilendeTilordninger();
 
-        verify(jmsTemplate, never()).send(any(MessageCreator.class));
         assertThat(feilendeTilordninger).contains(tilordningERROR1);
         assertThat(feilendeTilordninger).contains(tilordningERROR2);
     }

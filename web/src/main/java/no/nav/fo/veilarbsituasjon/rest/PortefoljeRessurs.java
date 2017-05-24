@@ -95,11 +95,12 @@ public class PortefoljeRessurs {
 
 
     @Transactional
-    private void skrivTilDatabase(OppfolgingBruker bruker) {
+    private void skrivTilDatabase(OppfolgingBruker bruker, VeilederTilordning tilordning) {
         try {
             brukerRepository.leggTilEllerOppdaterBruker(bruker);
             LOG.debug(String.format("Veileder %s tilordnet aktoer %s", bruker.getVeileder(), bruker.getAktoerid()));
         } catch (Exception e) {
+            feilendeTilordninger.add(tilordning);
             LOG.error(String.format("Kunne ikke tilordne veileder %s til aktoer %s", bruker.getVeileder(), bruker.getAktoerid()), e);
             throw e;
         }
@@ -110,7 +111,7 @@ public class PortefoljeRessurs {
         Boolean fraVeilederErOk = eksisterendeVeileder == null || eksisterendeVeileder.equals(tilordning.getFraVeilederId());
 
         if (fraVeilederErOk) {
-            skrivTilDatabase(bruker);
+            skrivTilDatabase(bruker, tilordning);
         } else {
             feilendeTilordninger.add(tilordning);
             LOG.info("Aktoerid {} kunne ikke tildeles ettersom fraVeileder er feil", bruker.getAktoerid());
