@@ -2,7 +2,10 @@ package no.nav.fo.veilarbsituasjon.rest;
 
 import lombok.val;
 import no.nav.fo.veilarbsituasjon.db.SituasjonRepository;
-import no.nav.fo.veilarbsituasjon.domain.*;
+import no.nav.fo.veilarbsituasjon.domain.Brukervilkar;
+import no.nav.fo.veilarbsituasjon.domain.OppfolgingStatusData;
+import no.nav.fo.veilarbsituasjon.domain.Situasjon;
+import no.nav.fo.veilarbsituasjon.domain.VilkarStatus;
 import no.nav.fo.veilarbsituasjon.services.AktoerIdService;
 import no.nav.fo.veilarbsituasjon.services.SituasjonOversiktService;
 import no.nav.fo.veilarbsituasjon.vilkar.VilkarService;
@@ -26,9 +29,7 @@ import java.sql.Timestamp;
 import java.util.Optional;
 
 import static java.lang.System.currentTimeMillis;
-import static no.nav.fo.veilarbsituasjon.domain.VilkarStatus.AVSLATT;
-import static no.nav.fo.veilarbsituasjon.domain.VilkarStatus.GODKJENT;
-import static no.nav.fo.veilarbsituasjon.domain.VilkarStatus.IKKE_BESVART;
+import static no.nav.fo.veilarbsituasjon.domain.VilkarStatus.*;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
@@ -179,7 +180,7 @@ public class SituasjonOversiktServiceTest {
     @Test
     public void akseptererFeilVilkar() throws Exception {
         gittAktor();
-        VilkarData feilVilkar = new VilkarData().setText("feilVilkar").setHash("HASH");
+        Brukervilkar feilVilkar = new Brukervilkar().setTekst("feilVilkar").setHash("HASH");
         besvarVilkar(GODKJENT, feilVilkar);
 
         assertThat(hentOppfolgingStatus().vilkarMaBesvares, is(true));
@@ -226,19 +227,19 @@ public class SituasjonOversiktServiceTest {
         verifyZeroInteractions(oppfoelgingPortType);
     }
 
-    private void besvarVilkar(VilkarStatus vilkarStatus, VilkarData vilkar) {
+    private void besvarVilkar(VilkarStatus vilkarStatus, Brukervilkar vilkar) {
         gittSituasjon(situasjon.setGjeldendeBrukervilkar(
                 new Brukervilkar(
                         situasjon.getAktorId(),
                         new Timestamp(currentTimeMillis()),
                         vilkarStatus,
-                        vilkar.getText(),
+                        vilkar.getTekst(),
                         vilkar.getHash()
                 ))
         );
     }
 
-    private VilkarData hentGjeldendeVilkar() throws Exception {
+    private Brukervilkar hentGjeldendeVilkar() throws Exception {
         return situasjonOversiktService.hentVilkar(situasjon);
     }
 

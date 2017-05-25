@@ -25,6 +25,10 @@ public interface SituasjonOversikt {
     @Path("/vilkar")
     Vilkar hentVilkar() throws Exception;
 
+    @GET
+    @Path("/hentVilkaarStatusListe")
+    List<Vilkar> hentVilkaarStatusListe() throws Exception;
+
     @POST
     @Path("/godta/{hash}")
     OppfolgingStatus godta(@PathParam("hash") String hash) throws Exception;
