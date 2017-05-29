@@ -54,7 +54,7 @@ public class SituasjonOversiktWebService implements BehandleSituasjonV1 {
 
     @Override
     public HentVilkaarsstatusListeResponse hentVilkaarsstatusListe(HentVilkaarsstatusListeRequest hentVilkaarsstatusListeRequest) throws HentVilkaarsstatusListeSikkerhetsbegrensning {
-        return mapToHentVilkaarsstatusListeResponse(situasjonOversiktService.hentHistoriskeVilkar(hentVilkaarsstatusListeRequest.getPersonident()));
+        return mapToHentVilkaarsstatusListeResponse(situasjonOversiktService.hentHistoriskeVilkar(hentVilkaarsstatusListeRequest.getPersonident()), hentVilkaarsstatusListeRequest.getPersonident());
     }
 
     @Override
@@ -162,18 +162,19 @@ public class SituasjonOversiktWebService implements BehandleSituasjonV1 {
         }
     }
 
-    private HentVilkaarsstatusListeResponse mapToHentVilkaarsstatusListeResponse(List<Brukervilkar> brukervilkarList) {
+    private HentVilkaarsstatusListeResponse mapToHentVilkaarsstatusListeResponse(List<Brukervilkar> brukervilkarList, String ident) {
         HentVilkaarsstatusListeResponse hentVilkaarsstatusListeResponse = new HentVilkaarsstatusListeResponse();
         hentVilkaarsstatusListeResponse.getVilkaarsstatusListe().addAll(
                 brukervilkarList.stream()
-                        .map(SituasjonOversiktWebService::mapBrukervilkarToVilkaarstatus)
+                        .map((Brukervilkar brukervilkar) -> mapBrukervilkarToVilkaarstatus(brukervilkar, ident))
                         .collect(Collectors.toList())
         );
         return hentVilkaarsstatusListeResponse;
     }
 
-    private static Vilkaarsstatus mapBrukervilkarToVilkaarstatus(Brukervilkar brukervilkar) {
+    private static Vilkaarsstatus mapBrukervilkarToVilkaarstatus(Brukervilkar brukervilkar, String ident) {
         Vilkaarsstatus vilkaarsstatus = new Vilkaarsstatus();
+        vilkaarsstatus.setPersonident(ident);
         vilkaarsstatus.setDato(CalendarConverter.convertTimestampToXMLGregorianCalendar(brukervilkar.getDato()));
         vilkaarsstatus.setVilkaarstekst(brukervilkar.getTekst());
         vilkaarsstatus.setHash(brukervilkar.getHash());
