@@ -175,7 +175,7 @@ public class SituasjonOversiktWebService implements BehandleSituasjonV1 {
     private static Vilkaarsstatus mapBrukervilkarToVilkaarstatus(Brukervilkar brukervilkar, String ident) {
         Vilkaarsstatus vilkaarsstatus = new Vilkaarsstatus();
         vilkaarsstatus.setPersonident(ident);
-        vilkaarsstatus.setDato(CalendarConverter.convertTimestampToXMLGregorianCalendar(brukervilkar.getDato()));
+        vilkaarsstatus.setDato(CalendarConverter.convertDateToXMLGregorianCalendar(brukervilkar.getDato()));
         vilkaarsstatus.setVilkaarstekst(brukervilkar.getTekst());
         vilkaarsstatus.setHash(brukervilkar.getHash());
         vilkaarsstatus.setStatus(mapVilkarStatusTilVilkaarstatuser(brukervilkar.getVilkarstatus()));

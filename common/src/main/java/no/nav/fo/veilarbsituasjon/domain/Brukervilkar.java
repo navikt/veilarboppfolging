@@ -3,7 +3,7 @@ package no.nav.fo.veilarbsituasjon.domain;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
-import java.sql.Timestamp;
+import java.util.Date;
 
 @Data
 @Accessors(chain = true)
@@ -12,7 +12,7 @@ public class Brukervilkar {
 
     }
 
-    public Brukervilkar(String aktorId, Timestamp dato, VilkarStatus vilkarstatus, String tekst, String hash) {
+    public Brukervilkar(String aktorId, Date dato, VilkarStatus vilkarstatus, String tekst, String hash) {
         this.aktorId = aktorId;
         this.dato = dato;
         this.vilkarstatus = vilkarstatus;
@@ -22,7 +22,7 @@ public class Brukervilkar {
 
     private long id;
     private String aktorId;
-    private Timestamp dato;
+    private Date dato;
     private VilkarStatus vilkarstatus;
     private String tekst;
     private String hash;
