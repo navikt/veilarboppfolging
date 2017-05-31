@@ -3,10 +3,11 @@ package no.nav.fo.veilarbsituasjon.rest;
 import lombok.SneakyThrows;
 import no.nav.brukerdialog.security.context.SubjectHandler;
 import no.nav.brukerdialog.security.domain.IdentType;
+import no.nav.fo.veilarbsituasjon.domain.Brukervilkar;
 import no.nav.fo.veilarbsituasjon.domain.MalData;
 import no.nav.fo.veilarbsituasjon.domain.OppfolgingStatusData;
-import no.nav.fo.veilarbsituasjon.domain.VilkarData;
 import no.nav.fo.veilarbsituasjon.domain.VilkarStatus;
+import no.nav.fo.veilarbsituasjon.mappers.VilkarMapper;
 import no.nav.fo.veilarbsituasjon.rest.api.SituasjonOversikt;
 import no.nav.fo.veilarbsituasjon.rest.domain.Bruker;
 import no.nav.fo.veilarbsituasjon.rest.domain.Mal;
@@ -20,7 +21,9 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 
 @Component
@@ -49,6 +52,14 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt {
     @Override
     public Vilkar hentVilkar() throws Exception {
         return tilDto(situasjonOversiktService.hentVilkar(getFnr()));
+    }
+
+    @Override
+    public List<Vilkar> hentVilkaarStatusListe() {
+        return situasjonOversiktService.hentHistoriskeVilkar(getFnr())
+                .stream()
+                .map(this::tilDto)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -99,10 +110,16 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt {
                 ;
     }
 
-    private Vilkar tilDto(VilkarData vilkarData) {
+    private Vilkar tilDto(Brukervilkar brukervilkar) {
         return new Vilkar()
-                .setText(vilkarData.text)
-                .setHash(vilkarData.hash);
+                .setTekst(brukervilkar.getTekst())
+                .setHash(brukervilkar.getHash())
+                .setDato(brukervilkar.getDato())
+                .setVilkarstatus(
+                        VilkarMapper.mapCommonVilkarStatusToVilkarStatusApi(
+                                ofNullable(brukervilkar.getVilkarstatus()).orElse(VilkarStatus.IKKE_BESVART)
+                        )
+                );
     }
 
     private Mal tilDto(MalData malData) {

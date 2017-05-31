@@ -9,5 +9,6 @@ public class Bruker {
 
     public String id;
     public boolean erVeileder;
+    public boolean erBruker;
 
 }

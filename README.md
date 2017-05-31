@@ -16,3 +16,7 @@ Riktig databaselink, brukernavn og passord må oppgis i metoden ``setupJndiLocal
 Kjør ``https://localhost:8485/veilarbsituasjon/api/sendalleveiledertilordninger`` i nettleseren.
 
 !! OBS OBS !! Husk at veilarbportefolje og veilarbportefoljeindeks må kjøre samtidig.
+
+#### For å kjøre Webservicen (soap)
+``veilarbsituasjon-vilkar`` må klones ned til samme mappe som ``veilarbsituasjon`` ligger i. I tillegg må 
+``mvn clean install`` kjøres fra roten.
