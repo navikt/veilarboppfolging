@@ -63,7 +63,6 @@ public class PortefoljeRessurs {
                         .setAktoerid(aktoerId);
 
                 settVeilederDersomFraVeilederErOK(bruker, tilordning);
-                feed.activateWebhook();
             }catch(PepException e){
                 LOG.error("Kall til ABAC feilet");
                 feilendeTilordninger.add(tilordning);
@@ -77,6 +76,8 @@ public class PortefoljeRessurs {
             }catch(Exception e) {
                 LOG.error("Det skjedde en feil ved tildeling av veileder",e);
                 feilendeTilordninger.add(tilordning);
+            }finally{
+                feed.activateWebhook();
             }
         }
 
