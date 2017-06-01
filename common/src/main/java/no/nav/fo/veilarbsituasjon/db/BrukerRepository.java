@@ -95,6 +95,6 @@ public class BrukerRepository {
                 "FROM AKTOER_ID_TO_VEILEDER tilordning " +
                 "LEFT JOIN SITUASJON situasjon " +
                 "ON tilordning.AKTOERID = situasjon.AKTORID " +
-                "WHERE OPPDATERT > ?";
+                "WHERE OPPDATERT >= ?";
     }
 }
