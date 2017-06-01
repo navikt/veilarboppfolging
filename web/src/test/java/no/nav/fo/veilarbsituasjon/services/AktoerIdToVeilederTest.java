@@ -1,6 +1,7 @@
 package no.nav.fo.veilarbsituasjon.services;
 
 
+import no.nav.fo.feed.producer.FeedProducer;
 import no.nav.fo.veilarbsituasjon.db.BrukerRepository;
 import no.nav.fo.veilarbsituasjon.domain.OppfolgingBruker;
 import no.nav.fo.veilarbsituasjon.rest.PortefoljeRessurs;
@@ -28,6 +29,9 @@ public class AktoerIdToVeilederTest {
     @Mock
     private AktoerIdService aktoerIdService;
 
+    @Mock
+    private FeedProducer<OppfolgingBruker> feed;
+
     @InjectMocks
     PortefoljeRessurs portefoljeRessurs;
 
@@ -36,6 +40,8 @@ public class AktoerIdToVeilederTest {
 
     @Mock
     PepClient pepClient;
+
+
 
     @Test
     public void portefoljeRessursMustCallDAOwithAktoerIdToVeileder() throws PepException {
