@@ -18,6 +18,10 @@ class HsqlSyntaxMapper {
         map(
             "alter table MAL modify (MAL NVARCHAR2(500))",
             "alter table MAL alter column MAL NVARCHAR2(500)"
+
+        );
+        map("ALTER TABLE AKTOER_ID_TO_VEILEDER MODIFY (VEILEDER NULL)",
+                "alter table AKTOER_ID_TO_VEILEDER alter column VEILEDER VARCHAR(20)"
         );
     }
 
