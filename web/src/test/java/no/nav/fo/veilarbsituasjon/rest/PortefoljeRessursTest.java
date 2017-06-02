@@ -222,10 +222,10 @@ public class PortefoljeRessursTest {
 
 
         doThrow(new BadSqlGrammarException("AKTOER","Dette er bare en test", new SQLException()))
-                .when(brukerRepository).leggTilEllerOppdaterBruker(argThat(new IsOppfolgingsbrukerWithAktoerId("AKTOERID2")));
+                .when(brukerRepository).upsertVeilederTilordning(argThat(new IsOppfolgingsbrukerWithAktoerId("AKTOERID2")));
 
         doThrow(new BadSqlGrammarException("AKTOER","Dette er bare en test", new SQLException()))
-                .when(brukerRepository).leggTilEllerOppdaterBruker(argThat(new IsOppfolgingsbrukerWithAktoerId("AKTOERID4")));
+                .when(brukerRepository).upsertVeilederTilordning(argThat(new IsOppfolgingsbrukerWithAktoerId("AKTOERID4")));
 
         Response response = portefoljeRessurs.postVeilederTilordninger(tilordninger);
         List<VeilederTilordning> feilendeTilordninger = ((TilordneVeilederResponse) response.getEntity()).getFeilendeTilordninger();

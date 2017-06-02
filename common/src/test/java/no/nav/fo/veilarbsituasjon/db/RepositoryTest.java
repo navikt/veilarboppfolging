@@ -2,16 +2,13 @@ package no.nav.fo.veilarbsituasjon.db;
 
 import no.nav.fo.veilarbsituasjon.IntegrasjonsTest;
 import no.nav.fo.veilarbsituasjon.domain.*;
-import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static java.lang.System.currentTimeMillis;
 import static org.hamcrest.Matchers.*;
@@ -95,7 +92,7 @@ public class RepositoryTest extends IntegrasjonsTest {
 
         @Test
         public void skalLeggeTilBruker() {
-            brukerRepository.leggTilEllerOppdaterBruker(new OppfolgingBruker()
+            brukerRepository.upsertVeilederTilordning(new OppfolgingBruker()
                     .setAktoerid(aktoerid)
                     .setVeileder("***REMOVED***"));
             assertThat(brukerRepository.hentVeilederForAktoer(aktoerid), is("***REMOVED***"));
@@ -104,10 +101,10 @@ public class RepositoryTest extends IntegrasjonsTest {
         @Test
         public void skalOppdatereBrukerDersomDenFinnes() {
             String aktoerid = "1111111";
-            brukerRepository.leggTilEllerOppdaterBruker(new OppfolgingBruker()
+            brukerRepository.upsertVeilederTilordning(new OppfolgingBruker()
                     .setAktoerid(aktoerid)
                     .setVeileder("***REMOVED***"));
-            brukerRepository.leggTilEllerOppdaterBruker(new OppfolgingBruker()
+            brukerRepository.upsertVeilederTilordning(new OppfolgingBruker()
                     .setAktoerid(aktoerid)
                     .setVeileder("***REMOVED***"));
 
@@ -115,29 +112,6 @@ public class RepositoryTest extends IntegrasjonsTest {
         }
     }
 
-    @Nested
-    class hentAlleVeiledertilordninger {
-        @Test
-        public void skalReturnereAlleVeiledertilordninger() {
-            slettAlleVeiledertilordninger();
-            insertVeiledertilordninger();
-            List<OppfolgingBruker> brukere = brukerRepository.hentAlleVeiledertilordninger();
-            assertThat(brukere.size(), is(20));
-        }
-    }
-
-    private void slettAlleVeiledertilordninger() {
-        db.update("DELETE FROM AKTOER_ID_TO_VEILEDER");
-    }
-
-    private void insertVeiledertilordninger() {
-        try {
-            db.execute(IOUtils.readLines(RepositoryTest.class.getResourceAsStream("/insert-aktoerid-veileder-testdata.sql")).stream().collect(Collectors.joining("\n")));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-    }
 
     private void sjekkLikeSituasjoner(Situasjon oprinneligSituasjon, Optional<Situasjon> situasjon) {
         assertThat(oprinneligSituasjon, equalTo(situasjon.get()));

@@ -9,6 +9,7 @@ import java.util.Map;
 class HsqlSyntaxMapper {
 
     private static final Map<String, String> syntaxMap = new HashMap<>();
+    private static final String NOOP = "SELECT 1 FROM DUAL";
 
     static {
         map(
@@ -23,6 +24,8 @@ class HsqlSyntaxMapper {
         map("ALTER TABLE AKTOER_ID_TO_VEILEDER MODIFY (VEILEDER NULL)",
                 "alter table AKTOER_ID_TO_VEILEDER alter column VEILEDER VARCHAR(20)"
         );
+
+        map("END", NOOP);
     }
 
     private static void map(String oracleSyntax, String hsqlSyntax) {
@@ -30,6 +33,10 @@ class HsqlSyntaxMapper {
     }
 
     static String hsqlSyntax(String sql) {
+        System.out.println(sql + "-------------");
+        if (sql.contains("BEGIN") || sql.contains("END LOOP")) {
+            return NOOP;
+        }
         return syntaxMap.getOrDefault(sql, sql);
     }
 

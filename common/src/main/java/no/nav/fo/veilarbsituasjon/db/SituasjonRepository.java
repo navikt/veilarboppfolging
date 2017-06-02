@@ -66,7 +66,7 @@ public class SituasjonRepository {
     public void oppdaterSituasjon(Situasjon oppdatertSituasjon) {
         String aktorId = oppdatertSituasjon.getAktorId();
         boolean oppfolging = oppdatertSituasjon.isOppfolging();
-        jdbcTemplate.update("UPDATE situasjon SET oppfolging = ? WHERE aktorid = ?",
+        jdbcTemplate.update("UPDATE situasjon SET oppfolging = ?, OPPDATERT = CURRENT_TIMESTAMP WHERE aktorid = ?",
                 oppfolging,
                 aktorId
         );
