@@ -18,6 +18,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import static java.lang.System.setProperty;
 import static java.util.Collections.singletonList;
+import static no.nav.brukerdialog.security.context.SubjectHandler.SUBJECTHANDLER_KEY;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -51,7 +52,7 @@ public class YtelsesRessursTest {
     public static void setup() {
         setProperty("no.nav.modig.security.systemuser.username", "username");
         setProperty("no.nav.modig.security.systemuser.password", "password");
-        setProperty("no.nav.modig.core.context.subjectHandlerImplementationClass", ThreadLocalSubjectHandler.class.getName());
+        setProperty(SUBJECTHANDLER_KEY, ThreadLocalSubjectHandler.class.getName());
         SubjectHandlerUtils.setSubject(new SubjectHandlerUtils.SubjectBuilder("userId", IdentType.InternBruker).withAuthLevel(3).getSubject());
     }
 
