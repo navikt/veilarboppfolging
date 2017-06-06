@@ -14,14 +14,6 @@ public class OppfolgingBruker implements Comparable<OppfolgingBruker> {
     Boolean oppfolging;
     Timestamp endretTimestamp;
 
-    public OppfolgingBruker(){
-        this.endretTimestamp = new Timestamp(System.currentTimeMillis());
-    }
-
-    public String toString() {
-        return "{\"aktoerid\":\""+aktoerid+"\",\"veileder\":\""+veileder+"\",\"oppdatert\":\""+endretTimestamp.toString()+"\"}";
-    }
-
     @Override
     public int compareTo(OppfolgingBruker o) {
         return endretTimestamp.compareTo(o.endretTimestamp);
