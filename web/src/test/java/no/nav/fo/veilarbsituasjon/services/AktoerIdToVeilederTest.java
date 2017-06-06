@@ -48,13 +48,13 @@ public class AktoerIdToVeilederTest {
         when(pepClient.isServiceCallAllowed(anyString())).thenReturn(true);
         when(aktoerIdService.findAktoerId(any(String.class))).thenReturn("AKTOERID");
         portefoljeRessurs.postVeilederTilordninger(Collections.singletonList(testData()));
-        verify(brukerRepository, times(1)).leggTilEllerOppdaterBruker(any(OppfolgingBruker.class));
+        verify(brukerRepository, times(1)).upsertVeilederTilordning(any(OppfolgingBruker.class));
     }
 
     public void noCallToDAOWhenAktoerIdServiceFails() {
         when(aktoerIdService.findAktoerId(any(String.class))).thenReturn(null);
         portefoljeRessurs.postVeilederTilordninger(Collections.singletonList(testData()));
-        verify(brukerRepository, never()).leggTilEllerOppdaterBruker(any(OppfolgingBruker.class));
+        verify(brukerRepository, never()).upsertVeilederTilordning(any(OppfolgingBruker.class));
     }
 
     private VeilederTilordning testData() {

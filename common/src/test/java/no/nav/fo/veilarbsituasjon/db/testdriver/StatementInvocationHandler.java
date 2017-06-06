@@ -21,6 +21,7 @@ public class StatementInvocationHandler implements InvocationHandler {
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         if (EXECUTE_METHOD.equals(method)) {
             args[0] = hsqlSyntax((String) args[0]);
+            System.out.println(args[0]);
         }
         return method.invoke(statement, args);
     }

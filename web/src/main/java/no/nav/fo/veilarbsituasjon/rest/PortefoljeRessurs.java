@@ -98,7 +98,7 @@ public class PortefoljeRessurs {
     @Transactional
     private void skrivTilDatabase(OppfolgingBruker bruker, VeilederTilordning tilordning) {
         try {
-            brukerRepository.leggTilEllerOppdaterBruker(bruker);
+            brukerRepository.upsertVeilederTilordning(bruker);
             LOG.debug(String.format("Veileder %s tilordnet aktoer %s", bruker.getVeileder(), bruker.getAktoerid()));
         } catch (Exception e) {
             feilendeTilordninger.add(tilordning);
