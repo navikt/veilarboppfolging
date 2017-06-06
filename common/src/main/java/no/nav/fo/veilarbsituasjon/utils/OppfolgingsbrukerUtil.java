@@ -3,6 +3,7 @@ package no.nav.fo.veilarbsituasjon.utils;
 
 import no.nav.fo.veilarbsituasjon.domain.OppfolgingBruker;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -27,7 +28,7 @@ public class OppfolgingsbrukerUtil {
         return new OppfolgingBruker()
                 .setAktoerid((String) rad.get("AKTOERID"))
                 .setVeileder((String) rad.get("VEILEDER"))
-                .setOppfolging((Boolean) rad.get("OPPFOLGING"))
+                .setOppfolging(rad.get("OPPFOLGING").equals(BigDecimal.ONE))
                 .setEndretTimestamp((Timestamp) (rad.get("OPPDATERT")));
     }
 
