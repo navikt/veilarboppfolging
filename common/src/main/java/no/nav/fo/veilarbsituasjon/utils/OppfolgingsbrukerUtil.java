@@ -26,7 +26,7 @@ public class OppfolgingsbrukerUtil {
 
     public static OppfolgingBruker mapRadTilOppfolgingsbruker(Map<String, Object> rad) {
         return new OppfolgingBruker()
-                .setAktoerid((String) rad.get("AKTOERID"))
+                .setAktoerid((String) rad.get("AKTORID"))
                 .setVeileder((String) rad.get("VEILEDER"))
                 .setOppfolging(rad.get("OPPFOLGING").equals(BigDecimal.ONE))
                 .setEndretTimestamp((Timestamp) (rad.get("OPPDATERT")));
