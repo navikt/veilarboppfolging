@@ -61,6 +61,13 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+
+            <dependency>
+                <groupId>no.nav.fo</groupId>
+                <artifactId>veilarbaktivitet-api</artifactId>
+                <version>RELEASE</version>
+            </dependency>
+
             <dependency>
                 <groupId>no.nav.fo</groupId>
                 <artifactId>veilarbsituasjon-common</artifactId>
