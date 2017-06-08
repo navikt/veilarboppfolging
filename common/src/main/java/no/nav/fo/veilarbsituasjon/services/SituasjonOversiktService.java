@@ -25,10 +25,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
 import java.sql.Timestamp;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.*;
 
 import static java.lang.System.currentTimeMillis;
 import static java.util.Arrays.asList;
@@ -133,13 +132,18 @@ public class SituasjonOversiktService {
                 && !harPagaendeYtelser
                 && !harAktiveTiltalk;
 
+        // TODO: Erstatt dette når inaktiveringsDato finnes i arena
+        LocalDate date = LocalDate.now().minusMonths(2);
+        Date toManedSiden = Date.from(date.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        Date inaktiveringsDato = fnr.equals("***REMOVED***") ? toManedSiden : new Date();
+        //
+
         return AvslutningStatusData.builder()
                 .kanAvslutte(kanAvslutte)
                 .underOppfolging(erUnderOppfolging)
                 .harYtelser(harPagaendeYtelser)
                 .harTiltak(harAktiveTiltalk)
-                // TODO finne ut hvordan vi finner denne
-//                .inaktiveringsDato(new Date())
+                .inaktiveringsDato(inaktiveringsDato)
                 .build();
     }
 
