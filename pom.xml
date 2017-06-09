@@ -65,7 +65,7 @@
             <dependency>
                 <groupId>no.nav.fo</groupId>
                 <artifactId>veilarbaktivitet-api</artifactId>
-                <version>RELEASE</version>
+                <version>1.181.55</version>
             </dependency>
 
             <dependency>

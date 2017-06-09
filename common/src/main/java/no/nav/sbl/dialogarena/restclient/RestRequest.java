@@ -1,11 +1,11 @@
 package no.nav.sbl.dialogarena.restclient;
 
-import org.glassfish.hk2.utilities.reflection.ParameterizedTypeImpl;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.GenericType;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.List;
 
@@ -24,10 +24,32 @@ public class RestRequest {
         return this;
     }
 
-    public <T> List<T> getList(Class<T> responseClass) {
+    public <ELEMENT> List<ELEMENT> getList(Class<ELEMENT> responseClass) {
         Invocation.Builder request = webTarget.request();
         Arrays.stream(httpServletRequest.getCookies()).forEach(c -> request.cookie(c.getName(), c.getValue()));
-        return request.get(new GenericType<>(new ParameterizedTypeImpl(List.class, responseClass)));
+        return request.get(new GenericType<>(new ListType(responseClass)));
     }
 
+    private class ListType implements ParameterizedType {
+        private final Class<?> elementType;
+
+        public ListType(Class<?> elementType) {
+            this.elementType = elementType;
+        }
+
+        @Override
+        public Type[] getActualTypeArguments() {
+            return new Type[]{elementType};
+        }
+
+        @Override
+        public Type getRawType() {
+            return List.class;
+        }
+
+        @Override
+        public Type getOwnerType() {
+            return List.class;
+        }
+    }
 }
