@@ -6,7 +6,6 @@ import no.nav.brukerdialog.security.domain.IdentType;
 import no.nav.fo.veilarbsituasjon.domain.*;
 import no.nav.fo.veilarbsituasjon.mappers.VilkarMapper;
 import no.nav.fo.veilarbsituasjon.rest.api.SituasjonOversikt;
-import no.nav.fo.veilarbsituasjon.rest.api.SituasjonOversiktVeileder;
 import no.nav.fo.veilarbsituasjon.rest.domain.*;
 import no.nav.fo.veilarbsituasjon.services.PepClient;
 import no.nav.fo.veilarbsituasjon.services.SituasjonOversiktService;
@@ -15,6 +14,8 @@ import org.springframework.stereotype.Component;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -22,7 +23,7 @@ import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 
 @Component
-public class SituasjonOversiktRessurs implements SituasjonOversikt, SituasjonOversiktVeileder {
+public class SituasjonOversiktRessurs implements SituasjonOversikt {
 
     @Inject
     private SituasjonOversiktService situasjonOversiktService;
@@ -44,7 +45,8 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt, SituasjonOve
         return tilDto(situasjonOversiktService.hentOppfolgingsStatus(getFnr()));
     }
 
-    @Override
+    @GET
+    @Path("/avslutningStatus")
     public AvslutningStatus hentAvslutningStatus() throws Exception {
         return tilDTO(situasjonOversiktService.hentAvslutningStatus(getFnr()));
     }
