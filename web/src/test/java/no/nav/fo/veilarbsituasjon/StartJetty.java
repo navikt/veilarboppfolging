@@ -15,7 +15,6 @@ class StartJetty {
 
     static final String CONTEXT_NAME = "/veilarbsituasjon";
     static final int PORT = 8486;
-    private static final int SSL_PORT = 8485;
 
     public static void main(String[] args) throws Exception {
         if (Boolean.parseBoolean(getProperty("lokal.database"))) {
@@ -28,7 +27,6 @@ class StartJetty {
 
         Jetty jetty = setupISSO(usingWar()
                 .at(CONTEXT_NAME)
-                .sslPort(SSL_PORT)
                 .port(PORT)
                 .loadProperties("/environment-test.properties")
                 .overrideWebXml()

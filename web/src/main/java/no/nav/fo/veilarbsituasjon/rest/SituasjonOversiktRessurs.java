@@ -3,16 +3,10 @@ package no.nav.fo.veilarbsituasjon.rest;
 import lombok.SneakyThrows;
 import no.nav.brukerdialog.security.context.SubjectHandler;
 import no.nav.brukerdialog.security.domain.IdentType;
-import no.nav.fo.veilarbsituasjon.domain.Brukervilkar;
-import no.nav.fo.veilarbsituasjon.domain.MalData;
-import no.nav.fo.veilarbsituasjon.domain.OppfolgingStatusData;
-import no.nav.fo.veilarbsituasjon.domain.VilkarStatus;
+import no.nav.fo.veilarbsituasjon.domain.*;
 import no.nav.fo.veilarbsituasjon.mappers.VilkarMapper;
 import no.nav.fo.veilarbsituasjon.rest.api.SituasjonOversikt;
-import no.nav.fo.veilarbsituasjon.rest.domain.Bruker;
-import no.nav.fo.veilarbsituasjon.rest.domain.Mal;
-import no.nav.fo.veilarbsituasjon.rest.domain.OppfolgingStatus;
-import no.nav.fo.veilarbsituasjon.rest.domain.Vilkar;
+import no.nav.fo.veilarbsituasjon.rest.domain.*;
 import no.nav.fo.veilarbsituasjon.services.PepClient;
 import no.nav.fo.veilarbsituasjon.services.SituasjonOversiktService;
 import org.springframework.stereotype.Component;
@@ -20,6 +14,8 @@ import org.springframework.stereotype.Component;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -47,6 +43,22 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt {
     @Override
     public OppfolgingStatus hentOppfolgingsStatus() throws Exception {
         return tilDto(situasjonOversiktService.hentOppfolgingsStatus(getFnr()));
+    }
+
+    @GET
+    @Path("/avslutningStatus")
+    public AvslutningStatus hentAvslutningStatus() throws Exception {
+        return tilDTO(situasjonOversiktService.hentAvslutningStatus(getFnr()));
+    }
+
+    private AvslutningStatus tilDTO(AvslutningStatusData avslutningStatusData) {
+        return new AvslutningStatus(
+                avslutningStatusData.kanAvslutte,
+                avslutningStatusData.harYtelser,
+                avslutningStatusData.underOppfolging,
+                avslutningStatusData.harTiltak,
+                avslutningStatusData.inaktiveringsDato
+        );
     }
 
     @Override
