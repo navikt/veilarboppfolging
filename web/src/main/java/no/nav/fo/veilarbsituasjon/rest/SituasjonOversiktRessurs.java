@@ -50,12 +50,13 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt, SituasjonOve
     }
 
     private AvslutningStatus tilDTO(AvslutningStatusData avslutningStatusData) {
-        return new AvslutningStatus()
-                .setKanAvslutte(avslutningStatusData.kanAvslutte)
-                .setInaktiveringsDato(avslutningStatusData.inaktiveringsDato)
-                .setHarYtelser(avslutningStatusData.harYtelser)
-                .setHarTiltak(avslutningStatusData.harTiltak)
-                .setUnderOppfolging(avslutningStatusData.underOppfolging);
+        return new AvslutningStatus(
+                avslutningStatusData.kanAvslutte,
+                avslutningStatusData.harYtelser,
+                avslutningStatusData.underOppfolging,
+                avslutningStatusData.harTiltak,
+                avslutningStatusData.inaktiveringsDato
+        );
     }
 
     @Override
