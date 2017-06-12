@@ -12,7 +12,7 @@ import javax.servlet.http.HttpServletRequest;
 public class RestClientConfig {
 
     @Bean
-    public VeilarbaktivtetService aktoerV2Ping(Provider<HttpServletRequest> httpServletRequestProvider) {
+    public VeilarbaktivtetService veilarbaktivtetService(Provider<HttpServletRequest> httpServletRequestProvider) {
         return new VeilarbaktivtetService(RestClient.build(httpServletRequestProvider, System.getProperty("veilarbaktivitet.url")));
     }
 
