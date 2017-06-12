@@ -62,10 +62,13 @@ public class SituasjonRepository {
         return situasjon.isEmpty() ? Optional.empty() : situasjon.stream().findAny();
     }
 
-
     public void oppdaterSituasjon(Situasjon oppdatertSituasjon) {
         String aktorId = oppdatertSituasjon.getAktorId();
         boolean oppfolging = oppdatertSituasjon.isOppfolging();
+        oppdaterSituasjon(aktorId, oppfolging);
+    }
+
+    public void oppdaterSituasjon(String aktorId, boolean oppfolging) {
         jdbcTemplate.update("UPDATE situasjon SET oppfolging = ?, OPPDATERT = CURRENT_TIMESTAMP WHERE aktorid = ?",
                 oppfolging,
                 aktorId
@@ -143,6 +146,15 @@ public class SituasjonRepository {
                 "WHERE AKTORID = ? " +
                 "ORDER BY DATO DESC";
         return jdbcTemplate.query(sql, (result, n) -> mapTilBrukervilkar(result), aktorId);
+    }
+
+    public void opprettOppfolgingsperiode(Oppfolgingsperiode oppfolgingperiode) {
+        jdbcTemplate.update("" +
+                "INSERT INTO OPPFOLGINGSPERIODE(aktorId, sluttDato, begrunnelse) " +
+                "VALUES (?,?,?)",
+                oppfolgingperiode.getAktorId(),
+                oppfolgingperiode.getSluttDato(),
+                oppfolgingperiode.getBegrunnelse());
     }
 
     private void oppdaterSituasjonBrukervilkar(Brukervilkar gjeldendeBrukervilkar) {

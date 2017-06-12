@@ -1,8 +1,10 @@
 package no.nav.fo.veilarbsituasjon.rest;
 
 import lombok.SneakyThrows;
+import lombok.val;
 import no.nav.brukerdialog.security.context.SubjectHandler;
 import no.nav.brukerdialog.security.domain.IdentType;
+import no.nav.fo.veilarbsituasjon.db.SituasjonRepository;
 import no.nav.fo.veilarbsituasjon.domain.*;
 import no.nav.fo.veilarbsituasjon.mappers.VilkarMapper;
 import no.nav.fo.veilarbsituasjon.rest.api.SituasjonOversikt;
@@ -14,8 +16,12 @@ import org.springframework.stereotype.Component;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.core.Response;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,8 +40,12 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt {
     @Inject
     private PepClient pepClient;
 
+    @Inject
+    private SituasjonRepository situasjonRepository;
+
     @Override
-    public Bruker hentBrukerInfo() throws Exception {return new Bruker()
+    public Bruker hentBrukerInfo() throws Exception {
+        return new Bruker()
                 .setId(getUid())
                 .setErVeileder(SubjectHandler.getSubjectHandler().getIdentType() == IdentType.InternBruker);
     }
@@ -59,6 +69,26 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt {
                 avslutningStatusData.harTiltak,
                 avslutningStatusData.inaktiveringsDato
         );
+    }
+
+    @POST
+    @Path("/avsluttOppfolging")
+    @Consumes("application/json")
+    public Response avsluttOppfolging(String begrunnelse) throws Exception {
+        String fnr = getFnr();
+        val avslutningStatus = hentAvslutningStatus();
+        val oppfolgingsperiode = Oppfolgingsperiode.builder()
+                .aktorId(fnr)
+                .sluttDato(new Date())
+                .begrunnelse(begrunnelse)
+                .build();
+
+        if (avslutningStatus.kanAvslutte) {
+            situasjonRepository.oppdaterSituasjon(fnr, true);
+            situasjonRepository.opprettOppfolgingsperiode(oppfolgingsperiode);
+        }
+
+        return Response.ok(avslutningStatus).build();
     }
 
     @Override
