@@ -1,10 +1,8 @@
 package no.nav.fo.veilarbsituasjon.rest;
 
 import lombok.SneakyThrows;
-import lombok.val;
 import no.nav.brukerdialog.security.context.SubjectHandler;
 import no.nav.brukerdialog.security.domain.IdentType;
-import no.nav.fo.veilarbsituasjon.db.SituasjonRepository;
 import no.nav.fo.veilarbsituasjon.domain.*;
 import no.nav.fo.veilarbsituasjon.mappers.VilkarMapper;
 import no.nav.fo.veilarbsituasjon.rest.api.SituasjonOversikt;
@@ -21,7 +19,6 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -39,9 +36,6 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt {
 
     @Inject
     private PepClient pepClient;
-
-    @Inject
-    private SituasjonRepository situasjonRepository;
 
     @Override
     public Bruker hentBrukerInfo() throws Exception {
@@ -74,21 +68,12 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt {
     @POST
     @Path("/avsluttOppfolging")
     @Consumes("application/json")
-    public Response avsluttOppfolging(String begrunnelse) throws Exception {
-        String fnr = getFnr();
-        val avslutningStatus = hentAvslutningStatus();
-        val oppfolgingsperiode = Oppfolgingsperiode.builder()
-                .aktorId(fnr)
-                .sluttDato(new Date())
-                .begrunnelse(begrunnelse)
-                .build();
-
-        if (avslutningStatus.kanAvslutte) {
-            situasjonRepository.oppdaterSituasjon(fnr, true);
-            situasjonRepository.opprettOppfolgingsperiode(oppfolgingsperiode);
-        }
-
-        return Response.ok(avslutningStatus).build();
+    public Response avsluttOppfolging(OppfolgingsperiodeDTO oppfolgingsperiode) throws Exception {
+        return situasjonOversiktService.avsluttOppfolging(
+                getFnr(),
+                oppfolgingsperiode.getVeilederId(),
+                oppfolgingsperiode.getBegrunnelse()
+        );
     }
 
     @Override
