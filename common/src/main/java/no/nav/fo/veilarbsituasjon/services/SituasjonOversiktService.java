@@ -2,6 +2,7 @@ package no.nav.fo.veilarbsituasjon.services;
 
 
 import io.swagger.annotations.Api;
+import lombok.SneakyThrows;
 import lombok.val;
 import no.nav.fo.veilarbsituasjon.db.SituasjonRepository;
 import no.nav.fo.veilarbsituasjon.domain.*;
@@ -15,6 +16,8 @@ import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.WSHentD
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.WSHentOppfoelgingsstatusRequest;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.WSHentOppfoelgingsstatusResponse;
+import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3;
+import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeRequest;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
@@ -22,15 +25,16 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
 import java.sql.Timestamp;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.*;
 
 import static java.lang.System.currentTimeMillis;
 import static java.util.Arrays.asList;
 import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
+import static no.nav.fo.veilarbaktivitet.domain.AktivitetStatus.AVBRUTT;
+import static no.nav.fo.veilarbaktivitet.domain.AktivitetStatus.FULLFORT;
 import static no.nav.fo.veilarbsituasjon.domain.VilkarStatus.GODKJENT;
 import static no.nav.fo.veilarbsituasjon.domain.VilkarStatus.IKKE_BESVART;
 import static no.nav.fo.veilarbsituasjon.utils.StringUtils.of;
@@ -60,7 +64,13 @@ public class SituasjonOversiktService {
     private OppfoelgingPortType oppfoelgingPortType;
 
     @Inject
+    private YtelseskontraktV3 ytelseskontraktV3;
+
+    @Inject
     private VilkarService vilkarService;
+
+    @Inject
+    private VeilarbaktivtetService veilarbaktivtetService;
 
     @Transactional
     public OppfolgingStatusData hentOppfolgingsStatus(String fnr) throws Exception {
@@ -110,6 +120,46 @@ public class SituasjonOversiktService {
                 .setUnderOppfolging(situasjon.isOppfolging())
                 .setOppfolgingUtgang(situasjon.getOppfolgingUtgang())
                 .setVilkarMaBesvares(vilkarMaBesvares);
+    }
+
+    public AvslutningStatusData hentAvslutningStatus(String fnr) throws Exception {
+        boolean erUnderOppfolging = erUnderOppfolging(fnr);
+        boolean harPagaendeYtelser = harPagaendeYtelser(fnr);
+        boolean harAktiveTiltalk = harAktiveTiltak(fnr);
+
+        boolean kanAvslutte = situasjonForFnr(fnr).isOppfolging()
+                && !erUnderOppfolging
+                && !harPagaendeYtelser
+                && !harAktiveTiltalk;
+
+        // TODO: Erstatt dette når inaktiveringsDato finnes i arena
+        LocalDate date = LocalDate.now().minusMonths(2);
+        Date toManedSiden = Date.from(date.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        Date inaktiveringsDato = fnr.equals("***REMOVED***") ? toManedSiden : new Date();
+        //
+
+        return AvslutningStatusData.builder()
+                .kanAvslutte(kanAvslutte)
+                .underOppfolging(erUnderOppfolging)
+                .harYtelser(harPagaendeYtelser)
+                .harTiltak(harAktiveTiltalk)
+                .inaktiveringsDato(inaktiveringsDato)
+                .build();
+    }
+
+    private boolean harAktiveTiltak(String fnr) {
+        return veilarbaktivtetService
+                .hentArenaAktiviteter(fnr)
+                .stream()
+                .anyMatch(arenaAktivitetDTO -> arenaAktivitetDTO.getStatus() != AVBRUTT && arenaAktivitetDTO.getStatus() != FULLFORT);
+    }
+
+    @SneakyThrows
+    private boolean harPagaendeYtelser(String fnr)  {
+        val wsHentYtelseskontraktListeRequest = new WSHentYtelseskontraktListeRequest();
+        wsHentYtelseskontraktListeRequest.setPersonidentifikator(fnr);
+        val wsHentYtelseskontraktListeResponse = ytelseskontraktV3.hentYtelseskontraktListe(wsHentYtelseskontraktListeRequest);
+        return !wsHentYtelseskontraktListeResponse.getYtelseskontraktListe().isEmpty();
     }
 
     public Brukervilkar hentVilkar(String fnr) throws Exception {
