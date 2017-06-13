@@ -2,13 +2,11 @@ package no.nav.fo.veilarbsituasjon.domain;
 
 import lombok.Builder;
 import lombok.Value;
-import lombok.experimental.Accessors;
 
 import java.util.Date;
 
 @Value
 @Builder
-@Accessors(chain = true)
 public class OppfolgingStatusFeedItem implements Comparable<OppfolgingStatusFeedItem> {
 
     private String aktoerid;

@@ -6,17 +6,14 @@ import no.nav.fo.veilarbsituasjon.domain.*;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import static java.util.Optional.ofNullable;
-import static java.util.stream.Collectors.toList;
 
 public class SituasjonRepository {
     private static final String DIALECT_PROPERTY = "db.dialect";
@@ -163,23 +160,21 @@ public class SituasjonRepository {
 
     public List<OppfolgingStatusFeedItem> hentOppfolgingStatusFeedItemsEtterDato(Date dato) {
         return jdbcTemplate
-                .queryForList("" +
-                                "SELECT s.AKTORID, op.VEILEDERID, s.OPPFOLGING, op.SLUTTDATO " +
-                                "FROM SITUASJON s " +
-                                "LEFT JOIN OPPFOLGINGSPERIODE op ON s.AKTORID = op.AKTOERID " +
-                                "WHERE op.SLUTTDATO >= ?"
-                        , dato)
-                .stream()
-                .map(this::mapRadTilOppfolgingStatusFeedItem)
-                .collect(toList());
+                .query("SELECT s.AKTORID, op.VEILEDERID, s.OPPFOLGING, op.SLUTTDATO " +
+                            "FROM SITUASJON s " +
+                            "LEFT JOIN OPPFOLGINGSPERIODE op ON s.AKTORID = op.AKTOERID " +
+                            "WHERE op.SLUTTDATO >= ?",
+                        (result, n) -> mapRadTilOppfolgingStatusFeedItem(result),
+                        dato);
     }
 
-    private OppfolgingStatusFeedItem mapRadTilOppfolgingStatusFeedItem(Map<String, Object> rad) {
+    @SneakyThrows
+    private OppfolgingStatusFeedItem mapRadTilOppfolgingStatusFeedItem(ResultSet rs) {
         return OppfolgingStatusFeedItem.builder()
-                .aktoerid((String) rad.get("AKTORID"))
-                .veilederid((String) rad.get("VEILEDERID"))
-                .oppfolging(rad.get("OPPFOLGING").equals(BigDecimal.ONE))
-                .avslutningsdato((Date) rad.get("SLUTTDATO"))
+                .aktoerid(rs.getString("AKTORID"))
+                .veilederid(rs.getString("VEILEDERID"))
+                .oppfolging(rs.getBoolean("OPPFOLGING"))
+                .avslutningsdato(rs.getDate("SLUTTDATO"))
                 .build();
     }
 
