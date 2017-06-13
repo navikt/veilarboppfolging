@@ -12,6 +12,7 @@ import java.util.Date;
 public class OppfolgingStatusFeedItem implements Comparable<OppfolgingStatusFeedItem> {
 
     private String aktoerid;
+    private String veilederid;
     private Boolean oppfolging;
     private Date avslutningsdato;
 

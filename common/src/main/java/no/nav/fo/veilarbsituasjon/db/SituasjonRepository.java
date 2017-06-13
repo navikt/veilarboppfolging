@@ -164,10 +164,10 @@ public class SituasjonRepository {
     public List<OppfolgingStatusFeedItem> hentOppfolgingStatusFeedItemsEtterDato(Date dato) {
         return jdbcTemplate
                 .queryForList("" +
-                                "SELECT AKTORID, OPPFOLGING, SLUTTDATO " +
-                                "FROM SITUASJON " +
-                                "LEFT JOIN OPPFOLGINGSPERIODE ON AKTORID = AKTOERID " +
-                                "WHERE SLUTTDATO >= ?"
+                                "SELECT s.AKTORID, op.VEILEDERID, s.OPPFOLGING, op.SLUTTDATO " +
+                                "FROM SITUASJON s " +
+                                "LEFT JOIN OPPFOLGINGSPERIODE op ON s.AKTORID = op.AKTOERID " +
+                                "WHERE op.SLUTTDATO >= ?"
                         , dato)
                 .stream()
                 .map(this::mapRadTilOppfolgingStatusFeedItem)
@@ -177,6 +177,7 @@ public class SituasjonRepository {
     private OppfolgingStatusFeedItem mapRadTilOppfolgingStatusFeedItem(Map<String, Object> rad) {
         return OppfolgingStatusFeedItem.builder()
                 .aktoerid((String) rad.get("AKTORID"))
+                .veilederid((String) rad.get("VEILEDERID"))
                 .oppfolging(rad.get("OPPFOLGING").equals(BigDecimal.ONE))
                 .avslutningsdato((Date) rad.get("SLUTTDATO"))
                 .build();
