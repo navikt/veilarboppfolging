@@ -24,7 +24,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
-import javax.ws.rs.core.Response;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -266,7 +265,7 @@ public class SituasjonOversiktService {
     }
 
     @SneakyThrows
-    public Response avsluttOppfolging(String aktorId, String veilederId, String begrunnelse) {
+    public AvslutningStatusData avsluttOppfolging(String aktorId, String veilederId, String begrunnelse) {
         val avslutningStatus = hentAvslutningStatus(aktorId);
         val oppfolgingsperiode = Oppfolgingsperiode.builder()
                 .aktorId(aktorId)
@@ -276,10 +275,10 @@ public class SituasjonOversiktService {
                 .build();
 
         if (avslutningStatus.kanAvslutte) {
-            situasjonRepository.oppdaterSituasjon(aktorId, true);
+            situasjonRepository.oppdaterSituasjon(aktorId, false);
             situasjonRepository.opprettOppfolgingsperiode(oppfolgingsperiode);
         }
 
-        return Response.ok(avslutningStatus).build();
+        return avslutningStatus;
     }
 }

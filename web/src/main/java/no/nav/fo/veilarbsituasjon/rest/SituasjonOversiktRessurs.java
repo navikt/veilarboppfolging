@@ -69,11 +69,13 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt {
     @Path("/avsluttOppfolging")
     @Consumes("application/json")
     public Response avsluttOppfolging(OppfolgingsperiodeDTO oppfolgingsperiode) throws Exception {
-        return situasjonOversiktService.avsluttOppfolging(
-                getFnr(),
-                oppfolgingsperiode.getVeilederId(),
-                oppfolgingsperiode.getBegrunnelse()
-        );
+        return Response.ok(
+                situasjonOversiktService.avsluttOppfolging(
+                        getFnr(),
+                        oppfolgingsperiode.getVeilederId(),
+                        oppfolgingsperiode.getBegrunnelse()
+                )
+        ).build();
     }
 
     @Override
