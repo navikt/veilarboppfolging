@@ -7,6 +7,7 @@ import no.nav.fo.veilarbsituasjon.domain.OppfolgingStatusData;
 import no.nav.fo.veilarbsituasjon.domain.Situasjon;
 import no.nav.fo.veilarbsituasjon.domain.VilkarStatus;
 import no.nav.fo.veilarbsituasjon.services.AktoerIdService;
+import no.nav.fo.veilarbsituasjon.services.SituasjonResolver;
 import no.nav.fo.veilarbsituasjon.services.SituasjonOversiktService;
 import no.nav.fo.veilarbsituasjon.vilkar.VilkarService;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.DigitalKontaktinformasjonV1;
@@ -54,7 +55,10 @@ public class SituasjonOversiktServiceTest {
     private VilkarService vilkarServiceMock;
 
     @Mock
-    private OppfoelgingPortType oppfoelgingPortType;
+    private OppfoelgingPortType oppfoelgingPortTypeMock;
+
+    @Mock
+    private SituasjonResolver.SituasjonResolverDependencies situasjonResolverDependencies;
 
     private static final String FNR = "fnr";
     private static final String AKTOR_ID = "aktorId";
@@ -70,12 +74,19 @@ public class SituasjonOversiktServiceTest {
     public void setup() throws Exception {
         hentOppfolgingstatusResponse = new WSHentOppfoelgingsstatusResponse();
         when(situasjonRepositoryMock.opprettSituasjon(any())).thenReturn(new Situasjon());
-        when(oppfoelgingPortType.hentOppfoelgingsstatus(any(WSHentOppfoelgingsstatusRequest.class)))
+        when(oppfoelgingPortTypeMock.hentOppfoelgingsstatus(any(WSHentOppfoelgingsstatusRequest.class)))
                 .thenReturn(hentOppfolgingstatusResponse);
         when(digitalKontaktinformasjonV1Mock.hentDigitalKontaktinformasjon(any(WSHentDigitalKontaktinformasjonRequest.class)))
                 .thenReturn(new WSHentDigitalKontaktinformasjonResponse()
                         .withDigitalKontaktinformasjon(wsKontaktinformasjon));
         when(vilkarServiceMock.getVilkar(any(VilkarService.VilkarType.class),any())).thenReturn("Gjeldene Vilkar");
+
+        when(situasjonResolverDependencies.getAktoerIdService()).thenReturn(aktoerIdServiceMcok);
+        when(situasjonResolverDependencies.getSituasjonRepository()).thenReturn(situasjonRepositoryMock);
+        when(situasjonResolverDependencies.getOppfoelgingPortType()).thenReturn(oppfoelgingPortTypeMock);
+        when(situasjonResolverDependencies.getDigitalKontaktinformasjonV1()).thenReturn(digitalKontaktinformasjonV1Mock);
+        when(situasjonResolverDependencies.getVilkarService()).thenReturn(vilkarServiceMock);
+        gittOppfolgingStatus("", "");
     }
 
     @Test
@@ -224,7 +235,7 @@ public class SituasjonOversiktServiceTest {
 
         hentOppfolgingStatus();
 
-        verifyZeroInteractions(oppfoelgingPortType);
+        verifyZeroInteractions(oppfoelgingPortTypeMock);
     }
 
     private void besvarVilkar(VilkarStatus vilkarStatus, Brukervilkar vilkar) {
@@ -240,7 +251,7 @@ public class SituasjonOversiktServiceTest {
     }
 
     private Brukervilkar hentGjeldendeVilkar() throws Exception {
-        return situasjonOversiktService.hentVilkar(situasjon);
+        return situasjonOversiktService.hentVilkar(FNR);
     }
 
     private void gittOppfolgingStatus(String formidlingskode, String kvalifiseringsgruppekode) {
