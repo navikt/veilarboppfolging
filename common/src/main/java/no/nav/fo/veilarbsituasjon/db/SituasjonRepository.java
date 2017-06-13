@@ -6,14 +6,17 @@ import no.nav.fo.veilarbsituasjon.domain.*;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.toList;
 
 public class SituasjonRepository {
     private static final String DIALECT_PROPERTY = "db.dialect";
@@ -158,6 +161,27 @@ public class SituasjonRepository {
                 oppfolgingperiode.getBegrunnelse());
     }
 
+    public List<OppfolgingStatusFeedItem> hentOppfolgingStatusFeedItemsEtterDato(Date dato) {
+        return jdbcTemplate
+                .queryForList("" +
+                                "SELECT AKTORID, OPPFOLGING, SLUTTDATO " +
+                                "FROM SITUASJON " +
+                                "LEFT JOIN OPPFOLGINGSPERIODE ON AKTORID = AKTOERID " +
+                                "WHERE SLUTTDATO >= ?"
+                        , dato)
+                .stream()
+                .map(this::mapRadTilOppfolgingStatusFeedItem)
+                .collect(toList());
+    }
+
+    private OppfolgingStatusFeedItem mapRadTilOppfolgingStatusFeedItem(Map<String, Object> rad) {
+        return OppfolgingStatusFeedItem.builder()
+                .aktoerid((String) rad.get("AKTORID"))
+                .oppfolging(rad.get("OPPFOLGING").equals(BigDecimal.ONE))
+                .avslutningsdato((Date) rad.get("SLUTTDATO"))
+                .build();
+    }
+
     private void oppdaterSituasjonBrukervilkar(Brukervilkar gjeldendeBrukervilkar) {
         jdbcTemplate.update("UPDATE situasjon SET gjeldende_brukervilkar = ? WHERE aktorid = ?",
                 gjeldendeBrukervilkar.getId(),
@@ -286,4 +310,5 @@ public class SituasjonRepository {
                 .setEndretAv(result.getString("MAL_ENDRET_AV"))
                 .setDato(result.getTimestamp("MAL_DATO"));
     }
+
 }
