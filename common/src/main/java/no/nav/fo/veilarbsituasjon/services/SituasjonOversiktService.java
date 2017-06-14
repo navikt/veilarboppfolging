@@ -120,12 +120,10 @@ public class SituasjonOversiktService {
         return Optional.ofNullable(gjeldendeMal).orElse(new MalData());
     }
 
-    //TODO: trengs situasjonResolver for denne?
     public List<MalData> hentMalList(String fnr) {
         return situasjonRepository.hentMalList(hentAktorId(fnr));
     }
 
-    //TODO: trengs situasjonResolver for denne?
     public List<Brukervilkar> hentHistoriskeVilkar(String fnr) {
         return situasjonRepository.hentHistoriskeVilkar(hentAktorId(fnr));
     }

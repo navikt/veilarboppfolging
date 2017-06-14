@@ -14,4 +14,5 @@ public class OppfolgingStatus {
     public boolean underOppfolging;
     public boolean vilkarMaBesvares;
     public Date oppfolgingUtgang;
+    private boolean kanStarteOppfolging;
 }

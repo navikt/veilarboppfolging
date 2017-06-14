@@ -136,6 +136,7 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt {
                 .setUnderOppfolging(oppfolgingStatusData.underOppfolging)
                 .setVilkarMaBesvares(oppfolgingStatusData.vilkarMaBesvares)
                 .setOppfolgingUtgang(oppfolgingStatusData.getOppfolgingUtgang())
+                .setKanStarteOppfolging(oppfolgingStatusData.isKanStarteOppfolging())
                 ;
     }
 
