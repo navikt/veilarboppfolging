@@ -18,7 +18,6 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.core.Response;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -68,14 +67,12 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt {
     @POST
     @Path("/avsluttOppfolging")
     @Consumes("application/json")
-    public Response avsluttOppfolging(OppfolgingsperiodeDTO oppfolgingsperiode) throws Exception {
-        return Response.ok(
-                situasjonOversiktService.avsluttOppfolging(
-                        getFnr(),
-                        oppfolgingsperiode.getVeilederId(),
-                        oppfolgingsperiode.getBegrunnelse()
-                )
-        ).build();
+    public void avsluttOppfolging(OppfolgingsperiodeDTO oppfolgingsperiode) throws Exception {
+        situasjonOversiktService.avsluttOppfolging(
+                getFnr(),
+                oppfolgingsperiode.veilederId,
+                oppfolgingsperiode.begrunnelse
+        );
     }
 
     @Override

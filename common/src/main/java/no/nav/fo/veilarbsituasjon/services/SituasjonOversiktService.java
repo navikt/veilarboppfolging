@@ -267,7 +267,7 @@ public class SituasjonOversiktService {
     @SneakyThrows
     public AvslutningStatusData avsluttOppfolging(String fnr, String veileder, String begrunnelse) {
         String aktorId = hentAktorId(fnr);
-        val avslutningStatus = hentAvslutningStatus(aktorId);
+        val avslutningStatus = hentAvslutningStatus(fnr);
         val oppfolgingsperiode = Oppfolgingsperiode.builder()
                 .aktorId(aktorId)
                 .veileder(veileder)
@@ -278,6 +278,9 @@ public class SituasjonOversiktService {
         if (avslutningStatus.kanAvslutte) {
             situasjonRepository.oppdaterSituasjon(aktorId, false);
             situasjonRepository.opprettOppfolgingsperiode(oppfolgingsperiode);
+        } else {
+            // TODO: Lag exception i api-app
+            throw new IllegalStateException("Kan ikke avslutte bruker");
         }
 
         return avslutningStatus;
