@@ -70,31 +70,8 @@ public class SituasjonOversiktService {
         return new SituasjonResolver(fnr, situasjonResolverDependencies).getNyesteVilkar();
     }
 
-    public AvslutningStatusData hentAvslutningStatus(String fnr) throws Exception {
-        val situasjonResolver = new SituasjonResolver(fnr, situasjonResolverDependencies);
-
-        boolean erUnderOppfolging = situasjonResolver.erUnderOppfolgingIArena();
-        boolean harPagaendeYtelser = harPagaendeYtelser(fnr);
-        boolean harAktiveTiltalk = harAktiveTiltak(fnr);
-
-        boolean kanAvslutte = situasjonResolver.getSitusjon().isOppfolging()
-                && !erUnderOppfolging
-                && !harPagaendeYtelser
-                && !harAktiveTiltalk;
-
-        // TODO: Erstatt dette når inaktiveringsDato finnes i arena
-        LocalDate date = LocalDate.now().minusMonths(2);
-        Date toManedSiden = Date.from(date.atStartOfDay(ZoneId.systemDefault()).toInstant());
-        Date inaktiveringsDato = fnr.equals("***REMOVED***") ? toManedSiden : new Date();
-        //
-
-        return AvslutningStatusData.builder()
-                .kanAvslutte(kanAvslutte)
-                .underOppfolging(erUnderOppfolging)
-                .harYtelser(harPagaendeYtelser)
-                .harTiltak(harAktiveTiltalk)
-                .inaktiveringsDato(inaktiveringsDato)
-                .build();
+    public List<Brukervilkar> hentHistoriskeVilkar(String fnr) {
+        return situasjonRepository.hentHistoriskeVilkar(hentAktorId(fnr));
     }
 
     @Transactional
@@ -124,10 +101,6 @@ public class SituasjonOversiktService {
         return situasjonRepository.hentMalList(hentAktorId(fnr));
     }
 
-    public List<Brukervilkar> hentHistoriskeVilkar(String fnr) {
-        return situasjonRepository.hentHistoriskeVilkar(hentAktorId(fnr));
-    }
-
     public MalData oppdaterMal(String mal, String fnr, String endretAv) {
         String aktorId = hentAktorId(fnr);
         Timestamp dato = new Timestamp(currentTimeMillis());
@@ -138,6 +111,33 @@ public class SituasjonOversiktService {
                 .setDato(dato);
         situasjonRepository.opprettMal(malData);
         return hentMal(fnr);
+    }
+
+    public AvslutningStatusData hentAvslutningStatus(String fnr) throws Exception {
+        val situasjonResolver = new SituasjonResolver(fnr, situasjonResolverDependencies);
+
+        boolean erUnderOppfolging = situasjonResolver.erUnderOppfolgingIArena();
+        boolean harPagaendeYtelser = harPagaendeYtelser(fnr);
+        boolean harAktiveTiltalk = harAktiveTiltak(fnr);
+
+        boolean kanAvslutte = situasjonResolver.getSitusjon().isOppfolging()
+                && !erUnderOppfolging
+                && !harPagaendeYtelser
+                && !harAktiveTiltalk;
+
+        // TODO: Erstatt dette når inaktiveringsDato finnes i arena
+        LocalDate date = LocalDate.now().minusMonths(2);
+        Date toManedSiden = Date.from(date.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        Date inaktiveringsDato = fnr.equals("***REMOVED***") ? toManedSiden : new Date();
+        //
+
+        return AvslutningStatusData.builder()
+                .kanAvslutte(kanAvslutte)
+                .underOppfolging(erUnderOppfolging)
+                .harYtelser(harPagaendeYtelser)
+                .harTiltak(harAktiveTiltalk)
+                .inaktiveringsDato(inaktiveringsDato)
+                .build();
     }
 
     @SneakyThrows
