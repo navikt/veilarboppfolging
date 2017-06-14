@@ -8,15 +8,15 @@ import java.util.Date;
 
 @Value
 @Builder
-public class AvsluttOppfolgingFeedItem implements Comparable<AvsluttOppfolgingFeedItem> {
+public class AvsluttetOppfolgingFeedItem implements Comparable<AvsluttetOppfolgingFeedItem> {
 
     private String aktoerid;
     private Date sluttdato;
     private Timestamp oppdatert;
 
     @Override
-    public int compareTo(AvsluttOppfolgingFeedItem avsluttOppfolgingFeedItem) {
-        return oppdatert.compareTo(avsluttOppfolgingFeedItem.oppdatert);
+    public int compareTo(AvsluttetOppfolgingFeedItem avsluttetOppfolgingFeedItem) {
+        return oppdatert.compareTo(avsluttetOppfolgingFeedItem.oppdatert);
     }
 
 }

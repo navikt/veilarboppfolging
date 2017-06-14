@@ -3,7 +3,7 @@ package no.nav.fo.veilarbsituasjon.services;
 import no.nav.fo.feed.common.FeedElement;
 import no.nav.fo.feed.producer.FeedProvider;
 import no.nav.fo.veilarbsituasjon.db.SituasjonRepository;
-import no.nav.fo.veilarbsituasjon.domain.AvsluttOppfolgingFeedItem;
+import no.nav.fo.veilarbsituasjon.domain.AvsluttetOppfolgingFeedItem;
 import no.nav.fo.veilarbsituasjon.utils.DateUtils;
 import org.springframework.stereotype.Component;
 
@@ -14,23 +14,23 @@ import java.util.stream.Stream;
 import static no.nav.fo.veilarbsituasjon.utils.DateUtils.toZonedDateTime;
 
 @Component
-public class AvsluttOppfolgingFeedProvider implements FeedProvider<AvsluttOppfolgingFeedItem> {
+public class AvsluttetOppfolgingFeedProvider implements FeedProvider<AvsluttetOppfolgingFeedItem> {
 
     private SituasjonRepository repository;
 
     @Inject
-    public AvsluttOppfolgingFeedProvider(SituasjonRepository repository) {
+    public AvsluttetOppfolgingFeedProvider(SituasjonRepository repository) {
         this.repository = repository;
     }
 
     @Override
-    public Stream<FeedElement<AvsluttOppfolgingFeedItem>> fetchData(String sinceId, int pageSize) {
+    public Stream<FeedElement<AvsluttetOppfolgingFeedItem>> fetchData(String sinceId, int pageSize) {
         Timestamp timestamp = DateUtils.toTimeStamp(sinceId);
 
         return repository
-                .hentAvsluttOppfolgingEtterDato(timestamp)
+                .hentAvsluttetOppfolgingEtterDato(timestamp)
                 .stream()
-                .map(o -> new FeedElement<AvsluttOppfolgingFeedItem>()
+                .map(o -> new FeedElement<AvsluttetOppfolgingFeedItem>()
                         .setId(toZonedDateTime(o.getOppdatert()).toString())
                         .setElement(o));
     }

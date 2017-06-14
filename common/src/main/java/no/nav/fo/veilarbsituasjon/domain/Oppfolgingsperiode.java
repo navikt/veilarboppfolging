@@ -9,7 +9,7 @@ import java.util.Date;
 @Builder
 public class Oppfolgingsperiode {
     String aktorId;
-    String veilederId;
+    String veileder;
     Date sluttDato;
     String begrunnelse;
 }

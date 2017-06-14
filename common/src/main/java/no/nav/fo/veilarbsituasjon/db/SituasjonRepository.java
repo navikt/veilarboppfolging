@@ -150,26 +150,26 @@ public class SituasjonRepository {
 
     public void opprettOppfolgingsperiode(Oppfolgingsperiode oppfolgingperiode) {
         jdbcTemplate.update("" +
-                "INSERT INTO OPPFOLGINGSPERIODE(aktoerId, veilederId, sluttDato, begrunnelse, oppdatert) " +
+                "INSERT INTO OPPFOLGINGSPERIODE(aktorId, veileder, sluttDato, begrunnelse, oppdatert) " +
                 "VALUES (?,?,?,?,CURRENT_TIMESTAMP)",
                 oppfolgingperiode.getAktorId(),
-                oppfolgingperiode.getVeilederId(),
+                oppfolgingperiode.getVeileder(),
                 oppfolgingperiode.getSluttDato(),
                 oppfolgingperiode.getBegrunnelse());
     }
 
-    public List<AvsluttOppfolgingFeedItem> hentAvsluttOppfolgingEtterDato(Timestamp timestamp) {
+    public List<AvsluttetOppfolgingFeedItem> hentAvsluttetOppfolgingEtterDato(Timestamp timestamp) {
         return jdbcTemplate
                 .query("SELECT aktorid, sluttdato, oppdatert " +
                             "FROM OPPFOLGINGSPERIODE " +
                             "WHERE oppdatert >= ?",
-                        (result, n) -> mapRadTilAvsluttOppfolging(result),
+                        (result, n) -> mapRadTilAvsluttetOppfolging(result),
                         timestamp);
     }
 
     @SneakyThrows
-    private AvsluttOppfolgingFeedItem mapRadTilAvsluttOppfolging(ResultSet rs) {
-        return AvsluttOppfolgingFeedItem.builder()
+    private AvsluttetOppfolgingFeedItem mapRadTilAvsluttetOppfolging(ResultSet rs) {
+        return AvsluttetOppfolgingFeedItem.builder()
                 .aktoerid(rs.getString("aktorid"))
                 .sluttdato(rs.getDate("sluttdato"))
                 .oppdatert(rs.getTimestamp("oppdatert"))
