@@ -5,9 +5,9 @@ import no.nav.fo.feed.controller.FeedController;
 import no.nav.fo.feed.producer.FeedProducer;
 import no.nav.fo.veilarbsituasjon.db.BrukerRepository;
 import no.nav.fo.veilarbsituasjon.db.SituasjonRepository;
+import no.nav.fo.veilarbsituasjon.domain.AvsluttOppfolgingFeedItem;
 import no.nav.fo.veilarbsituasjon.domain.OppfolgingBruker;
-import no.nav.fo.veilarbsituasjon.domain.OppfolgingStatusFeedItem;
-import no.nav.fo.veilarbsituasjon.services.OppfolgingStatusFeedProvider;
+import no.nav.fo.veilarbsituasjon.services.AvsluttOppfolgingFeedProvider;
 import no.nav.fo.veilarbsituasjon.services.TilordningFeedProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,11 +21,11 @@ public class FeedConfig {
     @Bean
     public FeedController feedController(
             FeedProducer<OppfolgingBruker> oppfolgingBrukerFeed,
-            FeedProducer<OppfolgingStatusFeedItem> oppfolgingStatusFeed) {
+            FeedProducer<AvsluttOppfolgingFeedItem> oppfolgingStatusFeed) {
         FeedController feedServerController = new FeedController();
 
         feedServerController.addFeed("tilordninger", oppfolgingBrukerFeed);
-        feedServerController.addFeed("oppfolgingstatus", oppfolgingStatusFeed);
+        feedServerController.addFeed("avsluttoppfolging", oppfolgingStatusFeed);
 
         return feedServerController;
     }
@@ -40,9 +40,9 @@ public class FeedConfig {
     }
 
     @Bean
-    public FeedProducer<OppfolgingStatusFeedItem> oppfolgingStatusFeed(SituasjonRepository situasjonRepository) {
-        return FeedProducer.<OppfolgingStatusFeedItem>builder()
-                .provider(new OppfolgingStatusFeedProvider(situasjonRepository))
+    public FeedProducer<AvsluttOppfolgingFeedItem> avsluttOppfolgingFeed(SituasjonRepository situasjonRepository) {
+        return FeedProducer.<AvsluttOppfolgingFeedItem>builder()
+                .provider(new AvsluttOppfolgingFeedProvider(situasjonRepository))
                 .maxPageSize(1000)
                 .interceptors(singletonList(new OidcFeedOutInterceptor()) )
                 .build();

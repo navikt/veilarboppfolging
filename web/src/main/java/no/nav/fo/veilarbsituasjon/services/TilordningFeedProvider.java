@@ -9,11 +9,9 @@ import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.util.stream.Stream;
+
+import static no.nav.fo.veilarbsituasjon.utils.DateUtils.toZonedDateTime;
 
 @Component
 public class TilordningFeedProvider implements FeedProvider<OppfolgingBruker> {
@@ -35,10 +33,5 @@ public class TilordningFeedProvider implements FeedProvider<OppfolgingBruker> {
                 .map(b -> new FeedElement<OppfolgingBruker>()
                         .setId(toZonedDateTime(b.getEndretTimestamp()).toString())
                         .setElement(b));
-    }
-
-    private ZonedDateTime toZonedDateTime(Timestamp endretTimestamp) {
-        LocalDateTime localDateTime = endretTimestamp.toLocalDateTime();
-        return ZonedDateTime.of(localDateTime, ZoneId.systemDefault()).withZoneSameInstant(ZoneOffset.UTC);
     }
 }
