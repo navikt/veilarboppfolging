@@ -3,6 +3,7 @@ package no.nav.fo.veilarbsituasjon.services;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.val;
+import no.nav.fo.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
 import no.nav.fo.veilarbsituasjon.db.SituasjonRepository;
 import no.nav.fo.veilarbsituasjon.domain.*;
 import no.nav.fo.veilarbsituasjon.utils.StringUtils;
@@ -16,17 +17,25 @@ import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.WSHentD
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.WSHentOppfoelgingsstatusRequest;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.WSHentOppfoelgingsstatusResponse;
+import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3;
+import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeRequest;
+import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeResponse;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.Date;
 import java.util.List;
 
 import static java.lang.System.currentTimeMillis;
 import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
+import static no.nav.fo.veilarbaktivitet.domain.AktivitetStatus.AVBRUTT;
+import static no.nav.fo.veilarbaktivitet.domain.AktivitetStatus.FULLFORT;
 import static no.nav.fo.veilarbsituasjon.domain.VilkarStatus.GODKJENT;
 import static no.nav.fo.veilarbsituasjon.services.ArenaUtils.erUnderOppfolging;
 import static no.nav.fo.veilarbsituasjon.services.ArenaUtils.kanSettesUnderOppfolging;
@@ -44,7 +53,9 @@ public class SituasjonResolver {
     private String aktorId;
     private Situasjon situasjon;
     private WSHentOppfoelgingsstatusResponse statusIArena;
-    private boolean reservertIKrr;
+    private Boolean reservertIKrr;
+    private WSHentYtelseskontraktListeResponse ytelser;
+    private List<ArenaAktivitetDTO> arenaAktiviteter;
 
     SituasjonResolver(String fnr, SituasjonResolverDependencies deps) {
         this.fnr = fnr;
@@ -57,28 +68,12 @@ public class SituasjonResolver {
 
     void sjekkStatusIArenaOgOppdaterSituasjon() {
         if (!situasjon.isOppfolging()) {
-            this.statusIArena = sjekkArena(fnr);
-
+            sjekkArena();
             deps.getSituasjonRepository().oppdaterSituasjon(
                     situasjon.setOppfolging(
                             erUnderOppfolging(statusIArena)
                     )
             );
-        }
-    }
-
-    void sjekkReservasjonIKrrOgOppdaterSituasjon() {
-        if (situasjon.isOppfolging()) {
-            this.reservertIKrr = sjekkKrr(fnr);
-            if (!manuell() && reservertIKrr) {
-                deps.getSituasjonRepository().opprettStatus(
-                        new Status(
-                                situasjon.getAktorId(),
-                                true,
-                                new Timestamp(currentTimeMillis()),
-                                "Reservert og under oppfølging")
-                );
-            }
         }
     }
 
@@ -103,6 +98,10 @@ public class SituasjonResolver {
                 .setHash(DigestUtils.sha256Hex(vilkarTekst));
     }
 
+    List<Brukervilkar> getHistoriskeVilkar() {
+        return deps.getSituasjonRepository().hentHistoriskeVilkar(aktorId);
+    }
+
     boolean maVilkarBesvares() {
         return ofNullable(situasjon.getGjeldendeBrukervilkar())
                 .filter(brukervilkar -> GODKJENT.equals(brukervilkar.getVilkarstatus()))
@@ -125,11 +124,18 @@ public class SituasjonResolver {
         return hentSituasjon().getGjeldendeMal();
     }
 
-    Situasjon getSitusjon() {
+    Situasjon getSituasjon() {
         return situasjon;
     }
 
+    String getAktorId() {
+        return aktorId;
+    }
+
     boolean reservertIKrr() {
+        if (reservertIKrr == null) {
+            sjekkReservasjonIKrrOgOppdaterSituasjon();
+        }
         return reservertIKrr;
     }
 
@@ -140,12 +146,57 @@ public class SituasjonResolver {
     }
 
     boolean getKanSettesUnderOppfolging() {
+        if (statusIArena == null) {
+            sjekkArena();
+        }
         return !situasjon.isOppfolging() && kanSettesUnderOppfolging(statusIArena);
     }
 
+    void startOppfolging() {
+        deps.getSituasjonRepository().oppdaterSituasjon(situasjon.setOppfolging(true));
+        situasjon = hentSituasjon();
+    }
+
     boolean erUnderOppfolgingIArena() {
-        statusIArena = sjekkArena(fnr);
+        if (statusIArena == null) {
+            sjekkArena();
+        }
         return erUnderOppfolging(statusIArena);
+    }
+
+    boolean harPagaendeYtelse() {
+        if (ytelser == null) {
+            hentYtelseskontrakt();
+        }
+        return !ytelser.getYtelseskontraktListe().isEmpty();
+    }
+
+    boolean harAktiveTiltak() {
+        if (arenaAktiviteter == null) {
+            hentArenaAktiviteter();
+        }
+        return arenaAktiviteter.stream()
+                .anyMatch(arenaAktivitetDTO -> arenaAktivitetDTO.getStatus() != AVBRUTT
+                        && arenaAktivitetDTO.getStatus() != FULLFORT);
+    }
+
+    boolean kanAvslutteOppfolging() {
+        return situasjon.isOppfolging()
+                && erUnderOppfolgingIArena()
+                && harPagaendeYtelse()
+                && harAktiveTiltak();
+    }
+
+    Date getInaktiveringsDato() {
+        // TODO: Erstatt dette når inaktiveringsDato finnes i arena
+        LocalDate date = LocalDate.now().minusMonths(2);
+        Date toManedSiden = Date.from(date.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        return fnr.equals("***REMOVED***") ? toManedSiden : new Date();
+    }
+
+    void avsluttOppfolging(Oppfolgingsperiode oppfolgingsperiode) {
+        deps.getSituasjonRepository().oppdaterSituasjon(aktorId, false);
+        deps.getSituasjonRepository().opprettOppfolgingsperiode(oppfolgingsperiode);
     }
 
     private Situasjon hentSituasjon() {
@@ -154,14 +205,29 @@ public class SituasjonResolver {
     }
 
     @SneakyThrows
-    private WSHentOppfoelgingsstatusResponse sjekkArena(String fnr) {
+    private void sjekkArena() {
         val hentOppfolgingstatusRequest = new WSHentOppfoelgingsstatusRequest();
         hentOppfolgingstatusRequest.setPersonidentifikator(fnr);
-        return deps.getOppfoelgingPortType().hentOppfoelgingsstatus(hentOppfolgingstatusRequest);
+        this.statusIArena = deps.getOppfoelgingPortType().hentOppfoelgingsstatus(hentOppfolgingstatusRequest);
+    }
+
+    private void sjekkReservasjonIKrrOgOppdaterSituasjon() {
+        if (situasjon.isOppfolging()) {
+            this.reservertIKrr = sjekkKrr();
+            if (!manuell() && reservertIKrr) {
+                deps.getSituasjonRepository().opprettStatus(
+                        new Status(
+                                situasjon.getAktorId(),
+                                true,
+                                new Timestamp(currentTimeMillis()),
+                                "Reservert og under oppfølging")
+                );
+            }
+        }
     }
 
     @SneakyThrows
-    private boolean sjekkKrr(String fnr) {
+    private boolean sjekkKrr() {
         val req = new WSHentDigitalKontaktinformasjonRequest().withPersonident(fnr);
         try {
             return of(deps.getDigitalKontaktinformasjonV1().hentDigitalKontaktinformasjon(req))
@@ -173,6 +239,17 @@ public class SituasjonResolver {
             LOG.warn(e.getMessage(), e);
             return true;
         }
+    }
+
+    @SneakyThrows
+    private void hentYtelseskontrakt() {
+        val wsHentYtelseskontraktListeRequest = new WSHentYtelseskontraktListeRequest();
+        wsHentYtelseskontraktListeRequest.setPersonidentifikator(fnr);
+        this.ytelser = deps.getYtelseskontraktV3().hentYtelseskontraktListe(wsHentYtelseskontraktListeRequest);
+    }
+
+    private void hentArenaAktiviteter() {
+        this.arenaAktiviteter = deps.getVeilarbaktivtetService().hentArenaAktiviteter(fnr);
     }
 
     @Component
@@ -193,5 +270,11 @@ public class SituasjonResolver {
 
         @Inject
         private VilkarService vilkarService;
+
+        @Inject
+        private YtelseskontraktV3 ytelseskontraktV3;
+
+        @Inject
+        private VeilarbaktivtetService veilarbaktivtetService;
     }
 }

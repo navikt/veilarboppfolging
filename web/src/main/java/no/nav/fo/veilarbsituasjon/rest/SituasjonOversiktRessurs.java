@@ -46,7 +46,7 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt {
         return tilDto(situasjonOversiktService.hentOppfolgingsStatus(getFnr()));
     }
 
-    @PUT
+    @POST
     @Path("/startOppfolging")
     public OppfolgingStatus startOppfolging() {
         return tilDto(situasjonOversiktService.startOppfolging(getFnr()));
