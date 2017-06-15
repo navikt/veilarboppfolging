@@ -21,11 +21,11 @@ public class FeedConfig {
     @Bean
     public FeedController feedController(
             FeedProducer<OppfolgingBruker> oppfolgingBrukerFeed,
-            FeedProducer<AvsluttetOppfolgingFeedItem> oppfolgingStatusFeed) {
+            FeedProducer<AvsluttetOppfolgingFeedItem> avsluttetOppfolgingFeed) {
         FeedController feedServerController = new FeedController();
 
         feedServerController.addFeed("tilordninger", oppfolgingBrukerFeed);
-        feedServerController.addFeed("avsluttetoppfolging", oppfolgingStatusFeed);
+        feedServerController.addFeed("avsluttetoppfolging", avsluttetOppfolgingFeed);
 
         return feedServerController;
     }

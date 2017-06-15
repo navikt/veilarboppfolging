@@ -123,6 +123,22 @@ public class SituasjonOversiktService {
     }
 
     public AvslutningStatusData hentAvslutningStatus(String fnr) throws Exception {
+        // TODO: Erstatt dette når inaktiveringsDato finnes i arena
+        LocalDate date = LocalDate.now().minusMonths(2);
+        Date toManedSiden = Date.from(date.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        Date inaktiveringsDato = fnr.equals("***REMOVED***") ? toManedSiden : new Date();
+        //
+        // TODO: Fjerne mock
+        if (fnr.equals("***REMOVED***")) {
+            return AvslutningStatusData.builder()
+                    .kanAvslutte(true)
+                    .underOppfolging(false)
+                    .harYtelser(false)
+                    .harTiltak(false)
+                    .inaktiveringsDato(Date.from(date.atStartOfDay(ZoneId.systemDefault()).toInstant()))
+                    .build();
+        }
+        //
         boolean erUnderOppfolging = erUnderOppfolging(fnr);
         boolean harPagaendeYtelser = harPagaendeYtelser(fnr);
         boolean harAktiveTiltalk = harAktiveTiltak(fnr);
@@ -132,11 +148,7 @@ public class SituasjonOversiktService {
                 && !harPagaendeYtelser
                 && !harAktiveTiltalk;
 
-        // TODO: Erstatt dette når inaktiveringsDato finnes i arena
-        LocalDate date = LocalDate.now().minusMonths(2);
-        Date toManedSiden = Date.from(date.atStartOfDay(ZoneId.systemDefault()).toInstant());
-        Date inaktiveringsDato = fnr.equals("***REMOVED***") ? toManedSiden : new Date();
-        //
+
 
         return AvslutningStatusData.builder()
                 .kanAvslutte(kanAvslutte)
@@ -267,7 +279,7 @@ public class SituasjonOversiktService {
     @SneakyThrows
     public AvslutningStatusData avsluttOppfolging(String fnr, String veileder, String begrunnelse) {
         String aktorId = hentAktorId(fnr);
-        val avslutningStatus = hentAvslutningStatus(aktorId);
+        val avslutningStatus = hentAvslutningStatus(fnr);
         val oppfolgingsperiode = Oppfolgingsperiode.builder()
                 .aktorId(aktorId)
                 .veileder(veileder)
@@ -278,6 +290,9 @@ public class SituasjonOversiktService {
         if (avslutningStatus.kanAvslutte) {
             situasjonRepository.oppdaterSituasjon(aktorId, false);
             situasjonRepository.opprettOppfolgingsperiode(oppfolgingsperiode);
+        } else {
+            // TODO: Lag exception i api-app
+            throw new IllegalStateException("Kan ikke avslutte bruker");
         }
 
         return avslutningStatus;
