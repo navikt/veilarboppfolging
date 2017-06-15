@@ -146,10 +146,13 @@ public class SituasjonResolver {
     }
 
     boolean getKanSettesUnderOppfolging() {
+        if (situasjon.isOppfolging()) {
+            return false;
+        }
         if (statusIArena == null) {
             sjekkArena();
         }
-        return !situasjon.isOppfolging() && kanSettesUnderOppfolging(statusIArena);
+        return kanSettesUnderOppfolging(statusIArena);
     }
 
     void startOppfolging() {
@@ -223,6 +226,8 @@ public class SituasjonResolver {
                                 "Reservert og under oppfølging")
                 );
             }
+        } else {
+            this.reservertIKrr = false;
         }
     }
 
