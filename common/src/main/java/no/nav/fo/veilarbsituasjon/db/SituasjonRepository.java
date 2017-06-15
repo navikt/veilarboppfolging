@@ -171,7 +171,7 @@ public class SituasjonRepository {
     private AvsluttetOppfolgingFeedItem mapRadTilAvsluttetOppfolging(ResultSet rs) {
         return AvsluttetOppfolgingFeedItem.builder()
                 .aktoerid(rs.getString("aktorid"))
-                .sluttdato(rs.getDate("sluttdato"))
+                .sluttdato(rs.getTimestamp("sluttdato"))
                 .oppdatert(rs.getTimestamp("oppdatert"))
                 .build();
     }
