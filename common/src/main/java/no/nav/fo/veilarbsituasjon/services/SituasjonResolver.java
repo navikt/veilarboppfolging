@@ -1,12 +1,11 @@
 package no.nav.fo.veilarbsituasjon.services;
 
+import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.val;
 import no.nav.fo.veilarbsituasjon.db.SituasjonRepository;
-import no.nav.fo.veilarbsituasjon.domain.Brukervilkar;
-import no.nav.fo.veilarbsituasjon.domain.Situasjon;
-import no.nav.fo.veilarbsituasjon.domain.Status;
-import no.nav.fo.veilarbsituasjon.domain.VilkarStatus;
+import no.nav.fo.veilarbsituasjon.domain.*;
+import no.nav.fo.veilarbsituasjon.utils.StringUtils;
 import no.nav.fo.veilarbsituasjon.vilkar.VilkarService;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.DigitalKontaktinformasjonV1;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.HentDigitalKontaktinformasjonKontaktinformasjonIkkeFunnet;
@@ -23,6 +22,7 @@ import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 import java.sql.Timestamp;
+import java.util.List;
 
 import static java.lang.System.currentTimeMillis;
 import static java.util.Optional.of;
@@ -52,8 +52,7 @@ public class SituasjonResolver {
 
         this.aktorId = ofNullable(deps.getAktoerIdService().findAktoerId(fnr))
                 .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktør for fnr: " + fnr));
-        this.situasjon = deps.getSituasjonRepository().hentSituasjon(aktorId)
-                .orElseGet(() -> deps.getSituasjonRepository().opprettSituasjon(new Situasjon().setAktorId(aktorId)));
+        this.situasjon = hentSituasjon();
     }
 
     void sjekkStatusIArenaOgOppdaterSituasjon() {
@@ -112,6 +111,20 @@ public class SituasjonResolver {
                 .orElse(true);
     }
 
+    List<MalData> getMalList() {
+        return deps.getSituasjonRepository().hentMalList(aktorId);
+    }
+
+    MalData oppdaterMal(String mal, String endretAv) {
+        MalData malData = new MalData()
+                .setAktorId(aktorId)
+                .setMal(mal)
+                .setEndretAv(StringUtils.of(endretAv).orElse(aktorId))
+                .setDato(new Timestamp(currentTimeMillis()));
+        deps.getSituasjonRepository().opprettMal(malData);
+        return hentSituasjon().getGjeldendeMal();
+    }
+
     Situasjon getSitusjon() {
         return situasjon;
     }
@@ -133,6 +146,11 @@ public class SituasjonResolver {
     boolean erUnderOppfolgingIArena() {
         statusIArena = sjekkArena(fnr);
         return erUnderOppfolging(statusIArena);
+    }
+
+    private Situasjon hentSituasjon() {
+        return deps.getSituasjonRepository().hentSituasjon(aktorId)
+                .orElseGet(() -> deps.getSituasjonRepository().opprettSituasjon(new Situasjon().setAktorId(aktorId)));
     }
 
     @SneakyThrows
@@ -158,6 +176,7 @@ public class SituasjonResolver {
     }
 
     @Component
+    @Getter
     public static class SituasjonResolverDependencies {
 
         @Inject
@@ -174,25 +193,5 @@ public class SituasjonResolver {
 
         @Inject
         private VilkarService vilkarService;
-
-        public AktoerIdService getAktoerIdService() {
-            return aktoerIdService;
-        }
-
-        public SituasjonRepository getSituasjonRepository() {
-            return situasjonRepository;
-        }
-
-        public OppfoelgingPortType getOppfoelgingPortType() {
-            return oppfoelgingPortType;
-        }
-
-        public DigitalKontaktinformasjonV1 getDigitalKontaktinformasjonV1() {
-            return digitalKontaktinformasjonV1;
-        }
-
-        public VilkarService getVilkarService() {
-            return vilkarService;
-        }
     }
 }

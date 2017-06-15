@@ -8,30 +8,23 @@ import no.nav.fo.veilarbsituasjon.domain.*;
 import no.nav.fo.veilarbsituasjon.services.SituasjonResolver.SituasjonResolverDependencies;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeRequest;
-import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
-import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
-import static java.lang.System.currentTimeMillis;
 import static java.util.Optional.ofNullable;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetStatus.AVBRUTT;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetStatus.FULLFORT;
-import static no.nav.fo.veilarbsituasjon.utils.StringUtils.of;
-import static org.slf4j.LoggerFactory.getLogger;
 
 @Component
 @Api
 public class SituasjonOversiktService {
-
-    private static final Logger LOG = getLogger(SituasjonOversiktService.class);
 
     @Inject
     private SituasjonRepository situasjonRepository;
@@ -65,7 +58,6 @@ public class SituasjonOversiktService {
                 .setKanStarteOppfolging(situasjonResolver.getKanSettesUnderOppfolging());
     }
 
-
     public Brukervilkar hentVilkar(String fnr) throws Exception {
         return new SituasjonResolver(fnr, situasjonResolverDependencies).getNyesteVilkar();
     }
@@ -98,19 +90,28 @@ public class SituasjonOversiktService {
     }
 
     public List<MalData> hentMalList(String fnr) {
-        return situasjonRepository.hentMalList(hentAktorId(fnr));
+        return new SituasjonResolver(fnr, situasjonResolverDependencies).getMalList();
     }
 
     public MalData oppdaterMal(String mal, String fnr, String endretAv) {
-        String aktorId = hentAktorId(fnr);
-        Timestamp dato = new Timestamp(currentTimeMillis());
-        MalData malData = new MalData()
-                .setAktorId(aktorId)
-                .setMal(mal)
-                .setEndretAv(of(endretAv).orElse(aktorId))
-                .setDato(dato);
-        situasjonRepository.opprettMal(malData);
-        return hentMal(fnr);
+        return new SituasjonResolver(fnr, situasjonResolverDependencies).oppdaterMal(mal, endretAv);
+    }
+
+    public OppfolgingStatusData startOppfolging(String fnr) {
+        val situasjonResolver = new SituasjonResolver(fnr, situasjonResolverDependencies);
+        situasjonResolver.sjekkStatusIArenaOgOppdaterSituasjon();
+        if (situasjonResolver.getKanSettesUnderOppfolging()) {
+            situasjonRepository.oppdaterSituasjon(situasjonResolver.getSitusjon().setOppfolging(true));
+        }
+        situasjonResolver.sjekkReservasjonIKrrOgOppdaterSituasjon();
+        return new OppfolgingStatusData()
+                .setFnr(fnr)
+                .setUnderOppfolging(situasjonResolver.getSitusjon().isOppfolging())
+                .setReservasjonKRR(situasjonResolver.reservertIKrr())
+                .setManuell(situasjonResolver.manuell())
+                .setOppfolgingUtgang(situasjonResolver.getSitusjon().getOppfolgingUtgang())
+                .setVilkarMaBesvares(situasjonResolver.maVilkarBesvares())
+                .setKanStarteOppfolging(situasjonResolver.getKanSettesUnderOppfolging());
     }
 
     public AvslutningStatusData hentAvslutningStatus(String fnr) throws Exception {

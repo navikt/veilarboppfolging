@@ -14,10 +14,7 @@ import org.springframework.stereotype.Component;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -49,20 +46,16 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt {
         return tilDto(situasjonOversiktService.hentOppfolgingsStatus(getFnr()));
     }
 
+    @PUT
+    @Path("/startOppfolging")
+    public OppfolgingStatus startOppfolging() {
+        return tilDto(situasjonOversiktService.startOppfolging(getFnr()));
+    }
+
     @GET
     @Path("/avslutningStatus")
     public AvslutningStatus hentAvslutningStatus() throws Exception {
         return tilDTO(situasjonOversiktService.hentAvslutningStatus(getFnr()));
-    }
-
-    private AvslutningStatus tilDTO(AvslutningStatusData avslutningStatusData) {
-        return new AvslutningStatus(
-                avslutningStatusData.kanAvslutte,
-                avslutningStatusData.harYtelser,
-                avslutningStatusData.underOppfolging,
-                avslutningStatusData.harTiltak,
-                avslutningStatusData.inaktiveringsDato
-        );
     }
 
     @POST
@@ -126,6 +119,16 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt {
         final String fnr = requestProvider.get().getParameter("fnr");
         pepClient.isServiceCallAllowed(fnr);
         return fnr;
+    }
+
+    private AvslutningStatus tilDTO(AvslutningStatusData avslutningStatusData) {
+        return new AvslutningStatus(
+                avslutningStatusData.kanAvslutte,
+                avslutningStatusData.harYtelser,
+                avslutningStatusData.underOppfolging,
+                avslutningStatusData.harTiltak,
+                avslutningStatusData.inaktiveringsDato
+        );
     }
 
     private OppfolgingStatus tilDto(OppfolgingStatusData oppfolgingStatusData) {
