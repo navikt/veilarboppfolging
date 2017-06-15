@@ -5,6 +5,9 @@ import lombok.SneakyThrows;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -40,8 +43,10 @@ public class DateUtils {
         return Timestamp.from(ZonedDateTime.parse(utc).toInstant());
     }
 
-    public static ZonedDateTime toZonedDateTime(Timestamp timestamp) {
-        return ZonedDateTime.now();
+    public static ZonedDateTime toZonedDateTime(Timestamp endretTimestamp) {
+        LocalDateTime localDateTime = endretTimestamp.toLocalDateTime();
+        return ZonedDateTime.of(localDateTime, ZoneId.systemDefault()).withZoneSameInstant(ZoneOffset.UTC);
     }
+
 
 }
