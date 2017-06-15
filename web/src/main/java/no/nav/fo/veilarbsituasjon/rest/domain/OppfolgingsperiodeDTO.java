@@ -1,13 +1,11 @@
 package no.nav.fo.veilarbsituasjon.rest.domain;
 
-import lombok.Builder;
-import lombok.Value;
+import lombok.Data;
 import lombok.experimental.Accessors;
 
-@Value
+@Data
 @Accessors(chain = true)
-@Builder
 public class OppfolgingsperiodeDTO {
-    String veilederId;
-    String begrunnelse;
+    public String veilederId;
+    public String begrunnelse;
 }
