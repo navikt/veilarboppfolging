@@ -26,14 +26,16 @@ public class SituasjonOversiktService {
 
         situasjonResolver.sjekkStatusIArenaOgOppdaterSituasjon();
 
+        Situasjon situasjon = situasjonResolver.getSituasjon();
         return new OppfolgingStatusData()
                 .setFnr(fnr)
-                .setUnderOppfolging(situasjonResolver.getSituasjon().isOppfolging())
+                .setUnderOppfolging(situasjon.isOppfolging())
                 .setReservasjonKRR(situasjonResolver.reservertIKrr())
                 .setManuell(situasjonResolver.manuell())
-                .setOppfolgingUtgang(situasjonResolver.getSituasjon().getOppfolgingUtgang())
+                .setOppfolgingUtgang(situasjon.getOppfolgingUtgang())
                 .setVilkarMaBesvares(situasjonResolver.maVilkarBesvares())
-                .setKanStarteOppfolging(situasjonResolver.getKanSettesUnderOppfolging());
+                .setKanStarteOppfolging(situasjonResolver.getKanSettesUnderOppfolging())
+                .setOppfolgingsperioder(situasjon.getOppfolgingsperioder());
     }
 
     public Brukervilkar hentVilkar(String fnr) throws Exception {
@@ -112,15 +114,18 @@ public class SituasjonOversiktService {
                     .build();
         }
 
+        Situasjon situasjon = situasjonResolver.getSituasjon();
         return new OppfolgingStatusData()
                 .setFnr(fnr)
-                .setUnderOppfolging(situasjonResolver.getSituasjon().isOppfolging())
+                .setUnderOppfolging(situasjon.isOppfolging())
                 .setReservasjonKRR(situasjonResolver.reservertIKrr())
                 .setManuell(situasjonResolver.manuell())
-                .setOppfolgingUtgang(situasjonResolver.getSituasjon().getOppfolgingUtgang())
+                .setOppfolgingUtgang(situasjon.getOppfolgingUtgang())
                 .setVilkarMaBesvares(situasjonResolver.maVilkarBesvares())
                 .setKanStarteOppfolging(situasjonResolver.getKanSettesUnderOppfolging())
-                .setAvslutningStatusData(avslutningStatusData);
+                .setAvslutningStatusData(avslutningStatusData)
+                .setOppfolgingsperioder(situasjon.getOppfolgingsperioder())
+                ;
     }
 
     @SneakyThrows

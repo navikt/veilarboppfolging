@@ -7,12 +7,14 @@ import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.sql.Timestamp;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
 import static java.lang.System.currentTimeMillis;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class SituasjonRepositoryTest extends IntegrasjonsTest {
 
@@ -83,6 +85,48 @@ public class SituasjonRepositoryTest extends IntegrasjonsTest {
             Optional<Situasjon> uthentetSituasjon = hentSituasjon(AKTOR_ID);
             assertThat(brukervilkar, equalTo(uthentetSituasjon.get().getGjeldendeBrukervilkar()));
         }
+    }
+
+    @Nested
+    class oppfolgingsperiode {
+
+        @Test
+        public void kanHenteSituasjonMedIngenOppfolgingsperioder() throws Exception {
+            situasjonRepository.opprettSituasjon(new Situasjon().setAktorId(AKTOR_ID));
+            Situasjon situasjon = situasjonRepository.hentSituasjon(AKTOR_ID).get();
+            assertThat(situasjon.getOppfolgingsperioder(), empty());
+        }
+
+        @Test
+        public void kanIkkeOppretteOppfolgingsperiodeUtenAHaSituasjon() throws Exception {
+            assertThrows(Exception.class, () -> opprettOppfolgingsperiode(AKTOR_ID));
+        }
+
+        @Test
+        public void kanHenteSituasjonMedOppfolgingsperioder() throws Exception {
+            situasjonRepository.opprettSituasjon(new Situasjon().setAktorId(AKTOR_ID));
+            Oppfolgingsperiode oppfolgingsperiode1 = opprettOppfolgingsperiode(AKTOR_ID);
+            Oppfolgingsperiode oppfolgingsperiode2 = opprettOppfolgingsperiode(AKTOR_ID);
+            Oppfolgingsperiode oppfolgingsperiode3 = opprettOppfolgingsperiode(AKTOR_ID);
+
+            Situasjon situasjon = situasjonRepository.hentSituasjon(AKTOR_ID).get();
+
+            List<Oppfolgingsperiode> oppfolgingsperioder = situasjon.getOppfolgingsperioder();
+            assertThat(oppfolgingsperioder, hasSize(3));
+            assertThat(oppfolgingsperioder, hasItems(oppfolgingsperiode1, oppfolgingsperiode2, oppfolgingsperiode3));
+        }
+
+        private Oppfolgingsperiode opprettOppfolgingsperiode(String aktorId) throws Exception {
+            Oppfolgingsperiode oppfolgingperiode = Oppfolgingsperiode.builder()
+                    .veileder("veileder")
+                    .begrunnelse("begrunnelse")
+                    .sluttDato(new Date())
+                    .aktorId(aktorId)
+                    .build();
+            situasjonRepository.opprettOppfolgingsperiode(oppfolgingperiode);
+            return oppfolgingperiode;
+        }
+
     }
 
     private void sjekkLikeSituasjoner(Situasjon oprinneligSituasjon, Optional<Situasjon> situasjon) {

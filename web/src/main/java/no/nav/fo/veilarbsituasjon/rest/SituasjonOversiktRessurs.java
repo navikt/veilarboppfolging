@@ -151,7 +151,14 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt {
                         ofNullable(oppfolgingStatusData.getAvslutningStatusData())
                                 .map(this::tilDto)
                                 .orElse(null)
-                );
+                )
+                .setOppfolgingsPerioder(oppfolgingStatusData.oppfolgingsperioder.stream().map(this::tilDTO).collect(toList()));
+    }
+
+    private OppfolgingPeriodeDTO tilDTO(Oppfolgingsperiode oppfolgingsperiode) {
+        return new OppfolgingPeriodeDTO()
+                .setSluttDato(oppfolgingsperiode.getSluttDato())
+                ;
     }
 
     private Vilkar tilDto(Brukervilkar brukervilkar) {
