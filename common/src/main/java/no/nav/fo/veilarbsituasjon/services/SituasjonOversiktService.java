@@ -265,11 +265,12 @@ public class SituasjonOversiktService {
     }
 
     @SneakyThrows
-    public AvslutningStatusData avsluttOppfolging(String aktorId, String veilederId, String begrunnelse) {
+    public AvslutningStatusData avsluttOppfolging(String fnr, String veileder, String begrunnelse) {
+        String aktorId = hentAktorId(fnr);
         val avslutningStatus = hentAvslutningStatus(aktorId);
         val oppfolgingsperiode = Oppfolgingsperiode.builder()
                 .aktorId(aktorId)
-                .veilederId(veilederId)
+                .veileder(veileder)
                 .sluttDato(new Date())
                 .begrunnelse(begrunnelse)
                 .build();

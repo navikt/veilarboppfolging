@@ -150,31 +150,29 @@ public class SituasjonRepository {
 
     public void opprettOppfolgingsperiode(Oppfolgingsperiode oppfolgingperiode) {
         jdbcTemplate.update("" +
-                "INSERT INTO OPPFOLGINGSPERIODE(aktoerId, veilederId, sluttDato, begrunnelse) " +
-                "VALUES (?,?,?,?)",
+                "INSERT INTO OPPFOLGINGSPERIODE(aktorId, veileder, sluttDato, begrunnelse, oppdatert) " +
+                "VALUES (?,?,?,?,CURRENT_TIMESTAMP)",
                 oppfolgingperiode.getAktorId(),
-                oppfolgingperiode.getVeilederId(),
+                oppfolgingperiode.getVeileder(),
                 oppfolgingperiode.getSluttDato(),
                 oppfolgingperiode.getBegrunnelse());
     }
 
-    public List<OppfolgingStatusFeedItem> hentOppfolgingStatusFeedItemsEtterDato(Date dato) {
+    public List<AvsluttetOppfolgingFeedItem> hentAvsluttetOppfolgingEtterDato(Timestamp timestamp) {
         return jdbcTemplate
-                .query("SELECT s.AKTORID, op.VEILEDERID, s.OPPFOLGING, op.SLUTTDATO " +
-                            "FROM SITUASJON s " +
-                            "LEFT JOIN OPPFOLGINGSPERIODE op ON s.AKTORID = op.AKTOERID " +
-                            "WHERE op.SLUTTDATO >= ?",
-                        (result, n) -> mapRadTilOppfolgingStatusFeedItem(result),
-                        dato);
+                .query("SELECT aktorid, sluttdato, oppdatert " +
+                            "FROM OPPFOLGINGSPERIODE " +
+                            "WHERE oppdatert >= ?",
+                        (result, n) -> mapRadTilAvsluttetOppfolging(result),
+                        timestamp);
     }
 
     @SneakyThrows
-    private OppfolgingStatusFeedItem mapRadTilOppfolgingStatusFeedItem(ResultSet rs) {
-        return OppfolgingStatusFeedItem.builder()
-                .aktoerid(rs.getString("AKTORID"))
-                .veilederid(rs.getString("VEILEDERID"))
-                .oppfolging(rs.getBoolean("OPPFOLGING"))
-                .avslutningsdato(rs.getDate("SLUTTDATO"))
+    private AvsluttetOppfolgingFeedItem mapRadTilAvsluttetOppfolging(ResultSet rs) {
+        return AvsluttetOppfolgingFeedItem.builder()
+                .aktoerid(rs.getString("aktorid"))
+                .sluttdato(rs.getDate("sluttdato"))
+                .oppdatert(rs.getTimestamp("oppdatert"))
                 .build();
     }
 
