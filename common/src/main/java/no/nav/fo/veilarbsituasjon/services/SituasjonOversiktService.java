@@ -89,26 +89,38 @@ public class SituasjonOversiktService {
                 .setKanStarteOppfolging(situasjonResolver.getKanSettesUnderOppfolging());
     }
 
-    public AvslutningStatusData hentAvslutningStatus(String fnr) throws Exception {
+    public OppfolgingStatusData hentAvslutningStatus(String fnr) throws Exception {
         val situasjonResolver = new SituasjonResolver(fnr, situasjonResolverDependencies);
 
+        AvslutningStatusData avslutningStatusData;
+        // TODO: Fjern mock!
         if (fnr.equals("***REMOVED***")) {
-            return AvslutningStatusData.builder()
+            avslutningStatusData = AvslutningStatusData.builder()
                     .kanAvslutte(true)
                     .underOppfolging(false)
                     .harYtelser(false)
                     .harTiltak(false)
                     .inaktiveringsDato(situasjonResolver.getInaktiveringsDato())
                     .build();
+        } else {
+            avslutningStatusData = AvslutningStatusData.builder()
+                    .kanAvslutte(situasjonResolver.kanAvslutteOppfolging())
+                    .underOppfolging(situasjonResolver.erUnderOppfolgingIArena())
+                    .harYtelser(situasjonResolver.harPagaendeYtelse())
+                    .harTiltak(situasjonResolver.harAktiveTiltak())
+                    .inaktiveringsDato(situasjonResolver.getInaktiveringsDato())
+                    .build();
         }
 
-        return AvslutningStatusData.builder()
-                .kanAvslutte(situasjonResolver.kanAvslutteOppfolging())
-                .underOppfolging(situasjonResolver.erUnderOppfolgingIArena())
-                .harYtelser(situasjonResolver.harPagaendeYtelse())
-                .harTiltak(situasjonResolver.harAktiveTiltak())
-                .inaktiveringsDato(situasjonResolver.getInaktiveringsDato())
-                .build();
+        return new OppfolgingStatusData()
+                .setFnr(fnr)
+                .setUnderOppfolging(situasjonResolver.getSituasjon().isOppfolging())
+                .setReservasjonKRR(situasjonResolver.reservertIKrr())
+                .setManuell(situasjonResolver.manuell())
+                .setOppfolgingUtgang(situasjonResolver.getSituasjon().getOppfolgingUtgang())
+                .setVilkarMaBesvares(situasjonResolver.maVilkarBesvares())
+                .setKanStarteOppfolging(situasjonResolver.getKanSettesUnderOppfolging())
+                .setAvslutningStatusData(avslutningStatusData);
     }
 
     @SneakyThrows

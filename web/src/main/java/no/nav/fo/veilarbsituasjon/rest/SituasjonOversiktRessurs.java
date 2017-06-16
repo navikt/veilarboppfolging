@@ -57,9 +57,9 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt {
 
     @GET
     @Path("/avslutningStatus")
-    public AvslutningStatus hentAvslutningStatus() throws Exception {
+    public OppfolgingStatus hentAvslutningStatus() throws Exception {
         pepClient.isServiceCallAllowed(getFnr());
-        return tilDTO(situasjonOversiktService.hentAvslutningStatus(getFnr()));
+        return tilDto(situasjonOversiktService.hentAvslutningStatus(getFnr()));
     }
 
     @POST
@@ -128,7 +128,7 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt {
         return requestProvider.get().getParameter("fnr");
     }
 
-    private AvslutningStatus tilDTO(AvslutningStatusData avslutningStatusData) {
+    private AvslutningStatus tilDto(AvslutningStatusData avslutningStatusData) {
         return new AvslutningStatus(
                 avslutningStatusData.kanAvslutte,
                 avslutningStatusData.harYtelser,
@@ -147,7 +147,11 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt {
                 .setVilkarMaBesvares(oppfolgingStatusData.vilkarMaBesvares)
                 .setOppfolgingUtgang(oppfolgingStatusData.getOppfolgingUtgang())
                 .setKanStarteOppfolging(oppfolgingStatusData.isKanStarteOppfolging())
-                ;
+                .setAvslutningStatus(
+                        ofNullable(oppfolgingStatusData.getAvslutningStatusData())
+                                .map(this::tilDto)
+                                .orElse(null)
+                );
     }
 
     private Vilkar tilDto(Brukervilkar brukervilkar) {

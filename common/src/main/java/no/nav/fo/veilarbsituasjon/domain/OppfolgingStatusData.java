@@ -15,4 +15,5 @@ public class OppfolgingStatusData {
     public boolean vilkarMaBesvares;
     public Date oppfolgingUtgang;
     private boolean kanStarteOppfolging;
+    private AvslutningStatusData avslutningStatusData;
 }
