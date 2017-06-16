@@ -7,8 +7,6 @@ på operativsystemet. Disse må ha navnene: domenebrukernavn/domenepassord. Inte
 klare å plukke opp disse. File --> Invalidate Caches / Restart --> Just Restart er ikke tilstrekkelig. Må krysses ut
 og startes på nytt.
 
-På veilarbsituasjon/internal/swagger så ligger en json som beskriver rest-apiet.
-
 #### Sending av veiledertilordninger til Portefølje
 Riktig databaselink, brukernavn og passord må oppgis i metoden ``setupJndiLocalContext()`` i klassen
 ``JndiLocalContextConfig``. Gå til Fasit --> søk på veilarbsituasjonDB --> velg riktig miljø.

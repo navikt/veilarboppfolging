@@ -12,36 +12,6 @@
         <listener-class>no.nav.apiapp.ApiAppServletContextListener</listener-class>
     </listener>
 
-
-    <!-- TODO fjerne? se http://stash.devillo.no/projects/FO/repos/apidoc/browse  -->
-    <servlet>
-        <servlet-name>swagger</servlet-name>
-        <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
-        <init-param>
-            <param-name>jersey.config.server.provider.packages</param-name>
-            <param-value>
-                io.swagger.jaxrs.listing,
-                no.nav.fo.veilarbsituasjon.rest,
-                no.nav.fo.veilarbsituasjon.ws
-            </param-value>
-        </init-param>
-        <load-on-startup>1</load-on-startup>
-        <async-supported>true</async-supported>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>swagger</servlet-name>
-        <url-pattern>internal/api/*</url-pattern>
-    </servlet-mapping>
-
-    <servlet>
-        <servlet-name>SwaggerUI</servlet-name>
-        <servlet-class>no.nav.fo.veilarbsituasjon.config.SwaggerServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>SwaggerUI</servlet-name>
-        <url-pattern>/internal/swagger/*</url-pattern>
-    </servlet-mapping>
-
     <security-constraint>
         <web-resource-collection>
             <web-resource-name>Ubeskyttet</web-resource-name>
