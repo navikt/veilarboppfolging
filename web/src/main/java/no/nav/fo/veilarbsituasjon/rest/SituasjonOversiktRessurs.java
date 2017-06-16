@@ -14,8 +14,10 @@ import org.springframework.stereotype.Component;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.*;
-import javax.ws.rs.core.Response;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -63,15 +65,13 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt {
     @POST
     @Path("/avsluttOppfolging")
     @Consumes("application/json")
-    public Response avsluttOppfolging(OppfolgingsperiodeDTO oppfolgingsperiode) throws Exception {
+    public void avsluttOppfolging(OppfolgingsperiodeDTO oppfolgingsperiode) throws Exception {
         pepClient.isServiceCallAllowed(getFnr());
-        return Response.ok(
-                situasjonOversiktService.avsluttOppfolging(
-                        getFnr(),
-                        oppfolgingsperiode.getVeilederId(),
-                        oppfolgingsperiode.getBegrunnelse()
-                )
-        ).build();
+        situasjonOversiktService.avsluttOppfolging(
+                getFnr(),
+                oppfolgingsperiode.veilederId,
+                oppfolgingsperiode.begrunnelse
+        );
     }
 
     @Override

@@ -1,18 +1,19 @@
 package no.nav.fo.veilarbsituasjon.domain;
 
 import lombok.Builder;
-import lombok.Value;
+import lombok.Data;
+import lombok.experimental.Accessors;
 
-import java.sql.Timestamp;
 import java.util.Date;
 
-@Value
+@Data
+@Accessors(chain = true)
 @Builder
 public class AvsluttetOppfolgingFeedItem implements Comparable<AvsluttetOppfolgingFeedItem> {
 
-    private String aktoerid;
-    private Date sluttdato;
-    private Timestamp oppdatert;
+    public String aktoerid;
+    public Date sluttdato;
+    public Date oppdatert;
 
     @Override
     public int compareTo(AvsluttetOppfolgingFeedItem avsluttetOppfolgingFeedItem) {

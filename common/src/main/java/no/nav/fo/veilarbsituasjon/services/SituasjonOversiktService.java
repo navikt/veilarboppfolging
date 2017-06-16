@@ -92,6 +92,16 @@ public class SituasjonOversiktService {
     public AvslutningStatusData hentAvslutningStatus(String fnr) throws Exception {
         val situasjonResolver = new SituasjonResolver(fnr, situasjonResolverDependencies);
 
+        if (fnr.equals("***REMOVED***")) {
+            return AvslutningStatusData.builder()
+                    .kanAvslutte(true)
+                    .underOppfolging(false)
+                    .harYtelser(false)
+                    .harTiltak(false)
+                    .inaktiveringsDato(situasjonResolver.getInaktiveringsDato())
+                    .build();
+        }
+
         return AvslutningStatusData.builder()
                 .kanAvslutte(situasjonResolver.kanAvslutteOppfolging())
                 .underOppfolging(situasjonResolver.erUnderOppfolgingIArena())
@@ -113,6 +123,9 @@ public class SituasjonOversiktService {
                     .begrunnelse(begrunnelse)
                     .build();
             situasjonResolver.avsluttOppfolging(oppfolgingsperiode);
+        } else {
+            // TODO: Lag exception i api-app
+            throw new IllegalStateException("Kan ikke avslutte bruker");
         }
 
         return AvslutningStatusData.builder()

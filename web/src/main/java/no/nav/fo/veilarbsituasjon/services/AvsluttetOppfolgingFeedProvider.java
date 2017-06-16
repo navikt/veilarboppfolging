@@ -9,9 +9,9 @@ import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 import java.sql.Timestamp;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.stream.Stream;
-
-import static no.nav.fo.veilarbsituasjon.utils.DateUtils.toZonedDateTime;
 
 @Component
 public class AvsluttetOppfolgingFeedProvider implements FeedProvider<AvsluttetOppfolgingFeedItem> {
@@ -31,7 +31,7 @@ public class AvsluttetOppfolgingFeedProvider implements FeedProvider<AvsluttetOp
                 .hentAvsluttetOppfolgingEtterDato(timestamp)
                 .stream()
                 .map(o -> new FeedElement<AvsluttetOppfolgingFeedItem>()
-                        .setId(toZonedDateTime(o.getOppdatert()).toString())
+                        .setId(ZonedDateTime.ofInstant(o.oppdatert.toInstant(), ZoneId.systemDefault()).toString())
                         .setElement(o));
     }
 }
