@@ -39,13 +39,13 @@ public interface SituasjonOversikt {
 
     @GET
     @Path("/mal")
-    Mal hentMal();
+    Mal hentMal() throws Exception;
 
     @GET
     @Path("/malListe")
-    List<Mal> hentMalListe();
+    List<Mal> hentMalListe() throws Exception;
 
     @POST
     @Path("/mal")
-    Mal oppdaterMal(Mal mal);
+    Mal oppdaterMal(Mal mal) throws Exception;
 }

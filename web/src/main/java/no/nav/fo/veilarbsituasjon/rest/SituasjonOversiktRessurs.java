@@ -1,6 +1,5 @@
 package no.nav.fo.veilarbsituasjon.rest;
 
-import lombok.SneakyThrows;
 import no.nav.brukerdialog.security.context.SubjectHandler;
 import no.nav.brukerdialog.security.domain.IdentType;
 import no.nav.fo.veilarbsituasjon.domain.*;
@@ -9,6 +8,7 @@ import no.nav.fo.veilarbsituasjon.rest.api.SituasjonOversikt;
 import no.nav.fo.veilarbsituasjon.rest.domain.*;
 import no.nav.fo.veilarbsituasjon.services.PepClient;
 import no.nav.fo.veilarbsituasjon.services.SituasjonOversiktService;
+import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
@@ -43,6 +43,7 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt {
 
     @Override
     public OppfolgingStatus hentOppfolgingsStatus() throws Exception {
+        pepClient.isServiceCallAllowed(getFnr());
         return tilDto(situasjonOversiktService.hentOppfolgingsStatus(getFnr()));
     }
 
@@ -55,6 +56,7 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt {
     @GET
     @Path("/avslutningStatus")
     public AvslutningStatus hentAvslutningStatus() throws Exception {
+        pepClient.isServiceCallAllowed(getFnr());
         return tilDTO(situasjonOversiktService.hentAvslutningStatus(getFnr()));
     }
 
@@ -62,6 +64,7 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt {
     @Path("/avsluttOppfolging")
     @Consumes("application/json")
     public Response avsluttOppfolging(OppfolgingsperiodeDTO oppfolgingsperiode) throws Exception {
+        pepClient.isServiceCallAllowed(getFnr());
         return Response.ok(
                 situasjonOversiktService.avsluttOppfolging(
                         getFnr(),
@@ -73,11 +76,13 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt {
 
     @Override
     public Vilkar hentVilkar() throws Exception {
+        pepClient.isServiceCallAllowed(getFnr());
         return tilDto(situasjonOversiktService.hentVilkar(getFnr()));
     }
 
     @Override
-    public List<Vilkar> hentVilkaarStatusListe() {
+    public List<Vilkar> hentVilkaarStatusListe() throws PepException {
+        pepClient.isServiceCallAllowed(getFnr());
         return situasjonOversiktService.hentHistoriskeVilkar(getFnr())
                 .stream()
                 .map(this::tilDto)
@@ -86,27 +91,32 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt {
 
     @Override
     public OppfolgingStatus godta(String hash) throws Exception {
+        pepClient.isServiceCallAllowed(getFnr());
         return tilDto(situasjonOversiktService.oppdaterVilkaar(hash, getFnr(), VilkarStatus.GODKJENT));
     }
 
     @Override
     public OppfolgingStatus avslaa(String hash) throws Exception {
+        pepClient.isServiceCallAllowed(getFnr());
         return tilDto(situasjonOversiktService.oppdaterVilkaar(hash, getFnr(), VilkarStatus.AVSLATT));
     }
 
     @Override
-    public Mal hentMal() {
+    public Mal hentMal() throws PepException {
+        pepClient.isServiceCallAllowed(getFnr());
         return tilDto(situasjonOversiktService.hentMal(getFnr()));
     }
 
     @Override
-    public List<Mal> hentMalListe() {
+    public List<Mal> hentMalListe() throws PepException {
+        pepClient.isServiceCallAllowed(getFnr());
         List<MalData> malDataList = situasjonOversiktService.hentMalList(getFnr());
         return malDataList.stream().map(this::tilDto).collect(toList());
     }
 
     @Override
-    public Mal oppdaterMal(Mal mal) {
+    public Mal oppdaterMal(Mal mal) throws PepException {
+        pepClient.isServiceCallAllowed(getFnr());
         return tilDto(situasjonOversiktService.oppdaterMal(mal.getMal(), getFnr(), getUid()));
     }
 
@@ -114,11 +124,8 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt {
         return SubjectHandler.getSubjectHandler().getUid();
     }
 
-    @SneakyThrows
     private String getFnr() {
-        final String fnr = requestProvider.get().getParameter("fnr");
-        pepClient.isServiceCallAllowed(fnr);
-        return fnr;
+        return requestProvider.get().getParameter("fnr");
     }
 
     private AvslutningStatus tilDTO(AvslutningStatusData avslutningStatusData) {
