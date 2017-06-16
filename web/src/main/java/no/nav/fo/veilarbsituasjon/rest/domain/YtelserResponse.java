@@ -2,6 +2,7 @@ package no.nav.fo.veilarbsituasjon.rest.domain;
 
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import no.nav.fo.veilarbsituasjon.domain.OppfolgingskontraktData;
 
 import java.util.List;
 

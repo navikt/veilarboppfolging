@@ -5,29 +5,8 @@
          version="3.0">
 
     <context-param>
-        <param-name>contextConfigLocation</param-name>
+        <param-name>springContekstKlasse</param-name>
         <param-value>no.nav.fo.veilarbsituasjon.config.ApplicationMockConfig</param-value>
     </context-param>
-
-    <filter>
-        <filter-name>CORSFilter</filter-name>
-        <filter-class>no.nav.fo.veilarbsituasjon.filter.CORSFilter</filter-class>
-    </filter>
-    <filter-mapping>
-        <filter-name>CORSFilter</filter-name>
-        <url-pattern>/*</url-pattern>
-    </filter-mapping>
-
-    <login-config>
-        <realm-name>jetty-login</realm-name>
-    </login-config>
-
-    <security-constraint>
-        <web-resource-collection>
-            <web-resource-name>Ubeskyttet</web-resource-name>
-            <url-pattern>/*</url-pattern>
-        </web-resource-collection>
-    </security-constraint>
-
 
 </web-app>

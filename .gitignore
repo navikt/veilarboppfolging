@@ -1,9 +1,10 @@
-
-*.idea
+.idea/*
+!.idea/runConfigurations/
 *.iml
 *.ipr
 *.iws
 *.log
+*.gz
 .checkstyle
 .classpath
 .pmd

@@ -3,16 +3,17 @@ package no.nav.fo.veilarbsituasjon.mappers;
 import no.nav.fo.veilarbsituasjon.rest.domain.*;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt.*;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeResponse;
+import org.springframework.stereotype.Component;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-
+@Component
 public class YtelseskontraktMapper {
 
-    public static YtelseskontraktResponse tilYtelseskontrakt(WSHentYtelseskontraktListeResponse response) {
+    public YtelseskontraktResponse tilYtelseskontrakt(WSHentYtelseskontraktListeResponse response) {
 
         final List<Vedtak> vedtakList = mapVedtak(response);
         final List<Ytelseskontrakt> ytelser = mapYtelser(response);

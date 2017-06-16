@@ -1,8 +1,8 @@
 package no.nav.fo.veilarbsituasjon.mappers;
 
 import no.nav.fo.veilarbsituasjon.mock.OppfoelgingV1Mock;
-import no.nav.fo.veilarbsituasjon.rest.domain.OppfolgingskontraktData;
-import no.nav.fo.veilarbsituasjon.rest.domain.OppfolgingskontraktResponse;
+import no.nav.fo.veilarbsituasjon.domain.OppfolgingskontraktData;
+import no.nav.fo.veilarbsituasjon.domain.OppfolgingskontraktResponse;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.HentOppfoelgingskontraktListeSikkerhetsbegrensning;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.informasjon.WSPeriode;
@@ -26,6 +26,7 @@ public class OppfolgingMapperTest {
     private static final int MANEDER_BAK_I_TID = 2;
     private static final int MANEDER_FREM_I_TID = 1;
     private static final int ANTALL_OPPFOELGINGSKONTRAKTER = 4;
+    private OppfolgingMapper oppfolgingMapper = new OppfolgingMapper();
 
     @Test
     public void oppfoelgingskontrakterInneholderListeMedOppfoelgingskontrakter() throws HentOppfoelgingskontraktListeSikkerhetsbegrensning {
@@ -72,7 +73,7 @@ public class OppfolgingMapperTest {
     private List<OppfolgingskontraktData> getOppfoelgingskontrakter(OppfoelgingPortType oppfoelgingMock) throws HentOppfoelgingskontraktListeSikkerhetsbegrensning {
         final WSHentOppfoelgingskontraktListeRequest request = getWsHentOppfoelgingskontraktListeRequest();
 
-        final OppfolgingskontraktResponse response = OppfolgingMapper.tilOppfolgingskontrakt(oppfoelgingMock.hentOppfoelgingskontraktListe(request));
+        final OppfolgingskontraktResponse response = oppfolgingMapper.tilOppfolgingskontrakt(oppfoelgingMock.hentOppfoelgingskontraktListe(request));
 
         return response.getOppfoelgingskontrakter();
     }
