@@ -65,12 +65,12 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt {
     @POST
     @Path("/avsluttOppfolging")
     @Consumes("application/json")
-    public void avsluttOppfolging(OppfolgingsperiodeDTO oppfolgingsperiode) throws Exception {
+    public void avsluttOppfolging(AvsluttOppfolgingsperiodeDTO avsluttOppfolgingsperiode) throws Exception {
         pepClient.isServiceCallAllowed(getFnr());
         situasjonOversiktService.avsluttOppfolging(
                 getFnr(),
-                oppfolgingsperiode.veilederId,
-                oppfolgingsperiode.begrunnelse
+                avsluttOppfolgingsperiode.veilederId,
+                avsluttOppfolgingsperiode.begrunnelse
         );
     }
 

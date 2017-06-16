@@ -20,8 +20,8 @@ public class ArenaUtils {
     }
 
     public static boolean kanSettesUnderOppfolging(WSHentOppfoelgingsstatusResponse statusIArena) {
-        return statusIArena.getFormidlingsgruppeKode().equals(IKKE_ARBEIDSSOKER)
-                && statusIArena.getServicegruppeKode().equals(SYKEMELDT_HOS_ARBEIDSGIVER);
+        return IKKE_ARBEIDSSOKER.equals(statusIArena.getFormidlingsgruppeKode())
+                && SYKEMELDT_HOS_ARBEIDSGIVER.equals(statusIArena.getServicegruppeKode());
     }
 
     private static boolean erArbeidssoker(WSHentOppfoelgingsstatusResponse oppfolgingstatus) {

@@ -5,7 +5,7 @@ import lombok.experimental.Accessors;
 
 @Data
 @Accessors(chain = true)
-public class OppfolgingsperiodeDTO {
+public class AvsluttOppfolgingsperiodeDTO {
     public String veilederId;
     public String begrunnelse;
 }

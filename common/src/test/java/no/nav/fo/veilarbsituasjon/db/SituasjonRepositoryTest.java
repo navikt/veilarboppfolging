@@ -14,14 +14,13 @@ import static java.lang.System.currentTimeMillis;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 
-public class RepositoryTest extends IntegrasjonsTest {
+public class SituasjonRepositoryTest extends IntegrasjonsTest {
 
     private static final String AKTOR_ID = "2222";
 
     private JdbcTemplate db = getBean(JdbcTemplate.class);
 
     private SituasjonRepository situasjonRepository = new SituasjonRepository(db);
-    private BrukerRepository brukerRepository = new BrukerRepository(db);
 
     @Nested
     class mal {
@@ -85,33 +84,6 @@ public class RepositoryTest extends IntegrasjonsTest {
             assertThat(brukervilkar, equalTo(uthentetSituasjon.get().getGjeldendeBrukervilkar()));
         }
     }
-
-    @Nested
-    class leggTilEllerOppdaterBruker {
-        String aktoerid = "111111";
-
-        @Test
-        public void skalLeggeTilBruker() {
-            brukerRepository.upsertVeilederTilordning(new OppfolgingBruker()
-                    .setAktoerid(aktoerid)
-                    .setVeileder("***REMOVED***"));
-            assertThat(brukerRepository.hentVeilederForAktoer(aktoerid), is("***REMOVED***"));
-        }
-
-        @Test
-        public void skalOppdatereBrukerDersomDenFinnes() {
-            String aktoerid = "1111111";
-            brukerRepository.upsertVeilederTilordning(new OppfolgingBruker()
-                    .setAktoerid(aktoerid)
-                    .setVeileder("***REMOVED***"));
-            brukerRepository.upsertVeilederTilordning(new OppfolgingBruker()
-                    .setAktoerid(aktoerid)
-                    .setVeileder("***REMOVED***"));
-
-            assertThat(brukerRepository.hentVeilederForAktoer(aktoerid), is("***REMOVED***"));
-        }
-    }
-
 
     private void sjekkLikeSituasjoner(Situasjon oprinneligSituasjon, Optional<Situasjon> situasjon) {
         assertThat(oprinneligSituasjon, equalTo(situasjon.get()));

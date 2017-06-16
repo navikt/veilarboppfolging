@@ -13,7 +13,6 @@ public class TestDriver implements Driver {
     private static int databaseCounter;
 
     public static final String URL = TestDriver.class.getSimpleName();
-    private static final String HSQL_URL = "jdbc:hsqldb:mem:situasjon-" + databaseCounter++;
 
     static {
         try {
@@ -31,7 +30,7 @@ public class TestDriver implements Driver {
     }
 
     private String getHsqlUrl() {
-        return HSQL_URL;
+        return "jdbc:hsqldb:mem:situasjon-" + databaseCounter++;
     }
 
     @Override
@@ -41,7 +40,7 @@ public class TestDriver implements Driver {
 
     @Override
     public DriverPropertyInfo[] getPropertyInfo(String url, Properties info) throws SQLException {
-        return driver.getPropertyInfo(HSQL_URL, info);
+        return driver.getPropertyInfo(getHsqlUrl(), info);
     }
 
     @Override
