@@ -1,4 +1,4 @@
-package no.nav.fo.veilarbsituasjon.domain;
+package no.nav.fo.veilarbsituasjon.rest.domain;
 
 import lombok.Builder;
 import lombok.Data;

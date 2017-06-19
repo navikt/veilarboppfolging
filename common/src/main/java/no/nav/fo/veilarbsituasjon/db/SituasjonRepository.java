@@ -3,6 +3,7 @@ package no.nav.fo.veilarbsituasjon.db;
 
 import lombok.SneakyThrows;
 import no.nav.fo.veilarbsituasjon.domain.*;
+import no.nav.fo.veilarbsituasjon.rest.domain.AvsluttetOppfolgingFeedItem;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 

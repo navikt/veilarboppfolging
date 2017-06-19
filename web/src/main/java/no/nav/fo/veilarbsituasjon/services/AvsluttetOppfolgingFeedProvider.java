@@ -3,7 +3,7 @@ package no.nav.fo.veilarbsituasjon.services;
 import no.nav.fo.feed.common.FeedElement;
 import no.nav.fo.feed.producer.FeedProvider;
 import no.nav.fo.veilarbsituasjon.db.SituasjonRepository;
-import no.nav.fo.veilarbsituasjon.domain.AvsluttetOppfolgingFeedItem;
+import no.nav.fo.veilarbsituasjon.rest.domain.AvsluttetOppfolgingFeedItem;
 import no.nav.fo.veilarbsituasjon.utils.DateUtils;
 import org.springframework.stereotype.Component;
 
