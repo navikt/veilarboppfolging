@@ -3,17 +3,12 @@ package no.nav.fo.veilarbsituasjon.ws.provider;
 import lombok.SneakyThrows;
 import lombok.val;
 import no.nav.apiapp.soap.SoapTjeneste;
-import no.nav.fo.veilarbsituasjon.domain.Brukervilkar;
-import no.nav.fo.veilarbsituasjon.domain.MalData;
-import no.nav.fo.veilarbsituasjon.domain.OppfolgingStatusData;
-import no.nav.fo.veilarbsituasjon.domain.VilkarStatus;
+import no.nav.fo.veilarbsituasjon.domain.*;
 import no.nav.fo.veilarbsituasjon.services.SituasjonOversiktService;
 import no.nav.fo.veilarbsituasjon.utils.CalendarConverter;
+import no.nav.fo.veilarbsituasjon.utils.DateUtils;
 import no.nav.tjeneste.virksomhet.behandlesituasjon.v1.binding.*;
-import no.nav.tjeneste.virksomhet.behandlesituasjon.v1.informasjon.Mal;
-import no.nav.tjeneste.virksomhet.behandlesituasjon.v1.informasjon.Oppfoelgingsstatus;
-import no.nav.tjeneste.virksomhet.behandlesituasjon.v1.informasjon.Vilkaarsstatus;
-import no.nav.tjeneste.virksomhet.behandlesituasjon.v1.informasjon.Vilkaarsstatuser;
+import no.nav.tjeneste.virksomhet.behandlesituasjon.v1.informasjon.*;
 import no.nav.tjeneste.virksomhet.behandlesituasjon.v1.meldinger.*;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +19,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.Response.Status.NOT_IMPLEMENTED;
 import static no.nav.fo.veilarbsituasjon.domain.VilkarStatus.*;
 import static no.nav.fo.veilarbsituasjon.utils.DateUtils.xmlCalendar;
@@ -97,7 +93,7 @@ public class SituasjonOversiktWebService implements BehandleSituasjonV1 {
         val malListe = situasjonOversiktService.hentMalList(personident)
                 .stream()
                 .map(malData -> mapTilMal(malData, personident))
-                .collect(Collectors.toList());
+                .collect(toList());
 
         val res = new HentMalListeResponse();
         res.getMalListe().addAll(malListe);
@@ -125,11 +121,20 @@ public class SituasjonOversiktWebService implements BehandleSituasjonV1 {
         oppfoelgingsstatus.setMaaVilkaarBesvares(oppfolgingStatusData.isVilkarMaBesvares());
         oppfoelgingsstatus.setPersonident(oppfolgingStatusData.getFnr());
         oppfoelgingsstatus.setOppfoelgingUtgang(xmlCalendar(oppfolgingStatusData.getOppfolgingUtgang()));
+        oppfoelgingsstatus.getOppfoelgingsPerioder().addAll(
+                oppfolgingStatusData.getOppfolgingsperioder().stream().map(this::mapOppfoelgingsPeriode).collect(toList())
+        );
 
         val res = new HentOppfoelgingsstatusResponse();
         res.setOppfoelgingsstatus(oppfoelgingsstatus);
 
         return res;
+    }
+
+    private OppfoelgingsPeriode mapOppfoelgingsPeriode(Oppfolgingsperiode oppfolgingsperiode) {
+        OppfoelgingsPeriode oppfoelgingsPeriode = new OppfoelgingsPeriode();
+        oppfoelgingsPeriode.setSluttDato(DateUtils.xmlCalendar(oppfolgingsperiode.getSluttDato()));
+        return oppfoelgingsPeriode;
     }
 
     private Mal mapTilMal(MalData malData, String personident) {
@@ -167,7 +172,7 @@ public class SituasjonOversiktWebService implements BehandleSituasjonV1 {
         hentVilkaarsstatusListeResponse.getVilkaarsstatusListe().addAll(
                 brukervilkarList.stream()
                         .map((Brukervilkar brukervilkar) -> mapBrukervilkarToVilkaarstatus(brukervilkar, ident))
-                        .collect(Collectors.toList())
+                        .collect(toList())
         );
         return hentVilkaarsstatusListeResponse;
     }
