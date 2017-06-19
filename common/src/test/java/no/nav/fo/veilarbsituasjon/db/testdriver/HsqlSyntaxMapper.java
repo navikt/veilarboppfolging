@@ -29,7 +29,10 @@ class HsqlSyntaxMapper {
                 "ALTER TABLE OPPFOLGINGSPERIODE MODIFY (sluttdato TIMESTAMP, oppdatert TIMESTAMP)",
                 "alter table OPPFOLGINGSPERIODE alter column sluttdato TIMESTAMP; alter table OPPFOLGINGSPERIODE alter column oppdatert TIMESTAMP;"
         );
-
+        map(
+                "alter table OPPFOLGINGSPERIODE modify (AKTORID VARCHAR2(20))",
+                "alter table OPPFOLGINGSPERIODE alter column AKTORID VARCHAR2(20)"
+        );
         map("END", NOOP);
     }
 

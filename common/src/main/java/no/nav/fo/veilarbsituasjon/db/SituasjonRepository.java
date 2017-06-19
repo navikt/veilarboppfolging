@@ -243,8 +243,9 @@ public class SituasjonRepository {
     }
 
     private Situasjon mapTilSituasjon(ResultSet resultat) throws SQLException {
+        String aktorId = resultat.getString("aktorid");
         return new Situasjon()
-                .setAktorId(resultat.getString("aktorid"))
+                .setAktorId(aktorId)
                 .setOppfolging(resultat.getBoolean("oppfolging"))
                 .setGjeldendeStatus(
                         Optional.ofNullable(resultat.getLong("gjeldende_status"))
@@ -261,7 +262,31 @@ public class SituasjonRepository {
                         Optional.ofNullable(resultat.getLong("GJELDENDE_MAL"))
                                 .map(m -> m != 0 ? mapTilMal(resultat) : null)
                                 .orElse(null)
-                );
+                )
+                .setOppfolgingsperioder(hentOppfolgingsperioder(aktorId));
+    }
+
+    private List<Oppfolgingsperiode> hentOppfolgingsperioder(String aktorid) {
+        return jdbcTemplate.query("" +
+                        "SELECT " +
+                        " AKTORID, " +
+                        " VEILEDER, " +
+                        " SLUTTDATO, " +
+                        " BEGRUNNELSE " +
+                        "FROM OPPFOLGINGSPERIODE " +
+                        "WHERE AKTORID = ?",
+                (result, n) -> mapTilOppfolgingsperiode(result),
+                aktorid
+        );
+    }
+
+    private Oppfolgingsperiode mapTilOppfolgingsperiode(ResultSet result) throws SQLException {
+        return Oppfolgingsperiode.builder()
+                .aktorId(result.getString("aktorid"))
+                .veileder(result.getString("veileder"))
+                .sluttDato(hentDato(result, "sluttdato"))
+                .begrunnelse(result.getString("begrunnelse"))
+                .build();
     }
 
     private static Date hentDato(ResultSet rs, String kolonneNavn) throws SQLException {
