@@ -20,11 +20,6 @@
 
         <dependency>
             <groupId>no.nav.fo</groupId>
-            <artifactId>veilarbsituasjon-api</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>no.nav.fo</groupId>
             <artifactId>veilarbaktivitet-api</artifactId>
         </dependency>
 

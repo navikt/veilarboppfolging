@@ -3,7 +3,6 @@ package no.nav.fo.veilarbsituasjon.db;
 
 import lombok.SneakyThrows;
 import no.nav.fo.veilarbsituasjon.domain.*;
-import no.nav.fo.veilarbsituasjon.rest.domain.AvsluttetOppfolgingFeedItem;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -159,7 +158,7 @@ public class SituasjonRepository {
                 oppfolgingperiode.getBegrunnelse());
     }
 
-    public List<AvsluttetOppfolgingFeedItem> hentAvsluttetOppfolgingEtterDato(Timestamp timestamp) {
+    public List<AvsluttetOppfolgingFeedData> hentAvsluttetOppfolgingEtterDato(Timestamp timestamp) {
         return jdbcTemplate
                 .query("SELECT aktorid, sluttdato, oppdatert " +
                             "FROM OPPFOLGINGSPERIODE " +
@@ -169,8 +168,8 @@ public class SituasjonRepository {
     }
 
     @SneakyThrows
-    private AvsluttetOppfolgingFeedItem mapRadTilAvsluttetOppfolging(ResultSet rs) {
-        return AvsluttetOppfolgingFeedItem.builder()
+    private AvsluttetOppfolgingFeedData mapRadTilAvsluttetOppfolging(ResultSet rs) {
+        return AvsluttetOppfolgingFeedData.builder()
                 .aktoerid(rs.getString("aktorid"))
                 .sluttdato(rs.getTimestamp("sluttdato"))
                 .oppdatert(rs.getTimestamp("oppdatert"))
