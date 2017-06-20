@@ -3,12 +3,14 @@ package no.nav.fo.veilarbsituasjon.services;
 import io.swagger.annotations.Api;
 import lombok.SneakyThrows;
 import lombok.val;
+import no.nav.fo.veilarbsituasjon.db.SituasjonRepository;
 import no.nav.fo.veilarbsituasjon.domain.*;
 import no.nav.fo.veilarbsituasjon.services.SituasjonResolver.SituasjonResolverDependencies;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
+import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -19,6 +21,9 @@ public class SituasjonOversiktService {
 
     @Inject
     private SituasjonResolverDependencies situasjonResolverDependencies;
+
+    @Inject
+    private SituasjonRepository situasjonRepository;
 
     @Transactional
     public OppfolgingStatusData hentOppfolgingsStatus(String fnr) throws Exception {
@@ -153,5 +158,9 @@ public class SituasjonOversiktService {
                 .inaktiveringsDato(situasjonResolver.getInaktiveringsDato())
                 .build();
 
+    }
+
+    public List<AvsluttetOppfolgingFeedData> hentAvsluttetOppfolgingEtterDato(Timestamp timestamp) {
+        return situasjonRepository.hentAvsluttetOppfolgingEtterDato(timestamp);
     }
 }
