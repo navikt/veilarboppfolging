@@ -9,6 +9,9 @@ import java.util.Date;
 @Accessors(chain = true)
 public class OppfolgingPeriodeDTO {
 
+    public String aktorId;
+    public String veileder;
     public Date sluttDato;
+    public String begrunnelse;
 
 }

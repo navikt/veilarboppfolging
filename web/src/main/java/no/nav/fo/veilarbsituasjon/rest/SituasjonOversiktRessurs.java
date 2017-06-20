@@ -157,7 +157,10 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt {
 
     private OppfolgingPeriodeDTO tilDTO(Oppfolgingsperiode oppfolgingsperiode) {
         return new OppfolgingPeriodeDTO()
+                .setAktorId(oppfolgingsperiode.getAktorId())
+                .setVeileder(oppfolgingsperiode.getVeileder())
                 .setSluttDato(oppfolgingsperiode.getSluttDato())
+                .setBegrunnelse(oppfolgingsperiode.getBegrunnelse())
                 ;
     }
 
