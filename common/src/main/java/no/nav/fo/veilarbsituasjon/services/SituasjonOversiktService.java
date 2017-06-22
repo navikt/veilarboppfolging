@@ -99,26 +99,7 @@ public class SituasjonOversiktService {
     public OppfolgingStatusData hentAvslutningStatus(String fnr) throws Exception {
         val situasjonResolver = new SituasjonResolver(fnr, situasjonResolverDependencies);
 
-        val avslutningStatusData = AvslutningStatusData.builder()
-                .kanAvslutte(situasjonResolver.kanAvslutteOppfolging())
-                .underOppfolging(situasjonResolver.erUnderOppfolgingIArena())
-                .harYtelser(situasjonResolver.harPagaendeYtelse())
-                .harTiltak(situasjonResolver.harAktiveTiltak())
-                .inaktiveringsDato(situasjonResolver.getInaktiveringsDato())
-                .build();
-
-        Situasjon situasjon = situasjonResolver.getSituasjon();
-        return new OppfolgingStatusData()
-                .setFnr(fnr)
-                .setUnderOppfolging(situasjon.isOppfolging())
-                .setReservasjonKRR(situasjonResolver.reservertIKrr())
-                .setManuell(situasjonResolver.manuell())
-                .setOppfolgingUtgang(situasjon.getOppfolgingUtgang())
-                .setVilkarMaBesvares(situasjonResolver.maVilkarBesvares())
-                .setKanStarteOppfolging(situasjonResolver.getKanSettesUnderOppfolging())
-                .setAvslutningStatusData(avslutningStatusData)
-                .setOppfolgingsperioder(situasjon.getOppfolgingsperioder())
-                ;
+        return getOppfolgingStatusData(fnr, situasjonResolver);
     }
 
     @SneakyThrows
@@ -135,6 +116,10 @@ public class SituasjonOversiktService {
             situasjonResolver.avsluttOppfolging(oppfolgingsperiode);
         }
 
+        return getOppfolgingStatusData(fnr, situasjonResolver);
+    }
+
+    private OppfolgingStatusData getOppfolgingStatusData(String fnr, SituasjonResolver situasjonResolver) {
         val avslutningStatusData = AvslutningStatusData.builder()
                 .kanAvslutte(situasjonResolver.kanAvslutteOppfolging())
                 .underOppfolging(situasjonResolver.erUnderOppfolgingIArena())
