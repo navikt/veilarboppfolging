@@ -99,16 +99,13 @@ public class SituasjonOversiktService {
     public OppfolgingStatusData hentAvslutningStatus(String fnr) throws Exception {
         val situasjonResolver = new SituasjonResolver(fnr, situasjonResolverDependencies);
 
-        AvslutningStatusData avslutningStatusData;
-
-        avslutningStatusData = AvslutningStatusData.builder()
+        val avslutningStatusData = AvslutningStatusData.builder()
                 .kanAvslutte(situasjonResolver.kanAvslutteOppfolging())
                 .underOppfolging(situasjonResolver.erUnderOppfolgingIArena())
                 .harYtelser(situasjonResolver.harPagaendeYtelse())
                 .harTiltak(situasjonResolver.harAktiveTiltak())
                 .inaktiveringsDato(situasjonResolver.getInaktiveringsDato())
                 .build();
-
 
         Situasjon situasjon = situasjonResolver.getSituasjon();
         return new OppfolgingStatusData()
