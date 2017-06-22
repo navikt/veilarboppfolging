@@ -100,24 +100,15 @@ public class SituasjonOversiktService {
         val situasjonResolver = new SituasjonResolver(fnr, situasjonResolverDependencies);
 
         AvslutningStatusData avslutningStatusData;
-        // TODO: Fjern mock!
-        if (fnr.equals("***REMOVED***")) {
-            avslutningStatusData = AvslutningStatusData.builder()
-                    .kanAvslutte(true)
-                    .underOppfolging(false)
-                    .harYtelser(false)
-                    .harTiltak(false)
-                    .inaktiveringsDato(situasjonResolver.getInaktiveringsDato())
-                    .build();
-        } else {
-            avslutningStatusData = AvslutningStatusData.builder()
-                    .kanAvslutte(situasjonResolver.kanAvslutteOppfolging())
-                    .underOppfolging(situasjonResolver.erUnderOppfolgingIArena())
-                    .harYtelser(situasjonResolver.harPagaendeYtelse())
-                    .harTiltak(situasjonResolver.harAktiveTiltak())
-                    .inaktiveringsDato(situasjonResolver.getInaktiveringsDato())
-                    .build();
-        }
+
+        avslutningStatusData = AvslutningStatusData.builder()
+                .kanAvslutte(situasjonResolver.kanAvslutteOppfolging())
+                .underOppfolging(situasjonResolver.erUnderOppfolgingIArena())
+                .harYtelser(situasjonResolver.harPagaendeYtelse())
+                .harTiltak(situasjonResolver.harAktiveTiltak())
+                .inaktiveringsDato(situasjonResolver.getInaktiveringsDato())
+                .build();
+
 
         Situasjon situasjon = situasjonResolver.getSituasjon();
         return new OppfolgingStatusData()
@@ -134,7 +125,7 @@ public class SituasjonOversiktService {
     }
 
     @SneakyThrows
-    public AvslutningStatusData avsluttOppfolging(String fnr, String veileder, String begrunnelse) {
+    public OppfolgingStatusData avsluttOppfolging(String fnr, String veileder, String begrunnelse) {
         val situasjonResolver = new SituasjonResolver(fnr, situasjonResolverDependencies);
 
         if (situasjonResolver.kanAvslutteOppfolging()) {
@@ -145,12 +136,9 @@ public class SituasjonOversiktService {
                     .begrunnelse(begrunnelse)
                     .build();
             situasjonResolver.avsluttOppfolging(oppfolgingsperiode);
-        } else {
-            // TODO: Lag exception i api-app
-            throw new IllegalStateException("Kan ikke avslutte bruker");
         }
 
-        return AvslutningStatusData.builder()
+        val avslutningStatusData = AvslutningStatusData.builder()
                 .kanAvslutte(situasjonResolver.kanAvslutteOppfolging())
                 .underOppfolging(situasjonResolver.erUnderOppfolgingIArena())
                 .harYtelser(situasjonResolver.harPagaendeYtelse())
@@ -158,6 +146,18 @@ public class SituasjonOversiktService {
                 .inaktiveringsDato(situasjonResolver.getInaktiveringsDato())
                 .build();
 
+        Situasjon situasjon = situasjonResolver.getSituasjon();
+        return new OppfolgingStatusData()
+                .setFnr(fnr)
+                .setUnderOppfolging(situasjon.isOppfolging())
+                .setReservasjonKRR(situasjonResolver.reservertIKrr())
+                .setManuell(situasjonResolver.manuell())
+                .setOppfolgingUtgang(situasjon.getOppfolgingUtgang())
+                .setVilkarMaBesvares(situasjonResolver.maVilkarBesvares())
+                .setKanStarteOppfolging(situasjonResolver.getKanSettesUnderOppfolging())
+                .setAvslutningStatusData(avslutningStatusData)
+                .setOppfolgingsperioder(situasjon.getOppfolgingsperioder())
+                ;
     }
 
     public List<AvsluttetOppfolgingFeedData> hentAvsluttetOppfolgingEtterDato(Timestamp timestamp) {
