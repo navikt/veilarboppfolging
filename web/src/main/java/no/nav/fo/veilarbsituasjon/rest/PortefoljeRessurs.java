@@ -20,6 +20,7 @@ import javax.ws.rs.core.Response;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static java.util.Optional.ofNullable;
 import static no.nav.fo.veilarbsituasjon.utils.JmsUtil.messageCreator;
@@ -98,33 +99,24 @@ public class PortefoljeRessurs {
 
     }
 
-
     @GET
     @Path("/sendalleveiledertilordninger")
     public Response getSendAlleVeiledertilordninger() {
-        long start = System.currentTimeMillis();
         LOG.info("Sender alle veiledertilordninger");
-        List<OppfolgingBruker> brukere = brukerRepository.hentAlleVeiledertilordninger();
-        int sendt = 0;
-        int feilet = 0;
-        for (OppfolgingBruker bruker : brukere) {
-            try {
-                leggPaaKo(bruker);
-                sendt++;
-            } catch (Exception e) {
-                feilet++;
-            }
-        }
-        String status = String.format("Sending fullført. Sendt: %1$s/%2$s. Feilet: %3$s/%2$s. Tid brukt: %4$s ms",
-                sendt, brukere.size(), feilet, System.currentTimeMillis() - start);
+        return leggOppfolgingsbrukerPaKo(brukerRepository.hentAlleVeiledertilordninger());
+    }
 
-        if (feilet > 0) {
-            LOG.warn(status);
-            return Response.serverError().entity(status).build();
-        } else {
-            LOG.info(status);
-            return Response.ok().entity(status).build();
-        }
+    @GET
+    @Path("/sendveiledertilordninger")
+    public Response getSendVeiledertilordninger(@QueryParam("fnr") List<String> fnrs) {
+        LOG.info("Sender veiledertilordninger for {}", fnrs);
+        List<OppfolgingBruker> brukere = fnrs
+                .stream()
+                .map(aktoerIdService::findAktoerId)
+                .map(brukerRepository::hentVeiledertilordningForAktoer)
+                .collect(Collectors.toList());
+
+        return leggOppfolgingsbrukerPaKo(brukere);
     }
 
     @Transactional
@@ -144,6 +136,30 @@ public class PortefoljeRessurs {
             feilendeTilordninger.add(tilordning);
             LOG.error(String.format("Kunne ikke tilordne veileder %s til aktoer %s", bruker.getVeileder(), bruker.getAktoerid()), e);
             throw e;
+        }
+    }
+
+    private Response leggOppfolgingsbrukerPaKo(List<OppfolgingBruker> brukere) {
+        long start = System.currentTimeMillis();
+        int sendt = 0;
+        int feilet = 0;
+        for (OppfolgingBruker bruker : brukere) {
+            try {
+                leggPaaKo(bruker);
+                sendt++;
+            } catch (Exception e) {
+                feilet++;
+            }
+        }
+        String status = String.format("Sending fullført. Sendt: %1$s/%2$s. Feilet: %3$s/%2$s. Tid brukt: %4$s ms",
+                sendt, brukere.size(), feilet, System.currentTimeMillis() - start);
+
+        if (feilet > 0) {
+            LOG.warn(status);
+            return Response.serverError().entity(status).build();
+        } else {
+            LOG.info(status);
+            return Response.ok().entity(status).build();
         }
     }
 
