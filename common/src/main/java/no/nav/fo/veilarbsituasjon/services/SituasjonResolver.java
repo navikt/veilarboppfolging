@@ -18,6 +18,7 @@ import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.WSHentOppfoelgingsstatusRequest;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.WSHentOppfoelgingsstatusResponse;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3;
+import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt.WSYtelseskontrakt;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeRequest;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeResponse;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -30,6 +31,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static java.lang.System.currentTimeMillis;
 import static java.util.Optional.of;
@@ -46,6 +48,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 public class SituasjonResolver {
 
     private static final Logger LOG = getLogger(SituasjonResolver.class);
+    public static final String AKTIV_YTELSE_STATUS = "Aktiv";
 
     private String fnr;
     private SituasjonResolverDependencies deps;
@@ -171,7 +174,11 @@ public class SituasjonResolver {
         if (ytelser == null) {
             hentYtelseskontrakt();
         }
-        return !ytelser.getYtelseskontraktListe().isEmpty();
+        return ytelser.getYtelseskontraktListe()
+                .stream()
+                .map(WSYtelseskontrakt::getStatus)
+                .collect(Collectors.toList())
+                .contains(AKTIV_YTELSE_STATUS);
     }
 
     boolean harAktiveTiltak() {
@@ -185,9 +192,9 @@ public class SituasjonResolver {
 
     boolean kanAvslutteOppfolging() {
         return situasjon.isOppfolging()
-                && erUnderOppfolgingIArena()
-                && harPagaendeYtelse()
-                && harAktiveTiltak();
+                && !erUnderOppfolgingIArena()
+                && !harPagaendeYtelse()
+                && !harAktiveTiltak();
     }
 
     Date getInaktiveringsDato() {

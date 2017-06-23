@@ -131,8 +131,8 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt {
     private AvslutningStatus tilDto(AvslutningStatusData avslutningStatusData) {
         return new AvslutningStatus(
                 avslutningStatusData.kanAvslutte,
-                avslutningStatusData.harYtelser,
                 avslutningStatusData.underOppfolging,
+                avslutningStatusData.harYtelser,
                 avslutningStatusData.harTiltak,
                 avslutningStatusData.inaktiveringsDato
         );
