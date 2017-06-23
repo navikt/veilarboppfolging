@@ -2,6 +2,7 @@ package no.nav.fo.veilarbsituasjon.db;
 
 
 import no.nav.fo.veilarbsituasjon.domain.OppfolgingBruker;
+import no.nav.fo.veilarbsituasjon.utils.OppfolgingsbrukerUtil;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -9,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static no.nav.fo.veilarbsituasjon.utils.OppfolgingsbrukerUtil.mapRadTilOppfolgingsbruker;
+import static org.apache.commons.lang.StringUtils.isEmpty;
 
 public class BrukerRepository {
 
@@ -27,6 +29,18 @@ public class BrukerRepository {
             brukere.add(mapRadTilOppfolgingsbruker(rs));
         });
         return brukere;
+    }
+
+    public OppfolgingBruker hentVeiledertilordningForAktoer(String aktoerId) {
+        if (isEmpty(aktoerId)) {
+            return null;
+        }
+
+        return db.query(
+                "SELECT AKTOERID, VEILEDER, OPPDATERT FROM AKTOER_ID_TO_VEILEDER WHERE AKTOERID = ?",
+                new Object[]{aktoerId},
+                OppfolgingsbrukerUtil::mapRadTilOppfolgingsbruker
+        );
     }
 
     public String hentVeilederForAktoer(String aktoerId) {
