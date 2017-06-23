@@ -31,7 +31,6 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static java.lang.System.currentTimeMillis;
 import static java.util.Optional.of;
@@ -48,7 +47,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 public class SituasjonResolver {
 
     private static final Logger LOG = getLogger(SituasjonResolver.class);
-    public static final String AKTIV_YTELSE_STATUS = "Aktiv";
+    private static final String AKTIV_YTELSE_STATUS = "Aktiv";
 
     private String fnr;
     private SituasjonResolverDependencies deps;
@@ -177,17 +176,17 @@ public class SituasjonResolver {
         return ytelser.getYtelseskontraktListe()
                 .stream()
                 .map(WSYtelseskontrakt::getStatus)
-                .collect(Collectors.toList())
-                .contains(AKTIV_YTELSE_STATUS);
+                .anyMatch(AKTIV_YTELSE_STATUS::equals);
     }
 
     boolean harAktiveTiltak() {
         if (arenaAktiviteter == null) {
             hentArenaAktiviteter();
         }
-        return arenaAktiviteter.stream()
-                .anyMatch(arenaAktivitetDTO -> arenaAktivitetDTO.getStatus() != AVBRUTT
-                        && arenaAktivitetDTO.getStatus() != FULLFORT);
+        return arenaAktiviteter
+                .stream()
+                .map(ArenaAktivitetDTO::getStatus)
+                .anyMatch(status -> status != AVBRUTT && status != FULLFORT);
     }
 
     boolean kanAvslutteOppfolging() {
