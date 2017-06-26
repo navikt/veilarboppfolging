@@ -59,6 +59,12 @@
             </dependency>
 
             <dependency>
+                <groupId>no.nav.sbl.dialogarena</groupId>
+                <artifactId>common-cxf</artifactId>
+                <version>3.1.48</version>
+            </dependency>
+
+            <dependency>
                 <groupId>no.nav.fo</groupId>
                 <artifactId>veilarbaktivitet-api</artifactId>
                 <version>1.181.55</version>
