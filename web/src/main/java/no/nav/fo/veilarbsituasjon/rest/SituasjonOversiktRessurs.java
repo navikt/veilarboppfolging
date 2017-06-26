@@ -81,6 +81,13 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt {
         return tilDto(situasjonOversiktService.oppdaterManuellStatus(getFnr(), true, settTilManuel.begrunnelse));
     }
 
+    @POST
+    @Path("/settDigital")
+    public OppfolgingStatus settTilDigital(EndreSituasjonDTO settTilDigital) throws Exception {
+        pepClient.isServiceCallAllowed(getFnr());
+        return tilDto(situasjonOversiktService.oppdaterManuellStatus(getFnr(), false, settTilDigital.begrunnelse));
+    }
+
     @Override
     public Vilkar hentVilkar() throws Exception {
         pepClient.isServiceCallAllowed(getFnr());
