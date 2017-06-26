@@ -15,6 +15,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
+import static java.lang.System.currentTimeMillis;
+
 @Component
 @Api
 public class SituasjonOversiktService {
@@ -31,16 +33,7 @@ public class SituasjonOversiktService {
 
         situasjonResolver.sjekkStatusIArenaOgOppdaterSituasjon();
 
-        Situasjon situasjon = situasjonResolver.getSituasjon();
-        return new OppfolgingStatusData()
-                .setFnr(fnr)
-                .setUnderOppfolging(situasjon.isOppfolging())
-                .setReservasjonKRR(situasjonResolver.reservertIKrr())
-                .setManuell(situasjonResolver.manuell())
-                .setOppfolgingUtgang(situasjon.getOppfolgingUtgang())
-                .setVilkarMaBesvares(situasjonResolver.maVilkarBesvares())
-                .setKanStarteOppfolging(situasjonResolver.getKanSettesUnderOppfolging())
-                .setOppfolgingsperioder(situasjon.getOppfolgingsperioder());
+        return getOppfolgingStatusData(fnr, situasjonResolver);
     }
 
     public Brukervilkar hentVilkar(String fnr) throws Exception {
@@ -57,14 +50,7 @@ public class SituasjonOversiktService {
 
         situasjonResolver.sjekkNyesteVilkarOgOppdaterSituasjon(hash, vilkarStatus);
 
-        return new OppfolgingStatusData()
-                .setFnr(fnr)
-                .setUnderOppfolging(situasjonResolver.getSituasjon().isOppfolging())
-                .setReservasjonKRR(situasjonResolver.reservertIKrr())
-                .setManuell(situasjonResolver.manuell())
-                .setOppfolgingUtgang(situasjonResolver.getSituasjon().getOppfolgingUtgang())
-                .setVilkarMaBesvares(situasjonResolver.maVilkarBesvares())
-                .setKanStarteOppfolging(situasjonResolver.getKanSettesUnderOppfolging());
+        return getOppfolgingStatusData(fnr, situasjonResolver);
     }
 
     public MalData hentMal(String fnr) {
@@ -86,14 +72,8 @@ public class SituasjonOversiktService {
             situasjonResolver.startOppfolging();
 
         }
-        return new OppfolgingStatusData()
-                .setFnr(fnr)
-                .setUnderOppfolging(situasjonResolver.getSituasjon().isOppfolging())
-                .setReservasjonKRR(situasjonResolver.reservertIKrr())
-                .setManuell(situasjonResolver.manuell())
-                .setOppfolgingUtgang(situasjonResolver.getSituasjon().getOppfolgingUtgang())
-                .setVilkarMaBesvares(situasjonResolver.maVilkarBesvares())
-                .setKanStarteOppfolging(situasjonResolver.getKanSettesUnderOppfolging());
+
+        return getOppfolgingStatusData(fnr, situasjonResolver);
     }
 
     public OppfolgingStatusData hentAvslutningStatus(String fnr) throws Exception {
@@ -119,6 +99,22 @@ public class SituasjonOversiktService {
         return getOppfolgingStatusData(fnr, situasjonResolver);
     }
 
+
+    public List<AvsluttetOppfolgingFeedData> hentAvsluttetOppfolgingEtterDato(Timestamp timestamp) {
+        return situasjonRepository.hentAvsluttetOppfolgingEtterDato(timestamp);
+    }
+
+    public OppfolgingStatusData oppdaterManuellStatus(String fnr, boolean manuell, String begrunnelse) {
+        val resolver = new SituasjonResolver(fnr, situasjonResolverDependencies);
+
+        if (resolver.manuell() != manuell) {
+            val nyStatus = new Status(resolver.getAktorId(), manuell, new Timestamp(currentTimeMillis()), begrunnelse);
+            situasjonRepository.opprettStatus(nyStatus);
+        }
+
+        return getOppfolgingStatusData(fnr, resolver);
+    }
+
     private OppfolgingStatusData getOppfolgingStatusData(String fnr, SituasjonResolver situasjonResolver) {
         val avslutningStatusData = AvslutningStatusData.builder()
                 .kanAvslutte(situasjonResolver.kanAvslutteOppfolging())
@@ -131,18 +127,14 @@ public class SituasjonOversiktService {
         Situasjon situasjon = situasjonResolver.getSituasjon();
         return new OppfolgingStatusData()
                 .setFnr(fnr)
-                .setUnderOppfolging(situasjon.isOppfolging())
+                .setUnderOppfolging(situasjonResolver.getSituasjon().isOppfolging())
                 .setReservasjonKRR(situasjonResolver.reservertIKrr())
                 .setManuell(situasjonResolver.manuell())
-                .setOppfolgingUtgang(situasjon.getOppfolgingUtgang())
+                .setOppfolgingUtgang(situasjonResolver.getSituasjon().getOppfolgingUtgang())
                 .setVilkarMaBesvares(situasjonResolver.maVilkarBesvares())
                 .setKanStarteOppfolging(situasjonResolver.getKanSettesUnderOppfolging())
                 .setAvslutningStatusData(avslutningStatusData)
                 .setOppfolgingsperioder(situasjon.getOppfolgingsperioder())
                 ;
-    }
-
-    public List<AvsluttetOppfolgingFeedData> hentAvsluttetOppfolgingEtterDato(Timestamp timestamp) {
-        return situasjonRepository.hentAvsluttetOppfolgingEtterDato(timestamp);
     }
 }

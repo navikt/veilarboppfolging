@@ -65,13 +65,20 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt {
     @POST
     @Path("/avsluttOppfolging")
     @Consumes("application/json")
-    public OppfolgingStatus avsluttOppfolging(AvsluttOppfolgingsperiodeDTO avsluttOppfolgingsperiode) throws Exception {
+    public OppfolgingStatus avsluttOppfolging(EndreSituasjonDTO avsluttOppfolgingsperiode) throws Exception {
         pepClient.isServiceCallAllowed(getFnr());
         return tilDto(situasjonOversiktService.avsluttOppfolging(
                 getFnr(),
                 avsluttOppfolgingsperiode.veilederId,
                 avsluttOppfolgingsperiode.begrunnelse
         ));
+    }
+
+    @POST
+    @Path("/settManuell")
+    public OppfolgingStatus settTilManuell(EndreSituasjonDTO settTilManuel) throws Exception {
+        pepClient.isServiceCallAllowed(getFnr());
+        return tilDto(situasjonOversiktService.oppdaterManuellStatus(getFnr(), true, settTilManuel.begrunnelse));
     }
 
     @Override
