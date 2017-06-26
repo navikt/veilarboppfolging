@@ -7,8 +7,8 @@ import no.nav.fo.veilarbsituasjon.domain.OppfolgingStatusData;
 import no.nav.fo.veilarbsituasjon.domain.Situasjon;
 import no.nav.fo.veilarbsituasjon.domain.VilkarStatus;
 import no.nav.fo.veilarbsituasjon.services.AktoerIdService;
-import no.nav.fo.veilarbsituasjon.services.SituasjonResolver;
 import no.nav.fo.veilarbsituasjon.services.SituasjonOversiktService;
+import no.nav.fo.veilarbsituasjon.services.SituasjonResolver;
 import no.nav.fo.veilarbsituasjon.vilkar.VilkarService;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.DigitalKontaktinformasjonV1;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.HentDigitalKontaktinformasjonKontaktinformasjonIkkeFunnet;
@@ -108,7 +108,7 @@ public class SituasjonOversiktServiceTest {
         gittAktor();
         gittSituasjon(situasjon);
         hentOppfolgingStatus();
-        verify(situasjonRepositoryMock).oppdaterSituasjon(eq(new Situasjon().setAktorId(AKTOR_ID)));
+        verify(situasjonRepositoryMock).oppdaterOppfolgingStatus(eq(new Situasjon().setAktorId(AKTOR_ID)));
     }
 
     @Test

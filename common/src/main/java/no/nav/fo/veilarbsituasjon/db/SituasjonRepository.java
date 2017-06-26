@@ -62,13 +62,13 @@ public class SituasjonRepository {
         return situasjon.isEmpty() ? Optional.empty() : situasjon.stream().findAny();
     }
 
-    public void oppdaterSituasjon(Situasjon oppdatertSituasjon) {
+    public void oppdaterOppfolgingStatus(Situasjon oppdatertSituasjon) {
         String aktorId = oppdatertSituasjon.getAktorId();
         boolean oppfolging = oppdatertSituasjon.isOppfolging();
-        oppdaterSituasjon(aktorId, oppfolging);
+        oppdaterOppfolgingStatus(aktorId, oppfolging);
     }
 
-    public void oppdaterSituasjon(String aktorId, boolean oppfolging) {
+    public void oppdaterOppfolgingStatus(String aktorId, boolean oppfolging) {
         jdbcTemplate.update("UPDATE situasjon SET oppfolging = ?, OPPDATERT = CURRENT_TIMESTAMP WHERE aktorid = ?",
                 oppfolging,
                 aktorId
@@ -329,5 +329,4 @@ public class SituasjonRepository {
                 .setEndretAv(result.getString("MAL_ENDRET_AV"))
                 .setDato(result.getTimestamp("MAL_DATO"));
     }
-
 }
