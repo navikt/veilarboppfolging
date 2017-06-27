@@ -43,8 +43,8 @@ public class ArenaServiceConfig {
                 .build();
 
         PingMetadata metadata = new PingMetadata(
-                "ytelseskontract_v3 via " + getProperty("ytelseskontrakt.endpoint.url"),
-                "Ping av ytelseskontract_v3. Henter informasjon om ytelser fra arena.",
+                "YTELSESKONTRAKT_V3 via " + getProperty("ytelseskontrakt.endpoint.url"),
+                "Ping av ytelseskontrakt_V3. Henter informasjon om ytelser fra arena.",
                 false
         );
 
