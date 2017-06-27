@@ -20,12 +20,17 @@ public class DigitalKontaktinformasjonConfig {
 
     @Bean
     public Pingable dkifV1Ping() {
+        Pingable.Ping.PingMetadata metadata = new Pingable.Ping.PingMetadata(
+                "DKIF_V1 via " + getProperty("dkif.endpoint.url"),
+                "Ping av DKIF_V1. Henter reservasjon fra KRR.",
+                false
+        );
         return () -> {
             try {
                 factory().ping();
-                return lyktes("DKIF_V1");
+                return lyktes(metadata);
             } catch (Exception e) {
-                return feilet("DKIF_V1", e);
+                return feilet(metadata, e);
             }
         };
     }

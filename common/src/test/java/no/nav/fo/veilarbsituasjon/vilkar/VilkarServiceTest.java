@@ -35,13 +35,13 @@ public class VilkarServiceTest {
 
     @Test
     public void ping_vellykket() {
-        assertThat(vilkarService.ping().isVellykket(), is(true));
+        assertThat(vilkarService.ping().erVellykket(), is(true));
     }
 
     @Test
     public void ping_feilPath_feiler() {
         vilkarService.vilkarPath = "/feil/path";
-        assertThat(vilkarService.ping().isVellykket(), is(false));
+        assertThat(vilkarService.ping().erVellykket(), is(false));
     }
 
 }

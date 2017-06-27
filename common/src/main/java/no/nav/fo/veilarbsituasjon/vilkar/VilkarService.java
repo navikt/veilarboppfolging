@@ -1,6 +1,7 @@
 package no.nav.fo.veilarbsituasjon.vilkar;
 
 import no.nav.sbl.dialogarena.types.Pingable;
+import no.nav.sbl.dialogarena.types.Pingable.Ping.PingMetadata;
 import no.nav.sbl.tekster.Filleser;
 import no.nav.sbl.tekster.Utils;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,14 +28,19 @@ public class VilkarService implements Pingable {
 
     @Override
     public Ping ping() {
+        PingMetadata metadata = new PingMetadata(
+                "Vilkår: " + vilkarPath,
+                "Sjekker om filen (tekstressursen) for vilkår finnes på noden",
+                false
+        );
         try {
             String vilkar = getVilkar(null,null);
             if (vilkar == null || vilkar.trim().length() == 0) {
                 throw new IllegalStateException("mangler vilkår");
             }
-            return Ping.lyktes(VilkarService.class.getSimpleName());
+            return Ping.lyktes(metadata);
         } catch (Exception e) {
-            return Ping.feilet(VilkarService.class.getSimpleName(), e);
+            return Ping.feilet(metadata, e);
         }
     }
 

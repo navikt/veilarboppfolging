@@ -3,6 +3,7 @@ package no.nav.fo.veilarbsituasjon.config;
 import no.nav.sbl.dialogarena.common.integrasjon.utils.RowMapper;
 import no.nav.sbl.dialogarena.common.integrasjon.utils.SQL;
 import no.nav.sbl.dialogarena.types.Pingable;
+import no.nav.sbl.dialogarena.types.Pingable.Ping.PingMetadata;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -41,12 +42,17 @@ public class DatabaseConfig {
 
     @Bean
     public Pingable dbPinger(final DataSource ds) {
+        PingMetadata metadata = new PingMetadata(
+                "veilabrSituasjonDB: " + System.getProperty("veilarbsituasjonDB.url"),
+                "Enkel spørring mot Databasen for VeilArbSituasjon.",
+                true
+        );
         return () -> {
             try {
                 SQL.query(ds, new RowMapper.IntMapper(), "select count(1) from dual");
-                return Pingable.Ping.lyktes("DATABASE");
+                return Pingable.Ping.lyktes(metadata);
             } catch (Exception e) {
-                return Pingable.Ping.feilet("DATABASE", e);
+                return Pingable.Ping.feilet(metadata, e);
             }
         };
     }
