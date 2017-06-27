@@ -8,7 +8,6 @@
 
     <selftest>
         <path>veilarbsituasjon/internal/selftest</path>
-        <humanReadablePath>veilarbsituasjon/internal/selftest</humanReadablePath>
     </selftest>
 
     <artifacts>
