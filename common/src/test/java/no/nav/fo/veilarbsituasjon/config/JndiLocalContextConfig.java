@@ -20,8 +20,8 @@ public class JndiLocalContextConfig {
 
     public static void setupJndiLocalContext() {
         SingleConnectionDataSource ds = new SingleConnectionDataSource();
-        ds.setUrl("jdbc:oracle:thin:@d26dbfl007.test.local:1521/t6veilarbsituasjon");
-        ds.setUsername("t6_veilarbsituasjon");
+        ds.setUrl("jdbc:oracle:thin:@d26dbfl020.test.local:1521/VEILARBSITUASJON_T6");
+        ds.setUsername("veilarbsituasjon");
         ds.setPassword("Change ME!");
         ds.setSuppressClose(true);
         registerJndi(ds);
