@@ -212,12 +212,15 @@ public class SituasjonRepository {
 
     private void opprettSituasjonStatus(Status status) {
         jdbcTemplate.update(
-                "INSERT INTO status(id, aktorid, manuell, dato, begrunnelse) VALUES(?, ?, ?, ?, ?)",
+                "INSERT INTO status(id, aktorid, manuell, dato, begrunnelse, opprettet_av, opprettet_av_brukerid) " +
+                     "VALUES(?, ?, ?, ?, ?, ?, ?)",
                 status.getId(),
                 status.getAktorId(),
                 status.isManuell(),
                 status.getDato(),
-                status.getBegrunnelse()
+                status.getBegrunnelse(),
+                status.getOpprettetAv(),
+                status.getOpprettetAvBrukerId()
         );
     }
 
@@ -315,7 +318,9 @@ public class SituasjonRepository {
                 result.getString("AKTORID"),
                 result.getBoolean("STATUS_MANUELL"),
                 result.getTimestamp("STATUS_DATO"),
-                result.getString("STATUS_BEGRUNNELSE")
+                result.getString("STATUS_BEGRUNNELSE"),
+                KodeverkBruker.valueOf(result.getString("OPPRETTET_AV")),
+                result.getString("OPPRETTET_AV_BRUKERID")
         ).setId(result.getLong("STATUS_ID"));
     }
 

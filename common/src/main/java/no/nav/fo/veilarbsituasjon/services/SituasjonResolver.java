@@ -233,7 +233,10 @@ public class SituasjonResolver {
                                 situasjon.getAktorId(),
                                 true,
                                 new Timestamp(currentTimeMillis()),
-                                "Reservert og under oppfølging")
+                                "Reservert og under oppfølging",
+                                KodeverkBruker.SYSTEM,
+                                null
+                        )
                 );
             }
         } else {

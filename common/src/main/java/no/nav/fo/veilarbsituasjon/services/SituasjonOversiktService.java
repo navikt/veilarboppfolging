@@ -105,11 +105,11 @@ public class SituasjonOversiktService {
         return situasjonRepository.hentAvsluttetOppfolgingEtterDato(timestamp);
     }
 
-    public OppfolgingStatusData oppdaterManuellStatus(String fnr, boolean manuell, String begrunnelse) {
+    public OppfolgingStatusData oppdaterManuellStatus(String fnr, boolean manuell, String begrunnelse, KodeverkBruker opprettetAv, String opprettetAvBrukerId) {
         val resolver = new SituasjonResolver(fnr, situasjonResolverDependencies);
 
         if (resolver.manuell() != manuell) {
-            val nyStatus = new Status(resolver.getAktorId(), manuell, new Timestamp(currentTimeMillis()), begrunnelse);
+            val nyStatus = new Status(resolver.getAktorId(), manuell, new Timestamp(currentTimeMillis()), begrunnelse, opprettetAv, opprettetAvBrukerId);
             situasjonRepository.opprettStatus(nyStatus);
         }
 
