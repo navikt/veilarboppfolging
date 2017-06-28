@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Optional;
 
 import static java.util.Optional.ofNullable;
+import static no.nav.apiapp.util.EnumUtils.getName;
+import static no.nav.apiapp.util.EnumUtils.valueOfOptional;
 
 public class SituasjonRepository {
     private static final String DIALECT_PROPERTY = "db.dialect";
@@ -39,6 +41,8 @@ public class SituasjonRepository {
                         "  STATUS.MANUELL AS STATUS_MANUELL, " +
                         "  STATUS.DATO AS STATUS_DATO, " +
                         "  STATUS.BEGRUNNELSE AS STATUS_BEGRUNNELSE, " +
+                        "  STATUS.OPPRETTET_AV AS STATUS_OPPRETTET_AV, " +
+                        "  STATUS.OPPRETTET_AV_BRUKERID AS STATUS_OPPRETTET_AV_BRUKERID, " +
                         "  BRUKERVILKAR.ID AS BRUKERVILKAR_ID, " +
                         "  BRUKERVILKAR.AKTORID AS BRUKERVILKAR_AKTORID, " +
                         "  BRUKERVILKAR.DATO AS BRUKERVILKAR_DATO, " +
@@ -212,14 +216,18 @@ public class SituasjonRepository {
 
     private void opprettSituasjonStatus(Status status) {
         jdbcTemplate.update(
-                "INSERT INTO status(id, aktorid, manuell, dato, begrunnelse, opprettet_av, opprettet_av_brukerid) " +
-                     "VALUES(?, ?, ?, ?, ?, ?, ?)",
+                "INSERT INTO STATUS(id, aktorid, manuell, dato, begrunnelse, opprettet_av, opprettet_av_brukerid) " +
+                     "VALUES(?, ?, ?, ?, ?, " +
+                        "(SELECT kb.id " +
+                        "FROM KODEVERK_BRUKER kb " +
+                        "WHERE bruker_kode = ?)" +
+                        ", ?)",
                 status.getId(),
                 status.getAktorId(),
                 status.isManuell(),
                 status.getDato(),
                 status.getBegrunnelse(),
-                status.getOpprettetAv(),
+                getName(status.getOpprettetAv()),
                 status.getOpprettetAvBrukerId()
         );
     }
@@ -319,8 +327,8 @@ public class SituasjonRepository {
                 result.getBoolean("STATUS_MANUELL"),
                 result.getTimestamp("STATUS_DATO"),
                 result.getString("STATUS_BEGRUNNELSE"),
-                KodeverkBruker.valueOf(result.getString("OPPRETTET_AV")),
-                result.getString("OPPRETTET_AV_BRUKERID")
+                valueOfOptional(KodeverkBruker.class, result.getString("STATUS_OPPRETTET_AV")).orElse(null),
+                result.getString("STATUS_OPPRETTET_AV_BRUKERID")
         ).setId(result.getLong("STATUS_ID"));
     }
 

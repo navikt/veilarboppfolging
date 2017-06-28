@@ -79,7 +79,7 @@ public class SituasjonOversiktService {
     public OppfolgingStatusData hentAvslutningStatus(String fnr) throws Exception {
         val situasjonResolver = new SituasjonResolver(fnr, situasjonResolverDependencies);
 
-        return getOppfolgingStatusData(fnr, situasjonResolver);
+        return getOppfolgingStatusDataMedAvslutningStatus(fnr, situasjonResolver);
     }
 
     @SneakyThrows
@@ -97,7 +97,7 @@ public class SituasjonOversiktService {
         }
 
         situasjonResolver.reloadSituasjon();
-        return getOppfolgingStatusData(fnr, situasjonResolver);
+        return getOppfolgingStatusDataMedAvslutningStatus(fnr, situasjonResolver);
     }
 
 
@@ -113,18 +113,15 @@ public class SituasjonOversiktService {
             situasjonRepository.opprettStatus(nyStatus);
         }
 
+        resolver.reloadSituasjon();
         return getOppfolgingStatusData(fnr, resolver);
     }
 
     private OppfolgingStatusData getOppfolgingStatusData(String fnr, SituasjonResolver situasjonResolver) {
-        val avslutningStatusData = AvslutningStatusData.builder()
-                .kanAvslutte(situasjonResolver.kanAvslutteOppfolging())
-                .underOppfolging(situasjonResolver.erUnderOppfolgingIArena())
-                .harYtelser(situasjonResolver.harPagaendeYtelse())
-                .harTiltak(situasjonResolver.harAktiveTiltak())
-                .inaktiveringsDato(situasjonResolver.getInaktiveringsDato())
-                .build();
+        return getOppfolgingStatusData(fnr, situasjonResolver, null);
+    }
 
+    private OppfolgingStatusData getOppfolgingStatusData(String fnr, SituasjonResolver situasjonResolver, AvslutningStatusData avslutningStatusData) {
         Situasjon situasjon = situasjonResolver.getSituasjon();
         return new OppfolgingStatusData()
                 .setFnr(fnr)
@@ -137,5 +134,17 @@ public class SituasjonOversiktService {
                 .setAvslutningStatusData(avslutningStatusData)
                 .setOppfolgingsperioder(situasjon.getOppfolgingsperioder())
                 ;
+    }
+
+    private OppfolgingStatusData getOppfolgingStatusDataMedAvslutningStatus(String fnr, SituasjonResolver situasjonResolver) {
+        val avslutningStatusData = AvslutningStatusData.builder()
+                .kanAvslutte(situasjonResolver.kanAvslutteOppfolging())
+                .underOppfolging(situasjonResolver.erUnderOppfolgingIArena())
+                .harYtelser(situasjonResolver.harPagaendeYtelse())
+                .harTiltak(situasjonResolver.harAktiveTiltak())
+                .inaktiveringsDato(situasjonResolver.getInaktiveringsDato())
+                .build();
+
+        return getOppfolgingStatusData(fnr, situasjonResolver, avslutningStatusData);
     }
 }
