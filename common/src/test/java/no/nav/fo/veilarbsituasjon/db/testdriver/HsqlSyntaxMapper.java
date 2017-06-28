@@ -45,6 +45,9 @@ class HsqlSyntaxMapper {
         if (sql.contains("BEGIN") || sql.contains("END LOOP")) {
             return NOOP;
         }
+        if(sql.contains("GENERATED ALWAYS AS IDENTITY(START WITH 1 INCREMENT BY 1)")) {
+            return sql.replaceAll("GENERATED ALWAYS AS IDENTITY\\(START WITH 1 INCREMENT BY 1\\)", "NOT NULL");
+        }
         return syntaxMap.getOrDefault(sql, sql);
     }
 

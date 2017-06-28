@@ -96,6 +96,7 @@ public class SituasjonOversiktService {
             situasjonResolver.avsluttOppfolging(oppfolgingsperiode);
         }
 
+        situasjonResolver.reloadSituasjon();
         return getOppfolgingStatusData(fnr, situasjonResolver);
     }
 

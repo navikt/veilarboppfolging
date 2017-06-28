@@ -68,6 +68,10 @@ public class SituasjonResolver {
         this.situasjon = hentSituasjon();
     }
 
+    void reloadSituasjon() {
+        situasjon = hentSituasjon();
+    }
+
     void sjekkStatusIArenaOgOppdaterSituasjon() {
         if (!situasjon.isOppfolging()) {
             sjekkArena();

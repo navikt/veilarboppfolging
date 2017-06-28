@@ -2,6 +2,7 @@ package no.nav.fo.veilarbsituasjon.config;
 
 import no.nav.sbl.dialogarena.common.cxf.CXFClient;
 import no.nav.sbl.dialogarena.types.Pingable;
+import no.nav.sbl.dialogarena.types.Pingable.Ping.PingMetadata;
 import no.nav.tjeneste.virksomhet.aktoer.v2.AktoerV2;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,12 +21,18 @@ public class AktoerConfig {
 
     @Bean
     public Pingable aktoerV2Ping() {
+        PingMetadata metadata = new PingMetadata(
+                "AKTOER_V2 via " + getProperty("aktoer.endpoint.url"),
+                "Ping Aktoer_V2. Henter aktørid for for fnummer.",
+                true
+        );
+
         return () -> {
             try {
                 factory().ping();
-                return lyktes("AKTOER_V2");
+                return lyktes(metadata);
             } catch (Exception e) {
-                return feilet("AKTOER_V2", e);
+                return feilet(metadata, e);
             }
         };
     }

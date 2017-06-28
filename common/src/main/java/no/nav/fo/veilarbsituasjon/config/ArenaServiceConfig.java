@@ -3,6 +3,8 @@ package no.nav.fo.veilarbsituasjon.config;
 
 import no.nav.sbl.dialogarena.common.cxf.CXFClient;
 import no.nav.sbl.dialogarena.types.Pingable;
+import no.nav.sbl.dialogarena.types.Pingable.Ping;
+import no.nav.sbl.dialogarena.types.Pingable.Ping.PingMetadata;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3;
 import org.apache.cxf.interceptor.LoggingOutInterceptor;
@@ -39,12 +41,19 @@ public class ArenaServiceConfig {
         final YtelseskontraktV3 ytelseskontraktPing = ytelseskontraktPortType()
                 .configureStsForSystemUserInFSS()
                 .build();
+
+        PingMetadata metadata = new PingMetadata(
+                "YTELSESKONTRAKT_V3 via " + getProperty("ytelseskontrakt.endpoint.url"),
+                "Ping av ytelseskontrakt_V3. Henter informasjon om ytelser fra arena.",
+                false
+        );
+
         return () -> {
             try {
                 ytelseskontraktPing.ping();
-                return lyktes("YTELSESKONTRAKT_V3");
+                return lyktes(metadata);
             } catch (Exception e) {
-                return feilet("YTELSESKONTRAKT_V3", e);
+                return feilet(metadata, e);
             }
         };
     }
@@ -57,12 +66,18 @@ public class ArenaServiceConfig {
                 .configureStsForSystemUserInFSS()
                 .build();
 
+        PingMetadata metadata = new PingMetadata(
+                "OPPFOELGING_V1 via " + getProperty("oppfoelging.endpoint.url"),
+                "Ping av oppfolging_v1. Henter informasjon om oppfølgingsstatus fra arena.",
+                true
+        );
+
         return () -> {
             try {
                 oppfoelgingPing.ping();
-                return lyktes("OPPFOELGING_V1");
+                return lyktes(metadata);
             } catch (Exception e) {
-                return feilet("OPPFOELGING_V1", e);
+                return feilet(metadata, e);
             }
         };
     }
