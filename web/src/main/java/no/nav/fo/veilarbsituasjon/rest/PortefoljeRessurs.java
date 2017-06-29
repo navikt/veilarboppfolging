@@ -94,7 +94,6 @@ public class PortefoljeRessurs {
 
     }
 
-
     @Transactional
     private void skrivTilDatabase(OppfolgingBruker bruker, VeilederTilordning tilordning) {
         try {
