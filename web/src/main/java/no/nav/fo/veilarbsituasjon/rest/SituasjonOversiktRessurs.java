@@ -5,6 +5,7 @@ import no.nav.brukerdialog.security.domain.IdentType;
 import no.nav.fo.veilarbsituasjon.domain.*;
 import no.nav.fo.veilarbsituasjon.mappers.VilkarMapper;
 import no.nav.fo.veilarbsituasjon.rest.api.SituasjonOversikt;
+import no.nav.fo.veilarbsituasjon.rest.api.VeilederSituasjonOversikt;
 import no.nav.fo.veilarbsituasjon.rest.domain.*;
 import no.nav.fo.veilarbsituasjon.services.PepClient;
 import no.nav.fo.veilarbsituasjon.services.SituasjonOversiktService;
@@ -14,10 +15,6 @@ import org.springframework.stereotype.Component;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,7 +22,7 @@ import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 
 @Component
-public class SituasjonOversiktRessurs implements SituasjonOversikt {
+public class SituasjonOversiktRessurs implements SituasjonOversikt, VeilederSituasjonOversikt {
 
     @Inject
     private SituasjonOversiktService situasjonOversiktService;
@@ -49,22 +46,18 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt {
         return tilDto(situasjonOversiktService.hentOppfolgingsStatus(getFnr()));
     }
 
-    @POST
-    @Path("/startOppfolging")
+    @Override
     public OppfolgingStatus startOppfolging() {
         return tilDto(situasjonOversiktService.startOppfolging(getFnr()));
     }
 
-    @GET
-    @Path("/avslutningStatus")
+    @Override
     public OppfolgingStatus hentAvslutningStatus() throws Exception {
         pepClient.isServiceCallAllowed(getFnr());
         return tilDto(situasjonOversiktService.hentAvslutningStatus(getFnr()));
     }
 
-    @POST
-    @Path("/avsluttOppfolging")
-    @Consumes("application/json")
+    @Override
     public OppfolgingStatus avsluttOppfolging(EndreSituasjonDTO avsluttOppfolgingsperiode) throws Exception {
         pepClient.isServiceCallAllowed(getFnr());
         return tilDto(situasjonOversiktService.avsluttOppfolging(
@@ -74,18 +67,16 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt {
         ));
     }
 
-    @POST
-    @Path("/settManuell")
+    @Override
     public OppfolgingStatus settTilManuell(EndreSituasjonDTO settTilManuel) throws Exception {
         pepClient.isServiceCallAllowed(getFnr());
-        return tilDto(situasjonOversiktService.oppdaterManuellStatus(getFnr(), true, settTilManuel.begrunnelse, KodeverkBruker.NAV, settTilManuel.veilederId));
+        return tilDto(situasjonOversiktService.oppdaterManuellStatus(getFnr(), true, settTilManuel.begrunnelse, KodeverkBruker.NAV, hentBrukerInfo().getId()));
     }
 
-    @POST
-    @Path("/settDigital")
+    @Override
     public OppfolgingStatus settTilDigital(EndreSituasjonDTO settTilDigital) throws Exception {
         pepClient.isServiceCallAllowed(getFnr());
-        return tilDto(situasjonOversiktService.oppdaterManuellStatus(getFnr(), false, settTilDigital.begrunnelse, KodeverkBruker.NAV, settTilDigital.veilederId));
+        return tilDto(situasjonOversiktService.oppdaterManuellStatus(getFnr(), false, settTilDigital.begrunnelse, KodeverkBruker.NAV, hentBrukerInfo().getId()));
     }
 
     @Override
