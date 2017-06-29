@@ -11,19 +11,6 @@ import java.util.Map;
 
 public class OppfolgingsbrukerUtil {
 
-    public static OppfolgingBruker mapRadTilOppfolgingsbruker(ResultSet rs) {
-        try {
-            return new OppfolgingBruker()
-                    .setAktoerid(rs.getString("AKTOERID"))
-                    .setVeileder(rs.getString("VEILEDER"))
-                    .setOppfolging(rs.getBoolean("OPPFOLGING"))
-                    .setEndretTimestamp(rs.getTimestamp("OPPDATERT"));
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
     public static OppfolgingBruker mapRadTilOppfolgingsbruker(Map<String, Object> rad) {
         return new OppfolgingBruker()
                 .setAktoerid((String) rad.get("AKTORID"))

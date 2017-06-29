@@ -39,8 +39,6 @@
         <brukerdialog-behandleSituasjon-v1-tjenestespesifikasjon.version>1.0.7-SNAPSHOT</brukerdialog-behandleSituasjon-v1-tjenestespesifikasjon.version>
         <organisasjonenhet-v1.version>1.0.7</organisasjonenhet-v1.version>
 
-        <javaslang.version>2.1.0-alpha</javaslang.version>
-
         <sonar.exclusions>
             **/mock/*,
             **/config/**
