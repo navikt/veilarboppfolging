@@ -47,7 +47,8 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt, VeilederSitu
     }
 
     @Override
-    public OppfolgingStatus startOppfolging() {
+    public OppfolgingStatus startOppfolging() throws Exception{
+        pepClient.isServiceCallAllowed(getFnr());
         return tilDto(situasjonOversiktService.startOppfolging(getFnr()));
     }
 

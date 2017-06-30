@@ -11,7 +11,7 @@ import javax.ws.rs.Path;
 public interface VeilederSituasjonOversikt extends SituasjonOversikt {
     @POST
     @Path("/startOppfolging")
-    public OppfolgingStatus startOppfolging();
+    public OppfolgingStatus startOppfolging() throws Exception;
 
     @GET
     @Path("/avslutningStatus")
