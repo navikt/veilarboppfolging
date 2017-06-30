@@ -29,7 +29,8 @@ public class ArenaUtils {
     }
 
     private static boolean erIArbeidOgHarInnsatsbehov(WSHentOppfoelgingsstatusResponse oppfolgingstatus) {
-        return OPPFOLGINGKODER.contains(oppfolgingstatus.getServicegruppeKode());
+        return IKKE_ARBEIDSSOKER.equals(oppfolgingstatus.getFormidlingsgruppeKode()) &&
+                OPPFOLGINGKODER.contains(oppfolgingstatus.getServicegruppeKode());
     }
 
 }
