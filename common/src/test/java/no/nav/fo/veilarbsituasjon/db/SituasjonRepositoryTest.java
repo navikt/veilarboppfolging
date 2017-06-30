@@ -71,7 +71,7 @@ public class SituasjonRepositoryTest extends IntegrasjonsTest {
         @Test
         public void oppdatererStatus() throws Exception {
             Situasjon situasjon = gittSituasjonForAktor(AKTOR_ID);
-            situasjonRepository.oppdaterSituasjon(situasjon);
+            situasjonRepository.oppdaterOppfolgingStatus(situasjon);
 
             Brukervilkar brukervilkar = new Brukervilkar(
                     AKTOR_ID,
@@ -136,7 +136,7 @@ public class SituasjonRepositoryTest extends IntegrasjonsTest {
     private Situasjon gittSituasjonForAktor(String aktorId) {
         Situasjon oppdatertSituasjon = new Situasjon().setAktorId(aktorId).setOppfolging(true);
         if (situasjonRepository.situasjonFinnes(oppdatertSituasjon)) {
-            situasjonRepository.oppdaterSituasjon(oppdatertSituasjon);
+            situasjonRepository.oppdaterOppfolgingStatus(oppdatertSituasjon);
         } else {
             situasjonRepository.opprettSituasjon(oppdatertSituasjon);
         }

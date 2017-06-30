@@ -75,7 +75,7 @@ public class SituasjonResolver {
     void sjekkStatusIArenaOgOppdaterSituasjon() {
         if (!situasjon.isOppfolging()) {
             sjekkArena();
-            deps.getSituasjonRepository().oppdaterSituasjon(
+            deps.getSituasjonRepository().oppdaterOppfolgingStatus(
                     situasjon.setOppfolging(
                             erUnderOppfolging(statusIArena)
                     )
@@ -162,7 +162,7 @@ public class SituasjonResolver {
     }
 
     void startOppfolging() {
-        deps.getSituasjonRepository().oppdaterSituasjon(situasjon.setOppfolging(true));
+        deps.getSituasjonRepository().oppdaterOppfolgingStatus(situasjon.setOppfolging(true));
         situasjon = hentSituasjon();
     }
 
@@ -208,7 +208,7 @@ public class SituasjonResolver {
     }
 
     void avsluttOppfolging(Oppfolgingsperiode oppfolgingsperiode) {
-        deps.getSituasjonRepository().oppdaterSituasjon(aktorId, false);
+        deps.getSituasjonRepository().oppdaterOppfolgingStatus(aktorId, false);
         deps.getSituasjonRepository().opprettOppfolgingsperiode(oppfolgingsperiode);
     }
 
@@ -233,7 +233,10 @@ public class SituasjonResolver {
                                 situasjon.getAktorId(),
                                 true,
                                 new Timestamp(currentTimeMillis()),
-                                "Reservert og under oppfølging")
+                                "Reservert og under oppfølging",
+                                KodeverkBruker.SYSTEM,
+                                null
+                        )
                 );
             }
         } else {
