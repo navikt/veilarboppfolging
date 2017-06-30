@@ -217,11 +217,7 @@ public class SituasjonRepository {
     private void opprettSituasjonStatus(Status status) {
         jdbcTemplate.update(
                 "INSERT INTO STATUS(id, aktorid, manuell, dato, begrunnelse, opprettet_av, opprettet_av_brukerid) " +
-                     "VALUES(?, ?, ?, ?, ?, " +
-                        "(SELECT kb.id " +
-                        "FROM KODEVERK_BRUKER kb " +
-                        "WHERE bruker_kode = ?)" +
-                        ", ?)",
+                     "VALUES(?, ?, ?, ?, ?, ?, ?)",
                 status.getId(),
                 status.getAktorId(),
                 status.isManuell(),
