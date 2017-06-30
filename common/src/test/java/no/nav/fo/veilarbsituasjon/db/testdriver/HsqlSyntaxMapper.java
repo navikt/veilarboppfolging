@@ -33,6 +33,10 @@ class HsqlSyntaxMapper {
                 "alter table OPPFOLGINGSPERIODE modify (AKTORID VARCHAR2(20))",
                 "alter table OPPFOLGINGSPERIODE alter column AKTORID VARCHAR2(20)"
         );
+        map(
+                "ALTER TABLE STATUS MODIFY OPPRETTET_AV VARCHAR(255) NOT NULL",
+                "ALTER TABLE STATUS alter column OPPRETTET_AV VARCHAR(255); ALTER TABLE STATUS alter column OPPRETTET_AV SET NOT NULL;"
+        );
         map("END", NOOP);
     }
 
