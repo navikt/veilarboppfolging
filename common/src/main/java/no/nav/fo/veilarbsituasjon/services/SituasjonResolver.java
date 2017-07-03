@@ -23,7 +23,9 @@ import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskont
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeResponse;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
 import java.sql.Timestamp;
@@ -212,11 +214,16 @@ public class SituasjonResolver {
         deps.getSituasjonRepository().opprettOppfolgingsperiode(oppfolgingsperiode);
     }
 
+    @Transactional
     private Situasjon hentSituasjon() {
-        return deps.getSituasjonRepository().hentSituasjon(aktorId)
+        try {
+            return deps.getSituasjonRepository().hentSituasjon(aktorId)
                 .orElseGet(() -> deps.getSituasjonRepository().opprettSituasjon(new Situasjon().setAktorId(aktorId)));
+        } catch (DuplicateKeyException dke) {
+            // Ved for hyppige kall til denne metoden kan situasjonen være opprettet allerede
+            return deps.getSituasjonRepository().hentSituasjon(aktorId).orElse(null);
+        }
     }
-
     @SneakyThrows
     private void sjekkArena() {
         val hentOppfolgingstatusRequest = new WSHentOppfoelgingsstatusRequest();
