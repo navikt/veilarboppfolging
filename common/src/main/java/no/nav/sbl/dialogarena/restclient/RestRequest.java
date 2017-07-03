@@ -3,13 +3,12 @@ package no.nav.sbl.dialogarena.restclient;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.GenericType;
-import javax.ws.rs.core.NewCookie;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.Arrays;
 import java.util.List;
+
+import static javax.ws.rs.core.HttpHeaders.COOKIE;
 
 public class RestRequest {
 
@@ -28,17 +27,8 @@ public class RestRequest {
 
     public <ELEMENT> List<ELEMENT> getList(Class<ELEMENT> responseClass) {
         Invocation.Builder request = webTarget.request();
-        Arrays.stream(httpServletRequest.getCookies()).forEach(c -> request.cookie(mapCookie(c)));
+        request.header(COOKIE, httpServletRequest.getHeader(COOKIE));
         return request.get(new GenericType<>(new ListType(responseClass)));
-    }
-
-    /**
-     * javax.ws.rs.core.Cookie lager en RFC 2109-cookie (versjon=1)
-     * dette hånderer ikke applikasjonsstacken vår.
-     * Løser dette ved å bruke NewCookie som gjør at cookies serialiseres på versjon 0-format
-     */
-    private Cookie mapCookie(javax.servlet.http.Cookie c) {
-        return new NewCookie(c.getName(), c.getValue());
     }
 
     private class ListType implements ParameterizedType {
