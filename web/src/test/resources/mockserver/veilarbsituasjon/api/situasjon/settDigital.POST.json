@@ -5,7 +5,7 @@
   "underOppfolging": true,
   "vilkarMaBesvares": false,
   "oppfolgingUtgang": "2010-12-03T10:15:30Z",
-  "kanStarteOppfolging": false,
+  "kanStarteOppfolging": true,
   "avslutningStatus": {
     "kanAvslutte": false,
     "underOppfolging": false,
