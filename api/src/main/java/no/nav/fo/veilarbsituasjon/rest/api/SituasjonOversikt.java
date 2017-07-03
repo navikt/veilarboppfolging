@@ -48,4 +48,8 @@ public interface SituasjonOversikt {
     @POST
     @Path("/mal")
     Mal oppdaterMal(Mal mal) throws Exception;
+
+    @POST
+    @Path("/settDigital")
+    OppfolgingStatus settTilDigital() throws Exception;
 }
