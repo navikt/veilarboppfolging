@@ -13,8 +13,7 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 
 import static no.nav.fo.veilarbsituasjon.utils.StringUtils.notNullOrEmpty;
-import static org.glassfish.jersey.client.ClientProperties.CONNECT_TIMEOUT;
-import static org.glassfish.jersey.client.ClientProperties.READ_TIMEOUT;
+import static org.glassfish.jersey.client.ClientProperties.*;
 import static org.slf4j.LoggerFactory.getLogger;
 
 public class RestClient {
@@ -39,6 +38,7 @@ public class RestClient {
     private Client createClient() {
         ClientConfig clientConfig = new ClientConfig();
         clientConfig.register(new JsonProvider());
+        clientConfig.property(FOLLOW_REDIRECTS,false);
         clientConfig.property(CONNECT_TIMEOUT,5000);
         clientConfig.property(READ_TIMEOUT,15000);
         return ClientBuilder.newClient(clientConfig);

@@ -109,12 +109,12 @@ public class SituasjonOversiktService {
     public OppfolgingStatusData oppdaterManuellStatus(String fnr, boolean manuell, String begrunnelse, KodeverkBruker opprettetAv, String opprettetAvBrukerId) {
         val resolver = new SituasjonResolver(fnr, situasjonResolverDependencies);
 
-        if (resolver.manuell() != manuell) {
+        if (!resolver.reservertIKrr() && resolver.manuell() != manuell) {
             val nyStatus = new Status(resolver.getAktorId(), manuell, new Timestamp(currentTimeMillis()), begrunnelse, opprettetAv, opprettetAvBrukerId);
             situasjonRepository.opprettStatus(nyStatus);
+            resolver.reloadSituasjon();
         }
 
-        resolver.reloadSituasjon();
         return getOppfolgingStatusData(fnr, resolver);
     }
 

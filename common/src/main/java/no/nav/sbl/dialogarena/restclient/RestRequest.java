@@ -6,8 +6,9 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.GenericType;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.Arrays;
 import java.util.List;
+
+import static javax.ws.rs.core.HttpHeaders.COOKIE;
 
 public class RestRequest {
 
@@ -26,7 +27,7 @@ public class RestRequest {
 
     public <ELEMENT> List<ELEMENT> getList(Class<ELEMENT> responseClass) {
         Invocation.Builder request = webTarget.request();
-        Arrays.stream(httpServletRequest.getCookies()).forEach(c -> request.cookie(c.getName(), c.getValue()));
+        request.header(COOKIE, httpServletRequest.getHeader(COOKIE));
         return request.get(new GenericType<>(new ListType(responseClass)));
     }
 

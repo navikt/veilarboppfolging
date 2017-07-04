@@ -66,7 +66,7 @@ public class SituasjonResolver {
         this.deps = deps;
 
         this.aktorId = ofNullable(deps.getAktoerIdService().findAktoerId(fnr))
-                .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktør for fnr: " + fnr));
+            .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktør for fnr: " + fnr));
         this.situasjon = hentSituasjon();
     }
 
@@ -78,9 +78,9 @@ public class SituasjonResolver {
         if (!situasjon.isOppfolging()) {
             sjekkArena();
             deps.getSituasjonRepository().oppdaterOppfolgingStatus(
-                    situasjon.setOppfolging(
-                            erUnderOppfolging(statusIArena)
-                    )
+                situasjon.setOppfolging(
+                    erUnderOppfolging(statusIArena)
+                )
             );
         }
     }
@@ -89,21 +89,21 @@ public class SituasjonResolver {
         Brukervilkar gjeldendeVilkar = getNyesteVilkar();
         if (gjeldendeVilkar.getHash().equals(hash)) {
             deps.getSituasjonRepository().opprettBrukervilkar(
-                    new Brukervilkar(
-                            aktorId,
-                            new Timestamp(currentTimeMillis()),
-                            vilkarStatus,
-                            gjeldendeVilkar.getTekst(),
-                            hash
-                    ));
+                new Brukervilkar(
+                    aktorId,
+                    new Timestamp(currentTimeMillis()),
+                    vilkarStatus,
+                    gjeldendeVilkar.getTekst(),
+                    hash
+                ));
         }
     }
 
     Brukervilkar getNyesteVilkar() {
         String vilkarTekst = deps.getVilkarService().getVilkar(situasjon.isOppfolging() ? UNDER_OPPFOLGING : PRIVAT, null);
         return new Brukervilkar()
-                .setTekst(vilkarTekst)
-                .setHash(DigestUtils.sha256Hex(vilkarTekst));
+            .setTekst(vilkarTekst)
+            .setHash(DigestUtils.sha256Hex(vilkarTekst));
     }
 
     List<Brukervilkar> getHistoriskeVilkar() {
@@ -112,10 +112,10 @@ public class SituasjonResolver {
 
     boolean maVilkarBesvares() {
         return ofNullable(situasjon.getGjeldendeBrukervilkar())
-                .filter(brukervilkar -> GODKJENT.equals(brukervilkar.getVilkarstatus()))
-                .map(Brukervilkar::getHash)
-                .map(brukerVilkar -> !brukerVilkar.equals(getNyesteVilkar().getHash()))
-                .orElse(true);
+            .filter(brukervilkar -> GODKJENT.equals(brukervilkar.getVilkarstatus()))
+            .map(Brukervilkar::getHash)
+            .map(brukerVilkar -> !brukerVilkar.equals(getNyesteVilkar().getHash()))
+            .orElse(true);
     }
 
     List<MalData> getMalList() {
@@ -124,10 +124,10 @@ public class SituasjonResolver {
 
     MalData oppdaterMal(String mal, String endretAv) {
         MalData malData = new MalData()
-                .setAktorId(aktorId)
-                .setMal(mal)
-                .setEndretAv(StringUtils.of(endretAv).orElse(aktorId))
-                .setDato(new Timestamp(currentTimeMillis()));
+            .setAktorId(aktorId)
+            .setMal(mal)
+            .setEndretAv(StringUtils.of(endretAv).orElse(aktorId))
+            .setDato(new Timestamp(currentTimeMillis()));
         deps.getSituasjonRepository().opprettMal(malData);
         return hentSituasjon().getGjeldendeMal();
     }
@@ -149,8 +149,8 @@ public class SituasjonResolver {
 
     boolean manuell() {
         return ofNullable(situasjon.getGjeldendeStatus())
-                .map(Status::isManuell)
-                .orElse(false);
+            .map(Status::isManuell)
+            .orElse(false);
     }
 
     boolean getKanSettesUnderOppfolging() {
@@ -180,9 +180,9 @@ public class SituasjonResolver {
             hentYtelseskontrakt();
         }
         return ytelser.getYtelseskontraktListe()
-                .stream()
-                .map(WSYtelseskontrakt::getStatus)
-                .anyMatch(AKTIV_YTELSE_STATUS::equals);
+            .stream()
+            .map(WSYtelseskontrakt::getStatus)
+            .anyMatch(AKTIV_YTELSE_STATUS::equals);
     }
 
     boolean harAktiveTiltak() {
@@ -190,16 +190,16 @@ public class SituasjonResolver {
             hentArenaAktiviteter();
         }
         return arenaAktiviteter
-                .stream()
-                .map(ArenaAktivitetDTO::getStatus)
-                .anyMatch(status -> status != AVBRUTT && status != FULLFORT);
+            .stream()
+            .map(ArenaAktivitetDTO::getStatus)
+            .anyMatch(status -> status != AVBRUTT && status != FULLFORT);
     }
 
     boolean kanAvslutteOppfolging() {
         return situasjon.isOppfolging()
-                && !erUnderOppfolgingIArena()
-                && !harPagaendeYtelse()
-                && !harAktiveTiltak();
+            && !erUnderOppfolgingIArena()
+            && !harPagaendeYtelse()
+            && !harAktiveTiltak();
     }
 
     Date getInaktiveringsDato() {
@@ -214,16 +214,11 @@ public class SituasjonResolver {
         deps.getSituasjonRepository().opprettOppfolgingsperiode(oppfolgingsperiode);
     }
 
-    @Transactional
     private Situasjon hentSituasjon() {
-        try {
-            return deps.getSituasjonRepository().hentSituasjon(aktorId)
-                .orElseGet(() -> deps.getSituasjonRepository().opprettSituasjon(new Situasjon().setAktorId(aktorId)));
-        } catch (DuplicateKeyException dke) {
-            // Ved for hyppige kall til denne metoden kan situasjonen være opprettet allerede
-            return deps.getSituasjonRepository().hentSituasjon(aktorId).orElse(null);
-        }
+        return deps.getSituasjonRepository().hentSituasjon(aktorId)
+            .orElseGet(() -> deps.getSituasjonRepository().opprettSituasjon(new Situasjon().setAktorId(aktorId)));
     }
+
     @SneakyThrows
     private void sjekkArena() {
         val hentOppfolgingstatusRequest = new WSHentOppfoelgingsstatusRequest();
@@ -236,14 +231,14 @@ public class SituasjonResolver {
             this.reservertIKrr = sjekkKrr();
             if (!manuell() && reservertIKrr) {
                 deps.getSituasjonRepository().opprettStatus(
-                        new Status(
-                                situasjon.getAktorId(),
-                                true,
-                                new Timestamp(currentTimeMillis()),
-                                "Reservert og under oppfølging",
-                                KodeverkBruker.SYSTEM,
-                                null
-                        )
+                    new Status(
+                        situasjon.getAktorId(),
+                        true,
+                        new Timestamp(currentTimeMillis()),
+                        "Reservert og under oppfølging",
+                        KodeverkBruker.SYSTEM,
+                        null
+                    )
                 );
             }
         } else {
@@ -256,10 +251,10 @@ public class SituasjonResolver {
         val req = new WSHentDigitalKontaktinformasjonRequest().withPersonident(fnr);
         try {
             return of(deps.getDigitalKontaktinformasjonV1().hentDigitalKontaktinformasjon(req))
-                    .map(WSHentDigitalKontaktinformasjonResponse::getDigitalKontaktinformasjon)
-                    .map(WSKontaktinformasjon::getReservasjon)
-                    .map("true"::equalsIgnoreCase)
-                    .orElse(false);
+                .map(WSHentDigitalKontaktinformasjonResponse::getDigitalKontaktinformasjon)
+                .map(WSKontaktinformasjon::getReservasjon)
+                .map("true"::equalsIgnoreCase)
+                .orElse(false);
         } catch (HentDigitalKontaktinformasjonKontaktinformasjonIkkeFunnet | HentDigitalKontaktinformasjonPersonIkkeFunnet e) {
             LOG.warn(e.getMessage(), e);
             return true;
