@@ -23,9 +23,7 @@ import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskont
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeResponse;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
 import java.sql.Timestamp;
@@ -79,7 +77,7 @@ public class SituasjonResolver {
             sjekkArena();
             deps.getSituasjonRepository().oppdaterOppfolgingStatus(
                 situasjon.setOppfolging(
-                    erUnderOppfolging(statusIArena)
+                    erUnderOppfolging(statusIArena.getFormidlingsgruppeKode(), statusIArena.getServicegruppeKode())
                 )
             );
         }
@@ -160,7 +158,7 @@ public class SituasjonResolver {
         if (statusIArena == null) {
             sjekkArena();
         }
-        return kanSettesUnderOppfolging(statusIArena);
+        return kanSettesUnderOppfolging(statusIArena.getFormidlingsgruppeKode(), statusIArena.getServicegruppeKode());
     }
 
     void startOppfolging() {
@@ -172,7 +170,7 @@ public class SituasjonResolver {
         if (statusIArena == null) {
             sjekkArena();
         }
-        return erUnderOppfolging(statusIArena);
+        return erUnderOppfolging(statusIArena.getFormidlingsgruppeKode(), statusIArena.getServicegruppeKode());
     }
 
     boolean harPagaendeYtelse() {
