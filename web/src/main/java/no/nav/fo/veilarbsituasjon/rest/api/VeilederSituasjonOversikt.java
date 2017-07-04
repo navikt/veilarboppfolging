@@ -31,6 +31,6 @@ public interface VeilederSituasjonOversikt extends SituasjonOversikt {
     @Path("/settDigital")
     public OppfolgingStatus settTilDigital(EndreSituasjonDTO settTilDigital) throws Exception;
     @GET
-    @Path("hentInstillingsHistorikk")
-    public List<InnstillingsHistorikk> hentInstillingsHistorikk() throws Exception;
+    @Path("/innstillingsHistorikk")
+    public List<InnstillingsHistorikk> hentInnstillingsHistorikk() throws Exception;
 }

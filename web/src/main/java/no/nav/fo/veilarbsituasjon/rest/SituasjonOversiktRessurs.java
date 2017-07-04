@@ -81,7 +81,7 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt, VeilederSitu
     }
 
     @Override
-    public List<InnstillingsHistorikk> hentInstillingsHistorikk() throws Exception {
+    public List<InnstillingsHistorikk> hentInnstillingsHistorikk() throws Exception {
         pepClient.isServiceCallAllowed(getFnr());
         return situasjonOversiktService.hentInstillingsHistorikk(getFnr());
     }
