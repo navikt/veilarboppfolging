@@ -99,23 +99,16 @@ public class SituasjonRepository {
 
     @Transactional
     public Situasjon opprettSituasjon(Situasjon situasjon) {
-        int update = jdbcTemplate.update(
-            "INSERT INTO situasjon(aktorid, oppfolging, gjeldende_status, gjeldende_brukervilkar, oppfolging_utgang, gjeldende_mal) " +
-                "SELECT ?, ?, ?, ?, ?, ? FROM dual " +
-                "WHERE NOT EXISTS (SELECT 1 FROM SITUASJON WHERE aktorid = ?)",
-            situasjon.getAktorId(),
-            situasjon.isOppfolging(),
-            null,
-            null,
-            null,
-            null,
-            situasjon.getAktorId()
+        jdbcTemplate.update(
+                "INSERT INTO situasjon(aktorid, oppfolging, gjeldende_status, gjeldende_brukervilkar, oppfolging_utgang, gjeldende_mal) " +
+                        "VALUES(?, ?, ?, ?, ?, ?)",
+                situasjon.getAktorId(),
+                situasjon.isOppfolging(),
+                null,
+                null,
+                null,
+                null
         );
-
-        if(update == 0) {
-            return hentSituasjon(situasjon.getAktorId()).get();
-        }
-
         Optional.ofNullable(situasjon.getGjeldendeBrukervilkar()).ifPresent(this::opprettBrukervilkar);
         Optional.ofNullable(situasjon.getGjeldendeStatus()).ifPresent(this::opprettStatus);
         Optional.ofNullable(situasjon.getGjeldendeMal()).ifPresent(this::opprettMal);
