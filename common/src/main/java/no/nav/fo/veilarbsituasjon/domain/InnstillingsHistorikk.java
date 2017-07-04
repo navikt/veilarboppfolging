@@ -8,9 +8,9 @@ import java.util.Date;
 @Value
 @Builder
 public class InnstillingsHistorikk {
-    private String beskrivelse;
+    private boolean manuell;
+    private Date dato;
     private String begrunnelse;
-    private Date tidspunkt;
     private KodeverkBruker opptettetAv;
     private String opprettetAvBrukerId;
 }

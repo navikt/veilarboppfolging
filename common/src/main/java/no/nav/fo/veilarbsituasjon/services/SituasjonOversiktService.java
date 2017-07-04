@@ -124,12 +124,12 @@ public class SituasjonOversiktService {
         val manuellHistorikk = situasjonRepository.hentManuellHistorikk(resolver.getAktorId());
 
         return manuellHistorikk.stream()
-                .map((h) -> InnstillingsHistorikk.builder()
-                        .beskrivelse("MANUELL")
-                        .begrunnelse(h.getBegrunnelse())
-                        .tidspunkt(h.getDato())
-                        .opptettetAv(h.getOpprettetAv())
-                        .opprettetAvBrukerId(h.getOpprettetAvBrukerId())
+                .map((historikkData) -> InnstillingsHistorikk.builder()
+                        .manuell(historikkData.isManuell())
+                        .begrunnelse(historikkData.getBegrunnelse())
+                        .dato(historikkData.getDato())
+                        .opptettetAv(historikkData.getOpprettetAv())
+                        .opprettetAvBrukerId(historikkData.getOpprettetAvBrukerId())
                         .build())
                 .collect(Collectors.toList());
     }
