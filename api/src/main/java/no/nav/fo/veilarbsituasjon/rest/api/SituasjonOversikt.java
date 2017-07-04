@@ -51,5 +51,7 @@ public interface SituasjonOversikt {
 
     @POST
     @Path("/settDigital")
-    OppfolgingStatus settTilDigital() throws Exception;
+    default OppfolgingStatus settTilDigital() throws Exception {
+        return null;
+    };
 }
