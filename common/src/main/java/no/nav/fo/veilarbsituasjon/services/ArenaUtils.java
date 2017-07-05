@@ -1,7 +1,5 @@
 package no.nav.fo.veilarbsituasjon.services;
 
-import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.WSHentOppfoelgingsstatusResponse;
-
 import java.util.HashSet;
 import java.util.Set;
 
@@ -14,23 +12,23 @@ public class ArenaUtils {
     private static final String IKKE_ARBEIDSSOKER = "IARBS";
     private static final String SYKEMELDT_HOS_ARBEIDSGIVER = "VURDI";
 
-
-    public static boolean erUnderOppfolging(WSHentOppfoelgingsstatusResponse statusIArena) {
-        return erArbeidssoker(statusIArena) || erIArbeidOgHarInnsatsbehov(statusIArena);
+    // Logikken som utleder om en bruker er under oppfolging kjøres også ved indeksering av brukere i VeilArbPortefølje.
+    // Endringer i logikken må implementeres begge steder
+    public static boolean erUnderOppfolging(String formidlingsgruppeKode, String servicegruppeKode) {
+        return erArbeidssoker(formidlingsgruppeKode) || erIArbeidOgHarInnsatsbehov(formidlingsgruppeKode, servicegruppeKode);
     }
 
-    public static boolean kanSettesUnderOppfolging(WSHentOppfoelgingsstatusResponse statusIArena) {
-        return IKKE_ARBEIDSSOKER.equals(statusIArena.getFormidlingsgruppeKode())
-                && SYKEMELDT_HOS_ARBEIDSGIVER.equals(statusIArena.getServicegruppeKode());
+    public static boolean kanSettesUnderOppfolging(String formidlingsgruppeKode, String servicegruppeKode) {
+        return IKKE_ARBEIDSSOKER.equals(formidlingsgruppeKode)
+                && SYKEMELDT_HOS_ARBEIDSGIVER.equals(servicegruppeKode);
     }
 
-    private static boolean erArbeidssoker(WSHentOppfoelgingsstatusResponse oppfolgingstatus) {
-        return ARBEIDSOKERKODER.contains(oppfolgingstatus.getFormidlingsgruppeKode());
+    private static boolean erArbeidssoker(String formidlingsgruppeKode) {
+        return ARBEIDSOKERKODER.contains(formidlingsgruppeKode);
     }
 
-    private static boolean erIArbeidOgHarInnsatsbehov(WSHentOppfoelgingsstatusResponse oppfolgingstatus) {
-        return IKKE_ARBEIDSSOKER.equals(oppfolgingstatus.getFormidlingsgruppeKode()) &&
-                OPPFOLGINGKODER.contains(oppfolgingstatus.getServicegruppeKode());
+    private static boolean erIArbeidOgHarInnsatsbehov(String formidlingsgruppeKode, String servicegruppeKode) {
+        return IKKE_ARBEIDSSOKER.equals(formidlingsgruppeKode) && OPPFOLGINGKODER.contains(servicegruppeKode);
     }
 
 }
