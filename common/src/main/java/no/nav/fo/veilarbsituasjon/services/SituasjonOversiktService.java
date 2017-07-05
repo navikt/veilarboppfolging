@@ -109,7 +109,7 @@ public class SituasjonOversiktService {
     public OppfolgingStatusData oppdaterManuellStatus(String fnr, boolean manuell, String begrunnelse, KodeverkBruker opprettetAv, String opprettetAvBrukerId) {
         val resolver = new SituasjonResolver(fnr, situasjonResolverDependencies);
 
-        if (!resolver.reservertIKrr() && resolver.manuell() != manuell) {
+        if ((resolver.manuell() != manuell) && (!resolver.reservertIKrr() || manuell)) {
             val nyStatus = new Status(resolver.getAktorId(), manuell, new Timestamp(currentTimeMillis()), begrunnelse, opprettetAv, opprettetAvBrukerId);
             situasjonRepository.opprettStatus(nyStatus);
             resolver.reloadSituasjon();
