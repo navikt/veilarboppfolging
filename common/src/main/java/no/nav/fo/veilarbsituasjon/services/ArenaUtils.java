@@ -12,7 +12,8 @@ public class ArenaUtils {
     private static final String IKKE_ARBEIDSSOKER = "IARBS";
     private static final String SYKEMELDT_HOS_ARBEIDSGIVER = "VURDI";
 
-
+    // Logikken som utleder om en bruker er under oppfolging kjøres også ved indeksering av brukere i VeilArbPortefølje.
+    // Endringer i logikken må implementeres begge steder
     public static boolean erUnderOppfolging(String formidlingsgruppeKode, String servicegruppeKode) {
         return erArbeidssoker(formidlingsgruppeKode) || erIArbeidOgHarInnsatsbehov(formidlingsgruppeKode, servicegruppeKode);
     }
