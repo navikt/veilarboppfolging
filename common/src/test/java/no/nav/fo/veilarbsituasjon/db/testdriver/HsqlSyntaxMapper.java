@@ -37,6 +37,10 @@ class HsqlSyntaxMapper {
                 "ALTER TABLE STATUS MODIFY OPPRETTET_AV VARCHAR(255) NOT NULL",
                 "ALTER TABLE STATUS alter column OPPRETTET_AV VARCHAR(255); ALTER TABLE STATUS alter column OPPRETTET_AV SET NOT NULL;"
         );
+        map(
+                "ALTER TABLE STATUS MODIFY BEGRUNNELSE VARCHAR(500)",
+                "ALTER TABLE STATUS alter column BEGRUNNELSE VARCHAR(500)"
+        );
         map("END", NOOP);
     }
 
