@@ -11,6 +11,6 @@ public class InnstillingsHistorikk {
     private boolean manuell;
     private Date dato;
     private String begrunnelse;
-    private KodeverkBruker opptettetAv;
+    private KodeverkBruker opprettetAv;
     private String opprettetAvBrukerId;
 }

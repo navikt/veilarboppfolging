@@ -128,7 +128,7 @@ public class SituasjonOversiktService {
                         .manuell(historikkData.isManuell())
                         .begrunnelse(historikkData.getBegrunnelse())
                         .dato(historikkData.getDato())
-                        .opptettetAv(historikkData.getOpprettetAv())
+                        .opprettetAv(historikkData.getOpprettetAv())
                         .opprettetAvBrukerId(historikkData.getOpprettetAvBrukerId())
                         .build())
                 .collect(Collectors.toList());
