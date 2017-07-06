@@ -13,8 +13,7 @@ import java.util.Set;
 
 public class ArenaUtilsTest {
 
-    private static final Set<String> FORMIDLINGSGRUPPEKODER = new HashSet<>(asList("ISERV", "IARBS", "RARBS", "ARBS", "PARBS"));
-	private static final Set<String> KVALIFISERINGSGRUPPEKODER = new HashSet<>(
+    private static final Set<String> KVALIFISERINGSGRUPPEKODER = new HashSet<>(
 			asList("BATT", "KAP11", "IKVAL", "IVURD", "VURDU", "VURDI", "VARIG", "OPPFI", "BKART", "BFORM"));
 	
     @Test
@@ -82,13 +81,4 @@ public class ArenaUtilsTest {
         assertThat(kanSettesUnderOppfolging("IARBS", "VURDI")).isTrue();
     }
 
-//    @Test
-    public void sjekkUnderOppfolging_AlleKombinasjoner() {
-        for (String fgKode : FORMIDLINGSGRUPPEKODER) {
-            for (String kgKode : KVALIFISERINGSGRUPPEKODER) {
-                System.out.println(String.format("[%s] [%s] - [%s]", fgKode, kgKode, erUnderOppfolging(fgKode, kgKode)));
-            }
-            System.out.println("-------");
-        }
-    }
 }
