@@ -228,6 +228,15 @@ public class SituasjonRepository {
         );
     }
 
+    public List<InnstillingsHistorikkData> hentManuellHistorikk(String aktorId) {
+        return jdbcTemplate.query(
+                        "SELECT manuell, dato, begrunnelse, opprettet_av, opprettet_av_brukerid " +
+                        "FROM STATUS " +
+                        "WHERE aktorid = ?",
+                (result, n) -> mapRadTilInnstillingsHistorikkData(result),
+                aktorId);
+    }
+
     private void opprettSituasjonMal(MalData mal) {
         jdbcTemplate.update(
                 "INSERT INTO MAL VALUES(?, ?, ?, ?, ?)",
@@ -337,5 +346,17 @@ public class SituasjonRepository {
                 .setMal(result.getString("MAL_MAL"))
                 .setEndretAv(result.getString("MAL_ENDRET_AV"))
                 .setDato(result.getTimestamp("MAL_DATO"));
+    }
+
+    @SneakyThrows
+    @SuppressWarnings("unchecked")
+    private InnstillingsHistorikkData mapRadTilInnstillingsHistorikkData(ResultSet result) {
+        return new InnstillingsHistorikkData()
+                .setManuell(result.getBoolean("MANUELL"))
+                .setDato(result.getTimestamp("DATO"))
+                .setBegrunnelse(result.getString("BEGRUNNELSE"))
+                .setOpprettetAv(valueOfOptional(KodeverkBruker.class, result.getString("OPPRETTET_AV")).orElse(null))
+                .setOpprettetAvBrukerId(result.getString("OPPRETTET_AV_BRUKERID"));
+
     }
 }

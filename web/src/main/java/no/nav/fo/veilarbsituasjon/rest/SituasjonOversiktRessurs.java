@@ -81,6 +81,12 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt, VeilederSitu
     }
 
     @Override
+    public List<InnstillingsHistorikk> hentInnstillingsHistorikk() throws Exception {
+        pepClient.isServiceCallAllowed(getFnr());
+        return situasjonOversiktService.hentInstillingsHistorikk(getFnr());
+    }
+
+    @Override
     public Vilkar hentVilkar() throws Exception {
         pepClient.isServiceCallAllowed(getFnr());
         return tilDto(situasjonOversiktService.hentVilkar(getFnr()));
@@ -117,13 +123,27 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt, VeilederSitu
     public List<Mal> hentMalListe() throws PepException {
         pepClient.isServiceCallAllowed(getFnr());
         List<MalData> malDataList = situasjonOversiktService.hentMalList(getFnr());
-        return malDataList.stream().map(this::tilDto).collect(toList());
+        return malDataList.stream()
+                .map(this::tilDto)
+                .collect(toList());
     }
 
     @Override
     public Mal oppdaterMal(Mal mal) throws PepException {
         pepClient.isServiceCallAllowed(getFnr());
         return tilDto(situasjonOversiktService.oppdaterMal(mal.getMal(), getFnr(), getUid()));
+    }
+
+    @Override
+    public OppfolgingStatus settTilDigital() throws Exception {
+        pepClient.isServiceCallAllowed(getFnr());
+        return tilDto(
+                situasjonOversiktService.oppdaterManuellStatus(
+                        getFnr(),
+                        false,
+                        "Bruker satt seg selv til digital oppfølging",
+                        KodeverkBruker.EKSTERN,
+                        hentBrukerInfo().getId()));
     }
 
     private String getUid() {

@@ -14,6 +14,7 @@ import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static java.lang.System.currentTimeMillis;
 
@@ -108,13 +109,29 @@ public class SituasjonOversiktService {
     public OppfolgingStatusData oppdaterManuellStatus(String fnr, boolean manuell, String begrunnelse, KodeverkBruker opprettetAv, String opprettetAvBrukerId) {
         val resolver = new SituasjonResolver(fnr, situasjonResolverDependencies);
 
-        if (resolver.manuell() != manuell) {
+        if ((resolver.manuell() != manuell) && (!resolver.reservertIKrr() || manuell)) {
             val nyStatus = new Status(resolver.getAktorId(), manuell, new Timestamp(currentTimeMillis()), begrunnelse, opprettetAv, opprettetAvBrukerId);
             situasjonRepository.opprettStatus(nyStatus);
+            resolver.reloadSituasjon();
         }
 
-        resolver.reloadSituasjon();
         return getOppfolgingStatusData(fnr, resolver);
+    }
+
+
+    public List<InnstillingsHistorikk> hentInstillingsHistorikk(String fnr) {
+        val resolver = new SituasjonResolver(fnr, situasjonResolverDependencies);
+        val manuellHistorikk = situasjonRepository.hentManuellHistorikk(resolver.getAktorId());
+
+        return manuellHistorikk.stream()
+                .map((historikkData) -> InnstillingsHistorikk.builder()
+                        .manuell(historikkData.isManuell())
+                        .begrunnelse(historikkData.getBegrunnelse())
+                        .dato(historikkData.getDato())
+                        .opptettetAv(historikkData.getOpprettetAv())
+                        .opprettetAvBrukerId(historikkData.getOpprettetAvBrukerId())
+                        .build())
+                .collect(Collectors.toList());
     }
 
     private OppfolgingStatusData getOppfolgingStatusData(String fnr, SituasjonResolver situasjonResolver) {
