@@ -41,6 +41,10 @@ class HsqlSyntaxMapper {
                 "ALTER TABLE STATUS MODIFY BEGRUNNELSE VARCHAR(500)",
                 "ALTER TABLE STATUS alter column BEGRUNNELSE VARCHAR(500)"
         );
+        map(
+                "ALTER TABLE STATUS MODIFY BEGRUNNELSE NVARCHAR2(500)",
+                "ALTER TABLE STATUS alter column BEGRUNNELSE NVARCHAR2(500)"
+        );
         map("END", NOOP);
     }
 
