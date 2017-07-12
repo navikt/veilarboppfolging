@@ -5,7 +5,6 @@ import lombok.val;
 import no.nav.apiapp.soap.SoapTjeneste;
 import no.nav.fo.veilarbsituasjon.domain.*;
 import no.nav.fo.veilarbsituasjon.services.SituasjonOversiktService;
-import no.nav.fo.veilarbsituasjon.utils.CalendarConverter;
 import no.nav.fo.veilarbsituasjon.utils.DateUtils;
 import no.nav.tjeneste.virksomhet.behandlesituasjon.v1.binding.*;
 import no.nav.tjeneste.virksomhet.behandlesituasjon.v1.informasjon.*;
@@ -14,15 +13,14 @@ import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
 import javax.ws.rs.WebApplicationException;
-import javax.xml.datatype.DatatypeFactory;
 import java.sql.Timestamp;
-import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Optional;
 
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.Response.Status.NOT_IMPLEMENTED;
 import static no.nav.fo.veilarbsituasjon.domain.VilkarStatus.*;
+import static no.nav.fo.veilarbsituasjon.utils.CalendarConverter.convertDateToXMLGregorianCalendar;
 import static no.nav.fo.veilarbsituasjon.utils.DateUtils.xmlCalendar;
 import static no.nav.fo.veilarbsituasjon.utils.StringUtils.emptyIfNull;
 
@@ -122,15 +120,13 @@ public class SituasjonOversiktWebService implements BehandleSituasjonV1 {
 
     @SneakyThrows
     private Oppfoelgingsstatus mapTilOppfoelgingstatus(OppfolgingStatusData oppfolgingStatusData) {
-        GregorianCalendar gregorianCalendarOppfolgingUtgang = new GregorianCalendar();
-        gregorianCalendarOppfolgingUtgang.setTime(oppfolgingStatusData.getOppfolgingUtgang());
-
         val oppfoelgingstatus = new Oppfoelgingsstatus();
         oppfoelgingstatus.setErBrukerUnderOppfoelging(oppfolgingStatusData.isUnderOppfolging());
         oppfoelgingstatus.setErBrukerSattTilManuell(oppfolgingStatusData.isManuell());
         oppfoelgingstatus.setErReservertIKontaktOgReservasjonsregisteret(oppfolgingStatusData.isReservasjonKRR());
         oppfoelgingstatus.setMaaVilkaarBesvares(oppfolgingStatusData.isVilkarMaBesvares());
-        oppfoelgingstatus.setOppfoelgingUtgang(DatatypeFactory.newInstance().newXMLGregorianCalendar(gregorianCalendarOppfolgingUtgang));
+        Optional.ofNullable(oppfolgingStatusData.getOppfolgingUtgang())
+                .ifPresent(value -> oppfoelgingstatus.setOppfoelgingUtgang(convertDateToXMLGregorianCalendar(value)));
         oppfoelgingstatus.setPersonident(oppfolgingStatusData.getFnr());
         return oppfoelgingstatus;
     }
@@ -209,7 +205,7 @@ public class SituasjonOversiktWebService implements BehandleSituasjonV1 {
     private static Vilkaarsstatus mapBrukervilkarToVilkaarstatus(Brukervilkar brukervilkar, String ident) {
         Vilkaarsstatus vilkaarsstatus = new Vilkaarsstatus();
         vilkaarsstatus.setPersonident(ident);
-        vilkaarsstatus.setDato(CalendarConverter.convertDateToXMLGregorianCalendar(brukervilkar.getDato()));
+        vilkaarsstatus.setDato(convertDateToXMLGregorianCalendar(brukervilkar.getDato()));
         vilkaarsstatus.setVilkaarstekst(brukervilkar.getTekst());
         vilkaarsstatus.setHash(brukervilkar.getHash());
         vilkaarsstatus.setStatus(mapVilkarStatusTilVilkaarstatuser(brukervilkar.getVilkarstatus()));

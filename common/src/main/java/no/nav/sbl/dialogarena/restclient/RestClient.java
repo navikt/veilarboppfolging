@@ -12,7 +12,7 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 
-import static no.nav.fo.veilarbsituasjon.utils.StringUtils.notNullOrEmpty;
+import static no.nav.fo.veilarbsituasjon.utils.StringUtils.notNullAndNotEmpty;
 import static org.glassfish.jersey.client.ClientProperties.*;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -45,7 +45,7 @@ public class RestClient {
     }
 
     public static RestClient build(Provider<HttpServletRequest> httpServletRequestProvider, String basePath) {
-        if (!notNullOrEmpty(basePath)) {
+        if (!notNullAndNotEmpty(basePath)) {
             throw new IllegalArgumentException("mangler basePath");
         }
         if (httpServletRequestProvider == null) {
