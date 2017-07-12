@@ -108,6 +108,8 @@ public class SituasjonOversiktWebService implements BehandleSituasjonV1 {
     @Override
     public SettDigitalResponse settDigital(SettDigitalRequest settDigitalRequest) {
         val oppfolgingStatusData = situasjonOversiktService.settDigitalBruker(settDigitalRequest.getPersonident());
+        oppfolgingStatusData.setVilkarMaBesvares(true); // Når man setter seg selv til digital oppfølging må man ta stilling til vilkår på nytt
+
 
         if (oppfolgingStatusData.isManuell()) {
             throw new RuntimeException("Klarte ikke å sette digital oppfølging");
