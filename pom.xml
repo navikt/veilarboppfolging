@@ -36,7 +36,7 @@
         <oppfoelging-v1-tjenestespesifikasjon.version>1.1.0</oppfoelging-v1-tjenestespesifikasjon.version>
         <dial-nav-tjeneste-aktoer_v2.version>1.1</dial-nav-tjeneste-aktoer_v2.version>
         <dkif-tjenestespesifikasjon.version>1.2</dkif-tjenestespesifikasjon.version>
-        <brukerdialog-behandleSituasjon-v1-tjenestespesifikasjon.version>1.0.7-SNAPSHOT</brukerdialog-behandleSituasjon-v1-tjenestespesifikasjon.version>
+        <brukerdialog-behandleSituasjon-v1-tjenestespesifikasjon.version>1.0.9-SNAPSHOT</brukerdialog-behandleSituasjon-v1-tjenestespesifikasjon.version>
         <organisasjonenhet-v1.version>1.0.7</organisasjonenhet-v1.version>
 
         <sonar.exclusions>

@@ -106,6 +106,12 @@ public class SituasjonOversiktService {
         return situasjonRepository.hentAvsluttetOppfolgingEtterDato(timestamp);
     }
 
+    public OppfolgingStatusData settDigitalBruker(String fnr) {
+        val resolver = new SituasjonResolver(fnr, situasjonResolverDependencies);
+
+        return oppdaterManuellStatus(fnr, false, "Bruker satt seg selv til digital oppfølging", KodeverkBruker.EKSTERN, resolver.getAktorId());
+    }
+
     public OppfolgingStatusData oppdaterManuellStatus(String fnr, boolean manuell, String begrunnelse, KodeverkBruker opprettetAv, String opprettetAvBrukerId) {
         val resolver = new SituasjonResolver(fnr, situasjonResolverDependencies);
 

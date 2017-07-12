@@ -14,10 +14,11 @@ import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
 import javax.ws.rs.WebApplicationException;
+import javax.xml.datatype.DatatypeFactory;
 import java.sql.Timestamp;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.Response.Status.NOT_IMPLEMENTED;
@@ -104,6 +105,34 @@ public class SituasjonOversiktWebService implements BehandleSituasjonV1 {
     public OpprettMalResponse opprettMal(OpprettMalRequest opprettMalRequest) {
         situasjonOversiktService.oppdaterMal(opprettMalRequest.getMal().getMal(), opprettMalRequest.getPersonident(), null);
         return new OpprettMalResponse();
+    }
+
+    @Override
+    public SettDigitalResponse settDigital(SettDigitalRequest settDigitalRequest) {
+        val oppfolgingStatusData = situasjonOversiktService.settDigitalBruker(settDigitalRequest.getPersonident());
+
+        if (oppfolgingStatusData.isManuell()) {
+            throw new RuntimeException("Klarte ikke å sette digital oppfølging");
+        }
+
+        val settDigitalResponse = new SettDigitalResponse();
+        settDigitalResponse.setOppfoelgingsstatus(mapTilOppfoelgingstatus(oppfolgingStatusData));
+        return settDigitalResponse;
+    }
+
+    @SneakyThrows
+    private Oppfoelgingsstatus mapTilOppfoelgingstatus(OppfolgingStatusData oppfolgingStatusData) {
+        GregorianCalendar gregorianCalendarOppfolgingUtgang = new GregorianCalendar();
+        gregorianCalendarOppfolgingUtgang.setTime(oppfolgingStatusData.getOppfolgingUtgang());
+
+        val oppfoelgingstatus = new Oppfoelgingsstatus();
+        oppfoelgingstatus.setErBrukerUnderOppfoelging(oppfolgingStatusData.isUnderOppfolging());
+        oppfoelgingstatus.setErBrukerSattTilManuell(oppfolgingStatusData.isManuell());
+        oppfoelgingstatus.setErReservertIKontaktOgReservasjonsregisteret(oppfolgingStatusData.isReservasjonKRR());
+        oppfoelgingstatus.setMaaVilkaarBesvares(oppfolgingStatusData.isVilkarMaBesvares());
+        oppfoelgingstatus.setOppfoelgingUtgang(DatatypeFactory.newInstance().newXMLGregorianCalendar(gregorianCalendarOppfolgingUtgang));
+        oppfoelgingstatus.setPersonident(oppfolgingStatusData.getFnr());
+        return oppfoelgingstatus;
     }
 
     private HentVilkaarResponse mapTilHentVilkaarResponse(Brukervilkar brukervilkar) {
