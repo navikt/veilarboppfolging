@@ -15,8 +15,13 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.lang.System.currentTimeMillis;
+import static no.nav.fo.veilarbsituasjon.domain.InnstillingsHistorikk.Type.AVSLUTTET_OPPFOLGINGSPERIODE;
+import static no.nav.fo.veilarbsituasjon.domain.InnstillingsHistorikk.Type.SATT_TIL_DIGITAL;
+import static no.nav.fo.veilarbsituasjon.domain.InnstillingsHistorikk.Type.SATT_TIL_MANUELL;
+import static no.nav.fo.veilarbsituasjon.domain.KodeverkBruker.NAV;
 
 @Component
 @Api
@@ -127,17 +132,32 @@ public class SituasjonOversiktService {
 
     public List<InnstillingsHistorikk> hentInstillingsHistorikk(String fnr) {
         val resolver = new SituasjonResolver(fnr, situasjonResolverDependencies);
-        val manuellHistorikk = situasjonRepository.hentManuellHistorikk(resolver.getAktorId());
+        String aktorId = resolver.getAktorId();
 
-        return manuellHistorikk.stream()
-                .map((historikkData) -> InnstillingsHistorikk.builder()
-                        .manuell(historikkData.isManuell())
-                        .begrunnelse(historikkData.getBegrunnelse())
-                        .dato(historikkData.getDato())
-                        .opprettetAv(historikkData.getOpprettetAv())
-                        .opprettetAvBrukerId(historikkData.getOpprettetAvBrukerId())
-                        .build())
-                .collect(Collectors.toList());
+        return Stream.concat(
+                situasjonRepository.hentOppfolgingsperioder(aktorId).stream().map(this::tilDTO),
+                situasjonRepository.hentManuellHistorikk(aktorId).stream().map(this::tilDTO)
+        ).collect(Collectors.toList());
+    }
+
+    private InnstillingsHistorikk tilDTO(Oppfolgingsperiode oppfolgingsperiode) {
+        return InnstillingsHistorikk.builder()
+                .type(AVSLUTTET_OPPFOLGINGSPERIODE)
+                .begrunnelse(oppfolgingsperiode.getBegrunnelse())
+                .dato(oppfolgingsperiode.getSluttDato())
+                .opprettetAv(NAV)
+                .opprettetAvBrukerId(oppfolgingsperiode.getVeileder())
+                .build();
+    }
+
+    private InnstillingsHistorikk tilDTO(InnstillingsHistorikkData historikkData) {
+        return InnstillingsHistorikk.builder()
+                .type(historikkData.isManuell() ? SATT_TIL_MANUELL : SATT_TIL_DIGITAL)
+                .begrunnelse(historikkData.getBegrunnelse())
+                .dato(historikkData.getDato())
+                .opprettetAv(historikkData.getOpprettetAv())
+                .opprettetAvBrukerId(historikkData.getOpprettetAvBrukerId())
+                .build();
     }
 
     private OppfolgingStatusData getOppfolgingStatusData(String fnr, SituasjonResolver situasjonResolver) {

@@ -8,9 +8,16 @@ import java.util.Date;
 @Value
 @Builder
 public class InnstillingsHistorikk {
-    private boolean manuell;
+    private Type type;
     private Date dato;
     private String begrunnelse;
     private KodeverkBruker opprettetAv;
     private String opprettetAvBrukerId;
+
+    public enum Type {
+        SATT_TIL_MANUELL,
+        SATT_TIL_DIGITAL,
+        AVSLUTTET_OPPFOLGINGSPERIODE
+    }
+
 }

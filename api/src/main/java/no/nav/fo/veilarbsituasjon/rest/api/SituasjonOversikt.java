@@ -49,9 +49,4 @@ public interface SituasjonOversikt {
     @Path("/mal")
     Mal oppdaterMal(Mal mal) throws Exception;
 
-    @POST
-    @Path("/settDigital")
-    default OppfolgingStatus settTilDigital() throws Exception {
-        return null;
-    };
 }

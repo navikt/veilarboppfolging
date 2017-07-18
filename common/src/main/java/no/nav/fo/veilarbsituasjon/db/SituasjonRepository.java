@@ -282,7 +282,7 @@ public class SituasjonRepository {
                 .setOppfolgingsperioder(hentOppfolgingsperioder(aktorId));
     }
 
-    private List<Oppfolgingsperiode> hentOppfolgingsperioder(String aktorid) {
+    public List<Oppfolgingsperiode> hentOppfolgingsperioder(String aktorid) {
         return jdbcTemplate.query("" +
                         "SELECT " +
                         " AKTORID, " +
