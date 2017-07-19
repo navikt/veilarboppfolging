@@ -37,11 +37,9 @@ public class AvsluttetOppfolgingFeedProvider implements FeedProvider<AvsluttetOp
     }
 
     private AvsluttetOppfolgingFeedDTO tilDTO(AvsluttetOppfolgingFeedData avsluttetOppfolgingFeedData) {
-        return AvsluttetOppfolgingFeedDTO
-                .builder()
-                .aktoerid(avsluttetOppfolgingFeedData.aktoerid)
-                .oppdatert(avsluttetOppfolgingFeedData.oppdatert)
-                .sluttdato(avsluttetOppfolgingFeedData.sluttdato)
-                .build();
+        return new AvsluttetOppfolgingFeedDTO()
+                .setAktoerid(avsluttetOppfolgingFeedData.aktoerid)
+                .setOppdatert(avsluttetOppfolgingFeedData.oppdatert)
+                .setSluttdato(avsluttetOppfolgingFeedData.sluttdato);
     }
 }
