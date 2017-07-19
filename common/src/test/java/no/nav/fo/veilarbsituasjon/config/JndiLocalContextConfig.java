@@ -1,5 +1,6 @@
 package no.nav.fo.veilarbsituasjon.config;
 
+import no.nav.dialogarena.config.fasit.DbCredentials;
 import no.nav.fo.veilarbsituasjon.db.testdriver.TestDriver;
 import org.flywaydb.core.Flyway;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
@@ -16,13 +17,11 @@ import static org.hamcrest.Matchers.greaterThan;
 
 public class JndiLocalContextConfig {
 
-    private static int databaseCounter;
-
-    public static void setupJndiLocalContext() {
+    public static void setupJndiLocalContext(DbCredentials dbCredentials) {
         SingleConnectionDataSource ds = new SingleConnectionDataSource();
-        ds.setUrl("jdbc:oracle:thin:@d26dbfl020.test.local:1521/VEILARBSITUASJON_T6");
-        ds.setUsername("veilarbsituasjon");
-        ds.setPassword("Change ME!");
+        ds.setUrl(dbCredentials.url);
+        ds.setUsername(dbCredentials.username);
+        ds.setPassword(dbCredentials.password);
         ds.setSuppressClose(true);
         registerJndi(ds);
     }

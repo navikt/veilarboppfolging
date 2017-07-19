@@ -1,6 +1,8 @@
 package no.nav.fo.veilarbsituasjon;
 
 import no.nav.dialogarena.config.DevelopmentSecurity.ISSOSecurityConfig;
+import no.nav.dialogarena.config.fasit.FasitUtils;
+import no.nav.dialogarena.config.fasit.TestEnvironment;
 import no.nav.sbl.dialogarena.common.jetty.Jetty;
 
 import static java.lang.System.getProperty;
@@ -13,6 +15,9 @@ import static no.nav.sbl.dialogarena.common.jetty.JettyStarterUtils.*;
 
 class StartJetty {
 
+    private static final String APPLICATION_NAME = "veilarbsituasjon";
+    private static final TestEnvironment TEST_ENVIRONMENT = TestEnvironment.T6;
+
     static final String CONTEXT_NAME = "/veilarbsituasjon";
     static final int PORT = 8486;
 
@@ -20,7 +25,7 @@ class StartJetty {
         if (Boolean.parseBoolean(getProperty("lokal.database"))) {
             setupInMemoryDatabase();
         } else {
-            setupJndiLocalContext();
+            setupJndiLocalContext(FasitUtils.getDbCredentials(TEST_ENVIRONMENT, APPLICATION_NAME));
         }
 
         setupLdap();
@@ -30,7 +35,7 @@ class StartJetty {
                 .port(PORT)
                 .loadProperties("/environment-test.properties")
                 .overrideWebXml()
-                ,  new ISSOSecurityConfig("veilarbsituasjon","t6")).buildJetty();
+                ,  new ISSOSecurityConfig(APPLICATION_NAME,TEST_ENVIRONMENT.toString())).buildJetty();
         jetty.startAnd(first(waitFor(gotKeypress())).then(jetty.stop));
     }
 
