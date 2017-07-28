@@ -129,6 +129,25 @@ public class SituasjonRepositoryTest extends IntegrasjonsTest {
 
     }
 
+    @Nested
+    class situasjonMedVeileder {
+
+        @Test
+        public void utenVeileder() throws Exception {
+            situasjonRepository.opprettSituasjon(new Situasjon().setAktorId(AKTOR_ID));
+            Situasjon situasjon = situasjonRepository.hentSituasjon(AKTOR_ID).get();
+            assertThat(situasjon.getVeilederId(), nullValue());
+        }
+
+        @Test
+        public void medVeileder() throws Exception {
+            String veilederId = "veilederId";
+            situasjonRepository.opprettSituasjon(new Situasjon().setAktorId(AKTOR_ID).setVeilederId(veilederId));
+            Situasjon situasjon = situasjonRepository.hentSituasjon(AKTOR_ID).get();
+            assertThat(situasjon.getVeilederId(), equalTo(veilederId));
+        }
+    }
+
     private void sjekkLikeSituasjoner(Situasjon oprinneligSituasjon, Optional<Situasjon> situasjon) {
         assertThat(oprinneligSituasjon, equalTo(situasjon.get()));
     }

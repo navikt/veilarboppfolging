@@ -31,6 +31,7 @@ public class SituasjonRepository {
         List<Situasjon> situasjon = jdbcTemplate.query("" +
                         "SELECT" +
                         "  SITUASJON.AKTORID AS AKTORID, " +
+                        "  SITUASJON.VEILEDER AS VEILEDER, " +
                         "  SITUASJON.OPPFOLGING AS OPPFOLGING, " +
                         "  SITUASJON.GJELDENDE_STATUS AS GJELDENDE_STATUS, " +
                         "  SITUASJON.GJELDENDE_BRUKERVILKAR AS GJELDENDE_BRUKERVILKAR, " +
@@ -100,13 +101,14 @@ public class SituasjonRepository {
     @Transactional
     public Situasjon opprettSituasjon(Situasjon situasjon) {
         jdbcTemplate.update(
-                "INSERT INTO situasjon(aktorid, oppfolging, gjeldende_status, gjeldende_brukervilkar, oppfolging_utgang, gjeldende_mal) " +
-                        "VALUES(?, ?, ?, ?, ?, ?)",
+                "INSERT INTO situasjon(aktorid, oppfolging, gjeldende_status, gjeldende_brukervilkar, oppfolging_utgang, veileder, gjeldende_mal) " +
+                        "VALUES(?, ?, ?, ?, ?, ?, ?)",
                 situasjon.getAktorId(),
                 situasjon.isOppfolging(),
                 null,
                 null,
                 null,
+                situasjon.getVeilederId(),
                 null
         );
         Optional.ofNullable(situasjon.getGjeldendeBrukervilkar()).ifPresent(this::opprettBrukervilkar);
@@ -262,6 +264,10 @@ public class SituasjonRepository {
         String aktorId = resultat.getString("aktorid");
         return new Situasjon()
                 .setAktorId(aktorId)
+                .setVeilederId(
+                        Optional.ofNullable(resultat.getString("veileder"))
+                        .orElse(null)
+                )
                 .setOppfolging(resultat.getBoolean("oppfolging"))
                 .setGjeldendeStatus(
                         Optional.ofNullable(resultat.getLong("gjeldende_status"))

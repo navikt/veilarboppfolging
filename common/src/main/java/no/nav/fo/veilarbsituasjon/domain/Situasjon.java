@@ -12,6 +12,7 @@ import static java.util.Collections.emptyList;
 @Accessors(chain = true)
 public class Situasjon {
     private String aktorId;
+    private String veilederId;
     private boolean oppfolging;
     private Status gjeldendeStatus;
     private Brukervilkar gjeldendeBrukervilkar;

@@ -11,6 +11,7 @@ import java.util.List;
 @Accessors(chain = true)
 public class OppfolgingStatusData {
     public String fnr;
+    public String veilederId;
     public boolean reservasjonKRR;
     public boolean manuell;
     public boolean underOppfolging;

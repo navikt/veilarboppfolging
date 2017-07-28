@@ -155,6 +155,7 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt, VeilederSitu
     private OppfolgingStatus tilDto(OppfolgingStatusData oppfolgingStatusData) {
         return new OppfolgingStatus()
                 .setFnr(oppfolgingStatusData.fnr)
+                .setVeilederId(oppfolgingStatusData.veilederId)
                 .setManuell(oppfolgingStatusData.manuell)
                 .setReservasjonKRR(oppfolgingStatusData.reservasjonKRR)
                 .setUnderOppfolging(oppfolgingStatusData.underOppfolging)

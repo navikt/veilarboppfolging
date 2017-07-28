@@ -18,9 +18,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.lang.System.currentTimeMillis;
-import static no.nav.fo.veilarbsituasjon.domain.InnstillingsHistorikk.Type.AVSLUTTET_OPPFOLGINGSPERIODE;
-import static no.nav.fo.veilarbsituasjon.domain.InnstillingsHistorikk.Type.SATT_TIL_DIGITAL;
-import static no.nav.fo.veilarbsituasjon.domain.InnstillingsHistorikk.Type.SATT_TIL_MANUELL;
+import static no.nav.fo.veilarbsituasjon.domain.InnstillingsHistorikk.Type.*;
 import static no.nav.fo.veilarbsituasjon.domain.KodeverkBruker.NAV;
 
 @Component
@@ -168,10 +166,11 @@ public class SituasjonOversiktService {
         Situasjon situasjon = situasjonResolver.getSituasjon();
         return new OppfolgingStatusData()
                 .setFnr(fnr)
-                .setUnderOppfolging(situasjonResolver.getSituasjon().isOppfolging())
+                .setVeilederId(situasjon.getVeilederId())
+                .setUnderOppfolging(situasjon.isOppfolging())
                 .setReservasjonKRR(situasjonResolver.reservertIKrr())
                 .setManuell(situasjonResolver.manuell())
-                .setOppfolgingUtgang(situasjonResolver.getSituasjon().getOppfolgingUtgang())
+                .setOppfolgingUtgang(situasjon.getOppfolgingUtgang())
                 .setVilkarMaBesvares(situasjonResolver.maVilkarBesvares())
                 .setKanStarteOppfolging(situasjonResolver.getKanSettesUnderOppfolging())
                 .setAvslutningStatusData(avslutningStatusData)
