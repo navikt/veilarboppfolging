@@ -264,10 +264,7 @@ public class SituasjonRepository {
         String aktorId = resultat.getString("aktorid");
         return new Situasjon()
                 .setAktorId(aktorId)
-                .setVeilederId(
-                        Optional.ofNullable(resultat.getString("veileder"))
-                        .orElse(null)
-                )
+                .setVeilederId(resultat.getString("veileder"))
                 .setOppfolging(resultat.getBoolean("oppfolging"))
                 .setGjeldendeStatus(
                         Optional.ofNullable(resultat.getLong("gjeldende_status"))
