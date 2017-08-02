@@ -9,6 +9,8 @@ import java.sql.Timestamp;
 @Accessors(chain = true)
 public class OppfolgingBruker implements Comparable<OppfolgingBruker> {
 
+    public static final String FEED_NAME = "situasjon";
+
     String aktoerid;
     String veileder;
     Boolean oppfolging;

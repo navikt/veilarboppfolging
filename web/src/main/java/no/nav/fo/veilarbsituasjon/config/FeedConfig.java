@@ -8,7 +8,7 @@ import no.nav.fo.veilarbsituasjon.domain.OppfolgingBruker;
 import no.nav.fo.veilarbsituasjon.rest.domain.AvsluttetOppfolgingFeedDTO;
 import no.nav.fo.veilarbsituasjon.services.AvsluttetOppfolgingFeedProvider;
 import no.nav.fo.veilarbsituasjon.services.SituasjonOversiktService;
-import no.nav.fo.veilarbsituasjon.services.TilordningFeedProvider;
+import no.nav.fo.veilarbsituasjon.services.SituasjonFeedProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -24,7 +24,7 @@ public class FeedConfig {
             FeedProducer<AvsluttetOppfolgingFeedDTO> avsluttetOppfolgingFeed) {
         FeedController feedServerController = new FeedController();
 
-        feedServerController.addFeed("tilordninger", oppfolgingBrukerFeed);
+        feedServerController.addFeed(OppfolgingBruker.FEED_NAME, oppfolgingBrukerFeed);
         feedServerController.addFeed(AvsluttetOppfolgingFeedDTO.FEED_NAME, avsluttetOppfolgingFeed);
 
         return feedServerController;
@@ -33,7 +33,7 @@ public class FeedConfig {
     @Bean
     public FeedProducer<OppfolgingBruker> oppfolgingBrukerFeed(BrukerRepository brukerRepository) {
         return FeedProducer.<OppfolgingBruker>builder()
-                .provider(new TilordningFeedProvider(brukerRepository))
+                .provider(new SituasjonFeedProvider(brukerRepository))
                 .maxPageSize(1000)
                 .interceptors(singletonList(new OidcFeedOutInterceptor()) )
                 .build();

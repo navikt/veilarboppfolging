@@ -14,12 +14,12 @@ import java.util.stream.Stream;
 import static no.nav.fo.veilarbsituasjon.utils.DateUtils.toZonedDateTime;
 
 @Component
-public class TilordningFeedProvider implements FeedProvider<OppfolgingBruker> {
+public class SituasjonFeedProvider implements FeedProvider<OppfolgingBruker> {
 
     private BrukerRepository repository;
 
     @Inject
-    public TilordningFeedProvider(BrukerRepository repository) {
+    public SituasjonFeedProvider(BrukerRepository repository) {
         this.repository = repository;
     }
 
