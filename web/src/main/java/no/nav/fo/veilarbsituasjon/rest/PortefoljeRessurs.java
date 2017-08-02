@@ -3,7 +3,7 @@ package no.nav.fo.veilarbsituasjon.rest;
 import io.swagger.annotations.Api;
 import no.nav.fo.feed.producer.FeedProducer;
 import no.nav.fo.veilarbsituasjon.db.BrukerRepository;
-import no.nav.fo.veilarbsituasjon.domain.OppfolgingBruker;
+import no.nav.fo.veilarbsituasjon.rest.domain.OppfolgingBruker;
 import no.nav.fo.veilarbsituasjon.rest.domain.TilordneVeilederResponse;
 import no.nav.fo.veilarbsituasjon.rest.domain.VeilederTilordning;
 import no.nav.fo.veilarbsituasjon.services.AktoerIdService;

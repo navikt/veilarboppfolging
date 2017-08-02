@@ -1,7 +1,7 @@
 package no.nav.fo.veilarbsituasjon.db;
 
 import no.nav.fo.veilarbsituasjon.IntegrasjonsTest;
-import no.nav.fo.veilarbsituasjon.domain.*;
+import no.nav.fo.veilarbsituasjon.rest.domain.OppfolgingBruker;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 

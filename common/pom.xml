@@ -23,6 +23,10 @@
             <artifactId>veilarbaktivitet-api</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>no.nav.fo</groupId>
+            <artifactId>veilarbsituasjon-api</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.glassfish.jersey.core</groupId>

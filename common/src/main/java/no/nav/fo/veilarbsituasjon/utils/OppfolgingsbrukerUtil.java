@@ -1,11 +1,9 @@
 package no.nav.fo.veilarbsituasjon.utils;
 
 
-import no.nav.fo.veilarbsituasjon.domain.OppfolgingBruker;
+import no.nav.fo.veilarbsituasjon.rest.domain.OppfolgingBruker;
 
 import java.math.BigDecimal;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Map;
 

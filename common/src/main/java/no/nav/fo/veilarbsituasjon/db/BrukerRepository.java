@@ -1,7 +1,7 @@
 package no.nav.fo.veilarbsituasjon.db;
 
 
-import no.nav.fo.veilarbsituasjon.domain.OppfolgingBruker;
+import no.nav.fo.veilarbsituasjon.rest.domain.OppfolgingBruker;
 import no.nav.fo.veilarbsituasjon.utils.OppfolgingsbrukerUtil;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCallback;

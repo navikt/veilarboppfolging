@@ -4,7 +4,7 @@ import no.nav.brukerdialog.security.oidc.OidcFeedOutInterceptor;
 import no.nav.fo.feed.controller.FeedController;
 import no.nav.fo.feed.producer.FeedProducer;
 import no.nav.fo.veilarbsituasjon.db.BrukerRepository;
-import no.nav.fo.veilarbsituasjon.domain.OppfolgingBruker;
+import no.nav.fo.veilarbsituasjon.rest.domain.OppfolgingBruker;
 import no.nav.fo.veilarbsituasjon.rest.domain.AvsluttetOppfolgingFeedDTO;
 import no.nav.fo.veilarbsituasjon.services.AvsluttetOppfolgingFeedProvider;
 import no.nav.fo.veilarbsituasjon.services.SituasjonOversiktService;
