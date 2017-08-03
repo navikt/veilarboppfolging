@@ -67,15 +67,14 @@ public class SituasjonRepository {
         return situasjon.isEmpty() ? Optional.empty() : situasjon.stream().findAny();
     }
 
-    public void oppdaterOppfolgingStatus(Situasjon oppdatertSituasjon) {
-        String aktorId = oppdatertSituasjon.getAktorId();
-        boolean oppfolging = oppdatertSituasjon.isOppfolging();
-        oppdaterOppfolgingStatus(aktorId, oppfolging);
+    public void startOppfolging(String aktorId) {
+        jdbcTemplate.update("UPDATE situasjon SET oppfolging = 1, OPPDATERT = CURRENT_TIMESTAMP WHERE aktorid = ?",
+                aktorId
+        );
     }
 
-    public void oppdaterOppfolgingStatus(String aktorId, boolean oppfolging) {
-        jdbcTemplate.update("UPDATE situasjon SET oppfolging = ?, OPPDATERT = CURRENT_TIMESTAMP WHERE aktorid = ?",
-                oppfolging,
+    public void avsluttOppfolging(String aktorId) {
+        jdbcTemplate.update("UPDATE situasjon SET oppfolging = 0, veileder = null, OPPDATERT = CURRENT_TIMESTAMP WHERE aktorid = ?",
                 aktorId
         );
     }
@@ -130,13 +129,6 @@ public class SituasjonRepository {
                         "ORDER BY ID DESC",
                 (result, n) -> mapTilMal(result),
                 aktorId);
-    }
-
-    public boolean situasjonFinnes(Situasjon situasjon) {
-        return !jdbcTemplate.queryForList(
-                "SELECT aktorid FROM situasjon WHERE aktorid=?",
-                situasjon.getAktorId()
-        ).isEmpty();
     }
 
     public List<Brukervilkar> hentHistoriskeVilkar(String aktorId) {
@@ -362,4 +354,5 @@ public class SituasjonRepository {
                 .setOpprettetAvBrukerId(result.getString("OPPRETTET_AV_BRUKERID"));
 
     }
+
 }

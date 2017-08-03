@@ -73,7 +73,6 @@ public class SituasjonOversiktService {
         val situasjonResolver = new SituasjonResolver(fnr, situasjonResolverDependencies);
         if (situasjonResolver.getKanSettesUnderOppfolging()) {
             situasjonResolver.startOppfolging();
-
         }
 
         return getOppfolgingStatusData(fnr, situasjonResolver);

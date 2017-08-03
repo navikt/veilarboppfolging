@@ -75,11 +75,10 @@ public class SituasjonResolver {
     void sjekkStatusIArenaOgOppdaterSituasjon() {
         if (!situasjon.isOppfolging()) {
             sjekkArena();
-            deps.getSituasjonRepository().oppdaterOppfolgingStatus(
-                situasjon.setOppfolging(
-                    erUnderOppfolging(statusIArena.getFormidlingsgruppeKode(), statusIArena.getServicegruppeKode())
-                )
-            );
+            if(erUnderOppfolging(statusIArena.getFormidlingsgruppeKode(), statusIArena.getServicegruppeKode())){
+                deps.getSituasjonRepository().startOppfolging(aktorId);
+                situasjon.setOppfolging(true);
+            }
         }
     }
 
@@ -162,7 +161,7 @@ public class SituasjonResolver {
     }
 
     void startOppfolging() {
-        deps.getSituasjonRepository().oppdaterOppfolgingStatus(situasjon.setOppfolging(true));
+        deps.getSituasjonRepository().startOppfolging(aktorId);
         situasjon = hentSituasjon();
     }
 
@@ -217,7 +216,7 @@ public class SituasjonResolver {
                 .sluttDato(new Date())
                 .begrunnelse(begrunnelse)
                 .build();
-        deps.getSituasjonRepository().oppdaterOppfolgingStatus(aktorId, false);
+        deps.getSituasjonRepository().avsluttOppfolging(aktorId);
         deps.getSituasjonRepository().opprettOppfolgingsperiode(oppfolgingsperiode);
     }
 
