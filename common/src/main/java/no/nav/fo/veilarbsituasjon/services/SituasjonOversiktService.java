@@ -11,7 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
 import java.sql.Timestamp;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -87,19 +86,12 @@ public class SituasjonOversiktService {
     }
 
     @SneakyThrows
+    @Transactional
     public OppfolgingStatusData avsluttOppfolging(String fnr, String veileder, String begrunnelse) {
         val situasjonResolver = new SituasjonResolver(fnr, situasjonResolverDependencies);
 
-        if (situasjonResolver.kanAvslutteOppfolging()) {
-            val oppfolgingsperiode = Oppfolgingsperiode.builder()
-                    .aktorId(situasjonResolver.getAktorId())
-                    .veileder(veileder)
-                    .sluttDato(new Date())
-                    .begrunnelse(begrunnelse)
-                    .build();
-            situasjonResolver.avsluttOppfolging(oppfolgingsperiode);
-        }
-
+        situasjonResolver.avsluttOppfolging(veileder, begrunnelse);
+        
         situasjonResolver.reloadSituasjon();
         return getOppfolgingStatusDataMedAvslutningStatus(fnr, situasjonResolver);
     }

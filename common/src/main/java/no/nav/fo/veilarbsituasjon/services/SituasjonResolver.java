@@ -207,7 +207,16 @@ public class SituasjonResolver {
         return fnr.equals("***REMOVED***") ? toManedSiden : new Date();
     }
 
-    void avsluttOppfolging(Oppfolgingsperiode oppfolgingsperiode) {
+    void avsluttOppfolging(String veileder, String begrunnelse) {
+        if (!kanAvslutteOppfolging()) { 
+            return;
+        }
+        val oppfolgingsperiode = Oppfolgingsperiode.builder()
+                .aktorId(aktorId)
+                .veileder(veileder)
+                .sluttDato(new Date())
+                .begrunnelse(begrunnelse)
+                .build();
         deps.getSituasjonRepository().oppdaterOppfolgingStatus(aktorId, false);
         deps.getSituasjonRepository().opprettOppfolgingsperiode(oppfolgingsperiode);
     }
