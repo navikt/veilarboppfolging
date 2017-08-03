@@ -60,6 +60,8 @@ public class JndiLocalContextConfig {
         Flyway flyway = new Flyway();
         flyway.setLocations("db/migration/veilarbsituasjonDB");
         flyway.setDataSource(ds);
+        flyway.setRepeatableSqlMigrationPrefix("N/A");
+
         int migrate = flyway.migrate();
         assertThat(migrate, greaterThan(0));
 
