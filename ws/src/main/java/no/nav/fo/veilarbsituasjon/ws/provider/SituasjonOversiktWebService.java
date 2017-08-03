@@ -127,8 +127,6 @@ public class SituasjonOversiktWebService implements BehandleSituasjonV1 {
         oppfoelgingstatus.setErBrukerSattTilManuell(oppfolgingStatusData.isManuell());
         oppfoelgingstatus.setErReservertIKontaktOgReservasjonsregisteret(oppfolgingStatusData.isReservasjonKRR());
         oppfoelgingstatus.setMaaVilkaarBesvares(oppfolgingStatusData.isVilkarMaBesvares());
-        Optional.ofNullable(oppfolgingStatusData.getOppfolgingUtgang())
-                .ifPresent(value -> oppfoelgingstatus.setOppfoelgingUtgang(convertDateToXMLGregorianCalendar(value)));
         oppfoelgingstatus.setPersonident(oppfolgingStatusData.getFnr());
         return oppfoelgingstatus;
     }
@@ -147,7 +145,6 @@ public class SituasjonOversiktWebService implements BehandleSituasjonV1 {
         oppfoelgingsstatus.setErReservertIKontaktOgReservasjonsregisteret(oppfolgingStatusData.isReservasjonKRR());
         oppfoelgingsstatus.setMaaVilkaarBesvares(oppfolgingStatusData.isVilkarMaBesvares());
         oppfoelgingsstatus.setPersonident(oppfolgingStatusData.getFnr());
-        oppfoelgingsstatus.setOppfoelgingUtgang(xmlCalendar(oppfolgingStatusData.getOppfolgingUtgang()));
         oppfoelgingsstatus.getOppfoelgingsPerioder().addAll(
                 oppfolgingStatusData.getOppfolgingsperioder().stream().map(this::mapOppfoelgingsPeriode).collect(toList())
         );

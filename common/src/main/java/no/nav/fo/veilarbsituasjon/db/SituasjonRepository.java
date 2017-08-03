@@ -35,7 +35,6 @@ public class SituasjonRepository {
                         "  SITUASJON.OPPFOLGING AS OPPFOLGING, " +
                         "  SITUASJON.GJELDENDE_STATUS AS GJELDENDE_STATUS, " +
                         "  SITUASJON.GJELDENDE_BRUKERVILKAR AS GJELDENDE_BRUKERVILKAR, " +
-                        "  SITUASJON.OPPFOLGING_UTGANG AS OPPFOLGING_UTGANG, " +
                         "  SITUASJON.GJELDENDE_MAL AS GJELDENDE_MAL, " +
                         "  STATUS.ID AS STATUS_ID, " +
                         "  STATUS.AKTORID AS STATUS_AKTORID, " +
@@ -101,11 +100,10 @@ public class SituasjonRepository {
     @Transactional
     public Situasjon opprettSituasjon(Situasjon situasjon) {
         jdbcTemplate.update(
-                "INSERT INTO situasjon(aktorid, oppfolging, gjeldende_status, gjeldende_brukervilkar, oppfolging_utgang, veileder, gjeldende_mal) " +
-                        "VALUES(?, ?, ?, ?, ?, ?, ?)",
+                "INSERT INTO situasjon(aktorid, oppfolging, gjeldende_status, gjeldende_brukervilkar, veileder, gjeldende_mal) " +
+                        "VALUES(?, ?, ?, ?, ?, ?)",
                 situasjon.getAktorId(),
                 situasjon.isOppfolging(),
-                null,
                 null,
                 null,
                 situasjon.getVeilederId(),
@@ -276,7 +274,6 @@ public class SituasjonRepository {
                                 .map(b -> b != 0 ? mapTilBrukervilkar(resultat) : null)
                                 .orElse(null)
                 )
-                .setOppfolgingUtgang(hentDato(resultat, "oppfolging_utgang"))
                 .setGjeldendeMal(
                         Optional.ofNullable(resultat.getLong("GJELDENDE_MAL"))
                                 .map(m -> m != 0 ? mapTilMal(resultat) : null)

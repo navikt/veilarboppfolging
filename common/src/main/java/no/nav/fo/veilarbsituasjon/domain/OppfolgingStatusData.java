@@ -4,7 +4,6 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 
 @Data
@@ -16,7 +15,6 @@ public class OppfolgingStatusData {
     public boolean manuell;
     public boolean underOppfolging;
     public boolean vilkarMaBesvares;
-    public Date oppfolgingUtgang;
     public boolean kanStarteOppfolging;
     public AvslutningStatusData avslutningStatusData;
     public List<Oppfolgingsperiode> oppfolgingsperioder = Collections.emptyList();

@@ -112,7 +112,7 @@ public class SituasjonOversiktService {
     public OppfolgingStatusData settDigitalBruker(String fnr) {
         val resolver = new SituasjonResolver(fnr, situasjonResolverDependencies);
 
-        return oppdaterManuellStatus(fnr, false, "Bruker satt seg selv til digital oppfølging", KodeverkBruker.EKSTERN, resolver.getAktorId());
+        return oppdaterManuellStatus(fnr, false, "Bruker satte seg selv til digital oppfølging", KodeverkBruker.EKSTERN, resolver.getAktorId());
     }
 
     public OppfolgingStatusData oppdaterManuellStatus(String fnr, boolean manuell, String begrunnelse, KodeverkBruker opprettetAv, String opprettetAvBrukerId) {
@@ -170,7 +170,6 @@ public class SituasjonOversiktService {
                 .setUnderOppfolging(situasjon.isOppfolging())
                 .setReservasjonKRR(situasjonResolver.reservertIKrr())
                 .setManuell(situasjonResolver.manuell())
-                .setOppfolgingUtgang(situasjon.getOppfolgingUtgang())
                 .setVilkarMaBesvares(situasjonResolver.maVilkarBesvares())
                 .setKanStarteOppfolging(situasjonResolver.getKanSettesUnderOppfolging())
                 .setAvslutningStatusData(avslutningStatusData)

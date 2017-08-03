@@ -160,7 +160,6 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt, VeilederSitu
                 .setReservasjonKRR(oppfolgingStatusData.reservasjonKRR)
                 .setUnderOppfolging(oppfolgingStatusData.underOppfolging)
                 .setVilkarMaBesvares(oppfolgingStatusData.vilkarMaBesvares)
-                .setOppfolgingUtgang(oppfolgingStatusData.getOppfolgingUtgang())
                 .setKanStarteOppfolging(oppfolgingStatusData.isKanStarteOppfolging())
                 .setAvslutningStatus(
                         ofNullable(oppfolgingStatusData.getAvslutningStatusData())
