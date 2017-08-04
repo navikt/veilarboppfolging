@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
 import javax.ws.rs.WebApplicationException;
+
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
@@ -20,7 +21,6 @@ import java.util.Optional;
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.Response.Status.NOT_IMPLEMENTED;
 import static no.nav.fo.veilarbsituasjon.domain.VilkarStatus.*;
-import static no.nav.fo.veilarbsituasjon.utils.CalendarConverter.convertDateToXMLGregorianCalendar;
 import static no.nav.fo.veilarbsituasjon.utils.DateUtils.xmlCalendar;
 import static no.nav.fo.veilarbsituasjon.utils.StringUtils.emptyIfNull;
 
@@ -194,7 +194,7 @@ public class SituasjonOversiktWebService implements BehandleSituasjonV1 {
     private static Vilkaarsstatus mapBrukervilkarToVilkaarstatus(Brukervilkar brukervilkar, String ident) {
         Vilkaarsstatus vilkaarsstatus = new Vilkaarsstatus();
         vilkaarsstatus.setPersonident(ident);
-        vilkaarsstatus.setDato(convertDateToXMLGregorianCalendar(brukervilkar.getDato()));
+        vilkaarsstatus.setDato(xmlCalendar(brukervilkar.getDato()));
         vilkaarsstatus.setVilkaarstekst(brukervilkar.getTekst());
         vilkaarsstatus.setHash(brukervilkar.getHash());
         vilkaarsstatus.setStatus(mapVilkarStatusTilVilkaarstatuser(brukervilkar.getVilkarstatus()));
