@@ -39,7 +39,9 @@ public class SituasjonOversiktWebService implements BehandleSituasjonV1 {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        return mapToHentOppfoelgingsstatusResponse(oppfolgingStatusData);
+        val res = new HentOppfoelgingsstatusResponse();
+        res.setOppfoelgingsstatus(mapTilOppfoelgingstatus(oppfolgingStatusData));
+        return res;
     }
 
     @Override
@@ -128,6 +130,10 @@ public class SituasjonOversiktWebService implements BehandleSituasjonV1 {
         oppfoelgingstatus.setErReservertIKontaktOgReservasjonsregisteret(oppfolgingStatusData.isReservasjonKRR());
         oppfoelgingstatus.setMaaVilkaarBesvares(oppfolgingStatusData.isVilkarMaBesvares());
         oppfoelgingstatus.setPersonident(oppfolgingStatusData.getFnr());
+        oppfoelgingstatus.getOppfoelgingsPerioder().addAll(
+                oppfolgingStatusData.getOppfolgingsperioder().stream().map(this::mapOppfoelgingsPeriode).collect(toList())
+        );
+
         return oppfoelgingstatus;
     }
 
@@ -135,23 +141,6 @@ public class SituasjonOversiktWebService implements BehandleSituasjonV1 {
         val res = new HentVilkaarResponse();
         res.setVilkaarstekst(brukervilkar.getTekst());
         res.setHash(brukervilkar.getHash());
-        return res;
-    }
-
-    private HentOppfoelgingsstatusResponse mapToHentOppfoelgingsstatusResponse(OppfolgingStatusData oppfolgingStatusData) {
-        Oppfoelgingsstatus oppfoelgingsstatus = new Oppfoelgingsstatus();
-        oppfoelgingsstatus.setErBrukerSattTilManuell(oppfolgingStatusData.isManuell());
-        oppfoelgingsstatus.setErBrukerUnderOppfoelging(oppfolgingStatusData.isUnderOppfolging());
-        oppfoelgingsstatus.setErReservertIKontaktOgReservasjonsregisteret(oppfolgingStatusData.isReservasjonKRR());
-        oppfoelgingsstatus.setMaaVilkaarBesvares(oppfolgingStatusData.isVilkarMaBesvares());
-        oppfoelgingsstatus.setPersonident(oppfolgingStatusData.getFnr());
-        oppfoelgingsstatus.getOppfoelgingsPerioder().addAll(
-                oppfolgingStatusData.getOppfolgingsperioder().stream().map(this::mapOppfoelgingsPeriode).collect(toList())
-        );
-
-        val res = new HentOppfoelgingsstatusResponse();
-        res.setOppfoelgingsstatus(oppfoelgingsstatus);
-
         return res;
     }
 
