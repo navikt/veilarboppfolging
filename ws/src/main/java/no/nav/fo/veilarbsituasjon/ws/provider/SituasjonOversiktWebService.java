@@ -133,6 +133,7 @@ public class SituasjonOversiktWebService implements BehandleSituasjonV1 {
         oppfoelgingstatus.getOppfoelgingsPerioder().addAll(
                 oppfolgingStatusData.getOppfolgingsperioder().stream().map(this::mapOppfoelgingsPeriode).collect(toList())
         );
+        oppfoelgingstatus.setOppfoelgingUtgang(xmlCalendar(oppfolgingStatusData.getOppfolgingUtgang()));
 
         return oppfoelgingstatus;
     }

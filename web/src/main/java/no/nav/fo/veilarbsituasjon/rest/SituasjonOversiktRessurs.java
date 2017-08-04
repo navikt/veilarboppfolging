@@ -16,10 +16,18 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import static java.util.Comparator.naturalOrder;
 import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.maxBy;
 import static java.util.stream.Collectors.toList;
+
+import java.util.Comparator;
+import java.util.Date;
 
 @Component
 public class SituasjonOversiktRessurs implements SituasjonOversikt, VeilederSituasjonOversikt {
@@ -153,6 +161,7 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt, VeilederSitu
     }
 
     private OppfolgingStatus tilDto(OppfolgingStatusData oppfolgingStatusData) {
+        
         return new OppfolgingStatus()
                 .setFnr(oppfolgingStatusData.fnr)
                 .setVeilederId(oppfolgingStatusData.veilederId)
@@ -166,7 +175,8 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt, VeilederSitu
                                 .map(this::tilDto)
                                 .orElse(null)
                 )
-                .setOppfolgingsPerioder(oppfolgingStatusData.oppfolgingsperioder.stream().map(this::tilDTO).collect(toList()));
+                .setOppfolgingsPerioder(oppfolgingStatusData.oppfolgingsperioder.stream().map(this::tilDTO).collect(toList()))
+                .setOppfolgingUtgang(oppfolgingStatusData.getOppfolgingUtgang());
     }
 
     private OppfolgingPeriodeDTO tilDTO(Oppfolgingsperiode oppfolgingsperiode) {
