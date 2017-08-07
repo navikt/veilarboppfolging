@@ -28,6 +28,7 @@
 
     <resources>
         <applicationProperties alias="veilarbsituasjon.properties"/>
+        <applicationProperties alias="feed.brukertilgang"/>
         <webservice alias="virksomhet:DigitalKontakinformasjon_v1" mapToProperty="dkif.endpoint"/>
         <webservice alias="virksomhet:Ytelseskontrakt_v3" mapToProperty="ytelseskontrakt.endpoint"/>
         <webservice alias="virksomhet:Oppfolging_v1" mapToProperty="oppfoelging.endpoint"/>
