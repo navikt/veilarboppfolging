@@ -12,7 +12,6 @@ import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentMatcher;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
@@ -35,9 +34,10 @@ import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.eq;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PortefoljeRessursTest {
@@ -114,16 +114,14 @@ public class PortefoljeRessursTest {
         tilordninger.add(harTilgang2);
         tilordninger.add(harIkkeTilgang2);
 
-        when(aktoerIdService.findAktoerId("FNR1")).thenReturn("AKTOERID1");
-        when(aktoerIdService.findAktoerId("FNR2")).thenReturn("AKTOERID2");
-        when(aktoerIdService.findAktoerId("FNR3")).thenReturn("AKTOERID3");
-        when(aktoerIdService.findAktoerId("FNR4")).thenReturn("AKTOERID4");
-
         when(pepClient.isServiceCallAllowed("FNR1")).thenReturn(true);
         when(pepClient.isServiceCallAllowed("FNR2")).thenThrow(NotAuthorizedException.class);
         when(pepClient.isServiceCallAllowed("FNR3")).thenReturn(true);
         when(pepClient.isServiceCallAllowed("FNR4")).thenThrow(PepException.class);
 
+        when(aktoerIdService.findAktoerId("FNR1")).thenReturn("AKTOERID1");
+        when(aktoerIdService.findAktoerId("FNR3")).thenReturn("AKTOERID3");
+        
 
         Response response = portefoljeRessurs.postVeilederTilordninger(tilordninger);
         List<VeilederTilordning> feilendeTilordninger = ((TilordneVeilederResponse) response.getEntity()).getFeilendeTilordninger();
@@ -229,10 +227,10 @@ public class PortefoljeRessursTest {
 
 
         doThrow(new BadSqlGrammarException("AKTOER","Dette er bare en test", new SQLException()))
-                .when(brukerRepository).upsertVeilederTilordning(argThat(new IsOppfolgingsbrukerWithAktoerId("AKTOERID2")));
+                .when(brukerRepository).upsertVeilederTilordning(eq("AKTOERID2"), anyString());
 
         doThrow(new BadSqlGrammarException("AKTOER","Dette er bare en test", new SQLException()))
-                .when(brukerRepository).upsertVeilederTilordning(argThat(new IsOppfolgingsbrukerWithAktoerId("AKTOERID4")));
+                .when(brukerRepository).upsertVeilederTilordning(eq("AKTOERID4"), anyString());
 
         Response response = portefoljeRessurs.postVeilederTilordninger(tilordninger);
         List<VeilederTilordning> feilendeTilordninger = ((TilordneVeilederResponse) response.getEntity()).getFeilendeTilordninger();
@@ -336,14 +334,4 @@ public class PortefoljeRessursTest {
         };
     }
 
-    class IsOppfolgingsbrukerWithAktoerId implements ArgumentMatcher<OppfolgingBruker> {
-        private String aktoeridToMatch;
-
-        IsOppfolgingsbrukerWithAktoerId(String aktoeridToMatch) {
-            this.aktoeridToMatch = aktoeridToMatch;
-        }
-        public boolean matches(OppfolgingBruker oppfolgingBruker) {
-            return aktoeridToMatch.equals(oppfolgingBruker.getAktoerid());
-        }
-    }
 }
