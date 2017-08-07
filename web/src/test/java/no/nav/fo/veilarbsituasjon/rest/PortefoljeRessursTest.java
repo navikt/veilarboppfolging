@@ -14,7 +14,9 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentMatcher;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.stubbing.Answer;
 import org.springframework.jdbc.BadSqlGrammarException;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.core.MessageCreator;
@@ -25,7 +27,12 @@ import javax.ws.rs.core.Response;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
+import static java.util.Arrays.asList;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -310,6 +317,51 @@ public class PortefoljeRessursTest {
         verify(jmsTemplate, never()).send(any(MessageCreator.class));
         assertThat(feilendeTilordninger).contains(tilordningERROR1);
         assertThat(feilendeTilordninger).contains(tilordningERROR2);
+    }
+
+    @Test    
+    public void toOppdateringerSkalIkkeGaaIBeinaPaaHverandre() throws Exception {        
+
+        VeilederTilordning tilordningOKBruker1 = new VeilederTilordning().setBrukerFnr("FNR1").setFraVeilederId("FRAVEILEDER1").setTilVeilederId("TILVEILEDER1");
+        VeilederTilordning tilordningERRORBruker2 = new VeilederTilordning().setBrukerFnr("FNR2").setFraVeilederId("FRAVEILEDER2").setTilVeilederId("TILVEILEDER2");
+       
+        when(pepClient.isServiceCallAllowed(any(String.class))).thenAnswer(new Answer<Boolean>() {
+
+            @Override
+            public Boolean answer(InvocationOnMock invocation) throws Throwable {
+                //Simulerer at pep-kallet tar noe tid for fnr1
+                if ("FNR1".equals(invocation.getArguments()[0])) {
+                    Thread.sleep(20);
+                    return true;
+                }
+                return false;
+            }
+
+        });
+      
+        when(aktoerIdService.findAktoerId("FNR1")).thenReturn("AKTOERID1");
+
+        //Starter to tråder som gjør to separate tilordninger gjennom samme portefoljeressurs. Dette simulerer 
+        //at to brukere kaller rest-operasjonen samtidig. Den første tilordningen tar lenger tid siden pep-kallet tar lenger tid.
+        ExecutorService pool = Executors.newFixedThreadPool(2);
+        Future<Response> response1 = pool.submit(portefoljeRessursCallable(portefoljeRessurs, asList(tilordningOKBruker1)));
+        Future<Response> response2 = pool.submit(portefoljeRessursCallable(portefoljeRessurs, asList(tilordningERRORBruker2)));
+        
+        List<VeilederTilordning> feilendeTilordninger1 = ((TilordneVeilederResponse) response1.get().getEntity()).getFeilendeTilordninger();
+        List<VeilederTilordning> feilendeTilordninger2 = ((TilordneVeilederResponse) response2.get().getEntity()).getFeilendeTilordninger();
+
+        assertThat(feilendeTilordninger1).isEmpty();
+        assertThat(feilendeTilordninger2).contains(tilordningERRORBruker2);
+    }
+    
+    private Callable<Response> portefoljeRessursCallable(PortefoljeRessurs portefoljeRessurs, List<VeilederTilordning> tilordninger) {
+        return new Callable<Response>() {
+
+            @Override
+            public Response call() throws Exception {
+                return portefoljeRessurs.postVeilederTilordninger(tilordninger);
+            }
+        };
     }
 
     class IsOppfolgingsbrukerWithAktoerId implements ArgumentMatcher<OppfolgingBruker> {
