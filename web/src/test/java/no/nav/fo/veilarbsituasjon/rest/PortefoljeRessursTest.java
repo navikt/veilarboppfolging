@@ -38,6 +38,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PortefoljeRessursTest {
@@ -113,16 +116,14 @@ public class PortefoljeRessursTest {
         tilordninger.add(harTilgang2);
         tilordninger.add(harIkkeTilgang2);
 
-        when(aktoerIdService.findAktoerId("FNR1")).thenReturn("AKTOERID1");
-        when(aktoerIdService.findAktoerId("FNR2")).thenReturn("AKTOERID2");
-        when(aktoerIdService.findAktoerId("FNR3")).thenReturn("AKTOERID3");
-        when(aktoerIdService.findAktoerId("FNR4")).thenReturn("AKTOERID4");
-
         when(pepClient.isServiceCallAllowed("FNR1")).thenReturn(true);
         when(pepClient.isServiceCallAllowed("FNR2")).thenThrow(NotAuthorizedException.class);
         when(pepClient.isServiceCallAllowed("FNR3")).thenReturn(true);
         when(pepClient.isServiceCallAllowed("FNR4")).thenThrow(PepException.class);
 
+        when(aktoerIdService.findAktoerId("FNR1")).thenReturn("AKTOERID1");
+        when(aktoerIdService.findAktoerId("FNR3")).thenReturn("AKTOERID3");
+        
 
         Response response = portefoljeRessurs.postVeilederTilordninger(tilordninger);
         List<VeilederTilordning> feilendeTilordninger = ((TilordneVeilederResponse) response.getEntity()).getFeilendeTilordninger();
@@ -370,8 +371,10 @@ public class PortefoljeRessursTest {
         IsOppfolgingsbrukerWithAktoerId(String aktoeridToMatch) {
             this.aktoeridToMatch = aktoeridToMatch;
         }
+
         public boolean matches(OppfolgingBruker oppfolgingBruker) {
             return aktoeridToMatch.equals(oppfolgingBruker.getAktoerid());
         }
     }
+
 }

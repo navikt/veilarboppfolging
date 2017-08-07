@@ -12,13 +12,13 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.jms.core.JmsTemplate;
+import org.mockito.junit.MockitoJUnitRunner;
 
-import javax.servlet.http.HttpServletResponse;
 import java.util.Collections;
 
-import static org.mockito.Matchers.any;
+import javax.servlet.http.HttpServletResponse;
+
 import static org.mockito.Mockito.*;
 
 
@@ -35,13 +35,13 @@ public class AktoerIdToVeilederTest {
     private AktoerIdService aktoerIdService;
 
     @InjectMocks
-    PortefoljeRessurs portefoljeRessurs;
+    private PortefoljeRessurs portefoljeRessurs;
 
     @Mock
     HttpServletResponse httpServletResponse;
 
     @Mock
-    PepClient pepClient;
+    private PepClient pepClient;
 
     @Test
     public void portefoljeRessursMustCallDAOwithAktoerIdToVeileder() throws PepException {
