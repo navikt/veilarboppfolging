@@ -63,8 +63,7 @@ public class PortefoljeRessurs {
 
                 String eksisterendeVeileder = brukerRepository.hentVeilederForAktoer(aktoerId);
 
-                boolean fraVeilederErOk = eksisterendeVeileder == null || eksisterendeVeileder.equals(tilordning.getFraVeilederId());
-                if (fraVeilederErOk) {
+                if (kanSetteNyVeileder(eksisterendeVeileder, tilordning.getFraVeilederId())) {
                     skrivTilDatabase(aktoerId, tilordning.getTilVeilederId());
                 } else {
                     feilendeTilordninger.add(tilordning);
@@ -125,10 +124,7 @@ public class PortefoljeRessurs {
         }
     }
 
-    static boolean kanSetteNyVeileder(String fraVeileder, String tilVeileder, String eksisterendeVeileder) {
-        if (tilVeileder == null) {
-            return false;
-        }
+    static boolean kanSetteNyVeileder(String eksisterendeVeileder, String fraVeileder) {
         return eksisterendeVeileder == null || eksisterendeVeileder.equals(fraVeileder);
     }
 }

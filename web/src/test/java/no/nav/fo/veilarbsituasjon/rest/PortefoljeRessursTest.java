@@ -30,6 +30,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import static java.util.Arrays.asList;
+import static no.nav.fo.veilarbsituasjon.rest.PortefoljeRessurs.kanSetteNyVeileder;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -65,39 +66,18 @@ public class PortefoljeRessursTest {
     }
 
     @Test
-    public void skalTildeleVeileder() throws Exception {
-        String fraVeileder = "AAAAAAA";
-        String tilVeileder = "BBBBBBB";
-        String eksisterendeVeileder = "AAAAAAA";
-        boolean result = PortefoljeRessurs.kanSetteNyVeileder(fraVeileder, tilVeileder, eksisterendeVeileder);
-        assertTrue(result);
+    public void skalKunneTildeleDersomOppgittVeilederErLikReellVeileder() throws Exception {
+        assertTrue(kanSetteNyVeileder("AAAAAAA", "AAAAAAA"));
     }
 
     @Test
     public void skalTildeleVeilederOmEksisterendeErNull() throws Exception {
-        String fraVeileder = "AAAAAAA";
-        String tilVeileder = "BBBBBBB";
-        String eksisterendeVeileder = null;
-        boolean result = PortefoljeRessurs.kanSetteNyVeileder(fraVeileder, tilVeileder, eksisterendeVeileder);
-        assertTrue(result);
+        assertTrue(kanSetteNyVeileder(null, "AAAAAAA"));
     }
 
     @Test
     public void skalIkkeTildeleVeilederOmEksisterendeErUlikFraVeileder() throws Exception {
-        String fraVeileder = "AAAAAAA";
-        String tilVeileder = "BBBBBBB";
-        String eksisterendeVeileder = "CCCCCC";
-        boolean result = PortefoljeRessurs.kanSetteNyVeileder(fraVeileder, tilVeileder, eksisterendeVeileder);
-        assertFalse(result);
-    }
-
-    @Test
-    public void skalIkkeTildeleVeilederOmTilVeilederErNull() throws Exception {
-        String fraVeileder = "AAAAAAA";
-        String tilVeileder = null;
-        String eksisterendeVeileder = "CCCCCC";
-        boolean result = PortefoljeRessurs.kanSetteNyVeileder(fraVeileder, tilVeileder, eksisterendeVeileder);
-        assertFalse(result);
+        assertFalse(kanSetteNyVeileder("AAAAAAA", "CCCCCC"));
     }
 
     @Test
