@@ -98,7 +98,7 @@ public class SituasjonRepository {
     }
 
     public Situasjon opprettSituasjon(String aktorId) {
-        jdbcTemplate.update("INSERT INTO situasjon(aktorid, oppfolging) VALUES(?, ?)", aktorId, false);
+        jdbcTemplate.update("INSERT INTO situasjon(aktorid, oppfolging, oppdatert) VALUES(?, ?, CURRENT_TIMESTAMP)", aktorId, false);
         return new Situasjon().setAktorId(aktorId).setOppfolging(false);
     }
     
@@ -161,21 +161,21 @@ public class SituasjonRepository {
     }
 
     private void oppdaterSituasjonBrukervilkar(Brukervilkar gjeldendeBrukervilkar) {
-        jdbcTemplate.update("UPDATE situasjon SET gjeldende_brukervilkar = ? WHERE aktorid = ?",
+        jdbcTemplate.update("UPDATE situasjon SET gjeldende_brukervilkar = ?, OPPDATERT = CURRENT_TIMESTAMP WHERE aktorid = ?",
                 gjeldendeBrukervilkar.getId(),
                 gjeldendeBrukervilkar.getAktorId()
         );
     }
 
     private void oppdaterSituasjonStatus(Status gjeldendeStatus) {
-        jdbcTemplate.update("UPDATE situasjon SET gjeldende_status = ? WHERE aktorid = ?",
+        jdbcTemplate.update("UPDATE situasjon SET gjeldende_status = ?, OPPDATERT = CURRENT_TIMESTAMP WHERE aktorid = ?",
                 gjeldendeStatus.getId(),
                 gjeldendeStatus.getAktorId()
         );
     }
 
     private void oppdaterSituasjonMal(MalData mal) {
-        jdbcTemplate.update("UPDATE SITUASJON SET GJELDENDE_MAL = ? WHERE AKTORID = ?",
+        jdbcTemplate.update("UPDATE SITUASJON SET GJELDENDE_MAL = ?, OPPDATERT = CURRENT_TIMESTAMP WHERE AKTORID = ?",
                 mal.getId(),
                 mal.getAktorId()
         );
