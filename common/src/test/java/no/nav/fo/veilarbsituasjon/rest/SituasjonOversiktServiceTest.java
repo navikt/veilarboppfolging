@@ -73,7 +73,7 @@ public class SituasjonOversiktServiceTest {
     @Before
     public void setup() throws Exception {
         hentOppfolgingstatusResponse = new WSHentOppfoelgingsstatusResponse();
-        when(situasjonRepositoryMock.opprettSituasjon(any())).thenReturn(new Situasjon());
+        when(situasjonRepositoryMock.opprettSituasjon(anyString())).thenReturn(new Situasjon());
         when(oppfoelgingPortTypeMock.hentOppfoelgingsstatus(any(WSHentOppfoelgingsstatusRequest.class)))
                 .thenReturn(hentOppfolgingstatusResponse);
         when(digitalKontaktinformasjonV1Mock.hentDigitalKontaktinformasjon(any(WSHentDigitalKontaktinformasjonRequest.class)))
