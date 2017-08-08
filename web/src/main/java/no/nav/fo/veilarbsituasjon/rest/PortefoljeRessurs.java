@@ -15,7 +15,6 @@ import javax.ws.rs.core.Response;
 
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import io.swagger.annotations.Api;
 import no.nav.fo.feed.producer.FeedProducer;
@@ -108,12 +107,6 @@ public class PortefoljeRessurs {
                 : "Det skjedde en feil ved tildeling av veileder";
     }
 
-    // Tror ikke denne annotasjonen funker. @Transactional funker bare på public metoder, så vidt jeg vet. 
-    // Men det er vel uansett ikke behov for @Transactional her? Dersom selve databaseoppdateringen feiler, 
-    // trenger den ikke rulles tilbake. Det eneste som kan feile bortsett fra databaseoppdateringen er om det skjer en 
-    // exception i den påfølgende loggingen. Det kan løses på flere måter, f.eks. ved å logge før databaseoppdatering gjøres
-    // i stedet for etterpå.
-    @Transactional
     private void skrivTilDatabase(String aktoerId, String veileder) {
         try {
             brukerRepository.upsertVeilederTilordning(aktoerId, veileder);
