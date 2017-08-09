@@ -73,7 +73,7 @@ public class SituasjonRepository {
     }
 
     public void avsluttOppfolging(String aktorId) {
-        jdbcTemplate.update("UPDATE situasjon SET oppfolging = 0, veileder = null, GJELDENDE_STATUS = null, OPPDATERT = CURRENT_TIMESTAMP WHERE aktorid = ?",
+        jdbcTemplate.update("UPDATE situasjon SET oppfolging = 0, veileder = null, GJELDENDE_STATUS = null, GJELDENDE_MAL = null, OPPDATERT = CURRENT_TIMESTAMP WHERE aktorid = ?",
                 aktorId
         );
     }

@@ -96,18 +96,22 @@ public class SituasjonRepositoryTest extends IntegrasjonsTest {
             situasjonRepository.opprettSituasjon(AKTOR_ID);
             situasjonRepository.startOppfolging(AKTOR_ID);
             String veilederId = "veilederId";
+            String maal = "Mål";
             settVeileder(veilederId, AKTOR_ID);
             situasjonRepository.opprettStatus(new Status(AKTOR_ID, true, new Timestamp(currentTimeMillis()), "Test", KodeverkBruker.SYSTEM, null));
+            situasjonRepository.opprettMal(new MalData().setAktorId(AKTOR_ID).setMal(maal));
             Situasjon situasjon = hentSituasjon(AKTOR_ID).get();
             assertThat(situasjon.isOppfolging(), is(true));
             assertThat(situasjon.getVeilederId(), equalTo(veilederId));
             assertThat(situasjon.getGjeldendeStatus().isManuell(), is(true));
+            assertThat(situasjon.getGjeldendeMal().getMal(), equalTo(maal));
             
             situasjonRepository.avsluttOppfolging(AKTOR_ID);
             Situasjon avsluttetSituasjon = hentSituasjon(AKTOR_ID).get();
             assertThat(avsluttetSituasjon.isOppfolging(), is(false));
             assertThat(avsluttetSituasjon.getVeilederId(), nullValue());
             assertThat(avsluttetSituasjon.getGjeldendeStatus(), nullValue());
+            assertThat(avsluttetSituasjon.getGjeldendeMal(), nullValue());
             
         }
         
