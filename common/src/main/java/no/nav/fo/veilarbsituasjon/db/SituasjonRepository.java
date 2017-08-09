@@ -4,7 +4,6 @@ package no.nav.fo.veilarbsituasjon.db;
 import lombok.SneakyThrows;
 import no.nav.fo.veilarbsituasjon.domain.*;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -98,25 +97,11 @@ public class SituasjonRepository {
         opprettSituasjonMal(mal);
     }
 
-    @Transactional
-    public Situasjon opprettSituasjon(Situasjon situasjon) {
-        jdbcTemplate.update(
-                "INSERT INTO situasjon(aktorid, oppfolging, gjeldende_status, gjeldende_brukervilkar, oppfolging_utgang, veileder, gjeldende_mal) " +
-                        "VALUES(?, ?, ?, ?, ?, ?, ?)",
-                situasjon.getAktorId(),
-                situasjon.isOppfolging(),
-                null,
-                null,
-                null,
-                situasjon.getVeilederId(),
-                null
-        );
-        Optional.ofNullable(situasjon.getGjeldendeBrukervilkar()).ifPresent(this::opprettBrukervilkar);
-        Optional.ofNullable(situasjon.getGjeldendeStatus()).ifPresent(this::opprettStatus);
-        Optional.ofNullable(situasjon.getGjeldendeMal()).ifPresent(this::opprettMal);
-        return situasjon;
+    public Situasjon opprettSituasjon(String aktorId) {
+        jdbcTemplate.update("INSERT INTO situasjon(aktorid, oppfolging, oppdatert) VALUES(?, ?, CURRENT_TIMESTAMP)", aktorId, false);
+        return new Situasjon().setAktorId(aktorId).setOppfolging(false);
     }
-
+    
     public List<MalData> hentMalList(String aktorId) {
         return jdbcTemplate.query("" +
                         "SELECT" +
@@ -130,13 +115,6 @@ public class SituasjonRepository {
                         "ORDER BY ID DESC",
                 (result, n) -> mapTilMal(result),
                 aktorId);
-    }
-
-    public boolean situasjonFinnes(Situasjon situasjon) {
-        return !jdbcTemplate.queryForList(
-                "SELECT aktorid FROM situasjon WHERE aktorid=?",
-                situasjon.getAktorId()
-        ).isEmpty();
     }
 
     public List<Brukervilkar> hentHistoriskeVilkar(String aktorId) {
@@ -183,21 +161,21 @@ public class SituasjonRepository {
     }
 
     private void oppdaterSituasjonBrukervilkar(Brukervilkar gjeldendeBrukervilkar) {
-        jdbcTemplate.update("UPDATE situasjon SET gjeldende_brukervilkar = ? WHERE aktorid = ?",
+        jdbcTemplate.update("UPDATE situasjon SET gjeldende_brukervilkar = ?, OPPDATERT = CURRENT_TIMESTAMP WHERE aktorid = ?",
                 gjeldendeBrukervilkar.getId(),
                 gjeldendeBrukervilkar.getAktorId()
         );
     }
 
     private void oppdaterSituasjonStatus(Status gjeldendeStatus) {
-        jdbcTemplate.update("UPDATE situasjon SET gjeldende_status = ? WHERE aktorid = ?",
+        jdbcTemplate.update("UPDATE situasjon SET gjeldende_status = ?, OPPDATERT = CURRENT_TIMESTAMP WHERE aktorid = ?",
                 gjeldendeStatus.getId(),
                 gjeldendeStatus.getAktorId()
         );
     }
 
     private void oppdaterSituasjonMal(MalData mal) {
-        jdbcTemplate.update("UPDATE SITUASJON SET GJELDENDE_MAL = ? WHERE AKTORID = ?",
+        jdbcTemplate.update("UPDATE SITUASJON SET GJELDENDE_MAL = ?, OPPDATERT = CURRENT_TIMESTAMP WHERE AKTORID = ?",
                 mal.getId(),
                 mal.getAktorId()
         );
