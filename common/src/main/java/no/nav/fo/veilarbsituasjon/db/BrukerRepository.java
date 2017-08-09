@@ -36,13 +36,11 @@ public class BrukerRepository {
                 .orElse(null);
     }
 
-    public void upsertVeilederTilordning(OppfolgingBruker oppfolgingBruker) {
-        String aktoerid = oppfolgingBruker.getAktoerid();
-        String veileder = oppfolgingBruker.getVeileder();
+    public void upsertVeilederTilordning(String aktoerId, String veileder) {
         db.execute(upsertTilordningSQL(), (PreparedStatementCallback<Boolean>) ps -> {
-            ps.setString(1, aktoerid);
+            ps.setString(1, aktoerId);
             ps.setString(2, veileder);
-            ps.setString(3, aktoerid);
+            ps.setString(3, aktoerId);
             ps.setString(4, veileder);
             return ps.execute();
         });
