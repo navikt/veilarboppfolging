@@ -16,18 +16,10 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
-import java.util.Optional;
-import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-import static java.util.Comparator.naturalOrder;
 import static java.util.Optional.ofNullable;
-import static java.util.stream.Collectors.maxBy;
 import static java.util.stream.Collectors.toList;
-
-import java.util.Comparator;
-import java.util.Date;
 
 @Component
 public class SituasjonOversiktRessurs implements SituasjonOversikt, VeilederSituasjonOversikt {
