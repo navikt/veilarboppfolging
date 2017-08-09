@@ -214,7 +214,7 @@ public class SituasjonResolver {
 
     private Situasjon hentSituasjon() {
         return deps.getSituasjonRepository().hentSituasjon(aktorId)
-            .orElseGet(() -> deps.getSituasjonRepository().opprettSituasjon(new Situasjon().setAktorId(aktorId)));
+            .orElseGet(() -> deps.getSituasjonRepository().opprettSituasjon(aktorId));
     }
 
     @SneakyThrows

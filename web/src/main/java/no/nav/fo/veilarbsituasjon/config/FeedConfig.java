@@ -1,5 +1,6 @@
 package no.nav.fo.veilarbsituasjon.config;
 
+import no.nav.brukerdialog.security.oidc.OidcFeedAuthorizationModule;
 import no.nav.brukerdialog.security.oidc.OidcFeedOutInterceptor;
 import no.nav.fo.feed.controller.FeedController;
 import no.nav.fo.feed.producer.FeedProducer;
@@ -35,7 +36,8 @@ public class FeedConfig {
         return FeedProducer.<OppfolgingBruker>builder()
                 .provider(new SituasjonFeedProvider(brukerRepository))
                 .maxPageSize(1000)
-                .interceptors(singletonList(new OidcFeedOutInterceptor()) )
+                .interceptors(singletonList(new OidcFeedOutInterceptor()))
+                .authorizationModule(new OidcFeedAuthorizationModule())
                 .build();
     }
 
@@ -45,6 +47,7 @@ public class FeedConfig {
                 .provider(new AvsluttetOppfolgingFeedProvider(situasjonOversiktService))
                 .maxPageSize(1000)
                 .interceptors(singletonList(new OidcFeedOutInterceptor()) )
+                .authorizationModule(new OidcFeedAuthorizationModule())
                 .build();
     }
 }

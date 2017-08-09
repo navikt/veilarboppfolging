@@ -12,10 +12,11 @@ import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentMatcher;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.stubbing.Answer;
 import org.springframework.jdbc.BadSqlGrammarException;
 
 import javax.ws.rs.NotAuthorizedException;
@@ -23,14 +24,21 @@ import javax.ws.rs.core.Response;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
+import static java.util.Arrays.asList;
+import static no.nav.fo.veilarbsituasjon.rest.PortefoljeRessurs.kanSetteNyVeileder;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.eq;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PortefoljeRessursTest {
@@ -58,39 +66,18 @@ public class PortefoljeRessursTest {
     }
 
     @Test
-    public void skalTildeleVeileder() throws Exception {
-        String fraVeileder = "AAAAAAA";
-        String tilVeileder = "BBBBBBB";
-        String eksisterendeVeileder = "AAAAAAA";
-        boolean result = PortefoljeRessurs.kanSetteNyVeileder(fraVeileder, tilVeileder, eksisterendeVeileder);
-        assertTrue(result);
+    public void skalKunneTildeleDersomOppgittVeilederErLikReellVeileder() throws Exception {
+        assertTrue(kanSetteNyVeileder("AAAAAAA", "AAAAAAA"));
     }
 
     @Test
     public void skalTildeleVeilederOmEksisterendeErNull() throws Exception {
-        String fraVeileder = "AAAAAAA";
-        String tilVeileder = "BBBBBBB";
-        String eksisterendeVeileder = null;
-        boolean result = PortefoljeRessurs.kanSetteNyVeileder(fraVeileder, tilVeileder, eksisterendeVeileder);
-        assertTrue(result);
+        assertTrue(kanSetteNyVeileder(null, "AAAAAAA"));
     }
 
     @Test
     public void skalIkkeTildeleVeilederOmEksisterendeErUlikFraVeileder() throws Exception {
-        String fraVeileder = "AAAAAAA";
-        String tilVeileder = "BBBBBBB";
-        String eksisterendeVeileder = "CCCCCC";
-        boolean result = PortefoljeRessurs.kanSetteNyVeileder(fraVeileder, tilVeileder, eksisterendeVeileder);
-        assertFalse(result);
-    }
-
-    @Test
-    public void skalIkkeTildeleVeilederOmTilVeilederErNull() throws Exception {
-        String fraVeileder = "AAAAAAA";
-        String tilVeileder = null;
-        String eksisterendeVeileder = "CCCCCC";
-        boolean result = PortefoljeRessurs.kanSetteNyVeileder(fraVeileder, tilVeileder, eksisterendeVeileder);
-        assertFalse(result);
+        assertFalse(kanSetteNyVeileder("AAAAAAA", "CCCCCC"));
     }
 
     @Test
@@ -107,16 +94,14 @@ public class PortefoljeRessursTest {
         tilordninger.add(harTilgang2);
         tilordninger.add(harIkkeTilgang2);
 
-        when(aktoerIdService.findAktoerId("FNR1")).thenReturn("AKTOERID1");
-        when(aktoerIdService.findAktoerId("FNR2")).thenReturn("AKTOERID2");
-        when(aktoerIdService.findAktoerId("FNR3")).thenReturn("AKTOERID3");
-        when(aktoerIdService.findAktoerId("FNR4")).thenReturn("AKTOERID4");
-
         when(pepClient.isServiceCallAllowed("FNR1")).thenReturn(true);
         when(pepClient.isServiceCallAllowed("FNR2")).thenThrow(NotAuthorizedException.class);
         when(pepClient.isServiceCallAllowed("FNR3")).thenReturn(true);
         when(pepClient.isServiceCallAllowed("FNR4")).thenThrow(PepException.class);
 
+        when(aktoerIdService.findAktoerId("FNR1")).thenReturn("AKTOERID1");
+        when(aktoerIdService.findAktoerId("FNR3")).thenReturn("AKTOERID3");
+        
 
         Response response = portefoljeRessurs.postVeilederTilordninger(tilordninger);
         List<VeilederTilordning> feilendeTilordninger = ((TilordneVeilederResponse) response.getEntity()).getFeilendeTilordninger();
@@ -222,10 +207,10 @@ public class PortefoljeRessursTest {
 
 
         doThrow(new BadSqlGrammarException("AKTOER","Dette er bare en test", new SQLException()))
-                .when(brukerRepository).upsertVeilederTilordning(argThat(new IsOppfolgingsbrukerWithAktoerId("AKTOERID2")));
+                .when(brukerRepository).upsertVeilederTilordning(eq("AKTOERID2"), anyString());
 
         doThrow(new BadSqlGrammarException("AKTOER","Dette er bare en test", new SQLException()))
-                .when(brukerRepository).upsertVeilederTilordning(argThat(new IsOppfolgingsbrukerWithAktoerId("AKTOERID4")));
+                .when(brukerRepository).upsertVeilederTilordning(eq("AKTOERID4"), anyString());
 
         Response response = portefoljeRessurs.postVeilederTilordninger(tilordninger);
         List<VeilederTilordning> feilendeTilordninger = ((TilordneVeilederResponse) response.getEntity()).getFeilendeTilordninger();
@@ -284,14 +269,49 @@ public class PortefoljeRessursTest {
         assertThat(feilendeTilordninger).contains(tilordningERROR2);
     }
 
-    class IsOppfolgingsbrukerWithAktoerId implements ArgumentMatcher<OppfolgingBruker> {
-        private String aktoeridToMatch;
+    @Test    
+    public void toOppdateringerSkalIkkeGaaIBeinaPaaHverandre() throws Exception {        
 
-        IsOppfolgingsbrukerWithAktoerId(String aktoeridToMatch) {
-            this.aktoeridToMatch = aktoeridToMatch;
-        }
-        public boolean matches(OppfolgingBruker oppfolgingBruker) {
-            return aktoeridToMatch.equals(oppfolgingBruker.getAktoerid());
-        }
+        VeilederTilordning tilordningOKBruker1 = new VeilederTilordning().setBrukerFnr("FNR1").setFraVeilederId("FRAVEILEDER1").setTilVeilederId("TILVEILEDER1");
+        VeilederTilordning tilordningERRORBruker2 = new VeilederTilordning().setBrukerFnr("FNR2").setFraVeilederId("FRAVEILEDER2").setTilVeilederId("TILVEILEDER2");
+       
+        when(pepClient.isServiceCallAllowed(any(String.class))).thenAnswer(new Answer<Boolean>() {
+
+            @Override
+            public Boolean answer(InvocationOnMock invocation) throws Throwable {
+                //Simulerer at pep-kallet tar noe tid for fnr1
+                if ("FNR1".equals(invocation.getArguments()[0])) {
+                    Thread.sleep(20);
+                    return true;
+                }
+                return false;
+            }
+
+        });
+      
+        when(aktoerIdService.findAktoerId("FNR1")).thenReturn("AKTOERID1");
+
+        //Starter to tråder som gjør to separate tilordninger gjennom samme portefoljeressurs. Dette simulerer 
+        //at to brukere kaller rest-operasjonen samtidig. Den første tilordningen tar lenger tid siden pep-kallet tar lenger tid.
+        ExecutorService pool = Executors.newFixedThreadPool(2);
+        Future<Response> response1 = pool.submit(portefoljeRessursCallable(portefoljeRessurs, asList(tilordningOKBruker1)));
+        Future<Response> response2 = pool.submit(portefoljeRessursCallable(portefoljeRessurs, asList(tilordningERRORBruker2)));
+        
+        List<VeilederTilordning> feilendeTilordninger1 = ((TilordneVeilederResponse) response1.get().getEntity()).getFeilendeTilordninger();
+        List<VeilederTilordning> feilendeTilordninger2 = ((TilordneVeilederResponse) response2.get().getEntity()).getFeilendeTilordninger();
+
+        assertThat(feilendeTilordninger1).isEmpty();
+        assertThat(feilendeTilordninger2).contains(tilordningERRORBruker2);
     }
+    
+    private Callable<Response> portefoljeRessursCallable(PortefoljeRessurs portefoljeRessurs, List<VeilederTilordning> tilordninger) {
+        return new Callable<Response>() {
+
+            @Override
+            public Response call() throws Exception {
+                return portefoljeRessurs.postVeilederTilordninger(tilordninger);
+            }
+        };
+    }
+
 }
