@@ -57,7 +57,7 @@
     </exposed-services>
 
     <serverOptions>
-        <memoryParameters resourceAlias="brukerdialog-memparams"/>
+        <memoryParameters resourceAlias="veilarb-memparams"/>
     </serverOptions>
 
 </application>
