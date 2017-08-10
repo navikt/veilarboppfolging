@@ -3,13 +3,9 @@ package no.nav.fo.veilarbsituasjon.db;
 
 import no.nav.fo.veilarbsituasjon.domain.OppfolgingBruker;
 import no.nav.fo.veilarbsituasjon.utils.OppfolgingsbrukerUtil;
-import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.ResultSetExtractor;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,8 +40,10 @@ public class BrukerRepository {
                 "SELECT AKTOERID, VEILEDER, OPPDATERT FROM AKTOER_ID_TO_VEILEDER WHERE AKTOERID = ?",
                 new Object[]{aktoerId},
                 resultSet -> {
-                    resultSet.next();
-                    return OppfolgingsbrukerUtil.mapRadTilOppfolgingsbruker(resultSet);
+                    if (resultSet.next()) {
+                        return OppfolgingsbrukerUtil.mapRadTilOppfolgingsbruker(resultSet);
+                    }
+                    return null;
                 }
         );
     }
@@ -63,7 +61,7 @@ public class BrukerRepository {
         try {
             leggTilBruker(oppfolgingBruker);
 
-        } catch(DuplicateKeyException e) {
+        } catch (DuplicateKeyException e) {
             oppdaterBruker(oppfolgingBruker);
         }
     }
@@ -83,15 +81,15 @@ public class BrukerRepository {
     }
 
     String leggTilBrukerSQL() {
-        return "INSERT INTO AKTOER_ID_TO_VEILEDER  "+
-                "VALUES (?,?,TO_TIMESTAMP(?,"+dateFormat+"))";
+        return "INSERT INTO AKTOER_ID_TO_VEILEDER  " +
+                "VALUES (?,?,TO_TIMESTAMP(?," + dateFormat + "))";
     }
 
     String oppdaterBrukerSQL() {
         return "UPDATE AKTOER_ID_TO_VEILEDER " +
                 "SET " +
                 "VEILEDER = ? " +
-                ",OPPDATERT = TO_TIMESTAMP(?,"+dateFormat+") " +
+                ",OPPDATERT = TO_TIMESTAMP(?," + dateFormat + ") " +
                 "WHERE AKTOERID = ?";
     }
 
