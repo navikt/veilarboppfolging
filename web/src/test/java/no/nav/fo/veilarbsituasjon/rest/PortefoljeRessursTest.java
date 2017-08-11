@@ -145,7 +145,7 @@ public class PortefoljeRessursTest {
         List<VeilederTilordning> feilendeTilordninger = ((TilordneVeilederResponse) response.getEntity()).getFeilendeTilordninger();
 
         verify(tilordningService, times(2)).skrivTilDataBaseOgLeggPaaKo(anyString(), anyString());
-//        verify(jmsTemplate, times(2)).send(any(MessageCreator.class));
+
         assertThat(feilendeTilordninger).contains(kanIkkeTilordne1);
         assertThat(feilendeTilordninger).contains(kanIkkeTilordne2);
         assertThat(feilendeTilordninger).doesNotContain(kanTilordne1);
@@ -181,7 +181,7 @@ public class PortefoljeRessursTest {
         List<VeilederTilordning> feilendeTilordninger = ((TilordneVeilederResponse) response.getEntity()).getFeilendeTilordninger();
 
         verify(tilordningService, times(2)).skrivTilDataBaseOgLeggPaaKo(anyString(), anyString());
-//        verify(jmsTemplate, times(2)).send(any(MessageCreator.class));
+
         assertThat(feilendeTilordninger).contains(tilordningERROR1);
         assertThat(feilendeTilordninger).contains(tilordningERROR2);
         assertThat(feilendeTilordninger).doesNotContain(tilordningOK1);
@@ -212,17 +212,12 @@ public class PortefoljeRessursTest {
 
         doThrow(BadSqlGrammarException.class).when(tilordningService).skrivTilDataBaseOgLeggPaaKo(eq("AKTOERID2"), anyString());
         doThrow(BadSqlGrammarException.class).when(tilordningService).skrivTilDataBaseOgLeggPaaKo(eq("AKTOERID4"), anyString());
-//        doThrow(new BadSqlGrammarException("AKTOER","Dette er bare en test", new SQLException()))
-//                .when(brukerRepository).leggTilEllerOppdaterBruker(argThat(new IsOppfolgingsbrukerWithAktoerId("AKTOERID2")));
-//
-//        doThrow(new BadSqlGrammarException("AKTOER","Dette er bare en test", new SQLException()))
-//                .when(brukerRepository).leggTilEllerOppdaterBruker(argThat(new IsOppfolgingsbrukerWithAktoerId("AKTOERID4")));
 
         Response response = portefoljeRessurs.postVeilederTilordninger(tilordninger);
         List<VeilederTilordning> feilendeTilordninger = ((TilordneVeilederResponse) response.getEntity()).getFeilendeTilordninger();
 
         verify(tilordningService, times(4)).skrivTilDataBaseOgLeggPaaKo(anyString(), anyString());
-//        verify(jmsTemplate, times(2)).send(any(MessageCreator.class));
+
         assertThat(feilendeTilordninger).contains(tilordningERROR1);
         assertThat(feilendeTilordninger).contains(tilordningERROR2);
         assertThat(feilendeTilordninger).doesNotContain(tilordningOK1);
@@ -252,7 +247,6 @@ public class PortefoljeRessursTest {
         Response response = portefoljeRessurs.postVeilederTilordninger(tilordninger);
         List<VeilederTilordning> feilendeTilordninger = ((TilordneVeilederResponse) response.getEntity()).getFeilendeTilordninger();
 
-//        verify(jmsTemplate, times(2)).send(any(MessageCreator.class));
         verify(tilordningService, times(2)).skrivTilDataBaseOgLeggPaaKo(anyString(), anyString());
 
         assertThat(feilendeTilordninger).contains(tilordningERROR1);
@@ -299,7 +293,6 @@ public class PortefoljeRessursTest {
         Response response = portefoljeRessurs.postVeilederTilordninger(tilordninger);
         List<VeilederTilordning> feilendeTilordninger = ((TilordneVeilederResponse) response.getEntity()).getFeilendeTilordninger();
 
-//        verify(jmsTemplate, never()).send(any(MessageCreator.class));
         verify(tilordningService, never()).skrivTilDataBaseOgLeggPaaKo(anyString(), anyString());
         assertThat(feilendeTilordninger).contains(tilordningERROR1);
         assertThat(feilendeTilordninger).contains(tilordningERROR2);
