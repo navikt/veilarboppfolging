@@ -5,8 +5,9 @@ import java.util.Map;
 
 /*
 "Fattigmanns-løsning" for å kunne bruke hsql lokalt med oracle syntax
+ NB: Har byttet til h2 så mye av disse kan funke hvis syntaxen var rett
 */
-class HsqlSyntaxMapper {
+class DatabaseSyntaxMapper {
 
     private static final Map<String, String> syntaxMap = new HashMap<>();
     private static final String NOOP = "SELECT 1 FROM DUAL";
@@ -52,12 +53,12 @@ class HsqlSyntaxMapper {
         syntaxMap.put(oracleSyntax, hsqlSyntax);
     }
 
-    static String hsqlSyntax(String sql) {
+    static String h2Syntax(String sql) {
         System.out.println(sql + "-------------");
         if (sql.contains("BEGIN") || sql.contains("END LOOP")) {
             return NOOP;
         }
-        if(sql.contains("GENERATED ALWAYS AS IDENTITY(START WITH 1 INCREMENT BY 1)")) {
+        if (sql.contains("GENERATED ALWAYS AS IDENTITY(START WITH 1 INCREMENT BY 1)")) {
             return sql.replaceAll("GENERATED ALWAYS AS IDENTITY\\(START WITH 1 INCREMENT BY 1\\)", "NOT NULL");
         }
         return syntaxMap.getOrDefault(sql, sql);

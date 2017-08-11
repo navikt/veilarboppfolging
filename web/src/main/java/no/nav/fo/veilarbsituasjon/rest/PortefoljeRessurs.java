@@ -1,8 +1,11 @@
 package no.nav.fo.veilarbsituasjon.rest;
 
 import io.swagger.annotations.Api;
+import lombok.val;
 import no.nav.fo.feed.producer.FeedProducer;
 import no.nav.fo.veilarbsituasjon.db.BrukerRepository;
+import no.nav.fo.veilarbsituasjon.db.SituasjonRepository;
+import no.nav.fo.veilarbsituasjon.domain.Oppfolgingsperiode;
 import no.nav.fo.veilarbsituasjon.rest.domain.OppfolgingBruker;
 import no.nav.fo.veilarbsituasjon.rest.domain.TilordneVeilederResponse;
 import no.nav.fo.veilarbsituasjon.rest.domain.VeilederTilordning;
@@ -32,14 +35,20 @@ public class PortefoljeRessurs {
     private BrukerRepository brukerRepository;
     private final PepClient pepClient;
     private List<VeilederTilordning> feilendeTilordninger;
+    private final SituasjonRepository situasjonRepository;
 
     private FeedProducer<OppfolgingBruker> feed;
 
-    public PortefoljeRessurs(AktoerIdService aktoerIdService, BrukerRepository brukerRepository, PepClient pepClient, FeedProducer<OppfolgingBruker> feed) {
+    public PortefoljeRessurs(AktoerIdService aktoerIdService,
+                             BrukerRepository brukerRepository,
+                             PepClient pepClient,
+                             FeedProducer<OppfolgingBruker> feed,
+                             SituasjonRepository situasjonRepository) {
         this.aktoerIdService = aktoerIdService;
         this.brukerRepository = brukerRepository;
         this.pepClient = pepClient;
         this.feed = feed;
+        this.situasjonRepository = situasjonRepository;
     }
 
     @POST
@@ -58,25 +67,26 @@ public class PortefoljeRessurs {
                         orElseThrow(() -> new IllegalArgumentException("Aktoerid ikke funnet"));
 
 
-                OppfolgingBruker bruker = new OppfolgingBruker()
-                        .setVeileder(tilordning.getTilVeilederId())
-                        .setAktoerid(aktoerId);
+                val oppdatertBruker = OppfolgingBruker
+                        .builder()
+                        .veileder(tilordning.getTilVeilederId())
+                        .aktoerid(aktoerId)
+                        .build();
 
-                settVeilederDersomFraVeilederErOK(bruker, tilordning);
-            }catch(PepException e){
+                settVeilederDersomFraVeilederErOK(oppdatertBruker, tilordning);
+            } catch (PepException e) {
                 LOG.error("Kall til ABAC feilet");
                 feilendeTilordninger.add(tilordning);
-            }
-            catch(IllegalArgumentException e) {
+            } catch (IllegalArgumentException e) {
                 LOG.error("Aktoerid ikke funnet", e);
                 feilendeTilordninger.add(tilordning);
-            }catch(NotAuthorizedException e) {
+            } catch (NotAuthorizedException e) {
                 LOG.warn("Request is not authorized", e);
                 feilendeTilordninger.add(tilordning);
-            }catch(Exception e) {
-                LOG.error("Det skjedde en feil ved tildeling av veileder",e);
+            } catch (Exception e) {
+                LOG.error("Det skjedde en feil ved tildeling av veileder", e);
                 feilendeTilordninger.add(tilordning);
-            }finally{
+            } finally {
                 feed.activateWebhook();
             }
         }
@@ -94,7 +104,6 @@ public class PortefoljeRessurs {
 
     }
 
-    @Transactional
     private void skrivTilDatabase(OppfolgingBruker bruker, VeilederTilordning tilordning) {
         try {
             brukerRepository.upsertVeilederTilordning(bruker);
@@ -106,12 +115,23 @@ public class PortefoljeRessurs {
         }
     }
 
-    private void settVeilederDersomFraVeilederErOK(OppfolgingBruker bruker, VeilederTilordning tilordning) {
-        String eksisterendeVeileder = brukerRepository.hentVeilederForAktoer(bruker.getAktoerid());
-        Boolean fraVeilederErOk = eksisterendeVeileder == null || eksisterendeVeileder.equals(tilordning.getFraVeilederId());
+    @Transactional
+    private void settVeilederDersomFraVeilederErOK(OppfolgingBruker brukerTilOppdatering, VeilederTilordning tilordning) {
+        val bruker = brukerRepository.hentTilordningForAktoer(brukerTilOppdatering.getAktoerid());
+        boolean fraVeilederErOk = bruker == null ||
+                bruker.getVeileder() == null ||
+                bruker.getVeileder().equals(tilordning.getFraVeilederId());
 
         if (fraVeilederErOk) {
-            skrivTilDatabase(bruker, tilordning);
+            if (bruker == null || bruker.getOppfolging()){
+                situasjonRepository.opprettOppfolgingsperiode(
+                        Oppfolgingsperiode
+                                .builder()
+                                .aktorId(brukerTilOppdatering.getAktoerid())
+                                .build());
+            }
+
+            skrivTilDatabase(brukerTilOppdatering, tilordning);
         } else {
             feilendeTilordninger.add(tilordning);
             LOG.info("Aktoerid {} kunne ikke tildeles ettersom fraVeileder er feil", bruker.getAktoerid());

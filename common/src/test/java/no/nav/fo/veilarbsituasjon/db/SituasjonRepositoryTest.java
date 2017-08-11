@@ -124,6 +124,7 @@ public class SituasjonRepositoryTest extends IntegrasjonsTest {
                     .aktorId(aktorId)
                     .build();
             situasjonRepository.opprettOppfolgingsperiode(oppfolgingperiode);
+            situasjonRepository.oppdaterOppfolgingsperiode(oppfolgingperiode);
             return oppfolgingperiode;
         }
 

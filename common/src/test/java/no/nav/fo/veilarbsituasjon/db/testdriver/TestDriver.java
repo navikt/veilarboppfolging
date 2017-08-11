@@ -22,15 +22,18 @@ public class TestDriver implements Driver {
         }
     }
 
-    private Driver driver = new org.hsqldb.jdbcDriver();
+    private Driver driver = new org.h2.Driver();
 
     @Override
     public Connection connect(String url, Properties info) throws SQLException {
-        return ProxyUtils.proxy(new ConnectionInvocationHandler(driver.connect(getHsqlUrl(), info)), Connection.class);
+        return ProxyUtils.proxy(new ConnectionInvocationHandler(driver.connect(getH2Url(), info)), Connection.class);
     }
 
-    private String getHsqlUrl() {
-        return "jdbc:hsqldb:mem:situasjon-" + databaseCounter++;
+    private String getH2Url() {
+        return String.format(
+                "jdbc:h2:mem:veilarbsituasjon-%s;DB_CLOSE_DELAY=-1;MODE=Oracle",
+                databaseCounter++
+        );
     }
 
     @Override
@@ -40,7 +43,7 @@ public class TestDriver implements Driver {
 
     @Override
     public DriverPropertyInfo[] getPropertyInfo(String url, Properties info) throws SQLException {
-        return driver.getPropertyInfo(getHsqlUrl(), info);
+        return driver.getPropertyInfo(getH2Url(), info);
     }
 
     @Override

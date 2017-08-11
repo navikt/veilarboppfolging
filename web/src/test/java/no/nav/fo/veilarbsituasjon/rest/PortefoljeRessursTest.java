@@ -1,8 +1,10 @@
 package no.nav.fo.veilarbsituasjon.rest;
 
+import lombok.val;
 import no.nav.brukerdialog.security.context.ThreadLocalSubjectHandler;
 import no.nav.fo.feed.producer.FeedProducer;
 import no.nav.fo.veilarbsituasjon.db.BrukerRepository;
+import no.nav.fo.veilarbsituasjon.db.SituasjonRepository;
 import no.nav.fo.veilarbsituasjon.rest.domain.OppfolgingBruker;
 import no.nav.fo.veilarbsituasjon.rest.domain.TilordneVeilederResponse;
 import no.nav.fo.veilarbsituasjon.rest.domain.VeilederTilordning;
@@ -44,6 +46,9 @@ public class PortefoljeRessursTest {
 
     @Mock
     private BrukerRepository brukerRepository;
+
+    @Mock
+    private SituasjonRepository situasjonRepository;
 
     @Mock
     private FeedProducer<OppfolgingBruker> feed;
@@ -143,17 +148,25 @@ public class PortefoljeRessursTest {
 
         when(pepClient.isServiceCallAllowed(any(String.class))).thenReturn(true);
 
+        val oppfolgingsBruker = OppfolgingBruker
+                .builder()
+                .oppfolging(false);
+
         when(aktoerIdService.findAktoerId("FNR1")).thenReturn("AKTOERID1");
-        when(brukerRepository.hentVeilederForAktoer("AKTOERID1")).thenReturn("FRAVEILEDER1");
+        when(brukerRepository.hentTilordningForAktoer("AKTOERID1"))
+                .thenReturn(oppfolgingsBruker.veileder("FRAVEILEDER1").build());
 
         when(aktoerIdService.findAktoerId("FNR2")).thenReturn("AKTOERID2");
-        when(brukerRepository.hentVeilederForAktoer("AKTOERID2")).thenReturn("IKKE_FRAVEILEDER2");
+        when(brukerRepository.hentTilordningForAktoer("AKTOERID2"))
+                .thenReturn(oppfolgingsBruker.veileder("IKKE_FRAVEILEDER2").build());
 
         when(aktoerIdService.findAktoerId("FNR3")).thenReturn("AKTOERID3");
-        when(brukerRepository.hentVeilederForAktoer("AKTOERID3")).thenReturn("FRAVEILEDER3");
+        when(brukerRepository.hentTilordningForAktoer("AKTOERID3"))
+                .thenReturn(oppfolgingsBruker.veileder("FRAVEILEDER3").build());
 
         when(aktoerIdService.findAktoerId("FNR4")).thenReturn("AKTOERID4");
-        when(brukerRepository.hentVeilederForAktoer("AKTOERID4")).thenReturn("IKKE_FRAVEILEDER4");
+        when(brukerRepository.hentTilordningForAktoer("AKTOERID4"))
+                .thenReturn(oppfolgingsBruker.veileder("IKKE_FRAVEILEDER4").build());
 
 
         Response response = portefoljeRessurs.postVeilederTilordninger(tilordninger);
@@ -185,10 +198,10 @@ public class PortefoljeRessursTest {
         when(aktoerIdService.findAktoerId("FNR4")).thenReturn("AKTOERID4");
 
         when(aktoerIdService.findAktoerId("FNR2")).thenReturn("AKTOERID2");
-        when(brukerRepository.hentVeilederForAktoer("AKTOERID2")).thenThrow(new BadSqlGrammarException("AKTOER","Dette er bare en test", new SQLException()));
+        when(brukerRepository.hentTilordningForAktoer("AKTOERID2")).thenThrow(new BadSqlGrammarException("AKTOER","Dette er bare en test", new SQLException()));
 
         when(aktoerIdService.findAktoerId("FNR3")).thenReturn("AKTOERID3");
-        when(brukerRepository.hentVeilederForAktoer("AKTOERID3")).thenThrow(new BadSqlGrammarException("AKTOER","Dette er bare en test", new SQLException()));
+        when(brukerRepository.hentTilordningForAktoer("AKTOERID3")).thenThrow(new BadSqlGrammarException("AKTOER","Dette er bare en test", new SQLException()));
 
         Response response = portefoljeRessurs.postVeilederTilordninger(tilordninger);
         List<VeilederTilordning> feilendeTilordninger = ((TilordneVeilederResponse) response.getEntity()).getFeilendeTilordninger();

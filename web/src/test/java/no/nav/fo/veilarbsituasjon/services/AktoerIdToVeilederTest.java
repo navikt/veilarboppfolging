@@ -3,8 +3,9 @@ package no.nav.fo.veilarbsituasjon.services;
 
 import no.nav.fo.feed.producer.FeedProducer;
 import no.nav.fo.veilarbsituasjon.db.BrukerRepository;
-import no.nav.fo.veilarbsituasjon.rest.domain.OppfolgingBruker;
+import no.nav.fo.veilarbsituasjon.db.SituasjonRepository;
 import no.nav.fo.veilarbsituasjon.rest.PortefoljeRessurs;
+import no.nav.fo.veilarbsituasjon.rest.domain.OppfolgingBruker;
 import no.nav.fo.veilarbsituasjon.rest.domain.VeilederTilordning;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
 import org.junit.Test;
@@ -25,6 +26,9 @@ public class AktoerIdToVeilederTest {
 
     @Mock
     private BrukerRepository brukerRepository;
+
+    @Mock
+    private SituasjonRepository situasjonRepository;
 
     @Mock
     private AktoerIdService aktoerIdService;

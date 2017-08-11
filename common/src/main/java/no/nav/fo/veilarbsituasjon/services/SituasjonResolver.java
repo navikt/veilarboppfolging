@@ -209,7 +209,7 @@ public class SituasjonResolver {
 
     void avsluttOppfolging(Oppfolgingsperiode oppfolgingsperiode) {
         deps.getSituasjonRepository().oppdaterOppfolgingStatus(aktorId, false);
-        deps.getSituasjonRepository().opprettOppfolgingsperiode(oppfolgingsperiode);
+        deps.getSituasjonRepository().oppdaterOppfolgingsperiode(oppfolgingsperiode);
     }
 
     private Situasjon hentSituasjon() {

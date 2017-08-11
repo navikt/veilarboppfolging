@@ -1,6 +1,7 @@
 package no.nav.fo.veilarbsituasjon.rest;
 
 import no.nav.fo.veilarbsituasjon.db.BrukerRepository;
+import no.nav.fo.veilarbsituasjon.rest.domain.OppfolgingBruker;
 import no.nav.fo.veilarbsituasjon.rest.domain.Veileder;
 import no.nav.fo.veilarbsituasjon.services.AktoerIdService;
 import org.junit.Test;
@@ -31,7 +32,8 @@ public class VeilederRessursTest {
     public void getVeilederSkalReturnereVeileder() throws Exception {
         final String forventetIdent = "***REMOVED***";
         when(aktoerIdService.findAktoerId(anyString())).thenReturn("test-id");
-        when(brukerRepository.hentVeilederForAktoer(anyString())).thenReturn(forventetIdent);
+        when(brukerRepository.hentTilordningForAktoer(anyString()))
+                .thenReturn(OppfolgingBruker.builder().veileder(forventetIdent).build());
 
         final Veileder veileder = veilederRessurs.getVeileder("***REMOVED***");
         assertNotNull(veileder);
