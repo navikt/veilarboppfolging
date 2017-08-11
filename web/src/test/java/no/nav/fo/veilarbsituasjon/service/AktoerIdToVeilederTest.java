@@ -2,18 +2,17 @@ package no.nav.fo.veilarbsituasjon.service;
 
 
 import no.nav.fo.veilarbsituasjon.db.BrukerRepository;
-import no.nav.fo.veilarbsituasjon.domain.OppfolgingBruker;
 import no.nav.fo.veilarbsituasjon.rest.PortefoljeRessurs;
 import no.nav.fo.veilarbsituasjon.rest.domain.VeilederTilordning;
 import no.nav.fo.veilarbsituasjon.services.AktoerIdService;
 import no.nav.fo.veilarbsituasjon.services.PepClient;
+import no.nav.fo.veilarbsituasjon.services.TilordningService;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.springframework.jms.core.JmsTemplate;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.Collections;
@@ -29,7 +28,7 @@ public class AktoerIdToVeilederTest {
     private BrukerRepository brukerRepository;
 
     @Mock
-    private JmsTemplate endreVeilederKo;
+    private TilordningService tilordningService;
 
     @Mock
     private AktoerIdService aktoerIdService;
@@ -48,14 +47,14 @@ public class AktoerIdToVeilederTest {
         when(pepClient.isServiceCallAllowed(anyString())).thenReturn(true);
         when(aktoerIdService.findAktoerId(any(String.class))).thenReturn("AKTOERID");
         portefoljeRessurs.postVeilederTilordninger(Collections.singletonList(testData()));
-        verify(brukerRepository, times(1)).leggTilEllerOppdaterBruker(any(OppfolgingBruker.class));
+        verify(tilordningService, times(1)).skrivTilDataBaseOgLeggPaaKo(anyString(), anyString());
     }
 
     @Test
     public void noCallToDAOWhenAktoerIdServiceFails() {
         when(aktoerIdService.findAktoerId(any(String.class))).thenThrow(new IndexOutOfBoundsException());
         portefoljeRessurs.postVeilederTilordninger(Collections.singletonList(testData()));
-        verify(brukerRepository, never()).leggTilEllerOppdaterBruker(any(OppfolgingBruker.class));
+        verify(tilordningService, never()).skrivTilDataBaseOgLeggPaaKo(anyString(), anyString());
     }
 
     private VeilederTilordning testData() {
