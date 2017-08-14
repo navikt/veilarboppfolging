@@ -11,6 +11,7 @@ import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jms.core.JmsTemplate;
 
 @Configuration
 public class ServiceConfig {
@@ -18,17 +19,22 @@ public class ServiceConfig {
     private final YtelseskontraktV3 ytelseskontraktV3;
     private final OppfoelgingPortType oppfoelgingPortType;
     private final OrganisasjonEnhetV1 organisasjonEnhetV1;
+    private final JmsTemplate endreVeilederQueue;
+    private final BrukerRepository brukerRepository;
     private AktoerV2 aktoerV2;
     private JdbcTemplate db;
     private final Pep pep;
 
-    public ServiceConfig(YtelseskontraktV3 ytelseskontraktV3, OppfoelgingPortType oppfoelgingPortType, AktoerV2 aktoerV2, JdbcTemplate db, OrganisasjonEnhetV1 organisasjonEnhetV1, Pep pep) {
+    public ServiceConfig(YtelseskontraktV3 ytelseskontraktV3, OppfoelgingPortType oppfoelgingPortType, AktoerV2 aktoerV2, JdbcTemplate db, OrganisasjonEnhetV1 organisasjonEnhetV1, Pep pep,
+                         JmsTemplate endreVeilederQueue, BrukerRepository brukerRepository) {
         this.ytelseskontraktV3 = ytelseskontraktV3;
         this.oppfoelgingPortType = oppfoelgingPortType;
         this.aktoerV2 = aktoerV2;
         this.db = db;
         this.pep = pep;
         this.organisasjonEnhetV1 = organisasjonEnhetV1;
+        this.endreVeilederQueue = endreVeilederQueue;
+        this.brukerRepository = brukerRepository;
     }
 
     @Bean
@@ -64,5 +70,10 @@ public class ServiceConfig {
     @Bean
     PepClient pepClient() {
         return new PepClient(pep);
+    }
+
+    @Bean
+    TilordningService tilordningService() {
+        return new TilordningService(endreVeilederQueue, brukerRepository);
     }
 }

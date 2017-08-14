@@ -39,7 +39,12 @@ public class BrukerRepository {
         return db.query(
                 "SELECT AKTOERID, VEILEDER, OPPDATERT FROM AKTOER_ID_TO_VEILEDER WHERE AKTOERID = ?",
                 new Object[]{aktoerId},
-                OppfolgingsbrukerUtil::mapRadTilOppfolgingsbruker
+                resultSet -> {
+                    if (resultSet.next()) {
+                        return OppfolgingsbrukerUtil.mapRadTilOppfolgingsbruker(resultSet);
+                    }
+                    return null;
+                }
         );
     }
 
@@ -56,7 +61,7 @@ public class BrukerRepository {
         try {
             leggTilBruker(oppfolgingBruker);
 
-        } catch(DuplicateKeyException e) {
+        } catch (DuplicateKeyException e) {
             oppdaterBruker(oppfolgingBruker);
         }
     }
@@ -76,15 +81,15 @@ public class BrukerRepository {
     }
 
     String leggTilBrukerSQL() {
-        return "INSERT INTO AKTOER_ID_TO_VEILEDER  "+
-                "VALUES (?,?,TO_TIMESTAMP(?,"+dateFormat+"))";
+        return "INSERT INTO AKTOER_ID_TO_VEILEDER  " +
+                "VALUES (?,?,TO_TIMESTAMP(?," + dateFormat + "))";
     }
 
     String oppdaterBrukerSQL() {
         return "UPDATE AKTOER_ID_TO_VEILEDER " +
                 "SET " +
                 "VEILEDER = ? " +
-                ",OPPDATERT = TO_TIMESTAMP(?,"+dateFormat+") " +
+                ",OPPDATERT = TO_TIMESTAMP(?," + dateFormat + ") " +
                 "WHERE AKTOERID = ?";
     }
 
