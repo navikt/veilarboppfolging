@@ -92,7 +92,7 @@ public class SituasjonRepositoryTest extends IntegrasjonsTest {
     class avsluttOppfolging {
 
         @Test
-        public void avsluttOppfolgingResetterVeuilederOgManuellstatus() throws Exception {
+        public void avsluttOppfolgingResetterVeileder_Manuellstatus_Mal_Og_Vilkar() throws Exception {
             situasjonRepository.opprettSituasjon(AKTOR_ID);
             situasjonRepository.startOppfolging(AKTOR_ID);
             String veilederId = "veilederId";
@@ -100,11 +100,14 @@ public class SituasjonRepositoryTest extends IntegrasjonsTest {
             settVeileder(veilederId, AKTOR_ID);
             situasjonRepository.opprettStatus(new Status(AKTOR_ID, true, new Timestamp(currentTimeMillis()), "Test", KodeverkBruker.SYSTEM, null));
             situasjonRepository.opprettMal(new MalData().setAktorId(AKTOR_ID).setMal(maal));
+            String brukervilkar_hash = "123";
+            situasjonRepository.opprettBrukervilkar(new Brukervilkar().setAktorId(AKTOR_ID).setHash(brukervilkar_hash));
             Situasjon situasjon = hentSituasjon(AKTOR_ID).get();
             assertThat(situasjon.isOppfolging(), is(true));
             assertThat(situasjon.getVeilederId(), equalTo(veilederId));
             assertThat(situasjon.getGjeldendeStatus().isManuell(), is(true));
             assertThat(situasjon.getGjeldendeMal().getMal(), equalTo(maal));
+            assertThat(situasjon.getGjeldendeBrukervilkar().getHash(), equalTo(brukervilkar_hash));
             
             situasjonRepository.avsluttOppfolging(AKTOR_ID);
             Situasjon avsluttetSituasjon = hentSituasjon(AKTOR_ID).get();
@@ -112,6 +115,7 @@ public class SituasjonRepositoryTest extends IntegrasjonsTest {
             assertThat(avsluttetSituasjon.getVeilederId(), nullValue());
             assertThat(avsluttetSituasjon.getGjeldendeStatus(), nullValue());
             assertThat(avsluttetSituasjon.getGjeldendeMal(), nullValue());
+            assertThat(avsluttetSituasjon.getGjeldendeBrukervilkar(), nullValue());
             
         }
         
