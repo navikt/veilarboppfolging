@@ -7,42 +7,34 @@ import no.nav.fo.veilarbsituasjon.rest.domain.TilordneVeilederResponse;
 import no.nav.fo.veilarbsituasjon.rest.domain.VeilederTilordning;
 import no.nav.fo.veilarbsituasjon.services.AktoerIdService;
 import no.nav.fo.veilarbsituasjon.services.PepClient;
+import no.nav.fo.veilarbsituasjon.services.TilordningService;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
 import org.slf4j.Logger;
-import org.springframework.dao.DataAccessException;
-import org.springframework.jms.JmsException;
-import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static java.util.Optional.ofNullable;
-import static no.nav.fo.veilarbsituasjon.utils.JmsUtil.messageCreator;
 import static org.slf4j.LoggerFactory.getLogger;
 
 @Component
 @Path("")
-@Api(value= "Portefolje")
+@Api(value = "Portefolje")
 public class PortefoljeRessurs {
 
     private static final Logger LOG = getLogger(PortefoljeRessurs.class);
 
-
-    private JmsTemplate endreVeilederQueue;
-    private AktoerIdService aktoerIdService;
-    private BrukerRepository brukerRepository;
+    private final AktoerIdService aktoerIdService;
+    private final BrukerRepository brukerRepository;
     private final PepClient pepClient;
-    private List<VeilederTilordning> feilendeTilordninger;
+    private final TilordningService tilordningService;
 
-
-    public PortefoljeRessurs(JmsTemplate endreVeilederQueue, AktoerIdService aktoerIdService, BrukerRepository brukerRepository, PepClient pepClient) {
-        this.endreVeilederQueue = endreVeilederQueue;
+    public PortefoljeRessurs(TilordningService tilordningService, AktoerIdService aktoerIdService, BrukerRepository brukerRepository, PepClient pepClient) {
+        this.tilordningService = tilordningService;
         this.aktoerIdService = aktoerIdService;
         this.brukerRepository = brukerRepository;
         this.pepClient = pepClient;
@@ -53,50 +45,57 @@ public class PortefoljeRessurs {
     @Produces("application/json")
     @Path("/tilordneveileder")
     public Response postVeilederTilordninger(List<VeilederTilordning> tilordninger) {
-        feilendeTilordninger = new ArrayList<>();
-
+        List<VeilederTilordning> feilendeTilordninger = new ArrayList<>();
 
         for (VeilederTilordning tilordning : tilordninger) {
             try {
                 final String fnr = tilordning.getBrukerFnr();
                 pepClient.isServiceCallAllowed(fnr);
 
-                String aktoerId = ofNullable(aktoerIdService.findAktoerId(fnr)).
-                        orElseThrow(() -> new IllegalArgumentException("Aktoerid ikke funnet"));
+                String aktoerId = finnAktorId(fnr);
 
+                String eksisterendeVeileder = brukerRepository.hentVeilederForAktoer(aktoerId);
 
-                OppfolgingBruker bruker = new OppfolgingBruker()
-                        .setVeileder(tilordning.getTilVeilederId())
-                        .setAktoerid(aktoerId);
-
-                settVeilederDersomFraVeilederErOK(bruker, tilordning);
-            }catch(PepException e){
-                LOG.error("Kall til ABAC feilet");
+                if (kanSetteNyVeileder(eksisterendeVeileder, tilordning.getFraVeilederId())) {
+                    tilordningService.skrivTilDataBaseOgLeggPaaKo(aktoerId, tilordning.getTilVeilederId());
+                } else {
+                    feilendeTilordninger.add(tilordning);
+                    LOG.info("Aktoerid {} kunne ikke tildeles ettersom fraVeileder er feil", aktoerId);
+                }
+            } catch (Exception e) {
                 feilendeTilordninger.add(tilordning);
-            }
-            catch(IllegalArgumentException e) {
-                LOG.error("Aktoerid ikke funnet", e);
-                feilendeTilordninger.add(tilordning);
-            }catch(NotAuthorizedException e) {
-                LOG.warn("Request is not atuhorized", e);
-                feilendeTilordninger.add(tilordning);
-            }catch(Exception e) {
-                LOG.error("Det skjedde en feil ved tildeling av veileder",e);
-                feilendeTilordninger.add(tilordning);
+                logFeilSituasjon(e);
             }
         }
 
-        TilordneVeilederResponse response = new TilordneVeilederResponse()
-                .setFeilendeTilordninger(feilendeTilordninger);
+        TilordneVeilederResponse response = new TilordneVeilederResponse().setFeilendeTilordninger(feilendeTilordninger);
 
         if (feilendeTilordninger.isEmpty()) {
             response.setResultat("OK: Veiledere tilordnet");
-            return Response.ok().entity(response).build();
         } else {
             response.setResultat("WARNING: Noen brukere kunne ikke tilordnes en veileder");
-            return Response.ok().entity(response).build();
         }
 
+        return Response.ok().entity(response).build();
+    }
+
+    private void logFeilSituasjon(Exception e) {
+        if (e instanceof NotAuthorizedException) {
+            LOG.warn("Request is not authorized", e);
+        } else {
+            LOG.error(loggMeldingForException(e), e);
+        }
+    }
+
+    private String loggMeldingForException(Exception e) {
+        return (e instanceof PepException) ? "Kall til ABAC feilet"
+                : (e instanceof IllegalArgumentException) ? "Aktoerid ikke funnet"
+                : "Det skjedde en feil ved tildeling av veileder";
+    }
+
+    private String finnAktorId(String fnr) {
+        return ofNullable(aktoerIdService.findAktoerId(fnr)).
+                orElseThrow(() -> new IllegalArgumentException("Aktoerid ikke funnet"));
     }
 
     @GET
@@ -119,33 +118,13 @@ public class PortefoljeRessurs {
         return leggOppfolgingsbrukerPaKo(brukere);
     }
 
-    @Transactional
-    private void skrivTilDataBaseOgLeggPaaKo(OppfolgingBruker bruker, VeilederTilordning tilordning) {
-        try {
-            brukerRepository.leggTilEllerOppdaterBruker(bruker);
-            leggPaaKo(bruker);
-            LOG.debug(String.format("Veileder %s tilordnet aktoer %s", bruker.getVeileder(), bruker.getAktoerid()));
-
-        } catch (JmsException e) {
-            feilendeTilordninger.add(tilordning);
-            LOG.error(String.format("Kunne ikke legge følgende melding på kø: %s", bruker.toString()));
-        } catch (DataAccessException e) {
-            feilendeTilordninger.add(tilordning);
-            LOG.error("Feil ved oppdatering av brukerinformasjon til aktoerid " + bruker.getAktoerid());
-        } catch (Exception e) {
-            feilendeTilordninger.add(tilordning);
-            LOG.error(String.format("Kunne ikke tilordne veileder %s til aktoer %s", bruker.getVeileder(), bruker.getAktoerid()), e);
-            throw e;
-        }
-    }
-
     private Response leggOppfolgingsbrukerPaKo(List<OppfolgingBruker> brukere) {
         long start = System.currentTimeMillis();
         int sendt = 0;
         int feilet = 0;
         for (OppfolgingBruker bruker : brukere) {
             try {
-                leggPaaKo(bruker);
+                tilordningService.leggPaaKo(bruker);
                 sendt++;
             } catch (Exception e) {
                 feilet++;
@@ -163,34 +142,7 @@ public class PortefoljeRessurs {
         }
     }
 
-    private void leggPaaKo(OppfolgingBruker bruker) {
-        endreVeilederQueue.send(messageCreator(bruker.toString()));
-    }
-
-    private void settVeilederDersomFraVeilederErOK(OppfolgingBruker bruker, VeilederTilordning tilordning) {
-        String eksisterendeVeileder;
-        try {
-            eksisterendeVeileder = brukerRepository.hentVeilederForAktoer(bruker.getAktoerid());
-        } catch (DataAccessException e) {
-            feilendeTilordninger.add(tilordning);
-            LOG.error(String.format("Kunne ikke hente veileder for aktoerid &s", bruker.getAktoerid()));
-            return;
-        }
-
-        Boolean fraVeilederErOk = eksisterendeVeileder == null || eksisterendeVeileder.equals(tilordning.getFraVeilederId());
-
-        if (fraVeilederErOk) {
-            skrivTilDataBaseOgLeggPaaKo(bruker, tilordning);
-        } else {
-            feilendeTilordninger.add(tilordning);
-            LOG.info("Aktoerid {} kunne ikke tildeles ettersom fraVeileder er feil", bruker.getAktoerid());
-        }
-    }
-
-    static boolean kanSetteNyVeileder(String fraVeileder, String tilVeileder, String eksisterendeVeileder) {
-        if (tilVeileder == null) {
-            return false;
-        }
+    static boolean kanSetteNyVeileder(String eksisterendeVeileder, String fraVeileder) {
         return eksisterendeVeileder == null || eksisterendeVeileder.equals(fraVeileder);
     }
 }

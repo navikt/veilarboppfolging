@@ -405,7 +405,7 @@
             <dependency>
                 <groupId>no.nav.sbl.dialogarena</groupId>
                 <artifactId>test-config</artifactId>
-                <version>1.25.64</version>
+                <version>1.30.17</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
