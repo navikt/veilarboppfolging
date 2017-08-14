@@ -314,4 +314,23 @@ public class PortefoljeRessursTest {
         };
     }
 
+    @Test
+    public void feilIWebhookSkalIgnoreres() throws Exception {
+
+        List<VeilederTilordning> tilordninger = new ArrayList<>();
+
+        VeilederTilordning tilordningOK1 = new VeilederTilordning().setBrukerFnr("FNR1").setFraVeilederId("FRAVEILEDER1").setTilVeilederId("TILVEILEDER1");
+
+        tilordninger.add(tilordningOK1);
+
+        when(pepClient.isServiceCallAllowed(any(String.class))).thenReturn(true);
+        when(aktoerIdService.findAktoerId("FNR1")).thenReturn("AKTOERID1");
+        doThrow(new RuntimeException("Test")).when(feed).activateWebhook();
+
+        Response response = portefoljeRessurs.postVeilederTilordninger(tilordninger);
+        List<VeilederTilordning> feilendeTilordninger = ((TilordneVeilederResponse) response.getEntity()).getFeilendeTilordninger();
+
+        assertThat(feilendeTilordninger).isEmpty();
+    }
+
 }

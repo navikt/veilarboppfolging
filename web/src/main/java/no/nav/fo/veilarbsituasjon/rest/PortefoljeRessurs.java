@@ -82,10 +82,20 @@ public class PortefoljeRessurs {
             response.setResultat("WARNING: Noen brukere kunne ikke tilordnes en veileder");
         }
         if(tilordninger.size() > feilendeTilordninger.size()) {
-            feed.activateWebhook();
+            kallWebhook();
         }
         return Response.ok().entity(response).build();
 
+    }
+
+    private void kallWebhook() {
+        try {
+            feed.activateWebhook();
+        } catch (Exception e) {
+            // Logger feilen, men bryr oss ikke om det. At webhooken feiler påvirker ikke funksjonaliteten
+            // men gjør at endringen kommer senere inn i portefølje
+            LOG.warn("Webhook feilet", e);
+        }
     }
 
     private String finnAktorId(final String fnr) {
