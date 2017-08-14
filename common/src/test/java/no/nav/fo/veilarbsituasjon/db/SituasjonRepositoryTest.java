@@ -100,14 +100,14 @@ public class SituasjonRepositoryTest extends IntegrasjonsTest {
             settVeileder(veilederId, AKTOR_ID);
             situasjonRepository.opprettStatus(new Status(AKTOR_ID, true, new Timestamp(currentTimeMillis()), "Test", KodeverkBruker.SYSTEM, null));
             situasjonRepository.opprettMal(new MalData().setAktorId(AKTOR_ID).setMal(maal));
-            String brukervilkar_hash = "123";
-            situasjonRepository.opprettBrukervilkar(new Brukervilkar().setAktorId(AKTOR_ID).setHash(brukervilkar_hash));
+            String hash = "123";
+            situasjonRepository.opprettBrukervilkar(new Brukervilkar().setAktorId(AKTOR_ID).setHash(hash).setVilkarstatus(GODKJENT));
             Situasjon situasjon = hentSituasjon(AKTOR_ID).get();
             assertThat(situasjon.isOppfolging(), is(true));
             assertThat(situasjon.getVeilederId(), equalTo(veilederId));
             assertThat(situasjon.getGjeldendeStatus().isManuell(), is(true));
             assertThat(situasjon.getGjeldendeMal().getMal(), equalTo(maal));
-            assertThat(situasjon.getGjeldendeBrukervilkar().getHash(), equalTo(brukervilkar_hash));
+            assertThat(situasjon.getGjeldendeBrukervilkar().getHash(), equalTo(hash));
             
             situasjonRepository.avsluttOppfolging(AKTOR_ID);
             Situasjon avsluttetSituasjon = hentSituasjon(AKTOR_ID).get();
