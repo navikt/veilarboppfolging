@@ -11,7 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
 import java.sql.Timestamp;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -74,7 +73,6 @@ public class SituasjonOversiktService {
         val situasjonResolver = new SituasjonResolver(fnr, situasjonResolverDependencies);
         if (situasjonResolver.getKanSettesUnderOppfolging()) {
             situasjonResolver.startOppfolging();
-
         }
 
         return getOppfolgingStatusData(fnr, situasjonResolver);
@@ -87,19 +85,12 @@ public class SituasjonOversiktService {
     }
 
     @SneakyThrows
+    @Transactional
     public OppfolgingStatusData avsluttOppfolging(String fnr, String veileder, String begrunnelse) {
         val situasjonResolver = new SituasjonResolver(fnr, situasjonResolverDependencies);
 
-        if (situasjonResolver.kanAvslutteOppfolging()) {
-            val oppfolgingsperiode = Oppfolgingsperiode.builder()
-                    .aktorId(situasjonResolver.getAktorId())
-                    .veileder(veileder)
-                    .sluttDato(new Date())
-                    .begrunnelse(begrunnelse)
-                    .build();
-            situasjonResolver.avsluttOppfolging(oppfolgingsperiode);
-        }
-
+        situasjonResolver.avsluttOppfolging(veileder, begrunnelse);
+        
         situasjonResolver.reloadSituasjon();
         return getOppfolgingStatusDataMedAvslutningStatus(fnr, situasjonResolver);
     }
@@ -112,7 +103,7 @@ public class SituasjonOversiktService {
     public OppfolgingStatusData settDigitalBruker(String fnr) {
         val resolver = new SituasjonResolver(fnr, situasjonResolverDependencies);
 
-        return oppdaterManuellStatus(fnr, false, "Bruker satt seg selv til digital oppfølging", KodeverkBruker.EKSTERN, resolver.getAktorId());
+        return oppdaterManuellStatus(fnr, false, "Bruker satte seg selv til digital oppfølging", KodeverkBruker.EKSTERN, resolver.getAktorId());
     }
 
     public OppfolgingStatusData oppdaterManuellStatus(String fnr, boolean manuell, String begrunnelse, KodeverkBruker opprettetAv, String opprettetAvBrukerId) {

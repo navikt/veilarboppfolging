@@ -1,5 +1,21 @@
 package no.nav.fo.veilarbsituasjon.rest;
 
+import static java.util.Optional.ofNullable;
+import static org.slf4j.LoggerFactory.getLogger;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.ws.rs.Consumes;
+import javax.ws.rs.NotAuthorizedException;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.Response;
+
+import org.slf4j.Logger;
+import org.springframework.stereotype.Component;
+
 import io.swagger.annotations.Api;
 import lombok.val;
 import no.nav.fo.feed.producer.FeedProducer;
@@ -35,7 +51,6 @@ public class PortefoljeRessurs {
     private AktoerIdService aktoerIdService;
     private BrukerRepository brukerRepository;
     private final PepClient pepClient;
-    private List<VeilederTilordning> feilendeTilordninger;
     private final SituasjonRepository situasjonRepository;
 
     private FeedProducer<OppfolgingBruker> feed;
@@ -57,86 +72,91 @@ public class PortefoljeRessurs {
     @Produces("application/json")
     @Path("/tilordneveileder")
     public Response postVeilederTilordninger(List<VeilederTilordning> tilordninger) {
-        feilendeTilordninger = new ArrayList<>();
+        List<VeilederTilordning> feilendeTilordninger = new ArrayList<>();
 
         for (VeilederTilordning tilordning : tilordninger) {
             try {
                 final String fnr = tilordning.getBrukerFnr();
                 pepClient.isServiceCallAllowed(fnr);
 
-                String aktoerId = ofNullable(aktoerIdService.findAktoerId(fnr)).
-                        orElseThrow(() -> new IllegalArgumentException("Aktoerid ikke funnet"));
+                String aktoerId = finnAktorId(fnr);
 
+                val bruker = brukerRepository.hentTilordningForAktoer(aktoerId);
 
-                val brukerTilOppdatering = OppfolgingBruker
-                        .builder()
-                        .veileder(tilordning.getTilVeilederId())
-                        .aktoerid(aktoerId)
-                        .build();
-
-                settVeilederDersomFraVeilederErOK(brukerTilOppdatering, tilordning);
-            } catch (PepException e) {
-                LOG.error("Kall til ABAC feilet");
-                feilendeTilordninger.add(tilordning);
-            } catch (IllegalArgumentException e) {
-                LOG.error("Aktoerid ikke funnet", e);
-                feilendeTilordninger.add(tilordning);
-            } catch (NotAuthorizedException e) {
-                LOG.warn("Request is not authorized", e);
-                feilendeTilordninger.add(tilordning);
+                if (bruker == null || kanSetteNyVeileder(bruker.getVeileder(), tilordning.getFraVeilederId())) {
+                    skrivTilDatabase(bruker, aktoerId, tilordning.getTilVeilederId());
+                } else {
+                    feilendeTilordninger.add(tilordning);
+                    LOG.info("Aktoerid {} kunne ikke tildeles ettersom fraVeileder er feil", aktoerId);
+                }
             } catch (Exception e) {
-                LOG.error("Det skjedde en feil ved tildeling av veileder", e);
                 feilendeTilordninger.add(tilordning);
-            } finally {
-                feed.activateWebhook();
+            loggFeilsituasjon(e);
             }
         }
 
-        TilordneVeilederResponse response = new TilordneVeilederResponse()
-                .setFeilendeTilordninger(feilendeTilordninger);
+        TilordneVeilederResponse response = new TilordneVeilederResponse().setFeilendeTilordninger(feilendeTilordninger);
 
         if (feilendeTilordninger.isEmpty()) {
             response.setResultat("OK: Veiledere tilordnet");
-            return Response.ok().entity(response).build();
         } else {
             response.setResultat("WARNING: Noen brukere kunne ikke tilordnes en veileder");
-            return Response.ok().entity(response).build();
         }
+        if(tilordninger.size() > feilendeTilordninger.size()) {
+            kallWebhook();
+        }
+        return Response.ok().entity(response).build();
 
     }
 
-    private void skrivTilDatabase(OppfolgingBruker bruker, VeilederTilordning tilordning) {
+    private void kallWebhook() {
         try {
-            brukerRepository.upsertVeilederTilordning(bruker);
-            LOG.debug(String.format("Veileder %s tilordnet aktoer %s", bruker.getVeileder(), bruker.getAktoerid()));
+            feed.activateWebhook();
         } catch (Exception e) {
-            feilendeTilordninger.add(tilordning);
-            LOG.error(String.format("Kunne ikke tilordne veileder %s til aktoer %s", bruker.getVeileder(), bruker.getAktoerid()), e);
+            // Logger feilen, men bryr oss ikke om det. At webhooken feiler påvirker ikke funksjonaliteten
+            // men gjør at endringen kommer senere inn i portefølje
+            LOG.warn("Webhook feilet", e);
+        }
+    }
+
+    private String finnAktorId(final String fnr) {
+        return ofNullable(aktoerIdService.findAktoerId(fnr)).
+                orElseThrow(() -> new IllegalArgumentException("Aktoerid ikke funnet"));
+    }
+
+    private void loggFeilsituasjon(Exception e) {
+        if(e instanceof NotAuthorizedException) {
+            LOG.warn("Request is not authorized", e);
+        } else {
+            LOG.error(loggMeldingForException(e), e);
+        }
+    }
+
+    private String loggMeldingForException(Exception e) {
+        return (e instanceof PepException) ? "Kall til ABAC feilet"
+                : (e instanceof IllegalArgumentException) ? "Aktoerid ikke funnet"
+                : "Det skjedde en feil ved tildeling av veileder";
+    }
+
+    @Transactional
+    private void skrivTilDatabase(OppfolgingBruker bruker, String aktoerId, String veileder) {
+        try {
+            if (bruker == null || !bruker.getOppfolging()){
+                situasjonRepository.opprettOppfolgingsperiode(
+                        Oppfolgingsperiode
+                                .builder()
+                                .aktorId(aktoerId)
+                                .build());
+            }
+            brukerRepository.upsertVeilederTilordning(aktoerId, veileder);
+            LOG.debug(String.format("Veileder %s tilordnet aktoer %s", veileder, aktoerId));
+        } catch (Exception e) {
+            LOG.error(String.format("Kunne ikke tilordne veileder %s til aktoer %s", veileder, aktoerId), e);
             throw e;
         }
     }
 
-    @Transactional
-    private void settVeilederDersomFraVeilederErOK(OppfolgingBruker brukerTilOppdatering, VeilederTilordning tilordning) {
-        val bruker = brukerRepository.hentTilordningForAktoer(brukerTilOppdatering.getAktoerid());
-        val fraVeilederErOk = Optional.ofNullable(bruker)
-                .map(OppfolgingBruker::getVeileder)
-                .map(veileder -> veileder.equals(tilordning.getFraVeilederId()))
-                .orElse(true);
-
-        if (fraVeilederErOk) {
-            if (bruker == null || bruker.getOppfolging()){
-                situasjonRepository.opprettOppfolgingsperiode(
-                        Oppfolgingsperiode
-                                .builder()
-                                .aktorId(brukerTilOppdatering.getAktoerid())
-                                .build());
-            }
-
-            skrivTilDatabase(brukerTilOppdatering, tilordning);
-        } else {
-            feilendeTilordninger.add(tilordning);
-            LOG.info("Aktoerid {} kunne ikke tildeles ettersom fraVeileder er feil", bruker.getAktoerid());
-        }
+    static boolean kanSetteNyVeileder(String eksisterendeVeileder, String fraVeileder) {
+        return eksisterendeVeileder == null || eksisterendeVeileder.equals(fraVeileder);
     }
 }

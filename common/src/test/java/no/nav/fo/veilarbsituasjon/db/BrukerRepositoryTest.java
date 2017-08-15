@@ -1,7 +1,6 @@
 package no.nav.fo.veilarbsituasjon.db;
 
 import no.nav.fo.veilarbsituasjon.IntegrasjonsTest;
-import no.nav.fo.veilarbsituasjon.rest.domain.OppfolgingBruker;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -16,28 +15,16 @@ public class BrukerRepositoryTest extends IntegrasjonsTest {
 
     @Test
     public void skalLeggeTilBruker() {
-        brukerRepository.upsertVeilederTilordning(
-                OppfolgingBruker
-                        .builder()
-                        .aktoerid(AKTOR_ID)
-                        .veileder("***REMOVED***")
-                        .build());
+        brukerRepository.upsertVeilederTilordning(AKTOR_ID, "***REMOVED***");
         assertThat(brukerRepository.hentTilordningForAktoer(AKTOR_ID).getVeileder(), is("***REMOVED***"));
     }
 
     @Test
     public void skalOppdatereBrukerDersomDenFinnes() {
         String aktoerid = "1111111";
-        brukerRepository.upsertVeilederTilordning(OppfolgingBruker
-                .builder()
-                .aktoerid(aktoerid)
-                .veileder("***REMOVED***")
-                .build());
-        brukerRepository.upsertVeilederTilordning(OppfolgingBruker
-                .builder()
-                .aktoerid(aktoerid)
-                .veileder("***REMOVED***")
-                .build());
+
+        brukerRepository.upsertVeilederTilordning(aktoerid, "***REMOVED***");
+        brukerRepository.upsertVeilederTilordning(aktoerid, "***REMOVED***");
 
         assertThat(brukerRepository.hentTilordningForAktoer(aktoerid).getVeileder(), is("***REMOVED***"));
     }

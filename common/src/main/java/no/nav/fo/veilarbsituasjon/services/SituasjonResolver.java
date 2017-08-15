@@ -24,6 +24,7 @@ import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskont
 import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
 import java.sql.Timestamp;
@@ -72,14 +73,20 @@ public class SituasjonResolver {
         situasjon = hentSituasjon();
     }
 
+    @Transactional
     void sjekkStatusIArenaOgOppdaterSituasjon() {
         if (!situasjon.isOppfolging()) {
             sjekkArena();
-            deps.getSituasjonRepository().oppdaterOppfolgingStatus(
-                situasjon.setOppfolging(
-                    erUnderOppfolging(statusIArena.getFormidlingsgruppeKode(), statusIArena.getServicegruppeKode())
-                )
-            );
+            if(erUnderOppfolging(statusIArena.getFormidlingsgruppeKode(), statusIArena.getServicegruppeKode())){
+                deps.getSituasjonRepository().startOppfolging(aktorId);
+                situasjon.setOppfolging(true);
+
+                deps.getSituasjonRepository().opprettOppfolgingsperiode(Oppfolgingsperiode
+                        .builder().aktorId(aktorId).build()
+                );
+
+                hentSituasjon();
+            }
         }
     }
 
@@ -161,8 +168,12 @@ public class SituasjonResolver {
         return kanSettesUnderOppfolging(statusIArena.getFormidlingsgruppeKode(), statusIArena.getServicegruppeKode());
     }
 
+    @Transactional
     void startOppfolging() {
-        deps.getSituasjonRepository().oppdaterOppfolgingStatus(situasjon.setOppfolging(true));
+        deps.getSituasjonRepository().startOppfolging(aktorId);
+        deps.getSituasjonRepository().opprettOppfolgingsperiode(Oppfolgingsperiode
+                .builder().aktorId(aktorId).build()
+        );
         situasjon = hentSituasjon();
     }
 
@@ -207,14 +218,23 @@ public class SituasjonResolver {
         return fnr.equals("***REMOVED***") ? toManedSiden : new Date();
     }
 
-    void avsluttOppfolging(Oppfolgingsperiode oppfolgingsperiode) {
-        deps.getSituasjonRepository().oppdaterOppfolgingStatus(aktorId, false);
+    void avsluttOppfolging(String veileder, String begrunnelse) {
+        if (!kanAvslutteOppfolging()) {
+            return;
+        }
+        val oppfolgingsperiode = Oppfolgingsperiode.builder()
+                .aktorId(aktorId)
+                .veileder(veileder)
+                .sluttDato(new Date())
+                .begrunnelse(begrunnelse)
+                .build();
+        deps.getSituasjonRepository().avsluttOppfolging(aktorId);
         deps.getSituasjonRepository().oppdaterOppfolgingsperiode(oppfolgingsperiode);
     }
 
     private Situasjon hentSituasjon() {
         return deps.getSituasjonRepository().hentSituasjon(aktorId)
-            .orElseGet(() -> deps.getSituasjonRepository().opprettSituasjon(new Situasjon().setAktorId(aktorId)));
+            .orElseGet(() -> deps.getSituasjonRepository().opprettSituasjon(aktorId));
     }
 
     @SneakyThrows

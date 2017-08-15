@@ -39,21 +39,17 @@ public class BrukerRepository {
                 );
     }
 
-    public void upsertVeilederTilordning(OppfolgingBruker oppfolgingBruker) {
-        String aktoerid = oppfolgingBruker.getAktoerid();
-        String veileder = oppfolgingBruker.getVeileder();
-
+    public void upsertVeilederTilordning(String aktoerId, String veileder) {
         val rowsUpdated = db.update(
                 "INSERT INTO SITUASJON(AKTORID, VEILEDER, OPPFOLGING, OPPDATERT) " +
                         "SELECT ?, ?, 1, CURRENT_TIMESTAMP FROM DUAL " +
                         "WHERE NOT EXISTS(SELECT * FROM SITUASJON WHERE AKTORID=?)",
-                aktoerid, veileder, aktoerid);
+                aktoerId, veileder, aktoerId);
 
         if (rowsUpdated == 0) {
             db.update("UPDATE SITUASJON SET VEILEDER = ?, OPPDATERT=CURRENT_TIMESTAMP WHERE AKTORID = ?",
-                    veileder, aktoerid);
+                    veileder, aktoerId);
         }
-
     }
 
     private String hentTilordninger() {

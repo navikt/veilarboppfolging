@@ -12,12 +12,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
-import javax.servlet.http.HttpServletResponse;
 import java.util.Collections;
 
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
 
@@ -37,28 +35,23 @@ public class AktoerIdToVeilederTest {
     private FeedProducer<OppfolgingBruker> feed;
 
     @InjectMocks
-    PortefoljeRessurs portefoljeRessurs;
+    private PortefoljeRessurs portefoljeRessurs;
 
     @Mock
-    HttpServletResponse httpServletResponse;
-
-    @Mock
-    PepClient pepClient;
-
-
+    private PepClient pepClient;
 
     @Test
     public void portefoljeRessursMustCallDAOwithAktoerIdToVeileder() throws PepException {
         when(pepClient.isServiceCallAllowed(anyString())).thenReturn(true);
         when(aktoerIdService.findAktoerId(any(String.class))).thenReturn("AKTOERID");
         portefoljeRessurs.postVeilederTilordninger(Collections.singletonList(testData()));
-        verify(brukerRepository, times(1)).upsertVeilederTilordning(any(OppfolgingBruker.class));
+        verify(brukerRepository, times(1)).upsertVeilederTilordning(anyString(), anyString());
     }
 
     public void noCallToDAOWhenAktoerIdServiceFails() {
         when(aktoerIdService.findAktoerId(any(String.class))).thenReturn(null);
         portefoljeRessurs.postVeilederTilordninger(Collections.singletonList(testData()));
-        verify(brukerRepository, never()).upsertVeilederTilordning(any(OppfolgingBruker.class));
+        verify(brukerRepository, never()).upsertVeilederTilordning(anyString(), anyString());
     }
 
     private VeilederTilordning testData() {

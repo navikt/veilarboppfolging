@@ -1,7 +1,7 @@
 package no.nav.fo.veilarbsituasjon.db;
 
-import no.nav.apiapp.util.JsonUtils;
 import no.nav.fo.veilarbsituasjon.IntegrasjonsTest;
+import no.nav.json.JsonUtils;
 import org.json.JSONArray;
 import org.junit.Test;
 import org.junit.runner.RunWith;
