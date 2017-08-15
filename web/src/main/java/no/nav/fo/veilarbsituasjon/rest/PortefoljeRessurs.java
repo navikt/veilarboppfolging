@@ -1,21 +1,5 @@
 package no.nav.fo.veilarbsituasjon.rest;
 
-import static java.util.Optional.ofNullable;
-import static org.slf4j.LoggerFactory.getLogger;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.ws.rs.Consumes;
-import javax.ws.rs.NotAuthorizedException;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Response;
-
-import org.slf4j.Logger;
-import org.springframework.stereotype.Component;
-
 import io.swagger.annotations.Api;
 import lombok.val;
 import no.nav.fo.feed.producer.FeedProducer;
@@ -36,7 +20,6 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import static java.util.Optional.ofNullable;
 import static org.slf4j.LoggerFactory.getLogger;
