@@ -27,8 +27,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.doThrow;
@@ -60,42 +58,6 @@ public class PortefoljeRessursTest {
     @Before
     public void beforeAll() {
         System.setProperty("no.nav.modig.core.context.subjectHandlerImplementationClass", ThreadLocalSubjectHandler.class.getName());
-    }
-
-    @Test
-    public void skalTildeleVeileder() throws Exception {
-        String fraVeileder = "AAAAAAA";
-        String tilVeileder = "BBBBBBB";
-        String eksisterendeVeileder = "AAAAAAA";
-        boolean result = PortefoljeRessurs.kanSetteNyVeileder(fraVeileder, tilVeileder, eksisterendeVeileder);
-        assertTrue(result);
-    }
-
-    @Test
-    public void skalTildeleVeilederOmEksisterendeErNull() throws Exception {
-        String fraVeileder = "AAAAAAA";
-        String tilVeileder = "BBBBBBB";
-        String eksisterendeVeileder = null;
-        boolean result = PortefoljeRessurs.kanSetteNyVeileder(fraVeileder, tilVeileder, eksisterendeVeileder);
-        assertTrue(result);
-    }
-
-    @Test
-    public void skalIkkeTildeleVeilederOmEksisterendeErUlikFraVeileder() throws Exception {
-        String fraVeileder = "AAAAAAA";
-        String tilVeileder = "BBBBBBB";
-        String eksisterendeVeileder = "CCCCCC";
-        boolean result = PortefoljeRessurs.kanSetteNyVeileder(fraVeileder, tilVeileder, eksisterendeVeileder);
-        assertFalse(result);
-    }
-
-    @Test
-    public void skalIkkeTildeleVeilederOmTilVeilederErNull() throws Exception {
-        String fraVeileder = "AAAAAAA";
-        String tilVeileder = null;
-        String eksisterendeVeileder = "CCCCCC";
-        boolean result = PortefoljeRessurs.kanSetteNyVeileder(fraVeileder, tilVeileder, eksisterendeVeileder);
-        assertFalse(result);
     }
 
     @Test

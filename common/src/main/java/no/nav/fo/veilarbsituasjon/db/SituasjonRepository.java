@@ -304,24 +304,33 @@ public class SituasjonRepository {
                 .setOppfolgingsperioder(hentOppfolgingsperioder(aktorId));
     }
 
+
+    private static String hentOppfolingsperioderSQL =
+            "SELECT AKTORID, VEILEDER, STARTDATO, SLUTTDATO, BEGRUNNELSE " +
+            "FROM OPPFOLGINGSPERIODE ";
+
     public List<Oppfolgingsperiode> hentOppfolgingsperioder(String aktorid) {
-        return jdbcTemplate.query("" +
-                        "SELECT " +
-                        " AKTORID, " +
-                        " VEILEDER, " +
-                        " SLUTTDATO, " +
-                        " BEGRUNNELSE " +
-                        "FROM OPPFOLGINGSPERIODE " +
-                        "WHERE AKTORID = ? AND SLUTTDATO IS NOT NULL",
+        return jdbcTemplate.query(hentOppfolingsperioderSQL +
+                        "WHERE AKTORID = ?",
                 (result, n) -> mapTilOppfolgingsperiode(result),
                 aktorid
         );
     }
 
+    public List<Oppfolgingsperiode> hentAvsluttetOppfolgingsperioder(String aktorid) {
+        return jdbcTemplate.query(hentOppfolingsperioderSQL +
+                        "WHERE AKTORID = ? AND SLUTTDATO is not null",
+                (result, n) -> mapTilOppfolgingsperiode(result),
+                aktorid
+        );
+    }
+
+
     private Oppfolgingsperiode mapTilOppfolgingsperiode(ResultSet result) throws SQLException {
         return Oppfolgingsperiode.builder()
                 .aktorId(result.getString("aktorid"))
                 .veileder(result.getString("veileder"))
+                .startDato(hentDato(result, "startdato"))
                 .sluttDato(hentDato(result, "sluttdato"))
                 .begrunnelse(result.getString("begrunnelse"))
                 .build();

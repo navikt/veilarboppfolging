@@ -120,6 +120,7 @@ public class SituasjonRepositoryTest extends IntegrasjonsTest {
             Oppfolgingsperiode oppfolgingperiode = Oppfolgingsperiode.builder()
                     .veileder("veileder")
                     .begrunnelse("begrunnelse")
+                    .startDato(new Date())
                     .sluttDato(new Date())
                     .aktorId(aktorId)
                     .build();

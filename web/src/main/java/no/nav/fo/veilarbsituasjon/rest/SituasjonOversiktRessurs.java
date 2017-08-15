@@ -175,6 +175,7 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt, VeilederSitu
                 .setAktorId(oppfolgingsperiode.getAktorId())
                 .setVeileder(oppfolgingsperiode.getVeileder())
                 .setSluttDato(oppfolgingsperiode.getSluttDato())
+                .setStartDato(oppfolgingsperiode.getStartDato())
                 .setBegrunnelse(oppfolgingsperiode.getBegrunnelse())
                 ;
     }

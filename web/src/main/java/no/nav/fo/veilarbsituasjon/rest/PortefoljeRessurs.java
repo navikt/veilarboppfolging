@@ -20,6 +20,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static java.util.Optional.ofNullable;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -67,13 +68,13 @@ public class PortefoljeRessurs {
                         orElseThrow(() -> new IllegalArgumentException("Aktoerid ikke funnet"));
 
 
-                val oppdatertBruker = OppfolgingBruker
+                val brukerTilOppdatering = OppfolgingBruker
                         .builder()
                         .veileder(tilordning.getTilVeilederId())
                         .aktoerid(aktoerId)
                         .build();
 
-                settVeilederDersomFraVeilederErOK(oppdatertBruker, tilordning);
+                settVeilederDersomFraVeilederErOK(brukerTilOppdatering, tilordning);
             } catch (PepException e) {
                 LOG.error("Kall til ABAC feilet");
                 feilendeTilordninger.add(tilordning);
@@ -118,9 +119,10 @@ public class PortefoljeRessurs {
     @Transactional
     private void settVeilederDersomFraVeilederErOK(OppfolgingBruker brukerTilOppdatering, VeilederTilordning tilordning) {
         val bruker = brukerRepository.hentTilordningForAktoer(brukerTilOppdatering.getAktoerid());
-        boolean fraVeilederErOk = bruker == null ||
-                bruker.getVeileder() == null ||
-                bruker.getVeileder().equals(tilordning.getFraVeilederId());
+        val fraVeilederErOk = Optional.ofNullable(bruker)
+                .map(OppfolgingBruker::getVeileder)
+                .map(veileder -> veileder.equals(tilordning.getFraVeilederId()))
+                .orElse(true);
 
         if (fraVeilederErOk) {
             if (bruker == null || bruker.getOppfolging()){
@@ -136,12 +138,5 @@ public class PortefoljeRessurs {
             feilendeTilordninger.add(tilordning);
             LOG.info("Aktoerid {} kunne ikke tildeles ettersom fraVeileder er feil", bruker.getAktoerid());
         }
-    }
-
-    static boolean kanSetteNyVeileder(String fraVeileder, String tilVeileder, String eksisterendeVeileder) {
-        if (tilVeileder == null) {
-            return false;
-        }
-        return eksisterendeVeileder == null || eksisterendeVeileder.equals(fraVeileder);
     }
 }
