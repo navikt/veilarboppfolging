@@ -153,9 +153,10 @@ public class SituasjonRepository {
     public void opprettOppfolgingsperiode(Oppfolgingsperiode oppfolgingperiode) {
         jdbcTemplate.update("" +
                         "INSERT INTO OPPFOLGINGSPERIODE(aktorId, veileder, startDato, sluttDato, begrunnelse, oppdatert) " +
-                        "VALUES (?,?,CURRENT_TIMESTAMP,?,?,CURRENT_TIMESTAMP)",
+                        "VALUES (?,?,?,?,?,CURRENT_TIMESTAMP)",
                 oppfolgingperiode.getAktorId(),
                 null,
+                oppfolgingperiode.getStartDato(),
                 null,
                 null);
     }

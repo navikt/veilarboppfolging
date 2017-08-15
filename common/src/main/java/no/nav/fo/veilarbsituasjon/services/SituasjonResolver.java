@@ -82,7 +82,10 @@ public class SituasjonResolver {
                 situasjon.setOppfolging(true);
 
                 deps.getSituasjonRepository().opprettOppfolgingsperiode(Oppfolgingsperiode
-                        .builder().aktorId(aktorId).build()
+                        .builder()
+                        .aktorId(aktorId)
+                        .startDato(new Date())
+                        .build()
                 );
 
                 hentSituasjon();
@@ -172,7 +175,9 @@ public class SituasjonResolver {
     void startOppfolging() {
         deps.getSituasjonRepository().startOppfolging(aktorId);
         deps.getSituasjonRepository().opprettOppfolgingsperiode(Oppfolgingsperiode
-                .builder().aktorId(aktorId).build()
+                .builder()
+                .startDato(new Date())
+                .aktorId(aktorId).build()
         );
         situasjon = hentSituasjon();
     }
