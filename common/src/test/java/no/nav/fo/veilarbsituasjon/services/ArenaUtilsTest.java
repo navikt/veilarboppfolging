@@ -59,11 +59,19 @@ public class ArenaUtilsTest {
     }
 
     @Test
-    public void erUnderOppfolging_IARBS_False_for_KAP11_IVURD_VURDI_VARIG_BKART() {
+    public void erUnderOppfolging_IARBS_False_for_KAP11_IVURD_VURDI_BKART() {
         assertThat(erUnderOppfolging("IARBS", null)).isFalse();
-        for (String kgKode : asList("KAP11", "IVURD", "VURDI", "VARIG", "BKART")) {
+        for (String kgKode : asList("KAP11", "IVURD", "VURDI", "BKART")) {
             assertThat(erUnderOppfolging("IARBS", kgKode)).isFalse();
         }
+    }
+
+    @Test
+    public void erUnderOppfolning_Nar_ServiceKode_VARIG_Og_Formidlingskode_ARBS_RARBS_PARBS_IARBS(){
+        assertThat(erUnderOppfolging("ARBS","VARIG")).isTrue();
+        assertThat(erUnderOppfolging("RARBS","VARIG")).isTrue();
+        assertThat(erUnderOppfolging("PARBS","VARIG")).isTrue();
+        assertThat(erUnderOppfolging("IARBS","VARIG")).isTrue();
     }
 
     @Test
