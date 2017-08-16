@@ -282,6 +282,27 @@ public class SituasjonRepository {
         );
     }
 
+    public EskaleringstatusData hentEskaleringstatus(String aktorId) {
+        return jdbcTemplate.query("" +
+                "SELECT * FROM ESKALERINGSVARSEL " +
+                "WHERE aktor_id = ? AND gjeldende = 1",
+                this::mapTilEskaleringstatusData,
+                aktorId
+        );
+    }
+
+    private EskaleringstatusData mapTilEskaleringstatusData(ResultSet result) throws SQLException {
+        return EskaleringstatusData.builder()
+                .varselId(result.getInt("varsel_id"))
+                .aktorId(result.getString("aktorid"))
+                .opprettetAv(result.getString("opprettet_av"))
+                .opprettetDato(hentDato(result, "opprettet_dato"))
+                .avsluttetDato(hentDato(result, "avsluttet_dato"))
+                .tilhorendeDialogId(result.getInt("tilhorende_dialog"))
+                .gjeldende(result.getBoolean("gjeldende"))
+                .build();
+    }
+
     private Oppfolgingsperiode mapTilOppfolgingsperiode(ResultSet result) throws SQLException {
         return Oppfolgingsperiode.builder()
                 .aktorId(result.getString("aktorid"))

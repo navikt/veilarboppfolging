@@ -33,4 +33,11 @@ public interface VeilederSituasjonOversikt extends SituasjonOversikt {
     @GET
     @Path("/innstillingsHistorikk")
     public List<InnstillingsHistorikk> hentInnstillingsHistorikk() throws Exception;
+
+    @POST
+    @Path("/startEskalering")
+    void startEskalering(String dialoglenke) throws Exception;
+    @POST
+    @Path("/stoppEskalering")
+    void stoppEskalering() throws Exception;
 }

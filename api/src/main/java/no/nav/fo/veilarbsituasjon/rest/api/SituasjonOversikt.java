@@ -1,9 +1,6 @@
 package no.nav.fo.veilarbsituasjon.rest.api;
 
-import no.nav.fo.veilarbsituasjon.rest.domain.Bruker;
-import no.nav.fo.veilarbsituasjon.rest.domain.Mal;
-import no.nav.fo.veilarbsituasjon.rest.domain.OppfolgingStatus;
-import no.nav.fo.veilarbsituasjon.rest.domain.Vilkar;
+import no.nav.fo.veilarbsituasjon.rest.domain.*;
 
 import javax.ws.rs.*;
 import java.util.List;
@@ -49,4 +46,11 @@ public interface SituasjonOversikt {
     @Path("/mal")
     Mal oppdaterMal(Mal mal) throws Exception;
 
+    @GET
+    @Path("/hentEskaleringstatus")
+    Eskaleringstatus hentEskaleringstatus() throws Exception;
+
+    @GET
+    @Path("/hentEskaleringhistorikk")
+    List<Eskaleringstatus> hentEskaleringhistorikk() throws Exception;
 }

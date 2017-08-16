@@ -129,6 +129,13 @@ public class SituasjonOversiktService {
         ).collect(Collectors.toList());
     }
 
+    public EskaleringstatusData hentEskaleringstatus(String fnr) {
+        val resolver = new SituasjonResolver(fnr, situasjonResolverDependencies);
+        String aktorId = resolver.getAktorId();
+
+        return situasjonRepository.hentEskaleringstatus(aktorId);
+    }
+
     private InnstillingsHistorikk tilDTO(Oppfolgingsperiode oppfolgingsperiode) {
         return InnstillingsHistorikk.builder()
                 .type(AVSLUTTET_OPPFOLGINGSPERIODE)

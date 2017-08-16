@@ -87,6 +87,18 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt, VeilederSitu
     }
 
     @Override
+    public void startEskalering(String dialoglenke) throws Exception {
+        pepClient.isServiceCallAllowed(getFnr());
+
+    }
+
+    @Override
+    public void stoppEskalering() throws Exception {
+        pepClient.isServiceCallAllowed(getFnr());
+
+    }
+
+    @Override
     public Vilkar hentVilkar() throws Exception {
         pepClient.isServiceCallAllowed(getFnr());
         return tilDto(situasjonOversiktService.hentVilkar(getFnr()));
@@ -132,6 +144,19 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt, VeilederSitu
     public Mal oppdaterMal(Mal mal) throws PepException {
         pepClient.isServiceCallAllowed(getFnr());
         return tilDto(situasjonOversiktService.oppdaterMal(mal.getMal(), getFnr(), getUid()));
+    }
+
+    @Override
+    public Eskaleringstatus hentEskaleringstatus() throws Exception {
+        pepClient.isServiceCallAllowed(getFnr());
+        situasjonOversiktService.hentEskaleringstatus(getFnr());
+        return null;
+    }
+
+    @Override
+    public List<Eskaleringstatus> hentEskaleringhistorikk() throws Exception {
+        pepClient.isServiceCallAllowed(getFnr());
+        return null;
     }
 
     private String getUid() {
