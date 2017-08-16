@@ -1,6 +1,6 @@
 CREATE TABLE ESKALERINGSVARSEL (
   varsel_id NUMBER,
-  aktor_id NVARCHAR2(255),
+  aktorid NVARCHAR2(255),
   opprettet_av NVARCHAR2(255),
   opprettet_dato TIMESTAMP,
   avsluttet_dato TIMESTAMP,
