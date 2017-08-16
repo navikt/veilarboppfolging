@@ -285,8 +285,17 @@ public class SituasjonRepository {
     public EskaleringstatusData hentEskaleringstatus(String aktorId) {
         return jdbcTemplate.query("" +
                 "SELECT * FROM ESKALERINGSVARSEL " +
-                "WHERE aktor_id = ? AND gjeldende = 1",
+                "WHERE aktorid = ? AND gjeldende = 1",
                 this::mapTilEskaleringstatusData,
+                aktorId
+        );
+    }
+
+    public List<EskaleringstatusData> hentEskaleringhistorikk(String aktorId) {
+        return jdbcTemplate.query("" +
+                "SELECT * FROM ESKALERINGSVARSEL " +
+                "WHERE aktorid = ?",
+                (result, n) -> mapTilEskaleringstatusData(result),
                 aktorId
         );
     }

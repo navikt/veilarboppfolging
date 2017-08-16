@@ -149,14 +149,28 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt, VeilederSitu
     @Override
     public Eskaleringstatus hentEskaleringstatus() throws Exception {
         pepClient.isServiceCallAllowed(getFnr());
-        situasjonOversiktService.hentEskaleringstatus(getFnr());
-        return null;
+        return tilDto(situasjonOversiktService.hentEskaleringstatus(getFnr()));
     }
 
     @Override
     public List<Eskaleringstatus> hentEskaleringhistorikk() throws Exception {
         pepClient.isServiceCallAllowed(getFnr());
-        return null;
+        List<EskaleringstatusData> eskaleringstatusDataList = situasjonOversiktService.hentEskaleringhistorikk(getFnr());
+        return eskaleringstatusDataList.stream()
+                .map(this::tilDto)
+                .collect(toList());
+    }
+
+    private Eskaleringstatus tilDto(EskaleringstatusData eskaleringstatusData) {
+        return Eskaleringstatus.builder()
+                .varselId(eskaleringstatusData.getVarselId())
+                .aktorId(eskaleringstatusData.getAktorId())
+                .opprettetAv(eskaleringstatusData.getOpprettetAv())
+                .opprettetDato(eskaleringstatusData.getOpprettetDato())
+                .avsluttetDato(eskaleringstatusData.getAvsluttetDato())
+                .tilhorendeDialogId(eskaleringstatusData.getTilhorendeDialogId())
+                .gjeldende(eskaleringstatusData.isGjeldende())
+                .build();
     }
 
     private String getUid() {
