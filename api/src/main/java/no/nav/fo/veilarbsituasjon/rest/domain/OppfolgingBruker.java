@@ -15,7 +15,7 @@ public class OppfolgingBruker implements Comparable<OppfolgingBruker> {
 
     String aktoerid;
     String veileder;
-    Boolean oppfolging;
+    boolean oppfolging;
     Timestamp endretTimestamp;
 
     @Override
