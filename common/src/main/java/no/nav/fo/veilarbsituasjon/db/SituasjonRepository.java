@@ -314,7 +314,7 @@ public class SituasjonRepository {
     }
 
     @Transactional
-    public void startEskalering(String aktorId, String opprettetAv, int tilhorendeDialog) {
+    public void startEskalering(String aktorId, String opprettetAv, int tilhorendeDialogId) {
         if (hentEskaleringstatus(aktorId) != null) {
             throw new RuntimeException();
         }
@@ -323,11 +323,30 @@ public class SituasjonRepository {
                 "VALUES(?, ?, CURRENT_TIMESTAMP, ?)",
                 aktorId,
                 opprettetAv,
-                tilhorendeDialog
+                tilhorendeDialogId
         );
         jdbcTemplate.update("" +
                 "UPDATE SITUASJON " +
                 "SET gjeldende_eskaleringsvarsel = (SELECT MAX(varsel_id) FROM ESKALERINGSVARSEL) " +
+                "WHERE aktorid = ?",
+                aktorId
+        );
+    }
+
+    @Transactional
+    public void stoppEskalering(String aktorId) {
+        if(hentEskaleringstatus(aktorId) == null) {
+            throw new RuntimeException();
+        }
+        jdbcTemplate.update("" +
+                "UPDATE ESKALERINGSVARSEL " +
+                "SET avsluttet_dato = CURRENT_TIMESTAMP " +
+                "WHERE aktor_id = ?",
+                aktorId
+        );
+        jdbcTemplate.update("" +
+                "UPDATE SITUASJON " +
+                "SET gjeldende_eskaleringsvarsel = null " +
                 "WHERE aktorid = ?",
                 aktorId
         );

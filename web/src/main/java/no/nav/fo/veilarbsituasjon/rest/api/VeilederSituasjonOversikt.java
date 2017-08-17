@@ -38,7 +38,7 @@ public interface VeilederSituasjonOversikt extends SituasjonOversikt {
 
     @POST
     @Path("/startEskalering")
-    void startEskalering(int tilhorendeDialog) throws Exception;
+    void startEskalering(int tilhorendeDialogId) throws Exception;
 
     @POST
     @Path("/stoppEskalering")

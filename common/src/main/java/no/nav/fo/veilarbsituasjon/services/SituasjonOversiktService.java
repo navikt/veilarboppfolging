@@ -144,17 +144,19 @@ public class SituasjonOversiktService {
         return situasjonRepository.hentEskaleringhistorikk(aktorId);
     }
 
-    public void startEskalering(String fnr, int tilhorendeDialog) {
+    public void startEskalering(String fnr, int tilhorendeDialogId) {
         val resolver = new SituasjonResolver(fnr, situasjonResolverDependencies);
         String aktorId = resolver.getAktorId();
         String veilederId = SubjectHandler.getSubjectHandler().getUid();
 
-        situasjonRepository.startEskalering(aktorId, veilederId, tilhorendeDialog);
+        situasjonRepository.startEskalering(aktorId, veilederId, tilhorendeDialogId);
     }
 
     public void stoppEskalering(String fnr) {
         val resolver = new SituasjonResolver(fnr, situasjonResolverDependencies);
         String aktorId = resolver.getAktorId();
+
+        situasjonRepository.stoppEskalering(aktorId);
     }
 
     private InnstillingsHistorikk tilDTO(Oppfolgingsperiode oppfolgingsperiode) {
