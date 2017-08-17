@@ -13,30 +13,33 @@ import java.util.List;
 public interface VeilederSituasjonOversikt extends SituasjonOversikt {
     @POST
     @Path("/startOppfolging")
-    public OppfolgingStatus startOppfolging() throws Exception;
+    OppfolgingStatus startOppfolging() throws Exception;
 
     @GET
     @Path("/avslutningStatus")
-    public OppfolgingStatus hentAvslutningStatus() throws Exception;
+    OppfolgingStatus hentAvslutningStatus() throws Exception;
 
     @POST
     @Path("/avsluttOppfolging")
     @Consumes("application/json")
-    public OppfolgingStatus avsluttOppfolging(EndreSituasjonDTO avsluttOppfolgingsperiode) throws Exception;
+    OppfolgingStatus avsluttOppfolging(EndreSituasjonDTO avsluttOppfolgingsperiode) throws Exception;
 
     @POST
     @Path("/settManuell")
-    public OppfolgingStatus settTilManuell(EndreSituasjonDTO settTilManuel) throws Exception;
+    OppfolgingStatus settTilManuell(EndreSituasjonDTO settTilManuel) throws Exception;
+
     @POST
     @Path("/settDigital")
-    public OppfolgingStatus settTilDigital(EndreSituasjonDTO settTilDigital) throws Exception;
+    OppfolgingStatus settTilDigital(EndreSituasjonDTO settTilDigital) throws Exception;
+
     @GET
     @Path("/innstillingsHistorikk")
-    public List<InnstillingsHistorikk> hentInnstillingsHistorikk() throws Exception;
+    List<InnstillingsHistorikk> hentInnstillingsHistorikk() throws Exception;
 
     @POST
     @Path("/startEskalering")
-    void startEskalering(String dialoglenke) throws Exception;
+    void startEskalering(int tilhorendeDialog) throws Exception;
+
     @POST
     @Path("/stoppEskalering")
     void stoppEskalering() throws Exception;

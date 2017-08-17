@@ -4,6 +4,7 @@ package no.nav.fo.veilarbsituasjon.db;
 import lombok.SneakyThrows;
 import no.nav.fo.veilarbsituasjon.domain.*;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -298,6 +299,17 @@ public class SituasjonRepository {
                 (result, n) -> mapTilEskaleringstatusData(result),
                 aktorId
         );
+    }
+
+    @Transactional
+    public void startEskalering(String aktorId, String opprettetAv, int tilhorendeDialog) {
+        jdbcTemplate.update("" +
+                "INSERT INTO ESKALERINGSVARSEL(aktorid, opprettet_av, opprettet_dato, tilhorende_dialog, gjeldende) " +
+                "VALUES(?, ?, CURRENT_TIMESTAMP, ?, 1)",
+                aktorId,
+                opprettetAv,
+                tilhorendeDialog
+                );
     }
 
     private EskaleringstatusData mapTilEskaleringstatusData(ResultSet result) throws SQLException {

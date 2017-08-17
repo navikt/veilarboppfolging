@@ -86,16 +86,18 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt, VeilederSitu
         return situasjonOversiktService.hentInstillingsHistorikk(getFnr());
     }
 
+    // TODO Implement
     @Override
-    public void startEskalering(String dialoglenke) throws Exception {
+    public void startEskalering(int tilhorendeDialog) throws Exception {
         pepClient.isServiceCallAllowed(getFnr());
-
+        situasjonOversiktService.startEskalering(getFnr(), tilhorendeDialog);
     }
 
+    // TODO Implement
     @Override
     public void stoppEskalering() throws Exception {
         pepClient.isServiceCallAllowed(getFnr());
-
+        situasjonOversiktService.stoppEskalering(getFnr());
     }
 
     @Override

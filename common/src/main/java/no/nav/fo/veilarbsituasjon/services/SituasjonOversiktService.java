@@ -3,6 +3,7 @@ package no.nav.fo.veilarbsituasjon.services;
 import io.swagger.annotations.Api;
 import lombok.SneakyThrows;
 import lombok.val;
+import no.nav.brukerdialog.security.context.SubjectHandler;
 import no.nav.fo.veilarbsituasjon.db.SituasjonRepository;
 import no.nav.fo.veilarbsituasjon.domain.*;
 import no.nav.fo.veilarbsituasjon.services.SituasjonResolver.SituasjonResolverDependencies;
@@ -141,6 +142,19 @@ public class SituasjonOversiktService {
         String aktorId = resolver.getAktorId();
 
         return situasjonRepository.hentEskaleringhistorikk(aktorId);
+    }
+
+    public void startEskalering(String fnr, int tilhorendeDialog) {
+        val resolver = new SituasjonResolver(fnr, situasjonResolverDependencies);
+        String aktorId = resolver.getAktorId();
+        String veilederId = SubjectHandler.getSubjectHandler().getUid();
+
+        situasjonRepository.startEskalering(aktorId, veilederId, tilhorendeDialog);
+    }
+
+    public void stoppEskalering(String fnr) {
+        val resolver = new SituasjonResolver(fnr, situasjonResolverDependencies);
+        String aktorId = resolver.getAktorId();
     }
 
     private InnstillingsHistorikk tilDTO(Oppfolgingsperiode oppfolgingsperiode) {
