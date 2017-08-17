@@ -7,7 +7,6 @@ import no.nav.fo.veilarbsituasjon.mappers.VilkarMapper;
 import no.nav.fo.veilarbsituasjon.rest.api.SituasjonOversikt;
 import no.nav.fo.veilarbsituasjon.rest.api.VeilederSituasjonOversikt;
 import no.nav.fo.veilarbsituasjon.rest.domain.*;
-import no.nav.fo.veilarbsituasjon.services.PepClient;
 import no.nav.fo.veilarbsituasjon.services.SituasjonOversiktService;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
 import org.springframework.stereotype.Component;
@@ -21,6 +20,11 @@ import java.util.stream.Collectors;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 
+/*
+    NB:
+    tilgangskontroll med abac utføres av SituasjonOversiktService/SituasjonResolver slik at dette blir gjort likt
+    for REST- og SOAP-apiet. Dette skiller denne rest-ressursen fra andre ressurser som må ta ansvar for tilgangskontroll selv
+ */
 @Component
 public class SituasjonOversiktRessurs implements SituasjonOversikt, VeilederSituasjonOversikt {
 
@@ -29,9 +33,6 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt, VeilederSitu
 
     @Inject
     private Provider<HttpServletRequest> requestProvider;
-
-    @Inject
-    private PepClient pepClient;
 
     @Override
     public Bruker hentBrukerInfo() throws Exception {
@@ -42,25 +43,21 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt, VeilederSitu
 
     @Override
     public OppfolgingStatus hentOppfolgingsStatus() throws Exception {
-        pepClient.isServiceCallAllowed(getFnr());
         return tilDto(situasjonOversiktService.hentOppfolgingsStatus(getFnr()));
     }
 
     @Override
     public OppfolgingStatus startOppfolging() throws Exception{
-        pepClient.isServiceCallAllowed(getFnr());
         return tilDto(situasjonOversiktService.startOppfolging(getFnr()));
     }
 
     @Override
     public OppfolgingStatus hentAvslutningStatus() throws Exception {
-        pepClient.isServiceCallAllowed(getFnr());
         return tilDto(situasjonOversiktService.hentAvslutningStatus(getFnr()));
     }
 
     @Override
     public OppfolgingStatus avsluttOppfolging(EndreSituasjonDTO avsluttOppfolgingsperiode) throws Exception {
-        pepClient.isServiceCallAllowed(getFnr());
         return tilDto(situasjonOversiktService.avsluttOppfolging(
                 getFnr(),
                 avsluttOppfolgingsperiode.veilederId,
@@ -70,31 +67,26 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt, VeilederSitu
 
     @Override
     public OppfolgingStatus settTilManuell(EndreSituasjonDTO settTilManuel) throws Exception {
-        pepClient.isServiceCallAllowed(getFnr());
         return tilDto(situasjonOversiktService.oppdaterManuellStatus(getFnr(), true, settTilManuel.begrunnelse, KodeverkBruker.NAV, hentBrukerInfo().getId()));
     }
 
     @Override
     public OppfolgingStatus settTilDigital(EndreSituasjonDTO settTilDigital) throws Exception {
-        pepClient.isServiceCallAllowed(getFnr());
         return tilDto(situasjonOversiktService.oppdaterManuellStatus(getFnr(), false, settTilDigital.begrunnelse, KodeverkBruker.NAV, hentBrukerInfo().getId()));
     }
 
     @Override
     public List<InnstillingsHistorikk> hentInnstillingsHistorikk() throws Exception {
-        pepClient.isServiceCallAllowed(getFnr());
         return situasjonOversiktService.hentInstillingsHistorikk(getFnr());
     }
 
     @Override
     public Vilkar hentVilkar() throws Exception {
-        pepClient.isServiceCallAllowed(getFnr());
         return tilDto(situasjonOversiktService.hentVilkar(getFnr()));
     }
 
     @Override
     public List<Vilkar> hentVilkaarStatusListe() throws PepException {
-        pepClient.isServiceCallAllowed(getFnr());
         return situasjonOversiktService.hentHistoriskeVilkar(getFnr())
                 .stream()
                 .map(this::tilDto)
@@ -103,25 +95,21 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt, VeilederSitu
 
     @Override
     public OppfolgingStatus godta(String hash) throws Exception {
-        pepClient.isServiceCallAllowed(getFnr());
         return tilDto(situasjonOversiktService.oppdaterVilkaar(hash, getFnr(), VilkarStatus.GODKJENT));
     }
 
     @Override
     public OppfolgingStatus avslaa(String hash) throws Exception {
-        pepClient.isServiceCallAllowed(getFnr());
         return tilDto(situasjonOversiktService.oppdaterVilkaar(hash, getFnr(), VilkarStatus.AVSLATT));
     }
 
     @Override
     public Mal hentMal() throws PepException {
-        pepClient.isServiceCallAllowed(getFnr());
         return tilDto(situasjonOversiktService.hentMal(getFnr()));
     }
 
     @Override
     public List<Mal> hentMalListe() throws PepException {
-        pepClient.isServiceCallAllowed(getFnr());
         List<MalData> malDataList = situasjonOversiktService.hentMalList(getFnr());
         return malDataList.stream()
                 .map(this::tilDto)
@@ -130,7 +118,6 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt, VeilederSitu
 
     @Override
     public Mal oppdaterMal(Mal mal) throws PepException {
-        pepClient.isServiceCallAllowed(getFnr());
         return tilDto(situasjonOversiktService.oppdaterMal(mal.getMal(), getFnr(), getUid()));
     }
 
