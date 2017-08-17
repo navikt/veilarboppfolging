@@ -13,10 +13,29 @@ public class BrukerRepositoryTest extends IntegrasjonsTest {
 
     private BrukerRepository brukerRepository = new BrukerRepository(getBean(JdbcTemplate.class));
 
+    private JdbcTemplate db = getBean(JdbcTemplate.class);
+
     @Test
     public void skalLeggeTilBruker() {
         brukerRepository.upsertVeilederTilordning(AKTOR_ID, "***REMOVED***");
         assertThat(brukerRepository.hentTilordningForAktoer(AKTOR_ID).getVeileder(), is("***REMOVED***"));
+    }
+
+    @Test
+    public void skalSetteOppfolgingsflaggVedOPpdaterering() {
+        db.execute("INSERT INTO SITUASJON (AKTORID, OPPDATERT, OPPFOLGING) " +
+                "VALUES ('1111111', CURRENT_TIMESTAMP, 0)");
+
+        assertThat(db.queryForList("SELECT * FROM SITUASJON WHERE AKTORID = '1111111'").get(0).get("OPPFOLGING").toString(), is("0"));
+        brukerRepository.upsertVeilederTilordning("1111111", "***REMOVED***");
+        assertThat(db.queryForList("SELECT * FROM SITUASJON WHERE AKTORID = '1111111'").get(0).get("OPPFOLGING").toString(), is("1"));
+
+    }
+
+    @Test
+    public void skalSetteOppfolgingsflaggVedInsert() {
+        brukerRepository.upsertVeilederTilordning("1111111", "***REMOVED***");
+        assertThat(db.queryForList("SELECT * FROM SITUASJON WHERE AKTORID = '1111111'").get(0).get("OPPFOLGING").toString(), is("1"));
     }
 
     @Test

@@ -47,7 +47,7 @@ public class BrukerRepository {
                 aktoerId, veileder, aktoerId);
 
         if (rowsUpdated == 0) {
-            db.update("UPDATE SITUASJON SET VEILEDER = ?, OPPDATERT=CURRENT_TIMESTAMP WHERE AKTORID = ?",
+            db.update("UPDATE SITUASJON SET VEILEDER = ?, OPPDATERT=CURRENT_TIMESTAMP, OPPFOLGING = 1 WHERE AKTORID = ?",
                     veileder, aktoerId);
         }
     }
