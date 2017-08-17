@@ -2,11 +2,11 @@ package no.nav.fo.veilarbsituasjon.rest;
 
 
 import io.swagger.annotations.Api;
+import no.nav.apiapp.security.PepClient;
 import no.nav.fo.veilarbsituasjon.domain.OppfolgingskontraktResponse;
 import no.nav.fo.veilarbsituasjon.domain.Oppfolgingsstatus;
 import no.nav.fo.veilarbsituasjon.mappers.OppfolgingMapper;
 import no.nav.fo.veilarbsituasjon.services.OppfolgingService;
-import no.nav.fo.veilarbsituasjon.services.PepClient;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
@@ -41,7 +41,7 @@ public class OppfolgingRessurs {
     @GET
     @Path("/oppfoelging")
     public OppfolgingskontraktResponse getOppfoelging(@PathParam("fnr") String fnr) throws PepException {
-        pepClient.isServiceCallAllowed(fnr);
+        pepClient.sjekkTilgangTilFnr(fnr);
         LocalDate periodeFom = LocalDate.now().minusMonths(MANEDER_BAK_I_TID);
         LocalDate periodeTom = LocalDate.now().plusMonths(MANEDER_FREM_I_TID);
         XMLGregorianCalendar fom = convertDateToXMLGregorianCalendar(periodeFom);
@@ -54,7 +54,7 @@ public class OppfolgingRessurs {
     @GET
     @Path("/oppfoelgingsstatus")
     public Oppfolgingsstatus getOppfoelginsstatus(@PathParam("fnr") String fnr) throws PepException {
-        pepClient.isServiceCallAllowed(fnr);
+        pepClient.sjekkTilgangTilFnr(fnr);
 
         LOG.info("Henter oppfølgingsstatus for {}", fnr);
         return oppfolgingService.hentOppfolgingsstatus(fnr);
