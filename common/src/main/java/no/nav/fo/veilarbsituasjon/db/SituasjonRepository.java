@@ -266,7 +266,12 @@ public class SituasjonRepository {
                                 .map(m -> m != 0 ? mapTilMal(resultat) : null)
                                 .orElse(null)
                 )
-                .setOppfolgingsperioder(hentOppfolgingsperioder(aktorId));
+                .setOppfolgingsperioder(hentOppfolgingsperioder(aktorId))
+                .setGjeldendeEskaleringsvarsel(
+                        Optional.ofNullable(resultat.getLong("gjeldende_eskaleringsvarsel"))
+                                .map(e -> e != 0 ? mapTilEskaleringstatusData(resultat) : null)
+                                .orElse(null)
+                );
     }
 
     public List<Oppfolgingsperiode> hentOppfolgingsperioder(String aktorid) {
@@ -321,17 +326,19 @@ public class SituasjonRepository {
         );
     }
 
-    private EskaleringstatusData mapTilEskaleringstatusData(ResultSet result) throws SQLException {
+    @SneakyThrows
+    @SuppressWarnings("unchecked")
+    private EskaleringstatusData mapTilEskaleringstatusData(ResultSet result) {
         if (!result.isBeforeFirst()) {
             return null;
         }
         return EskaleringstatusData.builder()
-                .varselId(result.getInt("varsel_id"))
+                .varselId(result.getLong("varsel_id"))
                 .aktorId(result.getString("aktor_id"))
                 .opprettetAv(result.getString("opprettet_av"))
                 .opprettetDato(hentDato(result, "opprettet_dato"))
                 .avsluttetDato(hentDato(result, "avsluttet_dato"))
-                .tilhorendeDialogId(result.getInt("tilhorende_dialog_id"))
+                .tilhorendeDialogId(result.getLong("tilhorende_dialog_id"))
                 .build();
     }
 

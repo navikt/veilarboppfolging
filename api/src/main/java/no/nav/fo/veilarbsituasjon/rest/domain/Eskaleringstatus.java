@@ -13,11 +13,11 @@ import java.util.Date;
 @Accessors(chain = true)
 public class Eskaleringstatus {
 
-    private int varselId;
+    private long varselId;
     private String aktorId;
     private String opprettetAv;
     private Date opprettetDato;
     private Date avsluttetDato;
-    private int tilhorendeDialogId;
+    private long tilhorendeDialogId;
 
 }

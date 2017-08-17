@@ -8,10 +8,10 @@ import java.util.Date;
 @Value
 @Builder
 public class EskaleringstatusData {
-    private int varselId;
+    private long varselId;
     private String aktorId;
     private String opprettetAv;
     private Date opprettetDato;
     private Date avsluttetDato;
-    private int tilhorendeDialogId;
+    private long tilhorendeDialogId;
 }
