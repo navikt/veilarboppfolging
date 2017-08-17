@@ -1,16 +1,14 @@
 package no.nav.fo.veilarbsituasjon.rest.domain;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Value;
-import lombok.experimental.Accessors;
+import lombok.experimental.Wither;
 
 import java.util.Date;
 
 @Value
-@Builder(toBuilder = true)
-@AllArgsConstructor
-@Accessors(chain = true)
+@Builder
+@Wither
 public class Eskaleringstatus {
 
     private long varselId;

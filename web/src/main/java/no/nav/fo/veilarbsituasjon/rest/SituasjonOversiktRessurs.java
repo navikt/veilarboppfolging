@@ -92,7 +92,6 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt, VeilederSitu
         situasjonOversiktService.startEskalering(getFnr(), tilhorendeDialogId);
     }
 
-    // TODO Implement
     @Override
     public void stoppEskalering() throws Exception {
         pepClient.isServiceCallAllowed(getFnr());

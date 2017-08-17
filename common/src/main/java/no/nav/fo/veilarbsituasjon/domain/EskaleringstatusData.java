@@ -2,11 +2,13 @@ package no.nav.fo.veilarbsituasjon.domain;
 
 import lombok.Builder;
 import lombok.Value;
+import lombok.experimental.Wither;
 
 import java.util.Date;
 
 @Value
 @Builder
+@Wither
 public class EskaleringstatusData {
     private long varselId;
     private String aktorId;
