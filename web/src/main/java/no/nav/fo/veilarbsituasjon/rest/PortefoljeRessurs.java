@@ -124,7 +124,7 @@ public class PortefoljeRessurs {
     @Transactional
     private void skrivTilDatabase(OppfolgingBruker bruker, String aktoerId, String veileder) {
         try {
-            if (bruker == null || !bruker.getOppfolging()){
+            if (bruker == null || !bruker.isOppfolging()){
                 situasjonRepository.opprettOppfolgingsperiode(
                         Oppfolgingsperiode
                                 .builder()
