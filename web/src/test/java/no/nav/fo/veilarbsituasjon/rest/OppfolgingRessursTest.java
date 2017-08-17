@@ -1,10 +1,10 @@
 package no.nav.fo.veilarbsituasjon.rest;
 
+import no.nav.apiapp.security.PepClient;
 import no.nav.fo.veilarbsituasjon.mappers.OppfolgingMapper;
 import no.nav.fo.veilarbsituasjon.domain.OppfolgingskontraktData;
 import no.nav.fo.veilarbsituasjon.domain.OppfolgingskontraktResponse;
 import no.nav.fo.veilarbsituasjon.services.OppfolgingService;
-import no.nav.fo.veilarbsituasjon.services.PepClient;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -42,7 +42,6 @@ public class OppfolgingRessursTest {
                 new OppfolgingskontraktResponse(Collections.singletonList(new OppfolgingskontraktData()))
         );
 
-        when(pepClient.isServiceCallAllowed(anyString())).thenReturn(true);
 
         final OppfolgingskontraktResponse oppfoelging = oppfoelgingRessurs.getOppfoelging("***REMOVED***");
 

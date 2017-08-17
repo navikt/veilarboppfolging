@@ -1,6 +1,7 @@
 package no.nav.fo.veilarbsituasjon.rest;
 
 import lombok.val;
+import no.nav.apiapp.security.PepClient;
 import no.nav.fo.veilarbsituasjon.db.SituasjonRepository;
 import no.nav.fo.veilarbsituasjon.domain.Brukervilkar;
 import no.nav.fo.veilarbsituasjon.domain.OppfolgingStatusData;
@@ -85,6 +86,7 @@ public class SituasjonOversiktServiceTest {
         when(situasjonResolverDependencies.getOppfoelgingPortType()).thenReturn(oppfoelgingPortTypeMock);
         when(situasjonResolverDependencies.getDigitalKontaktinformasjonV1()).thenReturn(digitalKontaktinformasjonV1Mock);
         when(situasjonResolverDependencies.getVilkarService()).thenReturn(vilkarServiceMock);
+        when(situasjonResolverDependencies.getPepClient()).thenReturn(mock(PepClient.class));
         gittOppfolgingStatus("", "");
     }
 

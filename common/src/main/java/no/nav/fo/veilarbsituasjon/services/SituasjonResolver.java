@@ -3,6 +3,7 @@ package no.nav.fo.veilarbsituasjon.services;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.val;
+import no.nav.apiapp.security.PepClient;
 import no.nav.fo.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
 import no.nav.fo.veilarbsituasjon.db.SituasjonRepository;
 import no.nav.fo.veilarbsituasjon.domain.*;
@@ -61,6 +62,8 @@ public class SituasjonResolver {
     private List<ArenaAktivitetDTO> arenaAktiviteter;
 
     SituasjonResolver(String fnr, SituasjonResolverDependencies deps) {
+        deps.getPepClient().sjekkTilgangTilFnr(fnr);
+
         this.fnr = fnr;
         this.deps = deps;
 
@@ -298,6 +301,9 @@ public class SituasjonResolver {
     @Component
     @Getter
     public static class SituasjonResolverDependencies {
+
+        @Inject
+        private PepClient pepClient;
 
         @Inject
         private AktoerIdService aktoerIdService;

@@ -1,6 +1,7 @@
 package no.nav.fo.veilarbsituasjon.services;
 
 
+import no.nav.apiapp.security.PepClient;
 import no.nav.fo.feed.producer.FeedProducer;
 import no.nav.fo.veilarbsituasjon.db.BrukerRepository;
 import no.nav.fo.veilarbsituasjon.db.SituasjonRepository;
@@ -42,7 +43,6 @@ public class AktoerIdToVeilederTest {
 
     @Test
     public void portefoljeRessursMustCallDAOwithAktoerIdToVeileder() throws PepException {
-        when(pepClient.isServiceCallAllowed(anyString())).thenReturn(true);
         when(aktoerIdService.findAktoerId(any(String.class))).thenReturn("AKTOERID");
         portefoljeRessurs.postVeilederTilordninger(Collections.singletonList(testData()));
         verify(brukerRepository, times(1)).upsertVeilederTilordning(anyString(), anyString());
