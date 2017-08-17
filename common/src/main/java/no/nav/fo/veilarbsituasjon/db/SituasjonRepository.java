@@ -54,11 +54,18 @@ public class SituasjonRepository {
                         "  MAL.AKTORID AS MAL_AKTORID, " +
                         "  MAL.MAL AS MAL_MAL, " +
                         "  MAL.ENDRET_AV AS MAL_ENDRET_AV, " +
-                        "  MAL.DATO AS MAL_DATO " +
+                        "  MAL.DATO AS MAL_DATO, " +
+                        "  ESKALERINGSVARSEL.VARSEL_ID AS ESKALERINGSVARSEL_ID, " +
+                        "  ESKALERINGSVARSEL.AKTOR_ID AS ESKALERINGSVARSEL_AKTOR_ID, " +
+                        "  ESKALERINGSVARSEL.OPPRETTET_AV AS ESKALERINGSVARSEL_OPPRETTET_AV, " +
+                        "  ESKALERINGSVARSEL.OPPRETTET_DATO AS ESKALERINGSVARSEL_OPPRETTET_DATO, " +
+                        "  ESKALERINGSVARSEL.AVSLUTTET_DATO AS ESKALERINGSVARSEL_AVSLUTTET_DATO, " +
+                        "  ESKALERINGSVARSEL.TILHORENDE_DIALOG_ID AS ESKALERINGSVARSEL_TILHORENDE_DIALOG_ID " +
                         "FROM situasjon " +
                         "LEFT JOIN status ON SITUASJON.GJELDENDE_STATUS = STATUS.ID " +
                         "LEFT JOIN brukervilkar ON SITUASJON.GJELDENDE_BRUKERVILKAR = BRUKERVILKAR.ID " +
                         "LEFT JOIN MAL ON SITUASJON.GJELDENDE_MAL = MAL.ID " +
+                        "LEFT JOIN ESKALERINGSVARSEL ON SITUASJON.GJELDENDE_ESKALERINGSVARSEL = ESKALERINGSVARSEL.VARSEL_ID " +
                         "WHERE situasjon.aktorid = ? ",
                 (result, n) -> mapTilSituasjon(result),
                 aktorId
