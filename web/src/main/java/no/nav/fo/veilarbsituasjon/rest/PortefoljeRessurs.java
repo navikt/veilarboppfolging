@@ -74,7 +74,7 @@ public class PortefoljeRessurs {
                 }
             } catch (Exception e) {
                 feilendeTilordninger.add(tilordning);
-            loggFeilsituasjon(e);
+                loggFeilsituasjon(e);
             }
         }
 
@@ -85,7 +85,7 @@ public class PortefoljeRessurs {
         } else {
             response.setResultat("WARNING: Noen brukere kunne ikke tilordnes en veileder");
         }
-        if(tilordninger.size() > feilendeTilordninger.size()) {
+        if (tilordninger.size() > feilendeTilordninger.size()) {
             kallWebhook();
         }
         return Response.ok().entity(response).build();
