@@ -14,5 +14,4 @@ public class EskaleringstatusData {
     private Date opprettetDato;
     private Date avsluttetDato;
     private int tilhorendeDialogId;
-    private boolean gjeldende;
 }

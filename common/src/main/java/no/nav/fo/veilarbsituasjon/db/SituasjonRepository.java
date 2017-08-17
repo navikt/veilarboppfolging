@@ -283,10 +283,11 @@ public class SituasjonRepository {
         );
     }
 
+    // TODO: Hent gjeldende id fra situasjon og returner eskalerigngstatus med den iden.
     public EskaleringstatusData hentEskaleringstatus(String aktorId) {
         return jdbcTemplate.query("" +
                 "SELECT * FROM ESKALERINGSVARSEL " +
-                "WHERE aktor_id = ? AND gjeldende = 1",
+                "WHERE aktor_id = ?",
                 this::mapTilEskaleringstatusData,
                 aktorId
         );
@@ -301,11 +302,12 @@ public class SituasjonRepository {
         );
     }
 
+    // TODO: Handter setting av gjeldende_eskaleringsvarsel.
     @Transactional
     public void startEskalering(String aktorId, String opprettetAv, int tilhorendeDialog) {
         jdbcTemplate.update("" +
-                "INSERT INTO ESKALERINGSVARSEL(aktor_id, opprettet_av, opprettet_dato, tilhorende_dialog, gjeldende) " +
-                "VALUES(?, ?, CURRENT_TIMESTAMP, ?, 1)",
+                "INSERT INTO ESKALERINGSVARSEL(aktor_id, opprettet_av, opprettet_dato, tilhorende_dialog_id) " +
+                "VALUES(?, ?, CURRENT_TIMESTAMP, ?)",
                 aktorId,
                 opprettetAv,
                 tilhorendeDialog
@@ -319,8 +321,7 @@ public class SituasjonRepository {
                 .opprettetAv(result.getString("opprettet_av"))
                 .opprettetDato(hentDato(result, "opprettet_dato"))
                 .avsluttetDato(hentDato(result, "avsluttet_dato"))
-                .tilhorendeDialogId(result.getInt("tilhorende_dialog"))
-                .gjeldende(result.getBoolean("gjeldende"))
+                .tilhorendeDialogId(result.getInt("tilhorende_dialog_id"))
                 .build();
     }
 

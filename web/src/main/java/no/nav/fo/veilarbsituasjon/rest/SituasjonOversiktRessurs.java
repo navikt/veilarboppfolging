@@ -171,7 +171,6 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt, VeilederSitu
                 .opprettetDato(eskaleringstatusData.getOpprettetDato())
                 .avsluttetDato(eskaleringstatusData.getAvsluttetDato())
                 .tilhorendeDialogId(eskaleringstatusData.getTilhorendeDialogId())
-                .gjeldende(eskaleringstatusData.isGjeldende())
                 .build();
     }
 
