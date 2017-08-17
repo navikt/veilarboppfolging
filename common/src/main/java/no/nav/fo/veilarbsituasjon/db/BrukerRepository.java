@@ -1,10 +1,10 @@
 package no.nav.fo.veilarbsituasjon.db;
 
 
+import lombok.val;
 import no.nav.fo.veilarbsituasjon.rest.domain.OppfolgingBruker;
 import no.nav.fo.veilarbsituasjon.utils.OppfolgingsbrukerUtil;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.PreparedStatementCallback;
 
 import java.sql.Timestamp;
 import java.util.List;
@@ -27,34 +27,43 @@ public class BrukerRepository {
                 .collect(toList());
     }
 
-    public String hentVeilederForAktoer(String aktorId) {
-        return db.queryForList("SELECT VEILEDER FROM SITUASJON WHERE AKTORID = ?", aktorId)
+    public OppfolgingBruker hentTilordningForAktoer(String aktorId) {
+        return db.queryForList(hentTilordningForAktoer(), aktorId)
                 .stream()
                 .findFirst()
-                .map(x -> x.get("VEILEDER"))
-                .map(Object::toString)
-                .orElse(null);
+                .map(OppfolgingsbrukerUtil::mapRadTilOppfolgingsbruker)
+                .orElse(OppfolgingBruker
+                        .builder()
+                        .aktoerid(aktorId)
+                        .build()
+                );
     }
 
     public void upsertVeilederTilordning(String aktoerId, String veileder) {
-        db.execute(upsertTilordningSQL(), (PreparedStatementCallback<Boolean>) ps -> {
-            ps.setString(1, aktoerId);
-            ps.setString(2, veileder);
-            ps.setString(3, aktoerId);
-            ps.setString(4, veileder);
-            return ps.execute();
-        });
+        val rowsUpdated = db.update(
+                "INSERT INTO SITUASJON(AKTORID, VEILEDER, OPPFOLGING, OPPDATERT) " +
+                        "SELECT ?, ?, 1, CURRENT_TIMESTAMP FROM DUAL " +
+                        "WHERE NOT EXISTS(SELECT * FROM SITUASJON WHERE AKTORID=?)",
+                aktoerId, veileder, aktoerId);
+
+        if (rowsUpdated == 0) {
+            db.update("UPDATE SITUASJON SET VEILEDER = ?, OPPDATERT=CURRENT_TIMESTAMP, OPPFOLGING = 1 WHERE AKTORID = ?",
+                    veileder, aktoerId);
+        }
     }
 
-    private String upsertTilordningSQL() {
-        return "MERGE INTO SITUASJON USING DUAL ON (AKTORID = ?) WHEN MATCHED THEN UPDATE SET VEILEDER = ?, OPPDATERT = CURRENT_TIMESTAMP WHEN NOT MATCHED " +
-                "THEN INSERT (AKTORID, VEILEDER, OPPDATERT, OPPFOLGING) " +
-                "VALUES (?, ?, CURRENT_TIMESTAMP, 1)";
+    private String hentTilordninger() {
+        return "SELECT AKTORID, VEILEDER, OPPFOLGING, OPPDATERT " +
+                "FROM SITUASJON";
+    }
+
+    private String hentTilordningForAktoer() {
+        return hentTilordninger() +
+                " WHERE AKTORID = ?";
     }
 
     private String hentVeilederTilordningerEtterTimestampSQL() {
-        return "SELECT AKTORID, VEILEDER, OPPFOLGING, OPPDATERT " +
-                "FROM SITUASJON " +
-                "WHERE OPPDATERT >= ?";
+        return hentTilordninger() +
+                " WHERE OPPDATERT >= ?";
     }
 }

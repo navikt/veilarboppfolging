@@ -8,9 +8,6 @@ import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Statement;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
@@ -50,12 +47,6 @@ public class JndiLocalContextConfig {
         ds.setUrl(TestDriver.URL);
         ds.setUsername("sa");
         ds.setPassword("");
-
-        try (Connection conn = ds.getConnection(); Statement st = conn.createStatement()) {
-            st.execute("SET DATABASE SQL SYNTAX ORA TRUE;");
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
 
         Flyway flyway = new Flyway();
         flyway.setLocations("db/migration/veilarbsituasjonDB");

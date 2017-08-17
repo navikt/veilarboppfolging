@@ -24,6 +24,7 @@ import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskont
 import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
 import java.sql.Timestamp;
@@ -72,12 +73,22 @@ public class SituasjonResolver {
         situasjon = hentSituasjon();
     }
 
+    @Transactional
     void sjekkStatusIArenaOgOppdaterSituasjon() {
         if (!situasjon.isOppfolging()) {
             sjekkArena();
             if(erUnderOppfolging(statusIArena.getFormidlingsgruppeKode(), statusIArena.getServicegruppeKode())){
                 deps.getSituasjonRepository().startOppfolging(aktorId);
                 situasjon.setOppfolging(true);
+
+                deps.getSituasjonRepository().opprettOppfolgingsperiode(Oppfolgingsperiode
+                        .builder()
+                        .aktorId(aktorId)
+                        .startDato(new Date())
+                        .build()
+                );
+
+                hentSituasjon();
             }
         }
     }
@@ -160,8 +171,14 @@ public class SituasjonResolver {
         return kanSettesUnderOppfolging(statusIArena.getFormidlingsgruppeKode(), statusIArena.getServicegruppeKode());
     }
 
+    @Transactional
     void startOppfolging() {
         deps.getSituasjonRepository().startOppfolging(aktorId);
+        deps.getSituasjonRepository().opprettOppfolgingsperiode(Oppfolgingsperiode
+                .builder()
+                .startDato(new Date())
+                .aktorId(aktorId).build()
+        );
         situasjon = hentSituasjon();
     }
 
@@ -207,7 +224,7 @@ public class SituasjonResolver {
     }
 
     void avsluttOppfolging(String veileder, String begrunnelse) {
-        if (!kanAvslutteOppfolging()) { 
+        if (!kanAvslutteOppfolging()) {
             return;
         }
         val oppfolgingsperiode = Oppfolgingsperiode.builder()
@@ -217,7 +234,7 @@ public class SituasjonResolver {
                 .begrunnelse(begrunnelse)
                 .build();
         deps.getSituasjonRepository().avsluttOppfolging(aktorId);
-        deps.getSituasjonRepository().opprettOppfolgingsperiode(oppfolgingsperiode);
+        deps.getSituasjonRepository().oppdaterOppfolgingsperiode(oppfolgingsperiode);
     }
 
     private Situasjon hentSituasjon() {

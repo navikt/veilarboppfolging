@@ -1,30 +1,28 @@
 package no.nav.fo.veilarbsituasjon.rest;
 
-import static java.util.Optional.ofNullable;
-import static org.slf4j.LoggerFactory.getLogger;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.ws.rs.Consumes;
-import javax.ws.rs.NotAuthorizedException;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Response;
-
-import org.slf4j.Logger;
-import org.springframework.stereotype.Component;
-
 import io.swagger.annotations.Api;
+import lombok.val;
 import no.nav.fo.feed.producer.FeedProducer;
 import no.nav.fo.veilarbsituasjon.db.BrukerRepository;
+import no.nav.fo.veilarbsituasjon.db.SituasjonRepository;
+import no.nav.fo.veilarbsituasjon.domain.Oppfolgingsperiode;
 import no.nav.fo.veilarbsituasjon.rest.domain.OppfolgingBruker;
 import no.nav.fo.veilarbsituasjon.rest.domain.TilordneVeilederResponse;
 import no.nav.fo.veilarbsituasjon.rest.domain.VeilederTilordning;
 import no.nav.fo.veilarbsituasjon.services.AktoerIdService;
 import no.nav.fo.veilarbsituasjon.services.PepClient;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+import javax.ws.rs.*;
+import javax.ws.rs.core.Response;
+import java.util.ArrayList;
+import java.util.List;
+
+import static java.util.Optional.ofNullable;
+import static org.slf4j.LoggerFactory.getLogger;
 
 @Component
 @Path("")
@@ -36,14 +34,20 @@ public class PortefoljeRessurs {
     private AktoerIdService aktoerIdService;
     private BrukerRepository brukerRepository;
     private final PepClient pepClient;
+    private final SituasjonRepository situasjonRepository;
 
     private FeedProducer<OppfolgingBruker> feed;
 
-    public PortefoljeRessurs(AktoerIdService aktoerIdService, BrukerRepository brukerRepository, PepClient pepClient, FeedProducer<OppfolgingBruker> feed) {
+    public PortefoljeRessurs(AktoerIdService aktoerIdService,
+                             BrukerRepository brukerRepository,
+                             PepClient pepClient,
+                             FeedProducer<OppfolgingBruker> feed,
+                             SituasjonRepository situasjonRepository) {
         this.aktoerIdService = aktoerIdService;
         this.brukerRepository = brukerRepository;
         this.pepClient = pepClient;
         this.feed = feed;
+        this.situasjonRepository = situasjonRepository;
     }
 
     @POST
@@ -60,10 +64,10 @@ public class PortefoljeRessurs {
 
                 String aktoerId = finnAktorId(fnr);
 
-                String eksisterendeVeileder = brukerRepository.hentVeilederForAktoer(aktoerId);
+                val bruker = brukerRepository.hentTilordningForAktoer(aktoerId);
 
-                if (kanSetteNyVeileder(eksisterendeVeileder, tilordning.getFraVeilederId())) {
-                    skrivTilDatabase(aktoerId, tilordning.getTilVeilederId());
+                if (bruker == null || kanSetteNyVeileder(bruker.getVeileder(), tilordning.getFraVeilederId())) {
+                    skrivTilDatabase(bruker, aktoerId, tilordning.getTilVeilederId());
                 } else {
                     feilendeTilordninger.add(tilordning);
                     LOG.info("Aktoerid {} kunne ikke tildeles ettersom fraVeileder er feil", aktoerId);
@@ -81,7 +85,7 @@ public class PortefoljeRessurs {
         } else {
             response.setResultat("WARNING: Noen brukere kunne ikke tilordnes en veileder");
         }
-        if(tilordninger.size() > feilendeTilordninger.size()) {
+        if (tilordninger.size() > feilendeTilordninger.size()) {
             kallWebhook();
         }
         return Response.ok().entity(response).build();
@@ -112,13 +116,21 @@ public class PortefoljeRessurs {
     }
 
     private String loggMeldingForException(Exception e) {
-        return (e instanceof PepException) ? "Kall til ABAC feilet" 
-                : (e instanceof IllegalArgumentException) ? "Aktoerid ikke funnet" 
+        return (e instanceof PepException) ? "Kall til ABAC feilet"
+                : (e instanceof IllegalArgumentException) ? "Aktoerid ikke funnet"
                 : "Det skjedde en feil ved tildeling av veileder";
     }
 
-    private void skrivTilDatabase(String aktoerId, String veileder) {
+    @Transactional
+    private void skrivTilDatabase(OppfolgingBruker bruker, String aktoerId, String veileder) {
         try {
+            if (bruker == null || !bruker.getOppfolging()){
+                situasjonRepository.opprettOppfolgingsperiode(
+                        Oppfolgingsperiode
+                                .builder()
+                                .aktorId(aktoerId)
+                                .build());
+            }
             brukerRepository.upsertVeilederTilordning(aktoerId, veileder);
             LOG.debug(String.format("Veileder %s tilordnet aktoer %s", veileder, aktoerId));
         } catch (Exception e) {

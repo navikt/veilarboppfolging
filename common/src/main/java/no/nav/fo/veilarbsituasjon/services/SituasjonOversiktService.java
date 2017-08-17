@@ -125,7 +125,7 @@ public class SituasjonOversiktService {
         String aktorId = resolver.getAktorId();
 
         return Stream.concat(
-                situasjonRepository.hentOppfolgingsperioder(aktorId).stream().map(this::tilDTO),
+                situasjonRepository.hentAvsluttetOppfolgingsperioder(aktorId).stream().map(this::tilDTO),
                 situasjonRepository.hentManuellHistorikk(aktorId).stream().map(this::tilDTO)
         ).collect(Collectors.toList());
     }

@@ -1,8 +1,10 @@
 package no.nav.fo.veilarbsituasjon.rest;
 
+import lombok.val;
 import no.nav.brukerdialog.security.context.ThreadLocalSubjectHandler;
 import no.nav.fo.feed.producer.FeedProducer;
 import no.nav.fo.veilarbsituasjon.db.BrukerRepository;
+import no.nav.fo.veilarbsituasjon.db.SituasjonRepository;
 import no.nav.fo.veilarbsituasjon.rest.domain.OppfolgingBruker;
 import no.nav.fo.veilarbsituasjon.rest.domain.TilordneVeilederResponse;
 import no.nav.fo.veilarbsituasjon.rest.domain.VeilederTilordning;
@@ -35,10 +37,7 @@ import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.anyString;
-import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PortefoljeRessursTest {
@@ -52,6 +51,9 @@ public class PortefoljeRessursTest {
 
     @Mock
     private BrukerRepository brukerRepository;
+
+    @Mock
+    private SituasjonRepository situasjonRepository;
 
     @Mock
     private FeedProducer<OppfolgingBruker> feed;
@@ -101,7 +103,7 @@ public class PortefoljeRessursTest {
 
         when(aktoerIdService.findAktoerId("FNR1")).thenReturn("AKTOERID1");
         when(aktoerIdService.findAktoerId("FNR3")).thenReturn("AKTOERID3");
-        
+
 
         Response response = portefoljeRessurs.postVeilederTilordninger(tilordninger);
         List<VeilederTilordning> feilendeTilordninger = ((TilordneVeilederResponse) response.getEntity()).getFeilendeTilordninger();
@@ -128,17 +130,25 @@ public class PortefoljeRessursTest {
 
         when(pepClient.isServiceCallAllowed(any(String.class))).thenReturn(true);
 
+        val oppfolgingsBruker = OppfolgingBruker
+                .builder()
+                .oppfolging(false);
+
         when(aktoerIdService.findAktoerId("FNR1")).thenReturn("AKTOERID1");
-        when(brukerRepository.hentVeilederForAktoer("AKTOERID1")).thenReturn("FRAVEILEDER1");
+        when(brukerRepository.hentTilordningForAktoer("AKTOERID1"))
+                .thenReturn(oppfolgingsBruker.veileder("FRAVEILEDER1").build());
 
         when(aktoerIdService.findAktoerId("FNR2")).thenReturn("AKTOERID2");
-        when(brukerRepository.hentVeilederForAktoer("AKTOERID2")).thenReturn("IKKE_FRAVEILEDER2");
+        when(brukerRepository.hentTilordningForAktoer("AKTOERID2"))
+                .thenReturn(oppfolgingsBruker.veileder("IKKE_FRAVEILEDER2").build());
 
         when(aktoerIdService.findAktoerId("FNR3")).thenReturn("AKTOERID3");
-        when(brukerRepository.hentVeilederForAktoer("AKTOERID3")).thenReturn("FRAVEILEDER3");
+        when(brukerRepository.hentTilordningForAktoer("AKTOERID3"))
+                .thenReturn(oppfolgingsBruker.veileder("FRAVEILEDER3").build());
 
         when(aktoerIdService.findAktoerId("FNR4")).thenReturn("AKTOERID4");
-        when(brukerRepository.hentVeilederForAktoer("AKTOERID4")).thenReturn("IKKE_FRAVEILEDER4");
+        when(brukerRepository.hentTilordningForAktoer("AKTOERID4"))
+                .thenReturn(oppfolgingsBruker.veileder("IKKE_FRAVEILEDER4").build());
 
 
         Response response = portefoljeRessurs.postVeilederTilordninger(tilordninger);
@@ -170,10 +180,10 @@ public class PortefoljeRessursTest {
         when(aktoerIdService.findAktoerId("FNR4")).thenReturn("AKTOERID4");
 
         when(aktoerIdService.findAktoerId("FNR2")).thenReturn("AKTOERID2");
-        when(brukerRepository.hentVeilederForAktoer("AKTOERID2")).thenThrow(new BadSqlGrammarException("AKTOER","Dette er bare en test", new SQLException()));
+        when(brukerRepository.hentTilordningForAktoer("AKTOERID2")).thenThrow(new BadSqlGrammarException("AKTOER","Dette er bare en test", new SQLException()));
 
         when(aktoerIdService.findAktoerId("FNR3")).thenReturn("AKTOERID3");
-        when(brukerRepository.hentVeilederForAktoer("AKTOERID3")).thenThrow(new BadSqlGrammarException("AKTOER","Dette er bare en test", new SQLException()));
+        when(brukerRepository.hentTilordningForAktoer("AKTOERID3")).thenThrow(new BadSqlGrammarException("AKTOER","Dette er bare en test", new SQLException()));
 
         Response response = portefoljeRessurs.postVeilederTilordninger(tilordninger);
         List<VeilederTilordning> feilendeTilordninger = ((TilordneVeilederResponse) response.getEntity()).getFeilendeTilordninger();
@@ -269,12 +279,12 @@ public class PortefoljeRessursTest {
         assertThat(feilendeTilordninger).contains(tilordningERROR2);
     }
 
-    @Test    
-    public void toOppdateringerSkalIkkeGaaIBeinaPaaHverandre() throws Exception {        
+    @Test
+    public void toOppdateringerSkalIkkeGaaIBeinaPaaHverandre() throws Exception {
 
         VeilederTilordning tilordningOKBruker1 = new VeilederTilordning().setBrukerFnr("FNR1").setFraVeilederId("FRAVEILEDER1").setTilVeilederId("TILVEILEDER1");
         VeilederTilordning tilordningERRORBruker2 = new VeilederTilordning().setBrukerFnr("FNR2").setFraVeilederId("FRAVEILEDER2").setTilVeilederId("TILVEILEDER2");
-       
+
         when(pepClient.isServiceCallAllowed(any(String.class))).thenAnswer(new Answer<Boolean>() {
 
             @Override
@@ -288,22 +298,22 @@ public class PortefoljeRessursTest {
             }
 
         });
-      
+
         when(aktoerIdService.findAktoerId("FNR1")).thenReturn("AKTOERID1");
 
-        //Starter to tråder som gjør to separate tilordninger gjennom samme portefoljeressurs. Dette simulerer 
+        //Starter to tråder som gjør to separate tilordninger gjennom samme portefoljeressurs. Dette simulerer
         //at to brukere kaller rest-operasjonen samtidig. Den første tilordningen tar lenger tid siden pep-kallet tar lenger tid.
         ExecutorService pool = Executors.newFixedThreadPool(2);
         Future<Response> response1 = pool.submit(portefoljeRessursCallable(portefoljeRessurs, asList(tilordningOKBruker1)));
         Future<Response> response2 = pool.submit(portefoljeRessursCallable(portefoljeRessurs, asList(tilordningERRORBruker2)));
-        
+
         List<VeilederTilordning> feilendeTilordninger1 = ((TilordneVeilederResponse) response1.get().getEntity()).getFeilendeTilordninger();
         List<VeilederTilordning> feilendeTilordninger2 = ((TilordneVeilederResponse) response2.get().getEntity()).getFeilendeTilordninger();
 
         assertThat(feilendeTilordninger1).isEmpty();
         assertThat(feilendeTilordninger2).contains(tilordningERRORBruker2);
     }
-    
+
     private Callable<Response> portefoljeRessursCallable(PortefoljeRessurs portefoljeRessurs, List<VeilederTilordning> tilordninger) {
         return new Callable<Response>() {
 
