@@ -37,6 +37,7 @@
         <applicationCertificate alias="srvveilarbsituasjon"/>
         <rest alias="abac.pdp.endpoint" mapToProperty="abac.endpoint" />
         <rest alias="veilArbAktivitetAPI" mapToProperty="veilarbaktivitet" />
+        <rest alias="veilarblogin.redirect-url" mapToProperty="oidc-redirect" />
         <baseUrl alias="isso-host"/>
         <baseUrl alias="isso-jwks"/>
         <baseUrl alias="isso-issuer"/>
