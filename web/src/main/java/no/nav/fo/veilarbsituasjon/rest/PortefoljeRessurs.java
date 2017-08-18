@@ -2,6 +2,7 @@ package no.nav.fo.veilarbsituasjon.rest;
 
 import io.swagger.annotations.Api;
 import lombok.val;
+import no.nav.apiapp.security.PepClient;
 import no.nav.fo.feed.producer.FeedProducer;
 import no.nav.fo.veilarbsituasjon.db.BrukerRepository;
 import no.nav.fo.veilarbsituasjon.db.SituasjonRepository;
@@ -10,7 +11,6 @@ import no.nav.fo.veilarbsituasjon.rest.domain.OppfolgingBruker;
 import no.nav.fo.veilarbsituasjon.rest.domain.TilordneVeilederResponse;
 import no.nav.fo.veilarbsituasjon.rest.domain.VeilederTilordning;
 import no.nav.fo.veilarbsituasjon.services.AktoerIdService;
-import no.nav.fo.veilarbsituasjon.services.PepClient;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
@@ -60,7 +60,7 @@ public class PortefoljeRessurs {
         for (VeilederTilordning tilordning : tilordninger) {
             try {
                 final String fnr = tilordning.getBrukerFnr();
-                pepClient.isServiceCallAllowed(fnr);
+                pepClient.sjekkTilgangTilFnr(fnr);
 
                 String aktoerId = finnAktorId(fnr);
 
@@ -124,14 +124,14 @@ public class PortefoljeRessurs {
     @Transactional
     private void skrivTilDatabase(OppfolgingBruker bruker, String aktoerId, String veileder) {
         try {
-            if (bruker == null || !bruker.getOppfolging()){
+            brukerRepository.upsertVeilederTilordning(aktoerId, veileder);
+            if (bruker == null || !bruker.isOppfolging()){
                 situasjonRepository.opprettOppfolgingsperiode(
                         Oppfolgingsperiode
                                 .builder()
                                 .aktorId(aktoerId)
                                 .build());
             }
-            brukerRepository.upsertVeilederTilordning(aktoerId, veileder);
             LOG.debug(String.format("Veileder %s tilordnet aktoer %s", veileder, aktoerId));
         } catch (Exception e) {
             LOG.error(String.format("Kunne ikke tilordne veileder %s til aktoer %s", veileder, aktoerId), e);

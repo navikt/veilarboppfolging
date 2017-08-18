@@ -1,6 +1,7 @@
 package no.nav.fo.veilarbsituasjon.rest;
 
 import lombok.val;
+import no.nav.apiapp.security.PepClient;
 import no.nav.brukerdialog.security.context.ThreadLocalSubjectHandler;
 import no.nav.fo.feed.producer.FeedProducer;
 import no.nav.fo.veilarbsituasjon.db.BrukerRepository;
@@ -9,7 +10,6 @@ import no.nav.fo.veilarbsituasjon.rest.domain.OppfolgingBruker;
 import no.nav.fo.veilarbsituasjon.rest.domain.TilordneVeilederResponse;
 import no.nav.fo.veilarbsituasjon.rest.domain.VeilederTilordning;
 import no.nav.fo.veilarbsituasjon.services.AktoerIdService;
-import no.nav.fo.veilarbsituasjon.services.PepClient;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
 import org.junit.Before;
 import org.junit.Test;
@@ -96,10 +96,8 @@ public class PortefoljeRessursTest {
         tilordninger.add(harTilgang2);
         tilordninger.add(harIkkeTilgang2);
 
-        when(pepClient.isServiceCallAllowed("FNR1")).thenReturn(true);
-        when(pepClient.isServiceCallAllowed("FNR2")).thenThrow(NotAuthorizedException.class);
-        when(pepClient.isServiceCallAllowed("FNR3")).thenReturn(true);
-        when(pepClient.isServiceCallAllowed("FNR4")).thenThrow(PepException.class);
+        when(pepClient.sjekkTilgangTilFnr("FNR2")).thenThrow(NotAuthorizedException.class);
+        when(pepClient.sjekkTilgangTilFnr("FNR4")).thenThrow(PepException.class);
 
         when(aktoerIdService.findAktoerId("FNR1")).thenReturn("AKTOERID1");
         when(aktoerIdService.findAktoerId("FNR3")).thenReturn("AKTOERID3");
@@ -128,11 +126,10 @@ public class PortefoljeRessursTest {
         tilordninger.add(kanTilordne2);
         tilordninger.add(kanIkkeTilordne2);
 
-        when(pepClient.isServiceCallAllowed(any(String.class))).thenReturn(true);
-
         val oppfolgingsBruker = OppfolgingBruker
                 .builder()
                 .oppfolging(false);
+
 
         when(aktoerIdService.findAktoerId("FNR1")).thenReturn("AKTOERID1");
         when(brukerRepository.hentTilordningForAktoer("AKTOERID1"))
@@ -174,8 +171,6 @@ public class PortefoljeRessursTest {
         tilordninger.add(tilordningOK2);
         tilordninger.add(tilordningERROR2);
 
-        when(pepClient.isServiceCallAllowed(any(String.class))).thenReturn(true);
-
         when(aktoerIdService.findAktoerId("FNR1")).thenReturn("AKTOERID1");
         when(aktoerIdService.findAktoerId("FNR4")).thenReturn("AKTOERID4");
 
@@ -207,8 +202,6 @@ public class PortefoljeRessursTest {
         tilordninger.add(tilordningERROR1);
         tilordninger.add(tilordningOK2);
         tilordninger.add(tilordningERROR2);
-
-        when(pepClient.isServiceCallAllowed(any(String.class))).thenReturn(true);
 
         when(aktoerIdService.findAktoerId("FNR1")).thenReturn("AKTOERID1");
         when(aktoerIdService.findAktoerId("FNR2")).thenReturn("AKTOERID2");
@@ -245,7 +238,6 @@ public class PortefoljeRessursTest {
         tilordninger.add(tilordningOK2);
         tilordninger.add(tilordningERROR2);
 
-        when(pepClient.isServiceCallAllowed(any(String.class))).thenReturn(true);
         when(aktoerIdService.findAktoerId("FNR3")).thenReturn(null);
         when(aktoerIdService.findAktoerId("FNR2")).thenReturn(null);
         when(aktoerIdService.findAktoerId("FNR1")).thenReturn("AKTOERID1");
@@ -270,7 +262,7 @@ public class PortefoljeRessursTest {
         tilordninger.add(tilordningERROR1);
         tilordninger.add(tilordningERROR2);
 
-        when(pepClient.isServiceCallAllowed(any(String.class))).thenThrow(Exception.class);
+        when(pepClient.sjekkTilgangTilFnr(any(String.class))).thenThrow(Exception.class);
 
         Response response = portefoljeRessurs.postVeilederTilordninger(tilordninger);
         List<VeilederTilordning> feilendeTilordninger = ((TilordneVeilederResponse) response.getEntity()).getFeilendeTilordninger();
@@ -285,16 +277,16 @@ public class PortefoljeRessursTest {
         VeilederTilordning tilordningOKBruker1 = new VeilederTilordning().setBrukerFnr("FNR1").setFraVeilederId("FRAVEILEDER1").setTilVeilederId("TILVEILEDER1");
         VeilederTilordning tilordningERRORBruker2 = new VeilederTilordning().setBrukerFnr("FNR2").setFraVeilederId("FRAVEILEDER2").setTilVeilederId("TILVEILEDER2");
 
-        when(pepClient.isServiceCallAllowed(any(String.class))).thenAnswer(new Answer<Boolean>() {
+        when(pepClient.sjekkTilgangTilFnr(any(String.class))).thenAnswer(new Answer<Boolean>() {
 
             @Override
             public Boolean answer(InvocationOnMock invocation) throws Throwable {
                 //Simulerer at pep-kallet tar noe tid for fnr1
                 if ("FNR1".equals(invocation.getArguments()[0])) {
                     Thread.sleep(20);
-                    return true;
+                    return null;
                 }
-                return false;
+                return null;
             }
 
         });
@@ -333,7 +325,6 @@ public class PortefoljeRessursTest {
 
         tilordninger.add(tilordningOK1);
 
-        when(pepClient.isServiceCallAllowed(any(String.class))).thenReturn(true);
         when(aktoerIdService.findAktoerId("FNR1")).thenReturn("AKTOERID1");
         doThrow(new RuntimeException("Test")).when(feed).activateWebhook();
 
