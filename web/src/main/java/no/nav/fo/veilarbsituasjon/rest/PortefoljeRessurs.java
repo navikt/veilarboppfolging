@@ -124,6 +124,7 @@ public class PortefoljeRessurs {
     @Transactional
     private void skrivTilDatabase(OppfolgingBruker bruker, String aktoerId, String veileder) {
         try {
+            brukerRepository.upsertVeilederTilordning(aktoerId, veileder);
             if (bruker == null || !bruker.isOppfolging()){
                 situasjonRepository.opprettOppfolgingsperiode(
                         Oppfolgingsperiode
@@ -131,7 +132,6 @@ public class PortefoljeRessurs {
                                 .aktorId(aktoerId)
                                 .build());
             }
-            brukerRepository.upsertVeilederTilordning(aktoerId, veileder);
             LOG.debug(String.format("Veileder %s tilordnet aktoer %s", veileder, aktoerId));
         } catch (Exception e) {
             LOG.error(String.format("Kunne ikke tilordne veileder %s til aktoer %s", veileder, aktoerId), e);
