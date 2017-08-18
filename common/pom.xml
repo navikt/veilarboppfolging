@@ -48,6 +48,11 @@
             <artifactId>common-abac</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>no.nav.dialogarena</groupId>
+            <artifactId>oidc-security</artifactId>
+        </dependency>
+
         <!--Lombok-->
         <dependency>
             <groupId>org.projectlombok</groupId>
