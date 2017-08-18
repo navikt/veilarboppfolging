@@ -82,13 +82,11 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt, VeilederSitu
 
     @Override
     public void startEskalering(int tilhorendeDialogId) throws Exception {
-        pepClient.isServiceCallAllowed(getFnr());
         situasjonOversiktService.startEskalering(getFnr(), tilhorendeDialogId);
     }
 
     @Override
     public void stoppEskalering() throws Exception {
-        pepClient.isServiceCallAllowed(getFnr());
         situasjonOversiktService.stoppEskalering(getFnr());
     }
 
@@ -135,13 +133,11 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt, VeilederSitu
 
     @Override
     public Eskaleringstatus hentEskaleringstatus() throws Exception {
-        pepClient.isServiceCallAllowed(getFnr());
         return tilDto(situasjonOversiktService.hentEskaleringstatus(getFnr()));
     }
 
     @Override
     public List<Eskaleringstatus> hentEskaleringhistorikk() throws Exception {
-        pepClient.isServiceCallAllowed(getFnr());
         List<EskaleringstatusData> eskaleringstatusDataList = situasjonOversiktService.hentEskaleringhistorikk(getFnr());
         return eskaleringstatusDataList.stream()
                 .map(this::tilDto)
