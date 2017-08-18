@@ -336,7 +336,6 @@ public class SituasjonRepository {
         );
     }
 
-    // TODO: Si ifra til VarselOppgave om at nytt eskaleringsvarsel er opprettet.
     @Transactional
     public void startEskalering(String aktorId, String opprettetAv, int tilhorendeDialogId) {
         if (hentEskaleringstatus(aktorId) != null) {
