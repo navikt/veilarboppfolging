@@ -66,15 +66,20 @@ public class SituasjonRepository {
         return situasjon.isEmpty() ? Optional.empty() : situasjon.stream().findAny();
     }
 
-    public void oppdaterOppfolgingStatus(Situasjon oppdatertSituasjon) {
-        String aktorId = oppdatertSituasjon.getAktorId();
-        boolean oppfolging = oppdatertSituasjon.isOppfolging();
-        oppdaterOppfolgingStatus(aktorId, oppfolging);
+    public void startOppfolging(String aktorId) {
+        jdbcTemplate.update("UPDATE situasjon SET oppfolging = 1, OPPDATERT = CURRENT_TIMESTAMP WHERE aktorid = ?",
+                aktorId
+        );
     }
 
-    public void oppdaterOppfolgingStatus(String aktorId, boolean oppfolging) {
-        jdbcTemplate.update("UPDATE situasjon SET oppfolging = ?, OPPDATERT = CURRENT_TIMESTAMP WHERE aktorid = ?",
-                oppfolging,
+    public void avsluttOppfolging(String aktorId) {
+        jdbcTemplate.update("UPDATE situasjon SET oppfolging = 0, "
+                + "veileder = null, "
+                + "GJELDENDE_STATUS = null, "
+                + "GJELDENDE_MAL = null, "
+                + "GJELDENDE_BRUKERVILKAR = null, "
+                + "OPPDATERT = CURRENT_TIMESTAMP "
+                + "WHERE aktorid = ?",
                 aktorId
         );
     }
@@ -101,7 +106,7 @@ public class SituasjonRepository {
         jdbcTemplate.update("INSERT INTO situasjon(aktorid, oppfolging, oppdatert) VALUES(?, ?, CURRENT_TIMESTAMP)", aktorId, false);
         return new Situasjon().setAktorId(aktorId).setOppfolging(false);
     }
-    
+
     public List<MalData> hentMalList(String aktorId) {
         return jdbcTemplate.query("" +
                         "SELECT" +
@@ -132,21 +137,35 @@ public class SituasjonRepository {
         return jdbcTemplate.query(sql, (result, n) -> mapTilBrukervilkar(result), aktorId);
     }
 
-    public void opprettOppfolgingsperiode(Oppfolgingsperiode oppfolgingperiode) {
+
+    public void oppdaterOppfolgingsperiode(Oppfolgingsperiode oppfolgingperiode) {
         jdbcTemplate.update("" +
-                "INSERT INTO OPPFOLGINGSPERIODE(aktorId, veileder, sluttDato, begrunnelse, oppdatert) " +
-                "VALUES (?,?,?,?,CURRENT_TIMESTAMP)",
-                oppfolgingperiode.getAktorId(),
+                        "UPDATE OPPFOLGINGSPERIODE " +
+                        "SET veileder=?, sluttDato=?, begrunnelse=?, oppdatert=CURRENT_TIMESTAMP " +
+                        "WHERE aktorId = ? AND sluttDato IS NULL",
                 oppfolgingperiode.getVeileder(),
                 oppfolgingperiode.getSluttDato(),
-                oppfolgingperiode.getBegrunnelse());
+                oppfolgingperiode.getBegrunnelse(),
+                oppfolgingperiode.getAktorId());
+    }
+
+
+    public void opprettOppfolgingsperiode(Oppfolgingsperiode oppfolgingperiode) {
+        jdbcTemplate.update("" +
+                        "INSERT INTO OPPFOLGINGSPERIODE(aktorId, veileder, startDato, sluttDato, begrunnelse, oppdatert) " +
+                        "VALUES (?,?,?,?,?,CURRENT_TIMESTAMP)",
+                oppfolgingperiode.getAktorId(),
+                null,
+                oppfolgingperiode.getStartDato(),
+                null,
+                null);
     }
 
     public List<AvsluttetOppfolgingFeedData> hentAvsluttetOppfolgingEtterDato(Timestamp timestamp) {
         return jdbcTemplate
                 .query("SELECT aktorid, sluttdato, oppdatert " +
-                            "FROM OPPFOLGINGSPERIODE " +
-                            "WHERE oppdatert >= ?",
+                                "FROM OPPFOLGINGSPERIODE " +
+                                "WHERE oppdatert >= ? and sluttdato is not null",
                         (result, n) -> mapRadTilAvsluttetOppfolging(result),
                         timestamp);
     }
@@ -197,7 +216,7 @@ public class SituasjonRepository {
     private void opprettSituasjonStatus(Status status) {
         jdbcTemplate.update(
                 "INSERT INTO STATUS(id, aktorid, manuell, dato, begrunnelse, opprettet_av, opprettet_av_brukerid) " +
-                     "VALUES(?, ?, ?, ?, ?, ?, ?)",
+                        "VALUES(?, ?, ?, ?, ?, ?, ?)",
                 status.getId(),
                 status.getAktorId(),
                 status.isManuell(),
@@ -210,7 +229,7 @@ public class SituasjonRepository {
 
     public List<InnstillingsHistorikkData> hentManuellHistorikk(String aktorId) {
         return jdbcTemplate.query(
-                        "SELECT manuell, dato, begrunnelse, opprettet_av, opprettet_av_brukerid " +
+                "SELECT manuell, dato, begrunnelse, opprettet_av, opprettet_av_brukerid " +
                         "FROM STATUS " +
                         "WHERE aktorid = ?",
                 (result, n) -> mapRadTilInnstillingsHistorikkData(result),
@@ -263,24 +282,33 @@ public class SituasjonRepository {
                 .setOppfolgingsperioder(hentOppfolgingsperioder(aktorId));
     }
 
+
+    private static String hentOppfolingsperioderSQL =
+            "SELECT AKTORID, VEILEDER, STARTDATO, SLUTTDATO, BEGRUNNELSE " +
+            "FROM OPPFOLGINGSPERIODE ";
+
     public List<Oppfolgingsperiode> hentOppfolgingsperioder(String aktorid) {
-        return jdbcTemplate.query("" +
-                        "SELECT " +
-                        " AKTORID, " +
-                        " VEILEDER, " +
-                        " SLUTTDATO, " +
-                        " BEGRUNNELSE " +
-                        "FROM OPPFOLGINGSPERIODE " +
+        return jdbcTemplate.query(hentOppfolingsperioderSQL +
                         "WHERE AKTORID = ?",
                 (result, n) -> mapTilOppfolgingsperiode(result),
                 aktorid
         );
     }
 
+    public List<Oppfolgingsperiode> hentAvsluttetOppfolgingsperioder(String aktorid) {
+        return jdbcTemplate.query(hentOppfolingsperioderSQL +
+                        "WHERE AKTORID = ? AND SLUTTDATO is not null",
+                (result, n) -> mapTilOppfolgingsperiode(result),
+                aktorid
+        );
+    }
+
+
     private Oppfolgingsperiode mapTilOppfolgingsperiode(ResultSet result) throws SQLException {
         return Oppfolgingsperiode.builder()
                 .aktorId(result.getString("aktorid"))
                 .veileder(result.getString("veileder"))
+                .startDato(hentDato(result, "startdato"))
                 .sluttDato(hentDato(result, "sluttdato"))
                 .begrunnelse(result.getString("begrunnelse"))
                 .build();
@@ -340,4 +368,5 @@ public class SituasjonRepository {
                 .setOpprettetAvBrukerId(result.getString("OPPRETTET_AV_BRUKERID"));
 
     }
+
 }

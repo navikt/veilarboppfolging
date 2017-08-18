@@ -3,6 +3,7 @@ package no.nav.fo.veilarbsituasjon.services;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.val;
+import no.nav.apiapp.security.PepClient;
 import no.nav.fo.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
 import no.nav.fo.veilarbsituasjon.db.SituasjonRepository;
 import no.nav.fo.veilarbsituasjon.domain.*;
@@ -24,6 +25,7 @@ import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskont
 import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
 import java.sql.Timestamp;
@@ -60,6 +62,8 @@ public class SituasjonResolver {
     private List<ArenaAktivitetDTO> arenaAktiviteter;
 
     SituasjonResolver(String fnr, SituasjonResolverDependencies deps) {
+        deps.getPepClient().sjekkTilgangTilFnr(fnr);
+
         this.fnr = fnr;
         this.deps = deps;
 
@@ -72,14 +76,23 @@ public class SituasjonResolver {
         situasjon = hentSituasjon();
     }
 
+    @Transactional
     void sjekkStatusIArenaOgOppdaterSituasjon() {
         if (!situasjon.isOppfolging()) {
             sjekkArena();
-            deps.getSituasjonRepository().oppdaterOppfolgingStatus(
-                situasjon.setOppfolging(
-                    erUnderOppfolging(statusIArena.getFormidlingsgruppeKode(), statusIArena.getServicegruppeKode())
-                )
-            );
+            if(erUnderOppfolging(statusIArena.getFormidlingsgruppeKode(), statusIArena.getServicegruppeKode())){
+                deps.getSituasjonRepository().startOppfolging(aktorId);
+                situasjon.setOppfolging(true);
+
+                deps.getSituasjonRepository().opprettOppfolgingsperiode(Oppfolgingsperiode
+                        .builder()
+                        .aktorId(aktorId)
+                        .startDato(new Date())
+                        .build()
+                );
+
+                hentSituasjon();
+            }
         }
     }
 
@@ -161,8 +174,14 @@ public class SituasjonResolver {
         return kanSettesUnderOppfolging(statusIArena.getFormidlingsgruppeKode(), statusIArena.getServicegruppeKode());
     }
 
+    @Transactional
     void startOppfolging() {
-        deps.getSituasjonRepository().oppdaterOppfolgingStatus(situasjon.setOppfolging(true));
+        deps.getSituasjonRepository().startOppfolging(aktorId);
+        deps.getSituasjonRepository().opprettOppfolgingsperiode(Oppfolgingsperiode
+                .builder()
+                .startDato(new Date())
+                .aktorId(aktorId).build()
+        );
         situasjon = hentSituasjon();
     }
 
@@ -207,9 +226,18 @@ public class SituasjonResolver {
         return fnr.equals("***REMOVED***") ? toManedSiden : new Date();
     }
 
-    void avsluttOppfolging(Oppfolgingsperiode oppfolgingsperiode) {
-        deps.getSituasjonRepository().oppdaterOppfolgingStatus(aktorId, false);
-        deps.getSituasjonRepository().opprettOppfolgingsperiode(oppfolgingsperiode);
+    void avsluttOppfolging(String veileder, String begrunnelse) {
+        if (!kanAvslutteOppfolging()) {
+            return;
+        }
+        val oppfolgingsperiode = Oppfolgingsperiode.builder()
+                .aktorId(aktorId)
+                .veileder(veileder)
+                .sluttDato(new Date())
+                .begrunnelse(begrunnelse)
+                .build();
+        deps.getSituasjonRepository().avsluttOppfolging(aktorId);
+        deps.getSituasjonRepository().oppdaterOppfolgingsperiode(oppfolgingsperiode);
     }
 
     private Situasjon hentSituasjon() {
@@ -273,6 +301,9 @@ public class SituasjonResolver {
     @Component
     @Getter
     public static class SituasjonResolverDependencies {
+
+        @Inject
+        private PepClient pepClient;
 
         @Inject
         private AktoerIdService aktoerIdService;

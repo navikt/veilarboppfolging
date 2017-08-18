@@ -11,6 +11,7 @@ public class OppfolgingPeriodeDTO {
 
     public String aktorId;
     public String veileder;
+    public Date startDato;
     public Date sluttDato;
     public String begrunnelse;
 

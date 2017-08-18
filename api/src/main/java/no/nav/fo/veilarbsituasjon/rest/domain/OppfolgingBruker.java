@@ -1,19 +1,21 @@
 package no.nav.fo.veilarbsituasjon.rest.domain;
 
-import lombok.Data;
-import lombok.experimental.Accessors;
+import lombok.Builder;
+import lombok.Value;
+import lombok.experimental.Wither;
 
 import java.sql.Timestamp;
 
-@Data
-@Accessors(chain = true)
+@Value
+@Builder
+@Wither
 public class OppfolgingBruker implements Comparable<OppfolgingBruker> {
 
     public static final String FEED_NAME = "situasjon";
 
     String aktoerid;
     String veileder;
-    Boolean oppfolging;
+    boolean oppfolging;
     Timestamp endretTimestamp;
 
     @Override

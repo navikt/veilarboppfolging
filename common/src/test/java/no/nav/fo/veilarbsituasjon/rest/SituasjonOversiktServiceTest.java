@@ -1,6 +1,7 @@
 package no.nav.fo.veilarbsituasjon.rest;
 
 import lombok.val;
+import no.nav.apiapp.security.PepClient;
 import no.nav.fo.veilarbsituasjon.db.SituasjonRepository;
 import no.nav.fo.veilarbsituasjon.domain.Brukervilkar;
 import no.nav.fo.veilarbsituasjon.domain.OppfolgingStatusData;
@@ -36,7 +37,6 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -86,6 +86,7 @@ public class SituasjonOversiktServiceTest {
         when(situasjonResolverDependencies.getOppfoelgingPortType()).thenReturn(oppfoelgingPortTypeMock);
         when(situasjonResolverDependencies.getDigitalKontaktinformasjonV1()).thenReturn(digitalKontaktinformasjonV1Mock);
         when(situasjonResolverDependencies.getVilkarService()).thenReturn(vilkarServiceMock);
+        when(situasjonResolverDependencies.getPepClient()).thenReturn(mock(PepClient.class));
         gittOppfolgingStatus("", "");
     }
 
@@ -104,11 +105,26 @@ public class SituasjonOversiktServiceTest {
     }
 
     @Test
-    public void databaseOppdateresMedRiktigSituasjon() throws Exception {
+    public void hentOppfolgingStatus_brukerSomIkkeErUnderOppfolgingOppdateresIkkeDersomIkkeUnderOppfolgingIArena() throws Exception {
         gittAktor();
         gittSituasjon(situasjon);
-        hentOppfolgingStatus();
-        verify(situasjonRepositoryMock).oppdaterOppfolgingStatus(eq(new Situasjon().setAktorId(AKTOR_ID)));
+        
+        OppfolgingStatusData oppfolgingStatusData = hentOppfolgingStatus();
+        
+        verify(situasjonRepositoryMock, never()).startOppfolging(anyString());
+        assertThat(oppfolgingStatusData.underOppfolging, is(false));
+    }
+
+    @Test
+    public void hentOppfolgingStatus_brukerSomIkkeErUnderOppfolgingSettesUnderOppfolgingDersomArenaHarRiktigStatus() throws Exception {
+        gittAktor();
+        gittSituasjon(situasjon);
+        gittOppfolgingStatus("ARBS", "");
+
+        OppfolgingStatusData oppfolgingStatusData = hentOppfolgingStatus();
+        
+        verify(situasjonRepositoryMock).startOppfolging(AKTOR_ID);
+        assertThat(oppfolgingStatusData.underOppfolging, is(true));       
     }
 
     @Test
