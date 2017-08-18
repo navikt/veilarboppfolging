@@ -99,7 +99,7 @@ public class SituasjonRepositoryTest extends IntegrasjonsTest {
             String maal = "Mål";
             settVeileder(veilederId, AKTOR_ID);
             situasjonRepository.opprettStatus(new Status(AKTOR_ID, true, new Timestamp(currentTimeMillis()), "Test", KodeverkBruker.SYSTEM, null));
-            situasjonRepository.opprettMal(new MalData().setAktorId(AKTOR_ID).setMal(maal));
+            situasjonRepository.opprettMal(new MalData().setAktorId(AKTOR_ID).setMal(maal).setEndretAv("bruker").setDato(new Timestamp(currentTimeMillis())));
             String hash = "123";
             situasjonRepository.opprettBrukervilkar(new Brukervilkar().setAktorId(AKTOR_ID).setHash(hash).setVilkarstatus(GODKJENT));
             Situasjon situasjon = hentSituasjon(AKTOR_ID).get();
@@ -220,7 +220,7 @@ public class SituasjonRepositoryTest extends IntegrasjonsTest {
                 .setAktorId(aktorId)
                 .setMal(mal)
                 .setEndretAv(aktorId)
-                .setDato(null);
+                .setDato(new Timestamp(1l));
         situasjonRepository.opprettMal(input);
     }
 }
