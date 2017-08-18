@@ -34,11 +34,11 @@
         </dependency>
 
         <dependency>
-            <groupId>no.nav.sbl.dialogarena</groupId>
+            <groupId>no.nav.sbl</groupId>
             <artifactId>api-app</artifactId>
         </dependency>
         <dependency>
-            <groupId>no.nav.sbl.dialogarena</groupId>
+            <groupId>no.nav.sbl</groupId>
             <artifactId>api-app</artifactId>
             <type>test-jar</type>
         </dependency>
@@ -96,11 +96,11 @@
 
         <!--NAV felles-->
         <dependency>
-            <groupId>no.nav.sbl.dialogarena</groupId>
+            <groupId>no.nav.sbl</groupId>
             <artifactId>api-app</artifactId>
         </dependency>
         <dependency>
-            <groupId>no.nav.sbl.dialogarena</groupId>
+            <groupId>no.nav.sbl</groupId>
             <artifactId>json</artifactId>
         </dependency>
         <dependency>
@@ -118,6 +118,10 @@
         <dependency>
             <groupId>no.nav.sbl.dialogarena</groupId>
             <artifactId>common-jetty</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-jndi</artifactId>
         </dependency>
         <dependency>
             <groupId>no.nav.sbl.dialogarena</groupId>
