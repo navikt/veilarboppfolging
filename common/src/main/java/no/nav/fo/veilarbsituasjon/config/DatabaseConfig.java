@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
-import org.springframework.jndi.JndiTemplate;
+import org.springframework.jdbc.datasource.lookup.JndiDataSourceLookup;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
@@ -20,9 +20,13 @@ import javax.sql.DataSource;
 @EnableTransactionManagement
 public class DatabaseConfig {
 
+    public static final String DATA_SOURCE_JDNI_NAME = "jdbc/veilarbsituasjonDS";
+
     @Bean
-    public DataSource dataSource() throws ClassNotFoundException, NamingException {
-        return new JndiTemplate().lookup("java:jboss/jdbc/veilarbsituasjonDS", DataSource.class);
+    public DataSource dataSourceJndiLookup() throws NamingException {
+        JndiDataSourceLookup jndiDataSourceLookup = new JndiDataSourceLookup();
+        jndiDataSourceLookup.setResourceRef(true);
+        return jndiDataSourceLookup.getDataSource("jdbc/veilarbsituasjonDS");
     }
 
     @Bean

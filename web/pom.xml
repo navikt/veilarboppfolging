@@ -24,7 +24,7 @@
         </dependency>
 
         <dependency>
-            <groupId>no.nav.sbl.dialogarena</groupId>
+            <groupId>no.nav.sbl</groupId>
             <artifactId>api-app</artifactId>
         </dependency>
 
