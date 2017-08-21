@@ -1,4 +1,4 @@
-package no.nav.fo.veilarbsituasjon;
+package no.nav.fo;
 
 import no.nav.dialogarena.config.DevelopmentSecurity;
 import no.nav.dialogarena.config.fasit.FasitUtils;

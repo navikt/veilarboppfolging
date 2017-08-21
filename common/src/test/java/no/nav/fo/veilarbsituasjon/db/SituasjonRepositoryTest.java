@@ -1,6 +1,6 @@
 package no.nav.fo.veilarbsituasjon.db;
 
-import no.nav.fo.veilarbsituasjon.IntegrasjonsTest;
+import no.nav.fo.IntegrasjonsTest;
 import no.nav.fo.veilarbsituasjon.domain.*;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;

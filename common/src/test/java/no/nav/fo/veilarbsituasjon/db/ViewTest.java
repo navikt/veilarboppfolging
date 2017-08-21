@@ -1,6 +1,6 @@
 package no.nav.fo.veilarbsituasjon.db;
 
-import no.nav.fo.veilarbsituasjon.IntegrasjonsTest;
+import no.nav.fo.IntegrasjonsTest;
 import no.nav.json.JsonUtils;
 import org.json.JSONArray;
 import org.junit.Test;
