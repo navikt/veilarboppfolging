@@ -57,7 +57,7 @@
 
         <!--NAV Felles -->
         <common-jetty.version>2.0.13</common-jetty.version>
-        <common-cxf.version>3.1.41</common-cxf.version>
+        <common-cxf.version>3.1.51</common-cxf.version>
         <common-web.version>4.0.6</common-web.version>
         <common-types.version>1.2</common-types.version>
         <common-test.version>1.2</common-test.version>
