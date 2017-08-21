@@ -145,7 +145,7 @@ public class SituasjonOversiktService {
     }
 
     // TODO: Si ifra til VarselOppgave om at nytt eskaleringsvarsel er opprettet.
-    public void startEskalering(String fnr, int tilhorendeDialogId) {
+    public void startEskalering(String fnr, long tilhorendeDialogId) {
         val resolver = new SituasjonResolver(fnr, situasjonResolverDependencies);
         String aktorId = resolver.getAktorId();
         String veilederId = SubjectHandler.getSubjectHandler().getUid();

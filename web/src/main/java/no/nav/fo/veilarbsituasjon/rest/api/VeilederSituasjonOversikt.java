@@ -1,14 +1,10 @@
 package no.nav.fo.veilarbsituasjon.rest.api;
 
 import no.nav.fo.veilarbsituasjon.domain.InnstillingsHistorikk;
-import no.nav.fo.veilarbsituasjon.domain.StartEskaleringDTO;
 import no.nav.fo.veilarbsituasjon.rest.domain.EndreSituasjonDTO;
 import no.nav.fo.veilarbsituasjon.rest.domain.OppfolgingStatus;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
+import javax.ws.rs.*;
 import java.util.List;
 
 public interface VeilederSituasjonOversikt extends SituasjonOversikt {
@@ -37,11 +33,11 @@ public interface VeilederSituasjonOversikt extends SituasjonOversikt {
     @Path("/innstillingsHistorikk")
     List<InnstillingsHistorikk> hentInnstillingsHistorikk() throws Exception;
 
-    @POST
-    @Path("/startEskalering")
-    void startEskalering(StartEskaleringDTO startEskalering) throws Exception;
+    @PUT
+    @Path("/startEskalering/{dialogId}")
+    void startEskalering(@PathParam("dialogId")long dialogId) throws Exception;
 
-    @POST
+    @PUT
     @Path("/stoppEskalering")
     void stoppEskalering() throws Exception;
 }

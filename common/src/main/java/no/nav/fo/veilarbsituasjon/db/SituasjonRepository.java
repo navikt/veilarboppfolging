@@ -344,7 +344,7 @@ public class SituasjonRepository {
     }
 
     @Transactional
-    public void startEskalering(String aktorId, String opprettetAv, int tilhorendeDialogId) {
+    public void startEskalering(String aktorId, String opprettetAv, long tilhorendeDialogId) {
         if (hentEskaleringstatus(aktorId) != null) {
             throw new RuntimeException();
         }

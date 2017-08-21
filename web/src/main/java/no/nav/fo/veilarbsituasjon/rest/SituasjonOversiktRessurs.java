@@ -81,8 +81,8 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt, VeilederSitu
     }
 
     @Override
-    public void startEskalering(StartEskaleringDTO startEskalering) throws Exception {
-        situasjonOversiktService.startEskalering(getFnr(), startEskalering.tilhorendeDialogId);
+    public void startEskalering(long tilhorendeDialogId) throws Exception {
+        situasjonOversiktService.startEskalering(getFnr(), tilhorendeDialogId);
     }
 
     @Override
