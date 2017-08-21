@@ -81,16 +81,6 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt, VeilederSitu
     }
 
     @Override
-    public void startEskalering(long tilhorendeDialogId) throws Exception {
-        situasjonOversiktService.startEskalering(getFnr(), tilhorendeDialogId);
-    }
-
-    @Override
-    public void stoppEskalering() throws Exception {
-        situasjonOversiktService.stoppEskalering(getFnr());
-    }
-
-    @Override
     public Vilkar hentVilkar() throws Exception {
         return tilDto(situasjonOversiktService.hentVilkar(getFnr()));
     }
@@ -143,6 +133,16 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt, VeilederSitu
         return eskaleringstatusDataList.stream()
                 .map(this::tilDto)
                 .collect(toList());
+    }
+
+    @Override
+    public void startEskalering(long tilhorendeDialogId) throws Exception {
+        situasjonOversiktService.startEskalering(getFnr(), tilhorendeDialogId);
+    }
+
+    @Override
+    public void stoppEskalering() throws Exception {
+        situasjonOversiktService.stoppEskalering(getFnr());
     }
 
     private Eskaleringstatus tilDto(EskaleringstatusData eskaleringstatusData) {
