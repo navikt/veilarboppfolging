@@ -320,7 +320,14 @@ public class SituasjonRepository {
 
     public EskaleringstatusData hentEskaleringstatus(String aktorId) {
         return jdbcTemplate.query("" +
-                "SELECT * FROM ESKALERINGSVARSEL " +
+                "SELECT " +
+                "VARSEL_ID AS ESK_ID, " +
+                "AKTOR_ID AS ESK_AKTOR_ID, " +
+                "OPPRETTET_AV AS ESK_OPPRETTET_AV, " +
+                "OPPRETTET_DATO AS ESK_OPPRETTET_DATO, " +
+                "AVSLUTTET_DATO AS ESK_AVSLUTTET_DATO, " +
+                "TILHORENDE_DIALOG_ID AS ESK_TILHORENDE_DIALOG_ID " +
+                "FROM ESKALERINGSVARSEL " +
                 "WHERE varsel_id IN (SELECT gjeldende_eskaleringsvarsel FROM SITUASJON WHERE SITUASJON.aktorid = ?)",
                 this::mapTilEskaleringstatusData,
                 aktorId
@@ -381,13 +388,14 @@ public class SituasjonRepository {
         if (!result.isBeforeFirst()) {
             return null;
         }
+        result.next();
         return EskaleringstatusData.builder()
-                .varselId(result.getLong("varsel_id"))
-                .aktorId(result.getString("aktor_id"))
-                .opprettetAv(result.getString("opprettet_av"))
-                .opprettetDato(hentDato(result, "opprettet_dato"))
-                .avsluttetDato(hentDato(result, "avsluttet_dato"))
-                .tilhorendeDialogId(result.getLong("tilhorende_dialog_id"))
+                .varselId(result.getLong("ESK_ID"))
+                .aktorId(result.getString("ESK_AKTOR_ID"))
+                .opprettetAv(result.getString("ESK_OPPRETTET_AV"))
+                .opprettetDato(hentDato(result, "ESK_OPPRETTET_DATO"))
+                .avsluttetDato(hentDato(result, "ESK_AVSLUTTET_DATO"))
+                .tilhorendeDialogId(result.getLong("ESK_TILHORENDE_DIALOG_ID"))
                 .build();
     }
 

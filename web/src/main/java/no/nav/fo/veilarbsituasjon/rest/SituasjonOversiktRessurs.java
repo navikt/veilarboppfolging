@@ -47,7 +47,7 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt, VeilederSitu
     }
 
     @Override
-    public OppfolgingStatus startOppfolging() throws Exception{
+    public OppfolgingStatus startOppfolging() throws Exception {
         return tilDto(situasjonOversiktService.startOppfolging(getFnr()));
     }
 
@@ -81,8 +81,8 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt, VeilederSitu
     }
 
     @Override
-    public void startEskalering(int tilhorendeDialogId) throws Exception {
-        situasjonOversiktService.startEskalering(getFnr(), tilhorendeDialogId);
+    public void startEskalering(StartEskaleringDTO startEskalering) throws Exception {
+        situasjonOversiktService.startEskalering(getFnr(), startEskalering.tilhorendeDialogId);
     }
 
     @Override
@@ -133,7 +133,8 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt, VeilederSitu
 
     @Override
     public Eskaleringstatus hentEskaleringstatus() throws Exception {
-        return tilDto(situasjonOversiktService.hentEskaleringstatus(getFnr()));
+        EskaleringstatusData eskaleringstatusData = situasjonOversiktService.hentEskaleringstatus(getFnr());
+        return ofNullable(eskaleringstatusData).map(this::tilDto).orElse(null);
     }
 
     @Override
