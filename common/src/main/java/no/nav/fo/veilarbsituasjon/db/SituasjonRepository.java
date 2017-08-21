@@ -56,12 +56,12 @@ public class SituasjonRepository {
                         "  MAL.MAL AS MAL_MAL, " +
                         "  MAL.ENDRET_AV AS MAL_ENDRET_AV, " +
                         "  MAL.DATO AS MAL_DATO, " +
-                        "  ESKALERINGSVARSEL.VARSEL_ID AS ESKALERING_ID, " +
-                        "  ESKALERINGSVARSEL.AKTOR_ID AS ESKALERING_AKTOR_ID, " +
-                        "  ESKALERINGSVARSEL.OPPRETTET_AV AS ESKALERING_OPPRETTET_AV, " +
-                        "  ESKALERINGSVARSEL.OPPRETTET_DATO AS ESKALERING_OPPRETTET_DATO, " +
-                        "  ESKALERINGSVARSEL.AVSLUTTET_DATO AS ESKALERING_AVSLUTTET_DATO, " +
-                        "  ESKALERINGSVARSEL.TILHORENDE_DIALOG_ID AS ESKALERING_TILHORENDE_DIALOG_ID " +
+                        "  ESKALERINGSVARSEL.VARSEL_ID AS ESK_ID, " +
+                        "  ESKALERINGSVARSEL.AKTOR_ID AS ESK_AKTOR_ID, " +
+                        "  ESKALERINGSVARSEL.OPPRETTET_AV AS ESK_OPPRETTET_AV, " +
+                        "  ESKALERINGSVARSEL.OPPRETTET_DATO AS ESK_OPPRETTET_DATO, " +
+                        "  ESKALERINGSVARSEL.AVSLUTTET_DATO AS ESK_AVSLUTTET_DATO, " +
+                        "  ESKALERINGSVARSEL.TILHORENDE_DIALOG_ID AS ESK_TILHORENDE_DIALOG_ID " +
                         "FROM situasjon " +
                         "LEFT JOIN status ON SITUASJON.GJELDENDE_STATUS = STATUS.ID " +
                         "LEFT JOIN brukervilkar ON SITUASJON.GJELDENDE_BRUKERVILKAR = BRUKERVILKAR.ID " +
