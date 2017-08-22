@@ -100,6 +100,11 @@ public class SituasjonOversiktWebService implements BehandleSituasjonV1 {
     }
 
     @Override
+    public HentEskaleringsHistorikkResponse hentEskaleringsHistorikk(HentEskaleringsHistorikkRequest hentEskaleringsHistorikkRequest) {
+        throw new IllegalStateException("ikke implementert");
+    }
+
+    @Override
     public OpprettMalResponse opprettMal(OpprettMalRequest opprettMalRequest) {
         situasjonOversiktService.oppdaterMal(opprettMalRequest.getMal().getMal(), opprettMalRequest.getPersonident(), null);
         return new OpprettMalResponse();
@@ -160,7 +165,8 @@ public class SituasjonOversiktWebService implements BehandleSituasjonV1 {
 
     private OppfoelgingsPeriode mapOppfoelgingsPeriode(Oppfolgingsperiode oppfolgingsperiode) {
         OppfoelgingsPeriode oppfoelgingsPeriode = new OppfoelgingsPeriode();
-        oppfoelgingsPeriode.setSluttDato(DateUtils.xmlCalendar(oppfolgingsperiode.getSluttDato()));
+        oppfoelgingsPeriode.setStartDato(xmlCalendar(oppfolgingsperiode.getStartDato()));
+        oppfoelgingsPeriode.setSluttDato(xmlCalendar(oppfolgingsperiode.getSluttDato()));
         return oppfoelgingsPeriode;
     }
 
