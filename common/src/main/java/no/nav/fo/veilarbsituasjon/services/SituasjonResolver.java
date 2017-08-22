@@ -82,8 +82,6 @@ public class SituasjonResolver {
             sjekkArena();
             if(erUnderOppfolging(statusIArena.getFormidlingsgruppeKode(), statusIArena.getServicegruppeKode())){
                 deps.getSituasjonRepository().startOppfolging(aktorId);
-                situasjon.setOppfolging(true);
-
                 deps.getSituasjonRepository().opprettOppfolgingsperiode(Oppfolgingsperiode
                         .builder()
                         .aktorId(aktorId)
@@ -91,7 +89,7 @@ public class SituasjonResolver {
                         .build()
                 );
 
-                hentSituasjon();
+                reloadSituasjon();
             }
         }
     }

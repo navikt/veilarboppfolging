@@ -2,6 +2,7 @@ package no.nav.fo.veilarbsituasjon.db;
 
 
 import lombok.SneakyThrows;
+import lombok.val;
 import no.nav.fo.veilarbsituasjon.domain.*;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
@@ -289,7 +290,7 @@ public class SituasjonRepository {
                                 .orElse(null)
                 )
                 .setOppfolgingsperioder(hentOppfolgingsperioder(aktorId))
-                .setGjeldendeEskaleringsvarsel(
+                .setGjeldendeEskaleringstatus(
                         Optional.ofNullable(resultat.getLong("gjeldende_eskaleringsvarsel"))
                                 .map(e -> e != 0 ? mapTilEskaleringstatusData(resultat) : null)
                                 .orElse(null)
@@ -318,8 +319,8 @@ public class SituasjonRepository {
     }
 
 
-    public EskaleringstatusData hentEskaleringstatus(String aktorId) {
-        return jdbcTemplate.query("" +
+    private EskaleringstatusData hentEskaleringstatus(String aktorId) {
+        List<EskaleringstatusData> eskalering = jdbcTemplate.query("" +
                 "SELECT " +
                 "VARSEL_ID AS ESK_ID, " +
                 "AKTOR_ID AS ESK_AKTOR_ID, " +
@@ -329,15 +330,26 @@ public class SituasjonRepository {
                 "TILHORENDE_DIALOG_ID AS ESK_TILHORENDE_DIALOG_ID " +
                 "FROM ESKALERINGSVARSEL " +
                 "WHERE varsel_id IN (SELECT gjeldende_eskaleringsvarsel FROM SITUASJON WHERE SITUASJON.aktorid = ?)",
-                this::mapTilEskaleringstatusData,
+                (rs, n) -> mapTilEskaleringstatusData(rs),
                 aktorId
         );
+
+        return eskalering.stream()
+                .findAny()
+                .orElse(null);
+
     }
 
     public List<EskaleringstatusData> hentEskaleringhistorikk(String aktorId) {
-        return jdbcTemplate.query("" +
-                "SELECT * FROM ESKALERINGSVARSEL " +
-                "WHERE aktor_id = ?",
+        return jdbcTemplate.query("SELECT " +
+                        "VARSEL_ID AS ESK_ID, " +
+                        "AKTOR_ID AS ESK_AKTOR_ID, " +
+                        "OPPRETTET_AV AS ESK_OPPRETTET_AV, " +
+                        "OPPRETTET_DATO AS ESK_OPPRETTET_DATO, " +
+                        "AVSLUTTET_DATO AS ESK_AVSLUTTET_DATO, " +
+                        "TILHORENDE_DIALOG_ID AS ESK_TILHORENDE_DIALOG_ID " +
+                        "FROM ESKALERINGSVARSEL " +
+                        "WHERE aktor_id = ?",
                 (result, n) -> mapTilEskaleringstatusData(result),
                 aktorId
         );
@@ -345,34 +357,44 @@ public class SituasjonRepository {
 
     @Transactional
     public void startEskalering(String aktorId, String opprettetAv, long tilhorendeDialogId) {
-        if (hentEskaleringstatus(aktorId) != null) {
+        val harEksisterendeEskalering = hentEskaleringstatus(aktorId) != null;
+        if (harEksisterendeEskalering) {
             throw new RuntimeException();
         }
+
+        val id = nesteFraSekvens("ESKALERINGSVARSEL_SEQ");
+
         jdbcTemplate.update("" +
-                "INSERT INTO ESKALERINGSVARSEL(aktor_id, opprettet_av, opprettet_dato, tilhorende_dialog_id) " +
-                "VALUES(?, ?, CURRENT_TIMESTAMP, ?)",
+                "INSERT INTO ESKALERINGSVARSEL(varsel_id, aktor_id, opprettet_av, opprettet_dato, tilhorende_dialog_id) " +
+                "VALUES(?, ?, ?, CURRENT_TIMESTAMP, ?)",
+                id,
                 aktorId,
                 opprettetAv,
                 tilhorendeDialogId
         );
+
         jdbcTemplate.update("" +
                 "UPDATE SITUASJON " +
-                "SET gjeldende_eskaleringsvarsel = (SELECT MAX(varsel_id) FROM ESKALERINGSVARSEL) " +
+                "SET gjeldende_eskaleringsvarsel = ? " +
                 "WHERE aktorid = ?",
+                id,
                 aktorId
         );
     }
 
     @Transactional
     public void stoppEskalering(String aktorId) {
-        if(hentEskaleringstatus(aktorId) == null) {
+        val eskalering = hentEskaleringstatus(aktorId);
+        val harIkkEnEksisterendeEskalering = eskalering == null;
+        if(harIkkEnEksisterendeEskalering) {
             throw new RuntimeException();
         }
+
         jdbcTemplate.update("" +
                 "UPDATE ESKALERINGSVARSEL " +
                 "SET avsluttet_dato = CURRENT_TIMESTAMP " +
-                "WHERE aktor_id = ?",
-                aktorId
+                "WHERE VARSEL_ID = ?",
+                eskalering.getVarselId()
         );
         jdbcTemplate.update("" +
                 "UPDATE SITUASJON " +
@@ -385,10 +407,6 @@ public class SituasjonRepository {
     @SneakyThrows
     @SuppressWarnings("unchecked")
     private EskaleringstatusData mapTilEskaleringstatusData(ResultSet result) {
-        if (!result.isBeforeFirst()) {
-            return null;
-        }
-        result.next();
         return EskaleringstatusData.builder()
                 .varselId(result.getLong("ESK_ID"))
                 .aktorId(result.getString("ESK_AKTOR_ID"))

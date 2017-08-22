@@ -47,10 +47,6 @@ public interface SituasjonOversikt {
     Mal oppdaterMal(Mal mal) throws Exception;
 
     @GET
-    @Path("/hentEskaleringstatus")
-    Eskaleringstatus hentEskaleringstatus() throws Exception;
-
-    @GET
     @Path("/hentEskaleringhistorikk")
     List<Eskaleringstatus> hentEskaleringhistorikk() throws Exception;
 }

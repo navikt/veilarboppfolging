@@ -15,6 +15,7 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static java.util.Optional.ofNullable;
@@ -121,11 +122,6 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt, VeilederSitu
         return tilDto(situasjonOversiktService.oppdaterMal(mal.getMal(), getFnr(), getUid()));
     }
 
-    @Override
-    public Eskaleringstatus hentEskaleringstatus() throws Exception {
-        EskaleringstatusData eskaleringstatusData = situasjonOversiktService.hentEskaleringstatus(getFnr());
-        return ofNullable(eskaleringstatusData).map(this::tilDto).orElse(null);
-    }
 
     @Override
     public List<Eskaleringstatus> hentEskaleringhistorikk() throws Exception {
@@ -146,14 +142,16 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt, VeilederSitu
     }
 
     private Eskaleringstatus tilDto(EskaleringstatusData eskaleringstatusData) {
-        return Eskaleringstatus.builder()
-                .varselId(eskaleringstatusData.getVarselId())
-                .aktorId(eskaleringstatusData.getAktorId())
-                .opprettetAv(eskaleringstatusData.getOpprettetAv())
-                .opprettetDato(eskaleringstatusData.getOpprettetDato())
-                .avsluttetDato(eskaleringstatusData.getAvsluttetDato())
-                .tilhorendeDialogId(eskaleringstatusData.getTilhorendeDialogId())
-                .build();
+        return Optional.ofNullable(eskaleringstatusData)
+                .map(eskalering -> Eskaleringstatus.builder()
+                .varselId(eskalering.getVarselId())
+                .aktorId(eskalering.getAktorId())
+                .opprettetAv(eskalering.getOpprettetAv())
+                .opprettetDato(eskalering.getOpprettetDato())
+                .avsluttetDato(eskalering.getAvsluttetDato())
+                .tilhorendeDialogId(eskalering.getTilhorendeDialogId())
+                .build()
+                ).orElse(null);
     }
 
     private String getUid() {
@@ -189,6 +187,7 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt, VeilederSitu
                                 .map(this::tilDto)
                                 .orElse(null)
                 )
+                .setGjeldendeEskaleringsstatus(tilDto(oppfolgingStatusData.getGjeldendeEskaleringsstatus()))
                 .setOppfolgingsPerioder(oppfolgingStatusData.oppfolgingsperioder.stream().map(this::tilDTO).collect(toList()));
     }
 
