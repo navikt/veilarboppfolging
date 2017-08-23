@@ -80,7 +80,7 @@ public class SituasjonResolver {
     void sjekkStatusIArenaOgOppdaterSituasjon() {
         if (!situasjon.isOppfolging()) {
             sjekkArena();
-            if(erUnderOppfolging(statusIArena.getFormidlingsgruppeKode(), statusIArena.getServicegruppeKode())){
+            if (erUnderOppfolging(statusIArena.getFormidlingsgruppeKode(), statusIArena.getServicegruppeKode())) {
                 deps.getSituasjonRepository().startOppfolging(aktorId);
                 deps.getSituasjonRepository().opprettOppfolgingsperiode(Oppfolgingsperiode
                         .builder()

@@ -385,8 +385,8 @@ public class SituasjonRepository {
     @Transactional
     public void stoppEskalering(String aktorId) {
         val eskalering = hentEskaleringsvarsel(aktorId);
-        val harIkkEnEksisterendeEskalering = eskalering == null;
-        if(harIkkEnEksisterendeEskalering) {
+        val harIkkeEnEksisterendeEskalering = eskalering == null;
+        if(harIkkeEnEksisterendeEskalering) {
             throw new RuntimeException();
         }
 
