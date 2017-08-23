@@ -15,65 +15,43 @@ import org.springframework.jms.core.JmsTemplate;
 
 @Configuration
 public class ServiceConfig {
-
-    private final YtelseskontraktV3 ytelseskontraktV3;
-    private final OppfoelgingPortType oppfoelgingPortType;
-    private final OrganisasjonEnhetV1 organisasjonEnhetV1;
-    private final JmsTemplate endreVeilederQueue;
-    private final BrukerRepository brukerRepository;
-    private AktoerV2 aktoerV2;
-    private JdbcTemplate db;
-    private final Pep pep;
-
-    public ServiceConfig(YtelseskontraktV3 ytelseskontraktV3, OppfoelgingPortType oppfoelgingPortType, AktoerV2 aktoerV2, JdbcTemplate db, OrganisasjonEnhetV1 organisasjonEnhetV1, Pep pep,
-                         JmsTemplate endreVeilederQueue, BrukerRepository brukerRepository) {
-        this.ytelseskontraktV3 = ytelseskontraktV3;
-        this.oppfoelgingPortType = oppfoelgingPortType;
-        this.aktoerV2 = aktoerV2;
-        this.db = db;
-        this.pep = pep;
-        this.organisasjonEnhetV1 = organisasjonEnhetV1;
-        this.endreVeilederQueue = endreVeilederQueue;
-        this.brukerRepository = brukerRepository;
-    }
-
     @Bean
-    YtelseskontraktService ytelsesKontraktService() {
+    YtelseskontraktService ytelsesKontraktService(YtelseskontraktV3 ytelseskontraktV3) {
         return new YtelseskontraktService(ytelseskontraktV3);
     }
 
     @Bean
-    OrganisasjonsenhetService organisasjonsenhetService() {
+    OrganisasjonsenhetService organisasjonsenhetService(OrganisasjonEnhetV1 organisasjonEnhetV1) {
         return new OrganisasjonsenhetService(organisasjonEnhetV1);
     }
 
     @Bean
-    OppfolgingService oppfolgingService() {
-        return new OppfolgingService(oppfoelgingPortType, organisasjonsenhetService());
+    OppfolgingService oppfolgingService(OppfoelgingPortType oppfoelgingPortType, OrganisasjonsenhetService organisasjonsenhetService) {
+        return new OppfolgingService(oppfoelgingPortType, organisasjonsenhetService);
     }
 
     @Bean
-    AktoerIdService aktoerIdService() {
+    AktoerIdService aktoerIdService(AktoerV2 aktoerV2) {
         return new AktoerIdService(aktoerV2);
     }
 
     @Bean
-    BrukerRepository brukerRepository() {
+    BrukerRepository brukerRepository(JdbcTemplate db) {
         return new BrukerRepository(db);
     }
 
     @Bean
-    SituasjonRepository situasjonRepository() {
+    SituasjonRepository situasjonRepository(JdbcTemplate db) {
         return new SituasjonRepository(db);
     }
 
     @Bean
-    PepClient pepClient() {
+    PepClient pepClient(Pep pep) {
         return new PepClient(pep);
     }
 
     @Bean
-    TilordningService tilordningService() {
+    TilordningService tilordningService(JmsTemplate endreVeilederQueue, BrukerRepository brukerRepository) {
         return new TilordningService(endreVeilederQueue, brukerRepository);
     }
 }
