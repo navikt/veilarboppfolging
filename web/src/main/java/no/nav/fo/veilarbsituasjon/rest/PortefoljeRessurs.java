@@ -5,8 +5,6 @@ import lombok.val;
 import no.nav.apiapp.security.PepClient;
 import no.nav.fo.feed.producer.FeedProducer;
 import no.nav.fo.veilarbsituasjon.db.BrukerRepository;
-import no.nav.fo.veilarbsituasjon.db.SituasjonRepository;
-import no.nav.fo.veilarbsituasjon.domain.Oppfolgingsperiode;
 import no.nav.fo.veilarbsituasjon.rest.domain.OppfolgingBruker;
 import no.nav.fo.veilarbsituasjon.rest.domain.TilordneVeilederResponse;
 import no.nav.fo.veilarbsituasjon.rest.domain.VeilederTilordning;
@@ -14,7 +12,6 @@ import no.nav.fo.veilarbsituasjon.services.AktoerIdService;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
@@ -34,20 +31,17 @@ public class PortefoljeRessurs {
     private AktoerIdService aktoerIdService;
     private BrukerRepository brukerRepository;
     private final PepClient pepClient;
-    private final SituasjonRepository situasjonRepository;
 
     private FeedProducer<OppfolgingBruker> feed;
 
     public PortefoljeRessurs(AktoerIdService aktoerIdService,
                              BrukerRepository brukerRepository,
                              PepClient pepClient,
-                             FeedProducer<OppfolgingBruker> feed,
-                             SituasjonRepository situasjonRepository) {
+                             FeedProducer<OppfolgingBruker> feed) {
         this.aktoerIdService = aktoerIdService;
         this.brukerRepository = brukerRepository;
         this.pepClient = pepClient;
         this.feed = feed;
-        this.situasjonRepository = situasjonRepository;
     }
 
     @POST
@@ -64,10 +58,10 @@ public class PortefoljeRessurs {
 
                 String aktoerId = finnAktorId(fnr);
 
-                val bruker = brukerRepository.hentTilordningForAktoer(aktoerId);
+                val eksisterendeBrukerData = brukerRepository.hentTilordningForAktoer(aktoerId);
 
-                if (bruker == null || kanSetteNyVeileder(bruker.getVeileder(), tilordning.getFraVeilederId())) {
-                    skrivTilDatabase(bruker, aktoerId, tilordning.getTilVeilederId());
+                if (eksisterendeBrukerData == null || kanSetteNyVeileder(eksisterendeBrukerData.getVeileder(), tilordning.getFraVeilederId())) {
+                    skrivTilDatabase(aktoerId, tilordning.getTilVeilederId());
                 } else {
                     feilendeTilordninger.add(tilordning);
                     LOG.info("Aktoerid {} kunne ikke tildeles ettersom fraVeileder er feil", aktoerId);
@@ -121,17 +115,9 @@ public class PortefoljeRessurs {
                 : "Det skjedde en feil ved tildeling av veileder";
     }
 
-    @Transactional
-    private void skrivTilDatabase(OppfolgingBruker bruker, String aktoerId, String veileder) {
+    private void skrivTilDatabase(String aktoerId, String veileder) {
         try {
             brukerRepository.upsertVeilederTilordning(aktoerId, veileder);
-            if (bruker == null || !bruker.isOppfolging()){
-                situasjonRepository.opprettOppfolgingsperiode(
-                        Oppfolgingsperiode
-                                .builder()
-                                .aktorId(aktoerId)
-                                .build());
-            }
             LOG.debug(String.format("Veileder %s tilordnet aktoer %s", veileder, aktoerId));
         } catch (Exception e) {
             LOG.error(String.format("Kunne ikke tilordne veileder %s til aktoer %s", veileder, aktoerId), e);

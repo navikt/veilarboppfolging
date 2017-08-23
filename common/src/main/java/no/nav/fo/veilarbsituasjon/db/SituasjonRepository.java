@@ -75,13 +75,31 @@ public class SituasjonRepository {
         return situasjon.isEmpty() ? Optional.empty() : situasjon.stream().findAny();
     }
 
-    public void startOppfolging(String aktorId) {
-        jdbcTemplate.update("UPDATE situasjon SET oppfolging = 1, OPPDATERT = CURRENT_TIMESTAMP WHERE aktorid = ?",
-                aktorId
-        );
+    @Transactional
+    public void startOppfolgingHvisIkkeAlleredeStartet(String aktorId) {
+        if(!erOppfolgingsflaggSattForBruker(aktorId)) {
+            jdbcTemplate.update("UPDATE situasjon SET oppfolging = 1, OPPDATERT = CURRENT_TIMESTAMP WHERE aktorid = ?", aktorId);
+            opprettOppfolgingsperiode(aktorId);
+        }
+
     }
 
-    public void avsluttOppfolging(String aktorId) {
+    private Boolean erOppfolgingsflaggSattForBruker(String aktorId) {
+        return jdbcTemplate.query("" +
+                "SELECT " +
+                "SITUASJON.OPPFOLGING AS OPPFOLGING " +
+                "FROM situasjon " +
+                "WHERE situasjon.aktorid = ? ",
+        (result, n) -> erUnderOppfolging(result),
+        aktorId).get(0);
+    }
+
+    private Boolean erUnderOppfolging(ResultSet result) throws SQLException {
+        return result.getBoolean("OPPFOLGING");
+    }
+
+    @Transactional
+    public void avsluttOppfolging(String aktorId, String veileder, String begrunnelse) {
         jdbcTemplate.update("UPDATE situasjon SET oppfolging = 0, "
                 + "veileder = null, "
                 + "GJELDENDE_STATUS = null, "
@@ -91,6 +109,7 @@ public class SituasjonRepository {
                 + "WHERE aktorid = ?",
                 aktorId
         );
+        avsluttOppfolgingsperiode(aktorId, veileder, begrunnelse);
     }
 
     public void opprettStatus(Status status) {
@@ -146,28 +165,25 @@ public class SituasjonRepository {
         return jdbcTemplate.query(sql, (result, n) -> mapTilBrukervilkar(result), aktorId);
     }
 
-
-    public void oppdaterOppfolgingsperiode(Oppfolgingsperiode oppfolgingperiode) {
+    private void avsluttOppfolgingsperiode(String aktorId, String veileder, String begrunnelse) {
         jdbcTemplate.update("" +
                         "UPDATE OPPFOLGINGSPERIODE " +
-                        "SET veileder=?, sluttDato=?, begrunnelse=?, oppdatert=CURRENT_TIMESTAMP " +
-                        "WHERE aktorId = ? AND sluttDato IS NULL",
-                oppfolgingperiode.getVeileder(),
-                oppfolgingperiode.getSluttDato(),
-                oppfolgingperiode.getBegrunnelse(),
-                oppfolgingperiode.getAktorId());
+                        "SET veileder = ?, " +
+                        "begrunnelse = ?, " +
+                        "sluttDato = CURRENT_TIMESTAMP, " +
+                        "oppdatert = CURRENT_TIMESTAMP " +
+                        "WHERE aktorId = ? " +
+                        "AND sluttDato IS NULL",
+                veileder,
+                begrunnelse,
+                aktorId);
     }
 
-
-    public void opprettOppfolgingsperiode(Oppfolgingsperiode oppfolgingperiode) {
+    private void opprettOppfolgingsperiode(String aktorId) {
         jdbcTemplate.update("" +
-                        "INSERT INTO OPPFOLGINGSPERIODE(aktorId, veileder, startDato, sluttDato, begrunnelse, oppdatert) " +
-                        "VALUES (?,?,?,?,?,CURRENT_TIMESTAMP)",
-                oppfolgingperiode.getAktorId(),
-                null,
-                oppfolgingperiode.getStartDato(),
-                null,
-                null);
+                        "INSERT INTO OPPFOLGINGSPERIODE(aktorId, startDato, oppdatert) " +
+                        "VALUES (?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
+                aktorId);
     }
 
     public List<AvsluttetOppfolgingFeedData> hentAvsluttetOppfolgingEtterDato(Timestamp timestamp) {
@@ -383,7 +399,6 @@ public class SituasjonRepository {
     }
 
     @SneakyThrows
-    @SuppressWarnings("unchecked")
     private EskaleringstatusData mapTilEskaleringstatusData(ResultSet result) {
         if (!result.isBeforeFirst()) {
             return null;
@@ -417,7 +432,6 @@ public class SituasjonRepository {
     }
 
     @SneakyThrows
-    @SuppressWarnings("unchecked")
     private Brukervilkar mapTilBrukervilkar(ResultSet result) {
         return new Brukervilkar(
                 result.getString("AKTORID"),
@@ -429,7 +443,6 @@ public class SituasjonRepository {
     }
 
     @SneakyThrows
-    @SuppressWarnings("unchecked")
     private Status mapTilStatus(ResultSet result) {
         return new Status(
                 result.getString("AKTORID"),
@@ -442,7 +455,6 @@ public class SituasjonRepository {
     }
 
     @SneakyThrows
-    @SuppressWarnings("unchecked")
     private MalData mapTilMal(ResultSet result) {
         return new MalData()
                 .setId(result.getLong("MAL_ID"))
@@ -453,7 +465,6 @@ public class SituasjonRepository {
     }
 
     @SneakyThrows
-    @SuppressWarnings("unchecked")
     private InnstillingsHistorikkData mapRadTilInnstillingsHistorikkData(ResultSet result) {
         return new InnstillingsHistorikkData()
                 .setManuell(result.getBoolean("MANUELL"))

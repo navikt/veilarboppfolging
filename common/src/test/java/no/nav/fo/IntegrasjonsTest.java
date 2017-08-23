@@ -1,10 +1,7 @@
 package no.nav.fo;
 
-import no.nav.dialogarena.config.DevelopmentSecurity;
-import no.nav.dialogarena.config.fasit.FasitUtils;
 import no.nav.fo.veilarbsituasjon.config.DatabaseConfig;
 import no.nav.fo.veilarbsituasjon.config.JndiLocalContextConfig;
-import no.nav.fo.veilarbsituasjon.config.PepConfig;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -35,14 +32,11 @@ public abstract class IntegrasjonsTest {
 
     @BeforeAll
     @BeforeClass
-    public static void setup() throws IOException {
-        DevelopmentSecurity.setupIntegrationTestSecurity(FasitUtils.getServiceUser("srvveilarbsituasjon", APPLICATION_NAME, "t6"));
-        DevelopmentSecurity.configureLdap(FasitUtils.getLdapConfig("ldap", APPLICATION_NAME, "t6"));
+    public static void setupFelles() throws IOException {
         JndiLocalContextConfig.setupInMemoryDatabase();
         annotationConfigApplicationContext = new AnnotationConfigApplicationContext(
                 JndiBean.class,
-                DatabaseConfig.class,
-                PepConfig.class
+                DatabaseConfig.class
         );
         annotationConfigApplicationContext.start();
         platformTransactionManager = getBean(PlatformTransactionManager.class);

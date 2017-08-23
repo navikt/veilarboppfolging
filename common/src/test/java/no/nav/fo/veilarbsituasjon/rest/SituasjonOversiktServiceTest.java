@@ -111,7 +111,7 @@ public class SituasjonOversiktServiceTest {
         
         OppfolgingStatusData oppfolgingStatusData = hentOppfolgingStatus();
         
-        verify(situasjonRepositoryMock, never()).startOppfolging(anyString());
+        verify(situasjonRepositoryMock, never()).startOppfolgingHvisIkkeAlleredeStartet(anyString());
         assertThat(oppfolgingStatusData.underOppfolging, is(false));
     }
 
@@ -123,7 +123,7 @@ public class SituasjonOversiktServiceTest {
 
         OppfolgingStatusData oppfolgingStatusData = hentOppfolgingStatus();
         
-        verify(situasjonRepositoryMock).startOppfolging(AKTOR_ID);
+        verify(situasjonRepositoryMock).startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
         assertThat(oppfolgingStatusData.underOppfolging, is(true));       
     }
 

@@ -53,7 +53,7 @@ public class ServiceConfig {
 
     @Bean
     BrukerRepository brukerRepository() {
-        return new BrukerRepository(db);
+        return new BrukerRepository(db, situasjonRepository());
     }
 
     @Bean

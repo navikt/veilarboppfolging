@@ -5,7 +5,6 @@ import no.nav.apiapp.security.PepClient;
 import no.nav.brukerdialog.security.context.ThreadLocalSubjectHandler;
 import no.nav.fo.feed.producer.FeedProducer;
 import no.nav.fo.veilarbsituasjon.db.BrukerRepository;
-import no.nav.fo.veilarbsituasjon.db.SituasjonRepository;
 import no.nav.fo.veilarbsituasjon.rest.domain.OppfolgingBruker;
 import no.nav.fo.veilarbsituasjon.rest.domain.TilordneVeilederResponse;
 import no.nav.fo.veilarbsituasjon.rest.domain.VeilederTilordning;
@@ -51,9 +50,6 @@ public class PortefoljeRessursTest {
 
     @Mock
     private BrukerRepository brukerRepository;
-
-    @Mock
-    private SituasjonRepository situasjonRepository;
 
     @Mock
     private FeedProducer<OppfolgingBruker> feed;

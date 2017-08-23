@@ -1,23 +1,39 @@
 package no.nav.fo.veilarbsituasjon.db;
 
 import no.nav.fo.IntegrasjonsTest;
+
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
+import java.io.IOException;
+
 public class BrukerRepositoryTest extends IntegrasjonsTest {
 
     private static final String AKTOR_ID = "2222";
 
-    private BrukerRepository brukerRepository = new BrukerRepository(getBean(JdbcTemplate.class));
+    @BeforeAll
+    public static void setup() throws IOException {
+        annotationConfigApplicationContext.register(SituasjonRepository.class);
+    }
+    
+    private BrukerRepository brukerRepository = new BrukerRepository(getBean(JdbcTemplate.class), getBean(SituasjonRepository.class));
 
     private JdbcTemplate db = getBean(JdbcTemplate.class);
 
     @Test
     public void skalLeggeTilBruker() {
-        brukerRepository.upsertVeilederTilordning(AKTOR_ID, "***REMOVED***");
+        try{
+            brukerRepository.upsertVeilederTilordning(AKTOR_ID, "***REMOVED***");
+        } catch (Exception e) {
+            LoggerFactory.getLogger(getClass()).info("Feil", e);
+            throw(e);
+        }
+        
         assertThat(brukerRepository.hentTilordningForAktoer(AKTOR_ID).getVeileder(), is("***REMOVED***"));
     }
 
