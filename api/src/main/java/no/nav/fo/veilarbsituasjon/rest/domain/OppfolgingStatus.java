@@ -16,6 +16,7 @@ public class OppfolgingStatus {
     public boolean underOppfolging;
     public boolean vilkarMaBesvares;
     public Date oppfolgingUtgang;
+    public Eskaleringsvarsel gjeldendeEskaleringsvarsel;
     private boolean kanStarteOppfolging;
     private AvslutningStatus avslutningStatus;
     private List<OppfolgingPeriodeDTO> oppfolgingsPerioder;

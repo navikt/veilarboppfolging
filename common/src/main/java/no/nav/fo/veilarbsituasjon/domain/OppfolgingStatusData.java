@@ -19,5 +19,6 @@ public class OppfolgingStatusData {
     public Date oppfolgingUtgang;
     public boolean kanStarteOppfolging;
     public AvslutningStatusData avslutningStatusData;
+    private EskaleringsvarselData gjeldendeEskaleringsvarsel;
     public List<Oppfolgingsperiode> oppfolgingsperioder = Collections.emptyList();
 }

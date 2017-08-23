@@ -82,9 +82,7 @@ public class SituasjonResolver {
             sjekkArena();
             if(erUnderOppfolging(statusIArena.getFormidlingsgruppeKode(), statusIArena.getServicegruppeKode())){
                 deps.getSituasjonRepository().startOppfolgingHvisIkkeAlleredeStartet(aktorId);
-                situasjon.setOppfolging(true);
-
-                hentSituasjon();
+                reloadSituasjon();
             }
         }
     }

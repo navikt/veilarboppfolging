@@ -130,14 +130,7 @@ public class SituasjonOversiktService {
         ).collect(Collectors.toList());
     }
 
-    public EskaleringstatusData hentEskaleringstatus(String fnr) {
-        val resolver = new SituasjonResolver(fnr, situasjonResolverDependencies);
-        String aktorId = resolver.getAktorId();
-
-        return situasjonRepository.hentEskaleringstatus(aktorId);
-    }
-
-    public List<EskaleringstatusData> hentEskaleringhistorikk(String fnr) {
+    public List<EskaleringsvarselData> hentEskaleringhistorikk(String fnr) {
         val resolver = new SituasjonResolver(fnr, situasjonResolverDependencies);
         String aktorId = resolver.getAktorId();
 
@@ -196,6 +189,7 @@ public class SituasjonOversiktService {
                 .setVilkarMaBesvares(situasjonResolver.maVilkarBesvares())
                 .setKanStarteOppfolging(situasjonResolver.getKanSettesUnderOppfolging())
                 .setAvslutningStatusData(avslutningStatusData)
+                .setGjeldendeEskaleringsvarsel(situasjon.getGjeldendeEskaleringsvarsel())
                 .setOppfolgingsperioder(situasjon.getOppfolgingsperioder())
                 ;
     }
