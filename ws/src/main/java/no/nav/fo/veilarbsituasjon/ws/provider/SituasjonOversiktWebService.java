@@ -5,7 +5,6 @@ import lombok.val;
 import no.nav.apiapp.soap.SoapTjeneste;
 import no.nav.fo.veilarbsituasjon.domain.*;
 import no.nav.fo.veilarbsituasjon.services.SituasjonOversiktService;
-import no.nav.fo.veilarbsituasjon.utils.DateUtils;
 import no.nav.tjeneste.virksomhet.behandlesituasjon.v1.binding.*;
 import no.nav.tjeneste.virksomhet.behandlesituasjon.v1.informasjon.*;
 import no.nav.tjeneste.virksomhet.behandlesituasjon.v1.meldinger.*;
@@ -16,6 +15,7 @@ import javax.ws.rs.WebApplicationException;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.Response.Status.NOT_IMPLEMENTED;
@@ -100,8 +100,17 @@ public class SituasjonOversiktWebService implements BehandleSituasjonV1 {
     }
 
     @Override
-    public HentEskaleringsHistorikkResponse hentEskaleringsHistorikk(HentEskaleringsHistorikkRequest hentEskaleringsHistorikkRequest) {
-        throw new IllegalStateException("ikke implementert");
+    public HentEskaleringsHistorikkResponse hentEskaleringsHistorikk(HentEskaleringsHistorikkRequest req) {
+        val res = new HentEskaleringsHistorikkResponse();
+
+        val eskaleringsHistorikk = situasjonOversiktService
+                .hentEskaleringhistorikk(req.getPersonident())
+                .stream()
+                .map(this::mapEskaleringsVarsel)
+                .collect(Collectors.toList());
+
+        res.getEskaleringsvarsler().addAll(eskaleringsHistorikk);
+        return res;
     }
 
     @Override
@@ -156,6 +165,9 @@ public class SituasjonOversiktWebService implements BehandleSituasjonV1 {
         oppfoelgingsstatus.getOppfoelgingsPerioder().addAll(
                 oppfolgingStatusData.getOppfolgingsperioder().stream().map(this::mapOppfoelgingsPeriode).collect(toList())
         );
+        Optional.ofNullable(oppfolgingStatusData.getGjeldendeEskaleringsvarsel())
+                .map(this::mapEskaleringsVarsel)
+                .ifPresent(oppfoelgingsstatus::setEskaleringsvarsel);
 
         val res = new HentOppfoelgingsstatusResponse();
         res.setOppfoelgingsstatus(oppfoelgingsstatus);
@@ -168,6 +180,18 @@ public class SituasjonOversiktWebService implements BehandleSituasjonV1 {
         oppfoelgingsPeriode.setStartDato(xmlCalendar(oppfolgingsperiode.getStartDato()));
         oppfoelgingsPeriode.setSluttDato(xmlCalendar(oppfolgingsperiode.getSluttDato()));
         return oppfoelgingsPeriode;
+    }
+
+    private Eskaleringsvarsel mapEskaleringsVarsel(EskaleringsvarselData eskalering){
+        val soapEskalering = new Eskaleringsvarsel();
+
+        soapEskalering.setAvsluttetDato(xmlCalendar(eskalering.getAvsluttetDato()));
+        soapEskalering.setOpprettetDato(xmlCalendar(eskalering.getOpprettetDato()));
+        soapEskalering.setOpprettetAv(eskalering.getOpprettetAv());
+        soapEskalering.setTilhorendeDialogId(Long.toString(eskalering.getTilhorendeDialogId()));
+        soapEskalering.setVarselId(Long.toString(eskalering.getVarselId()));
+
+        return soapEskalering;
     }
 
     private Mal mapTilMal(MalData malData, String personident) {
