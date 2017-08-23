@@ -9,7 +9,7 @@ import java.util.Date;
 @Value
 @Builder
 @Wither
-public class Eskaleringstatus {
+public class Eskaleringsvarsel {
 
     private long varselId;
     private String aktorId;

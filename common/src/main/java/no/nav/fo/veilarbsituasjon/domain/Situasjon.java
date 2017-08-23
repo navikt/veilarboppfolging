@@ -16,7 +16,7 @@ public class Situasjon {
     private boolean oppfolging;
     private Status gjeldendeStatus;
     private Brukervilkar gjeldendeBrukervilkar;
-    private EskaleringstatusData gjeldendeEskaleringstatus;
+    private EskaleringsvarselData gjeldendeEskaleringsvarsel;
     private Date oppfolgingUtgang;
     private MalData gjeldendeMal;
     private List<Oppfolgingsperiode> oppfolgingsperioder = emptyList();

@@ -48,5 +48,5 @@ public interface SituasjonOversikt {
 
     @GET
     @Path("/hentEskaleringhistorikk")
-    List<Eskaleringstatus> hentEskaleringhistorikk() throws Exception;
+    List<Eskaleringsvarsel> hentEskaleringhistorikk() throws Exception;
 }

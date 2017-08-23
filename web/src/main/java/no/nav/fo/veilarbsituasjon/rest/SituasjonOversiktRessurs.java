@@ -124,9 +124,9 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt, VeilederSitu
 
 
     @Override
-    public List<Eskaleringstatus> hentEskaleringhistorikk() throws Exception {
-        List<EskaleringstatusData> eskaleringstatusDataList = situasjonOversiktService.hentEskaleringhistorikk(getFnr());
-        return eskaleringstatusDataList.stream()
+    public List<Eskaleringsvarsel> hentEskaleringhistorikk() throws Exception {
+        List<EskaleringsvarselData> eskaleringsvarselDataList = situasjonOversiktService.hentEskaleringhistorikk(getFnr());
+        return eskaleringsvarselDataList.stream()
                 .map(this::tilDto)
                 .collect(toList());
     }
@@ -141,9 +141,9 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt, VeilederSitu
         situasjonOversiktService.stoppEskalering(getFnr());
     }
 
-    private Eskaleringstatus tilDto(EskaleringstatusData eskaleringstatusData) {
-        return Optional.ofNullable(eskaleringstatusData)
-                .map(eskalering -> Eskaleringstatus.builder()
+    private Eskaleringsvarsel tilDto(EskaleringsvarselData eskaleringsvarselData) {
+        return Optional.ofNullable(eskaleringsvarselData)
+                .map(eskalering -> Eskaleringsvarsel.builder()
                 .varselId(eskalering.getVarselId())
                 .aktorId(eskalering.getAktorId())
                 .opprettetAv(eskalering.getOpprettetAv())
@@ -187,7 +187,7 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt, VeilederSitu
                                 .map(this::tilDto)
                                 .orElse(null)
                 )
-                .setGjeldendeEskaleringsstatus(tilDto(oppfolgingStatusData.getGjeldendeEskaleringsstatus()))
+                .setGjeldendeEskaleringsvarsel(tilDto(oppfolgingStatusData.getGjeldendeEskaleringsvarsel()))
                 .setOppfolgingsPerioder(oppfolgingStatusData.oppfolgingsperioder.stream().map(this::tilDTO).collect(toList()));
     }
 
