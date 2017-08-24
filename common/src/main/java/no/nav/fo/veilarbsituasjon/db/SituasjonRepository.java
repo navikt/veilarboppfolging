@@ -389,7 +389,8 @@ public class SituasjonRepository {
 
         jdbcTemplate.update("" +
                 "UPDATE SITUASJON " +
-                "SET gjeldende_eskaleringsvarsel = ? " +
+                "SET gjeldende_eskaleringsvarsel = ?, " +
+                "OPPDATERT = CURRENT_TIMESTAMP " +
                 "WHERE aktorid = ?",
                 id,
                 aktorId
@@ -412,7 +413,8 @@ public class SituasjonRepository {
         );
         jdbcTemplate.update("" +
                 "UPDATE SITUASJON " +
-                "SET gjeldende_eskaleringsvarsel = null " +
+                "SET gjeldende_eskaleringsvarsel = null, " +
+                "OPPDATERT = CURRENT_TIMESTAMP " +
                 "WHERE aktorid = ?",
                 aktorId
         );
