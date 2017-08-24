@@ -1,10 +1,11 @@
 package no.nav.fo;
 
-import no.nav.apiapp.security.PepClient;
 import no.nav.dialogarena.config.DevelopmentSecurity;
 import no.nav.dialogarena.config.fasit.FasitUtils;
 import no.nav.fo.veilarbsituasjon.config.DatabaseConfig;
 import no.nav.fo.veilarbsituasjon.config.JndiLocalContextConfig;
+import no.nav.fo.veilarbsituasjon.config.PepConfig;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -42,7 +43,7 @@ public abstract class IntegrasjonsTest {
         annotationConfigApplicationContext = new AnnotationConfigApplicationContext(
                 JndiBean.class,
                 DatabaseConfig.class,
-                PepClient.class
+                PepConfig.class
         );
         annotationConfigApplicationContext.start();
         platformTransactionManager = getBean(PlatformTransactionManager.class);
