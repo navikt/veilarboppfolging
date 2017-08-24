@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
 import javax.ws.rs.WebApplicationException;
+
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
@@ -20,7 +21,6 @@ import java.util.stream.Collectors;
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.Response.Status.NOT_IMPLEMENTED;
 import static no.nav.fo.veilarbsituasjon.domain.VilkarStatus.*;
-import static no.nav.fo.veilarbsituasjon.utils.CalendarConverter.convertDateToXMLGregorianCalendar;
 import static no.nav.fo.veilarbsituasjon.utils.DateUtils.xmlCalendar;
 import static no.nav.fo.veilarbsituasjon.utils.StringUtils.emptyIfNull;
 
@@ -39,7 +39,9 @@ public class SituasjonOversiktWebService implements BehandleSituasjonV1 {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        return mapToHentOppfoelgingsstatusResponse(oppfolgingStatusData);
+        val res = new HentOppfoelgingsstatusResponse();
+        res.setOppfoelgingsstatus(mapTilOppfoelgingstatus(oppfolgingStatusData));
+        return res;
     }
 
     @Override
@@ -137,13 +139,19 @@ public class SituasjonOversiktWebService implements BehandleSituasjonV1 {
     @SneakyThrows
     private Oppfoelgingsstatus mapTilOppfoelgingstatus(OppfolgingStatusData oppfolgingStatusData) {
         val oppfoelgingstatus = new Oppfoelgingsstatus();
-        oppfoelgingstatus.setErBrukerUnderOppfoelging(oppfolgingStatusData.isUnderOppfolging());
         oppfoelgingstatus.setErBrukerSattTilManuell(oppfolgingStatusData.isManuell());
+        oppfoelgingstatus.setErBrukerUnderOppfoelging(oppfolgingStatusData.isUnderOppfolging());
         oppfoelgingstatus.setErReservertIKontaktOgReservasjonsregisteret(oppfolgingStatusData.isReservasjonKRR());
         oppfoelgingstatus.setMaaVilkaarBesvares(oppfolgingStatusData.isVilkarMaBesvares());
-        Optional.ofNullable(oppfolgingStatusData.getOppfolgingUtgang())
-                .ifPresent(value -> oppfoelgingstatus.setOppfoelgingUtgang(convertDateToXMLGregorianCalendar(value)));
         oppfoelgingstatus.setPersonident(oppfolgingStatusData.getFnr());
+        oppfoelgingstatus.setOppfoelgingUtgang(xmlCalendar(oppfolgingStatusData.getOppfolgingUtgang()));
+        oppfoelgingstatus.getOppfoelgingsPerioder().addAll(
+                oppfolgingStatusData.getOppfolgingsperioder().stream().map(this::mapOppfoelgingsPeriode).collect(toList())
+        );
+        Optional.ofNullable(oppfolgingStatusData.getGjeldendeEskaleringsvarsel())
+                .map(this::mapEskaleringsVarsel)
+                .ifPresent(oppfoelgingstatus::setEskaleringsvarsel);
+
         return oppfoelgingstatus;
     }
 
@@ -151,27 +159,6 @@ public class SituasjonOversiktWebService implements BehandleSituasjonV1 {
         val res = new HentVilkaarResponse();
         res.setVilkaarstekst(brukervilkar.getTekst());
         res.setHash(brukervilkar.getHash());
-        return res;
-    }
-
-    private HentOppfoelgingsstatusResponse mapToHentOppfoelgingsstatusResponse(OppfolgingStatusData oppfolgingStatusData) {
-        Oppfoelgingsstatus oppfoelgingsstatus = new Oppfoelgingsstatus();
-        oppfoelgingsstatus.setErBrukerSattTilManuell(oppfolgingStatusData.isManuell());
-        oppfoelgingsstatus.setErBrukerUnderOppfoelging(oppfolgingStatusData.isUnderOppfolging());
-        oppfoelgingsstatus.setErReservertIKontaktOgReservasjonsregisteret(oppfolgingStatusData.isReservasjonKRR());
-        oppfoelgingsstatus.setMaaVilkaarBesvares(oppfolgingStatusData.isVilkarMaBesvares());
-        oppfoelgingsstatus.setPersonident(oppfolgingStatusData.getFnr());
-        oppfoelgingsstatus.setOppfoelgingUtgang(xmlCalendar(oppfolgingStatusData.getOppfolgingUtgang()));
-        oppfoelgingsstatus.getOppfoelgingsPerioder().addAll(
-                oppfolgingStatusData.getOppfolgingsperioder().stream().map(this::mapOppfoelgingsPeriode).collect(toList())
-        );
-        Optional.ofNullable(oppfolgingStatusData.getGjeldendeEskaleringsvarsel())
-                .map(this::mapEskaleringsVarsel)
-                .ifPresent(oppfoelgingsstatus::setEskaleringsvarsel);
-
-        val res = new HentOppfoelgingsstatusResponse();
-        res.setOppfoelgingsstatus(oppfoelgingsstatus);
-
         return res;
     }
 
@@ -237,7 +224,7 @@ public class SituasjonOversiktWebService implements BehandleSituasjonV1 {
     private static Vilkaarsstatus mapBrukervilkarToVilkaarstatus(Brukervilkar brukervilkar, String ident) {
         Vilkaarsstatus vilkaarsstatus = new Vilkaarsstatus();
         vilkaarsstatus.setPersonident(ident);
-        vilkaarsstatus.setDato(convertDateToXMLGregorianCalendar(brukervilkar.getDato()));
+        vilkaarsstatus.setDato(xmlCalendar(brukervilkar.getDato()));
         vilkaarsstatus.setVilkaarstekst(brukervilkar.getTekst());
         vilkaarsstatus.setHash(brukervilkar.getHash());
         vilkaarsstatus.setStatus(mapVilkarStatusTilVilkaarstatuser(brukervilkar.getVilkarstatus()));

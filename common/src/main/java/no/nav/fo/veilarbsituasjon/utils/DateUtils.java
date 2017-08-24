@@ -17,7 +17,7 @@ import static java.util.Optional.ofNullable;
 public class DateUtils {
 
 
-    private static final DatatypeFactory datatypeFactory = getDatatypeFactory();
+    private static final DatatypeFactory DATATYPE_FACTORY = getDatatypeFactory();
 
     @SneakyThrows
     private static DatatypeFactory getDatatypeFactory() {
@@ -28,7 +28,7 @@ public class DateUtils {
         return ofNullable(date).map(d->{
             GregorianCalendar cal = new GregorianCalendar();
             cal.setTime(date);
-            return datatypeFactory.newXMLGregorianCalendar(cal);
+            return DATATYPE_FACTORY.newXMLGregorianCalendar(cal);
         }).orElse(null);
     }
 

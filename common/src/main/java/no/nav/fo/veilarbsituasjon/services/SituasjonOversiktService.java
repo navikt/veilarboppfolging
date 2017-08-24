@@ -185,7 +185,6 @@ public class SituasjonOversiktService {
                 .setUnderOppfolging(situasjon.isOppfolging())
                 .setReservasjonKRR(situasjonResolver.reservertIKrr())
                 .setManuell(situasjonResolver.manuell())
-                .setOppfolgingUtgang(situasjon.getOppfolgingUtgang())
                 .setVilkarMaBesvares(situasjonResolver.maVilkarBesvares())
                 .setKanStarteOppfolging(situasjonResolver.getKanSettesUnderOppfolging())
                 .setAvslutningStatusData(avslutningStatusData)

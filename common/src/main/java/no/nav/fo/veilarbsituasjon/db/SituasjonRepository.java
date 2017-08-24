@@ -37,7 +37,6 @@ public class SituasjonRepository {
                         "  SITUASJON.GJELDENDE_STATUS AS GJELDENDE_STATUS, " +
                         "  SITUASJON.GJELDENDE_ESKALERINGSVARSEL AS GJELDENDE_ESKALERINGSVARSEL, " +
                         "  SITUASJON.GJELDENDE_BRUKERVILKAR AS GJELDENDE_BRUKERVILKAR, " +
-                        "  SITUASJON.OPPFOLGING_UTGANG AS OPPFOLGING_UTGANG, " +
                         "  SITUASJON.GJELDENDE_MAL AS GJELDENDE_MAL, " +
                         "  STATUS.ID AS STATUS_ID, " +
                         "  STATUS.AKTORID AS STATUS_AKTORID, " +
@@ -299,7 +298,6 @@ public class SituasjonRepository {
                                 .map(b -> b != 0 ? mapTilBrukervilkar(resultat) : null)
                                 .orElse(null)
                 )
-                .setOppfolgingUtgang(hentDato(resultat, "oppfolging_utgang"))
                 .setGjeldendeMal(
                         Optional.ofNullable(resultat.getLong("GJELDENDE_MAL"))
                                 .map(m -> m != 0 ? mapTilMal(resultat) : null)

@@ -173,6 +173,7 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt, VeilederSitu
     }
 
     private OppfolgingStatus tilDto(OppfolgingStatusData oppfolgingStatusData) {
+        
         return new OppfolgingStatus()
                 .setFnr(oppfolgingStatusData.fnr)
                 .setVeilederId(oppfolgingStatusData.veilederId)
@@ -180,13 +181,13 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt, VeilederSitu
                 .setReservasjonKRR(oppfolgingStatusData.reservasjonKRR)
                 .setUnderOppfolging(oppfolgingStatusData.underOppfolging)
                 .setVilkarMaBesvares(oppfolgingStatusData.vilkarMaBesvares)
-                .setOppfolgingUtgang(oppfolgingStatusData.getOppfolgingUtgang())
                 .setKanStarteOppfolging(oppfolgingStatusData.isKanStarteOppfolging())
                 .setAvslutningStatus(
                         ofNullable(oppfolgingStatusData.getAvslutningStatusData())
                                 .map(this::tilDto)
                                 .orElse(null)
                 )
+                .setOppfolgingUtgang(oppfolgingStatusData.getOppfolgingUtgang())
                 .setGjeldendeEskaleringsvarsel(tilDto(oppfolgingStatusData.getGjeldendeEskaleringsvarsel()))
                 .setOppfolgingsPerioder(oppfolgingStatusData.oppfolgingsperioder.stream().map(this::tilDTO).collect(toList()));
     }
