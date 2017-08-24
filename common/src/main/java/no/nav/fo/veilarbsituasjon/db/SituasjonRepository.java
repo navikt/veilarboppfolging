@@ -169,8 +169,8 @@ public class SituasjonRepository {
     private void avsluttOppfolgingsperiode(String aktorId, String veileder, String begrunnelse) {
         jdbcTemplate.update("" +
                         "UPDATE OPPFOLGINGSPERIODE " +
-                        "SET veileder = ?, " +
-                        "begrunnelse = ?, " +
+                        "SET avslutt_veileder = ?, " +
+                        "avslutt_begrunnelse = ?, " +
                         "sluttDato = CURRENT_TIMESTAMP, " +
                         "oppdatert = CURRENT_TIMESTAMP " +
                         "WHERE aktorId = ? " +
@@ -315,7 +315,7 @@ public class SituasjonRepository {
 
 
     private static String hentOppfolingsperioderSQL =
-            "SELECT AKTORID, VEILEDER, STARTDATO, SLUTTDATO, BEGRUNNELSE " +
+            "SELECT AKTORID, AVSLUTT_VEILEDER, STARTDATO, SLUTTDATO, AVSLUTT_BEGRUNNELSE " +
             "FROM OPPFOLGINGSPERIODE ";
 
     public List<Oppfolgingsperiode> hentOppfolgingsperioder(String aktorid) {
@@ -435,10 +435,10 @@ public class SituasjonRepository {
     private Oppfolgingsperiode mapTilOppfolgingsperiode(ResultSet result) throws SQLException {
         return Oppfolgingsperiode.builder()
                 .aktorId(result.getString("aktorid"))
-                .veileder(result.getString("veileder"))
+                .veileder(result.getString("avslutt_veileder"))
                 .startDato(hentDato(result, "startdato"))
                 .sluttDato(hentDato(result, "sluttdato"))
-                .begrunnelse(result.getString("begrunnelse"))
+                .begrunnelse(result.getString("avslutt_begrunnelse"))
                 .build();
     }
 
