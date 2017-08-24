@@ -27,12 +27,7 @@ public class BrukerRepositoryTest extends IntegrasjonsTest {
 
     @Test
     public void skalLeggeTilBruker() {
-        try{
-            brukerRepository.upsertVeilederTilordning(AKTOR_ID, "***REMOVED***");
-        } catch (Exception e) {
-            LoggerFactory.getLogger(getClass()).info("Feil", e);
-            throw(e);
-        }
+        brukerRepository.upsertVeilederTilordning(AKTOR_ID, "***REMOVED***");
         
         assertThat(brukerRepository.hentTilordningForAktoer(AKTOR_ID).getVeileder(), is("***REMOVED***"));
     }
