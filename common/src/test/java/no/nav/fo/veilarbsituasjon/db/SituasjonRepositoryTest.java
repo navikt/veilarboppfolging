@@ -1,21 +1,19 @@
 package no.nav.fo.veilarbsituasjon.db;
 
-import no.nav.fo.veilarbsituasjon.IntegrasjonsTest;
+import no.nav.fo.IntegrasjonsTest;
 import no.nav.fo.veilarbsituasjon.domain.*;
-
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.sql.Timestamp;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
 import static java.lang.System.currentTimeMillis;
+import static no.nav.fo.veilarbsituasjon.domain.VilkarStatus.GODKJENT;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class SituasjonRepositoryTest extends IntegrasjonsTest {
 
@@ -62,18 +60,18 @@ public class SituasjonRepositoryTest extends IntegrasjonsTest {
     @Nested
     class oppdaterSituasjon {
         @Test
-        public void kanHenteSammeSituasjon() throws Exception {
-            situasjonRepository.opprettSituasjon("0001");
-            Situasjon situasjon = new Situasjon().setAktorId("0001").setOppfolging(true);
-            situasjonRepository.oppdaterOppfolgingStatus(situasjon);
-            Optional<Situasjon> uthentetSituasjon = hentSituasjon("0001");
-            sjekkLikeSituasjoner(situasjon, uthentetSituasjon);
+        public void kanHenteForventetSituasjon() throws Exception {
+            situasjonRepository.opprettSituasjon(AKTOR_ID);
+            situasjonRepository.startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
+            Situasjon uthentetSituasjon = hentSituasjon(AKTOR_ID).get();
+            assertThat(uthentetSituasjon.getAktorId(), equalTo(AKTOR_ID));
+            assertThat(uthentetSituasjon.isOppfolging(), is(true));
+            assertThat(uthentetSituasjon.getOppfolgingsperioder().size(), is(1));
         }
 
         @Test
         public void oppdatererStatus() throws Exception {
-            Situasjon situasjon = gittSituasjonForAktor(AKTOR_ID);
-            situasjonRepository.oppdaterOppfolgingStatus(situasjon);
+            gittSituasjonForAktor(AKTOR_ID);
 
             Brukervilkar brukervilkar = new Brukervilkar(
                     AKTOR_ID,
@@ -90,6 +88,43 @@ public class SituasjonRepositoryTest extends IntegrasjonsTest {
     }
 
     @Nested
+    class avsluttOppfolging {
+
+        @Test
+        public void avsluttOppfolgingResetterVeileder_Manuellstatus_Mal_Og_Vilkar() throws Exception {
+            situasjonRepository.opprettSituasjon(AKTOR_ID);
+            situasjonRepository.startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
+            String veilederId = "veilederId";
+            String maal = "Mål";
+            settVeileder(veilederId, AKTOR_ID);
+            situasjonRepository.opprettStatus(new Status(AKTOR_ID, true, new Timestamp(currentTimeMillis()), "Test", KodeverkBruker.SYSTEM, null));
+            situasjonRepository.opprettMal(new MalData().setAktorId(AKTOR_ID).setMal(maal).setEndretAv("bruker").setDato(new Timestamp(currentTimeMillis())));
+            String hash = "123";
+            situasjonRepository.opprettBrukervilkar(new Brukervilkar().setAktorId(AKTOR_ID).setHash(hash).setVilkarstatus(GODKJENT));
+            Situasjon situasjon = hentSituasjon(AKTOR_ID).get();
+            assertThat(situasjon.isOppfolging(), is(true));
+            assertThat(situasjon.getVeilederId(), equalTo(veilederId));
+            assertThat(situasjon.getGjeldendeStatus().isManuell(), is(true));
+            assertThat(situasjon.getGjeldendeMal().getMal(), equalTo(maal));
+            assertThat(situasjon.getGjeldendeBrukervilkar().getHash(), equalTo(hash));
+            
+            situasjonRepository.avsluttOppfolging(AKTOR_ID, veilederId, "Funnet arbeid");
+            Situasjon avsluttetSituasjon = hentSituasjon(AKTOR_ID).get();
+            assertThat(avsluttetSituasjon.isOppfolging(), is(false));
+            assertThat(avsluttetSituasjon.getVeilederId(), nullValue());
+            assertThat(avsluttetSituasjon.getGjeldendeStatus(), nullValue());
+            assertThat(avsluttetSituasjon.getGjeldendeMal(), nullValue());
+            assertThat(avsluttetSituasjon.getGjeldendeBrukervilkar(), nullValue());
+            
+            List<Oppfolgingsperiode> oppfolgingsperioder = avsluttetSituasjon.getOppfolgingsperioder();
+            assertThat(oppfolgingsperioder.size(), is(1));
+            
+            
+        }
+        
+    }
+    
+    @Nested
     class oppfolgingsperiode {
 
         @Test
@@ -100,36 +135,26 @@ public class SituasjonRepositoryTest extends IntegrasjonsTest {
         }
 
         @Test
-        public void kanIkkeOppretteOppfolgingsperiodeUtenAHaSituasjon() throws Exception {
-            assertThrows(Exception.class, () -> opprettOppfolgingsperiode(AKTOR_ID));
-        }
-
-        @Test
         public void kanHenteSituasjonMedOppfolgingsperioder() throws Exception {
             situasjonRepository.opprettSituasjon(AKTOR_ID);
-            Oppfolgingsperiode oppfolgingsperiode1 = opprettOppfolgingsperiode(AKTOR_ID);
-            Oppfolgingsperiode oppfolgingsperiode2 = opprettOppfolgingsperiode(AKTOR_ID);
-            Oppfolgingsperiode oppfolgingsperiode3 = opprettOppfolgingsperiode(AKTOR_ID);
+            situasjonRepository.startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
+            List<Oppfolgingsperiode> oppfolgingsperioder = situasjonRepository.hentSituasjon(AKTOR_ID).get().getOppfolgingsperioder();
+            assertThat(oppfolgingsperioder, hasSize(1));
+            assertThat(oppfolgingsperioder.get(0).getStartDato(), not(nullValue()));
+            assertThat(oppfolgingsperioder.get(0).getSluttDato(), nullValue());
+            
+            situasjonRepository.avsluttOppfolging(AKTOR_ID, "veileder", "begrunnelse");
+            oppfolgingsperioder = situasjonRepository.hentSituasjon(AKTOR_ID).get().getOppfolgingsperioder();
+            assertThat(oppfolgingsperioder, hasSize(1));
+            assertThat(oppfolgingsperioder.get(0).getSluttDato(), not(nullValue()));
 
-            Situasjon situasjon = situasjonRepository.hentSituasjon(AKTOR_ID).get();
-
-            List<Oppfolgingsperiode> oppfolgingsperioder = situasjon.getOppfolgingsperioder();
-            assertThat(oppfolgingsperioder, hasSize(3));
-            assertThat(oppfolgingsperioder, hasItems(oppfolgingsperiode1, oppfolgingsperiode2, oppfolgingsperiode3));
-        }
-
-        private Oppfolgingsperiode opprettOppfolgingsperiode(String aktorId) throws Exception {
-            Oppfolgingsperiode oppfolgingperiode = Oppfolgingsperiode.builder()
-                    .veileder("veileder")
-                    .begrunnelse("begrunnelse")
-                    .sluttDato(new Date())
-                    .aktorId(aktorId)
-                    .build();
-            situasjonRepository.opprettOppfolgingsperiode(oppfolgingperiode);
-            return oppfolgingperiode;
+            situasjonRepository.startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
+            oppfolgingsperioder = situasjonRepository.hentSituasjon(AKTOR_ID).get().getOppfolgingsperioder();
+            assertThat(oppfolgingsperioder, hasSize(2));
         }
 
     }
+
 
     @Nested
     class situasjonMedVeileder {
@@ -145,26 +170,27 @@ public class SituasjonRepositoryTest extends IntegrasjonsTest {
         public void medVeilederPaaNyBruker() throws Exception {
             String veilederId = "veilederId";
             situasjonRepository.opprettSituasjon(AKTOR_ID);
-            //Setter veileder direkte vha. sql, siden det ikke finnes funksjonalitet for tildeling av veileder i
-            //situasjonRepository. Dette finnes kun i BrukerRepository (og tilbys i PortefoljeRessurs) p.t.
-            //Men siden hentSituasjon henter opp veilder er det likevel aktuelt å teste her at veileder returneres 
-            //dersom det er satt i databasen. 
-            db.update("UPDATE situasjon SET VEILEDER = ? where aktorid = ?", veilederId, AKTOR_ID);
+            settVeileder(veilederId, AKTOR_ID);
             Situasjon situasjon = situasjonRepository.hentSituasjon(AKTOR_ID).get();
             assertThat(situasjon.getVeilederId(), equalTo(veilederId));
         }
+
     }
 
-    private void sjekkLikeSituasjoner(Situasjon oprinneligSituasjon, Optional<Situasjon> situasjon) {
-        assertThat(oprinneligSituasjon, equalTo(situasjon.get()));
+    //Setter veileder direkte vha. sql, siden det ikke finnes funksjonalitet for tildeling av veileder i
+    //situasjonRepository. Dette finnes kun i BrukerRepository (og tilbys i PortefoljeRessurs) p.t.
+    //Men siden hentSituasjon henter opp veilder er det likevel aktuelt å teste her at veileder returneres 
+    //dersom det er satt i databasen. 
+    private void settVeileder(String veilederId, String aktorId) {
+        db.update("UPDATE situasjon SET VEILEDER = ? where aktorid = ?", veilederId, aktorId);
     }
 
     private Situasjon gittSituasjonForAktor(String aktorId) {
         Situasjon situasjon = situasjonRepository.hentSituasjon(aktorId)
                 .orElseGet(() -> situasjonRepository.opprettSituasjon(aktorId));
 
+        situasjonRepository.startOppfolgingHvisIkkeAlleredeStartet(aktorId);
         situasjon.setOppfolging(true);
-        situasjonRepository.oppdaterOppfolgingStatus(situasjon);
         return situasjon;
     }
 
@@ -181,7 +207,7 @@ public class SituasjonRepositoryTest extends IntegrasjonsTest {
                 .setAktorId(aktorId)
                 .setMal(mal)
                 .setEndretAv(aktorId)
-                .setDato(null);
+                .setDato(new Timestamp(1l));
         situasjonRepository.opprettMal(input);
     }
 }

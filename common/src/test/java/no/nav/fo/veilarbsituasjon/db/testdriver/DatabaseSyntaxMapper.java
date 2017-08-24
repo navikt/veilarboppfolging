@@ -5,8 +5,9 @@ import java.util.Map;
 
 /*
 "Fattigmanns-løsning" for å kunne bruke hsql lokalt med oracle syntax
+ NB: Har byttet til h2 så mye av disse kan funke hvis syntaxen var rett
 */
-class HsqlSyntaxMapper {
+class DatabaseSyntaxMapper {
 
     private static final Map<String, String> syntaxMap = new HashMap<>();
     private static final String NOOP = "SELECT 1 FROM DUAL";
@@ -45,6 +46,22 @@ class HsqlSyntaxMapper {
                 "ALTER TABLE STATUS MODIFY BEGRUNNELSE NVARCHAR2(500)",
                 "ALTER TABLE STATUS alter column BEGRUNNELSE NVARCHAR2(500)"
         );
+        map(
+                "ALTER TABLE KODEVERK_BRUKER MODIFY ENDRET NOT NULL",
+                "ALTER TABLE KODEVERK_BRUKER alter column ENDRET SET NOT NULL;"
+        );
+        map(
+                "ALTER TABLE KODEVERK_BRUKER MODIFY ENDRET_AV NOT NULL",
+                "ALTER TABLE KODEVERK_BRUKER alter column ENDRET_AV SET NOT NULL;"
+        );
+        map(
+                "ALTER TABLE MAL MODIFY DATO NOT NULL",
+                "ALTER TABLE MAL alter column  DATO SET NOT NULL;"
+        );
+        map(
+                "ALTER TABLE MAL MODIFY ENDRET_AV NOT NULL",
+                "ALTER TABLE MAL alter column  ENDRET_AV SET NOT NULL;"
+        );
         map("END", NOOP);
     }
 
@@ -52,12 +69,12 @@ class HsqlSyntaxMapper {
         syntaxMap.put(oracleSyntax, hsqlSyntax);
     }
 
-    static String hsqlSyntax(String sql) {
+    static String h2Syntax(String sql) {
         System.out.println(sql + "-------------");
         if (sql.contains("BEGIN") || sql.contains("END LOOP")) {
             return NOOP;
         }
-        if(sql.contains("GENERATED ALWAYS AS IDENTITY(START WITH 1 INCREMENT BY 1)")) {
+        if (sql.contains("GENERATED ALWAYS AS IDENTITY(START WITH 1 INCREMENT BY 1)")) {
             return sql.replaceAll("GENERATED ALWAYS AS IDENTITY\\(START WITH 1 INCREMENT BY 1\\)", "NOT NULL");
         }
         return syntaxMap.getOrDefault(sql, sql);

@@ -10,6 +10,7 @@ import java.util.Date;
 public class Oppfolgingsperiode {
     String aktorId;
     String veileder;
+    Date startDato;
     Date sluttDato;
     String begrunnelse;
 }

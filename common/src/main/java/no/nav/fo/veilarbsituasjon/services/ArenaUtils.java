@@ -8,7 +8,7 @@ import static java.util.Arrays.asList;
 public class ArenaUtils {
 
     private static final Set<String> ARBEIDSOKERKODER = new HashSet<>(asList("ARBS", "RARBS", "PARBS"));
-    private static final Set<String> OPPFOLGINGKODER = new HashSet<>(asList("BATT", "BFORM", "IKVAL", "VURDU", "OPPFI"));
+    private static final Set<String> OPPFOLGINGKODER = new HashSet<>(asList("BATT", "BFORM", "IKVAL", "VURDU", "OPPFI", "VARIG"));
     private static final String IKKE_ARBEIDSSOKER = "IARBS";
     private static final String SYKEMELDT_HOS_ARBEIDSGIVER = "VURDI";
 

@@ -3,6 +3,7 @@ package no.nav.fo.veilarbsituasjon.services;
 import io.swagger.annotations.Api;
 import lombok.SneakyThrows;
 import lombok.val;
+import no.nav.brukerdialog.security.context.SubjectHandler;
 import no.nav.fo.veilarbsituasjon.db.SituasjonRepository;
 import no.nav.fo.veilarbsituasjon.domain.*;
 import no.nav.fo.veilarbsituasjon.services.SituasjonResolver.SituasjonResolverDependencies;
@@ -11,7 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
 import java.sql.Timestamp;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -74,7 +74,6 @@ public class SituasjonOversiktService {
         val situasjonResolver = new SituasjonResolver(fnr, situasjonResolverDependencies);
         if (situasjonResolver.getKanSettesUnderOppfolging()) {
             situasjonResolver.startOppfolging();
-
         }
 
         return getOppfolgingStatusData(fnr, situasjonResolver);
@@ -87,19 +86,12 @@ public class SituasjonOversiktService {
     }
 
     @SneakyThrows
+    @Transactional
     public OppfolgingStatusData avsluttOppfolging(String fnr, String veileder, String begrunnelse) {
         val situasjonResolver = new SituasjonResolver(fnr, situasjonResolverDependencies);
 
-        if (situasjonResolver.kanAvslutteOppfolging()) {
-            val oppfolgingsperiode = Oppfolgingsperiode.builder()
-                    .aktorId(situasjonResolver.getAktorId())
-                    .veileder(veileder)
-                    .sluttDato(new Date())
-                    .begrunnelse(begrunnelse)
-                    .build();
-            situasjonResolver.avsluttOppfolging(oppfolgingsperiode);
-        }
-
+        situasjonResolver.avsluttOppfolging(veileder, begrunnelse);
+        
         situasjonResolver.reloadSituasjon();
         return getOppfolgingStatusDataMedAvslutningStatus(fnr, situasjonResolver);
     }
@@ -133,9 +125,32 @@ public class SituasjonOversiktService {
         String aktorId = resolver.getAktorId();
 
         return Stream.concat(
-                situasjonRepository.hentOppfolgingsperioder(aktorId).stream().map(this::tilDTO),
+                situasjonRepository.hentAvsluttetOppfolgingsperioder(aktorId).stream().map(this::tilDTO),
                 situasjonRepository.hentManuellHistorikk(aktorId).stream().map(this::tilDTO)
         ).collect(Collectors.toList());
+    }
+
+    public List<EskaleringsvarselData> hentEskaleringhistorikk(String fnr) {
+        val resolver = new SituasjonResolver(fnr, situasjonResolverDependencies);
+        String aktorId = resolver.getAktorId();
+
+        return situasjonRepository.hentEskaleringhistorikk(aktorId);
+    }
+
+    // TODO: Si ifra til VarselOppgave om at nytt eskaleringsvarsel er opprettet.
+    public void startEskalering(String fnr, long tilhorendeDialogId) {
+        val resolver = new SituasjonResolver(fnr, situasjonResolverDependencies);
+        String aktorId = resolver.getAktorId();
+        String veilederId = SubjectHandler.getSubjectHandler().getUid();
+
+        situasjonRepository.startEskalering(aktorId, veilederId, tilhorendeDialogId);
+    }
+
+    public void stoppEskalering(String fnr) {
+        val resolver = new SituasjonResolver(fnr, situasjonResolverDependencies);
+        String aktorId = resolver.getAktorId();
+
+        situasjonRepository.stoppEskalering(aktorId);
     }
 
     private InnstillingsHistorikk tilDTO(Oppfolgingsperiode oppfolgingsperiode) {
@@ -173,6 +188,7 @@ public class SituasjonOversiktService {
                 .setVilkarMaBesvares(situasjonResolver.maVilkarBesvares())
                 .setKanStarteOppfolging(situasjonResolver.getKanSettesUnderOppfolging())
                 .setAvslutningStatusData(avslutningStatusData)
+                .setGjeldendeEskaleringsvarsel(situasjon.getGjeldendeEskaleringsvarsel())
                 .setOppfolgingsperioder(situasjon.getOppfolgingsperioder())
                 ;
     }

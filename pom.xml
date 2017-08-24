@@ -20,11 +20,8 @@
     <parent>
         <groupId>no.nav.sbl</groupId>
         <artifactId>mor-pom</artifactId>
-        <version>3.2</version>
+        <version>1-SNAPSHOT</version> <!-- TODO må låses før prodsetting -->
     </parent>
-
-    <name>VeilArbSituasjon</name>
-
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -36,7 +33,7 @@
         <oppfoelging-v1-tjenestespesifikasjon.version>1.1.0</oppfoelging-v1-tjenestespesifikasjon.version>
         <dial-nav-tjeneste-aktoer_v2.version>1.1</dial-nav-tjeneste-aktoer_v2.version>
         <dkif-tjenestespesifikasjon.version>1.2</dkif-tjenestespesifikasjon.version>
-        <brukerdialog-behandleSituasjon-v1-tjenestespesifikasjon.version>1.0.9-SNAPSHOT</brukerdialog-behandleSituasjon-v1-tjenestespesifikasjon.version>
+        <brukerdialog-behandleSituasjon-v1-tjenestespesifikasjon.version>1.0.11.16.14</brukerdialog-behandleSituasjon-v1-tjenestespesifikasjon.version>
         <organisasjonenhet-v1.version>1.0.7</organisasjonenhet-v1.version>
 
         <sonar.exclusions>
@@ -49,9 +46,9 @@
         <dependencies>
 
             <dependency>
-                <groupId>no.nav.sbl.dialogarena</groupId>
-                <artifactId>api-app-bom</artifactId>
-                <version>RELEASE</version>
+                <groupId>no.nav.sbl</groupId>
+                <artifactId>bom</artifactId>
+                <version>RELEASE</version> <!-- TODO må låses før prodsetting -->
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>

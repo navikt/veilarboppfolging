@@ -1,8 +1,8 @@
 package no.nav.sbl.dialogarena.restclient;
 
 
-import no.nav.apiapp.rest.JsonProvider;
 import no.nav.fo.veilarbsituasjon.services.SituasjonOversiktService;
+import no.nav.json.JsonProvider;
 import org.glassfish.jersey.client.ClientConfig;
 import org.slf4j.Logger;
 
