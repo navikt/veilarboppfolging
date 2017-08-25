@@ -57,11 +57,12 @@
 
         <!--NAV Felles -->
         <common-jetty.version>2.0.13</common-jetty.version>
-        <common-cxf.version>3.1.51</common-cxf.version>
+        <common-cxf.version>3.1.39</common-cxf.version>
         <common-web.version>4.0.6</common-web.version>
         <common-types.version>1.2</common-types.version>
         <common-test.version>1.2</common-test.version>
         <common-abac.version>1.1.69</common-abac.version>
+        <common-metrics.version>3.2.1</common-metrics.version>
 
         <xml-apis.version>1.4.01</xml-apis.version>
         <cxf-core.version>3.1.11</cxf-core.version>
@@ -93,6 +94,11 @@
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>no.nav</groupId>
+                <artifactId>metrics</artifactId>
+                <version>${common-metrics.version}</version>
+            </dependency>
             <dependency>
                 <groupId>no.nav.fo</groupId>
                 <artifactId>veilarbsituasjon-common</artifactId>
@@ -400,12 +406,6 @@
                 <groupId>org.junit.jupiter</groupId>
                 <artifactId>junit-jupiter-engine</artifactId>
                 <version>${junit.jupiter.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>no.nav.sbl.dialogarena</groupId>
-                <artifactId>test-config</artifactId>
-                <version>1.30.17</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
