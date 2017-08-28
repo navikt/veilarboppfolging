@@ -32,7 +32,7 @@ class StartJetty {
                         .port(PORT)
                         .loadProperties("/environment-test.properties")
                         .addDatasource(lokalDatabase ? setupInMemoryDatabase() : setupJndiLocalContext(getDbCredentials(TEST_ENVIRONMENT, APPLICATION_NAME)), DATA_SOURCE_JDNI_NAME)
-                , new ISSOSecurityConfig(APPLICATION_NAME, TEST_ENVIRONMENT.toString())).buildJetty();
+                , new ISSOSecurityConfig(APPLICATION_NAME)).buildJetty();
         jetty.startAnd(first(waitFor(gotKeypress())).then(jetty.stop));
     }
 

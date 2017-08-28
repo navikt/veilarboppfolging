@@ -27,7 +27,7 @@ public class StartJettyWS {
                         .port(PORT)
                         .sslPort(PORT + 1)
                         .addDatasource(lokalDatabase ? setupInMemoryDatabase() : setupJndiLocalContext(getDbCredentials(TEST_ENVIRONMENT, APPLICATION_NAME)), DATA_SOURCE_JDNI_NAME)
-                , new DevelopmentSecurity.SamlSecurityConfig(APPLICATION_NAME, TEST_ENVIRONMENT.toString())
+                , new DevelopmentSecurity.SamlSecurityConfig(APPLICATION_NAME)
         ).buildJetty();
         jetty.startAnd(first(waitFor(gotKeypress())).then(jetty.stop));
     }
