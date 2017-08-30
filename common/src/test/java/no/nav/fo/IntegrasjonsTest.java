@@ -37,8 +37,7 @@ public abstract class IntegrasjonsTest {
     @BeforeAll
     @BeforeClass
     public static void setupFelles() throws IOException {
-        DevelopmentSecurity.setupIntegrationTestSecurity(FasitUtils.getServiceUser("srvveilarbsituasjon", APPLICATION_NAME, "t6"));
-        DevelopmentSecurity.configureLdap(FasitUtils.getLdapConfig("ldap", APPLICATION_NAME, "t6"));
+        DevelopmentSecurity.setupIntegrationTestSecurity(FasitUtils.getServiceUser("srvveilarbsituasjon", APPLICATION_NAME));
         JndiLocalContextConfig.setupInMemoryDatabase();
         annotationConfigApplicationContext = new AnnotationConfigApplicationContext(
                 JndiBean.class,
