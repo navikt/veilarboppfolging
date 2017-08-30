@@ -4,11 +4,16 @@ import no.nav.fo.veilarbsituasjon.domain.Oppfolgingsenhet;
 import no.nav.fo.veilarbsituasjon.domain.Oppfolgingsstatus;
 import no.nav.fo.veilarbsituasjon.mappers.OppfolgingsstatusMapper;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.*;
-import no.nav.tjeneste.virksomhet.oppfoelging.v1.informasjon.WSPeriode;
-import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.*;
+import no.nav.tjeneste.virksomhet.oppfoelging.v1.informasjon.Periode;
+import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingskontraktListeRequest;
+import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingskontraktListeResponse;
+import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingsstatusRequest;
+import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingsstatusResponse;
 import org.slf4j.Logger;
 
-import javax.ws.rs.*;
+import javax.ws.rs.BadRequestException;
+import javax.ws.rs.ForbiddenException;
+import javax.ws.rs.NotFoundException;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import static org.slf4j.LoggerFactory.getLogger;
@@ -24,11 +29,14 @@ public class OppfolgingService {
         this.organisasjonsenhetService = organisasjonsenhetService;
     }
 
-    public WSHentOppfoelgingskontraktListeResponse hentOppfolgingskontraktListe(XMLGregorianCalendar fom, XMLGregorianCalendar tom, String fnr) {
-        WSHentOppfoelgingskontraktListeRequest request = new WSHentOppfoelgingskontraktListeRequest();
-        final WSPeriode periode = new WSPeriode().withFom(fom).withTom(tom);
-        request.withPeriode(periode).withPersonidentifikator(fnr);
-        WSHentOppfoelgingskontraktListeResponse response;
+    public HentOppfoelgingskontraktListeResponse hentOppfolgingskontraktListe(XMLGregorianCalendar fom, XMLGregorianCalendar tom, String fnr) {
+        HentOppfoelgingskontraktListeRequest request = new HentOppfoelgingskontraktListeRequest();
+        final Periode periode = new Periode();
+        periode.setFom(fom);
+        periode.setTom(tom);
+        request.setPeriode(periode);
+        request.setPersonidentifikator(fnr);
+        HentOppfoelgingskontraktListeResponse response;
 
         try {
             response = oppfoelgingPortType.hentOppfoelgingskontraktListe(request);
@@ -42,11 +50,11 @@ public class OppfolgingService {
     }
 
     public Oppfolgingsstatus hentOppfolgingsstatus(String identifikator) {
-        WSHentOppfoelgingsstatusRequest request = new WSHentOppfoelgingsstatusRequest()
-                .withPersonidentifikator(identifikator);
+        HentOppfoelgingsstatusRequest request = new HentOppfoelgingsstatusRequest();
+        request.setPersonidentifikator(identifikator);
 
         try {
-            WSHentOppfoelgingsstatusResponse oppfoelgingsstatus = oppfoelgingPortType.hentOppfoelgingsstatus(request);
+            HentOppfoelgingsstatusResponse oppfoelgingsstatus = oppfoelgingPortType.hentOppfoelgingsstatus(request);
             Oppfolgingsenhet oppfolgingsenhet = organisasjonsenhetService
                     .hentEnhet(oppfoelgingsstatus.getNavOppfoelgingsenhet());
             return OppfolgingsstatusMapper.tilOppfolgingsstatus(oppfoelgingsstatus, oppfolgingsenhet);

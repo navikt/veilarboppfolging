@@ -1,7 +1,6 @@
 package no.nav.fo.veilarbsituasjon;
 
 import no.nav.dialogarena.config.DevelopmentSecurity.ISSOSecurityConfig;
-import no.nav.dialogarena.config.fasit.TestEnvironment;
 import no.nav.sbl.dialogarena.common.jetty.Jetty;
 
 import static java.lang.System.getProperty;
@@ -17,7 +16,6 @@ import static no.nav.sbl.dialogarena.common.jetty.JettyStarterUtils.*;
 class StartJetty {
 
     private static final String APPLICATION_NAME = "veilarbsituasjon";
-    private static final TestEnvironment TEST_ENVIRONMENT = TestEnvironment.T6;
 
     static final String CONTEXT_NAME = "/veilarbsituasjon";
     static final int PORT = 8486;
@@ -31,7 +29,7 @@ class StartJetty {
                         .at(CONTEXT_NAME)
                         .port(PORT)
                         .loadProperties("/environment-test.properties")
-                        .addDatasource(lokalDatabase ? setupInMemoryDatabase() : setupJndiLocalContext(getDbCredentials(TEST_ENVIRONMENT, APPLICATION_NAME)), DATA_SOURCE_JDNI_NAME)
+                        .addDatasource(lokalDatabase ? setupInMemoryDatabase() : setupJndiLocalContext(getDbCredentials(APPLICATION_NAME)), DATA_SOURCE_JDNI_NAME)
                 , new ISSOSecurityConfig(APPLICATION_NAME)).buildJetty();
         jetty.startAnd(first(waitFor(gotKeypress())).then(jetty.stop));
     }

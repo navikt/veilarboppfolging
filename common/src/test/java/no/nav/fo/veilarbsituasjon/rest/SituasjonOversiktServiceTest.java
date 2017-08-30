@@ -18,8 +18,8 @@ import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.informasjon.WSKon
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.WSHentDigitalKontaktinformasjonRequest;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.WSHentDigitalKontaktinformasjonResponse;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
-import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.WSHentOppfoelgingsstatusRequest;
-import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.WSHentOppfoelgingsstatusResponse;
+import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingsstatusRequest;
+import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingsstatusResponse;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -67,17 +67,17 @@ public class SituasjonOversiktServiceTest {
     private SituasjonOversiktService situasjonOversiktService;
 
     private Situasjon situasjon = new Situasjon().setAktorId(AKTOR_ID);
-    private WSHentOppfoelgingsstatusResponse hentOppfolgingstatusResponse;
+    private HentOppfoelgingsstatusResponse hentOppfolgingstatusResponse;
     private WSKontaktinformasjon wsKontaktinformasjon = new WSKontaktinformasjon();
 
     @Before
     public void setup() throws Exception {
-        hentOppfolgingstatusResponse = new WSHentOppfoelgingsstatusResponse();
+        hentOppfolgingstatusResponse = new HentOppfoelgingsstatusResponse();
         when(situasjonRepositoryMock.opprettSituasjon(anyString())).thenReturn(situasjon);
 
         doAnswer((a) -> situasjon.setOppfolging(true)).when(situasjonRepositoryMock).startOppfolgingHvisIkkeAlleredeStartet(anyString());
 
-        when(oppfoelgingPortTypeMock.hentOppfoelgingsstatus(any(WSHentOppfoelgingsstatusRequest.class)))
+        when(oppfoelgingPortTypeMock.hentOppfoelgingsstatus(any(HentOppfoelgingsstatusRequest.class)))
                 .thenReturn(hentOppfolgingstatusResponse);
         when(digitalKontaktinformasjonV1Mock.hentDigitalKontaktinformasjon(any(WSHentDigitalKontaktinformasjonRequest.class)))
                 .thenReturn(new WSHentDigitalKontaktinformasjonResponse()

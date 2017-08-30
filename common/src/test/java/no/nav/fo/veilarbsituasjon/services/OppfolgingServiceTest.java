@@ -2,10 +2,18 @@ package no.nav.fo.veilarbsituasjon.services;
 
 import no.nav.fo.veilarbsituasjon.domain.Oppfolgingsenhet;
 import no.nav.fo.veilarbsituasjon.domain.Oppfolgingsstatus;
-import no.nav.tjeneste.virksomhet.oppfoelging.v1.*;
-import no.nav.tjeneste.virksomhet.oppfoelging.v1.informasjon.WSBruker;
-import no.nav.tjeneste.virksomhet.oppfoelging.v1.informasjon.WSOppfoelgingskontrakt;
-import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.*;
+import no.nav.tjeneste.virksomhet.oppfoelging.v1.HentOppfoelgingsstatusPersonIkkeFunnet;
+import no.nav.tjeneste.virksomhet.oppfoelging.v1.HentOppfoelgingsstatusSikkerhetsbegrensning;
+import no.nav.tjeneste.virksomhet.oppfoelging.v1.HentOppfoelgingsstatusUgyldigInput;
+import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
+import no.nav.tjeneste.virksomhet.oppfoelging.v1.feil.PersonIkkeFunnet;
+import no.nav.tjeneste.virksomhet.oppfoelging.v1.feil.Sikkerhetsbegrensning;
+import no.nav.tjeneste.virksomhet.oppfoelging.v1.feil.UgyldigInput;
+import no.nav.tjeneste.virksomhet.oppfoelging.v1.informasjon.Bruker;
+import no.nav.tjeneste.virksomhet.oppfoelging.v1.informasjon.Oppfoelgingskontrakt;
+import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingskontraktListeRequest;
+import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingskontraktListeResponse;
+import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingsstatusResponse;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -13,7 +21,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import javax.ws.rs.*;
+import javax.ws.rs.BadRequestException;
+import javax.ws.rs.ForbiddenException;
+import javax.ws.rs.NotFoundException;
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.time.LocalDate;
 
@@ -42,13 +52,13 @@ public class OppfolgingServiceTest {
     public void hentOppfoelgingskontraktListeReturnererEnRespons() throws Exception {
         final XMLGregorianCalendar fom = convertDateToXMLGregorianCalendar(LocalDate.now().minusMonths(2));
         final XMLGregorianCalendar tom = convertDateToXMLGregorianCalendar(LocalDate.now().plusMonths(1));
-        WSHentOppfoelgingskontraktListeResponse withOppfoelgingskontraktListe = new WSHentOppfoelgingskontraktListeResponse();
-        WSOppfoelgingskontrakt oppfoelgingskontrakt = new WSOppfoelgingskontrakt();
-        oppfoelgingskontrakt.setGjelderBruker(new WSBruker());
+        HentOppfoelgingskontraktListeResponse withOppfoelgingskontraktListe = new HentOppfoelgingskontraktListeResponse();
+        Oppfoelgingskontrakt oppfoelgingskontrakt = new Oppfoelgingskontrakt();
+        oppfoelgingskontrakt.setGjelderBruker(new Bruker());
         withOppfoelgingskontraktListe.getOppfoelgingskontraktListe().add(oppfoelgingskontrakt);
-        when(oppfoelgingPortType.hentOppfoelgingskontraktListe(any(WSHentOppfoelgingskontraktListeRequest.class))).thenReturn(withOppfoelgingskontraktListe);
+        when(oppfoelgingPortType.hentOppfoelgingskontraktListe(any(HentOppfoelgingskontraktListeRequest.class))).thenReturn(withOppfoelgingskontraktListe);
 
-        final WSHentOppfoelgingskontraktListeResponse response = oppfolgingService.hentOppfolgingskontraktListe(fom, tom, "***REMOVED***");
+        final HentOppfoelgingskontraktListeResponse response = oppfolgingService.hentOppfolgingskontraktListe(fom, tom, "***REMOVED***");
 
         assertThat(response.getOppfoelgingskontraktListe().isEmpty(), is(false));
     }
@@ -79,28 +89,29 @@ public class OppfolgingServiceTest {
 
     @Test(expected = NotFoundException.class)
     public void skalKasteNotFoundOmPersonIkkeFunnet() throws Exception {
-        when(oppfoelgingPortType.hentOppfoelgingsstatus(any())).thenThrow(new HentOppfoelgingsstatusPersonIkkeFunnet());
+        when(oppfoelgingPortType.hentOppfoelgingsstatus(any())).thenThrow(new HentOppfoelgingsstatusPersonIkkeFunnet("", new PersonIkkeFunnet()));
         oppfolgingService.hentOppfolgingsstatus("1234");
     }
 
     @Test(expected = ForbiddenException.class)
     public void skalKasteForbiddenOmManIkkeHarTilgang() throws Exception {
-        when(oppfoelgingPortType.hentOppfoelgingsstatus(any())).thenThrow(new HentOppfoelgingsstatusSikkerhetsbegrensning());
+        when(oppfoelgingPortType.hentOppfoelgingsstatus(any())).thenThrow(new HentOppfoelgingsstatusSikkerhetsbegrensning("", new Sikkerhetsbegrensning()));
         oppfolgingService.hentOppfolgingsstatus("1234");
     }
 
     @Test(expected = BadRequestException.class)
     public void skalKasteBadRequestOmUgyldigIdentifikator() throws Exception {
-        when(oppfoelgingPortType.hentOppfoelgingsstatus(any())).thenThrow(new HentOppfoelgingsstatusUgyldigInput());
+        when(oppfoelgingPortType.hentOppfoelgingsstatus(any())).thenThrow(new HentOppfoelgingsstatusUgyldigInput("", new UgyldigInput()));
         oppfolgingService.hentOppfolgingsstatus("1234");
     }
 
-    private WSHentOppfoelgingsstatusResponse lagMockResponse() {
-        return new WSHentOppfoelgingsstatusResponse()
-                .withFormidlingsgruppeKode("formidlingsgruppe")
-                .withNavOppfoelgingsenhet(MOCK_ENHET_ID)
-                .withRettighetsgruppeKode("rettighetsgruppe")
-                .withServicegruppeKode("servicegruppe");
+    private HentOppfoelgingsstatusResponse lagMockResponse() {
+        HentOppfoelgingsstatusResponse response = new HentOppfoelgingsstatusResponse();
+        response.setFormidlingsgruppeKode("formidlingsgruppe");
+        response.setNavOppfoelgingsenhet(MOCK_ENHET_ID);
+        response.setRettighetsgruppeKode("rettighetsgruppe");
+        response.setServicegruppeKode("servicegruppe");
+        return response;
     }
 
 }
