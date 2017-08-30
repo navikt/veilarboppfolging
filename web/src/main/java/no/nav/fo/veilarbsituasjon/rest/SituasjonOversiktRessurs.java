@@ -132,13 +132,13 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt, VeilederSitu
     }
 
     @Override
-    public void startEskalering(long tilhorendeDialogId) throws Exception {
-        situasjonOversiktService.startEskalering(getFnr(), tilhorendeDialogId);
+    public void startEskalering(EndreEskaleringDTO endreEskalering) throws Exception {
+        situasjonOversiktService.startEskalering(getFnr(), endreEskalering.getBegrunnelse(), endreEskalering.getDialogId());
     }
 
     @Override
-    public void stoppEskalering() throws Exception {
-        situasjonOversiktService.stoppEskalering(getFnr());
+    public void stoppEskalering(EndreEskaleringDTO endreEskalering) throws Exception {
+        situasjonOversiktService.stoppEskalering(getFnr(), endreEskalering.getBegrunnelse());
     }
 
     private Eskaleringsvarsel tilDto(EskaleringsvarselData eskaleringsvarselData) {
