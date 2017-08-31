@@ -3,7 +3,6 @@ package no.nav.fo.veilarbsituasjon.services;
 import io.swagger.annotations.Api;
 import lombok.SneakyThrows;
 import lombok.val;
-import no.nav.brukerdialog.security.context.SubjectHandler;
 import no.nav.fo.veilarbsituasjon.db.SituasjonRepository;
 import no.nav.fo.veilarbsituasjon.domain.*;
 import no.nav.fo.veilarbsituasjon.services.SituasjonResolver.SituasjonResolverDependencies;
@@ -144,18 +143,12 @@ public class SituasjonOversiktService {
     // TODO: Si ifra til VarselOppgave om at nytt eskaleringsvarsel er opprettet.
     public void startEskalering(String fnr, String begrunnelse, long tilhorendeDialogId) {
         val resolver = new SituasjonResolver(fnr, situasjonResolverDependencies);
-        String aktorId = resolver.getAktorId();
-        String veilederId = SubjectHandler.getSubjectHandler().getUid();
-
-        situasjonRepository.startEskalering(aktorId, veilederId, begrunnelse, tilhorendeDialogId);
+        resolver.startEskalering(begrunnelse, tilhorendeDialogId);
     }
 
     public void stoppEskalering(String fnr, String begrunnelse) {
         val resolver = new SituasjonResolver(fnr, situasjonResolverDependencies);
-        String aktorId = resolver.getAktorId();
-        String veilederId = SubjectHandler.getSubjectHandler().getUid();
-
-        situasjonRepository.stoppEskalering(aktorId, veilederId, begrunnelse);
+        resolver.stoppEskalering(begrunnelse);
     }
 
     private InnstillingsHistorikk tilDTO(Oppfolgingsperiode oppfolgingsperiode) {

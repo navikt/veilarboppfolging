@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.val;
 import no.nav.apiapp.security.PepClient;
+import no.nav.brukerdialog.security.context.SubjectHandler;
 import no.nav.fo.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
 import no.nav.fo.veilarbsituasjon.db.SituasjonRepository;
 import no.nav.fo.veilarbsituasjon.domain.*;
@@ -33,6 +34,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import static java.lang.System.currentTimeMillis;
 import static java.util.Optional.of;
@@ -216,12 +218,27 @@ public class SituasjonResolver {
         if (!kanAvslutteOppfolging()) {
             return;
         }
+
+        if(Optional.ofNullable(situasjon.getGjeldendeEskaleringsvarsel()).isPresent()){
+            stoppEskalering("Eskalering avsluttet fordi oppfølging ble avsluttet");
+        }
+
         deps.getSituasjonRepository().avsluttOppfolging(aktorId, veileder, begrunnelse);
     }
 
     private Situasjon hentSituasjon() {
         return deps.getSituasjonRepository().hentSituasjon(aktorId)
             .orElseGet(() -> deps.getSituasjonRepository().opprettSituasjon(aktorId));
+    }
+
+    void startEskalering(String begrunnelse, long tilhorendeDialogId){
+        String veilederId = SubjectHandler.getSubjectHandler().getUid();
+        deps.getSituasjonRepository().startEskalering(aktorId, veilederId, begrunnelse, tilhorendeDialogId);
+    }
+
+    void stoppEskalering(String begrunnelse) {
+        String veilederId = SubjectHandler.getSubjectHandler().getUid();
+        deps.getSituasjonRepository().stoppEskalering(aktorId, veilederId, begrunnelse);
     }
 
     @SneakyThrows
