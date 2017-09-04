@@ -3,7 +3,6 @@ package no.nav.fo.veilarbsituasjon.services;
 import io.swagger.annotations.Api;
 import lombok.SneakyThrows;
 import lombok.val;
-import no.nav.brukerdialog.security.context.SubjectHandler;
 import no.nav.fo.veilarbsituasjon.db.SituasjonRepository;
 import no.nav.fo.veilarbsituasjon.domain.*;
 import no.nav.fo.veilarbsituasjon.services.SituasjonResolver.SituasjonResolverDependencies;
@@ -12,12 +11,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
 import java.sql.Timestamp;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static java.lang.System.currentTimeMillis;
+import static java.util.stream.Stream.concat;
 import static no.nav.fo.veilarbsituasjon.domain.InnstillingsHistorikk.Type.*;
 import static no.nav.fo.veilarbsituasjon.domain.KodeverkBruker.NAV;
 
@@ -91,7 +92,7 @@ public class SituasjonOversiktService {
         val situasjonResolver = new SituasjonResolver(fnr, situasjonResolverDependencies);
 
         situasjonResolver.avsluttOppfolging(veileder, begrunnelse);
-        
+
         situasjonResolver.reloadSituasjon();
         return getOppfolgingStatusDataMedAvslutningStatus(fnr, situasjonResolver);
     }
@@ -124,9 +125,11 @@ public class SituasjonOversiktService {
         val resolver = new SituasjonResolver(fnr, situasjonResolverDependencies);
         String aktorId = resolver.getAktorId();
 
-        return Stream.concat(
-                situasjonRepository.hentAvsluttetOppfolgingsperioder(aktorId).stream().map(this::tilDTO),
-                situasjonRepository.hentManuellHistorikk(aktorId).stream().map(this::tilDTO)
+        return concat(
+                concat(
+                        situasjonRepository.hentAvsluttetOppfolgingsperioder(aktorId).stream().map(this::tilDTO),
+                        situasjonRepository.hentManuellHistorikk(aktorId).stream().map(this::tilDTO)),
+                situasjonRepository.hentEskaleringhistorikk(aktorId).stream().map(this::tilDTO).flatMap(List::stream)
         ).collect(Collectors.toList());
     }
 
@@ -138,19 +141,14 @@ public class SituasjonOversiktService {
     }
 
     // TODO: Si ifra til VarselOppgave om at nytt eskaleringsvarsel er opprettet.
-    public void startEskalering(String fnr, long tilhorendeDialogId) {
+    public void startEskalering(String fnr, String begrunnelse, long tilhorendeDialogId) {
         val resolver = new SituasjonResolver(fnr, situasjonResolverDependencies);
-        String aktorId = resolver.getAktorId();
-        String veilederId = SubjectHandler.getSubjectHandler().getUid();
-
-        situasjonRepository.startEskalering(aktorId, veilederId, tilhorendeDialogId);
+        resolver.startEskalering(begrunnelse, tilhorendeDialogId);
     }
 
-    public void stoppEskalering(String fnr) {
+    public void stoppEskalering(String fnr, String begrunnelse) {
         val resolver = new SituasjonResolver(fnr, situasjonResolverDependencies);
-        String aktorId = resolver.getAktorId();
-
-        situasjonRepository.stoppEskalering(aktorId);
+        resolver.stoppEskalering(begrunnelse);
     }
 
     private InnstillingsHistorikk tilDTO(Oppfolgingsperiode oppfolgingsperiode) {
@@ -171,6 +169,36 @@ public class SituasjonOversiktService {
                 .opprettetAv(historikkData.getOpprettetAv())
                 .opprettetAvBrukerId(historikkData.getOpprettetAvBrukerId())
                 .build();
+    }
+
+    private List<InnstillingsHistorikk> tilDTO(EskaleringsvarselData data) {
+        val harAvsluttetEskalering = data.getAvsluttetDato() != null;
+
+        val startetEskalering = InnstillingsHistorikk
+                .builder()
+                .type(ESKALERING_STARTET)
+                .dato(data.getOpprettetDato())
+                .begrunnelse(data.getOpprettetBegrunnelse())
+                .opprettetAv(KodeverkBruker.NAV)
+                .opprettetAvBrukerId(data.getOpprettetAv())
+                .dialogId(data.getTilhorendeDialogId())
+                .build();
+
+        if (harAvsluttetEskalering) {
+            val stoppetEskalering = InnstillingsHistorikk
+                    .builder()
+                    .type(ESKALERING_STOPPET)
+                    .dato(data.getAvsluttetDato())
+                    .begrunnelse(data.getAvsluttetBegrunnelse())
+                    .opprettetAv(KodeverkBruker.NAV)
+                    .opprettetAvBrukerId(data.getAvsluttetAv())
+                    .dialogId(data.getTilhorendeDialogId())
+                    .build();
+            return Arrays.asList(startetEskalering, stoppetEskalering);
+        } else {
+            return Collections.singletonList(startetEskalering);
+        }
+
     }
 
     private OppfolgingStatusData getOppfolgingStatusData(String fnr, SituasjonResolver situasjonResolver) {

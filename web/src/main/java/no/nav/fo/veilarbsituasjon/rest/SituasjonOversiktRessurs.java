@@ -122,23 +122,14 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt, VeilederSitu
         return tilDto(situasjonOversiktService.oppdaterMal(mal.getMal(), getFnr(), getUid()));
     }
 
-
     @Override
-    public List<Eskaleringsvarsel> hentEskaleringhistorikk() throws Exception {
-        List<EskaleringsvarselData> eskaleringsvarselDataList = situasjonOversiktService.hentEskaleringhistorikk(getFnr());
-        return eskaleringsvarselDataList.stream()
-                .map(this::tilDto)
-                .collect(toList());
+    public void startEskalering(EndreEskaleringDTO endreEskalering) throws Exception {
+        situasjonOversiktService.startEskalering(getFnr(), endreEskalering.getBegrunnelse(), endreEskalering.getDialogId());
     }
 
     @Override
-    public void startEskalering(long tilhorendeDialogId) throws Exception {
-        situasjonOversiktService.startEskalering(getFnr(), tilhorendeDialogId);
-    }
-
-    @Override
-    public void stoppEskalering() throws Exception {
-        situasjonOversiktService.stoppEskalering(getFnr());
+    public void stoppEskalering(EndreEskaleringDTO endreEskalering) throws Exception {
+        situasjonOversiktService.stoppEskalering(getFnr(), endreEskalering.getBegrunnelse());
     }
 
     private Eskaleringsvarsel tilDto(EskaleringsvarselData eskaleringsvarselData) {

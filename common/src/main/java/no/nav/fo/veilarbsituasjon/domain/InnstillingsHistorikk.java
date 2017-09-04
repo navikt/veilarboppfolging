@@ -13,11 +13,13 @@ public class InnstillingsHistorikk {
     private String begrunnelse;
     private KodeverkBruker opprettetAv;
     private String opprettetAvBrukerId;
+    private Long dialogId;
 
     public enum Type {
         SATT_TIL_MANUELL,
         SATT_TIL_DIGITAL,
-        AVSLUTTET_OPPFOLGINGSPERIODE
+        AVSLUTTET_OPPFOLGINGSPERIODE,
+        ESKALERING_STARTET,
+        ESKALERING_STOPPET
     }
-
 }

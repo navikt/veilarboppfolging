@@ -14,6 +14,9 @@ public class EskaleringsvarselData {
     private String aktorId;
     private String opprettetAv;
     private Date opprettetDato;
+    private String opprettetBegrunnelse;
     private Date avsluttetDato;
+    private String avsluttetAv;
+    private String avsluttetBegrunnelse;
     private long tilhorendeDialogId;
 }
