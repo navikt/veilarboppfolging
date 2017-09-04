@@ -1,9 +1,10 @@
 package no.nav.fo.veilarbsituasjon.rest;
 
-import no.nav.fo.veilarbsituasjon.rest.domain.OppfolgingskontraktData;
-import no.nav.fo.veilarbsituasjon.rest.domain.OppfolgingskontraktResponse;
+import no.nav.apiapp.security.PepClient;
+import no.nav.fo.veilarbsituasjon.mappers.OppfolgingMapper;
+import no.nav.fo.veilarbsituasjon.domain.OppfolgingskontraktData;
+import no.nav.fo.veilarbsituasjon.domain.OppfolgingskontraktResponse;
 import no.nav.fo.veilarbsituasjon.services.OppfolgingService;
-import no.nav.fo.veilarbsituasjon.services.PepClient;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -25,6 +26,10 @@ public class OppfolgingRessursTest {
     private OppfolgingRessurs oppfoelgingRessurs;
 
     @Mock
+    private OppfolgingMapper oppfolgingMapper;
+
+    @Mock
+    @SuppressWarnings("unused")
     private OppfolgingService oppfolgingService;
 
     @Mock
@@ -33,11 +38,10 @@ public class OppfolgingRessursTest {
     @Test
     public void getOppfoelgingSkalReturnereEnRespons() throws Exception {
 
-        when(oppfolgingService.hentOppfolgingskontraktListe(any(), any(), anyString())).thenReturn(
+        when(oppfolgingMapper.tilOppfolgingskontrakt(any())).thenReturn(
                 new OppfolgingskontraktResponse(Collections.singletonList(new OppfolgingskontraktData()))
         );
 
-        when(pepClient.isServiceCallAllowed(anyString())).thenReturn(true);
 
         final OppfolgingskontraktResponse oppfoelging = oppfoelgingRessurs.getOppfoelging("***REMOVED***");
 

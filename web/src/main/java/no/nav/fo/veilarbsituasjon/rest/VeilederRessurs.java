@@ -6,7 +6,11 @@ import no.nav.fo.veilarbsituasjon.rest.domain.Veileder;
 import no.nav.fo.veilarbsituasjon.services.AktoerIdService;
 import org.springframework.stereotype.Component;
 
-import javax.ws.rs.*;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 
 @Component
@@ -26,7 +30,7 @@ public class VeilederRessurs {
     @Path("/veileder")
     public Veileder getVeileder(@PathParam("fnr") String fnr) {
         String brukersAktoerId = aktoerIdService.findAktoerId(fnr);
-        String veilederIdent = brukerRepository.hentVeilederForAktoer(brukersAktoerId);
+        String veilederIdent = brukerRepository.hentTilordningForAktoer(brukersAktoerId).getVeileder();
         return new Veileder()
                 .withIdent(veilederIdent);
     }

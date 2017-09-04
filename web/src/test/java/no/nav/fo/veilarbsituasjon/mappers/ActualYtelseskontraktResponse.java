@@ -44,7 +44,7 @@ class ActualYtelseskontraktResponse {
         final WSHentYtelseskontraktListeRequest request = getWSHentYtelseskontraktListeRequest();
 
         final WSHentYtelseskontraktListeResponse rawResponse = ytelseskontraktMock.hentYtelseskontraktListe(request);
-        return YtelseskontraktMapper.tilYtelseskontrakt(rawResponse);
+        return new YtelseskontraktMapper().tilYtelseskontrakt(rawResponse);
 
     }
 

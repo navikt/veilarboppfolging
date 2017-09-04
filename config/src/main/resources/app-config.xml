@@ -8,7 +8,6 @@
 
     <selftest>
         <path>veilarbsituasjon/internal/selftest</path>
-        <humanReadablePath>veilarbsituasjon/internal/selftest</humanReadablePath>
     </selftest>
 
     <artifacts>
@@ -18,6 +17,9 @@
     <loadBalancer isAlive="veilarbsituasjon/internal/isAlive"/>
 
     <security serviceUserResourceAlias="srvveilarbsituasjon">
+        <logins>
+            <saml/>
+        </logins>
     </security>
 
     <abacSecurity serviceUserResourceAlias="srvveilarbsituasjon"/>
@@ -26,13 +28,16 @@
 
     <resources>
         <applicationProperties alias="veilarbsituasjon.properties"/>
+        <applicationProperties alias="feed.brukertilgang"/>
         <webservice alias="virksomhet:DigitalKontakinformasjon_v1" mapToProperty="dkif.endpoint"/>
         <webservice alias="virksomhet:Ytelseskontrakt_v3" mapToProperty="ytelseskontrakt.endpoint"/>
         <webservice alias="virksomhet:Oppfolging_v1" mapToProperty="oppfoelging.endpoint"/>
         <webservice alias="virksomhet:OrganisasjonEnhet_v1" mapToProperty="organisasjonenhet.endpoint"/>
         <webservice alias="Aktoer_v2" mapToProperty="aktoer.endpoint"/>
         <applicationCertificate alias="srvveilarbsituasjon"/>
-        <rest alias="abac.pdp.endpoint" mapToProperty="abac.endpoint"/>
+        <rest alias="abac.pdp.endpoint" mapToProperty="abac.endpoint" />
+        <rest alias="veilArbAktivitetAPI" mapToProperty="veilarbaktivitet" />
+        <rest alias="veilarblogin.redirect-url" mapToProperty="oidc-redirect" />
         <baseUrl alias="isso-host"/>
         <baseUrl alias="isso-jwks"/>
         <baseUrl alias="isso-issuer"/>
@@ -40,10 +45,6 @@
         <credential alias="isso-rp-user"/>
 
         <fileLibrary mapToProperty="vilkar" alias="veilarbsituasjon.vilkar.v1"/>
-
-        <queueManager xaEnabled="true" alias="mqGateway02" jndi="java:/jboss/mqConnectionFactory">
-            <queue alias="veilarbsituasjon_TILORDNEVEILEDER" jndi="java:jboss/jms/endreVeilederKo"/>
-        </queueManager>
 
         <datasource alias="veilarbsituasjonDB" xaEnabled="true" jndi="java:jboss/jdbc/veilarbsituasjonDS">
             <pool maxPoolSize="300" minPoolSize="0"/>
@@ -54,6 +55,14 @@
 
     <exposed-services>
         <exposedRest path="/veilarbsituasjon/api" name="veilArbSituasjonAPI"/>
+        <exposedSoap name="BehandleSituasjonV1"
+                     path="/veilarbsituasjon-ws/ws/Situasjon"
+                     securityToken="SAML"
+                     wsdlGroupId="no.nav.tjenester"
+                     wsdlArtifactId="brukerdialog-behandleSituasjon-v1-tjenestespesifikasjon"
+                     wsdlVersion="${brukerdialog-behandleSituasjon-v1-tjenestespesifikasjon.version}">
+            <exportToZone>SBS</exportToZone>
+        </exposedSoap>
     </exposed-services>
 
     <serverOptions>

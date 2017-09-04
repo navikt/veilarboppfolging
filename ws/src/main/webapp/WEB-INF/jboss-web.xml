@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jboss-web>
+    <resource-ref>
+        <res-ref-name>jdbc/veilarbsituasjonDS</res-ref-name>
+        <jndi-name>java:jboss/jdbc/veilarbsituasjonDS</jndi-name>
+        <res-type>javax.sql.DataSource</res-type>
+    </resource-ref>
+
+	<context-root>veilarbsituasjon-ws</context-root>
+    <security-domain>java:/jaas/NavSAML</security-domain>
+</jboss-web>

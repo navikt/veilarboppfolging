@@ -1,0 +1,1 @@
+alter table MAL modify (MAL NVARCHAR2(500));
