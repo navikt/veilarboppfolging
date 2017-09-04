@@ -12,11 +12,9 @@ import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
 import javax.ws.rs.WebApplicationException;
-
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.Response.Status.NOT_IMPLEMENTED;
@@ -98,20 +96,6 @@ public class SituasjonOversiktWebService implements BehandleSituasjonV1 {
 
         val res = new HentMalListeResponse();
         res.getMalListe().addAll(malListe);
-        return res;
-    }
-
-    @Override
-    public HentEskaleringsHistorikkResponse hentEskaleringsHistorikk(HentEskaleringsHistorikkRequest req) {
-        val res = new HentEskaleringsHistorikkResponse();
-
-        val eskaleringsHistorikk = situasjonOversiktService
-                .hentEskaleringhistorikk(req.getPersonident())
-                .stream()
-                .map(this::mapEskaleringsVarsel)
-                .collect(Collectors.toList());
-
-        res.getEskaleringsvarsler().addAll(eskaleringsHistorikk);
         return res;
     }
 
