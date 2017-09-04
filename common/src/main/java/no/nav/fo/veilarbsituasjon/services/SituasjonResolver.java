@@ -8,6 +8,7 @@ import no.nav.brukerdialog.security.context.SubjectHandler;
 import no.nav.fo.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
 import no.nav.fo.veilarbsituasjon.db.SituasjonRepository;
 import no.nav.fo.veilarbsituasjon.domain.*;
+import no.nav.fo.veilarbsituasjon.utils.DateUtils;
 import no.nav.fo.veilarbsituasjon.utils.StringUtils;
 import no.nav.fo.veilarbsituasjon.vilkar.VilkarService;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.DigitalKontaktinformasjonV1;
@@ -30,8 +31,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
 import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -81,7 +80,7 @@ public class SituasjonResolver {
     @Transactional
     void sjekkStatusIArenaOgOppdaterSituasjon() {
         if (!situasjon.isOppfolging()) {
-            sjekkArena();
+            hentOppfolgingstatusFraArena();
             if(erUnderOppfolging(statusIArena.getFormidlingsgruppeKode(), statusIArena.getServicegruppeKode())){
                 deps.getSituasjonRepository().startOppfolgingHvisIkkeAlleredeStartet(aktorId);
                 reloadSituasjon();
@@ -162,7 +161,7 @@ public class SituasjonResolver {
             return false;
         }
         if (statusIArena == null) {
-            sjekkArena();
+            hentOppfolgingstatusFraArena();
         }
         return kanSettesUnderOppfolging(statusIArena.getFormidlingsgruppeKode(), statusIArena.getServicegruppeKode());
     }
@@ -175,7 +174,7 @@ public class SituasjonResolver {
 
     boolean erUnderOppfolgingIArena() {
         if (statusIArena == null) {
-            sjekkArena();
+            hentOppfolgingstatusFraArena();
         }
         return erUnderOppfolging(statusIArena.getFormidlingsgruppeKode(), statusIArena.getServicegruppeKode());
     }
@@ -208,10 +207,11 @@ public class SituasjonResolver {
     }
 
     Date getInaktiveringsDato() {
-        // TODO: Erstatt dette når inaktiveringsDato finnes i arena
-        LocalDate date = LocalDate.now().minusMonths(2);
-        Date toManedSiden = Date.from(date.atStartOfDay(ZoneId.systemDefault()).toInstant());
-        return fnr.equals("***REMOVED***") ? toManedSiden : new Date();
+        if (statusIArena == null) {
+            hentOppfolgingstatusFraArena();
+        }
+
+        return DateUtils.getDate(statusIArena.getInaktiveringsdato());
     }
 
     void avsluttOppfolging(String veileder, String begrunnelse) {
@@ -242,7 +242,7 @@ public class SituasjonResolver {
     }
 
     @SneakyThrows
-    private void sjekkArena() {
+    private void hentOppfolgingstatusFraArena() {
         val hentOppfolgingstatusRequest = new HentOppfoelgingsstatusRequest();
         hentOppfolgingstatusRequest.setPersonidentifikator(fnr);
         this.statusIArena = deps.getOppfoelgingPortType().hentOppfoelgingsstatus(hentOppfolgingstatusRequest);
