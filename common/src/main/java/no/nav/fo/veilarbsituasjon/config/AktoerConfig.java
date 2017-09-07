@@ -3,7 +3,7 @@ package no.nav.fo.veilarbsituasjon.config;
 import no.nav.sbl.dialogarena.common.cxf.CXFClient;
 import no.nav.sbl.dialogarena.types.Pingable;
 import no.nav.sbl.dialogarena.types.Pingable.Ping.PingMetadata;
-import no.nav.tjeneste.virksomhet.aktoer.v2.AktoerV2;
+import no.nav.tjeneste.virksomhet.aktoer.v2.binding.AktoerV2;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -28,6 +28,7 @@ public class AktoerConfig {
         );
 
         return () -> {
+
             try {
                 factory().ping();
                 return lyktes(metadata);

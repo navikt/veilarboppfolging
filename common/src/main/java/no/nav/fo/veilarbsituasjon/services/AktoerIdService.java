@@ -1,9 +1,10 @@
 package no.nav.fo.veilarbsituasjon.services;
 
 
-import no.nav.tjeneste.virksomhet.aktoer.v2.AktoerV2;
-import no.nav.tjeneste.virksomhet.aktoer.v2.HentAktoerIdForIdentPersonIkkeFunnet;
-import no.nav.tjeneste.virksomhet.aktoer.v2.meldinger.WSHentAktoerIdForIdentRequest;
+//import no.nav.tjeneste.virksomhet.aktoer.v2.meldinger.WSHentAktoerIdForIdentRequest;
+import no.nav.tjeneste.virksomhet.aktoer.v2.binding.AktoerV2;
+import no.nav.tjeneste.virksomhet.aktoer.v2.binding.HentAktoerIdForIdentPersonIkkeFunnet;
+import no.nav.tjeneste.virksomhet.aktoer.v2.meldinger.HentAktoerIdForIdentRequest;
 import org.slf4j.Logger;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,10 +24,10 @@ public class AktoerIdService {
     public String findAktoerId(String fnr) {
 
         try {
-            return aktoerV2.hentAktoerIdForIdent(
-                    new WSHentAktoerIdForIdentRequest()
-                            .withIdent(fnr)
-            ).getAktoerId();
+            HentAktoerIdForIdentRequest hentAktoerIdForIdentRequest = new HentAktoerIdForIdentRequest();
+            hentAktoerIdForIdentRequest.setIdent(fnr);
+            return aktoerV2.hentAktoerIdForIdent(hentAktoerIdForIdentRequest)
+                    .getAktoerId();
         } catch (HentAktoerIdForIdentPersonIkkeFunnet e) {
             LOG.error("AktoerId ikke funnet", e);
             return null;
