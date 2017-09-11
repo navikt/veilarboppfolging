@@ -106,6 +106,12 @@ public class SituasjonOversiktWebService implements BehandleSituasjonV1 {
     }
 
     @Override
+    public SlettMalResponse slettMal(SlettMalRequest slettMalRequest) {
+        situasjonOversiktService.slettMal(slettMalRequest.getPersonident());
+        return new SlettMalResponse();
+    }
+
+    @Override
     public SettDigitalResponse settDigital(SettDigitalRequest settDigitalRequest) {
         val oppfolgingStatusData = situasjonOversiktService.settDigitalBruker(settDigitalRequest.getPersonident());
         oppfolgingStatusData.setVilkarMaBesvares(true);

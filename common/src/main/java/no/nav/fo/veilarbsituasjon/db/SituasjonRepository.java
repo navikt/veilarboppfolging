@@ -3,8 +3,8 @@ package no.nav.fo.veilarbsituasjon.db;
 
 import lombok.SneakyThrows;
 import lombok.val;
+import no.nav.fo.inject.Database;
 import no.nav.fo.veilarbsituasjon.domain.*;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.ResultSet;
@@ -19,17 +19,15 @@ import static no.nav.apiapp.util.EnumUtils.getName;
 import static no.nav.apiapp.util.EnumUtils.valueOfOptional;
 
 public class SituasjonRepository {
-    private static final String DIALECT_PROPERTY = "db.dialect";
-    private static final String HSQLDB_DIALECT = "hsqldb";
 
-    private JdbcTemplate jdbcTemplate;
+    private Database database;
 
-    public SituasjonRepository(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
+    public SituasjonRepository(Database database) {
+        this.database = database;
     }
 
     public Optional<Situasjon> hentSituasjon(String aktorId) {
-        List<Situasjon> situasjon = jdbcTemplate.query("" +
+        List<Situasjon> situasjon = database.query("" +
                         "SELECT" +
                         "  SITUASJON.AKTORID AS AKTORID, " +
                         "  SITUASJON.VEILEDER AS VEILEDER, " +
@@ -71,7 +69,7 @@ public class SituasjonRepository {
                         "LEFT JOIN MAL ON SITUASJON.GJELDENDE_MAL = MAL.ID " +
                         "LEFT JOIN ESKALERINGSVARSEL ON SITUASJON.GJELDENDE_ESKALERINGSVARSEL = ESKALERINGSVARSEL.VARSEL_ID " +
                         "WHERE situasjon.aktorid = ? ",
-                (result, n) -> mapTilSituasjon(result),
+                this::mapTilSituasjon,
                 aktorId
         );
 
@@ -81,20 +79,21 @@ public class SituasjonRepository {
     @Transactional
     public void startOppfolgingHvisIkkeAlleredeStartet(String aktorId) {
         if(!erOppfolgingsflaggSattForBruker(aktorId)) {
-            jdbcTemplate.update("UPDATE situasjon SET oppfolging = 1, OPPDATERT = CURRENT_TIMESTAMP WHERE aktorid = ?", aktorId);
+            database.update("UPDATE situasjon SET oppfolging = 1, OPPDATERT = CURRENT_TIMESTAMP WHERE aktorid = ?", aktorId);
             opprettOppfolgingsperiode(aktorId);
         }
 
     }
 
     private Boolean erOppfolgingsflaggSattForBruker(String aktorId) {
-        return jdbcTemplate.query("" +
+        return database.query("" +
                 "SELECT " +
                 "SITUASJON.OPPFOLGING AS OPPFOLGING " +
                 "FROM situasjon " +
                 "WHERE situasjon.aktorid = ? ",
-        (result, n) -> erUnderOppfolging(result),
-        aktorId).get(0);
+                this::erUnderOppfolging,
+                aktorId
+        ).get(0);
     }
 
     private Boolean erUnderOppfolging(ResultSet result) throws SQLException {
@@ -103,7 +102,7 @@ public class SituasjonRepository {
 
     @Transactional
     public void avsluttOppfolging(String aktorId, String veileder, String begrunnelse) {
-        jdbcTemplate.update("UPDATE situasjon SET oppfolging = 0, "
+        database.update("UPDATE situasjon SET oppfolging = 0, "
                 + "veileder = null, "
                 + "GJELDENDE_STATUS = null, "
                 + "GJELDENDE_MAL = null, "
@@ -134,12 +133,12 @@ public class SituasjonRepository {
     }
 
     public Situasjon opprettSituasjon(String aktorId) {
-        jdbcTemplate.update("INSERT INTO situasjon(aktorid, oppfolging, oppdatert) VALUES(?, ?, CURRENT_TIMESTAMP)", aktorId, false);
+        database.update("INSERT INTO situasjon(aktorid, oppfolging, oppdatert) VALUES(?, ?, CURRENT_TIMESTAMP)", aktorId, false);
         return new Situasjon().setAktorId(aktorId).setOppfolging(false);
     }
 
     public List<MalData> hentMalList(String aktorId) {
-        return jdbcTemplate.query("" +
+        return database.query("" +
                         "SELECT" +
                         "  ID AS MAL_ID, " +
                         "  AKTORID AS MAL_AKTORID, " +
@@ -149,7 +148,7 @@ public class SituasjonRepository {
                         "FROM MAL " +
                         "WHERE AKTORID = ? " +
                         "ORDER BY ID DESC",
-                (result, n) -> mapTilMal(result),
+                this::mapTilMal,
                 aktorId);
     }
 
@@ -165,11 +164,11 @@ public class SituasjonRepository {
                 "FROM BRUKERVILKAR " +
                 "WHERE AKTORID = ? " +
                 "ORDER BY DATO DESC";
-        return jdbcTemplate.query(sql, (result, n) -> mapTilBrukervilkar(result), aktorId);
+        return database.query(sql, this::mapTilBrukervilkar, aktorId);
     }
 
     private void avsluttOppfolgingsperiode(String aktorId, String veileder, String begrunnelse) {
-        jdbcTemplate.update("" +
+        database.update("" +
                         "UPDATE OPPFOLGINGSPERIODE " +
                         "SET avslutt_veileder = ?, " +
                         "avslutt_begrunnelse = ?, " +
@@ -183,18 +182,18 @@ public class SituasjonRepository {
     }
 
     private void opprettOppfolgingsperiode(String aktorId) {
-        jdbcTemplate.update("" +
+        database.update("" +
                         "INSERT INTO OPPFOLGINGSPERIODE(aktorId, startDato, oppdatert) " +
                         "VALUES (?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
                 aktorId);
     }
 
     public List<AvsluttetOppfolgingFeedData> hentAvsluttetOppfolgingEtterDato(Timestamp timestamp) {
-        return jdbcTemplate
+        return database
                 .query("SELECT aktorid, sluttdato, oppdatert " +
                                 "FROM OPPFOLGINGSPERIODE " +
                                 "WHERE oppdatert >= ? and sluttdato is not null",
-                        (result, n) -> mapRadTilAvsluttetOppfolging(result),
+                        this::mapRadTilAvsluttetOppfolging,
                         timestamp);
     }
 
@@ -208,28 +207,28 @@ public class SituasjonRepository {
     }
 
     private void oppdaterSituasjonBrukervilkar(Brukervilkar gjeldendeBrukervilkar) {
-        jdbcTemplate.update("UPDATE situasjon SET gjeldende_brukervilkar = ?, OPPDATERT = CURRENT_TIMESTAMP WHERE aktorid = ?",
+        database.update("UPDATE situasjon SET gjeldende_brukervilkar = ?, OPPDATERT = CURRENT_TIMESTAMP WHERE aktorid = ?",
                 gjeldendeBrukervilkar.getId(),
                 gjeldendeBrukervilkar.getAktorId()
         );
     }
 
     private void oppdaterSituasjonStatus(Status gjeldendeStatus) {
-        jdbcTemplate.update("UPDATE situasjon SET gjeldende_status = ?, OPPDATERT = CURRENT_TIMESTAMP WHERE aktorid = ?",
+        database.update("UPDATE situasjon SET gjeldende_status = ?, OPPDATERT = CURRENT_TIMESTAMP WHERE aktorid = ?",
                 gjeldendeStatus.getId(),
                 gjeldendeStatus.getAktorId()
         );
     }
 
     private void oppdaterSituasjonMal(MalData mal) {
-        jdbcTemplate.update("UPDATE SITUASJON SET GJELDENDE_MAL = ?, OPPDATERT = CURRENT_TIMESTAMP WHERE AKTORID = ?",
+        database.update("UPDATE SITUASJON SET GJELDENDE_MAL = ?, OPPDATERT = CURRENT_TIMESTAMP WHERE AKTORID = ?",
                 mal.getId(),
                 mal.getAktorId()
         );
     }
 
     private void opprettSituasjonBrukervilkar(Brukervilkar vilkar) {
-        jdbcTemplate.update(
+        database.update(
                 "INSERT INTO brukervilkar(id, aktorid, dato, vilkarstatus, tekst, hash) VALUES(?, ?, ?, ?, ?, ?)",
                 vilkar.getId(),
                 vilkar.getAktorId(),
@@ -242,7 +241,7 @@ public class SituasjonRepository {
     }
 
     private void opprettSituasjonStatus(Status status) {
-        jdbcTemplate.update(
+        database.update(
                 "INSERT INTO STATUS(id, aktorid, manuell, dato, begrunnelse, opprettet_av, opprettet_av_brukerid) " +
                         "VALUES(?, ?, ?, ?, ?, ?, ?)",
                 status.getId(),
@@ -256,16 +255,16 @@ public class SituasjonRepository {
     }
 
     public List<InnstillingsHistorikkData> hentManuellHistorikk(String aktorId) {
-        return jdbcTemplate.query(
+        return database.query(
                 "SELECT manuell, dato, begrunnelse, opprettet_av, opprettet_av_brukerid " +
                         "FROM STATUS " +
                         "WHERE aktorid = ?",
-                (result, n) -> mapRadTilInnstillingsHistorikkData(result),
+                this::mapRadTilInnstillingsHistorikkData,
                 aktorId);
     }
 
     private void opprettSituasjonMal(MalData mal) {
-        jdbcTemplate.update(
+        database.update(
                 "INSERT INTO MAL VALUES(?, ?, ?, ?, ?)",
                 mal.getId(),
                 mal.getAktorId(),
@@ -275,14 +274,14 @@ public class SituasjonRepository {
         );
     }
 
+    @Transactional
+    public void slettMalForAktorEtter(String aktorId, Date date) {
+        database.update("UPDATE SITUASJON SET GJELDENDE_MAL = NULL WHERE AKTORID = ?", aktorId);
+        database.update("DELETE FROM MAL WHERE AKTORID = ? AND DATO > ?", aktorId, date);
+    }
+
     private long nesteFraSekvens(String sekvensNavn) {
-        String sekvensQuery;
-        if (HSQLDB_DIALECT.equals(System.getProperty(DIALECT_PROPERTY))) {
-            sekvensQuery = "call next value for " + sekvensNavn;
-        } else {
-            sekvensQuery = "select " + sekvensNavn + ".nextval from dual";
-        }
-        return jdbcTemplate.queryForObject(sekvensQuery, Long.class);
+        return database.nesteFraSekvens(sekvensNavn);
     }
 
     private Situasjon mapTilSituasjon(ResultSet resultat) throws SQLException {
@@ -320,24 +319,24 @@ public class SituasjonRepository {
             "FROM OPPFOLGINGSPERIODE ";
 
     public List<Oppfolgingsperiode> hentOppfolgingsperioder(String aktorid) {
-        return jdbcTemplate.query(hentOppfolingsperioderSQL +
+        return database.query(hentOppfolingsperioderSQL +
                         "WHERE AKTORID = ?",
-                (result, n) -> mapTilOppfolgingsperiode(result),
+                this::mapTilOppfolgingsperiode,
                 aktorid
         );
     }
 
     public List<Oppfolgingsperiode> hentAvsluttetOppfolgingsperioder(String aktorid) {
-        return jdbcTemplate.query(hentOppfolingsperioderSQL +
+        return database.query(hentOppfolingsperioderSQL +
                         "WHERE AKTORID = ? AND SLUTTDATO is not null",
-                (result, n) -> mapTilOppfolgingsperiode(result),
+                this::mapTilOppfolgingsperiode,
                 aktorid
         );
     }
 
 
     private EskaleringsvarselData hentEskaleringsvarsel(String aktorId) {
-        List<EskaleringsvarselData> eskalering = jdbcTemplate.query("" +
+        List<EskaleringsvarselData> eskalering = database.query("" +
                 "SELECT " +
                 "VARSEL_ID AS ESK_ID, " +
                 "AKTOR_ID AS ESK_AKTOR_ID, " +
@@ -350,7 +349,7 @@ public class SituasjonRepository {
                 "AVSLUTTET_BEGRUNNELSE AS ESK_AVSLUTTET_BEGRUNNELSE " +
                 "FROM ESKALERINGSVARSEL " +
                 "WHERE varsel_id IN (SELECT gjeldende_eskaleringsvarsel FROM SITUASJON WHERE SITUASJON.aktorid = ?)",
-                (rs, n) -> mapTilEskaleringsvarselData(rs),
+                this::mapTilEskaleringsvarselData,
                 aktorId
         );
 
@@ -361,7 +360,7 @@ public class SituasjonRepository {
     }
 
     public List<EskaleringsvarselData> hentEskaleringhistorikk(String aktorId) {
-        return jdbcTemplate.query("SELECT " +
+        return database.query("SELECT " +
                         "VARSEL_ID AS ESK_ID, " +
                         "AKTOR_ID AS ESK_AKTOR_ID, " +
                         "OPPRETTET_AV AS ESK_OPPRETTET_AV, " +
@@ -373,7 +372,7 @@ public class SituasjonRepository {
                         "OPPRETTET_BEGRUNNELSE AS ESK_OPPRETTET_BEGRUNNELSE " +
                         "FROM ESKALERINGSVARSEL " +
                         "WHERE aktor_id = ?",
-                (result, n) -> mapTilEskaleringsvarselData(result),
+                this::mapTilEskaleringsvarselData,
                 aktorId
         );
     }
@@ -387,7 +386,7 @@ public class SituasjonRepository {
 
         val id = nesteFraSekvens("ESKALERINGSVARSEL_SEQ");
 
-        jdbcTemplate.update("" +
+        database.update("" +
                 "INSERT INTO ESKALERINGSVARSEL(varsel_id, " +
                         "aktor_id, " +
                         "opprettet_av, " +
@@ -402,7 +401,7 @@ public class SituasjonRepository {
                 tilhorendeDialogId
         );
 
-        jdbcTemplate.update("" +
+        database.update("" +
                 "UPDATE SITUASJON " +
                 "SET gjeldende_eskaleringsvarsel = ?, " +
                 "OPPDATERT = CURRENT_TIMESTAMP " +
@@ -420,7 +419,7 @@ public class SituasjonRepository {
             throw new RuntimeException();
         }
 
-        jdbcTemplate.update("" +
+        database.update("" +
                 "UPDATE ESKALERINGSVARSEL " +
                 "SET avsluttet_dato = CURRENT_TIMESTAMP, avsluttet_begrunnelse = ?, avsluttet_av = ? " +
                 "WHERE VARSEL_ID = ?",
@@ -428,7 +427,7 @@ public class SituasjonRepository {
                 avsluttetAv,
                 eskalering.getVarselId()
         );
-        jdbcTemplate.update("" +
+        database.update("" +
                 "UPDATE SITUASJON " +
                 "SET gjeldende_eskaleringsvarsel = null, " +
                 "OPPDATERT = CURRENT_TIMESTAMP " +

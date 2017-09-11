@@ -1,12 +1,13 @@
 package no.nav.fo.veilarbsituasjon.db;
 
 import no.nav.fo.IntegrasjonsTest;
+import no.nav.fo.inject.Database;
 import no.nav.fo.veilarbsituasjon.domain.*;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.sql.Timestamp;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,7 +20,7 @@ public class SituasjonRepositoryTest extends IntegrasjonsTest {
 
     private static final String AKTOR_ID = "2222";
 
-    private JdbcTemplate db = getBean(JdbcTemplate.class);
+    private Database db = getBean(Database.class);
 
     private SituasjonRepository situasjonRepository = new SituasjonRepository(db);
 
@@ -28,9 +29,9 @@ public class SituasjonRepositoryTest extends IntegrasjonsTest {
         @Test
         public void opprettOghentMal() {
             gittSituasjonForAktor(AKTOR_ID);
-            gittMal(AKTOR_ID, "Dette er et mål");
+            opprettMal(AKTOR_ID, "Dette er et mål");
 
-            MalData mal = situasjonRepository.hentSituasjon(AKTOR_ID).get().getGjeldendeMal();
+            MalData mal = getGjeldendeMal(AKTOR_ID);
             assertThat(mal.getAktorId(), equalTo(AKTOR_ID));
             assertThat(mal.getMal(), equalTo("Dette er et mål"));
         }
@@ -38,13 +39,48 @@ public class SituasjonRepositoryTest extends IntegrasjonsTest {
         @Test
         public void hentMalListe() {
             gittSituasjonForAktor(AKTOR_ID);
-            gittMal(AKTOR_ID, "Dette er et mål");
-            gittMal(AKTOR_ID, "Dette er et oppdatert mål");
+            opprettMal(AKTOR_ID, "Dette er et mål");
+            opprettMal(AKTOR_ID, "Dette er et oppdatert mål");
 
-            MalData mal = situasjonRepository.hentSituasjon(AKTOR_ID).get().getGjeldendeMal();
+            MalData mal = getGjeldendeMal(AKTOR_ID);
             assertThat(mal.getMal(), equalTo("Dette er et oppdatert mål"));
-            List<MalData> malList = situasjonRepository.hentMalList(AKTOR_ID);
+            List<MalData> malList = hentMal(AKTOR_ID);
             assertThat(malList.size(), greaterThan(1));
+        }
+
+        @Test
+        public void slettMalForAktorEtter() {
+            gittSituasjonForAktor(AKTOR_ID);
+
+            Date forOpprettelse = new Date(System.currentTimeMillis() - 1);
+            opprettMal(AKTOR_ID, "Dette er et mål");
+            Date etterOpprettelse = new Date(System.currentTimeMillis() + 1);
+
+            situasjonRepository.slettMalForAktorEtter(AKTOR_ID, etterOpprettelse);
+            sjekk_at_aktor_har_mal();
+
+            situasjonRepository.slettMalForAktorEtter("annenAktor", forOpprettelse);
+            sjekk_at_aktor_har_mal();
+
+            situasjonRepository.slettMalForAktorEtter(AKTOR_ID, forOpprettelse);
+            sjekk_at_aktor_ikke_har_mal();
+        }
+
+        private void sjekk_at_aktor_ikke_har_mal() {
+            assertThat(getGjeldendeMal(AKTOR_ID), nullValue());
+            assertThat(hentMal(AKTOR_ID), empty());
+        }
+
+        private void sjekk_at_aktor_har_mal() {
+            assertThat(hentMal(AKTOR_ID), not(empty()));
+        }
+
+        private MalData getGjeldendeMal(String aktorId) {
+            return situasjonRepository.hentSituasjon(aktorId).get().getGjeldendeMal();
+        }
+
+        private List<MalData> hentMal(String aktorId) {
+            return situasjonRepository.hentMalList(aktorId);
         }
     }
 
@@ -202,12 +238,12 @@ public class SituasjonRepositoryTest extends IntegrasjonsTest {
         return situasjonRepository.hentSituasjon(ukjentAktorId);
     }
 
-    private void gittMal(String aktorId, String mal) {
+    private void opprettMal(String aktorId, String mal) {
         MalData input = new MalData()
                 .setAktorId(aktorId)
                 .setMal(mal)
                 .setEndretAv(aktorId)
-                .setDato(new Timestamp(1l));
+                .setDato(new Timestamp(System.currentTimeMillis()));
         situasjonRepository.opprettMal(input);
     }
 }

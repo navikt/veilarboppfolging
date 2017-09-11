@@ -3,6 +3,7 @@ package no.nav.fo.veilarbsituasjon.services;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.val;
+import no.nav.apiapp.feil.UlovligHandling;
 import no.nav.apiapp.security.PepClient;
 import no.nav.brukerdialog.security.context.SubjectHandler;
 import no.nav.fo.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
@@ -33,6 +34,7 @@ import javax.inject.Inject;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import static java.lang.System.currentTimeMillis;
@@ -133,6 +135,23 @@ public class SituasjonResolver {
             .setDato(new Timestamp(currentTimeMillis()));
         deps.getSituasjonRepository().opprettMal(malData);
         return hentSituasjon().getGjeldendeMal();
+    }
+
+    void slettMal() {
+        // https://confluence.adeo.no/pages/viewpage.action?pageId=229941929
+        Situasjon situasjon = getSituasjon();
+        if (situasjon.isOppfolging()) {
+            throw new UlovligHandling();
+        } else {
+            Date sisteSluttDatoEller1970 = situasjon
+                    .getOppfolgingsperioder()
+                    .stream()
+                    .map(Oppfolgingsperiode::getSluttDato)
+                    .filter(Objects::nonNull)
+                    .max(Date::compareTo)
+                    .orElseGet(() -> new Date(0));
+            deps.getSituasjonRepository().slettMalForAktorEtter(aktorId, sisteSluttDatoEller1970);
+        }
     }
 
     Situasjon getSituasjon() {

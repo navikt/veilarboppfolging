@@ -1,5 +1,6 @@
 package no.nav.fo.veilarbsituasjon.config;
 
+import no.nav.fo.inject.Database;
 import no.nav.fo.veilarbsituasjon.db.BrukerRepository;
 import no.nav.fo.veilarbsituasjon.db.SituasjonRepository;
 import no.nav.fo.veilarbsituasjon.services.AktoerIdService;
@@ -43,7 +44,7 @@ public class ServiceConfig {
     }
 
     @Bean
-    SituasjonRepository situasjonRepository(JdbcTemplate db) {
+    SituasjonRepository situasjonRepository(Database db) {
         return new SituasjonRepository(db);
     }
 

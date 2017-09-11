@@ -76,6 +76,10 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-jdbc</artifactId>
         </dependency>
+        <dependency>
+            <groupId>no.nav.sbl</groupId>
+            <artifactId>jdbc</artifactId>
+        </dependency>
 
         <!--Tjenester-->
         <dependency>
