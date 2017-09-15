@@ -1,6 +1,6 @@
 package no.nav.fo.veilarbsituasjon.config;
 
-import no.nav.fo.inject.Database;
+import no.nav.sbl.jdbc.Database;
 import no.nav.fo.veilarbsituasjon.db.BrukerRepository;
 import no.nav.fo.veilarbsituasjon.db.SituasjonRepository;
 import no.nav.fo.veilarbsituasjon.services.AktoerIdService;

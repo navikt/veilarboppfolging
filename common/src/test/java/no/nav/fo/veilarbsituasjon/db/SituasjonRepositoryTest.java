@@ -1,7 +1,7 @@
 package no.nav.fo.veilarbsituasjon.db;
 
 import no.nav.fo.IntegrasjonsTest;
-import no.nav.fo.inject.Database;
+import no.nav.sbl.jdbc.Database;
 import no.nav.fo.veilarbsituasjon.domain.*;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;

@@ -1,6 +1,6 @@
 package no.nav.fo.veilarbsituasjon.config;
 
-import no.nav.fo.inject.Database;
+import no.nav.sbl.jdbc.Database;
 import no.nav.sbl.dialogarena.common.integrasjon.utils.RowMapper;
 import no.nav.sbl.dialogarena.common.integrasjon.utils.SQL;
 import no.nav.sbl.dialogarena.types.Pingable;
