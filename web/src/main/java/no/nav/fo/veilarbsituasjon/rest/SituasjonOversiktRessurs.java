@@ -124,6 +124,9 @@ public class SituasjonOversiktRessurs implements SituasjonOversikt, VeilederSitu
 
     @Override
     public void startEskalering(StartEskaleringDTO startEskalering) throws Exception {
+        if (startEskalering.dialogUrl == null) {
+            throw new IllegalArgumentException("DialogUrl er påkrevet");
+        }
         situasjonOversiktService.startEskalering(
                 getFnr(),
                 startEskalering.getBegrunnelse(),
