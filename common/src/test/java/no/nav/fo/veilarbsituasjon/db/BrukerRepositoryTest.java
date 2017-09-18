@@ -4,7 +4,6 @@ import no.nav.fo.IntegrasjonsTest;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import static org.hamcrest.Matchers.is;
