@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.inject.Inject;
 import java.sql.Timestamp;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.lang.System.currentTimeMillis;
 import static java.util.stream.Stream.concat;
