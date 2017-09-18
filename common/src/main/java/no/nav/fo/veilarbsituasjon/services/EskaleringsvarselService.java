@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import javax.inject.Inject;
 import java.util.UUID;
 
+import static no.nav.apiapp.util.PropertyUtils.getRequiredProperty;
 import static org.slf4j.LoggerFactory.getLogger;
 
 @Component
@@ -18,33 +19,42 @@ public class EskaleringsvarselService {
     @Inject
     VarseloppgaveV1 varseloppgaveV1;
 
-    public void sendEskaleringsvarsel(String aktorId, String varselUrl) {
+    private String aktivitetsplanBaseUrl = getRequiredProperty("aktivitetsplan.url");
+
+    public void sendEskaleringsvarsel(String aktorId, long dialogId) {
         try {
             Aktoer aktor = new AktoerId().withAktoerId(aktorId);
-            varseloppgaveV1.bestillVarselOppgave(lagBestillVarselOppgaveRequest(aktor, varselUrl));
+            varseloppgaveV1.bestillVarselOppgave(lagBestillVarselOppgaveRequest(aktor, dialogId));
         } catch (Exception e) {
             LOG.error(e.toString());
         }
     }
 
-    private BestillVarselOppgaveRequest lagBestillVarselOppgaveRequest(Aktoer aktoer, String varselUrl) {
+    private String dialogUrl(long dialogId) {
+        return aktivitetsplanBaseUrl + "/dialog/" + dialogId;
+    }
+
+    private BestillVarselOppgaveRequest lagBestillVarselOppgaveRequest(Aktoer aktoer, long dialogId) {
         return new BestillVarselOppgaveRequest()
                 .withVarselOppgaveBestilling(lagVarselOppgaveBestilling(aktoer))
-                .withOppgaveHenvendelse(lagOppgaveHenvendelse(varselUrl))
-                .withVarselMedHandling(lagVarselMedHandling(varselUrl));
+                .withOppgaveHenvendelse(lagOppgaveHenvendelse(dialogId))
+                .withVarselMedHandling(lagVarselMedHandling(dialogId));
     }
 
-    private VarselMedHandling lagVarselMedHandling(String varselUrl) {
+    private VarselMedHandling lagVarselMedHandling(long dialogId) {
         return new VarselMedHandling()
                 .withVarseltypeId(VARSELTYPE_ID)
-                .withParameterListe(new Parameter().withKey("url").withValue(varselUrl));
+                .withParameterListe(new Parameter()
+                        .withKey("url")
+                        .withValue(dialogUrl(dialogId))
+                );
     }
 
-    private OppgaveHenvendelse lagOppgaveHenvendelse(String url) {
+    private OppgaveHenvendelse lagOppgaveHenvendelse(long dialogId) {
         OppgaveType oppgaveType = new OppgaveType().withValue(VARSELTYPE_ID);
         return new OppgaveHenvendelse()
                 .withOppgaveType(oppgaveType)
-                .withOppgaveURL(url)
+                .withOppgaveURL(dialogUrl(dialogId))
                 .withStoppRepeterendeVarsel(true);
     }
 

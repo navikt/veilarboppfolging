@@ -141,9 +141,9 @@ public class SituasjonOversiktService {
         return situasjonRepository.hentEskaleringhistorikk(aktorId);
     }
 
-    public void startEskalering(String fnr, String begrunnelse, long tilhorendeDialogId, String dialogUrl) {
+    public void startEskalering(String fnr, String begrunnelse, long tilhorendeDialogId) {
         val resolver = new SituasjonResolver(fnr, situasjonResolverDependencies);
-        resolver.startEskalering(begrunnelse, tilhorendeDialogId, dialogUrl);
+        resolver.startEskalering(begrunnelse, tilhorendeDialogId);
     }
 
     public void stoppEskalering(String fnr, String begrunnelse) {

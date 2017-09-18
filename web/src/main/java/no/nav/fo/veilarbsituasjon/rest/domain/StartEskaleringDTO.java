@@ -7,6 +7,5 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 public class StartEskaleringDTO {
     public long dialogId;
-    public String dialogUrl;
     public String begrunnelse;
 }
