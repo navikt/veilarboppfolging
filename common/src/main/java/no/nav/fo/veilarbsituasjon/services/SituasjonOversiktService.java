@@ -11,7 +11,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
 import java.sql.Timestamp;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static java.lang.System.currentTimeMillis;
@@ -141,10 +144,9 @@ public class SituasjonOversiktService {
         return situasjonRepository.hentEskaleringhistorikk(aktorId);
     }
 
-    // TODO: Si ifra til VarselOppgave om at nytt eskaleringsvarsel er opprettet.
-    public void startEskalering(String fnr, String begrunnelse, long tilhorendeDialogId) {
+    public void startEskalering(String fnr, String begrunnelse, long tilhorendeDialogId, String dialogUrl) {
         val resolver = new SituasjonResolver(fnr, situasjonResolverDependencies);
-        resolver.startEskalering(begrunnelse, tilhorendeDialogId);
+        resolver.startEskalering(begrunnelse, tilhorendeDialogId, dialogUrl);
     }
 
     public void stoppEskalering(String fnr, String begrunnelse) {
