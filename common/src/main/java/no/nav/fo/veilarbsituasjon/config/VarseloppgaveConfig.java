@@ -18,6 +18,8 @@ import static org.apache.cxf.phase.Phase.PRE_STREAM;
 @Configuration
 public class VarseloppgaveConfig {
 
+    private static final String VARSELOPPGAVE_ENDPOINT_URL = "varseloppgave.endpoint.url";
+
     @Bean
     public VarseloppgaveV1 varseloppgaveV1() {
         return factory();
@@ -25,18 +27,18 @@ public class VarseloppgaveConfig {
 
     public VarseloppgaveV1 factory() {
         return new CXFClient<>(VarseloppgaveV1.class)
-                .address(getProperty("varseloppgave.endpoint.url"))
+                .address(getProperty(VARSELOPPGAVE_ENDPOINT_URL))
+                .withMetrics()
                 .configureStsForOnBehalfOfWithJWT()
                 .withOutInterceptor(new TestInterceptor())
-                .withMetrics()
                 .build();
     }
 
     public VarseloppgaveV1 pingFactory() {
         return new CXFClient<>(VarseloppgaveV1.class)
-                .address(getProperty("varseloppgave.endpoint.url"))
-                .configureStsForSystemUserInFSS()
+                .address(getProperty(VARSELOPPGAVE_ENDPOINT_URL))
                 .withMetrics()
+                .configureStsForSystemUserInFSS()
                 .build();
     }
 
@@ -50,7 +52,7 @@ public class VarseloppgaveConfig {
 
             @Override
             public HelsesjekkMetadata getMetadata() {
-                return new HelsesjekkMetadata(getProperty("varseloppgave.endpoint.url"), "Brukes for å sende eskaleringsvarsel", false);
+                return new HelsesjekkMetadata(getProperty(VARSELOPPGAVE_ENDPOINT_URL), "Brukes for å sende eskaleringsvarsel", false);
             }
         };
     }
