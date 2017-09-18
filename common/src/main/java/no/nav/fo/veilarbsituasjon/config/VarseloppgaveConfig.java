@@ -10,9 +10,7 @@ import org.apache.cxf.phase.AbstractPhaseInterceptor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static java.lang.System.getProperty;
 import static org.apache.cxf.phase.Phase.PRE_STREAM;
@@ -57,6 +55,8 @@ public class VarseloppgaveConfig {
         };
     }
 
+    // TODO: Fjern denne når det ikke er behov for den lenger
+    // Denne fanger legger på en header som skal gjøre det mulig å teste uten å bli stoppet av difi verifisering.
     private class TestInterceptor extends AbstractPhaseInterceptor<Message> {
 
         public TestInterceptor() {
