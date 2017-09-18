@@ -3,7 +3,7 @@ package no.nav.fo.veilarbsituasjon.db;
 
 import lombok.SneakyThrows;
 import lombok.val;
-import no.nav.fo.inject.Database;
+import no.nav.sbl.jdbc.Database;
 import no.nav.fo.veilarbsituasjon.domain.*;
 import org.springframework.transaction.annotation.Transactional;
 
