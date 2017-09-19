@@ -54,7 +54,7 @@ public class PortefoljeRessurs {
         for (VeilederTilordning tilordning : tilordninger) {
             try {
                 final String fnr = tilordning.getBrukerFnr();
-                pepClient.sjekkTilgangTilFnr(fnr);
+                pepClient.sjekkSkriveTilgangTilFnr(fnr);
 
                 String aktoerId = finnAktorId(fnr);
 
