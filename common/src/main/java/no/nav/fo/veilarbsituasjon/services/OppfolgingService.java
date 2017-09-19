@@ -41,7 +41,7 @@ public class OppfolgingService {
         try {
             response = oppfoelgingPortType.hentOppfoelgingskontraktListe(request);
         } catch (HentOppfoelgingskontraktListeSikkerhetsbegrensning hentOppfoelgingskontraktListeSikkerhetsbegrensning) {
-            String logMessage = "Veileder har ikke tilgang til å søke opp " + fnr;
+            String logMessage = "Veileder har ikke tilgang til å søke opp bruker";
             LOG.warn(logMessage, hentOppfoelgingskontraktListeSikkerhetsbegrensning);
             throw new ForbiddenException(logMessage, hentOppfoelgingskontraktListeSikkerhetsbegrensning);
         }
