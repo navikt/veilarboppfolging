@@ -5,7 +5,7 @@ import lombok.experimental.Accessors;
 
 @Data
 @Accessors(chain = true)
-public class EndreEskaleringDTO {
+public class StartEskaleringDTO {
     public long dialogId;
     public String begrunnelse;
 }

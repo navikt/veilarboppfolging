@@ -34,10 +34,12 @@
         <webservice alias="virksomhet:Oppfolging_v1" mapToProperty="oppfoelging.endpoint"/>
         <webservice alias="virksomhet:OrganisasjonEnhet_v1" mapToProperty="organisasjonenhet.endpoint"/>
         <webservice alias="Aktoer_v2" mapToProperty="aktoer.endpoint"/>
+        <webservice alias="VarselOppgave_v1" mapToProperty="varseloppgave.endpoint"/>
         <applicationCertificate alias="srvveilarbsituasjon"/>
         <rest alias="abac.pdp.endpoint" mapToProperty="abac.endpoint" />
         <rest alias="veilArbAktivitetAPI" mapToProperty="veilarbaktivitet" />
         <rest alias="veilarblogin.redirect-url" mapToProperty="oidc-redirect" />
+        <baseUrl alias="aktivitetsplan"/>
         <baseUrl alias="isso-host"/>
         <baseUrl alias="isso-jwks"/>
         <baseUrl alias="isso-issuer"/>
