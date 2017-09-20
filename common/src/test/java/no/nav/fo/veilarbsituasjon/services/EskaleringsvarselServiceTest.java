@@ -24,7 +24,7 @@ public class EskaleringsvarselServiceTest {
 
     @BeforeClass
     public static void setUp() throws Exception {
-        System.setProperty("aktivitetsplan.url", "https://aktivitetsplan.no/salami");
+        System.setProperty("aktivitetsplan.url", "https://aktivitetsplan.no");
     }
 
     @InjectMocks
@@ -50,7 +50,7 @@ public class EskaleringsvarselServiceTest {
     public void dialogUrl() throws Exception {
         assertThat(
                 eskaleringsvarselService.dialogUrl(DIALOG_ID),
-                equalTo("https://aktivitetsplan.no/salami/dialog/1")
+                equalTo("https://aktivitetsplan.no/dialog/1")
         );
     }
 }
