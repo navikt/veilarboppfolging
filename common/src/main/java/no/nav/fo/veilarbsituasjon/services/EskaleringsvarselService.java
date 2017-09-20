@@ -1,5 +1,6 @@
 package no.nav.fo.veilarbsituasjon.services;
 
+import no.nav.apiapp.feil.Feil;
 import no.nav.tjeneste.virksomhet.varseloppgave.v1.VarseloppgaveV1;
 import no.nav.tjeneste.virksomhet.varseloppgave.v1.informasjon.*;
 import no.nav.tjeneste.virksomhet.varseloppgave.v1.meldinger.BestillVarselOppgaveRequest;
@@ -14,10 +15,12 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 @Component
 public class EskaleringsvarselService {
+
     private static final Logger LOG  = getLogger(EskaleringsvarselService.class);
     private static final String VARSELTYPE_ID = "DittNAV_000008";
+
     @Inject
-    VarseloppgaveV1 varseloppgaveV1;
+    private VarseloppgaveV1 varseloppgaveV1;
 
     private String aktivitetsplanBaseUrl = getRequiredProperty("aktivitetsplan.url");
 
@@ -27,10 +30,11 @@ public class EskaleringsvarselService {
             varseloppgaveV1.bestillVarselOppgave(lagBestillVarselOppgaveRequest(aktor, dialogId));
         } catch (Exception e) {
             LOG.error(e.toString());
+            throw new Feil(Feil.Type.UKJENT);
         }
     }
 
-    private String dialogUrl(long dialogId) {
+    protected String dialogUrl(long dialogId) {
         return aktivitetsplanBaseUrl + "/dialog/" + dialogId;
     }
 
@@ -41,8 +45,11 @@ public class EskaleringsvarselService {
                 .withVarselMedHandling(lagVarselMedHandling());
     }
 
-    private VarselMedHandling lagVarselMedHandling() {
-        return new VarselMedHandling().withVarseltypeId(VARSELTYPE_ID);
+    private VarselOppgaveBestilling lagVarselOppgaveBestilling(Aktoer aktoer) {
+        String uuid = UUID.randomUUID().toString();
+        return new VarselOppgaveBestilling()
+                .withVarselbestillingId(uuid)
+                .withMottaker(aktoer);
     }
 
     private OppgaveHenvendelse lagOppgaveHenvendelse(long dialogId) {
@@ -53,10 +60,7 @@ public class EskaleringsvarselService {
                 .withStoppRepeterendeVarsel(true);
     }
 
-    private VarselOppgaveBestilling lagVarselOppgaveBestilling(Aktoer aktoer) {
-        String uuid = UUID.randomUUID().toString();
-        return new VarselOppgaveBestilling()
-                .withVarselbestillingId(uuid)
-                .withMottaker(aktoer);
+    private VarselMedHandling lagVarselMedHandling() {
+        return new VarselMedHandling().withVarseltypeId(VARSELTYPE_ID);
     }
 }
