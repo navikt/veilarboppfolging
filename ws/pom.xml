@@ -99,6 +99,10 @@
             <classifier>jaxws</classifier>
         </dependency>
         <dependency>
+            <groupId>no.nav.sbl.dialogarena</groupId>
+            <artifactId>oppfolgingsinfo-v1-tjenestespesifikasjon</artifactId>
+        </dependency>
+        <dependency>
             <groupId>no.nav.tjenester.fim</groupId>
             <artifactId>nav-fim-oppfoelging-v1-tjenestespesifikasjon</artifactId>
             <classifier>jaxws</classifier>
