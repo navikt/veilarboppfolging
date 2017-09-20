@@ -38,16 +38,11 @@ public class EskaleringsvarselService {
         return new BestillVarselOppgaveRequest()
                 .withVarselOppgaveBestilling(lagVarselOppgaveBestilling(aktoer))
                 .withOppgaveHenvendelse(lagOppgaveHenvendelse(dialogId))
-                .withVarselMedHandling(lagVarselMedHandling(dialogId));
+                .withVarselMedHandling(lagVarselMedHandling());
     }
 
-    private VarselMedHandling lagVarselMedHandling(long dialogId) {
-        return new VarselMedHandling()
-                .withVarseltypeId(VARSELTYPE_ID)
-                .withParameterListe(new Parameter()
-                        .withKey("url")
-                        .withValue(dialogUrl(dialogId))
-                );
+    private VarselMedHandling lagVarselMedHandling() {
+        return new VarselMedHandling().withVarseltypeId(VARSELTYPE_ID);
     }
 
     private OppgaveHenvendelse lagOppgaveHenvendelse(long dialogId) {
