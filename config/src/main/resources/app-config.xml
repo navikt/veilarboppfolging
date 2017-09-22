@@ -63,6 +63,14 @@
                      wsdlVersion="${brukerdialog-behandleSituasjon-v1-tjenestespesifikasjon.version}">
             <exportToZone>SBS</exportToZone>
         </exposedSoap>
+        <exposedSoap name="OppfolgingsinfoV1"
+                     path="/veilarbsituasjon-ws/ws/sit"
+                     securityToken="SAML"
+                     wsdlGroupId="no.nav.tjenester"
+                     wsdlArtifactId="oppfolgingsinfo-v1-tjenestespesifikasjon"
+                     wsdlVersion="${oppfolgingsinfo-v1-tjenestespesifikasjon.version}">
+            <exportToZone>FSS</exportToZone>
+        </exposedSoap>
     </exposed-services>
 
     <serverOptions>
