@@ -253,6 +253,7 @@ public class SituasjonResolver {
     void startEskalering(String begrunnelse, long tilhorendeDialogId){
         String veilederId = SubjectHandler.getSubjectHandler().getUid();
         deps.getSituasjonRepository().startEskalering(aktorId, veilederId, begrunnelse, tilhorendeDialogId);
+        deps.getEskaleringsvarselService().sendEskaleringsvarsel(aktorId, tilhorendeDialogId);
     }
 
     void stoppEskalering(String begrunnelse) {
@@ -340,5 +341,8 @@ public class SituasjonResolver {
 
         @Inject
         private VeilarbaktivtetService veilarbaktivtetService;
+
+        @Inject
+        private EskaleringsvarselService eskaleringsvarselService;
     }
 }

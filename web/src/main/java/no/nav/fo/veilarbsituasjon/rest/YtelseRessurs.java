@@ -62,7 +62,7 @@ public class YtelseRessurs {
         XMLGregorianCalendar fom = convertDateToXMLGregorianCalendar(periodeFom);
         XMLGregorianCalendar tom = convertDateToXMLGregorianCalendar(periodeTom);
 
-        LOG.info("Henter ytelse for {}", fnr);
+        LOG.info("Henter ytelse for fnr");
         final YtelseskontraktResponse ytelseskontraktResponse = ytelseskontraktMapper.tilYtelseskontrakt(ytelseskontraktService.hentYtelseskontraktListe(fom, tom, fnr));
         final OppfolgingskontraktResponse oppfolgingskontraktResponse = oppfolgingMapper.tilOppfolgingskontrakt(oppfolgingService.hentOppfolgingskontraktListe(fom, tom, fnr));
 

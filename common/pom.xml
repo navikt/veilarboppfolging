@@ -83,6 +83,11 @@
 
         <!--Tjenester-->
         <dependency>
+            <groupId>no.nav.tjenester.virksomhet.dokument</groupId>
+            <artifactId>varseloppgave-v1-tjenestespesifikasjon</artifactId>
+            <classifier>jaxws</classifier>
+        </dependency>
+        <dependency>
             <groupId>no.nav.sbl.dialogarena</groupId>
             <artifactId>ytelseskontrakt-v3-tjenestespesifikasjon</artifactId>
         </dependency>

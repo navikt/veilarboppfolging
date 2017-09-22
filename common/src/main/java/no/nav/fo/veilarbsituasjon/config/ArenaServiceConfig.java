@@ -3,7 +3,6 @@ package no.nav.fo.veilarbsituasjon.config;
 
 import no.nav.sbl.dialogarena.common.cxf.CXFClient;
 import no.nav.sbl.dialogarena.types.Pingable;
-import no.nav.sbl.dialogarena.types.Pingable.Ping;
 import no.nav.sbl.dialogarena.types.Pingable.Ping.PingMetadata;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3;

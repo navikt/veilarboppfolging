@@ -1,9 +1,10 @@
 package no.nav.fo.veilarbsituasjon.rest.api;
 
 import no.nav.fo.veilarbsituasjon.domain.InnstillingsHistorikk;
-import no.nav.fo.veilarbsituasjon.rest.domain.EndreEskaleringDTO;
 import no.nav.fo.veilarbsituasjon.rest.domain.EndreSituasjonDTO;
 import no.nav.fo.veilarbsituasjon.rest.domain.OppfolgingStatus;
+import no.nav.fo.veilarbsituasjon.rest.domain.StartEskaleringDTO;
+import no.nav.fo.veilarbsituasjon.rest.domain.StoppEskaleringDTO;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -39,9 +40,9 @@ public interface VeilederSituasjonOversikt extends SituasjonOversikt {
 
     @POST
     @Path("/startEskalering")
-    void startEskalering(EndreEskaleringDTO endreEskalering) throws Exception;
+    void startEskalering(StartEskaleringDTO startEskalering) throws Exception;
 
     @POST
     @Path("/stoppEskalering")
-    void stoppEskalering(EndreEskaleringDTO endreEskalering) throws Exception;
+    void stoppEskalering(StoppEskaleringDTO stoppEskalering) throws Exception;
 }

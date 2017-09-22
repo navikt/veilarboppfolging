@@ -47,7 +47,7 @@ public class OppfolgingRessurs {
         XMLGregorianCalendar fom = convertDateToXMLGregorianCalendar(periodeFom);
         XMLGregorianCalendar tom = convertDateToXMLGregorianCalendar(periodeTom);
 
-        LOG.info("Henter oppfoelging for {}", fnr);
+        LOG.info("Henter oppfoelging for fnr");
         return oppfolgingMapper.tilOppfolgingskontrakt(oppfolgingService.hentOppfolgingskontraktListe(fom, tom, fnr));
     }
 
@@ -56,7 +56,7 @@ public class OppfolgingRessurs {
     public Oppfolgingsstatus getOppfoelginsstatus(@PathParam("fnr") String fnr) throws PepException {
         pepClient.sjekkTilgangTilFnr(fnr);
 
-        LOG.info("Henter oppfølgingsstatus for {}", fnr);
+        LOG.info("Henter oppfølgingsstatus for fnr");
         return oppfolgingService.hentOppfolgingsstatus(fnr);
     }
 }
