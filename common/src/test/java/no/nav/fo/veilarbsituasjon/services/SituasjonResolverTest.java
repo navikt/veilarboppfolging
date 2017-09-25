@@ -3,6 +3,7 @@ package no.nav.fo.veilarbsituasjon.services;
 
 import no.nav.apiapp.feil.UlovligHandling;
 import no.nav.fo.veilarbsituasjon.db.SituasjonRepository;
+import no.nav.fo.veilarbsituasjon.domain.Fnr;
 import no.nav.fo.veilarbsituasjon.domain.Oppfolgingsperiode;
 import no.nav.fo.veilarbsituasjon.domain.Situasjon;
 import org.junit.Before;
@@ -33,7 +34,7 @@ public class SituasjonResolverTest {
         when(aktoerIdService.findAktoerId(FNR)).thenReturn(AKTOR_ID);
         when(situasjonRepository.hentSituasjon(AKTOR_ID)).thenReturn(of(situasjon));
 
-        situasjonResolver = new SituasjonResolver(FNR, situasjonResolverDependencies);
+        situasjonResolver = new SituasjonResolver(new Fnr(FNR), situasjonResolverDependencies);
     }
 
     @Test(expected = UlovligHandling.class)

@@ -31,7 +31,7 @@ public class SituasjonOversiktService {
 
     @Transactional
     public OppfolgingStatusData hentOppfolgingsStatus(String fnr) throws Exception {
-        val situasjonResolver = new SituasjonResolver(fnr, situasjonResolverDependencies);
+        val situasjonResolver = new SituasjonResolver(new Fnr(fnr), situasjonResolverDependencies);
 
         situasjonResolver.sjekkStatusIArenaOgOppdaterSituasjon();
 
@@ -39,16 +39,16 @@ public class SituasjonOversiktService {
     }
 
     public Brukervilkar hentVilkar(String fnr) throws Exception {
-        return new SituasjonResolver(fnr, situasjonResolverDependencies).getNyesteVilkar();
+        return new SituasjonResolver(new Fnr(fnr), situasjonResolverDependencies).getNyesteVilkar();
     }
 
     public List<Brukervilkar> hentHistoriskeVilkar(String fnr) {
-        return new SituasjonResolver(fnr, situasjonResolverDependencies).getHistoriskeVilkar();
+        return new SituasjonResolver(new Fnr(fnr), situasjonResolverDependencies).getHistoriskeVilkar();
     }
 
     @Transactional
     public OppfolgingStatusData oppdaterVilkaar(String hash, String fnr, VilkarStatus vilkarStatus) throws Exception {
-        val situasjonResolver = new SituasjonResolver(fnr, situasjonResolverDependencies);
+        val situasjonResolver = new SituasjonResolver(new Fnr(fnr), situasjonResolverDependencies);
 
         situasjonResolver.sjekkNyesteVilkarOgOppdaterSituasjon(hash, vilkarStatus);
 
@@ -56,24 +56,24 @@ public class SituasjonOversiktService {
     }
 
     public MalData hentMal(String fnr) {
-        MalData gjeldendeMal = new SituasjonResolver(fnr, situasjonResolverDependencies).getSituasjon().getGjeldendeMal();
+        MalData gjeldendeMal = new SituasjonResolver(new Fnr(fnr), situasjonResolverDependencies).getSituasjon().getGjeldendeMal();
         return Optional.ofNullable(gjeldendeMal).orElse(new MalData());
     }
 
     public List<MalData> hentMalList(String fnr) {
-        return new SituasjonResolver(fnr, situasjonResolverDependencies).getMalList();
+        return new SituasjonResolver(new Fnr(fnr), situasjonResolverDependencies).getMalList();
     }
 
     public MalData oppdaterMal(String mal, String fnr, String endretAv) {
-        return new SituasjonResolver(fnr, situasjonResolverDependencies).oppdaterMal(mal, endretAv);
+        return new SituasjonResolver(new Fnr(fnr), situasjonResolverDependencies).oppdaterMal(mal, endretAv);
     }
 
     public void slettMal(String fnr) {
-        new SituasjonResolver(fnr, situasjonResolverDependencies).slettMal();
+        new SituasjonResolver(new Fnr(fnr), situasjonResolverDependencies).slettMal();
     }
 
     public OppfolgingStatusData startOppfolging(String fnr) {
-        val situasjonResolver = new SituasjonResolver(fnr, situasjonResolverDependencies);
+        val situasjonResolver = new SituasjonResolver(new Fnr(fnr), situasjonResolverDependencies);
         if (situasjonResolver.getKanSettesUnderOppfolging()) {
             situasjonResolver.startOppfolging();
         }
@@ -82,7 +82,7 @@ public class SituasjonOversiktService {
     }
 
     public OppfolgingStatusData hentAvslutningStatus(String fnr) throws Exception {
-        val situasjonResolver = new SituasjonResolver(fnr, situasjonResolverDependencies);
+        val situasjonResolver = new SituasjonResolver(new Fnr(fnr), situasjonResolverDependencies);
 
         return getOppfolgingStatusDataMedAvslutningStatus(fnr, situasjonResolver);
     }
@@ -90,7 +90,7 @@ public class SituasjonOversiktService {
     @SneakyThrows
     @Transactional
     public OppfolgingStatusData avsluttOppfolging(String fnr, String veileder, String begrunnelse) {
-        val situasjonResolver = new SituasjonResolver(fnr, situasjonResolverDependencies);
+        val situasjonResolver = new SituasjonResolver(new Fnr(fnr), situasjonResolverDependencies);
 
         situasjonResolver.avsluttOppfolging(veileder, begrunnelse);
 
@@ -104,13 +104,13 @@ public class SituasjonOversiktService {
     }
 
     public OppfolgingStatusData settDigitalBruker(String fnr) {
-        val resolver = new SituasjonResolver(fnr, situasjonResolverDependencies);
+        val resolver = new SituasjonResolver(new Fnr(fnr), situasjonResolverDependencies);
 
         return oppdaterManuellStatus(fnr, false, "Brukeren endret til digital oppfølging", KodeverkBruker.EKSTERN, resolver.getAktorId());
     }
 
     public OppfolgingStatusData oppdaterManuellStatus(String fnr, boolean manuell, String begrunnelse, KodeverkBruker opprettetAv, String opprettetAvBrukerId) {
-        val resolver = new SituasjonResolver(fnr, situasjonResolverDependencies);
+        val resolver = new SituasjonResolver(new Fnr(fnr), situasjonResolverDependencies);
 
         if (resolver.getSituasjon().isOppfolging() && (resolver.manuell() != manuell) && (!resolver.reservertIKrr() || manuell)) {
             val nyStatus = new Status(resolver.getAktorId(), manuell, new Timestamp(currentTimeMillis()), begrunnelse, opprettetAv, opprettetAvBrukerId);
@@ -123,7 +123,7 @@ public class SituasjonOversiktService {
 
 
     public List<InnstillingsHistorikk> hentInstillingsHistorikk(String fnr) {
-        val resolver = new SituasjonResolver(fnr, situasjonResolverDependencies);
+        val resolver = new SituasjonResolver(new Fnr(fnr), situasjonResolverDependencies);
         String aktorId = resolver.getAktorId();
 
         return concat(
@@ -135,19 +135,19 @@ public class SituasjonOversiktService {
     }
 
     public List<EskaleringsvarselData> hentEskaleringhistorikk(String fnr) {
-        val resolver = new SituasjonResolver(fnr, situasjonResolverDependencies);
+        val resolver = new SituasjonResolver(new Fnr(fnr), situasjonResolverDependencies);
         String aktorId = resolver.getAktorId();
 
         return situasjonRepository.hentEskaleringhistorikk(aktorId);
     }
 
     public void startEskalering(String fnr, String begrunnelse, long tilhorendeDialogId) {
-        val resolver = new SituasjonResolver(fnr, situasjonResolverDependencies);
+        val resolver = new SituasjonResolver(new Fnr(fnr), situasjonResolverDependencies);
         resolver.startEskalering(begrunnelse, tilhorendeDialogId);
     }
 
     public void stoppEskalering(String fnr, String begrunnelse) {
-        val resolver = new SituasjonResolver(fnr, situasjonResolverDependencies);
+        val resolver = new SituasjonResolver(new Fnr(fnr), situasjonResolverDependencies);
         resolver.stoppEskalering(begrunnelse);
     }
 
