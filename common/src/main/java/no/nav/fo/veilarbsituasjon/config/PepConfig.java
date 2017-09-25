@@ -14,7 +14,7 @@ public class PepConfig {
 
     @Bean
     public PepClient pepClient(Pep pep) {
-        return new PepClient(pep, "veilarb", ResourceType.Person);
+        return new PepClient(pep, "veilarb");
     }
 
 }

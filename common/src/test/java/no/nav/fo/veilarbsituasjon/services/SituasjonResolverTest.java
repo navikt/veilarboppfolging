@@ -34,7 +34,7 @@ public class SituasjonResolverTest {
         when(aktoerIdService.findAktoerId(FNR)).thenReturn(AKTOR_ID);
         when(situasjonRepository.hentSituasjon(AKTOR_ID)).thenReturn(of(situasjon));
 
-        situasjonResolver = new SituasjonResolver(new Fnr(FNR), situasjonResolverDependencies);
+        situasjonResolver = new SituasjonResolver(FNR, situasjonResolverDependencies);
     }
 
     @Test(expected = UlovligHandling.class)

@@ -68,31 +68,16 @@ public class SituasjonResolver {
         this.deps = deps;
     }
 
-    SituasjonResolver(AktorId aktorId, SituasjonResolverDependencies deps) {
-        this(deps);
-        this.aktorId = aktorId.getAktorId();
-        this.fnr = ofNullable(deps.getAktoerIdService().findFnr(this.aktorId))
-                .orElseThrow(() -> new IllegalArgumentException("Fant ikke fnr for aktørid: " + this.aktorId));
-        this.situasjon = hentSituasjon();
-    }
+    SituasjonResolver(String fnr, SituasjonResolverDependencies deps) {
+        deps.getPepClient().sjekkLeseTilgangTilFnr(fnr);
 
-    SituasjonResolver(Fnr fnr, SituasjonResolverDependencies deps) {
-        this(deps);
-        this.fnr = fnr.getFnr();
-        this.aktorId = ofNullable(deps.getAktoerIdService().findAktoerId(this.fnr))
-                .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktør for fnr: " + this.fnr));
+        this.fnr = fnr;
+        this.deps = deps;
+
+        this.aktorId = ofNullable(deps.getAktoerIdService().findAktoerId(fnr))
+            .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktør for fnr: " + fnr));
         this.situasjon = hentSituasjon();
     }
-//    SituasjonResolver(String fnr, SituasjonResolverDependencies deps) {
-//        deps.getPepClient().sjekkLeseTilgangTilFnr(fnr);
-//
-//        this.fnr = fnr;
-//        this.deps = deps;
-//
-//        this.aktorId = ofNullable(deps.getAktoerIdService().findAktoerId(fnr))
-//            .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktør for fnr: " + fnr));
-//        this.situasjon = hentSituasjon();
-//    }
 
     void reloadSituasjon() {
         situasjon = hentSituasjon();

@@ -1,17 +1,18 @@
-package no.nav.fo.veilarbsituasjon.ws.provider.oppfolgingsinfo.v1;
+package no.nav.fo.veilarbsituasjon.ws.provider;
 
 
 import no.nav.apiapp.soap.SoapTjeneste;
+import no.nav.fo.veilarbsituasjon.domain.AktorId;
 import no.nav.fo.veilarbsituasjon.domain.OppfolgingStatusData;
 import no.nav.fo.veilarbsituasjon.services.SituasjonOversiktService;
 import no.nav.tjeneste.virksomhet.oppfolgingsinfo.v1.OppfolgingsinfoV1;
 import no.nav.tjeneste.virksomhet.oppfolgingsinfo.v1.meldinger.OppfolgingsstatusRequest;
 import no.nav.tjeneste.virksomhet.oppfolgingsinfo.v1.meldinger.OppfolgingsstatusResponse;
+import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
-import javax.jws.WebService;
 
-@WebService
+@Service
 @SoapTjeneste("/sit")
 public class OppfolgingsinfoWebService implements OppfolgingsinfoV1 {
 
@@ -22,7 +23,7 @@ public class OppfolgingsinfoWebService implements OppfolgingsinfoV1 {
     public OppfolgingsstatusResponse hentOppfolgingsstatus(OppfolgingsstatusRequest request) {
         OppfolgingStatusData oppfolgingStatusData = null;
         try {
-            oppfolgingStatusData = situasjonOversiktService.hentOppfolgingsStatus(request.getAktorId());
+            oppfolgingStatusData = situasjonOversiktService.hentOppfolgingsStatus(new AktorId(request.getAktorId()));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
