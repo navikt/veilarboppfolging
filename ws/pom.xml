@@ -21,6 +21,12 @@
             <artifactId>api-app</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>no.nav</groupId>
+            <artifactId>metrics</artifactId>
+        </dependency>
+
+
         <!--Lombok-->
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -33,6 +39,10 @@
         </dependency>
 
         <!-- TEST -->
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+        </dependency>
         <dependency>
             <groupId>no.nav.sbl.dialogarena</groupId>
             <artifactId>test-config</artifactId>

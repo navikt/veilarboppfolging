@@ -37,6 +37,7 @@
         <brukerdialog-behandleSituasjon-v1-tjenestespesifikasjon.version>1.0.12.20.19</brukerdialog-behandleSituasjon-v1-tjenestespesifikasjon.version>
         <organisasjonenhet-v1.version>1.0.8</organisasjonenhet-v1.version>
         <varseloppgave-v1-tjenestespesifikasjon.version>1.0.1</varseloppgave-v1-tjenestespesifikasjon.version>
+        <!--metrics.version>3.1.1</metrics.version-->
 
         <sonar.exclusions>
             **/mock/*,
@@ -84,6 +85,12 @@
                 <artifactId>veilarbsituasjon-appconfig</artifactId>
                 <version>${project.version}</version>
             </dependency>
+
+            <!--<dependency>-->
+                <!--<groupId>no.nav</groupId>-->
+                <!--<artifactId>metrics</artifactId>-->
+                <!--&lt;!&ndash;version>${metrics.version}</version&ndash;&gt;-->
+            <!--</dependency>-->
 
             <dependency>
                 <groupId>commons-codec</groupId>
