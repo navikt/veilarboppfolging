@@ -41,9 +41,9 @@ public class OppfolgingsinfoWebServiceTest {
         OppfolgingsstatusRequest request = new OppfolgingsstatusRequest().withAktorId(AKTORID_DUMMY.getAktorId());
         OppfolgingsstatusResponse response = oppfolgingsinfoWebService.hentOppfolgingsstatus(request);
 
-        assertThat(response.getAktorId()).isEqualTo(AKTORID_DUMMY.getAktorId());
-        assertThat(response.getVeilederIdent()).isEqualTo(VEILEDER);
-        assertThat(response.isErUnderOppfolging()).isTrue();
+        assertThat(response.getOppfolgingsdata().getAktorId()).isEqualTo(AKTORID_DUMMY.getAktorId());
+        assertThat(response.getOppfolgingsdata().getVeilederIdent()).isEqualTo(VEILEDER);
+        assertThat(response.getOppfolgingsdata().isErUnderOppfolging()).isTrue();
 
     }
 
