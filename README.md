@@ -9,12 +9,12 @@ og startes på nytt.
 
 #### Sending av veiledertilordninger til Portefølje
 Riktig databaselink, brukernavn og passord må oppgis i metoden ``setupJndiLocalContext()`` i klassen
-``JndiLocalContextConfig``. Gå til Fasit --> søk på veilarbsituasjonDB --> velg riktig miljø.
+``JndiLocalContextConfig``. Gå til Fasit --> søk på veilarboppfolgingDB --> velg riktig miljø.
 
-Kjør ``https://localhost:8485/veilarbsituasjon/api/sendalleveiledertilordninger`` i nettleseren.
+Kjør ``https://localhost:8485/veilarboppfolging/api/sendalleveiledertilordninger`` i nettleseren.
 
 !! OBS OBS !! Husk at veilarbportefolje og veilarbportefoljeindeks må kjøre samtidig.
 
 #### For å kjøre Webservicen (soap)
-``veilarbsituasjon-vilkar`` må klones ned til samme mappe som ``veilarbsituasjon`` ligger i. I tillegg må 
+``veilarboppfolging-vilkar`` må klones ned til samme mappe som ``veilarboppfolging`` ligger i. I tillegg må 
 ``mvn clean install`` kjøres fra roten.

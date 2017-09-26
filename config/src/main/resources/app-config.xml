@@ -4,30 +4,30 @@
              xsi:schemaLocation="http://appconfig.aura.nav.no
              http://maven.adeo.no/xsd/appconfig.xsd ">
 
-    <name>veilarbsituasjon</name>
+    <name>veilarboppfolging</name>
 
     <selftest>
-        <path>veilarbsituasjon/internal/selftest</path>
+        <path>veilarboppfolging/internal/selftest</path>
     </selftest>
 
     <artifacts>
-        <ear groupId="no.nav.fo" artifactId="veilarbsituasjon-ear"/>
+        <ear groupId="no.nav.fo" artifactId="veilarboppfolging-ear"/>
     </artifacts>
 
-    <loadBalancer isAlive="veilarbsituasjon/internal/isAlive"/>
+    <loadBalancer isAlive="veilarboppfolging/internal/isAlive"/>
 
-    <security serviceUserResourceAlias="srvveilarbsituasjon">
+    <security serviceUserResourceAlias="srvveilarboppfolging">
         <logins>
             <saml/>
         </logins>
     </security>
 
-    <abacSecurity serviceUserResourceAlias="srvveilarbsituasjon"/>
+    <abacSecurity serviceUserResourceAlias="srvveilarboppfolging"/>
 
     <logging serviceCalls="true"/>
 
     <resources>
-        <applicationProperties alias="veilarbsituasjon.properties"/>
+        <applicationProperties alias="veilarboppfolging.properties"/>
         <applicationProperties alias="feed.brukertilgang"/>
         <webservice alias="virksomhet:DigitalKontakinformasjon_v1" mapToProperty="dkif.endpoint"/>
         <webservice alias="virksomhet:Ytelseskontrakt_v3" mapToProperty="ytelseskontrakt.endpoint"/>
@@ -35,7 +35,7 @@
         <webservice alias="virksomhet:OrganisasjonEnhet_v1" mapToProperty="organisasjonenhet.endpoint"/>
         <webservice alias="Aktoer_v2" mapToProperty="aktoer.endpoint"/>
         <webservice alias="Varseloppgave_v1" mapToProperty="varseloppgave.endpoint"/>
-        <applicationCertificate alias="srvveilarbsituasjon"/>
+        <applicationCertificate alias="srvveilarboppfolging"/>
         <rest alias="abac.pdp.endpoint" mapToProperty="abac.endpoint" />
         <rest alias="veilArbAktivitetAPI" mapToProperty="veilarbaktivitet" />
         <rest alias="veilarblogin.redirect-url" mapToProperty="oidc-redirect" />
@@ -46,7 +46,7 @@
         <baseUrl alias="isso.isalive"/>
         <credential alias="isso-rp-user"/>
 
-        <fileLibrary mapToProperty="vilkar" alias="veilarbsituasjon.vilkar.v1"/>
+        <fileLibrary mapToProperty="vilkar" alias="veilarboppfolging.vilkar.v1"/>
 
         <datasource alias="veilarbsituasjonDB" xaEnabled="true" jndi="java:jboss/jdbc/veilarbsituasjonDS">
             <pool maxPoolSize="300" minPoolSize="0"/>
@@ -56,9 +56,9 @@
     </resources>
 
     <exposed-services>
-        <exposedRest path="/veilarbsituasjon/api" name="veilArbSituasjonAPI"/>
-        <exposedSoap name="BehandleSituasjonV1"
-                     path="/veilarbsituasjon-ws/ws/Situasjon"
+        <exposedRest path="/veilarboppfolging/api" name="veilArbOppfolgingAPI"/>
+        <exposedSoap name="BehandleOppfolgingV1"
+                     path="/veilarboppfolging-ws/ws/Oppfolging"
                      securityToken="SAML"
                      wsdlGroupId="no.nav.tjenester"
                      wsdlArtifactId="brukerdialog-behandleSituasjon-v1-tjenestespesifikasjon"

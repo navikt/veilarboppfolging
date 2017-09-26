@@ -1,7 +1,7 @@
 package no.nav.sbl.dialogarena.restclient;
 
 
-import no.nav.fo.veilarbsituasjon.services.SituasjonOversiktService;
+import no.nav.fo.veilarboppfolging.services.SituasjonOversiktService;
 import no.nav.json.JsonProvider;
 import org.glassfish.jersey.client.ClientConfig;
 import org.slf4j.Logger;
@@ -12,7 +12,7 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 
-import static no.nav.fo.veilarbsituasjon.utils.StringUtils.notNullAndNotEmpty;
+import static no.nav.fo.veilarboppfolging.utils.StringUtils.notNullAndNotEmpty;
 import static org.glassfish.jersey.client.ClientProperties.*;
 import static org.slf4j.LoggerFactory.getLogger;
 
