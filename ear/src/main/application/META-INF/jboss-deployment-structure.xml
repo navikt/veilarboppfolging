@@ -9,7 +9,7 @@
             <module name="org.slf4j"/>
         </exclusions>
     </deployment>
-    <sub-deployment name="veilarbsituasjon-web.war">
+    <sub-deployment name="veilarboppfolging-web.war">
         <exclusions>
             <module name="org.slf4j"/>
             <module name="javaee.api"/>
@@ -29,7 +29,7 @@
             <module name="javax.api" export="true"/>
         </dependencies>
     </sub-deployment>
-    <sub-deployment name="veilarbsituasjon-ws.war">
+    <sub-deployment name="veilarboppfolging-ws.war">
         <exclusions>
             <module name="org.slf4j"/>
             <module name="javaee.api"/>

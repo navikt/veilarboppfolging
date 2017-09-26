@@ -6,6 +6,6 @@
         <res-type>javax.sql.DataSource</res-type>
     </resource-ref>
 
-	<context-root>veilarbsituasjon-ws</context-root>
+	<context-root>veilarboppfolging-ws</context-root>
     <security-domain>java:/jaas/NavSAML</security-domain>
 </jboss-web>

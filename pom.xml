@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>no.nav.fo</groupId>
-    <artifactId>veilarbsituasjon</artifactId>
+    <artifactId>veilarboppfolging</artifactId>
     <version>2</version>
     <modules>
         <module>common</module>
@@ -62,25 +62,25 @@
 
             <dependency>
                 <groupId>no.nav.fo</groupId>
-                <artifactId>veilarbsituasjon-common</artifactId>
+                <artifactId>veilarboppfolging-common</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>no.nav.fo</groupId>
-                <artifactId>veilarbsituasjon-common</artifactId>
+                <artifactId>veilarboppfolging-common</artifactId>
                 <version>${project.version}</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>no.nav.fo</groupId>
-                <artifactId>veilarbsituasjon-api</artifactId>
+                <artifactId>veilarboppfolging-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>no.nav.fo</groupId>
-                <artifactId>veilarbsituasjon-appconfig</artifactId>
+                <artifactId>veilarboppfolging-appconfig</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -192,8 +192,8 @@
     </build>
 
     <scm>
-        <developerConnection>scm:git:http://stash.devillo.no/scm/fo/veilarbsituasjon.git</developerConnection>
-        <url>http://stash.devillo.no/projects/FO/repos/veilarbsituasjon/browse</url>
+        <developerConnection>scm:git:http://stash.devillo.no/scm/fo/veilarboppfolging.git</developerConnection>
+        <url>http://stash.devillo.no/projects/FO/repos/veilarboppfolging/browse</url>
         <tag>HEAD</tag>
     </scm>
 

@@ -7,7 +7,7 @@
         <res-type>javax.sql.DataSource</res-type>
     </resource-ref>
 
-    <context-root>veilarbsituasjon</context-root>
+    <context-root>veilarboppfolging</context-root>
     <security-domain>jaspitest</security-domain>
 
 </jboss-web>

@@ -2,10 +2,9 @@ package no.nav.fo;
 
 import no.nav.dialogarena.config.DevelopmentSecurity;
 import no.nav.dialogarena.config.fasit.FasitUtils;
-import no.nav.fo.veilarbsituasjon.config.DatabaseConfig;
-import no.nav.fo.veilarbsituasjon.config.JndiLocalContextConfig;
-import no.nav.fo.veilarbsituasjon.config.PepConfig;
-
+import no.nav.fo.veilarboppfolging.config.DatabaseConfig;
+import no.nav.fo.veilarboppfolging.config.JndiLocalContextConfig;
+import no.nav.fo.veilarboppfolging.config.PepConfig;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -24,11 +23,11 @@ import org.springframework.transaction.support.TransactionTemplate;
 import javax.naming.NamingException;
 import java.io.IOException;
 
-import static no.nav.fo.veilarbsituasjon.config.DatabaseConfig.DATA_SOURCE_JDNI_NAME;
+import static no.nav.fo.veilarboppfolging.config.DatabaseConfig.DATA_SOURCE_JDNI_NAME;
 
 public abstract class IntegrasjonsTest {
 
-    public static final String APPLICATION_NAME = "veilarbsituasjon";
+    public static final String APPLICATION_NAME = "veilarboppfolging";
 
     protected static AnnotationConfigApplicationContext annotationConfigApplicationContext;
     private static TransactionStatus transaction;
@@ -37,7 +36,7 @@ public abstract class IntegrasjonsTest {
     @BeforeAll
     @BeforeClass
     public static void setupFelles() throws IOException {
-        DevelopmentSecurity.setupIntegrationTestSecurity(FasitUtils.getServiceUser("srvveilarbsituasjon", APPLICATION_NAME));
+        DevelopmentSecurity.setupIntegrationTestSecurity(FasitUtils.getServiceUser("srvveilarboppfolging", APPLICATION_NAME));
         JndiLocalContextConfig.setupInMemoryDatabase();
         annotationConfigApplicationContext = new AnnotationConfigApplicationContext(
                 JndiBean.class,
