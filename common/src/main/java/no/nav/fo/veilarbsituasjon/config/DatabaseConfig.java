@@ -53,7 +53,7 @@ public class DatabaseConfig {
     @Bean
     public Pingable dbPinger(final DataSource ds) {
         PingMetadata metadata = new PingMetadata(
-                "veilabrSituasjonDB: " + System.getProperty("veilarbsituasjonDB.url"),
+                "veilarbSituasjonDB: " + System.getProperty("veilarbsituasjonDB.url"),
                 "Enkel spørring mot Databasen for VeilArbSituasjon.",
                 true
         );
