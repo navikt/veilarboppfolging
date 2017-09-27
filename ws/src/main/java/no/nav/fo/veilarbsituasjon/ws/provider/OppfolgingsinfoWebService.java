@@ -35,7 +35,7 @@ public class OppfolgingsinfoWebService implements OppfolgingsinfoV1 {
         OppfolgingsstatusResponse response = new OppfolgingsstatusResponse();
         try {
             oppfolgingStatusData = situasjonOversiktService.hentOppfolgingsStatus(new AktorId(request.getAktorId()));
-            response.setWsOppfolgingsdata((wsOppfolgingsdataof(oppfolgingStatusData, request.getAktorId())));
+            response.setWsOppfolgingsdata(wsOppfolgingsdataof(oppfolgingStatusData, request.getAktorId()));
             return response;
         } catch (IngenTilgang ingenTilgang) {
             return new OppfolgingsstatusResponse()
