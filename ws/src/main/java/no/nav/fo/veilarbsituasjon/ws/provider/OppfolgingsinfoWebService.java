@@ -6,19 +6,22 @@ import no.nav.apiapp.soap.SoapTjeneste;
 import no.nav.fo.veilarbsituasjon.domain.AktorId;
 import no.nav.fo.veilarbsituasjon.domain.OppfolgingStatusData;
 import no.nav.fo.veilarbsituasjon.services.SituasjonOversiktService;
-import no.nav.metrics.MetricsFactory;
-import no.nav.metrics.Timer;
 import no.nav.tjeneste.virksomhet.oppfolgingsinfo.v1.OppfolgingsinfoV1;
 import no.nav.tjeneste.virksomhet.oppfolgingsinfo.v1.feil.WSSikkerhetsbegrensning;
-import no.nav.tjeneste.virksomhet.oppfolgingsinfo.v1.meldinger.Oppfolgingsdata;
 import no.nav.tjeneste.virksomhet.oppfolgingsinfo.v1.meldinger.OppfolgingsstatusRequest;
 import no.nav.tjeneste.virksomhet.oppfolgingsinfo.v1.meldinger.OppfolgingsstatusResponse;
+import no.nav.tjeneste.virksomhet.oppfolgingsinfo.v1.meldinger.WSOppfolgingsdata;
 import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
 
+import java.time.LocalDate;
+import java.util.Date;
+
+import static no.nav.fo.veilarbsituasjon.utils.CalendarConverter.convertDateToXMLGregorianCalendar;
+
 @Service
-@SoapTjeneste("/sit")
+@SoapTjeneste("/oppfolgingsinfo")
 public class OppfolgingsinfoWebService implements OppfolgingsinfoV1 {
 
     @Inject
@@ -26,36 +29,40 @@ public class OppfolgingsinfoWebService implements OppfolgingsinfoV1 {
 
     @Override
     public OppfolgingsstatusResponse hentOppfolgingsstatus(OppfolgingsstatusRequest request) {
-        final Timer timer = MetricsFactory.createTimer("ws.produsent." +
-                this.getClass().getSimpleName() + ".hentOppfolgingsstatus");
-        timer.start();
         OppfolgingStatusData oppfolgingStatusData = null;
         OppfolgingsstatusResponse response = new OppfolgingsstatusResponse();
         try {
             oppfolgingStatusData = situasjonOversiktService.hentOppfolgingsStatus(new AktorId(request.getAktorId()));
-
-            Oppfolgingsdata oppfolgingsdata = new Oppfolgingsdata();
-            oppfolgingsdata.setAktorId(request.getAktorId());
-            oppfolgingsdata.setErUnderOppfolging(oppfolgingStatusData.isUnderOppfolging());
-            oppfolgingsdata.setVeilederIdent(oppfolgingStatusData.getVeilederId());
-            response.setOppfolgingsdata(oppfolgingsdata);
+            response.setWsOppfolgingsdata((wsOppfolgingsdataof(oppfolgingStatusData, request.getAktorId())));
             return response;
         } catch (IngenTilgang ingenTilgang) {
-            WSSikkerhetsbegrensning wsSikkerhetsbegrensning = new WSSikkerhetsbegrensning();
-            wsSikkerhetsbegrensning.setFeilkilde(ingenTilgang.getCause().toString());
-            wsSikkerhetsbegrensning.setFeilmelding(ingenTilgang.getMessage());
-            response.setWsSikkerhetsbegrensning(wsSikkerhetsbegrensning);
-            return response;
+            return new OppfolgingsstatusResponse()
+                    .withWsSikkerhetsbegrensning(new WSSikkerhetsbegrensning()
+                            .withFeilkilde("ABAC")
+                            .withFeilmelding("Ingen tilgang til bruker"));
         } catch (Exception e) {
             throw new RuntimeException(e);
-        } finally {
-            timer.stop();
-            timer.report();
         }
     }
 
     @Override
     public void ping() {
 
+    }
+
+    private static WSOppfolgingsdata wsOppfolgingsdataof(OppfolgingStatusData statusData, String aktoerid) {
+        WSOppfolgingsdata oppfolgingsdata = new WSOppfolgingsdata();
+        oppfolgingsdata.setAktorId(aktoerid);
+        oppfolgingsdata.setErUnderOppfolging(statusData.isUnderOppfolging());
+        oppfolgingsdata.setManuell(statusData.isManuell());
+        oppfolgingsdata.setReservasjonKRR(statusData.isReservasjonKRR());
+        oppfolgingsdata.setVeilederIdent(statusData.getVeilederId());
+        oppfolgingsdata.setOppfolgingUtgang(convertDateToXMLGregorianCalendar(toLocalDate(statusData.getOppfolgingUtgang())));
+        oppfolgingsdata.setVilkarMaBesvares(statusData.isVilkarMaBesvares());
+        return oppfolgingsdata;
+    }
+
+    private static LocalDate toLocalDate(Date date) {
+        return LocalDate.ofEpochDay(date.toInstant().getEpochSecond());
     }
 }
