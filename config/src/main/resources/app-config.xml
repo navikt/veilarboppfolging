@@ -27,7 +27,6 @@
     <logging serviceCalls="true"/>
 
     <resources>
-        <applicationProperties alias="veilarboppfolging.properties"/>
         <applicationProperties alias="feed.brukertilgang"/>
         <webservice alias="virksomhet:DigitalKontakinformasjon_v1" mapToProperty="dkif.endpoint"/>
         <webservice alias="virksomhet:Ytelseskontrakt_v3" mapToProperty="ytelseskontrakt.endpoint"/>
