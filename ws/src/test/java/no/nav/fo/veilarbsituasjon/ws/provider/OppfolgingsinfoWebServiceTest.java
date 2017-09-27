@@ -1,15 +1,10 @@
 package no.nav.fo.veilarbsituasjon.ws.provider;
 
-import no.nav.apiapp.security.PepClient;
-import no.nav.fo.veilarbsituasjon.db.SituasjonRepository;
 import no.nav.fo.veilarbsituasjon.domain.AktorId;
 import no.nav.fo.veilarbsituasjon.domain.OppfolgingStatusData;
-import no.nav.fo.veilarbsituasjon.services.AktoerIdService;
 import no.nav.fo.veilarbsituasjon.services.SituasjonOversiktService;
-import no.nav.fo.veilarbsituasjon.services.SituasjonResolver;
 import no.nav.tjeneste.virksomhet.oppfolgingsinfo.v1.meldinger.OppfolgingsstatusRequest;
 import no.nav.tjeneste.virksomhet.oppfolgingsinfo.v1.meldinger.OppfolgingsstatusResponse;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -18,7 +13,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -41,9 +35,9 @@ public class OppfolgingsinfoWebServiceTest {
         OppfolgingsstatusRequest request = new OppfolgingsstatusRequest().withAktorId(AKTORID_DUMMY.getAktorId());
         OppfolgingsstatusResponse response = oppfolgingsinfoWebService.hentOppfolgingsstatus(request);
 
-        assertThat(response.getOppfolgingsdata().getAktorId()).isEqualTo(AKTORID_DUMMY.getAktorId());
-        assertThat(response.getOppfolgingsdata().getVeilederIdent()).isEqualTo(VEILEDER);
-        assertThat(response.getOppfolgingsdata().isErUnderOppfolging()).isTrue();
+        assertThat(response.getWsOppfolgingsdata().getAktorId()).isEqualTo(AKTORID_DUMMY.getAktorId());
+        assertThat(response.getWsOppfolgingsdata().getVeilederIdent()).isEqualTo(VEILEDER);
+        assertThat(response.getWsOppfolgingsdata().isErUnderOppfolging()).isTrue();
 
     }
 
