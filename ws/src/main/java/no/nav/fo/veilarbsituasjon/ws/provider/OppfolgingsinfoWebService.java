@@ -14,9 +14,11 @@ import no.nav.tjeneste.virksomhet.oppfolgingsinfo.v1.meldinger.WSOppfolgingsdata
 import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
+import javax.xml.datatype.XMLGregorianCalendar;
 
 import java.time.LocalDate;
 import java.util.Date;
+import java.util.Objects;
 
 import static no.nav.fo.veilarbsituasjon.utils.CalendarConverter.convertDateToXMLGregorianCalendar;
 
@@ -57,12 +59,15 @@ public class OppfolgingsinfoWebService implements OppfolgingsinfoV1 {
         oppfolgingsdata.setManuell(statusData.isManuell());
         oppfolgingsdata.setReservasjonKRR(statusData.isReservasjonKRR());
         oppfolgingsdata.setVeilederIdent(statusData.getVeilederId());
-        oppfolgingsdata.setOppfolgingUtgang(convertDateToXMLGregorianCalendar(toLocalDate(statusData.getOppfolgingUtgang())));
+        oppfolgingsdata.setOppfolgingUtgang(kanskjeCalendar(statusData.getOppfolgingUtgang()));
         oppfolgingsdata.setVilkarMaBesvares(statusData.isVilkarMaBesvares());
         return oppfolgingsdata;
     }
 
-    private static LocalDate toLocalDate(Date date) {
-        return LocalDate.ofEpochDay(date.toInstant().getEpochSecond());
+    private static XMLGregorianCalendar kanskjeCalendar(Date date) {
+        if(Objects.isNull(date)) {
+            return null;
+        }
+        return convertDateToXMLGregorianCalendar(LocalDate.ofEpochDay(date.toInstant().getEpochSecond()));
     }
 }
