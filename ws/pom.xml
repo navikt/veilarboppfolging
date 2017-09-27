@@ -21,12 +21,6 @@
             <artifactId>api-app</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>no.nav</groupId>
-            <artifactId>metrics</artifactId>
-        </dependency>
-
-
         <!--Lombok-->
         <dependency>
             <groupId>org.projectlombok</groupId>
