@@ -5,7 +5,6 @@ import no.nav.tjeneste.virksomhet.varseloppgave.v1.BestillVarselOppgaveSikkerhet
 import no.nav.tjeneste.virksomhet.varseloppgave.v1.VarseloppgaveV1;
 import no.nav.tjeneste.virksomhet.varseloppgave.v1.informasjon.*;
 import no.nav.tjeneste.virksomhet.varseloppgave.v1.meldinger.BestillVarselOppgaveRequest;
-import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
@@ -13,12 +12,10 @@ import java.util.UUID;
 
 import static no.nav.apiapp.util.PropertyUtils.getRequiredProperty;
 import static no.nav.sbl.util.ExceptionUtils.throwUnchecked;
-import static org.slf4j.LoggerFactory.getLogger;
 
 @Component
 public class EskaleringsvarselService {
 
-    private static final Logger LOG  = getLogger(EskaleringsvarselService.class);
     private static final String VARSELTYPE_ID = "DittNAV_000008";
 
     @Inject
