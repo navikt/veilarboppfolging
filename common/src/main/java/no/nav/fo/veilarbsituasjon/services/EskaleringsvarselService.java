@@ -29,7 +29,7 @@ public class EskaleringsvarselService {
             Aktoer aktor = new AktoerId().withAktoerId(aktorId);
             varseloppgaveV1.bestillVarselOppgave(lagBestillVarselOppgaveRequest(aktor, dialogId));
         } catch (Exception e) {
-            LOG.error(e.toString());
+            LOG.error("Sending av eskaleringsvarsel feilet for aktørId {} og dialogId {}", aktorId, dialogId, e);
             throw new Feil(Feil.Type.UKJENT);
         }
     }
