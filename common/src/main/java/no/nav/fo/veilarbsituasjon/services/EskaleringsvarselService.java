@@ -5,6 +5,9 @@ import no.nav.tjeneste.virksomhet.varseloppgave.v1.BestillVarselOppgaveSikkerhet
 import no.nav.tjeneste.virksomhet.varseloppgave.v1.VarseloppgaveV1;
 import no.nav.tjeneste.virksomhet.varseloppgave.v1.informasjon.*;
 import no.nav.tjeneste.virksomhet.varseloppgave.v1.meldinger.BestillVarselOppgaveRequest;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
@@ -16,6 +19,7 @@ import static no.nav.sbl.util.ExceptionUtils.throwUnchecked;
 @Component
 public class EskaleringsvarselService {
 
+    private static final Logger LOG = LoggerFactory.getLogger(EskaleringsvarselService.class);
     private static final String AKTIVITETSPLAN_URL_PROPERTY = "aktivitetsplan.url";
     private static final String ESKALERINGSVARSEL_OPPGAVETYPE_PROPERTY = "eskaleringsvarsel.oppgavetype";
     private static final String ESKALERINGSVARSEL_VARSELTYPE_PROPERTY = "eskaleringsvarsel.varseltype";
@@ -32,14 +36,15 @@ public class EskaleringsvarselService {
         return property != null ? property : defaultVerdi;
     }
     
-
     public void sendEskaleringsvarsel(String aktorId, long dialogId) {
         Aktoer aktor = new AktoerId().withAktoerId(aktorId);
         try {
             varseloppgaveV1.bestillVarselOppgave(lagBestillVarselOppgaveRequest(aktor, dialogId));
         } catch (BestillVarselOppgaveSikkerhetsbegrensning bestillVarselOppgaveSikkerhetsbegrensning) {
+            LOG.error("Sikkerhetsbegrensning ved kall mot varseloppgaveV1");
             throw new IngenTilgang(bestillVarselOppgaveSikkerhetsbegrensning);
         } catch (Exception e) {
+            LOG.error("Sending av eskaleringsvarsel feilet for aktørId {} og dialogId {}", aktorId, dialogId, e);
             throw throwUnchecked(e);
         }
     }
