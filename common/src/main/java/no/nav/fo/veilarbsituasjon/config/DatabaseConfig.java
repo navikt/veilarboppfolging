@@ -1,10 +1,11 @@
 package no.nav.fo.veilarbsituasjon.config;
 
-import no.nav.sbl.jdbc.Database;
 import no.nav.sbl.dialogarena.common.integrasjon.utils.RowMapper;
 import no.nav.sbl.dialogarena.common.integrasjon.utils.SQL;
 import no.nav.sbl.dialogarena.types.Pingable;
 import no.nav.sbl.dialogarena.types.Pingable.Ping.PingMetadata;
+import no.nav.sbl.jdbc.Database;
+import no.nav.sbl.jdbc.Transactor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -48,6 +49,11 @@ public class DatabaseConfig {
     @Bean
     public Database database(JdbcTemplate jdbcTemplates) {
         return new Database(jdbcTemplates);
+    }
+
+    @Bean
+    public Transactor transactor(PlatformTransactionManager platformTransactionManager) {
+        return new Transactor(platformTransactionManager);
     }
 
     @Bean

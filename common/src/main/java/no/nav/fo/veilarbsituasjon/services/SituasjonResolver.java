@@ -1,8 +1,6 @@
 package no.nav.fo.veilarbsituasjon.services;
 
-import lombok.Getter;
-import lombok.SneakyThrows;
-import lombok.val;
+import lombok.*;
 import no.nav.apiapp.feil.UlovligHandling;
 import no.nav.apiapp.security.PepClient;
 import no.nav.brukerdialog.security.context.SubjectHandler;
@@ -12,9 +10,8 @@ import no.nav.fo.veilarbsituasjon.domain.*;
 import no.nav.fo.veilarbsituasjon.utils.DateUtils;
 import no.nav.fo.veilarbsituasjon.utils.StringUtils;
 import no.nav.fo.veilarbsituasjon.vilkar.VilkarService;
-import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.DigitalKontaktinformasjonV1;
-import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.HentDigitalKontaktinformasjonKontaktinformasjonIkkeFunnet;
-import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.HentDigitalKontaktinformasjonPersonIkkeFunnet;
+import no.nav.sbl.jdbc.Transactor;
+import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.*;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.informasjon.WSKontaktinformasjon;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.WSHentDigitalKontaktinformasjonRequest;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.WSHentDigitalKontaktinformasjonResponse;
@@ -28,14 +25,10 @@ import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskont
 import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
 import java.sql.Timestamp;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 import static java.lang.System.currentTimeMillis;
 import static java.util.Optional.of;
@@ -79,7 +72,6 @@ public class SituasjonResolver {
         situasjon = hentSituasjon();
     }
 
-    @Transactional
     void sjekkStatusIArenaOgOppdaterSituasjon() {
         if (!situasjon.isOppfolging()) {
             hentOppfolgingstatusFraArena();
@@ -185,7 +177,6 @@ public class SituasjonResolver {
         return kanSettesUnderOppfolging(statusIArena.getFormidlingsgruppeKode(), statusIArena.getServicegruppeKode());
     }
 
-    @Transactional
     void startOppfolging() {
         deps.getSituasjonRepository().startOppfolgingHvisIkkeAlleredeStartet(aktorId);
         situasjon = hentSituasjon();
@@ -252,8 +243,10 @@ public class SituasjonResolver {
 
     void startEskalering(String begrunnelse, long tilhorendeDialogId){
         String veilederId = SubjectHandler.getSubjectHandler().getUid();
-        deps.getSituasjonRepository().startEskalering(aktorId, veilederId, begrunnelse, tilhorendeDialogId);
-        deps.getEskaleringsvarselService().sendEskaleringsvarsel(aktorId, tilhorendeDialogId);
+        deps.getTransactor().inTransaction(() -> {
+            deps.getSituasjonRepository().startEskalering(aktorId, veilederId, begrunnelse, tilhorendeDialogId);
+            deps.getEskaleringsvarselService().sendEskaleringsvarsel(aktorId, tilhorendeDialogId);
+        });
     }
 
     void stoppEskalering(String begrunnelse) {
@@ -320,6 +313,9 @@ public class SituasjonResolver {
 
         @Inject
         private PepClient pepClient;
+
+        @Inject
+        private Transactor transactor;
 
         @Inject
         private AktoerIdService aktoerIdService;

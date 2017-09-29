@@ -26,20 +26,22 @@ public class VarseloppgaveConfig {
     }
 
     public VarseloppgaveV1 factory() {
-        return new CXFClient<>(VarseloppgaveV1.class)
-                .address(getProperty(VARSELOPPGAVE_ENDPOINT_URL))
-                .withMetrics()
+        return varselBuilder()
                 .configureStsForOnBehalfOfWithJWT()
                 .withOutInterceptor(new TestInterceptor())
                 .build();
     }
 
     public VarseloppgaveV1 pingFactory() {
-        return new CXFClient<>(VarseloppgaveV1.class)
-                .address(getProperty(VARSELOPPGAVE_ENDPOINT_URL))
-                .withMetrics()
+        return varselBuilder()
                 .configureStsForSystemUserInFSS()
                 .build();
+    }
+
+    private CXFClient<VarseloppgaveV1> varselBuilder() {
+        return new CXFClient<>(VarseloppgaveV1.class)
+                .address(getProperty(VARSELOPPGAVE_ENDPOINT_URL))
+                .withMetrics();
     }
 
     @Bean

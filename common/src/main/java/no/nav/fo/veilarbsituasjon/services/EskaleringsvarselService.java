@@ -1,6 +1,7 @@
 package no.nav.fo.veilarbsituasjon.services;
 
-import no.nav.apiapp.feil.Feil;
+import no.nav.apiapp.feil.IngenTilgang;
+import no.nav.tjeneste.virksomhet.varseloppgave.v1.BestillVarselOppgaveSikkerhetsbegrensning;
 import no.nav.tjeneste.virksomhet.varseloppgave.v1.VarseloppgaveV1;
 import no.nav.tjeneste.virksomhet.varseloppgave.v1.informasjon.*;
 import no.nav.tjeneste.virksomhet.varseloppgave.v1.meldinger.BestillVarselOppgaveRequest;
@@ -11,6 +12,7 @@ import javax.inject.Inject;
 import java.util.UUID;
 
 import static no.nav.apiapp.util.PropertyUtils.getRequiredProperty;
+import static no.nav.sbl.util.ExceptionUtils.throwUnchecked;
 import static org.slf4j.LoggerFactory.getLogger;
 
 @Component
@@ -25,12 +27,13 @@ public class EskaleringsvarselService {
     private String aktivitetsplanBaseUrl = getRequiredProperty("aktivitetsplan.url");
 
     public void sendEskaleringsvarsel(String aktorId, long dialogId) {
+        Aktoer aktor = new AktoerId().withAktoerId(aktorId);
         try {
-            Aktoer aktor = new AktoerId().withAktoerId(aktorId);
             varseloppgaveV1.bestillVarselOppgave(lagBestillVarselOppgaveRequest(aktor, dialogId));
+        } catch (BestillVarselOppgaveSikkerhetsbegrensning bestillVarselOppgaveSikkerhetsbegrensning) {
+            throw new IngenTilgang(bestillVarselOppgaveSikkerhetsbegrensning);
         } catch (Exception e) {
-            LOG.error(e.toString());
-            throw new Feil(Feil.Type.UKJENT);
+            throw throwUnchecked(e);
         }
     }
 
