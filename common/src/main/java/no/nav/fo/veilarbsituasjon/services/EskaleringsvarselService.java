@@ -16,12 +16,22 @@ import static no.nav.sbl.util.ExceptionUtils.throwUnchecked;
 @Component
 public class EskaleringsvarselService {
 
-    private static final String VARSELTYPE_ID = "DittNAV_000008";
+    private static final String AKTIVITETSPLAN_URL_PROPERTY = "aktivitetsplan.url";
+    private static final String ESKALERINGSVARSEL_OPPGAVETYPE_PROPERTY = "eskaleringsvarsel.oppgavetype";
+    private static final String ESKALERINGSVARSEL_VARSELTYPE_PROPERTY = "eskaleringsvarsel.varseltype";
 
     @Inject
     private VarseloppgaveV1 varseloppgaveV1;
 
-    private String aktivitetsplanBaseUrl = getRequiredProperty("aktivitetsplan.url");
+    private String aktivitetsplanBaseUrl = getRequiredProperty(AKTIVITETSPLAN_URL_PROPERTY);
+    private String varseltypeId = getPropertyEllerDefault(ESKALERINGSVARSEL_OPPGAVETYPE_PROPERTY, "DittNAV_000008");
+    private String oppgavetypeId = getPropertyEllerDefault(ESKALERINGSVARSEL_VARSELTYPE_PROPERTY, "DittNAV_000008");
+
+    private String getPropertyEllerDefault(String propertyNokkel, String defaultVerdi) {
+        String property = System.getProperty(propertyNokkel);
+        return property != null ? property : defaultVerdi;
+    }
+    
 
     public void sendEskaleringsvarsel(String aktorId, long dialogId) {
         Aktoer aktor = new AktoerId().withAktoerId(aktorId);
@@ -53,7 +63,7 @@ public class EskaleringsvarselService {
     }
 
     private OppgaveHenvendelse lagOppgaveHenvendelse(long dialogId) {
-        OppgaveType oppgaveType = new OppgaveType().withValue(VARSELTYPE_ID);
+        OppgaveType oppgaveType = new OppgaveType().withValue(oppgavetypeId);
         return new OppgaveHenvendelse()
                 .withOppgaveType(oppgaveType)
                 .withOppgaveURL(dialogUrl(dialogId))
@@ -61,6 +71,6 @@ public class EskaleringsvarselService {
     }
 
     private VarselMedHandling lagVarselMedHandling() {
-        return new VarselMedHandling().withVarseltypeId(VARSELTYPE_ID);
+        return new VarselMedHandling().withVarseltypeId(varseltypeId);
     }
 }
