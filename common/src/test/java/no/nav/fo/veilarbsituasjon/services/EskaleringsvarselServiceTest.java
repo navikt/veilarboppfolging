@@ -1,6 +1,5 @@
 package no.nav.fo.veilarbsituasjon.services;
 
-import no.nav.apiapp.feil.Feil;
 import no.nav.tjeneste.virksomhet.varseloppgave.v1.BestillVarselOppgaveUgyldigInput;
 import no.nav.tjeneste.virksomhet.varseloppgave.v1.VarseloppgaveV1;
 import no.nav.tjeneste.virksomhet.varseloppgave.v1.meldinger.BestillVarselOppgaveRequest;
