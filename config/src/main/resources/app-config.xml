@@ -68,7 +68,7 @@
         <exposedSoap name="OppfolgingsinfoV1"
                      path="/veilarbsituasjon-ws/ws/oppfolgingsinfo"
                      securityToken="SAML"
-                     wsdlGroupId="no.nav.tjenester"
+                     wsdlGroupId="no.nav.sbl.dialogarena"
                      wsdlArtifactId="oppfolgingsinfo-v1-tjenestespesifikasjon"
                      wsdlVersion="${oppfolgingsinfo-v1-tjenestespesifikasjon.version}">
         </exposedSoap>
