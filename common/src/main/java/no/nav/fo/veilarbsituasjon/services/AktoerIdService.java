@@ -28,7 +28,7 @@ public class AktoerIdService {
                     new WSHentAktoerIdForIdentRequest().withIdent(fnr)
             ).getAktoerId();
         } catch (HentAktoerIdForIdentPersonIkkeFunnet e) {
-            LOG.error("AktoerId ikke funnet", e);
+            LOG.error("AktoerId ikke funnet for fnr {}", fnr, e);
             return null;
         }
     }

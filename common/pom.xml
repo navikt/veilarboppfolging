@@ -39,6 +39,10 @@
         </dependency>
         <dependency>
             <groupId>no.nav.sbl</groupId>
+            <artifactId>util</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>no.nav.sbl</groupId>
             <artifactId>api-app</artifactId>
             <type>test-jar</type>
         </dependency>

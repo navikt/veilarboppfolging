@@ -1,6 +1,5 @@
 package no.nav.fo.veilarbsituasjon.services;
 
-import no.nav.apiapp.feil.Feil;
 import no.nav.tjeneste.virksomhet.varseloppgave.v1.BestillVarselOppgaveUgyldigInput;
 import no.nav.tjeneste.virksomhet.varseloppgave.v1.VarseloppgaveV1;
 import no.nav.tjeneste.virksomhet.varseloppgave.v1.meldinger.BestillVarselOppgaveRequest;
@@ -40,7 +39,7 @@ public class EskaleringsvarselServiceTest {
                 .bestillVarselOppgave(any(BestillVarselOppgaveRequest.class));
     }
 
-    @Test(expected = Feil.class)
+    @Test(expected = BestillVarselOppgaveUgyldigInput.class)
     public void sendEskaleringFeiler() throws Exception {
         when(varseloppgaveV1.bestillVarselOppgave(any())).thenThrow(BestillVarselOppgaveUgyldigInput.class);
         eskaleringsvarselService.sendEskaleringsvarsel(AKTOR_ID, DIALOG_ID);

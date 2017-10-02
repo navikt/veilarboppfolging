@@ -1,10 +1,11 @@
 package no.nav.fo.veilarbsituasjon.config;
 
-import no.nav.sbl.jdbc.Database;
 import no.nav.sbl.dialogarena.common.integrasjon.utils.RowMapper;
 import no.nav.sbl.dialogarena.common.integrasjon.utils.SQL;
 import no.nav.sbl.dialogarena.types.Pingable;
 import no.nav.sbl.dialogarena.types.Pingable.Ping.PingMetadata;
+import no.nav.sbl.jdbc.Database;
+import no.nav.sbl.jdbc.Transactor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -51,9 +52,14 @@ public class DatabaseConfig {
     }
 
     @Bean
+    public Transactor transactor(PlatformTransactionManager platformTransactionManager) {
+        return new Transactor(platformTransactionManager);
+    }
+
+    @Bean
     public Pingable dbPinger(final DataSource ds) {
         PingMetadata metadata = new PingMetadata(
-                "veilabrSituasjonDB: " + System.getProperty("veilarbsituasjonDB.url"),
+                "veilarbSituasjonDB: " + System.getProperty("veilarbsituasjonDB.url"),
                 "Enkel spørring mot Databasen for VeilArbSituasjon.",
                 true
         );
