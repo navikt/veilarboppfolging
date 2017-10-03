@@ -57,8 +57,12 @@ public class SituasjonResolver {
     private WSHentYtelseskontraktListeResponse ytelser;
     private List<ArenaAktivitetDTO> arenaAktiviteter;
 
+    private SituasjonResolver(SituasjonResolverDependencies deps) {
+        this.deps = deps;
+    }
+
     SituasjonResolver(String fnr, SituasjonResolverDependencies deps) {
-        deps.getPepClient().sjekkTilgangTilFnr(fnr);
+        deps.getPepClient().sjekkLeseTilgangTilFnr(fnr);
 
         this.fnr = fnr;
         this.deps = deps;

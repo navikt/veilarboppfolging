@@ -3,6 +3,7 @@ package no.nav.fo.veilarbsituasjon.services;
 
 import no.nav.apiapp.feil.UlovligHandling;
 import no.nav.fo.veilarbsituasjon.db.SituasjonRepository;
+import no.nav.fo.veilarbsituasjon.domain.Fnr;
 import no.nav.fo.veilarbsituasjon.domain.Oppfolgingsperiode;
 import no.nav.fo.veilarbsituasjon.domain.Situasjon;
 import org.junit.Before;

@@ -29,6 +29,11 @@ public class SituasjonOversiktService {
     @Inject
     private SituasjonRepository situasjonRepository;
 
+    public OppfolgingStatusData hentOppfolgingsStatus(AktorId aktorId) throws Exception {
+        String fnr = situasjonResolverDependencies.getAktoerIdService().findFnr(aktorId.getAktorId());
+        return hentOppfolgingsStatus(fnr);
+    }
+
     @Transactional
     public OppfolgingStatusData hentOppfolgingsStatus(String fnr) throws Exception {
         val situasjonResolver = new SituasjonResolver(fnr, situasjonResolverDependencies);
