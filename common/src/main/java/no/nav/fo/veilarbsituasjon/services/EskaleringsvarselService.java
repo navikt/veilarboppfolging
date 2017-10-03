@@ -28,14 +28,9 @@ public class EskaleringsvarselService {
     private VarseloppgaveV1 varseloppgaveV1;
 
     private String aktivitetsplanBaseUrl = getRequiredProperty(AKTIVITETSPLAN_URL_PROPERTY);
-    private String varseltypeId = getPropertyEllerDefault(ESKALERINGSVARSEL_OPPGAVETYPE_PROPERTY, "DittNAV_000008");
-    private String oppgavetypeId = getPropertyEllerDefault(ESKALERINGSVARSEL_VARSELTYPE_PROPERTY, "DittNAV_000008");
+    private String varseltypeId = System.getProperty(ESKALERINGSVARSEL_VARSELTYPE_PROPERTY, "DittNAV_000008");
+    private String oppgavetypeId = System.getProperty(ESKALERINGSVARSEL_OPPGAVETYPE_PROPERTY, "0004");
 
-    private String getPropertyEllerDefault(String propertyNokkel, String defaultVerdi) {
-        String property = System.getProperty(propertyNokkel);
-        return property != null ? property : defaultVerdi;
-    }
-    
     public void sendEskaleringsvarsel(String aktorId, long dialogId) {
         Aktoer aktor = new AktoerId().withAktoerId(aktorId);
         try {
@@ -78,4 +73,5 @@ public class EskaleringsvarselService {
     private VarselMedHandling lagVarselMedHandling() {
         return new VarselMedHandling().withVarseltypeId(varseltypeId);
     }
+    
 }
