@@ -29,7 +29,7 @@ public class EskaleringsvarselService {
 
     private String aktivitetsplanBaseUrl = getRequiredProperty(AKTIVITETSPLAN_URL_PROPERTY);
     private String varseltypeId = System.getProperty(ESKALERINGSVARSEL_VARSELTYPE_PROPERTY, "DittNAV_000008");
-    private String oppgavetypeId = System.getProperty(ESKALERINGSVARSEL_OPPGAVETYPE_PROPERTY, "DittNAV_000008");
+    private String oppgavetypeId = System.getProperty(ESKALERINGSVARSEL_OPPGAVETYPE_PROPERTY, "0004");
 
     public void sendEskaleringsvarsel(String aktorId, long dialogId) {
         Aktoer aktor = new AktoerId().withAktoerId(aktorId);
