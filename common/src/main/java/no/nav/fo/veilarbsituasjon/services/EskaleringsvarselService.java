@@ -73,4 +73,5 @@ public class EskaleringsvarselService {
     private VarselMedHandling lagVarselMedHandling() {
         return new VarselMedHandling().withVarseltypeId(varseltypeId);
     }
+    
 }
