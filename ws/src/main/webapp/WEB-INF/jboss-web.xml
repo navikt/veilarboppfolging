@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jboss-web>
     <resource-ref>
-        <res-ref-name>jdbc/veilarbsituasjonDS</res-ref-name>
-        <jndi-name>java:jboss/jdbc/veilarbsituasjonDS</jndi-name>
+        <res-ref-name>jdbc/veilarboppfolgingDB</res-ref-name>
+        <jndi-name>java:jboss/jdbc/veilarboppfolgingDB</jndi-name>
         <res-type>javax.sql.DataSource</res-type>
     </resource-ref>
 

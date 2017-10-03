@@ -21,13 +21,13 @@ import javax.sql.DataSource;
 @EnableTransactionManagement
 public class DatabaseConfig {
 
-    public static final String DATA_SOURCE_JDNI_NAME = "jdbc/veilarbsituasjonDS";
+    public static final String DATA_SOURCE_JDNI_NAME = "jdbc/veilarboppfolgingDB";
 
     @Bean
     public DataSource dataSourceJndiLookup() throws NamingException {
         JndiDataSourceLookup jndiDataSourceLookup = new JndiDataSourceLookup();
         jndiDataSourceLookup.setResourceRef(true);
-        return jndiDataSourceLookup.getDataSource("jdbc/veilarbsituasjonDS");
+        return jndiDataSourceLookup.getDataSource("jdbc/veilarboppfolgingDB");
     }
 
     @Bean

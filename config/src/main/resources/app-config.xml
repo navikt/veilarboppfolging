@@ -47,7 +47,7 @@
 
         <fileLibrary mapToProperty="vilkar" alias="veilarboppfolging.vilkar.v1"/>
 
-        <datasource alias="veilarbsituasjonDB" xaEnabled="true" jndi="java:jboss/jdbc/veilarbsituasjonDS">
+        <datasource alias="veilarboppfolgingDB" xaEnabled="true" jndi="java:jboss/jdbc/veilarboppfolgingDB">
             <pool maxPoolSize="300" minPoolSize="0"/>
         </datasource>
 
