@@ -17,7 +17,7 @@ public class StartJettyWS {
     private static final String APPLICATION_NAME = "veilarboppfolging";
     private static final TestEnvironment TEST_ENVIRONMENT = TestEnvironment.T6;
 
-    private static final int PORT = 8382;
+    private static final int PORT = 8688;
 
     public static void main(String[] args) throws Exception {
         boolean lokalDatabase = Boolean.parseBoolean(getProperty("lokal.database"));

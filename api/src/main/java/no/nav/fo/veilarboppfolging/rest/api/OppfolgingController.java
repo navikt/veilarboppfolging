@@ -10,7 +10,7 @@ import java.util.List;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 
-@Path("/Oppfolging")
+@Path("/oppfolging")
 @Produces(APPLICATION_JSON)
 public interface OppfolgingController {
 

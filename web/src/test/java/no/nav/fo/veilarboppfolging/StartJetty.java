@@ -18,7 +18,7 @@ class StartJetty {
     private static final String APPLICATION_NAME = "veilarboppfolging";
 
     static final String CONTEXT_NAME = "/veilarboppfolging";
-    static final int PORT = 8486;
+    static final int PORT = 8587;
 
     public static void main(String[] args) throws Exception {
         boolean lokalDatabase = Boolean.parseBoolean(getProperty("lokal.database"));
