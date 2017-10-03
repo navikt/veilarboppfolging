@@ -1,7 +1,6 @@
 package no.nav.fo.veilarboppfolging.rest;
 
-import no.nav.fo.veilarboppfolging.db.BrukerRepository;
-import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingBruker;
+import no.nav.fo.veilarboppfolging.db.VeilederTilordningerRepository;
 import no.nav.fo.veilarboppfolging.rest.domain.Veileder;
 import no.nav.fo.veilarboppfolging.services.AktoerIdService;
 import org.junit.Test;
@@ -23,7 +22,7 @@ public class VeilederRessursTest {
     private VeilederRessurs veilederRessurs;
 
     @Mock
-    private BrukerRepository brukerRepository;
+    private VeilederTilordningerRepository veilederTilordningerRepository;
 
     @Mock
     private AktoerIdService aktoerIdService;
@@ -32,8 +31,8 @@ public class VeilederRessursTest {
     public void getVeilederSkalReturnereVeileder() throws Exception {
         final String forventetIdent = "***REMOVED***";
         when(aktoerIdService.findAktoerId(anyString())).thenReturn("test-id");
-        when(brukerRepository.hentTilordningForAktoer(anyString()))
-                .thenReturn(OppfolgingBruker.builder().veileder(forventetIdent).build());
+        when(veilederTilordningerRepository.hentTilordningForAktoer(anyString()))
+                .thenReturn(forventetIdent);
 
         final Veileder veileder = veilederRessurs.getVeileder("***REMOVED***");
         assertNotNull(veileder);

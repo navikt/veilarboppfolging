@@ -3,10 +3,10 @@ package no.nav.fo.veilarboppfolging.services;
 
 import no.nav.apiapp.security.PepClient;
 import no.nav.fo.feed.producer.FeedProducer;
-import no.nav.fo.veilarboppfolging.db.BrukerRepository;
-import no.nav.fo.veilarboppfolging.db.SituasjonRepository;
-import no.nav.fo.veilarboppfolging.rest.PortefoljeRessurs;
-import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingBruker;
+import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
+import no.nav.fo.veilarboppfolging.db.VeilederTilordningerRepository;
+import no.nav.fo.veilarboppfolging.rest.VeilederTilordningRessurs;
+import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingFeedDTO;
 import no.nav.fo.veilarboppfolging.rest.domain.VeilederTilordning;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
 import org.junit.Test;
@@ -24,19 +24,19 @@ import static org.mockito.Mockito.*;
 public class AktoerIdToVeilederTest {
 
     @Mock
-    private BrukerRepository brukerRepository;
+    private VeilederTilordningerRepository veilederTilordningerRepository;
 
     @Mock
-    private SituasjonRepository situasjonRepository;
+    private OppfolgingRepository oppfolgingRepository;
 
     @Mock
     private AktoerIdService aktoerIdService;
 
     @Mock
-    private FeedProducer<OppfolgingBruker> feed;
+    private FeedProducer<OppfolgingFeedDTO> feed;
 
     @InjectMocks
-    private PortefoljeRessurs portefoljeRessurs;
+    private VeilederTilordningRessurs veilederTilordningRessurs;
 
     @Mock
     private PepClient pepClient;
@@ -44,14 +44,14 @@ public class AktoerIdToVeilederTest {
     @Test
     public void portefoljeRessursMustCallDAOwithAktoerIdToVeileder() throws PepException {
         when(aktoerIdService.findAktoerId(any(String.class))).thenReturn("AKTOERID");
-        portefoljeRessurs.postVeilederTilordninger(Collections.singletonList(testData()));
-        verify(brukerRepository, times(1)).upsertVeilederTilordning(anyString(), anyString());
+        veilederTilordningRessurs.postVeilederTilordninger(Collections.singletonList(testData()));
+        verify(veilederTilordningerRepository, times(1)).upsertVeilederTilordning(anyString(), anyString());
     }
 
     public void noCallToDAOWhenAktoerIdServiceFails() {
         when(aktoerIdService.findAktoerId(any(String.class))).thenReturn(null);
-        portefoljeRessurs.postVeilederTilordninger(Collections.singletonList(testData()));
-        verify(brukerRepository, never()).upsertVeilederTilordning(anyString(), anyString());
+        veilederTilordningRessurs.postVeilederTilordninger(Collections.singletonList(testData()));
+        verify(veilederTilordningerRepository, never()).upsertVeilederTilordning(anyString(), anyString());
     }
 
     private VeilederTilordning testData() {

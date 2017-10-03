@@ -1,16 +1,16 @@
 package no.nav.fo.veilarboppfolging.utils;
 
 
-import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingBruker;
+import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingFeedDTO;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Map;
 
-public class OppfolgingsbrukerUtil {
+public class OppfolgingFeedUtil {
 
-    public static OppfolgingBruker mapRadTilOppfolgingsbruker(Map<String, Object> rad) {
-        return OppfolgingBruker
+    public static OppfolgingFeedDTO mapRadTilOppfolgingFeedDTO(Map<String, Object> rad) {
+        return OppfolgingFeedDTO
                 .builder()
                 .aktoerid((String) rad.get("AKTORID"))
                 .veileder((String) rad.get("VEILEDER"))

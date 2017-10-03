@@ -7,7 +7,7 @@ import no.nav.fo.veilarboppfolging.mappers.OppfolgingMapper;
 import no.nav.fo.veilarboppfolging.mappers.YtelseskontraktMapper;
 import no.nav.fo.veilarboppfolging.rest.domain.YtelserResponse;
 import no.nav.fo.veilarboppfolging.rest.domain.YtelseskontraktResponse;
-import no.nav.fo.veilarboppfolging.services.OppfolgingService;
+import no.nav.fo.veilarboppfolging.services.ArenaOppfolgingService;
 import no.nav.fo.veilarboppfolging.services.YtelseskontraktService;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
 import org.slf4j.Logger;
@@ -34,18 +34,18 @@ public class YtelseRessurs {
     private static final int MANEDER_FREM_I_TID = 1;
 
     final private YtelseskontraktService ytelseskontraktService;
-    final private OppfolgingService oppfolgingService;
+    final private ArenaOppfolgingService arenaOppfolgingService;
     final private OppfolgingMapper oppfolgingMapper;
     final private YtelseskontraktMapper ytelseskontraktMapper;
     private final PepClient pepClient;
 
     public YtelseRessurs(YtelseskontraktService ytelseskontraktService,
-                         OppfolgingService oppfolgingService,
+                         ArenaOppfolgingService arenaOppfolgingService,
                          OppfolgingMapper oppfolgingMapper,
                          YtelseskontraktMapper ytelseskontraktMapper,
                          PepClient pepClient) {
         this.ytelseskontraktService = ytelseskontraktService;
-        this.oppfolgingService = oppfolgingService;
+        this.arenaOppfolgingService = arenaOppfolgingService;
         this.oppfolgingMapper = oppfolgingMapper;
         this.ytelseskontraktMapper = ytelseskontraktMapper;
         this.pepClient = pepClient;
@@ -64,7 +64,7 @@ public class YtelseRessurs {
 
         LOG.info("Henter ytelse for fnr");
         final YtelseskontraktResponse ytelseskontraktResponse = ytelseskontraktMapper.tilYtelseskontrakt(ytelseskontraktService.hentYtelseskontraktListe(fom, tom, fnr));
-        final OppfolgingskontraktResponse oppfolgingskontraktResponse = oppfolgingMapper.tilOppfolgingskontrakt(oppfolgingService.hentOppfolgingskontraktListe(fom, tom, fnr));
+        final OppfolgingskontraktResponse oppfolgingskontraktResponse = oppfolgingMapper.tilOppfolgingskontrakt(arenaOppfolgingService.hentOppfolgingskontraktListe(fom, tom, fnr));
 
         return new YtelserResponse()
                 .withVedtaksliste(ytelseskontraktResponse.getVedtaksliste())

@@ -1,7 +1,7 @@
 package no.nav.fo.veilarboppfolging.rest;
 
 import io.swagger.annotations.Api;
-import no.nav.fo.veilarboppfolging.db.BrukerRepository;
+import no.nav.fo.veilarboppfolging.db.VeilederTilordningerRepository;
 import no.nav.fo.veilarboppfolging.rest.domain.Veileder;
 import no.nav.fo.veilarboppfolging.services.AktoerIdService;
 import org.springframework.stereotype.Component;
@@ -19,18 +19,18 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 @Api(value= "Veileder")
 public class VeilederRessurs {
     private AktoerIdService aktoerIdService;
-    private BrukerRepository brukerRepository;
+    private VeilederTilordningerRepository veilederTilordningerRepository;
 
-    public VeilederRessurs(AktoerIdService aktoerIdService, BrukerRepository brukerRepository) {
+    public VeilederRessurs(AktoerIdService aktoerIdService, VeilederTilordningerRepository veilederTilordningerRepository) {
         this.aktoerIdService = aktoerIdService;
-        this.brukerRepository = brukerRepository;
+        this.veilederTilordningerRepository = veilederTilordningerRepository;
     }
 
     @GET
     @Path("/veileder")
     public Veileder getVeileder(@PathParam("fnr") String fnr) {
         String brukersAktoerId = aktoerIdService.findAktoerId(fnr);
-        String veilederIdent = brukerRepository.hentTilordningForAktoer(brukersAktoerId).getVeileder();
+        String veilederIdent = veilederTilordningerRepository.hentTilordningForAktoer(brukersAktoerId);
         return new Veileder()
                 .withIdent(veilederIdent);
     }

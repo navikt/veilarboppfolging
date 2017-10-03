@@ -1,12 +1,12 @@
 package no.nav.fo.veilarboppfolging.mappers;
 
+import no.nav.fo.veilarboppfolging.domain.ArenaOppfolging;
 import no.nav.fo.veilarboppfolging.domain.Oppfolgingsenhet;
-import no.nav.fo.veilarboppfolging.domain.Oppfolgingsstatus;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingsstatusResponse;
 
-public class OppfolgingsstatusMapper {
-    public static Oppfolgingsstatus tilOppfolgingsstatus(HentOppfoelgingsstatusResponse response, Oppfolgingsenhet oppfolgingsenhet) {
-        return new Oppfolgingsstatus()
+public class ArenaOppfolgingMapper {
+    public static ArenaOppfolging mapTilArenaOppfolging(HentOppfoelgingsstatusResponse response, Oppfolgingsenhet oppfolgingsenhet) {
+        return new ArenaOppfolging()
                 .setOppfolgingsenhet(oppfolgingsenhet)
                 .setRettighetsgruppe(response.getRettighetsgruppeKode())
                 .setFormidlingsgruppe(response.getFormidlingsgruppeKode())

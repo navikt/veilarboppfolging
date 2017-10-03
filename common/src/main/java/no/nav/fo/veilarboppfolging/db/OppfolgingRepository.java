@@ -18,16 +18,16 @@ import static java.util.Optional.ofNullable;
 import static no.nav.apiapp.util.EnumUtils.getName;
 import static no.nav.apiapp.util.EnumUtils.valueOfOptional;
 
-public class SituasjonRepository {
+public class OppfolgingRepository {
 
     private Database database;
 
-    public SituasjonRepository(Database database) {
+    public OppfolgingRepository(Database database) {
         this.database = database;
     }
 
-    public Optional<Situasjon> hentSituasjon(String aktorId) {
-        List<Situasjon> situasjon = database.query("" +
+    public Optional<Oppfolging> hentOppfolging(String aktorId) {
+        List<Oppfolging> oppfolging = database.query("" +
                         "SELECT" +
                         "  SITUASJON.AKTORID AS AKTORID, " +
                         "  SITUASJON.VEILEDER AS VEILEDER, " +
@@ -69,11 +69,11 @@ public class SituasjonRepository {
                         "LEFT JOIN MAL ON SITUASJON.GJELDENDE_MAL = MAL.ID " +
                         "LEFT JOIN ESKALERINGSVARSEL ON SITUASJON.GJELDENDE_ESKALERINGSVARSEL = ESKALERINGSVARSEL.VARSEL_ID " +
                         "WHERE situasjon.aktorid = ? ",
-                this::mapTilSituasjon,
+                this::mapTilOppfolging,
                 aktorId
         );
 
-        return situasjon.isEmpty() ? Optional.empty() : situasjon.stream().findAny();
+        return oppfolging.isEmpty() ? Optional.empty() : oppfolging.stream().findAny();
     }
 
     @Transactional
@@ -116,25 +116,25 @@ public class SituasjonRepository {
 
     public void opprettStatus(Status status) {
         status.setId(nesteFraSekvens("status_seq"));
-        oppdaterSituasjonStatus(status);
-        opprettSituasjonStatus(status);
+        oppdaterOppfolgingStatus(status);
+        opprettOppfolgingStatus(status);
     }
 
     public void opprettBrukervilkar(Brukervilkar brukervilkar) {
         brukervilkar.setId(nesteFraSekvens("brukervilkar_seq"));
-        opprettSituasjonBrukervilkar(brukervilkar);
-        oppdaterSituasjonBrukervilkar(brukervilkar);
+        opprettOppfolgingBrukervilkar(brukervilkar);
+        oppdaterOppfolgingBrukervilkar(brukervilkar);
     }
 
     public void opprettMal(MalData mal) {
         mal.setId(nesteFraSekvens("MAL_SEQ"));
-        oppdaterSituasjonMal(mal);
-        opprettSituasjonMal(mal);
+        oppdaterOppfolgingMal(mal);
+        opprettOppfolgingMal(mal);
     }
 
-    public Situasjon opprettSituasjon(String aktorId) {
+    public Oppfolging opprettOppfolging(String aktorId) {
         database.update("INSERT INTO situasjon(aktorid, oppfolging, oppdatert) VALUES(?, ?, CURRENT_TIMESTAMP)", aktorId, false);
-        return new Situasjon().setAktorId(aktorId).setOppfolging(false);
+        return new Oppfolging().setAktorId(aktorId).setUnderOppfolging(false);
     }
 
     public List<MalData> hentMalList(String aktorId) {
@@ -206,28 +206,28 @@ public class SituasjonRepository {
                 .build();
     }
 
-    private void oppdaterSituasjonBrukervilkar(Brukervilkar gjeldendeBrukervilkar) {
+    private void oppdaterOppfolgingBrukervilkar(Brukervilkar gjeldendeBrukervilkar) {
         database.update("UPDATE situasjon SET gjeldende_brukervilkar = ?, OPPDATERT = CURRENT_TIMESTAMP WHERE aktorid = ?",
                 gjeldendeBrukervilkar.getId(),
                 gjeldendeBrukervilkar.getAktorId()
         );
     }
 
-    private void oppdaterSituasjonStatus(Status gjeldendeStatus) {
+    private void oppdaterOppfolgingStatus(Status gjeldendeStatus) {
         database.update("UPDATE situasjon SET gjeldende_status = ?, OPPDATERT = CURRENT_TIMESTAMP WHERE aktorid = ?",
                 gjeldendeStatus.getId(),
                 gjeldendeStatus.getAktorId()
         );
     }
 
-    private void oppdaterSituasjonMal(MalData mal) {
+    private void oppdaterOppfolgingMal(MalData mal) {
         database.update("UPDATE SITUASJON SET GJELDENDE_MAL = ?, OPPDATERT = CURRENT_TIMESTAMP WHERE AKTORID = ?",
                 mal.getId(),
                 mal.getAktorId()
         );
     }
 
-    private void opprettSituasjonBrukervilkar(Brukervilkar vilkar) {
+    private void opprettOppfolgingBrukervilkar(Brukervilkar vilkar) {
         database.update(
                 "INSERT INTO brukervilkar(id, aktorid, dato, vilkarstatus, tekst, hash) VALUES(?, ?, ?, ?, ?, ?)",
                 vilkar.getId(),
@@ -240,7 +240,7 @@ public class SituasjonRepository {
         );
     }
 
-    private void opprettSituasjonStatus(Status status) {
+    private void opprettOppfolgingStatus(Status status) {
         database.update(
                 "INSERT INTO STATUS(id, aktorid, manuell, dato, begrunnelse, opprettet_av, opprettet_av_brukerid) " +
                         "VALUES(?, ?, ?, ?, ?, ?, ?)",
@@ -263,7 +263,7 @@ public class SituasjonRepository {
                 aktorId);
     }
 
-    private void opprettSituasjonMal(MalData mal) {
+    private void opprettOppfolgingMal(MalData mal) {
         database.update(
                 "INSERT INTO MAL VALUES(?, ?, ?, ?, ?)",
                 mal.getId(),
@@ -284,12 +284,12 @@ public class SituasjonRepository {
         return database.nesteFraSekvens(sekvensNavn);
     }
 
-    private Situasjon mapTilSituasjon(ResultSet resultat) throws SQLException {
+    private Oppfolging mapTilOppfolging(ResultSet resultat) throws SQLException {
         String aktorId = resultat.getString("aktorid");
-        return new Situasjon()
+        return new Oppfolging()
                 .setAktorId(aktorId)
                 .setVeilederId(resultat.getString("veileder"))
-                .setOppfolging(resultat.getBoolean("oppfolging"))
+                .setUnderOppfolging(resultat.getBoolean("oppfolging"))
                 .setGjeldendeStatus(
                         Optional.ofNullable(resultat.getLong("gjeldende_status"))
                                 .map(s -> s != 0 ? mapTilStatus(resultat) : null)

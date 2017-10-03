@@ -10,24 +10,26 @@ import java.io.IOException;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
-public class BrukerRepositoryTest extends IntegrasjonsTest {
+public class VeilederTilordningerRepositoryTest extends IntegrasjonsTest {
 
     private static final String AKTOR_ID = "2222";
 
     @BeforeAll
     public static void setup() throws IOException {
-        annotationConfigApplicationContext.register(SituasjonRepository.class);
+        annotationConfigApplicationContext.register(OppfolgingRepository.class);
     }
-    
-    private BrukerRepository brukerRepository = new BrukerRepository(getBean(JdbcTemplate.class), getBean(SituasjonRepository.class));
+
+    private VeilederTilordningerRepository repository = new VeilederTilordningerRepository(
+            getBean(JdbcTemplate.class),
+            getBean(OppfolgingRepository.class)
+    );
 
     private JdbcTemplate db = getBean(JdbcTemplate.class);
 
     @Test
     public void skalLeggeTilBruker() {
-        brukerRepository.upsertVeilederTilordning(AKTOR_ID, "***REMOVED***");
-        
-        assertThat(brukerRepository.hentTilordningForAktoer(AKTOR_ID).getVeileder(), is("***REMOVED***"));
+        repository.upsertVeilederTilordning(AKTOR_ID, "***REMOVED***");
+        assertThat(repository.hentTilordningForAktoer(AKTOR_ID), is("***REMOVED***"));
     }
 
     @Test
@@ -36,14 +38,14 @@ public class BrukerRepositoryTest extends IntegrasjonsTest {
                 "VALUES ('1111111', CURRENT_TIMESTAMP, 0)");
 
         assertThat(db.queryForList("SELECT * FROM SITUASJON WHERE AKTORID = '1111111'").get(0).get("OPPFOLGING").toString(), is("0"));
-        brukerRepository.upsertVeilederTilordning("1111111", "***REMOVED***");
+        repository.upsertVeilederTilordning("1111111", "***REMOVED***");
         assertThat(db.queryForList("SELECT * FROM SITUASJON WHERE AKTORID = '1111111'").get(0).get("OPPFOLGING").toString(), is("1"));
 
     }
 
     @Test
     public void skalSetteOppfolgingsflaggVedInsert() {
-        brukerRepository.upsertVeilederTilordning("1111111", "***REMOVED***");
+        repository.upsertVeilederTilordning("1111111", "***REMOVED***");
         assertThat(db.queryForList("SELECT * FROM SITUASJON WHERE AKTORID = '1111111'").get(0).get("OPPFOLGING").toString(), is("1"));
     }
 
@@ -51,10 +53,10 @@ public class BrukerRepositoryTest extends IntegrasjonsTest {
     public void skalOppdatereBrukerDersomDenFinnes() {
         String aktoerid = "1111111";
 
-        brukerRepository.upsertVeilederTilordning(aktoerid, "***REMOVED***");
-        brukerRepository.upsertVeilederTilordning(aktoerid, "***REMOVED***");
+        repository.upsertVeilederTilordning(aktoerid, "***REMOVED***");
+        repository.upsertVeilederTilordning(aktoerid, "***REMOVED***");
 
-        assertThat(brukerRepository.hentTilordningForAktoer(aktoerid).getVeileder(), is("***REMOVED***"));
+        assertThat(repository.hentTilordningForAktoer(aktoerid), is("***REMOVED***"));
     }
 
 }

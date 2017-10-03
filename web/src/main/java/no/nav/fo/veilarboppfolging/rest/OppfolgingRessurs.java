@@ -1,65 +1,228 @@
 package no.nav.fo.veilarboppfolging.rest;
 
-
-import io.swagger.annotations.Api;
-import no.nav.apiapp.security.PepClient;
-import no.nav.fo.veilarboppfolging.domain.OppfolgingskontraktResponse;
-import no.nav.fo.veilarboppfolging.domain.Oppfolgingsstatus;
-import no.nav.fo.veilarboppfolging.mappers.OppfolgingMapper;
+import no.nav.brukerdialog.security.context.SubjectHandler;
+import no.nav.brukerdialog.security.domain.IdentType;
+import no.nav.fo.veilarboppfolging.domain.*;
+import no.nav.fo.veilarboppfolging.mappers.VilkarMapper;
+import no.nav.fo.veilarboppfolging.rest.api.OppfolgingController;
+import no.nav.fo.veilarboppfolging.rest.api.VeilederOppfolgingController;
+import no.nav.fo.veilarboppfolging.rest.domain.*;
 import no.nav.fo.veilarboppfolging.services.OppfolgingService;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
-import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.xml.datatype.XMLGregorianCalendar;
-import java.time.LocalDate;
+import javax.inject.Inject;
+import javax.inject.Provider;
+import javax.servlet.http.HttpServletRequest;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-import static no.nav.fo.veilarboppfolging.utils.CalendarConverter.convertDateToXMLGregorianCalendar;
-import static org.slf4j.LoggerFactory.getLogger;
+import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.toList;
 
+/*
+    NB:
+    tilgangskontroll med abac utføres av OppfolgingOversiktService/OppfolgingResolver slik at dette blir gjort likt
+    for REST- og SOAP-apiet. Dette skiller denne rest-ressursen fra andre ressurser som må ta ansvar for tilgangskontroll selv
+ */
 @Component
-@Api(value = "Oppfølging")
-@Path("/person/{fnr}")
-@Produces(APPLICATION_JSON)
-public class OppfolgingRessurs {
-    private static final Logger LOG = getLogger(OppfolgingRessurs.class);
-    private static final int MANEDER_BAK_I_TID = 2;
-    private static final int MANEDER_FREM_I_TID = 1;
+public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgingController {
 
-    private final OppfolgingService oppfolgingService;
-    private final OppfolgingMapper oppfolgingMapper;
-    private final PepClient pepClient;
+    @Inject
+    private OppfolgingService oppfolgingService;
 
-    public OppfolgingRessurs(OppfolgingService oppfolgingService, OppfolgingMapper oppfolgingMapper, PepClient pepClient) {
-        this.oppfolgingService = oppfolgingService;
-        this.oppfolgingMapper = oppfolgingMapper;
-        this.pepClient = pepClient;
+    @Inject
+    private Provider<HttpServletRequest> requestProvider;
+
+    @Override
+    public Bruker hentBrukerInfo() throws Exception {
+        return new Bruker()
+                .setId(getUid())
+                .setErVeileder(SubjectHandler.getSubjectHandler().getIdentType() == IdentType.InternBruker);
     }
 
-    @GET
-    @Path("/oppfoelging")
-    public OppfolgingskontraktResponse getOppfoelging(@PathParam("fnr") String fnr) throws PepException {
-        pepClient.sjekkTilgangTilFnr(fnr);
-        LocalDate periodeFom = LocalDate.now().minusMonths(MANEDER_BAK_I_TID);
-        LocalDate periodeTom = LocalDate.now().plusMonths(MANEDER_FREM_I_TID);
-        XMLGregorianCalendar fom = convertDateToXMLGregorianCalendar(periodeFom);
-        XMLGregorianCalendar tom = convertDateToXMLGregorianCalendar(periodeTom);
-
-        LOG.info("Henter oppfoelging for fnr");
-        return oppfolgingMapper.tilOppfolgingskontrakt(oppfolgingService.hentOppfolgingskontraktListe(fom, tom, fnr));
+    @Override
+    public OppfolgingStatus hentOppfolgingsStatus() throws Exception {
+        return tilDto(oppfolgingService.hentOppfolgingsStatus(getFnr()));
     }
 
-    @GET
-    @Path("/oppfoelgingsstatus")
-    public Oppfolgingsstatus getOppfoelginsstatus(@PathParam("fnr") String fnr) throws PepException {
-        pepClient.sjekkTilgangTilFnr(fnr);
+    @Override
+    public OppfolgingStatus startOppfolging() throws Exception {
+        return tilDto(oppfolgingService.startOppfolging(getFnr()));
+    }
 
-        LOG.info("Henter oppfølgingsstatus for fnr");
-        return oppfolgingService.hentOppfolgingsstatus(fnr);
+    @Override
+    public OppfolgingStatus hentAvslutningStatus() throws Exception {
+        return tilDto(oppfolgingService.hentAvslutningStatus(getFnr()));
+    }
+
+    @Override
+    public OppfolgingStatus avsluttOppfolging(VeilederBegrunnelseDTO dto) throws Exception {
+        return tilDto(oppfolgingService.avsluttOppfolging(
+                getFnr(),
+                dto.veilederId,
+                dto.begrunnelse
+        ));
+    }
+
+    @Override
+    public OppfolgingStatus settTilManuell(VeilederBegrunnelseDTO dto) throws Exception {
+        return tilDto(oppfolgingService.oppdaterManuellStatus(getFnr(),
+                true,
+                dto.begrunnelse,
+                KodeverkBruker.NAV,
+                hentBrukerInfo().getId())
+        );
+    }
+
+    @Override
+    public OppfolgingStatus settTilDigital(VeilederBegrunnelseDTO dto) throws Exception {
+        return tilDto(oppfolgingService.oppdaterManuellStatus(getFnr(),
+                false,
+                dto.begrunnelse,
+                KodeverkBruker.NAV,
+                hentBrukerInfo().getId())
+        );
+    }
+
+    @Override
+    public List<InnstillingsHistorikk> hentInnstillingsHistorikk() throws Exception {
+        return oppfolgingService.hentInstillingsHistorikk(getFnr());
+    }
+
+    @Override
+    public Vilkar hentVilkar() throws Exception {
+        return tilDto(oppfolgingService.hentVilkar(getFnr()));
+    }
+
+    @Override
+    public List<Vilkar> hentVilkaarStatusListe() throws PepException {
+        return oppfolgingService.hentHistoriskeVilkar(getFnr())
+                .stream()
+                .map(this::tilDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public OppfolgingStatus godta(String hash) throws Exception {
+        return tilDto(oppfolgingService.oppdaterVilkaar(hash, getFnr(), VilkarStatus.GODKJENT));
+    }
+
+    @Override
+    public OppfolgingStatus avslaa(String hash) throws Exception {
+        return tilDto(oppfolgingService.oppdaterVilkaar(hash, getFnr(), VilkarStatus.AVSLATT));
+    }
+
+    @Override
+    public Mal hentMal() throws PepException {
+        return tilDto(oppfolgingService.hentMal(getFnr()));
+    }
+
+    @Override
+    public List<Mal> hentMalListe() throws PepException {
+        List<MalData> malDataList = oppfolgingService.hentMalList(getFnr());
+        return malDataList.stream()
+                .map(this::tilDto)
+                .collect(toList());
+    }
+
+    @Override
+    public Mal oppdaterMal(Mal mal) throws PepException {
+        return tilDto(oppfolgingService.oppdaterMal(mal.getMal(), getFnr(), getUid()));
+    }
+
+    @Override
+    public void startEskalering(StartEskaleringDTO startEskalering) throws Exception {
+        oppfolgingService.startEskalering(
+                getFnr(),
+                startEskalering.getBegrunnelse(),
+                startEskalering.getDialogId()
+        );
+    }
+
+    @Override
+    public void stoppEskalering(StoppEskaleringDTO stoppEskalering) throws Exception {
+        oppfolgingService.stoppEskalering(getFnr(), stoppEskalering.getBegrunnelse());
+    }
+
+    private Eskaleringsvarsel tilDto(EskaleringsvarselData eskaleringsvarselData) {
+        return Optional.ofNullable(eskaleringsvarselData)
+                .map(eskalering -> Eskaleringsvarsel.builder()
+                .varselId(eskalering.getVarselId())
+                .aktorId(eskalering.getAktorId())
+                .opprettetAv(eskalering.getOpprettetAv())
+                .opprettetDato(eskalering.getOpprettetDato())
+                .avsluttetDato(eskalering.getAvsluttetDato())
+                .tilhorendeDialogId(eskalering.getTilhorendeDialogId())
+                .build()
+                ).orElse(null);
+    }
+
+    private String getUid() {
+        return SubjectHandler.getSubjectHandler().getUid();
+    }
+
+    private String getFnr() {
+        return requestProvider.get().getParameter("fnr");
+    }
+
+    private AvslutningStatus tilDto(AvslutningStatusData avslutningStatusData) {
+        return new AvslutningStatus(
+                avslutningStatusData.kanAvslutte,
+                avslutningStatusData.underOppfolging,
+                avslutningStatusData.harYtelser,
+                avslutningStatusData.harTiltak,
+                avslutningStatusData.inaktiveringsDato
+        );
+    }
+
+    private OppfolgingStatus tilDto(OppfolgingStatusData oppfolgingStatusData) {
+        
+        return new OppfolgingStatus()
+                .setFnr(oppfolgingStatusData.fnr)
+                .setVeilederId(oppfolgingStatusData.veilederId)
+                .setManuell(oppfolgingStatusData.manuell)
+                .setReservasjonKRR(oppfolgingStatusData.reservasjonKRR)
+                .setUnderOppfolging(oppfolgingStatusData.underOppfolging)
+                .setVilkarMaBesvares(oppfolgingStatusData.vilkarMaBesvares)
+                .setKanStarteOppfolging(oppfolgingStatusData.isKanStarteOppfolging())
+                .setAvslutningStatus(
+                        ofNullable(oppfolgingStatusData.getAvslutningStatusData())
+                                .map(this::tilDto)
+                                .orElse(null)
+                )
+                .setOppfolgingUtgang(oppfolgingStatusData.getOppfolgingUtgang())
+                .setGjeldendeEskaleringsvarsel(tilDto(oppfolgingStatusData.getGjeldendeEskaleringsvarsel()))
+                .setOppfolgingsPerioder(oppfolgingStatusData.oppfolgingsperioder.stream().map(this::tilDTO).collect(toList()));
+    }
+
+    private OppfolgingPeriodeDTO tilDTO(Oppfolgingsperiode oppfolgingsperiode) {
+        return new OppfolgingPeriodeDTO()
+                .setAktorId(oppfolgingsperiode.getAktorId())
+                .setVeileder(oppfolgingsperiode.getVeileder())
+                .setSluttDato(oppfolgingsperiode.getSluttDato())
+                .setStartDato(oppfolgingsperiode.getStartDato())
+                .setBegrunnelse(oppfolgingsperiode.getBegrunnelse())
+                ;
+    }
+
+    private Vilkar tilDto(Brukervilkar brukervilkar) {
+        return new Vilkar()
+                .setTekst(brukervilkar.getTekst())
+                .setHash(brukervilkar.getHash())
+                .setDato(brukervilkar.getDato())
+                .setVilkarstatus(
+                        VilkarMapper.mapCommonVilkarStatusToVilkarStatusApi(
+                                ofNullable(brukervilkar.getVilkarstatus()).orElse(VilkarStatus.IKKE_BESVART)
+                        )
+                );
+    }
+
+    private Mal tilDto(MalData malData) {
+        return new Mal()
+                .setMal(malData.getMal())
+                .setEndretAv(malData.getEndretAvFormattert())
+                .setDato(malData.getDato());
     }
 }

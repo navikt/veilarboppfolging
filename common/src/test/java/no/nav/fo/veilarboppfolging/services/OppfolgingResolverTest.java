@@ -2,9 +2,9 @@ package no.nav.fo.veilarboppfolging.services;
 
 
 import no.nav.apiapp.feil.UlovligHandling;
-import no.nav.fo.veilarboppfolging.db.SituasjonRepository;
+import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
+import no.nav.fo.veilarboppfolging.domain.Oppfolging;
 import no.nav.fo.veilarboppfolging.domain.Oppfolgingsperiode;
-import no.nav.fo.veilarboppfolging.domain.Situasjon;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -14,38 +14,39 @@ import java.util.Date;
 import static java.util.Optional.of;
 import static org.mockito.Mockito.*;
 
-public class SituasjonResolverTest {
+public class OppfolgingResolverTest {
 
     private static final String AKTOR_ID = "aktorId";
     private static final String FNR = "fnr";
 
-    private SituasjonResolver.SituasjonResolverDependencies situasjonResolverDependencies = mock(SituasjonResolver.SituasjonResolverDependencies.class, RETURNS_MOCKS);
-    private SituasjonRepository situasjonRepository = mock(SituasjonRepository.class);
-    private Situasjon situasjon = new Situasjon();
-    private SituasjonResolver situasjonResolver;
+    private OppfolgingResolver.OppfolgingResolverDependencies oppfolgingResolverDependencies =
+            mock(OppfolgingResolver.OppfolgingResolverDependencies.class, RETURNS_MOCKS);
+    private OppfolgingRepository oppfolgingRepository = mock(OppfolgingRepository.class);
+    private Oppfolging oppfolging = new Oppfolging();
+    private OppfolgingResolver oppfolgingResolver;
 
     @Before
     public void setup() {
         AktoerIdService aktoerIdService = mock(AktoerIdService.class);
-        when(situasjonResolverDependencies.getAktoerIdService()).thenReturn(aktoerIdService);
-        when(situasjonResolverDependencies.getSituasjonRepository()).thenReturn(situasjonRepository);
+        when(oppfolgingResolverDependencies.getAktoerIdService()).thenReturn(aktoerIdService);
+        when(oppfolgingResolverDependencies.getOppfolgingRepository()).thenReturn(oppfolgingRepository);
 
         when(aktoerIdService.findAktoerId(FNR)).thenReturn(AKTOR_ID);
-        when(situasjonRepository.hentSituasjon(AKTOR_ID)).thenReturn(of(situasjon));
+        when(oppfolgingRepository.hentOppfolging(AKTOR_ID)).thenReturn(of(oppfolging));
 
-        situasjonResolver = new SituasjonResolver(FNR, situasjonResolverDependencies);
+        oppfolgingResolver = new OppfolgingResolver(FNR, oppfolgingResolverDependencies);
     }
 
     @Test(expected = UlovligHandling.class)
     public void slettMal__under_oppfolging__ulovlig() {
-        situasjon.setOppfolging(true);
-        situasjonResolver.slettMal();
+        oppfolging.setUnderOppfolging(true);
+        oppfolgingResolver.slettMal();
     }
 
     @Test
     public void slettMal__ikke_under_oppfolging_og_ingen_oppfolgingsperiode__slett_alle_mal_siden_1970() {
-        situasjonResolver.slettMal();
-        verify(situasjonRepository).slettMalForAktorEtter(AKTOR_ID, new Date(0));
+        oppfolgingResolver.slettMal();
+        verify(oppfolgingRepository).slettMalForAktorEtter(AKTOR_ID, new Date(0));
     }
 
     @Test
@@ -53,15 +54,15 @@ public class SituasjonResolverTest {
         Date date1 = new Date(1);
         Date date2 = new Date(2);
         Date date3 = new Date(3);
-        situasjon.setOppfolgingsperioder(Arrays.asList(
+        oppfolging.setOppfolgingsperioder(Arrays.asList(
                 periode(date1),
                 periode(date3),
                 periode(date2)
         ));
 
-        situasjonResolver.slettMal();
+        oppfolgingResolver.slettMal();
 
-        verify(situasjonRepository).slettMalForAktorEtter(eq(AKTOR_ID), eq(date3));
+        verify(oppfolgingRepository).slettMalForAktorEtter(eq(AKTOR_ID), eq(date3));
     }
 
     private Oppfolgingsperiode periode(Date date1) {

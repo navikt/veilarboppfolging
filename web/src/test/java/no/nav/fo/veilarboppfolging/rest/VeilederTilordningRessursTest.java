@@ -4,8 +4,8 @@ import lombok.val;
 import no.nav.apiapp.security.PepClient;
 import no.nav.brukerdialog.security.context.ThreadLocalSubjectHandler;
 import no.nav.fo.feed.producer.FeedProducer;
-import no.nav.fo.veilarboppfolging.db.BrukerRepository;
-import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingBruker;
+import no.nav.fo.veilarboppfolging.db.VeilederTilordningerRepository;
+import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingFeedDTO;
 import no.nav.fo.veilarboppfolging.rest.domain.TilordneVeilederResponse;
 import no.nav.fo.veilarboppfolging.rest.domain.VeilederTilordning;
 import no.nav.fo.veilarboppfolging.services.AktoerIdService;
@@ -31,7 +31,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import static java.util.Arrays.asList;
-import static no.nav.fo.veilarboppfolging.rest.PortefoljeRessurs.kanSetteNyVeileder;
+import static no.nav.fo.veilarboppfolging.rest.VeilederTilordningRessurs.kanSetteNyVeileder;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -39,8 +39,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
-public class PortefoljeRessursTest {
-
+public class VeilederTilordningRessursTest {
 
     @Mock
     private PepClient pepClient;
@@ -49,13 +48,13 @@ public class PortefoljeRessursTest {
     private AktoerIdService aktoerIdService;
 
     @Mock
-    private BrukerRepository brukerRepository;
+    private VeilederTilordningerRepository veilederTilordningerRepository;
 
     @Mock
-    private FeedProducer<OppfolgingBruker> feed;
+    private FeedProducer<OppfolgingFeedDTO> feed;
 
     @InjectMocks
-    private PortefoljeRessurs portefoljeRessurs;
+    private VeilederTilordningRessurs veilederTilordningRessurs;
 
 
     @Before
@@ -99,7 +98,7 @@ public class PortefoljeRessursTest {
         when(aktoerIdService.findAktoerId("FNR3")).thenReturn("AKTOERID3");
 
 
-        Response response = portefoljeRessurs.postVeilederTilordninger(tilordninger);
+        Response response = veilederTilordningRessurs.postVeilederTilordninger(tilordninger);
         List<VeilederTilordning> feilendeTilordninger = ((TilordneVeilederResponse) response.getEntity()).getFeilendeTilordninger();
 
         assertThat(feilendeTilordninger).contains(harIkkeTilgang1);
@@ -122,29 +121,29 @@ public class PortefoljeRessursTest {
         tilordninger.add(kanTilordne2);
         tilordninger.add(kanIkkeTilordne2);
 
-        val oppfolgingsBruker = OppfolgingBruker
+        val oppfolgingsBruker = OppfolgingFeedDTO
                 .builder()
                 .oppfolging(false);
 
 
         when(aktoerIdService.findAktoerId("FNR1")).thenReturn("AKTOERID1");
-        when(brukerRepository.hentTilordningForAktoer("AKTOERID1"))
-                .thenReturn(oppfolgingsBruker.veileder("FRAVEILEDER1").build());
+        when(veilederTilordningerRepository.hentTilordningForAktoer("AKTOERID1"))
+                .thenReturn("FRAVEILEDER1");
 
         when(aktoerIdService.findAktoerId("FNR2")).thenReturn("AKTOERID2");
-        when(brukerRepository.hentTilordningForAktoer("AKTOERID2"))
-                .thenReturn(oppfolgingsBruker.veileder("IKKE_FRAVEILEDER2").build());
+        when(veilederTilordningerRepository.hentTilordningForAktoer("AKTOERID2"))
+                .thenReturn("IKKE_FRAVEILEDER2");
 
         when(aktoerIdService.findAktoerId("FNR3")).thenReturn("AKTOERID3");
-        when(brukerRepository.hentTilordningForAktoer("AKTOERID3"))
-                .thenReturn(oppfolgingsBruker.veileder("FRAVEILEDER3").build());
+        when(veilederTilordningerRepository.hentTilordningForAktoer("AKTOERID3"))
+                .thenReturn("FRAVEILEDER3");
 
         when(aktoerIdService.findAktoerId("FNR4")).thenReturn("AKTOERID4");
-        when(brukerRepository.hentTilordningForAktoer("AKTOERID4"))
-                .thenReturn(oppfolgingsBruker.veileder("IKKE_FRAVEILEDER4").build());
+        when(veilederTilordningerRepository.hentTilordningForAktoer("AKTOERID4"))
+                .thenReturn("IKKE_FRAVEILEDER4");
 
 
-        Response response = portefoljeRessurs.postVeilederTilordninger(tilordninger);
+        Response response = veilederTilordningRessurs.postVeilederTilordninger(tilordninger);
         List<VeilederTilordning> feilendeTilordninger = ((TilordneVeilederResponse) response.getEntity()).getFeilendeTilordninger();
 
         assertThat(feilendeTilordninger).contains(kanIkkeTilordne1);
@@ -171,12 +170,12 @@ public class PortefoljeRessursTest {
         when(aktoerIdService.findAktoerId("FNR4")).thenReturn("AKTOERID4");
 
         when(aktoerIdService.findAktoerId("FNR2")).thenReturn("AKTOERID2");
-        when(brukerRepository.hentTilordningForAktoer("AKTOERID2")).thenThrow(new BadSqlGrammarException("AKTOER","Dette er bare en test", new SQLException()));
+        when(veilederTilordningerRepository.hentTilordningForAktoer("AKTOERID2")).thenThrow(new BadSqlGrammarException("AKTOER", "Dette er bare en test", new SQLException()));
 
         when(aktoerIdService.findAktoerId("FNR3")).thenReturn("AKTOERID3");
-        when(brukerRepository.hentTilordningForAktoer("AKTOERID3")).thenThrow(new BadSqlGrammarException("AKTOER","Dette er bare en test", new SQLException()));
+        when(veilederTilordningerRepository.hentTilordningForAktoer("AKTOERID3")).thenThrow(new BadSqlGrammarException("AKTOER", "Dette er bare en test", new SQLException()));
 
-        Response response = portefoljeRessurs.postVeilederTilordninger(tilordninger);
+        Response response = veilederTilordningRessurs.postVeilederTilordninger(tilordninger);
         List<VeilederTilordning> feilendeTilordninger = ((TilordneVeilederResponse) response.getEntity()).getFeilendeTilordninger();
 
         assertThat(feilendeTilordninger).contains(tilordningERROR1);
@@ -205,13 +204,13 @@ public class PortefoljeRessursTest {
         when(aktoerIdService.findAktoerId("FNR4")).thenReturn("AKTOERID4");
 
 
-        doThrow(new BadSqlGrammarException("AKTOER","Dette er bare en test", new SQLException()))
-                .when(brukerRepository).upsertVeilederTilordning(eq("AKTOERID2"), anyString());
+        doThrow(new BadSqlGrammarException("AKTOER", "Dette er bare en test", new SQLException()))
+                .when(veilederTilordningerRepository).upsertVeilederTilordning(eq("AKTOERID2"), anyString());
 
-        doThrow(new BadSqlGrammarException("AKTOER","Dette er bare en test", new SQLException()))
-                .when(brukerRepository).upsertVeilederTilordning(eq("AKTOERID4"), anyString());
+        doThrow(new BadSqlGrammarException("AKTOER", "Dette er bare en test", new SQLException()))
+                .when(veilederTilordningerRepository).upsertVeilederTilordning(eq("AKTOERID4"), anyString());
 
-        Response response = portefoljeRessurs.postVeilederTilordninger(tilordninger);
+        Response response = veilederTilordningRessurs.postVeilederTilordninger(tilordninger);
         List<VeilederTilordning> feilendeTilordninger = ((TilordneVeilederResponse) response.getEntity()).getFeilendeTilordninger();
 
         assertThat(feilendeTilordninger).contains(tilordningERROR1);
@@ -239,7 +238,7 @@ public class PortefoljeRessursTest {
         when(aktoerIdService.findAktoerId("FNR1")).thenReturn("AKTOERID1");
         when(aktoerIdService.findAktoerId("FNR4")).thenReturn("AKTOERID4");
 
-        Response response = portefoljeRessurs.postVeilederTilordninger(tilordninger);
+        Response response = veilederTilordningRessurs.postVeilederTilordninger(tilordninger);
         List<VeilederTilordning> feilendeTilordninger = ((TilordneVeilederResponse) response.getEntity()).getFeilendeTilordninger();
 
         assertThat(feilendeTilordninger).contains(tilordningERROR1);
@@ -260,7 +259,7 @@ public class PortefoljeRessursTest {
 
         when(pepClient.sjekkTilgangTilFnr(any(String.class))).thenThrow(Exception.class);
 
-        Response response = portefoljeRessurs.postVeilederTilordninger(tilordninger);
+        Response response = veilederTilordningRessurs.postVeilederTilordninger(tilordninger);
         List<VeilederTilordning> feilendeTilordninger = ((TilordneVeilederResponse) response.getEntity()).getFeilendeTilordninger();
 
         assertThat(feilendeTilordninger).contains(tilordningERROR1);
@@ -292,8 +291,8 @@ public class PortefoljeRessursTest {
         //Starter to tråder som gjør to separate tilordninger gjennom samme portefoljeressurs. Dette simulerer
         //at to brukere kaller rest-operasjonen samtidig. Den første tilordningen tar lenger tid siden pep-kallet tar lenger tid.
         ExecutorService pool = Executors.newFixedThreadPool(2);
-        Future<Response> response1 = pool.submit(portefoljeRessursCallable(portefoljeRessurs, asList(tilordningOKBruker1)));
-        Future<Response> response2 = pool.submit(portefoljeRessursCallable(portefoljeRessurs, asList(tilordningERRORBruker2)));
+        Future<Response> response1 = pool.submit(portefoljeRessursCallable(veilederTilordningRessurs, asList(tilordningOKBruker1)));
+        Future<Response> response2 = pool.submit(portefoljeRessursCallable(veilederTilordningRessurs, asList(tilordningERRORBruker2)));
 
         List<VeilederTilordning> feilendeTilordninger1 = ((TilordneVeilederResponse) response1.get().getEntity()).getFeilendeTilordninger();
         List<VeilederTilordning> feilendeTilordninger2 = ((TilordneVeilederResponse) response2.get().getEntity()).getFeilendeTilordninger();
@@ -302,12 +301,12 @@ public class PortefoljeRessursTest {
         assertThat(feilendeTilordninger2).contains(tilordningERRORBruker2);
     }
 
-    private Callable<Response> portefoljeRessursCallable(PortefoljeRessurs portefoljeRessurs, List<VeilederTilordning> tilordninger) {
+    private Callable<Response> portefoljeRessursCallable(VeilederTilordningRessurs veilederTilordningRessurs, List<VeilederTilordning> tilordninger) {
         return new Callable<Response>() {
 
             @Override
             public Response call() throws Exception {
-                return portefoljeRessurs.postVeilederTilordninger(tilordninger);
+                return veilederTilordningRessurs.postVeilederTilordninger(tilordninger);
             }
         };
     }
@@ -324,7 +323,7 @@ public class PortefoljeRessursTest {
         when(aktoerIdService.findAktoerId("FNR1")).thenReturn("AKTOERID1");
         doThrow(new RuntimeException("Test")).when(feed).activateWebhook();
 
-        Response response = portefoljeRessurs.postVeilederTilordninger(tilordninger);
+        Response response = veilederTilordningRessurs.postVeilederTilordninger(tilordninger);
         List<VeilederTilordning> feilendeTilordninger = ((TilordneVeilederResponse) response.getEntity()).getFeilendeTilordninger();
 
         assertThat(feilendeTilordninger).isEmpty();

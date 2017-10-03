@@ -4,7 +4,7 @@ import no.nav.apiapp.security.PepClient;
 import no.nav.fo.veilarboppfolging.domain.OppfolgingskontraktData;
 import no.nav.fo.veilarboppfolging.domain.OppfolgingskontraktResponse;
 import no.nav.fo.veilarboppfolging.mappers.OppfolgingMapper;
-import no.nav.fo.veilarboppfolging.services.OppfolgingService;
+import no.nav.fo.veilarboppfolging.services.ArenaOppfolgingService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -19,17 +19,17 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class OppfolgingRessursTest {
+public class ArenaOppfolgingRessursTest {
 
     @InjectMocks
-    private OppfolgingRessurs oppfoelgingRessurs;
+    private ArenaOppfolgingRessurs oppfoelgingRessurs;
 
     @Mock
     private OppfolgingMapper oppfolgingMapper;
 
     @Mock
     @SuppressWarnings("unused")
-    private OppfolgingService oppfolgingService;
+    private ArenaOppfolgingService arenaOppfolgingService;
 
     @Mock
     private PepClient pepClient;

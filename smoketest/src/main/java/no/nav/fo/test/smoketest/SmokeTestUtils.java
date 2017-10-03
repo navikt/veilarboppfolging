@@ -78,7 +78,7 @@ public class SmokeTestUtils {
     @SneakyThrows
     public static void setupSystemUser(String username) {
         String app = "veilarboppfolgingproxy";
-        String domain = "t6";
+        String domain = "t4";
 
         ServiceUser serviceUser = FasitUtils.getServiceUser(username, app, domain);
 

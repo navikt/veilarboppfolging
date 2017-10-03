@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 import static no.nav.fo.test.smoketest.SmokeTestUtils.*;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-public class SituasjonOversiktWebServiceTest {
+public class OppfolgingWebServiceTest {
 
     public static final String PROXY_USERNAME_ALIAS = "srvveilarboppfolgingproxy";
 
@@ -24,7 +24,7 @@ public class SituasjonOversiktWebServiceTest {
 
     @BeforeAll
     public static void setUp() throws Exception {
-        System.getProperties().load(SituasjonOversiktWebServiceTest.class.getResourceAsStream("/smoketest.properties"));
+        System.getProperties().load(OppfolgingWebServiceTest.class.getResourceAsStream("/smoketest.properties"));
     }
 
     @BeforeEach

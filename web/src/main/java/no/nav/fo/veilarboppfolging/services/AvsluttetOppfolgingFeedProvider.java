@@ -16,18 +16,18 @@ import java.util.stream.Stream;
 @Component
 public class AvsluttetOppfolgingFeedProvider implements FeedProvider<AvsluttetOppfolgingFeedDTO> {
 
-    private SituasjonOversiktService situasjonOversiktService;
+    private OppfolgingService oppfolgingService;
 
     @Inject
-    public AvsluttetOppfolgingFeedProvider(SituasjonOversiktService situasjonOversiktService) {
-        this.situasjonOversiktService = situasjonOversiktService;
+    public AvsluttetOppfolgingFeedProvider(OppfolgingService oppfolgingService) {
+        this.oppfolgingService = oppfolgingService;
     }
 
     @Override
     public Stream<FeedElement<AvsluttetOppfolgingFeedDTO>> fetchData(String sinceId, int pageSize) {
         Timestamp timestamp = DateUtils.toTimeStamp(sinceId);
 
-        return situasjonOversiktService
+        return oppfolgingService
                 .hentAvsluttetOppfolgingEtterDato(timestamp)
                 .stream()
                 .map(o -> new FeedElement<AvsluttetOppfolgingFeedDTO>()

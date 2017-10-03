@@ -1,10 +1,11 @@
 package no.nav.fo.veilarboppfolging.config;
 
-import no.nav.fo.veilarboppfolging.db.BrukerRepository;
-import no.nav.fo.veilarboppfolging.db.SituasjonRepository;
+import no.nav.fo.veilarboppfolging.db.OppfolgingFeedRepository;
+import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
+import no.nav.fo.veilarboppfolging.db.VeilederTilordningerRepository;
 import no.nav.fo.veilarboppfolging.services.AktoerIdService;
-import no.nav.fo.veilarboppfolging.services.OppfolgingService;
-import no.nav.fo.veilarboppfolging.services.OrganisasjonsenhetService;
+import no.nav.fo.veilarboppfolging.services.ArenaOppfolgingService;
+import no.nav.fo.veilarboppfolging.services.OrganisasjonEnhetService;
 import no.nav.fo.veilarboppfolging.services.YtelseskontraktService;
 import no.nav.sbl.jdbc.Database;
 import no.nav.tjeneste.virksomhet.aktoer.v2.AktoerV2;
@@ -24,13 +25,14 @@ public class ServiceConfig {
     }
 
     @Bean
-    OrganisasjonsenhetService organisasjonsenhetService(OrganisasjonEnhetV1 organisasjonEnhetV1) {
-        return new OrganisasjonsenhetService(organisasjonEnhetV1);
+    OrganisasjonEnhetService organisasjonsenhetService(OrganisasjonEnhetV1 organisasjonEnhetV1) {
+        return new OrganisasjonEnhetService(organisasjonEnhetV1);
     }
 
     @Bean
-    OppfolgingService oppfolgingService(OppfoelgingPortType oppfoelgingPortType, OrganisasjonsenhetService organisasjonsenhetService) {
-        return new OppfolgingService(oppfoelgingPortType, organisasjonsenhetService);
+    ArenaOppfolgingService arenaOppfolgingService(OppfoelgingPortType oppfoelgingPortType,
+                                                  OrganisasjonEnhetService organisasjonEnhetService) {
+        return new ArenaOppfolgingService(oppfoelgingPortType, organisasjonEnhetService);
     }
 
     @Bean
@@ -39,13 +41,19 @@ public class ServiceConfig {
     }
 
     @Bean
-    BrukerRepository brukerRepository(JdbcTemplate db, SituasjonRepository situasjonRepository) {
-        return new BrukerRepository(db, situasjonRepository);
+    OppfolgingFeedRepository oppfolgingFeedRepository(JdbcTemplate db) {
+        return new OppfolgingFeedRepository(db);
     }
 
     @Bean
-    SituasjonRepository situasjonRepository(Database db) {
-        return new SituasjonRepository(db);
+    VeilederTilordningerRepository veilederTilordningerRepository(JdbcTemplate db,
+                                                                  OppfolgingRepository oppfolgingRepository) {
+        return new VeilederTilordningerRepository(db, oppfolgingRepository);
+    }
+
+    @Bean
+    OppfolgingRepository oppfolgingRepository(Database db) {
+        return new OppfolgingRepository(db);
     }
 
 }

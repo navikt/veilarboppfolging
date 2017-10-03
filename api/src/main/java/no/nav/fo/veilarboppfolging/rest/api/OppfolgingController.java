@@ -10,9 +10,9 @@ import java.util.List;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 
-@Path("/situasjon")
+@Path("/Oppfolging")
 @Produces(APPLICATION_JSON)
-public interface SituasjonOversikt {
+public interface OppfolgingController {
 
     @GET
     @Path("/me")

@@ -7,7 +7,7 @@ import no.nav.apiapp.feil.UlovligHandling;
 import no.nav.apiapp.security.PepClient;
 import no.nav.brukerdialog.security.context.SubjectHandler;
 import no.nav.fo.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
-import no.nav.fo.veilarboppfolging.db.SituasjonRepository;
+import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.fo.veilarboppfolging.utils.DateUtils;
 import no.nav.fo.veilarboppfolging.utils.StringUtils;
@@ -49,22 +49,22 @@ import static no.nav.fo.veilarboppfolging.vilkar.VilkarService.VilkarType.PRIVAT
 import static no.nav.fo.veilarboppfolging.vilkar.VilkarService.VilkarType.UNDER_OPPFOLGING;
 import static org.slf4j.LoggerFactory.getLogger;
 
-public class SituasjonResolver {
+public class OppfolgingResolver {
 
-    private static final Logger LOG = getLogger(SituasjonResolver.class);
+    private static final Logger LOG = getLogger(OppfolgingResolver.class);
     private static final String AKTIV_YTELSE_STATUS = "Aktiv";
 
     private String fnr;
-    private SituasjonResolverDependencies deps;
+    private OppfolgingResolverDependencies deps;
 
     private String aktorId;
-    private Situasjon situasjon;
+    private Oppfolging oppfolging;
     private HentOppfoelgingsstatusResponse statusIArena;
     private Boolean reservertIKrr;
     private WSHentYtelseskontraktListeResponse ytelser;
     private List<ArenaAktivitetDTO> arenaAktiviteter;
 
-    SituasjonResolver(String fnr, SituasjonResolverDependencies deps) {
+    OppfolgingResolver(String fnr, OppfolgingResolverDependencies deps) {
         deps.getPepClient().sjekkTilgangTilFnr(fnr);
 
         this.fnr = fnr;
@@ -72,28 +72,28 @@ public class SituasjonResolver {
 
         this.aktorId = ofNullable(deps.getAktoerIdService().findAktoerId(fnr))
             .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktør for fnr: " + fnr));
-        this.situasjon = hentSituasjon();
+        this.oppfolging = hentOppfolging();
     }
 
-    void reloadSituasjon() {
-        situasjon = hentSituasjon();
+    void reloadOppfolging() {
+        oppfolging = hentOppfolging();
     }
 
     @Transactional
-    void sjekkStatusIArenaOgOppdaterSituasjon() {
-        if (!situasjon.isOppfolging()) {
+    void sjekkStatusIArenaOgOppdaterOppfolging() {
+        if (!oppfolging.isUnderOppfolging()) {
             hentOppfolgingstatusFraArena();
             if(erUnderOppfolging(statusIArena.getFormidlingsgruppeKode(), statusIArena.getServicegruppeKode())){
-                deps.getSituasjonRepository().startOppfolgingHvisIkkeAlleredeStartet(aktorId);
-                reloadSituasjon();
+                deps.getOppfolgingRepository().startOppfolgingHvisIkkeAlleredeStartet(aktorId);
+                reloadOppfolging();
             }
         }
     }
 
-    void sjekkNyesteVilkarOgOppdaterSituasjon(String hash, VilkarStatus vilkarStatus) {
+    void sjekkNyesteVilkarOgOppdaterOppfolging(String hash, VilkarStatus vilkarStatus) {
         Brukervilkar gjeldendeVilkar = getNyesteVilkar();
         if (gjeldendeVilkar.getHash().equals(hash)) {
-            deps.getSituasjonRepository().opprettBrukervilkar(
+            deps.getOppfolgingRepository().opprettBrukervilkar(
                 new Brukervilkar(
                     aktorId,
                     new Timestamp(currentTimeMillis()),
@@ -105,18 +105,18 @@ public class SituasjonResolver {
     }
 
     Brukervilkar getNyesteVilkar() {
-        String vilkarTekst = deps.getVilkarService().getVilkar(situasjon.isOppfolging() ? UNDER_OPPFOLGING : PRIVAT, null);
+        String vilkarTekst = deps.getVilkarService().getVilkar(oppfolging.isUnderOppfolging() ? UNDER_OPPFOLGING : PRIVAT, null);
         return new Brukervilkar()
             .setTekst(vilkarTekst)
             .setHash(DigestUtils.sha256Hex(vilkarTekst));
     }
 
     List<Brukervilkar> getHistoriskeVilkar() {
-        return deps.getSituasjonRepository().hentHistoriskeVilkar(aktorId);
+        return deps.getOppfolgingRepository().hentHistoriskeVilkar(aktorId);
     }
 
     boolean maVilkarBesvares() {
-        return ofNullable(situasjon.getGjeldendeBrukervilkar())
+        return ofNullable(oppfolging.getGjeldendeBrukervilkar())
             .filter(brukervilkar -> GODKJENT.equals(brukervilkar.getVilkarstatus()))
             .map(Brukervilkar::getHash)
             .map(brukerVilkar -> !brukerVilkar.equals(getNyesteVilkar().getHash()))
@@ -124,7 +124,7 @@ public class SituasjonResolver {
     }
 
     List<MalData> getMalList() {
-        return deps.getSituasjonRepository().hentMalList(aktorId);
+        return deps.getOppfolgingRepository().hentMalList(aktorId);
     }
 
     MalData oppdaterMal(String mal, String endretAv) {
@@ -133,29 +133,29 @@ public class SituasjonResolver {
             .setMal(mal)
             .setEndretAv(StringUtils.of(endretAv).orElse(aktorId))
             .setDato(new Timestamp(currentTimeMillis()));
-        deps.getSituasjonRepository().opprettMal(malData);
-        return hentSituasjon().getGjeldendeMal();
+        deps.getOppfolgingRepository().opprettMal(malData);
+        return hentOppfolging().getGjeldendeMal();
     }
 
     void slettMal() {
         // https://confluence.adeo.no/pages/viewpage.action?pageId=229941929
-        Situasjon situasjon = getSituasjon();
-        if (situasjon.isOppfolging()) {
+        Oppfolging oppfolging = getOppfolging();
+        if (oppfolging.isUnderOppfolging()) {
             throw new UlovligHandling();
         } else {
-            Date sisteSluttDatoEller1970 = situasjon
+            Date sisteSluttDatoEller1970 = oppfolging
                     .getOppfolgingsperioder()
                     .stream()
                     .map(Oppfolgingsperiode::getSluttDato)
                     .filter(Objects::nonNull)
                     .max(Date::compareTo)
                     .orElseGet(() -> new Date(0));
-            deps.getSituasjonRepository().slettMalForAktorEtter(aktorId, sisteSluttDatoEller1970);
+            deps.getOppfolgingRepository().slettMalForAktorEtter(aktorId, sisteSluttDatoEller1970);
         }
     }
 
-    Situasjon getSituasjon() {
-        return situasjon;
+    Oppfolging getOppfolging() {
+        return oppfolging;
     }
 
     String getAktorId() {
@@ -164,19 +164,19 @@ public class SituasjonResolver {
 
     boolean reservertIKrr() {
         if (reservertIKrr == null) {
-            sjekkReservasjonIKrrOgOppdaterSituasjon();
+            sjekkReservasjonIKrrOgOppdaterOppfolging();
         }
         return reservertIKrr;
     }
 
     boolean manuell() {
-        return ofNullable(situasjon.getGjeldendeStatus())
+        return ofNullable(oppfolging.getGjeldendeStatus())
             .map(Status::isManuell)
             .orElse(false);
     }
 
     boolean getKanSettesUnderOppfolging() {
-        if (situasjon.isOppfolging()) {
+        if (oppfolging.isUnderOppfolging()) {
             return false;
         }
         if (statusIArena == null) {
@@ -187,8 +187,8 @@ public class SituasjonResolver {
 
     @Transactional
     void startOppfolging() {
-        deps.getSituasjonRepository().startOppfolgingHvisIkkeAlleredeStartet(aktorId);
-        situasjon = hentSituasjon();
+        deps.getOppfolgingRepository().startOppfolgingHvisIkkeAlleredeStartet(aktorId);
+        oppfolging = hentOppfolging();
     }
 
     boolean erUnderOppfolgingIArena() {
@@ -219,7 +219,7 @@ public class SituasjonResolver {
     }
 
     boolean kanAvslutteOppfolging() {
-        return situasjon.isOppfolging()
+        return oppfolging.isUnderOppfolging()
             && !erUnderOppfolgingIArena()
             && !harPagaendeYtelse()
             && !harAktiveTiltak();
@@ -238,27 +238,27 @@ public class SituasjonResolver {
             return;
         }
 
-        if(Optional.ofNullable(situasjon.getGjeldendeEskaleringsvarsel()).isPresent()){
+        if(Optional.ofNullable(oppfolging.getGjeldendeEskaleringsvarsel()).isPresent()){
             stoppEskalering("Eskalering avsluttet fordi oppfølging ble avsluttet");
         }
 
-        deps.getSituasjonRepository().avsluttOppfolging(aktorId, veileder, begrunnelse);
+        deps.getOppfolgingRepository().avsluttOppfolging(aktorId, veileder, begrunnelse);
     }
 
-    private Situasjon hentSituasjon() {
-        return deps.getSituasjonRepository().hentSituasjon(aktorId)
-            .orElseGet(() -> deps.getSituasjonRepository().opprettSituasjon(aktorId));
+    private Oppfolging hentOppfolging() {
+        return deps.getOppfolgingRepository().hentOppfolging(aktorId)
+            .orElseGet(() -> deps.getOppfolgingRepository().opprettOppfolging(aktorId));
     }
 
     void startEskalering(String begrunnelse, long tilhorendeDialogId){
         String veilederId = SubjectHandler.getSubjectHandler().getUid();
-        deps.getSituasjonRepository().startEskalering(aktorId, veilederId, begrunnelse, tilhorendeDialogId);
+        deps.getOppfolgingRepository().startEskalering(aktorId, veilederId, begrunnelse, tilhorendeDialogId);
         deps.getEskaleringsvarselService().sendEskaleringsvarsel(aktorId, tilhorendeDialogId);
     }
 
     void stoppEskalering(String begrunnelse) {
         String veilederId = SubjectHandler.getSubjectHandler().getUid();
-        deps.getSituasjonRepository().stoppEskalering(aktorId, veilederId, begrunnelse);
+        deps.getOppfolgingRepository().stoppEskalering(aktorId, veilederId, begrunnelse);
     }
 
     @SneakyThrows
@@ -268,13 +268,13 @@ public class SituasjonResolver {
         this.statusIArena = deps.getOppfoelgingPortType().hentOppfoelgingsstatus(hentOppfolgingstatusRequest);
     }
 
-    private void sjekkReservasjonIKrrOgOppdaterSituasjon() {
-        if (situasjon.isOppfolging()) {
+    private void sjekkReservasjonIKrrOgOppdaterOppfolging() {
+        if (oppfolging.isUnderOppfolging()) {
             this.reservertIKrr = sjekkKrr();
             if (!manuell() && reservertIKrr) {
-                deps.getSituasjonRepository().opprettStatus(
+                deps.getOppfolgingRepository().opprettStatus(
                     new Status(
-                        situasjon.getAktorId(),
+                        oppfolging.getAktorId(),
                         true,
                         new Timestamp(currentTimeMillis()),
                         "Reservert og under oppfølging",
@@ -316,7 +316,7 @@ public class SituasjonResolver {
 
     @Component
     @Getter
-    public static class SituasjonResolverDependencies {
+    public static class OppfolgingResolverDependencies {
 
         @Inject
         private PepClient pepClient;
@@ -325,7 +325,7 @@ public class SituasjonResolver {
         private AktoerIdService aktoerIdService;
 
         @Inject
-        private SituasjonRepository situasjonRepository;
+        private OppfolgingRepository oppfolgingRepository;
 
         @Inject
         private OppfoelgingPortType oppfoelgingPortType;

@@ -10,11 +10,11 @@ import no.nav.tjeneste.virksomhet.organisasjonenhet.v1.meldinger.WSHentEnhetBolk
 import java.util.List;
 import java.util.NoSuchElementException;
 
-public class OrganisasjonsenhetService {
+public class OrganisasjonEnhetService {
 
     private final OrganisasjonEnhetV1 organisasjonenhetWs;
 
-    public OrganisasjonsenhetService(OrganisasjonEnhetV1 organisasjonEnhetV1) {
+    public OrganisasjonEnhetService(OrganisasjonEnhetV1 organisasjonEnhetV1) {
         this.organisasjonenhetWs = organisasjonEnhetV1;
     }
 

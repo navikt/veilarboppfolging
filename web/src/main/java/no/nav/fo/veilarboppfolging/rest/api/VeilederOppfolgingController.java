@@ -1,10 +1,10 @@
 package no.nav.fo.veilarboppfolging.rest.api;
 
 import no.nav.fo.veilarboppfolging.domain.InnstillingsHistorikk;
-import no.nav.fo.veilarboppfolging.rest.domain.EndreSituasjonDTO;
 import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingStatus;
 import no.nav.fo.veilarboppfolging.rest.domain.StartEskaleringDTO;
 import no.nav.fo.veilarboppfolging.rest.domain.StoppEskaleringDTO;
+import no.nav.fo.veilarboppfolging.rest.domain.VeilederBegrunnelseDTO;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -12,7 +12,7 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import java.util.List;
 
-public interface VeilederSituasjonOversikt extends SituasjonOversikt {
+public interface VeilederOppfolgingController {
     @POST
     @Path("/startOppfolging")
     OppfolgingStatus startOppfolging() throws Exception;
@@ -24,15 +24,15 @@ public interface VeilederSituasjonOversikt extends SituasjonOversikt {
     @POST
     @Path("/avsluttOppfolging")
     @Consumes("application/json")
-    OppfolgingStatus avsluttOppfolging(EndreSituasjonDTO avsluttOppfolgingsperiode) throws Exception;
+    OppfolgingStatus avsluttOppfolging(VeilederBegrunnelseDTO avsluttOppfolgingsperiode) throws Exception;
 
     @POST
     @Path("/settManuell")
-    OppfolgingStatus settTilManuell(EndreSituasjonDTO settTilManuel) throws Exception;
+    OppfolgingStatus settTilManuell(VeilederBegrunnelseDTO settTilManuel) throws Exception;
 
     @POST
     @Path("/settDigital")
-    OppfolgingStatus settTilDigital(EndreSituasjonDTO settTilDigital) throws Exception;
+    OppfolgingStatus settTilDigital(VeilederBegrunnelseDTO settTilDigital) throws Exception;
 
     @GET
     @Path("/innstillingsHistorikk")

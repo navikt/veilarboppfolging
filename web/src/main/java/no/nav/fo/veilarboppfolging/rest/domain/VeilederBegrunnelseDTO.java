@@ -5,7 +5,7 @@ import lombok.experimental.Accessors;
 
 @Data
 @Accessors(chain = true)
-public class EndreSituasjonDTO {
+public class VeilederBegrunnelseDTO {
     public String veilederId;
     public String begrunnelse;
 }

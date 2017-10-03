@@ -9,17 +9,14 @@ import java.sql.Timestamp;
 @Value
 @Builder
 @Wither
-public class OppfolgingBruker implements Comparable<OppfolgingBruker> {
-
-    public static final String FEED_NAME = "situasjon";
-
+public class OppfolgingFeedDTO implements Comparable<OppfolgingFeedDTO> {
     String aktoerid;
     String veileder;
     boolean oppfolging;
     Timestamp endretTimestamp;
 
     @Override
-    public int compareTo(OppfolgingBruker o) {
+    public int compareTo(OppfolgingFeedDTO o) {
         return endretTimestamp.compareTo(o.endretTimestamp);
     }
 }

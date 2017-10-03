@@ -4,7 +4,7 @@ import lombok.SneakyThrows;
 import lombok.val;
 import no.nav.apiapp.soap.SoapTjeneste;
 import no.nav.fo.veilarboppfolging.domain.*;
-import no.nav.fo.veilarboppfolging.services.SituasjonOversiktService;
+import no.nav.fo.veilarboppfolging.services.OppfolgingService;
 import no.nav.tjeneste.virksomhet.behandlesituasjon.v1.binding.*;
 import no.nav.tjeneste.virksomhet.behandlesituasjon.v1.informasjon.*;
 import no.nav.tjeneste.virksomhet.behandlesituasjon.v1.meldinger.*;
@@ -23,17 +23,17 @@ import static no.nav.fo.veilarboppfolging.utils.DateUtils.xmlCalendar;
 import static no.nav.fo.veilarboppfolging.utils.StringUtils.emptyIfNull;
 
 @Service
-@SoapTjeneste("/Situasjon")
-public class SituasjonOversiktWebService implements BehandleSituasjonV1 {
+@SoapTjeneste("/Oppfolging")
+public class OppfolgingWebService implements BehandleSituasjonV1 {
 
     @Inject
-    private SituasjonOversiktService situasjonOversiktService;
+    private OppfolgingService oppfolgingService;
 
     @Override
     public HentOppfoelgingsstatusResponse hentOppfoelgingsstatus(HentOppfoelgingsstatusRequest hentOppfoelgingsstatusRequest) throws HentOppfoelgingsstatusSikkerhetsbegrensning {
         OppfolgingStatusData oppfolgingStatusData = null;
         try {
-            oppfolgingStatusData = situasjonOversiktService.hentOppfolgingsStatus(hentOppfoelgingsstatusRequest.getPersonident());
+            oppfolgingStatusData = oppfolgingService.hentOppfolgingsStatus(hentOppfoelgingsstatusRequest.getPersonident());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -49,7 +49,7 @@ public class SituasjonOversiktWebService implements BehandleSituasjonV1 {
 
     @Override
     public HentVilkaarsstatusListeResponse hentVilkaarsstatusListe(HentVilkaarsstatusListeRequest hentVilkaarsstatusListeRequest) throws HentVilkaarsstatusListeSikkerhetsbegrensning {
-        return mapToHentVilkaarsstatusListeResponse(situasjonOversiktService.hentHistoriskeVilkar(hentVilkaarsstatusListeRequest.getPersonident()), hentVilkaarsstatusListeRequest.getPersonident());
+        return mapToHentVilkaarsstatusListeResponse(oppfolgingService.hentHistoriskeVilkar(hentVilkaarsstatusListeRequest.getPersonident()), hentVilkaarsstatusListeRequest.getPersonident());
     }
 
     @Override
@@ -60,7 +60,7 @@ public class SituasjonOversiktWebService implements BehandleSituasjonV1 {
     @SneakyThrows
     public OpprettVilkaarsstatusResponse opprettVilkaarsstatus(OpprettVilkaarsstatusRequest opprettVilkaarsstatusRequest)
             throws OpprettVilkaarsstatusSikkerhetsbegrensning, OpprettVilkaarsstatusUgyldigInput {
-        situasjonOversiktService.oppdaterVilkaar(
+        oppfolgingService.oppdaterVilkaar(
                 opprettVilkaarsstatusRequest.getHash(),
                 opprettVilkaarsstatusRequest.getPersonident(),
                 mapVilkaarstatuserTilVilkarStatus(opprettVilkaarsstatusRequest.getStatus())
@@ -73,13 +73,13 @@ public class SituasjonOversiktWebService implements BehandleSituasjonV1 {
     @Override
     @SneakyThrows
     public HentVilkaarResponse hentVilkaar(HentVilkaarRequest hentVilkaarRequest) throws HentVilkaarSikkerhetsbegrensning {
-        return mapTilHentVilkaarResponse(situasjonOversiktService.hentVilkar(hentVilkaarRequest.getPersonident()));
+        return mapTilHentVilkaarResponse(oppfolgingService.hentVilkar(hentVilkaarRequest.getPersonident()));
     }
 
     @Override
     public HentMalResponse hentMal(HentMalRequest hentMalRequest) {
         String personident = hentMalRequest.getPersonident();
-        val mal = mapTilMal(situasjonOversiktService.hentMal(personident),personident);
+        val mal = mapTilMal(oppfolgingService.hentMal(personident),personident);
 
         val res = new HentMalResponse();
         res.setMal(mal);
@@ -89,7 +89,7 @@ public class SituasjonOversiktWebService implements BehandleSituasjonV1 {
     @Override
     public HentMalListeResponse hentMalListe(HentMalListeRequest hentMalListeRequest) {
         String personident = hentMalListeRequest.getPersonident();
-        val malListe = situasjonOversiktService.hentMalList(personident)
+        val malListe = oppfolgingService.hentMalList(personident)
                 .stream()
                 .map(malData -> mapTilMal(malData, personident))
                 .collect(toList());
@@ -101,19 +101,19 @@ public class SituasjonOversiktWebService implements BehandleSituasjonV1 {
 
     @Override
     public OpprettMalResponse opprettMal(OpprettMalRequest opprettMalRequest) {
-        situasjonOversiktService.oppdaterMal(opprettMalRequest.getMal().getMal(), opprettMalRequest.getPersonident(), null);
+        oppfolgingService.oppdaterMal(opprettMalRequest.getMal().getMal(), opprettMalRequest.getPersonident(), null);
         return new OpprettMalResponse();
     }
 
     @Override
     public SlettMalResponse slettMal(SlettMalRequest slettMalRequest) {
-        situasjonOversiktService.slettMal(slettMalRequest.getPersonident());
+        oppfolgingService.slettMal(slettMalRequest.getPersonident());
         return new SlettMalResponse();
     }
 
     @Override
     public SettDigitalResponse settDigital(SettDigitalRequest settDigitalRequest) {
-        val oppfolgingStatusData = situasjonOversiktService.settDigitalBruker(settDigitalRequest.getPersonident());
+        val oppfolgingStatusData = oppfolgingService.settDigitalBruker(settDigitalRequest.getPersonident());
         oppfolgingStatusData.setVilkarMaBesvares(true);
 
 

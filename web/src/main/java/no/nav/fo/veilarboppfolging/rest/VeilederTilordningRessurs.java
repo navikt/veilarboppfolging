@@ -4,8 +4,8 @@ import io.swagger.annotations.Api;
 import lombok.val;
 import no.nav.apiapp.security.PepClient;
 import no.nav.fo.feed.producer.FeedProducer;
-import no.nav.fo.veilarboppfolging.db.BrukerRepository;
-import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingBruker;
+import no.nav.fo.veilarboppfolging.db.VeilederTilordningerRepository;
+import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingFeedDTO;
 import no.nav.fo.veilarboppfolging.rest.domain.TilordneVeilederResponse;
 import no.nav.fo.veilarboppfolging.rest.domain.VeilederTilordning;
 import no.nav.fo.veilarboppfolging.services.AktoerIdService;
@@ -23,23 +23,23 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 @Component
 @Path("")
-@Api(value = "Portefolje")
-public class PortefoljeRessurs {
+@Api(value = "VeilederTilordningRessurs")
+public class VeilederTilordningRessurs {
 
-    private static final Logger LOG = getLogger(PortefoljeRessurs.class);
+    private static final Logger LOG = getLogger(VeilederTilordningRessurs.class);
 
     private AktoerIdService aktoerIdService;
-    private BrukerRepository brukerRepository;
+    private VeilederTilordningerRepository veilederTilordningerRepository;
     private final PepClient pepClient;
 
-    private FeedProducer<OppfolgingBruker> feed;
+    private FeedProducer<OppfolgingFeedDTO> feed;
 
-    public PortefoljeRessurs(AktoerIdService aktoerIdService,
-                             BrukerRepository brukerRepository,
-                             PepClient pepClient,
-                             FeedProducer<OppfolgingBruker> feed) {
+    public VeilederTilordningRessurs(AktoerIdService aktoerIdService,
+                                     VeilederTilordningerRepository veilederTilordningerRepository,
+                                     PepClient pepClient,
+                                     FeedProducer<OppfolgingFeedDTO> feed) {
         this.aktoerIdService = aktoerIdService;
-        this.brukerRepository = brukerRepository;
+        this.veilederTilordningerRepository = veilederTilordningerRepository;
         this.pepClient = pepClient;
         this.feed = feed;
     }
@@ -58,9 +58,9 @@ public class PortefoljeRessurs {
 
                 String aktoerId = finnAktorId(fnr);
 
-                val eksisterendeBrukerData = brukerRepository.hentTilordningForAktoer(aktoerId);
+                val tilordningForAktoer = veilederTilordningerRepository.hentTilordningForAktoer(aktoerId);
 
-                if (eksisterendeBrukerData == null || kanSetteNyVeileder(eksisterendeBrukerData.getVeileder(), tilordning.getFraVeilederId())) {
+                if (kanSetteNyVeileder(tilordningForAktoer, tilordning.getFraVeilederId())) {
                     skrivTilDatabase(aktoerId, tilordning.getTilVeilederId());
                 } else {
                     feilendeTilordninger.add(tilordning);
@@ -68,7 +68,7 @@ public class PortefoljeRessurs {
                 }
             } catch (Exception e) {
                 feilendeTilordninger.add(tilordning);
-                loggFeilsituasjon(e);
+                loggFeilOppfolging(e);
             }
         }
 
@@ -101,7 +101,7 @@ public class PortefoljeRessurs {
                 orElseThrow(() -> new IllegalArgumentException("Aktoerid ikke funnet"));
     }
 
-    private void loggFeilsituasjon(Exception e) {
+    private void loggFeilOppfolging(Exception e) {
         if(e instanceof NotAuthorizedException) {
             LOG.warn("Request is not authorized", e);
         } else {
@@ -117,7 +117,7 @@ public class PortefoljeRessurs {
 
     private void skrivTilDatabase(String aktoerId, String veileder) {
         try {
-            brukerRepository.upsertVeilederTilordning(aktoerId, veileder);
+            veilederTilordningerRepository.upsertVeilederTilordning(aktoerId, veileder);
             LOG.debug(String.format("Veileder %s tilordnet aktoer %s", veileder, aktoerId));
         } catch (Exception e) {
             LOG.error(String.format("Kunne ikke tilordne veileder %s til aktoer %s", veileder, aktoerId), e);

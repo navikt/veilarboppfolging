@@ -12,7 +12,7 @@ import no.nav.fo.veilarboppfolging.rest.domain.Vedtak;
 import no.nav.fo.veilarboppfolging.rest.domain.YtelserResponse;
 import no.nav.fo.veilarboppfolging.rest.domain.Ytelseskontrakt;
 import no.nav.fo.veilarboppfolging.rest.domain.YtelseskontraktResponse;
-import no.nav.fo.veilarboppfolging.services.OppfolgingService;
+import no.nav.fo.veilarboppfolging.services.ArenaOppfolgingService;
 import no.nav.fo.veilarboppfolging.services.YtelseskontraktService;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -47,7 +47,7 @@ public class YtelsesRessursTest {
 
     @Mock
     @SuppressWarnings("unused")
-    private OppfolgingService oppfolgingService;
+    private ArenaOppfolgingService arenaOppfolgingService;
 
     @Mock
     PepClient pepClient;

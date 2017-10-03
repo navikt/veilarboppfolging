@@ -9,10 +9,10 @@ import static java.util.Collections.emptyList;
 
 @Data
 @Accessors(chain = true)
-public class Situasjon {
+public class Oppfolging {
     private String aktorId;
     private String veilederId;
-    private boolean oppfolging;
+    private boolean underOppfolging;
     private Status gjeldendeStatus;
     private Brukervilkar gjeldendeBrukervilkar;
     private EskaleringsvarselData gjeldendeEskaleringsvarsel;

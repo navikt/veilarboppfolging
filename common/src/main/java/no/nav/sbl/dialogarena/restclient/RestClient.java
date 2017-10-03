@@ -1,7 +1,7 @@
 package no.nav.sbl.dialogarena.restclient;
 
 
-import no.nav.fo.veilarboppfolging.services.SituasjonOversiktService;
+import no.nav.fo.veilarboppfolging.services.OppfolgingService;
 import no.nav.json.JsonProvider;
 import org.glassfish.jersey.client.ClientConfig;
 import org.slf4j.Logger;
@@ -18,7 +18,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 public class RestClient {
 
-    private static final Logger LOG = getLogger(SituasjonOversiktService.class);
+    private static final Logger LOG = getLogger(OppfolgingService.class);
 
     private final Provider<HttpServletRequest> httpServletRequestProvider;
     private final String basePath;

@@ -19,14 +19,14 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class OrganisasjonsenhetServiceTest {
+public class OrganisasjonEnhetServiceTest {
 
     private static final String MOCK_ENHET_NAVN = "NAV AKERSHUS";
     private static final String MOCK_ENHET_ID = "1340";
 
 
     @InjectMocks
-    private OrganisasjonsenhetService organisasjonsenhetService;
+    private OrganisasjonEnhetService organisasjonEnhetService;
 
     @Mock
     private OrganisasjonEnhetV1 organisasjonEnhetWebService;
@@ -36,7 +36,7 @@ public class OrganisasjonsenhetServiceTest {
         when(organisasjonEnhetWebService.hentEnhetBolk(any(WSHentEnhetBolkRequest.class)))
                 .thenReturn(new WSHentEnhetBolkResponse().withEnhetListe(new WSDetaljertEnhet().withNavn(MOCK_ENHET_NAVN)));
 
-        Oppfolgingsenhet enhet = organisasjonsenhetService.hentEnhet(MOCK_ENHET_ID);
+        Oppfolgingsenhet enhet = organisasjonEnhetService.hentEnhet(MOCK_ENHET_ID);
 
         assertThat(enhet.getNavn()).isEqualTo(MOCK_ENHET_NAVN);
         assertThat(enhet.getEnhetId()).isEqualTo(MOCK_ENHET_ID);
@@ -47,7 +47,7 @@ public class OrganisasjonsenhetServiceTest {
         when(organisasjonEnhetWebService.hentEnhetBolk(any(WSHentEnhetBolkRequest.class)))
                 .thenReturn(new WSHentEnhetBolkResponse().withEnhetListe());
 
-        organisasjonsenhetService.hentEnhet(MOCK_ENHET_ID);
+        organisasjonEnhetService.hentEnhet(MOCK_ENHET_ID);
     }
 
 }
