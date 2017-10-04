@@ -28,7 +28,7 @@ public class JndiLocalContextConfig {
         ds.setPassword("");
 
         Flyway flyway = new Flyway();
-        flyway.setLocations("db/migration/veilarbsituasjonDB");
+        flyway.setLocations("db/migration/veilarboppfolgingDB");
         flyway.setDataSource(ds);
         flyway.setRepeatableSqlMigrationPrefix("N/A");
 

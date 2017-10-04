@@ -18,9 +18,9 @@ public class OppfolgingFeedRepository {
     }
 
     public List<OppfolgingFeedDTO> hentTilordningerEtterTimestamp(Timestamp timestamp) {
-        return db.queryForList("SELECT AKTORID, VEILEDER, OPPFOLGING, OPPDATERT " +
-                        "FROM SITUASJON " +
-                        "WHERE OPPDATERT >= ? ",
+        return db.queryForList("SELECT aktorid, veileder, under_oppfolging, oppdatert " +
+                        "FROM OPPFOLGINGSTATUS " +
+                        "WHERE oppdatert >= ? ",
                 timestamp)
                 .stream()
                 .map(OppfolgingFeedUtil::mapRadTilOppfolgingFeedDTO)

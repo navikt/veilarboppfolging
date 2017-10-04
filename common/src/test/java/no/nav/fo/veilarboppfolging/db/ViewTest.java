@@ -23,7 +23,7 @@ public class ViewTest extends IntegrasjonsTest {
     @Parameters(name = "{0}")
     public static Object[] views() {
             return new Object[]{
-                "DVH_GJELDENDE_SITUASJON",
+                "DVH_GJELDENDE_OPPFOLGINGSTATUS",
                 "DVH_MANUELL_HISTORIKK",
                 "DVH_OPPFOLGINGSHISTORIKK"
         };

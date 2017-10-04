@@ -31,7 +31,7 @@ public class TestDriver implements Driver {
 
     private String getH2Url() {
         return String.format(
-                "jdbc:h2:mem:veilarbsituasjon-%s;DB_CLOSE_DELAY=-1;MODE=Oracle",
+                "jdbc:h2:mem:veilarboppfolging-%s;DB_CLOSE_DELAY=-1;MODE=Oracle",
                 databaseCounter++
         );
     }

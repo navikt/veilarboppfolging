@@ -16,27 +16,27 @@ public class VeilederTilordningerRepository {
     }
 
     public String hentTilordningForAktoer(String aktorId) {
-        return db.queryForList("SELECT VEILEDER " +
-                        "FROM SITUASJON " +
-                        "WHERE AKTORID = ? ",
+        return db.queryForList("SELECT veileder " +
+                        "FROM OPPFOLGINGSTATUS " +
+                        "WHERE aktor_id = ? ",
                 aktorId)
                 .stream()
                 .findFirst()
-                .map(rad -> (String) rad.get("VEILEDER"))
+                .map(rad -> (String) rad.get("veileder"))
                 .orElse(null);
     }
 
     @Transactional
     public void upsertVeilederTilordning(String aktoerId, String veileder) {
         val rowsUpdated = db.update(
-                "INSERT INTO SITUASJON(AKTORID, VEILEDER, OPPFOLGING, OPPDATERT) " +
+                "INSERT INTO OPPFOLGINGSTATUS(aktor_id, veileder, under_oppfolging, oppdatert) " +
                         "SELECT ?, ?, 0, CURRENT_TIMESTAMP FROM DUAL " +
-                        "WHERE NOT EXISTS(SELECT * FROM SITUASJON WHERE AKTORID=?)",
+                        "WHERE NOT EXISTS(SELECT * FROM OPPFOLGINGSTATUS WHERE aktor_id=?)",
                 aktoerId, veileder, aktoerId);
 
         if (rowsUpdated == 0) {
             db.update(
-                    "UPDATE SITUASJON SET VEILEDER = ?, OPPDATERT=CURRENT_TIMESTAMP WHERE AKTORID = ?",
+                    "UPDATE OPPFOLGINGSTATUS SET veileder = ?, oppdatert=CURRENT_TIMESTAMP WHERE aktor_id = ?",
                     veileder,
                     aktoerId);
         }

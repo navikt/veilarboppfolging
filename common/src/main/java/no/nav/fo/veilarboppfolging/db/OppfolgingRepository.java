@@ -29,46 +29,46 @@ public class OppfolgingRepository {
     public Optional<Oppfolging> hentOppfolging(String aktorId) {
         List<Oppfolging> oppfolging = database.query("" +
                         "SELECT" +
-                        "  SITUASJON.AKTORID AS AKTORID, " +
-                        "  SITUASJON.VEILEDER AS VEILEDER, " +
-                        "  SITUASJON.OPPFOLGING AS OPPFOLGING, " +
-                        "  SITUASJON.GJELDENDE_STATUS AS GJELDENDE_STATUS, " +
-                        "  SITUASJON.GJELDENDE_ESKALERINGSVARSEL AS GJELDENDE_ESKALERINGSVARSEL, " +
-                        "  SITUASJON.GJELDENDE_BRUKERVILKAR AS GJELDENDE_BRUKERVILKAR, " +
-                        "  SITUASJON.GJELDENDE_MAL AS GJELDENDE_MAL, " +
-                        "  STATUS.ID AS STATUS_ID, " +
-                        "  STATUS.AKTORID AS STATUS_AKTORID, " +
-                        "  STATUS.MANUELL AS STATUS_MANUELL, " +
-                        "  STATUS.DATO AS STATUS_DATO, " +
-                        "  STATUS.BEGRUNNELSE AS STATUS_BEGRUNNELSE, " +
-                        "  STATUS.OPPRETTET_AV AS STATUS_OPPRETTET_AV, " +
-                        "  STATUS.OPPRETTET_AV_BRUKERID AS STATUS_OPPRETTET_AV_BRUKERID, " +
-                        "  BRUKERVILKAR.ID AS BRUKERVILKAR_ID, " +
-                        "  BRUKERVILKAR.AKTORID AS BRUKERVILKAR_AKTORID, " +
-                        "  BRUKERVILKAR.DATO AS BRUKERVILKAR_DATO, " +
-                        "  BRUKERVILKAR.VILKARSTATUS AS BRUKERVILKAR_VILKARSTATUS, " +
-                        "  BRUKERVILKAR.TEKST AS BRUKERVILKAR_TEKST, " +
-                        "  BRUKERVILKAR.HASH AS BRUKERVILKAR_HASH, " +
-                        "  MAL.ID AS MAL_ID, " +
-                        "  MAL.AKTORID AS MAL_AKTORID, " +
-                        "  MAL.MAL AS MAL_MAL, " +
-                        "  MAL.ENDRET_AV AS MAL_ENDRET_AV, " +
-                        "  MAL.DATO AS MAL_DATO, " +
-                        "  ESKALERINGSVARSEL.VARSEL_ID AS ESK_ID, " +
-                        "  ESKALERINGSVARSEL.AKTOR_ID AS ESK_AKTOR_ID, " +
-                        "  ESKALERINGSVARSEL.OPPRETTET_AV AS ESK_OPPRETTET_AV, " +
-                        "  ESKALERINGSVARSEL.OPPRETTET_DATO AS ESK_OPPRETTET_DATO, " +
-                        "  ESKALERINGSVARSEL.AVSLUTTET_DATO AS ESK_AVSLUTTET_DATO, " +
-                        "  ESKALERINGSVARSEL.AVSLUTTET_BEGRUNNELSE AS ESK_AVSLUTTET_BEGRUNNELSE, " +
-                        "  ESKALERINGSVARSEL.OPPRETTET_BEGRUNNELSE AS ESK_OPPRETTET_BEGRUNNELSE, " +
-                        "  ESKALERINGSVARSEL.AVSLUTTET_AV AS ESK_AVSLUTTET_AV, " +
-                        "  ESKALERINGSVARSEL.TILHORENDE_DIALOG_ID AS ESK_TILHORENDE_DIALOG_ID " +
-                        "FROM situasjon " +
-                        "LEFT JOIN status ON SITUASJON.GJELDENDE_STATUS = STATUS.ID " +
-                        "LEFT JOIN brukervilkar ON SITUASJON.GJELDENDE_BRUKERVILKAR = BRUKERVILKAR.ID " +
-                        "LEFT JOIN MAL ON SITUASJON.GJELDENDE_MAL = MAL.ID " +
-                        "LEFT JOIN ESKALERINGSVARSEL ON SITUASJON.GJELDENDE_ESKALERINGSVARSEL = ESKALERINGSVARSEL.VARSEL_ID " +
-                        "WHERE situasjon.aktorid = ? ",
+                        "  OPPFOLGINGSTATUS.aktor_id AS aktor_id, " +
+                        "  OPPFOLGINGSTATUS.veileder AS veileder, " +
+                        "  OPPFOLGINGSTATUS.under_oppfolging AS under_oppfolging, " +
+                        "  OPPFOLGINGSTATUS.gjeldende_manuell_status AS gjeldende_manuell_status, " +
+                        "  OPPFOLGINGSTATUS.gjeldende_eskaleringsvarsel AS gjeldende_eskaleringsvarsel, " +
+                        "  OPPFOLGINGSTATUS.gjeldende_brukervilkar AS gjeldende_brukervilkar, " +
+                        "  OPPFOLGINGSTATUS.gjeldende_mal AS gjeldende_mal, " +
+                        "  MANUELL_STATUS.id AS ms_id, " +
+                        "  MANUELL_STATUS.aktor_id AS ms_aktor_id, " +
+                        "  MANUELL_STATUS.manuell AS ms_manuell, " +
+                        "  MANUELL_STATUS.opprettet_dato AS ms_opprettet_dato, " +
+                        "  MANUELL_STATUS.begrunnelse AS ms_begrunnelse, " +
+                        "  MANUELL_STATUS.opprettet_av AS ms_opprettet_av, " +
+                        "  MANUELL_STATUS.opprettet_av_brukerid AS ms_opprettet_av_brukerid, " +
+                        "  BRUKERVILKAR.id AS brukervilkar_id, " +
+                        "  BRUKERVILKAR.aktor_id AS brukervilkar_aktor_id, " +
+                        "  BRUKERVILKAR.dato AS brukervilkar_dato, " +
+                        "  BRUKERVILKAR.vilkarstatus AS brukervilkar_vilkarstatus, " +
+                        "  BRUKERVILKAR.tekst AS brukervilkar_tekst, " +
+                        "  BRUKERVILKAR.hash AS brukervilkar_hash, " +
+                        "  MAL.id AS mal_id, " +
+                        "  MAL.aktor_id AS mal_aktor_id, " +
+                        "  MAL.mal AS mal_mal, " +
+                        "  MAL.endret_av AS mal_endret_av, " +
+                        "  MAL.dato AS mal_dato, " +
+                        "  ESKALERINGSVARSEL.varsel_id AS esk_id, " +
+                        "  ESKALERINGSVARSEL.aktor_id AS esk_aktor_id, " +
+                        "  ESKALERINGSVARSEL.opprettet_av AS esk_opprettet_av, " +
+                        "  ESKALERINGSVARSEL.opprettet_dato AS esk_opprettet_dato, " +
+                        "  ESKALERINGSVARSEL.avsluttet_dato AS esk_avsluttet_dato, " +
+                        "  ESKALERINGSVARSEL.avsluttet_begrunnelse AS esk_avsluttet_begrunnelse, " +
+                        "  ESKALERINGSVARSEL.opprettet_begrunnelse AS esk_opprettet_begrunnelse, " +
+                        "  ESKALERINGSVARSEL.avsluttet_av AS esk_avsluttet_av, " +
+                        "  ESKALERINGSVARSEL.tilhorende_dialog_id AS esk_tilhorende_dialog_id " +
+                        "FROM OPPFOLGINGSTATUS " +
+                        "LEFT JOIN MANUELL_STATUS ON OPPFOLGINGSTATUS.gjeldende_manuell_status = MANUELL_STATUS.id " +
+                        "LEFT JOIN BRUKERVILKAR ON OPPFOLGINGSTATUS.gjeldende_brukervilkar = BRUKERVILKAR.id " +
+                        "LEFT JOIN MAL ON OPPFOLGINGSTATUS.gjeldende_mal = MAL.id " +
+                        "LEFT JOIN ESKALERINGSVARSEL ON OPPFOLGINGSTATUS.gjeldende_eskaleringsvarsel = ESKALERINGSVARSEL.varsel_id " +
+                        "WHERE OPPFOLGINGSTATUS.aktor_id = ? ",
                 this::mapTilOppfolging,
                 aktorId
         );
@@ -78,8 +78,12 @@ public class OppfolgingRepository {
 
     @Transactional
     public void startOppfolgingHvisIkkeAlleredeStartet(String aktorId) {
-        if(!erOppfolgingsflaggSattForBruker(aktorId)) {
-            database.update("UPDATE situasjon SET oppfolging = 1, OPPDATERT = CURRENT_TIMESTAMP WHERE aktorid = ?", aktorId);
+        if (!erOppfolgingsflaggSattForBruker(aktorId)) {
+            database.update("UPDATE OPPFOLGINGSTATUS " +
+                            "SET under_oppfolging = 1, " +
+                            "oppdatert = CURRENT_TIMESTAMP " +
+                            "WHERE aktor_id = ?",
+                    aktorId);
             opprettOppfolgingsperiode(aktorId);
         }
 
@@ -88,27 +92,27 @@ public class OppfolgingRepository {
     private Boolean erOppfolgingsflaggSattForBruker(String aktorId) {
         return database.query("" +
                 "SELECT " +
-                "SITUASJON.OPPFOLGING AS OPPFOLGING " +
-                "FROM situasjon " +
-                "WHERE situasjon.aktorid = ? ",
+                "OPPFOLGINGSTATUS.under_oppfolging AS under_oppfolging " +
+                "FROM OPPFOLGINGSTATUS " +
+                "WHERE OPPFOLGINGSTATUS.aktor_id = ? ",
                 this::erUnderOppfolging,
                 aktorId
         ).get(0);
     }
 
     private Boolean erUnderOppfolging(ResultSet result) throws SQLException {
-        return result.getBoolean("OPPFOLGING");
+        return result.getBoolean("UNDER_OPPFOLGING");
     }
 
     @Transactional
     public void avsluttOppfolging(String aktorId, String veileder, String begrunnelse) {
-        database.update("UPDATE situasjon SET oppfolging = 0, "
+        database.update("UPDATE OPPFOLGINGSTATUS SET under_oppfolging = 0, "
                 + "veileder = null, "
-                + "GJELDENDE_STATUS = null, "
-                + "GJELDENDE_MAL = null, "
-                + "GJELDENDE_BRUKERVILKAR = null, "
-                + "OPPDATERT = CURRENT_TIMESTAMP "
-                + "WHERE aktorid = ?",
+                + "gjeldende_manuell_status = null, "
+                + "gjeldende_mal = null, "
+                + "gjeldende_brukervilkar = null, "
+                + "oppdatert = CURRENT_TIMESTAMP "
+                + "WHERE aktor_id = ?",
                 aktorId
         );
         avsluttOppfolgingsperiode(aktorId, veileder, begrunnelse);
@@ -133,20 +137,26 @@ public class OppfolgingRepository {
     }
 
     public Oppfolging opprettOppfolging(String aktorId) {
-        database.update("INSERT INTO situasjon(aktorid, oppfolging, oppdatert) VALUES(?, ?, CURRENT_TIMESTAMP)", aktorId, false);
+        database.update("INSERT INTO OPPFOLGINGSTATUS(" +
+                        "aktor_id, " +
+                        "under_oppfolging, " +
+                        "oppdatert) " +
+                        "VALUES(?, ?, CURRENT_TIMESTAMP)",
+                aktorId,
+                false);
         return new Oppfolging().setAktorId(aktorId).setUnderOppfolging(false);
     }
 
     public List<MalData> hentMalList(String aktorId) {
         return database.query("" +
                         "SELECT" +
-                        "  ID AS MAL_ID, " +
-                        "  AKTORID AS MAL_AKTORID, " +
-                        "  MAL AS MAL_MAL, " +
-                        "  ENDRET_AV AS MAL_ENDRET_AV, " +
-                        "  DATO AS MAL_DATO " +
+                        "  id AS mal_id, " +
+                        "  aktor_id AS mal_aktor_id, " +
+                        "  mal AS mal_mal, " +
+                        "  endret_av AS mal_endret_av, " +
+                        "  dato AS mal_dato " +
                         "FROM MAL " +
-                        "WHERE AKTORID = ? " +
+                        "WHERE aktor_id = ? " +
                         "ORDER BY ID DESC",
                 this::mapTilMal,
                 aktorId);
@@ -155,15 +165,15 @@ public class OppfolgingRepository {
     public List<Brukervilkar> hentHistoriskeVilkar(String aktorId) {
         String sql =
                 "SELECT " +
-                "ID AS BRUKERVILKAR_ID, " +
-                "AKTORID AS AKTORID, " +
-                "DATO AS BRUKERVILKAR_DATO, " +
-                "VILKARSTATUS AS BRUKERVILKAR_VILKARSTATUS, " +
-                "TEKST AS BRUKERVILKAR_TEKST, " +
-                "HASH AS BRUKERVILKAR_HASH " +
+                "id AS brukervilkar_id, " +
+                "aktor_id AS aktor_id, " +
+                "dato AS brukervilkar_dato, " +
+                "vilkarstatus AS brukervilkar_vilkarstatus, " +
+                "tekst AS brukervilkar_tekst, " +
+                "hash AS brukervilkar_hash " +
                 "FROM BRUKERVILKAR " +
-                "WHERE AKTORID = ? " +
-                "ORDER BY DATO DESC";
+                "WHERE aktor_id = ? " +
+                "ORDER BY dato DESC";
         return database.query(sql, this::mapTilBrukervilkar, aktorId);
     }
 
@@ -174,7 +184,7 @@ public class OppfolgingRepository {
                         "avslutt_begrunnelse = ?, " +
                         "sluttDato = CURRENT_TIMESTAMP, " +
                         "oppdatert = CURRENT_TIMESTAMP " +
-                        "WHERE aktorId = ? " +
+                        "WHERE aktor_id = ? " +
                         "AND sluttDato IS NULL",
                 veileder,
                 begrunnelse,
@@ -183,14 +193,14 @@ public class OppfolgingRepository {
 
     private void opprettOppfolgingsperiode(String aktorId) {
         database.update("" +
-                        "INSERT INTO OPPFOLGINGSPERIODE(aktorId, startDato, oppdatert) " +
+                        "INSERT INTO OPPFOLGINGSPERIODE(aktor_id, startDato, oppdatert) " +
                         "VALUES (?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
                 aktorId);
     }
 
     public List<AvsluttetOppfolgingFeedData> hentAvsluttetOppfolgingEtterDato(Timestamp timestamp) {
         return database
-                .query("SELECT aktorid, sluttdato, oppdatert " +
+                .query("SELECT aktor_id, sluttdato, oppdatert " +
                                 "FROM OPPFOLGINGSPERIODE " +
                                 "WHERE oppdatert >= ? and sluttdato is not null",
                         this::mapRadTilAvsluttetOppfolging,
@@ -200,28 +210,28 @@ public class OppfolgingRepository {
     @SneakyThrows
     private AvsluttetOppfolgingFeedData mapRadTilAvsluttetOppfolging(ResultSet rs) {
         return AvsluttetOppfolgingFeedData.builder()
-                .aktoerid(rs.getString("aktorid"))
+                .aktoerid(rs.getString("aktor_id"))
                 .sluttdato(rs.getTimestamp("sluttdato"))
                 .oppdatert(rs.getTimestamp("oppdatert"))
                 .build();
     }
 
     private void oppdaterOppfolgingBrukervilkar(Brukervilkar gjeldendeBrukervilkar) {
-        database.update("UPDATE situasjon SET gjeldende_brukervilkar = ?, OPPDATERT = CURRENT_TIMESTAMP WHERE aktorid = ?",
+        database.update("UPDATE OPPFOLGINGSTATUS SET gjeldende_brukervilkar = ?, oppdatert = CURRENT_TIMESTAMP WHERE aktor_id = ?",
                 gjeldendeBrukervilkar.getId(),
                 gjeldendeBrukervilkar.getAktorId()
         );
     }
 
     private void oppdaterOppfolgingStatus(Status gjeldendeStatus) {
-        database.update("UPDATE situasjon SET gjeldende_status = ?, OPPDATERT = CURRENT_TIMESTAMP WHERE aktorid = ?",
+        database.update("UPDATE OPPFOLGINGSTATUS SET gjeldende_manuell_status = ?, oppdatert = CURRENT_TIMESTAMP WHERE aktor_id = ?",
                 gjeldendeStatus.getId(),
                 gjeldendeStatus.getAktorId()
         );
     }
 
     private void oppdaterOppfolgingMal(MalData mal) {
-        database.update("UPDATE SITUASJON SET GJELDENDE_MAL = ?, OPPDATERT = CURRENT_TIMESTAMP WHERE AKTORID = ?",
+        database.update("UPDATE OPPFOLGINGSTATUS SET gjeldende_mal = ?, oppdatert = CURRENT_TIMESTAMP WHERE aktor_id = ?",
                 mal.getId(),
                 mal.getAktorId()
         );
@@ -229,7 +239,7 @@ public class OppfolgingRepository {
 
     private void opprettOppfolgingBrukervilkar(Brukervilkar vilkar) {
         database.update(
-                "INSERT INTO brukervilkar(id, aktorid, dato, vilkarstatus, tekst, hash) VALUES(?, ?, ?, ?, ?, ?)",
+                "INSERT INTO BRUKERVILKAR(id, aktor_id, dato, vilkarstatus, tekst, hash) VALUES(?, ?, ?, ?, ?, ?)",
                 vilkar.getId(),
                 vilkar.getAktorId(),
                 vilkar.getDato(),
@@ -242,7 +252,14 @@ public class OppfolgingRepository {
 
     private void opprettOppfolgingStatus(Status status) {
         database.update(
-                "INSERT INTO STATUS(id, aktorid, manuell, dato, begrunnelse, opprettet_av, opprettet_av_brukerid) " +
+                "INSERT INTO MANUELL_STATUS(" +
+                        "id, " +
+                        "aktor_id, " +
+                        "manuell, " +
+                        "opprettet_dato, " +
+                        "begrunnelse, " +
+                        "opprettet_av, " +
+                        "opprettet_av_brukerid) " +
                         "VALUES(?, ?, ?, ?, ?, ?, ?)",
                 status.getId(),
                 status.getAktorId(),
@@ -256,16 +273,17 @@ public class OppfolgingRepository {
 
     public List<InnstillingsHistorikkData> hentManuellHistorikk(String aktorId) {
         return database.query(
-                "SELECT manuell, dato, begrunnelse, opprettet_av, opprettet_av_brukerid " +
-                        "FROM STATUS " +
-                        "WHERE aktorid = ?",
+                "SELECT manuell, opprettet_dato, begrunnelse, opprettet_av, opprettet_av_brukerid " +
+                        "FROM MANUELL_STATUS " +
+                        "WHERE aktor_id = ?",
                 this::mapRadTilInnstillingsHistorikkData,
                 aktorId);
     }
 
     private void opprettOppfolgingMal(MalData mal) {
         database.update(
-                "INSERT INTO MAL VALUES(?, ?, ?, ?, ?)",
+                "INSERT INTO MAL(id, aktor_id, mal, endret_av, dato) " +
+                        "VALUES(?, ?, ?, ?, ?)",
                 mal.getId(),
                 mal.getAktorId(),
                 mal.getMal(),
@@ -276,8 +294,8 @@ public class OppfolgingRepository {
 
     @Transactional
     public void slettMalForAktorEtter(String aktorId, Date date) {
-        database.update("UPDATE SITUASJON SET GJELDENDE_MAL = NULL WHERE AKTORID = ?", aktorId);
-        database.update("DELETE FROM MAL WHERE AKTORID = ? AND DATO > ?", aktorId, date);
+        database.update("UPDATE OPPFOLGINGSTATUS SET gjeldende_mal = NULL WHERE aktor_id = ?", aktorId);
+        database.update("DELETE FROM MAL WHERE aktor_id = ? AND dato > ?", aktorId, date);
     }
 
     private long nesteFraSekvens(String sekvensNavn) {
@@ -285,13 +303,13 @@ public class OppfolgingRepository {
     }
 
     private Oppfolging mapTilOppfolging(ResultSet resultat) throws SQLException {
-        String aktorId = resultat.getString("aktorid");
+        String aktorId = resultat.getString("aktor_id");
         return new Oppfolging()
                 .setAktorId(aktorId)
                 .setVeilederId(resultat.getString("veileder"))
-                .setUnderOppfolging(resultat.getBoolean("oppfolging"))
+                .setUnderOppfolging(resultat.getBoolean("under_oppfolging"))
                 .setGjeldendeStatus(
-                        Optional.ofNullable(resultat.getLong("gjeldende_status"))
+                        Optional.ofNullable(resultat.getLong("gjeldende_manuell_status"))
                                 .map(s -> s != 0 ? mapTilStatus(resultat) : null)
                                 .orElse(null)
                 )
@@ -301,7 +319,7 @@ public class OppfolgingRepository {
                                 .orElse(null)
                 )
                 .setGjeldendeMal(
-                        Optional.ofNullable(resultat.getLong("GJELDENDE_MAL"))
+                        Optional.ofNullable(resultat.getLong("gjeldende_mal"))
                                 .map(m -> m != 0 ? mapTilMal(resultat) : null)
                                 .orElse(null)
                 )
@@ -314,23 +332,23 @@ public class OppfolgingRepository {
     }
 
 
-    private static String hentOppfolingsperioderSQL =
-            "SELECT AKTORID, AVSLUTT_VEILEDER, STARTDATO, SLUTTDATO, AVSLUTT_BEGRUNNELSE " +
+    private final static String hentOppfolingsperioderSQL =
+            "SELECT aktor_id, avslutt_veileder, startdato, sluttdato, avslutt_begrunnelse " +
             "FROM OPPFOLGINGSPERIODE ";
 
-    public List<Oppfolgingsperiode> hentOppfolgingsperioder(String aktorid) {
+    public List<Oppfolgingsperiode> hentOppfolgingsperioder(String aktorId) {
         return database.query(hentOppfolingsperioderSQL +
-                        "WHERE AKTORID = ?",
+                        "WHERE aktor_id = ?",
                 this::mapTilOppfolgingsperiode,
-                aktorid
+                aktorId
         );
     }
 
-    public List<Oppfolgingsperiode> hentAvsluttetOppfolgingsperioder(String aktorid) {
+    public List<Oppfolgingsperiode> hentAvsluttetOppfolgingsperioder(String aktorId) {
         return database.query(hentOppfolingsperioderSQL +
-                        "WHERE AKTORID = ? AND SLUTTDATO is not null",
+                        "WHERE aktor_id = ? AND sluttdato is not null",
                 this::mapTilOppfolgingsperiode,
-                aktorid
+                aktorId
         );
     }
 
@@ -338,17 +356,17 @@ public class OppfolgingRepository {
     private EskaleringsvarselData hentEskaleringsvarsel(String aktorId) {
         List<EskaleringsvarselData> eskalering = database.query("" +
                 "SELECT " +
-                "VARSEL_ID AS ESK_ID, " +
-                "AKTOR_ID AS ESK_AKTOR_ID, " +
-                "OPPRETTET_AV AS ESK_OPPRETTET_AV, " +
-                "OPPRETTET_DATO AS ESK_OPPRETTET_DATO, " +
-                "AVSLUTTET_DATO AS ESK_AVSLUTTET_DATO, " +
-                "AVSLUTTET_AV AS ESK_AVSLUTTET_AV, " +
-                "TILHORENDE_DIALOG_ID AS ESK_TILHORENDE_DIALOG_ID, " +
-                "OPPRETTET_BEGRUNNELSE AS ESK_OPPRETTET_BEGRUNNELSE, " +
-                "AVSLUTTET_BEGRUNNELSE AS ESK_AVSLUTTET_BEGRUNNELSE " +
-                "FROM ESKALERINGSVARSEL " +
-                "WHERE varsel_id IN (SELECT gjeldende_eskaleringsvarsel FROM SITUASJON WHERE SITUASJON.aktorid = ?)",
+                "varsel_id AS esk_id, " +
+                "aktor_id AS esk_aktor_id, " +
+                "opprettet_av AS esk_opprettet_av, " +
+                "opprettet_dato AS esk_opprettet_dato, " +
+                "avsluttet_dato AS esk_avsluttet_dato, " +
+                "avsluttet_av AS esk_avsluttet_av, " +
+                "tilhorende_dialog_id AS esk_tilhorende_dialog_id, " +
+                "opprettet_begrunnelse AS esk_opprettet_begrunnelse, " +
+                "avsluttet_begrunnelse AS esk_avsluttet_begrunnelse " +
+                "FROM eskaleringsvarsel " +
+                "WHERE varsel_id IN (SELECT gjeldende_eskaleringsvarsel FROM OPPFOLGINGSTATUS WHERE aktor_id = ?)",
                 this::mapTilEskaleringsvarselData,
                 aktorId
         );
@@ -361,16 +379,16 @@ public class OppfolgingRepository {
 
     public List<EskaleringsvarselData> hentEskaleringhistorikk(String aktorId) {
         return database.query("SELECT " +
-                        "VARSEL_ID AS ESK_ID, " +
-                        "AKTOR_ID AS ESK_AKTOR_ID, " +
-                        "OPPRETTET_AV AS ESK_OPPRETTET_AV, " +
-                        "OPPRETTET_DATO AS ESK_OPPRETTET_DATO, " +
-                        "AVSLUTTET_AV AS ESK_AVSLUTTET_AV, " +
-                        "AVSLUTTET_DATO AS ESK_AVSLUTTET_DATO, " +
-                        "TILHORENDE_DIALOG_ID AS ESK_TILHORENDE_DIALOG_ID, " +
-                        "AVSLUTTET_BEGRUNNELSE AS ESK_AVSLUTTET_BEGRUNNELSE, " +
-                        "OPPRETTET_BEGRUNNELSE AS ESK_OPPRETTET_BEGRUNNELSE " +
-                        "FROM ESKALERINGSVARSEL " +
+                        "varsel_id AS esk_id, " +
+                        "aktor_id AS esk_aktor_id, " +
+                        "opprettet_av AS esk_opprettet_av, " +
+                        "opprettet_dato AS esk_opprettet_dato, " +
+                        "avsluttet_av AS esk_avsluttet_av, " +
+                        "avsluttet_dato AS esk_avsluttet_dato, " +
+                        "tilhorende_dialog_id AS esk_tilhorende_dialog_id, " +
+                        "avsluttet_begrunnelse AS esk_avsluttet_begrunnelse, " +
+                        "opprettet_begrunnelse AS esk_opprettet_begrunnelse " +
+                        "FROM eskaleringsvarsel " +
                         "WHERE aktor_id = ?",
                 this::mapTilEskaleringsvarselData,
                 aktorId
@@ -387,7 +405,8 @@ public class OppfolgingRepository {
         val id = nesteFraSekvens("ESKALERINGSVARSEL_SEQ");
 
         database.update("" +
-                "INSERT INTO ESKALERINGSVARSEL(varsel_id, " +
+                "INSERT INTO ESKALERINGSVARSEL(" +
+                        "varsel_id, " +
                         "aktor_id, " +
                         "opprettet_av, " +
                         "opprettet_dato, " +
@@ -402,10 +421,10 @@ public class OppfolgingRepository {
         );
 
         database.update("" +
-                "UPDATE SITUASJON " +
+                "UPDATE OPPFOLGINGSTATUS " +
                 "SET gjeldende_eskaleringsvarsel = ?, " +
-                "OPPDATERT = CURRENT_TIMESTAMP " +
-                "WHERE aktorid = ?",
+                "oppdatert = CURRENT_TIMESTAMP " +
+                "WHERE aktor_id = ?",
                 id,
                 aktorId
         );
@@ -422,16 +441,16 @@ public class OppfolgingRepository {
         database.update("" +
                 "UPDATE ESKALERINGSVARSEL " +
                 "SET avsluttet_dato = CURRENT_TIMESTAMP, avsluttet_begrunnelse = ?, avsluttet_av = ? " +
-                "WHERE VARSEL_ID = ?",
+                "WHERE varsel_id = ?",
                 avsluttetBegrunnelse,
                 avsluttetAv,
                 eskalering.getVarselId()
         );
         database.update("" +
-                "UPDATE SITUASJON " +
+                "UPDATE OPPFOLGINGSTATUS " +
                 "SET gjeldende_eskaleringsvarsel = null, " +
-                "OPPDATERT = CURRENT_TIMESTAMP " +
-                "WHERE aktorid = ?",
+                "oppdatert = CURRENT_TIMESTAMP " +
+                "WHERE aktor_id = ?",
                 aktorId
         );
     }
@@ -439,21 +458,21 @@ public class OppfolgingRepository {
     @SneakyThrows
     private EskaleringsvarselData mapTilEskaleringsvarselData(ResultSet result) {
         return EskaleringsvarselData.builder()
-                .varselId(result.getLong("ESK_ID"))
-                .aktorId(result.getString("ESK_AKTOR_ID"))
-                .opprettetAv(result.getString("ESK_OPPRETTET_AV"))
-                .opprettetDato(hentDato(result, "ESK_OPPRETTET_DATO"))
-                .opprettetBegrunnelse(result.getString("ESK_OPPRETTET_BEGRUNNELSE"))
-                .avsluttetDato(hentDato(result, "ESK_AVSLUTTET_DATO"))
-                .avsluttetBegrunnelse(result.getString( "ESK_AVSLUTTET_BEGRUNNELSE"))
-                .avsluttetAv(result.getString( "ESK_AVSLUTTET_AV"))
-                .tilhorendeDialogId(result.getLong("ESK_TILHORENDE_DIALOG_ID"))
+                .varselId(result.getLong("esk_id"))
+                .aktorId(result.getString("esk_aktor_id"))
+                .opprettetAv(result.getString("esk_opprettet_av"))
+                .opprettetDato(hentDato(result, "esk_opprettet_dato"))
+                .opprettetBegrunnelse(result.getString("esk_opprettet_begrunnelse"))
+                .avsluttetDato(hentDato(result, "esk_avsluttet_dato"))
+                .avsluttetBegrunnelse(result.getString( "esk_avsluttet_begrunnelse"))
+                .avsluttetAv(result.getString( "esk_avsluttet_av"))
+                .tilhorendeDialogId(result.getLong("esk_tilhorende_dialog_id"))
                 .build();
     }
 
     private Oppfolgingsperiode mapTilOppfolgingsperiode(ResultSet result) throws SQLException {
         return Oppfolgingsperiode.builder()
-                .aktorId(result.getString("aktorid"))
+                .aktorId(result.getString("aktor_id"))
                 .veileder(result.getString("avslutt_veileder"))
                 .startDato(hentDato(result, "startdato"))
                 .sluttDato(hentDato(result, "sluttdato"))
@@ -471,44 +490,44 @@ public class OppfolgingRepository {
     @SneakyThrows
     private Brukervilkar mapTilBrukervilkar(ResultSet result) {
         return new Brukervilkar(
-                result.getString("AKTORID"),
-                result.getTimestamp("BRUKERVILKAR_DATO"),
-                VilkarStatus.valueOf(result.getString("BRUKERVILKAR_VILKARSTATUS")),
-                result.getString("BRUKERVILKAR_TEKST"),
-                result.getString("BRUKERVILKAR_HASH")
-        ).setId(result.getLong("BRUKERVILKAR_ID"));
+                result.getString("aktor_id"),
+                result.getTimestamp("brukervilkar_dato"),
+                VilkarStatus.valueOf(result.getString("brukervilkar_vilkarstatus")),
+                result.getString("brukervilkar_tekst"),
+                result.getString("brukervilkar_hash")
+        ).setId(result.getLong("brukervilkar_id"));
     }
 
     @SneakyThrows
     private Status mapTilStatus(ResultSet result) {
         return new Status(
-                result.getString("AKTORID"),
-                result.getBoolean("STATUS_MANUELL"),
-                result.getTimestamp("STATUS_DATO"),
-                result.getString("STATUS_BEGRUNNELSE"),
-                valueOfOptional(KodeverkBruker.class, result.getString("STATUS_OPPRETTET_AV")).orElse(null),
-                result.getString("STATUS_OPPRETTET_AV_BRUKERID")
-        ).setId(result.getLong("STATUS_ID"));
+                result.getString("aktor_id"),
+                result.getBoolean("ms_manuell"),
+                result.getTimestamp("ms_opprettet_dato"),
+                result.getString("ms_begrunnelse"),
+                valueOfOptional(KodeverkBruker.class, result.getString("ms_opprettet_av")).orElse(null),
+                result.getString("ms_opprettet_av_brukerid")
+        ).setId(result.getLong("ms_id"));
     }
 
     @SneakyThrows
     private MalData mapTilMal(ResultSet result) {
         return new MalData()
-                .setId(result.getLong("MAL_ID"))
-                .setAktorId(result.getString("MAL_AKTORID"))
-                .setMal(result.getString("MAL_MAL"))
-                .setEndretAv(result.getString("MAL_ENDRET_AV"))
-                .setDato(result.getTimestamp("MAL_DATO"));
+                .setId(result.getLong("mal_id"))
+                .setAktorId(result.getString("mal_aktor_id"))
+                .setMal(result.getString("mal_mal"))
+                .setEndretAv(result.getString("mal_endret_av"))
+                .setDato(result.getTimestamp("mal_dato"));
     }
 
     @SneakyThrows
     private InnstillingsHistorikkData mapRadTilInnstillingsHistorikkData(ResultSet result) {
         return new InnstillingsHistorikkData()
-                .setManuell(result.getBoolean("MANUELL"))
-                .setDato(result.getTimestamp("DATO"))
-                .setBegrunnelse(result.getString("BEGRUNNELSE"))
-                .setOpprettetAv(valueOfOptional(KodeverkBruker.class, result.getString("OPPRETTET_AV")).orElse(null))
-                .setOpprettetAvBrukerId(result.getString("OPPRETTET_AV_BRUKERID"));
+                .setManuell(result.getBoolean("manuell"))
+                .setDato(result.getTimestamp("opprettet_dato"))
+                .setBegrunnelse(result.getString("begrunnelse"))
+                .setOpprettetAv(valueOfOptional(KodeverkBruker.class, result.getString("opprettet_av")).orElse(null))
+                .setOpprettetAvBrukerId(result.getString("opprettet_av_brukerid"));
 
     }
 

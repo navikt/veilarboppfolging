@@ -90,10 +90,6 @@
 
         <!-- transitive avhengigheter -->
         <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
-        </dependency>
-        <dependency>
             <groupId>no.nav.tjenester</groupId>
             <artifactId>brukerdialog-behandleSituasjon-v1-tjenestespesifikasjon</artifactId>
             <classifier>jaxws</classifier>

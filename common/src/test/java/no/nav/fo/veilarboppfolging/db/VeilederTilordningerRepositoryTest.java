@@ -34,19 +34,19 @@ public class VeilederTilordningerRepositoryTest extends IntegrasjonsTest {
 
     @Test
     public void skalSetteOppfolgingsflaggVedOPpdaterering() {
-        db.execute("INSERT INTO SITUASJON (AKTORID, OPPDATERT, OPPFOLGING) " +
+        db.execute("INSERT INTO OPPFOLGINGSTATUS (aktor_id, oppdatert, under_oppfolging) " +
                 "VALUES ('1111111', CURRENT_TIMESTAMP, 0)");
 
-        assertThat(db.queryForList("SELECT * FROM SITUASJON WHERE AKTORID = '1111111'").get(0).get("OPPFOLGING").toString(), is("0"));
+        assertThat(db.queryForList("SELECT * FROM OPPFOLGINGSTATUS WHERE aktor_id = '1111111'").get(0).get("under_oppfolging").toString(), is("0"));
         repository.upsertVeilederTilordning("1111111", "***REMOVED***");
-        assertThat(db.queryForList("SELECT * FROM SITUASJON WHERE AKTORID = '1111111'").get(0).get("OPPFOLGING").toString(), is("1"));
+        assertThat(db.queryForList("SELECT * FROM OPPFOLGINGSTATUS WHERE aktor_id = '1111111'").get(0).get("under_oppfolging").toString(), is("1"));
 
     }
 
     @Test
     public void skalSetteOppfolgingsflaggVedInsert() {
         repository.upsertVeilederTilordning("1111111", "***REMOVED***");
-        assertThat(db.queryForList("SELECT * FROM SITUASJON WHERE AKTORID = '1111111'").get(0).get("OPPFOLGING").toString(), is("1"));
+        assertThat(db.queryForList("SELECT * FROM OPPFOLGINGSTATUS WHERE aktor_id = '1111111'").get(0).get("under_oppfolging").toString(), is("1"));
     }
 
     @Test

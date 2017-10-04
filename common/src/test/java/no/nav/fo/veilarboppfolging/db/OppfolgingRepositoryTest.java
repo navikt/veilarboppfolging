@@ -214,11 +214,11 @@ public class OppfolgingRepositoryTest extends IntegrasjonsTest {
     }
 
     //Setter veileder direkte vha. sql, siden det ikke finnes funksjonalitet for tildeling av veileder i
-    //situasjonRepository. Dette finnes kun i OppfolgingFeedRepository (og tilbys i PortefoljeRessurs) p.t.
+    //OppfolgingRepository. Dette finnes kun i OppfolgingFeedRepository (og tilbys i PortefoljeRessurs) p.t.
     //Men siden hentOppfolging henter opp veilder er det likevel aktuelt å teste her at veileder returneres
     //dersom det er satt i databasen. 
     private void settVeileder(String veilederId, String aktorId) {
-        db.update("UPDATE situasjon SET VEILEDER = ? where aktorid = ?", veilederId, aktorId);
+        db.update("UPDATE OPPFOLGINGSTATUS SET VEILEDER = ? where aktor_id = ?", veilederId, aktorId);
     }
 
     private Oppfolging gittOppfolgingForAktor(String aktorId) {
