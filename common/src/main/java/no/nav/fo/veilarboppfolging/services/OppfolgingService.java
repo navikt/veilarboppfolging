@@ -116,8 +116,8 @@ public class OppfolgingService {
         val resolver = new OppfolgingResolver(fnr, oppfolgingResolverDependencies);
 
         if (resolver.getOppfolging().isUnderOppfolging() && (resolver.manuell() != manuell) && (!resolver.reservertIKrr() || manuell)) {
-            val nyStatus = new Status(resolver.getAktorId(), manuell, new Timestamp(currentTimeMillis()), begrunnelse, opprettetAv, opprettetAvBrukerId);
-            oppfolgingRepository.opprettStatus(nyStatus);
+            val nyStatus = new ManuellStatus(resolver.getAktorId(), manuell, new Timestamp(currentTimeMillis()), begrunnelse, opprettetAv, opprettetAvBrukerId);
+            oppfolgingRepository.opprettManuellStatus(nyStatus);
             resolver.reloadOppfolging();
         }
 

@@ -13,7 +13,7 @@ public class Oppfolging {
     private String aktorId;
     private String veilederId;
     private boolean underOppfolging;
-    private Status gjeldendeStatus;
+    private ManuellStatus gjeldendeManuellStatus;
     private Brukervilkar gjeldendeBrukervilkar;
     private EskaleringsvarselData gjeldendeEskaleringsvarsel;
     private MalData gjeldendeMal;

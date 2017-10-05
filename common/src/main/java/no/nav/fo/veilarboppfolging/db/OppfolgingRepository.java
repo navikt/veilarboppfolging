@@ -118,10 +118,10 @@ public class OppfolgingRepository {
         avsluttOppfolgingsperiode(aktorId, veileder, begrunnelse);
     }
 
-    public void opprettStatus(Status status) {
-        status.setId(nesteFraSekvens("status_seq"));
-        oppdaterOppfolgingStatus(status);
-        opprettOppfolgingStatus(status);
+    public void opprettManuellStatus(ManuellStatus manuellStatus) {
+        manuellStatus.setId(nesteFraSekvens("status_seq"));
+        oppdaterManuellStatus(manuellStatus);
+        insertManuellStatus(manuellStatus);
     }
 
     public void opprettBrukervilkar(Brukervilkar brukervilkar) {
@@ -223,10 +223,10 @@ public class OppfolgingRepository {
         );
     }
 
-    private void oppdaterOppfolgingStatus(Status gjeldendeStatus) {
+    private void oppdaterManuellStatus(ManuellStatus gjeldendeManuellStatus) {
         database.update("UPDATE OPPFOLGINGSTATUS SET gjeldende_manuell_status = ?, oppdatert = CURRENT_TIMESTAMP WHERE aktor_id = ?",
-                gjeldendeStatus.getId(),
-                gjeldendeStatus.getAktorId()
+                gjeldendeManuellStatus.getId(),
+                gjeldendeManuellStatus.getAktorId()
         );
     }
 
@@ -250,7 +250,7 @@ public class OppfolgingRepository {
         );
     }
 
-    private void opprettOppfolgingStatus(Status status) {
+    private void insertManuellStatus(ManuellStatus manuellStatus) {
         database.update(
                 "INSERT INTO MANUELL_STATUS(" +
                         "id, " +
@@ -261,13 +261,13 @@ public class OppfolgingRepository {
                         "opprettet_av, " +
                         "opprettet_av_brukerid) " +
                         "VALUES(?, ?, ?, ?, ?, ?, ?)",
-                status.getId(),
-                status.getAktorId(),
-                status.isManuell(),
-                status.getDato(),
-                status.getBegrunnelse(),
-                getName(status.getOpprettetAv()),
-                status.getOpprettetAvBrukerId()
+                manuellStatus.getId(),
+                manuellStatus.getAktorId(),
+                manuellStatus.isManuell(),
+                manuellStatus.getDato(),
+                manuellStatus.getBegrunnelse(),
+                getName(manuellStatus.getOpprettetAv()),
+                manuellStatus.getOpprettetAvBrukerId()
         );
     }
 
@@ -308,9 +308,9 @@ public class OppfolgingRepository {
                 .setAktorId(aktorId)
                 .setVeilederId(resultat.getString("veileder"))
                 .setUnderOppfolging(resultat.getBoolean("under_oppfolging"))
-                .setGjeldendeStatus(
+                .setGjeldendeManuellStatus(
                         Optional.ofNullable(resultat.getLong("gjeldende_manuell_status"))
-                                .map(s -> s != 0 ? mapTilStatus(resultat) : null)
+                                .map(s -> s != 0 ? mapTilManuellStatus(resultat) : null)
                                 .orElse(null)
                 )
                 .setGjeldendeBrukervilkar(
@@ -499,8 +499,8 @@ public class OppfolgingRepository {
     }
 
     @SneakyThrows
-    private Status mapTilStatus(ResultSet result) {
-        return new Status(
+    private ManuellStatus mapTilManuellStatus(ResultSet result) {
+        return new ManuellStatus(
                 result.getString("aktor_id"),
                 result.getBoolean("ms_manuell"),
                 result.getTimestamp("ms_opprettet_dato"),

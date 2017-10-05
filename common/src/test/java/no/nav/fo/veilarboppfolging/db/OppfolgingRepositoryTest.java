@@ -133,14 +133,14 @@ public class OppfolgingRepositoryTest extends IntegrasjonsTest {
             String veilederId = "veilederId";
             String maal = "Mål";
             settVeileder(veilederId, AKTOR_ID);
-            oppfolgingRepository.opprettStatus(new Status(AKTOR_ID, true, new Timestamp(currentTimeMillis()), "Test", KodeverkBruker.SYSTEM, null));
+            oppfolgingRepository.opprettManuellStatus(new ManuellStatus(AKTOR_ID, true, new Timestamp(currentTimeMillis()), "Test", KodeverkBruker.SYSTEM, null));
             oppfolgingRepository.opprettMal(new MalData().setAktorId(AKTOR_ID).setMal(maal).setEndretAv("bruker").setDato(new Timestamp(currentTimeMillis())));
             String hash = "123";
             oppfolgingRepository.opprettBrukervilkar(new Brukervilkar().setAktorId(AKTOR_ID).setHash(hash).setVilkarstatus(GODKJENT));
             Oppfolging oppfolging = hentOppfolging(AKTOR_ID).get();
             assertThat(oppfolging.isUnderOppfolging(), is(true));
             assertThat(oppfolging.getVeilederId(), equalTo(veilederId));
-            assertThat(oppfolging.getGjeldendeStatus().isManuell(), is(true));
+            assertThat(oppfolging.getGjeldendeManuellStatus().isManuell(), is(true));
             assertThat(oppfolging.getGjeldendeMal().getMal(), equalTo(maal));
             assertThat(oppfolging.getGjeldendeBrukervilkar().getHash(), equalTo(hash));
             
@@ -148,7 +148,7 @@ public class OppfolgingRepositoryTest extends IntegrasjonsTest {
             Oppfolging avsluttetOppfolging = hentOppfolging(AKTOR_ID).get();
             assertThat(avsluttetOppfolging.isUnderOppfolging(), is(false));
             assertThat(avsluttetOppfolging.getVeilederId(), nullValue());
-            assertThat(avsluttetOppfolging.getGjeldendeStatus(), nullValue());
+            assertThat(avsluttetOppfolging.getGjeldendeManuellStatus(), nullValue());
             assertThat(avsluttetOppfolging.getGjeldendeMal(), nullValue());
             assertThat(avsluttetOppfolging.getGjeldendeBrukervilkar(), nullValue());
             

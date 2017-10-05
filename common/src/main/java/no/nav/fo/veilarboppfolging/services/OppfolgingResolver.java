@@ -170,8 +170,8 @@ public class OppfolgingResolver {
     }
 
     boolean manuell() {
-        return ofNullable(oppfolging.getGjeldendeStatus())
-            .map(Status::isManuell)
+        return ofNullable(oppfolging.getGjeldendeManuellStatus())
+            .map(ManuellStatus::isManuell)
             .orElse(false);
     }
 
@@ -272,8 +272,8 @@ public class OppfolgingResolver {
         if (oppfolging.isUnderOppfolging()) {
             this.reservertIKrr = sjekkKrr();
             if (!manuell() && reservertIKrr) {
-                deps.getOppfolgingRepository().opprettStatus(
-                    new Status(
+                deps.getOppfolgingRepository().opprettManuellStatus(
+                    new ManuellStatus(
                         oppfolging.getAktorId(),
                         true,
                         new Timestamp(currentTimeMillis()),

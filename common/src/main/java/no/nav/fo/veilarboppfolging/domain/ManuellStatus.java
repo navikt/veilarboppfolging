@@ -7,8 +7,8 @@ import java.sql.Timestamp;
 
 @Data
 @Accessors(chain = true)
-public class Status {
-    public Status(String aktorId, boolean manuell, Timestamp dato, String begrunnelse, KodeverkBruker opprettetAv, String opprettetAvBrukerId) {
+public class ManuellStatus {
+    public ManuellStatus(String aktorId, boolean manuell, Timestamp dato, String begrunnelse, KodeverkBruker opprettetAv, String opprettetAvBrukerId) {
         this.aktorId = aktorId;
         this.manuell = manuell;
         this.dato = dato;
