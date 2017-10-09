@@ -19,7 +19,7 @@ import javax.naming.NamingException;
 import javax.sql.DataSource;
 
 @Configuration
-@EnableTransactionManagement
+@EnableTransactionManagement(proxyTargetClass = true)
 public class DatabaseConfig {
 
     public static final String DATA_SOURCE_JDNI_NAME = "jdbc/veilarbsituasjonDS";
