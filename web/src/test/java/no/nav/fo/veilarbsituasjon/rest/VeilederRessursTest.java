@@ -1,15 +1,16 @@
 package no.nav.fo.veilarbsituasjon.rest;
 
+import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarbsituasjon.db.BrukerRepository;
 import no.nav.fo.veilarbsituasjon.rest.domain.OppfolgingBruker;
 import no.nav.fo.veilarbsituasjon.rest.domain.Veileder;
-import no.nav.fo.veilarbsituasjon.services.AktoerIdService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import static java.util.Optional.of;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
@@ -26,12 +27,12 @@ public class VeilederRessursTest {
     private BrukerRepository brukerRepository;
 
     @Mock
-    private AktoerIdService aktoerIdService;
+    private AktorService aktorServiceMock;
 
     @Test
     public void getVeilederSkalReturnereVeileder() throws Exception {
         final String forventetIdent = "***REMOVED***";
-        when(aktoerIdService.findAktoerId(anyString())).thenReturn("test-id");
+        when(aktorServiceMock.getAktorId(anyString())).thenReturn(of("test-id"));
         when(brukerRepository.hentTilordningForAktoer(anyString()))
                 .thenReturn(OppfolgingBruker.builder().veileder(forventetIdent).build());
 

@@ -2,12 +2,12 @@ package no.nav.fo.veilarbsituasjon.rest;
 
 import lombok.val;
 import no.nav.apiapp.security.PepClient;
+import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarbsituasjon.db.SituasjonRepository;
 import no.nav.fo.veilarbsituasjon.domain.Brukervilkar;
 import no.nav.fo.veilarbsituasjon.domain.OppfolgingStatusData;
 import no.nav.fo.veilarbsituasjon.domain.Situasjon;
 import no.nav.fo.veilarbsituasjon.domain.VilkarStatus;
-import no.nav.fo.veilarbsituasjon.services.AktoerIdService;
 import no.nav.fo.veilarbsituasjon.services.SituasjonOversiktService;
 import no.nav.fo.veilarbsituasjon.services.SituasjonResolver;
 import no.nav.fo.veilarbsituasjon.vilkar.VilkarService;
@@ -31,6 +31,7 @@ import java.sql.Timestamp;
 import java.util.Optional;
 
 import static java.lang.System.currentTimeMillis;
+import static java.util.Optional.of;
 import static no.nav.fo.veilarbsituasjon.domain.VilkarStatus.*;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -49,7 +50,7 @@ public class SituasjonOversiktServiceTest {
     private SituasjonRepository situasjonRepositoryMock;
 
     @Mock
-    private AktoerIdService aktoerIdServiceMcok;
+    private AktorService aktorServiceMock;
 
     @Mock
     private VilkarService vilkarServiceMock;
@@ -82,9 +83,9 @@ public class SituasjonOversiktServiceTest {
         when(digitalKontaktinformasjonV1Mock.hentDigitalKontaktinformasjon(any(WSHentDigitalKontaktinformasjonRequest.class)))
                 .thenReturn(new WSHentDigitalKontaktinformasjonResponse()
                         .withDigitalKontaktinformasjon(wsKontaktinformasjon));
-        when(vilkarServiceMock.getVilkar(any(VilkarService.VilkarType.class),any())).thenReturn("Gjeldene Vilkar");
+        when(vilkarServiceMock.getVilkar(any(VilkarService.VilkarType.class), any())).thenReturn("Gjeldene Vilkar");
 
-        when(situasjonResolverDependencies.getAktoerIdService()).thenReturn(aktoerIdServiceMcok);
+        when(situasjonResolverDependencies.getAktorService()).thenReturn(aktorServiceMock);
         when(situasjonResolverDependencies.getSituasjonRepository()).thenReturn(situasjonRepositoryMock);
         when(situasjonResolverDependencies.getOppfoelgingPortType()).thenReturn(oppfoelgingPortTypeMock);
         when(situasjonResolverDependencies.getDigitalKontaktinformasjonV1()).thenReturn(digitalKontaktinformasjonV1Mock);
@@ -111,9 +112,9 @@ public class SituasjonOversiktServiceTest {
     public void hentOppfolgingStatus_brukerSomIkkeErUnderOppfolgingOppdateresIkkeDersomIkkeUnderOppfolgingIArena() throws Exception {
         gittAktor();
         gittSituasjon(situasjon);
-        
+
         OppfolgingStatusData oppfolgingStatusData = hentOppfolgingStatus();
-        
+
         verify(situasjonRepositoryMock, never()).startOppfolgingHvisIkkeAlleredeStartet(anyString());
         assertThat(oppfolgingStatusData.underOppfolging, is(false));
     }
@@ -125,9 +126,9 @@ public class SituasjonOversiktServiceTest {
         gittOppfolgingStatus("ARBS", "");
 
         OppfolgingStatusData oppfolgingStatusData = hentOppfolgingStatus();
-        
+
         verify(situasjonRepositoryMock).startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
-        assertThat(oppfolgingStatusData.underOppfolging, is(true));       
+        assertThat(oppfolgingStatusData.underOppfolging, is(true));
     }
 
     @Test
@@ -287,14 +288,14 @@ public class SituasjonOversiktServiceTest {
     }
 
     private void gittAktor() {
-        when(aktoerIdServiceMcok.findAktoerId(FNR)).thenReturn(AKTOR_ID);
+        when(aktorServiceMock.getAktorId(FNR)).thenReturn(of(AKTOR_ID));
     }
 
     private void gittReservasjon(String reservasjon) {
         wsKontaktinformasjon.setReservasjon(reservasjon);
     }
 
-    private void gittKRRFeil(Class<? extends Exception> aClass) throws Exception{
+    private void gittKRRFeil(Class<? extends Exception> aClass) throws Exception {
         when(digitalKontaktinformasjonV1Mock.hentDigitalKontaktinformasjon(any(WSHentDigitalKontaktinformasjonRequest.class))).thenThrow(aClass);
     }
 

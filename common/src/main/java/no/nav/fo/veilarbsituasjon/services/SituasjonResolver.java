@@ -4,6 +4,7 @@ import lombok.*;
 import no.nav.apiapp.feil.UlovligHandling;
 import no.nav.apiapp.security.PepClient;
 import no.nav.brukerdialog.security.context.SubjectHandler;
+import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
 import no.nav.fo.veilarbsituasjon.db.SituasjonRepository;
 import no.nav.fo.veilarbsituasjon.domain.*;
@@ -67,8 +68,8 @@ public class SituasjonResolver {
         this.fnr = fnr;
         this.deps = deps;
 
-        this.aktorId = ofNullable(deps.getAktoerIdService().findAktoerId(fnr))
-            .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktør for fnr: " + fnr));
+        this.aktorId = deps.getAktorService().getAktorId(fnr)
+                .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktør for fnr: " + fnr));
         this.situasjon = hentSituasjon();
     }
 
@@ -322,7 +323,7 @@ public class SituasjonResolver {
         private Transactor transactor;
 
         @Inject
-        private AktoerIdService aktoerIdService;
+        private AktorService aktorService;
 
         @Inject
         private SituasjonRepository situasjonRepository;

@@ -96,6 +96,10 @@
 
         <!--Tjenester-->
         <dependency>
+            <groupId>no.nav.sbl.dialogarena</groupId>
+            <artifactId>aktor-klient</artifactId>
+        </dependency>
+        <dependency>
             <groupId>no.nav.tjenester.virksomhet.dokument</groupId>
             <artifactId>varseloppgave-v1-tjenestespesifikasjon</artifactId>
             <classifier>jaxws</classifier>
@@ -108,10 +112,6 @@
             <groupId>no.nav.tjenester.fim</groupId>
             <artifactId>nav-fim-oppfoelging-v1-tjenestespesifikasjon</artifactId>
             <classifier>jaxws</classifier>
-        </dependency>
-        <dependency>
-            <groupId>no.nav.sbl.dialogarena</groupId>
-            <artifactId>dial-nav-tjeneste-aktoer_v2</artifactId>
         </dependency>
         <dependency>
             <groupId>no.nav.sbl</groupId>

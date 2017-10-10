@@ -2,8 +2,8 @@ package no.nav.fo.veilarbsituasjon.services;
 
 
 import no.nav.apiapp.feil.UlovligHandling;
+import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarbsituasjon.db.SituasjonRepository;
-import no.nav.fo.veilarbsituasjon.domain.Fnr;
 import no.nav.fo.veilarbsituasjon.domain.Oppfolgingsperiode;
 import no.nav.fo.veilarbsituasjon.domain.Situasjon;
 import org.junit.Before;
@@ -27,11 +27,11 @@ public class SituasjonResolverTest {
 
     @Before
     public void setup() {
-        AktoerIdService aktoerIdService = mock(AktoerIdService.class);
-        when(situasjonResolverDependencies.getAktoerIdService()).thenReturn(aktoerIdService);
+        AktorService aktorServiceMock = mock(AktorService.class);
+        when(situasjonResolverDependencies.getAktorService()).thenReturn(aktorServiceMock);
         when(situasjonResolverDependencies.getSituasjonRepository()).thenReturn(situasjonRepository);
 
-        when(aktoerIdService.findAktoerId(FNR)).thenReturn(AKTOR_ID);
+        when(aktorServiceMock.getAktorId(FNR)).thenReturn(of(AKTOR_ID));
         when(situasjonRepository.hentSituasjon(AKTOR_ID)).thenReturn(of(situasjon));
 
         situasjonResolver = new SituasjonResolver(FNR, situasjonResolverDependencies);

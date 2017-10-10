@@ -3,11 +3,9 @@ package no.nav.fo.veilarbsituasjon.config;
 import no.nav.sbl.jdbc.Database;
 import no.nav.fo.veilarbsituasjon.db.BrukerRepository;
 import no.nav.fo.veilarbsituasjon.db.SituasjonRepository;
-import no.nav.fo.veilarbsituasjon.services.AktoerIdService;
 import no.nav.fo.veilarbsituasjon.services.OppfolgingService;
 import no.nav.fo.veilarbsituasjon.services.OrganisasjonsenhetService;
 import no.nav.fo.veilarbsituasjon.services.YtelseskontraktService;
-import no.nav.tjeneste.virksomhet.aktoer.v2.AktoerV2;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
 import no.nav.tjeneste.virksomhet.organisasjonenhet.v1.OrganisasjonEnhetV1;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3;
@@ -31,11 +29,6 @@ public class ServiceConfig {
     @Bean
     OppfolgingService oppfolgingService(OppfoelgingPortType oppfoelgingPortType, OrganisasjonsenhetService organisasjonsenhetService) {
         return new OppfolgingService(oppfoelgingPortType, organisasjonsenhetService);
-    }
-
-    @Bean
-    AktoerIdService aktoerIdService(AktoerV2 aktoerV2) {
-        return new AktoerIdService(aktoerV2);
     }
 
     @Bean

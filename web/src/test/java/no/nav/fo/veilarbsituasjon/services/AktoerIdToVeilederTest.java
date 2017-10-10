@@ -2,6 +2,7 @@ package no.nav.fo.veilarbsituasjon.services;
 
 
 import no.nav.apiapp.security.PepClient;
+import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.feed.producer.FeedProducer;
 import no.nav.fo.veilarbsituasjon.db.BrukerRepository;
 import no.nav.fo.veilarbsituasjon.db.SituasjonRepository;
@@ -17,6 +18,8 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Collections;
 
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
 import static org.mockito.Mockito.*;
 
 
@@ -30,7 +33,7 @@ public class AktoerIdToVeilederTest {
     private SituasjonRepository situasjonRepository;
 
     @Mock
-    private AktoerIdService aktoerIdService;
+    private AktorService aktorServiceMock;
 
     @Mock
     private FeedProducer<OppfolgingBruker> feed;
@@ -43,13 +46,13 @@ public class AktoerIdToVeilederTest {
 
     @Test
     public void portefoljeRessursMustCallDAOwithAktoerIdToVeileder() throws PepException {
-        when(aktoerIdService.findAktoerId(any(String.class))).thenReturn("AKTOERID");
+        when(aktorServiceMock.getAktorId(any(String.class))).thenReturn(of("AKTOERID"));
         portefoljeRessurs.postVeilederTilordninger(Collections.singletonList(testData()));
         verify(brukerRepository, times(1)).upsertVeilederTilordning(anyString(), anyString());
     }
 
     public void noCallToDAOWhenAktoerIdServiceFails() {
-        when(aktoerIdService.findAktoerId(any(String.class))).thenReturn(null);
+        when(aktorServiceMock.getAktorId(any(String.class))).thenReturn(empty());
         portefoljeRessurs.postVeilederTilordninger(Collections.singletonList(testData()));
         verify(brukerRepository, never()).upsertVeilederTilordning(anyString(), anyString());
     }

@@ -3,12 +3,12 @@ package no.nav.fo.veilarbsituasjon.rest;
 import io.swagger.annotations.Api;
 import lombok.val;
 import no.nav.apiapp.security.PepClient;
+import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.feed.producer.FeedProducer;
 import no.nav.fo.veilarbsituasjon.db.BrukerRepository;
 import no.nav.fo.veilarbsituasjon.rest.domain.OppfolgingBruker;
 import no.nav.fo.veilarbsituasjon.rest.domain.TilordneVeilederResponse;
 import no.nav.fo.veilarbsituasjon.rest.domain.VeilederTilordning;
-import no.nav.fo.veilarbsituasjon.services.AktoerIdService;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
@@ -18,7 +18,6 @@ import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.List;
 
-import static java.util.Optional.ofNullable;
 import static org.slf4j.LoggerFactory.getLogger;
 
 @Component
@@ -28,17 +27,17 @@ public class PortefoljeRessurs {
 
     private static final Logger LOG = getLogger(PortefoljeRessurs.class);
 
-    private AktoerIdService aktoerIdService;
+    private AktorService aktorService;
     private BrukerRepository brukerRepository;
     private final PepClient pepClient;
 
     private FeedProducer<OppfolgingBruker> feed;
 
-    public PortefoljeRessurs(AktoerIdService aktoerIdService,
+    public PortefoljeRessurs(AktorService aktorService,
                              BrukerRepository brukerRepository,
                              PepClient pepClient,
                              FeedProducer<OppfolgingBruker> feed) {
-        this.aktoerIdService = aktoerIdService;
+        this.aktorService = aktorService;
         this.brukerRepository = brukerRepository;
         this.pepClient = pepClient;
         this.feed = feed;
@@ -97,12 +96,12 @@ public class PortefoljeRessurs {
     }
 
     private String finnAktorId(final String fnr) {
-        return ofNullable(aktoerIdService.findAktoerId(fnr)).
-                orElseThrow(() -> new IllegalArgumentException("Aktoerid ikke funnet"));
+        return aktorService.getAktorId(fnr)
+                .orElseThrow(() -> new IllegalArgumentException("Aktoerid ikke funnet"));
     }
 
     private void loggFeilsituasjon(Exception e) {
-        if(e instanceof NotAuthorizedException) {
+        if (e instanceof NotAuthorizedException) {
             LOG.warn("Request is not authorized", e);
         } else {
             LOG.error(loggMeldingForException(e), e);

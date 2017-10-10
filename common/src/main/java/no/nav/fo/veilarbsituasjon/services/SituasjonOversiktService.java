@@ -3,6 +3,7 @@ package no.nav.fo.veilarbsituasjon.services;
 import io.swagger.annotations.Api;
 import lombok.SneakyThrows;
 import lombok.val;
+import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarbsituasjon.db.SituasjonRepository;
 import no.nav.fo.veilarbsituasjon.domain.*;
 import no.nav.fo.veilarbsituasjon.services.SituasjonResolver.SituasjonResolverDependencies;
@@ -27,10 +28,14 @@ public class SituasjonOversiktService {
     private SituasjonResolverDependencies situasjonResolverDependencies;
 
     @Inject
+    private AktorService aktorService;
+
+    @Inject
     private SituasjonRepository situasjonRepository;
 
     public OppfolgingStatusData hentOppfolgingsStatus(AktorId aktorId) throws Exception {
-        String fnr = situasjonResolverDependencies.getAktoerIdService().findFnr(aktorId.getAktorId());
+        String fnr = aktorService.getFnr(aktorId.getAktorId())
+                .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktør for fnr: " + aktorId));
         return hentOppfolgingsStatus(fnr);
     }
 
