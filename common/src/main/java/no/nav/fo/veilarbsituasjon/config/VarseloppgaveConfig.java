@@ -13,6 +13,7 @@ import org.springframework.context.annotation.Configuration;
 import java.util.*;
 
 import static java.lang.System.getProperty;
+import static no.nav.fo.veilarbsituasjon.config.OppfolgingFeature.SKIP_VALIDERING_DIFI;
 import static org.apache.cxf.phase.Phase.PRE_STREAM;
 
 @Configuration
@@ -69,8 +70,10 @@ public class VarseloppgaveConfig {
 
         @Override
         public void handleMessage(Message message) throws Fault {
-            Map<String, List> headers = (Map<String, List>) message.get(Message.PROTOCOL_HEADERS);
-            headers.put("SkipPaaloggingValidation", Collections.singletonList("hvasomhelst"));
+            if(SKIP_VALIDERING_DIFI.erAktiv()){
+                Map<String, List> headers = (Map<String, List>) message.get(Message.PROTOCOL_HEADERS);
+                headers.put("SkipPaaloggingValidation", Collections.singletonList("hvasomhelst"));
+            }
         }
 
     }

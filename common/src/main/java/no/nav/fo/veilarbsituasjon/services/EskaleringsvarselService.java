@@ -1,11 +1,9 @@
 package no.nav.fo.veilarbsituasjon.services;
 
 import no.nav.apiapp.feil.IngenTilgang;
-import no.nav.tjeneste.virksomhet.varseloppgave.v1.BestillVarselOppgaveSikkerhetsbegrensning;
-import no.nav.tjeneste.virksomhet.varseloppgave.v1.VarseloppgaveV1;
+import no.nav.tjeneste.virksomhet.varseloppgave.v1.*;
 import no.nav.tjeneste.virksomhet.varseloppgave.v1.informasjon.*;
 import no.nav.tjeneste.virksomhet.varseloppgave.v1.meldinger.BestillVarselOppgaveRequest;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -38,6 +36,9 @@ public class EskaleringsvarselService {
         } catch (BestillVarselOppgaveSikkerhetsbegrensning bestillVarselOppgaveSikkerhetsbegrensning) {
             LOG.error("Sikkerhetsbegrensning ved kall mot varseloppgaveV1");
             throw new IngenTilgang(bestillVarselOppgaveSikkerhetsbegrensning);
+        } catch (BestillVarselOppgaveBrukerIkkeRegistrertIIdporten bestillVarselOppgaveBrukerIkkeRegistrertIIdporten){
+            LOG.error("Bruker ikke registert i id porten");
+            throw new IngenTilgang(bestillVarselOppgaveBrukerIkkeRegistrertIIdporten);
         } catch (Exception e) {
             LOG.error("Sending av eskaleringsvarsel feilet for aktørId {} og dialogId {}", aktorId, dialogId, e);
             throw throwUnchecked(e);
