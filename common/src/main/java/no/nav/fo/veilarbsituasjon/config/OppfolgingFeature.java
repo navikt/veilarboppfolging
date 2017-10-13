@@ -3,7 +3,7 @@ package no.nav.fo.veilarbsituasjon.config;
 import no.nav.sbl.featuretoggle.SystemPropertyFeatureToggle;
 
 public enum OppfolgingFeature implements SystemPropertyFeatureToggle {
-    SKIP_VALIDERING_DIFI("feature.skip.validering.difi", true); // TODO denne bør fjernes eller sette default=false før prodsetting
+    SKIP_VALIDERING_DIFI("feature.skip.validering.difi", false);
 
     private final String systemVariabel;
     private final boolean defaultAktiv;
