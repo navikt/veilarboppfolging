@@ -24,7 +24,7 @@ import static no.nav.dialogarena.config.DevelopmentSecurity.setupIntegrationTest
 @Category(value = Smoketest.class)
 public class OppfolgingsinfoSmoketest {
 
-    private static final String AREMARK_AKTOID = "***REMOVED***42";
+    private static final String AREMARK_AKTORID = "***REMOVED***42";
     private OppfolgingsinfoV1 oppfolgingsinfoV1;
     private static String hostname;
     private static String MILJO;
@@ -53,7 +53,7 @@ public class OppfolgingsinfoSmoketest {
 
     @Test
     public void hentOppfolgingsinfo() {
-        OppfolgingsstatusRequest request = new OppfolgingsstatusRequest().withAktorId(AREMARK_AKTOID);
+        OppfolgingsstatusRequest request = new OppfolgingsstatusRequest().withAktorId(AREMARK_AKTORID);
         oppfolgingsinfoV1.hentOppfolgingsstatus(request);
     }
 }
