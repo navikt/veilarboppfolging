@@ -22,7 +22,7 @@ import static java.lang.System.setProperty;
 import static no.nav.dialogarena.config.DevelopmentSecurity.setupIntegrationTestSecurity;
 
 @Category(value = Smoketest.class)
-public class oppfolgingsinfoSmoketest {
+public class OppfolgingsinfoSmoketest {
 
     private static final String AREMARK_AKTOID = "***REMOVED***42";
     private OppfolgingsinfoV1 oppfolgingsinfoV1;
