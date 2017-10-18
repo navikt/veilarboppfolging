@@ -5,9 +5,9 @@ import lombok.val;
 import no.nav.apiapp.soap.SoapTjeneste;
 import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.fo.veilarboppfolging.services.OppfolgingService;
-import no.nav.tjeneste.virksomhet.behandlesituasjon.v1.binding.*;
-import no.nav.tjeneste.virksomhet.behandlesituasjon.v1.informasjon.*;
-import no.nav.tjeneste.virksomhet.behandlesituasjon.v1.meldinger.*;
+import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.binding.*;
+import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.informasjon.*;
+import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.meldinger.*;
 import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
@@ -24,7 +24,7 @@ import static no.nav.fo.veilarboppfolging.utils.StringUtils.emptyIfNull;
 
 @Service
 @SoapTjeneste("/Oppfolging")
-public class OppfolgingWebService implements BehandleSituasjonV1 {
+public class OppfolgingWebService implements BehandleOppfolgingV1 {
 
     @Inject
     private OppfolgingService oppfolgingService;

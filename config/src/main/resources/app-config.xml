@@ -56,14 +56,14 @@
 
     <exposed-services>
         <exposedRest path="/veilarboppfolging/api" name="veilArbOppfolgingAPI"/>
-        <!--<exposedSoap name="BehandleOppfolgingV1"-->
-                     <!--path="/veilarboppfolging-ws/ws/Oppfolging"-->
-                     <!--securityToken="SAML"-->
-                     <!--wsdlGroupId="no.nav.tjenester"-->
-                     <!--wsdlArtifactId="brukerdialog-behandleSituasjon-v1-tjenestespesifikasjon"-->
-                     <!--wsdlVersion="${brukerdialog-behandleSituasjon-v1-tjenestespesifikasjon.version}">-->
-            <!--<exportToZone>SBS</exportToZone>-->
-        <!--</exposedSoap>-->
+        <exposedSoap name="BehandleOppfolgingV1"
+                     path="/veilarboppfolging-ws/ws/Oppfolging"
+                     securityToken="SAML"
+                     wsdlGroupId="no.nav.tjenester"
+                     wsdlArtifactId="brukerdialog-behandleOppfolging-v1-tjenestespesifikasjon"
+                     wsdlVersion="${brukerdialog-behandleOppfolging-v1-tjenestespesifikasjon.version}">
+            <exportToZone>SBS</exportToZone>
+        </exposedSoap>
     </exposed-services>
 
     <serverOptions>

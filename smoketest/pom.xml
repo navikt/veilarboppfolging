@@ -77,7 +77,7 @@
         <!-- transitive avhengigheter -->
         <dependency>
             <groupId>no.nav.tjenester</groupId>
-            <artifactId>brukerdialog-behandleSituasjon-v1-tjenestespesifikasjon</artifactId>
+            <artifactId>brukerdialog-behandleOppfolging-v1-tjenestespesifikasjon</artifactId>
             <classifier>jaxws</classifier>
         </dependency>
         <dependency>
