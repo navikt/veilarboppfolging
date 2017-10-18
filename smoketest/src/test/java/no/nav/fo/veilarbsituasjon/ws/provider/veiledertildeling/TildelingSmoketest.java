@@ -53,7 +53,6 @@ public class TildelingSmoketest {
 
     @BeforeAll
     public static void setup() {
-        System.setProperty("miljo", "t4");
         MILJO = getProperty("miljo");
         configureUrls();
         setupIntegrationTestSecurity(new DevelopmentSecurity.IntegrationTestConfig("veilarbportefolje"));
@@ -78,7 +77,7 @@ public class TildelingSmoketest {
 
         Veileder veileder = getVeileder();
 
-        if (Objects.isNull(veileder.getVeilederident())) {
+        if (Objects.nonNull(veileder.getVeilederident())) {
             resetVeilederOgVerifiser(veileder.getVeilederident(), AREMARK_FNR);
         }
 
