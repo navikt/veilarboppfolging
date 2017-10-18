@@ -77,6 +77,11 @@
                 <artifactId>veilarbsituasjon-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>no.nav.fo</groupId>
+                <artifactId>veilarbsituasjon-web</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
             <dependency>
                 <groupId>no.nav.fo</groupId>
