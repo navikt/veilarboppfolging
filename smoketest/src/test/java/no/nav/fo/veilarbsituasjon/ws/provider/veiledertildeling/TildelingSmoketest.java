@@ -16,9 +16,9 @@ import no.nav.fo.veilarbsituasjon.ws.provider.veiledertildeling.domene.Filterval
 import no.nav.fo.veilarbsituasjon.ws.provider.veiledertildeling.domene.Portefolje;
 import no.nav.fo.veilarbsituasjon.ws.provider.veiledertildeling.domene.Statustall;
 import no.nav.sbl.dialogarena.test.junit.Smoketest;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Cookie;
@@ -51,7 +51,7 @@ public class TildelingSmoketest {
 
     private static Cookie tokenCookie;
 
-    @BeforeAll
+    @BeforeClass
     public static void setup() {
         MILJO = getProperty("miljo");
         configureUrls();
