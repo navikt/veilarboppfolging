@@ -11,6 +11,7 @@ import no.nav.tjeneste.virksomhet.behandlesituasjon.v1.meldinger.HentVilkaarResp
 import org.apache.cxf.interceptor.LoggingOutInterceptor;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static no.nav.fo.test.smoketest.SmokeTestUtils.getMiljo;
@@ -18,6 +19,7 @@ import static no.nav.fo.test.smoketest.SmokeTestUtils.setupOpenAmSubject;
 import static no.nav.fo.test.smoketest.SmokeTestUtils.setupSystemUser;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+@Disabled
 public class SituasjonOversiktWebServiceTest {
 
     public static final String PROXY_USERNAME_ALIAS = "srvveilarbsituasjonproxy";
