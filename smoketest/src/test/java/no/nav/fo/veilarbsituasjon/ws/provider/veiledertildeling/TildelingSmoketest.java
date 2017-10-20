@@ -15,10 +15,9 @@ import no.nav.fo.veilarbsituasjon.ws.provider.veiledertildeling.domene.Bruker;
 import no.nav.fo.veilarbsituasjon.ws.provider.veiledertildeling.domene.Filtervalg;
 import no.nav.fo.veilarbsituasjon.ws.provider.veiledertildeling.domene.Portefolje;
 import no.nav.fo.veilarbsituasjon.ws.provider.veiledertildeling.domene.Statustall;
-import no.nav.sbl.dialogarena.test.junit.Smoketest;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Cookie;
@@ -28,10 +27,11 @@ import java.util.Objects;
 
 import static java.lang.System.getProperty;
 import static no.nav.dialogarena.config.DevelopmentSecurity.setupIntegrationTestSecurity;
+import static no.nav.sbl.dialogarena.test.junit.Tag.SMOKETEST;
 import static no.nav.sbl.rest.RestUtils.withClient;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
-@Category(value = Smoketest.class)
+@Tag(SMOKETEST)
 public class TildelingSmoketest {
     private static final String ID_TOKEN = "ID_token";
 
@@ -51,7 +51,7 @@ public class TildelingSmoketest {
 
     private static Cookie tokenCookie;
 
-    @BeforeClass
+    @BeforeAll
     public static void setup() {
         MILJO = getProperty("miljo");
         configureUrls();
