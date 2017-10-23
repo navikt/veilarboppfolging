@@ -10,7 +10,7 @@ import java.sql.Timestamp;
 @Builder
 @Wither
 public class OppfolgingFeedDTO implements Comparable<OppfolgingFeedDTO> {
-    public static final String FEED_NAME = "situasjon";
+    public static final String FEED_NAME = "oppfolging";
 
     String aktoerid;
     String veileder;
