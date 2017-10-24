@@ -146,8 +146,8 @@ public class TildelingSmoketest {
     private static void configureUrls() {
         String hostname = Objects.nonNull(MILJO) ? String.format("https://app-%s.adeo.no/", MILJO) : "http://localhost:8080/";
 
-        STATUSTALL_URL = hostname + "veilarbportefolje/tjenester/enhet/%s/statustall";
-        PORTEFOLJE_URL = hostname + "veilarbportefolje/tjenester/enhet/%s/portefolje" +
+        STATUSTALL_URL = hostname + "veilarbportefolje/api/enhet/%s/statustall";
+        PORTEFOLJE_URL = hostname + "veilarbportefolje/api/enhet/%s/portefolje" +
                 "?fra=0&antall=%s&sortDirection=ikke_satt&sortField=ikke_satt";
         TILDELING_URL = hostname + "veilarbsituasjon/api/tilordneveileder";
         VEILEDER_URL = String.format(hostname + "veilarbsituasjon/api/person/%s/veileder", AREMARK_FNR);
