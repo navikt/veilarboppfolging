@@ -3,12 +3,12 @@ package no.nav.fo.veilarboppfolging.rest;
 import io.swagger.annotations.Api;
 import lombok.val;
 import no.nav.apiapp.security.PepClient;
+import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.feed.producer.FeedProducer;
 import no.nav.fo.veilarboppfolging.db.VeilederTilordningerRepository;
 import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingFeedDTO;
 import no.nav.fo.veilarboppfolging.rest.domain.TilordneVeilederResponse;
 import no.nav.fo.veilarboppfolging.rest.domain.VeilederTilordning;
-import no.nav.fo.veilarboppfolging.services.AktoerIdService;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
@@ -18,7 +18,6 @@ import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.List;
 
-import static java.util.Optional.ofNullable;
 import static org.slf4j.LoggerFactory.getLogger;
 
 @Component
@@ -28,17 +27,17 @@ public class VeilederTilordningRessurs {
 
     private static final Logger LOG = getLogger(VeilederTilordningRessurs.class);
 
-    private AktoerIdService aktoerIdService;
+    private AktorService aktorService;
     private VeilederTilordningerRepository veilederTilordningerRepository;
     private final PepClient pepClient;
 
     private FeedProducer<OppfolgingFeedDTO> feed;
 
-    public VeilederTilordningRessurs(AktoerIdService aktoerIdService,
+    public VeilederTilordningRessurs(AktorService aktorService,
                                      VeilederTilordningerRepository veilederTilordningerRepository,
                                      PepClient pepClient,
                                      FeedProducer<OppfolgingFeedDTO> feed) {
-        this.aktoerIdService = aktoerIdService;
+        this.aktorService = aktorService;
         this.veilederTilordningerRepository = veilederTilordningerRepository;
         this.pepClient = pepClient;
         this.feed = feed;
@@ -97,8 +96,8 @@ public class VeilederTilordningRessurs {
     }
 
     private String finnAktorId(final String fnr) {
-        return ofNullable(aktoerIdService.findAktoerId(fnr)).
-                orElseThrow(() -> new IllegalArgumentException("Aktoerid ikke funnet"));
+        return aktorService.getAktorId(fnr)
+                .orElseThrow(() -> new IllegalArgumentException("Aktoerid ikke funnet"));
     }
 
     private void loggFeilOppfolging(Exception e) {

@@ -3,12 +3,10 @@ package no.nav.fo.veilarboppfolging.config;
 import no.nav.fo.veilarboppfolging.db.OppfolgingFeedRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.db.VeilederTilordningerRepository;
-import no.nav.fo.veilarboppfolging.services.AktoerIdService;
 import no.nav.fo.veilarboppfolging.services.ArenaOppfolgingService;
 import no.nav.fo.veilarboppfolging.services.OrganisasjonEnhetService;
 import no.nav.fo.veilarboppfolging.services.YtelseskontraktService;
 import no.nav.sbl.jdbc.Database;
-import no.nav.tjeneste.virksomhet.aktoer.v2.AktoerV2;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
 import no.nav.tjeneste.virksomhet.organisasjonenhet.v1.OrganisasjonEnhetV1;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3;
@@ -33,11 +31,6 @@ public class ServiceConfig {
     ArenaOppfolgingService arenaOppfolgingService(OppfoelgingPortType oppfoelgingPortType,
                                                   OrganisasjonEnhetService organisasjonEnhetService) {
         return new ArenaOppfolgingService(oppfoelgingPortType, organisasjonEnhetService);
-    }
-
-    @Bean
-    AktoerIdService aktoerIdService(AktoerV2 aktoerV2) {
-        return new AktoerIdService(aktoerV2);
     }
 
     @Bean

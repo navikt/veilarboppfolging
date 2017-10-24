@@ -1,12 +1,13 @@
 package no.nav.fo.veilarboppfolging.services;
 
-import lombok.Getter;
-import lombok.SneakyThrows;
-import lombok.val;
+import lombok.*;
 import no.nav.apiapp.feil.UlovligHandling;
 import no.nav.apiapp.security.PepClient;
 import no.nav.brukerdialog.security.context.SubjectHandler;
+import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
+import no.nav.sbl.jdbc.Transactor;
+import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.*;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.fo.veilarboppfolging.utils.DateUtils;
@@ -28,14 +29,10 @@ import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskont
 import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
 import java.sql.Timestamp;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 import static java.lang.System.currentTimeMillis;
 import static java.util.Optional.of;
@@ -64,13 +61,18 @@ public class OppfolgingResolver {
     private WSHentYtelseskontraktListeResponse ytelser;
     private List<ArenaAktivitetDTO> arenaAktiviteter;
 
+    OppfolgingResolver(OppfolgingResolverDependencies deps) {
+        this.deps = deps;
+    }
+
+
     OppfolgingResolver(String fnr, OppfolgingResolverDependencies deps) {
-        deps.getPepClient().sjekkTilgangTilFnr(fnr);
+        deps.getPepClient().sjekkLeseTilgangTilFnr(fnr);
 
         this.fnr = fnr;
         this.deps = deps;
 
-        this.aktorId = ofNullable(deps.getAktoerIdService().findAktoerId(fnr))
+        this.aktorId = deps.getAktorService().getAktorId(fnr)
             .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktør for fnr: " + fnr));
         this.oppfolging = hentOppfolging();
     }
@@ -79,7 +81,6 @@ public class OppfolgingResolver {
         oppfolging = hentOppfolging();
     }
 
-    @Transactional
     void sjekkStatusIArenaOgOppdaterOppfolging() {
         if (!oppfolging.isUnderOppfolging()) {
             hentOppfolgingstatusFraArena();
@@ -185,7 +186,6 @@ public class OppfolgingResolver {
         return kanSettesUnderOppfolging(statusIArena.getFormidlingsgruppeKode(), statusIArena.getServicegruppeKode());
     }
 
-    @Transactional
     void startOppfolging() {
         deps.getOppfolgingRepository().startOppfolgingHvisIkkeAlleredeStartet(aktorId);
         oppfolging = hentOppfolging();
@@ -252,8 +252,10 @@ public class OppfolgingResolver {
 
     void startEskalering(String begrunnelse, long tilhorendeDialogId){
         String veilederId = SubjectHandler.getSubjectHandler().getUid();
-        deps.getOppfolgingRepository().startEskalering(aktorId, veilederId, begrunnelse, tilhorendeDialogId);
-        deps.getEskaleringsvarselService().sendEskaleringsvarsel(aktorId, tilhorendeDialogId);
+        deps.getTransactor().inTransaction(() -> {
+            deps.getOppfolgingRepository().startEskalering(aktorId, veilederId, begrunnelse, tilhorendeDialogId);
+            deps.getEskaleringsvarselService().sendEskaleringsvarsel(aktorId, tilhorendeDialogId);
+        });
     }
 
     void stoppEskalering(String begrunnelse) {
@@ -322,7 +324,10 @@ public class OppfolgingResolver {
         private PepClient pepClient;
 
         @Inject
-        private AktoerIdService aktoerIdService;
+        private Transactor transactor;
+
+        @Inject
+        private AktorService aktorService;
 
         @Inject
         private OppfolgingRepository oppfolgingRepository;

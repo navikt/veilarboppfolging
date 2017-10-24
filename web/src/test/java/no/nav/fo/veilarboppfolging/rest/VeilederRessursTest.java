@@ -2,13 +2,14 @@ package no.nav.fo.veilarboppfolging.rest;
 
 import no.nav.fo.veilarboppfolging.db.VeilederTilordningerRepository;
 import no.nav.fo.veilarboppfolging.rest.domain.Veileder;
-import no.nav.fo.veilarboppfolging.services.AktoerIdService;
+import no.nav.dialogarena.aktor.AktorService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import static java.util.Optional.of;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
@@ -25,12 +26,12 @@ public class VeilederRessursTest {
     private VeilederTilordningerRepository veilederTilordningerRepository;
 
     @Mock
-    private AktoerIdService aktoerIdService;
+    private AktorService aktorServiceMock;
 
     @Test
     public void getVeilederSkalReturnereVeileder() throws Exception {
         final String forventetIdent = "***REMOVED***";
-        when(aktoerIdService.findAktoerId(anyString())).thenReturn("test-id");
+        when(aktorServiceMock.getAktorId(anyString())).thenReturn(of("test-id"));
         when(veilederTilordningerRepository.hentTilordningForAktoer(anyString()))
                 .thenReturn(forventetIdent);
 

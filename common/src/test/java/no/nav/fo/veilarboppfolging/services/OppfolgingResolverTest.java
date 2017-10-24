@@ -2,6 +2,7 @@ package no.nav.fo.veilarboppfolging.services;
 
 
 import no.nav.apiapp.feil.UlovligHandling;
+import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.domain.Oppfolging;
 import no.nav.fo.veilarboppfolging.domain.Oppfolgingsperiode;
@@ -27,11 +28,11 @@ public class OppfolgingResolverTest {
 
     @Before
     public void setup() {
-        AktoerIdService aktoerIdService = mock(AktoerIdService.class);
-        when(oppfolgingResolverDependencies.getAktoerIdService()).thenReturn(aktoerIdService);
+        AktorService aktorServiceMock = mock(AktorService.class);
+        when(oppfolgingResolverDependencies.getAktorService()).thenReturn(aktorServiceMock);
         when(oppfolgingResolverDependencies.getOppfolgingRepository()).thenReturn(oppfolgingRepository);
 
-        when(aktoerIdService.findAktoerId(FNR)).thenReturn(AKTOR_ID);
+        when(aktorServiceMock.getAktorId(FNR)).thenReturn(of(AKTOR_ID));
         when(oppfolgingRepository.hentOppfolging(AKTOR_ID)).thenReturn(of(oppfolging));
 
         oppfolgingResolver = new OppfolgingResolver(FNR, oppfolgingResolverDependencies);

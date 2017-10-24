@@ -3,12 +3,12 @@ package no.nav.fo.veilarboppfolging.rest;
 import lombok.val;
 import no.nav.apiapp.security.PepClient;
 import no.nav.brukerdialog.security.context.ThreadLocalSubjectHandler;
+import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.feed.producer.FeedProducer;
 import no.nav.fo.veilarboppfolging.db.VeilederTilordningerRepository;
 import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingFeedDTO;
 import no.nav.fo.veilarboppfolging.rest.domain.TilordneVeilederResponse;
 import no.nav.fo.veilarboppfolging.rest.domain.VeilederTilordning;
-import no.nav.fo.veilarboppfolging.services.AktoerIdService;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,6 +31,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import static java.util.Arrays.asList;
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
 import static no.nav.fo.veilarboppfolging.rest.VeilederTilordningRessurs.kanSetteNyVeileder;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
@@ -45,7 +47,7 @@ public class VeilederTilordningRessursTest {
     private PepClient pepClient;
 
     @Mock
-    private AktoerIdService aktoerIdService;
+    private AktorService aktorServiceMock;
 
     @Mock
     private VeilederTilordningerRepository veilederTilordningerRepository;
@@ -91,11 +93,11 @@ public class VeilederTilordningRessursTest {
         tilordninger.add(harTilgang2);
         tilordninger.add(harIkkeTilgang2);
 
-        when(pepClient.sjekkTilgangTilFnr("FNR2")).thenThrow(NotAuthorizedException.class);
-        when(pepClient.sjekkTilgangTilFnr("FNR4")).thenThrow(PepException.class);
+        when(pepClient.sjekkLeseTilgangTilFnr("FNR2")).thenThrow(NotAuthorizedException.class);
+        when(pepClient.sjekkLeseTilgangTilFnr("FNR4")).thenThrow(PepException.class);
 
-        when(aktoerIdService.findAktoerId("FNR1")).thenReturn("AKTOERID1");
-        when(aktoerIdService.findAktoerId("FNR3")).thenReturn("AKTOERID3");
+        when(aktorServiceMock.getAktorId("FNR1")).thenReturn(of("AKTOERID1"));
+        when(aktorServiceMock.getAktorId("FNR3")).thenReturn(of("AKTOERID3"));
 
 
         Response response = veilederTilordningRessurs.postVeilederTilordninger(tilordninger);
@@ -126,19 +128,19 @@ public class VeilederTilordningRessursTest {
                 .oppfolging(false);
 
 
-        when(aktoerIdService.findAktoerId("FNR1")).thenReturn("AKTOERID1");
+        when(aktorServiceMock.getAktorId("FNR1")).thenReturn(of("AKTOERID1"));
         when(veilederTilordningerRepository.hentTilordningForAktoer("AKTOERID1"))
                 .thenReturn("FRAVEILEDER1");
 
-        when(aktoerIdService.findAktoerId("FNR2")).thenReturn("AKTOERID2");
+        when(aktorServiceMock.getAktorId("FNR2")).thenReturn(of("AKTOERID2"));
         when(veilederTilordningerRepository.hentTilordningForAktoer("AKTOERID2"))
                 .thenReturn("IKKE_FRAVEILEDER2");
 
-        when(aktoerIdService.findAktoerId("FNR3")).thenReturn("AKTOERID3");
+        when(aktorServiceMock.getAktorId("FNR3")).thenReturn(of("AKTOERID3"));
         when(veilederTilordningerRepository.hentTilordningForAktoer("AKTOERID3"))
                 .thenReturn("FRAVEILEDER3");
 
-        when(aktoerIdService.findAktoerId("FNR4")).thenReturn("AKTOERID4");
+        when(aktorServiceMock.getAktorId("FNR4")).thenReturn(of("AKTOERID4"));
         when(veilederTilordningerRepository.hentTilordningForAktoer("AKTOERID4"))
                 .thenReturn("IKKE_FRAVEILEDER4");
 
@@ -166,13 +168,13 @@ public class VeilederTilordningRessursTest {
         tilordninger.add(tilordningOK2);
         tilordninger.add(tilordningERROR2);
 
-        when(aktoerIdService.findAktoerId("FNR1")).thenReturn("AKTOERID1");
-        when(aktoerIdService.findAktoerId("FNR4")).thenReturn("AKTOERID4");
+        when(aktorServiceMock.getAktorId("FNR1")).thenReturn(of("AKTOERID1"));
+        when(aktorServiceMock.getAktorId("FNR4")).thenReturn(of("AKTOERID4"));
 
-        when(aktoerIdService.findAktoerId("FNR2")).thenReturn("AKTOERID2");
+        when(aktorServiceMock.getAktorId("FNR2")).thenReturn(of("AKTOERID2"));
         when(veilederTilordningerRepository.hentTilordningForAktoer("AKTOERID2")).thenThrow(new BadSqlGrammarException("AKTOER", "Dette er bare en test", new SQLException()));
 
-        when(aktoerIdService.findAktoerId("FNR3")).thenReturn("AKTOERID3");
+        when(aktorServiceMock.getAktorId("FNR3")).thenReturn(of("AKTOERID3"));
         when(veilederTilordningerRepository.hentTilordningForAktoer("AKTOERID3")).thenThrow(new BadSqlGrammarException("AKTOER", "Dette er bare en test", new SQLException()));
 
         Response response = veilederTilordningRessurs.postVeilederTilordninger(tilordninger);
@@ -198,10 +200,10 @@ public class VeilederTilordningRessursTest {
         tilordninger.add(tilordningOK2);
         tilordninger.add(tilordningERROR2);
 
-        when(aktoerIdService.findAktoerId("FNR1")).thenReturn("AKTOERID1");
-        when(aktoerIdService.findAktoerId("FNR2")).thenReturn("AKTOERID2");
-        when(aktoerIdService.findAktoerId("FNR3")).thenReturn("AKTOERID3");
-        when(aktoerIdService.findAktoerId("FNR4")).thenReturn("AKTOERID4");
+        when(aktorServiceMock.getAktorId("FNR1")).thenReturn(of("AKTOERID1"));
+        when(aktorServiceMock.getAktorId("FNR2")).thenReturn(of("AKTOERID2"));
+        when(aktorServiceMock.getAktorId("FNR3")).thenReturn(of("AKTOERID3"));
+        when(aktorServiceMock.getAktorId("FNR4")).thenReturn(of("AKTOERID4"));
 
 
         doThrow(new BadSqlGrammarException("AKTOER", "Dette er bare en test", new SQLException()))
@@ -233,10 +235,10 @@ public class VeilederTilordningRessursTest {
         tilordninger.add(tilordningOK2);
         tilordninger.add(tilordningERROR2);
 
-        when(aktoerIdService.findAktoerId("FNR3")).thenReturn(null);
-        when(aktoerIdService.findAktoerId("FNR2")).thenReturn(null);
-        when(aktoerIdService.findAktoerId("FNR1")).thenReturn("AKTOERID1");
-        when(aktoerIdService.findAktoerId("FNR4")).thenReturn("AKTOERID4");
+        when(aktorServiceMock.getAktorId("FNR3")).thenReturn(empty());
+        when(aktorServiceMock.getAktorId("FNR2")).thenReturn(empty());
+        when(aktorServiceMock.getAktorId("FNR1")).thenReturn(of("AKTOERID1"));
+        when(aktorServiceMock.getAktorId("FNR4")).thenReturn(of("AKTOERID4"));
 
         Response response = veilederTilordningRessurs.postVeilederTilordninger(tilordninger);
         List<VeilederTilordning> feilendeTilordninger = ((TilordneVeilederResponse) response.getEntity()).getFeilendeTilordninger();
@@ -257,7 +259,7 @@ public class VeilederTilordningRessursTest {
         tilordninger.add(tilordningERROR1);
         tilordninger.add(tilordningERROR2);
 
-        when(pepClient.sjekkTilgangTilFnr(any(String.class))).thenThrow(Exception.class);
+        when(pepClient.sjekkLeseTilgangTilFnr(any(String.class))).thenThrow(Exception.class);
 
         Response response = veilederTilordningRessurs.postVeilederTilordninger(tilordninger);
         List<VeilederTilordning> feilendeTilordninger = ((TilordneVeilederResponse) response.getEntity()).getFeilendeTilordninger();
@@ -272,7 +274,7 @@ public class VeilederTilordningRessursTest {
         VeilederTilordning tilordningOKBruker1 = new VeilederTilordning().setBrukerFnr("FNR1").setFraVeilederId("FRAVEILEDER1").setTilVeilederId("TILVEILEDER1");
         VeilederTilordning tilordningERRORBruker2 = new VeilederTilordning().setBrukerFnr("FNR2").setFraVeilederId("FRAVEILEDER2").setTilVeilederId("TILVEILEDER2");
 
-        when(pepClient.sjekkTilgangTilFnr(any(String.class))).thenAnswer(new Answer<Boolean>() {
+        when(pepClient.sjekkLeseTilgangTilFnr(any(String.class))).thenAnswer(new Answer<Boolean>() {
 
             @Override
             public Boolean answer(InvocationOnMock invocation) throws Throwable {
@@ -286,7 +288,7 @@ public class VeilederTilordningRessursTest {
 
         });
 
-        when(aktoerIdService.findAktoerId("FNR1")).thenReturn("AKTOERID1");
+        when(aktorServiceMock.getAktorId("FNR1")).thenReturn(of("AKTOERID1"));
 
         //Starter to tråder som gjør to separate tilordninger gjennom samme portefoljeressurs. Dette simulerer
         //at to brukere kaller rest-operasjonen samtidig. Den første tilordningen tar lenger tid siden pep-kallet tar lenger tid.
@@ -320,7 +322,7 @@ public class VeilederTilordningRessursTest {
 
         tilordninger.add(tilordningOK1);
 
-        when(aktoerIdService.findAktoerId("FNR1")).thenReturn("AKTOERID1");
+        when(aktorServiceMock.getAktorId("FNR1")).thenReturn(of("AKTOERID1"));
         doThrow(new RuntimeException("Test")).when(feed).activateWebhook();
 
         Response response = veilederTilordningRessurs.postVeilederTilordninger(tilordninger);

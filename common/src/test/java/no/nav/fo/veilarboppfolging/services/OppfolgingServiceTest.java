@@ -2,6 +2,7 @@ package no.nav.fo.veilarboppfolging.services;
 
 import lombok.val;
 import no.nav.apiapp.security.PepClient;
+import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.domain.Brukervilkar;
 import no.nav.fo.veilarboppfolging.domain.Oppfolging;
@@ -29,6 +30,7 @@ import java.util.Optional;
 
 import static java.lang.System.currentTimeMillis;
 import static no.nav.fo.veilarboppfolging.domain.VilkarStatus.*;
+import static java.util.Optional.of;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
@@ -46,7 +48,7 @@ public class OppfolgingServiceTest {
     private OppfolgingRepository oppfolgingRepositoryMock;
 
     @Mock
-    private AktoerIdService aktoerIdServiceMcok;
+    private AktorService aktorServiceMock;
 
     @Mock
     private VilkarService vilkarServiceMock;
@@ -79,9 +81,9 @@ public class OppfolgingServiceTest {
         when(digitalKontaktinformasjonV1Mock.hentDigitalKontaktinformasjon(any(WSHentDigitalKontaktinformasjonRequest.class)))
                 .thenReturn(new WSHentDigitalKontaktinformasjonResponse()
                         .withDigitalKontaktinformasjon(wsKontaktinformasjon));
-        when(vilkarServiceMock.getVilkar(any(VilkarService.VilkarType.class),any())).thenReturn("Gjeldene Vilkar");
+        when(vilkarServiceMock.getVilkar(any(VilkarService.VilkarType.class), any())).thenReturn("Gjeldene Vilkar");
 
-        when(oppfolgingResolverDependencies.getAktoerIdService()).thenReturn(aktoerIdServiceMcok);
+        when(oppfolgingResolverDependencies.getAktorService()).thenReturn(aktorServiceMock);
         when(oppfolgingResolverDependencies.getOppfolgingRepository()).thenReturn(oppfolgingRepositoryMock);
         when(oppfolgingResolverDependencies.getOppfoelgingPortType()).thenReturn(oppfoelgingPortTypeMock);
         when(oppfolgingResolverDependencies.getDigitalKontaktinformasjonV1()).thenReturn(digitalKontaktinformasjonV1Mock);
@@ -108,9 +110,8 @@ public class OppfolgingServiceTest {
     public void hentOppfolgingStatus_brukerSomIkkeErUnderOppfolgingOppdateresIkkeDersomIkkeUnderOppfolgingIArena() throws Exception {
         gittAktor();
         gittOppfolging(oppfolging);
-        
         OppfolgingStatusData oppfolgingStatusData = hentOppfolgingStatus();
-        
+
         verify(oppfolgingRepositoryMock, never()).startOppfolgingHvisIkkeAlleredeStartet(anyString());
         assertThat(oppfolgingStatusData.underOppfolging, is(false));
     }
@@ -122,9 +123,9 @@ public class OppfolgingServiceTest {
         gittOppfolgingStatus("ARBS", "");
 
         OppfolgingStatusData oppfolgingStatusData = hentOppfolgingStatus();
-        
+
         verify(oppfolgingRepositoryMock).startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
-        assertThat(oppfolgingStatusData.underOppfolging, is(true));       
+        assertThat(oppfolgingStatusData.underOppfolging, is(true));
     }
 
     @Test
@@ -284,14 +285,14 @@ public class OppfolgingServiceTest {
     }
 
     private void gittAktor() {
-        when(aktoerIdServiceMcok.findAktoerId(FNR)).thenReturn(AKTOR_ID);
+        when(aktorServiceMock.getAktorId(FNR)).thenReturn(of(AKTOR_ID));
     }
 
     private void gittReservasjon(String reservasjon) {
         wsKontaktinformasjon.setReservasjon(reservasjon);
     }
 
-    private void gittKRRFeil(Class<? extends Exception> aClass) throws Exception{
+    private void gittKRRFeil(Class<? extends Exception> aClass) throws Exception {
         when(digitalKontaktinformasjonV1Mock.hentDigitalKontaktinformasjon(any(WSHentDigitalKontaktinformasjonRequest.class))).thenThrow(aClass);
     }
 

@@ -11,11 +11,13 @@ import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.meldinger.HentVilkaarRes
 import org.apache.cxf.interceptor.LoggingOutInterceptor;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static no.nav.fo.test.smoketest.SmokeTestUtils.*;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+@Disabled
 public class OppfolgingWebServiceTest {
 
     public static final String PROXY_USERNAME_ALIAS = "srvveilarboppfolgingproxy";

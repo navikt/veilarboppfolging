@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 
 import static java.lang.System.getProperty;
+import static no.nav.fo.veilarboppfolging.config.OppfolgingFeature.SKIP_VALIDERING_DIFI;
 import static org.apache.cxf.phase.Phase.PRE_STREAM;
 
 @Configuration
@@ -28,20 +29,22 @@ public class VarseloppgaveConfig {
     }
 
     public VarseloppgaveV1 factory() {
-        return new CXFClient<>(VarseloppgaveV1.class)
-                .address(getProperty(VARSELOPPGAVE_ENDPOINT_URL))
-                .withMetrics()
+        return varselBuilder()
                 .configureStsForOnBehalfOfWithJWT()
                 .withOutInterceptor(new TestInterceptor())
                 .build();
     }
 
     public VarseloppgaveV1 pingFactory() {
-        return new CXFClient<>(VarseloppgaveV1.class)
-                .address(getProperty(VARSELOPPGAVE_ENDPOINT_URL))
-                .withMetrics()
+        return varselBuilder()
                 .configureStsForSystemUserInFSS()
                 .build();
+    }
+
+    private CXFClient<VarseloppgaveV1> varselBuilder() {
+        return new CXFClient<>(VarseloppgaveV1.class)
+                .address(getProperty(VARSELOPPGAVE_ENDPOINT_URL))
+                .withMetrics();
     }
 
     @Bean
@@ -69,8 +72,10 @@ public class VarseloppgaveConfig {
 
         @Override
         public void handleMessage(Message message) throws Fault {
-            Map<String, List> headers = (Map<String, List>) message.get(Message.PROTOCOL_HEADERS);
-            headers.put("SkipPaaloggingValidation", Collections.singletonList("hvasomhelst"));
+            if(SKIP_VALIDERING_DIFI.erAktiv()){
+                Map<String, List> headers = (Map<String, List>) message.get(Message.PROTOCOL_HEADERS);
+                headers.put("SkipPaaloggingValidation", Collections.singletonList("hvasomhelst"));
+            }
         }
 
     }

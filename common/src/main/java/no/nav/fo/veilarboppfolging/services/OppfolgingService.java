@@ -6,6 +6,8 @@ import lombok.val;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.fo.veilarboppfolging.services.OppfolgingResolver.OppfolgingResolverDependencies;
+import no.nav.dialogarena.aktor.AktorService;
+import no.nav.fo.veilarboppfolging.domain.AktorId;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,7 +32,16 @@ public class OppfolgingService {
     private OppfolgingResolverDependencies oppfolgingResolverDependencies;
 
     @Inject
+    private AktorService aktorService;
+
+    @Inject
     private OppfolgingRepository oppfolgingRepository;
+
+    public OppfolgingStatusData hentOppfolgingsStatus(AktorId aktorId) throws Exception {
+        String fnr = aktorService.getFnr(aktorId.getAktorId())
+                .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktør for fnr: " + aktorId));
+        return hentOppfolgingsStatus(fnr);
+    }
 
     @Transactional
     public OppfolgingStatusData hentOppfolgingsStatus(String fnr) throws Exception {

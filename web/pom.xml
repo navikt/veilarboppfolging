@@ -59,6 +59,10 @@
         <!--Tjenester-->
         <dependency>
             <groupId>no.nav.sbl.dialogarena</groupId>
+            <artifactId>aktor-klient</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>no.nav.sbl.dialogarena</groupId>
             <artifactId>ytelseskontrakt-v3-tjenestespesifikasjon</artifactId>
         </dependency>
         <dependency>
@@ -173,6 +177,10 @@
         <dependency>
             <groupId>no.nav.sbl.dialogarena</groupId>
             <artifactId>test-config</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>no.nav.sbl</groupId>
+            <artifactId>fasit</artifactId>
         </dependency>
         <dependency>
             <groupId>org.hamcrest</groupId>

@@ -6,9 +6,13 @@ import no.nav.tjeneste.virksomhet.organisasjonenhet.v1.OrganisasjonEnhetV1;
 import no.nav.tjeneste.virksomhet.organisasjonenhet.v1.informasjon.WSDetaljertEnhet;
 import no.nav.tjeneste.virksomhet.organisasjonenhet.v1.meldinger.WSHentEnhetBolkRequest;
 import no.nav.tjeneste.virksomhet.organisasjonenhet.v1.meldinger.WSHentEnhetBolkResponse;
+import org.springframework.cache.annotation.Cacheable;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+
+import static no.nav.fo.veilarboppfolging.config.CacheConfig.HENT_ENHET;
+
 
 public class OrganisasjonEnhetService {
 
@@ -18,6 +22,7 @@ public class OrganisasjonEnhetService {
         this.organisasjonenhetWs = organisasjonEnhetV1;
     }
 
+    @Cacheable(HENT_ENHET)
     public Oppfolgingsenhet hentEnhet(String enhetId) {
         Oppfolgingsenhet oppfolgingsenhet = new Oppfolgingsenhet().withEnhetId(enhetId);
         try {
