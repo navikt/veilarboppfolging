@@ -64,6 +64,10 @@
                      wsdlVersion="${brukerdialog-behandleOppfolging-v1-tjenestespesifikasjon.version}">
             <exportToZone>SBS</exportToZone>
         </exposedSoap>
+
+
+        <!--Denne er ikke konsuermt av noen i fasit.-->
+        <!--Disabler den siden den hindrer deploy da veilarbsituasjon allerede exponerer den-->
         <!--<exposedSoap name="OppfolgingsinfoV1"-->
                      <!--path="/veilarbsituasjon-ws/ws/oppfolgingsinfo"-->
                      <!--securityToken="SAML"-->
