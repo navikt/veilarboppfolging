@@ -64,7 +64,7 @@
                      wsdlVersion="${brukerdialog-behandleOppfolging-v1-tjenestespesifikasjon.version}">
             <exportToZone>SBS</exportToZone>
         </exposedSoap>
-        <exposedSoap name="OppfolgingsinfoV1"
+        <exposedSoap name="OppfolgingsinfoV2"
                      path="/veilarboppfolging-ws/ws/oppfolgingsinfo"
                      securityToken="SAML"
                      wsdlGroupId="no.nav.sbl.dialogarena"
