@@ -65,7 +65,7 @@
             <exportToZone>SBS</exportToZone>
         </exposedSoap>
         <exposedSoap name="OppfolgingsinfoV1"
-                     path="/veilarbsituasjon-ws/ws/oppfolgingsinfo"
+                     path="/veilarboppfolging-ws/ws/oppfolgingsinfo"
                      securityToken="SAML"
                      wsdlGroupId="no.nav.sbl.dialogarena"
                      wsdlArtifactId="oppfolgingsinfo-v1-tjenestespesifikasjon"
