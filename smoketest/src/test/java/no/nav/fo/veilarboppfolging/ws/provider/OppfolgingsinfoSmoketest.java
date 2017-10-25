@@ -1,4 +1,4 @@
-package no.nav.fo.veilarbsituasjon.ws.provider.oppfolgingsinfo;
+package no.nav.fo.veilarboppfolging.ws.provider;
 
 import no.nav.brukerdialog.security.context.InternbrukerSubjectHandler;
 import no.nav.brukerdialog.security.domain.OidcCredential;
@@ -33,7 +33,7 @@ public class OppfolgingsinfoSmoketest {
     @BeforeAll
     public static void setup() {
         MILJO = getProperty("miljo");
-        setupIntegrationTestSecurity(new DevelopmentSecurity.IntegrationTestConfig("veilarbportefolje"));
+        setupIntegrationTestSecurity(new DevelopmentSecurity.IntegrationTestConfig("veilarboppfolging"));
         setProperty("no.nav.brukerdialog.security.context.subjectHandlerImplementationClass", InternbrukerSubjectHandler.class.getName());
     }
 
@@ -42,7 +42,7 @@ public class OppfolgingsinfoSmoketest {
         hostname = Objects.nonNull(MILJO) ? String.format("https://app-%s.adeo.no/", MILJO) : "http://localhost:8080/";
         oppfolgingsinfoV1 = new CXFClient<>(OppfolgingsinfoV1.class)
                 .withOutInterceptor(new LoggingOutInterceptor())
-                .address(hostname + "veilarbsituasjon-ws/ws/oppfolgingsinfo")
+                .address(hostname + "veilarboppfolging-ws/ws/oppfolgingsinfo")
                 .configureStsForOnBehalfOfWithJWT()
                 .build();
 

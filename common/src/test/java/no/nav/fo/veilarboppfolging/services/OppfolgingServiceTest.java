@@ -29,8 +29,8 @@ import java.sql.Timestamp;
 import java.util.Optional;
 
 import static java.lang.System.currentTimeMillis;
-import static no.nav.fo.veilarboppfolging.domain.VilkarStatus.*;
 import static java.util.Optional.of;
+import static no.nav.fo.veilarboppfolging.domain.VilkarStatus.*;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;

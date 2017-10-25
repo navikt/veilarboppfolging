@@ -1,18 +1,19 @@
 package no.nav.fo.veilarboppfolging.services;
 
-import lombok.*;
+import lombok.Getter;
+import lombok.SneakyThrows;
+import lombok.val;
 import no.nav.apiapp.feil.UlovligHandling;
 import no.nav.apiapp.security.PepClient;
 import no.nav.brukerdialog.security.context.SubjectHandler;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
-import no.nav.sbl.jdbc.Transactor;
-import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.*;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.fo.veilarboppfolging.utils.DateUtils;
 import no.nav.fo.veilarboppfolging.utils.StringUtils;
 import no.nav.fo.veilarboppfolging.vilkar.VilkarService;
+import no.nav.sbl.jdbc.Transactor;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.DigitalKontaktinformasjonV1;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.HentDigitalKontaktinformasjonKontaktinformasjonIkkeFunnet;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.HentDigitalKontaktinformasjonPersonIkkeFunnet;
@@ -32,7 +33,10 @@ import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 import java.sql.Timestamp;
-import java.util.*;
+import java.util.Date;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 import static java.lang.System.currentTimeMillis;
 import static java.util.Optional.of;

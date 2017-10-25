@@ -1,4 +1,4 @@
-package no.nav.fo.veilarbsituasjon.ws.provider.veiledertildeling;
+package no.nav.fo.veilarboppfolging.ws.provider;
 
 
 import lombok.SneakyThrows;
@@ -11,10 +11,10 @@ import no.nav.fo.veilarboppfolging.domain.ArenaOppfolging;
 import no.nav.fo.veilarboppfolging.rest.domain.TilordneVeilederResponse;
 import no.nav.fo.veilarboppfolging.rest.domain.Veileder;
 import no.nav.fo.veilarboppfolging.rest.domain.VeilederTilordning;
-import no.nav.fo.veilarbsituasjon.ws.provider.veiledertildeling.domene.Bruker;
-import no.nav.fo.veilarbsituasjon.ws.provider.veiledertildeling.domene.Filtervalg;
-import no.nav.fo.veilarbsituasjon.ws.provider.veiledertildeling.domene.Portefolje;
-import no.nav.fo.veilarbsituasjon.ws.provider.veiledertildeling.domene.Statustall;
+import no.nav.fo.veilarboppfolging.ws.provider.domene.Bruker;
+import no.nav.fo.veilarboppfolging.ws.provider.domene.Filtervalg;
+import no.nav.fo.veilarboppfolging.ws.provider.domene.Portefolje;
+import no.nav.fo.veilarboppfolging.ws.provider.domene.Statustall;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -55,7 +55,7 @@ public class TildelingSmoketest {
     public static void setup() {
         MILJO = getProperty("miljo");
         configureUrls();
-        setupIntegrationTestSecurity(new DevelopmentSecurity.IntegrationTestConfig("veilarbportefolje"));
+        setupIntegrationTestSecurity(new DevelopmentSecurity.IntegrationTestConfig("veilarboppfolging"));
 
         UserTokenProvider userTokenProvider = new UserTokenProvider();
         OidcCredential token = userTokenProvider.getIdToken();
@@ -149,8 +149,8 @@ public class TildelingSmoketest {
         STATUSTALL_URL = hostname + "veilarbportefolje/api/enhet/%s/statustall";
         PORTEFOLJE_URL = hostname + "veilarbportefolje/api/enhet/%s/portefolje" +
                 "?fra=0&antall=%s&sortDirection=ikke_satt&sortField=ikke_satt";
-        TILDELING_URL = hostname + "veilarbsituasjon/api/tilordneveileder";
-        VEILEDER_URL = String.format(hostname + "veilarbsituasjon/api/person/%s/veileder", AREMARK_FNR);
-        OPPFOLGINGSSTATUS_URL = String.format(hostname + "veilarbsituasjon/api/person/%s/oppfoelgingsstatus", AREMARK_FNR);
+        TILDELING_URL = hostname + "veilarboppfolging/api/tilordneveileder";
+        VEILEDER_URL = String.format(hostname + "veilarboppfolging/api/person/%s/veileder", AREMARK_FNR);
+        OPPFOLGINGSSTATUS_URL = String.format(hostname + "veilarboppfolging/api/person/%s/oppfoelgingsstatus", AREMARK_FNR);
     }
 }

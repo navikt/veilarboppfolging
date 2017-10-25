@@ -3,6 +3,7 @@ package no.nav.fo.veilarbsituasjon.ws.provider;
 import no.nav.fo.veilarboppfolging.domain.AktorId;
 import no.nav.fo.veilarboppfolging.domain.OppfolgingStatusData;
 import no.nav.fo.veilarboppfolging.services.OppfolgingService;
+import no.nav.fo.veilarboppfolging.ws.provider.OppfolgingsinfoWebService;
 import no.nav.tjeneste.virksomhet.oppfolgingsinfo.v1.meldinger.OppfolgingsstatusRequest;
 import no.nav.tjeneste.virksomhet.oppfolgingsinfo.v1.meldinger.OppfolgingsstatusResponse;
 import org.junit.Test;

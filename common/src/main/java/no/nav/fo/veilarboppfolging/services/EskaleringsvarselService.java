@@ -1,7 +1,9 @@
 package no.nav.fo.veilarboppfolging.services;
 
 import no.nav.apiapp.feil.IngenTilgang;
-import no.nav.tjeneste.virksomhet.varseloppgave.v1.*;
+import no.nav.tjeneste.virksomhet.varseloppgave.v1.BestillVarselOppgaveBrukerIkkeRegistrertIIdporten;
+import no.nav.tjeneste.virksomhet.varseloppgave.v1.BestillVarselOppgaveSikkerhetsbegrensning;
+import no.nav.tjeneste.virksomhet.varseloppgave.v1.VarseloppgaveV1;
 import no.nav.tjeneste.virksomhet.varseloppgave.v1.informasjon.*;
 import no.nav.tjeneste.virksomhet.varseloppgave.v1.meldinger.BestillVarselOppgaveRequest;
 import org.slf4j.Logger;

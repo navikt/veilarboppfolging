@@ -1,10 +1,10 @@
 package no.nav.fo.veilarboppfolging.rest;
 
 import io.swagger.annotations.Api;
+import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.db.VeilederTilordningerRepository;
 import no.nav.fo.veilarboppfolging.rest.domain.Veileder;
 import org.springframework.stereotype.Component;
-import no.nav.dialogarena.aktor.AktorService;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;

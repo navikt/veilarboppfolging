@@ -3,11 +3,10 @@ package no.nav.fo.veilarboppfolging.services;
 import io.swagger.annotations.Api;
 import lombok.SneakyThrows;
 import lombok.val;
+import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.fo.veilarboppfolging.services.OppfolgingResolver.OppfolgingResolverDependencies;
-import no.nav.dialogarena.aktor.AktorService;
-import no.nav.fo.veilarboppfolging.domain.AktorId;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 

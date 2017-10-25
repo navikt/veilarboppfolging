@@ -1,4 +1,4 @@
-package no.nav.fo.veilarbsituasjon.ws.provider;
+package no.nav.fo.veilarboppfolging.ws.provider;
 
 
 import no.nav.apiapp.feil.IngenTilgang;
@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
 import javax.xml.datatype.XMLGregorianCalendar;
-
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.Objects;

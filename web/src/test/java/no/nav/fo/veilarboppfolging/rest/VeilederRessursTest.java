@@ -1,8 +1,8 @@
 package no.nav.fo.veilarboppfolging.rest;
 
+import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.db.VeilederTilordningerRepository;
 import no.nav.fo.veilarboppfolging.rest.domain.Veileder;
-import no.nav.dialogarena.aktor.AktorService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;

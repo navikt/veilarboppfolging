@@ -1,4 +1,4 @@
-package no.nav.fo.veilarbsituasjon.ws.provider.veiledertildeling.domene;
+package no.nav.fo.veilarboppfolging.ws.provider.domene;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
