@@ -12,7 +12,7 @@ public class OppfolgingFeedUtil {
     public static OppfolgingFeedDTO mapRadTilOppfolgingFeedDTO(Map<String, Object> rad) {
         return OppfolgingFeedDTO
                 .builder()
-                .aktoerid((String) rad.get("AKTORID"))
+                .aktoerid((String) rad.get("AKTOR_ID"))
                 .veileder((String) rad.get("VEILEDER"))
                 .oppfolging(rad.get("OPPFOLGING").equals(BigDecimal.ONE))
                 .endretTimestamp((Timestamp) (rad.get("OPPDATERT")))
