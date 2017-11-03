@@ -303,9 +303,13 @@ public class OppfolgingResolver {
                 .map(WSKontaktinformasjon::getReservasjon)
                 .map("true"::equalsIgnoreCase)
                 .orElse(false);
-        } catch (HentDigitalKontaktinformasjonKontaktinformasjonIkkeFunnet | HentDigitalKontaktinformasjonPersonIkkeFunnet e) {
+        } catch (HentDigitalKontaktinformasjonKontaktinformasjonIkkeFunnet |
+                HentDigitalKontaktinformasjonPersonIkkeFunnet e) {
             LOG.warn(e.getMessage(), e);
             return true;
+        } catch (Exception e){
+            LOG.warn(e.getMessage(), e);
+            return false;
         }
     }
 
