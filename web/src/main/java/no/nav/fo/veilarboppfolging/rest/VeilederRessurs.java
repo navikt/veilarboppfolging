@@ -19,6 +19,7 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 @Produces(APPLICATION_JSON)
 @Api(value = "Veileder")
 public class VeilederRessurs {
+
     private AktorService aktorService;
     private VeilederTilordningerRepository veilederTilordningerRepository;
     private PepClient pepClient;
