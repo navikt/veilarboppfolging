@@ -1,5 +1,6 @@
 package no.nav.fo.veilarboppfolging.rest;
 
+import no.nav.apiapp.security.PepClient;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.db.VeilederTilordningerRepository;
 import no.nav.fo.veilarboppfolging.rest.domain.Veileder;
@@ -27,6 +28,9 @@ public class VeilederRessursTest {
 
     @Mock
     private AktorService aktorServiceMock;
+
+    @Mock
+    private PepClient pepClient;
 
     @Test
     public void getVeilederSkalReturnereVeileder() throws Exception {
