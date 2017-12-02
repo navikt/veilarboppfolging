@@ -28,7 +28,7 @@ public class AvsluttetOppfolgingFeedProvider implements FeedProvider<AvsluttetOp
         Timestamp timestamp = DateUtils.toTimeStamp(sinceId);
 
         return oppfolgingService
-                .hentAvsluttetOppfolgingEtterDato(timestamp)
+                .hentAvsluttetOppfolgingEtterDato(timestamp, pageSize)
                 .stream()
                 .map(o -> new FeedElement<AvsluttetOppfolgingFeedDTO>()
                         .setId(ZonedDateTime.ofInstant(o.oppdatert.toInstant(), ZoneId.systemDefault()).toString())
