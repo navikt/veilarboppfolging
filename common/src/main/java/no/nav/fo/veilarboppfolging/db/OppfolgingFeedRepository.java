@@ -17,12 +17,13 @@ public class OppfolgingFeedRepository {
         this.db = db;
     }
 
-    public List<OppfolgingFeedDTO> hentTilordningerEtterTimestamp(Timestamp timestamp) {
-        return db.queryForList("SELECT aktor_id, veileder, under_oppfolging, oppdatert " +
-                        "FROM OPPFOLGINGSTATUS " +
-                        "WHERE oppdatert >= ? ",
-                timestamp)
-                .stream()
+    public List<OppfolgingFeedDTO> hentTilordningerEtterTimestamp(Timestamp timestamp, int pageSize) {
+        return db.queryForList("SELECT * FROM "
+                        + "(SELECT aktor_id, veileder, under_oppfolging, oppdatert FROM OPPFOLGINGSTATUS WHERE oppdatert >= ?) "
+                        + "WHERE rownum <= ?",
+                timestamp,
+                pageSize
+        ).stream()
                 .map(OppfolgingFeedUtil::mapRadTilOppfolgingFeedDTO)
                 .collect(toList());
     }

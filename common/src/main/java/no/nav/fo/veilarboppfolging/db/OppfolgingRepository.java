@@ -198,13 +198,15 @@ public class OppfolgingRepository {
                 aktorId);
     }
 
-    public List<AvsluttetOppfolgingFeedData> hentAvsluttetOppfolgingEtterDato(Timestamp timestamp) {
+    public List<AvsluttetOppfolgingFeedData> hentAvsluttetOppfolgingEtterDato(Timestamp timestamp, int pageSize) {
         return database
-                .query("SELECT aktor_id, sluttdato, oppdatert " +
+                .query("SELECT * FROM (SELECT aktor_id, sluttdato, oppdatert " +
                                 "FROM OPPFOLGINGSPERIODE " +
-                                "WHERE oppdatert >= ? and sluttdato is not null",
+                                "WHERE oppdatert >= ? and sluttdato is not null) " +
+                        "WHERE rownum <= ?",
                         this::mapRadTilAvsluttetOppfolging,
-                        timestamp);
+                        timestamp,
+                        pageSize);
     }
 
     @SneakyThrows

@@ -112,8 +112,8 @@ public class OppfolgingService {
     }
 
 
-    public List<AvsluttetOppfolgingFeedData> hentAvsluttetOppfolgingEtterDato(Timestamp timestamp) {
-        return oppfolgingRepository.hentAvsluttetOppfolgingEtterDato(timestamp);
+    public List<AvsluttetOppfolgingFeedData> hentAvsluttetOppfolgingEtterDato(Timestamp timestamp, int pageSize) {
+        return oppfolgingRepository.hentAvsluttetOppfolgingEtterDato(timestamp, pageSize);
     }
 
     public OppfolgingStatusData settDigitalBruker(String fnr) {

@@ -28,7 +28,7 @@ public class OppfolgingFeedProvider implements FeedProvider<OppfolgingFeedDTO> {
         Timestamp timestamp = DateUtils.toTimeStamp(sinceId);
 
         return repository
-                .hentTilordningerEtterTimestamp(timestamp)
+                .hentTilordningerEtterTimestamp(timestamp, pageSize)
                 .stream()
                 .map(b -> new FeedElement<OppfolgingFeedDTO>()
                         .setId(toZonedDateTime(b.getEndretTimestamp()).toString())
