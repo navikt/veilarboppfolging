@@ -202,7 +202,7 @@ public class OppfolgingRepository {
         return database
                 .query("SELECT * FROM (SELECT aktor_id, sluttdato, oppdatert " +
                                 "FROM OPPFOLGINGSPERIODE " +
-                                "WHERE oppdatert >= ? and sluttdato is not null) " +
+                                "WHERE oppdatert >= ? and sluttdato is not null order by oppdatert) " +
                         "WHERE rownum <= ?",
                         this::mapRadTilAvsluttetOppfolging,
                         timestamp,
