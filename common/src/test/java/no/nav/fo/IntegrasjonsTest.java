@@ -2,6 +2,7 @@ package no.nav.fo;
 
 import no.nav.dialogarena.config.DevelopmentSecurity;
 import no.nav.dialogarena.config.fasit.FasitUtils;
+import no.nav.fo.veilarboppfolging.config.ApplicationConfig;
 import no.nav.fo.veilarboppfolging.config.DatabaseConfig;
 import no.nav.fo.veilarboppfolging.config.JndiLocalContextConfig;
 import no.nav.fo.veilarboppfolging.config.PepConfig;
@@ -23,11 +24,10 @@ import org.springframework.transaction.support.TransactionTemplate;
 import javax.naming.NamingException;
 import java.io.IOException;
 
+import static no.nav.fo.veilarboppfolging.config.ApplicationConfig.APPLICATION_NAME;
 import static no.nav.fo.veilarboppfolging.config.DatabaseConfig.DATA_SOURCE_JDNI_NAME;
 
 public abstract class IntegrasjonsTest {
-
-    public static final String APPLICATION_NAME = "veilarboppfolging";
 
     protected static AnnotationConfigApplicationContext annotationConfigApplicationContext;
     private static TransactionStatus transaction;
