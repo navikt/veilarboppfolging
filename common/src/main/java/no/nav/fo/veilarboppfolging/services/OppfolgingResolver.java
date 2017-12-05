@@ -20,6 +20,7 @@ import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.HentDigitalKontak
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.informasjon.WSKontaktinformasjon;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.WSHentDigitalKontaktinformasjonRequest;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.WSHentDigitalKontaktinformasjonResponse;
+import no.nav.tjeneste.virksomhet.oppfoelging.v1.HentOppfoelgingsstatusPersonIkkeFunnet;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingsstatusRequest;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingsstatusResponse;
@@ -60,7 +61,7 @@ public class OppfolgingResolver {
 
     private String aktorId;
     private Oppfolging oppfolging;
-    private HentOppfoelgingsstatusResponse statusIArena;
+    private Optional<HentOppfoelgingsstatusResponse> statusIArena;
     private Boolean reservertIKrr;
     private WSHentYtelseskontraktListeResponse ytelser;
     private List<ArenaAktivitetDTO> arenaAktiviteter;
@@ -88,10 +89,13 @@ public class OppfolgingResolver {
     void sjekkStatusIArenaOgOppdaterOppfolging() {
         if (!oppfolging.isUnderOppfolging()) {
             hentOppfolgingstatusFraArena();
-            if(erUnderOppfolging(statusIArena.getFormidlingsgruppeKode(), statusIArena.getServicegruppeKode())){
-                deps.getOppfolgingRepository().startOppfolgingHvisIkkeAlleredeStartet(aktorId);
-                reloadOppfolging();
-            }
+            statusIArena.ifPresent((arenaStatus) -> {
+                        if (erUnderOppfolging(arenaStatus.getFormidlingsgruppeKode(), arenaStatus.getServicegruppeKode())) {
+                            deps.getOppfolgingRepository().startOppfolgingHvisIkkeAlleredeStartet(aktorId);
+                            reloadOppfolging();
+                        }
+                    }
+            );
         }
     }
 
@@ -187,7 +191,10 @@ public class OppfolgingResolver {
         if (statusIArena == null) {
             hentOppfolgingstatusFraArena();
         }
-        return kanSettesUnderOppfolging(statusIArena.getFormidlingsgruppeKode(), statusIArena.getServicegruppeKode());
+        return statusIArena.map(status ->
+                kanSettesUnderOppfolging(status.getFormidlingsgruppeKode(),
+                        status.getServicegruppeKode()))
+                .orElse(false);
     }
 
     void startOppfolging() {
@@ -199,7 +206,10 @@ public class OppfolgingResolver {
         if (statusIArena == null) {
             hentOppfolgingstatusFraArena();
         }
-        return erUnderOppfolging(statusIArena.getFormidlingsgruppeKode(), statusIArena.getServicegruppeKode());
+        return statusIArena.map(status ->
+                erUnderOppfolging(status.getFormidlingsgruppeKode(),
+                        status.getServicegruppeKode()))
+                .orElse(false);
     }
 
     boolean harPagaendeYtelse() {
@@ -234,7 +244,7 @@ public class OppfolgingResolver {
             hentOppfolgingstatusFraArena();
         }
 
-        return DateUtils.getDate(statusIArena.getInaktiveringsdato());
+        return statusIArena.map(status -> DateUtils.getDate(status.getInaktiveringsdato())).orElse(null);
     }
 
     void avsluttOppfolging(String veileder, String begrunnelse) {
@@ -271,7 +281,14 @@ public class OppfolgingResolver {
     private void hentOppfolgingstatusFraArena() {
         val hentOppfolgingstatusRequest = new HentOppfoelgingsstatusRequest();
         hentOppfolgingstatusRequest.setPersonidentifikator(fnr);
-        this.statusIArena = deps.getOppfoelgingPortType().hentOppfoelgingsstatus(hentOppfolgingstatusRequest);
+
+        try {
+            statusIArena = Optional.of(
+                    deps.getOppfoelgingPortType().hentOppfoelgingsstatus(hentOppfolgingstatusRequest));
+        } catch (HentOppfoelgingsstatusPersonIkkeFunnet e){
+            statusIArena = Optional.empty();
+        }
+
     }
 
     private void sjekkReservasjonIKrrOgOppdaterOppfolging() {

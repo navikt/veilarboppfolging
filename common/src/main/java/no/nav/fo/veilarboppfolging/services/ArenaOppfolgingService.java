@@ -68,7 +68,7 @@ public class ArenaOppfolgingService {
             throw new BadRequestException(logMessage, e);
         } catch (HentOppfoelgingsstatusPersonIkkeFunnet e) {
             String logMessage = "Fant ikke bruker: " + identifikator;
-            LOG.debug(logMessage, e);
+            LOG.warn(logMessage, e);
             throw new NotFoundException(logMessage, e);
         }
     }
