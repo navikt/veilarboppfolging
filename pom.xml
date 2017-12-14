@@ -37,6 +37,7 @@
         <organisasjonenhet-v1.version>1.0.8</organisasjonenhet-v1.version>
         <varseloppgave-v1-tjenestespesifikasjon.version>1.1.0</varseloppgave-v1-tjenestespesifikasjon.version>
         <startregistreringstatus-v1-tjenestespesifikasjon.version>1.0.0</startregistreringstatus-v1-tjenestespesifikasjon.version>
+        <nocommons.version>0.6</nocommons.version>
         <vavr.version>0.9.0</vavr.version>
 
         <sonar.exclusions>
@@ -131,6 +132,12 @@
                 <groupId>no.nav.sbl.dialogarena</groupId>
                 <artifactId>startregistreringstatus-v1-tjenestespesifikasjon</artifactId>
                 <version>${startregistreringstatus-v1-tjenestespesifikasjon.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>no.bekk.bekkopen</groupId>
+                <artifactId>nocommons</artifactId>
+                <version>${nocommons.version}</version>
             </dependency>
 
             <!-- vaivr-->

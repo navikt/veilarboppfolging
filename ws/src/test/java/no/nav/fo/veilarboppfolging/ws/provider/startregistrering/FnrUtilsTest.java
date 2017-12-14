@@ -11,47 +11,11 @@ import static org.assertj.core.api.Java6Assertions.assertThat;
 public class FnrUtilsTest {
 
     private static final LocalDate dagensDato = LocalDate.of(2017,12,14);
+    private static final String AREMARK_FNR = "***REMOVED***";
 
     @Test
-    public void fnrForPersonFodtMellom1900Og1999() {
-        String fnr = "***REMOVED***";
-        LocalDate date = utledFodselsdatoForFnr(fnr);
-        assertThat(date).isEqualTo(LocalDate.of(1901,1,1));
-    }
-
-    @Test
-    public void fnrForPersonFodtMellom1900Og1999Dnummer() {
-        String fnr = "41010100000";
-        LocalDate date = utledFodselsdatoForFnr(fnr);
-        assertThat(date).isEqualTo(LocalDate.of(1901,1,1));
-    }
-
-    @Test
-    public void fnrForPersonFodtMellom1900Og1999Hnummer() {
-        String fnr = "01410100000";
-        LocalDate date = utledFodselsdatoForFnr(fnr);
-        assertThat(date).isEqualTo(LocalDate.of(1901,1,1));
-    }
-
-    @Test
-    public void fnrForPersonFodtMellom1854Og1899() {
-        String fnr = "***REMOVED***";
-        LocalDate date = utledFodselsdatoForFnr(fnr);
-        assertThat(date).isEqualTo(LocalDate.of(1854,1,1));
-    }
-
-    @Test
-    public void fnrForPersonFodtMellom2000Og2039() {
-        String fnr = "***REMOVED***";
-        LocalDate date = utledFodselsdatoForFnr(fnr);
-        assertThat(date).isEqualTo(LocalDate.of(2000,1,1));
-    }
-
-    @Test
-    public void fnrForPersonFodtMellom2000Og2039_2() {
-        String fnr = "***REMOVED***";
-        LocalDate date = utledFodselsdatoForFnr(fnr);
-        assertThat(date).isEqualTo(LocalDate.of(2038,1,1));
+    public void skalUtledeKorrektFodselsdatoForAremark() {
+        assertThat(utledFodselsdatoForFnr(AREMARK_FNR)).isEqualTo(LocalDate.of(1980,10,10));
     }
 
     @Test
