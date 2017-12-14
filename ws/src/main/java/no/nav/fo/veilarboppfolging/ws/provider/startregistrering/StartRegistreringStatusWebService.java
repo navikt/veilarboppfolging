@@ -79,8 +79,8 @@ public class StartRegistreringStatusWebService implements StartRegistreringStatu
 
         HentOppfoelgingsstatusResponse oppfolgingsstatusResponse =
                 Try.of(() -> oppfoelgingPortType.hentOppfoelgingsstatus(oppfoelgingsstatusRequest))
-                        .onFailure((t) -> log.error("Feil ved henting av status fra Arena {}", t))
                         .recover(HentOppfoelgingsstatusPersonIkkeFunnet.class, new HentOppfoelgingsstatusResponse())
+                        .onFailure((t) -> log.error("Feil ved henting av status fra Arena {}", t))
                         .getOrElseThrow(FeilVedHentingAvStatusFraArenaException::new);
 
         boolean erUnderoppfolgingIArena = erUnderOppfolging(
