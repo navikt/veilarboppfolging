@@ -56,7 +56,7 @@ public class StartRegistreringStatusWebService implements StartRegistreringStatu
         String fnr = request.getFnr();
 
         Try.of(() -> pepClient.sjekkLeseTilgangTilFnr(fnr))
-                .onFailure(t -> log.error("Kunne ikke gi tilgang til bruker grunnet", t))
+                .onFailure(t -> log.warn("Kunne ikke gi tilgang til bruker grunnet", t))
                 .getOrElseThrow(t -> new SikkerhetsbegrensningException());
 
         AktorId aktoerId = aktorService.getAktorId(fnr)
