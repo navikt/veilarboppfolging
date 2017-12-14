@@ -17,6 +17,7 @@ import java.util.Optional;
 import static java.util.Optional.ofNullable;
 import static no.nav.apiapp.util.EnumUtils.getName;
 import static no.nav.apiapp.util.EnumUtils.valueOfOptional;
+import static no.nav.fo.veilarboppfolging.db.KvpRepository.mapTilKvpData;
 
 public class OppfolgingRepository {
 
@@ -36,6 +37,7 @@ public class OppfolgingRepository {
                         "  OPPFOLGINGSTATUS.gjeldende_eskaleringsvarsel AS gjeldende_eskaleringsvarsel, " +
                         "  OPPFOLGINGSTATUS.gjeldende_brukervilkar AS gjeldende_brukervilkar, " +
                         "  OPPFOLGINGSTATUS.gjeldende_mal AS gjeldende_mal, " +
+                        "  OPPFOLGINGSTATUS.gjeldende_kvp AS gjeldende_kvp, " +
                         "  MANUELL_STATUS.id AS ms_id, " +
                         "  MANUELL_STATUS.aktor_id AS ms_aktor_id, " +
                         "  MANUELL_STATUS.manuell AS ms_manuell, " +
@@ -62,12 +64,22 @@ public class OppfolgingRepository {
                         "  ESKALERINGSVARSEL.avsluttet_begrunnelse AS esk_avsluttet_begrunnelse, " +
                         "  ESKALERINGSVARSEL.opprettet_begrunnelse AS esk_opprettet_begrunnelse, " +
                         "  ESKALERINGSVARSEL.avsluttet_av AS esk_avsluttet_av, " +
-                        "  ESKALERINGSVARSEL.tilhorende_dialog_id AS esk_tilhorende_dialog_id " +
+                        "  ESKALERINGSVARSEL.tilhorende_dialog_id AS esk_tilhorende_dialog_id, " +
+                        "  KVP.kvp_id AS kvp_id, " +
+                        "  KVP.aktor_id AS aktor_id, " +
+                        "  KVP.enhet AS enhet, " +
+                        "  KVP.opprettet_av AS opprettet_av, " +
+                        "  KVP.opprettet_dato AS opprettet_dato, " +
+                        "  KVP.opprettet_begrunnelse AS opprettet_begrunnelse, " +
+                        "  KVP.avsluttet_av AS avsluttet_av, " +
+                        "  KVP.avsluttet_dato AS avsluttet_dato, " +
+                        "  KVP.avsluttet_begrunnelse AS avsluttet_begrunnelse " +
                         "FROM OPPFOLGINGSTATUS " +
                         "LEFT JOIN MANUELL_STATUS ON OPPFOLGINGSTATUS.gjeldende_manuell_status = MANUELL_STATUS.id " +
                         "LEFT JOIN BRUKERVILKAR ON OPPFOLGINGSTATUS.gjeldende_brukervilkar = BRUKERVILKAR.id " +
                         "LEFT JOIN MAL ON OPPFOLGINGSTATUS.gjeldende_mal = MAL.id " +
                         "LEFT JOIN ESKALERINGSVARSEL ON OPPFOLGINGSTATUS.gjeldende_eskaleringsvarsel = ESKALERINGSVARSEL.varsel_id " +
+                        "LEFT JOIN KVP ON OPPFOLGINGSTATUS.gjeldende_kvp = KVP.kvp_id " +
                         "WHERE OPPFOLGINGSTATUS.aktor_id = ? ",
                 this::mapTilOppfolging,
                 aktorId
@@ -330,6 +342,11 @@ public class OppfolgingRepository {
                         Optional.ofNullable(resultat.getLong("gjeldende_eskaleringsvarsel"))
                                 .map(e -> e != 0 ? mapTilEskaleringsvarselData(resultat) : null)
                                 .orElse(null)
+                )
+                .setGjeldendeKvp(
+                        Optional.ofNullable(resultat.getLong("gjeldende_kvp"))
+                        .map(k -> k != 0 ? mapTilKvpData(resultat) : null)
+                        .orElse(null)
                 );
     }
 
@@ -482,7 +499,7 @@ public class OppfolgingRepository {
                 .build();
     }
 
-    private static Date hentDato(ResultSet rs, String kolonneNavn) throws SQLException {
+    protected static Date hentDato(ResultSet rs, String kolonneNavn) throws SQLException {
         return ofNullable(rs.getTimestamp(kolonneNavn))
                 .map(Timestamp::getTime)
                 .map(Date::new)
