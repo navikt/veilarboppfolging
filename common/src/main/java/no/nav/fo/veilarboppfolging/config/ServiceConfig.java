@@ -1,5 +1,6 @@
 package no.nav.fo.veilarboppfolging.config;
 
+import no.nav.fo.veilarboppfolging.db.ArbeidssokerregistreringRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingFeedRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.db.VeilederTilordningerRepository;
@@ -47,6 +48,11 @@ public class ServiceConfig {
     @Bean
     OppfolgingRepository oppfolgingRepository(Database db) {
         return new OppfolgingRepository(db);
+    }
+
+    @Bean
+    ArbeidssokerregistreringRepository arbeidssokerregistreringRepository(JdbcTemplate db) {
+        return new ArbeidssokerregistreringRepository(db);
     }
 
 }
