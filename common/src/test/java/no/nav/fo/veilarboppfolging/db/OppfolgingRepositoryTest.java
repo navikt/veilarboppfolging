@@ -29,50 +29,6 @@ public class OppfolgingRepositoryTest extends IntegrasjonsTest {
     private KvpRepository kvpRepository = new KvpRepository(db);
 
     @Nested
-    class kvp {
-
-        @Test
-        public void startKvp() {
-            gittOppfolgingForAktor(AKTOR_ID);
-            start_kvp();
-
-            assertThat(hentGjeldendeKvp(AKTOR_ID).getOpprettetBegrunnelse(), is(BEGRUNNELSE));
-        }
-
-        @Test
-        public void stopKvp() {
-            gittOppfolgingForAktor(AKTOR_ID);
-            start_kvp();
-            stop_kvp();
-
-            assertThat(hentGjeldendeKvp(AKTOR_ID), nullValue());
-        }
-
-        @Test
-        public void hentKvpHistorikk() {
-            gittOppfolgingForAktor(AKTOR_ID);
-            start_kvp();
-            stop_kvp();
-            start_kvp();
-            stop_kvp();
-
-            assertThat(kvpRepository.hentKvpHistorikk(AKTOR_ID), hasSize(2));
-        }
-
-        private void stop_kvp() {
-            kvpRepository.stopKvp(AKTOR_ID, SAKSBEHANDLER_ID, BEGRUNNELSE);
-        }
-
-        private void start_kvp() {
-            kvpRepository.startKvp(AKTOR_ID, "0123", SAKSBEHANDLER_ID, BEGRUNNELSE);
-        }
-
-        private Kvp hentGjeldendeKvp(String aktorId) {
-            return oppfolgingRepository.hentOppfolging(aktorId).get().getGjeldendeKvp();
-        }
-    }
-
-    @Nested
     class mal {
         @Test
         public void opprettOghentMal() {
