@@ -1,11 +1,14 @@
 package no.nav.fo.veilarboppfolging.config;
 
+import no.nav.apiapp.security.PepClient;
+import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.db.ArbeidssokerregistreringRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingFeedRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.db.VeilederTilordningerRepository;
 import no.nav.fo.veilarboppfolging.services.ArenaOppfolgingService;
 import no.nav.fo.veilarboppfolging.services.OrganisasjonEnhetService;
+import no.nav.fo.veilarboppfolging.services.StartRegistreringService;
 import no.nav.fo.veilarboppfolging.services.YtelseskontraktService;
 import no.nav.sbl.jdbc.Database;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
@@ -53,6 +56,14 @@ public class ServiceConfig {
     @Bean
     ArbeidssokerregistreringRepository arbeidssokerregistreringRepository(JdbcTemplate db) {
         return new ArbeidssokerregistreringRepository(db);
+    }
+
+    @Bean
+    StartRegistreringService startRegistreringService(ArbeidssokerregistreringRepository arbeidssokerregistreringRepository,
+                                                      PepClient pepClient,
+                                                      AktorService aktorService,
+                                                      OppfoelgingPortType oppfoelgingPortType) {
+        return new StartRegistreringService(arbeidssokerregistreringRepository, pepClient, aktorService, oppfoelgingPortType);
     }
 
 }

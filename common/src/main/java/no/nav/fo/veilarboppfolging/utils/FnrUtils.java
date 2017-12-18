@@ -1,4 +1,4 @@
-package no.nav.fo.veilarboppfolging.ws.provider.startregistrering;
+package no.nav.fo.veilarboppfolging.utils;
 
 import no.bekk.bekkopen.person.Fodselsnummer;
 import no.bekk.bekkopen.person.FodselsnummerValidator;
@@ -14,7 +14,7 @@ public class FnrUtils {
 
         return LocalDate.of(
                 Integer.parseInt(fodselsnummer.getBirthYear()),
-                Integer.parseInt(fodselsnummer.getDayInMonth()),
+                Integer.parseInt(fodselsnummer.getMonth()),
                 Integer.parseInt(fodselsnummer.getDayInMonth())
         );
     }

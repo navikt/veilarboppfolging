@@ -5,12 +5,12 @@ import lombok.val;
 import no.nav.apiapp.soap.SoapTjeneste;
 import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.fo.veilarboppfolging.services.OppfolgingService;
+import no.nav.fo.veilarboppfolging.services.StartRegistreringService;
 import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.binding.*;
 import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.informasjon.*;
 import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.meldinger.*;
 import org.springframework.stereotype.Service;
 
-import javax.inject.Inject;
 import javax.ws.rs.WebApplicationException;
 import java.sql.Timestamp;
 import java.util.List;
@@ -26,8 +26,13 @@ import static no.nav.fo.veilarboppfolging.utils.StringUtils.emptyIfNull;
 @SoapTjeneste("/Oppfolging")
 public class OppfolgingWebService implements BehandleOppfolgingV1 {
 
-    @Inject
     private OppfolgingService oppfolgingService;
+    private StartRegistreringService startRegistreringService;
+
+    public OppfolgingWebService(OppfolgingService oppfolgingService, StartRegistreringService startRegistreringService) {
+        this.startRegistreringService = startRegistreringService;
+        this.oppfolgingService = oppfolgingService;
+    }
 
     @Override
     public HentOppfoelgingsstatusResponse hentOppfoelgingsstatus(HentOppfoelgingsstatusRequest hentOppfoelgingsstatusRequest) throws HentOppfoelgingsstatusSikkerhetsbegrensning {
@@ -42,8 +47,9 @@ public class OppfolgingWebService implements BehandleOppfolgingV1 {
         return res;
     }
 
+
     @Override
-    public HentVilkaarsstatusResponse hentVilkaarsstatus(HentVilkaarsstatusRequest hentVilkaarsstatusRequest) throws HentVilkaarsstatusSikkerhetsbegrensning {
+    public HentVilkaarsstatusResponse hentVilkaarsstatus(HentVilkaarsstatusRequest hentVilkaarsstatusRequest) {
         throw new WebApplicationException(NOT_IMPLEMENTED);
     }
 
@@ -219,5 +225,17 @@ public class OppfolgingWebService implements BehandleOppfolgingV1 {
         vilkaarsstatus.setHash(brukervilkar.getHash());
         vilkaarsstatus.setStatus(mapVilkarStatusTilVilkaarstatuser(brukervilkar.getVilkarstatus()));
         return vilkaarsstatus;
+    }
+
+    @Override
+    public StartRegistreringStatusResponse hentStartRegistreringStatus(StartRegistreringStatusRequest startRegistreringStatusRequest) throws HentStartRegistreringStatusSikkerhetsbegrensning,
+            HentStartRegistreringStatusFeilVedHentingAvStatusFraArena {
+
+        StartRegistreringStatus status = startRegistreringService.hentStartRegistreringStatus(startRegistreringStatusRequest.getFnr());
+
+        StartRegistreringStatusResponse response = new StartRegistreringStatusResponse();
+        response.setErUnderOppfolging(status.isUnderOppfolging());
+        response.setOppfyllerKrav(status.isOppfyllerKravForAutomatiskRegistrering());
+        return response;
     }
 }

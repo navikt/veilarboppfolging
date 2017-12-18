@@ -1,11 +1,9 @@
-package no.nav.fo.veilarboppfolging.ws.provider.startregistrering;
+package no.nav.fo.veilarboppfolging.utils;
 
 
 import java.time.LocalDate;
 import java.util.Objects;
 
-import static no.nav.fo.veilarboppfolging.ws.provider.startregistrering.FnrUtils.antallAarSidenDato;
-import static no.nav.fo.veilarboppfolging.ws.provider.startregistrering.FnrUtils.utledFodselsdatoForFnr;
 
 public class StartRegistreringUtils {
 
@@ -14,8 +12,8 @@ public class StartRegistreringUtils {
     static final int MAX_ALDER_AUTOMATISK_REGISTRERING = 59;
 
     public static boolean oppfyllerKravOmAutomatiskRegistrering(String fnr, LocalDate inaktiveringsdato, LocalDate dagensDato) {
-        LocalDate fodselsdato = utledFodselsdatoForFnr(fnr);
-        int alder = antallAarSidenDato(fodselsdato,dagensDato);
+        LocalDate fodselsdato = FnrUtils.utledFodselsdatoForFnr(fnr);
+        int alder = FnrUtils.antallAarSidenDato(fodselsdato,dagensDato);
 
         boolean oppfyllerKravOmInaktivitet = Objects.isNull(inaktiveringsdato) || erDatoEldreEnnEllerLikAar(dagensDato, inaktiveringsdato, ANTALL_AAR_ISERV);
         boolean oppfyllerKravOmAlder = alder >= MIN_ALDER_AUTOMATISK_REGISTRERING && alder <= MAX_ALDER_AUTOMATISK_REGISTRERING;
@@ -25,6 +23,6 @@ public class StartRegistreringUtils {
 
 
     static boolean erDatoEldreEnnEllerLikAar(LocalDate dagensDato, LocalDate dato, int aar) {
-        return antallAarSidenDato(dato, dagensDato) >= 2;
+        return FnrUtils.antallAarSidenDato(dato, dagensDato) >= 2;
     }
 }

@@ -33,10 +33,11 @@
         <oppfoelging-v1-tjenestespesifikasjon.version>1.2.0</oppfoelging-v1-tjenestespesifikasjon.version>
         <oppfolgingsinfo-v1-tjenestespesifikasjon.version>1.0.4</oppfolgingsinfo-v1-tjenestespesifikasjon.version>
         <dkif-tjenestespesifikasjon.version>1.2</dkif-tjenestespesifikasjon.version>
-        <brukerdialog-behandleOppfolging-v1-tjenestespesifikasjon.version>1.0.0</brukerdialog-behandleOppfolging-v1-tjenestespesifikasjon.version>
+        <brukerdialog-behandleOppfolging-v1-tjenestespesifikasjon.version>25.20171218.1138</brukerdialog-behandleOppfolging-v1-tjenestespesifikasjon.version>
         <organisasjonenhet-v1.version>1.0.8</organisasjonenhet-v1.version>
         <varseloppgave-v1-tjenestespesifikasjon.version>1.1.0</varseloppgave-v1-tjenestespesifikasjon.version>
         <startregistreringstatus-v1-tjenestespesifikasjon.version>1.0.0</startregistreringstatus-v1-tjenestespesifikasjon.version>
+        <nav-arbeidsforhold-v3-tjenestespesifikasjon.version>3.0.0</nav-arbeidsforhold-v3-tjenestespesifikasjon.version>
         <nocommons.version>0.6</nocommons.version>
         <vavr.version>0.9.0</vavr.version>
 
@@ -119,7 +120,13 @@
             <dependency>
                 <groupId>no.nav.tjenester</groupId>
                 <artifactId>brukerdialog-behandleOppfolging-v1-tjenestespesifikasjon</artifactId>
-                <version>${brukerdialog-behandleOppfolging-v1-tjenestespesifikasjon.version}</version>
+                <version>1.0.13-SNAPSHOT</version>
+                <classifier>jaxws</classifier>
+            </dependency>
+            <dependency>
+                <groupId>no.nav.tjenester.fim</groupId>
+                <artifactId>nav-arbeidsforhold-v3-tjenestespesifikasjon</artifactId>
+                <version>${nav-arbeidsforhold-v3-tjenestespesifikasjon.version}</version>
                 <classifier>jaxws</classifier>
             </dependency>
 

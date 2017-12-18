@@ -1,32 +1,29 @@
-package no.nav.fo.veilarboppfolging.ws.provider;
+package no.nav.fo.veilarboppfolging.services;
 
-import cxf.FeilVedHentingAvStatusFraArenaException;
 import no.nav.apiapp.security.PepClient;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.db.ArbeidssokerregistreringRepository;
-import no.nav.fo.veilarboppfolging.ws.provider.startregistrering.StartRegistreringStatusWebService;
+import no.nav.fo.veilarboppfolging.domain.StartRegistreringStatus;
+import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.binding.HentStartRegistreringStatusFeilVedHentingAvStatusFraArena;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.HentOppfoelgingsstatusPersonIkkeFunnet;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
-import no.nav.tjeneste.virksomhet.startregistreringstatus.v1.meldinger.WSStartRegistreringStatus;
-import no.nav.tjeneste.virksomhet.startregistreringstatus.v1.meldinger.WSStartRegistreringStatusRequest;
-import no.nav.tjeneste.virksomhet.startregistreringstatus.v1.meldinger.WSStartRegistreringStatusResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
 
-public class StartRegistreringStatusWebServiceTest {
-
+public class StartRegistreringServiceTest {
     private OppfoelgingPortType oppfoelgingPortType;
     private PepClient pepClient;
     private AktorService aktorService;
     private ArbeidssokerregistreringRepository arbeidssokerregistreringRepository;
-    private StartRegistreringStatusWebService startRegistreringStatusWebService;
+    private StartRegistreringService startRegistreringService;
 
     @BeforeEach
     public void setup() {
@@ -34,10 +31,12 @@ public class StartRegistreringStatusWebServiceTest {
         pepClient = mock(PepClient.class);
         aktorService = mock(AktorService.class);
         arbeidssokerregistreringRepository = mock(ArbeidssokerregistreringRepository.class);
-        startRegistreringStatusWebService = new StartRegistreringStatusWebService(oppfoelgingPortType,
+        startRegistreringService = new StartRegistreringService(
+                arbeidssokerregistreringRepository,
                 pepClient,
                 aktorService,
-                arbeidssokerregistreringRepository);
+                oppfoelgingPortType
+        );
     }
 
 
@@ -45,10 +44,8 @@ public class StartRegistreringStatusWebServiceTest {
     public void skalIkkeKalleArenaOmOppfolgingsflaggErSatt() throws Exception {
         when(aktorService.getAktorId(any())).thenReturn(Optional.of("1111"));
         when(arbeidssokerregistreringRepository.erOppfolgingsflaggSatt(any())).thenReturn(true);
-        WSStartRegistreringStatusRequest request = new WSStartRegistreringStatusRequest();
-        request.setFnr("1111111111");
-        WSStartRegistreringStatus status = startRegistreringStatusWebService.hentStartRegistreringStatus(request).getWSStartRegistreringStatus();
-        assertThat(status.isErUnderOppfolging()).isTrue();
+        StartRegistreringStatus status = startRegistreringService.hentStartRegistreringStatus("1111111111");
+        assertThat(status.isUnderOppfolging()).isTrue();
         verify(oppfoelgingPortType, never()).hentOppfoelgingsstatus(any());
     }
 
@@ -56,9 +53,7 @@ public class StartRegistreringStatusWebServiceTest {
     public void abacSkalKallesForAlleRequests() throws Exception {
         when(aktorService.getAktorId(any())).thenReturn(Optional.of("1111"));
         when(arbeidssokerregistreringRepository.erOppfolgingsflaggSatt(any())).thenReturn(true);
-        WSStartRegistreringStatusRequest request = new WSStartRegistreringStatusRequest();
-        request.setFnr("1111111111");
-        WSStartRegistreringStatus status = startRegistreringStatusWebService.hentStartRegistreringStatus(request).getWSStartRegistreringStatus();
+        StartRegistreringStatus status = startRegistreringService.hentStartRegistreringStatus("1111111111");
         verify(pepClient, times(1)).sjekkLeseTilgangTilFnr("1111111111");
     }
 
@@ -67,11 +62,9 @@ public class StartRegistreringStatusWebServiceTest {
         when(aktorService.getAktorId(any())).thenReturn(Optional.of("1111"));
         when(arbeidssokerregistreringRepository.erOppfolgingsflaggSatt(any())).thenReturn(false);
         when(oppfoelgingPortType.hentOppfoelgingsstatus(any())).thenThrow(HentOppfoelgingsstatusPersonIkkeFunnet.class);
-        WSStartRegistreringStatusRequest request = new WSStartRegistreringStatusRequest();
-        request.setFnr("***REMOVED***");
-        WSStartRegistreringStatusResponse response = startRegistreringStatusWebService.hentStartRegistreringStatus(request);
-        assertThat(response.getWSStartRegistreringStatus().isErUnderOppfolging()).isFalse();
-        assertThat(response.getWSStartRegistreringStatus().isOppfyllerKrav()).isTrue();
+        StartRegistreringStatus status = startRegistreringService.hentStartRegistreringStatus("***REMOVED***");
+        assertThat(status.isUnderOppfolging()).isFalse();
+        assertThat(status.isOppfyllerKravForAutomatiskRegistrering()).isTrue();
     }
 
     @Test
@@ -79,8 +72,8 @@ public class StartRegistreringStatusWebServiceTest {
         when(aktorService.getAktorId(any())).thenReturn(Optional.of("1111"));
         when(arbeidssokerregistreringRepository.erOppfolgingsflaggSatt(any())).thenReturn(false);
         when(oppfoelgingPortType.hentOppfoelgingsstatus(any())).thenThrow(Exception.class);
-        WSStartRegistreringStatusRequest request = new WSStartRegistreringStatusRequest();
-        request.setFnr("***REMOVED***");
-        assertThrows(FeilVedHentingAvStatusFraArenaException.class, () -> startRegistreringStatusWebService.hentStartRegistreringStatus(request));
+        assertThrows(HentStartRegistreringStatusFeilVedHentingAvStatusFraArena.class, () -> startRegistreringService.hentStartRegistreringStatus("***REMOVED***"));
     }
+
+
 }
