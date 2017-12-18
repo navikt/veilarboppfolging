@@ -1,6 +1,7 @@
 package no.nav.fo.veilarboppfolging.db;
 
 import lombok.SneakyThrows;
+import no.nav.apiapp.feil.Feil;
 import no.nav.fo.veilarboppfolging.domain.Kvp;
 import no.nav.sbl.jdbc.Database;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,7 +22,7 @@ public class KvpRepository {
     @Transactional
     public void startKvp(String aktorId, String enhet, String opprettetAv, String opprettetBegrunnelse) {
         if (gjeldendeKvp(aktorId) != null) {
-            throw new RuntimeException();
+            throw new Feil(Feil.Type.UGYLDIG_REQUEST, "Aktøren er allerede under en KVP-periode.");
         }
 
         long id = database.nesteFraSekvens("KVP_SEQ");
@@ -52,7 +53,7 @@ public class KvpRepository {
     public void stopKvp(String aktorId, String avsluttetAv, String avsluttetBegrunnelse) {
         Kvp gjeldendeKvp = gjeldendeKvp(aktorId);
         if (gjeldendeKvp == null) {
-            throw new RuntimeException();
+            throw new Feil(Feil.Type.UGYLDIG_REQUEST, "Aktøren har ingen KVP-periode.");
         }
 
         database.update("UPDATE KVP " +
