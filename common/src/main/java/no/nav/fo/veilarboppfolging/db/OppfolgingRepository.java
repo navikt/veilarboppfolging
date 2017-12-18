@@ -17,7 +17,7 @@ import java.util.Optional;
 import static java.util.Optional.ofNullable;
 import static no.nav.apiapp.util.EnumUtils.getName;
 import static no.nav.apiapp.util.EnumUtils.valueOfOptional;
-import static no.nav.fo.veilarboppfolging.db.KvpRepository.mapTilKvpData;
+import static no.nav.fo.veilarboppfolging.db.KvpRepository.mapTilKvp;
 
 public class OppfolgingRepository {
 
@@ -345,7 +345,7 @@ public class OppfolgingRepository {
                 )
                 .setGjeldendeKvp(
                         Optional.ofNullable(resultat.getLong("gjeldende_kvp"))
-                        .map(k -> k != 0 ? mapTilKvpData(resultat) : null)
+                        .map(k -> k != 0 ? mapTilKvp(resultat) : null)
                         .orElse(null)
                 );
     }

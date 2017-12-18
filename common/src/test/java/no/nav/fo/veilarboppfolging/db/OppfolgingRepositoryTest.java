@@ -67,7 +67,7 @@ public class OppfolgingRepositoryTest extends IntegrasjonsTest {
             kvpRepository.startKvp(AKTOR_ID, "0123", SAKSBEHANDLER_ID, BEGRUNNELSE);
         }
 
-        private KvpData hentGjeldendeKvp(String aktorId) {
+        private Kvp hentGjeldendeKvp(String aktorId) {
             return oppfolgingRepository.hentOppfolging(aktorId).get().getGjeldendeKvp();
         }
     }

@@ -9,7 +9,7 @@ import java.util.Date;
 @Value
 @Builder
 @Wither
-public class KvpData {
+public class Kvp {
 
     private long kvpId;
     private String aktorId;

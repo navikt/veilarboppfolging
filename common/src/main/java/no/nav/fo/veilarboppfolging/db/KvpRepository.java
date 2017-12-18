@@ -1,8 +1,9 @@
 package no.nav.fo.veilarboppfolging.db;
 
 import lombok.SneakyThrows;
-import no.nav.fo.veilarboppfolging.domain.KvpData;
+import no.nav.fo.veilarboppfolging.domain.Kvp;
 import no.nav.sbl.jdbc.Database;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.ResultSet;
 import java.util.List;
@@ -17,6 +18,7 @@ public class KvpRepository {
         this.database = database;
     }
 
+    @Transactional
     public void startKvp(String aktorId, String enhet, String opprettetAv, String opprettetBegrunnelse) {
         if (gjeldendeKvp(aktorId) != null) {
             throw new RuntimeException();
@@ -48,7 +50,7 @@ public class KvpRepository {
     }
 
     public void stopKvp(String aktorId, String avsluttetAv, String avsluttetBegrunnelse) {
-        KvpData gjeldendeKvp = gjeldendeKvp(aktorId);
+        Kvp gjeldendeKvp = gjeldendeKvp(aktorId);
         if (gjeldendeKvp == null) {
             throw new RuntimeException();
         }
@@ -71,28 +73,28 @@ public class KvpRepository {
         );
     }
 
-    public List<KvpData> hentKvpHistorikk(String aktorId) {
+    public List<Kvp> hentKvpHistorikk(String aktorId) {
         return database.query("SELECT * " +
                         "FROM kvp " +
                         "WHERE aktor_id = ?",
-                KvpRepository::mapTilKvpData,
+                KvpRepository::mapTilKvp,
                 aktorId
         );
     }
 
-    private KvpData gjeldendeKvp(String aktorId) {
+    private Kvp gjeldendeKvp(String aktorId) {
         return database.query("SELECT * " +
                         "FROM KVP " +
                         "WHERE kvp_id IN (SELECT gjeldende_kvp FROM oppfolgingstatus WHERE aktor_id = ?)",
-                KvpRepository::mapTilKvpData, aktorId)
+                KvpRepository::mapTilKvp, aktorId)
                 .stream()
                 .findAny()
                 .orElse(null);
     }
 
     @SneakyThrows
-    protected static KvpData mapTilKvpData(ResultSet rs) {
-        return KvpData.builder()
+    protected static Kvp mapTilKvp(ResultSet rs) {
+        return Kvp.builder()
                 .kvpId(rs.getLong("kvp_id"))
                 .aktorId(rs.getString("aktor_id"))
                 .enhet(rs.getString("enhet"))
