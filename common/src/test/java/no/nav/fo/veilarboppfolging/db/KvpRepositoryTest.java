@@ -1,5 +1,6 @@
 package no.nav.fo.veilarboppfolging.db;
 
+import no.nav.apiapp.feil.Feil;
 import no.nav.fo.IntegrasjonsTest;
 import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.sbl.jdbc.Database;
@@ -8,6 +9,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 public class KvpRepositoryTest extends IntegrasjonsTest {
 
@@ -30,6 +32,15 @@ public class KvpRepositoryTest extends IntegrasjonsTest {
             start_kvp();
 
             assertThat(hentGjeldendeKvp(AKTOR_ID).getOpprettetBegrunnelse(), is(BEGRUNNELSE));
+
+            // Test that starting KVP an additional time yields an error.
+            try {
+                start_kvp();
+            } catch (Feil e) {
+                return;
+            }
+
+            fail("Starting the KVP period while the user is already under KVP did not trigger an exception.");
         }
 
         @Test
@@ -39,6 +50,19 @@ public class KvpRepositoryTest extends IntegrasjonsTest {
             stop_kvp();
 
             assertThat(hentGjeldendeKvp(AKTOR_ID), nullValue());
+        }
+
+        @Test
+        public void stopKvpWithoutPeriod() {
+            gittOppfolgingForAktor(AKTOR_ID);
+
+            try {
+                stop_kvp();
+            } catch (Feil e) {
+                return;
+            }
+
+            fail("Stopping the KVP period for a user without a KVP period did not trigger an exception.");
         }
 
         @Test
