@@ -8,8 +8,8 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
 
 public class KvpRepositoryTest extends IntegrasjonsTest {
 
@@ -34,13 +34,7 @@ public class KvpRepositoryTest extends IntegrasjonsTest {
             assertThat(hentGjeldendeKvp(AKTOR_ID).getOpprettetBegrunnelse(), is(BEGRUNNELSE));
 
             // Test that starting KVP an additional time yields an error.
-            try {
-                start_kvp();
-            } catch (Feil e) {
-                return;
-            }
-
-            fail("Starting the KVP period while the user is already under KVP did not trigger an exception.");
+            assertThrows(Feil.class, this::start_kvp);
         }
 
         @Test
@@ -55,14 +49,7 @@ public class KvpRepositoryTest extends IntegrasjonsTest {
         @Test
         public void stopKvpWithoutPeriod() {
             gittOppfolgingForAktor(AKTOR_ID);
-
-            try {
-                stop_kvp();
-            } catch (Feil e) {
-                return;
-            }
-
-            fail("Stopping the KVP period for a user without a KVP period did not trigger an exception.");
+            assertThrows(Feil.class, this::stop_kvp);
         }
 
         @Test
