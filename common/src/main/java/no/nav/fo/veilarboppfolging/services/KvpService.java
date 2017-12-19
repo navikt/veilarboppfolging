@@ -35,6 +35,7 @@ public class KvpService {
 
     public void startKvp(String fnr, String begrunnelse) {
         pepClient.sjekkLeseTilgangTilFnr(fnr); // TODO: Er dette riktig abacpppslag?
+        // TODO: Nytt abac oppslag for å sjekke veileders enhetTilgang
 
         String veilederId = SubjectHandler.getSubjectHandler().getUid();
         kvpRepository.startKvp(
@@ -46,6 +47,7 @@ public class KvpService {
 
     public void stopKvp(String fnr, String begrunnelse) {
         pepClient.sjekkLeseTilgangTilFnr(fnr); // TODO: Er dette riktig abacpppslag?
+        // TODO: Nytt abac oppslag for å sjekke veileders enhetTilgang
 
         String veilederId = SubjectHandler.getSubjectHandler().getUid();
         kvpRepository.stopKvp(
