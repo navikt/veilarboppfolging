@@ -7,6 +7,7 @@ import no.nav.fo.veilarboppfolging.mappers.VilkarMapper;
 import no.nav.fo.veilarboppfolging.rest.api.OppfolgingController;
 import no.nav.fo.veilarboppfolging.rest.api.VeilederOppfolgingController;
 import no.nav.fo.veilarboppfolging.rest.domain.*;
+import no.nav.fo.veilarboppfolging.services.KvpService;
 import no.nav.fo.veilarboppfolging.services.OppfolgingService;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
 import org.springframework.stereotype.Component;
@@ -31,6 +32,9 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
 
     @Inject
     private OppfolgingService oppfolgingService;
+
+    @Inject
+    private KvpService kvpService;
 
     @Inject
     private Provider<HttpServletRequest> requestProvider;
@@ -146,16 +150,27 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
         oppfolgingService.stoppEskalering(getFnr(), stoppEskalering.getBegrunnelse());
     }
 
+    @Override
+    public void startKvp(StartKvpDTO startKvp) throws Exception {
+        kvpService.startKvp(getFnr(), startKvp.getBegrunnelse());
+    }
+
+    @Override
+    public void stoppKvp(StoppKvpDTO stoppKvp) throws Exception {
+        kvpService.stopKvp(getFnr(), stoppKvp.getBegrunnelse());
+
+    }
+
     private Eskaleringsvarsel tilDto(EskaleringsvarselData eskaleringsvarselData) {
         return Optional.ofNullable(eskaleringsvarselData)
                 .map(eskalering -> Eskaleringsvarsel.builder()
-                .varselId(eskalering.getVarselId())
-                .aktorId(eskalering.getAktorId())
-                .opprettetAv(eskalering.getOpprettetAv())
-                .opprettetDato(eskalering.getOpprettetDato())
-                .avsluttetDato(eskalering.getAvsluttetDato())
-                .tilhorendeDialogId(eskalering.getTilhorendeDialogId())
-                .build()
+                        .varselId(eskalering.getVarselId())
+                        .aktorId(eskalering.getAktorId())
+                        .opprettetAv(eskalering.getOpprettetAv())
+                        .opprettetDato(eskalering.getOpprettetDato())
+                        .avsluttetDato(eskalering.getAvsluttetDato())
+                        .tilhorendeDialogId(eskalering.getTilhorendeDialogId())
+                        .build()
                 ).orElse(null);
     }
 
@@ -178,7 +193,6 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
     }
 
     private OppfolgingStatus tilDto(OppfolgingStatusData oppfolgingStatusData) {
-        
         return new OppfolgingStatus()
                 .setFnr(oppfolgingStatusData.fnr)
                 .setVeilederId(oppfolgingStatusData.veilederId)
