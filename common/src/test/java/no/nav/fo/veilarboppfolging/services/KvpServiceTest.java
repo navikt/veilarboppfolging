@@ -1,6 +1,7 @@
 package no.nav.fo.veilarboppfolging.services;
 
 import lombok.val;
+import no.nav.apiapp.feil.IngenTilgang;
 import no.nav.apiapp.security.PepClient;
 import no.nav.brukerdialog.security.context.ThreadLocalSubjectHandler;
 import no.nav.dialogarena.aktor.AktorService;
@@ -73,6 +74,13 @@ public class KvpServiceTest {
 
         verify(pepClientMock, times(1)).sjekkLeseTilgangTilFnr(FNR);
         verify(kvpRepositoryMock, times(1)).stopKvp(eq(AKTOR_ID), isNull(), eq(STOP_BEGRUNNELSE));
+    }
+
+    @Test(expected = IngenTilgang.class)
+    public void startKvpIkkeTilgang() {
+        when(pepClientMock.sjekkLeseTilgangTilFnr(any())).thenThrow(IngenTilgang.class);
+
+        kvpService.startKvp(FNR, START_BEGRUNNELSE);
     }
 
 }
