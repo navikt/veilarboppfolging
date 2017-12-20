@@ -4,6 +4,7 @@ import lombok.SneakyThrows;
 import no.nav.fo.veilarboppfolging.domain.Brukervilkar;
 import no.nav.fo.veilarboppfolging.domain.MalData;
 import no.nav.fo.veilarboppfolging.domain.ManuellStatus;
+import no.nav.sbl.jdbc.Database;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -17,9 +18,9 @@ public class  OppfolgingsStatusRepository {
     public static final String GJELDENE_ESKALERINGSVARSEL = "gjeldende_eskaleringsvarsel";
     public static final String UNDER_OPPFOLGING = "under_oppfolging";
 
-    private JdbcTemplate db;
+    private Database db;
 
-    public OppfolgingsStatusRepository(JdbcTemplate db) {
+    public OppfolgingsStatusRepository(Database db) {
         this.db = db;
     }
 
@@ -44,7 +45,7 @@ public class  OppfolgingsStatusRepository {
         );
     }
 
-    public void fjernEskalering(String aktorId){
+    public void fjernEskalering(String aktorId) {
         db.update("" +
                         "UPDATE OPPFOLGINGSTATUS " +
                         "SET gjeldende_eskaleringsvarsel = null, " +
@@ -53,26 +54,30 @@ public class  OppfolgingsStatusRepository {
                 aktorId
         );
     }
-    public void setGjeldeneEskaleringsvarsel(String aktorId, long id){
+    public void setGjeldendeEskaleringsvarsel(String aktorId, long eskaleringsVarselId) {
         db.update("" +
                         "UPDATE OPPFOLGINGSTATUS " +
                         "SET gjeldende_eskaleringsvarsel = ?, " +
                         "oppdatert = CURRENT_TIMESTAMP " +
                         "WHERE aktor_id = ?",
-                id,
+                eskaleringsVarselId,
                 aktorId
         );
     }
 
     public Boolean erOppfolgingsflaggSattForBruker(String aktorId) {
-        return SqlUtils.select(db.getDataSource(), TABLE_NAME, this::erUnderOppfolging)
-                .column(UNDER_OPPFOLGING)
-                .where(WhereClause.equals(AKTOR_ID, aktorId))
-                .execute();
+        return db.query("" +
+                        "SELECT " +
+                        "OPPFOLGINGSTATUS.under_oppfolging AS under_oppfolging " +
+                        "FROM OPPFOLGINGSTATUS " +
+                        "WHERE OPPFOLGINGSTATUS.aktor_id = ? ",
+                OppfolgingsStatusRepository::erUnderOppfolging,
+                aktorId
+        ).get(0);
     }
 
     @SneakyThrows
-    private Boolean erUnderOppfolging(ResultSet resultSet) {
+    public static Boolean erUnderOppfolging(ResultSet resultSet) {
         return resultSet.getBoolean(UNDER_OPPFOLGING);
     }
 

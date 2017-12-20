@@ -46,12 +46,12 @@ public class ServiceConfig {
     }
 
     @Bean
-    OppfolgingRepository oppfolgingRepository(Database db, JdbcTemplate jdbcTemplate) {
-        return new OppfolgingRepository(db, jdbcTemplate);
+    OppfolgingRepository oppfolgingRepository(Database db) {
+        return new OppfolgingRepository(db);
     }
 
     @Bean
-    OppfolgingsStatusRepository oppfolgingsStatusRepository(JdbcTemplate db) {
+    OppfolgingsStatusRepository oppfolgingsStatusRepository(Database db) {
         return new OppfolgingsStatusRepository(db);
     }
 

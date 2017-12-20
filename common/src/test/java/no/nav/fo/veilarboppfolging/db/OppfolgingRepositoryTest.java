@@ -22,8 +22,7 @@ public class OppfolgingRepositoryTest extends IntegrasjonsTest {
     private static final String AKTOR_ID = "2222";
 
     private Database db = getBean(Database.class);
-    private JdbcTemplate jdbcTemplate = getBean(JdbcTemplate.class);
-    private OppfolgingRepository oppfolgingRepository = new OppfolgingRepository(db, jdbcTemplate);
+    private OppfolgingRepository oppfolgingRepository = new OppfolgingRepository(db);
 
     @Nested
     class mal {

@@ -1,11 +1,10 @@
 package no.nav.fo.veilarboppfolging.db;
 
 
-import lombok.SneakyThrows;
 import lombok.val;
+import no.nav.apiapp.feil.Feil;
 import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.sbl.jdbc.Database;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.ResultSet;
@@ -15,8 +14,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
-import static java.util.Optional.ofNullable;
-import static no.nav.apiapp.util.EnumUtils.getName;
+import static no.nav.apiapp.feil.Feil.Type.UGYLDIG_HANDLING;
 
 public class OppfolgingRepository {
 
@@ -27,14 +25,16 @@ public class OppfolgingRepository {
     private final MaalRepository maalRepository;
     private final ManuellStatusRepository manuellStatusRepository;
     private final BrukervilkarRepository brukervilkarRepository;
+    private final EskaleringsvarselRepository eskaleringsvarselRepository;
 
-    public OppfolgingRepository(Database database, JdbcTemplate jdbcTemplate) {
+    public OppfolgingRepository(Database database) {
         this.database = database;
-        statusRepository = new OppfolgingsStatusRepository(jdbcTemplate);
+        statusRepository = new OppfolgingsStatusRepository(database);
         periodeRepository = new OppfolgingsPeriodeRepository(database);
         maalRepository = new MaalRepository(database);
         manuellStatusRepository = new ManuellStatusRepository(database);
         brukervilkarRepository = new BrukervilkarRepository(database);
+        eskaleringsvarselRepository = new EskaleringsvarselRepository(database);
     }
 
     public Optional<Oppfolging> hentOppfolging(String aktorId) {
@@ -166,7 +166,7 @@ public class OppfolgingRepository {
                 .setOppfolgingsperioder(periodeRepository.hentOppfolgingsperioder(aktorId))
                 .setGjeldendeEskaleringsvarsel(
                         Optional.ofNullable(resultat.getLong("gjeldende_eskaleringsvarsel"))
-                                .map(e -> e != 0 ? mapTilEskaleringsvarselData(resultat) : null)
+                                .map(e -> e != 0 ? EskaleringsvarselRepository.map(resultat) : null)
                                 .orElse(null)
                 );
     }
@@ -176,100 +176,41 @@ public class OppfolgingRepository {
         return periodeRepository.hentAvsluttetOppfolgingsperioder(aktorId);
     }
 
-
-    private EskaleringsvarselData hentEskaleringsvarsel(String aktorId) {
-        List<EskaleringsvarselData> eskalering = database.query("" +
-                "SELECT " +
-                "varsel_id AS esk_id, " +
-                "aktor_id AS esk_aktor_id, " +
-                "opprettet_av AS esk_opprettet_av, " +
-                "opprettet_dato AS esk_opprettet_dato, " +
-                "avsluttet_dato AS esk_avsluttet_dato, " +
-                "avsluttet_av AS esk_avsluttet_av, " +
-                "tilhorende_dialog_id AS esk_tilhorende_dialog_id, " +
-                "opprettet_begrunnelse AS esk_opprettet_begrunnelse, " +
-                "avsluttet_begrunnelse AS esk_avsluttet_begrunnelse " +
-                "FROM eskaleringsvarsel " +
-                "WHERE varsel_id IN (SELECT gjeldende_eskaleringsvarsel FROM OPPFOLGINGSTATUS WHERE aktor_id = ?)",
-                this::mapTilEskaleringsvarselData,
-                aktorId
-        );
-
-        return eskalering.stream()
-                .findAny()
-                .orElse(null);
-
-    }
-
+    // FIXME: go directly to the repository instead.
     public List<EskaleringsvarselData> hentEskaleringhistorikk(String aktorId) {
-        return database.query("SELECT " +
-                        "varsel_id AS esk_id, " +
-                        "aktor_id AS esk_aktor_id, " +
-                        "opprettet_av AS esk_opprettet_av, " +
-                        "opprettet_dato AS esk_opprettet_dato, " +
-                        "avsluttet_av AS esk_avsluttet_av, " +
-                        "avsluttet_dato AS esk_avsluttet_dato, " +
-                        "tilhorende_dialog_id AS esk_tilhorende_dialog_id, " +
-                        "avsluttet_begrunnelse AS esk_avsluttet_begrunnelse, " +
-                        "opprettet_begrunnelse AS esk_opprettet_begrunnelse " +
-                        "FROM eskaleringsvarsel " +
-                        "WHERE aktor_id = ?",
-                this::mapTilEskaleringsvarselData,
-                aktorId
-        );
+        return eskaleringsvarselRepository.history(aktorId);
     }
 
     @Transactional
     public void startEskalering(String aktorId, String opprettetAv, String opprettetBegrunnelse, long tilhorendeDialogId) {
-        val harEksisterendeEskalering = hentEskaleringsvarsel(aktorId) != null;
-        if (harEksisterendeEskalering) {
-            throw new RuntimeException();
+        if (eskaleringsvarselRepository.fetchByAktorId(aktorId) != null) {
+            throw new Feil(UGYLDIG_HANDLING, "Brukeren har allerede et aktivt eskaleringsvarsel.");
         }
 
         long id = nesteFraSekvens("ESKALERINGSVARSEL_SEQ");
 
-        database.update("" +
-                "INSERT INTO ESKALERINGSVARSEL(" +
-                        "varsel_id, " +
-                        "aktor_id, " +
-                        "opprettet_av, " +
-                        "opprettet_dato, " +
-                        "opprettet_begrunnelse, " +
-                        "tilhorende_dialog_id)" +
-                "VALUES(?, ?, ?, CURRENT_TIMESTAMP, ?, ?)",
-                id,
-                aktorId,
-                opprettetAv,
-                opprettetBegrunnelse,
-                tilhorendeDialogId
-        );
-
-        database.update("" +
-                "UPDATE OPPFOLGINGSTATUS " +
-                "SET gjeldende_eskaleringsvarsel = ?, " +
-                "oppdatert = CURRENT_TIMESTAMP " +
-                "WHERE aktor_id = ?",
-                id,
-                aktorId
-        );
+        val e = EskaleringsvarselData.builder()
+                .aktorId(aktorId)
+                .opprettetAv(opprettetAv)
+                .opprettetBegrunnelse(opprettetBegrunnelse)
+                .tilhorendeDialogId(tilhorendeDialogId)
+                .build();
+        eskaleringsvarselRepository.create(e);
+        statusRepository.setGjeldendeEskaleringsvarsel(aktorId, id);
     }
 
     @Transactional
     public void stoppEskalering(String aktorId, String avsluttetAv, String avsluttetBegrunnelse) {
-        val eskalering = hentEskaleringsvarsel(aktorId);
-        val harIkkeEnEksisterendeEskalering = eskalering == null;
-        if(harIkkeEnEksisterendeEskalering) {
-            throw new RuntimeException();
+        EskaleringsvarselData eskalering = eskaleringsvarselRepository.fetchByAktorId(aktorId);
+        if (eskalering == null) {
+            throw new Feil(UGYLDIG_HANDLING, "Brukeren har ikke et aktivt eskaleringsvarsel.");
         }
 
-        database.update("" +
-                "UPDATE ESKALERINGSVARSEL " +
-                "SET avsluttet_dato = CURRENT_TIMESTAMP, avsluttet_begrunnelse = ?, avsluttet_av = ? " +
-                "WHERE varsel_id = ?",
-                avsluttetBegrunnelse,
-                avsluttetAv,
-                eskalering.getVarselId()
-        );
+        eskalering = eskalering
+                .withAvsluttetAv(avsluttetAv)
+                .withAvsluttetBegrunnelse(avsluttetBegrunnelse);
+
+        eskaleringsvarselRepository.finish(eskalering);
         statusRepository.fjernEskalering(aktorId);
     }
 
@@ -290,27 +231,5 @@ public class OppfolgingRepository {
     public void slettMalForAktorEtter(String aktorId, Date date) {
         statusRepository.fjernMaal(aktorId);
         maalRepository.slettForAktorEtter(aktorId, date);
-    }
-
-    private static Date hentDato(ResultSet rs, String kolonneNavn) throws SQLException {
-        return ofNullable(rs.getTimestamp(kolonneNavn))
-                .map(Timestamp::getTime)
-                .map(Date::new)
-                .orElse(null);
-    }
-
-    @SneakyThrows
-    private EskaleringsvarselData mapTilEskaleringsvarselData(ResultSet result) {
-        return EskaleringsvarselData.builder()
-                .varselId(result.getLong("esk_id"))
-                .aktorId(result.getString("esk_aktor_id"))
-                .opprettetAv(result.getString("esk_opprettet_av"))
-                .opprettetDato(hentDato(result, "esk_opprettet_dato"))
-                .opprettetBegrunnelse(result.getString("esk_opprettet_begrunnelse"))
-                .avsluttetDato(hentDato(result, "esk_avsluttet_dato"))
-                .avsluttetBegrunnelse(result.getString( "esk_avsluttet_begrunnelse"))
-                .avsluttetAv(result.getString( "esk_avsluttet_av"))
-                .tilhorendeDialogId(result.getLong("esk_tilhorende_dialog_id"))
-                .build();
     }
 }
