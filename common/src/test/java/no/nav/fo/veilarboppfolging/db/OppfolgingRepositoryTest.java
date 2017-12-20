@@ -5,6 +5,7 @@ import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.sbl.jdbc.Database;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.sql.Timestamp;
 import java.util.Date;
@@ -21,8 +22,8 @@ public class OppfolgingRepositoryTest extends IntegrasjonsTest {
     private static final String AKTOR_ID = "2222";
 
     private Database db = getBean(Database.class);
-
-    private OppfolgingRepository oppfolgingRepository = new OppfolgingRepository(db);
+    private JdbcTemplate jdbcTemplate = getBean(JdbcTemplate.class);
+    private OppfolgingRepository oppfolgingRepository = new OppfolgingRepository(db, jdbcTemplate);
 
     @Nested
     class mal {

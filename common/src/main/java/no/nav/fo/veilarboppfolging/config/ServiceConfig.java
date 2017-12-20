@@ -2,6 +2,7 @@ package no.nav.fo.veilarboppfolging.config;
 
 import no.nav.fo.veilarboppfolging.db.OppfolgingFeedRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
+import no.nav.fo.veilarboppfolging.db.OppfolgingsStatusRepository;
 import no.nav.fo.veilarboppfolging.db.VeilederTilordningerRepository;
 import no.nav.fo.veilarboppfolging.services.ArenaOppfolgingService;
 import no.nav.fo.veilarboppfolging.services.OrganisasjonEnhetService;
@@ -45,8 +46,13 @@ public class ServiceConfig {
     }
 
     @Bean
-    OppfolgingRepository oppfolgingRepository(Database db) {
-        return new OppfolgingRepository(db);
+    OppfolgingRepository oppfolgingRepository(Database db, JdbcTemplate jdbcTemplate) {
+        return new OppfolgingRepository(db, jdbcTemplate);
+    }
+
+    @Bean
+    OppfolgingsStatusRepository oppfolgingsStatusRepository(JdbcTemplate db) {
+        return new OppfolgingsStatusRepository(db);
     }
 
 }

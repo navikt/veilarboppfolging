@@ -1,9 +1,13 @@
 package no.nav.fo.veilarboppfolging.db;
 
 
+import lombok.SneakyThrows;
 import lombok.val;
+import no.nav.sbl.sql.SqlUtils;
+import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
+import java.sql.ResultSet;
 
 public class VeilederTilordningerRepository {
 
@@ -16,14 +20,16 @@ public class VeilederTilordningerRepository {
     }
 
     public String hentTilordningForAktoer(String aktorId) {
-        return db.queryForList("SELECT veileder " +
-                        "FROM OPPFOLGINGSTATUS " +
-                        "WHERE aktor_id = ? ",
-                aktorId)
-                .stream()
-                .findFirst()
-                .map(rad -> (String) rad.get("veileder"))
-                .orElse(null);
+
+        return SqlUtils.select(db.getDataSource(), OppfolgingsStatusRepository.TABLE_NAME, this::getVeileder)
+                .column("veileder")
+                .where(WhereClause.equals("aktor_id", aktorId))
+                .execute();
+    }
+
+    @SneakyThrows
+    public String getVeileder(ResultSet resultSet) {
+        return resultSet.getString("veileder");
     }
 
     @Transactional

@@ -5,6 +5,7 @@ import lombok.SneakyThrows;
 import lombok.val;
 import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.sbl.jdbc.Database;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.ResultSet;
@@ -22,8 +23,14 @@ public class OppfolgingRepository {
 
     private Database database;
 
-    public OppfolgingRepository(Database database) {
+    private OppfolgingsStatusRepository statusRepository;
+    private  OppfolgingsPeriodeRepository periodeRepository;
+
+
+    public OppfolgingRepository(Database database, JdbcTemplate jdbcTemplate) {
         this.database = database;
+        statusRepository = new OppfolgingsStatusRepository(jdbcTemplate);
+        periodeRepository = new OppfolgingsPeriodeRepository(database);
     }
 
     public Optional<Oppfolging> hentOppfolging(String aktorId) {
@@ -78,72 +85,39 @@ public class OppfolgingRepository {
 
     @Transactional
     public void startOppfolgingHvisIkkeAlleredeStartet(String aktorId) {
-        if (!erOppfolgingsflaggSattForBruker(aktorId)) {
-            database.update("UPDATE OPPFOLGINGSTATUS " +
-                            "SET under_oppfolging = 1, " +
-                            "oppdatert = CURRENT_TIMESTAMP " +
-                            "WHERE aktor_id = ?",
-                    aktorId);
-            opprettOppfolgingsperiode(aktorId);
+        if (!statusRepository.erOppfolgingsflaggSattForBruker(aktorId)) {
+            statusRepository.setUnderOppfolging(aktorId);
+            periodeRepository.opprettOppfolgingsperiode(aktorId);
         }
-
-    }
-
-    private Boolean erOppfolgingsflaggSattForBruker(String aktorId) {
-        return database.query("" +
-                "SELECT " +
-                "OPPFOLGINGSTATUS.under_oppfolging AS under_oppfolging " +
-                "FROM OPPFOLGINGSTATUS " +
-                "WHERE OPPFOLGINGSTATUS.aktor_id = ? ",
-                this::erUnderOppfolging,
-                aktorId
-        ).get(0);
-    }
-
-    private Boolean erUnderOppfolging(ResultSet result) throws SQLException {
-        return result.getBoolean("UNDER_OPPFOLGING");
     }
 
     @Transactional
     public void avsluttOppfolging(String aktorId, String veileder, String begrunnelse) {
-        database.update("UPDATE OPPFOLGINGSTATUS SET under_oppfolging = 0, "
-                + "veileder = null, "
-                + "gjeldende_manuell_status = null, "
-                + "gjeldende_mal = null, "
-                + "gjeldende_brukervilkar = null, "
-                + "oppdatert = CURRENT_TIMESTAMP "
-                + "WHERE aktor_id = ?",
-                aktorId
-        );
-        avsluttOppfolgingsperiode(aktorId, veileder, begrunnelse);
+        statusRepository.avsluttOppfolging(aktorId);
+        periodeRepository.avsluttOppfolgingsperiode(aktorId, veileder, begrunnelse);
     }
 
     public void opprettManuellStatus(ManuellStatus manuellStatus) {
         manuellStatus.setId(nesteFraSekvens("status_seq"));
-        oppdaterManuellStatus(manuellStatus);
+        statusRepository.oppdaterManuellStatus(manuellStatus);
         insertManuellStatus(manuellStatus);
     }
 
     public void opprettBrukervilkar(Brukervilkar brukervilkar) {
         brukervilkar.setId(nesteFraSekvens("brukervilkar_seq"));
         opprettOppfolgingBrukervilkar(brukervilkar);
-        oppdaterOppfolgingBrukervilkar(brukervilkar);
+        statusRepository.oppdaterOppfolgingBrukervilkar(brukervilkar);
     }
 
     public void opprettMal(MalData mal) {
         mal.setId(nesteFraSekvens("MAL_SEQ"));
-        oppdaterOppfolgingMal(mal);
+        statusRepository.oppdaterOppfolgingMal(mal);
         opprettOppfolgingMal(mal);
     }
 
     public Oppfolging opprettOppfolging(String aktorId) {
-        database.update("INSERT INTO OPPFOLGINGSTATUS(" +
-                        "aktor_id, " +
-                        "under_oppfolging, " +
-                        "oppdatert) " +
-                        "VALUES(?, ?, CURRENT_TIMESTAMP)",
-                aktorId,
-                false);
+        statusRepository.opprettOppfolging(aktorId);
+
         return new Oppfolging().setAktorId(aktorId).setUnderOppfolging(false);
     }
 
@@ -177,66 +151,10 @@ public class OppfolgingRepository {
         return database.query(sql, this::mapTilBrukervilkar, aktorId);
     }
 
-    private void avsluttOppfolgingsperiode(String aktorId, String veileder, String begrunnelse) {
-        database.update("" +
-                        "UPDATE OPPFOLGINGSPERIODE " +
-                        "SET avslutt_veileder = ?, " +
-                        "avslutt_begrunnelse = ?, " +
-                        "sluttDato = CURRENT_TIMESTAMP, " +
-                        "oppdatert = CURRENT_TIMESTAMP " +
-                        "WHERE aktor_id = ? " +
-                        "AND sluttDato IS NULL",
-                veileder,
-                begrunnelse,
-                aktorId);
-    }
 
-    private void opprettOppfolgingsperiode(String aktorId) {
-        database.update("" +
-                        "INSERT INTO OPPFOLGINGSPERIODE(aktor_id, startDato, oppdatert) " +
-                        "VALUES (?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
-                aktorId);
-    }
 
     public List<AvsluttetOppfolgingFeedData> hentAvsluttetOppfolgingEtterDato(Timestamp timestamp, int pageSize) {
-        return database
-                .query("SELECT * FROM (SELECT aktor_id, sluttdato, oppdatert " +
-                                "FROM OPPFOLGINGSPERIODE " +
-                                "WHERE oppdatert >= ? and sluttdato is not null order by oppdatert) " +
-                        "WHERE rownum <= ?",
-                        this::mapRadTilAvsluttetOppfolging,
-                        timestamp,
-                        pageSize);
-    }
-
-    @SneakyThrows
-    private AvsluttetOppfolgingFeedData mapRadTilAvsluttetOppfolging(ResultSet rs) {
-        return AvsluttetOppfolgingFeedData.builder()
-                .aktoerid(rs.getString("aktor_id"))
-                .sluttdato(rs.getTimestamp("sluttdato"))
-                .oppdatert(rs.getTimestamp("oppdatert"))
-                .build();
-    }
-
-    private void oppdaterOppfolgingBrukervilkar(Brukervilkar gjeldendeBrukervilkar) {
-        database.update("UPDATE OPPFOLGINGSTATUS SET gjeldende_brukervilkar = ?, oppdatert = CURRENT_TIMESTAMP WHERE aktor_id = ?",
-                gjeldendeBrukervilkar.getId(),
-                gjeldendeBrukervilkar.getAktorId()
-        );
-    }
-
-    private void oppdaterManuellStatus(ManuellStatus gjeldendeManuellStatus) {
-        database.update("UPDATE OPPFOLGINGSTATUS SET gjeldende_manuell_status = ?, oppdatert = CURRENT_TIMESTAMP WHERE aktor_id = ?",
-                gjeldendeManuellStatus.getId(),
-                gjeldendeManuellStatus.getAktorId()
-        );
-    }
-
-    private void oppdaterOppfolgingMal(MalData mal) {
-        database.update("UPDATE OPPFOLGINGSTATUS SET gjeldende_mal = ?, oppdatert = CURRENT_TIMESTAMP WHERE aktor_id = ?",
-                mal.getId(),
-                mal.getAktorId()
-        );
+        return periodeRepository.hentAvsluttetOppfolgingEtterDato(timestamp, pageSize);
     }
 
     private void opprettOppfolgingBrukervilkar(Brukervilkar vilkar) {
@@ -296,7 +214,7 @@ public class OppfolgingRepository {
 
     @Transactional
     public void slettMalForAktorEtter(String aktorId, Date date) {
-        database.update("UPDATE OPPFOLGINGSTATUS SET gjeldende_mal = NULL WHERE aktor_id = ?", aktorId);
+        statusRepository.fjernMaal(aktorId);
         database.update("DELETE FROM MAL WHERE aktor_id = ? AND dato > ?", aktorId, date);
     }
 
@@ -325,33 +243,15 @@ public class OppfolgingRepository {
                                 .map(m -> m != 0 ? mapTilMal(resultat) : null)
                                 .orElse(null)
                 )
-                .setOppfolgingsperioder(hentOppfolgingsperioder(aktorId))
+                .setOppfolgingsperioder(periodeRepository.hentOppfolgingsperioder(aktorId))
                 .setGjeldendeEskaleringsvarsel(
                         Optional.ofNullable(resultat.getLong("gjeldende_eskaleringsvarsel"))
                                 .map(e -> e != 0 ? mapTilEskaleringsvarselData(resultat) : null)
                                 .orElse(null)
                 );
     }
-
-
-    private final static String hentOppfolingsperioderSQL =
-            "SELECT aktor_id, avslutt_veileder, startdato, sluttdato, avslutt_begrunnelse " +
-            "FROM OPPFOLGINGSPERIODE ";
-
-    public List<Oppfolgingsperiode> hentOppfolgingsperioder(String aktorId) {
-        return database.query(hentOppfolingsperioderSQL +
-                        "WHERE aktor_id = ?",
-                this::mapTilOppfolgingsperiode,
-                aktorId
-        );
-    }
-
     public List<Oppfolgingsperiode> hentAvsluttetOppfolgingsperioder(String aktorId) {
-        return database.query(hentOppfolingsperioderSQL +
-                        "WHERE aktor_id = ? AND sluttdato is not null",
-                this::mapTilOppfolgingsperiode,
-                aktorId
-        );
+        return periodeRepository.hentAvsluttetOppfolgingsperioder(aktorId);
     }
 
 
@@ -404,7 +304,7 @@ public class OppfolgingRepository {
             throw new RuntimeException();
         }
 
-        val id = nesteFraSekvens("ESKALERINGSVARSEL_SEQ");
+        long id = nesteFraSekvens("ESKALERINGSVARSEL_SEQ");
 
         database.update("" +
                 "INSERT INTO ESKALERINGSVARSEL(" +
@@ -448,13 +348,7 @@ public class OppfolgingRepository {
                 avsluttetAv,
                 eskalering.getVarselId()
         );
-        database.update("" +
-                "UPDATE OPPFOLGINGSTATUS " +
-                "SET gjeldende_eskaleringsvarsel = null, " +
-                "oppdatert = CURRENT_TIMESTAMP " +
-                "WHERE aktor_id = ?",
-                aktorId
-        );
+        statusRepository.fjernEskalering(aktorId);
     }
 
     @SneakyThrows
@@ -472,15 +366,7 @@ public class OppfolgingRepository {
                 .build();
     }
 
-    private Oppfolgingsperiode mapTilOppfolgingsperiode(ResultSet result) throws SQLException {
-        return Oppfolgingsperiode.builder()
-                .aktorId(result.getString("aktor_id"))
-                .veileder(result.getString("avslutt_veileder"))
-                .startDato(hentDato(result, "startdato"))
-                .sluttDato(hentDato(result, "sluttdato"))
-                .begrunnelse(result.getString("avslutt_begrunnelse"))
-                .build();
-    }
+
 
     private static Date hentDato(ResultSet rs, String kolonneNavn) throws SQLException {
         return ofNullable(rs.getTimestamp(kolonneNavn))
