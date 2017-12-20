@@ -26,6 +26,7 @@ public class OppfolgingRepository {
     private final OppfolgingsPeriodeRepository periodeRepository;
     private final MaalRepository maalRepository;
     private final ManuellStatusRepository manuellStatusRepository;
+    private final BrukervilkarRepository brukervilkarRepository;
 
     public OppfolgingRepository(Database database, JdbcTemplate jdbcTemplate) {
         this.database = database;
@@ -33,6 +34,7 @@ public class OppfolgingRepository {
         periodeRepository = new OppfolgingsPeriodeRepository(database);
         maalRepository = new MaalRepository(database);
         manuellStatusRepository = new ManuellStatusRepository(database);
+        brukervilkarRepository = new BrukervilkarRepository(database);
     }
 
     public Optional<Oppfolging> hentOppfolging(String aktorId) {
@@ -107,9 +109,10 @@ public class OppfolgingRepository {
         statusRepository.oppdaterManuellStatus(manuellStatus);
     }
 
+    @Transactional
     public void opprettBrukervilkar(Brukervilkar brukervilkar) {
         brukervilkar.setId(nesteFraSekvens("brukervilkar_seq"));
-        opprettOppfolgingBrukervilkar(brukervilkar);
+        brukervilkarRepository.create(brukervilkar);
         statusRepository.oppdaterOppfolgingBrukervilkar(brukervilkar);
     }
 
@@ -120,37 +123,14 @@ public class OppfolgingRepository {
         return new Oppfolging().setAktorId(aktorId).setUnderOppfolging(false);
     }
 
+    // FIXME: go directly to the repository instead.
     public List<Brukervilkar> hentHistoriskeVilkar(String aktorId) {
-        String sql =
-                "SELECT " +
-                "id AS brukervilkar_id, " +
-                "aktor_id AS aktor_id, " +
-                "dato AS brukervilkar_dato, " +
-                "vilkarstatus AS brukervilkar_vilkarstatus, " +
-                "tekst AS brukervilkar_tekst, " +
-                "hash AS brukervilkar_hash " +
-                "FROM BRUKERVILKAR " +
-                "WHERE aktor_id = ? " +
-                "ORDER BY dato DESC";
-        return database.query(sql, this::mapTilBrukervilkar, aktorId);
+        return brukervilkarRepository.history(aktorId);
     }
 
     // FIXME: go directly to the repository instead.
     public List<AvsluttetOppfolgingFeedData> hentAvsluttetOppfolgingEtterDato(Timestamp timestamp, int pageSize) {
         return periodeRepository.hentAvsluttetOppfolgingEtterDato(timestamp, pageSize);
-    }
-
-    private void opprettOppfolgingBrukervilkar(Brukervilkar vilkar) {
-        database.update(
-                "INSERT INTO BRUKERVILKAR(id, aktor_id, dato, vilkarstatus, tekst, hash) VALUES(?, ?, ?, ?, ?, ?)",
-                vilkar.getId(),
-                vilkar.getAktorId(),
-                vilkar.getDato(),
-                vilkar.getVilkarstatus().name(),
-                vilkar.getTekst(),
-                vilkar.getHash()
-
-        );
     }
 
     // FIXME: go directly to the repository instead.
@@ -175,7 +155,7 @@ public class OppfolgingRepository {
                 )
                 .setGjeldendeBrukervilkar(
                         Optional.ofNullable(resultat.getLong("gjeldende_brukervilkar"))
-                                .map(b -> b != 0 ? mapTilBrukervilkar(resultat) : null)
+                                .map(b -> b != 0 ? BrukervilkarRepository.map(resultat) : null)
                                 .orElse(null)
                 )
                 .setGjeldendeMal(
@@ -332,16 +312,5 @@ public class OppfolgingRepository {
                 .avsluttetAv(result.getString( "esk_avsluttet_av"))
                 .tilhorendeDialogId(result.getLong("esk_tilhorende_dialog_id"))
                 .build();
-    }
-
-    @SneakyThrows
-    private Brukervilkar mapTilBrukervilkar(ResultSet result) {
-        return new Brukervilkar(
-                result.getString("aktor_id"),
-                result.getTimestamp("brukervilkar_dato"),
-                VilkarStatus.valueOf(result.getString("brukervilkar_vilkarstatus")),
-                result.getString("brukervilkar_tekst"),
-                result.getString("brukervilkar_hash")
-        ).setId(result.getLong("brukervilkar_id"));
     }
 }
