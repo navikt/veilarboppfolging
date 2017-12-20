@@ -134,7 +134,13 @@ public class OppfolgingRepositoryTest extends IntegrasjonsTest {
             String veilederId = "veilederId";
             String maal = "Mål";
             settVeileder(veilederId, AKTOR_ID);
-            oppfolgingRepository.opprettManuellStatus(new ManuellStatus(AKTOR_ID, true, new Timestamp(currentTimeMillis()), "Test", KodeverkBruker.SYSTEM, null));
+            oppfolgingRepository.opprettManuellStatus(
+                    new ManuellStatus()
+                            .setAktorId(AKTOR_ID)
+                            .setManuell(true)
+                            .setDato(new Timestamp(currentTimeMillis()))
+                            .setBegrunnelse("Test")
+                            .setOpprettetAv(KodeverkBruker.SYSTEM));
             oppfolgingRepository.opprettMal(new MalData().setAktorId(AKTOR_ID).setMal(maal).setEndretAv("bruker").setDato(new Timestamp(currentTimeMillis())));
             String hash = "123";
             oppfolgingRepository.opprettBrukervilkar(new Brukervilkar().setAktorId(AKTOR_ID).setHash(hash).setVilkarstatus(GODKJENT));
@@ -144,7 +150,7 @@ public class OppfolgingRepositoryTest extends IntegrasjonsTest {
             assertThat(oppfolging.getGjeldendeManuellStatus().isManuell(), is(true));
             assertThat(oppfolging.getGjeldendeMal().getMal(), equalTo(maal));
             assertThat(oppfolging.getGjeldendeBrukervilkar().getHash(), equalTo(hash));
-            
+
             oppfolgingRepository.avsluttOppfolging(AKTOR_ID, veilederId, "Funnet arbeid");
             Oppfolging avsluttetOppfolging = hentOppfolging(AKTOR_ID).get();
             assertThat(avsluttetOppfolging.isUnderOppfolging(), is(false));
@@ -152,15 +158,15 @@ public class OppfolgingRepositoryTest extends IntegrasjonsTest {
             assertThat(avsluttetOppfolging.getGjeldendeManuellStatus(), nullValue());
             assertThat(avsluttetOppfolging.getGjeldendeMal(), nullValue());
             assertThat(avsluttetOppfolging.getGjeldendeBrukervilkar(), nullValue());
-            
+
             List<Oppfolgingsperiode> oppfolgingsperioder = avsluttetOppfolging.getOppfolgingsperioder();
             assertThat(oppfolgingsperioder.size(), is(1));
-            
-            
+
+
         }
-        
+
     }
-    
+
     @Nested
     class oppfolgingsperiode {
 
@@ -179,7 +185,7 @@ public class OppfolgingRepositoryTest extends IntegrasjonsTest {
             assertThat(oppfolgingsperioder, hasSize(1));
             assertThat(oppfolgingsperioder.get(0).getStartDato(), not(nullValue()));
             assertThat(oppfolgingsperioder.get(0).getSluttDato(), nullValue());
-            
+
             oppfolgingRepository.avsluttOppfolging(AKTOR_ID, "veileder", "begrunnelse");
             oppfolgingsperioder = oppfolgingRepository.hentOppfolging(AKTOR_ID).get().getOppfolgingsperioder();
             assertThat(oppfolgingsperioder, hasSize(1));

@@ -17,7 +17,6 @@ import java.util.Optional;
 
 import static java.util.Optional.ofNullable;
 import static no.nav.apiapp.util.EnumUtils.getName;
-import static no.nav.apiapp.util.EnumUtils.valueOfOptional;
 
 public class OppfolgingRepository {
 
@@ -26,13 +25,14 @@ public class OppfolgingRepository {
     private final OppfolgingsStatusRepository statusRepository;
     private final OppfolgingsPeriodeRepository periodeRepository;
     private final MaalRepository maalRepository;
-
+    private final ManuellStatusRepository manuellStatusRepository;
 
     public OppfolgingRepository(Database database, JdbcTemplate jdbcTemplate) {
         this.database = database;
         statusRepository = new OppfolgingsStatusRepository(jdbcTemplate);
         periodeRepository = new OppfolgingsPeriodeRepository(database);
         maalRepository = new MaalRepository(database);
+        manuellStatusRepository = new ManuellStatusRepository(database);
     }
 
     public Optional<Oppfolging> hentOppfolging(String aktorId) {
@@ -99,10 +99,12 @@ public class OppfolgingRepository {
         periodeRepository.avsluttOppfolgingsperiode(aktorId, veileder, begrunnelse);
     }
 
+    // FIXME: OPPFOLGINGSSTATUS table should have a foreign key constraint on GJELDENDE_MANUELL_STATUS
+    @Transactional
     public void opprettManuellStatus(ManuellStatus manuellStatus) {
         manuellStatus.setId(nesteFraSekvens("status_seq"));
+        manuellStatusRepository.create(manuellStatus);
         statusRepository.oppdaterManuellStatus(manuellStatus);
-        insertManuellStatus(manuellStatus);
     }
 
     public void opprettBrukervilkar(Brukervilkar brukervilkar) {
@@ -151,34 +153,8 @@ public class OppfolgingRepository {
         );
     }
 
-    private void insertManuellStatus(ManuellStatus manuellStatus) {
-        database.update(
-                "INSERT INTO MANUELL_STATUS(" +
-                        "id, " +
-                        "aktor_id, " +
-                        "manuell, " +
-                        "opprettet_dato, " +
-                        "begrunnelse, " +
-                        "opprettet_av, " +
-                        "opprettet_av_brukerid) " +
-                        "VALUES(?, ?, ?, ?, ?, ?, ?)",
-                manuellStatus.getId(),
-                manuellStatus.getAktorId(),
-                manuellStatus.isManuell(),
-                manuellStatus.getDato(),
-                manuellStatus.getBegrunnelse(),
-                getName(manuellStatus.getOpprettetAv()),
-                manuellStatus.getOpprettetAvBrukerId()
-        );
-    }
-
-    public List<InnstillingsHistorikkData> hentManuellHistorikk(String aktorId) {
-        return database.query(
-                "SELECT manuell, opprettet_dato, begrunnelse, opprettet_av, opprettet_av_brukerid " +
-                        "FROM MANUELL_STATUS " +
-                        "WHERE aktor_id = ?",
-                this::mapRadTilInnstillingsHistorikkData,
-                aktorId);
+    public List<ManuellStatus> hentManuellHistorikk(String aktorId) {
+        return manuellStatusRepository.history(aktorId);
     }
 
     private long nesteFraSekvens(String sekvensNavn) {
@@ -193,7 +169,7 @@ public class OppfolgingRepository {
                 .setUnderOppfolging(resultat.getBoolean("under_oppfolging"))
                 .setGjeldendeManuellStatus(
                         Optional.ofNullable(resultat.getLong("gjeldende_manuell_status"))
-                                .map(s -> s != 0 ? mapTilManuellStatus(resultat) : null)
+                                .map(s -> s != 0 ? ManuellStatusRepository.map(resultat) : null)
                                 .orElse(null)
                 )
                 .setGjeldendeBrukervilkar(
@@ -318,6 +294,7 @@ public class OppfolgingRepository {
         return maalRepository.aktorMal(aktorId);
     }
 
+    // FIXME: OPPFOLGINGSSTATUS table should have a foreign key constraint on GJELDENDE_MAL
     @Transactional
     public void opprettMal(MalData mal) {
         mal.setId(nesteFraSekvens("MAL_SEQ"));
@@ -363,28 +340,4 @@ public class OppfolgingRepository {
                 result.getString("brukervilkar_hash")
         ).setId(result.getLong("brukervilkar_id"));
     }
-
-    @SneakyThrows
-    private ManuellStatus mapTilManuellStatus(ResultSet result) {
-        return new ManuellStatus(
-                result.getString("aktor_id"),
-                result.getBoolean("ms_manuell"),
-                result.getTimestamp("ms_opprettet_dato"),
-                result.getString("ms_begrunnelse"),
-                valueOfOptional(KodeverkBruker.class, result.getString("ms_opprettet_av")).orElse(null),
-                result.getString("ms_opprettet_av_brukerid")
-        ).setId(result.getLong("ms_id"));
-    }
-
-    @SneakyThrows
-    private InnstillingsHistorikkData mapRadTilInnstillingsHistorikkData(ResultSet result) {
-        return new InnstillingsHistorikkData()
-                .setManuell(result.getBoolean("manuell"))
-                .setDato(result.getTimestamp("opprettet_dato"))
-                .setBegrunnelse(result.getString("begrunnelse"))
-                .setOpprettetAv(valueOfOptional(KodeverkBruker.class, result.getString("opprettet_av")).orElse(null))
-                .setOpprettetAvBrukerId(result.getString("opprettet_av_brukerid"));
-
-    }
-
 }
