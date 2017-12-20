@@ -116,6 +116,7 @@ public class OppfolgingRepository {
     public Oppfolging opprettOppfolging(String aktorId) {
         statusRepository.opprettOppfolging(aktorId);
 
+        // FIXME: return the actual database object.
         return new Oppfolging().setAktorId(aktorId).setUnderOppfolging(false);
     }
 
@@ -134,8 +135,7 @@ public class OppfolgingRepository {
         return database.query(sql, this::mapTilBrukervilkar, aktorId);
     }
 
-
-
+    // FIXME: go directly to the repository instead.
     public List<AvsluttetOppfolgingFeedData> hentAvsluttetOppfolgingEtterDato(Timestamp timestamp, int pageSize) {
         return periodeRepository.hentAvsluttetOppfolgingEtterDato(timestamp, pageSize);
     }
@@ -153,6 +153,7 @@ public class OppfolgingRepository {
         );
     }
 
+    // FIXME: go directly to the repository instead.
     public List<ManuellStatus> hentManuellHistorikk(String aktorId) {
         return manuellStatusRepository.history(aktorId);
     }
@@ -189,6 +190,8 @@ public class OppfolgingRepository {
                                 .orElse(null)
                 );
     }
+
+    // FIXME: go directly to the repository instead.
     public List<Oppfolgingsperiode> hentAvsluttetOppfolgingsperioder(String aktorId) {
         return periodeRepository.hentAvsluttetOppfolgingsperioder(aktorId);
     }
@@ -290,6 +293,7 @@ public class OppfolgingRepository {
         statusRepository.fjernEskalering(aktorId);
     }
 
+    // FIXME: go directly to maalRepository instead.
     public List<MalData> hentMalList(String aktorId) {
         return maalRepository.aktorMal(aktorId);
     }

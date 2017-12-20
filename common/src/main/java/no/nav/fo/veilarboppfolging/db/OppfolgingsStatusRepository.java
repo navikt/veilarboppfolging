@@ -65,14 +65,14 @@ public class  OppfolgingsStatusRepository {
     }
 
     public Boolean erOppfolgingsflaggSattForBruker(String aktorId) {
-        return SqlUtils.select(db.getDataSource(), TABLE_NAME, this::erOppflingsfalgSat)
+        return SqlUtils.select(db.getDataSource(), TABLE_NAME, this::erUnderOppfolging)
                 .column(UNDER_OPPFOLGING)
                 .where(WhereClause.equals(AKTOR_ID, aktorId))
                 .execute();
     }
 
     @SneakyThrows
-    private Boolean erOppflingsfalgSat(ResultSet resultSet) {
+    private Boolean erUnderOppfolging(ResultSet resultSet) {
         return resultSet.getBoolean(UNDER_OPPFOLGING);
     }
 
