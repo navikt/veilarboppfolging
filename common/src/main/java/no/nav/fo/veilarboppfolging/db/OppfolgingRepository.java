@@ -23,14 +23,16 @@ public class OppfolgingRepository {
 
     private Database database;
 
-    private OppfolgingsStatusRepository statusRepository;
-    private  OppfolgingsPeriodeRepository periodeRepository;
+    private final OppfolgingsStatusRepository statusRepository;
+    private final OppfolgingsPeriodeRepository periodeRepository;
+    private final MaalRepository maalRepository;
 
 
     public OppfolgingRepository(Database database, JdbcTemplate jdbcTemplate) {
         this.database = database;
         statusRepository = new OppfolgingsStatusRepository(jdbcTemplate);
         periodeRepository = new OppfolgingsPeriodeRepository(database);
+        maalRepository = new MaalRepository(database);
     }
 
     public Optional<Oppfolging> hentOppfolging(String aktorId) {
@@ -109,31 +111,10 @@ public class OppfolgingRepository {
         statusRepository.oppdaterOppfolgingBrukervilkar(brukervilkar);
     }
 
-    public void opprettMal(MalData mal) {
-        mal.setId(nesteFraSekvens("MAL_SEQ"));
-        statusRepository.oppdaterOppfolgingMal(mal);
-        opprettOppfolgingMal(mal);
-    }
-
     public Oppfolging opprettOppfolging(String aktorId) {
         statusRepository.opprettOppfolging(aktorId);
 
         return new Oppfolging().setAktorId(aktorId).setUnderOppfolging(false);
-    }
-
-    public List<MalData> hentMalList(String aktorId) {
-        return database.query("" +
-                        "SELECT" +
-                        "  id AS mal_id, " +
-                        "  aktor_id AS mal_aktor_id, " +
-                        "  mal AS mal_mal, " +
-                        "  endret_av AS mal_endret_av, " +
-                        "  dato AS mal_dato " +
-                        "FROM MAL " +
-                        "WHERE aktor_id = ? " +
-                        "ORDER BY ID DESC",
-                this::mapTilMal,
-                aktorId);
     }
 
     public List<Brukervilkar> hentHistoriskeVilkar(String aktorId) {
@@ -200,24 +181,6 @@ public class OppfolgingRepository {
                 aktorId);
     }
 
-    private void opprettOppfolgingMal(MalData mal) {
-        database.update(
-                "INSERT INTO MAL(id, aktor_id, mal, endret_av, dato) " +
-                        "VALUES(?, ?, ?, ?, ?)",
-                mal.getId(),
-                mal.getAktorId(),
-                mal.getMal(),
-                mal.getEndretAv(),
-                mal.getDato()
-        );
-    }
-
-    @Transactional
-    public void slettMalForAktorEtter(String aktorId, Date date) {
-        statusRepository.fjernMaal(aktorId);
-        database.update("DELETE FROM MAL WHERE aktor_id = ? AND dato > ?", aktorId, date);
-    }
-
     private long nesteFraSekvens(String sekvensNavn) {
         return database.nesteFraSekvens(sekvensNavn);
     }
@@ -240,7 +203,7 @@ public class OppfolgingRepository {
                 )
                 .setGjeldendeMal(
                         Optional.ofNullable(resultat.getLong("gjeldende_mal"))
-                                .map(m -> m != 0 ? mapTilMal(resultat) : null)
+                                .map(m -> m != 0 ? MaalRepository.map(resultat) : null)
                                 .orElse(null)
                 )
                 .setOppfolgingsperioder(periodeRepository.hentOppfolgingsperioder(aktorId))
@@ -351,6 +314,30 @@ public class OppfolgingRepository {
         statusRepository.fjernEskalering(aktorId);
     }
 
+    public List<MalData> hentMalList(String aktorId) {
+        return maalRepository.aktorMal(aktorId);
+    }
+
+    @Transactional
+    public void opprettMal(MalData mal) {
+        mal.setId(nesteFraSekvens("MAL_SEQ"));
+        statusRepository.oppdaterOppfolgingMal(mal);
+        maalRepository.opprett(mal);
+    }
+
+    @Transactional
+    public void slettMalForAktorEtter(String aktorId, Date date) {
+        statusRepository.fjernMaal(aktorId);
+        maalRepository.slettForAktorEtter(aktorId, date);
+    }
+
+    private static Date hentDato(ResultSet rs, String kolonneNavn) throws SQLException {
+        return ofNullable(rs.getTimestamp(kolonneNavn))
+                .map(Timestamp::getTime)
+                .map(Date::new)
+                .orElse(null);
+    }
+
     @SneakyThrows
     private EskaleringsvarselData mapTilEskaleringsvarselData(ResultSet result) {
         return EskaleringsvarselData.builder()
@@ -364,15 +351,6 @@ public class OppfolgingRepository {
                 .avsluttetAv(result.getString( "esk_avsluttet_av"))
                 .tilhorendeDialogId(result.getLong("esk_tilhorende_dialog_id"))
                 .build();
-    }
-
-
-
-    private static Date hentDato(ResultSet rs, String kolonneNavn) throws SQLException {
-        return ofNullable(rs.getTimestamp(kolonneNavn))
-                .map(Timestamp::getTime)
-                .map(Date::new)
-                .orElse(null);
     }
 
     @SneakyThrows
@@ -396,16 +374,6 @@ public class OppfolgingRepository {
                 valueOfOptional(KodeverkBruker.class, result.getString("ms_opprettet_av")).orElse(null),
                 result.getString("ms_opprettet_av_brukerid")
         ).setId(result.getLong("ms_id"));
-    }
-
-    @SneakyThrows
-    private MalData mapTilMal(ResultSet result) {
-        return new MalData()
-                .setId(result.getLong("mal_id"))
-                .setAktorId(result.getString("mal_aktor_id"))
-                .setMal(result.getString("mal_mal"))
-                .setEndretAv(result.getString("mal_endret_av"))
-                .setDato(result.getTimestamp("mal_dato"));
     }
 
     @SneakyThrows
