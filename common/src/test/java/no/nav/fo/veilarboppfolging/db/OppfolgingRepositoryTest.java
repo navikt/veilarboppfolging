@@ -5,7 +5,6 @@ import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.sbl.jdbc.Database;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.sql.Timestamp;
 import java.util.Date;
