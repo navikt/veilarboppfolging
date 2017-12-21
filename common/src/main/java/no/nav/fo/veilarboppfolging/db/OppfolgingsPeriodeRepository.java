@@ -4,12 +4,15 @@ import lombok.SneakyThrows;
 import no.nav.fo.veilarboppfolging.domain.AvsluttetOppfolgingFeedData;
 import no.nav.fo.veilarboppfolging.domain.Oppfolgingsperiode;
 import no.nav.sbl.jdbc.Database;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.List;
 
+import static no.nav.fo.veilarboppfolging.db.OppfolgingsStatusRepository.AKTOR_ID;
+import static no.nav.fo.veilarboppfolging.db.OppfolgingsStatusRepository.UNDER_OPPFOLGING;
 import static no.nav.sbl.jdbc.Database.hentDato;
 
 public class OppfolgingsPeriodeRepository {
@@ -19,14 +22,35 @@ public class OppfolgingsPeriodeRepository {
         this.database = database;
     }
 
+    @Transactional
     public void opprettOppfolgingsperiode(String aktorId) {
+        insert(aktorId);
+        setActive(aktorId);
+    }
+
+    private void insert(String aktorId) {
         database.update("" +
                         "INSERT INTO OPPFOLGINGSPERIODE(aktor_id, startDato, oppdatert) " +
                         "VALUES (?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
                 aktorId);
     }
 
+    public void setActive(String aktorId) {
+        database.update("UPDATE " +
+                        OppfolgingsStatusRepository.TABLE_NAME +
+                        " SET " + UNDER_OPPFOLGING + "= 1, " +
+                        "oppdatert = CURRENT_TIMESTAMP " +
+                        "WHERE " + AKTOR_ID + " = ?",
+                aktorId);
+    }
+
+    @Transactional
     public void avsluttOppfolgingsperiode(String aktorId, String veileder, String begrunnelse) {
+        endPeriode(aktorId, veileder, begrunnelse);
+        avsluttOppfolging(aktorId);
+    }
+
+    private void endPeriode(String aktorId, String veileder, String begrunnelse) {
         database.update("" +
                         "UPDATE OPPFOLGINGSPERIODE " +
                         "SET avslutt_veileder = ?, " +
@@ -40,6 +64,18 @@ public class OppfolgingsPeriodeRepository {
                 aktorId);
     }
 
+    private void avsluttOppfolging(String aktorId){
+        database.update("UPDATE OPPFOLGINGSTATUS SET under_oppfolging = 0, "
+                        + "veileder = null, "
+                        + "gjeldende_manuell_status = null, "
+                        + "gjeldende_mal = null, "
+                        + "gjeldende_brukervilkar = null, "
+                        + "oppdatert = CURRENT_TIMESTAMP "
+                        + "WHERE aktor_id = ?",
+                aktorId
+        );
+    }
+
     public List<AvsluttetOppfolgingFeedData> hentAvsluttetOppfolgingEtterDato(Timestamp timestamp, int pageSize) {
         return database
                 .query("SELECT * FROM (SELECT aktor_id, sluttdato, oppdatert " +
@@ -50,7 +86,6 @@ public class OppfolgingsPeriodeRepository {
                         timestamp,
                         pageSize);
     }
-
 
 
     public List<Oppfolgingsperiode> hentOppfolgingsperioder(String aktorId) {
