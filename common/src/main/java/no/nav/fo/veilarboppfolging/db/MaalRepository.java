@@ -40,7 +40,7 @@ public class MaalRepository {
     @Transactional
     public void slettForAktorEtter(String aktorId, Date date) {
         removeActive(aktorId);
-        deleteMaal(aktorId, date);
+        delete(aktorId, date);
     }
 
     private void insert(MalData maal) {
@@ -64,7 +64,7 @@ public class MaalRepository {
         );
     }
 
-    private void deleteMaal(String aktorId, Date date) {
+    private void delete(String aktorId, Date date) {
         database.update("DELETE FROM MAL " +
                         "WHERE aktor_id = ? AND dato > ?",
                 aktorId,
