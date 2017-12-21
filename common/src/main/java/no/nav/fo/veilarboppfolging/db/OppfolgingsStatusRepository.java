@@ -1,21 +1,16 @@
 package no.nav.fo.veilarboppfolging.db;
 
 import lombok.SneakyThrows;
-import no.nav.fo.veilarboppfolging.domain.Brukervilkar;
-import no.nav.fo.veilarboppfolging.domain.MalData;
-import no.nav.fo.veilarboppfolging.domain.ManuellStatus;
+import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.sbl.jdbc.Database;
-import no.nav.sbl.sql.SqlUtils;
-import no.nav.sbl.sql.where.WhereClause;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.List;
 
-public class  OppfolgingsStatusRepository {
+public class OppfolgingsStatusRepository {
 
     public static final String TABLE_NAME = "OPPFOLGINGSTATUS";
-    public static final String AKTOR_ID = "aktor_id";
-    public static final String GJELDENE_ESKALERINGSVARSEL = "gjeldende_eskaleringsvarsel";
     public static final String UNDER_OPPFOLGING = "under_oppfolging";
 
     private Database db;
@@ -24,6 +19,14 @@ public class  OppfolgingsStatusRepository {
         this.db = db;
     }
 
+    public OppfolgingTable fetch(String aktorId) {
+        List<OppfolgingTable> t = db.query("" +
+                "SELECT * FROM OPPFOLGINGSTATUS WHERE aktor_id = ?",
+                OppfolgingsStatusRepository::map,
+                aktorId
+        );
+        return t.size() > 0 ? t.get(0) : null;
+    }
 
     public void setUnderOppfolging(String aktorId) {
         db.update("UPDATE OPPFOLGINGSTATUS " +
@@ -76,11 +79,6 @@ public class  OppfolgingsStatusRepository {
         ).get(0);
     }
 
-    @SneakyThrows
-    public static Boolean erUnderOppfolging(ResultSet resultSet) {
-        return resultSet.getBoolean(UNDER_OPPFOLGING);
-    }
-
     public void opprettOppfolging(String aktorId) {
         db.update("INSERT INTO OPPFOLGINGSTATUS(" +
                         "aktor_id, " +
@@ -114,5 +112,21 @@ public class  OppfolgingsStatusRepository {
 
     public void fjernMaal(String aktorId) {
         db.update("UPDATE OPPFOLGINGSTATUS SET gjeldende_mal = NULL WHERE aktor_id = ?", aktorId);
+    }
+
+    @SneakyThrows
+    public static Boolean erUnderOppfolging(ResultSet resultSet) {
+        return resultSet.getBoolean(UNDER_OPPFOLGING);
+    }
+
+    public static OppfolgingTable map(ResultSet r) throws SQLException {
+        return new OppfolgingTable()
+                .setAktorId(r.getString("aktor_id"))
+                .setGjeldendeBrukervilkarId(r.getLong("gjeldende_brukervilkar"))
+                .setGjeldendeManuellStatusId(r.getLong("gjeldende_manuell_status"))
+                .setGjeldendeMaalId(r.getLong("gjeldende_mal"))
+                .setGjeldendeEskaleringsvarselId(r.getLong("gjeldende_eskaleringsvarsel"))
+                .setVeilederId(r.getString("veileder"))
+                .setUnderOppfolging(r.getBoolean("under_oppfolging"));
     }
 }

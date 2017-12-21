@@ -40,11 +40,13 @@ public class ManuellStatusRepository {
         );
     }
 
+    public ManuellStatus fetch(Long id) {
+        String sql = "SELECT * FROM MANUELL_STATUS WHERE id = ?";
+        return database.query(sql, ManuellStatusRepository::map, id).get(0);
+    }
+
     public List<ManuellStatus> history(String aktorId) {
-        return database.query("" +
-                        "SELECT manuell, opprettet_dato, begrunnelse, opprettet_av, opprettet_av_brukerid " +
-                        "FROM MANUELL_STATUS " +
-                        "WHERE aktor_id = ?",
+        return database.query("SELECT * FROM MANUELL_STATUS WHERE aktor_id = ?",
                 ManuellStatusRepository::map,
                 aktorId);
     }
@@ -52,12 +54,12 @@ public class ManuellStatusRepository {
     @SneakyThrows
     public static ManuellStatus map(ResultSet result) {
         return new ManuellStatus()
-                .setId(result.getLong("ms_id"))
+                .setId(result.getLong("id"))
                 .setAktorId(result.getString("aktor_id"))
-                .setManuell(result.getBoolean("ms_manuell"))
-                .setDato(result.getTimestamp("ms_opprettet_dato"))
-                .setBegrunnelse(result.getString("ms_begrunnelse"))
-                .setOpprettetAv(valueOfOptional(KodeverkBruker.class, result.getString("ms_opprettet_av")).orElse(null))
-                .setOpprettetAvBrukerId(result.getString("ms_opprettet_av_brukerid"));
+                .setManuell(result.getBoolean("manuell"))
+                .setDato(result.getTimestamp("opprettet_dato"))
+                .setBegrunnelse(result.getString("begrunnelse"))
+                .setOpprettetAv(valueOfOptional(KodeverkBruker.class, result.getString("opprettet_av")).orElse(null))
+                .setOpprettetAvBrukerId(result.getString("opprettet_av_brukerid"));
     }
 }

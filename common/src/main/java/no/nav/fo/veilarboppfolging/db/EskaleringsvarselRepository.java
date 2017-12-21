@@ -19,17 +19,7 @@ public class EskaleringsvarselRepository {
 
     protected EskaleringsvarselData fetchByAktorId(String aktorId) {
         List<EskaleringsvarselData> eskalering = database.query("" +
-                        "SELECT " +
-                        "varsel_id AS esk_id, " +
-                        "aktor_id AS esk_aktor_id, " +
-                        "opprettet_av AS esk_opprettet_av, " +
-                        "opprettet_dato AS esk_opprettet_dato, " +
-                        "avsluttet_dato AS esk_avsluttet_dato, " +
-                        "avsluttet_av AS esk_avsluttet_av, " +
-                        "tilhorende_dialog_id AS esk_tilhorende_dialog_id, " +
-                        "opprettet_begrunnelse AS esk_opprettet_begrunnelse, " +
-                        "avsluttet_begrunnelse AS esk_avsluttet_begrunnelse " +
-                        "FROM eskaleringsvarsel " +
+                        "SELECT * FROM eskaleringsvarsel " +
                         "WHERE varsel_id IN (SELECT gjeldende_eskaleringsvarsel FROM OPPFOLGINGSTATUS WHERE aktor_id = ?)",
                 EskaleringsvarselRepository::map,
                 aktorId);
@@ -38,6 +28,11 @@ public class EskaleringsvarselRepository {
                 .findAny()
                 .orElse(null);
 
+    }
+
+    public EskaleringsvarselData fetch(Long id) {
+        String sql = "SELECT * FROM ESKALERINGSVARSEL WHERE varsel_id = ?";
+        return database.query(sql, EskaleringsvarselRepository::map, id).get(0);
     }
 
     protected void create(EskaleringsvarselData e) {
@@ -68,18 +63,7 @@ public class EskaleringsvarselRepository {
     }
 
     public List<EskaleringsvarselData> history(String aktorId) {
-        return database.query("SELECT " +
-                        "varsel_id AS esk_id, " +
-                        "aktor_id AS esk_aktor_id, " +
-                        "opprettet_av AS esk_opprettet_av, " +
-                        "opprettet_dato AS esk_opprettet_dato, " +
-                        "avsluttet_av AS esk_avsluttet_av, " +
-                        "avsluttet_dato AS esk_avsluttet_dato, " +
-                        "tilhorende_dialog_id AS esk_tilhorende_dialog_id, " +
-                        "avsluttet_begrunnelse AS esk_avsluttet_begrunnelse, " +
-                        "opprettet_begrunnelse AS esk_opprettet_begrunnelse " +
-                        "FROM eskaleringsvarsel " +
-                        "WHERE aktor_id = ?",
+        return database.query("SELECT * FROM ESKALERINGSVARSEL WHERE aktor_id = ?",
                 EskaleringsvarselRepository::map,
                 aktorId);
     }
@@ -87,15 +71,15 @@ public class EskaleringsvarselRepository {
     @SneakyThrows
     public static EskaleringsvarselData map(ResultSet result) {
         return EskaleringsvarselData.builder()
-                .varselId(result.getLong("esk_id"))
-                .aktorId(result.getString("esk_aktor_id"))
-                .opprettetAv(result.getString("esk_opprettet_av"))
-                .opprettetDato(hentDato(result, "esk_opprettet_dato"))
-                .opprettetBegrunnelse(result.getString("esk_opprettet_begrunnelse"))
-                .avsluttetDato(hentDato(result, "esk_avsluttet_dato"))
-                .avsluttetBegrunnelse(result.getString( "esk_avsluttet_begrunnelse"))
-                .avsluttetAv(result.getString( "esk_avsluttet_av"))
-                .tilhorendeDialogId(result.getLong("esk_tilhorende_dialog_id"))
+                .varselId(result.getLong("varsel_id"))
+                .aktorId(result.getString("aktor_id"))
+                .opprettetAv(result.getString("opprettet_av"))
+                .opprettetDato(hentDato(result, "opprettet_dato"))
+                .opprettetBegrunnelse(result.getString("opprettet_begrunnelse"))
+                .avsluttetDato(hentDato(result, "avsluttet_dato"))
+                .avsluttetBegrunnelse(result.getString( "avsluttet_begrunnelse"))
+                .avsluttetAv(result.getString( "avsluttet_av"))
+                .tilhorendeDialogId(result.getLong("tilhorende_dialog_id"))
                 .build();
     }
 }

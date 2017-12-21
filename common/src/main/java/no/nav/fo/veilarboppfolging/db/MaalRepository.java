@@ -17,18 +17,14 @@ public class MaalRepository {
 
     @SneakyThrows
     public List<MalData> aktorMal(String aktorId) {
-        return database.query("" +
-                        "SELECT" +
-                        "  id AS mal_id, " +
-                        "  aktor_id AS mal_aktor_id, " +
-                        "  mal AS mal_mal, " +
-                        "  endret_av AS mal_endret_av, " +
-                        "  dato AS mal_dato " +
-                        "FROM MAL " +
-                        "WHERE aktor_id = ? " +
-                        "ORDER BY ID DESC",
+        return database.query("SELECT * FROM MAL WHERE aktor_id = ? ORDER BY ID DESC",
                 MaalRepository::map,
                 aktorId);
+    }
+
+    public MalData fetch(Long id) {
+        String sql = "SELECT * FROM MAL WHERE id = ?";
+        return database.query(sql, MaalRepository::map, id).get(0);
     }
 
     // Creates a goal. Remember to update the OPPFOLGINGSSTATUS table with the current goal as well, if applicable.
@@ -51,11 +47,11 @@ public class MaalRepository {
     @SneakyThrows
     public static MalData map(ResultSet result) {
         return new MalData()
-                .setId(result.getLong("mal_id"))
-                .setAktorId(result.getString("mal_aktor_id"))
-                .setMal(result.getString("mal_mal"))
-                .setEndretAv(result.getString("mal_endret_av"))
-                .setDato(result.getTimestamp("mal_dato"));
+                .setId(result.getLong("id"))
+                .setAktorId(result.getString("aktor_id"))
+                .setMal(result.getString("mal"))
+                .setEndretAv(result.getString("endret_av"))
+                .setDato(result.getTimestamp("dato"));
     }
 
 }

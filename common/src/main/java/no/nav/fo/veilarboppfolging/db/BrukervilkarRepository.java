@@ -27,18 +27,13 @@ public class BrukervilkarRepository {
         );
     }
 
+    public Brukervilkar fetch(Long id) {
+        String sql = "SELECT * FROM BRUKERVILKAR WHERE id = ?";
+        return database.query(sql, BrukervilkarRepository::map, id).get(0);
+    }
+
     public List<Brukervilkar> history(String aktorId) {
-        String sql =
-                "SELECT " +
-                        "id AS brukervilkar_id, " +
-                        "aktor_id AS aktor_id, " +
-                        "dato AS brukervilkar_dato, " +
-                        "vilkarstatus AS brukervilkar_vilkarstatus, " +
-                        "tekst AS brukervilkar_tekst, " +
-                        "hash AS brukervilkar_hash " +
-                        "FROM BRUKERVILKAR " +
-                        "WHERE aktor_id = ? " +
-                        "ORDER BY dato DESC";
+        String sql = "SELECT * FROM BRUKERVILKAR WHERE aktor_id = ? ORDER BY dato DESC";
         return database.query(sql, BrukervilkarRepository::map, aktorId);
     }
 
@@ -46,10 +41,10 @@ public class BrukervilkarRepository {
     public static Brukervilkar map(ResultSet result) {
         return new Brukervilkar(
                 result.getString("aktor_id"),
-                result.getTimestamp("brukervilkar_dato"),
-                VilkarStatus.valueOf(result.getString("brukervilkar_vilkarstatus")),
-                result.getString("brukervilkar_tekst"),
-                result.getString("brukervilkar_hash")
-        ).setId(result.getLong("brukervilkar_id"));
+                result.getTimestamp("dato"),
+                VilkarStatus.valueOf(result.getString("vilkarstatus")),
+                result.getString("tekst"),
+                result.getString("hash")
+        ).setId(result.getLong("id"));
     }
 }

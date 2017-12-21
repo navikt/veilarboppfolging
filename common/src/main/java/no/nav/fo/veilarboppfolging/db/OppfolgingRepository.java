@@ -7,8 +7,6 @@ import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.sbl.jdbc.Database;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
@@ -38,53 +36,35 @@ public class OppfolgingRepository {
     }
 
     public Optional<Oppfolging> hentOppfolging(String aktorId) {
-        List<Oppfolging> oppfolging = database.query("" +
-                        "SELECT" +
-                        "  OPPFOLGINGSTATUS.aktor_id AS aktor_id, " +
-                        "  OPPFOLGINGSTATUS.veileder AS veileder, " +
-                        "  OPPFOLGINGSTATUS.under_oppfolging AS under_oppfolging, " +
-                        "  OPPFOLGINGSTATUS.gjeldende_manuell_status AS gjeldende_manuell_status, " +
-                        "  OPPFOLGINGSTATUS.gjeldende_eskaleringsvarsel AS gjeldende_eskaleringsvarsel, " +
-                        "  OPPFOLGINGSTATUS.gjeldende_brukervilkar AS gjeldende_brukervilkar, " +
-                        "  OPPFOLGINGSTATUS.gjeldende_mal AS gjeldende_mal, " +
-                        "  MANUELL_STATUS.id AS ms_id, " +
-                        "  MANUELL_STATUS.aktor_id AS ms_aktor_id, " +
-                        "  MANUELL_STATUS.manuell AS ms_manuell, " +
-                        "  MANUELL_STATUS.opprettet_dato AS ms_opprettet_dato, " +
-                        "  MANUELL_STATUS.begrunnelse AS ms_begrunnelse, " +
-                        "  MANUELL_STATUS.opprettet_av AS ms_opprettet_av, " +
-                        "  MANUELL_STATUS.opprettet_av_brukerid AS ms_opprettet_av_brukerid, " +
-                        "  BRUKERVILKAR.id AS brukervilkar_id, " +
-                        "  BRUKERVILKAR.aktor_id AS brukervilkar_aktor_id, " +
-                        "  BRUKERVILKAR.dato AS brukervilkar_dato, " +
-                        "  BRUKERVILKAR.vilkarstatus AS brukervilkar_vilkarstatus, " +
-                        "  BRUKERVILKAR.tekst AS brukervilkar_tekst, " +
-                        "  BRUKERVILKAR.hash AS brukervilkar_hash, " +
-                        "  MAL.id AS mal_id, " +
-                        "  MAL.aktor_id AS mal_aktor_id, " +
-                        "  MAL.mal AS mal_mal, " +
-                        "  MAL.endret_av AS mal_endret_av, " +
-                        "  MAL.dato AS mal_dato, " +
-                        "  ESKALERINGSVARSEL.varsel_id AS esk_id, " +
-                        "  ESKALERINGSVARSEL.aktor_id AS esk_aktor_id, " +
-                        "  ESKALERINGSVARSEL.opprettet_av AS esk_opprettet_av, " +
-                        "  ESKALERINGSVARSEL.opprettet_dato AS esk_opprettet_dato, " +
-                        "  ESKALERINGSVARSEL.avsluttet_dato AS esk_avsluttet_dato, " +
-                        "  ESKALERINGSVARSEL.avsluttet_begrunnelse AS esk_avsluttet_begrunnelse, " +
-                        "  ESKALERINGSVARSEL.opprettet_begrunnelse AS esk_opprettet_begrunnelse, " +
-                        "  ESKALERINGSVARSEL.avsluttet_av AS esk_avsluttet_av, " +
-                        "  ESKALERINGSVARSEL.tilhorende_dialog_id AS esk_tilhorende_dialog_id " +
-                        "FROM OPPFOLGINGSTATUS " +
-                        "LEFT JOIN MANUELL_STATUS ON OPPFOLGINGSTATUS.gjeldende_manuell_status = MANUELL_STATUS.id " +
-                        "LEFT JOIN BRUKERVILKAR ON OPPFOLGINGSTATUS.gjeldende_brukervilkar = BRUKERVILKAR.id " +
-                        "LEFT JOIN MAL ON OPPFOLGINGSTATUS.gjeldende_mal = MAL.id " +
-                        "LEFT JOIN ESKALERINGSVARSEL ON OPPFOLGINGSTATUS.gjeldende_eskaleringsvarsel = ESKALERINGSVARSEL.varsel_id " +
-                        "WHERE OPPFOLGINGSTATUS.aktor_id = ? ",
-                this::mapTilOppfolging,
-                aktorId
-        );
+        OppfolgingTable t = statusRepository.fetch(aktorId);
+        if (t == null) {
+            return Optional.empty();
+        }
 
-        return oppfolging.isEmpty() ? Optional.empty() : oppfolging.stream().findAny();
+        Oppfolging o = new Oppfolging()
+                .setAktorId(t.getAktorId())
+                .setVeilederId(t.getVeilederId())
+                .setUnderOppfolging(t.isUnderOppfolging());
+
+        if (t.getGjeldendeBrukervilkarId() != 0) {
+            o.setGjeldendeBrukervilkar(brukervilkarRepository.fetch(t.getGjeldendeBrukervilkarId()));
+        }
+
+        if (t.getGjeldendeEskaleringsvarselId() != 0) {
+            o.setGjeldendeEskaleringsvarsel(eskaleringsvarselRepository.fetch(t.getGjeldendeEskaleringsvarselId()));
+        }
+
+        if (t.getGjeldendeMaalId() != 0) {
+            o.setGjeldendeMal(maalRepository.fetch(t.getGjeldendeMaalId()));
+        }
+
+        if (t.getGjeldendeManuellStatusId() != 0) {
+            o.setGjeldendeManuellStatus(manuellStatusRepository.fetch(t.getGjeldendeManuellStatusId()));
+        }
+
+        o.setOppfolgingsperioder(periodeRepository.hentOppfolgingsperioder(t.getAktorId()));
+
+        return Optional.of(o);
     }
 
     @Transactional
@@ -140,35 +120,6 @@ public class OppfolgingRepository {
 
     private long nesteFraSekvens(String sekvensNavn) {
         return database.nesteFraSekvens(sekvensNavn);
-    }
-
-    private Oppfolging mapTilOppfolging(ResultSet resultat) throws SQLException {
-        String aktorId = resultat.getString("aktor_id");
-        return new Oppfolging()
-                .setAktorId(aktorId)
-                .setVeilederId(resultat.getString("veileder"))
-                .setUnderOppfolging(resultat.getBoolean("under_oppfolging"))
-                .setGjeldendeManuellStatus(
-                        Optional.ofNullable(resultat.getLong("gjeldende_manuell_status"))
-                                .map(s -> s != 0 ? ManuellStatusRepository.map(resultat) : null)
-                                .orElse(null)
-                )
-                .setGjeldendeBrukervilkar(
-                        Optional.ofNullable(resultat.getLong("gjeldende_brukervilkar"))
-                                .map(b -> b != 0 ? BrukervilkarRepository.map(resultat) : null)
-                                .orElse(null)
-                )
-                .setGjeldendeMal(
-                        Optional.ofNullable(resultat.getLong("gjeldende_mal"))
-                                .map(m -> m != 0 ? MaalRepository.map(resultat) : null)
-                                .orElse(null)
-                )
-                .setOppfolgingsperioder(periodeRepository.hentOppfolgingsperioder(aktorId))
-                .setGjeldendeEskaleringsvarsel(
-                        Optional.ofNullable(resultat.getLong("gjeldende_eskaleringsvarsel"))
-                                .map(e -> e != 0 ? EskaleringsvarselRepository.map(resultat) : null)
-                                .orElse(null)
-                );
     }
 
     // FIXME: go directly to the repository instead.
