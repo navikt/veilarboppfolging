@@ -27,11 +27,6 @@ public class VeilederTilordningerRepository {
                 .execute();
     }
 
-    @SneakyThrows
-    public String getVeileder(ResultSet resultSet) {
-        return resultSet.getString("veileder");
-    }
-
     @Transactional
     public void upsertVeilederTilordning(String aktoerId, String veileder) {
         val rowsUpdated = db.update(
@@ -48,5 +43,10 @@ public class VeilederTilordningerRepository {
         }
         oppfolgingRepository.startOppfolgingHvisIkkeAlleredeStartet(aktoerId);
 
+    }
+
+    @SneakyThrows
+    private String getVeileder(ResultSet resultSet) {
+        return resultSet.getString("veileder");
     }
 }

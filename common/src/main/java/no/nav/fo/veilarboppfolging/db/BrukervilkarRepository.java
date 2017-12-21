@@ -62,7 +62,7 @@ public class BrukervilkarRepository {
     }
 
     @SneakyThrows
-    public static Brukervilkar map(ResultSet result) {
+    private static Brukervilkar map(ResultSet result) {
         return new Brukervilkar(
                 result.getString("aktor_id"),
                 result.getTimestamp("dato"),

@@ -80,7 +80,7 @@ public class MaalRepository {
     }
 
     @SneakyThrows
-    public static MalData map(ResultSet result) {
+    private static MalData map(ResultSet result) {
         return new MalData()
                 .setId(result.getLong("id"))
                 .setAktorId(result.getString("aktor_id"))

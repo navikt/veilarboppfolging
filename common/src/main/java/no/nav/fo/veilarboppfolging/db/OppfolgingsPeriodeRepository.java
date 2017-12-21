@@ -23,60 +23,18 @@ public class OppfolgingsPeriodeRepository {
     }
 
     @Transactional
-    public void opprettOppfolgingsperiode(String aktorId) {
+    public void start(String aktorId) {
         insert(aktorId);
         setActive(aktorId);
     }
 
-    private void insert(String aktorId) {
-        database.update("" +
-                        "INSERT INTO OPPFOLGINGSPERIODE(aktor_id, startDato, oppdatert) " +
-                        "VALUES (?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
-                aktorId);
-    }
-
-    public void setActive(String aktorId) {
-        database.update("UPDATE " +
-                        OppfolgingsStatusRepository.TABLE_NAME +
-                        " SET " + UNDER_OPPFOLGING + "= 1, " +
-                        "oppdatert = CURRENT_TIMESTAMP " +
-                        "WHERE " + AKTOR_ID + " = ?",
-                aktorId);
-    }
-
     @Transactional
-    public void avsluttOppfolgingsperiode(String aktorId, String veileder, String begrunnelse) {
+    public void avslutt(String aktorId, String veileder, String begrunnelse) {
         endPeriode(aktorId, veileder, begrunnelse);
         avsluttOppfolging(aktorId);
     }
 
-    private void endPeriode(String aktorId, String veileder, String begrunnelse) {
-        database.update("" +
-                        "UPDATE OPPFOLGINGSPERIODE " +
-                        "SET avslutt_veileder = ?, " +
-                        "avslutt_begrunnelse = ?, " +
-                        "sluttDato = CURRENT_TIMESTAMP, " +
-                        "oppdatert = CURRENT_TIMESTAMP " +
-                        "WHERE aktor_id = ? " +
-                        "AND sluttDato IS NULL",
-                veileder,
-                begrunnelse,
-                aktorId);
-    }
-
-    private void avsluttOppfolging(String aktorId){
-        database.update("UPDATE OPPFOLGINGSTATUS SET under_oppfolging = 0, "
-                        + "veileder = null, "
-                        + "gjeldende_manuell_status = null, "
-                        + "gjeldende_mal = null, "
-                        + "gjeldende_brukervilkar = null, "
-                        + "oppdatert = CURRENT_TIMESTAMP "
-                        + "WHERE aktor_id = ?",
-                aktorId
-        );
-    }
-
-    public List<AvsluttetOppfolgingFeedData> hentAvsluttetOppfolgingEtterDato(Timestamp timestamp, int pageSize) {
+    public List<AvsluttetOppfolgingFeedData> fetchAvsluttetEtterDato(Timestamp timestamp, int pageSize) {
         return database
                 .query("SELECT * FROM (SELECT aktor_id, sluttdato, oppdatert " +
                                 "FROM OPPFOLGINGSPERIODE " +
@@ -126,5 +84,50 @@ public class OppfolgingsPeriodeRepository {
                 .oppdatert(rs.getTimestamp("oppdatert"))
                 .build();
     }
+
+    private void insert(String aktorId) {
+        database.update("" +
+                        "INSERT INTO OPPFOLGINGSPERIODE(aktor_id, startDato, oppdatert) " +
+                        "VALUES (?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
+                aktorId);
+    }
+
+    private void setActive(String aktorId) {
+        database.update("UPDATE " +
+                        OppfolgingsStatusRepository.TABLE_NAME +
+                        " SET " + UNDER_OPPFOLGING + "= 1, " +
+                        "oppdatert = CURRENT_TIMESTAMP " +
+                        "WHERE " + AKTOR_ID + " = ?",
+                aktorId);
+    }
+
+    private void endPeriode(String aktorId, String veileder, String begrunnelse) {
+        database.update("" +
+                        "UPDATE OPPFOLGINGSPERIODE " +
+                        "SET avslutt_veileder = ?, " +
+                        "avslutt_begrunnelse = ?, " +
+                        "sluttDato = CURRENT_TIMESTAMP, " +
+                        "oppdatert = CURRENT_TIMESTAMP " +
+                        "WHERE aktor_id = ? " +
+                        "AND sluttDato IS NULL",
+                veileder,
+                begrunnelse,
+                aktorId);
+    }
+
+    private void avsluttOppfolging(String aktorId) {
+        database.update("UPDATE " +
+                        OppfolgingsStatusRepository.TABLE_NAME +
+                        " SET under_oppfolging = 0, "
+                        + "veileder = null, "
+                        + "gjeldende_manuell_status = null, "
+                        + "gjeldende_mal = null, "
+                        + "gjeldende_brukervilkar = null, "
+                        + "oppdatert = CURRENT_TIMESTAMP "
+                        + "WHERE aktor_id = ?",
+                aktorId
+        );
+    }
+
 
 }

@@ -16,8 +16,6 @@ import static no.nav.apiapp.feil.Feil.Type.UGYLDIG_HANDLING;
 
 public class OppfolgingRepository {
 
-    private Database database;
-
     private final OppfolgingsStatusRepository statusRepository;
     private final OppfolgingsPeriodeRepository periodeRepository;
     private final MaalRepository maalRepository;
@@ -26,7 +24,6 @@ public class OppfolgingRepository {
     private final EskaleringsvarselRepository eskaleringsvarselRepository;
 
     public OppfolgingRepository(Database database) {
-        this.database = database;
         statusRepository = new OppfolgingsStatusRepository(database);
         periodeRepository = new OppfolgingsPeriodeRepository(database);
         maalRepository = new MaalRepository(database);
@@ -70,61 +67,8 @@ public class OppfolgingRepository {
     @Transactional
     public void startOppfolgingHvisIkkeAlleredeStartet(String aktorId) {
         if (!statusRepository.erOppfolgingsflaggSattForBruker(aktorId)) {
-            periodeRepository.opprettOppfolgingsperiode(aktorId);
+            periodeRepository.start(aktorId);
         }
-    }
-
-    // FIXME: go directly to the repository instead.
-    public void avsluttOppfolging(String aktorId, String veileder, String begrunnelse) {
-        periodeRepository.avsluttOppfolgingsperiode(aktorId, veileder, begrunnelse);
-    }
-
-    // FIXME: OPPFOLGINGSSTATUS table should have a foreign key constraint on GJELDENDE_MANUELL_STATUS
-    // FIXME: go directly to the repository instead.
-    public void opprettManuellStatus(ManuellStatus manuellStatus) {
-        manuellStatusRepository.create(manuellStatus);
-    }
-
-    // FIXME: go directly to the repository instead.
-    public void opprettBrukervilkar(Brukervilkar brukervilkar) {
-        brukervilkarRepository.create(brukervilkar);
-    }
-
-    // FIXME: go directly to the repository instead.
-    public Oppfolging opprettOppfolging(String aktorId) {
-        statusRepository.opprettOppfolging(aktorId);
-
-        // FIXME: return the actual database object.
-        return new Oppfolging().setAktorId(aktorId).setUnderOppfolging(false);
-    }
-
-    // FIXME: go directly to the repository instead.
-    public List<Brukervilkar> hentHistoriskeVilkar(String aktorId) {
-        return brukervilkarRepository.history(aktorId);
-    }
-
-    // FIXME: go directly to the repository instead.
-    public List<AvsluttetOppfolgingFeedData> hentAvsluttetOppfolgingEtterDato(Timestamp timestamp, int pageSize) {
-        return periodeRepository.hentAvsluttetOppfolgingEtterDato(timestamp, pageSize);
-    }
-
-    // FIXME: go directly to the repository instead.
-    public List<ManuellStatus> hentManuellHistorikk(String aktorId) {
-        return manuellStatusRepository.history(aktorId);
-    }
-
-    private long nesteFraSekvens(String sekvensNavn) {
-        return database.nesteFraSekvens(sekvensNavn);
-    }
-
-    // FIXME: go directly to the repository instead.
-    public List<Oppfolgingsperiode> hentAvsluttetOppfolgingsperioder(String aktorId) {
-        return periodeRepository.hentAvsluttetOppfolgingsperioder(aktorId);
-    }
-
-    // FIXME: go directly to the repository instead.
-    public List<EskaleringsvarselData> hentEskaleringhistorikk(String aktorId) {
-        return eskaleringsvarselRepository.history(aktorId);
     }
 
     @Transactional
@@ -154,6 +98,52 @@ public class OppfolgingRepository {
                 .withAvsluttetBegrunnelse(avsluttetBegrunnelse);
 
         eskaleringsvarselRepository.finish(eskalering);
+    }
+
+    // FIXME: go directly to the repository instead.
+    public void avsluttOppfolging(String aktorId, String veileder, String begrunnelse) {
+        periodeRepository.avslutt(aktorId, veileder, begrunnelse);
+    }
+
+    // FIXME: OPPFOLGINGSSTATUS table should have a foreign key constraint on GJELDENDE_MANUELL_STATUS
+    // FIXME: go directly to the repository instead.
+    public void opprettManuellStatus(ManuellStatus manuellStatus) {
+        manuellStatusRepository.create(manuellStatus);
+    }
+
+    // FIXME: go directly to the repository instead.
+    public void opprettBrukervilkar(Brukervilkar brukervilkar) {
+        brukervilkarRepository.create(brukervilkar);
+    }
+
+    // FIXME: go directly to the repository instead.
+    public Oppfolging opprettOppfolging(String aktorId) {
+        return statusRepository.create(aktorId);
+    }
+
+    // FIXME: go directly to the repository instead.
+    public List<Brukervilkar> hentHistoriskeVilkar(String aktorId) {
+        return brukervilkarRepository.history(aktorId);
+    }
+
+    // FIXME: go directly to the repository instead.
+    public List<AvsluttetOppfolgingFeedData> hentAvsluttetOppfolgingEtterDato(Timestamp timestamp, int pageSize) {
+        return periodeRepository.fetchAvsluttetEtterDato(timestamp, pageSize);
+    }
+
+    // FIXME: go directly to the repository instead.
+    public List<ManuellStatus> hentManuellHistorikk(String aktorId) {
+        return manuellStatusRepository.history(aktorId);
+    }
+
+    // FIXME: go directly to the repository instead.
+    public List<Oppfolgingsperiode> hentAvsluttetOppfolgingsperioder(String aktorId) {
+        return periodeRepository.hentAvsluttetOppfolgingsperioder(aktorId);
+    }
+
+    // FIXME: go directly to the repository instead.
+    public List<EskaleringsvarselData> hentEskaleringhistorikk(String aktorId) {
+        return eskaleringsvarselRepository.history(aktorId);
     }
 
     // FIXME: go directly to maalRepository instead.

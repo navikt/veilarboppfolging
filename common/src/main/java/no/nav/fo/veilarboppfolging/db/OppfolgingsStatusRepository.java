@@ -25,12 +25,25 @@ public class OppfolgingsStatusRepository {
     }
 
     public OppfolgingTable fetch(String aktorId) {
-        List<OppfolgingTable> t = db.query("" +
+        List<OppfolgingTable> t = db.query(
                 "SELECT * FROM OPPFOLGINGSTATUS WHERE aktor_id = ?",
                 OppfolgingsStatusRepository::map,
                 aktorId
         );
-        return t.size() > 0 ? t.get(0) : null;
+        return !t.isEmpty() ? t.get(0) : null;
+    }
+
+    public Oppfolging create(String aktorId) {
+        db.update("INSERT INTO OPPFOLGINGSTATUS(" +
+                        "aktor_id, " +
+                        "under_oppfolging, " +
+                        "oppdatert) " +
+                        "VALUES(?, ?, CURRENT_TIMESTAMP)",
+                aktorId,
+                false);
+
+        // FIXME: return the actual database object.
+        return new Oppfolging().setAktorId(aktorId).setUnderOppfolging(false);
     }
 
     public Boolean erOppfolgingsflaggSattForBruker(String aktorId) {
@@ -44,18 +57,8 @@ public class OppfolgingsStatusRepository {
         ).get(0);
     }
 
-    public void opprettOppfolging(String aktorId) {
-        db.update("INSERT INTO OPPFOLGINGSTATUS(" +
-                        "aktor_id, " +
-                        "under_oppfolging, " +
-                        "oppdatert) " +
-                        "VALUES(?, ?, CURRENT_TIMESTAMP)",
-                aktorId,
-                false);
-    }
-
     @SneakyThrows
-    public static Boolean erUnderOppfolging(ResultSet resultSet) {
+    private static Boolean erUnderOppfolging(ResultSet resultSet) {
         return resultSet.getBoolean(UNDER_OPPFOLGING);
     }
 

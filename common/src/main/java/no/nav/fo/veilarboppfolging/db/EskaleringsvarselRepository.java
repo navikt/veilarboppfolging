@@ -64,7 +64,7 @@ public class EskaleringsvarselRepository {
     }
 
     @SneakyThrows
-    public static EskaleringsvarselData map(ResultSet result) {
+    private static EskaleringsvarselData map(ResultSet result) {
         return EskaleringsvarselData.builder()
                 .varselId(result.getLong("varsel_id"))
                 .aktorId(result.getString("aktor_id"))
