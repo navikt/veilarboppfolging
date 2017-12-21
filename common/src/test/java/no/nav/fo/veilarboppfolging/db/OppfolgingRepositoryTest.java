@@ -23,7 +23,6 @@ public class OppfolgingRepositoryTest extends IntegrasjonsTest {
     public static final String BEGRUNNELSE = "Begrunnelse";
 
     private Database db = getBean(Database.class);
-
     private OppfolgingRepository oppfolgingRepository = new OppfolgingRepository(db);
 
     private KvpRepository kvpRepository = new KvpRepository(db);
@@ -137,7 +136,13 @@ public class OppfolgingRepositoryTest extends IntegrasjonsTest {
             String veilederId = "veilederId";
             String maal = "Mål";
             settVeileder(veilederId, AKTOR_ID);
-            oppfolgingRepository.opprettManuellStatus(new ManuellStatus(AKTOR_ID, true, new Timestamp(currentTimeMillis()), "Test", KodeverkBruker.SYSTEM, null));
+            oppfolgingRepository.opprettManuellStatus(
+                    new ManuellStatus()
+                            .setAktorId(AKTOR_ID)
+                            .setManuell(true)
+                            .setDato(new Timestamp(currentTimeMillis()))
+                            .setBegrunnelse("Test")
+                            .setOpprettetAv(KodeverkBruker.SYSTEM));
             oppfolgingRepository.opprettMal(new MalData().setAktorId(AKTOR_ID).setMal(maal).setEndretAv("bruker").setDato(new Timestamp(currentTimeMillis())));
             String hash = "123";
             oppfolgingRepository.opprettBrukervilkar(new Brukervilkar().setAktorId(AKTOR_ID).setHash(hash).setVilkarstatus(GODKJENT));
