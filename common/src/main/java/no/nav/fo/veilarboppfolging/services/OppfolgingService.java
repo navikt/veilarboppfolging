@@ -130,7 +130,13 @@ public class OppfolgingService {
         val resolver = new OppfolgingResolver(fnr, oppfolgingResolverDependencies);
 
         if (resolver.getOppfolging().isUnderOppfolging() && (resolver.manuell() != manuell) && (!resolver.reservertIKrr() || manuell)) {
-            val nyStatus = new ManuellStatus(resolver.getAktorId(), manuell, new Timestamp(currentTimeMillis()), begrunnelse, opprettetAv, opprettetAvBrukerId);
+            val nyStatus = new ManuellStatus()
+                    .setAktorId(resolver.getAktorId())
+                    .setManuell(manuell)
+                    .setDato(new Timestamp(currentTimeMillis()))
+                    .setBegrunnelse(begrunnelse)
+                    .setOpprettetAv(opprettetAv)
+                    .setOpprettetAvBrukerId(opprettetAvBrukerId);
             oppfolgingRepository.opprettManuellStatus(nyStatus);
             resolver.reloadOppfolging();
         }
@@ -200,7 +206,7 @@ public class OppfolgingService {
                 .build();
     }
 
-    private InnstillingsHistorikk tilDTO(InnstillingsHistorikkData historikkData) {
+    private InnstillingsHistorikk tilDTO(ManuellStatus historikkData) {
         return InnstillingsHistorikk.builder()
                 .type(historikkData.isManuell() ? SATT_TIL_MANUELL : SATT_TIL_DIGITAL)
                 .begrunnelse(historikkData.getBegrunnelse())

@@ -9,7 +9,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.sql.ResultSet;
 import java.util.List;
 
-import static no.nav.fo.veilarboppfolging.db.OppfolgingRepository.hentDato;
+import static no.nav.sbl.jdbc.Database.hentDato;
+
 
 public class KvpRepository {
 
@@ -81,6 +82,16 @@ public class KvpRepository {
                 KvpRepository::mapTilKvp,
                 aktorId
         );
+    }
+
+    public Kvp fetch(long id) {
+        return database.query("SELECT * " +
+                        "FROM KVP " +
+                        "WHERE kvp_id = ?",
+                KvpRepository::mapTilKvp, id)
+                .stream()
+                .findAny()
+                .orElse(null);
     }
 
     private Kvp gjeldendeKvp(String aktorId) {
