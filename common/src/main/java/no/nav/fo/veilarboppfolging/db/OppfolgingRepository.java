@@ -70,32 +70,27 @@ public class OppfolgingRepository {
     @Transactional
     public void startOppfolgingHvisIkkeAlleredeStartet(String aktorId) {
         if (!statusRepository.erOppfolgingsflaggSattForBruker(aktorId)) {
-            statusRepository.setUnderOppfolging(aktorId);
             periodeRepository.opprettOppfolgingsperiode(aktorId);
         }
     }
 
-    @Transactional
+    // FIXME: go directly to the repository instead.
     public void avsluttOppfolging(String aktorId, String veileder, String begrunnelse) {
-        statusRepository.avsluttOppfolging(aktorId);
         periodeRepository.avsluttOppfolgingsperiode(aktorId, veileder, begrunnelse);
     }
 
     // FIXME: OPPFOLGINGSSTATUS table should have a foreign key constraint on GJELDENDE_MANUELL_STATUS
-    @Transactional
+    // FIXME: go directly to the repository instead.
     public void opprettManuellStatus(ManuellStatus manuellStatus) {
-        manuellStatus.setId(nesteFraSekvens("status_seq"));
         manuellStatusRepository.create(manuellStatus);
-        statusRepository.oppdaterManuellStatus(manuellStatus);
     }
 
-    @Transactional
+    // FIXME: go directly to the repository instead.
     public void opprettBrukervilkar(Brukervilkar brukervilkar) {
-        brukervilkar.setId(nesteFraSekvens("brukervilkar_seq"));
         brukervilkarRepository.create(brukervilkar);
-        statusRepository.oppdaterOppfolgingBrukervilkar(brukervilkar);
     }
 
+    // FIXME: go directly to the repository instead.
     public Oppfolging opprettOppfolging(String aktorId) {
         statusRepository.opprettOppfolging(aktorId);
 
@@ -138,8 +133,6 @@ public class OppfolgingRepository {
             throw new Feil(UGYLDIG_HANDLING, "Brukeren har allerede et aktivt eskaleringsvarsel.");
         }
 
-        long id = nesteFraSekvens("ESKALERINGSVARSEL_SEQ");
-
         val e = EskaleringsvarselData.builder()
                 .aktorId(aktorId)
                 .opprettetAv(opprettetAv)
@@ -147,7 +140,6 @@ public class OppfolgingRepository {
                 .tilhorendeDialogId(tilhorendeDialogId)
                 .build();
         eskaleringsvarselRepository.create(e);
-        statusRepository.setGjeldendeEskaleringsvarsel(aktorId, id);
     }
 
     @Transactional
@@ -162,7 +154,6 @@ public class OppfolgingRepository {
                 .withAvsluttetBegrunnelse(avsluttetBegrunnelse);
 
         eskaleringsvarselRepository.finish(eskalering);
-        statusRepository.fjernEskalering(aktorId);
     }
 
     // FIXME: go directly to maalRepository instead.
@@ -171,16 +162,13 @@ public class OppfolgingRepository {
     }
 
     // FIXME: OPPFOLGINGSSTATUS table should have a foreign key constraint on GJELDENDE_MAL
-    @Transactional
+    // FIXME: go directly to maalRepository instead.
     public void opprettMal(MalData mal) {
-        mal.setId(nesteFraSekvens("MAL_SEQ"));
-        statusRepository.oppdaterOppfolgingMal(mal);
         maalRepository.opprett(mal);
     }
 
-    @Transactional
+    // FIXME: go directly to maalRepository instead.
     public void slettMalForAktorEtter(String aktorId, Date date) {
-        statusRepository.fjernMaal(aktorId);
         maalRepository.slettForAktorEtter(aktorId, date);
     }
 }
