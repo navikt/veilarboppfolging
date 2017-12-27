@@ -40,7 +40,7 @@ public class ServiceConfig {
     }
 
     @Bean
-    VeilederTilordningerRepository veilederTilordningerRepository(JdbcTemplate db,
+    VeilederTilordningerRepository veilederTilordningerRepository(Database db,
                                                                   OppfolgingRepository oppfolgingRepository) {
         return new VeilederTilordningerRepository(db, oppfolgingRepository);
     }

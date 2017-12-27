@@ -1,6 +1,7 @@
 package no.nav.fo.veilarboppfolging.db;
 
 import no.nav.fo.IntegrasjonsTest;
+import no.nav.sbl.jdbc.Database;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -20,7 +21,7 @@ public class VeilederTilordningerRepositoryTest extends IntegrasjonsTest {
     }
 
     private VeilederTilordningerRepository repository = new VeilederTilordningerRepository(
-            getBean(JdbcTemplate.class),
+            getBean(Database.class),
             getBean(OppfolgingRepository.class)
     );
 

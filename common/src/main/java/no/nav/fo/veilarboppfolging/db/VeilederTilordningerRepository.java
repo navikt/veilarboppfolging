@@ -1,29 +1,36 @@
 package no.nav.fo.veilarboppfolging.db;
 
 
+import lombok.SneakyThrows;
 import lombok.val;
-import org.springframework.jdbc.core.JdbcTemplate;
+import no.nav.sbl.jdbc.Database;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.sql.ResultSet;
 
 public class VeilederTilordningerRepository {
 
-    private JdbcTemplate db;
+    private Database db;
     private OppfolgingRepository oppfolgingRepository;
 
-    public VeilederTilordningerRepository(JdbcTemplate db, OppfolgingRepository oppfolgingRepository) {
+    public VeilederTilordningerRepository(Database db, OppfolgingRepository oppfolgingRepository) {
         this.db = db;
         this.oppfolgingRepository = oppfolgingRepository;
     }
 
     public String hentTilordningForAktoer(String aktorId) {
-        return db.queryForList("SELECT veileder " +
+        return db.query("SELECT veileder " +
                         "FROM OPPFOLGINGSTATUS " +
-                        "WHERE aktor_id = ? ",
+                        "WHERE aktor_id = ? ",this::map,
                 aktorId)
                 .stream()
                 .findFirst()
-                .map(rad -> (String) rad.get("veileder"))
                 .orElse(null);
+    }
+
+    @SneakyThrows
+    private String map(ResultSet resultSet) {
+        return resultSet.getString("veileder");
     }
 
     @Transactional
