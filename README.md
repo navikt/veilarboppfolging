@@ -1,3 +1,4 @@
+# Veilarboppfolging
 Applikasjonen kjører på Embedded Jetty lokalt. Den lokale configen legges i ApplicationMockConfig.
 
 #### domenebrukernavn/domenepassord
@@ -13,7 +14,7 @@ Riktig databaselink, brukernavn og passord må oppgis i metoden ``setupJndiLocal
 
 Kjør ``https://localhost:8485/veilarboppfolging/api/sendalleveiledertilordninger`` i nettleseren.
 
-!! OBS OBS !! Husk at veilarbportefolje og veilarbportefoljeindeks må kjøre samtidig.
+*OBS OBS!!* Husk at veilarbportefolje og veilarbportefoljeindeks må kjøre samtidig.
 
 #### For å kjøre Webservicen (soap)
 ``veilarboppfolging-vilkar`` må klones ned til samme mappe som ``veilarboppfolging`` ligger i. I tillegg må 

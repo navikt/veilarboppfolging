@@ -5,6 +5,7 @@ import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.db.ArbeidssokerregistreringRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingFeedRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
+import no.nav.fo.veilarboppfolging.db.OppfolgingsStatusRepository;
 import no.nav.fo.veilarboppfolging.db.VeilederTilordningerRepository;
 import no.nav.fo.veilarboppfolging.services.ArbeidsforholdService;
 import no.nav.fo.veilarboppfolging.services.ArenaOppfolgingService;
@@ -72,6 +73,11 @@ public class ServiceConfig {
                                                       ArenaOppfolgingService arenaOppfolgingService,
                                                       ArbeidsforholdService arbeidsforholdService) {
         return new StartRegistreringService(arbeidssokerregistreringRepository, pepClient, aktorService, arenaOppfolgingService, arbeidsforholdService);
+    }
+
+    @Bean
+    OppfolgingsStatusRepository oppfolgingsStatusRepository(Database db) {
+        return new OppfolgingsStatusRepository(db);
     }
 
 }

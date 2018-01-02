@@ -296,14 +296,12 @@ public class OppfolgingResolver {
             this.reservertIKrr = sjekkKrr();
             if (!manuell() && reservertIKrr) {
                 deps.getOppfolgingRepository().opprettManuellStatus(
-                    new ManuellStatus(
-                        oppfolging.getAktorId(),
-                        true,
-                        new Timestamp(currentTimeMillis()),
-                        "Reservert og under oppfølging",
-                        KodeverkBruker.SYSTEM,
-                        null
-                    )
+                    new ManuellStatus()
+                        .setAktorId(oppfolging.getAktorId())
+                        .setManuell(true)
+                        .setDato(new Timestamp(currentTimeMillis()))
+                        .setBegrunnelse("Reservert og under oppfølging")
+                        .setOpprettetAv(KodeverkBruker.SYSTEM)
                 );
             }
         } else {
