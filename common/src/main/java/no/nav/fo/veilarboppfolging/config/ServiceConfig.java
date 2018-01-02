@@ -6,11 +6,13 @@ import no.nav.fo.veilarboppfolging.db.ArbeidssokerregistreringRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingFeedRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.db.VeilederTilordningerRepository;
+import no.nav.fo.veilarboppfolging.services.ArbeidsforholdService;
 import no.nav.fo.veilarboppfolging.services.ArenaOppfolgingService;
 import no.nav.fo.veilarboppfolging.services.OrganisasjonEnhetService;
-import no.nav.fo.veilarboppfolging.services.StartRegistreringService;
+import no.nav.fo.veilarboppfolging.services.startregistrering.StartRegistreringService;
 import no.nav.fo.veilarboppfolging.services.YtelseskontraktService;
 import no.nav.sbl.jdbc.Database;
+import no.nav.tjeneste.virksomhet.arbeidsforhold.v3.binding.ArbeidsforholdV3;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
 import no.nav.tjeneste.virksomhet.organisasjonenhet.v1.OrganisasjonEnhetV1;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3;
@@ -38,6 +40,11 @@ public class ServiceConfig {
     }
 
     @Bean
+    ArbeidsforholdService arbeidsforholdService(ArbeidsforholdV3 arbeidsforholdV3) {
+        return new ArbeidsforholdService(arbeidsforholdV3);
+    }
+
+    @Bean
     OppfolgingFeedRepository oppfolgingFeedRepository(JdbcTemplate db) {
         return new OppfolgingFeedRepository(db);
     }
@@ -62,8 +69,9 @@ public class ServiceConfig {
     StartRegistreringService startRegistreringService(ArbeidssokerregistreringRepository arbeidssokerregistreringRepository,
                                                       PepClient pepClient,
                                                       AktorService aktorService,
-                                                      OppfoelgingPortType oppfoelgingPortType) {
-        return new StartRegistreringService(arbeidssokerregistreringRepository, pepClient, aktorService, oppfoelgingPortType);
+                                                      ArenaOppfolgingService arenaOppfolgingService,
+                                                      ArbeidsforholdService arbeidsforholdService) {
+        return new StartRegistreringService(arbeidssokerregistreringRepository, pepClient, aktorService, arenaOppfolgingService, arbeidsforholdService);
     }
 
 }

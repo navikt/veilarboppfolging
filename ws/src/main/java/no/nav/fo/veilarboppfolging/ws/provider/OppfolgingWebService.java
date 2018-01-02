@@ -5,7 +5,7 @@ import lombok.val;
 import no.nav.apiapp.soap.SoapTjeneste;
 import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.fo.veilarboppfolging.services.OppfolgingService;
-import no.nav.fo.veilarboppfolging.services.StartRegistreringService;
+import no.nav.fo.veilarboppfolging.services.startregistrering.StartRegistreringService;
 import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.binding.*;
 import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.informasjon.*;
 import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.meldinger.*;
@@ -229,7 +229,8 @@ public class OppfolgingWebService implements BehandleOppfolgingV1 {
 
     @Override
     public StartRegistreringStatusResponse hentStartRegistreringStatus(StartRegistreringStatusRequest startRegistreringStatusRequest) throws HentStartRegistreringStatusSikkerhetsbegrensning,
-            HentStartRegistreringStatusFeilVedHentingAvStatusFraArena {
+            HentStartRegistreringStatusFeilVedHentingAvStatusFraArena,
+            HentStartRegistreringStatusFeilVedHentingAvArbeidsforhold{
 
         StartRegistreringStatus status = startRegistreringService.hentStartRegistreringStatus(startRegistreringStatusRequest.getFnr());
 

@@ -52,4 +52,15 @@ public class DateUtils {
                 .map(GregorianCalendar::toZonedDateTime)
                 .map(ZonedDateTime::toLocalDate).orElse(null);
     }
+
+    static boolean erDatoEldreEnnEllerLikAar(LocalDate dagensDato, LocalDate dato, int aar) {
+        return FnrUtils.antallAarSidenDato(dato, dagensDato) >= aar;
+    }
+
+    @SneakyThrows
+    public static XMLGregorianCalendar now() {
+        DatatypeFactory factory = DatatypeFactory.newInstance();
+        GregorianCalendar calendar = new GregorianCalendar();
+        return factory.newXMLGregorianCalendar(calendar);
+    }
 }

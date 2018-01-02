@@ -1,12 +1,17 @@
 package no.nav.fo.veilarboppfolging.utils;
 
+import no.nav.fo.veilarboppfolging.domain.Arbeidsforhold;
+import no.nav.fo.veilarboppfolging.domain.ArenaOppfolging;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
+import java.util.Collections;
+import java.util.List;
 
 import static no.nav.fo.veilarboppfolging.TestUtils.getFodselsnummerOnDateMinusYears;
-import static no.nav.fo.veilarboppfolging.utils.StartRegistreringUtils.erDatoEldreEnnEllerLikAar;
+import static no.nav.fo.veilarboppfolging.utils.DateUtils.erDatoEldreEnnEllerLikAar;
 import static no.nav.fo.veilarboppfolging.utils.StartRegistreringUtils.oppfyllerKravOmAutomatiskRegistrering;
+import static no.nav.fo.veilarboppfolging.utils.StartRegistreringUtils.oppfyllerKravOmInaktivitet;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
 
@@ -30,21 +35,21 @@ public class StartRegistreringUtilsTest {
     @Test
     public void oppfyllerIkkeKravPgaISERVDato() {
         LocalDate ISERVFraDato = LocalDate.of(2015,12,15);
-        String fnr = getFodselsnummerOnDateMinusYears(dagensDato, 40);
-        assertThat(oppfyllerKravOmAutomatiskRegistrering(fnr,ISERVFraDato,dagensDato)).isFalse();
-    }
-
-    @Test
-    public void oppfyllerIkkeKravPgaAlder() {
-        LocalDate ISERVFraDato = LocalDate.of(2010,12,14);
-        String fnr = getFodselsnummerOnDateMinusYears(dagensDato, 25);
-        assertThat(oppfyllerKravOmAutomatiskRegistrering(fnr,ISERVFraDato,dagensDato)).isFalse();
+        assertThat(oppfyllerKravOmInaktivitet(dagensDato,ISERVFraDato)).isFalse();
     }
 
     @Test
     public void oppfylleKrav() {
         LocalDate ISERVFraDato = LocalDate.of(2015,12,13);
         String fnr = getFodselsnummerOnDateMinusYears(dagensDato, 40);
-        assertThat(oppfyllerKravOmAutomatiskRegistrering(fnr,ISERVFraDato,dagensDato)).isTrue();
+        List<Arbeidsforhold> arbeidsforhold = getArbeidsforholdSomOppfyllerKrav();
+        ArenaOppfolging arenaOppfolging = new ArenaOppfolging().setInaktiveringsdato(ISERVFraDato);
+        assertThat(oppfyllerKravOmAutomatiskRegistrering(fnr,arbeidsforhold,arenaOppfolging,dagensDato)).isTrue();
+    }
+
+    public static List<Arbeidsforhold> getArbeidsforholdSomOppfyllerKrav() {
+        Arbeidsforhold arbeidsforhold = new Arbeidsforhold();
+        arbeidsforhold.setFom(LocalDate.of(2015,10,10));
+        return Collections.singletonList(arbeidsforhold);
     }
 }

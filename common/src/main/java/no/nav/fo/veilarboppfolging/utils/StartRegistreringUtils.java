@@ -1,8 +1,20 @@
 package no.nav.fo.veilarboppfolging.utils;
 
 
+import io.vavr.control.Try;
+import no.nav.apiapp.security.PepClient;
+import no.nav.fo.veilarboppfolging.domain.Arbeidsforhold;
+import no.nav.fo.veilarboppfolging.domain.ArenaOppfolging;
+
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Function;
+
+import static no.nav.fo.veilarboppfolging.services.ArenaUtils.erUnderOppfolging;
+import static no.nav.fo.veilarboppfolging.utils.ArbeidsforholdUtils.oppfyllerKravOmArbeidserfaring;
+import static no.nav.fo.veilarboppfolging.utils.DateUtils.erDatoEldreEnnEllerLikAar;
 
 
 public class StartRegistreringUtils {
@@ -11,18 +23,33 @@ public class StartRegistreringUtils {
     static final int MIN_ALDER_AUTOMATISK_REGISTRERING = 30;
     static final int MAX_ALDER_AUTOMATISK_REGISTRERING = 59;
 
-    public static boolean oppfyllerKravOmAutomatiskRegistrering(String fnr, LocalDate inaktiveringsdato, LocalDate dagensDato) {
+    public static boolean oppfyllerKravOmAutomatiskRegistrering(String fnr, List<Arbeidsforhold> arbeidsforhold,
+                                                                ArenaOppfolging arenaOppfolging, LocalDate dagensDato) {
         LocalDate fodselsdato = FnrUtils.utledFodselsdatoForFnr(fnr);
         int alder = FnrUtils.antallAarSidenDato(fodselsdato,dagensDato);
+        LocalDate inaktiveringsdato = Optional.ofNullable(arenaOppfolging).map(ArenaOppfolging::getInaktiveringsdato).orElse(null);
 
-        boolean oppfyllerKravOmInaktivitet = Objects.isNull(inaktiveringsdato) || erDatoEldreEnnEllerLikAar(dagensDato, inaktiveringsdato, ANTALL_AAR_ISERV);
-        boolean oppfyllerKravOmAlder = alder >= MIN_ALDER_AUTOMATISK_REGISTRERING && alder <= MAX_ALDER_AUTOMATISK_REGISTRERING;
-
-        return oppfyllerKravOmInaktivitet && oppfyllerKravOmAlder;
+        return oppfyllerKravOmInaktivitet(dagensDato, inaktiveringsdato) &&
+                oppfyllerKravOmAlder(alder) &&
+                oppfyllerKravOmArbeidserfaring(arbeidsforhold,dagensDato);
     }
 
+    public static boolean erUnderoppfolgingIArena(ArenaOppfolging arenaOppfolging) {
+        return erUnderOppfolging(
+                arenaOppfolging.getFormidlingsgruppe(),
+                arenaOppfolging.getServicegruppe());
+    }
 
-    static boolean erDatoEldreEnnEllerLikAar(LocalDate dagensDato, LocalDate dato, int aar) {
-        return FnrUtils.antallAarSidenDato(dato, dagensDato) >= 2;
+    static boolean oppfyllerKravOmAlder(int alder) {
+        return alder >= MIN_ALDER_AUTOMATISK_REGISTRERING && alder <= MAX_ALDER_AUTOMATISK_REGISTRERING;
+    }
+
+    static boolean oppfyllerKravOmInaktivitet(LocalDate dagensDato, LocalDate inaktiveringsdato) {
+        return Objects.isNull(inaktiveringsdato) || erDatoEldreEnnEllerLikAar(dagensDato, inaktiveringsdato, ANTALL_AAR_ISERV);
+    }
+
+    public static <T extends Throwable> void sjekkLesetilgangOrElseThrow(String fnr, PepClient pepClient, Function<Throwable, T> exceptionMapper) throws T {
+        Try.of(() -> pepClient.sjekkLeseTilgangTilFnr(fnr))
+                .getOrElseThrow(exceptionMapper);
     }
 }
