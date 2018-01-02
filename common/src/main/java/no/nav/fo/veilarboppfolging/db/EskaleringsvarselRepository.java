@@ -119,7 +119,7 @@ public class EskaleringsvarselRepository {
     private void removeActive(EskaleringsvarselData e) {
         database.update("" +
                         "UPDATE " + OppfolgingsStatusRepository.TABLE_NAME +
-                        "SET " + GJELDENE_ESKALERINGSVARSEL + " = null, " +
+                        " SET " + GJELDENE_ESKALERINGSVARSEL + " = null, " +
                         "oppdatert = CURRENT_TIMESTAMP " +
                         "WHERE " + AKTOR_ID + " = ?",
                 e.getAktorId()
