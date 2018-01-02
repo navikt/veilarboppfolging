@@ -120,7 +120,7 @@
             <dependency>
                 <groupId>no.nav.tjenester</groupId>
                 <artifactId>brukerdialog-behandleOppfolging-v1-tjenestespesifikasjon</artifactId>
-                <version>1.0.13-SNAPSHOT</version>
+                <version>${brukerdialog-behandleOppfolging-v1-tjenestespesifikasjon.version}</version>
                 <classifier>jaxws</classifier>
             </dependency>
             <dependency>
