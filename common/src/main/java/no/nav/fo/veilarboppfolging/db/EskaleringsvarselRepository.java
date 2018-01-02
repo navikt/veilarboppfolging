@@ -33,7 +33,7 @@ public class EskaleringsvarselRepository {
                         "SELECT * FROM eskaleringsvarsel " +
                         "WHERE varsel_id IN (" +
                         "SELECT " + GJELDENE_ESKALERINGSVARSEL +
-                        "FROM " + OppfolgingsStatusRepository.TABLE_NAME +
+                        " FROM " + OppfolgingsStatusRepository.TABLE_NAME +
                         " WHERE " + AKTOR_ID + " = ?" +
                         ")",
                 EskaleringsvarselRepository::map,
@@ -98,7 +98,7 @@ public class EskaleringsvarselRepository {
     private void setAcive(EskaleringsvarselData e) {
         database.update("" +
                         "UPDATE " + OppfolgingsStatusRepository.TABLE_NAME +
-                        "SET " + GJELDENE_ESKALERINGSVARSEL + " = ?, " +
+                        " SET " + GJELDENE_ESKALERINGSVARSEL + " = ?, " +
                         "oppdatert = CURRENT_TIMESTAMP " +
                         "WHERE " + AKTOR_ID + " = ?",
                 e.getVarselId(),
