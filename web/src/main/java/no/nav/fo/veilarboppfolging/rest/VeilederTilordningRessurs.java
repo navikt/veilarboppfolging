@@ -1,7 +1,6 @@
 package no.nav.fo.veilarboppfolging.rest;
 
 import io.swagger.annotations.Api;
-import lombok.val;
 import no.nav.apiapp.security.PepClient;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.feed.producer.FeedProducer;
@@ -57,7 +56,7 @@ public class VeilederTilordningRessurs {
 
                 String aktoerId = finnAktorId(fnr);
 
-                val tilordningForAktoer = veilederTilordningerRepository.hentTilordningForAktoer(aktoerId);
+                String tilordningForAktoer = veilederTilordningerRepository.hentTilordningForAktoer(aktoerId);
 
                 if (kanSetteNyVeileder(tilordningForAktoer, tilordning.getFraVeilederId())) {
                     skrivTilDatabase(aktoerId, tilordning.getTilVeilederId());
