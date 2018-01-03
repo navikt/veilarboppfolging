@@ -150,7 +150,8 @@ public class OppfolgingService {
         String aktorId = resolver.getAktorId();
 
         return Stream.of(
-                kvpRepository.hentKvpHistorikk(aktorId).stream().map(this::tilDTO).flatMap(List::stream), // TODO: Dette er et punkt hvor vi må filtrere ut data for brukere som ikke har tilgang til å se KVP data.
+                // TODO: Dette er et punkt hvor vi må filtrere ut data for brukere som ikke har tilgang til å se KVP data.
+                kvpRepository.hentKvpHistorikk(aktorId).stream().map(this::tilDTO).flatMap(List::stream),
                 oppfolgingRepository.hentAvsluttetOppfolgingsperioder(aktorId).stream().map(this::tilDTO),
                 oppfolgingRepository.hentManuellHistorikk(aktorId).stream().map(this::tilDTO),
                 oppfolgingRepository.hentEskaleringhistorikk(aktorId).stream().map(this::tilDTO).flatMap(List::stream)
