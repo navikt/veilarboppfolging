@@ -19,13 +19,9 @@ import static org.junit.Assert.assertThat;
 public class OppfolgingRepositoryTest extends IntegrasjonsTest {
 
     private static final String AKTOR_ID = "2222";
-    private static final String SAKSBEHANDLER_ID = "Z990000";
-    public static final String BEGRUNNELSE = "Begrunnelse";
 
     private Database db = getBean(Database.class);
     private OppfolgingRepository oppfolgingRepository = new OppfolgingRepository(db);
-
-    private KvpRepository kvpRepository = new KvpRepository(db);
 
     @Nested
     class mal {
