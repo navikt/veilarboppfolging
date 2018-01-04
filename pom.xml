@@ -38,8 +38,6 @@
         <varseloppgave-v1-tjenestespesifikasjon.version>1.1.0</varseloppgave-v1-tjenestespesifikasjon.version>
         <startregistreringstatus-v1-tjenestespesifikasjon.version>1.0.0</startregistreringstatus-v1-tjenestespesifikasjon.version>
         <nav-arbeidsforhold-v3-tjenestespesifikasjon.version>3.0.0</nav-arbeidsforhold-v3-tjenestespesifikasjon.version>
-        <nocommons.version>0.6</nocommons.version>
-        <vavr.version>0.9.0</vavr.version>
 
         <sonar.exclusions>
             **/mock/*,
@@ -53,15 +51,9 @@
             <dependency>
                 <groupId>no.nav.sbl</groupId>
                 <artifactId>bom</artifactId>
-                <version>2017.12.12.11.27</version>
+                <version>2018.01.03.22.21</version>
                 <type>pom</type>
                 <scope>import</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>io.vavr</groupId>
-                <artifactId>vavr</artifactId>
-                <version>${vavr.version}</version>
             </dependency>
 
             <dependency>
@@ -139,24 +131,6 @@
                 <groupId>no.nav.sbl.dialogarena</groupId>
                 <artifactId>startregistreringstatus-v1-tjenestespesifikasjon</artifactId>
                 <version>${startregistreringstatus-v1-tjenestespesifikasjon.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>no.bekk.bekkopen</groupId>
-                <artifactId>nocommons</artifactId>
-                <version>${nocommons.version}</version>
-            </dependency>
-
-            <!-- vaivr-->
-            <dependency>
-                <groupId>io.javaslang</groupId>
-                <artifactId>javaslang</artifactId>
-                <version>${javaslang.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.javaslang</groupId>
-                <artifactId>javaslang-match</artifactId>
-                <version>${javaslang.version}</version>
             </dependency>
 
             <!--Tjenester-->
