@@ -56,7 +56,7 @@ public class StartRegistreringStatusResolver {
             Sikkerhetsbegrensning sikkerhetsbegrensning = new Sikkerhetsbegrensning();
             sikkerhetsbegrensning.setFeilaarsak("ABAC");
             sikkerhetsbegrensning.setFeilkilde("ABAC");
-            sikkerhetsbegrensning.setFeilmelding(t.getMessage());
+            sikkerhetsbegrensning.setFeilmelding("Ingen tilgang");
             sikkerhetsbegrensning.setTidspunkt(now());
             return new HentStartRegistreringStatusSikkerhetsbegrensning("Kunne ikke gi tilgang etter kall til ABAC", sikkerhetsbegrensning);
         });
