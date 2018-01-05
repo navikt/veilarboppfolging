@@ -20,13 +20,13 @@ class StartJetty {
     static final int PORT = 8587;
 
     public static void main(String[] args) throws Exception {
-        boolean lokalDatabase = Boolean.parseBoolean(getProperty("lokal.database"));
 
         Jetty jetty = setupISSO(usingWar()
                         .at(CONTEXT_NAME)
                         .port(PORT)
                         .loadProperties("/environment-test.properties")
-                        .addDatasource(lokalDatabase ? setupInMemoryDatabase() : setupJndiLocalContext(getDbCredentials(APPLICATION_NAME)), DATA_SOURCE_JDNI_NAME)
+                        .addDatasource(Boolean.parseBoolean(getProperty("lokal.database", "true")) ? setupInMemoryDatabase() : 
+                            setupJndiLocalContext(getDbCredentials(APPLICATION_NAME)), DATA_SOURCE_JDNI_NAME)
                 , new ISSOSecurityConfig(APPLICATION_NAME)).buildJetty();
         jetty.startAnd(first(waitFor(gotKeypress())).then(jetty.stop));
     }
