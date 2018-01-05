@@ -22,7 +22,7 @@ public class KvpRepository {
 
     @Transactional
     public void startKvp(String aktorId, String enhet, String opprettetAv, String opprettetBegrunnelse) {
-        if (gjeldendeKvp(aktorId) != null) {
+        if (gjeldendeKvp(aktorId) != 0) {
             throw new Feil(Feil.Type.UGYLDIG_REQUEST, "Aktøren er allerede under en KVP-periode.");
         }
 
@@ -52,8 +52,8 @@ public class KvpRepository {
     }
 
     public void stopKvp(String aktorId, String avsluttetAv, String avsluttetBegrunnelse) {
-        Kvp gjeldendeKvp = gjeldendeKvp(aktorId);
-        if (gjeldendeKvp == null) {
+        long gjeldendeKvp = gjeldendeKvp(aktorId);
+        if (gjeldendeKvp == 0) {
             throw new Feil(Feil.Type.UGYLDIG_REQUEST, "Aktøren har ingen KVP-periode.");
         }
 
@@ -64,7 +64,7 @@ public class KvpRepository {
                         "WHERE kvp_id = ?",
                 avsluttetAv,
                 avsluttetBegrunnelse,
-                gjeldendeKvp.getKvpId()
+                gjeldendeKvp
 
         );
         database.update("UPDATE OPPFOLGINGSTATUS " +
@@ -94,14 +94,10 @@ public class KvpRepository {
                 .orElse(null);
     }
 
-    private Kvp gjeldendeKvp(String aktorId) {
-        return database.query("SELECT * " +
-                        "FROM KVP " +
-                        "WHERE kvp_id IN (SELECT gjeldende_kvp FROM oppfolgingstatus WHERE aktor_id = ?)",
-                KvpRepository::mapTilKvp, aktorId)
-                .stream()
-                .findAny()
-                .orElse(null);
+    private long gjeldendeKvp(String aktorId) {
+        return database.queryForObject("SELECT gjeldende_kvp FROM oppfolgingstatus WHERE aktor_id = ?",
+                (rs) -> rs.getLong("gjeldende_kvp"),
+                aktorId);
     }
 
     @SneakyThrows
