@@ -38,7 +38,7 @@ public class OppfolgingService {
 
     public OppfolgingStatusData hentOppfolgingsStatus(AktorId aktorId) throws Exception {
         String fnr = aktorService.getFnr(aktorId.getAktorId())
-                .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktør for fnr: " + aktorId));
+                .orElseThrow(() -> new IllegalArgumentException("Fant ikke fnr for aktørid: " + aktorId));
         return hentOppfolgingsStatus(fnr);
     }
 
