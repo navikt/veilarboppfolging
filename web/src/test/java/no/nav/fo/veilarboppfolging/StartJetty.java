@@ -9,7 +9,6 @@ import static no.nav.dialogarena.config.fasit.FasitUtils.getDbCredentials;
 import static no.nav.fo.veilarboppfolging.config.DatabaseConfig.DATA_SOURCE_JDNI_NAME;
 import static no.nav.fo.veilarboppfolging.config.JndiLocalContextConfig.setupInMemoryDatabase;
 import static no.nav.fo.veilarboppfolging.config.JndiLocalContextConfig.setupJndiLocalContext;
-import static no.nav.fo.veilarboppfolging.config.SecurityTestConfig.setupLdap;
 import static no.nav.sbl.dialogarena.common.jetty.Jetty.usingWar;
 import static no.nav.sbl.dialogarena.common.jetty.JettyStarterUtils.*;
 
@@ -22,8 +21,6 @@ class StartJetty {
 
     public static void main(String[] args) throws Exception {
         boolean lokalDatabase = Boolean.parseBoolean(getProperty("lokal.database"));
-
-        setupLdap();
 
         Jetty jetty = setupISSO(usingWar()
                         .at(CONTEXT_NAME)
