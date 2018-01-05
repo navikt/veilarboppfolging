@@ -31,23 +31,28 @@ public class KvpService {
     @Inject
     private PepClient pepClient;
 
+    @Inject
+    private EnhetPepClient enhetPepClient;
+
     public static final Supplier<Feil> AKTOR_ID_FEIL = () -> new Feil(UKJENT, "Fant ikke aktørId for fnr");
 
     public void startKvp(String fnr, String begrunnelse) {
-        pepClient.sjekkLeseTilgangTilFnr(fnr); // TODO: Er dette riktig abacpppslag?
-        // TODO: Nytt abac oppslag for å sjekke veileders enhetTilgang
+        pepClient.sjekkLeseTilgangTilFnr(fnr);
+
+        String enhet = getEnhet(fnr);
+        enhetPepClient.sjekkTilgang(enhet);
 
         String veilederId = SubjectHandler.getSubjectHandler().getUid();
         kvpRepository.startKvp(
                 aktorService.getAktorId(fnr).orElseThrow(AKTOR_ID_FEIL),
-                getEnhet(fnr),
+                enhet,
                 veilederId,
                 begrunnelse);
     }
 
     public void stopKvp(String fnr, String begrunnelse) {
-        pepClient.sjekkLeseTilgangTilFnr(fnr); // TODO: Er dette riktig abacpppslag?
-        // TODO: Nytt abac oppslag for å sjekke veileders enhetTilgang
+        pepClient.sjekkLeseTilgangTilFnr(fnr);
+        enhetPepClient.sjekkTilgang(getEnhet(fnr));
 
         String veilederId = SubjectHandler.getSubjectHandler().getUid();
         kvpRepository.stopKvp(
