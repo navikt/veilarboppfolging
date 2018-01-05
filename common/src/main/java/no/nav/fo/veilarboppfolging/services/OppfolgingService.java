@@ -40,6 +40,9 @@ public class OppfolgingService {
     @Inject
     private KvpRepository kvpRepository;
 
+    @Inject
+    private EnhetPepClient enhetPepClient;
+
     public OppfolgingStatusData hentOppfolgingsStatus(AktorId aktorId) throws Exception {
         String fnr = aktorService.getFnr(aktorId.getAktorId())
                 .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktør for fnr: " + aktorId));
@@ -150,8 +153,7 @@ public class OppfolgingService {
         String aktorId = resolver.getAktorId();
 
         return Stream.of(
-                // TODO: Dette er et punkt hvor vi må filtrere ut data for brukere som ikke har tilgang til å se KVP data.
-                kvpRepository.hentKvpHistorikk(aktorId).stream().map(this::tilDTO).flatMap(List::stream),
+                kvpRepository.hentKvpHistorikk(aktorId).stream().filter(this::sjekkEnhetTilgang).map(this::tilDTO).flatMap(List::stream),
                 oppfolgingRepository.hentAvsluttetOppfolgingsperioder(aktorId).stream().map(this::tilDTO),
                 oppfolgingRepository.hentManuellHistorikk(aktorId).stream().map(this::tilDTO),
                 oppfolgingRepository.hentEskaleringhistorikk(aktorId).stream().map(this::tilDTO).flatMap(List::stream)
@@ -195,6 +197,15 @@ public class OppfolgingService {
             return Arrays.asList(kvpStart, kvpStopp);
         }
         return singletonList(kvpStart);
+    }
+
+    private boolean sjekkEnhetTilgang(Kvp kvp) {
+        try {
+            enhetPepClient.sjekkTilgang(kvp.getEnhet());
+        } catch (Exception e) {
+            return false;
+        }
+        return true;
     }
 
     private InnstillingsHistorikk tilDTO(Oppfolgingsperiode oppfolgingsperiode) {
