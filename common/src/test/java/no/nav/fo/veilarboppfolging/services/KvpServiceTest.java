@@ -38,6 +38,9 @@ public class KvpServiceTest {
     @Mock
     private PepClient pepClientMock;
 
+    @Mock
+    private EnhetPepClient enhetPepClientMock;
+
     @InjectMocks
     private KvpService kvpService;
 
@@ -66,6 +69,7 @@ public class KvpServiceTest {
 
         verify(pepClientMock, times(1)).sjekkLeseTilgangTilFnr(FNR);
         verify(kvpRepositoryMock, times(1)).startKvp(eq(AKTOR_ID), eq(ENHET), isNull(), eq(START_BEGRUNNELSE));
+        verify(enhetPepClientMock, times(1)).sjekkTilgang(ENHET);
     }
 
     @Test
@@ -74,11 +78,19 @@ public class KvpServiceTest {
 
         verify(pepClientMock, times(1)).sjekkLeseTilgangTilFnr(FNR);
         verify(kvpRepositoryMock, times(1)).stopKvp(eq(AKTOR_ID), isNull(), eq(STOP_BEGRUNNELSE));
+        verify(enhetPepClientMock, times(1)).sjekkTilgang(ENHET);
     }
 
     @Test(expected = IngenTilgang.class)
     public void startKvpIkkeTilgang() {
         when(pepClientMock.sjekkLeseTilgangTilFnr(any())).thenThrow(IngenTilgang.class);
+
+        kvpService.startKvp(FNR, START_BEGRUNNELSE);
+    }
+
+    @Test(expected = IngenTilgang.class)
+    public void startKvpInhenEnhetTilgang() {
+        doThrow(IngenTilgang.class).when(enhetPepClientMock).sjekkTilgang(any());
 
         kvpService.startKvp(FNR, START_BEGRUNNELSE);
     }
