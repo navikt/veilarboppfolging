@@ -86,7 +86,7 @@ public class EskaleringsvarselRepository {
                         "opprettet_av, " +
                         "opprettet_dato, " +
                         "opprettet_begrunnelse, " +
-                        "tilhorende_dialog_id)" +
+                        "tilhorende_dialog_id) " +
                         "VALUES(?, ?, ?, CURRENT_TIMESTAMP, ?, ?)",
                 e.getVarselId(),
                 e.getAktorId(),
