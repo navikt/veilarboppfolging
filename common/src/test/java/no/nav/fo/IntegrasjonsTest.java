@@ -2,7 +2,6 @@ package no.nav.fo;
 
 import no.nav.dialogarena.config.DevelopmentSecurity;
 import no.nav.dialogarena.config.fasit.FasitUtils;
-import no.nav.fo.veilarboppfolging.config.ApplicationConfig;
 import no.nav.fo.veilarboppfolging.config.DatabaseConfig;
 import no.nav.fo.veilarboppfolging.config.JndiLocalContextConfig;
 import no.nav.fo.veilarboppfolging.config.PepConfig;
