@@ -199,6 +199,7 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
                 .setManuell(oppfolgingStatusData.manuell)
                 .setReservasjonKRR(oppfolgingStatusData.reservasjonKRR)
                 .setUnderOppfolging(oppfolgingStatusData.underOppfolging)
+                .setUnderKvp(oppfolgingStatusData.underKvp)
                 .setVilkarMaBesvares(oppfolgingStatusData.vilkarMaBesvares)
                 .setKanStarteOppfolging(oppfolgingStatusData.isKanStarteOppfolging())
                 .setAvslutningStatus(

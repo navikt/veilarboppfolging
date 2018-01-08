@@ -153,7 +153,9 @@ public class OppfolgingService {
         String aktorId = resolver.getAktorId();
 
         return Stream.of(
-                kvpRepository.hentKvpHistorikk(aktorId).stream().filter(this::sjekkEnhetTilgang).map(this::tilDTO).flatMap(List::stream),
+                kvpRepository.hentKvpHistorikk(aktorId).stream()
+                        .filter((kvp) -> enhetPepClient.harTilgang(kvp.getEnhet()))
+                        .map(this::tilDTO).flatMap(List::stream),
                 oppfolgingRepository.hentAvsluttetOppfolgingsperioder(aktorId).stream().map(this::tilDTO),
                 oppfolgingRepository.hentManuellHistorikk(aktorId).stream().map(this::tilDTO),
                 oppfolgingRepository.hentEskaleringhistorikk(aktorId).stream().map(this::tilDTO).flatMap(List::stream)
@@ -197,15 +199,6 @@ public class OppfolgingService {
             return Arrays.asList(kvpStart, kvpStopp);
         }
         return singletonList(kvpStart);
-    }
-
-    private boolean sjekkEnhetTilgang(Kvp kvp) {
-        try {
-            enhetPepClient.sjekkTilgang(kvp.getEnhet());
-        } catch (Exception e) {
-            return false;
-        }
-        return true;
     }
 
     private InnstillingsHistorikk tilDTO(Oppfolgingsperiode oppfolgingsperiode) {
@@ -268,6 +261,7 @@ public class OppfolgingService {
                 .setFnr(fnr)
                 .setVeilederId(oppfolging.getVeilederId())
                 .setUnderOppfolging(oppfolging.isUnderOppfolging())
+                .setUnderKvp(oppfolging.getGjeldendeKvp() != null)
                 .setReservasjonKRR(oppfolgingResolver.reservertIKrr())
                 .setManuell(oppfolgingResolver.manuell())
                 .setVilkarMaBesvares(oppfolgingResolver.maVilkarBesvares())
