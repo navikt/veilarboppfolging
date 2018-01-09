@@ -3,6 +3,7 @@ package no.nav.fo.veilarboppfolging.config;
 import no.nav.apiapp.security.PepClient;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.db.ArbeidssokerregistreringRepository;
+import no.nav.fo.veilarboppfolging.db.KvpRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingFeedRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingsStatusRepository;
@@ -78,6 +79,11 @@ public class ServiceConfig {
     @Bean
     OppfolgingsStatusRepository oppfolgingsStatusRepository(Database db) {
         return new OppfolgingsStatusRepository(db);
+    }
+
+    @Bean
+    KvpRepository kvpRepository(Database db) {
+        return new KvpRepository(db);
     }
 
 }

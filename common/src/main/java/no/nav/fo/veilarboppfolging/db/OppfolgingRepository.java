@@ -22,6 +22,7 @@ public class OppfolgingRepository {
     private final ManuellStatusRepository manuellStatusRepository;
     private final BrukervilkarRepository brukervilkarRepository;
     private final EskaleringsvarselRepository eskaleringsvarselRepository;
+    private final KvpRepository kvpRepository;
 
     public OppfolgingRepository(Database database) {
         statusRepository = new OppfolgingsStatusRepository(database);
@@ -30,6 +31,7 @@ public class OppfolgingRepository {
         manuellStatusRepository = new ManuellStatusRepository(database);
         brukervilkarRepository = new BrukervilkarRepository(database);
         eskaleringsvarselRepository = new EskaleringsvarselRepository(database);
+        kvpRepository = new KvpRepository(database);
     }
 
     public Optional<Oppfolging> hentOppfolging(String aktorId) {
@@ -57,6 +59,10 @@ public class OppfolgingRepository {
 
         if (t.getGjeldendeManuellStatusId() != 0) {
             o.setGjeldendeManuellStatus(manuellStatusRepository.fetch(t.getGjeldendeManuellStatusId()));
+        }
+
+        if (t.getGjeldendeKvpId() != 0) {
+            o.setGjeldendeKvp(kvpRepository.fetch(t.getGjeldendeKvpId()));
         }
 
         o.setOppfolgingsperioder(periodeRepository.hentOppfolgingsperioder(t.getAktorId()));

@@ -69,6 +69,7 @@ public class OppfolgingsStatusRepository {
                 .setGjeldendeManuellStatusId(r.getLong("gjeldende_manuell_status"))
                 .setGjeldendeMaalId(r.getLong("gjeldende_mal"))
                 .setGjeldendeEskaleringsvarselId(r.getLong("gjeldende_eskaleringsvarsel"))
+                .setGjeldendeKvpId(r.getLong("gjeldende_kvp"))
                 .setVeilederId(r.getString("veileder"))
                 .setUnderOppfolging(r.getBoolean("under_oppfolging"));
     }

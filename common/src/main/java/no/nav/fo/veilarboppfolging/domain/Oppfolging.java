@@ -18,4 +18,5 @@ public class Oppfolging {
     private EskaleringsvarselData gjeldendeEskaleringsvarsel;
     private MalData gjeldendeMal;
     private List<Oppfolgingsperiode> oppfolgingsperioder = emptyList();
+    private Kvp gjeldendeKvp;
 }
