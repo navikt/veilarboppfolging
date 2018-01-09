@@ -1,15 +1,34 @@
 package no.nav.fo.veilarboppfolging.config;
 
+import no.nav.apiapp.util.StringUtils;
 import no.nav.dialogarena.config.fasit.DbCredentials;
 import no.nav.fo.veilarboppfolging.db.testdriver.TestDriver;
 import org.flywaydb.core.Flyway;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 
+import static java.lang.System.getProperty;
+import static no.nav.dialogarena.config.fasit.FasitUtils.getDbCredentials;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 
+import javax.sql.DataSource;
+
 public class JndiLocalContextConfig {
 
+    public static DataSource configureDataSource(String applicationName) {
+        return Boolean.parseBoolean(getProperty("lokal.database", "true")) ? setupInMemoryDatabase() :
+            setupJndiLocalContext(configureCredentials(applicationName));
+    }
+ 
+    private static DbCredentials configureCredentials(String applicationName) {
+        String dbUrl = getProperty("database.url");
+        String dbUser = getProperty("database.user", "sa");
+        String dbPasswd = getProperty("database.password", "");
+        return(StringUtils.notNullOrEmpty(dbUrl)) ? 
+            new DbCredentials().setUrl(dbUrl).setUsername(dbUser).setPassword(dbPasswd) :
+                getDbCredentials(applicationName);
+    }
+    
     public static SingleConnectionDataSource setupJndiLocalContext(DbCredentials dbCredentials) {
         SingleConnectionDataSource ds = new SingleConnectionDataSource();
         ds.setUrl(dbCredentials.url);
