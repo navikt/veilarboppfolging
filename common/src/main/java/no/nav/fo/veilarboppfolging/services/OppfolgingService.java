@@ -4,6 +4,7 @@ import io.swagger.annotations.Api;
 import lombok.SneakyThrows;
 import lombok.val;
 import no.nav.dialogarena.aktor.AktorService;
+import no.nav.fo.veilarboppfolging.db.KvpRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.fo.veilarboppfolging.services.OppfolgingResolver.OppfolgingResolverDependencies;
@@ -13,13 +14,13 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.inject.Inject;
 import java.sql.Timestamp;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.lang.System.currentTimeMillis;
-import static java.util.stream.Stream.concat;
+import static java.util.Collections.singletonList;
 import static no.nav.fo.veilarboppfolging.domain.InnstillingsHistorikk.Type.*;
 import static no.nav.fo.veilarboppfolging.domain.KodeverkBruker.NAV;
 
@@ -35,6 +36,12 @@ public class OppfolgingService {
 
     @Inject
     private OppfolgingRepository oppfolgingRepository;
+
+    @Inject
+    private KvpRepository kvpRepository;
+
+    @Inject
+    private EnhetPepClient enhetPepClient;
 
     public OppfolgingStatusData hentOppfolgingsStatus(AktorId aktorId) throws Exception {
         String fnr = aktorService.getFnr(aktorId.getAktorId())
@@ -145,12 +152,14 @@ public class OppfolgingService {
         val resolver = new OppfolgingResolver(fnr, oppfolgingResolverDependencies);
         String aktorId = resolver.getAktorId();
 
-        return concat(
-                concat(
-                        oppfolgingRepository.hentAvsluttetOppfolgingsperioder(aktorId).stream().map(this::tilDTO),
-                        oppfolgingRepository.hentManuellHistorikk(aktorId).stream().map(this::tilDTO)),
+        return Stream.of(
+                kvpRepository.hentKvpHistorikk(aktorId).stream()
+                        .filter((kvp) -> enhetPepClient.harTilgang(kvp.getEnhet()))
+                        .map(this::tilDTO).flatMap(List::stream),
+                oppfolgingRepository.hentAvsluttetOppfolgingsperioder(aktorId).stream().map(this::tilDTO),
+                oppfolgingRepository.hentManuellHistorikk(aktorId).stream().map(this::tilDTO),
                 oppfolgingRepository.hentEskaleringhistorikk(aktorId).stream().map(this::tilDTO).flatMap(List::stream)
-        ).collect(Collectors.toList());
+        ).flatMap(s -> s).collect(Collectors.toList());
     }
 
     public List<EskaleringsvarselData> hentEskaleringhistorikk(String fnr) {
@@ -168,6 +177,28 @@ public class OppfolgingService {
     public void stoppEskalering(String fnr, String begrunnelse) {
         val resolver = new OppfolgingResolver(fnr, oppfolgingResolverDependencies);
         resolver.stoppEskalering(begrunnelse);
+    }
+
+    private List<InnstillingsHistorikk> tilDTO(Kvp kvp) {
+        InnstillingsHistorikk kvpStart = InnstillingsHistorikk.builder()
+                .type(KVP_STARTET)
+                .begrunnelse(kvp.getOpprettetBegrunnelse())
+                .dato(kvp.getOpprettetDato())
+                .opprettetAv(NAV)
+                .opprettetAvBrukerId(kvp.getOpprettetAv())
+                .build();
+
+        if (kvp.getAvsluttetDato() != null) {
+            InnstillingsHistorikk kvpStopp = InnstillingsHistorikk.builder()
+                    .type(KVP_STOPPET)
+                    .begrunnelse(kvp.getAvsluttetBegrunnelse())
+                    .dato(kvp.getAvsluttetDato())
+                    .opprettetAv(NAV)
+                    .opprettetAvBrukerId(kvp.getAvsluttetAv())
+                    .build();
+            return Arrays.asList(kvpStart, kvpStopp);
+        }
+        return singletonList(kvpStart);
     }
 
     private InnstillingsHistorikk tilDTO(Oppfolgingsperiode oppfolgingsperiode) {
@@ -198,7 +229,7 @@ public class OppfolgingService {
                 .type(ESKALERING_STARTET)
                 .dato(data.getOpprettetDato())
                 .begrunnelse(data.getOpprettetBegrunnelse())
-                .opprettetAv(KodeverkBruker.NAV)
+                .opprettetAv(NAV)
                 .opprettetAvBrukerId(data.getOpprettetAv())
                 .dialogId(data.getTilhorendeDialogId())
                 .build();
@@ -209,13 +240,13 @@ public class OppfolgingService {
                     .type(ESKALERING_STOPPET)
                     .dato(data.getAvsluttetDato())
                     .begrunnelse(data.getAvsluttetBegrunnelse())
-                    .opprettetAv(KodeverkBruker.NAV)
+                    .opprettetAv(NAV)
                     .opprettetAvBrukerId(data.getAvsluttetAv())
                     .dialogId(data.getTilhorendeDialogId())
                     .build();
             return Arrays.asList(startetEskalering, stoppetEskalering);
         } else {
-            return Collections.singletonList(startetEskalering);
+            return singletonList(startetEskalering);
         }
 
     }
@@ -230,6 +261,7 @@ public class OppfolgingService {
                 .setFnr(fnr)
                 .setVeilederId(oppfolging.getVeilederId())
                 .setUnderOppfolging(oppfolging.isUnderOppfolging())
+                .setUnderKvp(oppfolging.getGjeldendeKvp() != null)
                 .setReservasjonKRR(oppfolgingResolver.reservertIKrr())
                 .setManuell(oppfolgingResolver.manuell())
                 .setVilkarMaBesvares(oppfolgingResolver.maVilkarBesvares())

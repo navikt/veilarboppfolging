@@ -14,6 +14,7 @@ public class OppfolgingStatus {
     public boolean reservasjonKRR;
     public boolean manuell;
     public boolean underOppfolging;
+    public boolean underKvp;
     public boolean vilkarMaBesvares;
     public Date oppfolgingUtgang;
     public Eskaleringsvarsel gjeldendeEskaleringsvarsel;
