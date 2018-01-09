@@ -16,6 +16,10 @@ public class JndiLocalContextConfig {
         ds.setUsername(dbCredentials.username);
         ds.setPassword(dbCredentials.password);
         ds.setSuppressClose(true);
+        if(dbCredentials.url.contains("h2")) {
+            ds.setDriverClassName(TestDriver.class.getName());
+            migrerDatabase(ds);
+        }
         return ds;
     }
 
@@ -23,18 +27,23 @@ public class JndiLocalContextConfig {
         SingleConnectionDataSource ds = new SingleConnectionDataSource();
         ds.setSuppressClose(true);
         ds.setDriverClassName(TestDriver.class.getName());
-        ds.setUrl(TestDriver.URL);
+        ds.setUrl(TestDriver.createInMemoryDatabaseUrl());
         ds.setUsername("sa");
         ds.setPassword("");
 
+        int antallMigreringer = migrerDatabase(ds);
+        assertThat(antallMigreringer, greaterThan(0));
+
+        return ds;
+    }
+
+    private static int migrerDatabase(SingleConnectionDataSource ds) {
         Flyway flyway = new Flyway();
         flyway.setLocations("db/migration/veilarboppfolgingDB");
         flyway.setDataSource(ds);
         flyway.setRepeatableSqlMigrationPrefix("N/A");
 
         int migrate = flyway.migrate();
-        assertThat(migrate, greaterThan(0));
-
-        return ds;
+        return migrate;
     }
 }
