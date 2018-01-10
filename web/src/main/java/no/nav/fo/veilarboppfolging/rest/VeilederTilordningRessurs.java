@@ -53,7 +53,6 @@ public class VeilederTilordningRessurs {
     @Path("/tilordneveileder")
     public Response postVeilederTilordninger(List<VeilederTilordning> tilordninger) {
         List<VeilederTilordning> feilendeTilordninger = new ArrayList<>();
-
         for (VeilederTilordning tilordning : tilordninger) {
             try {
                 final String fnr = tilordning.getBrukerFnr();
