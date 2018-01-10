@@ -5,9 +5,12 @@ import no.nav.apiapp.security.PepClient;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.feed.producer.FeedProducer;
 import no.nav.fo.veilarboppfolging.db.VeilederTilordningerRepository;
+import no.nav.fo.veilarboppfolging.domain.Tilordning;
 import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingFeedDTO;
 import no.nav.fo.veilarboppfolging.rest.domain.TilordneVeilederResponse;
 import no.nav.fo.veilarboppfolging.rest.domain.VeilederTilordning;
+import no.nav.fo.veilarboppfolging.utils.FunkjsonelleMetrikker;
+import no.nav.modig.core.context.SubjectHandler;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
@@ -16,6 +19,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -82,6 +86,32 @@ public class VeilederTilordningRessurs {
         }
         return Response.ok().entity(response).build();
 
+    }
+
+    @POST
+    @Path("/lestaktivitetsplan/{fnr}")
+    public void lestAktivitetsplan(@PathParam("fnr") String fnr) {
+        pepClient.sjekkLeseTilgangTilFnr(fnr);
+        String aktorId = aktorService.getAktorId(fnr)
+                .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktør for fnr: " + fnr));
+
+        veilederTilordningerRepository.hentTilordnetVeileder(aktorId)
+                .filter(this::erVeilederFor)
+                .map(FunkjsonelleMetrikker::lestAvVeileder)
+                .map(Tilordning::getAktorId)
+                .map(veilederTilordningerRepository::markerSomLestAvVeileder)
+                .ifPresent(i -> kallWebhook());
+    }
+
+    private boolean erVeilederFor(Tilordning tilordning) {
+        String veilederId = SubjectHandler.getSubjectHandler().getUid();
+        if(veilederId == null)
+            return false;
+
+        return Optional.of(tilordning)
+                .map(Tilordning::getVeilederId)
+                .map(veilederId::equals)
+                .orElse(false);
     }
 
     private void kallWebhook() {
