@@ -4,13 +4,22 @@ import no.nav.apiapp.feil.Feil;
 import no.nav.fo.IntegrasjonsTest;
 import no.nav.fo.veilarboppfolging.domain.Kvp;
 import no.nav.fo.veilarboppfolging.domain.Oppfolging;
+import no.nav.fo.veilarboppfolging.services.EnhetPepClient;
 import no.nav.sbl.jdbc.Database;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
 
+@RunWith(MockitoJUnitRunner.class)
 public class KvpRepositoryTest extends IntegrasjonsTest {
 
     private static final String AKTOR_ID = "2222";
@@ -19,16 +28,24 @@ public class KvpRepositoryTest extends IntegrasjonsTest {
 
     private Database db = getBean(Database.class);
 
+    @Mock
+    private EnhetPepClient enhetPepClientMock;
+
+    @InjectMocks
     private OppfolgingRepository oppfolgingRepository = new OppfolgingRepository(db);
 
     private KvpRepository kvpRepository = new KvpRepository(db);
 
     @Test
     public void startKvp() {
+        when(enhetPepClientMock.harTilgang(anyString())).thenReturn(true);
         gittOppfolgingForAktor(AKTOR_ID);
         start_kvp();
 
         assertThat(hentGjeldendeKvp(AKTOR_ID).getOpprettetBegrunnelse(), is(BEGRUNNELSE));
+
+        when(enhetPepClientMock.harTilgang(anyString())).thenReturn(false);
+        assertNull(hentGjeldendeKvp(AKTOR_ID));
 
         // Test that starting KVP an additional time yields an error.
         assertThrows(Feil.class, this::start_kvp);

@@ -4,9 +4,11 @@ package no.nav.fo.veilarboppfolging.db;
 import lombok.val;
 import no.nav.apiapp.feil.Feil;
 import no.nav.fo.veilarboppfolging.domain.*;
+import no.nav.fo.veilarboppfolging.services.EnhetPepClient;
 import no.nav.sbl.jdbc.Database;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.inject.Inject;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
@@ -15,6 +17,9 @@ import java.util.Optional;
 import static no.nav.apiapp.feil.Feil.Type.UGYLDIG_HANDLING;
 
 public class OppfolgingRepository {
+
+    @Inject
+    private EnhetPepClient enhetPepClient;
 
     private final OppfolgingsStatusRepository statusRepository;
     private final OppfolgingsPeriodeRepository periodeRepository;
@@ -62,7 +67,10 @@ public class OppfolgingRepository {
         }
 
         if (t.getGjeldendeKvpId() != 0) {
-            o.setGjeldendeKvp(kvpRepository.fetch(t.getGjeldendeKvpId()));
+            Kvp kvp = kvpRepository.fetch(t.getGjeldendeKvpId());
+            if (enhetPepClient.harTilgang(kvp.getEnhet())) {
+                o.setGjeldendeKvp(kvp);
+            }
         }
 
         o.setOppfolgingsperioder(periodeRepository.hentOppfolgingsperioder(t.getAktorId()));

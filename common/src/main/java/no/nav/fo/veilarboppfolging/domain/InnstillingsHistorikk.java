@@ -20,6 +20,8 @@ public class InnstillingsHistorikk {
         SATT_TIL_DIGITAL,
         AVSLUTTET_OPPFOLGINGSPERIODE,
         ESKALERING_STARTET,
-        ESKALERING_STOPPET
+        ESKALERING_STOPPET,
+        KVP_STARTET,
+        KVP_STOPPET
     }
 }

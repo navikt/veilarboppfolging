@@ -18,6 +18,7 @@ public class OppfolgingStatusData {
     public boolean reservasjonKRR;
     public boolean manuell;
     public boolean underOppfolging;
+    public boolean underKvp;
     public boolean vilkarMaBesvares;
     public boolean kanStarteOppfolging;
     public AvslutningStatusData avslutningStatusData;
