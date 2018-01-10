@@ -63,15 +63,6 @@ public class ServiceConfig {
     }
 
     @Bean
-    StartRegistreringService startRegistreringService(ArbeidssokerregistreringRepository arbeidssokerregistreringRepository,
-                                                      PepClient pepClient,
-                                                      AktorService aktorService,
-                                                      ArenaOppfolgingService arenaOppfolgingService,
-                                                      ArbeidsforholdService arbeidsforholdService) {
-        return new StartRegistreringService(arbeidssokerregistreringRepository, pepClient, aktorService, arenaOppfolgingService, arbeidsforholdService);
-    }
-
-    @Bean
     OppfolgingsStatusRepository oppfolgingsStatusRepository(Database db) {
         return new OppfolgingsStatusRepository(db);
     }
