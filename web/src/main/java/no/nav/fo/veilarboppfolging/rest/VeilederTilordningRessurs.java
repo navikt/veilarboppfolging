@@ -96,6 +96,7 @@ public class VeilederTilordningRessurs {
                 .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktør for fnr: " + fnr));
 
         veilederTilordningerRepository.hentTilordnetVeileder(aktorId)
+                .filter(Tilordning::isNyForVeileder)
                 .filter(this::erVeilederFor)
                 .map(FunkjsonelleMetrikker::lestAvVeileder)
                 .map(Tilordning::getAktorId)
