@@ -42,4 +42,16 @@ public class FnrUtilsTest {
         LocalDate dato = LocalDate.of(1998, 12, 14);
         assertThat(antallAarSidenDato(dato, dagensDato)).isEqualTo(19);
     }
+    @Test
+    public void skalVaere1Aar() {
+        LocalDate dato = LocalDate.of(2016, 2, 29);
+        LocalDate dagensDato = LocalDate.of(2018,2,28);
+        assertThat(antallAarSidenDato(dato, dagensDato)).isEqualTo(1);
+    }
+    @Test
+    public void skalVaere2Aar() {
+        LocalDate dato = LocalDate.of(2016, 2, 29);
+        LocalDate dagensDato = LocalDate.of(2018,3,1);
+        assertThat(antallAarSidenDato(dato, dagensDato)).isEqualTo(2);
+    }
 }
