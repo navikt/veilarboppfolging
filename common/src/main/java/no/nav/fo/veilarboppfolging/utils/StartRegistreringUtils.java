@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import static no.nav.fo.veilarboppfolging.services.ArenaUtils.erUnderOppfolging;
 import static no.nav.fo.veilarboppfolging.utils.ArbeidsforholdUtils.oppfyllerKravOmArbeidserfaring;
@@ -23,7 +24,7 @@ public class StartRegistreringUtils {
     static final int MIN_ALDER_AUTOMATISK_REGISTRERING = 30;
     static final int MAX_ALDER_AUTOMATISK_REGISTRERING = 59;
 
-    public static boolean oppfyllerKravOmAutomatiskRegistrering(String fnr, List<Arbeidsforhold> arbeidsforhold,
+    public static boolean oppfyllerKravOmAutomatiskRegistrering(String fnr, Supplier<List<Arbeidsforhold>> arbeidsforholdSupplier,
                                                                 ArenaOppfolging arenaOppfolging, LocalDate dagensDato) {
         LocalDate fodselsdato = FnrUtils.utledFodselsdatoForFnr(fnr);
         int alder = FnrUtils.antallAarSidenDato(fodselsdato,dagensDato);
@@ -31,7 +32,7 @@ public class StartRegistreringUtils {
 
         return oppfyllerKravOmInaktivitet(dagensDato, inaktiveringsdato) &&
                 oppfyllerKravOmAlder(alder) &&
-                oppfyllerKravOmArbeidserfaring(arbeidsforhold,dagensDato);
+                oppfyllerKravOmArbeidserfaring(arbeidsforholdSupplier.get(),dagensDato);
     }
 
     public static boolean erUnderoppfolgingIArena(ArenaOppfolging arenaOppfolging) {

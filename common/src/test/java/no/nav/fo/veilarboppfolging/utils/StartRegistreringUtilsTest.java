@@ -44,7 +44,7 @@ public class StartRegistreringUtilsTest {
         String fnr = getFodselsnummerOnDateMinusYears(dagensDato, 40);
         List<Arbeidsforhold> arbeidsforhold = getArbeidsforholdSomOppfyllerKrav();
         ArenaOppfolging arenaOppfolging = new ArenaOppfolging().setInaktiveringsdato(ISERVFraDato);
-        assertThat(oppfyllerKravOmAutomatiskRegistrering(fnr,arbeidsforhold,arenaOppfolging,dagensDato)).isTrue();
+        assertThat(oppfyllerKravOmAutomatiskRegistrering(fnr, () -> arbeidsforhold,arenaOppfolging,dagensDato)).isTrue();
     }
 
     public static List<Arbeidsforhold> getArbeidsforholdSomOppfyllerKrav() {

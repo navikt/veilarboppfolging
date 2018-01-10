@@ -143,6 +143,13 @@ public class StartRegistreringStatusResolverTest {
     }
 
     @Test
+    public void skalIkkeHenteArbeidsforholdDersomBrukerIkkeOppfyllerKravOmAlder() throws Exception {
+        mockArenaMedRespons(arenaISERV(LocalDate.now().minusYears(2)));
+        getStartRegistreringStatus(FNR_OPPFYLLER_IKKE_KRAV);
+        verify(arbeidsforholdService, never()).hentArbeidsforhold(any());
+    }
+
+    @Test
     public void skalKasterKorrektExceptionDersomKallTilArenaFeiler() throws Exception {
         when(arenaOppfolgingService.hentArenaOppfolging(any())).thenThrow(Exception.class);
         assertThrows(HentStartRegistreringStatusFeilVedHentingAvStatusFraArena.class, () -> getStartRegistreringStatus(FNR_OPPFYLLER_KRAV));
@@ -150,7 +157,7 @@ public class StartRegistreringStatusResolverTest {
 
     @Test
     public void skalKasterKorrektExceptionDersomKallTilArbeidsforholdFeiler() throws Exception{
-        mockArenaMedRespons(arenaISERV(LocalDate.now()));
+        mockArenaMedRespons(arenaISERV(LocalDate.now().minusYears(2)));
         when(arbeidsforholdService.hentArbeidsforhold(any())).thenThrow(Exception.class);
         assertThrows(HentStartRegistreringStatusFeilVedHentingAvArbeidsforhold.class, () -> getStartRegistreringStatus(FNR_OPPFYLLER_KRAV));
     }
