@@ -127,6 +127,17 @@
             <artifactId>organisasjonenhet-v1-tjenestespesifikasjon</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>no.nav.tjenester</groupId>
+            <artifactId>brukerdialog-behandleOppfolging-v1-tjenestespesifikasjon</artifactId>
+            <classifier>jaxws</classifier>
+        </dependency>
+        <dependency>
+            <groupId>no.nav.tjenester.fim</groupId>
+            <artifactId>nav-arbeidsforhold-v3-tjenestespesifikasjon</artifactId>
+            <classifier>jaxws</classifier>
+        </dependency>
+
         <!--NAV felles-->
         <dependency>
             <groupId>no.nav.sbl</groupId>
@@ -198,6 +209,10 @@
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
         </dependency>
+        <dependency>
+            <groupId>io.vavr</groupId>
+            <artifactId>vavr</artifactId>
+        </dependency>
 
         <!-- TODO OppfolgingService kaster rs-exceptions, noe som ikke er ønskelig -->
         <dependency>
@@ -206,6 +221,11 @@
         </dependency>
 
         <!-- Test -->
+        <dependency>
+            <groupId>no.nav.dialogarena</groupId>
+            <artifactId>oidc-security</artifactId>
+            <type>test-jar</type>
+        </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-test</artifactId>
@@ -290,6 +310,10 @@
         <dependency>
             <groupId>io.swagger</groupId>
             <artifactId>swagger-annotations</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>no.bekk.bekkopen</groupId>
+            <artifactId>nocommons</artifactId>
         </dependency>
 
     </dependencies>

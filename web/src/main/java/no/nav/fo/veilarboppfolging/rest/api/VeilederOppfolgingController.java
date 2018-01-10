@@ -1,10 +1,7 @@
 package no.nav.fo.veilarboppfolging.rest.api;
 
 import no.nav.fo.veilarboppfolging.domain.InnstillingsHistorikk;
-import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingStatus;
-import no.nav.fo.veilarboppfolging.rest.domain.StartEskaleringDTO;
-import no.nav.fo.veilarboppfolging.rest.domain.StoppEskaleringDTO;
-import no.nav.fo.veilarboppfolging.rest.domain.VeilederBegrunnelseDTO;
+import no.nav.fo.veilarboppfolging.rest.domain.*;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -45,4 +42,12 @@ public interface VeilederOppfolgingController {
     @POST
     @Path("/stoppEskalering")
     void stoppEskalering(StoppEskaleringDTO stoppEskalering) throws Exception;
+
+    @POST
+    @Path("/startKvp")
+    void startKvp(StartKvpDTO startKvp) throws Exception;
+
+    @POST
+    @Path("/stoppKvp")
+    void stoppKvp(StoppKvpDTO stoppKvp) throws Exception;
 }

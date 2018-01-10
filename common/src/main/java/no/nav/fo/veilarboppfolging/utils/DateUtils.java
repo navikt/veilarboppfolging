@@ -5,12 +5,10 @@ import lombok.SneakyThrows;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.Optional;
 
 import static java.util.Optional.ofNullable;
 
@@ -48,5 +46,21 @@ public class DateUtils {
         return ZonedDateTime.of(localDateTime, ZoneId.systemDefault()).withZoneSameInstant(ZoneOffset.UTC);
     }
 
+    public static LocalDate xmlGregorianCalendarToLocalDate(XMLGregorianCalendar inaktiveringsdato) {
+        return Optional.ofNullable(inaktiveringsdato)
+                .map(XMLGregorianCalendar::toGregorianCalendar)
+                .map(GregorianCalendar::toZonedDateTime)
+                .map(ZonedDateTime::toLocalDate).orElse(null);
+    }
 
+    static boolean erDatoEldreEnnEllerLikAar(LocalDate dagensDato, LocalDate dato, int aar) {
+        return FnrUtils.antallAarSidenDato(dato, dagensDato) >= aar;
+    }
+
+    @SneakyThrows
+    public static XMLGregorianCalendar now() {
+        DatatypeFactory factory = DatatypeFactory.newInstance();
+        GregorianCalendar calendar = new GregorianCalendar();
+        return factory.newXMLGregorianCalendar(calendar);
+    }
 }
