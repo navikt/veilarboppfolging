@@ -35,6 +35,7 @@
         <webservice alias="virksomhet:OrganisasjonEnhet_v1" mapToProperty="organisasjonenhet.endpoint"/>
         <webservice alias="Aktoer_v2" mapToProperty="aktoer.endpoint"/>
         <webservice alias="Varseloppgave_v1" mapToProperty="varseloppgave.endpoint"/>
+        <webservice mapToProperty="aareg.endpoint" alias="virksomhet:Arbeidsforhold_v3"/>
         <applicationCertificate alias="srvveilarboppfolging"/>
         <rest alias="abac.pdp.endpoint" mapToProperty="abac.endpoint" />
         <rest alias="veilArbAktivitetAPI" mapToProperty="veilarbaktivitet" />

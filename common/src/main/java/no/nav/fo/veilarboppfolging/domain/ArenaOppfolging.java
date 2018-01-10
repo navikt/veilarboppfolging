@@ -3,6 +3,8 @@ package no.nav.fo.veilarboppfolging.domain;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
+import java.time.LocalDate;
+
 @Data
 @Accessors(chain = true)
 public class ArenaOppfolging {
@@ -10,4 +12,5 @@ public class ArenaOppfolging {
     private String formidlingsgruppe;
     private String servicegruppe;
     private Oppfolgingsenhet oppfolgingsenhet;
+    private LocalDate inaktiveringsdato;
 }
