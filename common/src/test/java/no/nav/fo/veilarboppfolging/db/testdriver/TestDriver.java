@@ -7,16 +7,19 @@ import java.util.Properties;
 import java.util.logging.Logger;
 
 import static java.sql.DriverManager.registerDriver;
+import static java.sql.DriverManager.deregisterDriver;
 
 public class TestDriver implements Driver {
 
+    private static final String DB_URL = "jdbc:h2:mem:veilarboppfolging-%s;DB_CLOSE_DELAY=-1;MODE=Oracle";
     private static int databaseCounter;
-
-    public static final String URL = TestDriver.class.getSimpleName();
 
     static {
         try {
             registerDriver(new TestDriver());
+            // Deregistrerer opprinnelig h2 driver for å sikre at TestDriver benyttes for h2-databaser.
+            // load() returnerer den registrerte instansen av h2-driveren.
+            deregisterDriver(org.h2.Driver.load());
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -24,16 +27,13 @@ public class TestDriver implements Driver {
 
     private Driver driver = new org.h2.Driver();
 
-    @Override
-    public Connection connect(String url, Properties info) throws SQLException {
-        return ProxyUtils.proxy(new ConnectionInvocationHandler(driver.connect(getH2Url(), info)), Connection.class);
+    public static String createInMemoryDatabaseUrl() {
+        return String.format(DB_URL, databaseCounter++);
     }
 
-    private String getH2Url() {
-        return String.format(
-                "jdbc:h2:mem:veilarboppfolging-%s;DB_CLOSE_DELAY=-1;MODE=Oracle",
-                databaseCounter++
-        );
+    @Override
+    public Connection connect(String url, Properties info) throws SQLException {
+        return ProxyUtils.proxy(new ConnectionInvocationHandler(driver.connect(url, info)), Connection.class);
     }
 
     @Override
@@ -43,7 +43,7 @@ public class TestDriver implements Driver {
 
     @Override
     public DriverPropertyInfo[] getPropertyInfo(String url, Properties info) throws SQLException {
-        return driver.getPropertyInfo(getH2Url(), info);
+        return driver.getPropertyInfo(url, info);
     }
 
     @Override

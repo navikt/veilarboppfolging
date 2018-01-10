@@ -3,12 +3,9 @@ package no.nav.fo.veilarboppfolging;
 import no.nav.dialogarena.config.DevelopmentSecurity.ISSOSecurityConfig;
 import no.nav.sbl.dialogarena.common.jetty.Jetty;
 
-import static java.lang.System.getProperty;
 import static no.nav.dialogarena.config.DevelopmentSecurity.setupISSO;
-import static no.nav.dialogarena.config.fasit.FasitUtils.getDbCredentials;
 import static no.nav.fo.veilarboppfolging.config.DatabaseConfig.DATA_SOURCE_JDNI_NAME;
-import static no.nav.fo.veilarboppfolging.config.JndiLocalContextConfig.setupInMemoryDatabase;
-import static no.nav.fo.veilarboppfolging.config.JndiLocalContextConfig.setupJndiLocalContext;
+import static no.nav.fo.veilarboppfolging.config.JndiLocalContextConfig.configureDataSource;
 import static no.nav.sbl.dialogarena.common.jetty.Jetty.usingWar;
 import static no.nav.sbl.dialogarena.common.jetty.JettyStarterUtils.*;
 
@@ -25,8 +22,7 @@ class StartJetty {
                         .at(CONTEXT_NAME)
                         .port(PORT)
                         .loadProperties("/environment-test.properties")
-                        .addDatasource(Boolean.parseBoolean(getProperty("lokal.database", "true")) ? setupInMemoryDatabase() : 
-                            setupJndiLocalContext(getDbCredentials(APPLICATION_NAME)), DATA_SOURCE_JDNI_NAME)
+                        .addDatasource(configureDataSource(APPLICATION_NAME), DATA_SOURCE_JDNI_NAME)
                 , new ISSOSecurityConfig(APPLICATION_NAME)).buildJetty();
         jetty.startAnd(first(waitFor(gotKeypress())).then(jetty.stop));
     }
