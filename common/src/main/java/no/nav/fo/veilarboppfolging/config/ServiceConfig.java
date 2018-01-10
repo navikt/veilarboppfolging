@@ -42,11 +42,6 @@ public class ServiceConfig {
     }
 
     @Bean
-    ArbeidsforholdService arbeidsforholdService(ArbeidsforholdV3 arbeidsforholdV3) {
-        return new ArbeidsforholdService(arbeidsforholdV3);
-    }
-
-    @Bean
     OppfolgingFeedRepository oppfolgingFeedRepository(JdbcTemplate db) {
         return new OppfolgingFeedRepository(db);
     }
