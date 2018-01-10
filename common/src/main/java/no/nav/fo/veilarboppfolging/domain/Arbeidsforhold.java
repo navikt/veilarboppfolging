@@ -29,7 +29,7 @@ public class Arbeidsforhold {
 
     private static LocalDate getTom(AnsettelsesPeriode periode) {
         return Optional.ofNullable(periode)
-                .map(AnsettelsesPeriode::getFomBruksperiode)
+                .map(AnsettelsesPeriode::getTomBruksperiode)
                 .map(DateUtils::xmlGregorianCalendarToLocalDate).orElse(null);
     }
 }
