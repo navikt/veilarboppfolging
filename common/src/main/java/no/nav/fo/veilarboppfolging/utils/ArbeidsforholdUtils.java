@@ -18,7 +18,6 @@ public class ArbeidsforholdUtils {
         LocalDate innevaerendeMnd = LocalDate.of(dagensDato.getYear(), dagensDato.getMonthValue(), dagIMnd);
 
         while(antallSammenhengendeMandeder < minAntallMndSammenhengendeJobb && mndFraDagensMnd < antallMnd) {
-            innevaerendeMnd = innevaerendeMnd.minusMonths(1);
 
             if(harArbeidsforholdPaaDato(arbeidsforhold, innevaerendeMnd)) {
                 antallSammenhengendeMandeder += 1;
@@ -26,6 +25,7 @@ public class ArbeidsforholdUtils {
                 antallSammenhengendeMandeder = 0;
             }
 
+            innevaerendeMnd = innevaerendeMnd.minusMonths(1);
             mndFraDagensMnd += 1;
         }
         return antallSammenhengendeMandeder >= minAntallMndSammenhengendeJobb;
@@ -39,8 +39,7 @@ public class ArbeidsforholdUtils {
     }
 
     static boolean erDatoInnenforPeriode(Arbeidsforhold arbeidsforhold, LocalDate innevaerendeMnd) {
-        return Objects.isNull(arbeidsforhold.getTom()) ||
-                innevaerendeMnd.isAfter(arbeidsforhold.getFom().minusDays(1)) &&
-                        innevaerendeMnd.isBefore(arbeidsforhold.getTom().plusDays(1));
+        return innevaerendeMnd.isAfter(arbeidsforhold.getFom().minusDays(1)) &&
+                (Objects.isNull(arbeidsforhold.getTom()) || innevaerendeMnd.isBefore(arbeidsforhold.getTom().plusDays(1)));
     }
 }
