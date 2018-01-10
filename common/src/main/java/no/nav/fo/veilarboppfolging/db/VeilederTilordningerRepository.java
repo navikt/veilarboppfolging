@@ -65,9 +65,9 @@ public class VeilederTilordningerRepository {
     }
 
     public int markerSomLestAvVeileder(String aktorId) {
-        return db.update("UPDATE" + OppfolgingsStatusRepository.TABLE_NAME +
-                " SET " + NY_FOR_VEILEDER + "= 0 " +
-                OPPDATERT + "=CURRENT_TIMESTAMP" +
+        return db.update("UPDATE " + OppfolgingsStatusRepository.TABLE_NAME +
+                " SET " + NY_FOR_VEILEDER + " = 0 " +
+                OPPDATERT + " = CURRENT_TIMESTAMP" +
                 " WHERE " + AKTOR_ID + " = ?", aktorId
         );
 
