@@ -6,12 +6,12 @@ import no.nav.fo.veilarboppfolging.db.testdriver.TestDriver;
 import org.flywaydb.core.Flyway;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 
+import javax.sql.DataSource;
+
 import static java.lang.System.getProperty;
 import static no.nav.dialogarena.config.fasit.FasitUtils.getDbCredentials;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
-
-import javax.sql.DataSource;
 
 public class JndiLocalContextConfig {
 

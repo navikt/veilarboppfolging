@@ -2,6 +2,7 @@ package no.nav.fo.veilarboppfolging.rest;
 
 import io.swagger.annotations.Api;
 import no.nav.apiapp.security.PepClient;
+import no.nav.apiapp.security.SubjectService;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.feed.producer.FeedProducer;
 import no.nav.fo.veilarboppfolging.db.VeilederTilordningerRepository;
@@ -10,7 +11,6 @@ import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingFeedDTO;
 import no.nav.fo.veilarboppfolging.rest.domain.TilordneVeilederResponse;
 import no.nav.fo.veilarboppfolging.rest.domain.VeilederTilordning;
 import no.nav.fo.veilarboppfolging.utils.FunkjsonelleMetrikker;
-import no.nav.modig.core.context.SubjectHandler;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
@@ -35,6 +35,7 @@ public class VeilederTilordningRessurs {
     private final PepClient pepClient;
 
     private FeedProducer<OppfolgingFeedDTO> feed;
+    private final SubjectService subjectService = new SubjectService();
 
     public VeilederTilordningRessurs(AktorService aktorService,
                                      VeilederTilordningerRepository veilederTilordningerRepository,
@@ -105,13 +106,14 @@ public class VeilederTilordningRessurs {
     }
 
     private boolean erVeilederFor(Tilordning tilordning) {
-        String veilederId = SubjectHandler.getSubjectHandler().getUid();
-        if(veilederId == null)
+        Optional<String> userId = subjectService.getUserId();
+        if(!userId.isPresent())
             return false;
+        String id = userId.get();
 
         return Optional.of(tilordning)
                 .map(Tilordning::getVeilederId)
-                .map(veilederId::equals)
+                .map(id::equals)
                 .orElse(false);
     }
 
