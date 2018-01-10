@@ -1,4 +1,4 @@
-package no.nav.fo.veilarboppfolging.service;
+package no.nav.fo.veilarboppfolging.config;
 
 
 import no.nav.fo.veilarboppfolging.services.ArbeidsforholdService;
