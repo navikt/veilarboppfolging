@@ -4,8 +4,11 @@ import lombok.SneakyThrows;
 import lombok.val;
 import no.nav.apiapp.soap.SoapTjeneste;
 import no.nav.fo.veilarboppfolging.domain.*;
+import no.nav.fo.veilarboppfolging.service.ReserverKrrService;
 import no.nav.fo.veilarboppfolging.services.OppfolgingService;
 import no.nav.fo.veilarboppfolging.services.startregistrering.StartRegistreringService;
+import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.HentReservertKrrRequest;
+import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.HentReservertKrrResponse;
 import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.binding.*;
 import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.informasjon.*;
 import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.meldinger.*;
@@ -28,10 +31,16 @@ public class OppfolgingWebService implements BehandleOppfolgingV1 {
 
     private OppfolgingService oppfolgingService;
     private StartRegistreringService startRegistreringService;
+    private ReserverKrrService reserverKrrService;
 
-    public OppfolgingWebService(OppfolgingService oppfolgingService, StartRegistreringService startRegistreringService) {
+    public OppfolgingWebService(
+            OppfolgingService oppfolgingService,
+            StartRegistreringService startRegistreringService,
+            ReserverKrrService reserverKrrService) {
+
         this.startRegistreringService = startRegistreringService;
         this.oppfolgingService = oppfolgingService;
+        this.reserverKrrService = reserverKrrService;
     }
 
     @Override
@@ -238,5 +247,11 @@ public class OppfolgingWebService implements BehandleOppfolgingV1 {
         response.setErUnderOppfolging(status.isUnderOppfolging());
         response.setOppfyllerKrav(status.isOppfyllerKravForAutomatiskRegistrering());
         return response;
+    }
+
+    @Override
+    public HentReservertKrrResponse hentReservertKrr(HentReservertKrrRequest request) {
+        return reserverKrrService.hentReservertKrr(request.getFnr());
+
     }
 }

@@ -13,6 +13,8 @@ import static no.nav.sbl.dialogarena.types.Pingable.Ping.lyktes;
 @Configuration
 public class DigitalKontaktinformasjonConfig {
 
+    public static String URL = getProperty("dkif.endpoint.url");
+
     @Bean
     public DigitalKontaktinformasjonV1 dkifV1() {
         return factory();
@@ -21,7 +23,7 @@ public class DigitalKontaktinformasjonConfig {
     @Bean
     public Pingable dkifV1Ping() {
         Pingable.Ping.PingMetadata metadata = new Pingable.Ping.PingMetadata(
-                "DKIF_V1 via " + getProperty("dkif.endpoint.url"),
+                "DKIF_V1 via " + URL,
                 "Ping av DKIF_V1. Henter reservasjon fra KRR.",
                 false
         );
@@ -37,7 +39,7 @@ public class DigitalKontaktinformasjonConfig {
 
     private DigitalKontaktinformasjonV1 factory() {
         return new CXFClient<>(DigitalKontaktinformasjonV1.class)
-                .address(getProperty("dkif.endpoint.url"))
+                .address(URL)
                 .configureStsForSystemUserInFSS()
                 .build();
     }
