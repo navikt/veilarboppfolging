@@ -2,6 +2,8 @@ package no.nav.fo.veilarboppfolging.service;
 
 import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.apiapp.feil.IngenTilgang;
+import no.nav.apiapp.security.PepClient;
 import no.nav.fo.veilarboppfolging.config.DigitalKontaktinformasjonConfig;
 import no.nav.fo.veilarboppfolging.services.DigitalKontaktinformasjonService;
 import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.HentReservertKrrResponse;
@@ -23,18 +25,22 @@ import static no.nav.fo.veilarboppfolging.utils.DateUtils.now;
 public class ReservertKrrService {
 
     private DigitalKontaktinformasjonService digitalKontaktinformasjonService;
+    private PepClient pepClient;
 
-    public ReservertKrrService(DigitalKontaktinformasjonService digitalKontaktinformasjonService) {
+    public ReservertKrrService(DigitalKontaktinformasjonService digitalKontaktinformasjonService, PepClient pepClient) {
         this.digitalKontaktinformasjonService = digitalKontaktinformasjonService;
+        this.pepClient = pepClient;
     }
 
     @SuppressWarnings({"unchecked"})
     public HentReservertKrrResponse hentReservertKrr(String fnr) {
-        return Try.of(() -> digitalKontaktinformasjonService.erBrukerReservertIKrr(fnr))
+        return Try.of(() -> pepClient.sjekkLeseTilgangTilFnr(fnr))
+                .map(digitalKontaktinformasjonService::erBrukerReservertIKrr)
                 .map(ReservertKrrService::mapToKrrResponse)
                 .mapFailure(
                         Case($(instanceOf(NotAuthorizedException.class)), ReservertKrrService::ikkeTilgang),
                         Case($(instanceOf(NotFoundException.class)), ReservertKrrService::ikkeFunnet),
+                        Case($(instanceOf(IngenTilgang.class)), ReservertKrrService::ikkeTilgangAbac),
                         Case($(), ReservertKrrService::generellFeil)
                 )
                 .get();
@@ -55,12 +61,22 @@ public class ReservertKrrService {
     }
 
     private static HentReservertKrrHentKrrStatusSikekrhetsbegrensning ikkeTilgang(Throwable t) {
+        Sikkerhetsbegrensning sikkerhetsbegrensning = getSikkerhetsbegrensning(DigitalKontaktinformasjonConfig.URL);
+        return new HentReservertKrrHentKrrStatusSikekrhetsbegrensning("Ingen tilgang",sikkerhetsbegrensning,t);
+    }
+
+    private static HentReservertKrrHentKrrStatusSikekrhetsbegrensning ikkeTilgangAbac(Throwable t) {
+        Sikkerhetsbegrensning sikkerhetsbegrensning = getSikkerhetsbegrensning("ABAC");
+        return new HentReservertKrrHentKrrStatusSikekrhetsbegrensning("Ingen tilgang",sikkerhetsbegrensning,t);
+    }
+
+    private static Sikkerhetsbegrensning getSikkerhetsbegrensning(String feilkilde) {
         Sikkerhetsbegrensning sikkerhetsbegrensning = new Sikkerhetsbegrensning();
         sikkerhetsbegrensning.setFeilaarsak("Ingen tilgang");
         sikkerhetsbegrensning.setFeilmelding("Ingen tilgang");
         sikkerhetsbegrensning.setTidspunkt(now());
-        sikkerhetsbegrensning.setFeilkilde(DigitalKontaktinformasjonConfig.URL);
-        return new HentReservertKrrHentKrrStatusSikekrhetsbegrensning("Ingen tilgang",sikkerhetsbegrensning,t);
+        sikkerhetsbegrensning.setFeilkilde(feilkilde);
+        return sikkerhetsbegrensning;
     }
 
     private static HentReservertKrrResponse mapToKrrResponse(boolean reserverKrr) {

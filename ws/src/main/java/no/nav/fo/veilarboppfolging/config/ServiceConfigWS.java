@@ -31,7 +31,7 @@ public class ServiceConfigWS {
     }
 
     @Bean
-    ReservertKrrService reserverKrrService(DigitalKontaktinformasjonService digitalKontaktinformasjonService) {
-        return new ReservertKrrService(digitalKontaktinformasjonService);
+    ReservertKrrService reserverKrrService(DigitalKontaktinformasjonService digitalKontaktinformasjonService, PepClient pepClient) {
+        return new ReservertKrrService(digitalKontaktinformasjonService, pepClient);
     }
 }
