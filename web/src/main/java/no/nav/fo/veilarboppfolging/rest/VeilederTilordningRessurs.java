@@ -89,7 +89,7 @@ public class VeilederTilordningRessurs {
     }
 
     @POST
-    @Path("/lestaktivitetsplan/{fnr}")
+    @Path("{fnr}/lestaktivitetsplan/")
     public void lestAktivitetsplan(@PathParam("fnr") String fnr) {
         pepClient.sjekkLeseTilgangTilFnr(fnr);
         String aktorId = aktorService.getAktorId(fnr)
