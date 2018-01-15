@@ -9,7 +9,7 @@ import java.util.Optional;
 
 public class FunkjsonelleMetrikker {
     public static Tilordning lestAvVeileder(Tilordning tilordning) {
-        Event event = MetricsFactory.createEvent("tilordent.veileder.lest");
+        Event event = MetricsFactory.createEvent("tilordnet.veileder.lest");
         Optional.of(tilordning)
                 .map(Tilordning::getSistTilordnet)
                 .map(Date::getTime)
