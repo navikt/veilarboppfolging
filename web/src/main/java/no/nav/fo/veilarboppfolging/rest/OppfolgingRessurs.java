@@ -202,6 +202,7 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
                 .setUnderKvp(oppfolgingStatusData.underKvp)
                 .setVilkarMaBesvares(oppfolgingStatusData.vilkarMaBesvares)
                 .setKanStarteOppfolging(oppfolgingStatusData.isKanStarteOppfolging())
+                .setVeilederHarKontorTilgang(oppfolgingStatusData.isVeilederHarKontorTilgang())
                 .setAvslutningStatus(
                         ofNullable(oppfolgingStatusData.getAvslutningStatusData())
                                 .map(this::tilDto)
