@@ -21,12 +21,13 @@ public class OppfolgingStatusData {
     public boolean underKvp;
     public boolean vilkarMaBesvares;
     public boolean kanStarteOppfolging;
+    public boolean veilederHarKontorTilgang;
     public AvslutningStatusData avslutningStatusData;
     private EskaleringsvarselData gjeldendeEskaleringsvarsel;
     public List<Oppfolgingsperiode> oppfolgingsperioder = Collections.emptyList();
-    
+
     public Date getOppfolgingUtgang() {
         return oppfolgingsperioder.stream().map(Oppfolgingsperiode::getSluttDato).filter(Objects::nonNull).max(naturalOrder()).orElse(null);
     }
-    
+
 }

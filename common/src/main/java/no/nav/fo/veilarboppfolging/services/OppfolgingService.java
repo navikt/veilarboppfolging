@@ -266,6 +266,7 @@ public class OppfolgingService {
                 .setManuell(oppfolgingResolver.manuell())
                 .setVilkarMaBesvares(oppfolgingResolver.maVilkarBesvares())
                 .setKanStarteOppfolging(oppfolgingResolver.getKanSettesUnderOppfolging())
+                .setVeilederHarKontorTilgang(enhetPepClient.harTilgang(oppfolgingResolver.getOppfolgingsEnhet()))
                 .setAvslutningStatusData(avslutningStatusData)
                 .setGjeldendeEskaleringsvarsel(oppfolging.getGjeldendeEskaleringsvarsel())
                 .setOppfolgingsperioder(oppfolging.getOppfolgingsperioder())
