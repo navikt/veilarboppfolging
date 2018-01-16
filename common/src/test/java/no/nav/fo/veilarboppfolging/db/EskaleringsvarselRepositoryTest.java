@@ -5,9 +5,6 @@ import no.nav.fo.veilarboppfolging.domain.EskaleringsvarselData;
 import no.nav.fo.veilarboppfolging.domain.Oppfolging;
 import no.nav.sbl.jdbc.Database;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.List;
 
@@ -16,7 +13,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@RunWith(MockitoJUnitRunner.class)
 public class EskaleringsvarselRepositoryTest extends IntegrasjonsTest {
 
     private static final String AKTOR_ID = "2222";
@@ -26,7 +22,6 @@ public class EskaleringsvarselRepositoryTest extends IntegrasjonsTest {
 
     private Database db = getBean(Database.class);
 
-    @InjectMocks
     private OppfolgingRepository oppfolgingRepository = new OppfolgingRepository(db);
 
     private EskaleringsvarselRepository repository = new EskaleringsvarselRepository(db);
