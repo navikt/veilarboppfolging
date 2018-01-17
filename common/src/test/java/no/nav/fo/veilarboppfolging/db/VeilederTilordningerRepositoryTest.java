@@ -1,12 +1,15 @@
 package no.nav.fo.veilarboppfolging.db;
 
 import no.nav.fo.IntegrasjonsTest;
+import no.nav.fo.veilarboppfolging.domain.Tilordning;
+import no.nav.sbl.jdbc.Database;
 import no.nav.fo.veilarboppfolging.services.EnhetPepClient;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.io.IOException;
+import java.util.Optional;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
@@ -22,7 +25,7 @@ public class VeilederTilordningerRepositoryTest extends IntegrasjonsTest {
     }
 
     private VeilederTilordningerRepository repository = new VeilederTilordningerRepository(
-            getBean(JdbcTemplate.class),
+            getBean(Database.class),
             getBean(OppfolgingRepository.class)
     );
 
@@ -32,6 +35,8 @@ public class VeilederTilordningerRepositoryTest extends IntegrasjonsTest {
     public void skalLeggeTilBruker() {
         repository.upsertVeilederTilordning(AKTOR_ID, "***REMOVED***");
         assertThat(repository.hentTilordningForAktoer(AKTOR_ID), is("***REMOVED***"));
+        Optional<Tilordning> ***REMOVED*** = repository.hentTilordnetVeileder(AKTOR_ID);
+        assertThat(***REMOVED***.map(Tilordning::isNyForVeileder).get(), is(true));
     }
 
     @Test
@@ -60,5 +65,23 @@ public class VeilederTilordningerRepositoryTest extends IntegrasjonsTest {
 
         assertThat(repository.hentTilordningForAktoer(aktoerid), is("***REMOVED***"));
     }
+
+    @Test
+    void kanMarkeresSomLest() {
+        repository.upsertVeilederTilordning(AKTOR_ID, "***REMOVED***");
+        repository.markerSomLestAvVeileder(AKTOR_ID);
+        Optional<Tilordning> ***REMOVED*** = repository.hentTilordnetVeileder(AKTOR_ID);
+        assertThat(***REMOVED***.map(Tilordning::isNyForVeileder).get(), is(false));
+    }
+
+    @Test
+    void blirNyVedNVeileder() {
+        repository.upsertVeilederTilordning(AKTOR_ID, "***REMOVED***");
+        repository.markerSomLestAvVeileder(AKTOR_ID);
+        repository.upsertVeilederTilordning(AKTOR_ID, "***REMOVED***");
+        Optional<Tilordning> ***REMOVED*** = repository.hentTilordnetVeileder(AKTOR_ID);
+        assertThat(***REMOVED***.map(Tilordning::isNyForVeileder).get(), is(true));
+    }
+
 
 }

@@ -15,6 +15,7 @@ public class OppfolgingFeedUtil {
                 .aktoerid((String) rad.get("AKTOR_ID"))
                 .veileder((String) rad.get("VEILEDER"))
                 .oppfolging(rad.get("UNDER_OPPFOLGING").equals(BigDecimal.ONE))
+                .nyForVeileder(rad.get("NY_FOR_VEILEDER").equals(BigDecimal.ONE))
                 .endretTimestamp((Timestamp) (rad.get("OPPDATERT")))
                 .build();
     }

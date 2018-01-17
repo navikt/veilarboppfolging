@@ -26,7 +26,6 @@ public class OppfolgingFeedProvider implements FeedProvider<OppfolgingFeedDTO> {
     @Override
     public Stream<FeedElement<OppfolgingFeedDTO>> fetchData(String sinceId, int pageSize) {
         Timestamp timestamp = DateUtils.toTimeStamp(sinceId);
-
         return repository
                 .hentTilordningerEtterTimestamp(timestamp, pageSize)
                 .stream()

@@ -26,9 +26,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static no.nav.fo.veilarboppfolging.utils.DateUtils.now;
-import static no.nav.fo.veilarboppfolging.utils.StartRegistreringUtils.erUnderoppfolgingIArena;
-import static no.nav.fo.veilarboppfolging.utils.StartRegistreringUtils.oppfyllerKravOmAutomatiskRegistrering;
-import static no.nav.fo.veilarboppfolging.utils.StartRegistreringUtils.sjekkLesetilgangOrElseThrow;
+import static no.nav.fo.veilarboppfolging.utils.StartRegistreringUtils.*;
 
 @Slf4j
 public class StartRegistreringStatusResolver {

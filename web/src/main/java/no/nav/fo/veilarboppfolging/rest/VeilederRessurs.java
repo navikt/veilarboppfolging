@@ -39,7 +39,6 @@ public class VeilederRessurs {
         String brukersAktoerId = aktorService.getAktorId(fnr)
                 .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktør for fnr: " + fnr));
         String veilederIdent = veilederTilordningerRepository.hentTilordningForAktoer(brukersAktoerId);
-        return new Veileder()
-                .withIdent(veilederIdent);
+        return new Veileder(veilederIdent);
     }
 }

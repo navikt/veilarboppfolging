@@ -6,8 +6,8 @@ import java.sql.*;
 import java.util.Properties;
 import java.util.logging.Logger;
 
-import static java.sql.DriverManager.registerDriver;
 import static java.sql.DriverManager.deregisterDriver;
+import static java.sql.DriverManager.registerDriver;
 
 public class TestDriver implements Driver {
 

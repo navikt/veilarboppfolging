@@ -1,11 +1,6 @@
 package no.nav.fo.veilarboppfolging.config;
 
-import no.nav.fo.veilarboppfolging.db.ArbeidssokerregistreringRepository;
-import no.nav.fo.veilarboppfolging.db.KvpRepository;
-import no.nav.fo.veilarboppfolging.db.OppfolgingFeedRepository;
-import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
-import no.nav.fo.veilarboppfolging.db.OppfolgingsStatusRepository;
-import no.nav.fo.veilarboppfolging.db.VeilederTilordningerRepository;
+import no.nav.fo.veilarboppfolging.db.*;
 import no.nav.fo.veilarboppfolging.services.ArenaOppfolgingService;
 import no.nav.fo.veilarboppfolging.services.DigitalKontaktinformasjonService;
 import no.nav.fo.veilarboppfolging.services.OrganisasjonEnhetService;
@@ -44,7 +39,7 @@ public class ServiceConfig {
     }
 
     @Bean
-    VeilederTilordningerRepository veilederTilordningerRepository(JdbcTemplate db,
+    VeilederTilordningerRepository veilederTilordningerRepository(Database db,
                                                                   OppfolgingRepository oppfolgingRepository) {
         return new VeilederTilordningerRepository(db, oppfolgingRepository);
     }
