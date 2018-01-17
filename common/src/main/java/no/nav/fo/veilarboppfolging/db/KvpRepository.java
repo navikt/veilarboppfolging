@@ -29,12 +29,13 @@ public class KvpRepository {
         long id = database.nesteFraSekvens("KVP_SEQ");
         database.update("INSERT INTO KVP (" +
                         "kvp_id, " +
+                        "serial, " +
                         "aktor_id, " +
                         "enhet, " +
                         "opprettet_av, " +
                         "opprettet_dato, " +
                         "opprettet_begrunnelse) " +
-                        "VALUES(?, ?, ?, ?, CURRENT_TIMESTAMP, ?)",
+                        "VALUES(?, KVP_SERIAL_SEQ.nextval, ?, ?, ?, CURRENT_TIMESTAMP, ?)",
                 id,
                 aktorId,
                 enhet,
@@ -58,7 +59,8 @@ public class KvpRepository {
         }
 
         database.update("UPDATE KVP " +
-                        "SET avsluttet_av = ?, " +
+                        "SET serial = KVP_SERIAL_SEQ.nextval, " +
+                        "avsluttet_av = ?, " +
                         "avsluttet_dato = CURRENT_TIMESTAMP, " +
                         "avsluttet_begrunnelse = ? " +
                         "WHERE kvp_id = ?",
@@ -104,6 +106,7 @@ public class KvpRepository {
     protected static Kvp mapTilKvp(ResultSet rs) {
         return Kvp.builder()
                 .kvpId(rs.getLong("kvp_id"))
+                .serial(rs.getLong("serial"))
                 .aktorId(rs.getString("aktor_id"))
                 .enhet(rs.getString("enhet"))
                 .opprettetAv(rs.getString("opprettet_av"))

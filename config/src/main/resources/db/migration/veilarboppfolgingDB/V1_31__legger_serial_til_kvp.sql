@@ -1,5 +1,5 @@
 -- Create a new sequence for SERIAL fields.
-CREATE SEQUENCE KVP_SERIAL_SEQ ORDER;
+CREATE SEQUENCE KVP_SERIAL_SEQ;
 
 -- Create the SERIAL field on the KVP table, and populate it with initial data.
 ALTER TABLE KVP ADD SERIAL NUMBER;
