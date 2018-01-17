@@ -27,6 +27,7 @@ public class KvpRepository {
         }
 
         long id = database.nesteFraSekvens("KVP_SEQ");
+        long nextSerial = database.nesteFraSekvens("KVP_SERIAL_SEQ");
         database.update("INSERT INTO KVP (" +
                         "kvp_id, " +
                         "serial, " +
@@ -35,8 +36,9 @@ public class KvpRepository {
                         "opprettet_av, " +
                         "opprettet_dato, " +
                         "opprettet_begrunnelse) " +
-                        "VALUES(?, KVP_SERIAL_SEQ.nextval, ?, ?, ?, CURRENT_TIMESTAMP, ?)",
+                        "VALUES(?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?)",
                 id,
+                nextSerial,
                 aktorId,
                 enhet,
                 opprettetAv,
