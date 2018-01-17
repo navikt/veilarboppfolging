@@ -19,7 +19,6 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -105,14 +104,8 @@ public class VeilederTilordningRessurs {
     }
 
     private boolean erVeilederFor(Tilordning tilordning) {
-        Optional<String> userId = subjectService.getUserId();
-        if(!userId.isPresent())
-            return false;
-        String id = userId.get();
-
-        return Optional.of(tilordning)
-                .map(Tilordning::getVeilederId)
-                .map(id::equals)
+        return subjectService.getUserId()
+                .map((userId) -> userId.equals(tilordning.getVeilederId()))
                 .orElse(false);
     }
 
