@@ -78,7 +78,7 @@ public class OppfolgingResolver {
         this.deps = deps;
 
         this.aktorId = deps.getAktorService().getAktorId(fnr)
-            .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktør for fnr: " + fnr));
+                .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktør for fnr: " + fnr));
         this.oppfolging = hentOppfolging();
     }
 
@@ -103,21 +103,21 @@ public class OppfolgingResolver {
         Brukervilkar gjeldendeVilkar = getNyesteVilkar();
         if (gjeldendeVilkar.getHash().equals(hash)) {
             deps.getOppfolgingRepository().opprettBrukervilkar(
-                new Brukervilkar(
-                    aktorId,
-                    new Timestamp(currentTimeMillis()),
-                    vilkarStatus,
-                    gjeldendeVilkar.getTekst(),
-                    hash
-                ));
+                    new Brukervilkar(
+                            aktorId,
+                            new Timestamp(currentTimeMillis()),
+                            vilkarStatus,
+                            gjeldendeVilkar.getTekst(),
+                            hash
+                    ));
         }
     }
 
     Brukervilkar getNyesteVilkar() {
         String vilkarTekst = deps.getVilkarService().getVilkar(oppfolging.isUnderOppfolging() ? UNDER_OPPFOLGING : PRIVAT, null);
         return new Brukervilkar()
-            .setTekst(vilkarTekst)
-            .setHash(DigestUtils.sha256Hex(vilkarTekst));
+                .setTekst(vilkarTekst)
+                .setHash(DigestUtils.sha256Hex(vilkarTekst));
     }
 
     List<Brukervilkar> getHistoriskeVilkar() {
@@ -126,10 +126,10 @@ public class OppfolgingResolver {
 
     boolean maVilkarBesvares() {
         return ofNullable(oppfolging.getGjeldendeBrukervilkar())
-            .filter(brukervilkar -> GODKJENT.equals(brukervilkar.getVilkarstatus()))
-            .map(Brukervilkar::getHash)
-            .map(brukerVilkar -> !brukerVilkar.equals(getNyesteVilkar().getHash()))
-            .orElse(true);
+                .filter(brukervilkar -> GODKJENT.equals(brukervilkar.getVilkarstatus()))
+                .map(Brukervilkar::getHash)
+                .map(brukerVilkar -> !brukerVilkar.equals(getNyesteVilkar().getHash()))
+                .orElse(true);
     }
 
     List<MalData> getMalList() {
@@ -138,10 +138,10 @@ public class OppfolgingResolver {
 
     MalData oppdaterMal(String mal, String endretAv) {
         MalData malData = new MalData()
-            .setAktorId(aktorId)
-            .setMal(mal)
-            .setEndretAv(StringUtils.of(endretAv).orElse(aktorId))
-            .setDato(new Timestamp(currentTimeMillis()));
+                .setAktorId(aktorId)
+                .setMal(mal)
+                .setEndretAv(StringUtils.of(endretAv).orElse(aktorId))
+                .setDato(new Timestamp(currentTimeMillis()));
         deps.getOppfolgingRepository().opprettMal(malData);
         return hentOppfolging().getGjeldendeMal();
     }
@@ -180,8 +180,8 @@ public class OppfolgingResolver {
 
     boolean manuell() {
         return ofNullable(oppfolging.getGjeldendeManuellStatus())
-            .map(ManuellStatus::isManuell)
-            .orElse(false);
+                .map(ManuellStatus::isManuell)
+                .orElse(false);
     }
 
     boolean getKanSettesUnderOppfolging() {
@@ -217,9 +217,9 @@ public class OppfolgingResolver {
             hentYtelseskontrakt();
         }
         return ytelser.getYtelseskontraktListe()
-            .stream()
-            .map(WSYtelseskontrakt::getStatus)
-            .anyMatch(AKTIV_YTELSE_STATUS::equals);
+                .stream()
+                .map(WSYtelseskontrakt::getStatus)
+                .anyMatch(AKTIV_YTELSE_STATUS::equals);
     }
 
     boolean harAktiveTiltak() {
@@ -227,16 +227,16 @@ public class OppfolgingResolver {
             hentArenaAktiviteter();
         }
         return arenaAktiviteter
-            .stream()
-            .map(ArenaAktivitetDTO::getStatus)
-            .anyMatch(status -> status != AVBRUTT && status != FULLFORT);
+                .stream()
+                .map(ArenaAktivitetDTO::getStatus)
+                .anyMatch(status -> status != AVBRUTT && status != FULLFORT);
     }
 
     boolean kanAvslutteOppfolging() {
         return oppfolging.isUnderOppfolging()
-            && !erUnderOppfolgingIArena()
-            && !harPagaendeYtelse()
-            && !harAktiveTiltak();
+                && !erUnderOppfolgingIArena()
+                && !harPagaendeYtelse()
+                && !harAktiveTiltak();
     }
 
     Date getInaktiveringsDato() {
@@ -247,12 +247,19 @@ public class OppfolgingResolver {
         return statusIArena.map(status -> DateUtils.getDate(status.getInaktiveringsdato())).orElse(null);
     }
 
+    String getOppfolgingsEnhet() {
+        if (statusIArena == null) {
+            hentOppfolgingstatusFraArena();
+        }
+        return statusIArena.map(HentOppfoelgingsstatusResponse::getNavOppfoelgingsenhet).orElse(null);
+    }
+
     void avsluttOppfolging(String veileder, String begrunnelse) {
         if (!kanAvslutteOppfolging()) {
             return;
         }
 
-        if(Optional.ofNullable(oppfolging.getGjeldendeEskaleringsvarsel()).isPresent()){
+        if (Optional.ofNullable(oppfolging.getGjeldendeEskaleringsvarsel()).isPresent()) {
             stoppEskalering("Eskalering avsluttet fordi oppfølging ble avsluttet");
         }
 
@@ -261,10 +268,10 @@ public class OppfolgingResolver {
 
     private Oppfolging hentOppfolging() {
         return deps.getOppfolgingRepository().hentOppfolging(aktorId)
-            .orElseGet(() -> deps.getOppfolgingRepository().opprettOppfolging(aktorId));
+                .orElseGet(() -> deps.getOppfolgingRepository().opprettOppfolging(aktorId));
     }
 
-    void startEskalering(String begrunnelse, long tilhorendeDialogId){
+    void startEskalering(String begrunnelse, long tilhorendeDialogId) {
         String veilederId = SubjectHandler.getSubjectHandler().getUid();
         deps.getTransactor().inTransaction(() -> {
             deps.getOppfolgingRepository().startEskalering(aktorId, veilederId, begrunnelse, tilhorendeDialogId);
@@ -285,7 +292,7 @@ public class OppfolgingResolver {
         try {
             statusIArena = Optional.of(
                     deps.getOppfoelgingPortType().hentOppfoelgingsstatus(hentOppfolgingstatusRequest));
-        } catch (HentOppfoelgingsstatusPersonIkkeFunnet e){
+        } catch (HentOppfoelgingsstatusPersonIkkeFunnet e) {
             statusIArena = Optional.empty();
         }
 
@@ -296,12 +303,12 @@ public class OppfolgingResolver {
             this.reservertIKrr = sjekkKrr();
             if (!manuell() && reservertIKrr) {
                 deps.getOppfolgingRepository().opprettManuellStatus(
-                    new ManuellStatus()
-                        .setAktorId(oppfolging.getAktorId())
-                        .setManuell(true)
-                        .setDato(new Timestamp(currentTimeMillis()))
-                        .setBegrunnelse("Reservert og under oppfølging")
-                        .setOpprettetAv(KodeverkBruker.SYSTEM)
+                        new ManuellStatus()
+                                .setAktorId(oppfolging.getAktorId())
+                                .setManuell(true)
+                                .setDato(new Timestamp(currentTimeMillis()))
+                                .setBegrunnelse("Reservert og under oppfølging")
+                                .setOpprettetAv(KodeverkBruker.SYSTEM)
                 );
             }
         } else {
@@ -314,15 +321,15 @@ public class OppfolgingResolver {
         val req = new WSHentDigitalKontaktinformasjonRequest().withPersonident(fnr);
         try {
             return of(deps.getDigitalKontaktinformasjonV1().hentDigitalKontaktinformasjon(req))
-                .map(WSHentDigitalKontaktinformasjonResponse::getDigitalKontaktinformasjon)
-                .map(WSKontaktinformasjon::getReservasjon)
-                .map("true"::equalsIgnoreCase)
-                .orElse(false);
+                    .map(WSHentDigitalKontaktinformasjonResponse::getDigitalKontaktinformasjon)
+                    .map(WSKontaktinformasjon::getReservasjon)
+                    .map("true"::equalsIgnoreCase)
+                    .orElse(false);
         } catch (HentDigitalKontaktinformasjonKontaktinformasjonIkkeFunnet |
                 HentDigitalKontaktinformasjonPersonIkkeFunnet e) {
             LOG.warn(e.getMessage(), e);
             return true;
-        } catch (Exception e){
+        } catch (Exception e) {
             LOG.warn(e.getMessage(), e);
             return false;
         }
