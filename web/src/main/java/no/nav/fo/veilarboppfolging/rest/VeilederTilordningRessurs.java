@@ -1,14 +1,16 @@
 package no.nav.fo.veilarboppfolging.rest;
 
 import io.swagger.annotations.Api;
-import lombok.val;
 import no.nav.apiapp.security.PepClient;
+import no.nav.apiapp.security.SubjectService;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.feed.producer.FeedProducer;
 import no.nav.fo.veilarboppfolging.db.VeilederTilordningerRepository;
+import no.nav.fo.veilarboppfolging.domain.Tilordning;
 import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingFeedDTO;
 import no.nav.fo.veilarboppfolging.rest.domain.TilordneVeilederResponse;
 import no.nav.fo.veilarboppfolging.rest.domain.VeilederTilordning;
+import no.nav.fo.veilarboppfolging.utils.FunkjsonelleMetrikker;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
@@ -32,6 +34,7 @@ public class VeilederTilordningRessurs {
     private final PepClient pepClient;
 
     private FeedProducer<OppfolgingFeedDTO> feed;
+    private final SubjectService subjectService = new SubjectService();
 
     public VeilederTilordningRessurs(AktorService aktorService,
                                      VeilederTilordningerRepository veilederTilordningerRepository,
@@ -49,7 +52,6 @@ public class VeilederTilordningRessurs {
     @Path("/tilordneveileder")
     public Response postVeilederTilordninger(List<VeilederTilordning> tilordninger) {
         List<VeilederTilordning> feilendeTilordninger = new ArrayList<>();
-
         for (VeilederTilordning tilordning : tilordninger) {
             try {
                 final String fnr = tilordning.getBrukerFnr();
@@ -57,7 +59,7 @@ public class VeilederTilordningRessurs {
 
                 String aktoerId = finnAktorId(fnr);
 
-                val tilordningForAktoer = veilederTilordningerRepository.hentTilordningForAktoer(aktoerId);
+                String tilordningForAktoer = veilederTilordningerRepository.hentTilordningForAktoer(aktoerId);
 
                 if (kanSetteNyVeileder(tilordningForAktoer, tilordning.getFraVeilederId())) {
                     skrivTilDatabase(aktoerId, tilordning.getTilVeilederId());
@@ -83,6 +85,28 @@ public class VeilederTilordningRessurs {
         }
         return Response.ok().entity(response).build();
 
+    }
+
+    @POST
+    @Path("{fnr}/lestaktivitetsplan/")
+    public void lestAktivitetsplan(@PathParam("fnr") String fnr) {
+        pepClient.sjekkLeseTilgangTilFnr(fnr);
+        String aktorId = aktorService.getAktorId(fnr)
+                .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktør for fnr: " + fnr));
+
+        veilederTilordningerRepository.hentTilordnetVeileder(aktorId)
+                .filter(Tilordning::isNyForVeileder)
+                .filter(this::erVeilederFor)
+                .map(FunkjsonelleMetrikker::lestAvVeileder)
+                .map(Tilordning::getAktorId)
+                .map(veilederTilordningerRepository::markerSomLestAvVeileder)
+                .ifPresent(i -> kallWebhook());
+    }
+
+    private boolean erVeilederFor(Tilordning tilordning) {
+        return subjectService.getUserId()
+                .map((userId) -> userId.equals(tilordning.getVeilederId()))
+                .orElse(false);
     }
 
     private void kallWebhook() {

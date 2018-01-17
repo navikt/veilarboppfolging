@@ -1,7 +1,8 @@
 package no.nav.fo.veilarboppfolging.db;
 
 import lombok.SneakyThrows;
-import no.nav.fo.veilarboppfolging.domain.*;
+import no.nav.fo.veilarboppfolging.domain.Oppfolging;
+import no.nav.fo.veilarboppfolging.domain.OppfolgingTable;
 import no.nav.sbl.jdbc.Database;
 
 import java.sql.ResultSet;
@@ -17,6 +18,10 @@ public class OppfolgingsStatusRepository {
     static final String AKTOR_ID = "aktor_id";
     static final String UNDER_OPPFOLGING = "under_oppfolging";
     static final String TABLE_NAME = "OPPFOLGINGSTATUS";
+    static final String VEILEDER = "veileder";
+    static final String NY_FOR_VEILEDER = "ny_for_veileder";
+    static final String SIST_TILORDNET = "sist_tilordnet";
+    static final String OPPDATERT = "oppdatert";
 
     private Database db;
 
@@ -64,13 +69,13 @@ public class OppfolgingsStatusRepository {
 
     public static OppfolgingTable map(ResultSet r) throws SQLException {
         return new OppfolgingTable()
-                .setAktorId(r.getString("aktor_id"))
-                .setGjeldendeBrukervilkarId(r.getLong("gjeldende_brukervilkar"))
-                .setGjeldendeManuellStatusId(r.getLong("gjeldende_manuell_status"))
-                .setGjeldendeMaalId(r.getLong("gjeldende_mal"))
-                .setGjeldendeEskaleringsvarselId(r.getLong("gjeldende_eskaleringsvarsel"))
+                .setAktorId(r.getString(AKTOR_ID))
+                .setGjeldendeBrukervilkarId(r.getLong(GJELDENDE_BRUKERVILKAR))
+                .setGjeldendeManuellStatusId(r.getLong(GJELDENDE_MANUELL_STATUS))
+                .setGjeldendeMaalId(r.getLong(GJELDENDE_MAL))
+                .setGjeldendeEskaleringsvarselId(r.getLong(GJELDENE_ESKALERINGSVARSEL))
                 .setGjeldendeKvpId(r.getLong("gjeldende_kvp"))
-                .setVeilederId(r.getString("veileder"))
-                .setUnderOppfolging(r.getBoolean("under_oppfolging"));
+                .setVeilederId(r.getString(VEILEDER))
+                .setUnderOppfolging(r.getBoolean(UNDER_OPPFOLGING));
     }
 }

@@ -19,7 +19,7 @@ public class OppfolgingFeedRepository {
 
     public List<OppfolgingFeedDTO> hentTilordningerEtterTimestamp(Timestamp timestamp, int pageSize) {
         return db.queryForList("SELECT * FROM "
-                        + "(SELECT aktor_id, veileder, under_oppfolging, oppdatert FROM OPPFOLGINGSTATUS WHERE oppdatert >= ? ORDER BY oppdatert) "
+                        + "(SELECT aktor_id, veileder, under_oppfolging, ny_for_veileder, oppdatert FROM OPPFOLGINGSTATUS WHERE oppdatert >= ? ORDER BY oppdatert) "
                         + "WHERE rownum <= ?",
                 timestamp,
                 pageSize
