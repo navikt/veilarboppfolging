@@ -6,6 +6,8 @@ import no.nav.apiapp.soap.SoapTjeneste;
 import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.fo.veilarboppfolging.services.OppfolgingService;
 import no.nav.fo.veilarboppfolging.services.startregistrering.StartRegistreringService;
+import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.HentReservertKrrRequest;
+import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.HentReservertKrrResponse;
 import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.binding.*;
 import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.informasjon.*;
 import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.meldinger.*;
@@ -238,5 +240,11 @@ public class OppfolgingWebService implements BehandleOppfolgingV1 {
         response.setErUnderOppfolging(status.isUnderOppfolging());
         response.setOppfyllerKrav(status.isOppfyllerKravForAutomatiskRegistrering());
         return response;
+    }
+
+    @Override
+    public HentReservertKrrResponse hentReservertKrr(HentReservertKrrRequest hentReservertKrrRequest) throws HentReservertKrrFeilVedHentingAvDataFraKrr,
+            HentReservertKrrHentKrrStatusSikekrhetsbegrensning, HentReservertKrrPersonIkkeFunnetIKrr {
+        return null;
     }
 }
