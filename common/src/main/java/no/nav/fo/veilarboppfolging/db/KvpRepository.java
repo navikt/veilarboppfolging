@@ -60,12 +60,15 @@ public class KvpRepository {
             throw new Feil(Feil.Type.UGYLDIG_REQUEST, "Aktøren har ingen KVP-periode.");
         }
 
+        long nextSerial = database.nesteFraSekvens("KVP_SERIAL_SEQ");
+
         database.update("UPDATE KVP " +
-                        "SET serial = KVP_SERIAL_SEQ.nextval, " +
+                        "SET serial = ?, " +
                         "avsluttet_av = ?, " +
                         "avsluttet_dato = CURRENT_TIMESTAMP, " +
                         "avsluttet_begrunnelse = ? " +
                         "WHERE kvp_id = ?",
+                nextSerial,
                 avsluttetAv,
                 avsluttetBegrunnelse,
                 gjeldendeKvp
