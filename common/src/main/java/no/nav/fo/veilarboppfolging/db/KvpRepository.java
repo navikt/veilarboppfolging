@@ -91,6 +91,16 @@ public class KvpRepository {
         );
     }
 
+    /**
+     * Return a list of KVP objects that have an ID greater than N.
+     */
+    public List<Kvp> idGreaterThan(long id, long pageSize) {
+        return database.query("SELECT * FROM kvp WHERE kvp_id > ? AND rownum <= ?",
+                KvpRepository::mapTilKvp,
+                id,
+                pageSize);
+    }
+
     public Kvp fetch(long id) {
         return database.query("SELECT * " +
                         "FROM KVP " +
