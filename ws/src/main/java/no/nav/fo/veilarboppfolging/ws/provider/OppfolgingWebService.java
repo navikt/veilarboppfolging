@@ -7,6 +7,8 @@ import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.fo.veilarboppfolging.service.ReservertKrrService;
 import no.nav.fo.veilarboppfolging.services.OppfolgingService;
 import no.nav.fo.veilarboppfolging.services.startregistrering.StartRegistreringService;
+import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.HentReservertKrrRequest;
+import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.HentReservertKrrResponse;
 import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.binding.*;
 import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.informasjon.*;
 import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.meldinger.*;
