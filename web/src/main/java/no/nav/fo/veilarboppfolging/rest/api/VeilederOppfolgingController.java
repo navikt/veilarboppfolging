@@ -1,6 +1,7 @@
 package no.nav.fo.veilarboppfolging.rest.api;
 
 import no.nav.fo.veilarboppfolging.domain.InnstillingsHistorikk;
+import no.nav.fo.veilarboppfolging.domain.VeilederTilgang;
 import no.nav.fo.veilarboppfolging.rest.domain.*;
 
 import javax.ws.rs.Consumes;
@@ -50,4 +51,8 @@ public interface VeilederOppfolgingController {
     @POST
     @Path("/stoppKvp")
     void stoppKvp(StoppKvpDTO stoppKvp) throws Exception;
+
+    @GET
+    @Path("/veilederTilgang")
+    VeilederTilgang hentVeilederTilgang() throws Exception;
 }

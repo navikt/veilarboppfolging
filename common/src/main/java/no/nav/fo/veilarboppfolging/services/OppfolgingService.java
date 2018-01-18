@@ -179,6 +179,11 @@ public class OppfolgingService {
         resolver.stoppEskalering(begrunnelse);
     }
 
+    public VeilederTilgang hentVeilederTilgang(String fnr) {
+        val resolver = new OppfolgingResolver(fnr, oppfolgingResolverDependencies);
+        return new VeilederTilgang().setTilgangTilBrukersKontor(enhetPepClient.harTilgang(resolver.getOppfolgingsEnhet()));
+    }
+
     private List<InnstillingsHistorikk> tilDTO(Kvp kvp) {
         InnstillingsHistorikk kvpStart = InnstillingsHistorikk.builder()
                 .type(KVP_STARTET)
@@ -266,7 +271,6 @@ public class OppfolgingService {
                 .setManuell(oppfolgingResolver.manuell())
                 .setVilkarMaBesvares(oppfolgingResolver.maVilkarBesvares())
                 .setKanStarteOppfolging(oppfolgingResolver.getKanSettesUnderOppfolging())
-                .setVeilederHarKontorTilgang(enhetPepClient.harTilgang(oppfolgingResolver.getOppfolgingsEnhet()))
                 .setAvslutningStatusData(avslutningStatusData)
                 .setGjeldendeEskaleringsvarsel(oppfolging.getGjeldendeEskaleringsvarsel())
                 .setOppfolgingsperioder(oppfolging.getOppfolgingsperioder())
