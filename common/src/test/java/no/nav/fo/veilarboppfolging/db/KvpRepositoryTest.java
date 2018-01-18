@@ -77,6 +77,26 @@ public class KvpRepositoryTest extends IntegrasjonsTest {
         assertThat(kvpRepository.hentKvpHistorikk(AKTOR_ID), hasSize(2));
     }
 
+    /**
+     * Test that the serial field is incremented when a record is started and stopped.
+     */
+    @Test
+    public void testSerial() {
+        Kvp kvp;
+        long serial;
+
+        when(enhetPepClientMock.harTilgang(anyString())).thenReturn(true);
+        gittOppfolgingForAktor(AKTOR_ID);
+
+        start_kvp();
+        kvp = hentGjeldendeKvp(AKTOR_ID);
+        serial = kvp.getSerial();
+
+        stop_kvp();
+        kvp = kvpRepository.fetch(kvp.getKvpId());
+        assertThat(kvp.getSerial(), is(serial+1));
+    }
+
     private void stop_kvp() {
         kvpRepository.stopKvp(AKTOR_ID, SAKSBEHANDLER_ID, BEGRUNNELSE);
     }

@@ -27,15 +27,18 @@ public class KvpRepository {
         }
 
         long id = database.nesteFraSekvens("KVP_SEQ");
+        long nextSerial = database.nesteFraSekvens("KVP_SERIAL_SEQ");
         database.update("INSERT INTO KVP (" +
                         "kvp_id, " +
+                        "serial, " +
                         "aktor_id, " +
                         "enhet, " +
                         "opprettet_av, " +
                         "opprettet_dato, " +
                         "opprettet_begrunnelse) " +
-                        "VALUES(?, ?, ?, ?, CURRENT_TIMESTAMP, ?)",
+                        "VALUES(?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?)",
                 id,
+                nextSerial,
                 aktorId,
                 enhet,
                 opprettetAv,
@@ -57,11 +60,15 @@ public class KvpRepository {
             throw new Feil(Feil.Type.UGYLDIG_REQUEST, "Aktøren har ingen KVP-periode.");
         }
 
+        long nextSerial = database.nesteFraSekvens("KVP_SERIAL_SEQ");
+
         database.update("UPDATE KVP " +
-                        "SET avsluttet_av = ?, " +
+                        "SET serial = ?, " +
+                        "avsluttet_av = ?, " +
                         "avsluttet_dato = CURRENT_TIMESTAMP, " +
                         "avsluttet_begrunnelse = ? " +
                         "WHERE kvp_id = ?",
+                nextSerial,
                 avsluttetAv,
                 avsluttetBegrunnelse,
                 gjeldendeKvp
@@ -104,6 +111,7 @@ public class KvpRepository {
     protected static Kvp mapTilKvp(ResultSet rs) {
         return Kvp.builder()
                 .kvpId(rs.getLong("kvp_id"))
+                .serial(rs.getLong("serial"))
                 .aktorId(rs.getString("aktor_id"))
                 .enhet(rs.getString("enhet"))
                 .opprettetAv(rs.getString("opprettet_av"))
