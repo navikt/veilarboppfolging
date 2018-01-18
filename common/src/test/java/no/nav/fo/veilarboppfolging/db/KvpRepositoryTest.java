@@ -83,15 +83,18 @@ public class KvpRepositoryTest extends IntegrasjonsTest {
     @Test
     public void testSerial() {
         Kvp kvp;
+        long serial;
+
+        when(enhetPepClientMock.harTilgang(anyString())).thenReturn(true);
         gittOppfolgingForAktor(AKTOR_ID);
 
         start_kvp();
-        kvp = kvpRepository.fetch(1);
-        assertThat(kvp.getSerial(), is(1L));
+        kvp = hentGjeldendeKvp(AKTOR_ID);
+        serial = kvp.getSerial();
 
         stop_kvp();
-        kvp = kvpRepository.fetch(1);
-        assertThat(kvp.getSerial(), is(2L));
+        kvp = kvpRepository.fetch(kvp.getKvpId());
+        assertThat(kvp.getSerial(), is(serial+1));
     }
 
     private void stop_kvp() {
