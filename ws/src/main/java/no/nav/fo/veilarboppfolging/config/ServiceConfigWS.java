@@ -4,8 +4,10 @@ package no.nav.fo.veilarboppfolging.config;
 import no.nav.apiapp.security.PepClient;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.db.ArbeidssokerregistreringRepository;
+import no.nav.fo.veilarboppfolging.service.ReservertKrrService;
 import no.nav.fo.veilarboppfolging.services.ArbeidsforholdService;
 import no.nav.fo.veilarboppfolging.services.ArenaOppfolgingService;
+import no.nav.fo.veilarboppfolging.services.DigitalKontaktinformasjonService;
 import no.nav.fo.veilarboppfolging.services.startregistrering.StartRegistreringService;
 import no.nav.tjeneste.virksomhet.arbeidsforhold.v3.binding.ArbeidsforholdV3;
 import org.springframework.context.annotation.Bean;
@@ -28,4 +30,8 @@ public class ServiceConfigWS {
         return new StartRegistreringService(arbeidssokerregistreringRepository, pepClient, aktorService, arenaOppfolgingService, arbeidsforholdService);
     }
 
+    @Bean
+    ReservertKrrService reserverKrrService(DigitalKontaktinformasjonService digitalKontaktinformasjonService, PepClient pepClient) {
+        return new ReservertKrrService(digitalKontaktinformasjonService, pepClient);
+    }
 }

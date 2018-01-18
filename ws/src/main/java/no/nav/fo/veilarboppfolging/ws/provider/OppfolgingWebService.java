@@ -4,6 +4,7 @@ import lombok.SneakyThrows;
 import lombok.val;
 import no.nav.apiapp.soap.SoapTjeneste;
 import no.nav.fo.veilarboppfolging.domain.*;
+import no.nav.fo.veilarboppfolging.service.ReservertKrrService;
 import no.nav.fo.veilarboppfolging.services.OppfolgingService;
 import no.nav.fo.veilarboppfolging.services.startregistrering.StartRegistreringService;
 import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.HentReservertKrrRequest;
@@ -30,10 +31,16 @@ public class OppfolgingWebService implements BehandleOppfolgingV1 {
 
     private OppfolgingService oppfolgingService;
     private StartRegistreringService startRegistreringService;
+    private ReservertKrrService reservertKrrService;
 
-    public OppfolgingWebService(OppfolgingService oppfolgingService, StartRegistreringService startRegistreringService) {
+    public OppfolgingWebService(
+            OppfolgingService oppfolgingService,
+            StartRegistreringService startRegistreringService,
+            ReservertKrrService reservertKrrService) {
+
         this.startRegistreringService = startRegistreringService;
         this.oppfolgingService = oppfolgingService;
+        this.reservertKrrService = reservertKrrService;
     }
 
     @Override
@@ -243,8 +250,8 @@ public class OppfolgingWebService implements BehandleOppfolgingV1 {
     }
 
     @Override
-    public HentReservertKrrResponse hentReservertKrr(HentReservertKrrRequest hentReservertKrrRequest) throws HentReservertKrrFeilVedHentingAvDataFraKrr,
-            HentReservertKrrHentKrrStatusSikekrhetsbegrensning, HentReservertKrrPersonIkkeFunnetIKrr {
-        return null;
+    public HentReservertKrrResponse hentReservertKrr(HentReservertKrrRequest request) {
+        return reservertKrrService.hentReservertKrr(request.getFnr());
+
     }
 }
