@@ -21,14 +21,14 @@ public class KvpFeedProvider implements FeedProvider<KvpDTO> {
     }
 
     @Override
-    public Stream<FeedElement<KvpDTO>> fetchData(String sinceIdStr, int pageSize) {
-        long sinceId = Long.parseLong(sinceIdStr);
+    public Stream<FeedElement<KvpDTO>> fetchData(String lastSerialStr, int pageSize) {
+        long lastSerial = Long.parseLong(lastSerialStr);
 
         return repository
-                .idGreaterThan(sinceId, pageSize)
+                .serialGreaterThan(lastSerial, pageSize)
                 .stream()
                 .map(o -> new FeedElement<KvpDTO>()
-                        .setId(Long.toString(o.getKvpId()))
+                        .setId(Long.toString(o.getSerial()))
                         .setElement(KvpMapper.KvpToDTO(o))
                 );
     }

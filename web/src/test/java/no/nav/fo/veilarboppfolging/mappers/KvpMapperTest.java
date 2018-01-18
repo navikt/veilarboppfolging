@@ -16,10 +16,12 @@ public class KvpMapperTest {
     public void testToDTO() {
         Kvp src = Kvp.builder()
                 .kvpId(1234)
+                .serial(298)
                 .enhet("foobar")
                 .build();
         KvpDTO dest = KvpMapper.KvpToDTO(src);
         assertThat(dest.getKvpId(), is(src.getKvpId()));
+        assertThat(dest.getSerial(), is(src.getSerial()));
         assertThat(dest.getEnhet(), is(src.getEnhet()));
     }
 }

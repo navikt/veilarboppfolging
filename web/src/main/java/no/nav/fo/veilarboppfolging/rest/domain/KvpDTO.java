@@ -9,6 +9,7 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 public class KvpDTO implements Comparable<KvpDTO> {
     private long kvpId;
+    private long serial;
     private String aktorId;
     private String enhet;
     private String opprettetAv;
@@ -20,6 +21,6 @@ public class KvpDTO implements Comparable<KvpDTO> {
 
     @Override
     public int compareTo(KvpDTO k) {
-        return Long.compare(kvpId, k.kvpId);
+        return Long.compare(serial, k.serial);
     }
 }

@@ -11,6 +11,7 @@ public class KvpMapper {
     public static KvpDTO KvpToDTO(Kvp k) {
         return new KvpDTO()
                 .setKvpId(k.getKvpId())
+                .setSerial(k.getSerial())
                 .setAktorId(k.getAktorId())
                 .setAvsluttetAv(k.getAvsluttetAv())
                 .setAvsluttetBegrunnelse(k.getAvsluttetBegrunnelse())
