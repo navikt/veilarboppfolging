@@ -23,7 +23,6 @@ import static java.util.Collections.singletonList;
 public class FeedConfig {
     public static final String OPPFOLGING_FEED_NAME = "oppfolging";
     public static final String AVSLUTTET_OPPFOLGING_FEED_NAME = "avsluttetoppfolging";
-    public static final String KVP_FEED_NAME = "kvp";
 
     @Bean
     public FeedController feedController(
@@ -34,7 +33,7 @@ public class FeedConfig {
 
         feedServerController.addFeed(OPPFOLGING_FEED_NAME, oppfolgingFeed);
         feedServerController.addFeed(AVSLUTTET_OPPFOLGING_FEED_NAME, avsluttetOppfolgingFeed);
-        feedServerController.addFeed(KVP_FEED_NAME, kvpFeed);
+        feedServerController.addFeed(KvpDTO.FEED_NAME, kvpFeed);
 
         return feedServerController;
     }

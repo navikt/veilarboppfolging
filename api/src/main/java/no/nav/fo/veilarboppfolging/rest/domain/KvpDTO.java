@@ -8,6 +8,8 @@ import lombok.experimental.Accessors;
 @Data
 @Accessors(chain = true)
 public class KvpDTO implements Comparable<KvpDTO> {
+    public static final String FEED_NAME = "kvp";
+
     private long kvpId;
     private long serial;
     private String aktorId;
