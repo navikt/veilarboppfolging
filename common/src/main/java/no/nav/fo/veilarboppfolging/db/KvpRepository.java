@@ -91,6 +91,17 @@ public class KvpRepository {
         );
     }
 
+    /**
+     * Return a list of KVP objects where the serial number is greater than N.
+     * The serial number is the number of updates the table has undergone.
+     */
+    public List<Kvp> serialGreaterThan(long serial, long pageSize) {
+        return database.query("SELECT * FROM kvp WHERE serial > ? AND rownum <= ? ORDER BY serial ASC",
+                KvpRepository::mapTilKvp,
+                serial,
+                pageSize);
+    }
+
     public Kvp fetch(long id) {
         return database.query("SELECT * " +
                         "FROM KVP " +
