@@ -4,10 +4,7 @@ import lombok.val;
 import no.nav.apiapp.security.PepClient;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
-import no.nav.fo.veilarboppfolging.domain.Brukervilkar;
-import no.nav.fo.veilarboppfolging.domain.Oppfolging;
-import no.nav.fo.veilarboppfolging.domain.OppfolgingStatusData;
-import no.nav.fo.veilarboppfolging.domain.VilkarStatus;
+import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.fo.veilarboppfolging.vilkar.VilkarService;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.DigitalKontaktinformasjonV1;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.HentDigitalKontaktinformasjonKontaktinformasjonIkkeFunnet;
@@ -86,7 +83,6 @@ public class OppfolgingServiceTest {
                 .thenReturn(new WSHentDigitalKontaktinformasjonResponse()
                         .withDigitalKontaktinformasjon(wsKontaktinformasjon));
         when(vilkarServiceMock.getVilkar(any(VilkarService.VilkarType.class), any())).thenReturn("Gjeldene Vilkar");
-        when(enhetPepClientMock.harTilgang(anyString())).thenReturn(true);
 
         when(oppfolgingResolverDependencies.getAktorService()).thenReturn(aktorServiceMock);
         when(oppfolgingResolverDependencies.getOppfolgingRepository()).thenReturn(oppfolgingRepositoryMock);
@@ -102,11 +98,10 @@ public class OppfolgingServiceTest {
         when(enhetPepClientMock.harTilgang(ENHET)).thenReturn(true);
 
         gittAktor();
-        gittOppfolging(oppfolging);
         gittEnhet(ENHET);
 
-        OppfolgingStatusData oppfolgingStatusData = hentOppfolgingStatus();
-        assertThat(oppfolgingStatusData.veilederHarKontorTilgang, equalTo(true));
+        VeilederTilgang veilederTilgang = oppfolgingService.hentVeilederTilgang(FNR);
+        assertThat(veilederTilgang.isTilgangTilBrukersKontor(), equalTo(true));
     }
 
     @Test
@@ -114,11 +109,10 @@ public class OppfolgingServiceTest {
         when(enhetPepClientMock.harTilgang(anyString())).thenReturn(false);
 
         gittAktor();
-        gittOppfolging(oppfolging);
         gittEnhet(ENHET);
 
-        OppfolgingStatusData oppfolgingStatusData = hentOppfolgingStatus();
-        assertThat(oppfolgingStatusData.veilederHarKontorTilgang, equalTo(false));
+        VeilederTilgang veilederTilgang = oppfolgingService.hentVeilederTilgang(FNR);
+        assertThat(veilederTilgang.isTilgangTilBrukersKontor(), equalTo(false));
     }
 
     @Test
@@ -272,6 +266,16 @@ public class OppfolgingServiceTest {
         val oppfolgingOgVilkarStatus = hentOppfolgingStatus();
 
         assertThat(oppfolgingOgVilkarStatus.underOppfolging, is(false));
+    }
+
+    @Test
+    public void oppfolgingMedOppfolgingsFlaggIDatabasen() throws Exception {
+        gittAktor();
+        gittOppfolging(oppfolging.setUnderOppfolging(true));
+
+        hentOppfolgingStatus();
+
+        verifyZeroInteractions(oppfoelgingPortTypeMock);
     }
 
     private void besvarVilkar(VilkarStatus vilkarStatus, Brukervilkar vilkar) {

@@ -161,6 +161,11 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
 
     }
 
+    @Override
+    public VeilederTilgang hentVeilederTilgang() throws Exception {
+        return oppfolgingService.hentVeilederTilgang(getFnr());
+    }
+
     private Eskaleringsvarsel tilDto(EskaleringsvarselData eskaleringsvarselData) {
         return Optional.ofNullable(eskaleringsvarselData)
                 .map(eskalering -> Eskaleringsvarsel.builder()
@@ -202,7 +207,6 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
                 .setUnderKvp(oppfolgingStatusData.underKvp)
                 .setVilkarMaBesvares(oppfolgingStatusData.vilkarMaBesvares)
                 .setKanStarteOppfolging(oppfolgingStatusData.isKanStarteOppfolging())
-                .setVeilederHarKontorTilgang(oppfolgingStatusData.isVeilederHarKontorTilgang())
                 .setAvslutningStatus(
                         ofNullable(oppfolgingStatusData.getAvslutningStatusData())
                                 .map(this::tilDto)
