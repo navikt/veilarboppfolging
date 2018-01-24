@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static no.nav.apiapp.feil.Feil.Type.UGYLDIG_HANDLING;
+import static no.nav.fo.veilarboppfolging.utils.KvpUtils.sjekkTilgangGittKvp;
 
 public class OppfolgingRepository {
 
@@ -55,7 +56,11 @@ public class OppfolgingRepository {
         }
 
         if (t.getGjeldendeEskaleringsvarselId() != 0) {
-            o.setGjeldendeEskaleringsvarsel(eskaleringsvarselRepository.fetch(t.getGjeldendeEskaleringsvarselId()));
+            Kvp kvp = kvpRepository.fetch(t.getGjeldendeKvpId());
+            EskaleringsvarselData varsel = eskaleringsvarselRepository.fetch(t.getGjeldendeEskaleringsvarselId());
+            if (sjekkTilgangGittKvp(enhetPepClient, kvp, varsel::getOpprettetDato)) {
+                o.setGjeldendeEskaleringsvarsel(varsel);
+            }
         }
 
         if (t.getGjeldendeMaalId() != 0) {

@@ -5,11 +5,11 @@ import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.db.KvpRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.domain.*;
+import no.nav.fo.veilarboppfolging.utils.KvpUtils;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -48,26 +48,12 @@ public class HistorikkService {
                         .map(this::tilDTO),
                 oppfolgingRepository.hentManuellHistorikk(aktorId).stream()
                         .map(this::tilDTO)
-                        .filter((dto) -> kvpHistorikkSjekk(kvpHistorikk, dto)),
+                        .filter((historikk) -> KvpUtils.sjekkTilgangGittKvp(enhetPepClient, kvpHistorikk, historikk::getDato)),
                 oppfolgingRepository.hentEskaleringhistorikk(aktorId).stream()
                         .map(this::tilDTO)
                         .flatMap(List::stream)
-                        .filter((dto) -> kvpHistorikkSjekk(kvpHistorikk, dto))
+                        .filter((historikk) -> KvpUtils.sjekkTilgangGittKvp(enhetPepClient, kvpHistorikk, historikk::getDato))
         ).flatMap(s -> s).collect(Collectors.toList());
-    }
-
-
-    private boolean between(Date start, Date stop, Date date) {
-        return !date.before(start) && (stop == null || !date.after(stop));
-    }
-
-    private boolean kvpHistorikkSjekk(List<Kvp> kvpList, InnstillingsHistorikk innstillingsHistorikk) {
-        for (Kvp kvp : kvpList) {
-            if (between(kvp.getOpprettetDato(), kvp.getAvsluttetDato(), innstillingsHistorikk.getDato())) {
-                return enhetPepClient.harTilgang(kvp.getEnhet());
-            }
-        }
-        return true;
     }
 
     private InnstillingsHistorikk tilDTO(Oppfolgingsperiode oppfolgingsperiode) {
