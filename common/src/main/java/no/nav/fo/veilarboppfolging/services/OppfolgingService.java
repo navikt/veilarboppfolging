@@ -13,16 +13,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
 import java.sql.Timestamp;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static java.lang.System.currentTimeMillis;
-import static java.util.Collections.singletonList;
-import static no.nav.fo.veilarboppfolging.domain.InnstillingsHistorikk.Type.*;
-import static no.nav.fo.veilarboppfolging.domain.KodeverkBruker.NAV;
 
 @Component
 @Api
@@ -147,28 +141,6 @@ public class OppfolgingService {
         return getOppfolgingStatusData(fnr, resolver);
     }
 
-
-    public List<InnstillingsHistorikk> hentInstillingsHistorikk(String fnr) {
-        val resolver = new OppfolgingResolver(fnr, oppfolgingResolverDependencies);
-        String aktorId = resolver.getAktorId();
-
-        return Stream.of(
-                kvpRepository.hentKvpHistorikk(aktorId).stream()
-                        .filter((kvp) -> enhetPepClient.harTilgang(kvp.getEnhet()))
-                        .map(this::tilDTO).flatMap(List::stream),
-                oppfolgingRepository.hentAvsluttetOppfolgingsperioder(aktorId).stream().map(this::tilDTO),
-                oppfolgingRepository.hentManuellHistorikk(aktorId).stream().map(this::tilDTO),
-                oppfolgingRepository.hentEskaleringhistorikk(aktorId).stream().map(this::tilDTO).flatMap(List::stream)
-        ).flatMap(s -> s).collect(Collectors.toList());
-    }
-
-    public List<EskaleringsvarselData> hentEskaleringhistorikk(String fnr) {
-        val resolver = new OppfolgingResolver(fnr, oppfolgingResolverDependencies);
-        String aktorId = resolver.getAktorId();
-
-        return oppfolgingRepository.hentEskaleringhistorikk(aktorId);
-    }
-
     public void startEskalering(String fnr, String begrunnelse, long tilhorendeDialogId) {
         val resolver = new OppfolgingResolver(fnr, oppfolgingResolverDependencies);
         resolver.startEskalering(begrunnelse, tilhorendeDialogId);
@@ -182,78 +154,6 @@ public class OppfolgingService {
     public VeilederTilgang hentVeilederTilgang(String fnr) {
         val resolver = new OppfolgingResolver(fnr, oppfolgingResolverDependencies);
         return new VeilederTilgang().setTilgangTilBrukersKontor(enhetPepClient.harTilgang(resolver.getOppfolgingsEnhet()));
-    }
-
-    private List<InnstillingsHistorikk> tilDTO(Kvp kvp) {
-        InnstillingsHistorikk kvpStart = InnstillingsHistorikk.builder()
-                .type(KVP_STARTET)
-                .begrunnelse(kvp.getOpprettetBegrunnelse())
-                .dato(kvp.getOpprettetDato())
-                .opprettetAv(NAV)
-                .opprettetAvBrukerId(kvp.getOpprettetAv())
-                .build();
-
-        if (kvp.getAvsluttetDato() != null) {
-            InnstillingsHistorikk kvpStopp = InnstillingsHistorikk.builder()
-                    .type(KVP_STOPPET)
-                    .begrunnelse(kvp.getAvsluttetBegrunnelse())
-                    .dato(kvp.getAvsluttetDato())
-                    .opprettetAv(NAV)
-                    .opprettetAvBrukerId(kvp.getAvsluttetAv())
-                    .build();
-            return Arrays.asList(kvpStart, kvpStopp);
-        }
-        return singletonList(kvpStart);
-    }
-
-    private InnstillingsHistorikk tilDTO(Oppfolgingsperiode oppfolgingsperiode) {
-        return InnstillingsHistorikk.builder()
-                .type(AVSLUTTET_OPPFOLGINGSPERIODE)
-                .begrunnelse(oppfolgingsperiode.getBegrunnelse())
-                .dato(oppfolgingsperiode.getSluttDato())
-                .opprettetAv(NAV)
-                .opprettetAvBrukerId(oppfolgingsperiode.getVeileder())
-                .build();
-    }
-
-    private InnstillingsHistorikk tilDTO(ManuellStatus historikkData) {
-        return InnstillingsHistorikk.builder()
-                .type(historikkData.isManuell() ? SATT_TIL_MANUELL : SATT_TIL_DIGITAL)
-                .begrunnelse(historikkData.getBegrunnelse())
-                .dato(historikkData.getDato())
-                .opprettetAv(historikkData.getOpprettetAv())
-                .opprettetAvBrukerId(historikkData.getOpprettetAvBrukerId())
-                .build();
-    }
-
-    private List<InnstillingsHistorikk> tilDTO(EskaleringsvarselData data) {
-        val harAvsluttetEskalering = data.getAvsluttetDato() != null;
-
-        val startetEskalering = InnstillingsHistorikk
-                .builder()
-                .type(ESKALERING_STARTET)
-                .dato(data.getOpprettetDato())
-                .begrunnelse(data.getOpprettetBegrunnelse())
-                .opprettetAv(NAV)
-                .opprettetAvBrukerId(data.getOpprettetAv())
-                .dialogId(data.getTilhorendeDialogId())
-                .build();
-
-        if (harAvsluttetEskalering) {
-            val stoppetEskalering = InnstillingsHistorikk
-                    .builder()
-                    .type(ESKALERING_STOPPET)
-                    .dato(data.getAvsluttetDato())
-                    .begrunnelse(data.getAvsluttetBegrunnelse())
-                    .opprettetAv(NAV)
-                    .opprettetAvBrukerId(data.getAvsluttetAv())
-                    .dialogId(data.getTilhorendeDialogId())
-                    .build();
-            return Arrays.asList(startetEskalering, stoppetEskalering);
-        } else {
-            return singletonList(startetEskalering);
-        }
-
     }
 
     private OppfolgingStatusData getOppfolgingStatusData(String fnr, OppfolgingResolver oppfolgingResolver) {
