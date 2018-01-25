@@ -55,9 +55,16 @@ public class OppfolgingRepository {
             o.setGjeldendeBrukervilkar(brukervilkarRepository.fetch(t.getGjeldendeBrukervilkarId()));
         }
 
-        // Gjeldende eskaleringsvarsel inkluderes i resultatet kun hvis den inloggede veilederen har tilgang til brukers enhet.
+        Kvp kvp = null;
+        if (t.getGjeldendeKvpId() != 0) {
+            kvp = kvpRepository.fetch(t.getGjeldendeKvpId());
+            if (enhetPepClient.harTilgang(kvp.getEnhet())) {
+                o.setGjeldendeKvp(kvp);
+            }
+        }
+
+        // Gjeldende eskaleringsvarsel inkluderes i resultatet kun hvis den innloggede veilederen har tilgang til brukers enhet.
         if (t.getGjeldendeEskaleringsvarselId() != 0) {
-            Kvp kvp = kvpRepository.fetch(t.getGjeldendeKvpId());
             EskaleringsvarselData varsel = eskaleringsvarselRepository.fetch(t.getGjeldendeEskaleringsvarselId());
             if (sjekkTilgangGittKvp(enhetPepClient, kvp, varsel::getOpprettetDato)) {
                 o.setGjeldendeEskaleringsvarsel(varsel);
@@ -70,13 +77,6 @@ public class OppfolgingRepository {
 
         if (t.getGjeldendeManuellStatusId() != 0) {
             o.setGjeldendeManuellStatus(manuellStatusRepository.fetch(t.getGjeldendeManuellStatusId()));
-        }
-
-        if (t.getGjeldendeKvpId() != 0) {
-            Kvp kvp = kvpRepository.fetch(t.getGjeldendeKvpId());
-            if (enhetPepClient.harTilgang(kvp.getEnhet())) {
-                o.setGjeldendeKvp(kvp);
-            }
         }
 
         o.setOppfolgingsperioder(periodeRepository.hentOppfolgingsperioder(t.getAktorId()));
