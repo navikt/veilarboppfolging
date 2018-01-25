@@ -4,6 +4,7 @@ import lombok.SneakyThrows;
 import no.nav.apiapp.feil.Feil;
 import no.nav.fo.veilarboppfolging.domain.Kvp;
 import no.nav.sbl.jdbc.Database;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.ResultSet;
@@ -112,10 +113,19 @@ public class KvpRepository {
                 .orElse(null);
     }
 
-    private long gjeldendeKvp(String aktorId) {
-        return database.queryForObject("SELECT gjeldende_kvp FROM oppfolgingstatus WHERE aktor_id = ?",
-                (rs) -> rs.getLong("gjeldende_kvp"),
-                aktorId);
+    /**
+     * @param aktorId
+     * @return A positive integer pointing to the KVP primary key,
+     * or zero if there is no current KVP period.
+     */
+    public long gjeldendeKvp(String aktorId) {
+        try {
+            return database.queryForObject("SELECT gjeldende_kvp FROM oppfolgingstatus WHERE aktor_id = ?",
+                    (rs) -> rs.getLong("gjeldende_kvp"),
+                    aktorId);
+        } catch (EmptyResultDataAccessException e) {
+            return 0;
+        }
     }
 
     @SneakyThrows
