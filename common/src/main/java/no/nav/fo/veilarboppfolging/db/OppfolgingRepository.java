@@ -55,6 +55,7 @@ public class OppfolgingRepository {
             o.setGjeldendeBrukervilkar(brukervilkarRepository.fetch(t.getGjeldendeBrukervilkarId()));
         }
 
+        // Gjeldende eskaleringsvarsel inkluderes i resultatet kun hvis den inloggede veilederen har tilgang til brukers enhet.
         if (t.getGjeldendeEskaleringsvarselId() != 0) {
             Kvp kvp = kvpRepository.fetch(t.getGjeldendeKvpId());
             EskaleringsvarselData varsel = eskaleringsvarselRepository.fetch(t.getGjeldendeEskaleringsvarselId());
