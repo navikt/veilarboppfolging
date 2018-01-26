@@ -7,6 +7,7 @@ import no.nav.fo.veilarboppfolging.mappers.VilkarMapper;
 import no.nav.fo.veilarboppfolging.rest.api.OppfolgingController;
 import no.nav.fo.veilarboppfolging.rest.api.VeilederOppfolgingController;
 import no.nav.fo.veilarboppfolging.rest.domain.*;
+import no.nav.fo.veilarboppfolging.services.HistorikkService;
 import no.nav.fo.veilarboppfolging.services.KvpService;
 import no.nav.fo.veilarboppfolging.services.OppfolgingService;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
@@ -35,6 +36,9 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
 
     @Inject
     private KvpService kvpService;
+
+    @Inject
+    private HistorikkService historikkService;
 
     @Inject
     private Provider<HttpServletRequest> requestProvider;
@@ -92,7 +96,7 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
 
     @Override
     public List<InnstillingsHistorikk> hentInnstillingsHistorikk() throws Exception {
-        return oppfolgingService.hentInstillingsHistorikk(getFnr());
+        return historikkService.hentInstillingsHistorikk(getFnr());
     }
 
     @Override
