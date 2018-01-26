@@ -4,7 +4,6 @@ import io.swagger.annotations.Api;
 import lombok.SneakyThrows;
 import lombok.val;
 import no.nav.dialogarena.aktor.AktorService;
-import no.nav.fo.veilarboppfolging.db.KvpRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.fo.veilarboppfolging.services.OppfolgingResolver.OppfolgingResolverDependencies;
@@ -14,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.inject.Inject;
 import java.sql.Timestamp;
 import java.util.List;
-import java.util.Optional;
 
 import static java.lang.System.currentTimeMillis;
 
@@ -30,9 +28,6 @@ public class OppfolgingService {
 
     @Inject
     private OppfolgingRepository oppfolgingRepository;
-
-    @Inject
-    private KvpRepository kvpRepository;
 
     @Inject
     private EnhetPepClient enhetPepClient;
@@ -67,23 +62,6 @@ public class OppfolgingService {
         resolver.sjekkNyesteVilkarOgOppdaterOppfolging(hash, vilkarStatus);
 
         return getOppfolgingStatusData(fnr, resolver);
-    }
-
-    public MalData hentMal(String fnr) {
-        MalData gjeldendeMal = new OppfolgingResolver(fnr, oppfolgingResolverDependencies).getOppfolging().getGjeldendeMal();
-        return Optional.ofNullable(gjeldendeMal).orElse(new MalData());
-    }
-
-    public List<MalData> hentMalList(String fnr) {
-        return new OppfolgingResolver(fnr, oppfolgingResolverDependencies).getMalList();
-    }
-
-    public MalData oppdaterMal(String mal, String fnr, String endretAv) {
-        return new OppfolgingResolver(fnr, oppfolgingResolverDependencies).oppdaterMal(mal, endretAv);
-    }
-
-    public void slettMal(String fnr) {
-        new OppfolgingResolver(fnr, oppfolgingResolverDependencies).slettMal();
     }
 
     public OppfolgingStatusData startOppfolging(String fnr) {
