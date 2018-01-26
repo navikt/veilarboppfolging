@@ -30,7 +30,7 @@ public class AAregServiceWSConfig {
     }
 
     @Bean
-    Pingable ytelseskontraktPing() {
+    Pingable arbeidsforholdPing() {
         final ArbeidsforholdV3 arbeidsforholdV3Ping = arbeidsforholdV3CXFClient()
                 .configureStsForSystemUserInFSS()
                 .build();
