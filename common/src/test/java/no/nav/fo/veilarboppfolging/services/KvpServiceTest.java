@@ -2,16 +2,21 @@ package no.nav.fo.veilarboppfolging.services;
 
 import lombok.val;
 import no.nav.apiapp.feil.IngenTilgang;
+import no.nav.apiapp.feil.UlovligHandling;
 import no.nav.apiapp.security.PepClient;
 import no.nav.brukerdialog.security.context.ThreadLocalSubjectHandler;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.db.KvpRepository;
+import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
+import no.nav.fo.veilarboppfolging.domain.Oppfolging;
+import no.nav.fo.veilarboppfolging.services.OppfolgingResolver.OppfolgingResolverDependencies;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingsstatusResponse;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Answers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
@@ -23,9 +28,6 @@ import static org.mockito.Mockito.*;
 @RunWith(MockitoJUnitRunner.class)
 public class KvpServiceTest {
 
-    public static final String ENHET = "1234";
-    public static final String START_BEGRUNNELSE = "START_BEGRUNNELSE";
-    public static final String STOP_BEGRUNNELSE = "STOP_BEGRUNNELSE";
     @Mock
     private KvpRepository kvpRepositoryMock;
 
@@ -41,11 +43,19 @@ public class KvpServiceTest {
     @Mock
     private EnhetPepClient enhetPepClientMock;
 
+    @Mock(answer = Answers.RETURNS_MOCKS)
+    private OppfolgingResolverDependencies oppfolgingResolverDependenciesMock;
+
     @InjectMocks
     private KvpService kvpService;
 
-    public static final String FNR = "12345678912";
-    public static final String AKTOR_ID = "12345";
+    private static final String FNR = "12345678912";
+    private static final String AKTOR_ID = "12345";
+    private static final String ENHET = "1234";
+    private static final String START_BEGRUNNELSE = "START_BEGRUNNELSE";
+    private static final String STOP_BEGRUNNELSE = "STOP_BEGRUNNELSE";
+
+    private OppfolgingRepository oppfolgingRepositoryMock;
 
     @BeforeClass
     public static void setUp() {
@@ -61,6 +71,17 @@ public class KvpServiceTest {
         val res = new HentOppfoelgingsstatusResponse();
         res.setNavOppfoelgingsenhet(ENHET);
         when(oppfoelgingPortTypeMock.hentOppfoelgingsstatus(any())).thenReturn(res);
+
+        oppfolgingRepositoryMock = mock(OppfolgingRepository.class);
+        when(oppfolgingRepositoryMock.hentOppfolging(AKTOR_ID)).thenReturn(of(new Oppfolging().setUnderOppfolging(true)));
+        when(oppfolgingResolverDependenciesMock.getOppfolgingRepository()).thenReturn(oppfolgingRepositoryMock);
+        when(oppfolgingResolverDependenciesMock.getAktorService()).thenReturn(aktorServiceMock);
+    }
+
+    @Test(expected = UlovligHandling.class)
+    public void start_kvp_uten_oppfolging_er_ulovlig_handling() {
+        when(oppfolgingRepositoryMock.hentOppfolging(AKTOR_ID)).thenReturn(of(new Oppfolging().setUnderOppfolging(false)));
+        kvpService.startKvp(FNR, START_BEGRUNNELSE);
     }
 
     @Test
