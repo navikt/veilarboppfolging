@@ -5,6 +5,7 @@ import lombok.val;
 import no.nav.apiapp.soap.SoapTjeneste;
 import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.fo.veilarboppfolging.service.ReservertKrrService;
+import no.nav.fo.veilarboppfolging.services.MalService;
 import no.nav.fo.veilarboppfolging.services.OppfolgingService;
 import no.nav.fo.veilarboppfolging.services.startregistrering.StartRegistreringService;
 import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.HentReservertKrrRequest;
@@ -32,15 +33,18 @@ public class OppfolgingWebService implements BehandleOppfolgingV1 {
     private OppfolgingService oppfolgingService;
     private StartRegistreringService startRegistreringService;
     private ReservertKrrService reservertKrrService;
+    private MalService malService;
 
     public OppfolgingWebService(
             OppfolgingService oppfolgingService,
             StartRegistreringService startRegistreringService,
-            ReservertKrrService reservertKrrService) {
+            ReservertKrrService reservertKrrService,
+            MalService malService) {
 
         this.startRegistreringService = startRegistreringService;
         this.oppfolgingService = oppfolgingService;
         this.reservertKrrService = reservertKrrService;
+        this.malService = malService;
     }
 
     @Override
@@ -94,7 +98,7 @@ public class OppfolgingWebService implements BehandleOppfolgingV1 {
     @Override
     public HentMalResponse hentMal(HentMalRequest hentMalRequest) {
         String personident = hentMalRequest.getPersonident();
-        val mal = mapTilMal(oppfolgingService.hentMal(personident),personident);
+        val mal = mapTilMal(malService.hentMal(personident), personident);
 
         val res = new HentMalResponse();
         res.setMal(mal);
@@ -104,7 +108,7 @@ public class OppfolgingWebService implements BehandleOppfolgingV1 {
     @Override
     public HentMalListeResponse hentMalListe(HentMalListeRequest hentMalListeRequest) {
         String personident = hentMalListeRequest.getPersonident();
-        val malListe = oppfolgingService.hentMalList(personident)
+        val malListe = malService.hentMalList(personident)
                 .stream()
                 .map(malData -> mapTilMal(malData, personident))
                 .collect(toList());
@@ -116,13 +120,13 @@ public class OppfolgingWebService implements BehandleOppfolgingV1 {
 
     @Override
     public OpprettMalResponse opprettMal(OpprettMalRequest opprettMalRequest) {
-        oppfolgingService.oppdaterMal(opprettMalRequest.getMal().getMal(), opprettMalRequest.getPersonident(), null);
+        malService.oppdaterMal(opprettMalRequest.getMal().getMal(), opprettMalRequest.getPersonident(), null);
         return new OpprettMalResponse();
     }
 
     @Override
     public SlettMalResponse slettMal(SlettMalRequest slettMalRequest) {
-        oppfolgingService.slettMal(slettMalRequest.getPersonident());
+        malService.slettMal(slettMalRequest.getPersonident());
         return new SlettMalResponse();
     }
 
@@ -174,7 +178,7 @@ public class OppfolgingWebService implements BehandleOppfolgingV1 {
         return oppfoelgingsPeriode;
     }
 
-    private Eskaleringsvarsel mapEskaleringsVarsel(EskaleringsvarselData eskalering){
+    private Eskaleringsvarsel mapEskaleringsVarsel(EskaleringsvarselData eskalering) {
         val soapEskalering = new Eskaleringsvarsel();
 
         soapEskalering.setAvsluttetDato(xmlCalendar(eskalering.getAvsluttetDato()));
@@ -239,7 +243,7 @@ public class OppfolgingWebService implements BehandleOppfolgingV1 {
     @Override
     public StartRegistreringStatusResponse hentStartRegistreringStatus(StartRegistreringStatusRequest startRegistreringStatusRequest) throws HentStartRegistreringStatusSikkerhetsbegrensning,
             HentStartRegistreringStatusFeilVedHentingAvStatusFraArena,
-            HentStartRegistreringStatusFeilVedHentingAvArbeidsforhold{
+            HentStartRegistreringStatusFeilVedHentingAvArbeidsforhold {
 
         StartRegistreringStatus status = startRegistreringService.hentStartRegistreringStatus(startRegistreringStatusRequest.getFnr());
 

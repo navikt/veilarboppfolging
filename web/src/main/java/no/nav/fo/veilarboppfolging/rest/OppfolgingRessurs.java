@@ -9,6 +9,7 @@ import no.nav.fo.veilarboppfolging.rest.api.VeilederOppfolgingController;
 import no.nav.fo.veilarboppfolging.rest.domain.*;
 import no.nav.fo.veilarboppfolging.services.HistorikkService;
 import no.nav.fo.veilarboppfolging.services.KvpService;
+import no.nav.fo.veilarboppfolging.services.MalService;
 import no.nav.fo.veilarboppfolging.services.OppfolgingService;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
 import org.springframework.stereotype.Component;
@@ -39,6 +40,9 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
 
     @Inject
     private HistorikkService historikkService;
+
+    @Inject
+    private MalService malService;
 
     @Inject
     private Provider<HttpServletRequest> requestProvider;
@@ -124,12 +128,12 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
 
     @Override
     public Mal hentMal() throws PepException {
-        return tilDto(oppfolgingService.hentMal(getFnr()));
+        return tilDto(malService.hentMal(getFnr()));
     }
 
     @Override
     public List<Mal> hentMalListe() throws PepException {
-        List<MalData> malDataList = oppfolgingService.hentMalList(getFnr());
+        List<MalData> malDataList = malService.hentMalList(getFnr());
         return malDataList.stream()
                 .map(this::tilDto)
                 .collect(toList());
@@ -137,7 +141,7 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
 
     @Override
     public Mal oppdaterMal(Mal mal) throws PepException {
-        return tilDto(oppfolgingService.oppdaterMal(mal.getMal(), getFnr(), getUid()));
+        return tilDto(malService.oppdaterMal(mal.getMal(), getFnr(), getUid()));
     }
 
     @Override
