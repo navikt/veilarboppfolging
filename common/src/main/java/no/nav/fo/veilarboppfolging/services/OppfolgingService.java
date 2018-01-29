@@ -66,6 +66,8 @@ public class OppfolgingService {
 
     public OppfolgingStatusData startOppfolging(String fnr) {
         val resolver = new OppfolgingResolver(fnr, oppfolgingResolverDependencies);
+        enhetPepClient.sjekkTilgang(resolver.getOppfolgingsEnhet());
+
         if (resolver.getKanSettesUnderOppfolging()) {
             resolver.startOppfolging();
         }
@@ -83,6 +85,7 @@ public class OppfolgingService {
     @Transactional
     public OppfolgingStatusData avsluttOppfolging(String fnr, String veileder, String begrunnelse) {
         val resolver = new OppfolgingResolver(fnr, oppfolgingResolverDependencies);
+        enhetPepClient.sjekkTilgang(resolver.getOppfolgingsEnhet());
 
         resolver.avsluttOppfolging(veileder, begrunnelse);
 
@@ -97,12 +100,14 @@ public class OppfolgingService {
 
     public OppfolgingStatusData settDigitalBruker(String fnr) {
         val resolver = new OppfolgingResolver(fnr, oppfolgingResolverDependencies);
+        enhetPepClient.sjekkTilgang(resolver.getOppfolgingsEnhet());
 
         return oppdaterManuellStatus(fnr, false, "Brukeren endret til digital oppfølging", KodeverkBruker.EKSTERN, resolver.getAktorId());
     }
 
     public OppfolgingStatusData oppdaterManuellStatus(String fnr, boolean manuell, String begrunnelse, KodeverkBruker opprettetAv, String opprettetAvBrukerId) {
         val resolver = new OppfolgingResolver(fnr, oppfolgingResolverDependencies);
+        enhetPepClient.sjekkTilgang(resolver.getOppfolgingsEnhet());
 
         if (resolver.getOppfolging().isUnderOppfolging() && (resolver.manuell() != manuell) && (!resolver.reservertIKrr() || manuell)) {
             val nyStatus = new ManuellStatus()
@@ -121,11 +126,13 @@ public class OppfolgingService {
 
     public void startEskalering(String fnr, String begrunnelse, long tilhorendeDialogId) {
         val resolver = new OppfolgingResolver(fnr, oppfolgingResolverDependencies);
+        enhetPepClient.sjekkTilgang(resolver.getOppfolgingsEnhet());
         resolver.startEskalering(begrunnelse, tilhorendeDialogId);
     }
 
     public void stoppEskalering(String fnr, String begrunnelse) {
         val resolver = new OppfolgingResolver(fnr, oppfolgingResolverDependencies);
+        enhetPepClient.sjekkTilgang(resolver.getOppfolgingsEnhet());
         resolver.stoppEskalering(begrunnelse);
     }
 
