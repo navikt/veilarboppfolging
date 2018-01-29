@@ -144,7 +144,7 @@ public class OppfolgingService {
                 .setFnr(fnr)
                 .setVeilederId(oppfolging.getVeilederId())
                 .setUnderOppfolging(oppfolging.isUnderOppfolging())
-                .setUnderKvp(oppfolging.getGjeldendeKvp() != null)
+                .setUnderKvp(oppfolgingResolver.erUnderKvp())
                 .setReservasjonKRR(oppfolgingResolver.reservertIKrr())
                 .setManuell(oppfolgingResolver.manuell())
                 .setVilkarMaBesvares(oppfolgingResolver.maVilkarBesvares())
@@ -161,6 +161,7 @@ public class OppfolgingService {
                 .underOppfolging(oppfolgingResolver.erUnderOppfolgingIArena())
                 .harYtelser(oppfolgingResolver.harPagaendeYtelse())
                 .harTiltak(oppfolgingResolver.harAktiveTiltak())
+                .underKvp(oppfolgingResolver.erUnderKvp())
                 .inaktiveringsDato(oppfolgingResolver.getInaktiveringsDato())
                 .build();
 

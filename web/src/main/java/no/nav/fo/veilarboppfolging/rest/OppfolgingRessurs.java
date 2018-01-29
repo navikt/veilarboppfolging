@@ -201,6 +201,7 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
                 avslutningStatusData.underOppfolging,
                 avslutningStatusData.harYtelser,
                 avslutningStatusData.harTiltak,
+                avslutningStatusData.underKvp,
                 avslutningStatusData.inaktiveringsDato
         );
     }

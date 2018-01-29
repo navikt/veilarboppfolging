@@ -13,6 +13,7 @@ public class AvslutningStatusData {
     public final boolean underOppfolging;
     public final boolean harYtelser;
     public final boolean harTiltak;
+    public final boolean underKvp;
     public final Date inaktiveringsDato;
 
 }
