@@ -9,7 +9,6 @@ import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 import java.util.List;
-import java.util.Optional;
 
 import static java.util.stream.Collectors.toList;
 
@@ -29,11 +28,15 @@ public class MalService {
         OppfolgingResolver resolver = new OppfolgingResolver(fnr, oppfolgingResolverDependencies);
         MalData gjeldendeMal = resolver.getOppfolging().getGjeldendeMal();
 
+        if (gjeldendeMal == null) {
+            return new MalData();
+        }
+
         List<Kvp> kvpList = kvpRepository.hentKvpHistorikk(resolver.getAktorId());
         if (!KvpUtils.sjekkTilgangGittKvp(enhetPepClient, kvpList, gjeldendeMal::getDato)) {
             return new MalData();
         }
-        return Optional.ofNullable(gjeldendeMal).orElse(new MalData());
+        return gjeldendeMal;
     }
 
     public List<MalData> hentMalList(String fnr) {

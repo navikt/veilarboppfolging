@@ -72,6 +72,15 @@ public class MalServiceTest {
     }
 
     @Test
+    public void gjeldendeMal_ikke_satt_med_kvp() {
+        when(kvpRepositoryMock.hentKvpHistorikk(AKTOR_ID)).thenReturn(kvp());
+        when(oppfolgingRepositoryMock.hentOppfolging(AKTOR_ID)).thenReturn(of(new Oppfolging()));
+
+        MalData malData = malService.hentMal(FNR);
+        assertThat(malData.getId()).isEqualTo(0L);
+    }
+
+    @Test
     public void hent_mal_ingen_kvp() {
         MalData malData = malService.hentMal(FNR);
         assertThat(malData.getId()).isEqualTo(MAL_ID);
