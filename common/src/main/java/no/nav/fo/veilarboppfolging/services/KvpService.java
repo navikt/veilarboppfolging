@@ -3,10 +3,12 @@ package no.nav.fo.veilarboppfolging.services;
 import lombok.SneakyThrows;
 import lombok.val;
 import no.nav.apiapp.feil.Feil;
+import no.nav.apiapp.feil.UlovligHandling;
 import no.nav.apiapp.security.PepClient;
 import no.nav.brukerdialog.security.context.SubjectHandler;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.db.KvpRepository;
+import no.nav.fo.veilarboppfolging.services.OppfolgingResolver.OppfolgingResolverDependencies;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingsstatusRequest;
 import org.springframework.stereotype.Component;
@@ -34,10 +36,18 @@ public class KvpService {
     @Inject
     private EnhetPepClient enhetPepClient;
 
+    @Inject
+    private OppfolgingResolverDependencies oppfolgingResolverDependencies;
+
     public static final Supplier<Feil> AKTOR_ID_FEIL = () -> new Feil(UKJENT, "Fant ikke aktørId for fnr");
 
     public void startKvp(String fnr, String begrunnelse) {
         pepClient.sjekkLeseTilgangTilFnr(fnr);
+
+        OppfolgingResolver resolver = new OppfolgingResolver(fnr, oppfolgingResolverDependencies);
+        if (!resolver.getOppfolging().isUnderOppfolging()) {
+            throw new UlovligHandling();
+        }
 
         String enhet = getEnhet(fnr);
         enhetPepClient.sjekkTilgang(enhet);
