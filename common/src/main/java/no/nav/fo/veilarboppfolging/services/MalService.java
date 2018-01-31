@@ -1,5 +1,6 @@
 package no.nav.fo.veilarboppfolging.services;
 
+import no.nav.apiapp.security.PepClient;
 import no.nav.fo.veilarboppfolging.db.KvpRepository;
 import no.nav.fo.veilarboppfolging.domain.Kvp;
 import no.nav.fo.veilarboppfolging.domain.MalData;
@@ -19,7 +20,7 @@ public class MalService {
     private OppfolgingResolverDependencies oppfolgingResolverDependencies;
 
     @Inject
-    private EnhetPepClient enhetPepClient;
+    private PepClient pepClient;
 
     @Inject
     private KvpRepository kvpRepository;
@@ -33,7 +34,7 @@ public class MalService {
         }
 
         List<Kvp> kvpList = kvpRepository.hentKvpHistorikk(resolver.getAktorId());
-        if (!KvpUtils.sjekkTilgangGittKvp(enhetPepClient, kvpList, gjeldendeMal::getDato)) {
+        if (!KvpUtils.sjekkTilgangGittKvp(pepClient, kvpList, gjeldendeMal::getDato)) {
             return new MalData();
         }
         return gjeldendeMal;
@@ -44,7 +45,7 @@ public class MalService {
         List<MalData> malList = resolver.getMalList();
 
         List<Kvp> kvpList = kvpRepository.hentKvpHistorikk(resolver.getAktorId());
-        return malList.stream().filter(mal -> KvpUtils.sjekkTilgangGittKvp(enhetPepClient, kvpList, mal::getDato)).collect(toList());
+        return malList.stream().filter(mal -> KvpUtils.sjekkTilgangGittKvp(pepClient, kvpList, mal::getDato)).collect(toList());
     }
 
     public MalData oppdaterMal(String mal, String fnr, String endretAv) {

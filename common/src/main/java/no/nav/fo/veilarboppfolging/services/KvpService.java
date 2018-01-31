@@ -34,13 +34,11 @@ public class KvpService {
     private PepClient pepClient;
 
     @Inject
-    private EnhetPepClient enhetPepClient;
-
-    @Inject
     private OppfolgingResolverDependencies oppfolgingResolverDependencies;
 
-    public static final Supplier<Feil> AKTOR_ID_FEIL = () -> new Feil(UKJENT, "Fant ikke aktørId for fnr");
+    private static final Supplier<Feil> AKTOR_ID_FEIL = () -> new Feil(UKJENT, "Fant ikke aktørId for fnr");
 
+    @SneakyThrows
     public void startKvp(String fnr, String begrunnelse) {
         pepClient.sjekkLeseTilgangTilFnr(fnr);
 
@@ -50,7 +48,7 @@ public class KvpService {
         }
 
         String enhet = getEnhet(fnr);
-        enhetPepClient.sjekkTilgang(enhet);
+        pepClient.sjekkTilgangTilEnhet(enhet);
 
         String veilederId = SubjectHandler.getSubjectHandler().getUid();
         kvpRepository.startKvp(
@@ -60,9 +58,10 @@ public class KvpService {
                 begrunnelse);
     }
 
+    @SneakyThrows
     public void stopKvp(String fnr, String begrunnelse) {
         pepClient.sjekkLeseTilgangTilFnr(fnr);
-        enhetPepClient.sjekkTilgang(getEnhet(fnr));
+        pepClient.sjekkTilgangTilEnhet(getEnhet(fnr));
 
         String veilederId = SubjectHandler.getSubjectHandler().getUid();
         kvpRepository.stopKvp(

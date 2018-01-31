@@ -1,5 +1,6 @@
 package no.nav.fo.veilarboppfolging.services;
 
+import no.nav.apiapp.security.PepClient;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.db.KvpRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
@@ -7,6 +8,7 @@ import no.nav.fo.veilarboppfolging.domain.EskaleringsvarselData;
 import no.nav.fo.veilarboppfolging.domain.InnstillingsHistorikk;
 import no.nav.fo.veilarboppfolging.domain.Kvp;
 import no.nav.fo.veilarboppfolging.domain.ManuellStatus;
+import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -39,7 +41,7 @@ public class HistorikkServiceTest {
     private KvpRepository kvpRepositoryMock;
 
     @Mock
-    private EnhetPepClient enhetPepClientMock;
+    private PepClient pepClientMock;
 
     @Mock
     private OppfolgingRepository oppfolgingRepositoryMock;
@@ -69,8 +71,8 @@ public class HistorikkServiceTest {
     }
 
     @Test
-    public void saksbehandler_har_ikke_tilgang_til_enhet() {
-        when(enhetPepClientMock.harTilgang(ENHET)).thenReturn(false);
+    public void saksbehandler_har_ikke_tilgang_til_enhet() throws PepException {
+        when(pepClientMock.harTilgangTilEnhet(ENHET)).thenReturn(false);
 
         List<InnstillingsHistorikk> historikk = historikkService.hentInstillingsHistorikk(FNR);
         List<String> begrunnelser = historikk.stream()
@@ -81,8 +83,8 @@ public class HistorikkServiceTest {
     }
 
     @Test
-    public void saksbehandler_har_tilgang_til_enhet() {
-        when(enhetPepClientMock.harTilgang(ENHET)).thenReturn(true);
+    public void saksbehandler_har_tilgang_til_enhet() throws PepException {
+        when(pepClientMock.harTilgangTilEnhet(ENHET)).thenReturn(true);
 
         List<InnstillingsHistorikk> historikk = historikkService.hentInstillingsHistorikk(FNR);
         List<String> begrunnelser = historikk.stream()
