@@ -57,7 +57,11 @@ public class VarseloppgaveConfig {
 
             @Override
             public HelsesjekkMetadata getMetadata() {
-                return new HelsesjekkMetadata(getProperty(VARSELOPPGAVE_ENDPOINT_URL), "Brukes for å sende eskaleringsvarsel", false);
+                return new HelsesjekkMetadata("varseloppgave",
+                        getProperty(VARSELOPPGAVE_ENDPOINT_URL),
+                        "Brukes for å sende eskaleringsvarsel",
+                        false
+                );
             }
         };
     }
@@ -72,7 +76,7 @@ public class VarseloppgaveConfig {
 
         @Override
         public void handleMessage(Message message) throws Fault {
-            if(SKIP_VALIDERING_DIFI.erAktiv()){
+            if (SKIP_VALIDERING_DIFI.erAktiv()) {
                 Map<String, List> headers = (Map<String, List>) message.get(Message.PROTOCOL_HEADERS);
                 headers.put("SkipPaaloggingValidation", Collections.singletonList("hvasomhelst"));
             }
