@@ -1,5 +1,7 @@
 package no.nav.fo.veilarboppfolging.services;
 
+import no.nav.apiapp.feil.Feil;
+import no.nav.apiapp.feil.IngenTilgang;
 import no.nav.apiapp.security.PepClient;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.db.KvpRepository;
@@ -29,6 +31,8 @@ import static java.util.Collections.singletonList;
 import static java.util.Optional.of;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -44,6 +48,7 @@ public class MalServiceTest {
     private static final Instant IN_KVP = START_KVP.plus(1, DAYS);
     private static final Instant STOP_KVP = START_KVP.plus(2, DAYS);
     private static final Instant AFTER_KVP = START_KVP.plus(3, DAYS);
+    private static final String VEILEDER = "Z990000";
 
     @Mock(answer = Answers.RETURNS_MOCKS)
     private OppfolgingResolverDependencies oppfolgingResolverDependenciesMock;
@@ -73,9 +78,16 @@ public class MalServiceTest {
 
     }
 
+    @Test(expected = Feil.class)
+    public void oppdater_mal_for_kvp_uten_tilgang() throws PepException {
+        when(kvpRepositoryMock.gjeldendeKvp(AKTOR_ID)).thenReturn(KVP_ID);
+        when(kvpRepositoryMock.fetch(KVP_ID)).thenReturn(aktivKvp());
+        doThrow(IngenTilgang.class).when(pepClientMock).sjekkTilgangTilEnhet(any());
+        malService.oppdaterMal("mal", FNR, VEILEDER);
+    }
+
     @Test
-    public void gjeldendeMal_ikke_satt_med_kvp() {
-        when(kvpRepositoryMock.hentKvpHistorikk(AKTOR_ID)).thenReturn(kvp());
+    public void gjeldendeMal_ikke_satt() {
         when(oppfolgingRepositoryMock.hentOppfolging(AKTOR_ID)).thenReturn(of(new Oppfolging()));
 
         MalData malData = malService.hentMal(FNR);
@@ -90,7 +102,7 @@ public class MalServiceTest {
 
     @Test
     public void hent_mal_opprettet_for_kvp() {
-        when(kvpRepositoryMock.hentKvpHistorikk(AKTOR_ID)).thenReturn(kvp());
+        when(kvpRepositoryMock.hentKvpHistorikk(AKTOR_ID)).thenReturn(kvpHistorikk());
 
         MalData malData = malService.hentMal(FNR);
         assertThat(malData.getId()).isEqualTo(MAL_ID);
@@ -98,7 +110,7 @@ public class MalServiceTest {
 
     @Test
     public void hent_mal_opprettet_etter_kvp_veileder_har_ikke_tilgang() throws PepException {
-        when(kvpRepositoryMock.hentKvpHistorikk(AKTOR_ID)).thenReturn(kvp());
+        when(kvpRepositoryMock.hentKvpHistorikk(AKTOR_ID)).thenReturn(kvpHistorikk());
         when(oppfolgingRepositoryMock.hentOppfolging(AKTOR_ID)).thenReturn(of(oppfolging(from(IN_KVP))));
         when(pepClientMock.harTilgangTilEnhet(ENHET)).thenReturn(false);
 
@@ -108,7 +120,7 @@ public class MalServiceTest {
 
     @Test
     public void hent_mal_opprettet_etter_kvp_veileder_har_tilgang() throws PepException {
-        when(kvpRepositoryMock.hentKvpHistorikk(AKTOR_ID)).thenReturn(kvp());
+        when(kvpRepositoryMock.hentKvpHistorikk(AKTOR_ID)).thenReturn(kvpHistorikk());
         when(oppfolgingRepositoryMock.hentOppfolging(AKTOR_ID)).thenReturn(of(oppfolging(from(IN_KVP))));
         when(pepClientMock.harTilgangTilEnhet(ENHET)).thenReturn(true);
 
@@ -118,7 +130,7 @@ public class MalServiceTest {
 
     @Test
     public void hent_mal_historikk_med_kvp_i_midten_veileder_har_Tilgang() throws PepException {
-        when(kvpRepositoryMock.hentKvpHistorikk(AKTOR_ID)).thenReturn(kvp());
+        when(kvpRepositoryMock.hentKvpHistorikk(AKTOR_ID)).thenReturn(kvpHistorikk());
         when(pepClientMock.harTilgangTilEnhet(ENHET)).thenReturn(true);
         when(oppfolgingRepositoryMock.hentMalList(AKTOR_ID)).thenReturn(malList());
 
@@ -129,7 +141,7 @@ public class MalServiceTest {
 
     @Test
     public void hent_mal_historikk_med_kvp_i_midten_veileder_har_ikke_Tilgang() throws PepException {
-        when(kvpRepositoryMock.hentKvpHistorikk(AKTOR_ID)).thenReturn(kvp());
+        when(kvpRepositoryMock.hentKvpHistorikk(AKTOR_ID)).thenReturn(kvpHistorikk());
         when(pepClientMock.harTilgangTilEnhet(ENHET)).thenReturn(false);
         when(oppfolgingRepositoryMock.hentMalList(AKTOR_ID)).thenReturn(malList());
 
@@ -155,8 +167,15 @@ public class MalServiceTest {
         );
     }
 
+    private Kvp aktivKvp() {
+        return Kvp.builder()
+                .kvpId(KVP_ID)
+                .enhet(ENHET)
+                .opprettetDato(from(START_KVP))
+                .build();
+    }
 
-    private List<Kvp> kvp() {
+    private List<Kvp> kvpHistorikk() {
         return singletonList(Kvp.builder()
                 .kvpId(KVP_ID)
                 .enhet(ENHET)
