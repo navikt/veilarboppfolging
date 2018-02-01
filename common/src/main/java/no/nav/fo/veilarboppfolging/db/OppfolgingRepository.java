@@ -1,10 +1,11 @@
 package no.nav.fo.veilarboppfolging.db;
 
 
+import lombok.SneakyThrows;
 import lombok.val;
 import no.nav.apiapp.feil.Feil;
+import no.nav.apiapp.security.PepClient;
 import no.nav.fo.veilarboppfolging.domain.*;
-import no.nav.fo.veilarboppfolging.services.EnhetPepClient;
 import no.nav.sbl.jdbc.Database;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,7 +21,7 @@ import static no.nav.fo.veilarboppfolging.utils.KvpUtils.sjekkTilgangGittKvp;
 public class OppfolgingRepository {
 
     @Inject
-    private EnhetPepClient enhetPepClient;
+    private PepClient pepClient;
 
     private final OppfolgingsStatusRepository statusRepository;
     private final OppfolgingsPeriodeRepository periodeRepository;
@@ -40,6 +41,7 @@ public class OppfolgingRepository {
         kvpRepository = new KvpRepository(database);
     }
 
+    @SneakyThrows
     public Optional<Oppfolging> hentOppfolging(String aktorId) {
         OppfolgingTable t = statusRepository.fetch(aktorId);
         if (t == null) {
@@ -58,7 +60,7 @@ public class OppfolgingRepository {
         Kvp kvp = null;
         if (t.getGjeldendeKvpId() != 0) {
             kvp = kvpRepository.fetch(t.getGjeldendeKvpId());
-            if (enhetPepClient.harTilgang(kvp.getEnhet())) {
+            if (pepClient.harTilgangTilEnhet(kvp.getEnhet())) {
                 o.setGjeldendeKvp(kvp);
             }
         }
@@ -66,7 +68,7 @@ public class OppfolgingRepository {
         // Gjeldende eskaleringsvarsel inkluderes i resultatet kun hvis den innloggede veilederen har tilgang til brukers enhet.
         if (t.getGjeldendeEskaleringsvarselId() != 0) {
             EskaleringsvarselData varsel = eskaleringsvarselRepository.fetch(t.getGjeldendeEskaleringsvarselId());
-            if (sjekkTilgangGittKvp(enhetPepClient, kvp, varsel::getOpprettetDato)) {
+            if (sjekkTilgangGittKvp(pepClient, kvp, varsel::getOpprettetDato)) {
                 o.setGjeldendeEskaleringsvarsel(varsel);
             }
         }

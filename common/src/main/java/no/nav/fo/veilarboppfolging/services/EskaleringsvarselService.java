@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 import javax.inject.Inject;
 import java.util.UUID;
 
-import static no.nav.apiapp.util.PropertyUtils.getRequiredProperty;
+import static no.nav.sbl.util.PropertyUtils.getRequiredProperty;
 import static no.nav.sbl.util.ExceptionUtils.throwUnchecked;
 
 @Component

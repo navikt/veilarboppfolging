@@ -54,7 +54,7 @@ public class OppfolgingServiceTest {
     private OppfoelgingPortType oppfoelgingPortTypeMock;
 
     @Mock
-    private EnhetPepClient enhetPepClientMock;
+    private PepClient pepClientMock;
 
     @Mock
     private OppfolgingResolver.OppfolgingResolverDependencies oppfolgingResolverDependencies;
@@ -89,13 +89,13 @@ public class OppfolgingServiceTest {
         when(oppfolgingResolverDependencies.getOppfoelgingPortType()).thenReturn(oppfoelgingPortTypeMock);
         when(oppfolgingResolverDependencies.getDigitalKontaktinformasjonV1()).thenReturn(digitalKontaktinformasjonV1Mock);
         when(oppfolgingResolverDependencies.getVilkarService()).thenReturn(vilkarServiceMock);
-        when(oppfolgingResolverDependencies.getPepClient()).thenReturn(mock(PepClient.class));
+        when(oppfolgingResolverDependencies.getPepClient()).thenReturn(pepClientMock);
         gittOppfolgingStatus("", "");
     }
 
     @Test
     public void medEnhetTilgang() throws Exception {
-        when(enhetPepClientMock.harTilgang(ENHET)).thenReturn(true);
+        when(pepClientMock.harTilgangTilEnhet(ENHET)).thenReturn(true);
 
         gittAktor();
         gittEnhet(ENHET);
@@ -106,7 +106,7 @@ public class OppfolgingServiceTest {
 
     @Test
     public void utenEnhetTilgang() throws Exception {
-        when(enhetPepClientMock.harTilgang(anyString())).thenReturn(false);
+        when(pepClientMock.harTilgangTilEnhet(anyString())).thenReturn(false);
 
         gittAktor();
         gittEnhet(ENHET);

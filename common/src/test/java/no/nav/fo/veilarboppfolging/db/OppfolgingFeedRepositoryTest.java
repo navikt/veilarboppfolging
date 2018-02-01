@@ -2,7 +2,6 @@ package no.nav.fo.veilarboppfolging.db;
 
 import no.nav.fo.IntegrasjonsTest;
 import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingFeedDTO;
-import no.nav.fo.veilarboppfolging.services.EnhetPepClient;
 import no.nav.sbl.jdbc.Database;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -22,7 +21,6 @@ class OppfolgingFeedRepositoryTest extends IntegrasjonsTest {
     @BeforeAll
     public static void setup() throws IOException {
         annotationConfigApplicationContext.register(OppfolgingRepository.class);
-        annotationConfigApplicationContext.register(EnhetPepClient.class);
     }
 
     private VeilederTilordningerRepository repository = new VeilederTilordningerRepository(

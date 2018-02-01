@@ -3,6 +3,7 @@ package no.nav.fo.veilarboppfolging.services;
 import io.swagger.annotations.Api;
 import lombok.SneakyThrows;
 import lombok.val;
+import no.nav.apiapp.security.PepClient;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.domain.*;
@@ -30,7 +31,7 @@ public class OppfolgingService {
     private OppfolgingRepository oppfolgingRepository;
 
     @Inject
-    private EnhetPepClient enhetPepClient;
+    private PepClient pepClient;
 
     public OppfolgingStatusData hentOppfolgingsStatus(AktorId aktorId) throws Exception {
         String fnr = aktorService.getFnr(aktorId.getAktorId())
@@ -129,9 +130,10 @@ public class OppfolgingService {
         resolver.stoppEskalering(begrunnelse);
     }
 
+    @SneakyThrows
     public VeilederTilgang hentVeilederTilgang(String fnr) {
         val resolver = new OppfolgingResolver(fnr, oppfolgingResolverDependencies);
-        return new VeilederTilgang().setTilgangTilBrukersKontor(enhetPepClient.harTilgang(resolver.getOppfolgingsEnhet()));
+        return new VeilederTilgang().setTilgangTilBrukersKontor(pepClient.harTilgangTilEnhet(resolver.getOppfolgingsEnhet()));
     }
 
     private OppfolgingStatusData getOppfolgingStatusData(String fnr, OppfolgingResolver oppfolgingResolver) {
