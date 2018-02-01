@@ -1,5 +1,8 @@
 package no.nav.fo.veilarboppfolging.services;
 
+import lombok.SneakyThrows;
+import no.nav.apiapp.feil.Feil;
+import no.nav.apiapp.feil.IngenTilgang;
 import no.nav.apiapp.security.PepClient;
 import no.nav.fo.veilarboppfolging.db.KvpRepository;
 import no.nav.fo.veilarboppfolging.domain.Kvp;
@@ -11,7 +14,9 @@ import org.springframework.stereotype.Component;
 import javax.inject.Inject;
 import java.util.List;
 
+import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
+import static no.nav.apiapp.feil.Feil.Type.INGEN_TILGANG;
 
 @Component
 public class MalService {
@@ -49,7 +54,21 @@ public class MalService {
     }
 
     public MalData oppdaterMal(String mal, String fnr, String endretAv) {
-        return new OppfolgingResolver(fnr, oppfolgingResolverDependencies).oppdaterMal(mal, endretAv);
+        OppfolgingResolver resolver = new OppfolgingResolver(fnr, oppfolgingResolverDependencies);
+
+        Kvp kvp = kvpRepository.fetch(kvpRepository.gjeldendeKvp(resolver.getAktorId()));
+        ofNullable(kvp).ifPresent(this::sjekkEnhetTilgang);
+
+        return resolver.oppdaterMal(mal, endretAv);
+    }
+
+    @SneakyThrows
+    private void sjekkEnhetTilgang(Kvp kvp) {
+        try {
+            pepClient.sjekkTilgangTilEnhet(kvp.getEnhet());
+        } catch (IngenTilgang e) {
+            throw new Feil(INGEN_TILGANG);
+        }
     }
 
     public void slettMal(String fnr) {
