@@ -1,6 +1,8 @@
 package no.nav.fo.veilarboppfolging.services;
 
+import lombok.SneakyThrows;
 import lombok.val;
+import no.nav.apiapp.security.PepClient;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.db.KvpRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
@@ -28,7 +30,7 @@ public class HistorikkService {
     private KvpRepository kvpRepository;
 
     @Inject
-    private EnhetPepClient enhetPepClient;
+    private PepClient pepClient;
 
     @Inject
     private OppfolgingRepository oppfolgingRepository;
@@ -42,18 +44,23 @@ public class HistorikkService {
 
         return Stream.of(
                 kvpHistorikk.stream()
-                        .filter((kvp) -> enhetPepClient.harTilgang(kvp.getEnhet()))
+                        .filter(this::harTilgangTilEnhet)
                         .map(this::tilDTO).flatMap(List::stream),
                 oppfolgingRepository.hentAvsluttetOppfolgingsperioder(aktorId).stream()
                         .map(this::tilDTO),
                 oppfolgingRepository.hentManuellHistorikk(aktorId).stream()
                         .map(this::tilDTO)
-                        .filter((historikk) -> KvpUtils.sjekkTilgangGittKvp(enhetPepClient, kvpHistorikk, historikk::getDato)),
+                        .filter((historikk) -> KvpUtils.sjekkTilgangGittKvp(pepClient, kvpHistorikk, historikk::getDato)),
                 oppfolgingRepository.hentEskaleringhistorikk(aktorId).stream()
                         .map(this::tilDTO)
                         .flatMap(List::stream)
-                        .filter((historikk) -> KvpUtils.sjekkTilgangGittKvp(enhetPepClient, kvpHistorikk, historikk::getDato))
+                        .filter((historikk) -> KvpUtils.sjekkTilgangGittKvp(pepClient, kvpHistorikk, historikk::getDato))
         ).flatMap(s -> s).collect(Collectors.toList());
+    }
+
+    @SneakyThrows
+    private boolean harTilgangTilEnhet(Kvp kvp) {
+        return pepClient.harTilgangTilEnhet(kvp.getEnhet());
     }
 
     private InnstillingsHistorikk tilDTO(Oppfolgingsperiode oppfolgingsperiode) {
