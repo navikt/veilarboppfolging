@@ -3,6 +3,7 @@ package no.nav.fo.veilarboppfolging.db;
 import lombok.SneakyThrows;
 import no.nav.fo.veilarboppfolging.domain.AktorId;
 import no.nav.fo.veilarboppfolging.domain.BrukerRegistrering;
+import no.nav.sbl.sql.DbConstants;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -44,7 +45,7 @@ public class ArbeidssokerregistreringRepository {
         SqlUtils.insert(db, BRUKER_REGISTRERING)
                 .value(BRUKER_REGISTRERING_ID, id)
                 .value(AKTOR_ID, bruker.getAktorId())
-                .value(OPPRETTET_DATO, bruker.getOpprettetDato())
+                .value(OPPRETTET_DATO, DbConstants.CURRENT_TIMESTAMP)
                 .value(ENIG_I_OPPSUMMERING, bruker.isEnigIOppsummering())
                 .value(OPPSUMMERING, bruker.getOppsummering())
                 .value(BESVARELSE, bruker.getBesvarelse())

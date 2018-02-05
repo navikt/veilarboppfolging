@@ -47,7 +47,6 @@ public class ArbeidssokerregistreringRepositoryTest {
     public void registrerBruker() {
         BrukerRegistrering bruker = new BrukerRegistrering()
                 .setAktorId(new AktorId("11111").getAktorId())
-                .setOpprettetDato(new Timestamp(currentTimeMillis()))
                 .setEnigIOppsummering(true)
                 .setOppsummering("Test test oppsummering")
                 .setBesvarelse("{1:1, 2:1, 3:1, 4:1, 5:1}");
