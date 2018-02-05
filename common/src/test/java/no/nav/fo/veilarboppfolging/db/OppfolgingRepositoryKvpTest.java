@@ -1,9 +1,8 @@
 package no.nav.fo.veilarboppfolging.db;
 
+import no.nav.apiapp.security.PepClient;
 import no.nav.fo.IntegrasjonsTest;
 import no.nav.fo.veilarboppfolging.domain.Oppfolging;
-import no.nav.fo.veilarboppfolging.services.EnhetPepClient;
-import no.nav.sbl.dialogarena.common.abac.pep.service.AbacService;
 import no.nav.sbl.jdbc.Database;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,7 +22,7 @@ public class OppfolgingRepositoryKvpTest extends IntegrasjonsTest {
     private static final String BEGRUNNELSE = "begrunnelse";
 
     @Mock
-    private EnhetPepClient enhetPepClientMock;
+    private PepClient pepClientMock;
 
     private Database db = getBean(Database.class);
     private KvpRepository kvpRepository = new KvpRepository(db);
@@ -41,7 +40,7 @@ public class OppfolgingRepositoryKvpTest extends IntegrasjonsTest {
 
     @Test
     public void test_eskaleringsvarsel_i_kvp_med_tilgang() throws Exception {
-        when(enhetPepClientMock.harTilgang(ENHET)).thenReturn(true);
+        when(pepClientMock.harTilgangTilEnhet(ENHET)).thenReturn(true);
         gitt_oppfolging_med_aktiv_kvp_og_eskalering(AKTOR_ID);
 
         Oppfolging oppfolging = oppfolgingRepository.hentOppfolging(AKTOR_ID).orElseThrow(Exception::new);
