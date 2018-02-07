@@ -7,7 +7,6 @@ import no.nav.sbl.sql.DbConstants;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.ResultSet;
 import java.util.Optional;
@@ -39,7 +38,6 @@ public class ArbeidssokerregistreringRepository {
                 .execute()).orElse(false);
     }
 
-    @Transactional
     public BrukerRegistrering registrerBruker(BrukerRegistrering bruker) {
         long id = nesteFraSekvens(BRUKER_REGISTRERING_SEQ);
         SqlUtils.insert(db, BRUKER_REGISTRERING)
