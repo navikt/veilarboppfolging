@@ -1,10 +1,11 @@
 package no.nav.fo.veilarboppfolging.db;
 
 import no.nav.apiapp.feil.Feil;
+import no.nav.apiapp.security.PepClient;
 import no.nav.fo.IntegrasjonsTest;
 import no.nav.fo.veilarboppfolging.domain.Kvp;
 import no.nav.fo.veilarboppfolging.domain.Oppfolging;
-import no.nav.fo.veilarboppfolging.services.EnhetPepClient;
+import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
 import no.nav.sbl.jdbc.Database;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,7 +30,7 @@ public class KvpRepositoryTest extends IntegrasjonsTest {
     private Database db = getBean(Database.class);
 
     @Mock
-    private EnhetPepClient enhetPepClientMock;
+    private PepClient pepClientMock;
 
     @InjectMocks
     private OppfolgingRepository oppfolgingRepository = new OppfolgingRepository(db);
@@ -37,14 +38,14 @@ public class KvpRepositoryTest extends IntegrasjonsTest {
     private KvpRepository kvpRepository = new KvpRepository(db);
 
     @Test
-    public void startKvp() {
-        when(enhetPepClientMock.harTilgang(anyString())).thenReturn(true);
+    public void startKvp() throws PepException {
+        when(pepClientMock.harTilgangTilEnhet(anyString())).thenReturn(true);
         gittOppfolgingForAktor(AKTOR_ID);
         start_kvp();
 
         assertThat(hentGjeldendeKvp(AKTOR_ID).getOpprettetBegrunnelse(), is(BEGRUNNELSE));
 
-        when(enhetPepClientMock.harTilgang(anyString())).thenReturn(false);
+        when(pepClientMock.harTilgangTilEnhet(anyString())).thenReturn(false);
         assertNull(hentGjeldendeKvp(AKTOR_ID));
 
         // Test that starting KVP an additional time yields an error.
@@ -81,11 +82,11 @@ public class KvpRepositoryTest extends IntegrasjonsTest {
      * Test that the serial field is incremented when a record is started and stopped.
      */
     @Test
-    public void testSerial() {
+    public void testSerial() throws PepException {
         Kvp kvp;
         long serial;
 
-        when(enhetPepClientMock.harTilgang(anyString())).thenReturn(true);
+        when(pepClientMock.harTilgangTilEnhet(anyString())).thenReturn(true);
         gittOppfolgingForAktor(AKTOR_ID);
 
         start_kvp();
@@ -94,7 +95,7 @@ public class KvpRepositoryTest extends IntegrasjonsTest {
 
         stop_kvp();
         kvp = kvpRepository.fetch(kvp.getKvpId());
-        assertThat(kvp.getSerial(), is(serial+1));
+        assertThat(kvp.getSerial(), is(serial + 1));
     }
 
     private void stop_kvp() {
