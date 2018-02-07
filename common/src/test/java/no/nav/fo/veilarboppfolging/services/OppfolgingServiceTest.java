@@ -1,5 +1,6 @@
 package no.nav.fo.veilarboppfolging.services;
 
+import lombok.SneakyThrows;
 import lombok.val;
 import no.nav.apiapp.feil.IngenTilgang;
 import no.nav.apiapp.security.PepClient;
@@ -99,38 +100,44 @@ public class OppfolgingServiceTest {
     }
 
     @Test(expected = IngenTilgang.class)
+    @SneakyThrows
     public void start_oppfolging_uten_enhet_tilgang() {
-        doThrow(IngenTilgang.class).when(enhetPepClientMock).sjekkTilgang(any());
+        doThrow(IngenTilgang.class).when(pepClientMock).sjekkTilgangTilEnhet(any());
         oppfolgingService.startOppfolging(FNR);
     }
 
     @Test(expected = IngenTilgang.class)
+    @SneakyThrows
     public void avslutt_oppfolging_uten_enhet_tilgang() {
-        doThrow(IngenTilgang.class).when(enhetPepClientMock).sjekkTilgang(any());
+        doThrow(IngenTilgang.class).when(pepClientMock).sjekkTilgangTilEnhet(any());
         oppfolgingService.avsluttOppfolging(FNR, VEILEDER, BEGRUNNELSE);
     }
 
     @Test(expected = IngenTilgang.class)
+    @SneakyThrows
     public void sett_manuell_uten_enhet_tilgang() {
-        doThrow(IngenTilgang.class).when(enhetPepClientMock).sjekkTilgang(any());
+        doThrow(IngenTilgang.class).when(pepClientMock).sjekkTilgangTilEnhet(any());
         oppfolgingService.oppdaterManuellStatus(FNR, true, BEGRUNNELSE, NAV, VEILEDER);
     }
 
     @Test(expected = IngenTilgang.class)
+    @SneakyThrows
     public void settDigital_uten_enhet_tilgang() {
-        doThrow(IngenTilgang.class).when(enhetPepClientMock).sjekkTilgang(any());
+        doThrow(IngenTilgang.class).when(pepClientMock).sjekkTilgangTilEnhet(any());
         oppfolgingService.settDigitalBruker(FNR);
     }
 
     @Test(expected = IngenTilgang.class)
+    @SneakyThrows
     public void start_eskalering_uten_enhet_tilgang() {
-        doThrow(IngenTilgang.class).when(enhetPepClientMock).sjekkTilgang(any());
+        doThrow(IngenTilgang.class).when(pepClientMock).sjekkTilgangTilEnhet(any());
         oppfolgingService.startEskalering(FNR, BEGRUNNELSE, 1L);
     }
 
     @Test(expected = IngenTilgang.class)
+    @SneakyThrows
     public void stopp_eskalering_uten_enhet_tilgang() {
-        doThrow(IngenTilgang.class).when(enhetPepClientMock).sjekkTilgang(any());
+        doThrow(IngenTilgang.class).when(pepClientMock).sjekkTilgangTilEnhet(any());
         oppfolgingService.stoppEskalering(FNR, BEGRUNNELSE);
     }
 
