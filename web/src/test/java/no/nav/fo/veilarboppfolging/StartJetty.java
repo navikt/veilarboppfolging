@@ -8,6 +8,7 @@ import static no.nav.fo.veilarboppfolging.config.DatabaseConfig.DATA_SOURCE_JDNI
 import static no.nav.fo.veilarboppfolging.config.JndiLocalContextConfig.configureDataSource;
 import static no.nav.sbl.dialogarena.common.jetty.Jetty.usingWar;
 import static no.nav.sbl.dialogarena.common.jetty.JettyStarterUtils.*;
+import static no.nav.testconfig.ApiAppTest.setupTestContext;
 
 class StartJetty {
 
@@ -24,6 +25,9 @@ class StartJetty {
                         .loadProperties("/environment-test.properties")
                         .addDatasource(configureDataSource(APPLICATION_NAME), DATA_SOURCE_JDNI_NAME)
                 , new ISSOSecurityConfig(APPLICATION_NAME)).buildJetty();
+
+        setupTestContext();
+
         jetty.startAnd(first(waitFor(gotKeypress())).then(jetty.stop));
     }
 
