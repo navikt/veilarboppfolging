@@ -1,6 +1,8 @@
 package no.nav.fo.veilarboppfolging.services;
 
+import lombok.SneakyThrows;
 import lombok.val;
+import no.nav.apiapp.feil.IngenTilgang;
 import no.nav.apiapp.security.PepClient;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
@@ -27,6 +29,7 @@ import java.util.Optional;
 
 import static java.lang.System.currentTimeMillis;
 import static java.util.Optional.of;
+import static no.nav.fo.veilarboppfolging.domain.KodeverkBruker.NAV;
 import static no.nav.fo.veilarboppfolging.domain.VilkarStatus.*;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -62,6 +65,8 @@ public class OppfolgingServiceTest {
     private static final String FNR = "fnr";
     private static final String AKTOR_ID = "aktorId";
     private static final String ENHET = "0100";
+    private static final String VEILEDER = "Z990000";
+    private static final String BEGRUNNELSE = "begrunnelse";
 
     @InjectMocks
     private OppfolgingService oppfolgingService;
@@ -83,6 +88,7 @@ public class OppfolgingServiceTest {
                 .thenReturn(new WSHentDigitalKontaktinformasjonResponse()
                         .withDigitalKontaktinformasjon(wsKontaktinformasjon));
         when(vilkarServiceMock.getVilkar(any(VilkarService.VilkarType.class), any())).thenReturn("Gjeldene Vilkar");
+        when(aktorServiceMock.getAktorId(FNR)).thenReturn(of(AKTOR_ID));
 
         when(oppfolgingResolverDependencies.getAktorService()).thenReturn(aktorServiceMock);
         when(oppfolgingResolverDependencies.getOppfolgingRepository()).thenReturn(oppfolgingRepositoryMock);
@@ -91,6 +97,48 @@ public class OppfolgingServiceTest {
         when(oppfolgingResolverDependencies.getVilkarService()).thenReturn(vilkarServiceMock);
         when(oppfolgingResolverDependencies.getPepClient()).thenReturn(pepClientMock);
         gittOppfolgingStatus("", "");
+    }
+
+    @Test(expected = IngenTilgang.class)
+    @SneakyThrows
+    public void start_oppfolging_uten_enhet_tilgang() {
+        doThrow(IngenTilgang.class).when(pepClientMock).sjekkTilgangTilEnhet(any());
+        oppfolgingService.startOppfolging(FNR);
+    }
+
+    @Test(expected = IngenTilgang.class)
+    @SneakyThrows
+    public void avslutt_oppfolging_uten_enhet_tilgang() {
+        doThrow(IngenTilgang.class).when(pepClientMock).sjekkTilgangTilEnhet(any());
+        oppfolgingService.avsluttOppfolging(FNR, VEILEDER, BEGRUNNELSE);
+    }
+
+    @Test(expected = IngenTilgang.class)
+    @SneakyThrows
+    public void sett_manuell_uten_enhet_tilgang() {
+        doThrow(IngenTilgang.class).when(pepClientMock).sjekkTilgangTilEnhet(any());
+        oppfolgingService.oppdaterManuellStatus(FNR, true, BEGRUNNELSE, NAV, VEILEDER);
+    }
+
+    @Test(expected = IngenTilgang.class)
+    @SneakyThrows
+    public void settDigital_uten_enhet_tilgang() {
+        doThrow(IngenTilgang.class).when(pepClientMock).sjekkTilgangTilEnhet(any());
+        oppfolgingService.settDigitalBruker(FNR);
+    }
+
+    @Test(expected = IngenTilgang.class)
+    @SneakyThrows
+    public void start_eskalering_uten_enhet_tilgang() {
+        doThrow(IngenTilgang.class).when(pepClientMock).sjekkTilgangTilEnhet(any());
+        oppfolgingService.startEskalering(FNR, BEGRUNNELSE, 1L);
+    }
+
+    @Test(expected = IngenTilgang.class)
+    @SneakyThrows
+    public void stopp_eskalering_uten_enhet_tilgang() {
+        doThrow(IngenTilgang.class).when(pepClientMock).sjekkTilgangTilEnhet(any());
+        oppfolgingService.stoppEskalering(FNR, BEGRUNNELSE);
     }
 
     @Test
@@ -117,6 +165,7 @@ public class OppfolgingServiceTest {
 
     @Test
     public void ukjentAktor() throws Exception {
+        doThrow(IllegalArgumentException.class).when(aktorServiceMock).getAktorId(FNR);
         assertThrows(IllegalArgumentException.class, this::hentOppfolgingStatus);
     }
 
