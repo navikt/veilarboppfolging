@@ -47,13 +47,26 @@ public class ArbeidssokerregistreringRepositoryTest {
     public void registrerBruker() {
         BrukerRegistrering bruker = new BrukerRegistrering()
                 .setAktorId(new AktorId("11111").getAktorId())
+                .setNusKode("123")
+                .setYrkesPraksis("12345")
                 .setEnigIOppsummering(true)
                 .setOppsummering("Test test oppsummering")
-                .setBesvarelse("{1:1, 2:1, 3:1, 4:1, 5:1}");
+                .setUtdanningBestatt(true)
+                .setUtdanningGodkjentNorge(true)
+                .setHarJobbetSammenhengende(true)
+                .setHarHelseutfordringer(true)
+                .setSituasjon("MISTET_JOBB");
+
         BrukerRegistrering registrertBruker = arbeidssokerregistreringRepository.registrerBruker(bruker);
 
+        assertThat(registrertBruker.getNusKode()).isEqualTo(bruker.getNusKode());
+        assertThat(registrertBruker.getYrkesPraksis()).isEqualTo(bruker.getYrkesPraksis());
         assertThat(registrertBruker.isEnigIOppsummering()).isEqualTo(bruker.isEnigIOppsummering());
         assertThat(registrertBruker.getOppsummering()).isEqualTo(bruker.getOppsummering());
-        assertThat(registrertBruker.getBesvarelse()).isEqualTo(bruker.getBesvarelse());
+        assertThat(registrertBruker.isUtdanningBestatt()).isEqualTo(bruker.isUtdanningBestatt());
+        assertThat(registrertBruker.isUtdanningGodkjentNorge()).isEqualTo(bruker.isUtdanningGodkjentNorge());
+        assertThat(registrertBruker.isHarJobbetSammenhengende()).isEqualTo(bruker.isHarJobbetSammenhengende());
+        assertThat(registrertBruker.isHarHelseutfordringer()).isEqualTo(bruker.isHarHelseutfordringer());
+        assertThat(registrertBruker.getSituasjon()).isEqualTo(bruker.getSituasjon());
     }
 }
