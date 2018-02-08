@@ -3,10 +3,12 @@ package no.nav.fo.veilarboppfolging.services;
 import lombok.SneakyThrows;
 import lombok.val;
 import no.nav.apiapp.feil.Feil;
+import no.nav.apiapp.feil.UlovligHandling;
 import no.nav.apiapp.security.PepClient;
 import no.nav.brukerdialog.security.context.SubjectHandler;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.db.KvpRepository;
+import no.nav.fo.veilarboppfolging.services.OppfolgingResolver.OppfolgingResolverDependencies;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingsstatusRequest;
 import org.springframework.stereotype.Component;
@@ -32,15 +34,21 @@ public class KvpService {
     private PepClient pepClient;
 
     @Inject
-    private EnhetPepClient enhetPepClient;
+    private OppfolgingResolverDependencies oppfolgingResolverDependencies;
 
-    public static final Supplier<Feil> AKTOR_ID_FEIL = () -> new Feil(UKJENT, "Fant ikke aktørId for fnr");
+    private static final Supplier<Feil> AKTOR_ID_FEIL = () -> new Feil(UKJENT, "Fant ikke aktørId for fnr");
 
+    @SneakyThrows
     public void startKvp(String fnr, String begrunnelse) {
         pepClient.sjekkLeseTilgangTilFnr(fnr);
 
+        OppfolgingResolver resolver = new OppfolgingResolver(fnr, oppfolgingResolverDependencies);
+        if (!resolver.getOppfolging().isUnderOppfolging()) {
+            throw new UlovligHandling();
+        }
+
         String enhet = getEnhet(fnr);
-        enhetPepClient.sjekkTilgang(enhet);
+        pepClient.sjekkTilgangTilEnhet(enhet);
 
         String veilederId = SubjectHandler.getSubjectHandler().getUid();
         kvpRepository.startKvp(
@@ -50,9 +58,10 @@ public class KvpService {
                 begrunnelse);
     }
 
+    @SneakyThrows
     public void stopKvp(String fnr, String begrunnelse) {
         pepClient.sjekkLeseTilgangTilFnr(fnr);
-        enhetPepClient.sjekkTilgang(getEnhet(fnr));
+        pepClient.sjekkTilgangTilEnhet(getEnhet(fnr));
 
         String veilederId = SubjectHandler.getSubjectHandler().getUid();
         kvpRepository.stopKvp(

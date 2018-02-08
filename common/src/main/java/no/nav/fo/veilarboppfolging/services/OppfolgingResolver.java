@@ -232,11 +232,16 @@ public class OppfolgingResolver {
                 .anyMatch(status -> status != AVBRUTT && status != FULLFORT);
     }
 
+    boolean erUnderKvp() {
+        return oppfolging.getGjeldendeKvp() != null;
+    }
+
     boolean kanAvslutteOppfolging() {
         return oppfolging.isUnderOppfolging()
                 && !erUnderOppfolgingIArena()
                 && !harPagaendeYtelse()
-                && !harAktiveTiltak();
+                && !harAktiveTiltak()
+                && !erUnderKvp();
     }
 
     Date getInaktiveringsDato() {

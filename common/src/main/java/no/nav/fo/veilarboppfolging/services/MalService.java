@@ -1,5 +1,9 @@
 package no.nav.fo.veilarboppfolging.services;
 
+import lombok.SneakyThrows;
+import no.nav.apiapp.feil.Feil;
+import no.nav.apiapp.feil.IngenTilgang;
+import no.nav.apiapp.security.PepClient;
 import no.nav.fo.veilarboppfolging.db.KvpRepository;
 import no.nav.fo.veilarboppfolging.domain.Kvp;
 import no.nav.fo.veilarboppfolging.domain.MalData;
@@ -10,7 +14,9 @@ import org.springframework.stereotype.Component;
 import javax.inject.Inject;
 import java.util.List;
 
+import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
+import static no.nav.apiapp.feil.Feil.Type.INGEN_TILGANG;
 
 @Component
 public class MalService {
@@ -19,7 +25,7 @@ public class MalService {
     private OppfolgingResolverDependencies oppfolgingResolverDependencies;
 
     @Inject
-    private EnhetPepClient enhetPepClient;
+    private PepClient pepClient;
 
     @Inject
     private KvpRepository kvpRepository;
@@ -33,7 +39,7 @@ public class MalService {
         }
 
         List<Kvp> kvpList = kvpRepository.hentKvpHistorikk(resolver.getAktorId());
-        if (!KvpUtils.sjekkTilgangGittKvp(enhetPepClient, kvpList, gjeldendeMal::getDato)) {
+        if (!KvpUtils.sjekkTilgangGittKvp(pepClient, kvpList, gjeldendeMal::getDato)) {
             return new MalData();
         }
         return gjeldendeMal;
@@ -44,11 +50,25 @@ public class MalService {
         List<MalData> malList = resolver.getMalList();
 
         List<Kvp> kvpList = kvpRepository.hentKvpHistorikk(resolver.getAktorId());
-        return malList.stream().filter(mal -> KvpUtils.sjekkTilgangGittKvp(enhetPepClient, kvpList, mal::getDato)).collect(toList());
+        return malList.stream().filter(mal -> KvpUtils.sjekkTilgangGittKvp(pepClient, kvpList, mal::getDato)).collect(toList());
     }
 
     public MalData oppdaterMal(String mal, String fnr, String endretAv) {
-        return new OppfolgingResolver(fnr, oppfolgingResolverDependencies).oppdaterMal(mal, endretAv);
+        OppfolgingResolver resolver = new OppfolgingResolver(fnr, oppfolgingResolverDependencies);
+
+        Kvp kvp = kvpRepository.fetch(kvpRepository.gjeldendeKvp(resolver.getAktorId()));
+        ofNullable(kvp).ifPresent(this::sjekkEnhetTilgang);
+
+        return resolver.oppdaterMal(mal, endretAv);
+    }
+
+    @SneakyThrows
+    private void sjekkEnhetTilgang(Kvp kvp) {
+        try {
+            pepClient.sjekkTilgangTilEnhet(kvp.getEnhet());
+        } catch (IngenTilgang e) {
+            throw new Feil(INGEN_TILGANG);
+        }
     }
 
     public void slettMal(String fnr) {
