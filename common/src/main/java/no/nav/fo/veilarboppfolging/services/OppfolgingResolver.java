@@ -2,6 +2,7 @@ package no.nav.fo.veilarboppfolging.services;
 
 import lombok.Getter;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import no.nav.apiapp.feil.UlovligHandling;
 import no.nav.apiapp.security.PepClient;
@@ -29,7 +30,6 @@ import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeRequest;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeResponse;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
@@ -49,11 +49,10 @@ import static no.nav.fo.veilarboppfolging.services.ArenaUtils.erUnderOppfolging;
 import static no.nav.fo.veilarboppfolging.services.ArenaUtils.kanSettesUnderOppfolging;
 import static no.nav.fo.veilarboppfolging.vilkar.VilkarService.VilkarType.PRIVAT;
 import static no.nav.fo.veilarboppfolging.vilkar.VilkarService.VilkarType.UNDER_OPPFOLGING;
-import static org.slf4j.LoggerFactory.getLogger;
 
+@Slf4j
 public class OppfolgingResolver {
 
-    private static final Logger LOG = getLogger(OppfolgingResolver.class);
     private static final String AKTIV_YTELSE_STATUS = "Aktiv";
 
     private String fnr;
@@ -66,11 +65,6 @@ public class OppfolgingResolver {
     private WSHentYtelseskontraktListeResponse ytelser;
     private List<ArenaAktivitetDTO> arenaAktiviteter;
 
-    OppfolgingResolver(OppfolgingResolverDependencies deps) {
-        this.deps = deps;
-    }
-
-
     OppfolgingResolver(String fnr, OppfolgingResolverDependencies deps) {
         deps.getPepClient().sjekkLeseTilgangTilFnr(fnr);
 
@@ -80,6 +74,8 @@ public class OppfolgingResolver {
         this.aktorId = deps.getAktorService().getAktorId(fnr)
                 .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktør for fnr: " + fnr));
         this.oppfolging = hentOppfolging();
+
+        avsluttKvpVedEnhetBytte();
     }
 
     void reloadOppfolging() {
@@ -332,10 +328,10 @@ public class OppfolgingResolver {
                     .orElse(false);
         } catch (HentDigitalKontaktinformasjonKontaktinformasjonIkkeFunnet |
                 HentDigitalKontaktinformasjonPersonIkkeFunnet e) {
-            LOG.warn(e.getMessage(), e);
+            log.warn(e.getMessage(), e);
             return true;
         } catch (Exception e) {
-            LOG.warn(e.getMessage(), e);
+            log.warn(e.getMessage(), e);
             return false;
         }
     }
@@ -349,6 +345,18 @@ public class OppfolgingResolver {
 
     private void hentArenaAktiviteter() {
         this.arenaAktiviteter = deps.getVeilarbaktivtetService().hentArenaAktiviteter(fnr);
+    }
+
+    private void avsluttKvpVedEnhetBytte() {
+        if (erUnderKvp()) {
+            hentOppfolgingstatusFraArena();
+            statusIArena.ifPresent(st -> {
+                if (!st.getNavOppfoelgingsenhet().equals(oppfolging.getGjeldendeKvp().getEnhet())) {
+                    deps.getKvpService().stopKvp(fnr, "KVP avsluttet automatisk pga. endret Nav-enhet");
+                    reloadOppfolging();
+                }
+            });
+        }
     }
 
     @Component
@@ -384,5 +392,8 @@ public class OppfolgingResolver {
 
         @Inject
         private EskaleringsvarselService eskaleringsvarselService;
+
+        @Inject
+        private KvpService kvpService;
     }
 }
