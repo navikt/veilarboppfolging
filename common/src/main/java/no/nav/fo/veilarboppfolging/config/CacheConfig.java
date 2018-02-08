@@ -17,8 +17,14 @@ import static no.nav.sbl.dialogarena.common.abac.pep.context.AbacContext.ABAC_CA
 public class CacheConfig {
 
     public static final String HENT_ENHET = "hentEnhet";
+    public static final String HENT_ARBEIDSFORHOLD = "hentArbeidsforhold";
 
     private static final CacheConfiguration HENT_ENHET_CACHE = new CacheConfiguration(HENT_ENHET, 10000)
+            .memoryStoreEvictionPolicy(LRU)
+            .timeToIdleSeconds(3600)
+            .timeToLiveSeconds(3600);
+
+    private static final CacheConfiguration HENT_ARBEIDSFORHOLD_CACHE = new CacheConfiguration(HENT_ARBEIDSFORHOLD, 100000)
             .memoryStoreEvictionPolicy(LRU)
             .timeToIdleSeconds(3600)
             .timeToLiveSeconds(3600);
@@ -30,6 +36,7 @@ public class CacheConfig {
         config.addCache(ABAC_CACHE);
         config.addCache(AKTOR_ID_FROM_FNR_CACHE);
         config.addCache(FNR_FROM_AKTOR_ID_CACHE);
+        config.addCache(HENT_ARBEIDSFORHOLD_CACHE);
         return new EhCacheCacheManager(net.sf.ehcache.CacheManager.newInstance(config));
     }
 }

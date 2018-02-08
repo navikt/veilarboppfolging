@@ -10,12 +10,14 @@ import no.nav.tjeneste.virksomhet.arbeidsforhold.v3.informasjon.arbeidsforhold.R
 import no.nav.tjeneste.virksomhet.arbeidsforhold.v3.meldinger.FinnArbeidsforholdPrArbeidstakerRequest;
 import no.nav.tjeneste.virksomhet.arbeidsforhold.v3.meldinger.FinnArbeidsforholdPrArbeidstakerResponse;
 import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.binding.HentStartRegistreringStatusFeilVedHentingAvArbeidsforhold;
+import org.springframework.cache.annotation.Cacheable;
 
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.ForbiddenException;
 import java.util.List;
 
 import static java.util.stream.Collectors.toList;
+import static no.nav.fo.veilarboppfolging.config.CacheConfig.HENT_ARBEIDSFORHOLD;
 
 @Slf4j
 public class ArbeidsforholdService {
@@ -26,6 +28,8 @@ public class ArbeidsforholdService {
         this.arbeidsforholdV3 = arbeidsforholdV3;
     }
 
+
+    @Cacheable(HENT_ARBEIDSFORHOLD)
     public List<Arbeidsforhold> hentArbeidsforhold(String fnr) throws HentStartRegistreringStatusFeilVedHentingAvArbeidsforhold {
         FinnArbeidsforholdPrArbeidstakerRequest request = new FinnArbeidsforholdPrArbeidstakerRequest();
         Regelverker regelverker = new Regelverker();
