@@ -230,7 +230,18 @@ public class OppfolgingResolver {
     }
 
     boolean erUnderKvp() {
-        return deps.getKvpRepository().gjeldendeKvp(getAktorId()) != 0;
+        return deps.getKvpRepository().gjeldendeKvp(getAktorId()) != 0L;
+    }
+
+    boolean harSkrivetilgangTilBruker() {
+        long kvpId = deps.getKvpRepository().gjeldendeKvp(getAktorId());
+        return kvpId == 0L || tilgangTilEnhet(kvpId);
+    }
+
+    @SneakyThrows
+    private boolean tilgangTilEnhet(long kvpId) {
+        String enhet = deps.getKvpRepository().fetch(kvpId).getEnhet();
+        return deps.getPepClient().harTilgangTilEnhet(enhet);
     }
 
     boolean kanAvslutteOppfolging() {
