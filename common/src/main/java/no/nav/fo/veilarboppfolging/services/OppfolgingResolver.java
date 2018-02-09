@@ -349,10 +349,11 @@ public class OppfolgingResolver {
     }
 
     private void avsluttKvpVedEnhetBytte() {
-        if (erUnderKvp()) {
+        long kvpId = deps.getKvpRepository().gjeldendeKvp(getAktorId());
+        if (kvpId != 0) {
             hentOppfolgingstatusFraArena();
             statusIArena.ifPresent(st -> {
-                Kvp kvp = deps.getKvpRepository().fetch(deps.getKvpRepository().gjeldendeKvp(getAktorId()));
+                Kvp kvp = deps.getKvpRepository().fetch(kvpId);
                 if (!st.getNavOppfoelgingsenhet().equals(kvp.getEnhet())) {
                     String avsluttetAv = SubjectHandler.getSubjectHandler().getUid();
                     deps.getKvpRepository().stopKvp(getAktorId(), avsluttetAv, "KVP avsluttet automatisk pga. endret Nav-enhet");
