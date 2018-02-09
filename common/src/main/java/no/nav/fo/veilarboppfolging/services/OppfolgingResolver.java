@@ -230,7 +230,7 @@ public class OppfolgingResolver {
     }
 
     boolean erUnderKvp() {
-        return oppfolging.getGjeldendeKvp() != null;
+        return deps.getKvpRepository().gjeldendeKvp(getAktorId()) != 0;
     }
 
     boolean kanAvslutteOppfolging() {

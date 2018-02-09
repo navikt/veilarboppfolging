@@ -82,6 +82,7 @@ public class OppfolgingResolverTest {
     public void avslutt_kvp_ved_bytte_av_enhet() throws Exception {
         oppfolging.setGjeldendeKvp(Kvp.builder().kvpId(KVP_ID).aktorId(AKTOR_ID).enhet(ENHET).build());
         when(oppfoelgingPortTypeMock.hentOppfoelgingsstatus(any())).thenReturn(oppfolgingIArena(OTHER_ENHET));
+        when(kvpRepositoryMock.gjeldendeKvp(AKTOR_ID)).thenReturn(KVP_ID);
 
         oppfolgingResolver = new OppfolgingResolver(FNR, oppfolgingResolverDependenciesMock);
         verify(kvpRepositoryMock, times(1)).stopKvp(eq(AKTOR_ID), any(), any());
@@ -90,7 +91,7 @@ public class OppfolgingResolverTest {
     @Test
     public void ikke_avslutt_kvp_nar_enhet_ikke_byttet() throws Exception {
         oppfolging.setGjeldendeKvp(Kvp.builder().kvpId(KVP_ID).aktorId(AKTOR_ID).enhet(ENHET).build());
-        when(oppfoelgingPortTypeMock.hentOppfoelgingsstatus(any())).thenReturn(oppfolgingIArena(ENHET));
+        when(kvpRepositoryMock.gjeldendeKvp(AKTOR_ID)).thenReturn(0L);
 
         oppfolgingResolver = new OppfolgingResolver(FNR, oppfolgingResolverDependenciesMock);
         verify(kvpRepositoryMock, times(0)).stopKvp(eq(AKTOR_ID), any(), any());
