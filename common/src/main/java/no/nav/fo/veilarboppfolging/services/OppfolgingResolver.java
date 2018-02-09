@@ -352,7 +352,8 @@ public class OppfolgingResolver {
         if (erUnderKvp()) {
             hentOppfolgingstatusFraArena();
             statusIArena.ifPresent(st -> {
-                if (!st.getNavOppfoelgingsenhet().equals(oppfolging.getGjeldendeKvp().getEnhet())) {
+                Kvp kvp = deps.getKvpRepository().fetch(deps.getKvpRepository().gjeldendeKvp(getAktorId()));
+                if (!st.getNavOppfoelgingsenhet().equals(kvp.getEnhet())) {
                     String avsluttetAv = SubjectHandler.getSubjectHandler().getUid();
                     deps.getKvpRepository().stopKvp(getAktorId(), avsluttetAv, "KVP avsluttet automatisk pga. endret Nav-enhet");
                     reloadOppfolging();
