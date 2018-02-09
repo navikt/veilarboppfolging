@@ -9,6 +9,7 @@ import no.nav.apiapp.security.PepClient;
 import no.nav.brukerdialog.security.context.SubjectHandler;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
+import no.nav.fo.veilarboppfolging.db.KvpRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.fo.veilarboppfolging.utils.DateUtils;
@@ -352,7 +353,8 @@ public class OppfolgingResolver {
             hentOppfolgingstatusFraArena();
             statusIArena.ifPresent(st -> {
                 if (!st.getNavOppfoelgingsenhet().equals(oppfolging.getGjeldendeKvp().getEnhet())) {
-                    deps.getKvpService().stopKvp(fnr, "KVP avsluttet automatisk pga. endret Nav-enhet");
+                    String avsluttetAv = SubjectHandler.getSubjectHandler().getUid();
+                    deps.getKvpRepository().stopKvp(getAktorId(), avsluttetAv, "KVP avsluttet automatisk pga. endret Nav-enhet");
                     reloadOppfolging();
                 }
             });
@@ -394,6 +396,6 @@ public class OppfolgingResolver {
         private EskaleringsvarselService eskaleringsvarselService;
 
         @Inject
-        private KvpService kvpService;
+        private KvpRepository kvpRepository;
     }
 }
