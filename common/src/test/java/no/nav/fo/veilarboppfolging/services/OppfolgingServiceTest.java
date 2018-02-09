@@ -27,6 +27,7 @@ import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskont
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Answers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
@@ -75,7 +76,7 @@ public class OppfolgingServiceTest {
     @Mock
     private YtelseskontraktV3 ytelseskontraktV3;
 
-    @Mock
+    @Mock(answer = Answers.RETURNS_MOCKS)
     private OppfolgingResolver.OppfolgingResolverDependencies oppfolgingResolverDependencies;
 
     private static final String FNR = "fnr";

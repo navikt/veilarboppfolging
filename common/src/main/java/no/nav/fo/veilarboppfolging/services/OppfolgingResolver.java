@@ -9,6 +9,7 @@ import no.nav.apiapp.security.PepClient;
 import no.nav.brukerdialog.security.context.SubjectHandler;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
+import no.nav.fo.veilarboppfolging.db.KvpRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.fo.veilarboppfolging.utils.DateUtils;
@@ -229,7 +230,7 @@ public class OppfolgingResolver {
     }
 
     boolean erUnderKvp() {
-        return oppfolging.getGjeldendeKvp() != null;
+        return deps.getKvpRepository().gjeldendeKvp(getAktorId()) != 0;
     }
 
     boolean kanAvslutteOppfolging() {
@@ -348,15 +349,22 @@ public class OppfolgingResolver {
     }
 
     private void avsluttKvpVedEnhetBytte() {
-        if (erUnderKvp()) {
+        long kvpId = deps.getKvpRepository().gjeldendeKvp(getAktorId());
+        if (kvpId != 0) {
             hentOppfolgingstatusFraArena();
-            statusIArena.ifPresent(st -> {
-                if (!st.getNavOppfoelgingsenhet().equals(oppfolging.getGjeldendeKvp().getEnhet())) {
-                    deps.getKvpService().stopKvp(fnr, "KVP avsluttet automatisk pga. endret Nav-enhet");
+            statusIArena.ifPresent(status -> {
+                Kvp kvp = deps.getKvpRepository().fetch(kvpId);
+                if (brukerHarByttetKontor(status, kvp)) {
+                    String avsluttetAv = SubjectHandler.getSubjectHandler().getUid();
+                    deps.getKvpRepository().stopKvp(getAktorId(), avsluttetAv, "KVP avsluttet automatisk pga. endret Nav-enhet");
                     reloadOppfolging();
                 }
             });
         }
+    }
+
+    private boolean brukerHarByttetKontor(HentOppfoelgingsstatusResponse statusIArena, Kvp kvp) {
+        return !statusIArena.getNavOppfoelgingsenhet().equals(kvp.getEnhet());
     }
 
     @Component
@@ -394,6 +402,6 @@ public class OppfolgingResolver {
         private EskaleringsvarselService eskaleringsvarselService;
 
         @Inject
-        private KvpService kvpService;
+        private KvpRepository kvpRepository;
     }
 }
