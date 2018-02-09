@@ -349,16 +349,22 @@ public class OppfolgingResolver {
     }
 
     private void avsluttKvpVedEnhetBytte() {
-        if (erUnderKvp()) {
+        long kvpId = deps.getKvpRepository().gjeldendeKvp(getAktorId());
+        if (kvpId != 0) {
             hentOppfolgingstatusFraArena();
-            statusIArena.ifPresent(st -> {
-                if (!st.getNavOppfoelgingsenhet().equals(oppfolging.getGjeldendeKvp().getEnhet())) {
+            statusIArena.ifPresent(status -> {
+                Kvp kvp = deps.getKvpRepository().fetch(kvpId);
+                if (brukerHarByttetKontor(status, kvp)) {
                     String avsluttetAv = SubjectHandler.getSubjectHandler().getUid();
                     deps.getKvpRepository().stopKvp(getAktorId(), avsluttetAv, "KVP avsluttet automatisk pga. endret Nav-enhet");
                     reloadOppfolging();
                 }
             });
         }
+    }
+
+    private boolean brukerHarByttetKontor(HentOppfoelgingsstatusResponse statusIArena, Kvp kvp) {
+        return !statusIArena.getNavOppfoelgingsenhet().equals(kvp.getEnhet());
     }
 
     @Component
