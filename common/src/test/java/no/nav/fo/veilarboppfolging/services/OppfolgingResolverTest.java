@@ -2,6 +2,7 @@ package no.nav.fo.veilarboppfolging.services;
 
 import lombok.val;
 import no.nav.apiapp.feil.UlovligHandling;
+import no.nav.apiapp.security.PepClient;
 import no.nav.brukerdialog.security.context.ThreadLocalSubjectHandler;
 import no.nav.brukerdialog.security.domain.IdentType;
 import no.nav.dialogarena.aktor.AktorService;
@@ -10,6 +11,7 @@ import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.domain.Kvp;
 import no.nav.fo.veilarboppfolging.domain.Oppfolging;
 import no.nav.fo.veilarboppfolging.domain.Oppfolgingsperiode;
+import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingsstatusResponse;
 import org.junit.Before;
@@ -28,6 +30,7 @@ import static java.util.Optional.of;
 import static no.nav.brukerdialog.security.context.SubjectHandler.SUBJECTHANDLER_KEY;
 import static no.nav.brukerdialog.security.context.SubjectHandlerUtils.SubjectBuilder;
 import static no.nav.brukerdialog.security.context.SubjectHandlerUtils.setSubject;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -55,6 +58,9 @@ public class OppfolgingResolverTest {
     @Mock
     private OppfoelgingPortType oppfoelgingPortTypeMock;
 
+    @Mock
+    private PepClient pepClientMock;
+
     private OppfolgingResolver oppfolgingResolver;
 
     @BeforeClass
@@ -66,16 +72,46 @@ public class OppfolgingResolverTest {
     }
 
     @Before
-    public void setup() {
+    public void setup() throws Exception {
         when(oppfolgingResolverDependenciesMock.getAktorService()).thenReturn(aktorServiceMock);
         when(oppfolgingResolverDependenciesMock.getOppfolgingRepository()).thenReturn(oppfolgingRepositoryMock);
         when(oppfolgingResolverDependenciesMock.getKvpRepository()).thenReturn(kvpRepositoryMock);
         when(oppfolgingResolverDependenciesMock.getOppfoelgingPortType()).thenReturn(oppfoelgingPortTypeMock);
+        when(oppfolgingResolverDependenciesMock.getPepClient()).thenReturn(pepClientMock);
 
         when(aktorServiceMock.getAktorId(FNR)).thenReturn(of(AKTOR_ID));
         when(oppfolgingRepositoryMock.hentOppfolging(AKTOR_ID)).thenReturn(of(oppfolging));
+        when(oppfoelgingPortTypeMock.hentOppfoelgingsstatus(any())).thenReturn(oppfolgingIArena(ENHET));
 
         oppfolgingResolver = new OppfolgingResolver(FNR, oppfolgingResolverDependenciesMock);
+    }
+
+    @Test
+    public void veileder_skal_ha_skrivetilgang_til_bruker_som_ikke_er_pa_kvp() {
+        when(kvpRepositoryMock.gjeldendeKvp(AKTOR_ID)).thenReturn(0L);
+
+        oppfolgingResolver = new OppfolgingResolver(FNR, oppfolgingResolverDependenciesMock);
+        assertThat(oppfolgingResolver.harSkrivetilgangTilBruker()).isEqualTo(true);
+    }
+
+    @Test
+    public void veileder_skal_ha_skrivetilgang_tilbruker_som_er_pa_kvp_hvis_han_har_tilgang_til_enheten() throws PepException {
+        when(kvpRepositoryMock.gjeldendeKvp(AKTOR_ID)).thenReturn(KVP_ID);
+        when(kvpRepositoryMock.fetch(KVP_ID)).thenReturn(Kvp.builder().kvpId(KVP_ID).aktorId(AKTOR_ID).enhet(ENHET).build());
+        when(pepClientMock.harTilgangTilEnhet(ENHET)).thenReturn(true);
+
+        oppfolgingResolver = new OppfolgingResolver(FNR, oppfolgingResolverDependenciesMock);
+        assertThat(oppfolgingResolver.harSkrivetilgangTilBruker()).isEqualTo(true);
+    }
+
+    @Test
+    public void veilder_skal_ikke_ha_skrivetilgang_til_bruker_som_er_pa_kvp_pa_en_enhet_han_ikke_har_tilgang_til() throws PepException {
+        when(kvpRepositoryMock.gjeldendeKvp(AKTOR_ID)).thenReturn(KVP_ID);
+        when(kvpRepositoryMock.fetch(KVP_ID)).thenReturn(Kvp.builder().kvpId(KVP_ID).aktorId(AKTOR_ID).enhet(OTHER_ENHET).build());
+        when(pepClientMock.harTilgangTilEnhet(OTHER_ENHET)).thenReturn(false);
+
+        oppfolgingResolver = new OppfolgingResolver(FNR, oppfolgingResolverDependenciesMock);
+        assertThat(oppfolgingResolver.harSkrivetilgangTilBruker()).isEqualTo(false);
     }
 
     @Test

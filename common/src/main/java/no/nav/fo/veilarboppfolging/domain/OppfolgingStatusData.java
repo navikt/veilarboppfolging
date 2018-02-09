@@ -24,6 +24,7 @@ public class OppfolgingStatusData {
     public AvslutningStatusData avslutningStatusData;
     private EskaleringsvarselData gjeldendeEskaleringsvarsel;
     public List<Oppfolgingsperiode> oppfolgingsperioder = Collections.emptyList();
+    public boolean harSkriveTilgang;
 
     public Date getOppfolgingUtgang() {
         return oppfolgingsperioder.stream().map(Oppfolgingsperiode::getSluttDato).filter(Objects::nonNull).max(naturalOrder()).orElse(null);

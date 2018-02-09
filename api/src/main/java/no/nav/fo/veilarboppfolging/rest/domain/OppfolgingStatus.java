@@ -21,4 +21,5 @@ public class OppfolgingStatus {
     private boolean kanStarteOppfolging;
     private AvslutningStatus avslutningStatus;
     private List<OppfolgingPeriodeDTO> oppfolgingsPerioder;
+    private boolean harSkriveTilgang;
 }
