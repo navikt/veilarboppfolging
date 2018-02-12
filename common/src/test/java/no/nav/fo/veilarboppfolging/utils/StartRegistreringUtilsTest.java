@@ -2,6 +2,7 @@ package no.nav.fo.veilarboppfolging.utils;
 
 import no.nav.fo.veilarboppfolging.domain.Arbeidsforhold;
 import no.nav.fo.veilarboppfolging.domain.ArenaOppfolging;
+import no.nav.fo.veilarboppfolging.domain.RegistrertBruker;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
@@ -12,6 +13,7 @@ import static no.nav.fo.veilarboppfolging.TestUtils.getFodselsnummerOnDateMinusY
 import static no.nav.fo.veilarboppfolging.utils.DateUtils.erDatoEldreEnnEllerLikAar;
 import static no.nav.fo.veilarboppfolging.utils.StartRegistreringUtils.oppfyllerKravOmAutomatiskRegistrering;
 import static no.nav.fo.veilarboppfolging.utils.StartRegistreringUtils.oppfyllerKravOmInaktivitet;
+import static no.nav.fo.veilarboppfolging.utils.StartRegistreringUtils.erIkkeSelvgaende;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
 
@@ -51,5 +53,52 @@ public class StartRegistreringUtilsTest {
         Arbeidsforhold arbeidsforhold = new Arbeidsforhold();
         arbeidsforhold.setFom(LocalDate.of(2015,10,10));
         return Collections.singletonList(arbeidsforhold);
+    }
+
+    @Test
+    void brukerHarIkkeBestattUtdanning() {
+        RegistrertBruker bruker = new RegistrertBruker(
+                "nus12",
+                "12345",
+                null,
+                true,
+                "Test test oppsummering",
+                false,
+                true,
+                true,
+                false,
+                "MISTET_JOBBEN");
+        assertThat(erIkkeSelvgaende(bruker)).isTrue();
+    }
+
+    @Test
+    void brukerHarIkkeGodkjentUtdanning() {
+        RegistrertBruker bruker = new RegistrertBruker(
+                "nus12",
+                "12345",
+                null,
+                true,
+                "Test test oppsummering",
+                true,
+                false,
+                true,
+                false,
+                "MISTET_JOBBEN");
+        assertThat(erIkkeSelvgaende(bruker)).isTrue();
+    }
+    @Test
+    void brukerHarIkkeJobbetSammenhengende() {
+        RegistrertBruker bruker = new RegistrertBruker(
+                "nus12",
+                "12345",
+                null,
+                true,
+                "Test test oppsummering",
+                true,
+                true,
+                false,
+                false,
+                "MISTET_JOBBEN");
+        assertThat(erIkkeSelvgaende(bruker)).isTrue();
     }
 }
