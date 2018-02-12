@@ -31,8 +31,4 @@ public class StartRegistreringService {
             RegistrerBrukerSikkerhetsbegrensning, HentStartRegistreringStatusFeilVedHentingAvArbeidsforhold {
         return startRegistreringStatusResolver.hentStartRegistreringStatus(fnr);
     }
-
-    public RegistreringBruker registrerBruker(RegistreringBruker registreringBruker, String fnr) throws RegistrerBrukerSikkerhetsbegrensning {
-        return startRegistreringStatusResolver.registrerBruker(registreringBruker, fnr);
-    }
 }

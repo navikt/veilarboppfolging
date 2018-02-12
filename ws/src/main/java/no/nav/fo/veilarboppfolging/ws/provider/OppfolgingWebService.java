@@ -7,6 +7,7 @@ import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.fo.veilarboppfolging.service.ReservertKrrService;
 import no.nav.fo.veilarboppfolging.services.MalService;
 import no.nav.fo.veilarboppfolging.services.OppfolgingService;
+import no.nav.fo.veilarboppfolging.services.registrerBruker.RegistrerBrukerService;
 import no.nav.fo.veilarboppfolging.services.startregistrering.StartRegistreringService;
 import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.HentReservertKrrRequest;
 import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.HentReservertKrrResponse;
@@ -32,17 +33,20 @@ public class OppfolgingWebService implements BehandleOppfolgingV1 {
 
     private OppfolgingService oppfolgingService;
     private StartRegistreringService startRegistreringService;
+    private RegistrerBrukerService registrerBrukerService;
     private ReservertKrrService reservertKrrService;
     private MalService malService;
 
     public OppfolgingWebService(
             OppfolgingService oppfolgingService,
             StartRegistreringService startRegistreringService,
+            RegistrerBrukerService registrerBrukerService,
             ReservertKrrService reservertKrrService,
             MalService malService) {
 
         this.startRegistreringService = startRegistreringService;
         this.oppfolgingService = oppfolgingService;
+        this.registrerBrukerService = registrerBrukerService;
         this.reservertKrrService = reservertKrrService;
         this.malService = malService;
     }
@@ -262,7 +266,7 @@ public class OppfolgingWebService implements BehandleOppfolgingV1 {
     @Override
     public RegistrerBrukerResponse registrerBruker(RegistrerBrukerRequest request) throws RegistrerBrukerSikkerhetsbegrensning {
         RegistreringBruker registreringBruker = mapRegistreringBruker(request);
-        RegistreringBruker bruker = startRegistreringService.registrerBruker(registreringBruker, request.getFnr());
+        RegistreringBruker bruker = registrerBrukerService.registrerBruker(registreringBruker, request.getFnr());
         return mapRegistrerBrukerResponse(bruker);
     }
 

@@ -76,16 +76,6 @@ public class StartRegistreringStatusResolver {
                 .setOppfyllerKravForAutomatiskRegistrering(oppfyllerKrav);
     }
 
-    public RegistreringBruker registrerBruker(RegistreringBruker bruker, String fnr) throws RegistrerBrukerSikkerhetsbegrensning {
-
-        sjekkLesetilgangOrElseThrow(fnr, pepClient, (t) -> getHentStartRegistreringStatusSikkerhetsbegrensning());
-
-        AktorId aktorId = FnrUtils.getAktorIdOrElseThrow(aktorService, fnr);
-
-        return arbeidssokerregistreringRepository.registrerBruker(bruker, aktorId);
-    }
-
-
     private Optional<ArenaOppfolging> hentOppfolgingsstatusFraArena(String fnr) throws HentStartRegistreringStatusFeilVedHentingAvStatusFraArena {
         return Try.of(() -> arenaOppfolgingService.hentArenaOppfolging(fnr))
                 .map(Optional::of)

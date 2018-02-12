@@ -8,6 +8,7 @@ import no.nav.fo.veilarboppfolging.service.ReservertKrrService;
 import no.nav.fo.veilarboppfolging.services.ArbeidsforholdService;
 import no.nav.fo.veilarboppfolging.services.ArenaOppfolgingService;
 import no.nav.fo.veilarboppfolging.services.DigitalKontaktinformasjonService;
+import no.nav.fo.veilarboppfolging.services.registrerBruker.RegistrerBrukerService;
 import no.nav.fo.veilarboppfolging.services.startregistrering.StartRegistreringService;
 import no.nav.tjeneste.virksomhet.arbeidsforhold.v3.binding.ArbeidsforholdV3;
 import org.springframework.context.annotation.Bean;
@@ -28,6 +29,12 @@ public class ServiceConfigWS {
                                                       ArenaOppfolgingService arenaOppfolgingService,
                                                       ArbeidsforholdService arbeidsforholdService) {
         return new StartRegistreringService(arbeidssokerregistreringRepository, pepClient, aktorService, arenaOppfolgingService, arbeidsforholdService);
+    }
+
+    @Bean
+    RegistrerBrukerService registrerBrukerService(ArbeidssokerregistreringRepository arbeidssokerregistreringRepository,
+                                                  PepClient  pepClient, AktorService aktorService) {
+        return new RegistrerBrukerService(arbeidssokerregistreringRepository, pepClient, aktorService);
     }
 
     @Bean
