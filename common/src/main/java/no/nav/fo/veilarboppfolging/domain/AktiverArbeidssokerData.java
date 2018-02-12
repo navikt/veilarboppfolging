@@ -1,11 +1,9 @@
 package no.nav.fo.veilarboppfolging.domain;
 
-import lombok.Data;
-import lombok.experimental.Accessors;
+import lombok.Value;
 
-@Data
-@Accessors(chain = true)
+@Value
 public class AktiverArbeidssokerData {
-    private Fnr fnr;
-    private String kvalifiseringsgruppekode;
+    Fnr fnr;
+    String kvalifiseringsgruppekode;
 }

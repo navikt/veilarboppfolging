@@ -21,7 +21,7 @@ public class AktiverArbeidssokerServiceTest {
 
     @BeforeEach
     public void setup() {
-        aktiverArbeidssokerData = new AktiverArbeidssokerData().setFnr(new Fnr("fnr")).setKvalifiseringsgruppekode("kval");
+        aktiverArbeidssokerData = new AktiverArbeidssokerData(new Fnr("fnr"), "kval");
         behandleArbeidssoekerV1 = mock(BehandleArbeidssoekerV1.class);
         aktiverArbeidssokerService = new AktiverArbeidssokerService(behandleArbeidssoekerV1);
     }
