@@ -5,7 +5,7 @@ import no.nav.apiapp.security.PepClient;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.db.ArbeidssokerregistreringRepository;
 import no.nav.fo.veilarboppfolging.domain.AktorId;
-import no.nav.fo.veilarboppfolging.domain.RegistreringBruker;
+import no.nav.fo.veilarboppfolging.domain.RegistrertBruker;
 import no.nav.fo.veilarboppfolging.utils.FnrUtils;
 import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.binding.RegistrerBrukerSikkerhetsbegrensning;
 import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.feil.Sikkerhetsbegrensning;
@@ -26,7 +26,7 @@ public class RegistrerBrukerService {
         this.aktorService = aktorService;
     }
 
-    public RegistreringBruker registrerBruker(RegistreringBruker bruker, String fnr) throws RegistrerBrukerSikkerhetsbegrensning {
+    public RegistrertBruker registrerBruker(RegistrertBruker bruker, String fnr) throws RegistrerBrukerSikkerhetsbegrensning {
         sjekkLesetilgangOrElseThrow(fnr, pepClient, (t) -> getHentStartRegistreringStatusSikkerhetsbegrensning());
 
         AktorId aktorId = FnrUtils.getAktorIdOrElseThrow(aktorService, fnr);

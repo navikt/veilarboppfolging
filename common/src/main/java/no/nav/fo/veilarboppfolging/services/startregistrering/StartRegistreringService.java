@@ -4,7 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.apiapp.security.PepClient;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.db.ArbeidssokerregistreringRepository;
-import no.nav.fo.veilarboppfolging.domain.RegistreringBruker;
 import no.nav.fo.veilarboppfolging.domain.StartRegistreringStatus;
 import no.nav.fo.veilarboppfolging.services.ArbeidsforholdService;
 import no.nav.fo.veilarboppfolging.services.ArenaOppfolgingService;

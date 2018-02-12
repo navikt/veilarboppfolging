@@ -1,10 +1,12 @@
 package no.nav.fo.veilarboppfolging.db;
 
 import no.nav.fo.veilarboppfolging.domain.AktorId;
-import no.nav.fo.veilarboppfolging.domain.RegistreringBruker;
+import no.nav.fo.veilarboppfolging.domain.RegistrertBruker;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
+
+import java.util.Date;
 
 import static no.nav.fo.veilarboppfolging.config.JndiLocalContextConfig.setupInMemoryDatabase;
 import static org.assertj.core.api.Java6Assertions.assertThat;
@@ -44,19 +46,21 @@ public class ArbeidssokerregistreringRepositoryTest {
     @Test
     public void registrerBruker() {
 
+        Date opprettetDato = new Date(System.currentTimeMillis());
         AktorId aktorId = new AktorId("11111");
-        RegistreringBruker bruker = new RegistreringBruker()
-                .setNusKode("123")
-                .setYrkesPraksis("12345")
-                .setEnigIOppsummering(true)
-                .setOppsummering("Test test oppsummering")
-                .setUtdanningBestatt(true)
-                .setUtdanningGodkjentNorge(true)
-                .setHarJobbetSammenhengende(true)
-                .setHarHelseutfordringer(true)
-                .setSituasjon("MISTET_JOBB");
+        RegistrertBruker bruker = new RegistrertBruker(
+          "nus12",
+          "12345",
+          opprettetDato,
+          true,
+          "Test test oppsummering",
+          true,
+          true,
+          true,
+          false,
+                "MISTET_JOBBEN");
 
-        RegistreringBruker registrertBruker = arbeidssokerregistreringRepository.registrerBruker(bruker, aktorId);
+        RegistrertBruker registrertBruker = arbeidssokerregistreringRepository.registrerBruker(bruker, aktorId);
 
         assertThat(registrertBruker.getNusKode()).isEqualTo(bruker.getNusKode());
         assertThat(registrertBruker.getYrkesPraksis()).isEqualTo(bruker.getYrkesPraksis());

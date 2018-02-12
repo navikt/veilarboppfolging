@@ -2,7 +2,7 @@ package no.nav.fo.veilarboppfolging.db;
 
 import lombok.SneakyThrows;
 import no.nav.fo.veilarboppfolging.domain.AktorId;
-import no.nav.fo.veilarboppfolging.domain.RegistreringBruker;
+import no.nav.fo.veilarboppfolging.domain.RegistrertBruker;
 import no.nav.sbl.sql.DbConstants;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
@@ -45,7 +45,7 @@ public class ArbeidssokerregistreringRepository {
                 .execute()).orElse(false);
     }
 
-    public RegistreringBruker registrerBruker(RegistreringBruker bruker, AktorId aktorId) {
+    public RegistrertBruker registrerBruker(RegistrertBruker bruker, AktorId aktorId) {
         long id = nesteFraSekvens(BRUKER_REGISTRERING_SEQ);
         SqlUtils.insert(db, BRUKER_REGISTRERING)
                 .value(BRUKER_REGISTRERING_ID, id)
@@ -78,17 +78,17 @@ public class ArbeidssokerregistreringRepository {
     }
 
     @SneakyThrows
-    private static RegistreringBruker brukerRegistreringMapper(ResultSet rs) {
-        return new RegistreringBruker()
-                .setNusKode(rs.getString(NUS_KODE))
-                .setYrkesPraksis(rs.getString(YRKESPRAKSIS))
-                .setOpprettetDato(rs.getDate(OPPRETTET_DATO))
-                .setEnigIOppsummering(rs.getBoolean(ENIG_I_OPPSUMMERING))
-                .setOppsummering(rs.getString(OPPSUMMERING))
-                .setUtdanningBestatt(rs.getBoolean(UTDANNING_BESTATT))
-                .setUtdanningGodkjentNorge(rs.getBoolean(UTDANNING_GODKJENT_NORGE))
-                .setHarJobbetSammenhengende(rs.getBoolean(HAR_JOBBET_SAMMENHENGENDE))
-                .setHarHelseutfordringer(rs.getBoolean(HAR_HELSEUTFORDRINGER))
-                .setSituasjon(rs.getString(SITUASJON));
+    private static RegistrertBruker brukerRegistreringMapper(ResultSet rs) {
+        return new RegistrertBruker(
+                rs.getString(NUS_KODE),
+                rs.getString(YRKESPRAKSIS),
+                rs.getDate(OPPRETTET_DATO),
+                rs.getBoolean(ENIG_I_OPPSUMMERING),
+                rs.getString(OPPSUMMERING),
+                rs.getBoolean(UTDANNING_BESTATT),
+                rs.getBoolean(UTDANNING_GODKJENT_NORGE),
+                rs.getBoolean(HAR_JOBBET_SAMMENHENGENDE),
+                rs.getBoolean(HAR_HELSEUTFORDRINGER),
+                rs.getString(SITUASJON));
     }
 }

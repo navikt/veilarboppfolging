@@ -265,12 +265,12 @@ public class OppfolgingWebService implements BehandleOppfolgingV1 {
 
     @Override
     public RegistrerBrukerResponse registrerBruker(RegistrerBrukerRequest request) throws RegistrerBrukerSikkerhetsbegrensning {
-        RegistreringBruker registreringBruker = mapRegistreringBruker(request);
-        RegistreringBruker bruker = registrerBrukerService.registrerBruker(registreringBruker, request.getFnr());
+        RegistrertBruker registrertBruker = mapRegistreringBruker(request);
+        RegistrertBruker bruker = registrerBrukerService.registrerBruker(registrertBruker, request.getFnr());
         return mapRegistrerBrukerResponse(bruker);
     }
 
-    private RegistrerBrukerResponse mapRegistrerBrukerResponse(RegistreringBruker bruker) {
+    private RegistrerBrukerResponse mapRegistrerBrukerResponse(RegistrertBruker bruker) {
         RegistrerBrukerResponse response = new RegistrerBrukerResponse();
         response.setNusKode(bruker.getNusKode());
         response.setYrkesPraksis(bruker.getYrkesPraksis());
@@ -283,17 +283,19 @@ public class OppfolgingWebService implements BehandleOppfolgingV1 {
         response.setSituasjon(bruker.getSituasjon());
         return response;
     }
-    private RegistreringBruker mapRegistreringBruker(RegistrerBrukerRequest request) {
-        RegistreringBruker bruker = new RegistreringBruker();
-        bruker.setNusKode(request.getNusKode());
-        bruker.setYrkesPraksis(request.getYrkesPraksis());
-        bruker.setEnigIOppsummering(request.isEnigIOppsummering());
-        bruker.setOppsummering(request.getOppsummering());
-        bruker.setUtdanningBestatt(request.isUtdanningBestatt());
-        bruker.setUtdanningGodkjentNorge(request.isUtdanningGodkjentNorge());
-        bruker.setHarHelseutfordringer(request.isHarHelseutfordringer());
-        bruker.setHarJobbetSammenhengende(request.isHarJobbetSammenhengende());
-        bruker.setSituasjon(request.getSituasjon());
+    private RegistrertBruker mapRegistreringBruker(RegistrerBrukerRequest request) {
+        RegistrertBruker bruker = new RegistrertBruker(
+                request.getNusKode(),
+                request.getYrkesPraksis(),
+                null,
+                request.isEnigIOppsummering(),
+                request.getOppsummering(),
+                request.isUtdanningBestatt(),
+                request.isUtdanningGodkjentNorge(),
+                request.isHarHelseutfordringer(),
+                request.isHarJobbetSammenhengende(),
+                request.getSituasjon()
+        );
         return bruker;
     }
 }
