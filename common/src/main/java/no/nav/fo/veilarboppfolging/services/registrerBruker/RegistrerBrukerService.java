@@ -46,7 +46,7 @@ public class RegistrerBrukerService {
         RegistrertBruker registrertBruker = null;
 
         StartRegistreringStatus startRegistreringStatus = startRegistreringStatusResolver.hentStartRegistreringStatus(fnr);
-        if(erIkkeSelvgaende(bruker) &&
+        if(!erIkkeSelvgaende(bruker) &&
                 (!startRegistreringStatus.isUnderOppfolging() &&
                         startRegistreringStatus.isOppfyllerKravForAutomatiskRegistrering())) {
             registrertBruker = arbeidssokerregistreringRepository.registrerBruker(bruker, aktorId);

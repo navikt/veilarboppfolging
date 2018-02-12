@@ -266,7 +266,12 @@ public class OppfolgingWebService implements BehandleOppfolgingV1 {
     @Override
     public RegistrerBrukerResponse registrerBruker(RegistrerBrukerRequest request) throws RegistrerBrukerSikkerhetsbegrensning {
         RegistrertBruker registrertBruker = mapRegistreringBruker(request);
-        RegistrertBruker bruker = registrerBrukerService.registrerBruker(registrertBruker, request.getFnr());
+        RegistrertBruker bruker = null;
+        try {
+            bruker = registrerBrukerService.registrerBruker(registrertBruker, request.getFnr());
+        } catch (HentStartRegistreringStatusFeilVedHentingAvStatusFraArena | HentStartRegistreringStatusFeilVedHentingAvArbeidsforhold hentStartRegistreringStatusFeilVedHentingAvStatusFraArena) {
+            hentStartRegistreringStatusFeilVedHentingAvStatusFraArena.printStackTrace();
+        }
         return mapRegistrerBrukerResponse(bruker);
     }
 
