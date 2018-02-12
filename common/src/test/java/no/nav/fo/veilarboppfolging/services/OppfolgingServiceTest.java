@@ -1,10 +1,13 @@
 package no.nav.fo.veilarboppfolging.services;
 
+import io.vavr.collection.Stream;
 import lombok.SneakyThrows;
 import lombok.val;
 import no.nav.apiapp.feil.IngenTilgang;
 import no.nav.apiapp.security.PepClient;
 import no.nav.dialogarena.aktor.AktorService;
+import no.nav.fo.veilarbaktivitet.domain.AktivitetStatus;
+import no.nav.fo.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.fo.veilarboppfolging.vilkar.VilkarService;
@@ -17,18 +20,26 @@ import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.WSHentD
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingsstatusRequest;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingsstatusResponse;
+import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3;
+import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt.WSYtelseskontrakt;
+import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeRequest;
+import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeResponse;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Answers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.Optional;
 
 import static java.lang.System.currentTimeMillis;
+import static java.util.Arrays.asList;
 import static java.util.Optional.of;
+import static java.util.stream.Collectors.toList;
 import static no.nav.fo.veilarboppfolging.domain.KodeverkBruker.NAV;
 import static no.nav.fo.veilarboppfolging.domain.VilkarStatus.*;
 import static org.hamcrest.Matchers.equalTo;
@@ -60,6 +71,12 @@ public class OppfolgingServiceTest {
     private PepClient pepClientMock;
 
     @Mock
+    private VeilarbaktivtetService veilarbaktivtetService;
+
+    @Mock
+    private YtelseskontraktV3 ytelseskontraktV3;
+
+    @Mock(answer = Answers.RETURNS_MOCKS)
     private OppfolgingResolver.OppfolgingResolverDependencies oppfolgingResolverDependencies;
 
     private static final String FNR = "fnr";
@@ -96,6 +113,8 @@ public class OppfolgingServiceTest {
         when(oppfolgingResolverDependencies.getDigitalKontaktinformasjonV1()).thenReturn(digitalKontaktinformasjonV1Mock);
         when(oppfolgingResolverDependencies.getVilkarService()).thenReturn(vilkarServiceMock);
         when(oppfolgingResolverDependencies.getPepClient()).thenReturn(pepClientMock);
+        when(oppfolgingResolverDependencies.getVeilarbaktivtetService()).thenReturn(veilarbaktivtetService);
+        when(oppfolgingResolverDependencies.getYtelseskontraktV3()).thenReturn(ytelseskontraktV3);
         gittOppfolgingStatus("", "");
     }
 
@@ -327,6 +346,60 @@ public class OppfolgingServiceTest {
         verifyZeroInteractions(oppfoelgingPortTypeMock);
     }
 
+    @Test
+    public void kanIkkeAvslutteNarManIkkeErUnderOppfolging() throws Exception {
+        gittAktor();
+        gittOppfolging(oppfolging.setUnderOppfolging(false));
+        gittYtelserMedStatus();
+
+        OppfolgingStatusData oppfolgingStatusData = oppfolgingService.hentAvslutningStatus(FNR);
+        AvslutningStatusData avslutningStatusData = oppfolgingStatusData.avslutningStatusData;
+
+        assertThat(avslutningStatusData.kanAvslutte, is(false));
+    }
+
+    @Test
+    public void kanIkkeAvslutteNarManIkkeErUnderOppfolgingIArena() throws Exception {
+        gittAktor();
+        gittOppfolging(oppfolging.setUnderOppfolging(true));
+        gittOppfolgingStatus("ARBS", null);
+        gittYtelserMedStatus();
+
+        OppfolgingStatusData oppfolgingStatusData = oppfolgingService.hentAvslutningStatus(FNR);
+        AvslutningStatusData avslutningStatusData = oppfolgingStatusData.avslutningStatusData;
+
+        assertThat(avslutningStatusData.kanAvslutte, is(false));
+    }
+
+    @Test
+    public void kanIkkeAvslutteMedAktiveTiltak() throws Exception {
+        gittAktor();
+        gittOppfolging(oppfolging.setUnderOppfolging(true));
+        gittOppfolgingStatus("IARBS", "VURDI");
+        gittAktiveTiltak();
+        gittYtelserMedStatus();
+
+        OppfolgingStatusData oppfolgingStatusData = oppfolgingService.hentAvslutningStatus(FNR);
+        AvslutningStatusData avslutningStatusData = oppfolgingStatusData.avslutningStatusData;
+
+        assertThat(avslutningStatusData.kanAvslutte, is(false));
+    }
+
+    @Test
+    public void kanAvslutteMedVarselOmAktiveYtelser() throws Exception {
+        gittAktor();
+        gittOppfolging(oppfolging.setUnderOppfolging(true));
+        gittOppfolgingStatus("IARBS", "VURDI");
+        gittIngenAktiveTiltak();
+        gittYtelserMedStatus("Inaktiv", "Aktiv");
+
+        OppfolgingStatusData oppfolgingStatusData = oppfolgingService.hentAvslutningStatus(FNR);
+        AvslutningStatusData avslutningStatusData = oppfolgingStatusData.avslutningStatusData;
+
+        assertThat(avslutningStatusData.kanAvslutte, is(false));
+        assertThat(avslutningStatusData.harYtelser, is(true));
+    }
+
     private void besvarVilkar(VilkarStatus vilkarStatus, Brukervilkar vilkar) {
         gittOppfolging(oppfolging.setGjeldendeBrukervilkar(
                 new Brukervilkar(
@@ -372,4 +445,39 @@ public class OppfolgingServiceTest {
         when(digitalKontaktinformasjonV1Mock.hentDigitalKontaktinformasjon(any(WSHentDigitalKontaktinformasjonRequest.class))).thenThrow(aClass);
     }
 
+    private void gittAktiveTiltak() {
+        when(veilarbaktivtetService.hentArenaAktiviteter(FNR)).thenReturn(
+                asList(
+                        new ArenaAktivitetDTO().setStatus(AktivitetStatus.GJENNOMFORES),
+                        new ArenaAktivitetDTO().setStatus(AktivitetStatus.PLANLAGT)
+                )
+        );
+    }
+
+    private void gittIngenAktiveTiltak() {
+        when(veilarbaktivtetService.hentArenaAktiviteter(FNR)).thenReturn(
+                asList(
+                        new ArenaAktivitetDTO().setStatus(AktivitetStatus.AVBRUTT),
+                        new ArenaAktivitetDTO().setStatus(AktivitetStatus.FULLFORT)
+                )
+        );
+    }
+
+    private void gittYtelserMedStatus(String... statuser) throws Exception {
+        WSHentYtelseskontraktListeRequest request = new WSHentYtelseskontraktListeRequest();
+        request.setPersonidentifikator(FNR);
+        WSHentYtelseskontraktListeResponse response = new WSHentYtelseskontraktListeResponse();
+
+        List<WSYtelseskontrakt> ytelser = Stream.of(statuser)
+                .map((status) -> {
+                    WSYtelseskontrakt ytelse = new WSYtelseskontrakt();
+                    ytelse.setStatus(status);
+                    return ytelse;
+                })
+                .collect(toList());
+
+        response.getYtelseskontraktListe().addAll(ytelser);
+
+        when(ytelseskontraktV3.hentYtelseskontraktListe(request)).thenReturn(response);
+    }
 }
