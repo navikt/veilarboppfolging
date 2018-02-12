@@ -2,7 +2,7 @@ package no.nav.fo.veilarboppfolging.db;
 
 import lombok.SneakyThrows;
 import no.nav.fo.veilarboppfolging.domain.AktorId;
-import no.nav.fo.veilarboppfolging.domain.BrukerRegistrering;
+import no.nav.fo.veilarboppfolging.domain.RegistreringBruker;
 import no.nav.sbl.sql.DbConstants;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
@@ -45,11 +45,11 @@ public class ArbeidssokerregistreringRepository {
                 .execute()).orElse(false);
     }
 
-    public BrukerRegistrering registrerBruker(BrukerRegistrering bruker) {
+    public RegistreringBruker registrerBruker(RegistreringBruker bruker, AktorId aktorId) {
         long id = nesteFraSekvens(BRUKER_REGISTRERING_SEQ);
         SqlUtils.insert(db, BRUKER_REGISTRERING)
                 .value(BRUKER_REGISTRERING_ID, id)
-                .value(AKTOR_ID, bruker.getAktorId())
+                .value(AKTOR_ID, aktorId.getAktorId())
                 .value(OPPRETTET_DATO, DbConstants.CURRENT_TIMESTAMP)
                 .value(NUS_KODE, bruker.getNusKode())
                 .value(YRKESPRAKSIS, bruker.getYrkesPraksis())
@@ -63,7 +63,7 @@ public class ArbeidssokerregistreringRepository {
                 .execute();
 
         return SqlUtils.select(db.getDataSource(), BRUKER_REGISTRERING, ArbeidssokerregistreringRepository::brukerRegistreringMapper)
-                .where(WhereClause.equals(AKTOR_ID, bruker.getAktorId()))
+                .where(WhereClause.equals(AKTOR_ID, aktorId.getAktorId()))
                 .column("*")
                 .execute();
     }
@@ -78,9 +78,8 @@ public class ArbeidssokerregistreringRepository {
     }
 
     @SneakyThrows
-    private static BrukerRegistrering brukerRegistreringMapper(ResultSet rs) {
-        return new BrukerRegistrering()
-                .setAktorId(rs.getString(AKTOR_ID))
+    private static RegistreringBruker brukerRegistreringMapper(ResultSet rs) {
+        return new RegistreringBruker()
                 .setNusKode(rs.getString(NUS_KODE))
                 .setYrkesPraksis(rs.getString(YRKESPRAKSIS))
                 .setOpprettetDato(rs.getDate(OPPRETTET_DATO))

@@ -6,16 +6,13 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.apiapp.security.PepClient;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.db.ArbeidssokerregistreringRepository;
-import no.nav.fo.veilarboppfolging.domain.AktorId;
-import no.nav.fo.veilarboppfolging.domain.Arbeidsforhold;
-import no.nav.fo.veilarboppfolging.domain.ArenaOppfolging;
-import no.nav.fo.veilarboppfolging.domain.StartRegistreringStatus;
+import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.fo.veilarboppfolging.services.ArbeidsforholdService;
 import no.nav.fo.veilarboppfolging.services.ArenaOppfolgingService;
 import no.nav.fo.veilarboppfolging.utils.FnrUtils;
 import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.binding.HentStartRegistreringStatusFeilVedHentingAvArbeidsforhold;
 import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.binding.HentStartRegistreringStatusFeilVedHentingAvStatusFraArena;
-import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.binding.HentStartRegistreringStatusSikkerhetsbegrensning;
+import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.binding.RegistrerBrukerSikkerhetsbegrensning;
 import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.feil.FeilVedHentingAvArbeidsforhold;
 import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.feil.FeilVedHentingAvStatusIArena;
 import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.feil.Sikkerhetsbegrensning;
@@ -49,7 +46,7 @@ public class StartRegistreringStatusResolver {
         this.arbeidsforholdService = arbeidsforholdService;
     }
 
-    public StartRegistreringStatus hentStartRegistreringStatus(String fnr) throws HentStartRegistreringStatusSikkerhetsbegrensning,
+    public StartRegistreringStatus hentStartRegistreringStatus(String fnr) throws RegistrerBrukerSikkerhetsbegrensning,
             HentStartRegistreringStatusFeilVedHentingAvStatusFraArena, HentStartRegistreringStatusFeilVedHentingAvArbeidsforhold {
 
         sjekkLesetilgangOrElseThrow(fnr, pepClient, (t) -> getHentStartRegistreringStatusSikkerhetsbegrensning());
@@ -79,6 +76,16 @@ public class StartRegistreringStatusResolver {
                 .setOppfyllerKravForAutomatiskRegistrering(oppfyllerKrav);
     }
 
+    public RegistreringBruker registrerBruker(RegistreringBruker bruker, String fnr) throws RegistrerBrukerSikkerhetsbegrensning {
+
+        sjekkLesetilgangOrElseThrow(fnr, pepClient, (t) -> getHentStartRegistreringStatusSikkerhetsbegrensning());
+
+        AktorId aktorId = FnrUtils.getAktorIdOrElseThrow(aktorService, fnr);
+
+        return arbeidssokerregistreringRepository.registrerBruker(bruker, aktorId);
+    }
+
+
     private Optional<ArenaOppfolging> hentOppfolgingsstatusFraArena(String fnr) throws HentStartRegistreringStatusFeilVedHentingAvStatusFraArena {
         return Try.of(() -> arenaOppfolgingService.hentArenaOppfolging(fnr))
                 .map(Optional::of)
@@ -104,12 +111,18 @@ public class StartRegistreringStatusResolver {
                 });
     }
 
-    private HentStartRegistreringStatusSikkerhetsbegrensning getHentStartRegistreringStatusSikkerhetsbegrensning() {
+    private RegistrerBrukerSikkerhetsbegrensning getHentStartRegistreringStatusSikkerhetsbegrensning() {
+        Sikkerhetsbegrensning sikkerhetsbegrensning = getSikkerhetsbegrensning();
+        return new RegistrerBrukerSikkerhetsbegrensning("Kunne ikke gi tilgang etter kall til ABAC", sikkerhetsbegrensning);
+    }
+
+
+    private Sikkerhetsbegrensning getSikkerhetsbegrensning() {
         Sikkerhetsbegrensning sikkerhetsbegrensning = new Sikkerhetsbegrensning();
         sikkerhetsbegrensning.setFeilaarsak("ABAC");
         sikkerhetsbegrensning.setFeilkilde("ABAC");
         sikkerhetsbegrensning.setFeilmelding("Ingen tilgang");
         sikkerhetsbegrensning.setTidspunkt(now());
-        return new HentStartRegistreringStatusSikkerhetsbegrensning("Kunne ikke gi tilgang etter kall til ABAC", sikkerhetsbegrensning);
+        return sikkerhetsbegrensning;
     }
 }

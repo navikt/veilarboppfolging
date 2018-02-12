@@ -241,7 +241,7 @@ public class OppfolgingWebService implements BehandleOppfolgingV1 {
     }
 
     @Override
-    public StartRegistreringStatusResponse hentStartRegistreringStatus(StartRegistreringStatusRequest startRegistreringStatusRequest) throws HentStartRegistreringStatusSikkerhetsbegrensning,
+    public StartRegistreringStatusResponse hentStartRegistreringStatus(StartRegistreringStatusRequest startRegistreringStatusRequest) throws RegistrerBrukerSikkerhetsbegrensning,
             HentStartRegistreringStatusFeilVedHentingAvStatusFraArena,
             HentStartRegistreringStatusFeilVedHentingAvArbeidsforhold {
 
@@ -257,5 +257,39 @@ public class OppfolgingWebService implements BehandleOppfolgingV1 {
     public HentReservertKrrResponse hentReservertKrr(HentReservertKrrRequest request) {
         return reservertKrrService.hentReservertKrr(request.getFnr());
 
+    }
+
+    @Override
+    public RegistrerBrukerResponse registrerBruker(RegistrerBrukerRequest request) throws RegistrerBrukerSikkerhetsbegrensning {
+        RegistreringBruker registreringBruker = mapRegistreringBruker(request);
+        RegistreringBruker bruker = startRegistreringService.registrerBruker(registreringBruker, request.getFnr());
+        return mapRegistrerBrukerResponse(bruker);
+    }
+
+    private RegistrerBrukerResponse mapRegistrerBrukerResponse(RegistreringBruker bruker) {
+        RegistrerBrukerResponse response = new RegistrerBrukerResponse();
+        response.setNusKode(bruker.getNusKode());
+        response.setYrkesPraksis(bruker.getYrkesPraksis());
+        response.setEnigIOppsummering(bruker.isEnigIOppsummering());
+        response.setOppsummering(bruker.getOppsummering());
+        response.setUtdanningBestatt(bruker.isUtdanningBestatt());
+        response.setUtdanningGodkjentNorge(bruker.isUtdanningGodkjentNorge());
+        response.setHarHelseutfordringer(bruker.isHarHelseutfordringer());
+        response.setHarJobbetSammenhengende(bruker.isHarJobbetSammenhengende());
+        response.setSituasjon(bruker.getSituasjon());
+        return response;
+    }
+    private RegistreringBruker mapRegistreringBruker(RegistrerBrukerRequest request) {
+        RegistreringBruker bruker = new RegistreringBruker();
+        bruker.setNusKode(request.getNusKode());
+        bruker.setYrkesPraksis(request.getYrkesPraksis());
+        bruker.setEnigIOppsummering(request.isEnigIOppsummering());
+        bruker.setOppsummering(request.getOppsummering());
+        bruker.setUtdanningBestatt(request.isUtdanningBestatt());
+        bruker.setUtdanningGodkjentNorge(request.isUtdanningGodkjentNorge());
+        bruker.setHarHelseutfordringer(request.isHarHelseutfordringer());
+        bruker.setHarJobbetSammenhengende(request.isHarJobbetSammenhengende());
+        bruker.setSituasjon(request.getSituasjon());
+        return bruker;
     }
 }
