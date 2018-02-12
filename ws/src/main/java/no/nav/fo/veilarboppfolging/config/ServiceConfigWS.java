@@ -33,8 +33,11 @@ public class ServiceConfigWS {
 
     @Bean
     RegistrerBrukerService registrerBrukerService(ArbeidssokerregistreringRepository arbeidssokerregistreringRepository,
-                                                  PepClient  pepClient, AktorService aktorService) {
-        return new RegistrerBrukerService(arbeidssokerregistreringRepository, pepClient, aktorService);
+                                                  PepClient pepClient,
+                                                  AktorService aktorService,
+                                                  ArenaOppfolgingService arenaOppfolgingService,
+                                                  ArbeidsforholdService arbeidsforholdService) {
+        return new RegistrerBrukerService(arbeidssokerregistreringRepository, pepClient, aktorService, arenaOppfolgingService, arbeidsforholdService);
     }
 
     @Bean

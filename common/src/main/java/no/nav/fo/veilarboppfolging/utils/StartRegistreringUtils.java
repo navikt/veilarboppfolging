@@ -5,6 +5,7 @@ import io.vavr.control.Try;
 import no.nav.apiapp.security.PepClient;
 import no.nav.fo.veilarboppfolging.domain.Arbeidsforhold;
 import no.nav.fo.veilarboppfolging.domain.ArenaOppfolging;
+import no.nav.fo.veilarboppfolging.domain.RegistrertBruker;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -52,5 +53,24 @@ public class StartRegistreringUtils {
     public static <T extends Throwable> void sjekkLesetilgangOrElseThrow(String fnr, PepClient pepClient, Function<Throwable, T> exceptionMapper) throws T {
         Try.of(() -> pepClient.sjekkLeseTilgangTilFnr(fnr))
                 .getOrElseThrow(exceptionMapper);
+    }
+
+    public static boolean erIkkeSelvgaende(RegistrertBruker bruker) {
+
+        if(bruker.getSituasjon().equals("ANNET")) {
+            return true;
+        } else if(!bruker.isHarJobbetSammenhengende()) {
+            return true;
+        } else if(bruker.getNusKode().equals("GRUNNSKOLE")) {
+            return true;
+        } else if(!bruker.isUtdanningBestatt()) {
+            return true;
+        } else if(!bruker.isUtdanningGodkjentNorge()) {
+            return true;
+        } else if(bruker.isHarHelseutfordringer()) {
+            return true;
+        }
+
+        return false;
     }
 }
