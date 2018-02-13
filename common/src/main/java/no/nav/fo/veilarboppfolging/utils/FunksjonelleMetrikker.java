@@ -31,6 +31,10 @@ public class FunksjonelleMetrikker {
         MetricsFactory.createEvent("kvp.stopped").report();
     }
 
+    public static void stopKvpDueToChangedUnit() {
+        MetricsFactory.createEvent("kvp.stopped.byttet_enhet").report();
+    }
+
     private FunksjonelleMetrikker() {
     }
 }

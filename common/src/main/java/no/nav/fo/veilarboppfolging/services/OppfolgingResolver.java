@@ -13,6 +13,7 @@ import no.nav.fo.veilarboppfolging.db.KvpRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.fo.veilarboppfolging.utils.DateUtils;
+import no.nav.fo.veilarboppfolging.utils.FunksjonelleMetrikker;
 import no.nav.fo.veilarboppfolging.utils.StringUtils;
 import no.nav.fo.veilarboppfolging.vilkar.VilkarService;
 import no.nav.sbl.jdbc.Transactor;
@@ -361,17 +362,20 @@ public class OppfolgingResolver {
 
     private void avsluttKvpVedEnhetBytte() {
         long kvpId = deps.getKvpRepository().gjeldendeKvp(getAktorId());
-        if (kvpId != 0) {
-            hentOppfolgingstatusFraArena();
-            statusIArena.ifPresent(status -> {
-                Kvp kvp = deps.getKvpRepository().fetch(kvpId);
-                if (brukerHarByttetKontor(status, kvp)) {
-                    String avsluttetAv = SubjectHandler.getSubjectHandler().getUid();
-                    deps.getKvpRepository().stopKvp(getAktorId(), avsluttetAv, "KVP avsluttet automatisk pga. endret Nav-enhet");
-                    reloadOppfolging();
-                }
-            });
+        if (kvpId == 0) {
+            return;
         }
+
+        hentOppfolgingstatusFraArena();
+        statusIArena.ifPresent(status -> {
+            Kvp kvp = deps.getKvpRepository().fetch(kvpId);
+            if (brukerHarByttetKontor(status, kvp)) {
+                String avsluttetAv = SubjectHandler.getSubjectHandler().getUid();
+                deps.getKvpRepository().stopKvp(getAktorId(), avsluttetAv, "KVP avsluttet automatisk pga. endret Nav-enhet");
+                FunksjonelleMetrikker.stopKvpDueToChangedUnit();
+                reloadOppfolging();
+            }
+        });
     }
 
     private boolean brukerHarByttetKontor(HentOppfoelgingsstatusResponse statusIArena, Kvp kvp) {
