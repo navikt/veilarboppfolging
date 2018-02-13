@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static no.nav.fo.veilarboppfolging.TestUtils.getFodselsnummerForPersonWithAge;
+import static no.nav.fo.veilarboppfolging.services.registrerBruker.Konstanter.*;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -57,25 +58,21 @@ class RegistrerBrukerServiceTest {
     }
     @Test
     void skalRegistrereSelvgaaendeBruker() throws Exception {
-        mockRegistrertBruker();
-        mockArenaMedRespons(arenaISERV(LocalDate.now().minusYears(2)));
-        mockArbeidsforhold(arbeidsforholdSomOppfyllerKrav());
+        mockRegistreringAvSelvgaaendeBruker();
 
-        RegistrertBruker bruker = getRegistrertSelvgaaendeBruker();
+        RegistrertBruker selvgaaendeBruker = getRegistrertSelvgaaendeBruker();
 
-        RegistrertBruker registrertBruker = registrerBruker(bruker);
-        assertThat(registrertBruker).isEqualTo(bruker);
+        RegistrertBruker registrertBruker = registrerBruker(selvgaaendeBruker);
+        assertThat(registrertBruker).isEqualTo(selvgaaendeBruker);
     }
 
     @Test
-    void skalIkkeRegistrereSelvgaaendeBruker() throws Exception {
-        mockRegistrertBruker();
-        mockArenaMedRespons(arenaISERV(LocalDate.now().minusYears(2)));
-        mockArbeidsforhold(arbeidsforholdSomOppfyllerKrav());
+    void skalIkkeRegistrereIkkeSelvgaaendeBruker() throws Exception {
+        mockRegistreringAvSelvgaaendeBruker();
 
-        RegistrertBruker bruker = getRegistrertBrukerUtdanningIkkeBestatt();
+        RegistrertBruker ikkeSelvgaaendeBruker = getRegistrertBrukerUtdanningIkkeBestatt();
 
-        RegistrertBruker registrertBruker = registrerBruker(bruker);
+        RegistrertBruker registrertBruker = registrerBruker(ikkeSelvgaaendeBruker);
         assertThat(registrertBruker).isEqualTo(null);
     }
 
@@ -91,31 +88,31 @@ class RegistrerBrukerServiceTest {
 
     private RegistrertBruker getRegistrertSelvgaaendeBruker() {
         return new RegistrertBruker(
-                "Hoyereutdanning",
+                NUS_KODE_4,
                 null,
                 null,
-                true,
-                "Test oppsummering",
-                true,
-                true,
-                true,
-                false,
-                "SITUASJON"
+                ENIG_I_OPPSUMMERING,
+                OPPSUMMERING,
+                UTDANNING_BESTATT,
+                UTDANNING_GODKJENT_NORGE,
+                HAR_JOBBET_SAMMENHENGENDE,
+                HAR_HELSEUTFORDRINGER,
+                SITUASJON
         );
     }
 
     private RegistrertBruker getRegistrertBrukerUtdanningIkkeBestatt() {
         return new RegistrertBruker(
-                "Hoyereutdanning",
+                NUS_KODE_4,
                 null,
                 null,
-                true,
-                "Test oppsummering",
-                false,
-                true,
-                true,
-                false,
-                "SITUASJON"
+                ENIG_I_OPPSUMMERING,
+                OPPSUMMERING,
+                UTDANNING_IKKE_BESTATT,
+                UTDANNING_GODKJENT_NORGE,
+                HAR_JOBBET_SAMMENHENGENDE,
+                HAR_HELSEUTFORDRINGER,
+                SITUASJON
         );
     }
 
@@ -123,7 +120,9 @@ class RegistrerBrukerServiceTest {
         return registrerBrukerService.registrerBruker(bruker, FNR_OPPFYLLER_KRAV);
     }
 
-    private void mockRegistrertBruker() {
+    private void mockRegistreringAvSelvgaaendeBruker() {
+        mockArenaMedRespons(arenaISERV(LocalDate.now().minusYears(2)));
+        mockArbeidsforhold(arbeidsforholdSomOppfyllerKrav());
         when(arbeidssokerregistreringRepository.registrerBruker(any(), any())).thenReturn(getRegistrertSelvgaaendeBruker());
     }
 

@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static no.nav.fo.veilarboppfolging.TestUtils.getFodselsnummerOnDateMinusYears;
+import static no.nav.fo.veilarboppfolging.services.registrerBruker.Konstanter.*;
 import static no.nav.fo.veilarboppfolging.utils.DateUtils.erDatoEldreEnnEllerLikAar;
 import static no.nav.fo.veilarboppfolging.utils.StartRegistreringUtils.oppfyllerKravOmAutomatiskRegistrering;
 import static no.nav.fo.veilarboppfolging.utils.StartRegistreringUtils.oppfyllerKravOmInaktivitet;
@@ -58,47 +59,50 @@ public class StartRegistreringUtilsTest {
     @Test
     void brukerHarIkkeBestattUtdanning() {
         RegistrertBruker bruker = new RegistrertBruker(
-                "nus12",
-                "12345",
+                NUS_KODE_4,
                 null,
-                true,
-                "Test test oppsummering",
-                false,
-                true,
-                true,
-                false,
-                "MISTET_JOBBEN");
+                null,
+                ENIG_I_OPPSUMMERING,
+                OPPSUMMERING,
+                UTDANNING_IKKE_BESTATT,
+                UTDANNING_GODKJENT_NORGE,
+                HAR_JOBBET_SAMMENHENGENDE,
+                HAR_HELSEUTFORDRINGER,
+                SITUASJON
+        );
         assertThat(erIkkeSelvgaende(bruker)).isTrue();
     }
 
     @Test
     void brukerHarIkkeGodkjentUtdanning() {
         RegistrertBruker bruker = new RegistrertBruker(
-                "nus12",
-                "12345",
+                NUS_KODE_4,
                 null,
-                true,
-                "Test test oppsummering",
-                true,
-                false,
-                true,
-                false,
-                "MISTET_JOBBEN");
+                null,
+                ENIG_I_OPPSUMMERING,
+                OPPSUMMERING,
+                UTDANNING_BESTATT,
+                UTDANNING_IKKE_GODKJENT_NORGE,
+                HAR_JOBBET_SAMMENHENGENDE,
+                HAR_HELSEUTFORDRINGER,
+                SITUASJON);
         assertThat(erIkkeSelvgaende(bruker)).isTrue();
     }
+
     @Test
-    void brukerHarIkkeJobbetSammenhengende() {
+    void brukerHarGrunnskole() {
         RegistrertBruker bruker = new RegistrertBruker(
-                "nus12",
-                "12345",
+                NUS_KODE_0,
                 null,
-                true,
-                "Test test oppsummering",
-                true,
-                true,
-                false,
-                false,
-                "MISTET_JOBBEN");
+                null,
+                ENIG_I_OPPSUMMERING,
+                OPPSUMMERING,
+                UTDANNING_BESTATT,
+                UTDANNING_GODKJENT_NORGE,
+                HAR_JOBBET_SAMMENHENGENDE,
+                HAR_HELSEUTFORDRINGER,
+                SITUASJON);
         assertThat(erIkkeSelvgaende(bruker)).isTrue();
     }
+
 }

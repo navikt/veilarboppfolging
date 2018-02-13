@@ -17,6 +17,7 @@ import java.util.function.Supplier;
 import static no.nav.fo.veilarboppfolging.services.ArenaUtils.erUnderOppfolging;
 import static no.nav.fo.veilarboppfolging.utils.ArbeidsforholdUtils.oppfyllerKravOmArbeidserfaring;
 import static no.nav.fo.veilarboppfolging.utils.DateUtils.erDatoEldreEnnEllerLikAar;
+import static no.nav.fo.veilarboppfolging.utils.KonfigForRegistrertBrukerIkkeSelvgaende.*;
 
 
 public class StartRegistreringUtils {
@@ -56,21 +57,12 @@ public class StartRegistreringUtils {
     }
 
     public static boolean erIkkeSelvgaende(RegistrertBruker bruker) {
-
-        if(bruker.getSituasjon().equals("ANNET")) {
-            return true;
-        } else if(!bruker.isHarJobbetSammenhengende()) {
-            return true;
-        } else if(bruker.getNusKode().equals("GRUNNSKOLE")) {
-            return true;
-        } else if(!bruker.isUtdanningBestatt()) {
-            return true;
-        } else if(!bruker.isUtdanningGodkjentNorge()) {
-            return true;
-        } else if(bruker.isHarHelseutfordringer()) {
-            return true;
-        }
-
-        return false;
+        return bruker.getSituasjon().equals(ANNET)
+                || bruker.getNusKode().equals(NUS_KODE_0)
+                || bruker.getNusKode().equals(NUS_KODE_2)
+                || bruker.isHarJobbetSammenhengende() == HAR_JOBBET_SAMMENHENGENDE
+                || bruker.isUtdanningBestatt() == UTDANNING_BESTATT
+                || bruker.isUtdanningGodkjentNorge() == UTDANNING_GODKJENT_I_NORGE
+                || bruker.isHarHelseutfordringer() == HAR_HELSEUTFORDRINGER;
     }
 }
