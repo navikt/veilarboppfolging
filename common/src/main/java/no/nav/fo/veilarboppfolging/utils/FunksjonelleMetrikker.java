@@ -23,6 +23,14 @@ public class FunksjonelleMetrikker {
         return new Date().getTime() - time;
     }
 
+    public static void startKvp() {
+        MetricsFactory.createEvent("kvp.started").report();
+    }
+
+    public static void stopKvp() {
+        MetricsFactory.createEvent("kvp.stopped").report();
+    }
+
     private FunksjonelleMetrikker() {
     }
 }

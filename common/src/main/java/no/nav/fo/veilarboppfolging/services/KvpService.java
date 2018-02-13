@@ -9,6 +9,7 @@ import no.nav.brukerdialog.security.context.SubjectHandler;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.db.KvpRepository;
 import no.nav.fo.veilarboppfolging.services.OppfolgingResolver.OppfolgingResolverDependencies;
+import no.nav.fo.veilarboppfolging.utils.FunksjonelleMetrikker;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingsstatusRequest;
 import org.springframework.stereotype.Component;
@@ -56,6 +57,8 @@ public class KvpService {
                 enhet,
                 veilederId,
                 begrunnelse);
+
+        FunksjonelleMetrikker.startKvp();
     }
 
     @SneakyThrows
@@ -68,6 +71,8 @@ public class KvpService {
                 aktorService.getAktorId(fnr).orElseThrow(AKTOR_ID_FEIL),
                 veilederId,
                 begrunnelse);
+
+        FunksjonelleMetrikker.stopKvp();
     }
 
     @SneakyThrows
