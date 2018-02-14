@@ -8,6 +8,8 @@ import no.nav.apiapp.security.PepClient;
 import no.nav.brukerdialog.security.context.SubjectHandler;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.db.KvpRepository;
+import no.nav.fo.veilarboppfolging.domain.KodeverkBruker;
+import no.nav.fo.veilarboppfolging.domain.Kvp;
 import no.nav.fo.veilarboppfolging.services.OppfolgingResolver.OppfolgingResolverDependencies;
 import no.nav.fo.veilarboppfolging.utils.FunksjonelleMetrikker;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
@@ -67,14 +69,28 @@ public class KvpService {
         pepClient.sjekkLeseTilgangTilFnr(fnr);
         pepClient.sjekkTilgangTilEnhet(getEnhet(fnr));
 
+        stopKvpUtenEnhetSjekk(fnr, begrunnelse, NAV);
+    }
+
+    void stopKvpUtenEnhetSjekk(String fnr, String begrunnelse, KodeverkBruker kodeverkBruker) {
+        OppfolgingResolver resolver = new OppfolgingResolver(fnr, oppfolgingResolverDependencies);
+        if (resolver.harAktivEskalering()) {
+            resolver.stoppEskalering("Eskalering avsluttet fordi KVP ble avsluttet");
+        }
+
         String veilederId = SubjectHandler.getSubjectHandler().getUid();
         kvpRepository.stopKvp(
                 aktorService.getAktorId(fnr).orElseThrow(AKTOR_ID_FEIL),
                 veilederId,
                 begrunnelse,
-                NAV);
+                kodeverkBruker);
 
         FunksjonelleMetrikker.stopKvp();
+    }
+
+    Kvp gjeldendeKvp(String fnr) {
+        String aktorId = aktorService.getAktorId(fnr).orElseThrow(AKTOR_ID_FEIL);
+        return kvpRepository.fetch(kvpRepository.gjeldendeKvp(aktorId));
     }
 
     @SneakyThrows
