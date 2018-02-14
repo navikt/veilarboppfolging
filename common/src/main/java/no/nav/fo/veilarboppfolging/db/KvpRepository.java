@@ -12,8 +12,8 @@ import java.sql.ResultSet;
 import java.util.List;
 
 import static no.nav.apiapp.util.EnumUtils.getName;
+import static no.nav.apiapp.util.EnumUtils.valueOfOptional;
 import static no.nav.fo.veilarboppfolging.domain.KodeverkBruker.NAV;
-import static no.nav.fo.veilarboppfolging.domain.KodeverkBruker.valueOf;
 import static no.nav.sbl.jdbc.Database.hentDato;
 
 
@@ -146,11 +146,13 @@ public class KvpRepository {
                 .opprettetAv(rs.getString("opprettet_av"))
                 .opprettetDato(hentDato(rs, "opprettet_dato"))
                 .opprettetBegrunnelse(rs.getString("opprettet_begrunnelse"))
-                .opprettetKodeverkbruker(valueOf(rs.getString("opprettet_kodeverkbruker")))
+                .opprettetKodeverkbruker(valueOfOptional(KodeverkBruker.class,
+                        rs.getString("opprettet_kodeverkbruker")).orElse(null))
                 .avsluttetAv(rs.getString("avsluttet_av"))
                 .avsluttetDato(hentDato(rs, "avsluttet_dato"))
                 .avsluttetBegrunnelse(rs.getString("avsluttet_begrunnelse"))
-                .avsluttetKodeverkbruker(valueOf(rs.getString("avsluttet_kodeverkbruker")))
+                .avsluttetKodeverkbruker(valueOfOptional(KodeverkBruker.class,
+                        rs.getString("avsluttet_kodeverkbruker")).orElse(null))
                 .build();
     }
 
