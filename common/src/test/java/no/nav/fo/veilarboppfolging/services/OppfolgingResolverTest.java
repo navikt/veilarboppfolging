@@ -125,7 +125,7 @@ public class OppfolgingResolverTest {
         when(kvpServiceMock.gjeldendeKvp(FNR)).thenReturn(Kvp.builder().kvpId(KVP_ID).aktorId(AKTOR_ID).enhet(ENHET).build());
 
         oppfolgingResolver = new OppfolgingResolver(FNR, oppfolgingResolverDependenciesMock);
-        verify(kvpServiceMock, times(1)).stopKvpUtenEnhetSjekk(eq(FNR), any(), eq(SYSTEM));
+        verify(kvpServiceMock, times(1)).stopKvpUtenEnhetSjekk(eq(FNR), any(), eq(SYSTEM), eq(oppfolgingResolver));
     }
 
     @Test
@@ -133,7 +133,7 @@ public class OppfolgingResolverTest {
         when(kvpServiceMock.gjeldendeKvp(FNR)).thenReturn(Kvp.builder().kvpId(KVP_ID).aktorId(AKTOR_ID).enhet(ENHET).build());
 
         oppfolgingResolver = new OppfolgingResolver(FNR, oppfolgingResolverDependenciesMock);
-        verify(kvpServiceMock, times(0)).stopKvpUtenEnhetSjekk(eq(FNR), any(), any());
+        verify(kvpServiceMock, times(0)).stopKvpUtenEnhetSjekk(eq(FNR), any(), any(), any());
     }
 
     private HentOppfoelgingsstatusResponse oppfolgingIArena(String enhet) {

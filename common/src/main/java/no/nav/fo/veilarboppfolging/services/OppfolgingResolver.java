@@ -374,7 +374,7 @@ public class OppfolgingResolver {
         hentOppfolgingstatusFraArena();
         statusIArena.ifPresent(status -> {
             if (brukerHarByttetKontor(status, gjeldendeKvp)) {
-                deps.getKvpService().stopKvpUtenEnhetSjekk(fnr, "KVP avsluttet automatisk pga. endret Nav-enhet", SYSTEM);
+                deps.getKvpService().stopKvpUtenEnhetSjekk(fnr, "KVP avsluttet automatisk pga. endret Nav-enhet", SYSTEM, this);
                 FunksjonelleMetrikker.stopKvpDueToChangedUnit();
                 reloadOppfolging();
             }
