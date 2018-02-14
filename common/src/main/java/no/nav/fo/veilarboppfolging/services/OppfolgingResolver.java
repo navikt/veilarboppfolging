@@ -366,21 +366,15 @@ public class OppfolgingResolver {
     }
 
     private void avsluttKvpVedEnhetBytte() {
-        long kvpId = deps.getKvpRepository().gjeldendeKvp(getAktorId());
-        if (kvpId == 0) {
+        Kvp gjeldendeKvp = deps.getKvpService().gjeldendeKvp(fnr);
+        if (gjeldendeKvp == null) {
             return;
         }
 
         hentOppfolgingstatusFraArena();
         statusIArena.ifPresent(status -> {
-            Kvp kvp = deps.getKvpRepository().fetch(kvpId);
-            if (brukerHarByttetKontor(status, kvp)) {
-                String avsluttetAv = SubjectHandler.getSubjectHandler().getUid();
-                deps.getKvpRepository().stopKvp(
-                        getAktorId(),
-                        avsluttetAv,
-                        "KVP avsluttet automatisk pga. endret Nav-enhet",
-                        SYSTEM);
+            if (brukerHarByttetKontor(status, gjeldendeKvp)) {
+                deps.getKvpService().stopKvpUtenEnhetSjekk(fnr, "KVP avsluttet automatisk pga. endret Nav-enhet", SYSTEM);
                 FunksjonelleMetrikker.stopKvpDueToChangedUnit();
                 reloadOppfolging();
             }
@@ -427,5 +421,8 @@ public class OppfolgingResolver {
 
         @Inject
         private KvpRepository kvpRepository;
+
+        @Inject
+        private KvpService kvpService;
     }
 }
