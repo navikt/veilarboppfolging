@@ -18,6 +18,7 @@ import javax.inject.Inject;
 import java.util.function.Supplier;
 
 import static no.nav.apiapp.feil.Feil.Type.UKJENT;
+import static no.nav.fo.veilarboppfolging.domain.KodeverkBruker.NAV;
 
 @Component
 public class KvpService {
@@ -70,7 +71,8 @@ public class KvpService {
         kvpRepository.stopKvp(
                 aktorService.getAktorId(fnr).orElseThrow(AKTOR_ID_FEIL),
                 veilederId,
-                begrunnelse);
+                begrunnelse,
+                NAV);
 
         FunksjonelleMetrikker.stopKvp();
     }
