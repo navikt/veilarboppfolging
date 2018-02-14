@@ -69,11 +69,11 @@ public class KvpService {
         pepClient.sjekkLeseTilgangTilFnr(fnr);
         pepClient.sjekkTilgangTilEnhet(getEnhet(fnr));
 
-        stopKvpUtenEnhetSjekk(fnr, begrunnelse, NAV);
+        OppfolgingResolver resolver = new OppfolgingResolver(fnr, oppfolgingResolverDependencies);
+        stopKvpUtenEnhetSjekk(fnr, begrunnelse, NAV, resolver);
     }
 
-    void stopKvpUtenEnhetSjekk(String fnr, String begrunnelse, KodeverkBruker kodeverkBruker) {
-        OppfolgingResolver resolver = new OppfolgingResolver(fnr, oppfolgingResolverDependencies);
+    void stopKvpUtenEnhetSjekk(String fnr, String begrunnelse, KodeverkBruker kodeverkBruker, OppfolgingResolver resolver) {
         if (resolver.harAktivEskalering()) {
             resolver.stoppEskalering("Eskalering avsluttet fordi KVP ble avsluttet");
         }
