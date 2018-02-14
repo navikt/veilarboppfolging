@@ -69,7 +69,7 @@ public class KvpService {
         pepClient.sjekkTilgangTilEnhet(getEnhet(fnr));
 
         OppfolgingResolver resolver = new OppfolgingResolver(fnr, oppfolgingResolverDependencies);
-        if (ofNullable(resolver.getOppfolging().getGjeldendeEskaleringsvarsel()).isPresent()) {
+        if (resolver.harAktivEskalering()) {
             resolver.stoppEskalering("Eskalering avsluttet fordi KVP ble avsluttet");
         }
 
