@@ -17,7 +17,6 @@ import org.springframework.stereotype.Component;
 import javax.inject.Inject;
 import java.util.function.Supplier;
 
-import static java.util.Optional.ofNullable;
 import static no.nav.apiapp.feil.Feil.Type.UKJENT;
 import static no.nav.fo.veilarboppfolging.domain.KodeverkBruker.NAV;
 
