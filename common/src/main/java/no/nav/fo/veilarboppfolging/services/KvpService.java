@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 import javax.inject.Inject;
 import java.util.function.Supplier;
 
+import static java.util.Optional.ofNullable;
 import static no.nav.apiapp.feil.Feil.Type.UKJENT;
 
 @Component
@@ -65,6 +66,11 @@ public class KvpService {
     public void stopKvp(String fnr, String begrunnelse) {
         pepClient.sjekkLeseTilgangTilFnr(fnr);
         pepClient.sjekkTilgangTilEnhet(getEnhet(fnr));
+
+        OppfolgingResolver resolver = new OppfolgingResolver(fnr, oppfolgingResolverDependencies);
+        if (ofNullable(resolver.getOppfolging().getGjeldendeEskaleringsvarsel()).isPresent()) {
+            resolver.stoppEskalering("Eskalering avsluttet fordi KVP ble avsluttet");
+        }
 
         String veilederId = SubjectHandler.getSubjectHandler().getUid();
         kvpRepository.stopKvp(
