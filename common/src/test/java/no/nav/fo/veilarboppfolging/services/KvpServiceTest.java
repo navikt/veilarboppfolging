@@ -23,6 +23,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import static java.util.Optional.of;
+import static no.nav.fo.veilarboppfolging.domain.KodeverkBruker.NAV;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -96,7 +97,7 @@ public class KvpServiceTest {
         kvpService.stopKvp(FNR, STOP_BEGRUNNELSE);
 
         verify(pepClientMock, times(1)).sjekkLeseTilgangTilFnr(FNR);
-        verify(kvpRepositoryMock, times(1)).stopKvp(eq(AKTOR_ID), isNull(), eq(STOP_BEGRUNNELSE));
+        verify(kvpRepositoryMock, times(1)).stopKvp(eq(AKTOR_ID), isNull(), eq(STOP_BEGRUNNELSE), eq(NAV));
         verify(pepClientMock, times(1)).sjekkTilgangTilEnhet(ENHET);
     }
 
