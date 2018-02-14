@@ -30,6 +30,8 @@ import static java.util.Optional.of;
 import static no.nav.brukerdialog.security.context.SubjectHandler.SUBJECTHANDLER_KEY;
 import static no.nav.brukerdialog.security.context.SubjectHandlerUtils.SubjectBuilder;
 import static no.nav.brukerdialog.security.context.SubjectHandlerUtils.setSubject;
+import static no.nav.fo.veilarboppfolging.domain.KodeverkBruker.NAV;
+import static no.nav.fo.veilarboppfolging.domain.KodeverkBruker.SYSTEM;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
@@ -121,7 +123,7 @@ public class OppfolgingResolverTest {
         when(kvpRepositoryMock.fetch(KVP_ID)).thenReturn(Kvp.builder().kvpId(KVP_ID).aktorId(AKTOR_ID).enhet(ENHET).build());
 
         oppfolgingResolver = new OppfolgingResolver(FNR, oppfolgingResolverDependenciesMock);
-        verify(kvpRepositoryMock, times(1)).stopKvp(eq(AKTOR_ID), any(), any());
+        verify(kvpRepositoryMock, times(1)).stopKvp(eq(AKTOR_ID), any(), any(), eq(SYSTEM));
     }
 
     @Test
@@ -129,7 +131,7 @@ public class OppfolgingResolverTest {
         when(kvpRepositoryMock.gjeldendeKvp(AKTOR_ID)).thenReturn(0L);
 
         oppfolgingResolver = new OppfolgingResolver(FNR, oppfolgingResolverDependenciesMock);
-        verify(kvpRepositoryMock, times(0)).stopKvp(eq(AKTOR_ID), any(), any());
+        verify(kvpRepositoryMock, times(0)).stopKvp(eq(AKTOR_ID), any(), any(), eq(NAV));
     }
 
     private HentOppfoelgingsstatusResponse oppfolgingIArena(String enhet) {

@@ -117,7 +117,7 @@ public class HistorikkService {
                 .type(KVP_STARTET)
                 .begrunnelse(kvp.getOpprettetBegrunnelse())
                 .dato(kvp.getOpprettetDato())
-                .opprettetAv(NAV)
+                .opprettetAv(kvp.getOpprettetKodeverkbruker())
                 .opprettetAvBrukerId(kvp.getOpprettetAv())
                 .build();
 
@@ -126,7 +126,7 @@ public class HistorikkService {
                     .type(KVP_STOPPET)
                     .begrunnelse(kvp.getAvsluttetBegrunnelse())
                     .dato(kvp.getAvsluttetDato())
-                    .opprettetAv(NAV)
+                    .opprettetAv(kvp.getAvsluttetKodeverkbruker())
                     .opprettetAvBrukerId(kvp.getAvsluttetAv())
                     .build();
             return Arrays.asList(kvpStart, kvpStopp);

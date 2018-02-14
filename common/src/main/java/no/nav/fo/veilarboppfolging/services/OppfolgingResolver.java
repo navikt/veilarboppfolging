@@ -46,6 +46,7 @@ import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetStatus.AVBRUTT;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetStatus.FULLFORT;
+import static no.nav.fo.veilarboppfolging.domain.KodeverkBruker.SYSTEM;
 import static no.nav.fo.veilarboppfolging.domain.VilkarStatus.GODKJENT;
 import static no.nav.fo.veilarboppfolging.services.ArenaUtils.erUnderOppfolging;
 import static no.nav.fo.veilarboppfolging.services.ArenaUtils.kanSettesUnderOppfolging;
@@ -322,7 +323,7 @@ public class OppfolgingResolver {
                                 .setManuell(true)
                                 .setDato(new Timestamp(currentTimeMillis()))
                                 .setBegrunnelse("Reservert og under oppfølging")
-                                .setOpprettetAv(KodeverkBruker.SYSTEM)
+                                .setOpprettetAv(SYSTEM)
                 );
             }
         } else {
@@ -371,7 +372,11 @@ public class OppfolgingResolver {
             Kvp kvp = deps.getKvpRepository().fetch(kvpId);
             if (brukerHarByttetKontor(status, kvp)) {
                 String avsluttetAv = SubjectHandler.getSubjectHandler().getUid();
-                deps.getKvpRepository().stopKvp(getAktorId(), avsluttetAv, "KVP avsluttet automatisk pga. endret Nav-enhet");
+                deps.getKvpRepository().stopKvp(
+                        getAktorId(),
+                        avsluttetAv,
+                        "KVP avsluttet automatisk pga. endret Nav-enhet",
+                        SYSTEM);
                 FunksjonelleMetrikker.stopKvpDueToChangedUnit();
                 reloadOppfolging();
             }
