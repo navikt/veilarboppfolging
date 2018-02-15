@@ -27,37 +27,37 @@ public class AktiverArbeidssokerServiceTest {
     }
 
     @Test
-    public void aktiverBrukerBrukerFinnesIkkeSkalMappesKorrekt() throws Exception {
+    public void brukerSomIkkeFinnesIArenaSkalMappesTilNotFoundException() throws Exception {
         doThrow(mock(AktiverBrukerBrukerFinnesIkke.class)).when(behandleArbeidssoekerV1).aktiverBruker(any());
         assertThrows(NotFoundException.class, () -> aktiverArbeidssokerService.aktiverArbeidssoker(aktiverArbeidssokerData));
     }
 
     @Test
-    public void aktiverBrukerBrukerIkkeReaktivertSkalMappesKorrekt() throws Exception {
+    public void brukerSomIkkeKanReaktiveresIArenaSkalGiServerErrorException() throws Exception {
         doThrow(mock(AktiverBrukerBrukerIkkeReaktivert.class)).when(behandleArbeidssoekerV1).aktiverBruker(any());
         assertThrows(ServerErrorException.class, () -> aktiverArbeidssokerService.aktiverArbeidssoker(aktiverArbeidssokerData));
     }
 
     @Test
-    public void aktiverBrukerBrukerKanIkkeAktiveresSkalMappesKorrekt() throws Exception {
+    public void brukerSomIkkeKanAktiveresIArenaSkalGiServerErrorException() throws Exception {
         doThrow(mock(AktiverBrukerBrukerKanIkkeAktiveres.class)).when(behandleArbeidssoekerV1).aktiverBruker(any());
         assertThrows(ServerErrorException.class, () -> aktiverArbeidssokerService.aktiverArbeidssoker(aktiverArbeidssokerData));
     }
 
     @Test
-    public void aktiverBrukerBrukerManglerArbeidstillatelseSkalMappesKorrekt() throws Exception {
+    public void brukerSomManglerArbeidstillatelseSkalGiServerErrorException() throws Exception {
         doThrow(mock(AktiverBrukerBrukerManglerArbeidstillatelse.class)).when(behandleArbeidssoekerV1).aktiverBruker(any());
         assertThrows(ServerErrorException.class, () -> aktiverArbeidssokerService.aktiverArbeidssoker(aktiverArbeidssokerData));
     }
 
     @Test
-    public void aktiverBrukerSikkerhetsbegrensningSkalMappesKorrekt() throws Exception {
+    public void brukerSomIkkeHarTilgangSkalGiNotAuthorizedException() throws Exception {
         doThrow(mock(AktiverBrukerSikkerhetsbegrensning.class)).when(behandleArbeidssoekerV1).aktiverBruker(any());
         assertThrows(NotAuthorizedException.class, () -> aktiverArbeidssokerService.aktiverArbeidssoker(aktiverArbeidssokerData));
     }
 
     @Test
-    public void aktiverBrukerUgyldigInputSkalMappesKorrekt() throws Exception {
+    public void ugyldigInputSkalGiBadRequestException() throws Exception {
         doThrow(mock(AktiverBrukerUgyldigInput.class)).when(behandleArbeidssoekerV1).aktiverBruker(any());
         assertThrows(BadRequestException.class, () -> aktiverArbeidssokerService.aktiverArbeidssoker(aktiverArbeidssokerData));
     }
