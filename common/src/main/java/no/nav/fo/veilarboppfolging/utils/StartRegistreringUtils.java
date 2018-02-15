@@ -56,7 +56,7 @@ public class StartRegistreringUtils {
                 .getOrElseThrow(exceptionMapper);
     }
 
-    public static boolean erIkkeSelvgaende(RegistrertBruker bruker) {
+    public static boolean erBesvarelseneValidertSomIkkeSelvgaaende(RegistrertBruker bruker) {
         return bruker.getSituasjon().equals(ANNET)
                 || bruker.getNusKode().equals(NUS_KODE_0)
                 || bruker.getNusKode().equals(NUS_KODE_2)

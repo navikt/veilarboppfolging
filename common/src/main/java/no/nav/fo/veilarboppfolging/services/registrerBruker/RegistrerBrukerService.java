@@ -18,7 +18,7 @@ import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.feil.Sikkerhetsbegrensni
 
 import static no.nav.fo.veilarboppfolging.utils.DateUtils.now;
 import static no.nav.fo.veilarboppfolging.utils.StartRegistreringUtils.sjekkLesetilgangOrElseThrow;
-import static no.nav.fo.veilarboppfolging.utils.StartRegistreringUtils.erIkkeSelvgaende;
+import static no.nav.fo.veilarboppfolging.utils.StartRegistreringUtils.erBesvarelseneValidertSomIkkeSelvgaaende;
 
 @Slf4j
 public class RegistrerBrukerService {
@@ -46,13 +46,21 @@ public class RegistrerBrukerService {
         RegistrertBruker registrertBruker = null;
 
         StartRegistreringStatus startRegistreringStatus = startRegistreringStatusResolver.hentStartRegistreringStatus(fnr);
-        if(!erIkkeSelvgaende(bruker) &&
-                (!startRegistreringStatus.isUnderOppfolging() &&
-                        startRegistreringStatus.isOppfyllerKravForAutomatiskRegistrering())) {
+        if(erSelvgaaende(bruker, startRegistreringStatus)) {
+            // kall arena -registrer bruker
+                // kast feilmelding
+
+            // Lagre brukeren
             registrertBruker = arbeidssokerregistreringRepository.registrerBruker(bruker, aktorId);
         }
 
         return registrertBruker;
+    }
+
+    private boolean erSelvgaaende(RegistrertBruker bruker, StartRegistreringStatus startRegistreringStatus) {
+        return !erBesvarelseneValidertSomIkkeSelvgaaende(bruker) &&
+                (!startRegistreringStatus.isUnderOppfolging() &&
+                        startRegistreringStatus.isOppfyllerKravForAutomatiskRegistrering());
     }
 
     private RegistrerBrukerSikkerhetsbegrensning getHentStartRegistreringStatusSikkerhetsbegrensning() {

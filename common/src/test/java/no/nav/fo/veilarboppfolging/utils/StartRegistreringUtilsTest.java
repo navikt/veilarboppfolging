@@ -14,7 +14,7 @@ import static no.nav.fo.veilarboppfolging.services.registrerBruker.Konstanter.*;
 import static no.nav.fo.veilarboppfolging.utils.DateUtils.erDatoEldreEnnEllerLikAar;
 import static no.nav.fo.veilarboppfolging.utils.StartRegistreringUtils.oppfyllerKravOmAutomatiskRegistrering;
 import static no.nav.fo.veilarboppfolging.utils.StartRegistreringUtils.oppfyllerKravOmInaktivitet;
-import static no.nav.fo.veilarboppfolging.utils.StartRegistreringUtils.erIkkeSelvgaende;
+import static no.nav.fo.veilarboppfolging.utils.StartRegistreringUtils.erBesvarelseneValidertSomIkkeSelvgaaende;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
 
@@ -70,7 +70,7 @@ public class StartRegistreringUtilsTest {
                 HAR_HELSEUTFORDRINGER,
                 SITUASJON
         );
-        assertThat(erIkkeSelvgaende(bruker)).isTrue();
+        assertThat(erBesvarelseneValidertSomIkkeSelvgaaende(bruker)).isTrue();
     }
 
     @Test
@@ -86,7 +86,7 @@ public class StartRegistreringUtilsTest {
                 HAR_JOBBET_SAMMENHENGENDE,
                 HAR_HELSEUTFORDRINGER,
                 SITUASJON);
-        assertThat(erIkkeSelvgaende(bruker)).isTrue();
+        assertThat(erBesvarelseneValidertSomIkkeSelvgaaende(bruker)).isTrue();
     }
 
     @Test
@@ -102,7 +102,7 @@ public class StartRegistreringUtilsTest {
                 HAR_JOBBET_SAMMENHENGENDE,
                 HAR_HELSEUTFORDRINGER,
                 SITUASJON);
-        assertThat(erIkkeSelvgaende(bruker)).isTrue();
+        assertThat(erBesvarelseneValidertSomIkkeSelvgaaende(bruker)).isTrue();
     }
 
 }
