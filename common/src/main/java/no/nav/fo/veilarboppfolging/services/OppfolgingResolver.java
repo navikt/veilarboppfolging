@@ -9,6 +9,7 @@ import no.nav.apiapp.security.PepClient;
 import no.nav.brukerdialog.security.context.SubjectHandler;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
+import no.nav.fo.veilarboppfolging.config.RemoteFeatureConfig;
 import no.nav.fo.veilarboppfolging.db.KvpRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.domain.*;
@@ -236,7 +237,7 @@ public class OppfolgingResolver {
     boolean kanAvslutteOppfolging() {
         return oppfolging.isUnderOppfolging()
                 && !erUnderOppfolgingIArena()
-                && !harPagaendeYtelse()
+                && !(deps.getSjekkPagaendeYtelserFeature().erAktiv() && harPagaendeYtelse())
                 && !harAktiveTiltak()
                 && !erUnderKvp();
     }
@@ -403,5 +404,8 @@ public class OppfolgingResolver {
 
         @Inject
         private KvpRepository kvpRepository;
+
+        @Inject
+        private RemoteFeatureConfig.SjekkPagaendeYtelserFeature sjekkPagaendeYtelserFeature;
     }
 }

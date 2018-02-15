@@ -8,6 +8,7 @@ import no.nav.apiapp.security.PepClient;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetStatus;
 import no.nav.fo.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
+import no.nav.fo.veilarboppfolging.config.RemoteFeatureConfig;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.fo.veilarboppfolging.vilkar.VilkarService;
@@ -76,6 +77,9 @@ public class OppfolgingServiceTest {
     @Mock
     private YtelseskontraktV3 ytelseskontraktV3;
 
+    @Mock
+    private RemoteFeatureConfig.SjekkPagaendeYtelserFeature sjekkPagaendeYtelserFeature;
+
     @Mock(answer = Answers.RETURNS_MOCKS)
     private OppfolgingResolver.OppfolgingResolverDependencies oppfolgingResolverDependencies;
 
@@ -115,6 +119,7 @@ public class OppfolgingServiceTest {
         when(oppfolgingResolverDependencies.getPepClient()).thenReturn(pepClientMock);
         when(oppfolgingResolverDependencies.getVeilarbaktivtetService()).thenReturn(veilarbaktivtetService);
         when(oppfolgingResolverDependencies.getYtelseskontraktV3()).thenReturn(ytelseskontraktV3);
+        when(oppfolgingResolverDependencies.getSjekkPagaendeYtelserFeature()).thenReturn(sjekkPagaendeYtelserFeature);
         gittOppfolgingStatus("", "");
     }
 
@@ -386,7 +391,8 @@ public class OppfolgingServiceTest {
     }
 
     @Test
-    public void kanAvslutteMedVarselOmAktiveYtelser() throws Exception {
+    public void kanIkkeAvslutteOmAktiveYtelser_og_featureErTrue() throws Exception {
+        gittAtSjekkPagaendeYtelserFeatureErTrue();
         gittAktor();
         gittOppfolging(oppfolging.setUnderOppfolging(true));
         gittOppfolgingStatus("IARBS", "VURDI");
@@ -397,6 +403,21 @@ public class OppfolgingServiceTest {
         AvslutningStatusData avslutningStatusData = oppfolgingStatusData.avslutningStatusData;
 
         assertThat(avslutningStatusData.kanAvslutte, is(false));
+    }
+
+    @Test
+    public void kanAvslutteMedVarselOmAktiveYtelser_og_featureErFalse() throws Exception {
+        gittAtSjekkPagaendeYtelserFeatureErFalse();
+        gittAktor();
+        gittOppfolging(oppfolging.setUnderOppfolging(true));
+        gittOppfolgingStatus("IARBS", "VURDI");
+        gittIngenAktiveTiltak();
+        gittYtelserMedStatus("Inaktiv", "Aktiv");
+
+        OppfolgingStatusData oppfolgingStatusData = oppfolgingService.hentAvslutningStatus(FNR);
+        AvslutningStatusData avslutningStatusData = oppfolgingStatusData.avslutningStatusData;
+
+        assertThat(avslutningStatusData.kanAvslutte, is(true));
         assertThat(avslutningStatusData.harYtelser, is(true));
     }
 
@@ -479,5 +500,12 @@ public class OppfolgingServiceTest {
         response.getYtelseskontraktListe().addAll(ytelser);
 
         when(ytelseskontraktV3.hentYtelseskontraktListe(request)).thenReturn(response);
+    }
+
+    private void gittAtSjekkPagaendeYtelserFeatureErTrue() {
+        when(sjekkPagaendeYtelserFeature.erAktiv()).thenReturn(true);
+    }
+    private void gittAtSjekkPagaendeYtelserFeatureErFalse() {
+        when(sjekkPagaendeYtelserFeature.erAktiv()).thenReturn(false);
     }
 }
