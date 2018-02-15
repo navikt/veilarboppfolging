@@ -24,7 +24,7 @@ public class RemoteFeatureConfig {
 
     public static class SjekkPagaendeYtelserFeature extends RemoteFeatureToggle {
         public SjekkPagaendeYtelserFeature(RemoteFeatureToggleRepository repository) {
-            super(repository, "veilarboppfolging.sjekkpagaendeytelser", true);
+            super(repository, "veilarboppfolging.unngasjekkpagaendeytelser", false);
         }
     }
 

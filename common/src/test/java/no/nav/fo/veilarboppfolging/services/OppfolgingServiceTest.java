@@ -391,8 +391,8 @@ public class OppfolgingServiceTest {
     }
 
     @Test
-    public void kanIkkeAvslutteOmAktiveYtelser_og_featureErTrue() throws Exception {
-        gittAtSjekkPagaendeYtelserFeatureErTrue();
+    public void kanIkkeAvslutteOmAktiveYtelser_og_featureErFalse() throws Exception {
+        gittAtSjekkPagaendeYtelserFeatureErFalse();
         gittAktor();
         gittOppfolging(oppfolging.setUnderOppfolging(true));
         gittOppfolgingStatus("IARBS", "VURDI");
@@ -406,8 +406,8 @@ public class OppfolgingServiceTest {
     }
 
     @Test
-    public void kanAvslutteMedVarselOmAktiveYtelser_og_featureErFalse() throws Exception {
-        gittAtSjekkPagaendeYtelserFeatureErFalse();
+    public void kanAvslutteMedVarselOmAktiveYtelser_og_featureErTrue() throws Exception {
+        gittAtSjekkPagaendeYtelserFeatureErTrue();
         gittAktor();
         gittOppfolging(oppfolging.setUnderOppfolging(true));
         gittOppfolgingStatus("IARBS", "VURDI");

@@ -250,7 +250,7 @@ public class OppfolgingResolver {
     boolean kanAvslutteOppfolging() {
         return oppfolging.isUnderOppfolging()
                 && !erUnderOppfolgingIArena()
-                && !(deps.getSjekkPagaendeYtelserFeature().erAktiv() && harPagaendeYtelse())
+                && (deps.getSjekkPagaendeYtelserFeature().erAktiv() || !harPagaendeYtelse())
                 && !harAktiveTiltak()
                 && !erUnderKvp();
     }
