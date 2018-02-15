@@ -56,7 +56,6 @@ public class ArbeidssokerregistreringRepositoryTest {
           "Test test oppsummering",
           true,
           true,
-          true,
           false,
                 "MISTET_JOBBEN");
 
@@ -68,7 +67,6 @@ public class ArbeidssokerregistreringRepositoryTest {
         assertThat(registrertBruker.getOppsummering()).isEqualTo(bruker.getOppsummering());
         assertThat(registrertBruker.isUtdanningBestatt()).isEqualTo(bruker.isUtdanningBestatt());
         assertThat(registrertBruker.isUtdanningGodkjentNorge()).isEqualTo(bruker.isUtdanningGodkjentNorge());
-        assertThat(registrertBruker.isHarJobbetSammenhengende()).isEqualTo(bruker.isHarJobbetSammenhengende());
         assertThat(registrertBruker.isHarHelseutfordringer()).isEqualTo(bruker.isHarHelseutfordringer());
         assertThat(registrertBruker.getSituasjon()).isEqualTo(bruker.getSituasjon());
     }

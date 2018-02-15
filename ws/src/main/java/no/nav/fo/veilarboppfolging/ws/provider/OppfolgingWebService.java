@@ -284,7 +284,6 @@ public class OppfolgingWebService implements BehandleOppfolgingV1 {
         response.setUtdanningBestatt(bruker.isUtdanningBestatt());
         response.setUtdanningGodkjentNorge(bruker.isUtdanningGodkjentNorge());
         response.setHarHelseutfordringer(bruker.isHarHelseutfordringer());
-        response.setHarJobbetSammenhengende(bruker.isHarJobbetSammenhengende());
         response.setSituasjon(bruker.getSituasjon());
         return response;
     }
@@ -298,7 +297,6 @@ public class OppfolgingWebService implements BehandleOppfolgingV1 {
                 request.isUtdanningBestatt(),
                 request.isUtdanningGodkjentNorge(),
                 request.isHarHelseutfordringer(),
-                request.isHarJobbetSammenhengende(),
                 request.getSituasjon()
         );
         return bruker;

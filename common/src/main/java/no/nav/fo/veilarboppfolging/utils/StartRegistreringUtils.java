@@ -60,7 +60,6 @@ public class StartRegistreringUtils {
         return bruker.getSituasjon().equals(ANNET)
                 || bruker.getNusKode().equals(NUS_KODE_0)
                 || bruker.getNusKode().equals(NUS_KODE_2)
-                || bruker.isHarJobbetSammenhengende() == HAR_JOBBET_SAMMENHENGENDE
                 || bruker.isUtdanningBestatt() == UTDANNING_BESTATT
                 || bruker.isUtdanningGodkjentNorge() == UTDANNING_GODKJENT_I_NORGE
                 || bruker.isHarHelseutfordringer() == HAR_HELSEUTFORDRINGER;

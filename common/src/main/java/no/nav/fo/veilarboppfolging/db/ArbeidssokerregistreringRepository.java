@@ -26,7 +26,6 @@ public class ArbeidssokerregistreringRepository {
     private final static String OPPSUMMERING = "OPPSUMMERING";
     private final static String UTDANNING_BESTATT = "UTDANNING_BESTATT";
     private final static String UTDANNING_GODKJENT_NORGE = "UTDANNING_GODKJENT_NORGE";
-    private final static String HAR_JOBBET_SAMMENHENGENDE = "HAR_JOBBET_SAMMENHENGENDE";
     private final static String HAR_HELSEUTFORDRINGER = "HAR_HELSEUTFORDRINGER";
     private final static String SITUASJON = "SITUASJON";
 
@@ -57,7 +56,6 @@ public class ArbeidssokerregistreringRepository {
                 .value(OPPSUMMERING, bruker.getOppsummering())
                 .value(UTDANNING_BESTATT, bruker.isUtdanningBestatt())
                 .value(UTDANNING_GODKJENT_NORGE, bruker.isUtdanningGodkjentNorge())
-                .value(HAR_JOBBET_SAMMENHENGENDE, bruker.isHarJobbetSammenhengende())
                 .value(HAR_HELSEUTFORDRINGER, bruker.isHarHelseutfordringer())
                 .value(SITUASJON, bruker.getSituasjon())
                 .execute();
@@ -87,7 +85,6 @@ public class ArbeidssokerregistreringRepository {
                 rs.getString(OPPSUMMERING),
                 rs.getBoolean(UTDANNING_BESTATT),
                 rs.getBoolean(UTDANNING_GODKJENT_NORGE),
-                rs.getBoolean(HAR_JOBBET_SAMMENHENGENDE),
                 rs.getBoolean(HAR_HELSEUTFORDRINGER),
                 rs.getString(SITUASJON));
     }

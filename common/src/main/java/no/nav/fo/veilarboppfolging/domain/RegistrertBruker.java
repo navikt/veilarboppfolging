@@ -12,7 +12,6 @@ public class RegistrertBruker {
     String oppsummering;
     boolean utdanningBestatt;
     boolean utdanningGodkjentNorge;
-    boolean harJobbetSammenhengende;
     boolean harHelseutfordringer;
     String situasjon;
 }

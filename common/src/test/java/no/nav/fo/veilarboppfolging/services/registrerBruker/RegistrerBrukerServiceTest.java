@@ -95,7 +95,6 @@ class RegistrerBrukerServiceTest {
                 OPPSUMMERING,
                 UTDANNING_BESTATT,
                 UTDANNING_GODKJENT_NORGE,
-                HAR_JOBBET_SAMMENHENGENDE,
                 HAR_HELSEUTFORDRINGER,
                 SITUASJON
         );
@@ -110,7 +109,6 @@ class RegistrerBrukerServiceTest {
                 OPPSUMMERING,
                 UTDANNING_IKKE_BESTATT,
                 UTDANNING_GODKJENT_NORGE,
-                HAR_JOBBET_SAMMENHENGENDE,
                 HAR_HELSEUTFORDRINGER,
                 SITUASJON
         );
