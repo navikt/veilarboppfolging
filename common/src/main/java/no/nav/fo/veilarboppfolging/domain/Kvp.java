@@ -18,8 +18,10 @@ public class Kvp {
     private String opprettetAv;
     private Date opprettetDato;
     private String opprettetBegrunnelse;
+    private KodeverkBruker opprettetKodeverkbruker;
     private String avsluttetAv;
     private Date avsluttetDato;
     private String avsluttetBegrunnelse;
+    private KodeverkBruker avsluttetKodeverkbruker;
 
 }

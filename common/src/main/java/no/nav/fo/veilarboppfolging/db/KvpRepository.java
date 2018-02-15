@@ -2,6 +2,7 @@ package no.nav.fo.veilarboppfolging.db;
 
 import lombok.SneakyThrows;
 import no.nav.apiapp.feil.Feil;
+import no.nav.fo.veilarboppfolging.domain.KodeverkBruker;
 import no.nav.fo.veilarboppfolging.domain.Kvp;
 import no.nav.sbl.jdbc.Database;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -10,6 +11,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.sql.ResultSet;
 import java.util.List;
 
+import static no.nav.apiapp.util.EnumUtils.getName;
+import static no.nav.apiapp.util.EnumUtils.valueOfOptional;
+import static no.nav.fo.veilarboppfolging.domain.KodeverkBruker.NAV;
 import static no.nav.sbl.jdbc.Database.hentDato;
 
 
@@ -36,14 +40,16 @@ public class KvpRepository {
                         "enhet, " +
                         "opprettet_av, " +
                         "opprettet_dato, " +
-                        "opprettet_begrunnelse) " +
-                        "VALUES(?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?)",
+                        "opprettet_begrunnelse, " +
+                        "opprettet_kodeverkbruker) " +
+                        "VALUES(?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?)",
                 id,
                 nextSerial,
                 aktorId,
                 enhet,
                 opprettetAv,
-                opprettetBegrunnelse
+                opprettetBegrunnelse,
+                getName(NAV)
         );
         database.update("UPDATE OPPFOLGINGSTATUS " +
                         "SET gjeldende_kvp = ?, " +
@@ -55,7 +61,7 @@ public class KvpRepository {
 
     }
 
-    public void stopKvp(String aktorId, String avsluttetAv, String avsluttetBegrunnelse) {
+    public void stopKvp(String aktorId, String avsluttetAv, String avsluttetBegrunnelse, KodeverkBruker kodeverkBruker) {
         long gjeldendeKvp = gjeldendeKvp(aktorId);
         if (gjeldendeKvp == 0) {
             throw new Feil(Feil.Type.UGYLDIG_REQUEST, "Aktøren har ingen KVP-periode.");
@@ -67,11 +73,13 @@ public class KvpRepository {
                         "SET serial = ?, " +
                         "avsluttet_av = ?, " +
                         "avsluttet_dato = CURRENT_TIMESTAMP, " +
-                        "avsluttet_begrunnelse = ? " +
+                        "avsluttet_begrunnelse = ?, " +
+                        "avsluttet_kodeverkbruker = ? " +
                         "WHERE kvp_id = ?",
                 nextSerial,
                 avsluttetAv,
                 avsluttetBegrunnelse,
+                getName(kodeverkBruker),
                 gjeldendeKvp
 
         );
@@ -138,9 +146,13 @@ public class KvpRepository {
                 .opprettetAv(rs.getString("opprettet_av"))
                 .opprettetDato(hentDato(rs, "opprettet_dato"))
                 .opprettetBegrunnelse(rs.getString("opprettet_begrunnelse"))
+                .opprettetKodeverkbruker(valueOfOptional(KodeverkBruker.class,
+                        rs.getString("opprettet_kodeverkbruker")).orElse(null))
                 .avsluttetAv(rs.getString("avsluttet_av"))
                 .avsluttetDato(hentDato(rs, "avsluttet_dato"))
                 .avsluttetBegrunnelse(rs.getString("avsluttet_begrunnelse"))
+                .avsluttetKodeverkbruker(valueOfOptional(KodeverkBruker.class,
+                        rs.getString("avsluttet_kodeverkbruker")).orElse(null))
                 .build();
     }
 

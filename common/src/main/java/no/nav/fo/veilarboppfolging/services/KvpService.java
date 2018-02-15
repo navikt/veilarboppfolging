@@ -8,7 +8,10 @@ import no.nav.apiapp.security.PepClient;
 import no.nav.brukerdialog.security.context.SubjectHandler;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.db.KvpRepository;
+import no.nav.fo.veilarboppfolging.domain.KodeverkBruker;
+import no.nav.fo.veilarboppfolging.domain.Kvp;
 import no.nav.fo.veilarboppfolging.services.OppfolgingResolver.OppfolgingResolverDependencies;
+import no.nav.fo.veilarboppfolging.utils.FunksjonelleMetrikker;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingsstatusRequest;
 import org.springframework.stereotype.Component;
@@ -17,6 +20,7 @@ import javax.inject.Inject;
 import java.util.function.Supplier;
 
 import static no.nav.apiapp.feil.Feil.Type.UKJENT;
+import static no.nav.fo.veilarboppfolging.domain.KodeverkBruker.NAV;
 
 @Component
 public class KvpService {
@@ -56,6 +60,8 @@ public class KvpService {
                 enhet,
                 veilederId,
                 begrunnelse);
+
+        FunksjonelleMetrikker.startKvp();
     }
 
     @SneakyThrows
@@ -63,11 +69,28 @@ public class KvpService {
         pepClient.sjekkLeseTilgangTilFnr(fnr);
         pepClient.sjekkTilgangTilEnhet(getEnhet(fnr));
 
+        OppfolgingResolver resolver = new OppfolgingResolver(fnr, oppfolgingResolverDependencies);
+        stopKvpUtenEnhetSjekk(fnr, begrunnelse, NAV, resolver);
+    }
+
+    void stopKvpUtenEnhetSjekk(String fnr, String begrunnelse, KodeverkBruker kodeverkBruker, OppfolgingResolver resolver) {
+        if (resolver.harAktivEskalering()) {
+            resolver.stoppEskalering("Eskalering avsluttet fordi KVP ble avsluttet");
+        }
+
         String veilederId = SubjectHandler.getSubjectHandler().getUid();
         kvpRepository.stopKvp(
                 aktorService.getAktorId(fnr).orElseThrow(AKTOR_ID_FEIL),
                 veilederId,
-                begrunnelse);
+                begrunnelse,
+                kodeverkBruker);
+
+        FunksjonelleMetrikker.stopKvp();
+    }
+
+    Kvp gjeldendeKvp(String fnr) {
+        String aktorId = aktorService.getAktorId(fnr).orElseThrow(AKTOR_ID_FEIL);
+        return kvpRepository.fetch(kvpRepository.gjeldendeKvp(aktorId));
     }
 
     @SneakyThrows

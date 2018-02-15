@@ -10,7 +10,7 @@ import no.nav.fo.veilarboppfolging.domain.Tilordning;
 import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingFeedDTO;
 import no.nav.fo.veilarboppfolging.rest.domain.TilordneVeilederResponse;
 import no.nav.fo.veilarboppfolging.rest.domain.VeilederTilordning;
-import no.nav.fo.veilarboppfolging.utils.FunkjsonelleMetrikker;
+import no.nav.fo.veilarboppfolging.utils.FunksjonelleMetrikker;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
@@ -97,7 +97,7 @@ public class VeilederTilordningRessurs {
         veilederTilordningerRepository.hentTilordnetVeileder(aktorId)
                 .filter(Tilordning::isNyForVeileder)
                 .filter(this::erVeilederFor)
-                .map(FunkjsonelleMetrikker::lestAvVeileder)
+                .map(FunksjonelleMetrikker::lestAvVeileder)
                 .map(Tilordning::getAktorId)
                 .map(veilederTilordningerRepository::markerSomLestAvVeileder)
                 .ifPresent(i -> kallWebhook());
