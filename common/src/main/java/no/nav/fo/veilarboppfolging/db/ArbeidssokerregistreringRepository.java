@@ -19,9 +19,16 @@ public class ArbeidssokerregistreringRepository {
     private final static String BRUKER_REGISTRERING = "BRUKER_REGISTRERING";
     private final static String BRUKER_REGISTRERING_ID = "BRUKER_REGISTRERING_ID";
     private final static String OPPRETTET_DATO = "OPPRETTET_DATO";
+
+    private final static String NUS_KODE = "NUS_KODE";
+    private final static String YRKESPRAKSIS = "YRKESPRAKSIS";
     private final static String ENIG_I_OPPSUMMERING = "ENIG_I_OPPSUMMERING";
     private final static String OPPSUMMERING = "OPPSUMMERING";
-    private final static String BESVARELSE = "BESVARELSE";
+    private final static String UTDANNING_BESTATT = "UTDANNING_BESTATT";
+    private final static String UTDANNING_GODKJENT_NORGE = "UTDANNING_GODKJENT_NORGE";
+    private final static String HAR_JOBBET_SAMMENHENGENDE = "HAR_JOBBET_SAMMENHENGENDE";
+    private final static String HAR_HELSEUTFORDRINGER = "HAR_HELSEUTFORDRINGER";
+    private final static String SITUASJON = "SITUASJON";
 
     private final static String OPPFOLGINGSTATUS = "OPPFOLGINGSTATUS";
     private final static String UNDER_OPPFOLGING = "UNDER_OPPFOLGING";
@@ -44,16 +51,20 @@ public class ArbeidssokerregistreringRepository {
                 .value(BRUKER_REGISTRERING_ID, id)
                 .value(AKTOR_ID, bruker.getAktorId())
                 .value(OPPRETTET_DATO, DbConstants.CURRENT_TIMESTAMP)
+                .value(NUS_KODE, bruker.getNusKode())
+                .value(YRKESPRAKSIS, bruker.getYrkesPraksis())
                 .value(ENIG_I_OPPSUMMERING, bruker.isEnigIOppsummering())
                 .value(OPPSUMMERING, bruker.getOppsummering())
-                .value(BESVARELSE, bruker.getBesvarelse())
+                .value(UTDANNING_BESTATT, bruker.isUtdanningBestatt())
+                .value(UTDANNING_GODKJENT_NORGE, bruker.isUtdanningGodkjentNorge())
+                .value(HAR_JOBBET_SAMMENHENGENDE, bruker.isHarJobbetSammenhengende())
+                .value(HAR_HELSEUTFORDRINGER, bruker.isHarHelseutfordringer())
+                .value(SITUASJON, bruker.getSituasjon())
                 .execute();
 
         return SqlUtils.select(db.getDataSource(), BRUKER_REGISTRERING, ArbeidssokerregistreringRepository::brukerRegistreringMapper)
-                .column(ENIG_I_OPPSUMMERING)
-                .column(OPPSUMMERING)
-                .column(BESVARELSE)
                 .where(WhereClause.equals(AKTOR_ID, bruker.getAktorId()))
+                .column("*")
                 .execute();
     }
 
@@ -69,8 +80,16 @@ public class ArbeidssokerregistreringRepository {
     @SneakyThrows
     private static BrukerRegistrering brukerRegistreringMapper(ResultSet rs) {
         return new BrukerRegistrering()
+                .setAktorId(rs.getString(AKTOR_ID))
+                .setNusKode(rs.getString(NUS_KODE))
+                .setYrkesPraksis(rs.getString(YRKESPRAKSIS))
+                .setOpprettetDato(rs.getDate(OPPRETTET_DATO))
                 .setEnigIOppsummering(rs.getBoolean(ENIG_I_OPPSUMMERING))
                 .setOppsummering(rs.getString(OPPSUMMERING))
-                .setBesvarelse(rs.getString(BESVARELSE));
+                .setUtdanningBestatt(rs.getBoolean(UTDANNING_BESTATT))
+                .setUtdanningGodkjentNorge(rs.getBoolean(UTDANNING_GODKJENT_NORGE))
+                .setHarJobbetSammenhengende(rs.getBoolean(HAR_JOBBET_SAMMENHENGENDE))
+                .setHarHelseutfordringer(rs.getBoolean(HAR_HELSEUTFORDRINGER))
+                .setSituasjon(rs.getString(SITUASJON));
     }
 }
