@@ -30,6 +30,7 @@ import static java.util.Optional.of;
 import static no.nav.brukerdialog.security.context.SubjectHandler.SUBJECTHANDLER_KEY;
 import static no.nav.brukerdialog.security.context.SubjectHandlerUtils.SubjectBuilder;
 import static no.nav.brukerdialog.security.context.SubjectHandlerUtils.setSubject;
+import static no.nav.fo.veilarboppfolging.domain.KodeverkBruker.SYSTEM;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
@@ -56,6 +57,9 @@ public class OppfolgingResolverTest {
     private KvpRepository kvpRepositoryMock;
 
     @Mock
+    private KvpService kvpServiceMock;
+
+    @Mock
     private OppfoelgingPortType oppfoelgingPortTypeMock;
 
     @Mock
@@ -78,6 +82,7 @@ public class OppfolgingResolverTest {
         when(oppfolgingResolverDependenciesMock.getKvpRepository()).thenReturn(kvpRepositoryMock);
         when(oppfolgingResolverDependenciesMock.getOppfoelgingPortType()).thenReturn(oppfoelgingPortTypeMock);
         when(oppfolgingResolverDependenciesMock.getPepClient()).thenReturn(pepClientMock);
+        when(oppfolgingResolverDependenciesMock.getKvpService()).thenReturn(kvpServiceMock);
 
         when(aktorServiceMock.getAktorId(FNR)).thenReturn(of(AKTOR_ID));
         when(oppfolgingRepositoryMock.hentOppfolging(AKTOR_ID)).thenReturn(of(oppfolging));
@@ -117,19 +122,18 @@ public class OppfolgingResolverTest {
     @Test
     public void kvp_periode_skal_automatisk_avsluttes_nar_bruker_har_byttet_oppfolgingsEnhet_i_arena() throws Exception {
         when(oppfoelgingPortTypeMock.hentOppfoelgingsstatus(any())).thenReturn(oppfolgingIArena(OTHER_ENHET));
-        when(kvpRepositoryMock.gjeldendeKvp(AKTOR_ID)).thenReturn(KVP_ID);
-        when(kvpRepositoryMock.fetch(KVP_ID)).thenReturn(Kvp.builder().kvpId(KVP_ID).aktorId(AKTOR_ID).enhet(ENHET).build());
+        when(kvpServiceMock.gjeldendeKvp(FNR)).thenReturn(Kvp.builder().kvpId(KVP_ID).aktorId(AKTOR_ID).enhet(ENHET).build());
 
         oppfolgingResolver = new OppfolgingResolver(FNR, oppfolgingResolverDependenciesMock);
-        verify(kvpRepositoryMock, times(1)).stopKvp(eq(AKTOR_ID), any(), any());
+        verify(kvpServiceMock, times(1)).stopKvpUtenEnhetSjekk(eq(FNR), any(), eq(SYSTEM), eq(oppfolgingResolver));
     }
 
     @Test
     public void kvp_periode_skal_ikke_avsluttes_sa_lenge_oppfolgingsenhet_i_arena_er_den_samme() throws Exception {
-        when(kvpRepositoryMock.gjeldendeKvp(AKTOR_ID)).thenReturn(0L);
+        when(kvpServiceMock.gjeldendeKvp(FNR)).thenReturn(Kvp.builder().kvpId(KVP_ID).aktorId(AKTOR_ID).enhet(ENHET).build());
 
         oppfolgingResolver = new OppfolgingResolver(FNR, oppfolgingResolverDependenciesMock);
-        verify(kvpRepositoryMock, times(0)).stopKvp(eq(AKTOR_ID), any(), any());
+        verify(kvpServiceMock, times(0)).stopKvpUtenEnhetSjekk(eq(FNR), any(), any(), any());
     }
 
     private HentOppfoelgingsstatusResponse oppfolgingIArena(String enhet) {

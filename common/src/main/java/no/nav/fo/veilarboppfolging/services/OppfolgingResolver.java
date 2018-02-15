@@ -13,6 +13,7 @@ import no.nav.fo.veilarboppfolging.db.KvpRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.fo.veilarboppfolging.utils.DateUtils;
+import no.nav.fo.veilarboppfolging.utils.FunksjonelleMetrikker;
 import no.nav.fo.veilarboppfolging.utils.StringUtils;
 import no.nav.fo.veilarboppfolging.vilkar.VilkarService;
 import no.nav.sbl.jdbc.Transactor;
@@ -45,6 +46,7 @@ import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetStatus.AVBRUTT;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetStatus.FULLFORT;
+import static no.nav.fo.veilarboppfolging.domain.KodeverkBruker.SYSTEM;
 import static no.nav.fo.veilarboppfolging.domain.VilkarStatus.GODKJENT;
 import static no.nav.fo.veilarboppfolging.services.ArenaUtils.erUnderOppfolging;
 import static no.nav.fo.veilarboppfolging.services.ArenaUtils.kanSettesUnderOppfolging;
@@ -297,6 +299,10 @@ public class OppfolgingResolver {
         deps.getOppfolgingRepository().stoppEskalering(aktorId, veilederId, begrunnelse);
     }
 
+    boolean harAktivEskalering() {
+        return oppfolging.getGjeldendeEskaleringsvarsel() != null;
+    }
+
     @SneakyThrows
     private void hentOppfolgingstatusFraArena() {
         val hentOppfolgingstatusRequest = new HentOppfoelgingsstatusRequest();
@@ -321,7 +327,7 @@ public class OppfolgingResolver {
                                 .setManuell(true)
                                 .setDato(new Timestamp(currentTimeMillis()))
                                 .setBegrunnelse("Reservert og under oppfølging")
-                                .setOpprettetAv(KodeverkBruker.SYSTEM)
+                                .setOpprettetAv(SYSTEM)
                 );
             }
         } else {
@@ -360,18 +366,19 @@ public class OppfolgingResolver {
     }
 
     private void avsluttKvpVedEnhetBytte() {
-        long kvpId = deps.getKvpRepository().gjeldendeKvp(getAktorId());
-        if (kvpId != 0) {
-            hentOppfolgingstatusFraArena();
-            statusIArena.ifPresent(status -> {
-                Kvp kvp = deps.getKvpRepository().fetch(kvpId);
-                if (brukerHarByttetKontor(status, kvp)) {
-                    String avsluttetAv = SubjectHandler.getSubjectHandler().getUid();
-                    deps.getKvpRepository().stopKvp(getAktorId(), avsluttetAv, "KVP avsluttet automatisk pga. endret Nav-enhet");
-                    reloadOppfolging();
-                }
-            });
+        Kvp gjeldendeKvp = deps.getKvpService().gjeldendeKvp(fnr);
+        if (gjeldendeKvp == null) {
+            return;
         }
+
+        hentOppfolgingstatusFraArena();
+        statusIArena.ifPresent(status -> {
+            if (brukerHarByttetKontor(status, gjeldendeKvp)) {
+                deps.getKvpService().stopKvpUtenEnhetSjekk(fnr, "KVP avsluttet automatisk pga. endret Nav-enhet", SYSTEM, this);
+                FunksjonelleMetrikker.stopKvpDueToChangedUnit();
+                reloadOppfolging();
+            }
+        });
     }
 
     private boolean brukerHarByttetKontor(HentOppfoelgingsstatusResponse statusIArena, Kvp kvp) {
@@ -414,5 +421,8 @@ public class OppfolgingResolver {
 
         @Inject
         private KvpRepository kvpRepository;
+
+        @Inject
+        private KvpService kvpService;
     }
 }
