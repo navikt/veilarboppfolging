@@ -40,13 +40,13 @@ public class RemoteFeatureConfig {
 
     public static class SjekkRegistrereBrukerGenerellFeature extends RemoteFeatureToggle {
         public SjekkRegistrereBrukerGenerellFeature(RemoteFeatureToggleRepository repository) {
-            super(repository, "feature.registrer.bruker.generell", false);
+            super(repository, "veilarboppfolging.registreringgenerell", false);
         }
     }
 
     public static class SjekkRegistrereBrukerArenaFeature extends RemoteFeatureToggle {
         public SjekkRegistrereBrukerArenaFeature(RemoteFeatureToggleRepository repository) {
-            super(repository, "feature.registrer.bruker.arena", false);
+            super(repository, "veilarboppfolging.registreringarena", false);
         }
     }
 }
