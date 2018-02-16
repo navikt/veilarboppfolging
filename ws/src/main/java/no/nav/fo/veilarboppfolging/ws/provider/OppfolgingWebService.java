@@ -8,7 +8,6 @@ import no.nav.fo.veilarboppfolging.service.ReservertKrrService;
 import no.nav.fo.veilarboppfolging.services.MalService;
 import no.nav.fo.veilarboppfolging.services.OppfolgingService;
 import no.nav.fo.veilarboppfolging.services.registrerBruker.RegistrerBrukerService;
-import no.nav.fo.veilarboppfolging.services.startregistrering.StartRegistreringService;
 import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.HentReservertKrrRequest;
 import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.HentReservertKrrResponse;
 import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.binding.*;
@@ -32,19 +31,16 @@ import static no.nav.fo.veilarboppfolging.utils.StringUtils.emptyIfNull;
 public class OppfolgingWebService implements BehandleOppfolgingV1 {
 
     private OppfolgingService oppfolgingService;
-    private StartRegistreringService startRegistreringService;
     private RegistrerBrukerService registrerBrukerService;
     private ReservertKrrService reservertKrrService;
     private MalService malService;
 
     public OppfolgingWebService(
             OppfolgingService oppfolgingService,
-            StartRegistreringService startRegistreringService,
             RegistrerBrukerService registrerBrukerService,
             ReservertKrrService reservertKrrService,
             MalService malService) {
 
-        this.startRegistreringService = startRegistreringService;
         this.oppfolgingService = oppfolgingService;
         this.registrerBrukerService = registrerBrukerService;
         this.reservertKrrService = reservertKrrService;
@@ -249,7 +245,7 @@ public class OppfolgingWebService implements BehandleOppfolgingV1 {
             HentStartRegistreringStatusFeilVedHentingAvStatusFraArena,
             HentStartRegistreringStatusFeilVedHentingAvArbeidsforhold {
 
-        StartRegistreringStatus status = startRegistreringService.hentStartRegistreringStatus(startRegistreringStatusRequest.getFnr());
+        StartRegistreringStatus status = registrerBrukerService.hentStartRegistreringStatus(startRegistreringStatusRequest.getFnr());
 
         StartRegistreringStatusResponse response = new StartRegistreringStatusResponse();
         response.setErUnderOppfolging(status.isUnderOppfolging());
@@ -260,17 +256,16 @@ public class OppfolgingWebService implements BehandleOppfolgingV1 {
     @Override
     public HentReservertKrrResponse hentReservertKrr(HentReservertKrrRequest request) {
         return reservertKrrService.hentReservertKrr(request.getFnr());
-
     }
 
     @Override
     public RegistrerBrukerResponse registrerBruker(RegistrerBrukerRequest request) throws RegistrerBrukerSikkerhetsbegrensning {
         RegistrertBruker registrertBruker = mapRegistreringBruker(request);
-        RegistrertBruker bruker = null;
+        RegistrertBruker bruker;
         try {
             bruker = registrerBrukerService.registrerBruker(registrertBruker, request.getFnr());
-        } catch (HentStartRegistreringStatusFeilVedHentingAvStatusFraArena | HentStartRegistreringStatusFeilVedHentingAvArbeidsforhold hentStartRegistreringStatusFeilVedHentingAvStatusFraArena) {
-            hentStartRegistreringStatusFeilVedHentingAvStatusFraArena.printStackTrace();
+        } catch (HentStartRegistreringStatusFeilVedHentingAvStatusFraArena | HentStartRegistreringStatusFeilVedHentingAvArbeidsforhold e) {
+            throw new RuntimeException(e);
         }
         return mapRegistrerBrukerResponse(bruker);
     }

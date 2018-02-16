@@ -1,4 +1,4 @@
-package no.nav.fo.veilarboppfolging.services.startregistrering;
+package no.nav.fo.veilarboppfolging.services.registrerBruker;
 
 import io.vavr.control.Try;
 import lombok.SneakyThrows;

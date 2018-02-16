@@ -44,7 +44,7 @@ public class ArbeidssokerregistreringRepository {
                 .execute()).orElse(false);
     }
 
-    public RegistrertBruker registrerBruker(RegistrertBruker bruker, AktorId aktorId) {
+    public RegistrertBruker lagreBruker(RegistrertBruker bruker, AktorId aktorId) {
         long id = nesteFraSekvens(BRUKER_REGISTRERING_SEQ);
         SqlUtils.insert(db, BRUKER_REGISTRERING)
                 .value(BRUKER_REGISTRERING_ID, id)

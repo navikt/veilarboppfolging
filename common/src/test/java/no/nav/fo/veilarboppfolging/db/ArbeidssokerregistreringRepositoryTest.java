@@ -59,7 +59,7 @@ public class ArbeidssokerregistreringRepositoryTest {
           false,
                 "MISTET_JOBBEN");
 
-        RegistrertBruker registrertBruker = arbeidssokerregistreringRepository.registrerBruker(bruker, aktorId);
+        RegistrertBruker registrertBruker = arbeidssokerregistreringRepository.lagreBruker(bruker, aktorId);
 
         assertThat(registrertBruker.getNusKode()).isEqualTo(bruker.getNusKode());
         assertThat(registrertBruker.getYrkesPraksis()).isEqualTo(bruker.getYrkesPraksis());
