@@ -61,7 +61,7 @@ public class ArbeidssokerregistreringRepository {
                 .execute();
 
         return SqlUtils.select(db.getDataSource(), BRUKER_REGISTRERING, ArbeidssokerregistreringRepository::brukerRegistreringMapper)
-                .where(WhereClause.equals(AKTOR_ID, aktorId.getAktorId()))
+                .where(WhereClause.equals(BRUKER_REGISTRERING_ID, id))
                 .column("*")
                 .execute();
     }
