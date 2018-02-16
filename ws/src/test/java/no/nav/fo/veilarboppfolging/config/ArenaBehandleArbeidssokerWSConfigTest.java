@@ -1,7 +1,6 @@
 package no.nav.fo.veilarboppfolging.config;
 
 import no.nav.fo.veilarboppfolging.config.RemoteFeatureConfig.SjekkRegistrereBrukerArenaFeature;
-import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -23,16 +22,9 @@ public class ArenaBehandleArbeidssokerWSConfigTest {
     @InjectMocks
     private ArenaBehandleArbeidssokerWSConfig arenaBehandleArbeidssokerWSConfig;
 
-    @After
-    public void tearDown() {
-        if(context != null) {
-            context.stop();
-        }
-    }
-
     @Test
     public void skalGiVellykketSelftestPingDersomArenaTjenestenErToggletAv() {
-        when(skalRegistrereBrukerArenaFeature.erAktiv()).thenReturn(true);
+        when(skalRegistrereBrukerArenaFeature.erAktiv()).thenReturn(false);
         assertTrue(arenaBehandleArbeidssokerWSConfig.behandleArbeidssokerPing().ping().erVellykket());
     }
 }

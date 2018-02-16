@@ -33,10 +33,10 @@ public class ArenaBehandleArbeidssokerWSConfig {
                 UUID.randomUUID().toString(),
                 "BehandleArbeidssoker_V1 via " + url,
                 "Ping av BehandleArbeidssoker_V1. Registrerer arbeidssoker i Arena.",
-                false
+                true
         );
 
-        if (skalRegistrereBrukerArenaFeature.erAktiv()) {
+        if (!skalRegistrereBrukerArenaFeature.erAktiv()) {
             return () -> lyktes(metadata);
         }
 
