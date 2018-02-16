@@ -265,7 +265,7 @@ public class OppfolgingWebService implements BehandleOppfolgingV1 {
         try {
             bruker = registrerBrukerService.registrerBruker(registrertBruker, request.getFnr());
         } catch (HentStartRegistreringStatusFeilVedHentingAvStatusFraArena | HentStartRegistreringStatusFeilVedHentingAvArbeidsforhold e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Feil ved registrering av bruker." + e);
         }
         return mapRegistrerBrukerResponse(bruker);
     }

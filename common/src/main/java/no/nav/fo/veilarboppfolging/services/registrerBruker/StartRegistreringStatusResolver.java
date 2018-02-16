@@ -85,7 +85,7 @@ public class StartRegistreringStatusResolver {
                     FeilVedHentingAvStatusIArena feilVedHentingAvStatusIArena = new FeilVedHentingAvStatusIArena();
                     feilVedHentingAvStatusIArena.setFeilkilde("Arena");
                     feilVedHentingAvStatusIArena.setFeilmelding(t.getMessage());
-                    return new HentStartRegistreringStatusFeilVedHentingAvStatusFraArena("Feil ved henting av status i Arnea", feilVedHentingAvStatusIArena);
+                    return new HentStartRegistreringStatusFeilVedHentingAvStatusFraArena("Feil ved henting av status i Arena", feilVedHentingAvStatusIArena);
                 });
     }
 
