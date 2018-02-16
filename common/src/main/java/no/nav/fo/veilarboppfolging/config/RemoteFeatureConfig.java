@@ -22,10 +22,31 @@ public class RemoteFeatureConfig {
         return new SjekkPagaendeYtelserFeature(repo);
     }
 
+    @Bean
+    public SjekkRegistrereBrukerGenerellFeature registrereBrukerGenerellFeature(RemoteFeatureToggleRepository repo) {
+        return new SjekkRegistrereBrukerGenerellFeature(repo);
+    }
+
+    @Bean
+    public SjekkRegistrereBrukerArenaFeature registrereBrukerArenaFeature(RemoteFeatureToggleRepository repo) {
+        return new SjekkRegistrereBrukerArenaFeature(repo);
+    }
+
     public static class SjekkPagaendeYtelserFeature extends RemoteFeatureToggle {
         public SjekkPagaendeYtelserFeature(RemoteFeatureToggleRepository repository) {
             super(repository, "veilarboppfolging.unngasjekkpagaendeytelser", false);
         }
     }
 
+    public static class SjekkRegistrereBrukerGenerellFeature extends RemoteFeatureToggle {
+        public SjekkRegistrereBrukerGenerellFeature(RemoteFeatureToggleRepository repository) {
+            super(repository, "feature.skip.registrer.bruker.generell", false);
+        }
+    }
+
+    public static class SjekkRegistrereBrukerArenaFeature extends RemoteFeatureToggle {
+        public SjekkRegistrereBrukerArenaFeature(RemoteFeatureToggleRepository repository) {
+            super(repository, "feature.skip.registrer.bruker.arena", false);
+        }
+    }
 }

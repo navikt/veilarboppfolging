@@ -4,6 +4,9 @@ import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.apiapp.security.PepClient;
 import no.nav.dialogarena.aktor.AktorService;
+import no.nav.fo.veilarboppfolging.config.RemoteFeatureConfig;
+import no.nav.fo.veilarboppfolging.config.RemoteFeatureConfig.SjekkRegistrereBrukerArenaFeature;
+import no.nav.fo.veilarboppfolging.config.RemoteFeatureConfig.SjekkRegistrereBrukerGenerellFeature;
 import no.nav.fo.veilarboppfolging.db.ArbeidssokerregistreringRepository;
 import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.fo.veilarboppfolging.services.ArbeidsforholdService;
@@ -15,15 +18,14 @@ import no.nav.tjeneste.virksomhet.behandlearbeidssoeker.v1.meldinger.AktiverBruk
 import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.binding.HentStartRegistreringStatusFeilVedHentingAvArbeidsforhold;
 import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.binding.HentStartRegistreringStatusFeilVedHentingAvStatusFraArena;
 import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.binding.RegistrerBrukerSikkerhetsbegrensning;
-import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.feil.Sikkerhetsbegrensning;
 
+import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
 
 import static io.vavr.API.$;
 import static io.vavr.API.Case;
 import static io.vavr.Predicates.instanceOf;
-import static no.nav.fo.veilarboppfolging.utils.DateUtils.now;
 import static no.nav.fo.veilarboppfolging.utils.StartRegistreringUtils.erBesvarelseneValidertSomIkkeSelvgaaende;
 
 @Slf4j
@@ -33,6 +35,12 @@ public class RegistrerBrukerService {
     private ArbeidssokerregistreringRepository arbeidssokerregistreringRepository;
     private StartRegistreringStatusResolver startRegistreringStatusResolver;
     private final BehandleArbeidssoekerV1 behandleArbeidssoekerV1;
+
+    @Inject
+    private SjekkRegistrereBrukerGenerellFeature skalRegistrereBrukerGenerellFeature;
+
+    @Inject
+    private SjekkRegistrereBrukerArenaFeature skalRegistrereBrukerArenaFeature;
 
     public RegistrerBrukerService(ArbeidssokerregistreringRepository arbeidssokerregistreringRepository,
                                   PepClient pepClient,
@@ -57,6 +65,10 @@ public class RegistrerBrukerService {
     public RegistrertBruker registrerBruker(RegistrertBruker bruker, String fnr) throws RegistrerBrukerSikkerhetsbegrensning,
             HentStartRegistreringStatusFeilVedHentingAvStatusFraArena, HentStartRegistreringStatusFeilVedHentingAvArbeidsforhold {
 
+        if (!skalRegistrereBrukerGenerellFeature.erAktiv()) {
+            throw new RuntimeException("Tjenesten er togglet av.");
+        }
+
         StartRegistreringStatus startRegistreringStatus = startRegistreringStatusResolver.hentStartRegistreringStatus(fnr);
 
         AktorId aktorId = FnrUtils.getAktorIdOrElseThrow(aktorService, fnr);
@@ -64,7 +76,10 @@ public class RegistrerBrukerService {
         RegistrertBruker registrertBruker = null;
 
         if (erSelvgaaende(bruker, startRegistreringStatus)) {
-            opprettBrukerIArena(new AktiverArbeidssokerData(new Fnr(fnr), "IKVAL"));
+            if (!skalRegistrereBrukerArenaFeature.erAktiv()) {
+                opprettBrukerIArena(new AktiverArbeidssokerData(new Fnr(fnr), "IKVAL"));
+            }
+
             registrertBruker = arbeidssokerregistreringRepository.lagreBruker(bruker, aktorId);
         }
 
