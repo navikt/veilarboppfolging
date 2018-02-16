@@ -3,6 +3,8 @@ package no.nav.fo.veilarboppfolging.services.registrerBruker;
 import lombok.SneakyThrows;
 import no.nav.apiapp.security.PepClient;
 import no.nav.dialogarena.aktor.AktorService;
+import no.nav.fo.veilarboppfolging.config.RemoteFeatureConfig.SjekkRegistrereBrukerArenaFeature;
+import no.nav.fo.veilarboppfolging.config.RemoteFeatureConfig.SjekkRegistrereBrukerGenerellFeature;
 import no.nav.fo.veilarboppfolging.db.ArbeidssokerregistreringRepository;
 import no.nav.fo.veilarboppfolging.domain.Arbeidsforhold;
 import no.nav.fo.veilarboppfolging.domain.ArenaOppfolging;
@@ -29,11 +31,9 @@ import static no.nav.fo.veilarboppfolging.TestUtils.getFodselsnummerForPersonWit
 import static no.nav.fo.veilarboppfolging.services.registrerBruker.Konstanter.*;
 import static no.nav.fo.veilarboppfolging.utils.KonfigForRegistrertBrukerIkkeSelvgaende.NUS_KODE_2;
 import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 class RegistrerBrukerServiceTest {
     private static String FNR_OPPFYLLER_KRAV = getFodselsnummerForPersonWithAge(40);
@@ -46,9 +46,13 @@ class RegistrerBrukerServiceTest {
     private ArenaOppfolgingService arenaOppfolgingService;
     private RegistrerBrukerService registrerBrukerService;
     private BehandleArbeidssoekerV1 behandleArbeidssoekerV1;
+    private SjekkRegistrereBrukerArenaFeature erArenaToggletPaa;
+    private SjekkRegistrereBrukerGenerellFeature erLagreFunksjonToggletPaa;
 
     @BeforeEach
     public void setup() {
+        erArenaToggletPaa = mock(SjekkRegistrereBrukerArenaFeature.class);
+        erLagreFunksjonToggletPaa = mock(SjekkRegistrereBrukerGenerellFeature.class);
         aktorService = mock(AktorService.class);
         arbeidssokerregistreringRepository = mock(ArbeidssokerregistreringRepository.class);
         pepClient = mock(PepClient.class);
@@ -62,10 +66,14 @@ class RegistrerBrukerServiceTest {
                         aktorService,
                         arenaOppfolgingService,
                         arbeidsforholdService,
-                        behandleArbeidssoekerV1
+                        behandleArbeidssoekerV1,
+                        erArenaToggletPaa,
+                        erLagreFunksjonToggletPaa
                 );
 
         when(aktorService.getAktorId(any())).thenReturn(Optional.of("AKTORID"));
+        when(erArenaToggletPaa.erAktiv()).thenReturn(true);
+        when(erLagreFunksjonToggletPaa.erAktiv()).thenReturn(true);
     }
 
     /*
@@ -77,6 +85,32 @@ class RegistrerBrukerServiceTest {
         RegistrertBruker selvgaaendeBruker = getBrukerSelvgaaende();
         RegistrertBruker registrertBruker = registrerBruker(selvgaaendeBruker, FNR_OPPFYLLER_KRAV);
         assertThat(registrertBruker).isEqualTo(selvgaaendeBruker);
+    }
+
+    @Test
+    void skalRegistrereSelvgaaendeBrukerIDatabasenSelvOmArenaErToggletBort() throws Exception {
+        when(erArenaToggletPaa.erAktiv()).thenReturn(false);
+        mockRegistreringAvSelvgaaendeBrukerSomIkkeErUnderOppfolgingOgOppfyllerKravForAutomatiskRegistrering();
+        RegistrertBruker selvgaaendeBruker = getBrukerSelvgaaende();
+        RegistrertBruker registrertBruker = registrerBruker(selvgaaendeBruker, FNR_OPPFYLLER_KRAV);
+        verify(behandleArbeidssoekerV1, times(0)).aktiverBruker(any());
+        assertThat(registrertBruker).isEqualTo(selvgaaendeBruker);
+    }
+
+    @Test
+    void skalRegistrereIArenaNaarArenaToggleErPaa() throws Exception {
+        when(erArenaToggletPaa.erAktiv()).thenReturn(true);
+        mockRegistreringAvSelvgaaendeBrukerSomIkkeErUnderOppfolgingOgOppfyllerKravForAutomatiskRegistrering();
+        registrerBruker(getBrukerSelvgaaende(), FNR_OPPFYLLER_KRAV);
+        verify(behandleArbeidssoekerV1, times(1)).aktiverBruker(any());
+    }
+
+    @Test
+    void skalKasteRuntimeExceptionDersomGenerellLagreToggleErAv() throws Exception {
+        when(erLagreFunksjonToggletPaa.erAktiv()).thenReturn(false);
+        mockRegistreringAvSelvgaaendeBrukerSomIkkeErUnderOppfolgingOgOppfyllerKravForAutomatiskRegistrering();
+        assertThrows(RuntimeException.class, () -> registrerBruker(getBrukerSelvgaaende(), FNR_OPPFYLLER_KRAV));
+        verify(behandleArbeidssoekerV1, times(0)).aktiverBruker(any());
     }
 
     @Test

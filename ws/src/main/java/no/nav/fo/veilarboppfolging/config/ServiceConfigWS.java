@@ -3,6 +3,8 @@ package no.nav.fo.veilarboppfolging.config;
 
 import no.nav.apiapp.security.PepClient;
 import no.nav.dialogarena.aktor.AktorService;
+import no.nav.fo.veilarboppfolging.config.RemoteFeatureConfig.SjekkRegistrereBrukerArenaFeature;
+import no.nav.fo.veilarboppfolging.config.RemoteFeatureConfig.SjekkRegistrereBrukerGenerellFeature;
 import no.nav.fo.veilarboppfolging.db.ArbeidssokerregistreringRepository;
 import no.nav.fo.veilarboppfolging.service.ReservertKrrService;
 import no.nav.fo.veilarboppfolging.services.ArbeidsforholdService;
@@ -29,14 +31,18 @@ public class ServiceConfigWS {
                                                   AktorService aktorService,
                                                   ArenaOppfolgingService arenaOppfolgingService,
                                                   ArbeidsforholdService arbeidsforholdService,
-                                                  BehandleArbeidssoekerV1 behandleArbeidssoekerV1) {
+                                                  BehandleArbeidssoekerV1 behandleArbeidssoekerV1,
+                                                  SjekkRegistrereBrukerArenaFeature sjekkRegistrereBrukerArenaFeature,
+                                                  SjekkRegistrereBrukerGenerellFeature skalRegistrereBrukerGenerellFeature) {
         return new RegistrerBrukerService(
                 arbeidssokerregistreringRepository,
                 pepClient,
                 aktorService,
                 arenaOppfolgingService,
                 arbeidsforholdService,
-                behandleArbeidssoekerV1
+                behandleArbeidssoekerV1,
+                sjekkRegistrereBrukerArenaFeature,
+                skalRegistrereBrukerGenerellFeature
                 );
     }
 

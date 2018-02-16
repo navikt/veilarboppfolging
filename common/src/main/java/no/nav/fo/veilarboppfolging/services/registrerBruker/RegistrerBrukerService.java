@@ -36,11 +36,7 @@ public class RegistrerBrukerService {
     private ArbeidssokerregistreringRepository arbeidssokerregistreringRepository;
     private StartRegistreringStatusResolver startRegistreringStatusResolver;
     private final BehandleArbeidssoekerV1 behandleArbeidssoekerV1;
-
-    @Inject
     private SjekkRegistrereBrukerGenerellFeature skalRegistrereBrukerGenerellFeature;
-
-    @Inject
     private SjekkRegistrereBrukerArenaFeature skalRegistrereBrukerArenaFeature;
 
     public RegistrerBrukerService(ArbeidssokerregistreringRepository arbeidssokerregistreringRepository,
@@ -48,11 +44,15 @@ public class RegistrerBrukerService {
                                   AktorService aktorService,
                                   ArenaOppfolgingService arenaOppfolgingService,
                                   ArbeidsforholdService arbeidsforholdService,
-                                  BehandleArbeidssoekerV1 BehandleArbeidssoekerV1
+                                  BehandleArbeidssoekerV1 BehandleArbeidssoekerV1,
+                                  SjekkRegistrereBrukerArenaFeature sjekkRegistrereBrukerArenaFeature,
+                                  SjekkRegistrereBrukerGenerellFeature skalRegistrereBrukerGenerellFeature
     ) {
         this.arbeidssokerregistreringRepository = arbeidssokerregistreringRepository;
         this.aktorService = aktorService;
         this.behandleArbeidssoekerV1 = BehandleArbeidssoekerV1;
+        this.skalRegistrereBrukerArenaFeature = sjekkRegistrereBrukerArenaFeature;
+        this.skalRegistrereBrukerGenerellFeature = skalRegistrereBrukerGenerellFeature;
 
         startRegistreringStatusResolver = new StartRegistreringStatusResolver(aktorService,
                 arbeidssokerregistreringRepository, pepClient, arenaOppfolgingService, arbeidsforholdService);
@@ -84,7 +84,9 @@ public class RegistrerBrukerService {
             throw new RegistrerBrukerSikkerhetsbegrensning("Bruker oppfyller ikke krav for registrering.", sikkerhetsbegrensning);
         }
 
-        opprettBrukerIArena(new AktiverArbeidssokerData(new Fnr(fnr), "IKVAL"));
+        if (skalRegistrereBrukerArenaFeature.erAktiv()) {
+            opprettBrukerIArena(new AktiverArbeidssokerData(new Fnr(fnr), "IKVAL"));
+        }
         return arbeidssokerregistreringRepository.lagreBruker(bruker, aktorId);
     }
 
