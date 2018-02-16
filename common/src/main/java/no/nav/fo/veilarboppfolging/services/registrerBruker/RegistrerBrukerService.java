@@ -18,6 +18,7 @@ import no.nav.tjeneste.virksomhet.behandlearbeidssoeker.v1.meldinger.AktiverBruk
 import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.binding.HentStartRegistreringStatusFeilVedHentingAvArbeidsforhold;
 import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.binding.HentStartRegistreringStatusFeilVedHentingAvStatusFraArena;
 import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.binding.RegistrerBrukerSikkerhetsbegrensning;
+import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.feil.Sikkerhetsbegrensning;
 
 import javax.inject.Inject;
 import javax.ws.rs.*;
@@ -73,17 +74,18 @@ public class RegistrerBrukerService {
 
         AktorId aktorId = FnrUtils.getAktorIdOrElseThrow(aktorService, fnr);
 
-        RegistrertBruker registrertBruker = null;
+        boolean erSelvaaende = erSelvgaaende(bruker, startRegistreringStatus);
 
-        if (erSelvgaaende(bruker, startRegistreringStatus)) {
-            if (!skalRegistrereBrukerArenaFeature.erAktiv()) {
-                opprettBrukerIArena(new AktiverArbeidssokerData(new Fnr(fnr), "IKVAL"));
-            }
-
-            registrertBruker = arbeidssokerregistreringRepository.lagreBruker(bruker, aktorId);
+        if (!erSelvaaende) {
+            Sikkerhetsbegrensning sikkerhetsbegrensning = startRegistreringStatusResolver.getSikkerhetsbegrensning(
+                    "Arena",
+                    "Arena",
+                    "Bruker oppfyller ikke krav for registrering.");
+            throw new RegistrerBrukerSikkerhetsbegrensning("Bruker oppfyller ikke krav for registrering.", sikkerhetsbegrensning);
         }
 
-        return registrertBruker;
+        opprettBrukerIArena(new AktiverArbeidssokerData(new Fnr(fnr), "IKVAL"));
+        return arbeidssokerregistreringRepository.lagreBruker(bruker, aktorId);
     }
 
     @SuppressWarnings({"unchecked"})

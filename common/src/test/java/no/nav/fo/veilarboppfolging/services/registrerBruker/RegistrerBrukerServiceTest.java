@@ -27,6 +27,7 @@ import java.util.Optional;
 
 import static no.nav.fo.veilarboppfolging.TestUtils.getFodselsnummerForPersonWithAge;
 import static no.nav.fo.veilarboppfolging.services.registrerBruker.Konstanter.*;
+import static no.nav.fo.veilarboppfolging.utils.KonfigForRegistrertBrukerIkkeSelvgaende.NUS_KODE_2;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
@@ -36,7 +37,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class RegistrerBrukerServiceTest {
     private static String FNR_OPPFYLLER_KRAV = getFodselsnummerForPersonWithAge(40);
-
+    private static String FNR_OPPFYLLER_IKKE_KRAV = getFodselsnummerForPersonWithAge(20);
 
     private ArbeidssokerregistreringRepository arbeidssokerregistreringRepository;
     private AktorService aktorService;
@@ -66,82 +67,176 @@ class RegistrerBrukerServiceTest {
 
         when(aktorService.getAktorId(any())).thenReturn(Optional.of("AKTORID"));
     }
+
+    /*
+    * Test av besvarelsene og lagring
+    * */
     @Test
     void skalRegistrereSelvgaaendeBruker() throws Exception {
-        mockRegistreringAvSelvgaaendeBruker();
-
-        RegistrertBruker selvgaaendeBruker = getRegistrertSelvgaaendeBruker();
-
-        RegistrertBruker registrertBruker = registrerBruker(selvgaaendeBruker);
+        mockRegistreringAvSelvgaaendeBrukerSomIkkeErUnderOppfolgingOgOppfyllerKravForAutomatiskRegistrering();
+        RegistrertBruker selvgaaendeBruker = getBrukerSelvgaaende();
+        RegistrertBruker registrertBruker = registrerBruker(selvgaaendeBruker, FNR_OPPFYLLER_KRAV);
         assertThat(registrertBruker).isEqualTo(selvgaaendeBruker);
     }
 
     @Test
-    void skalIkkeRegistrereIkkeSelvgaaendeBruker() throws Exception {
-        mockRegistreringAvSelvgaaendeBruker();
-
-        RegistrertBruker ikkeSelvgaaendeBruker = getRegistrertBrukerUtdanningIkkeBestatt();
-
-        RegistrertBruker registrertBruker = registrerBruker(ikkeSelvgaaendeBruker);
-        assertThat(registrertBruker).isEqualTo(null);
+    void skalIkkeRegistrereSomErUnderOppfolging() {
+        mockRegistreringAvSelvgaaendeBrukerSomErUnderOppfolging();
+        RegistrertBruker selvgaaendeBruker = getBrukerSelvgaaende();
+        assertThrows(RegistrerBrukerSikkerhetsbegrensning.class, () -> registrerBruker(selvgaaendeBruker, FNR_OPPFYLLER_KRAV));
     }
 
     @Test
-    public void brukerSomIkkeFinnesIArenaSkalMappesTilNotFoundException() throws Exception {
-        mockRegistreringAvSelvgaaendeBruker();
+    void skalIkkeRegistrereSomIkkeOppfyllerKravForAutomatiskRegistrering() throws Exception {
+        mockRegistreringAvSelvgaaendeBrukerSomIkkeErUnderOppfolgingOgOppfyllerKravForAutomatiskRegistrering();
+        RegistrertBruker selvgaaendeBruker = getBrukerSelvgaaende();
+        assertThrows(RegistrerBrukerSikkerhetsbegrensning.class, () -> registrerBruker(selvgaaendeBruker, FNR_OPPFYLLER_IKKE_KRAV));
+    }
+
+    @Test
+    void skalIkkeRegistrereDersomIngenUtdannelse() throws Exception {
+        mockRegistreringAvSelvgaaendeBrukerSomIkkeErUnderOppfolgingOgOppfyllerKravForAutomatiskRegistrering();
+        RegistrertBruker ikkeSelvgaaendeBruker = getBrukerIngenUtdannelse();
+        assertThrows(RegistrerBrukerSikkerhetsbegrensning.class, () -> registrerBruker(ikkeSelvgaaendeBruker, FNR_OPPFYLLER_KRAV));
+    }
+
+    @Test
+    void skalIkkeRegistrereDersomGrunnskole() throws Exception {
+        mockRegistreringAvSelvgaaendeBrukerSomIkkeErUnderOppfolgingOgOppfyllerKravForAutomatiskRegistrering();
+        RegistrertBruker ikkeSelvgaaendeBruker = getBrukerGrunnskole();
+        assertThrows(RegistrerBrukerSikkerhetsbegrensning.class, () -> registrerBruker(ikkeSelvgaaendeBruker, FNR_OPPFYLLER_KRAV));
+    }
+
+    @Test
+    void skalIkkeRegistrereDersomUtdanningIkkeBestatt() throws Exception {
+        mockRegistreringAvSelvgaaendeBrukerSomIkkeErUnderOppfolgingOgOppfyllerKravForAutomatiskRegistrering();
+        RegistrertBruker ikkeSelvgaaendeBruker = getBrukerUtdanningIkkeBestatt();
+        assertThrows(RegistrerBrukerSikkerhetsbegrensning.class, () -> registrerBruker(ikkeSelvgaaendeBruker, FNR_OPPFYLLER_KRAV));
+    }
+
+    @Test
+    void skalIkkeRegistrereSomHarHelseutfordringer() throws Exception {
+        mockRegistreringAvSelvgaaendeBrukerSomIkkeErUnderOppfolgingOgOppfyllerKravForAutomatiskRegistrering();
+        RegistrertBruker ikkeSelvgaaendeBruker = getBrukerHarHelseutfordringer();
+        assertThrows(RegistrerBrukerSikkerhetsbegrensning.class, () -> registrerBruker(ikkeSelvgaaendeBruker, FNR_OPPFYLLER_KRAV));
+    }
+
+    @Test
+    void skalIkkeRegistrereDersomUtdannelseIkkeGodkjent() throws Exception {
+        mockRegistreringAvSelvgaaendeBrukerSomIkkeErUnderOppfolgingOgOppfyllerKravForAutomatiskRegistrering();
+        RegistrertBruker ikkeSelvgaaendeBruker = getBrukerUtdannelseIkkeGodkjent();
+        assertThrows(RegistrerBrukerSikkerhetsbegrensning.class, () -> registrerBruker(ikkeSelvgaaendeBruker, FNR_OPPFYLLER_KRAV));
+    }
+
+    @Test
+    void skalIkkeRegistrereDersomSituasjonErAnnet() throws Exception {
+        mockRegistreringAvSelvgaaendeBrukerSomIkkeErUnderOppfolgingOgOppfyllerKravForAutomatiskRegistrering();
+        RegistrertBruker ikkeSelvgaaendeBruker = getBrukerSituasjonAnnet();
+        assertThrows(RegistrerBrukerSikkerhetsbegrensning.class, () -> registrerBruker(ikkeSelvgaaendeBruker, FNR_OPPFYLLER_KRAV));
+    }
+
+    /*
+    * Test av kall registrering arena og lagring
+    * */
+    @Test
+    void brukerSomIkkeFinnesIArenaSkalMappesTilNotFoundException() throws Exception {
+        mockRegistreringAvSelvgaaendeBrukerSomIkkeErUnderOppfolgingOgOppfyllerKravForAutomatiskRegistrering();
         doThrow(mock(AktiverBrukerBrukerFinnesIkke.class)).when(behandleArbeidssoekerV1).aktiverBruker(any());
-        assertThrows(NotFoundException.class, () -> registrerBruker(getRegistrertSelvgaaendeBruker()));
+        assertThrows(NotFoundException.class, () -> registrerBruker(getBrukerSelvgaaende(), FNR_OPPFYLLER_KRAV));
     }
 
     @Test
-    public void brukerSomIkkeKanReaktiveresIArenaSkalGiServerErrorException() throws Exception {
-        mockRegistreringAvSelvgaaendeBruker();
+    void brukerSomIkkeKanReaktiveresIArenaSkalGiServerErrorException() throws Exception {
+        mockRegistreringAvSelvgaaendeBrukerSomIkkeErUnderOppfolgingOgOppfyllerKravForAutomatiskRegistrering();
         doThrow(mock(AktiverBrukerBrukerIkkeReaktivert.class)).when(behandleArbeidssoekerV1).aktiverBruker(any());
-        assertThrows(ServerErrorException.class, () -> registrerBruker(getRegistrertSelvgaaendeBruker()));
+        assertThrows(ServerErrorException.class, () -> registrerBruker(getBrukerSelvgaaende(), FNR_OPPFYLLER_KRAV));
     }
 
     @Test
-    public void brukerSomIkkeKanAktiveresIArenaSkalGiServerErrorException() throws Exception {
-        mockRegistreringAvSelvgaaendeBruker();
+    void brukerSomIkkeKanAktiveresIArenaSkalGiServerErrorException() throws Exception {
+        mockRegistreringAvSelvgaaendeBrukerSomIkkeErUnderOppfolgingOgOppfyllerKravForAutomatiskRegistrering();
         doThrow(mock(AktiverBrukerBrukerKanIkkeAktiveres.class)).when(behandleArbeidssoekerV1).aktiverBruker(any());
-        assertThrows(ServerErrorException.class, () -> registrerBruker(getRegistrertSelvgaaendeBruker()));
+        assertThrows(ServerErrorException.class, () -> registrerBruker(getBrukerSelvgaaende(), FNR_OPPFYLLER_KRAV));
     }
 
     @Test
-    public void brukerSomManglerArbeidstillatelseSkalGiServerErrorException() throws Exception {
-        mockRegistreringAvSelvgaaendeBruker();
+    void brukerSomManglerArbeidstillatelseSkalGiServerErrorException() throws Exception {
+        mockRegistreringAvSelvgaaendeBrukerSomIkkeErUnderOppfolgingOgOppfyllerKravForAutomatiskRegistrering();
         doThrow(mock(AktiverBrukerBrukerManglerArbeidstillatelse.class)).when(behandleArbeidssoekerV1).aktiverBruker(any());
-        assertThrows(ServerErrorException.class, () -> registrerBruker(getRegistrertSelvgaaendeBruker()));
+        assertThrows(ServerErrorException.class, () -> registrerBruker(getBrukerSelvgaaende(), FNR_OPPFYLLER_KRAV));
     }
 
     @Test
-    public void brukerSomIkkeHarTilgangSkalGiNotAuthorizedException() throws Exception {
-        mockRegistreringAvSelvgaaendeBruker();
+    void brukerSomIkkeHarTilgangSkalGiNotAuthorizedException() throws Exception {
+        mockRegistreringAvSelvgaaendeBrukerSomIkkeErUnderOppfolgingOgOppfyllerKravForAutomatiskRegistrering();
         doThrow(mock(AktiverBrukerSikkerhetsbegrensning.class)).when(behandleArbeidssoekerV1).aktiverBruker(any());
-        assertThrows(NotAuthorizedException.class, () -> registrerBruker(getRegistrertSelvgaaendeBruker()));
+        assertThrows(NotAuthorizedException.class, () -> registrerBruker(getBrukerSelvgaaende(), FNR_OPPFYLLER_KRAV));
     }
 
     @Test
-    public void ugyldigInputSkalGiBadRequestException() throws Exception {
-        mockRegistreringAvSelvgaaendeBruker();
+    void ugyldigInputSkalGiBadRequestException() throws Exception {
+        mockRegistreringAvSelvgaaendeBrukerSomIkkeErUnderOppfolgingOgOppfyllerKravForAutomatiskRegistrering();
 
         doThrow(mock(AktiverBrukerUgyldigInput.class)).when(behandleArbeidssoekerV1).aktiverBruker(any());
-        assertThrows(BadRequestException.class, () -> registrerBruker(getRegistrertSelvgaaendeBruker()));
+        assertThrows(BadRequestException.class, () -> registrerBruker(getBrukerSelvgaaende(), FNR_OPPFYLLER_KRAV));
     }
 
-
-
-    @Test
-    void skalIkkeRegistrereBrukerUnderOppfolging() {
-        // Todo
+    /*
+    * Mock og hjelpe funksjoner
+    * */
+    private RegistrertBruker getBrukerSelvgaaende() {
+        return new RegistrertBruker(
+                NUS_KODE_4,
+                null,
+                null,
+                ENIG_I_OPPSUMMERING,
+                OPPSUMMERING,
+                UTDANNING_BESTATT,
+                UTDANNING_GODKJENT_NORGE,
+                HAR_INGEN_HELSEUTFORDRINGER,
+                MISTET_JOBBEN
+        );
     }
-
-    @Test
-    void skalIkkeRegistrereBrukerSomIkkeOppfyllerKravForAutomatiskRegistrering() {
+    private RegistrertBruker getBrukerGrunnskole() {
+        return new RegistrertBruker(
+                NUS_KODE_2,
+                null,
+                null,
+                ENIG_I_OPPSUMMERING,
+                OPPSUMMERING,
+                UTDANNING_BESTATT,
+                UTDANNING_GODKJENT_NORGE,
+                HAR_INGEN_HELSEUTFORDRINGER,
+                MISTET_JOBBEN
+        );
     }
-
-
-    private RegistrertBruker getRegistrertSelvgaaendeBruker() {
+    private RegistrertBruker getBrukerIngenUtdannelse() {
+        return new RegistrertBruker(
+                NUS_KODE_0,
+                null,
+                null,
+                ENIG_I_OPPSUMMERING,
+                OPPSUMMERING,
+                UTDANNING_BESTATT,
+                UTDANNING_GODKJENT_NORGE,
+                HAR_INGEN_HELSEUTFORDRINGER,
+                MISTET_JOBBEN
+        );
+    }
+    private RegistrertBruker getBrukerUtdannelseIkkeGodkjent() {
+        return new RegistrertBruker(
+                NUS_KODE_4,
+                null,
+                null,
+                ENIG_I_OPPSUMMERING,
+                OPPSUMMERING,
+                UTDANNING_BESTATT,
+                UTDANNING_IKKE_GODKJENT_NORGE,
+                HAR_INGEN_HELSEUTFORDRINGER,
+                MISTET_JOBBEN
+        );
+    }
+    private RegistrertBruker getBrukerHarHelseutfordringer() {
         return new RegistrertBruker(
                 NUS_KODE_4,
                 null,
@@ -151,11 +246,23 @@ class RegistrerBrukerServiceTest {
                 UTDANNING_BESTATT,
                 UTDANNING_GODKJENT_NORGE,
                 HAR_HELSEUTFORDRINGER,
-                SITUASJON
+                MISTET_JOBBEN
         );
     }
-
-    private RegistrertBruker getRegistrertBrukerUtdanningIkkeBestatt() {
+    private RegistrertBruker getBrukerSituasjonAnnet() {
+        return new RegistrertBruker(
+                NUS_KODE_4,
+                null,
+                null,
+                ENIG_I_OPPSUMMERING,
+                OPPSUMMERING,
+                UTDANNING_BESTATT,
+                UTDANNING_GODKJENT_NORGE,
+                HAR_INGEN_HELSEUTFORDRINGER,
+                SITUASJON_ANNET
+        );
+    }
+    private RegistrertBruker getBrukerUtdanningIkkeBestatt() {
         return new RegistrertBruker(
                 NUS_KODE_4,
                 null,
@@ -164,37 +271,39 @@ class RegistrerBrukerServiceTest {
                 OPPSUMMERING,
                 UTDANNING_IKKE_BESTATT,
                 UTDANNING_GODKJENT_NORGE,
-                HAR_HELSEUTFORDRINGER,
-                SITUASJON
+                HAR_INGEN_HELSEUTFORDRINGER,
+                MISTET_JOBBEN
         );
     }
-
-    private RegistrertBruker registrerBruker(RegistrertBruker bruker) throws RegistrerBrukerSikkerhetsbegrensning, HentStartRegistreringStatusFeilVedHentingAvStatusFraArena, HentStartRegistreringStatusFeilVedHentingAvArbeidsforhold {
-        return registrerBrukerService.registrerBruker(bruker, FNR_OPPFYLLER_KRAV);
+    private RegistrertBruker registrerBruker(RegistrertBruker bruker, String fnr) throws RegistrerBrukerSikkerhetsbegrensning, HentStartRegistreringStatusFeilVedHentingAvStatusFraArena, HentStartRegistreringStatusFeilVedHentingAvArbeidsforhold {
+        return registrerBrukerService.registrerBruker(bruker, fnr);
     }
-
-    private void mockRegistreringAvSelvgaaendeBruker() {
+    private void mockRegistreringAvSelvgaaendeBrukerSomIkkeErUnderOppfolgingOgOppfyllerKravForAutomatiskRegistrering() {
         mockArenaMedRespons(arenaISERV(LocalDate.now().minusYears(2)));
         mockArbeidsforhold(arbeidsforholdSomOppfyllerKrav());
-        when(arbeidssokerregistreringRepository.lagreBruker(any(), any())).thenReturn(getRegistrertSelvgaaendeBruker());
+        when(arbeidssokerregistreringRepository.lagreBruker(any(), any())).thenReturn(getBrukerSelvgaaende());
     }
-
-    private void mockArenaMedRespons(ArenaOppfolging arenaOppfolging){
+    private void mockRegistreringAvSelvgaaendeBrukerSomErUnderOppfolging() {
+        mockArenaMedRespons(arenaISERV(LocalDate.now().minusYears(2)));
+        mockOppfolgingsflagg();
+        when(arbeidssokerregistreringRepository.lagreBruker(any(), any())).thenReturn(getBrukerSelvgaaende());
+    }
+    private void mockArenaMedRespons(ArenaOppfolging arenaOppfolging) {
         when(arenaOppfolgingService.hentArenaOppfolging(any())).thenReturn(arenaOppfolging);
     }
-
     private ArenaOppfolging arenaISERV(LocalDate iservFra) {
         return new ArenaOppfolging().setFormidlingsgruppe("ISERV").setServicegruppe("IVURD").setInaktiveringsdato(iservFra);
     }
-
+    private void mockOppfolgingsflagg() {
+        when(arbeidssokerregistreringRepository.erOppfolgingsflaggSatt(any())).thenReturn(true);
+    }
     @SneakyThrows
     private void mockArbeidsforhold(List<Arbeidsforhold> arbeidsforhold) {
         when(arbeidsforholdService.hentArbeidsforhold(any())).thenReturn(arbeidsforhold);
     }
-
     private List<Arbeidsforhold> arbeidsforholdSomOppfyllerKrav() {
         return Collections.singletonList(new Arbeidsforhold()
                 .setArbeidsgiverOrgnummer("orgnummer")
-                .setFom(LocalDate.of(2017,1,10)));
+                .setFom(LocalDate.of(2017, 1, 10)));
     }
 }
