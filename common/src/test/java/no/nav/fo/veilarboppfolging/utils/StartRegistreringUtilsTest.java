@@ -66,8 +66,8 @@ public class StartRegistreringUtilsTest {
                 OPPSUMMERING,
                 UTDANNING_IKKE_BESTATT,
                 UTDANNING_GODKJENT_NORGE,
-                HAR_HELSEUTFORDRINGER,
-                SITUASJON
+                HAR_INGEN_HELSEUTFORDRINGER,
+                MISTET_JOBBEN
         );
         assertThat(erBesvarelseneValidertSomIkkeSelvgaaende(bruker)).isTrue();
     }
@@ -82,8 +82,8 @@ public class StartRegistreringUtilsTest {
                 OPPSUMMERING,
                 UTDANNING_BESTATT,
                 UTDANNING_IKKE_GODKJENT_NORGE,
-                HAR_HELSEUTFORDRINGER,
-                SITUASJON);
+                HAR_INGEN_HELSEUTFORDRINGER,
+                MISTET_JOBBEN);
         assertThat(erBesvarelseneValidertSomIkkeSelvgaaende(bruker)).isTrue();
     }
 
@@ -97,8 +97,8 @@ public class StartRegistreringUtilsTest {
                 OPPSUMMERING,
                 UTDANNING_BESTATT,
                 UTDANNING_GODKJENT_NORGE,
-                HAR_HELSEUTFORDRINGER,
-                SITUASJON);
+                HAR_INGEN_HELSEUTFORDRINGER,
+                MISTET_JOBBEN);
         assertThat(erBesvarelseneValidertSomIkkeSelvgaaende(bruker)).isTrue();
     }
 

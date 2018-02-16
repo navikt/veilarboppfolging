@@ -8,7 +8,9 @@ public class Konstanter {
     public static final boolean UTDANNING_IKKE_BESTATT = false;
     public static final boolean UTDANNING_GODKJENT_NORGE = true;
     public static final boolean UTDANNING_IKKE_GODKJENT_NORGE = false;
-    public static final boolean HAR_HELSEUTFORDRINGER = false;
-    public static final String SITUASJON = "MISTET-JOBBEN";
+    public static final boolean HAR_INGEN_HELSEUTFORDRINGER = false;
+    public static final boolean HAR_HELSEUTFORDRINGER = true;
+    public static final String MISTET_JOBBEN = "MISTET-JOBBEN";
+    public static final String SITUASJON_ANNET = "ANNET";
     public static final boolean ENIG_I_OPPSUMMERING = true;
 }

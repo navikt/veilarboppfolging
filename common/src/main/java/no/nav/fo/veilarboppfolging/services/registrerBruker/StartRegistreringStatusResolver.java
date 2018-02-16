@@ -102,16 +102,16 @@ public class StartRegistreringStatusResolver {
     }
 
     private RegistrerBrukerSikkerhetsbegrensning getHentStartRegistreringStatusSikkerhetsbegrensning() {
-        Sikkerhetsbegrensning sikkerhetsbegrensning = getSikkerhetsbegrensning();
+        Sikkerhetsbegrensning sikkerhetsbegrensning = getSikkerhetsbegrensning("ABAC", "ABAC", "Ingen tilgang");
         return new RegistrerBrukerSikkerhetsbegrensning("Kunne ikke gi tilgang etter kall til ABAC", sikkerhetsbegrensning);
     }
 
 
-    private Sikkerhetsbegrensning getSikkerhetsbegrensning() {
+    protected Sikkerhetsbegrensning getSikkerhetsbegrensning(String kilde, String aarsak, String feilmelding) {
         Sikkerhetsbegrensning sikkerhetsbegrensning = new Sikkerhetsbegrensning();
-        sikkerhetsbegrensning.setFeilaarsak("ABAC");
-        sikkerhetsbegrensning.setFeilkilde("ABAC");
-        sikkerhetsbegrensning.setFeilmelding("Ingen tilgang");
+        sikkerhetsbegrensning.setFeilaarsak(aarsak);
+        sikkerhetsbegrensning.setFeilkilde(kilde);
+        sikkerhetsbegrensning.setFeilmelding(feilmelding);
         sikkerhetsbegrensning.setTidspunkt(now());
         return sikkerhetsbegrensning;
     }

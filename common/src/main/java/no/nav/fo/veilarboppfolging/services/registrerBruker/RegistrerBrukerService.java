@@ -23,7 +23,6 @@ import javax.ws.rs.core.Response;
 import static io.vavr.API.$;
 import static io.vavr.API.Case;
 import static io.vavr.Predicates.instanceOf;
-import static no.nav.fo.veilarboppfolging.utils.DateUtils.now;
 import static no.nav.fo.veilarboppfolging.utils.StartRegistreringUtils.erBesvarelseneValidertSomIkkeSelvgaaende;
 
 @Slf4j
@@ -61,14 +60,19 @@ public class RegistrerBrukerService {
 
         AktorId aktorId = FnrUtils.getAktorIdOrElseThrow(aktorService, fnr);
 
-        RegistrertBruker registrertBruker = null;
+        boolean erSelvaaende = erSelvgaaende(bruker, startRegistreringStatus);
 
-        if (erSelvgaaende(bruker, startRegistreringStatus)) {
-            opprettBrukerIArena(new AktiverArbeidssokerData(new Fnr(fnr), "IKVAL"));
-            registrertBruker = arbeidssokerregistreringRepository.lagreBruker(bruker, aktorId);
+        if (!erSelvaaende) {
+            Sikkerhetsbegrensning sikkerhetsbegrensning = startRegistreringStatusResolver.getSikkerhetsbegrensning(
+                    "Arena",
+                    "Arena",
+                    "Bruker oppfyller ikke krav for registrering.");
+            throw new RegistrerBrukerSikkerhetsbegrensning("Bruker oppfyller ikke krav for registrering.", sikkerhetsbegrensning);
         }
 
-        return registrertBruker;
+        opprettBrukerIArena(new AktiverArbeidssokerData(new Fnr(fnr), "IKVAL"));
+        return arbeidssokerregistreringRepository.lagreBruker(bruker, aktorId);
+
     }
 
     @SuppressWarnings({"unchecked"})
