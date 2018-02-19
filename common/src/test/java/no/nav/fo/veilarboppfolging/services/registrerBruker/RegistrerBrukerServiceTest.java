@@ -6,6 +6,8 @@ import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.config.RemoteFeatureConfig.SjekkRegistrereBrukerArenaFeature;
 import no.nav.fo.veilarboppfolging.config.RemoteFeatureConfig.SjekkRegistrereBrukerGenerellFeature;
 import no.nav.fo.veilarboppfolging.db.ArbeidssokerregistreringRepository;
+import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
+import no.nav.fo.veilarboppfolging.db.OppfolgingsStatusRepository;
 import no.nav.fo.veilarboppfolging.domain.Arbeidsforhold;
 import no.nav.fo.veilarboppfolging.domain.ArenaOppfolging;
 import no.nav.fo.veilarboppfolging.domain.RegistrertBruker;
@@ -48,6 +50,8 @@ class RegistrerBrukerServiceTest {
     private BehandleArbeidssoekerV1 behandleArbeidssoekerV1;
     private SjekkRegistrereBrukerArenaFeature erArenaToggletPaa;
     private SjekkRegistrereBrukerGenerellFeature erLagreFunksjonToggletPaa;
+    private OppfolgingRepository oppfolgingRepository;
+    private OppfolgingsStatusRepository statusRepository;
 
     @BeforeEach
     public void setup() {
@@ -59,9 +63,14 @@ class RegistrerBrukerServiceTest {
         arbeidsforholdService = mock(ArbeidsforholdService.class);
         arenaOppfolgingService = mock(ArenaOppfolgingService.class);
         behandleArbeidssoekerV1 = mock(BehandleArbeidssoekerV1.class);
+        oppfolgingRepository = mock(OppfolgingRepository.class);
+        statusRepository = mock(OppfolgingsStatusRepository.class);
+
         registrerBrukerService =
                 new RegistrerBrukerService(
                         arbeidssokerregistreringRepository,
+                        oppfolgingRepository,
+                        statusRepository,
                         pepClient,
                         aktorService,
                         arenaOppfolgingService,
@@ -111,6 +120,13 @@ class RegistrerBrukerServiceTest {
         mockRegistreringAvSelvgaaendeBrukerSomIkkeErUnderOppfolgingOgOppfyllerKravForAutomatiskRegistrering();
         assertThrows(RuntimeException.class, () -> registrerBruker(getBrukerSelvgaaende(), FNR_OPPFYLLER_KRAV));
         verify(behandleArbeidssoekerV1, times(0)).aktiverBruker(any());
+    }
+
+    @Test
+    void skalKasteRuntimeExceptionDersomBrukerenSettesUnderoppfolgingUnderRegistreringsProsess() throws Exception {
+        mockRegistreringAvSelvgaaendeBrukerSomIkkeErUnderOppfolgingOgOppfyllerKravForAutomatiskRegistrering();
+        when(statusRepository.erOppfolgingsflaggSattForBruker(any())).thenReturn(true);
+        assertThrows(RuntimeException.class, () -> registrerBruker(getBrukerSelvgaaende(), FNR_OPPFYLLER_KRAV));
     }
 
     @Test
@@ -319,7 +335,7 @@ class RegistrerBrukerServiceTest {
     }
     private void mockRegistreringAvSelvgaaendeBrukerSomErUnderOppfolging() {
         mockArenaMedRespons(arenaISERV(LocalDate.now().minusYears(2)));
-        mockOppfolgingsflagg();
+        when(arbeidssokerregistreringRepository.erOppfolgingsflaggSatt(any())).thenReturn(true);
         when(arbeidssokerregistreringRepository.lagreBruker(any(), any())).thenReturn(getBrukerSelvgaaende());
     }
     private void mockArenaMedRespons(ArenaOppfolging arenaOppfolging) {
@@ -327,9 +343,6 @@ class RegistrerBrukerServiceTest {
     }
     private ArenaOppfolging arenaISERV(LocalDate iservFra) {
         return new ArenaOppfolging().setFormidlingsgruppe("ISERV").setServicegruppe("IVURD").setInaktiveringsdato(iservFra);
-    }
-    private void mockOppfolgingsflagg() {
-        when(arbeidssokerregistreringRepository.erOppfolgingsflaggSatt(any())).thenReturn(true);
     }
     @SneakyThrows
     private void mockArbeidsforhold(List<Arbeidsforhold> arbeidsforhold) {

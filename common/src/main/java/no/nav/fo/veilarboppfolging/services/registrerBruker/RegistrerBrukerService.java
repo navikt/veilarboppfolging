@@ -4,10 +4,11 @@ import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.apiapp.security.PepClient;
 import no.nav.dialogarena.aktor.AktorService;
-import no.nav.fo.veilarboppfolging.config.RemoteFeatureConfig;
 import no.nav.fo.veilarboppfolging.config.RemoteFeatureConfig.SjekkRegistrereBrukerArenaFeature;
 import no.nav.fo.veilarboppfolging.config.RemoteFeatureConfig.SjekkRegistrereBrukerGenerellFeature;
 import no.nav.fo.veilarboppfolging.db.ArbeidssokerregistreringRepository;
+import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
+import no.nav.fo.veilarboppfolging.db.OppfolgingsStatusRepository;
 import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.fo.veilarboppfolging.services.ArbeidsforholdService;
 import no.nav.fo.veilarboppfolging.services.ArenaOppfolgingService;
@@ -19,8 +20,8 @@ import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.binding.HentStartRegistr
 import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.binding.HentStartRegistreringStatusFeilVedHentingAvStatusFraArena;
 import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.binding.RegistrerBrukerSikkerhetsbegrensning;
 import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.feil.Sikkerhetsbegrensning;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
 
@@ -38,8 +39,12 @@ public class RegistrerBrukerService {
     private final BehandleArbeidssoekerV1 behandleArbeidssoekerV1;
     private SjekkRegistrereBrukerGenerellFeature skalRegistrereBrukerGenerellFeature;
     private SjekkRegistrereBrukerArenaFeature skalRegistrereBrukerArenaFeature;
+    private OppfolgingRepository oppfolgingRepository;
+    private OppfolgingsStatusRepository statusRepository;
 
     public RegistrerBrukerService(ArbeidssokerregistreringRepository arbeidssokerregistreringRepository,
+                                  OppfolgingRepository oppfolgingRepository,
+                                  OppfolgingsStatusRepository statusRepository,
                                   PepClient pepClient,
                                   AktorService aktorService,
                                   ArenaOppfolgingService arenaOppfolgingService,
@@ -53,6 +58,8 @@ public class RegistrerBrukerService {
         this.behandleArbeidssoekerV1 = BehandleArbeidssoekerV1;
         this.skalRegistrereBrukerArenaFeature = sjekkRegistrereBrukerArenaFeature;
         this.skalRegistrereBrukerGenerellFeature = skalRegistrereBrukerGenerellFeature;
+        this.oppfolgingRepository = oppfolgingRepository;
+        this.statusRepository = statusRepository;
 
         startRegistreringStatusResolver = new StartRegistreringStatusResolver(aktorService,
                 arbeidssokerregistreringRepository, pepClient, arenaOppfolgingService, arbeidsforholdService);
@@ -84,9 +91,20 @@ public class RegistrerBrukerService {
             throw new RegistrerBrukerSikkerhetsbegrensning("Bruker oppfyller ikke krav for registrering.", sikkerhetsbegrensning);
         }
 
+        if (statusRepository.erOppfolgingsflaggSattForBruker(aktorId.getAktorId())) {
+            throw new RuntimeException("Brukeren er allerede under oppfolging");
+        }
+
         if (skalRegistrereBrukerArenaFeature.erAktiv()) {
             opprettBrukerIArena(new AktiverArbeidssokerData(new Fnr(fnr), "IKVAL"));
         }
+
+        return opprettBrukerIDatabase(bruker, aktorId);
+    }
+
+    @Transactional
+    RegistrertBruker opprettBrukerIDatabase(RegistrertBruker bruker, AktorId aktorId) {
+        oppfolgingRepository.startOppfolgingHvisIkkeAlleredeStartet(aktorId.getAktorId());
         return arbeidssokerregistreringRepository.lagreBruker(bruker, aktorId);
     }
 
