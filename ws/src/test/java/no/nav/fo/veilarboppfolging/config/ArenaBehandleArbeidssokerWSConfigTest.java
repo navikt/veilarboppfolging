@@ -1,6 +1,6 @@
 package no.nav.fo.veilarboppfolging.config;
 
-import no.nav.fo.veilarboppfolging.config.RemoteFeatureConfig.SjekkRegistrereBrukerArenaFeature;
+import no.nav.fo.veilarboppfolging.config.RemoteFeatureConfig.OpprettBrukerIArenaFeature;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -17,14 +17,14 @@ public class ArenaBehandleArbeidssokerWSConfigTest {
     static AnnotationConfigApplicationContext context;
 
     @Mock
-    private SjekkRegistrereBrukerArenaFeature skalRegistrereBrukerArenaFeature;
+    private OpprettBrukerIArenaFeature opprettBrukerIArenaFeature;
 
     @InjectMocks
     private ArenaBehandleArbeidssokerWSConfig arenaBehandleArbeidssokerWSConfig;
 
     @Test
     public void skalGiVellykketSelftestPingDersomArenaTjenestenErToggletAv() {
-        when(skalRegistrereBrukerArenaFeature.erAktiv()).thenReturn(false);
+        when(opprettBrukerIArenaFeature.erAktiv()).thenReturn(false);
         assertTrue(arenaBehandleArbeidssokerWSConfig.behandleArbeidssokerPing().ping().erVellykket());
     }
 }

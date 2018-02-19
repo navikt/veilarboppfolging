@@ -4,11 +4,10 @@ import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.apiapp.security.PepClient;
 import no.nav.dialogarena.aktor.AktorService;
-import no.nav.fo.veilarboppfolging.config.RemoteFeatureConfig.SjekkRegistrereBrukerArenaFeature;
-import no.nav.fo.veilarboppfolging.config.RemoteFeatureConfig.SjekkRegistrereBrukerGenerellFeature;
+import no.nav.fo.veilarboppfolging.config.RemoteFeatureConfig.OpprettBrukerIArenaFeature;
+import no.nav.fo.veilarboppfolging.config.RemoteFeatureConfig.RegistreringFeature;
 import no.nav.fo.veilarboppfolging.db.ArbeidssokerregistreringRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
-import no.nav.fo.veilarboppfolging.db.OppfolgingsStatusRepository;
 import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.fo.veilarboppfolging.services.ArbeidsforholdService;
 import no.nav.fo.veilarboppfolging.services.ArenaOppfolgingService;
@@ -28,38 +27,36 @@ import javax.ws.rs.core.Response;
 import static io.vavr.API.$;
 import static io.vavr.API.Case;
 import static io.vavr.Predicates.instanceOf;
-import static no.nav.fo.veilarboppfolging.utils.StartRegistreringUtils.erBesvarelseneValidertSomIkkeSelvgaaende;
+import static no.nav.fo.veilarboppfolging.utils.SelvgaaendeUtil.erSelvgaaende;
 
 @Slf4j
-public class RegistrerBrukerService {
+public class BrukerRegistreringService {
 
     private AktorService aktorService;
     private ArbeidssokerregistreringRepository arbeidssokerregistreringRepository;
     private StartRegistreringStatusResolver startRegistreringStatusResolver;
     private final BehandleArbeidssoekerV1 behandleArbeidssoekerV1;
-    private SjekkRegistrereBrukerGenerellFeature skalRegistrereBrukerGenerellFeature;
-    private SjekkRegistrereBrukerArenaFeature skalRegistrereBrukerArenaFeature;
-    private OppfolgingRepository oppfolgingRepository;
-    private OppfolgingsStatusRepository statusRepository;
+    private RegistreringFeature registreringFeature;
+    private OpprettBrukerIArenaFeature opprettBrukerIArenaFeature;
 
-    public RegistrerBrukerService(ArbeidssokerregistreringRepository arbeidssokerregistreringRepository,
-                                  OppfolgingRepository oppfolgingRepository,
-                                  OppfolgingsStatusRepository statusRepository,
-                                  PepClient pepClient,
-                                  AktorService aktorService,
-                                  ArenaOppfolgingService arenaOppfolgingService,
-                                  ArbeidsforholdService arbeidsforholdService,
-                                  BehandleArbeidssoekerV1 BehandleArbeidssoekerV1,
-                                  SjekkRegistrereBrukerArenaFeature sjekkRegistrereBrukerArenaFeature,
-                                  SjekkRegistrereBrukerGenerellFeature skalRegistrereBrukerGenerellFeature
+    private OppfolgingRepository oppfolgingRepository;
+
+    public BrukerRegistreringService(ArbeidssokerregistreringRepository arbeidssokerregistreringRepository,
+                                     OppfolgingRepository oppfolgingRepository,
+                                     PepClient pepClient,
+                                     AktorService aktorService,
+                                     ArenaOppfolgingService arenaOppfolgingService,
+                                     ArbeidsforholdService arbeidsforholdService,
+                                     BehandleArbeidssoekerV1 BehandleArbeidssoekerV1,
+                                     OpprettBrukerIArenaFeature opprettBrukerIArenaFeature,
+                                     RegistreringFeature registreringFeature
     ) {
         this.arbeidssokerregistreringRepository = arbeidssokerregistreringRepository;
         this.aktorService = aktorService;
         this.behandleArbeidssoekerV1 = BehandleArbeidssoekerV1;
-        this.skalRegistrereBrukerArenaFeature = sjekkRegistrereBrukerArenaFeature;
-        this.skalRegistrereBrukerGenerellFeature = skalRegistrereBrukerGenerellFeature;
+        this.opprettBrukerIArenaFeature = opprettBrukerIArenaFeature;
+        this.registreringFeature = registreringFeature;
         this.oppfolgingRepository = oppfolgingRepository;
-        this.statusRepository = statusRepository;
 
         startRegistreringStatusResolver = new StartRegistreringStatusResolver(aktorService,
                 arbeidssokerregistreringRepository, pepClient, arenaOppfolgingService, arbeidsforholdService);
@@ -70,18 +67,20 @@ public class RegistrerBrukerService {
         return startRegistreringStatusResolver.hentStartRegistreringStatus(fnr);
     }
 
-    public RegistrertBruker registrerBruker(RegistrertBruker bruker, String fnr) throws RegistrerBrukerSikkerhetsbegrensning,
-            HentStartRegistreringStatusFeilVedHentingAvStatusFraArena, HentStartRegistreringStatusFeilVedHentingAvArbeidsforhold {
+    public BrukerRegistrering registrerBruker(BrukerRegistrering bruker, String fnr) throws
+            RegistrerBrukerSikkerhetsbegrensning,
+            HentStartRegistreringStatusFeilVedHentingAvStatusFraArena,
+            HentStartRegistreringStatusFeilVedHentingAvArbeidsforhold {
 
-        if (!skalRegistrereBrukerGenerellFeature.erAktiv()) {
+        if (!registreringFeature.erAktiv()) {
             throw new RuntimeException("Tjenesten er togglet av.");
         }
 
-        StartRegistreringStatus startRegistreringStatus = startRegistreringStatusResolver.hentStartRegistreringStatus(fnr);
+        StartRegistreringStatus status = startRegistreringStatusResolver.hentStartRegistreringStatus(fnr);
 
         AktorId aktorId = FnrUtils.getAktorIdOrElseThrow(aktorService, fnr);
 
-        boolean erSelvaaende = erSelvgaaende(bruker, startRegistreringStatus);
+        boolean erSelvaaende = erSelvgaaende(bruker, status);
 
         if (!erSelvaaende) {
             Sikkerhetsbegrensning sikkerhetsbegrensning = startRegistreringStatusResolver.getSikkerhetsbegrensning(
@@ -91,11 +90,7 @@ public class RegistrerBrukerService {
             throw new RegistrerBrukerSikkerhetsbegrensning("Bruker oppfyller ikke krav for registrering.", sikkerhetsbegrensning);
         }
 
-        if (statusRepository.erOppfolgingsflaggSattForBruker(aktorId.getAktorId())) {
-            throw new RuntimeException("Brukeren er allerede under oppfolging");
-        }
-
-        if (skalRegistrereBrukerArenaFeature.erAktiv()) {
+        if (opprettBrukerIArenaFeature.erAktiv()) {
             opprettBrukerIArena(new AktiverArbeidssokerData(new Fnr(fnr), "IKVAL"));
         }
 
@@ -103,7 +98,7 @@ public class RegistrerBrukerService {
     }
 
     @Transactional
-    RegistrertBruker opprettBrukerIDatabase(RegistrertBruker bruker, AktorId aktorId) {
+    BrukerRegistrering opprettBrukerIDatabase(BrukerRegistrering bruker, AktorId aktorId) {
         oppfolgingRepository.startOppfolgingHvisIkkeAlleredeStartet(aktorId.getAktorId());
         return arbeidssokerregistreringRepository.lagreBruker(bruker, aktorId);
     }
@@ -129,12 +124,6 @@ public class RegistrerBrukerService {
                         Case($(), (t) -> new InternalServerErrorException(t))
                 )
                 .get();
-    }
-
-    private boolean erSelvgaaende(RegistrertBruker bruker, StartRegistreringStatus startRegistreringStatus) {
-        return !erBesvarelseneValidertSomIkkeSelvgaaende(bruker) &&
-                (!startRegistreringStatus.isUnderOppfolging() &&
-                        startRegistreringStatus.isOppfyllerKravForAutomatiskRegistrering());
     }
 
 }

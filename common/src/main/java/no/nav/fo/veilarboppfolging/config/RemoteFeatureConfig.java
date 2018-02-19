@@ -23,13 +23,13 @@ public class RemoteFeatureConfig {
     }
 
     @Bean
-    public SjekkRegistrereBrukerGenerellFeature registrereBrukerGenerellFeature(RemoteFeatureToggleRepository repo) {
-        return new SjekkRegistrereBrukerGenerellFeature(repo);
+    public RegistreringFeature registrereBrukerGenerellFeature(RemoteFeatureToggleRepository repo) {
+        return new RegistreringFeature(repo);
     }
 
     @Bean
-    public SjekkRegistrereBrukerArenaFeature registrereBrukerArenaFeature(RemoteFeatureToggleRepository repo) {
-        return new SjekkRegistrereBrukerArenaFeature(repo);
+    public OpprettBrukerIArenaFeature registrereBrukerArenaFeature(RemoteFeatureToggleRepository repo) {
+        return new OpprettBrukerIArenaFeature(repo);
     }
 
     public static class SjekkPagaendeYtelserFeature extends RemoteFeatureToggle {
@@ -38,15 +38,15 @@ public class RemoteFeatureConfig {
         }
     }
 
-    public static class SjekkRegistrereBrukerGenerellFeature extends RemoteFeatureToggle {
-        public SjekkRegistrereBrukerGenerellFeature(RemoteFeatureToggleRepository repository) {
-            super(repository, "veilarboppfolging.registreringgenerell", false);
+    public static class RegistreringFeature extends RemoteFeatureToggle {
+        public RegistreringFeature(RemoteFeatureToggleRepository repository) {
+            super(repository, "veilarboppfolging.registrering", false);
         }
     }
 
-    public static class SjekkRegistrereBrukerArenaFeature extends RemoteFeatureToggle {
-        public SjekkRegistrereBrukerArenaFeature(RemoteFeatureToggleRepository repository) {
-            super(repository, "veilarboppfolging.registreringarena", false);
+    public static class OpprettBrukerIArenaFeature extends RemoteFeatureToggle {
+        public OpprettBrukerIArenaFeature(RemoteFeatureToggleRepository repository) {
+            super(repository, "veilarboppfolging.opprettbrukeriarena", false);
         }
     }
 }

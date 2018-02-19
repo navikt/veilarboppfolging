@@ -5,7 +5,6 @@ import io.vavr.control.Try;
 import no.nav.apiapp.security.PepClient;
 import no.nav.fo.veilarboppfolging.domain.Arbeidsforhold;
 import no.nav.fo.veilarboppfolging.domain.ArenaOppfolging;
-import no.nav.fo.veilarboppfolging.domain.RegistrertBruker;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -17,7 +16,6 @@ import java.util.function.Supplier;
 import static no.nav.fo.veilarboppfolging.services.ArenaUtils.erUnderOppfolging;
 import static no.nav.fo.veilarboppfolging.utils.ArbeidsforholdUtils.oppfyllerKravOmArbeidserfaring;
 import static no.nav.fo.veilarboppfolging.utils.DateUtils.erDatoEldreEnnEllerLikAar;
-import static no.nav.fo.veilarboppfolging.utils.KonfigForRegistrertBrukerIkkeSelvgaende.*;
 
 
 public class StartRegistreringUtils {
@@ -54,14 +52,5 @@ public class StartRegistreringUtils {
     public static <T extends Throwable> void sjekkLesetilgangOrElseThrow(String fnr, PepClient pepClient, Function<Throwable, T> exceptionMapper) throws T {
         Try.of(() -> pepClient.sjekkLeseTilgangTilFnr(fnr))
                 .getOrElseThrow(exceptionMapper);
-    }
-
-    public static boolean erBesvarelseneValidertSomIkkeSelvgaaende(RegistrertBruker bruker) {
-        return bruker.getSituasjon().equals(ANNET)
-                || bruker.getNusKode().equals(NUS_KODE_0)
-                || bruker.getNusKode().equals(NUS_KODE_2)
-                || bruker.isUtdanningBestatt() == UTDANNING_BESTATT
-                || bruker.isUtdanningGodkjentNorge() == UTDANNING_GODKJENT_I_NORGE
-                || bruker.isHarHelseutfordringer() == HAR_HELSEUTFORDRINGER;
     }
 }

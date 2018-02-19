@@ -1,6 +1,6 @@
 package no.nav.fo.veilarboppfolging.config;
 
-import no.nav.fo.veilarboppfolging.config.RemoteFeatureConfig.SjekkRegistrereBrukerArenaFeature;
+import no.nav.fo.veilarboppfolging.config.RemoteFeatureConfig.OpprettBrukerIArenaFeature;
 import no.nav.sbl.dialogarena.common.cxf.CXFClient;
 import no.nav.sbl.dialogarena.types.Pingable;
 import no.nav.tjeneste.virksomhet.behandlearbeidssoeker.v1.binding.BehandleArbeidssoekerV1;
@@ -18,7 +18,7 @@ import static no.nav.sbl.util.EnvironmentUtils.getOptionalProperty;
 public class ArenaBehandleArbeidssokerWSConfig {
 
     @Inject
-    private SjekkRegistrereBrukerArenaFeature skalRegistrereBrukerArenaFeature;
+    private OpprettBrukerIArenaFeature opprettBrukerIArenaFeature;
 
     public static final String url = getOptionalProperty("behandlearbeidssoker.endpoint.url").orElse("");
 
@@ -36,7 +36,7 @@ public class ArenaBehandleArbeidssokerWSConfig {
                 true
         );
 
-        if (!skalRegistrereBrukerArenaFeature.erAktiv()) {
+        if (!opprettBrukerIArenaFeature.erAktiv()) {
             return () -> lyktes(metadata);
         }
 

@@ -1,21 +1,17 @@
 package no.nav.fo.veilarboppfolging.domain;
 
-import lombok.Data;
-import lombok.experimental.Accessors;
+import lombok.Value;
 import java.util.Date;
 
-@Data
-@Accessors(chain = true)
+@Value
 public class BrukerRegistrering {
-    private String aktorId;
-    private String nusKode;
-    private String yrkesPraksis;
-    private Date opprettetDato;
-    private boolean enigIOppsummering;
-    private String oppsummering;
-    private boolean utdanningBestatt;
-    private boolean utdanningGodkjentNorge;
-    private boolean harJobbetSammenhengende;
-    private boolean harHelseutfordringer;
-    private String situasjon;
+    String nusKode;
+    String yrkesPraksis;
+    Date opprettetDato;
+    boolean enigIOppsummering;
+    String oppsummering;
+    boolean utdanningBestatt;
+    boolean utdanningGodkjentNorge;
+    boolean harHelseutfordringer;
+    String situasjon;
 }

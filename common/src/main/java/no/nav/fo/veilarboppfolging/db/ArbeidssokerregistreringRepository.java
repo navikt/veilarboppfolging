@@ -2,7 +2,7 @@ package no.nav.fo.veilarboppfolging.db;
 
 import lombok.SneakyThrows;
 import no.nav.fo.veilarboppfolging.domain.AktorId;
-import no.nav.fo.veilarboppfolging.domain.RegistrertBruker;
+import no.nav.fo.veilarboppfolging.domain.BrukerRegistrering;
 import no.nav.sbl.sql.DbConstants;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
@@ -44,7 +44,7 @@ public class ArbeidssokerregistreringRepository {
                 .execute()).orElse(false);
     }
 
-    public RegistrertBruker lagreBruker(RegistrertBruker bruker, AktorId aktorId) {
+    public BrukerRegistrering lagreBruker(BrukerRegistrering bruker, AktorId aktorId) {
         long id = nesteFraSekvens(BRUKER_REGISTRERING_SEQ);
         SqlUtils.insert(db, BRUKER_REGISTRERING)
                 .value(BRUKER_REGISTRERING_ID, id)
@@ -76,8 +76,8 @@ public class ArbeidssokerregistreringRepository {
     }
 
     @SneakyThrows
-    private static RegistrertBruker brukerRegistreringMapper(ResultSet rs) {
-        return new RegistrertBruker(
+    private static BrukerRegistrering brukerRegistreringMapper(ResultSet rs) {
+        return new BrukerRegistrering(
                 rs.getString(NUS_KODE),
                 rs.getString(YRKESPRAKSIS),
                 rs.getDate(OPPRETTET_DATO),

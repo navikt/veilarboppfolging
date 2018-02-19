@@ -1,7 +1,7 @@
 package no.nav.fo.veilarboppfolging.db;
 
 import no.nav.fo.veilarboppfolging.domain.AktorId;
-import no.nav.fo.veilarboppfolging.domain.RegistrertBruker;
+import no.nav.fo.veilarboppfolging.domain.BrukerRegistrering;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -48,7 +48,7 @@ public class ArbeidssokerregistreringRepositoryTest {
 
         Date opprettetDato = new Date(System.currentTimeMillis());
         AktorId aktorId = new AktorId("11111");
-        RegistrertBruker bruker = new RegistrertBruker(
+        BrukerRegistrering bruker = new BrukerRegistrering(
           "nus12",
           "12345",
           opprettetDato,
@@ -59,15 +59,15 @@ public class ArbeidssokerregistreringRepositoryTest {
           false,
                 "MISTET_JOBBEN");
 
-        RegistrertBruker registrertBruker = arbeidssokerregistreringRepository.lagreBruker(bruker, aktorId);
+        BrukerRegistrering brukerRegistrering = arbeidssokerregistreringRepository.lagreBruker(bruker, aktorId);
 
-        assertThat(registrertBruker.getNusKode()).isEqualTo(bruker.getNusKode());
-        assertThat(registrertBruker.getYrkesPraksis()).isEqualTo(bruker.getYrkesPraksis());
-        assertThat(registrertBruker.isEnigIOppsummering()).isEqualTo(bruker.isEnigIOppsummering());
-        assertThat(registrertBruker.getOppsummering()).isEqualTo(bruker.getOppsummering());
-        assertThat(registrertBruker.isUtdanningBestatt()).isEqualTo(bruker.isUtdanningBestatt());
-        assertThat(registrertBruker.isUtdanningGodkjentNorge()).isEqualTo(bruker.isUtdanningGodkjentNorge());
-        assertThat(registrertBruker.isHarHelseutfordringer()).isEqualTo(bruker.isHarHelseutfordringer());
-        assertThat(registrertBruker.getSituasjon()).isEqualTo(bruker.getSituasjon());
+        assertThat(brukerRegistrering.getNusKode()).isEqualTo(bruker.getNusKode());
+        assertThat(brukerRegistrering.getYrkesPraksis()).isEqualTo(bruker.getYrkesPraksis());
+        assertThat(brukerRegistrering.isEnigIOppsummering()).isEqualTo(bruker.isEnigIOppsummering());
+        assertThat(brukerRegistrering.getOppsummering()).isEqualTo(bruker.getOppsummering());
+        assertThat(brukerRegistrering.isUtdanningBestatt()).isEqualTo(bruker.isUtdanningBestatt());
+        assertThat(brukerRegistrering.isUtdanningGodkjentNorge()).isEqualTo(bruker.isUtdanningGodkjentNorge());
+        assertThat(brukerRegistrering.isHarHelseutfordringer()).isEqualTo(bruker.isHarHelseutfordringer());
+        assertThat(brukerRegistrering.getSituasjon()).isEqualTo(bruker.getSituasjon());
     }
 }

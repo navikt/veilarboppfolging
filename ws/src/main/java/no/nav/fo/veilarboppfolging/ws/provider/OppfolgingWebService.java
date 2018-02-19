@@ -7,7 +7,7 @@ import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.fo.veilarboppfolging.service.ReservertKrrService;
 import no.nav.fo.veilarboppfolging.services.MalService;
 import no.nav.fo.veilarboppfolging.services.OppfolgingService;
-import no.nav.fo.veilarboppfolging.services.registrerBruker.RegistrerBrukerService;
+import no.nav.fo.veilarboppfolging.services.registrerBruker.BrukerRegistreringService;
 import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.HentReservertKrrRequest;
 import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.HentReservertKrrResponse;
 import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.binding.*;
@@ -31,18 +31,18 @@ import static no.nav.fo.veilarboppfolging.utils.StringUtils.emptyIfNull;
 public class OppfolgingWebService implements BehandleOppfolgingV1 {
 
     private OppfolgingService oppfolgingService;
-    private RegistrerBrukerService registrerBrukerService;
+    private BrukerRegistreringService brukerRegistreringService;
     private ReservertKrrService reservertKrrService;
     private MalService malService;
 
     public OppfolgingWebService(
             OppfolgingService oppfolgingService,
-            RegistrerBrukerService registrerBrukerService,
+            BrukerRegistreringService brukerRegistreringService,
             ReservertKrrService reservertKrrService,
             MalService malService) {
 
         this.oppfolgingService = oppfolgingService;
-        this.registrerBrukerService = registrerBrukerService;
+        this.brukerRegistreringService = brukerRegistreringService;
         this.reservertKrrService = reservertKrrService;
         this.malService = malService;
     }
@@ -245,7 +245,7 @@ public class OppfolgingWebService implements BehandleOppfolgingV1 {
             HentStartRegistreringStatusFeilVedHentingAvStatusFraArena,
             HentStartRegistreringStatusFeilVedHentingAvArbeidsforhold {
 
-        StartRegistreringStatus status = registrerBrukerService.hentStartRegistreringStatus(startRegistreringStatusRequest.getFnr());
+        StartRegistreringStatus status = brukerRegistreringService.hentStartRegistreringStatus(startRegistreringStatusRequest.getFnr());
 
         StartRegistreringStatusResponse response = new StartRegistreringStatusResponse();
         response.setErUnderOppfolging(status.isUnderOppfolging());
@@ -260,17 +260,21 @@ public class OppfolgingWebService implements BehandleOppfolgingV1 {
 
     @Override
     public RegistrerBrukerResponse registrerBruker(RegistrerBrukerRequest request) throws RegistrerBrukerSikkerhetsbegrensning {
-        RegistrertBruker registrertBruker = mapRegistreringBruker(request);
-        RegistrertBruker bruker;
-        try {
-            bruker = registrerBrukerService.registrerBruker(registrertBruker, request.getFnr());
-        } catch (HentStartRegistreringStatusFeilVedHentingAvStatusFraArena | HentStartRegistreringStatusFeilVedHentingAvArbeidsforhold e) {
-            throw new RuntimeException("Feil ved registrering av bruker." + e);
-        }
-        return mapRegistrerBrukerResponse(bruker);
+        BrukerRegistrering brukerRegistrering = mapBrukerRegistrering(request);
+        return mapRegistrerBrukerResponse(getRegistrertBruker(request, brukerRegistrering));
     }
 
-    private RegistrerBrukerResponse mapRegistrerBrukerResponse(RegistrertBruker bruker) {
+    private BrukerRegistrering getRegistrertBruker(RegistrerBrukerRequest request, BrukerRegistrering brukerRegistrering)
+            throws RegistrerBrukerSikkerhetsbegrensning {
+        try {
+            return brukerRegistreringService.registrerBruker(brukerRegistrering, request.getFnr());
+        } catch (HentStartRegistreringStatusFeilVedHentingAvStatusFraArena |
+                HentStartRegistreringStatusFeilVedHentingAvArbeidsforhold e) {
+            throw new RuntimeException("Feil ved registrering av bruker." + e);
+        }
+    }
+
+    private RegistrerBrukerResponse mapRegistrerBrukerResponse(BrukerRegistrering bruker) {
         RegistrerBrukerResponse response = new RegistrerBrukerResponse();
         response.setNusKode(bruker.getNusKode());
         response.setYrkesPraksis(bruker.getYrkesPraksis());
@@ -282,8 +286,8 @@ public class OppfolgingWebService implements BehandleOppfolgingV1 {
         response.setSituasjon(bruker.getSituasjon());
         return response;
     }
-    private RegistrertBruker mapRegistreringBruker(RegistrerBrukerRequest request) {
-        RegistrertBruker bruker = new RegistrertBruker(
+    private BrukerRegistrering mapBrukerRegistrering(RegistrerBrukerRequest request) {
+        BrukerRegistrering bruker = new BrukerRegistrering(
                 request.getNusKode(),
                 request.getYrkesPraksis(),
                 null,

@@ -2,7 +2,6 @@ package no.nav.fo.veilarboppfolging.utils;
 
 import no.nav.fo.veilarboppfolging.domain.Arbeidsforhold;
 import no.nav.fo.veilarboppfolging.domain.ArenaOppfolging;
-import no.nav.fo.veilarboppfolging.domain.RegistrertBruker;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
@@ -10,11 +9,9 @@ import java.util.Collections;
 import java.util.List;
 
 import static no.nav.fo.veilarboppfolging.TestUtils.getFodselsnummerOnDateMinusYears;
-import static no.nav.fo.veilarboppfolging.services.registrerBruker.Konstanter.*;
 import static no.nav.fo.veilarboppfolging.utils.DateUtils.erDatoEldreEnnEllerLikAar;
 import static no.nav.fo.veilarboppfolging.utils.StartRegistreringUtils.oppfyllerKravOmAutomatiskRegistrering;
 import static no.nav.fo.veilarboppfolging.utils.StartRegistreringUtils.oppfyllerKravOmInaktivitet;
-import static no.nav.fo.veilarboppfolging.utils.StartRegistreringUtils.erBesvarelseneValidertSomIkkeSelvgaaende;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
 
@@ -55,51 +52,4 @@ public class StartRegistreringUtilsTest {
         arbeidsforhold.setFom(LocalDate.of(2015,10,10));
         return Collections.singletonList(arbeidsforhold);
     }
-
-    @Test
-    void brukerHarIkkeBestattUtdanning() {
-        RegistrertBruker bruker = new RegistrertBruker(
-                NUS_KODE_4,
-                null,
-                null,
-                ENIG_I_OPPSUMMERING,
-                OPPSUMMERING,
-                UTDANNING_IKKE_BESTATT,
-                UTDANNING_GODKJENT_NORGE,
-                HAR_INGEN_HELSEUTFORDRINGER,
-                MISTET_JOBBEN
-        );
-        assertThat(erBesvarelseneValidertSomIkkeSelvgaaende(bruker)).isTrue();
-    }
-
-    @Test
-    void brukerHarIkkeGodkjentUtdanning() {
-        RegistrertBruker bruker = new RegistrertBruker(
-                NUS_KODE_4,
-                null,
-                null,
-                ENIG_I_OPPSUMMERING,
-                OPPSUMMERING,
-                UTDANNING_BESTATT,
-                UTDANNING_IKKE_GODKJENT_NORGE,
-                HAR_INGEN_HELSEUTFORDRINGER,
-                MISTET_JOBBEN);
-        assertThat(erBesvarelseneValidertSomIkkeSelvgaaende(bruker)).isTrue();
-    }
-
-    @Test
-    void brukerHarGrunnskole() {
-        RegistrertBruker bruker = new RegistrertBruker(
-                NUS_KODE_0,
-                null,
-                null,
-                ENIG_I_OPPSUMMERING,
-                OPPSUMMERING,
-                UTDANNING_BESTATT,
-                UTDANNING_GODKJENT_NORGE,
-                HAR_INGEN_HELSEUTFORDRINGER,
-                MISTET_JOBBEN);
-        assertThat(erBesvarelseneValidertSomIkkeSelvgaaende(bruker)).isTrue();
-    }
-
 }
