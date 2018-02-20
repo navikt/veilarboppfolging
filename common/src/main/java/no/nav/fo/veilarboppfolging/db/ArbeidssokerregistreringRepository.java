@@ -26,7 +26,6 @@ public class ArbeidssokerregistreringRepository {
     private final static String OPPSUMMERING = "OPPSUMMERING";
     private final static String UTDANNING_BESTATT = "UTDANNING_BESTATT";
     private final static String UTDANNING_GODKJENT_NORGE = "UTDANNING_GODKJENT_NORGE";
-    private final static String HAR_JOBBET_SAMMENHENGENDE = "HAR_JOBBET_SAMMENHENGENDE";
     private final static String HAR_HELSEUTFORDRINGER = "HAR_HELSEUTFORDRINGER";
     private final static String SITUASJON = "SITUASJON";
 
@@ -45,11 +44,11 @@ public class ArbeidssokerregistreringRepository {
                 .execute()).orElse(false);
     }
 
-    public BrukerRegistrering registrerBruker(BrukerRegistrering bruker) {
+    public BrukerRegistrering lagreBruker(BrukerRegistrering bruker, AktorId aktorId) {
         long id = nesteFraSekvens(BRUKER_REGISTRERING_SEQ);
         SqlUtils.insert(db, BRUKER_REGISTRERING)
                 .value(BRUKER_REGISTRERING_ID, id)
-                .value(AKTOR_ID, bruker.getAktorId())
+                .value(AKTOR_ID, aktorId.getAktorId())
                 .value(OPPRETTET_DATO, DbConstants.CURRENT_TIMESTAMP)
                 .value(NUS_KODE, bruker.getNusKode())
                 .value(YRKESPRAKSIS, bruker.getYrkesPraksis())
@@ -57,13 +56,12 @@ public class ArbeidssokerregistreringRepository {
                 .value(OPPSUMMERING, bruker.getOppsummering())
                 .value(UTDANNING_BESTATT, bruker.isUtdanningBestatt())
                 .value(UTDANNING_GODKJENT_NORGE, bruker.isUtdanningGodkjentNorge())
-                .value(HAR_JOBBET_SAMMENHENGENDE, bruker.isHarJobbetSammenhengende())
                 .value(HAR_HELSEUTFORDRINGER, bruker.isHarHelseutfordringer())
                 .value(SITUASJON, bruker.getSituasjon())
                 .execute();
 
         return SqlUtils.select(db.getDataSource(), BRUKER_REGISTRERING, ArbeidssokerregistreringRepository::brukerRegistreringMapper)
-                .where(WhereClause.equals(AKTOR_ID, bruker.getAktorId()))
+                .where(WhereClause.equals(BRUKER_REGISTRERING_ID, id))
                 .column("*")
                 .execute();
     }
@@ -79,17 +77,15 @@ public class ArbeidssokerregistreringRepository {
 
     @SneakyThrows
     private static BrukerRegistrering brukerRegistreringMapper(ResultSet rs) {
-        return new BrukerRegistrering()
-                .setAktorId(rs.getString(AKTOR_ID))
-                .setNusKode(rs.getString(NUS_KODE))
-                .setYrkesPraksis(rs.getString(YRKESPRAKSIS))
-                .setOpprettetDato(rs.getDate(OPPRETTET_DATO))
-                .setEnigIOppsummering(rs.getBoolean(ENIG_I_OPPSUMMERING))
-                .setOppsummering(rs.getString(OPPSUMMERING))
-                .setUtdanningBestatt(rs.getBoolean(UTDANNING_BESTATT))
-                .setUtdanningGodkjentNorge(rs.getBoolean(UTDANNING_GODKJENT_NORGE))
-                .setHarJobbetSammenhengende(rs.getBoolean(HAR_JOBBET_SAMMENHENGENDE))
-                .setHarHelseutfordringer(rs.getBoolean(HAR_HELSEUTFORDRINGER))
-                .setSituasjon(rs.getString(SITUASJON));
+        return new BrukerRegistrering(
+                rs.getString(NUS_KODE),
+                rs.getString(YRKESPRAKSIS),
+                rs.getDate(OPPRETTET_DATO),
+                rs.getBoolean(ENIG_I_OPPSUMMERING),
+                rs.getString(OPPSUMMERING),
+                rs.getBoolean(UTDANNING_BESTATT),
+                rs.getBoolean(UTDANNING_GODKJENT_NORGE),
+                rs.getBoolean(HAR_HELSEUTFORDRINGER),
+                rs.getString(SITUASJON));
     }
 }

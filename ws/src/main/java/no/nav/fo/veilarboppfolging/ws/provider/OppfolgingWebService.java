@@ -7,7 +7,7 @@ import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.fo.veilarboppfolging.service.ReservertKrrService;
 import no.nav.fo.veilarboppfolging.services.MalService;
 import no.nav.fo.veilarboppfolging.services.OppfolgingService;
-import no.nav.fo.veilarboppfolging.services.startregistrering.StartRegistreringService;
+import no.nav.fo.veilarboppfolging.services.registrerBruker.BrukerRegistreringService;
 import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.HentReservertKrrRequest;
 import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.HentReservertKrrResponse;
 import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.binding.*;
@@ -31,18 +31,18 @@ import static no.nav.fo.veilarboppfolging.utils.StringUtils.emptyIfNull;
 public class OppfolgingWebService implements BehandleOppfolgingV1 {
 
     private OppfolgingService oppfolgingService;
-    private StartRegistreringService startRegistreringService;
+    private BrukerRegistreringService brukerRegistreringService;
     private ReservertKrrService reservertKrrService;
     private MalService malService;
 
     public OppfolgingWebService(
             OppfolgingService oppfolgingService,
-            StartRegistreringService startRegistreringService,
+            BrukerRegistreringService brukerRegistreringService,
             ReservertKrrService reservertKrrService,
             MalService malService) {
 
-        this.startRegistreringService = startRegistreringService;
         this.oppfolgingService = oppfolgingService;
+        this.brukerRegistreringService = brukerRegistreringService;
         this.reservertKrrService = reservertKrrService;
         this.malService = malService;
     }
@@ -241,11 +241,11 @@ public class OppfolgingWebService implements BehandleOppfolgingV1 {
     }
 
     @Override
-    public StartRegistreringStatusResponse hentStartRegistreringStatus(StartRegistreringStatusRequest startRegistreringStatusRequest) throws HentStartRegistreringStatusSikkerhetsbegrensning,
+    public StartRegistreringStatusResponse hentStartRegistreringStatus(StartRegistreringStatusRequest startRegistreringStatusRequest) throws RegistrerBrukerSikkerhetsbegrensning,
             HentStartRegistreringStatusFeilVedHentingAvStatusFraArena,
             HentStartRegistreringStatusFeilVedHentingAvArbeidsforhold {
 
-        StartRegistreringStatus status = startRegistreringService.hentStartRegistreringStatus(startRegistreringStatusRequest.getFnr());
+        StartRegistreringStatus status = brukerRegistreringService.hentStartRegistreringStatus(startRegistreringStatusRequest.getFnr());
 
         StartRegistreringStatusResponse response = new StartRegistreringStatusResponse();
         response.setErUnderOppfolging(status.isUnderOppfolging());
@@ -256,6 +256,48 @@ public class OppfolgingWebService implements BehandleOppfolgingV1 {
     @Override
     public HentReservertKrrResponse hentReservertKrr(HentReservertKrrRequest request) {
         return reservertKrrService.hentReservertKrr(request.getFnr());
+    }
 
+    @Override
+    public RegistrerBrukerResponse registrerBruker(RegistrerBrukerRequest request) throws RegistrerBrukerSikkerhetsbegrensning {
+        BrukerRegistrering brukerRegistrering = mapBrukerRegistrering(request);
+        return mapRegistrerBrukerResponse(getRegistrertBruker(request, brukerRegistrering));
+    }
+
+    private BrukerRegistrering getRegistrertBruker(RegistrerBrukerRequest request, BrukerRegistrering brukerRegistrering)
+            throws RegistrerBrukerSikkerhetsbegrensning {
+        try {
+            return brukerRegistreringService.registrerBruker(brukerRegistrering, request.getFnr());
+        } catch (HentStartRegistreringStatusFeilVedHentingAvStatusFraArena |
+                HentStartRegistreringStatusFeilVedHentingAvArbeidsforhold e) {
+            throw new RuntimeException("Feil ved registrering av bruker." + e);
+        }
+    }
+
+    private RegistrerBrukerResponse mapRegistrerBrukerResponse(BrukerRegistrering bruker) {
+        RegistrerBrukerResponse response = new RegistrerBrukerResponse();
+        response.setNusKode(bruker.getNusKode());
+        response.setYrkesPraksis(bruker.getYrkesPraksis());
+        response.setEnigIOppsummering(bruker.isEnigIOppsummering());
+        response.setOppsummering(bruker.getOppsummering());
+        response.setUtdanningBestatt(bruker.isUtdanningBestatt());
+        response.setUtdanningGodkjentNorge(bruker.isUtdanningGodkjentNorge());
+        response.setHarHelseutfordringer(bruker.isHarHelseutfordringer());
+        response.setSituasjon(bruker.getSituasjon());
+        return response;
+    }
+    private BrukerRegistrering mapBrukerRegistrering(RegistrerBrukerRequest request) {
+        BrukerRegistrering bruker = new BrukerRegistrering(
+                request.getNusKode(),
+                request.getYrkesPraksis(),
+                null,
+                request.isEnigIOppsummering(),
+                request.getOppsummering(),
+                request.isUtdanningBestatt(),
+                request.isUtdanningGodkjentNorge(),
+                request.isHarHelseutfordringer(),
+                request.getSituasjon()
+        );
+        return bruker;
     }
 }

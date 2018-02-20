@@ -6,8 +6,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import java.sql.Timestamp;
-import static java.lang.System.currentTimeMillis;
+import java.util.Date;
+
 import static no.nav.fo.veilarboppfolging.config.JndiLocalContextConfig.setupInMemoryDatabase;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
@@ -45,28 +45,29 @@ public class ArbeidssokerregistreringRepositoryTest {
 
     @Test
     public void registrerBruker() {
-        BrukerRegistrering bruker = new BrukerRegistrering()
-                .setAktorId(new AktorId("11111").getAktorId())
-                .setNusKode("123")
-                .setYrkesPraksis("12345")
-                .setEnigIOppsummering(true)
-                .setOppsummering("Test test oppsummering")
-                .setUtdanningBestatt(true)
-                .setUtdanningGodkjentNorge(true)
-                .setHarJobbetSammenhengende(true)
-                .setHarHelseutfordringer(true)
-                .setSituasjon("MISTET_JOBB");
 
-        BrukerRegistrering registrertBruker = arbeidssokerregistreringRepository.registrerBruker(bruker);
+        Date opprettetDato = new Date(System.currentTimeMillis());
+        AktorId aktorId = new AktorId("11111");
+        BrukerRegistrering bruker = new BrukerRegistrering(
+          "nus12",
+          "12345",
+          opprettetDato,
+          true,
+          "Test test oppsummering",
+          true,
+          true,
+          false,
+                "MISTET_JOBBEN");
 
-        assertThat(registrertBruker.getNusKode()).isEqualTo(bruker.getNusKode());
-        assertThat(registrertBruker.getYrkesPraksis()).isEqualTo(bruker.getYrkesPraksis());
-        assertThat(registrertBruker.isEnigIOppsummering()).isEqualTo(bruker.isEnigIOppsummering());
-        assertThat(registrertBruker.getOppsummering()).isEqualTo(bruker.getOppsummering());
-        assertThat(registrertBruker.isUtdanningBestatt()).isEqualTo(bruker.isUtdanningBestatt());
-        assertThat(registrertBruker.isUtdanningGodkjentNorge()).isEqualTo(bruker.isUtdanningGodkjentNorge());
-        assertThat(registrertBruker.isHarJobbetSammenhengende()).isEqualTo(bruker.isHarJobbetSammenhengende());
-        assertThat(registrertBruker.isHarHelseutfordringer()).isEqualTo(bruker.isHarHelseutfordringer());
-        assertThat(registrertBruker.getSituasjon()).isEqualTo(bruker.getSituasjon());
+        BrukerRegistrering brukerRegistrering = arbeidssokerregistreringRepository.lagreBruker(bruker, aktorId);
+
+        assertThat(brukerRegistrering.getNusKode()).isEqualTo(bruker.getNusKode());
+        assertThat(brukerRegistrering.getYrkesPraksis()).isEqualTo(bruker.getYrkesPraksis());
+        assertThat(brukerRegistrering.isEnigIOppsummering()).isEqualTo(bruker.isEnigIOppsummering());
+        assertThat(brukerRegistrering.getOppsummering()).isEqualTo(bruker.getOppsummering());
+        assertThat(brukerRegistrering.isUtdanningBestatt()).isEqualTo(bruker.isUtdanningBestatt());
+        assertThat(brukerRegistrering.isUtdanningGodkjentNorge()).isEqualTo(bruker.isUtdanningGodkjentNorge());
+        assertThat(brukerRegistrering.isHarHelseutfordringer()).isEqualTo(bruker.isHarHelseutfordringer());
+        assertThat(brukerRegistrering.getSituasjon()).isEqualTo(bruker.getSituasjon());
     }
 }
