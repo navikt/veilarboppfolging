@@ -25,7 +25,8 @@ public class ViewTest extends IntegrasjonsTest {
             return new Object[]{
                 "DVH_GJELDENDE_OPPFOLGINGSTATUS",
                 "DVH_MANUELL_HISTORIKK",
-                "DVH_OPPFOLGINGSHISTORIKK"
+                "DVH_OPPFOLGINGSHISTORIKK",
+                "DVH_BRUKER_REGISTRERING"
         };
     }
 
