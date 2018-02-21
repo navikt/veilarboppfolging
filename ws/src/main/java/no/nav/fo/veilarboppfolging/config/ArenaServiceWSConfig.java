@@ -11,9 +11,12 @@ import org.springframework.context.annotation.Configuration;
 import static no.nav.fo.veilarboppfolging.config.ArenaBehandleArbeidssokerWSConfig.behandleArbeidssokerPortType;
 import static no.nav.fo.veilarboppfolging.config.ArenaServiceConfig.oppfoelgingPortType;
 import static no.nav.fo.veilarboppfolging.config.ArenaServiceConfig.ytelseskontraktPortType;
+import static no.nav.sbl.dialogarena.common.cxf.TimeoutFeature.DEFAULT_CONNECTION_TIMEOUT;
 
 @Configuration
 public class ArenaServiceWSConfig {
+
+    public static final int BEHANDLE_ARBEIDSSOKER_RECEIVE_TIMEOUT = 60000;
 
     @Bean
     public YtelseskontraktV3 ytelseskontraktV3() {
@@ -33,6 +36,7 @@ public class ArenaServiceWSConfig {
     public BehandleArbeidssoekerV1 behandleArbeidssoekerV1() {
         return behandleArbeidssokerPortType()
                 .withOutInterceptor(new UserSAMLOutInterceptor())
+                .timeout(DEFAULT_CONNECTION_TIMEOUT, BEHANDLE_ARBEIDSSOKER_RECEIVE_TIMEOUT)
                 .build();
     }
 
