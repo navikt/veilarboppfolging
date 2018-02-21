@@ -64,27 +64,6 @@ public class ArbeidssokerregistreringRepositoryTest {
         assertRegistrertBruker(bruker, brukerRegistrering);
     }
 
-    @Test
-    public void registrerBrukerMedBlankeStrengVerdier() {
-
-        Date opprettetDato = new Date(System.currentTimeMillis());
-        AktorId aktorId = new AktorId("11111");
-        BrukerRegistrering bruker = new BrukerRegistrering(
-                "",
-                "",
-                opprettetDato,
-                true,
-                "",
-                true,
-                true,
-                false,
-                "");
-
-        BrukerRegistrering brukerRegistrering = arbeidssokerregistreringRepository.lagreBruker(bruker, aktorId);
-
-        assertRegistrertBruker(bruker, brukerRegistrering);
-    }
-
     private void assertRegistrertBruker(BrukerRegistrering bruker, BrukerRegistrering brukerRegistrering) {
         assertThat(brukerRegistrering.getNusKode()).isEqualTo(bruker.getNusKode());
         assertThat(brukerRegistrering.getYrkesPraksis()).isEqualTo(bruker.getYrkesPraksis());
