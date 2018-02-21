@@ -78,14 +78,14 @@ public class ArbeidssokerregistreringRepository {
     @SneakyThrows
     private static BrukerRegistrering brukerRegistreringMapper(ResultSet rs) {
         return new BrukerRegistrering(
-                rs.getString(NUS_KODE),
-                rs.getString(YRKESPRAKSIS),
+                Optional.ofNullable(rs.getString(NUS_KODE)).orElse(""),
+                Optional.ofNullable(rs.getString(YRKESPRAKSIS)).orElse(""),
                 rs.getDate(OPPRETTET_DATO),
                 rs.getBoolean(ENIG_I_OPPSUMMERING),
-                rs.getString(OPPSUMMERING),
+                Optional.ofNullable(rs.getString(OPPSUMMERING)).orElse(""),
                 rs.getBoolean(UTDANNING_BESTATT),
                 rs.getBoolean(UTDANNING_GODKJENT_NORGE),
                 rs.getBoolean(HAR_HELSEUTFORDRINGER),
-                rs.getString(SITUASJON));
+                Optional.ofNullable(rs.getString(SITUASJON)).orElse(""));
     }
 }
