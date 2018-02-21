@@ -16,7 +16,7 @@ import static no.nav.sbl.dialogarena.common.cxf.TimeoutFeature.DEFAULT_CONNECTIO
 @Configuration
 public class ArenaServiceWSConfig {
 
-    public static final int BEHANDLE_ARBEIDSSOKER_RECEIVE_TIMEOUT = 60000;
+    private static final int BEHANDLE_ARBEIDSSOKER_RECEIVE_TIMEOUT = 60000;
 
     @Bean
     public YtelseskontraktV3 ytelseskontraktV3() {
