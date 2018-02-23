@@ -131,7 +131,7 @@ public class OppfolgingRepository {
                 harTilgangTilEnhet(kvp)
                         && !periode.getStartDato().after(kvp.getOpprettetDato())
                         && (periode.getSluttDato() == null
-                        || !kvp.getOpprettetDato().before(periode.getSluttDato()));
+                        || !periode.getSluttDato().before(kvp.getOpprettetDato()));
 
         oppfolgingsPerioder.forEach(periode -> periode.setKvpPerioder(
                 kvpPerioder.stream()
