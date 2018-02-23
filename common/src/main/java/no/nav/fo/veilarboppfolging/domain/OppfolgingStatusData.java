@@ -24,6 +24,7 @@ public class OppfolgingStatusData {
     public AvslutningStatusData avslutningStatusData;
     private EskaleringsvarselData gjeldendeEskaleringsvarsel;
     public List<Oppfolgingsperiode> oppfolgingsperioder = Collections.emptyList();
+    public List<Kvp> kvpPerioder;
     public boolean harSkriveTilgang;
 
     public Date getOppfolgingUtgang() {
