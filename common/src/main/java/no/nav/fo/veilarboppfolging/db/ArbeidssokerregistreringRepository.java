@@ -77,15 +77,16 @@ public class ArbeidssokerregistreringRepository {
 
     @SneakyThrows
     private static BrukerRegistrering brukerRegistreringMapper(ResultSet rs) {
-        return new BrukerRegistrering(
-                rs.getString(NUS_KODE),
-                rs.getString(YRKESPRAKSIS),
-                rs.getDate(OPPRETTET_DATO),
-                rs.getBoolean(ENIG_I_OPPSUMMERING),
-                rs.getString(OPPSUMMERING),
-                rs.getBoolean(UTDANNING_BESTATT),
-                rs.getBoolean(UTDANNING_GODKJENT_NORGE),
-                rs.getBoolean(HAR_HELSEUTFORDRINGER),
-                rs.getString(SITUASJON));
+        return BrukerRegistrering.builder()
+                .nusKode(rs.getString(NUS_KODE))
+                .yrkesPraksis(rs.getString(YRKESPRAKSIS))
+                .opprettetDato(rs.getDate(OPPRETTET_DATO))
+                .enigIOppsummering(rs.getBoolean(ENIG_I_OPPSUMMERING))
+                .oppsummering(rs.getString(OPPSUMMERING))
+                .utdanningBestatt(rs.getBoolean(UTDANNING_BESTATT))
+                .utdanningGodkjentNorge(rs.getBoolean(UTDANNING_GODKJENT_NORGE))
+                .harHelseutfordringer(rs.getBoolean(HAR_HELSEUTFORDRINGER))
+                .situasjon(rs.getString(SITUASJON))
+                .build();
     }
 }

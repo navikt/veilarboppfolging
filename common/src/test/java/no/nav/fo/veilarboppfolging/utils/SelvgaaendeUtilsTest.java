@@ -11,47 +11,49 @@ public class SelvgaaendeUtilsTest {
 
     @Test
     void brukerHarIkkeBestattUtdanning() {
-        BrukerRegistrering bruker = new BrukerRegistrering(
-                NUS_KODE_4,
-                null,
-                null,
-                ENIG_I_OPPSUMMERING,
-                OPPSUMMERING,
-                UTDANNING_IKKE_BESTATT,
-                UTDANNING_GODKJENT_NORGE,
-                HAR_INGEN_HELSEUTFORDRINGER,
-                MISTET_JOBBEN
-        );
+        BrukerRegistrering bruker = BrukerRegistrering.builder()
+                .nusKode(NUS_KODE_4)
+                .yrkesPraksis(null)
+                .opprettetDato(null)
+                .enigIOppsummering(ENIG_I_OPPSUMMERING)
+                .oppsummering(OPPSUMMERING)
+                .utdanningBestatt(UTDANNING_IKKE_BESTATT)
+                .utdanningGodkjentNorge(UTDANNING_GODKJENT_NORGE)
+                .harHelseutfordringer(HAR_INGEN_HELSEUTFORDRINGER)
+                .situasjon(MISTET_JOBBEN)
+                .build();
         assertThat(!erBesvarelseneValidertSomSelvgaaende(bruker)).isTrue();
     }
 
     @Test
     void brukerHarIkkeGodkjentUtdanning() {
-        BrukerRegistrering bruker = new BrukerRegistrering(
-                NUS_KODE_4,
-                null,
-                null,
-                ENIG_I_OPPSUMMERING,
-                OPPSUMMERING,
-                UTDANNING_BESTATT,
-                UTDANNING_IKKE_GODKJENT_NORGE,
-                HAR_INGEN_HELSEUTFORDRINGER,
-                MISTET_JOBBEN);
+        BrukerRegistrering bruker = BrukerRegistrering.builder()
+                .nusKode(NUS_KODE_4)
+                .yrkesPraksis(null)
+                .opprettetDato(null)
+                .enigIOppsummering(ENIG_I_OPPSUMMERING)
+                .oppsummering(OPPSUMMERING)
+                .utdanningBestatt(UTDANNING_BESTATT)
+                .utdanningGodkjentNorge(UTDANNING_IKKE_GODKJENT_NORGE)
+                .harHelseutfordringer(HAR_INGEN_HELSEUTFORDRINGER)
+                .situasjon(MISTET_JOBBEN)
+                .build();
         assertThat(!erBesvarelseneValidertSomSelvgaaende(bruker)).isTrue();
     }
 
     @Test
     void brukerHarGrunnskole() {
-        BrukerRegistrering bruker = new BrukerRegistrering(
-                NUS_KODE_0,
-                null,
-                null,
-                ENIG_I_OPPSUMMERING,
-                OPPSUMMERING,
-                UTDANNING_BESTATT,
-                UTDANNING_GODKJENT_NORGE,
-                HAR_INGEN_HELSEUTFORDRINGER,
-                MISTET_JOBBEN);
+        BrukerRegistrering bruker = BrukerRegistrering.builder()
+                .nusKode(NUS_KODE_0)
+                .yrkesPraksis(null)
+                .opprettetDato(null)
+                .enigIOppsummering(ENIG_I_OPPSUMMERING)
+                .oppsummering(OPPSUMMERING)
+                .utdanningBestatt(UTDANNING_BESTATT)
+                .utdanningGodkjentNorge(UTDANNING_GODKJENT_NORGE)
+                .harHelseutfordringer(HAR_INGEN_HELSEUTFORDRINGER)
+                .situasjon(MISTET_JOBBEN)
+                .build();
         assertThat(!erBesvarelseneValidertSomSelvgaaende(bruker)).isTrue();
     }
 

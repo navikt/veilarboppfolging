@@ -48,16 +48,17 @@ public class ArbeidssokerregistreringRepositoryTest {
 
         Date opprettetDato = new Date(System.currentTimeMillis());
         AktorId aktorId = new AktorId("11111");
-        BrukerRegistrering bruker = new BrukerRegistrering(
-          "nus12",
-          "12345",
-          opprettetDato,
-          true,
-          "Test test oppsummering",
-          true,
-          true,
-          false,
-                "MISTET_JOBBEN");
+        BrukerRegistrering bruker = BrukerRegistrering.builder()
+                .nusKode("nus12")
+                .yrkesPraksis("12345")
+                .opprettetDato(opprettetDato)
+                .enigIOppsummering(true)
+                .oppsummering("Test test oppsummering")
+                .utdanningBestatt(true)
+                .utdanningGodkjentNorge(true)
+                .harHelseutfordringer(false)
+                .situasjon("MISTET_JOBBEN")
+                .build();
 
         BrukerRegistrering brukerRegistrering = arbeidssokerregistreringRepository.lagreBruker(bruker, aktorId);
 

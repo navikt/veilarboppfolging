@@ -287,17 +287,16 @@ public class OppfolgingWebService implements BehandleOppfolgingV1 {
         return response;
     }
     private BrukerRegistrering mapBrukerRegistrering(RegistrerBrukerRequest request) {
-        BrukerRegistrering bruker = new BrukerRegistrering(
-                request.getNusKode(),
-                request.getYrkesPraksis(),
-                null,
-                request.isEnigIOppsummering(),
-                request.getOppsummering(),
-                request.isUtdanningBestatt(),
-                request.isUtdanningGodkjentNorge(),
-                request.isHarHelseutfordringer(),
-                request.getSituasjon()
-        );
-        return bruker;
+        return BrukerRegistrering.builder()
+                .nusKode(request.getNusKode())
+                .yrkesPraksis(request.getYrkesPraksis())
+                .opprettetDato(null)
+                .enigIOppsummering(request.isEnigIOppsummering())
+                .oppsummering(request.getOppsummering())
+                .utdanningBestatt(request.isUtdanningBestatt())
+                .utdanningGodkjentNorge(request.isUtdanningGodkjentNorge())
+                .harHelseutfordringer(request.isHarHelseutfordringer())
+                .situasjon(request.getSituasjon())
+                .build();
     }
 }
