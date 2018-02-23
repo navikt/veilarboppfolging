@@ -10,9 +10,9 @@ import org.springframework.context.annotation.Configuration;
 import javax.inject.Inject;
 import java.util.UUID;
 
-import static java.lang.System.getProperty;
 import static no.nav.sbl.dialogarena.types.Pingable.Ping.feilet;
 import static no.nav.sbl.dialogarena.types.Pingable.Ping.lyktes;
+import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 
 @Configuration
 public class ArenaBehandleArbeidssokerWSConfig {
@@ -20,7 +20,7 @@ public class ArenaBehandleArbeidssokerWSConfig {
     @Inject
     private OpprettBrukerIArenaFeature opprettBrukerIArenaFeature;
 
-    public static final String url = getProperty("behandlearbeidssoker.endpoint.url");
+    public static final String url = getRequiredProperty("behandlearbeidssoker.endpoint.url");
 
     public static CXFClient<BehandleArbeidssoekerV1> behandleArbeidssokerPortType() {
         return new CXFClient<>(BehandleArbeidssoekerV1.class)
