@@ -99,6 +99,7 @@ public class BrukerRegistreringService {
 
     @Transactional
     BrukerRegistrering opprettBrukerIDatabase(BrukerRegistrering bruker, AktorId aktorId) {
+        oppfolgingRepository.opprettOppfolging(aktorId.getAktorId());
         oppfolgingRepository.startOppfolgingHvisIkkeAlleredeStartet(aktorId.getAktorId());
         return arbeidssokerregistreringRepository.lagreBruker(bruker, aktorId);
     }
