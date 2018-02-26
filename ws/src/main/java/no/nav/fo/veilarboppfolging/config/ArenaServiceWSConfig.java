@@ -35,7 +35,7 @@ public class ArenaServiceWSConfig {
     @Bean
     public BehandleArbeidssoekerV1 behandleArbeidssoekerV1() {
         return behandleArbeidssokerPortType()
-                .configureStsForSystemUserInFSS() // https://confluence.adeo.no/pages/viewpage.action?pageId=261926380
+                .configureStsForSystemUserInFSS()
                 .timeout(DEFAULT_CONNECTION_TIMEOUT, BEHANDLE_ARBEIDSSOKER_RECEIVE_TIMEOUT)
                 .build();
     }
