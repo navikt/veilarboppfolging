@@ -15,6 +15,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
+import static java.util.stream.Collectors.toList;
 import static no.nav.apiapp.feil.Feil.Type.UGYLDIG_HANDLING;
 import static no.nav.fo.veilarboppfolging.utils.KvpUtils.sjekkTilgangGittKvp;
 
@@ -81,7 +82,8 @@ public class OppfolgingRepository {
             o.setGjeldendeManuellStatus(manuellStatusRepository.fetch(t.getGjeldendeManuellStatusId()));
         }
 
-        o.setOppfolgingsperioder(periodeRepository.hentOppfolgingsperioder(t.getAktorId()));
+        List<Kvp> kvpPerioder = kvpRepository.hentKvpHistorikk(aktorId);
+        o.setOppfolgingsperioder(populerKvpPerioder(periodeRepository.hentOppfolgingsperioder(t.getAktorId()), kvpPerioder));
 
         return Optional.of(o);
     }
@@ -120,6 +122,36 @@ public class OppfolgingRepository {
                 .withAvsluttetBegrunnelse(avsluttetBegrunnelse);
 
         eskaleringsvarselRepository.finish(eskalering);
+    }
+
+    private List<Oppfolgingsperiode> populerKvpPerioder(List<Oppfolgingsperiode> oppfolgingsPerioder, List<Kvp> kvpPerioder) {
+        return oppfolgingsPerioder.stream()
+                .map(periode -> periode.toBuilder().kvpPerioder(
+                        kvpPerioder.stream()
+                                .filter(kvp -> erKvpIPeriode(kvp, periode))
+                                .collect(toList())
+                ).build())
+                .collect(toList());
+    }
+
+    private boolean erKvpIPeriode(Kvp kvp, Oppfolgingsperiode periode) {
+        return harTilgangTilEnhet(kvp)
+                && kvpEtterStartenAvPeriode(kvp, periode)
+                && kvpForSluttenAvPeriode(kvp, periode);
+    }
+
+    private boolean kvpEtterStartenAvPeriode(Kvp kvp, Oppfolgingsperiode periode) {
+        return !periode.getStartDato().after(kvp.getOpprettetDato());
+    }
+
+    private boolean kvpForSluttenAvPeriode(Kvp kvp, Oppfolgingsperiode periode) {
+        return periode.getSluttDato() == null
+                || !periode.getSluttDato().before(kvp.getOpprettetDato());
+    }
+
+    @SneakyThrows
+    private boolean harTilgangTilEnhet(Kvp kvp) {
+        return pepClient.harTilgangTilEnhet(kvp.getEnhet());
     }
 
     // FIXME: go directly to the repository instead.

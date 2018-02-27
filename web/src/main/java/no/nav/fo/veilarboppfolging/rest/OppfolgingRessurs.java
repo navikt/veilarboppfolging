@@ -234,7 +234,12 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
                 .setSluttDato(oppfolgingsperiode.getSluttDato())
                 .setStartDato(oppfolgingsperiode.getStartDato())
                 .setBegrunnelse(oppfolgingsperiode.getBegrunnelse())
+                .setKvpPerioder(oppfolgingsperiode.getKvpPerioder().stream().map(this::tilDTO).collect(toList()))
                 ;
+    }
+
+    private KvpPeriodeDTO tilDTO(Kvp kvp) {
+        return new KvpPeriodeDTO(kvp.getOpprettetDato(), kvp.getAvsluttetDato());
     }
 
     private Vilkar tilDto(Brukervilkar brukervilkar) {
