@@ -239,9 +239,7 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
     }
 
     private KvpPeriodeDTO tilDTO(Kvp kvp) {
-        return new KvpPeriodeDTO()
-                .setOpprettetDato(kvp.getOpprettetDato())
-                .setAvsluttetDato(kvp.getAvsluttetDato());
+        return new KvpPeriodeDTO(kvp.getOpprettetDato(), kvp.getAvsluttetDato());
     }
 
     private Vilkar tilDto(Brukervilkar brukervilkar) {

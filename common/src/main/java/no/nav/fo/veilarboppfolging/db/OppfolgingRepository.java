@@ -6,7 +6,6 @@ import lombok.val;
 import no.nav.apiapp.feil.Feil;
 import no.nav.apiapp.security.PepClient;
 import no.nav.fo.veilarboppfolging.domain.*;
-import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
 import no.nav.sbl.jdbc.Database;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,7 +14,6 @@ import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.BiPredicate;
 
 import static java.util.stream.Collectors.toList;
 import static no.nav.apiapp.feil.Feil.Type.UGYLDIG_HANDLING;
@@ -127,23 +125,32 @@ public class OppfolgingRepository {
     }
 
     private List<Oppfolgingsperiode> populerKvpPerioder(List<Oppfolgingsperiode> oppfolgingsPerioder, List<Kvp> kvpPerioder) {
-        BiPredicate<Kvp, Oppfolgingsperiode> kvpInPeriode = (kvp, periode) ->
-                harTilgangTilEnhet(kvp)
-                        && !periode.getStartDato().after(kvp.getOpprettetDato())
-                        && (periode.getSluttDato() == null
-                        || !periode.getSluttDato().before(kvp.getOpprettetDato()));
+        return oppfolgingsPerioder.stream()
+                .map(periode -> periode.toBuilder().kvpPerioder(
+                        kvpPerioder.stream()
+                                .filter(kvp -> erKvpIPeriode(kvp, periode))
+                                .collect(toList())
+                ).build())
+                .collect(toList());
+    }
 
-        oppfolgingsPerioder.forEach(periode -> periode.setKvpPerioder(
-                kvpPerioder.stream()
-                        .filter(kvp -> kvpInPeriode.test(kvp, periode))
-                        .collect(toList())
-                )
-        );
-        return oppfolgingsPerioder;
+    private boolean erKvpIPeriode(Kvp kvp, Oppfolgingsperiode periode) {
+        return harTilgangTilEnhet(kvp)
+                && kvpEtterStartenAvPeriode(kvp, periode)
+                && kvpForSluttenAvPeriode(kvp, periode);
+    }
+
+    private boolean kvpEtterStartenAvPeriode(Kvp kvp, Oppfolgingsperiode periode) {
+        return !periode.getStartDato().after(kvp.getOpprettetDato());
+    }
+
+    private boolean kvpForSluttenAvPeriode(Kvp kvp, Oppfolgingsperiode periode) {
+        return periode.getSluttDato() == null
+                || !periode.getSluttDato().before(kvp.getOpprettetDato());
     }
 
     @SneakyThrows
-    private boolean harTilgangTilEnhet(Kvp kvp)  {
+    private boolean harTilgangTilEnhet(Kvp kvp) {
         return pepClient.harTilgangTilEnhet(kvp.getEnhet());
     }
 

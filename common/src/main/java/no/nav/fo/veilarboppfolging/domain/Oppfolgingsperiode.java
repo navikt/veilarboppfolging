@@ -1,15 +1,13 @@
 package no.nav.fo.veilarboppfolging.domain;
 
 import lombok.Builder;
-import lombok.Data;
-import lombok.experimental.Accessors;
+import lombok.Value;
 
 import java.util.Date;
 import java.util.List;
 
-@Data
-@Accessors(chain = true)
-@Builder
+@Value
+@Builder(toBuilder = true)
 public class Oppfolgingsperiode {
     String aktorId;
     String veileder;

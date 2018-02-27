@@ -1,12 +1,10 @@
 package no.nav.fo.veilarboppfolging.rest.domain;
 
-import lombok.Data;
-import lombok.experimental.Accessors;
+import lombok.Value;
 
 import java.util.Date;
 
-@Data
-@Accessors(chain = true)
+@Value
 public class KvpPeriodeDTO {
 
     private Date opprettetDato;
