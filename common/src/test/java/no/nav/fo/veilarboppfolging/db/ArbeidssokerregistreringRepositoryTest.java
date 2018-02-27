@@ -62,6 +62,10 @@ public class ArbeidssokerregistreringRepositoryTest {
 
         BrukerRegistrering brukerRegistrering = arbeidssokerregistreringRepository.lagreBruker(bruker, aktorId);
 
+        assertRegistrertBruker(bruker, brukerRegistrering);
+    }
+
+    private void assertRegistrertBruker(BrukerRegistrering bruker, BrukerRegistrering brukerRegistrering) {
         assertThat(brukerRegistrering.getNusKode()).isEqualTo(bruker.getNusKode());
         assertThat(brukerRegistrering.getYrkesPraksis()).isEqualTo(bruker.getYrkesPraksis());
         assertThat(brukerRegistrering.isEnigIOppsummering()).isEqualTo(bruker.isEnigIOppsummering());

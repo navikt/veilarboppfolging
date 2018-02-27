@@ -35,7 +35,7 @@ public class ArenaServiceWSConfig {
     @Bean
     public BehandleArbeidssoekerV1 behandleArbeidssoekerV1() {
         return behandleArbeidssokerPortType()
-                .withOutInterceptor(new UserSAMLOutInterceptor())
+                .configureStsForSystemUserInFSS()
                 .timeout(DEFAULT_CONNECTION_TIMEOUT, BEHANDLE_ARBEIDSSOKER_RECEIVE_TIMEOUT)
                 .build();
     }
