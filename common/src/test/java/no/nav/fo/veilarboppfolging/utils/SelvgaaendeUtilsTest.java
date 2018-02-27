@@ -58,7 +58,6 @@ public class SelvgaaendeUtilsTest {
                 .utdanningBestatt(UTDANNING_BESTATT)
                 .utdanningGodkjentNorge(UTDANNING_IKKE_GODKJENT_NORGE)
                 .harHelseutfordringer(HAR_INGEN_HELSEUTFORDRINGER)
-                .situasjon(MISTET_JOBBEN)
                 .build();
         assertThat(!erBesvarelseneValidertSomSelvgaaende(bruker)).isTrue();
     }
@@ -74,7 +73,6 @@ public class SelvgaaendeUtilsTest {
                 .utdanningBestatt(UTDANNING_BESTATT)
                 .utdanningGodkjentNorge(UTDANNING_GODKJENT_NORGE)
                 .harHelseutfordringer(HAR_INGEN_HELSEUTFORDRINGER)
-                .situasjon(MISTET_JOBBEN)
                 .build();
         assertThat(!erBesvarelseneValidertSomSelvgaaende(bruker)).isTrue();
     }
@@ -89,7 +87,6 @@ public class SelvgaaendeUtilsTest {
                 .utdanningBestatt(UTDANNING_BESTATT)
                 .utdanningGodkjentNorge(UTDANNING_GODKJENT_NORGE)
                 .harHelseutfordringer(HAR_INGEN_HELSEUTFORDRINGER)
-                .situasjon(MISTET_JOBBEN)
                 .build();
     }
 
@@ -103,7 +100,6 @@ public class SelvgaaendeUtilsTest {
                 .utdanningBestatt(UTDANNING_IKKE_BESTATT)
                 .utdanningGodkjentNorge(UTDANNING_GODKJENT_NORGE)
                 .harHelseutfordringer(HAR_INGEN_HELSEUTFORDRINGER)
-                .situasjon(MISTET_JOBBEN)
                 .build();
     }
 

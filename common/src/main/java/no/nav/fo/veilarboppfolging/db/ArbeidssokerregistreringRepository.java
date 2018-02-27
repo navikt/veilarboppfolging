@@ -27,7 +27,6 @@ public class ArbeidssokerregistreringRepository {
     private final static String UTDANNING_BESTATT = "UTDANNING_BESTATT";
     private final static String UTDANNING_GODKJENT_NORGE = "UTDANNING_GODKJENT_NORGE";
     private final static String HAR_HELSEUTFORDRINGER = "HAR_HELSEUTFORDRINGER";
-    private final static String SITUASJON = "SITUASJON";
 
     private final static String OPPFOLGINGSTATUS = "OPPFOLGINGSTATUS";
     private final static String UNDER_OPPFOLGING = "UNDER_OPPFOLGING";
@@ -57,7 +56,6 @@ public class ArbeidssokerregistreringRepository {
                 .value(UTDANNING_BESTATT, bruker.isUtdanningBestatt())
                 .value(UTDANNING_GODKJENT_NORGE, bruker.isUtdanningGodkjentNorge())
                 .value(HAR_HELSEUTFORDRINGER, bruker.isHarHelseutfordringer())
-                .value(SITUASJON, bruker.getSituasjon())
                 .execute();
 
         return SqlUtils.select(db.getDataSource(), BRUKER_REGISTRERING, ArbeidssokerregistreringRepository::brukerRegistreringMapper)
@@ -86,7 +84,6 @@ public class ArbeidssokerregistreringRepository {
                 .utdanningBestatt(rs.getBoolean(UTDANNING_BESTATT))
                 .utdanningGodkjentNorge(rs.getBoolean(UTDANNING_GODKJENT_NORGE))
                 .harHelseutfordringer(rs.getBoolean(HAR_HELSEUTFORDRINGER))
-                .situasjon(rs.getString(SITUASJON))
                 .build();
     }
 }

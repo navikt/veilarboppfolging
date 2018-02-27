@@ -283,7 +283,6 @@ public class OppfolgingWebService implements BehandleOppfolgingV1 {
         response.setUtdanningBestatt(bruker.isUtdanningBestatt());
         response.setUtdanningGodkjentNorge(bruker.isUtdanningGodkjentNorge());
         response.setHarHelseutfordringer(bruker.isHarHelseutfordringer());
-        response.setSituasjon(bruker.getSituasjon());
         return response;
     }
     private BrukerRegistrering mapBrukerRegistrering(RegistrerBrukerRequest request) {
@@ -296,7 +295,6 @@ public class OppfolgingWebService implements BehandleOppfolgingV1 {
                 .utdanningBestatt(request.isUtdanningBestatt())
                 .utdanningGodkjentNorge(request.isUtdanningGodkjentNorge())
                 .harHelseutfordringer(request.isHarHelseutfordringer())
-                .situasjon(request.getSituasjon())
                 .build();
     }
 }

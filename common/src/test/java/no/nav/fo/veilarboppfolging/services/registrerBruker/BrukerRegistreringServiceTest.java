@@ -168,13 +168,6 @@ class BrukerRegistreringServiceTest {
         assertThrows(RegistrerBrukerSikkerhetsbegrensning.class, () -> registrerBruker(brukerRegistreringUtdannelseIkkeGodkjent, FNR_OPPFYLLER_KRAV));
     }
 
-    @Test
-    void skalIkkeLagreRegistreringDersomSituasjonErAnnet() throws Exception {
-        mockSelvgaaendeBruker();
-        BrukerRegistrering brukerRegistreringSituasjonenAnnet = getBrukerRegistreringSituasjonenAnnet();
-        assertThrows(RegistrerBrukerSikkerhetsbegrensning.class, () -> registrerBruker(brukerRegistreringSituasjonenAnnet, FNR_OPPFYLLER_KRAV));
-    }
-
     /*
     * Test av kall registrering arena og lagring
     * */
@@ -234,7 +227,6 @@ class BrukerRegistreringServiceTest {
                 .utdanningBestatt(UTDANNING_BESTATT)
                 .utdanningGodkjentNorge(UTDANNING_GODKJENT_NORGE)
                 .harHelseutfordringer(HAR_INGEN_HELSEUTFORDRINGER)
-                .situasjon(MISTET_JOBBEN)
                 .build();
     }
     private BrukerRegistrering getBrukerRegistreringMedKunGrunnskole() {
@@ -247,7 +239,6 @@ class BrukerRegistreringServiceTest {
                 .utdanningBestatt(UTDANNING_BESTATT)
                 .utdanningGodkjentNorge(UTDANNING_GODKJENT_NORGE)
                 .harHelseutfordringer(HAR_INGEN_HELSEUTFORDRINGER)
-                .situasjon(MISTET_JOBBEN)
                 .build();
     }
     private BrukerRegistrering getBrukerIngenUtdannelse() {
@@ -260,7 +251,6 @@ class BrukerRegistreringServiceTest {
                 .utdanningBestatt(UTDANNING_BESTATT)
                 .utdanningGodkjentNorge(UTDANNING_GODKJENT_NORGE)
                 .harHelseutfordringer(HAR_INGEN_HELSEUTFORDRINGER)
-                .situasjon(MISTET_JOBBEN)
                 .build();
     }
     private BrukerRegistrering getBrukerRegistreringUtdannelseIkkeGodkjent() {
@@ -273,7 +263,6 @@ class BrukerRegistreringServiceTest {
                 .utdanningBestatt(UTDANNING_BESTATT)
                 .utdanningGodkjentNorge(UTDANNING_IKKE_GODKJENT_NORGE)
                 .harHelseutfordringer(HAR_INGEN_HELSEUTFORDRINGER)
-                .situasjon(MISTET_JOBBEN)
                 .build();
     }
     private BrukerRegistrering getBrukerRegistreringMedHelseutfordringer() {
@@ -286,22 +275,9 @@ class BrukerRegistreringServiceTest {
                 .utdanningBestatt(UTDANNING_BESTATT)
                 .utdanningGodkjentNorge(UTDANNING_GODKJENT_NORGE)
                 .harHelseutfordringer(HAR_HELSEUTFORDRINGER)
-                .situasjon(MISTET_JOBBEN)
                 .build();
     }
-    private BrukerRegistrering getBrukerRegistreringSituasjonenAnnet() {
-        return BrukerRegistrering.builder()
-                .nusKode(NUS_KODE_4)
-                .yrkesPraksis(null)
-                .opprettetDato(null)
-                .enigIOppsummering(ENIG_I_OPPSUMMERING)
-                .oppsummering(OPPSUMMERING)
-                .utdanningBestatt(UTDANNING_BESTATT)
-                .utdanningGodkjentNorge(UTDANNING_GODKJENT_NORGE)
-                .harHelseutfordringer(HAR_INGEN_HELSEUTFORDRINGER)
-                .situasjon(SITUASJON_ANNET)
-                .build();
-    }
+
     private BrukerRegistrering getBrukerRegistreringUtdanningIkkeBestatt() {
         return BrukerRegistrering.builder()
                 .nusKode(NUS_KODE_4)
@@ -312,7 +288,6 @@ class BrukerRegistreringServiceTest {
                 .utdanningBestatt(UTDANNING_IKKE_BESTATT)
                 .utdanningGodkjentNorge(UTDANNING_GODKJENT_NORGE)
                 .harHelseutfordringer(HAR_INGEN_HELSEUTFORDRINGER)
-                .situasjon(MISTET_JOBBEN)
                 .build();
     }
     private BrukerRegistrering registrerBruker(BrukerRegistrering bruker, String fnr) throws RegistrerBrukerSikkerhetsbegrensning, HentStartRegistreringStatusFeilVedHentingAvStatusFraArena, HentStartRegistreringStatusFeilVedHentingAvArbeidsforhold {

@@ -15,5 +15,4 @@ public class BrukerRegistrering {
     boolean utdanningBestatt;
     boolean utdanningGodkjentNorge;
     boolean harHelseutfordringer;
-    String situasjon;
 }

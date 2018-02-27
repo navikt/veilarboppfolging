@@ -57,7 +57,6 @@ public class ArbeidssokerregistreringRepositoryTest {
                 .utdanningBestatt(true)
                 .utdanningGodkjentNorge(true)
                 .harHelseutfordringer(false)
-                .situasjon("MISTET_JOBBEN")
                 .build();
 
         BrukerRegistrering brukerRegistrering = arbeidssokerregistreringRepository.lagreBruker(bruker, aktorId);
@@ -73,6 +72,5 @@ public class ArbeidssokerregistreringRepositoryTest {
         assertThat(brukerRegistrering.isUtdanningBestatt()).isEqualTo(bruker.isUtdanningBestatt());
         assertThat(brukerRegistrering.isUtdanningGodkjentNorge()).isEqualTo(bruker.isUtdanningGodkjentNorge());
         assertThat(brukerRegistrering.isHarHelseutfordringer()).isEqualTo(bruker.isHarHelseutfordringer());
-        assertThat(brukerRegistrering.getSituasjon()).isEqualTo(bruker.getSituasjon());
     }
 }
