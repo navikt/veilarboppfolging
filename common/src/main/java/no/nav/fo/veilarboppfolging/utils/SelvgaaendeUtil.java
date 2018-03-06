@@ -6,7 +6,6 @@ import no.nav.fo.veilarboppfolging.domain.StartRegistreringStatus;
 
 public class SelvgaaendeUtil {
 
-    public static final String ANNET = "ANNET";
     public static final String NUS_KODE_0 = "0";
     public static final String NUS_KODE_2 = "2";
     public static final boolean UTDANNING_BESTATT = false;
@@ -20,8 +19,7 @@ public class SelvgaaendeUtil {
     }
 
     public static boolean erBesvarelseneValidertSomSelvgaaende(BrukerRegistrering bruker) {
-        return !(bruker.getSituasjon().equals(ANNET)
-                || bruker.getNusKode().equals(NUS_KODE_0)
+        return !(bruker.getNusKode().equals(NUS_KODE_0)
                 || bruker.getNusKode().equals(NUS_KODE_2)
                 || bruker.isUtdanningBestatt() == UTDANNING_BESTATT
                 || bruker.isUtdanningGodkjentNorge() == UTDANNING_GODKJENT_I_NORGE

@@ -168,13 +168,6 @@ class BrukerRegistreringServiceTest {
         assertThrows(RegistrerBrukerSikkerhetsbegrensning.class, () -> registrerBruker(brukerRegistreringUtdannelseIkkeGodkjent, FNR_OPPFYLLER_KRAV));
     }
 
-    @Test
-    void skalIkkeLagreRegistreringDersomSituasjonErAnnet() throws Exception {
-        mockSelvgaaendeBruker();
-        BrukerRegistrering brukerRegistreringSituasjonenAnnet = getBrukerRegistreringSituasjonenAnnet();
-        assertThrows(RegistrerBrukerSikkerhetsbegrensning.class, () -> registrerBruker(brukerRegistreringSituasjonenAnnet, FNR_OPPFYLLER_KRAV));
-    }
-
     /*
     * Test av kall registrering arena og lagring
     * */
@@ -225,95 +218,77 @@ class BrukerRegistreringServiceTest {
     * Mock og hjelpe funksjoner
     * */
     private BrukerRegistrering getBrukerRegistreringSelvgaaende() {
-        return new BrukerRegistrering(
-                NUS_KODE_4,
-                null,
-                null,
-                ENIG_I_OPPSUMMERING,
-                OPPSUMMERING,
-                UTDANNING_BESTATT,
-                UTDANNING_GODKJENT_NORGE,
-                HAR_INGEN_HELSEUTFORDRINGER,
-                MISTET_JOBBEN
-        );
+        return BrukerRegistrering.builder()
+                .nusKode(NUS_KODE_4)
+                .yrkesPraksis(null)
+                .opprettetDato(null)
+                .enigIOppsummering(ENIG_I_OPPSUMMERING)
+                .oppsummering(OPPSUMMERING)
+                .utdanningBestatt(UTDANNING_BESTATT)
+                .utdanningGodkjentNorge(UTDANNING_GODKJENT_NORGE)
+                .harHelseutfordringer(HAR_INGEN_HELSEUTFORDRINGER)
+                .build();
     }
     private BrukerRegistrering getBrukerRegistreringMedKunGrunnskole() {
-        return new BrukerRegistrering(
-                NUS_KODE_2,
-                null,
-                null,
-                ENIG_I_OPPSUMMERING,
-                OPPSUMMERING,
-                UTDANNING_BESTATT,
-                UTDANNING_GODKJENT_NORGE,
-                HAR_INGEN_HELSEUTFORDRINGER,
-                MISTET_JOBBEN
-        );
+        return BrukerRegistrering.builder()
+                .nusKode(NUS_KODE_2)
+                .yrkesPraksis(null)
+                .opprettetDato(null)
+                .enigIOppsummering(ENIG_I_OPPSUMMERING)
+                .oppsummering(OPPSUMMERING)
+                .utdanningBestatt(UTDANNING_BESTATT)
+                .utdanningGodkjentNorge(UTDANNING_GODKJENT_NORGE)
+                .harHelseutfordringer(HAR_INGEN_HELSEUTFORDRINGER)
+                .build();
     }
     private BrukerRegistrering getBrukerIngenUtdannelse() {
-        return new BrukerRegistrering(
-                NUS_KODE_0,
-                null,
-                null,
-                ENIG_I_OPPSUMMERING,
-                OPPSUMMERING,
-                UTDANNING_BESTATT,
-                UTDANNING_GODKJENT_NORGE,
-                HAR_INGEN_HELSEUTFORDRINGER,
-                MISTET_JOBBEN
-        );
+        return BrukerRegistrering.builder()
+                .nusKode(NUS_KODE_0)
+                .yrkesPraksis(null)
+                .opprettetDato(null)
+                .enigIOppsummering(ENIG_I_OPPSUMMERING)
+                .oppsummering(OPPSUMMERING)
+                .utdanningBestatt(UTDANNING_BESTATT)
+                .utdanningGodkjentNorge(UTDANNING_GODKJENT_NORGE)
+                .harHelseutfordringer(HAR_INGEN_HELSEUTFORDRINGER)
+                .build();
     }
     private BrukerRegistrering getBrukerRegistreringUtdannelseIkkeGodkjent() {
-        return new BrukerRegistrering(
-                NUS_KODE_4,
-                null,
-                null,
-                ENIG_I_OPPSUMMERING,
-                OPPSUMMERING,
-                UTDANNING_BESTATT,
-                UTDANNING_IKKE_GODKJENT_NORGE,
-                HAR_INGEN_HELSEUTFORDRINGER,
-                MISTET_JOBBEN
-        );
+        return BrukerRegistrering.builder()
+                .nusKode(NUS_KODE_4)
+                .yrkesPraksis(null)
+                .opprettetDato(null)
+                .enigIOppsummering(ENIG_I_OPPSUMMERING)
+                .oppsummering(OPPSUMMERING)
+                .utdanningBestatt(UTDANNING_BESTATT)
+                .utdanningGodkjentNorge(UTDANNING_IKKE_GODKJENT_NORGE)
+                .harHelseutfordringer(HAR_INGEN_HELSEUTFORDRINGER)
+                .build();
     }
     private BrukerRegistrering getBrukerRegistreringMedHelseutfordringer() {
-        return new BrukerRegistrering(
-                NUS_KODE_4,
-                null,
-                null,
-                ENIG_I_OPPSUMMERING,
-                OPPSUMMERING,
-                UTDANNING_BESTATT,
-                UTDANNING_GODKJENT_NORGE,
-                HAR_HELSEUTFORDRINGER,
-                MISTET_JOBBEN
-        );
+        return BrukerRegistrering.builder()
+                .nusKode(NUS_KODE_4)
+                .yrkesPraksis(null)
+                .opprettetDato(null)
+                .enigIOppsummering(ENIG_I_OPPSUMMERING)
+                .oppsummering(OPPSUMMERING)
+                .utdanningBestatt(UTDANNING_BESTATT)
+                .utdanningGodkjentNorge(UTDANNING_GODKJENT_NORGE)
+                .harHelseutfordringer(HAR_HELSEUTFORDRINGER)
+                .build();
     }
-    private BrukerRegistrering getBrukerRegistreringSituasjonenAnnet() {
-        return new BrukerRegistrering(
-                NUS_KODE_4,
-                null,
-                null,
-                ENIG_I_OPPSUMMERING,
-                OPPSUMMERING,
-                UTDANNING_BESTATT,
-                UTDANNING_GODKJENT_NORGE,
-                HAR_INGEN_HELSEUTFORDRINGER,
-                SITUASJON_ANNET
-        );
-    }
+
     private BrukerRegistrering getBrukerRegistreringUtdanningIkkeBestatt() {
-        return new BrukerRegistrering(
-                NUS_KODE_4,
-                null,
-                null,
-                ENIG_I_OPPSUMMERING,
-                OPPSUMMERING,
-                UTDANNING_IKKE_BESTATT,
-                UTDANNING_GODKJENT_NORGE,
-                HAR_INGEN_HELSEUTFORDRINGER,
-                MISTET_JOBBEN
-        );
+        return BrukerRegistrering.builder()
+                .nusKode(NUS_KODE_4)
+                .yrkesPraksis(null)
+                .opprettetDato(null)
+                .enigIOppsummering(ENIG_I_OPPSUMMERING)
+                .oppsummering(OPPSUMMERING)
+                .utdanningBestatt(UTDANNING_IKKE_BESTATT)
+                .utdanningGodkjentNorge(UTDANNING_GODKJENT_NORGE)
+                .harHelseutfordringer(HAR_INGEN_HELSEUTFORDRINGER)
+                .build();
     }
     private BrukerRegistrering registrerBruker(BrukerRegistrering bruker, String fnr) throws RegistrerBrukerSikkerhetsbegrensning, HentStartRegistreringStatusFeilVedHentingAvStatusFraArena, HentStartRegistreringStatusFeilVedHentingAvArbeidsforhold {
         return brukerRegistreringService.registrerBruker(bruker, fnr);
