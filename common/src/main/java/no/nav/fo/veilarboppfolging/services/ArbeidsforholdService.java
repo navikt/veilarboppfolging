@@ -33,7 +33,7 @@ public class ArbeidsforholdService {
     public List<Arbeidsforhold> hentArbeidsforhold(String fnr) throws HentStartRegistreringStatusFeilVedHentingAvArbeidsforhold {
         FinnArbeidsforholdPrArbeidstakerRequest request = new FinnArbeidsforholdPrArbeidstakerRequest();
         Regelverker regelverker = new Regelverker();
-        regelverker.setValue("ALLE");
+        regelverker.setValue("A_ORDNINGEN");
         request.setRapportertSomRegelverk(regelverker);
         NorskIdent ident = new NorskIdent();
         ident.setIdent(fnr);
