@@ -12,6 +12,8 @@ import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.fo.veilarboppfolging.services.ArbeidsforholdService;
 import no.nav.fo.veilarboppfolging.services.ArenaOppfolgingService;
 import no.nav.fo.veilarboppfolging.utils.FnrUtils;
+import no.nav.metrics.MetricsFactory;
+import no.nav.metrics.Timer;
 import no.nav.tjeneste.virksomhet.behandlearbeidssoeker.v1.binding.*;
 import no.nav.tjeneste.virksomhet.behandlearbeidssoeker.v1.informasjon.Brukerident;
 import no.nav.tjeneste.virksomhet.behandlearbeidssoeker.v1.meldinger.AktiverBrukerRequest;
@@ -111,9 +113,15 @@ public class BrukerRegistreringService {
         request.setIdent(brukerident);
         request.setKvalifiseringsgruppekode(aktiverArbeidssokerData.getKvalifiseringsgruppekode());
 
-
+        Timer timer = MetricsFactory.createTimer("registrering.i.arena").start();
         Try.run(() -> behandleArbeidssoekerV1.aktiverBruker(request))
-                .onFailure((t) -> log.warn("Feil ved aktivering av bruker i arena", t))
+                .onFailure((t) -> {
+                    timer.stop()
+                            .setFailed()
+                            .addTagToReport("aarsak",  t.getClass().getSimpleName())
+                            .report();
+                    log.warn("Feil ved aktivering av bruker i arena", t);
+                })
                 .mapFailure(
                         Case($(instanceOf(AktiverBrukerBrukerFinnesIkke.class)), (t) -> new NotFoundException(t)),
                         Case($(instanceOf(AktiverBrukerBrukerIkkeReaktivert.class)), (t) -> new ServerErrorException(Response.Status.BAD_GATEWAY, t)),
@@ -123,6 +131,7 @@ public class BrukerRegistreringService {
                         Case($(instanceOf(AktiverBrukerUgyldigInput.class)), (t) -> new BadRequestException(t)),
                         Case($(), (t) -> new InternalServerErrorException(t))
                 )
+                .onSuccess((event) -> timer.stop().report())
                 .get();
     }
 
