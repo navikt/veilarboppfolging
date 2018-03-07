@@ -163,6 +163,12 @@ public class StartRegistreringStatusResolverTest {
         assertThrows(HentStartRegistreringStatusFeilVedHentingAvArbeidsforhold.class, () -> getStartRegistreringStatus(FNR_OPPFYLLER_KRAV));
     }
 
+    @Test void skalHenteSisteArbeidsforhold() throws Exception {
+        mockArbeidsforhold(arbeidsforholdSomOppfyllerKrav());
+        Arbeidsforhold arbeidsforhold = startRegistreringStatusResolver.hentArbeidsforholdet(FNR_OPPFYLLER_KRAV);
+        assertThat(arbeidsforhold.getStyrk()).isEqualTo("styrk");
+    }
+
     private ArenaOppfolging underOppfolgingIArena() {
         return new ArenaOppfolging().setFormidlingsgruppe("ARBS").setServicegruppe("BATT");
     }
@@ -179,6 +185,7 @@ public class StartRegistreringStatusResolverTest {
     private List<Arbeidsforhold> arbeidsforholdSomOppfyllerKrav() {
         return Collections.singletonList(new Arbeidsforhold()
                 .setArbeidsgiverOrgnummer("orgnummer")
+                .setStyrk("styrk")
                 .setFom(LocalDate.of(2017,1,10)));
     }
 

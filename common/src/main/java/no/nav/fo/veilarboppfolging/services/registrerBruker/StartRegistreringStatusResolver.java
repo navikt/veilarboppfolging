@@ -76,6 +76,14 @@ public class StartRegistreringStatusResolver {
                 .setOppfyllerKravForAutomatiskRegistrering(oppfyllerKrav);
     }
 
+    public Arbeidsforhold hentArbeidsforholdet(String fnr) throws RegistrerBrukerSikkerhetsbegrensning,
+            HentStartRegistreringStatusFeilVedHentingAvArbeidsforhold {
+        sjekkLesetilgangOrElseThrow(fnr, pepClient, (t) -> getHentStartRegistreringStatusSikkerhetsbegrensning());
+
+        return hentArbeidsforhold(fnr).stream()
+                .findFirst().orElse(null);
+    }
+
     private Optional<ArenaOppfolging> hentOppfolgingsstatusFraArena(String fnr) throws HentStartRegistreringStatusFeilVedHentingAvStatusFraArena {
         return Try.of(() -> arenaOppfolgingService.hentArenaOppfolging(fnr))
                 .map(Optional::of)

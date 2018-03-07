@@ -10,6 +10,8 @@ import no.nav.fo.veilarboppfolging.services.OppfolgingService;
 import no.nav.fo.veilarboppfolging.services.registrerBruker.BrukerRegistreringService;
 import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.HentReservertKrrRequest;
 import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.HentReservertKrrResponse;
+import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.HentSisteArbeidsforholdRequest;
+import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.HentSisteArbeidsforholdResponse;
 import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.binding.*;
 import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.informasjon.*;
 import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.meldinger.*;
@@ -262,6 +264,15 @@ public class OppfolgingWebService implements BehandleOppfolgingV1 {
     public RegistrerBrukerResponse registrerBruker(RegistrerBrukerRequest request) throws RegistrerBrukerSikkerhetsbegrensning {
         BrukerRegistrering brukerRegistrering = mapBrukerRegistrering(request);
         return mapRegistrerBrukerResponse(getRegistrertBruker(request, brukerRegistrering));
+    }
+
+    @Override
+    public HentSisteArbeidsforholdResponse hentSisteArbeidsforhold(HentSisteArbeidsforholdRequest request) throws RegistrerBrukerSikkerhetsbegrensning,
+    HentStartRegistreringStatusFeilVedHentingAvArbeidsforhold {
+        HentSisteArbeidsforholdResponse respons = new HentSisteArbeidsforholdResponse();
+        String styrk = brukerRegistreringService.hentArbeidsforholdet(request.getFnr()).getStyrk();
+        respons.setStyrk(styrk);
+        return respons;
     }
 
     private BrukerRegistrering getRegistrertBruker(RegistrerBrukerRequest request, BrukerRegistrering brukerRegistrering)

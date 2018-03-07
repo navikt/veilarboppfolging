@@ -67,6 +67,11 @@ public class BrukerRegistreringService {
         return startRegistreringStatusResolver.hentStartRegistreringStatus(fnr);
     }
 
+    public Arbeidsforhold hentArbeidsforholdet(String fnr) throws RegistrerBrukerSikkerhetsbegrensning,
+            HentStartRegistreringStatusFeilVedHentingAvArbeidsforhold {
+        return startRegistreringStatusResolver.hentArbeidsforholdet(fnr);
+    }
+
     public BrukerRegistrering registrerBruker(BrukerRegistrering bruker, String fnr) throws
             RegistrerBrukerSikkerhetsbegrensning,
             HentStartRegistreringStatusFeilVedHentingAvStatusFraArena,
