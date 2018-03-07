@@ -66,6 +66,10 @@ class DatabaseSyntaxMapper {
                 "CREATE SEQUENCE BRUKER_REGISTRERING_SEQ ORDER",
                 "CREATE SEQUENCE BRUKER_REGISTRERING_SEQ"
         );
+        map(
+                "CREATE SEQUENCE NYE_BRUKERE_SEQ ORDER",
+                "CREATE SEQUENCE NYE_BRUKERE_SEQ"
+        );
         map("END", NOOP);
     }
 
