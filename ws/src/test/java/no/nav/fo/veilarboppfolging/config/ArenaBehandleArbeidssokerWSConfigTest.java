@@ -1,6 +1,7 @@
 package no.nav.fo.veilarboppfolging.config;
 
 import no.nav.fo.veilarboppfolging.config.RemoteFeatureConfig.OpprettBrukerIArenaFeature;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -15,6 +16,11 @@ import static org.mockito.Mockito.when;
 public class ArenaBehandleArbeidssokerWSConfigTest {
 
     static AnnotationConfigApplicationContext context;
+
+    @BeforeClass
+    public static void setUp() throws Exception {
+        System.setProperty("behandlearbeidssoker.endpoint.url", "behandlearbeidssoker");
+    }
 
     @Mock
     private OpprettBrukerIArenaFeature opprettBrukerIArenaFeature;

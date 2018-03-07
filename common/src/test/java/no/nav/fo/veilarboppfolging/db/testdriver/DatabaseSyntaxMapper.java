@@ -62,6 +62,10 @@ class DatabaseSyntaxMapper {
                 "ALTER TABLE MAL MODIFY ENDRET_AV NOT NULL",
                 "ALTER TABLE MAL alter column  ENDRET_AV SET NOT NULL;"
         );
+        map(
+                "CREATE SEQUENCE BRUKER_REGISTRERING_SEQ ORDER",
+                "CREATE SEQUENCE BRUKER_REGISTRERING_SEQ"
+        );
         map("END", NOOP);
     }
 

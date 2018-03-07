@@ -92,17 +92,21 @@ public class BrukerRegistreringService {
             throw new RegistrerBrukerSikkerhetsbegrensning("Bruker oppfyller ikke krav for registrering.", sikkerhetsbegrensning);
         }
 
+        return opprettBruker(fnr, bruker, aktorId);
+    }
+
+    @Transactional
+    BrukerRegistrering opprettBruker(String fnr, BrukerRegistrering bruker, AktorId aktorId) {
+        oppfolgingRepository.opprettOppfolging(aktorId.getAktorId());
+        oppfolgingRepository.startOppfolgingHvisIkkeAlleredeStartet(aktorId.getAktorId());
+
+        BrukerRegistrering brukerRegistrering = arbeidssokerregistreringRepository.lagreBruker(bruker, aktorId);
+
         if (opprettBrukerIArenaFeature.erAktiv()) {
             opprettBrukerIArena(new AktiverArbeidssokerData(new Fnr(fnr), "IKVAL"));
         }
 
-        return opprettBrukerIDatabase(bruker, aktorId);
-    }
-
-    @Transactional
-    BrukerRegistrering opprettBrukerIDatabase(BrukerRegistrering bruker, AktorId aktorId) {
-        oppfolgingRepository.startOppfolgingHvisIkkeAlleredeStartet(aktorId.getAktorId());
-        return arbeidssokerregistreringRepository.lagreBruker(bruker, aktorId);
+        return brukerRegistrering;
     }
 
     @SuppressWarnings({"unchecked"})

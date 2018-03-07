@@ -1,9 +1,11 @@
 package no.nav.fo.veilarboppfolging.domain;
 
+import lombok.Builder;
 import lombok.Value;
 import java.util.Date;
 
 @Value
+@Builder
 public class BrukerRegistrering {
     String nusKode;
     String yrkesPraksis;
@@ -13,5 +15,4 @@ public class BrukerRegistrering {
     boolean utdanningBestatt;
     boolean utdanningGodkjentNorge;
     boolean harHelseutfordringer;
-    String situasjon;
 }

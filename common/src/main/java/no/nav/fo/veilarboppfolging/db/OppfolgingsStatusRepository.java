@@ -59,7 +59,7 @@ public class OppfolgingsStatusRepository {
                         "WHERE OPPFOLGINGSTATUS.aktor_id = ? ",
                 OppfolgingsStatusRepository::erUnderOppfolging,
                 aktorId
-        ).get(0);
+        ).stream().findFirst().orElse(false);
     }
 
     @SneakyThrows
