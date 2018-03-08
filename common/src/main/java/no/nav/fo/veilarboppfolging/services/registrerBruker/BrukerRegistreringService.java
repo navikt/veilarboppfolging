@@ -115,7 +115,6 @@ public class BrukerRegistreringService {
         request.setIdent(brukerident);
         request.setKvalifiseringsgruppekode(aktiverArbeidssokerData.getKvalifiseringsgruppekode());
 
-
         Try.run(() -> behandleArbeidssoekerV1.aktiverBruker(request))
                 .onFailure((t) -> log.warn("Feil ved aktivering av bruker i arena", t))
                 .mapFailure(
