@@ -6,6 +6,7 @@ import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.config.RemoteFeatureConfig.OpprettBrukerIArenaFeature;
 import no.nav.fo.veilarboppfolging.config.RemoteFeatureConfig.RegistreringFeature;
 import no.nav.fo.veilarboppfolging.db.ArbeidssokerregistreringRepository;
+import no.nav.fo.veilarboppfolging.db.NyeBrukereFeedRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.service.ReservertKrrService;
 import no.nav.fo.veilarboppfolging.services.ArbeidsforholdService;
@@ -35,7 +36,8 @@ public class ServiceConfigWS {
                                                      BehandleArbeidssoekerV1 behandleArbeidssoekerV1,
                                                      OpprettBrukerIArenaFeature sjekkRegistrereBrukerArenaFeature,
                                                      RegistreringFeature skalRegistrereBrukerGenerellFeature,
-                                                     OppfolgingRepository oppfolgingRepository) {
+                                                     OppfolgingRepository oppfolgingRepository,
+                                                     NyeBrukereFeedRepository nyeBrukereFeedRepository) {
         return new BrukerRegistreringService(
                 arbeidssokerregistreringRepository,
                 oppfolgingRepository,
@@ -45,7 +47,8 @@ public class ServiceConfigWS {
                 arbeidsforholdService,
                 behandleArbeidssoekerV1,
                 sjekkRegistrereBrukerArenaFeature,
-                skalRegistrereBrukerGenerellFeature
+                skalRegistrereBrukerGenerellFeature,
+                nyeBrukereFeedRepository
                 );
     }
 
