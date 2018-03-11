@@ -16,6 +16,7 @@ import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.binding.RegistrerBrukerS
 import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.feil.FeilVedHentingAvArbeidsforhold;
 import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.feil.FeilVedHentingAvStatusIArena;
 import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.feil.Sikkerhetsbegrensning;
+import static no.nav.fo.veilarboppfolging.utils.ArbeidsforholdUtils.hentSisteArbeidsforhold;
 
 import javax.ws.rs.NotFoundException;
 import java.time.LocalDate;
@@ -80,8 +81,7 @@ public class StartRegistreringStatusResolver {
             HentStartRegistreringStatusFeilVedHentingAvArbeidsforhold {
         sjekkLesetilgangOrElseThrow(fnr, pepClient, (t) -> getHentStartRegistreringStatusSikkerhetsbegrensning());
 
-        return hentArbeidsforhold(fnr).stream()
-                .findFirst().orElse(null);
+        return hentSisteArbeidsforhold(hentArbeidsforhold(fnr));
     }
 
     private Optional<ArenaOppfolging> hentOppfolgingsstatusFraArena(String fnr) throws HentStartRegistreringStatusFeilVedHentingAvStatusFraArena {

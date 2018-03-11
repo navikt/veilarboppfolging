@@ -3,6 +3,7 @@ package no.nav.fo.veilarboppfolging.utils;
 import no.nav.fo.veilarboppfolging.domain.Arbeidsforhold;
 
 import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
@@ -41,5 +42,14 @@ public class ArbeidsforholdUtils {
     static boolean erDatoInnenforPeriode(Arbeidsforhold arbeidsforhold, LocalDate innevaerendeMnd) {
         return innevaerendeMnd.isAfter(arbeidsforhold.getFom().minusDays(1)) &&
                 (Objects.isNull(arbeidsforhold.getTom()) || innevaerendeMnd.isBefore(arbeidsforhold.getTom().plusDays(1)));
+    }
+
+    public static Arbeidsforhold hentSisteArbeidsforhold(List<Arbeidsforhold> arbeidsforholdListe) {
+        Arbeidsforhold arbeidsforholdUtenStyrkkode = new Arbeidsforhold().setStyrk("utenstyrkkode");
+        return arbeidsforholdListe.stream()
+                .sorted(Comparator.comparing(Arbeidsforhold::getTom,
+                        Comparator.nullsLast(Comparator.naturalOrder())
+                ).reversed())
+                .findFirst().orElse(arbeidsforholdUtenStyrkkode);
     }
 }
