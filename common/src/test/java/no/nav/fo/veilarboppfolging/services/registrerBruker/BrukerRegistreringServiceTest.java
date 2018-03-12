@@ -6,6 +6,7 @@ import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.config.RemoteFeatureConfig.OpprettBrukerIArenaFeature;
 import no.nav.fo.veilarboppfolging.config.RemoteFeatureConfig.RegistreringFeature;
 import no.nav.fo.veilarboppfolging.db.ArbeidssokerregistreringRepository;
+import no.nav.fo.veilarboppfolging.db.NyeBrukereFeedRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.domain.Arbeidsforhold;
 import no.nav.fo.veilarboppfolging.domain.ArenaOppfolging;
@@ -50,6 +51,7 @@ class BrukerRegistreringServiceTest {
     private OpprettBrukerIArenaFeature opprettBrukerIArenaFeature;
     private RegistreringFeature registreringFeature;
     private OppfolgingRepository oppfolgingRepository;
+    private NyeBrukereFeedRepository nyeBrukereFeedRepository;
 
     @BeforeEach
     public void setup() {
@@ -62,6 +64,8 @@ class BrukerRegistreringServiceTest {
         arenaOppfolgingService = mock(ArenaOppfolgingService.class);
         behandleArbeidssoekerV1 = mock(BehandleArbeidssoekerV1.class);
         oppfolgingRepository = mock(OppfolgingRepository.class);
+        nyeBrukereFeedRepository = mock(NyeBrukereFeedRepository.class);
+
 
         brukerRegistreringService =
                 new BrukerRegistreringService(
@@ -73,7 +77,8 @@ class BrukerRegistreringServiceTest {
                         arbeidsforholdService,
                         behandleArbeidssoekerV1,
                         opprettBrukerIArenaFeature,
-                        registreringFeature
+                        registreringFeature,
+                        nyeBrukereFeedRepository
                 );
 
         when(aktorService.getAktorId(any())).thenReturn(Optional.of("AKTORID"));

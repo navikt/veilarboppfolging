@@ -69,4 +69,9 @@ public class ServiceConfig {
         return new DigitalKontaktinformasjonService(digitalKontaktinformasjonV1);
     }
 
+    @Bean
+    NyeBrukereFeedRepository nyeBrukereFeedRepository(Database db) {
+        return new NyeBrukereFeedRepository(db);
+    }
+
 }
