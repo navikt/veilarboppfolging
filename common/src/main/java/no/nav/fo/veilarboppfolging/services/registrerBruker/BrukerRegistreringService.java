@@ -7,6 +7,7 @@ import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.config.RemoteFeatureConfig.OpprettBrukerIArenaFeature;
 import no.nav.fo.veilarboppfolging.config.RemoteFeatureConfig.RegistreringFeature;
 import no.nav.fo.veilarboppfolging.db.ArbeidssokerregistreringRepository;
+import no.nav.fo.veilarboppfolging.db.NyeBrukereFeedRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.fo.veilarboppfolging.services.ArbeidsforholdService;
@@ -42,6 +43,7 @@ public class BrukerRegistreringService {
     private OpprettBrukerIArenaFeature opprettBrukerIArenaFeature;
 
     private OppfolgingRepository oppfolgingRepository;
+    private NyeBrukereFeedRepository nyeBrukereFeedRepository;
 
     public BrukerRegistreringService(ArbeidssokerregistreringRepository arbeidssokerregistreringRepository,
                                      OppfolgingRepository oppfolgingRepository,
@@ -51,7 +53,8 @@ public class BrukerRegistreringService {
                                      ArbeidsforholdService arbeidsforholdService,
                                      BehandleArbeidssoekerV1 BehandleArbeidssoekerV1,
                                      OpprettBrukerIArenaFeature opprettBrukerIArenaFeature,
-                                     RegistreringFeature registreringFeature
+                                     RegistreringFeature registreringFeature,
+                                     NyeBrukereFeedRepository nyeBrukereFeedRepository
     ) {
         this.arbeidssokerregistreringRepository = arbeidssokerregistreringRepository;
         this.aktorService = aktorService;
@@ -59,6 +62,7 @@ public class BrukerRegistreringService {
         this.opprettBrukerIArenaFeature = opprettBrukerIArenaFeature;
         this.registreringFeature = registreringFeature;
         this.oppfolgingRepository = oppfolgingRepository;
+        this.nyeBrukereFeedRepository = nyeBrukereFeedRepository;
 
         startRegistreringStatusResolver = new StartRegistreringStatusResolver(aktorService,
                 arbeidssokerregistreringRepository, pepClient, arenaOppfolgingService, arbeidsforholdService);
@@ -98,7 +102,12 @@ public class BrukerRegistreringService {
     @Transactional
     BrukerRegistrering opprettBruker(String fnr, BrukerRegistrering bruker, AktorId aktorId) {
         oppfolgingRepository.opprettOppfolging(aktorId.getAktorId());
-        oppfolgingRepository.startOppfolgingHvisIkkeAlleredeStartet(aktorId.getAktorId());
+        oppfolgingRepository.startOppfolgingHvisIkkeAlleredeStartet(
+                Oppfolgingsbruker.builder()
+                .aktoerId(aktorId.getAktorId())
+                .selvgaende(true)
+                .build()
+        );
 
         BrukerRegistrering brukerRegistrering = arbeidssokerregistreringRepository.lagreBruker(bruker, aktorId);
 
@@ -106,6 +115,7 @@ public class BrukerRegistreringService {
             opprettBrukerIArena(new AktiverArbeidssokerData(new Fnr(fnr), "IKVAL"));
         }
 
+        nyeBrukereFeedRepository.tryLeggTilFeedIdPaAlleElementerUtenFeedId();
         return brukerRegistrering;
     }
 

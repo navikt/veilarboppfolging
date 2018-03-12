@@ -62,4 +62,8 @@ public class ServiceConfig {
         return new KvpRepository(db);
     }
 
+    @Bean
+    NyeBrukereFeedRepository nyeBrukereFeedRepository(Database db) {
+        return new NyeBrukereFeedRepository(db);
+    }
 }
