@@ -9,21 +9,14 @@ import no.nav.fo.veilarboppfolging.db.ArbeidssokerregistreringRepository;
 import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.fo.veilarboppfolging.services.ArbeidsforholdService;
 import no.nav.fo.veilarboppfolging.services.ArenaOppfolgingService;
+import no.nav.fo.veilarboppfolging.utils.ArbeidsforholdUtils;
 import no.nav.fo.veilarboppfolging.utils.FnrUtils;
-import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.binding.HentStartRegistreringStatusFeilVedHentingAvArbeidsforhold;
-import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.binding.HentStartRegistreringStatusFeilVedHentingAvStatusFraArena;
-import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.binding.RegistrerBrukerSikkerhetsbegrensning;
-import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.feil.FeilVedHentingAvArbeidsforhold;
-import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.feil.FeilVedHentingAvStatusIArena;
-import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.feil.Sikkerhetsbegrensning;
-import static no.nav.fo.veilarboppfolging.utils.ArbeidsforholdUtils.hentSisteArbeidsforhold;
 
 import javax.ws.rs.NotFoundException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
-import static no.nav.fo.veilarboppfolging.utils.DateUtils.now;
 import static no.nav.fo.veilarboppfolging.utils.StartRegistreringUtils.*;
 
 @Slf4j
@@ -47,10 +40,9 @@ public class StartRegistreringStatusResolver {
         this.arbeidsforholdService = arbeidsforholdService;
     }
 
-    public StartRegistreringStatus hentStartRegistreringStatus(String fnr) throws RegistrerBrukerSikkerhetsbegrensning,
-            HentStartRegistreringStatusFeilVedHentingAvStatusFraArena, HentStartRegistreringStatusFeilVedHentingAvArbeidsforhold {
+    public StartRegistreringStatus hentStartRegistreringStatus(String fnr) {
+        pepClient.sjekkLeseTilgangTilFnr(fnr);
 
-        sjekkLesetilgangOrElseThrow(fnr, pepClient, (t) -> getHentStartRegistreringStatusSikkerhetsbegrensning());
 
         AktorId aktorId = FnrUtils.getAktorIdOrElseThrow(aktorService,fnr);
 
@@ -70,57 +62,29 @@ public class StartRegistreringStatusResolver {
                     .setOppfyllerKravForAutomatiskRegistrering(false);
         }
 
-        boolean oppfyllerKrav = oppfyllerKravOmAutomatiskRegistrering(fnr, () -> hentArbeidsforhold(fnr), arenaOppfolging.orElse(null), LocalDate.now());
+        boolean oppfyllerKrav = oppfyllerKravOmAutomatiskRegistrering(fnr, () -> hentAlleArbeidsforhold(fnr), arenaOppfolging.orElse(null), LocalDate.now());
 
         return new StartRegistreringStatus()
                 .setUnderOppfolging(false)
                 .setOppfyllerKravForAutomatiskRegistrering(oppfyllerKrav);
     }
 
-    public Arbeidsforhold hentArbeidsforholdet(String fnr) throws RegistrerBrukerSikkerhetsbegrensning,
-            HentStartRegistreringStatusFeilVedHentingAvArbeidsforhold {
-        sjekkLesetilgangOrElseThrow(fnr, pepClient, (t) -> getHentStartRegistreringStatusSikkerhetsbegrensning());
-
-        return hentSisteArbeidsforhold(hentArbeidsforhold(fnr));
+    public Arbeidsforhold hentSisteArbeidsforhold(String fnr) {
+        pepClient.sjekkLeseTilgangTilFnr(fnr);
+        return ArbeidsforholdUtils.hentSisteArbeidsforhold(hentAlleArbeidsforhold(fnr));
     }
 
-    private Optional<ArenaOppfolging> hentOppfolgingsstatusFraArena(String fnr) throws HentStartRegistreringStatusFeilVedHentingAvStatusFraArena {
+    private Optional<ArenaOppfolging> hentOppfolgingsstatusFraArena(String fnr) {
         return Try.of(() -> arenaOppfolgingService.hentArenaOppfolging(fnr))
                 .map(Optional::of)
                 .recover(NotFoundException.class, Optional.empty())
                 .onFailure((t) -> log.error("Feil ved henting av status fra Arena {}", t))
-                .getOrElseThrow(t -> {
-                    FeilVedHentingAvStatusIArena feilVedHentingAvStatusIArena = new FeilVedHentingAvStatusIArena();
-                    feilVedHentingAvStatusIArena.setFeilkilde("Arena");
-                    feilVedHentingAvStatusIArena.setFeilmelding(t.getMessage());
-                    return new HentStartRegistreringStatusFeilVedHentingAvStatusFraArena("Feil ved henting av status i Arena", feilVedHentingAvStatusIArena);
-                });
+                .get();
     }
 
     @SneakyThrows
-    private List<Arbeidsforhold> hentArbeidsforhold(String fnr) {
-                return Try.of(() -> arbeidsforholdService.hentArbeidsforhold(fnr))
-                .onFailure((t) -> log.error("Feil ved henting av arbeidsforhold", t))
-                .getOrElseThrow(t -> {
-                    FeilVedHentingAvArbeidsforhold feilVedHentingAvArbeidsforhold = new FeilVedHentingAvArbeidsforhold();
-                    feilVedHentingAvArbeidsforhold.setFeilkilde("AAREG");
-                    feilVedHentingAvArbeidsforhold.setFeilmelding(t.getMessage());
-                    return new HentStartRegistreringStatusFeilVedHentingAvArbeidsforhold("Feil ved henting av arbeidforhold", feilVedHentingAvArbeidsforhold);
-                });
+    private List<Arbeidsforhold> hentAlleArbeidsforhold(String fnr) {
+                return arbeidsforholdService.hentArbeidsforhold(fnr);
     }
 
-    private RegistrerBrukerSikkerhetsbegrensning getHentStartRegistreringStatusSikkerhetsbegrensning() {
-        Sikkerhetsbegrensning sikkerhetsbegrensning = getSikkerhetsbegrensning("ABAC", "ABAC", "Ingen tilgang");
-        return new RegistrerBrukerSikkerhetsbegrensning("Kunne ikke gi tilgang etter kall til ABAC", sikkerhetsbegrensning);
-    }
-
-
-    protected Sikkerhetsbegrensning getSikkerhetsbegrensning(String kilde, String aarsak, String feilmelding) {
-        Sikkerhetsbegrensning sikkerhetsbegrensning = new Sikkerhetsbegrensning();
-        sikkerhetsbegrensning.setFeilaarsak(aarsak);
-        sikkerhetsbegrensning.setFeilkilde(kilde);
-        sikkerhetsbegrensning.setFeilmelding(feilmelding);
-        sikkerhetsbegrensning.setTidspunkt(now());
-        return sikkerhetsbegrensning;
-    }
 }

@@ -123,49 +123,49 @@ class BrukerRegistreringServiceTest {
     void skalIkkeLagreRegistreringSomErUnderOppfolging() {
         mockBrukerUnderOppfolging();
         BrukerRegistrering selvgaaendeBruker = getBrukerRegistreringSelvgaaende();
-        assertThrows(RegistrerBrukerSikkerhetsbegrensning.class, () -> registrerBruker(selvgaaendeBruker, FNR_OPPFYLLER_KRAV));
+        assertThrows(RuntimeException.class, () -> registrerBruker(selvgaaendeBruker, FNR_OPPFYLLER_KRAV));
     }
 
     @Test
     void skalIkkeLagreRegistreringSomIkkeOppfyllerKravForAutomatiskRegistrering() throws Exception {
         mockSelvgaaendeBruker();
         BrukerRegistrering selvgaaendeBruker = getBrukerRegistreringSelvgaaende();
-        assertThrows(RegistrerBrukerSikkerhetsbegrensning.class, () -> registrerBruker(selvgaaendeBruker, FNR_OPPFYLLER_IKKE_KRAV));
+        assertThrows(RuntimeException.class, () -> registrerBruker(selvgaaendeBruker, FNR_OPPFYLLER_IKKE_KRAV));
     }
 
     @Test
     void skalIkkeLagreRegistreringDersomIngenUtdannelse() throws Exception {
         mockSelvgaaendeBruker();
         BrukerRegistrering ikkeSelvgaaendeBruker = getBrukerIngenUtdannelse();
-        assertThrows(RegistrerBrukerSikkerhetsbegrensning.class, () -> registrerBruker(ikkeSelvgaaendeBruker, FNR_OPPFYLLER_KRAV));
+        assertThrows(RuntimeException.class, () -> registrerBruker(ikkeSelvgaaendeBruker, FNR_OPPFYLLER_KRAV));
     }
 
     @Test
     void skalIkkeLagreRegistrereDersomKunGrunnskole() throws Exception {
         mockSelvgaaendeBruker();
         BrukerRegistrering brukerRegistreringMedKunGrunnskole = getBrukerRegistreringMedKunGrunnskole();
-        assertThrows(RegistrerBrukerSikkerhetsbegrensning.class, () -> registrerBruker(brukerRegistreringMedKunGrunnskole, FNR_OPPFYLLER_KRAV));
+        assertThrows(RuntimeException.class, () -> registrerBruker(brukerRegistreringMedKunGrunnskole, FNR_OPPFYLLER_KRAV));
     }
 
     @Test
     void skalIkkeLagreRegistreringDersomUtdanningIkkeBestatt() throws Exception {
         mockSelvgaaendeBruker();
         BrukerRegistrering brukerRegistreringUtdanningIkkeBestatt = getBrukerRegistreringUtdanningIkkeBestatt();
-        assertThrows(RegistrerBrukerSikkerhetsbegrensning.class, () -> registrerBruker(brukerRegistreringUtdanningIkkeBestatt, FNR_OPPFYLLER_KRAV));
+        assertThrows(RuntimeException.class, () -> registrerBruker(brukerRegistreringUtdanningIkkeBestatt, FNR_OPPFYLLER_KRAV));
     }
 
     @Test
     void skalIkkeLagreRegistreringMedHelseutfordringer() throws Exception {
         mockSelvgaaendeBruker();
         BrukerRegistrering brukerRegistreringMedHelseutfordringer = getBrukerRegistreringMedHelseutfordringer();
-        assertThrows(RegistrerBrukerSikkerhetsbegrensning.class, () -> registrerBruker(brukerRegistreringMedHelseutfordringer, FNR_OPPFYLLER_KRAV));
+        assertThrows(RuntimeException.class, () -> registrerBruker(brukerRegistreringMedHelseutfordringer, FNR_OPPFYLLER_KRAV));
     }
 
     @Test
     void skalIkkeLagreRegistreringDersomUtdannelseIkkeGodkjent() throws Exception {
         mockSelvgaaendeBruker();
         BrukerRegistrering brukerRegistreringUtdannelseIkkeGodkjent = getBrukerRegistreringUtdannelseIkkeGodkjent();
-        assertThrows(RegistrerBrukerSikkerhetsbegrensning.class, () -> registrerBruker(brukerRegistreringUtdannelseIkkeGodkjent, FNR_OPPFYLLER_KRAV));
+        assertThrows(RuntimeException.class, () -> registrerBruker(brukerRegistreringUtdannelseIkkeGodkjent, FNR_OPPFYLLER_KRAV));
     }
 
     /*

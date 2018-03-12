@@ -267,22 +267,15 @@ public class OppfolgingWebService implements BehandleOppfolgingV1 {
     }
 
     @Override
-    public HentSisteArbeidsforholdResponse hentSisteArbeidsforhold(HentSisteArbeidsforholdRequest request) throws RegistrerBrukerSikkerhetsbegrensning,
-    HentStartRegistreringStatusFeilVedHentingAvArbeidsforhold {
+    public HentSisteArbeidsforholdResponse hentSisteArbeidsforhold(HentSisteArbeidsforholdRequest request) {
         HentSisteArbeidsforholdResponse respons = new HentSisteArbeidsforholdResponse();
-        String styrk = brukerRegistreringService.hentArbeidsforholdet(request.getFnr()).getStyrk();
+        String styrk = brukerRegistreringService.hentSisteArbeidsforhold(request.getFnr()).getStyrk();
         respons.setStyrk(styrk);
         return respons;
     }
 
-    private BrukerRegistrering getRegistrertBruker(RegistrerBrukerRequest request, BrukerRegistrering brukerRegistrering)
-            throws RegistrerBrukerSikkerhetsbegrensning {
-        try {
-            return brukerRegistreringService.registrerBruker(brukerRegistrering, request.getFnr());
-        } catch (HentStartRegistreringStatusFeilVedHentingAvStatusFraArena |
-                HentStartRegistreringStatusFeilVedHentingAvArbeidsforhold e) {
-            throw new RuntimeException("Feil ved registrering av bruker." + e);
-        }
+    private BrukerRegistrering getRegistrertBruker(RegistrerBrukerRequest request, BrukerRegistrering brukerRegistrering) {
+        return brukerRegistreringService.registrerBruker(brukerRegistrering, request.getFnr());
     }
 
     private RegistrerBrukerResponse mapRegistrerBrukerResponse(BrukerRegistrering bruker) {
@@ -296,6 +289,7 @@ public class OppfolgingWebService implements BehandleOppfolgingV1 {
         response.setHarHelseutfordringer(bruker.isHarHelseutfordringer());
         return response;
     }
+
     private BrukerRegistrering mapBrukerRegistrering(RegistrerBrukerRequest request) {
         return BrukerRegistrering.builder()
                 .nusKode(request.getNusKode())

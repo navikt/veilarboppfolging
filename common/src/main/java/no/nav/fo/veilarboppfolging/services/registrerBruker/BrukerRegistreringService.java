@@ -62,20 +62,15 @@ public class BrukerRegistreringService {
                 arbeidssokerregistreringRepository, pepClient, arenaOppfolgingService, arbeidsforholdService);
     }
 
-    public StartRegistreringStatus hentStartRegistreringStatus(String fnr) throws HentStartRegistreringStatusFeilVedHentingAvStatusFraArena,
-            RegistrerBrukerSikkerhetsbegrensning, HentStartRegistreringStatusFeilVedHentingAvArbeidsforhold {
+    public StartRegistreringStatus hentStartRegistreringStatus(String fnr) {
         return startRegistreringStatusResolver.hentStartRegistreringStatus(fnr);
     }
 
-    public Arbeidsforhold hentArbeidsforholdet(String fnr) throws RegistrerBrukerSikkerhetsbegrensning,
-            HentStartRegistreringStatusFeilVedHentingAvArbeidsforhold {
-        return startRegistreringStatusResolver.hentArbeidsforholdet(fnr);
+    public Arbeidsforhold hentSisteArbeidsforhold(String fnr) {
+        return startRegistreringStatusResolver.hentSisteArbeidsforhold(fnr);
     }
 
-    public BrukerRegistrering registrerBruker(BrukerRegistrering bruker, String fnr) throws
-            RegistrerBrukerSikkerhetsbegrensning,
-            HentStartRegistreringStatusFeilVedHentingAvStatusFraArena,
-            HentStartRegistreringStatusFeilVedHentingAvArbeidsforhold {
+    public BrukerRegistrering registrerBruker(BrukerRegistrering bruker, String fnr) {
 
         if (!registreringFeature.erAktiv()) {
             throw new RuntimeException("Tjenesten er togglet av.");
@@ -88,11 +83,7 @@ public class BrukerRegistreringService {
         boolean erSelvaaende = erSelvgaaende(bruker, status);
 
         if (!erSelvaaende) {
-            Sikkerhetsbegrensning sikkerhetsbegrensning = startRegistreringStatusResolver.getSikkerhetsbegrensning(
-                    "Arena",
-                    "Arena",
-                    "Bruker oppfyller ikke krav for registrering.");
-            throw new RegistrerBrukerSikkerhetsbegrensning("Bruker oppfyller ikke krav for registrering.", sikkerhetsbegrensning);
+            throw new RuntimeException("Bruker oppfyller ikke krav for registrering.");
         }
 
         return opprettBruker(fnr, bruker, aktorId);
