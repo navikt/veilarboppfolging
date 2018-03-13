@@ -31,6 +31,7 @@ public class OppfolgingRepository {
     private final BrukervilkarRepository brukervilkarRepository;
     private final EskaleringsvarselRepository eskaleringsvarselRepository;
     private final KvpRepository kvpRepository;
+    private final NyeBrukereFeedRepository nyeBrukereFeedRepository;
 
     public OppfolgingRepository(Database database) {
         statusRepository = new OppfolgingsStatusRepository(database);
@@ -40,6 +41,7 @@ public class OppfolgingRepository {
         brukervilkarRepository = new BrukervilkarRepository(database);
         eskaleringsvarselRepository = new EskaleringsvarselRepository(database);
         kvpRepository = new KvpRepository(database);
+        nyeBrukereFeedRepository = new NyeBrukereFeedRepository(database);
     }
 
     @SneakyThrows
@@ -90,8 +92,19 @@ public class OppfolgingRepository {
 
     @Transactional
     public void startOppfolgingHvisIkkeAlleredeStartet(String aktorId) {
-        if (!statusRepository.erOppfolgingsflaggSattForBruker(aktorId)) {
-            periodeRepository.start(aktorId);
+        startOppfolgingHvisIkkeAlleredeStartet(
+                Oppfolgingsbruker.builder()
+                        .aktoerId(aktorId)
+                        .selvgaende(false)
+                .build()
+        );
+    }
+
+    @Transactional
+    public void startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker oppfolgingsbruker) {
+        if (!statusRepository.erOppfolgingsflaggSattForBruker(oppfolgingsbruker.getAktoerId())) {
+            periodeRepository.start(oppfolgingsbruker.getAktoerId());
+            nyeBrukereFeedRepository.leggTil(oppfolgingsbruker);
         }
     }
 

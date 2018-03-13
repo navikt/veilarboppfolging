@@ -7,11 +7,14 @@ import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.config.RemoteFeatureConfig.OpprettBrukerIArenaFeature;
 import no.nav.fo.veilarboppfolging.config.RemoteFeatureConfig.RegistreringFeature;
 import no.nav.fo.veilarboppfolging.db.ArbeidssokerregistreringRepository;
+import no.nav.fo.veilarboppfolging.db.NyeBrukereFeedRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.fo.veilarboppfolging.services.ArbeidsforholdService;
 import no.nav.fo.veilarboppfolging.services.ArenaOppfolgingService;
 import no.nav.fo.veilarboppfolging.utils.FnrUtils;
+import no.nav.metrics.MetricsFactory;
+import no.nav.metrics.Timer;
 import no.nav.tjeneste.virksomhet.behandlearbeidssoeker.v1.binding.*;
 import no.nav.tjeneste.virksomhet.behandlearbeidssoeker.v1.informasjon.Brukerident;
 import no.nav.tjeneste.virksomhet.behandlearbeidssoeker.v1.meldinger.AktiverBrukerRequest;
@@ -40,6 +43,7 @@ public class BrukerRegistreringService {
     private OpprettBrukerIArenaFeature opprettBrukerIArenaFeature;
 
     private OppfolgingRepository oppfolgingRepository;
+    private NyeBrukereFeedRepository nyeBrukereFeedRepository;
 
     public BrukerRegistreringService(ArbeidssokerregistreringRepository arbeidssokerregistreringRepository,
                                      OppfolgingRepository oppfolgingRepository,
@@ -49,7 +53,8 @@ public class BrukerRegistreringService {
                                      ArbeidsforholdService arbeidsforholdService,
                                      BehandleArbeidssoekerV1 BehandleArbeidssoekerV1,
                                      OpprettBrukerIArenaFeature opprettBrukerIArenaFeature,
-                                     RegistreringFeature registreringFeature
+                                     RegistreringFeature registreringFeature,
+                                     NyeBrukereFeedRepository nyeBrukereFeedRepository
     ) {
         this.arbeidssokerregistreringRepository = arbeidssokerregistreringRepository;
         this.aktorService = aktorService;
@@ -57,6 +62,7 @@ public class BrukerRegistreringService {
         this.opprettBrukerIArenaFeature = opprettBrukerIArenaFeature;
         this.registreringFeature = registreringFeature;
         this.oppfolgingRepository = oppfolgingRepository;
+        this.nyeBrukereFeedRepository = nyeBrukereFeedRepository;
 
         startRegistreringStatusResolver = new StartRegistreringStatusResolver(aktorService,
                 arbeidssokerregistreringRepository, pepClient, arenaOppfolgingService, arbeidsforholdService);
@@ -92,7 +98,12 @@ public class BrukerRegistreringService {
     @Transactional
     BrukerRegistrering opprettBruker(String fnr, BrukerRegistrering bruker, AktorId aktorId) {
         oppfolgingRepository.opprettOppfolging(aktorId.getAktorId());
-        oppfolgingRepository.startOppfolgingHvisIkkeAlleredeStartet(aktorId.getAktorId());
+        oppfolgingRepository.startOppfolgingHvisIkkeAlleredeStartet(
+                Oppfolgingsbruker.builder()
+                .aktoerId(aktorId.getAktorId())
+                .selvgaende(true)
+                .build()
+        );
 
         BrukerRegistrering brukerRegistrering = arbeidssokerregistreringRepository.lagreBruker(bruker, aktorId);
 
@@ -100,6 +111,7 @@ public class BrukerRegistreringService {
             opprettBrukerIArena(new AktiverArbeidssokerData(new Fnr(fnr), "IKVAL"));
         }
 
+        nyeBrukereFeedRepository.tryLeggTilFeedIdPaAlleElementerUtenFeedId();
         return brukerRegistrering;
     }
 
@@ -111,9 +123,15 @@ public class BrukerRegistreringService {
         request.setIdent(brukerident);
         request.setKvalifiseringsgruppekode(aktiverArbeidssokerData.getKvalifiseringsgruppekode());
 
-
+        Timer timer = MetricsFactory.createTimer("registrering.i.arena").start();
         Try.run(() -> behandleArbeidssoekerV1.aktiverBruker(request))
-                .onFailure((t) -> log.warn("Feil ved aktivering av bruker i arena", t))
+                .onFailure((t) -> {
+                    timer.stop()
+                            .setFailed()
+                            .addTagToReport("aarsak",  t.getClass().getSimpleName())
+                            .report();
+                    log.warn("Feil ved aktivering av bruker i arena", t);
+                })
                 .mapFailure(
                         Case($(instanceOf(AktiverBrukerBrukerFinnesIkke.class)), (t) -> new NotFoundException(t)),
                         Case($(instanceOf(AktiverBrukerBrukerIkkeReaktivert.class)), (t) -> new ServerErrorException(Response.Status.BAD_GATEWAY, t)),
@@ -123,6 +141,7 @@ public class BrukerRegistreringService {
                         Case($(instanceOf(AktiverBrukerUgyldigInput.class)), (t) -> new BadRequestException(t)),
                         Case($(), (t) -> new InternalServerErrorException(t))
                 )
+                .onSuccess((event) -> timer.stop().report())
                 .get();
     }
 

@@ -5,14 +5,13 @@ import no.nav.brukerdialog.security.oidc.OidcFeedOutInterceptor;
 import no.nav.fo.feed.controller.FeedController;
 import no.nav.fo.feed.producer.FeedProducer;
 import no.nav.fo.veilarboppfolging.db.KvpRepository;
+import no.nav.fo.veilarboppfolging.db.NyeBrukereFeedRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingFeedRepository;
+import no.nav.fo.veilarboppfolging.domain.NyeBrukereFeedDTO;
 import no.nav.fo.veilarboppfolging.rest.domain.AvsluttetOppfolgingFeedDTO;
 import no.nav.fo.veilarboppfolging.rest.domain.KvpDTO;
 import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingFeedDTO;
-import no.nav.fo.veilarboppfolging.services.AvsluttetOppfolgingFeedProvider;
-import no.nav.fo.veilarboppfolging.services.KvpFeedProvider;
-import no.nav.fo.veilarboppfolging.services.OppfolgingFeedProvider;
-import no.nav.fo.veilarboppfolging.services.OppfolgingService;
+import no.nav.fo.veilarboppfolging.services.*;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -23,17 +22,20 @@ import static java.util.Collections.singletonList;
 public class FeedConfig {
     public static final String OPPFOLGING_FEED_NAME = "oppfolging";
     public static final String AVSLUTTET_OPPFOLGING_FEED_NAME = "avsluttetoppfolging";
+    public static final String NYE_BRUKERE_FEED_NAME = "nyebrukere";
 
     @Bean
     public FeedController feedController(
             FeedProducer<OppfolgingFeedDTO> oppfolgingFeed,
             FeedProducer<AvsluttetOppfolgingFeedDTO> avsluttetOppfolgingFeed,
-            FeedProducer<KvpDTO> kvpFeed) {
+            FeedProducer<KvpDTO> kvpFeed,
+            FeedProducer<NyeBrukereFeedDTO> nyeBrukereFeed) {
         FeedController feedServerController = new FeedController();
 
         feedServerController.addFeed(OPPFOLGING_FEED_NAME, oppfolgingFeed);
         feedServerController.addFeed(AVSLUTTET_OPPFOLGING_FEED_NAME, avsluttetOppfolgingFeed);
         feedServerController.addFeed(KvpDTO.FEED_NAME, kvpFeed);
+        feedServerController.addFeed(NYE_BRUKERE_FEED_NAME, nyeBrukereFeed);
 
         return feedServerController;
     }
@@ -64,6 +66,15 @@ public class FeedConfig {
                 .provider(new KvpFeedProvider(repo))
                 .maxPageSize(1000)
                 .interceptors(singletonList(new OidcFeedOutInterceptor()) )
+                .authorizationModule(new OidcFeedAuthorizationModule())
+                .build();
+    }
+
+    @Bean
+    public FeedProducer<NyeBrukereFeedDTO> nyeBrukereFeed(NyeBrukereFeedRepository repo) {
+        return FeedProducer.<NyeBrukereFeedDTO>builder()
+                .provider((id, pageSize) -> repo.hentElementerStorreEnnId(id, pageSize).stream().map(NyeBrukereFeedDTO::toFeedElement))
+                .maxPageSize(1000)
                 .authorizationModule(new OidcFeedAuthorizationModule())
                 .build();
     }
