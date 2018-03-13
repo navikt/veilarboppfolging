@@ -8,10 +8,8 @@ import no.nav.fo.veilarboppfolging.config.RemoteFeatureConfig.RegistreringFeatur
 import no.nav.fo.veilarboppfolging.db.ArbeidssokerregistreringRepository;
 import no.nav.fo.veilarboppfolging.db.NyeBrukereFeedRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
-import no.nav.fo.veilarboppfolging.service.ReservertKrrService;
 import no.nav.fo.veilarboppfolging.services.ArbeidsforholdService;
 import no.nav.fo.veilarboppfolging.services.ArenaOppfolgingService;
-import no.nav.fo.veilarboppfolging.services.DigitalKontaktinformasjonService;
 import no.nav.fo.veilarboppfolging.services.registrerBruker.BrukerRegistreringService;
 import no.nav.tjeneste.virksomhet.arbeidsforhold.v3.binding.ArbeidsforholdV3;
 import no.nav.tjeneste.virksomhet.behandlearbeidssoeker.v1.binding.BehandleArbeidssoekerV1;
@@ -52,8 +50,4 @@ public class ServiceConfigWS {
                 );
     }
 
-    @Bean
-    ReservertKrrService reserverKrrService(DigitalKontaktinformasjonService digitalKontaktinformasjonService, PepClient pepClient) {
-        return new ReservertKrrService(digitalKontaktinformasjonService, pepClient);
-    }
 }

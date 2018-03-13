@@ -4,12 +4,9 @@ import lombok.SneakyThrows;
 import lombok.val;
 import no.nav.apiapp.soap.SoapTjeneste;
 import no.nav.fo.veilarboppfolging.domain.*;
-import no.nav.fo.veilarboppfolging.service.ReservertKrrService;
 import no.nav.fo.veilarboppfolging.services.MalService;
 import no.nav.fo.veilarboppfolging.services.OppfolgingService;
 import no.nav.fo.veilarboppfolging.services.registrerBruker.BrukerRegistreringService;
-import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.HentReservertKrrRequest;
-import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.HentReservertKrrResponse;
 import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.binding.*;
 import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.informasjon.*;
 import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.meldinger.*;
@@ -32,18 +29,15 @@ public class OppfolgingWebService implements BehandleOppfolgingV1 {
 
     private OppfolgingService oppfolgingService;
     private BrukerRegistreringService brukerRegistreringService;
-    private ReservertKrrService reservertKrrService;
     private MalService malService;
 
     public OppfolgingWebService(
             OppfolgingService oppfolgingService,
             BrukerRegistreringService brukerRegistreringService,
-            ReservertKrrService reservertKrrService,
             MalService malService) {
 
         this.oppfolgingService = oppfolgingService;
         this.brukerRegistreringService = brukerRegistreringService;
-        this.reservertKrrService = reservertKrrService;
         this.malService = malService;
     }
 
@@ -251,11 +245,6 @@ public class OppfolgingWebService implements BehandleOppfolgingV1 {
         response.setErUnderOppfolging(status.isUnderOppfolging());
         response.setOppfyllerKrav(status.isOppfyllerKravForAutomatiskRegistrering());
         return response;
-    }
-
-    @Override
-    public HentReservertKrrResponse hentReservertKrr(HentReservertKrrRequest request) {
-        return reservertKrrService.hentReservertKrr(request.getFnr());
     }
 
     @Override
