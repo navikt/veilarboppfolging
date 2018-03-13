@@ -152,15 +152,14 @@ public class StartRegistreringStatusResolverTest {
 
     @Test
     public void skalKasterKorrektExceptionDersomKallTilArenaFeiler() throws Exception {
-        when(arenaOppfolgingService.hentArenaOppfolging(any())).thenThrow(Exception.class);
-        assertThrows(HentStartRegistreringStatusFeilVedHentingAvStatusFraArena.class, () -> getStartRegistreringStatus(FNR_OPPFYLLER_KRAV));
+        when(arenaOppfolgingService.hentArenaOppfolging(any())).thenThrow(RuntimeException.class);
+        assertThrows(RuntimeException.class, () -> getStartRegistreringStatus(FNR_OPPFYLLER_KRAV));
     }
 
-    @Test
-    public void skalKasterKorrektExceptionDersomKallTilArbeidsforholdFeiler() throws Exception{
-        mockArenaMedRespons(arenaISERV(LocalDate.now().minusYears(2)));
-        when(arbeidsforholdService.hentArbeidsforhold(any())).thenThrow(Exception.class);
-        assertThrows(HentStartRegistreringStatusFeilVedHentingAvArbeidsforhold.class, () -> getStartRegistreringStatus(FNR_OPPFYLLER_KRAV));
+    @Test void skalHenteSisteArbeidsforhold() throws Exception {
+        mockArbeidsforhold(arbeidsforholdSomOppfyllerKrav());
+        Arbeidsforhold arbeidsforhold = startRegistreringStatusResolver.hentSisteArbeidsforhold(FNR_OPPFYLLER_KRAV);
+        assertThat(arbeidsforhold.getStyrk()).isEqualTo("styrk");
     }
 
     private ArenaOppfolging underOppfolgingIArena() {
@@ -179,6 +178,7 @@ public class StartRegistreringStatusResolverTest {
     private List<Arbeidsforhold> arbeidsforholdSomOppfyllerKrav() {
         return Collections.singletonList(new Arbeidsforhold()
                 .setArbeidsgiverOrgnummer("orgnummer")
+                .setStyrk("styrk")
                 .setFom(LocalDate.of(2017,1,10)));
     }
 

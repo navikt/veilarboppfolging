@@ -4,6 +4,8 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 import no.nav.fo.veilarboppfolging.utils.DateUtils;
 import no.nav.tjeneste.virksomhet.arbeidsforhold.v3.informasjon.arbeidsforhold.AnsettelsesPeriode;
+import no.nav.tjeneste.virksomhet.arbeidsforhold.v3.informasjon.arbeidsforhold.Arbeidsavtale;
+import no.nav.tjeneste.virksomhet.arbeidsforhold.v3.informasjon.arbeidsforhold.Yrker;
 
 import java.time.LocalDate;
 import java.util.Optional;
@@ -12,11 +14,13 @@ import java.util.Optional;
 @Accessors(chain = true)
 public class Arbeidsforhold {
     private String arbeidsgiverOrgnummer;
+    private String styrk;
     private LocalDate fom;
     private LocalDate tom;
 
     public static Arbeidsforhold of(no.nav.tjeneste.virksomhet.arbeidsforhold.v3.informasjon.arbeidsforhold.Arbeidsforhold arbeidsforhold) {
         return new Arbeidsforhold().setArbeidsgiverOrgnummer(arbeidsforhold.getArbeidsgiver().getAktoerId())
+                .setStyrk(arbeidsforhold.getArbeidsavtale().stream().findFirst().map(Arbeidsavtale::getYrke).map(Yrker::getKodeRef).orElse("utenstyrkkode"))
                 .setFom(getFom(arbeidsforhold.getAnsettelsesPeriode()))
                 .setTom(getTom(arbeidsforhold.getAnsettelsesPeriode()));
     }

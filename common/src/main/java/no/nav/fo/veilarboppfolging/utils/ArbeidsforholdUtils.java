@@ -3,8 +3,12 @@ package no.nav.fo.veilarboppfolging.utils;
 import no.nav.fo.veilarboppfolging.domain.Arbeidsforhold;
 
 import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+
+import static java.util.Comparator.comparing;
+import static java.util.Comparator.nullsLast;
 
 public class ArbeidsforholdUtils {
 
@@ -17,9 +21,9 @@ public class ArbeidsforholdUtils {
         int mndFraDagensMnd = 0;
         LocalDate innevaerendeMnd = LocalDate.of(dagensDato.getYear(), dagensDato.getMonthValue(), dagIMnd);
 
-        while(antallSammenhengendeMandeder < minAntallMndSammenhengendeJobb && mndFraDagensMnd < antallMnd) {
+        while (antallSammenhengendeMandeder < minAntallMndSammenhengendeJobb && mndFraDagensMnd < antallMnd) {
 
-            if(harArbeidsforholdPaaDato(arbeidsforhold, innevaerendeMnd)) {
+            if (harArbeidsforholdPaaDato(arbeidsforhold, innevaerendeMnd)) {
                 antallSammenhengendeMandeder += 1;
             } else {
                 antallSammenhengendeMandeder = 0;
@@ -42,4 +46,18 @@ public class ArbeidsforholdUtils {
         return innevaerendeMnd.isAfter(arbeidsforhold.getFom().minusDays(1)) &&
                 (Objects.isNull(arbeidsforhold.getTom()) || innevaerendeMnd.isBefore(arbeidsforhold.getTom().plusDays(1)));
     }
+
+    public static Arbeidsforhold hentSisteArbeidsforhold(List<Arbeidsforhold> arbeidsforholdListe) {
+        Arbeidsforhold arbeidsforholdUtenStyrkkode = new Arbeidsforhold().setStyrk("utenstyrkkode");
+        return arbeidsforholdListe.stream()
+                .sorted(sorterArbeidsforholdEtterTilDato()
+                .thenComparing(comparing(Arbeidsforhold::getFom)))
+                .findFirst().orElse(arbeidsforholdUtenStyrkkode);
+    }
+
+    private static Comparator<Arbeidsforhold> sorterArbeidsforholdEtterTilDato() {
+        return comparing(Arbeidsforhold::getTom, nullsLast(Comparator.naturalOrder()))
+                .reversed();
+    }
+
 }

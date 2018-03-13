@@ -7,6 +7,8 @@ import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.fo.veilarboppfolging.services.MalService;
 import no.nav.fo.veilarboppfolging.services.OppfolgingService;
 import no.nav.fo.veilarboppfolging.services.registrerBruker.BrukerRegistreringService;
+import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.HentSisteArbeidsforholdRequest;
+import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.HentSisteArbeidsforholdResponse;
 import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.binding.*;
 import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.informasjon.*;
 import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.meldinger.*;
@@ -253,14 +255,16 @@ public class OppfolgingWebService implements BehandleOppfolgingV1 {
         return mapRegistrerBrukerResponse(getRegistrertBruker(request, brukerRegistrering));
     }
 
-    private BrukerRegistrering getRegistrertBruker(RegistrerBrukerRequest request, BrukerRegistrering brukerRegistrering)
-            throws RegistrerBrukerSikkerhetsbegrensning {
-        try {
-            return brukerRegistreringService.registrerBruker(brukerRegistrering, request.getFnr());
-        } catch (HentStartRegistreringStatusFeilVedHentingAvStatusFraArena |
-                HentStartRegistreringStatusFeilVedHentingAvArbeidsforhold e) {
-            throw new RuntimeException("Feil ved registrering av bruker." + e);
-        }
+    @Override
+    public HentSisteArbeidsforholdResponse hentSisteArbeidsforhold(HentSisteArbeidsforholdRequest request) {
+        HentSisteArbeidsforholdResponse respons = new HentSisteArbeidsforholdResponse();
+        String styrk = brukerRegistreringService.hentSisteArbeidsforhold(request.getFnr()).getStyrk();
+        respons.setStyrk(styrk);
+        return respons;
+    }
+
+    private BrukerRegistrering getRegistrertBruker(RegistrerBrukerRequest request, BrukerRegistrering brukerRegistrering) {
+        return brukerRegistreringService.registrerBruker(brukerRegistrering, request.getFnr());
     }
 
     private RegistrerBrukerResponse mapRegistrerBrukerResponse(BrukerRegistrering bruker) {
@@ -274,6 +278,7 @@ public class OppfolgingWebService implements BehandleOppfolgingV1 {
         response.setHarHelseutfordringer(bruker.isHarHelseutfordringer());
         return response;
     }
+
     private BrukerRegistrering mapBrukerRegistrering(RegistrerBrukerRequest request) {
         return BrukerRegistrering.builder()
                 .nusKode(request.getNusKode())
