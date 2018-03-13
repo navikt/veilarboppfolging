@@ -151,6 +151,42 @@ public class ArbeidsforholdUtilsTest {
     }
 
     @Test
+    public void skalHenteLengsteAvPaagendeArbeidsforhold() {
+        LocalDate fom3 = LocalDate.of(2017,1,1);
+        LocalDate tom3 = null;
+        LocalDate fom2 = LocalDate.of(2017,10,1);
+        LocalDate tom2 = null;
+        LocalDate fom1 = LocalDate.of(2017,11,1);
+        LocalDate tom1 = null;
+
+        Arbeidsforhold paagaaendeArbeidsforholdVarighet3 = new Arbeidsforhold().setFom(fom3).setTom(tom3);
+        Arbeidsforhold paagaaendeArbeidsforholdVarighet2 = new Arbeidsforhold().setFom(fom2).setTom(tom2);
+        Arbeidsforhold paagaaendeArbeidsforholdVarighet1 = new Arbeidsforhold().setFom(fom1).setTom(tom1);
+
+        List<Arbeidsforhold> flerePaagendeArbeidsforhold =
+                asList(paagaaendeArbeidsforholdVarighet2, paagaaendeArbeidsforholdVarighet1, paagaaendeArbeidsforholdVarighet3);
+        assertThat(hentSisteArbeidsforhold(flerePaagendeArbeidsforhold)).isEqualTo(paagaaendeArbeidsforholdVarighet3);
+    }
+
+    @Test
+    public void skalHenteLengsteAvSisteArbeidsforhold() {
+        LocalDate fom3 = LocalDate.of(2017,1,1);
+        LocalDate tom3 = LocalDate.of(2017,11,30);
+        LocalDate fom2 = LocalDate.of(2017,10,1);
+        LocalDate tom2 = LocalDate.of(2017,11,30);
+        LocalDate fom1 = LocalDate.of(2017,11,1);
+        LocalDate tom1 = LocalDate.of(2017,11,30);
+
+        Arbeidsforhold sisteArbeidsforholdVarighet3 = new Arbeidsforhold().setFom(fom3).setTom(tom3);
+        Arbeidsforhold sisteArbeidsforholdvarighet2 = new Arbeidsforhold().setFom(fom2).setTom(tom2);
+        Arbeidsforhold sisteArbeidsforholdVarighet1 = new Arbeidsforhold().setFom(fom1).setTom(tom1);
+
+        List<Arbeidsforhold> flereSisteArbeidsforhold =
+                asList(sisteArbeidsforholdVarighet1, sisteArbeidsforholdvarighet2, sisteArbeidsforholdVarighet3);
+        assertThat(hentSisteArbeidsforhold(flereSisteArbeidsforhold)).isEqualTo(sisteArbeidsforholdVarighet3);
+    }
+
+        @Test
     public void skalDefaultArbeidsforhold() {
         Arbeidsforhold arbeidsforhold = new Arbeidsforhold().setStyrk("utenstyrkkode");
         assertThat(hentSisteArbeidsforhold(Collections.emptyList())).isEqualTo(arbeidsforhold);

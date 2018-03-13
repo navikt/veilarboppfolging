@@ -20,7 +20,7 @@ public class Arbeidsforhold {
 
     public static Arbeidsforhold of(no.nav.tjeneste.virksomhet.arbeidsforhold.v3.informasjon.arbeidsforhold.Arbeidsforhold arbeidsforhold) {
         return new Arbeidsforhold().setArbeidsgiverOrgnummer(arbeidsforhold.getArbeidsgiver().getAktoerId())
-                .setStyrk(arbeidsforhold.getArbeidsavtale().stream().findFirst().map(Arbeidsavtale::getYrke).map(Yrker::getKodeRef).orElse(""))
+                .setStyrk(arbeidsforhold.getArbeidsavtale().stream().findFirst().map(Arbeidsavtale::getYrke).map(Yrker::getKodeRef).orElse("utenstyrkkode"))
                 .setFom(getFom(arbeidsforhold.getAnsettelsesPeriode()))
                 .setTom(getTom(arbeidsforhold.getAnsettelsesPeriode()));
     }
