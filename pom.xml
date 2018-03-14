@@ -31,7 +31,7 @@
         <!--Tjenester-->
         <ytelseskontrakt-v3-tjenestespesifikasjon.version>1.0.0</ytelseskontrakt-v3-tjenestespesifikasjon.version>
         <oppfoelging-v1-tjenestespesifikasjon.version>1.2.0</oppfoelging-v1-tjenestespesifikasjon.version>
-        <oppfolgingsinfo-v1-tjenestespesifikasjon.version>1.0.4</oppfolgingsinfo-v1-tjenestespesifikasjon.version>
+        <oppfolgingsinfo-v1-tjenestespesifikasjon.version>1.0.5</oppfolgingsinfo-v1-tjenestespesifikasjon.version>
         <dkif-tjenestespesifikasjon.version>1.2</dkif-tjenestespesifikasjon.version>
         <brukerdialog-behandleOppfolging-v1-tjenestespesifikasjon.version>1.20180313.1240</brukerdialog-behandleOppfolging-v1-tjenestespesifikasjon.version>
         <organisasjonenhet-v1.version>1.0.8</organisasjonenhet-v1.version>
