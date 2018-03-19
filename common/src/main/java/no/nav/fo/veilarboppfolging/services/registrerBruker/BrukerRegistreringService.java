@@ -2,7 +2,6 @@ package no.nav.fo.veilarboppfolging.services.registrerBruker;
 
 import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.apiapp.security.PepClient;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.config.RemoteFeatureConfig.OpprettBrukerIArenaFeature;
 import no.nav.fo.veilarboppfolging.config.RemoteFeatureConfig.RegistreringFeature;
@@ -10,18 +9,12 @@ import no.nav.fo.veilarboppfolging.db.ArbeidssokerregistreringRepository;
 import no.nav.fo.veilarboppfolging.db.NyeBrukereFeedRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.domain.*;
-import no.nav.fo.veilarboppfolging.services.ArbeidsforholdService;
-import no.nav.fo.veilarboppfolging.services.ArenaOppfolgingService;
 import no.nav.fo.veilarboppfolging.utils.FnrUtils;
 import no.nav.metrics.MetricsFactory;
 import no.nav.metrics.Timer;
 import no.nav.tjeneste.virksomhet.behandlearbeidssoeker.v1.binding.*;
 import no.nav.tjeneste.virksomhet.behandlearbeidssoeker.v1.informasjon.Brukerident;
 import no.nav.tjeneste.virksomhet.behandlearbeidssoeker.v1.meldinger.AktiverBrukerRequest;
-import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.binding.HentStartRegistreringStatusFeilVedHentingAvArbeidsforhold;
-import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.binding.HentStartRegistreringStatusFeilVedHentingAvStatusFraArena;
-import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.binding.RegistrerBrukerSikkerhetsbegrensning;
-import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.feil.Sikkerhetsbegrensning;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.ws.rs.*;
@@ -45,16 +38,15 @@ public class BrukerRegistreringService {
     private OppfolgingRepository oppfolgingRepository;
     private NyeBrukereFeedRepository nyeBrukereFeedRepository;
 
+
     public BrukerRegistreringService(ArbeidssokerregistreringRepository arbeidssokerregistreringRepository,
                                      OppfolgingRepository oppfolgingRepository,
-                                     PepClient pepClient,
                                      AktorService aktorService,
-                                     ArenaOppfolgingService arenaOppfolgingService,
-                                     ArbeidsforholdService arbeidsforholdService,
                                      BehandleArbeidssoekerV1 BehandleArbeidssoekerV1,
                                      OpprettBrukerIArenaFeature opprettBrukerIArenaFeature,
                                      RegistreringFeature registreringFeature,
-                                     NyeBrukereFeedRepository nyeBrukereFeedRepository
+                                     NyeBrukereFeedRepository nyeBrukereFeedRepository,
+                                     StartRegistreringStatusResolver startRegistreringStatusResolver
     ) {
         this.arbeidssokerregistreringRepository = arbeidssokerregistreringRepository;
         this.aktorService = aktorService;
@@ -63,9 +55,7 @@ public class BrukerRegistreringService {
         this.registreringFeature = registreringFeature;
         this.oppfolgingRepository = oppfolgingRepository;
         this.nyeBrukereFeedRepository = nyeBrukereFeedRepository;
-
-        startRegistreringStatusResolver = new StartRegistreringStatusResolver(aktorService,
-                arbeidssokerregistreringRepository, pepClient, arenaOppfolgingService, arbeidsforholdService);
+        this.startRegistreringStatusResolver = startRegistreringStatusResolver;
     }
 
     public StartRegistreringStatus hentStartRegistreringStatus(String fnr) {
@@ -76,6 +66,7 @@ public class BrukerRegistreringService {
         return startRegistreringStatusResolver.hentSisteArbeidsforhold(fnr);
     }
 
+    @Transactional
     public BrukerRegistrering registrerBruker(BrukerRegistrering bruker, String fnr) {
 
         if (!registreringFeature.erAktiv()) {
@@ -95,7 +86,6 @@ public class BrukerRegistreringService {
         return opprettBruker(fnr, bruker, aktorId);
     }
 
-    @Transactional
     BrukerRegistrering opprettBruker(String fnr, BrukerRegistrering bruker, AktorId aktorId) {
         oppfolgingRepository.opprettOppfolging(aktorId.getAktorId());
         oppfolgingRepository.startOppfolgingHvisIkkeAlleredeStartet(
