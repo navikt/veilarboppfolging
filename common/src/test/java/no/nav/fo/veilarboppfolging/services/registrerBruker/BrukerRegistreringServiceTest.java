@@ -24,7 +24,6 @@ import java.util.Optional;
 import static no.nav.fo.veilarboppfolging.TestUtils.getFodselsnummerForPersonWithAge;
 import static no.nav.fo.veilarboppfolging.services.registrerBruker.Konstanter.*;
 import static no.nav.fo.veilarboppfolging.utils.SelvgaaendeUtil.NUS_KODE_2;
-import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -79,8 +78,8 @@ class BrukerRegistreringServiceTest {
     void skalRegistrereSelvgaaendeBruker() throws Exception {
         mockSelvgaaendeBruker();
         BrukerRegistrering selvgaaendeBruker = getBrukerRegistreringSelvgaaende();
-        BrukerRegistrering brukerRegistrering = registrerBruker(selvgaaendeBruker, FNR_OPPFYLLER_KRAV);
-        assertThat(brukerRegistrering).isEqualTo(selvgaaendeBruker);
+        registrerBruker(selvgaaendeBruker, FNR_OPPFYLLER_KRAV);
+        verify(arbeidssokerregistreringRepository, times(1)).lagreBruker(any(), any());
     }
 
     @Test
@@ -88,9 +87,9 @@ class BrukerRegistreringServiceTest {
         when(opprettBrukerIArenaFeature.erAktiv()).thenReturn(false);
         mockSelvgaaendeBruker();
         BrukerRegistrering selvgaaendeBruker = getBrukerRegistreringSelvgaaende();
-        BrukerRegistrering brukerRegistrering = registrerBruker(selvgaaendeBruker, FNR_OPPFYLLER_KRAV);
+        registrerBruker(selvgaaendeBruker, FNR_OPPFYLLER_KRAV);
         verify(behandleArbeidssoekerV1, times(0)).aktiverBruker(any());
-        assertThat(brukerRegistrering).isEqualTo(selvgaaendeBruker);
+        verify(arbeidssokerregistreringRepository, times(1)).lagreBruker(any(), any());
     }
 
     @Test
