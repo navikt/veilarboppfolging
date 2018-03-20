@@ -1,18 +1,13 @@
 package no.nav.fo.veilarboppfolging.services.registrerBruker;
 
-import lombok.SneakyThrows;
-import no.nav.apiapp.security.PepClient;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.config.RemoteFeatureConfig.OpprettBrukerIArenaFeature;
 import no.nav.fo.veilarboppfolging.config.RemoteFeatureConfig.RegistreringFeature;
 import no.nav.fo.veilarboppfolging.db.ArbeidssokerregistreringRepository;
 import no.nav.fo.veilarboppfolging.db.NyeBrukereFeedRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
-import no.nav.fo.veilarboppfolging.domain.Arbeidsforhold;
-import no.nav.fo.veilarboppfolging.domain.ArenaOppfolging;
 import no.nav.fo.veilarboppfolging.domain.BrukerRegistrering;
-import no.nav.fo.veilarboppfolging.services.ArbeidsforholdService;
-import no.nav.fo.veilarboppfolging.services.ArenaOppfolgingService;
+import no.nav.fo.veilarboppfolging.domain.StartRegistreringStatus;
 import no.nav.tjeneste.virksomhet.behandlearbeidssoeker.v1.binding.*;
 import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.binding.HentStartRegistreringStatusFeilVedHentingAvArbeidsforhold;
 import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.binding.HentStartRegistreringStatusFeilVedHentingAvStatusFraArena;
@@ -24,15 +19,11 @@ import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.ServerErrorException;
-import java.time.LocalDate;
-import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 
 import static no.nav.fo.veilarboppfolging.TestUtils.getFodselsnummerForPersonWithAge;
 import static no.nav.fo.veilarboppfolging.services.registrerBruker.Konstanter.*;
 import static no.nav.fo.veilarboppfolging.utils.SelvgaaendeUtil.NUS_KODE_2;
-import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -43,15 +34,13 @@ class BrukerRegistreringServiceTest {
 
     private ArbeidssokerregistreringRepository arbeidssokerregistreringRepository;
     private AktorService aktorService;
-    private PepClient pepClient;
-    private ArbeidsforholdService arbeidsforholdService;
-    private ArenaOppfolgingService arenaOppfolgingService;
     private BrukerRegistreringService brukerRegistreringService;
     private BehandleArbeidssoekerV1 behandleArbeidssoekerV1;
     private OpprettBrukerIArenaFeature opprettBrukerIArenaFeature;
     private RegistreringFeature registreringFeature;
     private OppfolgingRepository oppfolgingRepository;
     private NyeBrukereFeedRepository nyeBrukereFeedRepository;
+    private StartRegistreringStatusResolver startRegistreringStatusResolver;
 
     @BeforeEach
     public void setup() {
@@ -59,32 +48,27 @@ class BrukerRegistreringServiceTest {
         registreringFeature = mock(RegistreringFeature.class);
         aktorService = mock(AktorService.class);
         arbeidssokerregistreringRepository = mock(ArbeidssokerregistreringRepository.class);
-        pepClient = mock(PepClient.class);
-        arbeidsforholdService = mock(ArbeidsforholdService.class);
-        arenaOppfolgingService = mock(ArenaOppfolgingService.class);
         behandleArbeidssoekerV1 = mock(BehandleArbeidssoekerV1.class);
         oppfolgingRepository = mock(OppfolgingRepository.class);
         nyeBrukereFeedRepository = mock(NyeBrukereFeedRepository.class);
+        startRegistreringStatusResolver = mock(StartRegistreringStatusResolver.class);
 
 
         brukerRegistreringService =
                 new BrukerRegistreringService(
                         arbeidssokerregistreringRepository,
                         oppfolgingRepository,
-                        pepClient,
                         aktorService,
-                        arenaOppfolgingService,
-                        arbeidsforholdService,
                         behandleArbeidssoekerV1,
                         opprettBrukerIArenaFeature,
                         registreringFeature,
-                        nyeBrukereFeedRepository
+                        nyeBrukereFeedRepository,
+                        startRegistreringStatusResolver
                 );
 
         when(aktorService.getAktorId(any())).thenReturn(Optional.of("AKTORID"));
         when(opprettBrukerIArenaFeature.erAktiv()).thenReturn(true);
         when(registreringFeature.erAktiv()).thenReturn(true);
-        mockArenaMedRespons(arenaISERV(LocalDate.now().minusYears(2)));
     }
 
     /*
@@ -94,8 +78,8 @@ class BrukerRegistreringServiceTest {
     void skalRegistrereSelvgaaendeBruker() throws Exception {
         mockSelvgaaendeBruker();
         BrukerRegistrering selvgaaendeBruker = getBrukerRegistreringSelvgaaende();
-        BrukerRegistrering brukerRegistrering = registrerBruker(selvgaaendeBruker, FNR_OPPFYLLER_KRAV);
-        assertThat(brukerRegistrering).isEqualTo(selvgaaendeBruker);
+        registrerBruker(selvgaaendeBruker, FNR_OPPFYLLER_KRAV);
+        verify(arbeidssokerregistreringRepository, times(1)).lagreBruker(any(), any());
     }
 
     @Test
@@ -103,9 +87,9 @@ class BrukerRegistreringServiceTest {
         when(opprettBrukerIArenaFeature.erAktiv()).thenReturn(false);
         mockSelvgaaendeBruker();
         BrukerRegistrering selvgaaendeBruker = getBrukerRegistreringSelvgaaende();
-        BrukerRegistrering brukerRegistrering = registrerBruker(selvgaaendeBruker, FNR_OPPFYLLER_KRAV);
+        registrerBruker(selvgaaendeBruker, FNR_OPPFYLLER_KRAV);
         verify(behandleArbeidssoekerV1, times(0)).aktiverBruker(any());
-        assertThat(brukerRegistrering).isEqualTo(selvgaaendeBruker);
+        verify(arbeidssokerregistreringRepository, times(1)).lagreBruker(any(), any());
     }
 
     @Test
@@ -134,7 +118,7 @@ class BrukerRegistreringServiceTest {
     @Test
     void skalIkkeLagreRegistreringSomIkkeOppfyllerKravForAutomatiskRegistrering() throws Exception {
         mockSelvgaaendeBruker();
-        BrukerRegistrering selvgaaendeBruker = getBrukerRegistreringSelvgaaende();
+        BrukerRegistrering selvgaaendeBruker = getBrukerIngenUtdannelse();
         assertThrows(RuntimeException.class, () -> registrerBruker(selvgaaendeBruker, FNR_OPPFYLLER_IKKE_KRAV));
     }
 
@@ -222,10 +206,10 @@ class BrukerRegistreringServiceTest {
     /*
     * Mock og hjelpe funksjoner
     * */
-    private BrukerRegistrering getBrukerRegistreringSelvgaaende() {
+    static BrukerRegistrering getBrukerRegistreringSelvgaaende() {
         return BrukerRegistrering.builder()
                 .nusKode(NUS_KODE_4)
-                .yrkesPraksis(null)
+                .yrkesPraksis("1111.11")
                 .opprettetDato(null)
                 .enigIOppsummering(ENIG_I_OPPSUMMERING)
                 .oppsummering(OPPSUMMERING)
@@ -299,27 +283,17 @@ class BrukerRegistreringServiceTest {
         return brukerRegistreringService.registrerBruker(bruker, fnr);
     }
 
-    private void mockSelvgaaendeBruker() {
-        mockArbeidsforhold(arbeidsforholdSomOppfyllerKrav());
-        when(arbeidssokerregistreringRepository.lagreBruker(any(), any())).thenReturn(getBrukerRegistreringSelvgaaende());
-    }
     private void mockBrukerUnderOppfolging() {
         when(arbeidssokerregistreringRepository.erOppfolgingsflaggSatt(any())).thenReturn(true);
         when(arbeidssokerregistreringRepository.lagreBruker(any(), any())).thenReturn(getBrukerRegistreringSelvgaaende());
     }
-    private void mockArenaMedRespons(ArenaOppfolging arenaOppfolging) {
-        when(arenaOppfolgingService.hentArenaOppfolging(any())).thenReturn(arenaOppfolging);
+
+    private void mockSelvgaaendeBruker() {
+        when(startRegistreringStatusResolver.hentStartRegistreringStatus(any())).thenReturn(
+                new StartRegistreringStatus()
+                        .setUnderOppfolging(false)
+                        .setOppfyllerKravForAutomatiskRegistrering(true)
+        );
     }
-    private ArenaOppfolging arenaISERV(LocalDate iservFra) {
-        return new ArenaOppfolging().setFormidlingsgruppe("ISERV").setServicegruppe("IVURD").setInaktiveringsdato(iservFra);
-    }
-    @SneakyThrows
-    private void mockArbeidsforhold(List<Arbeidsforhold> arbeidsforhold) {
-        when(arbeidsforholdService.hentArbeidsforhold(any())).thenReturn(arbeidsforhold);
-    }
-    private List<Arbeidsforhold> arbeidsforholdSomOppfyllerKrav() {
-        return Collections.singletonList(new Arbeidsforhold()
-                .setArbeidsgiverOrgnummer("orgnummer")
-                .setFom(LocalDate.of(2017, 1, 10)));
-    }
+
 }
