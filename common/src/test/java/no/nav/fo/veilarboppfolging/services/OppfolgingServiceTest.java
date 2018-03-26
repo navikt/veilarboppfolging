@@ -80,6 +80,9 @@ public class OppfolgingServiceTest {
     @Mock
     private RemoteFeatureConfig.SjekkPagaendeYtelserFeature sjekkPagaendeYtelserFeature;
 
+    @Mock
+    private RemoteFeatureConfig.BrukervilkarFeature brukervilkarFeature;
+
     @Mock(answer = Answers.RETURNS_MOCKS)
     private OppfolgingResolver.OppfolgingResolverDependencies oppfolgingResolverDependencies;
 
@@ -120,6 +123,7 @@ public class OppfolgingServiceTest {
         when(oppfolgingResolverDependencies.getVeilarbaktivtetService()).thenReturn(veilarbaktivtetService);
         when(oppfolgingResolverDependencies.getYtelseskontraktV3()).thenReturn(ytelseskontraktV3);
         when(oppfolgingResolverDependencies.getSjekkPagaendeYtelserFeature()).thenReturn(sjekkPagaendeYtelserFeature);
+        when(oppfolgingResolverDependencies.getBrukervilkarFeature()).thenReturn(brukervilkarFeature);
         gittOppfolgingStatus("", "");
     }
 
