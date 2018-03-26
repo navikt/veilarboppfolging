@@ -18,6 +18,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.mock.jndi.SimpleNamingContextBuilder;
@@ -57,7 +58,7 @@ class BrukerRegistreringServiceIntegrationTest {
 
         context = new AnnotationConfigApplicationContext(
                 DatabaseConfig.class,
-                BrukerregistreringTestConfig.class
+                BrukerregistreringConfigTest.class
         );
 
         context.start();
@@ -114,9 +115,9 @@ class BrukerRegistreringServiceIntegrationTest {
     }
 
 
-
     @Configuration
-    public static class BrukerregistreringTestConfig {
+    @ComponentScan
+    public static class BrukerregistreringConfigTest {
 
         @Bean
         public ArbeidssokerregistreringRepository arbeidssokerregistreringRepository(JdbcTemplate db) {
