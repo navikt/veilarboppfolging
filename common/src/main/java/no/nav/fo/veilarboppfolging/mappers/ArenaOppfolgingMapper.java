@@ -15,4 +15,14 @@ public class ArenaOppfolgingMapper {
                 .setServicegruppe(response.getServicegruppeKode())
                 .setInaktiveringsdato(xmlGregorianCalendarToLocalDate(response.getInaktiveringsdato()));
     }
+
+    public static ArenaOppfolging mapTilArenaOppfolgingsstatus(no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v1.meldinger.HentOppfoelgingsstatusResponse response,
+                                                               Oppfolgingsenhet oppfolgingsenhet) {
+        return new ArenaOppfolging()
+                .setOppfolgingsenhet(oppfolgingsenhet)
+                .setRettighetsgruppe(response.getRettighetsgruppeKode().toString())
+                .setFormidlingsgruppe(response.getFormidlingsgruppeKode().getKodeverksRef())
+                .setServicegruppe(response.getServicegruppeKode().getKodeverksRef())
+                .setInaktiveringsdato(xmlGregorianCalendarToLocalDate(response.getInaktiveringsdato()));
+    }
 }
