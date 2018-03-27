@@ -125,6 +125,10 @@ public class OppfolgingResolver {
     }
 
     boolean maVilkarBesvares() {
+        if(deps.getBrukervilkarFeature().erAktiv() && oppfolging.isUnderOppfolging()) { //TODO: når featuretoggle slettes er det bare nødvending å sjekke på isUnderOppfolging og returnere false
+            return false;
+        }
+
         return ofNullable(oppfolging.getGjeldendeBrukervilkar())
                 .filter(brukervilkar -> GODKJENT.equals(brukervilkar.getVilkarstatus()))
                 .map(Brukervilkar::getHash)
@@ -428,5 +432,8 @@ public class OppfolgingResolver {
 
         @Inject
         private RemoteFeatureConfig.SjekkPagaendeYtelserFeature sjekkPagaendeYtelserFeature;
+
+        @Inject
+        private RemoteFeatureConfig.BrukervilkarFeature brukervilkarFeature;
     }
 }

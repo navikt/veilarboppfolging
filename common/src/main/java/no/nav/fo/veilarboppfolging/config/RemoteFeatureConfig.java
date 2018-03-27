@@ -32,6 +32,11 @@ public class RemoteFeatureConfig {
         return new OpprettBrukerIArenaFeature(repo);
     }
 
+    @Bean
+    public BrukervilkarFeature brukervilkarFeature(RemoteFeatureToggleRepository repo) {
+        return new BrukervilkarFeature(repo);
+    }
+
     public static class SjekkPagaendeYtelserFeature extends RemoteFeatureToggle {
         public SjekkPagaendeYtelserFeature(RemoteFeatureToggleRepository repository) {
             super(repository, "veilarboppfolging.unngasjekkpagaendeytelser", false);
@@ -47,6 +52,12 @@ public class RemoteFeatureConfig {
     public static class OpprettBrukerIArenaFeature extends RemoteFeatureToggle {
         public OpprettBrukerIArenaFeature(RemoteFeatureToggleRepository repository) {
             super(repository, "veilarboppfolging.opprettbrukeriarena", false);
+        }
+    }
+
+    public static class BrukervilkarFeature extends RemoteFeatureToggle {
+        public BrukervilkarFeature(RemoteFeatureToggleRepository repository) {
+            super(repository, "aktivitetsplan.brukervilkar", false);
         }
     }
 }
