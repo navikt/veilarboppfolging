@@ -9,6 +9,7 @@ import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingskontr
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingskontraktListeResponse;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingsstatusRequest;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingsstatusResponse;
+import no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v1.binding.OppfoelgingsstatusV1_Service;
 import org.slf4j.Logger;
 
 import javax.ws.rs.BadRequestException;
@@ -23,8 +24,10 @@ public class ArenaOppfolgingService {
     private static final Logger LOG = getLogger(ArenaOppfolgingService.class);
     private final OppfoelgingPortType oppfoelgingPortType;
     private OrganisasjonEnhetService organisasjonEnhetService;
+    private OppfoelgingsstatusV1_Service oppfoelgingsstatusService;
 
-    public ArenaOppfolgingService(OppfoelgingPortType oppfoelgingPortType, OrganisasjonEnhetService organisasjonEnhetService) {
+    public ArenaOppfolgingService(OppfoelgingsstatusV1_Service oppfoelgingsstatusService, OppfoelgingPortType oppfoelgingPortType, OrganisasjonEnhetService organisasjonEnhetService) {
+        this.oppfoelgingsstatusService = oppfoelgingsstatusService;
         this.oppfoelgingPortType = oppfoelgingPortType;
         this.organisasjonEnhetService = organisasjonEnhetService;
     }

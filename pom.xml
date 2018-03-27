@@ -39,6 +39,7 @@
         <startregistreringstatus-v1-tjenestespesifikasjon.version>1.0.0</startregistreringstatus-v1-tjenestespesifikasjon.version>
         <nav-arbeidsforhold-v3-tjenestespesifikasjon.version>3.0.0</nav-arbeidsforhold-v3-tjenestespesifikasjon.version>
         <nav-behandleArbeidssoeker-v1-tjenestespesifikasjon.version>1.0.1</nav-behandleArbeidssoeker-v1-tjenestespesifikasjon.version>
+        <nav-oppfoelgingsstatus-v1-tjenestespesifikasjon.version>1.0.1</nav-oppfoelgingsstatus-v1-tjenestespesifikasjon.version>
 
         <sonar.exclusions>
             **/mock/*,
@@ -126,6 +127,12 @@
                 <groupId>no.nav.tjenester</groupId>
                 <artifactId>nav-behandleArbeidssoeker-v1-tjenestespesifikasjon</artifactId>
                 <version>${nav-behandleArbeidssoeker-v1-tjenestespesifikasjon.version}</version>
+                <classifier>jaxws</classifier>
+            </dependency>
+            <dependency>
+                <groupId>no.nav.tjenester</groupId>
+                <artifactId>nav-oppfoelgingsstatus-v1-tjenestespesifikasjon</artifactId>
+                <version>${nav-oppfoelgingsstatus-v1-tjenestespesifikasjon.version}</version>
                 <classifier>jaxws</classifier>
             </dependency>
 
