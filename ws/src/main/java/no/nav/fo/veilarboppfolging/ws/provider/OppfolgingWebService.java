@@ -3,6 +3,7 @@ package no.nav.fo.veilarboppfolging.ws.provider;
 import lombok.SneakyThrows;
 import lombok.val;
 import no.nav.apiapp.soap.SoapTjeneste;
+import no.nav.fo.veilarboppfolging.config.RemoteFeatureConfig;
 import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.fo.veilarboppfolging.services.MalService;
 import no.nav.fo.veilarboppfolging.services.OppfolgingService;
@@ -14,6 +15,7 @@ import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.informasjon.*;
 import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.meldinger.*;
 import org.springframework.stereotype.Service;
 
+import javax.inject.Inject;
 import javax.ws.rs.WebApplicationException;
 import java.sql.Timestamp;
 import java.util.List;
@@ -32,6 +34,9 @@ public class OppfolgingWebService implements BehandleOppfolgingV1 {
     private OppfolgingService oppfolgingService;
     private BrukerRegistreringService brukerRegistreringService;
     private MalService malService;
+
+    @Inject
+    private RemoteFeatureConfig.BrukervilkarFeature brukervilkarFeature;
 
     public OppfolgingWebService(
             OppfolgingService oppfolgingService,
@@ -129,8 +134,10 @@ public class OppfolgingWebService implements BehandleOppfolgingV1 {
     @Override
     public SettDigitalResponse settDigital(SettDigitalRequest settDigitalRequest) {
         val oppfolgingStatusData = oppfolgingService.settDigitalBruker(settDigitalRequest.getPersonident());
-        oppfolgingStatusData.setVilkarMaBesvares(true);
 
+        if (!brukervilkarFeature.erAktiv()) { // TODO: slett hele if-blokken når vi sletter featuretoggle.
+            oppfolgingStatusData.setVilkarMaBesvares(true);
+        }
 
         if (oppfolgingStatusData.isManuell()) {
             throw new RuntimeException("Klarte ikke å sette digital oppfølging");
