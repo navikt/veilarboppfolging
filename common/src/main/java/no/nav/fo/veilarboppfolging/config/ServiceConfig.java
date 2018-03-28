@@ -27,9 +27,8 @@ public class ServiceConfig {
     }
 
     @Bean
-    ArenaOppfolgingService arenaOppfolgingService(OppfoelgingsstatusV1_Service oppfoelgingsstatusService, OppfoelgingPortType oppfoelgingPortType,
-                                                  OrganisasjonEnhetService organisasjonEnhetService) {
-        return new ArenaOppfolgingService(oppfoelgingsstatusService, oppfoelgingPortType, organisasjonEnhetService);
+    ArenaOppfolgingService arenaOppfolgingService(OppfoelgingsstatusV1_Service oppfoelgingsstatusService, OppfoelgingPortType oppfoelgingPortType) {
+        return new ArenaOppfolgingService(oppfoelgingsstatusService, oppfoelgingPortType);
     }
 
     @Bean

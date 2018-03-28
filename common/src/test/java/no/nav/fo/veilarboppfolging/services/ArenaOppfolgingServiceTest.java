@@ -1,7 +1,6 @@
 package no.nav.fo.veilarboppfolging.services;
 
 import no.nav.fo.veilarboppfolging.domain.ArenaOppfolging;
-import no.nav.fo.veilarboppfolging.domain.Oppfolgingsenhet;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.HentOppfoelgingsstatusPersonIkkeFunnet;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.HentOppfoelgingsstatusSikkerhetsbegrensning;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.HentOppfoelgingsstatusUgyldigInput;
@@ -37,16 +36,12 @@ import static org.mockito.Mockito.when;
 public class ArenaOppfolgingServiceTest {
 
     private static final String MOCK_ENHET_ID = "1331";
-    private static final String MOCK_ENHET_NAVN = "NAV Eidsvoll";
 
     @InjectMocks
     private ArenaOppfolgingService arenaOppfolgingService;
 
     @Mock
     private OppfoelgingPortType oppfoelgingPortType;
-
-    @Mock
-    private OrganisasjonEnhetService organisasjonEnhetService;
 
     @Test
     public void hentOppfoelgingskontraktListeReturnererEnRespons() throws Exception {
@@ -66,25 +61,12 @@ public class ArenaOppfolgingServiceTest {
     @Test
     public void skalMappeTilOppfolgingsstatus() throws Exception {
         when(oppfoelgingPortType.hentOppfoelgingsstatus(any())).thenReturn(lagMockResponse());
-        when(organisasjonEnhetService.hentEnhet(any())).thenReturn(new Oppfolgingsenhet()
-                .withNavn(MOCK_ENHET_NAVN)
-                .withEnhetId(MOCK_ENHET_ID));
 
         ArenaOppfolging arenaOppfolging = arenaOppfolgingService.hentArenaOppfolging("1234");
         Assertions.assertThat(arenaOppfolging.getFormidlingsgruppe()).isEqualTo("formidlingsgruppe");
-        Assertions.assertThat(arenaOppfolging.getOppfolgingsenhet().getEnhetId()).isEqualTo(MOCK_ENHET_ID);
+        Assertions.assertThat(arenaOppfolging.getOppfolgingsenhet()).isEqualTo(MOCK_ENHET_ID);
         Assertions.assertThat(arenaOppfolging.getRettighetsgruppe()).isEqualTo("rettighetsgruppe");
         Assertions.assertThat(arenaOppfolging.getServicegruppe()).isEqualTo("servicegruppe");
-    }
-
-    @Test
-    public void skalHenteOrganisasjonsenhetDetaljerFraNorg() throws HentOppfoelgingsstatusUgyldigInput, HentOppfoelgingsstatusPersonIkkeFunnet, HentOppfoelgingsstatusSikkerhetsbegrensning {
-        when(oppfoelgingPortType.hentOppfoelgingsstatus(any())).thenReturn(lagMockResponse());
-        when(organisasjonEnhetService.hentEnhet(any())).thenReturn(new Oppfolgingsenhet().withNavn(MOCK_ENHET_NAVN));
-
-        ArenaOppfolging arenaOppfolging = arenaOppfolgingService.hentArenaOppfolging("1234");
-
-        Assertions.assertThat(arenaOppfolging.getOppfolgingsenhet().getNavn()).isEqualTo(MOCK_ENHET_NAVN);
     }
 
     @Test(expected = NotFoundException.class)

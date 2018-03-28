@@ -38,7 +38,8 @@ public class StartRegistreringUtils {
     public static boolean erUnderoppfolgingIArena(ArenaOppfolging arenaOppfolging) {
         return erUnderOppfolging(
                 arenaOppfolging.getFormidlingsgruppe(),
-                arenaOppfolging.getServicegruppe());
+                arenaOppfolging.getServicegruppe(), 
+                arenaOppfolging.getHarMottaOppgaveIArena());
     }
 
     static boolean oppfyllerKravOmAlder(int alder) {

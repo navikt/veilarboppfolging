@@ -18,7 +18,7 @@ public class ArenaUtilsTest {
 	
     @Test
     public void erUnderOppfolging_default_false(){
-        assertThat(erUnderOppfolging(null, null)).isFalse();
+        assertThat(erUnderOppfolging(null, null, null)).isFalse();
     }
 
     @Test
@@ -27,9 +27,9 @@ public class ArenaUtilsTest {
     }
 
     private void alleKombinasjonerErTrue(String formidlingsgruppeKode) {
-        assertThat(erUnderOppfolging(formidlingsgruppeKode, null)).isTrue();
+        assertThat(erUnderOppfolging(formidlingsgruppeKode, null, null)).isTrue();
         for (String kgKode : KVALIFISERINGSGRUPPEKODER) {
-            assertThat(erUnderOppfolging(formidlingsgruppeKode, kgKode)).isTrue();
+            assertThat(erUnderOppfolging(formidlingsgruppeKode, kgKode, null)).isTrue();
         }
     }
 
@@ -45,33 +45,33 @@ public class ArenaUtilsTest {
     
     @Test
     public void erUnderOppfolging_ISERV_false() {
-        assertThat(erUnderOppfolging("ISERV", null)).isFalse();
+        assertThat(erUnderOppfolging("ISERV", null, null)).isFalse();
         for (String kgKode : KVALIFISERINGSGRUPPEKODER) {
-            assertThat(erUnderOppfolging("ISERV", kgKode)).isFalse();
+            assertThat(erUnderOppfolging("ISERV", kgKode, null)).isFalse();
         }
     }    
     
     @Test
     public void erUnderOppfolging_IARBS_true_for_BATT_BFORM_IKVAL_VURDU_OPPFI() {
         for (String kgKode : asList("BATT", "IKVAL", "VURDU", "OPPFI", "BFORM")) {
-            assertThat(erUnderOppfolging("IARBS", kgKode)).isTrue();
+            assertThat(erUnderOppfolging("IARBS", kgKode, null)).isTrue();
         }
     }
 
     @Test
     public void erUnderOppfolging_IARBS_False_for_KAP11_IVURD_VURDI_BKART() {
-        assertThat(erUnderOppfolging("IARBS", null)).isFalse();
+        assertThat(erUnderOppfolging("IARBS", null, null)).isFalse();
         for (String kgKode : asList("KAP11", "IVURD", "VURDI", "BKART")) {
-            assertThat(erUnderOppfolging("IARBS", kgKode)).isFalse();
+            assertThat(erUnderOppfolging("IARBS", kgKode, null)).isFalse();
         }
     }
 
     @Test
     public void erUnderOppfolning_Nar_ServiceKode_VARIG_Og_Formidlingskode_ARBS_RARBS_PARBS_IARBS(){
-        assertThat(erUnderOppfolging("ARBS","VARIG")).isTrue();
-        assertThat(erUnderOppfolging("RARBS","VARIG")).isTrue();
-        assertThat(erUnderOppfolging("PARBS","VARIG")).isTrue();
-        assertThat(erUnderOppfolging("IARBS","VARIG")).isTrue();
+        assertThat(erUnderOppfolging("ARBS","VARIG", null)).isTrue();
+        assertThat(erUnderOppfolging("RARBS","VARIG", null)).isTrue();
+        assertThat(erUnderOppfolging("PARBS","VARIG", null)).isTrue();
+        assertThat(erUnderOppfolging("IARBS","VARIG", null)).isTrue();
     }
 
     @Test

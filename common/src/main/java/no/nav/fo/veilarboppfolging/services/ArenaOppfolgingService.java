@@ -1,7 +1,6 @@
 package no.nav.fo.veilarboppfolging.services;
 
 import no.nav.fo.veilarboppfolging.domain.ArenaOppfolging;
-import no.nav.fo.veilarboppfolging.domain.Oppfolgingsenhet;
 import no.nav.fo.veilarboppfolging.mappers.ArenaOppfolgingMapper;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.*;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.informasjon.Periode;
@@ -24,13 +23,11 @@ public class ArenaOppfolgingService {
 
     private static final Logger LOG = getLogger(ArenaOppfolgingService.class);
     private final OppfoelgingPortType oppfoelgingPortType;
-    private OrganisasjonEnhetService organisasjonEnhetService;
     private OppfoelgingsstatusV1_Service oppfoelgingsstatusService;
 
-    public ArenaOppfolgingService(OppfoelgingsstatusV1_Service oppfoelgingsstatusService, OppfoelgingPortType oppfoelgingPortType, OrganisasjonEnhetService organisasjonEnhetService) {
+    public ArenaOppfolgingService(OppfoelgingsstatusV1_Service oppfoelgingsstatusService, OppfoelgingPortType oppfoelgingPortType) {
         this.oppfoelgingsstatusService = oppfoelgingsstatusService;
         this.oppfoelgingPortType = oppfoelgingPortType;
-        this.organisasjonEnhetService = organisasjonEnhetService;
     }
 
     public HentOppfoelgingskontraktListeResponse hentOppfolgingskontraktListe(XMLGregorianCalendar fom, XMLGregorianCalendar tom, String fnr) {
@@ -76,9 +73,7 @@ public class ArenaOppfolgingService {
             no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v1.meldinger.HentOppfoelgingsstatusResponse oppfoelgingsstatus =
             oppfoelgingsstatusService.getOppfoelgingsstatusV1Port().hentOppfoelgingsstatus(request);
 
-            Oppfolgingsenhet oppfolgingsenhet = organisasjonEnhetService
-                    .hentEnhet(oppfoelgingsstatus.getNavOppfoelgingsenhet());
-            return ArenaOppfolgingMapper.mapTilArenaOppfolgingsstatus(oppfoelgingsstatus, oppfolgingsenhet);
+            return ArenaOppfolgingMapper.mapTilArenaOppfolgingsstatus(oppfoelgingsstatus);
         } catch (no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v1.binding.HentOppfoelgingsstatusSikkerhetsbegrensning e ) {
             String logMessage = "Ikke tilgang til bruker " + identifikator;
             LOG.warn(logMessage, e);
@@ -100,9 +95,7 @@ public class ArenaOppfolgingService {
 
         try {
             HentOppfoelgingsstatusResponse oppfoelgingsstatus = oppfoelgingPortType.hentOppfoelgingsstatus(request);
-            Oppfolgingsenhet oppfolgingsenhet = organisasjonEnhetService
-                    .hentEnhet(oppfoelgingsstatus.getNavOppfoelgingsenhet());
-            return ArenaOppfolgingMapper.mapTilArenaOppfolging(oppfoelgingsstatus, oppfolgingsenhet);
+            return ArenaOppfolgingMapper.mapTilArenaOppfolging(oppfoelgingsstatus);
         } catch (HentOppfoelgingsstatusSikkerhetsbegrensning e) {
             String logMessage = "Ikke tilgang til bruker " + identifikator;
             LOG.warn(logMessage, e);
