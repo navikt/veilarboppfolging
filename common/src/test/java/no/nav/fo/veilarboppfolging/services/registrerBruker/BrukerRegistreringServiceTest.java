@@ -137,24 +137,10 @@ class BrukerRegistreringServiceTest {
     }
 
     @Test
-    void skalIkkeLagreRegistreringDersomUtdanningIkkeBestatt() throws Exception {
-        mockSelvgaaendeBruker();
-        BrukerRegistrering brukerRegistreringUtdanningIkkeBestatt = getBrukerRegistreringUtdanningIkkeBestatt();
-        assertThrows(RuntimeException.class, () -> registrerBruker(brukerRegistreringUtdanningIkkeBestatt, FNR_OPPFYLLER_KRAV));
-    }
-
-    @Test
     void skalIkkeLagreRegistreringMedHelseutfordringer() throws Exception {
         mockSelvgaaendeBruker();
         BrukerRegistrering brukerRegistreringMedHelseutfordringer = getBrukerRegistreringMedHelseutfordringer();
         assertThrows(RuntimeException.class, () -> registrerBruker(brukerRegistreringMedHelseutfordringer, FNR_OPPFYLLER_KRAV));
-    }
-
-    @Test
-    void skalIkkeLagreRegistreringDersomUtdannelseIkkeGodkjent() throws Exception {
-        mockSelvgaaendeBruker();
-        BrukerRegistrering brukerRegistreringUtdannelseIkkeGodkjent = getBrukerRegistreringUtdannelseIkkeGodkjent();
-        assertThrows(RuntimeException.class, () -> registrerBruker(brukerRegistreringUtdannelseIkkeGodkjent, FNR_OPPFYLLER_KRAV));
     }
 
     /*
@@ -213,8 +199,6 @@ class BrukerRegistreringServiceTest {
                 .opprettetDato(null)
                 .enigIOppsummering(ENIG_I_OPPSUMMERING)
                 .oppsummering(OPPSUMMERING)
-                .utdanningBestatt(UTDANNING_BESTATT)
-                .utdanningGodkjentNorge(UTDANNING_GODKJENT_NORGE)
                 .harHelseutfordringer(HAR_INGEN_HELSEUTFORDRINGER)
                 .build();
     }
@@ -225,8 +209,6 @@ class BrukerRegistreringServiceTest {
                 .opprettetDato(null)
                 .enigIOppsummering(ENIG_I_OPPSUMMERING)
                 .oppsummering(OPPSUMMERING)
-                .utdanningBestatt(UTDANNING_BESTATT)
-                .utdanningGodkjentNorge(UTDANNING_GODKJENT_NORGE)
                 .harHelseutfordringer(HAR_INGEN_HELSEUTFORDRINGER)
                 .build();
     }
@@ -237,8 +219,6 @@ class BrukerRegistreringServiceTest {
                 .opprettetDato(null)
                 .enigIOppsummering(ENIG_I_OPPSUMMERING)
                 .oppsummering(OPPSUMMERING)
-                .utdanningBestatt(UTDANNING_BESTATT)
-                .utdanningGodkjentNorge(UTDANNING_GODKJENT_NORGE)
                 .harHelseutfordringer(HAR_INGEN_HELSEUTFORDRINGER)
                 .build();
     }
@@ -249,8 +229,6 @@ class BrukerRegistreringServiceTest {
                 .opprettetDato(null)
                 .enigIOppsummering(ENIG_I_OPPSUMMERING)
                 .oppsummering(OPPSUMMERING)
-                .utdanningBestatt(UTDANNING_BESTATT)
-                .utdanningGodkjentNorge(UTDANNING_IKKE_GODKJENT_NORGE)
                 .harHelseutfordringer(HAR_INGEN_HELSEUTFORDRINGER)
                 .build();
     }
@@ -261,24 +239,11 @@ class BrukerRegistreringServiceTest {
                 .opprettetDato(null)
                 .enigIOppsummering(ENIG_I_OPPSUMMERING)
                 .oppsummering(OPPSUMMERING)
-                .utdanningBestatt(UTDANNING_BESTATT)
-                .utdanningGodkjentNorge(UTDANNING_GODKJENT_NORGE)
                 .harHelseutfordringer(HAR_HELSEUTFORDRINGER)
                 .build();
     }
 
-    private BrukerRegistrering getBrukerRegistreringUtdanningIkkeBestatt() {
-        return BrukerRegistrering.builder()
-                .nusKode(NUS_KODE_4)
-                .yrkesPraksis(null)
-                .opprettetDato(null)
-                .enigIOppsummering(ENIG_I_OPPSUMMERING)
-                .oppsummering(OPPSUMMERING)
-                .utdanningBestatt(UTDANNING_IKKE_BESTATT)
-                .utdanningGodkjentNorge(UTDANNING_GODKJENT_NORGE)
-                .harHelseutfordringer(HAR_INGEN_HELSEUTFORDRINGER)
-                .build();
-    }
+
     private BrukerRegistrering registrerBruker(BrukerRegistrering bruker, String fnr) throws RegistrerBrukerSikkerhetsbegrensning, HentStartRegistreringStatusFeilVedHentingAvStatusFraArena, HentStartRegistreringStatusFeilVedHentingAvArbeidsforhold {
         return brukerRegistreringService.registrerBruker(bruker, fnr);
     }
