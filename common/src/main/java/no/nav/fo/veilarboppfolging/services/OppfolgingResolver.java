@@ -261,7 +261,13 @@ public class OppfolgingResolver {
             hentOppfolgingstatusFraArena();
         }
         
-        return statusIArena.map(status -> Date.from(status.getInaktiveringsdato().atStartOfDay().atZone(ZoneId.systemDefault()).toInstant())).orElse(null);
+        return statusIArena.map(this::getInaktiveringsDato).orElse(null);
+    }
+
+    private Date getInaktiveringsDato(ArenaOppfolging status) {
+        return Optional.ofNullable(status.getInaktiveringsdato()).isPresent()
+                ? Date.from(status.getInaktiveringsdato().atStartOfDay().atZone(ZoneId.systemDefault()).toInstant())
+                : null;
     }
 
     String getOppfolgingsEnhet() {
