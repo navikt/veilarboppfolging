@@ -280,8 +280,6 @@ public class OppfolgingWebService implements BehandleOppfolgingV1 {
         response.setYrkesPraksis(bruker.getYrkesPraksis());
         response.setEnigIOppsummering(bruker.isEnigIOppsummering());
         response.setOppsummering(bruker.getOppsummering());
-        response.setUtdanningBestatt(bruker.isUtdanningBestatt());
-        response.setUtdanningGodkjentNorge(bruker.isUtdanningGodkjentNorge());
         response.setHarHelseutfordringer(bruker.isHarHelseutfordringer());
         return response;
     }
@@ -293,8 +291,6 @@ public class OppfolgingWebService implements BehandleOppfolgingV1 {
                 .opprettetDato(null)
                 .enigIOppsummering(request.isEnigIOppsummering())
                 .oppsummering(request.getOppsummering())
-                .utdanningBestatt(request.isUtdanningBestatt())
-                .utdanningGodkjentNorge(request.isUtdanningGodkjentNorge())
                 .harHelseutfordringer(request.isHarHelseutfordringer())
                 .build();
     }

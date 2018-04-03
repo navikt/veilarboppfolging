@@ -12,7 +12,5 @@ public class BrukerRegistrering {
     Date opprettetDato;
     boolean enigIOppsummering;
     String oppsummering;
-    boolean utdanningBestatt;
-    boolean utdanningGodkjentNorge;
     boolean harHelseutfordringer;
 }
