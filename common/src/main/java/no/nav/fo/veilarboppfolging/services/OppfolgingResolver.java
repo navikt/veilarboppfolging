@@ -254,7 +254,6 @@ public class OppfolgingResolver {
     boolean kanAvslutteOppfolging() {
         return oppfolging.isUnderOppfolging()
                 && !erUnderOppfolgingIArena()
-                && (deps.getSjekkPagaendeYtelserFeature().erAktiv() || !harPagaendeYtelse())
                 && !harAktiveTiltak()
                 && !erUnderKvp();
     }
@@ -429,9 +428,6 @@ public class OppfolgingResolver {
 
         @Inject
         private KvpService kvpService;
-
-        @Inject
-        private RemoteFeatureConfig.SjekkPagaendeYtelserFeature sjekkPagaendeYtelserFeature;
 
         @Inject
         private RemoteFeatureConfig.BrukervilkarFeature brukervilkarFeature;
