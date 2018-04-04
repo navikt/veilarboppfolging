@@ -1,5 +1,6 @@
 package no.nav.fo.veilarboppfolging.services;
 
+import no.nav.fo.veilarboppfolging.config.RemoteFeatureConfig.NyOppfolgingTjenesteMotArenaFeature;
 import no.nav.fo.veilarboppfolging.domain.ArenaOppfolging;
 import no.nav.fo.veilarboppfolging.mappers.ArenaOppfolgingMapper;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.*;
@@ -8,7 +9,7 @@ import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingskontr
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingskontraktListeResponse;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingsstatusRequest;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingsstatusResponse;
-import no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v1.binding.OppfoelgingsstatusV1_Service;
+import no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v1.binding.OppfoelgingsstatusV1;
 import no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v1.informasjon.Person;
 import org.slf4j.Logger;
 
@@ -23,11 +24,22 @@ public class ArenaOppfolgingService {
 
     private static final Logger LOG = getLogger(ArenaOppfolgingService.class);
     private final OppfoelgingPortType oppfoelgingPortType;
-    private OppfoelgingsstatusV1_Service oppfoelgingsstatusService;
+    private NyOppfolgingTjenesteMotArenaFeature nyOppfolgingTjenesteMotArenaFeature;
+    private OppfoelgingsstatusV1 oppfoelgingsstatusService;
 
-    public ArenaOppfolgingService(OppfoelgingsstatusV1_Service oppfoelgingsstatusService, OppfoelgingPortType oppfoelgingPortType) {
+    public ArenaOppfolgingService(OppfoelgingsstatusV1 oppfoelgingsstatusService,
+                                  OppfoelgingPortType oppfoelgingPortType,
+                                  NyOppfolgingTjenesteMotArenaFeature nyOppfolgingTjenesteMotArenaFeature) {
         this.oppfoelgingsstatusService = oppfoelgingsstatusService;
         this.oppfoelgingPortType = oppfoelgingPortType;
+        this.nyOppfolgingTjenesteMotArenaFeature = nyOppfolgingTjenesteMotArenaFeature;
+    }
+
+    public ArenaOppfolging hentArenaOppfolging(String identifikator) {
+        if (nyOppfolgingTjenesteMotArenaFeature.erAktiv()) {
+            return getArenaOppfolgingsstatus(identifikator);
+        }
+        return getArenaOppfolging(identifikator);
     }
 
     public HentOppfoelgingskontraktListeResponse hentOppfolgingskontraktListe(XMLGregorianCalendar fom, XMLGregorianCalendar tom, String fnr) {
@@ -50,17 +62,6 @@ public class ArenaOppfolgingService {
         return response;
     }
 
-    public ArenaOppfolging hentArenaOppfolging(String identifikator) {
-
-        // Byttes ut med RemoteFeatureConfig..
-        boolean nyOppgfolgingsstatusFeature = false;
-
-        if (nyOppgfolgingsstatusFeature) {
-            return getArenaOppfolgingsstatus(identifikator);
-        }
-        return getArenaOppfolging(identifikator);
-    }
-
     private ArenaOppfolging getArenaOppfolgingsstatus(String identifikator) {
         no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v1.meldinger.HentOppfoelgingsstatusRequest request =
                 new no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v1.meldinger.HentOppfoelgingsstatusRequest();
@@ -71,10 +72,10 @@ public class ArenaOppfolgingService {
 
         try {
             no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v1.meldinger.HentOppfoelgingsstatusResponse oppfoelgingsstatus =
-            oppfoelgingsstatusService.getOppfoelgingsstatusV1Port().hentOppfoelgingsstatus(request);
+                    oppfoelgingsstatusService.hentOppfoelgingsstatus(request);
 
             return ArenaOppfolgingMapper.mapTilArenaOppfolgingsstatus(oppfoelgingsstatus);
-        } catch (no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v1.binding.HentOppfoelgingsstatusSikkerhetsbegrensning e ) {
+        } catch (no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v1.binding.HentOppfoelgingsstatusSikkerhetsbegrensning e) {
             String logMessage = "Ikke tilgang til bruker " + identifikator;
             LOG.warn(logMessage, e);
             throw new ForbiddenException(logMessage, e);

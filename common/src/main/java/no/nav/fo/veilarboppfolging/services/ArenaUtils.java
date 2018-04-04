@@ -5,7 +5,6 @@ import java.util.Set;
 
 import static java.lang.Boolean.TRUE;
 import static java.util.Arrays.asList;
-import static org.springframework.util.ObjectUtils.isEmpty;
 
 public class ArenaUtils {
 
@@ -26,7 +25,7 @@ public class ArenaUtils {
     }
 
     private static boolean erArbeidssoker(String formidlingsgruppeKode, Boolean harOppgave) {
-        if (isEmpty(harOppgave)) {
+        if (harOppgave == null) {
             return ARBS.equals(formidlingsgruppeKode) ||
                     erDelvisRegistrert(formidlingsgruppeKode);
         } else {

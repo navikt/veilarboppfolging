@@ -1,5 +1,7 @@
 package no.nav.fo.veilarboppfolging.services;
 
+import no.nav.fo.veilarboppfolging.config.RemoteFeatureConfig;
+import no.nav.fo.veilarboppfolging.config.RemoteFeatureConfig.NyOppfolgingTjenesteMotArenaFeature;
 import no.nav.fo.veilarboppfolging.domain.ArenaOppfolging;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.HentOppfoelgingsstatusPersonIkkeFunnet;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.HentOppfoelgingsstatusSikkerhetsbegrensning;
@@ -39,6 +41,9 @@ public class ArenaOppfolgingServiceTest {
 
     @InjectMocks
     private ArenaOppfolgingService arenaOppfolgingService;
+
+    @Mock
+    private NyOppfolgingTjenesteMotArenaFeature nyOppfolgingTjenesteMotArenaFeature;
 
     @Mock
     private OppfoelgingPortType oppfoelgingPortType;
