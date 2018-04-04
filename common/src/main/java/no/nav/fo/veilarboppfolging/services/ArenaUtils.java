@@ -3,7 +3,9 @@ package no.nav.fo.veilarboppfolging.services;
 import java.util.HashSet;
 import java.util.Set;
 
+import static java.lang.Boolean.TRUE;
 import static java.util.Arrays.asList;
+import static org.springframework.util.ObjectUtils.isEmpty;
 
 public class ArenaUtils {
 
@@ -20,14 +22,25 @@ public class ArenaUtils {
     }
 
     public static boolean kanSettesUnderOppfolging(String formidlingsgruppeKode, String servicegruppeKode) {
-        return IKKE_ARBEIDSSOKER.equals(formidlingsgruppeKode)
-                && SYKEMELDT_HOS_ARBEIDSGIVER.equals(servicegruppeKode);
+        return IKKE_ARBEIDSSOKER.equals(formidlingsgruppeKode) && SYKEMELDT_HOS_ARBEIDSGIVER.equals(servicegruppeKode);
     }
 
     private static boolean erArbeidssoker(String formidlingsgruppeKode, Boolean harOppgave) {
-        return ARBS.equals(formidlingsgruppeKode) 
-                || DELVIS_REGISTRERT_KODER.contains(formidlingsgruppeKode) && 
-                    (harOppgave == null || Boolean.TRUE.equals(harOppgave));
+        if (isEmpty(harOppgave)) {
+            return ARBS.equals(formidlingsgruppeKode) ||
+                    erDelvisRegistrert(formidlingsgruppeKode);
+        } else {
+            return ARBS.equals(formidlingsgruppeKode) ||
+                    erDelvisRegistrertOgHarFaattOppgaveIArena(formidlingsgruppeKode, harOppgave);
+        }
+    }
+
+    private static boolean erDelvisRegistrert(String formidlingsgruppeKode) {
+        return DELVIS_REGISTRERT_KODER.contains(formidlingsgruppeKode);
+    }
+
+    private static boolean erDelvisRegistrertOgHarFaattOppgaveIArena(String formidlingsgruppeKode, Boolean harOppgave) {
+        return DELVIS_REGISTRERT_KODER.contains(formidlingsgruppeKode) && TRUE.equals(harOppgave);
     }
 
     private static boolean erIArbeidOgHarInnsatsbehov(String formidlingsgruppeKode, String servicegruppeKode) {
