@@ -106,7 +106,7 @@ public class ArenaServiceConfig {
 
 
         PingMetadata metadata = new PingMetadata(
-                "OPPFOELGING_V1 via " + getProperty("oppfoelgingsstatus.endpoint.url"),
+                "OPPFOELGINGSTATUS_V1 via " + getProperty("oppfoelgingsstatus.endpoint.url"),
                 "Ping av oppfolgingstatus_v1. Henter informasjon om oppfølgingsstatus fra arena.",
                 true
         );
