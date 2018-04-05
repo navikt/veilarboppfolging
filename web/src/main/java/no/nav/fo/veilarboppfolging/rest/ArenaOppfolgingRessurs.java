@@ -4,7 +4,7 @@ package no.nav.fo.veilarboppfolging.rest;
 import io.swagger.annotations.Api;
 import no.nav.apiapp.security.PepClient;
 import no.nav.fo.veilarboppfolging.rest.domain.ArenaOppfolging;
-import no.nav.fo.veilarboppfolging.rest.domain.Oppfolgingsenhet;
+import no.nav.fo.veilarboppfolging.domain.Oppfolgingsenhet;
 import no.nav.fo.veilarboppfolging.domain.OppfolgingskontraktResponse;
 import no.nav.fo.veilarboppfolging.mappers.OppfolgingMapper;
 import no.nav.fo.veilarboppfolging.services.ArenaOppfolgingService;
@@ -69,16 +69,18 @@ public class ArenaOppfolgingRessurs {
 
         LOG.info("Henter oppfølgingsstatus for fnr");
         no.nav.fo.veilarboppfolging.domain.ArenaOppfolging arenaData = arenaOppfolgingService.hentArenaOppfolging(fnr);
-        no.nav.fo.veilarboppfolging.domain.Oppfolgingsenhet enhet = organisasjonEnhetService.hentEnhet(arenaData.getOppfolgingsenhet());
+        Oppfolgingsenhet enhet = organisasjonEnhetService.hentEnhet(arenaData.getOppfolgingsenhet());
         
         return toRestDto(arenaData, enhet);
     }
 
-    private ArenaOppfolging toRestDto(no.nav.fo.veilarboppfolging.domain.ArenaOppfolging hentArenaOppfolging, no.nav.fo.veilarboppfolging.domain.Oppfolgingsenhet enhet) {        
+    private ArenaOppfolging toRestDto(no.nav.fo.veilarboppfolging.domain.ArenaOppfolging hentArenaOppfolging, Oppfolgingsenhet enhet) {
+        Oppfolgingsenhet oppfolgingsenhet = new Oppfolgingsenhet().withEnhetId(enhet.getEnhetId()).withNavn(enhet.getNavn());
+
         return new ArenaOppfolging()
                 .setFormidlingsgruppe(hentArenaOppfolging.getFormidlingsgruppe())
                 .setInaktiveringsdato(hentArenaOppfolging.getInaktiveringsdato())
-                .setOppfolgingsenhet(new Oppfolgingsenhet().withEnhetId(enhet.getEnhetId()).withNavn(enhet.getNavn()))
+                .setOppfolgingsenhet(oppfolgingsenhet)
                 .setRettighetsgruppe(hentArenaOppfolging.getRettighetsgruppe())
                 .setServicegruppe(hentArenaOppfolging.getServicegruppe());
     }

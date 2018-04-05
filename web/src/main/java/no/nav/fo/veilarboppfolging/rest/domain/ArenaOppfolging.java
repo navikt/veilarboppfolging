@@ -2,6 +2,7 @@ package no.nav.fo.veilarboppfolging.rest.domain;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
+import no.nav.fo.veilarboppfolging.domain.Oppfolgingsenhet;
 
 import java.time.LocalDate;
 
