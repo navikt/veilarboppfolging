@@ -2,6 +2,7 @@ package no.nav.fo.veilarboppfolging.utils;
 
 import no.nav.fo.veilarboppfolging.domain.Arbeidsforhold;
 import no.nav.fo.veilarboppfolging.domain.ArenaOppfolging;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
@@ -10,8 +11,7 @@ import java.util.List;
 
 import static no.nav.fo.veilarboppfolging.TestUtils.getFodselsnummerOnDateMinusYears;
 import static no.nav.fo.veilarboppfolging.utils.DateUtils.erDatoEldreEnnEllerLikAar;
-import static no.nav.fo.veilarboppfolging.utils.StartRegistreringUtils.oppfyllerKravOmAutomatiskRegistrering;
-import static no.nav.fo.veilarboppfolging.utils.StartRegistreringUtils.oppfyllerKravOmInaktivitet;
+import static no.nav.fo.veilarboppfolging.utils.StartRegistreringUtils.*;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
 
@@ -19,6 +19,16 @@ public class StartRegistreringUtilsTest {
 
     private static final LocalDate dagensDato = LocalDate.of(2017,12,14);
 
+    @AfterEach
+    public void clearSystemProperties() {
+        System.clearProperty(MAX_ALDER_AUTOMATISK_REGISTRERING);
+        System.clearProperty(MIN_ALDER_AUTOMATISK_REGISTRERING);
+    }
+
+    private void setGyldigeAldersProperties() {
+        System.setProperty(MIN_ALDER_AUTOMATISK_REGISTRERING, "30");
+        System.setProperty(MAX_ALDER_AUTOMATISK_REGISTRERING, "59");
+    }
 
     @Test
     public void datoEldreEnnEllerLikToAar() {
@@ -44,7 +54,37 @@ public class StartRegistreringUtilsTest {
         String fnr = getFodselsnummerOnDateMinusYears(dagensDato, 40);
         List<Arbeidsforhold> arbeidsforhold = getArbeidsforholdSomOppfyllerKrav();
         ArenaOppfolging arenaOppfolging = new ArenaOppfolging().setInaktiveringsdato(ISERVFraDato);
+        setGyldigeAldersProperties();
         assertThat(oppfyllerKravOmAutomatiskRegistrering(fnr, () -> arbeidsforhold,arenaOppfolging,dagensDato)).isTrue();
+    }
+
+    @Test
+    public void oppfylleIkkeKravVedUgyldigeAldersPropertier() {
+        LocalDate ISERVFraDato = LocalDate.of(2015,12,13);
+        String fnr = getFodselsnummerOnDateMinusYears(dagensDato, 40);
+        List<Arbeidsforhold> arbeidsforhold = getArbeidsforholdSomOppfyllerKrav();
+        ArenaOppfolging arenaOppfolging = new ArenaOppfolging().setInaktiveringsdato(ISERVFraDato);
+        System.setProperty(MIN_ALDER_AUTOMATISK_REGISTRERING, "");
+        System.setProperty(MAX_ALDER_AUTOMATISK_REGISTRERING, "59");
+        assertThat(oppfyllerKravOmAutomatiskRegistrering(fnr, () -> arbeidsforhold,arenaOppfolging,dagensDato)).isFalse();
+        clearSystemProperties();
+        System.setProperty(MIN_ALDER_AUTOMATISK_REGISTRERING, "30");
+        System.setProperty(MAX_ALDER_AUTOMATISK_REGISTRERING, "");
+        assertThat(oppfyllerKravOmAutomatiskRegistrering(fnr, () -> arbeidsforhold,arenaOppfolging,dagensDato)).isFalse();
+        clearSystemProperties();
+        System.setProperty(MIN_ALDER_AUTOMATISK_REGISTRERING, "x");
+        System.setProperty(MAX_ALDER_AUTOMATISK_REGISTRERING, "y");
+        assertThat(oppfyllerKravOmAutomatiskRegistrering(fnr, () -> arbeidsforhold,arenaOppfolging,dagensDato)).isFalse();
+    }
+
+    @Test
+    public void oppfylleIkkeKravVedManglendePropertier() {
+
+        LocalDate ISERVFraDato = LocalDate.of(2015,12,13);
+        String fnr = getFodselsnummerOnDateMinusYears(dagensDato, 40);
+        List<Arbeidsforhold> arbeidsforhold = getArbeidsforholdSomOppfyllerKrav();
+        ArenaOppfolging arenaOppfolging = new ArenaOppfolging().setInaktiveringsdato(ISERVFraDato);
+        assertThat(oppfyllerKravOmAutomatiskRegistrering(fnr, () -> arbeidsforhold,arenaOppfolging,dagensDato)).isFalse();
     }
 
     public static List<Arbeidsforhold> getArbeidsforholdSomOppfyllerKrav() {

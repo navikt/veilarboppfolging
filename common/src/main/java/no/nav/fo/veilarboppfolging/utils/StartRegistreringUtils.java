@@ -5,6 +5,8 @@ import io.vavr.control.Try;
 import no.nav.apiapp.security.PepClient;
 import no.nav.fo.veilarboppfolging.domain.Arbeidsforhold;
 import no.nav.fo.veilarboppfolging.domain.ArenaOppfolging;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -13,6 +15,8 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import static java.lang.Integer.getInteger;
+import static java.util.Objects.nonNull;
 import static no.nav.fo.veilarboppfolging.services.ArenaUtils.erUnderOppfolging;
 import static no.nav.fo.veilarboppfolging.utils.ArbeidsforholdUtils.oppfyllerKravOmArbeidserfaring;
 import static no.nav.fo.veilarboppfolging.utils.DateUtils.erDatoEldreEnnEllerLikAar;
@@ -20,19 +24,21 @@ import static no.nav.fo.veilarboppfolging.utils.DateUtils.erDatoEldreEnnEllerLik
 
 public class StartRegistreringUtils {
 
+    private static final Logger LOG = LoggerFactory.getLogger(StartRegistreringUtils.class);
+
     static final int ANTALL_AAR_ISERV = 2;
-    static final int MIN_ALDER_AUTOMATISK_REGISTRERING = 30;
-    static final int MAX_ALDER_AUTOMATISK_REGISTRERING = 59;
+    public static final String MIN_ALDER_AUTOMATISK_REGISTRERING = "min.alder.automatisk.registrering";
+    public static final String MAX_ALDER_AUTOMATISK_REGISTRERING = "maks.alder.automatisk.registrering";
 
     public static boolean oppfyllerKravOmAutomatiskRegistrering(String fnr, Supplier<List<Arbeidsforhold>> arbeidsforholdSupplier,
                                                                 ArenaOppfolging arenaOppfolging, LocalDate dagensDato) {
         LocalDate fodselsdato = FnrUtils.utledFodselsdatoForFnr(fnr);
-        int alder = FnrUtils.antallAarSidenDato(fodselsdato,dagensDato);
+        int alder = FnrUtils.antallAarSidenDato(fodselsdato, dagensDato);
         LocalDate inaktiveringsdato = Optional.ofNullable(arenaOppfolging).map(ArenaOppfolging::getInaktiveringsdato).orElse(null);
 
         return oppfyllerKravOmInaktivitet(dagensDato, inaktiveringsdato) &&
                 oppfyllerKravOmAlder(alder) &&
-                oppfyllerKravOmArbeidserfaring(arbeidsforholdSupplier.get(),dagensDato);
+                oppfyllerKravOmArbeidserfaring(arbeidsforholdSupplier.get(), dagensDato);
     }
 
     public static boolean erUnderoppfolgingIArena(ArenaOppfolging arenaOppfolging) {
@@ -42,7 +48,16 @@ public class StartRegistreringUtils {
     }
 
     static boolean oppfyllerKravOmAlder(int alder) {
-        return alder >= MIN_ALDER_AUTOMATISK_REGISTRERING && alder <= MAX_ALDER_AUTOMATISK_REGISTRERING;
+        Integer minAlderAutomatiskRegistrering = getInteger(MIN_ALDER_AUTOMATISK_REGISTRERING);
+        Integer maksAlderAutomatiskRegistrering = getInteger(MAX_ALDER_AUTOMATISK_REGISTRERING);
+
+        if (nonNull(minAlderAutomatiskRegistrering) && nonNull(maksAlderAutomatiskRegistrering)) {
+            return alder >= minAlderAutomatiskRegistrering && alder <= maksAlderAutomatiskRegistrering;
+        } else {
+            LOG.error("Parametrene " + MAX_ALDER_AUTOMATISK_REGISTRERING + " eller " +
+                    MIN_ALDER_AUTOMATISK_REGISTRERING + " mangler eller har ugyldig innhold.");
+            return false;
+        }
     }
 
     static boolean oppfyllerKravOmInaktivitet(LocalDate dagensDato, LocalDate inaktiveringsdato) {
