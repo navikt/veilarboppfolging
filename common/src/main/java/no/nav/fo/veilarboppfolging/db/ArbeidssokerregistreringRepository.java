@@ -35,7 +35,7 @@ public class ArbeidssokerregistreringRepository {
     }
 
     public boolean erOppfolgingsflaggSatt(AktorId aktorid) {
-        return Optional.ofNullable(SqlUtils.select(db.getDataSource(), OPPFOLGINGSTATUS, ArbeidssokerregistreringRepository::oppfolgignsflaggMapper)
+        return Optional.ofNullable(SqlUtils.select(db, OPPFOLGINGSTATUS, ArbeidssokerregistreringRepository::oppfolgignsflaggMapper)
                 .column(UNDER_OPPFOLGING)
                 .where(WhereClause.equals(AKTOR_ID, aktorid.getAktorId()))
                 .execute()).orElse(false);
@@ -54,7 +54,7 @@ public class ArbeidssokerregistreringRepository {
                 .value(HAR_HELSEUTFORDRINGER, bruker.isHarHelseutfordringer())
                 .execute();
 
-        return SqlUtils.select(db.getDataSource(), BRUKER_REGISTRERING, ArbeidssokerregistreringRepository::brukerRegistreringMapper)
+        return SqlUtils.select(db, BRUKER_REGISTRERING, ArbeidssokerregistreringRepository::brukerRegistreringMapper)
                 .where(WhereClause.equals(BRUKER_REGISTRERING_ID, id))
                 .column("*")
                 .execute();
