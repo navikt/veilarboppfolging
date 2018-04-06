@@ -1,11 +1,13 @@
 package no.nav.fo.veilarboppfolging.config;
 
+import no.nav.fo.veilarboppfolging.config.RemoteFeatureConfig.NyOppfolgingTjenesteMotArenaFeature;
 import no.nav.fo.veilarboppfolging.db.*;
 import no.nav.fo.veilarboppfolging.services.ArenaOppfolgingService;
 import no.nav.fo.veilarboppfolging.services.OrganisasjonEnhetService;
 import no.nav.fo.veilarboppfolging.services.YtelseskontraktService;
 import no.nav.sbl.jdbc.Database;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
+import no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v1.binding.OppfoelgingsstatusV1;
 import no.nav.tjeneste.virksomhet.organisasjonenhet.v1.OrganisasjonEnhetV1;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3;
 import org.springframework.context.annotation.Bean;
@@ -26,9 +28,11 @@ public class ServiceConfig {
     }
 
     @Bean
-    ArenaOppfolgingService arenaOppfolgingService(OppfoelgingPortType oppfoelgingPortType,
-                                                  OrganisasjonEnhetService organisasjonEnhetService) {
-        return new ArenaOppfolgingService(oppfoelgingPortType, organisasjonEnhetService);
+    ArenaOppfolgingService arenaOppfolgingService(OppfoelgingsstatusV1 oppfoelgingsstatusV1,
+                                                  OppfoelgingPortType oppfoelgingPortType,
+                                                  NyOppfolgingTjenesteMotArenaFeature nyOppfolgingTjenesteMotArenaFeature) {
+
+        return new ArenaOppfolgingService(oppfoelgingsstatusV1, oppfoelgingPortType, nyOppfolgingTjenesteMotArenaFeature);
     }
 
     @Bean

@@ -3,10 +3,12 @@ package no.nav.fo.veilarboppfolging.rest;
 
 import io.swagger.annotations.Api;
 import no.nav.apiapp.security.PepClient;
-import no.nav.fo.veilarboppfolging.domain.ArenaOppfolging;
+import no.nav.fo.veilarboppfolging.rest.domain.ArenaOppfolging;
+import no.nav.fo.veilarboppfolging.domain.Oppfolgingsenhet;
 import no.nav.fo.veilarboppfolging.domain.OppfolgingskontraktResponse;
 import no.nav.fo.veilarboppfolging.mappers.OppfolgingMapper;
 import no.nav.fo.veilarboppfolging.services.ArenaOppfolgingService;
+import no.nav.fo.veilarboppfolging.services.OrganisasjonEnhetService;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
@@ -34,11 +36,17 @@ public class ArenaOppfolgingRessurs {
     private final ArenaOppfolgingService arenaOppfolgingService;
     private final OppfolgingMapper oppfolgingMapper;
     private final PepClient pepClient;
+    private final OrganisasjonEnhetService organisasjonEnhetService;
 
-    public ArenaOppfolgingRessurs(ArenaOppfolgingService arenaOppfolgingService, OppfolgingMapper oppfolgingMapper, PepClient pepClient) {
+    public ArenaOppfolgingRessurs(
+            ArenaOppfolgingService arenaOppfolgingService, 
+            OppfolgingMapper oppfolgingMapper, 
+            PepClient pepClient,
+            OrganisasjonEnhetService organisasjonEnhetService) {
         this.arenaOppfolgingService = arenaOppfolgingService;
         this.oppfolgingMapper = oppfolgingMapper;
         this.pepClient = pepClient;
+        this.organisasjonEnhetService = organisasjonEnhetService;
     }
 
     @GET
@@ -60,6 +68,20 @@ public class ArenaOppfolgingRessurs {
         pepClient.sjekkTilgangTilFnr(fnr);
 
         LOG.info("Henter oppfølgingsstatus for fnr");
-        return arenaOppfolgingService.hentArenaOppfolging(fnr);
+        no.nav.fo.veilarboppfolging.domain.ArenaOppfolging arenaData = arenaOppfolgingService.hentArenaOppfolging(fnr);
+        Oppfolgingsenhet enhet = organisasjonEnhetService.hentEnhet(arenaData.getOppfolgingsenhet());
+        
+        return toRestDto(arenaData, enhet);
+    }
+
+    private ArenaOppfolging toRestDto(no.nav.fo.veilarboppfolging.domain.ArenaOppfolging hentArenaOppfolging, Oppfolgingsenhet enhet) {
+        Oppfolgingsenhet oppfolgingsenhet = new Oppfolgingsenhet().withEnhetId(enhet.getEnhetId()).withNavn(enhet.getNavn());
+
+        return new ArenaOppfolging()
+                .setFormidlingsgruppe(hentArenaOppfolging.getFormidlingsgruppe())
+                .setInaktiveringsdato(hentArenaOppfolging.getInaktiveringsdato())
+                .setOppfolgingsenhet(oppfolgingsenhet)
+                .setRettighetsgruppe(hentArenaOppfolging.getRettighetsgruppe())
+                .setServicegruppe(hentArenaOppfolging.getServicegruppe());
     }
 }

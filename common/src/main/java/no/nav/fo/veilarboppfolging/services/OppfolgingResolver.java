@@ -1,5 +1,6 @@
 package no.nav.fo.veilarboppfolging.services;
 
+import io.vavr.control.Try;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -13,7 +14,6 @@ import no.nav.fo.veilarboppfolging.config.RemoteFeatureConfig;
 import no.nav.fo.veilarboppfolging.db.KvpRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.domain.*;
-import no.nav.fo.veilarboppfolging.utils.DateUtils;
 import no.nav.fo.veilarboppfolging.utils.FunksjonelleMetrikker;
 import no.nav.fo.veilarboppfolging.utils.StringUtils;
 import no.nav.fo.veilarboppfolging.vilkar.VilkarService;
@@ -24,10 +24,7 @@ import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.HentDigitalKontak
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.informasjon.WSKontaktinformasjon;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.WSHentDigitalKontaktinformasjonRequest;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.WSHentDigitalKontaktinformasjonResponse;
-import no.nav.tjeneste.virksomhet.oppfoelging.v1.HentOppfoelgingsstatusPersonIkkeFunnet;
-import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingsstatusRequest;
-import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingsstatusResponse;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt.WSYtelseskontrakt;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeRequest;
@@ -37,6 +34,7 @@ import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 import java.sql.Timestamp;
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -64,7 +62,7 @@ public class OppfolgingResolver {
 
     private String aktorId;
     private Oppfolging oppfolging;
-    private Optional<HentOppfoelgingsstatusResponse> statusIArena;
+    private Optional<ArenaOppfolging> statusIArena;
     private Boolean reservertIKrr;
     private WSHentYtelseskontraktListeResponse ytelser;
     private List<ArenaAktivitetDTO> arenaAktiviteter;
@@ -90,7 +88,7 @@ public class OppfolgingResolver {
         if (!oppfolging.isUnderOppfolging()) {
             hentOppfolgingstatusFraArena();
             statusIArena.ifPresent((arenaStatus) -> {
-                        if (erUnderOppfolging(arenaStatus.getFormidlingsgruppeKode(), arenaStatus.getServicegruppeKode())) {
+                        if (erUnderOppfolging(arenaStatus.getFormidlingsgruppe(), arenaStatus.getServicegruppe(), arenaStatus.getHarMottaOppgaveIArena())) {
                             deps.getOppfolgingRepository().startOppfolgingHvisIkkeAlleredeStartet(aktorId);
                             reloadOppfolging();
                         }
@@ -196,8 +194,8 @@ public class OppfolgingResolver {
             hentOppfolgingstatusFraArena();
         }
         return statusIArena.map(status ->
-                kanSettesUnderOppfolging(status.getFormidlingsgruppeKode(),
-                        status.getServicegruppeKode()))
+                kanSettesUnderOppfolging(status.getFormidlingsgruppe(),
+                        status.getServicegruppe()))
                 .orElse(false);
     }
 
@@ -211,8 +209,8 @@ public class OppfolgingResolver {
             hentOppfolgingstatusFraArena();
         }
         return statusIArena.map(status ->
-                erUnderOppfolging(status.getFormidlingsgruppeKode(),
-                        status.getServicegruppeKode()))
+                erUnderOppfolging(status.getFormidlingsgruppe(),
+                        status.getServicegruppe(), status.getHarMottaOppgaveIArena()))
                 .orElse(false);
     }
 
@@ -263,15 +261,21 @@ public class OppfolgingResolver {
         if (statusIArena == null) {
             hentOppfolgingstatusFraArena();
         }
+        
+        return statusIArena.map(this::getInaktiveringsDato).orElse(null);
+    }
 
-        return statusIArena.map(status -> DateUtils.getDate(status.getInaktiveringsdato())).orElse(null);
+    private Date getInaktiveringsDato(ArenaOppfolging status) {
+        return Optional.ofNullable(status.getInaktiveringsdato()).isPresent()
+                ? Date.from(status.getInaktiveringsdato().atStartOfDay().atZone(ZoneId.systemDefault()).toInstant())
+                : null;
     }
 
     String getOppfolgingsEnhet() {
         if (statusIArena == null) {
             hentOppfolgingstatusFraArena();
         }
-        return statusIArena.map(HentOppfoelgingsstatusResponse::getNavOppfoelgingsenhet).orElse(null);
+        return statusIArena.map(status -> status.getOppfolgingsenhet()).orElse(null);
     }
 
     void avsluttOppfolging(String veileder, String begrunnelse) {
@@ -313,13 +317,9 @@ public class OppfolgingResolver {
         val hentOppfolgingstatusRequest = new HentOppfoelgingsstatusRequest();
         hentOppfolgingstatusRequest.setPersonidentifikator(fnr);
 
-        try {
-            statusIArena = Optional.of(
-                    deps.getOppfoelgingPortType().hentOppfoelgingsstatus(hentOppfolgingstatusRequest));
-        } catch (HentOppfoelgingsstatusPersonIkkeFunnet e) {
-            statusIArena = Optional.empty();
-        }
-
+        statusIArena = Try.of(() -> deps.getArenaOppfolgingService().hentArenaOppfolging(fnr))
+                .toOption()
+                .toJavaOptional();
     }
 
     private void sjekkReservasjonIKrrOgOppdaterOppfolging() {
@@ -386,8 +386,8 @@ public class OppfolgingResolver {
         });
     }
 
-    private boolean brukerHarByttetKontor(HentOppfoelgingsstatusResponse statusIArena, Kvp kvp) {
-        return !statusIArena.getNavOppfoelgingsenhet().equals(kvp.getEnhet());
+    private boolean brukerHarByttetKontor(ArenaOppfolging statusIArena, Kvp kvp) {
+        return !statusIArena.getOppfolgingsenhet().equals(kvp.getEnhet());
     }
 
     @Component
@@ -407,8 +407,8 @@ public class OppfolgingResolver {
         private OppfolgingRepository oppfolgingRepository;
 
         @Inject
-        private OppfoelgingPortType oppfoelgingPortType;
-
+        private ArenaOppfolgingService arenaOppfolgingService;
+        
         @Inject
         private DigitalKontaktinformasjonV1 digitalKontaktinformasjonV1;
 

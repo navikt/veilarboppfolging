@@ -23,6 +23,11 @@ public class RemoteFeatureConfig {
     }
 
     @Bean
+    public NyOppfolgingTjenesteMotArenaFeature nyOppfolgingTjenesteMotArenaFeature(RemoteFeatureToggleRepository repo) {
+        return new NyOppfolgingTjenesteMotArenaFeature(repo);
+    }
+
+    @Bean
     public RegistreringFeature registrereBrukerGenerellFeature(RemoteFeatureToggleRepository repo) {
         return new RegistreringFeature(repo);
     }
@@ -46,6 +51,12 @@ public class RemoteFeatureConfig {
     public static class RegistreringFeature extends RemoteFeatureToggle {
         public RegistreringFeature(RemoteFeatureToggleRepository repository) {
             super(repository, "veilarboppfolging.registrering", false);
+        }
+    }
+
+    public static class NyOppfolgingTjenesteMotArenaFeature extends RemoteFeatureToggle {
+        public NyOppfolgingTjenesteMotArenaFeature(RemoteFeatureToggleRepository repository) {
+            super(repository, "veilarboppfolging.nyoppfolgingtjenestearena", false);
         }
     }
 
