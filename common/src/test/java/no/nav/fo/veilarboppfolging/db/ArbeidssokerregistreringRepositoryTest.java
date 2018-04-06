@@ -54,8 +54,6 @@ public class ArbeidssokerregistreringRepositoryTest {
                 .opprettetDato(opprettetDato)
                 .enigIOppsummering(true)
                 .oppsummering("Test test oppsummering")
-                .utdanningBestatt(true)
-                .utdanningGodkjentNorge(true)
                 .harHelseutfordringer(false)
                 .build();
 
@@ -69,8 +67,6 @@ public class ArbeidssokerregistreringRepositoryTest {
         assertThat(brukerRegistrering.getYrkesPraksis()).isEqualTo(bruker.getYrkesPraksis());
         assertThat(brukerRegistrering.isEnigIOppsummering()).isEqualTo(bruker.isEnigIOppsummering());
         assertThat(brukerRegistrering.getOppsummering()).isEqualTo(bruker.getOppsummering());
-        assertThat(brukerRegistrering.isUtdanningBestatt()).isEqualTo(bruker.isUtdanningBestatt());
-        assertThat(brukerRegistrering.isUtdanningGodkjentNorge()).isEqualTo(bruker.isUtdanningGodkjentNorge());
         assertThat(brukerRegistrering.isHarHelseutfordringer()).isEqualTo(bruker.isHarHelseutfordringer());
     }
 }

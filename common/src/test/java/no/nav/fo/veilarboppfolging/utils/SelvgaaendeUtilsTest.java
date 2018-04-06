@@ -12,16 +12,6 @@ import static org.assertj.core.api.Java6Assertions.assertThat;
 public class SelvgaaendeUtilsTest {
 
     @Test
-    void skalValidereSelvgaaendeBesvarelse() {
-        BrukerRegistrering bruker = getBrukerBesvarelseUtdanningIkkeBestatt();
-        StartRegistreringStatus startRegistreringStatus = new StartRegistreringStatus()
-                .setUnderOppfolging(false)
-                .setOppfyllerKravForAutomatiskRegistrering(true);
-        assertThat(erSelvgaaende(bruker, startRegistreringStatus )).isFalse();
-    }
-
-
-    @Test
     void skalValidereSelvgaaendeUnderoppfolging() {
         BrukerRegistrering bruker = getBrukerBesvarelse();
         StartRegistreringStatus startRegistreringStatus = new StartRegistreringStatus()
@@ -39,29 +29,6 @@ public class SelvgaaendeUtilsTest {
         assertThat(erSelvgaaende(bruker, startRegistreringStatus )).isFalse();
     }
 
-
-    @Test
-    void brukerHarIkkeBestattUtdanning() {
-        BrukerRegistrering bruker = getBrukerBesvarelseUtdanningIkkeBestatt();
-
-        assertThat(!erBesvarelseneValidertSomSelvgaaende(bruker)).isTrue();
-    }
-
-    @Test
-    void brukerHarIkkeGodkjentUtdanning() {
-        BrukerRegistrering bruker = BrukerRegistrering.builder()
-                .nusKode(NUS_KODE_4)
-                .yrkesPraksis(null)
-                .opprettetDato(null)
-                .enigIOppsummering(ENIG_I_OPPSUMMERING)
-                .oppsummering(OPPSUMMERING)
-                .utdanningBestatt(UTDANNING_BESTATT)
-                .utdanningGodkjentNorge(UTDANNING_IKKE_GODKJENT_NORGE)
-                .harHelseutfordringer(HAR_INGEN_HELSEUTFORDRINGER)
-                .build();
-        assertThat(!erBesvarelseneValidertSomSelvgaaende(bruker)).isTrue();
-    }
-
     @Test
     void brukerHarGrunnskole() {
         BrukerRegistrering bruker = BrukerRegistrering.builder()
@@ -70,8 +37,6 @@ public class SelvgaaendeUtilsTest {
                 .opprettetDato(null)
                 .enigIOppsummering(ENIG_I_OPPSUMMERING)
                 .oppsummering(OPPSUMMERING)
-                .utdanningBestatt(UTDANNING_BESTATT)
-                .utdanningGodkjentNorge(UTDANNING_GODKJENT_NORGE)
                 .harHelseutfordringer(HAR_INGEN_HELSEUTFORDRINGER)
                 .build();
         assertThat(!erBesvarelseneValidertSomSelvgaaende(bruker)).isTrue();
@@ -84,21 +49,6 @@ public class SelvgaaendeUtilsTest {
                 .opprettetDato(null)
                 .enigIOppsummering(ENIG_I_OPPSUMMERING)
                 .oppsummering(OPPSUMMERING)
-                .utdanningBestatt(UTDANNING_BESTATT)
-                .utdanningGodkjentNorge(UTDANNING_GODKJENT_NORGE)
-                .harHelseutfordringer(HAR_INGEN_HELSEUTFORDRINGER)
-                .build();
-    }
-
-    private BrukerRegistrering getBrukerBesvarelseUtdanningIkkeBestatt() {
-        return BrukerRegistrering.builder()
-                .nusKode(NUS_KODE_4)
-                .yrkesPraksis(null)
-                .opprettetDato(null)
-                .enigIOppsummering(ENIG_I_OPPSUMMERING)
-                .oppsummering(OPPSUMMERING)
-                .utdanningBestatt(UTDANNING_IKKE_BESTATT)
-                .utdanningGodkjentNorge(UTDANNING_GODKJENT_NORGE)
                 .harHelseutfordringer(HAR_INGEN_HELSEUTFORDRINGER)
                 .build();
     }

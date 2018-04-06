@@ -24,8 +24,6 @@ public class ArbeidssokerregistreringRepository {
     private final static String YRKESPRAKSIS = "YRKESPRAKSIS";
     private final static String ENIG_I_OPPSUMMERING = "ENIG_I_OPPSUMMERING";
     private final static String OPPSUMMERING = "OPPSUMMERING";
-    private final static String UTDANNING_BESTATT = "UTDANNING_BESTATT";
-    private final static String UTDANNING_GODKJENT_NORGE = "UTDANNING_GODKJENT_NORGE";
     private final static String HAR_HELSEUTFORDRINGER = "HAR_HELSEUTFORDRINGER";
 
     private final static String OPPFOLGINGSTATUS = "OPPFOLGINGSTATUS";
@@ -37,7 +35,7 @@ public class ArbeidssokerregistreringRepository {
     }
 
     public boolean erOppfolgingsflaggSatt(AktorId aktorid) {
-        return Optional.ofNullable(SqlUtils.select(db.getDataSource(), OPPFOLGINGSTATUS, ArbeidssokerregistreringRepository::oppfolgignsflaggMapper)
+        return Optional.ofNullable(SqlUtils.select(db, OPPFOLGINGSTATUS, ArbeidssokerregistreringRepository::oppfolgignsflaggMapper)
                 .column(UNDER_OPPFOLGING)
                 .where(WhereClause.equals(AKTOR_ID, aktorid.getAktorId()))
                 .execute()).orElse(false);
@@ -53,12 +51,10 @@ public class ArbeidssokerregistreringRepository {
                 .value(YRKESPRAKSIS, bruker.getYrkesPraksis())
                 .value(ENIG_I_OPPSUMMERING, bruker.isEnigIOppsummering())
                 .value(OPPSUMMERING, bruker.getOppsummering())
-                .value(UTDANNING_BESTATT, bruker.isUtdanningBestatt())
-                .value(UTDANNING_GODKJENT_NORGE, bruker.isUtdanningGodkjentNorge())
                 .value(HAR_HELSEUTFORDRINGER, bruker.isHarHelseutfordringer())
                 .execute();
 
-        return SqlUtils.select(db.getDataSource(), BRUKER_REGISTRERING, ArbeidssokerregistreringRepository::brukerRegistreringMapper)
+        return SqlUtils.select(db, BRUKER_REGISTRERING, ArbeidssokerregistreringRepository::brukerRegistreringMapper)
                 .where(WhereClause.equals(BRUKER_REGISTRERING_ID, id))
                 .column("*")
                 .execute();
@@ -81,8 +77,6 @@ public class ArbeidssokerregistreringRepository {
                 .opprettetDato(rs.getDate(OPPRETTET_DATO))
                 .enigIOppsummering(rs.getBoolean(ENIG_I_OPPSUMMERING))
                 .oppsummering(rs.getString(OPPSUMMERING))
-                .utdanningBestatt(rs.getBoolean(UTDANNING_BESTATT))
-                .utdanningGodkjentNorge(rs.getBoolean(UTDANNING_GODKJENT_NORGE))
                 .harHelseutfordringer(rs.getBoolean(HAR_HELSEUTFORDRINGER))
                 .build();
     }
