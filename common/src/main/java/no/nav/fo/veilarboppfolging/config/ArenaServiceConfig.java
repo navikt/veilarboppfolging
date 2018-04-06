@@ -14,6 +14,8 @@ import org.springframework.context.annotation.Configuration;
 
 import javax.inject.Inject;
 
+import java.util.UUID;
+
 import static java.lang.System.getProperty;
 import static no.nav.sbl.dialogarena.types.Pingable.Ping.feilet;
 import static no.nav.sbl.dialogarena.types.Pingable.Ping.lyktes;
@@ -55,7 +57,7 @@ public class ArenaServiceConfig {
                 .configureStsForSystemUserInFSS()
                 .build();
 
-        PingMetadata metadata = new PingMetadata(
+        PingMetadata metadata = new PingMetadata(UUID.randomUUID().toString(),
                 "YTELSESKONTRAKT_V3 via " + getProperty("ytelseskontrakt.endpoint.url"),
                 "Ping av ytelseskontrakt_V3. Henter informasjon om ytelser fra arena.",
                 false
@@ -79,7 +81,7 @@ public class ArenaServiceConfig {
                 .configureStsForSystemUserInFSS()
                 .build();
 
-        PingMetadata metadata = new PingMetadata(
+        PingMetadata metadata = new PingMetadata(UUID.randomUUID().toString(),
                 "OPPFOELGING_V1 via " + getProperty("oppfoelging.endpoint.url"),
                 "Ping av oppfolging_v1. Henter informasjon om oppfølgingsstatus fra arena.",
                 true
@@ -105,7 +107,7 @@ public class ArenaServiceConfig {
 
 
 
-        PingMetadata metadata = new PingMetadata(
+        PingMetadata metadata = new PingMetadata(UUID.randomUUID().toString(),
                 "OPPFOELGINGSTATUS_V1 via " + getProperty("oppfoelgingsstatus.endpoint.url"),
                 "Ping av oppfolgingstatus_v1. Henter informasjon om oppfølgingsstatus fra arena.",
                 true
