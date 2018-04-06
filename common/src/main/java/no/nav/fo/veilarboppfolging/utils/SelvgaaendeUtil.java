@@ -18,7 +18,6 @@ public class SelvgaaendeUtil {
 
     public static boolean erBesvarelseneValidertSomSelvgaaende(BrukerRegistrering bruker) {
         return !(bruker.getNusKode().equals(NUS_KODE_0)
-                || bruker.getNusKode().equals(NUS_KODE_2)
                 || bruker.isHarHelseutfordringer() == HAR_HELSEUTFORDRINGER);
     }
 }

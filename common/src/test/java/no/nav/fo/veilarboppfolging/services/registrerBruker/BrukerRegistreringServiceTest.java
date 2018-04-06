@@ -130,13 +130,6 @@ class BrukerRegistreringServiceTest {
     }
 
     @Test
-    void skalIkkeLagreRegistrereDersomKunGrunnskole() throws Exception {
-        mockSelvgaaendeBruker();
-        BrukerRegistrering brukerRegistreringMedKunGrunnskole = getBrukerRegistreringMedKunGrunnskole();
-        assertThrows(RuntimeException.class, () -> registrerBruker(brukerRegistreringMedKunGrunnskole, FNR_OPPFYLLER_KRAV));
-    }
-
-    @Test
     void skalIkkeLagreRegistreringMedHelseutfordringer() throws Exception {
         mockSelvgaaendeBruker();
         BrukerRegistrering brukerRegistreringMedHelseutfordringer = getBrukerRegistreringMedHelseutfordringer();
