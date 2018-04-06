@@ -1,5 +1,6 @@
 package no.nav.fo.veilarboppfolging.services;
 
+import io.vavr.control.Try;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -316,12 +317,9 @@ public class OppfolgingResolver {
         val hentOppfolgingstatusRequest = new HentOppfoelgingsstatusRequest();
         hentOppfolgingstatusRequest.setPersonidentifikator(fnr);
 
-        try {
-            statusIArena = Optional.of(deps.getArenaOppfolgingService().hentArenaOppfolging(fnr));
-        } catch (Exception e) {
-            statusIArena = Optional.empty();
-        }
-
+        statusIArena = Try.of(() -> deps.getArenaOppfolgingService().hentArenaOppfolging(fnr))
+                .toOption()
+                .toJavaOptional();
     }
 
     private void sjekkReservasjonIKrrOgOppdaterOppfolging() {
