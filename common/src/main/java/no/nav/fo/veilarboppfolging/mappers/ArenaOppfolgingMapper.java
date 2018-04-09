@@ -18,9 +18,9 @@ public class ArenaOppfolgingMapper {
     public static ArenaOppfolging mapTilArenaOppfolgingsstatus(no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v1.meldinger.HentOppfoelgingsstatusResponse response) {
         return new ArenaOppfolging()
                 .setOppfolgingsenhet(response.getNavOppfoelgingsenhet())
-                .setRettighetsgruppe(response.getRettighetsgruppeKode().getKodeverksRef())
-                .setFormidlingsgruppe(response.getFormidlingsgruppeKode().getKodeverksRef())
-                .setServicegruppe(response.getServicegruppeKode().getKodeverksRef())
+                .setRettighetsgruppe(response.getRettighetsgruppeKode().getValue())
+                .setFormidlingsgruppe(response.getFormidlingsgruppeKode().getValue())
+                .setServicegruppe(response.getServicegruppeKode().getValue())
                 .setInaktiveringsdato(xmlGregorianCalendarToLocalDate(response.getInaktiveringsdato()))
                 .setHarMottaOppgaveIArena(response.getHarOppgaveMottaSelvregPerson());
     }
