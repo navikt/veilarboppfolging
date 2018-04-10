@@ -87,7 +87,9 @@ public class BrukerRegistreringService {
     }
 
     BrukerRegistrering opprettBruker(String fnr, BrukerRegistrering bruker, AktorId aktorId) {
-        oppfolgingRepository.opprettOppfolging(aktorId.getAktorId());
+        if (!harBrukerOppfolgingsstatus(aktorId)) {
+            oppfolgingRepository.opprettOppfolging(aktorId.getAktorId());
+        }
         oppfolgingRepository.startOppfolgingHvisIkkeAlleredeStartet(
                 Oppfolgingsbruker.builder()
                 .aktoerId(aktorId.getAktorId())
@@ -103,6 +105,10 @@ public class BrukerRegistreringService {
 
         nyeBrukereFeedRepository.tryLeggTilFeedIdPaAlleElementerUtenFeedId();
         return brukerRegistrering;
+    }
+
+    private boolean harBrukerOppfolgingsstatus(AktorId aktorId) {
+        return oppfolgingRepository.hentOppfolging(aktorId.getAktorId()).isPresent();
     }
 
     @SuppressWarnings({"unchecked"})
