@@ -51,17 +51,6 @@ public class OppfolgingsStatusRepository {
         return new Oppfolging().setAktorId(aktorId).setUnderOppfolging(false);
     }
 
-    public Boolean erOppfolgingsflaggSattForBruker(String aktorId) {
-        return db.query("" +
-                        "SELECT " +
-                        "OPPFOLGINGSTATUS.under_oppfolging AS under_oppfolging " +
-                        "FROM OPPFOLGINGSTATUS " +
-                        "WHERE OPPFOLGINGSTATUS.aktor_id = ? ",
-                OppfolgingsStatusRepository::erUnderOppfolging,
-                aktorId
-        ).stream().findFirst().orElse(false);
-    }
-
     @SneakyThrows
     private static Boolean erUnderOppfolging(ResultSet resultSet) {
         return resultSet.getBoolean(UNDER_OPPFOLGING);

@@ -8,6 +8,7 @@ import no.nav.fo.veilarboppfolging.config.RemoteFeatureConfig;
 import no.nav.fo.veilarboppfolging.db.ArbeidssokerregistreringRepository;
 import no.nav.fo.veilarboppfolging.db.NyeBrukereFeedRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
+import no.nav.fo.veilarboppfolging.db.OppfolgingsPeriodeRepository;
 import no.nav.fo.veilarboppfolging.domain.BrukerRegistrering;
 import no.nav.fo.veilarboppfolging.domain.Oppfolging;
 import no.nav.fo.veilarboppfolging.domain.StartRegistreringStatus;
@@ -40,6 +41,7 @@ class BrukerRegistreringServiceIntegrationTest {
 
     private static BrukerRegistreringService brukerRegistreringService;
     private static OppfolgingRepository oppfolgingRepository;
+    private static OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
     private static AktorService aktorService;
     private static BehandleArbeidssoekerV1 behandleArbeidssoekerV1;
     private static RemoteFeatureConfig.OpprettBrukerIArenaFeature opprettBrukerIArenaFeature;
@@ -65,6 +67,7 @@ class BrukerRegistreringServiceIntegrationTest {
 
         brukerRegistreringService = context.getBean(BrukerRegistreringService.class);
         oppfolgingRepository = context.getBean(OppfolgingRepository.class);
+        oppfolgingsPeriodeRepository = context.getBean(OppfolgingsPeriodeRepository.class);
         aktorService = context.getBean(AktorService.class);
         behandleArbeidssoekerV1 = context.getBean(BehandleArbeidssoekerV1.class);
         opprettBrukerIArenaFeature = context.getBean(RemoteFeatureConfig.OpprettBrukerIArenaFeature.class);
@@ -101,6 +104,20 @@ class BrukerRegistreringServiceIntegrationTest {
         assertThat(oppfolging.isPresent()).isTrue();
     }
 
+    @Test
+    public void skalHaandtereAtOppfolgingstatusAlleredeFinnes() {
+        cofigureMocks();
+        String ident = "33333333333333";
+        oppfolgingRepository.opprettOppfolging(ident);
+        oppfolgingsPeriodeRepository.avslutt(ident, "veilederid", "begrunnelse" );
+
+        brukerRegistreringService.registrerBruker(SELVGAENDE_BRUKER, ident);
+
+        Optional<Oppfolging> oppfolging = oppfolgingRepository.hentOppfolging(ident);
+
+        assertThat(oppfolging.get().isUnderOppfolging()).isTrue();
+    }
+
     private void cofigureMocks() {
         when(registreringFeature.erAktiv()).thenReturn(true);
         when(opprettBrukerIArenaFeature.erAktiv()).thenReturn(true);
@@ -127,6 +144,11 @@ class BrukerRegistreringServiceIntegrationTest {
         @Bean
         public OppfolgingRepository oppfolgingRepository(Database database) {
             return new OppfolgingRepository(database);
+        }
+
+        @Bean
+        public OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository(Database database) {
+            return new OppfolgingsPeriodeRepository(database);
         }
 
         @Bean
