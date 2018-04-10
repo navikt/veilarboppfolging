@@ -62,6 +62,11 @@
             <artifactId>aktor-klient</artifactId>
         </dependency>
         <dependency>
+            <groupId>no.nav.tjenester</groupId>
+            <artifactId>nav-oppfoelgingsstatus-v1-tjenestespesifikasjon</artifactId>
+            <classifier>jaxws</classifier>
+        </dependency>
+        <dependency>
             <groupId>no.nav.sbl.dialogarena</groupId>
             <artifactId>ytelseskontrakt-v3-tjenestespesifikasjon</artifactId>
         </dependency>

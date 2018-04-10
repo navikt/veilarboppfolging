@@ -17,9 +17,6 @@ import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.HentDigitalKontak
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.informasjon.WSKontaktinformasjon;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.WSHentDigitalKontaktinformasjonRequest;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.WSHentDigitalKontaktinformasjonResponse;
-import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
-import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingsstatusRequest;
-import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingsstatusResponse;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt.WSYtelseskontrakt;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeRequest;
@@ -65,7 +62,7 @@ public class OppfolgingServiceTest {
     private VilkarService vilkarServiceMock;
 
     @Mock
-    private OppfoelgingPortType oppfoelgingPortTypeMock;
+    private ArenaOppfolgingService arenaOppfolgingService;
 
     @Mock
     private PepClient pepClientMock;
@@ -89,18 +86,18 @@ public class OppfolgingServiceTest {
     private OppfolgingService oppfolgingService;
 
     private Oppfolging oppfolging = new Oppfolging().setAktorId(AKTOR_ID);
-    private HentOppfoelgingsstatusResponse hentOppfolgingstatusResponse;
+    private ArenaOppfolging arenaOppfolging;
     private WSKontaktinformasjon wsKontaktinformasjon = new WSKontaktinformasjon();
 
     @Before
     public void setup() throws Exception {
-        hentOppfolgingstatusResponse = new HentOppfoelgingsstatusResponse();
+        arenaOppfolging = new ArenaOppfolging();
         when(oppfolgingRepositoryMock.opprettOppfolging(anyString())).thenReturn(oppfolging);
 
         doAnswer((a) -> oppfolging.setUnderOppfolging(true)).when(oppfolgingRepositoryMock).startOppfolgingHvisIkkeAlleredeStartet(anyString());
 
-        when(oppfoelgingPortTypeMock.hentOppfoelgingsstatus(any(HentOppfoelgingsstatusRequest.class)))
-                .thenReturn(hentOppfolgingstatusResponse);
+        when(arenaOppfolgingService.hentArenaOppfolging(any(String.class)))
+                .thenReturn(arenaOppfolging);
         when(digitalKontaktinformasjonV1Mock.hentDigitalKontaktinformasjon(any(WSHentDigitalKontaktinformasjonRequest.class)))
                 .thenReturn(new WSHentDigitalKontaktinformasjonResponse()
                         .withDigitalKontaktinformasjon(wsKontaktinformasjon));
@@ -109,7 +106,7 @@ public class OppfolgingServiceTest {
 
         when(oppfolgingResolverDependencies.getAktorService()).thenReturn(aktorServiceMock);
         when(oppfolgingResolverDependencies.getOppfolgingRepository()).thenReturn(oppfolgingRepositoryMock);
-        when(oppfolgingResolverDependencies.getOppfoelgingPortType()).thenReturn(oppfoelgingPortTypeMock);
+        when(oppfolgingResolverDependencies.getArenaOppfolgingService()).thenReturn(arenaOppfolgingService);
         when(oppfolgingResolverDependencies.getDigitalKontaktinformasjonV1()).thenReturn(digitalKontaktinformasjonV1Mock);
         when(oppfolgingResolverDependencies.getVilkarService()).thenReturn(vilkarServiceMock);
         when(oppfolgingResolverDependencies.getPepClient()).thenReturn(pepClientMock);
@@ -343,7 +340,7 @@ public class OppfolgingServiceTest {
 
         hentOppfolgingStatus();
 
-        verifyZeroInteractions(oppfoelgingPortTypeMock);
+        verifyZeroInteractions(arenaOppfolgingService);
     }
 
     @Test
@@ -417,12 +414,12 @@ public class OppfolgingServiceTest {
     }
 
     private void gittOppfolgingStatus(String formidlingskode, String kvalifiseringsgruppekode) {
-        hentOppfolgingstatusResponse.setFormidlingsgruppeKode(formidlingskode);
-        hentOppfolgingstatusResponse.setServicegruppeKode(kvalifiseringsgruppekode);
+        arenaOppfolging.setFormidlingsgruppe(formidlingskode);
+        arenaOppfolging.setServicegruppe(kvalifiseringsgruppekode);
     }
 
     private void gittEnhet(String enhet) {
-        hentOppfolgingstatusResponse.setNavOppfoelgingsenhet(enhet);
+        arenaOppfolging.setOppfolgingsenhet(enhet);
     }
 
     private OppfolgingStatusData hentOppfolgingStatus() throws Exception {
