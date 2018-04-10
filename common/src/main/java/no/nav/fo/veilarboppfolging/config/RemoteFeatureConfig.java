@@ -18,11 +18,6 @@ public class RemoteFeatureConfig {
     }
 
     @Bean
-    public SjekkPagaendeYtelserFeature pagaendeYtelserFeature(RemoteFeatureToggleRepository repo) {
-        return new SjekkPagaendeYtelserFeature(repo);
-    }
-
-    @Bean
     public NyOppfolgingTjenesteMotArenaFeature nyOppfolgingTjenesteMotArenaFeature(RemoteFeatureToggleRepository repo) {
         return new NyOppfolgingTjenesteMotArenaFeature(repo);
     }
@@ -40,12 +35,6 @@ public class RemoteFeatureConfig {
     @Bean
     public BrukervilkarFeature brukervilkarFeature(RemoteFeatureToggleRepository repo) {
         return new BrukervilkarFeature(repo);
-    }
-
-    public static class SjekkPagaendeYtelserFeature extends RemoteFeatureToggle {
-        public SjekkPagaendeYtelserFeature(RemoteFeatureToggleRepository repository) {
-            super(repository, "veilarboppfolging.unngasjekkpagaendeytelser", false);
-        }
     }
 
     public static class RegistreringFeature extends RemoteFeatureToggle {
