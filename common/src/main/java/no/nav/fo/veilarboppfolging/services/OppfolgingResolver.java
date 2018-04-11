@@ -24,7 +24,6 @@ import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.HentDigitalKontak
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.informasjon.WSKontaktinformasjon;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.WSHentDigitalKontaktinformasjonRequest;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.WSHentDigitalKontaktinformasjonResponse;
-import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingsstatusRequest;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt.WSYtelseskontrakt;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeRequest;
@@ -313,8 +312,6 @@ public class OppfolgingResolver {
 
     @SneakyThrows
     private void hentOppfolgingstatusFraArena() {
-        val hentOppfolgingstatusRequest = new HentOppfoelgingsstatusRequest();
-        hentOppfolgingstatusRequest.setPersonidentifikator(fnr);
 
         statusIArena = Try.of(() -> deps.getArenaOppfolgingService().hentArenaOppfolging(fnr))
                 .toOption()
