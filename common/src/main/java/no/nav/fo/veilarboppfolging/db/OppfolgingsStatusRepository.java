@@ -1,6 +1,5 @@
 package no.nav.fo.veilarboppfolging.db;
 
-import lombok.SneakyThrows;
 import no.nav.fo.veilarboppfolging.domain.Oppfolging;
 import no.nav.fo.veilarboppfolging.domain.OppfolgingTable;
 import no.nav.sbl.jdbc.Database;
@@ -49,11 +48,6 @@ public class OppfolgingsStatusRepository {
 
         // FIXME: return the actual database object.
         return new Oppfolging().setAktorId(aktorId).setUnderOppfolging(false);
-    }
-
-    @SneakyThrows
-    private static Boolean erUnderOppfolging(ResultSet resultSet) {
-        return resultSet.getBoolean(UNDER_OPPFOLGING);
     }
 
     public static OppfolgingTable map(ResultSet r) throws SQLException {
