@@ -71,21 +71,15 @@ public class ArenaOppfolgingService {
         request.setBruker(person);
 
         try {
-            no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v1.meldinger.HentOppfoelgingsstatusResponse oppfoelgingsstatus =
-                    oppfoelgingsstatusService.hentOppfoelgingsstatus(request);
+            throw new no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v1.binding.HentOppfoelgingsstatusSikkerhetsbegrensning("", new no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v1.feil.Sikkerhetsbegrensning());
+//            no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v1.meldinger.HentOppfoelgingsstatusResponse oppfoelgingsstatus =
+//                    oppfoelgingsstatusService.hentOppfoelgingsstatus(request);
 
-            return ArenaOppfolgingMapper.mapTilArenaOppfolgingsstatus(oppfoelgingsstatus);
+            //return ArenaOppfolgingMapper.mapTilArenaOppfolgingsstatus(oppfoelgingsstatus);
         } catch (no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v1.binding.HentOppfoelgingsstatusSikkerhetsbegrensning e) {
             String logMessage = "Ikke tilgang til bruker " + identifikator;
             LOG.warn(logMessage, e);
             throw new ForbiddenException(logMessage, e);
-        } catch (no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v1.binding.HentOppfoelgingsstatusUgyldigInput e) {
-            String logMessage = "Ugyldig bruker identifikator: " + identifikator;
-            LOG.warn(logMessage, e);
-            throw new BadRequestException(logMessage, e);
-        } catch (no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v1.binding.HentOppfoelgingsstatusPersonIkkeFunnet e) {
-            String logMessage = "Fant ikke bruker: " + identifikator;
-            throw new NotFoundException(logMessage, e);
         }
     }
 
