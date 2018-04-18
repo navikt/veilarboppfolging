@@ -2,6 +2,8 @@ package no.nav.fo.veilarboppfolging.config;
 
 import no.nav.metrics.Event;
 import no.nav.metrics.MetricsFactory;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -16,11 +18,16 @@ public class MetricsReporterConfig {
     private static final int MINUTE = 60 * 1000;
 
     @Inject
-    JdbcTemplate jdbc;
+    private JdbcTemplate jdbc;
+
+    @Value("${metrikk.for.veilederusynk:true}")
+    private boolean rapporterMetrikkForVeilederUsynk;
 
     @Scheduled(fixedDelay = MINUTE)
     public void reportMetrics() {
-        antallVeiledereIkkeOverfortTilPortefolje();
+        if(rapporterMetrikkForVeilederUsynk) {
+            antallVeiledereIkkeOverfortTilPortefolje();
+        }
     }
 
     private void antallVeiledereIkkeOverfortTilPortefolje() {
