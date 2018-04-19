@@ -33,8 +33,8 @@ public class MetricsReporterConfig {
     private void antallVeiledereIkkeOverfortTilPortefolje() {
         String sql = Stream.of(
                 "SELECT count(*) as antallIUsynk",
-                "FROM OPPFOLGINGSTATUS os",
-                "LEFT JOIN OPPFOLGING_DATA@VEILARBPORTEFOLJE bd ON (os.AKTOR_ID = bd.AKTOERID)",
+                "FROM veilarboppfolging.OPPFOLGINGSTATUS os",
+                "LEFT JOIN veilarbportefolje.OPPFOLGING_DATA@VEILARBPORTEFOLJE bd ON (os.AKTOR_ID = bd.AKTOERID)",
                 "WHERE os.OPPDATERT < (sysdate - 1/24)",
                 "AND (",
                 "    (os.VEILEDER is null AND bd.veilederident is not null) OR",
