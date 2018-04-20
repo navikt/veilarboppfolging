@@ -1,6 +1,5 @@
 package no.nav.fo.veilarboppfolging.config;
 
-import no.nav.fo.veilarboppfolging.config.RemoteFeatureConfig.NyOppfolgingTjenesteMotArenaFeature;
 import no.nav.fo.veilarboppfolging.db.*;
 import no.nav.fo.veilarboppfolging.services.ArenaOppfolgingService;
 import no.nav.fo.veilarboppfolging.services.OrganisasjonEnhetService;
@@ -29,10 +28,9 @@ public class ServiceConfig {
 
     @Bean
     ArenaOppfolgingService arenaOppfolgingService(OppfoelgingsstatusV1 oppfoelgingsstatusV1,
-                                                  OppfoelgingPortType oppfoelgingPortType,
-                                                  NyOppfolgingTjenesteMotArenaFeature nyOppfolgingTjenesteMotArenaFeature) {
+                                                  OppfoelgingPortType oppfoelgingPortType) {
 
-        return new ArenaOppfolgingService(oppfoelgingsstatusV1, oppfoelgingPortType, nyOppfolgingTjenesteMotArenaFeature);
+        return new ArenaOppfolgingService(oppfoelgingsstatusV1, oppfoelgingPortType);
     }
 
     @Bean
