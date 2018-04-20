@@ -25,9 +25,6 @@ import static org.slf4j.LoggerFactory.getLogger;
 public class ArenaServiceConfig {
     private static final Logger LOG = getLogger(ArenaServiceConfig.class);
 
-    @Inject
-    private RemoteFeatureConfig.NyOppfolgingTjenesteMotArenaFeature nyOppfolgingTjenesteMotArenaFeature;
-
     public static CXFClient<YtelseskontraktV3> ytelseskontraktPortType() {
         final String url = getProperty("ytelseskontrakt.endpoint.url");
         return new CXFClient<>(YtelseskontraktV3.class)
@@ -112,10 +109,6 @@ public class ArenaServiceConfig {
                 "Ping av oppfolgingstatus_v1. Henter informasjon om oppfølgingsstatus fra arena.",
                 true
         );
-
-        if (!nyOppfolgingTjenesteMotArenaFeature.erAktiv()) {
-            return () -> lyktes(metadata);
-        }
 
         return () -> {
             try {
