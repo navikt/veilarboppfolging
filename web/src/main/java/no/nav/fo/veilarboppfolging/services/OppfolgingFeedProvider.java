@@ -1,5 +1,6 @@
 package no.nav.fo.veilarboppfolging.services;
 
+import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.feed.common.FeedElement;
 import no.nav.fo.feed.producer.FeedProvider;
 import no.nav.fo.veilarboppfolging.db.OppfolgingFeedRepository;
@@ -9,11 +10,13 @@ import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.stream.Stream;
 
 import static no.nav.fo.veilarboppfolging.utils.DateUtils.toZonedDateTime;
 
 @Component
+@Slf4j
 public class OppfolgingFeedProvider implements FeedProvider<OppfolgingFeedDTO> {
 
     private OppfolgingFeedRepository repository;
@@ -25,9 +28,13 @@ public class OppfolgingFeedProvider implements FeedProvider<OppfolgingFeedDTO> {
 
     @Override
     public Stream<FeedElement<OppfolgingFeedDTO>> fetchData(String sinceId, int pageSize) {
+        log.info("OppfolgingFeedProviderDebug: {}", sinceId);
+
         Timestamp timestamp = DateUtils.toTimeStamp(sinceId);
-        return repository
-                .hentTilordningerEtterTimestamp(timestamp, pageSize)
+        List<OppfolgingFeedDTO> data = repository.hentTilordningerEtterTimestamp(timestamp, pageSize);
+
+        log.info("OppfolgingFeedProviderDebug: {}", data);
+        return data
                 .stream()
                 .map(b -> new FeedElement<OppfolgingFeedDTO>()
                         .setId(toZonedDateTime(b.getEndretTimestamp()).toString())
