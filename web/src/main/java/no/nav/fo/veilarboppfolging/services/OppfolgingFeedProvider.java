@@ -28,12 +28,12 @@ public class OppfolgingFeedProvider implements FeedProvider<OppfolgingFeedDTO> {
 
     @Override
     public Stream<FeedElement<OppfolgingFeedDTO>> fetchData(String sinceId, int pageSize) {
-        log.info("OppfolgingFeedProviderDebug: {}", sinceId);
+        log.info("OppfolgingFeedProviderDebug requested sinceId: {}", sinceId);
 
         Timestamp timestamp = DateUtils.toTimeStamp(sinceId);
         List<OppfolgingFeedDTO> data = repository.hentTilordningerEtterTimestamp(timestamp, pageSize);
 
-        log.info("OppfolgingFeedProviderDebug: {}", data);
+        log.info("OppfolgingFeedProviderDebug feed-response: {}", data);
         return data
                 .stream()
                 .map(b -> new FeedElement<OppfolgingFeedDTO>()
