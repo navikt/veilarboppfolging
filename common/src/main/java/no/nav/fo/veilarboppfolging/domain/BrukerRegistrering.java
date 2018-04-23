@@ -13,4 +13,6 @@ public class BrukerRegistrering {
     boolean enigIOppsummering;
     String oppsummering;
     boolean harHelseutfordringer;
+    String yrkesbeskrivelse;
+    long konseptId;
 }
