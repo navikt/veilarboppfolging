@@ -23,7 +23,6 @@ import java.util.Optional;
 
 import static no.nav.fo.veilarboppfolging.TestUtils.getFodselsnummerForPersonWithAge;
 import static no.nav.fo.veilarboppfolging.services.registrerBruker.Konstanter.*;
-import static no.nav.fo.veilarboppfolging.utils.SelvgaaendeUtil.NUS_KODE_2;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -130,13 +129,6 @@ class BrukerRegistreringServiceTest {
     }
 
     @Test
-    void skalIkkeLagreRegistrereDersomKunGrunnskole() throws Exception {
-        mockSelvgaaendeBruker();
-        BrukerRegistrering brukerRegistreringMedKunGrunnskole = getBrukerRegistreringMedKunGrunnskole();
-        assertThrows(RuntimeException.class, () -> registrerBruker(brukerRegistreringMedKunGrunnskole, FNR_OPPFYLLER_KRAV));
-    }
-
-    @Test
     void skalIkkeLagreRegistreringMedHelseutfordringer() throws Exception {
         mockSelvgaaendeBruker();
         BrukerRegistrering brukerRegistreringMedHelseutfordringer = getBrukerRegistreringMedHelseutfordringer();
@@ -202,29 +194,9 @@ class BrukerRegistreringServiceTest {
                 .harHelseutfordringer(HAR_INGEN_HELSEUTFORDRINGER)
                 .build();
     }
-    private BrukerRegistrering getBrukerRegistreringMedKunGrunnskole() {
-        return BrukerRegistrering.builder()
-                .nusKode(NUS_KODE_2)
-                .yrkesPraksis(null)
-                .opprettetDato(null)
-                .enigIOppsummering(ENIG_I_OPPSUMMERING)
-                .oppsummering(OPPSUMMERING)
-                .harHelseutfordringer(HAR_INGEN_HELSEUTFORDRINGER)
-                .build();
-    }
     private BrukerRegistrering getBrukerIngenUtdannelse() {
         return BrukerRegistrering.builder()
                 .nusKode(NUS_KODE_0)
-                .yrkesPraksis(null)
-                .opprettetDato(null)
-                .enigIOppsummering(ENIG_I_OPPSUMMERING)
-                .oppsummering(OPPSUMMERING)
-                .harHelseutfordringer(HAR_INGEN_HELSEUTFORDRINGER)
-                .build();
-    }
-    private BrukerRegistrering getBrukerRegistreringUtdannelseIkkeGodkjent() {
-        return BrukerRegistrering.builder()
-                .nusKode(NUS_KODE_4)
                 .yrkesPraksis(null)
                 .opprettetDato(null)
                 .enigIOppsummering(ENIG_I_OPPSUMMERING)

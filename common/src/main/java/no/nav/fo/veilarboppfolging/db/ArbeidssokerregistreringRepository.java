@@ -25,6 +25,8 @@ public class ArbeidssokerregistreringRepository {
     private final static String ENIG_I_OPPSUMMERING = "ENIG_I_OPPSUMMERING";
     private final static String OPPSUMMERING = "OPPSUMMERING";
     private final static String HAR_HELSEUTFORDRINGER = "HAR_HELSEUTFORDRINGER";
+    private final static String YRKESBESKRIVELSE = "YRKESBESKRIVELSE";
+    private final static String KONSEPT_ID = "KONSEPT_ID";
 
     private final static String OPPFOLGINGSTATUS = "OPPFOLGINGSTATUS";
     private final static String UNDER_OPPFOLGING = "UNDER_OPPFOLGING";
@@ -52,6 +54,8 @@ public class ArbeidssokerregistreringRepository {
                 .value(ENIG_I_OPPSUMMERING, bruker.isEnigIOppsummering())
                 .value(OPPSUMMERING, bruker.getOppsummering())
                 .value(HAR_HELSEUTFORDRINGER, bruker.isHarHelseutfordringer())
+                .value(YRKESBESKRIVELSE, -1)
+                .value(KONSEPT_ID, -1)
                 .execute();
 
         return SqlUtils.select(db, BRUKER_REGISTRERING, ArbeidssokerregistreringRepository::brukerRegistreringMapper)

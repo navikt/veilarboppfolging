@@ -102,8 +102,10 @@ public class OppfolgingRepository {
 
     @Transactional
     public void startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker oppfolgingsbruker) {
-        if (!statusRepository.erOppfolgingsflaggSattForBruker(oppfolgingsbruker.getAktoerId())) {
-            periodeRepository.start(oppfolgingsbruker.getAktoerId());
+        String aktoerId = oppfolgingsbruker.getAktoerId();
+        Oppfolging oppfolgingsstatus = hentOppfolging(aktoerId).orElseGet(() -> opprettOppfolging(aktoerId));
+        if (!oppfolgingsstatus.isUnderOppfolging()) {
+            periodeRepository.start(aktoerId);
             nyeBrukereFeedRepository.leggTil(oppfolgingsbruker);
         }
     }
