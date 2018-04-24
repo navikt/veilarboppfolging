@@ -87,7 +87,6 @@ public class BrukerRegistreringService {
     }
 
     BrukerRegistrering opprettBruker(String fnr, BrukerRegistrering bruker, AktorId aktorId) {
-        oppfolgingRepository.opprettOppfolging(aktorId.getAktorId());
         oppfolgingRepository.startOppfolgingHvisIkkeAlleredeStartet(
                 Oppfolgingsbruker.builder()
                 .aktoerId(aktorId.getAktorId())

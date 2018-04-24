@@ -8,7 +8,6 @@ import no.nav.apiapp.security.PepClient;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetStatus;
 import no.nav.fo.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
-import no.nav.fo.veilarboppfolging.config.RemoteFeatureConfig;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.fo.veilarboppfolging.vilkar.VilkarService;
@@ -18,9 +17,6 @@ import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.HentDigitalKontak
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.informasjon.WSKontaktinformasjon;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.WSHentDigitalKontaktinformasjonRequest;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.WSHentDigitalKontaktinformasjonResponse;
-import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
-import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingsstatusRequest;
-import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingsstatusResponse;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt.WSYtelseskontrakt;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeRequest;
@@ -66,7 +62,7 @@ public class OppfolgingServiceTest {
     private VilkarService vilkarServiceMock;
 
     @Mock
-    private OppfoelgingPortType oppfoelgingPortTypeMock;
+    private ArenaOppfolgingService arenaOppfolgingService;
 
     @Mock
     private PepClient pepClientMock;
@@ -76,9 +72,6 @@ public class OppfolgingServiceTest {
 
     @Mock
     private YtelseskontraktV3 ytelseskontraktV3;
-
-    @Mock
-    private RemoteFeatureConfig.SjekkPagaendeYtelserFeature sjekkPagaendeYtelserFeature;
 
     @Mock(answer = Answers.RETURNS_MOCKS)
     private OppfolgingResolver.OppfolgingResolverDependencies oppfolgingResolverDependencies;
@@ -93,18 +86,18 @@ public class OppfolgingServiceTest {
     private OppfolgingService oppfolgingService;
 
     private Oppfolging oppfolging = new Oppfolging().setAktorId(AKTOR_ID);
-    private HentOppfoelgingsstatusResponse hentOppfolgingstatusResponse;
+    private ArenaOppfolging arenaOppfolging;
     private WSKontaktinformasjon wsKontaktinformasjon = new WSKontaktinformasjon();
 
     @Before
     public void setup() throws Exception {
-        hentOppfolgingstatusResponse = new HentOppfoelgingsstatusResponse();
+        arenaOppfolging = new ArenaOppfolging();
         when(oppfolgingRepositoryMock.opprettOppfolging(anyString())).thenReturn(oppfolging);
 
         doAnswer((a) -> oppfolging.setUnderOppfolging(true)).when(oppfolgingRepositoryMock).startOppfolgingHvisIkkeAlleredeStartet(anyString());
 
-        when(oppfoelgingPortTypeMock.hentOppfoelgingsstatus(any(HentOppfoelgingsstatusRequest.class)))
-                .thenReturn(hentOppfolgingstatusResponse);
+        when(arenaOppfolgingService.hentArenaOppfolging(any(String.class)))
+                .thenReturn(arenaOppfolging);
         when(digitalKontaktinformasjonV1Mock.hentDigitalKontaktinformasjon(any(WSHentDigitalKontaktinformasjonRequest.class)))
                 .thenReturn(new WSHentDigitalKontaktinformasjonResponse()
                         .withDigitalKontaktinformasjon(wsKontaktinformasjon));
@@ -113,13 +106,12 @@ public class OppfolgingServiceTest {
 
         when(oppfolgingResolverDependencies.getAktorService()).thenReturn(aktorServiceMock);
         when(oppfolgingResolverDependencies.getOppfolgingRepository()).thenReturn(oppfolgingRepositoryMock);
-        when(oppfolgingResolverDependencies.getOppfoelgingPortType()).thenReturn(oppfoelgingPortTypeMock);
+        when(oppfolgingResolverDependencies.getArenaOppfolgingService()).thenReturn(arenaOppfolgingService);
         when(oppfolgingResolverDependencies.getDigitalKontaktinformasjonV1()).thenReturn(digitalKontaktinformasjonV1Mock);
         when(oppfolgingResolverDependencies.getVilkarService()).thenReturn(vilkarServiceMock);
         when(oppfolgingResolverDependencies.getPepClient()).thenReturn(pepClientMock);
         when(oppfolgingResolverDependencies.getVeilarbaktivtetService()).thenReturn(veilarbaktivtetService);
         when(oppfolgingResolverDependencies.getYtelseskontraktV3()).thenReturn(ytelseskontraktV3);
-        when(oppfolgingResolverDependencies.getSjekkPagaendeYtelserFeature()).thenReturn(sjekkPagaendeYtelserFeature);
         gittOppfolgingStatus("", "");
     }
 
@@ -348,7 +340,7 @@ public class OppfolgingServiceTest {
 
         hentOppfolgingStatus();
 
-        verifyZeroInteractions(oppfoelgingPortTypeMock);
+        verifyZeroInteractions(arenaOppfolgingService);
     }
 
     @Test
@@ -391,23 +383,7 @@ public class OppfolgingServiceTest {
     }
 
     @Test
-    public void kanIkkeAvslutteOmAktiveYtelser_og_featureErFalse() throws Exception {
-        gittAtSjekkPagaendeYtelserFeatureErFalse();
-        gittAktor();
-        gittOppfolging(oppfolging.setUnderOppfolging(true));
-        gittOppfolgingStatus("IARBS", "VURDI");
-        gittIngenAktiveTiltak();
-        gittYtelserMedStatus("Inaktiv", "Aktiv");
-
-        OppfolgingStatusData oppfolgingStatusData = oppfolgingService.hentAvslutningStatus(FNR);
-        AvslutningStatusData avslutningStatusData = oppfolgingStatusData.avslutningStatusData;
-
-        assertThat(avslutningStatusData.kanAvslutte, is(false));
-    }
-
-    @Test
-    public void kanAvslutteMedVarselOmAktiveYtelser_og_featureErTrue() throws Exception {
-        gittAtSjekkPagaendeYtelserFeatureErTrue();
+    public void kanAvslutteMedVarselOmAktiveYtelser() throws Exception {
         gittAktor();
         gittOppfolging(oppfolging.setUnderOppfolging(true));
         gittOppfolgingStatus("IARBS", "VURDI");
@@ -438,12 +414,12 @@ public class OppfolgingServiceTest {
     }
 
     private void gittOppfolgingStatus(String formidlingskode, String kvalifiseringsgruppekode) {
-        hentOppfolgingstatusResponse.setFormidlingsgruppeKode(formidlingskode);
-        hentOppfolgingstatusResponse.setServicegruppeKode(kvalifiseringsgruppekode);
+        arenaOppfolging.setFormidlingsgruppe(formidlingskode);
+        arenaOppfolging.setServicegruppe(kvalifiseringsgruppekode);
     }
 
     private void gittEnhet(String enhet) {
-        hentOppfolgingstatusResponse.setNavOppfoelgingsenhet(enhet);
+        arenaOppfolging.setOppfolgingsenhet(enhet);
     }
 
     private OppfolgingStatusData hentOppfolgingStatus() throws Exception {
@@ -500,12 +476,5 @@ public class OppfolgingServiceTest {
         response.getYtelseskontraktListe().addAll(ytelser);
 
         when(ytelseskontraktV3.hentYtelseskontraktListe(request)).thenReturn(response);
-    }
-
-    private void gittAtSjekkPagaendeYtelserFeatureErTrue() {
-        when(sjekkPagaendeYtelserFeature.erAktiv()).thenReturn(true);
-    }
-    private void gittAtSjekkPagaendeYtelserFeatureErFalse() {
-        when(sjekkPagaendeYtelserFeature.erAktiv()).thenReturn(false);
     }
 }

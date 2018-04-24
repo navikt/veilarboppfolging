@@ -1,6 +1,5 @@
 package no.nav.fo.veilarboppfolging.services;
 
-import lombok.val;
 import no.nav.apiapp.feil.UlovligHandling;
 import no.nav.apiapp.security.PepClient;
 import no.nav.brukerdialog.security.context.ThreadLocalSubjectHandler;
@@ -8,12 +7,11 @@ import no.nav.brukerdialog.security.domain.IdentType;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.db.KvpRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
+import no.nav.fo.veilarboppfolging.domain.ArenaOppfolging;
 import no.nav.fo.veilarboppfolging.domain.Kvp;
 import no.nav.fo.veilarboppfolging.domain.Oppfolging;
 import no.nav.fo.veilarboppfolging.domain.Oppfolgingsperiode;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
-import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
-import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingsstatusResponse;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -60,7 +58,7 @@ public class OppfolgingResolverTest {
     private KvpService kvpServiceMock;
 
     @Mock
-    private OppfoelgingPortType oppfoelgingPortTypeMock;
+    private ArenaOppfolgingService arenaOppfolgingServiceMock;
 
     @Mock
     private PepClient pepClientMock;
@@ -80,13 +78,13 @@ public class OppfolgingResolverTest {
         when(oppfolgingResolverDependenciesMock.getAktorService()).thenReturn(aktorServiceMock);
         when(oppfolgingResolverDependenciesMock.getOppfolgingRepository()).thenReturn(oppfolgingRepositoryMock);
         when(oppfolgingResolverDependenciesMock.getKvpRepository()).thenReturn(kvpRepositoryMock);
-        when(oppfolgingResolverDependenciesMock.getOppfoelgingPortType()).thenReturn(oppfoelgingPortTypeMock);
+        when(oppfolgingResolverDependenciesMock.getArenaOppfolgingService()).thenReturn(arenaOppfolgingServiceMock);
         when(oppfolgingResolverDependenciesMock.getPepClient()).thenReturn(pepClientMock);
         when(oppfolgingResolverDependenciesMock.getKvpService()).thenReturn(kvpServiceMock);
 
         when(aktorServiceMock.getAktorId(FNR)).thenReturn(of(AKTOR_ID));
         when(oppfolgingRepositoryMock.hentOppfolging(AKTOR_ID)).thenReturn(of(oppfolging));
-        when(oppfoelgingPortTypeMock.hentOppfoelgingsstatus(any())).thenReturn(oppfolgingIArena(ENHET));
+        when(arenaOppfolgingServiceMock.hentArenaOppfolging(any())).thenReturn(oppfolgingIArena(ENHET));
 
         oppfolgingResolver = new OppfolgingResolver(FNR, oppfolgingResolverDependenciesMock);
     }
@@ -121,7 +119,7 @@ public class OppfolgingResolverTest {
 
     @Test
     public void kvp_periode_skal_automatisk_avsluttes_nar_bruker_har_byttet_oppfolgingsEnhet_i_arena() throws Exception {
-        when(oppfoelgingPortTypeMock.hentOppfoelgingsstatus(any())).thenReturn(oppfolgingIArena(OTHER_ENHET));
+        when(arenaOppfolgingServiceMock.hentArenaOppfolging(any())).thenReturn(oppfolgingIArena(OTHER_ENHET));
         when(kvpServiceMock.gjeldendeKvp(FNR)).thenReturn(Kvp.builder().kvpId(KVP_ID).aktorId(AKTOR_ID).enhet(ENHET).build());
 
         oppfolgingResolver = new OppfolgingResolver(FNR, oppfolgingResolverDependenciesMock);
@@ -136,10 +134,8 @@ public class OppfolgingResolverTest {
         verify(kvpServiceMock, times(0)).stopKvpUtenEnhetSjekk(eq(FNR), any(), any(), any());
     }
 
-    private HentOppfoelgingsstatusResponse oppfolgingIArena(String enhet) {
-        val res = new HentOppfoelgingsstatusResponse();
-        res.setNavOppfoelgingsenhet(enhet);
-        return res;
+    private ArenaOppfolging oppfolgingIArena(String enhet) {
+        return new ArenaOppfolging().setOppfolgingsenhet(enhet);
     }
 
     @Test(expected = UlovligHandling.class)

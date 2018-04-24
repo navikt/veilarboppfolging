@@ -63,7 +63,7 @@ public class TildelingSmoketest {
         InternbrukerSubjectHandler.setVeilederIdent(TokenUtils.getTokenSub(token.getToken()));
         tokenCookie = new Cookie(ID_TOKEN, token.getToken());
 
-        AREMARK_OPPFOLGINGSENHET = getOppfolgingsstatus().getOppfolgingsenhet().getEnhetId();
+        AREMARK_OPPFOLGINGSENHET = getOppfolgingsstatus().getOppfolgingsenhet();
 
         Statustall statustall = getStatustall(AREMARK_OPPFOLGINGSENHET);
         long antallBrukere = statustall.getTotalt();
