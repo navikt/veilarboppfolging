@@ -13,12 +13,12 @@
     </listener>
 
     <servlet>
-        <servlet-name>forcesynk</servlet-name>
-        <servlet-class>no.nav.fo.veilarboppfolging.ForcesynkServlet</servlet-class>
+        <servlet-name>forcesync</servlet-name>
+        <servlet-class>no.nav.fo.veilarboppfolging.ForcesyncServlet</servlet-class>
     </servlet>
     <servlet-mapping>
-        <servlet-name>forcesynk</servlet-name>
-        <url-pattern>/internal/forcesynk</url-pattern>
+        <servlet-name>forcesync</servlet-name>
+        <url-pattern>/internal/forcesync</url-pattern>
     </servlet-mapping>
 
     <security-constraint>

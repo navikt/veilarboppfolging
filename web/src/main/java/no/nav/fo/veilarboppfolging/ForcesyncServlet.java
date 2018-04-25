@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class ForcesynkServlet extends HttpServlet {
+public class ForcesyncServlet extends HttpServlet {
 
     private JdbcTemplate jdbc;
 
