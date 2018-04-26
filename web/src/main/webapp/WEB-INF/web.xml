@@ -12,6 +12,15 @@
         <listener-class>no.nav.apiapp.ApiAppServletContextListener</listener-class>
     </listener>
 
+    <servlet>
+        <servlet-name>forcesync</servlet-name>
+        <servlet-class>no.nav.fo.veilarboppfolging.ForcesyncServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>forcesync</servlet-name>
+        <url-pattern>/internal/forcesync</url-pattern>
+    </servlet-mapping>
+
     <security-constraint>
         <web-resource-collection>
             <web-resource-name>Ubeskyttet</web-resource-name>
