@@ -54,8 +54,8 @@ public class ArbeidssokerregistreringRepository {
                 .value(ENIG_I_OPPSUMMERING, bruker.isEnigIOppsummering())
                 .value(OPPSUMMERING, bruker.getOppsummering())
                 .value(HAR_HELSEUTFORDRINGER, bruker.isHarHelseutfordringer())
-                .value(YRKESBESKRIVELSE, bruker.getYrkesbeskrivelse())
-                .value(KONSEPT_ID, bruker.getKonseptId())
+                .value(YRKESBESKRIVELSE, bruker.getYrkesbeskrivelse() != null ? bruker.getYrkesbeskrivelse() : "-1")
+                .value(KONSEPT_ID, bruker.getKonseptId() != null ? bruker.getKonseptId() : -1L)
                 .execute();
 
         return SqlUtils.select(db, BRUKER_REGISTRERING, ArbeidssokerregistreringRepository::brukerRegistreringMapper)
