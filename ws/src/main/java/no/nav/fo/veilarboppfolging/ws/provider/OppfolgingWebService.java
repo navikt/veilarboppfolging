@@ -281,6 +281,8 @@ public class OppfolgingWebService implements BehandleOppfolgingV1 {
         response.setEnigIOppsummering(bruker.isEnigIOppsummering());
         response.setOppsummering(bruker.getOppsummering());
         response.setHarHelseutfordringer(bruker.isHarHelseutfordringer());
+        response.setYrkesbeskrivelse(bruker.getYrkesbeskrivelse());
+        response.setKonseptId(bruker.getKonseptId());
         return response;
     }
 
@@ -292,6 +294,8 @@ public class OppfolgingWebService implements BehandleOppfolgingV1 {
                 .enigIOppsummering(request.isEnigIOppsummering())
                 .oppsummering(request.getOppsummering())
                 .harHelseutfordringer(request.isHarHelseutfordringer())
+                .yrkesbeskrivelse(request.getYrkesbeskrivelse())
+                .konseptId(request.getKonseptId())
                 .build();
     }
 }
