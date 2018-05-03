@@ -16,7 +16,7 @@ public class OppfolgingFeedDTO implements Comparable<OppfolgingFeedDTO> {
     String veileder;
     boolean oppfolging;
     boolean nyForVeileder;
-    boolean manuellBruker;
+    boolean manuell;
     Timestamp endretTimestamp;
 
     @Override
