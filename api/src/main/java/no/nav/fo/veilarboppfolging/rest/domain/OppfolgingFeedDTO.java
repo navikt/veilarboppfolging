@@ -16,6 +16,7 @@ public class OppfolgingFeedDTO implements Comparable<OppfolgingFeedDTO> {
     String veileder;
     boolean oppfolging;
     boolean nyForVeileder;
+    boolean manuellBruker;    //TODO Slett når FO-123 er i prod
     boolean manuell;
     Timestamp endretTimestamp;
 
