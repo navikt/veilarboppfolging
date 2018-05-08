@@ -8,5 +8,5 @@ import javax.ws.rs.Path;
 public interface SystemOppfolgingController {
     @POST
     @Path("/aktiveBruker")
-    void aktiverBruker(AktiverArbeidssokerData aktiverArbeidssokerData) throws Exception;
+    AktiverArbeidssokerData aktiverBruker(AktiverArbeidssokerData aktiverArbeidssokerData) throws Exception;
 }
