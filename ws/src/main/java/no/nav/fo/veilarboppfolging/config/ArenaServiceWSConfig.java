@@ -1,7 +1,7 @@
 package no.nav.fo.veilarboppfolging.config;
 
 
-import no.nav.modig.security.ws.UserSAMLOutInterceptor;
+import no.nav.sbl.dialogarena.common.cxf.SamlPropagatingOutInterceptor;
 import no.nav.tjeneste.virksomhet.behandlearbeidssoeker.v1.binding.BehandleArbeidssoekerV1;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
 import no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v1.binding.OppfoelgingsstatusV1;
@@ -21,21 +21,21 @@ public class ArenaServiceWSConfig {
     @Bean
     public YtelseskontraktV3 ytelseskontraktV3() {
         return ytelseskontraktPortType()
-                .withOutInterceptor(new UserSAMLOutInterceptor())
+                .withOutInterceptor(new SamlPropagatingOutInterceptor())
                 .build();
     }
 
     @Bean
     public OppfoelgingPortType oppfoelgingV1() {
         return oppfoelgingPortType()
-                .withOutInterceptor(new UserSAMLOutInterceptor())
+                .withOutInterceptor(new SamlPropagatingOutInterceptor())
                 .build();
     }
 
     @Bean
     public OppfoelgingsstatusV1 oppfoelgingsstatusV1() {
         return oppfoelgingstatusV1PortType()
-                .withOutInterceptor(new UserSAMLOutInterceptor())
+                .withOutInterceptor(new SamlPropagatingOutInterceptor())
                 .build();
     }
 
