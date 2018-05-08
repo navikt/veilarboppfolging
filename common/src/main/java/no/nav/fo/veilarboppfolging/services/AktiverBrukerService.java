@@ -9,7 +9,6 @@ import no.nav.fo.veilarboppfolging.db.NyeBrukereFeedRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.domain.AktiverArbeidssokerData;
 import no.nav.fo.veilarboppfolging.domain.AktorId;
-import no.nav.fo.veilarboppfolging.domain.Fnr;
 import no.nav.fo.veilarboppfolging.domain.Oppfolgingsbruker;
 import no.nav.fo.veilarboppfolging.utils.FnrUtils;
 import no.nav.metrics.MetricsFactory;
@@ -74,10 +73,10 @@ public class AktiverBrukerService {
 
         AktorId aktorId = FnrUtils.getAktorIdOrElseThrow(aktorService, fnr);
 
-        aktiverBrukerOgOppfolging(fnr, bruker, aktorId);
+        aktiverBrukerOgOppfolging(fnr, aktorId, bruker.getKvalifiseringsgruppekode());
     }
 
-    void aktiverBrukerOgOppfolging(String fnr, AktiverArbeidssokerData bruker, AktorId aktorId) {
+    private void aktiverBrukerOgOppfolging(String fnr, AktorId aktorId, String kvalifiseringsgruppekode) {
         oppfolgingRepository.startOppfolgingHvisIkkeAlleredeStartet(
                 Oppfolgingsbruker.builder()
                         .aktoerId(aktorId.getAktorId())
@@ -86,19 +85,19 @@ public class AktiverBrukerService {
         );
 
         if (opprettBrukerIArenaFeature.erAktiv()) {
-            opprettBrukerIArena(new AktiverArbeidssokerData(new Fnr(fnr), bruker.getKvalifiseringsgruppekode()));
+            opprettBrukerIArena(fnr, kvalifiseringsgruppekode);
         }
 
         nyeBrukereFeedRepository.tryLeggTilFeedIdPaAlleElementerUtenFeedId();
     }
 
     @SuppressWarnings({"unchecked"})
-    private void opprettBrukerIArena(AktiverArbeidssokerData aktiverArbeidssokerData) {
+    private void opprettBrukerIArena(String fnr, String kvalifiseringsgruppekode) {
         Brukerident brukerident = new Brukerident();
-        brukerident.setBrukerident(aktiverArbeidssokerData.getFnr().getFnr());
+        brukerident.setBrukerident(fnr);
         AktiverBrukerRequest request = new AktiverBrukerRequest();
         request.setIdent(brukerident);
-        request.setKvalifiseringsgruppekode(aktiverArbeidssokerData.getKvalifiseringsgruppekode());
+        request.setKvalifiseringsgruppekode(kvalifiseringsgruppekode);
 
         Timer timer = MetricsFactory.createTimer("registrering.i.arena").start();
         Try.run(() -> behandleArbeidssoekerV1.aktiverBruker(request))
