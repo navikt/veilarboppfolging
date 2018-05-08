@@ -118,7 +118,7 @@ class AktiverBrukerIntegrationTest {
     }
 
     private AktiverArbeidssokerData lagBruker(String ident) {
-        return new AktiverArbeidssokerData(new Fnr(ident), "IKVAL");
+        return new AktiverArbeidssokerData(new Fnr(ident), true);
     }
 
     @Configuration

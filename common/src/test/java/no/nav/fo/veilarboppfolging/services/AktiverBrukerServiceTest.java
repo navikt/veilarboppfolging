@@ -68,7 +68,7 @@ class AktiverBrukerServiceTest {
 
 
     private AktiverArbeidssokerData hentBruker() {
-        return new AktiverArbeidssokerData(new Fnr("12345678910"), "IKVAL");
+        return new AktiverArbeidssokerData(new Fnr("12345678910"), true);
     }
 
     @Test

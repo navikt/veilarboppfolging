@@ -77,9 +77,9 @@ public class BrukerRegistreringService {
 
         AktorId aktorId = FnrUtils.getAktorIdOrElseThrow(aktorService, fnr);
 
-        boolean erSelvaaende = erSelvgaaende(bruker, status);
+        boolean erSelvgaaende = erSelvgaaende(bruker, status);
 
-        if (!erSelvaaende) {
+        if (!erSelvgaaende) {
             throw new RuntimeException("Bruker oppfyller ikke krav for registrering.");
         }
 
@@ -97,7 +97,7 @@ public class BrukerRegistreringService {
         BrukerRegistrering brukerRegistrering = arbeidssokerregistreringRepository.lagreBruker(bruker, aktorId);
 
         if (opprettBrukerIArenaFeature.erAktiv()) {
-            opprettBrukerIArena(new AktiverArbeidssokerData(new Fnr(fnr), "IKVAL"));
+            opprettBrukerIArena(fnr);
         }
 
         nyeBrukereFeedRepository.tryLeggTilFeedIdPaAlleElementerUtenFeedId();
@@ -105,12 +105,12 @@ public class BrukerRegistreringService {
     }
 
     @SuppressWarnings({"unchecked"})
-    private void opprettBrukerIArena(AktiverArbeidssokerData aktiverArbeidssokerData) {
+    private void opprettBrukerIArena(String fnr) {
         Brukerident brukerident = new Brukerident();
-        brukerident.setBrukerident(aktiverArbeidssokerData.getFnr().getFnr());
+        brukerident.setBrukerident(fnr);
         AktiverBrukerRequest request = new AktiverBrukerRequest();
         request.setIdent(brukerident);
-        request.setKvalifiseringsgruppekode(aktiverArbeidssokerData.getKvalifiseringsgruppekode());
+        request.setKvalifiseringsgruppekode("IKVAL");
 
         Timer timer = MetricsFactory.createTimer("registrering.i.arena").start();
         Try.run(() -> behandleArbeidssoekerV1.aktiverBruker(request))
