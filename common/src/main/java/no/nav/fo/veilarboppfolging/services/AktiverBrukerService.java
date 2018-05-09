@@ -32,6 +32,7 @@ import static java.util.Optional.ofNullable;
 public class AktiverBrukerService {
 
 
+    private static final String KVALIFISERINGSGRUPPEKODE_SELVGAENDE = "IKVAL";
     private AktorService aktorService;
     private final BehandleArbeidssoekerV1 behandleArbeidssoekerV1;
     private RemoteFeatureConfig.RegistreringFeature registreringFeature;
@@ -73,19 +74,21 @@ public class AktiverBrukerService {
 
         AktorId aktorId = FnrUtils.getAktorIdOrElseThrow(aktorService, fnr);
 
-        aktiverBrukerOgOppfolging(fnr, aktorId, bruker.getKvalifiseringsgruppekode());
+        aktiverBrukerOgOppfolging(fnr, aktorId, bruker.getSelvgaende());
     }
 
-    private void aktiverBrukerOgOppfolging(String fnr, AktorId aktorId, String kvalifiseringsgruppekode) {
+    private void aktiverBrukerOgOppfolging(String fnr, AktorId aktorId, boolean selvgaende) {
         oppfolgingRepository.startOppfolgingHvisIkkeAlleredeStartet(
                 Oppfolgingsbruker.builder()
                         .aktoerId(aktorId.getAktorId())
-                        .selvgaende(true)
+                        .selvgaende(selvgaende)
                         .build()
         );
 
+        String kvalifiseringsgruppekodeSelvgaende = selvgaende ? KVALIFISERINGSGRUPPEKODE_SELVGAENDE : "";
+
         if (opprettBrukerIArenaFeature.erAktiv()) {
-            opprettBrukerIArena(fnr, kvalifiseringsgruppekode);
+            opprettBrukerIArena(fnr, kvalifiseringsgruppekodeSelvgaende);
         }
 
         nyeBrukereFeedRepository.tryLeggTilFeedIdPaAlleElementerUtenFeedId();
