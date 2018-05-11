@@ -1,20 +1,22 @@
-package no.nav.fo.veilarboppfolging.services.registrerBruker;
+package no.nav.fo.veilarboppfolging.services;
 
 import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.apiapp.security.PepClient;
 import no.nav.dialogarena.aktor.AktorService;
-import no.nav.fo.veilarboppfolging.config.RemoteFeatureConfig.OpprettBrukerIArenaFeature;
-import no.nav.fo.veilarboppfolging.config.RemoteFeatureConfig.RegistreringFeature;
-import no.nav.fo.veilarboppfolging.db.ArbeidssokerregistreringRepository;
+import no.nav.fo.veilarboppfolging.config.RemoteFeatureConfig;
 import no.nav.fo.veilarboppfolging.db.NyeBrukereFeedRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
-import no.nav.fo.veilarboppfolging.domain.*;
+import no.nav.fo.veilarboppfolging.domain.AktiverArbeidssokerData;
+import no.nav.fo.veilarboppfolging.domain.AktorId;
+import no.nav.fo.veilarboppfolging.domain.Oppfolgingsbruker;
 import no.nav.fo.veilarboppfolging.utils.FnrUtils;
 import no.nav.metrics.MetricsFactory;
 import no.nav.metrics.Timer;
 import no.nav.tjeneste.virksomhet.behandlearbeidssoeker.v1.binding.*;
 import no.nav.tjeneste.virksomhet.behandlearbeidssoeker.v1.informasjon.Brukerident;
 import no.nav.tjeneste.virksomhet.behandlearbeidssoeker.v1.meldinger.AktiverBrukerRequest;
+import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.ws.rs.*;
@@ -23,101 +25,89 @@ import javax.ws.rs.core.Response;
 import static io.vavr.API.$;
 import static io.vavr.API.Case;
 import static io.vavr.Predicates.instanceOf;
-import static no.nav.fo.veilarboppfolging.utils.SelvgaaendeUtil.erSelvgaaende;
+import static java.util.Optional.ofNullable;
 
 @Slf4j
-public class BrukerRegistreringService {
+@Component
+public class AktiverBrukerService {
 
+
+    private static final String KVALIFISERINGSGRUPPEKODE_SELVGAENDE = "IKVAL";
     private AktorService aktorService;
-    private ArbeidssokerregistreringRepository arbeidssokerregistreringRepository;
-    private StartRegistreringStatusResolver startRegistreringStatusResolver;
     private final BehandleArbeidssoekerV1 behandleArbeidssoekerV1;
-    private RegistreringFeature registreringFeature;
-    private OpprettBrukerIArenaFeature opprettBrukerIArenaFeature;
+    private RemoteFeatureConfig.RegistreringFeature registreringFeature;
+    private RemoteFeatureConfig.OpprettBrukerIArenaFeature opprettBrukerIArenaFeature;
 
     private OppfolgingRepository oppfolgingRepository;
     private NyeBrukereFeedRepository nyeBrukereFeedRepository;
+    private PepClient pepClient;
 
 
-    public BrukerRegistreringService(ArbeidssokerregistreringRepository arbeidssokerregistreringRepository,
-                                     OppfolgingRepository oppfolgingRepository,
-                                     AktorService aktorService,
-                                     BehandleArbeidssoekerV1 BehandleArbeidssoekerV1,
-                                     OpprettBrukerIArenaFeature opprettBrukerIArenaFeature,
-                                     RegistreringFeature registreringFeature,
-                                     NyeBrukereFeedRepository nyeBrukereFeedRepository,
-                                     StartRegistreringStatusResolver startRegistreringStatusResolver
+    public AktiverBrukerService(OppfolgingRepository oppfolgingRepository,
+                                AktorService aktorService,
+                                BehandleArbeidssoekerV1 BehandleArbeidssoekerV1,
+                                RemoteFeatureConfig.OpprettBrukerIArenaFeature opprettBrukerIArenaFeature,
+                                RemoteFeatureConfig.RegistreringFeature registreringFeature,
+                                NyeBrukereFeedRepository nyeBrukereFeedRepository,
+                                PepClient pepClient
     ) {
-        this.arbeidssokerregistreringRepository = arbeidssokerregistreringRepository;
         this.aktorService = aktorService;
         this.behandleArbeidssoekerV1 = BehandleArbeidssoekerV1;
         this.opprettBrukerIArenaFeature = opprettBrukerIArenaFeature;
         this.registreringFeature = registreringFeature;
         this.oppfolgingRepository = oppfolgingRepository;
         this.nyeBrukereFeedRepository = nyeBrukereFeedRepository;
-        this.startRegistreringStatusResolver = startRegistreringStatusResolver;
-    }
-
-    public StartRegistreringStatus hentStartRegistreringStatus(String fnr) {
-        return startRegistreringStatusResolver.hentStartRegistreringStatus(fnr);
-    }
-
-    public Arbeidsforhold hentSisteArbeidsforhold(String fnr) {
-        return startRegistreringStatusResolver.hentSisteArbeidsforhold(fnr);
+        this.pepClient = pepClient;
     }
 
     @Transactional
-    public BrukerRegistrering registrerBruker(BrukerRegistrering bruker, String fnr) {
+    public void aktiverBruker(AktiverArbeidssokerData bruker) {
+        String fnr = ofNullable(bruker.getFnr())
+                .map(f -> f.getFnr())
+                .orElse("");
+
+        pepClient.sjekkLeseTilgangTilFnr(fnr);
 
         if (!registreringFeature.erAktiv()) {
             throw new RuntimeException("Tjenesten er togglet av.");
         }
 
-        StartRegistreringStatus status = startRegistreringStatusResolver.hentStartRegistreringStatus(fnr);
-
         AktorId aktorId = FnrUtils.getAktorIdOrElseThrow(aktorService, fnr);
 
-        boolean erSelvgaaende = erSelvgaaende(bruker, status);
-
-        if (!erSelvgaaende) {
-            throw new RuntimeException("Bruker oppfyller ikke krav for registrering.");
-        }
-
-        return opprettBruker(fnr, bruker, aktorId);
+        aktiverBrukerOgOppfolging(fnr, aktorId, bruker.getSelvgaende());
     }
 
-    BrukerRegistrering opprettBruker(String fnr, BrukerRegistrering bruker, AktorId aktorId) {
+    private void aktiverBrukerOgOppfolging(String fnr, AktorId aktorId, boolean selvgaende) {
         oppfolgingRepository.startOppfolgingHvisIkkeAlleredeStartet(
                 Oppfolgingsbruker.builder()
-                .aktoerId(aktorId.getAktorId())
-                .selvgaende(true)
-                .build()
+                        .aktoerId(aktorId.getAktorId())
+                        .selvgaende(selvgaende)
+                        .build()
         );
 
-        BrukerRegistrering brukerRegistrering = arbeidssokerregistreringRepository.lagreBruker(bruker, aktorId);
+        String kvalifiseringsgruppekodeSelvgaende = selvgaende ? KVALIFISERINGSGRUPPEKODE_SELVGAENDE : "";
 
         if (opprettBrukerIArenaFeature.erAktiv()) {
-            opprettBrukerIArena(fnr);
+            opprettBrukerIArena(fnr, kvalifiseringsgruppekodeSelvgaende);
         }
 
         nyeBrukereFeedRepository.tryLeggTilFeedIdPaAlleElementerUtenFeedId();
-        return brukerRegistrering;
     }
 
     @SuppressWarnings({"unchecked"})
-    private void opprettBrukerIArena(String fnr) {
+    private void opprettBrukerIArena(String fnr, String kvalifiseringsgruppekode) {
         Brukerident brukerident = new Brukerident();
         brukerident.setBrukerident(fnr);
         AktiverBrukerRequest request = new AktiverBrukerRequest();
         request.setIdent(brukerident);
-        request.setKvalifiseringsgruppekode("IKVAL");
+        request.setKvalifiseringsgruppekode(kvalifiseringsgruppekode);
 
         Timer timer = MetricsFactory.createTimer("registrering.i.arena").start();
         Try.run(() -> behandleArbeidssoekerV1.aktiverBruker(request))
                 .onFailure((t) -> {
                     timer.stop()
                             .setFailed()
-                            .addTagToReport("aarsak",  t.getClass().getSimpleName())
+                            .addTagToReport("aarsak", t.getClass().getSimpleName())
                             .report();
                     log.warn("Feil ved aktivering av bruker i arena", t);
                 })
@@ -135,3 +125,4 @@ public class BrukerRegistreringService {
     }
 
 }
+
