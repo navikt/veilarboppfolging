@@ -45,7 +45,7 @@ public class EskaleringsvarselService {
             LOG.error("Bruker ikke registert i id porten");
             throw new Feil(new BrukerIkkeRegistrertIIdporten());
         } catch (BestillVarselOppgaveBrukerHarIkkeTilstrekkeligPaaloggingsnivaa e) {
-            LOG.error("Bruker har ikke tilstrekkel innloggingsnivå");
+            LOG.error("Bruker har ikke tilstrekkelig innloggingsnivå");
             throw new Feil(new BrukerHarIkkeTilstrekkeligPaaloggingsnivaa());
         } catch (Exception e) {
             LOG.error("Sending av eskaleringsvarsel feilet for aktørId {} og dialogId {}", aktorId, dialogId, e);
