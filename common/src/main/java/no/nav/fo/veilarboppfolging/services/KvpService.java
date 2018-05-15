@@ -19,7 +19,7 @@ import org.springframework.stereotype.Component;
 import javax.inject.Inject;
 import java.util.function.Supplier;
 
-import static no.nav.apiapp.feil.Feil.Type.UKJENT;
+import static no.nav.apiapp.feil.FeilType.UKJENT;
 import static no.nav.fo.veilarboppfolging.domain.KodeverkBruker.NAV;
 
 @Component

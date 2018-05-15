@@ -1,6 +1,8 @@
 package no.nav.fo.veilarboppfolging.services;
 
+import no.nav.apiapp.feil.Feil;
 import no.nav.apiapp.feil.IngenTilgang;
+import no.nav.tjeneste.virksomhet.varseloppgave.v1.BestillVarselOppgaveBrukerHarIkkeTilstrekkeligPaaloggingsnivaa;
 import no.nav.tjeneste.virksomhet.varseloppgave.v1.BestillVarselOppgaveBrukerIkkeRegistrertIIdporten;
 import no.nav.tjeneste.virksomhet.varseloppgave.v1.BestillVarselOppgaveSikkerhetsbegrensning;
 import no.nav.tjeneste.virksomhet.varseloppgave.v1.VarseloppgaveV1;
@@ -11,10 +13,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
+import javax.ws.rs.core.Response;
 import java.util.UUID;
 
-import static no.nav.sbl.util.PropertyUtils.getRequiredProperty;
 import static no.nav.sbl.util.ExceptionUtils.throwUnchecked;
+import static no.nav.sbl.util.PropertyUtils.getRequiredProperty;
 
 @Component
 public class EskaleringsvarselService {
@@ -35,17 +38,45 @@ public class EskaleringsvarselService {
         Aktoer aktor = new AktoerId().withAktoerId(aktorId);
         try {
             varseloppgaveV1.bestillVarselOppgave(lagBestillVarselOppgaveRequest(aktor, dialogId));
-        } catch (BestillVarselOppgaveSikkerhetsbegrensning bestillVarselOppgaveSikkerhetsbegrensning) {
+        } catch (BestillVarselOppgaveSikkerhetsbegrensning e) {
             LOG.error("Sikkerhetsbegrensning ved kall mot varseloppgaveV1");
-            throw new IngenTilgang(bestillVarselOppgaveSikkerhetsbegrensning);
-        } catch (BestillVarselOppgaveBrukerIkkeRegistrertIIdporten bestillVarselOppgaveBrukerIkkeRegistrertIIdporten){
+            throw new IngenTilgang(e);
+        } catch (BestillVarselOppgaveBrukerIkkeRegistrertIIdporten e) {
             LOG.error("Bruker ikke registert i id porten");
-            throw new IngenTilgang(bestillVarselOppgaveBrukerIkkeRegistrertIIdporten);
+            throw new Feil(new BrukerIkkeRegistrertIIdporten());
+        } catch (BestillVarselOppgaveBrukerHarIkkeTilstrekkeligPaaloggingsnivaa e) {
+            LOG.error("Bruker har ikke tilstrekkelig innloggingsnivå");
+            throw new Feil(new BrukerHarIkkeTilstrekkeligPaaloggingsnivaa());
         } catch (Exception e) {
             LOG.error("Sending av eskaleringsvarsel feilet for aktørId {} og dialogId {}", aktorId, dialogId, e);
             throw throwUnchecked(e);
         }
     }
+
+    public class BrukerIkkeRegistrertIIdporten implements Feil.Type {
+        @Override
+        public String getName() {
+            return "BRUKER_IKKE_REGISTRERT_I_IDPORTEN";
+        }
+
+        @Override
+        public Response.Status getStatus() {
+            return Response.Status.BAD_REQUEST;
+        }
+    }
+
+    public class BrukerHarIkkeTilstrekkeligPaaloggingsnivaa implements Feil.Type {
+        @Override
+        public String getName() {
+            return "BRUKER_HAR_IKKE_TILSTREKKELIG_PAALOGGINGSNIVAA";
+        }
+
+        @Override
+        public Response.Status getStatus() {
+            return Response.Status.BAD_REQUEST;
+        }
+    }
+
 
     protected String dialogUrl(long dialogId) {
         return aktivitetsplanBaseUrl + "/dialog/" + dialogId;
