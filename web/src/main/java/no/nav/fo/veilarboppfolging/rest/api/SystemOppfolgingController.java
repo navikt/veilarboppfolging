@@ -7,6 +7,6 @@ import javax.ws.rs.Path;
 
 public interface SystemOppfolgingController {
     @POST
-    @Path("/aktiveBruker")
+    @Path("/aktiverbruker")
     AktiverArbeidssokerData aktiverBruker(AktiverArbeidssokerData aktiverArbeidssokerData) throws Exception;
 }
