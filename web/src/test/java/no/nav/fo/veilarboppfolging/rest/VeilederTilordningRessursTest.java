@@ -2,7 +2,6 @@ package no.nav.fo.veilarboppfolging.rest;
 
 import lombok.val;
 import no.nav.apiapp.security.PepClient;
-import no.nav.brukerdialog.security.context.ThreadLocalSubjectHandler;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.feed.producer.FeedProducer;
 import no.nav.fo.veilarboppfolging.db.VeilederTilordningerRepository;
@@ -10,7 +9,6 @@ import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingFeedDTO;
 import no.nav.fo.veilarboppfolging.rest.domain.TilordneVeilederResponse;
 import no.nav.fo.veilarboppfolging.rest.domain.VeilederTilordning;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -57,12 +55,6 @@ public class VeilederTilordningRessursTest {
 
     @InjectMocks
     private VeilederTilordningRessurs veilederTilordningRessurs;
-
-
-    @Before
-    public void beforeAll() {
-        System.setProperty("no.nav.modig.core.context.subjectHandlerImplementationClass", ThreadLocalSubjectHandler.class.getName());
-    }
 
     @Test
     public void skalKunneTildeleDersomOppgittVeilederErLikReellVeileder() throws Exception {
