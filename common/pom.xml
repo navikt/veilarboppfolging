@@ -58,8 +58,8 @@
         </dependency>
 
         <dependency>
-            <groupId>no.nav.dialogarena</groupId>
-            <artifactId>oidc-security</artifactId>
+            <groupId>no.nav.common</groupId>
+            <artifactId>auth</artifactId>
         </dependency>
         <dependency>
             <groupId>no.nav.sbl.dialogarena</groupId>
@@ -191,24 +191,9 @@
             <artifactId>json</artifactId>
         </dependency>
 
-        <!--modig-->
         <dependency>
             <groupId>no.nav.sbl</groupId>
             <artifactId>utave</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>no.nav.modig</groupId>
-            <artifactId>modig-security-core</artifactId>
-            <scope>test</scope>
-            <type>test-jar</type>
-        </dependency>
-        <dependency>
-            <groupId>no.nav.modig</groupId>
-            <artifactId>modig-security-loginmodule</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>no.nav.modig</groupId>
-            <artifactId>modig-testcertificates</artifactId>
         </dependency>
 
         <dependency>
