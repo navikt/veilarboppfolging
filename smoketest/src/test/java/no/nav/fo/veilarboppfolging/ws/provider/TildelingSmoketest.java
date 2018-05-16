@@ -2,9 +2,7 @@ package no.nav.fo.veilarboppfolging.ws.provider;
 
 
 import lombok.SneakyThrows;
-import no.nav.brukerdialog.security.context.InternbrukerSubjectHandler;
 import no.nav.brukerdialog.security.domain.OidcCredential;
-import no.nav.brukerdialog.security.oidc.TokenUtils;
 import no.nav.brukerdialog.security.oidc.UserTokenProvider;
 import no.nav.dialogarena.config.DevelopmentSecurity;
 import no.nav.fo.veilarboppfolging.domain.ArenaOppfolging;
@@ -25,10 +23,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import static java.lang.System.getProperty;
 import static no.nav.dialogarena.config.DevelopmentSecurity.setupIntegrationTestSecurity;
 import static no.nav.sbl.dialogarena.test.junit.Tag.SMOKETEST;
 import static no.nav.sbl.rest.RestUtils.withClient;
+import static no.nav.sbl.util.EnvironmentUtils.getOptionalProperty;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
 @Tag(SMOKETEST)
@@ -53,14 +51,12 @@ public class TildelingSmoketest {
 
     @BeforeAll
     public static void setup() {
-        MILJO = getProperty("miljo");
+        MILJO = getOptionalProperty("miljo").orElse(null);
         configureUrls();
         setupIntegrationTestSecurity(new DevelopmentSecurity.IntegrationTestConfig("veilarboppfolging"));
 
         UserTokenProvider userTokenProvider = new UserTokenProvider();
         OidcCredential token = userTokenProvider.getIdToken();
-        InternbrukerSubjectHandler.setOidcCredential(token);
-        InternbrukerSubjectHandler.setVeilederIdent(TokenUtils.getTokenSub(token.getToken()));
         tokenCookie = new Cookie(ID_TOKEN, token.getToken());
 
         AREMARK_OPPFOLGINGSENHET = getOppfolgingsstatus().getOppfolgingsenhet();
@@ -68,8 +64,6 @@ public class TildelingSmoketest {
         Statustall statustall = getStatustall(AREMARK_OPPFOLGINGSENHET);
         long antallBrukere = statustall.getTotalt();
         AREMARK_OPPFOLGINGSENHET_ANTALL = String.valueOf(antallBrukere);
-
-        INNLOGGET_VEILEDER = TokenUtils.getTokenSub(token.getToken());
     }
 
     @Test
