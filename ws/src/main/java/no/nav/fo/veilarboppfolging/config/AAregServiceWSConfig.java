@@ -1,7 +1,7 @@
 package no.nav.fo.veilarboppfolging.config;
 
-import no.nav.modig.security.ws.UserSAMLOutInterceptor;
 import no.nav.sbl.dialogarena.common.cxf.CXFClient;
+import no.nav.sbl.dialogarena.common.cxf.SamlPropagatingOutInterceptor;
 import no.nav.sbl.dialogarena.types.Pingable;
 import no.nav.tjeneste.virksomhet.arbeidsforhold.v3.binding.ArbeidsforholdV3;
 import org.apache.cxf.interceptor.LoggingOutInterceptor;
@@ -25,7 +25,7 @@ public class AAregServiceWSConfig {
     @Bean
     ArbeidsforholdV3 arbeidsforholdV3() {
         return arbeidsforholdV3CXFClient()
-                .withOutInterceptor(new UserSAMLOutInterceptor())
+                .withOutInterceptor(new SamlPropagatingOutInterceptor())
                 .build();
     }
 

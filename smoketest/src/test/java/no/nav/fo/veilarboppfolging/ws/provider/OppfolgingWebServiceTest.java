@@ -1,5 +1,6 @@
 package no.nav.fo.veilarboppfolging.ws.provider;
 
+import no.nav.dialogarena.config.fasit.FasitUtils;
 import no.nav.sbl.dialogarena.common.cxf.CXFClient;
 import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.binding.BehandleOppfolgingV1;
 import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.binding.HentOppfoelgingsstatusSikkerhetsbegrensning;
@@ -14,13 +15,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import static no.nav.fo.test.smoketest.SmokeTestUtils.*;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @Disabled
 public class OppfolgingWebServiceTest {
-
-    public static final String PROXY_USERNAME_ALIAS = "srvveilarboppfolgingproxy";
 
     private BehandleOppfolgingV1 behandleSituasjonV1;
 
@@ -31,11 +29,9 @@ public class OppfolgingWebServiceTest {
 
     @BeforeEach
     public void before() throws Exception {
-        setupSystemUser(PROXY_USERNAME_ALIAS);
-        setupOpenAmSubject();
         behandleSituasjonV1 = new CXFClient<>(BehandleOppfolgingV1.class)
                 .withOutInterceptor(new LoggingOutInterceptor())
-                .address("https://app-" + getMiljo() + ".adeo.no/veilarboppfolging-ws/ws/Oppfolging")
+                .address("https://app-" + FasitUtils.getDefaultEnvironment() + ".adeo.no/veilarboppfolging-ws/ws/Oppfolging")
                 .configureStsForExternalSSO()
                 .build();
     }
