@@ -48,13 +48,13 @@ public class StartRegistreringStatusResolver {
 
         boolean oppfolgingsflagg = arbeidssokerregistreringRepository.erOppfolgingsflaggSatt(aktorId);
 
-        if(oppfolgingsflagg) {
-            return new StartRegistreringStatus().setUnderOppfolging(true).setOppfyllerKravForAutomatiskRegistrering(false);
-        }
-
         Optional<ArenaOppfolging> arenaOppfolging = hentOppfolgingsstatusFraArena(fnr);
 
         boolean underOppfolgingIArena = arenaOppfolging.isPresent() && erUnderoppfolgingIArena(arenaOppfolging.get());
+
+        if(oppfolgingsflagg && underOppfolgingIArena)  {
+            return new StartRegistreringStatus().setUnderOppfolging(true).setOppfyllerKravForAutomatiskRegistrering(false);
+        }
 
         if(underOppfolgingIArena) {
             return new StartRegistreringStatus()
