@@ -83,17 +83,11 @@ public class StartRegistreringStatusResolverTest {
     }
 
     @Test
-    public void skalIkkeKalleArenaDersomOppfolgignsflaggErSatt() {
+    public void skalKalleArenaDersomOppfolgignsflaggErSatt() {
+        mockFinnesIkkeIArena();
         mockOppfolgingsflagg();
         getStartRegistreringStatus(FNR_OPPFYLLER_KRAV);
-        verify(arenaOppfolgingService, never()).hentArenaOppfolging(any());
-    }
-
-    @Test
-    public void skalIkkeHenteArbeidsforholdOmBrukerErUnderOppfolging() throws Exception {
-        mockOppfolgingsflagg();
-        getStartRegistreringStatus(FNR_OPPFYLLER_KRAV);
-        verify(arbeidsforholdService, never()).hentArbeidsforhold(any());
+        verify(arenaOppfolgingService, timeout(1)).hentArenaOppfolging(any());
     }
 
     @Test
