@@ -9,7 +9,6 @@ import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.sql.ResultSet;
-import java.util.Optional;
 
 public class ArbeidssokerregistreringRepository {
 
@@ -28,19 +27,10 @@ public class ArbeidssokerregistreringRepository {
     private final static String YRKESBESKRIVELSE = "YRKESBESKRIVELSE";
     private final static String KONSEPT_ID = "KONSEPT_ID";
 
-    private final static String OPPFOLGINGSTATUS = "OPPFOLGINGSTATUS";
-    private final static String UNDER_OPPFOLGING = "UNDER_OPPFOLGING";
     private final static String AKTOR_ID = "AKTOR_ID";
 
     public ArbeidssokerregistreringRepository(JdbcTemplate db) {
         this.db = db;
-    }
-
-    public boolean erOppfolgingsflaggSatt(AktorId aktorid) {
-        return Optional.ofNullable(SqlUtils.select(db, OPPFOLGINGSTATUS, ArbeidssokerregistreringRepository::oppfolgignsflaggMapper)
-                .column(UNDER_OPPFOLGING)
-                .where(WhereClause.equals(AKTOR_ID, aktorid.getAktorId()))
-                .execute()).orElse(false);
     }
 
     public BrukerRegistrering lagreBruker(BrukerRegistrering bruker, AktorId aktorId) {
@@ -66,11 +56,6 @@ public class ArbeidssokerregistreringRepository {
 
     private long nesteFraSekvens(String sekvensNavn) {
         return ((Long)this.db.queryForObject("select " + sekvensNavn + ".nextval from dual", Long.class)).longValue();
-    }
-
-    @SneakyThrows
-    private static boolean oppfolgignsflaggMapper(ResultSet rs) {
-        return rs.getBoolean(UNDER_OPPFOLGING);
     }
 
     @SneakyThrows

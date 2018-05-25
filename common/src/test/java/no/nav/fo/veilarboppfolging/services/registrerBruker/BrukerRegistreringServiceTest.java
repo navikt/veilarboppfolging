@@ -221,7 +221,6 @@ class BrukerRegistreringServiceTest {
     }
 
     private void mockBrukerUnderOppfolging() {
-        when(arbeidssokerregistreringRepository.erOppfolgingsflaggSatt(any())).thenReturn(true);
         when(arbeidssokerregistreringRepository.lagreBruker(any(), any())).thenReturn(getBrukerRegistreringSelvgaaende());
     }
 
