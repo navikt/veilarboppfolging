@@ -23,27 +23,6 @@ public class ArbeidssokerregistreringRepositoryTest {
     }
 
     @Test
-    public void skalHenteOppfolgingsflaggSomErTrue() {
-        db.execute("INSERT INTO OPPFOLGINGSTATUS (AKTOR_ID, UNDER_OPPFOLGING) VALUES ('11111','1')");
-        db.execute("INSERT INTO OPPFOLGINGSTATUS (AKTOR_ID, UNDER_OPPFOLGING) VALUES ('11112','0')");
-        boolean oppfolgingsflagg = arbeidssokerregistreringRepository.erOppfolgingsflaggSatt(new AktorId("11111"));
-        assertThat(oppfolgingsflagg).isTrue();
-    }
-
-    @Test
-    public void skalHenteOppfolgingsflaggSomErFalse() {
-        db.execute("INSERT INTO OPPFOLGINGSTATUS (AKTOR_ID, UNDER_OPPFOLGING) VALUES ('11111','0')");
-        boolean oppfolgingsflagg = arbeidssokerregistreringRepository.erOppfolgingsflaggSatt(new AktorId("11111"));
-        assertThat(oppfolgingsflagg).isFalse();
-    }
-
-    @Test
-    public void oppfolgingsflaggSkalVaereFalseNaarIkkeSatt() {
-        boolean oppfolgingsflagg = arbeidssokerregistreringRepository.erOppfolgingsflaggSatt(new AktorId("11111"));
-        assertThat(oppfolgingsflagg).isFalse();
-    }
-
-    @Test
     public void registrerBruker() {
 
         Date opprettetDato = new Date(System.currentTimeMillis());
