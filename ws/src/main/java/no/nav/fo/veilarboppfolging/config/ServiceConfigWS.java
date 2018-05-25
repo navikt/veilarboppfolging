@@ -48,15 +48,11 @@ public class ServiceConfigWS {
 
     @Bean
     public StartRegistreringStatusResolver startRegistreringStatusResolver(
-            AktorService aktorService,
-            ArbeidssokerregistreringRepository arbeidssokerregistreringRepository,
             PepClient pepClient,
             ArenaOppfolgingService arenaOppfolgingService,
             ArbeidsforholdService arbeidsforholdService)
     {
         return new StartRegistreringStatusResolver(
-                aktorService,
-                arbeidssokerregistreringRepository,
                 pepClient,
                 arenaOppfolgingService,
                 arbeidsforholdService

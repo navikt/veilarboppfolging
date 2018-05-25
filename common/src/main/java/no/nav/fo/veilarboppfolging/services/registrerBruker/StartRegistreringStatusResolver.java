@@ -4,13 +4,10 @@ import io.vavr.control.Try;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.apiapp.security.PepClient;
-import no.nav.dialogarena.aktor.AktorService;
-import no.nav.fo.veilarboppfolging.db.ArbeidssokerregistreringRepository;
 import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.fo.veilarboppfolging.services.ArbeidsforholdService;
 import no.nav.fo.veilarboppfolging.services.ArenaOppfolgingService;
 import no.nav.fo.veilarboppfolging.utils.ArbeidsforholdUtils;
-import no.nav.fo.veilarboppfolging.utils.FnrUtils;
 
 import javax.ws.rs.NotFoundException;
 import java.time.LocalDate;
@@ -22,19 +19,13 @@ import static no.nav.fo.veilarboppfolging.utils.StartRegistreringUtils.*;
 @Slf4j
 public class StartRegistreringStatusResolver {
 
-    private AktorService aktorService;
-    private ArbeidssokerregistreringRepository arbeidssokerregistreringRepository;
     private PepClient pepClient;
     private ArenaOppfolgingService arenaOppfolgingService;
     private ArbeidsforholdService arbeidsforholdService;
 
-    public StartRegistreringStatusResolver(AktorService aktorService,
-                                           ArbeidssokerregistreringRepository arbeidssokerregistreringRepository,
-                                           PepClient pepClient,
+    public StartRegistreringStatusResolver(PepClient pepClient,
                                            ArenaOppfolgingService arenaOppfolgingService,
                                            ArbeidsforholdService arbeidsforholdService) {
-        this.aktorService = aktorService;
-        this.arbeidssokerregistreringRepository = arbeidssokerregistreringRepository;
         this.pepClient = pepClient;
         this.arenaOppfolgingService = arenaOppfolgingService;
         this.arbeidsforholdService = arbeidsforholdService;
@@ -43,23 +34,12 @@ public class StartRegistreringStatusResolver {
     public StartRegistreringStatus hentStartRegistreringStatus(String fnr) {
         pepClient.sjekkLeseTilgangTilFnr(fnr);
 
-
-        AktorId aktorId = FnrUtils.getAktorIdOrElseThrow(aktorService,fnr);
-
-        boolean oppfolgingsflagg = arbeidssokerregistreringRepository.erOppfolgingsflaggSatt(aktorId);
-
         Optional<ArenaOppfolging> arenaOppfolging = hentOppfolgingsstatusFraArena(fnr);
 
         boolean underOppfolgingIArena = arenaOppfolging.isPresent() && erUnderoppfolgingIArena(arenaOppfolging.get());
 
-        if(oppfolgingsflagg && underOppfolgingIArena)  {
+        if(underOppfolgingIArena)  {
             return new StartRegistreringStatus().setUnderOppfolging(true).setOppfyllerKravForAutomatiskRegistrering(false);
-        }
-
-        if(underOppfolgingIArena) {
-            return new StartRegistreringStatus()
-                    .setUnderOppfolging(true)
-                    .setOppfyllerKravForAutomatiskRegistrering(false);
         }
 
         boolean oppfyllerKrav = oppfyllerKravOmAutomatiskRegistrering(fnr, () -> hentAlleArbeidsforhold(fnr), arenaOppfolging.orElse(null), LocalDate.now());

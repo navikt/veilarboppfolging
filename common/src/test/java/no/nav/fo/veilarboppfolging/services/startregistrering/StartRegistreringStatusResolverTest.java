@@ -2,8 +2,6 @@ package no.nav.fo.veilarboppfolging.services.startregistrering;
 
 import lombok.SneakyThrows;
 import no.nav.apiapp.security.PepClient;
-import no.nav.dialogarena.aktor.AktorService;
-import no.nav.fo.veilarboppfolging.db.ArbeidssokerregistreringRepository;
 import no.nav.fo.veilarboppfolging.domain.Arbeidsforhold;
 import no.nav.fo.veilarboppfolging.domain.ArenaOppfolging;
 import no.nav.fo.veilarboppfolging.domain.StartRegistreringStatus;
@@ -17,7 +15,6 @@ import javax.ws.rs.NotFoundException;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 import static no.nav.fo.veilarboppfolging.TestUtils.getFodselsnummerForPersonWithAge;
 import static no.nav.fo.veilarboppfolging.utils.StartRegistreringUtils.MAX_ALDER_AUTOMATISK_REGISTRERING;
@@ -28,8 +25,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 public class StartRegistreringStatusResolverTest {
-    private AktorService aktorService;
-    private ArbeidssokerregistreringRepository arbeidssokerregistreringRepository;
+
     private PepClient pepClient;
     private ArbeidsforholdService arbeidsforholdService;
 
@@ -42,21 +38,16 @@ public class StartRegistreringStatusResolverTest {
 
     @BeforeEach
     public void setup() {
-        aktorService = mock(AktorService.class);
-        arbeidssokerregistreringRepository = mock(ArbeidssokerregistreringRepository.class);
         pepClient = mock(PepClient.class);
         arbeidsforholdService = mock(ArbeidsforholdService.class);
         arenaOppfolgingService = mock(ArenaOppfolgingService.class);
         startRegistreringStatusResolver =
                 new StartRegistreringStatusResolver(
-                        aktorService,
-                        arbeidssokerregistreringRepository,
                         pepClient,
                         arenaOppfolgingService,
                         arbeidsforholdService
                 );
 
-        when(aktorService.getAktorId(any())).thenReturn(Optional.of("AKTORID"));
     }
 
     @Test
@@ -83,9 +74,8 @@ public class StartRegistreringStatusResolverTest {
     }
 
     @Test
-    public void skalKalleArenaDersomOppfolgignsflaggErSatt() {
+    public void skalKalleArena() {
         mockFinnesIkkeIArena();
-        mockOppfolgingsflagg();
         getStartRegistreringStatus(FNR_OPPFYLLER_KRAV);
         verify(arenaOppfolgingService, timeout(1)).hentArenaOppfolging(any());
     }
@@ -176,11 +166,6 @@ public class StartRegistreringStatusResolverTest {
                 .setArbeidsgiverOrgnummer("orgnummer")
                 .setStyrk("styrk")
                 .setFom(LocalDate.of(2017,1,10)));
-    }
-
-
-    private void mockOppfolgingsflagg() {
-        when(arbeidssokerregistreringRepository.erOppfolgingsflaggSatt(any())).thenReturn(true);
     }
 
     @SneakyThrows
