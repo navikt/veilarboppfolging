@@ -38,15 +38,16 @@ public class StartRegistreringStatusResolver {
 
         boolean underOppfolgingIArena = arenaOppfolging.isPresent() && erUnderoppfolgingIArena(arenaOppfolging.get());
 
+        StartRegistreringStatus status;
         if(underOppfolgingIArena)  {
-            return new StartRegistreringStatus().setUnderOppfolging(true).setOppfyllerKravForAutomatiskRegistrering(false);
+            status = new StartRegistreringStatus().setUnderOppfolging(true).setOppfyllerKravForAutomatiskRegistrering(false);
+        } else {
+            boolean oppfyllerKrav = oppfyllerKravOmAutomatiskRegistrering(fnr, () -> hentAlleArbeidsforhold(fnr), arenaOppfolging.orElse(null), LocalDate.now());
+            status = new StartRegistreringStatus().setUnderOppfolging(false).setOppfyllerKravForAutomatiskRegistrering(oppfyllerKrav);
         }
 
-        boolean oppfyllerKrav = oppfyllerKravOmAutomatiskRegistrering(fnr, () -> hentAlleArbeidsforhold(fnr), arenaOppfolging.orElse(null), LocalDate.now());
-
-        return new StartRegistreringStatus()
-                .setUnderOppfolging(false)
-                .setOppfyllerKravForAutomatiskRegistrering(oppfyllerKrav);
+        log.info("Returnerer registreringsstatus {}. ArenaOppfolging: {}", status, arenaOppfolging.orElse(null));
+        return status;
     }
 
     public Arbeidsforhold hentSisteArbeidsforhold(String fnr) {
