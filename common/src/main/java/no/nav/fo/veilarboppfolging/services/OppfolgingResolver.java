@@ -347,7 +347,7 @@ public class OppfolgingResolver {
                     .orElse(false);
         } catch (HentDigitalKontaktinformasjonKontaktinformasjonIkkeFunnet |
                 HentDigitalKontaktinformasjonPersonIkkeFunnet e) {
-            log.warn(e.getMessage(), e);
+            log.info(e.getMessage(), e);
             return true;
         } catch (Exception e) {
             log.warn(e.getMessage(), e);
