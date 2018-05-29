@@ -51,9 +51,9 @@ public class AktivStatusRessurs {
         boolean underOppfolgingIArena = erUnderOppfolging(arenaData.getFormidlingsgruppe(), arenaData.getServicegruppe(), arenaData.getHarMottaOppgaveIArena());
 
         return AktivStatus.builder()
-                .aktivStatus(underOppfolgingIArena)
+                .aktiv(underOppfolgingIArena)
                 .inaktiveringDato(arenaData.getInaktiveringsdato())
-                .oppfolgingStatus(oppfolgingStatus.isUnderOppfolging())
+                .underOppfolging(oppfolgingStatus.isUnderOppfolging())
                 .build();
     }
 
