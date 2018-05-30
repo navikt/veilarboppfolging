@@ -11,7 +11,10 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import javax.ws.rs.NotFoundException;
+
 import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -28,6 +31,18 @@ public class AktivStatusRessursTest {
 
     @Mock
     private PepClient pepClient;
+
+    @Test
+    public void skalReturnereVerdiSelvOmBrukerIkkeFinnesIArena() throws Exception {
+
+        when(arenaOppfolgingService.hentArenaOppfolging(any())).thenThrow(NotFoundException.class);
+        when(oppfolgingService.hentOppfolgingsStatus(anyString())).thenReturn(createBrukerMedOppfolgingsflagg());
+
+        AktivStatusRessurs aktivStatusRessurs = new AktivStatusRessurs(arenaOppfolgingService, pepClient, oppfolgingService);
+        AktivStatus aktivStatus = aktivStatusRessurs.getAggregertAktivStatus("fnr");
+
+        assertNotNull(aktivStatus);
+    }
 
     @Test
     public void aktivBrukerIArenaMedOppfolgingsflaggHarAktivStatus() throws Exception {
