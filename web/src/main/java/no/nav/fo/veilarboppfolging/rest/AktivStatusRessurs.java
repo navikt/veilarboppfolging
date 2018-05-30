@@ -1,6 +1,7 @@
 package no.nav.fo.veilarboppfolging.rest;
 
 import io.swagger.annotations.Api;
+import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.apiapp.security.PepClient;
 import no.nav.fo.veilarboppfolging.domain.ArenaOppfolging;
@@ -43,8 +44,11 @@ public class AktivStatusRessurs {
     public AktivStatus getAggregertAktivStatus(@PathParam("fnr") String fnr) throws Exception {
         pepClient.sjekkLeseTilgangTilFnr(fnr);
 
+        ArenaOppfolging arenaData =
+                Try.of(() -> arenaOppfolgingService.hentArenaOppfolging(fnr))
+                .onFailure((e) -> new ArenaOppfolging())
+                .get();
 
-        ArenaOppfolging arenaData = arenaOppfolgingService.hentArenaOppfolging(fnr);
         OppfolgingStatusData oppfolgingStatus = oppfolgingService.hentOppfolgingsStatus(fnr);
         boolean underOppfolgingIArena = erUnderOppfolging(arenaData.getFormidlingsgruppe(), arenaData.getServicegruppe(), arenaData.getHarMottaOppgaveIArena());
 
