@@ -49,7 +49,11 @@ public class AktivStatusRessurs {
                         .recover(Exception.class, new ArenaOppfolging())
                         .get();
 
-        OppfolgingStatusData oppfolgingStatus = oppfolgingService.hentOppfolgingsStatus(fnr);
+        OppfolgingStatusData oppfolgingStatus =
+                Try.of(() -> oppfolgingService.hentOppfolgingsStatus(fnr))
+                        .recover(Exception.class, new OppfolgingStatusData())
+                        .get();
+
         boolean underOppfolgingIArena = erUnderOppfolging(arenaData.getFormidlingsgruppe(), arenaData.getServicegruppe(), arenaData.getHarMottaOppgaveIArena());
 
         AktivStatus aktivStatus = AktivStatus.builder()

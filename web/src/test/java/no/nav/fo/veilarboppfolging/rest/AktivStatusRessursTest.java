@@ -45,6 +45,18 @@ public class AktivStatusRessursTest {
     }
 
     @Test
+    public void skalReturnereVerdiSelvOmBrukerIkkeFinnesITPS() throws Exception {
+
+        when(arenaOppfolgingService.hentArenaOppfolging(any())).thenReturn(createBrukerIArena("ARBS", false));
+        when(oppfolgingService.hentOppfolgingsStatus(anyString())).thenThrow(Exception.class);
+
+        AktivStatusRessurs aktivStatusRessurs = new AktivStatusRessurs(arenaOppfolgingService, pepClient, oppfolgingService);
+        AktivStatus aktivStatus = aktivStatusRessurs.getAggregertAktivStatus("fnr");
+
+        assertNotNull(aktivStatus);
+    }
+
+    @Test
     public void aktivBrukerIArenaMedOppfolgingsflaggHarAktivStatus() throws Exception {
 
         when(arenaOppfolgingService.hentArenaOppfolging(any())).thenReturn(createBrukerIArena("ARBS", false));
