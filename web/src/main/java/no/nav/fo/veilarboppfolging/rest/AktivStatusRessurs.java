@@ -11,10 +11,7 @@ import no.nav.fo.veilarboppfolging.services.ArenaOppfolgingService;
 import no.nav.fo.veilarboppfolging.services.OppfolgingService;
 import org.springframework.stereotype.Component;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static no.nav.fo.veilarboppfolging.services.ArenaUtils.erUnderOppfolging;
@@ -46,10 +43,14 @@ public class AktivStatusRessurs {
 
         ArenaOppfolging arenaData =
                 Try.of(() -> arenaOppfolgingService.hentArenaOppfolging(fnr))
-                        .recover(Exception.class, new ArenaOppfolging())
+                        .recover(NotFoundException.class, new ArenaOppfolging())
                         .get();
 
-        OppfolgingStatusData oppfolgingStatus = oppfolgingService.hentOppfolgingsStatus(fnr);
+        OppfolgingStatusData oppfolgingStatus =
+                Try.of(() -> oppfolgingService.hentOppfolgingsStatus(fnr))
+                        .recover(IllegalArgumentException.class, new OppfolgingStatusData())
+                        .get();
+
         boolean underOppfolgingIArena = erUnderOppfolging(arenaData.getFormidlingsgruppe(), arenaData.getServicegruppe(), arenaData.getHarMottaOppgaveIArena());
 
         AktivStatus aktivStatus = AktivStatus.builder()
