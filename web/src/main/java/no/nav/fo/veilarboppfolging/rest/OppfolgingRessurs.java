@@ -176,9 +176,8 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
     }
 
     @Override
-    public AktiverArbeidssokerData aktiverBruker(AktiverArbeidssokerData aktiverArbeidssokerData) throws Exception {
-        aktiverBrukerService.aktiverBruker(aktiverArbeidssokerData);
-        return aktiverArbeidssokerData;
+    public AktiverBrukerResponseStatus aktiverBruker(AktiverArbeidssokerData aktiverArbeidssokerData) throws Exception {
+        return aktiverBrukerService.aktiverBruker(aktiverArbeidssokerData);
     }
 
     private Eskaleringsvarsel tilDto(EskaleringsvarselData eskaleringsvarselData) {

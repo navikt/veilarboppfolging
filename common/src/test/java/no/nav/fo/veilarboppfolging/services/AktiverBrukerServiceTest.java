@@ -6,6 +6,7 @@ import no.nav.fo.veilarboppfolging.config.RemoteFeatureConfig;
 import no.nav.fo.veilarboppfolging.db.NyeBrukereFeedRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.domain.AktiverArbeidssokerData;
+import no.nav.fo.veilarboppfolging.domain.AktiverBrukerResponseStatus;
 import no.nav.fo.veilarboppfolging.domain.Fnr;
 import no.nav.fo.veilarboppfolging.domain.Oppfolgingsbruker;
 import no.nav.tjeneste.virksomhet.behandlearbeidssoeker.v1.binding.*;
@@ -14,10 +15,10 @@ import org.junit.jupiter.api.Test;
 
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotAuthorizedException;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.ServerErrorException;
 import java.util.Optional;
 
+import static no.nav.fo.veilarboppfolging.domain.AktiverBrukerResponseStatus.Status.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -86,27 +87,32 @@ class AktiverBrukerServiceTest {
     }
 
     @Test
-    void brukerSomIkkeFinnesIArenaSkalMappesTilNotFoundException() throws Exception {
+    void brukerSomIkkeFinnesIArenaSkalGiRiktigStatus() throws Exception {
+        when(registreringFeature.erAktiv()).thenReturn(true);
         doThrow(mock(AktiverBrukerBrukerFinnesIkke.class)).when(behandleArbeidssoekerV1).aktiverBruker(any());
-        assertThrows(NotFoundException.class, () -> aktiverBrukerService.aktiverBruker(hentBruker()));
+        AktiverBrukerResponseStatus brukerResponseStatus = aktiverBrukerService.aktiverBruker(hentBruker());
+        assertThat(brukerResponseStatus.getStatus()).isEqualTo(BRUKER_ER_UKJENT);
     }
 
     @Test
-    void brukerSomIkkeKanReaktiveresIArenaSkalGiServerErrorException() throws Exception {
+    void brukerSomIkkeKanReaktiveresIArenaSkalGiGiRiktigStatus() throws Exception {
         doThrow(mock(AktiverBrukerBrukerIkkeReaktivert.class)).when(behandleArbeidssoekerV1).aktiverBruker(any());
-        assertThrows(ServerErrorException.class, () -> aktiverBrukerService.aktiverBruker(hentBruker()));
+        AktiverBrukerResponseStatus brukerResponseStatus = aktiverBrukerService.aktiverBruker(hentBruker());
+        assertThat(brukerResponseStatus.getStatus()).isEqualTo(BRUKER_KAN_IKKE_REAKTIVERES);
     }
 
     @Test
-    void brukerSomIkkeKanAktiveresIArenaSkalGiServerErrorException() throws Exception {
+    void brukerSomIkkeKanAktiveresIArenaSkalGiRiktigStatus() throws Exception {
         doThrow(mock(AktiverBrukerBrukerKanIkkeAktiveres.class)).when(behandleArbeidssoekerV1).aktiverBruker(any());
-        assertThrows(ServerErrorException.class, () -> aktiverBrukerService.aktiverBruker(hentBruker()));
+        AktiverBrukerResponseStatus brukerResponseStatus = aktiverBrukerService.aktiverBruker(hentBruker());
+        assertThat(brukerResponseStatus.getStatus()).isEqualTo(BRUKER_ER_DOD_UTVANDRET_ELLER_FORSVUNNET);
     }
 
     @Test
-    void brukerSomManglerArbeidstillatelseSkalGiServerErrorException() throws Exception {
+    void brukerSomManglerArbeidstillatelseSkalGiRiktigStatus() throws Exception {
         doThrow(mock(AktiverBrukerBrukerManglerArbeidstillatelse.class)).when(behandleArbeidssoekerV1).aktiverBruker(any());
-        assertThrows(ServerErrorException.class, () -> aktiverBrukerService.aktiverBruker(hentBruker()));
+        AktiverBrukerResponseStatus brukerResponseStatus = aktiverBrukerService.aktiverBruker(hentBruker());
+        assertThat(brukerResponseStatus.getStatus()).isEqualTo(BRUKER_MANGLER_ARBEIDSTILLATELSE);
     }
 
     @Test
