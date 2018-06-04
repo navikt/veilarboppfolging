@@ -8,6 +8,7 @@ import no.nav.fo.veilarboppfolging.config.RemoteFeatureConfig;
 import no.nav.fo.veilarboppfolging.db.NyeBrukereFeedRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.domain.AktiverArbeidssokerData;
+import no.nav.fo.veilarboppfolging.domain.AktiverBrukerResponseStatus;
 import no.nav.fo.veilarboppfolging.domain.AktorId;
 import no.nav.fo.veilarboppfolging.domain.Oppfolgingsbruker;
 import no.nav.fo.veilarboppfolging.utils.FnrUtils;
@@ -19,13 +20,15 @@ import no.nav.tjeneste.virksomhet.behandlearbeidssoeker.v1.meldinger.AktiverBruk
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.ws.rs.*;
-import javax.ws.rs.core.Response;
+import javax.ws.rs.BadRequestException;
+import javax.ws.rs.InternalServerErrorException;
+import javax.ws.rs.NotAuthorizedException;
 
 import static io.vavr.API.$;
 import static io.vavr.API.Case;
 import static io.vavr.Predicates.instanceOf;
 import static java.util.Optional.ofNullable;
+import static no.nav.fo.veilarboppfolging.domain.AktiverBrukerResponseStatus.Status.*;
 
 @Slf4j
 @Component
@@ -61,7 +64,7 @@ public class AktiverBrukerService {
     }
 
     @Transactional
-    public void aktiverBruker(AktiverArbeidssokerData bruker) {
+    public AktiverBrukerResponseStatus aktiverBruker(AktiverArbeidssokerData bruker) {
         String fnr = ofNullable(bruker.getFnr())
                 .map(f -> f.getFnr())
                 .orElse("");
@@ -74,10 +77,11 @@ public class AktiverBrukerService {
 
         AktorId aktorId = FnrUtils.getAktorIdOrElseThrow(aktorService, fnr);
 
-        aktiverBrukerOgOppfolging(fnr, aktorId, bruker.getSelvgaende());
+        return aktiverBrukerOgOppfolging(fnr, aktorId, bruker.getSelvgaende());
     }
 
-    private void aktiverBrukerOgOppfolging(String fnr, AktorId aktorId, boolean selvgaende) {
+    private AktiverBrukerResponseStatus aktiverBrukerOgOppfolging(String fnr, AktorId aktorId, boolean selvgaende) {
+
         oppfolgingRepository.startOppfolgingHvisIkkeAlleredeStartet(
                 Oppfolgingsbruker.builder()
                         .aktoerId(aktorId.getAktorId())
@@ -87,15 +91,17 @@ public class AktiverBrukerService {
 
         String kvalifiseringsgruppekodeSelvgaende = selvgaende ? KVALIFISERINGSGRUPPEKODE_SELVGAENDE : "";
 
+        AktiverBrukerResponseStatus aktiverBrukerResponseStatus = new AktiverBrukerResponseStatus(INGEN_STATUS);
         if (opprettBrukerIArenaFeature.erAktiv()) {
-            opprettBrukerIArena(fnr, kvalifiseringsgruppekodeSelvgaende);
+            aktiverBrukerResponseStatus = opprettBrukerIArena(fnr, kvalifiseringsgruppekodeSelvgaende);
         }
 
         nyeBrukereFeedRepository.tryLeggTilFeedIdPaAlleElementerUtenFeedId();
+        return aktiverBrukerResponseStatus;
     }
 
     @SuppressWarnings({"unchecked"})
-    private void opprettBrukerIArena(String fnr, String kvalifiseringsgruppekode) {
+    private AktiverBrukerResponseStatus opprettBrukerIArena(String fnr, String kvalifiseringsgruppekode) {
         Brukerident brukerident = new Brukerident();
         brukerident.setBrukerident(fnr);
         AktiverBrukerRequest request = new AktiverBrukerRequest();
@@ -103,25 +109,33 @@ public class AktiverBrukerService {
         request.setKvalifiseringsgruppekode(kvalifiseringsgruppekode);
 
         Timer timer = MetricsFactory.createTimer("registrering.i.arena").start();
-        Try.run(() -> behandleArbeidssoekerV1.aktiverBruker(request))
+        AktiverBrukerResponseStatus aktiverBrukerResponseStatus =
+                Try.of(() -> aktiverBrukerIArenaMedRespons(request))
                 .onFailure((t) -> {
                     timer.stop()
                             .setFailed()
-                            .addTagToReport("aarsak", t.getClass().getSimpleName())
+                            .addTagToReport("aarsak",  t.getClass().getSimpleName())
                             .report();
                     log.warn("Feil ved aktivering av bruker i arena", t);
                 })
+                .recover(AktiverBrukerBrukerFinnesIkke.class, new AktiverBrukerResponseStatus(BRUKER_ER_UKJENT))
+                .recover(AktiverBrukerBrukerIkkeReaktivert.class, new AktiverBrukerResponseStatus(BRUKER_KAN_IKKE_REAKTIVERES))
+                .recover(AktiverBrukerBrukerKanIkkeAktiveres.class, new AktiverBrukerResponseStatus(BRUKER_ER_DOD_UTVANDRET_ELLER_FORSVUNNET))
+                .recover(AktiverBrukerBrukerManglerArbeidstillatelse.class, new AktiverBrukerResponseStatus(BRUKER_MANGLER_ARBEIDSTILLATELSE))
                 .mapFailure(
-                        Case($(instanceOf(AktiverBrukerBrukerFinnesIkke.class)), (t) -> new NotFoundException(t)),
-                        Case($(instanceOf(AktiverBrukerBrukerIkkeReaktivert.class)), (t) -> new ServerErrorException(Response.Status.BAD_GATEWAY, t)),
-                        Case($(instanceOf(AktiverBrukerBrukerKanIkkeAktiveres.class)), (t) -> new ServerErrorException(Response.Status.BAD_GATEWAY, t)),
-                        Case($(instanceOf(AktiverBrukerBrukerManglerArbeidstillatelse.class)), (t) -> new ServerErrorException(Response.Status.BAD_GATEWAY, t)),
                         Case($(instanceOf(AktiverBrukerSikkerhetsbegrensning.class)), (t) -> new NotAuthorizedException(t)),
                         Case($(instanceOf(AktiverBrukerUgyldigInput.class)), (t) -> new BadRequestException(t)),
                         Case($(), (t) -> new InternalServerErrorException(t))
                 )
                 .onSuccess((event) -> timer.stop().report())
                 .get();
+
+        return aktiverBrukerResponseStatus;
+    }
+
+    private AktiverBrukerResponseStatus aktiverBrukerIArenaMedRespons(AktiverBrukerRequest request) throws Exception{
+        behandleArbeidssoekerV1.aktiverBruker(request);
+        return new AktiverBrukerResponseStatus(STATUS_SUKSESS);
     }
 
 }
