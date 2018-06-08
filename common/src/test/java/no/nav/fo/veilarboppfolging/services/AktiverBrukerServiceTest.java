@@ -1,12 +1,12 @@
 package no.nav.fo.veilarboppfolging.services;
 
+import no.nav.apiapp.feil.Feil;
 import no.nav.apiapp.security.PepClient;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.config.RemoteFeatureConfig;
 import no.nav.fo.veilarboppfolging.db.NyeBrukereFeedRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.domain.AktiverArbeidssokerData;
-import no.nav.fo.veilarboppfolging.domain.AktiverBrukerResponseStatus;
 import no.nav.fo.veilarboppfolging.domain.Fnr;
 import no.nav.fo.veilarboppfolging.domain.Oppfolgingsbruker;
 import no.nav.tjeneste.virksomhet.behandlearbeidssoeker.v1.binding.*;
@@ -17,8 +17,8 @@ import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotAuthorizedException;
 import java.util.Optional;
 
-import static no.nav.fo.veilarboppfolging.domain.AktiverBrukerResponseStatus.Status.*;
-import static org.assertj.core.api.Assertions.assertThat;
+import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
+import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -90,29 +90,37 @@ class AktiverBrukerServiceTest {
     void brukerSomIkkeFinnesIArenaSkalGiRiktigStatus() throws Exception {
         when(registreringFeature.erAktiv()).thenReturn(true);
         doThrow(mock(AktiverBrukerBrukerFinnesIkke.class)).when(behandleArbeidssoekerV1).aktiverBruker(any());
-        AktiverBrukerResponseStatus brukerResponseStatus = aktiverBrukerService.aktiverBruker(hentBruker());
-        assertThat(brukerResponseStatus.getStatus()).isEqualTo(BRUKER_ER_UKJENT);
+        Feil e = aktiverBrukerMotArenaOgReturnerFeil(hentBruker());
+        assertThat(e.getType().getStatus()).isNotNull();
+        assertThat(e.getType().getStatus()).isEqualTo(INTERNAL_SERVER_ERROR);
+        assertThat(e.getType().getName()).isEqualTo("BRUKER_ER_UKJENT");
     }
 
     @Test
     void brukerSomIkkeKanReaktiveresIArenaSkalGiGiRiktigStatus() throws Exception {
         doThrow(mock(AktiverBrukerBrukerIkkeReaktivert.class)).when(behandleArbeidssoekerV1).aktiverBruker(any());
-        AktiverBrukerResponseStatus brukerResponseStatus = aktiverBrukerService.aktiverBruker(hentBruker());
-        assertThat(brukerResponseStatus.getStatus()).isEqualTo(BRUKER_KAN_IKKE_REAKTIVERES);
+        Feil e = aktiverBrukerMotArenaOgReturnerFeil(hentBruker());
+        assertThat(e.getType().getStatus()).isNotNull();
+        assertThat(e.getType().getStatus()).isEqualTo(INTERNAL_SERVER_ERROR);
+        assertThat(e.getType().getName()).isEqualTo("BRUKER_KAN_IKKE_REAKTIVERES");
     }
 
     @Test
     void brukerSomIkkeKanAktiveresIArenaSkalGiRiktigStatus() throws Exception {
         doThrow(mock(AktiverBrukerBrukerKanIkkeAktiveres.class)).when(behandleArbeidssoekerV1).aktiverBruker(any());
-        AktiverBrukerResponseStatus brukerResponseStatus = aktiverBrukerService.aktiverBruker(hentBruker());
-        assertThat(brukerResponseStatus.getStatus()).isEqualTo(BRUKER_ER_DOD_UTVANDRET_ELLER_FORSVUNNET);
+        Feil e = aktiverBrukerMotArenaOgReturnerFeil(hentBruker());
+        assertThat(e.getType().getStatus()).isNotNull();
+        assertThat(e.getType().getStatus()).isEqualTo(INTERNAL_SERVER_ERROR);
+        assertThat(e.getType().getName()).isEqualTo("BRUKER_ER_DOD_UTVANDRET_ELLER_FORSVUNNET");
     }
 
     @Test
     void brukerSomManglerArbeidstillatelseSkalGiRiktigStatus() throws Exception {
         doThrow(mock(AktiverBrukerBrukerManglerArbeidstillatelse.class)).when(behandleArbeidssoekerV1).aktiverBruker(any());
-        AktiverBrukerResponseStatus brukerResponseStatus = aktiverBrukerService.aktiverBruker(hentBruker());
-        assertThat(brukerResponseStatus.getStatus()).isEqualTo(BRUKER_MANGLER_ARBEIDSTILLATELSE);
+        Feil e = aktiverBrukerMotArenaOgReturnerFeil(hentBruker());
+        assertThat(e.getType().getStatus()).isNotNull();
+        assertThat(e.getType().getStatus()).isEqualTo(INTERNAL_SERVER_ERROR);
+        assertThat(e.getType().getName()).isEqualTo("BRUKER_MANGLER_ARBEIDSTILLATELSE");
     }
 
     @Test
@@ -125,6 +133,15 @@ class AktiverBrukerServiceTest {
     void ugyldigInputSkalGiBadRequestException() throws Exception {
         doThrow(mock(AktiverBrukerUgyldigInput.class)).when(behandleArbeidssoekerV1).aktiverBruker(any());
         assertThrows(BadRequestException.class, () -> aktiverBrukerService.aktiverBruker(hentBruker()));
+    }
+
+    private Feil aktiverBrukerMotArenaOgReturnerFeil(AktiverArbeidssokerData aktiverArbeidssokerData) {
+        try {
+            aktiverBrukerService.aktiverBruker(aktiverArbeidssokerData);
+        } catch (Feil feil) {
+            return feil;
+        }
+        return null;
     }
 
 }

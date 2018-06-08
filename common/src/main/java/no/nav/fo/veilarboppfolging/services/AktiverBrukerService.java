@@ -2,13 +2,13 @@ package no.nav.fo.veilarboppfolging.services;
 
 import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.apiapp.feil.Feil;
 import no.nav.apiapp.security.PepClient;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.config.RemoteFeatureConfig;
 import no.nav.fo.veilarboppfolging.db.NyeBrukereFeedRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.domain.AktiverArbeidssokerData;
-import no.nav.fo.veilarboppfolging.domain.AktiverBrukerResponseStatus;
 import no.nav.fo.veilarboppfolging.domain.AktorId;
 import no.nav.fo.veilarboppfolging.domain.Oppfolgingsbruker;
 import no.nav.fo.veilarboppfolging.utils.FnrUtils;
@@ -23,12 +23,13 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotAuthorizedException;
+import javax.ws.rs.core.Response;
 
 import static io.vavr.API.$;
 import static io.vavr.API.Case;
 import static io.vavr.Predicates.instanceOf;
 import static java.util.Optional.ofNullable;
-import static no.nav.fo.veilarboppfolging.domain.AktiverBrukerResponseStatus.Status.*;
+import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 
 @Slf4j
 @Component
@@ -64,7 +65,7 @@ public class AktiverBrukerService {
     }
 
     @Transactional
-    public AktiverBrukerResponseStatus aktiverBruker(AktiverArbeidssokerData bruker) {
+    public void aktiverBruker(AktiverArbeidssokerData bruker) {
         String fnr = ofNullable(bruker.getFnr())
                 .map(f -> f.getFnr())
                 .orElse("");
@@ -77,10 +78,10 @@ public class AktiverBrukerService {
 
         AktorId aktorId = FnrUtils.getAktorIdOrElseThrow(aktorService, fnr);
 
-        return aktiverBrukerOgOppfolging(fnr, aktorId, bruker.getSelvgaende());
+        aktiverBrukerOgOppfolging(fnr, aktorId, bruker.getSelvgaende());
     }
 
-    private AktiverBrukerResponseStatus aktiverBrukerOgOppfolging(String fnr, AktorId aktorId, boolean selvgaende) {
+    private void aktiverBrukerOgOppfolging(String fnr, AktorId aktorId, boolean selvgaende) {
 
         oppfolgingRepository.startOppfolgingHvisIkkeAlleredeStartet(
                 Oppfolgingsbruker.builder()
@@ -91,17 +92,15 @@ public class AktiverBrukerService {
 
         String kvalifiseringsgruppekodeSelvgaende = selvgaende ? KVALIFISERINGSGRUPPEKODE_SELVGAENDE : "";
 
-        AktiverBrukerResponseStatus aktiverBrukerResponseStatus = new AktiverBrukerResponseStatus(INGEN_STATUS);
         if (opprettBrukerIArenaFeature.erAktiv()) {
-            aktiverBrukerResponseStatus = opprettBrukerIArena(fnr, kvalifiseringsgruppekodeSelvgaende);
+            opprettBrukerIArena(fnr, kvalifiseringsgruppekodeSelvgaende);
         }
 
         nyeBrukereFeedRepository.tryLeggTilFeedIdPaAlleElementerUtenFeedId();
-        return aktiverBrukerResponseStatus;
     }
 
     @SuppressWarnings({"unchecked"})
-    private AktiverBrukerResponseStatus opprettBrukerIArena(String fnr, String kvalifiseringsgruppekode) {
+    private void opprettBrukerIArena(String fnr, String kvalifiseringsgruppekode) {
         Brukerident brukerident = new Brukerident();
         brukerident.setBrukerident(fnr);
         AktiverBrukerRequest request = new AktiverBrukerRequest();
@@ -109,8 +108,7 @@ public class AktiverBrukerService {
         request.setKvalifiseringsgruppekode(kvalifiseringsgruppekode);
 
         Timer timer = MetricsFactory.createTimer("registrering.i.arena").start();
-        AktiverBrukerResponseStatus aktiverBrukerResponseStatus =
-                Try.of(() -> aktiverBrukerIArenaMedRespons(request))
+                Try.run(() -> behandleArbeidssoekerV1.aktiverBruker(request))
                 .onFailure((t) -> {
                     timer.stop()
                             .setFailed()
@@ -118,25 +116,35 @@ public class AktiverBrukerService {
                             .report();
                     log.warn("Feil ved aktivering av bruker i arena", t);
                 })
-                .recover(AktiverBrukerBrukerFinnesIkke.class, new AktiverBrukerResponseStatus(BRUKER_ER_UKJENT))
-                .recover(AktiverBrukerBrukerIkkeReaktivert.class, new AktiverBrukerResponseStatus(BRUKER_KAN_IKKE_REAKTIVERES))
-                .recover(AktiverBrukerBrukerKanIkkeAktiveres.class, new AktiverBrukerResponseStatus(BRUKER_ER_DOD_UTVANDRET_ELLER_FORSVUNNET))
-                .recover(AktiverBrukerBrukerManglerArbeidstillatelse.class, new AktiverBrukerResponseStatus(BRUKER_MANGLER_ARBEIDSTILLATELSE))
                 .mapFailure(
+                        Case($(instanceOf(AktiverBrukerBrukerFinnesIkke.class)), (t) -> new Feil(new ArenaFeilType("BRUKER_ER_UKJENT"))),
+                        Case($(instanceOf(AktiverBrukerBrukerIkkeReaktivert.class)), (t) -> new Feil(new ArenaFeilType("BRUKER_KAN_IKKE_REAKTIVERES"))),
+                        Case($(instanceOf(AktiverBrukerBrukerKanIkkeAktiveres.class)), (t) -> new Feil(new ArenaFeilType("BRUKER_ER_DOD_UTVANDRET_ELLER_FORSVUNNET"))),
+                        Case($(instanceOf(AktiverBrukerBrukerManglerArbeidstillatelse.class)), (t) -> new Feil(new ArenaFeilType("BRUKER_MANGLER_ARBEIDSTILLATELSE"))),
                         Case($(instanceOf(AktiverBrukerSikkerhetsbegrensning.class)), (t) -> new NotAuthorizedException(t)),
                         Case($(instanceOf(AktiverBrukerUgyldigInput.class)), (t) -> new BadRequestException(t)),
                         Case($(), (t) -> new InternalServerErrorException(t))
                 )
                 .onSuccess((event) -> timer.stop().report())
                 .get();
-
-        return aktiverBrukerResponseStatus;
     }
 
-    private AktiverBrukerResponseStatus aktiverBrukerIArenaMedRespons(AktiverBrukerRequest request) throws Exception{
-        behandleArbeidssoekerV1.aktiverBruker(request);
-        return new AktiverBrukerResponseStatus(STATUS_SUKSESS);
-    }
+    private class ArenaFeilType implements Feil.Type {
+        private String feilType;
 
+        public ArenaFeilType(String feilType) {
+            this.feilType = feilType;
+        }
+
+        @Override
+        public String getName() {
+            return feilType;
+        }
+
+        @Override
+        public Response.Status getStatus() {
+            return INTERNAL_SERVER_ERROR;
+        }
+    }
 }
 
