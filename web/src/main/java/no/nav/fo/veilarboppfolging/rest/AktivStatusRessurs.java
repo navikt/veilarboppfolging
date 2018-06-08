@@ -59,7 +59,7 @@ public class AktivStatusRessurs {
                 .underOppfolging(oppfolgingStatus.isUnderOppfolging())
                 .build();
 
-        log.info("Henter aggregert status fra Arena og Oppfolging for fnr {}. Aktivstatus: {} ArenaOppfolging: {}", fnr, aktivStatus, arenaData);
+        log.info("Henter aggregert status fra Arena og Oppfolging. Aktivstatus: {} ArenaOppfolging: {}", aktivStatus, arenaData);
         return aktivStatus;
     }
 
