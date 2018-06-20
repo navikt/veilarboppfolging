@@ -45,7 +45,7 @@ public class OppfolgingWebService implements BehandleOppfolgingV1 {
     }
 
     @Override
-    public HentSisteArbeidsforholdResponse hentSisteArbeidsforhold(HentSisteArbeidsforholdRequest hentSisteArbeidsforholdRequest) throws HentSisteArbeidsforholdFeilVedHentingAvArbeidsforhold, HentSisteArbeidsforholdSikkerhetsbegrensning {
+    public HentSisteArbeidsforholdResponse hentSisteArbeidsforhold(HentSisteArbeidsforholdRequest hentSisteArbeidsforholdRequest) {
         return null;
     }
 
@@ -63,12 +63,12 @@ public class OppfolgingWebService implements BehandleOppfolgingV1 {
     }
 
     @Override
-    public StartRegistreringStatusResponse hentStartRegistreringStatus(StartRegistreringStatusRequest startRegistreringStatusRequest) throws HentStartRegistreringStatusFeilVedHentingAvArbeidsforhold, HentStartRegistreringStatusFeilVedHentingAvStatusFraArena, RegistrerBrukerSikkerhetsbegrensning {
+    public StartRegistreringStatusResponse hentStartRegistreringStatus(StartRegistreringStatusRequest startRegistreringStatusRequest) {
         return null;
     }
 
     @Override
-    public RegistrerBrukerResponse registrerBruker(RegistrerBrukerRequest registrerBrukerRequest) throws RegistrerBrukerSikkerhetsbegrensning {
+    public RegistrerBrukerResponse registrerBruker(RegistrerBrukerRequest registrerBrukerRequest) {
         return null;
     }
 
