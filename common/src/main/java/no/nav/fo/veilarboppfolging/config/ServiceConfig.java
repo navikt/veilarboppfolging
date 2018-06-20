@@ -50,11 +50,6 @@ public class ServiceConfig {
     }
 
     @Bean
-    ArbeidssokerregistreringRepository arbeidssokerregistreringRepository(JdbcTemplate db) {
-        return new ArbeidssokerregistreringRepository(db);
-    }
-
-    @Bean
     OppfolgingsStatusRepository oppfolgingsStatusRepository(Database db) {
         return new OppfolgingsStatusRepository(db);
     }

@@ -7,7 +7,6 @@ import no.nav.fo.veilarboppfolging.config.RemoteFeatureConfig;
 import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.fo.veilarboppfolging.services.MalService;
 import no.nav.fo.veilarboppfolging.services.OppfolgingService;
-import no.nav.fo.veilarboppfolging.services.registrerBruker.BrukerRegistreringService;
 import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.HentSisteArbeidsforholdRequest;
 import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.HentSisteArbeidsforholdResponse;
 import no.nav.tjeneste.virksomhet.behandleoppfolging.v1.binding.*;
@@ -32,7 +31,6 @@ import static no.nav.fo.veilarboppfolging.utils.StringUtils.emptyIfNull;
 public class OppfolgingWebService implements BehandleOppfolgingV1 {
 
     private OppfolgingService oppfolgingService;
-    private BrukerRegistreringService brukerRegistreringService;
     private MalService malService;
 
     @Inject
@@ -40,12 +38,15 @@ public class OppfolgingWebService implements BehandleOppfolgingV1 {
 
     public OppfolgingWebService(
             OppfolgingService oppfolgingService,
-            BrukerRegistreringService brukerRegistreringService,
             MalService malService) {
 
         this.oppfolgingService = oppfolgingService;
-        this.brukerRegistreringService = brukerRegistreringService;
         this.malService = malService;
+    }
+
+    @Override
+    public HentSisteArbeidsforholdResponse hentSisteArbeidsforhold(HentSisteArbeidsforholdRequest hentSisteArbeidsforholdRequest) {
+        return null;
     }
 
     @Override
@@ -59,6 +60,16 @@ public class OppfolgingWebService implements BehandleOppfolgingV1 {
         val res = new HentOppfoelgingsstatusResponse();
         res.setOppfoelgingsstatus(mapTilOppfoelgingstatus(oppfolgingStatusData));
         return res;
+    }
+
+    @Override
+    public StartRegistreringStatusResponse hentStartRegistreringStatus(StartRegistreringStatusRequest startRegistreringStatusRequest) {
+        return null;
+    }
+
+    @Override
+    public RegistrerBrukerResponse registrerBruker(RegistrerBrukerRequest registrerBrukerRequest) {
+        return null;
     }
 
 
@@ -243,59 +254,5 @@ public class OppfolgingWebService implements BehandleOppfolgingV1 {
         return vilkaarsstatus;
     }
 
-    @Override
-    public StartRegistreringStatusResponse hentStartRegistreringStatus(StartRegistreringStatusRequest startRegistreringStatusRequest) throws RegistrerBrukerSikkerhetsbegrensning,
-            HentStartRegistreringStatusFeilVedHentingAvStatusFraArena,
-            HentStartRegistreringStatusFeilVedHentingAvArbeidsforhold {
 
-        StartRegistreringStatus status = brukerRegistreringService.hentStartRegistreringStatus(startRegistreringStatusRequest.getFnr());
-
-        StartRegistreringStatusResponse response = new StartRegistreringStatusResponse();
-        response.setErUnderOppfolging(status.isUnderOppfolging());
-        response.setOppfyllerKrav(status.isOppfyllerKravForAutomatiskRegistrering());
-        return response;
-    }
-
-    @Override
-    public RegistrerBrukerResponse registrerBruker(RegistrerBrukerRequest request) throws RegistrerBrukerSikkerhetsbegrensning {
-        BrukerRegistrering brukerRegistrering = mapBrukerRegistrering(request);
-        return mapRegistrerBrukerResponse(getRegistrertBruker(request, brukerRegistrering));
-    }
-
-    @Override
-    public HentSisteArbeidsforholdResponse hentSisteArbeidsforhold(HentSisteArbeidsforholdRequest request) {
-        HentSisteArbeidsforholdResponse respons = new HentSisteArbeidsforholdResponse();
-        String styrk = brukerRegistreringService.hentSisteArbeidsforhold(request.getFnr()).getStyrk();
-        respons.setStyrk(styrk);
-        return respons;
-    }
-
-    private BrukerRegistrering getRegistrertBruker(RegistrerBrukerRequest request, BrukerRegistrering brukerRegistrering) {
-        return brukerRegistreringService.registrerBruker(brukerRegistrering, request.getFnr());
-    }
-
-    private RegistrerBrukerResponse mapRegistrerBrukerResponse(BrukerRegistrering bruker) {
-        RegistrerBrukerResponse response = new RegistrerBrukerResponse();
-        response.setNusKode(bruker.getNusKode());
-        response.setYrkesPraksis(bruker.getYrkesPraksis());
-        response.setEnigIOppsummering(bruker.isEnigIOppsummering());
-        response.setOppsummering(bruker.getOppsummering());
-        response.setHarHelseutfordringer(bruker.isHarHelseutfordringer());
-        response.setYrkesbeskrivelse(bruker.getYrkesbeskrivelse());
-        response.setKonseptId(bruker.getKonseptId());
-        return response;
-    }
-
-    private BrukerRegistrering mapBrukerRegistrering(RegistrerBrukerRequest request) {
-        return BrukerRegistrering.builder()
-                .nusKode(request.getNusKode())
-                .yrkesPraksis(request.getYrkesPraksis())
-                .opprettetDato(null)
-                .enigIOppsummering(request.isEnigIOppsummering())
-                .oppsummering(request.getOppsummering())
-                .harHelseutfordringer(request.isHarHelseutfordringer())
-                .yrkesbeskrivelse(request.getYrkesbeskrivelse())
-                .konseptId(request.getKonseptId())
-                .build();
-    }
 }
