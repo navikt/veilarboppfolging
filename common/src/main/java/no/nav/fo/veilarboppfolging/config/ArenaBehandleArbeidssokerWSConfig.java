@@ -10,12 +10,14 @@ import org.springframework.context.annotation.Configuration;
 import javax.inject.Inject;
 import java.util.UUID;
 
+import static no.nav.sbl.dialogarena.common.cxf.TimeoutFeature.DEFAULT_CONNECTION_TIMEOUT;
 import static no.nav.sbl.dialogarena.types.Pingable.Ping.feilet;
 import static no.nav.sbl.dialogarena.types.Pingable.Ping.lyktes;
 import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 
 @Configuration
 public class ArenaBehandleArbeidssokerWSConfig {
+    private static final int BEHANDLE_ARBEIDSSOKER_RECEIVE_TIMEOUT = 300000;
 
     @Inject
     private OpprettBrukerIArenaFeature opprettBrukerIArenaFeature;
@@ -53,5 +55,14 @@ public class ArenaBehandleArbeidssokerWSConfig {
             }
         };
     }
+
+    @Bean
+    public BehandleArbeidssoekerV1 behandleArbeidssoekerV1() {
+        return behandleArbeidssokerPortType()
+                .configureStsForSystemUserInFSS()
+                .timeout(DEFAULT_CONNECTION_TIMEOUT, BEHANDLE_ARBEIDSSOKER_RECEIVE_TIMEOUT)
+                .build();
+    }
+
 
 }

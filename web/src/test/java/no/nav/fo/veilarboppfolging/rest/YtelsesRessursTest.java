@@ -1,9 +1,6 @@
 package no.nav.fo.veilarboppfolging.rest;
 
 import no.nav.apiapp.security.PepClient;
-import no.nav.brukerdialog.security.context.SubjectHandlerUtils;
-import no.nav.brukerdialog.security.context.ThreadLocalSubjectHandler;
-import no.nav.brukerdialog.security.domain.IdentType;
 import no.nav.fo.veilarboppfolging.domain.OppfolgingskontraktData;
 import no.nav.fo.veilarboppfolging.domain.OppfolgingskontraktResponse;
 import no.nav.fo.veilarboppfolging.mappers.OppfolgingMapper;
@@ -23,7 +20,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import static java.lang.System.setProperty;
 import static java.util.Collections.singletonList;
-import static no.nav.brukerdialog.security.context.SubjectHandler.SUBJECTHANDLER_KEY;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -50,14 +46,13 @@ public class YtelsesRessursTest {
     private ArenaOppfolgingService arenaOppfolgingService;
 
     @Mock
-    PepClient pepClient;
+    @SuppressWarnings("unused")
+    private PepClient pepClient;
 
     @BeforeClass
     public static void setup() {
         setProperty("no.nav.modig.security.systemuser.username", "username");
         setProperty("no.nav.modig.security.systemuser.password", "password");
-        setProperty(SUBJECTHANDLER_KEY, ThreadLocalSubjectHandler.class.getName());
-        SubjectHandlerUtils.setSubject(new SubjectHandlerUtils.SubjectBuilder("userId", IdentType.InternBruker).withAuthLevel(3).getSubject());
     }
 
     @Test

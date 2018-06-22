@@ -4,7 +4,6 @@ import lombok.val;
 import no.nav.apiapp.feil.IngenTilgang;
 import no.nav.apiapp.feil.UlovligHandling;
 import no.nav.apiapp.security.PepClient;
-import no.nav.brukerdialog.security.context.ThreadLocalSubjectHandler;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.db.KvpRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
@@ -55,14 +54,6 @@ public class KvpServiceTest {
     private static final String STOP_BEGRUNNELSE = "STOP_BEGRUNNELSE";
 
     private OppfolgingRepository oppfolgingRepositoryMock;
-
-    @BeforeClass
-    public static void setUp() {
-        System.setProperty("no.nav.brukerdialog.security.context.subjectHandlerImplementationClass",
-                ThreadLocalSubjectHandler.class.getName());
-        ThreadLocalSubjectHandler sh = new ThreadLocalSubjectHandler();
-
-    }
 
     @Before
     public void initialize() throws Exception {

@@ -20,7 +20,7 @@
     <parent>
         <groupId>no.nav.sbl</groupId>
         <artifactId>mor-pom</artifactId>
-        <version>2018.04.20.15.16</version>
+        <version>2018.05.22.18.28</version>
     </parent>
 
     <properties>
@@ -37,7 +37,6 @@
         <organisasjonenhet-v1.version>1.0.8</organisasjonenhet-v1.version>
         <varseloppgave-v1-tjenestespesifikasjon.version>1.1.0</varseloppgave-v1-tjenestespesifikasjon.version>
         <startregistreringstatus-v1-tjenestespesifikasjon.version>1.0.0</startregistreringstatus-v1-tjenestespesifikasjon.version>
-        <nav-arbeidsforhold-v3-tjenestespesifikasjon.version>3.0.0</nav-arbeidsforhold-v3-tjenestespesifikasjon.version>
         <nav-behandleArbeidssoeker-v1-tjenestespesifikasjon.version>1.0.1</nav-behandleArbeidssoeker-v1-tjenestespesifikasjon.version>
         <nav-oppfoelgingsstatus-v1-tjenestespesifikasjon.version>1.0.1</nav-oppfoelgingsstatus-v1-tjenestespesifikasjon.version>
 
@@ -53,7 +52,7 @@
             <dependency>
                 <groupId>no.nav.sbl</groupId>
                 <artifactId>bom</artifactId>
-                <version>2018.04.20.15.16</version>
+                <version>2018.05.22.18.28</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -115,12 +114,6 @@
                 <groupId>no.nav.tjenester</groupId>
                 <artifactId>brukerdialog-behandleOppfolging-v1-tjenestespesifikasjon</artifactId>
                 <version>${brukerdialog-behandleOppfolging-v1-tjenestespesifikasjon.version}</version>
-                <classifier>jaxws</classifier>
-            </dependency>
-            <dependency>
-                <groupId>no.nav.tjenester.fim</groupId>
-                <artifactId>nav-arbeidsforhold-v3-tjenestespesifikasjon</artifactId>
-                <version>${nav-arbeidsforhold-v3-tjenestespesifikasjon.version}</version>
                 <classifier>jaxws</classifier>
             </dependency>
             <dependency>

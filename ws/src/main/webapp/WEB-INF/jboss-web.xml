@@ -7,5 +7,5 @@
     </resource-ref>
 
 	<context-root>veilarboppfolging-ws</context-root>
-    <security-domain>java:/jaas/NavSAML</security-domain>
+
 </jboss-web>

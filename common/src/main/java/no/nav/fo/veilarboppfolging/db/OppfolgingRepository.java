@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static java.util.stream.Collectors.toList;
-import static no.nav.apiapp.feil.Feil.Type.UGYLDIG_HANDLING;
+import static no.nav.apiapp.feil.FeilType.UGYLDIG_HANDLING;
 import static no.nav.fo.veilarboppfolging.utils.KvpUtils.sjekkTilgangGittKvp;
 
 public class OppfolgingRepository {

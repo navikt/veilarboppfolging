@@ -2,7 +2,6 @@ package no.nav.fo.veilarboppfolging.services;
 
 import no.nav.apiapp.feil.UlovligHandling;
 import no.nav.apiapp.security.PepClient;
-import no.nav.brukerdialog.security.context.ThreadLocalSubjectHandler;
 import no.nav.brukerdialog.security.domain.IdentType;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.db.KvpRepository;
@@ -25,9 +24,6 @@ import java.util.Date;
 
 import static java.lang.System.setProperty;
 import static java.util.Optional.of;
-import static no.nav.brukerdialog.security.context.SubjectHandler.SUBJECTHANDLER_KEY;
-import static no.nav.brukerdialog.security.context.SubjectHandlerUtils.SubjectBuilder;
-import static no.nav.brukerdialog.security.context.SubjectHandlerUtils.setSubject;
 import static no.nav.fo.veilarboppfolging.domain.KodeverkBruker.SYSTEM;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
@@ -64,14 +60,6 @@ public class OppfolgingResolverTest {
     private PepClient pepClientMock;
 
     private OppfolgingResolver oppfolgingResolver;
-
-    @BeforeClass
-    public static void before() {
-        setProperty("no.nav.modig.security.systemuser.username", "username");
-        setProperty("no.nav.modig.security.systemuser.password", "password");
-        setProperty(SUBJECTHANDLER_KEY, ThreadLocalSubjectHandler.class.getName());
-        setSubject(new SubjectBuilder("USER", IdentType.InternBruker).withAuthLevel(3).getSubject());
-    }
 
     @Before
     public void setup() throws Exception {

@@ -5,12 +5,10 @@ import no.nav.brukerdialog.security.domain.IdentType;
 import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.fo.veilarboppfolging.mappers.VilkarMapper;
 import no.nav.fo.veilarboppfolging.rest.api.OppfolgingController;
+import no.nav.fo.veilarboppfolging.rest.api.SystemOppfolgingController;
 import no.nav.fo.veilarboppfolging.rest.api.VeilederOppfolgingController;
 import no.nav.fo.veilarboppfolging.rest.domain.*;
-import no.nav.fo.veilarboppfolging.services.HistorikkService;
-import no.nav.fo.veilarboppfolging.services.KvpService;
-import no.nav.fo.veilarboppfolging.services.MalService;
-import no.nav.fo.veilarboppfolging.services.OppfolgingService;
+import no.nav.fo.veilarboppfolging.services.*;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
 import org.springframework.stereotype.Component;
 
@@ -30,7 +28,7 @@ import static java.util.stream.Collectors.toList;
     for REST- og SOAP-apiet. Dette skiller denne rest-ressursen fra andre ressurser som må ta ansvar for tilgangskontroll selv
  */
 @Component
-public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgingController {
+public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgingController, SystemOppfolgingController {
 
     @Inject
     private OppfolgingService oppfolgingService;
@@ -46,6 +44,9 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
 
     @Inject
     private Provider<HttpServletRequest> requestProvider;
+
+    @Inject
+    private AktiverBrukerService aktiverBrukerService;
 
     @Override
     public Bruker hentBrukerInfo() throws Exception {
@@ -172,6 +173,11 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
     @Override
     public VeilederTilgang hentVeilederTilgang() throws Exception {
         return oppfolgingService.hentVeilederTilgang(getFnr());
+    }
+
+    @Override
+    public void aktiverBruker(AktiverArbeidssokerData aktiverArbeidssokerData) throws Exception {
+        aktiverBrukerService.aktiverBruker(aktiverArbeidssokerData);
     }
 
     private Eskaleringsvarsel tilDto(EskaleringsvarselData eskaleringsvarselData) {
