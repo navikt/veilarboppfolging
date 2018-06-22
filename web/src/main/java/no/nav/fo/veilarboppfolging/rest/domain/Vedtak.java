@@ -1,5 +1,6 @@
 package no.nav.fo.veilarboppfolging.rest.domain;
 
+import javax.xml.datatype.XMLGregorianCalendar;
 
 @SuppressWarnings("unused")
 public class Vedtak {
@@ -7,6 +8,8 @@ public class Vedtak {
     private String status;
     private String aktivitetsfase;
     private String rettighetsgruppe;
+    private Dato fradato;
+    private Dato tildato;
 
     public String getVedtakstype() {
         return vedtakstype;
@@ -23,6 +26,10 @@ public class Vedtak {
     public String getRettighetsgruppe() {
         return rettighetsgruppe;
     }
+
+    public Dato getFomDato() { return fradato; }
+
+    public Dato getTomdato() { return tildato; }
 
     public Vedtak withVedtakstype(String vedtakstype) {
         this.vedtakstype = vedtakstype;
@@ -41,6 +48,16 @@ public class Vedtak {
 
     public Vedtak withRettighetsgruppe(String rettighetsGruppe) {
         this.rettighetsgruppe = rettighetsGruppe;
+        return this;
+    }
+
+    public Vedtak withFradato(XMLGregorianCalendar fomdato) {
+        fradato = new Dato(fomdato.getYear(), fomdato.getMonth(), fomdato.getDay());
+        return this;
+    }
+
+    public Vedtak withTildato(XMLGregorianCalendar tomdato) {
+        tildato = new Dato(tomdato.getYear(), tomdato.getMonth(), tomdato.getDay());
         return this;
     }
 
