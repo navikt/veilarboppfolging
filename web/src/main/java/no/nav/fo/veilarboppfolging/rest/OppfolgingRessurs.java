@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
+import static no.nav.brukerdialog.security.domain.IdentType.Systemressurs;
 
 /*
     NB:
@@ -48,6 +49,9 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
     @Inject
     private AktiverBrukerService aktiverBrukerService;
 
+    @Inject
+    private AutorisasjonService autorisasjonService;
+
     @Override
     public Bruker hentBrukerInfo() throws Exception {
         return new Bruker()
@@ -62,16 +66,19 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
 
     @Override
     public OppfolgingStatus startOppfolging() throws Exception {
+        autorisasjonService.skalVæreVeileder();
         return tilDto(oppfolgingService.startOppfolging(getFnr()));
     }
 
     @Override
     public OppfolgingStatus hentAvslutningStatus() throws Exception {
+        autorisasjonService.skalVæreVeileder();
         return tilDto(oppfolgingService.hentAvslutningStatus(getFnr()));
     }
 
     @Override
     public OppfolgingStatus avsluttOppfolging(VeilederBegrunnelseDTO dto) throws Exception {
+        autorisasjonService.skalVæreVeileder();
         return tilDto(oppfolgingService.avsluttOppfolging(
                 getFnr(),
                 dto.veilederId,
@@ -81,6 +88,7 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
 
     @Override
     public OppfolgingStatus settTilManuell(VeilederBegrunnelseDTO dto) throws Exception {
+        autorisasjonService.skalVæreVeileder();
         return tilDto(oppfolgingService.oppdaterManuellStatus(getFnr(),
                 true,
                 dto.begrunnelse,
@@ -91,6 +99,7 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
 
     @Override
     public OppfolgingStatus settTilDigital(VeilederBegrunnelseDTO dto) throws Exception {
+        autorisasjonService.skalVæreVeileder();
         return tilDto(oppfolgingService.oppdaterManuellStatus(getFnr(),
                 false,
                 dto.begrunnelse,
@@ -101,6 +110,7 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
 
     @Override
     public List<InnstillingsHistorikk> hentInnstillingsHistorikk() throws Exception {
+        autorisasjonService.skalVæreVeileder();
         return historikkService.hentInstillingsHistorikk(getFnr());
     }
 
@@ -147,6 +157,7 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
 
     @Override
     public void startEskalering(StartEskaleringDTO startEskalering) throws Exception {
+        autorisasjonService.skalVæreVeileder();
         oppfolgingService.startEskalering(
                 getFnr(),
                 startEskalering.getBegrunnelse(),
@@ -156,27 +167,31 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
 
     @Override
     public void stoppEskalering(StoppEskaleringDTO stoppEskalering) throws Exception {
+        autorisasjonService.skalVæreVeileder();
         oppfolgingService.stoppEskalering(getFnr(), stoppEskalering.getBegrunnelse());
     }
 
     @Override
     public void startKvp(StartKvpDTO startKvp) throws Exception {
+        autorisasjonService.skalVæreVeileder();
         kvpService.startKvp(getFnr(), startKvp.getBegrunnelse());
     }
 
     @Override
     public void stoppKvp(StoppKvpDTO stoppKvp) throws Exception {
+        autorisasjonService.skalVæreVeileder();
         kvpService.stopKvp(getFnr(), stoppKvp.getBegrunnelse());
-
     }
 
     @Override
     public VeilederTilgang hentVeilederTilgang() throws Exception {
+        autorisasjonService.skalVæreVeileder();
         return oppfolgingService.hentVeilederTilgang(getFnr());
     }
 
     @Override
     public void aktiverBruker(AktiverArbeidssokerData aktiverArbeidssokerData) throws Exception {
+        autorisasjonService.skalVære(Systemressurs);
         aktiverBrukerService.aktiverBruker(aktiverArbeidssokerData);
     }
 
