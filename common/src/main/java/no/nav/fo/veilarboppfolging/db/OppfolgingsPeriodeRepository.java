@@ -96,7 +96,8 @@ public class OppfolgingsPeriodeRepository {
         database.update("UPDATE " +
                         OppfolgingsStatusRepository.TABLE_NAME +
                         " SET " + UNDER_OPPFOLGING + "= 1, " +
-                        "oppdatert = CURRENT_TIMESTAMP " +
+                        "oppdatert = CURRENT_TIMESTAMP, " +
+                        "FEED_ID = null " +
                         "WHERE " + AKTOR_ID + " = ?",
                 aktorId);
     }
@@ -123,7 +124,8 @@ public class OppfolgingsPeriodeRepository {
                         + "gjeldende_manuell_status = null, "
                         + "gjeldende_mal = null, "
                         + "gjeldende_brukervilkar = null, "
-                        + "oppdatert = CURRENT_TIMESTAMP "
+                        + "oppdatert = CURRENT_TIMESTAMP, "
+                        + "FEED_ID = null "
                         + "WHERE aktor_id = ?",
                 aktorId
         );

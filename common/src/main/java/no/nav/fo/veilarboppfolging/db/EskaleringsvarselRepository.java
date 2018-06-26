@@ -99,7 +99,8 @@ public class EskaleringsvarselRepository {
         database.update("" +
                         "UPDATE " + OppfolgingsStatusRepository.TABLE_NAME +
                         " SET " + GJELDENE_ESKALERINGSVARSEL + " = ?, " +
-                        "oppdatert = CURRENT_TIMESTAMP " +
+                        "oppdatert = CURRENT_TIMESTAMP, " +
+                        "FEED_ID = null " +
                         "WHERE " + AKTOR_ID + " = ?",
                 e.getVarselId(),
                 e.getAktorId()
@@ -120,7 +121,8 @@ public class EskaleringsvarselRepository {
         database.update("" +
                         "UPDATE " + OppfolgingsStatusRepository.TABLE_NAME +
                         " SET " + GJELDENE_ESKALERINGSVARSEL + " = null, " +
-                        "oppdatert = CURRENT_TIMESTAMP " +
+                        "oppdatert = CURRENT_TIMESTAMP, " +
+                        "FEED_ID = null " +
                         "WHERE " + AKTOR_ID + " = ?",
                 e.getAktorId()
         );
