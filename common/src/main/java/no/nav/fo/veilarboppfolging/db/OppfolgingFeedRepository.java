@@ -3,6 +3,7 @@ package no.nav.fo.veilarboppfolging.db;
 import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingFeedDTO;
 import no.nav.fo.veilarboppfolging.utils.OppfolgingFeedUtil;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,4 +33,14 @@ public class OppfolgingFeedRepository {
                 .map(OppfolgingFeedUtil::mapRadTilOppfolgingFeedDTO)
                 .collect(toList());
     }
+    
+    @Scheduled(fixedDelay = 1000)
+    @Transactional
+    public void settIdeerPaFeedElementer() {
+        db.update(
+                "UPDATE OPPFOLGINGSTATUS " + 
+                "SET FEED_ID = OPPFOLGING_FEED_SEQ.NEXTVAL " +
+                "WHERE FEED_ID IS NULL");
+    }
+
 }
