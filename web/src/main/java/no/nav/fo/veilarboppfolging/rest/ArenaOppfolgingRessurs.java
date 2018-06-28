@@ -3,10 +3,13 @@ package no.nav.fo.veilarboppfolging.rest;
 
 import io.swagger.annotations.Api;
 import no.nav.apiapp.security.PepClient;
-import no.nav.fo.veilarboppfolging.rest.domain.ArenaOppfolging;
+import no.nav.dialogarena.aktor.AktorService;
+import no.nav.fo.veilarboppfolging.db.VeilederTilordningerRepository;
 import no.nav.fo.veilarboppfolging.domain.Oppfolgingsenhet;
 import no.nav.fo.veilarboppfolging.domain.OppfolgingskontraktResponse;
 import no.nav.fo.veilarboppfolging.mappers.OppfolgingMapper;
+import no.nav.fo.veilarboppfolging.rest.domain.ArenaOppfolging;
+import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingEnhetMedVeileder;
 import no.nav.fo.veilarboppfolging.services.ArenaOppfolgingService;
 import no.nav.fo.veilarboppfolging.services.OrganisasjonEnhetService;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
@@ -37,16 +40,23 @@ public class ArenaOppfolgingRessurs {
     private final OppfolgingMapper oppfolgingMapper;
     private final PepClient pepClient;
     private final OrganisasjonEnhetService organisasjonEnhetService;
+    private AktorService aktorService;
+    private VeilederTilordningerRepository veilederTilordningerRepository;
 
     public ArenaOppfolgingRessurs(
-            ArenaOppfolgingService arenaOppfolgingService, 
-            OppfolgingMapper oppfolgingMapper, 
+            ArenaOppfolgingService arenaOppfolgingService,
+            OppfolgingMapper oppfolgingMapper,
             PepClient pepClient,
-            OrganisasjonEnhetService organisasjonEnhetService) {
+            OrganisasjonEnhetService organisasjonEnhetService,
+            AktorService aktorService,
+            VeilederTilordningerRepository veilederTilordningerRepository
+    ) {
         this.arenaOppfolgingService = arenaOppfolgingService;
         this.oppfolgingMapper = oppfolgingMapper;
         this.pepClient = pepClient;
         this.organisasjonEnhetService = organisasjonEnhetService;
+        this.aktorService = aktorService;
+        this.veilederTilordningerRepository = veilederTilordningerRepository;
     }
 
     @GET
@@ -64,6 +74,7 @@ public class ArenaOppfolgingRessurs {
 
     @GET
     @Path("/oppfoelgingsstatus")
+    @Deprecated
     public ArenaOppfolging getOppfoelginsstatus(@PathParam("fnr") String fnr) throws PepException {
         pepClient.sjekkTilgangTilFnr(fnr);
 
@@ -83,5 +94,28 @@ public class ArenaOppfolgingRessurs {
                 .setOppfolgingsenhet(oppfolgingsenhet)
                 .setRettighetsgruppe(hentArenaOppfolging.getRettighetsgruppe())
                 .setServicegruppe(hentArenaOppfolging.getServicegruppe());
+    }
+
+    /*
+     API used by veilarbmaofs. Contains only the neccasary information
+     */
+    @GET
+    @Path("/oppfolgingsstatus")
+    public OppfolgingEnhetMedVeileder getOppfolginsstatus(@PathParam("fnr") String fnr) throws PepException {
+        pepClient.sjekkLeseTilgangTilFnr(fnr);
+
+        LOG.info("Henter oppfølgingsstatus for fnr");
+        no.nav.fo.veilarboppfolging.domain.ArenaOppfolging arenaData = arenaOppfolgingService.hentArenaOppfolging(fnr);
+        Oppfolgingsenhet enhet = organisasjonEnhetService.hentEnhet(arenaData.getOppfolgingsenhet());
+
+        Oppfolgingsenhet oppfolgingsenhet = new Oppfolgingsenhet().withEnhetId(enhet.getEnhetId()).withNavn(enhet.getNavn());
+
+        String brukersAktoerId = aktorService.getAktorId(fnr)
+                .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktør for fnr: " + fnr));
+        String veilederIdent = veilederTilordningerRepository.hentTilordningForAktoer(brukersAktoerId);
+
+        return new OppfolgingEnhetMedVeileder()
+                .setOppfolgingsenhet(oppfolgingsenhet)
+                .setVeileder(veilederIdent);
     }
 }
