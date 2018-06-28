@@ -116,6 +116,6 @@ public class ArenaOppfolgingRessurs {
 
         return new OppfolgingEnhetMedVeileder()
                 .setOppfolgingsenhet(oppfolgingsenhet)
-                .setVeileder(veilederIdent);
+                .setVeilederId(veilederIdent);
     }
 }

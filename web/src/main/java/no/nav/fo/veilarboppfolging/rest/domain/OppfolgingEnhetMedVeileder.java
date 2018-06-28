@@ -8,6 +8,6 @@ import no.nav.fo.veilarboppfolging.domain.Oppfolgingsenhet;
 @Accessors(chain = true)
 public class OppfolgingEnhetMedVeileder {
     private Oppfolgingsenhet oppfolgingsenhet;
-    private String veileder;
+    private String veilederId;
 }
 
