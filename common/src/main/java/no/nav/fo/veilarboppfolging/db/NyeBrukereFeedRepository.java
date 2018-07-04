@@ -25,7 +25,7 @@ public class NyeBrukereFeedRepository {
                 "INSERT INTO NYE_BRUKERE_FEED " +
                 "(AKTOR_ID, SELVGAENDE) " +
                 "VALUES" +
-                "(?,?)", oppfolgingsbruker.getAktoerId(), oppfolgingsbruker.isSelvgaende());
+                "(?,?)", oppfolgingsbruker.getAktoerId(), false);
     }
 
     public Try<Integer> tryLeggTilFeedIdPaAlleElementerUtenFeedId() {
