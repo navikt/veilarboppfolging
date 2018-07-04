@@ -3,6 +3,7 @@ package no.nav.fo.veilarboppfolging.db;
 import no.nav.fo.IntegrasjonsTest;
 import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingFeedDTO;
 import no.nav.sbl.jdbc.Database;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -34,7 +35,7 @@ class OppfolgingFeedRepositoryTest extends IntegrasjonsTest {
     public void skalHenteBrukere() {
         repository.upsertVeilederTilordning(AKTOR_ID, "***REMOVED***");
         assertThat(repository.hentTilordningForAktoer(AKTOR_ID), is("***REMOVED***"));
-        List<OppfolgingFeedDTO> oppfolgingFeedDTOS = feedRepository.hentTilordningerEtterTimestamp(new Timestamp(0), 2);
+        List<OppfolgingFeedDTO> oppfolgingFeedDTOS = feedRepository.hentEndringerEtterTimestamp(new Timestamp(0), 2);
         assertThat(oppfolgingFeedDTOS.size(), is(1));
         assertThat(oppfolgingFeedDTOS.get(0).isNyForVeileder(), is(true));
         assertThat(oppfolgingFeedDTOS.get(0).getVeileder(), is("***REMOVED***"));
@@ -49,7 +50,7 @@ class OppfolgingFeedRepositoryTest extends IntegrasjonsTest {
         repository.upsertVeilederTilordning("4444", "***REMOVED***");
 
         assertThat(repository.hentTilordningForAktoer(AKTOR_ID), is("***REMOVED***"));
-        List<OppfolgingFeedDTO> oppfolgingFeedDTOS = feedRepository.hentTilordningerEtterTimestamp(new Timestamp(0), 2);
+        List<OppfolgingFeedDTO> oppfolgingFeedDTOS = feedRepository.hentEndringerEtterTimestamp(new Timestamp(0), 2);
         assertThat(oppfolgingFeedDTOS.size(), is(2));
     }
 }

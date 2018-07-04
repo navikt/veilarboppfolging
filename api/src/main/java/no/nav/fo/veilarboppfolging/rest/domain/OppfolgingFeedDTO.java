@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Value;
 import lombok.experimental.Wither;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 @Value
@@ -19,6 +20,7 @@ public class OppfolgingFeedDTO implements Comparable<OppfolgingFeedDTO> {
     boolean manuellBruker;    //TODO Slett når FO-123 er i prod
     boolean manuell;
     Timestamp endretTimestamp;
+    BigDecimal feedId;
 
     @Override
     public int compareTo(OppfolgingFeedDTO o) {

@@ -17,6 +17,7 @@ public class OppfolgingFeedUtil {
                 .oppfolging(rad.get("UNDER_OPPFOLGING").equals(BigDecimal.ONE))
                 .nyForVeileder(rad.get("NY_FOR_VEILEDER").equals(BigDecimal.ONE))
                 .endretTimestamp((Timestamp) (rad.get("OPPDATERT")))
+                .feedId((BigDecimal) rad.get("FEED_ID"))
                 .manuellBruker(BigDecimal.ONE.equals(rad.get("MANUELL"))) //TODO Slett når FO-123 er i prod
                 .manuell(BigDecimal.ONE.equals(rad.get("MANUELL")))
                 .build();

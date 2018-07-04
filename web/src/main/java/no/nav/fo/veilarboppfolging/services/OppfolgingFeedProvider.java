@@ -31,7 +31,7 @@ public class OppfolgingFeedProvider implements FeedProvider<OppfolgingFeedDTO> {
         log.info("OppfolgingFeedProviderDebug requested sinceId: {}", sinceId);
 
         Timestamp timestamp = DateUtils.toTimeStamp(sinceId);
-        List<OppfolgingFeedDTO> data = repository.hentTilordningerEtterTimestamp(timestamp, pageSize);
+        List<OppfolgingFeedDTO> data = repository.hentEndringerEtterTimestamp(timestamp, pageSize);
 
         log.info("OppfolgingFeedProviderDebug feed-response: {}", data);
         return data
