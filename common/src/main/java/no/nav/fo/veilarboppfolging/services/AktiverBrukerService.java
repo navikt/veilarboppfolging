@@ -31,6 +31,7 @@ import static io.vavr.API.Case;
 import static io.vavr.Predicates.instanceOf;
 import static java.util.Optional.ofNullable;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
+import static no.nav.fo.veilarboppfolging.domain.Innsatsgruppe.STANDARD_INNSATS;
 
 @Slf4j
 @Component
@@ -78,7 +79,12 @@ public class AktiverBrukerService {
 
         AktorId aktorId = FnrUtils.getAktorIdOrElseThrow(aktorService, fnr);
 
-        aktiverBrukerOgOppfolging(fnr, aktorId, bruker.getInnsatsgruppe());
+        aktiverBrukerOgOppfolging(fnr, aktorId, hentInnsatsGruppeBakoverKompatibel(bruker));
+    }
+
+    //Todo: fjerne denne metoden når FO-1123 går over i Test1.
+    private Innsatsgruppe hentInnsatsGruppeBakoverKompatibel(AktiverArbeidssokerData aktiverArbeidssokerData) {
+        return ofNullable(aktiverArbeidssokerData.getInnsatsgruppe()).orElse(STANDARD_INNSATS);
     }
 
     private void aktiverBrukerOgOppfolging(String fnr, AktorId aktorId, Innsatsgruppe innsatsgruppe) {
