@@ -10,6 +10,7 @@ import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingsPeriodeRepository;
 import no.nav.fo.veilarboppfolging.domain.AktiverArbeidssokerData;
 import no.nav.fo.veilarboppfolging.domain.Fnr;
+import no.nav.fo.veilarboppfolging.domain.Innsatsgruppe;
 import no.nav.fo.veilarboppfolging.domain.Oppfolging;
 import no.nav.fo.veilarboppfolging.services.AktiverBrukerService;
 import no.nav.sbl.jdbc.Database;
@@ -118,7 +119,7 @@ class AktiverBrukerIntegrationTest {
     }
 
     private AktiverArbeidssokerData lagBruker(String ident) {
-        return new AktiverArbeidssokerData(new Fnr(ident), true);
+        return new AktiverArbeidssokerData(new Fnr(ident), Innsatsgruppe.STANDARD_INNSATS);
     }
 
     @Configuration

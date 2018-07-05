@@ -95,7 +95,6 @@ public class OppfolgingRepository {
         startOppfolgingHvisIkkeAlleredeStartet(
                 Oppfolgingsbruker.builder()
                         .aktoerId(aktorId)
-                        .selvgaende(false)
                 .build()
         );
     }

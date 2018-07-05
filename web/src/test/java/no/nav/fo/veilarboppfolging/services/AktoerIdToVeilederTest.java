@@ -6,6 +6,7 @@ import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.feed.producer.FeedProducer;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.db.VeilederTilordningerRepository;
+import no.nav.fo.veilarboppfolging.rest.AutorisasjonService;
 import no.nav.fo.veilarboppfolging.rest.VeilederTilordningRessurs;
 import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingFeedDTO;
 import no.nav.fo.veilarboppfolging.rest.domain.VeilederTilordning;
@@ -37,6 +38,9 @@ public class AktoerIdToVeilederTest {
 
     @Mock
     private FeedProducer<OppfolgingFeedDTO> feed;
+
+    @Mock
+    private AutorisasjonService autorisasjonService;
 
     @InjectMocks
     private VeilederTilordningRessurs veilederTilordningRessurs;

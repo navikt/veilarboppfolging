@@ -8,6 +8,7 @@ import no.nav.fo.veilarboppfolging.db.NyeBrukereFeedRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.domain.AktiverArbeidssokerData;
 import no.nav.fo.veilarboppfolging.domain.Fnr;
+import no.nav.fo.veilarboppfolging.domain.Innsatsgruppe;
 import no.nav.fo.veilarboppfolging.domain.Oppfolgingsbruker;
 import no.nav.tjeneste.virksomhet.behandlearbeidssoeker.v1.binding.*;
 import org.junit.jupiter.api.BeforeEach;
@@ -69,7 +70,7 @@ class AktiverBrukerServiceTest {
 
 
     private AktiverArbeidssokerData hentBruker() {
-        return new AktiverArbeidssokerData(new Fnr("12345678910"), true);
+        return new AktiverArbeidssokerData(new Fnr("12345678910"), Innsatsgruppe.STANDARD_INNSATS);
     }
 
     @Test
