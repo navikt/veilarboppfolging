@@ -53,6 +53,9 @@ public class VeilederTilordningRessursTest {
     @Mock
     private FeedProducer<OppfolgingFeedDTO> feed;
 
+    @Mock
+    private AutorisasjonService autorisasjonService;
+
     @InjectMocks
     private VeilederTilordningRessurs veilederTilordningRessurs;
 
