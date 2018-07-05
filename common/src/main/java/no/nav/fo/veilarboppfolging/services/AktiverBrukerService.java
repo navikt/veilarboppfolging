@@ -10,6 +10,7 @@ import no.nav.fo.veilarboppfolging.db.NyeBrukereFeedRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.domain.AktiverArbeidssokerData;
 import no.nav.fo.veilarboppfolging.domain.AktorId;
+import no.nav.fo.veilarboppfolging.domain.Innsatsgruppe;
 import no.nav.fo.veilarboppfolging.domain.Oppfolgingsbruker;
 import no.nav.fo.veilarboppfolging.utils.FnrUtils;
 import no.nav.metrics.MetricsFactory;
@@ -30,13 +31,13 @@ import static io.vavr.API.Case;
 import static io.vavr.Predicates.instanceOf;
 import static java.util.Optional.ofNullable;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
+import static no.nav.fo.veilarboppfolging.domain.Innsatsgruppe.STANDARD_INNSATS;
 
 @Slf4j
 @Component
 public class AktiverBrukerService {
 
 
-    private static final String KVALIFISERINGSGRUPPEKODE_SELVGAENDE = "IKVAL";
     private AktorService aktorService;
     private final BehandleArbeidssoekerV1 behandleArbeidssoekerV1;
     private RemoteFeatureConfig.RegistreringFeature registreringFeature;
@@ -78,34 +79,36 @@ public class AktiverBrukerService {
 
         AktorId aktorId = FnrUtils.getAktorIdOrElseThrow(aktorService, fnr);
 
-        aktiverBrukerOgOppfolging(fnr, aktorId, bruker.getSelvgaende());
+        aktiverBrukerOgOppfolging(fnr, aktorId, hentInnsatsGruppeBakoverKompatibel(bruker));
     }
 
-    private void aktiverBrukerOgOppfolging(String fnr, AktorId aktorId, boolean selvgaende) {
+    //Todo: fjerne denne metoden når FO-1123 går over i Test1.
+    private Innsatsgruppe hentInnsatsGruppeBakoverKompatibel(AktiverArbeidssokerData aktiverArbeidssokerData) {
+        return ofNullable(aktiverArbeidssokerData.getInnsatsgruppe()).orElse(STANDARD_INNSATS);
+    }
+
+    private void aktiverBrukerOgOppfolging(String fnr, AktorId aktorId, Innsatsgruppe innsatsgruppe) {
 
         oppfolgingRepository.startOppfolgingHvisIkkeAlleredeStartet(
                 Oppfolgingsbruker.builder()
                         .aktoerId(aktorId.getAktorId())
-                        .selvgaende(selvgaende)
                         .build()
         );
 
-        String kvalifiseringsgruppekodeSelvgaende = selvgaende ? KVALIFISERINGSGRUPPEKODE_SELVGAENDE : "";
-
         if (opprettBrukerIArenaFeature.erAktiv()) {
-            opprettBrukerIArena(fnr, kvalifiseringsgruppekodeSelvgaende);
+            opprettBrukerIArena(fnr, innsatsgruppe);
         }
 
         nyeBrukereFeedRepository.tryLeggTilFeedIdPaAlleElementerUtenFeedId();
     }
 
     @SuppressWarnings({"unchecked"})
-    private void opprettBrukerIArena(String fnr, String kvalifiseringsgruppekode) {
+    private void opprettBrukerIArena(String fnr, Innsatsgruppe innsatsgruppe) {
         Brukerident brukerident = new Brukerident();
         brukerident.setBrukerident(fnr);
         AktiverBrukerRequest request = new AktiverBrukerRequest();
         request.setIdent(brukerident);
-        request.setKvalifiseringsgruppekode(kvalifiseringsgruppekode);
+        request.setKvalifiseringsgruppekode(innsatsgruppe.getKode());
 
         Timer timer = MetricsFactory.createTimer("registrering.i.arena").start();
                 Try.run(() -> behandleArbeidssoekerV1.aktiverBruker(request))

@@ -9,5 +9,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class AktiverArbeidssokerData {
     Fnr fnr;
-    Boolean selvgaende;
+    Innsatsgruppe innsatsgruppe;
 }
