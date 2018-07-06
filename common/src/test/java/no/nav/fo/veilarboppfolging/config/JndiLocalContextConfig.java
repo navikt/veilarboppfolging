@@ -4,7 +4,8 @@ import no.nav.apiapp.util.StringUtils;
 import no.nav.dialogarena.config.fasit.DbCredentials;
 import no.nav.fo.veilarboppfolging.db.testdriver.TestDriver;
 import org.flywaydb.core.Flyway;
-import org.springframework.jdbc.datasource.SingleConnectionDataSource;
+import org.springframework.jdbc.datasource.AbstractDataSource;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import javax.sql.DataSource;
 
@@ -29,12 +30,11 @@ public class JndiLocalContextConfig {
                 getDbCredentials(applicationName);
     }
     
-    public static SingleConnectionDataSource setupJndiLocalContext(DbCredentials dbCredentials) {
-        SingleConnectionDataSource ds = new SingleConnectionDataSource();
+    public static AbstractDataSource setupJndiLocalContext(DbCredentials dbCredentials) {
+        DriverManagerDataSource ds = new DriverManagerDataSource();
         ds.setUrl(dbCredentials.url);
         ds.setUsername(dbCredentials.username);
         ds.setPassword(dbCredentials.password);
-        ds.setSuppressClose(true);
         if(dbCredentials.url.contains("h2")) {
             ds.setDriverClassName(TestDriver.class.getName());
             migrerDatabase(ds);
@@ -42,9 +42,8 @@ public class JndiLocalContextConfig {
         return ds;
     }
 
-    public static SingleConnectionDataSource setupInMemoryDatabase() {
-        SingleConnectionDataSource ds = new SingleConnectionDataSource();
-        ds.setSuppressClose(true);
+    public static AbstractDataSource setupInMemoryDatabase() {
+        DriverManagerDataSource ds = new DriverManagerDataSource();
         ds.setDriverClassName(TestDriver.class.getName());
         ds.setUrl(TestDriver.createInMemoryDatabaseUrl());
         ds.setUsername("sa");
@@ -56,13 +55,12 @@ public class JndiLocalContextConfig {
         return ds;
     }
 
-    private static int migrerDatabase(SingleConnectionDataSource ds) {
+    private static int migrerDatabase(AbstractDataSource ds) {
         Flyway flyway = new Flyway();
         flyway.setLocations("db/migration/veilarboppfolgingDB");
         flyway.setDataSource(ds);
         flyway.setRepeatableSqlMigrationPrefix("N/A");
 
-        int migrate = flyway.migrate();
-        return migrate;
+        return flyway.migrate();
     }
 }
