@@ -194,6 +194,12 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
         aktiverBrukerService.aktiverBruker(aktiverArbeidssokerData);
     }
 
+    @Override
+    public void reaktiverBruker(Fnr fnr) throws Exception {
+        autorisasjonService.skalVereInternBruker();
+        aktiverBrukerService.reaktiverBruker(fnr);
+    }
+
     private Eskaleringsvarsel tilDto(EskaleringsvarselData eskaleringsvarselData) {
         return Optional.ofNullable(eskaleringsvarselData)
                 .map(eskalering -> Eskaleringsvarsel.builder()

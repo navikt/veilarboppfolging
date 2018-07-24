@@ -8,16 +8,14 @@ import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.config.RemoteFeatureConfig;
 import no.nav.fo.veilarboppfolging.db.NyeBrukereFeedRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
-import no.nav.fo.veilarboppfolging.domain.AktiverArbeidssokerData;
-import no.nav.fo.veilarboppfolging.domain.AktorId;
-import no.nav.fo.veilarboppfolging.domain.Innsatsgruppe;
-import no.nav.fo.veilarboppfolging.domain.Oppfolgingsbruker;
+import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.fo.veilarboppfolging.utils.FnrUtils;
 import no.nav.metrics.MetricsFactory;
 import no.nav.metrics.Timer;
 import no.nav.tjeneste.virksomhet.behandlearbeidssoeker.v1.binding.*;
 import no.nav.tjeneste.virksomhet.behandlearbeidssoeker.v1.informasjon.Brukerident;
 import no.nav.tjeneste.virksomhet.behandlearbeidssoeker.v1.meldinger.AktiverBrukerRequest;
+import no.nav.tjeneste.virksomhet.behandlearbeidssoeker.v1.meldinger.ReaktiverBrukerForenkletRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -82,6 +80,33 @@ public class AktiverBrukerService {
         aktiverBrukerOgOppfolging(fnr, aktorId, hentInnsatsGruppeBakoverKompatibel(bruker));
     }
 
+    @Transactional
+    public void reaktiverBruker(Fnr fnr) {
+        pepClient.sjekkLeseTilgangTilFnr(fnr.getFnr());
+
+        if (!registreringFeature.erAktiv()) {
+            throw new RuntimeException("Tjenesten er togglet av.");
+        }
+
+        AktorId aktorId = FnrUtils.getAktorIdOrElseThrow(aktorService, fnr.getFnr());
+
+        startReaktiveringAvBrukerOgOppfolging(fnr, aktorId);
+
+    }
+
+    private void startReaktiveringAvBrukerOgOppfolging(Fnr fnr, AktorId aktorId) {
+        oppfolgingRepository.startOppfolgingHvisIkkeAlleredeStartet(
+                Oppfolgingsbruker.builder()
+                        .aktoerId(aktorId.getAktorId())
+                        .build()
+        );
+
+        if (opprettBrukerIArenaFeature.erAktiv()) {
+            reaktiverBrukerIArena(fnr);
+        }
+    }
+
+
     //Todo: fjerne denne metoden når FO-1123 går over i Test1.
     private Innsatsgruppe hentInnsatsGruppeBakoverKompatibel(AktiverArbeidssokerData aktiverArbeidssokerData) {
         return ofNullable(aktiverArbeidssokerData.getInnsatsgruppe()).orElse(STANDARD_INNSATS);
@@ -113,10 +138,7 @@ public class AktiverBrukerService {
         Timer timer = MetricsFactory.createTimer("registrering.i.arena").start();
                 Try.run(() -> behandleArbeidssoekerV1.aktiverBruker(request))
                 .onFailure((t) -> {
-                    timer.stop()
-                            .setFailed()
-                            .addTagToReport("aarsak",  t.getClass().getSimpleName())
-                            .report();
+                    timer.stop().setFailed().addTagToReport("aarsak",  t.getClass().getSimpleName()).report();
                     log.warn("Feil ved aktivering av bruker i arena", t);
                 })
                 .mapFailure(
@@ -126,6 +148,32 @@ public class AktiverBrukerService {
                         Case($(instanceOf(AktiverBrukerBrukerManglerArbeidstillatelse.class)), (t) -> new Feil(new ArenaFeilType("BRUKER_MANGLER_ARBEIDSTILLATELSE"))),
                         Case($(instanceOf(AktiverBrukerSikkerhetsbegrensning.class)), (t) -> new NotAuthorizedException(t)),
                         Case($(instanceOf(AktiverBrukerUgyldigInput.class)), (t) -> new BadRequestException(t)),
+                        Case($(), (t) -> new InternalServerErrorException(t))
+                )
+                .onSuccess((event) -> timer.stop().report())
+                .get();
+    }
+
+    private void reaktiverBrukerIArena(Fnr fnr) {
+        Brukerident brukerident = new Brukerident();
+        brukerident.setBrukerident(fnr.getFnr());
+        ReaktiverBrukerForenkletRequest request = new ReaktiverBrukerForenkletRequest();
+        request.setIdent(brukerident);
+
+        Timer timer = MetricsFactory.createTimer("reaktivering.i.arena").start();
+        Try.run(() -> behandleArbeidssoekerV1.reaktiverBrukerForenklet(request))
+                .onFailure((t) -> {
+                    timer.stop().setFailed().addTagToReport("aarsak",  t.getClass().getSimpleName()).report();
+                    log.warn("Feil ved reaktivering av bruker i arena", t);
+                })
+                .mapFailure(
+                        Case($(instanceOf(ReaktiverBrukerForenkletBrukerFinnesIkke.class)), (t) -> new Feil(new ArenaFeilType("BRUKER_ER_UKJENT"))),
+                        Case($(instanceOf(AktiverBrukerBrukerIkkeReaktivert.class)), (t) -> new Feil(new ArenaFeilType("BRUKER_KAN_IKKE_REAKTIVERES"))),
+                        Case($(instanceOf(ReaktiverBrukerForenkletBrukerKanIkkeAktiveres.class)), (t) -> new Feil(new ArenaFeilType("BRUKER_ER_DOD_UTVANDRET_ELLER_FORSVUNNET"))),
+                        Case($(instanceOf(ReaktiverBrukerForenkletBrukerKanIkkeReaktiveresForenklet.class)), (t) -> new Feil(new ArenaFeilType("BRUKER_KAN_IKKE_REAKTIVERES_FORENKLET"))),
+                        Case($(instanceOf(ReaktiverBrukerForenkletBrukerManglerArbeidstillatelse.class)), (t) -> new Feil(new ArenaFeilType("BRUKER_MANGLER_ARBEIDSTILLATELSE"))),
+                        Case($(instanceOf(ReaktiverBrukerForenkletSikkerhetsbegrensning.class)), (t) -> new NotAuthorizedException(t)),
+                        Case($(instanceOf(ReaktiverBrukerForenkletUgyldigInput.class)), (t) -> new BadRequestException(t)),
                         Case($(), (t) -> new InternalServerErrorException(t))
                 )
                 .onSuccess((event) -> timer.stop().report())
