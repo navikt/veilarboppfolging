@@ -41,7 +41,7 @@ public class FunksjonelleMetrikker {
         String bleOpprettet = antallMal == 1 ? "opprettet" : "endret";
 
         MetricsFactory.createEvent("mittmal." + bleOpprettet)
-                .addFieldToReport("endretAv", endretAv)
+                .addTagToReport("endretAv", endretAv)
                 .report();
     }
 
