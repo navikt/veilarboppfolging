@@ -40,8 +40,8 @@ public class FunksjonelleMetrikker {
         String endretAv = malData.getEndretAvFormattert().toLowerCase();
         String bleOpprettet = antallMal == 1 ? "opprettet" : "endret";
 
-        MetricsFactory.createEvent("mittmal." + bleOpprettet)
-                .addTagToReport("endretAv", endretAv)
+        MetricsFactory.createEvent("mittmal.oppdatering")
+                .addTagToReport("endretAv", endretAv + " " +  bleOpprettet)
                 .report();
     }
 
