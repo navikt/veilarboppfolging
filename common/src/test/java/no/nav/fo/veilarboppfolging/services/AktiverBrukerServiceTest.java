@@ -88,6 +88,23 @@ class AktiverBrukerServiceTest {
     }
 
     @Test
+    void brukerSomHarInaktivStatusSkalKunneReaktivereSeg() throws Exception {
+        when(registreringFeature.erAktiv()).thenReturn(true);
+        aktiverBrukerService.reaktiverBruker(new Fnr("12345678910"));
+        verify(behandleArbeidssoekerV1, times(1)).reaktiverBrukerForenklet(any());
+    }
+
+    @Test
+    void brukerSomIkkeKanReaktiveresForenkletIArenaSkalGiRiktigFeil() throws Exception {
+        when(registreringFeature.erAktiv()).thenReturn(true);
+        doThrow(mock(ReaktiverBrukerForenkletBrukerKanIkkeReaktiveresForenklet.class)).when(behandleArbeidssoekerV1).reaktiverBrukerForenklet(any());
+        Feil e = reaktiverBrukerMotArenaOgReturnerFeil(new Fnr("12345678910"));
+        assertThat(e.getType().getStatus()).isNotNull();
+        assertThat(e.getType().getStatus()).isEqualTo(INTERNAL_SERVER_ERROR);
+        assertThat(e.getType().getName()).isEqualTo("BRUKER_KAN_IKKE_REAKTIVERES_FORENKLET");
+    }
+
+    @Test
     void brukerSomIkkeFinnesIArenaSkalGiRiktigStatus() throws Exception {
         when(registreringFeature.erAktiv()).thenReturn(true);
         doThrow(mock(AktiverBrukerBrukerFinnesIkke.class)).when(behandleArbeidssoekerV1).aktiverBruker(any());
@@ -139,6 +156,15 @@ class AktiverBrukerServiceTest {
     private Feil aktiverBrukerMotArenaOgReturnerFeil(AktiverArbeidssokerData aktiverArbeidssokerData) {
         try {
             aktiverBrukerService.aktiverBruker(aktiverArbeidssokerData);
+        } catch (Feil feil) {
+            return feil;
+        }
+        return null;
+    }
+
+    private Feil reaktiverBrukerMotArenaOgReturnerFeil(Fnr fnr) {
+        try {
+            aktiverBrukerService.reaktiverBruker(fnr);
         } catch (Feil feil) {
             return feil;
         }
