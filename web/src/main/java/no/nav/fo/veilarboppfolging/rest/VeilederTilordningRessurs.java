@@ -13,6 +13,7 @@ import no.nav.fo.veilarboppfolging.rest.domain.VeilederTilordning;
 import no.nav.fo.veilarboppfolging.utils.FunksjonelleMetrikker;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import javax.ws.rs.*;
@@ -33,17 +34,21 @@ public class VeilederTilordningRessurs {
     private VeilederTilordningerRepository veilederTilordningerRepository;
     private final PepClient pepClient;
 
-    private FeedProducer<OppfolgingFeedDTO> feed;
+    private FeedProducer<OppfolgingFeedDTO> oppfolgingFeed;
+    private FeedProducer<OppfolgingFeedDTO> oppfolgingMedLopenummerFeed;
+
     private final SubjectService subjectService = new SubjectService();
 
     public VeilederTilordningRessurs(AktorService aktorService,
                                      VeilederTilordningerRepository veilederTilordningerRepository,
                                      PepClient pepClient,
-                                     FeedProducer<OppfolgingFeedDTO> feed) {
+                                     @Qualifier("oppfolgingFeed") FeedProducer<OppfolgingFeedDTO> oppfolgingFeed,
+                                     @Qualifier("oppfolgingMedLopenummerFeed") FeedProducer<OppfolgingFeedDTO> oppfolgingMedLopenummerFeed) {
         this.aktorService = aktorService;
         this.veilederTilordningerRepository = veilederTilordningerRepository;
         this.pepClient = pepClient;
-        this.feed = feed;
+        this.oppfolgingFeed = oppfolgingFeed;
+        this.oppfolgingMedLopenummerFeed = oppfolgingMedLopenummerFeed;
     }
 
     @POST
@@ -111,7 +116,8 @@ public class VeilederTilordningRessurs {
 
     private void kallWebhook() {
         try {
-            feed.activateWebhook();
+            oppfolgingFeed.activateWebhook();
+            oppfolgingMedLopenummerFeed.activateWebhook();
         } catch (Exception e) {
             // Logger feilen, men bryr oss ikke om det. At webhooken feiler påvirker ikke funksjonaliteten
             // men gjør at endringen kommer senere inn i portefølje

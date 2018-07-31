@@ -37,6 +37,20 @@ public class OppfolgingFeedRepository {
                 .collect(toList());
     }
     
+    @Transactional
+    public List<OppfolgingFeedDTO> hentEndringerEtterId(String sinceId, int pageSize) {
+        return db.queryForList("SELECT * FROM "
+                        + "(SELECT o.aktor_id, o.veileder, o.under_oppfolging, o.ny_for_veileder, o.oppdatert, o.feed_id, m.manuell "
+                        + "FROM OPPFOLGINGSTATUS o LEFT JOIN MANUELL_STATUS m ON (o.GJELDENDE_MANUELL_STATUS = m.ID) "
+                        + "where o.feed_id >= ? ORDER BY o.feed_id) "
+                        + "WHERE rownum <= ?",
+                sinceId,
+                pageSize
+        ).stream()
+                .map(OppfolgingFeedUtil::mapRadTilOppfolgingFeedDTO)
+                .collect(toList());
+    }
+
     @Scheduled(fixedDelay = 1000)
     @Transactional
     public void settIderPaFeedElementer() {
