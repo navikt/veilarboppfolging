@@ -8,6 +8,7 @@ import no.nav.fo.veilarboppfolging.db.KvpRepository;
 import no.nav.fo.veilarboppfolging.domain.Kvp;
 import no.nav.fo.veilarboppfolging.domain.MalData;
 import no.nav.fo.veilarboppfolging.services.OppfolgingResolver.OppfolgingResolverDependencies;
+import no.nav.fo.veilarboppfolging.utils.FunksjonelleMetrikker;
 import no.nav.fo.veilarboppfolging.utils.KvpUtils;
 import org.springframework.stereotype.Component;
 
@@ -17,6 +18,7 @@ import java.util.List;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 import static no.nav.apiapp.feil.FeilType.INGEN_TILGANG;
+import static no.nav.fo.veilarboppfolging.utils.StringUtils.notNullAndNotEmpty;
 
 @Component
 public class MalService {
@@ -59,7 +61,9 @@ public class MalService {
         Kvp kvp = kvpRepository.fetch(kvpRepository.gjeldendeKvp(resolver.getAktorId()));
         ofNullable(kvp).ifPresent(this::sjekkEnhetTilgang);
 
-        return resolver.oppdaterMal(mal, endretAv);
+        MalData malData = resolver.oppdaterMal(mal, endretAv);
+        FunksjonelleMetrikker.oppdatertMittMal(malData, resolver.getMalList().size());
+        return malData;
     }
 
     @SneakyThrows

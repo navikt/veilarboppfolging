@@ -26,8 +26,8 @@ class NyeBrukereFeedRepositoryTest {
 
     @Test
     public void skalOppdatereFeedIdPaaAlleElementer() {
-        Oppfolgingsbruker oppfolgingsbruker1 = Oppfolgingsbruker.builder().aktoerId("111111").selvgaende(false).build();
-        Oppfolgingsbruker oppfolgingsbruker2 = Oppfolgingsbruker.builder().aktoerId("222222").selvgaende(true).build();
+        Oppfolgingsbruker oppfolgingsbruker1 = Oppfolgingsbruker.builder().aktoerId("111111").build();
+        Oppfolgingsbruker oppfolgingsbruker2 = Oppfolgingsbruker.builder().aktoerId("222222").build();
 
         nyeBrukereFeedRepository.leggTil(oppfolgingsbruker1);
         nyeBrukereFeedRepository.leggTil(oppfolgingsbruker2);
@@ -59,7 +59,7 @@ class NyeBrukereFeedRepositoryTest {
 
     private void leggTilElementer(int antall) {
         for(int i = 0; i < antall; i++) {
-            nyeBrukereFeedRepository.leggTil(Oppfolgingsbruker.builder().aktoerId("111111").selvgaende(false).build());
+            nyeBrukereFeedRepository.leggTil(Oppfolgingsbruker.builder().aktoerId("111111").build());
         }
     }
 

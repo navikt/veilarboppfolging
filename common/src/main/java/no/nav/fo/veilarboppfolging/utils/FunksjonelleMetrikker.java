@@ -1,5 +1,6 @@
 package no.nav.fo.veilarboppfolging.utils;
 
+import no.nav.fo.veilarboppfolging.domain.MalData;
 import no.nav.fo.veilarboppfolging.domain.Tilordning;
 import no.nav.metrics.Event;
 import no.nav.metrics.MetricsFactory;
@@ -33,6 +34,15 @@ public class FunksjonelleMetrikker {
 
     public static void stopKvpDueToChangedUnit() {
         MetricsFactory.createEvent("kvp.stopped.byttet_enhet").report();
+    }
+
+    public static void oppdatertMittMal(MalData malData, int antallMal) {
+        String endretAv = malData.getEndretAvFormattert().toLowerCase();
+        String bleOpprettet = antallMal == 1 ? "opprettet" : "endret";
+
+        MetricsFactory.createEvent("mittmal.oppdatering")
+                .addTagToReport("endretAv", endretAv + " " +  bleOpprettet)
+                .report();
     }
 
     private FunksjonelleMetrikker() {

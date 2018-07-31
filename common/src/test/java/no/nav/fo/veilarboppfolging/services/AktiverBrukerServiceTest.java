@@ -8,6 +8,7 @@ import no.nav.fo.veilarboppfolging.db.NyeBrukereFeedRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.domain.AktiverArbeidssokerData;
 import no.nav.fo.veilarboppfolging.domain.Fnr;
+import no.nav.fo.veilarboppfolging.domain.Innsatsgruppe;
 import no.nav.fo.veilarboppfolging.domain.Oppfolgingsbruker;
 import no.nav.tjeneste.virksomhet.behandlearbeidssoeker.v1.binding.*;
 import org.junit.jupiter.api.BeforeEach;
@@ -69,7 +70,7 @@ class AktiverBrukerServiceTest {
 
 
     private AktiverArbeidssokerData hentBruker() {
-        return new AktiverArbeidssokerData(new Fnr("12345678910"), true);
+        return new AktiverArbeidssokerData(new Fnr("12345678910"), Innsatsgruppe.STANDARD_INNSATS);
     }
 
     @Test
@@ -84,6 +85,23 @@ class AktiverBrukerServiceTest {
         when(registreringFeature.erAktiv()).thenReturn(false);
         assertThrows(RuntimeException.class, () -> aktiverBrukerService.aktiverBruker(hentBruker()));
         verify(behandleArbeidssoekerV1, times(0)).aktiverBruker(any());
+    }
+
+    @Test
+    void brukerSomHarInaktivStatusSkalKunneReaktivereSeg() throws Exception {
+        when(registreringFeature.erAktiv()).thenReturn(true);
+        aktiverBrukerService.reaktiverBruker(new Fnr("12345678910"));
+        verify(behandleArbeidssoekerV1, times(1)).reaktiverBrukerForenklet(any());
+    }
+
+    @Test
+    void brukerSomIkkeKanReaktiveresForenkletIArenaSkalGiRiktigFeil() throws Exception {
+        when(registreringFeature.erAktiv()).thenReturn(true);
+        doThrow(mock(ReaktiverBrukerForenkletBrukerKanIkkeReaktiveresForenklet.class)).when(behandleArbeidssoekerV1).reaktiverBrukerForenklet(any());
+        Feil e = reaktiverBrukerMotArenaOgReturnerFeil(new Fnr("12345678910"));
+        assertThat(e.getType().getStatus()).isNotNull();
+        assertThat(e.getType().getStatus()).isEqualTo(INTERNAL_SERVER_ERROR);
+        assertThat(e.getType().getName()).isEqualTo("BRUKER_KAN_IKKE_REAKTIVERES_FORENKLET");
     }
 
     @Test
@@ -138,6 +156,15 @@ class AktiverBrukerServiceTest {
     private Feil aktiverBrukerMotArenaOgReturnerFeil(AktiverArbeidssokerData aktiverArbeidssokerData) {
         try {
             aktiverBrukerService.aktiverBruker(aktiverArbeidssokerData);
+        } catch (Feil feil) {
+            return feil;
+        }
+        return null;
+    }
+
+    private Feil reaktiverBrukerMotArenaOgReturnerFeil(Fnr fnr) {
+        try {
+            aktiverBrukerService.reaktiverBruker(fnr);
         } catch (Feil feil) {
             return feil;
         }

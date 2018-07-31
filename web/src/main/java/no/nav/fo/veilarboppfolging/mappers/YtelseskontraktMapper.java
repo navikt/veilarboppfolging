@@ -61,10 +61,20 @@ public class YtelseskontraktMapper {
                 .map(WSRettighetsgruppe::getRettighetsGruppe).orElse("");
     }
 
-    private static final Function<WSVedtak, Vedtak> wsVedtakToVedtak = wsVedtak -> new Vedtak()
-            .withVedtakstype(wsVedtak.getVedtakstype())
-            .withStatus(wsVedtak.getStatus())
-            .withAktivitetsfase(wsVedtak.getAktivitetsfase());
+    private static final Function<WSVedtak, Vedtak> wsVedtakToVedtak = wsVedtak -> {
+        final Optional<XMLGregorianCalendar> fomdato = Optional.ofNullable(wsVedtak.getVedtaksperiode().getFom());
+        final Optional<XMLGregorianCalendar> tomdato = Optional.ofNullable(wsVedtak.getVedtaksperiode().getTom());
+
+        final Vedtak ytelse = new Vedtak()
+                .withVedtakstype(wsVedtak.getVedtakstype())
+                .withStatus(wsVedtak.getStatus())
+                .withAktivitetsfase(wsVedtak.getAktivitetsfase());
+
+        fomdato.ifPresent(ytelse::withFradato);
+        tomdato.ifPresent(ytelse::withTildato);
+
+        return ytelse;
+    };
 
     private static final Function<WSYtelseskontrakt, Ytelseskontrakt> wsYtelseskontraktToYtelseskontrakt = wsYtelseskontrakt -> {
         final Optional<XMLGregorianCalendar> fomGyldighetsperiode = Optional.ofNullable(wsYtelseskontrakt.getFomGyldighetsperiode());

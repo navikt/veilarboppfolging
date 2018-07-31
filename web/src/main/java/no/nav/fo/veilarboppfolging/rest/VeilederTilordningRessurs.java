@@ -30,9 +30,10 @@ public class VeilederTilordningRessurs {
 
     private static final Logger LOG = getLogger(VeilederTilordningRessurs.class);
 
-    private AktorService aktorService;
-    private VeilederTilordningerRepository veilederTilordningerRepository;
+    private final AktorService aktorService;
+    private final VeilederTilordningerRepository veilederTilordningerRepository;
     private final PepClient pepClient;
+    private final AutorisasjonService autorisasjonService;
 
     private FeedProducer<OppfolgingFeedDTO> oppfolgingFeed;
     private FeedProducer<OppfolgingFeedDTO> oppfolgingMedLopenummerFeed;
@@ -43,7 +44,10 @@ public class VeilederTilordningRessurs {
                                      VeilederTilordningerRepository veilederTilordningerRepository,
                                      PepClient pepClient,
                                      @Qualifier("oppfolgingFeed") FeedProducer<OppfolgingFeedDTO> oppfolgingFeed,
-                                     @Qualifier("oppfolgingMedLopenummerFeed") FeedProducer<OppfolgingFeedDTO> oppfolgingMedLopenummerFeed) {
+                                     @Qualifier("oppfolgingMedLopenummerFeed") FeedProducer<OppfolgingFeedDTO> oppfolgingMedLopenummerFeed,
+                                     AutorisasjonService autorisasjonService
+    ) {
+        this.autorisasjonService = autorisasjonService;
         this.aktorService = aktorService;
         this.veilederTilordningerRepository = veilederTilordningerRepository;
         this.pepClient = pepClient;
@@ -56,6 +60,8 @@ public class VeilederTilordningRessurs {
     @Produces("application/json")
     @Path("/tilordneveileder")
     public Response postVeilederTilordninger(List<VeilederTilordning> tilordninger) {
+        autorisasjonService.skalVereInternBruker();
+
         List<VeilederTilordning> feilendeTilordninger = new ArrayList<>();
         for (VeilederTilordning tilordning : tilordninger) {
             try {
@@ -95,7 +101,9 @@ public class VeilederTilordningRessurs {
     @POST
     @Path("{fnr}/lestaktivitetsplan/")
     public void lestAktivitetsplan(@PathParam("fnr") String fnr) {
+        autorisasjonService.skalVereInternBruker();
         pepClient.sjekkLeseTilgangTilFnr(fnr);
+
         String aktorId = aktorService.getAktorId(fnr)
                 .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktør for fnr: " + fnr));
 
