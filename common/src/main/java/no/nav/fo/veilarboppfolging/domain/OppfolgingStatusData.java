@@ -26,6 +26,8 @@ public class OppfolgingStatusData {
     public List<Oppfolgingsperiode> oppfolgingsperioder = Collections.emptyList();
     public List<Kvp> kvpPerioder;
     public boolean harSkriveTilgang;
+    public Boolean inaktivIArena;
+    public Boolean kanReaktiveres;
 
     public Date getOppfolgingUtgang() {
         return oppfolgingsperioder.stream().map(Oppfolgingsperiode::getSluttDato).filter(Objects::nonNull).max(naturalOrder()).orElse(null);
