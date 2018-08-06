@@ -129,14 +129,14 @@ public class ArenaUtilsTest {
 
     @Test
     public void harIkkeVaertRegistrertILopetAvDeSiste28Dagene() {
-        assertThat(ArenaUtils.harVaertRegistrertILopetAvDeSiste28Dagene(LocalDate.now().minusDays(31))).isTrue();
-        assertThat(ArenaUtils.harVaertRegistrertILopetAvDeSiste28Dagene(LocalDate.now().minusDays(29))).isTrue();
+        assertThat(ArenaUtils.harVaertRegistrertILopetAvDeSiste28Dagene(LocalDate.now().minusDays(31))).isFalse();
+        assertThat(ArenaUtils.harVaertRegistrertILopetAvDeSiste28Dagene(LocalDate.now().minusDays(29))).isFalse();
     }
 
     @Test
     public void harIkkeVaertRegistrertPaaOvertEttAAr() {
-        assertThat(ArenaUtils.harVaertRegistrertILopetAvDeSiste28Dagene(LocalDate.now().minusYears(1).minusDays(24))).isTrue();
-        assertThat(ArenaUtils.harVaertRegistrertILopetAvDeSiste28Dagene(LocalDate.now().minusYears(1).minusDays(38))).isTrue();
+        assertThat(ArenaUtils.harVaertRegistrertILopetAvDeSiste28Dagene(LocalDate.now().minusYears(1).minusDays(24))).isFalse();
+        assertThat(ArenaUtils.harVaertRegistrertILopetAvDeSiste28Dagene(LocalDate.now().minusYears(1).minusDays(38))).isFalse();
     }
 
 }
