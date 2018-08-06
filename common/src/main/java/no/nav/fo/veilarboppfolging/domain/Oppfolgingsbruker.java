@@ -7,5 +7,5 @@ import lombok.Value;
 @Builder
 public class Oppfolgingsbruker {
     private String aktoerId;
-    private Innsatsgruppe selvgaende;
+    private Innsatsgruppe innsatsgruppe;
 }

@@ -117,6 +117,7 @@ public class AktiverBrukerService {
         oppfolgingRepository.startOppfolgingHvisIkkeAlleredeStartet(
                 Oppfolgingsbruker.builder()
                         .aktoerId(aktorId.getAktorId())
+                        .innsatsgruppe(innsatsgruppe)
                         .build()
         );
 
