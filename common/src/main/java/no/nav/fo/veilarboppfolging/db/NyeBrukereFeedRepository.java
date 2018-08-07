@@ -3,9 +3,12 @@ package no.nav.fo.veilarboppfolging.db;
 import io.vavr.control.Try;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.fo.veilarboppfolging.domain.Innsatsgruppe;
 import no.nav.fo.veilarboppfolging.domain.NyeBrukereFeedDTO;
 import no.nav.fo.veilarboppfolging.domain.Oppfolgingsbruker;
 import no.nav.sbl.jdbc.Database;
+
+import static no.nav.fo.veilarboppfolging.domain.Innsatsgruppe.STANDARD_INNSATS;
 
 import java.sql.ResultSet;
 import java.util.List;
@@ -21,11 +24,13 @@ public class NyeBrukereFeedRepository {
 
 
     public void leggTil(Oppfolgingsbruker oppfolgingsbruker) {
+        Innsatsgruppe innsatsgruppe = oppfolgingsbruker.getInnsatsgruppe();
+        String innsatsGruppeNavn = innsatsgruppe == null ? null : innsatsgruppe.toString();
         database.update(
                 "INSERT INTO NYE_BRUKERE_FEED " +
-                "(AKTOR_ID, SELVGAENDE) " +
+                "(AKTOR_ID, SELVGAENDE, INNSATSGRUPPE) " +
                 "VALUES" +
-                "(?,?)", oppfolgingsbruker.getAktoerId(), false);
+                "(?,?,?)", oppfolgingsbruker.getAktoerId(), STANDARD_INNSATS == innsatsgruppe, innsatsGruppeNavn);
     }
 
     public Try<Integer> tryLeggTilFeedIdPaAlleElementerUtenFeedId() {
@@ -53,6 +58,7 @@ public class NyeBrukereFeedRepository {
                 .id(rs.getLong("FEED_ID"))
                 .aktorId(rs.getString("AKTOR_ID"))
                 .selvgaende(rs.getBoolean("SELVGAENDE"))
+                .innsatsgruppe(rs.getString("INNSATSGRUPPE"))
                 .opprettet(rs.getTimestamp("OPPRETTET_TIMESTAMP"))
                 .build();
     }
