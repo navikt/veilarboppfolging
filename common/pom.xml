@@ -42,6 +42,10 @@
             <artifactId>feature-toggle</artifactId>
         </dependency>
         <dependency>
+            <groupId>no.finn.unleash</groupId>
+            <artifactId>unleash-client-java</artifactId>
+        </dependency>
+        <dependency>
             <groupId>no.nav.sbl</groupId>
             <artifactId>api-app</artifactId>
             <type>test-jar</type>
