@@ -2,33 +2,34 @@ package no.nav.fo.veilarboppfolging.config;
 
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
 
-import javax.inject.Inject;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class RemoteFeatureConfig {
 
-    @Inject
     protected UnleashService unleashService;
 
     @Bean
     public RegistreringFeature registrereBrukerGenerellFeature() {
-        return new RegistreringFeature();
+        return new RegistreringFeature(unleashService);
     }
 
     @Bean
     public OpprettBrukerIArenaFeature registrereBrukerArenaFeature() {
-        return new OpprettBrukerIArenaFeature();
+        return new OpprettBrukerIArenaFeature(unleashService);
     }
 
     @Bean
     public BrukervilkarFeature brukervilkarFeature(UnleashService unleashService) {
-        return new BrukervilkarFeature();
+        return new BrukervilkarFeature(unleashService);
     }
 
     public static class RegistreringFeature extends RemoteFeatureConfig {
+
+        public RegistreringFeature(UnleashService unleashService) {
+            this.unleashService = unleashService;
+        }
 
         public boolean erAktiv() {
             return unleashService.isEnabled("veilarboppfolging.registrering");
@@ -38,6 +39,10 @@ public class RemoteFeatureConfig {
 
     public static class OpprettBrukerIArenaFeature extends RemoteFeatureConfig {
 
+        public OpprettBrukerIArenaFeature(UnleashService unleashService) {
+            this.unleashService = unleashService;
+        }
+
         public boolean erAktiv() {
             return unleashService.isEnabled("veilarboppfolging.opprettbrukeriarena");
         }
@@ -45,6 +50,10 @@ public class RemoteFeatureConfig {
     }
 
     public static class BrukervilkarFeature extends RemoteFeatureConfig {
+
+        public BrukervilkarFeature(UnleashService unleashService) {
+            this.unleashService = unleashService;
+        }
 
         public boolean erAktiv() {
             return unleashService.isEnabled("aktivitetsplan.brukervilkar");
