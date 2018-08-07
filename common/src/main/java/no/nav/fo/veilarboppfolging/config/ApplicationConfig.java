@@ -21,14 +21,4 @@ public class ApplicationConfig implements ApiApplication {
 
     public static final String APPLICATION_NAME = "veilarboppfolging";
 
-    @Override
-    public String getApplicationName() {
-        return APPLICATION_NAME;
-    }
-
-    @Override
-    public Sone getSone() {
-        return FSS;
-    }
-
 }
