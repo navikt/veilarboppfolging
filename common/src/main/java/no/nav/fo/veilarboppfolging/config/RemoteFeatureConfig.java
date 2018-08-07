@@ -1,52 +1,53 @@
 package no.nav.fo.veilarboppfolging.config;
 
-import no.nav.sbl.featuretoggle.remote.RemoteFeatureToggle;
-import no.nav.sbl.featuretoggle.remote.RemoteFeatureToggleRepository;
-import org.springframework.beans.factory.annotation.Value;
+import no.nav.sbl.featuretoggle.unleash.UnleashService;
+
+import javax.inject.Inject;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class RemoteFeatureConfig {
 
-    @Value("${feature_endpoint.url}")
-    private String remoteFeatureUrl;
+    @Inject
+    protected UnleashService unleashService;
 
     @Bean
-    public RemoteFeatureToggleRepository remoteFeatureToggleRespository() {
-        return new RemoteFeatureToggleRepository(remoteFeatureUrl);
+    public RegistreringFeature registrereBrukerGenerellFeature() {
+        return new RegistreringFeature();
     }
 
     @Bean
-    public RegistreringFeature registrereBrukerGenerellFeature(RemoteFeatureToggleRepository repo) {
-        return new RegistreringFeature(repo);
+    public OpprettBrukerIArenaFeature registrereBrukerArenaFeature() {
+        return new OpprettBrukerIArenaFeature();
     }
 
     @Bean
-    public OpprettBrukerIArenaFeature registrereBrukerArenaFeature(RemoteFeatureToggleRepository repo) {
-        return new OpprettBrukerIArenaFeature(repo);
+    public BrukervilkarFeature brukervilkarFeature(UnleashService unleashService) {
+        return new BrukervilkarFeature();
     }
 
-    @Bean
-    public BrukervilkarFeature brukervilkarFeature(RemoteFeatureToggleRepository repo) {
-        return new BrukervilkarFeature(repo);
-    }
+    public static class RegistreringFeature extends RemoteFeatureConfig {
 
-    public static class RegistreringFeature extends RemoteFeatureToggle {
-        public RegistreringFeature(RemoteFeatureToggleRepository repository) {
-            super(repository, "veilarboppfolging.registrering", false);
+        public boolean erAktiv() {
+            return unleashService.isEnabled("veilarboppfolging.registrering");
         }
+
     }
 
-    public static class OpprettBrukerIArenaFeature extends RemoteFeatureToggle {
-        public OpprettBrukerIArenaFeature(RemoteFeatureToggleRepository repository) {
-            super(repository, "veilarboppfolging.opprettbrukeriarena", false);
+    public static class OpprettBrukerIArenaFeature extends RemoteFeatureConfig {
+
+        public boolean erAktiv() {
+            return unleashService.isEnabled("veilarboppfolging.opprettbrukeriarena");
         }
+
     }
 
-    public static class BrukervilkarFeature extends RemoteFeatureToggle {
-        public BrukervilkarFeature(RemoteFeatureToggleRepository repository) {
-            super(repository, "aktivitetsplan.brukervilkar", false);
+    public static class BrukervilkarFeature extends RemoteFeatureConfig {
+
+        public boolean erAktiv() {
+            return unleashService.isEnabled("aktivitetsplan.brukervilkar");
         }
     }
 }
