@@ -17,6 +17,7 @@ import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.fo.veilarboppfolging.utils.FunksjonelleMetrikker;
 import no.nav.fo.veilarboppfolging.utils.StringUtils;
 import no.nav.fo.veilarboppfolging.vilkar.VilkarService;
+import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import no.nav.sbl.jdbc.Transactor;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.DigitalKontaktinformasjonV1;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.HentDigitalKontaktinformasjonKontaktinformasjonIkkeFunnet;
@@ -100,7 +101,7 @@ public class OppfolgingResolver {
 
         // Denne togglen iverksetter sjekk av reaktiveringsstatus. Dette i seg selv er en ren leseoperasjon, men medfører at det alltid 
         // går et oppslag for status mot Arena, også dersom bruker allerede er under oppfølging
-        boolean sjekkReaktiveringsStatus = false;
+        boolean sjekkReaktiveringsStatus = deps.getUnleashService().isEnabled("oppfolgingsstatus.sjekkreaktivering");
         if(sjekkReaktiveringsStatus) {
             if(statusIArena == null) {
                 hentOppfolgingstatusFraArena();
@@ -110,7 +111,7 @@ public class OppfolgingResolver {
                 kanReaktiveres = kanReaktiveres(statusIArena.get());
 
                 // Denne togglen iverksetter automatisk avslutning av oppfølging dersom bruker er inaktiv i Arena og ikke kan reaktiveres.
-                boolean automatiskAvslutningAvOppfolgingToggle = false;
+                boolean automatiskAvslutningAvOppfolgingToggle = deps.getUnleashService().isEnabled("oppfolgingsstatus.avsluttoppfolging.automatisk");
                 if(automatiskAvslutningAvOppfolgingToggle && inaktivIArena && !kanReaktiveres) {
                     log.info("Avslutter oppfølgingsperiode for bruker");
                     avsluttOppfolging(null, "Oppfølging avsluttet automatisk pga. inaktiv bruker som ikke kan reaktiveres");
@@ -461,5 +462,8 @@ public class OppfolgingResolver {
 
         @Inject
         private RemoteFeatureConfig.BrukervilkarFeature brukervilkarFeature;
+
+        @Inject
+        private UnleashService unleashService;
     }
 }
