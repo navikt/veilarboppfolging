@@ -250,7 +250,10 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
                 .setOppfolgingUtgang(oppfolgingStatusData.getOppfolgingUtgang())
                 .setGjeldendeEskaleringsvarsel(tilDto(oppfolgingStatusData.getGjeldendeEskaleringsvarsel()))
                 .setOppfolgingsPerioder(oppfolgingStatusData.oppfolgingsperioder.stream().map(this::tilDTO).collect(toList()))
-                .setHarSkriveTilgang(oppfolgingStatusData.harSkriveTilgang);
+                .setHarSkriveTilgang(oppfolgingStatusData.harSkriveTilgang)
+                .setInaktivIArena(oppfolgingStatusData.inaktivIArena)
+                .setKanReaktiveres(oppfolgingStatusData.kanReaktiveres)
+                ;
     }
 
     private OppfolgingPeriodeDTO tilDTO(Oppfolgingsperiode oppfolgingsperiode) {

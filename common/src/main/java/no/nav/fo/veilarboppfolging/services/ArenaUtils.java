@@ -3,12 +3,18 @@ package no.nav.fo.veilarboppfolging.services;
 import java.util.HashSet;
 import java.util.Set;
 
+import no.nav.fo.veilarboppfolging.domain.ArenaOppfolging;
+
 import static java.lang.Boolean.TRUE;
 import static java.util.Arrays.asList;
+
+import java.time.LocalDate;
+import java.time.Period;
 
 public class ArenaUtils {
 
     private static final String ARBS = "ARBS";
+    private static final String ISERV = "ISERV";
     private static final Set<String> DELVIS_REGISTRERT_KODER = new HashSet<>(asList("RARBS", "PARBS"));
     private static final Set<String> OPPFOLGINGKODER = new HashSet<>(asList("BATT", "BFORM", "IKVAL", "VURDU", "OPPFI", "VARIG"));
     private static final String IKKE_ARBEIDSSOKER = "IARBS";
@@ -44,6 +50,24 @@ public class ArenaUtils {
 
     private static boolean erIArbeidOgHarInnsatsbehov(String formidlingsgruppeKode, String servicegruppeKode) {
         return IKKE_ARBEIDSSOKER.equals(formidlingsgruppeKode) && OPPFOLGINGKODER.contains(servicegruppeKode);
+    }
+
+    public static boolean erIserv(ArenaOppfolging arenaStatus) {
+        return ISERV.equals(arenaStatus.getFormidlingsgruppe());
+    }
+
+    public static boolean kanReaktiveres(ArenaOppfolging arenaStatus) {
+        return erIserv(arenaStatus) && harVaertRegistrertILopetAvDeSiste28Dagene(arenaStatus.getInaktiveringsdato());
+    }
+
+    static boolean harVaertRegistrertILopetAvDeSiste28Dagene(LocalDate inaktiveringsDato) {
+        if (inaktiveringsDato == null) {
+            return false;
+        }
+        Period inaktiveringsIntervall = Period.between(inaktiveringsDato, LocalDate.now());
+        return inaktiveringsIntervall.getYears() == 0
+                && inaktiveringsIntervall.getMonths() == 0
+                && inaktiveringsIntervall.getDays() <= 28;
     }
 
 }

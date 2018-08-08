@@ -42,6 +42,7 @@
         <rest alias="veilArbAktivitetAPI" mapToProperty="veilarbaktivitet" />
         <rest alias="veilarblogin.redirect-url" mapToProperty="oidc-redirect" />
         <rest alias="feature_endpoint" mapToProperty="feature_endpoint" />
+        <rest alias="unleash-api" mapToProperty="unleash" />
 
         <rest alias="veilarbazureadproxy_discovery" mapToProperty="aad_b2c_discovery" />
         <credential alias="aad_b2c_clientid"/>
