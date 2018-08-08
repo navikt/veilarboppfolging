@@ -108,7 +108,7 @@ public class OppfolgingResolver {
             }
             statusIArena.ifPresent((arenaStatus) -> {
                 inaktivIArena = erIserv(statusIArena.get());
-                kanReaktiveres = kanReaktiveres(statusIArena.get());
+                kanReaktiveres = oppfolging.isUnderOppfolging() && kanReaktiveres(statusIArena.get());
 
                 // Denne togglen iverksetter automatisk avslutning av oppfølging dersom bruker er inaktiv i Arena og ikke kan reaktiveres.
                 boolean automatiskAvslutningAvOppfolgingToggle = deps.getUnleashService().isEnabled("oppfolgingsstatus.avsluttoppfolging.automatisk");
