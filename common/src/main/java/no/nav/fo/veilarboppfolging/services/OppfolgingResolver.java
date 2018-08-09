@@ -274,9 +274,10 @@ public class OppfolgingResolver {
     }
 
     boolean kanAvslutteOppfolging() {
+        boolean harAktiveTiltak = !deps.getUnleashService().isEnabled("oppfolging.ikke.hent.tiltak.ved.avslutning") && harAktiveTiltak();
         return oppfolging.isUnderOppfolging()
                 && !erUnderOppfolgingIArena()
-                && !harAktiveTiltak()
+                && !harAktiveTiltak
                 && !erUnderKvp();
     }
 
