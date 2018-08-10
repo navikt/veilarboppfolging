@@ -6,13 +6,12 @@ import no.nav.sbl.dialogarena.types.Pingable;
 import no.nav.sbl.dialogarena.types.Pingable.Ping.PingMetadata;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
 import no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v1.binding.OppfoelgingsstatusV1;
+import no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v2.binding.OppfoelgingsstatusV2;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3;
 import org.apache.cxf.interceptor.LoggingOutInterceptor;
 import org.slf4j.Logger;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import javax.inject.Inject;
 
 import java.util.UUID;
 
@@ -36,6 +35,14 @@ public class ArenaServiceConfig {
         final String url = getProperty("oppfoelging.endpoint.url");
         LOG.info("URL for Oppfoelging_V1 er {}", url);
         return new CXFClient<>(OppfoelgingPortType.class)
+                .withOutInterceptor(new LoggingOutInterceptor())
+                .address(url);
+    }
+
+    public static CXFClient<OppfoelgingsstatusV2> oppfoelgingstatusV2PortType() {
+        final String url = getProperty("oppfoelgingsstatus.v2.endpoint.url");
+        LOG.info("URL for Oppfoelging_V2 er {}", url);
+        return new CXFClient<>(OppfoelgingsstatusV2.class)
                 .withOutInterceptor(new LoggingOutInterceptor())
                 .address(url);
     }
