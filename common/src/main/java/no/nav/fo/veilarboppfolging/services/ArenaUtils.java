@@ -57,7 +57,11 @@ public class ArenaUtils {
     }
 
     public static boolean kanReaktiveres(ArenaOppfolging arenaStatus) {
-        return arenaStatus.getKanEnkeltReaktiveres() != null && arenaStatus.getKanEnkeltReaktiveres();
+        Boolean kanEnkeltReaktiveres = arenaStatus.getKanEnkeltReaktiveres();
+        return TRUE == kanEnkeltReaktiveres || 
+                (kanEnkeltReaktiveres == null 
+                && erIserv(arenaStatus) 
+                && harVaertRegistrertILopetAvDeSiste28Dagene(arenaStatus.getInaktiveringsdato()));
     }
 
     static boolean harVaertRegistrertILopetAvDeSiste28Dagene(LocalDate inaktiveringsDato) {
