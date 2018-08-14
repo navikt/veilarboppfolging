@@ -32,6 +32,7 @@ public class ArenaOppfolgingService {
     private UnleashService unleashService;
     private OppfoelgingsstatusV1 oppfoelgingsstatusService;
     private OppfoelgingsstatusV2 oppfoelgingsstatusV2Service;
+    public static final String UNLEASH_TOGGLE_OPPFOLGING_V2 = "oppfolging.bruk.ny.oppfolgingtjeneste.v2";
 
     public ArenaOppfolgingService(OppfoelgingsstatusV1 oppfoelgingsstatusService,
                                   OppfoelgingsstatusV2 oppfoelgingsstatusV2Service,
@@ -44,7 +45,7 @@ public class ArenaOppfolgingService {
     }
 
     public ArenaOppfolging hentArenaOppfolging(String identifikator) {
-        boolean skalBrukeNyArenaOppfolgingTjeneste = unleashService.isEnabled("oppfolging.bruk.ny.oppfolgingtjeneste.v2");
+        boolean skalBrukeNyArenaOppfolgingTjeneste = unleashService.isEnabled(UNLEASH_TOGGLE_OPPFOLGING_V2);
         if (skalBrukeNyArenaOppfolgingTjeneste) {
             return getArenaOppfolgingsstatusV2(identifikator);
         } else {
