@@ -109,15 +109,25 @@ public class OppfolgingResolver {
             statusIArena.ifPresent((arenaStatus) -> {
                 inaktivIArena = erIserv(statusIArena.get());
                 kanReaktiveres = oppfolging.isUnderOppfolging() && kanReaktiveres(statusIArena.get());
+                boolean skalAvsluttes = oppfolging.isUnderOppfolging() && inaktivIArena && !kanReaktiveres;
+                log.info("Statuser for reaktivering og inaktivering: Aktiv Oppfølgingsperiode [{}], kanReaktiveres [{}], skalAvsluttes [{}]. Tilstand i Arena: [{}]",
+                        oppfolging.isUnderOppfolging(), kanReaktiveres, skalAvsluttes, statusIArena.get());
 
-                // Denne togglen iverksetter automatisk avslutning av oppfølging dersom bruker er inaktiv i Arena og ikke kan reaktiveres.
-                boolean automatiskAvslutningAvOppfolgingToggle = deps.getUnleashService().isEnabled("oppfolgingsstatus.avsluttoppfolging.automatisk");
-                if(automatiskAvslutningAvOppfolgingToggle && inaktivIArena && !kanReaktiveres) {
-                    log.info("Avslutter oppfølgingsperiode for bruker");
-                    avsluttOppfolging(null, "Oppfølging avsluttet automatisk pga. inaktiv bruker som ikke kan reaktiveres");
-                    reloadOppfolging();
+                if(skalAvsluttes) {
+                    inaktiverBruker();
                 }
             });
+        }
+    }
+
+    private void inaktiverBruker() {
+        boolean automatiskAvslutningAvOppfolgingToggle = deps.getUnleashService().isEnabled("oppfolgingsstatus.avsluttoppfolging.automatisk");
+        if(automatiskAvslutningAvOppfolgingToggle) {
+            log.info("Avslutter oppfølgingsperiode for bruker");
+            avsluttOppfolging(null, "Oppfølging avsluttet automatisk pga. inaktiv bruker som ikke kan reaktiveres");
+            reloadOppfolging();
+        } else {
+            log.info("Bruker skal inaktiveres, men automatisk avslutning er slått av");
         }
     }
 
