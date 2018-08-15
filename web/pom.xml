@@ -14,10 +14,6 @@
 
     <dependencies>
         <dependency>
-            <groupId>io.vavr</groupId>
-            <artifactId>vavr</artifactId>
-        </dependency>
-        <dependency>
             <groupId>no.nav.fo</groupId>
             <artifactId>veilarboppfolging-common</artifactId>
         </dependency>
