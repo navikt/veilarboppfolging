@@ -47,10 +47,7 @@ import static no.nav.fo.veilarbaktivitet.domain.AktivitetStatus.AVBRUTT;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetStatus.FULLFORT;
 import static no.nav.fo.veilarboppfolging.domain.KodeverkBruker.SYSTEM;
 import static no.nav.fo.veilarboppfolging.domain.VilkarStatus.GODKJENT;
-import static no.nav.fo.veilarboppfolging.services.ArenaUtils.erIserv;
-import static no.nav.fo.veilarboppfolging.services.ArenaUtils.erUnderOppfolging;
-import static no.nav.fo.veilarboppfolging.services.ArenaUtils.kanReaktiveres;
-import static no.nav.fo.veilarboppfolging.services.ArenaUtils.kanSettesUnderOppfolging;
+import static no.nav.fo.veilarboppfolging.services.ArenaUtils.*;
 import static no.nav.fo.veilarboppfolging.vilkar.VilkarService.VilkarType.PRIVAT;
 import static no.nav.fo.veilarboppfolging.vilkar.VilkarService.VilkarType.UNDER_OPPFOLGING;
 
@@ -70,6 +67,7 @@ public class OppfolgingResolver {
     private List<ArenaAktivitetDTO> arenaAktiviteter;
     private Boolean inaktivIArena;
     private Boolean kanReaktiveres;
+    private Boolean erIkkeArbeidssokerUtenOppfolging;
 
     OppfolgingResolver(String fnr, OppfolgingResolverDependencies deps) {
         deps.getPepClient().sjekkLeseTilgangTilFnr(fnr);
@@ -96,6 +94,11 @@ public class OppfolgingResolver {
                     deps.getOppfolgingRepository().startOppfolgingHvisIkkeAlleredeStartet(aktorId);
                     reloadOppfolging();
                 }
+
+                erIkkeArbeidssokerUtenOppfolging = erIARBSUtenOppfolging(
+                        arenaStatus.getFormidlingsgruppe(),
+                        arenaStatus.getServicegruppe()
+                );
             });
         }
 
@@ -318,6 +321,10 @@ public class OppfolgingResolver {
 
     Boolean getKanReaktiveres() {
         return kanReaktiveres;
+    }
+
+    Boolean getErIkkeArbeidssokerUtenOppfolging() {
+        return erIkkeArbeidssokerUtenOppfolging;
     }
 
     void avsluttOppfolging(String veileder, String begrunnelse) {
