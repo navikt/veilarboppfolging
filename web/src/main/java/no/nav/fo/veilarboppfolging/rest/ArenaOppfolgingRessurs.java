@@ -81,7 +81,7 @@ public class ArenaOppfolgingRessurs {
         LOG.info("Henter oppfølgingsstatus for fnr");
         no.nav.fo.veilarboppfolging.domain.ArenaOppfolging arenaData = arenaOppfolgingService.hentArenaOppfolging(fnr);
         Oppfolgingsenhet enhet = organisasjonEnhetService.hentEnhet(arenaData.getOppfolgingsenhet());
-        
+
         return toRestDto(arenaData, enhet);
     }
 
@@ -116,6 +116,8 @@ public class ArenaOppfolgingRessurs {
 
         return new OppfolgingEnhetMedVeileder()
                 .setOppfolgingsenhet(oppfolgingsenhet)
-                .setVeilederId(veilederIdent);
+                .setVeilederId(veilederIdent)
+                .setFormidlingsgruppe(arenaData.getFormidlingsgruppe())
+                .setServicegruppe(arenaData.getServicegruppe());
     }
 }
