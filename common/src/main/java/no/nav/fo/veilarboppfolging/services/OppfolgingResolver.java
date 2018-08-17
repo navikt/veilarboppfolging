@@ -87,40 +87,35 @@ public class OppfolgingResolver {
     }
 
     void sjekkStatusIArenaOgOppdaterOppfolging() {
-        if (!oppfolging.isUnderOppfolging()) {
-            hentOppfolgingstatusFraArena();
-            statusIArena.ifPresent((arenaStatus) -> {
+        hentOppfolgingstatusFraArena();
+        statusIArena.ifPresent((arenaStatus) -> {
+            if (!oppfolging.isUnderOppfolging()) {
                 if (erUnderOppfolging(arenaStatus.getFormidlingsgruppe(), arenaStatus.getServicegruppe(), arenaStatus.getHarMottaOppgaveIArena())) {
                     deps.getOppfolgingRepository().startOppfolgingHvisIkkeAlleredeStartet(aktorId);
                     reloadOppfolging();
                 }
 
-                erIkkeArbeidssokerUtenOppfolging = erIARBSUtenOppfolging(
-                        arenaStatus.getFormidlingsgruppe(),
-                        arenaStatus.getServicegruppe()
-                );
-            });
-        }
-
-        // Denne togglen iverksetter sjekk av reaktiveringsstatus. Dette i seg selv er en ren leseoperasjon, men medfører at det alltid 
-        // går et oppslag for status mot Arena, også dersom bruker allerede er under oppfølging
-        boolean sjekkReaktiveringsStatus = deps.getUnleashService().isEnabled("oppfolgingsstatus.sjekkreaktivering");
-        if(sjekkReaktiveringsStatus) {
-            if(statusIArena == null) {
-                hentOppfolgingstatusFraArena();
             }
-            statusIArena.ifPresent((arenaStatus) -> {
-                inaktivIArena = erIserv(statusIArena.get());
-                kanReaktiveres = oppfolging.isUnderOppfolging() && kanReaktiveres(statusIArena.get());
-                boolean skalAvsluttes = oppfolging.isUnderOppfolging() && inaktivIArena && !kanReaktiveres;
-                log.info("Statuser for reaktivering og inaktivering: Aktiv Oppfølgingsperiode [{}], kanReaktiveres [{}], skalAvsluttes [{}]. Tilstand i Arena: [{}]",
-                        oppfolging.isUnderOppfolging(), kanReaktiveres, skalAvsluttes, statusIArena.get());
+            erIkkeArbeidssokerUtenOppfolging = erIARBSUtenOppfolging(
+                    arenaStatus.getFormidlingsgruppe(),
+                    arenaStatus.getServicegruppe()
+                    );
 
-                if(skalAvsluttes) {
-                    inaktiverBruker();
-                }
-            });
-        }
+            inaktivIArena = erIserv(statusIArena.get());
+            kanReaktiveres = oppfolging.isUnderOppfolging() && kanReaktiveres(statusIArena.get());
+            boolean skalAvsluttes = oppfolging.isUnderOppfolging() && inaktivIArena && !kanReaktiveres;
+            log.info("Statuser for reaktivering og inaktivering: "
+                    + "Aktiv Oppfølgingsperiode={} "
+                    + "kanReaktiveres={} "
+                    + "erIkkeArbeidssokerUtenOppfolging={} "
+                    + "skalAvsluttes={} "
+                    + "Tilstand i Arena: {}",
+                    oppfolging.isUnderOppfolging(), kanReaktiveres, erIkkeArbeidssokerUtenOppfolging, skalAvsluttes, statusIArena.get());
+            
+            if(skalAvsluttes) {
+                inaktiverBruker();
+            }
+        });
     }
 
     private void inaktiverBruker() {
