@@ -54,6 +54,8 @@ import static no.nav.fo.veilarboppfolging.vilkar.VilkarService.VilkarType.UNDER_
 @Slf4j
 public class OppfolgingResolver {
 
+    static final String OPPFOLGINGSSTATUS_AVSLUTTOPPFOLGING_AUTOMATISK_TOGGLE = "oppfolgingsstatus.avsluttoppfolging.automatisk";
+
     private static final String AKTIV_YTELSE_STATUS = "Aktiv";
 
     private String fnr;
@@ -119,7 +121,7 @@ public class OppfolgingResolver {
     }
 
     private void inaktiverBruker() {
-        boolean automatiskAvslutningAvOppfolgingToggle = deps.getUnleashService().isEnabled("oppfolgingsstatus.avsluttoppfolging.automatisk");
+        boolean automatiskAvslutningAvOppfolgingToggle = deps.getUnleashService().isEnabled(OPPFOLGINGSSTATUS_AVSLUTTOPPFOLGING_AUTOMATISK_TOGGLE);
         if(automatiskAvslutningAvOppfolgingToggle) {
             log.info("Avslutter oppfølgingsperiode for bruker");
             avsluttOppfolging(null, "Oppfølging avsluttet automatisk pga. inaktiv bruker som ikke kan reaktiveres");
