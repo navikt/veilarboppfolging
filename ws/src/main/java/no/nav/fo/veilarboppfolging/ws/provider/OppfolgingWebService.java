@@ -168,6 +168,7 @@ public class OppfolgingWebService implements BehandleOppfolgingV1 {
         oppfoelgingstatus.setMaaVilkaarBesvares(oppfolgingStatusData.isVilkarMaBesvares());
         oppfoelgingstatus.setPersonident(oppfolgingStatusData.getFnr());
         oppfoelgingstatus.setOppfoelgingUtgang(xmlCalendar(oppfolgingStatusData.getOppfolgingUtgang()));
+        oppfoelgingstatus.setKanReaktiveres(oppfolgingStatusData.getKanReaktiveres());
         oppfoelgingstatus.getOppfoelgingsPerioder().addAll(
                 oppfolgingStatusData.getOppfolgingsperioder().stream().map(this::mapOppfoelgingsPeriode).collect(toList())
         );

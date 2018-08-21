@@ -9,5 +9,7 @@ import no.nav.fo.veilarboppfolging.domain.Oppfolgingsenhet;
 public class OppfolgingEnhetMedVeileder {
     private Oppfolgingsenhet oppfolgingsenhet;
     private String veilederId;
+    private String formidlingsgruppe;
+    private String servicegruppe;
 }
 
