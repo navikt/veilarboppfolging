@@ -48,15 +48,14 @@ import static no.nav.fo.veilarbaktivitet.domain.AktivitetStatus.AVBRUTT;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetStatus.FULLFORT;
 import static no.nav.fo.veilarboppfolging.domain.KodeverkBruker.SYSTEM;
 import static no.nav.fo.veilarboppfolging.domain.VilkarStatus.GODKJENT;
-import static no.nav.fo.veilarboppfolging.services.ArenaUtils.erIserv;
-import static no.nav.fo.veilarboppfolging.services.ArenaUtils.erUnderOppfolging;
-import static no.nav.fo.veilarboppfolging.services.ArenaUtils.kanReaktiveres;
-import static no.nav.fo.veilarboppfolging.services.ArenaUtils.kanSettesUnderOppfolging;
+import static no.nav.fo.veilarboppfolging.services.ArenaUtils.*;
 import static no.nav.fo.veilarboppfolging.vilkar.VilkarService.VilkarType.PRIVAT;
 import static no.nav.fo.veilarboppfolging.vilkar.VilkarService.VilkarType.UNDER_OPPFOLGING;
 
 @Slf4j
 public class OppfolgingResolver {
+
+    static final String OPPFOLGINGSSTATUS_AVSLUTTOPPFOLGING_AUTOMATISK_TOGGLE = "oppfolgingsstatus.avsluttoppfolging.automatisk";
 
     private static final String AKTIV_YTELSE_STATUS = "Aktiv";
 
@@ -71,6 +70,7 @@ public class OppfolgingResolver {
     private List<ArenaAktivitetDTO> arenaAktiviteter;
     private Boolean inaktivIArena;
     private Boolean kanReaktiveres;
+    private Boolean erIkkeArbeidssokerUtenOppfolging;
 
     OppfolgingResolver(String fnr, OppfolgingResolverDependencies deps) {
         deps.getPepClient().sjekkLeseTilgangTilFnr(fnr);
@@ -90,39 +90,39 @@ public class OppfolgingResolver {
     }
 
     void sjekkStatusIArenaOgOppdaterOppfolging() {
-        if (!oppfolging.isUnderOppfolging()) {
-            hentOppfolgingstatusFraArena();
-            statusIArena.ifPresent((arenaStatus) -> {
+        hentOppfolgingstatusFraArena();
+        statusIArena.ifPresent((arenaStatus) -> {
+            if (!oppfolging.isUnderOppfolging()) {
                 if (erUnderOppfolging(arenaStatus.getFormidlingsgruppe(), arenaStatus.getServicegruppe(), arenaStatus.getHarMottaOppgaveIArena())) {
                     deps.getOppfolgingRepository().startOppfolgingHvisIkkeAlleredeStartet(aktorId);
                     reloadOppfolging();
                 }
-            });
-        }
 
-        // Denne togglen iverksetter sjekk av reaktiveringsstatus. Dette i seg selv er en ren leseoperasjon, men medfører at det alltid 
-        // går et oppslag for status mot Arena, også dersom bruker allerede er under oppfølging
-        boolean sjekkReaktiveringsStatus = deps.getUnleashService().isEnabled("oppfolgingsstatus.sjekkreaktivering");
-        if(sjekkReaktiveringsStatus) {
-            if(statusIArena == null) {
-                hentOppfolgingstatusFraArena();
             }
-            statusIArena.ifPresent((arenaStatus) -> {
-                inaktivIArena = erIserv(statusIArena.get());
-                kanReaktiveres = oppfolging.isUnderOppfolging() && kanReaktiveres(statusIArena.get());
-                boolean skalAvsluttes = oppfolging.isUnderOppfolging() && inaktivIArena && !kanReaktiveres;
-                log.info("Statuser for reaktivering og inaktivering: Aktiv Oppfølgingsperiode [{}], kanReaktiveres [{}], skalAvsluttes [{}]. Tilstand i Arena: [{}]",
-                        oppfolging.isUnderOppfolging(), kanReaktiveres, skalAvsluttes, statusIArena.get());
+            erIkkeArbeidssokerUtenOppfolging = erIARBSUtenOppfolging(
+                    arenaStatus.getFormidlingsgruppe(),
+                    arenaStatus.getServicegruppe()
+                    );
 
-                if(skalAvsluttes) {
-                    inaktiverBruker();
-                }
-            });
-        }
+            inaktivIArena = erIserv(statusIArena.get());
+            kanReaktiveres = oppfolging.isUnderOppfolging() && kanReaktiveres(statusIArena.get());
+            boolean skalAvsluttes = oppfolging.isUnderOppfolging() && inaktivIArena && !kanReaktiveres;
+            log.info("Statuser for reaktivering og inaktivering: "
+                    + "Aktiv Oppfølgingsperiode={} "
+                    + "kanReaktiveres={} "
+                    + "erIkkeArbeidssokerUtenOppfolging={} "
+                    + "skalAvsluttes={} "
+                    + "Tilstand i Arena: {}",
+                    oppfolging.isUnderOppfolging(), kanReaktiveres, erIkkeArbeidssokerUtenOppfolging, skalAvsluttes, statusIArena.get());
+            
+            if(skalAvsluttes) {
+                inaktiverBruker();
+            }
+        });
     }
 
     private void inaktiverBruker() {
-        boolean automatiskAvslutningAvOppfolgingToggle = deps.getUnleashService().isEnabled("oppfolgingsstatus.avsluttoppfolging.automatisk");
+        boolean automatiskAvslutningAvOppfolgingToggle = deps.getUnleashService().isEnabled(OPPFOLGINGSSTATUS_AVSLUTTOPPFOLGING_AUTOMATISK_TOGGLE);
         if(automatiskAvslutningAvOppfolgingToggle) {
             log.info("Avslutter oppfølgingsperiode for bruker");
             avsluttOppfolging(null, "Oppfølging avsluttet automatisk pga. inaktiv bruker som ikke kan reaktiveres");
@@ -320,6 +320,10 @@ public class OppfolgingResolver {
 
     Boolean getKanReaktiveres() {
         return kanReaktiveres;
+    }
+
+    Boolean getErIkkeArbeidssokerUtenOppfolging() {
+        return erIkkeArbeidssokerUtenOppfolging;
     }
 
     void avsluttOppfolging(String veileder, String begrunnelse) {

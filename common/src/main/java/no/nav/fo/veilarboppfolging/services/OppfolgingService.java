@@ -169,6 +169,7 @@ public class OppfolgingService {
                 .setHarSkriveTilgang(oppfolgingResolver.harSkrivetilgangTilBruker())
                 .setInaktivIArena(oppfolgingResolver.getInaktivIArena())
                 .setKanReaktiveres(oppfolgingResolver.getKanReaktiveres())
+                .setErIkkeArbeidssokerUtenOppfolging(oppfolgingResolver.getErIkkeArbeidssokerUtenOppfolging())
                 ;
     }
 

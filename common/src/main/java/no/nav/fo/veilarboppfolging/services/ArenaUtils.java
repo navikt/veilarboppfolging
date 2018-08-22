@@ -30,6 +30,10 @@ public class ArenaUtils {
         return IKKE_ARBEIDSSOKER.equals(formidlingsgruppeKode) && SYKEMELDT_HOS_ARBEIDSGIVER.equals(servicegruppeKode);
     }
 
+    public static boolean erIARBSUtenOppfolging(String formidlingsgruppeKode, String servicegruppeKode) {
+        return IKKE_ARBEIDSSOKER.equals(formidlingsgruppeKode) && !OPPFOLGINGKODER.contains(servicegruppeKode);
+    }
+
     private static boolean erArbeidssoker(String formidlingsgruppeKode, Boolean harOppgave) {
         if (harOppgave == null) {
             return ARBS.equals(formidlingsgruppeKode) ||

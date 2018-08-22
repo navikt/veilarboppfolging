@@ -253,6 +253,7 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
                 .setHarSkriveTilgang(oppfolgingStatusData.harSkriveTilgang)
                 .setInaktivIArena(oppfolgingStatusData.inaktivIArena)
                 .setKanReaktiveres(oppfolgingStatusData.kanReaktiveres)
+                .setErIkkeArbeidssokerUtenOppfolging(oppfolgingStatusData.getErIkkeArbeidssokerUtenOppfolging())
                 ;
     }
 
