@@ -13,6 +13,7 @@ public class NyeBrukereFeedDTO implements Comparable<NyeBrukereFeedDTO>{
     private String aktorId;
     private boolean selvgaende;
     private String innsatsgruppe;
+    private String foreslattInnsatsgruppe;
     private Date opprettet;
 
     @Override

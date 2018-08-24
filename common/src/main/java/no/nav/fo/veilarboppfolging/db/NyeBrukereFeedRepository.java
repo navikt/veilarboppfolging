@@ -59,6 +59,7 @@ public class NyeBrukereFeedRepository {
                 .aktorId(rs.getString("AKTOR_ID"))
                 .selvgaende(rs.getBoolean("SELVGAENDE"))
                 .innsatsgruppe(rs.getString("INNSATSGRUPPE"))
+                .foreslattInnsatsgruppe(rs.getString("INNSATSGRUPPE"))
                 .opprettet(rs.getTimestamp("OPPRETTET_TIMESTAMP"))
                 .build();
     }
