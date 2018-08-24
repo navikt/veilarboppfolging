@@ -28,7 +28,7 @@ public class NyeBrukereFeedRepository {
         String innsatsGruppeNavn = innsatsgruppe == null ? null : innsatsgruppe.toString();
         database.update(
                 "INSERT INTO NYE_BRUKERE_FEED " +
-                "(AKTOR_ID, SELVGAENDE, INNSATSGRUPPE) " +
+                "(AKTOR_ID, SELVGAENDE, FORESLATT_INNSATSGRUPPE) " +
                 "VALUES" +
                 "(?,?,?)", oppfolgingsbruker.getAktoerId(), STANDARD_INNSATS == innsatsgruppe, innsatsGruppeNavn);
     }
@@ -58,8 +58,8 @@ public class NyeBrukereFeedRepository {
                 .id(rs.getLong("FEED_ID"))
                 .aktorId(rs.getString("AKTOR_ID"))
                 .selvgaende(rs.getBoolean("SELVGAENDE"))
-                .innsatsgruppe(rs.getString("INNSATSGRUPPE"))
-                .foreslattInnsatsgruppe(rs.getString("INNSATSGRUPPE"))
+                .innsatsgruppe(rs.getString("FORESLATT_INNSATSGRUPPE"))
+                .foreslattInnsatsgruppe(rs.getString("FORESLATT_INNSATSGRUPPE"))
                 .opprettet(rs.getTimestamp("OPPRETTET_TIMESTAMP"))
                 .build();
     }
