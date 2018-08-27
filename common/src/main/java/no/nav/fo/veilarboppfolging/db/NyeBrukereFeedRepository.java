@@ -8,8 +8,6 @@ import no.nav.fo.veilarboppfolging.domain.NyeBrukereFeedDTO;
 import no.nav.fo.veilarboppfolging.domain.Oppfolgingsbruker;
 import no.nav.sbl.jdbc.Database;
 
-import static no.nav.fo.veilarboppfolging.domain.Innsatsgruppe.STANDARD_INNSATS;
-
 import java.sql.ResultSet;
 import java.util.List;
 
@@ -28,9 +26,9 @@ public class NyeBrukereFeedRepository {
         String innsatsGruppeNavn = innsatsgruppe == null ? null : innsatsgruppe.toString();
         database.update(
                 "INSERT INTO NYE_BRUKERE_FEED " +
-                "(AKTOR_ID, SELVGAENDE, FORESLATT_INNSATSGRUPPE) " +
+                "(AKTOR_ID, FORESLATT_INNSATSGRUPPE) " +
                 "VALUES" +
-                "(?,?,?)", oppfolgingsbruker.getAktoerId(), STANDARD_INNSATS == innsatsgruppe, innsatsGruppeNavn);
+                "(?,?)", oppfolgingsbruker.getAktoerId(), innsatsGruppeNavn);
     }
 
     public Try<Integer> tryLeggTilFeedIdPaAlleElementerUtenFeedId() {
