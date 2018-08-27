@@ -57,8 +57,6 @@ public class NyeBrukereFeedRepository {
         return NyeBrukereFeedDTO.builder()
                 .id(rs.getLong("FEED_ID"))
                 .aktorId(rs.getString("AKTOR_ID"))
-                .selvgaende(rs.getBoolean("SELVGAENDE"))
-                .innsatsgruppe(rs.getString("FORESLATT_INNSATSGRUPPE"))
                 .foreslattInnsatsgruppe(rs.getString("FORESLATT_INNSATSGRUPPE"))
                 .opprettet(rs.getTimestamp("OPPRETTET_TIMESTAMP"))
                 .build();
