@@ -42,16 +42,13 @@ public class AktiverBrukerService {
 
     private OppfolgingRepository oppfolgingRepository;
     private NyeBrukereFeedRepository nyeBrukereFeedRepository;
-    private PepClient pepClient;
-
 
     public AktiverBrukerService(OppfolgingRepository oppfolgingRepository,
                                 AktorService aktorService,
                                 BehandleArbeidssoekerV1 BehandleArbeidssoekerV1,
                                 RemoteFeatureConfig.OpprettBrukerIArenaFeature opprettBrukerIArenaFeature,
                                 RemoteFeatureConfig.RegistreringFeature registreringFeature,
-                                NyeBrukereFeedRepository nyeBrukereFeedRepository,
-                                PepClient pepClient
+                                NyeBrukereFeedRepository nyeBrukereFeedRepository
     ) {
         this.aktorService = aktorService;
         this.behandleArbeidssoekerV1 = BehandleArbeidssoekerV1;
@@ -59,7 +56,6 @@ public class AktiverBrukerService {
         this.registreringFeature = registreringFeature;
         this.oppfolgingRepository = oppfolgingRepository;
         this.nyeBrukereFeedRepository = nyeBrukereFeedRepository;
-        this.pepClient = pepClient;
     }
 
     @Transactional
@@ -67,8 +63,6 @@ public class AktiverBrukerService {
         String fnr = ofNullable(bruker.getFnr())
                 .map(f -> f.getFnr())
                 .orElse("");
-
-        pepClient.sjekkLeseTilgangTilFnr(fnr);
 
         if (!registreringFeature.erAktiv()) {
             throw new RuntimeException("Tjenesten er togglet av.");
@@ -81,8 +75,6 @@ public class AktiverBrukerService {
 
     @Transactional
     public void reaktiverBruker(Fnr fnr) {
-        pepClient.sjekkLeseTilgangTilFnr(fnr.getFnr());
-
         if (!registreringFeature.erAktiv()) {
             throw new RuntimeException("Tjenesten er togglet av.");
         }
