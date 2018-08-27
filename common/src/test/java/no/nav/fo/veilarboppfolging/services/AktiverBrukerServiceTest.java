@@ -1,7 +1,6 @@
 package no.nav.fo.veilarboppfolging.services;
 
 import no.nav.apiapp.feil.Feil;
-import no.nav.apiapp.security.PepClient;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.config.RemoteFeatureConfig;
 import no.nav.fo.veilarboppfolging.db.NyeBrukereFeedRepository;
@@ -33,7 +32,6 @@ class AktiverBrukerServiceTest {
     private RemoteFeatureConfig.RegistreringFeature registreringFeature;
     private OppfolgingRepository oppfolgingRepository;
     private NyeBrukereFeedRepository nyeBrukereFeedRepository;
-    private PepClient pepClient;
 
     @BeforeEach
     public void setup() {
@@ -43,7 +41,6 @@ class AktiverBrukerServiceTest {
         behandleArbeidssoekerV1 = mock(BehandleArbeidssoekerV1.class);
         oppfolgingRepository = mock(OppfolgingRepository.class);
         nyeBrukereFeedRepository = mock(NyeBrukereFeedRepository.class);
-        pepClient = mock(PepClient.class);
 
         aktiverBrukerService =
                 new AktiverBrukerService(
@@ -52,8 +49,7 @@ class AktiverBrukerServiceTest {
                         behandleArbeidssoekerV1,
                         opprettBrukerIArenaFeature,
                         registreringFeature,
-                        nyeBrukereFeedRepository,
-                        pepClient);
+                        nyeBrukereFeedRepository);
 
         when(aktorService.getAktorId(any())).thenReturn(Optional.of("AKTORID"));
         when(opprettBrukerIArenaFeature.erAktiv()).thenReturn(true);
