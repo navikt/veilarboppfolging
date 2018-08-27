@@ -417,7 +417,7 @@ public class OppfolgingServiceTest {
     }
 
     @Test
-    public void kanIkkeAvslutteMedAktiveTiltak() throws Exception {
+    public void kanAvslutteMedAktiveTiltak() throws Exception {
         gittAktor();
         gittOppfolging(oppfolging.setUnderOppfolging(true));
         gittOppfolgingStatus("IARBS", "VURDI");
@@ -427,7 +427,8 @@ public class OppfolgingServiceTest {
         OppfolgingStatusData oppfolgingStatusData = oppfolgingService.hentAvslutningStatus(FNR);
         AvslutningStatusData avslutningStatusData = oppfolgingStatusData.avslutningStatusData;
 
-        assertThat(avslutningStatusData.kanAvslutte, is(false));
+        assertThat(avslutningStatusData.harTiltak, is(true));
+        assertThat(avslutningStatusData.kanAvslutte, is(true));
     }
 
     @Test
