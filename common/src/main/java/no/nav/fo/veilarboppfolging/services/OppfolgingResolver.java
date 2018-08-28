@@ -1,10 +1,8 @@
 package no.nav.fo.veilarboppfolging.services;
 
 import io.vavr.control.Try;
-import lombok.Getter;
-import lombok.SneakyThrows;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
-import lombok.val;
 import no.nav.apiapp.feil.UlovligHandling;
 import no.nav.apiapp.security.PepClient;
 import no.nav.brukerdialog.security.context.SubjectHandler;
@@ -20,9 +18,7 @@ import no.nav.fo.veilarboppfolging.vilkar.VilkarService;
 import no.nav.metrics.MetricsFactory;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import no.nav.sbl.jdbc.Transactor;
-import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.DigitalKontaktinformasjonV1;
-import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.HentDigitalKontaktinformasjonKontaktinformasjonIkkeFunnet;
-import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.HentDigitalKontaktinformasjonPersonIkkeFunnet;
+import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.*;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.informasjon.WSKontaktinformasjon;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.WSHentDigitalKontaktinformasjonRequest;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.WSHentDigitalKontaktinformasjonResponse;
@@ -36,10 +32,7 @@ import org.springframework.stereotype.Component;
 import javax.inject.Inject;
 import java.sql.Timestamp;
 import java.time.ZoneId;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 import static java.lang.System.currentTimeMillis;
 import static java.util.Optional.of;

@@ -1,0 +1,17 @@
+package no.nav.fo.veilarboppfolging.domain;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.ToString;
+import java.time.ZonedDateTime;
+
+@AllArgsConstructor
+@Getter
+@ToString
+public class Iserv28 {
+
+    public final String aktoerId;
+    public String formidlingsgruppekode;
+    public final ZonedDateTime iservSiden;
+}
+

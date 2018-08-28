@@ -14,6 +14,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import no.nav.fo.veilarboppfolging.kafka.ConsumerConfig;
 
 @Configuration
 @EnableScheduling
@@ -21,7 +22,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
         basePackages = "no.nav.fo.veilarboppfolging",
         excludeFilters = { @ComponentScan.Filter(type = FilterType.REGEX, pattern = ".*Test")}
         )
-@Import(AktorConfig.class)
+@Import({AktorConfig.class,
+        ConsumerConfig.class})
 public class ApplicationConfig implements ApiApplication {
 
     private static final String STRING = "unleash.url";
