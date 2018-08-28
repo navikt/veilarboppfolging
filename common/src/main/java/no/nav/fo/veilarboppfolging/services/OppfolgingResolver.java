@@ -16,7 +16,6 @@ import no.nav.fo.veilarboppfolging.utils.FunksjonelleMetrikker;
 import no.nav.fo.veilarboppfolging.utils.StringUtils;
 import no.nav.fo.veilarboppfolging.vilkar.VilkarService;
 import no.nav.metrics.MetricsFactory;
-import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import no.nav.sbl.jdbc.Transactor;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.*;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.informasjon.WSKontaktinformasjon;
@@ -47,8 +46,6 @@ import static no.nav.fo.veilarboppfolging.vilkar.VilkarService.VilkarType.UNDER_
 
 @Slf4j
 public class OppfolgingResolver {
-
-    static final String OPPFOLGINGSSTATUS_AVSLUTTOPPFOLGING_AUTOMATISK_TOGGLE = "oppfolgingsstatus.avsluttoppfolging.automatisk";
 
     private static final String AKTIV_YTELSE_STATUS = "Aktiv";
 
@@ -115,15 +112,10 @@ public class OppfolgingResolver {
     }
 
     private void inaktiverBruker() {
-        boolean automatiskAvslutningAvOppfolgingToggle = deps.getUnleashService().isEnabled(OPPFOLGINGSSTATUS_AVSLUTTOPPFOLGING_AUTOMATISK_TOGGLE);
-        if(automatiskAvslutningAvOppfolgingToggle) {
-            log.info("Avslutter oppfølgingsperiode for bruker");
-            avsluttOppfolging(null, "Oppfølging avsluttet automatisk pga. inaktiv bruker som ikke kan reaktiveres");
-            reloadOppfolging();
-            MetricsFactory.createEvent("oppfolging.automatisk.avslutning").addFieldToReport("success", !oppfolging.isUnderOppfolging()).report();
-        } else {
-            log.info("Bruker skal inaktiveres, men automatisk avslutning er slått av");
-        }
+        log.info("Avslutter oppfølgingsperiode for bruker");
+        avsluttOppfolging(null, "Oppfølging avsluttet automatisk pga. inaktiv bruker som ikke kan reaktiveres");
+        reloadOppfolging();
+        MetricsFactory.createEvent("oppfolging.automatisk.avslutning").addFieldToReport("success", !oppfolging.isUnderOppfolging()).report();
     }
 
     void sjekkNyesteVilkarOgOppdaterOppfolging(String hash, VilkarStatus vilkarStatus) {
@@ -279,10 +271,8 @@ public class OppfolgingResolver {
     }
 
     boolean kanAvslutteOppfolging() {
-        boolean harAktiveTiltak = !deps.getUnleashService().isEnabled("oppfolging.ikke.hent.tiltak.ved.avslutning") && harAktiveTiltak();
         return oppfolging.isUnderOppfolging()
                 && !erUnderOppfolgingIArena()
-                && !harAktiveTiltak
                 && !erUnderKvp();
     }
 
@@ -473,7 +463,5 @@ public class OppfolgingResolver {
         @Inject
         private RemoteFeatureConfig.BrukervilkarFeature brukervilkarFeature;
 
-        @Inject
-        private UnleashService unleashService;
     }
 }

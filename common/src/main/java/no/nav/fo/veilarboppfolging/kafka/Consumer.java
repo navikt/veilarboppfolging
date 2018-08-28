@@ -20,15 +20,8 @@ public class Consumer {
     @Inject
     private Iserv28Service iserv28Service;
 
-    private CountDownLatch latch = new CountDownLatch(1);
-
-    public CountDownLatch getLatch() {
-        return latch;
-    }
-
     @KafkaListener(topics = "aapen-fo-endringPaaOppfoelgingsBruker-v1")
     public void consume(String arenaBruker) {
-        latch.countDown();
         final ArenaBruker deserialisertBruker = fromJson(arenaBruker, ArenaBruker.class);
         iserv28Service.filterereIservBrukere(deserialisertBruker);
         LOG.info("endret bruker= '{}'", deserialisertBruker);

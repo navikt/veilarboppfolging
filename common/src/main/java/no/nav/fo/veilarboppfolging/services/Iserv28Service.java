@@ -33,17 +33,26 @@ public class Iserv28Service{
     @Scheduled(cron = "* * * 10")
     public void automatiskAvlutteOppfolging() {
         List<Iserv28> iservert28DagerBrukerne = finnBrukereMedIservI28Dager();
-        iservert28DagerBrukerne.stream().forEach(iservBruker -> avsluttOppfolging(iservBruker.aktoerId));
+        iservert28DagerBrukerne.stream().forEach(iservBruker -> avsluttOppfolging(iservBruker.aktor_Id));
     }
 
-    public void filterereIservBrukere(ArenaBruker iservMapper){
-        if(iservMapper.formidlingsgruppekode.equals("ISERV")) {
+    public void filterereIservBrukere(ArenaBruker arenaBruker){
+        if(eksisterendeIservBruker(arenaBruker) != null && !arenaBruker.formidlingsgruppekode.equals("ISERV")) {
+            slettAvluttetOppfolgingsBruker(arenaBruker.getAktoerid());
+        }else if(arenaBruker.getFormidlingsgruppekode().equals("ISERV")){
             insertIservBruker(
-                    iservMapper.aktoerid,
-                    iservMapper.formidlingsgruppekode,
-                    DateUtils.toTimeStamp(iservMapper.iserv_fra_dato)
+                    arenaBruker.aktoerid,
+                    arenaBruker.formidlingsgruppekode,
+                    DateUtils.toTimeStamp(arenaBruker.iserv_fra_dato)
             );
         }
+    }
+
+    public Iserv28 eksisterendeIservBruker(ArenaBruker arenaBruker){
+         return SqlUtils.select(jdbc, "UTMELDING", Iserv28Service::mapper)
+                .column("aktor_id")
+                .column("formidlingsgruppekode")
+                .where(WhereClause.equals("aktor_id",arenaBruker.getAktoerid())).execute();
     }
 
     public void insertIservBruker(String aktoerId, String formidlingsgruppekode, Timestamp iserv_fra_dato) {
@@ -66,8 +75,8 @@ public class Iserv28Service{
     }
 
     public void slettAvluttetOppfolgingsBruker(String aktoerId) {
-        WhereClause aktoerid = WhereClause.equals("aktoerid", aktoerId);
-        SqlUtils.delete(jdbc, "utmelding").where(aktoerid).execute();
+        WhereClause aktoerid = WhereClause.equals("aktor_id", aktoerId);
+        SqlUtils.delete(jdbc, "UTMELDING").where(aktoerid).execute();
     }
 
     public List<Iserv28> finnBrukereMedIservI28Dager() {
@@ -76,8 +85,8 @@ public class Iserv28Service{
         WhereClause harAktoerId = WhereClause.isNotNull("aktoerid");
         WhereClause iservDato28DagerTilbake = WhereClause.lteq("iserv_fra_dato", tilbake28);
 
-        return SqlUtils.select(jdbc, "utmelding", Iserv28Service::mapper)
-                .column("aktoerid")
+        return SqlUtils.select(jdbc, "UTMELDING", Iserv28Service::mapper)
+                .column("aktor_id")
                 .column("formidlingsgruppekode")
                 .column("iserv_fra_dato")
                 .where(erIserv.and(harAktoerId).and(iservDato28DagerTilbake))
@@ -86,7 +95,7 @@ public class Iserv28Service{
 
     private static Iserv28 mapper(ResultSet resultSet) throws SQLException {
         return new Iserv28(
-                resultSet.getString("aktoerid"),
+                resultSet.getString("aktor_id"),
                 resultSet.getString("formidlingsgruppekode"),
                 resultSet.getTimestamp("iserv_fra_dato").toLocalDateTime().atZone(ZoneId.systemDefault())
         );

@@ -1,5 +1,6 @@
 package no.nav.fo.veilarboppfolging.rest;
 
+import no.nav.apiapp.security.PepClient;
 import no.nav.brukerdialog.security.context.SubjectHandler;
 import no.nav.brukerdialog.security.domain.IdentType;
 import no.nav.fo.veilarboppfolging.domain.*;
@@ -50,6 +51,9 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
 
     @Inject
     private AutorisasjonService autorisasjonService;
+
+    @Inject
+    private PepClient pepClient;
 
     @Override
     public Bruker hentBrukerInfo() throws Exception {
@@ -190,13 +194,13 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
 
     @Override
     public void aktiverBruker(AktiverArbeidssokerData aktiverArbeidssokerData) throws Exception {
-        autorisasjonService.skalVereInternBruker();
+        pepClient.sjekkSkriveTilgangTilFnr(aktiverArbeidssokerData.getFnr().getFnr());
         aktiverBrukerService.aktiverBruker(aktiverArbeidssokerData);
     }
 
     @Override
     public void reaktiverBruker(Fnr fnr) throws Exception {
-        autorisasjonService.skalVereInternBruker();
+        pepClient.sjekkSkriveTilgangTilFnr(fnr.getFnr());
         aktiverBrukerService.reaktiverBruker(fnr);
     }
 
