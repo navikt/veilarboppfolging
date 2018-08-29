@@ -8,7 +8,6 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
-import java.util.concurrent.CountDownLatch;
 
 import static no.nav.json.JsonUtils.fromJson;
 
@@ -22,8 +21,12 @@ public class Consumer {
 
     @KafkaListener(topics = "aapen-fo-endringPaaOppfoelgingsBruker-v1")
     public void consume(String arenaBruker) {
-        final ArenaBruker deserialisertBruker = fromJson(arenaBruker, ArenaBruker.class);
+        final ArenaBruker deserialisertBruker = deserialisereBruker(arenaBruker);
         iserv28Service.filterereIservBrukere(deserialisertBruker);
         LOG.info("endret bruker= '{}'", deserialisertBruker);
+    }
+
+    public ArenaBruker deserialisereBruker(String arenaBruker) {
+        return fromJson(arenaBruker, ArenaBruker.class);
     }
 }
