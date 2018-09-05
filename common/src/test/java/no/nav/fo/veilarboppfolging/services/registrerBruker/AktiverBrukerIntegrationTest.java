@@ -171,8 +171,7 @@ class AktiverBrukerIntegrationTest {
                 RemoteFeatureConfig.OpprettBrukerIArenaFeature sjekkRegistrereBrukerArenaFeature,
                 RemoteFeatureConfig.RegistreringFeature skalRegistrereBrukerGenerellFeature,
                 OppfolgingRepository oppfolgingRepository,
-                NyeBrukereFeedRepository nyeBrukereFeedRepository,
-                PepClient pepClient)
+                NyeBrukereFeedRepository nyeBrukereFeedRepository)
         {
             return new AktiverBrukerService(
                     oppfolgingRepository,
@@ -180,8 +179,7 @@ class AktiverBrukerIntegrationTest {
                     behandleArbeidssoekerV1,
                     sjekkRegistrereBrukerArenaFeature,
                     skalRegistrereBrukerGenerellFeature,
-                    nyeBrukereFeedRepository,
-                    pepClient
+                    nyeBrukereFeedRepository
             );
         }
 

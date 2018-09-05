@@ -20,7 +20,7 @@
     <parent>
         <groupId>no.nav.sbl</groupId>
         <artifactId>mor-pom</artifactId>
-        <version>2018.08.01.13.48</version>
+        <version>2018.08.14.11.00</version>
     </parent>
 
     <properties>
@@ -33,12 +33,13 @@
         <oppfoelging-v1-tjenestespesifikasjon.version>1.2.0</oppfoelging-v1-tjenestespesifikasjon.version>
         <oppfolgingsinfo-v1-tjenestespesifikasjon.version>1.0.5</oppfolgingsinfo-v1-tjenestespesifikasjon.version>
         <dkif-tjenestespesifikasjon.version>1.2</dkif-tjenestespesifikasjon.version>
-        <brukerdialog-behandleOppfolging-v1-tjenestespesifikasjon.version>1.20180426.1240</brukerdialog-behandleOppfolging-v1-tjenestespesifikasjon.version>
+        <brukerdialog-behandleOppfolging-v1-tjenestespesifikasjon.version>1.20180813.1552</brukerdialog-behandleOppfolging-v1-tjenestespesifikasjon.version>
         <organisasjonenhet-v1.version>1.0.8</organisasjonenhet-v1.version>
         <varseloppgave-v1-tjenestespesifikasjon.version>1.1.0</varseloppgave-v1-tjenestespesifikasjon.version>
         <startregistreringstatus-v1-tjenestespesifikasjon.version>1.0.0</startregistreringstatus-v1-tjenestespesifikasjon.version>
         <nav-behandleArbeidssoeker-v1-tjenestespesifikasjon.version>1.1.0</nav-behandleArbeidssoeker-v1-tjenestespesifikasjon.version>
         <nav-oppfoelgingsstatus-v1-tjenestespesifikasjon.version>1.0.1</nav-oppfoelgingsstatus-v1-tjenestespesifikasjon.version>
+        <nav-oppfoelgingsstatus-v2-tjenestespesifikasjon.version>2.0.0</nav-oppfoelgingsstatus-v2-tjenestespesifikasjon.version>
 
         <sonar.exclusions>
             **/mock/*,
@@ -52,7 +53,7 @@
             <dependency>
                 <groupId>no.nav.sbl</groupId>
                 <artifactId>bom</artifactId>
-                <version>2018.08.01.13.48</version>
+                <version>2018.08.14.11.00</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -126,6 +127,12 @@
                 <groupId>no.nav.tjenester</groupId>
                 <artifactId>nav-oppfoelgingsstatus-v1-tjenestespesifikasjon</artifactId>
                 <version>${nav-oppfoelgingsstatus-v1-tjenestespesifikasjon.version}</version>
+                <classifier>jaxws</classifier>
+            </dependency>
+            <dependency>
+                <groupId>no.nav.tjenester</groupId>
+                <artifactId>nav-oppfoelgingsstatus-v2-tjenestespesifikasjon</artifactId>
+                <version>${nav-oppfoelgingsstatus-v2-tjenestespesifikasjon.version}</version>
                 <classifier>jaxws</classifier>
             </dependency>
 
