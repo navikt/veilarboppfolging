@@ -3,7 +3,6 @@ package no.nav.fo.veilarboppfolging.services;
 import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.apiapp.feil.Feil;
-import no.nav.apiapp.security.PepClient;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.config.RemoteFeatureConfig;
 import no.nav.fo.veilarboppfolging.db.NyeBrukereFeedRepository;
@@ -28,7 +27,7 @@ import static io.vavr.API.$;
 import static io.vavr.API.Case;
 import static io.vavr.Predicates.instanceOf;
 import static java.util.Optional.ofNullable;
-import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
+import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 
 @Slf4j
 @Component
@@ -179,7 +178,7 @@ public class AktiverBrukerService {
 
         @Override
         public Response.Status getStatus() {
-            return INTERNAL_SERVER_ERROR;
+            return FORBIDDEN;
         }
     }
 }
