@@ -4,7 +4,6 @@ import io.vavr.control.Try;
 import no.nav.apiapp.security.PepClient;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.config.DatabaseConfig;
-import no.nav.fo.veilarboppfolging.config.RemoteFeatureConfig;
 import no.nav.fo.veilarboppfolging.db.NyeBrukereFeedRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingsPeriodeRepository;
@@ -41,8 +40,6 @@ class AktiverBrukerIntegrationTest {
     private OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
     private AktorService aktorService;
     private BehandleArbeidssoekerV1 behandleArbeidssoekerV1;
-    private RemoteFeatureConfig.OpprettBrukerIArenaFeature opprettBrukerIArenaFeature;
-    private RemoteFeatureConfig.RegistreringFeature registreringFeature;
     private AktiverBrukerService aktiverBrukerService;
     private String ident = "***REMOVED***";
 
@@ -67,8 +64,6 @@ class AktiverBrukerIntegrationTest {
         oppfolgingsPeriodeRepository = context.getBean(OppfolgingsPeriodeRepository.class);
         aktorService = context.getBean(AktorService.class);
         behandleArbeidssoekerV1 = context.getBean(BehandleArbeidssoekerV1.class);
-        opprettBrukerIArenaFeature = context.getBean(RemoteFeatureConfig.OpprettBrukerIArenaFeature.class);
-        registreringFeature = context.getBean(RemoteFeatureConfig.RegistreringFeature.class);
     }
 
     @AfterEach
@@ -116,8 +111,6 @@ class AktiverBrukerIntegrationTest {
     }
 
     private void cofigureMocks() {
-        when(registreringFeature.erAktiv()).thenReturn(true);
-        when(opprettBrukerIArenaFeature.erAktiv()).thenReturn(true);
         when(aktorService.getAktorId(any())).thenReturn(Optional.of(ident));
     }
 
@@ -150,16 +143,6 @@ class AktiverBrukerIntegrationTest {
         }
 
         @Bean
-        public RemoteFeatureConfig.OpprettBrukerIArenaFeature opprettBrukerIArenaFeature() {
-            return mock(RemoteFeatureConfig.OpprettBrukerIArenaFeature.class);
-        }
-
-        @Bean
-        public RemoteFeatureConfig.RegistreringFeature registreringFeature() {
-            return mock(RemoteFeatureConfig.RegistreringFeature.class);
-        }
-
-        @Bean
         public NyeBrukereFeedRepository nyeBrukereFeedRepository(Database database) {
             return new NyeBrukereFeedRepository(database);
         }
@@ -168,8 +151,6 @@ class AktiverBrukerIntegrationTest {
         AktiverBrukerService aktiverBrukerService(
                 AktorService aktorService,
                 BehandleArbeidssoekerV1 behandleArbeidssoekerV1,
-                RemoteFeatureConfig.OpprettBrukerIArenaFeature sjekkRegistrereBrukerArenaFeature,
-                RemoteFeatureConfig.RegistreringFeature skalRegistrereBrukerGenerellFeature,
                 OppfolgingRepository oppfolgingRepository,
                 NyeBrukereFeedRepository nyeBrukereFeedRepository)
         {
@@ -177,8 +158,6 @@ class AktiverBrukerIntegrationTest {
                     oppfolgingRepository,
                     aktorService,
                     behandleArbeidssoekerV1,
-                    sjekkRegistrereBrukerArenaFeature,
-                    skalRegistrereBrukerGenerellFeature,
                     nyeBrukereFeedRepository
             );
         }
