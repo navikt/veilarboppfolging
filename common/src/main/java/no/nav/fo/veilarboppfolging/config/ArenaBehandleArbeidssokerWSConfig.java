@@ -1,13 +1,11 @@
 package no.nav.fo.veilarboppfolging.config;
 
-import no.nav.fo.veilarboppfolging.config.RemoteFeatureConfig.OpprettBrukerIArenaFeature;
 import no.nav.sbl.dialogarena.common.cxf.CXFClient;
 import no.nav.sbl.dialogarena.types.Pingable;
 import no.nav.tjeneste.virksomhet.behandlearbeidssoeker.v1.binding.BehandleArbeidssoekerV1;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import javax.inject.Inject;
 import java.util.UUID;
 
 import static no.nav.sbl.dialogarena.common.cxf.TimeoutFeature.DEFAULT_CONNECTION_TIMEOUT;
@@ -18,9 +16,6 @@ import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 @Configuration
 public class ArenaBehandleArbeidssokerWSConfig {
     private static final int BEHANDLE_ARBEIDSSOKER_RECEIVE_TIMEOUT = 300000;
-
-    @Inject
-    private OpprettBrukerIArenaFeature opprettBrukerIArenaFeature;
 
     public static final String url = getRequiredProperty("behandlearbeidssoker.endpoint.url");
 
@@ -37,10 +32,6 @@ public class ArenaBehandleArbeidssokerWSConfig {
                 "Ping av BehandleArbeidssoker_V1. Registrerer arbeidssoker i Arena.",
                 true
         );
-
-        if (!opprettBrukerIArenaFeature.erAktiv()) {
-            return () -> lyktes(metadata);
-        }
 
         final BehandleArbeidssoekerV1 behandleArbeidssoekerPing = behandleArbeidssokerPortType()
                 .configureStsForSystemUserInFSS()

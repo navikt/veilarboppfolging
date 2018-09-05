@@ -18,30 +18,8 @@ public class RemoteFeatureConfig {
     }
 
     @Bean
-    public RegistreringFeature registrereBrukerGenerellFeature(RemoteFeatureToggleRepository repo) {
-        return new RegistreringFeature(repo);
-    }
-
-    @Bean
-    public OpprettBrukerIArenaFeature registrereBrukerArenaFeature(RemoteFeatureToggleRepository repo) {
-        return new OpprettBrukerIArenaFeature(repo);
-    }
-
-    @Bean
     public BrukervilkarFeature brukervilkarFeature(RemoteFeatureToggleRepository repo) {
         return new BrukervilkarFeature(repo);
-    }
-
-    public static class RegistreringFeature extends RemoteFeatureToggle {
-        public RegistreringFeature(RemoteFeatureToggleRepository repository) {
-            super(repository, "veilarboppfolging.registrering", false);
-        }
-    }
-
-    public static class OpprettBrukerIArenaFeature extends RemoteFeatureToggle {
-        public OpprettBrukerIArenaFeature(RemoteFeatureToggleRepository repository) {
-            super(repository, "veilarboppfolging.opprettbrukeriarena", false);
-        }
     }
 
     public static class BrukervilkarFeature extends RemoteFeatureToggle {
