@@ -4,7 +4,6 @@ import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.apiapp.feil.Feil;
 import no.nav.dialogarena.aktor.AktorService;
-import no.nav.fo.veilarboppfolging.config.RemoteFeatureConfig;
 import no.nav.fo.veilarboppfolging.db.NyeBrukereFeedRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.domain.*;
@@ -36,8 +35,6 @@ public class AktiverBrukerService {
 
     private AktorService aktorService;
     private final BehandleArbeidssoekerV1 behandleArbeidssoekerV1;
-    private RemoteFeatureConfig.RegistreringFeature registreringFeature;
-    private RemoteFeatureConfig.OpprettBrukerIArenaFeature opprettBrukerIArenaFeature;
 
     private OppfolgingRepository oppfolgingRepository;
     private NyeBrukereFeedRepository nyeBrukereFeedRepository;
@@ -45,14 +42,10 @@ public class AktiverBrukerService {
     public AktiverBrukerService(OppfolgingRepository oppfolgingRepository,
                                 AktorService aktorService,
                                 BehandleArbeidssoekerV1 BehandleArbeidssoekerV1,
-                                RemoteFeatureConfig.OpprettBrukerIArenaFeature opprettBrukerIArenaFeature,
-                                RemoteFeatureConfig.RegistreringFeature registreringFeature,
                                 NyeBrukereFeedRepository nyeBrukereFeedRepository
     ) {
         this.aktorService = aktorService;
         this.behandleArbeidssoekerV1 = BehandleArbeidssoekerV1;
-        this.opprettBrukerIArenaFeature = opprettBrukerIArenaFeature;
-        this.registreringFeature = registreringFeature;
         this.oppfolgingRepository = oppfolgingRepository;
         this.nyeBrukereFeedRepository = nyeBrukereFeedRepository;
     }
@@ -63,10 +56,6 @@ public class AktiverBrukerService {
                 .map(f -> f.getFnr())
                 .orElse("");
 
-        if (!registreringFeature.erAktiv()) {
-            throw new RuntimeException("Tjenesten er togglet av.");
-        }
-
         AktorId aktorId = FnrUtils.getAktorIdOrElseThrow(aktorService, fnr);
 
         aktiverBrukerOgOppfolging(fnr, aktorId, bruker.getInnsatsgruppe());
@@ -74,9 +63,6 @@ public class AktiverBrukerService {
 
     @Transactional
     public void reaktiverBruker(Fnr fnr) {
-        if (!registreringFeature.erAktiv()) {
-            throw new RuntimeException("Tjenesten er togglet av.");
-        }
 
         AktorId aktorId = FnrUtils.getAktorIdOrElseThrow(aktorService, fnr.getFnr());
 
@@ -91,9 +77,7 @@ public class AktiverBrukerService {
                         .build()
         );
 
-        if (opprettBrukerIArenaFeature.erAktiv()) {
-            reaktiverBrukerIArena(fnr);
-        }
+        reaktiverBrukerIArena(fnr);
     }
 
     private void aktiverBrukerOgOppfolging(String fnr, AktorId aktorId, Innsatsgruppe innsatsgruppe) {
@@ -105,9 +89,7 @@ public class AktiverBrukerService {
                         .build()
         );
 
-        if (opprettBrukerIArenaFeature.erAktiv()) {
-            opprettBrukerIArena(fnr, innsatsgruppe);
-        }
+        opprettBrukerIArena(fnr, innsatsgruppe);
 
         nyeBrukereFeedRepository.tryLeggTilFeedIdPaAlleElementerUtenFeedId();
     }
