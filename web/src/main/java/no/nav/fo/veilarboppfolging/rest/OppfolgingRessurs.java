@@ -258,7 +258,7 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
                 .setInaktivIArena(oppfolgingStatusData.inaktivIArena)
                 .setKanReaktiveres(oppfolgingStatusData.kanReaktiveres)
                 .setErIkkeArbeidssokerUtenOppfolging(oppfolgingStatusData.getErIkkeArbeidssokerUtenOppfolging())
-                ;
+                .setInaktiveringsdato(oppfolgingStatusData.inaktiveringsdato);
     }
 
     private OppfolgingPeriodeDTO tilDTO(Oppfolgingsperiode oppfolgingsperiode) {

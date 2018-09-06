@@ -25,4 +25,5 @@ public class OppfolgingStatus {
     private Boolean inaktivIArena;
     private Boolean kanReaktiveres;
     private Boolean erIkkeArbeidssokerUtenOppfolging;
+    public Date inaktiveringsdato;
 }
