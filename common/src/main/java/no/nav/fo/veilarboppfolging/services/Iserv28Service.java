@@ -10,6 +10,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import lombok.extern.slf4j.Slf4j;
+
 import javax.inject.Inject;
 import java.sql.*;
 import java.time.LocalDateTime;
@@ -17,6 +19,7 @@ import java.time.ZoneId;
 import java.util.List;
 
 @Component
+@Slf4j
 public class Iserv28Service{
 
     private JdbcTemplate jdbc;
@@ -34,8 +37,12 @@ public class Iserv28Service{
 
     @Scheduled(cron = "* * * 10")
     public void automatiskAvlutteOppfolging() {
-        List<Iserv28> iservert28DagerBrukerne = finnBrukereMedIservI28Dager();
-        iservert28DagerBrukerne.stream().forEach(iservBruker -> avsluttOppfolging(iservBruker.aktor_Id));
+        try {
+            List<Iserv28> iservert28DagerBrukerne = finnBrukereMedIservI28Dager();
+            iservert28DagerBrukerne.stream().forEach(iservBruker -> avsluttOppfolging(iservBruker.aktor_Id));
+        } catch (Exception e) {
+            log.error("Feil ved automatisk avslutning av brukere", e);
+        }
     }
 
     public void filterereIservBrukere(ArenaBruker arenaBruker){
