@@ -50,14 +50,14 @@ public class Iserv28Service{
         }
     }
 
-    public Iserv28 eksisterendeIservBruker(ArenaBruker arenaBruker){
+    private Iserv28 eksisterendeIservBruker(ArenaBruker arenaBruker){
          return SqlUtils.select(jdbc, "UTMELDING", Iserv28Service::mapper)
                 .column("aktor_id")
                 .column("formidlingsgruppekode")
                 .where(WhereClause.equals("aktor_id",arenaBruker.getAktoerid())).execute();
     }
 
-    public void insertIservBruker(String aktoerId, String formidlingsgruppekode, Timestamp iserv_fra_dato) {
+    private void insertIservBruker(String aktoerId, String formidlingsgruppekode, Timestamp iserv_fra_dato) {
         SqlUtils.insert(jdbc, "UTMELDING")
                 .value("aktor_id", aktoerId)
                 .value("formidlingsgruppekode", formidlingsgruppekode)
@@ -65,7 +65,7 @@ public class Iserv28Service{
                 .execute();
     }
 
-    public void avsluttOppfolging(String aktoerId) {
+    private void avsluttOppfolging(String aktoerId) {
         String fnr = aktorService.getFnr(aktoerId).orElseThrow(() -> new IllegalArgumentException("Fant ikke fnr for aktoerid: " + aktoerId));
         oppfolgingService.avsluttOppfolging(
                  fnr,
@@ -76,12 +76,12 @@ public class Iserv28Service{
         slettAvluttetOppfolgingsBruker(aktoerId);
     }
 
-    public void slettAvluttetOppfolgingsBruker(String aktoerId) {
+    private void slettAvluttetOppfolgingsBruker(String aktoerId) {
         WhereClause aktoerid = WhereClause.equals("aktor_id", aktoerId);
         SqlUtils.delete(jdbc, "UTMELDING").where(aktoerid).execute();
     }
 
-    public List<Iserv28> finnBrukereMedIservI28Dager() {
+    private List<Iserv28> finnBrukereMedIservI28Dager() {
         Timestamp tilbake28 = Timestamp.valueOf(LocalDateTime.now().minusDays(28));
         WhereClause erIserv = WhereClause.equals("formidlingsgruppekode", "ISERV");
         WhereClause harAktoerId = WhereClause.isNotNull("aktoerid");
