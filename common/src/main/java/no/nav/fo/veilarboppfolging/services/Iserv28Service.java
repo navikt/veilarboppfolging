@@ -91,7 +91,7 @@ public class Iserv28Service{
     private List<Iserv28> finnBrukereMedIservI28Dager() {
         Timestamp tilbake28 = Timestamp.valueOf(LocalDateTime.now().minusDays(28));
         WhereClause erIserv = WhereClause.equals("formidlingsgruppekode", "ISERV");
-        WhereClause harAktoerId = WhereClause.isNotNull("aktoerid");
+        WhereClause harAktoerId = WhereClause.isNotNull("aktor_id");
         WhereClause iservDato28DagerTilbake = WhereClause.lteq("iserv_fra_dato", tilbake28);
 
         return SqlUtils.select(jdbc, "UTMELDING", Iserv28Service::mapper)
