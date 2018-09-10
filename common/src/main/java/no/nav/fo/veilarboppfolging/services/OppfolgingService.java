@@ -170,7 +170,7 @@ public class OppfolgingService {
                 .setInaktivIArena(oppfolgingResolver.getInaktivIArena())
                 .setKanReaktiveres(oppfolgingResolver.getKanReaktiveres())
                 .setErIkkeArbeidssokerUtenOppfolging(oppfolgingResolver.getErIkkeArbeidssokerUtenOppfolging())
-                ;
+                .setInaktiveringsdato(oppfolgingResolver.getInaktiveringsDato());
     }
 
     private OppfolgingStatusData getOppfolgingStatusDataMedAvslutningStatus(String fnr, OppfolgingResolver oppfolgingResolver) {
