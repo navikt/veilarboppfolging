@@ -2,7 +2,6 @@ package no.nav.fo.veilarboppfolging.services;
 
 import org.junit.Test;
 
-import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -12,7 +11,6 @@ import static java.util.Arrays.asList;
 import static no.nav.fo.veilarboppfolging.services.ArenaUtils.erUnderOppfolging;
 import static no.nav.fo.veilarboppfolging.services.ArenaUtils.kanSettesUnderOppfolging;
 import static org.assertj.core.api.Assertions.assertThat;
-
 
 public class ArenaUtilsTest {
 
@@ -120,23 +118,4 @@ public class ArenaUtilsTest {
         assertThat(kanSettesUnderOppfolging("IARBS", "VURDI")).isTrue();
     }
     
-    @Test
-    public void harVaertRegistrertILopetAvDeSiste28Dagene() {
-        assertThat(ArenaUtils.harVaertRegistrertILopetAvDeSiste28Dagene(LocalDate.now().minusDays(24))).isTrue();
-        assertThat(ArenaUtils.harVaertRegistrertILopetAvDeSiste28Dagene(LocalDate.now().minusDays(28))).isTrue();
-
-    }
-
-    @Test
-    public void harIkkeVaertRegistrertILopetAvDeSiste28Dagene() {
-        assertThat(ArenaUtils.harVaertRegistrertILopetAvDeSiste28Dagene(LocalDate.now().minusDays(31))).isFalse();
-        assertThat(ArenaUtils.harVaertRegistrertILopetAvDeSiste28Dagene(LocalDate.now().minusDays(29))).isFalse();
-    }
-
-    @Test
-    public void harIkkeVaertRegistrertPaaOvertEttAAr() {
-        assertThat(ArenaUtils.harVaertRegistrertILopetAvDeSiste28Dagene(LocalDate.now().minusYears(1).minusDays(24))).isFalse();
-        assertThat(ArenaUtils.harVaertRegistrertILopetAvDeSiste28Dagene(LocalDate.now().minusYears(1).minusDays(38))).isFalse();
-    }
-
 }

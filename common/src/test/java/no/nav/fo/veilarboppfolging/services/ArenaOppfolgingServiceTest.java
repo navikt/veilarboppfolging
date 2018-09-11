@@ -1,23 +1,17 @@
 package no.nav.fo.veilarboppfolging.services;
 
 import no.nav.fo.veilarboppfolging.domain.ArenaOppfolging;
-import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.informasjon.Bruker;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.informasjon.Oppfoelgingskontrakt;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingskontraktListeRequest;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingskontraktListeResponse;
-import no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v1.binding.HentOppfoelgingsstatusPersonIkkeFunnet;
-import no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v1.binding.HentOppfoelgingsstatusSikkerhetsbegrensning;
-import no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v1.binding.HentOppfoelgingsstatusUgyldigInput;
-import no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v1.binding.OppfoelgingsstatusV1;
-import no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v1.feil.PersonIkkeFunnet;
-import no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v1.feil.Sikkerhetsbegrensning;
-import no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v1.feil.UgyldigInput;
-import no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v1.informasjon.Formidlingsgrupper;
-import no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v1.informasjon.Rettighetsgrupper;
-import no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v1.informasjon.ServicegruppeKoder;
-import no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v1.meldinger.HentOppfoelgingsstatusResponse;
+import no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v2.binding.HentOppfoelgingsstatusPersonIkkeFunnet;
+import no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v2.binding.HentOppfoelgingsstatusSikkerhetsbegrensning;
+import no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v2.binding.HentOppfoelgingsstatusUgyldigInput;
+import no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v2.feil.PersonIkkeFunnet;
+import no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v2.feil.Sikkerhetsbegrensning;
+import no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v2.feil.UgyldigInput;
 import no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v2.binding.OppfoelgingsstatusV2;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
@@ -47,17 +41,10 @@ public class ArenaOppfolgingServiceTest {
     private ArenaOppfolgingService arenaOppfolgingService;
 
     @Mock
-    private OppfoelgingsstatusV1 oppfoelgingsstatusService;
-
-    @Mock
     private OppfoelgingsstatusV2 oppfoelgingsstatusV2Service;
 
     @Mock
     private OppfoelgingPortType oppfoelgingPortType;
-
-    @Mock
-    private UnleashService unleashService;
-
 
     @Test
     public void hentOppfoelgingskontraktListeReturnererEnRespons() throws Exception {
@@ -75,20 +62,7 @@ public class ArenaOppfolgingServiceTest {
     }
 
     @Test
-    public void skalMappeTilOppfolgingsstatusV1() throws Exception {
-        when(unleashService.isEnabled(any())).thenReturn(false);
-        when(oppfoelgingsstatusService.hentOppfoelgingsstatus(any())).thenReturn(lagMockResponseV1());
-
-        ArenaOppfolging arenaOppfolging = arenaOppfolgingService.hentArenaOppfolging("1234");
-        Assertions.assertThat(arenaOppfolging.getFormidlingsgruppe()).isEqualTo("ARBS");
-        Assertions.assertThat(arenaOppfolging.getOppfolgingsenhet()).isEqualTo(MOCK_ENHET_ID);
-        Assertions.assertThat(arenaOppfolging.getRettighetsgruppe()).isEqualTo("rettighetsgruppe");
-        Assertions.assertThat(arenaOppfolging.getServicegruppe()).isEqualTo("servicegruppe");
-    }
-
-    @Test
     public void skalMappeTilOppfolgingsstatusV2() throws Exception {
-        when(unleashService.isEnabled(any())).thenReturn(true);
         when(oppfoelgingsstatusV2Service.hentOppfoelgingsstatus(any())).thenReturn(lagMockResponseV2());
 
         ArenaOppfolging arenaOppfolging = arenaOppfolgingService.hentArenaOppfolging("1234");
@@ -101,41 +75,22 @@ public class ArenaOppfolgingServiceTest {
 
     @Test(expected = NotFoundException.class)
     public void skalKasteNotFoundOmPersonIkkeFunnet() throws Exception {
-        when(oppfoelgingsstatusService.hentOppfoelgingsstatus(any())).thenReturn(lagMockResponseV1());
-        when(oppfoelgingsstatusService.hentOppfoelgingsstatus(any())).thenThrow(new HentOppfoelgingsstatusPersonIkkeFunnet("", new PersonIkkeFunnet()));
+        when(oppfoelgingsstatusV2Service.hentOppfoelgingsstatus(any())).thenReturn(lagMockResponseV2());
+        when(oppfoelgingsstatusV2Service.hentOppfoelgingsstatus(any())).thenThrow(new HentOppfoelgingsstatusPersonIkkeFunnet("", new PersonIkkeFunnet()));
         arenaOppfolgingService.hentArenaOppfolging("1234");
     }
 
     @Test(expected = ForbiddenException.class)
     public void skalKasteForbiddenOmManIkkeHarTilgang() throws Exception {
-        when(oppfoelgingsstatusService.hentOppfoelgingsstatus(any())).thenReturn(lagMockResponseV1());
-        when(oppfoelgingsstatusService.hentOppfoelgingsstatus(any())).thenThrow(new HentOppfoelgingsstatusSikkerhetsbegrensning("", new Sikkerhetsbegrensning()));
+        when(oppfoelgingsstatusV2Service.hentOppfoelgingsstatus(any())).thenReturn(lagMockResponseV2());
+        when(oppfoelgingsstatusV2Service.hentOppfoelgingsstatus(any())).thenThrow(new HentOppfoelgingsstatusSikkerhetsbegrensning("", new Sikkerhetsbegrensning()));
         arenaOppfolgingService.hentArenaOppfolging("1234");
     }
 
     @Test(expected = BadRequestException.class)
     public void skalKasteBadRequestOmUgyldigIdentifikator() throws Exception {
-        when(oppfoelgingsstatusService.hentOppfoelgingsstatus(any())).thenThrow(new HentOppfoelgingsstatusUgyldigInput("", new UgyldigInput()));
+        when(oppfoelgingsstatusV2Service.hentOppfoelgingsstatus(any())).thenThrow(new HentOppfoelgingsstatusUgyldigInput("", new UgyldigInput()));
         arenaOppfolgingService.hentArenaOppfolging("1234");
-    }
-
-    private HentOppfoelgingsstatusResponse lagMockResponseV1() {
-        HentOppfoelgingsstatusResponse response = new HentOppfoelgingsstatusResponse();
-
-        Formidlingsgrupper formidlingsgrupper = new Formidlingsgrupper();
-        formidlingsgrupper.setValue("ARBS");
-
-        Rettighetsgrupper rettighetsgrupper = new Rettighetsgrupper();
-        rettighetsgrupper.setValue("rettighetsgruppe");
-
-        ServicegruppeKoder servicegruppeKoder = new ServicegruppeKoder();
-        servicegruppeKoder.setValue("servicegruppe");
-
-        response.setRettighetsgruppeKode(rettighetsgrupper);
-        response.setFormidlingsgruppeKode(formidlingsgrupper);
-        response.setNavOppfoelgingsenhet(MOCK_ENHET_ID);
-        response.setServicegruppeKode(servicegruppeKoder);
-        return response;
     }
 
     private no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v2.meldinger.HentOppfoelgingsstatusResponse lagMockResponseV2() {
