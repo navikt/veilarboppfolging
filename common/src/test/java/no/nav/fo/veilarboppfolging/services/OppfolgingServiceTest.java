@@ -31,7 +31,6 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.sql.Timestamp;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -218,43 +217,17 @@ public class OppfolgingServiceTest {
         assertThat(oppfolgingStatusData.underOppfolging, is(true));
     }
 
-    @Test
-    public void hentOppfolgingStatus_brukerSomErUnderOppfolgingMeldesUtDersomIservMerEnn28Dager() throws Exception {
-        gittAktor();
-        oppfolging.setUnderOppfolging(true);
-        gittOppfolging(oppfolging);
-        gittInaktivOppfolgingStatus(LocalDate.now().minusDays(29), null);
-
-        hentOppfolgingStatus();
-
-        verify(oppfolgingRepositoryMock).avsluttOppfolging(eq(AKTOR_ID), eq(null), any(String.class));
-    }
-    
-    private void gittInaktivOppfolgingStatus(LocalDate iservDato, Boolean kanEnkeltReaktiveres) {
+    private void gittInaktivOppfolgingStatus(Boolean kanEnkeltReaktiveres) {
         arenaOppfolging.setFormidlingsgruppe("ISERV");
-        arenaOppfolging.setInaktiveringsdato(iservDato);
         arenaOppfolging.setKanEnkeltReaktiveres(kanEnkeltReaktiveres);
     }
 
     @Test
-    public void hentOppfolgingStatus_brukerSomErUnderOppfolgingSkalReaktiveresDersomIservMindreEnn28Dager() throws Exception {
+    public void hentOppfolgingStatus_brukerSomErUnderOppfolgingOgISERVMeldesUtDersomArenaSierReaktiveringIkkeErMulig() throws Exception {
         gittAktor();
         oppfolging.setUnderOppfolging(true);
         gittOppfolging(oppfolging);
-        gittInaktivOppfolgingStatus(LocalDate.now().minusDays(27), null);
-
-        OppfolgingStatusData status = hentOppfolgingStatus();
-
-        assertThat(status.kanReaktiveres, is(true));
-        assertThat(status.inaktivIArena, is(true));
-    }
-
-    @Test
-    public void hentOppfolgingStatus_brukerSomErUnderOppfolgingMeldesUtDersomArenaSierReaktiveringIkkeErMulig() throws Exception {
-        gittAktor();
-        oppfolging.setUnderOppfolging(true);
-        gittOppfolging(oppfolging);
-        gittInaktivOppfolgingStatus(LocalDate.now().minusDays(27), false);
+        gittInaktivOppfolgingStatus(false);
 
         hentOppfolgingStatus();
 
@@ -262,11 +235,11 @@ public class OppfolgingServiceTest {
     }
      
     @Test
-    public void hentOppfolgingStatus_brukerSomErUnderOppfolgingSkalReaktiveresDersomArenaSierReaktiveringErMulig() throws Exception {
+    public void hentOppfolgingStatus_brukerSomErUnderOppfolgingOgISERVSkalReaktiveresDersomArenaSierReaktiveringErMulig() throws Exception {
         gittAktor();
         oppfolging.setUnderOppfolging(true);
         gittOppfolging(oppfolging);
-        gittInaktivOppfolgingStatus(LocalDate.now().minusDays(29), true);
+        gittInaktivOppfolgingStatus(true);
 
         OppfolgingStatusData status = hentOppfolgingStatus();
 
