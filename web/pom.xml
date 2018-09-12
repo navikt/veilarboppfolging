@@ -35,6 +35,11 @@
             <artifactId>api-app</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>io.vavr</groupId>
+            <artifactId>vavr</artifactId>
+        </dependency>
+
         <!--Lombok-->
         <dependency>
             <groupId>org.projectlombok</groupId>
