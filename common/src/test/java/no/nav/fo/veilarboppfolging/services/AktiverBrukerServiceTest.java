@@ -15,7 +15,7 @@ import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotAuthorizedException;
 import java.util.Optional;
 
-import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
+import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -67,7 +67,7 @@ class AktiverBrukerServiceTest {
         doThrow(mock(ReaktiverBrukerForenkletBrukerKanIkkeReaktiveresForenklet.class)).when(behandleArbeidssoekerV1).reaktiverBrukerForenklet(any());
         Feil e = reaktiverBrukerMotArenaOgReturnerFeil(new Fnr("12345678910"));
         assertThat(e.getType().getStatus()).isNotNull();
-        assertThat(e.getType().getStatus()).isEqualTo(INTERNAL_SERVER_ERROR);
+        assertThat(e.getType().getStatus()).isEqualTo(FORBIDDEN);
         assertThat(e.getType().getName()).isEqualTo("BRUKER_KAN_IKKE_REAKTIVERES_FORENKLET");
     }
 
@@ -76,7 +76,7 @@ class AktiverBrukerServiceTest {
         doThrow(mock(AktiverBrukerBrukerFinnesIkke.class)).when(behandleArbeidssoekerV1).aktiverBruker(any());
         Feil e = aktiverBrukerMotArenaOgReturnerFeil(hentBruker());
         assertThat(e.getType().getStatus()).isNotNull();
-        assertThat(e.getType().getStatus()).isEqualTo(INTERNAL_SERVER_ERROR);
+        assertThat(e.getType().getStatus()).isEqualTo(FORBIDDEN);
         assertThat(e.getType().getName()).isEqualTo("BRUKER_ER_UKJENT");
     }
 
@@ -85,7 +85,7 @@ class AktiverBrukerServiceTest {
         doThrow(mock(AktiverBrukerBrukerIkkeReaktivert.class)).when(behandleArbeidssoekerV1).aktiverBruker(any());
         Feil e = aktiverBrukerMotArenaOgReturnerFeil(hentBruker());
         assertThat(e.getType().getStatus()).isNotNull();
-        assertThat(e.getType().getStatus()).isEqualTo(INTERNAL_SERVER_ERROR);
+        assertThat(e.getType().getStatus()).isEqualTo(FORBIDDEN);
         assertThat(e.getType().getName()).isEqualTo("BRUKER_KAN_IKKE_REAKTIVERES");
     }
 
@@ -94,7 +94,7 @@ class AktiverBrukerServiceTest {
         doThrow(mock(AktiverBrukerBrukerKanIkkeAktiveres.class)).when(behandleArbeidssoekerV1).aktiverBruker(any());
         Feil e = aktiverBrukerMotArenaOgReturnerFeil(hentBruker());
         assertThat(e.getType().getStatus()).isNotNull();
-        assertThat(e.getType().getStatus()).isEqualTo(INTERNAL_SERVER_ERROR);
+        assertThat(e.getType().getStatus()).isEqualTo(FORBIDDEN);
         assertThat(e.getType().getName()).isEqualTo("BRUKER_ER_DOD_UTVANDRET_ELLER_FORSVUNNET");
     }
 
@@ -103,7 +103,7 @@ class AktiverBrukerServiceTest {
         doThrow(mock(AktiverBrukerBrukerManglerArbeidstillatelse.class)).when(behandleArbeidssoekerV1).aktiverBruker(any());
         Feil e = aktiverBrukerMotArenaOgReturnerFeil(hentBruker());
         assertThat(e.getType().getStatus()).isNotNull();
-        assertThat(e.getType().getStatus()).isEqualTo(INTERNAL_SERVER_ERROR);
+        assertThat(e.getType().getStatus()).isEqualTo(FORBIDDEN);
         assertThat(e.getType().getName()).isEqualTo("BRUKER_MANGLER_ARBEIDSTILLATELSE");
     }
 

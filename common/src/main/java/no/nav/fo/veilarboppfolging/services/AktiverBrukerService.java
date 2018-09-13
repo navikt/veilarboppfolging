@@ -26,7 +26,7 @@ import static io.vavr.API.$;
 import static io.vavr.API.Case;
 import static io.vavr.Predicates.instanceOf;
 import static java.util.Optional.ofNullable;
-import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
+import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 
 @Slf4j
 @Component
@@ -160,7 +160,7 @@ public class AktiverBrukerService {
 
         @Override
         public Response.Status getStatus() {
-            return INTERNAL_SERVER_ERROR;
+            return FORBIDDEN;
         }
     }
 }

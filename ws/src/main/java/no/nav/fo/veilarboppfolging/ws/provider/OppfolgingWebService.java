@@ -172,6 +172,7 @@ public class OppfolgingWebService implements BehandleOppfolgingV1 {
         oppfoelgingstatus.getOppfoelgingsPerioder().addAll(
                 oppfolgingStatusData.getOppfolgingsperioder().stream().map(this::mapOppfoelgingsPeriode).collect(toList())
         );
+        oppfoelgingstatus.setInaktiveringsDato(xmlCalendar(oppfolgingStatusData.getInaktiveringsdato()));
         Optional.ofNullable(oppfolgingStatusData.getGjeldendeEskaleringsvarsel())
                 .map(this::mapEskaleringsVarsel)
                 .ifPresent(oppfoelgingstatus::setEskaleringsvarsel);
