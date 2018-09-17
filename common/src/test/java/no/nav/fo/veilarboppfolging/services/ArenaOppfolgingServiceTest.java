@@ -1,6 +1,7 @@
 package no.nav.fo.veilarboppfolging.services;
 
 import no.nav.fo.veilarboppfolging.domain.ArenaOppfolging;
+import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.informasjon.Bruker;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.informasjon.Oppfoelgingskontrakt;
@@ -17,6 +18,7 @@ import no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v1.informasjon.Formidlingsg
 import no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v1.informasjon.Rettighetsgrupper;
 import no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v1.informasjon.ServicegruppeKoder;
 import no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v1.meldinger.HentOppfoelgingsstatusResponse;
+import no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v2.binding.OppfoelgingsstatusV2;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -48,7 +50,14 @@ public class ArenaOppfolgingServiceTest {
     private OppfoelgingsstatusV1 oppfoelgingsstatusService;
 
     @Mock
+    private OppfoelgingsstatusV2 oppfoelgingsstatusV2Service;
+
+    @Mock
     private OppfoelgingPortType oppfoelgingPortType;
+
+    @Mock
+    private UnleashService unleashService;
+
 
     @Test
     public void hentOppfoelgingskontraktListeReturnererEnRespons() throws Exception {
@@ -66,8 +75,9 @@ public class ArenaOppfolgingServiceTest {
     }
 
     @Test
-    public void skalMappeTilOppfolgingsstatus() throws Exception {
-        when(oppfoelgingsstatusService.hentOppfoelgingsstatus(any())).thenReturn(lagMockResponse());
+    public void skalMappeTilOppfolgingsstatusV1() throws Exception {
+        when(unleashService.isEnabled(any())).thenReturn(false);
+        when(oppfoelgingsstatusService.hentOppfoelgingsstatus(any())).thenReturn(lagMockResponseV1());
 
         ArenaOppfolging arenaOppfolging = arenaOppfolgingService.hentArenaOppfolging("1234");
         Assertions.assertThat(arenaOppfolging.getFormidlingsgruppe()).isEqualTo("ARBS");
@@ -76,16 +86,29 @@ public class ArenaOppfolgingServiceTest {
         Assertions.assertThat(arenaOppfolging.getServicegruppe()).isEqualTo("servicegruppe");
     }
 
+    @Test
+    public void skalMappeTilOppfolgingsstatusV2() throws Exception {
+        when(unleashService.isEnabled(any())).thenReturn(true);
+        when(oppfoelgingsstatusV2Service.hentOppfoelgingsstatus(any())).thenReturn(lagMockResponseV2());
+
+        ArenaOppfolging arenaOppfolging = arenaOppfolgingService.hentArenaOppfolging("1234");
+        Assertions.assertThat(arenaOppfolging.getFormidlingsgruppe()).isEqualTo("ARBS");
+        Assertions.assertThat(arenaOppfolging.getOppfolgingsenhet()).isEqualTo(MOCK_ENHET_ID);
+        Assertions.assertThat(arenaOppfolging.getRettighetsgruppe()).isEqualTo("rettighetsgruppe");
+        Assertions.assertThat(arenaOppfolging.getServicegruppe()).isEqualTo("servicegruppe");
+        Assertions.assertThat(arenaOppfolging.getKanEnkeltReaktiveres()).isEqualTo(Boolean.TRUE);
+    }
+
     @Test(expected = NotFoundException.class)
     public void skalKasteNotFoundOmPersonIkkeFunnet() throws Exception {
-        when(oppfoelgingsstatusService.hentOppfoelgingsstatus(any())).thenReturn(lagMockResponse());
+        when(oppfoelgingsstatusService.hentOppfoelgingsstatus(any())).thenReturn(lagMockResponseV1());
         when(oppfoelgingsstatusService.hentOppfoelgingsstatus(any())).thenThrow(new HentOppfoelgingsstatusPersonIkkeFunnet("", new PersonIkkeFunnet()));
         arenaOppfolgingService.hentArenaOppfolging("1234");
     }
 
     @Test(expected = ForbiddenException.class)
     public void skalKasteForbiddenOmManIkkeHarTilgang() throws Exception {
-        when(oppfoelgingsstatusService.hentOppfoelgingsstatus(any())).thenReturn(lagMockResponse());
+        when(oppfoelgingsstatusService.hentOppfoelgingsstatus(any())).thenReturn(lagMockResponseV1());
         when(oppfoelgingsstatusService.hentOppfoelgingsstatus(any())).thenThrow(new HentOppfoelgingsstatusSikkerhetsbegrensning("", new Sikkerhetsbegrensning()));
         arenaOppfolgingService.hentArenaOppfolging("1234");
     }
@@ -96,7 +119,7 @@ public class ArenaOppfolgingServiceTest {
         arenaOppfolgingService.hentArenaOppfolging("1234");
     }
 
-    private HentOppfoelgingsstatusResponse lagMockResponse() {
+    private HentOppfoelgingsstatusResponse lagMockResponseV1() {
         HentOppfoelgingsstatusResponse response = new HentOppfoelgingsstatusResponse();
 
         Formidlingsgrupper formidlingsgrupper = new Formidlingsgrupper();
@@ -112,6 +135,26 @@ public class ArenaOppfolgingServiceTest {
         response.setFormidlingsgruppeKode(formidlingsgrupper);
         response.setNavOppfoelgingsenhet(MOCK_ENHET_ID);
         response.setServicegruppeKode(servicegruppeKoder);
+        return response;
+    }
+
+    private no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v2.meldinger.HentOppfoelgingsstatusResponse lagMockResponseV2() {
+        no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v2.meldinger.HentOppfoelgingsstatusResponse response = new no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v2.meldinger.HentOppfoelgingsstatusResponse();
+
+        no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v2.informasjon.Formidlingsgrupper formidlingsgrupper = new no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v2.informasjon.Formidlingsgrupper();
+        formidlingsgrupper.setValue("ARBS");
+
+        no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v2.informasjon.Rettighetsgrupper rettighetsgrupper = new no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v2.informasjon.Rettighetsgrupper();
+        rettighetsgrupper.setValue("rettighetsgruppe");
+
+        no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v2.informasjon.ServicegruppeKoder servicegruppeKoder = new no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v2.informasjon.ServicegruppeKoder();
+        servicegruppeKoder.setValue("servicegruppe");
+
+        response.setRettighetsgruppeKode(rettighetsgrupper);
+        response.setFormidlingsgruppeKode(formidlingsgrupper);
+        response.setNavOppfoelgingsenhet(MOCK_ENHET_ID);
+        response.setServicegruppeKode(servicegruppeKoder);
+        response.setKanEnkeltReaktiveres(Boolean.TRUE);
         return response;
     }
 

@@ -21,6 +21,7 @@ import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt.WSYtelseskontrakt;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeRequest;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeResponse;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -30,6 +31,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -217,6 +219,62 @@ public class OppfolgingServiceTest {
     }
 
     @Test
+    public void hentOppfolgingStatus_brukerSomErUnderOppfolgingMeldesUtDersomIservMerEnn28Dager() throws Exception {
+        gittAktor();
+        oppfolging.setUnderOppfolging(true);
+        gittOppfolging(oppfolging);
+        gittInaktivOppfolgingStatus(LocalDate.now().minusDays(29), null);
+
+        hentOppfolgingStatus();
+
+        verify(oppfolgingRepositoryMock).avsluttOppfolging(eq(AKTOR_ID), eq(null), any(String.class));
+    }
+    
+    private void gittInaktivOppfolgingStatus(LocalDate iservDato, Boolean kanEnkeltReaktiveres) {
+        arenaOppfolging.setFormidlingsgruppe("ISERV");
+        arenaOppfolging.setInaktiveringsdato(iservDato);
+        arenaOppfolging.setKanEnkeltReaktiveres(kanEnkeltReaktiveres);
+    }
+
+    @Test
+    public void hentOppfolgingStatus_brukerSomErUnderOppfolgingSkalReaktiveresDersomIservMindreEnn28Dager() throws Exception {
+        gittAktor();
+        oppfolging.setUnderOppfolging(true);
+        gittOppfolging(oppfolging);
+        gittInaktivOppfolgingStatus(LocalDate.now().minusDays(27), null);
+
+        OppfolgingStatusData status = hentOppfolgingStatus();
+
+        assertThat(status.kanReaktiveres, is(true));
+        assertThat(status.inaktivIArena, is(true));
+    }
+
+    @Test
+    public void hentOppfolgingStatus_brukerSomErUnderOppfolgingMeldesUtDersomArenaSierReaktiveringIkkeErMulig() throws Exception {
+        gittAktor();
+        oppfolging.setUnderOppfolging(true);
+        gittOppfolging(oppfolging);
+        gittInaktivOppfolgingStatus(LocalDate.now().minusDays(27), false);
+
+        hentOppfolgingStatus();
+
+        verify(oppfolgingRepositoryMock).avsluttOppfolging(eq(AKTOR_ID), eq(null), any(String.class));
+    }
+     
+    @Test
+    public void hentOppfolgingStatus_brukerSomErUnderOppfolgingSkalReaktiveresDersomArenaSierReaktiveringErMulig() throws Exception {
+        gittAktor();
+        oppfolging.setUnderOppfolging(true);
+        gittOppfolging(oppfolging);
+        gittInaktivOppfolgingStatus(LocalDate.now().minusDays(29), true);
+
+        OppfolgingStatusData status = hentOppfolgingStatus();
+
+        assertThat(status.kanReaktiveres, is(true));
+        assertThat(status.inaktivIArena, is(true));
+    }
+    
+    @Test
     public void utenReservasjon() throws Exception {
         gittAktor();
 
@@ -334,16 +392,6 @@ public class OppfolgingServiceTest {
     }
 
     @Test
-    public void oppfolgingMedOppfolgingsFlaggIDatabasen() throws Exception {
-        gittAktor();
-        gittOppfolging(oppfolging.setUnderOppfolging(true));
-
-        hentOppfolgingStatus();
-
-        verifyZeroInteractions(arenaOppfolgingService);
-    }
-
-    @Test
     public void kanIkkeAvslutteNarManIkkeErUnderOppfolging() throws Exception {
         gittAktor();
         gittOppfolging(oppfolging.setUnderOppfolging(false));
@@ -369,7 +417,7 @@ public class OppfolgingServiceTest {
     }
 
     @Test
-    public void kanIkkeAvslutteMedAktiveTiltak() throws Exception {
+    public void kanAvslutteMedAktiveTiltak() throws Exception {
         gittAktor();
         gittOppfolging(oppfolging.setUnderOppfolging(true));
         gittOppfolgingStatus("IARBS", "VURDI");
@@ -379,7 +427,8 @@ public class OppfolgingServiceTest {
         OppfolgingStatusData oppfolgingStatusData = oppfolgingService.hentAvslutningStatus(FNR);
         AvslutningStatusData avslutningStatusData = oppfolgingStatusData.avslutningStatusData;
 
-        assertThat(avslutningStatusData.kanAvslutte, is(false));
+        assertThat(avslutningStatusData.harTiltak, is(true));
+        assertThat(avslutningStatusData.kanAvslutte, is(true));
     }
 
     @Test

@@ -14,4 +14,5 @@ public class ArenaOppfolging {
     private String oppfolgingsenhet;
     private LocalDate inaktiveringsdato;
     private Boolean harMottaOppgaveIArena;
+    private Boolean kanEnkeltReaktiveres;
 }

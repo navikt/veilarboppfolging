@@ -17,7 +17,7 @@ import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.fo.veilarboppfolging.utils.FunksjonelleMetrikker;
 import no.nav.fo.veilarboppfolging.utils.StringUtils;
 import no.nav.fo.veilarboppfolging.vilkar.VilkarService;
-import no.nav.sbl.featuretoggle.unleash.UnleashService;
+import no.nav.metrics.MetricsFactory;
 import no.nav.sbl.jdbc.Transactor;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.DigitalKontaktinformasjonV1;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.HentDigitalKontaktinformasjonKontaktinformasjonIkkeFunnet;
@@ -47,10 +47,7 @@ import static no.nav.fo.veilarbaktivitet.domain.AktivitetStatus.AVBRUTT;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetStatus.FULLFORT;
 import static no.nav.fo.veilarboppfolging.domain.KodeverkBruker.SYSTEM;
 import static no.nav.fo.veilarboppfolging.domain.VilkarStatus.GODKJENT;
-import static no.nav.fo.veilarboppfolging.services.ArenaUtils.erIserv;
-import static no.nav.fo.veilarboppfolging.services.ArenaUtils.erUnderOppfolging;
-import static no.nav.fo.veilarboppfolging.services.ArenaUtils.kanReaktiveres;
-import static no.nav.fo.veilarboppfolging.services.ArenaUtils.kanSettesUnderOppfolging;
+import static no.nav.fo.veilarboppfolging.services.ArenaUtils.*;
 import static no.nav.fo.veilarboppfolging.vilkar.VilkarService.VilkarType.PRIVAT;
 import static no.nav.fo.veilarboppfolging.vilkar.VilkarService.VilkarType.UNDER_OPPFOLGING;
 
@@ -70,6 +67,7 @@ public class OppfolgingResolver {
     private List<ArenaAktivitetDTO> arenaAktiviteter;
     private Boolean inaktivIArena;
     private Boolean kanReaktiveres;
+    private Boolean erIkkeArbeidssokerUtenOppfolging;
 
     OppfolgingResolver(String fnr, OppfolgingResolverDependencies deps) {
         deps.getPepClient().sjekkLeseTilgangTilFnr(fnr);
@@ -89,36 +87,42 @@ public class OppfolgingResolver {
     }
 
     void sjekkStatusIArenaOgOppdaterOppfolging() {
-        if (!oppfolging.isUnderOppfolging()) {
-            hentOppfolgingstatusFraArena();
-            statusIArena.ifPresent((arenaStatus) -> {
+        hentOppfolgingstatusFraArena();
+        statusIArena.ifPresent((arenaStatus) -> {
+            if (!oppfolging.isUnderOppfolging()) {
                 if (erUnderOppfolging(arenaStatus.getFormidlingsgruppe(), arenaStatus.getServicegruppe(), arenaStatus.getHarMottaOppgaveIArena())) {
                     deps.getOppfolgingRepository().startOppfolgingHvisIkkeAlleredeStartet(aktorId);
                     reloadOppfolging();
                 }
-            });
-        }
 
-        // Denne togglen iverksetter sjekk av reaktiveringsstatus. Dette i seg selv er en ren leseoperasjon, men medfører at det alltid 
-        // går et oppslag for status mot Arena, også dersom bruker allerede er under oppfølging
-        boolean sjekkReaktiveringsStatus = deps.getUnleashService().isEnabled("oppfolgingsstatus.sjekkreaktivering");
-        if(sjekkReaktiveringsStatus) {
-            if(statusIArena == null) {
-                hentOppfolgingstatusFraArena();
             }
-            statusIArena.ifPresent((arenaStatus) -> {
-                inaktivIArena = erIserv(statusIArena.get());
-                kanReaktiveres = oppfolging.isUnderOppfolging() && kanReaktiveres(statusIArena.get());
+            erIkkeArbeidssokerUtenOppfolging = erIARBSUtenOppfolging(
+                    arenaStatus.getFormidlingsgruppe(),
+                    arenaStatus.getServicegruppe()
+                    );
 
-                // Denne togglen iverksetter automatisk avslutning av oppfølging dersom bruker er inaktiv i Arena og ikke kan reaktiveres.
-                boolean automatiskAvslutningAvOppfolgingToggle = deps.getUnleashService().isEnabled("oppfolgingsstatus.avsluttoppfolging.automatisk");
-                if(automatiskAvslutningAvOppfolgingToggle && inaktivIArena && !kanReaktiveres) {
-                    log.info("Avslutter oppfølgingsperiode for bruker");
-                    avsluttOppfolging(null, "Oppfølging avsluttet automatisk pga. inaktiv bruker som ikke kan reaktiveres");
-                    reloadOppfolging();
-                }
-            });
-        }
+            inaktivIArena = erIserv(statusIArena.get());
+            kanReaktiveres = oppfolging.isUnderOppfolging() && kanReaktiveres(statusIArena.get());
+            boolean skalAvsluttes = oppfolging.isUnderOppfolging() && inaktivIArena && !kanReaktiveres;
+            log.info("Statuser for reaktivering og inaktivering: "
+                    + "Aktiv Oppfølgingsperiode={} "
+                    + "kanReaktiveres={} "
+                    + "erIkkeArbeidssokerUtenOppfolging={} "
+                    + "skalAvsluttes={} "
+                    + "Tilstand i Arena: {}",
+                    oppfolging.isUnderOppfolging(), kanReaktiveres, erIkkeArbeidssokerUtenOppfolging, skalAvsluttes, statusIArena.get());
+            
+            if(skalAvsluttes) {
+                inaktiverBruker();
+            }
+        });
+    }
+
+    private void inaktiverBruker() {
+        log.info("Avslutter oppfølgingsperiode for bruker");
+        avsluttOppfolging(null, "Oppfølging avsluttet automatisk pga. inaktiv bruker som ikke kan reaktiveres");
+        reloadOppfolging();
+        MetricsFactory.createEvent("oppfolging.automatisk.avslutning").addFieldToReport("success", !oppfolging.isUnderOppfolging()).report();
     }
 
     void sjekkNyesteVilkarOgOppdaterOppfolging(String hash, VilkarStatus vilkarStatus) {
@@ -274,10 +278,8 @@ public class OppfolgingResolver {
     }
 
     boolean kanAvslutteOppfolging() {
-        boolean harAktiveTiltak = !deps.getUnleashService().isEnabled("oppfolging.ikke.hent.tiltak.ved.avslutning") && harAktiveTiltak();
         return oppfolging.isUnderOppfolging()
                 && !erUnderOppfolgingIArena()
-                && !harAktiveTiltak
                 && !erUnderKvp();
     }
 
@@ -308,6 +310,10 @@ public class OppfolgingResolver {
 
     Boolean getKanReaktiveres() {
         return kanReaktiveres;
+    }
+
+    Boolean getErIkkeArbeidssokerUtenOppfolging() {
+        return erIkkeArbeidssokerUtenOppfolging;
     }
 
     void avsluttOppfolging(String veileder, String begrunnelse) {
@@ -464,7 +470,5 @@ public class OppfolgingResolver {
         @Inject
         private RemoteFeatureConfig.BrukervilkarFeature brukervilkarFeature;
 
-        @Inject
-        private UnleashService unleashService;
     }
 }

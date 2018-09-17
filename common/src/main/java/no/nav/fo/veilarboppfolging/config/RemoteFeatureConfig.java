@@ -1,52 +1,28 @@
 package no.nav.fo.veilarboppfolging.config;
 
-import no.nav.sbl.featuretoggle.remote.RemoteFeatureToggle;
-import no.nav.sbl.featuretoggle.remote.RemoteFeatureToggleRepository;
-import org.springframework.beans.factory.annotation.Value;
+import no.nav.sbl.featuretoggle.unleash.UnleashService;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class RemoteFeatureConfig {
 
-    @Value("${feature_endpoint.url}")
-    private String remoteFeatureUrl;
+    protected UnleashService unleashService;
 
     @Bean
-    public RemoteFeatureToggleRepository remoteFeatureToggleRespository() {
-        return new RemoteFeatureToggleRepository(remoteFeatureUrl);
+    public BrukervilkarFeature brukervilkarFeature(UnleashService unleashService) {
+        return new BrukervilkarFeature(unleashService);
     }
 
-    @Bean
-    public RegistreringFeature registrereBrukerGenerellFeature(RemoteFeatureToggleRepository repo) {
-        return new RegistreringFeature(repo);
-    }
+    public static class BrukervilkarFeature extends RemoteFeatureConfig {
 
-    @Bean
-    public OpprettBrukerIArenaFeature registrereBrukerArenaFeature(RemoteFeatureToggleRepository repo) {
-        return new OpprettBrukerIArenaFeature(repo);
-    }
-
-    @Bean
-    public BrukervilkarFeature brukervilkarFeature(RemoteFeatureToggleRepository repo) {
-        return new BrukervilkarFeature(repo);
-    }
-
-    public static class RegistreringFeature extends RemoteFeatureToggle {
-        public RegistreringFeature(RemoteFeatureToggleRepository repository) {
-            super(repository, "veilarboppfolging.registrering", false);
+        public BrukervilkarFeature(UnleashService unleashService) {
+            this.unleashService = unleashService;
         }
-    }
 
-    public static class OpprettBrukerIArenaFeature extends RemoteFeatureToggle {
-        public OpprettBrukerIArenaFeature(RemoteFeatureToggleRepository repository) {
-            super(repository, "veilarboppfolging.opprettbrukeriarena", false);
-        }
-    }
-
-    public static class BrukervilkarFeature extends RemoteFeatureToggle {
-        public BrukervilkarFeature(RemoteFeatureToggleRepository repository) {
-            super(repository, "aktivitetsplan.brukervilkar", false);
+        public boolean erAktiv() {
+            return unleashService.isEnabled("aktivitetsplan.brukervilkar");
         }
     }
 }

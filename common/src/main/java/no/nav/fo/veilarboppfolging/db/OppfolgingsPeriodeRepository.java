@@ -120,6 +120,7 @@ public class OppfolgingsPeriodeRepository {
                         OppfolgingsStatusRepository.TABLE_NAME +
                         " SET under_oppfolging = 0, "
                         + "veileder = null, "
+                        + "ny_for_veileder = 0, "
                         + "gjeldende_manuell_status = null, "
                         + "gjeldende_mal = null, "
                         + "gjeldende_brukervilkar = null, "
