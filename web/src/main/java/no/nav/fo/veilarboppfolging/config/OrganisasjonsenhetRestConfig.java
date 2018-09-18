@@ -1,22 +1,17 @@
 package no.nav.fo.veilarboppfolging.config;
 
-import no.nav.fo.veilarboppfolging.mock.OrganisasjonEnhetMock;
-import no.nav.tjeneste.virksomhet.organisasjonenhet.v1.OrganisasjonEnhetV1;
+import no.nav.tjeneste.virksomhet.organisasjonenhet.v2.binding.OrganisasjonEnhetV2;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import static no.nav.sbl.dialogarena.common.cxf.InstanceSwitcher.createMetricsProxyWithInstanceSwitcher;
 
 @Configuration
 public class OrganisasjonsenhetRestConfig {
 
-    private static final String ORGANISASJONSENHET_MOCK_KEY = "organisasjonenhet.endpoint.url";
-
     @Bean
-    public OrganisasjonEnhetV1 organisasjonEnhetPortType() {
-        OrganisasjonEnhetV1 prod = OrganisasjonsenhetConfig.organisasjonEnhetPortType().configureStsForOnBehalfOfWithJWT().build();
-        OrganisasjonEnhetV1 mock = new OrganisasjonEnhetMock();
-        return createMetricsProxyWithInstanceSwitcher("Organisasjonsenhet", prod, mock, ORGANISASJONSENHET_MOCK_KEY, OrganisasjonEnhetV1.class);
+    public OrganisasjonEnhetV2 organisasjonEnhetPortType() {
+        return OrganisasjonsenhetConfig.organisasjonEnhetPortType()
+                .configureStsForOnBehalfOfWithJWT()
+                .build();
     }
 
 }
