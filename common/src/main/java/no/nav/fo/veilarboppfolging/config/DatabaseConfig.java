@@ -1,7 +1,5 @@
 package no.nav.fo.veilarboppfolging.config;
 
-import no.nav.sbl.dialogarena.common.integrasjon.utils.RowMapper;
-import no.nav.sbl.dialogarena.common.integrasjon.utils.SQL;
 import no.nav.sbl.dialogarena.types.Pingable;
 import no.nav.sbl.dialogarena.types.Pingable.Ping.PingMetadata;
 import no.nav.sbl.jdbc.Database;
@@ -57,7 +55,7 @@ public class DatabaseConfig {
     }
 
     @Bean
-    public Pingable dbPinger(final DataSource ds) {
+    public Pingable dbPinger(final JdbcTemplate jdbcTemplate) {
         PingMetadata metadata = new PingMetadata(
                 "veilarboppfolgingDB: " + System.getProperty("veilarboppfolgingDB.url"),
                 "Enkel spørring mot Databasen for VeilArbOppfolging.",
@@ -65,7 +63,7 @@ public class DatabaseConfig {
         );
         return () -> {
             try {
-                SQL.query(ds, new RowMapper.IntMapper(), "select count(1) from dual");
+                jdbcTemplate.query("select count(1) from dual", rs->{});
                 return Pingable.Ping.lyktes(metadata);
             } catch (Exception e) {
                 return Pingable.Ping.feilet(metadata, e);
