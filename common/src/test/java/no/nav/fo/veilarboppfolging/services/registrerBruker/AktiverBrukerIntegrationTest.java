@@ -4,7 +4,6 @@ import io.vavr.control.Try;
 import no.nav.apiapp.security.PepClient;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.config.DatabaseConfig;
-import no.nav.fo.veilarboppfolging.config.RemoteFeatureConfig;
 import no.nav.fo.veilarboppfolging.db.NyeBrukereFeedRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingsPeriodeRepository;
@@ -22,6 +21,7 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.jdbc.datasource.AbstractDataSource;
 import org.springframework.mock.jndi.SimpleNamingContextBuilder;
 
 import java.util.Optional;
@@ -34,22 +34,22 @@ import static org.mockito.Mockito.*;
 
 class AktiverBrukerIntegrationTest {
 
-    private static AnnotationConfigApplicationContext context;
+    private AnnotationConfigApplicationContext context;
 
-    private static OppfolgingRepository oppfolgingRepository;
-    private static OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
-    private static AktorService aktorService;
-    private static BehandleArbeidssoekerV1 behandleArbeidssoekerV1;
-    private static RemoteFeatureConfig.OpprettBrukerIArenaFeature opprettBrukerIArenaFeature;
-    private static RemoteFeatureConfig.RegistreringFeature registreringFeature;
-    private static AktiverBrukerService aktiverBrukerService;
-    private static String ident = "***REMOVED***";
+    private OppfolgingRepository oppfolgingRepository;
+    private OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
+    private AktorService aktorService;
+    private BehandleArbeidssoekerV1 behandleArbeidssoekerV1;
+    private AktiverBrukerService aktiverBrukerService;
+    private String ident = "***REMOVED***";
+
+    private static AbstractDataSource db = setupInMemoryDatabase();
 
     @BeforeEach
     public void setup() throws Exception {
 
         SimpleNamingContextBuilder builder = new SimpleNamingContextBuilder();
-        builder.bind(DATA_SOURCE_JDNI_NAME, setupInMemoryDatabase());
+        builder.bind(DATA_SOURCE_JDNI_NAME, db);
         builder.activate();
 
         context = new AnnotationConfigApplicationContext(
@@ -64,8 +64,6 @@ class AktiverBrukerIntegrationTest {
         oppfolgingsPeriodeRepository = context.getBean(OppfolgingsPeriodeRepository.class);
         aktorService = context.getBean(AktorService.class);
         behandleArbeidssoekerV1 = context.getBean(BehandleArbeidssoekerV1.class);
-        opprettBrukerIArenaFeature = context.getBean(RemoteFeatureConfig.OpprettBrukerIArenaFeature.class);
-        registreringFeature = context.getBean(RemoteFeatureConfig.RegistreringFeature.class);
     }
 
     @AfterEach
@@ -113,8 +111,6 @@ class AktiverBrukerIntegrationTest {
     }
 
     private void cofigureMocks() {
-        when(registreringFeature.erAktiv()).thenReturn(true);
-        when(opprettBrukerIArenaFeature.erAktiv()).thenReturn(true);
         when(aktorService.getAktorId(any())).thenReturn(Optional.of(ident));
     }
 
@@ -147,16 +143,6 @@ class AktiverBrukerIntegrationTest {
         }
 
         @Bean
-        public RemoteFeatureConfig.OpprettBrukerIArenaFeature opprettBrukerIArenaFeature() {
-            return mock(RemoteFeatureConfig.OpprettBrukerIArenaFeature.class);
-        }
-
-        @Bean
-        public RemoteFeatureConfig.RegistreringFeature registreringFeature() {
-            return mock(RemoteFeatureConfig.RegistreringFeature.class);
-        }
-
-        @Bean
         public NyeBrukereFeedRepository nyeBrukereFeedRepository(Database database) {
             return new NyeBrukereFeedRepository(database);
         }
@@ -165,8 +151,6 @@ class AktiverBrukerIntegrationTest {
         AktiverBrukerService aktiverBrukerService(
                 AktorService aktorService,
                 BehandleArbeidssoekerV1 behandleArbeidssoekerV1,
-                RemoteFeatureConfig.OpprettBrukerIArenaFeature sjekkRegistrereBrukerArenaFeature,
-                RemoteFeatureConfig.RegistreringFeature skalRegistrereBrukerGenerellFeature,
                 OppfolgingRepository oppfolgingRepository,
                 NyeBrukereFeedRepository nyeBrukereFeedRepository)
         {
@@ -174,8 +158,6 @@ class AktiverBrukerIntegrationTest {
                     oppfolgingRepository,
                     aktorService,
                     behandleArbeidssoekerV1,
-                    sjekkRegistrereBrukerArenaFeature,
-                    skalRegistrereBrukerGenerellFeature,
                     nyeBrukereFeedRepository
             );
         }
