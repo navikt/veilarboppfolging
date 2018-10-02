@@ -8,9 +8,6 @@ import no.nav.fo.veilarboppfolging.domain.ArenaOppfolging;
 import static java.lang.Boolean.TRUE;
 import static java.util.Arrays.asList;
 
-import java.time.LocalDate;
-import java.time.Period;
-
 public class ArenaUtils {
 
     private static final String ARBS = "ARBS";
@@ -61,21 +58,7 @@ public class ArenaUtils {
     }
 
     public static boolean kanReaktiveres(ArenaOppfolging arenaStatus) {
-        Boolean kanEnkeltReaktiveres = arenaStatus.getKanEnkeltReaktiveres();
-        return TRUE.equals(kanEnkeltReaktiveres) || 
-                (kanEnkeltReaktiveres == null 
-                && erIserv(arenaStatus) 
-                && harVaertRegistrertILopetAvDeSiste28Dagene(arenaStatus.getInaktiveringsdato()));
-    }
-
-    static boolean harVaertRegistrertILopetAvDeSiste28Dagene(LocalDate inaktiveringsDato) {
-        if (inaktiveringsDato == null) {
-            return false;
-        }
-        Period inaktiveringsIntervall = Period.between(inaktiveringsDato, LocalDate.now());
-        return inaktiveringsIntervall.getYears() == 0
-                && inaktiveringsIntervall.getMonths() == 0
-                && inaktiveringsIntervall.getDays() <= 28;
+        return TRUE.equals(arenaStatus.getKanEnkeltReaktiveres());
     }
 
 }
