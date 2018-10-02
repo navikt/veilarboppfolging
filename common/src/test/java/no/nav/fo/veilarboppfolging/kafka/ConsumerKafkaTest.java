@@ -1,32 +1,55 @@
 package no.nav.fo.veilarboppfolging.kafka;
 
+import lombok.extern.slf4j.Slf4j;
+import no.nav.fo.veilarboppfolging.domain.Iserv28;
 import no.nav.fo.veilarboppfolging.mappers.ArenaBruker;
+import no.nav.fo.veilarboppfolging.services.Iserv28Service;
+import no.nav.json.JsonUtils;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
 
+import javax.inject.Inject;
+import java.time.ZonedDateTime;
+import java.util.function.Supplier;
+
+import static no.nav.fo.veilarboppfolging.kafka.Consumer.ENDRING_PAA_BRUKER_KAFKA_TOPIC;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
-@RunWith(SpringRunner.class)
-@ContextConfiguration(classes = ConsumerConfig.class)
+@Slf4j
 public class ConsumerKafkaTest extends KafkaTest {
 
-    @Autowired
-    private Consumer consumer;
+    @Inject
+    private Iserv28Service iserv28Service;
 
     @Test
     public void testConsume() throws InterruptedException {
+        ZonedDateTime iservSiden = ZonedDateTime.now();
+
         ArenaBruker bruker = new ArenaBruker();
         bruker.setAktoerid("1234");
         bruker.setFormidlingsgruppekode("ISERV");
-        bruker.setIserv_fra_dato("2018-07-29T12:21:04.963+02:00");
+        bruker.setIserv_fra_dato(iservSiden);
+        assertThat(iserv28Service.eksisterendeIservBruker(bruker)).isNull();
+        iserv28Service.filterereIservBrukere(bruker);
 
-        template.sendDefault(bruker.toString());
+        kafkaTemplate.send(ENDRING_PAA_BRUKER_KAFKA_TOPIC, JsonUtils.toJson(bruker));
+        dynamicTimeout(() -> iserv28Service.eksisterendeIservBruker(bruker) != null);
 
-        ArenaBruker arenaBruker = consumer.deserialisereBruker(bruker.toString());
-        assertThat(arenaBruker.getAktoerid().equals(bruker.getAktoerid()));
+        Iserv28 iserv28 = iserv28Service.eksisterendeIservBruker(bruker);
+
+        assertThat(iserv28).isNotNull();
+        assertThat(iserv28.getAktor_Id()).isEqualTo("1234");
+        assertThat(iserv28.getIservSiden()).isEqualTo(iservSiden);
+    }
+
+    private void dynamicTimeout(Supplier<Boolean> waitUntil) throws InterruptedException {
+        long start = System.currentTimeMillis();
+        while (!waitUntil.get()) {
+            Thread.sleep(10);
+            if (System.currentTimeMillis() - start > 30000) {
+                throw new IllegalStateException();
+            }
+        }
+        log.info("timeout was {}ms", System.currentTimeMillis() - start);
     }
 
 }

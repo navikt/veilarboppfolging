@@ -11,7 +11,6 @@ import java.time.ZonedDateTime;
 public class Iserv28 {
 
     public final String aktor_Id;
-    public String formidlingsgruppekode;
     public final ZonedDateTime iservSiden;
 }
 

@@ -14,16 +14,26 @@ import static no.nav.json.JsonUtils.fromJson;
 @Component
 public class Consumer {
 
+    public static final String ENDRING_PAA_BRUKER_KAFKA_TOPIC = "aapen-fo-endringPaaOppfoelgingsBruker-v1";
+
     private static final Logger LOG = LoggerFactory.getLogger(Consumer.class);
 
-    @Inject
-    private Iserv28Service iserv28Service;
+    private final Iserv28Service iserv28Service;
 
-    @KafkaListener(topics = "aapen-fo-endringPaaOppfoelgingsBruker-v1")
+    @Inject
+    public Consumer(Iserv28Service iserv28Service) {
+        this.iserv28Service = iserv28Service;
+    }
+
+    @KafkaListener(topics = ENDRING_PAA_BRUKER_KAFKA_TOPIC)
     public void consume(String arenaBruker) {
-        final ArenaBruker deserialisertBruker = deserialisereBruker(arenaBruker);
-        iserv28Service.filterereIservBrukere(deserialisertBruker);
-        LOG.info("endret bruker= '{}'", deserialisertBruker);
+        try {
+            final ArenaBruker deserialisertBruker = deserialisereBruker(arenaBruker);
+            iserv28Service.filterereIservBrukere(deserialisertBruker);
+            LOG.info("endret bruker= '{}'", deserialisertBruker);
+        } catch (Throwable t) {
+            LOG.error(t.getMessage(), t);
+        }
     }
 
     public ArenaBruker deserialisereBruker(String arenaBruker) {

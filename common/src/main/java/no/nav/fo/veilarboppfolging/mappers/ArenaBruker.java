@@ -8,10 +8,9 @@ import java.time.ZonedDateTime;
 @Getter
 @Setter
 public class ArenaBruker {
-
     public String aktoerid;
     public String formidlingsgruppekode;
-    public String iserv_fra_dato;
+    public ZonedDateTime iserv_fra_dato;
     public String fodselsnr;
     public String etternavn;
     public String fornavn;
@@ -25,5 +24,5 @@ public class ArenaBruker {
     public String sperret_ansatt;
     public Boolean er_doed;
     public ZonedDateTime doed_fra_dato;
-    public ZonedDateTime tidsstempel;
+    public ZonedDateTime endret_dato;
 }

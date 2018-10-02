@@ -354,6 +354,10 @@
             <groupId>no.bekk.bekkopen</groupId>
             <artifactId>nocommons</artifactId>
         </dependency>
+        <dependency>
+            <groupId>net.javacrumbs.shedlock</groupId>
+            <artifactId>shedlock-provider-jdbc</artifactId>
+        </dependency>
 
     </dependencies>
 
