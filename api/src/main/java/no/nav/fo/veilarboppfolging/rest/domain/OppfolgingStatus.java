@@ -22,4 +22,8 @@ public class OppfolgingStatus {
     private AvslutningStatus avslutningStatus;
     private List<OppfolgingPeriodeDTO> oppfolgingsPerioder;
     private boolean harSkriveTilgang;
+    private Boolean inaktivIArena;
+    private Boolean kanReaktiveres;
+    private Boolean erIkkeArbeidssokerUtenOppfolging;
+    public Date inaktiveringsdato;
 }

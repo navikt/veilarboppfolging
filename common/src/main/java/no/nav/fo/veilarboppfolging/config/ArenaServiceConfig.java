@@ -5,14 +5,12 @@ import no.nav.sbl.dialogarena.common.cxf.CXFClient;
 import no.nav.sbl.dialogarena.types.Pingable;
 import no.nav.sbl.dialogarena.types.Pingable.Ping.PingMetadata;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
-import no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v1.binding.OppfoelgingsstatusV1;
+import no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v2.binding.OppfoelgingsstatusV2;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3;
 import org.apache.cxf.interceptor.LoggingOutInterceptor;
 import org.slf4j.Logger;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import javax.inject.Inject;
 
 import java.util.UUID;
 
@@ -40,10 +38,10 @@ public class ArenaServiceConfig {
                 .address(url);
     }
 
-    public static CXFClient<OppfoelgingsstatusV1> oppfoelgingstatusV1PortType() {
-        final String url = getProperty("oppfoelgingsstatus.endpoint.url");
-        LOG.info("URL for Oppfoelging_V1 er {}", url);
-        return new CXFClient<>(OppfoelgingsstatusV1.class)
+    public static CXFClient<OppfoelgingsstatusV2> oppfoelgingstatusV2PortType() {
+        final String url = getProperty("oppfoelgingsstatus.v2.endpoint.url");
+        LOG.info("URL for OppfoelgingStatus_V2 er {}", url);
+        return new CXFClient<>(OppfoelgingsstatusV2.class)
                 .withOutInterceptor(new LoggingOutInterceptor())
                 .address(url);
     }
@@ -63,6 +61,32 @@ public class ArenaServiceConfig {
         return () -> {
             try {
                 ytelseskontraktPing.ping();
+                return lyktes(metadata);
+            } catch (Exception e) {
+                return feilet(metadata, e);
+            }
+        };
+    }
+
+    @Bean
+    Pingable oppfoelgingstatusV2Ping() {
+        final String url = getProperty("oppfoelgingsstatus.v2.endpoint.url");
+        LOG.info("URL for Oppfoelgingstatus_V2 er {}", url);
+        OppfoelgingsstatusV2 oppfoelgingsstatusV2 = oppfoelgingstatusV2PortType()
+                .configureStsForSystemUserInFSS()
+                .build();
+
+
+
+        PingMetadata metadata = new PingMetadata(UUID.randomUUID().toString(),
+                "OPPFOELGINGSTATUS_V2 via " + getProperty("oppfoelgingsstatus.v2.endpoint.url"),
+                "Ping av oppfolgingstatus_v2. Henter informasjon om oppfølgingsstatus fra arena.",
+                true
+        );
+
+        return () -> {
+            try {
+                oppfoelgingsstatusV2.ping();
                 return lyktes(metadata);
             } catch (Exception e) {
                 return feilet(metadata, e);
@@ -93,32 +117,5 @@ public class ArenaServiceConfig {
             }
         };
     }
-
-    @Bean
-    Pingable oppfoelgingstatusPing() {
-        final String url = getProperty("oppfoelgingsstatus.endpoint.url");
-        LOG.info("URL for Oppfoelgingstatus_V1 er {}", url);
-        OppfoelgingsstatusV1 oppfoelgingsstatusV1 = oppfoelgingstatusV1PortType()
-                .configureStsForSystemUserInFSS()
-                .build();
-
-
-
-        PingMetadata metadata = new PingMetadata(UUID.randomUUID().toString(),
-                "OPPFOELGINGSTATUS_V1 via " + getProperty("oppfoelgingsstatus.endpoint.url"),
-                "Ping av oppfolgingstatus_v1. Henter informasjon om oppfølgingsstatus fra arena.",
-                true
-        );
-
-        return () -> {
-            try {
-                oppfoelgingsstatusV1.ping();
-                return lyktes(metadata);
-            } catch (Exception e) {
-                return feilet(metadata, e);
-            }
-        };
-    }
-
 
 }

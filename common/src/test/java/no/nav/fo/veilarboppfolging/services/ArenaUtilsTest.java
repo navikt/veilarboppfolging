@@ -12,7 +12,6 @@ import static no.nav.fo.veilarboppfolging.services.ArenaUtils.erUnderOppfolging;
 import static no.nav.fo.veilarboppfolging.services.ArenaUtils.kanSettesUnderOppfolging;
 import static org.assertj.core.api.Assertions.assertThat;
 
-
 public class ArenaUtilsTest {
 
     private static final Set<String> KVALIFISERINGSGRUPPEKODER = new HashSet<>(
@@ -118,5 +117,5 @@ public class ArenaUtilsTest {
     public void kanSettesUnderOppfolging_IARBSogVURDI_false(){
         assertThat(kanSettesUnderOppfolging("IARBS", "VURDI")).isTrue();
     }
-
+    
 }

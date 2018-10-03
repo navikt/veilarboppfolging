@@ -11,8 +11,7 @@ import java.util.Date;
 public class NyeBrukereFeedDTO implements Comparable<NyeBrukereFeedDTO>{
     private long id;
     private String aktorId;
-    private boolean selvgaende;
-    private String innsatsgruppe;
+    private String foreslattInnsatsgruppe;
     private Date opprettet;
 
     @Override

@@ -158,7 +158,7 @@ public class OppfolgingService {
                 .setFnr(fnr)
                 .setVeilederId(oppfolging.getVeilederId())
                 .setUnderOppfolging(oppfolging.isUnderOppfolging())
-                .setUnderKvp(oppfolgingResolver.getOppfolging().getGjeldendeKvp() != null)
+                .setUnderKvp(oppfolging.getGjeldendeKvp() != null)
                 .setReservasjonKRR(oppfolgingResolver.reservertIKrr())
                 .setManuell(oppfolgingResolver.manuell())
                 .setVilkarMaBesvares(oppfolgingResolver.maVilkarBesvares())
@@ -167,7 +167,10 @@ public class OppfolgingService {
                 .setGjeldendeEskaleringsvarsel(oppfolging.getGjeldendeEskaleringsvarsel())
                 .setOppfolgingsperioder(oppfolging.getOppfolgingsperioder())
                 .setHarSkriveTilgang(oppfolgingResolver.harSkrivetilgangTilBruker())
-                ;
+                .setInaktivIArena(oppfolgingResolver.getInaktivIArena())
+                .setKanReaktiveres(oppfolgingResolver.getKanReaktiveres())
+                .setErIkkeArbeidssokerUtenOppfolging(oppfolgingResolver.getErIkkeArbeidssokerUtenOppfolging())
+                .setInaktiveringsdato(oppfolgingResolver.getInaktiveringsDato());
     }
 
     private OppfolgingStatusData getOppfolgingStatusDataMedAvslutningStatus(String fnr, OppfolgingResolver oppfolgingResolver) {

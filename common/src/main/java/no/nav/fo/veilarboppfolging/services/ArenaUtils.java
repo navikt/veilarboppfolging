@@ -3,12 +3,15 @@ package no.nav.fo.veilarboppfolging.services;
 import java.util.HashSet;
 import java.util.Set;
 
+import no.nav.fo.veilarboppfolging.domain.ArenaOppfolging;
+
 import static java.lang.Boolean.TRUE;
 import static java.util.Arrays.asList;
 
 public class ArenaUtils {
 
     private static final String ARBS = "ARBS";
+    private static final String ISERV = "ISERV";
     private static final Set<String> DELVIS_REGISTRERT_KODER = new HashSet<>(asList("RARBS", "PARBS"));
     private static final Set<String> OPPFOLGINGKODER = new HashSet<>(asList("BATT", "BFORM", "IKVAL", "VURDU", "OPPFI", "VARIG"));
     private static final String IKKE_ARBEIDSSOKER = "IARBS";
@@ -22,6 +25,10 @@ public class ArenaUtils {
 
     public static boolean kanSettesUnderOppfolging(String formidlingsgruppeKode, String servicegruppeKode) {
         return IKKE_ARBEIDSSOKER.equals(formidlingsgruppeKode) && SYKEMELDT_HOS_ARBEIDSGIVER.equals(servicegruppeKode);
+    }
+
+    public static boolean erIARBSUtenOppfolging(String formidlingsgruppeKode, String servicegruppeKode) {
+        return IKKE_ARBEIDSSOKER.equals(formidlingsgruppeKode) && !OPPFOLGINGKODER.contains(servicegruppeKode);
     }
 
     private static boolean erArbeidssoker(String formidlingsgruppeKode, Boolean harOppgave) {
@@ -44,6 +51,14 @@ public class ArenaUtils {
 
     private static boolean erIArbeidOgHarInnsatsbehov(String formidlingsgruppeKode, String servicegruppeKode) {
         return IKKE_ARBEIDSSOKER.equals(formidlingsgruppeKode) && OPPFOLGINGKODER.contains(servicegruppeKode);
+    }
+
+    public static boolean erIserv(ArenaOppfolging arenaStatus) {
+        return ISERV.equals(arenaStatus.getFormidlingsgruppe());
+    }
+
+    public static boolean kanReaktiveres(ArenaOppfolging arenaStatus) {
+        return TRUE.equals(arenaStatus.getKanEnkeltReaktiveres());
     }
 
 }

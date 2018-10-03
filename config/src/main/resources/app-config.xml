@@ -32,7 +32,7 @@
         <webservice alias="virksomhet:DigitalKontakinformasjon_v1" mapToProperty="dkif.endpoint"/>
         <webservice alias="virksomhet:Ytelseskontrakt_v3" mapToProperty="ytelseskontrakt.endpoint"/>
         <webservice alias="virksomhet:Oppfolging_v1" mapToProperty="oppfoelging.endpoint"/>
-        <webservice alias="virksomhet:Oppfoelgingsstatus_v1" mapToProperty="oppfoelgingsstatus.endpoint"/>
+        <webservice alias="virksomhet:Oppfoelgingsstatus_v2" mapToProperty="oppfoelgingsstatus.v2.endpoint"/>
         <webservice alias="virksomhet:OrganisasjonEnhet_v1" mapToProperty="organisasjonenhet.endpoint"/>
         <webservice alias="Aktoer_v2" mapToProperty="aktoer.endpoint"/>
         <webservice alias="Varseloppgave_v1" mapToProperty="varseloppgave.endpoint"/>
@@ -41,7 +41,7 @@
         <rest alias="abac.pdp.endpoint" mapToProperty="abac.endpoint" />
         <rest alias="veilArbAktivitetAPI" mapToProperty="veilarbaktivitet" />
         <rest alias="veilarblogin.redirect-url" mapToProperty="oidc-redirect" />
-        <rest alias="feature_endpoint" mapToProperty="feature_endpoint" />
+        <rest alias="unleash-api" mapToProperty="unleash" />
 
         <rest alias="veilarbazureadproxy_discovery" mapToProperty="aad_b2c_discovery" />
         <credential alias="aad_b2c_clientid"/>

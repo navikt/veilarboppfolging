@@ -6,8 +6,8 @@ import no.nav.fo.veilarboppfolging.services.OrganisasjonEnhetService;
 import no.nav.fo.veilarboppfolging.services.YtelseskontraktService;
 import no.nav.sbl.jdbc.Database;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
-import no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v1.binding.OppfoelgingsstatusV1;
-import no.nav.tjeneste.virksomhet.organisasjonenhet.v1.OrganisasjonEnhetV1;
+import no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v2.binding.OppfoelgingsstatusV2;
+import no.nav.tjeneste.virksomhet.organisasjonenhet.v2.binding.OrganisasjonEnhetV2;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,15 +22,15 @@ public class ServiceConfig {
     }
 
     @Bean
-    OrganisasjonEnhetService organisasjonsenhetService(OrganisasjonEnhetV1 organisasjonEnhetV1) {
-        return new OrganisasjonEnhetService(organisasjonEnhetV1);
+    OrganisasjonEnhetService organisasjonsenhetService(OrganisasjonEnhetV2 organisasjonEnhetV2) {
+        return new OrganisasjonEnhetService(organisasjonEnhetV2);
     }
 
     @Bean
-    ArenaOppfolgingService arenaOppfolgingService(OppfoelgingsstatusV1 oppfoelgingsstatusV1,
+    ArenaOppfolgingService arenaOppfolgingService(OppfoelgingsstatusV2 oppfoelgingsstatusV2,
                                                   OppfoelgingPortType oppfoelgingPortType) {
 
-        return new ArenaOppfolgingService(oppfoelgingsstatusV1, oppfoelgingPortType);
+        return new ArenaOppfolgingService(oppfoelgingsstatusV2, oppfoelgingPortType);
     }
 
     @Bean

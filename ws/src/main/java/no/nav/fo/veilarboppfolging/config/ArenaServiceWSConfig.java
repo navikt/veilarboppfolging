@@ -4,7 +4,7 @@ package no.nav.fo.veilarboppfolging.config;
 import no.nav.sbl.dialogarena.common.cxf.SamlPropagatingOutInterceptor;
 import no.nav.tjeneste.virksomhet.behandlearbeidssoeker.v1.binding.BehandleArbeidssoekerV1;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
-import no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v1.binding.OppfoelgingsstatusV1;
+import no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v2.binding.OppfoelgingsstatusV2;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -33,8 +33,8 @@ public class ArenaServiceWSConfig {
     }
 
     @Bean
-    public OppfoelgingsstatusV1 oppfoelgingsstatusV1() {
-        return oppfoelgingstatusV1PortType()
+    public OppfoelgingsstatusV2 oppfoelgingsstatusV2() {
+        return oppfoelgingstatusV2PortType()
                 .withOutInterceptor(new SamlPropagatingOutInterceptor())
                 .build();
     }

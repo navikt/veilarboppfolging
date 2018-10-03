@@ -7,8 +7,12 @@ import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.informasjon.Periode;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingskontraktListeRequest;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingskontraktListeResponse;
-import no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v1.binding.OppfoelgingsstatusV1;
-import no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v1.informasjon.Person;
+import no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v2.binding.HentOppfoelgingsstatusPersonIkkeFunnet;
+import no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v2.binding.HentOppfoelgingsstatusSikkerhetsbegrensning;
+import no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v2.binding.HentOppfoelgingsstatusUgyldigInput;
+import no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v2.binding.OppfoelgingsstatusV2;
+import no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v2.meldinger.HentOppfoelgingsstatusRequest;
+import no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v2.meldinger.HentOppfoelgingsstatusResponse;
 import org.slf4j.Logger;
 
 import javax.ws.rs.BadRequestException;
@@ -22,11 +26,11 @@ public class ArenaOppfolgingService {
 
     private static final Logger LOG = getLogger(ArenaOppfolgingService.class);
     private final OppfoelgingPortType oppfoelgingPortType;
-    private OppfoelgingsstatusV1 oppfoelgingsstatusService;
+    private OppfoelgingsstatusV2 oppfoelgingsstatusV2Service;
 
-    public ArenaOppfolgingService(OppfoelgingsstatusV1 oppfoelgingsstatusService,
+    public ArenaOppfolgingService(OppfoelgingsstatusV2 oppfoelgingsstatusV2Service,
                                   OppfoelgingPortType oppfoelgingPortType) {
-        this.oppfoelgingsstatusService = oppfoelgingsstatusService;
+        this.oppfoelgingsstatusV2Service = oppfoelgingsstatusV2Service;
         this.oppfoelgingPortType = oppfoelgingPortType;
     }
 
@@ -55,29 +59,25 @@ public class ArenaOppfolgingService {
     }
 
     private ArenaOppfolging getArenaOppfolgingsstatus(String identifikator) {
-        no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v1.meldinger.HentOppfoelgingsstatusRequest request =
-                new no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v1.meldinger.HentOppfoelgingsstatusRequest();
-
-        Person person = new Person();
+        no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v2.informasjon.Person person = new no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v2.informasjon.Person();
         person.setIdent(identifikator);
+
+        HentOppfoelgingsstatusRequest request = new HentOppfoelgingsstatusRequest();
         request.setBruker(person);
-
         try {
-            no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v1.meldinger.HentOppfoelgingsstatusResponse oppfoelgingsstatus =
-                    oppfoelgingsstatusService.hentOppfoelgingsstatus(request);
-
-            return ArenaOppfolgingMapper.mapTilArenaOppfolgingsstatus(oppfoelgingsstatus);
-        } catch (no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v1.binding.HentOppfoelgingsstatusSikkerhetsbegrensning e) {
+            HentOppfoelgingsstatusResponse hentOppfoelgingsstatusResponse = oppfoelgingsstatusV2Service.hentOppfoelgingsstatus(request);
+            return ArenaOppfolgingMapper.mapTilArenaOppfolgingsstatusV2(hentOppfoelgingsstatusResponse);
+        } catch (HentOppfoelgingsstatusPersonIkkeFunnet e) {
+            String logMessage = "Fant ikke bruker: " + identifikator;
+            throw new NotFoundException(logMessage, e);
+        } catch (HentOppfoelgingsstatusSikkerhetsbegrensning e) {
             String logMessage = "Ikke tilgang til bruker " + identifikator;
             LOG.warn(logMessage, e);
             throw new ForbiddenException(logMessage, e);
-        } catch (no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v1.binding.HentOppfoelgingsstatusUgyldigInput e) {
+        } catch (HentOppfoelgingsstatusUgyldigInput e) {
             String logMessage = "Ugyldig bruker identifikator: " + identifikator;
             LOG.warn(logMessage, e);
             throw new BadRequestException(logMessage, e);
-        } catch (no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v1.binding.HentOppfoelgingsstatusPersonIkkeFunnet e) {
-            String logMessage = "Fant ikke bruker: " + identifikator;
-            throw new NotFoundException(logMessage, e);
         }
     }
 
