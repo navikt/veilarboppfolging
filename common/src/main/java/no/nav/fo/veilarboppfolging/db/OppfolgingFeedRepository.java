@@ -51,7 +51,7 @@ public class OppfolgingFeedRepository {
                 .collect(toList());
     }
 
-    @Scheduled(fixedDelay = 1000)
+    @Scheduled(fixedDelay = 500)
     @Transactional
     public void settIderPaFeedElementer() {
         int updatedRows = db.update(
