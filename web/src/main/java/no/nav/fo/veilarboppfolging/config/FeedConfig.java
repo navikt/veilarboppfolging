@@ -23,7 +23,7 @@ import static java.util.Collections.singletonList;
 @Configuration
 public class FeedConfig {
     public static final String OPPFOLGING_FEED_NAME = "oppfolging";
-    public static final String OPPFOLGING_MED_LOPENUMMER_FEED_NAME = "oppfolgingMedLopenummer";
+    public static final String OPPFOLGING_MED_LOPENUMMER_FEED_NAME = "oppfolgingmedlopenummer";
     public static final String AVSLUTTET_OPPFOLGING_FEED_NAME = "avsluttetoppfolging";
     public static final String NYE_BRUKERE_FEED_NAME = "nyebrukere";
 
