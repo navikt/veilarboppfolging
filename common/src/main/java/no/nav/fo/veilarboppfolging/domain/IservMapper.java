@@ -8,7 +8,7 @@ import java.time.ZonedDateTime;
 @AllArgsConstructor
 @Getter
 @ToString
-public class Iserv28 {
+public class IservMapper {
 
     public final String aktor_Id;
     public final ZonedDateTime iservSiden;
