@@ -1,6 +1,7 @@
 package no.nav.fo.veilarboppfolging.db;
 
 import no.nav.fo.IntegrasjonsTest;
+
 import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingFeedDTO;
 import no.nav.sbl.jdbc.Database;
 
@@ -29,7 +30,9 @@ class OppfolgingFeedRepositoryTest extends IntegrasjonsTest {
             getBean(OppfolgingRepository.class)
     );
 
-    private OppfolgingFeedRepository feedRepository = new OppfolgingFeedRepository(getBean(JdbcTemplate.class));
+    private OppfolgingFeedRepository feedRepository = new OppfolgingFeedRepository(
+            getBean(JdbcTemplate.class),
+            null);
 
     @Test
     public void skalHenteBrukere() {

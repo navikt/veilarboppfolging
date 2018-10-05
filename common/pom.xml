@@ -211,6 +211,16 @@
             <artifactId>vavr</artifactId>
         </dependency>
 
+        <!-- Shedlock -->
+        <dependency>
+            <groupId>net.javacrumbs.shedlock</groupId>
+            <artifactId>shedlock-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.javacrumbs.shedlock</groupId>
+            <artifactId>shedlock-provider-jdbc</artifactId>
+        </dependency>
+
         <!-- TODO OppfolgingService kaster rs-exceptions, noe som ikke er ønskelig -->
         <dependency>
             <groupId>javax.ws.rs</groupId>
