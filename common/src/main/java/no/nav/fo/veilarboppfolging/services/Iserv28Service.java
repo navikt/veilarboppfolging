@@ -4,11 +4,11 @@ import lombok.extern.slf4j.Slf4j;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import no.nav.dialogarena.aktor.AktorService;
-import no.nav.fo.veilarboppfolging.domain.Iserv28;
+import no.nav.fo.veilarboppfolging.domain.IservMapper;
 import no.nav.fo.veilarboppfolging.mappers.ArenaBruker;
+import no.nav.fo.veilarboppfolging.utils.FunksjonelleMetrikker;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -18,7 +18,6 @@ import java.sql.*;
 import java.time.*;
 import java.util.List;
 
-import static java.util.Optional.of;
 import static no.nav.sbl.sql.DbConstants.CURRENT_TIMESTAMP;
 
 @Component
@@ -28,18 +27,16 @@ public class Iserv28Service{
     private final JdbcTemplate jdbc;
     private final OppfolgingService oppfolgingService;
     private final AktorService aktorService;
+    private final LockingTaskExecutor taskExecutor;
+
+    private int lockAutomatiskAvslutteOppfolgingSeconds = 3600;
 
     @Inject
-    private LockingTaskExecutor taskExecutor;
-
-    @Value("${lock.automatiskAvslutteOppfolging.seconds:3600}")
-    private int lockAutomatiskAvslutteOppfolgingSeconds;
-
-    @Inject
-    public Iserv28Service(JdbcTemplate jdbc, OppfolgingService oppfolgingService, AktorService aktorService){
+    public Iserv28Service(JdbcTemplate jdbc, OppfolgingService oppfolgingService, AktorService aktorService, LockingTaskExecutor taskExecutor){
         this.jdbc = jdbc;
         this.oppfolgingService = oppfolgingService;
         this.aktorService = aktorService;
+        this.taskExecutor = taskExecutor;
     }
 
     @Scheduled(fixedDelay = 10000L, initialDelay = 1000L)
@@ -47,74 +44,78 @@ public class Iserv28Service{
         Instant lockAtMostUntil = Instant.now().plusSeconds(lockAutomatiskAvslutteOppfolgingSeconds);
         Instant lockAtLeastUntil = Instant.now().plusSeconds(10);
         taskExecutor.executeWithLock(
-                () -> automatiskAvlutteOppfolging(),
+                this::automatiskAvlutteOppfolging,
                 new LockConfiguration("oppdaterAvlutteOppfolging", lockAtMostUntil, lockAtLeastUntil)
         );
     }
 
     public void automatiskAvlutteOppfolging() {
         try {
-            List<Iserv28> iservert28DagerBrukerne = finnBrukereMedIservI28Dager();
-            iservert28DagerBrukerne.stream().forEach(iservBruker -> avsluttOppfolging(iservBruker.aktor_Id));
+            List<IservMapper> iservert28DagerBrukere = finnBrukereMedIservI28Dager();
+            iservert28DagerBrukere.stream().forEach(iservMapper ->  avslutteOppfolging(iservMapper.aktor_Id));
         } catch(Exception e) {
             log.error("Feil ved automatisk avslutning av brukere", e);
         }
     }
 
     public void filterereIservBrukere(ArenaBruker arenaBruker){
-        if (eksisterendeIservBruker(arenaBruker)!= null && !arenaBruker.formidlingsgruppekode.equals("ISERV")) {
+        boolean erIserv = "ISERV".equals(arenaBruker.getFormidlingsgruppekode());
+        if (eksisterendeIservBruker(arenaBruker) != null && !erIserv) {
             slettAvluttetOppfolgingsBruker(arenaBruker.getAktoerid());
-        } else if(eksisterendeIservBruker(arenaBruker)!= null){
-            updateIservBruker();
-        } else if(arenaBruker.getFormidlingsgruppekode().equals("ISERV")){
-            insertIservBruker(
-                    arenaBruker.aktoerid,
-                    of(arenaBruker.iserv_fra_dato).map(ZonedDateTime::toInstant).map(Timestamp::from).orElseThrow(IllegalStateException::new)
-            );
+        } else if (eksisterendeIservBruker(arenaBruker) != null) {
+            updateIservBruker(arenaBruker);
+        } else if (erIserv) {
+            insertIservBruker(arenaBruker);
         }
     }
 
-    public Iserv28 eksisterendeIservBruker(ArenaBruker arenaBruker){
+    public IservMapper eksisterendeIservBruker(ArenaBruker arenaBruker){
          return SqlUtils.select(jdbc, "UTMELDING", Iserv28Service::mapper)
                 .column("aktor_id")
                 .column("iserv_fra_dato")
                 .where(WhereClause.equals("aktor_id",arenaBruker.getAktoerid())).execute();
     }
 
-    public void updateIservBruker(){
+    public void updateIservBruker(ArenaBruker arenaBruker){
         SqlUtils.update(jdbc, "UTMELDING")
+                .set("iserv_fra_dato", Timestamp.from(arenaBruker.getIserv_fra_dato().toInstant()))
                 .set("oppdatert_dato", CURRENT_TIMESTAMP)
+                .whereEquals("aktor_id", arenaBruker.getAktoerid())
                 .execute();
+        log.info("ISERV bruker med aktorid "+ arenaBruker.getAktoerid() +" har blitt oppdatert inn i UTMELDING tabell");
     }
 
-    public void insertIservBruker(String aktoerId, Timestamp iserv_fra_dato) {
+    public void insertIservBruker(ArenaBruker arenaBruker) {
         SqlUtils.insert(jdbc, "UTMELDING")
-                .value("aktor_id", aktoerId)
-                .value("iserv_fra_dato", iserv_fra_dato)
+                .value("aktor_id", arenaBruker.getAktoerid())
+                .value("iserv_fra_dato", Timestamp.from(arenaBruker.getIserv_fra_dato().toInstant()))
                 .value("oppdatert_dato", CURRENT_TIMESTAMP)
                 .execute();
+        log.info("ISERV bruker med aktorid "+ arenaBruker.getAktoerid() +" har blitt insertert inn i UTMELDING tabell");
     }
 
-    public void avsluttOppfolging(String aktoerId) {
+    public void avslutteOppfolging(String aktoerId) {
         try {
-            String fnr = aktorService.getFnr(aktoerId).toString();
+            String fnr = aktorService.getFnr(aktoerId).orElseThrow(IllegalStateException::new);
             oppfolgingService.avsluttOppfolging(
                     fnr,
                     "System",
                     "Oppfolging avsluttet autmatisk for grunn av iservert 28 dager"
             );
             slettAvluttetOppfolgingsBruker(aktoerId);
-        } catch(IllegalArgumentException e){
-            log.error("Automatisk avsluttOppfolging feilet for aktoerid:"+ aktoerId, e);
+            FunksjonelleMetrikker.antallBrukereAvluttetAutomatisk();
+        } catch (Exception e) {
+            log.error("Automatisk avsluttOppfolging feilet for aktoerid: " + aktoerId, e);
         }
     }
 
     public void slettAvluttetOppfolgingsBruker(String aktoerId) {
         WhereClause aktoerid = WhereClause.equals("aktor_id", aktoerId);
         SqlUtils.delete(jdbc, "UTMELDING").where(aktoerid).execute();
+        log.info("Aktorid "+ aktoerid +" har blitt slettet fra UTMELDING tabell");
     }
 
-    public List<Iserv28> finnBrukereMedIservI28Dager() {
+    public List<IservMapper> finnBrukereMedIservI28Dager() {
         Timestamp tilbake28 = Timestamp.valueOf(LocalDateTime.now().minusDays(28));
         WhereClause harAktoerId = WhereClause.isNotNull("aktor_id");
         WhereClause iservDato28DagerTilbake = WhereClause.lt("iserv_fra_dato", tilbake28);
@@ -126,8 +127,8 @@ public class Iserv28Service{
                 .executeToList();
     }
 
-    private static Iserv28 mapper(ResultSet resultSet) throws SQLException {
-        return new Iserv28(
+    private static IservMapper mapper(ResultSet resultSet) throws SQLException {
+        return new IservMapper(
                 resultSet.getString("aktor_id"),
                 resultSet.getTimestamp("iserv_fra_dato").toLocalDateTime().atZone(ZoneId.systemDefault())
         );
