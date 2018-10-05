@@ -1,5 +1,6 @@
 package no.nav.fo.veilarboppfolging.kafka;
 
+import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.services.*;
 import org.springframework.context.annotation.*;
@@ -15,10 +16,16 @@ import static org.mockito.Mockito.mock;
 public class KafkaTestConfig {
 
     @Bean
+    public ConsumerConfig.SASL sasl(){
+        return ConsumerConfig.SASL.DISABLED;
+    }
+
+    @Bean
     public Iserv28Service aktorService(JdbcTemplate jdbcTemplate) {
         OppfolgingService oppfolgingService = mock(OppfolgingService.class);
         AktorService aktorService = mock(AktorService.class);
-        return new Iserv28Service(jdbcTemplate, oppfolgingService, aktorService);
+        LockingTaskExecutor taskExecutor = mock(LockingTaskExecutor.class);
+        return new Iserv28Service(jdbcTemplate, oppfolgingService, aktorService, taskExecutor);
     }
 
 }

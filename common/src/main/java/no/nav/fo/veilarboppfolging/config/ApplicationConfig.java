@@ -31,6 +31,11 @@ public class ApplicationConfig implements ApiApplication {
     public static final String APPLICATION_NAME = "veilarboppfolging";
 
     @Bean
+    public ConsumerConfig.SASL sasl(){
+        return ConsumerConfig.SASL.ENABLED;
+    }
+
+    @Bean
     public UnleashService unleashService() {
         return new UnleashService(UnleashServiceConfig.builder()
                 .applicationName(requireApplicationName())
