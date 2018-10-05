@@ -1,7 +1,7 @@
 package no.nav.fo.veilarboppfolging.kafka;
 
 import lombok.extern.slf4j.Slf4j;
-import no.nav.fo.veilarboppfolging.domain.Iserv28;
+import no.nav.fo.veilarboppfolging.domain.IservMapper;
 import no.nav.fo.veilarboppfolging.mappers.ArenaBruker;
 import no.nav.fo.veilarboppfolging.services.Iserv28Service;
 import no.nav.json.JsonUtils;
@@ -29,16 +29,15 @@ public class ConsumerKafkaTest extends KafkaTest {
         bruker.setFormidlingsgruppekode("ISERV");
         bruker.setIserv_fra_dato(iservSiden);
         assertThat(iserv28Service.eksisterendeIservBruker(bruker)).isNull();
-        iserv28Service.filterereIservBrukere(bruker);
 
         kafkaTemplate.send(ENDRING_PAA_BRUKER_KAFKA_TOPIC, JsonUtils.toJson(bruker));
         dynamicTimeout(() -> iserv28Service.eksisterendeIservBruker(bruker) != null);
 
-        Iserv28 iserv28 = iserv28Service.eksisterendeIservBruker(bruker);
+        IservMapper iservMapper = iserv28Service.eksisterendeIservBruker(bruker);
 
-        assertThat(iserv28).isNotNull();
-        assertThat(iserv28.getAktor_Id()).isEqualTo("1234");
-        assertThat(iserv28.getIservSiden()).isEqualTo(iservSiden);
+        assertThat(iservMapper).isNotNull();
+        assertThat(iservMapper.getAktor_Id()).isEqualTo("1234");
+        assertThat(iservMapper.getIservSiden()).isEqualTo(iservSiden);
     }
 
     private void dynamicTimeout(Supplier<Boolean> waitUntil) throws InterruptedException {
