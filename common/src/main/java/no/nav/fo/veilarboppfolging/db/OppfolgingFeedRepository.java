@@ -17,6 +17,7 @@ import static java.util.stream.Collectors.toList;
 @Slf4j
 public class OppfolgingFeedRepository {
 
+    public static final int INSERT_ID_INTERVAL = 500;
     private JdbcTemplate db;
 
     public OppfolgingFeedRepository(JdbcTemplate db) {
@@ -51,7 +52,7 @@ public class OppfolgingFeedRepository {
                 .collect(toList());
     }
 
-    @Scheduled(fixedDelay = 500)
+    @Scheduled(fixedDelay = INSERT_ID_INTERVAL)
     @Transactional
     public void settIderPaFeedElementer() {
         int updatedRows = db.update(

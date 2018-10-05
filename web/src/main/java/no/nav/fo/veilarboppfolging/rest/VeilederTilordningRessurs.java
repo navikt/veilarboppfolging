@@ -6,6 +6,7 @@ import no.nav.apiapp.security.PepClient;
 import no.nav.apiapp.security.SubjectService;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.feed.producer.FeedProducer;
+import no.nav.fo.veilarboppfolging.db.OppfolgingFeedRepository;
 import no.nav.fo.veilarboppfolging.db.VeilederTilordningerRepository;
 import no.nav.fo.veilarboppfolging.domain.Tilordning;
 import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingFeedDTO;
@@ -20,6 +21,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -89,7 +91,8 @@ public class VeilederTilordningRessurs {
             response.setResultat("WARNING: Noen brukere kunne ikke tilordnes en veileder");
         }
         if (tilordninger.size() > feilendeTilordninger.size()) {
-            kallWebhook();
+            //Kaller denne asynkront siden resultatet ikke er interessant og operasjonen tar litt tid.
+            CompletableFuture.runAsync(() -> kallWebhook());
         }
         return Response.ok().entity(response).build();
 
@@ -121,6 +124,8 @@ public class VeilederTilordningRessurs {
 
     private void kallWebhook() {
         try {
+            //Venter for å gi tid til å populere ID-er i feeden
+            Thread.sleep(OppfolgingFeedRepository.INSERT_ID_INTERVAL);
             oppfolgingFeed.activateWebhook();
         } catch (Exception e) {
             // Logger feilen, men bryr oss ikke om det. At webhooken feiler påvirker ikke funksjonaliteten
