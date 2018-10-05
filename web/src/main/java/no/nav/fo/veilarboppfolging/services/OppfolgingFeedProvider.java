@@ -55,7 +55,7 @@ public class OppfolgingFeedProvider implements FeedProvider<OppfolgingFeedDTO> {
         return data
                 .stream()
                 .map(b -> new FeedElement<OppfolgingFeedDTO>()
-                        .setId(finalDateId ? (toZonedDateTime(b.getEndretTimestamp()).toString()) : ("" + b.getFeedId()))
+                        .setId(finalDateId ? toZonedDateTime(b.getEndretTimestamp()).toString() : "" + b.getFeedId())
                         .setElement(b));
     }
 }
