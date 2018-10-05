@@ -82,7 +82,7 @@ public class Iserv28Service{
                 .set("oppdatert_dato", CURRENT_TIMESTAMP)
                 .whereEquals("aktor_id", arenaBruker.getAktoerid())
                 .execute();
-        log.info("ISERV bruker med aktorid "+ arenaBruker.getAktoerid() +" har blitt oppdatert inn i UTMELDING tabell");
+        log.info("ISERV bruker med aktorid {} har blitt oppdatert inn i UTMELDING tabell", arenaBruker.getAktoerid());
     }
 
     public void insertIservBruker(ArenaBruker arenaBruker) {
@@ -91,7 +91,7 @@ public class Iserv28Service{
                 .value("iserv_fra_dato", Timestamp.from(arenaBruker.getIserv_fra_dato().toInstant()))
                 .value("oppdatert_dato", CURRENT_TIMESTAMP)
                 .execute();
-        log.info("ISERV bruker med aktorid "+ arenaBruker.getAktoerid() +" har blitt insertert inn i UTMELDING tabell");
+        log.info("ISERV bruker med aktorid {} har blitt insertert inn i UTMELDING tabell", arenaBruker.getAktoerid());
     }
 
     public void avslutteOppfolging(String aktoerId) {
@@ -105,7 +105,7 @@ public class Iserv28Service{
             slettAvluttetOppfolgingsBruker(aktoerId);
             FunksjonelleMetrikker.antallBrukereAvluttetAutomatisk();
         } catch (Exception e) {
-            log.error("Automatisk avsluttOppfolging feilet for aktoerid: " + aktoerId, e);
+            log.error("Automatisk avsluttOppfolging feilet for aktoerid {} ", aktoerId, e);
         }
     }
 
@@ -113,6 +113,7 @@ public class Iserv28Service{
         WhereClause aktoerid = WhereClause.equals("aktor_id", aktoerId);
         SqlUtils.delete(jdbc, "UTMELDING").where(aktoerid).execute();
         log.info("Aktorid "+ aktoerid +" har blitt slettet fra UTMELDING tabell");
+        log.info("Aktorid {} har blitt slettet fra UTMELDING tabell", aktoerid);
     }
 
     public List<IservMapper> finnBrukereMedIservI28Dager() {
