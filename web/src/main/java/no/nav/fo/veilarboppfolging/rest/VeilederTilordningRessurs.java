@@ -1,6 +1,7 @@
 package no.nav.fo.veilarboppfolging.rest;
 
 import io.swagger.annotations.Api;
+
 import no.nav.apiapp.security.PepClient;
 import no.nav.apiapp.security.SubjectService;
 import no.nav.dialogarena.aktor.AktorService;
@@ -13,7 +14,6 @@ import no.nav.fo.veilarboppfolging.rest.domain.VeilederTilordning;
 import no.nav.fo.veilarboppfolging.utils.FunksjonelleMetrikker;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
 import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import javax.ws.rs.*;
@@ -36,15 +36,13 @@ public class VeilederTilordningRessurs {
     private final AutorisasjonService autorisasjonService;
 
     private FeedProducer<OppfolgingFeedDTO> oppfolgingFeed;
-    private FeedProducer<OppfolgingFeedDTO> oppfolgingMedLopenummerFeed;
 
     private final SubjectService subjectService = new SubjectService();
 
     public VeilederTilordningRessurs(AktorService aktorService,
                                      VeilederTilordningerRepository veilederTilordningerRepository,
                                      PepClient pepClient,
-                                     @Qualifier("oppfolgingFeed") FeedProducer<OppfolgingFeedDTO> oppfolgingFeed,
-                                     @Qualifier("oppfolgingMedLopenummerFeed") FeedProducer<OppfolgingFeedDTO> oppfolgingMedLopenummerFeed,
+                                     FeedProducer<OppfolgingFeedDTO> oppfolgingFeed,
                                      AutorisasjonService autorisasjonService
     ) {
         this.autorisasjonService = autorisasjonService;
@@ -52,7 +50,6 @@ public class VeilederTilordningRessurs {
         this.veilederTilordningerRepository = veilederTilordningerRepository;
         this.pepClient = pepClient;
         this.oppfolgingFeed = oppfolgingFeed;
-        this.oppfolgingMedLopenummerFeed = oppfolgingMedLopenummerFeed;
     }
 
     @POST
@@ -125,7 +122,6 @@ public class VeilederTilordningRessurs {
     private void kallWebhook() {
         try {
             oppfolgingFeed.activateWebhook();
-            oppfolgingMedLopenummerFeed.activateWebhook();
         } catch (Exception e) {
             // Logger feilen, men bryr oss ikke om det. At webhooken feiler påvirker ikke funksjonaliteten
             // men gjør at endringen kommer senere inn i portefølje
