@@ -59,7 +59,7 @@ public abstract class KafkaTest {
     }
 
     public KafkaTest addListener(MessageListener<String, String> listener) {
-        this.container.setupMessageListener(listener);
+        container.setupMessageListener(listener);
         return this;
     }
 

@@ -3,7 +3,6 @@ package no.nav.fo.veilarboppfolging.kafka;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.common.errors.TopicAuthorizationException;
 import org.springframework.kafka.listener.*;
 import org.springframework.stereotype.Component;
 
