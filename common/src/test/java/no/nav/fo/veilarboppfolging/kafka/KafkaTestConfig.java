@@ -8,7 +8,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import static org.mockito.Mockito.mock;
 
-@Configuration
 @Import({
         ConsumerConfig.class,
         Consumer.class
