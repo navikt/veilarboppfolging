@@ -29,7 +29,7 @@ public class Iserv28Service{
     private final AktorService aktorService;
     private final LockingTaskExecutor taskExecutor;
 
-    private int lockAutomatiskAvslutteOppfolgingSeconds = 3600;
+    private static final int lockAutomatiskAvslutteOppfolgingSeconds = 3600;
 
     @Inject
     public Iserv28Service(JdbcTemplate jdbc, OppfolgingService oppfolgingService, AktorService aktorService, LockingTaskExecutor taskExecutor){
@@ -60,9 +60,11 @@ public class Iserv28Service{
 
     public void filterereIservBrukere(ArenaBruker arenaBruker){
         boolean erIserv = "ISERV".equals(arenaBruker.getFormidlingsgruppekode());
-        if (eksisterendeIservBruker(arenaBruker) != null && !erIserv) {
+        IservMapper eksisterendeIservBruker = eksisterendeIservBruker(arenaBruker);
+
+        if (eksisterendeIservBruker != null && !erIserv) {
             slettAvluttetOppfolgingsBruker(arenaBruker.getAktoerid());
-        } else if (eksisterendeIservBruker(arenaBruker) != null) {
+        } else if (eksisterendeIservBruker != null) {
             updateIservBruker(arenaBruker);
         } else if (erIserv) {
             insertIservBruker(arenaBruker);
@@ -112,7 +114,6 @@ public class Iserv28Service{
     private void slettAvluttetOppfolgingsBruker(String aktoerId) {
         WhereClause aktoerid = WhereClause.equals("aktor_id", aktoerId);
         SqlUtils.delete(jdbc, "UTMELDING").where(aktoerid).execute();
-        log.info("Aktorid "+ aktoerid +" har blitt slettet fra UTMELDING tabell");
         log.info("Aktorid {} har blitt slettet fra UTMELDING tabell", aktoerid);
     }
 
