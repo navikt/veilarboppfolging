@@ -20,7 +20,7 @@
     <parent>
         <groupId>no.nav.sbl</groupId>
         <artifactId>mor-pom</artifactId>
-        <version>2018.10.02.11.44</version>
+        <version>2018.08.23.10.26</version>
     </parent>
 
     <properties>
@@ -52,7 +52,7 @@
             <dependency>
                 <groupId>no.nav.sbl</groupId>
                 <artifactId>bom</artifactId>
-                <version>2018.10.02.11.44</version>
+                <version>2018.08.23.10.26</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -187,6 +187,11 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
