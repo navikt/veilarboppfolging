@@ -11,7 +11,6 @@ import javax.inject.Inject;
 import java.time.ZonedDateTime;
 import java.util.function.Supplier;
 
-import static no.nav.fo.veilarboppfolging.kafka.Consumer.ENDRING_PAA_BRUKER_KAFKA_TOPIC;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
 @Slf4j
@@ -30,7 +29,7 @@ public class ConsumerKafkaTest extends KafkaTest {
         bruker.setIserv_fra_dato(iservSiden);
         assertThat(iserv28Service.eksisterendeIservBruker(bruker)).isNull();
 
-        kafkaTemplate.send(ENDRING_PAA_BRUKER_KAFKA_TOPIC, JsonUtils.toJson(bruker));
+        kafkaTemplate.send(KAFKA_TEST_TOPIC, JsonUtils.toJson(bruker));
         dynamicTimeout(() -> iserv28Service.eksisterendeIservBruker(bruker) != null);
 
         IservMapper iservMapper = iserv28Service.eksisterendeIservBruker(bruker);
