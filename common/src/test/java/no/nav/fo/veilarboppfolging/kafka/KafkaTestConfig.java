@@ -24,7 +24,8 @@ public class KafkaTestConfig {
         OppfolgingService oppfolgingService = mock(OppfolgingService.class);
         AktorService aktorService = mock(AktorService.class);
         LockingTaskExecutor taskExecutor = mock(LockingTaskExecutor.class);
-        return new Iserv28Service(jdbcTemplate, oppfolgingService, aktorService, taskExecutor);
+        SystemUserSubjectProvider systemUserSubjectProvider = mock(SystemUserSubjectProvider.class);
+        return new Iserv28Service(jdbcTemplate, oppfolgingService, aktorService, taskExecutor, systemUserSubjectProvider);
     }
 
 }

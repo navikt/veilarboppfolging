@@ -39,7 +39,8 @@ public class Iserv28ServiceIntegrationTest extends IntegrasjonsTest {
     public void setup() {
         AktorService aktorService = mock(AktorService.class);
         when(aktorService.getFnr(anyString())).thenReturn(of("12345678901"));
-        iserv28Service = new Iserv28Service(jdbcTemplate, oppfolgingService, aktorService, taskExecutor);
+        SystemUserSubjectProvider systemUserSubjectProvider = mock(SystemUserSubjectProvider.class);
+        iserv28Service = new Iserv28Service(jdbcTemplate, oppfolgingService, aktorService, taskExecutor, systemUserSubjectProvider);
     }
 
     public ArenaBruker getArenaBruker() {
@@ -94,7 +95,7 @@ public class Iserv28ServiceIntegrationTest extends IntegrasjonsTest {
     public void finnBrukereMedIservI28Dager() {
         assertThat(iserv28Service.finnBrukereMedIservI28Dager()).isEmpty();
 
-        insertIservBruker(now().minusDays(28));
+        insertIservBruker(now().minusDays(30));
         insertIservBruker(now().minusDays(27));
         insertIservBruker(now().minusDays(15));
         insertIservBruker(now());
@@ -128,7 +129,7 @@ public class Iserv28ServiceIntegrationTest extends IntegrasjonsTest {
 
     @Test
     public void scheduledAvlutteOppfolging(){
-        ArenaBruker brukerIservertI28Dager = insertIservBruker(now().minusDays(28));
+        ArenaBruker brukerIservertI28Dager = insertIservBruker(now().minusDays(30));
         ArenaBruker brukerIservertMindreEnn28Dager = insertIservBruker(now().minusDays(25));
 
         assertThat(iserv28Service.eksisterendeIservBruker(brukerIservertI28Dager)).isNotNull();

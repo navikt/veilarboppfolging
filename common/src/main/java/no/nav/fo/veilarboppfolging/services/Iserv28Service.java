@@ -14,10 +14,15 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
-import java.sql.*;
-import java.time.*;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 
+import static no.nav.common.auth.SubjectHandler.withSubject;
 import static no.nav.sbl.sql.DbConstants.CURRENT_TIMESTAMP;
 
 @Component
@@ -28,15 +33,23 @@ public class Iserv28Service{
     private final OppfolgingService oppfolgingService;
     private final AktorService aktorService;
     private final LockingTaskExecutor taskExecutor;
+    private final SystemUserSubjectProvider systemUserSubjectProvider;
 
     private static final int lockAutomatiskAvslutteOppfolgingSeconds = 3600;
 
     @Inject
-    public Iserv28Service(JdbcTemplate jdbc, OppfolgingService oppfolgingService, AktorService aktorService, LockingTaskExecutor taskExecutor){
+    public Iserv28Service(
+            JdbcTemplate jdbc,
+            OppfolgingService oppfolgingService,
+            AktorService aktorService,
+            LockingTaskExecutor taskExecutor,
+            SystemUserSubjectProvider systemUserSubjectProvider
+    ){
         this.jdbc = jdbc;
         this.oppfolgingService = oppfolgingService;
         this.aktorService = aktorService;
         this.taskExecutor = taskExecutor;
+        this.systemUserSubjectProvider = systemUserSubjectProvider;
     }
 
     @Scheduled(fixedDelay = 10000L, initialDelay = 1000L)
@@ -52,7 +65,11 @@ public class Iserv28Service{
     private void automatiskAvlutteOppfolging() {
         try {
             List<IservMapper> iservert28DagerBrukere = finnBrukereMedIservI28Dager();
-            iservert28DagerBrukere.stream().forEach(iservMapper ->  avslutteOppfolging(iservMapper.aktor_Id));
+            if (!iservert28DagerBrukere.isEmpty()) {
+                withSubject(systemUserSubjectProvider.getSystemUserSubject(), () -> {
+                    iservert28DagerBrukere.forEach(iservMapper -> avslutteOppfolging(iservMapper.aktor_Id));
+                });
+            }
         } catch(Exception e) {
             log.error("Feil ved automatisk avslutning av brukere", e);
         }
@@ -88,12 +105,16 @@ public class Iserv28Service{
     }
 
     void insertIservBruker(ArenaBruker arenaBruker) {
+        Timestamp iservFraDato = Timestamp.from(arenaBruker.getIserv_fra_dato().toInstant());
         SqlUtils.insert(jdbc, "UTMELDING")
                 .value("aktor_id", arenaBruker.getAktoerid())
-                .value("iserv_fra_dato", Timestamp.from(arenaBruker.getIserv_fra_dato().toInstant()))
+                .value("iserv_fra_dato", iservFraDato)
                 .value("oppdatert_dato", CURRENT_TIMESTAMP)
                 .execute();
-        log.info("ISERV bruker med aktorid {} har blitt insertert inn i UTMELDING tabell", arenaBruker.getAktoerid());
+        log.info("ISERV bruker med aktorid {} og iserv_fra_dato {} har blitt insertert inn i UTMELDING tabell",
+                arenaBruker.getAktoerid(),
+                iservFraDato
+        );
     }
 
     public void avslutteOppfolging(String aktoerId) {
