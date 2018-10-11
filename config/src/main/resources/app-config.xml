@@ -54,7 +54,6 @@
         <credential alias="isso-rp-user"/>
 
         <baseUrl alias="kafka-brokers" />
-        <applicationProperties alias="veilarbarena.kafka.properties"/>
 
         <fileLibrary mapToProperty="vilkar" alias="veilarboppfolging.vilkar.v1"/>
 
