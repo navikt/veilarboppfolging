@@ -53,6 +53,8 @@
         <baseUrl alias="isso.isalive"/>
         <credential alias="isso-rp-user"/>
 
+        <baseUrl alias="kafka-brokers" />
+
         <fileLibrary mapToProperty="vilkar" alias="veilarboppfolging.vilkar.v1"/>
 
         <datasource alias="veilarboppfolgingDB" xaEnabled="true" jndi="java:jboss/jdbc/veilarboppfolgingDB">

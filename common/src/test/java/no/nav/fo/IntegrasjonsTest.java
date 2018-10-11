@@ -67,7 +67,7 @@ public abstract class IntegrasjonsTest {
 
     @AfterAll
     @AfterClass
-    public static void tearDown() {
+    public static void stopSpringContext() {
         if (annotationConfigApplicationContext != null) {
             annotationConfigApplicationContext.stop();
         }
@@ -80,7 +80,7 @@ public abstract class IntegrasjonsTest {
     @Component
     public static class JndiBean {
 
-        private final SimpleNamingContextBuilder builder = new SimpleNamingContextBuilder();
+        public final SimpleNamingContextBuilder builder = new SimpleNamingContextBuilder();
 
         public JndiBean() throws Exception {
             builder.bind(DATA_SOURCE_JDNI_NAME, JndiLocalContextConfig.setupInMemoryDatabase());

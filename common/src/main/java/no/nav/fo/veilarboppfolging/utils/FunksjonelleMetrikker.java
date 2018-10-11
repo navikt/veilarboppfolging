@@ -45,6 +45,14 @@ public class FunksjonelleMetrikker {
                 .report();
     }
 
+    public static void antallMeldingerKonsumertAvKafka(){
+        MetricsFactory.createEvent("kafka.konsumert.meldinger").report();
+    }
+
+    public static void antallBrukereAvluttetAutomatisk(){
+        MetricsFactory.createEvent("automatisk.avsluttet.bruker").report();
+    }
+
     private FunksjonelleMetrikker() {
     }
 }
