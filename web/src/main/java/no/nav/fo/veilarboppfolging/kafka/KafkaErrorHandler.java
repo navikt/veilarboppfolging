@@ -3,7 +3,8 @@ package no.nav.fo.veilarboppfolging.kafka;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.springframework.kafka.listener.*;
+import org.springframework.kafka.listener.ContainerAwareErrorHandler;
+import org.springframework.kafka.listener.MessageListenerContainer;
 import org.springframework.stereotype.Component;
 
 import java.util.List;

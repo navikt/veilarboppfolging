@@ -25,8 +25,6 @@ import static org.apache.kafka.clients.consumer.ConsumerConfig.*;
 public class ConsumerConfig {
 
     public static final String KAFKA_BROKERS_URL_PROPERTY_NAME = "kafka-brokers.url";
-    private static final String USERNAME = getRequiredProperty(StsSecurityConstants.SYSTEMUSER_USERNAME);
-    private static final String PASSWORD = getRequiredProperty(StsSecurityConstants.SYSTEMUSER_PASSWORD);
 
     private final SASL sasl;
 
@@ -58,13 +56,14 @@ public class ConsumerConfig {
         props.put(VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(GROUP_ID_CONFIG, "veilarboppfolging-consumer");
         props.put(AUTO_OFFSET_RESET_CONFIG, "earliest");
-
         props.put(MAX_POLL_INTERVAL_MS_CONFIG, 5000);
 
         if (sasl != DISABLED) {
+            String username = getRequiredProperty(StsSecurityConstants.SYSTEMUSER_USERNAME);
+            String password = getRequiredProperty(StsSecurityConstants.SYSTEMUSER_PASSWORD);
             props.put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, "SASL_SSL");
             props.put(SaslConfigs.SASL_MECHANISM, "PLAIN");
-            props.put(SaslConfigs.SASL_JAAS_CONFIG, "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"" + USERNAME + "\" password=\"" + PASSWORD + "\";");
+            props.put(SaslConfigs.SASL_JAAS_CONFIG, "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"" + username + "\" password=\"" + password + "\";");
         }
 
         return new DefaultKafkaConsumerFactory<>(props);

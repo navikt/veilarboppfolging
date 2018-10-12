@@ -4,6 +4,7 @@ import no.nav.dialogarena.config.DevelopmentSecurity;
 import no.nav.dialogarena.config.fasit.FasitUtils;
 import no.nav.fo.IntegrasjonsTest;
 import no.nav.fo.veilarboppfolging.config.*;
+import no.nav.sbl.util.EnvironmentUtils;
 import org.junit.*;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.kafka.core.*;
@@ -23,11 +24,11 @@ import java.util.Map;
 
 import static no.nav.fo.veilarboppfolging.config.ApplicationConfig.APPLICATION_NAME;
 import static no.nav.fo.veilarboppfolging.kafka.Consumer.ENDRING_PAA_BRUKER_KAFKA_TOPIC_PROPERTY_NAME;
+import static no.nav.sbl.util.EnvironmentUtils.Type.PUBLIC;
+import static no.nav.sbl.util.EnvironmentUtils.setProperty;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.producerProps;
 
 public abstract class KafkaTest {
-
-    protected static final String KAFKA_TEST_TOPIC = "kafka-test";
 
     private static String RECEIVER_TOPIC = "receiver.t";
 
@@ -58,8 +59,7 @@ public abstract class KafkaTest {
         kafkaTemplate = new KafkaTemplate<>(new DefaultKafkaProducerFactory<>(producerProps(embeddedKafka)));
         kafkaTemplate.setDefaultTopic(RECEIVER_TOPIC);
 
-        System.setProperty(ConsumerConfig.KAFKA_BROKERS_URL_PROPERTY_NAME, embeddedKafka.getBrokersAsString());
-        System.setProperty(ENDRING_PAA_BRUKER_KAFKA_TOPIC_PROPERTY_NAME, KAFKA_TEST_TOPIC);
+        setProperty(ConsumerConfig.KAFKA_BROKERS_URL_PROPERTY_NAME, embeddedKafka.getBrokersAsString(), PUBLIC);
     }
 
     public KafkaTest addListener(MessageListener<String, String> listener) {
@@ -69,12 +69,10 @@ public abstract class KafkaTest {
 
     @BeforeClass
     public static void setupFelles() throws IOException {
-        DevelopmentSecurity.setupIntegrationTestSecurity(FasitUtils.getServiceUser("srvveilarboppfolging", APPLICATION_NAME));
         JndiLocalContextConfig.setupInMemoryDatabase();
         annotationConfigApplicationContext = new AnnotationConfigApplicationContext(
                 IntegrasjonsTest.JndiBean.class,
                 DatabaseConfig.class,
-                PepConfig.class,
                 KafkaTestConfig.class,
                 UnleashTestConfig.class
         );
