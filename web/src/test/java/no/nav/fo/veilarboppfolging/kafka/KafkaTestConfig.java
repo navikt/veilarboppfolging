@@ -3,9 +3,13 @@ package no.nav.fo.veilarboppfolging.kafka;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.services.*;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import java.util.UUID;
+
+import static no.nav.sbl.util.EnvironmentUtils.requireEnvironmentName;
 import static org.mockito.Mockito.mock;
 
 @Import({
@@ -13,6 +17,13 @@ import static org.mockito.Mockito.mock;
         Consumer.class
 })
 public class KafkaTestConfig {
+
+    public static final String KAFKA_TEST_TOPIC = "test-topic";
+
+    @Bean
+    public Consumer.ConsumerParameters consumerParameters() {
+        return new Consumer.ConsumerParameters(KAFKA_TEST_TOPIC);
+    }
 
     @Bean
     public ConsumerConfig.SASL sasl(){
