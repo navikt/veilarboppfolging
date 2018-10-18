@@ -25,8 +25,11 @@ public class OppfolgingStatusData {
     public boolean harSkriveTilgang;
     public Boolean inaktivIArena;
     public Boolean kanReaktiveres;
-    public Boolean erIkkeArbeidssokerUtenOppfolging;
     public Date inaktiveringsdato;
+    public Boolean erSykmeldtMedArbeidsgiver;
+
+    @Deprecated
+    public Boolean erIkkeArbeidssokerUtenOppfolging;
 
     public Date getOppfolgingUtgang() {
         return oppfolgingsperioder.stream().map(Oppfolgingsperiode::getSluttDato).filter(Objects::nonNull).max(naturalOrder()).orElse(null);

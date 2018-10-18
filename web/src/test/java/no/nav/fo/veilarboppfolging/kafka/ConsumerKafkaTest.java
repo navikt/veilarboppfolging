@@ -1,14 +1,17 @@
 package no.nav.fo.veilarboppfolging.kafka;
 
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.veilarboppfolging.domain.IservMapper;
 import no.nav.fo.veilarboppfolging.mappers.ArenaBruker;
 import no.nav.fo.veilarboppfolging.services.Iserv28Service;
 import no.nav.json.JsonUtils;
 import org.junit.Test;
+import org.springframework.kafka.support.SendResult;
 
 import javax.inject.Inject;
 import java.time.ZonedDateTime;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
@@ -29,7 +32,7 @@ public class ConsumerKafkaTest extends KafkaTest {
         bruker.setIserv_fra_dato(iservSiden);
         assertThat(iserv28Service.eksisterendeIservBruker(bruker)).isNull();
 
-        kafkaTemplate.send(KAFKA_TEST_TOPIC, JsonUtils.toJson(bruker));
+        send(KafkaTestConfig.KAFKA_TEST_TOPIC, JsonUtils.toJson(bruker));
         dynamicTimeout(() -> iserv28Service.eksisterendeIservBruker(bruker) != null);
 
         IservMapper iservMapper = iserv28Service.eksisterendeIservBruker(bruker);
@@ -37,6 +40,12 @@ public class ConsumerKafkaTest extends KafkaTest {
         assertThat(iservMapper).isNotNull();
         assertThat(iservMapper.getAktor_Id()).isEqualTo("1234");
         assertThat(iservMapper.getIservSiden()).isEqualTo(iservSiden);
+    }
+
+    @SneakyThrows
+    private void send(String topic, String message) {
+        SendResult<String, String> sendResult = kafkaTemplate.send(topic, message).get(10, TimeUnit.SECONDS);
+        log.info("{}", sendResult);
     }
 
     private void dynamicTimeout(Supplier<Boolean> waitUntil) throws InterruptedException {

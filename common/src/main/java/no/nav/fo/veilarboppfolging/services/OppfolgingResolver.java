@@ -60,7 +60,7 @@ public class OppfolgingResolver {
     private List<ArenaAktivitetDTO> arenaAktiviteter;
     private Boolean inaktivIArena;
     private Boolean kanReaktiveres;
-    private Boolean erIkkeArbeidssokerUtenOppfolging;
+    private Boolean erSykmeldtMedArbeidsgiver;
 
     OppfolgingResolver(String fnr, OppfolgingResolverDependencies deps) {
         deps.getPepClient().sjekkLeseTilgangTilFnr(fnr);
@@ -89,10 +89,11 @@ public class OppfolgingResolver {
                 }
 
             }
-            erIkkeArbeidssokerUtenOppfolging = erIARBSUtenOppfolging(
+            erSykmeldtMedArbeidsgiver = erIARBSUtenOppfolging(
                     arenaStatus.getFormidlingsgruppe(),
                     arenaStatus.getServicegruppe()
-                    );
+            );
+
 
             inaktivIArena = erIserv(statusIArena.get());
             kanReaktiveres = oppfolging.isUnderOppfolging() && kanReaktiveres(statusIArena.get());
@@ -100,11 +101,11 @@ public class OppfolgingResolver {
             log.info("Statuser for reaktivering og inaktivering: "
                     + "Aktiv Oppfølgingsperiode={} "
                     + "kanReaktiveres={} "
-                    + "erIkkeArbeidssokerUtenOppfolging={} "
+                    + "erSykmeldtMedArbeidsgiver={} "
                     + "skalAvsluttes={} "
                     + "Tilstand i Arena: {}",
-                    oppfolging.isUnderOppfolging(), kanReaktiveres, erIkkeArbeidssokerUtenOppfolging, skalAvsluttes, statusIArena.get());
-            
+                    oppfolging.isUnderOppfolging(), kanReaktiveres, erSykmeldtMedArbeidsgiver, skalAvsluttes, statusIArena.get());
+
             if(skalAvsluttes) {
                 inaktiverBruker();
             }
@@ -305,8 +306,8 @@ public class OppfolgingResolver {
         return kanReaktiveres;
     }
 
-    Boolean getErIkkeArbeidssokerUtenOppfolging() {
-        return erIkkeArbeidssokerUtenOppfolging;
+    Boolean getErSykmeldtMedArbeidsgiver() {
+        return erSykmeldtMedArbeidsgiver;
     }
 
     void avsluttOppfolging(String veileder, String begrunnelse) {
