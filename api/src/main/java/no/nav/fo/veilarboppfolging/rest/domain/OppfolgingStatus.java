@@ -24,6 +24,9 @@ public class OppfolgingStatus {
     private boolean harSkriveTilgang;
     private Boolean inaktivIArena;
     private Boolean kanReaktiveres;
-    private Boolean erIkkeArbeidssokerUtenOppfolging;
     public Date inaktiveringsdato;
+    private Boolean erSykmeldtMedArbeidsgiver;
+
+    @Deprecated
+    private Boolean erIkkeArbeidssokerUtenOppfolging;
 }
