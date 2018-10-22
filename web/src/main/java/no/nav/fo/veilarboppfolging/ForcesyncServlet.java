@@ -27,7 +27,8 @@ public class ForcesyncServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String sql = Stream.of(
                 "UPDATE veilarboppfolging.OPPFOLGINGSTATUS",
-                "SET oppdatert=CURRENT_TIMESTAMP",
+                "SET oppdatert=CURRENT_TIMESTAMP,",
+                "FEED_ID = null",
                 "WHERE aktor_id in (",
                 " SELECT os.AKTOR_ID",
                 " FROM veilarboppfolging.OPPFOLGINGSTATUS os",
