@@ -203,6 +203,11 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
         aktiverBrukerService.reaktiverBruker(fnr);
     }
 
+    @Override
+    public OppfolgingStatus aktiverSykmeldt() throws Exception {
+        return startOppfolging();
+    }
+
     private Eskaleringsvarsel tilDto(EskaleringsvarselData eskaleringsvarselData) {
         return Optional.ofNullable(eskaleringsvarselData)
                 .map(eskalering -> Eskaleringsvarsel.builder()

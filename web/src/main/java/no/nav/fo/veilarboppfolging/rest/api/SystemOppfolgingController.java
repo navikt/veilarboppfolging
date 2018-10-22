@@ -17,6 +17,6 @@ public interface SystemOppfolgingController {
     void reaktiverBruker(Fnr fnr) throws Exception;
 
     @POST
-    @Path("/sykmeldt")
-    OppfolgingStatus startOppfolging() throws Exception;
+    @Path("/aktiverSykmeldt")
+    OppfolgingStatus aktiverSykmeldt() throws Exception;
 }
