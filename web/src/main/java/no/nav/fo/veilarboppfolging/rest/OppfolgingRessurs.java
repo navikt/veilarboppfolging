@@ -69,7 +69,6 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
 
     @Override
     public OppfolgingStatus startOppfolging() throws Exception {
-        autorisasjonService.skalVereInternBruker();
         return tilDto(oppfolgingService.startOppfolging(getFnr()));
     }
 
