@@ -221,8 +221,18 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
         return SubjectHandler.getSubjectHandler().getUid();
     }
 
+    public static boolean erEksternBruker() {
+        return no.nav.common.auth.SubjectHandler
+            .getIdentType()
+            .map(identType -> IdentType.EksternBruker == identType)
+            .orElse(false);
+    }
+
     private String getFnr() {
-        return requestProvider.get().getParameter("fnr");
+        if (erEksternBruker()) {
+            return no.nav.common.auth.SubjectHandler.getIdent().orElseThrow(RuntimeException::new);
+        }
+        return Optional.ofNullable(requestProvider.get().getParameter("fnr")).orElseThrow(RuntimeException::new);
     }
 
     private AvslutningStatus tilDto(AvslutningStatusData avslutningStatusData) {
