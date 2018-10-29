@@ -18,5 +18,5 @@ public interface SystemOppfolgingController {
 
     @POST
     @Path("/aktiverSykmeldt")
-    OppfolgingStatus aktiverSykmeldt() throws Exception;
+    void aktiverSykmeldt() throws Exception;
 }

@@ -69,6 +69,7 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
 
     @Override
     public OppfolgingStatus startOppfolging() throws Exception {
+        autorisasjonService.skalVereInternBruker();
         return tilDto(oppfolgingService.startOppfolging(getFnr()));
     }
 
@@ -204,8 +205,8 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
     }
 
     @Override
-    public OppfolgingStatus aktiverSykmeldt() throws Exception {
-        return startOppfolging();
+    public void aktiverSykmeldt() throws Exception {
+        oppfolgingService.startOppfolging(getUid());
     }
 
     private Eskaleringsvarsel tilDto(EskaleringsvarselData eskaleringsvarselData) {
