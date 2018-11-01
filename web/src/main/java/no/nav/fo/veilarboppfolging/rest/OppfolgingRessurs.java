@@ -199,14 +199,22 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
 
     @Override
     public void aktiverBruker(AktiverArbeidssokerData aktiverArbeidssokerData) throws Exception {
+        autorisasjonService.skalVereSystemRessurs();
         pepClient.sjekkSkriveTilgangTilFnr(aktiverArbeidssokerData.getFnr().getFnr());
         aktiverBrukerService.aktiverBruker(aktiverArbeidssokerData);
     }
 
     @Override
     public void reaktiverBruker(Fnr fnr) throws Exception {
+        autorisasjonService.skalVereSystemRessurs();
         pepClient.sjekkSkriveTilgangTilFnr(fnr.getFnr());
         aktiverBrukerService.reaktiverBruker(fnr);
+    }
+
+    @Override
+    public void aktiverSykmeldt() throws Exception {
+        autorisasjonService.skalVereSystemRessurs();
+        oppfolgingService.startOppfolging(getUid());
     }
 
     private Eskaleringsvarsel tilDto(EskaleringsvarselData eskaleringsvarselData) {

@@ -14,4 +14,8 @@ public interface SystemOppfolgingController {
     @POST
     @Path("/reaktiverbruker")
     void reaktiverBruker(Fnr fnr) throws Exception;
+
+    @POST
+    @Path("/aktiverSykmeldt")
+    void aktiverSykmeldt() throws Exception;
 }
