@@ -70,6 +70,10 @@ class DatabaseSyntaxMapper {
                 "CREATE SEQUENCE NYE_BRUKERE_FEED_SEQ ORDER",
                 "CREATE SEQUENCE NYE_BRUKERE_FEED_SEQ"
         );
+        map(
+                "CREATE SEQUENCE OPPFOLGING_FEED_SEQ ORDER",
+                "CREATE SEQUENCE OPPFOLGING_FEED_SEQ"
+        );
         map("END", NOOP);
     }
 

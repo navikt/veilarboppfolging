@@ -123,7 +123,7 @@ public class Iserv28ServiceIntegrationTest extends IntegrasjonsTest {
 
         iserv28Service.avslutteOppfolging(arenaBruker.aktoerid);
 
-        verify(oppfolgingService).avsluttOppfolging(anyString(), anyString(), anyString());
+        verify(oppfolgingService).avsluttOppfolgingForSystemBruker(anyString(), anyString(), anyString());
         assertThat(iserv28Service.eksisterendeIservBruker(arenaBruker)).isNull();
     }
 

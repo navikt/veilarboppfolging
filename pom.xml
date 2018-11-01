@@ -18,9 +18,9 @@
     <packaging>pom</packaging>
 
     <parent>
-        <groupId>no.nav.sbl</groupId>
+        <groupId>no.nav.common</groupId>
         <artifactId>mor-pom</artifactId>
-        <version>2018.08.23.10.26</version>
+        <version>2018.10.30.12.04</version>
     </parent>
 
     <properties>
@@ -50,9 +50,9 @@
         <dependencies>
 
             <dependency>
-                <groupId>no.nav.sbl</groupId>
+                <groupId>no.nav.common</groupId>
                 <artifactId>bom</artifactId>
-                <version>2018.08.23.10.26</version>
+                <version>2018.10.30.12.04</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -135,7 +135,7 @@
                 <version>${oppfolgingsinfo-v1-tjenestespesifikasjon.version}</version>
             </dependency>
             <dependency>
-                <groupId>no.nav.sbl.dialogarena</groupId>
+                <groupId>no.nav.common</groupId>
                 <artifactId>startregistreringstatus-v1-tjenestespesifikasjon</artifactId>
                 <version>${startregistreringstatus-v1-tjenestespesifikasjon.version}</version>
             </dependency>

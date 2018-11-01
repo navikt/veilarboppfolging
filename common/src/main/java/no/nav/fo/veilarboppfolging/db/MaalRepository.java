@@ -56,8 +56,10 @@ public class MaalRepository {
     }
 
     private void setActive(MalData mal) {
-        database.update("UPDATE OPPFOLGINGSTATUS SET " + GJELDENDE_MAL + " = ?," +
-                        " oppdatert = CURRENT_TIMESTAMP " +
+        database.update("UPDATE OPPFOLGINGSTATUS " + 
+                        " SET " + GJELDENDE_MAL + " = ?," +
+                        " oppdatert = CURRENT_TIMESTAMP, " +
+                        " FEED_ID = null " +
                         "WHERE " + AKTOR_ID + " = ?",
                 mal.getId(),
                 mal.getAktorId()
