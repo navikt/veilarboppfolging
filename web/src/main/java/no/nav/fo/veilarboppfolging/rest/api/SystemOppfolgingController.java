@@ -2,7 +2,6 @@ package no.nav.fo.veilarboppfolging.rest.api;
 
 import no.nav.fo.veilarboppfolging.domain.AktiverArbeidssokerData;
 import no.nav.fo.veilarboppfolging.domain.Fnr;
-import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingStatus;
 
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;

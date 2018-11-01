@@ -2,11 +2,24 @@ package no.nav.fo.veilarboppfolging.rest;
 
 import no.nav.apiapp.feil.IngenTilgang;
 import no.nav.brukerdialog.security.domain.IdentType;
+import no.nav.brukerdialog.security.oidc.OidcTokenValidator;
+import no.nav.brukerdialog.security.oidc.OidcTokenValidatorResult;
+import no.nav.brukerdialog.security.oidc.provider.IssoOidcProvider;
 import no.nav.common.auth.SubjectHandler;
 import org.springframework.stereotype.Component;
 
+import javax.inject.Inject;
+import javax.inject.Provider;
+import javax.servlet.http.HttpServletRequest;
+
 @Component
 public class AutorisasjonService {
+
+    @Inject
+    Provider<HttpServletRequest> httpServletRequestProvider;
+
+    private OidcTokenValidator oidcTokenValidator = new OidcTokenValidator();
+    private IssoOidcProvider issoProvider = new IssoOidcProvider();
 
     public void skalVereInternBruker() {
         skalVere(IdentType.InternBruker);
@@ -19,4 +32,11 @@ public class AutorisasjonService {
         }
     }
 
+    public void skalVereSystemRessurs() {
+        String systemToken = httpServletRequestProvider.get().getHeader("SystemAuthorization");
+        OidcTokenValidatorResult validatedIssoToken = oidcTokenValidator.validate(systemToken, issoProvider);
+        if (!validatedIssoToken.isValid()) {
+            throw new IngenTilgang();
+        }
+    }
 }
