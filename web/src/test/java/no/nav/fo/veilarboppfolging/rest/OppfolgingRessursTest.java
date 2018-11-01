@@ -1,10 +1,15 @@
 package no.nav.fo.veilarboppfolging.rest;
 
 import no.nav.apiapp.security.PepClient;
+import no.nav.brukerdialog.security.context.SubjectRule;
+import no.nav.brukerdialog.security.domain.IdentType;
+import no.nav.common.auth.SsoToken;
+import no.nav.common.auth.Subject;
 import no.nav.fo.veilarboppfolging.domain.AktiverArbeidssokerData;
 import no.nav.fo.veilarboppfolging.domain.Fnr;
 import no.nav.fo.veilarboppfolging.services.AktiverBrukerService;
 import no.nav.fo.veilarboppfolging.services.OppfolgingService;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -32,6 +37,9 @@ public class OppfolgingRessursTest {
     @Mock
     private PepClient pepClient;
 
+    @Rule
+    public SubjectRule subjectRule = new SubjectRule();
+
     @Test
     public void aktiverBruker() throws Exception {
         AktiverArbeidssokerData data = new AktiverArbeidssokerData();
@@ -48,6 +56,7 @@ public class OppfolgingRessursTest {
 
     @Test
     public void aktiverSykmeldt() throws Exception {
+        subjectRule.setSubject(new Subject("uid", IdentType.EksternBruker, SsoToken.oidcToken("oidcToken")));
         oppfolgingRessurs.aktiverSykmeldt();
         verify(autorisasjonService,  times(1)).skalVereSystemRessurs();
     }
