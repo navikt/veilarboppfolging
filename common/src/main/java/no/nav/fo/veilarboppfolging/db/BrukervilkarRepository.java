@@ -54,7 +54,8 @@ public class BrukervilkarRepository {
                 "UPDATE " +
                         OppfolgingsStatusRepository.TABLE_NAME +
                         " SET " + GJELDENDE_BRUKERVILKAR + " = ?, " +
-                        " oppdatert = CURRENT_TIMESTAMP " +
+                        " oppdatert = CURRENT_TIMESTAMP, " +
+                        " FEED_ID = null " +
                         "WHERE " + AKTOR_ID +" = ?",
                 gjeldendeBrukervilkar.getId(),
                 gjeldendeBrukervilkar.getAktorId()

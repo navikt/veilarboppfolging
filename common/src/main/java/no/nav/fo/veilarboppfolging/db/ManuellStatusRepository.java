@@ -77,7 +77,8 @@ public class ManuellStatusRepository {
         database.update("UPDATE " +
                         OppfolgingsStatusRepository.TABLE_NAME +
                         " SET " + GJELDENDE_MANUELL_STATUS + " = ?, " +
-                        "oppdatert = CURRENT_TIMESTAMP " +
+                        "oppdatert = CURRENT_TIMESTAMP, " +
+                        "FEED_ID = null " +
                         "WHERE " + AKTOR_ID + " = ?",
                 gjeldendeManuellStatus.getId(),
                 gjeldendeManuellStatus.getAktorId()

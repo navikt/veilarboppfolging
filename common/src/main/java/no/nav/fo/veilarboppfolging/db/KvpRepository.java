@@ -54,7 +54,8 @@ public class KvpRepository {
         );
         database.update("UPDATE OPPFOLGINGSTATUS " +
                         "SET gjeldende_kvp = ?, " +
-                        "oppdatert = CURRENT_TIMESTAMP " +
+                        "oppdatert = CURRENT_TIMESTAMP, " +
+                        "FEED_ID = null " +
                         "WHERE aktor_id = ?",
                 id,
                 aktorId
@@ -86,7 +87,8 @@ public class KvpRepository {
         );
         database.update("UPDATE OPPFOLGINGSTATUS " +
                         "SET gjeldende_kvp = NULL, " +
-                        "oppdatert = CURRENT_TIMESTAMP " +
+                        "oppdatert = CURRENT_TIMESTAMP, " +
+                        "FEED_ID = null " +
                         "WHERE aktor_id = ?",
                 aktorId
         );

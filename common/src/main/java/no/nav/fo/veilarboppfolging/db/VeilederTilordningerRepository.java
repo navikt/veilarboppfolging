@@ -49,14 +49,14 @@ public class VeilederTilordningerRepository {
     @Transactional
     public void upsertVeilederTilordning(String aktoerId, String veileder) {
         int rowsUpdated = db.update(
-                "INSERT INTO OPPFOLGINGSTATUS(aktor_id, veileder, under_oppfolging, ny_for_veileder, sist_tilordnet, oppdatert) " +
-                        "SELECT ?, ?, 0, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP FROM DUAL " +
+                "INSERT INTO OPPFOLGINGSTATUS(aktor_id, veileder, under_oppfolging, ny_for_veileder, sist_tilordnet, oppdatert, FEED_ID) " +
+                        "SELECT ?, ?, 0, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, null FROM DUAL " +
                         "WHERE NOT EXISTS(SELECT * FROM OPPFOLGINGSTATUS WHERE aktor_id=?)",
                 aktoerId, veileder, aktoerId);
 
         if (rowsUpdated == 0) {
             db.update(
-                    "UPDATE OPPFOLGINGSTATUS SET veileder = ?, ny_for_veileder = 1, sist_tilordnet=CURRENT_TIMESTAMP, oppdatert=CURRENT_TIMESTAMP WHERE aktor_id = ?",
+                    "UPDATE OPPFOLGINGSTATUS SET veileder = ?, ny_for_veileder = 1, sist_tilordnet = CURRENT_TIMESTAMP, oppdatert = CURRENT_TIMESTAMP, FEED_ID = null WHERE aktor_id = ?",
                     veileder,
                     aktoerId);
         }
@@ -67,7 +67,8 @@ public class VeilederTilordningerRepository {
     public int markerSomLestAvVeileder(String aktorId) {
         return db.update("UPDATE " + OppfolgingsStatusRepository.TABLE_NAME +
                 " SET " + NY_FOR_VEILEDER + " = 0, " +
-                OPPDATERT + " = CURRENT_TIMESTAMP " +
+                OPPDATERT + " = CURRENT_TIMESTAMP, " +
+                "FEED_ID = null " +
                 " WHERE " + AKTOR_ID + " = ?", aktorId
         );
 

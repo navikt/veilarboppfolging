@@ -1,6 +1,7 @@
 package no.nav.fo.veilarboppfolging.config;
 
 import no.nav.brukerdialog.security.oidc.OidcFeedAuthorizationModule;
+
 import no.nav.brukerdialog.security.oidc.OidcFeedOutInterceptor;
 import no.nav.fo.feed.controller.FeedController;
 import no.nav.fo.feed.producer.FeedProducer;
@@ -12,6 +13,7 @@ import no.nav.fo.veilarboppfolging.rest.domain.AvsluttetOppfolgingFeedDTO;
 import no.nav.fo.veilarboppfolging.rest.domain.KvpDTO;
 import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingFeedDTO;
 import no.nav.fo.veilarboppfolging.services.*;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

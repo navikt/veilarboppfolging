@@ -1,8 +1,8 @@
 package no.nav.fo.veilarboppfolging.rest;
 
-import no.nav.apiapp.security.PepClient;
-import no.nav.brukerdialog.security.context.SubjectHandler;
+import no.nav.common.auth.SubjectHandler;
 import no.nav.brukerdialog.security.domain.IdentType;
+import no.nav.apiapp.security.PepClient;
 import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.fo.veilarboppfolging.mappers.VilkarMapper;
 import no.nav.fo.veilarboppfolging.rest.api.OppfolgingController;
@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
+import static no.nav.common.auth.SubjectHandler.*;
 
 /*
     NB:
@@ -57,9 +58,13 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
 
     @Override
     public Bruker hentBrukerInfo() throws Exception {
+        boolean erVeileder = SubjectHandler.getIdentType()
+            .map(identType -> IdentType.InternBruker == identType)
+            .orElse(false);
+
         return new Bruker()
-                .setId(getUid())
-                .setErVeileder(SubjectHandler.getSubjectHandler().getIdentType() == IdentType.InternBruker);
+            .setId(getUid())
+            .setErVeileder(erVeileder);
     }
 
     @Override
@@ -226,11 +231,20 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
     }
 
     private String getUid() {
-        return SubjectHandler.getSubjectHandler().getUid();
+        return SubjectHandler.getIdent().orElseThrow(RuntimeException::new);
+    }
+
+    public static boolean erEksternBruker() {
+        return getIdentType()
+            .map(identType -> IdentType.EksternBruker == identType)
+            .orElse(false);
     }
 
     private String getFnr() {
-        return requestProvider.get().getParameter("fnr");
+        if (erEksternBruker()) {
+            return getIdent().orElseThrow(RuntimeException::new);
+        }
+        return Optional.ofNullable(requestProvider.get().getParameter("fnr")).orElseThrow(RuntimeException::new);
     }
 
     private AvslutningStatus tilDto(AvslutningStatusData avslutningStatusData) {
