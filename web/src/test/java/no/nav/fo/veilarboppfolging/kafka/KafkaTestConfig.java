@@ -7,9 +7,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import java.util.UUID;
-
-import static no.nav.sbl.util.EnvironmentUtils.requireEnvironmentName;
 import static org.mockito.Mockito.mock;
 
 @Import({

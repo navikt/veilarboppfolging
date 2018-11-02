@@ -1,10 +1,7 @@
 package no.nav.fo.veilarboppfolging.kafka;
 
-import no.nav.dialogarena.config.DevelopmentSecurity;
-import no.nav.dialogarena.config.fasit.FasitUtils;
 import no.nav.fo.IntegrasjonsTest;
 import no.nav.fo.veilarboppfolging.config.*;
-import no.nav.sbl.util.EnvironmentUtils;
 import org.junit.*;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.kafka.core.*;
@@ -22,8 +19,6 @@ import javax.naming.NamingException;
 import java.io.IOException;
 import java.util.Map;
 
-import static no.nav.fo.veilarboppfolging.config.ApplicationConfig.APPLICATION_NAME;
-import static no.nav.fo.veilarboppfolging.kafka.Consumer.ENDRING_PAA_BRUKER_KAFKA_TOPIC_PROPERTY_NAME;
 import static no.nav.sbl.util.EnvironmentUtils.Type.PUBLIC;
 import static no.nav.sbl.util.EnvironmentUtils.setProperty;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.producerProps;
