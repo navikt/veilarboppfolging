@@ -44,6 +44,7 @@ public class ArenaOppfolgingRessurs {
     private final OrganisasjonEnhetService organisasjonEnhetService;
     private AktorService aktorService;
     private VeilederTilordningerRepository veilederTilordningerRepository;
+    private final AutorisasjonService autorisasjonService;
 
     public ArenaOppfolgingRessurs(
             ArenaOppfolgingService arenaOppfolgingService,
@@ -51,7 +52,8 @@ public class ArenaOppfolgingRessurs {
             PepClient pepClient,
             OrganisasjonEnhetService organisasjonEnhetService,
             AktorService aktorService,
-            VeilederTilordningerRepository veilederTilordningerRepository
+            VeilederTilordningerRepository veilederTilordningerRepository,
+            AutorisasjonService autorisasjonService
     ) {
         this.arenaOppfolgingService = arenaOppfolgingService;
         this.oppfolgingMapper = oppfolgingMapper;
@@ -59,18 +61,19 @@ public class ArenaOppfolgingRessurs {
         this.organisasjonEnhetService = organisasjonEnhetService;
         this.aktorService = aktorService;
         this.veilederTilordningerRepository = veilederTilordningerRepository;
+        this.autorisasjonService = autorisasjonService;
     }
 
     @GET
     @Path("/oppfoelging")
     public OppfolgingskontraktResponse getOppfoelging(@PathParam("fnr") String fnr) throws PepException {
-        pepClient.sjekkTilgangTilFnr(fnr);
+        autorisasjonService.skalVereInternBruker();
+        pepClient.sjekkLeseTilgangTilFnr(fnr);
         LocalDate periodeFom = LocalDate.now().minusMonths(MANEDER_BAK_I_TID);
         LocalDate periodeTom = LocalDate.now().plusMonths(MANEDER_FREM_I_TID);
         XMLGregorianCalendar fom = convertDateToXMLGregorianCalendar(periodeFom);
         XMLGregorianCalendar tom = convertDateToXMLGregorianCalendar(periodeTom);
 
-        LOG.info("Henter oppfoelging for fnr");
         return oppfolgingMapper.tilOppfolgingskontrakt(arenaOppfolgingService.hentOppfolgingskontraktListe(fom, tom, fnr));
     }
 
@@ -78,9 +81,9 @@ public class ArenaOppfolgingRessurs {
     @Path("/oppfoelgingsstatus")
     @Deprecated
     public ArenaOppfolging getOppfoelginsstatus(@PathParam("fnr") String fnr) throws PepException {
-        pepClient.sjekkTilgangTilFnr(fnr);
+        autorisasjonService.skalVereInternBruker();
+        pepClient.sjekkLeseTilgangTilFnr(fnr);
 
-        LOG.info("Henter oppfølgingsstatus for fnr");
         no.nav.fo.veilarboppfolging.domain.ArenaOppfolging arenaData = arenaOppfolgingService.hentArenaOppfolging(fnr);
         Oppfolgingsenhet enhet = hentEnhet(arenaData.getOppfolgingsenhet());
 
@@ -99,14 +102,14 @@ public class ArenaOppfolgingRessurs {
     }
 
     /*
-     API used by veilarbmaofs. Contains only the neccasary information
+     API used by veilarbmaofs. Contains only the necessary information
      */
     @GET
     @Path("/oppfolgingsstatus")
     public OppfolgingEnhetMedVeileder getOppfolginsstatus(@PathParam("fnr") String fnr) throws PepException {
+        autorisasjonService.skalVereInternBruker();
         pepClient.sjekkLeseTilgangTilFnr(fnr);
 
-        LOG.info("Henter oppfølgingsstatus for fnr");
         no.nav.fo.veilarboppfolging.domain.ArenaOppfolging arenaData = arenaOppfolgingService.hentArenaOppfolging(fnr);
 
         Oppfolgingsenhet oppfolgingsenhet = hentEnhet(arenaData.getOppfolgingsenhet());

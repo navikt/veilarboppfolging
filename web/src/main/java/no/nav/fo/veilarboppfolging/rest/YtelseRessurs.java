@@ -38,24 +38,28 @@ public class YtelseRessurs {
     final private OppfolgingMapper oppfolgingMapper;
     final private YtelseskontraktMapper ytelseskontraktMapper;
     private final PepClient pepClient;
+    private final AutorisasjonService autorisasjonService;
+
 
     public YtelseRessurs(YtelseskontraktService ytelseskontraktService,
                          ArenaOppfolgingService arenaOppfolgingService,
                          OppfolgingMapper oppfolgingMapper,
                          YtelseskontraktMapper ytelseskontraktMapper,
-                         PepClient pepClient) {
+                         PepClient pepClient,
+                         AutorisasjonService autorisasjonService) {
         this.ytelseskontraktService = ytelseskontraktService;
         this.arenaOppfolgingService = arenaOppfolgingService;
         this.oppfolgingMapper = oppfolgingMapper;
         this.ytelseskontraktMapper = ytelseskontraktMapper;
         this.pepClient = pepClient;
+        this.autorisasjonService = autorisasjonService;
     }
 
     @GET
     @Path("/ytelser")
     public YtelserResponse getYtelser(@PathParam("fnr") String fnr) throws PepException {
-
-        pepClient.sjekkTilgangTilFnr(fnr);
+        autorisasjonService.skalVereInternBruker();
+        pepClient.sjekkLeseTilgangTilFnr(fnr);
 
         LocalDate periodeFom = LocalDate.now().minusMonths(MANEDER_BAK_I_TID);
         LocalDate periodeTom = LocalDate.now().plusMonths(MANEDER_FREM_I_TID);

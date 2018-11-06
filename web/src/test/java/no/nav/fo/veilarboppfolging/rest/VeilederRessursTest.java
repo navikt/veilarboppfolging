@@ -32,6 +32,9 @@ public class VeilederRessursTest {
     @Mock
     private PepClient pepClient;
 
+    @Mock
+    private AutorisasjonService autorisasjonService;
+
     @Test
     public void getVeilederSkalReturnereVeileder() throws Exception {
         final String forventetIdent = "***REMOVED***";

@@ -1,8 +1,8 @@
 package no.nav.fo.veilarboppfolging.rest;
 
-import no.nav.common.auth.SubjectHandler;
-import no.nav.brukerdialog.security.domain.IdentType;
 import no.nav.apiapp.security.PepClient;
+import no.nav.brukerdialog.security.domain.IdentType;
+import no.nav.common.auth.SubjectHandler;
 import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.fo.veilarboppfolging.mappers.VilkarMapper;
 import no.nav.fo.veilarboppfolging.rest.api.OppfolgingController;
@@ -22,7 +22,8 @@ import java.util.stream.Collectors;
 
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
-import static no.nav.common.auth.SubjectHandler.*;
+import static no.nav.common.auth.SubjectHandler.getIdent;
+import static no.nav.common.auth.SubjectHandler.getIdentType;
 
 /*
     NB:
@@ -69,6 +70,7 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
 
     @Override
     public OppfolgingStatus hentOppfolgingsStatus() throws Exception {
+        autorisasjonService.skalVereInternBruker(); //TODO responsen inneholder stuff som ikke skal eksponeres
         return tilDto(oppfolgingService.hentOppfolgingsStatus(getFnr()));
     }
 
@@ -137,11 +139,13 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
 
     @Override
     public OppfolgingStatus godta(String hash) throws Exception {
+        autorisasjonService.skalVereInternBruker();
         return tilDto(oppfolgingService.oppdaterVilkaar(hash, getFnr(), VilkarStatus.GODKJENT));
     }
 
     @Override
     public OppfolgingStatus avslaa(String hash) throws Exception {
+        autorisasjonService.skalVereInternBruker();
         return tilDto(oppfolgingService.oppdaterVilkaar(hash, getFnr(), VilkarStatus.AVSLATT));
     }
 
