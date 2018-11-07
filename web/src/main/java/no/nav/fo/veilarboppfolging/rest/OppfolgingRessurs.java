@@ -60,12 +60,12 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
     @Override
     public Bruker hentBrukerInfo() throws Exception {
         boolean erVeileder = SubjectHandler.getIdentType()
-            .map(identType -> IdentType.InternBruker == identType)
-            .orElse(false);
+                .map(identType -> IdentType.InternBruker == identType)
+                .orElse(false);
 
         return new Bruker()
-            .setId(getUid())
-            .setErVeileder(erVeileder);
+                .setId(getUid())
+                .setErVeileder(erVeileder);
     }
 
     @Override
@@ -138,13 +138,11 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
 
     @Override
     public OppfolgingStatus godta(String hash) throws Exception {
-        autorisasjonService.skalVereInternBruker();
         return tilDto(oppfolgingService.oppdaterVilkaar(hash, getFnr(), VilkarStatus.GODKJENT));
     }
 
     @Override
     public OppfolgingStatus avslaa(String hash) throws Exception {
-        autorisasjonService.skalVereInternBruker();
         return tilDto(oppfolgingService.oppdaterVilkaar(hash, getFnr(), VilkarStatus.AVSLATT));
     }
 
@@ -239,8 +237,8 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
 
     public static boolean erEksternBruker() {
         return getIdentType()
-            .map(identType -> IdentType.EksternBruker == identType)
-            .orElse(false);
+                .map(identType -> IdentType.EksternBruker == identType)
+                .orElse(false);
     }
 
     private String getFnr() {
@@ -262,40 +260,54 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
     }
 
     private OppfolgingStatus tilDto(OppfolgingStatusData oppfolgingStatusData) {
-        return new OppfolgingStatus()
+        OppfolgingStatus status = new OppfolgingStatus()
                 .setFnr(oppfolgingStatusData.fnr)
-                .setVeilederId(oppfolgingStatusData.veilederId)
+                .setUnderOppfolging(oppfolgingStatusData.underOppfolging)
                 .setManuell(oppfolgingStatusData.manuell)
                 .setReservasjonKRR(oppfolgingStatusData.reservasjonKRR)
-                .setUnderOppfolging(oppfolgingStatusData.underOppfolging)
-                .setUnderKvp(oppfolgingStatusData.underKvp)
                 .setVilkarMaBesvares(oppfolgingStatusData.vilkarMaBesvares)
-                .setKanStarteOppfolging(oppfolgingStatusData.isKanStarteOppfolging())
-                .setAvslutningStatus(
-                        ofNullable(oppfolgingStatusData.getAvslutningStatusData())
-                                .map(this::tilDto)
-                                .orElse(null)
-                )
                 .setOppfolgingUtgang(oppfolgingStatusData.getOppfolgingUtgang())
-                .setGjeldendeEskaleringsvarsel(tilDto(oppfolgingStatusData.getGjeldendeEskaleringsvarsel()))
-                .setOppfolgingsPerioder(oppfolgingStatusData.oppfolgingsperioder.stream().map(this::tilDTO).collect(toList()))
-                .setHarSkriveTilgang(oppfolgingStatusData.harSkriveTilgang)
-                .setInaktivIArena(oppfolgingStatusData.inaktivIArena)
                 .setKanReaktiveres(oppfolgingStatusData.kanReaktiveres)
+                .setOppfolgingsPerioder(oppfolgingStatusData.oppfolgingsperioder.stream().map(this::tilDTO).collect(toList()))
+                .setInaktiveringsdato(oppfolgingStatusData.inaktiveringsdato)
+                .setGjeldendeEskaleringsvarsel(tilDto(oppfolgingStatusData.getGjeldendeEskaleringsvarsel()))
                 .setErIkkeArbeidssokerUtenOppfolging(oppfolgingStatusData.getErSykmeldtMedArbeidsgiver())
                 .setErSykmeldtMedArbeidsgiver(oppfolgingStatusData.getErSykmeldtMedArbeidsgiver())
-                .setInaktiveringsdato(oppfolgingStatusData.inaktiveringsdato);
+                .setHarSkriveTilgang(true);
+
+
+        if (AutorisasjonService.erInternBruker()) {
+            status
+                    .setVeilederId(oppfolgingStatusData.veilederId)
+                    .setUnderKvp(oppfolgingStatusData.underKvp)
+                    .setKanStarteOppfolging(oppfolgingStatusData.isKanStarteOppfolging())
+                    .setAvslutningStatus(
+                            ofNullable(oppfolgingStatusData.getAvslutningStatusData())
+                                    .map(this::tilDto)
+                                    .orElse(null)
+                    )
+                    .setOppfolgingUtgang(oppfolgingStatusData.getOppfolgingUtgang())
+                    .setHarSkriveTilgang(oppfolgingStatusData.harSkriveTilgang)
+                    .setInaktivIArena(oppfolgingStatusData.inaktivIArena);
+        }
+
+        return status;
     }
 
     private OppfolgingPeriodeDTO tilDTO(Oppfolgingsperiode oppfolgingsperiode) {
-        return new OppfolgingPeriodeDTO()
-                .setAktorId(oppfolgingsperiode.getAktorId())
-                .setVeileder(oppfolgingsperiode.getVeileder())
+        OppfolgingPeriodeDTO periode = new OppfolgingPeriodeDTO()
                 .setSluttDato(oppfolgingsperiode.getSluttDato())
-                .setStartDato(oppfolgingsperiode.getStartDato())
-                .setBegrunnelse(oppfolgingsperiode.getBegrunnelse())
-                .setKvpPerioder(oppfolgingsperiode.getKvpPerioder().stream().map(this::tilDTO).collect(toList()))
-                ;
+                .setStartDato(oppfolgingsperiode.getStartDato());
+
+        if (AutorisasjonService.erInternBruker()) {
+            periode.setVeileder(oppfolgingsperiode.getVeileder())
+                    .setAktorId(oppfolgingsperiode.getAktorId())
+                    .setBegrunnelse(oppfolgingsperiode.getBegrunnelse())
+                    .setKvpPerioder(oppfolgingsperiode.getKvpPerioder().stream().map(this::tilDTO).collect(toList()))
+            ;
+        }
+
+        return periode;
     }
 
     private KvpPeriodeDTO tilDTO(Kvp kvp) {

@@ -32,6 +32,16 @@ public class AutorisasjonService {
         }
     }
 
+    public static boolean erInternBruker() {
+        IdentType identType = SubjectHandler.getIdentType().orElse(null);
+        return IdentType.InternBruker.equals(identType);
+    }
+
+    public static boolean erEksternBruker() {
+        IdentType identType = SubjectHandler.getIdentType().orElse(null);
+        return IdentType.EksternBruker.equals(identType);
+    }
+
     public void skalVereSystemRessurs() {
         String systemToken = httpServletRequestProvider.get().getHeader("SystemAuthorization");
         OidcTokenValidatorResult validatedIssoToken = oidcTokenValidator.validate(systemToken, issoProvider);
