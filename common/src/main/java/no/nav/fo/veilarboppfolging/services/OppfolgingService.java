@@ -1,6 +1,5 @@
 package no.nav.fo.veilarboppfolging.services;
 
-import io.swagger.annotations.Api;
 import lombok.SneakyThrows;
 import lombok.val;
 import no.nav.apiapp.security.PepClient;
@@ -18,7 +17,6 @@ import java.util.List;
 import static java.lang.System.currentTimeMillis;
 
 @Component
-@Api
 public class OppfolgingService {
 
     @Inject
