@@ -156,6 +156,10 @@ public class OppfolgingService {
 
     private OppfolgingStatusData getOppfolgingStatusData(String fnr, OppfolgingResolver oppfolgingResolver, AvslutningStatusData avslutningStatusData) {
         Oppfolging oppfolging = oppfolgingResolver.getOppfolging();
+
+        //TODO fixme here
+
+
         return new OppfolgingStatusData()
                 .setFnr(fnr)
                 .setVeilederId(oppfolging.getVeilederId())
