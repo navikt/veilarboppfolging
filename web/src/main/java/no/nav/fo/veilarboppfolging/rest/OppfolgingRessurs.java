@@ -70,7 +70,6 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
 
     @Override
     public OppfolgingStatus hentOppfolgingsStatus() throws Exception {
-        autorisasjonService.skalVereInternBruker(); //TODO responsen inneholder stuff som ikke skal eksponeres
         return tilDto(oppfolgingService.hentOppfolgingsStatus(getFnr()));
     }
 
