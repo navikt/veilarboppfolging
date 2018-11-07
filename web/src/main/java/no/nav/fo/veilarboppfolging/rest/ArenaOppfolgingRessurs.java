@@ -118,11 +118,16 @@ public class ArenaOppfolgingRessurs {
                 .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktør for fnr: " + fnr));
         String veilederIdent = veilederTilordningerRepository.hentTilordningForAktoer(brukersAktoerId);
 
-        return new OppfolgingEnhetMedVeileder()
-                .setOppfolgingsenhet(oppfolgingsenhet)
-                .setVeilederId(veilederIdent)
+        OppfolgingEnhetMedVeileder res = new OppfolgingEnhetMedVeileder()
+                .setServicegruppe(arenaData.getServicegruppe())
                 .setFormidlingsgruppe(arenaData.getFormidlingsgruppe())
-                .setServicegruppe(arenaData.getServicegruppe());
+                .setOppfolgingsenhet(oppfolgingsenhet);
+
+        if (AutorisasjonService.erInternBruker()) {
+            res.setVeilederId(veilederIdent);
+
+        }
+        return res;
     }
 
     private Oppfolgingsenhet hentEnhet(String oppfolgingsenhetId) {
