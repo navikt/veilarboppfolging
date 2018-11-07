@@ -107,7 +107,6 @@ public class ArenaOppfolgingRessurs {
     @GET
     @Path("/oppfolgingsstatus")
     public OppfolgingEnhetMedVeileder getOppfolginsstatus(@PathParam("fnr") String fnr) throws PepException {
-        autorisasjonService.skalVereInternBruker();
         pepClient.sjekkLeseTilgangTilFnr(fnr);
 
         no.nav.fo.veilarboppfolging.domain.ArenaOppfolging arenaData = arenaOppfolgingService.hentArenaOppfolging(fnr);
