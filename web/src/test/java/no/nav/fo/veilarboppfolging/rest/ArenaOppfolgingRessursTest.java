@@ -34,9 +34,6 @@ public class ArenaOppfolgingRessursTest {
     @Mock
     private PepClient pepClient;
 
-    @Mock
-    private AutorisasjonService autorisasjonService;
-
     @Test
     public void getOppfoelgingSkalReturnereEnRespons() throws Exception {
 
