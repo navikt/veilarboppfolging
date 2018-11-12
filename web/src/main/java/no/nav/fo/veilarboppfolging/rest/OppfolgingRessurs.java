@@ -59,13 +59,10 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
 
     @Override
     public Bruker hentBrukerInfo() throws Exception {
-        boolean erVeileder = SubjectHandler.getIdentType()
-                .map(identType -> IdentType.InternBruker == identType)
-                .orElse(false);
-
         return new Bruker()
                 .setId(getUid())
-                .setErVeileder(erVeileder);
+                .setErVeileder(AutorisasjonService.erInternBruker())
+                .setErBruker(AutorisasjonService.erEksternBruker());
     }
 
     @Override
