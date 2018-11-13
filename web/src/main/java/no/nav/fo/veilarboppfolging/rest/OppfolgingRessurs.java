@@ -241,7 +241,7 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
                 .map(eskalering -> Eskaleringsvarsel.builder()
                         .varselId(eskalering.getVarselId())
                         .aktorId(eskalering.getAktorId())
-                        .opprettetAv(eskalering.getOpprettetAv())
+                        .opprettetAv(AutorisasjonService.erInternBruker() ? eskalering.getOpprettetAv() : null)
                         .opprettetDato(eskalering.getOpprettetDato())
                         .avsluttetDato(eskalering.getAvsluttetDato())
                         .tilhorendeDialogId(eskalering.getTilhorendeDialogId())
