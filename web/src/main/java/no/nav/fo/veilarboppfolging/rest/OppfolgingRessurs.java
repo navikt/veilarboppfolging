@@ -176,6 +176,13 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
     }
 
     @Override
+    public void slettMal() throws PepException {
+        autorisasjonService.skalVereEksternBruker();
+        malService.slettMal(getFnr());
+    }
+
+
+    @Override
     public void startEskalering(StartEskaleringDTO startEskalering) throws Exception {
         autorisasjonService.skalVereInternBruker();
         oppfolgingService.startEskalering(

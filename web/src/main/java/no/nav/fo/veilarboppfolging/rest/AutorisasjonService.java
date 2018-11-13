@@ -25,6 +25,10 @@ public class AutorisasjonService {
         skalVere(IdentType.InternBruker);
     }
 
+    public void skalVereEksternBruker() {
+        skalVere(IdentType.EksternBruker);
+    }
+
     private void skalVere(IdentType forventetIdentType) {
         IdentType identType = SubjectHandler.getIdentType().orElse(null);
         if (identType != forventetIdentType) {
