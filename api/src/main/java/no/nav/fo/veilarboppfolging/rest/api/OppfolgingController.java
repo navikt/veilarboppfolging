@@ -48,4 +48,8 @@ public interface OppfolgingController {
     @POST
     @Path("/mal")
     Mal oppdaterMal(Mal mal) throws Exception;
+
+    @DELETE
+    @Path("/mal")
+    void slettMal() throws Exception;
 }

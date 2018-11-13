@@ -176,6 +176,13 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
     }
 
     @Override
+    public void slettMal() throws PepException {
+        autorisasjonService.skalVereEksternBruker();
+        malService.slettMal(getFnr());
+    }
+
+
+    @Override
     public void startEskalering(StartEskaleringDTO startEskalering) throws Exception {
         autorisasjonService.skalVereInternBruker();
         oppfolgingService.startEskalering(
@@ -234,7 +241,7 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
                 .map(eskalering -> Eskaleringsvarsel.builder()
                         .varselId(eskalering.getVarselId())
                         .aktorId(eskalering.getAktorId())
-                        .opprettetAv(eskalering.getOpprettetAv())
+                        .opprettetAv(AutorisasjonService.erInternBruker() ? eskalering.getOpprettetAv() : null)
                         .opprettetDato(eskalering.getOpprettetDato())
                         .avsluttetDato(eskalering.getAvsluttetDato())
                         .tilhorendeDialogId(eskalering.getTilhorendeDialogId())
