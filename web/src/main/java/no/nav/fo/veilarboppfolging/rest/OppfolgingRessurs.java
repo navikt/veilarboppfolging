@@ -1,8 +1,10 @@
 package no.nav.fo.veilarboppfolging.rest;
 
+import lombok.val;
 import no.nav.apiapp.security.PepClient;
 import no.nav.brukerdialog.security.domain.IdentType;
 import no.nav.common.auth.SubjectHandler;
+import no.nav.fo.veilarboppfolging.config.RemoteFeatureConfig;
 import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.fo.veilarboppfolging.mappers.VilkarMapper;
 import no.nav.fo.veilarboppfolging.rest.api.OppfolgingController;
@@ -57,6 +59,9 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
     @Inject
     private PepClient pepClient;
 
+    @Inject
+    private RemoteFeatureConfig.BrukervilkarFeature brukervilkarFeature;
+
     @Override
     public Bruker hentBrukerInfo() throws Exception {
         return new Bruker()
@@ -105,7 +110,16 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
 
     @Override
     public OppfolgingStatus settTilDigital(VeilederBegrunnelseDTO dto) throws Exception {
-        autorisasjonService.skalVereInternBruker();
+
+        if (AutorisasjonService.erInternBruker()) {
+            val oppfolgingStatusData = oppfolgingService.settDigitalBruker(getFnr());
+
+            if (!brukervilkarFeature.erAktiv()) { // TODO: slett hele if-blokken når vi sletter featuretoggle.
+                oppfolgingStatusData.setVilkarMaBesvares(true);
+            }
+            return tilDto(oppfolgingStatusData);
+        }
+
         return tilDto(oppfolgingService.oppdaterManuellStatus(getFnr(),
                 false,
                 dto.begrunnelse,
