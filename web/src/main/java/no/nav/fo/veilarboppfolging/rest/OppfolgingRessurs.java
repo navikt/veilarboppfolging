@@ -111,7 +111,7 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
     @Override
     public OppfolgingStatus settTilDigital(VeilederBegrunnelseDTO dto) throws Exception {
 
-        if (AutorisasjonService.erInternBruker()) {
+        if (AutorisasjonService.erEksternBruker()) {
             val oppfolgingStatusData = oppfolgingService.settDigitalBruker(getFnr());
 
             if (!brukervilkarFeature.erAktiv()) { // TODO: slett hele if-blokken når vi sletter featuretoggle.
