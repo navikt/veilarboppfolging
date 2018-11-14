@@ -319,10 +319,10 @@ public class OppfolgingResolver {
         return erSykmeldtMedArbeidsgiver;
     }
 
-    void avsluttOppfolging(String veileder, String begrunnelse) {
+    boolean avsluttOppfolging(String veileder, String begrunnelse) {
         if (!kanAvslutteOppfolging()) {
             log.info("Avslutting av oppfølging ikke tillatt for aktorid {}", aktorId);
-            return;
+            return false;
         }
 
         if (Optional.ofNullable(oppfolging.getGjeldendeEskaleringsvarsel()).isPresent()) {
@@ -330,6 +330,7 @@ public class OppfolgingResolver {
         }
 
         deps.getOppfolgingRepository().avsluttOppfolging(aktorId, veileder, begrunnelse);
+        return true;
     }
 
     private Oppfolging hentOppfolging() {

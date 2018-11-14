@@ -122,13 +122,15 @@ public class Iserv28Service{
     public void avslutteOppfolging(String aktoerId) {
         try {
             String fnr = aktorService.getFnr(aktoerId).orElseThrow(IllegalStateException::new);
-            oppfolgingService.avsluttOppfolgingForSystemBruker(
+            boolean oppfolgingAvsluttet = oppfolgingService.avsluttOppfolgingForSystemBruker(
                     fnr,
                     "System",
                     "Oppfolging avsluttet autmatisk for grunn av iservert 28 dager"
             );
-            slettAvluttetOppfolgingsBruker(aktoerId);
-            FunksjonelleMetrikker.antallBrukereAvluttetAutomatisk();
+            if(oppfolgingAvsluttet) {
+                slettAvluttetOppfolgingsBruker(aktoerId);
+                FunksjonelleMetrikker.antallBrukereAvluttetAutomatisk();
+            }
         } catch (Exception e) {
             log.error("Automatisk avsluttOppfolging feilet for aktoerid {} ", aktoerId, e);
         }

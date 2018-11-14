@@ -98,9 +98,9 @@ public class OppfolgingService {
 
     @SneakyThrows
     @Transactional
-    public void avsluttOppfolgingForSystemBruker(String fnr, String veileder, String begrunnelse) {
+    public boolean avsluttOppfolgingForSystemBruker(String fnr, String veileder, String begrunnelse) {
         val resolver = sjekkTilgangTilEnhet(fnr);
-        resolver.avsluttOppfolging(veileder, begrunnelse);
+        return resolver.avsluttOppfolging(veileder, begrunnelse);
     }
 
     public List<AvsluttetOppfolgingFeedData> hentAvsluttetOppfolgingEtterDato(Timestamp timestamp, int pageSize) {
