@@ -312,7 +312,7 @@ public class OppfolgingResolver {
 
     void avsluttOppfolging(String veileder, String begrunnelse) {
         if (!kanAvslutteOppfolging()) {
-            log.info("Avslutting av oppfølging ikke tillatt");
+            log.info("Avslutting av oppfølging ikke tillatt for aktorid {}", aktorId);
             return;
         }
 

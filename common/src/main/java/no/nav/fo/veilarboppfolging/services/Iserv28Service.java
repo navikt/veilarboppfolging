@@ -101,6 +101,7 @@ public class Iserv28Service{
                 .set("oppdatert_dato", CURRENT_TIMESTAMP)
                 .whereEquals("aktor_id", arenaBruker.getAktoerid())
                 .execute();
+
         log.info("ISERV bruker med aktorid {} har blitt oppdatert inn i UTMELDING tabell", arenaBruker.getAktoerid());
     }
 
@@ -111,6 +112,7 @@ public class Iserv28Service{
                 .value("iserv_fra_dato", iservFraDato)
                 .value("oppdatert_dato", CURRENT_TIMESTAMP)
                 .execute();
+
         log.info("ISERV bruker med aktorid {} og iserv_fra_dato {} har blitt insertert inn i UTMELDING tabell",
                 arenaBruker.getAktoerid(),
                 iservFraDato
@@ -135,7 +137,7 @@ public class Iserv28Service{
     private void slettAvluttetOppfolgingsBruker(String aktoerId) {
         WhereClause aktoerid = WhereClause.equals("aktor_id", aktoerId);
         SqlUtils.delete(jdbc, "UTMELDING").where(aktoerid).execute();
-        log.info("Aktorid {} har blitt slettet fra UTMELDING tabell", aktoerid);
+        log.info("Aktorid {} har slettet fra UTMELDING tabell", aktoerid);
     }
 
     public List<IservMapper> finnBrukereMedIservI28Dager() {
