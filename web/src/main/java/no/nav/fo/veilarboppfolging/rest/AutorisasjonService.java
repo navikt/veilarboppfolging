@@ -25,11 +25,25 @@ public class AutorisasjonService {
         skalVere(IdentType.InternBruker);
     }
 
+    public void skalVereEksternBruker() {
+        skalVere(IdentType.EksternBruker);
+    }
+
     private void skalVere(IdentType forventetIdentType) {
         IdentType identType = SubjectHandler.getIdentType().orElse(null);
         if (identType != forventetIdentType) {
             throw new IngenTilgang(String.format("%s != %s", identType, forventetIdentType));
         }
+    }
+
+    public static boolean erInternBruker() {
+        IdentType identType = SubjectHandler.getIdentType().orElse(null);
+        return IdentType.InternBruker.equals(identType);
+    }
+
+    public static boolean erEksternBruker() {
+        IdentType identType = SubjectHandler.getIdentType().orElse(null);
+        return IdentType.EksternBruker.equals(identType);
     }
 
     public void skalVereSystemRessurs() {

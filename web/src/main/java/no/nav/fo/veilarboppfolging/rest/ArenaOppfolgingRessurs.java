@@ -64,13 +64,12 @@ public class ArenaOppfolgingRessurs {
     @GET
     @Path("/oppfoelging")
     public OppfolgingskontraktResponse getOppfoelging(@PathParam("fnr") String fnr) throws PepException {
-        pepClient.sjekkTilgangTilFnr(fnr);
+        pepClient.sjekkLeseTilgangTilFnr(fnr);
         LocalDate periodeFom = LocalDate.now().minusMonths(MANEDER_BAK_I_TID);
         LocalDate periodeTom = LocalDate.now().plusMonths(MANEDER_FREM_I_TID);
         XMLGregorianCalendar fom = convertDateToXMLGregorianCalendar(periodeFom);
         XMLGregorianCalendar tom = convertDateToXMLGregorianCalendar(periodeTom);
 
-        LOG.info("Henter oppfoelging for fnr");
         return oppfolgingMapper.tilOppfolgingskontrakt(arenaOppfolgingService.hentOppfolgingskontraktListe(fom, tom, fnr));
     }
 
@@ -78,9 +77,8 @@ public class ArenaOppfolgingRessurs {
     @Path("/oppfoelgingsstatus")
     @Deprecated
     public ArenaOppfolging getOppfoelginsstatus(@PathParam("fnr") String fnr) throws PepException {
-        pepClient.sjekkTilgangTilFnr(fnr);
+        pepClient.sjekkLeseTilgangTilFnr(fnr);
 
-        LOG.info("Henter oppfølgingsstatus for fnr");
         no.nav.fo.veilarboppfolging.domain.ArenaOppfolging arenaData = arenaOppfolgingService.hentArenaOppfolging(fnr);
         Oppfolgingsenhet enhet = hentEnhet(arenaData.getOppfolgingsenhet());
 
@@ -99,14 +97,13 @@ public class ArenaOppfolgingRessurs {
     }
 
     /*
-     API used by veilarbmaofs. Contains only the neccasary information
+     API used by veilarbmaofs. Contains only the necessary information
      */
     @GET
     @Path("/oppfolgingsstatus")
     public OppfolgingEnhetMedVeileder getOppfolginsstatus(@PathParam("fnr") String fnr) throws PepException {
         pepClient.sjekkLeseTilgangTilFnr(fnr);
 
-        LOG.info("Henter oppfølgingsstatus for fnr");
         no.nav.fo.veilarboppfolging.domain.ArenaOppfolging arenaData = arenaOppfolgingService.hentArenaOppfolging(fnr);
 
         Oppfolgingsenhet oppfolgingsenhet = hentEnhet(arenaData.getOppfolgingsenhet());
@@ -115,11 +112,16 @@ public class ArenaOppfolgingRessurs {
                 .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktør for fnr: " + fnr));
         String veilederIdent = veilederTilordningerRepository.hentTilordningForAktoer(brukersAktoerId);
 
-        return new OppfolgingEnhetMedVeileder()
-                .setOppfolgingsenhet(oppfolgingsenhet)
-                .setVeilederId(veilederIdent)
+        OppfolgingEnhetMedVeileder res = new OppfolgingEnhetMedVeileder()
+                .setServicegruppe(arenaData.getServicegruppe())
                 .setFormidlingsgruppe(arenaData.getFormidlingsgruppe())
-                .setServicegruppe(arenaData.getServicegruppe());
+                .setOppfolgingsenhet(oppfolgingsenhet);
+
+        if (AutorisasjonService.erInternBruker()) {
+            res.setVeilederId(veilederIdent);
+
+        }
+        return res;
     }
 
     private Oppfolgingsenhet hentEnhet(String oppfolgingsenhetId) {

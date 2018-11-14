@@ -135,9 +135,9 @@ public class Iserv28Service{
     }
 
     private void slettAvluttetOppfolgingsBruker(String aktoerId) {
-        WhereClause aktoerid = WhereClause.equals("aktor_id", aktoerId);
-        SqlUtils.delete(jdbc, "UTMELDING").where(aktoerid).execute();
-        log.info("Aktorid {} har slettet fra UTMELDING tabell", aktoerid);
+        WhereClause aktoeridClause = WhereClause.equals("aktor_id", aktoerId);
+        SqlUtils.delete(jdbc, "UTMELDING").where(aktoeridClause).execute();
+        log.info("Aktorid {} har blitt slettet fra UTMELDING tabell", aktoerId);
     }
 
     public List<IservMapper> finnBrukereMedIservI28Dager() {

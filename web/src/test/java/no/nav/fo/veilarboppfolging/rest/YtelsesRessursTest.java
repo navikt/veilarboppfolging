@@ -49,6 +49,9 @@ public class YtelsesRessursTest {
     @SuppressWarnings("unused")
     private PepClient pepClient;
 
+    @Mock
+    private AutorisasjonService autorisasjonService;
+
     @BeforeClass
     public static void setup() {
         setProperty("no.nav.modig.security.systemuser.username", "username");

@@ -23,18 +23,22 @@ public class VeilederRessurs {
     private AktorService aktorService;
     private VeilederTilordningerRepository veilederTilordningerRepository;
     private PepClient pepClient;
+    private AutorisasjonService autorisasjonService;
 
     public VeilederRessurs(AktorService aktorService,
                            VeilederTilordningerRepository veilederTilordningerRepository,
-                           PepClient pepClient) {
+                           PepClient pepClient,
+                           AutorisasjonService autorisasjonService) {
         this.aktorService = aktorService;
         this.veilederTilordningerRepository = veilederTilordningerRepository;
         this.pepClient = pepClient;
+        this.autorisasjonService = autorisasjonService;
     }
 
     @GET
     @Path("/veileder")
     public Veileder getVeileder(@PathParam("fnr") String fnr) {
+        autorisasjonService.skalVereInternBruker();
         pepClient.sjekkLeseTilgangTilFnr(fnr);
         String brukersAktoerId = aktorService.getAktorId(fnr)
                 .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktør for fnr: " + fnr));
