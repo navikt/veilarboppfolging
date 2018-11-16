@@ -146,6 +146,14 @@ public class AktiverBrukerService {
                 .get();
     }
 
+    public void leggTilSykmeldtNyeBrukereFeedRepository(SykmeldtBrukerData sykmeldtBrukerData) {
+        oppfolgingRepository.leggTilSykmeldtNyeBrukereFeedRepository(
+                Oppfolgingsbruker.builder()
+                        .sykmeldtBrukerType(sykmeldtBrukerData.getSykmeldtBrukerType())
+                        .build()
+        );
+    }
+
     private class ArenaFeilType implements Feil.Type {
         private String feilType;
 

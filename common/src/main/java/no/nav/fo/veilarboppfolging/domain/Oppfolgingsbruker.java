@@ -8,4 +8,5 @@ import lombok.Value;
 public class Oppfolgingsbruker {
     private String aktoerId;
     private Innsatsgruppe innsatsgruppe;
+    private SykmeldtBrukerType sykmeldtBrukerType;
 }

@@ -110,6 +110,15 @@ public class OppfolgingRepository {
     }
 
     @Transactional
+    public void leggTilSykmeldtNyeBrukereFeedRepository(Oppfolgingsbruker oppfolgingsbruker) {
+        String aktoerId = oppfolgingsbruker.getAktoerId();
+        Oppfolging oppfolgingsstatus = hentOppfolging(aktoerId).orElseGet(() -> opprettOppfolging(aktoerId));
+        if (!oppfolgingsstatus.isUnderOppfolging()) {
+            nyeBrukereFeedRepository.leggTil(oppfolgingsbruker);
+        }
+    }
+
+    @Transactional
     public void startEskalering(String aktorId, String opprettetAv, String opprettetBegrunnelse, long tilhorendeDialogId) {
         if (eskaleringsvarselRepository.fetchByAktorId(aktorId) != null) {
             throw new Feil(UGYLDIG_HANDLING, "Brukeren har allerede et aktivt eskaleringsvarsel.");
