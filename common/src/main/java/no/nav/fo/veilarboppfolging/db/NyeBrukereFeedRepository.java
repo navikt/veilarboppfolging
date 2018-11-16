@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.veilarboppfolging.domain.Innsatsgruppe;
 import no.nav.fo.veilarboppfolging.domain.NyeBrukereFeedDTO;
 import no.nav.fo.veilarboppfolging.domain.Oppfolgingsbruker;
+import no.nav.fo.veilarboppfolging.domain.SykmeldtBrukerType;
 import no.nav.sbl.jdbc.Database;
 
 import java.sql.ResultSet;
@@ -23,12 +24,14 @@ public class NyeBrukereFeedRepository {
 
     public void leggTil(Oppfolgingsbruker oppfolgingsbruker) {
         Innsatsgruppe innsatsgruppe = oppfolgingsbruker.getInnsatsgruppe();
+        SykmeldtBrukerType sykmeldtBrukerType = oppfolgingsbruker.getSykmeldtBrukerType();
         String innsatsGruppeNavn = innsatsgruppe == null ? null : innsatsgruppe.toString();
+        String sykmeldtBrukerTypeNavn = sykmeldtBrukerType == null ? null : sykmeldtBrukerType.toString();
         database.update(
                 "INSERT INTO NYE_BRUKERE_FEED " +
-                "(AKTOR_ID, FORESLATT_INNSATSGRUPPE) " +
+                "(AKTOR_ID, FORESLATT_INNSATSGRUPPE, FORESLATT_SYKMELDTGRUPPE) " +
                 "VALUES" +
-                "(?,?)", oppfolgingsbruker.getAktoerId(), innsatsGruppeNavn);
+                "(?,?,?)", oppfolgingsbruker.getAktoerId(), innsatsGruppeNavn, sykmeldtBrukerTypeNavn);
     }
 
     public Try<Integer> tryLeggTilFeedIdPaAlleElementerUtenFeedId() {
@@ -56,6 +59,7 @@ public class NyeBrukereFeedRepository {
                 .id(rs.getLong("FEED_ID"))
                 .aktorId(rs.getString("AKTOR_ID"))
                 .foreslattInnsatsgruppe(rs.getString("FORESLATT_INNSATSGRUPPE"))
+                .foreslattSykmeldtgruppe(rs.getString("FORESLATT_SYKMELDTGRUPPE"))
                 .opprettet(rs.getTimestamp("OPPRETTET_TIMESTAMP"))
                 .build();
     }
