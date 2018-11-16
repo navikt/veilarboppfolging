@@ -39,7 +39,7 @@ public class Consumer {
                 final ArenaBruker deserialisertBruker = deserialisereBruker(arenaBruker);
                 iserv28Service.filterereIservBrukere(deserialisertBruker);
                 FunksjonelleMetrikker.antallMeldingerKonsumertAvKafka();
-                LOG.info("endret bruker= '{}'", deserialisertBruker);
+                LOG.info("Konsumert bruker med akoerid = '{}'", deserialisertBruker.aktoerid);
             } catch (Throwable t) {
                 LOG.error(t.getMessage(), t);
             }
