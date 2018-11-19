@@ -79,12 +79,19 @@ public class Iserv28Service{
         boolean erIserv = "ISERV".equals(arenaBruker.getFormidlingsgruppekode());
         IservMapper eksisterendeIservBruker = eksisterendeIservBruker(arenaBruker);
 
-        if (eksisterendeIservBruker != null && !erIserv) {
-            slettAvluttetOppfolgingsBruker(arenaBruker.getAktoerid());
-        } else if (eksisterendeIservBruker != null) {
-            updateIservBruker(arenaBruker);
-        } else if (erIserv) {
-            insertIservBruker(arenaBruker);
+        try {
+            boolean under_oppfolging = oppfolgingService.hentOppfolgingsStatus(arenaBruker.getAktoerid()).underOppfolging;
+
+            if (eksisterendeIservBruker != null && !erIserv) {
+                slettAvluttetOppfolgingsBruker(arenaBruker.getAktoerid());
+            } else if (eksisterendeIservBruker != null) {
+                updateIservBruker(arenaBruker);
+            } else if (erIserv && under_oppfolging) {
+                insertIservBruker(arenaBruker);
+            }
+        }
+        catch(Exception e){
+            log.error("Exception ved filterereIservBrukere: {}" , e);
         }
     }
 
