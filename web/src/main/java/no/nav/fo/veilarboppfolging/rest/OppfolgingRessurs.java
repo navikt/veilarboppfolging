@@ -232,11 +232,9 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
     }
 
     @Override
-    @Transactional
     public void aktiverSykmeldt(SykmeldtBrukerType sykmeldtBrukerType) throws Exception {
         autorisasjonService.skalVereSystemRessurs();
-        oppfolgingService.startOppfolging(getUid());
-        aktiverBrukerService.leggTilSykmeldtNyeBrukereFeedRepository(sykmeldtBrukerType);
+        aktiverBrukerService.aktiverSykmeldt(getUid(), sykmeldtBrukerType);
     }
 
     private Eskaleringsvarsel tilDto(EskaleringsvarselData eskaleringsvarselData) {

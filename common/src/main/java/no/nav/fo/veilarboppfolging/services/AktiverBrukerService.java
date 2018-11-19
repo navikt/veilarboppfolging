@@ -7,7 +7,6 @@ import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.db.NyeBrukereFeedRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.domain.*;
-import no.nav.fo.veilarboppfolging.utils.FnrUtils;
 import no.nav.metrics.MetricsFactory;
 import no.nav.metrics.Timer;
 import no.nav.tjeneste.virksomhet.behandlearbeidssoeker.v1.binding.*;
@@ -27,6 +26,8 @@ import static io.vavr.API.Case;
 import static io.vavr.Predicates.instanceOf;
 import static java.util.Optional.ofNullable;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
+import static no.nav.fo.veilarboppfolging.domain.Oppfolgingsbruker.builder;
+import static no.nav.fo.veilarboppfolging.utils.FnrUtils.*;
 
 @Slf4j
 @Component
@@ -56,7 +57,7 @@ public class AktiverBrukerService {
                 .map(f -> f.getFnr())
                 .orElse("");
 
-        AktorId aktorId = FnrUtils.getAktorIdOrElseThrow(aktorService, fnr);
+        AktorId aktorId = getAktorIdOrElseThrow(aktorService, fnr);
 
         aktiverBrukerOgOppfolging(fnr, aktorId, bruker.getInnsatsgruppe());
     }
@@ -64,7 +65,7 @@ public class AktiverBrukerService {
     @Transactional
     public void reaktiverBruker(Fnr fnr) {
 
-        AktorId aktorId = FnrUtils.getAktorIdOrElseThrow(aktorService, fnr.getFnr());
+        AktorId aktorId = getAktorIdOrElseThrow(aktorService, fnr.getFnr());
 
         startReaktiveringAvBrukerOgOppfolging(fnr, aktorId);
 
@@ -72,7 +73,7 @@ public class AktiverBrukerService {
 
     private void startReaktiveringAvBrukerOgOppfolging(Fnr fnr, AktorId aktorId) {
         oppfolgingRepository.startOppfolgingHvisIkkeAlleredeStartet(
-                Oppfolgingsbruker.builder()
+                builder()
                         .aktoerId(aktorId.getAktorId())
                         .build()
         );
@@ -83,7 +84,7 @@ public class AktiverBrukerService {
     private void aktiverBrukerOgOppfolging(String fnr, AktorId aktorId, Innsatsgruppe innsatsgruppe) {
 
         oppfolgingRepository.startOppfolgingHvisIkkeAlleredeStartet(
-                Oppfolgingsbruker.builder()
+                builder()
                         .aktoerId(aktorId.getAktorId())
                         .innsatsgruppe(innsatsgruppe)
                         .build()
@@ -146,12 +147,14 @@ public class AktiverBrukerService {
                 .get();
     }
 
-    public void leggTilSykmeldtNyeBrukereFeedRepository(SykmeldtBrukerType sykmeldtBrukerType) {
-        oppfolgingRepository.leggTilSykmeldtNyeBrukereFeedRepository(
-                Oppfolgingsbruker.builder()
-                        .sykmeldtBrukerType(sykmeldtBrukerType)
-                        .build()
-        );
+    @Transactional
+    public void aktiverSykmeldt(String uid, SykmeldtBrukerType sykmeldtBrukerType) {
+        Oppfolgingsbruker oppfolgingsbruker = builder()
+                .sykmeldtBrukerType(sykmeldtBrukerType)
+                .aktoerId(getAktorIdOrElseThrow(aktorService, uid).getAktorId())
+                .build();
+
+        oppfolgingRepository.startOppfolgingHvisIkkeAlleredeStartet(oppfolgingsbruker);
     }
 
     private class ArenaFeilType implements Feil.Type {
