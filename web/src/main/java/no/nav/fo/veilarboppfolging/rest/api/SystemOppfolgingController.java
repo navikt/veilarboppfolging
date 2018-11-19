@@ -2,7 +2,7 @@ package no.nav.fo.veilarboppfolging.rest.api;
 
 import no.nav.fo.veilarboppfolging.domain.AktiverArbeidssokerData;
 import no.nav.fo.veilarboppfolging.domain.Fnr;
-import no.nav.fo.veilarboppfolging.domain.SykmeldtBrukerData;
+import no.nav.fo.veilarboppfolging.domain.SykmeldtBrukerType;
 
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -18,5 +18,5 @@ public interface SystemOppfolgingController {
 
     @POST
     @Path("/aktiverSykmeldt")
-    void aktiverSykmeldt(SykmeldtBrukerData sykmeldtBrukerData) throws Exception;
+    void aktiverSykmeldt(SykmeldtBrukerType sykmeldtBrukerType) throws Exception;
 }

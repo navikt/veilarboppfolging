@@ -29,7 +29,7 @@ public class NyeBrukereFeedRepository {
         String sykmeldtBrukerTypeNavn = sykmeldtBrukerType == null ? null : sykmeldtBrukerType.toString();
         database.update(
                 "INSERT INTO NYE_BRUKERE_FEED " +
-                "(AKTOR_ID, FORESLATT_INNSATSGRUPPE, FORESLATT_SYKMELDTGRUPPE) " +
+                "(AKTOR_ID, FORESLATT_INNSATSGRUPPE, BRUKERGRUPPE) " +
                 "VALUES" +
                 "(?,?,?)", oppfolgingsbruker.getAktoerId(), innsatsGruppeNavn, sykmeldtBrukerTypeNavn);
     }
@@ -59,7 +59,7 @@ public class NyeBrukereFeedRepository {
                 .id(rs.getLong("FEED_ID"))
                 .aktorId(rs.getString("AKTOR_ID"))
                 .foreslattInnsatsgruppe(rs.getString("FORESLATT_INNSATSGRUPPE"))
-                .foreslattSykmeldtgruppe(rs.getString("FORESLATT_SYKMELDTGRUPPE"))
+                .brukergruppe(rs.getString("BRUKERGRUPPE"))
                 .opprettet(rs.getTimestamp("OPPRETTET_TIMESTAMP"))
                 .build();
     }

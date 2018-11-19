@@ -146,10 +146,10 @@ public class AktiverBrukerService {
                 .get();
     }
 
-    public void leggTilSykmeldtNyeBrukereFeedRepository(SykmeldtBrukerData sykmeldtBrukerData) {
+    public void leggTilSykmeldtNyeBrukereFeedRepository(SykmeldtBrukerType sykmeldtBrukerType) {
         oppfolgingRepository.leggTilSykmeldtNyeBrukereFeedRepository(
                 Oppfolgingsbruker.builder()
-                        .sykmeldtBrukerType(sykmeldtBrukerData.getSykmeldtBrukerType())
+                        .sykmeldtBrukerType(sykmeldtBrukerType)
                         .build()
         );
     }

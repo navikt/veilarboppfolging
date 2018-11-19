@@ -14,6 +14,7 @@ import no.nav.fo.veilarboppfolging.rest.domain.*;
 import no.nav.fo.veilarboppfolging.services.*;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -231,10 +232,11 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
     }
 
     @Override
-    public void aktiverSykmeldt(SykmeldtBrukerData sykmeldtBrukerData) throws Exception {
+    @Transactional
+    public void aktiverSykmeldt(SykmeldtBrukerType sykmeldtBrukerType) throws Exception {
         autorisasjonService.skalVereSystemRessurs();
         oppfolgingService.startOppfolging(getUid());
-        aktiverBrukerService.leggTilSykmeldtNyeBrukereFeedRepository(sykmeldtBrukerData);
+        aktiverBrukerService.leggTilSykmeldtNyeBrukereFeedRepository(sykmeldtBrukerType);
     }
 
     private Eskaleringsvarsel tilDto(EskaleringsvarselData eskaleringsvarselData) {
