@@ -101,6 +101,7 @@ public class Iserv28Service{
                 .set("oppdatert_dato", CURRENT_TIMESTAMP)
                 .whereEquals("aktor_id", arenaBruker.getAktoerid())
                 .execute();
+
         log.info("ISERV bruker med aktorid {} har blitt oppdatert inn i UTMELDING tabell", arenaBruker.getAktoerid());
     }
 
@@ -111,6 +112,7 @@ public class Iserv28Service{
                 .value("iserv_fra_dato", iservFraDato)
                 .value("oppdatert_dato", CURRENT_TIMESTAMP)
                 .execute();
+
         log.info("ISERV bruker med aktorid {} og iserv_fra_dato {} har blitt insertert inn i UTMELDING tabell",
                 arenaBruker.getAktoerid(),
                 iservFraDato
@@ -120,13 +122,15 @@ public class Iserv28Service{
     public void avslutteOppfolging(String aktoerId) {
         try {
             String fnr = aktorService.getFnr(aktoerId).orElseThrow(IllegalStateException::new);
-            oppfolgingService.avsluttOppfolgingForSystemBruker(
+            boolean oppfolgingAvsluttet = oppfolgingService.avsluttOppfolgingForSystemBruker(
                     fnr,
                     "System",
                     "Oppfolging avsluttet autmatisk for grunn av iservert 28 dager"
             );
-            slettAvluttetOppfolgingsBruker(aktoerId);
-            FunksjonelleMetrikker.antallBrukereAvluttetAutomatisk();
+            if(oppfolgingAvsluttet) {
+                slettAvluttetOppfolgingsBruker(aktoerId);
+                FunksjonelleMetrikker.antallBrukereAvluttetAutomatisk();
+            }
         } catch (Exception e) {
             log.error("Automatisk avsluttOppfolging feilet for aktoerid {} ", aktoerId, e);
         }
