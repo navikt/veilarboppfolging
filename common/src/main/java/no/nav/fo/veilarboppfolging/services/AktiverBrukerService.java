@@ -26,7 +26,6 @@ import static io.vavr.API.Case;
 import static io.vavr.Predicates.instanceOf;
 import static java.util.Optional.ofNullable;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
-import static no.nav.fo.veilarboppfolging.domain.Oppfolgingsbruker.builder;
 import static no.nav.fo.veilarboppfolging.utils.FnrUtils.*;
 
 @Slf4j
@@ -73,7 +72,7 @@ public class AktiverBrukerService {
 
     private void startReaktiveringAvBrukerOgOppfolging(Fnr fnr, AktorId aktorId) {
         oppfolgingRepository.startOppfolgingHvisIkkeAlleredeStartet(
-                builder()
+                Oppfolgingsbruker.builder()
                         .aktoerId(aktorId.getAktorId())
                         .build()
         );
@@ -84,7 +83,7 @@ public class AktiverBrukerService {
     private void aktiverBrukerOgOppfolging(String fnr, AktorId aktorId, Innsatsgruppe innsatsgruppe) {
 
         oppfolgingRepository.startOppfolgingHvisIkkeAlleredeStartet(
-                builder()
+                Oppfolgingsbruker.builder()
                         .aktoerId(aktorId.getAktorId())
                         .innsatsgruppe(innsatsgruppe)
                         .build()
@@ -149,7 +148,7 @@ public class AktiverBrukerService {
 
     @Transactional
     public void aktiverSykmeldt(String uid, SykmeldtBrukerType sykmeldtBrukerType) {
-        Oppfolgingsbruker oppfolgingsbruker = builder()
+        Oppfolgingsbruker oppfolgingsbruker = Oppfolgingsbruker.builder()
                 .sykmeldtBrukerType(sykmeldtBrukerType)
                 .aktoerId(getAktorIdOrElseThrow(aktorService, uid).getAktorId())
                 .build();
