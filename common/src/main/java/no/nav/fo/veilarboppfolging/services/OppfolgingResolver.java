@@ -320,7 +320,11 @@ public class OppfolgingResolver {
     }
 
     boolean avsluttOppfolging(String veileder, String begrunnelse) {
-        if (!kanAvslutteOppfolging()) {
+        boolean oppfolgingKanAvsluttes = kanAvslutteOppfolging();
+
+        log.info("Avslutting av oppfølging, tilstand i Arena: {}", statusIArena.get());
+
+        if (!oppfolgingKanAvsluttes) {
             log.info("Avslutting av oppfølging ikke tillatt for aktorid {}", aktorId);
             return false;
         }
