@@ -88,7 +88,7 @@ public class Iserv28Service{
         IservMapper eksisterendeIservBruker = eksisterendeIservBruker(arenaBruker);
 
         try {
-            boolean under_oppfolging = oppfolgingService.hentOppfolgingsStatus(arenaBruker.getAktoerid()).underOppfolging;
+            boolean under_oppfolging = oppfolgingService.hentOppfolgingsStatus(arenaBruker.getFodselsnr()).underOppfolging;
 
             if (eksisterendeIservBruker != null && !erIserv) {
                 slettAvluttetOppfolgingsBruker(arenaBruker.getAktoerid());
