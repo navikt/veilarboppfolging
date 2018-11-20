@@ -10,6 +10,9 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 import static no.nav.sbl.util.EnvironmentUtils.requireApplicationName;
 
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+
 @Configuration
 @EnableScheduling
 @ComponentScan(
@@ -30,5 +33,11 @@ public class ApplicationConfig implements ApiApplication {
                 .unleashApiUrl(getRequiredProperty(STRING))
                 .build());
     }
+    
+    @Bean
+    public Executor taskScheduler() {
+        return Executors.newScheduledThreadPool(5);
+    }
+
 
 }
