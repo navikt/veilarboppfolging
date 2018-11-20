@@ -282,8 +282,15 @@ public class OppfolgingResolver {
 
     boolean kanAvslutteOppfolging() {
         return oppfolging.isUnderOppfolging()
-                && !erUnderOppfolgingIArena()
+                && erIservIArena()
                 && !erUnderKvp();
+    }
+
+    private boolean erIservIArena() {
+        if (statusIArena == null) {
+            hentOppfolgingstatusFraArena();
+        }
+        return statusIArena.map(status -> erIserv(status)).orElse(false);
     }
 
     Date getInaktiveringsDato() {
@@ -320,7 +327,11 @@ public class OppfolgingResolver {
     }
 
     boolean avsluttOppfolging(String veileder, String begrunnelse) {
-        if (!kanAvslutteOppfolging()) {
+        boolean oppfolgingKanAvsluttes = kanAvslutteOppfolging();
+
+        log.info("Avslutting av oppfølging, tilstand i Arena: {}", statusIArena.get());
+
+        if (!oppfolgingKanAvsluttes) {
             log.info("Avslutting av oppfølging ikke tillatt for aktorid {}", aktorId);
             return false;
         }

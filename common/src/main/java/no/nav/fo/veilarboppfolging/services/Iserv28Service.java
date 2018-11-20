@@ -7,6 +7,7 @@ import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.domain.IservMapper;
 import no.nav.fo.veilarboppfolging.mappers.ArenaBruker;
 import no.nav.fo.veilarboppfolging.utils.FunksjonelleMetrikker;
+import no.nav.metrics.utils.MetricsUtils;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -63,16 +64,23 @@ public class Iserv28Service{
     }
 
     private void automatiskAvlutteOppfolging() {
-        try {
-            List<IservMapper> iservert28DagerBrukere = finnBrukereMedIservI28Dager();
-            if (!iservert28DagerBrukere.isEmpty()) {
-                withSubject(systemUserSubjectProvider.getSystemUserSubject(), () -> {
-                    iservert28DagerBrukere.forEach(iservMapper -> avslutteOppfolging(iservMapper.aktor_Id));
-                });
+        
+        MetricsUtils.timed("oppfolging.automatisk.avslutning", () ->   {
+            long start = System.currentTimeMillis();
+            try {
+                log.info("Starter jobb for automatisk avslutning av brukere");
+                List<IservMapper> iservert28DagerBrukere = finnBrukereMedIservI28Dager();
+                log.info("Fant {} brukere som har vært ISERV mer enn 28 dager", iservert28DagerBrukere.size());
+                if (!iservert28DagerBrukere.isEmpty()) {
+                    withSubject(systemUserSubjectProvider.getSystemUserSubject(), () -> {
+                        iservert28DagerBrukere.forEach(iservMapper -> avslutteOppfolging(iservMapper.aktor_Id));
+                    });
+                }
+            } catch (Exception e) {
+                log.error("Feil ved automatisk avslutning av brukere", e);
             }
-        } catch(Exception e) {
-            log.error("Feil ved automatisk avslutning av brukere", e);
-        }
+            log.info("Avslutter jobb for automatisk avslutning av brukere. Tid brukt: {} ms", System.currentTimeMillis() - start);
+        });
     }
 
     public void filterereIservBrukere(ArenaBruker arenaBruker){
