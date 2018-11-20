@@ -282,8 +282,15 @@ public class OppfolgingResolver {
 
     boolean kanAvslutteOppfolging() {
         return oppfolging.isUnderOppfolging()
-                && !erUnderOppfolgingIArena()
+                && erIservIArena()
                 && !erUnderKvp();
+    }
+
+    private boolean erIservIArena() {
+        if (statusIArena == null) {
+            hentOppfolgingstatusFraArena();
+        }
+        return statusIArena.map(status -> erIserv(status)).orElse(false);
     }
 
     Date getInaktiveringsDato() {

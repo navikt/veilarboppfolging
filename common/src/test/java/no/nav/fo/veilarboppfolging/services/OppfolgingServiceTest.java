@@ -393,7 +393,7 @@ public class OppfolgingServiceTest {
     public void kanAvslutteMedAktiveTiltak() throws Exception {
         gittAktor();
         gittOppfolging(oppfolging.setUnderOppfolging(true));
-        gittOppfolgingStatus("IARBS", "VURDI");
+        gittOppfolgingStatus("ISERV", "");
         gittAktiveTiltak();
         gittYtelserMedStatus();
 
@@ -408,7 +408,7 @@ public class OppfolgingServiceTest {
     public void kanAvslutteMedVarselOmAktiveYtelser() throws Exception {
         gittAktor();
         gittOppfolging(oppfolging.setUnderOppfolging(true));
-        gittOppfolgingStatus("IARBS", "VURDI");
+        gittOppfolgingStatus("ISERV", "");
         gittIngenAktiveTiltak();
         gittYtelserMedStatus("Inaktiv", "Aktiv");
 
