@@ -19,17 +19,23 @@ import static java.lang.System.currentTimeMillis;
 @Component
 public class OppfolgingService {
 
-    @Inject
-    private OppfolgingResolverDependencies oppfolgingResolverDependencies;
+    private final OppfolgingResolverDependencies oppfolgingResolverDependencies;
+    private final AktorService aktorService;
+    private final OppfolgingRepository oppfolgingRepository;
+    private final PepClient pepClient;
 
     @Inject
-    private AktorService aktorService;
-
-    @Inject
-    private OppfolgingRepository oppfolgingRepository;
-
-    @Inject
-    private PepClient pepClient;
+    public OppfolgingService(
+            OppfolgingResolverDependencies oppfolgingResolverDependencies,
+            AktorService aktorService,
+            OppfolgingRepository oppfolgingRepository,
+            PepClient pepClient
+    ) {
+        this.oppfolgingResolverDependencies = oppfolgingResolverDependencies;
+        this.aktorService = aktorService;
+        this.oppfolgingRepository = oppfolgingRepository;
+        this.pepClient = pepClient;
+    }
 
     public OppfolgingStatusData hentOppfolgingsStatus(AktorId aktorId) throws Exception {
         String fnr = aktorService.getFnr(aktorId.getAktorId())

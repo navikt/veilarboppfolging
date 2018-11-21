@@ -15,12 +15,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.sql.*;
+import java.time.*;
 import java.util.List;
 
 import static no.nav.common.auth.SubjectHandler.withSubject;
@@ -64,7 +60,7 @@ public class Iserv28Service{
     }
 
     private void automatiskAvlutteOppfolging() {
-        
+
         MetricsUtils.timed("oppfolging.automatisk.avslutning", () ->   {
             long start = System.currentTimeMillis();
             try {
@@ -88,13 +84,13 @@ public class Iserv28Service{
         IservMapper eksisterendeIservBruker = eksisterendeIservBruker(arenaBruker);
 
         try {
-            boolean under_oppfolging = oppfolgingService.hentOppfolgingsStatus(arenaBruker.getFodselsnr()).underOppfolging;
+            boolean underOppfolging = oppfolgingService.hentOppfolgingsStatus(arenaBruker.getFodselsnr()).isUnderOppfolging();
 
             if (eksisterendeIservBruker != null && !erIserv) {
                 slettAvluttetOppfolgingsBruker(arenaBruker.getAktoerid());
             } else if (eksisterendeIservBruker != null) {
                 updateIservBruker(arenaBruker);
-            } else if (erIserv && under_oppfolging) {
+            } else if (erIserv && underOppfolging) {
                 insertIservBruker(arenaBruker);
             }
         }

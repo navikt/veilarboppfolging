@@ -32,8 +32,8 @@ public class Iserv28ServiceIntegrationTest extends IntegrasjonsTest {
     private Iserv28Service iserv28Service;
 
     ZonedDateTime iservFraDato = now();
-    final static String AKTORID = "***REMOVED***42";
-    final static String FNR = "***REMOVED***";
+    final static String AKTORID = "1234";
+    final static String FNR = "4567";
 
     private OppfolgingService oppfolgingService = mock(OppfolgingService.class);
 
