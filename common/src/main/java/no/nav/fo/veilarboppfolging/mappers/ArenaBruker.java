@@ -9,6 +9,7 @@ import java.time.ZonedDateTime;
 @Setter
 public class ArenaBruker {
     public String aktoerid;
+    public String fodselsnr;
     public String formidlingsgruppekode;
     public ZonedDateTime iserv_fra_dato;
 }

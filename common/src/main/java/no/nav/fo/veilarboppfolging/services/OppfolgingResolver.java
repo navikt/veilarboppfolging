@@ -329,6 +329,9 @@ public class OppfolgingResolver {
     boolean avsluttOppfolging(String veileder, String begrunnelse) {
         boolean oppfolgingKanAvsluttes = kanAvslutteOppfolging();
 
+        if (statusIArena == null) {
+            hentOppfolgingstatusFraArena();
+        }
         log.info("Avslutting av oppfølging, tilstand i Arena: {}", statusIArena.get());
 
         if (!oppfolgingKanAvsluttes) {

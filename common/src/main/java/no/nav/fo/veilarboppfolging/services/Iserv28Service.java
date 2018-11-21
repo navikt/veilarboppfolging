@@ -15,12 +15,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.sql.*;
+import java.time.*;
 import java.util.List;
 
 import static no.nav.common.auth.SubjectHandler.withSubject;
@@ -64,7 +60,7 @@ public class Iserv28Service{
     }
 
     private void automatiskAvlutteOppfolging() {
-        
+
         MetricsUtils.timed("oppfolging.automatisk.avslutning", () ->   {
             long start = System.currentTimeMillis();
             try {
@@ -87,12 +83,19 @@ public class Iserv28Service{
         boolean erIserv = "ISERV".equals(arenaBruker.getFormidlingsgruppekode());
         IservMapper eksisterendeIservBruker = eksisterendeIservBruker(arenaBruker);
 
-        if (eksisterendeIservBruker != null && !erIserv) {
-            slettAvluttetOppfolgingsBruker(arenaBruker.getAktoerid());
-        } else if (eksisterendeIservBruker != null) {
-            updateIservBruker(arenaBruker);
-        } else if (erIserv) {
-            insertIservBruker(arenaBruker);
+        try {
+            boolean underOppfolging = oppfolgingService.hentOppfolgingsStatus(arenaBruker.getFodselsnr()).isUnderOppfolging();
+
+            if (eksisterendeIservBruker != null && !erIserv) {
+                slettAvluttetOppfolgingsBruker(arenaBruker.getAktoerid());
+            } else if (eksisterendeIservBruker != null) {
+                updateIservBruker(arenaBruker);
+            } else if (erIserv && underOppfolging) {
+                insertIservBruker(arenaBruker);
+            }
+        }
+        catch(Exception e){
+            log.error("Exception ved filterereIservBrukere: {}" , e);
         }
     }
 

@@ -4,6 +4,7 @@ import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.IntegrasjonsTest;
 import no.nav.fo.veilarboppfolging.domain.IservMapper;
+import no.nav.fo.veilarboppfolging.domain.OppfolgingStatusData;
 import no.nav.fo.veilarboppfolging.mappers.ArenaBruker;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,14 +32,16 @@ public class Iserv28ServiceIntegrationTest extends IntegrasjonsTest {
     private Iserv28Service iserv28Service;
 
     ZonedDateTime iservFraDato = now();
-    final static String AKTORID = "***REMOVED***42";
+    final static String AKTORID = "1234";
+    final static String FNR = "4567";
 
     private OppfolgingService oppfolgingService = mock(OppfolgingService.class);
 
     @Before
-    public void setup() {
+    public void setup() throws Exception {
         AktorService aktorService = mock(AktorService.class);
         when(aktorService.getFnr(anyString())).thenReturn(of("12345678901"));
+        when(oppfolgingService.hentOppfolgingsStatus(anyString())).thenReturn(new OppfolgingStatusData().setUnderOppfolging(true));
         SystemUserSubjectProvider systemUserSubjectProvider = mock(SystemUserSubjectProvider.class);
         iserv28Service = new Iserv28Service(jdbcTemplate, oppfolgingService, aktorService, taskExecutor, systemUserSubjectProvider);
     }
@@ -47,6 +50,7 @@ public class Iserv28ServiceIntegrationTest extends IntegrasjonsTest {
         ArenaBruker arenaBruker = new ArenaBruker();
 
         arenaBruker.setAktoerid(AKTORID);
+        arenaBruker.setFodselsnr(FNR);
         arenaBruker.setFormidlingsgruppekode("ISERV");
         arenaBruker.setIserv_fra_dato(iservFraDato);
         return arenaBruker;
@@ -108,6 +112,7 @@ public class Iserv28ServiceIntegrationTest extends IntegrasjonsTest {
         arenaBruker.setAktoerid(Integer.toString(nesteAktorId++));
         arenaBruker.setFormidlingsgruppekode("ISERV");
         arenaBruker.setIserv_fra_dato(iservFraDato);
+        arenaBruker.setFodselsnr("***REMOVED***");
 
         assertThat(iserv28Service.eksisterendeIservBruker(arenaBruker)).isNull();
 
