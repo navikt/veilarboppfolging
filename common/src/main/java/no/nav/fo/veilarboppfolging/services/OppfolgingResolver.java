@@ -332,7 +332,10 @@ public class OppfolgingResolver {
         if (statusIArena == null) {
             hentOppfolgingstatusFraArena();
         }
-        log.info("Avslutting av oppfølging, tilstand i Arena: {}", statusIArena.get());
+
+        statusIArena.ifPresent((arenaStatus) ->
+            log.info("Avslutting av oppfølging, tilstand i Arena: {}", statusIArena.get()));
+
 
         if (!oppfolgingKanAvsluttes) {
             log.info("Avslutting av oppfølging ikke tillatt for aktorid {}", aktorId);
