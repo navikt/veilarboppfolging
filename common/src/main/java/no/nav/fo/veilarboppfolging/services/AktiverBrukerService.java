@@ -7,7 +7,6 @@ import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.db.NyeBrukereFeedRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.domain.*;
-import no.nav.fo.veilarboppfolging.utils.FnrUtils;
 import no.nav.metrics.MetricsFactory;
 import no.nav.metrics.Timer;
 import no.nav.tjeneste.virksomhet.behandlearbeidssoeker.v1.binding.*;
@@ -27,6 +26,7 @@ import static io.vavr.API.Case;
 import static io.vavr.Predicates.instanceOf;
 import static java.util.Optional.ofNullable;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
+import static no.nav.fo.veilarboppfolging.utils.FnrUtils.*;
 
 @Slf4j
 @Component
@@ -56,7 +56,7 @@ public class AktiverBrukerService {
                 .map(f -> f.getFnr())
                 .orElse("");
 
-        AktorId aktorId = FnrUtils.getAktorIdOrElseThrow(aktorService, fnr);
+        AktorId aktorId = getAktorIdOrElseThrow(aktorService, fnr);
 
         aktiverBrukerOgOppfolging(fnr, aktorId, bruker.getInnsatsgruppe());
     }
@@ -64,7 +64,7 @@ public class AktiverBrukerService {
     @Transactional
     public void reaktiverBruker(Fnr fnr) {
 
-        AktorId aktorId = FnrUtils.getAktorIdOrElseThrow(aktorService, fnr.getFnr());
+        AktorId aktorId = getAktorIdOrElseThrow(aktorService, fnr.getFnr());
 
         startReaktiveringAvBrukerOgOppfolging(fnr, aktorId);
 
@@ -144,6 +144,16 @@ public class AktiverBrukerService {
                 )
                 .onSuccess((event) -> timer.stop().report())
                 .get();
+    }
+
+    @Transactional
+    public void aktiverSykmeldt(String uid, SykmeldtBrukerType sykmeldtBrukerType) {
+        Oppfolgingsbruker oppfolgingsbruker = Oppfolgingsbruker.builder()
+                .sykmeldtBrukerType(sykmeldtBrukerType)
+                .aktoerId(getAktorIdOrElseThrow(aktorService, uid).getAktorId())
+                .build();
+
+        oppfolgingRepository.startOppfolgingHvisIkkeAlleredeStartet(oppfolgingsbruker);
     }
 
     private class ArenaFeilType implements Feil.Type {
