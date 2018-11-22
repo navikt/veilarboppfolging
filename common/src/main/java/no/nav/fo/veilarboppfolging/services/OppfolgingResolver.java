@@ -281,6 +281,8 @@ public class OppfolgingResolver {
     }
 
     boolean kanAvslutteOppfolging() {
+        log.info("Kan oppfolging avsluttes for aktorid {}?, oppfolging.isUnderOppfolging(): {}, erIservIArena(): {}, !erUnderKvp(): {}",
+                aktorId, oppfolging.isUnderOppfolging(), erIservIArena(), !erUnderKvp());
         return oppfolging.isUnderOppfolging()
                 && erIservIArena()
                 && !erUnderKvp();
@@ -334,7 +336,7 @@ public class OppfolgingResolver {
         }
 
         statusIArena.ifPresent((arenaStatus) ->
-            log.info("Avslutting av oppfølging, tilstand i Arena: {}", statusIArena.get()));
+            log.info("Avslutting av oppfølging, tilstand i Arena for aktorid {}: {}", aktorId, statusIArena.get()));
 
 
         if (!oppfolgingKanAvsluttes) {
