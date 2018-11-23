@@ -4,9 +4,7 @@ import lombok.*;
 
 import java.time.ZonedDateTime;
 
-
-@Getter
-@Setter
+@Data
 public class ArenaBruker {
     public String aktoerid;
     public String fodselsnr;
