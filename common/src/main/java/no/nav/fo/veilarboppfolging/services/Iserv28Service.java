@@ -3,8 +3,10 @@ package no.nav.fo.veilarboppfolging.services;
 import lombok.extern.slf4j.Slf4j;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor;
+import no.nav.common.auth.Subject;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.domain.IservMapper;
+import no.nav.fo.veilarboppfolging.domain.OppfolgingStatusData;
 import no.nav.fo.veilarboppfolging.mappers.ArenaBruker;
 import no.nav.fo.veilarboppfolging.utils.FunksjonelleMetrikker;
 import no.nav.metrics.utils.MetricsUtils;
@@ -68,7 +70,8 @@ public class Iserv28Service{
                 List<IservMapper> iservert28DagerBrukere = finnBrukereMedIservI28Dager();
                 log.info("Fant {} brukere som har vært ISERV mer enn 28 dager", iservert28DagerBrukere.size());
                 if (!iservert28DagerBrukere.isEmpty()) {
-                    withSubject(systemUserSubjectProvider.getSystemUserSubject(), () -> {
+                    Subject subject = systemUserSubjectProvider.getSystemUserSubject();
+                    withSubject(subject, () -> {
                         iservert28DagerBrukere.forEach(iservMapper -> avslutteOppfolging(iservMapper.aktor_Id));
                     });
                 }
@@ -84,19 +87,24 @@ public class Iserv28Service{
         IservMapper eksisterendeIservBruker = eksisterendeIservBruker(arenaBruker);
 
         try {
-            boolean underOppfolging = oppfolgingService.hentOppfolgingsStatus(arenaBruker.getFodselsnr()).isUnderOppfolging();
-
             if (eksisterendeIservBruker != null && !erIserv) {
                 slettAvluttetOppfolgingsBruker(arenaBruker.getAktoerid());
             } else if (eksisterendeIservBruker != null) {
                 updateIservBruker(arenaBruker);
-            } else if (erIserv && underOppfolging) {
+            } else if(erIserv && erUnderOppfolging(arenaBruker)) {
                 insertIservBruker(arenaBruker);
             }
         }
         catch(Exception e){
             log.error("Exception ved filterereIservBrukere: {}" , e);
         }
+    }
+
+    private boolean erUnderOppfolging(ArenaBruker arenaBruker) {
+        Subject subject = systemUserSubjectProvider.getSystemUserSubject();
+        String fnr = arenaBruker.getFodselsnr();
+        OppfolgingStatusData oppfolgingStatus = withSubject(subject, () -> oppfolgingService.hentOppfolgingsStatus(fnr));
+        return oppfolgingStatus.isUnderOppfolging();
     }
 
     public IservMapper eksisterendeIservBruker(ArenaBruker arenaBruker){
