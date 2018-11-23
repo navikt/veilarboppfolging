@@ -104,7 +104,9 @@ public class Iserv28Service{
         Subject subject = systemUserSubjectProvider.getSystemUserSubject();
         String fnr = arenaBruker.getFodselsnr();
         OppfolgingStatusData oppfolgingStatus = withSubject(subject, () -> oppfolgingService.hentOppfolgingsStatus(fnr));
-        return oppfolgingStatus.isUnderOppfolging();
+        boolean underOppfolging = oppfolgingStatus.isUnderOppfolging();
+        log.info("ISERV bruker med aktorid {} har underOppfolging: {}", arenaBruker.getAktoerid(), underOppfolging);
+        return underOppfolging;
     }
 
     public IservMapper eksisterendeIservBruker(ArenaBruker arenaBruker){
