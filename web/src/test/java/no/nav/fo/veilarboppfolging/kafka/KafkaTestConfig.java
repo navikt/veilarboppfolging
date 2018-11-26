@@ -2,6 +2,7 @@ package no.nav.fo.veilarboppfolging.kafka;
 
 import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import no.nav.dialogarena.aktor.AktorService;
+import no.nav.fo.veilarboppfolging.db.OppfolgingsStatusRepository;
 import no.nav.fo.veilarboppfolging.services.*;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
@@ -37,6 +38,8 @@ public class KafkaTestConfig {
         AktorService aktorService = mock(AktorService.class);
         LockingTaskExecutor taskExecutor = mock(LockingTaskExecutor.class);
         SystemUserSubjectProvider systemUserSubjectProvider = mock(SystemUserSubjectProvider.class);
-        return new Iserv28Service(jdbcTemplate, oppfolgingService, aktorService, taskExecutor, systemUserSubjectProvider);
+        OppfolgingsStatusRepository oppfolgingsStatusRepository = mock(OppfolgingsStatusRepository.class);
+        
+        return new Iserv28Service(jdbcTemplate, oppfolgingService, oppfolgingsStatusRepository, aktorService, taskExecutor, systemUserSubjectProvider);
     }
 }
