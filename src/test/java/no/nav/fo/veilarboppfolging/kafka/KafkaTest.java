@@ -1,10 +1,12 @@
 package no.nav.fo.veilarboppfolging.kafka;
 
-import no.nav.fo.IntegrasjonsTest;
-import no.nav.fo.veilarboppfolging.config.*;
+import no.nav.fo.veilarboppfolging.config.DatabaseConfig;
+import no.nav.fo.veilarboppfolging.config.UnleashTestConfig;
 import org.junit.*;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.kafka.core.*;
+import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
+import org.springframework.kafka.core.DefaultKafkaProducerFactory;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.listener.KafkaMessageListenerContainer;
 import org.springframework.kafka.listener.MessageListener;
 import org.springframework.kafka.listener.config.ContainerProperties;
@@ -15,10 +17,13 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import javax.naming.NamingException;
+import javax.sql.DataSource;
 import java.io.IOException;
 import java.util.Map;
 
+import static no.nav.fo.veilarboppfolging.config.DatabaseConfig.*;
+import static no.nav.fo.veilarboppfolging.db.testdriver.TestDriver.createInMemoryDatabaseUrl;
+import static no.nav.sbl.dialogarena.test.SystemProperties.setTemporaryProperty;
 import static no.nav.sbl.util.EnvironmentUtils.Type.PUBLIC;
 import static no.nav.sbl.util.EnvironmentUtils.setProperty;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.producerProps;
@@ -64,15 +69,20 @@ public abstract class KafkaTest {
 
     @BeforeClass
     public static void setupFelles() throws IOException {
-        JndiLocalContextConfig.setupInMemoryDatabase();
-        annotationConfigApplicationContext = new AnnotationConfigApplicationContext(
-                IntegrasjonsTest.JndiBean.class,
-                DatabaseConfig.class,
-                KafkaTestConfig.class,
-                UnleashTestConfig.class
-        );
-        annotationConfigApplicationContext.start();
-        platformTransactionManager = getBean(PlatformTransactionManager.class);
+        setTemporaryProperty(VEILARBOPPFOLGINGDB_URL_PROPERTY, createInMemoryDatabaseUrl(), () -> {
+            setTemporaryProperty(VEILARBOPPFOLGINGDB_USERNAME_PROPERTY, "sa", () -> {
+                setTemporaryProperty(VEILARBOPPFOLGINGDB_PASSWORD_PROPERTY, "pw", () -> {
+                    annotationConfigApplicationContext = new AnnotationConfigApplicationContext(
+                            DatabaseConfig.class,
+                            KafkaTestConfig.class,
+                            UnleashTestConfig.class
+                    );
+                    annotationConfigApplicationContext.start();
+                    platformTransactionManager = getBean(PlatformTransactionManager.class);
+                    migrateDatabase(getBean(DataSource.class));
+                });
+            });
+        });
     }
 
     @Before
@@ -107,11 +117,6 @@ public abstract class KafkaTest {
 
     protected static <T> T getBean(Class<T> requiredType) {
         return annotationConfigApplicationContext.getBean(requiredType);
-    }
-
-    @Before
-    public final void fiksJndiOgLdapKonflikt() throws NamingException {
-        getBean(IntegrasjonsTest.JndiBean.class).builder.deactivate();
     }
 
 }

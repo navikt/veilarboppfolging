@@ -7,31 +7,39 @@ import no.nav.sbl.dialogarena.common.integrasjon.utils.RowMapper;
 import no.nav.sbl.dialogarena.common.integrasjon.utils.SQL;
 import no.nav.sbl.dialogarena.types.Pingable;
 import no.nav.sbl.dialogarena.types.Pingable.Ping.PingMetadata;
+import no.nav.sbl.jdbc.DataSourceFactory;
 import no.nav.sbl.jdbc.Database;
 import no.nav.sbl.jdbc.Transactor;
+import org.flywaydb.core.Flyway;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
-import org.springframework.jdbc.datasource.lookup.JndiDataSourceLookup;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
-import javax.naming.NamingException;
 import javax.sql.DataSource;
+import java.util.UUID;
+
+import static no.nav.sbl.util.EnvironmentUtils.getOptionalProperty;
+import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 
 @Configuration
 @EnableTransactionManagement
 public class DatabaseConfig {
 
-    public static final String DATA_SOURCE_JDNI_NAME = "jdbc/veilarboppfolgingDB";
+    public static final String VEILARBOPPFOLGINGDB_URL_PROPERTY = "VEILARBOPPFOLGINGDB_URL";
+    public static final String VEILARBOPPFOLGINGDB_USERNAME_PROPERTY = "VEILARBOPPFOLGINGDB_USERNAME";
+    public static final String VEILARBOPPFOLGINGDB_PASSWORD_PROPERTY = "VEILARBOPPFOLGINGDB_PASSWORD";
 
     @Bean
-    public DataSource dataSourceJndiLookup() throws NamingException {
-        JndiDataSourceLookup jndiDataSourceLookup = new JndiDataSourceLookup();
-        jndiDataSourceLookup.setResourceRef(true);
-        return jndiDataSourceLookup.getDataSource("jdbc/veilarboppfolgingDB");
+    public DataSource dataSource() {
+        return DataSourceFactory.dataSource()
+                .url(getRequiredProperty(VEILARBOPPFOLGINGDB_URL_PROPERTY))
+                .username(getRequiredProperty(VEILARBOPPFOLGINGDB_USERNAME_PROPERTY))
+                .password(getOptionalProperty(VEILARBOPPFOLGINGDB_PASSWORD_PROPERTY).orElse(""))
+                .build();
     }
 
     @Bean
@@ -40,7 +48,7 @@ public class DatabaseConfig {
     }
 
     @Bean
-    public JdbcTemplate jdbcTemplate(DataSource datasource) throws NamingException {
+    public JdbcTemplate jdbcTemplate(DataSource datasource) {
         return new JdbcTemplate(datasource);
     }
 
@@ -62,6 +70,7 @@ public class DatabaseConfig {
     @Bean
     public Pingable dbPinger(final DataSource ds) {
         PingMetadata metadata = new PingMetadata(
+                UUID.randomUUID().toString(),
                 "veilarboppfolgingDB: " + System.getProperty("veilarboppfolgingDB.url"),
                 "Enkel spørring mot Databasen for VeilArbOppfolging.",
                 true
@@ -79,5 +88,11 @@ public class DatabaseConfig {
     @Bean
     public LockingTaskExecutor taskExecutor(DataSource ds) {
         return new DefaultLockingTaskExecutor(new JdbcLockProvider(ds));
+    }
+
+    public static void migrateDatabase(DataSource dataSource) {
+        Flyway flyway = new Flyway();
+        flyway.setDataSource(dataSource);
+        flyway.migrate();
     }
 }

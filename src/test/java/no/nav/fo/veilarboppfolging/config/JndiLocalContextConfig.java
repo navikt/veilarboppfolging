@@ -18,24 +18,24 @@ public class JndiLocalContextConfig {
 
     public static DataSource configureDataSource(String applicationName) {
         return Boolean.parseBoolean(getProperty("lokal.database", "true")) ? setupInMemoryDatabase() :
-            setupJndiLocalContext(configureCredentials(applicationName));
+                setupJndiLocalContext(configureCredentials(applicationName));
     }
- 
+
     private static DbCredentials configureCredentials(String applicationName) {
         String dbUrl = getProperty("database.url");
         String dbUser = getProperty("database.user", "sa");
         String dbPasswd = getProperty("database.password", "");
-        return(StringUtils.notNullOrEmpty(dbUrl)) ? 
-            new DbCredentials().setUrl(dbUrl).setUsername(dbUser).setPassword(dbPasswd) :
+        return (StringUtils.notNullOrEmpty(dbUrl)) ?
+                new DbCredentials().setUrl(dbUrl).setUsername(dbUser).setPassword(dbPasswd) :
                 getDbCredentials(applicationName);
     }
-    
+
     public static AbstractDataSource setupJndiLocalContext(DbCredentials dbCredentials) {
         DriverManagerDataSource ds = new DriverManagerDataSource();
         ds.setUrl(dbCredentials.url);
         ds.setUsername(dbCredentials.username);
         ds.setPassword(dbCredentials.password);
-        if(dbCredentials.url.contains("h2")) {
+        if (dbCredentials.url.contains("h2")) {
             ds.setDriverClassName(TestDriver.class.getName());
             migrerDatabase(ds);
         }
@@ -57,10 +57,7 @@ public class JndiLocalContextConfig {
 
     private static int migrerDatabase(AbstractDataSource ds) {
         Flyway flyway = new Flyway();
-        flyway.setLocations("db/migration/veilarboppfolgingDB");
         flyway.setDataSource(ds);
-        flyway.setRepeatableSqlMigrationPrefix("N/A");
-
         return flyway.migrate();
     }
 }

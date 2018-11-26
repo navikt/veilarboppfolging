@@ -21,13 +21,13 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.jdbc.datasource.AbstractDataSource;
-import org.springframework.mock.jndi.SimpleNamingContextBuilder;
 
+import javax.sql.DataSource;
 import java.util.Optional;
 
-import static no.nav.fo.veilarboppfolging.config.DatabaseConfig.DATA_SOURCE_JDNI_NAME;
-import static no.nav.fo.veilarboppfolging.config.JndiLocalContextConfig.setupInMemoryDatabase;
+import static no.nav.fo.veilarboppfolging.config.DatabaseConfig.*;
+import static no.nav.fo.veilarboppfolging.db.testdriver.TestDriver.createInMemoryDatabaseUrl;
+import static no.nav.sbl.dialogarena.test.SystemProperties.setTemporaryProperty;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -43,27 +43,27 @@ class AktiverBrukerIntegrationTest {
     private AktiverBrukerService aktiverBrukerService;
     private String ident = "***REMOVED***";
 
-    private static AbstractDataSource db = setupInMemoryDatabase();
-
     @BeforeEach
-    public void setup() throws Exception {
+    public void setup() {
+        setTemporaryProperty(VEILARBOPPFOLGINGDB_URL_PROPERTY, createInMemoryDatabaseUrl(), () -> {
+            setTemporaryProperty(VEILARBOPPFOLGINGDB_USERNAME_PROPERTY, "sa", () -> {
+                setTemporaryProperty(VEILARBOPPFOLGINGDB_PASSWORD_PROPERTY, "pw", () -> {
+                    context = new AnnotationConfigApplicationContext(
+                            DatabaseConfig.class,
+                            BrukerregistreringConfigTest.class
+                    );
 
-        SimpleNamingContextBuilder builder = new SimpleNamingContextBuilder();
-        builder.bind(DATA_SOURCE_JDNI_NAME, db);
-        builder.activate();
+                    context.start();
 
-        context = new AnnotationConfigApplicationContext(
-                DatabaseConfig.class,
-                BrukerregistreringConfigTest.class
-        );
-
-        context.start();
-
-        aktiverBrukerService = context.getBean(AktiverBrukerService.class);
-        oppfolgingRepository = context.getBean(OppfolgingRepository.class);
-        oppfolgingsPeriodeRepository = context.getBean(OppfolgingsPeriodeRepository.class);
-        aktorService = context.getBean(AktorService.class);
-        behandleArbeidssoekerV1 = context.getBean(BehandleArbeidssoekerV1.class);
+                    aktiverBrukerService = context.getBean(AktiverBrukerService.class);
+                    oppfolgingRepository = context.getBean(OppfolgingRepository.class);
+                    oppfolgingsPeriodeRepository = context.getBean(OppfolgingsPeriodeRepository.class);
+                    aktorService = context.getBean(AktorService.class);
+                    behandleArbeidssoekerV1 = context.getBean(BehandleArbeidssoekerV1.class);
+                    migrateDatabase(context.getBean(DataSource.class));
+                });
+            });
+        });
     }
 
     @AfterEach
@@ -101,7 +101,7 @@ class AktiverBrukerIntegrationTest {
     public void skalHaandtereAtOppfolgingstatusAlleredeFinnes() {
         cofigureMocks();
         oppfolgingRepository.opprettOppfolging(ident);
-        oppfolgingsPeriodeRepository.avslutt(ident, "veilederid", "begrunnelse" );
+        oppfolgingsPeriodeRepository.avslutt(ident, "veilederid", "begrunnelse");
 
         aktiverBrukerService.aktiverBruker(lagBruker(ident));
 
@@ -152,8 +152,7 @@ class AktiverBrukerIntegrationTest {
                 AktorService aktorService,
                 BehandleArbeidssoekerV1 behandleArbeidssoekerV1,
                 OppfolgingRepository oppfolgingRepository,
-                NyeBrukereFeedRepository nyeBrukereFeedRepository)
-        {
+                NyeBrukereFeedRepository nyeBrukereFeedRepository) {
             return new AktiverBrukerService(
                     oppfolgingRepository,
                     aktorService,
@@ -167,6 +166,5 @@ class AktiverBrukerIntegrationTest {
             return mock(PepClient.class);
         }
     }
-
 
 }
