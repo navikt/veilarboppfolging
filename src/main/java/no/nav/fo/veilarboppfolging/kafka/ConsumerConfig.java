@@ -16,6 +16,7 @@ import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
 
 import java.util.HashMap;
 
+import static no.nav.fo.veilarboppfolging.config.ApplicationConfig.KAFKA_BROKERS_PROPERTY;
 import static no.nav.fo.veilarboppfolging.kafka.ConsumerConfig.SASL.DISABLED;
 import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.*;
@@ -24,7 +25,6 @@ import static org.apache.kafka.clients.consumer.ConsumerConfig.*;
 @EnableKafka
 public class ConsumerConfig {
 
-    public static final String KAFKA_BROKERS_URL_PROPERTY_NAME = "kafka-brokers.url";
 
     private final SASL sasl;
 
@@ -38,7 +38,7 @@ public class ConsumerConfig {
     }
 
     static String getBrokerUrls() {
-        return getRequiredProperty(KAFKA_BROKERS_URL_PROPERTY_NAME);
+        return getRequiredProperty(KAFKA_BROKERS_PROPERTY);
     }
 
     @Bean

@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Configuration;
 
 import java.util.UUID;
 
+import static no.nav.fo.veilarboppfolging.config.ApplicationConfig.VIRKSOMHET_BEHANDLEARBEIDSSOEKER_V1_PROPERTY;
 import static no.nav.sbl.dialogarena.common.cxf.TimeoutFeature.DEFAULT_CONNECTION_TIMEOUT;
 import static no.nav.sbl.dialogarena.types.Pingable.Ping.feilet;
 import static no.nav.sbl.dialogarena.types.Pingable.Ping.lyktes;
@@ -17,7 +18,7 @@ import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 public class ArenaBehandleArbeidssokerWSConfig {
     private static final int BEHANDLE_ARBEIDSSOKER_RECEIVE_TIMEOUT = 300000;
 
-    public static final String url = getRequiredProperty("behandlearbeidssoker.endpoint.url");
+    public static final String url = getRequiredProperty(VIRKSOMHET_BEHANDLEARBEIDSSOEKER_V1_PROPERTY);
 
     public static CXFClient<BehandleArbeidssoekerV1> behandleArbeidssokerPortType() {
         return new CXFClient<>(BehandleArbeidssoekerV1.class)

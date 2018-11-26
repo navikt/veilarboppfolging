@@ -14,14 +14,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import static java.lang.System.getProperty;
+import static no.nav.fo.veilarboppfolging.config.ApplicationConfig.VARSELOPPGAVE_V1_PROPERTY;
 import static no.nav.fo.veilarboppfolging.config.OppfolgingFeature.SKIP_VALIDERING_DIFI;
+import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 import static org.apache.cxf.phase.Phase.PRE_STREAM;
 
 @Configuration
 public class VarseloppgaveConfig {
-
-    private static final String VARSELOPPGAVE_ENDPOINT_URL = "varseloppgave.endpoint.url";
 
     @Bean
     public VarseloppgaveV1 varseloppgaveV1() {
@@ -43,7 +42,7 @@ public class VarseloppgaveConfig {
 
     private CXFClient<VarseloppgaveV1> varselBuilder() {
         return new CXFClient<>(VarseloppgaveV1.class)
-                .address(getProperty(VARSELOPPGAVE_ENDPOINT_URL))
+                .address(getRequiredProperty(VARSELOPPGAVE_V1_PROPERTY))
                 .withMetrics();
     }
 
@@ -58,7 +57,7 @@ public class VarseloppgaveConfig {
             @Override
             public HelsesjekkMetadata getMetadata() {
                 return new HelsesjekkMetadata("varseloppgave",
-                        getProperty(VARSELOPPGAVE_ENDPOINT_URL),
+                        getRequiredProperty(VARSELOPPGAVE_V1_PROPERTY),
                         "Brukes for å sende eskaleringsvarsel",
                         false
                 );

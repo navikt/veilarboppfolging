@@ -11,6 +11,9 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import static no.nav.sbl.dialogarena.common.abac.pep.service.AbacServiceConfig.ABAC_ENDPOINT_URL_PROPERTY_NAME;
+import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
+
 @Configuration
 public class PingConfig {
 
@@ -23,7 +26,7 @@ public class PingConfig {
     @Bean
     public Pingable pepPing() {
         PingMetadata metadata = new PingMetadata(
-                "ABAC via " + System.getProperty("abac.endpoint.url"),
+                "ABAC via " + getRequiredProperty(ABAC_ENDPOINT_URL_PROPERTY_NAME),
                 "Tilgangskontroll, sjekk om NAV-ansatt har tilgang til bruker.",
                 true
         );
@@ -32,7 +35,7 @@ public class PingConfig {
             try {
                 pep.ping();
                 return Pingable.Ping.lyktes(metadata);
-            } catch( Exception e) {
+            } catch (Exception e) {
                 return Pingable.Ping.feilet(metadata, e);
             }
         };

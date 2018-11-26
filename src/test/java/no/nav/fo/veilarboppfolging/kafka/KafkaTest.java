@@ -21,6 +21,7 @@ import javax.sql.DataSource;
 import java.io.IOException;
 import java.util.Map;
 
+import static no.nav.fo.veilarboppfolging.config.ApplicationConfig.KAFKA_BROKERS_PROPERTY;
 import static no.nav.fo.veilarboppfolging.config.DatabaseConfig.*;
 import static no.nav.fo.veilarboppfolging.db.testdriver.TestDriver.createInMemoryDatabaseUrl;
 import static no.nav.sbl.dialogarena.test.SystemProperties.setTemporaryProperty;
@@ -59,7 +60,7 @@ public abstract class KafkaTest {
         kafkaTemplate = new KafkaTemplate<>(new DefaultKafkaProducerFactory<>(producerProps(embeddedKafka)));
         kafkaTemplate.setDefaultTopic(RECEIVER_TOPIC);
 
-        setProperty(ConsumerConfig.KAFKA_BROKERS_URL_PROPERTY_NAME, embeddedKafka.getBrokersAsString(), PUBLIC);
+        setProperty(KAFKA_BROKERS_PROPERTY, embeddedKafka.getBrokersAsString(), PUBLIC);
     }
 
     public KafkaTest addListener(MessageListener<String, String> listener) {

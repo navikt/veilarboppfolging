@@ -16,6 +16,7 @@ import javax.inject.Inject;
 import javax.ws.rs.core.Response;
 import java.util.UUID;
 
+import static no.nav.fo.veilarboppfolging.config.ApplicationConfig.AKTIVITETSPLAN_URL_PROPERTY;
 import static no.nav.sbl.util.ExceptionUtils.throwUnchecked;
 import static no.nav.sbl.util.PropertyUtils.getRequiredProperty;
 
@@ -23,7 +24,6 @@ import static no.nav.sbl.util.PropertyUtils.getRequiredProperty;
 public class EskaleringsvarselService {
 
     private static final Logger LOG = LoggerFactory.getLogger(EskaleringsvarselService.class);
-    private static final String AKTIVITETSPLAN_URL_PROPERTY = "aktivitetsplan.url";
     private static final String ESKALERINGSVARSEL_OPPGAVETYPE_PROPERTY = "eskaleringsvarsel.oppgavetype";
     private static final String ESKALERINGSVARSEL_VARSELTYPE_PROPERTY = "eskaleringsvarsel.varseltype";
 
@@ -107,5 +107,5 @@ public class EskaleringsvarselService {
     private VarselMedHandling lagVarselMedHandling() {
         return new VarselMedHandling().withVarseltypeId(varseltypeId);
     }
-    
+
 }

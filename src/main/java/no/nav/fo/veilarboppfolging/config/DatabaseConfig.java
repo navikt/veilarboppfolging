@@ -71,7 +71,7 @@ public class DatabaseConfig {
     public Pingable dbPinger(final DataSource ds) {
         PingMetadata metadata = new PingMetadata(
                 UUID.randomUUID().toString(),
-                "veilarboppfolgingDB: " + System.getProperty("veilarboppfolgingDB.url"),
+                "veilarboppfolgingDB: " + getRequiredProperty(VEILARBOPPFOLGINGDB_URL_PROPERTY),
                 "Enkel spørring mot Databasen for VeilArbOppfolging.",
                 true
         );
