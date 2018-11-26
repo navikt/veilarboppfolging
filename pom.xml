@@ -13,6 +13,9 @@
     <version>2</version>
     <packaging>war</packaging>
 
+    <build>
+        <finalName>veilarboppfolging</finalName>
+    </build>
 
     <properties>
         <ytelseskontrakt-v3-tjenestespesifikasjon.version>1.0.0</ytelseskontrakt-v3-tjenestespesifikasjon.version>
