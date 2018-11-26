@@ -2,7 +2,6 @@ package no.nav.fo.veilarboppfolging.services;
 
 import no.nav.apiapp.feil.UlovligHandling;
 import no.nav.apiapp.security.PepClient;
-import no.nav.brukerdialog.security.domain.IdentType;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.db.KvpRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
@@ -12,7 +11,6 @@ import no.nav.fo.veilarboppfolging.domain.Oppfolging;
 import no.nav.fo.veilarboppfolging.domain.Oppfolgingsperiode;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Answers;
@@ -22,7 +20,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 import java.util.Arrays;
 import java.util.Date;
 
-import static java.lang.System.setProperty;
 import static java.util.Optional.of;
 import static no.nav.fo.veilarboppfolging.domain.KodeverkBruker.SYSTEM;
 import static org.assertj.core.api.Assertions.assertThat;

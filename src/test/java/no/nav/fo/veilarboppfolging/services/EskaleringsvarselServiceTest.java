@@ -10,6 +10,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import static no.nav.fo.veilarboppfolging.config.ApplicationConfig.AKTIVITETSPLAN_URL_PROPERTY;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -23,7 +24,7 @@ public class EskaleringsvarselServiceTest {
 
     @BeforeClass
     public static void setUp() throws Exception {
-        System.setProperty("aktivitetsplan.url", "https://aktivitetsplan.no");
+        System.setProperty(AKTIVITETSPLAN_URL_PROPERTY, "https://aktivitetsplan.no");
     }
 
     @InjectMocks
