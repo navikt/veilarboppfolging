@@ -3,7 +3,6 @@ package no.nav.fo.veilarboppfolging.config;
 import no.nav.apiapp.ApiApplication.NaisApiApplication;
 import no.nav.apiapp.config.ApiAppConfigurator;
 import no.nav.dialogarena.aktor.AktorConfig;
-import no.nav.fo.veilarboppfolging.ForcesyncServlet;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.springframework.context.annotation.*;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -14,7 +13,6 @@ import javax.sql.DataSource;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
-import static no.nav.apiapp.ServletUtil.leggTilServlet;
 import static no.nav.fo.veilarboppfolging.config.DatabaseConfig.migrateDatabase;
 import static no.nav.sbl.featuretoggle.unleash.UnleashServiceConfig.resolveFromEnvironment;
 
@@ -39,7 +37,7 @@ public class ApplicationConfig implements NaisApiApplication {
     public static final String VIRKSOMHET_YTELSESKONTRAKT_V3_PROPERTY = "VIRKSOMHET_YTELSESKONTRAKT_V3_ENDPOINTURL";
     public static final String VIRKSOMHET_OPPFOLGING_V1_PROPERTY = "VIRKSOMHET_OPPFOLGING_V1_ENDPOINTURL";
     public static final String VIRKSOMHET_OPPFOELGINGSSTATUS_V2_PROPERTY = "VIRKSOMHET_OPPFOELGINGSSTATUS_V2_ENDPOINTURL";
-    public static final String VIRKSOMHET_ORGANISASJONENHET_V1_PROPERTY = "VIRKSOMHET_ORGANISASJONENHET_V1_ENDPOINTURL";
+    public static final String VIRKSOMHET_ORGANISASJONENHET_V2_PROPERTY = "VIRKSOMHET_ORGANISASJONENHET_V1_ENDPOINTURL";
     public static final String VARSELOPPGAVE_V1_PROPERTY = "VARSELOPPGAVE_V1_ENDPOINTURL";
     public static final String VIRKSOMHET_BEHANDLEARBEIDSSOEKER_V1_PROPERTY = "VIRKSOMHET_BEHANDLEARBEIDSSOEKER_V1_ENDPOINTURL";
     public static final String KAFKA_BROKERS_PROPERTY = "KAFKA_BROKERS_URL";
@@ -61,7 +59,6 @@ public class ApplicationConfig implements NaisApiApplication {
     @Override
     public void startup(ServletContext servletContext) {
         migrateDatabase(dataSource);
-        leggTilServlet(servletContext, new ForcesyncServlet(), "/internal/forcesync");
     }
 
     @Override

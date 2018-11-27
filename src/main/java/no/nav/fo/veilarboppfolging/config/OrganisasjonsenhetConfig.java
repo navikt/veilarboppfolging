@@ -9,7 +9,7 @@ import org.apache.cxf.interceptor.LoggingOutInterceptor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import static no.nav.fo.veilarboppfolging.config.ApplicationConfig.VIRKSOMHET_ORGANISASJONENHET_V1_PROPERTY;
+import static no.nav.fo.veilarboppfolging.config.ApplicationConfig.VIRKSOMHET_ORGANISASJONENHET_V2_PROPERTY;
 import static no.nav.sbl.dialogarena.types.Pingable.Ping.feilet;
 import static no.nav.sbl.dialogarena.types.Pingable.Ping.lyktes;
 
@@ -18,7 +18,7 @@ import static no.nav.sbl.dialogarena.types.Pingable.Ping.lyktes;
 public class OrganisasjonsenhetConfig {
 
     public static String getEndpointAddress() {
-        return EnvironmentUtils.getRequiredProperty(VIRKSOMHET_ORGANISASJONENHET_V1_PROPERTY);
+        return EnvironmentUtils.getRequiredProperty(VIRKSOMHET_ORGANISASJONENHET_V2_PROPERTY);
     }
 
     public static CXFClient<OrganisasjonEnhetV2> organisasjonEnhetPortType() {

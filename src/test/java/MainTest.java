@@ -1,7 +1,14 @@
 import no.nav.dialogarena.config.fasit.DbCredentials;
+import no.nav.dialogarena.config.fasit.FasitUtils;
 import no.nav.dialogarena.config.fasit.ServiceUser;
+import no.nav.dialogarena.config.fasit.ServiceUserCertificate;
 import no.nav.sbl.dialogarena.common.abac.pep.CredentialConstants;
+import no.nav.sbl.util.EnvironmentUtils;
 import no.nav.testconfig.ApiAppTest;
+import org.apache.commons.io.FileUtils;
+
+import java.io.File;
+import java.io.IOException;
 
 import static java.lang.System.setProperty;
 import static no.nav.brukerdialog.security.Constants.*;
@@ -12,6 +19,8 @@ import static no.nav.fo.veilarboppfolging.config.DatabaseConfig.*;
 import static no.nav.sbl.dialogarena.common.abac.pep.service.AbacServiceConfig.ABAC_ENDPOINT_URL_PROPERTY_NAME;
 import static no.nav.sbl.dialogarena.common.cxf.StsSecurityConstants.*;
 import static no.nav.sbl.featuretoggle.unleash.UnleashServiceConfig.UNLEASH_API_URL_PROPERTY_NAME;
+import static no.nav.sbl.util.EnvironmentUtils.Type.PUBLIC;
+import static no.nav.sbl.util.EnvironmentUtils.Type.SECRET;
 import static no.nav.testconfig.ApiAppTest.setupTestContext;
 
 public class MainTest {
@@ -30,12 +39,12 @@ public class MainTest {
     private static final String VIRKSOMHET_YTELSESKONTRAKT_V3_ALIAS = "virksomhet:Ytelseskontrakt_v3";
     private static final String VIRKSOMHET_OPPFOLGING_V1_ALIAS = "virksomhet:Oppfolging_v1";
     private static final String VIRKSOMHET_OPPFOELGINGSSTATUS_V2_ALIAS = "virksomhet:Oppfoelgingsstatus_v2";
-    private static final String VIRKSOMHET_ORGANISASJONENHET_V1_ALIAS = "virksomhet:OrganisasjonEnhet_v1";
+    private static final String VIRKSOMHET_ORGANISASJONENHET_V2_ALIAS = "virksomhet:OrganisasjonEnhet_v2";
     private static final String VARSELOPPGAVE_V1_ALIAS = "Varseloppgave_v1";
     private static final String VIRKSOMHET_BEHANDLEARBEIDSSOEKER_V1_ALIAS = "virksomhet:BehandleArbeidssoeker_v1";
     private static final String KAFKA_BROKERS_ALIAS = "kafka-brokers";
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         setupTestContext(ApiAppTest.Config.builder().applicationName(APPLICATION_NAME).build());
 
         ServiceUser serviceUser = getServiceUser(SERVICE_USER_ALIAS, APPLICATION_NAME);
@@ -60,7 +69,7 @@ public class MainTest {
         setProperty(VIRKSOMHET_YTELSESKONTRAKT_V3_PROPERTY, getWebServiceEndpoint(VIRKSOMHET_YTELSESKONTRAKT_V3_ALIAS).getUrl());
         setProperty(VIRKSOMHET_OPPFOLGING_V1_PROPERTY, getWebServiceEndpoint(VIRKSOMHET_OPPFOLGING_V1_ALIAS).getUrl());
         setProperty(VIRKSOMHET_OPPFOELGINGSSTATUS_V2_PROPERTY, getWebServiceEndpoint(VIRKSOMHET_OPPFOELGINGSSTATUS_V2_ALIAS).getUrl());
-        setProperty(VIRKSOMHET_ORGANISASJONENHET_V1_PROPERTY, getWebServiceEndpoint(VIRKSOMHET_ORGANISASJONENHET_V1_ALIAS).getUrl());
+        setProperty(VIRKSOMHET_ORGANISASJONENHET_V2_PROPERTY, getWebServiceEndpoint(VIRKSOMHET_ORGANISASJONENHET_V2_ALIAS).getUrl());
         setProperty(VARSELOPPGAVE_V1_PROPERTY, getWebServiceEndpoint(VARSELOPPGAVE_V1_ALIAS).getUrl());
         setProperty(VIRKSOMHET_BEHANDLEARBEIDSSOEKER_V1_PROPERTY, getWebServiceEndpoint(VIRKSOMHET_BEHANDLEARBEIDSSOEKER_V1_ALIAS).getUrl());
         setProperty(KAFKA_BROKERS_PROPERTY, getBaseUrl(KAFKA_BROKERS_ALIAS));
@@ -79,6 +88,13 @@ public class MainTest {
         setProperty(VEILARBAZUREADPROXY_DISCOVERY_URL_PROPERTY, getRestService(VEILARBAZUREADPROXY_DISCOVERY_ALIAS, getDefaultEnvironment()).getUrl());
         setProperty(AAD_B2C_CLIENTID_USERNAME_PROPERTY, aadB2cUser.getUsername());
         setProperty(AAD_B2C_CLIENTID_PASSWORD_PROPERTY, aadB2cUser.getPassword());
+
+        ServiceUserCertificate navTrustStore = FasitUtils.getServiceUserCertificate("nav_truststore", FasitUtils.getDefaultEnvironmentClass());
+        File navTrustStoreFile = File.createTempFile("nav_truststore", ".jks");
+        FileUtils.writeByteArrayToFile(navTrustStoreFile,navTrustStore.getKeystore());
+
+        EnvironmentUtils.setProperty("javax.net.ssl.trustStore", navTrustStoreFile.getAbsolutePath(), PUBLIC);
+        EnvironmentUtils.setProperty("javax.net.ssl.trustStorePassword", navTrustStore.getKeystorepassword(), SECRET);
 
         Main.main(PORT);
     }

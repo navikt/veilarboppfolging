@@ -59,7 +59,7 @@ fasitResources:
     resourceType: webserviceendpoint
   - alias: virksomhet:Oppfoelgingsstatus_v2
     resourceType: webserviceendpoint
-  - alias: virksomhet:OrganisasjonEnhet_v1
+  - alias: virksomhet:OrganisasjonEnhet_v2
     resourceType: webserviceendpoint
   - alias: Varseloppgave_v1
     resourceType: webserviceendpoint
