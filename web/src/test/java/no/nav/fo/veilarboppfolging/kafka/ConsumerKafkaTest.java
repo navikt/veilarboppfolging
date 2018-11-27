@@ -2,8 +2,8 @@ package no.nav.fo.veilarboppfolging.kafka;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.fo.veilarboppfolging.domain.IservMapper;
-import no.nav.fo.veilarboppfolging.domain.OppfolgingStatusData;
+import no.nav.fo.veilarboppfolging.db.OppfolgingsStatusRepository;
+import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.fo.veilarboppfolging.mappers.ArenaBruker;
 import no.nav.fo.veilarboppfolging.services.Iserv28Service;
 import no.nav.fo.veilarboppfolging.services.OppfolgingService;
@@ -19,6 +19,7 @@ import java.util.function.Supplier;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @Slf4j
@@ -28,11 +29,11 @@ public class ConsumerKafkaTest extends KafkaTest {
     private Iserv28Service iserv28Service;
 
     @Inject
-    private OppfolgingService oppfolgingService;
+    private OppfolgingsStatusRepository oppfolgingStatusRepository;
 
     @Before
     public void setup() throws Exception {
-        when(oppfolgingService.hentOppfolgingsStatus(anyString())).thenReturn(new OppfolgingStatusData().setUnderOppfolging(true));
+        when(oppfolgingStatusRepository.fetch(anyString())).thenReturn(new OppfolgingTable().setUnderOppfolging(true));
     }
 
     @Test

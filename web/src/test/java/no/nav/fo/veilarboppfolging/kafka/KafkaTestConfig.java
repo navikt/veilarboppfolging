@@ -29,17 +29,17 @@ public class KafkaTestConfig {
     }
 
     @Bean
-    public OppfolgingService oppfolgingService() {
-        return mock(OppfolgingService.class);
+    public OppfolgingsStatusRepository OppfolgingsStatusRepository() {
+        return mock(OppfolgingsStatusRepository.class);
     }
 
     @Bean
-    public Iserv28Service aktorService(JdbcTemplate jdbcTemplate, OppfolgingService oppfolgingService) {
+    public Iserv28Service aktorService(JdbcTemplate jdbcTemplate, OppfolgingsStatusRepository oppfolgingsStatusRepository) {
+        OppfolgingService oppfolgingService = mock(OppfolgingService.class);
         AktorService aktorService = mock(AktorService.class);
         LockingTaskExecutor taskExecutor = mock(LockingTaskExecutor.class);
         SystemUserSubjectProvider systemUserSubjectProvider = mock(SystemUserSubjectProvider.class);
-        OppfolgingsStatusRepository oppfolgingsStatusRepository = mock(OppfolgingsStatusRepository.class);
-        
+
         return new Iserv28Service(jdbcTemplate, oppfolgingService, oppfolgingsStatusRepository, aktorService, taskExecutor, systemUserSubjectProvider);
     }
 }
