@@ -5,8 +5,9 @@ import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import no.nav.common.auth.Subject;
 import no.nav.dialogarena.aktor.AktorService;
+import no.nav.fo.veilarboppfolging.db.OppfolgingsStatusRepository;
 import no.nav.fo.veilarboppfolging.domain.IservMapper;
-import no.nav.fo.veilarboppfolging.domain.OppfolgingStatusData;
+import no.nav.fo.veilarboppfolging.domain.OppfolgingTable;
 import no.nav.fo.veilarboppfolging.mappers.ArenaBruker;
 import no.nav.fo.veilarboppfolging.utils.FunksjonelleMetrikker;
 import no.nav.metrics.utils.MetricsUtils;
@@ -33,6 +34,7 @@ public class Iserv28Service{
     private final AktorService aktorService;
     private final LockingTaskExecutor taskExecutor;
     private final SystemUserSubjectProvider systemUserSubjectProvider;
+    private final OppfolgingsStatusRepository oppfolgingsStatusRepository;
 
     private static final int lockAutomatiskAvslutteOppfolgingSeconds = 3600;
 
@@ -40,12 +42,14 @@ public class Iserv28Service{
     public Iserv28Service(
             JdbcTemplate jdbc,
             OppfolgingService oppfolgingService,
+            OppfolgingsStatusRepository oppfolgingsStatusRepository,
             AktorService aktorService,
             LockingTaskExecutor taskExecutor,
             SystemUserSubjectProvider systemUserSubjectProvider
     ){
         this.jdbc = jdbc;
         this.oppfolgingService = oppfolgingService;
+        this.oppfolgingsStatusRepository = oppfolgingsStatusRepository;
         this.aktorService = aktorService;
         this.taskExecutor = taskExecutor;
         this.systemUserSubjectProvider = systemUserSubjectProvider;
@@ -91,7 +95,7 @@ public class Iserv28Service{
                 slettAvluttetOppfolgingsBruker(arenaBruker.getAktoerid());
             } else if (eksisterendeIservBruker != null) {
                 updateIservBruker(arenaBruker);
-            } else if(erIserv && erUnderOppfolging(arenaBruker)) {
+            } else if(erIserv && brukerHarOppfolgingsflagg(arenaBruker.getAktoerid())) {
                 insertIservBruker(arenaBruker);
             }
         }
@@ -100,13 +104,11 @@ public class Iserv28Service{
         }
     }
 
-    private boolean erUnderOppfolging(ArenaBruker arenaBruker) {
-        Subject subject = systemUserSubjectProvider.getSystemUserSubject();
-        String fnr = arenaBruker.getFodselsnr();
-        OppfolgingStatusData oppfolgingStatus = withSubject(subject, () -> oppfolgingService.hentOppfolgingsStatus(fnr));
-        boolean underOppfolging = oppfolgingStatus.isUnderOppfolging();
-        log.info("ISERV bruker med aktorid {} har underOppfolging: {}", arenaBruker.getAktoerid(), underOppfolging);
-        return underOppfolging;
+    private boolean brukerHarOppfolgingsflagg(String aktoerId) {
+        OppfolgingTable eksisterendeOppfolgingstatus = oppfolgingsStatusRepository.fetch(aktoerId);
+        boolean harOppfolgingsflagg = eksisterendeOppfolgingstatus != null && eksisterendeOppfolgingstatus.isUnderOppfolging();
+        log.info("ISERV bruker med aktorid {} har oppfolgingsflagg: {}", aktoerId, harOppfolgingsflagg);
+        return harOppfolgingsflagg;
     }
 
     public IservMapper eksisterendeIservBruker(ArenaBruker arenaBruker){
