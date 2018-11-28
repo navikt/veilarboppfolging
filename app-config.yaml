@@ -40,7 +40,7 @@ fasitResources:
     resourceType: applicationproperties
   - alias: securityTokenService
     resourceType: baseUrl
-  - alias: abac.pdp.endpoint # mapToProperty="abac.endpoint"
+  - alias: abac.pdp.endpoint
     resourceType: restservice
   - alias: Aktoer_v2
     resourceType: webserviceendpoint
@@ -79,11 +79,11 @@ fasitResources:
     resourceType: baseurl
   - alias: isso-rp-user
     resourceType: credential
-  - alias: veilarblogin.redirect-url # mapToProperty="oidc-redirect"
+  - alias: veilarblogin.redirect-url
     resourceType: restservice
   - alias: aad_b2c_clientid
     resourceType: credential
-  - alias: veilarbazureadproxy_discovery # mapToProperty="aad_b2c_discovery"
+  - alias: veilarbazureadproxy_discovery
     resourceType: restservice
 
   exposed:
