@@ -32,9 +32,9 @@ public class Iserv28ServiceIntegrationTest extends IntegrasjonsTest {
 
     private Iserv28Service iserv28Service;
 
-    ZonedDateTime iservFraDato = now();
-    final static String AKTORID = "1234";
-    final static String FNR = "4567";
+    private ZonedDateTime iservFraDato = now();
+    private final static String AKTORID = "1234";
+    private final static String FNR = "4567";
 
     private OppfolgingsStatusRepository oppfolgingStatusRepository = mock(OppfolgingsStatusRepository.class);
 
@@ -47,16 +47,6 @@ public class Iserv28ServiceIntegrationTest extends IntegrasjonsTest {
         when(oppfolgingStatusRepository.fetch(anyString())).thenReturn(new OppfolgingTable().setUnderOppfolging(true));
         SystemUserSubjectProvider systemUserSubjectProvider = mock(SystemUserSubjectProvider.class);
         iserv28Service = new Iserv28Service(jdbcTemplate, oppfolgingService, oppfolgingStatusRepository, aktorService, taskExecutor, systemUserSubjectProvider);
-    }
-
-    public ArenaBruker getArenaBruker() {
-        ArenaBruker arenaBruker = new ArenaBruker();
-
-        arenaBruker.setAktoerid(AKTORID);
-        arenaBruker.setFodselsnr(FNR);
-        arenaBruker.setFormidlingsgruppekode("ISERV");
-        arenaBruker.setIserv_fra_dato(iservFraDato);
-        return arenaBruker;
     }
 
     @Test
@@ -110,24 +100,6 @@ public class Iserv28ServiceIntegrationTest extends IntegrasjonsTest {
         assertThat(iserv28Service.finnBrukereMedIservI28Dager()).hasSize(1);
     }
 
-    private ArenaBruker insertIservBruker(ZonedDateTime iservFraDato) {
-        ArenaBruker arenaBruker = new ArenaBruker();
-        arenaBruker.setAktoerid(Integer.toString(nesteAktorId++));
-        arenaBruker.setFormidlingsgruppekode("ISERV");
-        arenaBruker.setIserv_fra_dato(iservFraDato);
-        arenaBruker.setFodselsnr("***REMOVED***");
-
-        assertThat(iserv28Service.eksisterendeIservBruker(arenaBruker)).isNull();
-
-        iserv28Service.filterereIservBrukere(arenaBruker);
-
-        return arenaBruker;
-    }
-
-    public boolean verifisereOmOppfolgingHarAvsluttet(){
-        return verify(oppfolgingService).avsluttOppfolgingForSystemBruker(anyString(), anyString(), anyString());
-    }
-
     @Test
     public void avsluttOppfolging(){
         ArenaBruker arenaBruker = insertIservBruker(iservFraDato);
@@ -154,5 +126,30 @@ public class Iserv28ServiceIntegrationTest extends IntegrasjonsTest {
             assertThat(iserv28Service.eksisterendeIservBruker(brukerIservertI28Dager)).isNull();
             assertThat(iserv28Service.eksisterendeIservBruker(brukerIservertMindreEnn28Dager)).isNotNull();
         }
+    }
+
+    private ArenaBruker getArenaBruker() {
+        ArenaBruker arenaBruker = new ArenaBruker();
+        arenaBruker.setAktoerid(AKTORID);
+        arenaBruker.setFodselsnr(FNR);
+        arenaBruker.setFormidlingsgruppekode("ISERV");
+        arenaBruker.setIserv_fra_dato(iservFraDato);
+        return arenaBruker;
+    }
+
+    private ArenaBruker insertIservBruker(ZonedDateTime iservFraDato) {
+        ArenaBruker arenaBruker = new ArenaBruker();
+        arenaBruker.setAktoerid(Integer.toString(nesteAktorId++));
+        arenaBruker.setFormidlingsgruppekode("ISERV");
+        arenaBruker.setIserv_fra_dato(iservFraDato);
+        arenaBruker.setFodselsnr("1111");
+
+        assertThat(iserv28Service.eksisterendeIservBruker(arenaBruker)).isNull();
+        iserv28Service.filterereIservBrukere(arenaBruker);
+        return arenaBruker;
+    }
+
+    private boolean verifisereOmOppfolgingHarAvsluttet(){
+        return verify(oppfolgingService).avsluttOppfolgingForSystemBruker(anyString(), anyString(), anyString());
     }
 }

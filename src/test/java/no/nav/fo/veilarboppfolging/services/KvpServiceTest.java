@@ -47,7 +47,7 @@ public class KvpServiceTest {
     @InjectMocks
     private KvpService kvpService;
 
-    private static final String FNR = "12345678912";
+    private static final String FNR = "1234";
     private static final String AKTOR_ID = "12345";
     private static final String ENHET = "1234";
     private static final String START_BEGRUNNELSE = "START_BEGRUNNELSE";

@@ -16,6 +16,8 @@ import static org.junit.Assert.assertThat;
 public class VeilederTilordningerRepositoryTest extends IntegrasjonsTest {
 
     private static final String AKTOR_ID = "2222";
+    public static final String VEILEDER = "4321";
+    public static final String OTHER_VEILEDER = "5432";
 
     @BeforeAll
     public static void setup() throws IOException {
@@ -31,10 +33,10 @@ public class VeilederTilordningerRepositoryTest extends IntegrasjonsTest {
 
     @Test
     public void skalLeggeTilBruker() {
-        repository.upsertVeilederTilordning(AKTOR_ID, "***REMOVED***");
-        assertThat(repository.hentTilordningForAktoer(AKTOR_ID), is("***REMOVED***"));
-        Optional<Tilordning> ***REMOVED*** = repository.hentTilordnetVeileder(AKTOR_ID);
-        assertThat(***REMOVED***.map(Tilordning::isNyForVeileder).get(), is(true));
+        repository.upsertVeilederTilordning(AKTOR_ID, VEILEDER);
+        assertThat(repository.hentTilordningForAktoer(AKTOR_ID), is(VEILEDER));
+        Optional<Tilordning> veileder = repository.hentTilordnetVeileder(AKTOR_ID);
+        assertThat(veileder.map(Tilordning::isNyForVeileder).get(), is(true));
     }
 
     @Test
@@ -43,14 +45,14 @@ public class VeilederTilordningerRepositoryTest extends IntegrasjonsTest {
                 "VALUES ('1111111', CURRENT_TIMESTAMP, 0)");
 
         assertThat(db.queryForList("SELECT * FROM OPPFOLGINGSTATUS WHERE aktor_id = '1111111'").get(0).get("under_oppfolging").toString(), is("0"));
-        repository.upsertVeilederTilordning("1111111", "***REMOVED***");
+        repository.upsertVeilederTilordning("1111111", VEILEDER);
         assertThat(db.queryForList("SELECT * FROM OPPFOLGINGSTATUS WHERE aktor_id = '1111111'").get(0).get("under_oppfolging").toString(), is("1"));
 
     }
 
     @Test
     public void skalSetteOppfolgingsflaggVedInsert() {
-        repository.upsertVeilederTilordning("1111111", "***REMOVED***");
+        repository.upsertVeilederTilordning("1111111", VEILEDER);
         assertThat(db.queryForList("SELECT * FROM OPPFOLGINGSTATUS WHERE aktor_id = '1111111'").get(0).get("under_oppfolging").toString(), is("1"));
     }
 
@@ -58,27 +60,27 @@ public class VeilederTilordningerRepositoryTest extends IntegrasjonsTest {
     public void skalOppdatereBrukerDersomDenFinnes() {
         String aktoerid = "1111111";
 
-        repository.upsertVeilederTilordning(aktoerid, "***REMOVED***");
-        repository.upsertVeilederTilordning(aktoerid, "***REMOVED***");
+        repository.upsertVeilederTilordning(aktoerid, VEILEDER);
+        repository.upsertVeilederTilordning(aktoerid, OTHER_VEILEDER);
 
-        assertThat(repository.hentTilordningForAktoer(aktoerid), is("***REMOVED***"));
+        assertThat(repository.hentTilordningForAktoer(aktoerid), is(OTHER_VEILEDER));
     }
 
     @Test
     void kanMarkeresSomLest() {
-        repository.upsertVeilederTilordning(AKTOR_ID, "***REMOVED***");
+        repository.upsertVeilederTilordning(AKTOR_ID, VEILEDER);
         repository.markerSomLestAvVeileder(AKTOR_ID);
-        Optional<Tilordning> ***REMOVED*** = repository.hentTilordnetVeileder(AKTOR_ID);
-        assertThat(***REMOVED***.map(Tilordning::isNyForVeileder).get(), is(false));
+        Optional<Tilordning> veileder = repository.hentTilordnetVeileder(AKTOR_ID);
+        assertThat(veileder.map(Tilordning::isNyForVeileder).get(), is(false));
     }
 
     @Test
     void blirNyVedNVeileder() {
-        repository.upsertVeilederTilordning(AKTOR_ID, "***REMOVED***");
+        repository.upsertVeilederTilordning(AKTOR_ID, VEILEDER);
         repository.markerSomLestAvVeileder(AKTOR_ID);
-        repository.upsertVeilederTilordning(AKTOR_ID, "***REMOVED***");
-        Optional<Tilordning> ***REMOVED*** = repository.hentTilordnetVeileder(AKTOR_ID);
-        assertThat(***REMOVED***.map(Tilordning::isNyForVeileder).get(), is(true));
+        repository.upsertVeilederTilordning(AKTOR_ID, OTHER_VEILEDER);
+        Optional<Tilordning> veileder = repository.hentTilordnetVeileder(AKTOR_ID);
+        assertThat(veileder.map(Tilordning::isNyForVeileder).get(), is(true));
     }
 
 

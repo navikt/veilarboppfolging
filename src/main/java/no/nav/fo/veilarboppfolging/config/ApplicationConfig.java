@@ -5,6 +5,7 @@ import no.nav.apiapp.config.ApiAppConfigurator;
 import no.nav.dialogarena.aktor.AktorConfig;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.springframework.context.annotation.*;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 import javax.inject.Inject;
@@ -45,6 +46,9 @@ public class ApplicationConfig implements NaisApiApplication {
     @Inject
     private DataSource dataSource;
 
+    @Inject
+    private JdbcTemplate jdbcTemplate;
+
     @Bean
     public UnleashService unleashService() {
         return new UnleashService(resolveFromEnvironment());
@@ -58,6 +62,7 @@ public class ApplicationConfig implements NaisApiApplication {
 
     @Override
     public void startup(ServletContext servletContext) {
+        jdbcTemplate.update("UPDATE \"schema_version\" SET \"checksum\"=-788301912 WHERE \"version\" = '1.16'");
         migrateDatabase(dataSource);
     }
 

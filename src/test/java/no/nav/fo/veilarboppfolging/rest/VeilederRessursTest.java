@@ -36,8 +36,8 @@ public class VeilederRessursTest {
     private AutorisasjonService autorisasjonService;
 
     @Test
-    public void getVeilederSkalReturnereVeileder() throws Exception {
-        final String forventetIdent = "***REMOVED***";
+    public void getVeilederSkalReturnereVeileder() {
+        final String forventetIdent = "4321";
         when(aktorServiceMock.getAktorId(anyString())).thenReturn(of("test-id"));
         when(veilederTilordningerRepository.hentTilordningForAktoer(anyString()))
                 .thenReturn(forventetIdent);

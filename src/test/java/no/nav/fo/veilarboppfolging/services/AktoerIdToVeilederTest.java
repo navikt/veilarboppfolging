@@ -64,7 +64,7 @@ public class AktoerIdToVeilederTest {
     private VeilederTilordning testData() {
         return new VeilederTilordning()
                 .setFraVeilederId(null)
-                .setTilVeilederId("***REMOVED***")
-                .setBrukerFnr("12345678912");
+                .setTilVeilederId("4321")
+                .setBrukerFnr("1234");
     }
 }

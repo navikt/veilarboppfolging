@@ -18,7 +18,7 @@ public class OppfolgingRepositoryKvpTest extends IntegrasjonsTest {
 
     private static final String AKTOR_ID = "2222";
     private static final String ENHET = "1234";
-    private static final String SAKSBEHANDLER = "Z990000";
+    private static final String SAKSBEHANDLER = "4321";
     private static final String BEGRUNNELSE = "begrunnelse";
 
     @Mock

@@ -19,9 +19,10 @@ import static org.junit.Assert.assertThat;
 class OppfolgingFeedRepositoryTest extends IntegrasjonsTest {
 
     private static final String AKTOR_ID = "2222";
+    private static final String VEILEDER = "1234";
 
     @BeforeAll
-    public static void setup() throws IOException {
+    public static void setup() {
         annotationConfigApplicationContext.register(OppfolgingRepository.class);
     }
 
@@ -36,23 +37,23 @@ class OppfolgingFeedRepositoryTest extends IntegrasjonsTest {
 
     @Test
     public void skalHenteBrukere() {
-        repository.upsertVeilederTilordning(AKTOR_ID, "***REMOVED***");
-        assertThat(repository.hentTilordningForAktoer(AKTOR_ID), is("***REMOVED***"));
+        repository.upsertVeilederTilordning(AKTOR_ID, VEILEDER);
+        assertThat(repository.hentTilordningForAktoer(AKTOR_ID), is(VEILEDER));
         List<OppfolgingFeedDTO> oppfolgingFeedDTOS = feedRepository.hentEndringerEtterTimestamp(new Timestamp(0), 2);
         assertThat(oppfolgingFeedDTOS.size(), is(1));
         assertThat(oppfolgingFeedDTOS.get(0).isNyForVeileder(), is(true));
-        assertThat(oppfolgingFeedDTOS.get(0).getVeileder(), is("***REMOVED***"));
+        assertThat(oppfolgingFeedDTOS.get(0).getVeileder(), is(VEILEDER));
     }
 
 
     @Test
     public void skalHenteMaxBruker() {
-        repository.upsertVeilederTilordning(AKTOR_ID, "***REMOVED***");
-        repository.upsertVeilederTilordning("1111", "***REMOVED***");
-        repository.upsertVeilederTilordning("3333", "***REMOVED***");
-        repository.upsertVeilederTilordning("4444", "***REMOVED***");
+        repository.upsertVeilederTilordning(AKTOR_ID, VEILEDER);
+        repository.upsertVeilederTilordning("1111", VEILEDER);
+        repository.upsertVeilederTilordning("3333", VEILEDER);
+        repository.upsertVeilederTilordning("4444", VEILEDER);
 
-        assertThat(repository.hentTilordningForAktoer(AKTOR_ID), is("***REMOVED***"));
+        assertThat(repository.hentTilordningForAktoer(AKTOR_ID), is(VEILEDER));
         List<OppfolgingFeedDTO> oppfolgingFeedDTOS = feedRepository.hentEndringerEtterTimestamp(new Timestamp(0), 2);
         assertThat(oppfolgingFeedDTOS.size(), is(2));
     }
