@@ -19,6 +19,7 @@ import javax.ws.rs.core.Response;
 import java.util.Date;
 
 import static java.lang.System.setProperty;
+import static no.nav.fo.veilarboppfolging.config.ApplicationConfig.KVP_API_BRUKERTILGANG_PROPERTY;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
@@ -45,12 +46,12 @@ public class KvpRessursTest {
 
     @Before
     public void setup() {
-        setProperty("kvp.api.brukertilgang", AUTHORIZED_USER);
+        setProperty(KVP_API_BRUKERTILGANG_PROPERTY, AUTHORIZED_USER);
     }
 
     @Test
     public void unauthorized_user() {
-        setProperty("kvp.api.brukertilgang", "unauthorizedUser");
+        setProperty(KVP_API_BRUKERTILGANG_PROPERTY, "unauthorizedUser");
         Response kvpStatus = getKvpStatus();
         assertThat(kvpStatus.getStatus()).isEqualTo(403);
     }

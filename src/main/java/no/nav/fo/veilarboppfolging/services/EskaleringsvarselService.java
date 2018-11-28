@@ -24,15 +24,11 @@ import static no.nav.sbl.util.PropertyUtils.getRequiredProperty;
 public class EskaleringsvarselService {
 
     private static final Logger LOG = LoggerFactory.getLogger(EskaleringsvarselService.class);
-    private static final String ESKALERINGSVARSEL_OPPGAVETYPE_PROPERTY = "eskaleringsvarsel.oppgavetype";
-    private static final String ESKALERINGSVARSEL_VARSELTYPE_PROPERTY = "eskaleringsvarsel.varseltype";
 
     @Inject
     private VarseloppgaveV1 varseloppgaveV1;
 
     private String aktivitetsplanBaseUrl = getRequiredProperty(AKTIVITETSPLAN_URL_PROPERTY);
-    private String varseltypeId = System.getProperty(ESKALERINGSVARSEL_VARSELTYPE_PROPERTY, "DittNAV_000008");
-    private String oppgavetypeId = System.getProperty(ESKALERINGSVARSEL_OPPGAVETYPE_PROPERTY, "0004");
 
     public void sendEskaleringsvarsel(String aktorId, long dialogId) {
         Aktoer aktor = new AktoerId().withAktoerId(aktorId);
@@ -97,7 +93,7 @@ public class EskaleringsvarselService {
     }
 
     private OppgaveHenvendelse lagOppgaveHenvendelse(long dialogId) {
-        OppgaveType oppgaveType = new OppgaveType().withValue(oppgavetypeId);
+        OppgaveType oppgaveType = new OppgaveType().withValue("0004");
         return new OppgaveHenvendelse()
                 .withOppgaveType(oppgaveType)
                 .withOppgaveURL(dialogUrl(dialogId))
@@ -105,7 +101,7 @@ public class EskaleringsvarselService {
     }
 
     private VarselMedHandling lagVarselMedHandling() {
-        return new VarselMedHandling().withVarseltypeId(varseltypeId);
+        return new VarselMedHandling().withVarseltypeId("DittNAV_000008");
     }
 
 }
