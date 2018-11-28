@@ -41,7 +41,7 @@ class AktiverBrukerIntegrationTest {
     private AktorService aktorService;
     private BehandleArbeidssoekerV1 behandleArbeidssoekerV1;
     private AktiverBrukerService aktiverBrukerService;
-    private String ident = "***REMOVED***";
+    private String ident = "1111";
 
     @BeforeEach
     public void setup() {
