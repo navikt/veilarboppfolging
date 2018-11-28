@@ -5,7 +5,7 @@ import lombok.val;
 import no.nav.apiapp.feil.Feil;
 import no.nav.apiapp.feil.UlovligHandling;
 import no.nav.apiapp.security.PepClient;
-import no.nav.brukerdialog.security.context.SubjectHandler;
+import no.nav.common.auth.SubjectHandler;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.db.KvpRepository;
 import no.nav.fo.veilarboppfolging.domain.KodeverkBruker;
@@ -54,7 +54,7 @@ public class KvpService {
         String enhet = getEnhet(fnr);
         pepClient.sjekkTilgangTilEnhet(enhet);
 
-        String veilederId = SubjectHandler.getSubjectHandler().getUid();
+        String veilederId = SubjectHandler.getIdent().orElseThrow(RuntimeException::new);
         kvpRepository.startKvp(
                 aktorService.getAktorId(fnr).orElseThrow(AKTOR_ID_FEIL),
                 enhet,
@@ -78,7 +78,7 @@ public class KvpService {
             resolver.stoppEskalering("Eskalering avsluttet fordi KVP ble avsluttet");
         }
 
-        String veilederId = SubjectHandler.getSubjectHandler().getUid();
+        String veilederId = SubjectHandler.getIdent().orElseThrow(RuntimeException::new);
         kvpRepository.stopKvp(
                 aktorService.getAktorId(fnr).orElseThrow(AKTOR_ID_FEIL),
                 veilederId,

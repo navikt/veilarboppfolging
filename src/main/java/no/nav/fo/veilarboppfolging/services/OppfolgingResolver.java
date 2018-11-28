@@ -7,7 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import no.nav.apiapp.feil.UlovligHandling;
 import no.nav.apiapp.security.PepClient;
-import no.nav.brukerdialog.security.context.SubjectHandler;
+import no.nav.common.auth.SubjectHandler;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
 import no.nav.fo.veilarboppfolging.config.RemoteFeatureConfig;
@@ -106,14 +106,14 @@ public class OppfolgingResolver {
             kanReaktiveres = oppfolging.isUnderOppfolging() && kanReaktiveres(statusIArena.get());
             boolean skalAvsluttes = oppfolging.isUnderOppfolging() && inaktivIArena && !kanReaktiveres;
             log.info("Statuser for reaktivering og inaktivering: "
-                    + "Aktiv Oppfølgingsperiode={} "
-                    + "kanReaktiveres={} "
-                    + "erSykmeldtMedArbeidsgiver={} "
-                    + "skalAvsluttes={} "
-                    + "Tilstand i Arena: {}",
+                            + "Aktiv Oppfølgingsperiode={} "
+                            + "kanReaktiveres={} "
+                            + "erSykmeldtMedArbeidsgiver={} "
+                            + "skalAvsluttes={} "
+                            + "Tilstand i Arena: {}",
                     oppfolging.isUnderOppfolging(), kanReaktiveres, erSykmeldtMedArbeidsgiver, skalAvsluttes, statusIArena.get());
 
-            if(skalAvsluttes) {
+            if (skalAvsluttes) {
                 inaktiverBruker();
             }
         });
@@ -154,7 +154,7 @@ public class OppfolgingResolver {
     }
 
     boolean maVilkarBesvares() {
-        if(deps.getBrukervilkarFeature().erAktiv() && oppfolging.isUnderOppfolging()) { //TODO: når featuretoggle slettes er det bare nødvending å sjekke på isUnderOppfolging og returnere false
+        if (deps.getBrukervilkarFeature().erAktiv() && oppfolging.isUnderOppfolging()) { //TODO: når featuretoggle slettes er det bare nødvending å sjekke på isUnderOppfolging og returnere false
             return false;
         }
 
@@ -299,7 +299,7 @@ public class OppfolgingResolver {
         if (statusIArena == null) {
             hentOppfolgingstatusFraArena();
         }
-        
+
         return statusIArena.map(this::getInaktiveringsDato).orElse(null);
     }
 
@@ -336,7 +336,7 @@ public class OppfolgingResolver {
         }
 
         statusIArena.ifPresent((arenaStatus) ->
-            log.info("Avslutting av oppfølging, tilstand i Arena for aktorid {}: {}", aktorId, statusIArena.get()));
+                log.info("Avslutting av oppfølging, tilstand i Arena for aktorid {}: {}", aktorId, statusIArena.get()));
 
 
         if (!oppfolgingKanAvsluttes) {
@@ -358,7 +358,7 @@ public class OppfolgingResolver {
     }
 
     void startEskalering(String begrunnelse, long tilhorendeDialogId) {
-        String veilederId = SubjectHandler.getSubjectHandler().getUid();
+        String veilederId = SubjectHandler.getIdent().orElseThrow(RuntimeException::new);
         deps.getTransactor().inTransaction(() -> {
             deps.getOppfolgingRepository().startEskalering(aktorId, veilederId, begrunnelse, tilhorendeDialogId);
             deps.getEskaleringsvarselService().sendEskaleringsvarsel(aktorId, tilhorendeDialogId);
@@ -366,7 +366,7 @@ public class OppfolgingResolver {
     }
 
     void stoppEskalering(String begrunnelse) {
-        String veilederId = SubjectHandler.getSubjectHandler().getUid();
+        String veilederId = SubjectHandler.getIdent().orElseThrow(RuntimeException::new);
         deps.getOppfolgingRepository().stoppEskalering(aktorId, veilederId, begrunnelse);
     }
 
@@ -468,7 +468,7 @@ public class OppfolgingResolver {
 
         @Inject
         private ArenaOppfolgingService arenaOppfolgingService;
-        
+
         @Inject
         private DigitalKontaktinformasjonV1 digitalKontaktinformasjonV1;
 

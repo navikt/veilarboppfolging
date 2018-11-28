@@ -4,8 +4,8 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import no.nav.brukerdialog.security.context.SubjectHandler;
 import no.nav.brukerdialog.tools.Utils;
+import no.nav.common.auth.SubjectHandler;
 import no.nav.fo.veilarboppfolging.db.KvpRepository;
 import no.nav.fo.veilarboppfolging.domain.Kvp;
 import no.nav.fo.veilarboppfolging.mappers.KvpMapper;
@@ -68,7 +68,7 @@ public class KvpRessurs {
     }
 
     private boolean isRequestAuthorized() {
-        String username = SubjectHandler.getSubjectHandler().getUid().toLowerCase();
+        String username = SubjectHandler.getIdent().orElse("").toLowerCase();
         String allowedUsersString = getRequiredProperty(KVP_API_BRUKERTILGANG_PROPERTY);
         List<String> allowedUsers = Utils.getCommaSeparatedUsers(allowedUsersString);
         return allowedUsers.contains(username);
