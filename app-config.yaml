@@ -20,10 +20,10 @@ prometheus:
 resources:
   limits:
     cpu: 2
-    memory: 1024Mi
+    memory: 2048Mi
   requests:
     cpu: 200m
-    memory: 512Mi
+    memory: 1536Mi
 fasitResources:
   used:
   - alias: loadbalancer:veilarboppfolging
