@@ -11,5 +11,6 @@ public class OppfolgingEnhetMedVeileder {
     private String veilederId;
     private String formidlingsgruppe;
     private String servicegruppe;
+    private String hovedmaalkode;
 }
 

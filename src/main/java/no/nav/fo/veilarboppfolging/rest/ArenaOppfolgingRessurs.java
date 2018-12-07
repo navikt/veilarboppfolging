@@ -8,11 +8,10 @@ import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.db.VeilederTilordningerRepository;
 import no.nav.fo.veilarboppfolging.domain.Oppfolgingsenhet;
 import no.nav.fo.veilarboppfolging.domain.OppfolgingskontraktResponse;
+import no.nav.fo.veilarboppfolging.mappers.ArenaBruker;
 import no.nav.fo.veilarboppfolging.mappers.OppfolgingMapper;
-import no.nav.fo.veilarboppfolging.rest.domain.ArenaOppfolging;
-import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingEnhetMedVeileder;
-import no.nav.fo.veilarboppfolging.services.ArenaOppfolgingService;
-import no.nav.fo.veilarboppfolging.services.OrganisasjonEnhetService;
+import no.nav.fo.veilarboppfolging.rest.domain.*;
+import no.nav.fo.veilarboppfolging.services.*;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
@@ -23,6 +22,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.Optional;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
@@ -44,6 +44,7 @@ public class ArenaOppfolgingRessurs {
     private final OrganisasjonEnhetService organisasjonEnhetService;
     private AktorService aktorService;
     private VeilederTilordningerRepository veilederTilordningerRepository;
+    private OppfolgingsbrukerService oppfolgingsbrukerService;
 
     public ArenaOppfolgingRessurs(
             ArenaOppfolgingService arenaOppfolgingService,
@@ -51,7 +52,8 @@ public class ArenaOppfolgingRessurs {
             PepClient pepClient,
             OrganisasjonEnhetService organisasjonEnhetService,
             AktorService aktorService,
-            VeilederTilordningerRepository veilederTilordningerRepository
+            VeilederTilordningerRepository veilederTilordningerRepository,
+            OppfolgingsbrukerService oppfolgingsbrukerService
     ) {
         this.arenaOppfolgingService = arenaOppfolgingService;
         this.oppfolgingMapper = oppfolgingMapper;
@@ -59,6 +61,7 @@ public class ArenaOppfolgingRessurs {
         this.organisasjonEnhetService = organisasjonEnhetService;
         this.aktorService = aktorService;
         this.veilederTilordningerRepository = veilederTilordningerRepository;
+        this.oppfolgingsbrukerService = oppfolgingsbrukerService;
     }
 
     @GET
@@ -112,10 +115,13 @@ public class ArenaOppfolgingRessurs {
                 .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktør for fnr: " + fnr));
         String veilederIdent = veilederTilordningerRepository.hentTilordningForAktoer(brukersAktoerId);
 
+        ArenaBruker oppfolgingsbrukerStatus = oppfolgingsbrukerService.hentOppfolgingsbruker(fnr);
+
         OppfolgingEnhetMedVeileder res = new OppfolgingEnhetMedVeileder()
                 .setServicegruppe(arenaData.getServicegruppe())
                 .setFormidlingsgruppe(arenaData.getFormidlingsgruppe())
-                .setOppfolgingsenhet(oppfolgingsenhet);
+                .setOppfolgingsenhet(oppfolgingsenhet)
+                .setHovedmaalkode(hentStrengForHovedmaalkode(oppfolgingsbrukerStatus.getHovedmaalkode()));
 
         if (AutorisasjonService.erInternBruker()) {
             res.setVeilederId(veilederIdent);
@@ -127,5 +133,14 @@ public class ArenaOppfolgingRessurs {
     private Oppfolgingsenhet hentEnhet(String oppfolgingsenhetId) {
         Optional<String> enhetNavn = Try.of(() -> organisasjonEnhetService.hentEnhet(oppfolgingsenhetId).getNavn()).toJavaOptional();
         return new Oppfolgingsenhet().withEnhetId(oppfolgingsenhetId).withNavn(enhetNavn.orElse(""));
+    }
+
+    private String hentStrengForHovedmaalkode(String hovedmaalkode){
+        HashMap<String, String> hovedmaalMap = new HashMap();
+        hovedmaalMap.put("SKAFFEA", "Skaffe arbeid");
+        hovedmaalMap.put("BEHOLDEA", "Beholde arbeid");
+        hovedmaalMap.put("OKEDELT", "Øke deltakelse eller mål om arbeid");
+
+        return !hovedmaalkode.isEmpty() ? hovedmaalMap.get(hovedmaalkode) : null;
     }
 }

@@ -10,4 +10,5 @@ public class ArenaBruker {
     public String fodselsnr;
     public String formidlingsgruppekode;
     public ZonedDateTime iserv_fra_dato;
+    public String hovedmaalkode;
 }

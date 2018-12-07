@@ -67,6 +67,8 @@ fasitResources:
     resourceType: webserviceendpoint
   - alias: kafka-brokers
     resourceType: baseurl
+  - alias: veilarbarenaAPI
+    resourceType: restservice
 
   # ISSO
   - alias: isso-host

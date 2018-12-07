@@ -42,6 +42,7 @@ public class TestContext {
     private static final String VARSELOPPGAVE_V1_ALIAS = "Varseloppgave_v1";
     private static final String VIRKSOMHET_BEHANDLEARBEIDSSOEKER_V1_ALIAS = "virksomhet:BehandleArbeidssoeker_v1";
     private static final String KAFKA_BROKERS_ALIAS = "kafka-brokers";
+    private static final String VEILARBARENAAPI_ALIAS = "veilarbarenaAPI";
 
     public static void setup() throws IOException {
         ServiceUser serviceUser = getServiceUser(SERVICE_USER_ALIAS, APPLICATION_NAME);
@@ -70,6 +71,7 @@ public class TestContext {
         setProperty(VARSELOPPGAVE_V1_PROPERTY, getWebServiceEndpoint(VARSELOPPGAVE_V1_ALIAS).getUrl());
         setProperty(VIRKSOMHET_BEHANDLEARBEIDSSOEKER_V1_PROPERTY, getWebServiceEndpoint(VIRKSOMHET_BEHANDLEARBEIDSSOEKER_V1_ALIAS).getUrl());
         setProperty(KAFKA_BROKERS_PROPERTY, getBaseUrl(KAFKA_BROKERS_ALIAS));
+        setProperty(VEILARBARENAAPI_URL_PROPERTY, getRestService(VEILARBARENAAPI_ALIAS, getDefaultEnvironment()).getUrl());
 
         ServiceUser isso_rp_user = getServiceUser("isso-rp-user", APPLICATION_NAME);
         String loginUrl = getRestService(VEILARBLOGIN_REDIRECT_URL_ALIAS, getDefaultEnvironment()).getUrl();
