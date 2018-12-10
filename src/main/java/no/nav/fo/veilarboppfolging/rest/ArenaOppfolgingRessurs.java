@@ -121,7 +121,7 @@ public class ArenaOppfolgingRessurs {
                 .setServicegruppe(arenaData.getServicegruppe())
                 .setFormidlingsgruppe(arenaData.getFormidlingsgruppe())
                 .setOppfolgingsenhet(oppfolgingsenhet)
-                .setHovedmaalkode(hentStrengForHovedmaalkode(oppfolgingsbrukerStatus.getHovedmaalkode()));
+                .setHovedmaalkode(oppfolgingsbrukerStatus.getHovedmaalkode());
 
         if (AutorisasjonService.erInternBruker()) {
             res.setVeilederId(veilederIdent);
@@ -133,14 +133,5 @@ public class ArenaOppfolgingRessurs {
     private Oppfolgingsenhet hentEnhet(String oppfolgingsenhetId) {
         Optional<String> enhetNavn = Try.of(() -> organisasjonEnhetService.hentEnhet(oppfolgingsenhetId).getNavn()).toJavaOptional();
         return new Oppfolgingsenhet().withEnhetId(oppfolgingsenhetId).withNavn(enhetNavn.orElse(""));
-    }
-
-    private String hentStrengForHovedmaalkode(String hovedmaalkode){
-        HashMap<String, String> hovedmaalMap = new HashMap();
-        hovedmaalMap.put("SKAFFEA", "Skaffe arbeid");
-        hovedmaalMap.put("BEHOLDEA", "Beholde arbeid");
-        hovedmaalMap.put("OKEDELT", "Øke deltakelse eller mål om arbeid");
-
-        return !hovedmaalkode.isEmpty() ? hovedmaalMap.get(hovedmaalkode) : null;
     }
 }
