@@ -49,6 +49,7 @@ public class ApplicationConfig implements NaisApiApplication {
     public static final String KVP_FEED_BRUKERTILGANG_PROPERTY = "kvp.feed.brukertilgang";
     public static final String NYEBRUKERE_FEED_BRUKERTILGANG_PROPERTY = "nyebrukere.feed.brukertilgang";
     public static final String KVP_API_BRUKERTILGANG_PROPERTY = "kvp.api.brukertilgang";
+    public static final String VEILARBARENAAPI_URL_PROPERTY = "VEILARBARENAAPI_URL";
 
     @Inject
     private DataSource dataSource;
