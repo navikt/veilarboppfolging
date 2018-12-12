@@ -15,7 +15,6 @@ public class ArenaUtils {
     private static final Set<String> DELVIS_REGISTRERT_KODER = new HashSet<>(asList("RARBS", "PARBS"));
     private static final Set<String> OPPFOLGINGKODER = new HashSet<>(asList("BATT", "BFORM", "IKVAL", "VURDU", "OPPFI", "VARIG"));
     private static final String IKKE_ARBEIDSSOKER = "IARBS";
-    private static final String SYKEMELDT_HOS_ARBEIDSGIVER = "VURDI";
 
     // Logikken som utleder om en bruker er under oppfolging kjøres også ved indeksering av brukere i VeilArbPortefølje.
     // Endringer i logikken må implementeres begge steder
@@ -24,7 +23,7 @@ public class ArenaUtils {
     }
 
     public static boolean kanSettesUnderOppfolging(String formidlingsgruppeKode, String servicegruppeKode) {
-        return IKKE_ARBEIDSSOKER.equals(formidlingsgruppeKode) && SYKEMELDT_HOS_ARBEIDSGIVER.equals(servicegruppeKode);
+        return erIARBSUtenOppfolging(formidlingsgruppeKode, servicegruppeKode);
     }
 
     public static boolean erIARBSUtenOppfolging(String formidlingsgruppeKode, String servicegruppeKode) {
