@@ -8,6 +8,7 @@ import java.util.Set;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static java.util.Arrays.asList;
+import static no.nav.fo.veilarboppfolging.services.ArenaUtils.OPPFOLGINGKODER;
 import static no.nav.fo.veilarboppfolging.services.ArenaUtils.erUnderOppfolging;
 import static no.nav.fo.veilarboppfolging.services.ArenaUtils.kanSettesUnderOppfolging;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -109,13 +110,16 @@ public class ArenaUtilsTest {
     }
 
     @Test
-    public void kanSettesUnderOppfolging_IARBS_false(){
-        assertThat(kanSettesUnderOppfolging("IARBS", null)).isFalse();
+    public void kanSettesUnderOppfolging_IARBSogOppfolgingskoder_false(){
+        OPPFOLGINGKODER.forEach((servicegruppeode) -> {
+            assertThat(kanSettesUnderOppfolging("IARBS", servicegruppeode)).isFalse();
+        });
     }
 
     @Test
-    public void kanSettesUnderOppfolging_IARBSogVURDI_false(){
-        assertThat(kanSettesUnderOppfolging("IARBS", "VURDI")).isTrue();
+    public void kanSettesUnderOppfolging_IARBSogIkkeOppfolgingskoder_true(){
+        asList("VURDI", "BKART", "IVURD", "KAP11").forEach((servicegruppeode) -> {
+            assertThat(kanSettesUnderOppfolging("IARBS", servicegruppeode)).isTrue();
+        });
     }
-    
 }
