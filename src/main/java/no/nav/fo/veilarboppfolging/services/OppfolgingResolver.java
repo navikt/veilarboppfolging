@@ -102,8 +102,8 @@ public class OppfolgingResolver {
             );
 
 
-            inaktivIArena = erIserv(statusIArena.get());
-            kanReaktiveres = oppfolging.isUnderOppfolging() && kanReaktiveres(statusIArena.get());
+            inaktivIArena = erIserv(arenaStatus);
+            kanReaktiveres = oppfolging.isUnderOppfolging() && kanReaktiveres(arenaStatus);
             boolean skalAvsluttes = oppfolging.isUnderOppfolging() && inaktivIArena && !kanReaktiveres;
             log.info("Statuser for reaktivering og inaktivering: "
                             + "Aktiv Oppfølgingsperiode={} "
@@ -111,7 +111,7 @@ public class OppfolgingResolver {
                             + "erSykmeldtMedArbeidsgiver={} "
                             + "skalAvsluttes={} "
                             + "Tilstand i Arena: {}",
-                    oppfolging.isUnderOppfolging(), kanReaktiveres, erSykmeldtMedArbeidsgiver, skalAvsluttes, statusIArena.get());
+                    oppfolging.isUnderOppfolging(), kanReaktiveres, erSykmeldtMedArbeidsgiver, skalAvsluttes, arenaStatus);
 
             if (skalAvsluttes) {
                 inaktiverBruker();
