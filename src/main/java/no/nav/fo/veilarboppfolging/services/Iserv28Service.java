@@ -142,17 +142,22 @@ public class Iserv28Service{
         );
     }
 
-    public void avslutteOppfolging(String aktoerId) {
+    void avslutteOppfolging(String aktoerId) {
         try {
-            String fnr = aktorService.getFnr(aktoerId).orElseThrow(IllegalStateException::new);
-            boolean oppfolgingAvsluttet = oppfolgingService.avsluttOppfolgingForSystemBruker(
-                    fnr,
-                    "System",
-                    "Oppfolging avsluttet autmatisk for grunn av iservert 28 dager"
-            );
-            if(oppfolgingAvsluttet) {
+            if(!brukerHarOppfolgingsflagg(aktoerId)) {
+                log.info("Bruker med aktørid {} har ikke oppfølgingsflagg. Sletter fra utmelding-tabell", aktoerId);
                 slettAvluttetOppfolgingsBruker(aktoerId);
-                FunksjonelleMetrikker.antallBrukereAvluttetAutomatisk();
+            } else {
+                String fnr = aktorService.getFnr(aktoerId).orElseThrow(IllegalStateException::new);
+                boolean oppfolgingAvsluttet = oppfolgingService.avsluttOppfolgingForSystemBruker(
+                        fnr,
+                        "System",
+                        "Oppfolging avsluttet autmatisk for grunn av iservert 28 dager"
+                );
+                if(oppfolgingAvsluttet) {
+                    slettAvluttetOppfolgingsBruker(aktoerId);
+                    FunksjonelleMetrikker.antallBrukereAvluttetAutomatisk();
+                }
             }
         } catch (Exception e) {
             log.error("Automatisk avsluttOppfolging feilet for aktoerid {} ", aktoerId, e);
