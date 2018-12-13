@@ -55,7 +55,7 @@ public class Iserv28Service{
         this.systemUserSubjectProvider = systemUserSubjectProvider;
     }
 
-    @Scheduled(fixedDelay = 10000L, initialDelay = 1000L)
+    @Scheduled(cron="0 0 * * * *")
     public void scheduledAvlutteOppfolging() {
         Instant lockAtMostUntil = Instant.now().plusSeconds(lockAutomatiskAvslutteOppfolgingSeconds);
         Instant lockAtLeastUntil = Instant.now().plusSeconds(10);
