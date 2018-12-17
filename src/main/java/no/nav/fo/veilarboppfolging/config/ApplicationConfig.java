@@ -1,8 +1,10 @@
 package no.nav.fo.veilarboppfolging.config;
 
-import no.nav.apiapp.ApiApplication.NaisApiApplication;
+import no.nav.apiapp.ApiApplication;
 import no.nav.apiapp.config.ApiAppConfigurator;
 import no.nav.dialogarena.aktor.AktorConfig;
+import no.nav.fo.veilarboppfolging.security.SecurityTokenServiceOidcProvider;
+import no.nav.fo.veilarboppfolging.security.SecurityTokenServiceOidcProviderConfig;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.springframework.context.annotation.*;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -17,6 +19,7 @@ import java.util.concurrent.Executors;
 import static no.nav.fo.veilarboppfolging.config.DatabaseConfig.migrateDatabase;
 import static no.nav.sbl.featuretoggle.unleash.UnleashServiceConfig.resolveFromEnvironment;
 import static no.nav.sbl.util.EnvironmentUtils.Type.PUBLIC;
+import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 import static no.nav.sbl.util.EnvironmentUtils.setProperty;
 
 @Configuration
@@ -26,7 +29,7 @@ import static no.nav.sbl.util.EnvironmentUtils.setProperty;
         excludeFilters = {@ComponentScan.Filter(type = FilterType.REGEX, pattern = ".*Test")}
 )
 @Import(AktorConfig.class)
-public class ApplicationConfig implements NaisApiApplication {
+public class ApplicationConfig implements ApiApplication {
 
     public static final String APPLICATION_NAME = "veilarboppfolging";
     public static final String AKTOER_V2_URL_PROPERTY = "AKTOER_V2_ENDPOINTURL";
@@ -50,6 +53,7 @@ public class ApplicationConfig implements NaisApiApplication {
     public static final String NYEBRUKERE_FEED_BRUKERTILGANG_PROPERTY = "nyebrukere.feed.brukertilgang";
     public static final String KVP_API_BRUKERTILGANG_PROPERTY = "kvp.api.brukertilgang";
     public static final String VEILARBARENAAPI_URL_PROPERTY = "VEILARBARENAAPI_URL";
+    public static final String STS_OIDC_CONFIGURATION_URL_PROPERTY = "SECURITY_TOKEN_SERVICE_OPENID_CONFIGURATION_URL";
 
     @Inject
     private DataSource dataSource;
@@ -81,10 +85,15 @@ public class ApplicationConfig implements NaisApiApplication {
 
     @Override
     public void configure(ApiAppConfigurator apiAppConfigurator) {
+        SecurityTokenServiceOidcProvider securityTokenServiceOidcProvider = new SecurityTokenServiceOidcProvider(SecurityTokenServiceOidcProviderConfig.builder()
+                .discoveryUrl(getRequiredProperty(STS_OIDC_CONFIGURATION_URL_PROPERTY))
+                .build());
+
         apiAppConfigurator
                 .sts()
                 .azureADB2CLogin()
                 .issoLogin()
+                .oidcProvider(securityTokenServiceOidcProvider)
         ;
     }
 }
