@@ -88,6 +88,9 @@ fasitResources:
   - alias: veilarbazureadproxy_discovery
     resourceType: restservice
 
+  - alias: security-token-service-openid-configuration
+    resourceType: restservice
+
   exposed:
   - alias: veilArbOppfolgingAPI
     resourceType: restservice
