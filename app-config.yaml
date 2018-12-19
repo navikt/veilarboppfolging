@@ -88,8 +88,9 @@ fasitResources:
   - alias: veilarbazureadproxy_discovery
     resourceType: restservice
 
-  - alias: security-token-service-openid-configuration
-    resourceType: restservice
+# TODO: Reenable when STS has been deployed to P
+#  - alias: security-token-service-openid-configuration
+#    resourceType: restservice
 
   exposed:
   - alias: veilArbOppfolgingAPI
