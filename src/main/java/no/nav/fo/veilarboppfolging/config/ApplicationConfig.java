@@ -85,15 +85,17 @@ public class ApplicationConfig implements ApiApplication {
 
     @Override
     public void configure(ApiAppConfigurator apiAppConfigurator) {
-        SecurityTokenServiceOidcProvider securityTokenServiceOidcProvider = new SecurityTokenServiceOidcProvider(SecurityTokenServiceOidcProviderConfig.builder()
-                .discoveryUrl(getRequiredProperty(STS_OIDC_CONFIGURATION_URL_PROPERTY))
-                .build());
+//        SecurityTokenServiceOidcProvider securityTokenServiceOidcProvider = new SecurityTokenServiceOidcProvider(SecurityTokenServiceOidcProviderConfig.builder()
+//                .discoveryUrl(getRequiredProperty(STS_OIDC_CONFIGURATION_URL_PROPERTY))
+//                .build());
 
         apiAppConfigurator
                 .sts()
                 .azureADB2CLogin()
                 .issoLogin()
-                .oidcProvider(securityTokenServiceOidcProvider)
+//                .oidcProvider(securityTokenServiceOidcProvider)
+//        TODO: Reenable oidcProvider when STS has beed deployed to P
+//        I disabled it now because it prevents naisification of veilarboppfolging
         ;
     }
 }
