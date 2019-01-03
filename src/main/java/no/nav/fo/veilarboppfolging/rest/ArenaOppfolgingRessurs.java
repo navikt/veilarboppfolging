@@ -115,13 +115,13 @@ public class ArenaOppfolgingRessurs {
                 .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktør for fnr: " + fnr));
         String veilederIdent = veilederTilordningerRepository.hentTilordningForAktoer(brukersAktoerId);
 
-        ArenaBruker oppfolgingsbrukerStatus = oppfolgingsbrukerService.hentOppfolgingsbruker(fnr);
+        Optional<ArenaBruker> oppfolgingsbrukerStatus = oppfolgingsbrukerService.hentOppfolgingsbruker(fnr);
 
         OppfolgingEnhetMedVeileder res = new OppfolgingEnhetMedVeileder()
                 .setServicegruppe(arenaData.getServicegruppe())
                 .setFormidlingsgruppe(arenaData.getFormidlingsgruppe())
                 .setOppfolgingsenhet(oppfolgingsenhet)
-                .setHovedmaalkode(oppfolgingsbrukerStatus.getHovedmaalkode());
+                .setHovedmaalkode(oppfolgingsbrukerStatus.map(ArenaBruker::getHovedmaalkode).orElse(null));
 
         if (AutorisasjonService.erInternBruker()) {
             res.setVeilederId(veilederIdent);
