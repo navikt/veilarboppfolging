@@ -78,19 +78,7 @@ public class Iserv28Service{
 
         MetricsUtils.timed("oppfolging.automatisk.avslutning", () ->   {
             long start = System.currentTimeMillis();
-            List<AvslutteOppfolgingResultat> resultater = new ArrayList<AvslutteOppfolgingResultat>();
-            try {
-                log.info("Starter jobb for automatisk avslutning av brukere");
-                List<IservMapper> iservert28DagerBrukere = finnBrukereMedIservI28Dager();
-                log.info("Fant {} brukere som har vært ISERV mer enn 28 dager", iservert28DagerBrukere.size());
-                withSubject(systemUserSubjectProvider.getSystemUserSubject(), () -> {
-                    resultater.addAll(iservert28DagerBrukere.stream()
-                            .map(iservMapper -> avslutteOppfolging(iservMapper.aktor_Id))
-                            .collect(toList()));
-                });
-            } catch (Exception e) {
-                log.error("Feil ved automatisk avslutning av brukere", e);
-            }
+            List<AvslutteOppfolgingResultat> resultater = finnBrukereOgAvslutt();
             log.info("Avslutter jobb for automatisk avslutning av brukere. Tid brukt: {} ms. Antall [Avsluttet/Ikke avsluttet/Ikke lenger under oppfølging/Feilet/Totalt]: [{}/{}/{}/{}/{}]", 
                 System.currentTimeMillis() - start,
                 resultater.stream().filter(r -> r == AVSLUTTET_OK).count(),
@@ -99,6 +87,23 @@ public class Iserv28Service{
                 resultater.stream().filter(r -> r == AVSLUTTET_FEILET).count(),
                 resultater.size());
         });
+    }
+
+    private List<AvslutteOppfolgingResultat> finnBrukereOgAvslutt() {
+        List<AvslutteOppfolgingResultat> resultater = new ArrayList<>();
+        try {
+            log.info("Starter jobb for automatisk avslutning av brukere");
+            List<IservMapper> iservert28DagerBrukere = finnBrukereMedIservI28Dager();
+            log.info("Fant {} brukere som har vært ISERV mer enn 28 dager", iservert28DagerBrukere.size());
+            withSubject(systemUserSubjectProvider.getSystemUserSubject(), () -> {
+                resultater.addAll(iservert28DagerBrukere.stream()
+                        .map(iservMapper -> avslutteOppfolging(iservMapper.aktor_Id))
+                        .collect(toList()));
+            });
+        } catch (Exception e) {
+            log.error("Feil ved automatisk avslutning av brukere", e);
+        }
+        return resultater;
     }
 
     public void filterereIservBrukere(ArenaBruker arenaBruker){
