@@ -1,10 +1,12 @@
 package no.nav.fo.veilarboppfolging.db;
 
+import no.nav.apiapp.security.PepClient;
 import no.nav.fo.IntegrasjonsTest;
 import no.nav.fo.veilarboppfolging.domain.Tilordning;
 import no.nav.sbl.jdbc.Database;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.io.IOException;
@@ -22,6 +24,7 @@ public class VeilederTilordningerRepositoryTest extends IntegrasjonsTest {
     @BeforeAll
     public static void setup() throws IOException {
         annotationConfigApplicationContext.register(OppfolgingRepository.class);
+        annotationConfigApplicationContext.registerBean(PepClient.class, () -> Mockito.mock(PepClient.class));
     }
 
     private VeilederTilordningerRepository repository = new VeilederTilordningerRepository(

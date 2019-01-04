@@ -1,9 +1,6 @@
 package no.nav.fo;
 
-import no.nav.fo.veilarboppfolging.TestContext;
 import no.nav.fo.veilarboppfolging.config.DatabaseConfig;
-import no.nav.fo.veilarboppfolging.config.PepConfig;
-import no.nav.testconfig.ApiAppTest;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -20,11 +17,9 @@ import org.springframework.transaction.support.TransactionTemplate;
 import javax.sql.DataSource;
 import java.io.IOException;
 
-import static no.nav.fo.veilarboppfolging.config.ApplicationConfig.APPLICATION_NAME;
 import static no.nav.fo.veilarboppfolging.config.DatabaseConfig.*;
 import static no.nav.fo.veilarboppfolging.db.testdriver.TestDriver.createInMemoryDatabaseUrl;
 import static no.nav.sbl.dialogarena.test.SystemProperties.setTemporaryProperty;
-import static no.nav.testconfig.ApiAppTest.setupTestContext;
 
 public abstract class IntegrasjonsTest {
 
@@ -35,15 +30,10 @@ public abstract class IntegrasjonsTest {
     @BeforeAll
     @BeforeClass
     public static void setupFelles() throws IOException {
-        setupTestContext(ApiAppTest.Config.builder().applicationName(APPLICATION_NAME).build());
-        TestContext.setup();
         setTemporaryProperty(VEILARBOPPFOLGINGDB_URL_PROPERTY, createInMemoryDatabaseUrl(), () -> {
             setTemporaryProperty(VEILARBOPPFOLGINGDB_USERNAME_PROPERTY, "sa", () -> {
                 setTemporaryProperty(VEILARBOPPFOLGINGDB_PASSWORD_PROPERTY, "pw", () -> {
-                    annotationConfigApplicationContext = new AnnotationConfigApplicationContext(
-                            DatabaseConfig.class,
-                            PepConfig.class
-                    );
+                    annotationConfigApplicationContext = new AnnotationConfigApplicationContext(DatabaseConfig.class);
                     annotationConfigApplicationContext.start();
                     platformTransactionManager = getBean(PlatformTransactionManager.class);
                     migrateDatabase(getBean(DataSource.class));

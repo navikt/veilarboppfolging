@@ -59,7 +59,7 @@ public class OppfolgingRepositoryKvpTest extends IntegrasjonsTest {
 
 
     private void gitt_oppfolging_med_aktiv_kvp_og_eskalering(String aktorId) {
-        Oppfolging oppfolging = oppfolgingRepository.hentOppfolging(aktorId)
+        oppfolgingRepository.hentOppfolging(aktorId)
                 .orElseGet(() -> oppfolgingRepository.opprettOppfolging(aktorId));
         oppfolgingRepository.startOppfolgingHvisIkkeAlleredeStartet(aktorId);
         kvpRepository.startKvp(AKTOR_ID, ENHET, SAKSBEHANDLER, BEGRUNNELSE);
@@ -67,7 +67,7 @@ public class OppfolgingRepositoryKvpTest extends IntegrasjonsTest {
     }
 
     private void gitt_oppfolging_uten_aktiv_kvp_men_med_eskalering(String aktorId) {
-        Oppfolging oppfolging = oppfolgingRepository.hentOppfolging(aktorId)
+        oppfolgingRepository.hentOppfolging(aktorId)
                 .orElseGet(() -> oppfolgingRepository.opprettOppfolging(aktorId));
         oppfolgingRepository.startOppfolgingHvisIkkeAlleredeStartet(aktorId);
         oppfolgingRepository.startEskalering(AKTOR_ID, SAKSBEHANDLER, BEGRUNNELSE, 0);
