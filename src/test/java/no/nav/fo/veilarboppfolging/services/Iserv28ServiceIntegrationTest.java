@@ -34,7 +34,6 @@ public class Iserv28ServiceIntegrationTest extends IntegrasjonsTest {
 
     private ZonedDateTime iservFraDato = now();
     private final static String AKTORID = "1234";
-    private final static String FNR = "4567";
 
     private OppfolgingsStatusRepository oppfolgingStatusRepository = mock(OppfolgingsStatusRepository.class);
 
@@ -45,6 +44,7 @@ public class Iserv28ServiceIntegrationTest extends IntegrasjonsTest {
         AktorService aktorService = mock(AktorService.class);
         when(aktorService.getFnr(anyString())).thenReturn(of("12345678901"));
         when(oppfolgingStatusRepository.fetch(anyString())).thenReturn(new OppfolgingTable().setUnderOppfolging(true));
+        when(oppfolgingService.avsluttOppfolgingForSystemBruker(anyString(), anyString(), anyString())).thenReturn(true);
         SystemUserSubjectProvider systemUserSubjectProvider = mock(SystemUserSubjectProvider.class);
         iserv28Service = new Iserv28Service(jdbcTemplate, oppfolgingService, oppfolgingStatusRepository, aktorService, taskExecutor, systemUserSubjectProvider);
     }
@@ -107,31 +107,43 @@ public class Iserv28ServiceIntegrationTest extends IntegrasjonsTest {
 
         iserv28Service.avslutteOppfolging(arenaBruker.aktoerid);
 
-        if(verifisereOmOppfolgingHarAvsluttet()){
-            assertThat(iserv28Service.eksisterendeIservBruker(arenaBruker)).isNull();
-        }
+        verify(oppfolgingService).avsluttOppfolgingForSystemBruker(anyString(), anyString(), anyString());
+        assertThat(iserv28Service.eksisterendeIservBruker(arenaBruker)).isNull();
     }
 
     @Test
-    public void scheduledAvslutteOppfolging(){
-        ArenaBruker brukerIservertI28Dager = insertIservBruker(now().minusDays(30));
-        ArenaBruker brukerIservertMindreEnn28Dager = insertIservBruker(now().minusDays(25));
+    public void automatiskAvslutteOppfolging_skalAvslutteBrukerSomErIserv28dagerOgUnderOppfolging(){
+        ArenaBruker bruker = insertIservBruker(now().minusDays(30));
 
-        assertThat(iserv28Service.eksisterendeIservBruker(brukerIservertI28Dager)).isNotNull();
-        assertThat(iserv28Service.eksisterendeIservBruker(brukerIservertMindreEnn28Dager)).isNotNull();
+        iserv28Service.automatiskAvslutteOppfolging();
 
-        iserv28Service.scheduledAvslutteOppfolging();
-
-        if(verifisereOmOppfolgingHarAvsluttet()) {
-            assertThat(iserv28Service.eksisterendeIservBruker(brukerIservertI28Dager)).isNull();
-            assertThat(iserv28Service.eksisterendeIservBruker(brukerIservertMindreEnn28Dager)).isNotNull();
-        }
+        assertThat(iserv28Service.eksisterendeIservBruker(bruker)).isNull();
     }
 
+    @Test
+    public void automatiskAvslutteOppfolging_skalFjerneBrukerSomErIserv28dagerOgIkkeUnderOppfolging(){
+        ArenaBruker bruker = insertIservBruker(now().minusDays(30));
+        when(oppfolgingStatusRepository.fetch(bruker.aktoerid)).thenReturn(new OppfolgingTable().setUnderOppfolging(false));
+
+        iserv28Service.automatiskAvslutteOppfolging();
+
+        verifyZeroInteractions(oppfolgingService);
+        assertThat(iserv28Service.eksisterendeIservBruker(bruker)).isNull();
+    }
+    
+    @Test
+    public void automatiskAvslutteOppfolging_skalIkkeFjerneBrukerSomErIserv28dagerMenIkkeAvsluttet(){
+        ArenaBruker bruker = insertIservBruker(now().minusDays(30));
+        when(oppfolgingService.avsluttOppfolgingForSystemBruker(anyString(), anyString(), anyString())).thenReturn(false);
+
+        iserv28Service.automatiskAvslutteOppfolging();
+
+        assertThat(iserv28Service.eksisterendeIservBruker(bruker)).isNotNull();
+    }
+    
     private ArenaBruker getArenaBruker() {
         ArenaBruker arenaBruker = new ArenaBruker();
         arenaBruker.setAktoerid(AKTORID);
-        arenaBruker.setFodselsnr(FNR);
         arenaBruker.setFormidlingsgruppekode("ISERV");
         arenaBruker.setIserv_fra_dato(iservFraDato);
         return arenaBruker;
@@ -147,9 +159,5 @@ public class Iserv28ServiceIntegrationTest extends IntegrasjonsTest {
         assertThat(iserv28Service.eksisterendeIservBruker(arenaBruker)).isNull();
         iserv28Service.filterereIservBrukere(arenaBruker);
         return arenaBruker;
-    }
-
-    private boolean verifisereOmOppfolgingHarAvsluttet(){
-        return verify(oppfolgingService).avsluttOppfolgingForSystemBruker(anyString(), anyString(), anyString());
     }
 }
