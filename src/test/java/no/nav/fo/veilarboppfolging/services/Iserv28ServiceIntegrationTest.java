@@ -113,14 +113,14 @@ public class Iserv28ServiceIntegrationTest extends IntegrasjonsTest {
     }
 
     @Test
-    public void scheduledAvlutteOppfolging(){
+    public void scheduledAvslutteOppfolging(){
         ArenaBruker brukerIservertI28Dager = insertIservBruker(now().minusDays(30));
         ArenaBruker brukerIservertMindreEnn28Dager = insertIservBruker(now().minusDays(25));
 
         assertThat(iserv28Service.eksisterendeIservBruker(brukerIservertI28Dager)).isNotNull();
         assertThat(iserv28Service.eksisterendeIservBruker(brukerIservertMindreEnn28Dager)).isNotNull();
 
-        iserv28Service.scheduledAvlutteOppfolging();
+        iserv28Service.scheduledAvslutteOppfolging();
 
         if(verifisereOmOppfolgingHarAvsluttet()) {
             assertThat(iserv28Service.eksisterendeIservBruker(brukerIservertI28Dager)).isNull();

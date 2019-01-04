@@ -56,16 +56,16 @@ public class Iserv28Service{
     }
 
     @Scheduled(cron="0 0 * * * *")
-    public void scheduledAvlutteOppfolging() {
+    public void scheduledAvslutteOppfolging() {
         Instant lockAtMostUntil = Instant.now().plusSeconds(lockAutomatiskAvslutteOppfolgingSeconds);
         Instant lockAtLeastUntil = Instant.now().plusSeconds(10);
         taskExecutor.executeWithLock(
-                this::automatiskAvlutteOppfolging,
+                this::automatiskAvslutteOppfolging,
                 new LockConfiguration("oppdaterAvlutteOppfolging", lockAtMostUntil, lockAtLeastUntil)
         );
     }
 
-    private void automatiskAvlutteOppfolging() {
+    private void automatiskAvslutteOppfolging() {
 
         MetricsUtils.timed("oppfolging.automatisk.avslutning", () ->   {
             long start = System.currentTimeMillis();
@@ -92,7 +92,7 @@ public class Iserv28Service{
 
         try {
             if (eksisterendeIservBruker != null && !erIserv) {
-                slettAvluttetOppfolgingsBruker(arenaBruker.getAktoerid());
+                slettAvsluttetOppfolgingsBruker(arenaBruker.getAktoerid());
             } else if (eksisterendeIservBruker != null) {
                 updateIservBruker(arenaBruker);
             } else if(erIserv && brukerHarOppfolgingsflagg(arenaBruker.getAktoerid())) {
@@ -146,7 +146,7 @@ public class Iserv28Service{
         try {
             if(!brukerHarOppfolgingsflagg(aktoerId)) {
                 log.info("Bruker med aktørid {} har ikke oppfølgingsflagg. Sletter fra utmelding-tabell", aktoerId);
-                slettAvluttetOppfolgingsBruker(aktoerId);
+                slettAvsluttetOppfolgingsBruker(aktoerId);
             } else {
                 String fnr = aktorService.getFnr(aktoerId).orElseThrow(IllegalStateException::new);
                 boolean oppfolgingAvsluttet = oppfolgingService.avsluttOppfolgingForSystemBruker(
@@ -155,8 +155,8 @@ public class Iserv28Service{
                         "Oppfolging avsluttet autmatisk for grunn av iservert 28 dager"
                 );
                 if(oppfolgingAvsluttet) {
-                    slettAvluttetOppfolgingsBruker(aktoerId);
-                    FunksjonelleMetrikker.antallBrukereAvluttetAutomatisk();
+                    slettAvsluttetOppfolgingsBruker(aktoerId);
+                    FunksjonelleMetrikker.antallBrukereAvsluttetAutomatisk();
                 }
             }
         } catch (Exception e) {
@@ -164,7 +164,7 @@ public class Iserv28Service{
         }
     }
 
-    private void slettAvluttetOppfolgingsBruker(String aktoerId) {
+    private void slettAvsluttetOppfolgingsBruker(String aktoerId) {
         WhereClause aktoeridClause = WhereClause.equals("aktor_id", aktoerId);
         SqlUtils.delete(jdbc, "UTMELDING").where(aktoeridClause).execute();
         log.info("Aktorid {} har blitt slettet fra UTMELDING tabell", aktoerId);

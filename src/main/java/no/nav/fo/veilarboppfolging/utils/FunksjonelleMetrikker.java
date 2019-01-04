@@ -49,7 +49,7 @@ public class FunksjonelleMetrikker {
         MetricsFactory.createEvent("kafka.konsumert.meldinger").report();
     }
 
-    public static void antallBrukereAvluttetAutomatisk(){
+    public static void antallBrukereAvsluttetAutomatisk(){
         MetricsFactory.createEvent("automatisk.avsluttet.bruker").report();
     }
 
