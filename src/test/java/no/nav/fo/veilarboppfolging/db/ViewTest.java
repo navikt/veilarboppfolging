@@ -1,6 +1,6 @@
 package no.nav.fo.veilarboppfolging.db;
 
-import no.nav.fo.IntegrasjonsTest;
+import no.nav.fo.DatabaseTest;
 import no.nav.json.JsonUtils;
 import org.json.JSONArray;
 import org.junit.Test;
@@ -18,7 +18,7 @@ import java.util.Scanner;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(value = Parameterized.class)
-public class ViewTest extends IntegrasjonsTest {
+public class ViewTest extends DatabaseTest {
 
     @Parameters(name = "{0}")
     public static Object[] views() {

@@ -1,7 +1,7 @@
 package no.nav.fo.veilarboppfolging.db;
 
 import no.nav.apiapp.security.PepClient;
-import no.nav.fo.IntegrasjonsTest;
+import no.nav.fo.DatabaseTest;
 import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingFeedDTO;
 import no.nav.sbl.jdbc.Database;
 
@@ -16,7 +16,7 @@ import java.util.List;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
-class OppfolgingFeedRepositoryTest extends IntegrasjonsTest {
+class OppfolgingFeedRepositoryTest extends DatabaseTest {
 
     private static final String AKTOR_ID = "2222";
     private static final String VEILEDER = "1234";

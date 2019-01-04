@@ -21,7 +21,7 @@ import static no.nav.fo.veilarboppfolging.config.DatabaseConfig.*;
 import static no.nav.fo.veilarboppfolging.db.testdriver.TestDriver.createInMemoryDatabaseUrl;
 import static no.nav.sbl.dialogarena.test.SystemProperties.setTemporaryProperty;
 
-public abstract class IntegrasjonsTest {
+public abstract class DatabaseTest {
 
     protected static AnnotationConfigApplicationContext annotationConfigApplicationContext;
     private static TransactionStatus transaction;

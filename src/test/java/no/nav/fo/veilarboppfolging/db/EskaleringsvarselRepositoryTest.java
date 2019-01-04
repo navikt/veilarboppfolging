@@ -1,6 +1,6 @@
 package no.nav.fo.veilarboppfolging.db;
 
-import no.nav.fo.IntegrasjonsTest;
+import no.nav.fo.DatabaseTest;
 import no.nav.fo.veilarboppfolging.domain.EskaleringsvarselData;
 import no.nav.fo.veilarboppfolging.domain.Oppfolging;
 import no.nav.sbl.jdbc.Database;
@@ -13,7 +13,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class EskaleringsvarselRepositoryTest extends IntegrasjonsTest {
+public class EskaleringsvarselRepositoryTest extends DatabaseTest {
 
     private static final String AKTOR_ID = "2222";
     private static final String SAKSBEHANDLER_ID = "Z990000";

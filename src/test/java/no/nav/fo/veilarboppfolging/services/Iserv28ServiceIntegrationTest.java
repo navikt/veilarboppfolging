@@ -2,7 +2,7 @@ package no.nav.fo.veilarboppfolging.services;
 
 import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import no.nav.dialogarena.aktor.AktorService;
-import no.nav.fo.IntegrasjonsTest;
+import no.nav.fo.DatabaseTest;
 import no.nav.fo.veilarboppfolging.db.OppfolgingsStatusRepository;
 import no.nav.fo.veilarboppfolging.domain.IservMapper;
 import no.nav.fo.veilarboppfolging.domain.OppfolgingTable;
@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
-public class Iserv28ServiceIntegrationTest extends IntegrasjonsTest {
+public class Iserv28ServiceIntegrationTest extends DatabaseTest {
 
     private static int nesteAktorId;
 
