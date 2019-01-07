@@ -1,7 +1,7 @@
 package no.nav.fo.veilarboppfolging.db;
 
 import no.nav.apiapp.security.PepClient;
-import no.nav.fo.IntegrasjonsTest;
+import no.nav.fo.DatabaseTest;
 import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
 import no.nav.sbl.jdbc.Database;
@@ -25,7 +25,7 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class OppfolgingRepositoryTest extends IntegrasjonsTest {
+public class OppfolgingRepositoryTest extends DatabaseTest {
 
     private static final String AKTOR_ID = "2222";
     private static final String ENHET = "1234";

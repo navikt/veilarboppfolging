@@ -2,7 +2,7 @@ package no.nav.fo.veilarboppfolging.db;
 
 import no.nav.apiapp.feil.Feil;
 import no.nav.apiapp.security.PepClient;
-import no.nav.fo.IntegrasjonsTest;
+import no.nav.fo.DatabaseTest;
 import no.nav.fo.veilarboppfolging.domain.Kvp;
 import no.nav.fo.veilarboppfolging.domain.Oppfolging;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
@@ -22,7 +22,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class KvpRepositoryTest extends IntegrasjonsTest {
+public class KvpRepositoryTest extends DatabaseTest {
 
     private static final String AKTOR_ID = "2222";
     private static final String SAKSBEHANDLER_ID = "Z990000";

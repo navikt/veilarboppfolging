@@ -1,7 +1,7 @@
 package no.nav.fo.veilarboppfolging.db;
 
 import no.nav.apiapp.security.PepClient;
-import no.nav.fo.IntegrasjonsTest;
+import no.nav.fo.DatabaseTest;
 import no.nav.fo.veilarboppfolging.domain.Oppfolging;
 import no.nav.sbl.jdbc.Database;
 import org.junit.Test;
@@ -14,7 +14,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class OppfolgingRepositoryKvpTest extends IntegrasjonsTest {
+public class OppfolgingRepositoryKvpTest extends DatabaseTest {
 
     private static final String AKTOR_ID = "2222";
     private static final String ENHET = "1234";
@@ -59,7 +59,7 @@ public class OppfolgingRepositoryKvpTest extends IntegrasjonsTest {
 
 
     private void gitt_oppfolging_med_aktiv_kvp_og_eskalering(String aktorId) {
-        Oppfolging oppfolging = oppfolgingRepository.hentOppfolging(aktorId)
+        oppfolgingRepository.hentOppfolging(aktorId)
                 .orElseGet(() -> oppfolgingRepository.opprettOppfolging(aktorId));
         oppfolgingRepository.startOppfolgingHvisIkkeAlleredeStartet(aktorId);
         kvpRepository.startKvp(AKTOR_ID, ENHET, SAKSBEHANDLER, BEGRUNNELSE);
@@ -67,7 +67,7 @@ public class OppfolgingRepositoryKvpTest extends IntegrasjonsTest {
     }
 
     private void gitt_oppfolging_uten_aktiv_kvp_men_med_eskalering(String aktorId) {
-        Oppfolging oppfolging = oppfolgingRepository.hentOppfolging(aktorId)
+        oppfolgingRepository.hentOppfolging(aktorId)
                 .orElseGet(() -> oppfolgingRepository.opprettOppfolging(aktorId));
         oppfolgingRepository.startOppfolgingHvisIkkeAlleredeStartet(aktorId);
         oppfolgingRepository.startEskalering(AKTOR_ID, SAKSBEHANDLER, BEGRUNNELSE, 0);

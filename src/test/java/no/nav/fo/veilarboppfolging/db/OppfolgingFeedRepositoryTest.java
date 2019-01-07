@@ -1,22 +1,22 @@
 package no.nav.fo.veilarboppfolging.db;
 
-import no.nav.fo.IntegrasjonsTest;
-
+import no.nav.apiapp.security.PepClient;
+import no.nav.fo.DatabaseTest;
 import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingFeedDTO;
 import no.nav.sbl.jdbc.Database;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.List;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
-class OppfolgingFeedRepositoryTest extends IntegrasjonsTest {
+class OppfolgingFeedRepositoryTest extends DatabaseTest {
 
     private static final String AKTOR_ID = "2222";
     private static final String VEILEDER = "1234";
@@ -24,6 +24,7 @@ class OppfolgingFeedRepositoryTest extends IntegrasjonsTest {
     @BeforeAll
     public static void setup() {
         annotationConfigApplicationContext.register(OppfolgingRepository.class);
+        annotationConfigApplicationContext.registerBean(PepClient.class, () -> Mockito.mock(PepClient.class));
     }
 
     private VeilederTilordningerRepository repository = new VeilederTilordningerRepository(
