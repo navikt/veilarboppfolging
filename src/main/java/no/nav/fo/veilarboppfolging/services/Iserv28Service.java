@@ -3,7 +3,6 @@ package no.nav.fo.veilarboppfolging.services;
 import lombok.extern.slf4j.Slf4j;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor;
-import no.nav.common.auth.Subject;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.db.OppfolgingsStatusRepository;
 import no.nav.fo.veilarboppfolging.domain.IservMapper;
@@ -20,14 +19,24 @@ import org.springframework.stereotype.Component;
 import javax.inject.Inject;
 import java.sql.*;
 import java.time.*;
+import java.util.ArrayList;
 import java.util.List;
 
+import static java.util.stream.Collectors.toList;
 import static no.nav.common.auth.SubjectHandler.withSubject;
+import static no.nav.fo.veilarboppfolging.services.Iserv28Service.AvslutteOppfolgingResultat.*;
 import static no.nav.sbl.sql.DbConstants.CURRENT_TIMESTAMP;
 
 @Component
 @Slf4j
 public class Iserv28Service{
+
+    enum AvslutteOppfolgingResultat {
+        AVSLUTTET_OK,
+        IKKE_AVSLUTTET,
+        IKKE_LENGER_UNDER_OPPFØLGING,
+        AVSLUTTET_FEILET
+    }
 
     private final JdbcTemplate jdbc;
     private final OppfolgingService oppfolgingService;
@@ -56,34 +65,45 @@ public class Iserv28Service{
     }
 
     @Scheduled(cron="0 0 * * * *")
-    public void scheduledAvlutteOppfolging() {
+    public void scheduledAvslutteOppfolging() {
         Instant lockAtMostUntil = Instant.now().plusSeconds(lockAutomatiskAvslutteOppfolgingSeconds);
         Instant lockAtLeastUntil = Instant.now().plusSeconds(10);
         taskExecutor.executeWithLock(
-                this::automatiskAvlutteOppfolging,
+                this::automatiskAvslutteOppfolging,
                 new LockConfiguration("oppdaterAvlutteOppfolging", lockAtMostUntil, lockAtLeastUntil)
         );
     }
 
-    private void automatiskAvlutteOppfolging() {
+    void automatiskAvslutteOppfolging() {
 
         MetricsUtils.timed("oppfolging.automatisk.avslutning", () ->   {
             long start = System.currentTimeMillis();
-            try {
-                log.info("Starter jobb for automatisk avslutning av brukere");
-                List<IservMapper> iservert28DagerBrukere = finnBrukereMedIservI28Dager();
-                log.info("Fant {} brukere som har vært ISERV mer enn 28 dager", iservert28DagerBrukere.size());
-                if (!iservert28DagerBrukere.isEmpty()) {
-                    Subject subject = systemUserSubjectProvider.getSystemUserSubject();
-                    withSubject(subject, () -> {
-                        iservert28DagerBrukere.forEach(iservMapper -> avslutteOppfolging(iservMapper.aktor_Id));
-                    });
-                }
-            } catch (Exception e) {
-                log.error("Feil ved automatisk avslutning av brukere", e);
-            }
-            log.info("Avslutter jobb for automatisk avslutning av brukere. Tid brukt: {} ms", System.currentTimeMillis() - start);
+            List<AvslutteOppfolgingResultat> resultater = finnBrukereOgAvslutt();
+            log.info("Avslutter jobb for automatisk avslutning av brukere. Tid brukt: {} ms. Antall [Avsluttet/Ikke avsluttet/Ikke lenger under oppfølging/Feilet/Totalt]: [{}/{}/{}/{}/{}]", 
+                System.currentTimeMillis() - start,
+                resultater.stream().filter(r -> r == AVSLUTTET_OK).count(),
+                resultater.stream().filter(r -> r == IKKE_AVSLUTTET).count(),
+                resultater.stream().filter(r -> r == IKKE_LENGER_UNDER_OPPFØLGING).count(),
+                resultater.stream().filter(r -> r == AVSLUTTET_FEILET).count(),
+                resultater.size());
         });
+    }
+
+    private List<AvslutteOppfolgingResultat> finnBrukereOgAvslutt() {
+        List<AvslutteOppfolgingResultat> resultater = new ArrayList<>();
+        try {
+            log.info("Starter jobb for automatisk avslutning av brukere");
+            List<IservMapper> iservert28DagerBrukere = finnBrukereMedIservI28Dager();
+            log.info("Fant {} brukere som har vært ISERV mer enn 28 dager", iservert28DagerBrukere.size());
+            withSubject(systemUserSubjectProvider.getSystemUserSubject(), () -> {
+                resultater.addAll(iservert28DagerBrukere.stream()
+                        .map(iservMapper -> avslutteOppfolging(iservMapper.aktor_Id))
+                        .collect(toList()));
+            });
+        } catch (Exception e) {
+            log.error("Feil ved automatisk avslutning av brukere", e);
+        }
+        return resultater;
     }
 
     public void filterereIservBrukere(ArenaBruker arenaBruker){
@@ -92,7 +112,7 @@ public class Iserv28Service{
 
         try {
             if (eksisterendeIservBruker != null && !erIserv) {
-                slettAvluttetOppfolgingsBruker(arenaBruker.getAktoerid());
+                slettAvsluttetOppfolgingsBruker(arenaBruker.getAktoerid());
             } else if (eksisterendeIservBruker != null) {
                 updateIservBruker(arenaBruker);
             } else if(erIserv && brukerHarOppfolgingsflagg(arenaBruker.getAktoerid())) {
@@ -141,12 +161,14 @@ public class Iserv28Service{
                 iservFraDato
         );
     }
-
-    void avslutteOppfolging(String aktoerId) {
+    
+    AvslutteOppfolgingResultat avslutteOppfolging(String aktoerId) {
+        AvslutteOppfolgingResultat resultat;
         try {
             if(!brukerHarOppfolgingsflagg(aktoerId)) {
                 log.info("Bruker med aktørid {} har ikke oppfølgingsflagg. Sletter fra utmelding-tabell", aktoerId);
-                slettAvluttetOppfolgingsBruker(aktoerId);
+                slettAvsluttetOppfolgingsBruker(aktoerId);
+                resultat = IKKE_LENGER_UNDER_OPPFØLGING;
             } else {
                 String fnr = aktorService.getFnr(aktoerId).orElseThrow(IllegalStateException::new);
                 boolean oppfolgingAvsluttet = oppfolgingService.avsluttOppfolgingForSystemBruker(
@@ -154,17 +176,20 @@ public class Iserv28Service{
                         "System",
                         "Oppfolging avsluttet autmatisk for grunn av iservert 28 dager"
                 );
+                resultat = oppfolgingAvsluttet ? AVSLUTTET_OK : IKKE_AVSLUTTET;
                 if(oppfolgingAvsluttet) {
-                    slettAvluttetOppfolgingsBruker(aktoerId);
-                    FunksjonelleMetrikker.antallBrukereAvluttetAutomatisk();
+                    slettAvsluttetOppfolgingsBruker(aktoerId);
+                    FunksjonelleMetrikker.antallBrukereAvsluttetAutomatisk();
                 }
             }
         } catch (Exception e) {
             log.error("Automatisk avsluttOppfolging feilet for aktoerid {} ", aktoerId, e);
+            resultat = AVSLUTTET_FEILET;
         }
+        return resultat;
     }
 
-    private void slettAvluttetOppfolgingsBruker(String aktoerId) {
+    private void slettAvsluttetOppfolgingsBruker(String aktoerId) {
         WhereClause aktoeridClause = WhereClause.equals("aktor_id", aktoerId);
         SqlUtils.delete(jdbc, "UTMELDING").where(aktoeridClause).execute();
         log.info("Aktorid {} har blitt slettet fra UTMELDING tabell", aktoerId);
