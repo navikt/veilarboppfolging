@@ -378,6 +378,7 @@ public class OppfolgingResolver {
     private void hentOppfolgingstatusFraArena() {
 
         statusIArena = Try.of(() -> deps.getArenaOppfolgingService().hentArenaOppfolging(fnr))
+                .onFailure(e -> {log.warn("Feil fra Arena for aktørId: {}", aktorId, e);})
                 .toOption()
                 .toJavaOptional();
     }
