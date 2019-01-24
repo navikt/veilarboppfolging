@@ -51,7 +51,7 @@ public class OppfolgingFeedProvider implements FeedProvider<OppfolgingFeedDTO> {
         } 
 
         final boolean finalDateId = dateId;
-        log.info("OppfolgingFeedProviderDebug feed-response: {}", data);
+        log.info("Hentet: {} oppfolgingsfeed dtoer fra databasen", data.size());
         return data
                 .stream()
                 .map(b -> new FeedElement<OppfolgingFeedDTO>()
