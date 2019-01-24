@@ -13,6 +13,7 @@ import java.io.IOException;
 
 import static java.lang.System.setProperty;
 import static no.nav.brukerdialog.security.Constants.*;
+import static no.nav.brukerdialog.security.oidc.provider.AzureADB2CConfig.AZUREAD_B2C_DISCOVERY_URL_PROPERTY_NAME;
 import static no.nav.dialogarena.config.fasit.FasitUtils.*;
 import static no.nav.dialogarena.config.fasit.FasitUtils.Zone.FSS;
 import static no.nav.fo.veilarboppfolging.config.ApplicationConfig.*;
@@ -30,7 +31,7 @@ public class TestContext {
     private static final String ABAC_PDP_ENDPOINT_ALIAS = "abac.pdp.endpoint";
     private static final String AKTOER_V2_ALIAS = "Aktoer_v2";
     private static final String VEILARBLOGIN_REDIRECT_URL_ALIAS = "veilarblogin.redirect-url";
-    private static final String VEILARBAZUREADPROXY_DISCOVERY_ALIAS = "veilarbazureadproxy_discovery";
+    private static final String AZURE_AD_B2C_DISCOVERY_ALIAS = "aad_b2c_discovery";
     private static final String AAD_B2C_CLIENTID_ALIAS = "aad_b2c_clientid";
     private static final String AKTIVITETSPLAN_ALIAS = "aktivitetsplan";
     private static final String VEILARBAKTIVITETAPI_ALIAS = "veilArbAktivitetAPI";
@@ -85,7 +86,7 @@ public class TestContext {
         setProperty(VEILARBLOGIN_REDIRECT_URL_URL_PROPERTY, loginUrl);
 
         ServiceUser aadB2cUser = getServiceUser(AAD_B2C_CLIENTID_ALIAS, APPLICATION_NAME);
-        setProperty(VEILARBAZUREADPROXY_DISCOVERY_URL_PROPERTY, getRestService(VEILARBAZUREADPROXY_DISCOVERY_ALIAS).getUrl());
+        setProperty(AZUREAD_B2C_DISCOVERY_URL_PROPERTY_NAME, getBaseUrl(AZURE_AD_B2C_DISCOVERY_ALIAS));
         setProperty(AAD_B2C_CLIENTID_USERNAME_PROPERTY, aadB2cUser.getUsername());
         setProperty(AAD_B2C_CLIENTID_PASSWORD_PROPERTY, aadB2cUser.getPassword());
 
