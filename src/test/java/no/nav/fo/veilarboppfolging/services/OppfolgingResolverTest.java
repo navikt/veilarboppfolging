@@ -155,4 +155,13 @@ public class OppfolgingResolverTest {
         return Oppfolgingsperiode.builder().sluttDato(date1).build();
     }
 
+    @Test
+    public void sjekkStatusIArenaOgOppdaterOppfolging__skal_fungere_selv_om_arena_feiler() {
+
+        when(arenaOppfolgingServiceMock.hentArenaOppfolging(anyString())).thenThrow(new RuntimeException("Feil i Arena"));
+
+        oppfolgingResolver.sjekkStatusIArenaOgOppdaterOppfolging();
+
+        verify(arenaOppfolgingServiceMock).hentArenaOppfolging(anyString());
+    }
 }
