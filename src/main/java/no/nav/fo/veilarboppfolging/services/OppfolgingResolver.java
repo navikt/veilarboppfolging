@@ -110,8 +110,9 @@ public class OppfolgingResolver {
                             + "kanReaktiveres={} "
                             + "erSykmeldtMedArbeidsgiver={} "
                             + "skalAvsluttes={} "
+                            + "aktorId={} "
                             + "Tilstand i Arena: {}",
-                    oppfolging.isUnderOppfolging(), kanReaktiveres, erSykmeldtMedArbeidsgiver, skalAvsluttes, arenaStatus);
+                    oppfolging.isUnderOppfolging(), kanReaktiveres, erSykmeldtMedArbeidsgiver, skalAvsluttes, aktorId, arenaStatus);
 
             if (skalAvsluttes) {
                 inaktiverBruker();
