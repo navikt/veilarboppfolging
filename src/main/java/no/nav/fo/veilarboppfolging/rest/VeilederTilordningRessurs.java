@@ -36,9 +36,7 @@ public class VeilederTilordningRessurs {
     private final VeilederTilordningerRepository veilederTilordningerRepository;
     private final PepClient pepClient;
     private final AutorisasjonService autorisasjonService;
-
     private FeedProducer<OppfolgingFeedDTO> oppfolgingFeed;
-
     private final SubjectService subjectService = new SubjectService();
 
     public VeilederTilordningRessurs(AktorService aktorService,
@@ -71,7 +69,7 @@ public class VeilederTilordningRessurs {
 
                 String tilordningForAktoer = veilederTilordningerRepository.hentTilordningForAktoer(aktoerId);
 
-                if (kanSetteNyVeileder(tilordningForAktoer, tilordning.getFraVeilederId())) {
+                if (kanSetteNyVeileder(tilordningForAktoer, tilordning)) {
                     skrivTilDatabase(aktoerId, tilordning.getTilVeilederId());
                 } else {
                     feilendeTilordninger.add(tilordning);
@@ -163,7 +161,16 @@ public class VeilederTilordningRessurs {
         }
     }
 
-    static boolean kanSetteNyVeileder(String eksisterendeVeileder, String fraVeileder) {
-        return eksisterendeVeileder == null || eksisterendeVeileder.equals(fraVeileder);
+    public boolean kanSetteNyVeileder(String eksisterendeVeileder, VeilederTilordning veilederTilordning) {
+        return kanTilordneFraVeileder(eksisterendeVeileder, veilederTilordning.getFraVeilederId()) && nyVeilederHarTilgang(veilederTilordning);
     }
+
+    static boolean kanTilordneFraVeileder(String eksisterendeVeileder, String fraVeilederId) {
+        return eksisterendeVeileder == null || eksisterendeVeileder.equals(fraVeilederId);
+    }
+
+    private boolean nyVeilederHarTilgang(VeilederTilordning veilederTilordning) {
+        return autorisasjonService.harVeilederSkriveTilgangTilFnr(veilederTilordning.getTilVeilederId(), veilederTilordning.getBrukerFnr());
+    }
+
 }
