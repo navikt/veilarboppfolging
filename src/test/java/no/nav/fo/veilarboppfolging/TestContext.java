@@ -98,5 +98,6 @@ public class TestContext {
 
         EnvironmentUtils.setProperty("javax.net.ssl.trustStore", navTrustStoreFile.getAbsolutePath(), PUBLIC);
         EnvironmentUtils.setProperty("javax.net.ssl.trustStorePassword", navTrustStore.getKeystorepassword(), SECRET);
+        EnvironmentUtils.setProperty("VEILARBABAC", "https://veilarbabac-"+FasitUtils.getDefaultEnvironment()+".nais.preprod.local" , SECRET);
     }
 }
