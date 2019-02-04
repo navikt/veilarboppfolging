@@ -68,16 +68,11 @@ public class ArenaOppfolgingService {
             HentOppfoelgingsstatusResponse hentOppfoelgingsstatusResponse = oppfoelgingsstatusV2Service.hentOppfoelgingsstatus(request);
             return ArenaOppfolgingMapper.mapTilArenaOppfolgingsstatusV2(hentOppfoelgingsstatusResponse);
         } catch (HentOppfoelgingsstatusPersonIkkeFunnet e) {
-            String logMessage = "Fant ikke bruker: " + identifikator;
-            throw new NotFoundException(logMessage, e);
+            throw new NotFoundException("Fant ikke bruker: " + identifikator, e);
         } catch (HentOppfoelgingsstatusSikkerhetsbegrensning e) {
-            String logMessage = "Ikke tilgang til bruker " + identifikator;
-            LOG.warn(logMessage, e);
-            throw new ForbiddenException(logMessage, e);
+            throw new ForbiddenException("Ikke tilgang til bruker " + identifikator, e);
         } catch (HentOppfoelgingsstatusUgyldigInput e) {
-            String logMessage = "Ugyldig bruker identifikator: " + identifikator;
-            LOG.warn(logMessage, e);
-            throw new BadRequestException(logMessage, e);
+            throw new BadRequestException("Ugyldig bruker identifikator: " + identifikator, e);
         }
     }
 
