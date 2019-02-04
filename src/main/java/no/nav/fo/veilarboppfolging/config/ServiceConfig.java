@@ -2,7 +2,7 @@ package no.nav.fo.veilarboppfolging.config;
 
 import no.nav.brukerdialog.security.oidc.SystemUserTokenProvider;
 import no.nav.fo.veilarboppfolging.db.*;
-
+import no.nav.fo.veilarboppfolging.rest.AbacHelsesjekk;
 import no.nav.fo.veilarboppfolging.services.*;
 import no.nav.sbl.jdbc.Database;
 import no.nav.sbl.rest.RestUtils;
@@ -84,6 +84,9 @@ public class ServiceConfig {
     public SystemUserTokenProvider systemUserTokenProvider() {
         return new SystemUserTokenProvider();
     }
+
+    @Bean
+    public AbacHelsesjekk abacHelsesjekker(){ return new AbacHelsesjekk(); }
 
     @Bean
     public OppfolgingsbrukerService oppfolgingsbrukerService(SystemUserTokenProvider systemUserTokenProvider) {
