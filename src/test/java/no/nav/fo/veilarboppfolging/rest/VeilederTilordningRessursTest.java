@@ -5,10 +5,9 @@ import no.nav.apiapp.security.PepClient;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.feed.producer.FeedProducer;
 import no.nav.fo.veilarboppfolging.db.VeilederTilordningerRepository;
-import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingFeedDTO;
-import no.nav.fo.veilarboppfolging.rest.domain.TilordneVeilederResponse;
-import no.nav.fo.veilarboppfolging.rest.domain.VeilederTilordning;
+import no.nav.fo.veilarboppfolging.rest.domain.*;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -21,17 +20,13 @@ import org.springframework.jdbc.BadSqlGrammarException;
 import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.core.Response;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.*;
+import java.util.concurrent.*;
 
 import static java.util.Arrays.asList;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
-import static no.nav.fo.veilarboppfolging.rest.VeilederTilordningRessurs.kanSetteNyVeileder;
+import static no.nav.fo.veilarboppfolging.rest.VeilederTilordningRessurs.kanTilordneFraVeileder;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -59,19 +54,24 @@ public class VeilederTilordningRessursTest {
     @InjectMocks
     private VeilederTilordningRessurs veilederTilordningRessurs;
 
+    @Before
+    public void setup() {
+        when(autorisasjonService.harVeilederSkriveTilgangTilFnr(anyString(), anyString())).thenReturn(true);
+    }
+
     @Test
     public void skalKunneTildeleDersomOppgittVeilederErLikReellVeileder() throws Exception {
-        assertTrue(kanSetteNyVeileder("AAAAAAA", "AAAAAAA"));
+        assertTrue(kanTilordneFraVeileder("AAAAAAA", "AAAAAAA"));
     }
 
     @Test
     public void skalTildeleVeilederOmEksisterendeErNull() throws Exception {
-        assertTrue(kanSetteNyVeileder(null, "AAAAAAA"));
+        assertTrue(kanTilordneFraVeileder(null, "AAAAAAA"));
     }
 
     @Test
     public void skalIkkeTildeleVeilederOmEksisterendeErUlikFraVeileder() throws Exception {
-        assertFalse(kanSetteNyVeileder("AAAAAAA", "CCCCCC"));
+        assertFalse(kanTilordneFraVeileder("AAAAAAA", "CCCCCC"));
     }
 
     @Test
@@ -138,7 +138,6 @@ public class VeilederTilordningRessursTest {
         when(aktorServiceMock.getAktorId("FNR4")).thenReturn(of("AKTOERID4"));
         when(veilederTilordningerRepository.hentTilordningForAktoer("AKTOERID4"))
                 .thenReturn("IKKE_FRAVEILEDER4");
-
 
         Response response = veilederTilordningRessurs.postVeilederTilordninger(tilordninger);
         List<VeilederTilordning> feilendeTilordninger = ((TilordneVeilederResponse) response.getEntity()).getFeilendeTilordninger();
@@ -324,6 +323,27 @@ public class VeilederTilordningRessursTest {
         List<VeilederTilordning> feilendeTilordninger = ((TilordneVeilederResponse) response.getEntity()).getFeilendeTilordninger();
 
         assertThat(feilendeTilordninger).isEmpty();
+    }
+
+    @Test
+    public void portefoljeRessursMustCallDAOwithAktoerIdToVeileder() throws PepException {
+        when(aktorServiceMock.getAktorId(any(String.class))).thenReturn(of("AKTOERID"));
+        veilederTilordningRessurs.postVeilederTilordninger(Collections.singletonList(testData()));
+        verify(veilederTilordningerRepository, times(1)).upsertVeilederTilordning(anyString(), anyString());
+    }
+
+    @Test
+    public void noCallToDAOWhenAktoerIdServiceFails() {
+        when(aktorServiceMock.getAktorId(any(String.class))).thenReturn(empty());
+        veilederTilordningRessurs.postVeilederTilordninger(Collections.singletonList(testData()));
+        verify(veilederTilordningerRepository, never()).upsertVeilederTilordning(anyString(), anyString());
+    }
+
+    private VeilederTilordning testData() {
+        return new VeilederTilordning()
+                .setFraVeilederId(null)
+                .setTilVeilederId("4321")
+                .setBrukerFnr("1234");
     }
 
 }

@@ -2,15 +2,19 @@ package no.nav.fo.veilarboppfolging.rest;
 
 import no.nav.apiapp.feil.IngenTilgang;
 import no.nav.brukerdialog.security.domain.IdentType;
-import no.nav.brukerdialog.security.oidc.OidcTokenValidator;
-import no.nav.brukerdialog.security.oidc.OidcTokenValidatorResult;
+import no.nav.brukerdialog.security.oidc.*;
 import no.nav.brukerdialog.security.oidc.provider.IssoOidcProvider;
 import no.nav.common.auth.SubjectHandler;
+import no.nav.sbl.rest.RestUtils;
+import no.nav.sbl.util.EnvironmentUtils;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.servlet.http.HttpServletRequest;
+
+import static javax.ws.rs.core.HttpHeaders.AUTHORIZATION;
+import static no.nav.apiapp.util.UrlUtils.clusterUrlForApplication;
 
 @Component
 public class AutorisasjonService {
@@ -18,8 +22,14 @@ public class AutorisasjonService {
     @Inject
     Provider<HttpServletRequest> httpServletRequestProvider;
 
+    @Inject
+    SystemUserTokenProvider systemUserTokenProvider;
+
     private OidcTokenValidator oidcTokenValidator = new OidcTokenValidator();
     private IssoOidcProvider issoProvider = new IssoOidcProvider();
+
+    private final String abacTargetUrl = EnvironmentUtils.getOptionalProperty("VEILARBABAC")
+                                            .orElseGet(()->clusterUrlForApplication("veilarbabac"));
 
     public void skalVereInternBruker() {
         skalVere(IdentType.InternBruker);
@@ -53,4 +63,18 @@ public class AutorisasjonService {
             throw new IngenTilgang();
         }
     }
+
+    public boolean harVeilederSkriveTilgangTilFnr(String veilederId, String fnr) {
+        return 200 == RestUtils.withClient(c -> c.target(abacTargetUrl)
+                .path(veilederId)
+                .path("person")
+                .queryParam("fnr", fnr)
+                .queryParam("action", "update")
+                .request()
+                .header(AUTHORIZATION, "Bearer " + systemUserTokenProvider.getToken())
+                .get()
+                .getStatus()
+        );
+    }
+
 }
