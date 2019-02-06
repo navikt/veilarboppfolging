@@ -33,6 +33,8 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
+import javax.ws.rs.NotFoundException;
+
 import java.sql.Timestamp;
 import java.time.ZoneId;
 import java.util.Date;
@@ -379,7 +381,7 @@ public class OppfolgingResolver {
     private void hentOppfolgingstatusFraArena() {
 
         statusIArena = Try.of(() -> deps.getArenaOppfolgingService().hentArenaOppfolging(fnr))
-                .onFailure(e -> {log.warn("Feil fra Arena for aktørId: {}", aktorId, e);})
+                .onFailure(e -> {if(!(e instanceof NotFoundException)) {log.warn("Feil fra Arena for aktørId: {}", aktorId, e);}})
                 .toOption()
                 .toJavaOptional();
     }
