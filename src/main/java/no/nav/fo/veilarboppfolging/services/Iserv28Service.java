@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import no.nav.dialogarena.aktor.AktorService;
+import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingsStatusRepository;
 import no.nav.fo.veilarboppfolging.domain.IservMapper;
 import no.nav.fo.veilarboppfolging.domain.OppfolgingTable;
@@ -44,6 +45,7 @@ public class Iserv28Service{
     private final LockingTaskExecutor taskExecutor;
     private final SystemUserSubjectProvider systemUserSubjectProvider;
     private final OppfolgingsStatusRepository oppfolgingsStatusRepository;
+    private final OppfolgingRepository oppfolgingRepository;
 
     private static final int lockAutomatiskAvslutteOppfolgingSeconds = 3600;
 
@@ -52,6 +54,7 @@ public class Iserv28Service{
             JdbcTemplate jdbc,
             OppfolgingService oppfolgingService,
             OppfolgingsStatusRepository oppfolgingsStatusRepository,
+            OppfolgingRepository oppfolgingRepository,
             AktorService aktorService,
             LockingTaskExecutor taskExecutor,
             SystemUserSubjectProvider systemUserSubjectProvider
@@ -59,6 +62,7 @@ public class Iserv28Service{
         this.jdbc = jdbc;
         this.oppfolgingService = oppfolgingService;
         this.oppfolgingsStatusRepository = oppfolgingsStatusRepository;
+        this.oppfolgingRepository = oppfolgingRepository;
         this.aktorService = aktorService;
         this.taskExecutor = taskExecutor;
         this.systemUserSubjectProvider = systemUserSubjectProvider;
@@ -117,6 +121,8 @@ public class Iserv28Service{
                 updateIservBruker(arenaBruker);
             } else if(erIserv && brukerHarOppfolgingsflagg(arenaBruker.getAktoerid())) {
                 insertIservBruker(arenaBruker);
+            } else if("ARBS".equals(arenaBruker.getFormidlingsgruppekode())) {
+                oppfolgingRepository.startOppfolgingHvisIkkeAlleredeStartet(arenaBruker.getAktoerid());
             }
         }
         catch(Exception e){
