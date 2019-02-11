@@ -53,7 +53,11 @@ public class ArenaUtils {
     }
 
     public static boolean erIserv(ArenaOppfolging arenaStatus) {
-        return ISERV.equals(arenaStatus.getFormidlingsgruppe());
+        return erIserv(arenaStatus.getFormidlingsgruppe());
+    }
+
+    public static boolean erIserv(String formidlingsgruppe) {
+        return ISERV.equals(formidlingsgruppe);
     }
 
     public static boolean kanReaktiveres(ArenaOppfolging arenaStatus) {

@@ -11,4 +11,9 @@ public class ArenaBruker {
     public String formidlingsgruppekode;
     public ZonedDateTime iserv_fra_dato;
     public String hovedmaalkode;
+    
+    public String nav_kontor;
+    public String kvalifiseringsgruppekode;
+    public String rettighetsgruppekode;
+
 }

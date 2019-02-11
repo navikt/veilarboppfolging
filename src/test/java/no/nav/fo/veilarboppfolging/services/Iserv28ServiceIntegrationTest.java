@@ -8,6 +8,8 @@ import no.nav.fo.veilarboppfolging.db.OppfolgingsStatusRepository;
 import no.nav.fo.veilarboppfolging.domain.IservMapper;
 import no.nav.fo.veilarboppfolging.domain.OppfolgingTable;
 import no.nav.fo.veilarboppfolging.mappers.ArenaBruker;
+import no.nav.sbl.featuretoggle.unleash.UnleashService;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -48,7 +50,8 @@ public class Iserv28ServiceIntegrationTest extends DatabaseTest {
         when(oppfolgingService.avsluttOppfolgingForSystemBruker(anyString(), anyString(), anyString())).thenReturn(true);
         SystemUserSubjectProvider systemUserSubjectProvider = mock(SystemUserSubjectProvider.class);
         OppfolgingRepository oppfolgingRepository = mock(OppfolgingRepository.class);
-        iserv28Service = new Iserv28Service(jdbcTemplate, oppfolgingService, oppfolgingStatusRepository, oppfolgingRepository, aktorService, taskExecutor, systemUserSubjectProvider);
+        UnleashService unleash = mock(UnleashService.class);
+        iserv28Service = new Iserv28Service(jdbcTemplate, oppfolgingService, oppfolgingStatusRepository, oppfolgingRepository, aktorService, taskExecutor, systemUserSubjectProvider, unleash);
     }
 
     @Test

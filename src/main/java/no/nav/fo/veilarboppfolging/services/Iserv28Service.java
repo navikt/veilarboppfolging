@@ -11,6 +11,7 @@ import no.nav.fo.veilarboppfolging.domain.OppfolgingTable;
 import no.nav.fo.veilarboppfolging.mappers.ArenaBruker;
 import no.nav.fo.veilarboppfolging.utils.FunksjonelleMetrikker;
 import no.nav.metrics.utils.MetricsUtils;
+import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -25,6 +26,8 @@ import java.util.List;
 
 import static java.util.stream.Collectors.toList;
 import static no.nav.common.auth.SubjectHandler.withSubject;
+import static no.nav.fo.veilarboppfolging.services.ArenaUtils.erIserv;
+import static no.nav.fo.veilarboppfolging.services.ArenaUtils.erUnderOppfolging;
 import static no.nav.fo.veilarboppfolging.services.Iserv28Service.AvslutteOppfolgingResultat.*;
 import static no.nav.sbl.sql.DbConstants.CURRENT_TIMESTAMP;
 
@@ -46,6 +49,7 @@ public class Iserv28Service{
     private final SystemUserSubjectProvider systemUserSubjectProvider;
     private final OppfolgingsStatusRepository oppfolgingsStatusRepository;
     private final OppfolgingRepository oppfolgingRepository;
+    private final UnleashService unleashService;
 
     private static final int lockAutomatiskAvslutteOppfolgingSeconds = 3600;
 
@@ -57,7 +61,8 @@ public class Iserv28Service{
             OppfolgingRepository oppfolgingRepository,
             AktorService aktorService,
             LockingTaskExecutor taskExecutor,
-            SystemUserSubjectProvider systemUserSubjectProvider
+            SystemUserSubjectProvider systemUserSubjectProvider,
+            UnleashService unleashService
     ){
         this.jdbc = jdbc;
         this.oppfolgingService = oppfolgingService;
@@ -66,6 +71,7 @@ public class Iserv28Service{
         this.aktorService = aktorService;
         this.taskExecutor = taskExecutor;
         this.systemUserSubjectProvider = systemUserSubjectProvider;
+        this.unleashService = unleashService;
     }
 
     @Scheduled(cron="0 0 * * * *")
@@ -111,18 +117,29 @@ public class Iserv28Service{
     }
 
     public void filterereIservBrukere(ArenaBruker arenaBruker){
-        boolean erIserv = "ISERV".equals(arenaBruker.getFormidlingsgruppekode());
-        IservMapper eksisterendeIservBruker = eksisterendeIservBruker(arenaBruker);
 
         try {
-            if (eksisterendeIservBruker != null && !erIserv) {
-                slettAvsluttetOppfolgingsBruker(arenaBruker.getAktoerid());
-            } else if (eksisterendeIservBruker != null) {
-                updateIservBruker(arenaBruker);
-            } else if(erIserv && brukerHarOppfolgingsflagg(arenaBruker.getAktoerid())) {
-                insertIservBruker(arenaBruker);
-            } else if("ARBS".equals(arenaBruker.getFormidlingsgruppekode())) {
-                oppfolgingRepository.startOppfolgingHvisIkkeAlleredeStartet(arenaBruker.getAktoerid());
+            IservMapper eksisterendeIservBruker = eksisterendeIservBruker(arenaBruker);
+            String aktoerid = arenaBruker.getAktoerid();
+
+            if(erIserv(arenaBruker.getFormidlingsgruppekode())) {
+                if (eksisterendeIservBruker != null) {
+                    updateIservBruker(arenaBruker);
+                } else if (brukerHarOppfolgingsflagg(aktoerid)) {
+                    insertIservBruker(arenaBruker);
+                }
+            } else {
+                if(eksisterendeIservBruker != null) {
+                    slettAvsluttetOppfolgingsBruker(aktoerid);
+                }
+                if(erUnderOppfolging(arenaBruker.getFormidlingsgruppekode(), arenaBruker.getKvalifiseringsgruppekode(), null)) {
+                    if(unleashService.isEnabled("veilarboppfolging.start.oppfolging.automatisk")) {
+                        log.info("Starter oppfølging automatisk for bruker med aktørid{}", aktoerid);
+                        oppfolgingRepository.startOppfolgingHvisIkkeAlleredeStartet(aktoerid);
+                    } else {
+                        log.info("Automatisk start av oppfølging er slått av i unleash. Aktørid {}", aktoerid);
+                    }
+                }
             }
         }
         catch(Exception e){
