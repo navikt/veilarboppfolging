@@ -42,7 +42,7 @@ public class ArenaOppfolgingRessursTest {
         );
 
 
-        final OppfolgingskontraktResponse oppfoelging = oppfoelgingRessurs.getOppfoelging("***REMOVED***");
+        final OppfolgingskontraktResponse oppfoelging = oppfoelgingRessurs.getOppfoelging("fnr");
 
         assertThat(oppfoelging.getOppfoelgingskontrakter().isEmpty(), is(false));
     }

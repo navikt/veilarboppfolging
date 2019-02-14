@@ -47,7 +47,7 @@ class AktiverBrukerServiceTest {
     }
 
     private AktiverArbeidssokerData hentBruker() {
-        return new AktiverArbeidssokerData(new Fnr("12345678910"), Innsatsgruppe.STANDARD_INNSATS);
+        return new AktiverArbeidssokerData(new Fnr("fnr"), Innsatsgruppe.STANDARD_INNSATS);
     }
 
     @Test
@@ -58,14 +58,14 @@ class AktiverBrukerServiceTest {
 
     @Test
     void brukerSomHarInaktivStatusSkalKunneReaktivereSeg() throws Exception {
-        aktiverBrukerService.reaktiverBruker(new Fnr("12345678910"));
+        aktiverBrukerService.reaktiverBruker(new Fnr("fnr"));
         verify(behandleArbeidssoekerV1, times(1)).reaktiverBrukerForenklet(any());
     }
 
     @Test
     void brukerSomIkkeKanReaktiveresForenkletIArenaSkalGiRiktigFeil() throws Exception {
         doThrow(mock(ReaktiverBrukerForenkletBrukerKanIkkeReaktiveresForenklet.class)).when(behandleArbeidssoekerV1).reaktiverBrukerForenklet(any());
-        Feil e = reaktiverBrukerMotArenaOgReturnerFeil(new Fnr("12345678910"));
+        Feil e = reaktiverBrukerMotArenaOgReturnerFeil(new Fnr("fnr"));
         assertThat(e.getType().getStatus()).isNotNull();
         assertThat(e.getType().getStatus()).isEqualTo(FORBIDDEN);
         assertThat(e.getType().getName()).isEqualTo("BRUKER_KAN_IKKE_REAKTIVERES_FORENKLET");

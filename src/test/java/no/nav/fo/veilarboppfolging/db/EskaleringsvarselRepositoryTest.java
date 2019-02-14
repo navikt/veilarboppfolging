@@ -15,8 +15,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class EskaleringsvarselRepositoryTest extends DatabaseTest {
 
-    private static final String AKTOR_ID = "2222";
-    private static final String SAKSBEHANDLER_ID = "Z990000";
+    private static final String AKTOR_ID = "aktorId";
+    private static final String SAKSBEHANDLER_ID = "saksbehandlerId";
     private static final String BEGRUNNELSE = "Begrunnelse";
     private static final int NUM_ITEMS = 10;
 

@@ -38,17 +38,17 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class MalServiceTest {
 
-    private static final String FNR = "12345678901";
-    private static final String AKTOR_ID = "123456";
+    private static final String FNR = "fnr";
+    private static final String AKTOR_ID = "aktorId";
     private static final long MAL_ID = 1L;
     private static final long KVP_ID = 1L;
-    private static final String ENHET = "1234";
+    private static final String ENHET = "enhet";
     private static final Instant START_KVP = OffsetDateTime.now().toInstant();
     private static final Instant BEFORE_KVP = START_KVP.minus(1, DAYS);
     private static final Instant IN_KVP = START_KVP.plus(1, DAYS);
     private static final Instant STOP_KVP = START_KVP.plus(2, DAYS);
     private static final Instant AFTER_KVP = START_KVP.plus(3, DAYS);
-    private static final String VEILEDER = "Z990000";
+    private static final String VEILEDER = "veileder";
 
     @Mock(answer = Answers.RETURNS_MOCKS)
     private OppfolgingResolverDependencies oppfolgingResolverDependenciesMock;

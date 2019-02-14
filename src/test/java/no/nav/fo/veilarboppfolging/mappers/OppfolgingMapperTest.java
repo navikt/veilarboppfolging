@@ -81,7 +81,7 @@ public class OppfolgingMapperTest {
     private HentOppfoelgingskontraktListeRequest getWsHentOppfoelgingskontraktListeRequest() {
         final HentOppfoelgingskontraktListeRequest request = new HentOppfoelgingskontraktListeRequest();
         final Periode periode = new Periode();
-        final String fnr = "***REMOVED***";
+        final String fnr = "fnr";
         LocalDate periodeFom = LocalDate.now().minusMonths(MANEDER_BAK_I_TID);
         LocalDate periodeTom = LocalDate.now().plusMonths(MANEDER_FREM_I_TID);
         XMLGregorianCalendar fom = convertDateToXMLGregorianCalendar(periodeFom);

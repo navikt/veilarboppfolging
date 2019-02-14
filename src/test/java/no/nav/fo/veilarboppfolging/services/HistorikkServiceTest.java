@@ -49,9 +49,9 @@ public class HistorikkServiceTest {
     @InjectMocks
     private HistorikkService historikkService;
 
-    private static final String FNR = "12345678901";
-    private static final String AKTOR_ID = "123456";
-    private static final String ENHET = "1234";
+    private static final String FNR = "fnr";
+    private static final String AKTOR_ID = "aktorId";
+    private static final String ENHET = "enhet";
 
     private static final Instant BEFORE_KVP = OffsetDateTime.now().toInstant();
     private static final Instant ALSO_BEFORE_KVP = BEFORE_KVP.plus(1, HOURS);

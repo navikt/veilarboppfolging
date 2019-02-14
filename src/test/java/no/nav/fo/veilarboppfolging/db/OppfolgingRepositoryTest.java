@@ -27,11 +27,11 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class OppfolgingRepositoryTest extends DatabaseTest {
 
-    private static final String AKTOR_ID = "2222";
-    private static final String ENHET = "1234";
-    private static final String VEILERDER = "Z9900001";
+    private static final String AKTOR_ID = "aktorId";
+    private static final String ENHET = "enhet";
+    private static final String VEILERDER = "veileder";
     private static final String BEGRUNNELSE = "begrunnelse";
-    private static final String OTHER_ENHET = "4321";
+    private static final String OTHER_ENHET = "otherEnhet";
 
     @Mock
     private PepClient pepClientMock;

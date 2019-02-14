@@ -42,7 +42,7 @@ public class Iserv28ServiceIntegrationTest extends DatabaseTest {
     @Before
     public void setup() throws Exception {
         AktorService aktorService = mock(AktorService.class);
-        when(aktorService.getFnr(anyString())).thenReturn(of("12345678901"));
+        when(aktorService.getFnr(anyString())).thenReturn(of("fnr"));
         when(oppfolgingStatusRepository.fetch(anyString())).thenReturn(new OppfolgingTable().setUnderOppfolging(true));
         when(oppfolgingService.avsluttOppfolgingForSystemBruker(anyString(), anyString(), anyString())).thenReturn(true);
         SystemUserSubjectProvider systemUserSubjectProvider = mock(SystemUserSubjectProvider.class);

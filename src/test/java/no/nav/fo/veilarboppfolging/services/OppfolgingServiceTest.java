@@ -79,8 +79,8 @@ public class OppfolgingServiceTest {
 
     private static final String FNR = "fnr";
     private static final String AKTOR_ID = "aktorId";
-    private static final String ENHET = "0100";
-    private static final String VEILEDER = "Z990000";
+    private static final String ENHET = "enhet";
+    private static final String VEILEDER = "veileder";
     private static final String BEGRUNNELSE = "begrunnelse";
 
     @InjectMocks

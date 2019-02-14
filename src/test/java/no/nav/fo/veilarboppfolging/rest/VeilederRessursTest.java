@@ -42,7 +42,7 @@ public class VeilederRessursTest {
         when(veilederTilordningerRepository.hentTilordningForAktoer(anyString()))
                 .thenReturn(forventetIdent);
 
-        final Veileder veileder = veilederRessurs.getVeileder("***REMOVED***");
+        final Veileder veileder = veilederRessurs.getVeileder("fnr");
         assertNotNull(veileder);
         assertNotNull(veileder.getVeilederident());
         assertThat(veileder.getVeilederident(), is(forventetIdent));
