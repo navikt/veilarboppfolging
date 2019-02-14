@@ -49,7 +49,7 @@ class ActualYtelseskontraktResponse {
     }
 
     private static WSHentYtelseskontraktListeRequest getWSHentYtelseskontraktListeRequest() {
-        String personId = "***REMOVED***";
+        String personId = "fnr";
 
         LocalDate periodeFom = LocalDate.now().minusMonths(MANEDER_BAK_I_TID);
         LocalDate periodeTom = LocalDate.now().plusMonths(MANEDER_FREM_I_TID);

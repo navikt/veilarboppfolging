@@ -24,8 +24,8 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class KvpRepositoryTest extends DatabaseTest {
 
-    private static final String AKTOR_ID = "2222";
-    private static final String SAKSBEHANDLER_ID = "Z990000";
+    private static final String AKTOR_ID = "aktorId";
+    private static final String SAKSBEHANDLER_ID = "saksbehandlerId";
     public static final String BEGRUNNELSE = "Begrunnelse";
 
     private Database db = getBean(Database.class);

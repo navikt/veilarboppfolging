@@ -68,7 +68,7 @@ public class YtelsesRessursTest {
                 new OppfolgingskontraktResponse(singletonList(new OppfolgingskontraktData()))
         );
 
-        final YtelserResponse ytelser = ytelseRessurs.getYtelser("***REMOVED***");
+        final YtelserResponse ytelser = ytelseRessurs.getYtelser("fnr");
 
         assertThat(ytelser.getOppfoelgingskontrakter().isEmpty(), is(false));
         assertThat(ytelser.getVedtaksliste().isEmpty(), is(false));
