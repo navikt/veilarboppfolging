@@ -132,7 +132,8 @@ public class Iserv28Service{
                 if(eksisterendeIservBruker != null) {
                     slettAvsluttetOppfolgingsBruker(aktoerid);
                 }
-                if(erUnderOppfolging(arenaBruker.getFormidlingsgruppekode(), arenaBruker.getKvalifiseringsgruppekode(), null)) {
+                if(erUnderOppfolging(arenaBruker.getFormidlingsgruppekode(), arenaBruker.getKvalifiseringsgruppekode(), null) 
+                        && !brukerHarOppfolgingsflagg(aktoerid)) {
                     if(unleashService.isEnabled("veilarboppfolging.start.oppfolging.automatisk")) {
                         log.info("Starter oppfølging automatisk for bruker med aktørid{}", aktoerid);
                         oppfolgingRepository.startOppfolgingHvisIkkeAlleredeStartet(aktoerid);
@@ -150,7 +151,7 @@ public class Iserv28Service{
     private boolean brukerHarOppfolgingsflagg(String aktoerId) {
         OppfolgingTable eksisterendeOppfolgingstatus = oppfolgingsStatusRepository.fetch(aktoerId);
         boolean harOppfolgingsflagg = eksisterendeOppfolgingstatus != null && eksisterendeOppfolgingstatus.isUnderOppfolging();
-        log.info("ISERV bruker med aktorid {} har oppfolgingsflagg: {}", aktoerId, harOppfolgingsflagg);
+        log.info("Bruker med aktorid {} har oppfolgingsflagg: {}", aktoerId, harOppfolgingsflagg);
         return harOppfolgingsflagg;
     }
 
