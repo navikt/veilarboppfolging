@@ -357,7 +357,7 @@ public class OppfolgingResolver {
 
     private Oppfolging hentOppfolging() {
         return deps.getOppfolgingRepository().hentOppfolging(aktorId)
-                .orElseGet(() -> deps.getOppfolgingRepository().opprettOppfolging(aktorId));
+                .orElseGet(() -> new Oppfolging().setAktorId(aktorId).setUnderOppfolging(false));
     }
 
     void startEskalering(String begrunnelse, long tilhorendeDialogId) {
