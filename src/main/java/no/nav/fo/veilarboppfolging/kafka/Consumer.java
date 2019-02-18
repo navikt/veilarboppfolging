@@ -3,7 +3,6 @@ package no.nav.fo.veilarboppfolging.kafka;
 import no.nav.fo.veilarboppfolging.mappers.ArenaBruker;
 import no.nav.fo.veilarboppfolging.services.Iserv28Service;
 import no.nav.fo.veilarboppfolging.utils.FunksjonelleMetrikker;
-import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -23,28 +22,22 @@ public class Consumer {
     private static final Logger LOG = LoggerFactory.getLogger(Consumer.class);
 
     private final Iserv28Service iserv28Service;
-    private final UnleashService unleashService;
 
     @Inject
-    public Consumer(Iserv28Service iserv28Service, UnleashService unleashService, ConsumerParameters consumerParameters) {
+    public Consumer(Iserv28Service iserv28Service, ConsumerParameters consumerParameters) {
         this.iserv28Service = iserv28Service;
-        this.unleashService = unleashService;
         setProperty(ENDRING_PAA_BRUKER_KAFKA_TOPIC_PROPERTY_NAME, consumerParameters.topic, PUBLIC);
     }
 
     @KafkaListener(topics = "${" + ENDRING_PAA_BRUKER_KAFKA_TOPIC_PROPERTY_NAME + "}")
     public void consume(String arenaBruker) {
-        if (unleashService.isEnabled("konsumer-endring-oppfolgingsbruker")) {
-            try {
-                final ArenaBruker deserialisertBruker = deserialisereBruker(arenaBruker);
-                iserv28Service.filterereIservBrukere(deserialisertBruker);
-                FunksjonelleMetrikker.antallMeldingerKonsumertAvKafka();
-                LOG.info("Konsumert bruker med akoerid = '{}' har status i veilarbarena: {}", deserialisertBruker.aktoerid, deserialisertBruker);
-            } catch (Throwable t) {
-                LOG.error(t.getMessage(), t);
-            }
-        } else {
-            LOG.info("konsumering av endringer er disablet");
+        try {
+            final ArenaBruker deserialisertBruker = deserialisereBruker(arenaBruker);
+            iserv28Service.filterereIservBrukere(deserialisertBruker);
+            FunksjonelleMetrikker.antallMeldingerKonsumertAvKafka();
+            LOG.info("Konsumert bruker med akoerid = '{}' har status i veilarbarena: {}", deserialisertBruker.aktoerid, deserialisertBruker);
+        } catch (Throwable t) {
+            LOG.error(t.getMessage(), t);
         }
     }
 
