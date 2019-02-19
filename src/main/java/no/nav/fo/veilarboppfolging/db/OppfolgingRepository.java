@@ -6,7 +6,7 @@ import lombok.val;
 import no.nav.apiapp.feil.Feil;
 import no.nav.apiapp.security.PepClient;
 import no.nav.fo.veilarboppfolging.domain.*;
-import no.nav.sbl.jdbc.Database;
+import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
@@ -19,11 +19,10 @@ import static java.util.stream.Collectors.toList;
 import static no.nav.apiapp.feil.FeilType.UGYLDIG_HANDLING;
 import static no.nav.fo.veilarboppfolging.utils.KvpUtils.sjekkTilgangGittKvp;
 
+@Component
 public class OppfolgingRepository {
 
-    @Inject
-    private PepClient pepClient;
-
+    private final PepClient pepClient;
     private final OppfolgingsStatusRepository statusRepository;
     private final OppfolgingsPeriodeRepository periodeRepository;
     private final MaalRepository maalRepository;
@@ -33,15 +32,27 @@ public class OppfolgingRepository {
     private final KvpRepository kvpRepository;
     private final NyeBrukereFeedRepository nyeBrukereFeedRepository;
 
-    public OppfolgingRepository(Database database) {
-        statusRepository = new OppfolgingsStatusRepository(database);
-        periodeRepository = new OppfolgingsPeriodeRepository(database);
-        maalRepository = new MaalRepository(database);
-        manuellStatusRepository = new ManuellStatusRepository(database);
-        brukervilkarRepository = new BrukervilkarRepository(database);
-        eskaleringsvarselRepository = new EskaleringsvarselRepository(database);
-        kvpRepository = new KvpRepository(database);
-        nyeBrukereFeedRepository = new NyeBrukereFeedRepository(database);
+    @Inject
+    public OppfolgingRepository(
+            PepClient pepClient,
+            OppfolgingsStatusRepository statusRepository,
+            OppfolgingsPeriodeRepository periodeRepository,
+            MaalRepository maalRepository,
+            ManuellStatusRepository manuellStatusRepository,
+            BrukervilkarRepository brukervilkarRepository,
+            EskaleringsvarselRepository eskaleringsvarselRepository,
+            KvpRepository kvpRepository,
+            NyeBrukereFeedRepository nyeBrukereFeedRepository
+    ) {
+        this.pepClient = pepClient;
+        this.statusRepository = statusRepository;
+        this.periodeRepository = periodeRepository;
+        this.maalRepository = maalRepository;
+        this.manuellStatusRepository = manuellStatusRepository;
+        this.brukervilkarRepository = brukervilkarRepository;
+        this.eskaleringsvarselRepository = eskaleringsvarselRepository;
+        this.kvpRepository = kvpRepository;
+        this.nyeBrukereFeedRepository = nyeBrukereFeedRepository;
     }
 
     @SneakyThrows
@@ -95,7 +106,7 @@ public class OppfolgingRepository {
         startOppfolgingHvisIkkeAlleredeStartet(
                 Oppfolgingsbruker.builder()
                         .aktoerId(aktorId)
-                .build()
+                        .build()
         );
     }
 

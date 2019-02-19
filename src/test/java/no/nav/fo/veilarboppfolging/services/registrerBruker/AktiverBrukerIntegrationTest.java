@@ -4,6 +4,7 @@ import io.vavr.control.Try;
 import no.nav.apiapp.security.PepClient;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.config.DatabaseConfig;
+import no.nav.fo.veilarboppfolging.config.DatabaseRepositoryConfig;
 import no.nav.fo.veilarboppfolging.db.NyeBrukereFeedRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingsPeriodeRepository;
@@ -17,10 +18,7 @@ import no.nav.tjeneste.virksomhet.behandlearbeidssoeker.v1.binding.BehandleArbei
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.*;
 
 import javax.sql.DataSource;
 import java.util.Optional;
@@ -120,31 +118,19 @@ class AktiverBrukerIntegrationTest {
 
     @Configuration
     @ComponentScan
+    @Import({
+            DatabaseRepositoryConfig.class
+    })
     public static class BrukerregistreringConfigTest {
-        @Bean
-        public OppfolgingRepository oppfolgingRepository(Database database) {
-            return new OppfolgingRepository(database);
-        }
-
-        @Bean
-        public OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository(Database database) {
-            return new OppfolgingsPeriodeRepository(database);
-        }
 
         @Bean
         public AktorService aktoerService() {
             return mock(AktorService.class);
         }
 
-
         @Bean
         public BehandleArbeidssoekerV1 behandleArbeidssoekerV1() {
             return mock(BehandleArbeidssoekerV1.class);
-        }
-
-        @Bean
-        public NyeBrukereFeedRepository nyeBrukereFeedRepository(Database database) {
-            return new NyeBrukereFeedRepository(database);
         }
 
         @Bean

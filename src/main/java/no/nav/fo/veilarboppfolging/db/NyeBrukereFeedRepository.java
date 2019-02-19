@@ -8,15 +8,19 @@ import no.nav.fo.veilarboppfolging.domain.NyeBrukereFeedDTO;
 import no.nav.fo.veilarboppfolging.domain.Oppfolgingsbruker;
 import no.nav.fo.veilarboppfolging.domain.SykmeldtBrukerType;
 import no.nav.sbl.jdbc.Database;
+import org.springframework.stereotype.Component;
 
+import javax.inject.Inject;
 import java.sql.ResultSet;
 import java.util.List;
 
 @Slf4j
+@Component
 public class NyeBrukereFeedRepository {
 
-    private Database database;
+    private final Database database;
 
+    @Inject
     public NyeBrukereFeedRepository(Database database) {
         this.database = database;
     }

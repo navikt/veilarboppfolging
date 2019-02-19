@@ -4,23 +4,28 @@ package no.nav.fo.veilarboppfolging.db;
 import lombok.SneakyThrows;
 import no.nav.fo.veilarboppfolging.domain.Tilordning;
 import no.nav.sbl.jdbc.Database;
+import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.inject.Inject;
 import java.sql.ResultSet;
 import java.util.List;
 import java.util.Optional;
 
 import static no.nav.fo.veilarboppfolging.db.OppfolgingsStatusRepository.*;
 
+@Component
 public class VeilederTilordningerRepository {
 
-    private Database db;
-    private OppfolgingRepository oppfolgingRepository;
+    private final Database db;
+    private final OppfolgingRepository oppfolgingRepository;
 
+    @Inject
     public VeilederTilordningerRepository(Database db, OppfolgingRepository oppfolgingRepository) {
         this.db = db;
         this.oppfolgingRepository = oppfolgingRepository;
     }
+
     public String hentTilordningForAktoer(String aktorId) {
         return hentTilordnetVeileder(aktorId)
                 .map(Tilordning::getVeilederId)

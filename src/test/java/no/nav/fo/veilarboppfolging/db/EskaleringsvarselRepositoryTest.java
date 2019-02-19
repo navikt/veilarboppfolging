@@ -6,6 +6,7 @@ import no.nav.fo.veilarboppfolging.domain.Oppfolging;
 import no.nav.sbl.jdbc.Database;
 import org.junit.Test;
 
+import javax.inject.Inject;
 import java.util.List;
 
 import static org.hamcrest.Matchers.is;
@@ -20,11 +21,11 @@ public class EskaleringsvarselRepositoryTest extends DatabaseTest {
     private static final String BEGRUNNELSE = "Begrunnelse";
     private static final int NUM_ITEMS = 10;
 
-    private Database db = getBean(Database.class);
+    @Inject
+    private OppfolgingRepository oppfolgingRepository;
 
-    private OppfolgingRepository oppfolgingRepository = new OppfolgingRepository(db);
-
-    private EskaleringsvarselRepository repository = new EskaleringsvarselRepository(db);
+    @Inject
+    private EskaleringsvarselRepository repository;
 
     /**
      * Test that creating an escalation warning inserts a record in the database,

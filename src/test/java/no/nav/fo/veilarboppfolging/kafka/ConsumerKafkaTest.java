@@ -3,10 +3,10 @@ package no.nav.fo.veilarboppfolging.kafka;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.veilarboppfolging.db.OppfolgingsStatusRepository;
-import no.nav.fo.veilarboppfolging.domain.*;
+import no.nav.fo.veilarboppfolging.domain.IservMapper;
+import no.nav.fo.veilarboppfolging.domain.OppfolgingTable;
 import no.nav.fo.veilarboppfolging.mappers.ArenaBruker;
 import no.nav.fo.veilarboppfolging.services.Iserv28Service;
-import no.nav.fo.veilarboppfolging.services.OppfolgingService;
 import no.nav.json.JsonUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -19,7 +19,6 @@ import java.util.function.Supplier;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @Slf4j

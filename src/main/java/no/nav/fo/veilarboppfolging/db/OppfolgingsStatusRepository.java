@@ -3,11 +3,14 @@ package no.nav.fo.veilarboppfolging.db;
 import no.nav.fo.veilarboppfolging.domain.Oppfolging;
 import no.nav.fo.veilarboppfolging.domain.OppfolgingTable;
 import no.nav.sbl.jdbc.Database;
+import org.springframework.stereotype.Component;
 
+import javax.inject.Inject;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
+@Component
 public class OppfolgingsStatusRepository {
 
     static final String GJELDENE_ESKALERINGSVARSEL = "gjeldende_eskaleringsvarsel";
@@ -22,8 +25,9 @@ public class OppfolgingsStatusRepository {
     static final String SIST_TILORDNET = "sist_tilordnet";
     static final String OPPDATERT = "oppdatert";
 
-    private Database db;
+    private final Database db;
 
+    @Inject
     public OppfolgingsStatusRepository(Database db) {
         this.db = db;
     }
