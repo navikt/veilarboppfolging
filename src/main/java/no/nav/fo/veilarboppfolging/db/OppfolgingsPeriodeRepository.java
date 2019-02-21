@@ -4,8 +4,10 @@ import lombok.SneakyThrows;
 import no.nav.fo.veilarboppfolging.domain.AvsluttetOppfolgingFeedData;
 import no.nav.fo.veilarboppfolging.domain.Oppfolgingsperiode;
 import no.nav.sbl.jdbc.Database;
+import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.inject.Inject;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -15,9 +17,11 @@ import static no.nav.fo.veilarboppfolging.db.OppfolgingsStatusRepository.AKTOR_I
 import static no.nav.fo.veilarboppfolging.db.OppfolgingsStatusRepository.UNDER_OPPFOLGING;
 import static no.nav.sbl.jdbc.Database.hentDato;
 
+@Component
 public class OppfolgingsPeriodeRepository {
-    private Database database;
+    private final Database database;
 
+    @Inject
     public OppfolgingsPeriodeRepository(Database database) {
         this.database = database;
     }

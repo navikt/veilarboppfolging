@@ -11,6 +11,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import javax.inject.Inject;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
@@ -24,7 +25,6 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
 public class OppfolgingRepositoryTest extends DatabaseTest {
 
     private static final String AKTOR_ID = "aktorId";
@@ -33,14 +33,17 @@ public class OppfolgingRepositoryTest extends DatabaseTest {
     private static final String BEGRUNNELSE = "begrunnelse";
     private static final String OTHER_ENHET = "otherEnhet";
 
-    @Mock
+    @Inject
     private PepClient pepClientMock;
 
-    private Database db = getBean(Database.class);
-    private KvpRepository kvpRepository = new KvpRepository(db);
+    @Inject
+    private KvpRepository kvpRepository;
 
-    @InjectMocks
-    private OppfolgingRepository oppfolgingRepository = new OppfolgingRepository(db);
+    @Inject
+    private Database db;
+
+    @Inject
+    private OppfolgingRepository oppfolgingRepository;
 
     @Test
     public void oppfolging_periode_uten_kvp_perioder() {

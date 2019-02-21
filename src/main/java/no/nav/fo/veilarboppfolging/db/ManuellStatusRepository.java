@@ -4,8 +4,10 @@ import lombok.SneakyThrows;
 import no.nav.fo.veilarboppfolging.domain.KodeverkBruker;
 import no.nav.fo.veilarboppfolging.domain.ManuellStatus;
 import no.nav.sbl.jdbc.Database;
+import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.inject.Inject;
 import java.sql.ResultSet;
 import java.util.List;
 
@@ -14,10 +16,12 @@ import static no.nav.apiapp.util.EnumUtils.valueOfOptional;
 import static no.nav.fo.veilarboppfolging.db.OppfolgingsStatusRepository.AKTOR_ID;
 import static no.nav.fo.veilarboppfolging.db.OppfolgingsStatusRepository.GJELDENDE_MANUELL_STATUS;
 
+@Component
 public class ManuellStatusRepository {
 
-    private Database database;
+    private final Database database;
 
+    @Inject
     public ManuellStatusRepository(Database database) {
         this.database = database;
     }

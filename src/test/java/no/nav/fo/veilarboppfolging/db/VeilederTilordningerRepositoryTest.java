@@ -1,15 +1,11 @@
 package no.nav.fo.veilarboppfolging.db;
 
-import no.nav.apiapp.security.PepClient;
 import no.nav.fo.DatabaseTest;
 import no.nav.fo.veilarboppfolging.domain.Tilordning;
-import no.nav.sbl.jdbc.Database;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import java.io.IOException;
+import javax.inject.Inject;
 import java.util.Optional;
 
 import static org.hamcrest.Matchers.is;
@@ -21,18 +17,12 @@ public class VeilederTilordningerRepositoryTest extends DatabaseTest {
     public static final String VEILEDER = "4321";
     public static final String OTHER_VEILEDER = "5432";
 
-    @BeforeAll
-    public static void setup() throws IOException {
-        annotationConfigApplicationContext.register(OppfolgingRepository.class);
-        annotationConfigApplicationContext.registerBean(PepClient.class, () -> Mockito.mock(PepClient.class));
-    }
 
-    private VeilederTilordningerRepository repository = new VeilederTilordningerRepository(
-            getBean(Database.class),
-            getBean(OppfolgingRepository.class)
-    );
+    @Inject
+    private VeilederTilordningerRepository repository;
 
-    private JdbcTemplate db = getBean(JdbcTemplate.class);
+    @Inject
+    private JdbcTemplate db;
 
     @Test
     public void skalLeggeTilBruker() {
