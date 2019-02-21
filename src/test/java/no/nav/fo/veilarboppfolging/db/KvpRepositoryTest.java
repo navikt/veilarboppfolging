@@ -13,6 +13,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import javax.inject.Inject;
+
 import static no.nav.fo.veilarboppfolging.domain.KodeverkBruker.NAV;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertNull;
@@ -21,7 +23,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
 public class KvpRepositoryTest extends DatabaseTest {
 
     private static final String AKTOR_ID = "aktorId";
@@ -30,11 +31,11 @@ public class KvpRepositoryTest extends DatabaseTest {
 
     private Database db = getBean(Database.class);
 
-    @Mock
+    @Inject
     private PepClient pepClientMock;
 
-    @InjectMocks
-    private OppfolgingRepository oppfolgingRepository = new OppfolgingRepository(db);
+    @Inject
+    private OppfolgingRepository oppfolgingRepository;
 
     private KvpRepository kvpRepository = new KvpRepository(db);
 

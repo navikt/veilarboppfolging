@@ -18,6 +18,7 @@ import no.nav.fo.veilarboppfolging.utils.FunksjonelleMetrikker;
 import no.nav.fo.veilarboppfolging.utils.StringUtils;
 import no.nav.fo.veilarboppfolging.vilkar.VilkarService;
 import no.nav.metrics.MetricsFactory;
+import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import no.nav.sbl.jdbc.Transactor;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.DigitalKontaktinformasjonV1;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.HentDigitalKontaktinformasjonKontaktinformasjonIkkeFunnet;
@@ -357,7 +358,13 @@ public class OppfolgingResolver {
 
     private Oppfolging hentOppfolging() {
         return deps.getOppfolgingRepository().hentOppfolging(aktorId)
-                .orElseGet(() -> deps.getOppfolgingRepository().opprettOppfolging(aktorId));
+                .orElseGet(() -> nyBruker());
+    }
+
+    private Oppfolging nyBruker() {
+        return deps.unleash.isEnabled("veilarboppfolging.ikke.lagre.ny.privat.bruker") 
+                ? new Oppfolging().setAktorId(aktorId).setUnderOppfolging(false)
+                : deps.getOppfolgingRepository().opprettOppfolging(aktorId);
     }
 
     void startEskalering(String begrunnelse, long tilhorendeDialogId) {
@@ -496,6 +503,9 @@ public class OppfolgingResolver {
 
         @Inject
         private RemoteFeatureConfig.BrukervilkarFeature brukervilkarFeature;
+
+        @Inject
+        private UnleashService unleash;
 
     }
 }

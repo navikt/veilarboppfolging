@@ -3,8 +3,10 @@ package no.nav.fo.veilarboppfolging.db;
 import lombok.SneakyThrows;
 import no.nav.fo.veilarboppfolging.domain.EskaleringsvarselData;
 import no.nav.sbl.jdbc.Database;
+import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.inject.Inject;
 import java.sql.ResultSet;
 import java.util.List;
 
@@ -12,10 +14,12 @@ import static no.nav.fo.veilarboppfolging.db.OppfolgingsStatusRepository.AKTOR_I
 import static no.nav.fo.veilarboppfolging.db.OppfolgingsStatusRepository.GJELDENE_ESKALERINGSVARSEL;
 import static no.nav.sbl.jdbc.Database.hentDato;
 
+@Component
 public class EskaleringsvarselRepository {
 
-    private Database database;
+    private final Database database;
 
+    @Inject
     public EskaleringsvarselRepository(Database database) {
         this.database = database;
     }

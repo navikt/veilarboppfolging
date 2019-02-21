@@ -14,6 +14,7 @@ import no.nav.tjeneste.virksomhet.organisasjonenhet.v2.binding.OrganisasjonEnhet
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.sql.DataSource;
@@ -38,42 +39,6 @@ public class ServiceConfig {
                                                   OppfoelgingPortType oppfoelgingPortType) {
 
         return new ArenaOppfolgingService(oppfoelgingsstatusV2, oppfoelgingPortType);
-    }
-
-    @Bean
-    OppfolgingFeedRepository oppfolgingFeedRepository(JdbcTemplate db, LockingTaskExecutor taskExecutor) {
-        return new OppfolgingFeedRepository(db, taskExecutor);
-    }
-
-    @Bean
-    VeilederTilordningerRepository veilederTilordningerRepository(Database db,
-                                                                  OppfolgingRepository oppfolgingRepository) {
-        return new VeilederTilordningerRepository(db, oppfolgingRepository);
-    }
-
-    @Bean
-    OppfolgingRepository oppfolgingRepository(Database db) {
-        return new OppfolgingRepository(db);
-    }
-
-    @Bean
-    OppfolgingsStatusRepository oppfolgingsStatusRepository(Database db) {
-        return new OppfolgingsStatusRepository(db);
-    }
-
-    @Bean
-    KvpRepository kvpRepository(Database db) {
-        return new KvpRepository(db);
-    }
-
-    @Bean
-    NyeBrukereFeedRepository nyeBrukereFeedRepository(Database db) {
-        return new NyeBrukereFeedRepository(db);
-    }
-    
-    @Bean
-    public LockingTaskExecutor taskExecutor(DataSource ds) {
-        return new DefaultLockingTaskExecutor(new JdbcLockProvider(ds));
     }
 
     @Bean

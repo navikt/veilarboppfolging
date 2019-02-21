@@ -10,10 +10,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import javax.inject.Inject;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
 public class OppfolgingRepositoryKvpTest extends DatabaseTest {
 
     private static final String AKTOR_ID = "2222";
@@ -21,14 +22,14 @@ public class OppfolgingRepositoryKvpTest extends DatabaseTest {
     private static final String SAKSBEHANDLER = "4321";
     private static final String BEGRUNNELSE = "begrunnelse";
 
-    @Mock
+    @Inject
     private PepClient pepClientMock;
 
-    private Database db = getBean(Database.class);
-    private KvpRepository kvpRepository = new KvpRepository(db);
+    @Inject
+    private KvpRepository kvpRepository;
 
-    @InjectMocks
-    private OppfolgingRepository oppfolgingRepository = new OppfolgingRepository(db);
+    @Inject
+    private OppfolgingRepository oppfolgingRepository;
 
     @Test
     public void test_eskaleringsvarsel_i_kvp_ingen_tilgang() throws Exception {

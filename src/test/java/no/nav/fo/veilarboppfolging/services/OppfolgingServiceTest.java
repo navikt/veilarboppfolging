@@ -93,7 +93,7 @@ public class OppfolgingServiceTest {
     @Before
     public void setup() throws Exception {
         arenaOppfolging = new ArenaOppfolging();
-        when(oppfolgingRepositoryMock.opprettOppfolging(anyString())).thenReturn(oppfolging);
+        when(oppfolgingRepositoryMock.hentOppfolging(anyString())).thenReturn(Optional.of(oppfolging));
 
         doAnswer((a) -> oppfolging.setUnderOppfolging(true)).when(oppfolgingRepositoryMock).startOppfolgingHvisIkkeAlleredeStartet(anyString());
 

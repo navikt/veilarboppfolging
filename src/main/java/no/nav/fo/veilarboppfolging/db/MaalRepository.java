@@ -3,8 +3,10 @@ package no.nav.fo.veilarboppfolging.db;
 import lombok.SneakyThrows;
 import no.nav.fo.veilarboppfolging.domain.MalData;
 import no.nav.sbl.jdbc.Database;
+import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.inject.Inject;
 import java.sql.ResultSet;
 import java.util.Date;
 import java.util.List;
@@ -12,9 +14,11 @@ import java.util.List;
 import static no.nav.fo.veilarboppfolging.db.OppfolgingsStatusRepository.AKTOR_ID;
 import static no.nav.fo.veilarboppfolging.db.OppfolgingsStatusRepository.GJELDENDE_MAL;
 
+@Component
 public class MaalRepository {
-    private Database database;
+    private final Database database;
 
+    @Inject
     public MaalRepository(Database database) {
         this.database = database;
     }

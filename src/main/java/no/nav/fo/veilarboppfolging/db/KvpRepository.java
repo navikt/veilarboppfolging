@@ -7,8 +7,10 @@ import no.nav.fo.veilarboppfolging.domain.KodeverkBruker;
 import no.nav.fo.veilarboppfolging.domain.Kvp;
 import no.nav.sbl.jdbc.Database;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.inject.Inject;
 import java.sql.ResultSet;
 import java.util.List;
 
@@ -17,11 +19,12 @@ import static no.nav.apiapp.util.EnumUtils.valueOfOptional;
 import static no.nav.fo.veilarboppfolging.domain.KodeverkBruker.NAV;
 import static no.nav.sbl.jdbc.Database.hentDato;
 
-
+@Component
 public class KvpRepository {
 
     private Database database;
 
+    @Inject
     public KvpRepository(Database database) {
         this.database = database;
     }

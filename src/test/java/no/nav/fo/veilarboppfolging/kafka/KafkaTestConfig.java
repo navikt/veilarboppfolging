@@ -4,9 +4,11 @@ import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingsStatusRepository;
-import no.nav.fo.veilarboppfolging.services.*;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
 
+import no.nav.fo.veilarboppfolging.services.Iserv28Service;
+import no.nav.fo.veilarboppfolging.services.OppfolgingService;
+import no.nav.fo.veilarboppfolging.services.SystemUserSubjectProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
