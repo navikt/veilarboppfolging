@@ -35,6 +35,8 @@ import static no.nav.sbl.sql.DbConstants.CURRENT_TIMESTAMP;
 @Slf4j
 public class Iserv28Service{
 
+    static final String START_OPPFOLGING_TOGGLE = "veilarboppfolging.start.oppfolging.automatisk";
+
     enum AvslutteOppfolgingResultat {
         AVSLUTTET_OK,
         IKKE_AVSLUTTET,
@@ -134,7 +136,7 @@ public class Iserv28Service{
                 }
                 if(erUnderOppfolging(arenaBruker.getFormidlingsgruppekode(), arenaBruker.getKvalifiseringsgruppekode(), null) 
                         && !brukerHarOppfolgingsflagg(aktoerid)) {
-                    if(unleashService.isEnabled("veilarboppfolging.start.oppfolging.automatisk")) {
+                    if(unleashService.isEnabled(START_OPPFOLGING_TOGGLE)) {
                         log.info("Starter oppfølging automatisk for bruker med aktørid{}", aktoerid);
                         oppfolgingRepository.startOppfolgingHvisIkkeAlleredeStartet(aktoerid);
                     } else {

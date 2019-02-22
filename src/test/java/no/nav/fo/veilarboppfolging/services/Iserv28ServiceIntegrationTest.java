@@ -12,6 +12,7 @@ import no.nav.sbl.featuretoggle.unleash.UnleashService;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.inject.Inject;
@@ -41,6 +42,8 @@ public class Iserv28ServiceIntegrationTest extends DatabaseTest {
     private OppfolgingsStatusRepository oppfolgingStatusRepository = mock(OppfolgingsStatusRepository.class);
 
     private OppfolgingService oppfolgingService = mock(OppfolgingService.class);
+    private OppfolgingRepository oppfolgingRepository = mock(OppfolgingRepository.class);
+    private UnleashService unleash = mock(UnleashService.class);
 
     @Before
     public void setup() throws Exception {
@@ -49,8 +52,6 @@ public class Iserv28ServiceIntegrationTest extends DatabaseTest {
         when(oppfolgingStatusRepository.fetch(anyString())).thenReturn(new OppfolgingTable().setUnderOppfolging(true));
         when(oppfolgingService.avsluttOppfolgingForSystemBruker(anyString(), anyString(), anyString())).thenReturn(true);
         SystemUserSubjectProvider systemUserSubjectProvider = mock(SystemUserSubjectProvider.class);
-        OppfolgingRepository oppfolgingRepository = mock(OppfolgingRepository.class);
-        UnleashService unleash = mock(UnleashService.class);
         iserv28Service = new Iserv28Service(jdbcTemplate, oppfolgingService, oppfolgingStatusRepository, oppfolgingRepository, aktorService, taskExecutor, systemUserSubjectProvider, unleash);
     }
 
@@ -91,6 +92,50 @@ public class Iserv28ServiceIntegrationTest extends DatabaseTest {
         arenaBruker.setFormidlingsgruppekode("ARBS");
         iserv28Service.behandleEndretBruker(arenaBruker);
         assertThat(iserv28Service.eksisterendeIservBruker(arenaBruker)).isNull();
+    }
+
+    @Test
+    public void behandleEndretBruker_skalStarteBrukerSomHarOppfolgingsstatus() {
+        ArenaBruker arenaBruker = getArenaBruker();
+        arenaBruker.setFormidlingsgruppekode("ARBS");
+        when(oppfolgingStatusRepository.fetch(anyString())).thenReturn(new OppfolgingTable().setUnderOppfolging(false));
+        when(unleash.isEnabled(Iserv28Service.START_OPPFOLGING_TOGGLE)).thenReturn(true);
+
+        iserv28Service.behandleEndretBruker(arenaBruker);
+        verify(oppfolgingRepository).startOppfolgingHvisIkkeAlleredeStartet(AKTORID);
+    }
+
+    @Test
+    public void behandleEndretBruker_skalIkkeStarteBrukerSomHarOppfolgingsstatusDersomAlleredeUnderOppfolging() {
+        ArenaBruker arenaBruker = getArenaBruker();
+        arenaBruker.setFormidlingsgruppekode("ARBS");
+        when(unleash.isEnabled(Iserv28Service.START_OPPFOLGING_TOGGLE)).thenReturn(true);
+
+        iserv28Service.behandleEndretBruker(arenaBruker);
+        verifyZeroInteractions(oppfolgingRepository);
+    }
+
+    @Test
+    public void behandleEndretBruker_skalIkkeStarteBrukerSomHarOppfolgingsstatusDersomToggleErAv() {
+        ArenaBruker arenaBruker = getArenaBruker();
+        arenaBruker.setFormidlingsgruppekode("ARBS");
+        when(oppfolgingStatusRepository.fetch(anyString())).thenReturn(new OppfolgingTable().setUnderOppfolging(false));
+        when(unleash.isEnabled(Iserv28Service.START_OPPFOLGING_TOGGLE)).thenReturn(false);
+
+        iserv28Service.behandleEndretBruker(arenaBruker);
+        verifyZeroInteractions(oppfolgingRepository);
+    }
+
+    @Test
+    public void behandleEndretBruker_skalIkkeStarteBrukerSomIkkeHarOppfolgingsstatus() {
+        ArenaBruker arenaBruker = getArenaBruker();
+        arenaBruker.setFormidlingsgruppekode("IARBS");
+        arenaBruker.setKvalifiseringsgruppekode("IkkeOppfolging");
+        when(oppfolgingStatusRepository.fetch(anyString())).thenReturn(new OppfolgingTable().setUnderOppfolging(false));
+        when(unleash.isEnabled(Iserv28Service.START_OPPFOLGING_TOGGLE)).thenReturn(true);
+
+        iserv28Service.behandleEndretBruker(arenaBruker);
+        verifyZeroInteractions(oppfolgingRepository);
     }
 
     @Test
