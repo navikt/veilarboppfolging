@@ -55,11 +55,11 @@ public class Iserv28ServiceIntegrationTest extends DatabaseTest {
     }
 
     @Test
-    public void filterereOgInsertereIservBruker() {
+    public void behandleEndretBruker_skalLagreNyIservBruker() {
         ArenaBruker arenaBruker = getArenaBruker();
         assertThat(iserv28Service.eksisterendeIservBruker(arenaBruker)).isNull();
 
-        iserv28Service.filterereIservBrukere(arenaBruker);
+        iserv28Service.behandleEndretBruker(arenaBruker);
 
         IservMapper iservMapper = iserv28Service.eksisterendeIservBruker(arenaBruker);
         assertThat(iservMapper).isNotNull();
@@ -68,13 +68,13 @@ public class Iserv28ServiceIntegrationTest extends DatabaseTest {
     }
 
     @Test
-    public void filterereOgOppdatereIservBruker(){
+    public void behandleEndretBruker_skalOppdatereEksisterendeIservBruker() {
         ArenaBruker arenaBruker = getArenaBruker();
         iserv28Service.insertIservBruker(arenaBruker);
         assertThat(iserv28Service.eksisterendeIservBruker(arenaBruker)).isNotNull();
 
         arenaBruker.setIserv_fra_dato(arenaBruker.iserv_fra_dato.plusDays(2));
-        iserv28Service.filterereIservBrukere(arenaBruker);
+        iserv28Service.behandleEndretBruker(arenaBruker);
 
         IservMapper iservMapper = iserv28Service.eksisterendeIservBruker(arenaBruker);
         assertThat(iservMapper).isNotNull();
@@ -83,13 +83,13 @@ public class Iserv28ServiceIntegrationTest extends DatabaseTest {
     }
 
     @Test
-    public void filterereOgSletteIservIkkeLengeBruker(){
+    public void behandleEndretBruker_skalSletteBrukerSomIkkeLengerErIserv() {
         ArenaBruker arenaBruker = getArenaBruker();
         iserv28Service.insertIservBruker(arenaBruker);
         assertThat(iserv28Service.eksisterendeIservBruker(arenaBruker)).isNotNull();
 
         arenaBruker.setFormidlingsgruppekode("ARBS");
-        iserv28Service.filterereIservBrukere(arenaBruker);
+        iserv28Service.behandleEndretBruker(arenaBruker);
         assertThat(iserv28Service.eksisterendeIservBruker(arenaBruker)).isNull();
     }
 
@@ -162,7 +162,7 @@ public class Iserv28ServiceIntegrationTest extends DatabaseTest {
         arenaBruker.setFodselsnr("1111");
 
         assertThat(iserv28Service.eksisterendeIservBruker(arenaBruker)).isNull();
-        iserv28Service.filterereIservBrukere(arenaBruker);
+        iserv28Service.behandleEndretBruker(arenaBruker);
         return arenaBruker;
     }
 }

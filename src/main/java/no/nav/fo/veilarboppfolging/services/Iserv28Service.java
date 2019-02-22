@@ -116,11 +116,11 @@ public class Iserv28Service{
         return resultater;
     }
 
-    public void filterereIservBrukere(ArenaBruker arenaBruker){
+    public void behandleEndretBruker(ArenaBruker arenaBruker){
 
+        String aktoerid = arenaBruker.getAktoerid();
         try {
             IservMapper eksisterendeIservBruker = eksisterendeIservBruker(arenaBruker);
-            String aktoerid = arenaBruker.getAktoerid();
 
             if(erIserv(arenaBruker.getFormidlingsgruppekode())) {
                 if (eksisterendeIservBruker != null) {
@@ -144,7 +144,7 @@ public class Iserv28Service{
             }
         }
         catch(Exception e){
-            log.error("Exception ved filterereIservBrukere: {}" , e);
+            log.error("Exception ved behandleEndretBruker for bruker: {}", aktoerid, e);
         }
     }
 

@@ -30,12 +30,12 @@ public class Consumer {
     }
 
     @KafkaListener(topics = "${" + ENDRING_PAA_BRUKER_KAFKA_TOPIC_PROPERTY_NAME + "}")
-    public void consume(String arenaBruker) {
+    public void consume(String kafkaMelding) {
         try {
-            final ArenaBruker deserialisertBruker = deserialisereBruker(arenaBruker);
-            iserv28Service.filterereIservBrukere(deserialisertBruker);
+            final ArenaBruker arenaBruker = deserialisereBruker(kafkaMelding);
+            iserv28Service.behandleEndretBruker(arenaBruker);
             FunksjonelleMetrikker.antallMeldingerKonsumertAvKafka();
-            LOG.info("Konsumert bruker med akoerid = '{}' har status i veilarbarena: {}", deserialisertBruker.aktoerid, deserialisertBruker);
+            LOG.info("Konsumert bruker med akoerid = '{}' har status i veilarbarena: {}", arenaBruker.aktoerid, arenaBruker);
         } catch (Throwable t) {
             LOG.error(t.getMessage(), t);
         }
