@@ -1,6 +1,7 @@
 package no.nav.fo.veilarboppfolging.services;
 
 import net.javacrumbs.shedlock.core.LockingTaskExecutor;
+
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.DatabaseTest;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
@@ -12,7 +13,6 @@ import no.nav.sbl.featuretoggle.unleash.UnleashService;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.inject.Inject;
