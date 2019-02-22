@@ -13,7 +13,6 @@ import no.nav.fo.veilarboppfolging.mappers.OppfolgingMapper;
 import no.nav.fo.veilarboppfolging.rest.domain.*;
 import no.nav.fo.veilarboppfolging.services.*;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
-import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
 import javax.ws.rs.GET;
@@ -22,19 +21,16 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.time.LocalDate;
-import java.util.HashMap;
 import java.util.Optional;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static no.nav.fo.veilarboppfolging.utils.CalendarConverter.convertDateToXMLGregorianCalendar;
-import static org.slf4j.LoggerFactory.getLogger;
 
 @Component
 @Api(value = "Oppfølging")
 @Path("/person/{fnr}")
 @Produces(APPLICATION_JSON)
 public class ArenaOppfolgingRessurs {
-    private static final Logger LOG = getLogger(ArenaOppfolgingRessurs.class);
     private static final int MANEDER_BAK_I_TID = 2;
     private static final int MANEDER_FREM_I_TID = 1;
 
@@ -107,21 +103,18 @@ public class ArenaOppfolgingRessurs {
     public OppfolgingEnhetMedVeileder getOppfolginsstatus(@PathParam("fnr") String fnr) throws PepException {
         pepClient.sjekkLeseTilgangTilFnr(fnr);
 
-        no.nav.fo.veilarboppfolging.domain.ArenaOppfolging arenaData = arenaOppfolgingService.hentArenaOppfolging(fnr);
-
-        Oppfolgingsenhet oppfolgingsenhet = hentEnhet(arenaData.getOppfolgingsenhet());
+        ArenaBruker arenaBruker = oppfolgingsbrukerService.hentOppfolgingsbruker(fnr).orElseThrow(() -> new RuntimeException("Bruker ikke funnet"));
+        Oppfolgingsenhet oppfolgingsenhet = hentEnhet(arenaBruker.getNav_kontor());
 
         String brukersAktoerId = aktorService.getAktorId(fnr)
                 .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktør for fnr: " + fnr));
         String veilederIdent = veilederTilordningerRepository.hentTilordningForAktoer(brukersAktoerId);
 
-        Optional<ArenaBruker> oppfolgingsbrukerStatus = oppfolgingsbrukerService.hentOppfolgingsbruker(fnr);
-
         OppfolgingEnhetMedVeileder res = new OppfolgingEnhetMedVeileder()
-                .setServicegruppe(arenaData.getServicegruppe())
-                .setFormidlingsgruppe(arenaData.getFormidlingsgruppe())
+                .setServicegruppe(arenaBruker.getKvalifiseringsgruppekode())
+                .setFormidlingsgruppe(arenaBruker.getFormidlingsgruppekode())
                 .setOppfolgingsenhet(oppfolgingsenhet)
-                .setHovedmaalkode(oppfolgingsbrukerStatus.map(ArenaBruker::getHovedmaalkode).orElse(null));
+                .setHovedmaalkode(arenaBruker.getHovedmaalkode());
 
         if (AutorisasjonService.erInternBruker()) {
             res.setVeilederId(veilederIdent);
