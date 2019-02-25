@@ -17,6 +17,7 @@ import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
 import java.sql.*;
@@ -118,6 +119,7 @@ public class Iserv28Service{
         return resultater;
     }
 
+    @Transactional
     public void behandleEndretBruker(ArenaBruker arenaBruker) {
 
         log.info("Behandler bruker: {}", arenaBruker);
