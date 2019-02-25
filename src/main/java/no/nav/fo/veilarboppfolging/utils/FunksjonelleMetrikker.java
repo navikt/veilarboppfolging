@@ -53,6 +53,11 @@ public class FunksjonelleMetrikker {
         MetricsFactory.createEvent("automatisk.avsluttet.bruker").report();
     }
 
+    public static void startetOppfolgingAutomatisk() {
+        MetricsFactory.createEvent("automatisk.startet.oppfolging.bruker").report();
+    }
+
     private FunksjonelleMetrikker() {
     }
+
 }

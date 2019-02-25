@@ -4,17 +4,20 @@ import lombok.extern.slf4j.Slf4j;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import no.nav.dialogarena.aktor.AktorService;
+import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingsStatusRepository;
 import no.nav.fo.veilarboppfolging.domain.IservMapper;
 import no.nav.fo.veilarboppfolging.domain.OppfolgingTable;
 import no.nav.fo.veilarboppfolging.mappers.ArenaBruker;
 import no.nav.fo.veilarboppfolging.utils.FunksjonelleMetrikker;
 import no.nav.metrics.utils.MetricsUtils;
+import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
 import java.sql.*;
@@ -24,12 +27,16 @@ import java.util.List;
 
 import static java.util.stream.Collectors.toList;
 import static no.nav.common.auth.SubjectHandler.withSubject;
+import static no.nav.fo.veilarboppfolging.services.ArenaUtils.erIserv;
+import static no.nav.fo.veilarboppfolging.services.ArenaUtils.erUnderOppfolging;
 import static no.nav.fo.veilarboppfolging.services.Iserv28Service.AvslutteOppfolgingResultat.*;
 import static no.nav.sbl.sql.DbConstants.CURRENT_TIMESTAMP;
 
 @Component
 @Slf4j
 public class Iserv28Service{
+
+    static final String START_OPPFOLGING_TOGGLE = "veilarboppfolging.start.oppfolging.automatisk";
 
     enum AvslutteOppfolgingResultat {
         AVSLUTTET_OK,
@@ -44,6 +51,8 @@ public class Iserv28Service{
     private final LockingTaskExecutor taskExecutor;
     private final SystemUserSubjectProvider systemUserSubjectProvider;
     private final OppfolgingsStatusRepository oppfolgingsStatusRepository;
+    private final OppfolgingRepository oppfolgingRepository;
+    private final UnleashService unleashService;
 
     private static final int lockAutomatiskAvslutteOppfolgingSeconds = 3600;
 
@@ -52,16 +61,20 @@ public class Iserv28Service{
             JdbcTemplate jdbc,
             OppfolgingService oppfolgingService,
             OppfolgingsStatusRepository oppfolgingsStatusRepository,
+            OppfolgingRepository oppfolgingRepository,
             AktorService aktorService,
             LockingTaskExecutor taskExecutor,
-            SystemUserSubjectProvider systemUserSubjectProvider
+            SystemUserSubjectProvider systemUserSubjectProvider,
+            UnleashService unleashService
     ){
         this.jdbc = jdbc;
         this.oppfolgingService = oppfolgingService;
         this.oppfolgingsStatusRepository = oppfolgingsStatusRepository;
+        this.oppfolgingRepository = oppfolgingRepository;
         this.aktorService = aktorService;
         this.taskExecutor = taskExecutor;
         this.systemUserSubjectProvider = systemUserSubjectProvider;
+        this.unleashService = unleashService;
     }
 
     @Scheduled(cron="0 0 * * * *")
@@ -106,39 +119,63 @@ public class Iserv28Service{
         return resultater;
     }
 
-    public void filterereIservBrukere(ArenaBruker arenaBruker){
-        boolean erIserv = "ISERV".equals(arenaBruker.getFormidlingsgruppekode());
-        IservMapper eksisterendeIservBruker = eksisterendeIservBruker(arenaBruker);
+    @Transactional
+    public void behandleEndretBruker(ArenaBruker arenaBruker) {
 
-        try {
-            if (eksisterendeIservBruker != null && !erIserv) {
-                slettAvsluttetOppfolgingsBruker(arenaBruker.getAktoerid());
-            } else if (eksisterendeIservBruker != null) {
-                updateIservBruker(arenaBruker);
-            } else if(erIserv && brukerHarOppfolgingsflagg(arenaBruker.getAktoerid())) {
-                insertIservBruker(arenaBruker);
+        log.info("Behandler bruker: {}", arenaBruker);
+    
+        if(erIserv(arenaBruker.getFormidlingsgruppekode())) {
+            oppdaterUtmeldingTabell(arenaBruker);
+        } else {
+            slettBrukerFraUtmeldingTabell(arenaBruker.getAktoerid());
+            if(skalStarteOppfolging(arenaBruker)) {
+                startOppfolging(arenaBruker);
             }
         }
-        catch(Exception e){
-            log.error("Exception ved filterereIservBrukere: {}" , e);
+    }
+
+    private void startOppfolging(ArenaBruker arenaBruker) {
+        if(unleashService.isEnabled(START_OPPFOLGING_TOGGLE)) {
+            log.info("Starter oppfølging automatisk for bruker med aktørid{}", arenaBruker.getAktoerid());
+            oppfolgingRepository.startOppfolgingHvisIkkeAlleredeStartet(arenaBruker.getAktoerid());
+            FunksjonelleMetrikker.startetOppfolgingAutomatisk();
+        } else {
+            log.info("Automatisk start av oppfølging er slått av i unleash. Aktørid {}", arenaBruker.getAktoerid());
+        }
+    }
+
+    private boolean skalStarteOppfolging(ArenaBruker arenaBruker) {
+        return erUnderOppfolging(arenaBruker.getFormidlingsgruppekode(), arenaBruker.getKvalifiseringsgruppekode(), null) 
+                && !brukerHarOppfolgingsflagg(arenaBruker.getAktoerid());
+    }
+
+    private void oppdaterUtmeldingTabell(ArenaBruker arenaBruker) {
+        if (finnesIUtmeldingTabell(arenaBruker)) {
+            updateUtmeldingTabell(arenaBruker);
+        } else if (brukerHarOppfolgingsflagg(arenaBruker.getAktoerid())) {
+            insertUtmeldingTabell(arenaBruker);
         }
     }
 
     private boolean brukerHarOppfolgingsflagg(String aktoerId) {
         OppfolgingTable eksisterendeOppfolgingstatus = oppfolgingsStatusRepository.fetch(aktoerId);
         boolean harOppfolgingsflagg = eksisterendeOppfolgingstatus != null && eksisterendeOppfolgingstatus.isUnderOppfolging();
-        log.info("ISERV bruker med aktorid {} har oppfolgingsflagg: {}", aktoerId, harOppfolgingsflagg);
+        log.info("Bruker med aktorid {} har oppfolgingsflagg: {}", aktoerId, harOppfolgingsflagg);
         return harOppfolgingsflagg;
     }
 
-    public IservMapper eksisterendeIservBruker(ArenaBruker arenaBruker){
+    private boolean finnesIUtmeldingTabell(ArenaBruker arenaBruker) {
+        return eksisterendeIservBruker(arenaBruker) != null;
+    }
+    
+    IservMapper eksisterendeIservBruker(ArenaBruker arenaBruker){
          return SqlUtils.select(jdbc, "UTMELDING", Iserv28Service::mapper)
                 .column("aktor_id")
                 .column("iserv_fra_dato")
                 .where(WhereClause.equals("aktor_id",arenaBruker.getAktoerid())).execute();
     }
 
-    private void updateIservBruker(ArenaBruker arenaBruker){
+    private void updateUtmeldingTabell(ArenaBruker arenaBruker){
         SqlUtils.update(jdbc, "UTMELDING")
                 .set("iserv_fra_dato", Timestamp.from(arenaBruker.getIserv_fra_dato().toInstant()))
                 .set("oppdatert_dato", CURRENT_TIMESTAMP)
@@ -148,7 +185,7 @@ public class Iserv28Service{
         log.info("ISERV bruker med aktorid {} har blitt oppdatert inn i UTMELDING tabell", arenaBruker.getAktoerid());
     }
 
-    void insertIservBruker(ArenaBruker arenaBruker) {
+    void insertUtmeldingTabell(ArenaBruker arenaBruker) {
         Timestamp iservFraDato = Timestamp.from(arenaBruker.getIserv_fra_dato().toInstant());
         SqlUtils.insert(jdbc, "UTMELDING")
                 .value("aktor_id", arenaBruker.getAktoerid())
@@ -167,7 +204,7 @@ public class Iserv28Service{
         try {
             if(!brukerHarOppfolgingsflagg(aktoerId)) {
                 log.info("Bruker med aktørid {} har ikke oppfølgingsflagg. Sletter fra utmelding-tabell", aktoerId);
-                slettAvsluttetOppfolgingsBruker(aktoerId);
+                slettBrukerFraUtmeldingTabell(aktoerId);
                 resultat = IKKE_LENGER_UNDER_OPPFØLGING;
             } else {
                 String fnr = aktorService.getFnr(aktoerId).orElseThrow(IllegalStateException::new);
@@ -178,7 +215,7 @@ public class Iserv28Service{
                 );
                 resultat = oppfolgingAvsluttet ? AVSLUTTET_OK : IKKE_AVSLUTTET;
                 if(oppfolgingAvsluttet) {
-                    slettAvsluttetOppfolgingsBruker(aktoerId);
+                    slettBrukerFraUtmeldingTabell(aktoerId);
                     FunksjonelleMetrikker.antallBrukereAvsluttetAutomatisk();
                 }
             }
@@ -189,7 +226,7 @@ public class Iserv28Service{
         return resultat;
     }
 
-    private void slettAvsluttetOppfolgingsBruker(String aktoerId) {
+    private void slettBrukerFraUtmeldingTabell(String aktoerId) {
         WhereClause aktoeridClause = WhereClause.equals("aktor_id", aktoerId);
         SqlUtils.delete(jdbc, "UTMELDING").where(aktoeridClause).execute();
         log.info("Aktorid {} har blitt slettet fra UTMELDING tabell", aktoerId);
