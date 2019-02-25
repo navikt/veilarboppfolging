@@ -71,7 +71,7 @@ public class Iserv28ServiceIntegrationTest extends DatabaseTest {
     @Test
     public void behandleEndretBruker_skalOppdatereEksisterendeIservBruker() {
         ArenaBruker arenaBruker = getArenaBruker();
-        iserv28Service.insertIservBruker(arenaBruker);
+        iserv28Service.insertUtmeldingTabell(arenaBruker);
         assertThat(iserv28Service.eksisterendeIservBruker(arenaBruker)).isNotNull();
 
         arenaBruker.setIserv_fra_dato(arenaBruker.iserv_fra_dato.plusDays(2));
@@ -86,7 +86,7 @@ public class Iserv28ServiceIntegrationTest extends DatabaseTest {
     @Test
     public void behandleEndretBruker_skalSletteBrukerSomIkkeLengerErIserv() {
         ArenaBruker arenaBruker = getArenaBruker();
-        iserv28Service.insertIservBruker(arenaBruker);
+        iserv28Service.insertUtmeldingTabell(arenaBruker);
         assertThat(iserv28Service.eksisterendeIservBruker(arenaBruker)).isNotNull();
 
         arenaBruker.setFormidlingsgruppekode("ARBS");
