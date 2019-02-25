@@ -41,7 +41,7 @@ public class Consumer {
         }
     }
 
-    public ArenaBruker deserialisereBruker(String arenaBruker) {
+    public static ArenaBruker deserialisereBruker(String arenaBruker) {
         return fromJson(arenaBruker, ArenaBruker.class);
     }
 
