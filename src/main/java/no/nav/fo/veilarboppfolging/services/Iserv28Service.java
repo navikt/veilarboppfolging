@@ -159,9 +159,7 @@ public class Iserv28Service{
 
     private boolean brukerHarOppfolgingsflagg(String aktoerId) {
         OppfolgingTable eksisterendeOppfolgingstatus = oppfolgingsStatusRepository.fetch(aktoerId);
-        boolean harOppfolgingsflagg = eksisterendeOppfolgingstatus != null && eksisterendeOppfolgingstatus.isUnderOppfolging();
-        log.info("Bruker med aktorid {} har oppfolgingsflagg: {}", aktoerId, harOppfolgingsflagg);
-        return harOppfolgingsflagg;
+        return eksisterendeOppfolgingstatus != null && eksisterendeOppfolgingstatus.isUnderOppfolging();
     }
 
     private boolean finnesIUtmeldingTabell(ArenaBruker arenaBruker) {
