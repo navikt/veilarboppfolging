@@ -18,6 +18,7 @@ import static no.nav.dialogarena.config.fasit.FasitUtils.*;
 import static no.nav.dialogarena.config.fasit.FasitUtils.Zone.FSS;
 import static no.nav.fo.veilarboppfolging.config.ApplicationConfig.*;
 import static no.nav.fo.veilarboppfolging.config.DatabaseConfig.*;
+import static no.nav.fo.veilarboppfolging.rest.VeilArbAbacService.VEILARBABAC_HOSTNAME_PROPERTY;
 import static no.nav.sbl.dialogarena.common.abac.pep.service.AbacServiceConfig.ABAC_ENDPOINT_URL_PROPERTY_NAME;
 import static no.nav.sbl.dialogarena.common.cxf.StsSecurityConstants.*;
 import static no.nav.sbl.featuretoggle.unleash.UnleashServiceConfig.UNLEASH_API_URL_PROPERTY_NAME;
@@ -98,6 +99,6 @@ public class TestContext {
 
         EnvironmentUtils.setProperty("javax.net.ssl.trustStore", navTrustStoreFile.getAbsolutePath(), PUBLIC);
         EnvironmentUtils.setProperty("javax.net.ssl.trustStorePassword", navTrustStore.getKeystorepassword(), SECRET);
-        EnvironmentUtils.setProperty("VEILARBABAC", "https://veilarbabac-"+FasitUtils.getDefaultEnvironment()+".nais.preprod.local" , SECRET);
+        EnvironmentUtils.setProperty(VEILARBABAC_HOSTNAME_PROPERTY, "https://veilarbabac-" + FasitUtils.getDefaultEnvironment() + ".nais.preprod.local", SECRET);
     }
 }
