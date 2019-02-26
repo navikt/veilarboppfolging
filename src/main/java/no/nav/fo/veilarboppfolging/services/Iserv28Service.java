@@ -136,7 +136,7 @@ public class Iserv28Service{
 
     private void startOppfolging(ArenaBruker arenaBruker) {
         if(unleashService.isEnabled(START_OPPFOLGING_TOGGLE)) {
-            log.info("Starter oppfølging automatisk for bruker med aktørid{}", arenaBruker.getAktoerid());
+            log.info("Starter oppfølging automatisk for bruker med aktørid {}", arenaBruker.getAktoerid());
             oppfolgingRepository.startOppfolgingHvisIkkeAlleredeStartet(arenaBruker.getAktoerid());
             FunksjonelleMetrikker.startetOppfolgingAutomatisk();
         } else {
