@@ -55,13 +55,13 @@ public class MalService {
         return malList.stream().filter(mal -> KvpUtils.sjekkTilgangGittKvp(pepClient, kvpList, mal::getDato)).collect(toList());
     }
 
-    public MalData oppdaterMal(String mal, String fnr, String endretAv) {
+    public MalData oppdaterMal(String mal, String fnr, String endretAvVeileder) {
         OppfolgingResolver resolver = new OppfolgingResolver(fnr, oppfolgingResolverDependencies);
 
         Kvp kvp = kvpRepository.fetch(kvpRepository.gjeldendeKvp(resolver.getAktorId()));
         ofNullable(kvp).ifPresent(this::sjekkEnhetTilgang);
 
-        MalData malData = resolver.oppdaterMal(mal, endretAv);
+        MalData malData = resolver.oppdaterMal(mal, endretAvVeileder);
         FunksjonelleMetrikker.oppdatertMittMal(malData, resolver.getMalList().size());
         return malData;
     }
