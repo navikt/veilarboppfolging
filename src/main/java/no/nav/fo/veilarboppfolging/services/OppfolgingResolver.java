@@ -173,11 +173,11 @@ public class OppfolgingResolver {
         return deps.getOppfolgingRepository().hentMalList(aktorId);
     }
 
-    MalData oppdaterMal(String mal, String endretAv) {
+    MalData oppdaterMal(String mal, String endretAvVeileder) {
         MalData malData = new MalData()
                 .setAktorId(aktorId)
                 .setMal(mal)
-                .setEndretAv(StringUtils.of(endretAv).orElse(aktorId))
+                .setEndretAv(StringUtils.of(endretAvVeileder).orElse(aktorId))
                 .setDato(new Timestamp(currentTimeMillis()));
         deps.getOppfolgingRepository().opprettMal(malData);
         return hentOppfolging().getGjeldendeMal();
