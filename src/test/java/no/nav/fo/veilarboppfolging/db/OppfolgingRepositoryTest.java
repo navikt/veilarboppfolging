@@ -6,14 +6,9 @@ import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
 import no.nav.sbl.jdbc.Database;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
 
 import javax.inject.Inject;
 import java.sql.Timestamp;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -98,34 +93,6 @@ public class OppfolgingRepositoryTest extends DatabaseTest {
         assertThat(mal.getMal(), equalTo("Dette er et oppdatert mål"));
         List<MalData> malList = hentMal(AKTOR_ID);
         assertThat(malList.size(), greaterThan(1));
-    }
-
-    @Test
-    public void slettMalForAktorEtter() {
-        gittOppfolgingForAktor(AKTOR_ID);
-
-        Date forOpprettelse = new Date(System.currentTimeMillis() - 1);
-        opprettMal(AKTOR_ID, "Dette er et mål");
-        Date etterOpprettelse = new Date(System.currentTimeMillis() + 1);
-
-        oppfolgingRepository.slettMalForAktorEtter(AKTOR_ID, etterOpprettelse);
-        sjekk_at_aktor_har_mal();
-
-        oppfolgingRepository.slettMalForAktorEtter("annenAktor", forOpprettelse);
-        sjekk_at_aktor_har_mal();
-
-        oppfolgingRepository.slettMalForAktorEtter(AKTOR_ID, forOpprettelse);
-        sjekk_at_aktor_ikke_har_mal();
-    }
-
-
-    private void sjekk_at_aktor_ikke_har_mal() {
-        assertThat(getGjeldendeMal(AKTOR_ID), nullValue());
-        assertThat(hentMal(AKTOR_ID), empty());
-    }
-
-    private void sjekk_at_aktor_har_mal() {
-        assertThat(hentMal(AKTOR_ID), not(empty()));
     }
 
     private MalData getGjeldendeMal(String aktorId) {
