@@ -172,7 +172,8 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
 
     @Override
     public Mal oppdaterMal(Mal mal) throws PepException {
-        return tilDto(malService.oppdaterMal(mal.getMal(), getFnr(), getUid()));
+        String endretAvVeileder = erEksternBruker()? null : getUid();
+        return tilDto(malService.oppdaterMal(mal.getMal(), getFnr(), endretAvVeileder));
     }
 
     @Override

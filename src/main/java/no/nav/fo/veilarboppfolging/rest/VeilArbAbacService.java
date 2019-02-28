@@ -15,27 +15,34 @@ import static no.nav.apiapp.util.UrlUtils.clusterUrlForApplication;
 @Component
 public class VeilArbAbacService implements Helsesjekk {
 
-    @Inject
-    SystemUserTokenProvider systemUserTokenProvider;
+    public static final String VEILARBABAC_HOSTNAME_PROPERTY = "VEILARBABAC";
 
-    private final String abacTargetUrl = EnvironmentUtils.getOptionalProperty("VEILARBABAC")
+
+    private final SystemUserTokenProvider systemUserTokenProvider;
+
+    private final String abacTargetUrl = EnvironmentUtils.getOptionalProperty(VEILARBABAC_HOSTNAME_PROPERTY)
             .orElseGet(() -> clusterUrlForApplication("veilarbabac"));
 
+    @Inject
+    public VeilArbAbacService(SystemUserTokenProvider systemUserTokenProvider) {
+        this.systemUserTokenProvider = systemUserTokenProvider;
+    }
+
     public boolean harVeilederSkriveTilgangTilFnr(String veilederId, String fnr) {
-        return 200 == RestUtils.withClient(c -> c.target(abacTargetUrl)
-                .path(veilederId)
+        return "permit".equals(RestUtils.withClient(c -> c.target(abacTargetUrl)
+                .path("subject")
                 .path("person")
                 .queryParam("fnr", fnr)
                 .queryParam("action", "update")
                 .request()
                 .header(AUTHORIZATION, "Bearer " + systemUserTokenProvider.getToken())
-                .get()
-                .getStatus()
-        );
+                .header("subject", veilederId)
+                .get(String.class)
+        ));
     }
 
     @Override
-    public void helsesjekk() throws Throwable {
+    public void helsesjekk() {
         int status = RestUtils.withClient(c -> c.target(abacTargetUrl)
                 .path("ping")
                 .request()

@@ -136,7 +136,7 @@ public class Iserv28Service{
 
     private void startOppfolging(ArenaBruker arenaBruker) {
         if(unleashService.isEnabled(START_OPPFOLGING_TOGGLE)) {
-            log.info("Starter oppfølging automatisk for bruker med aktørid{}", arenaBruker.getAktoerid());
+            log.info("Starter oppfølging automatisk for bruker med aktørid {}", arenaBruker.getAktoerid());
             oppfolgingRepository.startOppfolgingHvisIkkeAlleredeStartet(arenaBruker.getAktoerid());
             FunksjonelleMetrikker.startetOppfolgingAutomatisk();
         } else {
@@ -159,9 +159,7 @@ public class Iserv28Service{
 
     private boolean brukerHarOppfolgingsflagg(String aktoerId) {
         OppfolgingTable eksisterendeOppfolgingstatus = oppfolgingsStatusRepository.fetch(aktoerId);
-        boolean harOppfolgingsflagg = eksisterendeOppfolgingstatus != null && eksisterendeOppfolgingstatus.isUnderOppfolging();
-        log.info("Bruker med aktorid {} har oppfolgingsflagg: {}", aktoerId, harOppfolgingsflagg);
-        return harOppfolgingsflagg;
+        return eksisterendeOppfolgingstatus != null && eksisterendeOppfolgingstatus.isUnderOppfolging();
     }
 
     private boolean finnesIUtmeldingTabell(ArenaBruker arenaBruker) {
