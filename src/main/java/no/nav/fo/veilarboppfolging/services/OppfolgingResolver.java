@@ -10,7 +10,6 @@ import no.nav.apiapp.security.PepClient;
 import no.nav.common.auth.SubjectHandler;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
-import no.nav.fo.veilarboppfolging.config.RemoteFeatureConfig;
 import no.nav.fo.veilarboppfolging.db.KvpRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.domain.*;
@@ -157,11 +156,10 @@ public class OppfolgingResolver {
     }
 
     boolean maVilkarBesvares() {
-        if (deps.getBrukervilkarFeature().erAktiv() && oppfolging.isUnderOppfolging()) { //TODO: når featuretoggle slettes er det bare nødvending å sjekke på isUnderOppfolging og returnere false
-            return false;
-        }
 
-        return ofNullable(oppfolging.getGjeldendeBrukervilkar())
+        return oppfolging.isUnderOppfolging() 
+                ? false 
+                : ofNullable(oppfolging.getGjeldendeBrukervilkar())
                 .filter(brukervilkar -> GODKJENT.equals(brukervilkar.getVilkarstatus()))
                 .map(Brukervilkar::getHash)
                 .map(brukerVilkar -> !brukerVilkar.equals(getNyesteVilkar().getHash()))
@@ -493,9 +491,6 @@ public class OppfolgingResolver {
 
         @Inject
         private KvpService kvpService;
-
-        @Inject
-        private RemoteFeatureConfig.BrukervilkarFeature brukervilkarFeature;
 
     }
 }
