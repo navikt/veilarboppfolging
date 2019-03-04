@@ -10,13 +10,11 @@ import no.nav.apiapp.security.PepClient;
 import no.nav.common.auth.SubjectHandler;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
-import no.nav.fo.veilarboppfolging.config.RemoteFeatureConfig;
 import no.nav.fo.veilarboppfolging.db.KvpRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.fo.veilarboppfolging.utils.FunksjonelleMetrikker;
 import no.nav.fo.veilarboppfolging.utils.StringUtils;
-import no.nav.fo.veilarboppfolging.vilkar.VilkarService;
 import no.nav.metrics.MetricsFactory;
 import no.nav.sbl.jdbc.Transactor;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.DigitalKontaktinformasjonV1;
@@ -29,7 +27,6 @@ import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt.WSYtelseskontrakt;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeRequest;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeResponse;
-import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
@@ -48,10 +45,8 @@ import static java.util.Optional.ofNullable;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetStatus.AVBRUTT;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetStatus.FULLFORT;
 import static no.nav.fo.veilarboppfolging.domain.KodeverkBruker.SYSTEM;
-import static no.nav.fo.veilarboppfolging.domain.VilkarStatus.GODKJENT;
 import static no.nav.fo.veilarboppfolging.services.ArenaUtils.*;
-import static no.nav.fo.veilarboppfolging.vilkar.VilkarService.VilkarType.PRIVAT;
-import static no.nav.fo.veilarboppfolging.vilkar.VilkarService.VilkarType.UNDER_OPPFOLGING;
+
 
 @Slf4j
 public class OppfolgingResolver {
@@ -127,45 +122,6 @@ public class OppfolgingResolver {
         avsluttOppfolging(null, "Oppfølging avsluttet automatisk pga. inaktiv bruker som ikke kan reaktiveres");
         reloadOppfolging();
         MetricsFactory.createEvent("oppfolging.automatisk.avslutning").addFieldToReport("success", !oppfolging.isUnderOppfolging()).report();
-    }
-
-    void sjekkNyesteVilkarOgOppdaterOppfolging(String hash, VilkarStatus vilkarStatus) {
-        Brukervilkar gjeldendeVilkar = getNyesteVilkar();
-        if (gjeldendeVilkar.getHash().equals(hash)) {
-            deps.getOppfolgingRepository().opprettBrukervilkar(
-                    new Brukervilkar(
-                            aktorId,
-                            new Timestamp(currentTimeMillis()),
-                            vilkarStatus,
-                            gjeldendeVilkar.getTekst(),
-                            hash
-                    ));
-        }
-
-        reloadOppfolging();
-    }
-
-    Brukervilkar getNyesteVilkar() {
-        String vilkarTekst = deps.getVilkarService().getVilkar(oppfolging.isUnderOppfolging() ? UNDER_OPPFOLGING : PRIVAT, null);
-        return new Brukervilkar()
-                .setTekst(vilkarTekst)
-                .setHash(DigestUtils.sha256Hex(vilkarTekst));
-    }
-
-    List<Brukervilkar> getHistoriskeVilkar() {
-        return deps.getOppfolgingRepository().hentHistoriskeVilkar(aktorId);
-    }
-
-    boolean maVilkarBesvares() {
-        if (deps.getBrukervilkarFeature().erAktiv() && oppfolging.isUnderOppfolging()) { //TODO: når featuretoggle slettes er det bare nødvending å sjekke på isUnderOppfolging og returnere false
-            return false;
-        }
-
-        return ofNullable(oppfolging.getGjeldendeBrukervilkar())
-                .filter(brukervilkar -> GODKJENT.equals(brukervilkar.getVilkarstatus()))
-                .map(Brukervilkar::getHash)
-                .map(brukerVilkar -> !brukerVilkar.equals(getNyesteVilkar().getHash()))
-                .orElse(true);
     }
 
     List<MalData> getMalList() {
@@ -477,9 +433,6 @@ public class OppfolgingResolver {
         private DigitalKontaktinformasjonV1 digitalKontaktinformasjonV1;
 
         @Inject
-        private VilkarService vilkarService;
-
-        @Inject
         private YtelseskontraktV3 ytelseskontraktV3;
 
         @Inject
@@ -493,9 +446,6 @@ public class OppfolgingResolver {
 
         @Inject
         private KvpService kvpService;
-
-        @Inject
-        private RemoteFeatureConfig.BrukervilkarFeature brukervilkarFeature;
 
     }
 }

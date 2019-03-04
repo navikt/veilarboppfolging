@@ -16,7 +16,6 @@ public class OppfolgingStatusData {
     public boolean manuell;
     public boolean underOppfolging;
     public boolean underKvp;
-    public boolean vilkarMaBesvares;
     public boolean kanStarteOppfolging;
     public AvslutningStatusData avslutningStatusData;
     private EskaleringsvarselData gjeldendeEskaleringsvarsel;
@@ -27,6 +26,9 @@ public class OppfolgingStatusData {
     public Boolean kanReaktiveres;
     public Date inaktiveringsdato;
     public Boolean erSykmeldtMedArbeidsgiver;
+
+    @Deprecated
+    public boolean vilkarMaBesvares;
 
     @Deprecated
     public Boolean erIkkeArbeidssokerUtenOppfolging;

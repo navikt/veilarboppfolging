@@ -6,7 +6,6 @@ import no.nav.brukerdialog.security.domain.IdentType;
 import no.nav.common.auth.SubjectHandler;
 import no.nav.fo.veilarboppfolging.config.RemoteFeatureConfig;
 import no.nav.fo.veilarboppfolging.domain.*;
-import no.nav.fo.veilarboppfolging.mappers.VilkarMapper;
 import no.nav.fo.veilarboppfolging.rest.api.OppfolgingController;
 import no.nav.fo.veilarboppfolging.rest.api.SystemOppfolgingController;
 import no.nav.fo.veilarboppfolging.rest.api.VeilederOppfolgingController;
@@ -20,7 +19,6 @@ import javax.inject.Provider;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
@@ -132,29 +130,6 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
     public List<InnstillingsHistorikk> hentInnstillingsHistorikk() throws Exception {
         autorisasjonService.skalVereInternBruker();
         return historikkService.hentInstillingsHistorikk(getFnr());
-    }
-
-    @Override
-    public Vilkar hentVilkar() throws Exception {
-        return tilDto(oppfolgingService.hentVilkar(getFnr()));
-    }
-
-    @Override
-    public List<Vilkar> hentVilkaarStatusListe() throws PepException {
-        return oppfolgingService.hentHistoriskeVilkar(getFnr())
-                .stream()
-                .map(this::tilDto)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public OppfolgingStatus godta(String hash) throws Exception {
-        return tilDto(oppfolgingService.oppdaterVilkaar(hash, getFnr(), VilkarStatus.GODKJENT));
-    }
-
-    @Override
-    public OppfolgingStatus avslaa(String hash) throws Exception {
-        return tilDto(oppfolgingService.oppdaterVilkaar(hash, getFnr(), VilkarStatus.AVSLATT));
     }
 
     @Override
@@ -331,18 +306,6 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
 
     private KvpPeriodeDTO tilDTO(Kvp kvp) {
         return new KvpPeriodeDTO(kvp.getOpprettetDato(), kvp.getAvsluttetDato());
-    }
-
-    private Vilkar tilDto(Brukervilkar brukervilkar) {
-        return new Vilkar()
-                .setTekst(brukervilkar.getTekst())
-                .setHash(brukervilkar.getHash())
-                .setDato(brukervilkar.getDato())
-                .setVilkarstatus(
-                        VilkarMapper.mapCommonVilkarStatusToVilkarStatusApi(
-                                ofNullable(brukervilkar.getVilkarstatus()).orElse(VilkarStatus.IKKE_BESVART)
-                        )
-                );
     }
 
     private Mal tilDto(MalData malData) {
