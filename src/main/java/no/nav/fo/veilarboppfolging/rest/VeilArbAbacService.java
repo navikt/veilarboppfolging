@@ -30,6 +30,7 @@ public class VeilArbAbacService implements Helsesjekk {
 
     public boolean harVeilederSkriveTilgangTilFnr(String veilederId, String fnr) {
         return "permit".equals(RestUtils.withClient(c -> c.target(abacTargetUrl)
+                .path("subject")
                 .path("person")
                 .queryParam("fnr", fnr)
                 .queryParam("action", "update")
