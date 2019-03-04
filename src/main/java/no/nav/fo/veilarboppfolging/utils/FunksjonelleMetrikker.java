@@ -8,7 +8,12 @@ import no.nav.metrics.MetricsFactory;
 import java.util.Date;
 import java.util.Optional;
 
+import io.micrometer.core.instrument.MeterRegistry;
+
 public class FunksjonelleMetrikker {
+    
+    private static final MeterRegistry meterRegistry = MetricsFactory.getMeterRegistry();
+
     public static Tilordning lestAvVeileder(Tilordning tilordning) {
         Event event = MetricsFactory.createEvent("tilordnet.veileder.lest");
         Optional.of(tilordning)
@@ -45,7 +50,7 @@ public class FunksjonelleMetrikker {
                 .report();
     }
 
-    public static void antallMeldingerKonsumertAvKafka(){
+    public static void antallMeldingerKonsumertAvKafka() {
         MetricsFactory.createEvent("kafka.konsumert.meldinger").report();
     }
 
@@ -53,8 +58,17 @@ public class FunksjonelleMetrikker {
         MetricsFactory.createEvent("automatisk.avsluttet.bruker").report();
     }
 
-    public static void startetOppfolgingAutomatisk() {
-        MetricsFactory.createEvent("automatisk.startet.oppfolging.bruker").report();
+    public static void startetOppfolgingAutomatisk(String formidlingsgruppekode, String kvalifiseringsgruppekode) {
+        MetricsFactory.createEvent("automatisk.startet.oppfolging.bruker")
+            .addTagToReport("formidlingsgruppekode", formidlingsgruppekode)
+            .addTagToReport("kvalifiseringsgruppekode", kvalifiseringsgruppekode)
+            .report();
+        meterRegistry.counter("automatisk.startet.oppfolging.bruker",
+                "formidlingsgruppekode",
+                formidlingsgruppekode,
+                "kvalifiseringsgruppekode", 
+                kvalifiseringsgruppekode)
+        .increment();
     }
 
     private FunksjonelleMetrikker() {

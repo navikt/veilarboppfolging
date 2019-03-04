@@ -142,7 +142,7 @@ public class Iserv28Service{
         if(unleashService.isEnabled(START_OPPFOLGING_TOGGLE)) {
             log.info("Starter oppfølging automatisk for bruker med aktørid {}", arenaBruker.getAktoerid());
             oppfolgingRepository.startOppfolgingHvisIkkeAlleredeStartet(arenaBruker.getAktoerid());
-            FunksjonelleMetrikker.startetOppfolgingAutomatisk();
+            FunksjonelleMetrikker.startetOppfolgingAutomatisk(arenaBruker.getFormidlingsgruppekode(), arenaBruker.getKvalifiseringsgruppekode());
         } else {
             log.info("Automatisk start av oppfølging er slått av i unleash. Aktørid {}", arenaBruker.getAktoerid());
         }
