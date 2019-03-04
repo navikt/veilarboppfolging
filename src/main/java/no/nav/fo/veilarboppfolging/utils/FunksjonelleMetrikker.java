@@ -5,6 +5,8 @@ import no.nav.fo.veilarboppfolging.domain.Tilordning;
 import no.nav.metrics.Event;
 import no.nav.metrics.MetricsFactory;
 
+import static no.nav.fo.veilarboppfolging.utils.StringUtils.of;
+
 import java.util.Date;
 import java.util.Optional;
 
@@ -65,9 +67,9 @@ public class FunksjonelleMetrikker {
             .report();
         meterRegistry.counter("automatisk.startet.oppfolging.bruker",
                 "formidlingsgruppekode",
-                formidlingsgruppekode,
+                of(formidlingsgruppekode).orElse("unknown"),
                 "kvalifiseringsgruppekode", 
-                kvalifiseringsgruppekode)
+                of(kvalifiseringsgruppekode).orElse("unknown"))
         .increment();
     }
 
