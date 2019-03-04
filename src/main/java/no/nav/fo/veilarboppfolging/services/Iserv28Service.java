@@ -128,7 +128,7 @@ public class Iserv28Service{
             oppdaterUtmeldingTabell(arenaBruker);
         } else {
             slettBrukerFraUtmeldingTabell(arenaBruker.getAktoerid());
-            if(erUnderOppfolging(arenaBruker.getFormidlingsgruppekode(), arenaBruker.getKvalifiseringsgruppekode(), null)) {
+            if(erUnderOppfolging(arenaBruker.getFormidlingsgruppekode(), arenaBruker.getKvalifiseringsgruppekode())) {
                 if (brukerHarOppfolgingsflagg(arenaBruker.getAktoerid())) {
                     log.info("Bruker med aktørid {} er allerede under oppfølging", arenaBruker.getAktoerid());
                 } else {
