@@ -37,12 +37,6 @@ public class OppfolgingService {
         this.pepClient = pepClient;
     }
 
-    public OppfolgingStatusData hentOppfolgingsStatus(AktorId aktorId) throws Exception {
-        String fnr = aktorService.getFnr(aktorId.getAktorId())
-                .orElseThrow(() -> new IllegalArgumentException("Fant ikke fnr for aktørid: " + aktorId));
-        return hentOppfolgingsStatus(fnr);
-    }
-
     @SneakyThrows
     public OppfolgingResolver sjekkTilgangTilEnhet(String fnr){
         val resolver = new OppfolgingResolver(fnr, oppfolgingResolverDependencies);
@@ -55,23 +49,6 @@ public class OppfolgingService {
         val resolver = new OppfolgingResolver(fnr, oppfolgingResolverDependencies);
 
         resolver.sjekkStatusIArenaOgOppdaterOppfolging();
-
-        return getOppfolgingStatusData(fnr, resolver);
-    }
-
-    public Brukervilkar hentVilkar(String fnr) throws Exception {
-        return new OppfolgingResolver(fnr, oppfolgingResolverDependencies).getNyesteVilkar();
-    }
-
-    public List<Brukervilkar> hentHistoriskeVilkar(String fnr) {
-        return new OppfolgingResolver(fnr, oppfolgingResolverDependencies).getHistoriskeVilkar();
-    }
-
-    @Transactional
-    public OppfolgingStatusData oppdaterVilkaar(String hash, String fnr, VilkarStatus vilkarStatus) throws Exception {
-        val resolver = new OppfolgingResolver(fnr, oppfolgingResolverDependencies);
-
-        resolver.sjekkNyesteVilkarOgOppdaterOppfolging(hash, vilkarStatus);
 
         return getOppfolgingStatusData(fnr, resolver);
     }
@@ -170,7 +147,6 @@ public class OppfolgingService {
                 .setUnderKvp(oppfolging.getGjeldendeKvp() != null)
                 .setReservasjonKRR(oppfolgingResolver.reservertIKrr())
                 .setManuell(oppfolgingResolver.manuell())
-                .setVilkarMaBesvares(oppfolgingResolver.maVilkarBesvares())
                 .setKanStarteOppfolging(oppfolgingResolver.getKanSettesUnderOppfolging())
                 .setAvslutningStatusData(avslutningStatusData)
                 .setGjeldendeEskaleringsvarsel(oppfolging.getGjeldendeEskaleringsvarsel())

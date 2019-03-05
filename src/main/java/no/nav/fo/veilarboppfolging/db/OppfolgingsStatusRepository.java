@@ -14,7 +14,6 @@ import java.util.List;
 public class OppfolgingsStatusRepository {
 
     static final String GJELDENE_ESKALERINGSVARSEL = "gjeldende_eskaleringsvarsel";
-    static final String GJELDENDE_BRUKERVILKAR = "gjeldende_brukervilkar";
     static final String GJELDENDE_MAL = "gjeldende_mal";
     static final String GJELDENDE_MANUELL_STATUS = "gjeldende_manuell_status";
     static final String AKTOR_ID = "aktor_id";
@@ -57,7 +56,6 @@ public class OppfolgingsStatusRepository {
     public static OppfolgingTable map(ResultSet r) throws SQLException {
         return new OppfolgingTable()
                 .setAktorId(r.getString(AKTOR_ID))
-                .setGjeldendeBrukervilkarId(r.getLong(GJELDENDE_BRUKERVILKAR))
                 .setGjeldendeManuellStatusId(r.getLong(GJELDENDE_MANUELL_STATUS))
                 .setGjeldendeMaalId(r.getLong(GJELDENDE_MAL))
                 .setGjeldendeEskaleringsvarselId(r.getLong(GJELDENE_ESKALERINGSVARSEL))
