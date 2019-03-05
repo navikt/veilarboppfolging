@@ -128,7 +128,6 @@ public class OppfolgingsPeriodeRepository {
                         + "ny_for_veileder = 0, "
                         + "gjeldende_manuell_status = null, "
                         + "gjeldende_mal = null, "
-                        + "gjeldende_brukervilkar = null, "
                         + "oppdatert = CURRENT_TIMESTAMP, "
                         + "FEED_ID = null "
                         + "WHERE aktor_id = ?",
