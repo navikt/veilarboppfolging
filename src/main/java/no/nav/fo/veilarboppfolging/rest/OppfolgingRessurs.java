@@ -250,7 +250,6 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
                 .setUnderOppfolging(oppfolgingStatusData.underOppfolging)
                 .setManuell(oppfolgingStatusData.manuell)
                 .setReservasjonKRR(oppfolgingStatusData.reservasjonKRR)
-                .setVilkarMaBesvares(oppfolgingStatusData.vilkarMaBesvares)
                 .setOppfolgingUtgang(oppfolgingStatusData.getOppfolgingUtgang())
                 .setKanReaktiveres(oppfolgingStatusData.kanReaktiveres)
                 .setOppfolgingsPerioder(oppfolgingStatusData.oppfolgingsperioder.stream().map(this::tilDTO).collect(toList()))

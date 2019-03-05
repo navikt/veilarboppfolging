@@ -28,8 +28,5 @@ public class OppfolgingStatus {
     private Boolean erSykmeldtMedArbeidsgiver;
 
     @Deprecated
-    public boolean vilkarMaBesvares;
-
-    @Deprecated
     private Boolean erIkkeArbeidssokerUtenOppfolging;
 }
