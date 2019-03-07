@@ -4,6 +4,7 @@ import io.swagger.annotations.Api;
 
 import no.nav.apiapp.security.PepClient;
 import no.nav.apiapp.security.SubjectService;
+import no.nav.common.auth.SubjectHandler;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.feed.producer.FeedProducer;
 import no.nav.fo.veilarboppfolging.db.OppfolgingFeedRepository;
@@ -63,7 +64,6 @@ public class VeilederTilordningRessurs {
         for (VeilederTilordning tilordning : tilordninger) {
             try {
                 final String fnr = tilordning.getBrukerFnr();
-                pepClient.sjekkSkriveTilgangTilFnr(fnr);
 
                 String aktoerId = finnAktorId(fnr);
 
@@ -138,7 +138,7 @@ public class VeilederTilordningRessurs {
     }
 
     private void loggFeilOppfolging(Exception e) {
-        if(e instanceof NotAuthorizedException) {
+        if (e instanceof NotAuthorizedException) {
             LOG.warn("Request is not authorized", e);
         } else {
             LOG.error(loggMeldingForException(e), e);
@@ -162,7 +162,10 @@ public class VeilederTilordningRessurs {
     }
 
     public boolean kanSetteNyVeileder(String eksisterendeVeileder, VeilederTilordning veilederTilordning) {
-        return kanTilordneFraVeileder(eksisterendeVeileder, veilederTilordning.getFraVeilederId()) && nyVeilederHarTilgang(veilederTilordning);
+        return
+                harInnloggetVeilederSkrivetilgangTilFnr(veilederTilordning.getBrukerFnr()) &&
+                        kanTilordneFraVeileder(eksisterendeVeileder, veilederTilordning.getFraVeilederId()) &&
+                        nyVeilederHarTilgang(veilederTilordning);
     }
 
     static boolean kanTilordneFraVeileder(String eksisterendeVeileder, String fraVeilederId) {
@@ -171,6 +174,13 @@ public class VeilederTilordningRessurs {
 
     private boolean nyVeilederHarTilgang(VeilederTilordning veilederTilordning) {
         return autorisasjonService.harVeilederSkriveTilgangTilFnr(veilederTilordning.getTilVeilederId(), veilederTilordning.getBrukerFnr());
+    }
+
+    private boolean harInnloggetVeilederSkrivetilgangTilFnr(String fnr) {
+        return AutorisasjonService.erInternBruker() &&
+                SubjectHandler.getIdent()
+                        .map(ident -> autorisasjonService.harVeilederSkriveTilgangTilFnr(ident, fnr))
+                        .orElse(false);
     }
 
 }

@@ -2,17 +2,23 @@ package no.nav.fo.veilarboppfolging.rest;
 
 import lombok.val;
 import no.nav.apiapp.security.PepClient;
+import no.nav.brukerdialog.security.context.SubjectRule;
+import no.nav.brukerdialog.security.domain.IdentType;
+import no.nav.common.auth.SsoToken;
+import no.nav.common.auth.Subject;
+import no.nav.common.auth.SubjectHandler;
+import no.nav.common.auth.TestSubjectUtils;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.feed.producer.FeedProducer;
 import no.nav.fo.veilarboppfolging.db.VeilederTilordningerRepository;
 import no.nav.fo.veilarboppfolging.rest.domain.*;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 import org.springframework.jdbc.BadSqlGrammarException;
@@ -36,6 +42,9 @@ import static org.mockito.Mockito.*;
 @RunWith(MockitoJUnitRunner.class)
 public class VeilederTilordningRessursTest {
 
+    @Rule
+    public SubjectRule subjectRule = new SubjectRule();
+
     @Mock
     private PepClient pepClient;
 
@@ -57,6 +66,11 @@ public class VeilederTilordningRessursTest {
     @Before
     public void setup() {
         when(autorisasjonService.harVeilederSkriveTilgangTilFnr(anyString(), anyString())).thenReturn(true);
+
+        subjectRule.setSubject(TestSubjectUtils.builder()
+                .tokenType(SsoToken.Type.OIDC)
+                .identType(IdentType.InternBruker)
+                .uid("TILORDNERVEILEDER").build());
     }
 
     @Test
@@ -72,6 +86,39 @@ public class VeilederTilordningRessursTest {
     @Test
     public void skalIkkeTildeleVeilederOmEksisterendeErUlikFraVeileder() throws Exception {
         assertFalse(kanTilordneFraVeileder("AAAAAAA", "CCCCCC"));
+    }
+
+    @Test
+    public void responsSkalInneholdeBrukereHvorVeilederSomTilordnerEllerTilordnesIkkeHarAbacTilgang() {
+        String tilordnerVeileder = SubjectHandler.getIdent().orElse(null);
+        String tilVeileder = "TILVEILEDER";
+        VeilederTilordning tilgangOk = new VeilederTilordning().setBrukerFnr("FNR1").setTilVeilederId(tilVeileder);
+        VeilederTilordning tilordnerHarIkkeTilgang = new VeilederTilordning().setBrukerFnr("FNR2").setTilVeilederId(tilVeileder);
+        VeilederTilordning tilVeilederHarIkkeTilgang = new VeilederTilordning().setBrukerFnr("FNR3").setTilVeilederId(tilVeileder);
+
+        List<VeilederTilordning> tilordninger = Arrays.asList(
+                tilgangOk,
+                tilordnerHarIkkeTilgang,
+                tilVeilederHarIkkeTilgang
+        );
+
+        when(aktorServiceMock.getAktorId(tilgangOk.getBrukerFnr())).thenReturn(of("AKTOERID1"));
+        when(aktorServiceMock.getAktorId(tilordnerHarIkkeTilgang.getBrukerFnr())).thenReturn(of("AKTOERID2"));
+        when(aktorServiceMock.getAktorId(tilVeilederHarIkkeTilgang.getBrukerFnr())).thenReturn(of("AKTOERID3"));
+
+        when(autorisasjonService.harVeilederSkriveTilgangTilFnr(tilordnerVeileder, tilgangOk.getBrukerFnr())).thenReturn(true);
+        when(autorisasjonService.harVeilederSkriveTilgangTilFnr(tilordnerVeileder, tilordnerHarIkkeTilgang.getBrukerFnr())).thenReturn(false);
+        when(autorisasjonService.harVeilederSkriveTilgangTilFnr(tilordnerVeileder, tilVeilederHarIkkeTilgang.getBrukerFnr())).thenReturn(true);
+
+        when(autorisasjonService.harVeilederSkriveTilgangTilFnr(tilVeileder, tilgangOk.getBrukerFnr())).thenReturn(true);
+        when(autorisasjonService.harVeilederSkriveTilgangTilFnr(tilVeileder, tilordnerHarIkkeTilgang.getBrukerFnr())).thenReturn(true);
+        when(autorisasjonService.harVeilederSkriveTilgangTilFnr(tilVeileder, tilVeilederHarIkkeTilgang.getBrukerFnr())).thenReturn(false);
+
+        Response response = veilederTilordningRessurs.postVeilederTilordninger(tilordninger);
+
+        List<VeilederTilordning> feilendeTilordninger = ((TilordneVeilederResponse) response.getEntity()).getFeilendeTilordninger();
+
+        assertThat(feilendeTilordninger).containsExactlyInAnyOrder(tilordnerHarIkkeTilgang, tilVeilederHarIkkeTilgang);
     }
 
     @Test
@@ -268,18 +315,15 @@ public class VeilederTilordningRessursTest {
         VeilederTilordning tilordningOKBruker1 = new VeilederTilordning().setBrukerFnr("FNR1").setFraVeilederId("FRAVEILEDER1").setTilVeilederId("TILVEILEDER1");
         VeilederTilordning tilordningERRORBruker2 = new VeilederTilordning().setBrukerFnr("FNR2").setFraVeilederId("FRAVEILEDER2").setTilVeilederId("TILVEILEDER2");
 
-        when(pepClient.sjekkLeseTilgangTilFnr(any(String.class))).thenAnswer(new Answer<Boolean>() {
 
-            @Override
-            public Boolean answer(InvocationOnMock invocation) throws Throwable {
-                //Simulerer at pep-kallet tar noe tid for fnr1
-                if ("FNR1".equals(invocation.getArguments()[0])) {
-                    Thread.sleep(20);
-                    return null;
-                }
-                return null;
+        when(autorisasjonService.harVeilederSkriveTilgangTilFnr(any(String.class), any(String.class)))
+                .thenAnswer((Answer<Boolean>) invocation -> {
+            //Simulerer at pep-kallet tar noe tid for fnr1
+            if ("FNR1".equals(invocation.getArguments()[1])) {
+                Thread.sleep(20);
+                return true;
             }
-
+            return true;
         });
 
         when(aktorServiceMock.getAktorId("FNR1")).thenReturn(of("AKTOERID1"));
@@ -287,8 +331,8 @@ public class VeilederTilordningRessursTest {
         //Starter to tråder som gjør to separate tilordninger gjennom samme portefoljeressurs. Dette simulerer
         //at to brukere kaller rest-operasjonen samtidig. Den første tilordningen tar lenger tid siden pep-kallet tar lenger tid.
         ExecutorService pool = Executors.newFixedThreadPool(2);
-        Future<Response> response1 = pool.submit(portefoljeRessursCallable(veilederTilordningRessurs, asList(tilordningOKBruker1)));
-        Future<Response> response2 = pool.submit(portefoljeRessursCallable(veilederTilordningRessurs, asList(tilordningERRORBruker2)));
+        Future<Response> response1 = pool.submit(portefoljeRessursCallable(veilederTilordningRessurs, asList(tilordningOKBruker1), SubjectHandler.getSubject()));
+        Future<Response> response2 = pool.submit(portefoljeRessursCallable(veilederTilordningRessurs, asList(tilordningERRORBruker2), SubjectHandler.getSubject()));
 
         List<VeilederTilordning> feilendeTilordninger1 = ((TilordneVeilederResponse) response1.get().getEntity()).getFeilendeTilordninger();
         List<VeilederTilordning> feilendeTilordninger2 = ((TilordneVeilederResponse) response2.get().getEntity()).getFeilendeTilordninger();
@@ -297,14 +341,12 @@ public class VeilederTilordningRessursTest {
         assertThat(feilendeTilordninger2).contains(tilordningERRORBruker2);
     }
 
-    private Callable<Response> portefoljeRessursCallable(VeilederTilordningRessurs veilederTilordningRessurs, List<VeilederTilordning> tilordninger) {
-        return new Callable<Response>() {
-
-            @Override
-            public Response call() throws Exception {
-                return veilederTilordningRessurs.postVeilederTilordninger(tilordninger);
-            }
-        };
+    private Callable<Response> portefoljeRessursCallable(VeilederTilordningRessurs veilederTilordningRessurs,
+                                                         List<VeilederTilordning> tilordninger,
+                                                         Optional<Subject> subject) {
+        return () ->
+                SubjectHandler
+                        .withSubject(subject.get(), () -> veilederTilordningRessurs.postVeilederTilordninger(tilordninger));
     }
 
     @Test
