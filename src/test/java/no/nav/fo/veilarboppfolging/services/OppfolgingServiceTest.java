@@ -153,7 +153,6 @@ public class OppfolgingServiceTest {
     public void medEnhetTilgang() throws Exception {
         when(pepClientMock.harTilgangTilEnhet(ENHET)).thenReturn(true);
 
-        gittAktor();
         gittEnhet(ENHET);
 
         VeilederTilgang veilederTilgang = oppfolgingService.hentVeilederTilgang(FNR);
@@ -164,7 +163,6 @@ public class OppfolgingServiceTest {
     public void utenEnhetTilgang() throws Exception {
         when(pepClientMock.harTilgangTilEnhet(anyString())).thenReturn(false);
 
-        gittAktor();
         gittEnhet(ENHET);
 
         VeilederTilgang veilederTilgang = oppfolgingService.hentVeilederTilgang(FNR);
@@ -179,7 +177,6 @@ public class OppfolgingServiceTest {
 
     @Test
     public void riktigFnr() throws Exception {
-        gittAktor();
         gittOppfolging(oppfolging);
 
         OppfolgingStatusData oppfolgingStatusData = hentOppfolgingStatus();
@@ -188,7 +185,6 @@ public class OppfolgingServiceTest {
 
     @Test
     public void hentOppfolgingStatus_brukerSomIkkeErUnderOppfolgingOppdateresIkkeDersomIkkeUnderOppfolgingIArena() throws Exception {
-        gittAktor();
         gittOppfolging(oppfolging);
         OppfolgingStatusData oppfolgingStatusData = hentOppfolgingStatus();
 
@@ -198,7 +194,6 @@ public class OppfolgingServiceTest {
 
     @Test
     public void hentOppfolgingStatus_brukerSomIkkeErUnderOppfolgingSettesUnderOppfolgingDersomArenaHarRiktigStatus() throws Exception {
-        gittAktor();
         gittOppfolging(oppfolging);
         gittOppfolgingStatus("ARBS", "");
 
@@ -215,7 +210,6 @@ public class OppfolgingServiceTest {
 
     @Test
     public void hentOppfolgingStatus_brukerSomErUnderOppfolgingOgISERVMeldesUtDersomArenaSierReaktiveringIkkeErMulig() throws Exception {
-        gittAktor();
         oppfolging.setUnderOppfolging(true);
         gittOppfolging(oppfolging);
         gittInaktivOppfolgingStatus(false);
@@ -227,7 +221,6 @@ public class OppfolgingServiceTest {
      
     @Test
     public void hentOppfolgingStatus_brukerSomErUnderOppfolgingOgISERVSkalReaktiveresDersomArenaSierReaktiveringErMulig() throws Exception {
-        gittAktor();
         oppfolging.setUnderOppfolging(true);
         gittOppfolging(oppfolging);
         gittInaktivOppfolgingStatus(true);
@@ -240,7 +233,6 @@ public class OppfolgingServiceTest {
     
     @Test
     public void utenReservasjon() throws Exception {
-        gittAktor();
 
         OppfolgingStatusData oppfolgingStatusData = hentOppfolgingStatus();
 
@@ -249,7 +241,6 @@ public class OppfolgingServiceTest {
 
     @Test
     public void utenKontaktInformasjon() throws Exception {
-        gittAktor();
         gittKRRFeil(HentDigitalKontaktinformasjonKontaktinformasjonIkkeFunnet.class);
         gittOppfolgingStatus("ARBS", "");
 
@@ -260,7 +251,6 @@ public class OppfolgingServiceTest {
 
     @Test
     public void personIkkeFunnet() throws Exception {
-        gittAktor();
         gittKRRFeil(HentDigitalKontaktinformasjonPersonIkkeFunnet.class);
         gittOppfolgingStatus("ARBS", "");
 
@@ -271,7 +261,6 @@ public class OppfolgingServiceTest {
 
     @Test
     public void medReservasjonOgUnderOppfolging() throws Exception {
-        gittAktor();
         gittReservasjon("true");
         gittOppfolgingStatus("ARBS", "");
 
@@ -282,7 +271,6 @@ public class OppfolgingServiceTest {
 
     @Test
     public void underOppfolging() throws Exception {
-        gittAktor();
         gittOppfolging(oppfolging);
         gittOppfolgingStatus("ARBS", "");
 
@@ -293,7 +281,6 @@ public class OppfolgingServiceTest {
 
     @Test
     public void ikkeArbeidssokerUnderOppfolging() throws Exception {
-        gittAktor();
         gittOppfolging(oppfolging);
         gittOppfolgingStatus("IARBS", "BATT");
 
@@ -304,7 +291,6 @@ public class OppfolgingServiceTest {
 
     @Test
     public void ikkeArbeidssokerIkkeUnderOppfolging() throws Exception {
-        gittAktor();
         gittOppfolging(oppfolging);
         gittOppfolgingStatus("IARBS", "");
 
@@ -315,7 +301,6 @@ public class OppfolgingServiceTest {
 
     @Test
     public void kanIkkeAvslutteNarManIkkeErUnderOppfolging() throws Exception {
-        gittAktor();
         gittOppfolging(oppfolging.setUnderOppfolging(false));
         gittYtelserMedStatus();
 
@@ -327,7 +312,6 @@ public class OppfolgingServiceTest {
 
     @Test
     public void kanIkkeAvslutteNarManIkkeErUnderOppfolgingIArena() throws Exception {
-        gittAktor();
         gittOppfolging(oppfolging.setUnderOppfolging(true));
         gittOppfolgingStatus("ARBS", null);
         gittYtelserMedStatus();
@@ -340,7 +324,6 @@ public class OppfolgingServiceTest {
 
     @Test
     public void kanAvslutteMedAktiveTiltak() throws Exception {
-        gittAktor();
         gittOppfolging(oppfolging.setUnderOppfolging(true));
         gittOppfolgingStatus("ISERV", "");
         gittAktiveTiltak();
@@ -355,7 +338,6 @@ public class OppfolgingServiceTest {
 
     @Test
     public void kanAvslutteMedVarselOmAktiveYtelser() throws Exception {
-        gittAktor();
         gittOppfolging(oppfolging.setUnderOppfolging(true));
         gittOppfolgingStatus("ISERV", "");
         gittIngenAktiveTiltak();
@@ -383,10 +365,6 @@ public class OppfolgingServiceTest {
 
     private void gittOppfolging(Oppfolging oppfolging) {
         when(oppfolgingRepositoryMock.hentOppfolging(AKTOR_ID)).thenReturn(Optional.of(oppfolging));
-    }
-
-    private void gittAktor() {
-        when(aktorServiceMock.getAktorId(FNR)).thenReturn(of(AKTOR_ID));
     }
 
     private void gittReservasjon(String reservasjon) {
