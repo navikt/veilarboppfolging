@@ -1,7 +1,6 @@
 package no.nav.fo.veilarboppfolging.rest;
 
 import io.swagger.annotations.Api;
-
 import no.nav.apiapp.security.PepClient;
 import no.nav.apiapp.security.SubjectService;
 import no.nav.dialogarena.aktor.AktorService;
@@ -67,13 +66,18 @@ public class VeilederTilordningRessurs {
 
                 String aktoerId = finnAktorId(fnr);
 
-                String tilordningForAktoer = veilederTilordningerRepository.hentTilordningForAktoer(aktoerId);
+                String eksisterendeVeileder = veilederTilordningerRepository.hentTilordningForAktoer(aktoerId);
 
-                if (kanSetteNyVeileder(tilordningForAktoer, tilordning)) {
-                    skrivTilDatabase(aktoerId, tilordning.getTilVeilederId());
+                if (kanTilordneFraVeileder(eksisterendeVeileder, tilordning.getFraVeilederId())) {
+                    if(nyVeilederHarTilgang(tilordning)) {
+                        skrivTilDatabase(aktoerId, tilordning.getTilVeilederId());
+                    } else {
+                        LOG.info("Aktoerid {} kunne ikke tildeles. Ny veileder {} har ikke tilgang.", aktoerId, tilordning.getTilVeilederId());
+                        feilendeTilordninger.add(tilordning);
+                    }
                 } else {
+                    LOG.info("Aktoerid {} kunne ikke tildeles. Oppgitt fraVeileder {} er feil. Faktisk veileder: {}", aktoerId, tilordning.getFraVeilederId(), eksisterendeVeileder);
                     feilendeTilordninger.add(tilordning);
-                    LOG.info("Aktoerid {} kunne ikke tildeles ettersom fraVeileder er feil", aktoerId);
                 }
             } catch (Exception e) {
                 feilendeTilordninger.add(tilordning);
@@ -159,10 +163,6 @@ public class VeilederTilordningRessurs {
             LOG.error(String.format("Kunne ikke tilordne veileder %s til aktoer %s", veileder, aktoerId), e);
             throw e;
         }
-    }
-
-    public boolean kanSetteNyVeileder(String eksisterendeVeileder, VeilederTilordning veilederTilordning) {
-        return kanTilordneFraVeileder(eksisterendeVeileder, veilederTilordning.getFraVeilederId()) && nyVeilederHarTilgang(veilederTilordning);
     }
 
     static boolean kanTilordneFraVeileder(String eksisterendeVeileder, String fraVeilederId) {
