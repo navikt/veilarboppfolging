@@ -11,7 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
 import java.sql.Timestamp;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -221,8 +220,4 @@ public class OppfolgingRepository {
         maalRepository.opprett(mal);
     }
 
-    // FIXME: go directly to maalRepository instead.
-    public void slettMalForAktorEtter(String aktorId, Date date) {
-        maalRepository.slettForAktorEtter(aktorId, date);
-    }
 }

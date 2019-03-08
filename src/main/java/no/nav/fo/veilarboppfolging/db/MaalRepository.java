@@ -8,7 +8,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
 import java.sql.ResultSet;
-import java.util.Date;
 import java.util.List;
 
 import static no.nav.fo.veilarboppfolging.db.OppfolgingsStatusRepository.AKTOR_ID;
@@ -41,12 +40,6 @@ public class MaalRepository {
         setActive(maal);
     }
 
-    @Transactional
-    public void slettForAktorEtter(String aktorId, Date date) {
-        removeActive(aktorId);
-        delete(aktorId, date);
-    }
-
     private void insert(MalData maal) {
         database.update("" +
                         "INSERT INTO MAL(id, aktor_id, mal, endret_av, dato) " +
@@ -68,21 +61,6 @@ public class MaalRepository {
                 mal.getId(),
                 mal.getAktorId()
         );
-    }
-
-    private void delete(String aktorId, Date date) {
-        database.update("DELETE FROM MAL " +
-                        "WHERE aktor_id = ? AND dato > ?",
-                aktorId,
-                date);
-    }
-
-    private void removeActive(String aktorId) {
-        database.update("UPDATE " +
-                        OppfolgingsStatusRepository.TABLE_NAME +
-                        " SET " + GJELDENDE_MAL + " = NULL" +
-                        " WHERE " + AKTOR_ID + " = ?",
-                aktorId);
     }
 
     @SneakyThrows

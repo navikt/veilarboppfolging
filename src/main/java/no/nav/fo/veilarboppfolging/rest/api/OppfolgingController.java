@@ -32,7 +32,4 @@ public interface OppfolgingController {
     @Path("/mal")
     Mal oppdaterMal(Mal mal) throws Exception;
 
-    @DELETE
-    @Path("/mal")
-    void slettMal() throws Exception;
 }

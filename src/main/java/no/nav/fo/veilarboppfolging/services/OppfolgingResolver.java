@@ -5,7 +5,6 @@ import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import no.nav.apiapp.feil.UlovligHandling;
 import no.nav.apiapp.security.PepClient;
 import no.nav.common.auth.SubjectHandler;
 import no.nav.dialogarena.aktor.AktorService;
@@ -36,7 +35,6 @@ import java.sql.Timestamp;
 import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 import static java.lang.System.currentTimeMillis;
@@ -136,23 +134,6 @@ public class OppfolgingResolver {
                 .setDato(new Timestamp(currentTimeMillis()));
         deps.getOppfolgingRepository().opprettMal(malData);
         return hentOppfolging().getGjeldendeMal();
-    }
-
-    void slettMal() {
-        // https://confluence.adeo.no/pages/viewpage.action?pageId=229941929
-        Oppfolging oppfolging = getOppfolging();
-        if (oppfolging.isUnderOppfolging()) {
-            throw new UlovligHandling();
-        } else {
-            Date sisteSluttDatoEller1970 = oppfolging
-                    .getOppfolgingsperioder()
-                    .stream()
-                    .map(Oppfolgingsperiode::getSluttDato)
-                    .filter(Objects::nonNull)
-                    .max(Date::compareTo)
-                    .orElseGet(() -> new Date(0));
-            deps.getOppfolgingRepository().slettMalForAktorEtter(aktorId, sisteSluttDatoEller1970);
-        }
     }
 
     Oppfolging getOppfolging() {

@@ -1,6 +1,5 @@
 package no.nav.fo.veilarboppfolging.services;
 
-import no.nav.apiapp.feil.UlovligHandling;
 import no.nav.apiapp.security.PepClient;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.db.KvpRepository;
@@ -8,7 +7,6 @@ import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.domain.ArenaOppfolging;
 import no.nav.fo.veilarboppfolging.domain.Kvp;
 import no.nav.fo.veilarboppfolging.domain.Oppfolging;
-import no.nav.fo.veilarboppfolging.domain.Oppfolgingsperiode;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
 import org.junit.Before;
 import org.junit.Test;
@@ -16,9 +14,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-
-import java.util.Arrays;
-import java.util.Date;
 
 import static java.util.Optional.of;
 import static no.nav.fo.veilarboppfolging.domain.KodeverkBruker.SYSTEM;
@@ -121,38 +116,6 @@ public class OppfolgingResolverTest {
 
     private ArenaOppfolging oppfolgingIArena(String enhet) {
         return new ArenaOppfolging().setOppfolgingsenhet(enhet);
-    }
-
-    @Test(expected = UlovligHandling.class)
-    public void slettMal__under_oppfolging__ulovlig() {
-        oppfolging.setUnderOppfolging(true);
-        oppfolgingResolver.slettMal();
-    }
-
-    @Test
-    public void slettMal__ikke_under_oppfolging_og_ingen_oppfolgingsperiode__slett_alle_mal_siden_1970() {
-        oppfolgingResolver.slettMal();
-        verify(oppfolgingRepositoryMock).slettMalForAktorEtter(AKTOR_ID, new Date(0));
-    }
-
-    @Test
-    public void slettMal__ikke_under_oppfolging_og_oppfolgingsperioder__slett_alle_mal_etter_siste_avsluttede_periode() {
-        Date date1 = new Date(1);
-        Date date2 = new Date(2);
-        Date date3 = new Date(3);
-        oppfolging.setOppfolgingsperioder(Arrays.asList(
-                periode(date1),
-                periode(date3),
-                periode(date2)
-        ));
-
-        oppfolgingResolver.slettMal();
-
-        verify(oppfolgingRepositoryMock).slettMalForAktorEtter(eq(AKTOR_ID), eq(date3));
-    }
-
-    private Oppfolgingsperiode periode(Date date1) {
-        return Oppfolgingsperiode.builder().sluttDato(date1).build();
     }
 
     @Test
