@@ -3,6 +3,7 @@ package no.nav.fo.veilarboppfolging.rest.api;
 import no.nav.fo.veilarboppfolging.rest.domain.Bruker;
 import no.nav.fo.veilarboppfolging.rest.domain.Mal;
 import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingStatus;
+import no.nav.fo.veilarboppfolging.rest.domain.UnderOppfolgingDTO;
 
 import javax.ws.rs.*;
 import java.util.List;
@@ -31,5 +32,9 @@ public interface OppfolgingController {
     @POST
     @Path("/mal")
     Mal oppdaterMal(Mal mal) throws Exception;
+
+    @GET
+    @Path("/underOppfolging")
+    UnderOppfolgingDTO underOppfolging() throws Exception;
 
 }

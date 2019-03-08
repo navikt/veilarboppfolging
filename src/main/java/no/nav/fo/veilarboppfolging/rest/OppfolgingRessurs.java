@@ -1,6 +1,5 @@
 package no.nav.fo.veilarboppfolging.rest;
 
-import lombok.val;
 import no.nav.apiapp.security.PepClient;
 import no.nav.brukerdialog.security.domain.IdentType;
 import no.nav.common.auth.SubjectHandler;
@@ -196,6 +195,11 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
         aktiverBrukerService.aktiverSykmeldt(getUid(), sykmeldtBrukerType);
     }
 
+    @Override
+    public UnderOppfolgingDTO underOppfolging() throws Exception {
+        return new UnderOppfolgingDTO().setUnderOppfolging(oppfolgingService.underOppfolging(getFnr()));
+    }
+    
     private Eskaleringsvarsel tilDto(EskaleringsvarselData eskaleringsvarselData) {
         return Optional.ofNullable(eskaleringsvarselData)
                 .map(eskalering -> Eskaleringsvarsel.builder()
@@ -297,4 +301,5 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
                 .setEndretAv(malData.getEndretAvFormattert())
                 .setDato(malData.getDato());
     }
+    
 }
