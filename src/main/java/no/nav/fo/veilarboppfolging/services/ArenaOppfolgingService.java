@@ -15,6 +15,7 @@ import no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v2.meldinger.HentOppfoelgin
 import no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v2.meldinger.HentOppfoelgingsstatusResponse;
 import org.slf4j.Logger;
 
+
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.NotFoundException;
@@ -67,13 +68,20 @@ public class ArenaOppfolgingService {
         try {
             HentOppfoelgingsstatusResponse hentOppfoelgingsstatusResponse = oppfoelgingsstatusV2Service.hentOppfoelgingsstatus(request);
             return ArenaOppfolgingMapper.mapTilArenaOppfolgingsstatusV2(hentOppfoelgingsstatusResponse);
+        } catch (java.lang.reflect.UndeclaredThrowableException e) {
+            Throwable undeclared = e.getUndeclaredThrowable();
+            throw (undeclared != null  && undeclared.getCause() instanceof HentOppfoelgingsstatusPersonIkkeFunnet ? notFound(identifikator, undeclared.getCause()) : e);
         } catch (HentOppfoelgingsstatusPersonIkkeFunnet e) {
-            throw new NotFoundException("Fant ikke bruker: " + identifikator, e);
+            throw notFound(identifikator, e);
         } catch (HentOppfoelgingsstatusSikkerhetsbegrensning e) {
             throw new ForbiddenException("Ikke tilgang til bruker " + identifikator, e);
         } catch (HentOppfoelgingsstatusUgyldigInput e) {
             throw new BadRequestException("Ugyldig bruker identifikator: " + identifikator, e);
         }
+    }
+
+    private NotFoundException notFound(String identifikator, Throwable t) {
+        return new NotFoundException("Fant ikke bruker: " + identifikator, t);
     }
 
 }
