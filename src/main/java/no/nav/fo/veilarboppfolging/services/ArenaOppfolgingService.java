@@ -70,7 +70,9 @@ public class ArenaOppfolgingService {
             return ArenaOppfolgingMapper.mapTilArenaOppfolgingsstatusV2(hentOppfoelgingsstatusResponse);
         } catch (java.lang.reflect.UndeclaredThrowableException e) {
             Throwable undeclared = e.getUndeclaredThrowable();
-            throw (undeclared != null  && undeclared.getCause() instanceof HentOppfoelgingsstatusPersonIkkeFunnet ? notFound(identifikator, undeclared.getCause()) : e);
+            throw undeclared != null  && undeclared.getCause() instanceof HentOppfoelgingsstatusPersonIkkeFunnet 
+                    ? notFound(identifikator, undeclared.getCause()) 
+                    : e;
         } catch (HentOppfoelgingsstatusPersonIkkeFunnet e) {
             throw notFound(identifikator, e);
         } catch (HentOppfoelgingsstatusSikkerhetsbegrensning e) {
