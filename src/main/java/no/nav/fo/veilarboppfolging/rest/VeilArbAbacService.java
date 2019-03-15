@@ -2,6 +2,7 @@ package no.nav.fo.veilarboppfolging.rest;
 
 import no.nav.apiapp.selftest.Helsesjekk;
 import no.nav.apiapp.selftest.HelsesjekkMetadata;
+import no.nav.brukerdialog.security.domain.IdentType;
 import no.nav.brukerdialog.security.oidc.SystemUserTokenProvider;
 import no.nav.sbl.rest.RestUtils;
 import no.nav.sbl.util.EnvironmentUtils;
@@ -30,13 +31,13 @@ public class VeilArbAbacService implements Helsesjekk {
 
     public boolean harVeilederSkriveTilgangTilFnr(String veilederId, String fnr) {
         return "permit".equals(RestUtils.withClient(c -> c.target(abacTargetUrl)
-                .path("subject")
                 .path("person")
                 .queryParam("fnr", fnr)
                 .queryParam("action", "update")
                 .request()
                 .header(AUTHORIZATION, "Bearer " + systemUserTokenProvider.getToken())
                 .header("subject", veilederId)
+                .header("subjectType", IdentType.InternBruker)
                 .get(String.class)
         ));
     }
