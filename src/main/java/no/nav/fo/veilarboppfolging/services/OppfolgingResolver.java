@@ -310,10 +310,6 @@ public class OppfolgingResolver {
         deps.getOppfolgingRepository().stoppEskalering(aktorId, veilederId, begrunnelse);
     }
 
-    boolean harAktivEskalering() {
-        return oppfolging.getGjeldendeEskaleringsvarsel() != null;
-    }
-
     @SneakyThrows
     private void hentOppfolgingstatusFraArena() {
 
