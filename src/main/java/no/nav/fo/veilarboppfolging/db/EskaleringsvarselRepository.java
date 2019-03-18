@@ -29,24 +29,7 @@ public class EskaleringsvarselRepository {
         long id = database.nesteFraSekvens("ESKALERINGSVARSEL_SEQ");
         e = e.withVarselId(id);
         insert(e);
-        setAcive(e);
-    }
-
-    public EskaleringsvarselData fetchByAktorId(String aktorId) {
-        List<EskaleringsvarselData> eskalering = database.query("" +
-                        "SELECT * FROM eskaleringsvarsel " +
-                        "WHERE varsel_id IN (" +
-                        "SELECT " + GJELDENE_ESKALERINGSVARSEL +
-                        " FROM " + OppfolgingsStatusRepository.TABLE_NAME +
-                        " WHERE " + AKTOR_ID + " = ?" +
-                        ")",
-                EskaleringsvarselRepository::map,
-                aktorId);
-
-        return eskalering.stream()
-                .findAny()
-                .orElse(null);
-
+        setActive(e);
     }
 
     public EskaleringsvarselData fetch(Long id) {
@@ -99,7 +82,7 @@ public class EskaleringsvarselRepository {
                 e.getTilhorendeDialogId());
     }
 
-    private void setAcive(EskaleringsvarselData e) {
+    private void setActive(EskaleringsvarselData e) {
         database.update("" +
                         "UPDATE " + OppfolgingsStatusRepository.TABLE_NAME +
                         " SET " + GJELDENE_ESKALERINGSVARSEL + " = ?, " +

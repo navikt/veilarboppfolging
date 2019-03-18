@@ -114,7 +114,8 @@ public class OppfolgingRepository {
 
     @Transactional
     public void startEskalering(String aktorId, String opprettetAv, String opprettetBegrunnelse, long tilhorendeDialogId) {
-        if (eskaleringsvarselRepository.fetchByAktorId(aktorId) != null) {
+        long gjeldendeEskaleringsvarselId = statusRepository.fetch(aktorId).getGjeldendeEskaleringsvarselId();
+        if (gjeldendeEskaleringsvarselId > 0) {
             throw new Feil(UGYLDIG_HANDLING, "Brukeren har allerede et aktivt eskaleringsvarsel.");
         }
 
