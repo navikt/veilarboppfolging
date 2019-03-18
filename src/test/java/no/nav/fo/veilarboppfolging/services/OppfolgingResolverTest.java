@@ -100,18 +100,18 @@ public class OppfolgingResolverTest {
     @Test
     public void kvp_periode_skal_automatisk_avsluttes_nar_bruker_har_byttet_oppfolgingsEnhet_i_arena() throws Exception {
         when(arenaOppfolgingServiceMock.hentArenaOppfolging(any())).thenReturn(oppfolgingIArena(OTHER_ENHET));
-        when(kvpServiceMock.gjeldendeKvp(FNR)).thenReturn(Kvp.builder().kvpId(KVP_ID).aktorId(AKTOR_ID).enhet(ENHET).build());
+        when(kvpServiceMock.gjeldendeKvp(AKTOR_ID)).thenReturn(Kvp.builder().kvpId(KVP_ID).aktorId(AKTOR_ID).enhet(ENHET).build());
 
         oppfolgingResolver = new OppfolgingResolver(FNR, oppfolgingResolverDependenciesMock);
-        verify(kvpServiceMock, times(1)).stopKvpUtenEnhetSjekk(eq(FNR), any(), eq(SYSTEM), eq(oppfolgingResolver));
+        verify(kvpServiceMock, times(1)).stopKvpUtenEnhetSjekk(eq(AKTOR_ID), any(), eq(SYSTEM));
     }
 
     @Test
     public void kvp_periode_skal_ikke_avsluttes_sa_lenge_oppfolgingsenhet_i_arena_er_den_samme() throws Exception {
-        when(kvpServiceMock.gjeldendeKvp(FNR)).thenReturn(Kvp.builder().kvpId(KVP_ID).aktorId(AKTOR_ID).enhet(ENHET).build());
+        when(kvpServiceMock.gjeldendeKvp(AKTOR_ID)).thenReturn(Kvp.builder().kvpId(KVP_ID).aktorId(AKTOR_ID).enhet(ENHET).build());
 
         oppfolgingResolver = new OppfolgingResolver(FNR, oppfolgingResolverDependenciesMock);
-        verify(kvpServiceMock, times(0)).stopKvpUtenEnhetSjekk(eq(FNR), any(), any(), any());
+        verify(kvpServiceMock, times(0)).stopKvpUtenEnhetSjekk(eq(AKTOR_ID), any(), any());
     }
 
     private ArenaOppfolging oppfolgingIArena(String enhet) {

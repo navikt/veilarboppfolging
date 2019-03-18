@@ -55,9 +55,9 @@ public class EskaleringsvarselRepository {
     }
 
     @Transactional
-    public void finish(EskaleringsvarselData e) {
-        avsluttEskaleringsVarsel(e);
-        removeActive(e);
+    public void finish(String aktorId, long varselId, String avsluttetAv, String avsluttetBegrunnelse) {
+        avsluttEskaleringsVarsel(avsluttetBegrunnelse, avsluttetAv, varselId);
+        removeActive(aktorId);
     }
 
 
@@ -111,24 +111,24 @@ public class EskaleringsvarselRepository {
         );
     }
 
-    private void avsluttEskaleringsVarsel(EskaleringsvarselData e) {
+    void avsluttEskaleringsVarsel(String avsluttetBegrunnelse, String avsluttetAv, long varselId) {
         database.update("" +
                         "UPDATE ESKALERINGSVARSEL " +
                         "SET avsluttet_dato = CURRENT_TIMESTAMP, avsluttet_begrunnelse = ?, avsluttet_av = ? " +
                         "WHERE varsel_id = ?",
-                e.getAvsluttetBegrunnelse(),
-                e.getAvsluttetAv(),
-                e.getVarselId());
+                avsluttetBegrunnelse,
+                avsluttetAv,
+                varselId);
     }
 
-    private void removeActive(EskaleringsvarselData e) {
+    private void removeActive(String aktorId) {
         database.update("" +
                         "UPDATE " + OppfolgingsStatusRepository.TABLE_NAME +
                         " SET " + GJELDENE_ESKALERINGSVARSEL + " = null, " +
                         "oppdatert = CURRENT_TIMESTAMP, " +
                         "FEED_ID = null " +
                         "WHERE " + AKTOR_ID + " = ?",
-                e.getAktorId()
+                aktorId
         );
     }
 }
