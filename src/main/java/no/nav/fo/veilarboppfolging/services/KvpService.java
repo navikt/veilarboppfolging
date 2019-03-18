@@ -17,6 +17,7 @@ import no.nav.fo.veilarboppfolging.utils.FunksjonelleMetrikker;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingsstatusRequest;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
 import java.util.function.Supplier;
@@ -46,7 +47,7 @@ public class KvpService {
 
     @Inject 
     private EskaleringsvarselRepository eskaleringsvarselRepository;
-    
+
     private static final Supplier<Feil> AKTOR_ID_FEIL = () -> new Feil(UKJENT, "Fant ikke aktørId for fnr");
 
     @SneakyThrows
@@ -73,6 +74,7 @@ public class KvpService {
     }
 
     @SneakyThrows
+    @Transactional
     public void stopKvp(String fnr, String begrunnelse) {
         pepClient.sjekkLeseTilgangTilFnr(fnr);
         pepClient.sjekkTilgangTilEnhet(getEnhet(fnr));
