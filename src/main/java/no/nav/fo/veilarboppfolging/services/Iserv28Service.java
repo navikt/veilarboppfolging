@@ -7,6 +7,7 @@ import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingsStatusRepository;
 import no.nav.fo.veilarboppfolging.domain.IservMapper;
+import no.nav.fo.veilarboppfolging.domain.Kvp;
 import no.nav.fo.veilarboppfolging.domain.OppfolgingTable;
 import no.nav.fo.veilarboppfolging.mappers.ArenaBruker;
 import no.nav.fo.veilarboppfolging.utils.FunksjonelleMetrikker;
@@ -52,6 +53,7 @@ public class Iserv28Service{
     private final SystemUserSubjectProvider systemUserSubjectProvider;
     private final OppfolgingsStatusRepository oppfolgingsStatusRepository;
     private final OppfolgingRepository oppfolgingRepository;
+    private final KvpService kvpService;
     private final UnleashService unleashService;
 
     private static final int lockAutomatiskAvslutteOppfolgingSeconds = 3600;
@@ -65,6 +67,7 @@ public class Iserv28Service{
             AktorService aktorService,
             LockingTaskExecutor taskExecutor,
             SystemUserSubjectProvider systemUserSubjectProvider,
+            KvpService kvpService,
             UnleashService unleashService
     ){
         this.jdbc = jdbc;
@@ -74,6 +77,7 @@ public class Iserv28Service{
         this.aktorService = aktorService;
         this.taskExecutor = taskExecutor;
         this.systemUserSubjectProvider = systemUserSubjectProvider;
+        this.kvpService = kvpService;
         this.unleashService = unleashService;
     }
 
@@ -124,12 +128,17 @@ public class Iserv28Service{
 
         log.info("Behandler bruker: {}", arenaBruker);
     
+        boolean brukerHarOppfolgingsflagg = brukerHarOppfolgingsflagg(arenaBruker.getAktoerid());
+        if(brukerHarOppfolgingsflagg) {
+            avsluttKvpVedEnhetBytte(arenaBruker);
+        }
+
         if(erIserv(arenaBruker.getFormidlingsgruppekode())) {
-            oppdaterUtmeldingTabell(arenaBruker);
+            oppdaterUtmeldingTabell(arenaBruker, brukerHarOppfolgingsflagg);
         } else {
             slettBrukerFraUtmeldingTabell(arenaBruker.getAktoerid());
             if(erUnderOppfolging(arenaBruker.getFormidlingsgruppekode(), arenaBruker.getKvalifiseringsgruppekode(), null)) {
-                if (brukerHarOppfolgingsflagg(arenaBruker.getAktoerid())) {
+                if (brukerHarOppfolgingsflagg) {
                     log.info("Bruker med aktørid {} er allerede under oppfølging", arenaBruker.getAktoerid());
                 } else {
                     startOppfolging(arenaBruker);
@@ -137,7 +146,22 @@ public class Iserv28Service{
             }
         }
     }
+    
+    private void avsluttKvpVedEnhetBytte(ArenaBruker arenaBruker) {
+        Kvp gjeldendeKvp = kvpService.gjeldendeKvp(arenaBruker.getAktoerid());
+        if (gjeldendeKvp == null) {
+            return;
+        }
 
+        if (brukerHarByttetKontor(arenaBruker.getNav_kontor(), gjeldendeKvp)) {
+            kvpService.stopKvpVedEnhetsbytte(arenaBruker.getAktoerid(), "System");
+        }
+    }
+
+    private boolean brukerHarByttetKontor(String navKontor, Kvp kvp) {
+        return !navKontor.equals(kvp.getEnhet());
+    }
+    
     private void startOppfolging(ArenaBruker arenaBruker) {
         if(unleashService.isEnabled(START_OPPFOLGING_TOGGLE)) {
             log.info("Starter oppfølging automatisk for bruker med aktørid {}", arenaBruker.getAktoerid());
@@ -148,10 +172,10 @@ public class Iserv28Service{
         }
     }
 
-    private void oppdaterUtmeldingTabell(ArenaBruker arenaBruker) {
+    private void oppdaterUtmeldingTabell(ArenaBruker arenaBruker, boolean brukerHarOppfolgingsflagg) {
         if (finnesIUtmeldingTabell(arenaBruker)) {
             updateUtmeldingTabell(arenaBruker);
-        } else if (brukerHarOppfolgingsflagg(arenaBruker.getAktoerid())) {
+        } else if (brukerHarOppfolgingsflagg) {
             insertUtmeldingTabell(arenaBruker);
         }
     }

@@ -24,6 +24,7 @@ import java.util.function.Supplier;
 
 import static no.nav.apiapp.feil.FeilType.UKJENT;
 import static no.nav.fo.veilarboppfolging.domain.KodeverkBruker.NAV;
+import static no.nav.fo.veilarboppfolging.domain.KodeverkBruker.SYSTEM;
 
 @Component
 public class KvpService {
@@ -79,24 +80,28 @@ public class KvpService {
         pepClient.sjekkLeseTilgangTilFnr(fnr);
         pepClient.sjekkTilgangTilEnhet(getEnhet(fnr));
         String aktorId = aktorService.getAktorId(fnr).orElseThrow(AKTOR_ID_FEIL);
-        stopKvpUtenEnhetSjekk(aktorId, begrunnelse, NAV);
+        stopKvpUtenEnhetSjekk(aktorId, begrunnelse, NAV, SubjectHandler.getIdent().orElseThrow(RuntimeException::new));
     }
 
-    void stopKvpUtenEnhetSjekk(String aktorId, String begrunnelse, KodeverkBruker kodeverkBruker) {
-        String veilederId = SubjectHandler.getIdent().orElseThrow(RuntimeException::new);
+    public void stopKvpVedEnhetsbytte(String aktorId, String innloggetBruker) {
+        stopKvpUtenEnhetSjekk(aktorId, "KVP avsluttet automatisk pga. endret Nav-enhet", SYSTEM, innloggetBruker);
+        FunksjonelleMetrikker.stopKvpDueToChangedUnit();
+    }
+
+    private void stopKvpUtenEnhetSjekk(String aktorId, String begrunnelse, KodeverkBruker kodeverkBruker, String innloggetBruker) {
 
         OppfolgingTable oppfolgingTable = oppfolgingsStatusRepository.fetch(aktorId);
         if(oppfolgingTable != null && oppfolgingTable.getGjeldendeEskaleringsvarselId() != 0) {
             eskaleringsvarselRepository.finish(
                     aktorId, 
                     oppfolgingTable.getGjeldendeEskaleringsvarselId(), 
-                    veilederId, 
+                    innloggetBruker, 
                     ESKALERING_AVSLUTTET_FORDI_KVP_BLE_AVSLUTTET);
         }
 
         kvpRepository.stopKvp(
                 aktorId,
-                veilederId,
+                innloggetBruker,
                 begrunnelse,
                 kodeverkBruker);
 

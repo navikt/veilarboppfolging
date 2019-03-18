@@ -1,6 +1,9 @@
 package no.nav.fo.veilarboppfolging.services;
 
 import no.nav.apiapp.security.PepClient;
+import no.nav.common.auth.SsoToken;
+import no.nav.common.auth.Subject;
+import no.nav.common.auth.SubjectHandler;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.db.KvpRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
@@ -15,8 +18,9 @@ import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import static java.util.Collections.emptyMap;
 import static java.util.Optional.of;
-import static no.nav.fo.veilarboppfolging.domain.KodeverkBruker.SYSTEM;
+import static no.nav.brukerdialog.security.domain.IdentType.InternBruker;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
@@ -102,8 +106,12 @@ public class OppfolgingResolverTest {
         when(arenaOppfolgingServiceMock.hentArenaOppfolging(any())).thenReturn(oppfolgingIArena(OTHER_ENHET));
         when(kvpServiceMock.gjeldendeKvp(AKTOR_ID)).thenReturn(Kvp.builder().kvpId(KVP_ID).aktorId(AKTOR_ID).enhet(ENHET).build());
 
-        oppfolgingResolver = new OppfolgingResolver(FNR, oppfolgingResolverDependenciesMock);
-        verify(kvpServiceMock, times(1)).stopKvpUtenEnhetSjekk(eq(AKTOR_ID), any(), eq(SYSTEM));
+        String innloggetBruker = "1234";
+        SubjectHandler.withSubject(new Subject(innloggetBruker, InternBruker, SsoToken.oidcToken("token", emptyMap())),
+                () -> new OppfolgingResolver(FNR, oppfolgingResolverDependenciesMock)
+        );
+
+        verify(kvpServiceMock, times(1)).stopKvpVedEnhetsbytte(AKTOR_ID, innloggetBruker);
     }
 
     @Test
@@ -111,7 +119,7 @@ public class OppfolgingResolverTest {
         when(kvpServiceMock.gjeldendeKvp(AKTOR_ID)).thenReturn(Kvp.builder().kvpId(KVP_ID).aktorId(AKTOR_ID).enhet(ENHET).build());
 
         oppfolgingResolver = new OppfolgingResolver(FNR, oppfolgingResolverDependenciesMock);
-        verify(kvpServiceMock, times(0)).stopKvpUtenEnhetSjekk(eq(AKTOR_ID), any(), any());
+        verify(kvpServiceMock, times(0)).stopKvpVedEnhetsbytte(anyString(), anyString());
     }
 
     private ArenaOppfolging oppfolgingIArena(String enhet) {

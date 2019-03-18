@@ -7,6 +7,7 @@ import no.nav.fo.DatabaseTest;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingsStatusRepository;
 import no.nav.fo.veilarboppfolging.domain.IservMapper;
+import no.nav.fo.veilarboppfolging.domain.Kvp;
 import no.nav.fo.veilarboppfolging.domain.OppfolgingTable;
 import no.nav.fo.veilarboppfolging.mappers.ArenaBruker;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
@@ -44,7 +45,8 @@ public class Iserv28ServiceIntegrationTest extends DatabaseTest {
     private OppfolgingService oppfolgingService = mock(OppfolgingService.class);
     private OppfolgingRepository oppfolgingRepository = mock(OppfolgingRepository.class);
     private UnleashService unleash = mock(UnleashService.class);
-
+    private KvpService kvpService = mock(KvpService.class);
+    
     @Before
     public void setup() throws Exception {
         AktorService aktorService = mock(AktorService.class);
@@ -52,7 +54,16 @@ public class Iserv28ServiceIntegrationTest extends DatabaseTest {
         when(oppfolgingStatusRepository.fetch(anyString())).thenReturn(new OppfolgingTable().setUnderOppfolging(true));
         when(oppfolgingService.avsluttOppfolgingForSystemBruker(anyString(), anyString(), anyString())).thenReturn(true);
         SystemUserSubjectProvider systemUserSubjectProvider = mock(SystemUserSubjectProvider.class);
-        iserv28Service = new Iserv28Service(jdbcTemplate, oppfolgingService, oppfolgingStatusRepository, oppfolgingRepository, aktorService, taskExecutor, systemUserSubjectProvider, unleash);
+        iserv28Service = new Iserv28Service(
+                jdbcTemplate, 
+                oppfolgingService, 
+                oppfolgingStatusRepository, 
+                oppfolgingRepository, 
+                aktorService, 
+                taskExecutor, 
+                systemUserSubjectProvider,
+                kvpService,
+                unleash);
     }
 
     @Test
@@ -138,6 +149,55 @@ public class Iserv28ServiceIntegrationTest extends DatabaseTest {
         verifyZeroInteractions(oppfolgingRepository);
     }
 
+    @Test
+    public void behandleEndretBruker_brukerHarOppfolgingsflaggOgErUnderKvp_skalAvslutteKvpHvisEndretKontor() {
+        ArenaBruker arenaBruker = getArenaBruker();
+        arenaBruker.setNav_kontor("0123");
+
+        when(oppfolgingStatusRepository.fetch(AKTORID)).thenReturn(new OppfolgingTable().setUnderOppfolging(true));
+        when(kvpService.gjeldendeKvp(AKTORID)).thenReturn(Kvp.builder().enhet("1111").build());
+
+        iserv28Service.behandleEndretBruker(arenaBruker);
+
+        verify(kvpService).stopKvpVedEnhetsbytte(AKTORID, "System");
+    }
+    
+    @Test
+    public void behandleEndretBruker_brukerHarOppfolgingsflaggOgErUnderKvp_skalIkkeAvslutteKvpHvisSammeKontor() {
+        ArenaBruker arenaBruker = getArenaBruker();
+        arenaBruker.setNav_kontor("0123");
+
+        when(oppfolgingStatusRepository.fetch(AKTORID)).thenReturn(new OppfolgingTable().setUnderOppfolging(true));
+        when(kvpService.gjeldendeKvp(AKTORID)).thenReturn(Kvp.builder().enhet("0123").build());
+
+        iserv28Service.behandleEndretBruker(arenaBruker);
+
+        verify(kvpService, never()).stopKvpVedEnhetsbytte(anyString(), anyString());
+    }
+    
+    @Test
+    public void behandleEndretBruker_brukerHarOppfolgingsflaggOgErIkkeUnderKvp_skalIkkeAvslutteKvp() {
+        ArenaBruker arenaBruker = getArenaBruker();
+
+        when(oppfolgingStatusRepository.fetch(AKTORID)).thenReturn(new OppfolgingTable().setUnderOppfolging(true));
+        when(kvpService.gjeldendeKvp(AKTORID)).thenReturn(null);
+
+        iserv28Service.behandleEndretBruker(arenaBruker);
+
+        verify(kvpService, never()).stopKvpVedEnhetsbytte(anyString(), anyString());
+    }
+    
+    @Test
+    public void behandleEndretBruker_brukerHarIkkeOppfolgingsflagg_skalIkkeAvslutteKvp() {
+        ArenaBruker arenaBruker = getArenaBruker();
+
+        when(oppfolgingStatusRepository.fetch(AKTORID)).thenReturn(new OppfolgingTable().setUnderOppfolging(false));
+
+        iserv28Service.behandleEndretBruker(arenaBruker);
+
+        verifyZeroInteractions(kvpService);
+    }
+    
     @Test
     public void finnBrukereMedIservI28Dager() {
         assertThat(iserv28Service.finnBrukereMedIservI28Dager()).isEmpty();

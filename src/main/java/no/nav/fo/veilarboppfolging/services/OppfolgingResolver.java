@@ -12,7 +12,6 @@ import no.nav.fo.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
 import no.nav.fo.veilarboppfolging.db.KvpRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.domain.*;
-import no.nav.fo.veilarboppfolging.utils.FunksjonelleMetrikker;
 import no.nav.fo.veilarboppfolging.utils.StringUtils;
 import no.nav.metrics.MetricsFactory;
 import no.nav.sbl.jdbc.Transactor;
@@ -376,8 +375,7 @@ public class OppfolgingResolver {
         hentOppfolgingstatusFraArena();
         statusIArena.ifPresent(status -> {
             if (brukerHarByttetKontor(status, gjeldendeKvp)) {
-                deps.getKvpService().stopKvpUtenEnhetSjekk(aktorId, "KVP avsluttet automatisk pga. endret Nav-enhet", SYSTEM);
-                FunksjonelleMetrikker.stopKvpDueToChangedUnit();
+                deps.getKvpService().stopKvpVedEnhetsbytte(aktorId, SubjectHandler.getIdent().orElseThrow(RuntimeException::new));
                 reloadOppfolging();
             }
         });
