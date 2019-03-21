@@ -193,7 +193,7 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
     @Override
     public void aktiverSykmeldt(SykmeldtBrukerType sykmeldtBrukerType) throws Exception {
         autorisasjonService.skalVereSystemRessurs();
-        aktiverBrukerService.aktiverSykmeldt(getUid(), sykmeldtBrukerType);
+        aktiverBrukerService.aktiverSykmeldt(getFnr(), sykmeldtBrukerType);
     }
 
     private Eskaleringsvarsel tilDto(EskaleringsvarselData eskaleringsvarselData) {
