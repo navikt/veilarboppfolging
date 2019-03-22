@@ -5,6 +5,7 @@ import lombok.val;
 import no.nav.apiapp.security.PepClient;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
+import no.nav.fo.veilarboppfolging.db.OppfolgingsStatusRepository;
 import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.fo.veilarboppfolging.services.OppfolgingResolver.OppfolgingResolverDependencies;
 import org.springframework.stereotype.Component;
@@ -23,18 +24,21 @@ public class OppfolgingService {
     private final AktorService aktorService;
     private final OppfolgingRepository oppfolgingRepository;
     private final PepClient pepClient;
-
+    private final OppfolgingsStatusRepository oppfolgingsStatusRepository;
+    
     @Inject
     public OppfolgingService(
             OppfolgingResolverDependencies oppfolgingResolverDependencies,
             AktorService aktorService,
             OppfolgingRepository oppfolgingRepository,
-            PepClient pepClient
+            PepClient pepClient,
+            OppfolgingsStatusRepository oppfolgingsStatusRepository 
     ) {
         this.oppfolgingResolverDependencies = oppfolgingResolverDependencies;
         this.aktorService = aktorService;
         this.oppfolgingRepository = oppfolgingRepository;
         this.pepClient = pepClient;
+        this.oppfolgingsStatusRepository = oppfolgingsStatusRepository; 
     }
 
     @SneakyThrows
@@ -133,6 +137,14 @@ public class OppfolgingService {
         return new VeilederTilgang().setTilgangTilBrukersKontor(pepClient.harTilgangTilEnhet(resolver.getOppfolgingsEnhet()));
     }
 
+    public boolean underOppfolging(String fnr) {
+        pepClient.sjekkLeseTilgangTilFnr(fnr);
+        String aktorId = aktorService.getAktorId(fnr)
+                .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktør for fnr: " + fnr));
+        OppfolgingTable eksisterendeOppfolgingstatus = oppfolgingsStatusRepository.fetch(aktorId);
+        return eksisterendeOppfolgingstatus != null && eksisterendeOppfolgingstatus.isUnderOppfolging();
+    }
+    
     private OppfolgingStatusData getOppfolgingStatusData(String fnr, OppfolgingResolver oppfolgingResolver) {
         return getOppfolgingStatusData(fnr, oppfolgingResolver, null);
     }

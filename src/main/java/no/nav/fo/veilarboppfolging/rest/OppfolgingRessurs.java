@@ -1,8 +1,6 @@
 package no.nav.fo.veilarboppfolging.rest;
 
-import lombok.val;
 import no.nav.apiapp.security.PepClient;
-import no.nav.brukerdialog.security.domain.IdentType;
 import no.nav.common.auth.SubjectHandler;
 import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.fo.veilarboppfolging.rest.api.OppfolgingController;
@@ -14,15 +12,11 @@ import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
-import javax.inject.Provider;
-import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Optional;
 
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
-import static no.nav.common.auth.SubjectHandler.getIdent;
-import static no.nav.common.auth.SubjectHandler.getIdentType;
 
 /*
     NB:
@@ -45,7 +39,7 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
     private MalService malService;
 
     @Inject
-    private Provider<HttpServletRequest> requestProvider;
+    private FnrParameterUtil fnrParameterUtil;
 
     @Inject
     private AktiverBrukerService aktiverBrukerService;
@@ -138,7 +132,7 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
 
     @Override
     public Mal oppdaterMal(Mal mal) throws PepException {
-        String endretAvVeileder = erEksternBruker()? null : getUid();
+        String endretAvVeileder = FnrParameterUtil.erEksternBruker()? null : getUid();
         return tilDto(malService.oppdaterMal(mal.getMal(), getFnr(), endretAvVeileder));
     }
 
@@ -213,17 +207,8 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
         return SubjectHandler.getIdent().orElseThrow(RuntimeException::new);
     }
 
-    public static boolean erEksternBruker() {
-        return getIdentType()
-                .map(identType -> IdentType.EksternBruker == identType)
-                .orElse(false);
-    }
-
     private String getFnr() {
-        if (erEksternBruker()) {
-            return getIdent().orElseThrow(RuntimeException::new);
-        }
-        return Optional.ofNullable(requestProvider.get().getParameter("fnr")).orElseThrow(RuntimeException::new);
+        return fnrParameterUtil.getFnr();
     }
 
     private AvslutningStatus tilDto(AvslutningStatusData avslutningStatusData) {
@@ -297,4 +282,5 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
                 .setEndretAv(malData.getEndretAvFormattert())
                 .setDato(malData.getDato());
     }
+    
 }
