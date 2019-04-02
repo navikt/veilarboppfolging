@@ -13,7 +13,7 @@ public class ArenaOppfolgingMapper {
                 .setFormidlingsgruppe(response.getFormidlingsgruppeKode().getValue())
                 .setServicegruppe(response.getServicegruppeKode().getValue())
                 .setInaktiveringsdato(xmlGregorianCalendarToLocalDate(response.getInaktiveringsdato()))
-                .setHarMottaOppgaveIArena(response.getHarOppgaveMottaSelvregPerson())
-                .setKanEnkeltReaktiveres(response.getKanEnkeltReaktiveres());
+                .setHarMottaOppgaveIArena(response.isHarOppgaveMottaSelvregPerson())
+                .setKanEnkeltReaktiveres(response.isKanEnkeltReaktiveres());
     }
 }

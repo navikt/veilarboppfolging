@@ -2,7 +2,7 @@ package no.nav.fo.veilarboppfolging.services;
 
 import no.nav.apiapp.feil.Feil;
 import no.nav.apiapp.feil.IngenTilgang;
-import no.nav.apiapp.security.PepClient;
+import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.db.KvpRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
@@ -32,8 +32,7 @@ import static java.util.Optional.of;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class MalServiceTest {
@@ -54,7 +53,7 @@ public class MalServiceTest {
     private OppfolgingResolverDependencies oppfolgingResolverDependenciesMock;
 
     @Mock
-    private PepClient pepClientMock;
+    private VeilarbAbacPepClient pepClientMock;
 
     @Mock
     private KvpRepository kvpRepositoryMock;
@@ -82,7 +81,7 @@ public class MalServiceTest {
     public void oppdater_mal_for_kvp_uten_tilgang() throws PepException {
         when(kvpRepositoryMock.gjeldendeKvp(AKTOR_ID)).thenReturn(KVP_ID);
         when(kvpRepositoryMock.fetch(KVP_ID)).thenReturn(aktivKvp());
-        doThrow(IngenTilgang.class).when(pepClientMock).sjekkTilgangTilEnhet(any());
+        doReturn(false).when(pepClientMock).harTilgangTilEnhet(any());
         malService.oppdaterMal("mal", FNR, VEILEDER);
     }
 

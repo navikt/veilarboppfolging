@@ -1,8 +1,10 @@
 package no.nav.fo.veilarboppfolging.rest;
 
 import io.swagger.annotations.Api;
-import no.nav.apiapp.security.PepClient;
+import no.nav.apiapp.feil.IngenTilgang;
 import no.nav.apiapp.security.SubjectService;
+import no.nav.apiapp.security.veilarbabac.Bruker;
+import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.feed.producer.FeedProducer;
 import no.nav.fo.veilarboppfolging.db.OppfolgingFeedRepository;
@@ -33,14 +35,14 @@ public class VeilederTilordningRessurs {
 
     private final AktorService aktorService;
     private final VeilederTilordningerRepository veilederTilordningerRepository;
-    private final PepClient pepClient;
+    private final VeilarbAbacPepClient pepClient;
     private final AutorisasjonService autorisasjonService;
     private FeedProducer<OppfolgingFeedDTO> oppfolgingFeed;
     private final SubjectService subjectService = new SubjectService();
 
     public VeilederTilordningRessurs(AktorService aktorService,
                                      VeilederTilordningerRepository veilederTilordningerRepository,
-                                     PepClient pepClient,
+                                     VeilarbAbacPepClient pepClient,
                                      FeedProducer<OppfolgingFeedDTO> oppfolgingFeed,
                                      AutorisasjonService autorisasjonService
     ) {
@@ -61,10 +63,10 @@ public class VeilederTilordningRessurs {
         List<VeilederTilordning> feilendeTilordninger = new ArrayList<>();
         for (VeilederTilordning tilordning : tilordninger) {
             try {
-                final String fnr = tilordning.getBrukerFnr();
-                pepClient.sjekkSkriveTilgangTilFnr(fnr);
+                Bruker bruker = lagBrukerFraFnr(tilordning.getBrukerFnr());
+                pepClient.sjekkSkrivetilgangTilBruker(bruker);
 
-                String aktoerId = finnAktorId(fnr);
+                String aktoerId = bruker.getAktoerId();
 
                 String eksisterendeVeileder = veilederTilordningerRepository.hentTilordningForAktoer(aktoerId);
 
@@ -103,13 +105,13 @@ public class VeilederTilordningRessurs {
     @POST
     @Path("{fnr}/lestaktivitetsplan/")
     public void lestAktivitetsplan(@PathParam("fnr") String fnr) {
+
+        Bruker bruker = lagBrukerFraFnr(fnr);
+
         autorisasjonService.skalVereInternBruker();
-        pepClient.sjekkLeseTilgangTilFnr(fnr);
+        pepClient.sjekkLesetilgangTilBruker(bruker);
 
-        String aktorId = aktorService.getAktorId(fnr)
-                .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktør for fnr: " + fnr));
-
-        veilederTilordningerRepository.hentTilordnetVeileder(aktorId)
+        veilederTilordningerRepository.hentTilordnetVeileder(bruker.getAktoerId())
                 .filter(Tilordning::isNyForVeileder)
                 .filter(this::erVeilederFor)
                 .map(FunksjonelleMetrikker::lestAvVeileder)
@@ -134,11 +136,6 @@ public class VeilederTilordningRessurs {
             // men gjør at endringen kommer senere inn i portefølje
             LOG.warn("Webhook feilet", e);
         }
-    }
-
-    private String finnAktorId(final String fnr) {
-        return aktorService.getAktorId(fnr)
-                .orElseThrow(() -> new IllegalArgumentException("Aktoerid ikke funnet"));
     }
 
     private void loggFeilOppfolging(Exception e) {
@@ -172,5 +169,12 @@ public class VeilederTilordningRessurs {
     private boolean nyVeilederHarTilgang(VeilederTilordning veilederTilordning) {
         return autorisasjonService.harVeilederSkriveTilgangTilFnr(veilederTilordning.getTilVeilederId(), veilederTilordning.getBrukerFnr());
     }
+
+    private Bruker lagBrukerFraFnr(String fnr) {
+        return Bruker.fraFnr(fnr)
+                .medAktoerIdSupplier(()->aktorService.getAktorId(fnr)
+                        .orElseThrow(()->new IllegalArgumentException("Aktoerid ikke funnet")));
+    }
+
 
 }

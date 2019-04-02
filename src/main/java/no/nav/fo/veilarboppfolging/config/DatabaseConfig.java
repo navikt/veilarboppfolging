@@ -3,8 +3,6 @@ package no.nav.fo.veilarboppfolging.config;
 import net.javacrumbs.shedlock.core.DefaultLockingTaskExecutor;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import net.javacrumbs.shedlock.provider.jdbc.JdbcLockProvider;
-import no.nav.sbl.dialogarena.common.integrasjon.utils.RowMapper;
-import no.nav.sbl.dialogarena.common.integrasjon.utils.SQL;
 import no.nav.sbl.dialogarena.types.Pingable;
 import no.nav.sbl.dialogarena.types.Pingable.Ping.PingMetadata;
 import no.nav.sbl.jdbc.DataSourceFactory;
@@ -18,6 +16,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+
 
 import javax.sql.DataSource;
 import java.util.UUID;
@@ -77,7 +76,7 @@ public class DatabaseConfig {
         );
         return () -> {
             try {
-                SQL.query(ds, new RowMapper.IntMapper(), "select count(1) from dual");
+                jdbcTemplate(ds).queryForObject("SELECT 1 FROM DUAL", Long.class);
                 return Pingable.Ping.lyktes(metadata);
             } catch (Exception e) {
                 return Pingable.Ping.feilet(metadata, e);

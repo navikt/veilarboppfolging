@@ -2,7 +2,7 @@ package no.nav.fo.veilarboppfolging.services;
 
 import lombok.SneakyThrows;
 import lombok.val;
-import no.nav.apiapp.security.PepClient;
+import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.db.KvpRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
@@ -30,7 +30,7 @@ public class HistorikkService {
     private KvpRepository kvpRepository;
 
     @Inject
-    private PepClient pepClient;
+    private VeilarbAbacPepClient pepClient;
 
     @Inject
     private OppfolgingRepository oppfolgingRepository;

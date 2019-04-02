@@ -1,27 +1,33 @@
 package no.nav.fo.veilarboppfolging.rest;
 
 import lombok.val;
-import no.nav.apiapp.security.PepClient;
+import no.nav.apiapp.security.veilarbabac.Bruker;
+import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.feed.producer.FeedProducer;
 import no.nav.fo.veilarboppfolging.db.VeilederTilordningerRepository;
-import no.nav.fo.veilarboppfolging.rest.domain.*;
+import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingFeedDTO;
+import no.nav.fo.veilarboppfolging.rest.domain.TilordneVeilederResponse;
+import no.nav.fo.veilarboppfolging.rest.domain.VeilederTilordning;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.mockito.stubbing.Answer;
 import org.springframework.jdbc.BadSqlGrammarException;
 
 import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.core.Response;
 import java.sql.SQLException;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import static java.util.Arrays.asList;
 import static java.util.Optional.empty;
@@ -37,7 +43,7 @@ import static org.mockito.Mockito.*;
 public class VeilederTilordningRessursTest {
 
     @Mock
-    private PepClient pepClient;
+    private VeilarbAbacPepClient pepClient;
 
     @Mock
     private AktorService aktorServiceMock;
@@ -88,8 +94,8 @@ public class VeilederTilordningRessursTest {
         tilordninger.add(harTilgang2);
         tilordninger.add(harIkkeTilgang2);
 
-        when(pepClient.sjekkLeseTilgangTilFnr("FNR2")).thenThrow(NotAuthorizedException.class);
-        when(pepClient.sjekkLeseTilgangTilFnr("FNR4")).thenThrow(PepException.class);
+        doThrow(NotAuthorizedException.class).when (pepClient).sjekkLesetilgangTilBruker(bruker("FNR2"));
+        doThrow(PepException.class).when(pepClient).sjekkLesetilgangTilBruker(bruker("FNR4"));
 
         when(aktorServiceMock.getAktorId("FNR1")).thenReturn(of("AKTOERID1"));
         when(aktorServiceMock.getAktorId("FNR3")).thenReturn(of("AKTOERID3"));
@@ -253,7 +259,7 @@ public class VeilederTilordningRessursTest {
         tilordninger.add(tilordningERROR1);
         tilordninger.add(tilordningERROR2);
 
-        when(pepClient.sjekkLeseTilgangTilFnr(any(String.class))).thenThrow(Exception.class);
+        doThrow(Exception.class).when(pepClient).sjekkLesetilgangTilBruker(any(Bruker.class));
 
         Response response = veilederTilordningRessurs.postVeilederTilordninger(tilordninger);
         List<VeilederTilordning> feilendeTilordninger = ((TilordneVeilederResponse) response.getEntity()).getFeilendeTilordninger();
@@ -268,19 +274,14 @@ public class VeilederTilordningRessursTest {
         VeilederTilordning tilordningOKBruker1 = new VeilederTilordning().setBrukerFnr("FNR1").setFraVeilederId("FRAVEILEDER1").setTilVeilederId("TILVEILEDER1");
         VeilederTilordning tilordningERRORBruker2 = new VeilederTilordning().setBrukerFnr("FNR2").setFraVeilederId("FRAVEILEDER2").setTilVeilederId("TILVEILEDER2");
 
-        when(pepClient.sjekkLeseTilgangTilFnr(any(String.class))).thenAnswer(new Answer<Boolean>() {
-
-            @Override
-            public Boolean answer(InvocationOnMock invocation) throws Throwable {
-                //Simulerer at pep-kallet tar noe tid for fnr1
-                if ("FNR1".equals(invocation.getArguments()[0])) {
-                    Thread.sleep(20);
-                    return null;
-                }
+        doAnswer(invocation -> {
+            //Simulerer at pep-kallet tar noe tid for fnr1
+            if ("FNR1".equals(invocation.getArguments()[0])) {
+                Thread.sleep(20);
                 return null;
             }
-
-        });
+            return null;
+        }).when(pepClient).sjekkLesetilgangTilBruker(any(Bruker.class));
 
         when(aktorServiceMock.getAktorId("FNR1")).thenReturn(of("AKTOERID1"));
 
@@ -346,4 +347,7 @@ public class VeilederTilordningRessursTest {
                 .setBrukerFnr("1234");
     }
 
+    private Bruker bruker(String fnr) {
+        return Bruker.fraFnr(fnr).medAktoerIdSupplier(()->null);
+    }
 }

@@ -2,7 +2,9 @@ package no.nav.fo.veilarboppfolging.services;
 
 import lombok.SneakyThrows;
 import lombok.val;
-import no.nav.apiapp.security.PepClient;
+import no.nav.apiapp.feil.IngenTilgang;
+import no.nav.apiapp.security.veilarbabac.Bruker;
+import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingsStatusRepository;
@@ -23,7 +25,7 @@ public class OppfolgingService {
     private final OppfolgingResolverDependencies oppfolgingResolverDependencies;
     private final AktorService aktorService;
     private final OppfolgingRepository oppfolgingRepository;
-    private final PepClient pepClient;
+    private final VeilarbAbacPepClient pepClient;
     private final OppfolgingsStatusRepository oppfolgingsStatusRepository;
     
     @Inject
@@ -31,7 +33,7 @@ public class OppfolgingService {
             OppfolgingResolverDependencies oppfolgingResolverDependencies,
             AktorService aktorService,
             OppfolgingRepository oppfolgingRepository,
-            PepClient pepClient,
+            VeilarbAbacPepClient pepClient,
             OppfolgingsStatusRepository oppfolgingsStatusRepository 
     ) {
         this.oppfolgingResolverDependencies = oppfolgingResolverDependencies;
@@ -44,7 +46,9 @@ public class OppfolgingService {
     @SneakyThrows
     public OppfolgingResolver sjekkTilgangTilEnhet(String fnr){
         val resolver = new OppfolgingResolver(fnr, oppfolgingResolverDependencies);
-        pepClient.sjekkTilgangTilEnhet(resolver.getOppfolgingsEnhet());
+        if(!pepClient.harTilgangTilEnhet(resolver.getOppfolgingsEnhet())) {
+            throw new IngenTilgang();
+        }
         return resolver;
     }
 
@@ -138,10 +142,11 @@ public class OppfolgingService {
     }
 
     public boolean underOppfolging(String fnr) {
-        pepClient.sjekkLeseTilgangTilFnr(fnr);
-        String aktorId = aktorService.getAktorId(fnr)
-                .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktør for fnr: " + fnr));
-        OppfolgingTable eksisterendeOppfolgingstatus = oppfolgingsStatusRepository.fetch(aktorId);
+        Bruker bruker = Bruker.fraFnr(fnr)
+                .medAktoerIdSupplier(() -> aktorService.getAktorId(fnr)
+                        .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktørid")));
+        pepClient.sjekkLesetilgangTilBruker(bruker);
+        OppfolgingTable eksisterendeOppfolgingstatus = oppfolgingsStatusRepository.fetch(bruker.getAktoerId());
         return eksisterendeOppfolgingstatus != null && eksisterendeOppfolgingstatus.isUnderOppfolging();
     }
     
@@ -183,4 +188,5 @@ public class OppfolgingService {
 
         return getOppfolgingStatusData(fnr, oppfolgingResolver, avslutningStatusData);
     }
+
 }

@@ -1,7 +1,9 @@
 package no.nav.fo.veilarboppfolging.rest;
 
-import no.nav.apiapp.security.PepClient;
+import no.nav.apiapp.feil.IngenTilgang;
+import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
 import no.nav.common.auth.SubjectHandler;
+import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.fo.veilarboppfolging.rest.api.OppfolgingController;
 import no.nav.fo.veilarboppfolging.rest.api.SystemOppfolgingController;
@@ -48,7 +50,10 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
     private AutorisasjonService autorisasjonService;
 
     @Inject
-    private PepClient pepClient;
+    private VeilarbAbacPepClient pepClient;
+
+    @Inject
+    private AktorService aktorService;
 
     @Override
     public Bruker hentBrukerInfo() throws Exception {
@@ -173,14 +178,14 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
     @Override
     public void aktiverBruker(AktiverArbeidssokerData aktiverArbeidssokerData) throws Exception {
         autorisasjonService.skalVereSystemRessurs();
-        pepClient.sjekkSkriveTilgangTilFnr(aktiverArbeidssokerData.getFnr().getFnr());
+        pepClient.sjekkSkrivetilgangTilBruker(lagBrukerFraFnr(aktiverArbeidssokerData.getFnr().getFnr()));
         aktiverBrukerService.aktiverBruker(aktiverArbeidssokerData);
     }
 
     @Override
     public void reaktiverBruker(Fnr fnr) throws Exception {
         autorisasjonService.skalVereSystemRessurs();
-        pepClient.sjekkSkriveTilgangTilFnr(fnr.getFnr());
+        pepClient.sjekkSkrivetilgangTilBruker(lagBrukerFraFnr(fnr.getFnr()));
         aktiverBrukerService.reaktiverBruker(fnr);
     }
 
@@ -282,5 +287,11 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
                 .setEndretAv(malData.getEndretAvFormattert())
                 .setDato(malData.getDato());
     }
-    
+
+    private no.nav.apiapp.security.veilarbabac.Bruker lagBrukerFraFnr(String fnr) {
+        return no.nav.apiapp.security.veilarbabac.Bruker.fraFnr(fnr)
+                .medAktoerIdSupplier(()->aktorService.getAktorId(fnr).orElseThrow(IngenTilgang::new));
+    }
+
+
 }
