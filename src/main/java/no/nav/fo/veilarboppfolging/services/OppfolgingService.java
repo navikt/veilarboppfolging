@@ -5,6 +5,7 @@ import lombok.val;
 import no.nav.apiapp.security.PepClient;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
+import no.nav.fo.veilarboppfolging.db.OppfolgingsStatusRepository;
 import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.fo.veilarboppfolging.services.OppfolgingResolver.OppfolgingResolverDependencies;
 import org.springframework.stereotype.Component;
@@ -23,24 +24,21 @@ public class OppfolgingService {
     private final AktorService aktorService;
     private final OppfolgingRepository oppfolgingRepository;
     private final PepClient pepClient;
-
+    private final OppfolgingsStatusRepository oppfolgingsStatusRepository;
+    
     @Inject
     public OppfolgingService(
             OppfolgingResolverDependencies oppfolgingResolverDependencies,
             AktorService aktorService,
             OppfolgingRepository oppfolgingRepository,
-            PepClient pepClient
+            PepClient pepClient,
+            OppfolgingsStatusRepository oppfolgingsStatusRepository 
     ) {
         this.oppfolgingResolverDependencies = oppfolgingResolverDependencies;
         this.aktorService = aktorService;
         this.oppfolgingRepository = oppfolgingRepository;
         this.pepClient = pepClient;
-    }
-
-    public OppfolgingStatusData hentOppfolgingsStatus(AktorId aktorId) throws Exception {
-        String fnr = aktorService.getFnr(aktorId.getAktorId())
-                .orElseThrow(() -> new IllegalArgumentException("Fant ikke fnr for aktørid: " + aktorId));
-        return hentOppfolgingsStatus(fnr);
+        this.oppfolgingsStatusRepository = oppfolgingsStatusRepository; 
     }
 
     @SneakyThrows
@@ -55,23 +53,6 @@ public class OppfolgingService {
         val resolver = new OppfolgingResolver(fnr, oppfolgingResolverDependencies);
 
         resolver.sjekkStatusIArenaOgOppdaterOppfolging();
-
-        return getOppfolgingStatusData(fnr, resolver);
-    }
-
-    public Brukervilkar hentVilkar(String fnr) throws Exception {
-        return new OppfolgingResolver(fnr, oppfolgingResolverDependencies).getNyesteVilkar();
-    }
-
-    public List<Brukervilkar> hentHistoriskeVilkar(String fnr) {
-        return new OppfolgingResolver(fnr, oppfolgingResolverDependencies).getHistoriskeVilkar();
-    }
-
-    @Transactional
-    public OppfolgingStatusData oppdaterVilkaar(String hash, String fnr, VilkarStatus vilkarStatus) throws Exception {
-        val resolver = new OppfolgingResolver(fnr, oppfolgingResolverDependencies);
-
-        resolver.sjekkNyesteVilkarOgOppdaterOppfolging(hash, vilkarStatus);
 
         return getOppfolgingStatusData(fnr, resolver);
     }
@@ -156,6 +137,14 @@ public class OppfolgingService {
         return new VeilederTilgang().setTilgangTilBrukersKontor(pepClient.harTilgangTilEnhet(resolver.getOppfolgingsEnhet()));
     }
 
+    public boolean underOppfolging(String fnr) {
+        pepClient.sjekkLeseTilgangTilFnr(fnr);
+        String aktorId = aktorService.getAktorId(fnr)
+                .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktør for fnr: " + fnr));
+        OppfolgingTable eksisterendeOppfolgingstatus = oppfolgingsStatusRepository.fetch(aktorId);
+        return eksisterendeOppfolgingstatus != null && eksisterendeOppfolgingstatus.isUnderOppfolging();
+    }
+    
     private OppfolgingStatusData getOppfolgingStatusData(String fnr, OppfolgingResolver oppfolgingResolver) {
         return getOppfolgingStatusData(fnr, oppfolgingResolver, null);
     }
@@ -170,7 +159,6 @@ public class OppfolgingService {
                 .setUnderKvp(oppfolging.getGjeldendeKvp() != null)
                 .setReservasjonKRR(oppfolgingResolver.reservertIKrr())
                 .setManuell(oppfolgingResolver.manuell())
-                .setVilkarMaBesvares(oppfolgingResolver.maVilkarBesvares())
                 .setKanStarteOppfolging(oppfolgingResolver.getKanSettesUnderOppfolging())
                 .setAvslutningStatusData(avslutningStatusData)
                 .setGjeldendeEskaleringsvarsel(oppfolging.getGjeldendeEskaleringsvarsel())

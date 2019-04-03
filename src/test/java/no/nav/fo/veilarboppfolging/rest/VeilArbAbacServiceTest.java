@@ -56,12 +56,12 @@ public class VeilArbAbacServiceTest {
 
     @Test
     public void harVeilederSkriveTilgangTilFnr() {
-        givenThat(get(urlEqualTo("/subject/person?fnr=fnr&action=update"))
+        givenThat(get(urlEqualTo("/person?fnr=fnr&action=update"))
                 .willReturn(aResponse().withStatus(200).withBody("deny"))
         );
         assertThat(veilArbAbacService.harVeilederSkriveTilgangTilFnr(VEILEDER_ID, FNR)).isFalse();
 
-        givenThat(get(urlEqualTo("/subject/person?fnr=fnr&action=update"))
+        givenThat(get(urlEqualTo("/person?fnr=fnr&action=update"))
                 .willReturn(aResponse().withStatus(200).withBody("permit"))
         );
         assertThat(veilArbAbacService.harVeilederSkriveTilgangTilFnr(VEILEDER_ID, FNR)).isTrue();

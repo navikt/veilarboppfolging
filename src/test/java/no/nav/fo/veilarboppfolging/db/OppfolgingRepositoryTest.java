@@ -6,20 +6,14 @@ import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
 import no.nav.sbl.jdbc.Database;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
 
 import javax.inject.Inject;
 import java.sql.Timestamp;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
 import static java.lang.System.currentTimeMillis;
 import static no.nav.fo.veilarboppfolging.domain.KodeverkBruker.NAV;
-import static no.nav.fo.veilarboppfolging.domain.VilkarStatus.GODKJENT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
@@ -100,34 +94,6 @@ public class OppfolgingRepositoryTest extends DatabaseTest {
         assertThat(malList.size(), greaterThan(1));
     }
 
-    @Test
-    public void slettMalForAktorEtter() {
-        gittOppfolgingForAktor(AKTOR_ID);
-
-        Date forOpprettelse = new Date(System.currentTimeMillis() - 1);
-        opprettMal(AKTOR_ID, "Dette er et mål");
-        Date etterOpprettelse = new Date(System.currentTimeMillis() + 1);
-
-        oppfolgingRepository.slettMalForAktorEtter(AKTOR_ID, etterOpprettelse);
-        sjekk_at_aktor_har_mal();
-
-        oppfolgingRepository.slettMalForAktorEtter("annenAktor", forOpprettelse);
-        sjekk_at_aktor_har_mal();
-
-        oppfolgingRepository.slettMalForAktorEtter(AKTOR_ID, forOpprettelse);
-        sjekk_at_aktor_ikke_har_mal();
-    }
-
-
-    private void sjekk_at_aktor_ikke_har_mal() {
-        assertThat(getGjeldendeMal(AKTOR_ID), nullValue());
-        assertThat(hentMal(AKTOR_ID), empty());
-    }
-
-    private void sjekk_at_aktor_har_mal() {
-        assertThat(hentMal(AKTOR_ID), not(empty()));
-    }
-
     private MalData getGjeldendeMal(String aktorId) {
         return oppfolgingRepository.hentOppfolging(aktorId).get().getGjeldendeMal();
     }
@@ -153,23 +119,6 @@ public class OppfolgingRepositoryTest extends DatabaseTest {
     }
 
     @Test
-    public void oppdatererStatus() throws Exception {
-        gittOppfolgingForAktor(AKTOR_ID);
-
-        Brukervilkar brukervilkar = new Brukervilkar(
-                AKTOR_ID,
-                new Timestamp(currentTimeMillis()),
-                VilkarStatus.GODKJENT,
-                "Vilkårstekst",
-                "Vilkårshash"
-        );
-        oppfolgingRepository.opprettBrukervilkar(brukervilkar);
-
-        Optional<Oppfolging> uthentetOppfolging = hentOppfolging(AKTOR_ID);
-        assertThat(brukervilkar, equalTo(uthentetOppfolging.get().getGjeldendeBrukervilkar()));
-    }
-
-    @Test
     public void avsluttOppfolgingResetterVeileder_Manuellstatus_Mal_Og_Vilkar() throws Exception {
         oppfolgingRepository.opprettOppfolging(AKTOR_ID);
         oppfolgingRepository.startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
@@ -184,14 +133,11 @@ public class OppfolgingRepositoryTest extends DatabaseTest {
                         .setBegrunnelse("Test")
                         .setOpprettetAv(KodeverkBruker.SYSTEM));
         oppfolgingRepository.opprettMal(new MalData().setAktorId(AKTOR_ID).setMal(maal).setEndretAv("bruker").setDato(new Timestamp(currentTimeMillis())));
-        String hash = "123";
-        oppfolgingRepository.opprettBrukervilkar(new Brukervilkar().setAktorId(AKTOR_ID).setHash(hash).setVilkarstatus(GODKJENT));
         Oppfolging oppfolging = hentOppfolging(AKTOR_ID).get();
         assertThat(oppfolging.isUnderOppfolging(), is(true));
         assertThat(oppfolging.getVeilederId(), equalTo(veilederId));
         assertThat(oppfolging.getGjeldendeManuellStatus().isManuell(), is(true));
         assertThat(oppfolging.getGjeldendeMal().getMal(), equalTo(maal));
-        assertThat(oppfolging.getGjeldendeBrukervilkar().getHash(), equalTo(hash));
 
         oppfolgingRepository.avsluttOppfolging(AKTOR_ID, veilederId, "Funnet arbeid");
         Oppfolging avsluttetOppfolging = hentOppfolging(AKTOR_ID).get();
@@ -199,7 +145,6 @@ public class OppfolgingRepositoryTest extends DatabaseTest {
         assertThat(avsluttetOppfolging.getVeilederId(), nullValue());
         assertThat(avsluttetOppfolging.getGjeldendeManuellStatus(), nullValue());
         assertThat(avsluttetOppfolging.getGjeldendeMal(), nullValue());
-        assertThat(avsluttetOppfolging.getGjeldendeBrukervilkar(), nullValue());
 
         List<Oppfolgingsperiode> oppfolgingsperioder = avsluttetOppfolging.getOppfolgingsperioder();
         assertThat(oppfolgingsperioder.size(), is(1));

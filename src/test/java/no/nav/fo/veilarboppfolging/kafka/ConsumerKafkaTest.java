@@ -22,7 +22,7 @@ public class ConsumerKafkaTest extends KafkaTest {
     @Inject
     private Iserv28Service iserv28Service;
 
-    @Test
+    @Test(timeout=1000)
     public void testConsume() throws InterruptedException {
         ArenaBruker bruker = new ArenaBruker();
         bruker.setAktoerid("1234");
@@ -34,9 +34,20 @@ public class ConsumerKafkaTest extends KafkaTest {
         String kafkaMelding = JsonUtils.toJson(bruker);
         
         send(KafkaTestConfig.KAFKA_TEST_TOPIC, kafkaMelding);
-        Thread.sleep(50);
-        verify(iserv28Service).behandleEndretBruker(eq(Consumer.deserialisereBruker(kafkaMelding)));
+        verifiserKonsumentAsynkront(kafkaMelding);
 
+    }
+
+    private void verifiserKonsumentAsynkront(String kafkaMelding) {
+        boolean prosessert = false;
+        while(!prosessert) {
+            try {
+                Thread.sleep(10);
+                verify(iserv28Service).behandleEndretBruker(eq(Consumer.deserialisereBruker(kafkaMelding)));
+                prosessert = true;
+            } catch(Throwable a) {
+            }
+        }
     }
 
     @SneakyThrows

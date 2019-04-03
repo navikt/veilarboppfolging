@@ -11,7 +11,6 @@ import org.springframework.context.annotation.Import;
         OppfolgingsPeriodeRepository.class,
         MaalRepository.class,
         ManuellStatusRepository.class,
-        BrukervilkarRepository.class,
         EskaleringsvarselRepository.class,
         KvpRepository.class,
         OppfolgingFeedRepository.class,

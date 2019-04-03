@@ -5,18 +5,15 @@ import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import no.nav.apiapp.feil.UlovligHandling;
 import no.nav.apiapp.security.PepClient;
 import no.nav.common.auth.SubjectHandler;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
-import no.nav.fo.veilarboppfolging.config.RemoteFeatureConfig;
 import no.nav.fo.veilarboppfolging.db.KvpRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.fo.veilarboppfolging.utils.FunksjonelleMetrikker;
 import no.nav.fo.veilarboppfolging.utils.StringUtils;
-import no.nav.fo.veilarboppfolging.vilkar.VilkarService;
 import no.nav.metrics.MetricsFactory;
 import no.nav.sbl.jdbc.Transactor;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.DigitalKontaktinformasjonV1;
@@ -29,7 +26,6 @@ import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt.WSYtelseskontrakt;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeRequest;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeResponse;
-import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
@@ -39,7 +35,6 @@ import java.sql.Timestamp;
 import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 import static java.lang.System.currentTimeMillis;
@@ -48,10 +43,8 @@ import static java.util.Optional.ofNullable;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetStatus.AVBRUTT;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetStatus.FULLFORT;
 import static no.nav.fo.veilarboppfolging.domain.KodeverkBruker.SYSTEM;
-import static no.nav.fo.veilarboppfolging.domain.VilkarStatus.GODKJENT;
 import static no.nav.fo.veilarboppfolging.services.ArenaUtils.*;
-import static no.nav.fo.veilarboppfolging.vilkar.VilkarService.VilkarType.PRIVAT;
-import static no.nav.fo.veilarboppfolging.vilkar.VilkarService.VilkarType.UNDER_OPPFOLGING;
+
 
 @Slf4j
 public class OppfolgingResolver {
@@ -129,45 +122,6 @@ public class OppfolgingResolver {
         MetricsFactory.createEvent("oppfolging.automatisk.avslutning").addFieldToReport("success", !oppfolging.isUnderOppfolging()).report();
     }
 
-    void sjekkNyesteVilkarOgOppdaterOppfolging(String hash, VilkarStatus vilkarStatus) {
-        Brukervilkar gjeldendeVilkar = getNyesteVilkar();
-        if (gjeldendeVilkar.getHash().equals(hash)) {
-            deps.getOppfolgingRepository().opprettBrukervilkar(
-                    new Brukervilkar(
-                            aktorId,
-                            new Timestamp(currentTimeMillis()),
-                            vilkarStatus,
-                            gjeldendeVilkar.getTekst(),
-                            hash
-                    ));
-        }
-
-        reloadOppfolging();
-    }
-
-    Brukervilkar getNyesteVilkar() {
-        String vilkarTekst = deps.getVilkarService().getVilkar(oppfolging.isUnderOppfolging() ? UNDER_OPPFOLGING : PRIVAT, null);
-        return new Brukervilkar()
-                .setTekst(vilkarTekst)
-                .setHash(DigestUtils.sha256Hex(vilkarTekst));
-    }
-
-    List<Brukervilkar> getHistoriskeVilkar() {
-        return deps.getOppfolgingRepository().hentHistoriskeVilkar(aktorId);
-    }
-
-    boolean maVilkarBesvares() {
-        if (deps.getBrukervilkarFeature().erAktiv() && oppfolging.isUnderOppfolging()) { //TODO: når featuretoggle slettes er det bare nødvending å sjekke på isUnderOppfolging og returnere false
-            return false;
-        }
-
-        return ofNullable(oppfolging.getGjeldendeBrukervilkar())
-                .filter(brukervilkar -> GODKJENT.equals(brukervilkar.getVilkarstatus()))
-                .map(Brukervilkar::getHash)
-                .map(brukerVilkar -> !brukerVilkar.equals(getNyesteVilkar().getHash()))
-                .orElse(true);
-    }
-
     List<MalData> getMalList() {
         return deps.getOppfolgingRepository().hentMalList(aktorId);
     }
@@ -180,23 +134,6 @@ public class OppfolgingResolver {
                 .setDato(new Timestamp(currentTimeMillis()));
         deps.getOppfolgingRepository().opprettMal(malData);
         return hentOppfolging().getGjeldendeMal();
-    }
-
-    void slettMal() {
-        // https://confluence.adeo.no/pages/viewpage.action?pageId=229941929
-        Oppfolging oppfolging = getOppfolging();
-        if (oppfolging.isUnderOppfolging()) {
-            throw new UlovligHandling();
-        } else {
-            Date sisteSluttDatoEller1970 = oppfolging
-                    .getOppfolgingsperioder()
-                    .stream()
-                    .map(Oppfolgingsperiode::getSluttDato)
-                    .filter(Objects::nonNull)
-                    .max(Date::compareTo)
-                    .orElseGet(() -> new Date(0));
-            deps.getOppfolgingRepository().slettMalForAktorEtter(aktorId, sisteSluttDatoEller1970);
-        }
     }
 
     Oppfolging getOppfolging() {
@@ -477,9 +414,6 @@ public class OppfolgingResolver {
         private DigitalKontaktinformasjonV1 digitalKontaktinformasjonV1;
 
         @Inject
-        private VilkarService vilkarService;
-
-        @Inject
         private YtelseskontraktV3 ytelseskontraktV3;
 
         @Inject
@@ -493,9 +427,6 @@ public class OppfolgingResolver {
 
         @Inject
         private KvpService kvpService;
-
-        @Inject
-        private RemoteFeatureConfig.BrukervilkarFeature brukervilkarFeature;
 
     }
 }

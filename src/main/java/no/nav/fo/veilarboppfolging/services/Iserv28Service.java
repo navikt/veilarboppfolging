@@ -128,8 +128,12 @@ public class Iserv28Service{
             oppdaterUtmeldingTabell(arenaBruker);
         } else {
             slettBrukerFraUtmeldingTabell(arenaBruker.getAktoerid());
-            if(skalStarteOppfolging(arenaBruker)) {
-                startOppfolging(arenaBruker);
+            if(erUnderOppfolging(arenaBruker.getFormidlingsgruppekode(), arenaBruker.getKvalifiseringsgruppekode(), null)) {
+                if (brukerHarOppfolgingsflagg(arenaBruker.getAktoerid())) {
+                    log.info("Bruker med aktørid {} er allerede under oppfølging", arenaBruker.getAktoerid());
+                } else {
+                    startOppfolging(arenaBruker);
+                }
             }
         }
     }
@@ -138,15 +142,10 @@ public class Iserv28Service{
         if(unleashService.isEnabled(START_OPPFOLGING_TOGGLE)) {
             log.info("Starter oppfølging automatisk for bruker med aktørid {}", arenaBruker.getAktoerid());
             oppfolgingRepository.startOppfolgingHvisIkkeAlleredeStartet(arenaBruker.getAktoerid());
-            FunksjonelleMetrikker.startetOppfolgingAutomatisk();
+            FunksjonelleMetrikker.startetOppfolgingAutomatisk(arenaBruker.getFormidlingsgruppekode(), arenaBruker.getKvalifiseringsgruppekode());
         } else {
             log.info("Automatisk start av oppfølging er slått av i unleash. Aktørid {}", arenaBruker.getAktoerid());
         }
-    }
-
-    private boolean skalStarteOppfolging(ArenaBruker arenaBruker) {
-        return erUnderOppfolging(arenaBruker.getFormidlingsgruppekode(), arenaBruker.getKvalifiseringsgruppekode(), null) 
-                && !brukerHarOppfolgingsflagg(arenaBruker.getAktoerid());
     }
 
     private void oppdaterUtmeldingTabell(ArenaBruker arenaBruker) {
@@ -226,8 +225,10 @@ public class Iserv28Service{
 
     private void slettBrukerFraUtmeldingTabell(String aktoerId) {
         WhereClause aktoeridClause = WhereClause.equals("aktor_id", aktoerId);
-        SqlUtils.delete(jdbc, "UTMELDING").where(aktoeridClause).execute();
-        log.info("Aktorid {} har blitt slettet fra UTMELDING tabell", aktoerId);
+        int slettedeRader = SqlUtils.delete(jdbc, "UTMELDING").where(aktoeridClause).execute();
+        if(slettedeRader > 0) {
+            log.info("Aktorid {} har blitt slettet fra UTMELDING tabell", aktoerId);
+        }
     }
 
     public List<IservMapper> finnBrukereMedIservI28Dager() {
