@@ -16,6 +16,7 @@ import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
 import org.springframework.stereotype.Component;
 
 import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -103,7 +104,7 @@ public class ArenaOppfolgingRessurs {
     public OppfolgingEnhetMedVeileder getOppfolginsstatus(@PathParam("fnr") String fnr) throws PepException {
         pepClient.sjekkLeseTilgangTilFnr(fnr);
 
-        ArenaBruker arenaBruker = oppfolgingsbrukerService.hentOppfolgingsbruker(fnr).orElseThrow(() -> new RuntimeException("Bruker ikke funnet"));
+        ArenaBruker arenaBruker = oppfolgingsbrukerService.hentOppfolgingsbruker(fnr).orElseThrow(() -> new NotFoundException("Bruker ikke funnet"));
         Oppfolgingsenhet oppfolgingsenhet = hentEnhet(arenaBruker.getNav_kontor());
 
         String brukersAktoerId = aktorService.getAktorId(fnr)
