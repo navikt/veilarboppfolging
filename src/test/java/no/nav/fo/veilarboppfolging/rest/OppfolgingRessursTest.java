@@ -38,6 +38,9 @@ public class OppfolgingRessursTest {
     @Mock
     private PepClient pepClient;
 
+    @Mock
+    private FnrParameterUtil fnrParameterUtil;
+
     @Rule
     public SubjectRule subjectRule = new SubjectRule();
 

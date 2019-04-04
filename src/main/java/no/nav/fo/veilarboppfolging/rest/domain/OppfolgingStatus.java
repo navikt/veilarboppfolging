@@ -15,7 +15,7 @@ public class OppfolgingStatus {
     public boolean manuell;
     public boolean underOppfolging;
     public boolean underKvp;
-    public boolean vilkarMaBesvares;
+
     public Date oppfolgingUtgang;
     public Eskaleringsvarsel gjeldendeEskaleringsvarsel;
     private boolean kanStarteOppfolging;

@@ -14,7 +14,6 @@ public class Oppfolging {
     private String veilederId;
     private boolean underOppfolging;
     private ManuellStatus gjeldendeManuellStatus;
-    private Brukervilkar gjeldendeBrukervilkar;
     private EskaleringsvarselData gjeldendeEskaleringsvarsel;
     private MalData gjeldendeMal;
     private List<Oppfolgingsperiode> oppfolgingsperioder = emptyList();

@@ -1,11 +1,8 @@
 package no.nav.fo.veilarboppfolging.rest;
 
-import lombok.val;
 import no.nav.apiapp.security.PepClient;
-import no.nav.brukerdialog.security.domain.IdentType;
 import no.nav.common.auth.SubjectHandler;
 import no.nav.fo.veilarboppfolging.domain.*;
-import no.nav.fo.veilarboppfolging.mappers.VilkarMapper;
 import no.nav.fo.veilarboppfolging.rest.api.OppfolgingController;
 import no.nav.fo.veilarboppfolging.rest.api.SystemOppfolgingController;
 import no.nav.fo.veilarboppfolging.rest.api.VeilederOppfolgingController;
@@ -15,16 +12,11 @@ import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
-import javax.inject.Provider;
-import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
-import static no.nav.common.auth.SubjectHandler.getIdent;
-import static no.nav.common.auth.SubjectHandler.getIdentType;
 
 /*
     NB:
@@ -47,7 +39,7 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
     private MalService malService;
 
     @Inject
-    private Provider<HttpServletRequest> requestProvider;
+    private FnrParameterUtil fnrParameterUtil;
 
     @Inject
     private AktiverBrukerService aktiverBrukerService;
@@ -126,29 +118,6 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
     }
 
     @Override
-    public Vilkar hentVilkar() throws Exception {
-        return tilDto(oppfolgingService.hentVilkar(getFnr()));
-    }
-
-    @Override
-    public List<Vilkar> hentVilkaarStatusListe() throws PepException {
-        return oppfolgingService.hentHistoriskeVilkar(getFnr())
-                .stream()
-                .map(this::tilDto)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public OppfolgingStatus godta(String hash) throws Exception {
-        return tilDto(oppfolgingService.oppdaterVilkaar(hash, getFnr(), VilkarStatus.GODKJENT));
-    }
-
-    @Override
-    public OppfolgingStatus avslaa(String hash) throws Exception {
-        return tilDto(oppfolgingService.oppdaterVilkaar(hash, getFnr(), VilkarStatus.AVSLATT));
-    }
-
-    @Override
     public Mal hentMal() throws PepException {
         return tilDto(malService.hentMal(getFnr()));
     }
@@ -163,16 +132,9 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
 
     @Override
     public Mal oppdaterMal(Mal mal) throws PepException {
-        String endretAvVeileder = erEksternBruker()? null : getUid();
+        String endretAvVeileder = FnrParameterUtil.erEksternBruker()? null : getUid();
         return tilDto(malService.oppdaterMal(mal.getMal(), getFnr(), endretAvVeileder));
     }
-
-    @Override
-    public void slettMal() throws PepException {
-        autorisasjonService.skalVereEksternBruker();
-        malService.slettMal(getFnr());
-    }
-
 
     @Override
     public void startEskalering(StartEskaleringDTO startEskalering) throws Exception {
@@ -225,7 +187,7 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
     @Override
     public void aktiverSykmeldt(SykmeldtBrukerType sykmeldtBrukerType) throws Exception {
         autorisasjonService.skalVereSystemRessurs();
-        aktiverBrukerService.aktiverSykmeldt(getUid(), sykmeldtBrukerType);
+        aktiverBrukerService.aktiverSykmeldt(getFnr(), sykmeldtBrukerType);
     }
 
     private Eskaleringsvarsel tilDto(EskaleringsvarselData eskaleringsvarselData) {
@@ -245,17 +207,8 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
         return SubjectHandler.getIdent().orElseThrow(RuntimeException::new);
     }
 
-    public static boolean erEksternBruker() {
-        return getIdentType()
-                .map(identType -> IdentType.EksternBruker == identType)
-                .orElse(false);
-    }
-
     private String getFnr() {
-        if (erEksternBruker()) {
-            return getIdent().orElseThrow(RuntimeException::new);
-        }
-        return Optional.ofNullable(requestProvider.get().getParameter("fnr")).orElseThrow(RuntimeException::new);
+        return fnrParameterUtil.getFnr();
     }
 
     private AvslutningStatus tilDto(AvslutningStatusData avslutningStatusData) {
@@ -275,7 +228,6 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
                 .setUnderOppfolging(oppfolgingStatusData.underOppfolging)
                 .setManuell(oppfolgingStatusData.manuell)
                 .setReservasjonKRR(oppfolgingStatusData.reservasjonKRR)
-                .setVilkarMaBesvares(oppfolgingStatusData.vilkarMaBesvares)
                 .setOppfolgingUtgang(oppfolgingStatusData.getOppfolgingUtgang())
                 .setKanReaktiveres(oppfolgingStatusData.kanReaktiveres)
                 .setOppfolgingsPerioder(oppfolgingStatusData.oppfolgingsperioder.stream().map(this::tilDTO).collect(toList()))
@@ -324,22 +276,11 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
         return new KvpPeriodeDTO(kvp.getOpprettetDato(), kvp.getAvsluttetDato());
     }
 
-    private Vilkar tilDto(Brukervilkar brukervilkar) {
-        return new Vilkar()
-                .setTekst(brukervilkar.getTekst())
-                .setHash(brukervilkar.getHash())
-                .setDato(brukervilkar.getDato())
-                .setVilkarstatus(
-                        VilkarMapper.mapCommonVilkarStatusToVilkarStatusApi(
-                                ofNullable(brukervilkar.getVilkarstatus()).orElse(VilkarStatus.IKKE_BESVART)
-                        )
-                );
-    }
-
     private Mal tilDto(MalData malData) {
         return new Mal()
                 .setMal(malData.getMal())
                 .setEndretAv(malData.getEndretAvFormattert())
                 .setDato(malData.getDato());
     }
+    
 }

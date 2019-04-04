@@ -11,7 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
 import java.sql.Timestamp;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -27,7 +26,6 @@ public class OppfolgingRepository {
     private final OppfolgingsPeriodeRepository periodeRepository;
     private final MaalRepository maalRepository;
     private final ManuellStatusRepository manuellStatusRepository;
-    private final BrukervilkarRepository brukervilkarRepository;
     private final EskaleringsvarselRepository eskaleringsvarselRepository;
     private final KvpRepository kvpRepository;
     private final NyeBrukereFeedRepository nyeBrukereFeedRepository;
@@ -39,7 +37,6 @@ public class OppfolgingRepository {
             OppfolgingsPeriodeRepository periodeRepository,
             MaalRepository maalRepository,
             ManuellStatusRepository manuellStatusRepository,
-            BrukervilkarRepository brukervilkarRepository,
             EskaleringsvarselRepository eskaleringsvarselRepository,
             KvpRepository kvpRepository,
             NyeBrukereFeedRepository nyeBrukereFeedRepository
@@ -49,7 +46,6 @@ public class OppfolgingRepository {
         this.periodeRepository = periodeRepository;
         this.maalRepository = maalRepository;
         this.manuellStatusRepository = manuellStatusRepository;
-        this.brukervilkarRepository = brukervilkarRepository;
         this.eskaleringsvarselRepository = eskaleringsvarselRepository;
         this.kvpRepository = kvpRepository;
         this.nyeBrukereFeedRepository = nyeBrukereFeedRepository;
@@ -66,10 +62,6 @@ public class OppfolgingRepository {
                 .setAktorId(t.getAktorId())
                 .setVeilederId(t.getVeilederId())
                 .setUnderOppfolging(t.isUnderOppfolging());
-
-        if (t.getGjeldendeBrukervilkarId() != 0) {
-            o.setGjeldendeBrukervilkar(brukervilkarRepository.fetch(t.getGjeldendeBrukervilkarId()));
-        }
 
         Kvp kvp = null;
         if (t.getGjeldendeKvpId() != 0) {
@@ -190,20 +182,12 @@ public class OppfolgingRepository {
         manuellStatusRepository.create(manuellStatus);
     }
 
-    // FIXME: go directly to the repository instead.
-    public void opprettBrukervilkar(Brukervilkar brukervilkar) {
-        brukervilkarRepository.create(brukervilkar);
-    }
 
     // FIXME: go directly to the repository instead.
     public Oppfolging opprettOppfolging(String aktorId) {
         return statusRepository.create(aktorId);
     }
 
-    // FIXME: go directly to the repository instead.
-    public List<Brukervilkar> hentHistoriskeVilkar(String aktorId) {
-        return brukervilkarRepository.history(aktorId);
-    }
 
     // FIXME: go directly to the repository instead.
     public List<AvsluttetOppfolgingFeedData> hentAvsluttetOppfolgingEtterDato(Timestamp timestamp, int pageSize) {
@@ -236,8 +220,4 @@ public class OppfolgingRepository {
         maalRepository.opprett(mal);
     }
 
-    // FIXME: go directly to maalRepository instead.
-    public void slettMalForAktorEtter(String aktorId, Date date) {
-        maalRepository.slettForAktorEtter(aktorId, date);
-    }
 }

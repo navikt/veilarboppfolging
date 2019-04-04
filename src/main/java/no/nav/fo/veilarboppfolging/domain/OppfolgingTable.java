@@ -16,7 +16,6 @@ public class OppfolgingTable {
     private String veilederId;
     private boolean underOppfolging;
     private long gjeldendeManuellStatusId;
-    private long gjeldendeBrukervilkarId;
     private long gjeldendeEskaleringsvarselId;
     private long gjeldendeMaalId;
     private long gjeldendeKvpId;

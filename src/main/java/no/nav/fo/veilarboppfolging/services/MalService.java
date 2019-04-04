@@ -18,7 +18,6 @@ import java.util.List;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 import static no.nav.apiapp.feil.FeilType.INGEN_TILGANG;
-import static no.nav.fo.veilarboppfolging.utils.StringUtils.notNullAndNotEmpty;
 
 @Component
 public class MalService {
@@ -73,10 +72,6 @@ public class MalService {
         } catch (IngenTilgang e) {
             throw new Feil(INGEN_TILGANG);
         }
-    }
-
-    public void slettMal(String fnr) {
-        new OppfolgingResolver(fnr, oppfolgingResolverDependencies).slettMal();
     }
 
 }

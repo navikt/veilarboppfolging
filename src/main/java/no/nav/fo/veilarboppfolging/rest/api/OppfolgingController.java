@@ -3,7 +3,6 @@ package no.nav.fo.veilarboppfolging.rest.api;
 import no.nav.fo.veilarboppfolging.rest.domain.Bruker;
 import no.nav.fo.veilarboppfolging.rest.domain.Mal;
 import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingStatus;
-import no.nav.fo.veilarboppfolging.rest.domain.Vilkar;
 
 import javax.ws.rs.*;
 import java.util.List;
@@ -22,22 +21,6 @@ public interface OppfolgingController {
     OppfolgingStatus hentOppfolgingsStatus() throws Exception;
 
     @GET
-    @Path("/vilkar")
-    Vilkar hentVilkar() throws Exception;
-
-    @GET
-    @Path("/hentVilkaarStatusListe")
-    List<Vilkar> hentVilkaarStatusListe() throws Exception;
-
-    @POST
-    @Path("/godta/{hash}")
-    OppfolgingStatus godta(@PathParam("hash") String hash) throws Exception;
-
-    @POST
-    @Path("/avslaa/{hash}")
-    OppfolgingStatus avslaa(@PathParam("hash") String hash) throws Exception;
-
-    @GET
     @Path("/mal")
     Mal hentMal() throws Exception;
 
@@ -49,7 +32,4 @@ public interface OppfolgingController {
     @Path("/mal")
     Mal oppdaterMal(Mal mal) throws Exception;
 
-    @DELETE
-    @Path("/mal")
-    void slettMal() throws Exception;
 }

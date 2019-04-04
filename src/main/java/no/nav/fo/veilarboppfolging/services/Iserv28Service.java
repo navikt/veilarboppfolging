@@ -11,7 +11,6 @@ import no.nav.fo.veilarboppfolging.domain.OppfolgingTable;
 import no.nav.fo.veilarboppfolging.mappers.ArenaBruker;
 import no.nav.fo.veilarboppfolging.utils.FunksjonelleMetrikker;
 import no.nav.metrics.utils.MetricsUtils;
-import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -36,8 +35,6 @@ import static no.nav.sbl.sql.DbConstants.CURRENT_TIMESTAMP;
 @Slf4j
 public class Iserv28Service{
 
-    static final String START_OPPFOLGING_TOGGLE = "veilarboppfolging.start.oppfolging.automatisk";
-
     enum AvslutteOppfolgingResultat {
         AVSLUTTET_OK,
         IKKE_AVSLUTTET,
@@ -52,7 +49,6 @@ public class Iserv28Service{
     private final SystemUserSubjectProvider systemUserSubjectProvider;
     private final OppfolgingsStatusRepository oppfolgingsStatusRepository;
     private final OppfolgingRepository oppfolgingRepository;
-    private final UnleashService unleashService;
 
     private static final int lockAutomatiskAvslutteOppfolgingSeconds = 3600;
 
@@ -64,8 +60,7 @@ public class Iserv28Service{
             OppfolgingRepository oppfolgingRepository,
             AktorService aktorService,
             LockingTaskExecutor taskExecutor,
-            SystemUserSubjectProvider systemUserSubjectProvider,
-            UnleashService unleashService
+            SystemUserSubjectProvider systemUserSubjectProvider
     ){
         this.jdbc = jdbc;
         this.oppfolgingService = oppfolgingService;
@@ -74,7 +69,6 @@ public class Iserv28Service{
         this.aktorService = aktorService;
         this.taskExecutor = taskExecutor;
         this.systemUserSubjectProvider = systemUserSubjectProvider;
-        this.unleashService = unleashService;
     }
 
     @Scheduled(cron="0 0 * * * *")
@@ -139,13 +133,9 @@ public class Iserv28Service{
     }
 
     private void startOppfolging(ArenaBruker arenaBruker) {
-        if(unleashService.isEnabled(START_OPPFOLGING_TOGGLE)) {
-            log.info("Starter oppfølging automatisk for bruker med aktørid {}", arenaBruker.getAktoerid());
-            oppfolgingRepository.startOppfolgingHvisIkkeAlleredeStartet(arenaBruker.getAktoerid());
-            FunksjonelleMetrikker.startetOppfolgingAutomatisk();
-        } else {
-            log.info("Automatisk start av oppfølging er slått av i unleash. Aktørid {}", arenaBruker.getAktoerid());
-        }
+        log.info("Starter oppfølging automatisk for bruker med aktørid {}", arenaBruker.getAktoerid());
+        oppfolgingRepository.startOppfolgingHvisIkkeAlleredeStartet(arenaBruker.getAktoerid());
+        FunksjonelleMetrikker.startetOppfolgingAutomatisk(arenaBruker.getFormidlingsgruppekode(), arenaBruker.getKvalifiseringsgruppekode());
     }
 
     private void oppdaterUtmeldingTabell(ArenaBruker arenaBruker) {
