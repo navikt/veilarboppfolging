@@ -114,7 +114,7 @@ public class KvpServiceTest {
 
     @Test(expected = IngenTilgang.class)
     public void startKvpInhenEnhetTilgang()  {
-        doThrow(IngenTilgang.class).when(pepClientMock).harTilgangTilEnhet(any());
+        doReturn(false).when(pepClientMock).harTilgangTilEnhet(any());
 
         kvpService.startKvp(FNR, START_BEGRUNNELSE);
     }
