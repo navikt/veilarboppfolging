@@ -2,10 +2,10 @@ package no.nav.fo.veilarboppfolging.services;
 
 import no.nav.apiapp.feil.Feil;
 import no.nav.apiapp.feil.IngenTilgang;
-import no.nav.tjeneste.virksomhet.varseloppgave.v1.BestillVarselOppgaveBrukerHarIkkeTilstrekkeligPaaloggingsnivaa;
-import no.nav.tjeneste.virksomhet.varseloppgave.v1.BestillVarselOppgaveBrukerIkkeRegistrertIIdporten;
-import no.nav.tjeneste.virksomhet.varseloppgave.v1.BestillVarselOppgaveSikkerhetsbegrensning;
-import no.nav.tjeneste.virksomhet.varseloppgave.v1.VarseloppgaveV1;
+import no.nav.tjeneste.virksomhet.varseloppgave.v1.binding.BestillVarselOppgaveBrukerHarIkkeTilstrekkeligPaaloggingsnivaa;
+import no.nav.tjeneste.virksomhet.varseloppgave.v1.binding.BestillVarselOppgaveBrukerIkkeRegistrertIIdporten;
+import no.nav.tjeneste.virksomhet.varseloppgave.v1.binding.BestillVarselOppgaveSikkerhetsbegrensning;
+import no.nav.tjeneste.virksomhet.varseloppgave.v1.binding.VarseloppgaveV1;
 import no.nav.tjeneste.virksomhet.varseloppgave.v1.informasjon.*;
 import no.nav.tjeneste.virksomhet.varseloppgave.v1.meldinger.BestillVarselOppgaveRequest;
 import org.slf4j.Logger;
@@ -31,7 +31,8 @@ public class EskaleringsvarselService {
     private String aktivitetsplanBaseUrl = getRequiredProperty(AKTIVITETSPLAN_URL_PROPERTY);
 
     public void sendEskaleringsvarsel(String aktorId, long dialogId) {
-        Aktoer aktor = new AktoerId().withAktoerId(aktorId);
+        AktoerId aktor = new AktoerId();
+        aktor.setAktoerId(aktorId);
         try {
             varseloppgaveV1.bestillVarselOppgave(lagBestillVarselOppgaveRequest(aktor, dialogId));
         } catch (BestillVarselOppgaveSikkerhetsbegrensning e) {
@@ -79,29 +80,41 @@ public class EskaleringsvarselService {
     }
 
     private BestillVarselOppgaveRequest lagBestillVarselOppgaveRequest(Aktoer aktoer, long dialogId) {
-        return new BestillVarselOppgaveRequest()
-                .withVarselOppgaveBestilling(lagVarselOppgaveBestilling(aktoer))
-                .withOppgaveHenvendelse(lagOppgaveHenvendelse(dialogId))
-                .withVarselMedHandling(lagVarselMedHandling());
+        BestillVarselOppgaveRequest bestillVarselOppgaveRequest = new BestillVarselOppgaveRequest();
+        bestillVarselOppgaveRequest.setVarselOppgaveBestilling(lagVarselOppgaveBestilling(aktoer));
+        bestillVarselOppgaveRequest.setOppgaveHenvendelse(lagOppgaveHenvendelse(dialogId));
+        bestillVarselOppgaveRequest.setVarselMedHandling(lagVarselMedHandling());
+
+        return bestillVarselOppgaveRequest;
     }
 
     private VarselOppgaveBestilling lagVarselOppgaveBestilling(Aktoer aktoer) {
         String uuid = UUID.randomUUID().toString();
-        return new VarselOppgaveBestilling()
-                .withVarselbestillingId(uuid)
-                .withMottaker(aktoer);
+        VarselOppgaveBestilling varselOppgaveBestilling = new VarselOppgaveBestilling();
+        varselOppgaveBestilling.setVarselbestillingId(uuid);
+        varselOppgaveBestilling.setMottaker(aktoer);
+
+        return varselOppgaveBestilling;
+
     }
 
     private OppgaveHenvendelse lagOppgaveHenvendelse(long dialogId) {
-        OppgaveType oppgaveType = new OppgaveType().withValue("0004");
-        return new OppgaveHenvendelse()
-                .withOppgaveType(oppgaveType)
-                .withOppgaveURL(dialogUrl(dialogId))
-                .withStoppRepeterendeVarsel(true);
+        OppgaveType oppgaveType = new OppgaveType();
+        oppgaveType.setValue("0004");
+
+        OppgaveHenvendelse oppgaveHenvendelse = new OppgaveHenvendelse();
+        oppgaveHenvendelse.setOppgaveType(oppgaveType);
+        oppgaveHenvendelse.setOppgaveURL(dialogUrl(dialogId));
+        oppgaveHenvendelse.setStoppRepeterendeVarsel(true);
+
+        return oppgaveHenvendelse;
     }
 
     private VarselMedHandling lagVarselMedHandling() {
-        return new VarselMedHandling().withVarseltypeId("DittNAV_000008");
+        VarselMedHandling varselMedHandling = new VarselMedHandling();
+        varselMedHandling.setVarseltypeId("DittNAV_000008");
+
+        return varselMedHandling;
     }
 
 }

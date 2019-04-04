@@ -18,7 +18,7 @@
     </build>
 
     <properties>
-        <tjenestespesifikasjoner.version>0-SNAPSHOT</tjenestespesifikasjoner.version>
+        <tjenestespesifikasjoner.version>1.2019.04.03-23.09-56488320520a</tjenestespesifikasjoner.version>
         <organisasjonenhet-v2.version>2.1.0</organisasjonenhet-v2.version>
      </properties>
 
@@ -69,7 +69,6 @@
                 <groupId>no.nav.tjenestespesifikasjoner</groupId>
                 <artifactId>varseloppgave-v1-tjenestespesifikasjon</artifactId>
                 <version>${tjenestespesifikasjoner.version}</version>
-                <classifier>jaxws</classifier>
             </dependency>
             <dependency>
                 <groupId>no.nav.tjenestespesifikasjoner</groupId>
@@ -211,7 +210,6 @@
         <dependency>
             <groupId>no.nav.tjenestespesifikasjoner</groupId>
             <artifactId>varseloppgave-v1-tjenestespesifikasjon</artifactId>
-            <classifier>jaxws</classifier>
         </dependency>
         <dependency>
             <groupId>no.nav.tjenestespesifikasjoner</groupId>
