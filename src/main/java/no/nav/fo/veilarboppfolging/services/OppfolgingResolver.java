@@ -85,7 +85,7 @@ public class OppfolgingResolver {
         hentOppfolgingstatusFraArena();
         statusIArena.ifPresent((arenaStatus) -> {
             if (!oppfolging.isUnderOppfolging()) {
-                if (erUnderOppfolging(arenaStatus.getFormidlingsgruppe(), arenaStatus.getServicegruppe(), arenaStatus.getHarMottaOppgaveIArena())) {
+                if (erUnderOppfolging(arenaStatus.getFormidlingsgruppe(), arenaStatus.getServicegruppe())) {
                     deps.getOppfolgingRepository().startOppfolgingHvisIkkeAlleredeStartet(aktorId);
                     reloadOppfolging();
                 }
@@ -180,8 +180,7 @@ public class OppfolgingResolver {
             hentOppfolgingstatusFraArena();
         }
         return statusIArena.map(status ->
-                erUnderOppfolging(status.getFormidlingsgruppe(),
-                        status.getServicegruppe(), status.getHarMottaOppgaveIArena()))
+                erUnderOppfolging(status.getFormidlingsgruppe(), status.getServicegruppe()))
                 .orElse(false);
     }
 
