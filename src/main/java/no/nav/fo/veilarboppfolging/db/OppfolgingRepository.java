@@ -108,6 +108,7 @@ public class OppfolgingRepository {
         Oppfolging oppfolgingsstatus = hentOppfolging(aktoerId).orElseGet(() -> opprettOppfolging(aktoerId));
         if (!oppfolgingsstatus.isUnderOppfolging()) {
             periodeRepository.start(aktoerId);
+            oppfolgingsbruker.withErManuell(oppfolgingsstatus.getGjeldendeManuellStatus().isManuell());
             nyeBrukereFeedRepository.leggTil(oppfolgingsbruker);
         }
     }

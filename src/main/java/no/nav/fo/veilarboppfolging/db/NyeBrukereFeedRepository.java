@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 import javax.inject.Inject;
 import java.sql.ResultSet;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Component
@@ -31,11 +32,12 @@ public class NyeBrukereFeedRepository {
         SykmeldtBrukerType sykmeldtBrukerType = oppfolgingsbruker.getSykmeldtBrukerType();
         String innsatsGruppeNavn = innsatsgruppe == null ? null : innsatsgruppe.toString();
         String sykmeldtBrukerTypeNavn = sykmeldtBrukerType == null ? null : sykmeldtBrukerType.toString();
+        boolean erManuell = Optional.ofNullable(oppfolgingsbruker.getErManuell()).orElse(false);
         database.update(
                 "INSERT INTO NYE_BRUKERE_FEED " +
-                "(AKTOR_ID, FORESLATT_INNSATSGRUPPE, SYKMELDTBRUKERTYPE) " +
+                "(AKTOR_ID, FORESLATT_INNSATSGRUPPE, SYKMELDTBRUKERTYPE, ER_MANUELL) " +
                 "VALUES" +
-                "(?,?,?)", oppfolgingsbruker.getAktoerId(), innsatsGruppeNavn, sykmeldtBrukerTypeNavn);
+                "(?,?,?,?)", oppfolgingsbruker.getAktoerId(), innsatsGruppeNavn, sykmeldtBrukerTypeNavn, erManuell);
     }
 
     public Try<Integer> tryLeggTilFeedIdPaAlleElementerUtenFeedId() {
@@ -64,6 +66,7 @@ public class NyeBrukereFeedRepository {
                 .aktorId(rs.getString("AKTOR_ID"))
                 .foreslattInnsatsgruppe(rs.getString("FORESLATT_INNSATSGRUPPE"))
                 .sykmeldtBrukerType(rs.getString("SYKMELDTBRUKERTYPE"))
+                .erManuell(rs.getBoolean("ER_MANUELL"))
                 .opprettet(rs.getTimestamp("OPPRETTET_TIMESTAMP"))
                 .build();
     }
