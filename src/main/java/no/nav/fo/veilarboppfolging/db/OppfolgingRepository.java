@@ -9,6 +9,8 @@ import no.nav.fo.veilarboppfolging.domain.*;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import io.vavr.control.Try;
+
 import javax.inject.Inject;
 import java.sql.Timestamp;
 import java.util.List;
@@ -108,7 +110,8 @@ public class OppfolgingRepository {
         Oppfolging oppfolgingsstatus = hentOppfolging(aktoerId).orElseGet(() -> opprettOppfolging(aktoerId));
         if (!oppfolgingsstatus.isUnderOppfolging()) {
             periodeRepository.start(aktoerId);
-            oppfolgingsbruker.withErManuell(oppfolgingsstatus.getGjeldendeManuellStatus().isManuell());
+            Boolean erManuell = Try.of(() -> oppfolgingsstatus.getGjeldendeManuellStatus().isManuell()).getOrElse(false);
+            oppfolgingsbruker.withErManuell(erManuell);
             nyeBrukereFeedRepository.leggTil(oppfolgingsbruker);
         }
     }
