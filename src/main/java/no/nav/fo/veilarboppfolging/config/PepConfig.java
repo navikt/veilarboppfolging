@@ -25,6 +25,7 @@ public class PepConfig {
 
         return VeilarbAbacPepClient.ny()
                 .medPep(pep)
+                .medResourceTypePerson()
                 .medSystemUserTokenProvider(()->systemUserTokenProvider.getToken())
                 .brukAktoerId(()->unleashService.isEnabled("veilarboppfølging.veilarbabac.aktor"))
                 .sammenlikneTilgang(()->unleashService.isEnabled("veilarboppfølging.veilarbabac.sammenlikn"))
