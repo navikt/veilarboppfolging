@@ -157,13 +157,14 @@ public class OppfolgingService {
     private OppfolgingStatusData getOppfolgingStatusData(String fnr, OppfolgingResolver oppfolgingResolver, AvslutningStatusData avslutningStatusData) {
         Oppfolging oppfolging = oppfolgingResolver.getOppfolging();
 
+        boolean krr = oppfolgingResolver.reservertIKrr();
         return new OppfolgingStatusData()
                 .setFnr(fnr)
                 .setVeilederId(oppfolging.getVeilederId())
                 .setUnderOppfolging(oppfolging.isUnderOppfolging())
                 .setUnderKvp(oppfolging.getGjeldendeKvp() != null)
-                .setReservasjonKRR(oppfolgingResolver.reservertIKrr())
-                .setManuell(oppfolgingResolver.manuell())
+                .setReservasjonKRR(krr)
+                .setManuell(oppfolgingResolver.manuell() || krr)
                 .setKanStarteOppfolging(oppfolgingResolver.getKanSettesUnderOppfolging())
                 .setAvslutningStatusData(avslutningStatusData)
                 .setGjeldendeEskaleringsvarsel(oppfolging.getGjeldendeEskaleringsvarsel())

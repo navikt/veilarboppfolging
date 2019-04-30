@@ -15,10 +15,12 @@ import no.nav.fo.veilarboppfolging.mappers.OppfolgingMapper;
 import no.nav.fo.veilarboppfolging.rest.domain.*;
 import no.nav.fo.veilarboppfolging.services.*;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
-import org.slf4j.Logger;
+import no.nav.sbl.featuretoggle.unleash.UnleashService;
+
 import org.springframework.stereotype.Component;
 
 import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -28,14 +30,12 @@ import java.util.Optional;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static no.nav.fo.veilarboppfolging.utils.CalendarConverter.convertDateToXMLGregorianCalendar;
-import static org.slf4j.LoggerFactory.getLogger;
 
 @Component
 @Api(value = "Oppfølging")
 @Path("/person/{fnr}")
 @Produces(APPLICATION_JSON)
 public class ArenaOppfolgingRessurs {
-    private static final Logger LOG = getLogger(ArenaOppfolgingRessurs.class);
     private static final int MANEDER_BAK_I_TID = 2;
     private static final int MANEDER_FREM_I_TID = 1;
 
@@ -43,9 +43,10 @@ public class ArenaOppfolgingRessurs {
     private final OppfolgingMapper oppfolgingMapper;
     private final VeilarbAbacPepClient pepClient;
     private final OrganisasjonEnhetService organisasjonEnhetService;
-    private AktorService aktorService;
-    private VeilederTilordningerRepository veilederTilordningerRepository;
-    private OppfolgingsbrukerService oppfolgingsbrukerService;
+    private final AktorService aktorService;
+    private final VeilederTilordningerRepository veilederTilordningerRepository;
+    private final OppfolgingsbrukerService oppfolgingsbrukerService;
+    private final UnleashService unleash;
 
     public ArenaOppfolgingRessurs(
             ArenaOppfolgingService arenaOppfolgingService,
@@ -54,7 +55,8 @@ public class ArenaOppfolgingRessurs {
             OrganisasjonEnhetService organisasjonEnhetService,
             AktorService aktorService,
             VeilederTilordningerRepository veilederTilordningerRepository,
-            OppfolgingsbrukerService oppfolgingsbrukerService
+            OppfolgingsbrukerService oppfolgingsbrukerService,
+            UnleashService unleash
     ) {
         this.arenaOppfolgingService = arenaOppfolgingService;
         this.oppfolgingMapper = oppfolgingMapper;
@@ -63,6 +65,7 @@ public class ArenaOppfolgingRessurs {
         this.aktorService = aktorService;
         this.veilederTilordningerRepository = veilederTilordningerRepository;
         this.oppfolgingsbrukerService = oppfolgingsbrukerService;
+        this.unleash = unleash;
     }
 
     @GET
@@ -117,25 +120,30 @@ public class ArenaOppfolgingRessurs {
 
         pepClient.sjekkLesetilgangTilBruker(bruker);
 
-        no.nav.fo.veilarboppfolging.domain.ArenaOppfolging arenaData = arenaOppfolgingService.hentArenaOppfolging(fnr);
+        OppfolgingEnhetMedVeileder res;
+        if(unleash.isEnabled("veilarboppfolging.oppfolgingsstatus.fra.veilarbarena")) {
+            ArenaBruker arenaBruker = oppfolgingsbrukerService.hentOppfolgingsbruker(fnr).orElseThrow(() -> new NotFoundException("Bruker ikke funnet"));
+            res = new OppfolgingEnhetMedVeileder()
+                    .setServicegruppe(arenaBruker.getKvalifiseringsgruppekode())
+                    .setFormidlingsgruppe(arenaBruker.getFormidlingsgruppekode())
+                    .setOppfolgingsenhet(hentEnhet(arenaBruker.getNav_kontor()))
+                    .setHovedmaalkode(arenaBruker.getHovedmaalkode());
 
-        Oppfolgingsenhet oppfolgingsenhet = hentEnhet(arenaData.getOppfolgingsenhet());
-
-        String brukersAktoerId = aktorService.getAktorId(fnr)
-                .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktør for fnr: " + fnr));
-        String veilederIdent = veilederTilordningerRepository.hentTilordningForAktoer(brukersAktoerId);
-
-        Optional<ArenaBruker> oppfolgingsbrukerStatus = oppfolgingsbrukerService.hentOppfolgingsbruker(fnr);
-
-        OppfolgingEnhetMedVeileder res = new OppfolgingEnhetMedVeileder()
+        } else {
+            no.nav.fo.veilarboppfolging.domain.ArenaOppfolging arenaData = arenaOppfolgingService.hentArenaOppfolging(fnr);
+            Optional<ArenaBruker> oppfolgingsbrukerStatus = oppfolgingsbrukerService.hentOppfolgingsbruker(fnr);
+            res = new OppfolgingEnhetMedVeileder()
                 .setServicegruppe(arenaData.getServicegruppe())
                 .setFormidlingsgruppe(arenaData.getFormidlingsgruppe())
-                .setOppfolgingsenhet(oppfolgingsenhet)
+                .setOppfolgingsenhet(hentEnhet(arenaData.getOppfolgingsenhet()))
                 .setHovedmaalkode(oppfolgingsbrukerStatus.map(ArenaBruker::getHovedmaalkode).orElse(null));
+        }
 
         if (AutorisasjonService.erInternBruker()) {
+            String brukersAktoerId = aktorService.getAktorId(fnr)
+                    .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktør for fnr: " + fnr));
+            String veilederIdent = veilederTilordningerRepository.hentTilordningForAktoer(brukersAktoerId);
             res.setVeilederId(veilederIdent);
-
         }
         return res;
     }
