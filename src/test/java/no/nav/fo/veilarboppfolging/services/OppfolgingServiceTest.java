@@ -234,6 +234,16 @@ public class OppfolgingServiceTest {
         assertThat(status.kanReaktiveres, is(true));
         assertThat(status.inaktivIArena, is(true));
     }
+
+    @Test
+    public void hentOppfolgingStatus_brukerSomErKRRSkalVareManuell() throws Exception {
+        oppfolging.setUnderOppfolging(true);
+        gittReservasjon("true");
+        OppfolgingStatusData status = hentOppfolgingStatus();
+
+        assertThat(status.reservasjonKRR, is(true));
+        assertThat(status.manuell, is(true));
+    }
     
     @Test
     public void utenReservasjon() throws Exception {
