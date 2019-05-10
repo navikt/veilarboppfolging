@@ -1,6 +1,6 @@
 package no.nav.fo;
 
-import no.nav.apiapp.security.PepClient;
+import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
 import no.nav.fo.veilarboppfolging.config.DatabaseConfig;
 import no.nav.fo.veilarboppfolging.config.DatabaseRepositoryConfig;
 import org.junit.After;
@@ -32,7 +32,7 @@ public abstract class DatabaseTest {
     protected static AnnotationConfigApplicationContext annotationConfigApplicationContext;
     private static TransactionStatus transaction;
     private static PlatformTransactionManager platformTransactionManager;
-    private static PepClient pepClient = mock(PepClient.class);
+    private static VeilarbAbacPepClient pepClient = mock(VeilarbAbacPepClient.class);
 
     @BeforeAll
     @BeforeClass
@@ -94,7 +94,7 @@ public abstract class DatabaseTest {
     public static class PepClientMockConfig {
 
         @Bean
-        public PepClient pepClient(){
+        public VeilarbAbacPepClient pepClient(){
             return pepClient;
         }
     }

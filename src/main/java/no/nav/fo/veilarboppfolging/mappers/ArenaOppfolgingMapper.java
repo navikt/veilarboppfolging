@@ -13,6 +13,6 @@ public class ArenaOppfolgingMapper {
                 .setFormidlingsgruppe(response.getFormidlingsgruppeKode().getValue())
                 .setServicegruppe(response.getServicegruppeKode().getValue())
                 .setInaktiveringsdato(xmlGregorianCalendarToLocalDate(response.getInaktiveringsdato()))
-                .setKanEnkeltReaktiveres(response.getKanEnkeltReaktiveres());
+                .setKanEnkeltReaktiveres(response.isKanEnkeltReaktiveres());
     }
 }

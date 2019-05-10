@@ -1,6 +1,6 @@
 package no.nav.fo.veilarboppfolging.services;
 
-import no.nav.apiapp.security.PepClient;
+import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.db.KvpRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
@@ -49,7 +49,7 @@ public class OppfolgingResolverTest {
     private ArenaOppfolgingService arenaOppfolgingServiceMock;
 
     @Mock
-    private PepClient pepClientMock;
+    private VeilarbAbacPepClient pepClientMock;
 
     private OppfolgingResolver oppfolgingResolver;
 

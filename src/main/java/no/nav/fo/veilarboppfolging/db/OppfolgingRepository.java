@@ -4,7 +4,7 @@ package no.nav.fo.veilarboppfolging.db;
 import lombok.SneakyThrows;
 import lombok.val;
 import no.nav.apiapp.feil.Feil;
-import no.nav.apiapp.security.PepClient;
+import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
 import no.nav.fo.veilarboppfolging.domain.*;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,7 +21,7 @@ import static no.nav.fo.veilarboppfolging.utils.KvpUtils.sjekkTilgangGittKvp;
 @Component
 public class OppfolgingRepository {
 
-    private final PepClient pepClient;
+    private final VeilarbAbacPepClient pepClient;
     private final OppfolgingsStatusRepository statusRepository;
     private final OppfolgingsPeriodeRepository periodeRepository;
     private final MaalRepository maalRepository;
@@ -32,7 +32,7 @@ public class OppfolgingRepository {
 
     @Inject
     public OppfolgingRepository(
-            PepClient pepClient,
+            VeilarbAbacPepClient pepClient,
             OppfolgingsStatusRepository statusRepository,
             OppfolgingsPeriodeRepository periodeRepository,
             MaalRepository maalRepository,

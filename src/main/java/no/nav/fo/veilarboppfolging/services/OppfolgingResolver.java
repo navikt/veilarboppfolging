@@ -5,10 +5,11 @@ import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import no.nav.apiapp.security.PepClient;
+import no.nav.apiapp.security.veilarbabac.Bruker;
+import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
 import no.nav.common.auth.SubjectHandler;
 import no.nav.dialogarena.aktor.AktorService;
-import no.nav.fo.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
+import no.nav.fo.veilarboppfolging.domain.arena.ArenaAktivitetDTO;
 import no.nav.fo.veilarboppfolging.db.KvpRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.domain.*;
@@ -40,9 +41,9 @@ import java.util.Optional;
 import static java.lang.System.currentTimeMillis;
 import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
-import static no.nav.fo.veilarbaktivitet.domain.AktivitetStatus.AVBRUTT;
-import static no.nav.fo.veilarbaktivitet.domain.AktivitetStatus.FULLFORT;
 import static no.nav.fo.veilarboppfolging.domain.KodeverkBruker.SYSTEM;
+import static no.nav.fo.veilarboppfolging.domain.arena.AktivitetStatus.AVBRUTT;
+import static no.nav.fo.veilarboppfolging.domain.arena.AktivitetStatus.FULLFORT;
 import static no.nav.fo.veilarboppfolging.services.ArenaUtils.*;
 
 
@@ -65,13 +66,16 @@ public class OppfolgingResolver {
     private Boolean erSykmeldtMedArbeidsgiver;
 
     OppfolgingResolver(String fnr, OppfolgingResolverDependencies deps) {
-        deps.getPepClient().sjekkLeseTilgangTilFnr(fnr);
+        Bruker bruker = Bruker.fraFnr(fnr)
+                .medAktoerIdSupplier(() -> this.deps.getAktorService().getAktorId(fnr)
+                        .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktørid")));
+
+        deps.getPepClient().sjekkLesetilgangTilBruker(bruker);
 
         this.fnr = fnr;
         this.deps = deps;
 
-        this.aktorId = deps.getAktorService().getAktorId(fnr)
-                .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktør for fnr: " + fnr));
+        this.aktorId = bruker.getAktoerId();
         this.oppfolging = hentOppfolging();
 
         avsluttKvpVedEnhetBytte();
@@ -395,7 +399,7 @@ public class OppfolgingResolver {
     public static class OppfolgingResolverDependencies {
 
         @Inject
-        private PepClient pepClient;
+        private VeilarbAbacPepClient pepClient;
 
         @Inject
         private Transactor transactor;

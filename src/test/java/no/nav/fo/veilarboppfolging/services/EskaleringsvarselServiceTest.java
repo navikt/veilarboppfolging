@@ -1,7 +1,7 @@
 package no.nav.fo.veilarboppfolging.services;
 
-import no.nav.tjeneste.virksomhet.varseloppgave.v1.BestillVarselOppgaveUgyldigInput;
-import no.nav.tjeneste.virksomhet.varseloppgave.v1.VarseloppgaveV1;
+import no.nav.tjeneste.virksomhet.varseloppgave.v1.binding.BestillVarselOppgaveUgyldigInput;
+import no.nav.tjeneste.virksomhet.varseloppgave.v1.binding.VarseloppgaveV1;
 import no.nav.tjeneste.virksomhet.varseloppgave.v1.meldinger.BestillVarselOppgaveRequest;
 import org.junit.BeforeClass;
 import org.junit.Test;

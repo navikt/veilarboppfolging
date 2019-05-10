@@ -1,7 +1,7 @@
 package no.nav.fo.veilarboppfolging.services.registrerBruker;
 
 import io.vavr.control.Try;
-import no.nav.apiapp.security.PepClient;
+import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.config.DatabaseConfig;
 import no.nav.fo.veilarboppfolging.config.DatabaseRepositoryConfig;
@@ -148,8 +148,8 @@ class AktiverBrukerIntegrationTest {
         }
 
         @Bean
-        PepClient pepClient() {
-            return mock(PepClient.class);
+        VeilarbAbacPepClient pepClient() {
+            return mock(VeilarbAbacPepClient.class);
         }
     }
 

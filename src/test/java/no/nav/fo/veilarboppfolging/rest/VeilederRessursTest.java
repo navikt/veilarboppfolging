@@ -1,6 +1,6 @@
 package no.nav.fo.veilarboppfolging.rest;
 
-import no.nav.apiapp.security.PepClient;
+import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.db.VeilederTilordningerRepository;
 import no.nav.fo.veilarboppfolging.rest.domain.Veileder;
@@ -30,7 +30,7 @@ public class VeilederRessursTest {
     private AktorService aktorServiceMock;
 
     @Mock
-    private PepClient pepClient;
+    private VeilarbAbacPepClient pepClient;
 
     @Mock
     private AutorisasjonService autorisasjonService;

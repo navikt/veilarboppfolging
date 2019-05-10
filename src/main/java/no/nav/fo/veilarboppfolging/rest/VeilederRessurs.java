@@ -1,7 +1,8 @@
 package no.nav.fo.veilarboppfolging.rest;
 
 import io.swagger.annotations.Api;
-import no.nav.apiapp.security.PepClient;
+import no.nav.apiapp.security.veilarbabac.Bruker;
+import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.db.VeilederTilordningerRepository;
 import no.nav.fo.veilarboppfolging.rest.domain.Veileder;
@@ -22,12 +23,12 @@ public class VeilederRessurs {
 
     private AktorService aktorService;
     private VeilederTilordningerRepository veilederTilordningerRepository;
-    private PepClient pepClient;
+    private VeilarbAbacPepClient pepClient;
     private AutorisasjonService autorisasjonService;
 
     public VeilederRessurs(AktorService aktorService,
                            VeilederTilordningerRepository veilederTilordningerRepository,
-                           PepClient pepClient,
+                           VeilarbAbacPepClient pepClient,
                            AutorisasjonService autorisasjonService) {
         this.aktorService = aktorService;
         this.veilederTilordningerRepository = veilederTilordningerRepository;
@@ -39,10 +40,14 @@ public class VeilederRessurs {
     @Path("/veileder")
     public Veileder getVeileder(@PathParam("fnr") String fnr) {
         autorisasjonService.skalVereInternBruker();
-        pepClient.sjekkLeseTilgangTilFnr(fnr);
-        String brukersAktoerId = aktorService.getAktorId(fnr)
-                .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktør for fnr: " + fnr));
-        String veilederIdent = veilederTilordningerRepository.hentTilordningForAktoer(brukersAktoerId);
+
+        Bruker bruker = Bruker.fraFnr(fnr)
+                .medAktoerIdSupplier(() -> aktorService.getAktorId(fnr)
+                        .orElseThrow(() -> new IllegalArgumentException("Aktoerid ikke funnet")));
+
+        pepClient.sjekkLesetilgangTilBruker(bruker);
+        String veilederIdent = veilederTilordningerRepository.hentTilordningForAktoer(bruker.getAktoerId());
         return new Veileder(veilederIdent);
     }
+
 }

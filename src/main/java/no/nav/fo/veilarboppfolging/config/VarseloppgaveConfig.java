@@ -3,7 +3,7 @@ package no.nav.fo.veilarboppfolging.config;
 import no.nav.apiapp.selftest.Helsesjekk;
 import no.nav.apiapp.selftest.HelsesjekkMetadata;
 import no.nav.sbl.dialogarena.common.cxf.CXFClient;
-import no.nav.tjeneste.virksomhet.varseloppgave.v1.VarseloppgaveV1;
+import no.nav.tjeneste.virksomhet.varseloppgave.v1.binding.VarseloppgaveV1;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
