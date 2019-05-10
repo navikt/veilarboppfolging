@@ -2,6 +2,7 @@ package no.nav.fo.veilarboppfolging.rest;
 
 
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiParam;
 import io.vavr.control.Try;
 import no.nav.apiapp.feil.IngenTilgang;
 import no.nav.apiapp.security.veilarbabac.Bruker;
@@ -19,11 +20,7 @@ import no.nav.sbl.featuretoggle.unleash.UnleashService;
 
 import org.springframework.stereotype.Component;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.time.LocalDate;
 import java.util.Optional;
@@ -114,14 +111,17 @@ public class ArenaOppfolgingRessurs {
      */
     @GET
     @Path("/oppfolgingsstatus")
-    public OppfolgingEnhetMedVeileder getOppfolginsstatus(@PathParam("fnr") String fnr) throws PepException {
+    public OppfolgingEnhetMedVeileder getOppfolginsstatus(@PathParam("fnr") String fnr,
+                                                          @ApiParam(value = "Deprecated og bør ikke settes. " +
+                                                                  "Tilgjengelig pga. overgang til veilarbarena som har litt forsinkelse på data i Arena i motsetning til SOAP tjeneste.")
+                                                          @QueryParam("brukArena") boolean brukArena) throws PepException {
         Bruker bruker = Bruker.fraFnr(fnr)
                 .medAktoerIdSupplier(() -> aktorService.getAktorId(fnr).orElseThrow(IngenTilgang::new));
 
         pepClient.sjekkLesetilgangTilBruker(bruker);
 
         OppfolgingEnhetMedVeileder res;
-        if(unleash.isEnabled("veilarboppfolging.oppfolgingsstatus.fra.veilarbarena")) {
+        if(!brukArena && unleash.isEnabled("veilarboppfolging.oppfolgingsstatus.fra.veilarbarena")) {
             ArenaBruker arenaBruker = oppfolgingsbrukerService.hentOppfolgingsbruker(fnr).orElseThrow(() -> new NotFoundException("Bruker ikke funnet"));
             res = new OppfolgingEnhetMedVeileder()
                     .setServicegruppe(arenaBruker.getKvalifiseringsgruppekode())

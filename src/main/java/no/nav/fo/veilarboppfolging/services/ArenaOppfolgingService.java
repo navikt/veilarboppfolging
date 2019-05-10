@@ -1,5 +1,6 @@
 package no.nav.fo.veilarboppfolging.services;
 
+import io.micrometer.core.instrument.Counter;
 import no.nav.fo.veilarboppfolging.domain.ArenaOppfolging;
 import no.nav.fo.veilarboppfolging.mappers.ArenaOppfolgingMapper;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.HentOppfoelgingskontraktListeSikkerhetsbegrensning;
@@ -21,6 +22,7 @@ import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.NotFoundException;
 import javax.xml.datatype.XMLGregorianCalendar;
 
+import static no.nav.metrics.MetricsFactory.getMeterRegistry;
 import static org.slf4j.LoggerFactory.getLogger;
 
 public class ArenaOppfolgingService {
@@ -28,11 +30,13 @@ public class ArenaOppfolgingService {
     private static final Logger LOG = getLogger(ArenaOppfolgingService.class);
     private final OppfoelgingPortType oppfoelgingPortType;
     private OppfoelgingsstatusV2 oppfoelgingsstatusV2Service;
+    private Counter counter;
 
     public ArenaOppfolgingService(OppfoelgingsstatusV2 oppfoelgingsstatusV2Service,
                                   OppfoelgingPortType oppfoelgingPortType) {
         this.oppfoelgingsstatusV2Service = oppfoelgingsstatusV2Service;
         this.oppfoelgingPortType = oppfoelgingPortType;
+        counter = Counter.builder("veilarboppfolging.kall_mot_arena_oppfolging").register(getMeterRegistry());
     }
 
     public ArenaOppfolging hentArenaOppfolging(String identifikator) {
@@ -60,6 +64,9 @@ public class ArenaOppfolgingService {
     }
 
     private ArenaOppfolging getArenaOppfolgingsstatus(String identifikator) {
+
+        counter.increment();
+
         no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v2.informasjon.Person person = new no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v2.informasjon.Person();
         person.setIdent(identifikator);
 
