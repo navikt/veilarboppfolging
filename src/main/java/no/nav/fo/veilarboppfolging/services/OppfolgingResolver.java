@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import no.nav.apiapp.security.veilarbabac.Bruker;
 import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
+import no.nav.brukerdialog.security.oidc.SystemUserTokenProvider;
 import no.nav.common.auth.SubjectHandler;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.domain.arena.ArenaAktivitetDTO;
@@ -16,7 +17,9 @@ import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.fo.veilarboppfolging.utils.FunksjonelleMetrikker;
 import no.nav.fo.veilarboppfolging.utils.StringUtils;
 import no.nav.metrics.MetricsFactory;
+import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import no.nav.sbl.jdbc.Transactor;
+import no.nav.sbl.rest.RestUtils;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.DigitalKontaktinformasjonV1;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.HentDigitalKontaktinformasjonKontaktinformasjonIkkeFunnet;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.HentDigitalKontaktinformasjonPersonIkkeFunnet;
@@ -27,6 +30,7 @@ import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt.WSYtelseskontrakt;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeRequest;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeResponse;
+import org.json.JSONObject;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
@@ -37,10 +41,13 @@ import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static java.lang.System.currentTimeMillis;
 import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
+import static javax.ws.rs.core.HttpHeaders.AUTHORIZATION;
+import static no.nav.fo.veilarboppfolging.config.ApplicationConfig.APPLICATION_NAME;
 import static no.nav.fo.veilarboppfolging.domain.KodeverkBruker.SYSTEM;
 import static no.nav.fo.veilarboppfolging.domain.arena.AktivitetStatus.AVBRUTT;
 import static no.nav.fo.veilarboppfolging.domain.arena.AktivitetStatus.FULLFORT;
@@ -346,6 +353,35 @@ public class OppfolgingResolver {
 
     @SneakyThrows
     private boolean sjekkKrr() {
+        if (deps.getUnleashService().isEnabled("veilarboppfolging.dkif_rest")) {
+            return sjekkDkifRest();
+        } else {
+            return sjekkDkifSoap();
+        }
+    }
+
+    public boolean sjekkDkifRest() {
+        UUID uuid = UUID.randomUUID();
+        String callId = Long.toHexString(uuid.getMostSignificantBits()) + Long.toHexString(uuid.getLeastSignificantBits());
+
+        String responseBody = RestUtils.withClient(c ->
+                c.target("http://dkif.default.svc.nais.local/api/v1/personer/kontaktinformasjon")
+                        .queryParam("inkluderSikkerDigitalPost", "false")
+                        .request()
+                        .header(AUTHORIZATION, "Bearer " + deps.getSystemUserTokenProvider().getToken())
+                        .header("Nav-Personidenter", fnr)
+                        .header("Nav-Call-Id", callId)
+                        .header("Nav-Consumer-Id", APPLICATION_NAME)
+                        .get(String.class));
+
+        return new JSONObject(responseBody)
+                .getJSONObject("kontaktinfo")
+                .getJSONObject(fnr)
+                .getBoolean("kanVarsles");
+    }
+
+
+    private boolean sjekkDkifSoap() {
         val req = new WSHentDigitalKontaktinformasjonRequest().withPersonident(fnr);
         try {
             return of(deps.getDigitalKontaktinformasjonV1().hentDigitalKontaktinformasjon(req))
@@ -430,6 +466,12 @@ public class OppfolgingResolver {
 
         @Inject
         private KvpService kvpService;
+
+        @Inject
+        private SystemUserTokenProvider systemUserTokenProvider;
+
+        @Inject
+        private UnleashService unleashService;
 
     }
 }
