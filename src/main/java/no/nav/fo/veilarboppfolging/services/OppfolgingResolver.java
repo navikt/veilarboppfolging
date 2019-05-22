@@ -374,10 +374,12 @@ public class OppfolgingResolver {
                         .header("Nav-Consumer-Id", APPLICATION_NAME)
                         .get(String.class));
 
-        return new JSONObject(responseBody)
+        boolean kanVarsles = new JSONObject(responseBody)
                 .getJSONObject("kontaktinfo")
                 .getJSONObject(fnr)
                 .getBoolean("kanVarsles");
+
+        return !kanVarsles;
     }
 
 
