@@ -379,6 +379,8 @@ public class OppfolgingResolver {
                 .getJSONObject(fnr)
                 .getBoolean("kanVarsles");
 
+        log.info("Dkif-response: {}: kanVarsles: {}", aktorId, kanVarsles);
+
         return !kanVarsles;
     }
 
