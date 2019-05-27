@@ -34,7 +34,7 @@ public class OppfolgingService {
             AktorService aktorService,
             OppfolgingRepository oppfolgingRepository,
             VeilarbAbacPepClient pepClient,
-            OppfolgingsStatusRepository oppfolgingsStatusRepository 
+            OppfolgingsStatusRepository oppfolgingsStatusRepository
     ) {
         this.oppfolgingResolverDependencies = oppfolgingResolverDependencies;
         this.aktorService = aktorService;
@@ -151,10 +151,11 @@ public class OppfolgingService {
     }
 
     public OppfolgingTable oppfolgingData(String fnr) {
-        pepClient.sjekkLeseTilgangTilFnr(fnr);
-        String aktorId = aktorService.getAktorId(fnr)
-                .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktør for fnr: " + fnr));
-        return oppfolgingsStatusRepository.fetch(aktorId);
+        Bruker bruker = Bruker.fraFnr(fnr)
+                .medAktoerIdSupplier(() -> aktorService.getAktorId(fnr)
+                        .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktørid")));
+        pepClient.sjekkLesetilgangTilBruker(bruker);
+        return oppfolgingsStatusRepository.fetch(bruker.getAktoerId());
     }
 
     private OppfolgingStatusData getOppfolgingStatusData(String fnr, OppfolgingResolver oppfolgingResolver) {
