@@ -25,20 +25,20 @@ public class OppfolgingService {
     private final OppfolgingRepository oppfolgingRepository;
     private final PepClient pepClient;
     private final OppfolgingsStatusRepository oppfolgingsStatusRepository;
-    
+
     @Inject
     public OppfolgingService(
             OppfolgingResolverDependencies oppfolgingResolverDependencies,
             AktorService aktorService,
             OppfolgingRepository oppfolgingRepository,
             PepClient pepClient,
-            OppfolgingsStatusRepository oppfolgingsStatusRepository 
+            OppfolgingsStatusRepository oppfolgingsStatusRepository
     ) {
         this.oppfolgingResolverDependencies = oppfolgingResolverDependencies;
         this.aktorService = aktorService;
         this.oppfolgingRepository = oppfolgingRepository;
         this.pepClient = pepClient;
-        this.oppfolgingsStatusRepository = oppfolgingsStatusRepository; 
+        this.oppfolgingsStatusRepository = oppfolgingsStatusRepository;
     }
 
     @SneakyThrows
@@ -144,7 +144,14 @@ public class OppfolgingService {
         OppfolgingTable eksisterendeOppfolgingstatus = oppfolgingsStatusRepository.fetch(aktorId);
         return eksisterendeOppfolgingstatus != null && eksisterendeOppfolgingstatus.isUnderOppfolging();
     }
-    
+
+    public OppfolgingTable oppfolgingData(String fnr) {
+        pepClient.sjekkLeseTilgangTilFnr(fnr);
+        String aktorId = aktorService.getAktorId(fnr)
+                .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktør for fnr: " + fnr));
+        return oppfolgingsStatusRepository.fetch(aktorId);
+    }
+
     private OppfolgingStatusData getOppfolgingStatusData(String fnr, OppfolgingResolver oppfolgingResolver) {
         return getOppfolgingStatusData(fnr, oppfolgingResolver, null);
     }

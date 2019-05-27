@@ -9,4 +9,6 @@ public class UnderOppfolgingDTO {
 
     private boolean underOppfolging;
 
+    private boolean erManuell;
+
 }
