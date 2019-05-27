@@ -4,10 +4,11 @@ import io.vavr.collection.Stream;
 import lombok.SneakyThrows;
 import lombok.val;
 import no.nav.apiapp.feil.IngenTilgang;
-import no.nav.apiapp.security.PepClient;
+import no.nav.apiapp.security.veilarbabac.Bruker;
+import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
 import no.nav.dialogarena.aktor.AktorService;
-import no.nav.fo.veilarbaktivitet.domain.AktivitetStatus;
-import no.nav.fo.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
+import no.nav.fo.veilarboppfolging.domain.arena.AktivitetStatus;
+import no.nav.fo.veilarboppfolging.domain.arena.ArenaAktivitetDTO;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingsStatusRepository;
 import no.nav.fo.veilarboppfolging.domain.*;
@@ -60,7 +61,7 @@ public class OppfolgingServiceTest {
     private ArenaOppfolgingService arenaOppfolgingService;
 
     @Mock
-    private PepClient pepClientMock;
+    private VeilarbAbacPepClient pepClientMock;
 
     @Mock
     private VeilarbaktivtetService veilarbaktivtetService;
@@ -114,42 +115,42 @@ public class OppfolgingServiceTest {
     @Test(expected = IngenTilgang.class)
     @SneakyThrows
     public void start_oppfolging_uten_enhet_tilgang() {
-        doThrow(IngenTilgang.class).when(pepClientMock).sjekkTilgangTilEnhet(any());
+        doReturn(false).when(pepClientMock).harTilgangTilEnhet(any());
         oppfolgingService.startOppfolging(FNR);
     }
 
     @Test(expected = IngenTilgang.class)
     @SneakyThrows
     public void avslutt_oppfolging_uten_enhet_tilgang() {
-        doThrow(IngenTilgang.class).when(pepClientMock).sjekkTilgangTilEnhet(any());
+        doReturn(false).when(pepClientMock).harTilgangTilEnhet(any());
         oppfolgingService.avsluttOppfolging(FNR, VEILEDER, BEGRUNNELSE);
     }
 
     @Test(expected = IngenTilgang.class)
     @SneakyThrows
     public void sett_manuell_uten_enhet_tilgang() {
-        doThrow(IngenTilgang.class).when(pepClientMock).sjekkTilgangTilEnhet(any());
+        doReturn(false).when(pepClientMock).harTilgangTilEnhet(any());
         oppfolgingService.oppdaterManuellStatus(FNR, true, BEGRUNNELSE, NAV, VEILEDER);
     }
 
     @Test(expected = IngenTilgang.class)
     @SneakyThrows
     public void settDigital_uten_enhet_tilgang() {
-        doThrow(IngenTilgang.class).when(pepClientMock).sjekkTilgangTilEnhet(any());
+        doReturn(false).when(pepClientMock).harTilgangTilEnhet(any());
         oppfolgingService.settDigitalBruker(FNR);
     }
 
     @Test(expected = IngenTilgang.class)
     @SneakyThrows
     public void start_eskalering_uten_enhet_tilgang() {
-        doThrow(IngenTilgang.class).when(pepClientMock).sjekkTilgangTilEnhet(any());
+        doReturn(false).when(pepClientMock).harTilgangTilEnhet(any());
         oppfolgingService.startEskalering(FNR, BEGRUNNELSE, 1L);
     }
 
     @Test(expected = IngenTilgang.class)
     @SneakyThrows
     public void stopp_eskalering_uten_enhet_tilgang() {
-        doThrow(IngenTilgang.class).when(pepClientMock).sjekkTilgangTilEnhet(any());
+        doReturn(false).when(pepClientMock).harTilgangTilEnhet(any());
         oppfolgingService.stoppEskalering(FNR, BEGRUNNELSE);
     }
 
@@ -175,7 +176,7 @@ public class OppfolgingServiceTest {
 
     @Test
     public void ukjentAktor() throws Exception {
-        doThrow(IllegalArgumentException.class).when(aktorServiceMock).getAktorId(FNR);
+        doReturn(Optional.empty()).when(aktorServiceMock).getAktorId(FNR);
         assertThrows(IllegalArgumentException.class, this::hentOppfolgingStatus);
     }
 
@@ -233,6 +234,16 @@ public class OppfolgingServiceTest {
 
         assertThat(status.kanReaktiveres, is(true));
         assertThat(status.inaktivIArena, is(true));
+    }
+
+    @Test
+    public void hentOppfolgingStatus_brukerSomErKRRSkalVareManuell() throws Exception {
+        oppfolging.setUnderOppfolging(true);
+        gittReservasjon("true");
+        OppfolgingStatusData status = hentOppfolgingStatus();
+
+        assertThat(status.reservasjonKRR, is(true));
+        assertThat(status.manuell, is(true));
     }
     
     @Test
@@ -356,7 +367,8 @@ public class OppfolgingServiceTest {
     
     @Test(expected=IngenTilgang.class)
     public void underOppfolging_skalFeileHvisIkkeTilgang() {
-        when(pepClientMock.sjekkLeseTilgangTilFnr(FNR)).thenThrow(new IngenTilgang());
+        doThrow(IngenTilgang.class).when(pepClientMock)
+                .sjekkLesetilgangTilBruker(Bruker.fraFnr(FNR).medAktoerIdSupplier(()->AKTOR_ID));
         oppfolgingService.underOppfolging(FNR);
     }
     

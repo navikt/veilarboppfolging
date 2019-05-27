@@ -1,9 +1,9 @@
 package no.nav.fo.veilarboppfolging;
 
-import no.nav.dialogarena.config.fasit.DbCredentials;
-import no.nav.dialogarena.config.fasit.FasitUtils;
-import no.nav.dialogarena.config.fasit.ServiceUser;
-import no.nav.dialogarena.config.fasit.ServiceUserCertificate;
+import no.nav.fasit.DbCredentials;
+import no.nav.fasit.FasitUtils;
+import no.nav.fasit.ServiceUser;
+import no.nav.fasit.ServiceUserCertificate;
 import no.nav.sbl.dialogarena.common.abac.pep.CredentialConstants;
 import no.nav.sbl.util.EnvironmentUtils;
 import org.apache.commons.io.FileUtils;
@@ -13,9 +13,9 @@ import java.io.IOException;
 
 import static java.lang.System.setProperty;
 import static no.nav.brukerdialog.security.Constants.*;
-import static no.nav.brukerdialog.security.oidc.provider.AzureADB2CConfig.AZUREAD_B2C_DISCOVERY_URL_PROPERTY_NAME;
-import static no.nav.dialogarena.config.fasit.FasitUtils.*;
-import static no.nav.dialogarena.config.fasit.FasitUtils.Zone.FSS;
+import static no.nav.brukerdialog.security.oidc.provider.AzureADB2CConfig.EXTERNAL_USERS_AZUREAD_B2C_DISCOVERY_URL;
+import static no.nav.fasit.FasitUtils.*;
+import static no.nav.fasit.FasitUtils.Zone.FSS;
 import static no.nav.fo.veilarboppfolging.config.ApplicationConfig.*;
 import static no.nav.fo.veilarboppfolging.config.DatabaseConfig.*;
 import static no.nav.fo.veilarboppfolging.rest.VeilArbAbacService.VEILARBABAC_HOSTNAME_PROPERTY;
@@ -87,7 +87,7 @@ public class TestContext {
         setProperty(VEILARBLOGIN_REDIRECT_URL_URL_PROPERTY, loginUrl);
 
         ServiceUser aadB2cUser = getServiceUser(AAD_B2C_CLIENTID_ALIAS, APPLICATION_NAME);
-        setProperty(AZUREAD_B2C_DISCOVERY_URL_PROPERTY_NAME, getBaseUrl(AZURE_AD_B2C_DISCOVERY_ALIAS));
+        setProperty(EXTERNAL_USERS_AZUREAD_B2C_DISCOVERY_URL, getBaseUrl(AZURE_AD_B2C_DISCOVERY_ALIAS));
         setProperty(AAD_B2C_CLIENTID_USERNAME_PROPERTY, aadB2cUser.getUsername());
         setProperty(AAD_B2C_CLIENTID_PASSWORD_PROPERTY, aadB2cUser.getPassword());
 

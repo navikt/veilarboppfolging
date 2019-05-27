@@ -1,6 +1,6 @@
 package no.nav.fo.veilarboppfolging.db;
 
-import no.nav.apiapp.security.PepClient;
+import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
 import no.nav.fo.DatabaseTest;
 import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
@@ -28,7 +28,7 @@ public class OppfolgingRepositoryTest extends DatabaseTest {
     private static final String OTHER_ENHET = "otherEnhet";
 
     @Inject
-    private PepClient pepClientMock;
+    private VeilarbAbacPepClient pepClientMock;
 
     @Inject
     private KvpRepository kvpRepository;

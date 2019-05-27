@@ -1,7 +1,7 @@
 package no.nav.fo.veilarboppfolging.config;
 
 import no.nav.apiapp.util.StringUtils;
-import no.nav.dialogarena.config.fasit.DbCredentials;
+import no.nav.fasit.DbCredentials;
 import no.nav.fo.veilarboppfolging.db.testdriver.TestDriver;
 import org.flywaydb.core.Flyway;
 import org.springframework.jdbc.datasource.AbstractDataSource;
@@ -10,7 +10,7 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import javax.sql.DataSource;
 
 import static java.lang.System.getProperty;
-import static no.nav.dialogarena.config.fasit.FasitUtils.getDbCredentials;
+import static no.nav.fasit.FasitUtils.getDbCredentials;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 

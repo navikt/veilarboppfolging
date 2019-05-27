@@ -5,17 +5,21 @@ import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import no.nav.apiapp.security.PepClient;
+import no.nav.apiapp.security.veilarbabac.Bruker;
+import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
+import no.nav.brukerdialog.security.oidc.SystemUserTokenProvider;
 import no.nav.common.auth.SubjectHandler;
 import no.nav.dialogarena.aktor.AktorService;
-import no.nav.fo.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
+import no.nav.fo.veilarboppfolging.domain.arena.ArenaAktivitetDTO;
 import no.nav.fo.veilarboppfolging.db.KvpRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.fo.veilarboppfolging.utils.FunksjonelleMetrikker;
 import no.nav.fo.veilarboppfolging.utils.StringUtils;
 import no.nav.metrics.MetricsFactory;
+import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import no.nav.sbl.jdbc.Transactor;
+import no.nav.sbl.rest.RestUtils;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.DigitalKontaktinformasjonV1;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.HentDigitalKontaktinformasjonKontaktinformasjonIkkeFunnet;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.HentDigitalKontaktinformasjonPersonIkkeFunnet;
@@ -26,6 +30,7 @@ import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt.WSYtelseskontrakt;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeRequest;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeResponse;
+import org.json.JSONObject;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
@@ -36,13 +41,16 @@ import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static java.lang.System.currentTimeMillis;
 import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
-import static no.nav.fo.veilarbaktivitet.domain.AktivitetStatus.AVBRUTT;
-import static no.nav.fo.veilarbaktivitet.domain.AktivitetStatus.FULLFORT;
+import static javax.ws.rs.core.HttpHeaders.AUTHORIZATION;
+import static no.nav.fo.veilarboppfolging.config.ApplicationConfig.APPLICATION_NAME;
 import static no.nav.fo.veilarboppfolging.domain.KodeverkBruker.SYSTEM;
+import static no.nav.fo.veilarboppfolging.domain.arena.AktivitetStatus.AVBRUTT;
+import static no.nav.fo.veilarboppfolging.domain.arena.AktivitetStatus.FULLFORT;
 import static no.nav.fo.veilarboppfolging.services.ArenaUtils.*;
 
 
@@ -65,13 +73,16 @@ public class OppfolgingResolver {
     private Boolean erSykmeldtMedArbeidsgiver;
 
     OppfolgingResolver(String fnr, OppfolgingResolverDependencies deps) {
-        deps.getPepClient().sjekkLeseTilgangTilFnr(fnr);
+        Bruker bruker = Bruker.fraFnr(fnr)
+                .medAktoerIdSupplier(() -> this.deps.getAktorService().getAktorId(fnr)
+                        .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktørid")));
+
+        deps.getPepClient().sjekkLesetilgangTilBruker(bruker);
 
         this.fnr = fnr;
         this.deps = deps;
 
-        this.aktorId = deps.getAktorService().getAktorId(fnr)
-                .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktør for fnr: " + fnr));
+        this.aktorId = bruker.getAktoerId();
         this.oppfolging = hentOppfolging();
 
         avsluttKvpVedEnhetBytte();
@@ -85,7 +96,7 @@ public class OppfolgingResolver {
         hentOppfolgingstatusFraArena();
         statusIArena.ifPresent((arenaStatus) -> {
             if (!oppfolging.isUnderOppfolging()) {
-                if (erUnderOppfolging(arenaStatus.getFormidlingsgruppe(), arenaStatus.getServicegruppe(), arenaStatus.getHarMottaOppgaveIArena())) {
+                if (erUnderOppfolging(arenaStatus.getFormidlingsgruppe(), arenaStatus.getServicegruppe())) {
                     deps.getOppfolgingRepository().startOppfolgingHvisIkkeAlleredeStartet(aktorId);
                     reloadOppfolging();
                 }
@@ -180,8 +191,7 @@ public class OppfolgingResolver {
             hentOppfolgingstatusFraArena();
         }
         return statusIArena.map(status ->
-                erUnderOppfolging(status.getFormidlingsgruppe(),
-                        status.getServicegruppe(), status.getHarMottaOppgaveIArena()))
+                erUnderOppfolging(status.getFormidlingsgruppe(), status.getServicegruppe()))
                 .orElse(false);
     }
 
@@ -343,6 +353,39 @@ public class OppfolgingResolver {
 
     @SneakyThrows
     private boolean sjekkKrr() {
+        if (deps.getUnleashService().isEnabled("veilarboppfolging.dkif_rest")) {
+            return sjekkDkifRest();
+        } else {
+            return sjekkDkifSoap();
+        }
+    }
+
+    public boolean sjekkDkifRest() {
+        UUID uuid = UUID.randomUUID();
+        String callId = Long.toHexString(uuid.getMostSignificantBits()) + Long.toHexString(uuid.getLeastSignificantBits());
+
+        String responseBody = RestUtils.withClient(c ->
+                c.target("http://dkif.default.svc.nais.local/api/v1/personer/kontaktinformasjon")
+                        .queryParam("inkluderSikkerDigitalPost", "false")
+                        .request()
+                        .header(AUTHORIZATION, "Bearer " + deps.getSystemUserTokenProvider().getToken())
+                        .header("Nav-Personidenter", fnr)
+                        .header("Nav-Call-Id", callId)
+                        .header("Nav-Consumer-Id", APPLICATION_NAME)
+                        .get(String.class));
+
+        boolean kanVarsles = new JSONObject(responseBody)
+                .getJSONObject("kontaktinfo")
+                .getJSONObject(fnr)
+                .getBoolean("kanVarsles");
+
+        log.info("Dkif-response: {}: kanVarsles: {}", aktorId, kanVarsles);
+
+        return !kanVarsles;
+    }
+
+
+    private boolean sjekkDkifSoap() {
         val req = new WSHentDigitalKontaktinformasjonRequest().withPersonident(fnr);
         try {
             return of(deps.getDigitalKontaktinformasjonV1().hentDigitalKontaktinformasjon(req))
@@ -396,7 +439,7 @@ public class OppfolgingResolver {
     public static class OppfolgingResolverDependencies {
 
         @Inject
-        private PepClient pepClient;
+        private VeilarbAbacPepClient pepClient;
 
         @Inject
         private Transactor transactor;
@@ -427,6 +470,12 @@ public class OppfolgingResolver {
 
         @Inject
         private KvpService kvpService;
+
+        @Inject
+        private SystemUserTokenProvider systemUserTokenProvider;
+
+        @Inject
+        private UnleashService unleashService;
 
     }
 }

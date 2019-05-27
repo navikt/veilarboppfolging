@@ -1,17 +1,13 @@
 package no.nav.fo.veilarboppfolging.db;
 
 import no.nav.apiapp.feil.Feil;
-import no.nav.apiapp.security.PepClient;
+import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
 import no.nav.fo.DatabaseTest;
 import no.nav.fo.veilarboppfolging.domain.Kvp;
 import no.nav.fo.veilarboppfolging.domain.Oppfolging;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
 import no.nav.sbl.jdbc.Database;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
 
 import javax.inject.Inject;
 
@@ -32,7 +28,7 @@ public class KvpRepositoryTest extends DatabaseTest {
     private Database db = getBean(Database.class);
 
     @Inject
-    private PepClient pepClientMock;
+    private VeilarbAbacPepClient pepClientMock;
 
     @Inject
     private OppfolgingRepository oppfolgingRepository;

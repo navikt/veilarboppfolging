@@ -3,7 +3,8 @@ package no.nav.fo.veilarboppfolging.services;
 import lombok.val;
 import no.nav.apiapp.feil.IngenTilgang;
 import no.nav.apiapp.feil.UlovligHandling;
-import no.nav.apiapp.security.PepClient;
+import no.nav.apiapp.security.veilarbabac.Bruker;
+import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
 import no.nav.common.auth.SsoToken;
 import no.nav.common.auth.Subject;
 import no.nav.common.auth.SubjectHandler;
@@ -12,7 +13,6 @@ import no.nav.fo.veilarboppfolging.db.KvpRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.domain.Oppfolging;
 import no.nav.fo.veilarboppfolging.services.OppfolgingResolver.OppfolgingResolverDependencies;
-import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingsstatusResponse;
 import org.junit.Before;
@@ -43,7 +43,7 @@ public class KvpServiceTest {
     private OppfoelgingPortType oppfoelgingPortTypeMock;
 
     @Mock
-    private PepClient pepClientMock;
+    private VeilarbAbacPepClient pepClientMock;
 
     @Mock(answer = Answers.RETURNS_MOCKS)
     private OppfolgingResolverDependencies oppfolgingResolverDependenciesMock;
@@ -53,6 +53,7 @@ public class KvpServiceTest {
 
     private static final String FNR = "1234";
     private static final String AKTOR_ID = "12345";
+    private static final Bruker BRUKER = Bruker.fraFnr(FNR).medAktoerIdSupplier(()->AKTOR_ID);
     private static final String ENHET = "1234";
     private static final String START_BEGRUNNELSE = "START_BEGRUNNELSE";
     private static final String STOP_BEGRUNNELSE = "STOP_BEGRUNNELSE";
@@ -79,37 +80,41 @@ public class KvpServiceTest {
     }
 
     @Test
-    public void startKvp() throws PepException {
+    public void startKvp()  {
+        doReturn(true).when(pepClientMock).harTilgangTilEnhet(any());
+
         SubjectHandler.withSubject(new Subject(VEILEDER, InternBruker, SsoToken.oidcToken("token")),
                 () -> kvpService.startKvp(FNR, START_BEGRUNNELSE)
         );
 
-        verify(pepClientMock, times(1)).sjekkLeseTilgangTilFnr(FNR);
+        verify(pepClientMock, times(1)).sjekkLesetilgangTilBruker(BRUKER);
         verify(kvpRepositoryMock, times(1)).startKvp(eq(AKTOR_ID), eq(ENHET), eq(VEILEDER), eq(START_BEGRUNNELSE));
-        verify(pepClientMock, times(1)).sjekkTilgangTilEnhet(ENHET);
+        verify(pepClientMock, times(1)).harTilgangTilEnhet(ENHET);
     }
 
     @Test
-    public void stopKvp() throws PepException {
+    public void stopKvp()  {
+        doReturn(true).when(pepClientMock).harTilgangTilEnhet(any());
+
         SubjectHandler.withSubject(new Subject(VEILEDER, InternBruker, SsoToken.oidcToken("token")),
                 () -> kvpService.stopKvp(FNR, STOP_BEGRUNNELSE)
         );
 
-        verify(pepClientMock, times(1)).sjekkLeseTilgangTilFnr(FNR);
+        verify(pepClientMock, times(1)).sjekkLesetilgangTilBruker(BRUKER);
         verify(kvpRepositoryMock, times(1)).stopKvp(eq(AKTOR_ID), eq(VEILEDER), eq(STOP_BEGRUNNELSE), eq(NAV));
-        verify(pepClientMock, times(1)).sjekkTilgangTilEnhet(ENHET);
+        verify(pepClientMock, times(1)).harTilgangTilEnhet(ENHET);
     }
 
     @Test(expected = IngenTilgang.class)
     public void startKvpIkkeTilgang() {
-        when(pepClientMock.sjekkLeseTilgangTilFnr(any())).thenThrow(IngenTilgang.class);
+        doThrow(IngenTilgang.class).when(pepClientMock).sjekkLesetilgangTilBruker(any());
 
         kvpService.startKvp(FNR, START_BEGRUNNELSE);
     }
 
     @Test(expected = IngenTilgang.class)
-    public void startKvpInhenEnhetTilgang() throws PepException {
-        doThrow(IngenTilgang.class).when(pepClientMock).sjekkTilgangTilEnhet(any());
+    public void startKvpInhenEnhetTilgang()  {
+        doReturn(false).when(pepClientMock).harTilgangTilEnhet(any());
 
         kvpService.startKvp(FNR, START_BEGRUNNELSE);
     }

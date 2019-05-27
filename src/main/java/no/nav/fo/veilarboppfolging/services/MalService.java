@@ -2,8 +2,7 @@ package no.nav.fo.veilarboppfolging.services;
 
 import lombok.SneakyThrows;
 import no.nav.apiapp.feil.Feil;
-import no.nav.apiapp.feil.IngenTilgang;
-import no.nav.apiapp.security.PepClient;
+import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
 import no.nav.fo.veilarboppfolging.db.KvpRepository;
 import no.nav.fo.veilarboppfolging.domain.Kvp;
 import no.nav.fo.veilarboppfolging.domain.MalData;
@@ -26,7 +25,7 @@ public class MalService {
     private OppfolgingResolverDependencies oppfolgingResolverDependencies;
 
     @Inject
-    private PepClient pepClient;
+    private VeilarbAbacPepClient pepClient;
 
     @Inject
     private KvpRepository kvpRepository;
@@ -67,9 +66,7 @@ public class MalService {
 
     @SneakyThrows
     private void sjekkEnhetTilgang(Kvp kvp) {
-        try {
-            pepClient.sjekkTilgangTilEnhet(kvp.getEnhet());
-        } catch (IngenTilgang e) {
+        if(!pepClient.harTilgangTilEnhet(kvp.getEnhet())) {
             throw new Feil(INGEN_TILGANG);
         }
     }

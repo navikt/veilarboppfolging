@@ -2,8 +2,11 @@ package no.nav.fo.veilarboppfolging.rest;
 
 
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiParam;
 import io.vavr.control.Try;
-import no.nav.apiapp.security.PepClient;
+import no.nav.apiapp.feil.IngenTilgang;
+import no.nav.apiapp.security.veilarbabac.Bruker;
+import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.db.VeilederTilordningerRepository;
 import no.nav.fo.veilarboppfolging.domain.Oppfolgingsenhet;
@@ -13,47 +16,44 @@ import no.nav.fo.veilarboppfolging.mappers.OppfolgingMapper;
 import no.nav.fo.veilarboppfolging.rest.domain.*;
 import no.nav.fo.veilarboppfolging.services.*;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
-import org.slf4j.Logger;
+import no.nav.sbl.featuretoggle.unleash.UnleashService;
+
 import org.springframework.stereotype.Component;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.time.LocalDate;
-import java.util.HashMap;
 import java.util.Optional;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static no.nav.fo.veilarboppfolging.utils.CalendarConverter.convertDateToXMLGregorianCalendar;
-import static org.slf4j.LoggerFactory.getLogger;
 
 @Component
 @Api(value = "Oppfølging")
 @Path("/person/{fnr}")
 @Produces(APPLICATION_JSON)
 public class ArenaOppfolgingRessurs {
-    private static final Logger LOG = getLogger(ArenaOppfolgingRessurs.class);
     private static final int MANEDER_BAK_I_TID = 2;
     private static final int MANEDER_FREM_I_TID = 1;
 
     private final ArenaOppfolgingService arenaOppfolgingService;
     private final OppfolgingMapper oppfolgingMapper;
-    private final PepClient pepClient;
+    private final VeilarbAbacPepClient pepClient;
     private final OrganisasjonEnhetService organisasjonEnhetService;
-    private AktorService aktorService;
-    private VeilederTilordningerRepository veilederTilordningerRepository;
-    private OppfolgingsbrukerService oppfolgingsbrukerService;
+    private final AktorService aktorService;
+    private final VeilederTilordningerRepository veilederTilordningerRepository;
+    private final OppfolgingsbrukerService oppfolgingsbrukerService;
+    private final UnleashService unleash;
 
     public ArenaOppfolgingRessurs(
             ArenaOppfolgingService arenaOppfolgingService,
             OppfolgingMapper oppfolgingMapper,
-            PepClient pepClient,
+            VeilarbAbacPepClient pepClient,
             OrganisasjonEnhetService organisasjonEnhetService,
             AktorService aktorService,
             VeilederTilordningerRepository veilederTilordningerRepository,
-            OppfolgingsbrukerService oppfolgingsbrukerService
+            OppfolgingsbrukerService oppfolgingsbrukerService,
+            UnleashService unleash
     ) {
         this.arenaOppfolgingService = arenaOppfolgingService;
         this.oppfolgingMapper = oppfolgingMapper;
@@ -62,12 +62,16 @@ public class ArenaOppfolgingRessurs {
         this.aktorService = aktorService;
         this.veilederTilordningerRepository = veilederTilordningerRepository;
         this.oppfolgingsbrukerService = oppfolgingsbrukerService;
+        this.unleash = unleash;
     }
 
     @GET
     @Path("/oppfoelging")
     public OppfolgingskontraktResponse getOppfoelging(@PathParam("fnr") String fnr) throws PepException {
-        pepClient.sjekkLeseTilgangTilFnr(fnr);
+        Bruker bruker = Bruker.fraFnr(fnr)
+                .medAktoerIdSupplier(() -> aktorService.getAktorId(fnr).orElseThrow(IngenTilgang::new));
+
+        pepClient.sjekkLesetilgangTilBruker(bruker);
         LocalDate periodeFom = LocalDate.now().minusMonths(MANEDER_BAK_I_TID);
         LocalDate periodeTom = LocalDate.now().plusMonths(MANEDER_FREM_I_TID);
         XMLGregorianCalendar fom = convertDateToXMLGregorianCalendar(periodeFom);
@@ -80,7 +84,10 @@ public class ArenaOppfolgingRessurs {
     @Path("/oppfoelgingsstatus")
     @Deprecated
     public ArenaOppfolging getOppfoelginsstatus(@PathParam("fnr") String fnr) throws PepException {
-        pepClient.sjekkLeseTilgangTilFnr(fnr);
+        Bruker bruker = Bruker.fraFnr(fnr)
+                .medAktoerIdSupplier(() -> aktorService.getAktorId(fnr).orElseThrow(IngenTilgang::new));
+
+        pepClient.sjekkLesetilgangTilBruker(bruker);
 
         no.nav.fo.veilarboppfolging.domain.ArenaOppfolging arenaData = arenaOppfolgingService.hentArenaOppfolging(fnr);
         Oppfolgingsenhet enhet = hentEnhet(arenaData.getOppfolgingsenhet());
@@ -104,28 +111,39 @@ public class ArenaOppfolgingRessurs {
      */
     @GET
     @Path("/oppfolgingsstatus")
-    public OppfolgingEnhetMedVeileder getOppfolginsstatus(@PathParam("fnr") String fnr) throws PepException {
-        pepClient.sjekkLeseTilgangTilFnr(fnr);
+    public OppfolgingEnhetMedVeileder getOppfolginsstatus(@PathParam("fnr") String fnr,
+                                                          @ApiParam(value = "Deprecated og bør ikke settes. " +
+                                                                  "Tilgjengelig pga. overgang til veilarbarena som har litt forsinkelse på data i Arena i motsetning til SOAP tjeneste.")
+                                                          @QueryParam("brukArena") boolean brukArena) throws PepException {
+        Bruker bruker = Bruker.fraFnr(fnr)
+                .medAktoerIdSupplier(() -> aktorService.getAktorId(fnr).orElseThrow(IngenTilgang::new));
 
-        no.nav.fo.veilarboppfolging.domain.ArenaOppfolging arenaData = arenaOppfolgingService.hentArenaOppfolging(fnr);
+        pepClient.sjekkLesetilgangTilBruker(bruker);
 
-        Oppfolgingsenhet oppfolgingsenhet = hentEnhet(arenaData.getOppfolgingsenhet());
+        OppfolgingEnhetMedVeileder res;
+        if(!brukArena && unleash.isEnabled("veilarboppfolging.oppfolgingsstatus.fra.veilarbarena")) {
+            ArenaBruker arenaBruker = oppfolgingsbrukerService.hentOppfolgingsbruker(fnr).orElseThrow(() -> new NotFoundException("Bruker ikke funnet"));
+            res = new OppfolgingEnhetMedVeileder()
+                    .setServicegruppe(arenaBruker.getKvalifiseringsgruppekode())
+                    .setFormidlingsgruppe(arenaBruker.getFormidlingsgruppekode())
+                    .setOppfolgingsenhet(hentEnhet(arenaBruker.getNav_kontor()))
+                    .setHovedmaalkode(arenaBruker.getHovedmaalkode());
 
-        String brukersAktoerId = aktorService.getAktorId(fnr)
-                .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktør for fnr: " + fnr));
-        String veilederIdent = veilederTilordningerRepository.hentTilordningForAktoer(brukersAktoerId);
-
-        Optional<ArenaBruker> oppfolgingsbrukerStatus = oppfolgingsbrukerService.hentOppfolgingsbruker(fnr);
-
-        OppfolgingEnhetMedVeileder res = new OppfolgingEnhetMedVeileder()
+        } else {
+            no.nav.fo.veilarboppfolging.domain.ArenaOppfolging arenaData = arenaOppfolgingService.hentArenaOppfolging(fnr);
+            Optional<ArenaBruker> oppfolgingsbrukerStatus = oppfolgingsbrukerService.hentOppfolgingsbruker(fnr);
+            res = new OppfolgingEnhetMedVeileder()
                 .setServicegruppe(arenaData.getServicegruppe())
                 .setFormidlingsgruppe(arenaData.getFormidlingsgruppe())
-                .setOppfolgingsenhet(oppfolgingsenhet)
+                .setOppfolgingsenhet(hentEnhet(arenaData.getOppfolgingsenhet()))
                 .setHovedmaalkode(oppfolgingsbrukerStatus.map(ArenaBruker::getHovedmaalkode).orElse(null));
+        }
 
         if (AutorisasjonService.erInternBruker()) {
+            String brukersAktoerId = aktorService.getAktorId(fnr)
+                    .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktør for fnr: " + fnr));
+            String veilederIdent = veilederTilordningerRepository.hentTilordningForAktoer(brukersAktoerId);
             res.setVeilederId(veilederIdent);
-
         }
         return res;
     }
@@ -134,4 +152,5 @@ public class ArenaOppfolgingRessurs {
         Optional<String> enhetNavn = Try.of(() -> organisasjonEnhetService.hentEnhet(oppfolgingsenhetId).getNavn()).toJavaOptional();
         return new Oppfolgingsenhet().withEnhetId(oppfolgingsenhetId).withNavn(enhetNavn.orElse(""));
     }
+
 }
