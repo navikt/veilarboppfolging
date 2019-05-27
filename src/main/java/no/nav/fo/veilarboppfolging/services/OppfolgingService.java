@@ -6,9 +6,11 @@ import no.nav.apiapp.feil.IngenTilgang;
 import no.nav.apiapp.security.veilarbabac.Bruker;
 import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
 import no.nav.dialogarena.aktor.AktorService;
+import no.nav.fo.veilarboppfolging.db.ManuellStatusRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingsStatusRepository;
 import no.nav.fo.veilarboppfolging.domain.*;
+import no.nav.fo.veilarboppfolging.rest.domain.UnderOppfolgingDTO;
 import no.nav.fo.veilarboppfolging.services.OppfolgingResolver.OppfolgingResolverDependencies;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.inject.Inject;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Optional;
 
 import static java.lang.System.currentTimeMillis;
 
@@ -27,6 +30,7 @@ public class OppfolgingService {
     private final OppfolgingRepository oppfolgingRepository;
     private final VeilarbAbacPepClient pepClient;
     private final OppfolgingsStatusRepository oppfolgingsStatusRepository;
+    private final ManuellStatusRepository manuellStatusRepository;
 
     @Inject
     public OppfolgingService(
@@ -34,13 +38,15 @@ public class OppfolgingService {
             AktorService aktorService,
             OppfolgingRepository oppfolgingRepository,
             VeilarbAbacPepClient pepClient,
-            OppfolgingsStatusRepository oppfolgingsStatusRepository
+            OppfolgingsStatusRepository oppfolgingsStatusRepository,
+            ManuellStatusRepository manuellStatusRepository
     ) {
         this.oppfolgingResolverDependencies = oppfolgingResolverDependencies;
         this.aktorService = aktorService;
         this.oppfolgingRepository = oppfolgingRepository;
         this.pepClient = pepClient;
         this.oppfolgingsStatusRepository = oppfolgingsStatusRepository;
+        this.manuellStatusRepository = manuellStatusRepository;
     }
 
     @SneakyThrows
@@ -141,21 +147,33 @@ public class OppfolgingService {
         return new VeilederTilgang().setTilgangTilBrukersKontor(pepClient.harTilgangTilEnhet(resolver.getOppfolgingsEnhet()));
     }
 
-    public boolean underOppfolging(String fnr) {
+    public Optional<OppfolgingTable> getOppfolgingStatus(String fnr) {
         Bruker bruker = Bruker.fraFnr(fnr)
                 .medAktoerIdSupplier(() -> aktorService.getAktorId(fnr)
                         .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktørid")));
         pepClient.sjekkLesetilgangTilBruker(bruker);
-        OppfolgingTable eksisterendeOppfolgingstatus = oppfolgingsStatusRepository.fetch(bruker.getAktoerId());
-        return eksisterendeOppfolgingstatus != null && eksisterendeOppfolgingstatus.isUnderOppfolging();
+        return Optional.ofNullable(oppfolgingsStatusRepository.fetch(bruker.getAktoerId()));
     }
 
-    public OppfolgingTable oppfolgingData(String fnr) {
-        Bruker bruker = Bruker.fraFnr(fnr)
-                .medAktoerIdSupplier(() -> aktorService.getAktorId(fnr)
-                        .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktørid")));
-        pepClient.sjekkLesetilgangTilBruker(bruker);
-        return oppfolgingsStatusRepository.fetch(bruker.getAktoerId());
+    public boolean underOppfolging(String fnr) {
+        return getOppfolgingStatus(fnr)
+                .map(OppfolgingTable::isUnderOppfolging)
+                .orElse(false);
+    }
+
+    public boolean erManuell (OppfolgingTable eksisterendeOppfolgingstatus) {
+        return Optional.of(eksisterendeOppfolgingstatus)
+                .flatMap(oppfolgingstatus ->
+                        Optional.of(eksisterendeOppfolgingstatus.getGjeldendeManuellStatusId())
+                                .map(manuellStatusRepository::fetch)
+                                .map(ManuellStatus::isManuell))
+                .orElse(false);
+    }
+
+    public UnderOppfolgingDTO oppfolgingData(String fnr) {
+        return getOppfolgingStatus(fnr)
+                .map(oppfolgingsstatus -> new UnderOppfolgingDTO().setUnderOppfolging(oppfolgingsstatus.isUnderOppfolging()).setErManuell(erManuell(oppfolgingsstatus)))
+                .orElse(new UnderOppfolgingDTO().setUnderOppfolging(false).setErManuell(false));
     }
 
     private OppfolgingStatusData getOppfolgingStatusData(String fnr, OppfolgingResolver oppfolgingResolver) {
