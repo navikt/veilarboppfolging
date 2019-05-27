@@ -27,6 +27,11 @@ public class ServiceConfig {
     }
 
     @Bean
+    ManuellStatusService manuellStatusService() {
+        return new ManuellStatusService();
+    }
+
+    @Bean
     ArenaOppfolgingService arenaOppfolgingService(OppfoelgingsstatusV2 oppfoelgingsstatusV2,
                                                   OppfoelgingPortType oppfoelgingPortType) {
 
