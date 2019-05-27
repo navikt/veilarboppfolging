@@ -27,20 +27,20 @@ public class OppfolgingService {
     private final OppfolgingRepository oppfolgingRepository;
     private final VeilarbAbacPepClient pepClient;
     private final OppfolgingsStatusRepository oppfolgingsStatusRepository;
-    
+
     @Inject
     public OppfolgingService(
             OppfolgingResolverDependencies oppfolgingResolverDependencies,
             AktorService aktorService,
             OppfolgingRepository oppfolgingRepository,
             VeilarbAbacPepClient pepClient,
-            OppfolgingsStatusRepository oppfolgingsStatusRepository 
+            OppfolgingsStatusRepository oppfolgingsStatusRepository
     ) {
         this.oppfolgingResolverDependencies = oppfolgingResolverDependencies;
         this.aktorService = aktorService;
         this.oppfolgingRepository = oppfolgingRepository;
         this.pepClient = pepClient;
-        this.oppfolgingsStatusRepository = oppfolgingsStatusRepository; 
+        this.oppfolgingsStatusRepository = oppfolgingsStatusRepository;
     }
 
     @SneakyThrows
@@ -149,7 +149,15 @@ public class OppfolgingService {
         OppfolgingTable eksisterendeOppfolgingstatus = oppfolgingsStatusRepository.fetch(bruker.getAktoerId());
         return eksisterendeOppfolgingstatus != null && eksisterendeOppfolgingstatus.isUnderOppfolging();
     }
-    
+
+    public OppfolgingTable oppfolgingData(String fnr) {
+        Bruker bruker = Bruker.fraFnr(fnr)
+                .medAktoerIdSupplier(() -> aktorService.getAktorId(fnr)
+                        .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktørid")));
+        pepClient.sjekkLesetilgangTilBruker(bruker);
+        return oppfolgingsStatusRepository.fetch(bruker.getAktoerId());
+    }
+
     private OppfolgingStatusData getOppfolgingStatusData(String fnr, OppfolgingResolver oppfolgingResolver) {
         return getOppfolgingStatusData(fnr, oppfolgingResolver, null);
     }
