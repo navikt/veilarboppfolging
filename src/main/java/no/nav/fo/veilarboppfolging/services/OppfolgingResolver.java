@@ -14,6 +14,7 @@ import no.nav.fo.veilarboppfolging.domain.arena.ArenaAktivitetDTO;
 import no.nav.fo.veilarboppfolging.db.KvpRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.domain.*;
+import no.nav.fo.veilarboppfolging.kafka.AvsluttOppfolgingProducer;
 import no.nav.fo.veilarboppfolging.utils.FunksjonelleMetrikker;
 import no.nav.fo.veilarboppfolging.utils.StringUtils;
 import no.nav.metrics.MetricsFactory;
@@ -299,6 +300,7 @@ public class OppfolgingResolver {
         }
 
         deps.getOppfolgingRepository().avsluttOppfolging(aktorId, veileder, begrunnelse);
+        deps.getAvsluttOppfolgingProducer().avsluttOppfolgingEvent(aktorId, new Date());
         return true;
     }
 
@@ -476,6 +478,9 @@ public class OppfolgingResolver {
 
         @Inject
         private UnleashService unleashService;
+
+        @Inject
+        private AvsluttOppfolgingProducer avsluttOppfolgingProducer;
 
     }
 }
