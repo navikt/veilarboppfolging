@@ -1,6 +1,7 @@
 package no.nav.fo.veilarboppfolging.services;
 
 import no.nav.fo.veilarboppfolging.domain.ArenaOppfolging;
+import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.informasjon.Bruker;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.informasjon.Oppfoelgingskontrakt;
@@ -45,6 +46,9 @@ public class ArenaOppfolgingServiceTest {
 
     @Mock
     private OppfoelgingPortType oppfoelgingPortType;
+
+    @Mock
+    private UnleashService unleashService;
 
     @Test
     public void hentOppfoelgingskontraktListeReturnererEnRespons() throws Exception {
