@@ -1,7 +1,8 @@
 package no.nav.fo.veilarboppfolging.rest;
 
 import io.swagger.annotations.Api;
-import lombok.experimental.var;
+import no.nav.fo.veilarboppfolging.domain.ArenaOppfolging;
+import no.nav.fo.veilarboppfolging.domain.OppfolgingStatusData;
 import no.nav.fo.veilarboppfolging.rest.domain.VeienTilArbeidDTO;
 import no.nav.fo.veilarboppfolging.services.ArenaOppfolgingService;
 import no.nav.fo.veilarboppfolging.services.OppfolgingService;
@@ -30,8 +31,8 @@ public class VeienTilArbeidRessurs {
 
     @GET
     public VeienTilArbeidDTO veienTilArbeid() throws Exception {
-        var oppfolgingData = oppfolgingService.hentOppfolgingsStatus(fnrParameterUtil.getFnr());
-        var arenaData = arenaOppfolgingService.hentArenaOppfolging(fnrParameterUtil.getFnr());
+        OppfolgingStatusData oppfolgingData = oppfolgingService.hentOppfolgingsStatus(fnrParameterUtil.getFnr());
+        ArenaOppfolging arenaData = arenaOppfolgingService.hentArenaOppfolging(fnrParameterUtil.getFnr());
 
         return new VeienTilArbeidDTO()
                 .setUnderOppfolging(oppfolgingData.underOppfolging)
