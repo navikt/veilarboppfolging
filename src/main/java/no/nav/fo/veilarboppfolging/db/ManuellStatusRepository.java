@@ -35,7 +35,8 @@ public class ManuellStatusRepository {
 
     public ManuellStatus fetch(Long id) {
         String sql = "SELECT * FROM MANUELL_STATUS WHERE id = ?";
-        return database.query(sql, ManuellStatusRepository::map, id).get(0);
+        List<ManuellStatus> manuellStatusList = database.query(sql, ManuellStatusRepository::map, id);
+        return manuellStatusList.isEmpty() ? null : manuellStatusList.get(0);
     }
 
     public List<ManuellStatus> history(String aktorId) {
