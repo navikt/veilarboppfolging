@@ -9,6 +9,7 @@ import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingsStatusRepository;
 import no.nav.fo.veilarboppfolging.domain.*;
+import no.nav.fo.veilarboppfolging.mappers.ArenaBruker;
 import no.nav.fo.veilarboppfolging.rest.domain.UnderOppfolgingDTO;
 import no.nav.fo.veilarboppfolging.services.OppfolgingResolver.OppfolgingResolverDependencies;
 import org.springframework.stereotype.Component;
@@ -30,6 +31,7 @@ public class OppfolgingService {
     private final VeilarbAbacPepClient pepClient;
     private final OppfolgingsStatusRepository oppfolgingsStatusRepository;
     private final ManuellStatusService manuellStatusService;
+    private final OppfolgingsbrukerService oppfolgingsbrukerService;
 
     @Inject
     public OppfolgingService(
@@ -38,7 +40,8 @@ public class OppfolgingService {
             OppfolgingRepository oppfolgingRepository,
             VeilarbAbacPepClient pepClient,
             OppfolgingsStatusRepository oppfolgingsStatusRepository,
-            ManuellStatusService manuellStatusService
+            ManuellStatusService manuellStatusService,
+            OppfolgingsbrukerService oppfolgingsbrukerService
     ) {
         this.oppfolgingResolverDependencies = oppfolgingResolverDependencies;
         this.aktorService = aktorService;
@@ -46,6 +49,7 @@ public class OppfolgingService {
         this.pepClient = pepClient;
         this.oppfolgingsStatusRepository = oppfolgingsStatusRepository;
         this.manuellStatusService = manuellStatusService;
+        this.oppfolgingsbrukerService = oppfolgingsbrukerService;
     }
 
     @SneakyThrows
@@ -142,8 +146,9 @@ public class OppfolgingService {
 
     @SneakyThrows
     public VeilederTilgang hentVeilederTilgang(String fnr) {
-        val resolver = new OppfolgingResolver(fnr, oppfolgingResolverDependencies);
-        return new VeilederTilgang().setTilgangTilBrukersKontor(pepClient.harTilgangTilEnhet(resolver.getOppfolgingsEnhet()));
+        Optional<ArenaBruker> arenaBruker = oppfolgingsbrukerService.hentOppfolgingsbruker(fnr);
+        String oppfolgingsenhet = arenaBruker.map(ArenaBruker::getNav_kontor).orElse(null);
+        return new VeilederTilgang().setTilgangTilBrukersKontor(pepClient.harTilgangTilEnhet(oppfolgingsenhet));
     }
 
     private Optional<OppfolgingTable> getOppfolgingStatus(String fnr) {
