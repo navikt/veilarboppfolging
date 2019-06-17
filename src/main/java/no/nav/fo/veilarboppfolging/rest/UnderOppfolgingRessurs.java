@@ -12,6 +12,10 @@ import io.swagger.annotations.Api;
 import no.nav.fo.veilarboppfolging.rest.domain.UnderOppfolgingDTO;
 import no.nav.fo.veilarboppfolging.services.OppfolgingService;
 
+/**
+ * Denne ressursen skal kun brukes til å hente data som veilarboppfolging har selv, uavhengig av integrasjoner. Hvis
+ * behovet ikke dekkes av veilarboppfolging på egen hånd, bruk eksisterende OppfolgingRessurs
+ */
 @Component
 @Path("")
 @Api(value = "UnderOppfølging")
