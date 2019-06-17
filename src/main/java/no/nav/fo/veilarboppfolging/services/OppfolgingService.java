@@ -154,13 +154,6 @@ public class OppfolgingService {
         return Optional.ofNullable(oppfolgingsStatusRepository.fetch(bruker.getAktoerId()));
     }
 
-    public boolean underOppfolging(String fnr) {
-        return getOppfolgingStatus(fnr)
-                .map(OppfolgingTable::isUnderOppfolging)
-                .orElse(false);
-    }
-
-
     public UnderOppfolgingDTO oppfolgingData(String fnr) {
         return getOppfolgingStatus(fnr)
                 .map(oppfolgingsstatus -> {
