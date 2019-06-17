@@ -6,7 +6,6 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 
-import no.nav.fo.veilarboppfolging.domain.OppfolgingTable;
 import org.springframework.stereotype.Component;
 
 import io.swagger.annotations.Api;
@@ -31,11 +30,7 @@ public class UnderOppfolgingRessurs {
     @GET
     @Path("/underoppfolging")
     public UnderOppfolgingDTO underOppfolging() {
-        OppfolgingTable oppfolgingData = oppfolgingService.oppfolgingData(fnrParameterUtil.getFnr());
-        boolean harData = oppfolgingData != null;
-        return new UnderOppfolgingDTO()
-                .setUnderOppfolging(harData && oppfolgingData.isUnderOppfolging())
-                .setErManuell(harData && oppfolgingData.getGjeldendeManuellStatusId() > 0);
+        return oppfolgingService.oppfolgingData(fnrParameterUtil.getFnr());
     }
 
 }
