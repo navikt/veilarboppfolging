@@ -38,12 +38,12 @@ public class AvsluttOppfolgingProducer {
 
     private void onSuccess(String aktorId) {
         avsluttOppfolgingEndringRepository.deleteFeiletBruker(aktorId);
-        log.info("Bruker med aktorid {} har lagt på avsluttoppfolging-topic", aktorId);
+        log.info("Bruker med aktorid {} har lagt på {}-topic", aktorId, this.topic);
     }
 
     private void onError(Throwable throwable, AvsluttOppfolgingKafkaDTO avsluttOppfolgingKafkaDTO) {
-        log.error("Kunne ikke publisere melding til avsluttoppfolging-topic", throwable);
-        log.info("Forsøker å insertere feilede bruker med aktorid {} i FEILEDE_KAFKA_AVSLUTT_OPPFOLGING_BRUKERE", avsluttOppfolgingKafkaDTO.getAktorId());
+        log.error("Kunne ikke publisere melding til {}-topic", this.topic, throwable);
+        log.info("Forsøker å insertere feilede bruker med aktorid {} i KAFKA_AVSLUTT_OPPFOLGING", avsluttOppfolgingKafkaDTO.getAktorId());
         avsluttOppfolgingEndringRepository.insertFeiletBruker(avsluttOppfolgingKafkaDTO);
     }
 

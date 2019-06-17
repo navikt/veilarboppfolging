@@ -52,11 +52,6 @@ public abstract class KafkaTest {
         setProperty(KAFKA_BROKERS_PROPERTY, embeddedKafka.getBrokersAsString(), PUBLIC);
     }
 
-    public KafkaTest addListener(MessageListener<String, String> listener) {
-        container.setupMessageListener(listener);
-        return this;
-    }
-
     @BeforeClass
     public static void setupFelles() throws IOException {
         annotationConfigApplicationContext = new AnnotationConfigApplicationContext(KafkaTestConfig.class);
