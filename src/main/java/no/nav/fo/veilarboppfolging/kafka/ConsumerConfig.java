@@ -20,6 +20,7 @@ import java.util.HashMap;
 import static no.nav.fo.veilarboppfolging.config.ApplicationConfig.KAFKA_BROKERS_PROPERTY;
 import static no.nav.fo.veilarboppfolging.kafka.ConsumerConfig.SASL.DISABLED;
 import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
+import static no.nav.sbl.util.EnvironmentUtils.requireEnvironmentName;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.*;
 
 @Configuration
@@ -49,6 +50,16 @@ public class ConsumerConfig {
         factory.setConsumerFactory(consumerFactory());
         factory.getContainerProperties().setErrorHandler(kafkaHelsesjekk);
         return factory;
+    }
+
+    @Bean
+    public Consumer.ConsumerParameters consumerParameters() {
+        return new Consumer.ConsumerParameters("aapen-fo-endringPaaOppfoelgingsBruker-v1-" + requireEnvironmentName());
+    }
+
+    @Bean
+    public ConsumerConfig.SASL sasl() {
+        return ConsumerConfig.SASL.ENABLED;
     }
 
     private ConsumerFactory<String, ArenaBruker> consumerFactory() {
