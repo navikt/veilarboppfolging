@@ -163,6 +163,18 @@ public class OppfolgingService {
                 .orElse(new UnderOppfolgingDTO().setUnderOppfolging(false).setErManuell(false));
     }
 
+    public boolean underOppfolgingNiva3(String fnr) {
+        Bruker bruker = Bruker.fraFnr(fnr)
+                .medAktoerIdSupplier(() -> aktorService.getAktorId(fnr)
+                        .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktørid")));
+
+        pepClient.sjekkLesetilgangTilBruker(bruker);
+
+        OppfolgingTable eksisterendeOppfolgingstatus = oppfolgingsStatusRepository.fetch(bruker.getAktoerId());
+
+        return eksisterendeOppfolgingstatus != null && eksisterendeOppfolgingstatus.isUnderOppfolging();
+    }
+
     private OppfolgingStatusData getOppfolgingStatusData(String fnr, OppfolgingResolver oppfolgingResolver) {
         return getOppfolgingStatusData(fnr, oppfolgingResolver, null);
     }
