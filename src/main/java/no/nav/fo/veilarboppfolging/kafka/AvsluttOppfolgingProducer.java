@@ -3,20 +3,16 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.veilarboppfolging.db.AvsluttOppfolgingEndringRepository;
 import no.nav.fo.veilarboppfolging.domain.AvsluttOppfolgingKafkaDTO;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.stereotype.Component;
 
-import javax.inject.Inject;
 import java.util.Date;
 
 import static no.nav.json.JsonUtils.toJson;
-@Component
 @Slf4j
 public class AvsluttOppfolgingProducer {
     private final String topic;
     private final KafkaTemplate<String, String> kafkaTemplate;
     private final AvsluttOppfolgingEndringRepository avsluttOppfolgingEndringRepository;
 
-    @Inject
     public AvsluttOppfolgingProducer(KafkaTemplate<String, String> kafkaTemplate, AvsluttOppfolgingEndringRepository avsluttOppfolgingEndringRepository, String topic) {
         this.kafkaTemplate = kafkaTemplate;
         this.avsluttOppfolgingEndringRepository = avsluttOppfolgingEndringRepository;
@@ -37,14 +33,12 @@ public class AvsluttOppfolgingProducer {
     }
 
     private void onSuccess(String aktorId) {
-        avsluttOppfolgingEndringRepository.deleteFeiletBruker(aktorId);
+        avsluttOppfolgingEndringRepository.deleteAvsluttOppfolgingBruker(aktorId);
         log.info("Bruker med aktorid {} har lagt på {}-topic", aktorId, this.topic);
     }
 
     private void onError(Throwable throwable, AvsluttOppfolgingKafkaDTO avsluttOppfolgingKafkaDTO) {
-        log.error("Kunne ikke publisere melding til {}-topic", this.topic, throwable);
-        log.info("Forsøker å insertere feilede bruker med aktorid {} i KAFKA_AVSLUTT_OPPFOLGING", avsluttOppfolgingKafkaDTO.getAktorId());
-        avsluttOppfolgingEndringRepository.insertFeiletBruker(avsluttOppfolgingKafkaDTO);
+        log.error("Kunne ikke publisere melding {} til {}-topic", avsluttOppfolgingKafkaDTO, this.topic, throwable);
     }
 
     public static AvsluttOppfolgingKafkaDTO toDTO (String aktorId, Date sluttdato) {

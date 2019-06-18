@@ -12,7 +12,7 @@ import java.util.List;
 @Component
 public class AvsluttOppfolgingKafkaFeilSchedule {
 
-    public static final long SCHEDULE_DELAY = 15 * 60 * 1000; // 15 minutes
+    public static final long SCHEDULE_DELAY = 60 * 10 * 1000; // 15 minutes
 
     private AvsluttOppfolgingEndringRepository avsluttOppfolgingEndringRepository;
 
@@ -26,7 +26,7 @@ public class AvsluttOppfolgingKafkaFeilSchedule {
 
     @Scheduled(fixedDelay = SCHEDULE_DELAY, initialDelay = 60 * 1000)
     public void sendFeiledeKafkaMeldinger() {
-        List<AvsluttOppfolgingKafkaDTO> feiledeMeldinger = avsluttOppfolgingEndringRepository.hentFeiledeBrukere();
+        List<AvsluttOppfolgingKafkaDTO> feiledeMeldinger = avsluttOppfolgingEndringRepository.hentAvsluttOppfolgingBrukere();
         feiledeMeldinger.forEach(feiletMelding -> avsluttOppfolgingProducer.avsluttOppfolgingEvent(feiletMelding.getAktorId(), feiletMelding.getSluttdato()));
     }
 
