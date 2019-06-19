@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
 import java.sql.ResultSet;
+import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 
@@ -35,8 +36,9 @@ public class AvsluttOppfolgingEndringRepository {
     }
 
     public void deleteAvsluttOppfolgingBruker(String aktorId, Date sluttdato) {
+        Timestamp timestamp = new Timestamp(sluttdato.getTime());
         SqlUtils.delete(db, KAFKA_TABLE)
-                .where(WhereClause.equals(AKTOR_ID, aktorId).and(WhereClause.lteq(SLUTTDATO, sluttdato)))
+                .where(WhereClause.equals(AKTOR_ID, aktorId).and(WhereClause.lteq(SLUTTDATO, timestamp)))
                 .execute();
     }
 
