@@ -12,6 +12,7 @@ import no.nav.fo.veilarboppfolging.domain.arena.ArenaAktivitetDTO;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingsStatusRepository;
 import no.nav.fo.veilarboppfolging.domain.*;
+import no.nav.fo.veilarboppfolging.mappers.ArenaBruker;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.DigitalKontaktinformasjonV1;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.HentDigitalKontaktinformasjonKontaktinformasjonIkkeFunnet;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.HentDigitalKontaktinformasjonPersonIkkeFunnet;
@@ -71,6 +72,9 @@ public class OppfolgingServiceTest {
 
     @Mock
     private OppfolgingsStatusRepository oppfolgingsStatusRepository;
+
+    @Mock
+    private OppfolgingsbrukerService oppfolgingsbrukerService;
     
     @Mock(answer = Answers.RETURNS_MOCKS)
     private OppfolgingResolver.OppfolgingResolverDependencies oppfolgingResolverDependencies;
@@ -85,6 +89,7 @@ public class OppfolgingServiceTest {
     private OppfolgingService oppfolgingService;
 
     private Oppfolging oppfolging = new Oppfolging().setAktorId(AKTOR_ID);
+    private ArenaBruker arenaBruker = new ArenaBruker();
     private ArenaOppfolging arenaOppfolging;
     private WSKontaktinformasjon wsKontaktinformasjon = new WSKontaktinformasjon();
 
@@ -109,6 +114,7 @@ public class OppfolgingServiceTest {
         when(oppfolgingResolverDependencies.getPepClient()).thenReturn(pepClientMock);
         when(oppfolgingResolverDependencies.getVeilarbaktivtetService()).thenReturn(veilarbaktivtetService);
         when(oppfolgingResolverDependencies.getYtelseskontraktV3()).thenReturn(ytelseskontraktV3);
+        when(oppfolgingsbrukerService.hentOppfolgingsbruker(FNR)).thenReturn(Optional.of(arenaBruker));
         gittOppfolgingStatus("", "");
     }
 
@@ -396,6 +402,7 @@ public class OppfolgingServiceTest {
 
     private void gittEnhet(String enhet) {
         arenaOppfolging.setOppfolgingsenhet(enhet);
+        arenaBruker.setNav_kontor(enhet);
     }
 
     private OppfolgingStatusData hentOppfolgingStatus() throws Exception {
