@@ -27,9 +27,9 @@ public class PepConfig {
                 .medPep(pep)
                 .medResourceTypePerson()
                 .medSystemUserTokenProvider(()->systemUserTokenProvider.getToken())
-                .brukAktoerId(()->unleashService.isEnabled("veilarboppfølging.veilarbabac.aktor"))
-                .sammenlikneTilgang(()->unleashService.isEnabled("veilarboppfølging.veilarbabac.sammenlikn"))
-                .foretrekkVeilarbAbacResultat(()->unleashService.isEnabled("veilarboppfølging.veilarbabac.foretrekk_veilarbabac"))
+                .brukAktoerId(()->unleashService.isEnabled("veilarboppfolging.veilarbabac.aktor"))
+                .sammenlikneTilgang(()->unleashService.isEnabled("veilarboppfolging.veilarbabac.sammenlikn"))
+                .foretrekkVeilarbAbacResultat(()->unleashService.isEnabled("veilarboppfolging.veilarbabac.foretrekk_veilarbabac"))
                 .bygg();
     }
 
