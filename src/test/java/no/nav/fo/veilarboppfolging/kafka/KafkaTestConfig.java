@@ -23,7 +23,6 @@ import static org.apache.kafka.clients.consumer.ConsumerConfig.MAX_POLL_INTERVAL
 import static org.mockito.Mockito.mock;
 
 @Import({Consumer.class})
-@Configuration
 @EnableKafka
 public class KafkaTestConfig {
 

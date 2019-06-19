@@ -3,10 +3,9 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.veilarboppfolging.db.AvsluttOppfolgingEndringRepository;
 import no.nav.fo.veilarboppfolging.domain.AvsluttOppfolgingKafkaDTO;
 import org.springframework.kafka.core.KafkaTemplate;
-
 import java.util.Date;
-
 import static no.nav.json.JsonUtils.toJson;
+
 @Slf4j
 public class AvsluttOppfolgingProducer {
     private final String topic;
@@ -27,14 +26,14 @@ public class AvsluttOppfolgingProducer {
                 aktorId,
                 serialisertBruker
         ).addCallback(
-                sendResult -> onSuccess(aktorId),
+                sendResult -> onSuccess(avsluttOppfolgingKafkaDTO),
                 throwable -> onError(throwable, avsluttOppfolgingKafkaDTO)
         );
     }
 
-    private void onSuccess(String aktorId) {
-        avsluttOppfolgingEndringRepository.deleteAvsluttOppfolgingBruker(aktorId);
-        log.info("Bruker med aktorid {} har lagt på {}-topic", aktorId, this.topic);
+    private void onSuccess(AvsluttOppfolgingKafkaDTO avsluttOppfolgingKafkaDTO) {
+        avsluttOppfolgingEndringRepository.deleteAvsluttOppfolgingBruker(avsluttOppfolgingKafkaDTO.getAktorId(), avsluttOppfolgingKafkaDTO.getSluttdato());
+        log.info("Bruker med aktorid {} har lagt på {}-topic", avsluttOppfolgingKafkaDTO, this.topic);
     }
 
     private void onError(Throwable throwable, AvsluttOppfolgingKafkaDTO avsluttOppfolgingKafkaDTO) {

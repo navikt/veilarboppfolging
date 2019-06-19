@@ -1,5 +1,6 @@
 package no.nav.fo.veilarboppfolging.kafka;
 
+import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.*;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
@@ -18,11 +19,12 @@ import java.util.Map;
 import static no.nav.fo.veilarboppfolging.config.ApplicationConfig.KAFKA_BROKERS_PROPERTY;
 import static no.nav.sbl.util.EnvironmentUtils.Type.PUBLIC;
 import static no.nav.sbl.util.EnvironmentUtils.setProperty;
+import static org.apache.kafka.clients.producer.ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.producerProps;
 
 public abstract class KafkaTest {
 
-    private static String RECEIVER_TOPIC = "receiver.t";
+    protected static String RECEIVER_TOPIC = "receiver.t";
 
     private static AnnotationConfigApplicationContext annotationConfigApplicationContext;
 
@@ -46,7 +48,10 @@ public abstract class KafkaTest {
         container.start();
         ContainerTestUtils.waitForAssignment(container, embeddedKafka.getPartitionsPerTopic());
 
-        kafkaTemplate = new KafkaTemplate<>(new DefaultKafkaProducerFactory<>(producerProps(embeddedKafka)));
+        Map<String, Object> kafkaProps = producerProps(embeddedKafka);
+        kafkaProps.put(KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+
+        kafkaTemplate = new KafkaTemplate<>(new DefaultKafkaProducerFactory<>(kafkaProps));
         kafkaTemplate.setDefaultTopic(RECEIVER_TOPIC);
 
         setProperty(KAFKA_BROKERS_PROPERTY, embeddedKafka.getBrokersAsString(), PUBLIC);

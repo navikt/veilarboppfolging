@@ -2,6 +2,7 @@ package no.nav.fo.veilarboppfolging.db;
 
 import lombok.SneakyThrows;
 import no.nav.fo.veilarboppfolging.domain.AvsluttOppfolgingKafkaDTO;
+import no.nav.sbl.sql.DbConstants;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -18,7 +19,7 @@ public class AvsluttOppfolgingEndringRepository {
     private final static String KAFKA_TABLE = "KAFKA_AVSLUTT_OPPFOLGING";
     private final static String AKTOR_ID = "AKTOR_ID";
     private final static String SLUTTDATO = "SLUTTDATO";
-    private JdbcTemplate db;
+    private final JdbcTemplate db;
 
     @Inject
     public AvsluttOppfolgingEndringRepository(JdbcTemplate db) {
@@ -29,13 +30,13 @@ public class AvsluttOppfolgingEndringRepository {
     public void insertAvsluttOppfolgingBruker(String aktorId) {
         SqlUtils.insert(db, KAFKA_TABLE)
                 .value(AKTOR_ID, aktorId)
-                .value(SLUTTDATO, new Date())
+                .value(SLUTTDATO, DbConstants.CURRENT_TIMESTAMP)
                 .execute();
     }
 
-    public void deleteAvsluttOppfolgingBruker(String aktorId) {
+    public void deleteAvsluttOppfolgingBruker(String aktorId, Date sluttdato) {
         SqlUtils.delete(db, KAFKA_TABLE)
-                .where(WhereClause.equals(AKTOR_ID, aktorId))
+                .where(WhereClause.equals(AKTOR_ID, aktorId).and(WhereClause.lteq(SLUTTDATO, sluttdato)))
                 .execute();
     }
 
