@@ -49,9 +49,9 @@ public class OppfolgingService {
     }
 
     @SneakyThrows
-    public OppfolgingResolver sjekkTilgangTilEnhet(String fnr){
+    public OppfolgingResolver sjekkTilgangTilEnhet(String fnr) {
         val resolver = new OppfolgingResolver(fnr, oppfolgingResolverDependencies);
-        if(!pepClient.harTilgangTilEnhet(resolver.getOppfolgingsEnhet())) {
+        if (!pepClient.harTilgangTilEnhet(resolver.getOppfolgingsEnhet())) {
             throw new IngenTilgang();
         }
         return resolver;
