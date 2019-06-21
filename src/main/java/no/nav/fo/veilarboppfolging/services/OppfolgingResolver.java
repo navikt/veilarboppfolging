@@ -33,6 +33,7 @@ import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskont
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeResponse;
 import org.json.JSONObject;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
 import javax.ws.rs.NotFoundException;
@@ -298,11 +299,16 @@ public class OppfolgingResolver {
         if (Optional.ofNullable(oppfolging.getGjeldendeEskaleringsvarsel()).isPresent()) {
             stoppEskalering("Eskalering avsluttet fordi oppfølging ble avsluttet");
         }
-        deps.getTransactor().inTransaction(() -> {
-            deps.getOppfolgingRepository().avsluttOppfolging(aktorId, veileder, begrunnelse);
-            deps.getAvsluttOppfolgingProducer().avsluttOppfolgingEvent(aktorId, new Date());
-        });
+
+        avsluttOppfolgingOgSendPaKafka(veileder, begrunnelse);
         return true;
+    }
+
+    @SneakyThrows
+    @Transactional
+    void avsluttOppfolgingOgSendPaKafka (String veileder, String begrunnelse) {
+        deps.getOppfolgingRepository().avsluttOppfolging(aktorId, veileder, begrunnelse);
+        deps.getAvsluttOppfolgingProducer().avsluttOppfolgingEvent(aktorId, new Date());
     }
 
     private Oppfolging hentOppfolging() {
