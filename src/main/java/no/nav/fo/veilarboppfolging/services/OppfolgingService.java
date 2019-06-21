@@ -9,13 +9,17 @@ import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingsStatusRepository;
 import no.nav.fo.veilarboppfolging.domain.*;
+import no.nav.fo.veilarboppfolging.mappers.ArenaBruker;
+import no.nav.fo.veilarboppfolging.rest.domain.UnderOppfolgingDTO;
 import no.nav.fo.veilarboppfolging.services.OppfolgingResolver.OppfolgingResolverDependencies;
+import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Optional;
 
 import static java.lang.System.currentTimeMillis;
 
@@ -27,6 +31,9 @@ public class OppfolgingService {
     private final OppfolgingRepository oppfolgingRepository;
     private final VeilarbAbacPepClient pepClient;
     private final OppfolgingsStatusRepository oppfolgingsStatusRepository;
+    private final ManuellStatusService manuellStatusService;
+    private final OppfolgingsbrukerService oppfolgingsbrukerService;
+    private final UnleashService unleashService;
 
     @Inject
     public OppfolgingService(
@@ -34,13 +41,19 @@ public class OppfolgingService {
             AktorService aktorService,
             OppfolgingRepository oppfolgingRepository,
             VeilarbAbacPepClient pepClient,
-            OppfolgingsStatusRepository oppfolgingsStatusRepository
+            OppfolgingsStatusRepository oppfolgingsStatusRepository,
+            ManuellStatusService manuellStatusService,
+            OppfolgingsbrukerService oppfolgingsbrukerService,
+            UnleashService unleashService
     ) {
         this.oppfolgingResolverDependencies = oppfolgingResolverDependencies;
         this.aktorService = aktorService;
         this.oppfolgingRepository = oppfolgingRepository;
         this.pepClient = pepClient;
         this.oppfolgingsStatusRepository = oppfolgingsStatusRepository;
+        this.manuellStatusService = manuellStatusService;
+        this.oppfolgingsbrukerService = oppfolgingsbrukerService;
+        this.unleashService = unleashService;
     }
 
     @SneakyThrows
@@ -137,25 +150,38 @@ public class OppfolgingService {
 
     @SneakyThrows
     public VeilederTilgang hentVeilederTilgang(String fnr) {
-        val resolver = new OppfolgingResolver(fnr, oppfolgingResolverDependencies);
-        return new VeilederTilgang().setTilgangTilBrukersKontor(pepClient.harTilgangTilEnhet(resolver.getOppfolgingsEnhet()));
+        if(unleashService.isEnabled("veilarboppfolging.hentVeilederTilgang.fra.veilarbarena")) {
+            Optional<ArenaBruker> arenaBruker = oppfolgingsbrukerService.hentOppfolgingsbruker(fnr);
+            String oppfolgingsenhet = arenaBruker.map(ArenaBruker::getNav_kontor).orElse(null);
+            return new VeilederTilgang().setTilgangTilBrukersKontor(pepClient.harTilgangTilEnhet(oppfolgingsenhet));
+        } else {
+            val resolver = new OppfolgingResolver(fnr, oppfolgingResolverDependencies);
+            return new VeilederTilgang().setTilgangTilBrukersKontor(pepClient.harTilgangTilEnhet(resolver.getOppfolgingsEnhet()));
+        }
+    }
+
+    private Optional<OppfolgingTable> getOppfolgingStatus(String fnr) {
+        Bruker bruker = Bruker.fraFnr(fnr)
+                .medAktoerIdSupplier(() -> aktorService.getAktorId(fnr)
+                        .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktørid")));
+        pepClient.sjekkLesetilgangTilBruker(bruker);
+        return Optional.ofNullable(oppfolgingsStatusRepository.fetch(bruker.getAktoerId()));
     }
 
     public boolean underOppfolging(String fnr) {
-        Bruker bruker = Bruker.fraFnr(fnr)
-                .medAktoerIdSupplier(() -> aktorService.getAktorId(fnr)
-                        .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktørid")));
-        pepClient.sjekkLesetilgangTilBruker(bruker);
-        OppfolgingTable eksisterendeOppfolgingstatus = oppfolgingsStatusRepository.fetch(bruker.getAktoerId());
-        return eksisterendeOppfolgingstatus != null && eksisterendeOppfolgingstatus.isUnderOppfolging();
+        return getOppfolgingStatus(fnr)
+                .map(OppfolgingTable::isUnderOppfolging)
+                .orElse(false);
     }
 
-    public OppfolgingTable oppfolgingData(String fnr) {
-        Bruker bruker = Bruker.fraFnr(fnr)
-                .medAktoerIdSupplier(() -> aktorService.getAktorId(fnr)
-                        .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktørid")));
-        pepClient.sjekkLesetilgangTilBruker(bruker);
-        return oppfolgingsStatusRepository.fetch(bruker.getAktoerId());
+
+    public UnderOppfolgingDTO oppfolgingData(String fnr) {
+        return getOppfolgingStatus(fnr)
+                .map(oppfolgingsstatus -> {
+                    boolean isUnderOppfolging = oppfolgingsstatus.isUnderOppfolging();
+                    return new UnderOppfolgingDTO().setUnderOppfolging(isUnderOppfolging).setErManuell(isUnderOppfolging && manuellStatusService.erManuell(oppfolgingsstatus));
+                })
+                .orElse(new UnderOppfolgingDTO().setUnderOppfolging(false).setErManuell(false));
     }
 
     private OppfolgingStatusData getOppfolgingStatusData(String fnr, OppfolgingResolver oppfolgingResolver) {
