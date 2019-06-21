@@ -10,11 +10,13 @@ import org.springframework.stereotype.Component;
 import javax.inject.Inject;
 import java.util.List;
 
+import static no.nav.common.leaderelection.LeaderElection.isLeader;
+
 @Slf4j
 @Component
 public class AvsluttOppfolgingKafkaFeilSchedule {
 
-    public static final long SCHEDULE_DELAY = 60 * 60 * 1000; // 60 minutes
+    public static final long SCHEDULE_DELAY =  15 * 1000; // 15 sec
 
     private AvsluttOppfolgingEndringRepository avsluttOppfolgingEndringRepository;
 
@@ -26,11 +28,13 @@ public class AvsluttOppfolgingKafkaFeilSchedule {
         this.avsluttOppfolgingProducer = avsluttOppfolgingProducer;
     }
 
-    @Scheduled(fixedDelay = SCHEDULE_DELAY, initialDelay = 15 * 60 * 1000)
+    @Scheduled(fixedDelay = SCHEDULE_DELAY, initialDelay =  5 * 1000)
     public void sendFeiledeKafkaMeldinger() {
-        List<AvsluttOppfolgingKafkaDTO> avsluttOppfolgingKafkaBrukere = avsluttOppfolgingEndringRepository.hentAvsluttOppfolgingBrukere();
-        log.info("Starter jobb for legge til avslutning av brukere {} på kafka", avsluttOppfolgingKafkaBrukere);
-        avsluttOppfolgingKafkaBrukere.forEach(feiletMelding -> avsluttOppfolgingProducer.avsluttOppfolgingEvent(feiletMelding.getAktorId(), feiletMelding.getSluttdato()));
+        if(isLeader()) {
+            List<AvsluttOppfolgingKafkaDTO> avsluttOppfolgingKafkaBrukere = avsluttOppfolgingEndringRepository.hentAvsluttOppfolgingBrukere();
+            log.info("Starter jobb for legge til avslutning av brukere {} på kafka", avsluttOppfolgingKafkaBrukere);
+            avsluttOppfolgingKafkaBrukere.forEach(feiletMelding -> avsluttOppfolgingProducer.avsluttOppfolgingEvent(feiletMelding.getAktorId(), feiletMelding.getSluttdato()));
+        }
     }
 
 }

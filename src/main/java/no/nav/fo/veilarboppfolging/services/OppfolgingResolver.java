@@ -298,9 +298,10 @@ public class OppfolgingResolver {
         if (Optional.ofNullable(oppfolging.getGjeldendeEskaleringsvarsel()).isPresent()) {
             stoppEskalering("Eskalering avsluttet fordi oppfølging ble avsluttet");
         }
-
-        deps.getOppfolgingRepository().avsluttOppfolging(aktorId, veileder, begrunnelse);
-        deps.getAvsluttOppfolgingProducer().avsluttOppfolgingEvent(aktorId, new Date());
+        deps.getTransactor().inTransaction(() -> {
+            deps.getOppfolgingRepository().avsluttOppfolging(aktorId, veileder, begrunnelse);
+            deps.getAvsluttOppfolgingProducer().avsluttOppfolgingEvent(aktorId, new Date());
+        });
         return true;
     }
 

@@ -37,6 +37,7 @@ public class AvsluttOppfolgingProducer {
     }
 
     private void onError(Throwable throwable, AvsluttOppfolgingKafkaDTO avsluttOppfolgingKafkaDTO) {
+        avsluttOppfolgingEndringRepository.insertAvsluttOppfolgingBruker(avsluttOppfolgingKafkaDTO.getAktorId());
         log.error("Kunne ikke publisere melding {} til {}-topic", avsluttOppfolgingKafkaDTO, this.topic, throwable);
     }
 

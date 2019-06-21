@@ -26,7 +26,7 @@ public class ProducerKafkaTest extends KafkaTest {
     }
 
     @Test
-    public void slett_avsluttbruker_fra_db_ved_vedlykkedSendning() {
+    public void slett_avsluttbruker_fra_db_ved_vedlykked_sendning() {
         avsluttOppfolgingEndringRepository.insertAvsluttOppfolgingBruker("1234");
         List<AvsluttOppfolgingKafkaDTO> alleBrukere = avsluttOppfolgingEndringRepository.hentAvsluttOppfolgingBrukere();
         assertThat(alleBrukere.size()).isEqualTo(1);

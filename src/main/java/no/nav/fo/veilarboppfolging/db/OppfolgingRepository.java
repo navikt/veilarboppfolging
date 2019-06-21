@@ -29,7 +29,6 @@ public class OppfolgingRepository {
     private final EskaleringsvarselRepository eskaleringsvarselRepository;
     private final KvpRepository kvpRepository;
     private final NyeBrukereFeedRepository nyeBrukereFeedRepository;
-    private final AvsluttOppfolgingEndringRepository avsluttOppfolgingEndringRepository;
 
     @Inject
     public OppfolgingRepository(
@@ -40,8 +39,7 @@ public class OppfolgingRepository {
             ManuellStatusRepository manuellStatusRepository,
             EskaleringsvarselRepository eskaleringsvarselRepository,
             KvpRepository kvpRepository,
-            NyeBrukereFeedRepository nyeBrukereFeedRepository,
-            AvsluttOppfolgingEndringRepository avsluttOppfolgingEndringRepository
+            NyeBrukereFeedRepository nyeBrukereFeedRepository
     ) {
         this.pepClient = pepClient;
         this.statusRepository = statusRepository;
@@ -51,7 +49,6 @@ public class OppfolgingRepository {
         this.eskaleringsvarselRepository = eskaleringsvarselRepository;
         this.kvpRepository = kvpRepository;
         this.nyeBrukereFeedRepository = nyeBrukereFeedRepository;
-        this.avsluttOppfolgingEndringRepository = avsluttOppfolgingEndringRepository;
     }
 
     @SneakyThrows
@@ -175,10 +172,9 @@ public class OppfolgingRepository {
     }
 
     // FIXME: go directly to the repository instead.
-    @Transactional
+
     public void avsluttOppfolging(String aktorId, String veileder, String begrunnelse) {
         periodeRepository.avslutt(aktorId, veileder, begrunnelse);
-        avsluttOppfolgingEndringRepository.insertAvsluttOppfolgingBruker(aktorId);
     }
 
     // FIXME: OPPFOLGINGSSTATUS table should have a foreign key constraint on GJELDENDE_MANUELL_STATUS
