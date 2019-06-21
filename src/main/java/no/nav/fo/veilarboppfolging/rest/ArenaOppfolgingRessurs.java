@@ -96,7 +96,7 @@ public class ArenaOppfolgingRessurs {
     }
 
     private ArenaOppfolging toRestDto(no.nav.fo.veilarboppfolging.domain.ArenaOppfolging hentArenaOppfolging, Oppfolgingsenhet enhet) {
-        Oppfolgingsenhet oppfolgingsenhet = new Oppfolgingsenhet().withEnhetId(enhet.getEnhetId()).withNavn(enhet.getNavn());
+        Oppfolgingsenhet oppfolgingsenhet = Oppfolgingsenhet.builder().enhetId(enhet.getEnhetId()).navn(enhet.getNavn()).build();
 
         return new ArenaOppfolging()
                 .setFormidlingsgruppe(hentArenaOppfolging.getFormidlingsgruppe())
@@ -150,7 +150,7 @@ public class ArenaOppfolgingRessurs {
 
     private Oppfolgingsenhet hentEnhet(String oppfolgingsenhetId) {
         Optional<String> enhetNavn = Try.of(() -> organisasjonEnhetService.hentEnhet(oppfolgingsenhetId).getNavn()).toJavaOptional();
-        return new Oppfolgingsenhet().withEnhetId(oppfolgingsenhetId).withNavn(enhetNavn.orElse(""));
+        return Oppfolgingsenhet.builder().enhetId(oppfolgingsenhetId).navn(enhetNavn.orElse("")).build();
     }
 
 }

@@ -19,7 +19,6 @@
 
     <properties>
         <tjenestespesifikasjoner.version>1.2019.04.03-23.09-56488320520a</tjenestespesifikasjoner.version>
-        <organisasjonenhet-v2.version>2.1.0</organisasjonenhet-v2.version>
      </properties>
 
     <dependencyManagement>
@@ -36,13 +35,6 @@
                 <groupId>commons-codec</groupId>
                 <artifactId>commons-codec</artifactId>
                 <version>1.10</version>
-            </dependency>
-
-             <dependency>
-                <groupId>no.nav.tjenester</groupId>
-                <artifactId>nav-organisasjonEnhet-v2-tjenestespesifikasjon</artifactId>
-                <version>${organisasjonenhet-v2.version}</version>
-                <classifier>jaxws</classifier>
             </dependency>
 
              <dependency>
@@ -184,11 +176,6 @@
         <dependency>
             <groupId>no.nav.common</groupId>
             <artifactId>aktor-klient</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>no.nav.tjenester</groupId>
-            <artifactId>nav-organisasjonEnhet-v2-tjenestespesifikasjon</artifactId>
-            <classifier>jaxws</classifier>
         </dependency>
 
         <dependency>

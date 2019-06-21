@@ -8,7 +8,6 @@ import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import no.nav.sbl.rest.RestUtils;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
 import no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v2.binding.OppfoelgingsstatusV2;
-import no.nav.tjeneste.virksomhet.organisasjonenhet.v2.binding.OrganisasjonEnhetV2;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,11 +21,6 @@ public class ServiceConfig {
     @Bean
     YtelseskontraktService ytelsesKontraktService(YtelseskontraktV3 ytelseskontraktV3) {
         return new YtelseskontraktService(ytelseskontraktV3);
-    }
-
-    @Bean
-    OrganisasjonEnhetService organisasjonsenhetService(OrganisasjonEnhetV2 organisasjonEnhetV2) {
-        return new OrganisasjonEnhetService(organisasjonEnhetV2);
     }
 
     @Bean

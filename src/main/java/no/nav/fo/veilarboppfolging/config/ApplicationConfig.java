@@ -55,6 +55,7 @@ public class ApplicationConfig implements ApiApplication {
     public static final String ARENA_NIGHT_KING_URL_PROPERTY = "NIGHTKINGAPI_URL";
     public static final String STS_OIDC_CONFIGURATION_URL_PROPERTY = "SECURITY_TOKEN_SERVICE_OPENID_CONFIGURATION_URL";
     public static final String KAFKA_BROKERS_URL_PROPERTY = "KAFKA_BROKERS_URL";
+    public static final String NORG2_REST_API_URL_PROPERTY = "NORG2_API_V1_URL";
 
     @Inject
     private DataSource dataSource;
