@@ -12,6 +12,10 @@ import org.springframework.stereotype.Component;
 import io.swagger.annotations.Api;
 import no.nav.fo.veilarboppfolging.services.OppfolgingService;
 
+/**
+ * Denne ressursen er dedikert til å håndtere forespørsler på vegne av brukere som har innloggingstoken med nivå 3.
+ * Ressursen ble opprettet for å dekke behov fra Ditt Nav.
+ */
 @Component
 @Path("")
 @Api(value = "UnderOppfølgingNiva3")
