@@ -50,9 +50,8 @@ public class AvsluttOppfolgingEndringRepository {
 
     @SneakyThrows
     private static AvsluttOppfolgingKafkaDTO avsluttOppfolgingKafkaDTOMapper(ResultSet resultSet){
-        Date sluttdato = new Date(resultSet.getTimestamp(SLUTTDATO).toInstant().toEpochMilli());
         return new AvsluttOppfolgingKafkaDTO()
                 .setAktorId(resultSet.getString(AKTOR_ID))
-                .setSluttdato(sluttdato);
+                .setSluttdato(resultSet.getDate(SLUTTDATO));
     }
 }
