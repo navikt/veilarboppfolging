@@ -14,6 +14,7 @@ import no.nav.fo.veilarboppfolging.domain.arena.ArenaAktivitetDTO;
 import no.nav.fo.veilarboppfolging.db.KvpRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.domain.*;
+import no.nav.fo.veilarboppfolging.kafka.AvsluttOppfolgingProducer;
 import no.nav.fo.veilarboppfolging.utils.FunksjonelleMetrikker;
 import no.nav.fo.veilarboppfolging.utils.StringUtils;
 import no.nav.metrics.MetricsFactory;
@@ -32,6 +33,7 @@ import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskont
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeResponse;
 import org.json.JSONObject;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
 import javax.ws.rs.NotFoundException;
@@ -298,8 +300,15 @@ public class OppfolgingResolver {
             stoppEskalering("Eskalering avsluttet fordi oppfølging ble avsluttet");
         }
 
-        deps.getOppfolgingRepository().avsluttOppfolging(aktorId, veileder, begrunnelse);
+        avsluttOppfolgingOgSendPaKafka(veileder, begrunnelse);
         return true;
+    }
+
+    @SneakyThrows
+    @Transactional
+    void avsluttOppfolgingOgSendPaKafka (String veileder, String begrunnelse) {
+        deps.getOppfolgingRepository().avsluttOppfolging(aktorId, veileder, begrunnelse);
+        deps.getAvsluttOppfolgingProducer().avsluttOppfolgingEvent(aktorId, new Date());
     }
 
     private Oppfolging hentOppfolging() {
@@ -476,6 +485,9 @@ public class OppfolgingResolver {
 
         @Inject
         private UnleashService unleashService;
+
+        @Inject
+        private AvsluttOppfolgingProducer avsluttOppfolgingProducer;
 
     }
 }

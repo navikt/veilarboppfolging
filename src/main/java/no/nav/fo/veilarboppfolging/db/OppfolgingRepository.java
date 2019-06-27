@@ -172,6 +172,7 @@ public class OppfolgingRepository {
     }
 
     // FIXME: go directly to the repository instead.
+
     public void avsluttOppfolging(String aktorId, String veileder, String begrunnelse) {
         periodeRepository.avslutt(aktorId, veileder, begrunnelse);
     }
