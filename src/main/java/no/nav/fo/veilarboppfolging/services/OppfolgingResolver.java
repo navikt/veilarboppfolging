@@ -83,6 +83,7 @@ public class OppfolgingResolver {
 
         this.fnr = fnr;
         this.deps = deps;
+        this.statusIArena = Optional.empty();
 
         this.aktorId = bruker.getAktoerId();
         this.oppfolging = hentOppfolging();
@@ -174,9 +175,7 @@ public class OppfolgingResolver {
         if (oppfolging.isUnderOppfolging()) {
             return false;
         }
-        if (statusIArena == null) {
-            hentOppfolgingstatusFraArena();
-        }
+        hentOppfolgingstatusFraArena();
         return statusIArena.map(status ->
                 kanSettesUnderOppfolging(status.getFormidlingsgruppe(),
                         status.getServicegruppe()))
@@ -189,9 +188,7 @@ public class OppfolgingResolver {
     }
 
     boolean erUnderOppfolgingIArena() {
-        if (statusIArena == null) {
-            hentOppfolgingstatusFraArena();
-        }
+        hentOppfolgingstatusFraArena();
         return statusIArena.map(status ->
                 erUnderOppfolging(status.getFormidlingsgruppe(), status.getServicegruppe()))
                 .orElse(false);
@@ -241,16 +238,12 @@ public class OppfolgingResolver {
     }
 
     private boolean erIservIArena() {
-        if (statusIArena == null) {
-            hentOppfolgingstatusFraArena();
-        }
+        hentOppfolgingstatusFraArena();
         return statusIArena.map(status -> erIserv(status)).orElse(false);
     }
 
     Date getInaktiveringsDato() {
-        if (statusIArena == null) {
-            hentOppfolgingstatusFraArena();
-        }
+        hentOppfolgingstatusFraArena();
 
         return statusIArena.map(this::getInaktiveringsDato).orElse(null);
     }
@@ -262,9 +255,7 @@ public class OppfolgingResolver {
     }
 
     String getOppfolgingsEnhet() {
-        if (statusIArena == null) {
-            hentOppfolgingstatusFraArena();
-        }
+        hentOppfolgingstatusFraArena();
         return statusIArena.map(status -> status.getOppfolgingsenhet()).orElse(null);
     }
 
@@ -283,9 +274,7 @@ public class OppfolgingResolver {
     boolean avsluttOppfolging(String veileder, String begrunnelse) {
         boolean oppfolgingKanAvsluttes = kanAvslutteOppfolging();
 
-        if (statusIArena == null) {
-            hentOppfolgingstatusFraArena();
-        }
+        hentOppfolgingstatusFraArena();
 
         statusIArena.ifPresent((arenaStatus) ->
                 log.info("Avslutting av oppfølging, tilstand i Arena for aktorid {}: {}", aktorId, statusIArena.get()));
@@ -335,11 +324,16 @@ public class OppfolgingResolver {
 
     @SneakyThrows
     private void hentOppfolgingstatusFraArena() {
-
-        statusIArena = Try.of(() -> deps.getArenaOppfolgingService().hentArenaOppfolging(fnr))
-                .onFailure(e -> {if(!(e instanceof NotFoundException)) {log.warn("Feil fra Arena for aktørId: {}", aktorId, e);}})
-                .toOption()
-                .toJavaOptional();
+        if (!statusIArena.isPresent()) {
+            statusIArena = Try.of(() -> deps.getArenaOppfolgingService().hentArenaOppfolging(fnr))
+                    .onFailure(e -> {
+                        if (!(e instanceof NotFoundException)) {
+                            log.warn("Feil fra Arena for aktørId: {}", aktorId, e);
+                        }
+                    })
+                    .toOption()
+                    .toJavaOptional();
+        }
     }
 
     private void sjekkReservasjonIKrrOgOppdaterOppfolging() {
