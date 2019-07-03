@@ -324,7 +324,7 @@ public class OppfolgingResolver {
 
     @SneakyThrows
     private void hentOppfolgingstatusFraArena() {
-        if (!statusIArena.isPresent()) {
+        if (!statusIArena.isPresent() && !oppfolging.isUnderOppfolging()) {
             statusIArena = Try.of(() -> deps.getArenaOppfolgingService().hentArenaOppfolging(fnr))
                     .onFailure(e -> {
                         if (!(e instanceof NotFoundException)) {
