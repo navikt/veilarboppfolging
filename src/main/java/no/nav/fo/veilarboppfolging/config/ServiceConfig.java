@@ -19,6 +19,11 @@ import java.io.IOException;
 public class ServiceConfig {
 
     @Bean
+    OrganisasjonEnhetService organisasjonEnhetService() {
+        return new OrganisasjonEnhetService();
+    }
+
+    @Bean
     YtelseskontraktService ytelsesKontraktService(YtelseskontraktV3 ytelseskontraktV3) {
         return new YtelseskontraktService(ytelseskontraktV3);
     }
