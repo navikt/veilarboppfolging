@@ -1,10 +1,11 @@
 package no.nav.fo.veilarboppfolging.rest;
 
 import io.swagger.annotations.Api;
-import no.nav.apiapp.feil.IngenTilgang;
 import no.nav.apiapp.security.SubjectService;
 import no.nav.apiapp.security.veilarbabac.Bruker;
 import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
+import no.nav.brukerdialog.security.domain.IdentType;
+import no.nav.common.auth.SubjectHandler;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.feed.producer.FeedProducer;
 import no.nav.fo.veilarboppfolging.db.OppfolgingFeedRepository;
@@ -24,6 +25,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+import static no.nav.brukerdialog.security.domain.IdentType.InternBruker;
+import static no.nav.brukerdialog.security.domain.IdentType.Systemressurs;
+import static no.nav.common.auth.SubjectHandler.getIdentType;
+import static org.slf4j.LoggerFactory.getILoggerFactory;
 import static org.slf4j.LoggerFactory.getLogger;
 
 @Component
@@ -62,8 +67,22 @@ public class VeilederTilordningRessurs {
 
         List<VeilederTilordning> feilendeTilordninger = new ArrayList<>();
         for (VeilederTilordning tilordning : tilordninger) {
+
+            String innloggetVeilederId = "INGEN_IDENTTYPE_FUNNET";
+            if (getIdentType().isPresent() && InternBruker.equals(getIdentType().get())) {
+                innloggetVeilederId = SubjectHandler.getIdent().orElse("INGEN_VEILEDERIDENT_FUNNET");
+            }
+
+            Bruker bruker;
             try {
-                Bruker bruker = lagBrukerFraFnr(tilordning.getBrukerFnr());
+                bruker = lagBrukerFraFnr(tilordning.getBrukerFnr());
+            } catch (Exception e) {
+                feilendeTilordninger.add(tilordning);
+                LOG.error("Feil ved tildeling av veileder: innlogget veileder: {}, fraVeileder: {} tilVeileder: {}", innloggetVeilederId, tilordning.getFraVeilederId(), tilordning.getTilVeilederId());
+                continue;
+            }
+
+            try {
                 pepClient.sjekkSkrivetilgangTilBruker(bruker);
 
                 String aktoerId = bruker.getAktoerId();
@@ -71,7 +90,7 @@ public class VeilederTilordningRessurs {
                 String eksisterendeVeileder = veilederTilordningerRepository.hentTilordningForAktoer(aktoerId);
 
                 if (kanTilordneFraVeileder(eksisterendeVeileder, tilordning.getFraVeilederId())) {
-                    if(nyVeilederHarTilgang(tilordning)) {
+                    if (nyVeilederHarTilgang(tilordning)) {
                         skrivTilDatabase(aktoerId, tilordning.getTilVeilederId());
                     } else {
                         LOG.info("Aktoerid {} kunne ikke tildeles. Ny veileder {} har ikke tilgang.", aktoerId, tilordning.getTilVeilederId());
@@ -83,7 +102,7 @@ public class VeilederTilordningRessurs {
                 }
             } catch (Exception e) {
                 feilendeTilordninger.add(tilordning);
-                loggFeilOppfolging(e);
+                loggFeilOppfolging(e, tilordning, bruker, innloggetVeilederId);
             }
         }
 
@@ -138,18 +157,18 @@ public class VeilederTilordningRessurs {
         }
     }
 
-    private void loggFeilOppfolging(Exception e) {
-        if(e instanceof NotAuthorizedException) {
-            LOG.warn("Request is not authorized", e);
-        } else {
-            LOG.error(loggMeldingForException(e), e);
-        }
-    }
+    private void loggFeilOppfolging(Exception e, VeilederTilordning tilordning, Bruker bruker, String innloggetVeilederId) {
+        String fraVeilederId = tilordning.getFraVeilederId();
+        String tilVeilederId = tilordning.getTilVeilederId();
+        String aktoerId = bruker.getAktoerId();
 
-    private String loggMeldingForException(Exception e) {
-        return (e instanceof PepException) ? "Kall til ABAC feilet"
-                : (e instanceof IllegalArgumentException) ? "Aktoerid ikke funnet"
-                : "Det skjedde en feil ved tildeling av veileder";
+        if (e instanceof NotAuthorizedException) {
+            LOG.warn("Feil ved tildeling av veileder: innlogget veileder: {}, fraVeileder: {} tilVeileder: {} bruker(aktørId): {} årsak: request is not authorized", innloggetVeilederId, fraVeilederId, tilVeilederId, aktoerId, e);
+        } else if (e instanceof PepException) {
+            LOG.error("Feil ved tildeling av veileder: innlogget veileder: {}, fraVeileder: {} tilVeileder: {} bruker(aktørId): {}, årsak: kall til ABAC feilet", innloggetVeilederId, fraVeilederId, tilVeilederId, aktoerId, e);
+        } else {
+            LOG.error("Feil ved tildeling av veileder: innlogget veileder: {}, fraVeileder: {} tilVeileder: {} bruker(aktørId): {} årsak: ukjent årsak", innloggetVeilederId, fraVeilederId, tilVeilederId, aktoerId, e);
+        }
     }
 
     private void skrivTilDatabase(String aktoerId, String veileder) {
@@ -172,8 +191,8 @@ public class VeilederTilordningRessurs {
 
     private Bruker lagBrukerFraFnr(String fnr) {
         return Bruker.fraFnr(fnr)
-                .medAktoerIdSupplier(()->aktorService.getAktorId(fnr)
-                        .orElseThrow(()->new IllegalArgumentException("Aktoerid ikke funnet")));
+                .medAktoerIdSupplier(() -> aktorService.getAktorId(fnr)
+                        .orElseThrow(() -> new IllegalArgumentException("Aktoerid ikke funnet")));
     }
 
 
