@@ -78,7 +78,7 @@ public class VeilederTilordningRessurs {
                 bruker = lagBrukerFraFnr(tilordning.getBrukerFnr());
             } catch (Exception e) {
                 feilendeTilordninger.add(tilordning);
-                LOG.error("Feil ved tildeling av veileder: innlogget veileder: {}, fraVeileder: {} tilVeileder: {}", innloggetVeilederId, tilordning.getFraVeilederId(), tilordning.getTilVeilederId());
+                LOG.error("Feil ved tildeling av veileder: innlogget veileder: {}, fraVeileder: {} tilVeileder: {} årsak: Fant ikke aktørId for bruker", innloggetVeilederId, tilordning.getFraVeilederId(), tilordning.getTilVeilederId(), e);
                 continue;
             }
 
