@@ -48,6 +48,8 @@ fasitResources:
   - alias: unleash-api
     resourceType: restservice
   - alias: norg2.api.v1
+    propertyMap:
+      url: NORG2_API_V1_URL
     resourceType: restservice
   - alias: aktivitetsplan
     resourceType: baseurl
