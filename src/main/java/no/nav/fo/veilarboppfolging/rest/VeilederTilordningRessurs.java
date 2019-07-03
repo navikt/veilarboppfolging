@@ -4,7 +4,6 @@ import io.swagger.annotations.Api;
 import no.nav.apiapp.security.SubjectService;
 import no.nav.apiapp.security.veilarbabac.Bruker;
 import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
-import no.nav.brukerdialog.security.domain.IdentType;
 import no.nav.common.auth.SubjectHandler;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.feed.producer.FeedProducer;
@@ -25,10 +24,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-import static no.nav.brukerdialog.security.domain.IdentType.InternBruker;
-import static no.nav.brukerdialog.security.domain.IdentType.Systemressurs;
-import static no.nav.common.auth.SubjectHandler.getIdentType;
-import static org.slf4j.LoggerFactory.getILoggerFactory;
 import static org.slf4j.LoggerFactory.getLogger;
 
 @Component
@@ -64,28 +59,19 @@ public class VeilederTilordningRessurs {
     @Path("/tilordneveileder")
     public Response postVeilederTilordninger(List<VeilederTilordning> tilordninger) {
         autorisasjonService.skalVereInternBruker();
+        String innloggetVeilederId = SubjectHandler.getIdent().orElseThrow(IllegalStateException::new);
 
         List<VeilederTilordning> feilendeTilordninger = new ArrayList<>();
         for (VeilederTilordning tilordning : tilordninger) {
 
-            String innloggetVeilederId = "INGEN_IDENTTYPE_FUNNET";
-            if (getIdentType().isPresent() && InternBruker.equals(getIdentType().get())) {
-                innloggetVeilederId = SubjectHandler.getIdent().orElse("INGEN_VEILEDERIDENT_FUNNET");
-            }
-
-            Bruker bruker;
-            try {
-                bruker = lagBrukerFraFnr(tilordning.getBrukerFnr());
-            } catch (Exception e) {
-                feilendeTilordninger.add(tilordning);
-                LOG.error("Feil ved tildeling av veileder: innlogget veileder: {}, fraVeileder: {} tilVeileder: {} årsak: Fant ikke aktørId for bruker", innloggetVeilederId, tilordning.getFraVeilederId(), tilordning.getTilVeilederId(), e);
-                continue;
-            }
+            tilordning.setInnloggetVeilederId(innloggetVeilederId);
 
             try {
+                Bruker bruker = lagBrukerFraFnr(tilordning.getBrukerFnr());
                 pepClient.sjekkSkrivetilgangTilBruker(bruker);
 
                 String aktoerId = bruker.getAktoerId();
+                tilordning.setAktoerId(aktoerId);
 
                 String eksisterendeVeileder = veilederTilordningerRepository.hentTilordningForAktoer(aktoerId);
 
@@ -100,9 +86,10 @@ public class VeilederTilordningRessurs {
                     LOG.info("Aktoerid {} kunne ikke tildeles. Oppgitt fraVeileder {} er feil. Faktisk veileder: {}", aktoerId, tilordning.getFraVeilederId(), eksisterendeVeileder);
                     feilendeTilordninger.add(tilordning);
                 }
+
             } catch (Exception e) {
                 feilendeTilordninger.add(tilordning);
-                loggFeilOppfolging(e, tilordning, bruker, innloggetVeilederId);
+                loggFeilOppfolging(e, tilordning);
             }
         }
 
@@ -139,6 +126,26 @@ public class VeilederTilordningRessurs {
                 .ifPresent(i -> kallWebhook());
     }
 
+
+    private void loggFeilOppfolging(Exception e, VeilederTilordning tilordning) {
+
+        String fraVeilederId = tilordning.getFraVeilederId();
+        String tilVeilederId = tilordning.getTilVeilederId();
+        String innloggetVeilederId = tilordning.getInnloggetVeilederId();
+        String aktoerId = tilordning.getAktoerId();
+
+        if (e instanceof NotAuthorizedException) {
+            LOG.warn("Feil ved tildeling av veileder: innlogget veileder: {}, fraVeileder: {} tilVeileder: {} bruker(aktørId): {} årsak: request is not authorized", innloggetVeilederId, fraVeilederId, tilVeilederId, aktoerId, e);
+        } else if (e instanceof PepException) {
+            LOG.error("Feil ved tildeling av veileder: innlogget veileder: {}, fraVeileder: {} tilVeileder: {} bruker(aktørId): {}, årsak: kall til ABAC feilet", innloggetVeilederId, fraVeilederId, tilVeilederId, aktoerId, e);
+        } else if (e instanceof IllegalArgumentException) {
+            LOG.error("Feil ved tildeling av veileder: innlogget veileder: {}, fraVeileder: {} tilVeileder: {} årsak: Fant ikke aktørId for bruker", innloggetVeilederId, tilordning.getFraVeilederId(), tilordning.getTilVeilederId(), e);
+        } else {
+            LOG.error("Feil ved tildeling av veileder: innlogget veileder: {}, fraVeileder: {} tilVeileder: {} bruker(aktørId): {} årsak: ukjent årsak", innloggetVeilederId, fraVeilederId, tilVeilederId, aktoerId, e);
+        }
+    }
+
+
     private boolean erVeilederFor(Tilordning tilordning) {
         return subjectService.getUserId()
                 .map((userId) -> userId.equals(tilordning.getVeilederId()))
@@ -154,20 +161,6 @@ public class VeilederTilordningRessurs {
             // Logger feilen, men bryr oss ikke om det. At webhooken feiler påvirker ikke funksjonaliteten
             // men gjør at endringen kommer senere inn i portefølje
             LOG.warn("Webhook feilet", e);
-        }
-    }
-
-    private void loggFeilOppfolging(Exception e, VeilederTilordning tilordning, Bruker bruker, String innloggetVeilederId) {
-        String fraVeilederId = tilordning.getFraVeilederId();
-        String tilVeilederId = tilordning.getTilVeilederId();
-        String aktoerId = bruker.getAktoerId();
-
-        if (e instanceof NotAuthorizedException) {
-            LOG.warn("Feil ved tildeling av veileder: innlogget veileder: {}, fraVeileder: {} tilVeileder: {} bruker(aktørId): {} årsak: request is not authorized", innloggetVeilederId, fraVeilederId, tilVeilederId, aktoerId, e);
-        } else if (e instanceof PepException) {
-            LOG.error("Feil ved tildeling av veileder: innlogget veileder: {}, fraVeileder: {} tilVeileder: {} bruker(aktørId): {}, årsak: kall til ABAC feilet", innloggetVeilederId, fraVeilederId, tilVeilederId, aktoerId, e);
-        } else {
-            LOG.error("Feil ved tildeling av veileder: innlogget veileder: {}, fraVeileder: {} tilVeileder: {} bruker(aktørId): {} årsak: ukjent årsak", innloggetVeilederId, fraVeilederId, tilVeilederId, aktoerId, e);
         }
     }
 
