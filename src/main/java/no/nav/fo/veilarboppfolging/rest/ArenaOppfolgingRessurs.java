@@ -11,7 +11,7 @@ import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.db.VeilederTilordningerRepository;
 import no.nav.fo.veilarboppfolging.domain.Oppfolgingsenhet;
 import no.nav.fo.veilarboppfolging.domain.OppfolgingskontraktResponse;
-import no.nav.fo.veilarboppfolging.mappers.ArenaBruker;
+import no.nav.fo.veilarboppfolging.mappers.VeilarbArenaOppfolging;
 import no.nav.fo.veilarboppfolging.mappers.OppfolgingMapper;
 import no.nav.fo.veilarboppfolging.rest.domain.*;
 import no.nav.fo.veilarboppfolging.services.*;
@@ -122,21 +122,21 @@ public class ArenaOppfolgingRessurs {
 
         OppfolgingEnhetMedVeileder res;
         if(!brukArena && unleash.isEnabled("veilarboppfolging.oppfolgingsstatus.fra.veilarbarena")) {
-            ArenaBruker arenaBruker = oppfolgingsbrukerService.hentOppfolgingsbruker(fnr).orElseThrow(() -> new NotFoundException("Bruker ikke funnet"));
+            VeilarbArenaOppfolging veilarbArenaOppfolging = oppfolgingsbrukerService.hentOppfolgingsbruker(fnr).orElseThrow(() -> new NotFoundException("Bruker ikke funnet"));
             res = new OppfolgingEnhetMedVeileder()
-                    .setServicegruppe(arenaBruker.getKvalifiseringsgruppekode())
-                    .setFormidlingsgruppe(arenaBruker.getFormidlingsgruppekode())
-                    .setOppfolgingsenhet(hentEnhet(arenaBruker.getNav_kontor()))
-                    .setHovedmaalkode(arenaBruker.getHovedmaalkode());
+                    .setServicegruppe(veilarbArenaOppfolging.getKvalifiseringsgruppekode())
+                    .setFormidlingsgruppe(veilarbArenaOppfolging.getFormidlingsgruppekode())
+                    .setOppfolgingsenhet(hentEnhet(veilarbArenaOppfolging.getNav_kontor()))
+                    .setHovedmaalkode(veilarbArenaOppfolging.getHovedmaalkode());
 
         } else {
             no.nav.fo.veilarboppfolging.domain.ArenaOppfolging arenaData = arenaOppfolgingService.hentArenaOppfolging(fnr);
-            Optional<ArenaBruker> oppfolgingsbrukerStatus = oppfolgingsbrukerService.hentOppfolgingsbruker(fnr);
+            Optional<VeilarbArenaOppfolging> oppfolgingsbrukerStatus = oppfolgingsbrukerService.hentOppfolgingsbruker(fnr);
             res = new OppfolgingEnhetMedVeileder()
                 .setServicegruppe(arenaData.getServicegruppe())
                 .setFormidlingsgruppe(arenaData.getFormidlingsgruppe())
                 .setOppfolgingsenhet(hentEnhet(arenaData.getOppfolgingsenhet()))
-                .setHovedmaalkode(oppfolgingsbrukerStatus.map(ArenaBruker::getHovedmaalkode).orElse(null));
+                .setHovedmaalkode(oppfolgingsbrukerStatus.map(VeilarbArenaOppfolging::getHovedmaalkode).orElse(null));
         }
 
         if (AutorisasjonService.erInternBruker()) {

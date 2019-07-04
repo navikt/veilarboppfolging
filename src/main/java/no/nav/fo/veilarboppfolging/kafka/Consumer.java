@@ -1,6 +1,6 @@
 package no.nav.fo.veilarboppfolging.kafka;
 
-import no.nav.fo.veilarboppfolging.mappers.ArenaBruker;
+import no.nav.fo.veilarboppfolging.mappers.VeilarbArenaOppfolging;
 import no.nav.fo.veilarboppfolging.services.Iserv28Service;
 import no.nav.fo.veilarboppfolging.utils.FunksjonelleMetrikker;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -39,8 +39,8 @@ public class Consumer {
         }
     }
 
-    public static ArenaBruker deserialisereBruker(String arenaBruker) {
-        return fromJson(arenaBruker, ArenaBruker.class);
+    public static VeilarbArenaOppfolging deserialisereBruker(String arenaBruker) {
+        return fromJson(arenaBruker, VeilarbArenaOppfolging.class);
     }
 
     public static class ConsumerParameters {

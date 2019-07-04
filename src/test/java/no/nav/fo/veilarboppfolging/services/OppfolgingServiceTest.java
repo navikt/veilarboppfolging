@@ -7,12 +7,12 @@ import no.nav.apiapp.feil.IngenTilgang;
 import no.nav.apiapp.security.veilarbabac.Bruker;
 import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
 import no.nav.dialogarena.aktor.AktorService;
-import no.nav.fo.veilarboppfolging.domain.arena.AktivitetStatus;
-import no.nav.fo.veilarboppfolging.domain.arena.ArenaAktivitetDTO;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingsStatusRepository;
 import no.nav.fo.veilarboppfolging.domain.*;
-import no.nav.fo.veilarboppfolging.mappers.ArenaBruker;
+import no.nav.fo.veilarboppfolging.domain.arena.AktivitetStatus;
+import no.nav.fo.veilarboppfolging.domain.arena.ArenaAktivitetDTO;
+import no.nav.fo.veilarboppfolging.mappers.VeilarbArenaOppfolging;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.DigitalKontaktinformasjonV1;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.HentDigitalKontaktinformasjonKontaktinformasjonIkkeFunnet;
@@ -24,8 +24,6 @@ import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt.WSYtelseskontrakt;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeRequest;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeResponse;
-import org.springframework.kafka.core.KafkaTemplate;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -33,7 +31,6 @@ import org.mockito.Answers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.springframework.util.concurrent.ListenableFuture;
 
 import java.util.List;
 import java.util.Optional;
@@ -95,7 +92,7 @@ public class OppfolgingServiceTest {
     private OppfolgingService oppfolgingService;
 
     private Oppfolging oppfolging = new Oppfolging().setAktorId(AKTOR_ID);
-    private ArenaBruker arenaBruker = new ArenaBruker();
+    private VeilarbArenaOppfolging veilarbArenaOppfolging = new VeilarbArenaOppfolging();
     private ArenaOppfolging arenaOppfolging;
     private WSKontaktinformasjon wsKontaktinformasjon = new WSKontaktinformasjon();
 
@@ -112,6 +109,8 @@ public class OppfolgingServiceTest {
                 .thenReturn(new WSHentDigitalKontaktinformasjonResponse()
                         .withDigitalKontaktinformasjon(wsKontaktinformasjon));
         when(aktorServiceMock.getAktorId(FNR)).thenReturn(of(AKTOR_ID));
+        when(unleashService.isEnabled("veilarboppfolging.oppfolgingresolver.bruk_arena_direkte")).thenReturn(true);
+        when(unleashService.isEnabled("veilarboppfolging.hentVeilederTilgang.fra.veilarbarena")).thenReturn(true);
 
         when(oppfolgingResolverDependencies.getAktorService()).thenReturn(aktorServiceMock);
         when(oppfolgingResolverDependencies.getOppfolgingRepository()).thenReturn(oppfolgingRepositoryMock);
@@ -120,7 +119,8 @@ public class OppfolgingServiceTest {
         when(oppfolgingResolverDependencies.getPepClient()).thenReturn(pepClientMock);
         when(oppfolgingResolverDependencies.getVeilarbaktivtetService()).thenReturn(veilarbaktivtetService);
         when(oppfolgingResolverDependencies.getYtelseskontraktV3()).thenReturn(ytelseskontraktV3);
-        when(oppfolgingsbrukerService.hentOppfolgingsbruker(FNR)).thenReturn(Optional.of(arenaBruker));
+        when(oppfolgingResolverDependencies.getUnleashService()).thenReturn(unleashService);
+        when(oppfolgingsbrukerService.hentOppfolgingsbruker(FNR)).thenReturn(Optional.of(veilarbArenaOppfolging));
         gittOppfolgingStatus("", "");
     }
 
@@ -408,11 +408,11 @@ public class OppfolgingServiceTest {
 
     private void gittEnhet(String enhet) {
         arenaOppfolging.setOppfolgingsenhet(enhet);
-        arenaBruker.setNav_kontor(enhet);
+        veilarbArenaOppfolging.setNav_kontor(enhet);
     }
 
     private OppfolgingStatusData hentOppfolgingStatus() throws Exception {
-        return oppfolgingService.hentOppfolgingsStatus(FNR);
+        return oppfolgingService.hentOppfolgingsStatus(FNR, true);
     }
 
     private void gittOppfolging(Oppfolging oppfolging) {

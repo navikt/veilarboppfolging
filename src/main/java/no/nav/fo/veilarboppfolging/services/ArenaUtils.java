@@ -37,15 +37,15 @@ public class ArenaUtils {
         return ARBS.equals(formidlingsgruppeKode);
     }
 
-    public static boolean erIserv(ArenaOppfolging arenaStatus) {
-        return erIserv(arenaStatus.getFormidlingsgruppe());
+    public static boolean erIserv(ArenaOppfolging arenaOppfolging) {
+        return erIserv(arenaOppfolging.getFormidlingsgruppe());
     }
 
     public static boolean erIserv(String formidlingsgruppe) {
         return ISERV.equals(formidlingsgruppe);
     }
 
-    public static boolean kanReaktiveres(ArenaOppfolging arenaStatus) {
+    public static boolean kanEnkeltReaktiveres(ArenaOppfolging arenaStatus) {
         return TRUE.equals(arenaStatus.getKanEnkeltReaktiveres());
     }
 
