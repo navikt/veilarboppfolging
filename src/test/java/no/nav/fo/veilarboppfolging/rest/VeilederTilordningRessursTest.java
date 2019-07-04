@@ -3,6 +3,11 @@ package no.nav.fo.veilarboppfolging.rest;
 import lombok.val;
 import no.nav.apiapp.security.veilarbabac.Bruker;
 import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
+import no.nav.brukerdialog.security.context.SubjectRule;
+import no.nav.brukerdialog.security.domain.IdentType;
+import no.nav.common.auth.SsoToken;
+import no.nav.common.auth.Subject;
+import no.nav.common.auth.SubjectHandler;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.feed.producer.FeedProducer;
 import no.nav.fo.veilarboppfolging.db.VeilederTilordningerRepository;
@@ -11,6 +16,7 @@ import no.nav.fo.veilarboppfolging.rest.domain.TilordneVeilederResponse;
 import no.nav.fo.veilarboppfolging.rest.domain.VeilederTilordning;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -39,7 +45,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.class)
+@RunWith(MockitoJUnitRunner.Silent.class)
 public class VeilederTilordningRessursTest {
 
     @Mock
@@ -60,9 +66,13 @@ public class VeilederTilordningRessursTest {
     @InjectMocks
     private VeilederTilordningRessurs veilederTilordningRessurs;
 
+    @Rule
+    public SubjectRule subjectRule = new SubjectRule();
+
     @Before
     public void setup() {
         when(autorisasjonService.harVeilederSkriveTilgangTilFnr(anyString(), anyString())).thenReturn(true);
+        subjectRule.setSubject(new Subject("Z000000", IdentType.InternBruker, SsoToken.oidcToken("XOXO")));
     }
 
     @Test
@@ -299,13 +309,7 @@ public class VeilederTilordningRessursTest {
     }
 
     private Callable<Response> portefoljeRessursCallable(VeilederTilordningRessurs veilederTilordningRessurs, List<VeilederTilordning> tilordninger) {
-        return new Callable<Response>() {
-
-            @Override
-            public Response call() throws Exception {
-                return veilederTilordningRessurs.postVeilederTilordninger(tilordninger);
-            }
-        };
+        return () -> SubjectHandler.withSubject(new Subject("foo", IdentType.InternBruker, SsoToken.oidcToken("xoxo")), () -> veilederTilordningRessurs.postVeilederTilordninger(tilordninger));
     }
 
     @Test
