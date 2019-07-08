@@ -17,7 +17,7 @@ import no.nav.fo.veilarboppfolging.services.OppfolgingService;
  * Ressursen ble opprettet for å dekke behov fra Ditt Nav.
  */
 @Component
-@Path("")
+@Path("/niva3")
 @Api(value = "UnderOppfølgingNiva3")
 @Produces(APPLICATION_JSON)
 public class UnderOppfolgingNiva3Ressurs {
@@ -32,7 +32,7 @@ public class UnderOppfolgingNiva3Ressurs {
     }
 
     @GET
-    @Path("/underoppfolgingniva3")
+    @Path("/underoppfolging")
     public UnderOppfolgingNiva3DTO underOppfolgingNiva3() throws Exception {
         return new UnderOppfolgingNiva3DTO().setUnderOppfolging(oppfolgingService.underOppfolgingNiva3(fnrParameterUtil.getFnr()));
     }
