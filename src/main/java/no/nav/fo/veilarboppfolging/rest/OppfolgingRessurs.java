@@ -64,8 +64,8 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
     }
 
     @Override
-    public OppfolgingStatus hentOppfolgingsStatus() throws Exception {
-        return tilDto(oppfolgingService.hentOppfolgingsStatus(getFnr()));
+    public OppfolgingStatus hentOppfolgingsStatus(boolean brukArenaDirekte) throws Exception {
+        return tilDto(oppfolgingService.hentOppfolgingsStatus(getFnr(), brukArenaDirekte));
     }
 
     @Override

@@ -1,6 +1,6 @@
 package no.nav.fo.veilarboppfolging.services;
 
-import no.nav.fo.veilarboppfolging.mappers.ArenaBruker;
+import no.nav.fo.veilarboppfolging.mappers.VeilarbArenaOppfolging;
 
 import javax.ws.rs.client.Client;
 
@@ -20,12 +20,12 @@ public class OppfolgingsbrukerService {
         this.host = getRequiredProperty(VEILARBARENAAPI_URL_PROPERTY).toLowerCase();
     }
 
-    public Optional<ArenaBruker> hentOppfolgingsbruker(String fnr) {
+    public Optional<VeilarbArenaOppfolging> hentOppfolgingsbruker(String fnr) {
         return Optional.ofNullable(
                 restClient.target(String.format("%s/oppfolgingsbruker/%s", host, fnr))
                         .request()
                         .header(ACCEPT, APPLICATION_JSON)
-                        .get(ArenaBruker.class)
+                        .get(VeilarbArenaOppfolging.class)
         );
     }
 

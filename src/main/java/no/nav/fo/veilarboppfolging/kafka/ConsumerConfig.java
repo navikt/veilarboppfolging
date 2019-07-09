@@ -1,6 +1,6 @@
 package no.nav.fo.veilarboppfolging.kafka;
 
-import no.nav.fo.veilarboppfolging.mappers.ArenaBruker;
+import no.nav.fo.veilarboppfolging.mappers.VeilarbArenaOppfolging;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -19,8 +19,8 @@ import static no.nav.sbl.util.EnvironmentUtils.requireEnvironmentName;
 public class ConsumerConfig {
 
     @Bean
-    public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<String, ArenaBruker>> kafkaListenerContainerFactory(KafkaHelsesjekk kafkaHelsesjekk) {
-        ConcurrentKafkaListenerContainerFactory<String, ArenaBruker> factory = new ConcurrentKafkaListenerContainerFactory<>();
+    public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<String, VeilarbArenaOppfolging>> kafkaListenerContainerFactory(KafkaHelsesjekk kafkaHelsesjekk) {
+        ConcurrentKafkaListenerContainerFactory<String, VeilarbArenaOppfolging> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
         factory.getContainerProperties().setErrorHandler(kafkaHelsesjekk);
         return factory;
@@ -31,7 +31,7 @@ public class ConsumerConfig {
         return new Consumer.ConsumerParameters("aapen-fo-endringPaaOppfoelgingsBruker-v1-" + requireEnvironmentName());
     }
 
-    static ConsumerFactory<String, ArenaBruker> consumerFactory() {
+    static ConsumerFactory<String, VeilarbArenaOppfolging> consumerFactory() {
         return new DefaultKafkaConsumerFactory<>(KafkaPropsConfig.kafkaConsumerProperties());
     }
 

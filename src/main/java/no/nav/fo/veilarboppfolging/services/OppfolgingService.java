@@ -9,7 +9,7 @@ import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingsStatusRepository;
 import no.nav.fo.veilarboppfolging.domain.*;
-import no.nav.fo.veilarboppfolging.mappers.ArenaBruker;
+import no.nav.fo.veilarboppfolging.mappers.VeilarbArenaOppfolging;
 import no.nav.fo.veilarboppfolging.rest.domain.UnderOppfolgingDTO;
 import no.nav.fo.veilarboppfolging.services.OppfolgingResolver.OppfolgingResolverDependencies;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
@@ -66,8 +66,8 @@ public class OppfolgingService {
     }
 
     @Transactional
-    public OppfolgingStatusData hentOppfolgingsStatus(String fnr) throws Exception {
-        val resolver = new OppfolgingResolver(fnr, oppfolgingResolverDependencies);
+    public OppfolgingStatusData hentOppfolgingsStatus(String fnr, boolean brukArenaDirekte) throws Exception {
+        val resolver = new OppfolgingResolver(fnr, oppfolgingResolverDependencies, brukArenaDirekte);
 
         resolver.sjekkStatusIArenaOgOppdaterOppfolging();
 
@@ -151,8 +151,8 @@ public class OppfolgingService {
     @SneakyThrows
     public VeilederTilgang hentVeilederTilgang(String fnr) {
         if(unleashService.isEnabled("veilarboppfolging.hentVeilederTilgang.fra.veilarbarena")) {
-            Optional<ArenaBruker> arenaBruker = oppfolgingsbrukerService.hentOppfolgingsbruker(fnr);
-            String oppfolgingsenhet = arenaBruker.map(ArenaBruker::getNav_kontor).orElse(null);
+            Optional<VeilarbArenaOppfolging> arenaBruker = oppfolgingsbrukerService.hentOppfolgingsbruker(fnr);
+            String oppfolgingsenhet = arenaBruker.map(VeilarbArenaOppfolging::getNav_kontor).orElse(null);
             return new VeilederTilgang().setTilgangTilBrukersKontor(pepClient.harTilgangTilEnhet(oppfolgingsenhet));
         } else {
             val resolver = new OppfolgingResolver(fnr, oppfolgingResolverDependencies);
