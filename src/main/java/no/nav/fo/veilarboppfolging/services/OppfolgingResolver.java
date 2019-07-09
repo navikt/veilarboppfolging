@@ -406,6 +406,13 @@ public class OppfolgingResolver {
                 hentOppfolgingstatusDirekteFraArena();
             } else {
                 hentOppfolgingstatusFraVeilarbArena();
+
+                // Fallbackløsning for å hente direkte fra Arena dersom bruker er under oppfølging, men veilarbarena
+                // ikke har data på brukeren. Dette kan forekomme direkte etter registrering, før data har blitt
+                // synkronisert fra Arena til veilarbarena.
+                if (!arenaOppfolgingTilstand.isPresent() && oppfolging.isUnderOppfolging()) {
+                    hentOppfolgingstatusDirekteFraArena();
+                }
             }
         }
     }
@@ -425,16 +432,11 @@ public class OppfolgingResolver {
 
     private void hentOppfolgingstatusFraVeilarbArena() {
         if (!arenaOppfolgingTilstand.isPresent()) {
-            Optional<VeilarbArenaOppfolging> veilarbArenaBruker = Try.of(() ->
-                    deps.getOppfolgingsbrukerService().hentOppfolgingsbruker(fnr))
-                    .onFailure(e -> {
-                        if (!(e instanceof NotFoundException)) {
-                            log.warn("Feil fra veilarbarena for aktørId: {}", aktorId, e);
-                        }
-                    }).toJavaOptional()
-                    .flatMap(x -> x);
+            Optional<VeilarbArenaOppfolging> veilarbArenaOppfolging =
+                    deps.getOppfolgingsbrukerService().hentOppfolgingsbruker(fnr);
 
-            arenaOppfolgingTilstand = veilarbArenaBruker.map(Either::left);
+            arenaOppfolgingTilstand = veilarbArenaOppfolging.map(Either::left);
+
         }
     }
 

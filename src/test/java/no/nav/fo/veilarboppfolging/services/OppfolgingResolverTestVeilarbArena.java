@@ -32,7 +32,6 @@ public class OppfolgingResolverTestVeilarbArena extends OppfolgingResolverTest {
 
         verify(oppfolgingsbrukerServiceMock, times(1)).hentOppfolgingsbruker(any());
         verify(arenaOppfolgingServiceMock, times(1)).hentArenaOppfolging(any());
-
     }
 
     @Test
@@ -91,5 +90,21 @@ public class OppfolgingResolverTestVeilarbArena extends OppfolgingResolverTest {
         assertThat(oppfolgingResolver.getErSykmeldtMedArbeidsgiver()).isTrue();
         assertThat(oppfolgingResolver.getInaktivIArena()).isFalse();
         assertThat(oppfolgingResolver.getKanReaktiveres()).isTrue();
+    }
+
+    @Test
+    public void henter_bruker_direkte_fra_arena_dersom_bruker_er_under_oppfolging_og_ikke_finnes_i_veilarbarena() {
+
+        when(oppfolgingRepositoryMock.hentOppfolging(any())).thenReturn(Optional.of(new Oppfolging().setUnderOppfolging(true)));
+        when(oppfolgingsbrukerServiceMock.hentOppfolgingsbruker(any())).thenReturn(Optional.empty());
+        setupArenaService();
+        when(arenaOppfolgingServiceMock.hentArenaOppfolging(any())).thenReturn(new ArenaOppfolging());
+
+        oppfolgingResolver = new OppfolgingResolver(FNR, oppfolgingResolverDependenciesMock);
+
+        oppfolgingResolver.sjekkStatusIArenaOgOppdaterOppfolging();
+
+        verify(oppfolgingsbrukerServiceMock, times(1)).hentOppfolgingsbruker(any());
+        verify(arenaOppfolgingServiceMock, times(1)).hentArenaOppfolging(any());
     }
 }

@@ -141,26 +141,6 @@ abstract class OppfolgingResolverTest {
         verify(kvpServiceMock, times(0)).stopKvpUtenEnhetSjekk(eq(FNR), any(), any(), any());
     }
 
-    @Test
-    public void sjekkStatusIArenaOgOppdaterOppfolging__skal_fungere_selv_om_arena_feiler() {
-
-        if (brukArenaDirekte) {
-            when(arenaOppfolgingServiceMock.hentArenaOppfolging(anyString())).thenThrow(new RuntimeException("Feil i Arena"));
-        } else {
-            when(oppfolgingsbrukerServiceMock.hentOppfolgingsbruker(any())).thenThrow(new RuntimeException("Feil i veilarbarena"));
-        }
-
-        oppfolgingResolver.sjekkStatusIArenaOgOppdaterOppfolging();
-
-        if (brukArenaDirekte) {
-            verify(arenaOppfolgingServiceMock).hentArenaOppfolging(anyString());
-            verify(oppfolgingsbrukerServiceMock, times(0)).hentOppfolgingsbruker(anyString());
-        } else {
-            verify(oppfolgingsbrukerServiceMock).hentOppfolgingsbruker(anyString());
-            verify(arenaOppfolgingServiceMock, times(0)).hentArenaOppfolging(anyString());
-        }
-    }
-
     protected void mockSvarFraArena(String enhet) {
         if (brukArenaDirekte) {
             when(arenaOppfolgingServiceMock.hentArenaOppfolging(any())).thenReturn(new ArenaOppfolging().setOppfolgingsenhet(enhet));
