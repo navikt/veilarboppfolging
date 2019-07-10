@@ -184,7 +184,7 @@ public class OppfolgingService {
 
         VeilarbAbacPepClient endretVeilarbAbacPepClient = pepClient
                 .endre()
-                .medResourceTypeUnderOppfolging()
+                .medResourceTypeUnderOppfolgingNiva3()
                 .bygg();
 
         endretVeilarbAbacPepClient.sjekkLesetilgangTilBruker(bruker);
