@@ -1,8 +1,10 @@
 package no.nav.fo.veilarboppfolging.services;
 
+import io.vavr.control.Either;
 import io.vavr.control.Try;
 import lombok.Getter;
 import lombok.SneakyThrows;
+import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import no.nav.apiapp.security.veilarbabac.Bruker;
@@ -14,6 +16,8 @@ import no.nav.fo.veilarboppfolging.domain.arena.ArenaAktivitetDTO;
 import no.nav.fo.veilarboppfolging.db.KvpRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.domain.*;
+import no.nav.fo.veilarboppfolging.kafka.AvsluttOppfolgingProducer;
+import no.nav.fo.veilarboppfolging.mappers.VeilarbArenaOppfolging;
 import no.nav.fo.veilarboppfolging.utils.FunksjonelleMetrikker;
 import no.nav.fo.veilarboppfolging.utils.StringUtils;
 import no.nav.metrics.MetricsFactory;
@@ -32,12 +36,15 @@ import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskont
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeResponse;
 import org.json.JSONObject;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
 import javax.ws.rs.NotFoundException;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -64,15 +71,21 @@ public class OppfolgingResolver {
 
     private String aktorId;
     private Oppfolging oppfolging;
-    private Optional<ArenaOppfolging> statusIArena;
+    private Optional<Either<VeilarbArenaOppfolging, ArenaOppfolging>> arenaOppfolgingTilstand;
     private Boolean reservertIKrr;
     private WSHentYtelseskontraktListeResponse ytelser;
     private List<ArenaAktivitetDTO> arenaAktiviteter;
     private Boolean inaktivIArena;
     private Boolean kanReaktiveres;
     private Boolean erSykmeldtMedArbeidsgiver;
+    private final boolean brukArenaDirekte;
 
     OppfolgingResolver(String fnr, OppfolgingResolverDependencies deps) {
+        this(fnr, deps, false);
+    }
+
+    OppfolgingResolver(String fnr, OppfolgingResolverDependencies deps, boolean brukArenaDirekte) {
+        this.brukArenaDirekte = brukArenaDirekte;
         Bruker bruker = Bruker.fraFnr(fnr)
                 .medAktoerIdSupplier(() -> this.deps.getAktorService().getAktorId(fnr)
                         .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktørid")));
@@ -81,11 +94,28 @@ public class OppfolgingResolver {
 
         this.fnr = fnr;
         this.deps = deps;
+        this.arenaOppfolgingTilstand = Optional.empty();
 
         this.aktorId = bruker.getAktoerId();
         this.oppfolging = hentOppfolging();
 
         avsluttKvpVedEnhetBytte();
+    }
+
+    private Optional<ArenaOppfolging> oppfolgingDirekteFraArena() {
+        return arenaOppfolgingTilstand.flatMap(Either::toJavaOptional);
+    }
+
+    private Optional<ArenaOppfolgingTilstand> arenaOppfolgingTilstand() {
+        return arenaOppfolgingTilstand.map(this::arenaOppfolgingTilstand);
+    }
+
+    private ArenaOppfolgingTilstand arenaOppfolgingTilstand(Either<VeilarbArenaOppfolging, ArenaOppfolging> entenEller) {
+        if (entenEller.isRight()) {
+            return ArenaOppfolgingTilstand.fraArenaOppfolging(entenEller.get());
+        } else {
+            return ArenaOppfolgingTilstand.fraArenaBruker(entenEller.getLeft());
+        }
     }
 
     void reloadOppfolging() {
@@ -94,37 +124,105 @@ public class OppfolgingResolver {
 
     void sjekkStatusIArenaOgOppdaterOppfolging() {
         hentOppfolgingstatusFraArena();
-        statusIArena.ifPresent((arenaStatus) -> {
+        arenaOppfolgingTilstand().ifPresent(arenaBruker -> {
             if (!oppfolging.isUnderOppfolging()) {
-                if (erUnderOppfolging(arenaStatus.getFormidlingsgruppe(), arenaStatus.getServicegruppe())) {
-                    deps.getOppfolgingRepository().startOppfolgingHvisIkkeAlleredeStartet(aktorId);
-                    reloadOppfolging();
-                }
-
+                sjekkOgStartOppfolging();
             }
-            erSykmeldtMedArbeidsgiver = erIARBSUtenOppfolging(
-                    arenaStatus.getFormidlingsgruppe(),
-                    arenaStatus.getServicegruppe()
-            );
+            sjekkOgOppdaterBruker(arenaBruker);
+
+        });
+    }
+
+    private void sjekkOgStartOppfolging() {
+        hentOppfolgingstatusDirekteFraArena();
+        oppfolgingDirekteFraArena().ifPresent(arenaOppfolging -> {
+            if (erUnderOppfolging(arenaOppfolging.getFormidlingsgruppe(), arenaOppfolging.getServicegruppe())) {
+                deps.getOppfolgingRepository().startOppfolgingHvisIkkeAlleredeStartet(aktorId);
+                reloadOppfolging();
+            }
+        });
+    }
+
+    private void sjekkOgOppdaterBruker(ArenaOppfolgingTilstand arenaOppfolgingTilstand) {
+
+        oppdatertErSykmeldtMedArbeidsgiver(arenaOppfolgingTilstand);
+        oppdaterInaktivIArena(arenaOppfolgingTilstand);
+
+        boolean sjekkIArenaOmBrukerSkalAvsluttes = oppfolging.isUnderOppfolging() && inaktivIArena;
+
+        logStatusForReaktiveringOgInaktivering();
+
+        if (sjekkIArenaOmBrukerSkalAvsluttes) {
+            sjekkOgOppdaterBrukerDirekteFraArena();
+        }
+    }
+
+    private void logStatusForReaktiveringOgInaktivering() {
+        log.info("Statuser for reaktivering og inaktivering basert på {}: "
+                        + "Aktiv Oppfølgingsperiode={} "
+                        + "kanEnkeltReaktiveres={} "
+                        + "erSykmeldtMedArbeidsgiver={} "
+                        + "inaktivIArena={} "
+                        + "aktorId={} "
+                        + "Tilstand i Arena: {}",
+                tilstandFra(),
+                oppfolging.isUnderOppfolging(),
+                kanReaktiveres,
+                erSykmeldtMedArbeidsgiver,
+                inaktivIArena,
+                aktorId,
+                arenaOppfolgingTilstandToString());
+    }
+
+    private String tilstandFra() {
+        return arenaOppfolgingTilstand.map(tilstand ->
+                tilstand.fold(fraArena -> "veilarbarena",
+                        fraVeilarbarena -> "Arena"))
+                .orElse(null);
+    }
+
+    private String arenaOppfolgingTilstandToString() {
+        return arenaOppfolgingTilstand
+                .map(tilstand ->
+                        tilstand.fold(
+                                VeilarbArenaOppfolging::toString,
+                                ArenaOppfolging::toString))
+                .orElse(null);
+    }
+
+    private void oppdatertErSykmeldtMedArbeidsgiver(ArenaOppfolgingTilstand arenaOppfolgingTilstand) {
+
+        erSykmeldtMedArbeidsgiver = ArenaUtils.erIARBSUtenOppfolging(
+                arenaOppfolgingTilstand.getFormidlingsgruppe(),
+                arenaOppfolgingTilstand.getServicegruppe()
+        );
+    }
+
+    private void oppdaterInaktivIArena(ArenaOppfolgingTilstand arenaOppfolgingTilstand) {
+        inaktivIArena = erIserv(arenaOppfolgingTilstand.getFormidlingsgruppe());
+    }
 
 
-            inaktivIArena = erIserv(arenaStatus);
-            kanReaktiveres = oppfolging.isUnderOppfolging() && kanReaktiveres(arenaStatus);
-            boolean skalAvsluttes = oppfolging.isUnderOppfolging() && inaktivIArena && !kanReaktiveres;
-            log.info("Statuser for reaktivering og inaktivering: "
-                            + "Aktiv Oppfølgingsperiode={} "
-                            + "kanReaktiveres={} "
-                            + "erSykmeldtMedArbeidsgiver={} "
-                            + "skalAvsluttes={} "
-                            + "aktorId={} "
-                            + "Tilstand i Arena: {}",
-                    oppfolging.isUnderOppfolging(), kanReaktiveres, erSykmeldtMedArbeidsgiver, skalAvsluttes, aktorId, arenaStatus);
+    private void sjekkOgOppdaterBrukerDirekteFraArena() {
+        hentOppfolgingstatusDirekteFraArena();
+
+        arenaOppfolgingTilstand().ifPresent(this::oppdatertErSykmeldtMedArbeidsgiver);
+        arenaOppfolgingTilstand().ifPresent(this::oppdaterInaktivIArena);
+
+        oppfolgingDirekteFraArena().ifPresent(arenaOppfolging -> {
+
+            boolean kanEnkeltReaktiveres = ArenaUtils.kanEnkeltReaktiveres(arenaOppfolging);
+            kanReaktiveres = oppfolging.isUnderOppfolging() && kanEnkeltReaktiveres;
+            boolean skalAvsluttes = oppfolging.isUnderOppfolging() && inaktivIArena && !kanEnkeltReaktiveres;
+
+            logStatusForReaktiveringOgInaktivering();
 
             if (skalAvsluttes) {
                 inaktiverBruker();
             }
         });
     }
+
 
     private void inaktiverBruker() {
         log.info("Avslutter oppfølgingsperiode for bruker");
@@ -172,10 +270,8 @@ public class OppfolgingResolver {
         if (oppfolging.isUnderOppfolging()) {
             return false;
         }
-        if (statusIArena == null) {
-            hentOppfolgingstatusFraArena();
-        }
-        return statusIArena.map(status ->
+        hentOppfolgingstatusFraArena();
+        return arenaOppfolgingTilstand().map(status ->
                 kanSettesUnderOppfolging(status.getFormidlingsgruppe(),
                         status.getServicegruppe()))
                 .orElse(false);
@@ -187,10 +283,8 @@ public class OppfolgingResolver {
     }
 
     boolean erUnderOppfolgingIArena() {
-        if (statusIArena == null) {
-            hentOppfolgingstatusFraArena();
-        }
-        return statusIArena.map(status ->
+        hentOppfolgingstatusFraArena();
+        return arenaOppfolgingTilstand().map(status ->
                 erUnderOppfolging(status.getFormidlingsgruppe(), status.getServicegruppe()))
                 .orElse(false);
     }
@@ -239,31 +333,25 @@ public class OppfolgingResolver {
     }
 
     private boolean erIservIArena() {
-        if (statusIArena == null) {
-            hentOppfolgingstatusFraArena();
-        }
-        return statusIArena.map(status -> erIserv(status)).orElse(false);
+        hentOppfolgingstatusFraArena();
+        return arenaOppfolgingTilstand().map(status -> erIserv(status.getFormidlingsgruppe())).orElse(false);
     }
 
     Date getInaktiveringsDato() {
-        if (statusIArena == null) {
-            hentOppfolgingstatusFraArena();
-        }
+        hentOppfolgingstatusFraArena();
 
-        return statusIArena.map(this::getInaktiveringsDato).orElse(null);
+        return arenaOppfolgingTilstand().map(this::getInaktiveringsDato).orElse(null);
     }
 
-    private Date getInaktiveringsDato(ArenaOppfolging status) {
+    private Date getInaktiveringsDato(ArenaOppfolgingTilstand status) {
         return Optional.ofNullable(status.getInaktiveringsdato()).isPresent()
                 ? Date.from(status.getInaktiveringsdato().atStartOfDay().atZone(ZoneId.systemDefault()).toInstant())
                 : null;
     }
 
     String getOppfolgingsEnhet() {
-        if (statusIArena == null) {
-            hentOppfolgingstatusFraArena();
-        }
-        return statusIArena.map(status -> status.getOppfolgingsenhet()).orElse(null);
+        hentOppfolgingstatusFraArena();
+        return arenaOppfolgingTilstand().map(status -> status.getOppfolgingsenhet()).orElse(null);
     }
 
     Boolean getInaktivIArena() {
@@ -281,12 +369,10 @@ public class OppfolgingResolver {
     boolean avsluttOppfolging(String veileder, String begrunnelse) {
         boolean oppfolgingKanAvsluttes = kanAvslutteOppfolging();
 
-        if (statusIArena == null) {
-            hentOppfolgingstatusFraArena();
-        }
+        hentOppfolgingstatusFraArena();
 
-        statusIArena.ifPresent((arenaStatus) ->
-                log.info("Avslutting av oppfølging, tilstand i Arena for aktorid {}: {}", aktorId, statusIArena.get()));
+        arenaOppfolgingTilstand().ifPresent(arenaStatus ->
+                log.info("Avslutting av oppfølging, tilstand i Arena for aktorid {}: {}", aktorId, arenaStatus));
 
 
         if (!oppfolgingKanAvsluttes) {
@@ -298,8 +384,15 @@ public class OppfolgingResolver {
             stoppEskalering("Eskalering avsluttet fordi oppfølging ble avsluttet");
         }
 
-        deps.getOppfolgingRepository().avsluttOppfolging(aktorId, veileder, begrunnelse);
+        avsluttOppfolgingOgSendPaKafka(veileder, begrunnelse);
         return true;
+    }
+
+    @SneakyThrows
+    @Transactional
+    void avsluttOppfolgingOgSendPaKafka(String veileder, String begrunnelse) {
+        deps.getOppfolgingRepository().avsluttOppfolging(aktorId, veileder, begrunnelse);
+        deps.getAvsluttOppfolgingProducer().avsluttOppfolgingEvent(aktorId, new Date());
     }
 
     private Oppfolging hentOppfolging() {
@@ -326,11 +419,43 @@ public class OppfolgingResolver {
 
     @SneakyThrows
     private void hentOppfolgingstatusFraArena() {
+        if (!arenaOppfolgingTilstand.isPresent()) {
+            if (brukArenaDirekte || deps.getUnleashService().isEnabled("veilarboppfolging.oppfolgingresolver.bruk_arena_direkte")) {
+                hentOppfolgingstatusDirekteFraArena();
+            } else {
+                hentOppfolgingstatusFraVeilarbArena();
 
-        statusIArena = Try.of(() -> deps.getArenaOppfolgingService().hentArenaOppfolging(fnr))
-                .onFailure(e -> {if(!(e instanceof NotFoundException)) {log.warn("Feil fra Arena for aktørId: {}", aktorId, e);}})
-                .toOption()
-                .toJavaOptional();
+                // Fallbackløsning for å hente direkte fra Arena dersom bruker er under oppfølging, men veilarbarena
+                // ikke har data på brukeren. Dette kan forekomme direkte etter registrering, før data har blitt
+                // synkronisert fra Arena til veilarbarena.
+                if (!arenaOppfolgingTilstand.isPresent() && oppfolging.isUnderOppfolging()) {
+                    hentOppfolgingstatusDirekteFraArena();
+                }
+            }
+        }
+    }
+
+    @SneakyThrows
+    private void hentOppfolgingstatusDirekteFraArena() {
+        if (!oppfolgingDirekteFraArena().isPresent()) {
+            arenaOppfolgingTilstand = Try.of(() -> deps.getArenaOppfolgingService().hentArenaOppfolging(fnr))
+                    .onFailure(e -> {
+                        if (!(e instanceof NotFoundException)) {
+                            log.warn("Feil fra Arena for aktørId: {}", aktorId, e);
+                        }
+                    })
+                    .toJavaOptional().map(Either::right);
+        }
+    }
+
+    private void hentOppfolgingstatusFraVeilarbArena() {
+        if (!arenaOppfolgingTilstand.isPresent()) {
+            Optional<VeilarbArenaOppfolging> veilarbArenaOppfolging =
+                    deps.getOppfolgingsbrukerService().hentOppfolgingsbruker(fnr);
+
+            arenaOppfolgingTilstand = veilarbArenaOppfolging.map(Either::left);
+
+        }
     }
 
     private void sjekkReservasjonIKrrOgOppdaterOppfolging() {
@@ -421,7 +546,7 @@ public class OppfolgingResolver {
         }
 
         hentOppfolgingstatusFraArena();
-        statusIArena.ifPresent(status -> {
+        arenaOppfolgingTilstand().ifPresent(status -> {
             if (brukerHarByttetKontor(status, gjeldendeKvp)) {
                 deps.getKvpService().stopKvpUtenEnhetSjekk(fnr, "KVP avsluttet automatisk pga. endret Nav-enhet", SYSTEM, this);
                 FunksjonelleMetrikker.stopKvpDueToChangedUnit();
@@ -430,7 +555,7 @@ public class OppfolgingResolver {
         });
     }
 
-    private boolean brukerHarByttetKontor(ArenaOppfolging statusIArena, Kvp kvp) {
+    private boolean brukerHarByttetKontor(ArenaOppfolgingTilstand statusIArena, Kvp kvp) {
         return !statusIArena.getOppfolgingsenhet().equals(kvp.getEnhet());
     }
 
@@ -452,6 +577,9 @@ public class OppfolgingResolver {
 
         @Inject
         private ArenaOppfolgingService arenaOppfolgingService;
+
+        @Inject
+        private OppfolgingsbrukerService oppfolgingsbrukerService;
 
         @Inject
         private DigitalKontaktinformasjonV1 digitalKontaktinformasjonV1;
@@ -477,5 +605,38 @@ public class OppfolgingResolver {
         @Inject
         private UnleashService unleashService;
 
+        @Inject
+        private AvsluttOppfolgingProducer avsluttOppfolgingProducer;
+
+    }
+
+
+}
+
+/**
+ * Felles struktur for data som kan hentes både fra Arena og veilarbarena
+ */
+@Value
+class ArenaOppfolgingTilstand {
+    String formidlingsgruppe;
+    String servicegruppe;
+    String oppfolgingsenhet;
+    LocalDate inaktiveringsdato;
+
+    static ArenaOppfolgingTilstand fraArenaOppfolging(ArenaOppfolging arenaOppfolging) {
+        return new ArenaOppfolgingTilstand(
+                arenaOppfolging.getFormidlingsgruppe(),
+                arenaOppfolging.getServicegruppe(),
+                arenaOppfolging.getOppfolgingsenhet(),
+                arenaOppfolging.getInaktiveringsdato());
+    }
+
+    static ArenaOppfolgingTilstand fraArenaBruker(VeilarbArenaOppfolging veilarbArenaOppfolging) {
+        return new ArenaOppfolgingTilstand(
+                veilarbArenaOppfolging.getFormidlingsgruppekode(),
+                veilarbArenaOppfolging.getKvalifiseringsgruppekode(),
+                veilarbArenaOppfolging.getNav_kontor(),
+                Optional.ofNullable(veilarbArenaOppfolging.getIserv_fra_dato()).map(ZonedDateTime::toLocalDate).orElse(null)
+        );
     }
 }

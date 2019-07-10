@@ -275,6 +275,11 @@
             <artifactId>vavr</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>no.nav.common</groupId>
+            <artifactId>leader-election</artifactId>
+        </dependency>
+
         <!-- Shedlock -->
         <dependency>
             <groupId>net.javacrumbs.shedlock</groupId>
