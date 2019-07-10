@@ -150,18 +150,44 @@ public class OppfolgingResolver {
 
         boolean sjekkIArenaOmBrukerSkalAvsluttes = oppfolging.isUnderOppfolging() && inaktivIArena;
 
-        log.info("Statuser for reaktivering og inaktivering basert på veilarbarena: "
-                        + "Aktiv Oppfølgingsperiode={} "
-                        + "kanEnkeltReaktiveres={} "
-                        + "erSykmeldtMedArbeidsgiver={} "
-                        + "sjekkIArenaOmBrukerSkalAvsluttes={} "
-                        + "aktorId={} "
-                        + "Tilstand i Arena: {}",
-                oppfolging.isUnderOppfolging(), kanReaktiveres, erSykmeldtMedArbeidsgiver, sjekkIArenaOmBrukerSkalAvsluttes, aktorId, arenaOppfolgingTilstand);
+        logStatusForReaktiveringOgInaktivering();
 
         if (sjekkIArenaOmBrukerSkalAvsluttes) {
             sjekkOgOppdaterBrukerDirekteFraArena();
         }
+    }
+
+    private void logStatusForReaktiveringOgInaktivering() {
+        log.info("Statuser for reaktivering og inaktivering basert på {}: "
+                        + "Aktiv Oppfølgingsperiode={} "
+                        + "kanEnkeltReaktiveres={} "
+                        + "erSykmeldtMedArbeidsgiver={} "
+                        + "inaktivIArena={} "
+                        + "aktorId={} "
+                        + "Tilstand i Arena: {}",
+                tilstandFra(),
+                oppfolging.isUnderOppfolging(),
+                kanReaktiveres,
+                erSykmeldtMedArbeidsgiver,
+                inaktivIArena,
+                aktorId,
+                arenaOppfolgingTilstandToString());
+    }
+
+    private String tilstandFra() {
+        return arenaOppfolgingTilstand.map(tilstand ->
+                tilstand.fold(fraArena -> "veilarbarena",
+                        fraVeilarbarena -> "Arena"))
+                .orElse(null);
+    }
+
+    private String arenaOppfolgingTilstandToString() {
+        return arenaOppfolgingTilstand
+                .map(tilstand ->
+                        tilstand.fold(
+                                VeilarbArenaOppfolging::toString,
+                                ArenaOppfolging::toString))
+                .orElse(null);
     }
 
     private void oppdatertErSykmeldtMedArbeidsgiver(ArenaOppfolgingTilstand arenaOppfolgingTilstand) {
@@ -189,15 +215,7 @@ public class OppfolgingResolver {
             kanReaktiveres = oppfolging.isUnderOppfolging() && kanEnkeltReaktiveres;
             boolean skalAvsluttes = oppfolging.isUnderOppfolging() && inaktivIArena && !kanEnkeltReaktiveres;
 
-            log.info("Statuser for reaktivering og inaktivering basert på arena: "
-                            + "Aktiv Oppfølgingsperiode={} "
-                            + "kanEnkeltReaktiveres={} "
-                            + "kanReaktiveres={} "
-                            + "erSykmeldtMedArbeidsgiver={} "
-                            + "skalAvsluttes={} "
-                            + "aktorId={} "
-                            + "Tilstand i Arena: {}",
-                    oppfolging.isUnderOppfolging(), kanEnkeltReaktiveres, kanReaktiveres, erSykmeldtMedArbeidsgiver, skalAvsluttes, aktorId, arenaOppfolging);
+            logStatusForReaktiveringOgInaktivering();
 
             if (skalAvsluttes) {
                 inaktiverBruker();
