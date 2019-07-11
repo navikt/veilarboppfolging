@@ -201,6 +201,15 @@ public class OppfolgingServiceTest {
     }
 
     @Test
+    public void riktigServicegruppe() throws Exception {
+        String servicegruppe = "BATT";
+        gittServicegruppe(servicegruppe);
+
+        OppfolgingStatusData oppfolgingStatusData = hentOppfolgingStatus();
+        assertThat(oppfolgingStatusData.servicegruppe, equalTo(servicegruppe));
+    }
+
+    @Test
     public void hentOppfolgingStatus_brukerSomIkkeErUnderOppfolgingOppdateresIkkeDersomIkkeUnderOppfolgingIArena() throws Exception {
         gittOppfolging(oppfolging);
         OppfolgingStatusData oppfolgingStatusData = hentOppfolgingStatus();
@@ -223,6 +232,10 @@ public class OppfolgingServiceTest {
     private void gittInaktivOppfolgingStatus(Boolean kanEnkeltReaktiveres) {
         arenaOppfolging.setFormidlingsgruppe("ISERV");
         arenaOppfolging.setKanEnkeltReaktiveres(kanEnkeltReaktiveres);
+    }
+
+    private void gittServicegruppe(String servicegruppe) {
+        arenaOppfolging.setServicegruppe(servicegruppe);
     }
 
     @Test

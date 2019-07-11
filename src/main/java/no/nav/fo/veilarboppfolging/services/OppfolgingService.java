@@ -208,7 +208,8 @@ public class OppfolgingService {
                 .setKanReaktiveres(oppfolgingResolver.getKanReaktiveres())
                 .setErSykmeldtMedArbeidsgiver(oppfolgingResolver.getErSykmeldtMedArbeidsgiver())
                 .setErIkkeArbeidssokerUtenOppfolging(oppfolgingResolver.getErSykmeldtMedArbeidsgiver())
-                .setInaktiveringsdato(oppfolgingResolver.getInaktiveringsDato());
+                .setInaktiveringsdato(oppfolgingResolver.getInaktiveringsDato())
+                .setServicegruppe(oppfolgingResolver.getServicegruppe());
     }
 
     private OppfolgingStatusData getOppfolgingStatusDataMedAvslutningStatus(String fnr, OppfolgingResolver oppfolgingResolver) {
