@@ -240,7 +240,8 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
                 .setGjeldendeEskaleringsvarsel(tilDto(oppfolgingStatusData.getGjeldendeEskaleringsvarsel()))
                 .setErIkkeArbeidssokerUtenOppfolging(oppfolgingStatusData.getErSykmeldtMedArbeidsgiver())
                 .setErSykmeldtMedArbeidsgiver(oppfolgingStatusData.getErSykmeldtMedArbeidsgiver())
-                .setHarSkriveTilgang(true);
+                .setHarSkriveTilgang(true)
+                .setServicegruppe(oppfolgingStatusData.getServicegruppe());
 
 
         if (AutorisasjonService.erInternBruker()) {
