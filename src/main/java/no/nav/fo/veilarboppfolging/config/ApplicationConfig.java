@@ -55,6 +55,7 @@ public class ApplicationConfig implements ApiApplication {
     public static final String ARENA_NIGHT_KING_URL_PROPERTY = "NIGHTKINGAPI_URL";
     public static final String STS_OIDC_CONFIGURATION_URL_PROPERTY = "SECURITY_TOKEN_SERVICE_OPENID_CONFIGURATION_URL";
     public static final String KAFKA_BROKERS_URL_PROPERTY = "KAFKA_BROKERS_URL";
+    public static final String VIS_DETALJER_VED_FEIL_PROPERTY = "VIS_DETALJER_VED_FEIL";
 
     @Inject
     private DataSource dataSource;
@@ -80,6 +81,7 @@ public class ApplicationConfig implements ApiApplication {
         setProperty(KVP_FEED_BRUKERTILGANG_PROPERTY, "srvveilarbdialog,srvveilarbaktivitet", PUBLIC);
         setProperty(NYEBRUKERE_FEED_BRUKERTILGANG_PROPERTY, "srvveilarbdirigent", PUBLIC);
         setProperty(KVP_API_BRUKERTILGANG_PROPERTY, "srvveilarbdialog,srvveilarbaktivitet", PUBLIC);
+        setProperty(VIS_DETALJER_VED_FEIL_PROPERTY, "true", PUBLIC);
         jdbcTemplate.update("UPDATE \"schema_version\" SET \"checksum\"=-788301912 WHERE \"version\" = '1.16'");
         migrateDatabase(dataSource);
     }

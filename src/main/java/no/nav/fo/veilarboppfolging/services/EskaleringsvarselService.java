@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.core.Response;
 import java.util.UUID;
 
@@ -73,7 +74,6 @@ public class EskaleringsvarselService {
             return Response.Status.BAD_REQUEST;
         }
     }
-
 
     protected String dialogUrl(long dialogId) {
         return aktivitetsplanBaseUrl + "/dialog/" + dialogId;
