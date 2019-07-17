@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.core.Response;
 import java.util.UUID;
 
@@ -40,40 +41,15 @@ public class EskaleringsvarselService {
             throw new IngenTilgang(e);
         } catch (BestillVarselOppgaveBrukerIkkeRegistrertIIdporten e) {
             LOG.error("Bruker ikke registert i id porten");
-            throw new Feil(new BrukerIkkeRegistrertIIdporten());
+            throw new BadRequestException("BRUKER_IKKE_REGISTRERT_I_IDPORTEN");
         } catch (BestillVarselOppgaveBrukerHarIkkeTilstrekkeligPaaloggingsnivaa e) {
             LOG.error("Bruker har ikke tilstrekkelig innloggingsnivå");
-            throw new Feil(new BrukerHarIkkeTilstrekkeligPaaloggingsnivaa());
+            throw new BadRequestException("BRUKER_HAR_IKKE_TILSTREKKELIG_PAALOGGINGSNIVAA");
         } catch (Exception e) {
             LOG.error("Sending av eskaleringsvarsel feilet for aktørId {} og dialogId {}", aktorId, dialogId, e);
             throw throwUnchecked(e);
         }
     }
-
-    public class BrukerIkkeRegistrertIIdporten implements Feil.Type {
-        @Override
-        public String getName() {
-            return "BRUKER_IKKE_REGISTRERT_I_IDPORTEN";
-        }
-
-        @Override
-        public Response.Status getStatus() {
-            return Response.Status.BAD_REQUEST;
-        }
-    }
-
-    public class BrukerHarIkkeTilstrekkeligPaaloggingsnivaa implements Feil.Type {
-        @Override
-        public String getName() {
-            return "BRUKER_HAR_IKKE_TILSTREKKELIG_PAALOGGINGSNIVAA";
-        }
-
-        @Override
-        public Response.Status getStatus() {
-            return Response.Status.BAD_REQUEST;
-        }
-    }
-
 
     protected String dialogUrl(long dialogId) {
         return aktivitetsplanBaseUrl + "/dialog/" + dialogId;
