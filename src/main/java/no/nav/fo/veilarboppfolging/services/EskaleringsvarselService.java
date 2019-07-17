@@ -40,10 +40,10 @@ public class EskaleringsvarselService {
             throw new IngenTilgang(e);
         } catch (BestillVarselOppgaveBrukerIkkeRegistrertIIdporten e) {
             LOG.error("Bruker ikke registert i id porten");
-            throw new Feil(new BrukerIkkeRegistrertIIdporten());
+            throw new Feil(new BrukerIkkeRegistrertIIdporten(), "Bruker ikke registert i id porten");
         } catch (BestillVarselOppgaveBrukerHarIkkeTilstrekkeligPaaloggingsnivaa e) {
             LOG.error("Bruker har ikke tilstrekkelig innloggingsnivå");
-            throw new Feil(new BrukerHarIkkeTilstrekkeligPaaloggingsnivaa());
+            throw new Feil(new BrukerHarIkkeTilstrekkeligPaaloggingsnivaa(), "Bruker har ikke tilstrekkelig innloggingsnivå");
         } catch (Exception e) {
             LOG.error("Sending av eskaleringsvarsel feilet for aktørId {} og dialogId {}", aktorId, dialogId, e);
             throw throwUnchecked(e);
