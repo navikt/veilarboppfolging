@@ -2,7 +2,6 @@ package no.nav.fo.veilarboppfolging.services;
 
 import lombok.SneakyThrows;
 import lombok.val;
-import no.nav.apiapp.feil.Feil;
 import no.nav.apiapp.feil.IngenTilgang;
 import no.nav.apiapp.feil.UlovligHandling;
 import no.nav.apiapp.security.veilarbabac.Bruker;
@@ -21,9 +20,7 @@ import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingsstatu
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
-import java.util.function.Supplier;
 
-import static no.nav.apiapp.feil.FeilType.UKJENT;
 import static no.nav.fo.veilarboppfolging.domain.KodeverkBruker.NAV;
 
 @Component
@@ -49,8 +46,6 @@ public class KvpService {
     @Inject 
     private EskaleringsvarselRepository eskaleringsvarselRepository;
     
-    private static final Supplier<Feil> AKTOR_ID_FEIL = () -> new Feil(UKJENT, "Fant ikke aktørId for fnr");
-
     @SneakyThrows
     public void startKvp(String fnr, String begrunnelse) {
         Bruker bruker = Bruker.fraFnr(fnr)
