@@ -15,6 +15,7 @@ import org.springframework.context.annotation.Import;
         KvpRepository.class,
         OppfolgingFeedRepository.class,
         NyeBrukereFeedRepository.class,
-        VeilederTilordningerRepository.class
+        VeilederTilordningerRepository.class,
+        AvsluttOppfolgingEndringRepository.class
 })
 public class DatabaseRepositoryConfig { }

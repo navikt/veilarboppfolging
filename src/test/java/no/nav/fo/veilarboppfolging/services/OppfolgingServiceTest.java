@@ -4,12 +4,16 @@ import io.vavr.collection.Stream;
 import lombok.SneakyThrows;
 import lombok.val;
 import no.nav.apiapp.feil.IngenTilgang;
-import no.nav.apiapp.security.PepClient;
+import no.nav.apiapp.security.veilarbabac.Bruker;
+import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
 import no.nav.dialogarena.aktor.AktorService;
-import no.nav.fo.veilarbaktivitet.domain.AktivitetStatus;
-import no.nav.fo.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
+import no.nav.fo.veilarboppfolging.db.OppfolgingsStatusRepository;
 import no.nav.fo.veilarboppfolging.domain.*;
+import no.nav.fo.veilarboppfolging.domain.arena.AktivitetStatus;
+import no.nav.fo.veilarboppfolging.domain.arena.ArenaAktivitetDTO;
+import no.nav.fo.veilarboppfolging.mappers.VeilarbArenaOppfolging;
+import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.DigitalKontaktinformasjonV1;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.HentDigitalKontaktinformasjonKontaktinformasjonIkkeFunnet;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.HentDigitalKontaktinformasjonPersonIkkeFunnet;
@@ -20,7 +24,6 @@ import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt.WSYtelseskontrakt;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeRequest;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeResponse;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -59,7 +62,7 @@ public class OppfolgingServiceTest {
     private ArenaOppfolgingService arenaOppfolgingService;
 
     @Mock
-    private PepClient pepClientMock;
+    private VeilarbAbacPepClient pepClientMock;
 
     @Mock
     private VeilarbaktivtetService veilarbaktivtetService;
@@ -67,8 +70,17 @@ public class OppfolgingServiceTest {
     @Mock
     private YtelseskontraktV3 ytelseskontraktV3;
 
+    @Mock
+    private OppfolgingsStatusRepository oppfolgingsStatusRepository;
+
+    @Mock
+    private OppfolgingsbrukerService oppfolgingsbrukerService;
+    
     @Mock(answer = Answers.RETURNS_MOCKS)
     private OppfolgingResolver.OppfolgingResolverDependencies oppfolgingResolverDependencies;
+
+    @Mock
+    private UnleashService unleashService;
 
     private static final String FNR = "fnr";
     private static final String AKTOR_ID = "aktorId";
@@ -80,6 +92,7 @@ public class OppfolgingServiceTest {
     private OppfolgingService oppfolgingService;
 
     private Oppfolging oppfolging = new Oppfolging().setAktorId(AKTOR_ID);
+    private VeilarbArenaOppfolging veilarbArenaOppfolging = new VeilarbArenaOppfolging();
     private ArenaOppfolging arenaOppfolging;
     private WSKontaktinformasjon wsKontaktinformasjon = new WSKontaktinformasjon();
 
@@ -96,6 +109,8 @@ public class OppfolgingServiceTest {
                 .thenReturn(new WSHentDigitalKontaktinformasjonResponse()
                         .withDigitalKontaktinformasjon(wsKontaktinformasjon));
         when(aktorServiceMock.getAktorId(FNR)).thenReturn(of(AKTOR_ID));
+        when(unleashService.isEnabled("veilarboppfolging.oppfolgingresolver.bruk_arena_direkte")).thenReturn(true);
+        when(unleashService.isEnabled("veilarboppfolging.hentVeilederTilgang.fra.veilarbarena")).thenReturn(true);
 
         when(oppfolgingResolverDependencies.getAktorService()).thenReturn(aktorServiceMock);
         when(oppfolgingResolverDependencies.getOppfolgingRepository()).thenReturn(oppfolgingRepositoryMock);
@@ -104,48 +119,50 @@ public class OppfolgingServiceTest {
         when(oppfolgingResolverDependencies.getPepClient()).thenReturn(pepClientMock);
         when(oppfolgingResolverDependencies.getVeilarbaktivtetService()).thenReturn(veilarbaktivtetService);
         when(oppfolgingResolverDependencies.getYtelseskontraktV3()).thenReturn(ytelseskontraktV3);
+        when(oppfolgingResolverDependencies.getUnleashService()).thenReturn(unleashService);
+        when(oppfolgingsbrukerService.hentOppfolgingsbruker(FNR)).thenReturn(Optional.of(veilarbArenaOppfolging));
         gittOppfolgingStatus("", "");
     }
 
     @Test(expected = IngenTilgang.class)
     @SneakyThrows
     public void start_oppfolging_uten_enhet_tilgang() {
-        doThrow(IngenTilgang.class).when(pepClientMock).sjekkTilgangTilEnhet(any());
+        doReturn(false).when(pepClientMock).harTilgangTilEnhet(any());
         oppfolgingService.startOppfolging(FNR);
     }
 
     @Test(expected = IngenTilgang.class)
     @SneakyThrows
     public void avslutt_oppfolging_uten_enhet_tilgang() {
-        doThrow(IngenTilgang.class).when(pepClientMock).sjekkTilgangTilEnhet(any());
+        doReturn(false).when(pepClientMock).harTilgangTilEnhet(any());
         oppfolgingService.avsluttOppfolging(FNR, VEILEDER, BEGRUNNELSE);
     }
 
     @Test(expected = IngenTilgang.class)
     @SneakyThrows
     public void sett_manuell_uten_enhet_tilgang() {
-        doThrow(IngenTilgang.class).when(pepClientMock).sjekkTilgangTilEnhet(any());
+        doReturn(false).when(pepClientMock).harTilgangTilEnhet(any());
         oppfolgingService.oppdaterManuellStatus(FNR, true, BEGRUNNELSE, NAV, VEILEDER);
     }
 
     @Test(expected = IngenTilgang.class)
     @SneakyThrows
     public void settDigital_uten_enhet_tilgang() {
-        doThrow(IngenTilgang.class).when(pepClientMock).sjekkTilgangTilEnhet(any());
+        doReturn(false).when(pepClientMock).harTilgangTilEnhet(any());
         oppfolgingService.settDigitalBruker(FNR);
     }
 
     @Test(expected = IngenTilgang.class)
     @SneakyThrows
     public void start_eskalering_uten_enhet_tilgang() {
-        doThrow(IngenTilgang.class).when(pepClientMock).sjekkTilgangTilEnhet(any());
+        doReturn(false).when(pepClientMock).harTilgangTilEnhet(any());
         oppfolgingService.startEskalering(FNR, BEGRUNNELSE, 1L);
     }
 
     @Test(expected = IngenTilgang.class)
     @SneakyThrows
     public void stopp_eskalering_uten_enhet_tilgang() {
-        doThrow(IngenTilgang.class).when(pepClientMock).sjekkTilgangTilEnhet(any());
+        doReturn(false).when(pepClientMock).harTilgangTilEnhet(any());
         oppfolgingService.stoppEskalering(FNR, BEGRUNNELSE);
     }
 
@@ -153,7 +170,6 @@ public class OppfolgingServiceTest {
     public void medEnhetTilgang() throws Exception {
         when(pepClientMock.harTilgangTilEnhet(ENHET)).thenReturn(true);
 
-        gittAktor();
         gittEnhet(ENHET);
 
         VeilederTilgang veilederTilgang = oppfolgingService.hentVeilederTilgang(FNR);
@@ -164,7 +180,6 @@ public class OppfolgingServiceTest {
     public void utenEnhetTilgang() throws Exception {
         when(pepClientMock.harTilgangTilEnhet(anyString())).thenReturn(false);
 
-        gittAktor();
         gittEnhet(ENHET);
 
         VeilederTilgang veilederTilgang = oppfolgingService.hentVeilederTilgang(FNR);
@@ -173,13 +188,12 @@ public class OppfolgingServiceTest {
 
     @Test
     public void ukjentAktor() throws Exception {
-        doThrow(IllegalArgumentException.class).when(aktorServiceMock).getAktorId(FNR);
+        doReturn(Optional.empty()).when(aktorServiceMock).getAktorId(FNR);
         assertThrows(IllegalArgumentException.class, this::hentOppfolgingStatus);
     }
 
     @Test
     public void riktigFnr() throws Exception {
-        gittAktor();
         gittOppfolging(oppfolging);
 
         OppfolgingStatusData oppfolgingStatusData = hentOppfolgingStatus();
@@ -187,8 +201,16 @@ public class OppfolgingServiceTest {
     }
 
     @Test
+    public void riktigServicegruppe() throws Exception {
+        String servicegruppe = "BATT";
+        gittServicegruppe(servicegruppe);
+
+        OppfolgingStatusData oppfolgingStatusData = hentOppfolgingStatus();
+        assertThat(oppfolgingStatusData.servicegruppe, equalTo(servicegruppe));
+    }
+
+    @Test
     public void hentOppfolgingStatus_brukerSomIkkeErUnderOppfolgingOppdateresIkkeDersomIkkeUnderOppfolgingIArena() throws Exception {
-        gittAktor();
         gittOppfolging(oppfolging);
         OppfolgingStatusData oppfolgingStatusData = hentOppfolgingStatus();
 
@@ -198,7 +220,6 @@ public class OppfolgingServiceTest {
 
     @Test
     public void hentOppfolgingStatus_brukerSomIkkeErUnderOppfolgingSettesUnderOppfolgingDersomArenaHarRiktigStatus() throws Exception {
-        gittAktor();
         gittOppfolging(oppfolging);
         gittOppfolgingStatus("ARBS", "");
 
@@ -213,9 +234,12 @@ public class OppfolgingServiceTest {
         arenaOppfolging.setKanEnkeltReaktiveres(kanEnkeltReaktiveres);
     }
 
+    private void gittServicegruppe(String servicegruppe) {
+        arenaOppfolging.setServicegruppe(servicegruppe);
+    }
+
     @Test
     public void hentOppfolgingStatus_brukerSomErUnderOppfolgingOgISERVMeldesUtDersomArenaSierReaktiveringIkkeErMulig() throws Exception {
-        gittAktor();
         oppfolging.setUnderOppfolging(true);
         gittOppfolging(oppfolging);
         gittInaktivOppfolgingStatus(false);
@@ -227,7 +251,6 @@ public class OppfolgingServiceTest {
      
     @Test
     public void hentOppfolgingStatus_brukerSomErUnderOppfolgingOgISERVSkalReaktiveresDersomArenaSierReaktiveringErMulig() throws Exception {
-        gittAktor();
         oppfolging.setUnderOppfolging(true);
         gittOppfolging(oppfolging);
         gittInaktivOppfolgingStatus(true);
@@ -237,10 +260,19 @@ public class OppfolgingServiceTest {
         assertThat(status.kanReaktiveres, is(true));
         assertThat(status.inaktivIArena, is(true));
     }
+
+    @Test
+    public void hentOppfolgingStatus_brukerSomErKRRSkalVareManuell() throws Exception {
+        oppfolging.setUnderOppfolging(true);
+        gittReservasjon("true");
+        OppfolgingStatusData status = hentOppfolgingStatus();
+
+        assertThat(status.reservasjonKRR, is(true));
+        assertThat(status.manuell, is(true));
+    }
     
     @Test
     public void utenReservasjon() throws Exception {
-        gittAktor();
 
         OppfolgingStatusData oppfolgingStatusData = hentOppfolgingStatus();
 
@@ -249,7 +281,6 @@ public class OppfolgingServiceTest {
 
     @Test
     public void utenKontaktInformasjon() throws Exception {
-        gittAktor();
         gittKRRFeil(HentDigitalKontaktinformasjonKontaktinformasjonIkkeFunnet.class);
         gittOppfolgingStatus("ARBS", "");
 
@@ -260,7 +291,6 @@ public class OppfolgingServiceTest {
 
     @Test
     public void personIkkeFunnet() throws Exception {
-        gittAktor();
         gittKRRFeil(HentDigitalKontaktinformasjonPersonIkkeFunnet.class);
         gittOppfolgingStatus("ARBS", "");
 
@@ -271,7 +301,6 @@ public class OppfolgingServiceTest {
 
     @Test
     public void medReservasjonOgUnderOppfolging() throws Exception {
-        gittAktor();
         gittReservasjon("true");
         gittOppfolgingStatus("ARBS", "");
 
@@ -282,7 +311,6 @@ public class OppfolgingServiceTest {
 
     @Test
     public void underOppfolging() throws Exception {
-        gittAktor();
         gittOppfolging(oppfolging);
         gittOppfolgingStatus("ARBS", "");
 
@@ -293,7 +321,6 @@ public class OppfolgingServiceTest {
 
     @Test
     public void ikkeArbeidssokerUnderOppfolging() throws Exception {
-        gittAktor();
         gittOppfolging(oppfolging);
         gittOppfolgingStatus("IARBS", "BATT");
 
@@ -304,7 +331,6 @@ public class OppfolgingServiceTest {
 
     @Test
     public void ikkeArbeidssokerIkkeUnderOppfolging() throws Exception {
-        gittAktor();
         gittOppfolging(oppfolging);
         gittOppfolgingStatus("IARBS", "");
 
@@ -315,7 +341,6 @@ public class OppfolgingServiceTest {
 
     @Test
     public void kanIkkeAvslutteNarManIkkeErUnderOppfolging() throws Exception {
-        gittAktor();
         gittOppfolging(oppfolging.setUnderOppfolging(false));
         gittYtelserMedStatus();
 
@@ -327,7 +352,6 @@ public class OppfolgingServiceTest {
 
     @Test
     public void kanIkkeAvslutteNarManIkkeErUnderOppfolgingIArena() throws Exception {
-        gittAktor();
         gittOppfolging(oppfolging.setUnderOppfolging(true));
         gittOppfolgingStatus("ARBS", null);
         gittYtelserMedStatus();
@@ -340,7 +364,6 @@ public class OppfolgingServiceTest {
 
     @Test
     public void kanAvslutteMedAktiveTiltak() throws Exception {
-        gittAktor();
         gittOppfolging(oppfolging.setUnderOppfolging(true));
         gittOppfolgingStatus("ISERV", "");
         gittAktiveTiltak();
@@ -355,7 +378,6 @@ public class OppfolgingServiceTest {
 
     @Test
     public void kanAvslutteMedVarselOmAktiveYtelser() throws Exception {
-        gittAktor();
         gittOppfolging(oppfolging.setUnderOppfolging(true));
         gittOppfolgingStatus("ISERV", "");
         gittIngenAktiveTiltak();
@@ -367,7 +389,31 @@ public class OppfolgingServiceTest {
         assertThat(avslutningStatusData.kanAvslutte, is(true));
         assertThat(avslutningStatusData.harYtelser, is(true));
     }
-
+    
+    @Test(expected=IngenTilgang.class)
+    public void underOppfolging_skalFeileHvisIkkeTilgang() {
+        doThrow(IngenTilgang.class).when(pepClientMock)
+                .sjekkLesetilgangTilBruker(Bruker.fraFnr(FNR).medAktoerIdSupplier(()->AKTOR_ID));
+        oppfolgingService.underOppfolging(FNR);
+    }
+    
+    @Test(expected=IllegalArgumentException.class)
+    public void underOppfolging_skalFeileHvisAktoerIdIkkeFinnes() {
+        when(aktorServiceMock.getAktorId(FNR)).thenReturn(Optional.empty());
+        oppfolgingService.underOppfolging(FNR);
+    }
+    
+    @Test
+    public void underOppfolging_skalReturnereFalseHvisIngenDataOmBruker() {
+        assertThat(oppfolgingService.underOppfolging(FNR), is(false));
+    }
+    
+    @Test
+    public void underOppfolging_skalReturnereTrueHvisBrukerHarOppfolgingsflagg() {
+        when(oppfolgingsStatusRepository.fetch(AKTOR_ID)).thenReturn(new OppfolgingTable().setUnderOppfolging(true));
+        assertThat(oppfolgingService.underOppfolging(FNR), is(true));
+    }
+    
     private void gittOppfolgingStatus(String formidlingskode, String kvalifiseringsgruppekode) {
         arenaOppfolging.setFormidlingsgruppe(formidlingskode);
         arenaOppfolging.setServicegruppe(kvalifiseringsgruppekode);
@@ -375,18 +421,15 @@ public class OppfolgingServiceTest {
 
     private void gittEnhet(String enhet) {
         arenaOppfolging.setOppfolgingsenhet(enhet);
+        veilarbArenaOppfolging.setNav_kontor(enhet);
     }
 
     private OppfolgingStatusData hentOppfolgingStatus() throws Exception {
-        return oppfolgingService.hentOppfolgingsStatus(FNR);
+        return oppfolgingService.hentOppfolgingsStatus(FNR, true);
     }
 
     private void gittOppfolging(Oppfolging oppfolging) {
         when(oppfolgingRepositoryMock.hentOppfolging(AKTOR_ID)).thenReturn(Optional.of(oppfolging));
-    }
-
-    private void gittAktor() {
-        when(aktorServiceMock.getAktorId(FNR)).thenReturn(of(AKTOR_ID));
     }
 
     private void gittReservasjon(String reservasjon) {
@@ -432,4 +475,5 @@ public class OppfolgingServiceTest {
 
         when(ytelseskontraktV3.hentYtelseskontraktListe(request)).thenReturn(response);
     }
+    
 }

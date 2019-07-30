@@ -1,6 +1,6 @@
 package no.nav.fo.veilarboppfolging.rest;
 
-import no.nav.apiapp.security.PepClient;
+import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
 import no.nav.fo.veilarboppfolging.domain.OppfolgingskontraktData;
 import no.nav.fo.veilarboppfolging.domain.OppfolgingskontraktResponse;
 import no.nav.fo.veilarboppfolging.mappers.OppfolgingMapper;
@@ -32,7 +32,7 @@ public class ArenaOppfolgingRessursTest {
     private ArenaOppfolgingService arenaOppfolgingService;
 
     @Mock
-    private PepClient pepClient;
+    private VeilarbAbacPepClient pepClient;
 
     @Test
     public void getOppfoelgingSkalReturnereEnRespons() throws Exception {

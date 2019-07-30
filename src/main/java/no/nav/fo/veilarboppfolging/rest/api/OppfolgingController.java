@@ -18,7 +18,7 @@ public interface OppfolgingController {
     Bruker hentBrukerInfo() throws Exception;
 
     @GET
-    OppfolgingStatus hentOppfolgingsStatus() throws Exception;
+    OppfolgingStatus hentOppfolgingsStatus(@QueryParam("brukArenaDirekte") boolean brukArenaDirekte) throws Exception;
 
     @GET
     @Path("/mal")

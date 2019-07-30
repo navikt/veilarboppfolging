@@ -12,7 +12,8 @@ import org.springframework.stereotype.Component;
 import java.util.Date;
 import java.util.List;
 
-import static no.nav.fo.veilarboppfolging.kafka.ConsumerConfig.getBrokerUrls;
+import static no.nav.fo.veilarboppfolging.kafka.KafkaPropsConfig.KAFKA_BROKERS;
+
 
 @Component
 @Slf4j
@@ -31,7 +32,7 @@ public class KafkaHelsesjekk implements Helsesjekk, ContainerAwareErrorHandler {
 
     @Override
     public HelsesjekkMetadata getMetadata() {
-        return new HelsesjekkMetadata("kafka", getBrokerUrls(), "kafka", false);
+        return new HelsesjekkMetadata("kafka", KAFKA_BROKERS, "kafka", false);
     }
 
     @Override

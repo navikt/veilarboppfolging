@@ -1,9 +1,10 @@
 package no.nav.fo.veilarboppfolging.rest;
 
 import io.swagger.annotations.Api;
-
-import no.nav.apiapp.security.PepClient;
 import no.nav.apiapp.security.SubjectService;
+import no.nav.apiapp.security.veilarbabac.Bruker;
+import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
+import no.nav.common.auth.SubjectHandler;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.feed.producer.FeedProducer;
 import no.nav.fo.veilarboppfolging.db.OppfolgingFeedRepository;
@@ -34,14 +35,14 @@ public class VeilederTilordningRessurs {
 
     private final AktorService aktorService;
     private final VeilederTilordningerRepository veilederTilordningerRepository;
-    private final PepClient pepClient;
+    private final VeilarbAbacPepClient pepClient;
     private final AutorisasjonService autorisasjonService;
     private FeedProducer<OppfolgingFeedDTO> oppfolgingFeed;
     private final SubjectService subjectService = new SubjectService();
 
     public VeilederTilordningRessurs(AktorService aktorService,
                                      VeilederTilordningerRepository veilederTilordningerRepository,
-                                     PepClient pepClient,
+                                     VeilarbAbacPepClient pepClient,
                                      FeedProducer<OppfolgingFeedDTO> oppfolgingFeed,
                                      AutorisasjonService autorisasjonService
     ) {
@@ -58,26 +59,37 @@ public class VeilederTilordningRessurs {
     @Path("/tilordneveileder")
     public Response postVeilederTilordninger(List<VeilederTilordning> tilordninger) {
         autorisasjonService.skalVereInternBruker();
+        String innloggetVeilederId = SubjectHandler.getIdent().orElseThrow(IllegalStateException::new);
 
         List<VeilederTilordning> feilendeTilordninger = new ArrayList<>();
         for (VeilederTilordning tilordning : tilordninger) {
+
+            tilordning.setInnloggetVeilederId(innloggetVeilederId);
+
             try {
-                final String fnr = tilordning.getBrukerFnr();
-                pepClient.sjekkSkriveTilgangTilFnr(fnr);
+                Bruker bruker = lagBrukerFraFnr(tilordning.getBrukerFnr());
+                pepClient.sjekkSkrivetilgangTilBruker(bruker);
 
-                String aktoerId = finnAktorId(fnr);
+                String aktoerId = bruker.getAktoerId();
+                tilordning.setAktoerId(aktoerId);
 
-                String tilordningForAktoer = veilederTilordningerRepository.hentTilordningForAktoer(aktoerId);
+                String eksisterendeVeileder = veilederTilordningerRepository.hentTilordningForAktoer(aktoerId);
 
-                if (kanSetteNyVeileder(tilordningForAktoer, tilordning)) {
-                    skrivTilDatabase(aktoerId, tilordning.getTilVeilederId());
+                if (kanTilordneFraVeileder(eksisterendeVeileder, tilordning.getFraVeilederId())) {
+                    if (nyVeilederHarTilgang(tilordning)) {
+                        skrivTilDatabase(aktoerId, tilordning.getTilVeilederId());
+                    } else {
+                        LOG.info("Aktoerid {} kunne ikke tildeles. Ny veileder {} har ikke tilgang.", aktoerId, tilordning.getTilVeilederId());
+                        feilendeTilordninger.add(tilordning);
+                    }
                 } else {
+                    LOG.info("Aktoerid {} kunne ikke tildeles. Oppgitt fraVeileder {} er feil. Faktisk veileder: {}", aktoerId, tilordning.getFraVeilederId(), eksisterendeVeileder);
                     feilendeTilordninger.add(tilordning);
-                    LOG.info("Aktoerid {} kunne ikke tildeles ettersom fraVeileder er feil", aktoerId);
                 }
+
             } catch (Exception e) {
                 feilendeTilordninger.add(tilordning);
-                loggFeilOppfolging(e);
+                loggFeilOppfolging(e, tilordning);
             }
         }
 
@@ -99,13 +111,13 @@ public class VeilederTilordningRessurs {
     @POST
     @Path("{fnr}/lestaktivitetsplan/")
     public void lestAktivitetsplan(@PathParam("fnr") String fnr) {
+
+        Bruker bruker = lagBrukerFraFnr(fnr);
+
         autorisasjonService.skalVereInternBruker();
-        pepClient.sjekkLeseTilgangTilFnr(fnr);
+        pepClient.sjekkLesetilgangTilBruker(bruker);
 
-        String aktorId = aktorService.getAktorId(fnr)
-                .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktør for fnr: " + fnr));
-
-        veilederTilordningerRepository.hentTilordnetVeileder(aktorId)
+        veilederTilordningerRepository.hentTilordnetVeileder(bruker.getAktoerId())
                 .filter(Tilordning::isNyForVeileder)
                 .filter(this::erVeilederFor)
                 .map(FunksjonelleMetrikker::lestAvVeileder)
@@ -113,6 +125,26 @@ public class VeilederTilordningRessurs {
                 .map(veilederTilordningerRepository::markerSomLestAvVeileder)
                 .ifPresent(i -> kallWebhook());
     }
+
+
+    private void loggFeilOppfolging(Exception e, VeilederTilordning tilordning) {
+
+        String fraVeilederId = tilordning.getFraVeilederId();
+        String tilVeilederId = tilordning.getTilVeilederId();
+        String innloggetVeilederId = tilordning.getInnloggetVeilederId();
+        String aktoerId = tilordning.getAktoerId();
+
+        if (e instanceof NotAuthorizedException) {
+            LOG.warn("Feil ved tildeling av veileder: innlogget veileder: {}, fraVeileder: {} tilVeileder: {} bruker(aktørId): {} årsak: request is not authorized", innloggetVeilederId, fraVeilederId, tilVeilederId, aktoerId, e);
+        } else if (e instanceof PepException) {
+            LOG.error("Feil ved tildeling av veileder: innlogget veileder: {}, fraVeileder: {} tilVeileder: {} bruker(aktørId): {}, årsak: kall til ABAC feilet", innloggetVeilederId, fraVeilederId, tilVeilederId, aktoerId, e);
+        } else if (e instanceof IllegalArgumentException) {
+            LOG.error("Feil ved tildeling av veileder: innlogget veileder: {}, fraVeileder: {} tilVeileder: {} årsak: Fant ikke aktørId for bruker", innloggetVeilederId, tilordning.getFraVeilederId(), tilordning.getTilVeilederId(), e);
+        } else {
+            LOG.error("Feil ved tildeling av veileder: innlogget veileder: {}, fraVeileder: {} tilVeileder: {} bruker(aktørId): {} årsak: ukjent årsak", innloggetVeilederId, fraVeilederId, tilVeilederId, aktoerId, e);
+        }
+    }
+
 
     private boolean erVeilederFor(Tilordning tilordning) {
         return subjectService.getUserId()
@@ -132,25 +164,6 @@ public class VeilederTilordningRessurs {
         }
     }
 
-    private String finnAktorId(final String fnr) {
-        return aktorService.getAktorId(fnr)
-                .orElseThrow(() -> new IllegalArgumentException("Aktoerid ikke funnet"));
-    }
-
-    private void loggFeilOppfolging(Exception e) {
-        if(e instanceof NotAuthorizedException) {
-            LOG.warn("Request is not authorized", e);
-        } else {
-            LOG.error(loggMeldingForException(e), e);
-        }
-    }
-
-    private String loggMeldingForException(Exception e) {
-        return (e instanceof PepException) ? "Kall til ABAC feilet"
-                : (e instanceof IllegalArgumentException) ? "Aktoerid ikke funnet"
-                : "Det skjedde en feil ved tildeling av veileder";
-    }
-
     private void skrivTilDatabase(String aktoerId, String veileder) {
         try {
             veilederTilordningerRepository.upsertVeilederTilordning(aktoerId, veileder);
@@ -161,10 +174,6 @@ public class VeilederTilordningRessurs {
         }
     }
 
-    public boolean kanSetteNyVeileder(String eksisterendeVeileder, VeilederTilordning veilederTilordning) {
-        return kanTilordneFraVeileder(eksisterendeVeileder, veilederTilordning.getFraVeilederId()) && nyVeilederHarTilgang(veilederTilordning);
-    }
-
     static boolean kanTilordneFraVeileder(String eksisterendeVeileder, String fraVeilederId) {
         return eksisterendeVeileder == null || eksisterendeVeileder.equals(fraVeilederId);
     }
@@ -172,5 +181,12 @@ public class VeilederTilordningRessurs {
     private boolean nyVeilederHarTilgang(VeilederTilordning veilederTilordning) {
         return autorisasjonService.harVeilederSkriveTilgangTilFnr(veilederTilordning.getTilVeilederId(), veilederTilordning.getBrukerFnr());
     }
+
+    private Bruker lagBrukerFraFnr(String fnr) {
+        return Bruker.fraFnr(fnr)
+                .medAktoerIdSupplier(() -> aktorService.getAktorId(fnr)
+                        .orElseThrow(() -> new IllegalArgumentException("Aktoerid ikke funnet")));
+    }
+
 
 }

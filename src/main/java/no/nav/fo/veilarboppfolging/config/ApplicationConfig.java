@@ -52,7 +52,9 @@ public class ApplicationConfig implements ApiApplication {
     public static final String NYEBRUKERE_FEED_BRUKERTILGANG_PROPERTY = "nyebrukere.feed.brukertilgang";
     public static final String KVP_API_BRUKERTILGANG_PROPERTY = "kvp.api.brukertilgang";
     public static final String VEILARBARENAAPI_URL_PROPERTY = "VEILARBARENAAPI_URL";
+    public static final String ARENA_NIGHT_KING_URL_PROPERTY = "NIGHTKINGAPI_URL";
     public static final String STS_OIDC_CONFIGURATION_URL_PROPERTY = "SECURITY_TOKEN_SERVICE_OPENID_CONFIGURATION_URL";
+    public static final String KAFKA_BROKERS_URL_PROPERTY = "KAFKA_BROKERS_URL";
 
     @Inject
     private DataSource dataSource;
@@ -90,7 +92,7 @@ public class ApplicationConfig implements ApiApplication {
 
         apiAppConfigurator
                 .sts()
-                .azureADB2CLogin()
+                .validateAzureAdExternalUserTokens()
                 .issoLogin()
                 .oidcProvider(securityTokenServiceOidcProvider);
     }

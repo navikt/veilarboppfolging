@@ -1,7 +1,9 @@
 package no.nav.fo.veilarboppfolging.services;
 
+import io.micrometer.core.instrument.Counter;
 import no.nav.fo.veilarboppfolging.domain.ArenaOppfolging;
 import no.nav.fo.veilarboppfolging.mappers.ArenaOppfolgingMapper;
+import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.HentOppfoelgingskontraktListeSikkerhetsbegrensning;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.informasjon.Periode;
@@ -21,22 +23,35 @@ import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.NotFoundException;
 import javax.xml.datatype.XMLGregorianCalendar;
 
+import static no.nav.metrics.MetricsFactory.getMeterRegistry;
 import static org.slf4j.LoggerFactory.getLogger;
 
 public class ArenaOppfolgingService {
 
     private static final Logger LOG = getLogger(ArenaOppfolgingService.class);
     private final OppfoelgingPortType oppfoelgingPortType;
+    private final UnleashService unleash;
+    private final ArenaNightKingService arenaNightKingService;
     private OppfoelgingsstatusV2 oppfoelgingsstatusV2Service;
+    private Counter counter;
 
     public ArenaOppfolgingService(OppfoelgingsstatusV2 oppfoelgingsstatusV2Service,
-                                  OppfoelgingPortType oppfoelgingPortType) {
+                                  OppfoelgingPortType oppfoelgingPortType,
+                                  UnleashService unleash,
+                                  ArenaNightKingService arenaNightKingService) {
         this.oppfoelgingsstatusV2Service = oppfoelgingsstatusV2Service;
         this.oppfoelgingPortType = oppfoelgingPortType;
+        this.unleash = unleash;
+        this.arenaNightKingService = arenaNightKingService;
+        counter = Counter.builder("veilarboppfolging.kall_mot_arena_oppfolging").register(getMeterRegistry());
     }
 
     public ArenaOppfolging hentArenaOppfolging(String identifikator) {
-        return getArenaOppfolgingsstatus(identifikator);
+        if(unleash.isEnabled("veilarboppfolging.oppfolging.fra.nightking")) {
+            return arenaNightKingService.hentArenaOppfolging(identifikator);
+        } else {
+            return getArenaOppfolgingsstatus(identifikator);
+        }
     }
 
     public HentOppfoelgingskontraktListeResponse hentOppfolgingskontraktListe(XMLGregorianCalendar fom, XMLGregorianCalendar tom, String fnr) {
@@ -60,6 +75,9 @@ public class ArenaOppfolgingService {
     }
 
     private ArenaOppfolging getArenaOppfolgingsstatus(String identifikator) {
+
+        counter.increment();
+
         no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v2.informasjon.Person person = new no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v2.informasjon.Person();
         person.setIdent(identifikator);
 

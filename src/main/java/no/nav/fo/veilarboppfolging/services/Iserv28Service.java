@@ -8,10 +8,9 @@ import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingsStatusRepository;
 import no.nav.fo.veilarboppfolging.domain.IservMapper;
 import no.nav.fo.veilarboppfolging.domain.OppfolgingTable;
-import no.nav.fo.veilarboppfolging.mappers.ArenaBruker;
+import no.nav.fo.veilarboppfolging.mappers.VeilarbArenaOppfolging;
 import no.nav.fo.veilarboppfolging.utils.FunksjonelleMetrikker;
 import no.nav.metrics.utils.MetricsUtils;
-import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -36,8 +35,6 @@ import static no.nav.sbl.sql.DbConstants.CURRENT_TIMESTAMP;
 @Slf4j
 public class Iserv28Service{
 
-    static final String START_OPPFOLGING_TOGGLE = "veilarboppfolging.start.oppfolging.automatisk";
-
     enum AvslutteOppfolgingResultat {
         AVSLUTTET_OK,
         IKKE_AVSLUTTET,
@@ -52,7 +49,6 @@ public class Iserv28Service{
     private final SystemUserSubjectProvider systemUserSubjectProvider;
     private final OppfolgingsStatusRepository oppfolgingsStatusRepository;
     private final OppfolgingRepository oppfolgingRepository;
-    private final UnleashService unleashService;
 
     private static final int lockAutomatiskAvslutteOppfolgingSeconds = 3600;
 
@@ -64,8 +60,7 @@ public class Iserv28Service{
             OppfolgingRepository oppfolgingRepository,
             AktorService aktorService,
             LockingTaskExecutor taskExecutor,
-            SystemUserSubjectProvider systemUserSubjectProvider,
-            UnleashService unleashService
+            SystemUserSubjectProvider systemUserSubjectProvider
     ){
         this.jdbc = jdbc;
         this.oppfolgingService = oppfolgingService;
@@ -74,7 +69,6 @@ public class Iserv28Service{
         this.aktorService = aktorService;
         this.taskExecutor = taskExecutor;
         this.systemUserSubjectProvider = systemUserSubjectProvider;
-        this.unleashService = unleashService;
     }
 
     @Scheduled(cron="0 0 * * * *")
@@ -120,39 +114,35 @@ public class Iserv28Service{
     }
 
     @Transactional
-    public void behandleEndretBruker(ArenaBruker arenaBruker) {
+    public void behandleEndretBruker(VeilarbArenaOppfolging veilarbArenaOppfolging) {
 
-        log.info("Behandler bruker: {}", arenaBruker);
+        log.info("Behandler bruker: {}", veilarbArenaOppfolging);
     
-        if(erIserv(arenaBruker.getFormidlingsgruppekode())) {
-            oppdaterUtmeldingTabell(arenaBruker);
+        if(erIserv(veilarbArenaOppfolging.getFormidlingsgruppekode())) {
+            oppdaterUtmeldingTabell(veilarbArenaOppfolging);
         } else {
-            slettBrukerFraUtmeldingTabell(arenaBruker.getAktoerid());
-            if(erUnderOppfolging(arenaBruker.getFormidlingsgruppekode(), arenaBruker.getKvalifiseringsgruppekode(), null)) {
-                if (brukerHarOppfolgingsflagg(arenaBruker.getAktoerid())) {
-                    log.info("Bruker med aktørid {} er allerede under oppfølging", arenaBruker.getAktoerid());
+            slettBrukerFraUtmeldingTabell(veilarbArenaOppfolging.getAktoerid());
+            if(erUnderOppfolging(veilarbArenaOppfolging.getFormidlingsgruppekode(), veilarbArenaOppfolging.getKvalifiseringsgruppekode())) {
+                if (brukerHarOppfolgingsflagg(veilarbArenaOppfolging.getAktoerid())) {
+                    log.info("Bruker med aktørid {} er allerede under oppfølging", veilarbArenaOppfolging.getAktoerid());
                 } else {
-                    startOppfolging(arenaBruker);
+                    startOppfolging(veilarbArenaOppfolging);
                 }
             }
         }
     }
 
-    private void startOppfolging(ArenaBruker arenaBruker) {
-        if(unleashService.isEnabled(START_OPPFOLGING_TOGGLE)) {
-            log.info("Starter oppfølging automatisk for bruker med aktørid {}", arenaBruker.getAktoerid());
-            oppfolgingRepository.startOppfolgingHvisIkkeAlleredeStartet(arenaBruker.getAktoerid());
-            FunksjonelleMetrikker.startetOppfolgingAutomatisk(arenaBruker.getFormidlingsgruppekode(), arenaBruker.getKvalifiseringsgruppekode());
-        } else {
-            log.info("Automatisk start av oppfølging er slått av i unleash. Aktørid {}", arenaBruker.getAktoerid());
-        }
+    private void startOppfolging(VeilarbArenaOppfolging veilarbArenaOppfolging) {
+        log.info("Starter oppfølging automatisk for bruker med aktørid {}", veilarbArenaOppfolging.getAktoerid());
+        oppfolgingRepository.startOppfolgingHvisIkkeAlleredeStartet(veilarbArenaOppfolging.getAktoerid());
+        FunksjonelleMetrikker.startetOppfolgingAutomatisk(veilarbArenaOppfolging.getFormidlingsgruppekode(), veilarbArenaOppfolging.getKvalifiseringsgruppekode());
     }
 
-    private void oppdaterUtmeldingTabell(ArenaBruker arenaBruker) {
-        if (finnesIUtmeldingTabell(arenaBruker)) {
-            updateUtmeldingTabell(arenaBruker);
-        } else if (brukerHarOppfolgingsflagg(arenaBruker.getAktoerid())) {
-            insertUtmeldingTabell(arenaBruker);
+    private void oppdaterUtmeldingTabell(VeilarbArenaOppfolging veilarbArenaOppfolging) {
+        if (finnesIUtmeldingTabell(veilarbArenaOppfolging)) {
+            updateUtmeldingTabell(veilarbArenaOppfolging);
+        } else if (brukerHarOppfolgingsflagg(veilarbArenaOppfolging.getAktoerid())) {
+            insertUtmeldingTabell(veilarbArenaOppfolging);
         }
     }
 
@@ -161,37 +151,37 @@ public class Iserv28Service{
         return eksisterendeOppfolgingstatus != null && eksisterendeOppfolgingstatus.isUnderOppfolging();
     }
 
-    private boolean finnesIUtmeldingTabell(ArenaBruker arenaBruker) {
-        return eksisterendeIservBruker(arenaBruker) != null;
+    private boolean finnesIUtmeldingTabell(VeilarbArenaOppfolging veilarbArenaOppfolging) {
+        return eksisterendeIservBruker(veilarbArenaOppfolging) != null;
     }
     
-    IservMapper eksisterendeIservBruker(ArenaBruker arenaBruker){
+    IservMapper eksisterendeIservBruker(VeilarbArenaOppfolging veilarbArenaOppfolging){
          return SqlUtils.select(jdbc, "UTMELDING", Iserv28Service::mapper)
                 .column("aktor_id")
                 .column("iserv_fra_dato")
-                .where(WhereClause.equals("aktor_id",arenaBruker.getAktoerid())).execute();
+                .where(WhereClause.equals("aktor_id", veilarbArenaOppfolging.getAktoerid())).execute();
     }
 
-    private void updateUtmeldingTabell(ArenaBruker arenaBruker){
+    private void updateUtmeldingTabell(VeilarbArenaOppfolging veilarbArenaOppfolging){
         SqlUtils.update(jdbc, "UTMELDING")
-                .set("iserv_fra_dato", Timestamp.from(arenaBruker.getIserv_fra_dato().toInstant()))
+                .set("iserv_fra_dato", Timestamp.from(veilarbArenaOppfolging.getIserv_fra_dato().toInstant()))
                 .set("oppdatert_dato", CURRENT_TIMESTAMP)
-                .whereEquals("aktor_id", arenaBruker.getAktoerid())
+                .whereEquals("aktor_id", veilarbArenaOppfolging.getAktoerid())
                 .execute();
 
-        log.info("ISERV bruker med aktorid {} har blitt oppdatert inn i UTMELDING tabell", arenaBruker.getAktoerid());
+        log.info("ISERV bruker med aktorid {} har blitt oppdatert inn i UTMELDING tabell", veilarbArenaOppfolging.getAktoerid());
     }
 
-    void insertUtmeldingTabell(ArenaBruker arenaBruker) {
-        Timestamp iservFraDato = Timestamp.from(arenaBruker.getIserv_fra_dato().toInstant());
+    void insertUtmeldingTabell(VeilarbArenaOppfolging veilarbArenaOppfolging) {
+        Timestamp iservFraDato = Timestamp.from(veilarbArenaOppfolging.getIserv_fra_dato().toInstant());
         SqlUtils.insert(jdbc, "UTMELDING")
-                .value("aktor_id", arenaBruker.getAktoerid())
+                .value("aktor_id", veilarbArenaOppfolging.getAktoerid())
                 .value("iserv_fra_dato", iservFraDato)
                 .value("oppdatert_dato", CURRENT_TIMESTAMP)
                 .execute();
 
         log.info("ISERV bruker med aktorid {} og iserv_fra_dato {} har blitt insertert inn i UTMELDING tabell",
-                arenaBruker.getAktoerid(),
+                veilarbArenaOppfolging.getAktoerid(),
                 iservFraDato
         );
     }

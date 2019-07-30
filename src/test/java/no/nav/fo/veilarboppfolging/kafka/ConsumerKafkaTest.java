@@ -2,7 +2,7 @@ package no.nav.fo.veilarboppfolging.kafka;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.fo.veilarboppfolging.mappers.ArenaBruker;
+import no.nav.fo.veilarboppfolging.mappers.VeilarbArenaOppfolging;
 import no.nav.fo.veilarboppfolging.services.Iserv28Service;
 import no.nav.json.JsonUtils;
 
@@ -24,7 +24,7 @@ public class ConsumerKafkaTest extends KafkaTest {
 
     @Test(timeout=1000)
     public void testConsume() throws InterruptedException {
-        ArenaBruker bruker = new ArenaBruker();
+        VeilarbArenaOppfolging bruker = new VeilarbArenaOppfolging();
         bruker.setAktoerid("1234");
         bruker.setFodselsnr("4321");
         bruker.setFormidlingsgruppekode("ISERV");

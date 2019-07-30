@@ -1,6 +1,6 @@
 package no.nav.fo.veilarboppfolging.rest;
 
-import no.nav.apiapp.security.PepClient;
+import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
 import no.nav.brukerdialog.security.context.SubjectRule;
 import no.nav.brukerdialog.security.domain.IdentType;
 import no.nav.common.auth.SsoToken;
@@ -36,7 +36,10 @@ public class OppfolgingRessursTest {
     private AktiverBrukerService aktiverBrukerService;
 
     @Mock
-    private PepClient pepClient;
+    private VeilarbAbacPepClient pepClient;
+
+    @Mock
+    private FnrParameterUtil fnrParameterUtil;
 
     @Rule
     public SubjectRule subjectRule = new SubjectRule();
@@ -44,14 +47,14 @@ public class OppfolgingRessursTest {
     @Test
     public void aktiverBruker() throws Exception {
         AktiverArbeidssokerData data = new AktiverArbeidssokerData();
-        data.setFnr(new Fnr(""));
+        data.setFnr(new Fnr("fnr"));
         oppfolgingRessurs.aktiverBruker(data);
         verify(autorisasjonService,  times(1)).skalVereSystemRessurs();
     }
 
     @Test
     public void reaktiverBruker() throws Exception {
-        oppfolgingRessurs.reaktiverBruker(new Fnr(""));
+        oppfolgingRessurs.reaktiverBruker(new Fnr("fnr"));
         verify(autorisasjonService,  times(1)).skalVereSystemRessurs();
     }
 

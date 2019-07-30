@@ -1,6 +1,6 @@
 package no.nav.fo.veilarboppfolging.services;
 
-import no.nav.fo.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
+import no.nav.fo.veilarboppfolging.domain.arena.ArenaAktivitetDTO;
 import no.nav.sbl.dialogarena.restclient.RestClient;
 
 import java.util.List;

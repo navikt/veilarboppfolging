@@ -26,6 +26,7 @@ public class OppfolgingStatus {
     private Boolean kanReaktiveres;
     public Date inaktiveringsdato;
     private Boolean erSykmeldtMedArbeidsgiver;
+    private String servicegruppe;
 
     @Deprecated
     private Boolean erIkkeArbeidssokerUtenOppfolging;
