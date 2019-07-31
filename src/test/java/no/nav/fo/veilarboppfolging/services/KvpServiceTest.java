@@ -31,8 +31,7 @@ import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class KvpServiceTest {
-
-    public static final String VEILEDER = "1234";
+   
     @Mock
     private KvpRepository kvpRepositoryMock;
 
@@ -60,6 +59,7 @@ public class KvpServiceTest {
     private static final String ENHET = "1234";
     private static final String START_BEGRUNNELSE = "START_BEGRUNNELSE";
     private static final String STOP_BEGRUNNELSE = "STOP_BEGRUNNELSE";
+    private static final String VEILEDER = "1234";
 
     @Before
     public void initialize() throws Exception {
@@ -112,7 +112,9 @@ public class KvpServiceTest {
 
     @Test
     public void stopKvp_avslutter_eskalering() throws PepException {
+        doReturn(true).when(pepClientMock).harTilgangTilEnhet(any());
         when(oppfolgingsStatusRepository.fetch(AKTOR_ID)).thenReturn(new OppfolgingTable().setUnderOppfolging(true).setGjeldendeEskaleringsvarselId(1));
+
         SubjectHandler.withSubject(new Subject(VEILEDER, InternBruker, SsoToken.oidcToken("token")),
                 () -> kvpService.stopKvp(FNR, STOP_BEGRUNNELSE)
         );
