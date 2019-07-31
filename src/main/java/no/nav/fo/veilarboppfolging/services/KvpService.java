@@ -18,6 +18,7 @@ import no.nav.fo.veilarboppfolging.utils.FunksjonelleMetrikker;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingsstatusRequest;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
 
@@ -76,6 +77,7 @@ public class KvpService {
     }
 
     @SneakyThrows
+    @Transactional
     public void stopKvp(String fnr, String begrunnelse) {
         Bruker bruker = Bruker.fraFnr(fnr)
                 .medAktoerIdSupplier(() -> aktorService.getAktorId(fnr).orElseThrow(IngenTilgang::new));
