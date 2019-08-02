@@ -2,6 +2,8 @@ package no.nav.fo.veilarboppfolging.services;
 
 import lombok.SneakyThrows;
 import lombok.val;
+import no.nav.apiapp.feil.Feil;
+import no.nav.apiapp.feil.FeilType;
 import no.nav.apiapp.feil.IngenTilgang;
 import no.nav.apiapp.feil.UlovligHandling;
 import no.nav.apiapp.security.veilarbabac.Bruker;
@@ -66,6 +68,10 @@ public class KvpService {
             throw new IngenTilgang(String.format("Ingen tilgang til enhet '%s'", enhet));
         }
 
+        if (oppfolgingTable.getGjeldendeKvpId() != 0) {
+            throw new Feil(FeilType.UGYLDIG_REQUEST, "Aktøren er allerede under en KVP-periode.");
+        }
+
         String veilederId = SubjectHandler.getIdent().orElseThrow(RuntimeException::new);
         kvpRepository.startKvp(
                 aktorId,
@@ -95,7 +101,13 @@ public class KvpService {
         String veilederId = SubjectHandler.getIdent().orElseThrow(RuntimeException::new);
 
         OppfolgingTable oppfolgingTable = oppfolgingsStatusRepository.fetch(aktorId);
-        if(oppfolgingTable != null && oppfolgingTable.getGjeldendeEskaleringsvarselId() != 0) {
+
+        long gjeldendeKvp = oppfolgingTable.getGjeldendeKvpId();
+        if (gjeldendeKvp == 0) {
+            throw new Feil(FeilType.UGYLDIG_REQUEST, "Aktøren har ingen KVP-periode.");
+        }
+
+        if(oppfolgingTable.getGjeldendeEskaleringsvarselId() != 0) {
             eskaleringsvarselRepository.finish(
                     aktorId, 
                     oppfolgingTable.getGjeldendeEskaleringsvarselId(), 
@@ -104,6 +116,7 @@ public class KvpService {
         }
 
         kvpRepository.stopKvp(
+                gjeldendeKvp,
                 aktorId,
                 veilederId,
                 begrunnelse,

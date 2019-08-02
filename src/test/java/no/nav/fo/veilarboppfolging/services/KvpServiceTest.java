@@ -1,6 +1,7 @@
 package no.nav.fo.veilarboppfolging.services;
 
 import lombok.val;
+import no.nav.apiapp.feil.Feil;
 import no.nav.apiapp.feil.IngenTilgang;
 import no.nav.apiapp.feil.UlovligHandling;
 import no.nav.apiapp.security.veilarbabac.Bruker;
@@ -67,9 +68,9 @@ public class KvpServiceTest {
         val res = new HentOppfoelgingsstatusResponse();
         res.setNavOppfoelgingsenhet(ENHET);
         when(oppfoelgingPortTypeMock.hentOppfoelgingsstatus(any())).thenReturn(res);
-
+        
         when(oppfolgingsStatusRepository.fetch(AKTOR_ID)).thenReturn(new OppfolgingTable().setUnderOppfolging(true));
-
+        doReturn(true).when(pepClientMock).harTilgangTilEnhet(any());
     }
 
     @Test(expected = UlovligHandling.class)
@@ -86,8 +87,6 @@ public class KvpServiceTest {
     
     @Test
     public void startKvp()  {
-        doReturn(true).when(pepClientMock).harTilgangTilEnhet(any());
-
         SubjectHandler.withSubject(new Subject(VEILEDER, InternBruker, SsoToken.oidcToken("token")),
                 () -> kvpService.startKvp(FNR, START_BEGRUNNELSE)
         );
@@ -97,32 +96,51 @@ public class KvpServiceTest {
         verify(pepClientMock, times(1)).harTilgangTilEnhet(ENHET);
     }
 
+    @Test(expected = Feil.class)
+    public void startKvp_feiler_dersom_bruker_allerede_er_under_kvp() {
+
+        when(oppfolgingsStatusRepository.fetch(AKTOR_ID)).thenReturn(new OppfolgingTable().setUnderOppfolging(true).setGjeldendeKvpId((long) 2));
+        SubjectHandler.withSubject(new Subject(VEILEDER, InternBruker, SsoToken.oidcToken("token")),
+                () -> kvpService.startKvp(FNR, START_BEGRUNNELSE)
+        );
+
+    }
+
     @Test
     public void stopKvp()  {
-        doReturn(true).when(pepClientMock).harTilgangTilEnhet(any());
+        long kvpId = 2;
+        when(oppfolgingsStatusRepository.fetch(AKTOR_ID)).thenReturn(new OppfolgingTable().setUnderOppfolging(true).setGjeldendeKvpId(kvpId));
 
         SubjectHandler.withSubject(new Subject(VEILEDER, InternBruker, SsoToken.oidcToken("token")),
                 () -> kvpService.stopKvp(FNR, STOP_BEGRUNNELSE)
         );
 
         verify(pepClientMock, times(1)).sjekkLesetilgangTilBruker(BRUKER);
-        verify(kvpRepositoryMock, times(1)).stopKvp(eq(AKTOR_ID), eq(VEILEDER), eq(STOP_BEGRUNNELSE), eq(NAV));
+        verify(oppfolgingsStatusRepository, times(1)).fetch(AKTOR_ID);
+        verify(kvpRepositoryMock, times(1)).stopKvp(eq(kvpId), eq(AKTOR_ID), eq(VEILEDER), eq(STOP_BEGRUNNELSE), eq(NAV));
         verify(pepClientMock, times(1)).harTilgangTilEnhet(ENHET);
     }
-
+    
     @Test
     public void stopKvp_avslutter_eskalering() throws PepException {
-        doReturn(true).when(pepClientMock).harTilgangTilEnhet(any());
-        when(oppfolgingsStatusRepository.fetch(AKTOR_ID)).thenReturn(new OppfolgingTable().setUnderOppfolging(true).setGjeldendeEskaleringsvarselId(1));
+        long kvpId = 2;
+        when(oppfolgingsStatusRepository.fetch(AKTOR_ID)).thenReturn(new OppfolgingTable().setUnderOppfolging(true).setGjeldendeEskaleringsvarselId(1).setGjeldendeKvpId(kvpId));
 
         SubjectHandler.withSubject(new Subject(VEILEDER, InternBruker, SsoToken.oidcToken("token")),
                 () -> kvpService.stopKvp(FNR, STOP_BEGRUNNELSE)
         );
 
         verify(eskaleringsvarselRepository).finish(AKTOR_ID, 1, VEILEDER, KvpService.ESKALERING_AVSLUTTET_FORDI_KVP_BLE_AVSLUTTET);
-        verify(kvpRepositoryMock, times(1)).stopKvp(eq(AKTOR_ID), eq(VEILEDER), eq(STOP_BEGRUNNELSE), eq(NAV));
+        verify(kvpRepositoryMock, times(1)).stopKvp(eq(kvpId), eq(AKTOR_ID), eq(VEILEDER), eq(STOP_BEGRUNNELSE), eq(NAV));
     }
     
+    @Test(expected = Feil.class)
+    public void stopKvp_UtenAktivPeriode_feiler() {
+        SubjectHandler.withSubject(new Subject(VEILEDER, InternBruker, SsoToken.oidcToken("token")),
+                () -> kvpService.stopKvp(FNR, STOP_BEGRUNNELSE)
+        );
+    }
+
     @Test(expected = IngenTilgang.class)
     public void startKvpIkkeTilgang() {
         doThrow(IngenTilgang.class).when(pepClientMock).sjekkLesetilgangTilBruker(any());

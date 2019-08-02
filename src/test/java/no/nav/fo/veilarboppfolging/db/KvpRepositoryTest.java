@@ -1,6 +1,5 @@
 package no.nav.fo.veilarboppfolging.db;
 
-import no.nav.apiapp.feil.Feil;
 import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
 import no.nav.fo.DatabaseTest;
 import no.nav.fo.veilarboppfolging.domain.Kvp;
@@ -13,9 +12,7 @@ import javax.inject.Inject;
 
 import static no.nav.fo.veilarboppfolging.domain.KodeverkBruker.NAV;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
@@ -23,7 +20,7 @@ public class KvpRepositoryTest extends DatabaseTest {
 
     private static final String AKTOR_ID = "aktorId";
     private static final String SAKSBEHANDLER_ID = "saksbehandlerId";
-    public static final String BEGRUNNELSE = "Begrunnelse";
+    private static final String BEGRUNNELSE = "Begrunnelse";
 
     private Database db = getBean(Database.class);
 
@@ -36,33 +33,12 @@ public class KvpRepositoryTest extends DatabaseTest {
     private KvpRepository kvpRepository = new KvpRepository(db);
 
     @Test
-    public void startKvp() throws PepException {
-        when(pepClientMock.harTilgangTilEnhet(anyString())).thenReturn(true);
-        gittOppfolgingForAktor(AKTOR_ID);
-        start_kvp();
-
-        assertThat(hentGjeldendeKvp(AKTOR_ID).getOpprettetBegrunnelse(), is(BEGRUNNELSE));
-
-        when(pepClientMock.harTilgangTilEnhet(anyString())).thenReturn(false);
-        assertNull(hentGjeldendeKvp(AKTOR_ID));
-
-        // Test that starting KVP an additional time yields an error.
-        assertThrows(Feil.class, this::start_kvp);
-    }
-
-    @Test
     public void stopKvp() {
         gittOppfolgingForAktor(AKTOR_ID);
         start_kvp();
         stop_kvp();
 
         assertThat(hentGjeldendeKvp(AKTOR_ID), nullValue());
-    }
-
-    @Test
-    public void stopKvpWithoutPeriod() {
-        gittOppfolgingForAktor(AKTOR_ID);
-        assertThrows(Feil.class, this::stop_kvp);
     }
 
     @Test
@@ -97,7 +73,8 @@ public class KvpRepositoryTest extends DatabaseTest {
     }
 
     private void stop_kvp() {
-        kvpRepository.stopKvp(AKTOR_ID, SAKSBEHANDLER_ID, BEGRUNNELSE, NAV);
+        long kvpId = kvpRepository.gjeldendeKvp(AKTOR_ID);
+        kvpRepository.stopKvp(kvpId, AKTOR_ID, SAKSBEHANDLER_ID, BEGRUNNELSE, NAV);
     }
 
     private void start_kvp() {
