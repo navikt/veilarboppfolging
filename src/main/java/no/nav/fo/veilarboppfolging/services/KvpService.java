@@ -90,7 +90,8 @@ public class KvpService {
         stopKvpUtenEnhetSjekk(bruker.getAktoerId(), begrunnelse, NAV);
     }
 
-    void stopKvpUtenEnhetSjekk(String aktorId, String begrunnelse, KodeverkBruker kodeverkBruker) {
+    @Transactional
+    public void stopKvpUtenEnhetSjekk(String aktorId, String begrunnelse, KodeverkBruker kodeverkBruker) {
         String veilederId = SubjectHandler.getIdent().orElseThrow(RuntimeException::new);
 
         OppfolgingTable oppfolgingTable = oppfolgingsStatusRepository.fetch(aktorId);
