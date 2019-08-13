@@ -1,5 +1,6 @@
 package no.nav.fo.veilarboppfolging.kafka;
 
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.*;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -15,6 +16,8 @@ import org.springframework.kafka.test.utils.KafkaTestUtils;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import static no.nav.fo.veilarboppfolging.config.ApplicationConfig.KAFKA_BROKERS_PROPERTY;
 import static no.nav.sbl.util.EnvironmentUtils.Type.PUBLIC;
@@ -31,6 +34,7 @@ public abstract class KafkaTest {
     protected static KafkaTemplate<String, String> kafkaTemplate;
 
     private static KafkaMessageListenerContainer<String, String> container;
+    protected static BlockingQueue<ConsumerRecord<String, String>> records;
 
     @ClassRule
     public static KafkaEmbedded embeddedKafka = new KafkaEmbedded(1, true, RECEIVER_TOPIC);
@@ -42,8 +46,9 @@ public abstract class KafkaTest {
         ContainerProperties containerProperties = new ContainerProperties(RECEIVER_TOPIC);
 
         container = new KafkaMessageListenerContainer<>(consumerFactory, containerProperties);
+        records = new LinkedBlockingQueue<>();
         container.setupMessageListener((MessageListener<String, String>) record -> {
-            System.out.println("KafkaMessage: " + record.toString());
+            records.add(record);
         });
         container.start();
         ContainerTestUtils.waitForAssignment(container, embeddedKafka.getPartitionsPerTopic());
