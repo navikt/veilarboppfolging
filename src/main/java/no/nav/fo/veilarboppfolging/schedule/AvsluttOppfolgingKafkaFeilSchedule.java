@@ -32,8 +32,8 @@ public class AvsluttOppfolgingKafkaFeilSchedule {
     public void sendFeiledeKafkaMeldinger() {
         if(isLeader()) {
             List<AvsluttOppfolgingKafkaDTO> avsluttOppfolgingKafkaBrukere = avsluttOppfolgingEndringRepository.hentAvsluttOppfolgingBrukere();
-            log.info("Starter jobb for legge til avslutning av brukere {} på kafka", avsluttOppfolgingKafkaBrukere);
-            avsluttOppfolgingKafkaBrukere.forEach(feiletMelding -> avsluttOppfolgingProducer.avsluttOppfolgingEvent(feiletMelding.getAktorId(), feiletMelding.getSluttdato(), true));
+            log.info("Starter jobb for legge til avslutning av {} brukere på kafka", avsluttOppfolgingKafkaBrukere.size());
+            avsluttOppfolgingKafkaBrukere.forEach(feiletMelding -> avsluttOppfolgingProducer.avsluttOppfolgingEvent(feiletMelding.getAktorId(), feiletMelding.getSluttdato()));
         }
     }
 

@@ -21,7 +21,7 @@ public class AvsluttOppfolgingProducer {
         this.topic = topic;
     }
 
-    public void avsluttOppfolgingEvent(String aktorId, LocalDateTime sluttdato, boolean harFeiletTidligere) {
+    public void avsluttOppfolgingEvent(String aktorId, LocalDateTime sluttdato) {
         final AvsluttOppfolgingKafkaDTO avsluttOppfolgingKafkaDTO = toDTO(aktorId, sluttdato);
         final String serialisertBruker = toJson(avsluttOppfolgingKafkaDTO);
         kafkaTemplate.send(
@@ -30,7 +30,7 @@ public class AvsluttOppfolgingProducer {
                 serialisertBruker
         ).addCallback(
                 sendResult -> onSuccess(avsluttOppfolgingKafkaDTO),
-                throwable -> onError(throwable, avsluttOppfolgingKafkaDTO, harFeiletTidligere)
+                throwable -> onError(throwable, avsluttOppfolgingKafkaDTO)
         );
     }
 
@@ -40,10 +40,8 @@ public class AvsluttOppfolgingProducer {
     }
 
     @Transactional (propagation = Propagation.MANDATORY)
-    public void onError(Throwable throwable, AvsluttOppfolgingKafkaDTO avsluttOppfolgingKafkaDTO, boolean harFeiletTidligere) {
-        if(!harFeiletTidligere) {
-            avsluttOppfolgingEndringRepository.insertAvsluttOppfolgingBruker(avsluttOppfolgingKafkaDTO.getAktorId(), avsluttOppfolgingKafkaDTO.getSluttdato());
-        }
+    public void onError(Throwable throwable, AvsluttOppfolgingKafkaDTO avsluttOppfolgingKafkaDTO) {
+        avsluttOppfolgingEndringRepository.insertAvsluttOppfolgingBruker(avsluttOppfolgingKafkaDTO.getAktorId(), avsluttOppfolgingKafkaDTO.getSluttdato());
         log.error("Kunne ikke publisere melding {} til {}-topic", avsluttOppfolgingKafkaDTO, this.topic, throwable);
     }
 

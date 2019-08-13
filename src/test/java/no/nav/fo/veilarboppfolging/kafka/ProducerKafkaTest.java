@@ -31,9 +31,9 @@ public class ProducerKafkaTest extends KafkaTest {
         String aktorId = "1234";
         LocalDateTime avsluttOppfolgingDato = LocalDateTime.now();
         String serialisertBruker = serialiserBruker(aktorId, avsluttOppfolgingDato);
-        avsluttOppfolgingProducer.avsluttOppfolgingEvent(aktorId, avsluttOppfolgingDato, false);
+        avsluttOppfolgingProducer.avsluttOppfolgingEvent(aktorId, avsluttOppfolgingDato);
         ConsumerRecord<String, String> received = records.poll(10, TimeUnit.SECONDS);
-        assertThat(received.value().equals(serialisertBruker));
+        assertThat(received.value()).isEqualTo(serialisertBruker);
     }
 
     private String serialiserBruker (String aktorId, LocalDateTime avsluttOppfolgingDato) {

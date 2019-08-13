@@ -397,7 +397,7 @@ public class OppfolgingResolver {
     @Transactional
     void avsluttOppfolgingOgSendPaKafka(String veileder, String begrunnelse) {
         deps.getOppfolgingRepository().avsluttOppfolging(aktorId, veileder, begrunnelse);
-        deps.getAvsluttOppfolgingProducer().avsluttOppfolgingEvent(aktorId, LocalDateTime.now(), false);
+        deps.getAvsluttOppfolgingProducer().avsluttOppfolgingEvent(aktorId, LocalDateTime.now());
     }
 
     private Oppfolging hentOppfolging() {
