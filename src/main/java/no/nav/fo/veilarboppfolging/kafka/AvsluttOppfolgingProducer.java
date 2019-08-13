@@ -5,8 +5,8 @@ import no.nav.fo.veilarboppfolging.domain.AvsluttOppfolgingKafkaDTO;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import java.time.LocalDateTime;
 
-import java.util.Date;
 import static no.nav.json.JsonUtils.toJson;
 
 @Slf4j
@@ -21,7 +21,7 @@ public class AvsluttOppfolgingProducer {
         this.topic = topic;
     }
 
-    public void avsluttOppfolgingEvent(String aktorId, Date sluttdato) {
+    public void avsluttOppfolgingEvent(String aktorId, LocalDateTime sluttdato) {
         final AvsluttOppfolgingKafkaDTO avsluttOppfolgingKafkaDTO = toDTO(aktorId, sluttdato);
         final String serialisertBruker = toJson(avsluttOppfolgingKafkaDTO);
         kafkaTemplate.send(
@@ -45,7 +45,7 @@ public class AvsluttOppfolgingProducer {
         log.error("Kunne ikke publisere melding {} til {}-topic", avsluttOppfolgingKafkaDTO, this.topic, throwable);
     }
 
-    public static AvsluttOppfolgingKafkaDTO toDTO (String aktorId, Date sluttdato) {
+    public static AvsluttOppfolgingKafkaDTO toDTO (String aktorId, LocalDateTime sluttdato) {
      return new AvsluttOppfolgingKafkaDTO()
              .setAktorId(aktorId)
              .setSluttdato(sluttdato);

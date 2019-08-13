@@ -1,15 +1,16 @@
 package no.nav.fo.veilarboppfolging.kafka;
-
 import no.nav.fo.veilarboppfolging.db.AvsluttOppfolgingEndringRepository;
 import no.nav.fo.veilarboppfolging.domain.AvsluttOppfolgingKafkaDTO;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import java.util.Date;
-import java.util.List;
+import java.time.LocalDateTime;
+import java.util.concurrent.TimeUnit;
 
 import static no.nav.fo.veilarboppfolging.config.JndiLocalContextConfig.setupInMemoryDatabase;
+import static no.nav.json.JsonUtils.toJson;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class ProducerKafkaTest extends KafkaTest {
@@ -22,45 +23,21 @@ public class ProducerKafkaTest extends KafkaTest {
     public void setup() {
         db = new JdbcTemplate(setupInMemoryDatabase());
         avsluttOppfolgingEndringRepository = new AvsluttOppfolgingEndringRepository(db);
-        avsluttOppfolgingProducer = new AvsluttOppfolgingProducer(kafkaTemplate, avsluttOppfolgingEndringRepository, "HELLO_WORLD_TOPIC");
+        avsluttOppfolgingProducer = new AvsluttOppfolgingProducer(kafkaTemplate, avsluttOppfolgingEndringRepository, RECEIVER_TOPIC);
     }
 
     @Test
-    public void slett_avsluttbruker_fra_db_ved_vedlykked_sendning() {
-        avsluttOppfolgingEndringRepository.insertAvsluttOppfolgingBruker("1234");
-        List<AvsluttOppfolgingKafkaDTO> alleBrukere = avsluttOppfolgingEndringRepository.hentAvsluttOppfolgingBrukere();
-        assertThat(alleBrukere.size()).isEqualTo(1);
-        avsluttOppfolgingProducer.avsluttOppfolgingEvent("1234", new Date());
-
-        boolean prosessert = false;
-        while(!prosessert) {
-            try {
-                Thread.sleep(10);
-                prosessert = true;
-                alleBrukere = avsluttOppfolgingEndringRepository.hentAvsluttOppfolgingBrukere();
-                assertThat(alleBrukere.size()).isEqualTo(0);
-            } catch(Throwable a) {
-            }
-        }
+    public void kafka_send_avslutt_oppfolging() throws InterruptedException {
+        String aktorId = "1234";
+        LocalDateTime avsluttOppfolgingDato = LocalDateTime.now();
+        String serialisertBruker = serialiserBruker(aktorId, avsluttOppfolgingDato);
+        avsluttOppfolgingProducer.avsluttOppfolgingEvent(aktorId, avsluttOppfolgingDato);
+        ConsumerRecord<String, String> received = records.poll(10, TimeUnit.SECONDS);
+        assertThat(received.value().equals(serialisertBruker));
     }
 
-    @Test
-    public void gitt_att_misslyckades_produsere_kafka_meldig_skall_ikke_slette_nyare_inslag_i_db() {
-        avsluttOppfolgingEndringRepository.insertAvsluttOppfolgingBruker("1234");
-        long DAG_I_MILLISEK = 1000 * 60 * 60 * 24;
-        avsluttOppfolgingProducer.avsluttOppfolgingEvent("1234", new Date(System.currentTimeMillis() - (7 * DAG_I_MILLISEK)));
-
-        boolean prosessert = false;
-        while(!prosessert) {
-            try {
-                Thread.sleep(10);
-                prosessert = true;
-                List<AvsluttOppfolgingKafkaDTO> alleBrukere = avsluttOppfolgingEndringRepository.hentAvsluttOppfolgingBrukere();
-                assertThat(alleBrukere.size()).isEqualTo(1);
-            } catch(Throwable a) {
-            }
-        }
+    private String serialiserBruker (String aktorId, LocalDateTime avsluttOppfolgingDato) {
+        AvsluttOppfolgingKafkaDTO avsluttOppfolgingKafkaDTO = AvsluttOppfolgingProducer.toDTO(aktorId, avsluttOppfolgingDato);
+        return toJson(avsluttOppfolgingKafkaDTO);
     }
-
-
 }

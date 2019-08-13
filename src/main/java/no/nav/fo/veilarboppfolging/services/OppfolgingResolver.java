@@ -43,6 +43,7 @@ import javax.ws.rs.NotFoundException;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Date;
@@ -396,7 +397,7 @@ public class OppfolgingResolver {
     @Transactional
     void avsluttOppfolgingOgSendPaKafka(String veileder, String begrunnelse) {
         deps.getOppfolgingRepository().avsluttOppfolging(aktorId, veileder, begrunnelse);
-        deps.getAvsluttOppfolgingProducer().avsluttOppfolgingEvent(aktorId, new Date());
+        deps.getAvsluttOppfolgingProducer().avsluttOppfolgingEvent(aktorId, LocalDateTime.now());
     }
 
     private Oppfolging hentOppfolging() {

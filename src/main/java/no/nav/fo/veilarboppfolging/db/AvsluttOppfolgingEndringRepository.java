@@ -12,7 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.inject.Inject;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Component
@@ -35,8 +35,8 @@ public class AvsluttOppfolgingEndringRepository {
                 .execute();
     }
 
-    public void deleteAvsluttOppfolgingBruker(String aktorId, Date sluttdato) {
-        Timestamp timestamp = new Timestamp(sluttdato.getTime());
+    public void deleteAvsluttOppfolgingBruker(String aktorId, LocalDateTime sluttdato) {
+        Timestamp timestamp = Timestamp.valueOf(sluttdato);
         SqlUtils.delete(db, KAFKA_TABLE)
                 .where(WhereClause.equals(AKTOR_ID, aktorId).and(WhereClause.lteq(SLUTTDATO, timestamp)))
                 .execute();
@@ -52,6 +52,6 @@ public class AvsluttOppfolgingEndringRepository {
     private static AvsluttOppfolgingKafkaDTO avsluttOppfolgingKafkaDTOMapper(ResultSet resultSet){
         return new AvsluttOppfolgingKafkaDTO()
                 .setAktorId(resultSet.getString(AKTOR_ID))
-                .setSluttdato(resultSet.getDate(SLUTTDATO));
+                .setSluttdato(resultSet.getTimestamp(SLUTTDATO).toLocalDateTime());
     }
 }
