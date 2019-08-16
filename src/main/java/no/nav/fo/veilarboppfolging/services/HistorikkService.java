@@ -6,6 +6,7 @@ import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.db.KvpRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
+import no.nav.fo.veilarboppfolging.db.VeilederHistorikkRepository;
 import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.fo.veilarboppfolging.utils.KvpUtils;
 import org.springframework.stereotype.Component;
@@ -35,6 +36,9 @@ public class HistorikkService {
     @Inject
     private OppfolgingRepository oppfolgingRepository;
 
+    @Inject
+    private VeilederHistorikkRepository veilederHistorikkRepository;
+
 
     public List<InnstillingsHistorikk> hentInstillingsHistorikk(String fnr) {
         String aktorId = aktorService.getAktorId(fnr)
@@ -54,13 +58,24 @@ public class HistorikkService {
                 oppfolgingRepository.hentEskaleringhistorikk(aktorId).stream()
                         .map(this::tilDTO)
                         .flatMap(List::stream)
-                        .filter((historikk) -> KvpUtils.sjekkTilgangGittKvp(pepClient, kvpHistorikk, historikk::getDato))
+                        .filter((historikk) -> KvpUtils.sjekkTilgangGittKvp(pepClient, kvpHistorikk, historikk::getDato)),
+                veilederHistorikkRepository.hentTilordnedeVeiledereForAktorId(aktorId).stream()
+                        .map(this::tilDTO)
         ).flatMap(s -> s).collect(Collectors.toList());
     }
 
     @SneakyThrows
     private boolean harTilgangTilEnhet(Kvp kvp) {
         return pepClient.harTilgangTilEnhet(kvp.getEnhet());
+    }
+
+    private InnstillingsHistorikk tilDTO(VeilederTilordningerData veilederTilordningerData) {
+        return InnstillingsHistorikk.builder()
+                .type(VEILEDER_TILORDNET)
+                .dato(veilederTilordningerData.getSistTilordnet())
+                .opprettetAv(NAV)
+                .opprettetAvBrukerId(veilederTilordningerData.getVeileder())
+                .build();
     }
 
     private InnstillingsHistorikk tilDTO(Oppfolgingsperiode oppfolgingsperiode) {
