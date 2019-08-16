@@ -18,6 +18,7 @@ import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.fo.veilarboppfolging.kafka.AvsluttOppfolgingProducer;
 import no.nav.fo.veilarboppfolging.mappers.VeilarbArenaOppfolging;
+import no.nav.fo.veilarboppfolging.rest.domain.DkifResponse;
 import no.nav.fo.veilarboppfolging.utils.FunksjonelleMetrikker;
 import no.nav.fo.veilarboppfolging.utils.StringUtils;
 import no.nav.metrics.MetricsFactory;
@@ -73,7 +74,7 @@ public class OppfolgingResolver {
     private String aktorId;
     private Oppfolging oppfolging;
     private Optional<Either<VeilarbArenaOppfolging, ArenaOppfolging>> arenaOppfolgingTilstand;
-    private Boolean reservertIKrr;
+    private DkifResponse dkifResponse;
     private WSHentYtelseskontraktListeResponse ytelser;
     private List<ArenaAktivitetDTO> arenaAktiviteter;
     private Boolean inaktivIArena;
@@ -254,11 +255,11 @@ public class OppfolgingResolver {
         return aktorId;
     }
 
-    boolean reservertIKrr() {
-        if (reservertIKrr == null) {
+    DkifResponse reservertIKrr() {
+        if (dkifResponse == null) {
             sjekkReservasjonIKrrOgOppdaterOppfolging();
         }
-        return reservertIKrr;
+        return dkifResponse;
     }
 
     boolean manuell() {
@@ -465,8 +466,8 @@ public class OppfolgingResolver {
 
     private void sjekkReservasjonIKrrOgOppdaterOppfolging() {
         if (oppfolging.isUnderOppfolging()) {
-            this.reservertIKrr = sjekkKrr();
-            if (!manuell() && reservertIKrr) {
+            this.dkifResponse = sjekkKrr();
+            if (!manuell() && dkifResponse.isKrr()) {
                 deps.getOppfolgingRepository().opprettManuellStatus(
                         new ManuellStatus()
                                 .setAktorId(oppfolging.getAktorId())
@@ -477,20 +478,25 @@ public class OppfolgingResolver {
                 );
             }
         } else {
-            this.reservertIKrr = false;
+            this.dkifResponse = new DkifResponse().setKrr(false).setKanVarsles(true);
         }
     }
 
     @SneakyThrows
-    private boolean sjekkKrr() {
+    private DkifResponse sjekkKrr() {
         if (deps.getUnleashService().isEnabled("veilarboppfolging.dkif_rest")) {
             return sjekkDkifRest();
         } else {
-            return sjekkDkifSoap();
+            boolean krr = sjekkDkifSoap();
+            DkifResponse dkifResponse = new DkifResponse().setKrr(krr);
+            if(krr) {
+                return dkifResponse.setKanVarsles(false);
+            }
+            return dkifResponse.setKanVarsles(true);
         }
     }
 
-    public boolean sjekkDkifRest() {
+    public DkifResponse sjekkDkifRest() {
         UUID uuid = UUID.randomUUID();
         String callId = Long.toHexString(uuid.getMostSignificantBits()) + Long.toHexString(uuid.getLeastSignificantBits());
 
@@ -504,14 +510,16 @@ public class OppfolgingResolver {
                         .header("Nav-Consumer-Id", APPLICATION_NAME)
                         .get(String.class));
 
-        boolean kanVarsles = new JSONObject(responseBody)
+        JSONObject dkifJson = new JSONObject(responseBody)
                 .getJSONObject("kontaktinfo")
-                .getJSONObject(fnr)
-                .getBoolean("kanVarsles");
+                .getJSONObject(fnr);
 
-        log.info("Dkif-response: {}: kanVarsles: {}", aktorId, kanVarsles);
+        boolean kanVarsles = dkifJson.getBoolean("kanVarsles");
+        boolean krr = dkifJson.getBoolean("reservert");
 
-        return !kanVarsles;
+        log.info("Dkif-response: {}: kanVarsles: {} krr: {}", aktorId, kanVarsles, krr);
+
+        return new DkifResponse().setKrr(krr).setKanVarsles(kanVarsles);
     }
 
 

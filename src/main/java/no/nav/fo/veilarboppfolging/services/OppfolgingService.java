@@ -10,6 +10,7 @@ import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingsStatusRepository;
 import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.fo.veilarboppfolging.mappers.VeilarbArenaOppfolging;
+import no.nav.fo.veilarboppfolging.rest.domain.DkifResponse;
 import no.nav.fo.veilarboppfolging.rest.domain.UnderOppfolgingDTO;
 import no.nav.fo.veilarboppfolging.services.OppfolgingResolver.OppfolgingResolverDependencies;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
@@ -121,7 +122,7 @@ public class OppfolgingService {
     public OppfolgingStatusData oppdaterManuellStatus(String fnr, boolean manuell, String begrunnelse, KodeverkBruker opprettetAv, String opprettetAvBrukerId) {
         val resolver = sjekkTilgangTilEnhet(fnr);
 
-        if (resolver.getOppfolging().isUnderOppfolging() && (resolver.manuell() != manuell) && (!resolver.reservertIKrr() || manuell)) {
+        if (resolver.getOppfolging().isUnderOppfolging() && (resolver.manuell() != manuell) && (!resolver.reservertIKrr().isKrr() || manuell)) {
             val nyStatus = new ManuellStatus()
                     .setAktorId(resolver.getAktorId())
                     .setManuell(manuell)
@@ -191,14 +192,17 @@ public class OppfolgingService {
     private OppfolgingStatusData getOppfolgingStatusData(String fnr, OppfolgingResolver oppfolgingResolver, AvslutningStatusData avslutningStatusData) {
         Oppfolging oppfolging = oppfolgingResolver.getOppfolging();
 
-        boolean krr = oppfolgingResolver.reservertIKrr();
+        DkifResponse dkifResponse = oppfolgingResolver.reservertIKrr();
+        boolean krr = dkifResponse.isKrr();
+        boolean manuell = oppfolgingResolver.manuell();
+
         return new OppfolgingStatusData()
                 .setFnr(fnr)
                 .setVeilederId(oppfolging.getVeilederId())
                 .setUnderOppfolging(oppfolging.isUnderOppfolging())
                 .setUnderKvp(oppfolging.getGjeldendeKvp() != null)
                 .setReservasjonKRR(krr)
-                .setManuell(oppfolgingResolver.manuell() || krr)
+                .setManuell(manuell || krr)
                 .setKanStarteOppfolging(oppfolgingResolver.getKanSettesUnderOppfolging())
                 .setAvslutningStatusData(avslutningStatusData)
                 .setGjeldendeEskaleringsvarsel(oppfolging.getGjeldendeEskaleringsvarsel())
@@ -209,7 +213,8 @@ public class OppfolgingService {
                 .setErSykmeldtMedArbeidsgiver(oppfolgingResolver.getErSykmeldtMedArbeidsgiver())
                 .setErIkkeArbeidssokerUtenOppfolging(oppfolgingResolver.getErSykmeldtMedArbeidsgiver())
                 .setInaktiveringsdato(oppfolgingResolver.getInaktiveringsDato())
-                .setServicegruppe(oppfolgingResolver.getServicegruppe());
+                .setServicegruppe(oppfolgingResolver.getServicegruppe())
+                .setKanVarsles(!manuell && dkifResponse.isKanVarsles());
     }
 
     private OppfolgingStatusData getOppfolgingStatusDataMedAvslutningStatus(String fnr, OppfolgingResolver oppfolgingResolver) {
