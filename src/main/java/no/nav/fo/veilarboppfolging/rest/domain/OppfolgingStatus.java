@@ -12,6 +12,7 @@ public class OppfolgingStatus {
     public String fnr;
     public String veilederId;
     public boolean reservasjonKRR;
+    public boolean kanVarsles;
     public boolean manuell;
     public boolean underOppfolging;
     public boolean underKvp;

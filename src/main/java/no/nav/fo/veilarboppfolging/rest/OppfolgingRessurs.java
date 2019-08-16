@@ -256,7 +256,8 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
                     )
                     .setOppfolgingUtgang(oppfolgingStatusData.getOppfolgingUtgang())
                     .setHarSkriveTilgang(oppfolgingStatusData.harSkriveTilgang)
-                    .setInaktivIArena(oppfolgingStatusData.inaktivIArena);
+                    .setInaktivIArena(oppfolgingStatusData.inaktivIArena)
+                    .setKanVarsles(oppfolgingStatusData.kanVarsles);
         }
 
         return status;
