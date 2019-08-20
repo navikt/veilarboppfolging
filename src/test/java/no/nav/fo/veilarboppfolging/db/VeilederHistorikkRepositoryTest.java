@@ -1,19 +1,36 @@
 package no.nav.fo.veilarboppfolging.db;
 
-import no.nav.sbl.jdbc.Database;
-import org.junit.jupiter.api.BeforeEach;
+import no.nav.fo.veilarboppfolging.domain.VeilederTilordningerData;
+import org.junit.Before;
+import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
+
+import java.util.List;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.assertThat;
 
 import static no.nav.fo.veilarboppfolging.config.JndiLocalContextConfig.setupInMemoryDatabase;
 
-public class VeilederHistorikkRepositoryTest {
-    private static Database database;
-    private static NyeBrukereFeedRepository nyeBrukereFeedRepository;
 
-    @BeforeEach
+public class VeilederHistorikkRepositoryTest {
+    private static VeilederHistorikkRepository veilederHistorikkRepository;
+    private static final String AKTOR_ID = "2222";
+    public static final String VEILEDER1 = "4321";
+    public static final String VEILEDER2 = "1234";
+
+    @Before
     public void setup() {
-        database = new Database(new JdbcTemplate(setupInMemoryDatabase()));
-        nyeBrukereFeedRepository = new NyeBrukereFeedRepository(database);
+        veilederHistorikkRepository = new VeilederHistorikkRepository(new JdbcTemplate(setupInMemoryDatabase()));
+    }
+
+    @Test
+    public void skalInserteTilordnetVeileder () {
+        veilederHistorikkRepository.insertTilordnetVeilederForAktorId(AKTOR_ID, VEILEDER1);
+        veilederHistorikkRepository.insertTilordnetVeilederForAktorId(AKTOR_ID, VEILEDER2);
+        List<VeilederTilordningerData> veilederHistorikk = veilederHistorikkRepository.hentTilordnedeVeiledereForAktorId(AKTOR_ID);
+        assertThat(veilederHistorikk.size(), equalTo(2));
+        assertThat(veilederHistorikk.get(0).getVeileder(), equalTo(VEILEDER2));
+        assertThat(veilederHistorikk.get(1).getVeileder(), equalTo(VEILEDER1));
     }
 
 }

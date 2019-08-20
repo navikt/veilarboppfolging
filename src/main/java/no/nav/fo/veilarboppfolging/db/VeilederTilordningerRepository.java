@@ -19,13 +19,11 @@ public class VeilederTilordningerRepository {
 
     private final Database db;
     private final OppfolgingRepository oppfolgingRepository;
-    private final VeilederHistorikkRepository veilederHistorikkRepository;
 
     @Inject
-    public VeilederTilordningerRepository(Database db, OppfolgingRepository oppfolgingRepository, VeilederHistorikkRepository veilederHistorikkRepository) {
+    public VeilederTilordningerRepository(Database db, OppfolgingRepository oppfolgingRepository) {
         this.db = db;
         this.oppfolgingRepository = oppfolgingRepository;
-        this.veilederHistorikkRepository = veilederHistorikkRepository;
     }
 
     public String hentTilordningForAktoer(String aktorId) {
@@ -67,7 +65,6 @@ public class VeilederTilordningerRepository {
                     veileder,
                     aktoerId);
         }
-        veilederHistorikkRepository.insertTilordnetVeilederForAktorId(aktoerId, veileder);
         oppfolgingRepository.startOppfolgingHvisIkkeAlleredeStartet(aktoerId);
 
     }
