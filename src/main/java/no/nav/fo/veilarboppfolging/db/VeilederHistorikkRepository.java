@@ -5,7 +5,6 @@ import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
 import java.sql.ResultSet;
@@ -22,7 +21,6 @@ public class VeilederHistorikkRepository {
         this.jdbc = jdbc;
     }
 
-    @Transactional
     public void insertTilordnetVeilederForAktorId(String aktorId, String veileder) {
         SqlUtils.insert(jdbc, "VEILEDER_TILLORDNINGER")
                 .value("veileder", veileder)

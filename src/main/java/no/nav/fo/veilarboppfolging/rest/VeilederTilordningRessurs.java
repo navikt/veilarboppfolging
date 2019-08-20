@@ -16,6 +16,7 @@ import no.nav.fo.veilarboppfolging.rest.domain.TilordneVeilederResponse;
 import no.nav.fo.veilarboppfolging.rest.domain.VeilederTilordning;
 import no.nav.fo.veilarboppfolging.utils.FunksjonelleMetrikker;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
+import no.nav.sbl.jdbc.Transactor;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
@@ -41,13 +42,15 @@ public class VeilederTilordningRessurs {
     private final AutorisasjonService autorisasjonService;
     private FeedProducer<OppfolgingFeedDTO> oppfolgingFeed;
     private final SubjectService subjectService = new SubjectService();
+    private final Transactor transactor;
 
     public VeilederTilordningRessurs(AktorService aktorService,
                                      VeilederTilordningerRepository veilederTilordningerRepository,
                                      VeilarbAbacPepClient pepClient,
                                      FeedProducer<OppfolgingFeedDTO> oppfolgingFeed,
                                      AutorisasjonService autorisasjonService,
-                                     VeilederHistorikkRepository veilederHistorikkRepository
+                                     VeilederHistorikkRepository veilederHistorikkRepository,
+                                     Transactor transactor
     ) {
         this.autorisasjonService = autorisasjonService;
         this.aktorService = aktorService;
@@ -55,6 +58,7 @@ public class VeilederTilordningRessurs {
         this.pepClient = pepClient;
         this.oppfolgingFeed = oppfolgingFeed;
         this.veilederHistorikkRepository = veilederHistorikkRepository;
+        this.transactor = transactor;
     }
 
     @POST
@@ -170,8 +174,10 @@ public class VeilederTilordningRessurs {
 
     private void skrivTilDatabase(String aktoerId, String veileder) {
         try {
-            veilederTilordningerRepository.upsertVeilederTilordning(aktoerId, veileder);
-            veilederHistorikkRepository.insertTilordnetVeilederForAktorId(aktoerId, veileder);
+            transactor.inTransaction(()-> {
+                veilederTilordningerRepository.upsertVeilederTilordning(aktoerId, veileder);
+                veilederHistorikkRepository.insertTilordnetVeilederForAktorId(aktoerId, veileder);
+            });
             LOG.debug(String.format("Veileder %s tilordnet aktoer %s", veileder, aktoerId));
         } catch (Exception e) {
             LOG.error(String.format("Kunne ikke tilordne veileder %s til aktoer %s", veileder, aktoerId), e);
