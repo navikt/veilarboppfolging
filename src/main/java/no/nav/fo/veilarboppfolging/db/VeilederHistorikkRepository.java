@@ -5,6 +5,7 @@ import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
 import java.sql.ResultSet;
@@ -21,10 +22,11 @@ public class VeilederHistorikkRepository {
         this.jdbc = jdbc;
     }
 
-    public void insertTilordnetVeilederForAktorId(String aktorId, String veileder) {
+    public void insertTilordnetVeilederForAktorId(String aktorId, String veileder, String innloggetVeilederId) {
         SqlUtils.insert(jdbc, "VEILEDER_TILLORDNINGER")
                 .value("veileder", veileder)
                 .value("aktor_id", aktorId)
+                .value("lagt_inn_av_veileder", innloggetVeilederId)
                 .value("sist_tilordnet", DbConstants.CURRENT_TIMESTAMP)
                 .execute();
     }
@@ -33,6 +35,7 @@ public class VeilederHistorikkRepository {
         return SqlUtils.select(jdbc, "VEILEDER_TILLORDNINGER", VeilederHistorikkRepository::mapper)
                 .column("veileder")
                 .column("sist_tilordnet")
+                .column("lagt_inn_av_veileder")
                 .where(WhereClause.equals("aktor_id", aktorId))
                 .executeToList();
     }
@@ -40,6 +43,7 @@ public class VeilederHistorikkRepository {
     private static VeilederTilordningerData mapper(ResultSet resultSet) throws SQLException {
         return new VeilederTilordningerData(
                 resultSet.getString("veileder"),
+                resultSet.getString("lagt_inn_av_veileder"),
                 resultSet.getDate("sist_tilordnet")
         );
     }

@@ -8,6 +8,7 @@ import no.nav.common.auth.SubjectHandler;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.feed.producer.FeedProducer;
 import no.nav.fo.veilarboppfolging.db.OppfolgingFeedRepository;
+import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.db.VeilederHistorikkRepository;
 import no.nav.fo.veilarboppfolging.db.VeilederTilordningerRepository;
 import no.nav.fo.veilarboppfolging.domain.Tilordning;
@@ -37,11 +38,12 @@ public class VeilederTilordningRessurs {
 
     private final AktorService aktorService;
     private final VeilederTilordningerRepository veilederTilordningerRepository;
-    private final VeilederHistorikkRepository veilederHistorikkRepository;
     private final VeilarbAbacPepClient pepClient;
     private final AutorisasjonService autorisasjonService;
     private FeedProducer<OppfolgingFeedDTO> oppfolgingFeed;
     private final SubjectService subjectService = new SubjectService();
+    private final OppfolgingRepository oppfolgingRepository;
+    private final VeilederHistorikkRepository veilederHistorikkRepository;
     private final Transactor transactor;
 
     public VeilederTilordningRessurs(AktorService aktorService,
@@ -49,6 +51,7 @@ public class VeilederTilordningRessurs {
                                      VeilarbAbacPepClient pepClient,
                                      FeedProducer<OppfolgingFeedDTO> oppfolgingFeed,
                                      AutorisasjonService autorisasjonService,
+                                     OppfolgingRepository oppfolgingRepository,
                                      VeilederHistorikkRepository veilederHistorikkRepository,
                                      Transactor transactor
     ) {
@@ -57,6 +60,7 @@ public class VeilederTilordningRessurs {
         this.veilederTilordningerRepository = veilederTilordningerRepository;
         this.pepClient = pepClient;
         this.oppfolgingFeed = oppfolgingFeed;
+        this.oppfolgingRepository = oppfolgingRepository;
         this.veilederHistorikkRepository = veilederHistorikkRepository;
         this.transactor = transactor;
     }
@@ -85,7 +89,7 @@ public class VeilederTilordningRessurs {
 
                 if (kanTilordneFraVeileder(eksisterendeVeileder, tilordning.getFraVeilederId())) {
                     if (nyVeilederHarTilgang(tilordning)) {
-                        skrivTilDatabase(aktoerId, tilordning.getTilVeilederId());
+                        skrivTilDatabase(aktoerId, tilordning.getTilVeilederId(), innloggetVeilederId);
                     } else {
                         LOG.info("Aktoerid {} kunne ikke tildeles. Ny veileder {} har ikke tilgang.", aktoerId, tilordning.getTilVeilederId());
                         feilendeTilordninger.add(tilordning);
@@ -172,17 +176,14 @@ public class VeilederTilordningRessurs {
         }
     }
 
-    private void skrivTilDatabase(String aktoerId, String veileder) {
-        try {
-            transactor.inTransaction(()-> {
-                veilederTilordningerRepository.upsertVeilederTilordning(aktoerId, veileder);
-                veilederHistorikkRepository.insertTilordnetVeilederForAktorId(aktoerId, veileder);
-            });
-            LOG.debug(String.format("Veileder %s tilordnet aktoer %s", veileder, aktoerId));
-        } catch (Exception e) {
-            LOG.error(String.format("Kunne ikke tilordne veileder %s til aktoer %s", veileder, aktoerId), e);
-            throw e;
-        }
+    public void skrivTilDatabase(String aktoerId, String veileder, String innloggetVeilederId ) {
+        transactor.inTransaction(()-> {
+            veilederTilordningerRepository.upsertVeilederTilordning(aktoerId, veileder);
+            veilederHistorikkRepository.insertTilordnetVeilederForAktorId(aktoerId, veileder, innloggetVeilederId);
+            oppfolgingRepository.startOppfolgingHvisIkkeAlleredeStartet(aktoerId);
+        });
+
+        LOG.debug(String.format("Veileder %s tilordnet aktoer %s", veileder, aktoerId));
     }
 
     static boolean kanTilordneFraVeileder(String eksisterendeVeileder, String fraVeilederId) {

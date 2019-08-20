@@ -10,11 +10,13 @@ import no.nav.common.auth.Subject;
 import no.nav.common.auth.SubjectHandler;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.feed.producer.FeedProducer;
+import no.nav.fo.veilarboppfolging.db.VeilederHistorikkRepository;
 import no.nav.fo.veilarboppfolging.db.VeilederTilordningerRepository;
 import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingFeedDTO;
 import no.nav.fo.veilarboppfolging.rest.domain.TilordneVeilederResponse;
 import no.nav.fo.veilarboppfolging.rest.domain.VeilederTilordning;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
+import no.nav.sbl.jdbc.Transactor;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -56,6 +58,12 @@ public class VeilederTilordningRessursTest {
 
     @Mock
     private VeilederTilordningerRepository veilederTilordningerRepository;
+
+    @Mock
+    private Transactor transactor;
+
+    @Mock
+    private VeilederHistorikkRepository veilederHistorikkRepository;
 
     @Mock
     private FeedProducer<OppfolgingFeedDTO> feed;

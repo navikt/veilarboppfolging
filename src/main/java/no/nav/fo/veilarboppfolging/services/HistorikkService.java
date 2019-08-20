@@ -75,7 +75,8 @@ public class HistorikkService {
                 .type(VEILEDER_TILORDNET)
                 .dato(veilederTilordningerData.getSistTilordnet())
                 .opprettetAv(NAV)
-                .opprettetAvBrukerId(veilederTilordningerData.getVeileder())
+                .opprettetAvBrukerId(veilederTilordningerData.getLagtInnAvVeilder())
+                .veileder(veilederTilordningerData.getVeileder())
                 .build();
     }
 

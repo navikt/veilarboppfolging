@@ -13,6 +13,7 @@ public class InnstillingsHistorikk {
     private String begrunnelse;
     private KodeverkBruker opprettetAv;
     private String opprettetAvBrukerId;
+    private String veileder;
     private Long dialogId;
 
     public enum Type {

@@ -9,5 +9,6 @@ import java.util.Date;
 @AllArgsConstructor
 public class VeilederTilordningerData {
     private String veileder;
+    private String lagtInnAvVeilder;
     private Date sistTilordnet;
 }

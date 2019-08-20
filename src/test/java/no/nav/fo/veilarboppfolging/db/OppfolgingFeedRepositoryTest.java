@@ -17,6 +17,7 @@ class OppfolgingFeedRepositoryTest extends DatabaseTest {
 
     private static final String AKTOR_ID = "2222";
     private static final String VEILEDER = "1234";
+    private static final String VEILEDER2 = "4321";
 
     @Inject
     private VeilederTilordningerRepository repository;

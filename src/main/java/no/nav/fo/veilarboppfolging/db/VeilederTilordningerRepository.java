@@ -18,12 +18,10 @@ import static no.nav.fo.veilarboppfolging.db.OppfolgingsStatusRepository.*;
 public class VeilederTilordningerRepository {
 
     private final Database db;
-    private final OppfolgingRepository oppfolgingRepository;
 
     @Inject
-    public VeilederTilordningerRepository(Database db, OppfolgingRepository oppfolgingRepository) {
+    public VeilederTilordningerRepository(Database db) {
         this.db = db;
-        this.oppfolgingRepository = oppfolgingRepository;
     }
 
     public String hentTilordningForAktoer(String aktorId) {
@@ -65,7 +63,6 @@ public class VeilederTilordningerRepository {
                     veileder,
                     aktoerId);
         }
-        oppfolgingRepository.startOppfolgingHvisIkkeAlleredeStartet(aktoerId);
 
     }
 
