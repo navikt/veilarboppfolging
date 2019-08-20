@@ -20,6 +20,7 @@ import java.util.stream.Stream;
 import static java.util.Collections.singletonList;
 import static no.nav.fo.veilarboppfolging.domain.InnstillingsHistorikk.Type.*;
 import static no.nav.fo.veilarboppfolging.domain.KodeverkBruker.NAV;
+import static no.nav.fo.veilarboppfolging.domain.KodeverkBruker.SYSTEM;
 
 @Component
 public class HistorikkService {
@@ -79,12 +80,13 @@ public class HistorikkService {
     }
 
     private InnstillingsHistorikk tilDTO(Oppfolgingsperiode oppfolgingsperiode) {
+        String veilderId = oppfolgingsperiode.getVeileder();
         return InnstillingsHistorikk.builder()
                 .type(AVSLUTTET_OPPFOLGINGSPERIODE)
                 .begrunnelse(oppfolgingsperiode.getBegrunnelse())
                 .dato(oppfolgingsperiode.getSluttDato())
-                .opprettetAv(NAV)
-                .opprettetAvBrukerId(oppfolgingsperiode.getVeileder())
+                .opprettetAv(veilderId != null ? NAV : SYSTEM)
+                .opprettetAvBrukerId(veilderId)
                 .build();
     }
 
