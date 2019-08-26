@@ -18,15 +18,15 @@ import no.nav.fo.veilarboppfolging.services.OppfolgingService;
  */
 @Component
 @Path("/niva3")
-@Api(value = "UnderOppfølgingNiva3")
+@Api(value = "OppfølgingNiva3")
 @Produces(APPLICATION_JSON)
-public class UnderOppfolgingNiva3Ressurs {
+public class OppfolgingNiva3Ressurs {
 
     private final OppfolgingService oppfolgingService;
 
     private final FnrParameterUtil fnrParameterUtil;
 
-    public UnderOppfolgingNiva3Ressurs(OppfolgingService oppfolgingService, FnrParameterUtil fnrParameterUtil) {
+    public OppfolgingNiva3Ressurs(OppfolgingService oppfolgingService, FnrParameterUtil fnrParameterUtil) {
         this.oppfolgingService = oppfolgingService;
         this.fnrParameterUtil = fnrParameterUtil;
     }
