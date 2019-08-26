@@ -415,7 +415,7 @@ public class OppfolgingServiceTest {
 
     @Test
     public void underOppfolgingNiva3_skalReturnereTrueHvisBrukerHarOppfolgingsflagg() throws Exception {
-        when(oppfolgingsStatusRepository.fetch(AKTOR_ID)).thenReturn(new OppfolgingTable().setUnderOppfolging(true));
+        gittOppfolging(oppfolging.setUnderOppfolging(true));
         underOppfolgingNiva3_setup(of(AKTOR_ID));
 
         assertThat(oppfolgingService.underOppfolgingNiva3(FNR), is(true));
