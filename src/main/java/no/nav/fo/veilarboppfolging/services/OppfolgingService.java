@@ -178,7 +178,8 @@ public class OppfolgingService {
                 .orElse(new UnderOppfolgingDTO().setUnderOppfolging(false).setErManuell(false));
     }
 
-    public boolean underOppfolgingNiva3(String fnr) {
+    @Transactional
+    public boolean underOppfolgingNiva3(String fnr) throws Exception {
         Bruker bruker = Bruker.fraFnr(fnr)
                 .medAktoerIdSupplier(() -> aktorService.getAktorId(fnr)
                         .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktørid")));
@@ -190,9 +191,9 @@ public class OppfolgingService {
 
         endretVeilarbAbacPepClient.sjekkLesetilgangTilBruker(bruker);
 
-        OppfolgingTable eksisterendeOppfolgingstatus = oppfolgingsStatusRepository.fetch(bruker.getAktoerId());
+        OppfolgingStatusData oppfolgingStatusData = hentOppfolgingsStatus(fnr, false);
 
-        return eksisterendeOppfolgingstatus != null && eksisterendeOppfolgingstatus.isUnderOppfolging();
+        return oppfolgingStatusData.isUnderOppfolging();
     }
 
     private OppfolgingStatusData getOppfolgingStatusData(String fnr, OppfolgingResolver oppfolgingResolver) {
