@@ -391,7 +391,7 @@ public class OppfolgingServiceTest {
     }
 
     @Test(expected = IngenTilgang.class)
-    public void underOppfolgingNiva3_skalFeileHvisIkkeTilgang() {
+    public void underOppfolgingNiva3_skalFeileHvisIkkeTilgang() throws Exception {
         VeilarbAbacPepClient endretVeilarbAbacPepClientMock = underOppfolgingNiva3_setup(of(AKTOR_ID));
 
         doThrow(IngenTilgang.class).when(endretVeilarbAbacPepClientMock).sjekkLesetilgangTilBruker(any(Bruker.class));
@@ -400,21 +400,21 @@ public class OppfolgingServiceTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void underOppfolgingNiva3_skalFeileHvisAktoerIdIkkeFinnes() {
+    public void underOppfolgingNiva3_skalFeileHvisAktoerIdIkkeFinnes() throws Exception {
         underOppfolgingNiva3_setup(Optional.empty());
 
         oppfolgingService.underOppfolgingNiva3(FNR);
     }
 
     @Test
-    public void underOppfolgingNiva3_skalReturnereFalseHvisIngenDataOmBruker() {
+    public void underOppfolgingNiva3_skalReturnereFalseHvisIngenDataOmBruker() throws Exception {
         underOppfolgingNiva3_setup(of(AKTOR_ID));
 
         assertThat(oppfolgingService.underOppfolgingNiva3(FNR), is(false));
     }
 
     @Test
-    public void underOppfolgingNiva3_skalReturnereTrueHvisBrukerHarOppfolgingsflagg() {
+    public void underOppfolgingNiva3_skalReturnereTrueHvisBrukerHarOppfolgingsflagg() throws Exception {
         when(oppfolgingsStatusRepository.fetch(AKTOR_ID)).thenReturn(new OppfolgingTable().setUnderOppfolging(true));
         underOppfolgingNiva3_setup(of(AKTOR_ID));
 
