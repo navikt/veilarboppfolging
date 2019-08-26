@@ -17,6 +17,7 @@ public class OppfolgingStatusData {
     public boolean underOppfolging;
     public boolean underKvp;
     public boolean kanStarteOppfolging;
+    public boolean kanVarsles;
     public AvslutningStatusData avslutningStatusData;
     private EskaleringsvarselData gjeldendeEskaleringsvarsel;
     public List<Oppfolgingsperiode> oppfolgingsperioder = Collections.emptyList();
@@ -26,6 +27,7 @@ public class OppfolgingStatusData {
     public Boolean kanReaktiveres;
     public Date inaktiveringsdato;
     public Boolean erSykmeldtMedArbeidsgiver;
+    public String servicegruppe;
 
     @Deprecated
     public Boolean erIkkeArbeidssokerUtenOppfolging;

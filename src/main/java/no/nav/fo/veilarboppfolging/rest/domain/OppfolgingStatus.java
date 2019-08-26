@@ -12,6 +12,7 @@ public class OppfolgingStatus {
     public String fnr;
     public String veilederId;
     public boolean reservasjonKRR;
+    public boolean kanVarsles;
     public boolean manuell;
     public boolean underOppfolging;
     public boolean underKvp;
@@ -26,6 +27,7 @@ public class OppfolgingStatus {
     private Boolean kanReaktiveres;
     public Date inaktiveringsdato;
     private Boolean erSykmeldtMedArbeidsgiver;
+    private String servicegruppe;
 
     @Deprecated
     private Boolean erIkkeArbeidssokerUtenOppfolging;

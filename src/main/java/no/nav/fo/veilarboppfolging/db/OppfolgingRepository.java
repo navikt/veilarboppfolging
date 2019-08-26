@@ -2,10 +2,12 @@ package no.nav.fo.veilarboppfolging.db;
 
 
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import no.nav.apiapp.feil.Feil;
 import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
 import no.nav.fo.veilarboppfolging.domain.*;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +20,7 @@ import static java.util.stream.Collectors.toList;
 import static no.nav.apiapp.feil.FeilType.UGYLDIG_HANDLING;
 import static no.nav.fo.veilarboppfolging.utils.KvpUtils.sjekkTilgangGittKvp;
 
+@Slf4j
 @Component
 public class OppfolgingRepository {
 
@@ -105,8 +108,20 @@ public class OppfolgingRepository {
     @Transactional
     public void startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker oppfolgingsbruker) {
         String aktoerId = oppfolgingsbruker.getAktoerId();
-        Oppfolging oppfolgingsstatus = hentOppfolging(aktoerId).orElseGet(() -> opprettOppfolging(aktoerId));
-        if (!oppfolgingsstatus.isUnderOppfolging()) {
+
+        Oppfolging oppfolgingsstatus = hentOppfolging(aktoerId).orElseGet(() -> {
+            // Siden det blir gjort mange kall samtidig til flere noder kan det oppstå en race condition
+            // hvor oppfølging har blitt insertet av en annen node etter at den har sjekket at oppfølging
+            // ikke ligger i databasen.
+            try {
+                return opprettOppfolging(aktoerId);
+            } catch (DuplicateKeyException e) {
+                log.info("Race condition oppstod under oppretting av ny oppfølging for bruker: " + aktoerId);
+                return hentOppfolging(aktoerId).orElse(null);
+            }
+        });
+
+        if (oppfolgingsstatus != null && !oppfolgingsstatus.isUnderOppfolging()) {
             periodeRepository.start(aktoerId);
             nyeBrukereFeedRepository.leggTil(oppfolgingsbruker);
         }
