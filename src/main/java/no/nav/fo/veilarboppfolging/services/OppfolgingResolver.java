@@ -136,8 +136,7 @@ public class OppfolgingResolver {
     }
 
     private void sjekkOgStartOppfolging() {
-        hentOppfolgingstatusDirekteFraArena();
-        oppfolgingDirekteFraArena().ifPresent(arenaOppfolging -> {
+        arenaOppfolgingTilstand().ifPresent(arenaOppfolging -> {
             if (erUnderOppfolging(arenaOppfolging.getFormidlingsgruppe(), arenaOppfolging.getServicegruppe())) {
                 deps.getOppfolgingRepository().startOppfolgingHvisIkkeAlleredeStartet(aktorId);
                 reloadOppfolging();
@@ -431,10 +430,23 @@ public class OppfolgingResolver {
             } else {
                 hentOppfolgingstatusFraVeilarbArena();
 
-                // Fallbackløsning for å hente direkte fra Arena dersom bruker er under oppfølging, men veilarbarena
-                // ikke har data på brukeren. Dette kan forekomme direkte etter registrering, før data har blitt
-                // synkronisert fra Arena til veilarbarena.
-                if (!arenaOppfolgingTilstand.isPresent() && oppfolging.isUnderOppfolging()) {
+                boolean harTilstand = arenaOppfolgingTilstand.isPresent();
+                boolean erUnderOppfolgingIVeilarbarena = arenaOppfolgingTilstand().filter(oppfolgingTilstand ->
+                        ArenaUtils.erUnderOppfolging(oppfolgingTilstand.getFormidlingsgruppe(), oppfolgingTilstand.getServicegruppe())
+                ).isPresent();
+
+                boolean harIkkeDataIVeilarbarena = !harTilstand;
+                boolean erIkkeUnderOppfolgingIVeilarbarena = !erUnderOppfolgingIVeilarbarena;
+
+                // Fallbackløsning for å hente direkte fra Arena dersom data fra veilarbarena ikke stemmer overens
+                // med oppfølgingsflagg:
+
+                if ((harIkkeDataIVeilarbarena || erIkkeUnderOppfolgingIVeilarbarena) && oppfolging.isUnderOppfolging()) {
+                    // Dette kan forekomme direkte etter registrering, før data har blitt synkronisert fra Arena til veilarbarena.
+                    // Enten kan det mangle data i veilarbarena, eller så kan det være gammel data som ikke er fra den nye registreringen
+                    hentOppfolgingstatusDirekteFraArena();
+                } else if (!oppfolging.isUnderOppfolging() && erUnderOppfolgingIVeilarbarena) {
+                    // Dette kan forekomme etter at bruker er tatt ut av oppfølging, men før før data har blitt synkronisert fra Arena til veilarbarena.
                     hentOppfolgingstatusDirekteFraArena();
                 }
             }
@@ -489,7 +501,7 @@ public class OppfolgingResolver {
         } else {
             boolean krr = sjekkDkifSoap();
             DkifResponse dkifResponse = new DkifResponse().setKrr(krr);
-            if(krr) {
+            if (krr) {
                 return dkifResponse.setKanVarsles(false);
             }
             return dkifResponse.setKanVarsles(true);
