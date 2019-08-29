@@ -3,29 +3,33 @@ package no.nav.fo.veilarboppfolging.services;
 import lombok.SneakyThrows;
 import lombok.val;
 import no.nav.apiapp.feil.Feil;
+import no.nav.apiapp.feil.FeilType;
 import no.nav.apiapp.feil.IngenTilgang;
 import no.nav.apiapp.feil.UlovligHandling;
 import no.nav.apiapp.security.veilarbabac.Bruker;
 import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
 import no.nav.common.auth.SubjectHandler;
 import no.nav.dialogarena.aktor.AktorService;
+import no.nav.fo.veilarboppfolging.db.EskaleringsvarselRepository;
 import no.nav.fo.veilarboppfolging.db.KvpRepository;
+import no.nav.fo.veilarboppfolging.db.OppfolgingsStatusRepository;
 import no.nav.fo.veilarboppfolging.domain.KodeverkBruker;
 import no.nav.fo.veilarboppfolging.domain.Kvp;
-import no.nav.fo.veilarboppfolging.services.OppfolgingResolver.OppfolgingResolverDependencies;
+import no.nav.fo.veilarboppfolging.domain.OppfolgingTable;
 import no.nav.fo.veilarboppfolging.utils.FunksjonelleMetrikker;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingsstatusRequest;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
-import java.util.function.Supplier;
 
-import static no.nav.apiapp.feil.FeilType.UKJENT;
 import static no.nav.fo.veilarboppfolging.domain.KodeverkBruker.NAV;
 
 @Component
 public class KvpService {
+
+    static final String ESKALERING_AVSLUTTET_FORDI_KVP_BLE_AVSLUTTET = "Eskalering avsluttet fordi KVP ble avsluttet";
 
     @Inject
     private KvpRepository kvpRepository;
@@ -40,10 +44,11 @@ public class KvpService {
     private VeilarbAbacPepClient pepClient;
 
     @Inject
-    private OppfolgingResolverDependencies oppfolgingResolverDependencies;
+    private OppfolgingsStatusRepository oppfolgingsStatusRepository;
 
-    private static final Supplier<Feil> AKTOR_ID_FEIL = () -> new Feil(UKJENT, "Fant ikke aktørId for fnr");
-
+    @Inject 
+    private EskaleringsvarselRepository eskaleringsvarselRepository;
+    
     @SneakyThrows
     public void startKvp(String fnr, String begrunnelse) {
         Bruker bruker = Bruker.fraFnr(fnr)
@@ -51,8 +56,10 @@ public class KvpService {
 
         pepClient.sjekkLesetilgangTilBruker(bruker);
 
-        OppfolgingResolver resolver = new OppfolgingResolver(fnr, oppfolgingResolverDependencies);
-        if (!resolver.getOppfolging().isUnderOppfolging()) {
+        String aktorId = bruker.getAktoerId();
+        OppfolgingTable oppfolgingTable = oppfolgingsStatusRepository.fetch(aktorId);
+
+        if (oppfolgingTable == null || !oppfolgingTable.isUnderOppfolging()) {
             throw new UlovligHandling();
         }
 
@@ -61,9 +68,13 @@ public class KvpService {
             throw new IngenTilgang(String.format("Ingen tilgang til enhet '%s'", enhet));
         }
 
+        if (oppfolgingTable.getGjeldendeKvpId() != 0) {
+            throw new Feil(FeilType.UGYLDIG_REQUEST, "Aktøren er allerede under en KVP-periode.");
+        }
+
         String veilederId = SubjectHandler.getIdent().orElseThrow(RuntimeException::new);
         kvpRepository.startKvp(
-                aktorService.getAktorId(fnr).orElseThrow(AKTOR_ID_FEIL),
+                aktorId,
                 enhet,
                 veilederId,
                 begrunnelse);
@@ -72,6 +83,7 @@ public class KvpService {
     }
 
     @SneakyThrows
+    @Transactional
     public void stopKvp(String fnr, String begrunnelse) {
         Bruker bruker = Bruker.fraFnr(fnr)
                 .medAktoerIdSupplier(() -> aktorService.getAktorId(fnr).orElseThrow(IngenTilgang::new));
@@ -81,18 +93,31 @@ public class KvpService {
             throw new IngenTilgang();
         }
 
-        OppfolgingResolver resolver = new OppfolgingResolver(fnr, oppfolgingResolverDependencies);
-        stopKvpUtenEnhetSjekk(fnr, begrunnelse, NAV, resolver);
+        stopKvpUtenEnhetSjekk(bruker.getAktoerId(), begrunnelse, NAV);
     }
 
-    void stopKvpUtenEnhetSjekk(String fnr, String begrunnelse, KodeverkBruker kodeverkBruker, OppfolgingResolver resolver) {
-        if (resolver.harAktivEskalering()) {
-            resolver.stoppEskalering("Eskalering avsluttet fordi KVP ble avsluttet");
+    @Transactional
+    public void stopKvpUtenEnhetSjekk(String aktorId, String begrunnelse, KodeverkBruker kodeverkBruker) {
+        String veilederId = SubjectHandler.getIdent().orElseThrow(RuntimeException::new);
+
+        OppfolgingTable oppfolgingTable = oppfolgingsStatusRepository.fetch(aktorId);
+
+        long gjeldendeKvp = oppfolgingTable.getGjeldendeKvpId();
+        if (gjeldendeKvp == 0) {
+            throw new Feil(FeilType.UGYLDIG_REQUEST, "Aktøren har ingen KVP-periode.");
         }
 
-        String veilederId = SubjectHandler.getIdent().orElseThrow(RuntimeException::new);
+        if(oppfolgingTable.getGjeldendeEskaleringsvarselId() != 0) {
+            eskaleringsvarselRepository.finish(
+                    aktorId, 
+                    oppfolgingTable.getGjeldendeEskaleringsvarselId(), 
+                    veilederId, 
+                    ESKALERING_AVSLUTTET_FORDI_KVP_BLE_AVSLUTTET);
+        }
+
         kvpRepository.stopKvp(
-                aktorService.getAktorId(fnr).orElseThrow(AKTOR_ID_FEIL),
+                gjeldendeKvp,
+                aktorId,
                 veilederId,
                 begrunnelse,
                 kodeverkBruker);
@@ -100,8 +125,7 @@ public class KvpService {
         FunksjonelleMetrikker.stopKvp();
     }
 
-    Kvp gjeldendeKvp(String fnr) {
-        String aktorId = aktorService.getAktorId(fnr).orElseThrow(AKTOR_ID_FEIL);
+    Kvp gjeldendeKvp(String aktorId) {
         return kvpRepository.fetch(kvpRepository.gjeldendeKvp(aktorId));
     }
 
