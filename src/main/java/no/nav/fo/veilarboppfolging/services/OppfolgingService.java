@@ -198,6 +198,7 @@ public class OppfolgingService {
 
         return new OppfolgingStatusData()
                 .setFnr(fnr)
+                .setAktorId(oppfolging.getAktorId())
                 .setVeilederId(oppfolging.getVeilederId())
                 .setUnderOppfolging(oppfolging.isUnderOppfolging())
                 .setUnderKvp(oppfolging.getGjeldendeKvp() != null)

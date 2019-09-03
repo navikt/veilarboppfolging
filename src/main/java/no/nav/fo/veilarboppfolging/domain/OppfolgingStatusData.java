@@ -11,6 +11,7 @@ import static java.util.Comparator.naturalOrder;
 @Accessors(chain = true)
 public class OppfolgingStatusData {
     public String fnr;
+    public String aktorId;
     public String veilederId;
     public boolean reservasjonKRR;
     public boolean manuell;
