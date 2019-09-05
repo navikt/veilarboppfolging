@@ -15,9 +15,9 @@ import static no.nav.fo.veilarboppfolging.config.JndiLocalContextConfig.setupInM
 public class VeilederHistorikkRepositoryTest {
     private static VeilederHistorikkRepository veilederHistorikkRepository;
     private static final String AKTOR_ID = "2222";
-    public static final String VEILEDER1 = "4321";
-    public static final String VEILEDER2 = "1234";
-    public static final String VEILEDER3 = "12345";
+    public static final String VEILEDER1 = "Veileder1";
+    public static final String VEILEDER2 = "Veileder2";
+    public static final String VEILEDER3 = "Veileder3";
 
     @Before
     public void setup() {

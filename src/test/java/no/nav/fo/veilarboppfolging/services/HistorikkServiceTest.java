@@ -4,11 +4,13 @@ import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.db.KvpRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
+import no.nav.fo.veilarboppfolging.db.VeilederHistorikkRepository;
 import no.nav.fo.veilarboppfolging.domain.EskaleringsvarselData;
 import no.nav.fo.veilarboppfolging.domain.InnstillingsHistorikk;
 import no.nav.fo.veilarboppfolging.domain.Kvp;
 import no.nav.fo.veilarboppfolging.domain.ManuellStatus;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
+import no.nav.sbl.jdbc.Transactor;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -45,6 +47,12 @@ public class HistorikkServiceTest {
 
     @Mock
     private OppfolgingRepository oppfolgingRepositoryMock;
+
+    @Mock
+    private Transactor transactor;
+
+    @Mock
+    private VeilederHistorikkRepository veilederHistorikkRepository;
 
     @InjectMocks
     private HistorikkService historikkService;
