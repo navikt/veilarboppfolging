@@ -62,6 +62,7 @@ public class HistorikkService {
                         .filter((historikk) -> KvpUtils.sjekkTilgangGittKvp(pepClient, kvpHistorikk, historikk::getDato)),
                 veilederHistorikkRepository.hentTilordnedeVeiledereForAktorId(aktorId).stream()
                         .map(this::tilDTO)
+                        .filter((historikk) -> KvpUtils.sjekkTilgangGittKvp(pepClient, kvpHistorikk, historikk::getDato))
         ).flatMap(s -> s).collect(Collectors.toList());
     }
 

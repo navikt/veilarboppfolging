@@ -204,40 +204,6 @@ public class VeilederTilordningRessursTest {
         assertThat(feilendeTilordninger).doesNotContain(tilordningOK2);
     }
 
-    @Test
-    public void responsSkalInneholderFeilendeTildelingNaarOppdateringAvDBFeiler() throws Exception {
-        List<VeilederTilordning> tilordninger = new ArrayList<>();
-
-        VeilederTilordning tilordningOK1 = new VeilederTilordning().setBrukerFnr("FNR1").setFraVeilederId("FRAVEILEDER1").setTilVeilederId("TILVEILEDER1");
-        VeilederTilordning tilordningERROR1 = new VeilederTilordning().setBrukerFnr("FNR2").setFraVeilederId("FRAVEILEDER2").setTilVeilederId("TILVEILEDER2");
-        VeilederTilordning tilordningOK2 = new VeilederTilordning().setBrukerFnr("FNR3").setFraVeilederId("FRAVEILEDER3").setTilVeilederId("TILVEILEDER3");
-        VeilederTilordning tilordningERROR2 = new VeilederTilordning().setBrukerFnr("FNR4").setFraVeilederId("FRAVEILEDER4").setTilVeilederId("TILVEILEDER4");
-
-        tilordninger.add(tilordningOK1);
-        tilordninger.add(tilordningERROR1);
-        tilordninger.add(tilordningOK2);
-        tilordninger.add(tilordningERROR2);
-
-        when(aktorServiceMock.getAktorId("FNR1")).thenReturn(of("AKTOERID1"));
-        when(aktorServiceMock.getAktorId("FNR2")).thenReturn(of("AKTOERID2"));
-        when(aktorServiceMock.getAktorId("FNR3")).thenReturn(of("AKTOERID3"));
-        when(aktorServiceMock.getAktorId("FNR4")).thenReturn(of("AKTOERID4"));
-
-
-        doThrow(new BadSqlGrammarException("AKTOER", "Dette er bare en test", new SQLException()))
-                .when(veilederTilordningerRepository).upsertVeilederTilordning(eq("AKTOERID2"), anyString());
-
-        doThrow(new BadSqlGrammarException("AKTOER", "Dette er bare en test", new SQLException()))
-                .when(veilederTilordningerRepository).upsertVeilederTilordning(eq("AKTOERID4"), anyString());
-
-        Response response = veilederTilordningRessurs.postVeilederTilordninger(tilordninger);
-        List<VeilederTilordning> feilendeTilordninger = ((TilordneVeilederResponse) response.getEntity()).getFeilendeTilordninger();
-
-        assertThat(feilendeTilordninger).contains(tilordningERROR1);
-        assertThat(feilendeTilordninger).contains(tilordningERROR2);
-        assertThat(feilendeTilordninger).doesNotContain(tilordningOK1);
-        assertThat(feilendeTilordninger).doesNotContain(tilordningOK2);
-    }
 
     @Test
     public void skalInneholdeFeilendeTildeligNaarKallTilAktoerFeiler() throws Exception {
@@ -336,13 +302,6 @@ public class VeilederTilordningRessursTest {
         List<VeilederTilordning> feilendeTilordninger = ((TilordneVeilederResponse) response.getEntity()).getFeilendeTilordninger();
 
         assertThat(feilendeTilordninger).isEmpty();
-    }
-
-    @Test
-    public void portefoljeRessursMustCallDAOwithAktoerIdToVeileder() throws PepException {
-        when(aktorServiceMock.getAktorId(any(String.class))).thenReturn(of("AKTOERID"));
-        veilederTilordningRessurs.postVeilederTilordninger(Collections.singletonList(testData()));
-        verify(veilederTilordningerRepository, times(1)).upsertVeilederTilordning(anyString(), anyString());
     }
 
     @Test

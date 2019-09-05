@@ -2,10 +2,10 @@ package no.nav.fo.veilarboppfolging.db;
 import no.nav.fo.veilarboppfolging.domain.VeilederTilordningerData;
 import no.nav.sbl.sql.DbConstants;
 import no.nav.sbl.sql.SqlUtils;
+import no.nav.sbl.sql.order.OrderClause;
 import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
 import java.sql.ResultSet;
@@ -14,7 +14,6 @@ import java.util.List;
 
 @Component
 public class VeilederHistorikkRepository {
-
     private final JdbcTemplate jdbc;
 
     @Inject
@@ -23,7 +22,7 @@ public class VeilederHistorikkRepository {
     }
 
     public void insertTilordnetVeilederForAktorId(String aktorId, String veileder, String innloggetVeilederId) {
-        SqlUtils.insert(jdbc, "VEILEDER_TILLORDNINGER")
+        SqlUtils.insert(jdbc, "VEILEDER_TILORDNINGER")
                 .value("veileder", veileder)
                 .value("aktor_id", aktorId)
                 .value("lagt_inn_av_veileder", innloggetVeilederId)
@@ -32,19 +31,20 @@ public class VeilederHistorikkRepository {
     }
 
     public List<VeilederTilordningerData> hentTilordnedeVeiledereForAktorId(String aktorId) {
-        return SqlUtils.select(jdbc, "VEILEDER_TILLORDNINGER", VeilederHistorikkRepository::mapper)
+        return SqlUtils.select(jdbc, "VEILEDER_TILORDNINGER", VeilederHistorikkRepository::mapper)
                 .column("veileder")
                 .column("sist_tilordnet")
                 .column("lagt_inn_av_veileder")
                 .where(WhereClause.equals("aktor_id", aktorId))
+                .orderBy(OrderClause.desc("sist_tilordnet"))
                 .executeToList();
     }
 
     private static VeilederTilordningerData mapper(ResultSet resultSet) throws SQLException {
-        return new VeilederTilordningerData(
-                resultSet.getString("veileder"),
-                resultSet.getString("lagt_inn_av_veileder"),
-                resultSet.getDate("sist_tilordnet")
-        );
+        return VeilederTilordningerData.builder()
+                .veileder(resultSet.getString("veileder"))
+                .lagtInnAvVeilder(resultSet.getString("lagt_inn_av_veileder"))
+                .sistTilordnet(resultSet.getDate("sist_tilordnet"))
+                .build();
     }
 }

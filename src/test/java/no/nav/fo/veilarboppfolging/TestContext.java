@@ -67,7 +67,7 @@ public class TestContext {
 
         setProperty(AKTIVITETSPLAN_URL_PROPERTY, getBaseUrl(AKTIVITETSPLAN_ALIAS));
         setProperty(VEILARBAKTIVITETAPI_URL_PROPERTY, getRestService(VEILARBAKTIVITETAPI_ALIAS).getUrl());
-        setProperty(VIRKSOMHET_DIGITALKONTAKINFORMASJON_V1_PROPERTY, getWebServiceEndpoint(VIRKSOMHET_DIGITALKONTAKINFORMASJON_V1_ALIAS).getUrl());
+        setProperty(VIRKSOMHET_DIGITALKONTAKINFORMASJON_V1_PROPERTY, getWebServiceEndpoint(VIRKSOMHET_DIGITALKONTAKINFORMASJON_V1_ALIAS, "q2").getUrl());
         setProperty(VIRKSOMHET_YTELSESKONTRAKT_V3_PROPERTY, getWebServiceEndpoint(VIRKSOMHET_YTELSESKONTRAKT_V3_ALIAS).getUrl());
         setProperty(VIRKSOMHET_OPPFOLGING_V1_PROPERTY, getWebServiceEndpoint(VIRKSOMHET_OPPFOLGING_V1_ALIAS).getUrl());
         setProperty(VIRKSOMHET_OPPFOELGINGSSTATUS_V2_PROPERTY, getWebServiceEndpoint(VIRKSOMHET_OPPFOELGINGSSTATUS_V2_ALIAS).getUrl());
@@ -95,7 +95,7 @@ public class TestContext {
 
         EnvironmentUtils.setProperty(STS_OIDC_CONFIGURATION_URL_PROPERTY, getRestService("security-token-service-openid-configuration").getUrl(), PUBLIC);
 
-        ServiceUserCertificate navTrustStore = FasitUtils.getServiceUserCertificate("nav_truststore", FasitUtils.getDefaultEnvironmentClass());
+        ServiceUserCertificate navTrustStore = FasitUtils.getServiceUserCertificate("nav_truststore_pto", FasitUtils.getDefaultEnvironmentClass());
         File navTrustStoreFile = File.createTempFile("nav_truststore", ".jks");
         FileUtils.writeByteArrayToFile(navTrustStoreFile, navTrustStore.getKeystore());
 
