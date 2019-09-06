@@ -10,6 +10,8 @@ import no.nav.common.auth.Subject;
 import no.nav.common.auth.SubjectHandler;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.feed.producer.FeedProducer;
+import no.nav.fo.veilarboppfolging.TestTransactor;
+import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.db.VeilederHistorikkRepository;
 import no.nav.fo.veilarboppfolging.db.VeilederTilordningerRepository;
 import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingFeedDTO;
@@ -21,7 +23,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.jdbc.BadSqlGrammarException;
@@ -50,6 +51,8 @@ import static org.mockito.Mockito.*;
 @RunWith(MockitoJUnitRunner.Silent.class)
 public class VeilederTilordningRessursTest {
 
+
+
     @Mock
     private VeilarbAbacPepClient pepClient;
 
@@ -59,11 +62,13 @@ public class VeilederTilordningRessursTest {
     @Mock
     private VeilederTilordningerRepository veilederTilordningerRepository;
 
-    @Mock
     private Transactor transactor;
 
     @Mock
     private VeilederHistorikkRepository veilederHistorikkRepository;
+
+    @Mock
+    private OppfolgingRepository oppfolgingRepository;
 
     @Mock
     private FeedProducer<OppfolgingFeedDTO> feed;
@@ -71,7 +76,6 @@ public class VeilederTilordningRessursTest {
     @Mock
     private AutorisasjonService autorisasjonService;
 
-    @InjectMocks
     private VeilederTilordningRessurs veilederTilordningRessurs;
 
     @Rule
@@ -79,6 +83,8 @@ public class VeilederTilordningRessursTest {
 
     @Before
     public void setup() {
+        transactor = new TestTransactor();
+        veilederTilordningRessurs = new VeilederTilordningRessurs(aktorServiceMock, veilederTilordningerRepository, pepClient, feed, autorisasjonService, oppfolgingRepository, veilederHistorikkRepository, transactor);
         when(autorisasjonService.harVeilederSkriveTilgangTilFnr(anyString(), anyString())).thenReturn(true);
         subjectRule.setSubject(new Subject("Z000000", IdentType.InternBruker, SsoToken.oidcToken("XOXO")));
     }
@@ -127,6 +133,42 @@ public class VeilederTilordningRessursTest {
         assertThat(feilendeTilordninger).doesNotContain(harTilgang1);
         assertThat(feilendeTilordninger).doesNotContain(harTilgang2);
     }
+
+    @Test
+    public void responsSkalInneholderFeilendeTildelingNaarOppdateringAvDBFeiler() throws Exception {
+        List<VeilederTilordning> tilordninger = new ArrayList<>();
+
+        VeilederTilordning tilordningOK1 = new VeilederTilordning().setBrukerFnr("FNR1").setFraVeilederId("FRAVEILEDER1").setTilVeilederId("TILVEILEDER1");
+        VeilederTilordning tilordningERROR1 = new VeilederTilordning().setBrukerFnr("FNR2").setFraVeilederId("FRAVEILEDER2").setTilVeilederId("TILVEILEDER2");
+        VeilederTilordning tilordningOK2 = new VeilederTilordning().setBrukerFnr("FNR3").setFraVeilederId("FRAVEILEDER3").setTilVeilederId("TILVEILEDER3");
+        VeilederTilordning tilordningERROR2 = new VeilederTilordning().setBrukerFnr("FNR4").setFraVeilederId("FRAVEILEDER4").setTilVeilederId("TILVEILEDER4");
+
+        tilordninger.add(tilordningOK1);
+        tilordninger.add(tilordningERROR1);
+        tilordninger.add(tilordningOK2);
+        tilordninger.add(tilordningERROR2);
+
+        when(aktorServiceMock.getAktorId("FNR1")).thenReturn(of("AKTOERID1"));
+        when(aktorServiceMock.getAktorId("FNR2")).thenReturn(of("AKTOERID2"));
+        when(aktorServiceMock.getAktorId("FNR3")).thenReturn(of("AKTOERID3"));
+        when(aktorServiceMock.getAktorId("FNR4")).thenReturn(of("AKTOERID4"));
+
+
+        doThrow(new BadSqlGrammarException("AKTOER", "Dette er bare en test", new SQLException()))
+                .when(veilederTilordningerRepository).upsertVeilederTilordning(eq("AKTOERID2"), anyString());
+
+        doThrow(new BadSqlGrammarException("AKTOER", "Dette er bare en test", new SQLException()))
+                .when(veilederTilordningerRepository).upsertVeilederTilordning(eq("AKTOERID4"), anyString());
+
+        Response response = veilederTilordningRessurs.postVeilederTilordninger(tilordninger);
+        List<VeilederTilordning> feilendeTilordninger = ((TilordneVeilederResponse) response.getEntity()).getFeilendeTilordninger();
+
+        assertThat(feilendeTilordninger).contains(tilordningERROR1);
+        assertThat(feilendeTilordninger).contains(tilordningERROR2);
+        assertThat(feilendeTilordninger).doesNotContain(tilordningOK1);
+        assertThat(feilendeTilordninger).doesNotContain(tilordningOK2);
+    }
+
 
     @Test
     public void responsSkalInneholdeBrukereSomHarFeilFraVeileder() throws Exception {

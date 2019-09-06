@@ -49,7 +49,6 @@ public class VeilederTilordningerRepository {
                 .setSistOppdatert(resultSet.getDate(OPPDATERT));
     }
 
-    @Transactional
     public void upsertVeilederTilordning(String aktoerId, String veileder) {
         int rowsUpdated = db.update(
                 "INSERT INTO OPPFOLGINGSTATUS(aktor_id, veileder, under_oppfolging, ny_for_veileder, sist_tilordnet, oppdatert, FEED_ID) " +
