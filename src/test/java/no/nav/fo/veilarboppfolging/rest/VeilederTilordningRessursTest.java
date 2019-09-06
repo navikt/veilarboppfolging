@@ -11,14 +11,12 @@ import no.nav.common.auth.SubjectHandler;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.feed.producer.FeedProducer;
 import no.nav.fo.veilarboppfolging.TestTransactor;
-import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
-import no.nav.fo.veilarboppfolging.db.VeilederHistorikkRepository;
-import no.nav.fo.veilarboppfolging.db.VeilederTilordningerRepository;
+import no.nav.fo.veilarboppfolging.db.*;
 import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingFeedDTO;
 import no.nav.fo.veilarboppfolging.rest.domain.TilordneVeilederResponse;
 import no.nav.fo.veilarboppfolging.rest.domain.VeilederTilordning;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
-import no.nav.sbl.jdbc.Transactor;
+import no.nav.sbl.jdbc.Database;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -28,7 +26,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.jdbc.BadSqlGrammarException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import javax.inject.Inject;
 import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.core.Response;
 import java.sql.SQLException;
@@ -43,23 +40,18 @@ import java.util.concurrent.Future;
 import static java.util.Arrays.asList;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
-import static no.nav.fo.veilarboppfolging.db.VeilederTilordningerRepositoryTest.VEILEDER;
+import static no.nav.fo.veilarboppfolging.config.JndiLocalContextConfig.setupInMemoryDatabase;
 import static no.nav.fo.veilarboppfolging.rest.VeilederTilordningRessurs.kanTilordneFraVeileder;
 import static org.assertj.core.api.Java6Assertions.assertThat;
-import static org.assertj.core.internal.bytebuddy.matcher.ElementMatchers.is;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.Silent.class)
 public class VeilederTilordningRessursTest {
 
+    private JdbcTemplate db;
 
-    @Inject
-    JdbcTemplate db;
-
-    @Inject
     private VeilederTilordningerRepository veilederTilordningerRepository;
 
     @Mock
@@ -67,12 +59,6 @@ public class VeilederTilordningRessursTest {
 
     @Mock
     private AktorService aktorServiceMock;
-
-    @Mock
-    private VeilederHistorikkRepository veilederHistorikkRepository;
-
-    @Mock
-    private OppfolgingRepository oppfolgingRepository;
 
     @Mock
     private FeedProducer<OppfolgingFeedDTO> feed;
@@ -87,8 +73,22 @@ public class VeilederTilordningRessursTest {
 
     @Before
     public void setup() {
-        Transactor transactor = new TestTransactor();
-        veilederTilordningRessurs = new VeilederTilordningRessurs(aktorServiceMock, veilederTilordningerRepository, pepClient, feed, autorisasjonService, oppfolgingRepository, veilederHistorikkRepository, transactor);
+        db = new JdbcTemplate(setupInMemoryDatabase());
+        Database database = new Database(db);
+        VeilederHistorikkRepository veilederHistorikkRepository = new VeilederHistorikkRepository(db);
+        veilederTilordningerRepository = new VeilederTilordningerRepository(database);
+        OppfolgingRepository oppfolgingRepository = new OppfolgingRepository(
+                pepClient,
+                new OppfolgingsStatusRepository(database),
+                new OppfolgingsPeriodeRepository(database),
+                mock(MaalRepository.class),
+                mock(ManuellStatusRepository.class),
+                mock(EskaleringsvarselRepository.class),
+                mock(KvpRepository.class),
+                mock(NyeBrukereFeedRepository.class)
+        );
+        veilederTilordningRessurs = new VeilederTilordningRessurs(aktorServiceMock, veilederTilordningerRepository, pepClient, feed, autorisasjonService, oppfolgingRepository, veilederHistorikkRepository, new TestTransactor());
+
         when(autorisasjonService.harVeilederSkriveTilgangTilFnr(anyString(), anyString())).thenReturn(true);
         subjectRule.setSubject(new Subject("Z000000", IdentType.InternBruker, SsoToken.oidcToken("XOXO")));
     }
@@ -98,11 +98,9 @@ public class VeilederTilordningRessursTest {
         db.execute("INSERT INTO OPPFOLGINGSTATUS (aktor_id, oppdatert, under_oppfolging) " +
                 "VALUES ('1111111', CURRENT_TIMESTAMP, 0)");
 
-        veilederTilordningRessurs.skrivTilDatabase()
-
-        assertThat(db.queryForList("SELECT * FROM OPPFOLGINGSTATUS WHERE aktor_id = '1111111'").get(0).get("under_oppfolging").toString(), is("0"));
-        veilederTilordningerRepository.upsertVeilederTilordning("1111111", VEILEDER);
-        assertThat(db.queryForList("SELECT * FROM OPPFOLGINGSTATUS WHERE aktor_id = '1111111'").get(0).get("under_oppfolging").toString(), is("1"));
+        assertTrue(db.queryForList("SELECT * FROM OPPFOLGINGSTATUS WHERE aktor_id = '1111111'").get(0).get("under_oppfolging").toString().equals("0"));
+        veilederTilordningRessurs.skrivTilDatabase("1111111", "VEILEDER1");
+        assertTrue(db.queryForList("SELECT * FROM OPPFOLGINGSTATUS WHERE aktor_id = '1111111'").get(0).get("under_oppfolging").toString().equals("1"));
 
     }
 

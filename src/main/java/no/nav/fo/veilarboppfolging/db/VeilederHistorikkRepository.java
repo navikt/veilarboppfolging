@@ -22,11 +22,10 @@ public class VeilederHistorikkRepository {
         this.jdbc = jdbc;
     }
 
-    public void insertTilordnetVeilederForAktorId(String aktorId, String veileder, String innloggetVeilederId) {
+    public void insertTilordnetVeilederForAktorId(String aktorId, String veileder) {
         SqlUtils.insert(jdbc, "VEILEDER_TILORDNINGER")
                 .value("veileder", veileder)
                 .value("aktor_id", aktorId)
-                .value("lagt_inn_av_veileder", innloggetVeilederId)
                 .value("sist_tilordnet", DbConstants.CURRENT_TIMESTAMP)
                 .execute();
     }
@@ -35,7 +34,6 @@ public class VeilederHistorikkRepository {
         return SqlUtils.select(jdbc, "VEILEDER_TILORDNINGER", VeilederHistorikkRepository::mapper)
                 .column("veileder")
                 .column("sist_tilordnet")
-                .column("lagt_inn_av_veileder")
                 .where(WhereClause.equals("aktor_id", aktorId))
                 .orderBy(OrderClause.desc("sist_tilordnet"))
                 .executeToList();
@@ -44,7 +42,6 @@ public class VeilederHistorikkRepository {
     private static VeilederTilordningerData mapper(ResultSet resultSet) throws SQLException {
         return VeilederTilordningerData.builder()
                 .veileder(resultSet.getString("veileder"))
-                .lagtInnAvVeilder(resultSet.getString("lagt_inn_av_veileder"))
                 .sistTilordnet(hentDato(resultSet,"sist_tilordnet"))
                 .build();
     }

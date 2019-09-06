@@ -17,7 +17,6 @@ public class VeilederHistorikkRepositoryTest {
     private static final String AKTOR_ID = "2222";
     public static final String VEILEDER1 = "Veileder1";
     public static final String VEILEDER2 = "Veileder2";
-    public static final String VEILEDER3 = "Veileder3";
 
     @Before
     public void setup() {
@@ -26,14 +25,12 @@ public class VeilederHistorikkRepositoryTest {
 
     @Test
     public void skalInserteTilordnetVeileder () {
-        veilederHistorikkRepository.insertTilordnetVeilederForAktorId(AKTOR_ID, VEILEDER1, VEILEDER3);
-        veilederHistorikkRepository.insertTilordnetVeilederForAktorId(AKTOR_ID, VEILEDER2, VEILEDER3);
+        veilederHistorikkRepository.insertTilordnetVeilederForAktorId(AKTOR_ID, VEILEDER1);
+        veilederHistorikkRepository.insertTilordnetVeilederForAktorId(AKTOR_ID, VEILEDER2);
         List<VeilederTilordningerData> veilederHistorikk = veilederHistorikkRepository.hentTilordnedeVeiledereForAktorId(AKTOR_ID);
         assertThat(veilederHistorikk.size(), equalTo(2));
+        assertThat(veilederHistorikk.get(0).getVeileder(), equalTo(VEILEDER1));
         assertThat(veilederHistorikk.get(0).getVeileder(), equalTo(VEILEDER2));
-        assertThat(veilederHistorikk.get(1).getVeileder(), equalTo(VEILEDER1));
-        assertThat(veilederHistorikk.get(0).getLagtInnAvVeilder(), equalTo(VEILEDER3));
-        assertThat(veilederHistorikk.get(1).getLagtInnAvVeilder(), equalTo(VEILEDER3));
     }
 
 }

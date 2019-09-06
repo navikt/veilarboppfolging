@@ -89,7 +89,7 @@ public class VeilederTilordningRessurs {
 
                 if (kanTilordneFraVeileder(eksisterendeVeileder, tilordning.getFraVeilederId())) {
                     if (nyVeilederHarTilgang(tilordning)) {
-                        skrivTilDatabase(aktoerId, tilordning.getTilVeilederId(), innloggetVeilederId);
+                        skrivTilDatabase(aktoerId, tilordning.getTilVeilederId());
                     } else {
                         LOG.info("Aktoerid {} kunne ikke tildeles. Ny veileder {} har ikke tilgang.", aktoerId, tilordning.getTilVeilederId());
                         feilendeTilordninger.add(tilordning);
@@ -176,10 +176,10 @@ public class VeilederTilordningRessurs {
         }
     }
 
-    public void skrivTilDatabase(String aktoerId, String veileder, String innloggetVeilederId ) {
+    public void skrivTilDatabase(String aktoerId, String veileder) {
         transactor.inTransaction(()-> {
             veilederTilordningerRepository.upsertVeilederTilordning(aktoerId, veileder);
-            veilederHistorikkRepository.insertTilordnetVeilederForAktorId(aktoerId, veileder, innloggetVeilederId);
+            veilederHistorikkRepository.insertTilordnetVeilederForAktorId(aktoerId, veileder);
             oppfolgingRepository.startOppfolgingHvisIkkeAlleredeStartet(aktoerId);
         });
 

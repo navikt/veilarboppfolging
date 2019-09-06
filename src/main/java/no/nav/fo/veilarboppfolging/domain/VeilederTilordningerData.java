@@ -9,6 +9,5 @@ import java.util.Date;
 @Builder
 public class VeilederTilordningerData {
     private String veileder;
-    private String lagtInnAvVeilder;
     private Date sistTilordnet;
 }
