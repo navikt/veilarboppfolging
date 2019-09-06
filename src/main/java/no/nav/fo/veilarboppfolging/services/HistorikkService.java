@@ -74,9 +74,9 @@ public class HistorikkService {
     private InnstillingsHistorikk tilDTO(VeilederTilordningerData veilederTilordningerData) {
         return InnstillingsHistorikk.builder()
                 .type(VEILEDER_TILORDNET)
+                .begrunnelse("Brukeren er tildelt veileder " +  veilederTilordningerData.getVeileder())
                 .dato(veilederTilordningerData.getSistTilordnet())
                 .opprettetAv(NAV)
-                .opprettetAvBrukerId(veilederTilordningerData.getVeileder())
                 .build();
     }
 
