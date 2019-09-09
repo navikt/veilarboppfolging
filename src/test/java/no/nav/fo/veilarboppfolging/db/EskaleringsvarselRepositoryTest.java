@@ -3,7 +3,6 @@ package no.nav.fo.veilarboppfolging.db;
 import no.nav.fo.DatabaseTest;
 import no.nav.fo.veilarboppfolging.domain.EskaleringsvarselData;
 import no.nav.fo.veilarboppfolging.domain.Oppfolging;
-import no.nav.sbl.jdbc.Database;
 import org.junit.Test;
 
 import javax.inject.Inject;
@@ -35,17 +34,15 @@ public class EskaleringsvarselRepositoryTest extends DatabaseTest {
     public void testCreateAndFinish() {
         gittOppfolgingForAktor(AKTOR_ID);
 
-        EskaleringsvarselData e = EskaleringsvarselData.builder()
+        // Create the escalation warning, and test that retrieving
+        // the current warning yields the object we just created.
+        repository.create(EskaleringsvarselData.builder()
                 .aktorId(AKTOR_ID)
                 .opprettetAv(SAKSBEHANDLER_ID)
                 .opprettetBegrunnelse(BEGRUNNELSE)
-                .build();
+                .build());
 
-        // Create the escalation warning, and test that retrieving
-        // the current warning yields the object we just created.
-        repository.create(e);
-
-        e = gjeldendeEskaleringsVarsel(AKTOR_ID);
+        EskaleringsvarselData e = gjeldendeEskaleringsVarsel(AKTOR_ID);
 
         assertThat(e.getAktorId(), is(AKTOR_ID));
         assertThat(e.getOpprettetAv(), is(SAKSBEHANDLER_ID));
@@ -53,10 +50,9 @@ public class EskaleringsvarselRepositoryTest extends DatabaseTest {
 
         // Finish the escalation warning, and test that retrieving
         // the current warning yields nothing.
-        repository.finish(e);
+        repository.finish(AKTOR_ID, e.getVarselId(), SAKSBEHANDLER_ID, "Begrunnelse");
 
-        e = gjeldendeEskaleringsVarsel(AKTOR_ID);
-        assertNull(e);
+        assertNull(gjeldendeEskaleringsVarsel(AKTOR_ID));
     }
 
     /**
