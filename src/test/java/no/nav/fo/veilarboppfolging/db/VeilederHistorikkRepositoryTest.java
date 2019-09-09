@@ -15,8 +15,8 @@ import static no.nav.fo.veilarboppfolging.config.JndiLocalContextConfig.setupInM
 public class VeilederHistorikkRepositoryTest {
     private static VeilederHistorikkRepository veilederHistorikkRepository;
     private static final String AKTOR_ID = "2222";
-    public static final String VEILEDER1 = "Veileder1";
-    public static final String VEILEDER2 = "Veileder2";
+    private static final String VEILEDER1 = "Veileder1";
+    private static final String VEILEDER2 = "Veileder2";
 
     @Before
     public void setup() {
@@ -29,8 +29,8 @@ public class VeilederHistorikkRepositoryTest {
         veilederHistorikkRepository.insertTilordnetVeilederForAktorId(AKTOR_ID, VEILEDER2);
         List<VeilederTilordningerData> veilederHistorikk = veilederHistorikkRepository.hentTilordnedeVeiledereForAktorId(AKTOR_ID);
         assertThat(veilederHistorikk.size(), equalTo(2));
-        assertThat(veilederHistorikk.get(0).getVeileder(), equalTo(VEILEDER1));
         assertThat(veilederHistorikk.get(0).getVeileder(), equalTo(VEILEDER2));
+        assertThat(veilederHistorikk.get(1).getVeileder(), equalTo(VEILEDER1));
     }
 
 }

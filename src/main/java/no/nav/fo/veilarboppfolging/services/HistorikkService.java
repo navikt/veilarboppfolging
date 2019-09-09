@@ -45,25 +45,7 @@ public class HistorikkService {
         String aktorId = aktorService.getAktorId(fnr)
                 .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktør for fnr: " + fnr));
 
-        List<Kvp> kvpHistorikk = kvpRepository.hentKvpHistorikk(aktorId);
-
-        return Stream.of(
-                kvpHistorikk.stream()
-                        .filter(this::harTilgangTilEnhet)
-                        .map(this::tilDTO).flatMap(List::stream),
-                oppfolgingRepository.hentAvsluttetOppfolgingsperioder(aktorId).stream()
-                        .map(this::tilDTO),
-                oppfolgingRepository.hentManuellHistorikk(aktorId).stream()
-                        .map(this::tilDTO)
-                        .filter((historikk) -> KvpUtils.sjekkTilgangGittKvp(pepClient, kvpHistorikk, historikk::getDato)),
-                oppfolgingRepository.hentEskaleringhistorikk(aktorId).stream()
-                        .map(this::tilDTO)
-                        .flatMap(List::stream)
-                        .filter((historikk) -> KvpUtils.sjekkTilgangGittKvp(pepClient, kvpHistorikk, historikk::getDato)),
-                veilederHistorikkRepository.hentTilordnedeVeiledereForAktorId(aktorId).stream()
-                        .map(this::tilDTO)
-                        .filter((historikk) -> KvpUtils.sjekkTilgangGittKvp(pepClient, kvpHistorikk, historikk::getDato))
-        ).flatMap(s -> s).collect(Collectors.toList());
+        return hentInstillingHistorikk(aktorId).flatMap(s -> s).collect(Collectors.toList());
     }
 
     @SneakyThrows
@@ -150,5 +132,39 @@ public class HistorikkService {
             return Arrays.asList(kvpStart, kvpStopp);
         }
         return singletonList(kvpStart);
+    }
+
+    private Stream<Stream<InnstillingsHistorikk>> hentInstillingHistorikk (String aktorId) {
+        List<Kvp> kvpHistorikk = kvpRepository.hentKvpHistorikk(aktorId);
+
+        Stream<InnstillingsHistorikk> kvpInnstillingHistorikk = kvpHistorikk.stream()
+                .filter(this::harTilgangTilEnhet)
+                .map(this::tilDTO).flatMap(List::stream);
+
+        Stream<InnstillingsHistorikk> avluttetOppfolgingInnstillingHistorikk = oppfolgingRepository.hentAvsluttetOppfolgingsperioder(aktorId)
+                .stream()
+                .map(this::tilDTO);
+
+        Stream<InnstillingsHistorikk> manuellInnstillingHistorikk = oppfolgingRepository.hentManuellHistorikk(aktorId)
+                .stream()
+                .map(this::tilDTO)
+                .filter((historikk) -> KvpUtils.sjekkTilgangGittKvp(pepClient, kvpHistorikk, historikk::getDato));
+
+        Stream <InnstillingsHistorikk> eskaleringInnstillingHistorikk = oppfolgingRepository.hentEskaleringhistorikk(aktorId).stream()
+                .map(this::tilDTO)
+                .flatMap(List::stream)
+                .filter((historikk) -> KvpUtils.sjekkTilgangGittKvp(pepClient, kvpHistorikk, historikk::getDato));
+
+        Stream <InnstillingsHistorikk> veilederTilordningerInnstillingHistorikk =  veilederHistorikkRepository.hentTilordnedeVeiledereForAktorId(aktorId).stream()
+                .map(this::tilDTO)
+                .filter((historikk) -> KvpUtils.sjekkTilgangGittKvp(pepClient, kvpHistorikk, historikk::getDato));
+
+        return Stream.of(
+                kvpInnstillingHistorikk,
+                avluttetOppfolgingInnstillingHistorikk,
+                manuellInnstillingHistorikk,
+                eskaleringInnstillingHistorikk,
+                veilederTilordningerInnstillingHistorikk
+        );
     }
 }

@@ -87,17 +87,7 @@ public class VeilederTilordningRessurs {
 
                 String eksisterendeVeileder = veilederTilordningerRepository.hentTilordningForAktoer(aktoerId);
 
-                if (kanTilordneFraVeileder(eksisterendeVeileder, tilordning.getFraVeilederId())) {
-                    if (nyVeilederHarTilgang(tilordning)) {
-                        skrivTilDatabase(aktoerId, tilordning.getTilVeilederId());
-                    } else {
-                        LOG.info("Aktoerid {} kunne ikke tildeles. Ny veileder {} har ikke tilgang.", aktoerId, tilordning.getTilVeilederId());
-                        feilendeTilordninger.add(tilordning);
-                    }
-                } else {
-                    LOG.info("Aktoerid {} kunne ikke tildeles. Oppgitt fraVeileder {} er feil. Faktisk veileder: {}", aktoerId, tilordning.getFraVeilederId(), eksisterendeVeileder);
-                    feilendeTilordninger.add(tilordning);
-                }
+                feilendeTilordninger = tildelVeileder(feilendeTilordninger, tilordning, aktoerId, eksisterendeVeileder);
 
             } catch (Exception e) {
                 feilendeTilordninger.add(tilordning);
@@ -120,6 +110,22 @@ public class VeilederTilordningRessurs {
 
     }
 
+    private List<VeilederTilordning> tildelVeileder(List<VeilederTilordning> feilendeTilordninger, VeilederTilordning tilordning, String aktoerId, String eksisterendeVeileder) {
+        if (kanTilordneFraVeileder(eksisterendeVeileder, tilordning.getFraVeilederId())) {
+            if (nyVeilederHarTilgang(tilordning)) {
+                skrivTilDatabase(aktoerId, tilordning.getTilVeilederId());
+            } else {
+                LOG.info("Aktoerid {} kunne ikke tildeles. Ny veileder {} har ikke tilgang.", aktoerId, tilordning.getTilVeilederId());
+                feilendeTilordninger.add(tilordning);
+            }
+        } else {
+            LOG.info("Aktoerid {} kunne ikke tildeles. Oppgitt fraVeileder {} er feil. Faktisk veileder: {}", aktoerId, tilordning.getFraVeilederId(), eksisterendeVeileder);
+            feilendeTilordninger.add(tilordning);
+        }
+
+        return feilendeTilordninger;
+    }
+
     @POST
     @Path("{fnr}/lestaktivitetsplan/")
     public void lestAktivitetsplan(@PathParam("fnr") String fnr) {
@@ -137,7 +143,6 @@ public class VeilederTilordningRessurs {
                 .map(veilederTilordningerRepository::markerSomLestAvVeileder)
                 .ifPresent(i -> kallWebhook());
     }
-
 
     private void loggFeilOppfolging(Exception e, VeilederTilordning tilordning) {
 
