@@ -1,4 +1,4 @@
-package no.nav.fo.veilarboppfolging.rest;
+package no.nav.fo.veilarboppfolging.services;
 
 import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
 import no.nav.brukerdialog.security.context.SubjectRule;
@@ -6,6 +6,8 @@ import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.feed.producer.FeedProducer;
 import no.nav.fo.veilarboppfolging.TestTransactor;
 import no.nav.fo.veilarboppfolging.db.*;
+import no.nav.fo.veilarboppfolging.rest.AutorisasjonService;
+import no.nav.fo.veilarboppfolging.rest.VeilederTilordningRessurs;
 import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingFeedDTO;
 import no.nav.sbl.jdbc.Database;
 import org.junit.Before;

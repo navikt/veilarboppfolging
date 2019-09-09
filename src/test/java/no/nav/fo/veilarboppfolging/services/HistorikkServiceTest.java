@@ -10,6 +10,7 @@ import no.nav.fo.veilarboppfolging.domain.InnstillingsHistorikk;
 import no.nav.fo.veilarboppfolging.domain.Kvp;
 import no.nav.fo.veilarboppfolging.domain.ManuellStatus;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
+import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import no.nav.sbl.jdbc.Transactor;
 import org.junit.Before;
 import org.junit.Test;
@@ -50,6 +51,9 @@ public class HistorikkServiceTest {
 
     @Mock
     private Transactor transactor;
+
+    @Mock
+    private UnleashService unleashService;
 
     @Mock
     private VeilederHistorikkRepository veilederHistorikkRepository;

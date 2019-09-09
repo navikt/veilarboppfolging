@@ -9,11 +9,13 @@ import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.db.VeilederHistorikkRepository;
 import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.fo.veilarboppfolging.utils.KvpUtils;
+import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -40,12 +42,15 @@ public class HistorikkService {
     @Inject
     private VeilederHistorikkRepository veilederHistorikkRepository;
 
+    @Inject
+    private UnleashService unleashService;
+
 
     public List<InnstillingsHistorikk> hentInstillingsHistorikk(String fnr) {
         String aktorId = aktorService.getAktorId(fnr)
                 .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktør for fnr: " + fnr));
 
-        return hentInstillingHistorikk(aktorId).flatMap(s -> s).collect(Collectors.toList());
+        return hentInstillingHistorikk(aktorId).filter(Objects::nonNull).flatMap(s -> s).collect(Collectors.toList());
     }
 
     @SneakyThrows
@@ -137,6 +142,14 @@ public class HistorikkService {
     private Stream<Stream<InnstillingsHistorikk>> hentInstillingHistorikk (String aktorId) {
         List<Kvp> kvpHistorikk = kvpRepository.hentKvpHistorikk(aktorId);
 
+        Stream <InnstillingsHistorikk> veilederTilordningerInnstillingHistorikk = null;
+
+        if(unleashService.isEnabled("veilarboppfolging.tildel_veileder")) {
+            veilederTilordningerInnstillingHistorikk =  veilederHistorikkRepository.hentTilordnedeVeiledereForAktorId(aktorId).stream()
+                    .map(this::tilDTO)
+                    .filter((historikk) -> KvpUtils.sjekkTilgangGittKvp(pepClient, kvpHistorikk, historikk::getDato));
+        }
+
         Stream<InnstillingsHistorikk> kvpInnstillingHistorikk = kvpHistorikk.stream()
                 .filter(this::harTilgangTilEnhet)
                 .map(this::tilDTO).flatMap(List::stream);
@@ -155,9 +168,6 @@ public class HistorikkService {
                 .flatMap(List::stream)
                 .filter((historikk) -> KvpUtils.sjekkTilgangGittKvp(pepClient, kvpHistorikk, historikk::getDato));
 
-        Stream <InnstillingsHistorikk> veilederTilordningerInnstillingHistorikk =  veilederHistorikkRepository.hentTilordnedeVeiledereForAktorId(aktorId).stream()
-                .map(this::tilDTO)
-                .filter((historikk) -> KvpUtils.sjekkTilgangGittKvp(pepClient, kvpHistorikk, historikk::getDato));
 
         return Stream.of(
                 kvpInnstillingHistorikk,
