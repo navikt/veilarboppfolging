@@ -10,8 +10,10 @@ import java.util.List;
 @Accessors(chain = true)
 public class OppfolgingStatus {
     public String fnr;
+    public String aktorId;
     public String veilederId;
     public boolean reservasjonKRR;
+    public boolean kanVarsles;
     public boolean manuell;
     public boolean underOppfolging;
     public boolean underKvp;

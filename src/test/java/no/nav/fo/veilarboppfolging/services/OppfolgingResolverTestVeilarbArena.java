@@ -18,28 +18,30 @@ public class OppfolgingResolverTestVeilarbArena extends OppfolgingResolverTest {
     }
 
     @Test
-    public void henter_bruker_direkte_fra_arena_dersom_bruker_ikke_er_under_oppfolging() {
-
-        when(oppfolgingRepositoryMock.hentOppfolging(any())).thenReturn(Optional.of(new Oppfolging().setUnderOppfolging(false)));
-        when(oppfolgingsbrukerServiceMock.hentOppfolgingsbruker(any())).thenReturn(Optional.of(new VeilarbArenaOppfolging()));
-        setupArenaService();
-        when(arenaOppfolgingServiceMock.hentArenaOppfolging(any())).thenReturn(new ArenaOppfolging());
-
+    public void setter_bruker_under_oppfolging_dersom_under_oppfolging_i_veilarbarena_men_ikke_i_folge_oppfolgingsflagg() {
+        gittTilstand(false,
+                Optional.of(new VeilarbArenaOppfolging()
+                        .setFormidlingsgruppekode("ARBS")
+                        .setKvalifiseringsgruppekode("BATT")),
+                Optional.of(new ArenaOppfolging()
+                        .setFormidlingsgruppe("ARBS")
+                        .setServicegruppe("BATT")));
 
         oppfolgingResolver = new OppfolgingResolver(FNR, oppfolgingResolverDependenciesMock);
 
         oppfolgingResolver.sjekkStatusIArenaOgOppdaterOppfolging();
 
-        verify(oppfolgingsbrukerServiceMock, times(1)).hentOppfolgingsbruker(any());
-        verify(arenaOppfolgingServiceMock, times(1)).hentArenaOppfolging(any());
+        verify(oppfolgingRepositoryMock).startOppfolgingHvisIkkeAlleredeStartet(anyString());
     }
 
     @Test
-    public void henter_ikke_bruker_direkte_fra_arena_dersom_bruker_er_under_oppfolging() {
+    public void henter_ikke_direkte_fra_arena_dersom_bruker_er_under_oppfolging_i_folge_oppfolgingsflagg_og_veilarbarena() {
 
-        when(oppfolgingRepositoryMock.hentOppfolging(any())).thenReturn(Optional.of(new Oppfolging().setUnderOppfolging(true)));
-        when(oppfolgingsbrukerServiceMock.hentOppfolgingsbruker(any())).thenReturn(Optional.of(new VeilarbArenaOppfolging()));
-        setupArenaService();
+        gittTilstand(true,
+                Optional.of(new VeilarbArenaOppfolging()
+                        .setFormidlingsgruppekode("ARBS")
+                        .setKvalifiseringsgruppekode("BATT")),
+                Optional.empty());
 
         oppfolgingResolver = new OppfolgingResolver(FNR, oppfolgingResolverDependenciesMock);
 
@@ -47,16 +49,46 @@ public class OppfolgingResolverTestVeilarbArena extends OppfolgingResolverTest {
 
         verify(oppfolgingsbrukerServiceMock, times(1)).hentOppfolgingsbruker(any());
         verify(arenaOppfolgingServiceMock, times(0)).hentArenaOppfolging(any());
-
     }
 
     @Test
-    public void henter_bruker_direkte_fra_arena_dersom_bruker_er_under_oppfolging_og_iserv__lik_data() {
+    public void henter_ikke_direkte_fra_arena_dersom_bruker_ikke_er_under_oppfolging_i_folge_oppfolgingsflagg_og_veilarbarena() {
 
-        when(oppfolgingRepositoryMock.hentOppfolging(any())).thenReturn(Optional.of(new Oppfolging().setUnderOppfolging(true)));
-        when(oppfolgingsbrukerServiceMock.hentOppfolgingsbruker(any())).thenReturn(Optional.of(new VeilarbArenaOppfolging().setFormidlingsgruppekode("ISERV")));
-        setupArenaService();
-        when(arenaOppfolgingServiceMock.hentArenaOppfolging(any())).thenReturn(new ArenaOppfolging().setFormidlingsgruppe("ISERV").setKanEnkeltReaktiveres(true));
+        gittTilstand(false,
+                Optional.of(new VeilarbArenaOppfolging()
+                        .setFormidlingsgruppekode("IKKE")
+                        .setKvalifiseringsgruppekode("OPPF")),
+                Optional.empty());
+
+        oppfolgingResolver = new OppfolgingResolver(FNR, oppfolgingResolverDependenciesMock);
+
+        oppfolgingResolver.sjekkStatusIArenaOgOppdaterOppfolging();
+
+        verify(oppfolgingsbrukerServiceMock, times(1)).hentOppfolgingsbruker(any());
+        verify(arenaOppfolgingServiceMock, times(0)).hentArenaOppfolging(any());
+    }
+
+    @Test
+    public void henter_ikke_direkte_fra_arena_dersom_bruker_ikke_er_under_oppfolging_i_folge_oppfolgingsflagg_og_ikke_og_ikke_finnes_i_veilarbarena() {
+
+        gittTilstand(false,
+                Optional.empty(),
+                Optional.empty());
+
+        oppfolgingResolver = new OppfolgingResolver(FNR, oppfolgingResolverDependenciesMock);
+
+        oppfolgingResolver.sjekkStatusIArenaOgOppdaterOppfolging();
+
+        verify(oppfolgingsbrukerServiceMock, times(1)).hentOppfolgingsbruker(any());
+        verify(arenaOppfolgingServiceMock, times(0)).hentArenaOppfolging(any());
+    }
+
+    @Test
+    public void henter_direkte_fra_arena_dersom_bruker_er_under_oppfolgingi_folge_oppfolgingsflagg_og_ikke_finnes_i_veilarbarena() {
+
+        gittTilstand(true,
+                Optional.empty(),
+                Optional.of(new ArenaOppfolging()));
 
         oppfolgingResolver = new OppfolgingResolver(FNR, oppfolgingResolverDependenciesMock);
 
@@ -64,21 +96,14 @@ public class OppfolgingResolverTestVeilarbArena extends OppfolgingResolverTest {
 
         verify(oppfolgingsbrukerServiceMock, times(1)).hentOppfolgingsbruker(any());
         verify(arenaOppfolgingServiceMock, times(1)).hentArenaOppfolging(any());
-
-
-        assertThat(oppfolgingResolver.getErSykmeldtMedArbeidsgiver()).isFalse();
-        assertThat(oppfolgingResolver.getInaktivIArena()).isTrue();
-        assertThat(oppfolgingResolver.getKanReaktiveres()).isTrue();
-
     }
 
     @Test
-    public void henter_bruker_direkte_fra_arena_dersom_bruker_er_under_oppfolging_og_iserv__ulik_data() {
+    public void henter_direkte_fra_arena_dersom_bruker_er_under_oppfolgingi_folge_oppfolgingsflagg_men_ikke_i_folge_veilarbarena() {
 
-        when(oppfolgingRepositoryMock.hentOppfolging(any())).thenReturn(Optional.of(new Oppfolging().setUnderOppfolging(true)));
-        when(oppfolgingsbrukerServiceMock.hentOppfolgingsbruker(any())).thenReturn(Optional.of(new VeilarbArenaOppfolging().setFormidlingsgruppekode("ISERV")));
-        setupArenaService();
-        when(arenaOppfolgingServiceMock.hentArenaOppfolging(any())).thenReturn(new ArenaOppfolging().setFormidlingsgruppe("IARBS").setServicegruppe("IKKE_OPPF").setKanEnkeltReaktiveres(true));
+        gittTilstand(true,
+                Optional.of(new VeilarbArenaOppfolging().setFormidlingsgruppekode("ISERV").setKvalifiseringsgruppekode("IKKE_OPPF")),
+                Optional.of(new ArenaOppfolging()));
 
         oppfolgingResolver = new OppfolgingResolver(FNR, oppfolgingResolverDependenciesMock);
 
@@ -86,19 +111,14 @@ public class OppfolgingResolverTestVeilarbArena extends OppfolgingResolverTest {
 
         verify(oppfolgingsbrukerServiceMock, times(1)).hentOppfolgingsbruker(any());
         verify(arenaOppfolgingServiceMock, times(1)).hentArenaOppfolging(any());
-
-        assertThat(oppfolgingResolver.getErSykmeldtMedArbeidsgiver()).isTrue();
-        assertThat(oppfolgingResolver.getInaktivIArena()).isFalse();
-        assertThat(oppfolgingResolver.getKanReaktiveres()).isTrue();
     }
 
     @Test
-    public void henter_bruker_direkte_fra_arena_dersom_bruker_er_under_oppfolging_og_ikke_finnes_i_veilarbarena() {
+    public void henter_direkte_fra_arena_dersom_bruker_er_under_oppfolging_i_folge_veilarbarena_men_ikke_i_folge_oppfolgingsflagg() {
 
-        when(oppfolgingRepositoryMock.hentOppfolging(any())).thenReturn(Optional.of(new Oppfolging().setUnderOppfolging(true)));
-        when(oppfolgingsbrukerServiceMock.hentOppfolgingsbruker(any())).thenReturn(Optional.empty());
-        setupArenaService();
-        when(arenaOppfolgingServiceMock.hentArenaOppfolging(any())).thenReturn(new ArenaOppfolging());
+        gittTilstand(false,
+                Optional.of(new VeilarbArenaOppfolging().setFormidlingsgruppekode("ARBS").setKvalifiseringsgruppekode("BATT")),
+                Optional.of(new ArenaOppfolging()));
 
         oppfolgingResolver = new OppfolgingResolver(FNR, oppfolgingResolverDependenciesMock);
 
@@ -106,5 +126,16 @@ public class OppfolgingResolverTestVeilarbArena extends OppfolgingResolverTest {
 
         verify(oppfolgingsbrukerServiceMock, times(1)).hentOppfolgingsbruker(any());
         verify(arenaOppfolgingServiceMock, times(1)).hentArenaOppfolging(any());
+    }
+
+    private void gittTilstand(boolean oppfolgingsflagg,
+                              Optional<VeilarbArenaOppfolging> veilarbarena,
+                              Optional<ArenaOppfolging> arena) {
+        when(oppfolgingRepositoryMock.hentOppfolging(any()))
+                .thenReturn(Optional.of(new Oppfolging().setUnderOppfolging(oppfolgingsflagg)));
+        when(oppfolgingsbrukerServiceMock.hentOppfolgingsbruker(any()))
+                .thenReturn(veilarbarena);
+        setupArenaService();
+        when(arenaOppfolgingServiceMock.hentArenaOppfolging(any())).thenReturn(arena.orElse(null));
     }
 }

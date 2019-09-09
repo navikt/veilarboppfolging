@@ -230,6 +230,7 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
     private OppfolgingStatus tilDto(OppfolgingStatusData oppfolgingStatusData) {
         OppfolgingStatus status = new OppfolgingStatus()
                 .setFnr(oppfolgingStatusData.fnr)
+                .setAktorId(oppfolgingStatusData.aktorId)
                 .setUnderOppfolging(oppfolgingStatusData.underOppfolging)
                 .setManuell(oppfolgingStatusData.manuell)
                 .setReservasjonKRR(oppfolgingStatusData.reservasjonKRR)
@@ -256,7 +257,8 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
                     )
                     .setOppfolgingUtgang(oppfolgingStatusData.getOppfolgingUtgang())
                     .setHarSkriveTilgang(oppfolgingStatusData.harSkriveTilgang)
-                    .setInaktivIArena(oppfolgingStatusData.inaktivIArena);
+                    .setInaktivIArena(oppfolgingStatusData.inaktivIArena)
+                    .setKanVarsles(oppfolgingStatusData.kanVarsles);
         }
 
         return status;
