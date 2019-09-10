@@ -10,6 +10,9 @@ import no.nav.common.auth.Subject;
 import no.nav.common.auth.SubjectHandler;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.feed.producer.FeedProducer;
+import no.nav.fo.veilarboppfolging.TestTransactor;
+import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
+import no.nav.fo.veilarboppfolging.db.VeilederHistorikkRepository;
 import no.nav.fo.veilarboppfolging.db.VeilederTilordningerRepository;
 import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingFeedDTO;
 import no.nav.fo.veilarboppfolging.rest.domain.TilordneVeilederResponse;
@@ -19,7 +22,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.jdbc.BadSqlGrammarException;
@@ -58,12 +60,18 @@ public class VeilederTilordningRessursTest {
     private VeilederTilordningerRepository veilederTilordningerRepository;
 
     @Mock
+    private VeilederHistorikkRepository veilederHistorikkRepository;
+
+    @Mock
+    private OppfolgingRepository oppfolgingRepository;
+
+    @Mock
     private FeedProducer<OppfolgingFeedDTO> feed;
 
     @Mock
     private AutorisasjonService autorisasjonService;
 
-    @InjectMocks
+
     private VeilederTilordningRessurs veilederTilordningRessurs;
 
     @Rule
@@ -73,6 +81,7 @@ public class VeilederTilordningRessursTest {
     public void setup() {
         when(autorisasjonService.harVeilederSkriveTilgangTilFnr(anyString(), anyString())).thenReturn(true);
         subjectRule.setSubject(new Subject("Z000000", IdentType.InternBruker, SsoToken.oidcToken("XOXO")));
+        veilederTilordningRessurs = new VeilederTilordningRessurs(aktorServiceMock, veilederTilordningerRepository, pepClient, feed, autorisasjonService, oppfolgingRepository, veilederHistorikkRepository, new TestTransactor());
     }
 
     @Test
@@ -328,13 +337,6 @@ public class VeilederTilordningRessursTest {
         List<VeilederTilordning> feilendeTilordninger = ((TilordneVeilederResponse) response.getEntity()).getFeilendeTilordninger();
 
         assertThat(feilendeTilordninger).isEmpty();
-    }
-
-    @Test
-    public void portefoljeRessursMustCallDAOwithAktoerIdToVeileder() throws PepException {
-        when(aktorServiceMock.getAktorId(any(String.class))).thenReturn(of("AKTOERID"));
-        veilederTilordningRessurs.postVeilederTilordninger(Collections.singletonList(testData()));
-        verify(veilederTilordningerRepository, times(1)).upsertVeilederTilordning(anyString(), anyString());
     }
 
     @Test
