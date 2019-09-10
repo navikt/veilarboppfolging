@@ -184,12 +184,12 @@ public class OppfolgingService {
                 .medAktoerIdSupplier(() -> aktorService.getAktorId(fnr)
                         .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktørid")));
 
-        VeilarbAbacPepClient endretVeilarbAbacPepClient = pepClient
+        VeilarbAbacPepClient veilarbAbacPepClientMedNiva3 = pepClient
                 .endre()
                 .medResourceTypeUnderOppfolgingNiva3()
                 .bygg();
 
-        endretVeilarbAbacPepClient.sjekkLesetilgangTilBruker(bruker);
+        veilarbAbacPepClientMedNiva3.sjekkLesetilgangTilBruker(bruker);
 
         OppfolgingStatusData oppfolgingStatusData = hentOppfolgingsStatus(fnr, false);
 
