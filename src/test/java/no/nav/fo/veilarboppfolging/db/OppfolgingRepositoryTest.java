@@ -233,6 +233,7 @@ public class OppfolgingRepositoryTest extends DatabaseTest {
 
     private void gitt_kvp_periode(String enhet) {
         kvpRepository.startKvp(AKTOR_ID, enhet, VEILERDER, BEGRUNNELSE);
-        kvpRepository.stopKvp(AKTOR_ID, VEILERDER, BEGRUNNELSE, NAV);
+        long kvpId = kvpRepository.gjeldendeKvp(AKTOR_ID);
+        kvpRepository.stopKvp(kvpId, AKTOR_ID, VEILERDER, BEGRUNNELSE, NAV);
     }
 }

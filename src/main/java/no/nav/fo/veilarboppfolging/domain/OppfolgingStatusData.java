@@ -11,12 +11,14 @@ import static java.util.Comparator.naturalOrder;
 @Accessors(chain = true)
 public class OppfolgingStatusData {
     public String fnr;
+    public String aktorId;
     public String veilederId;
     public boolean reservasjonKRR;
     public boolean manuell;
     public boolean underOppfolging;
     public boolean underKvp;
     public boolean kanStarteOppfolging;
+    public boolean kanVarsles;
     public AvslutningStatusData avslutningStatusData;
     private EskaleringsvarselData gjeldendeEskaleringsvarsel;
     public List<Oppfolgingsperiode> oppfolgingsperioder = Collections.emptyList();
