@@ -23,6 +23,7 @@ public class InnstillingsHistorikk {
         ESKALERING_STOPPET,
         KVP_STARTET,
         KVP_STOPPET,
-        VEILEDER_TILORDNET
+        VEILEDER_TILORDNET,
+        OPPFOLGINGSENHET_ENDRET
     }
 }

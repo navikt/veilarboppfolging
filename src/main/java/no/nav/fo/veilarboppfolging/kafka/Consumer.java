@@ -32,6 +32,7 @@ public class Consumer {
     public void consume(String kafkaMelding) {
         try {
             iserv28Service.behandleEndretBruker(deserialisereBruker(kafkaMelding));
+            //TODO: oppfolgingsenhetEndringService.behandleEndretBruker(deserialisereBruker(kafkaMelding));
         } catch (Throwable t) {
             log.error("Feilet ved behandling av kafka-melding: {}\n{}", kafkaMelding, t.getMessage(), t);
         } finally {
