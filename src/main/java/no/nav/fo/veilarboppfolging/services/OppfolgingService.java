@@ -180,20 +180,25 @@ public class OppfolgingService {
 
     @Transactional
     public boolean underOppfolgingNiva3(String fnr) throws Exception {
-        Bruker bruker = Bruker.fraFnr(fnr)
-                .medAktoerIdSupplier(() -> aktorService.getAktorId(fnr)
-                        .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktørid")));
+        if (unleashService.isEnabled("veilarboppfolging.niva3.underoppfolging")) {
+            Bruker bruker = Bruker.fraFnr(fnr)
+                    .medAktoerIdSupplier(() -> aktorService.getAktorId(fnr)
+                            .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktørid")));
 
-        VeilarbAbacPepClient veilarbAbacPepClientMedNiva3 = pepClient
-                .endre()
-                .medResourceTypeUnderOppfolgingNiva3()
-                .bygg();
+            VeilarbAbacPepClient veilarbAbacPepClientMedNiva3 = pepClient
+                    .endre()
+                    .medResourceTypeUnderOppfolgingNiva3()
+                    .bygg();
 
-        veilarbAbacPepClientMedNiva3.sjekkLesetilgangTilBruker(bruker);
+            veilarbAbacPepClientMedNiva3.sjekkLesetilgangTilBruker(bruker);
 
-        OppfolgingStatusData oppfolgingStatusData = hentOppfolgingsStatus(fnr, false);
+            OppfolgingStatusData oppfolgingStatusData = hentOppfolgingsStatus(fnr, false);
 
-        return oppfolgingStatusData.isUnderOppfolging();
+            return oppfolgingStatusData.isUnderOppfolging();
+        } else {
+            return false;
+        }
+
     }
 
     private OppfolgingStatusData getOppfolgingStatusData(String fnr, OppfolgingResolver oppfolgingResolver) {
