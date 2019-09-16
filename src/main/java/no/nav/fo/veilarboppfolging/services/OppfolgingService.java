@@ -177,13 +177,6 @@ public class OppfolgingService {
         return Optional.ofNullable(oppfolgingsStatusRepository.fetch(bruker.getAktoerId()));
     }
 
-    public boolean underOppfolging(String fnr) {
-        return getOppfolgingStatus(fnr)
-                .map(OppfolgingTable::isUnderOppfolging)
-                .orElse(false);
-    }
-
-
     public UnderOppfolgingDTO oppfolgingData(String fnr) {
         autorisasjonService.sjekkLesetilgangTilBruker(fnr);
 
@@ -193,6 +186,29 @@ public class OppfolgingService {
                     return new UnderOppfolgingDTO().setUnderOppfolging(isUnderOppfolging).setErManuell(isUnderOppfolging && manuellStatusService.erManuell(oppfolgingsstatus));
                 })
                 .orElse(new UnderOppfolgingDTO().setUnderOppfolging(false).setErManuell(false));
+    }
+
+    @Transactional
+    public boolean underOppfolgingNiva3(String fnr) throws Exception {
+        if (unleashService.isEnabled("veilarboppfolging.niva3.underoppfolging")) {
+            Bruker bruker = Bruker.fraFnr(fnr)
+                    .medAktoerIdSupplier(() -> aktorService.getAktorId(fnr)
+                            .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktørid")));
+
+            VeilarbAbacPepClient veilarbAbacPepClientMedNiva3 = pepClient
+                    .endre()
+                    .medResourceTypeUnderOppfolgingNiva3()
+                    .bygg();
+
+            veilarbAbacPepClientMedNiva3.sjekkLesetilgangTilBruker(bruker);
+
+            OppfolgingStatusData oppfolgingStatusData = hentOppfolgingsStatus(fnr, false);
+
+            return oppfolgingStatusData.isUnderOppfolging();
+        } else {
+            return false;
+        }
+
     }
 
     private OppfolgingStatusData getOppfolgingStatusData(String fnr, OppfolgingResolver oppfolgingResolver) {

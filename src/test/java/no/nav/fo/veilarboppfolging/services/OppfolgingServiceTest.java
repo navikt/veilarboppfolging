@@ -115,6 +115,7 @@ public class OppfolgingServiceTest {
         when(aktorServiceMock.getAktorId(FNR)).thenReturn(of(AKTOR_ID));
         when(unleashService.isEnabled("veilarboppfolging.oppfolgingresolver.bruk_arena_direkte")).thenReturn(true);
         when(unleashService.isEnabled("veilarboppfolging.hentVeilederTilgang.fra.veilarbarena")).thenReturn(true);
+        when(unleashService.isEnabled("veilarboppfolging.niva3.underoppfolging")).thenReturn(true);
 
         when(oppfolgingResolverDependencies.getAktorService()).thenReturn(aktorServiceMock);
         when(oppfolgingResolverDependencies.getOppfolgingRepository()).thenReturn(oppfolgingRepositoryMock);
@@ -393,28 +394,45 @@ public class OppfolgingServiceTest {
         assertThat(avslutningStatusData.harYtelser, is(true));
     }
 
-    @Test(expected=IngenTilgang.class)
-    public void underOppfolging_skalFeileHvisIkkeTilgang() {
-        doThrow(IngenTilgang.class).when(pepClientMock)
-                .sjekkLesetilgangTilBruker(Bruker.fraFnr(FNR).medAktoerIdSupplier(()->AKTOR_ID));
-        oppfolgingService.underOppfolging(FNR);
+    @Test(expected = IngenTilgang.class)
+    public void underOppfolgingNiva3_skalFeileHvisIkkeTilgang() throws Exception {
+        VeilarbAbacPepClient veilarbAbacPepClientMedNiva3 = underOppfolgingNiva3_setup(of(AKTOR_ID));
+
+        doThrow(IngenTilgang.class).when(veilarbAbacPepClientMedNiva3).sjekkLesetilgangTilBruker(any(Bruker.class));
+
+        oppfolgingService.underOppfolgingNiva3(FNR);
     }
 
-    @Test(expected=IllegalArgumentException.class)
-    public void underOppfolging_skalFeileHvisAktoerIdIkkeFinnes() {
-        when(aktorServiceMock.getAktorId(FNR)).thenReturn(Optional.empty());
-        oppfolgingService.underOppfolging(FNR);
+    @Test(expected = IllegalArgumentException.class)
+    public void underOppfolgingNiva3_skalFeileHvisAktoerIdIkkeFinnes() throws Exception {
+        underOppfolgingNiva3_setup(Optional.empty());
+
+        oppfolgingService.underOppfolgingNiva3(FNR);
     }
 
     @Test
-    public void underOppfolging_skalReturnereFalseHvisIngenDataOmBruker() {
-        assertThat(oppfolgingService.underOppfolging(FNR), is(false));
+    public void underOppfolgingNiva3_skalReturnereFalseHvisIngenDataOmBruker() throws Exception {
+        underOppfolgingNiva3_setup(of(AKTOR_ID));
+
+        assertThat(oppfolgingService.underOppfolgingNiva3(FNR), is(false));
     }
 
     @Test
-    public void underOppfolging_skalReturnereTrueHvisBrukerHarOppfolgingsflagg() {
-        when(oppfolgingsStatusRepository.fetch(AKTOR_ID)).thenReturn(new OppfolgingTable().setUnderOppfolging(true));
-        assertThat(oppfolgingService.underOppfolging(FNR), is(true));
+    public void underOppfolgingNiva3_skalReturnereTrueHvisBrukerHarOppfolgingsflagg() throws Exception {
+        gittOppfolging(oppfolging.setUnderOppfolging(true));
+        underOppfolgingNiva3_setup(of(AKTOR_ID));
+
+        assertThat(oppfolgingService.underOppfolgingNiva3(FNR), is(true));
+    }
+
+    private VeilarbAbacPepClient underOppfolgingNiva3_setup(Optional<String> aktorId) {
+        when(aktorServiceMock.getAktorId(FNR)).thenReturn(aktorId);
+        VeilarbAbacPepClient veilarbAbacPepClientMedNiva3 = mock(VeilarbAbacPepClient.class);
+        VeilarbAbacPepClient.Builder builderMock = mock(VeilarbAbacPepClient.Builder.class);
+        when(pepClientMock.endre()).thenReturn(builderMock);
+        when(builderMock.medResourceTypeUnderOppfolgingNiva3()).thenReturn(builderMock);
+        when(builderMock.bygg()).thenReturn(veilarbAbacPepClientMedNiva3);
+        return veilarbAbacPepClientMedNiva3;
     }
 
     private void gittOppfolgingStatus(String formidlingskode, String kvalifiseringsgruppekode) {
