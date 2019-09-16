@@ -115,6 +115,7 @@ public class OppfolgingServiceTest {
         when(aktorServiceMock.getAktorId(FNR)).thenReturn(of(AKTOR_ID));
         when(unleashService.isEnabled("veilarboppfolging.oppfolgingresolver.bruk_arena_direkte")).thenReturn(true);
         when(unleashService.isEnabled("veilarboppfolging.hentVeilederTilgang.fra.veilarbarena")).thenReturn(true);
+        when(unleashService.isEnabled("veilarboppfolging.niva3.underoppfolging")).thenReturn(true);
 
         when(oppfolgingResolverDependencies.getAktorService()).thenReturn(aktorServiceMock);
         when(oppfolgingResolverDependencies.getOppfolgingRepository()).thenReturn(oppfolgingRepositoryMock);
