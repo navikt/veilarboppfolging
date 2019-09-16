@@ -185,6 +185,8 @@ public class OppfolgingService {
 
 
     public UnderOppfolgingDTO oppfolgingData(String fnr) {
+        autorisasjonService.sjekkLesetilgangTilBruker(fnr);
+
         return getOppfolgingStatus(fnr)
                 .map(oppfolgingsstatus -> {
                     boolean isUnderOppfolging = oppfolgingsstatus.isUnderOppfolging();
