@@ -82,17 +82,11 @@ public class OppfolgingResolver {
     private Boolean erSykmeldtMedArbeidsgiver;
     private final boolean brukArenaDirekte;
 
-    OppfolgingResolver(String fnr, OppfolgingResolverDependencies deps) {
-        this(fnr, deps, false);
-    }
-
-    OppfolgingResolver(String fnr, OppfolgingResolverDependencies deps, boolean brukArenaDirekte) {
+    private OppfolgingResolver(String fnr, OppfolgingResolverDependencies deps, boolean brukArenaDirekte) {
         this.brukArenaDirekte = brukArenaDirekte;
         Bruker bruker = Bruker.fraFnr(fnr)
                 .medAktoerIdSupplier(() -> this.deps.getAktorService().getAktorId(fnr)
                         .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktørid")));
-
-        deps.getPepClient().sjekkLesetilgangTilBruker(bruker);
 
         this.fnr = fnr;
         this.deps = deps;
@@ -102,6 +96,14 @@ public class OppfolgingResolver {
         this.oppfolging = hentOppfolging();
 
         avsluttKvpVedEnhetBytte();
+    }
+
+    public static OppfolgingResolver lagOppfolgingResolver(String fnr, OppfolgingResolverDependencies deps, boolean brukArenaDirekte) {
+        return new OppfolgingResolver(fnr, deps, brukArenaDirekte);
+    }
+
+    public static OppfolgingResolver lagOppfolgingResolver(String fnr, OppfolgingResolverDependencies deps) {
+        return lagOppfolgingResolver(fnr, deps, false);
     }
 
     private Optional<ArenaOppfolging> oppfolgingDirekteFraArena() {

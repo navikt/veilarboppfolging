@@ -6,6 +6,7 @@ import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
 import no.nav.fo.veilarboppfolging.db.KvpRepository;
 import no.nav.fo.veilarboppfolging.domain.Kvp;
 import no.nav.fo.veilarboppfolging.domain.MalData;
+import no.nav.fo.veilarboppfolging.rest.AutorisasjonService;
 import no.nav.fo.veilarboppfolging.services.OppfolgingResolver.OppfolgingResolverDependencies;
 import no.nav.fo.veilarboppfolging.utils.FunksjonelleMetrikker;
 import no.nav.fo.veilarboppfolging.utils.KvpUtils;
@@ -30,8 +31,13 @@ public class MalService {
     @Inject
     private KvpRepository kvpRepository;
 
+    @Inject
+    AutorisasjonService autorisasjonService;
+
     public MalData hentMal(String fnr) {
-        OppfolgingResolver resolver = new OppfolgingResolver(fnr, oppfolgingResolverDependencies);
+        autorisasjonService.sjekkLesetilgangTilBruker(fnr);
+
+        OppfolgingResolver resolver = OppfolgingResolver.lagOppfolgingResolver(fnr, oppfolgingResolverDependencies);
         MalData gjeldendeMal = resolver.getOppfolging().getGjeldendeMal();
 
         if (gjeldendeMal == null) {
@@ -46,7 +52,9 @@ public class MalService {
     }
 
     public List<MalData> hentMalList(String fnr) {
-        OppfolgingResolver resolver = new OppfolgingResolver(fnr, oppfolgingResolverDependencies);
+        autorisasjonService.sjekkLesetilgangTilBruker(fnr);
+
+        OppfolgingResolver resolver = OppfolgingResolver.lagOppfolgingResolver(fnr, oppfolgingResolverDependencies);
         List<MalData> malList = resolver.getMalList();
 
         List<Kvp> kvpList = kvpRepository.hentKvpHistorikk(resolver.getAktorId());
@@ -54,7 +62,9 @@ public class MalService {
     }
 
     public MalData oppdaterMal(String mal, String fnr, String endretAvVeileder) {
-        OppfolgingResolver resolver = new OppfolgingResolver(fnr, oppfolgingResolverDependencies);
+        autorisasjonService.sjekkLesetilgangTilBruker(fnr);
+
+        OppfolgingResolver resolver = OppfolgingResolver.lagOppfolgingResolver(fnr, oppfolgingResolverDependencies);
 
         Kvp kvp = kvpRepository.fetch(kvpRepository.gjeldendeKvp(resolver.getAktorId()));
         ofNullable(kvp).ifPresent(this::sjekkEnhetTilgang);
@@ -63,6 +73,8 @@ public class MalService {
         FunksjonelleMetrikker.oppdatertMittMal(malData, resolver.getMalList().size());
         return malData;
     }
+
+
 
     @SneakyThrows
     private void sjekkEnhetTilgang(Kvp kvp) {

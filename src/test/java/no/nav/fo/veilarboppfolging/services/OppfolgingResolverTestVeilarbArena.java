@@ -27,7 +27,7 @@ public class OppfolgingResolverTestVeilarbArena extends OppfolgingResolverTest {
                         .setFormidlingsgruppe("ARBS")
                         .setServicegruppe("BATT")));
 
-        oppfolgingResolver = new OppfolgingResolver(FNR, oppfolgingResolverDependenciesMock);
+        oppfolgingResolver = OppfolgingResolver.lagOppfolgingResolver(FNR, oppfolgingResolverDependenciesMock);
 
         oppfolgingResolver.sjekkStatusIArenaOgOppdaterOppfolging();
 
@@ -43,7 +43,7 @@ public class OppfolgingResolverTestVeilarbArena extends OppfolgingResolverTest {
                         .setKvalifiseringsgruppekode("BATT")),
                 Optional.empty());
 
-        oppfolgingResolver = new OppfolgingResolver(FNR, oppfolgingResolverDependenciesMock);
+        oppfolgingResolver = OppfolgingResolver.lagOppfolgingResolver(FNR, oppfolgingResolverDependenciesMock);
 
         oppfolgingResolver.sjekkStatusIArenaOgOppdaterOppfolging();
 
@@ -60,7 +60,7 @@ public class OppfolgingResolverTestVeilarbArena extends OppfolgingResolverTest {
                         .setKvalifiseringsgruppekode("OPPF")),
                 Optional.empty());
 
-        oppfolgingResolver = new OppfolgingResolver(FNR, oppfolgingResolverDependenciesMock);
+        oppfolgingResolver = OppfolgingResolver.lagOppfolgingResolver(FNR, oppfolgingResolverDependenciesMock);
 
         oppfolgingResolver.sjekkStatusIArenaOgOppdaterOppfolging();
 
@@ -75,7 +75,7 @@ public class OppfolgingResolverTestVeilarbArena extends OppfolgingResolverTest {
                 Optional.empty(),
                 Optional.empty());
 
-        oppfolgingResolver = new OppfolgingResolver(FNR, oppfolgingResolverDependenciesMock);
+        oppfolgingResolver = OppfolgingResolver.lagOppfolgingResolver(FNR, oppfolgingResolverDependenciesMock);
 
         oppfolgingResolver.sjekkStatusIArenaOgOppdaterOppfolging();
 
@@ -90,7 +90,7 @@ public class OppfolgingResolverTestVeilarbArena extends OppfolgingResolverTest {
                 Optional.empty(),
                 Optional.of(new ArenaOppfolging()));
 
-        oppfolgingResolver = new OppfolgingResolver(FNR, oppfolgingResolverDependenciesMock);
+        oppfolgingResolver = OppfolgingResolver.lagOppfolgingResolver(FNR, oppfolgingResolverDependenciesMock);
 
         oppfolgingResolver.sjekkStatusIArenaOgOppdaterOppfolging();
 
@@ -105,7 +105,7 @@ public class OppfolgingResolverTestVeilarbArena extends OppfolgingResolverTest {
                 Optional.of(new VeilarbArenaOppfolging().setFormidlingsgruppekode("ISERV").setKvalifiseringsgruppekode("IKKE_OPPF")),
                 Optional.of(new ArenaOppfolging()));
 
-        oppfolgingResolver = new OppfolgingResolver(FNR, oppfolgingResolverDependenciesMock);
+        oppfolgingResolver = OppfolgingResolver.lagOppfolgingResolver(FNR, oppfolgingResolverDependenciesMock);
 
         oppfolgingResolver.sjekkStatusIArenaOgOppdaterOppfolging();
 
@@ -120,7 +120,7 @@ public class OppfolgingResolverTestVeilarbArena extends OppfolgingResolverTest {
                 Optional.of(new VeilarbArenaOppfolging().setFormidlingsgruppekode("ARBS").setKvalifiseringsgruppekode("BATT")),
                 Optional.of(new ArenaOppfolging()));
 
-        oppfolgingResolver = new OppfolgingResolver(FNR, oppfolgingResolverDependenciesMock);
+        oppfolgingResolver = OppfolgingResolver.lagOppfolgingResolver(FNR, oppfolgingResolverDependenciesMock);
 
         oppfolgingResolver.sjekkStatusIArenaOgOppdaterOppfolging();
 
