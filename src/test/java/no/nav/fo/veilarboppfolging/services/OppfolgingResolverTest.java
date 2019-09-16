@@ -93,14 +93,14 @@ abstract class OppfolgingResolverTest {
         when(oppfolgingRepositoryMock.hentOppfolging(AKTOR_ID)).thenReturn(of(oppfolging));
         when(unleashServiceMock.isEnabled("veilarboppfolging.oppfolgingresolver.bruk_arena_direkte")).thenReturn(brukArenaDirekte);
 
-        oppfolgingResolver = new OppfolgingResolver(FNR, oppfolgingResolverDependenciesMock);
+        oppfolgingResolver = OppfolgingResolver.lagOppfolgingResolver(FNR, oppfolgingResolverDependenciesMock);
     }
 
     @Test
     public void veileder_skal_ha_skrivetilgang_til_bruker_som_ikke_er_pa_kvp() {
         when(kvpRepositoryMock.gjeldendeKvp(AKTOR_ID)).thenReturn(0L);
 
-        oppfolgingResolver = new OppfolgingResolver(FNR, oppfolgingResolverDependenciesMock);
+        oppfolgingResolver = OppfolgingResolver.lagOppfolgingResolver(FNR, oppfolgingResolverDependenciesMock);
         assertThat(oppfolgingResolver.harSkrivetilgangTilBruker()).isEqualTo(true);
     }
 
@@ -110,7 +110,7 @@ abstract class OppfolgingResolverTest {
         when(kvpRepositoryMock.fetch(KVP_ID)).thenReturn(Kvp.builder().kvpId(KVP_ID).aktorId(AKTOR_ID).enhet(ENHET).build());
         when(pepClientMock.harTilgangTilEnhet(ENHET)).thenReturn(true);
 
-        oppfolgingResolver = new OppfolgingResolver(FNR, oppfolgingResolverDependenciesMock);
+        oppfolgingResolver = OppfolgingResolver.lagOppfolgingResolver(FNR, oppfolgingResolverDependenciesMock);
         assertThat(oppfolgingResolver.harSkrivetilgangTilBruker()).isEqualTo(true);
     }
 
@@ -120,25 +120,25 @@ abstract class OppfolgingResolverTest {
         when(kvpRepositoryMock.fetch(KVP_ID)).thenReturn(Kvp.builder().kvpId(KVP_ID).aktorId(AKTOR_ID).enhet(OTHER_ENHET).build());
         when(pepClientMock.harTilgangTilEnhet(OTHER_ENHET)).thenReturn(false);
 
-        oppfolgingResolver = new OppfolgingResolver(FNR, oppfolgingResolverDependenciesMock);
+        oppfolgingResolver = OppfolgingResolver.lagOppfolgingResolver(FNR, oppfolgingResolverDependenciesMock);
         assertThat(oppfolgingResolver.harSkrivetilgangTilBruker()).isEqualTo(false);
     }
 
     @Test
     public void kvp_periode_skal_automatisk_avsluttes_nar_bruker_har_byttet_oppfolgingsEnhet_i_arena() throws Exception {
         mockSvarFraArena(OTHER_ENHET);
-        when(kvpServiceMock.gjeldendeKvp(FNR)).thenReturn(Kvp.builder().kvpId(KVP_ID).aktorId(AKTOR_ID).enhet(ENHET).build());
+        when(kvpServiceMock.gjeldendeKvp(AKTOR_ID)).thenReturn(Kvp.builder().kvpId(KVP_ID).aktorId(AKTOR_ID).enhet(ENHET).build());
 
-        oppfolgingResolver = new OppfolgingResolver(FNR, oppfolgingResolverDependenciesMock);
-        verify(kvpServiceMock, times(1)).stopKvpUtenEnhetSjekk(eq(FNR), any(), eq(SYSTEM), eq(oppfolgingResolver));
+        oppfolgingResolver = OppfolgingResolver.lagOppfolgingResolver(FNR, oppfolgingResolverDependenciesMock);
+        verify(kvpServiceMock, times(1)).stopKvpUtenEnhetSjekk(eq(AKTOR_ID), any(), eq(SYSTEM));
     }
 
     @Test
     public void kvp_periode_skal_ikke_avsluttes_sa_lenge_oppfolgingsenhet_i_arena_er_den_samme() throws Exception {
-        when(kvpServiceMock.gjeldendeKvp(FNR)).thenReturn(Kvp.builder().kvpId(KVP_ID).aktorId(AKTOR_ID).enhet(ENHET).build());
+        when(kvpServiceMock.gjeldendeKvp(AKTOR_ID)).thenReturn(Kvp.builder().kvpId(KVP_ID).aktorId(AKTOR_ID).enhet(ENHET).build());
 
-        oppfolgingResolver = new OppfolgingResolver(FNR, oppfolgingResolverDependenciesMock);
-        verify(kvpServiceMock, times(0)).stopKvpUtenEnhetSjekk(eq(FNR), any(), any(), any());
+        oppfolgingResolver = OppfolgingResolver.lagOppfolgingResolver(FNR, oppfolgingResolverDependenciesMock);
+        verify(kvpServiceMock, times(0)).stopKvpUtenEnhetSjekk(eq(AKTOR_ID), any(), any());
     }
 
     protected void mockSvarFraArena(String enhet) {

@@ -21,8 +21,6 @@ public class VeilederTilordningerRepositoryTest extends DatabaseTest {
     @Inject
     private VeilederTilordningerRepository repository;
 
-    @Inject
-    private JdbcTemplate db;
 
     @Test
     public void skalLeggeTilBruker() {
@@ -30,23 +28,6 @@ public class VeilederTilordningerRepositoryTest extends DatabaseTest {
         assertThat(repository.hentTilordningForAktoer(AKTOR_ID), is(VEILEDER));
         Optional<Tilordning> veileder = repository.hentTilordnetVeileder(AKTOR_ID);
         assertThat(veileder.map(Tilordning::isNyForVeileder).get(), is(true));
-    }
-
-    @Test
-    public void skalSetteOppfolgingsflaggVedOPpdaterering() {
-        db.execute("INSERT INTO OPPFOLGINGSTATUS (aktor_id, oppdatert, under_oppfolging) " +
-                "VALUES ('1111111', CURRENT_TIMESTAMP, 0)");
-
-        assertThat(db.queryForList("SELECT * FROM OPPFOLGINGSTATUS WHERE aktor_id = '1111111'").get(0).get("under_oppfolging").toString(), is("0"));
-        repository.upsertVeilederTilordning("1111111", VEILEDER);
-        assertThat(db.queryForList("SELECT * FROM OPPFOLGINGSTATUS WHERE aktor_id = '1111111'").get(0).get("under_oppfolging").toString(), is("1"));
-
-    }
-
-    @Test
-    public void skalSetteOppfolgingsflaggVedInsert() {
-        repository.upsertVeilederTilordning("1111111", VEILEDER);
-        assertThat(db.queryForList("SELECT * FROM OPPFOLGINGSTATUS WHERE aktor_id = '1111111'").get(0).get("under_oppfolging").toString(), is("1"));
     }
 
     @Test

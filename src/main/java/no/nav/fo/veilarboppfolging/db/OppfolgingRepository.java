@@ -129,7 +129,8 @@ public class OppfolgingRepository {
 
     @Transactional
     public void startEskalering(String aktorId, String opprettetAv, String opprettetBegrunnelse, long tilhorendeDialogId) {
-        if (eskaleringsvarselRepository.fetchByAktorId(aktorId) != null) {
+        long gjeldendeEskaleringsvarselId = statusRepository.fetch(aktorId).getGjeldendeEskaleringsvarselId();
+        if (gjeldendeEskaleringsvarselId > 0) {
             throw new Feil(UGYLDIG_HANDLING, "Brukeren har allerede et aktivt eskaleringsvarsel.");
         }
 
@@ -144,16 +145,13 @@ public class OppfolgingRepository {
 
     @Transactional
     public void stoppEskalering(String aktorId, String avsluttetAv, String avsluttetBegrunnelse) {
-        EskaleringsvarselData eskalering = eskaleringsvarselRepository.fetchByAktorId(aktorId);
-        if (eskalering == null) {
+        long gjeldendeEskaleringsvarselId = statusRepository.fetch(aktorId).getGjeldendeEskaleringsvarselId();
+        if(gjeldendeEskaleringsvarselId == 0) {
             throw new Feil(UGYLDIG_HANDLING, "Brukeren har ikke et aktivt eskaleringsvarsel.");
         }
 
-        eskalering = eskalering
-                .withAvsluttetAv(avsluttetAv)
-                .withAvsluttetBegrunnelse(avsluttetBegrunnelse);
-
-        eskaleringsvarselRepository.finish(eskalering);
+        eskaleringsvarselRepository.finish(aktorId, gjeldendeEskaleringsvarselId, avsluttetAv, avsluttetBegrunnelse);
+        
     }
 
     private List<Oppfolgingsperiode> populerKvpPerioder(List<Oppfolgingsperiode> oppfolgingsPerioder, List<Kvp> kvpPerioder) {

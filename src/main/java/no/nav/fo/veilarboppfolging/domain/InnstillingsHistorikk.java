@@ -22,6 +22,7 @@ public class InnstillingsHistorikk {
         ESKALERING_STARTET,
         ESKALERING_STOPPET,
         KVP_STARTET,
-        KVP_STOPPET
+        KVP_STOPPET,
+        VEILEDER_TILORDNET
     }
 }

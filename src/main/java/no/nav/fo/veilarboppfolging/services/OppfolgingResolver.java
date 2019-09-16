@@ -82,17 +82,11 @@ public class OppfolgingResolver {
     private Boolean erSykmeldtMedArbeidsgiver;
     private final boolean brukArenaDirekte;
 
-    OppfolgingResolver(String fnr, OppfolgingResolverDependencies deps) {
-        this(fnr, deps, false);
-    }
-
-    OppfolgingResolver(String fnr, OppfolgingResolverDependencies deps, boolean brukArenaDirekte) {
+    private OppfolgingResolver(String fnr, OppfolgingResolverDependencies deps, boolean brukArenaDirekte) {
         this.brukArenaDirekte = brukArenaDirekte;
         Bruker bruker = Bruker.fraFnr(fnr)
                 .medAktoerIdSupplier(() -> this.deps.getAktorService().getAktorId(fnr)
                         .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktørid")));
-
-        deps.getPepClient().sjekkLesetilgangTilBruker(bruker);
 
         this.fnr = fnr;
         this.deps = deps;
@@ -102,6 +96,14 @@ public class OppfolgingResolver {
         this.oppfolging = hentOppfolging();
 
         avsluttKvpVedEnhetBytte();
+    }
+
+    public static OppfolgingResolver lagOppfolgingResolver(String fnr, OppfolgingResolverDependencies deps, boolean brukArenaDirekte) {
+        return new OppfolgingResolver(fnr, deps, brukArenaDirekte);
+    }
+
+    public static OppfolgingResolver lagOppfolgingResolver(String fnr, OppfolgingResolverDependencies deps) {
+        return lagOppfolgingResolver(fnr, deps, false);
     }
 
     private Optional<ArenaOppfolging> oppfolgingDirekteFraArena() {
@@ -136,8 +138,7 @@ public class OppfolgingResolver {
     }
 
     private void sjekkOgStartOppfolging() {
-        hentOppfolgingstatusDirekteFraArena();
-        oppfolgingDirekteFraArena().ifPresent(arenaOppfolging -> {
+        arenaOppfolgingTilstand().ifPresent(arenaOppfolging -> {
             if (erUnderOppfolging(arenaOppfolging.getFormidlingsgruppe(), arenaOppfolging.getServicegruppe())) {
                 deps.getOppfolgingRepository().startOppfolgingHvisIkkeAlleredeStartet(aktorId);
                 reloadOppfolging();
@@ -419,10 +420,6 @@ public class OppfolgingResolver {
         deps.getOppfolgingRepository().stoppEskalering(aktorId, veilederId, begrunnelse);
     }
 
-    boolean harAktivEskalering() {
-        return oppfolging.getGjeldendeEskaleringsvarsel() != null;
-    }
-
     @SneakyThrows
     private void hentOppfolgingstatusFraArena() {
         if (!arenaOppfolgingTilstand.isPresent()) {
@@ -431,10 +428,23 @@ public class OppfolgingResolver {
             } else {
                 hentOppfolgingstatusFraVeilarbArena();
 
-                // Fallbackløsning for å hente direkte fra Arena dersom bruker er under oppfølging, men veilarbarena
-                // ikke har data på brukeren. Dette kan forekomme direkte etter registrering, før data har blitt
-                // synkronisert fra Arena til veilarbarena.
-                if (!arenaOppfolgingTilstand.isPresent() && oppfolging.isUnderOppfolging()) {
+                boolean harTilstand = arenaOppfolgingTilstand.isPresent();
+                boolean erUnderOppfolgingIVeilarbarena = arenaOppfolgingTilstand().filter(oppfolgingTilstand ->
+                        ArenaUtils.erUnderOppfolging(oppfolgingTilstand.getFormidlingsgruppe(), oppfolgingTilstand.getServicegruppe())
+                ).isPresent();
+
+                boolean harIkkeDataIVeilarbarena = !harTilstand;
+                boolean erIkkeUnderOppfolgingIVeilarbarena = !erUnderOppfolgingIVeilarbarena;
+
+                // Fallbackløsning for å hente direkte fra Arena dersom data fra veilarbarena ikke stemmer overens
+                // med oppfølgingsflagg:
+
+                if ((harIkkeDataIVeilarbarena || erIkkeUnderOppfolgingIVeilarbarena) && oppfolging.isUnderOppfolging()) {
+                    // Dette kan forekomme direkte etter registrering, før data har blitt synkronisert fra Arena til veilarbarena.
+                    // Enten kan det mangle data i veilarbarena, eller så kan det være gammel data som ikke er fra den nye registreringen
+                    hentOppfolgingstatusDirekteFraArena();
+                } else if (!oppfolging.isUnderOppfolging() && erUnderOppfolgingIVeilarbarena) {
+                    // Dette kan forekomme etter at bruker er tatt ut av oppfølging, men før før data har blitt synkronisert fra Arena til veilarbarena.
                     hentOppfolgingstatusDirekteFraArena();
                 }
             }
@@ -489,7 +499,7 @@ public class OppfolgingResolver {
         } else {
             boolean krr = sjekkDkifSoap();
             DkifResponse dkifResponse = new DkifResponse().setKrr(krr);
-            if(krr) {
+            if (krr) {
                 return dkifResponse.setKanVarsles(false);
             }
             return dkifResponse.setKanVarsles(true);
@@ -553,7 +563,7 @@ public class OppfolgingResolver {
     }
 
     private void avsluttKvpVedEnhetBytte() {
-        Kvp gjeldendeKvp = deps.getKvpService().gjeldendeKvp(fnr);
+        Kvp gjeldendeKvp = deps.getKvpService().gjeldendeKvp(aktorId);
         if (gjeldendeKvp == null) {
             return;
         }
@@ -561,7 +571,7 @@ public class OppfolgingResolver {
         hentOppfolgingstatusFraArena();
         arenaOppfolgingTilstand().ifPresent(status -> {
             if (brukerHarByttetKontor(status, gjeldendeKvp)) {
-                deps.getKvpService().stopKvpUtenEnhetSjekk(fnr, "KVP avsluttet automatisk pga. endret Nav-enhet", SYSTEM, this);
+                deps.getKvpService().stopKvpUtenEnhetSjekk(aktorId, "KVP avsluttet automatisk pga. endret Nav-enhet", SYSTEM);
                 FunksjonelleMetrikker.stopKvpDueToChangedUnit();
                 reloadOppfolging();
             }

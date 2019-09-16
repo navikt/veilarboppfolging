@@ -9,6 +9,7 @@ import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.domain.Kvp;
 import no.nav.fo.veilarboppfolging.domain.MalData;
 import no.nav.fo.veilarboppfolging.domain.Oppfolging;
+import no.nav.fo.veilarboppfolging.rest.AutorisasjonService;
 import no.nav.fo.veilarboppfolging.services.OppfolgingResolver.OppfolgingResolverDependencies;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
 import org.junit.Before;
@@ -63,6 +64,9 @@ public class MalServiceTest {
 
     @Mock
     private AktorService aktorServiceMock;
+
+    @Mock
+    private AutorisasjonService autorisasjonService;
 
     @InjectMocks
     private MalService malService;

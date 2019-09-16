@@ -13,6 +13,7 @@ import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.fo.veilarboppfolging.domain.arena.AktivitetStatus;
 import no.nav.fo.veilarboppfolging.domain.arena.ArenaAktivitetDTO;
 import no.nav.fo.veilarboppfolging.mappers.VeilarbArenaOppfolging;
+import no.nav.fo.veilarboppfolging.rest.AutorisasjonService;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.DigitalKontaktinformasjonV1;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.HentDigitalKontaktinformasjonKontaktinformasjonIkkeFunnet;
@@ -57,6 +58,9 @@ public class OppfolgingServiceTest {
 
     @Mock
     private AktorService aktorServiceMock;
+
+    @Mock
+    private AutorisasjonService autorisasjonService;
 
     @Mock
     private ArenaOppfolgingService arenaOppfolgingService;
@@ -116,7 +120,6 @@ public class OppfolgingServiceTest {
         when(oppfolgingResolverDependencies.getOppfolgingRepository()).thenReturn(oppfolgingRepositoryMock);
         when(oppfolgingResolverDependencies.getArenaOppfolgingService()).thenReturn(arenaOppfolgingService);
         when(oppfolgingResolverDependencies.getDigitalKontaktinformasjonV1()).thenReturn(digitalKontaktinformasjonV1Mock);
-        when(oppfolgingResolverDependencies.getPepClient()).thenReturn(pepClientMock);
         when(oppfolgingResolverDependencies.getVeilarbaktivtetService()).thenReturn(veilarbaktivtetService);
         when(oppfolgingResolverDependencies.getYtelseskontraktV3()).thenReturn(ytelseskontraktV3);
         when(oppfolgingResolverDependencies.getUnleashService()).thenReturn(unleashService);
@@ -392,9 +395,9 @@ public class OppfolgingServiceTest {
 
     @Test(expected = IngenTilgang.class)
     public void underOppfolgingNiva3_skalFeileHvisIkkeTilgang() throws Exception {
-        VeilarbAbacPepClient endretVeilarbAbacPepClientMock = underOppfolgingNiva3_setup(of(AKTOR_ID));
+        VeilarbAbacPepClient veilarbAbacPepClientMedNiva3 = underOppfolgingNiva3_setup(of(AKTOR_ID));
 
-        doThrow(IngenTilgang.class).when(endretVeilarbAbacPepClientMock).sjekkLesetilgangTilBruker(any(Bruker.class));
+        doThrow(IngenTilgang.class).when(veilarbAbacPepClientMedNiva3).sjekkLesetilgangTilBruker(any(Bruker.class));
 
         oppfolgingService.underOppfolgingNiva3(FNR);
     }
@@ -423,12 +426,12 @@ public class OppfolgingServiceTest {
 
     private VeilarbAbacPepClient underOppfolgingNiva3_setup(Optional<String> aktorId) {
         when(aktorServiceMock.getAktorId(FNR)).thenReturn(aktorId);
-        VeilarbAbacPepClient endretVeilarbAbacPepClientMock = mock(VeilarbAbacPepClient.class);
+        VeilarbAbacPepClient veilarbAbacPepClientMedNiva3 = mock(VeilarbAbacPepClient.class);
         VeilarbAbacPepClient.Builder builderMock = mock(VeilarbAbacPepClient.Builder.class);
         when(pepClientMock.endre()).thenReturn(builderMock);
         when(builderMock.medResourceTypeUnderOppfolgingNiva3()).thenReturn(builderMock);
-        when(builderMock.bygg()).thenReturn(endretVeilarbAbacPepClientMock);
-        return endretVeilarbAbacPepClientMock;
+        when(builderMock.bygg()).thenReturn(veilarbAbacPepClientMedNiva3);
+        return veilarbAbacPepClientMedNiva3;
     }
 
     private void gittOppfolgingStatus(String formidlingskode, String kvalifiseringsgruppekode) {
