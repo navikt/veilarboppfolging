@@ -199,12 +199,12 @@ public class OppfolgingService {
                     .endre()
                     .medResourceTypeUnderOppfolgingNiva3()
                     .bygg();
-
             veilarbAbacPepClientMedNiva3.sjekkLesetilgangTilBruker(bruker);
 
-            OppfolgingStatusData oppfolgingStatusData = hentOppfolgingsStatus(fnr, false);
+            val resolver = OppfolgingResolver.lagOppfolgingResolver(fnr, oppfolgingResolverDependencies);
+            resolver.sjekkStatusIArenaOgOppdaterOppfolging();
 
-            return oppfolgingStatusData.isUnderOppfolging();
+            return getOppfolgingStatusData(fnr, resolver).isUnderOppfolging();
         } else {
             return false;
         }
