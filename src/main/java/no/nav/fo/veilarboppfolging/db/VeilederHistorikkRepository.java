@@ -27,6 +27,7 @@ public class VeilederHistorikkRepository {
                 .value("veileder", veileder)
                 .value("aktor_id", aktorId)
                 .value("sist_tilordnet", DbConstants.CURRENT_TIMESTAMP)
+                .value("tilordning_seq", DbConstants.nextSeq("VEILEDER_TILORDNING_SEQ"))
                 .execute();
     }
 
@@ -35,7 +36,7 @@ public class VeilederHistorikkRepository {
                 .column("veileder")
                 .column("sist_tilordnet")
                 .where(WhereClause.equals("aktor_id", aktorId))
-                .orderBy(OrderClause.desc("sist_tilordnet"))
+                .orderBy(OrderClause.desc("tilordning_seq"))
                 .executeToList();
     }
 
