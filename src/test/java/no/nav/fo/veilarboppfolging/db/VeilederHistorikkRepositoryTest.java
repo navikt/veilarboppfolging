@@ -26,14 +26,9 @@ public class VeilederHistorikkRepositoryTest {
     @Test
     public void skalInserteTilordnetVeileder () {
         veilederHistorikkRepository.insertTilordnetVeilederForAktorId(AKTOR_ID, VEILEDER1);
-        List<VeilederTilordningerData> veilederHistorikk = veilederHistorikkRepository.hentTilordnedeVeiledereForAktorId(AKTOR_ID);
-        assertThat(veilederHistorikk.size(), equalTo(1));
-        assertThat(veilederHistorikk.get(0).getVeileder(), equalTo(VEILEDER1));
-
         veilederHistorikkRepository.insertTilordnetVeilederForAktorId(AKTOR_ID, VEILEDER2);
-        veilederHistorikk = veilederHistorikkRepository.hentTilordnedeVeiledereForAktorId(AKTOR_ID);
+        List<VeilederTilordningerData> veilederHistorikk = veilederHistorikkRepository.hentTilordnedeVeiledereForAktorId(AKTOR_ID);
         assertThat(veilederHistorikk.size(), equalTo(2));
-
         assertThat(veilederHistorikk.get(0).getVeileder(), equalTo(VEILEDER2));
         assertThat(veilederHistorikk.get(1).getVeileder(), equalTo(VEILEDER1));
     }
