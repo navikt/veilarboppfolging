@@ -8,8 +8,12 @@ import javax.inject.Inject;
 import java.util.List;
 
 public class OppfolgingsenhetEndringService {
+    private final OppfolgingsenhetHistorikkRepository enhetHistorikkRepository;
+
     @Inject
-    private OppfolgingsenhetHistorikkRepository enhetHistorikkRepository;
+    public OppfolgingsenhetEndringService(OppfolgingsenhetHistorikkRepository enhetHistorikkRepository) {
+        this.enhetHistorikkRepository = enhetHistorikkRepository;
+    }
 
     public void behandleBrukerEndring(VeilarbArenaOppfolging arenaOppfolging) {
         String aktoerid = arenaOppfolging.getAktoerid();

@@ -2,6 +2,7 @@ package no.nav.fo.veilarboppfolging.kafka;
 
 import no.nav.fo.veilarboppfolging.mappers.VeilarbArenaOppfolging;
 import no.nav.fo.veilarboppfolging.services.Iserv28Service;
+import no.nav.fo.veilarboppfolging.services.OppfolgingsenhetEndringService;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
@@ -35,6 +36,11 @@ public class KafkaTestConfig {
     @Bean
     public Iserv28Service iserv28Service() {
         return mock(Iserv28Service.class);
+    }
+
+    @Bean
+    public OppfolgingsenhetEndringService oppfolgingsenhetEndringService() {
+        return mock(OppfolgingsenhetEndringService.class);
     }
 
     @Bean
