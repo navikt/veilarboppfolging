@@ -1,11 +1,14 @@
 package no.nav.fo.veilarboppfolging.rest;
 
 import no.nav.apiapp.feil.IngenTilgang;
+import no.nav.apiapp.security.veilarbabac.Bruker;
+import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
 import no.nav.brukerdialog.security.domain.IdentType;
 import no.nav.brukerdialog.security.oidc.OidcTokenValidator;
 import no.nav.brukerdialog.security.oidc.OidcTokenValidatorResult;
 import no.nav.brukerdialog.security.oidc.provider.IssoOidcProvider;
 import no.nav.common.auth.SubjectHandler;
+import no.nav.dialogarena.aktor.AktorService;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
@@ -20,6 +23,12 @@ public class AutorisasjonService {
 
     @Inject
     VeilArbAbacService veilArbAbacService;
+
+    @Inject
+    AktorService aktorService;
+
+    @Inject
+    VeilarbAbacPepClient pepClient;
 
     private OidcTokenValidator oidcTokenValidator = new OidcTokenValidator();
     private IssoOidcProvider issoProvider = new IssoOidcProvider();
@@ -55,6 +64,13 @@ public class AutorisasjonService {
 
     public boolean harVeilederSkriveTilgangTilFnr(String veilederId, String fnr) {
         return veilArbAbacService.harVeilederSkriveTilgangTilFnr(veilederId, fnr);
+    }
+
+    public void sjekkLesetilgangTilBruker(String fnr) {
+        Bruker bruker = Bruker.fraFnr(fnr)
+                .medAktoerIdSupplier(() -> aktorService.getAktorId(fnr)
+                        .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktørid")));
+        pepClient.sjekkLesetilgangTilBruker(bruker);
     }
 
 }

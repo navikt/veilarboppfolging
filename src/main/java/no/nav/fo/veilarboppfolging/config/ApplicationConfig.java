@@ -2,6 +2,7 @@ package no.nav.fo.veilarboppfolging.config;
 
 import no.nav.apiapp.ApiApplication;
 import no.nav.apiapp.config.ApiAppConfigurator;
+import no.nav.common.auth.SecurityLevel;
 import no.nav.dialogarena.aktor.AktorConfig;
 import no.nav.fo.veilarboppfolging.security.SecurityTokenServiceOidcProvider;
 import no.nav.fo.veilarboppfolging.security.SecurityTokenServiceOidcProviderConfig;
@@ -92,7 +93,8 @@ public class ApplicationConfig implements ApiApplication {
 
         apiAppConfigurator
                 .sts()
-                .validateAzureAdExternalUserTokens()
+                .validateAzureAdExternalUserTokens(SecurityLevel.Level4)
+                .customSecurityLevelForExternalUsers(SecurityLevel.Level3, "niva3")
                 .issoLogin()
                 .oidcProvider(securityTokenServiceOidcProvider);
     }

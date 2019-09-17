@@ -10,6 +10,7 @@ import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingsStatusRepository;
 import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.fo.veilarboppfolging.mappers.VeilarbArenaOppfolging;
+import no.nav.fo.veilarboppfolging.rest.AutorisasjonService;
 import no.nav.fo.veilarboppfolging.rest.domain.DkifResponse;
 import no.nav.fo.veilarboppfolging.rest.domain.UnderOppfolgingDTO;
 import no.nav.fo.veilarboppfolging.services.OppfolgingResolver.OppfolgingResolverDependencies;
@@ -35,6 +36,7 @@ public class OppfolgingService {
     private final ManuellStatusService manuellStatusService;
     private final OppfolgingsbrukerService oppfolgingsbrukerService;
     private final UnleashService unleashService;
+    private final AutorisasjonService autorisasjonService;
 
     @Inject
     public OppfolgingService(
@@ -45,8 +47,8 @@ public class OppfolgingService {
             OppfolgingsStatusRepository oppfolgingsStatusRepository,
             ManuellStatusService manuellStatusService,
             OppfolgingsbrukerService oppfolgingsbrukerService,
-            UnleashService unleashService
-    ) {
+            UnleashService unleashService,
+            AutorisasjonService autorisasjonService) {
         this.oppfolgingResolverDependencies = oppfolgingResolverDependencies;
         this.aktorService = aktorService;
         this.oppfolgingRepository = oppfolgingRepository;
@@ -55,11 +57,13 @@ public class OppfolgingService {
         this.manuellStatusService = manuellStatusService;
         this.oppfolgingsbrukerService = oppfolgingsbrukerService;
         this.unleashService = unleashService;
+        this.autorisasjonService = autorisasjonService;
     }
 
     @SneakyThrows
     public OppfolgingResolver sjekkTilgangTilEnhet(String fnr){
-        val resolver = new OppfolgingResolver(fnr, oppfolgingResolverDependencies);
+        autorisasjonService.sjekkLesetilgangTilBruker(fnr);
+        val resolver = OppfolgingResolver.lagOppfolgingResolver(fnr, oppfolgingResolverDependencies);
         if(!pepClient.harTilgangTilEnhet(resolver.getOppfolgingsEnhet())) {
             throw new IngenTilgang();
         }
@@ -67,8 +71,10 @@ public class OppfolgingService {
     }
 
     @Transactional
-    public OppfolgingStatusData hentOppfolgingsStatus(String fnr, boolean brukArenaDirekte) throws Exception {
-        val resolver = new OppfolgingResolver(fnr, oppfolgingResolverDependencies, brukArenaDirekte);
+    public OppfolgingStatusData hentOppfolgingsStatus(String fnr, boolean brukArenaDirekte) {
+        autorisasjonService.sjekkLesetilgangTilBruker(fnr);
+
+        val resolver = OppfolgingResolver.lagOppfolgingResolver(fnr, oppfolgingResolverDependencies, brukArenaDirekte);
 
         resolver.sjekkStatusIArenaOgOppdaterOppfolging();
 
@@ -85,8 +91,9 @@ public class OppfolgingService {
         return getOppfolgingStatusData(fnr, resolver);
     }
 
-    public OppfolgingStatusData hentAvslutningStatus(String fnr) throws Exception {
-        val resolver = new OppfolgingResolver(fnr, oppfolgingResolverDependencies);
+    public OppfolgingStatusData hentAvslutningStatus(String fnr) {
+        autorisasjonService.sjekkLesetilgangTilBruker(fnr);
+        val resolver = OppfolgingResolver.lagOppfolgingResolver(fnr, oppfolgingResolverDependencies);
         return getOppfolgingStatusDataMedAvslutningStatus(fnr, resolver);
     }
 
@@ -151,12 +158,13 @@ public class OppfolgingService {
 
     @SneakyThrows
     public VeilederTilgang hentVeilederTilgang(String fnr) {
+        autorisasjonService.sjekkLesetilgangTilBruker(fnr);
         if(unleashService.isEnabled("veilarboppfolging.hentVeilederTilgang.fra.veilarbarena")) {
             Optional<VeilarbArenaOppfolging> arenaBruker = oppfolgingsbrukerService.hentOppfolgingsbruker(fnr);
             String oppfolgingsenhet = arenaBruker.map(VeilarbArenaOppfolging::getNav_kontor).orElse(null);
             return new VeilederTilgang().setTilgangTilBrukersKontor(pepClient.harTilgangTilEnhet(oppfolgingsenhet));
         } else {
-            val resolver = new OppfolgingResolver(fnr, oppfolgingResolverDependencies);
+            val resolver = OppfolgingResolver.lagOppfolgingResolver(fnr, oppfolgingResolverDependencies);
             return new VeilederTilgang().setTilgangTilBrukersKontor(pepClient.harTilgangTilEnhet(resolver.getOppfolgingsEnhet()));
         }
     }
@@ -169,20 +177,38 @@ public class OppfolgingService {
         return Optional.ofNullable(oppfolgingsStatusRepository.fetch(bruker.getAktoerId()));
     }
 
-    public boolean underOppfolging(String fnr) {
-        return getOppfolgingStatus(fnr)
-                .map(OppfolgingTable::isUnderOppfolging)
-                .orElse(false);
-    }
-
-
     public UnderOppfolgingDTO oppfolgingData(String fnr) {
+        autorisasjonService.sjekkLesetilgangTilBruker(fnr);
+
         return getOppfolgingStatus(fnr)
                 .map(oppfolgingsstatus -> {
                     boolean isUnderOppfolging = oppfolgingsstatus.isUnderOppfolging();
                     return new UnderOppfolgingDTO().setUnderOppfolging(isUnderOppfolging).setErManuell(isUnderOppfolging && manuellStatusService.erManuell(oppfolgingsstatus));
                 })
                 .orElse(new UnderOppfolgingDTO().setUnderOppfolging(false).setErManuell(false));
+    }
+
+    @Transactional
+    public boolean underOppfolgingNiva3(String fnr) throws Exception {
+        if (unleashService.isEnabled("veilarboppfolging.niva3.underoppfolging")) {
+            Bruker bruker = Bruker.fraFnr(fnr)
+                    .medAktoerIdSupplier(() -> aktorService.getAktorId(fnr)
+                            .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktørid")));
+
+            VeilarbAbacPepClient veilarbAbacPepClientMedNiva3 = pepClient
+                    .endre()
+                    .medResourceTypeUnderOppfolgingNiva3()
+                    .bygg();
+            veilarbAbacPepClientMedNiva3.sjekkLesetilgangTilBruker(bruker);
+
+            val resolver = OppfolgingResolver.lagOppfolgingResolver(fnr, oppfolgingResolverDependencies);
+            resolver.sjekkStatusIArenaOgOppdaterOppfolging();
+
+            return getOppfolgingStatusData(fnr, resolver).isUnderOppfolging();
+        } else {
+            return false;
+        }
+
     }
 
     private OppfolgingStatusData getOppfolgingStatusData(String fnr, OppfolgingResolver oppfolgingResolver) {
