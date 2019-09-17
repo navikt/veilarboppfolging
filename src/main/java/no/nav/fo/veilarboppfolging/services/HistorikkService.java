@@ -74,7 +74,7 @@ public class HistorikkService {
     private InnstillingsHistorikk tilDTO(OppfolgingsenhetEndringData oppfolgingsenhetEndringData) {
         return InnstillingsHistorikk.builder()
                 .type(OPPFOLGINGSENHET_ENDRET)
-                .begrunnelse("Ny oppfølgingsenhet [" + oppfolgingsenhetEndringData.getEnhet() + "] [" + oppfolgingsenhetEndringData.getEndretDato() + "]")
+                .begrunnelse("Ny oppfølgingsenhet " + oppfolgingsenhetEndringData.getEnhet())
                 .dato(oppfolgingsenhetEndringData.getEndretDato())
                 .opprettetAv(NAV)
                 .build();

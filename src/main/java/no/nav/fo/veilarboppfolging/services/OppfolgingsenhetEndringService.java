@@ -9,11 +9,17 @@ import java.util.List;
 
 public class OppfolgingsenhetEndringService {
     @Inject
-    private OppfolgingsenhetHistorikkRepository oppfolgingsenhetHistorikkRepository;
+    private OppfolgingsenhetHistorikkRepository enhetHistorikkRepository;
 
-    public void behandleBrukerEndring(VeilarbArenaOppfolging veilarbArenaOppfolging) {
-        List<OppfolgingsenhetEndringData> oppfolgingsenhetEndringData = oppfolgingsenhetHistorikkRepository.hentOppfolgingsenhetEndringerForAktorId(veilarbArenaOppfolging.getAktoerid());
+    public void behandleBrukerEndring(VeilarbArenaOppfolging arenaOppfolging) {
+        String aktoerid = arenaOppfolging.getAktoerid();
+        String arenaNavKontor = arenaOppfolging.getNav_kontor();
+        List<OppfolgingsenhetEndringData> eksisterendeHistorikk = enhetHistorikkRepository.hentOppfolgingsenhetEndringerForAktorId(aktoerid);
 
-        //TODO: legge til alle endringer på enhet på en eller annen måte ...
+        if (eksisterendeHistorikk.isEmpty()) {
+            enhetHistorikkRepository.insertOppfolgingsenhetEndringForAktorId(aktoerid, arenaNavKontor);
+        } else if (!arenaNavKontor.equals(eksisterendeHistorikk.get(0).getEnhet())) {
+            enhetHistorikkRepository.insertOppfolgingsenhetEndringForAktorId(aktoerid, arenaNavKontor);
+        }
     }
 }

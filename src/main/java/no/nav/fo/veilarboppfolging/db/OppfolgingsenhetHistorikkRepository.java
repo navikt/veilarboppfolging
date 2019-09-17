@@ -22,9 +22,10 @@ public class OppfolgingsenhetHistorikkRepository {
     public OppfolgingsenhetHistorikkRepository(JdbcTemplate jdbc) {
         this.jdbc = jdbc;
     }
+    private static final String TABLENAME = "OPPFOLGINGSENHET_ENDRET";
 
     public void insertOppfolgingsenhetEndringForAktorId(String aktorId, String enhet) {
-        SqlUtils.insert(jdbc, "OPPFOLGINGSENHET_ENDRET")
+        SqlUtils.insert(jdbc, TABLENAME)
                 .value("aktor_id", aktorId)
                 .value("enhet", enhet)
                 .value("endret_dato", DbConstants.CURRENT_TIMESTAMP)
@@ -32,7 +33,7 @@ public class OppfolgingsenhetHistorikkRepository {
     }
 
     public List<OppfolgingsenhetEndringData> hentOppfolgingsenhetEndringerForAktorId(String aktorId) {
-        return SqlUtils.select(jdbc, "OPPFOLGINGSENHET_ENDRET", OppfolgingsenhetHistorikkRepository::mapper)
+        return SqlUtils.select(jdbc, TABLENAME, OppfolgingsenhetHistorikkRepository::mapper)
                 .column("enhet")
                 .column("endret_dato")
                 .where(WhereClause.equals("aktor_id", aktorId))
