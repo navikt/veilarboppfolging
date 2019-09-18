@@ -93,8 +93,7 @@ public class ApplicationConfig implements ApiApplication {
 
         apiAppConfigurator
                 .sts()
-                .validateAzureAdExternalUserTokens(SecurityLevel.Level4)
-                .customSecurityLevelForExternalUsers(SecurityLevel.Level3, "niva3")
+                .validateAzureAdExternalUserTokens()
                 .issoLogin()
                 .oidcProvider(securityTokenServiceOidcProvider);
     }
