@@ -17,6 +17,7 @@ public class OppfolgingFeedUtil {
                 .oppfolging(rad.get("UNDER_OPPFOLGING").equals(BigDecimal.ONE))
                 .nyForVeileder(rad.get("NY_FOR_VEILEDER").equals(BigDecimal.ONE))
                 .endretTimestamp((Timestamp) (rad.get("OPPDATERT")))
+                .startDato((Timestamp) (rad.get("STARTDATO")))
                 .feedId((BigDecimal) rad.get("FEED_ID"))
                 .manuell(BigDecimal.ONE.equals(rad.get("MANUELL")))
                 .build();

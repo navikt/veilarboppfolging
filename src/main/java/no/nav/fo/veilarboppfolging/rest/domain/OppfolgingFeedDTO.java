@@ -19,6 +19,7 @@ public class OppfolgingFeedDTO implements Comparable<OppfolgingFeedDTO> {
     boolean nyForVeileder;
     boolean manuell;
     Timestamp endretTimestamp;
+    Timestamp startDato;
     BigDecimal feedId;
 
     @Override
