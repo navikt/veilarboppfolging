@@ -39,9 +39,12 @@ public class OppfolgingFeedRepository {
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public List<OppfolgingFeedDTO> hentEndringerEtterTimestamp(Timestamp timestamp, int pageSize) {
         return db.queryForList("SELECT * FROM "
-                        + "(SELECT o.aktor_id, o.veileder, o.under_oppfolging, o.ny_for_veileder, o.oppdatert, o.feed_id, m.manuell "
-                        + "FROM OPPFOLGINGSTATUS o LEFT JOIN MANUELL_STATUS m ON (o.GJELDENDE_MANUELL_STATUS = m.ID) "
-                        + "where o.oppdatert >= ? ORDER BY o.oppdatert) "
+                        + "(SELECT o.aktor_id, o.veileder, o.under_oppfolging, o.ny_for_veileder, o.oppdatert, o.feed_id, m.manuell, op.startdato "
+                        + "FROM OPPFOLGINGSTATUS o "
+                        + "LEFT JOIN MANUELL_STATUS m ON (o.GJELDENDE_MANUELL_STATUS = m.ID) "
+                        + "LEFT JOIN OPPFOLGINGSPERIODE op ON (o.AKTOR_ID = op.AKTOR_ID) "
+                        + "WHERE o.oppdatert >= ? and op.SLUTTDATO is null "
+                        + "ORDER BY o.oppdatert) "
                         + "WHERE rownum <= ?",
                 timestamp,
                 pageSize
@@ -53,9 +56,12 @@ public class OppfolgingFeedRepository {
     @Transactional
     public List<OppfolgingFeedDTO> hentEndringerEtterId(String sinceId, int pageSize) {
         return db.queryForList("SELECT * FROM "
-                        + "(SELECT o.aktor_id, o.veileder, o.under_oppfolging, o.ny_for_veileder, o.oppdatert, o.feed_id, m.manuell "
-                        + "FROM OPPFOLGINGSTATUS o LEFT JOIN MANUELL_STATUS m ON (o.GJELDENDE_MANUELL_STATUS = m.ID) "
-                        + "where o.feed_id >= ? ORDER BY o.feed_id) "
+                        + "(SELECT o.aktor_id, o.veileder, o.under_oppfolging, o.ny_for_veileder, o.oppdatert, o.feed_id, m.manuell, op.startdato "
+                        + "FROM OPPFOLGINGSTATUS o "
+                        + "LEFT JOIN MANUELL_STATUS m ON (o.GJELDENDE_MANUELL_STATUS = m.ID) "
+                        + "LEFT JOIN OPPFOLGINGSPERIODE op ON (o.AKTOR_ID = op.AKTOR_ID) "
+                        + "WHERE o.feed_id >= ? and op.SLUTTDATO is null "
+                        + "ORDER BY o.feed_id) "
                         + "WHERE rownum <= ?",
                 sinceId,
                 pageSize
@@ -73,7 +79,7 @@ public class OppfolgingFeedRepository {
     private void insertFeedIdWithLock() {
         Instant lockAtMostUntil = Instant.now().plusSeconds(ADD_FEED_ID_MAX_LOCK);
         taskExecutor.executeWithLock(
-                () -> insertFeedId(), 
+                () -> insertFeedId(),
                 new LockConfiguration("oppdaterOppfolgingFeedId", lockAtMostUntil));
     }
 
@@ -81,7 +87,7 @@ public class OppfolgingFeedRepository {
         MetricsUtils.timed("oppfolging.feedid", () ->   {
             long start = System.currentTimeMillis();
             int updatedRows = db.update(
-                    "UPDATE OPPFOLGINGSTATUS " + 
+                    "UPDATE OPPFOLGINGSTATUS " +
                     "SET FEED_ID = OPPFOLGING_FEED_SEQ.NEXTVAL " +
                     "WHERE FEED_ID IS NULL");
             if(updatedRows > 0) {
