@@ -241,6 +241,7 @@ public class OppfolgingService {
                 .setErIkkeArbeidssokerUtenOppfolging(oppfolgingResolver.getErSykmeldtMedArbeidsgiver())
                 .setInaktiveringsdato(oppfolgingResolver.getInaktiveringsDato())
                 .setServicegruppe(oppfolgingResolver.getServicegruppe())
+                .setFormidlingsgruppe(oppfolgingResolver.getFormidlingsgruppe())
                 .setKanVarsles(!manuell && dkifResponse.isKanVarsles());
     }
 
