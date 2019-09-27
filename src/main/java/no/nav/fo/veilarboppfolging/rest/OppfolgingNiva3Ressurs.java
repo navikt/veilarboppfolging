@@ -27,10 +27,13 @@ public class OppfolgingNiva3Ressurs {
 
     private final OppfolgingService oppfolgingService;
     private final FnrParameterUtil fnrParameterUtil;
+    private Counter counter;
+
 
     public OppfolgingNiva3Ressurs(OppfolgingService oppfolgingService, FnrParameterUtil fnrParameterUtil) {
         this.oppfolgingService = oppfolgingService;
         this.fnrParameterUtil = fnrParameterUtil;
+        this.counter = Counter.builder("request_niva3_underoppfolging").register(getMeterRegistry());
     }
 
     @GET
@@ -38,8 +41,7 @@ public class OppfolgingNiva3Ressurs {
     public UnderOppfolgingNiva3DTO underOppfolgingNiva3() throws Exception {
         UnderOppfolgingNiva3DTO underOppfolgingNiva3DTO = new UnderOppfolgingNiva3DTO().setUnderOppfolging(oppfolgingService.underOppfolgingNiva3(fnrParameterUtil.getFnr()));
 
-        Counter counter = Counter.builder("request_niva3_underoppfolging_count").register(getMeterRegistry());
-        counter.increment();
+        this.counter.increment();
 
         MetricsFactory.createEvent("request.niva3.underoppfolging").report();
 
