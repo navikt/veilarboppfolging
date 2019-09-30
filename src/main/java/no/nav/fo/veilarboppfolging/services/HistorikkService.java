@@ -76,7 +76,7 @@ public class HistorikkService {
                 .type(OPPFOLGINGSENHET_ENDRET)
                 .begrunnelse("Ny oppfølgingsenhet " + oppfolgingsenhetEndringData.getEnhet())
                 .dato(oppfolgingsenhetEndringData.getEndretDato())
-                .opprettetAv(NAV)
+                .opprettetAv(SYSTEM)
                 .build();
     }
 
