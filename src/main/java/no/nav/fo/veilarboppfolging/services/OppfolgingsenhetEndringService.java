@@ -3,10 +3,12 @@ package no.nav.fo.veilarboppfolging.services;
 import no.nav.fo.veilarboppfolging.db.OppfolgingsenhetHistorikkRepository;
 import no.nav.fo.veilarboppfolging.domain.OppfolgingsenhetEndringData;
 import no.nav.fo.veilarboppfolging.mappers.VeilarbArenaOppfolging;
+import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 import java.util.List;
 
+@Component
 public class OppfolgingsenhetEndringService {
     private final OppfolgingsenhetHistorikkRepository enhetHistorikkRepository;
 

@@ -29,6 +29,7 @@ public class OppfolgingsenhetHistorikkRepository {
                 .value("aktor_id", aktorId)
                 .value("enhet", enhet)
                 .value("endret_dato", DbConstants.CURRENT_TIMESTAMP)
+                .value("enhet_seq", DbConstants.nextSeq("ENHET_SEQ"))
                 .execute();
     }
 
@@ -37,7 +38,7 @@ public class OppfolgingsenhetHistorikkRepository {
                 .column("enhet")
                 .column("endret_dato")
                 .where(WhereClause.equals("aktor_id", aktorId))
-                .orderBy(OrderClause.desc("endret_dato"))
+                .orderBy(OrderClause.desc("enhet_seq"))
                 .executeToList();
     }
 
