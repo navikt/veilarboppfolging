@@ -1,12 +1,15 @@
 package no.nav.fo.veilarboppfolging.rest;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+import static no.nav.metrics.MetricsFactory.getMeterRegistry;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 
+import io.micrometer.core.instrument.Counter;
 import no.nav.fo.veilarboppfolging.rest.domain.UnderOppfolgingNiva3DTO;
+import no.nav.metrics.MetricsFactory;
 import org.springframework.stereotype.Component;
 
 import io.swagger.annotations.Api;
@@ -24,15 +27,24 @@ public class OppfolgingNiva3Ressurs {
 
     private final OppfolgingService oppfolgingService;
     private final FnrParameterUtil fnrParameterUtil;
+    private Counter counter;
+
 
     public OppfolgingNiva3Ressurs(OppfolgingService oppfolgingService, FnrParameterUtil fnrParameterUtil) {
         this.oppfolgingService = oppfolgingService;
         this.fnrParameterUtil = fnrParameterUtil;
+        this.counter = Counter.builder("request_niva3_underoppfolging").register(getMeterRegistry());
     }
 
     @GET
     @Path("/underoppfolging")
     public UnderOppfolgingNiva3DTO underOppfolgingNiva3() throws Exception {
-        return new UnderOppfolgingNiva3DTO().setUnderOppfolging(oppfolgingService.underOppfolgingNiva3(fnrParameterUtil.getFnr()));
+        UnderOppfolgingNiva3DTO underOppfolgingNiva3DTO = new UnderOppfolgingNiva3DTO().setUnderOppfolging(oppfolgingService.underOppfolgingNiva3(fnrParameterUtil.getFnr()));
+
+        this.counter.increment();
+
+        MetricsFactory.createEvent("request.niva3.underoppfolging").report();
+
+        return underOppfolgingNiva3DTO;
     }
 }
