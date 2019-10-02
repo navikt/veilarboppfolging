@@ -14,6 +14,7 @@ public class InnstillingsHistorikk {
     private KodeverkBruker opprettetAv;
     private String opprettetAvBrukerId;
     private Long dialogId;
+    private String enhet;
 
     public enum Type {
         SATT_TIL_MANUELL,

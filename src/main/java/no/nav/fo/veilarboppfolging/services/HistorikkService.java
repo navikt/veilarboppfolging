@@ -72,9 +72,11 @@ public class HistorikkService {
     }
 
     private InnstillingsHistorikk tilDTO(OppfolgingsenhetEndringData oppfolgingsenhetEndringData) {
+        String enhet = oppfolgingsenhetEndringData.getEnhet();
         return InnstillingsHistorikk.builder()
                 .type(OPPFOLGINGSENHET_ENDRET)
-                .begrunnelse("Ny oppfølgingsenhet " + oppfolgingsenhetEndringData.getEnhet())
+                .enhet(enhet)
+                .begrunnelse("Ny oppfølgingsenhet " + enhet)
                 .dato(oppfolgingsenhetEndringData.getEndretDato())
                 .opprettetAv(SYSTEM)
                 .build();
