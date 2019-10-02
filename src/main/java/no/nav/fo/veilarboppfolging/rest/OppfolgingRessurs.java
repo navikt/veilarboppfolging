@@ -242,7 +242,8 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
                 .setErIkkeArbeidssokerUtenOppfolging(oppfolgingStatusData.getErSykmeldtMedArbeidsgiver())
                 .setErSykmeldtMedArbeidsgiver(oppfolgingStatusData.getErSykmeldtMedArbeidsgiver())
                 .setHarSkriveTilgang(true)
-                .setServicegruppe(oppfolgingStatusData.getServicegruppe());
+                .setServicegruppe(oppfolgingStatusData.getServicegruppe())
+                .setFormidlingsgruppe(oppfolgingStatusData.getFormidlingsgruppe());
 
 
         if (AutorisasjonService.erInternBruker()) {
