@@ -350,6 +350,10 @@ public class OppfolgingResolver {
         return arenaOppfolgingTilstand().map(ArenaOppfolgingTilstand::getServicegruppe).orElse(null);
     }
 
+    String getFormidlingsgruppe() {
+        return arenaOppfolgingTilstand().map(ArenaOppfolgingTilstand::getFormidlingsgruppe).orElse(null);
+    }
+
     private Date getInaktiveringsDato(ArenaOppfolgingTilstand status) {
         return Optional.ofNullable(status.getInaktiveringsdato()).isPresent()
                 ? Date.from(status.getInaktiveringsdato().atStartOfDay().atZone(ZoneId.systemDefault()).toInstant())
