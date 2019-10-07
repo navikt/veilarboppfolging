@@ -12,14 +12,14 @@ public class OppfolgingFeedUtil {
     public static OppfolgingFeedDTO mapRadTilOppfolgingFeedDTO(ResultSet rad) throws SQLException {
         return OppfolgingFeedDTO
                 .builder()
-                .aktoerid(rad.getString("AKTOR_ID"))
-                .veileder(rad.getString("VEILEDER"))
-                .oppfolging(rad.getBigDecimal("UNDER_OPPFOLGING").equals(BigDecimal.ONE))
-                .nyForVeileder(rad.getBigDecimal("NY_FOR_VEILEDER").equals(BigDecimal.ONE))
-                .endretTimestamp(rad.getTimestamp("OPPDATERT"))
-                .startDato(rad.getTimestamp("STARTDATO"))
-                .feedId(rad.getBigDecimal("FEED_ID"))
-                .manuell(BigDecimal.ONE.equals(rad.getBigDecimal("MANUELL")))
+                .aktoerid((String) rad.get("AKTOR_ID"))
+                .veileder((String) rad.get("VEILEDER"))
+                .oppfolging(rad.get("UNDER_OPPFOLGING").equals(BigDecimal.ONE))
+                .nyForVeileder(rad.get("NY_FOR_VEILEDER").equals(BigDecimal.ONE))
+                .endretTimestamp((Timestamp) (rad.get("OPPDATERT")))
+                .startDato((Timestamp) (rad.get("STARTDATO")))
+                .feedId((BigDecimal) rad.get("FEED_ID"))
+                .manuell(BigDecimal.ONE.equals(rad.get("MANUELL")))
                 .build();
     }
 }
