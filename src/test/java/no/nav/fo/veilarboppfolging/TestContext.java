@@ -45,7 +45,6 @@ public class TestContext {
     private static final String VIRKSOMHET_BEHANDLEARBEIDSSOEKER_V1_ALIAS = "virksomhet:BehandleArbeidssoeker_v1";
     private static final String KAFKA_BROKERS_ALIAS = "kafka-brokers";
     private static final String VEILARBARENAAPI_ALIAS = "veilarbarenaAPI";
-    private static final String NIGHTKINGAPI_ALIAS = "nightkingAPI";
     private static final String UNLEASH_API = "unleash-api";
 
     public static void setup() throws IOException {
@@ -76,7 +75,6 @@ public class TestContext {
         setProperty(VIRKSOMHET_BEHANDLEARBEIDSSOEKER_V1_PROPERTY, getWebServiceEndpoint(VIRKSOMHET_BEHANDLEARBEIDSSOEKER_V1_ALIAS).getUrl());
         setProperty(KAFKA_BROKERS_PROPERTY, getBaseUrl(KAFKA_BROKERS_ALIAS));
         setProperty(VEILARBARENAAPI_URL_PROPERTY, getRestService(VEILARBARENAAPI_ALIAS).getUrl());
-        setProperty(ARENA_NIGHT_KING_URL_PROPERTY, getRestService(NIGHTKINGAPI_ALIAS).getUrl());
 
         ServiceUser isso_rp_user = getServiceUser("isso-rp-user", APPLICATION_NAME);
         String loginUrl = getRestService(VEILARBLOGIN_REDIRECT_URL_ALIAS).getUrl();
