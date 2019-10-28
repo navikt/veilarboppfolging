@@ -2,9 +2,7 @@ package no.nav.fo.veilarboppfolging.db;
 
 import no.nav.fo.DatabaseTest;
 import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingFeedDTO;
-import no.nav.sbl.jdbc.Database;
 import org.junit.jupiter.api.Test;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.inject.Inject;
 import java.sql.Timestamp;
@@ -19,15 +17,18 @@ class OppfolgingFeedRepositoryTest extends DatabaseTest {
     private static final String VEILEDER = "1234";
 
     @Inject
-    private VeilederTilordningerRepository repository;
+    private VeilederTilordningerRepository veilederTilordningerRepository;
 
     @Inject
     private OppfolgingFeedRepository feedRepository;
 
+    @Inject
+    private OppfolgingRepository oppfolgingRepository;
+
     @Test
     public void skalHenteBrukere() {
-        repository.upsertVeilederTilordning(AKTOR_ID, VEILEDER);
-        assertThat(repository.hentTilordningForAktoer(AKTOR_ID), is(VEILEDER));
+        veilederTilordningerRepository.upsertVeilederTilordning(AKTOR_ID, VEILEDER);
+        assertThat(veilederTilordningerRepository.hentTilordningForAktoer(AKTOR_ID), is(VEILEDER));
         List<OppfolgingFeedDTO> oppfolgingFeedDTOS = feedRepository.hentEndringerEtterTimestamp(new Timestamp(0), 2);
         assertThat(oppfolgingFeedDTOS.size(), is(1));
         assertThat(oppfolgingFeedDTOS.get(0).isNyForVeileder(), is(true));
@@ -37,13 +38,23 @@ class OppfolgingFeedRepositoryTest extends DatabaseTest {
 
     @Test
     public void skalHenteMaxBruker() {
-        repository.upsertVeilederTilordning(AKTOR_ID, VEILEDER);
-        repository.upsertVeilederTilordning("1111", VEILEDER);
-        repository.upsertVeilederTilordning("3333", VEILEDER);
-        repository.upsertVeilederTilordning("4444", VEILEDER);
+        veilederTilordningerRepository.upsertVeilederTilordning(AKTOR_ID, VEILEDER);
+        veilederTilordningerRepository.upsertVeilederTilordning("1111", VEILEDER);
+        veilederTilordningerRepository.upsertVeilederTilordning("3333", VEILEDER);
+        veilederTilordningerRepository.upsertVeilederTilordning("4444", VEILEDER);
 
-        assertThat(repository.hentTilordningForAktoer(AKTOR_ID), is(VEILEDER));
+        assertThat(veilederTilordningerRepository.hentTilordningForAktoer(AKTOR_ID), is(VEILEDER));
         List<OppfolgingFeedDTO> oppfolgingFeedDTOS = feedRepository.hentEndringerEtterTimestamp(new Timestamp(0), 2);
         assertThat(oppfolgingFeedDTOS.size(), is(2));
     }
+
+    @Test
+    public void skal_hente_ut_bruker_med_sluttdato_ut_paa_feed() {
+        veilederTilordningerRepository.upsertVeilederTilordning(AKTOR_ID, VEILEDER);
+        List<OppfolgingFeedDTO> feedElementer = feedRepository.hentEndringerEtterTimestamp(new Timestamp(0), 2);
+        oppfolgingRepository.avsluttOppfolging(AKTOR_ID, VEILEDER, "test");
+        assertThat(feedElementer.size(), is(1));
+        assertThat(feedElementer.get(0).getAktoerid(), is(AKTOR_ID));
+    }
+
 }

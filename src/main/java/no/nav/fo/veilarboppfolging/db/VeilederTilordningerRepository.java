@@ -5,7 +5,6 @@ import lombok.SneakyThrows;
 import no.nav.fo.veilarboppfolging.domain.Tilordning;
 import no.nav.sbl.jdbc.Database;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
 import java.sql.ResultSet;
