@@ -43,7 +43,8 @@ public class OppfolgingFeedRepository {
                         + "FROM OPPFOLGINGSTATUS o "
                         + "LEFT JOIN MANUELL_STATUS m ON (o.GJELDENDE_MANUELL_STATUS = m.ID) "
                         + "LEFT JOIN OPPFOLGINGSPERIODE op ON (o.AKTOR_ID = op.AKTOR_ID) "
-                        + "WHERE o.oppdatert >= ? and op.SLUTTDATO is null "
+                        + "AND op.SLUTTDATO = (SELECT MAX(SLUTTDATO) FROM OPPFOLGINGSPERIODE  WHERE AKTOR_ID = o.AKTOR_ID) "
+                        + "WHERE o.oppdatert >= ? "
                         + "ORDER BY o.oppdatert) "
                         + "WHERE rownum <= ?",
                 timestamp,
@@ -52,7 +53,7 @@ public class OppfolgingFeedRepository {
                 .map(OppfolgingFeedUtil::mapRadTilOppfolgingFeedDTO)
                 .collect(toList());
     }
-    
+
     @Transactional
     public List<OppfolgingFeedDTO> hentEndringerEtterId(String sinceId, int pageSize) {
         return db.queryForList("SELECT * FROM "
@@ -60,7 +61,8 @@ public class OppfolgingFeedRepository {
                         + "FROM OPPFOLGINGSTATUS o "
                         + "LEFT JOIN MANUELL_STATUS m ON (o.GJELDENDE_MANUELL_STATUS = m.ID) "
                         + "LEFT JOIN OPPFOLGINGSPERIODE op ON (o.AKTOR_ID = op.AKTOR_ID) "
-                        + "WHERE o.feed_id >= ? and op.SLUTTDATO is null "
+                        + "AND op.SLUTTDATO = (SELECT MAX(SLUTTDATO) FROM OPPFOLGINGSPERIODE  WHERE AKTOR_ID = o.AKTOR_ID) "
+                        + "WHERE o.feed_id >= ?"
                         + "ORDER BY o.feed_id) "
                         + "WHERE rownum <= ?",
                 sinceId,
