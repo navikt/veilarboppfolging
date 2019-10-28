@@ -42,6 +42,7 @@ public class OppfolgingFeedProvider implements FeedProvider<OppfolgingFeedDTO> {
         } catch (Exception e) {
             log.info("Id var ikke gyldig dato. Forsøker numerisk id");
             try {
+                log.info("OppfolgingFeedProviderDebug: Henter endringer etter {}", sinceId);
                 data = repository.hentEndringerEtterId(sinceId, pageSize);
                 dateId = false;
             } catch (Exception e2) {
@@ -51,7 +52,8 @@ public class OppfolgingFeedProvider implements FeedProvider<OppfolgingFeedDTO> {
         } 
 
         final boolean finalDateId = dateId;
-        log.info("Hentet: {} oppfolgingsfeed dtoer fra databasen", data.size());
+        log.info("OppfolgingFeedProviderDebug: {} oppfolgingsfeed dtoer fra databasen", data.size());
+        log.info("OppfolgingFeedProviderDebug: {}", data);
         return data
                 .stream()
                 .map(b -> new FeedElement<OppfolgingFeedDTO>()
