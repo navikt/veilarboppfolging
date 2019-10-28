@@ -1,0 +1,177 @@
+---
+kind: Application
+apiVersion: nais.io/v1alpha1
+metadata:
+  name: veilarboppfolging
+  namespace: default
+  labels:
+    team: pto
+spec:
+  env:
+  - name: NAV_TRUSTSTORE_KEYSTOREALIAS
+    value: na
+  - name: VEILARBOPPFOLGINGDB_URL
+    value: jdbc:oracle:thin:@a01dbfl032.adeo.no:1521/veilarboppfolging_{{namespace}}
+  - name: VEILARBOPPFOLGINGDB_USERNAME
+    value: veilarboppfolging
+  - name: SRVVEILARBOPPFOLGING_USERNAME
+    value: srvveilarboppfolging
+  - name: APPDYNAMICS_CONTROLLER_PORT
+    value: "443"
+  - name: APPDYNAMICS_CONTROLLER_SSL_ENABLED
+    value: "true"
+  - name: APPDYNAMICS_AGENT_ACCOUNT_NAME
+    value: NON-PROD
+  - name: APPDYNAMICS_AGENT_ACCOUNT_ACCESS_KEY
+    value: 5ed4d975-ed5b-40b2-8ac6-9e0c0e61a67e
+  - name: APPDYNAMICS_CONTROLLER_HOST_NAME
+    value: appdynamics.adeo.no
+  - name: MAKS_ALDER_AUTOMATISK_REGISTRERING
+    value: "0"
+  - name: MIN_ALDER_AUTOMATISK_REGISTRERING
+    value: "0"
+  - name: ROLE
+    value: 0000-GA-Modia-Oppfolging
+  - name: LDAP_FALLBACK
+    value: "false"
+  - name: ESKALERINGSVARSEL_OPPGAVETYPE
+    value: "0004"
+  - name: ESKALERINGSVARSEL_VARSELTYPE
+    value: DittNAV_000008
+  - name: FEATURE_SKIP_VALIDERING_DIFI
+    value: "true"
+  - name: KVP_API_BRUKERTILGANG
+    value: srvveilarbdialog,srvveilarbaktivitet
+  - name: OPPFOLGING_FEED_BRUKERTILGANG
+    value: srvveilarbportefolje
+  - name: AVSLUTTETOPPFOLGING_FEED_BRUKERTILGANG
+    value: srvveilarbdialog,srvveilarbaktivitet,srvveilarbjobbsoke
+  - name: KVP_FEED_BRUKERTILGANG
+    value: srvveilarbdialog,srvveilarbaktivitet
+  - name: NYEBRUKERE_FEED_BRUKERTILGANG
+    value: srvveilarbdirigent
+  - name: SECURITYTOKENSERVICE_URL
+    value: https://sts-{{namespace}}.preprod.local/SecurityTokenServiceProvider/
+  - name: ABAC_PDP_ENDPOINT_DESCRIPTION
+    value: The XACML JSON Endpoint for evaluating attributes against policies
+  - name: ABAC_PDP_ENDPOINT_URL
+    value: https://wasapp-{{namespace}}.adeo.no/asm-pdp/authorize
+  - name: AKTOER_V2_WSDLURL
+    value: http://maven.adeo.no/nexus/content/groups/public/no/nav/tjenester/fim/nav-fim-aktoer-v2-tjenestespesifikasjon/2.0.1/nav-fim-aktoer-v2-tjenestespesifikasjon-2.0.1.zip
+  - name: AKTOER_V2_SECURITYTOKEN
+    value: SAML
+  - name: AKTOER_V2_ENDPOINTURL
+    value: https://app-{{namespace}}.adeo.no/aktoerregister/ws/Aktoer/v2
+  - name: UNLEASH_API_URL
+    value: https://unleash.nais.adeo.no/api/
+  - name: AKTIVITETSPLAN_URL
+    value: https://aktivitetsplan-q.nav.no
+  - name: VEILARBAKTIVITETAPI_URL
+    value: https://veilarbaktivitet-{{namespace}}.nais.preprod.local/veilarbaktivitet/api
+  - name: VIRKSOMHET_DIGITALKONTAKINFORMASJON_V1_SECURITYTOKEN
+    value: SAML
+  - name: VIRKSOMHET_DIGITALKONTAKINFORMASJON_V1_ENDPOINTURL
+    value: https://dkif.nais.preprod.local/ws/DigitalKontaktinformasjon/v1
+  - name: VIRKSOMHET_DIGITALKONTAKINFORMASJON_V1_WSDLURL
+    value: http://maven.adeo.no/nexus/service/local/artifact/maven/redirect?a=nav-digitalKontaktinformasjon-v1-tjenestespesifikasjon&e=zip&g=no.nav.tjenester.fim&r=m2internal&v=2.0.0
+  - name: VIRKSOMHET_YTELSESKONTRAKT_V3_WSDLURL
+    value: http://maven.adeo.no/nexus/content/groups/public/no/nav/tjenester/fim/nav-fim-ytelseskontrakt-v3-tjenestespesifikasjon/3.0.1/nav-fim-ytelseskontrakt-v3-tjenestespesifikasjon-3.0.1.zip
+  - name: VIRKSOMHET_YTELSESKONTRAKT_V3_SECURITYTOKEN
+    value: SAML
+  - name: VIRKSOMHET_YTELSESKONTRAKT_V3_ENDPOINTURL
+    value: https://arena-{{namespace}}.adeo.no/ail_ws/Ytelseskontrakt_v3
+  - name: VIRKSOMHET_OPPFOLGING_V1_SECURITYTOKEN
+    value: SAML
+  - name: VIRKSOMHET_OPPFOLGING_V1_ENDPOINTURL
+    value: https://arena-{{namespace}}.adeo.no/ail_ws/Oppfoelging_v1
+  - name: VIRKSOMHET_OPPFOLGING_V1_WSDLURL
+    value: http://maven.adeo.no/nexus/content/repositories/public/no/nav/tjenester/fim/nav-fim-oppfoelging-v1-tjenestespesifikasjon/1.2.0/nav-fim-oppfoelging-v1-tjenestespesifikasjon-1.2.0.zip
+  - name: VIRKSOMHET_OPPFOELGINGSSTATUS_V2_SECURITYTOKEN
+    value: SAML
+  - name: VIRKSOMHET_OPPFOELGINGSSTATUS_V2_ENDPOINTURL
+    value: https://arena-{{namespace}}.adeo.no/ail_ws/Oppfoelgingsstatus_v2
+  - name: VIRKSOMHET_OPPFOELGINGSSTATUS_V2_WSDLURL
+    value: http://maven.adeo.no/nexus/content/repositories/public/no/nav/tjenester/nav-oppfoelgingsstatus-v2-tjenestespesifikasjon/2.0.0/nav-oppfoelgingsstatus-v2-tjenestespesifikasjon-2.0.0.zip
+  - name: VIRKSOMHET_ORGANISASJONENHET_V2_ENDPOINTURL
+    value: https://app-{{namespace}}.adeo.no/norg2/ws/OrganisasjonEnhet/v2
+  - name: VIRKSOMHET_ORGANISASJONENHET_V2_WSDLURL
+    value: http://maven.adeo.no/nexus/content/groups/public/no/nav/tjenester/nav-organisasjonEnhet-v2-tjenestespesifikasjon/2.1.0/nav-organisasjonEnhet-v2-tjenestespesifikasjon-2.1.0.zip
+  - name: VIRKSOMHET_ORGANISASJONENHET_V2_SECURITYTOKEN
+    value: SAML
+  - name: VARSELOPPGAVE_V1_WSDLURL
+    value: http://maven.adeo.no/nexus/service/local/artifact/maven/redirect?a=varseloppgave-v1-tjenestespesifikasjon&e=zip&g=no.nav.tjenester.virksomhet.dokument&r=m2internal&v=1.1.0
+  - name: VARSELOPPGAVE_V1_SECURITYTOKEN
+    value: SAML
+  - name: VARSELOPPGAVE_V1_ENDPOINTURL
+    value: https://varseloppgave-{{namespace}}.nais.preprod.local/services/varseloppgave/v1
+  - name: VARSELOPPGAVE_V1_DESCRIPTION
+    value: Koordinerer bestilling av henvendelse om oppgave og varsel med handling
+  - name: VIRKSOMHET_BEHANDLEARBEIDSSOEKER_V1_ENDPOINTURL
+    value: https://arena-{{namespace}}.adeo.no/ail_ws/BehandleArbeidssoeker_v1
+  - name: VIRKSOMHET_BEHANDLEARBEIDSSOEKER_V1_WSDLURL
+    value: http://maven.adeo.no/nexus/content/repositories/public/no/nav/tjenester/nav-behandleArbeidssoeker-v1-tjenestespesifikasjon/1.1.0/nav-behandleArbeidssoeker-v1-tjenestespesifikasjon-1.1.0.zip
+  - name: VIRKSOMHET_BEHANDLEARBEIDSSOEKER_V1_SECURITYTOKEN
+    value: SAML
+  - name: KAFKA_BROKERS_URL
+    value: b27apvl00045.preprod.local:8443,b27apvl00046.preprod.local:8443,b27apvl00047.preprod.local:8443
+  - name: VEILARBARENAAPI_URL
+    value: https://veilarbarena-{{namespace}}.nais.preprod.local/veilarbarena/api
+  - name: ISSO_HOST_URL
+    value: https://isso-q.adeo.no/isso/oauth2
+  - name: ISSO_JWKS_URL
+    value: https://isso-q.adeo.no/isso/oauth2/connect/jwk_uri
+  - name: ISSO_ISSUER_URL
+    value: https://isso-q.adeo.no:443/isso/oauth2
+  - name: ISSO_ISALIVE_URL
+    value: https://isso-q.adeo.no/isso/isAlive.jsp
+  - name: ISSO_RP_USER_USERNAME
+    value: veilarblogin-{{namespace}}
+  - name: VEILARBLOGIN_REDIRECT_URL_DESCRIPTION
+    value: Login for veilarb
+  - name: VEILARBLOGIN_REDIRECT_URL_URL
+    value: https://app-{{namespace}}.adeo.no/veilarblogin/api/login
+  - name: AAD_B2C_CLIENTID_USERNAME
+    value: 0090b6e1-ffcc-4c37-bc21-049f7d1f0fe5
+  - name: AAD_B2C_DISCOVERY_URL
+    value: https://login.microsoftonline.com/NAVtestB2C.onmicrosoft.com/v2.0/.well-known/openid-configuration?p=B2C_1A_idporten_ver1
+  - name: SECURITY_TOKEN_SERVICE_OPENID_CONFIGURATION_URL
+    value: https://security-token-service.nais.preprod.local/rest/v1/sts/.well-known/openid-configuration
+  image: docker.adeo.no:5000/fo/veilarboppfolging
+  ingresses:
+  - https://veilarboppfolging.nais.preprod.local
+  - https://app-{{namespace}}.adeo.no/veilarboppfolging
+  - https://app-{{namespace}}.adeo.no/veilarboppfolging-ws
+  leaderElection: true
+  liveness:
+    path: veilarboppfolging/internal/isAlive
+    port: 8080
+    initialDelay: 20
+  port: 8080
+  prometheus:
+    enabled: true
+    path: veilarboppfolging/internal/metrics
+  readiness:
+    path: veilarboppfolging/internal/isReady
+    port: 8080
+    initialDelay: 20
+  replicas:
+    min: 2
+    max: 4
+    cpuThresholdPercentage: 50
+  resources:
+    limits:
+      cpu: "2"
+      memory: 2048Mi
+    requests:
+      cpu: 200m
+      memory: 1536Mi
+  vault:
+    enabled: true
+    paths:
+    - kvPath: /oracle/data/dev/creds/veilarboppfolging_{{namespace}}-user
+      mountPath: /var/run/secrets/nais.io/veilarboppfolgingDB
+    - kvPath: /serviceuser/data/dev/srvveilarboppfolging
+      mountPath: /var/run/secrets/nais.io/srvveilarboppfolging
+    - kvPath: /kv/preprod/fss/veilarboppfolging/default
+      mountPath: /var/run/secrets/nais.io/vault
+  webproxy: true
