@@ -43,7 +43,7 @@ public class OppfolgingFeedRepository {
                         + "FROM OPPFOLGINGSTATUS o "
                         + "LEFT JOIN MANUELL_STATUS m ON (o.GJELDENDE_MANUELL_STATUS = m.ID) "
                         + "LEFT JOIN OPPFOLGINGSPERIODE op ON (o.AKTOR_ID = op.AKTOR_ID) "
-                        + "AND op.SLUTTDATO = (SELECT MAX(SLUTTDATO) FROM OPPFOLGINGSPERIODE  WHERE AKTOR_ID = o.AKTOR_ID)"
+                        + "AND op.SLUTTDATO = (SELECT MAX(SLUTTDATO) FROM OPPFOLGINGSPERIODE  WHERE AKTOR_ID = o.AKTOR_ID) "
                         + "WHERE o.oppdatert >= ? "
                         + "ORDER BY o.oppdatert) "
                         + "WHERE rownum <= ?",
@@ -61,7 +61,7 @@ public class OppfolgingFeedRepository {
                         + "FROM OPPFOLGINGSTATUS o "
                         + "LEFT JOIN MANUELL_STATUS m ON (o.GJELDENDE_MANUELL_STATUS = m.ID) "
                         + "LEFT JOIN OPPFOLGINGSPERIODE op ON (o.AKTOR_ID = op.AKTOR_ID) "
-                        + "AND op.SLUTTDATO = (SELECT MAX(SLUTTDATO) FROM OPPFOLGINGSPERIODE  WHERE AKTOR_ID = o.AKTOR_ID)"
+                        + "AND op.SLUTTDATO = (SELECT MAX(SLUTTDATO) FROM OPPFOLGINGSPERIODE  WHERE AKTOR_ID = o.AKTOR_ID) "
                         + "WHERE o.feed_id >= ?"
                         + "ORDER BY o.feed_id) "
                         + "WHERE rownum <= ?",
