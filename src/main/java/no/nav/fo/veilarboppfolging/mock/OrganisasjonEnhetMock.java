@@ -1,34 +1,34 @@
 package no.nav.fo.veilarboppfolging.mock;
 
-import no.nav.tjeneste.virksomhet.organisasjonenhet.v2.binding.FinnNAVKontorUgyldigInput;
-import no.nav.tjeneste.virksomhet.organisasjonenhet.v2.binding.HentOverordnetEnhetListeEnhetIkkeFunnet;
-import no.nav.tjeneste.virksomhet.organisasjonenhet.v2.binding.OrganisasjonEnhetV2;
+
+import no.nav.tjeneste.virksomhet.organisasjonenhet.v2.OrganisasjonEnhetV2;
 import no.nav.tjeneste.virksomhet.organisasjonenhet.v2.meldinger.*;
 
-public class OrganisasjonEnhetMock implements OrganisasjonEnhetV2 {
+public class
+OrganisasjonEnhetMock implements OrganisasjonEnhetV2 {
 
     @Override
-    public FinnNAVKontorResponse finnNAVKontor(FinnNAVKontorRequest finnNAVKontorRequest) throws FinnNAVKontorUgyldigInput {
+    public WSHentFullstendigEnhetListeResponse hentFullstendigEnhetListe(WSHentFullstendigEnhetListeRequest request) {
         return null;
     }
 
     @Override
-    public HentEnhetBolkResponse hentEnhetBolk(HentEnhetBolkRequest hentEnhetBolkRequest) {
+    public WSHentOverordnetEnhetListeResponse hentOverordnetEnhetListe(WSHentOverordnetEnhetListeRequest request) {
         return null;
     }
 
     @Override
-    public HentFullstendigEnhetListeResponse hentFullstendigEnhetListe(HentFullstendigEnhetListeRequest hentFullstendigEnhetListeRequest) {
+    public WSFinnNAVKontorResponse finnNAVKontor(WSFinnNAVKontorRequest request) {
+        return null;
+    }
+
+    @Override
+    public WSHentEnhetBolkResponse hentEnhetBolk(WSHentEnhetBolkRequest request) {
         return null;
     }
 
     @Override
     public void ping() {
 
-    }
-
-    @Override
-    public HentOverordnetEnhetListeResponse hentOverordnetEnhetListe(HentOverordnetEnhetListeRequest hentOverordnetEnhetListeRequest) throws HentOverordnetEnhetListeEnhetIkkeFunnet {
-        return null;
     }
 }

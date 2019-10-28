@@ -1,10 +1,11 @@
 package no.nav.fo.veilarboppfolging.services;
 
 import no.nav.fo.veilarboppfolging.domain.Oppfolgingsenhet;
-import no.nav.tjeneste.virksomhet.organisasjonenhet.v2.binding.OrganisasjonEnhetV2;
-import no.nav.tjeneste.virksomhet.organisasjonenhet.v2.informasjon.Organisasjonsenhet;
-import no.nav.tjeneste.virksomhet.organisasjonenhet.v2.meldinger.HentEnhetBolkRequest;
-import no.nav.tjeneste.virksomhet.organisasjonenhet.v2.meldinger.HentEnhetBolkResponse;
+import no.nav.tjeneste.virksomhet.organisasjonenhet.v2.HentEnhetBolkResponse;
+import no.nav.tjeneste.virksomhet.organisasjonenhet.v2.OrganisasjonEnhetV2;
+import no.nav.tjeneste.virksomhet.organisasjonenhet.v2.informasjon.WSOrganisasjonsenhet;
+import no.nav.tjeneste.virksomhet.organisasjonenhet.v2.meldinger.WSHentEnhetBolkRequest;
+import no.nav.tjeneste.virksomhet.organisasjonenhet.v2.meldinger.WSHentEnhetBolkResponse;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -23,7 +24,6 @@ public class OrganisasjonEnhetServiceTest {
     private static final String MOCK_ENHET_NAVN = "NAV AKERSHUS";
     private static final String MOCK_ENHET_ID = "1340";
 
-
     @InjectMocks
     private OrganisasjonEnhetService organisasjonEnhetService;
 
@@ -32,11 +32,12 @@ public class OrganisasjonEnhetServiceTest {
 
     @Test
     public void hentOrganisasjonsenhetReturnererEnRespons() {
-        HentEnhetBolkResponse hentEnhetBolkResponse = new HentEnhetBolkResponse();
-        Organisasjonsenhet organisasjonsenhet = new Organisasjonsenhet();
+        WSHentEnhetBolkResponse hentEnhetBolkResponse = new HentEnhetBolkResponse().getResponse();
+        WSOrganisasjonsenhet organisasjonsenhet = new WSOrganisasjonsenhet();
         organisasjonsenhet.setEnhetNavn(MOCK_ENHET_NAVN);
         hentEnhetBolkResponse.getEnhetListe().add(organisasjonsenhet);
-        when(organisasjonEnhetWebService.hentEnhetBolk(any(HentEnhetBolkRequest.class)))
+
+        when(organisasjonEnhetWebService.hentEnhetBolk(any(WSHentEnhetBolkRequest.class)))
                 .thenReturn(hentEnhetBolkResponse);
 
         Oppfolgingsenhet enhet = organisasjonEnhetService.hentEnhet(MOCK_ENHET_ID);
@@ -47,8 +48,8 @@ public class OrganisasjonEnhetServiceTest {
 
     @Test(expected = NoSuchElementException.class)
     public void hentOrganisasjonsenhetKasterFeilVedTomRespons() {
-        when(organisasjonEnhetWebService.hentEnhetBolk(any(HentEnhetBolkRequest.class)))
-                .thenReturn(new HentEnhetBolkResponse());
+        when(organisasjonEnhetWebService.hentEnhetBolk(any(WSHentEnhetBolkRequest.class)))
+                .thenReturn(new WSHentEnhetBolkResponse());
 
         organisasjonEnhetService.hentEnhet(MOCK_ENHET_ID);
     }

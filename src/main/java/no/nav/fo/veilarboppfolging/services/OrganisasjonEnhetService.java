@@ -1,10 +1,11 @@
 package no.nav.fo.veilarboppfolging.services;
 
 import no.nav.fo.veilarboppfolging.domain.Oppfolgingsenhet;
-import no.nav.tjeneste.virksomhet.organisasjonenhet.v2.binding.OrganisasjonEnhetV2;
-import no.nav.tjeneste.virksomhet.organisasjonenhet.v2.informasjon.Organisasjonsenhet;
-import no.nav.tjeneste.virksomhet.organisasjonenhet.v2.meldinger.HentEnhetBolkRequest;
-import no.nav.tjeneste.virksomhet.organisasjonenhet.v2.meldinger.HentEnhetBolkResponse;
+import no.nav.tjeneste.virksomhet.organisasjonenhet.v2.HentEnhetBolk;
+import no.nav.tjeneste.virksomhet.organisasjonenhet.v2.OrganisasjonEnhetV2;
+import no.nav.tjeneste.virksomhet.organisasjonenhet.v2.informasjon.WSOrganisasjonsenhet;
+import no.nav.tjeneste.virksomhet.organisasjonenhet.v2.meldinger.WSHentEnhetBolkRequest;
+import no.nav.tjeneste.virksomhet.organisasjonenhet.v2.meldinger.WSHentEnhetBolkResponse;
 import org.springframework.cache.annotation.Cacheable;
 
 import java.util.List;
@@ -24,13 +25,14 @@ public class OrganisasjonEnhetService {
     @Cacheable(HENT_ENHET)
     public Oppfolgingsenhet hentEnhet(String enhetId) {
         Oppfolgingsenhet oppfolgingsenhet = new Oppfolgingsenhet().withEnhetId(enhetId);
-        HentEnhetBolkRequest hentEnhetBolkRequest = new HentEnhetBolkRequest();
+        WSHentEnhetBolkRequest hentEnhetBolkRequest = new HentEnhetBolk().getRequest();
+
         hentEnhetBolkRequest.getEnhetIdListe().add(enhetId);
-        HentEnhetBolkResponse response = organisasjonenhetWs.hentEnhetBolk(hentEnhetBolkRequest);
+        WSHentEnhetBolkResponse response = organisasjonenhetWs.hentEnhetBolk(hentEnhetBolkRequest);
         return oppfolgingsenhet.withNavn(getNavn(response.getEnhetListe(), enhetId));
     }
 
-    private String getNavn(List<Organisasjonsenhet> enhetListe, String enhetId) {
+    private String getNavn(List<WSOrganisasjonsenhet> enhetListe, String enhetId) {
         if (enhetListe.size() == 0) {
             throw new NoSuchElementException("Norg returnerte en tom liste når vi spurte etter detaljer om denne enheten: " + enhetId);
         }

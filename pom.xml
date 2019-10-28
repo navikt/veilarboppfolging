@@ -5,7 +5,7 @@
     <parent>
         <groupId>no.nav.common</groupId>
         <artifactId>mor-pom</artifactId>
-        <version>1.2019.09.30-12.38-c22e90b63895</version>
+        <version>1.2019.10.14-11.26-d162453764a7</version>
     </parent>
 
     <groupId>no.nav.fo</groupId>
@@ -38,13 +38,11 @@
                 <version>1.10</version>
             </dependency>
 
-             <dependency>
-                <groupId>no.nav.tjenester</groupId>
-                <artifactId>nav-organisasjonEnhet-v2-tjenestespesifikasjon</artifactId>
-                <version>${organisasjonenhet-v2.version}</version>
-                <classifier>jaxws</classifier>
+            <dependency>
+                <groupId>no.nav.tjenestespesifikasjoner</groupId>
+                <artifactId>organisasjonenhet-v2-tjenestespesifikasjon</artifactId>
+                <version>${tjenestespesifikasjoner.version}</version>
             </dependency>
-
              <dependency>
                 <groupId>no.nav.tjenestespesifikasjoner</groupId>
                 <artifactId>nav-fim-oppfoelging-v1.2.0-tjenestespesifikasjon</artifactId>
@@ -185,12 +183,11 @@
             <groupId>no.nav.common</groupId>
             <artifactId>aktor-klient</artifactId>
         </dependency>
-        <dependency>
-            <groupId>no.nav.tjenester</groupId>
-            <artifactId>nav-organisasjonEnhet-v2-tjenestespesifikasjon</artifactId>
-            <classifier>jaxws</classifier>
-        </dependency>
 
+        <dependency>
+            <groupId>no.nav.tjenestespesifikasjoner</groupId>
+            <artifactId>organisasjonenhet-v2-tjenestespesifikasjon</artifactId>
+        </dependency>
         <dependency>
             <groupId>no.nav.tjenestespesifikasjoner</groupId>
             <artifactId>nav-fim-oppfoelging-v1.2.0-tjenestespesifikasjon</artifactId>
@@ -298,8 +295,8 @@
 
         <!--DB-->
         <dependency>
-            <groupId>com.oracle</groupId>
-            <artifactId>ojdbc6</artifactId>
+            <groupId>com.oracle.ojdbc</groupId>
+            <artifactId>ojdbc8</artifactId>
             <scope>runtime</scope>
         </dependency>
         <dependency>
