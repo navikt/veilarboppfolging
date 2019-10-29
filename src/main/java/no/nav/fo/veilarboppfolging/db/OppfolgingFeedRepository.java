@@ -58,7 +58,7 @@ public class OppfolgingFeedRepository {
                         + "WHERE os.AKTOR_ID = op.AKTOR_ID "
                         + "AND os.OPPDATERT >= ? "
                         + "AND ROWNUM <= ? "
-                        + "ORDER BY os.FEED_ID;",
+                        + "ORDER BY os.FEED_ID",
                 timestamp,
                 pageSize
         ).stream()
@@ -95,7 +95,7 @@ public class OppfolgingFeedRepository {
                 + "WHERE os.AKTOR_ID = op.AKTOR_ID "
                 + "AND os.FEED_ID >= ? "
                 + "AND ROWNUM <= ? "
-                + "ORDER BY os.FEED_ID;",
+                + "ORDER BY os.FEED_ID",
                 sinceId,
                 pageSize
         ).stream()
