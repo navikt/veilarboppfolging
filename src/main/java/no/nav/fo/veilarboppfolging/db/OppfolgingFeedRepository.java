@@ -3,6 +3,7 @@ package no.nav.fo.veilarboppfolging.db;
 import no.nav.metrics.utils.MetricsUtils;
 import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingFeedDTO;
 import no.nav.fo.veilarboppfolging.utils.OppfolgingFeedUtil;
+import no.nav.sbl.sql.SqlUtils;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -38,15 +39,26 @@ public class OppfolgingFeedRepository {
 
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public List<OppfolgingFeedDTO> hentEndringerEtterTimestamp(Timestamp timestamp, int pageSize) {
-        return db.queryForList("SELECT * FROM "
-                        + "(SELECT o.aktor_id, o.veileder, o.under_oppfolging, o.ny_for_veileder, o.oppdatert, o.feed_id, m.manuell, op.startdato "
-                        + "FROM OPPFOLGINGSTATUS o "
-                        + "LEFT JOIN MANUELL_STATUS m ON (o.GJELDENDE_MANUELL_STATUS = m.ID) "
-                        + "LEFT JOIN OPPFOLGINGSPERIODE op ON (o.AKTOR_ID = op.AKTOR_ID) "
-                        + "AND op.SLUTTDATO = (SELECT MAX(SLUTTDATO) FROM OPPFOLGINGSPERIODE  WHERE AKTOR_ID = o.AKTOR_ID) "
-                        + "WHERE o.oppdatert >= ? "
-                        + "ORDER BY o.oppdatert) "
-                        + "WHERE rownum <= ?",
+
+        // Se kommentarer nedenfor
+
+        return db.queryForList(
+                "SELECT DISTINCT "
+                        + "os.AKTOR_ID,"
+                        + "os.VEILEDER,"
+                        + "os.UNDER_OPPFOLGING,"
+                        + "os.NY_FOR_VEILEDER,"
+                        + "os.OPPDATERT,"
+                        + "os.FEED_ID,"
+                        + "m.MANUELL,"
+                        + "first_value(op.STARTDATO) over (partition BY os.AKTOR_ID ORDER BY op.STARTDATO DESC) AS STARTDATO "
+                        + "FROM "
+                        + "VEILARBOPPFOLGING.OPPFOLGINGSPERIODE op,"
+                        + "VEILARBOPPFOLGING.OPPFOLGINGSTATUS os LEFT JOIN VEILARBOPPFOLGING.MANUELL_STATUS m ON (os.GJELDENDE_MANUELL_STATUS = m.ID) "
+                        + "WHERE os.AKTOR_ID = op.AKTOR_ID "
+                        + "AND os.OPPDATERT >= ? "
+                        + "AND ROWNUM <= ? "
+                        + "ORDER BY os.FEED_ID;",
                 timestamp,
                 pageSize
         ).stream()
@@ -55,16 +67,35 @@ public class OppfolgingFeedRepository {
     }
 
     @Transactional
+
     public List<OppfolgingFeedDTO> hentEndringerEtterId(String sinceId, int pageSize) {
-        return db.queryForList("SELECT * FROM "
-                        + "(SELECT o.aktor_id, o.veileder, o.under_oppfolging, o.ny_for_veileder, o.oppdatert, o.feed_id, m.manuell, op.startdato "
-                        + "FROM OPPFOLGINGSTATUS o "
-                        + "LEFT JOIN MANUELL_STATUS m ON (o.GJELDENDE_MANUELL_STATUS = m.ID) "
-                        + "LEFT JOIN OPPFOLGINGSPERIODE op ON (o.AKTOR_ID = op.AKTOR_ID) "
-                        + "AND op.SLUTTDATO = (SELECT MAX(SLUTTDATO) FROM OPPFOLGINGSPERIODE  WHERE AKTOR_ID = o.AKTOR_ID) "
-                        + "WHERE o.feed_id >= ?"
-                        + "ORDER BY o.feed_id) "
-                        + "WHERE rownum <= ?",
+
+        // 1. Join sammen Tabellen OPPFOLGINGSPERIODE og OPPFOLGINGSTATUS på AKTOR_ID
+        // 2. LEFT JOIN inn tabellen MANUELL_STATUS siden ikke alle brukere ligger i denne tabellen (de radene hvor det ikke er noe match på id vil få null i MANUELL-kolonnen)
+        // 3. Det er nå flere duplikate rader siden én bruker kan ha flere startdatoer, vi må filtrere ut de radene for en bruker som har den nyeste startdatoen,
+        //    partition_by grupperer på AKTOR_ID for så å sortere på startdato hvor den nyeste ligger øverst, first_value velger så den øverste raden.
+
+        return db.queryForList(
+        "SELECT DISTINCT "
+                + "os.AKTOR_ID,"
+                + "os.VEILEDER,"
+                + "os.UNDER_OPPFOLGING,"
+                + "os.NY_FOR_VEILEDER,"
+                + "os.OPPDATERT,"
+                + "os.FEED_ID,"
+                + "m.MANUELL,"
+                // grupper duplikate rader og sorter på startdato, velg så den øverste raden (som da er den med nyeste startdatoen)
+                // https://stackoverflow.com/questions/10515391/oracle-equivalent-of-postgres-distinct-on
+                + "first_value(op.STARTDATO) over (partition BY os.AKTOR_ID ORDER BY op.STARTDATO DESC) AS STARTDATO "
+                + "FROM "
+                + "VEILARBOPPFOLGING.OPPFOLGINGSPERIODE op,"
+                // LEFT JOIN fordi ikke alle brukere ligger i MANUELL_STATUS
+                // (https://www.oracletutorial.com/oracle-basics/oracle-joins/)
+                + "VEILARBOPPFOLGING.OPPFOLGINGSTATUS os LEFT JOIN VEILARBOPPFOLGING.MANUELL_STATUS m ON (os.GJELDENDE_MANUELL_STATUS = m.ID) "
+                + "WHERE os.AKTOR_ID = op.AKTOR_ID "
+                + "AND os.FEED_ID >= ? "
+                + "AND ROWNUM <= ? "
+                + "ORDER BY os.FEED_ID;",
                 sinceId,
                 pageSize
         ).stream()
@@ -86,13 +117,13 @@ public class OppfolgingFeedRepository {
     }
 
     private void insertFeedId() {
-        MetricsUtils.timed("oppfolging.feedid", () ->   {
+        MetricsUtils.timed("oppfolging.feedid", () -> {
             long start = System.currentTimeMillis();
             int updatedRows = db.update(
                     "UPDATE OPPFOLGINGSTATUS " +
-                    "SET FEED_ID = OPPFOLGING_FEED_SEQ.NEXTVAL " +
-                    "WHERE FEED_ID IS NULL");
-            if(updatedRows > 0) {
+                            "SET FEED_ID = OPPFOLGING_FEED_SEQ.NEXTVAL " +
+                            "WHERE FEED_ID IS NULL");
+            if (updatedRows > 0) {
                 log.info("Satte feed-id på {} rader. Tid brukt: {} ms", updatedRows, System.currentTimeMillis() - start);
             }
         });
