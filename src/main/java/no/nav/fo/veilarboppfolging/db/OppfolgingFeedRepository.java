@@ -53,8 +53,8 @@ public class OppfolgingFeedRepository {
                         + "m.MANUELL,"
                         + "first_value(op.STARTDATO) over (partition BY os.AKTOR_ID ORDER BY op.STARTDATO DESC) AS STARTDATO "
                         + "FROM "
-                        + "VEILARBOPPFOLGING.OPPFOLGINGSPERIODE op,"
-                        + "VEILARBOPPFOLGING.OPPFOLGINGSTATUS os LEFT JOIN VEILARBOPPFOLGING.MANUELL_STATUS m ON (os.GJELDENDE_MANUELL_STATUS = m.ID) "
+                        + "OPPFOLGINGSPERIODE op,"
+                        + "OPPFOLGINGSTATUS os LEFT JOIN MANUELL_STATUS m ON (os.GJELDENDE_MANUELL_STATUS = m.ID) "
                         + "WHERE os.AKTOR_ID = op.AKTOR_ID "
                         + "AND os.OPPDATERT >= ? "
                         + "AND ROWNUM <= ? "
@@ -88,10 +88,10 @@ public class OppfolgingFeedRepository {
                 // https://stackoverflow.com/questions/10515391/oracle-equivalent-of-postgres-distinct-on
                 + "first_value(op.STARTDATO) over (partition BY os.AKTOR_ID ORDER BY op.STARTDATO DESC) AS STARTDATO "
                 + "FROM "
-                + "VEILARBOPPFOLGING.OPPFOLGINGSPERIODE op,"
+                + "OPPFOLGINGSPERIODE op,"
                 // LEFT JOIN fordi ikke alle brukere ligger i MANUELL_STATUS
                 // (https://www.oracletutorial.com/oracle-basics/oracle-joins/)
-                + "VEILARBOPPFOLGING.OPPFOLGINGSTATUS os LEFT JOIN VEILARBOPPFOLGING.MANUELL_STATUS m ON (os.GJELDENDE_MANUELL_STATUS = m.ID) "
+                + "OPPFOLGINGSTATUS os LEFT JOIN MANUELL_STATUS m ON (os.GJELDENDE_MANUELL_STATUS = m.ID) "
                 + "WHERE os.AKTOR_ID = op.AKTOR_ID "
                 + "AND os.FEED_ID >= ? "
                 + "AND ROWNUM <= ? "
