@@ -32,42 +32,12 @@ public class OppfolgingFeedRepository {
     private final LockingTaskExecutor taskExecutor;
 
     @Inject
-    public OppfolgingFeedRepository(JdbcTemplate db, LockingTaskExecutor taskExecutor) {
+    OppfolgingFeedRepository(JdbcTemplate db, LockingTaskExecutor taskExecutor) {
         this.db = db;
         this.taskExecutor = taskExecutor;
     }
 
-    @Transactional(isolation = Isolation.SERIALIZABLE)
-    public List<OppfolgingFeedDTO> hentEndringerEtterTimestamp(Timestamp timestamp, int pageSize) {
-
-        // Se kommentarer nedenfor
-
-        return db.queryForList(
-                "SELECT DISTINCT "
-                        + "os.AKTOR_ID,"
-                        + "os.VEILEDER,"
-                        + "os.UNDER_OPPFOLGING,"
-                        + "os.NY_FOR_VEILEDER,"
-                        + "os.OPPDATERT,"
-                        + "os.FEED_ID,"
-                        + "m.MANUELL,"
-                        + "first_value(op.STARTDATO) over (partition BY os.AKTOR_ID ORDER BY op.STARTDATO DESC) AS STARTDATO "
-                        + "FROM "
-                        + "OPPFOLGINGSPERIODE op,"
-                        + "OPPFOLGINGSTATUS os LEFT JOIN MANUELL_STATUS m ON (os.GJELDENDE_MANUELL_STATUS = m.ID) "
-                        + "WHERE os.AKTOR_ID = op.AKTOR_ID "
-                        + "AND os.OPPDATERT >= ? "
-                        + "AND ROWNUM <= ? "
-                        + "ORDER BY os.FEED_ID",
-                timestamp,
-                pageSize
-        ).stream()
-                .map(OppfolgingFeedUtil::mapRadTilOppfolgingFeedDTO)
-                .collect(toList());
-    }
-
     @Transactional
-
     public List<OppfolgingFeedDTO> hentEndringerEtterId(String sinceId, int pageSize) {
 
         // 1. Join sammen Tabellen OPPFOLGINGSPERIODE og OPPFOLGINGSTATUS på AKTOR_ID
