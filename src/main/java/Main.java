@@ -26,13 +26,9 @@ public class Main {
         System.setProperty(CredentialConstants.SYSTEMUSER_USERNAME, serviceUser.username);
         System.setProperty(CredentialConstants.SYSTEMUSER_PASSWORD, serviceUser.password);
 
-        //CXF
+        //CXF/OIDC
         System.setProperty(StsSecurityConstants.SYSTEMUSER_USERNAME, serviceUser.username);
         System.setProperty(StsSecurityConstants.SYSTEMUSER_PASSWORD, serviceUser.password);
-
-        //OIDC
-        System.setProperty(SecurityConstants.SYSTEMUSER_USERNAME, serviceUser.username);
-        System.setProperty(SecurityConstants.SYSTEMUSER_PASSWORD, serviceUser.password);
 
         NaiseratorUtils.Credentials oracleCreds = NaiseratorUtils.getCredentials(NaiseratorUtils.getDefaultSecretPath("oracle_creds"));
         System.setProperty(VEILARBOPPFOLGINGDB_USERNAME_PROPERTY, oracleCreds.username);
