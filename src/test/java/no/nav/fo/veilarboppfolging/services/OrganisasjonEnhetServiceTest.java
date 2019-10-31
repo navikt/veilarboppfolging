@@ -32,7 +32,7 @@ public class OrganisasjonEnhetServiceTest {
 
     @Test
     public void hentOrganisasjonsenhetReturnererEnRespons() {
-        WSHentEnhetBolkResponse hentEnhetBolkResponse = new HentEnhetBolkResponse().getResponse();
+        WSHentEnhetBolkResponse hentEnhetBolkResponse = new WSHentEnhetBolkResponse();
         WSOrganisasjonsenhet organisasjonsenhet = new WSOrganisasjonsenhet();
         organisasjonsenhet.setEnhetNavn(MOCK_ENHET_NAVN);
         hentEnhetBolkResponse.getEnhetListe().add(organisasjonsenhet);
