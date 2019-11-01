@@ -82,6 +82,8 @@ spec:
     - VEILARBLOGIN_REDIRECT_URL_URL
     - AAD_B2C_DISCOVERY_URL
     - SECURITY_TOKEN_SERVICE_OPENID_CONFIGURATION_URL
+    - name: APP_ENVIRONMENT_NAME
+      value: p
     - name: VEILARBOPPFOLGINGDB_URL
       value: jdbc:oracle:thin:@a01dbfl037.adeo.no:1521/veilarboppfolging
     - name: ROLE

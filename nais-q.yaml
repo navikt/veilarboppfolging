@@ -83,6 +83,8 @@ spec:
     - VIRKSOMHET_YTELSESKONTRAKT_V3_ENDPOINTURL
     - VIRKSOMHET_YTELSESKONTRAKT_V3_SECURITYTOKEN
     - VIRKSOMHET_YTELSESKONTRAKT_V3_WSDLURL
+    - name: APP_ENVIRONMENT_NAME
+      value: {{namespace}}
     - name: VEILARBOPPFOLGINGDB_URL
       value: jdbc:oracle:thin:@a01dbfl032.adeo.no:1521/veilarboppfolging_{{namespace}}
     - name: MAKS_ALDER_AUTOMATISK_REGISTRERING
