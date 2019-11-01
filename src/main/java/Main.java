@@ -11,6 +11,7 @@ import static no.nav.dialogarena.aktor.AktorConfig.AKTOER_ENDPOINT_URL;
 import static no.nav.fo.veilarboppfolging.config.ApplicationConfig.*;
 import static no.nav.fo.veilarboppfolging.config.DatabaseConfig.VEILARBOPPFOLGINGDB_PASSWORD_PROPERTY;
 import static no.nav.fo.veilarboppfolging.config.DatabaseConfig.VEILARBOPPFOLGINGDB_USERNAME_PROPERTY;
+import static no.nav.fo.veilarboppfolging.utils.NaiseratorUtils.getDefaultSecretPath;
 import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 
 public class Main {
@@ -19,7 +20,7 @@ public class Main {
         setProperty(AKTOER_ENDPOINT_URL, getRequiredProperty(AKTOER_V2_URL_PROPERTY));
         setProperty(OIDC_REDIRECT_URL_PROPERTY_NAME, getRequiredProperty(VEILARBLOGIN_REDIRECT_URL_URL_PROPERTY));
 
-        NaiseratorUtils.Credentials serviceUser = NaiseratorUtils.getCredentials("service_user");
+        NaiseratorUtils.Credentials serviceUser = NaiseratorUtils.getCredentials(getDefaultSecretPath("service_user"));
 
         //ABAC
         System.setProperty(CredentialConstants.SYSTEMUSER_USERNAME, serviceUser.username);
@@ -29,7 +30,7 @@ public class Main {
         System.setProperty(StsSecurityConstants.SYSTEMUSER_USERNAME, serviceUser.username);
         System.setProperty(StsSecurityConstants.SYSTEMUSER_PASSWORD, serviceUser.password);
 
-        NaiseratorUtils.Credentials oracleCreds = NaiseratorUtils.getCredentials(NaiseratorUtils.getDefaultSecretPath("oracle_creds"));
+        NaiseratorUtils.Credentials oracleCreds = NaiseratorUtils.getCredentials(getDefaultSecretPath("oracle_creds"));
         System.setProperty(VEILARBOPPFOLGINGDB_USERNAME_PROPERTY, oracleCreds.username);
         System.setProperty(VEILARBOPPFOLGINGDB_PASSWORD_PROPERTY, oracleCreds.password);
 

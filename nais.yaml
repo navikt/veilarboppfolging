@@ -112,9 +112,9 @@ spec:
     enabled: true
     paths:
     - kvPath: /oracle/data/prod/creds/veilarboppfolging-user
-      mountPath: /var/run/secrets/nais.io/veilarboppfolgingDB
+      mountPath: /var/run/secrets/nais.io/oracle_creds
     - kvPath: /serviceuser/data/prod/srvveilarboppfolging
-      mountPath: /var/run/secrets/nais.io/srvveilarboppfolging
+      mountPath: /var/run/secrets/nais.io/service_user
     - kvPath: /kv/prod/fss/veilarboppfolging/default
       mountPath: /var/run/secrets/nais.io/vault
   webproxy: true
