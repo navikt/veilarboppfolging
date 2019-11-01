@@ -10,18 +10,18 @@ metadata:
 spec:
   image: docker.pkg.github.com/navikt/veilarboppfolging/veilarboppfolging:{{version}}
   ingresses:
-  - https://veilarboppfolging.nais.preprod.local
-  - https://app-{{namespace}}.adeo.no/veilarboppfolging
-  - https://app-{{namespace}}.adeo.no/veilarboppfolging-ws
+    - https://veilarboppfolging.nais.preprod.local
+    - https://app-{{namespace}}.adeo.no/veilarboppfolging
+    - https://app-{{namespace}}.adeo.no/veilarboppfolging-ws
   leaderElection: true
-  liveness:
-    path: veilarboppfolging/internal/isAlive
-    port: 8080
-    initialDelay: 20
   port: 8080
   prometheus:
     enabled: true
     path: veilarboppfolging/internal/metrics
+  liveness:
+    path: veilarboppfolging/internal/isAlive
+    port: 8080
+    initialDelay: 20
   readiness:
     path: veilarboppfolging/internal/isReady
     port: 8080
@@ -38,84 +38,84 @@ spec:
       cpu: 200m
       memory: 1536Mi
   env:
-  - AAD_B2C_DISCOVERY_URL
-  - ABAC_PDP_ENDPOINT_DESCRIPTION
-  - ABAC_PDP_ENDPOINT_URL
-  - AKTIVITETSPLAN_URL
-  - AKTOER_V2_ENDPOINTURL
-  - AKTOER_V2_SECURITYTOKEN
-  - AKTOER_V2_WSDLURL
-  - APPDYNAMICS_AGENT_ACCOUNT_NAME
-  - APPDYNAMICS_CONTROLLER_HOST_NAME
-  - APPDYNAMICS_CONTROLLER_PORT
-  - APPDYNAMICS_CONTROLLER_SSL_ENABLED
-  - ISSO_HOST_URL
-  - ISSO_ISALIVE_URL
-  - ISSO_ISSUER_URL
-  - ISSO_JWKS_URL
-  - KAFKA_BROKERS_URL
-  - SECURITY_TOKEN_SERVICE_OPENID_CONFIGURATION_URL
-  - SECURITYTOKENSERVICE_URL
-  - UNLEASH_API_URL
-  - VARSELOPPGAVE_V1_DESCRIPTION
-  - VARSELOPPGAVE_V1_ENDPOINTURL
-  - VARSELOPPGAVE_V1_SECURITYTOKEN
-  - VARSELOPPGAVE_V1_WSDLURL
-  - VEILARBAKTIVITETAPI_URL
-  - VEILARBARENAAPI_URL
-  - VEILARBLOGIN_REDIRECT_URL_DESCRIPTION
-  - VEILARBLOGIN_REDIRECT_URL_URL
-  - VIRKSOMHET_BEHANDLEARBEIDSSOEKER_V1_ENDPOINTURL
-  - VIRKSOMHET_BEHANDLEARBEIDSSOEKER_V1_SECURITYTOKEN
-  - VIRKSOMHET_BEHANDLEARBEIDSSOEKER_V1_WSDLURL
-  - VIRKSOMHET_DIGITALKONTAKINFORMASJON_V1_ENDPOINTURL
-  - VIRKSOMHET_DIGITALKONTAKINFORMASJON_V1_SECURITYTOKEN
-  - VIRKSOMHET_DIGITALKONTAKINFORMASJON_V1_WSDLURL
-  - VIRKSOMHET_OPPFOELGINGSSTATUS_V2_ENDPOINTURL
-  - VIRKSOMHET_OPPFOELGINGSSTATUS_V2_SECURITYTOKEN
-  - VIRKSOMHET_OPPFOELGINGSSTATUS_V2_WSDLURL
-  - VIRKSOMHET_OPPFOLGING_V1_ENDPOINTURL
-  - VIRKSOMHET_OPPFOLGING_V1_SECURITYTOKEN
-  - VIRKSOMHET_OPPFOLGING_V1_WSDLURL
-  - VIRKSOMHET_ORGANISASJONENHET_V2_ENDPOINTURL
-  - VIRKSOMHET_ORGANISASJONENHET_V2_SECURITYTOKEN
-  - VIRKSOMHET_ORGANISASJONENHET_V2_WSDLURL
-  - VIRKSOMHET_YTELSESKONTRAKT_V3_ENDPOINTURL
-  - VIRKSOMHET_YTELSESKONTRAKT_V3_SECURITYTOKEN
-  - VIRKSOMHET_YTELSESKONTRAKT_V3_WSDLURL
-  - name: VEILARBOPPFOLGINGDB_URL
-    value: jdbc:oracle:thin:@a01dbfl032.adeo.no:1521/veilarboppfolging_{{namespace}}
-  - name: MAKS_ALDER_AUTOMATISK_REGISTRERING
-    value: "0"
-  - name: MIN_ALDER_AUTOMATISK_REGISTRERING
-    value: "0"
-  - name: ROLE
-    value: 0000-GA-Modia-Oppfolging
-  - name: LDAP_FALLBACK
-    value: "false"
-  - name: ESKALERINGSVARSEL_OPPGAVETYPE
-    value: "0004"
-  - name: ESKALERINGSVARSEL_VARSELTYPE
-    value: DittNAV_000008
-  - name: FEATURE_SKIP_VALIDERING_DIFI
-    value: "true"
-  - name: KVP_API_BRUKERTILGANG
-    value: srvveilarbdialog,srvveilarbaktivitet
-  - name: OPPFOLGING_FEED_BRUKERTILGANG
-    value: srvveilarbportefolje
-  - name: AVSLUTTETOPPFOLGING_FEED_BRUKERTILGANG
-    value: srvveilarbdialog,srvveilarbaktivitet,srvveilarbjobbsoke
-  - name: KVP_FEED_BRUKERTILGANG
-    value: srvveilarbdialog,srvveilarbaktivitet
-  - name: NYEBRUKERE_FEED_BRUKERTILGANG
-    value: srvveilarbdirigent
+    - AAD_B2C_DISCOVERY_URL
+    - ABAC_PDP_ENDPOINT_DESCRIPTION
+    - ABAC_PDP_ENDPOINT_URL
+    - AKTIVITETSPLAN_URL
+    - AKTOER_V2_ENDPOINTURL
+    - AKTOER_V2_SECURITYTOKEN
+    - AKTOER_V2_WSDLURL
+    - APPDYNAMICS_AGENT_ACCOUNT_NAME
+    - APPDYNAMICS_CONTROLLER_HOST_NAME
+    - APPDYNAMICS_CONTROLLER_PORT
+    - APPDYNAMICS_CONTROLLER_SSL_ENABLED
+    - ISSO_HOST_URL
+    - ISSO_ISALIVE_URL
+    - ISSO_ISSUER_URL
+    - ISSO_JWKS_URL
+    - KAFKA_BROKERS_URL
+    - SECURITY_TOKEN_SERVICE_OPENID_CONFIGURATION_URL
+    - SECURITYTOKENSERVICE_URL
+    - UNLEASH_API_URL
+    - VARSELOPPGAVE_V1_DESCRIPTION
+    - VARSELOPPGAVE_V1_ENDPOINTURL
+    - VARSELOPPGAVE_V1_SECURITYTOKEN
+    - VARSELOPPGAVE_V1_WSDLURL
+    - VEILARBAKTIVITETAPI_URL
+    - VEILARBARENAAPI_URL
+    - VEILARBLOGIN_REDIRECT_URL_DESCRIPTION
+    - VEILARBLOGIN_REDIRECT_URL_URL
+    - VIRKSOMHET_BEHANDLEARBEIDSSOEKER_V1_ENDPOINTURL
+    - VIRKSOMHET_BEHANDLEARBEIDSSOEKER_V1_SECURITYTOKEN
+    - VIRKSOMHET_BEHANDLEARBEIDSSOEKER_V1_WSDLURL
+    - VIRKSOMHET_DIGITALKONTAKINFORMASJON_V1_ENDPOINTURL
+    - VIRKSOMHET_DIGITALKONTAKINFORMASJON_V1_SECURITYTOKEN
+    - VIRKSOMHET_DIGITALKONTAKINFORMASJON_V1_WSDLURL
+    - VIRKSOMHET_OPPFOELGINGSSTATUS_V2_ENDPOINTURL
+    - VIRKSOMHET_OPPFOELGINGSSTATUS_V2_SECURITYTOKEN
+    - VIRKSOMHET_OPPFOELGINGSSTATUS_V2_WSDLURL
+    - VIRKSOMHET_OPPFOLGING_V1_ENDPOINTURL
+    - VIRKSOMHET_OPPFOLGING_V1_SECURITYTOKEN
+    - VIRKSOMHET_OPPFOLGING_V1_WSDLURL
+    - VIRKSOMHET_ORGANISASJONENHET_V2_ENDPOINTURL
+    - VIRKSOMHET_ORGANISASJONENHET_V2_SECURITYTOKEN
+    - VIRKSOMHET_ORGANISASJONENHET_V2_WSDLURL
+    - VIRKSOMHET_YTELSESKONTRAKT_V3_ENDPOINTURL
+    - VIRKSOMHET_YTELSESKONTRAKT_V3_SECURITYTOKEN
+    - VIRKSOMHET_YTELSESKONTRAKT_V3_WSDLURL
+    - name: VEILARBOPPFOLGINGDB_URL
+      value: jdbc:oracle:thin:@a01dbfl032.adeo.no:1521/veilarboppfolging_{{namespace}}
+    - name: MAKS_ALDER_AUTOMATISK_REGISTRERING
+      value: "0"
+    - name: MIN_ALDER_AUTOMATISK_REGISTRERING
+      value: "0"
+    - name: ROLE
+      value: 0000-GA-Modia-Oppfolging
+    - name: LDAP_FALLBACK
+      value: "false"
+    - name: ESKALERINGSVARSEL_OPPGAVETYPE
+      value: "0004"
+    - name: ESKALERINGSVARSEL_VARSELTYPE
+      value: DittNAV_000008
+    - name: FEATURE_SKIP_VALIDERING_DIFI
+      value: "true"
+    - name: KVP_API_BRUKERTILGANG
+      value: srvveilarbdialog,srvveilarbaktivitet
+    - name: OPPFOLGING_FEED_BRUKERTILGANG
+      value: srvveilarbportefolje
+    - name: AVSLUTTETOPPFOLGING_FEED_BRUKERTILGANG
+      value: srvveilarbdialog,srvveilarbaktivitet,srvveilarbjobbsoke
+    - name: KVP_FEED_BRUKERTILGANG
+      value: srvveilarbdialog,srvveilarbaktivitet
+    - name: NYEBRUKERE_FEED_BRUKERTILGANG
+      value: srvveilarbdirigent
   vault:
     enabled: true
     paths:
-    - kvPath: /oracle/data/dev/creds/veilarboppfolging_{{namespace}}-user
-      mountPath: /var/run/secrets/nais.io/oracle_creds
-    - kvPath: /serviceuser/data/dev/srvveilarboppfolging
-      mountPath: /var/run/secrets/nais.io/service_user
-    - kvPath: /kv/preprod/fss/veilarboppfolging/default
-      mountPath: /var/run/secrets/nais.io/vault
+      - kvPath: /oracle/data/dev/creds/veilarboppfolging_{{namespace}}-user
+        mountPath: /var/run/secrets/nais.io/oracle_creds
+      - kvPath: /serviceuser/data/dev/srvveilarboppfolging
+        mountPath: /var/run/secrets/nais.io/service_user
+      - kvPath: /kv/preprod/fss/veilarboppfolging/default
+        mountPath: /var/run/secrets/nais.io/vault
   webproxy: true
