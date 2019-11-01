@@ -25,8 +25,7 @@ public class OrganisasjonEnhetService {
     @Cacheable(HENT_ENHET)
     public Oppfolgingsenhet hentEnhet(String enhetId) {
         Oppfolgingsenhet oppfolgingsenhet = new Oppfolgingsenhet().withEnhetId(enhetId);
-        WSHentEnhetBolkRequest hentEnhetBolkRequest = new HentEnhetBolk().getRequest();
-
+        WSHentEnhetBolkRequest hentEnhetBolkRequest = new WSHentEnhetBolkRequest();
         hentEnhetBolkRequest.getEnhetIdListe().add(enhetId);
         WSHentEnhetBolkResponse response = organisasjonenhetWs.hentEnhetBolk(hentEnhetBolkRequest);
         return oppfolgingsenhet.withNavn(getNavn(response.getEnhetListe(), enhetId));
