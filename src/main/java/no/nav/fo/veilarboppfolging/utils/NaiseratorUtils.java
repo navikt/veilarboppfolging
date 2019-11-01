@@ -1,15 +1,13 @@
 package no.nav.fo.veilarboppfolging.utils;
 
 import lombok.SneakyThrows;
+import no.nav.common.utils.Pair;
 import no.nav.sbl.util.EnvironmentUtils;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -80,12 +78,11 @@ public class NaiseratorUtils {
     }
 
     private static void addMapToEnv(Map<String, String> map) {
-        map.entrySet().forEach(entrySet -> System.setProperty(entrySet.getKey(), entrySet.getValue()));
+        map.forEach((key, value) -> EnvironmentUtils.setProperty(key, value, EnvironmentUtils.Type.PUBLIC));
     }
 
     @SneakyThrows
     public static Map<String, String> readConfigMap(String configMap) {
-
         String configMapsPath = EnvironmentUtils.getOptionalProperty(CONFIG_MAPS_PATH).orElse(DEFAULT_CONFIG_MAPS_PATH);
         Path path = Paths.get(configMapsPath, configMap);
         Stream<Path> files = Files.walk(path, 1).filter(Files::isRegularFile);
@@ -94,10 +91,13 @@ public class NaiseratorUtils {
     }
 
     public static Map<String, String> readConfigMap(String configMap, String... keys) {
-        List<String> keyList = Arrays.asList(keys);
-        return readConfigMap(configMap).entrySet().stream()
-                .filter(entrySet -> keyList.contains(entrySet.getKey()))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        Map<String, String> configMapMap = readConfigMap(configMap);
+
+        return Arrays.stream(keys).map(key ->
+                Optional.ofNullable(configMapMap.get(key))
+                        .map(value -> Pair.of(key, value))
+                        .orElseThrow(() ->
+                                new IllegalStateException(String.format("Fant ikke key %s i config map %s", key, configMap))))
+                .collect(Collectors.toMap(Pair::getFirst, Pair::getSecond));
     }
 }
-

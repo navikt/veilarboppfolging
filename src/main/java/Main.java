@@ -1,6 +1,5 @@
 import no.nav.apiapp.ApiApp;
 
-import no.nav.brukerdialog.tools.SecurityConstants;
 import no.nav.fo.veilarboppfolging.config.ApplicationConfig;
 import no.nav.fo.veilarboppfolging.utils.NaiseratorUtils;
 import no.nav.sbl.dialogarena.common.abac.pep.CredentialConstants;
