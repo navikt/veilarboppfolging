@@ -116,6 +116,6 @@ spec:
         mountPath: /var/run/secrets/nais.io/oracle_creds
       - kvPath: /serviceuser/data/dev/srvveilarboppfolging
         mountPath: /var/run/secrets/nais.io/service_user
-      - kvPath: /kv/preprod/fss/veilarboppfolging/default
+      - kvPath: /kv/preprod/fss/veilarboppfolging/{{namespace}}
         mountPath: /var/run/secrets/nais.io/vault
   webproxy: true
