@@ -55,6 +55,8 @@ public class ApplicationConfig implements ApiApplication {
     public static final String VEILARBARENAAPI_URL_PROPERTY = "VEILARBARENAAPI_URL";
     public static final String STS_OIDC_CONFIGURATION_URL_PROPERTY = "SECURITY_TOKEN_SERVICE_OPENID_CONFIGURATION_URL";
     public static final String KAFKA_BROKERS_URL_PROPERTY = "KAFKA_BROKERS_URL";
+    public static final String APP_ENVIRONMENT_NAME = "APP_ENVIRONMENT_NAME";
+
 
     @Inject
     private DataSource dataSource;
