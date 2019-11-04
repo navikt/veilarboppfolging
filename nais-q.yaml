@@ -10,7 +10,7 @@ metadata:
 spec:
   image: docker.pkg.github.com/navikt/veilarboppfolging/veilarboppfolging:{{version}}
   ingresses:
-    - https://veilarboppfolging.nais.preprod.local
+    - https://veilarboppfolging-{{namespace}}.nais.preprod.local
     - https://app-{{namespace}}.adeo.no/veilarboppfolging
     - https://app-{{namespace}}.adeo.no/veilarboppfolging-ws
   leaderElection: true
