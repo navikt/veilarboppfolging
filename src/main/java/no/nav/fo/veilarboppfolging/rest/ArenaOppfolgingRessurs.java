@@ -126,6 +126,7 @@ public class ArenaOppfolgingRessurs {
             res = new OppfolgingEnhetMedVeileder()
                     .setServicegruppe(veilarbArenaOppfolging.getKvalifiseringsgruppekode())
                     .setFormidlingsgruppe(veilarbArenaOppfolging.getFormidlingsgruppekode())
+                    .setRettighetsgruppe(veilarbArenaOppfolging.getRettighetsgruppekode())
                     .setOppfolgingsenhet(hentEnhet(veilarbArenaOppfolging.getNav_kontor()))
                     .setHovedmaalkode(veilarbArenaOppfolging.getHovedmaalkode());
 
@@ -133,10 +134,11 @@ public class ArenaOppfolgingRessurs {
             no.nav.fo.veilarboppfolging.domain.ArenaOppfolging arenaData = arenaOppfolgingService.hentArenaOppfolging(fnr);
             Optional<VeilarbArenaOppfolging> oppfolgingsbrukerStatus = oppfolgingsbrukerService.hentOppfolgingsbruker(fnr);
             res = new OppfolgingEnhetMedVeileder()
-                .setServicegruppe(arenaData.getServicegruppe())
-                .setFormidlingsgruppe(arenaData.getFormidlingsgruppe())
-                .setOppfolgingsenhet(hentEnhet(arenaData.getOppfolgingsenhet()))
-                .setHovedmaalkode(oppfolgingsbrukerStatus.map(VeilarbArenaOppfolging::getHovedmaalkode).orElse(null));
+                    .setServicegruppe(arenaData.getServicegruppe())
+                    .setFormidlingsgruppe(arenaData.getFormidlingsgruppe())
+                    .setRettighetsgruppe(arenaData.getRettighetsgruppe())
+                    .setOppfolgingsenhet(hentEnhet(arenaData.getOppfolgingsenhet()))
+                    .setHovedmaalkode(oppfolgingsbrukerStatus.map(VeilarbArenaOppfolging::getHovedmaalkode).orElse(null));
         }
 
         if (AutorisasjonService.erInternBruker()) {

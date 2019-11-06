@@ -12,6 +12,7 @@ public class VeilarbArenaOppfolging {
     public String fodselsnr;
     public String formidlingsgruppekode;
     public String kvalifiseringsgruppekode;
+    public String rettighetsgruppekode;
     public ZonedDateTime iserv_fra_dato;
     public String hovedmaalkode;
     public String nav_kontor;

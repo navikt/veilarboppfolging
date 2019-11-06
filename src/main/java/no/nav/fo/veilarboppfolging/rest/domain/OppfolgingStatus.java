@@ -30,6 +30,7 @@ public class OppfolgingStatus {
     private Boolean erSykmeldtMedArbeidsgiver;
     private String servicegruppe;
     private String formidlingsgruppe;
+    private String rettighetsgruppe;
 
     @Deprecated
     private Boolean erIkkeArbeidssokerUtenOppfolging;

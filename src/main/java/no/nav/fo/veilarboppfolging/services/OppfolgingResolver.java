@@ -354,6 +354,10 @@ public class OppfolgingResolver {
         return arenaOppfolgingTilstand().map(ArenaOppfolgingTilstand::getFormidlingsgruppe).orElse(null);
     }
 
+    String getRettighetsgruppe() {
+        return arenaOppfolgingTilstand().map(ArenaOppfolgingTilstand::getRettighetsgruppe).orElse(null);
+    }
+
     private Date getInaktiveringsDato(ArenaOppfolgingTilstand status) {
         return Optional.ofNullable(status.getInaktiveringsdato()).isPresent()
                 ? Date.from(status.getInaktiveringsdato().atStartOfDay().atZone(ZoneId.systemDefault()).toInstant())
@@ -647,6 +651,7 @@ public class OppfolgingResolver {
 class ArenaOppfolgingTilstand {
     String formidlingsgruppe;
     String servicegruppe;
+    String rettighetsgruppe;
     String oppfolgingsenhet;
     LocalDate inaktiveringsdato;
 
@@ -654,6 +659,7 @@ class ArenaOppfolgingTilstand {
         return new ArenaOppfolgingTilstand(
                 arenaOppfolging.getFormidlingsgruppe(),
                 arenaOppfolging.getServicegruppe(),
+                arenaOppfolging.getRettighetsgruppe(),
                 arenaOppfolging.getOppfolgingsenhet(),
                 arenaOppfolging.getInaktiveringsdato());
     }
@@ -662,6 +668,7 @@ class ArenaOppfolgingTilstand {
         return new ArenaOppfolgingTilstand(
                 veilarbArenaOppfolging.getFormidlingsgruppekode(),
                 veilarbArenaOppfolging.getKvalifiseringsgruppekode(),
+                veilarbArenaOppfolging.getRettighetsgruppekode(),
                 veilarbArenaOppfolging.getNav_kontor(),
                 Optional.ofNullable(veilarbArenaOppfolging.getIserv_fra_dato()).map(ZonedDateTime::toLocalDate).orElse(null)
         );

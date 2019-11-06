@@ -10,6 +10,7 @@ public class OppfolgingEnhetMedVeileder {
     private Oppfolgingsenhet oppfolgingsenhet;
     private String veilederId;
     private String formidlingsgruppe;
+    private String rettighetsgruppe;
     private String servicegruppe;
     private String hovedmaalkode;
 }

@@ -237,6 +237,7 @@ public class OppfolgingService {
                 .setInaktiveringsdato(oppfolgingResolver.getInaktiveringsDato())
                 .setServicegruppe(oppfolgingResolver.getServicegruppe())
                 .setFormidlingsgruppe(oppfolgingResolver.getFormidlingsgruppe())
+                .setRettighetsgruppe(oppfolgingResolver.getRettighetsgruppe())
                 .setKanVarsles(!manuell && dkifResponse.isKanVarsles());
     }
 
