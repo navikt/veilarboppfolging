@@ -70,8 +70,6 @@ fasitResources:
     resourceType: baseurl
   - alias: veilarbarenaAPI
     resourceType: restservice
-  - alias: nightkingAPI
-    resourceType: restservice
 
   # ISSO
   - alias: isso-host

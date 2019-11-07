@@ -4,7 +4,7 @@ import no.nav.sbl.dialogarena.common.cxf.CXFClient;
 import no.nav.sbl.dialogarena.types.Pingable;
 import no.nav.sbl.dialogarena.types.Pingable.Ping.PingMetadata;
 import no.nav.sbl.util.EnvironmentUtils;
-import no.nav.tjeneste.virksomhet.organisasjonenhet.v2.binding.OrganisasjonEnhetV2;
+import no.nav.tjeneste.virksomhet.organisasjonenhet.v2.OrganisasjonEnhetV2;
 import org.apache.cxf.interceptor.LoggingOutInterceptor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -34,8 +34,8 @@ public class OrganisasjonsenhetConfig {
                 .build();
 
         PingMetadata metadata = new PingMetadata(
-                "ORGANISASJONSENHET_V1 via " + getEndpointAddress(),
-                "Ping av organisasjonsenhet_v1. Henter enheter for veileder.",
+                "ORGANISASJONSENHET_V2 via " + getEndpointAddress(),
+                "Ping av organisasjonsenhet_v2. Henter enheter for veileder.",
                 false
         );
 

@@ -11,12 +11,14 @@ import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
 
-import static no.nav.sbl.util.EnvironmentUtils.requireEnvironmentName;
+import static no.nav.fo.veilarboppfolging.config.ApplicationConfig.APP_ENVIRONMENT_NAME;
+import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 
 @Configuration
 @Import({ KafkaHelsesjekk.class })
 @EnableKafka
 public class ConsumerConfig {
+
 
     @Bean
     public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<String, VeilarbArenaOppfolging>> kafkaListenerContainerFactory(KafkaHelsesjekk kafkaHelsesjekk) {
@@ -28,7 +30,7 @@ public class ConsumerConfig {
 
     @Bean
     public Consumer.ConsumerParameters consumerParameters() {
-        return new Consumer.ConsumerParameters("aapen-fo-endringPaaOppfoelgingsBruker-v1-" + requireEnvironmentName());
+        return new Consumer.ConsumerParameters("aapen-fo-endringPaaOppfoelgingsBruker-v1-" + getRequiredProperty(APP_ENVIRONMENT_NAME));
     }
 
     static ConsumerFactory<String, VeilarbArenaOppfolging> consumerFactory() {

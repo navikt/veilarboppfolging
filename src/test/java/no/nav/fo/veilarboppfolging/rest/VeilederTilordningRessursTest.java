@@ -40,7 +40,7 @@ import java.util.concurrent.Future;
 import static java.util.Arrays.asList;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
-import static no.nav.fo.veilarboppfolging.rest.VeilederTilordningRessurs.kanTilordneFraVeileder;
+import static no.nav.fo.veilarboppfolging.rest.VeilederTilordningRessurs.kanTilordneVeileder;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -86,17 +86,26 @@ public class VeilederTilordningRessursTest {
 
     @Test
     public void skalKunneTildeleDersomOppgittVeilederErLikReellVeileder() throws Exception {
-        assertTrue(kanTilordneFraVeileder("AAAAAAA", "AAAAAAA"));
+        VeilederTilordning v = new VeilederTilordning().setBrukerFnr("FNR1").setFraVeilederId("A1").setTilVeilederId("B1");
+        assertTrue(kanTilordneVeileder("A1", v));
     }
 
     @Test
     public void skalTildeleVeilederOmEksisterendeErNull() throws Exception {
-        assertTrue(kanTilordneFraVeileder(null, "AAAAAAA"));
+        VeilederTilordning v = new VeilederTilordning().setBrukerFnr("FNR1").setFraVeilederId(null).setTilVeilederId("A1");
+        assertTrue(kanTilordneVeileder(null, v));
     }
 
     @Test
     public void skalIkkeTildeleVeilederOmEksisterendeErUlikFraVeileder() throws Exception {
-        assertFalse(kanTilordneFraVeileder("AAAAAAA", "CCCCCC"));
+        VeilederTilordning v = new VeilederTilordning().setBrukerFnr("FNR1").setFraVeilederId("B1").setTilVeilederId("A1");
+        assertFalse(kanTilordneVeileder("C1", v));
+    }
+
+    @Test
+    public void skalIkkeTildeleVeilederOmEksisterendeErLikTilVeileder() throws Exception {
+        VeilederTilordning v = new VeilederTilordning().setBrukerFnr("FNR1").setFraVeilederId("C1").setTilVeilederId("C1");
+        assertFalse(kanTilordneVeileder("C1", v));
     }
 
     @Test

@@ -1,13 +1,13 @@
 package no.nav.fo.veilarboppfolging.rest;
 
+import static java.lang.String.valueOf;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-import static no.nav.metrics.MetricsFactory.getMeterRegistry;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 
-import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import no.nav.fo.veilarboppfolging.rest.domain.UnderOppfolgingNiva3DTO;
 import no.nav.metrics.MetricsFactory;
 import org.springframework.stereotype.Component;
@@ -27,13 +27,12 @@ public class OppfolgingNiva3Ressurs {
 
     private final OppfolgingService oppfolgingService;
     private final FnrParameterUtil fnrParameterUtil;
-    private Counter counter;
+    private static final MeterRegistry meterRegistry = MetricsFactory.getMeterRegistry();
 
 
     public OppfolgingNiva3Ressurs(OppfolgingService oppfolgingService, FnrParameterUtil fnrParameterUtil) {
         this.oppfolgingService = oppfolgingService;
         this.fnrParameterUtil = fnrParameterUtil;
-        this.counter = Counter.builder("request_niva3_underoppfolging").register(getMeterRegistry());
     }
 
     @GET
@@ -41,9 +40,14 @@ public class OppfolgingNiva3Ressurs {
     public UnderOppfolgingNiva3DTO underOppfolgingNiva3() throws Exception {
         UnderOppfolgingNiva3DTO underOppfolgingNiva3DTO = new UnderOppfolgingNiva3DTO().setUnderOppfolging(oppfolgingService.underOppfolgingNiva3(fnrParameterUtil.getFnr()));
 
-        this.counter.increment();
+        meterRegistry.counter("request_niva3_underoppfolging",
+                "underoppfolging",
+                valueOf(underOppfolgingNiva3DTO.isUnderOppfolging()))
+                .increment();
 
-        MetricsFactory.createEvent("request.niva3.underoppfolging").report();
+        MetricsFactory.createEvent("request.niva3.underoppfolging")
+                .addTagToReport("underoppfolging", valueOf(underOppfolgingNiva3DTO.isUnderOppfolging()))
+                .report();
 
         return underOppfolgingNiva3DTO;
     }
