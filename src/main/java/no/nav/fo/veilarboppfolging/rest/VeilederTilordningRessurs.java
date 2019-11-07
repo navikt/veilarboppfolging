@@ -111,7 +111,7 @@ public class VeilederTilordningRessurs {
     }
 
     private List<VeilederTilordning> tildelVeileder(List<VeilederTilordning> feilendeTilordninger, VeilederTilordning tilordning, String aktoerId, String eksisterendeVeileder) {
-        if (kanTilordneFraVeileder(eksisterendeVeileder, tilordning.getFraVeilederId())) {
+        if (kanTilordneVeileder(eksisterendeVeileder, tilordning)) {
             if (nyVeilederHarTilgang(tilordning)) {
                 skrivTilDatabase(aktoerId, tilordning.getTilVeilederId());
             } else {
@@ -119,7 +119,8 @@ public class VeilederTilordningRessurs {
                 feilendeTilordninger.add(tilordning);
             }
         } else {
-            LOG.info("Aktoerid {} kunne ikke tildeles. Oppgitt fraVeileder {} er feil. Faktisk veileder: {}", aktoerId, tilordning.getFraVeilederId(), eksisterendeVeileder);
+            LOG.info("Aktoerid {} kunne ikke tildeles. Oppgitt fraVeileder {} er feil eller tilVeileder {} er feil. Faktisk veileder: {}",
+                    aktoerId, tilordning.getFraVeilederId(), tilordning.getTilVeilederId(), eksisterendeVeileder);
             feilendeTilordninger.add(tilordning);
         }
 
@@ -191,8 +192,10 @@ public class VeilederTilordningRessurs {
         LOG.debug(String.format("Veileder %s tilordnet aktoer %s", veileder, aktoerId));
     }
 
-    static boolean kanTilordneFraVeileder(String eksisterendeVeileder, String fraVeilederId) {
-        return eksisterendeVeileder == null || eksisterendeVeileder.equals(fraVeilederId);
+    static boolean kanTilordneVeileder(String eksisterendeVeileder, VeilederTilordning veilederTilordning) {
+        return eksisterendeVeileder == null ||
+                (eksisterendeVeileder.equals(veilederTilordning.getFraVeilederId()) &&
+                        !eksisterendeVeileder.equals(veilederTilordning.getTilVeilederId()));
     }
 
     private boolean nyVeilederHarTilgang(VeilederTilordning veilederTilordning) {
