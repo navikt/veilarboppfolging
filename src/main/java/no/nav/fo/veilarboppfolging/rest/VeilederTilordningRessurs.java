@@ -193,9 +193,20 @@ public class VeilederTilordningRessurs {
     }
 
     static boolean kanTilordneVeileder(String eksisterendeVeileder, VeilederTilordning veilederTilordning) {
-        return eksisterendeVeileder == null ||
-                (eksisterendeVeileder.equals(veilederTilordning.getFraVeilederId()) &&
-                        !eksisterendeVeileder.equals(veilederTilordning.getTilVeilederId()));
+        return eksisterendeVeileder == null || validerVeilederTilordning(eksisterendeVeileder, veilederTilordning);
+    }
+
+    static boolean validerVeilederTilordning(String eksisterendeVeileder, VeilederTilordning veilederTilordning) {
+        return eksisterendeVeilederErSammeSomFra(eksisterendeVeileder, veilederTilordning.getFraVeilederId()) &&
+                tildelesTilAnnenVeileder(eksisterendeVeileder, veilederTilordning.getTilVeilederId());
+    }
+
+    static boolean eksisterendeVeilederErSammeSomFra(String eksisterendeVeileder, String fraVeileder) {
+        return eksisterendeVeileder.equals(fraVeileder);
+    }
+
+    static boolean tildelesTilAnnenVeileder(String eksisterendeVeileder, String tilVeileder) {
+        return !eksisterendeVeileder.equals(tilVeileder);
     }
 
     private boolean nyVeilederHarTilgang(VeilederTilordning veilederTilordning) {
