@@ -1,5 +1,6 @@
 package no.nav.fo.veilarboppfolging.db;
 import no.nav.fo.veilarboppfolging.domain.OppfolgingsenhetEndringData;
+import no.nav.internal.OppfolgingEnhetDTO;
 import no.nav.sbl.sql.DbConstants;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.order.OrderClause;
@@ -23,6 +24,15 @@ public class OppfolgingsenhetHistorikkRepository {
         this.jdbc = jdbc;
     }
     private static final String TABLENAME = "OPPFOLGINGSENHET_ENDRET";
+
+    public void insertOppfolgingsenhetEndring(OppfolgingEnhetDTO dto) {
+        SqlUtils.insert(jdbc, TABLENAME)
+                .value("aktor_id", dto.getAktorId())
+                .value("enhet", dto.getEnhetId())
+                .value("endret_dato", DbConstants.CURRENT_TIMESTAMP)
+                .value("enhet_seq", DbConstants.nextSeq("ENHET_SEQ"))
+                .execute();
+    }
 
     public void insertOppfolgingsenhetEndringForAktorId(String aktorId, String enhet) {
         SqlUtils.insert(jdbc, TABLENAME)
