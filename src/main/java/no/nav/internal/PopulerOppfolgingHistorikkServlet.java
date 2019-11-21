@@ -26,6 +26,8 @@ public class PopulerOppfolgingHistorikkServlet extends HttpServlet {
     private static final Integer MAX_PAGE_NUMBER = 3500;
     private static final int PAGE_SIZE = 1000;
 
+    private static final String VEILARBPORTEFOLJE_API_URL = EnvironmentUtils.getRequiredProperty("VEILARBPORTEFOLJEAPI_URL");
+
     private OppfolgingsenhetHistorikkRepository repository;
     private SystemUserTokenProvider systemUserTokenProvider;
 
@@ -65,7 +67,7 @@ public class PopulerOppfolgingHistorikkServlet extends HttpServlet {
 
         log.info("Fetching page {}", pageNumber);
 
-        return RestUtils.withClient(client -> client.target("http://veilarbportefolje/api/oppfolgingenhet")
+        return RestUtils.withClient(client -> client.target(VEILARBPORTEFOLJE_API_URL)
                 .queryParam("page_number", pageNumber)
                 .queryParam("page_size", PAGE_SIZE)
                 .request(APPLICATION_JSON_TYPE)
