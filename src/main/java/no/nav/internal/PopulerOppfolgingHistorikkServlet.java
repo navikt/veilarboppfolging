@@ -67,7 +67,7 @@ public class PopulerOppfolgingHistorikkServlet extends HttpServlet {
 
         log.info("Fetching page {}", pageNumber);
 
-        return RestUtils.withClient(client -> client.target(VEILARBPORTEFOLJE_API_URL)
+        return RestUtils.withClient(client -> client.target(VEILARBPORTEFOLJE_API_URL + "/oppfolgingenhet")
                 .queryParam("page_number", pageNumber)
                 .queryParam("page_size", PAGE_SIZE)
                 .request(APPLICATION_JSON_TYPE)
