@@ -1,11 +1,14 @@
 package no.nav.fo.veilarboppfolging.config;
 
 import no.nav.apiapp.ApiApplication;
+import no.nav.apiapp.ServletUtil;
 import no.nav.apiapp.config.ApiAppConfigurator;
 import no.nav.common.auth.SecurityLevel;
 import no.nav.dialogarena.aktor.AktorConfig;
+import no.nav.fo.veilarboppfolging.db.OppfolgingsenhetHistorikkRepository;
 import no.nav.fo.veilarboppfolging.security.SecurityTokenServiceOidcProvider;
 import no.nav.fo.veilarboppfolging.security.SecurityTokenServiceOidcProviderConfig;
+import no.nav.internal.PopulerOppfolgingHistorikkServlet;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.springframework.context.annotation.*;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -64,6 +67,9 @@ public class ApplicationConfig implements ApiApplication {
     @Inject
     private JdbcTemplate jdbcTemplate;
 
+    @Inject
+    private OppfolgingsenhetHistorikkRepository oppfolgingsenhetHistorikkRepository;
+
     @Bean
     public UnleashService unleashService() {
         return new UnleashService(resolveFromEnvironment());
@@ -84,6 +90,8 @@ public class ApplicationConfig implements ApiApplication {
         setProperty(KVP_API_BRUKERTILGANG_PROPERTY, "srvveilarbdialog,srvveilarbaktivitet", PUBLIC);
         jdbcTemplate.update("UPDATE \"schema_version\" SET \"checksum\"=-788301912 WHERE \"version\" = '1.16'");
         migrateDatabase(dataSource);
+
+        ServletUtil.leggTilServlet(servletContext, new PopulerOppfolgingHistorikkServlet(oppfolgingsenhetHistorikkRepository), "internal/populer_enhet_historikk");
     }
 
     @Override

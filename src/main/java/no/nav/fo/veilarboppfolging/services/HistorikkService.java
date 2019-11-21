@@ -6,6 +6,7 @@ import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.db.KvpRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
+import no.nav.fo.veilarboppfolging.db.OppfolgingsenhetHistorikkRepository;
 import no.nav.fo.veilarboppfolging.db.VeilederHistorikkRepository;
 import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.fo.veilarboppfolging.utils.KvpUtils;
@@ -45,6 +46,9 @@ public class HistorikkService {
     @Inject
     private UnleashService unleashService;
 
+    @Inject
+    private OppfolgingsenhetHistorikkRepository oppfolgingsenhetHistorikkRepository;
+
 
     public List<InnstillingsHistorikk> hentInstillingsHistorikk(String fnr) {
         String aktorId = aktorService.getAktorId(fnr)
@@ -64,6 +68,17 @@ public class HistorikkService {
                 .begrunnelse("Brukeren er tildelt veileder " +  veilederTilordningerData.getVeileder())
                 .dato(veilederTilordningerData.getSistTilordnet())
                 .opprettetAv(NAV)
+                .build();
+    }
+
+    private InnstillingsHistorikk tilDTO(OppfolgingsenhetEndringData oppfolgingsenhetEndringData) {
+        String enhet = oppfolgingsenhetEndringData.getEnhet();
+        return InnstillingsHistorikk.builder()
+                .type(OPPFOLGINGSENHET_ENDRET)
+                .enhet(enhet)
+                .begrunnelse("Ny oppfølgingsenhet " + enhet)
+                .dato(oppfolgingsenhetEndringData.getEndretDato())
+                .opprettetAv(SYSTEM)
                 .build();
     }
 
@@ -168,13 +183,19 @@ public class HistorikkService {
                 .flatMap(List::stream)
                 .filter((historikk) -> KvpUtils.sjekkTilgangGittKvp(pepClient, kvpHistorikk, historikk::getDato));
 
+        Stream <InnstillingsHistorikk> enhetEndringHistorikk = oppfolgingsenhetHistorikkRepository.hentOppfolgingsenhetEndringerForAktorId(aktorId)
+                .stream()
+                .map(this::tilDTO)
+                .filter((historikk) -> KvpUtils.sjekkTilgangGittKvp(pepClient, kvpHistorikk, historikk::getDato));
+
 
         return Stream.of(
                 kvpInnstillingHistorikk,
                 avluttetOppfolgingInnstillingHistorikk,
                 manuellInnstillingHistorikk,
                 eskaleringInnstillingHistorikk,
-                veilederTilordningerInnstillingHistorikk
+                veilederTilordningerInnstillingHistorikk,
+                enhetEndringHistorikk
         );
     }
 }

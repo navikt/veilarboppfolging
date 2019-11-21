@@ -14,6 +14,7 @@ public class InnstillingsHistorikk {
     private KodeverkBruker opprettetAv;
     private String opprettetAvBrukerId;
     private Long dialogId;
+    private String enhet;
 
     public enum Type {
         SATT_TIL_MANUELL,
@@ -23,6 +24,7 @@ public class InnstillingsHistorikk {
         ESKALERING_STOPPET,
         KVP_STARTET,
         KVP_STOPPET,
-        VEILEDER_TILORDNET
+        VEILEDER_TILORDNET,
+        OPPFOLGINGSENHET_ENDRET
     }
 }

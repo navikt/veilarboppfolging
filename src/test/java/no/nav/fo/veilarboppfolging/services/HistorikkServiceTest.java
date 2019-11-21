@@ -2,9 +2,7 @@ package no.nav.fo.veilarboppfolging.services;
 
 import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
 import no.nav.dialogarena.aktor.AktorService;
-import no.nav.fo.veilarboppfolging.db.KvpRepository;
-import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
-import no.nav.fo.veilarboppfolging.db.VeilederHistorikkRepository;
+import no.nav.fo.veilarboppfolging.db.*;
 import no.nav.fo.veilarboppfolging.domain.EskaleringsvarselData;
 import no.nav.fo.veilarboppfolging.domain.InnstillingsHistorikk;
 import no.nav.fo.veilarboppfolging.domain.Kvp;
@@ -57,6 +55,9 @@ public class HistorikkServiceTest {
 
     @Mock
     private VeilederHistorikkRepository veilederHistorikkRepository;
+
+    @Mock
+    private OppfolgingsenhetHistorikkRepository oppfolgingsenhetHistorikkRepository;
 
     @InjectMocks
     private HistorikkService historikkService;
