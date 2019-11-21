@@ -3,6 +3,7 @@ package no.nav.fo.veilarboppfolging.config;
 import no.nav.apiapp.ApiApplication;
 import no.nav.apiapp.ServletUtil;
 import no.nav.apiapp.config.ApiAppConfigurator;
+import no.nav.brukerdialog.security.oidc.SystemUserTokenProvider;
 import no.nav.common.auth.SecurityLevel;
 import no.nav.dialogarena.aktor.AktorConfig;
 import no.nav.fo.veilarboppfolging.db.OppfolgingsenhetHistorikkRepository;
@@ -70,6 +71,9 @@ public class ApplicationConfig implements ApiApplication {
     @Inject
     private OppfolgingsenhetHistorikkRepository oppfolgingsenhetHistorikkRepository;
 
+    @Inject
+    public SystemUserTokenProvider systemUserTokenProvider;
+
     @Bean
     public UnleashService unleashService() {
         return new UnleashService(resolveFromEnvironment());
@@ -79,7 +83,6 @@ public class ApplicationConfig implements ApiApplication {
     public Executor taskScheduler() {
         return Executors.newScheduledThreadPool(5);
     }
-
 
     @Override
     public void startup(ServletContext servletContext) {
@@ -91,7 +94,7 @@ public class ApplicationConfig implements ApiApplication {
         jdbcTemplate.update("UPDATE \"schema_version\" SET \"checksum\"=-788301912 WHERE \"version\" = '1.16'");
         migrateDatabase(dataSource);
 
-        ServletUtil.leggTilServlet(servletContext, new PopulerOppfolgingHistorikkServlet(oppfolgingsenhetHistorikkRepository), "/internal/populer_enhet_historikk");
+        ServletUtil.leggTilServlet(servletContext, new PopulerOppfolgingHistorikkServlet(oppfolgingsenhetHistorikkRepository, systemUserTokenProvider), "/internal/populer_enhet_historikk");
     }
 
     @Override

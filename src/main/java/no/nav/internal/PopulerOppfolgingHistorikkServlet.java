@@ -2,12 +2,13 @@ package no.nav.internal;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.auth.SubjectHandler;
+import no.nav.brukerdialog.security.oidc.SystemUserTokenProvider;
 import no.nav.common.utils.IdUtils;
 import no.nav.fo.veilarboppfolging.db.OppfolgingsenhetHistorikkRepository;
 import no.nav.jobutils.JobUtils;
 import no.nav.jobutils.RunningJob;
 import no.nav.sbl.rest.RestUtils;
+import no.nav.sbl.util.EnvironmentUtils;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServlet;
@@ -15,8 +16,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import static javax.servlet.http.HttpServletResponse.SC_OK;
+import static javax.ws.rs.core.HttpHeaders.AUTHORIZATION;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
-import static no.nav.common.auth.SsoToken.Type.OIDC;
 import static no.nav.internal.AuthorizationUtils.isBasicAuthAuthorized;
 
 @Slf4j
@@ -26,10 +27,12 @@ public class PopulerOppfolgingHistorikkServlet extends HttpServlet {
     private static final int PAGE_SIZE = 1000;
 
     private OppfolgingsenhetHistorikkRepository repository;
+    private SystemUserTokenProvider systemUserTokenProvider;
 
     @Inject
-    public PopulerOppfolgingHistorikkServlet(OppfolgingsenhetHistorikkRepository repository) {
+    public PopulerOppfolgingHistorikkServlet(OppfolgingsenhetHistorikkRepository repository, SystemUserTokenProvider systemUserTokenProvider) {
         this.repository = repository;
+        this.systemUserTokenProvider = systemUserTokenProvider;
     }
 
     @Override
@@ -48,26 +51,27 @@ public class PopulerOppfolgingHistorikkServlet extends HttpServlet {
         Integer nextPage = 1;
 
         while (nextPage != null && nextPage < MAX_PAGE_NUMBER) {
-            log.info("Fetching page {}", nextPage);
+
             OppfolgingEnhetPageDTO page = fetchPage(nextPage);
+
+            log.info("Inserting {} elements from page {} into database", page.getUsers().size(), page.getPage_number());
             page.getUsers().forEach(repository::insertOppfolgingsenhetEndring);
+
             nextPage = page.getPage_next();
         }
     }
 
     private OppfolgingEnhetPageDTO fetchPage(int pageNumber) {
 
-        String oidcToken = SubjectHandler.getSsoToken(OIDC).orElseThrow(IllegalStateException::new);
-        String token = String.format("Bearer %s", oidcToken);
+        log.info("Fetching page {}", pageNumber);
 
-        return RestUtils.withClient(client -> client.target("http://veilarbportefolje")
-                .path("oppfolgingenhet")
+        return RestUtils.withClient(client -> client.target("http://veilarbportefolje/api/oppfolgingenhet")
                 .queryParam("page_number", pageNumber)
                 .queryParam("page_size", PAGE_SIZE)
                 .request(APPLICATION_JSON_TYPE)
-                .header("Authorization", token)
+                .header(AUTHORIZATION, "Bearer " + systemUserTokenProvider.getToken())
                 .header("Nav-Call-Id", IdUtils.generateId())
-                .header("Nav-Consumer-Id", "veilarboppfolging")
+                .header("Nav-Consumer-Id", EnvironmentUtils.getApplicationName())
                 .get(OppfolgingEnhetPageDTO.class));
     }
 }
