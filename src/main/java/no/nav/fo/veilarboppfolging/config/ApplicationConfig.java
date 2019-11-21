@@ -91,7 +91,7 @@ public class ApplicationConfig implements ApiApplication {
         jdbcTemplate.update("UPDATE \"schema_version\" SET \"checksum\"=-788301912 WHERE \"version\" = '1.16'");
         migrateDatabase(dataSource);
 
-        ServletUtil.leggTilServlet(servletContext, new PopulerOppfolgingHistorikkServlet(oppfolgingsenhetHistorikkRepository), "internal/populer_enhet_historikk");
+        ServletUtil.leggTilServlet(servletContext, new PopulerOppfolgingHistorikkServlet(oppfolgingsenhetHistorikkRepository), "/internal/populer_enhet_historikk");
     }
 
     @Override

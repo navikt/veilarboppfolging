@@ -1,9 +1,7 @@
 package no.nav.internal;
 
-import jdk.nashorn.internal.parser.TokenType;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.auth.SsoToken;
 import no.nav.common.auth.SubjectHandler;
 import no.nav.common.utils.IdUtils;
 import no.nav.fo.veilarboppfolging.db.OppfolgingsenhetHistorikkRepository;
