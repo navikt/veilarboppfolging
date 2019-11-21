@@ -1,6 +1,7 @@
 package no.nav.internal;
 
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.veilarboppfolging.db.OppfolgingsenhetHistorikkRepository;
 import no.nav.jobutils.JobUtils;
 import no.nav.jobutils.RunningJob;
@@ -15,6 +16,7 @@ import static javax.servlet.http.HttpServletResponse.SC_OK;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
 import static no.nav.internal.AuthorizationUtils.isBasicAuthAuthorized;
 
+@Slf4j
 public class PopulerOppfolgingHistorikkServlet extends HttpServlet {
 
     private static final Integer MAX_PAGE_NUMBER = 3500;
@@ -40,12 +42,13 @@ public class PopulerOppfolgingHistorikkServlet extends HttpServlet {
     }
 
     private void fetchAllPages() {
-        Integer next = 1;
+        Integer nextPage = 1;
 
-        while (next != null && next < MAX_PAGE_NUMBER) {
-            OppfolgingEnhetPageDTO page = fetchPage(next);
+        while (nextPage != null && nextPage < MAX_PAGE_NUMBER) {
+            log.info("Fetching page {}", nextPage);
+            OppfolgingEnhetPageDTO page = fetchPage(nextPage);
             page.getUsers().forEach(repository::insertOppfolgingsenhetEndring);
-            next = page.getPage_next();
+            nextPage = page.getPage_next();
         }
     }
 
