@@ -25,10 +25,10 @@ public class OppfolgingsenhetEndringService {
         List<OppfolgingsenhetEndringData> eksisterendeHistorikk = enhetHistorikkRepository.hentOppfolgingsenhetEndringerForAktorId(aktoerid);
 
         if (eksisterendeHistorikk.isEmpty()) {
-            log.info(String.format("Legger til første historikkinnslag for endret oppfolgingsenhet på aktørid: %s"), aktoerid);
+            log.info(String.format("Legger til første historikkinnslag for endret oppfolgingsenhet på aktørid: %s", aktoerid));
             enhetHistorikkRepository.insertOppfolgingsenhetEndringForAktorId(aktoerid, arenaNavKontor);
         } else if (!arenaNavKontor.equals(eksisterendeHistorikk.get(0).getEnhet())) {
-            log.info(String.format("Legger til historikkinnslag for endret oppfolgingsenhet på aktørid: %s"), aktoerid);
+            log.info(String.format("Legger til historikkinnslag for endret oppfolgingsenhet på aktørid: %s", aktoerid));
             enhetHistorikkRepository.insertOppfolgingsenhetEndringForAktorId(aktoerid, arenaNavKontor);
         }
     }
