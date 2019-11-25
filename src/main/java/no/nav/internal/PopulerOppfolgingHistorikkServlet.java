@@ -52,15 +52,16 @@ public class PopulerOppfolgingHistorikkServlet extends HttpServlet {
     private void fetchAllPages() {
         Integer nextPage = 1;
 
-        while (nextPage != null && nextPage < MAX_PAGE_NUMBER) {
-
+        do {
             OppfolgingEnhetPageDTO page = fetchPage(nextPage);
 
             log.info("Inserting {} elements from page {} into database", page.getUsers().size(), page.getPage_number());
             page.getUsers().forEach(repository::insertOppfolgingsenhetEndring);
 
             nextPage = page.getPage_next();
-        }
+
+        } while (nextPage != null && nextPage < MAX_PAGE_NUMBER);
+
     }
 
     private OppfolgingEnhetPageDTO fetchPage(int pageNumber) {
