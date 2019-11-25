@@ -1,5 +1,6 @@
 package no.nav.fo.veilarboppfolging;
 
+import no.nav.brukerdialog.tools.SecurityConstants;
 import no.nav.fasit.DbCredentials;
 import no.nav.fasit.FasitUtils;
 import no.nav.fasit.ServiceUser;
@@ -14,6 +15,7 @@ import java.io.IOException;
 import static java.lang.System.setProperty;
 import static no.nav.brukerdialog.security.Constants.*;
 import static no.nav.brukerdialog.security.oidc.provider.AzureADB2CConfig.EXTERNAL_USERS_AZUREAD_B2C_DISCOVERY_URL;
+import static no.nav.dialogarena.aktor.AktorConfig.AKTOER_ENDPOINT_URL;
 import static no.nav.fasit.FasitUtils.*;
 import static no.nav.fasit.FasitUtils.Zone.FSS;
 import static no.nav.fo.veilarboppfolging.config.ApplicationConfig.*;
@@ -24,6 +26,7 @@ import static no.nav.sbl.dialogarena.common.cxf.StsSecurityConstants.*;
 import static no.nav.sbl.featuretoggle.unleash.UnleashServiceConfig.UNLEASH_API_URL_PROPERTY_NAME;
 import static no.nav.sbl.util.EnvironmentUtils.Type.PUBLIC;
 import static no.nav.sbl.util.EnvironmentUtils.Type.SECRET;
+import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 
 public class TestContext {
 
@@ -36,6 +39,7 @@ public class TestContext {
     private static final String AAD_B2C_CLIENTID_ALIAS = "aad_b2c_clientid";
     private static final String AKTIVITETSPLAN_ALIAS = "aktivitetsplan";
     private static final String VEILARBAKTIVITETAPI_ALIAS = "veilArbAktivitetAPI";
+    private static final String VEILARBPORTEFOLJEAPI_ALIAS = "veilArbPortefoljeAPI";
     private static final String VIRKSOMHET_DIGITALKONTAKINFORMASJON_V1_ALIAS = "virksomhet:DigitalKontakinformasjon_v1";
     private static final String VIRKSOMHET_YTELSESKONTRAKT_V3_ALIAS = "virksomhet:Ytelseskontrakt_v3";
     private static final String VIRKSOMHET_OPPFOLGING_V1_ALIAS = "virksomhet:Oppfolging_v1";
@@ -66,6 +70,7 @@ public class TestContext {
 
         setProperty(AKTIVITETSPLAN_URL_PROPERTY, getBaseUrl(AKTIVITETSPLAN_ALIAS));
         setProperty(VEILARBAKTIVITETAPI_URL_PROPERTY, getRestService(VEILARBAKTIVITETAPI_ALIAS).getUrl());
+        setProperty(VEILARBPORTEFOLJE_URL_PROPERTY, getRestService(VEILARBPORTEFOLJEAPI_ALIAS).getUrl());
         setProperty(VIRKSOMHET_DIGITALKONTAKINFORMASJON_V1_PROPERTY, getWebServiceEndpoint(VIRKSOMHET_DIGITALKONTAKINFORMASJON_V1_ALIAS, "q2").getUrl());
         setProperty(VIRKSOMHET_YTELSESKONTRAKT_V3_PROPERTY, getWebServiceEndpoint(VIRKSOMHET_YTELSESKONTRAKT_V3_ALIAS).getUrl());
         setProperty(VIRKSOMHET_OPPFOLGING_V1_PROPERTY, getWebServiceEndpoint(VIRKSOMHET_OPPFOLGING_V1_ALIAS).getUrl());
@@ -90,8 +95,13 @@ public class TestContext {
         setProperty(EXTERNAL_USERS_AZUREAD_B2C_DISCOVERY_URL, getBaseUrl(AZURE_AD_B2C_DISCOVERY_ALIAS));
         setProperty(AAD_B2C_CLIENTID_USERNAME_PROPERTY, aadB2cUser.getUsername());
         setProperty(AAD_B2C_CLIENTID_PASSWORD_PROPERTY, aadB2cUser.getPassword());
+        setProperty(AKTOER_ENDPOINT_URL, getRequiredProperty(AKTOER_V2_URL_PROPERTY));
+        setProperty(OIDC_REDIRECT_URL_PROPERTY_NAME, getRequiredProperty(VEILARBLOGIN_REDIRECT_URL_URL_PROPERTY));
+        setProperty(APP_ENVIRONMENT_NAME, getDefaultEnvironment());
+        setProperty(SecurityConstants.SYSTEMUSER_USERNAME, serviceUser.username);
+        setProperty(SecurityConstants.SYSTEMUSER_PASSWORD, serviceUser.password);
 
-        EnvironmentUtils.setProperty(STS_OIDC_CONFIGURATION_URL_PROPERTY, getRestService("security-token-service-openid-configuration").getUrl(), PUBLIC);
+        EnvironmentUtils.setProperty(STS_OIDC_CONFIGURATION_URL_PROPERTY, "https://security-token-service.nais.preprod.local/rest/v1/sts/.well-known/openid-configuration", PUBLIC);
 
         ServiceUserCertificate navTrustStore = FasitUtils.getServiceUserCertificate("nav_truststore_pto", FasitUtils.getDefaultEnvironmentClass());
         File navTrustStoreFile = File.createTempFile("nav_truststore", ".jks");

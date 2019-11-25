@@ -1,4 +1,6 @@
+import no.nav.apiapp.ApiApp;
 import no.nav.fo.veilarboppfolging.TestContext;
+import no.nav.fo.veilarboppfolging.config.ApplicationConfig;
 import no.nav.testconfig.ApiAppTest;
 
 import java.io.IOException;
@@ -13,7 +15,6 @@ public class MainTest {
     public static void main(String[] args) throws IOException {
         setupTestContext(ApiAppTest.Config.builder().applicationName(APPLICATION_NAME).build());
         TestContext.setup();
-        Main.main(PORT);
+        ApiApp.runApp(ApplicationConfig.class, new String[]{PORT});
     }
-
 }
