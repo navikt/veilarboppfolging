@@ -69,7 +69,8 @@ public class PopulerOppfolgingHistorikkServlet extends HttpServlet {
                 totalNumberOfPages = page.getPage_number_total();
             }
             pageNumber++;
-        } while (pageNumber <= totalNumberOfPages && pageNumber < MAX_PAGE_NUMBER);
+
+        } while (pageNumber <= totalNumberOfPages || pageNumber < MAX_PAGE_NUMBER);
     }
 
     private OppfolgingEnhetPageDTO fetchPage(int pageNumber) {
