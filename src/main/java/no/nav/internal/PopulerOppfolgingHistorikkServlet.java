@@ -57,17 +57,19 @@ public class PopulerOppfolgingHistorikkServlet extends HttpServlet {
 
     private void fetchPages(int pageNumber) {
 
-        Integer nextPage = pageNumber;
+        Integer totalNumberOfPages = null;
 
         do {
-            OppfolgingEnhetPageDTO page = fetchPage(nextPage);
+            OppfolgingEnhetPageDTO page = fetchPage(pageNumber);
 
             log.info("Inserting {} elements from page {} into database", page.getUsers().size(), page.getPage_number());
             page.getUsers().forEach(repository::insertOppfolgingsenhetEndring);
 
-            nextPage = page.getPage_next();
+            if (totalNumberOfPages == null) {
+                totalNumberOfPages = page.getPage_number_total();
+            }
 
-        } while (nextPage != null && nextPage < MAX_PAGE_NUMBER);
+        } while (pageNumber <= totalNumberOfPages && pageNumber < MAX_PAGE_NUMBER);
     }
 
     private OppfolgingEnhetPageDTO fetchPage(int pageNumber) {
