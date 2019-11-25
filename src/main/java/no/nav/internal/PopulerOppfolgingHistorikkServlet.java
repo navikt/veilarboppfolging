@@ -15,6 +15,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import java.util.Optional;
+
+import static java.lang.Integer.parseInt;
 import static javax.servlet.http.HttpServletResponse.SC_OK;
 import static javax.ws.rs.core.HttpHeaders.AUTHORIZATION;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
@@ -40,8 +43,11 @@ public class PopulerOppfolgingHistorikkServlet extends HttpServlet {
     @Override
     @SneakyThrows
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) {
+
+        int pageNumber = Optional.of(parseInt(req.getParameter("page_number"))).orElse(1);
+
         if (isBasicAuthAuthorized(req)) {
-            RunningJob job = JobUtils.runAsyncJob(this::fetchAllPages);
+            RunningJob job = JobUtils.runAsyncJob(() -> fetchPages(pageNumber));
             resp.getWriter().write(String.format("Startet populering av enhetshistorikk med jobId %s på pod %s", job.getJobId(), job.getPodName()));
             resp.setStatus(SC_OK);
         } else {
@@ -49,8 +55,9 @@ public class PopulerOppfolgingHistorikkServlet extends HttpServlet {
         }
     }
 
-    private void fetchAllPages() {
-        Integer nextPage = 1;
+    private void fetchPages(int pageNumber) {
+
+        Integer nextPage = pageNumber;
 
         do {
             OppfolgingEnhetPageDTO page = fetchPage(nextPage);
@@ -61,7 +68,6 @@ public class PopulerOppfolgingHistorikkServlet extends HttpServlet {
             nextPage = page.getPage_next();
 
         } while (nextPage != null && nextPage < MAX_PAGE_NUMBER);
-
     }
 
     private OppfolgingEnhetPageDTO fetchPage(int pageNumber) {
