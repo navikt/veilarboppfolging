@@ -354,6 +354,10 @@ public class OppfolgingResolver {
         return arenaOppfolgingTilstand().map(ArenaOppfolgingTilstand::getFormidlingsgruppe).orElse(null);
     }
 
+    String getRettighetsgruppe() {
+        return arenaOppfolgingTilstand().map(ArenaOppfolgingTilstand::getRettighetsgruppe).orElse(null);
+    }
+
     private Date getInaktiveringsDato(ArenaOppfolgingTilstand status) {
         return Optional.ofNullable(status.getInaktiveringsdato()).isPresent()
                 ? Date.from(status.getInaktiveringsdato().atStartOfDay().atZone(ZoneId.systemDefault()).toInstant())
@@ -426,46 +430,50 @@ public class OppfolgingResolver {
 
     @SneakyThrows
     private void hentOppfolgingstatusFraArena() {
-        if (!arenaOppfolgingTilstand.isPresent()) {
-            if (brukArenaDirekte || deps.getUnleashService().isEnabled("veilarboppfolging.oppfolgingresolver.bruk_arena_direkte")) {
+        if (arenaOppfolgingTilstand.isPresent()) {
+            return;
+        }
+
+        if (brukArenaDirekte || deps.getUnleashService().isEnabled("veilarboppfolging.oppfolgingresolver.bruk_arena_direkte")) {
+            hentOppfolgingstatusDirekteFraArena();
+        } else {
+            hentOppfolgingstatusFraVeilarbArena();
+
+            boolean harTilstand = arenaOppfolgingTilstand.isPresent();
+            boolean erUnderOppfolgingIVeilarbarena = arenaOppfolgingTilstand().filter(oppfolgingTilstand ->
+                    ArenaUtils.erUnderOppfolging(oppfolgingTilstand.getFormidlingsgruppe(), oppfolgingTilstand.getServicegruppe())
+            ).isPresent();
+
+            boolean harIkkeDataIVeilarbarena = !harTilstand;
+            boolean erIkkeUnderOppfolgingIVeilarbarena = !erUnderOppfolgingIVeilarbarena;
+
+            // Fallbackløsning for å hente direkte fra Arena dersom data fra veilarbarena ikke stemmer overens
+            // med oppfølgingsflagg:
+
+            if ((harIkkeDataIVeilarbarena || erIkkeUnderOppfolgingIVeilarbarena) && oppfolging.isUnderOppfolging()) {
+                // Dette kan forekomme direkte etter registrering, før data har blitt synkronisert fra Arena til veilarbarena.
+                // Enten kan det mangle data i veilarbarena, eller så kan det være gammel data som ikke er fra den nye registreringen
                 hentOppfolgingstatusDirekteFraArena();
-            } else {
-                hentOppfolgingstatusFraVeilarbArena();
-
-                boolean harTilstand = arenaOppfolgingTilstand.isPresent();
-                boolean erUnderOppfolgingIVeilarbarena = arenaOppfolgingTilstand().filter(oppfolgingTilstand ->
-                        ArenaUtils.erUnderOppfolging(oppfolgingTilstand.getFormidlingsgruppe(), oppfolgingTilstand.getServicegruppe())
-                ).isPresent();
-
-                boolean harIkkeDataIVeilarbarena = !harTilstand;
-                boolean erIkkeUnderOppfolgingIVeilarbarena = !erUnderOppfolgingIVeilarbarena;
-
-                // Fallbackløsning for å hente direkte fra Arena dersom data fra veilarbarena ikke stemmer overens
-                // med oppfølgingsflagg:
-
-                if ((harIkkeDataIVeilarbarena || erIkkeUnderOppfolgingIVeilarbarena) && oppfolging.isUnderOppfolging()) {
-                    // Dette kan forekomme direkte etter registrering, før data har blitt synkronisert fra Arena til veilarbarena.
-                    // Enten kan det mangle data i veilarbarena, eller så kan det være gammel data som ikke er fra den nye registreringen
-                    hentOppfolgingstatusDirekteFraArena();
-                } else if (!oppfolging.isUnderOppfolging() && erUnderOppfolgingIVeilarbarena) {
-                    // Dette kan forekomme etter at bruker er tatt ut av oppfølging, men før før data har blitt synkronisert fra Arena til veilarbarena.
-                    hentOppfolgingstatusDirekteFraArena();
-                }
+            } else if (!oppfolging.isUnderOppfolging() && erUnderOppfolgingIVeilarbarena) {
+                // Dette kan forekomme etter at bruker er tatt ut av oppfølging, men før før data har blitt synkronisert fra Arena til veilarbarena.
+                hentOppfolgingstatusDirekteFraArena();
             }
         }
     }
 
     @SneakyThrows
     private void hentOppfolgingstatusDirekteFraArena() {
-        if (!oppfolgingDirekteFraArena().isPresent()) {
-            arenaOppfolgingTilstand = Try.of(() -> deps.getArenaOppfolgingService().hentArenaOppfolging(fnr))
-                    .onFailure(e -> {
-                        if (!(e instanceof NotFoundException)) {
-                            log.warn("Feil fra Arena for aktørId: {}", aktorId, e);
-                        }
-                    })
-                    .toJavaOptional().map(Either::right);
+        if (oppfolgingDirekteFraArena().isPresent()) {
+            return;
         }
+
+        arenaOppfolgingTilstand = Try.of(() -> deps.getArenaOppfolgingService().hentArenaOppfolging(fnr))
+                .onFailure(e -> {
+                    if (!(e instanceof NotFoundException)) {
+                        log.warn("Feil fra Arena for aktørId: {}", aktorId, e);
+                    }
+                })
+                .toJavaOptional().map(Either::right);
     }
 
     private void hentOppfolgingstatusFraVeilarbArena() {
@@ -647,6 +655,7 @@ public class OppfolgingResolver {
 class ArenaOppfolgingTilstand {
     String formidlingsgruppe;
     String servicegruppe;
+    String rettighetsgruppe;
     String oppfolgingsenhet;
     LocalDate inaktiveringsdato;
 
@@ -654,6 +663,7 @@ class ArenaOppfolgingTilstand {
         return new ArenaOppfolgingTilstand(
                 arenaOppfolging.getFormidlingsgruppe(),
                 arenaOppfolging.getServicegruppe(),
+                arenaOppfolging.getRettighetsgruppe(),
                 arenaOppfolging.getOppfolgingsenhet(),
                 arenaOppfolging.getInaktiveringsdato());
     }
@@ -662,8 +672,10 @@ class ArenaOppfolgingTilstand {
         return new ArenaOppfolgingTilstand(
                 veilarbArenaOppfolging.getFormidlingsgruppekode(),
                 veilarbArenaOppfolging.getKvalifiseringsgruppekode(),
+                veilarbArenaOppfolging.getRettighetsgruppekode(),
                 veilarbArenaOppfolging.getNav_kontor(),
                 Optional.ofNullable(veilarbArenaOppfolging.getIserv_fra_dato()).map(ZonedDateTime::toLocalDate).orElse(null)
         );
     }
+
 }
