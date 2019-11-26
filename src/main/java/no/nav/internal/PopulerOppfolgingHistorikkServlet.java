@@ -27,7 +27,6 @@ import static no.nav.internal.AuthorizationUtils.isBasicAuthAuthorized;
 public class PopulerOppfolgingHistorikkServlet extends HttpServlet {
 
     private static final Integer MAX_PAGE_NUMBER = 3500;
-    private static final int PAGE_SIZE = 1000;
 
     private static final String VEILARBPORTEFOLJE_API_URL = EnvironmentUtils.getRequiredProperty("VEILARBPORTEFOLJEAPI_URL");
 
@@ -45,9 +44,10 @@ public class PopulerOppfolgingHistorikkServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) {
 
         int pageNumber = Optional.of(parseInt(req.getParameter("page_number"))).orElse(1);
+        int pageSize = Optional.of(parseInt(req.getParameter("page_size"))).orElse(100);
 
         if (isBasicAuthAuthorized(req)) {
-            RunningJob job = JobUtils.runAsyncJob(() -> fetchPages(pageNumber));
+            RunningJob job = JobUtils.runAsyncJob(() -> fetchPages(pageNumber, pageSize));
             resp.getWriter().write(String.format("Startet populering av enhetshistorikk med jobId %s på pod %s", job.getJobId(), job.getPodName()));
             resp.setStatus(SC_OK);
         } else {
@@ -55,12 +55,12 @@ public class PopulerOppfolgingHistorikkServlet extends HttpServlet {
         }
     }
 
-    private void fetchPages(int pageNumber) {
+    private void fetchPages(int pageNumber, int pageSize) {
 
         Integer totalNumberOfPages = null;
 
         do {
-            OppfolgingEnhetPageDTO page = fetchPage(pageNumber);
+            OppfolgingEnhetPageDTO page = fetchPage(pageNumber, pageSize);
 
             log.info("Inserting {} elements from page {} into database", page.getUsers().size(), page.getPage_number());
             page.getUsers().forEach(repository::insertOppfolgingsenhetEndring);
@@ -73,13 +73,13 @@ public class PopulerOppfolgingHistorikkServlet extends HttpServlet {
         } while (pageNumber <= totalNumberOfPages || pageNumber < MAX_PAGE_NUMBER);
     }
 
-    private OppfolgingEnhetPageDTO fetchPage(int pageNumber) {
+    private OppfolgingEnhetPageDTO fetchPage(int pageNumber, int pageSize) {
 
         log.info("Fetching page {}", pageNumber);
 
         return RestUtils.withClient(client -> client.target(VEILARBPORTEFOLJE_API_URL + "/oppfolgingenhet")
                 .queryParam("page_number", pageNumber)
-                .queryParam("page_size", PAGE_SIZE)
+                .queryParam("page_size", pageSize)
                 .request(APPLICATION_JSON_TYPE)
                 .header(AUTHORIZATION, "Bearer " + systemUserTokenProvider.getToken())
                 .header("Nav-Call-Id", IdUtils.generateId())
