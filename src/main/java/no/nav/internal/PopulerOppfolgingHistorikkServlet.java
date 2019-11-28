@@ -27,7 +27,7 @@ import static no.nav.internal.AuthorizationUtils.isBasicAuthAuthorized;
 @Slf4j
 public class PopulerOppfolgingHistorikkServlet extends HttpServlet {
 
-    private static final Integer MAX_PAGE_NUMBER = 3500;
+    private static final Integer MAX_PAGE_NUMBER = 1000;
 
     private static final String VEILARBPORTEFOLJE_API_URL = EnvironmentUtils.getRequiredProperty("VEILARBPORTEFOLJEAPI_URL");
 
@@ -73,9 +73,12 @@ public class PopulerOppfolgingHistorikkServlet extends HttpServlet {
             if (totalNumberOfPages == null) {
                 totalNumberOfPages = page.getPage_number_total();
             }
+
             pageNumber++;
 
         } while (pageNumber <= totalNumberOfPages || pageNumber < MAX_PAGE_NUMBER);
+
+        log.info("Finished fetching {} pages", totalNumberOfPages);
     }
 
     private OppfolgingEnhetPageDTO fetchPage(int pageNumber, int pageSize) {
