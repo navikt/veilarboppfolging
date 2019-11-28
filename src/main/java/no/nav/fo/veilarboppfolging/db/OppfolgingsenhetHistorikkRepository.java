@@ -3,6 +3,7 @@ package no.nav.fo.veilarboppfolging.db;
 import no.nav.fo.veilarboppfolging.domain.OppfolgingsenhetEndringData;
 import no.nav.internal.OppfolgingEnhetDTO;
 import no.nav.sbl.sql.DbConstants;
+import no.nav.sbl.sql.InsertBatchQuery;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.order.OrderClause;
 import no.nav.sbl.sql.where.WhereClause;
@@ -28,7 +29,7 @@ public class OppfolgingsenhetHistorikkRepository {
     public static final String TABLENAME = "OPPFOLGINGSENHET_ENDRET";
 
     public void insertOppfolgingsenhetEndring(List<OppfolgingEnhetDTO> dtoer) {
-        SqlUtils.updateBatch(jdbc, TABLENAME, OppfolgingEnhetDTO.class)
+        new InsertBatchQuery<OppfolgingEnhetDTO>(jdbc, TABLENAME)
                 .add("aktor_id", OppfolgingEnhetDTO::getAktorId, String.class)
                 .add("enhet", OppfolgingEnhetDTO::getEnhetId, String.class)
                 .add("endret_dato", DbConstants.CURRENT_TIMESTAMP)
