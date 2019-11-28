@@ -25,21 +25,12 @@ public class OppfolgingsenhetHistorikkRepository {
         this.jdbc = jdbc;
     }
 
-    private static final String TABLENAME = "OPPFOLGINGSENHET_ENDRET";
-
-    public void insertOppfolgingsenhetEndring(OppfolgingEnhetDTO dto) {
-        SqlUtils.insert(jdbc, TABLENAME)
-                .value("aktor_id", dto.getAktorId())
-                .value("enhet", dto.getEnhetId())
-                .value("endret_dato", DbConstants.CURRENT_TIMESTAMP)
-                .value("enhet_seq", DbConstants.nextSeq("ENHET_SEQ"))
-                .execute();
-    }
+    public static final String TABLENAME = "OPPFOLGINGSENHET_ENDRET";
 
     public void insertOppfolgingsenhetEndring(List<OppfolgingEnhetDTO> dtoer) {
         SqlUtils.updateBatch(jdbc, TABLENAME, OppfolgingEnhetDTO.class)
                 .add("aktor_id", OppfolgingEnhetDTO::getAktorId, String.class)
-                .add("enhet", OppfolgingEnhetDTO::getAktorId, String.class)
+                .add("enhet", OppfolgingEnhetDTO::getEnhetId, String.class)
                 .add("endret_dato", DbConstants.CURRENT_TIMESTAMP)
                 .add("enhet_seq", DbConstants.nextSeq("ENHET_SEQ"))
                 .execute(dtoer);
@@ -68,5 +59,9 @@ public class OppfolgingsenhetHistorikkRepository {
                 .enhet(resultset.getString("enhet"))
                 .endretDato(hentDato(resultset, "endret_dato"))
                 .build();
+    }
+
+    public void truncateOppfolgingsenhetEndret() {
+        jdbc.execute("TRUNCATE TABLE " + TABLENAME);
     }
 }

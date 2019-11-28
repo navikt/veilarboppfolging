@@ -21,6 +21,7 @@ import static java.lang.Integer.parseInt;
 import static javax.servlet.http.HttpServletResponse.SC_OK;
 import static javax.ws.rs.core.HttpHeaders.AUTHORIZATION;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
+import static no.nav.fo.veilarboppfolging.db.OppfolgingsenhetHistorikkRepository.TABLENAME;
 import static no.nav.internal.AuthorizationUtils.isBasicAuthAuthorized;
 
 @Slf4j
@@ -59,6 +60,9 @@ public class PopulerOppfolgingHistorikkServlet extends HttpServlet {
     private void fetchPages(int pageNumber, int pageSize) {
 
         Integer totalNumberOfPages = null;
+
+        log.info("Truncating table {}", TABLENAME);
+        repository.truncateOppfolgingsenhetEndret();
 
         do {
             OppfolgingEnhetPageDTO page = fetchPage(pageNumber, pageSize);
