@@ -48,13 +48,14 @@ public class PopulerOppfolgingHistorikkServlet extends HttpServlet {
 
         if (isBasicAuthAuthorized(req)) {
             RunningJob job = JobUtils.runAsyncJob(() -> fetchPages(pageNumber, pageSize));
-            resp.getWriter().write(String.format("Startet populering av enhetshistorikk med jobId %s på pod %s", job.getJobId(), job.getPodName()));
+            resp.getWriter().write(String.format("Startet populering av enhetshistorikk med jobId %s på pod %s  (page_number: %s page_size: %s", job.getJobId(), job.getPodName(), pageNumber, pageSize));
             resp.setStatus(SC_OK);
         } else {
             AuthorizationUtils.writeUnauthorized(resp);
         }
     }
 
+    @SneakyThrows
     private void fetchPages(int pageNumber, int pageSize) {
 
         Integer totalNumberOfPages = null;
@@ -69,6 +70,8 @@ public class PopulerOppfolgingHistorikkServlet extends HttpServlet {
                 totalNumberOfPages = page.getPage_number_total();
             }
             pageNumber++;
+
+            Thread.sleep(1000);
 
         } while (pageNumber <= totalNumberOfPages || pageNumber < MAX_PAGE_NUMBER);
     }
