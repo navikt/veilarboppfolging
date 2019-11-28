@@ -8,8 +8,23 @@ import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.fo.veilarboppfolging.rest.api.OppfolgingController;
 import no.nav.fo.veilarboppfolging.rest.api.SystemOppfolgingController;
 import no.nav.fo.veilarboppfolging.rest.api.VeilederOppfolgingController;
-import no.nav.fo.veilarboppfolging.rest.domain.*;
-import no.nav.fo.veilarboppfolging.services.*;
+import no.nav.fo.veilarboppfolging.rest.domain.AvslutningStatus;
+import no.nav.fo.veilarboppfolging.rest.domain.Bruker;
+import no.nav.fo.veilarboppfolging.rest.domain.Eskaleringsvarsel;
+import no.nav.fo.veilarboppfolging.rest.domain.KvpPeriodeDTO;
+import no.nav.fo.veilarboppfolging.rest.domain.Mal;
+import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingPeriodeDTO;
+import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingStatus;
+import no.nav.fo.veilarboppfolging.rest.domain.StartEskaleringDTO;
+import no.nav.fo.veilarboppfolging.rest.domain.StartKvpDTO;
+import no.nav.fo.veilarboppfolging.rest.domain.StoppEskaleringDTO;
+import no.nav.fo.veilarboppfolging.rest.domain.StoppKvpDTO;
+import no.nav.fo.veilarboppfolging.rest.domain.VeilederBegrunnelseDTO;
+import no.nav.fo.veilarboppfolging.services.AktiverBrukerService;
+import no.nav.fo.veilarboppfolging.services.HistorikkService;
+import no.nav.fo.veilarboppfolging.services.KvpService;
+import no.nav.fo.veilarboppfolging.services.MalService;
+import no.nav.fo.veilarboppfolging.services.OppfolgingService;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
 import org.springframework.stereotype.Component;
 
@@ -243,7 +258,8 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
                 .setErSykmeldtMedArbeidsgiver(oppfolgingStatusData.getErSykmeldtMedArbeidsgiver())
                 .setHarSkriveTilgang(true)
                 .setServicegruppe(oppfolgingStatusData.getServicegruppe())
-                .setFormidlingsgruppe(oppfolgingStatusData.getFormidlingsgruppe());
+                .setFormidlingsgruppe(oppfolgingStatusData.getFormidlingsgruppe())
+                .setRettighetsgruppe(oppfolgingStatusData.getRettighetsgruppe());
 
 
         if (AutorisasjonService.erInternBruker()) {

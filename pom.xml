@@ -5,7 +5,7 @@
     <parent>
         <groupId>no.nav.common</groupId>
         <artifactId>mor-pom</artifactId>
-        <version>1.2019.11.05-08.52-efbfb5bc984e</version>
+        <version>1.2019.11.15-14.33-055ca1d05826</version>
     </parent>
 
     <groupId>no.nav.fo</groupId>
@@ -85,6 +85,10 @@
         <dependency>
             <groupId>no.nav.common</groupId>
             <artifactId>util</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>no.nav.common</groupId>
+            <artifactId>jobutils</artifactId>
         </dependency>
         <dependency>
             <groupId>no.nav.common</groupId>
