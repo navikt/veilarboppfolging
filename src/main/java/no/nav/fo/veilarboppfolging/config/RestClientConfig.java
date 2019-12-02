@@ -1,5 +1,6 @@
 package no.nav.fo.veilarboppfolging.config;
 
+import no.nav.fo.veilarboppfolging.services.DkifService;
 import no.nav.fo.veilarboppfolging.services.VeilarbaktivtetService;
 import no.nav.sbl.dialogarena.restclient.RestClient;
 import no.nav.sbl.util.EnvironmentUtils;
@@ -17,6 +18,11 @@ public class RestClientConfig {
     @Bean
     public VeilarbaktivtetService veilarbaktivtetService(Provider<HttpServletRequest> httpServletRequestProvider) {
         return new VeilarbaktivtetService(RestClient.build(httpServletRequestProvider, EnvironmentUtils.getRequiredProperty(VEILARBAKTIVITETAPI_URL_PROPERTY)));
+    }
+
+    @Bean
+    public DkifService dkifService() {
+        return new DkifService();
     }
 
 }
