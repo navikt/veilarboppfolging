@@ -55,11 +55,6 @@
             </dependency>
             <dependency>
                 <groupId>no.nav.tjenestespesifikasjoner</groupId>
-                <artifactId>dkif-tjenestespesifikasjon</artifactId>
-                <version>${tjenestespesifikasjoner.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>no.nav.tjenestespesifikasjoner</groupId>
                 <artifactId>nav-behandleArbeidssoeker-v1-tjenestespesifikasjon</artifactId>
                 <version>${tjenestespesifikasjoner.version}</version>
             </dependency>
@@ -199,10 +194,6 @@
         <dependency>
             <groupId>no.nav.tjenestespesifikasjoner</groupId>
             <artifactId>ytelseskontrakt-v3-tjenestespesifikasjon</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>no.nav.tjenestespesifikasjoner</groupId>
-            <artifactId>dkif-tjenestespesifikasjon</artifactId>
         </dependency>
         <dependency>
             <groupId>no.nav.tjenestespesifikasjoner</groupId>

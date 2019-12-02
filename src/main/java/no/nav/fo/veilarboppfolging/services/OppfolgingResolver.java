@@ -24,17 +24,11 @@ import no.nav.fo.veilarboppfolging.utils.StringUtils;
 import no.nav.metrics.MetricsFactory;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import no.nav.sbl.jdbc.Transactor;
-import no.nav.sbl.rest.RestUtils;
-import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.DigitalKontaktinformasjonV1;
-import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.HentDigitalKontaktinformasjonKontaktinformasjonIkkeFunnet;
-import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.HentDigitalKontaktinformasjonPersonIkkeFunnet;
-import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.informasjon.WSKontaktinformasjon;
-import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.WSHentDigitalKontaktinformasjonRequest;
-import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.WSHentDigitalKontaktinformasjonResponse;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt.WSYtelseskontrakt;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeRequest;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeResponse;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -50,13 +44,9 @@ import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 import static java.lang.System.currentTimeMillis;
-import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
-import static javax.ws.rs.core.HttpHeaders.AUTHORIZATION;
-import static no.nav.fo.veilarboppfolging.config.ApplicationConfig.APPLICATION_NAME;
 import static no.nav.fo.veilarboppfolging.domain.KodeverkBruker.SYSTEM;
 import static no.nav.fo.veilarboppfolging.domain.arena.AktivitetStatus.AVBRUTT;
 import static no.nav.fo.veilarboppfolging.domain.arena.AktivitetStatus.FULLFORT;
@@ -506,60 +496,22 @@ public class OppfolgingResolver {
 
     @SneakyThrows
     private DkifResponse sjekkKrr() {
-        if (deps.getUnleashService().isEnabled("veilarboppfolging.dkif_rest")) {
-            return sjekkDkifRest();
-        } else {
-            boolean krr = sjekkDkifSoap();
-            DkifResponse dkifResponse = new DkifResponse().setKrr(krr);
-            if (krr) {
-                return dkifResponse.setKanVarsles(false);
-            }
-            return dkifResponse.setKanVarsles(true);
-        }
-    }
+        String responseBody = deps.getDkifService().sjekkDkifRest(fnr);
 
-    public DkifResponse sjekkDkifRest() {
-        UUID uuid = UUID.randomUUID();
-        String callId = Long.toHexString(uuid.getMostSignificantBits()) + Long.toHexString(uuid.getLeastSignificantBits());
-
-        String responseBody = RestUtils.withClient(c ->
-                c.target("http://dkif.default.svc.nais.local/api/v1/personer/kontaktinformasjon")
-                        .queryParam("inkluderSikkerDigitalPost", "false")
-                        .request()
-                        .header(AUTHORIZATION, "Bearer " + deps.getSystemUserTokenProvider().getToken())
-                        .header("Nav-Personidenter", fnr)
-                        .header("Nav-Call-Id", callId)
-                        .header("Nav-Consumer-Id", APPLICATION_NAME)
-                        .get(String.class));
-
-        JSONObject dkifJson = new JSONObject(responseBody)
-                .getJSONObject("kontaktinfo")
-                .getJSONObject(fnr);
-
-        boolean kanVarsles = dkifJson.getBoolean("kanVarsles");
-        boolean krr = dkifJson.getBoolean("reservert");
-
-        log.info("Dkif-response: {}: kanVarsles: {} krr: {}", aktorId, kanVarsles, krr);
-
-        return new DkifResponse().setKrr(krr).setKanVarsles(kanVarsles);
-    }
-
-
-    private boolean sjekkDkifSoap() {
-        val req = new WSHentDigitalKontaktinformasjonRequest().withPersonident(fnr);
         try {
-            return of(deps.getDigitalKontaktinformasjonV1().hentDigitalKontaktinformasjon(req))
-                    .map(WSHentDigitalKontaktinformasjonResponse::getDigitalKontaktinformasjon)
-                    .map(WSKontaktinformasjon::getReservasjon)
-                    .map("true"::equalsIgnoreCase)
-                    .orElse(false);
-        } catch (HentDigitalKontaktinformasjonKontaktinformasjonIkkeFunnet |
-                HentDigitalKontaktinformasjonPersonIkkeFunnet e) {
-            log.info(e.getMessage(), e);
-            return true;
-        } catch (Exception e) {
-            log.warn(e.getMessage(), e);
-            return false;
+            JSONObject dkifJson = new JSONObject(responseBody)
+                    .getJSONObject("kontaktinfo")
+                    .getJSONObject(fnr);
+
+            boolean kanVarsles = dkifJson.getBoolean("kanVarsles");
+            boolean krr = dkifJson.getBoolean("reservert");
+
+            log.info("Dkif-response: {}: kanVarsles: {} krr: {}", aktorId, kanVarsles, krr);
+
+            return new DkifResponse().setKrr(krr).setKanVarsles(kanVarsles);
+        } catch(Exception e) {
+            log.warn("Feil fra Dkif for aktørId: {}", aktorId, e);
+            return new DkifResponse().setKrr(true).setKanVarsles(false);
         }
     }
 
@@ -617,7 +569,7 @@ public class OppfolgingResolver {
         private OppfolgingsbrukerService oppfolgingsbrukerService;
 
         @Inject
-        private DigitalKontaktinformasjonV1 digitalKontaktinformasjonV1;
+        private DkifService dkifService;
 
         @Inject
         private YtelseskontraktV3 ytelseskontraktV3;

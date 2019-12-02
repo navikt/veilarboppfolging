@@ -15,12 +15,6 @@ import no.nav.fo.veilarboppfolging.domain.arena.ArenaAktivitetDTO;
 import no.nav.fo.veilarboppfolging.mappers.VeilarbArenaOppfolging;
 import no.nav.fo.veilarboppfolging.rest.AutorisasjonService;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
-import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.DigitalKontaktinformasjonV1;
-import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.HentDigitalKontaktinformasjonKontaktinformasjonIkkeFunnet;
-import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.HentDigitalKontaktinformasjonPersonIkkeFunnet;
-import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.informasjon.WSKontaktinformasjon;
-import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.WSHentDigitalKontaktinformasjonRequest;
-import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.WSHentDigitalKontaktinformasjonResponse;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt.WSYtelseskontrakt;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeRequest;
@@ -51,7 +45,7 @@ import static org.mockito.Mockito.*;
 public class OppfolgingServiceTest {
 
     @Mock
-    private DigitalKontaktinformasjonV1 digitalKontaktinformasjonV1Mock;
+    private DkifService dkifService;
 
     @Mock
     private OppfolgingRepository oppfolgingRepositoryMock;
@@ -98,7 +92,6 @@ public class OppfolgingServiceTest {
     private Oppfolging oppfolging = new Oppfolging().setAktorId(AKTOR_ID);
     private VeilarbArenaOppfolging veilarbArenaOppfolging = new VeilarbArenaOppfolging();
     private ArenaOppfolging arenaOppfolging;
-    private WSKontaktinformasjon wsKontaktinformasjon = new WSKontaktinformasjon();
 
     @Before
     public void setup() throws Exception {
@@ -109,21 +102,17 @@ public class OppfolgingServiceTest {
 
         when(arenaOppfolgingService.hentArenaOppfolging(any(String.class)))
                 .thenReturn(arenaOppfolging);
-        when(digitalKontaktinformasjonV1Mock.hentDigitalKontaktinformasjon(any(WSHentDigitalKontaktinformasjonRequest.class)))
-                .thenReturn(new WSHentDigitalKontaktinformasjonResponse()
-                        .withDigitalKontaktinformasjon(wsKontaktinformasjon));
         when(aktorServiceMock.getAktorId(FNR)).thenReturn(of(AKTOR_ID));
         when(unleashService.isEnabled("veilarboppfolging.oppfolgingresolver.bruk_arena_direkte")).thenReturn(true);
         when(unleashService.isEnabled("veilarboppfolging.hentVeilederTilgang.fra.veilarbarena")).thenReturn(true);
-        when(unleashService.isEnabled("veilarboppfolging.niva3.underoppfolging")).thenReturn(true);
 
         when(oppfolgingResolverDependencies.getAktorService()).thenReturn(aktorServiceMock);
         when(oppfolgingResolverDependencies.getOppfolgingRepository()).thenReturn(oppfolgingRepositoryMock);
         when(oppfolgingResolverDependencies.getArenaOppfolgingService()).thenReturn(arenaOppfolgingService);
-        when(oppfolgingResolverDependencies.getDigitalKontaktinformasjonV1()).thenReturn(digitalKontaktinformasjonV1Mock);
         when(oppfolgingResolverDependencies.getVeilarbaktivtetService()).thenReturn(veilarbaktivtetService);
         when(oppfolgingResolverDependencies.getYtelseskontraktV3()).thenReturn(ytelseskontraktV3);
         when(oppfolgingResolverDependencies.getUnleashService()).thenReturn(unleashService);
+        when(oppfolgingResolverDependencies.getDkifService()).thenReturn(dkifService);
         when(oppfolgingsbrukerService.hentOppfolgingsbruker(FNR)).thenReturn(Optional.of(veilarbArenaOppfolging));
         gittOppfolgingStatus("", "");
     }
@@ -268,7 +257,7 @@ public class OppfolgingServiceTest {
     @Test
     public void hentOppfolgingStatus_brukerSomErKRRSkalVareManuell() throws Exception {
         oppfolging.setUnderOppfolging(true);
-        gittReservasjon("true");
+        gittReservasjonIKrr();
         OppfolgingStatusData status = hentOppfolgingStatus();
 
         assertThat(status.reservasjonKRR, is(true));
@@ -285,17 +274,7 @@ public class OppfolgingServiceTest {
 
     @Test
     public void utenKontaktInformasjon() throws Exception {
-        gittKRRFeil(HentDigitalKontaktinformasjonKontaktinformasjonIkkeFunnet.class);
-        gittOppfolgingStatus("ARBS", "");
-
-        OppfolgingStatusData oppfolgingStatusData = hentOppfolgingStatus();
-
-        assertThat(oppfolgingStatusData.reservasjonKRR, is(true));
-    }
-
-    @Test
-    public void personIkkeFunnet() throws Exception {
-        gittKRRFeil(HentDigitalKontaktinformasjonPersonIkkeFunnet.class);
+        gittKRRFeil();
         gittOppfolgingStatus("ARBS", "");
 
         OppfolgingStatusData oppfolgingStatusData = hentOppfolgingStatus();
@@ -305,7 +284,7 @@ public class OppfolgingServiceTest {
 
     @Test
     public void medReservasjonOgUnderOppfolging() throws Exception {
-        gittReservasjon("true");
+        gittReservasjonIKrr();
         gittOppfolgingStatus("ARBS", "");
 
         OppfolgingStatusData oppfolgingStatusData = hentOppfolgingStatus();
@@ -453,12 +432,24 @@ public class OppfolgingServiceTest {
         when(oppfolgingRepositoryMock.hentOppfolging(AKTOR_ID)).thenReturn(Optional.of(oppfolging));
     }
 
-    private void gittReservasjon(String reservasjon) {
-        wsKontaktinformasjon.setReservasjon(reservasjon);
+    private void gittReservasjonIKrr() {
+        val dkifResponse = "{\n" +
+                "  \"kontaktinfo\": {\n" +
+                "    \"fnr\": {\n" +
+                "      \"kanVarsles\": false,\n" +
+                "      \"reservert\": true,\n" +
+                "    },\n" +
+                "  }\n" +
+                "}";
+
+
+        when(dkifService.sjekkDkifRest(FNR)).thenReturn(dkifResponse);
     }
 
-    private void gittKRRFeil(Class<? extends Exception> aClass) throws Exception {
-        when(digitalKontaktinformasjonV1Mock.hentDigitalKontaktinformasjon(any(WSHentDigitalKontaktinformasjonRequest.class))).thenThrow(aClass);
+    private void gittKRRFeil() {
+        when(dkifService.sjekkDkifRest(FNR)).thenReturn("{\n" +
+                "  \"melding\": \"Tilgang nektet\"\n" +
+                "}");
     }
 
     private void gittAktiveTiltak() {
