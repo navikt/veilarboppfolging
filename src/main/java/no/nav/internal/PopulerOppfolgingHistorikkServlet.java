@@ -21,12 +21,13 @@ import static java.lang.Integer.parseInt;
 import static javax.servlet.http.HttpServletResponse.SC_OK;
 import static javax.ws.rs.core.HttpHeaders.AUTHORIZATION;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
+import static no.nav.fo.veilarboppfolging.db.OppfolgingsenhetHistorikkRepository.TABLENAME;
 import static no.nav.internal.AuthorizationUtils.isBasicAuthAuthorized;
 
 @Slf4j
 public class PopulerOppfolgingHistorikkServlet extends HttpServlet {
 
-    private static final Integer MAX_PAGE_NUMBER = 3500;
+    private static final Integer MAX_PAGE_NUMBER = 1000;
 
     private static final String VEILARBPORTEFOLJE_API_URL = EnvironmentUtils.getRequiredProperty("VEILARBPORTEFOLJEAPI_URL");
 
@@ -60,20 +61,24 @@ public class PopulerOppfolgingHistorikkServlet extends HttpServlet {
 
         Integer totalNumberOfPages = null;
 
+        log.info("Truncating table {}", TABLENAME);
+        repository.truncateOppfolgingsenhetEndret();
+
         do {
             OppfolgingEnhetPageDTO page = fetchPage(pageNumber, pageSize);
 
             log.info("Inserting {} elements from page {} into database", page.getUsers().size(), page.getPage_number());
-            page.getUsers().forEach(repository::insertOppfolgingsenhetEndring);
+            repository.insertOppfolgingsenhetEndring(page.getUsers());
 
             if (totalNumberOfPages == null) {
                 totalNumberOfPages = page.getPage_number_total();
             }
+
             pageNumber++;
 
-            Thread.sleep(1000);
-
         } while (pageNumber <= totalNumberOfPages || pageNumber < MAX_PAGE_NUMBER);
+
+        log.info("Finished fetching {} pages", totalNumberOfPages);
     }
 
     private OppfolgingEnhetPageDTO fetchPage(int pageNumber, int pageSize) {
