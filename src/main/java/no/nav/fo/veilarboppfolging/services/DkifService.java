@@ -23,8 +23,6 @@ public class DkifService {
                         .request()
                         .header(AUTHORIZATION, "Bearer " + systemUserTokenProvider.getToken())
                         .header("Nav-Personidenter", fnr)
-                        .header("Nav-Call-Id", callId)
-                        .header("Nav-Consumer-Id", APPLICATION_NAME)
                         .get(String.class));
     }
 }
