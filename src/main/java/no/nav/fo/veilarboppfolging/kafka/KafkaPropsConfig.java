@@ -40,7 +40,8 @@ public class KafkaPropsConfig {
         props.put(VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(GROUP_ID_CONFIG, "veilarboppfolging-consumer");
         props.put(AUTO_OFFSET_RESET_CONFIG, "earliest");
-        props.put(MAX_POLL_INTERVAL_MS_CONFIG, 5000);
+        props.put(MAX_POLL_INTERVAL_MS_CONFIG, 150_000);
+        props.put(MAX_POLL_RECORDS_CONFIG, 1000);
         props.put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, "SASL_SSL");
         props.put(SaslConfigs.SASL_MECHANISM, "PLAIN");
         props.put(SaslConfigs.SASL_JAAS_CONFIG, "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"" + USERNAME + "\" password=\"" + PASSWORD + "\";");
