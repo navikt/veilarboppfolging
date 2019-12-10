@@ -1,6 +1,8 @@
 package no.nav.fo.veilarboppfolging.services;
 
 import no.nav.fo.veilarboppfolging.domain.ArenaOppfolging;
+import no.nav.sbl.dialogarena.test.junit.SystemPropertiesRule;
+import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.informasjon.Bruker;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.informasjon.Oppfoelgingskontrakt;
@@ -9,23 +11,26 @@ import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingskontr
 import no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v2.binding.HentOppfoelgingsstatusPersonIkkeFunnet;
 import no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v2.binding.HentOppfoelgingsstatusSikkerhetsbegrensning;
 import no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v2.binding.HentOppfoelgingsstatusUgyldigInput;
+import no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v2.binding.OppfoelgingsstatusV2;
 import no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v2.feil.PersonIkkeFunnet;
 import no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v2.feil.Sikkerhetsbegrensning;
 import no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v2.feil.UgyldigInput;
-import no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v2.binding.OppfoelgingsstatusV2;
 import org.assertj.core.api.Assertions;
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.NotFoundException;
+import javax.ws.rs.client.Client;
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.time.LocalDate;
 
+import static no.nav.fo.veilarboppfolging.config.ApplicationConfig.VEILARBARENAAPI_URL_PROPERTY;
 import static no.nav.fo.veilarboppfolging.utils.CalendarConverter.convertDateToXMLGregorianCalendar;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -37,14 +42,28 @@ public class ArenaOppfolgingServiceTest {
 
     private static final String MOCK_ENHET_ID = "1331";
 
-    @InjectMocks
     private ArenaOppfolgingService arenaOppfolgingService;
+
+    @Rule
+    public SystemPropertiesRule systemPropertiesRule = new SystemPropertiesRule();
 
     @Mock
     private OppfoelgingsstatusV2 oppfoelgingsstatusV2Service;
 
     @Mock
     private OppfoelgingPortType oppfoelgingPortType;
+
+    @Mock
+    Client restClient;
+
+    @Mock
+    UnleashService unleash;
+
+    @Before
+    public void setup() {
+        systemPropertiesRule.setProperty(VEILARBARENAAPI_URL_PROPERTY, "test");
+        arenaOppfolgingService = new ArenaOppfolgingService(oppfoelgingsstatusV2Service, oppfoelgingPortType, restClient, unleash);
+    }
 
     @Test
     public void hentOppfoelgingskontraktListeReturnererEnRespons() throws Exception {
