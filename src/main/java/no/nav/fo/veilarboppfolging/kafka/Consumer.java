@@ -1,6 +1,6 @@
 package no.nav.fo.veilarboppfolging.kafka;
 
-import no.nav.fo.veilarboppfolging.mappers.VeilarbArenaOppfolging;
+import no.nav.fo.veilarboppfolging.mappers.VeilarbArenaOppfolgingEndret;
 import no.nav.fo.veilarboppfolging.services.Iserv28Service;
 import no.nav.fo.veilarboppfolging.services.OppfolgingsenhetEndringService;
 import no.nav.fo.veilarboppfolging.utils.FunksjonelleMetrikker;
@@ -34,7 +34,7 @@ public class Consumer {
     @KafkaListener(topics = "${" + ENDRING_PAA_BRUKER_KAFKA_TOPIC_PROPERTY_NAME + "}")
     public void consume(String kafkaMelding) {
         try {
-            final VeilarbArenaOppfolging deserialisertBruker = deserialisereBruker(kafkaMelding);
+            final VeilarbArenaOppfolgingEndret deserialisertBruker = deserialisereBruker(kafkaMelding);
 
             iserv28Service.behandleEndretBruker(deserialisertBruker);
             oppfolgingsenhetEndringService.behandleBrukerEndring(deserialisertBruker);
@@ -45,8 +45,8 @@ public class Consumer {
         }
     }
 
-    public static VeilarbArenaOppfolging deserialisereBruker(String arenaBruker) {
-        return fromJson(arenaBruker, VeilarbArenaOppfolging.class);
+    public static VeilarbArenaOppfolgingEndret deserialisereBruker(String arenaBruker) {
+        return fromJson(arenaBruker, VeilarbArenaOppfolgingEndret.class);
     }
 
     public static class ConsumerParameters {
