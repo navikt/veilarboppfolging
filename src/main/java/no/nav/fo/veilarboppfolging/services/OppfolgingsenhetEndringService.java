@@ -3,7 +3,7 @@ package no.nav.fo.veilarboppfolging.services;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.veilarboppfolging.db.OppfolgingsenhetHistorikkRepository;
 import no.nav.fo.veilarboppfolging.domain.OppfolgingsenhetEndringData;
-import no.nav.fo.veilarboppfolging.mappers.VeilarbArenaOppfolging;
+import no.nav.fo.veilarboppfolging.mappers.VeilarbArenaOppfolgingEndret;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
@@ -19,7 +19,7 @@ public class OppfolgingsenhetEndringService {
         this.enhetHistorikkRepository = enhetHistorikkRepository;
     }
 
-    public void behandleBrukerEndring(VeilarbArenaOppfolging arenaOppfolging) {
+    public void behandleBrukerEndring(VeilarbArenaOppfolgingEndret arenaOppfolging) {
         String aktoerid = arenaOppfolging.getAktoerid();
         String arenaNavKontor = arenaOppfolging.getNav_kontor();
         List<OppfolgingsenhetEndringData> eksisterendeHistorikk = enhetHistorikkRepository.hentOppfolgingsenhetEndringerForAktorId(aktoerid);

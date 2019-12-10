@@ -3,7 +3,7 @@ package no.nav.fo.veilarboppfolging.services;
 import no.nav.fo.DatabaseTest;
 import no.nav.fo.veilarboppfolging.db.OppfolgingsenhetHistorikkRepository;
 import no.nav.fo.veilarboppfolging.domain.OppfolgingsenhetEndringData;
-import no.nav.fo.veilarboppfolging.mappers.VeilarbArenaOppfolging;
+import no.nav.fo.veilarboppfolging.mappers.VeilarbArenaOppfolgingEndret;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -70,7 +70,7 @@ class OppfolgingsenhetEndringServiceTest extends DatabaseTest {
 
 
     private void behandle_ny_enhets_endring(String navKontor) {
-        VeilarbArenaOppfolging arenaEndring = new VeilarbArenaOppfolging()
+        VeilarbArenaOppfolgingEndret arenaEndring = new VeilarbArenaOppfolgingEndret()
                 .setAktoerid(AKTOERID)
                 .setNav_kontor(navKontor);
 
