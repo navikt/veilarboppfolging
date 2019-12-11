@@ -7,6 +7,7 @@ import lombok.SneakyThrows;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import no.nav.apiapp.security.SecurityLevelAuthorizationModule;
 import no.nav.apiapp.security.veilarbabac.Bruker;
 import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
 import no.nav.brukerdialog.security.oidc.SystemUserTokenProvider;
@@ -446,9 +447,23 @@ public class OppfolgingResolver {
                 hentOppfolgingstatusDirekteFraArena();
             } else if (!oppfolging.isUnderOppfolging() && erUnderOppfolgingIVeilarbarena) {
                 // Dette kan forekomme etter at bruker er tatt ut av oppfølging, men før før data har blitt synkronisert fra Arena til veilarbarena.
+                oppfolgingstatusAvvik();
                 hentOppfolgingstatusDirekteFraArena();
             }
         }
+    }
+
+    private void oppfolgingstatusAvvik() {
+
+        String kilde = arenaOppfolgingTilstand
+                .map(tilstand -> tilstand.isRight() ? "Arena" : "veilarbarena").orElse("INGEN_VERDI");
+
+        MetricsFactory.createEvent("veilarboppfolging.oppfolgingsstatus.avvik")
+                .addTagToReport("formidlingsgruppe", arenaOppfolgingTilstand().map(ArenaOppfolgingTilstand::getFormidlingsgruppe).orElse("INGEN_VERDI"))
+                .addTagToReport("servicegruppe", arenaOppfolgingTilstand().map(ArenaOppfolgingTilstand::getServicegruppe).orElse("INGEN_VERDI"))
+                .addTagToReport("underOppfolging", Boolean.toString(oppfolging.isUnderOppfolging()))
+                .addTagToReport("level", SubjectHandler.getSubject().map(SecurityLevelAuthorizationModule::getSecurityLevel).map(x -> Integer.toString(x.getSecurityLevel())).orElse("INGEN_VERDI"))
+                .addTagToReport("kilde", kilde);
     }
 
     @SneakyThrows
