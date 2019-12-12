@@ -463,7 +463,8 @@ public class OppfolgingResolver {
                 .addTagToReport("servicegruppe", arenaOppfolgingTilstand().map(ArenaOppfolgingTilstand::getServicegruppe).orElse("INGEN_VERDI"))
                 .addTagToReport("underOppfolging", Boolean.toString(oppfolging.isUnderOppfolging()))
                 .addTagToReport("level", SubjectHandler.getSubject().map(SecurityLevelAuthorizationModule::getSecurityLevel).map(x -> Integer.toString(x.getSecurityLevel())).orElse("INGEN_VERDI"))
-                .addTagToReport("kilde", kilde);
+                .addTagToReport("kilde", kilde)
+                .report();
     }
 
     @SneakyThrows
