@@ -56,19 +56,8 @@ public class ArenaOppfolgingService {
     }
 
     public ArenaOppfolging hentArenaOppfolging(String identifikator) {
-        if(unleash.isEnabled("veilarboppfolging.use_ords_for_oppfolgingsstatus")) {
-            if(unleash.isEnabled("veilarboppfolging.compare_ords_oppfolgingsstatus")) {
-                ArenaOppfolging soap = getArenaOppfolgingsstatusSoap(identifikator);
-                ArenaOppfolging ords = getArenaOppfolgingsstatus(identifikator);
-                if (soap.equals(ords)) {
-                    return ords;
-                } else {
-                    LOG.warn("Response fra ORDS samsvarer ikke med SOAP");
-                    return soap;
-                }
-            } else {
-                return getArenaOppfolgingsstatus(identifikator);
-            }
+        if (unleash.isEnabled("veilarboppfolging.use_ords_for_oppfolgingsstatus")) {
+            return getArenaOppfolgingsstatus(identifikator);
         } else {
             return getArenaOppfolgingsstatusSoap(identifikator);
         }
