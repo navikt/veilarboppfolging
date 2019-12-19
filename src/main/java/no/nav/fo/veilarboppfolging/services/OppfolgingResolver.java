@@ -29,7 +29,6 @@ import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt.WSYtelseskontrakt;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeRequest;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeResponse;
-import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -447,31 +446,19 @@ public class OppfolgingResolver {
                 hentOppfolgingstatusDirekteFraArena();
             } else if (!oppfolging.isUnderOppfolging() && erUnderOppfolgingIVeilarbarena) {
                 // Dette kan forekomme etter at bruker er tatt ut av oppfølging, men før før data har blitt synkronisert fra Arena til veilarbarena.
-                oppfolgingstatusAvvik();
                 hentOppfolgingstatusDirekteFraArena();
             }
         }
     }
 
-    private void oppfolgingstatusAvvik() {
-
-        String kilde = arenaOppfolgingTilstand
-                .map(tilstand -> tilstand.isRight() ? "Arena" : "veilarbarena").orElse("INGEN_VERDI");
-
-        MetricsFactory.createEvent("veilarboppfolging.oppfolgingsstatus.avvik")
-                .addTagToReport("formidlingsgruppe", arenaOppfolgingTilstand().map(ArenaOppfolgingTilstand::getFormidlingsgruppe).orElse("INGEN_VERDI"))
-                .addTagToReport("servicegruppe", arenaOppfolgingTilstand().map(ArenaOppfolgingTilstand::getServicegruppe).orElse("INGEN_VERDI"))
-                .addTagToReport("underOppfolging", Boolean.toString(oppfolging.isUnderOppfolging()))
-                .addTagToReport("level", SubjectHandler.getSubject().map(SecurityLevelAuthorizationModule::getSecurityLevel).map(x -> Integer.toString(x.getSecurityLevel())).orElse("INGEN_VERDI"))
-                .addTagToReport("kilde", kilde)
-                .report();
-    }
 
     @SneakyThrows
     private void hentOppfolgingstatusDirekteFraArena() {
         if (oppfolgingDirekteFraArena().isPresent()) {
             return;
         }
+
+        oppfolgingDirekteFraArenaMetrikk();
 
         arenaOppfolgingTilstand = Try.of(() -> deps.getArenaOppfolgingService().hentArenaOppfolging(fnr))
                 .onFailure(e -> {
@@ -481,6 +468,16 @@ public class OppfolgingResolver {
                 })
                 .toJavaOptional().map(Either::right);
     }
+
+    private void oppfolgingDirekteFraArenaMetrikk() {
+        MetricsFactory.createEvent("veilarboppfolging.oppfolgingdirektefraarena")
+                .addTagToReport("formidlingsgruppe", arenaOppfolgingTilstand().map(ArenaOppfolgingTilstand::getFormidlingsgruppe).orElse("INGEN_VERDI"))
+                .addTagToReport("servicegruppe", arenaOppfolgingTilstand().map(ArenaOppfolgingTilstand::getServicegruppe).orElse("INGEN_VERDI"))
+                .addTagToReport("underOppfolging", Boolean.toString(oppfolging.isUnderOppfolging()))
+                .addTagToReport("level", SubjectHandler.getSubject().map(SecurityLevelAuthorizationModule::getSecurityLevel).map(x -> Integer.toString(x.getSecurityLevel())).orElse("INGEN_VERDI"))
+                .report();
+    }
+
 
     private void hentOppfolgingstatusFraVeilarbArena() {
         if (!arenaOppfolgingTilstand.isPresent()) {
