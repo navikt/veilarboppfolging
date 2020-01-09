@@ -443,9 +443,11 @@ public class OppfolgingResolver {
             if ((harIkkeDataIVeilarbarena || erIkkeUnderOppfolgingIVeilarbarena) && oppfolging.isUnderOppfolging()) {
                 // Dette kan forekomme direkte etter registrering, før data har blitt synkronisert fra Arena til veilarbarena.
                 // Enten kan det mangle data i veilarbarena, eller så kan det være gammel data som ikke er fra den nye registreringen
+                oppfolgingDirekteFraArenaMetrikk();
                 hentOppfolgingstatusDirekteFraArena();
             } else if (!oppfolging.isUnderOppfolging() && erUnderOppfolgingIVeilarbarena) {
                 // Dette kan forekomme etter at bruker er tatt ut av oppfølging, men før før data har blitt synkronisert fra Arena til veilarbarena.
+                oppfolgingDirekteFraArenaMetrikk();
                 hentOppfolgingstatusDirekteFraArena();
             }
         }
@@ -457,8 +459,6 @@ public class OppfolgingResolver {
         if (oppfolgingDirekteFraArena().isPresent()) {
             return;
         }
-
-        oppfolgingDirekteFraArenaMetrikk();
 
         arenaOppfolgingTilstand = Try.of(() -> deps.getArenaOppfolgingService().hentArenaOppfolging(fnr))
                 .onFailure(e -> {
