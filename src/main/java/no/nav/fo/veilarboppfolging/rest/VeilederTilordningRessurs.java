@@ -1,6 +1,7 @@
 package no.nav.fo.veilarboppfolging.rest;
 
 import io.swagger.annotations.Api;
+import lombok.extern.slf4j.Slf4j;
 import no.nav.apiapp.security.SubjectService;
 import no.nav.apiapp.security.veilarbabac.Bruker;
 import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
@@ -32,6 +33,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 @Component
 @Path("")
 @Api(value = "VeilederTilordningRessurs")
+@Slf4j
 public class VeilederTilordningRessurs {
 
     private static final Logger LOG = getLogger(VeilederTilordningRessurs.class);
@@ -72,6 +74,8 @@ public class VeilederTilordningRessurs {
     public Response postVeilederTilordninger(List<VeilederTilordning> tilordninger) {
         autorisasjonService.skalVereInternBruker();
         String innloggetVeilederId = SubjectHandler.getIdent().orElseThrow(IllegalStateException::new);
+
+        log.info("{} Prøver å tildele veileder", innloggetVeilederId);
 
         List<VeilederTilordning> feilendeTilordninger = new ArrayList<>();
         for (VeilederTilordning tilordning : tilordninger) {
