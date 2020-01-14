@@ -474,6 +474,7 @@ public class OppfolgingResolver {
                 .addTagToReport("formidlingsgruppe", arenaOppfolgingTilstand().map(ArenaOppfolgingTilstand::getFormidlingsgruppe).orElse("INGEN_VERDI"))
                 .addTagToReport("servicegruppe", arenaOppfolgingTilstand().map(ArenaOppfolgingTilstand::getServicegruppe).orElse("INGEN_VERDI"))
                 .addTagToReport("underOppfolging", Boolean.toString(oppfolging.isUnderOppfolging()))
+                .addTagToReport("manueltRegistrert", (oppfolging.getGjeldendeManuellStatus() != null && oppfolging.getGjeldendeManuellStatus().isManuell()) ? "ja" : "nei")
                 .addTagToReport("level", SubjectHandler.getSubject().map(SecurityLevelAuthorizationModule::getSecurityLevel).map(x -> Integer.toString(x.getSecurityLevel())).orElse("INGEN_VERDI"))
                 .report();
     }
