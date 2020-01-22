@@ -2,6 +2,8 @@ package no.nav.fo.veilarboppfolging.rest;
 
 import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.apiapp.security.PepClient;
+import no.nav.apiapp.security.PepClientComparator;
 import no.nav.apiapp.security.SubjectService;
 import no.nav.apiapp.security.veilarbabac.Bruker;
 import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
@@ -17,6 +19,7 @@ import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingFeedDTO;
 import no.nav.fo.veilarboppfolging.rest.domain.TilordneVeilederResponse;
 import no.nav.fo.veilarboppfolging.rest.domain.VeilederTilordning;
 import no.nav.fo.veilarboppfolging.utils.FunksjonelleMetrikker;
+import no.nav.sbl.dialogarena.common.abac.pep.AbacPersonId;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
 import no.nav.sbl.jdbc.Transactor;
 import org.slf4j.Logger;
@@ -40,7 +43,8 @@ public class VeilederTilordningRessurs {
 
     private final AktorService aktorService;
     private final VeilederTilordningerRepository veilederTilordningerRepository;
-    private final VeilarbAbacPepClient pepClient;
+    private final VeilarbAbacPepClient veilarbAbacPepClient;
+    private final PepClient pepClient;
     private final AutorisasjonService autorisasjonService;
     private FeedProducer<OppfolgingFeedDTO> oppfolgingFeed;
     private final SubjectService subjectService = new SubjectService();
@@ -50,7 +54,8 @@ public class VeilederTilordningRessurs {
 
     public VeilederTilordningRessurs(AktorService aktorService,
                                      VeilederTilordningerRepository veilederTilordningerRepository,
-                                     VeilarbAbacPepClient pepClient,
+                                     VeilarbAbacPepClient veilarbAbacPepClient,
+                                     PepClient pepClient,
                                      FeedProducer<OppfolgingFeedDTO> oppfolgingFeed,
                                      AutorisasjonService autorisasjonService,
                                      OppfolgingRepository oppfolgingRepository,
@@ -60,6 +65,7 @@ public class VeilederTilordningRessurs {
         this.autorisasjonService = autorisasjonService;
         this.aktorService = aktorService;
         this.veilederTilordningerRepository = veilederTilordningerRepository;
+        this.veilarbAbacPepClient = veilarbAbacPepClient;
         this.pepClient = pepClient;
         this.oppfolgingFeed = oppfolgingFeed;
         this.oppfolgingRepository = oppfolgingRepository;
@@ -84,7 +90,11 @@ public class VeilederTilordningRessurs {
 
             try {
                 Bruker bruker = lagBrukerFraFnr(tilordning.getBrukerFnr());
-                pepClient.sjekkSkrivetilgangTilBruker(bruker);
+
+                PepClientComparator.get(
+                        () -> veilarbAbacPepClient.sjekkSkrivetilgangTilBruker(bruker),
+                        () -> pepClient.sjekkSkrivetilgang(AbacPersonId.fnr(tilordning.getBrukerFnr())));
+
 
                 String aktoerId = bruker.getAktoerId();
                 tilordning.setAktoerId(aktoerId);
@@ -138,7 +148,7 @@ public class VeilederTilordningRessurs {
         Bruker bruker = lagBrukerFraFnr(fnr);
 
         autorisasjonService.skalVereInternBruker();
-        pepClient.sjekkLesetilgangTilBruker(bruker);
+        veilarbAbacPepClient.sjekkLesetilgangTilBruker(bruker);
 
         veilederTilordningerRepository.hentTilordnetVeileder(bruker.getAktoerId())
                 .filter(Tilordning::isNyForVeileder)

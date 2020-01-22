@@ -1,5 +1,6 @@
 package no.nav.fo.veilarboppfolging.services;
 
+import no.nav.apiapp.security.PepClient;
 import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
 import no.nav.brukerdialog.security.context.SubjectRule;
 import no.nav.dialogarena.aktor.AktorService;
@@ -27,7 +28,10 @@ public class SettOppfolgingsFlaggTildelVeilederTest {
     private VeilederTilordningerRepository veilederTilordningerRepository;
 
     @Mock
-    private VeilarbAbacPepClient pepClient;
+    private VeilarbAbacPepClient veilarbAbacPepClient;
+
+    @Mock
+    private PepClient pepClient;
 
     @Mock
     private AktorService aktorServiceMock;
@@ -51,7 +55,7 @@ public class SettOppfolgingsFlaggTildelVeilederTest {
         VeilederHistorikkRepository veilederHistorikkRepository = new VeilederHistorikkRepository(db);
         veilederTilordningerRepository = new VeilederTilordningerRepository(database);
         OppfolgingRepository oppfolgingRepository = new OppfolgingRepository(
-                pepClient,
+                veilarbAbacPepClient,
                 new OppfolgingsStatusRepository(database),
                 new OppfolgingsPeriodeRepository(database),
                 mock(MaalRepository.class),
@@ -60,7 +64,7 @@ public class SettOppfolgingsFlaggTildelVeilederTest {
                 mock(KvpRepository.class),
                 mock(NyeBrukereFeedRepository.class)
         );
-        veilederTilordningRessurs = new VeilederTilordningRessurs(aktorServiceMock, veilederTilordningerRepository, pepClient, feed, autorisasjonService, oppfolgingRepository, veilederHistorikkRepository, new TestTransactor());
+        veilederTilordningRessurs = new VeilederTilordningRessurs(aktorServiceMock, veilederTilordningerRepository, veilarbAbacPepClient, pepClient, feed, autorisasjonService, oppfolgingRepository, veilederHistorikkRepository, new TestTransactor());
 
     }
 
