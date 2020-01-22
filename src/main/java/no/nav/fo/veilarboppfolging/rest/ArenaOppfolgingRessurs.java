@@ -4,6 +4,7 @@ package no.nav.fo.veilarboppfolging.rest;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiParam;
 import io.vavr.control.Try;
+import lombok.extern.slf4j.Slf4j;
 import no.nav.apiapp.feil.IngenTilgang;
 import no.nav.apiapp.security.veilarbabac.Bruker;
 import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
@@ -28,6 +29,7 @@ import java.util.Optional;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static no.nav.fo.veilarboppfolging.utils.CalendarConverter.convertDateToXMLGregorianCalendar;
 
+@Slf4j
 @Component
 @Api(value = "Oppfølging")
 @Path("/person/{fnr}")
@@ -142,6 +144,8 @@ public class ArenaOppfolgingRessurs {
         if (AutorisasjonService.erInternBruker()) {
             String brukersAktoerId = aktorService.getAktorId(fnr)
                     .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktør for fnr: " + fnr));
+
+            log.info("Henter tilordning for bruker med aktørId {}", brukersAktoerId);
             String veilederIdent = veilederTilordningerRepository.hentTilordningForAktoer(brukersAktoerId);
             res.setVeilederId(veilederIdent);
         }
