@@ -4,6 +4,7 @@ import no.nav.fasit.DbCredentials;
 import no.nav.fasit.FasitUtils;
 import no.nav.fasit.ServiceUser;
 import no.nav.fasit.ServiceUserCertificate;
+import no.nav.fasit.dto.RestService;
 import no.nav.sbl.dialogarena.common.abac.pep.CredentialConstants;
 import no.nav.sbl.util.EnvironmentUtils;
 import org.apache.commons.io.FileUtils;
@@ -22,6 +23,7 @@ import static no.nav.fo.veilarboppfolging.rest.VeilArbAbacService.VEILARBABAC_HO
 import static no.nav.sbl.dialogarena.common.abac.pep.service.AbacServiceConfig.ABAC_ENDPOINT_URL_PROPERTY_NAME;
 import static no.nav.sbl.dialogarena.common.cxf.StsSecurityConstants.*;
 import static no.nav.sbl.featuretoggle.unleash.UnleashServiceConfig.UNLEASH_API_URL_PROPERTY_NAME;
+import static no.nav.sbl.util.EnvironmentUtils.APP_ENVIRONMENT_NAME_PROPERTY_NAME;
 import static no.nav.sbl.util.EnvironmentUtils.Type.PUBLIC;
 import static no.nav.sbl.util.EnvironmentUtils.Type.SECRET;
 
@@ -58,7 +60,11 @@ public class TestContext {
         setProperty(VEILARBOPPFOLGINGDB_PASSWORD_PROPERTY, dbCredentials.getPassword());
 
         setProperty(STS_URL_KEY, getBaseUrl(SECURITY_TOKEN_SERVICE_ALIAS, FSS));
-        setProperty(ABAC_ENDPOINT_URL_PROPERTY_NAME, getRestService(ABAC_PDP_ENDPOINT_ALIAS).getUrl());
+        RestService abacEndpoint = FasitUtils.getRestServices(ABAC_PDP_ENDPOINT_ALIAS).stream()
+                .filter(rs -> getDefaultEnvironment().equals(rs.getEnvironment()) && rs.getApplication() == null)
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("Fant ikke " + ABAC_PDP_ENDPOINT_ALIAS + " i Fasit"));
+        setProperty(ABAC_ENDPOINT_URL_PROPERTY_NAME, abacEndpoint.getUrl());
         setProperty(CredentialConstants.SYSTEMUSER_USERNAME, serviceUser.getUsername());
         setProperty(CredentialConstants.SYSTEMUSER_PASSWORD, serviceUser.getPassword());
         setProperty(AKTOER_V2_URL_PROPERTY, getWebServiceEndpoint(AKTOER_V2_ALIAS).getUrl());
@@ -91,7 +97,15 @@ public class TestContext {
         setProperty(AAD_B2C_CLIENTID_USERNAME_PROPERTY, aadB2cUser.getUsername());
         setProperty(AAD_B2C_CLIENTID_PASSWORD_PROPERTY, aadB2cUser.getPassword());
 
-        EnvironmentUtils.setProperty(STS_OIDC_CONFIGURATION_URL_PROPERTY, getRestService("security-token-service-openid-configuration").getUrl(), PUBLIC);
+        setProperty("VEILARBPORTEFOLJEAPI_URL", "https://veilarbportefolje-" + FasitUtils.getDefaultEnvironment() + ".nais.preprod.local/veilarbportefolje/api");
+        setProperty(APP_ENVIRONMENT_NAME_PROPERTY_NAME, getDefaultEnvironment());
+
+        String stsRestServiceAlias = "security-token-service-openid-configuration";
+        RestService stsRestService = getRestServices(stsRestServiceAlias)
+                .stream()
+                .filter(x -> x.getEnvironmentClass().equals(getEnvironmentClass(getDefaultEnvironment())) && x.getEnvironment() == null)
+                .findFirst().orElseThrow(() -> new IllegalStateException("Fant ikke " + stsRestServiceAlias + " i Fasit"));
+        EnvironmentUtils.setProperty(STS_OIDC_CONFIGURATION_URL_PROPERTY, stsRestService.getUrl(), PUBLIC);
 
         ServiceUserCertificate navTrustStore = FasitUtils.getServiceUserCertificate("nav_truststore_pto", FasitUtils.getDefaultEnvironmentClass());
         File navTrustStoreFile = File.createTempFile("nav_truststore", ".jks");
