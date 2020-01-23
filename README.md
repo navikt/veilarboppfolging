@@ -1,5 +1,3 @@
-[![CircleCI](https://circleci.com/gh/navikt/veilarboppfolging.svg?style=svg)](https://circleci.com/gh/navikt/veilarboppfolging)
-
 # Veilarboppfolging
 Applikasjonen kjører på Embedded Jetty lokalt. Den lokale configen legges i ApplicationMockConfig.
 
