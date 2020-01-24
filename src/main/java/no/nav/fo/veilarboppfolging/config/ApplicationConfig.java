@@ -3,7 +3,9 @@ package no.nav.fo.veilarboppfolging.config;
 import no.nav.apiapp.ApiApplication;
 import no.nav.apiapp.ServletUtil;
 import no.nav.apiapp.config.ApiAppConfigurator;
+import no.nav.brukerdialog.security.domain.IdentType;
 import no.nav.brukerdialog.security.oidc.SystemUserTokenProvider;
+import no.nav.brukerdialog.security.oidc.provider.AzureADB2CConfig;
 import no.nav.common.auth.SecurityLevel;
 import no.nav.dialogarena.aktor.AktorConfig;
 import no.nav.fo.veilarboppfolging.db.OppfolgingsenhetHistorikkRepository;
@@ -21,6 +23,7 @@ import javax.sql.DataSource;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
+import static no.nav.brukerdialog.security.Constants.AZUREADB2C_OIDC_COOKIE_NAME_FSS;
 import static no.nav.fo.veilarboppfolging.config.DatabaseConfig.migrateDatabase;
 import static no.nav.sbl.featuretoggle.unleash.UnleashServiceConfig.resolveFromEnvironment;
 import static no.nav.sbl.util.EnvironmentUtils.Type.PUBLIC;
@@ -99,6 +102,16 @@ public class ApplicationConfig implements ApiApplication {
 
     @Override
     public void configure(ApiAppConfigurator apiAppConfigurator) {
+        String discoveryUrl = getRequiredProperty("AAD_DISCOVERY_URL");
+        String clientId = getRequiredProperty("VEILARBLOGIN_AAD_CLIENT_ID");
+
+        AzureADB2CConfig config = AzureADB2CConfig.builder()
+                .discoveryUrl(discoveryUrl)
+                .expectedAudience(clientId)
+                .identType(IdentType.InternBruker)
+                .tokenName(AZUREADB2C_OIDC_COOKIE_NAME_FSS)
+                .build();
+
         SecurityTokenServiceOidcProvider securityTokenServiceOidcProvider = new SecurityTokenServiceOidcProvider(SecurityTokenServiceOidcProviderConfig.builder()
                 .discoveryUrl(getRequiredProperty(STS_OIDC_CONFIGURATION_URL_PROPERTY))
                 .build());
@@ -106,6 +119,7 @@ public class ApplicationConfig implements ApiApplication {
         apiAppConfigurator
                 .sts()
                 .validateAzureAdExternalUserTokens(SecurityLevel.Level4)
+                .validateAzureAdInternalUsersTokens(config)
                 .customSecurityLevelForExternalUsers(SecurityLevel.Level3, "niva3")
                 .issoLogin()
                 .oidcProvider(securityTokenServiceOidcProvider);
