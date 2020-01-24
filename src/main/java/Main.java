@@ -17,8 +17,6 @@ import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 public class Main {
 
     public static void main(String... args) {
-        setProperty(AKTOER_ENDPOINT_URL, getRequiredProperty(AKTOER_V2_URL_PROPERTY));
-        setProperty(OIDC_REDIRECT_URL_PROPERTY_NAME, getRequiredProperty(VEILARBLOGIN_REDIRECT_URL_URL_PROPERTY));
 
         NaisUtils.Credentials serviceUser = NaisUtils.getCredentials("service_user");
 
@@ -38,6 +36,9 @@ public class Main {
         NaisUtils.Credentials oracleCreds = NaisUtils.getCredentials("oracle_creds");
         System.setProperty(VEILARBOPPFOLGINGDB_USERNAME_PROPERTY, oracleCreds.username);
         System.setProperty(VEILARBOPPFOLGINGDB_PASSWORD_PROPERTY, oracleCreds.password);
+
+        setProperty(AKTOER_ENDPOINT_URL, getRequiredProperty(AKTOER_V2_URL_PROPERTY));
+        setProperty(OIDC_REDIRECT_URL_PROPERTY_NAME, getRequiredProperty(VEILARBLOGIN_REDIRECT_URL_URL_PROPERTY));
 
         ApiApp.runApp(ApplicationConfig.class, args);
     }
