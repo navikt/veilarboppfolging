@@ -38,7 +38,7 @@ spec:
       cpu: 500m
       memory: 2Gi
   envFrom:
-    - configMap: pto-config
+    - configmap: pto-config
   env:
     - name: APP_ENVIRONMENT_NAME
       value: {{namespace}}
