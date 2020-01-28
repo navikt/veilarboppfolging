@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+import static no.nav.sbl.util.EnvironmentUtils.getClusterName;
 import static org.slf4j.LoggerFactory.getLogger;
 
 @Component
@@ -71,7 +72,6 @@ public class VeilederTilordningRessurs {
         this.veilederHistorikkRepository = veilederHistorikkRepository;
         this.transactor = transactor;
         this.timer = MetricsFactory.createTimer("veilarboppfolging.veiledertilordning");
-        timer.addFieldToReport("cluster", EnvironmentUtils.getClusterName().orElse("unknown_cluster"));
     }
 
     @POST
@@ -122,7 +122,7 @@ public class VeilederTilordningRessurs {
         }
 
         timer.stop();
-        timer.report();
+        timer.addTagToReport("cluster_name", getClusterName().orElse("unknown_cluster")).report();
 
         return Response.ok().entity(response).build();
     }
