@@ -122,7 +122,7 @@ public class VeilederTilordningRessurs {
         }
 
         timer.stop();
-        timer.addTagToReport("cluster_name", getClusterName().orElse("unknown_cluster")).report();
+        timer.report();
 
         return Response.ok().entity(response).build();
     }
