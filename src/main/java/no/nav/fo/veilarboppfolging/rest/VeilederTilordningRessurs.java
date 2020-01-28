@@ -1,5 +1,7 @@
 package no.nav.fo.veilarboppfolging.rest;
 
+import io.micrometer.core.instrument.Metrics;
+import io.micrometer.core.instrument.Timer;
 import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.apiapp.security.SubjectService;
@@ -8,6 +10,7 @@ import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
 import no.nav.common.auth.SubjectHandler;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.feed.producer.FeedProducer;
+import no.nav.fo.feed.util.MetricsUtils;
 import no.nav.fo.veilarboppfolging.db.OppfolgingFeedRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.db.VeilederHistorikkRepository;
@@ -28,6 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+import static no.nav.metrics.MetricsFactory.getMeterRegistry;
 import static org.slf4j.LoggerFactory.getLogger;
 
 @Component
@@ -47,6 +51,7 @@ public class VeilederTilordningRessurs {
     private final OppfolgingRepository oppfolgingRepository;
     private final VeilederHistorikkRepository veilederHistorikkRepository;
     private final Transactor transactor;
+    private final Timer timer;
 
     public VeilederTilordningRessurs(AktorService aktorService,
                                      VeilederTilordningerRepository veilederTilordningerRepository,
@@ -65,6 +70,7 @@ public class VeilederTilordningRessurs {
         this.oppfolgingRepository = oppfolgingRepository;
         this.veilederHistorikkRepository = veilederHistorikkRepository;
         this.transactor = transactor;
+        this.timer = Timer.builder("veilarboppfolging_tilordning").register(getMeterRegistry());
     }
 
     @POST
@@ -72,46 +78,50 @@ public class VeilederTilordningRessurs {
     @Produces("application/json")
     @Path("/tilordneveileder")
     public Response postVeilederTilordninger(List<VeilederTilordning> tilordninger) {
-        autorisasjonService.skalVereInternBruker();
-        String innloggetVeilederId = SubjectHandler.getIdent().orElseThrow(IllegalStateException::new);
 
-        log.info("{} Prøver å tildele veileder", innloggetVeilederId);
+        return timer.record(() -> {
 
-        List<VeilederTilordning> feilendeTilordninger = new ArrayList<>();
-        for (VeilederTilordning tilordning : tilordninger) {
+            autorisasjonService.skalVereInternBruker();
+            String innloggetVeilederId = SubjectHandler.getIdent().orElseThrow(IllegalStateException::new);
 
-            tilordning.setInnloggetVeilederId(innloggetVeilederId);
+            log.info("{} Prøver å tildele veileder", innloggetVeilederId);
 
-            try {
-                Bruker bruker = lagBrukerFraFnr(tilordning.getBrukerFnr());
-                pepClient.sjekkSkrivetilgangTilBruker(bruker);
+            List<VeilederTilordning> feilendeTilordninger = new ArrayList<>();
+            for (VeilederTilordning tilordning : tilordninger) {
 
-                String aktoerId = bruker.getAktoerId();
-                tilordning.setAktoerId(aktoerId);
+                tilordning.setInnloggetVeilederId(innloggetVeilederId);
 
-                String eksisterendeVeileder = veilederTilordningerRepository.hentTilordningForAktoer(aktoerId);
+                try {
+                    Bruker bruker = lagBrukerFraFnr(tilordning.getBrukerFnr());
+                    pepClient.sjekkSkrivetilgangTilBruker(bruker);
 
-                feilendeTilordninger = tildelVeileder(feilendeTilordninger, tilordning, aktoerId, eksisterendeVeileder);
+                    String aktoerId = bruker.getAktoerId();
+                    tilordning.setAktoerId(aktoerId);
 
-            } catch (Exception e) {
-                feilendeTilordninger.add(tilordning);
-                loggFeilOppfolging(e, tilordning);
+                    String eksisterendeVeileder = veilederTilordningerRepository.hentTilordningForAktoer(aktoerId);
+
+                    feilendeTilordninger = tildelVeileder(feilendeTilordninger, tilordning, aktoerId, eksisterendeVeileder);
+
+                } catch (Exception e) {
+                    feilendeTilordninger.add(tilordning);
+                    loggFeilOppfolging(e, tilordning);
+                }
             }
-        }
 
-        TilordneVeilederResponse response = new TilordneVeilederResponse().setFeilendeTilordninger(feilendeTilordninger);
+            TilordneVeilederResponse response = new TilordneVeilederResponse().setFeilendeTilordninger(feilendeTilordninger);
 
-        if (feilendeTilordninger.isEmpty()) {
-            response.setResultat("OK: Veiledere tilordnet");
-        } else {
-            response.setResultat("WARNING: Noen brukere kunne ikke tilordnes en veileder");
-        }
-        if (tilordninger.size() > feilendeTilordninger.size()) {
-            //Kaller denne asynkront siden resultatet ikke er interessant og operasjonen tar litt tid.
-            CompletableFuture.runAsync(() -> kallWebhook());
-        }
-        return Response.ok().entity(response).build();
+            if (feilendeTilordninger.isEmpty()) {
+                response.setResultat("OK: Veiledere tilordnet");
+            } else {
+                response.setResultat("WARNING: Noen brukere kunne ikke tilordnes en veileder");
+            }
+            if (tilordninger.size() > feilendeTilordninger.size()) {
+                //Kaller denne asynkront siden resultatet ikke er interessant og operasjonen tar litt tid.
+                CompletableFuture.runAsync(this::kallWebhook);
+            }
+            return Response.ok().entity(response).build();
 
+        });
     }
 
     private List<VeilederTilordning> tildelVeileder(List<VeilederTilordning> feilendeTilordninger, VeilederTilordning tilordning, String aktoerId, String eksisterendeVeileder) {
@@ -187,7 +197,7 @@ public class VeilederTilordningRessurs {
     }
 
     public void skrivTilDatabase(String aktoerId, String veileder) {
-        transactor.inTransaction(()-> {
+        transactor.inTransaction(() -> {
             veilederTilordningerRepository.upsertVeilederTilordning(aktoerId, veileder);
             veilederHistorikkRepository.insertTilordnetVeilederForAktorId(aktoerId, veileder);
             oppfolgingRepository.startOppfolgingHvisIkkeAlleredeStartet(aktoerId);
