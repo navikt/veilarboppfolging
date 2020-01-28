@@ -17,6 +17,7 @@ import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingFeedDTO;
 import no.nav.fo.veilarboppfolging.rest.domain.TilordneVeilederResponse;
 import no.nav.fo.veilarboppfolging.rest.domain.VeilederTilordning;
 import no.nav.fo.veilarboppfolging.utils.FunksjonelleMetrikker;
+import no.nav.metrics.utils.MetricsUtils;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
 import no.nav.sbl.jdbc.Transactor;
 import org.slf4j.Logger;
@@ -72,46 +73,49 @@ public class VeilederTilordningRessurs {
     @Produces("application/json")
     @Path("/tilordneveileder")
     public Response postVeilederTilordninger(List<VeilederTilordning> tilordninger) {
-        autorisasjonService.skalVereInternBruker();
-        String innloggetVeilederId = SubjectHandler.getIdent().orElseThrow(IllegalStateException::new);
 
-        log.info("{} Prøver å tildele veileder", innloggetVeilederId);
+        return MetricsUtils.timed("veiledertilordning", () -> {
 
-        List<VeilederTilordning> feilendeTilordninger = new ArrayList<>();
-        for (VeilederTilordning tilordning : tilordninger) {
+            autorisasjonService.skalVereInternBruker();
+            String innloggetVeilederId = SubjectHandler.getIdent().orElseThrow(IllegalStateException::new);
 
-            tilordning.setInnloggetVeilederId(innloggetVeilederId);
+            log.info("{} Prøver å tildele veileder", innloggetVeilederId);
 
-            try {
-                Bruker bruker = lagBrukerFraFnr(tilordning.getBrukerFnr());
-                pepClient.sjekkSkrivetilgangTilBruker(bruker);
+            List<VeilederTilordning> feilendeTilordninger = new ArrayList<>();
+            for (VeilederTilordning tilordning : tilordninger) {
 
-                String aktoerId = bruker.getAktoerId();
-                tilordning.setAktoerId(aktoerId);
+                tilordning.setInnloggetVeilederId(innloggetVeilederId);
 
-                String eksisterendeVeileder = veilederTilordningerRepository.hentTilordningForAktoer(aktoerId);
+                try {
+                    Bruker bruker = lagBrukerFraFnr(tilordning.getBrukerFnr());
+                    pepClient.sjekkSkrivetilgangTilBruker(bruker);
 
-                feilendeTilordninger = tildelVeileder(feilendeTilordninger, tilordning, aktoerId, eksisterendeVeileder);
+                    String aktoerId = bruker.getAktoerId();
+                    tilordning.setAktoerId(aktoerId);
 
-            } catch (Exception e) {
-                feilendeTilordninger.add(tilordning);
-                loggFeilOppfolging(e, tilordning);
+                    String eksisterendeVeileder = veilederTilordningerRepository.hentTilordningForAktoer(aktoerId);
+
+                    feilendeTilordninger = tildelVeileder(feilendeTilordninger, tilordning, aktoerId, eksisterendeVeileder);
+
+                } catch (Exception e) {
+                    feilendeTilordninger.add(tilordning);
+                    loggFeilOppfolging(e, tilordning);
+                }
             }
-        }
 
-        TilordneVeilederResponse response = new TilordneVeilederResponse().setFeilendeTilordninger(feilendeTilordninger);
+            TilordneVeilederResponse response = new TilordneVeilederResponse().setFeilendeTilordninger(feilendeTilordninger);
 
-        if (feilendeTilordninger.isEmpty()) {
-            response.setResultat("OK: Veiledere tilordnet");
-        } else {
-            response.setResultat("WARNING: Noen brukere kunne ikke tilordnes en veileder");
-        }
-        if (tilordninger.size() > feilendeTilordninger.size()) {
-            //Kaller denne asynkront siden resultatet ikke er interessant og operasjonen tar litt tid.
-            CompletableFuture.runAsync(() -> kallWebhook());
-        }
-        return Response.ok().entity(response).build();
-
+            if (feilendeTilordninger.isEmpty()) {
+                response.setResultat("OK: Veiledere tilordnet");
+            } else {
+                response.setResultat("WARNING: Noen brukere kunne ikke tilordnes en veileder");
+            }
+            if (tilordninger.size() > feilendeTilordninger.size()) {
+                //Kaller denne asynkront siden resultatet ikke er interessant og operasjonen tar litt tid.
+                CompletableFuture.runAsync(this::kallWebhook);
+            }
+            return Response.ok().entity(response).build();
+        });
     }
 
     private List<VeilederTilordning> tildelVeileder(List<VeilederTilordning> feilendeTilordninger, VeilederTilordning tilordning, String aktoerId, String eksisterendeVeileder) {
@@ -187,7 +191,7 @@ public class VeilederTilordningRessurs {
     }
 
     public void skrivTilDatabase(String aktoerId, String veileder) {
-        transactor.inTransaction(()-> {
+        transactor.inTransaction(() -> {
             veilederTilordningerRepository.upsertVeilederTilordning(aktoerId, veileder);
             veilederHistorikkRepository.insertTilordnetVeilederForAktorId(aktoerId, veileder);
             oppfolgingRepository.startOppfolgingHvisIkkeAlleredeStartet(aktoerId);
