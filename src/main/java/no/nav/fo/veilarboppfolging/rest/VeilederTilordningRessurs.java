@@ -1,6 +1,5 @@
 package no.nav.fo.veilarboppfolging.rest;
 
-import io.micrometer.core.instrument.Timer;
 import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.apiapp.security.SubjectService;
@@ -25,12 +24,10 @@ import org.springframework.stereotype.Component;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-import static no.nav.metrics.MetricsFactory.getMeterRegistry;
 import static org.slf4j.LoggerFactory.getLogger;
 
 @Component
@@ -45,7 +42,6 @@ public class VeilederTilordningRessurs {
     private final VeilederTilordningerRepository veilederTilordningerRepository;
     private final VeilarbAbacPepClient pepClient;
     private final AutorisasjonService autorisasjonService;
-    private final Timer timer;
     private FeedProducer<OppfolgingFeedDTO> oppfolgingFeed;
     private final SubjectService subjectService = new SubjectService();
     private final OppfolgingRepository oppfolgingRepository;
@@ -69,7 +65,6 @@ public class VeilederTilordningRessurs {
         this.oppfolgingRepository = oppfolgingRepository;
         this.veilederHistorikkRepository = veilederHistorikkRepository;
         this.transactor = transactor;
-        this.timer = Timer.builder("veilarboppfolging_tilordning").register(getMeterRegistry());
     }
 
     @POST
@@ -77,9 +72,6 @@ public class VeilederTilordningRessurs {
     @Produces("application/json")
     @Path("/tilordneveileder")
     public Response postVeilederTilordninger(List<VeilederTilordning> tilordninger) {
-
-        long startTime = System.nanoTime();
-
         autorisasjonService.skalVereInternBruker();
         String innloggetVeilederId = SubjectHandler.getIdent().orElseThrow(IllegalStateException::new);
 
@@ -116,13 +108,8 @@ public class VeilederTilordningRessurs {
         }
         if (tilordninger.size() > feilendeTilordninger.size()) {
             //Kaller denne asynkront siden resultatet ikke er interessant og operasjonen tar litt tid.
-            CompletableFuture.runAsync(this::kallWebhook);
+            CompletableFuture.runAsync(() -> kallWebhook());
         }
-
-        long stopTime = System.nanoTime();
-        Duration duration = Duration.ofNanos(stopTime - startTime);
-        timer.record(duration);
-
         return Response.ok().entity(response).build();
 
     }
