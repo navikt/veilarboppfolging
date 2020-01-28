@@ -25,7 +25,8 @@ public class AvsluttetOppfolgingFeedProvider implements FeedProvider<AvsluttetOp
 
     @Override
     public Stream<FeedElement<AvsluttetOppfolgingFeedDTO>> fetchData(String sinceId, int pageSize) {
-        Timestamp timestamp = DateUtils.toTimeStamp(sinceId);
+
+        Timestamp timestamp = Timestamp.from(ZonedDateTime.parse(sinceId).toInstant());
 
         return oppfolgingService
                 .hentAvsluttetOppfolgingEtterDato(timestamp, pageSize)

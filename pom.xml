@@ -5,7 +5,7 @@
     <parent>
         <groupId>no.nav.common</groupId>
         <artifactId>mor-pom</artifactId>
-        <version>1.2020.01.07-16.15-300a924a10d4</version>
+        <version>1.2020.01.22-08.52-0c45e47cbbb2</version>
     </parent>
 
     <groupId>no.nav.fo</groupId>
@@ -80,6 +80,10 @@
         <dependency>
             <groupId>no.nav.common</groupId>
             <artifactId>util</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>no.nav.common</groupId>
+            <artifactId>nais</artifactId>
         </dependency>
         <dependency>
             <groupId>no.nav.common</groupId>

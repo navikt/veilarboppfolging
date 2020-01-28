@@ -17,8 +17,12 @@ import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingFeedDTO;
 import no.nav.fo.veilarboppfolging.rest.domain.TilordneVeilederResponse;
 import no.nav.fo.veilarboppfolging.rest.domain.VeilederTilordning;
 import no.nav.fo.veilarboppfolging.utils.FunksjonelleMetrikker;
+import no.nav.metrics.MetricsFactory;
+import no.nav.metrics.Timer;
+import no.nav.metrics.utils.MetricsUtils;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
 import no.nav.sbl.jdbc.Transactor;
+import no.nav.sbl.util.EnvironmentUtils;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
@@ -28,6 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+import static no.nav.sbl.util.EnvironmentUtils.getClusterName;
 import static org.slf4j.LoggerFactory.getLogger;
 
 @Component
@@ -42,6 +47,7 @@ public class VeilederTilordningRessurs {
     private final VeilederTilordningerRepository veilederTilordningerRepository;
     private final VeilarbAbacPepClient pepClient;
     private final AutorisasjonService autorisasjonService;
+    private final Timer timer;
     private FeedProducer<OppfolgingFeedDTO> oppfolgingFeed;
     private final SubjectService subjectService = new SubjectService();
     private final OppfolgingRepository oppfolgingRepository;
@@ -65,6 +71,7 @@ public class VeilederTilordningRessurs {
         this.oppfolgingRepository = oppfolgingRepository;
         this.veilederHistorikkRepository = veilederHistorikkRepository;
         this.transactor = transactor;
+        this.timer = MetricsFactory.createTimer("veilarboppfolging.veiledertilordning");
     }
 
     @POST
@@ -72,6 +79,9 @@ public class VeilederTilordningRessurs {
     @Produces("application/json")
     @Path("/tilordneveileder")
     public Response postVeilederTilordninger(List<VeilederTilordning> tilordninger) {
+
+        timer.start();
+
         autorisasjonService.skalVereInternBruker();
         String innloggetVeilederId = SubjectHandler.getIdent().orElseThrow(IllegalStateException::new);
 
@@ -108,10 +118,13 @@ public class VeilederTilordningRessurs {
         }
         if (tilordninger.size() > feilendeTilordninger.size()) {
             //Kaller denne asynkront siden resultatet ikke er interessant og operasjonen tar litt tid.
-            CompletableFuture.runAsync(() -> kallWebhook());
+            CompletableFuture.runAsync(this::kallWebhook);
         }
-        return Response.ok().entity(response).build();
 
+        timer.stop();
+        timer.report();
+
+        return Response.ok().entity(response).build();
     }
 
     private List<VeilederTilordning> tildelVeileder(List<VeilederTilordning> feilendeTilordninger, VeilederTilordning tilordning, String aktoerId, String eksisterendeVeileder) {
@@ -187,7 +200,7 @@ public class VeilederTilordningRessurs {
     }
 
     public void skrivTilDatabase(String aktoerId, String veileder) {
-        transactor.inTransaction(()-> {
+        transactor.inTransaction(() -> {
             veilederTilordningerRepository.upsertVeilederTilordning(aktoerId, veileder);
             veilederHistorikkRepository.insertTilordnetVeilederForAktorId(aktoerId, veileder);
             oppfolgingRepository.startOppfolgingHvisIkkeAlleredeStartet(aktoerId);
