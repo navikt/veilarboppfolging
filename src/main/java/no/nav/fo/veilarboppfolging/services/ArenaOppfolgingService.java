@@ -56,6 +56,9 @@ public class ArenaOppfolgingService {
     }
 
     public ArenaOppfolging hentArenaOppfolging(String identifikator) {
+
+        counter.increment();
+
         if (unleash.isEnabled("veilarboppfolging.use_ords_for_oppfolgingsstatus")) {
             return getArenaOppfolgingsstatus(identifikator);
         } else {
@@ -92,8 +95,6 @@ public class ArenaOppfolgingService {
     }
 
     private ArenaOppfolging getArenaOppfolgingsstatusSoap(String identifikator) {
-
-        counter.increment();
 
         no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v2.informasjon.Person person = new no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v2.informasjon.Person();
         person.setIdent(identifikator);

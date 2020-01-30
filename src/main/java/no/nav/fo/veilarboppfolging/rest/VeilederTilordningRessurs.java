@@ -19,6 +19,8 @@ import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingFeedDTO;
 import no.nav.fo.veilarboppfolging.rest.domain.TilordneVeilederResponse;
 import no.nav.fo.veilarboppfolging.rest.domain.VeilederTilordning;
 import no.nav.fo.veilarboppfolging.utils.FunksjonelleMetrikker;
+import no.nav.metrics.MetricsFactory;
+import no.nav.metrics.Timer;
 import no.nav.sbl.dialogarena.common.abac.pep.AbacPersonId;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
 import no.nav.sbl.jdbc.Transactor;
@@ -46,6 +48,7 @@ public class VeilederTilordningRessurs {
     private final VeilarbAbacPepClient veilarbAbacPepClient;
     private final PepClient pepClient;
     private final AutorisasjonService autorisasjonService;
+    private final Timer timer;
     private FeedProducer<OppfolgingFeedDTO> oppfolgingFeed;
     private final SubjectService subjectService = new SubjectService();
     private final OppfolgingRepository oppfolgingRepository;
@@ -71,6 +74,7 @@ public class VeilederTilordningRessurs {
         this.oppfolgingRepository = oppfolgingRepository;
         this.veilederHistorikkRepository = veilederHistorikkRepository;
         this.transactor = transactor;
+        this.timer = MetricsFactory.createTimer("veilarboppfolging.veiledertilordning");
     }
 
     @POST
@@ -78,6 +82,9 @@ public class VeilederTilordningRessurs {
     @Produces("application/json")
     @Path("/tilordneveileder")
     public Response postVeilederTilordninger(List<VeilederTilordning> tilordninger) {
+
+        timer.start();
+
         autorisasjonService.skalVereInternBruker();
         String innloggetVeilederId = SubjectHandler.getIdent().orElseThrow(IllegalStateException::new);
 
@@ -118,10 +125,13 @@ public class VeilederTilordningRessurs {
         }
         if (tilordninger.size() > feilendeTilordninger.size()) {
             //Kaller denne asynkront siden resultatet ikke er interessant og operasjonen tar litt tid.
-            CompletableFuture.runAsync(() -> kallWebhook());
+            CompletableFuture.runAsync(this::kallWebhook);
         }
-        return Response.ok().entity(response).build();
 
+        timer.stop();
+        timer.report();
+
+        return Response.ok().entity(response).build();
     }
 
     private List<VeilederTilordning> tildelVeileder(List<VeilederTilordning> feilendeTilordninger, VeilederTilordning tilordning, String aktoerId, String eksisterendeVeileder) {
@@ -197,7 +207,7 @@ public class VeilederTilordningRessurs {
     }
 
     public void skrivTilDatabase(String aktoerId, String veileder) {
-        transactor.inTransaction(()-> {
+        transactor.inTransaction(() -> {
             veilederTilordningerRepository.upsertVeilederTilordning(aktoerId, veileder);
             veilederHistorikkRepository.insertTilordnetVeilederForAktorId(aktoerId, veileder);
             oppfolgingRepository.startOppfolgingHvisIkkeAlleredeStartet(aktoerId);
