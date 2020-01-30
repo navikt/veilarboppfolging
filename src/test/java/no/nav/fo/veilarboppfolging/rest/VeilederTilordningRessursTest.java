@@ -1,6 +1,7 @@
 package no.nav.fo.veilarboppfolging.rest;
 
 import lombok.val;
+import no.nav.apiapp.security.PepClient;
 import no.nav.apiapp.security.veilarbabac.Bruker;
 import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
 import no.nav.brukerdialog.security.context.SubjectRule;
@@ -51,7 +52,10 @@ import static org.mockito.Mockito.*;
 public class VeilederTilordningRessursTest {
 
     @Mock
-    private VeilarbAbacPepClient pepClient;
+    private VeilarbAbacPepClient veilarbAbacPepClient;
+
+    @Mock
+    private PepClient pepClient;
 
     @Mock
     private AktorService aktorServiceMock;
@@ -81,7 +85,7 @@ public class VeilederTilordningRessursTest {
     public void setup() {
         when(autorisasjonService.harVeilederSkriveTilgangTilFnr(anyString(), anyString())).thenReturn(true);
         subjectRule.setSubject(new Subject("Z000000", IdentType.InternBruker, SsoToken.oidcToken("XOXO")));
-        veilederTilordningRessurs = new VeilederTilordningRessurs(aktorServiceMock, veilederTilordningerRepository, pepClient, feed, autorisasjonService, oppfolgingRepository, veilederHistorikkRepository, new TestTransactor());
+        veilederTilordningRessurs = new VeilederTilordningRessurs(aktorServiceMock, veilederTilordningerRepository, veilarbAbacPepClient, pepClient, feed, autorisasjonService, oppfolgingRepository, veilederHistorikkRepository, new TestTransactor());
     }
 
     @Test
@@ -122,8 +126,8 @@ public class VeilederTilordningRessursTest {
         tilordninger.add(harTilgang2);
         tilordninger.add(harIkkeTilgang2);
 
-        doThrow(NotAuthorizedException.class).when (pepClient).sjekkLesetilgangTilBruker(bruker("FNR2"));
-        doThrow(PepException.class).when(pepClient).sjekkLesetilgangTilBruker(bruker("FNR4"));
+        doThrow(NotAuthorizedException.class).when (veilarbAbacPepClient).sjekkLesetilgangTilBruker(bruker("FNR2"));
+        doThrow(PepException.class).when(veilarbAbacPepClient).sjekkLesetilgangTilBruker(bruker("FNR4"));
 
         when(aktorServiceMock.getAktorId("FNR1")).thenReturn(of("AKTOERID1"));
         when(aktorServiceMock.getAktorId("FNR3")).thenReturn(of("AKTOERID3"));
@@ -287,7 +291,7 @@ public class VeilederTilordningRessursTest {
         tilordninger.add(tilordningERROR1);
         tilordninger.add(tilordningERROR2);
 
-        doThrow(Exception.class).when(pepClient).sjekkLesetilgangTilBruker(any(Bruker.class));
+        doThrow(Exception.class).when(veilarbAbacPepClient).sjekkLesetilgangTilBruker(any(Bruker.class));
 
         Response response = veilederTilordningRessurs.postVeilederTilordninger(tilordninger);
         List<VeilederTilordning> feilendeTilordninger = ((TilordneVeilederResponse) response.getEntity()).getFeilendeTilordninger();
@@ -309,7 +313,7 @@ public class VeilederTilordningRessursTest {
                 return null;
             }
             return null;
-        }).when(pepClient).sjekkLesetilgangTilBruker(any(Bruker.class));
+        }).when(veilarbAbacPepClient).sjekkLesetilgangTilBruker(any(Bruker.class));
 
         when(aktorServiceMock.getAktorId("FNR1")).thenReturn(of("AKTOERID1"));
 
