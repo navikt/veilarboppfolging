@@ -1,5 +1,6 @@
 package no.nav.fo.veilarboppfolging.config;
 
+import no.nav.apiapp.security.PepClient;
 import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
 import no.nav.brukerdialog.security.oidc.SystemUserTokenProvider;
 import no.nav.sbl.dialogarena.common.abac.pep.Pep;
@@ -11,9 +12,13 @@ import org.springframework.context.annotation.Import;
 
 import javax.inject.Inject;
 
+import static no.nav.sbl.dialogarena.common.abac.pep.domain.ResourceType.Person;
+
 @Configuration
 @Import({AbacContext.class})
 public class PepConfig {
+
+    public static final String DOMAIN_VEILARB = "veilarb";
 
     private SystemUserTokenProvider systemUserTokenProvider = new SystemUserTokenProvider();
 
@@ -21,7 +26,7 @@ public class PepConfig {
     UnleashService unleashService;
 
     @Bean
-    public VeilarbAbacPepClient pepClient(Pep pep) {
+    public VeilarbAbacPepClient veilarbAbacPepClient(Pep pep) {
 
         return VeilarbAbacPepClient.ny()
                 .medPep(pep)
@@ -33,4 +38,8 @@ public class PepConfig {
                 .bygg();
     }
 
+    @Bean
+    public PepClient pepClient(Pep pep) {
+        return new PepClient(pep, DOMAIN_VEILARB, Person);
+    }
 }

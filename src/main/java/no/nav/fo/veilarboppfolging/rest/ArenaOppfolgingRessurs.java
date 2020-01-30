@@ -6,6 +6,8 @@ import io.swagger.annotations.ApiParam;
 import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.apiapp.feil.IngenTilgang;
+import no.nav.apiapp.security.PepClient;
+import no.nav.apiapp.security.PepClientComparator;
 import no.nav.apiapp.security.veilarbabac.Bruker;
 import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
 import no.nav.dialogarena.aktor.AktorService;
@@ -16,6 +18,7 @@ import no.nav.fo.veilarboppfolging.mappers.VeilarbArenaOppfolging;
 import no.nav.fo.veilarboppfolging.mappers.OppfolgingMapper;
 import no.nav.fo.veilarboppfolging.rest.domain.*;
 import no.nav.fo.veilarboppfolging.services.*;
+import no.nav.sbl.dialogarena.common.abac.pep.AbacPersonId;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
 
@@ -40,7 +43,8 @@ public class ArenaOppfolgingRessurs {
 
     private final ArenaOppfolgingService arenaOppfolgingService;
     private final OppfolgingMapper oppfolgingMapper;
-    private final VeilarbAbacPepClient pepClient;
+    private final VeilarbAbacPepClient veilarbAbacPepClient;
+    private final PepClient pepClient;
     private final OrganisasjonEnhetService organisasjonEnhetService;
     private final AktorService aktorService;
     private final VeilederTilordningerRepository veilederTilordningerRepository;
@@ -50,7 +54,8 @@ public class ArenaOppfolgingRessurs {
     public ArenaOppfolgingRessurs(
             ArenaOppfolgingService arenaOppfolgingService,
             OppfolgingMapper oppfolgingMapper,
-            VeilarbAbacPepClient pepClient,
+            VeilarbAbacPepClient veilarbAbacPepClient,
+            PepClient pepClient,
             OrganisasjonEnhetService organisasjonEnhetService,
             AktorService aktorService,
             VeilederTilordningerRepository veilederTilordningerRepository,
@@ -59,6 +64,7 @@ public class ArenaOppfolgingRessurs {
     ) {
         this.arenaOppfolgingService = arenaOppfolgingService;
         this.oppfolgingMapper = oppfolgingMapper;
+        this.veilarbAbacPepClient = veilarbAbacPepClient;
         this.pepClient = pepClient;
         this.organisasjonEnhetService = organisasjonEnhetService;
         this.aktorService = aktorService;
@@ -73,7 +79,7 @@ public class ArenaOppfolgingRessurs {
         Bruker bruker = Bruker.fraFnr(fnr)
                 .medAktoerIdSupplier(() -> aktorService.getAktorId(fnr).orElseThrow(IngenTilgang::new));
 
-        pepClient.sjekkLesetilgangTilBruker(bruker);
+        veilarbAbacPepClient.sjekkLesetilgangTilBruker(bruker);
         LocalDate periodeFom = LocalDate.now().minusMonths(MANEDER_BAK_I_TID);
         LocalDate periodeTom = LocalDate.now().plusMonths(MANEDER_FREM_I_TID);
         XMLGregorianCalendar fom = convertDateToXMLGregorianCalendar(periodeFom);
@@ -89,7 +95,7 @@ public class ArenaOppfolgingRessurs {
         Bruker bruker = Bruker.fraFnr(fnr)
                 .medAktoerIdSupplier(() -> aktorService.getAktorId(fnr).orElseThrow(IngenTilgang::new));
 
-        pepClient.sjekkLesetilgangTilBruker(bruker);
+        veilarbAbacPepClient.sjekkLesetilgangTilBruker(bruker);
 
         no.nav.fo.veilarboppfolging.domain.ArenaOppfolging arenaData = arenaOppfolgingService.hentArenaOppfolging(fnr);
         Oppfolgingsenhet enhet = hentEnhet(arenaData.getOppfolgingsenhet());
@@ -120,7 +126,10 @@ public class ArenaOppfolgingRessurs {
         Bruker bruker = Bruker.fraFnr(fnr)
                 .medAktoerIdSupplier(() -> aktorService.getAktorId(fnr).orElseThrow(IngenTilgang::new));
 
-        pepClient.sjekkLesetilgangTilBruker(bruker);
+        PepClientComparator.get(
+                () -> veilarbAbacPepClient.sjekkLesetilgangTilBruker(bruker),
+                () -> pepClient.sjekkLesetilgang(AbacPersonId.fnr(fnr))
+        );
 
         OppfolgingEnhetMedVeileder res;
         if(!brukArena && unleash.isEnabled("veilarboppfolging.oppfolgingsstatus.fra.veilarbarena")) {
