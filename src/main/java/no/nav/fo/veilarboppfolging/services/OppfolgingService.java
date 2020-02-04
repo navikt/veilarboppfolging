@@ -6,7 +6,6 @@ import no.nav.apiapp.feil.IngenTilgang;
 import no.nav.apiapp.security.PepClient;
 import no.nav.apiapp.security.PepClientComparator;
 import no.nav.apiapp.security.veilarbabac.Bruker;
-import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingsStatusRepository;
@@ -36,7 +35,6 @@ public class OppfolgingService {
     private final OppfolgingResolverDependencies oppfolgingResolverDependencies;
     private final AktorService aktorService;
     private final OppfolgingRepository oppfolgingRepository;
-    private final VeilarbAbacPepClient veilarbAbacPepClient;
     private final PepClient pepClient;
     private final OppfolgingsStatusRepository oppfolgingsStatusRepository;
     private final ManuellStatusService manuellStatusService;
@@ -49,7 +47,6 @@ public class OppfolgingService {
             OppfolgingResolverDependencies oppfolgingResolverDependencies,
             AktorService aktorService,
             OppfolgingRepository oppfolgingRepository,
-            VeilarbAbacPepClient veilarbAbacPepClient,
             PepClient pepClient,
             OppfolgingsStatusRepository oppfolgingsStatusRepository,
             ManuellStatusService manuellStatusService,
@@ -59,7 +56,6 @@ public class OppfolgingService {
         this.oppfolgingResolverDependencies = oppfolgingResolverDependencies;
         this.aktorService = aktorService;
         this.oppfolgingRepository = oppfolgingRepository;
-        this.veilarbAbacPepClient = veilarbAbacPepClient;
         this.pepClient = pepClient;
         this.oppfolgingsStatusRepository = oppfolgingsStatusRepository;
         this.manuellStatusService = manuellStatusService;
@@ -70,16 +66,11 @@ public class OppfolgingService {
 
     @SneakyThrows
     public OppfolgingResolver sjekkTilgangTilEnhet(String fnr){
-        PepClientComparator.get(
-                () -> autorisasjonService.sjekkLesetilgangTilBruker(fnr),
-                () -> pepClient.sjekkLesetilgang(AbacPersonId.fnr(fnr))
-        );
+        autorisasjonService.sjekkLesetilgangTilBruker(fnr);
 
         val resolver = OppfolgingResolver.lagOppfolgingResolver(fnr, oppfolgingResolverDependencies);
 
-        boolean harTilgangTilEnhet = PepClientComparator.get(
-                () -> veilarbAbacPepClient.harTilgangTilEnhet(resolver.getOppfolgingsEnhet()),
-                () -> pepClient.harTilgangTilEnhet(resolver.getOppfolgingsEnhet()));
+        boolean harTilgangTilEnhet = pepClient.harTilgangTilEnhet(resolver.getOppfolgingsEnhet());
 
         if(!harTilgangTilEnhet) {
             throw new IngenTilgang();
@@ -89,10 +80,8 @@ public class OppfolgingService {
 
     @Transactional
     public OppfolgingStatusData hentOppfolgingsStatus(String fnr, boolean brukArenaDirekte) {
-        PepClientComparator.get(
-                () -> autorisasjonService.sjekkLesetilgangTilBruker(fnr),
-                () -> pepClient.sjekkLesetilgang(AbacPersonId.fnr(fnr))
-        );
+
+        autorisasjonService.sjekkLesetilgangTilBruker(fnr);
 
         val resolver = OppfolgingResolver.lagOppfolgingResolver(fnr, oppfolgingResolverDependencies, brukArenaDirekte);
 
@@ -182,10 +171,12 @@ public class OppfolgingService {
         if(unleashService.isEnabled("veilarboppfolging.hentVeilederTilgang.fra.veilarbarena")) {
             Optional<VeilarbArenaOppfolging> arenaBruker = oppfolgingsbrukerService.hentOppfolgingsbruker(fnr);
             String oppfolgingsenhet = arenaBruker.map(VeilarbArenaOppfolging::getNav_kontor).orElse(null);
-            return new VeilederTilgang().setTilgangTilBrukersKontor(veilarbAbacPepClient.harTilgangTilEnhet(oppfolgingsenhet));
+            boolean tilgangTilEnhet = pepClient.harTilgangTilEnhet(oppfolgingsenhet);
+            return new VeilederTilgang().setTilgangTilBrukersKontor(tilgangTilEnhet);
         } else {
             val resolver = OppfolgingResolver.lagOppfolgingResolver(fnr, oppfolgingResolverDependencies);
-            return new VeilederTilgang().setTilgangTilBrukersKontor(veilarbAbacPepClient.harTilgangTilEnhet(resolver.getOppfolgingsEnhet()));
+            boolean tilgangTilEnhet = pepClient.harTilgangTilEnhet(resolver.getOppfolgingsEnhet());
+            return new VeilederTilgang().setTilgangTilBrukersKontor(tilgangTilEnhet);
         }
     }
 
@@ -193,7 +184,7 @@ public class OppfolgingService {
         Bruker bruker = Bruker.fraFnr(fnr)
                 .medAktoerIdSupplier(() -> aktorService.getAktorId(fnr)
                         .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktørid")));
-        veilarbAbacPepClient.sjekkLesetilgangTilBruker(bruker);
+        pepClient.sjekkLesetilgang(AbacPersonId.fnr(fnr));
         return Optional.ofNullable(oppfolgingsStatusRepository.fetch(bruker.getAktoerId()));
     }
 
@@ -214,14 +205,9 @@ public class OppfolgingService {
                 .medAktoerIdSupplier(() -> aktorService.getAktorId(fnr)
                         .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktørid")));
 
-        VeilarbAbacPepClient veilarbAbacPepClientMedNiva3 = veilarbAbacPepClient
-                .endre()
-                .medResourceTypeUnderOppfolgingNiva3()
-                .bygg();
-
         PepClientComparator.get(
-                () -> veilarbAbacPepClientMedNiva3.sjekkLesetilgangTilBruker(bruker),
-                () -> pepClient.sjekkTilgang(AbacPersonId.fnr(fnr), ActionId.READ, ResourceType.VeilArbUnderOppfolging)
+                () -> pepClient.sjekkTilgang(AbacPersonId.fnr(fnr), ActionId.READ, ResourceType.VeilArbUnderOppfolging),
+                () -> pepClient.sjekkTilgang(AbacPersonId.aktorId(bruker.getAktoerId()), ActionId.READ, ResourceType.VeilArbUnderOppfolging)
         );
 
         val resolver = OppfolgingResolver.lagOppfolgingResolver(fnr, oppfolgingResolverDependencies);
