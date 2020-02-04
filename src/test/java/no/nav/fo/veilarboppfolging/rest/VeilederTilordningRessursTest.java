@@ -3,7 +3,6 @@ package no.nav.fo.veilarboppfolging.rest;
 import lombok.val;
 import no.nav.apiapp.security.PepClient;
 import no.nav.apiapp.security.veilarbabac.Bruker;
-import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
 import no.nav.brukerdialog.security.context.SubjectRule;
 import no.nav.brukerdialog.security.domain.IdentType;
 import no.nav.common.auth.SsoToken;
@@ -18,6 +17,7 @@ import no.nav.fo.veilarboppfolging.db.VeilederTilordningerRepository;
 import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingFeedDTO;
 import no.nav.fo.veilarboppfolging.rest.domain.TilordneVeilederResponse;
 import no.nav.fo.veilarboppfolging.rest.domain.VeilederTilordning;
+import no.nav.sbl.dialogarena.common.abac.pep.AbacPersonId;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
 import org.junit.Before;
 import org.junit.Rule;
@@ -52,9 +52,6 @@ import static org.mockito.Mockito.*;
 public class VeilederTilordningRessursTest {
 
     @Mock
-    private VeilarbAbacPepClient veilarbAbacPepClient;
-
-    @Mock
     private PepClient pepClient;
 
     @Mock
@@ -85,7 +82,7 @@ public class VeilederTilordningRessursTest {
     public void setup() {
         when(autorisasjonService.harVeilederSkriveTilgangTilFnr(anyString(), anyString())).thenReturn(true);
         subjectRule.setSubject(new Subject("Z000000", IdentType.InternBruker, SsoToken.oidcToken("XOXO")));
-        veilederTilordningRessurs = new VeilederTilordningRessurs(aktorServiceMock, veilederTilordningerRepository, veilarbAbacPepClient, pepClient, feed, autorisasjonService, oppfolgingRepository, veilederHistorikkRepository, new TestTransactor());
+        veilederTilordningRessurs = new VeilederTilordningRessurs(aktorServiceMock, veilederTilordningerRepository, pepClient, feed, autorisasjonService, oppfolgingRepository, veilederHistorikkRepository, new TestTransactor());
     }
 
     @Test
@@ -126,11 +123,13 @@ public class VeilederTilordningRessursTest {
         tilordninger.add(harTilgang2);
         tilordninger.add(harIkkeTilgang2);
 
-        doThrow(NotAuthorizedException.class).when (veilarbAbacPepClient).sjekkLesetilgangTilBruker(bruker("FNR2"));
-        doThrow(PepException.class).when(veilarbAbacPepClient).sjekkLesetilgangTilBruker(bruker("FNR4"));
+        doThrow(NotAuthorizedException.class).when(pepClient).sjekkSkrivetilgang(AbacPersonId.fnr("FNR2"));
+        doThrow(PepException.class).when(pepClient).sjekkSkrivetilgang(AbacPersonId.fnr("FNR4"));
 
         when(aktorServiceMock.getAktorId("FNR1")).thenReturn(of("AKTOERID1"));
+        when(aktorServiceMock.getAktorId("FNR2")).thenReturn(of("AKTOERID2"));
         when(aktorServiceMock.getAktorId("FNR3")).thenReturn(of("AKTOERID3"));
+        when(aktorServiceMock.getAktorId("FNR4")).thenReturn(of("AKTOERID4"));
 
 
         Response response = veilederTilordningRessurs.postVeilederTilordninger(tilordninger);
@@ -155,10 +154,6 @@ public class VeilederTilordningRessursTest {
         tilordninger.add(kanIkkeTilordne1);
         tilordninger.add(kanTilordne2);
         tilordninger.add(kanIkkeTilordne2);
-
-        val oppfolgingsBruker = OppfolgingFeedDTO
-                .builder()
-                .oppfolging(false);
 
 
         when(aktorServiceMock.getAktorId("FNR1")).thenReturn(of("AKTOERID1"));
@@ -291,7 +286,9 @@ public class VeilederTilordningRessursTest {
         tilordninger.add(tilordningERROR1);
         tilordninger.add(tilordningERROR2);
 
-        doThrow(Exception.class).when(veilarbAbacPepClient).sjekkLesetilgangTilBruker(any(Bruker.class));
+        when(aktorServiceMock.getAktorId("FNR1")).thenReturn(of("AKTOERID1"));
+        when(aktorServiceMock.getAktorId("FNR2")).thenReturn(of("AKTOERID2"));
+        doThrow(Exception.class).when(pepClient).sjekkSkrivetilgang(any(AbacPersonId.class));
 
         Response response = veilederTilordningRessurs.postVeilederTilordninger(tilordninger);
         List<VeilederTilordning> feilendeTilordninger = ((TilordneVeilederResponse) response.getEntity()).getFeilendeTilordninger();
@@ -313,7 +310,7 @@ public class VeilederTilordningRessursTest {
                 return null;
             }
             return null;
-        }).when(veilarbAbacPepClient).sjekkLesetilgangTilBruker(any(Bruker.class));
+        }).when(pepClient).sjekkSkrivetilgang(any(AbacPersonId.class));
 
         when(aktorServiceMock.getAktorId("FNR1")).thenReturn(of("AKTOERID1"));
 

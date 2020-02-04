@@ -1,14 +1,16 @@
 package no.nav.fo.veilarboppfolging.rest;
 
 import no.nav.apiapp.feil.IngenTilgang;
+import no.nav.apiapp.security.PepClient;
+import no.nav.apiapp.security.PepClientComparator;
 import no.nav.apiapp.security.veilarbabac.Bruker;
-import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
 import no.nav.brukerdialog.security.domain.IdentType;
 import no.nav.brukerdialog.security.oidc.OidcTokenValidator;
 import no.nav.brukerdialog.security.oidc.OidcTokenValidatorResult;
 import no.nav.brukerdialog.security.oidc.provider.IssoOidcProvider;
 import no.nav.common.auth.SubjectHandler;
 import no.nav.dialogarena.aktor.AktorService;
+import no.nav.sbl.dialogarena.common.abac.pep.AbacPersonId;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
@@ -28,7 +30,7 @@ public class AutorisasjonService {
     AktorService aktorService;
 
     @Inject
-    VeilarbAbacPepClient pepClient;
+    PepClient pepClient;
 
     private OidcTokenValidator oidcTokenValidator = new OidcTokenValidator();
     private IssoOidcProvider issoProvider = new IssoOidcProvider();
@@ -70,7 +72,11 @@ public class AutorisasjonService {
         Bruker bruker = Bruker.fraFnr(fnr)
                 .medAktoerIdSupplier(() -> aktorService.getAktorId(fnr)
                         .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktørid")));
-        pepClient.sjekkLesetilgangTilBruker(bruker);
+
+        PepClientComparator.get(
+                () -> pepClient.sjekkLesetilgang(AbacPersonId.fnr(fnr)),
+                () -> pepClient.sjekkLesetilgang(AbacPersonId.aktorId(bruker.getAktoerId()))
+        );
     }
 
 }

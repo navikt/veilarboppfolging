@@ -9,7 +9,6 @@ import no.nav.apiapp.feil.IngenTilgang;
 import no.nav.apiapp.security.PepClient;
 import no.nav.apiapp.security.PepClientComparator;
 import no.nav.apiapp.security.veilarbabac.Bruker;
-import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.db.VeilederTilordningerRepository;
 import no.nav.fo.veilarboppfolging.domain.Oppfolgingsenhet;
@@ -43,7 +42,6 @@ public class ArenaOppfolgingRessurs {
 
     private final ArenaOppfolgingService arenaOppfolgingService;
     private final OppfolgingMapper oppfolgingMapper;
-    private final VeilarbAbacPepClient veilarbAbacPepClient;
     private final PepClient pepClient;
     private final OrganisasjonEnhetService organisasjonEnhetService;
     private final AktorService aktorService;
@@ -54,7 +52,6 @@ public class ArenaOppfolgingRessurs {
     public ArenaOppfolgingRessurs(
             ArenaOppfolgingService arenaOppfolgingService,
             OppfolgingMapper oppfolgingMapper,
-            VeilarbAbacPepClient veilarbAbacPepClient,
             PepClient pepClient,
             OrganisasjonEnhetService organisasjonEnhetService,
             AktorService aktorService,
@@ -64,7 +61,6 @@ public class ArenaOppfolgingRessurs {
     ) {
         this.arenaOppfolgingService = arenaOppfolgingService;
         this.oppfolgingMapper = oppfolgingMapper;
-        this.veilarbAbacPepClient = veilarbAbacPepClient;
         this.pepClient = pepClient;
         this.organisasjonEnhetService = organisasjonEnhetService;
         this.aktorService = aktorService;
@@ -79,7 +75,7 @@ public class ArenaOppfolgingRessurs {
         Bruker bruker = Bruker.fraFnr(fnr)
                 .medAktoerIdSupplier(() -> aktorService.getAktorId(fnr).orElseThrow(IngenTilgang::new));
 
-        veilarbAbacPepClient.sjekkLesetilgangTilBruker(bruker);
+        pepClient.sjekkLesetilgang(AbacPersonId.fnr(bruker.getFoedselsnummer()));
         LocalDate periodeFom = LocalDate.now().minusMonths(MANEDER_BAK_I_TID);
         LocalDate periodeTom = LocalDate.now().plusMonths(MANEDER_FREM_I_TID);
         XMLGregorianCalendar fom = convertDateToXMLGregorianCalendar(periodeFom);
@@ -95,7 +91,7 @@ public class ArenaOppfolgingRessurs {
         Bruker bruker = Bruker.fraFnr(fnr)
                 .medAktoerIdSupplier(() -> aktorService.getAktorId(fnr).orElseThrow(IngenTilgang::new));
 
-        veilarbAbacPepClient.sjekkLesetilgangTilBruker(bruker);
+        pepClient.sjekkLesetilgang(AbacPersonId.fnr(bruker.getFoedselsnummer()));
 
         no.nav.fo.veilarboppfolging.domain.ArenaOppfolging arenaData = arenaOppfolgingService.hentArenaOppfolging(fnr);
         Oppfolgingsenhet enhet = hentEnhet(arenaData.getOppfolgingsenhet());
@@ -127,8 +123,8 @@ public class ArenaOppfolgingRessurs {
                 .medAktoerIdSupplier(() -> aktorService.getAktorId(fnr).orElseThrow(IngenTilgang::new));
 
         PepClientComparator.get(
-                () -> veilarbAbacPepClient.sjekkLesetilgangTilBruker(bruker),
-                () -> pepClient.sjekkLesetilgang(AbacPersonId.fnr(fnr))
+                () -> pepClient.sjekkLesetilgang(AbacPersonId.fnr(fnr)),
+                () -> pepClient.sjekkLesetilgang(AbacPersonId.aktorId(bruker.getAktoerId()))
         );
 
         OppfolgingEnhetMedVeileder res;
