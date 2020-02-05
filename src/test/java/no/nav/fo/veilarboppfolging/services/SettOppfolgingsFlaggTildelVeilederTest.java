@@ -64,7 +64,7 @@ public class SettOppfolgingsFlaggTildelVeilederTest {
                 mock(KvpRepository.class),
                 mock(NyeBrukereFeedRepository.class)
         );
-        veilederTilordningRessurs = new VeilederTilordningRessurs(aktorServiceMock, veilederTilordningerRepository, veilarbAbacPepClient, pepClient, feed, autorisasjonService, oppfolgingRepository, veilederHistorikkRepository, new TestTransactor());
+        veilederTilordningRessurs = new VeilederTilordningRessurs(aktorServiceMock, veilederTilordningerRepository, pepClient, feed, autorisasjonService, oppfolgingRepository, veilederHistorikkRepository, new TestTransactor());
 
     }
 

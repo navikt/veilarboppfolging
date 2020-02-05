@@ -4,8 +4,7 @@ import io.vavr.collection.Stream;
 import lombok.SneakyThrows;
 import lombok.val;
 import no.nav.apiapp.feil.IngenTilgang;
-import no.nav.apiapp.security.veilarbabac.Bruker;
-import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
+import no.nav.apiapp.security.PepClient;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingsStatusRepository;
@@ -14,6 +13,9 @@ import no.nav.fo.veilarboppfolging.domain.arena.AktivitetStatus;
 import no.nav.fo.veilarboppfolging.domain.arena.ArenaAktivitetDTO;
 import no.nav.fo.veilarboppfolging.mappers.VeilarbArenaOppfolging;
 import no.nav.fo.veilarboppfolging.rest.AutorisasjonService;
+import no.nav.sbl.dialogarena.common.abac.pep.AbacPersonId;
+import no.nav.sbl.dialogarena.common.abac.pep.domain.ResourceType;
+import no.nav.sbl.dialogarena.common.abac.pep.domain.request.Action;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt.WSYtelseskontrakt;
@@ -60,7 +62,7 @@ public class OppfolgingServiceTest {
     private ArenaOppfolgingService arenaOppfolgingService;
 
     @Mock
-    private VeilarbAbacPepClient pepClientMock;
+    private PepClient pepClientMock;
 
     @Mock
     private VeilarbaktivtetService veilarbaktivtetService;
@@ -375,43 +377,22 @@ public class OppfolgingServiceTest {
 
     @Test(expected = IngenTilgang.class)
     public void underOppfolgingNiva3_skalFeileHvisIkkeTilgang() throws Exception {
-        VeilarbAbacPepClient veilarbAbacPepClientMedNiva3 = underOppfolgingNiva3_setup(of(AKTOR_ID));
-
-        doThrow(IngenTilgang.class).when(veilarbAbacPepClientMedNiva3).sjekkLesetilgangTilBruker(any(Bruker.class));
-
-        oppfolgingService.underOppfolgingNiva3(FNR);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void underOppfolgingNiva3_skalFeileHvisAktoerIdIkkeFinnes() throws Exception {
-        underOppfolgingNiva3_setup(Optional.empty());
+        doThrow(IngenTilgang.class).when(pepClientMock)
+                .sjekkTilgang(any(AbacPersonId.class), any(Action.ActionId.class), eq(ResourceType.VeilArbUnderOppfolging));
 
         oppfolgingService.underOppfolgingNiva3(FNR);
     }
 
     @Test
     public void underOppfolgingNiva3_skalReturnereFalseHvisIngenDataOmBruker() throws Exception {
-        underOppfolgingNiva3_setup(of(AKTOR_ID));
-
         assertThat(oppfolgingService.underOppfolgingNiva3(FNR), is(false));
     }
 
     @Test
     public void underOppfolgingNiva3_skalReturnereTrueHvisBrukerHarOppfolgingsflagg() throws Exception {
         gittOppfolging(oppfolging.setUnderOppfolging(true));
-        underOppfolgingNiva3_setup(of(AKTOR_ID));
 
         assertThat(oppfolgingService.underOppfolgingNiva3(FNR), is(true));
-    }
-
-    private VeilarbAbacPepClient underOppfolgingNiva3_setup(Optional<String> aktorId) {
-        when(aktorServiceMock.getAktorId(FNR)).thenReturn(aktorId);
-        VeilarbAbacPepClient veilarbAbacPepClientMedNiva3 = mock(VeilarbAbacPepClient.class);
-        VeilarbAbacPepClient.Builder builderMock = mock(VeilarbAbacPepClient.Builder.class);
-        when(pepClientMock.endre()).thenReturn(builderMock);
-        when(builderMock.medResourceTypeUnderOppfolgingNiva3()).thenReturn(builderMock);
-        when(builderMock.bygg()).thenReturn(veilarbAbacPepClientMedNiva3);
-        return veilarbAbacPepClientMedNiva3;
     }
 
     private void gittOppfolgingStatus(String formidlingskode, String kvalifiseringsgruppekode) {

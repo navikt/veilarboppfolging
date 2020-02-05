@@ -6,7 +6,6 @@ import no.nav.apiapp.security.PepClient;
 import no.nav.apiapp.security.PepClientComparator;
 import no.nav.apiapp.security.SubjectService;
 import no.nav.apiapp.security.veilarbabac.Bruker;
-import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
 import no.nav.common.auth.SubjectHandler;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.feed.producer.FeedProducer;
@@ -45,7 +44,6 @@ public class VeilederTilordningRessurs {
 
     private final AktorService aktorService;
     private final VeilederTilordningerRepository veilederTilordningerRepository;
-    private final VeilarbAbacPepClient veilarbAbacPepClient;
     private final PepClient pepClient;
     private final AutorisasjonService autorisasjonService;
     private final Timer timer;
@@ -57,7 +55,6 @@ public class VeilederTilordningRessurs {
 
     public VeilederTilordningRessurs(AktorService aktorService,
                                      VeilederTilordningerRepository veilederTilordningerRepository,
-                                     VeilarbAbacPepClient veilarbAbacPepClient,
                                      PepClient pepClient,
                                      FeedProducer<OppfolgingFeedDTO> oppfolgingFeed,
                                      AutorisasjonService autorisasjonService,
@@ -68,7 +65,6 @@ public class VeilederTilordningRessurs {
         this.autorisasjonService = autorisasjonService;
         this.aktorService = aktorService;
         this.veilederTilordningerRepository = veilederTilordningerRepository;
-        this.veilarbAbacPepClient = veilarbAbacPepClient;
         this.pepClient = pepClient;
         this.oppfolgingFeed = oppfolgingFeed;
         this.oppfolgingRepository = oppfolgingRepository;
@@ -99,8 +95,9 @@ public class VeilederTilordningRessurs {
                 Bruker bruker = lagBrukerFraFnr(tilordning.getBrukerFnr());
 
                 PepClientComparator.get(
-                        () -> veilarbAbacPepClient.sjekkSkrivetilgangTilBruker(bruker),
-                        () -> pepClient.sjekkSkrivetilgang(AbacPersonId.fnr(tilordning.getBrukerFnr())));
+                        () -> pepClient.sjekkSkrivetilgang(AbacPersonId.fnr(bruker.getFoedselsnummer())),
+                        () -> pepClient.sjekkSkrivetilgang(AbacPersonId.aktorId(bruker.getAktoerId()))
+                );
 
 
                 String aktoerId = bruker.getAktoerId();
@@ -158,7 +155,7 @@ public class VeilederTilordningRessurs {
         Bruker bruker = lagBrukerFraFnr(fnr);
 
         autorisasjonService.skalVereInternBruker();
-        veilarbAbacPepClient.sjekkLesetilgangTilBruker(bruker);
+        pepClient.sjekkLesetilgang(AbacPersonId.fnr(bruker.getFoedselsnummer()));
 
         veilederTilordningerRepository.hentTilordnetVeileder(bruker.getAktoerId())
                 .filter(Tilordning::isNyForVeileder)
