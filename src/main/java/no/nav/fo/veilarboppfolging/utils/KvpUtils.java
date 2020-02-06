@@ -1,7 +1,7 @@
 package no.nav.fo.veilarboppfolging.utils;
 
 import lombok.SneakyThrows;
-import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
+import no.nav.apiapp.security.PepClient;
 import no.nav.fo.veilarboppfolging.domain.Kvp;
 
 import java.util.Date;
@@ -12,13 +12,13 @@ import static java.util.Collections.singletonList;
 
 public class KvpUtils {
 
-    public static boolean sjekkTilgangGittKvp(VeilarbAbacPepClient pepClient, Kvp kvp, Supplier<Date> dateSupplier) {
+    public static boolean sjekkTilgangGittKvp(PepClient pepClient, Kvp kvp, Supplier<Date> dateSupplier) {
         return kvp == null || sjekkTilgangGittKvp(pepClient, singletonList(kvp), dateSupplier);
 
     }
 
     @SneakyThrows
-    public static boolean sjekkTilgangGittKvp(VeilarbAbacPepClient pepClient, List<Kvp> kvpList, Supplier<Date> dateSupplier) {
+    public static boolean sjekkTilgangGittKvp(PepClient pepClient, List<Kvp> kvpList, Supplier<Date> dateSupplier) {
         for (Kvp kvp : kvpList) {
             if (between(kvp.getOpprettetDato(), kvp.getAvsluttetDato(), dateSupplier.get())) {
                 return pepClient.harTilgangTilEnhet(kvp.getEnhet());

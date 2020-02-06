@@ -1,6 +1,7 @@
 package no.nav.fo.veilarboppfolging.rest;
 
 import no.nav.apiapp.security.PepClient;
+import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.domain.OppfolgingskontraktData;
 import no.nav.fo.veilarboppfolging.domain.OppfolgingskontraktResponse;
 import no.nav.fo.veilarboppfolging.mappers.OppfolgingMapper;
@@ -12,6 +13,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Collections;
+import java.util.Optional;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
@@ -34,12 +36,17 @@ public class ArenaOppfolgingRessursTest {
     @Mock
     private PepClient pepClient;
 
+    @Mock
+    AktorService aktorService;
+
     @Test
     public void getOppfoelgingSkalReturnereEnRespons() throws Exception {
 
         when(oppfolgingMapper.tilOppfolgingskontrakt(any())).thenReturn(
                 new OppfolgingskontraktResponse(Collections.singletonList(new OppfolgingskontraktData()))
         );
+
+        when(aktorService.getAktorId("fnr")).thenReturn(Optional.of("aktorId"));
 
 
         final OppfolgingskontraktResponse oppfoelging = oppfoelgingRessurs.getOppfoelging("fnr");

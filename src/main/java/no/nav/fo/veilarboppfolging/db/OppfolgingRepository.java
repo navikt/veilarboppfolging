@@ -5,7 +5,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import no.nav.apiapp.feil.Feil;
-import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
+import no.nav.apiapp.security.PepClient;
 import no.nav.fo.veilarboppfolging.domain.*;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Component;
@@ -24,7 +24,7 @@ import static no.nav.fo.veilarboppfolging.utils.KvpUtils.sjekkTilgangGittKvp;
 @Component
 public class OppfolgingRepository {
 
-    private final VeilarbAbacPepClient pepClient;
+    private final PepClient pepClient;
     private final OppfolgingsStatusRepository statusRepository;
     private final OppfolgingsPeriodeRepository periodeRepository;
     private final MaalRepository maalRepository;
@@ -35,7 +35,7 @@ public class OppfolgingRepository {
 
     @Inject
     public OppfolgingRepository(
-            VeilarbAbacPepClient pepClient,
+            PepClient pepClient,
             OppfolgingsStatusRepository statusRepository,
             OppfolgingsPeriodeRepository periodeRepository,
             MaalRepository maalRepository,

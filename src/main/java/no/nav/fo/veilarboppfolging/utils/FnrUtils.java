@@ -28,6 +28,6 @@ public class FnrUtils {
     public static AktorId getAktorIdOrElseThrow(AktorService aktorService, String fnr) {
         return aktorService.getAktorId(fnr)
                 .map(AktorId::new)
-                .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktør for fnr: " + fnr));
+                .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktør id."));
     }
 }

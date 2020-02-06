@@ -1,10 +1,11 @@
 package no.nav.fo.veilarboppfolging.rest;
 
-import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
+import no.nav.apiapp.security.PepClient;
 import no.nav.brukerdialog.security.context.SubjectRule;
 import no.nav.brukerdialog.security.domain.IdentType;
 import no.nav.common.auth.SsoToken;
 import no.nav.common.auth.Subject;
+import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.domain.AktiverArbeidssokerData;
 import no.nav.fo.veilarboppfolging.domain.Fnr;
 import no.nav.fo.veilarboppfolging.domain.SykmeldtBrukerType;
@@ -17,8 +18,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import java.util.Optional;
+
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class OppfolgingRessursTest {
@@ -36,7 +38,10 @@ public class OppfolgingRessursTest {
     private AktiverBrukerService aktiverBrukerService;
 
     @Mock
-    private VeilarbAbacPepClient pepClient;
+    AktorService aktorService;
+
+    @Mock
+    private PepClient pepClient;
 
     @Mock
     private FnrParameterUtil fnrParameterUtil;
@@ -48,12 +53,14 @@ public class OppfolgingRessursTest {
     public void aktiverBruker() throws Exception {
         AktiverArbeidssokerData data = new AktiverArbeidssokerData();
         data.setFnr(new Fnr("fnr"));
+        when(aktorService.getAktorId("fnr")).thenReturn(Optional.of("aktorId"));
         oppfolgingRessurs.aktiverBruker(data);
         verify(autorisasjonService,  times(1)).skalVereSystemRessurs();
     }
 
     @Test
     public void reaktiverBruker() throws Exception {
+        when(aktorService.getAktorId("fnr")).thenReturn(Optional.of("aktorId"));
         oppfolgingRessurs.reaktiverBruker(new Fnr("fnr"));
         verify(autorisasjonService,  times(1)).skalVereSystemRessurs();
     }

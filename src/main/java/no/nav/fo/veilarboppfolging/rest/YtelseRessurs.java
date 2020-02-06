@@ -2,8 +2,8 @@ package no.nav.fo.veilarboppfolging.rest;
 
 import io.swagger.annotations.Api;
 import no.nav.apiapp.feil.IngenTilgang;
+import no.nav.apiapp.security.PepClient;
 import no.nav.apiapp.security.veilarbabac.Bruker;
-import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.domain.OppfolgingskontraktResponse;
 import no.nav.fo.veilarboppfolging.mappers.OppfolgingMapper;
@@ -12,6 +12,7 @@ import no.nav.fo.veilarboppfolging.rest.domain.YtelserResponse;
 import no.nav.fo.veilarboppfolging.rest.domain.YtelseskontraktResponse;
 import no.nav.fo.veilarboppfolging.services.ArenaOppfolgingService;
 import no.nav.fo.veilarboppfolging.services.YtelseskontraktService;
+import no.nav.sbl.dialogarena.common.abac.pep.AbacPersonId;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
@@ -40,7 +41,7 @@ public class YtelseRessurs {
     final private ArenaOppfolgingService arenaOppfolgingService;
     final private OppfolgingMapper oppfolgingMapper;
     final private YtelseskontraktMapper ytelseskontraktMapper;
-    private final VeilarbAbacPepClient pepClient;
+    private final PepClient pepClient;
     private final AutorisasjonService autorisasjonService;
     private final AktorService aktorService;
 
@@ -49,7 +50,7 @@ public class YtelseRessurs {
                          ArenaOppfolgingService arenaOppfolgingService,
                          OppfolgingMapper oppfolgingMapper,
                          YtelseskontraktMapper ytelseskontraktMapper,
-                         VeilarbAbacPepClient pepClient,
+                         PepClient pepClient,
                          AutorisasjonService autorisasjonService,
                          AktorService aktorService) {
         this.ytelseskontraktService = ytelseskontraktService;
@@ -65,9 +66,7 @@ public class YtelseRessurs {
     @Path("/ytelser")
     public YtelserResponse getYtelser(@PathParam("fnr") String fnr) throws PepException {
         autorisasjonService.skalVereInternBruker();
-        Bruker bruker = Bruker.fraFnr(fnr)
-                .medAktoerIdSupplier(() -> aktorService.getAktorId(fnr).orElseThrow(IngenTilgang::new));
-        pepClient.sjekkLesetilgangTilBruker(bruker);
+        autorisasjonService.sjekkLesetilgangTilBruker(fnr);
 
         LocalDate periodeFom = LocalDate.now().minusMonths(MANEDER_BAK_I_TID);
         LocalDate periodeTom = LocalDate.now().plusMonths(MANEDER_FREM_I_TID);

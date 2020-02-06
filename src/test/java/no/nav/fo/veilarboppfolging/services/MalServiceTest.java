@@ -1,8 +1,7 @@
 package no.nav.fo.veilarboppfolging.services;
 
 import no.nav.apiapp.feil.Feil;
-import no.nav.apiapp.feil.IngenTilgang;
-import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
+import no.nav.apiapp.security.PepClient;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.db.KvpRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
@@ -54,7 +53,7 @@ public class MalServiceTest {
     private OppfolgingResolverDependencies oppfolgingResolverDependenciesMock;
 
     @Mock
-    private VeilarbAbacPepClient pepClientMock;
+    private PepClient pepClientMock;
 
     @Mock
     private KvpRepository kvpRepositoryMock;

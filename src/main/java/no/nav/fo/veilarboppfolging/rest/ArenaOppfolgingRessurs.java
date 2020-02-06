@@ -7,10 +7,10 @@ import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.apiapp.feil.IngenTilgang;
 import no.nav.apiapp.security.PepClient;
-import no.nav.apiapp.security.PepClientComparator;
 import no.nav.apiapp.security.veilarbabac.Bruker;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.db.VeilederTilordningerRepository;
+import no.nav.fo.veilarboppfolging.domain.AktorId;
 import no.nav.fo.veilarboppfolging.domain.Oppfolgingsenhet;
 import no.nav.fo.veilarboppfolging.domain.OppfolgingskontraktResponse;
 import no.nav.fo.veilarboppfolging.mappers.VeilarbArenaOppfolging;
@@ -30,6 +30,7 @@ import java.util.Optional;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static no.nav.fo.veilarboppfolging.utils.CalendarConverter.convertDateToXMLGregorianCalendar;
+import static no.nav.fo.veilarboppfolging.utils.FnrUtils.getAktorIdOrElseThrow;
 
 @Slf4j
 @Component
@@ -72,10 +73,8 @@ public class ArenaOppfolgingRessurs {
     @GET
     @Path("/oppfoelging")
     public OppfolgingskontraktResponse getOppfoelging(@PathParam("fnr") String fnr) throws PepException {
-        Bruker bruker = Bruker.fraFnr(fnr)
-                .medAktoerIdSupplier(() -> aktorService.getAktorId(fnr).orElseThrow(IngenTilgang::new));
-
-        pepClient.sjekkLesetilgang(AbacPersonId.fnr(bruker.getFoedselsnummer()));
+        AktorId aktorId = getAktorIdOrElseThrow(aktorService, fnr);
+        pepClient.sjekkLesetilgang(AbacPersonId.aktorId(aktorId.getAktorId()));
         LocalDate periodeFom = LocalDate.now().minusMonths(MANEDER_BAK_I_TID);
         LocalDate periodeTom = LocalDate.now().plusMonths(MANEDER_FREM_I_TID);
         XMLGregorianCalendar fom = convertDateToXMLGregorianCalendar(periodeFom);
@@ -88,10 +87,9 @@ public class ArenaOppfolgingRessurs {
     @Path("/oppfoelgingsstatus")
     @Deprecated
     public ArenaOppfolging getOppfoelginsstatus(@PathParam("fnr") String fnr) throws PepException {
-        Bruker bruker = Bruker.fraFnr(fnr)
-                .medAktoerIdSupplier(() -> aktorService.getAktorId(fnr).orElseThrow(IngenTilgang::new));
 
-        pepClient.sjekkLesetilgang(AbacPersonId.fnr(bruker.getFoedselsnummer()));
+        AktorId aktorId = getAktorIdOrElseThrow(aktorService, fnr);
+        pepClient.sjekkLesetilgang(AbacPersonId.aktorId(aktorId.getAktorId()));
 
         no.nav.fo.veilarboppfolging.domain.ArenaOppfolging arenaData = arenaOppfolgingService.hentArenaOppfolging(fnr);
         Oppfolgingsenhet enhet = hentEnhet(arenaData.getOppfolgingsenhet());
@@ -119,13 +117,9 @@ public class ArenaOppfolgingRessurs {
                                                           @ApiParam(value = "Deprecated og bør ikke settes. " +
                                                                   "Tilgjengelig pga. overgang til veilarbarena som har litt forsinkelse på data i Arena i motsetning til SOAP tjeneste.")
                                                           @QueryParam("brukArena") boolean brukArena) throws PepException {
-        Bruker bruker = Bruker.fraFnr(fnr)
-                .medAktoerIdSupplier(() -> aktorService.getAktorId(fnr).orElseThrow(IngenTilgang::new));
+        AktorId aktorId = getAktorIdOrElseThrow(aktorService, fnr);
 
-        PepClientComparator.get(
-                () -> pepClient.sjekkLesetilgang(AbacPersonId.fnr(fnr)),
-                () -> pepClient.sjekkLesetilgang(AbacPersonId.aktorId(bruker.getAktoerId()))
-        );
+        pepClient.sjekkLesetilgang(AbacPersonId.aktorId(aktorId.getAktorId()));
 
         OppfolgingEnhetMedVeileder res;
         if(!brukArena && unleash.isEnabled("veilarboppfolging.oppfolgingsstatus.fra.veilarbarena")) {

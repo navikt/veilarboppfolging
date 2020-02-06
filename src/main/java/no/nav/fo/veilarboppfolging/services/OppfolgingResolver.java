@@ -7,9 +7,9 @@ import lombok.SneakyThrows;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import no.nav.apiapp.security.PepClient;
 import no.nav.apiapp.security.SecurityLevelAuthorizationModule;
 import no.nav.apiapp.security.veilarbabac.Bruker;
-import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
 import no.nav.brukerdialog.security.oidc.SystemUserTokenProvider;
 import no.nav.common.auth.SubjectHandler;
 import no.nav.dialogarena.aktor.AktorService;
@@ -51,6 +51,7 @@ import static no.nav.fo.veilarboppfolging.domain.KodeverkBruker.SYSTEM;
 import static no.nav.fo.veilarboppfolging.domain.arena.AktivitetStatus.AVBRUTT;
 import static no.nav.fo.veilarboppfolging.domain.arena.AktivitetStatus.FULLFORT;
 import static no.nav.fo.veilarboppfolging.services.ArenaUtils.*;
+import static no.nav.fo.veilarboppfolging.utils.FnrUtils.getAktorIdOrElseThrow;
 
 
 @Slf4j
@@ -74,15 +75,13 @@ public class OppfolgingResolver {
 
     private OppfolgingResolver(String fnr, OppfolgingResolverDependencies deps, boolean brukArenaDirekte) {
         this.brukArenaDirekte = brukArenaDirekte;
-        Bruker bruker = Bruker.fraFnr(fnr)
-                .medAktoerIdSupplier(() -> this.deps.getAktorService().getAktorId(fnr)
-                        .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktørid")));
+
 
         this.fnr = fnr;
         this.deps = deps;
         this.arenaOppfolgingTilstand = Optional.empty();
 
-        this.aktorId = bruker.getAktoerId();
+        this.aktorId = getAktorIdOrElseThrow(this.deps.getAktorService(), fnr).getAktorId();
         this.oppfolging = hentOppfolging();
 
         avsluttKvpVedEnhetBytte();
@@ -565,7 +564,7 @@ public class OppfolgingResolver {
     public static class OppfolgingResolverDependencies {
 
         @Inject
-        private VeilarbAbacPepClient pepClient;
+        private PepClient pepClient;
 
         @Inject
         private Transactor transactor;

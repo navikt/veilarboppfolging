@@ -1,7 +1,7 @@
 package no.nav.fo.veilarboppfolging.rest;
 
 import no.nav.apiapp.feil.IngenTilgang;
-import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
+import no.nav.apiapp.security.PepClient;
 import no.nav.common.auth.SubjectHandler;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.domain.*;
@@ -25,6 +25,7 @@ import no.nav.fo.veilarboppfolging.services.HistorikkService;
 import no.nav.fo.veilarboppfolging.services.KvpService;
 import no.nav.fo.veilarboppfolging.services.MalService;
 import no.nav.fo.veilarboppfolging.services.OppfolgingService;
+import no.nav.sbl.dialogarena.common.abac.pep.AbacPersonId;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
 import org.springframework.stereotype.Component;
 
@@ -34,6 +35,7 @@ import java.util.Optional;
 
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
+import static no.nav.fo.veilarboppfolging.utils.FnrUtils.getAktorIdOrElseThrow;
 
 /*
     NB:
@@ -65,7 +67,7 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
     private AutorisasjonService autorisasjonService;
 
     @Inject
-    private VeilarbAbacPepClient pepClient;
+    private PepClient pepClient;
 
     @Inject
     private AktorService aktorService;
@@ -193,14 +195,16 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
     @Override
     public void aktiverBruker(AktiverArbeidssokerData aktiverArbeidssokerData) throws Exception {
         autorisasjonService.skalVereSystemRessurs();
-        pepClient.sjekkSkrivetilgangTilBruker(lagBrukerFraFnr(aktiverArbeidssokerData.getFnr().getFnr()));
+        AktorId aktorId = getAktorIdOrElseThrow(aktorService, aktiverArbeidssokerData.getFnr().getFnr());
+        pepClient.sjekkSkrivetilgang(AbacPersonId.aktorId(aktorId.getAktorId()));
         aktiverBrukerService.aktiverBruker(aktiverArbeidssokerData);
     }
 
     @Override
     public void reaktiverBruker(Fnr fnr) throws Exception {
         autorisasjonService.skalVereSystemRessurs();
-        pepClient.sjekkSkrivetilgangTilBruker(lagBrukerFraFnr(fnr.getFnr()));
+        AktorId aktorId = getAktorIdOrElseThrow(aktorService, fnr.getFnr());
+        pepClient.sjekkSkrivetilgang(AbacPersonId.aktorId(aktorId.getAktorId()));
         aktiverBrukerService.reaktiverBruker(fnr);
     }
 
@@ -307,11 +311,4 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
                 .setEndretAv(malData.getEndretAvFormattert())
                 .setDato(malData.getDato());
     }
-
-    private no.nav.apiapp.security.veilarbabac.Bruker lagBrukerFraFnr(String fnr) {
-        return no.nav.apiapp.security.veilarbabac.Bruker.fraFnr(fnr)
-                .medAktoerIdSupplier(()->aktorService.getAktorId(fnr).orElseThrow(IngenTilgang::new));
-    }
-
-
 }

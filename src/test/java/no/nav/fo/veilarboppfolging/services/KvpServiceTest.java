@@ -4,8 +4,7 @@ import lombok.val;
 import no.nav.apiapp.feil.Feil;
 import no.nav.apiapp.feil.IngenTilgang;
 import no.nav.apiapp.feil.UlovligHandling;
-import no.nav.apiapp.security.veilarbabac.Bruker;
-import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
+import no.nav.apiapp.security.PepClient;
 import no.nav.common.auth.SsoToken;
 import no.nav.common.auth.Subject;
 import no.nav.common.auth.SubjectHandler;
@@ -14,6 +13,7 @@ import no.nav.fo.veilarboppfolging.db.EskaleringsvarselRepository;
 import no.nav.fo.veilarboppfolging.db.KvpRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingsStatusRepository;
 import no.nav.fo.veilarboppfolging.domain.OppfolgingTable;
+import no.nav.sbl.dialogarena.common.abac.pep.AbacPersonId;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingsstatusResponse;
@@ -43,7 +43,7 @@ public class KvpServiceTest {
     private OppfoelgingPortType oppfoelgingPortTypeMock;
 
     @Mock
-    private VeilarbAbacPepClient pepClientMock;
+    private PepClient pepClientMock;
 
     @Mock
     private OppfolgingsStatusRepository oppfolgingsStatusRepository;
@@ -56,7 +56,7 @@ public class KvpServiceTest {
 
     private static final String FNR = "1234";
     private static final String AKTOR_ID = "12345";
-    private static final Bruker BRUKER = Bruker.fraFnr(FNR).medAktoerIdSupplier(()->AKTOR_ID);
+    private static final AbacPersonId ABAC_PERSON_ID = AbacPersonId.aktorId(AKTOR_ID);
     private static final String ENHET = "1234";
     private static final String START_BEGRUNNELSE = "START_BEGRUNNELSE";
     private static final String STOP_BEGRUNNELSE = "STOP_BEGRUNNELSE";
@@ -91,7 +91,7 @@ public class KvpServiceTest {
                 () -> kvpService.startKvp(FNR, START_BEGRUNNELSE)
         );
 
-        verify(pepClientMock, times(1)).sjekkLesetilgangTilBruker(BRUKER);
+        verify(pepClientMock, times(1)).sjekkLesetilgang(ABAC_PERSON_ID);
         verify(kvpRepositoryMock, times(1)).startKvp(eq(AKTOR_ID), eq(ENHET), eq(VEILEDER), eq(START_BEGRUNNELSE));
         verify(pepClientMock, times(1)).harTilgangTilEnhet(ENHET);
     }
@@ -115,7 +115,7 @@ public class KvpServiceTest {
                 () -> kvpService.stopKvp(FNR, STOP_BEGRUNNELSE)
         );
 
-        verify(pepClientMock, times(1)).sjekkLesetilgangTilBruker(BRUKER);
+        verify(pepClientMock, times(1)).sjekkLesetilgang(ABAC_PERSON_ID);
         verify(oppfolgingsStatusRepository, times(1)).fetch(AKTOR_ID);
         verify(kvpRepositoryMock, times(1)).stopKvp(eq(kvpId), eq(AKTOR_ID), eq(VEILEDER), eq(STOP_BEGRUNNELSE), eq(NAV));
         verify(pepClientMock, times(1)).harTilgangTilEnhet(ENHET);
@@ -143,7 +143,7 @@ public class KvpServiceTest {
 
     @Test(expected = IngenTilgang.class)
     public void startKvpIkkeTilgang() {
-        doThrow(IngenTilgang.class).when(pepClientMock).sjekkLesetilgangTilBruker(any());
+        doThrow(IngenTilgang.class).when(pepClientMock).sjekkLesetilgang(any());
 
         kvpService.startKvp(FNR, START_BEGRUNNELSE);
     }
@@ -157,7 +157,7 @@ public class KvpServiceTest {
 
     @Test(expected = IngenTilgang.class)
     public void stoppKvpIkkeTilgang() {
-        doThrow(IngenTilgang.class).when(pepClientMock).sjekkLesetilgangTilBruker(any());
+        doThrow(IngenTilgang.class).when(pepClientMock).sjekkLesetilgang(any());
 
         kvpService.stopKvp(FNR, STOP_BEGRUNNELSE);
     }
