@@ -20,7 +20,6 @@ import no.nav.fo.veilarboppfolging.rest.domain.VeilederTilordning;
 import no.nav.fo.veilarboppfolging.utils.FunksjonelleMetrikker;
 import no.nav.metrics.MetricsFactory;
 import no.nav.metrics.Timer;
-import no.nav.sbl.dialogarena.common.abac.pep.AbacPersonId;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
 import no.nav.sbl.jdbc.Transactor;
 import org.slf4j.Logger;
@@ -95,8 +94,8 @@ public class VeilederTilordningRessurs {
                 Bruker bruker = lagBrukerFraFnr(tilordning.getBrukerFnr());
 
                 PepClientComparator.get(
-                        () -> pepClient.sjekkSkrivetilgang(AbacPersonId.fnr(bruker.getFoedselsnummer())),
-                        () -> pepClient.sjekkSkrivetilgang(AbacPersonId.aktorId(bruker.getAktoerId()))
+                        () -> pepClient.sjekkSkrivetilgangTilFnr(bruker.getFoedselsnummer()),
+                        () -> pepClient.sjekkSkrivetilgangTilAktorId(bruker.getAktoerId())
                 );
 
 
@@ -155,7 +154,7 @@ public class VeilederTilordningRessurs {
         Bruker bruker = lagBrukerFraFnr(fnr);
 
         autorisasjonService.skalVereInternBruker();
-        pepClient.sjekkLesetilgang(AbacPersonId.fnr(bruker.getFoedselsnummer()));
+        pepClient.sjekkLesetilgangTilFnr(bruker.getFoedselsnummer());
 
         veilederTilordningerRepository.hentTilordnetVeileder(bruker.getAktoerId())
                 .filter(Tilordning::isNyForVeileder)
