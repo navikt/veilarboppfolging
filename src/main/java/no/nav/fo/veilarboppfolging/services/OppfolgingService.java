@@ -184,7 +184,7 @@ public class OppfolgingService {
         Bruker bruker = Bruker.fraFnr(fnr)
                 .medAktoerIdSupplier(() -> aktorService.getAktorId(fnr)
                         .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktørid")));
-        pepClient.sjekkLesetilgang(AbacPersonId.fnr(fnr));
+        pepClient.sjekkLesetilgangTilFnr(fnr);
         return Optional.ofNullable(oppfolgingsStatusRepository.fetch(bruker.getAktoerId()));
     }
 
@@ -206,8 +206,8 @@ public class OppfolgingService {
                         .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktørid")));
 
         PepClientComparator.get(
-                () -> pepClient.sjekkTilgang(AbacPersonId.fnr(fnr), ActionId.READ, ResourceType.VeilArbUnderOppfolging),
-                () -> pepClient.sjekkTilgang(AbacPersonId.aktorId(bruker.getAktoerId()), ActionId.READ, ResourceType.VeilArbUnderOppfolging)
+                () -> pepClient.sjekkTilgangTilPerson(AbacPersonId.fnr(fnr), ActionId.READ, ResourceType.VeilArbUnderOppfolging),
+                () -> pepClient.sjekkTilgangTilPerson(AbacPersonId.aktorId(bruker.getAktoerId()), ActionId.READ, ResourceType.VeilArbUnderOppfolging)
         );
 
         val resolver = OppfolgingResolver.lagOppfolgingResolver(fnr, oppfolgingResolverDependencies);

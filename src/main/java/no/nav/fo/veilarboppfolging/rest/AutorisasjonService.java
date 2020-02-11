@@ -10,7 +10,6 @@ import no.nav.brukerdialog.security.oidc.OidcTokenValidatorResult;
 import no.nav.brukerdialog.security.oidc.provider.IssoOidcProvider;
 import no.nav.common.auth.SubjectHandler;
 import no.nav.dialogarena.aktor.AktorService;
-import no.nav.sbl.dialogarena.common.abac.pep.AbacPersonId;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
@@ -74,8 +73,8 @@ public class AutorisasjonService {
                         .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktørid")));
 
         PepClientComparator.get(
-                () -> pepClient.sjekkLesetilgang(AbacPersonId.fnr(fnr)),
-                () -> pepClient.sjekkLesetilgang(AbacPersonId.aktorId(bruker.getAktoerId()))
+                () -> pepClient.sjekkLesetilgangTilFnr(fnr),
+                () -> pepClient.sjekkLesetilgangTilAktorId(bruker.getAktoerId())
         );
     }
 
