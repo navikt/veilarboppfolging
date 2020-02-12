@@ -1,7 +1,7 @@
 package no.nav.fo.veilarboppfolging.services.registrerBruker;
 
 import io.vavr.control.Try;
-import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
+import no.nav.apiapp.security.PepClient;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.config.DatabaseConfig;
 import no.nav.fo.veilarboppfolging.config.DatabaseRepositoryConfig;
@@ -13,7 +13,6 @@ import no.nav.fo.veilarboppfolging.domain.Fnr;
 import no.nav.fo.veilarboppfolging.domain.Innsatsgruppe;
 import no.nav.fo.veilarboppfolging.domain.Oppfolging;
 import no.nav.fo.veilarboppfolging.services.AktiverBrukerService;
-import no.nav.sbl.jdbc.Database;
 import no.nav.tjeneste.virksomhet.behandlearbeidssoeker.v1.binding.BehandleArbeidssoekerV1;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -148,8 +147,8 @@ class AktiverBrukerIntegrationTest {
         }
 
         @Bean
-        VeilarbAbacPepClient pepClient() {
-            return mock(VeilarbAbacPepClient.class);
+        PepClient pepClient() {
+            return mock(PepClient.class);
         }
     }
 

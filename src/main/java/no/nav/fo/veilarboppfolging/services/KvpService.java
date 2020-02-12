@@ -6,8 +6,7 @@ import no.nav.apiapp.feil.Feil;
 import no.nav.apiapp.feil.FeilType;
 import no.nav.apiapp.feil.IngenTilgang;
 import no.nav.apiapp.feil.UlovligHandling;
-import no.nav.apiapp.security.veilarbabac.Bruker;
-import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
+import no.nav.apiapp.security.PepClient;
 import no.nav.common.auth.SubjectHandler;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.db.EskaleringsvarselRepository;
@@ -24,6 +23,7 @@ import org.springframework.stereotype.Component;
 import javax.inject.Inject;
 
 import static no.nav.fo.veilarboppfolging.domain.KodeverkBruker.NAV;
+import static no.nav.fo.veilarboppfolging.utils.FnrUtils.getAktorIdOrElseThrow;
 
 @Component
 public class KvpService {
@@ -40,7 +40,7 @@ public class KvpService {
     private OppfoelgingPortType oppfoelgingPortType;
 
     @Inject
-    private VeilarbAbacPepClient pepClient;
+    private PepClient pepClient;
 
     @Inject
     private OppfolgingsStatusRepository oppfolgingsStatusRepository;
@@ -50,12 +50,11 @@ public class KvpService {
     
     @SneakyThrows
     public void startKvp(String fnr, String begrunnelse) {
-        Bruker bruker = Bruker.fraFnr(fnr)
-                .medAktoerIdSupplier(() -> aktorService.getAktorId(fnr).orElseThrow(IngenTilgang::new));
 
-        pepClient.sjekkLesetilgangTilBruker(bruker);
+        String aktorId = getAktorIdOrElseThrow(aktorService, fnr).getAktorId();
 
-        String aktorId = bruker.getAktoerId();
+        pepClient.sjekkLesetilgangTilAktorId(aktorId);
+
         OppfolgingTable oppfolgingTable = oppfolgingsStatusRepository.fetch(aktorId);
 
         if (oppfolgingTable == null || !oppfolgingTable.isUnderOppfolging()) {
@@ -83,15 +82,15 @@ public class KvpService {
 
     @SneakyThrows
     public void stopKvp(String fnr, String begrunnelse) {
-        Bruker bruker = Bruker.fraFnr(fnr)
-                .medAktoerIdSupplier(() -> aktorService.getAktorId(fnr).orElseThrow(IngenTilgang::new));
 
-        pepClient.sjekkLesetilgangTilBruker(bruker);
+        String aktorId = getAktorIdOrElseThrow(aktorService, fnr).getAktorId();
+
+        pepClient.sjekkLesetilgangTilAktorId(aktorId);
         if(!pepClient.harTilgangTilEnhet(getEnhet(fnr))){
             throw new IngenTilgang();
         }
 
-        stopKvpUtenEnhetSjekk(bruker.getAktoerId(), begrunnelse, NAV);
+        stopKvpUtenEnhetSjekk(aktorId, begrunnelse, NAV);
     }
 
     public void stopKvpUtenEnhetSjekk(String aktorId, String begrunnelse, KodeverkBruker kodeverkBruker) {

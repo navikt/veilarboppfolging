@@ -1,6 +1,6 @@
 package no.nav.fo.veilarboppfolging.db;
 
-import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
+import no.nav.apiapp.security.PepClient;
 import no.nav.fo.DatabaseTest;
 import no.nav.fo.veilarboppfolging.domain.Kvp;
 import no.nav.fo.veilarboppfolging.domain.Oppfolging;
@@ -25,7 +25,7 @@ public class KvpRepositoryTest extends DatabaseTest {
     private Database db = getBean(Database.class);
 
     @Inject
-    private VeilarbAbacPepClient pepClientMock;
+    private PepClient pepClientMock;
 
     @Inject
     private OppfolgingRepository oppfolgingRepository;

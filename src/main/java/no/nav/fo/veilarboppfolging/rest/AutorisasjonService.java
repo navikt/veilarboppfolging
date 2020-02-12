@@ -2,19 +2,20 @@ package no.nav.fo.veilarboppfolging.rest;
 
 import no.nav.apiapp.feil.IngenTilgang;
 import no.nav.apiapp.security.PepClient;
-import no.nav.apiapp.security.PepClientComparator;
-import no.nav.apiapp.security.veilarbabac.Bruker;
 import no.nav.brukerdialog.security.domain.IdentType;
 import no.nav.brukerdialog.security.oidc.OidcTokenValidator;
 import no.nav.brukerdialog.security.oidc.OidcTokenValidatorResult;
 import no.nav.brukerdialog.security.oidc.provider.IssoOidcProvider;
 import no.nav.common.auth.SubjectHandler;
 import no.nav.dialogarena.aktor.AktorService;
+import no.nav.fo.veilarboppfolging.domain.AktorId;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.servlet.http.HttpServletRequest;
+
+import static no.nav.fo.veilarboppfolging.utils.FnrUtils.getAktorIdOrElseThrow;
 
 @Component
 public class AutorisasjonService {
@@ -68,14 +69,8 @@ public class AutorisasjonService {
     }
 
     public void sjekkLesetilgangTilBruker(String fnr) {
-        Bruker bruker = Bruker.fraFnr(fnr)
-                .medAktoerIdSupplier(() -> aktorService.getAktorId(fnr)
-                        .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktørid")));
-
-        PepClientComparator.get(
-                () -> pepClient.sjekkLesetilgangTilFnr(fnr),
-                () -> pepClient.sjekkLesetilgangTilAktorId(bruker.getAktoerId())
-        );
+        AktorId aktorId = getAktorIdOrElseThrow(aktorService, fnr);
+        pepClient.sjekkLesetilgangTilAktorId(aktorId.getAktorId());
     }
 
 }

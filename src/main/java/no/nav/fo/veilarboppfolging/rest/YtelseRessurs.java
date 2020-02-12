@@ -1,9 +1,6 @@
 package no.nav.fo.veilarboppfolging.rest;
 
 import io.swagger.annotations.Api;
-import no.nav.apiapp.feil.IngenTilgang;
-import no.nav.apiapp.security.veilarbabac.Bruker;
-import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.domain.OppfolgingskontraktResponse;
 import no.nav.fo.veilarboppfolging.mappers.OppfolgingMapper;
@@ -40,7 +37,6 @@ public class YtelseRessurs {
     final private ArenaOppfolgingService arenaOppfolgingService;
     final private OppfolgingMapper oppfolgingMapper;
     final private YtelseskontraktMapper ytelseskontraktMapper;
-    private final VeilarbAbacPepClient pepClient;
     private final AutorisasjonService autorisasjonService;
     private final AktorService aktorService;
 
@@ -49,14 +45,12 @@ public class YtelseRessurs {
                          ArenaOppfolgingService arenaOppfolgingService,
                          OppfolgingMapper oppfolgingMapper,
                          YtelseskontraktMapper ytelseskontraktMapper,
-                         VeilarbAbacPepClient pepClient,
                          AutorisasjonService autorisasjonService,
                          AktorService aktorService) {
         this.ytelseskontraktService = ytelseskontraktService;
         this.arenaOppfolgingService = arenaOppfolgingService;
         this.oppfolgingMapper = oppfolgingMapper;
         this.ytelseskontraktMapper = ytelseskontraktMapper;
-        this.pepClient = pepClient;
         this.autorisasjonService = autorisasjonService;
         this.aktorService = aktorService;
     }
@@ -65,9 +59,7 @@ public class YtelseRessurs {
     @Path("/ytelser")
     public YtelserResponse getYtelser(@PathParam("fnr") String fnr) throws PepException {
         autorisasjonService.skalVereInternBruker();
-        Bruker bruker = Bruker.fraFnr(fnr)
-                .medAktoerIdSupplier(() -> aktorService.getAktorId(fnr).orElseThrow(IngenTilgang::new));
-        pepClient.sjekkLesetilgangTilBruker(bruker);
+        autorisasjonService.sjekkLesetilgangTilBruker(fnr);
 
         LocalDate periodeFom = LocalDate.now().minusMonths(MANEDER_BAK_I_TID);
         LocalDate periodeTom = LocalDate.now().plusMonths(MANEDER_FREM_I_TID);
@@ -83,6 +75,4 @@ public class YtelseRessurs {
                 .withYtelser(ytelseskontraktResponse.getYtelser())
                 .withOppfoelgingskontrakter(oppfolgingskontraktResponse.getOppfoelgingskontrakter());
     }
-
-
 }
