@@ -378,7 +378,7 @@ public class OppfolgingServiceTest {
     @Test(expected = IngenTilgang.class)
     public void underOppfolgingNiva3_skalFeileHvisIkkeTilgang() throws Exception {
         doThrow(IngenTilgang.class).when(pepClientMock)
-                .sjekkTilgang(any(AbacPersonId.class), any(Action.ActionId.class), eq(ResourceType.VeilArbUnderOppfolging));
+                .sjekkTilgangTilPerson(any(AbacPersonId.class), any(Action.ActionId.class), eq(ResourceType.VeilArbUnderOppfolging));
 
         oppfolgingService.underOppfolgingNiva3(FNR);
     }

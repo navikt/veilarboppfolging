@@ -17,7 +17,6 @@ import no.nav.fo.veilarboppfolging.mappers.VeilarbArenaOppfolging;
 import no.nav.fo.veilarboppfolging.mappers.OppfolgingMapper;
 import no.nav.fo.veilarboppfolging.rest.domain.*;
 import no.nav.fo.veilarboppfolging.services.*;
-import no.nav.sbl.dialogarena.common.abac.pep.AbacPersonId;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
 
@@ -75,7 +74,7 @@ public class ArenaOppfolgingRessurs {
         Bruker bruker = Bruker.fraFnr(fnr)
                 .medAktoerIdSupplier(() -> aktorService.getAktorId(fnr).orElseThrow(IngenTilgang::new));
 
-        pepClient.sjekkLesetilgang(AbacPersonId.fnr(bruker.getFoedselsnummer()));
+        pepClient.sjekkLesetilgangTilFnr(bruker.getFoedselsnummer());
         LocalDate periodeFom = LocalDate.now().minusMonths(MANEDER_BAK_I_TID);
         LocalDate periodeTom = LocalDate.now().plusMonths(MANEDER_FREM_I_TID);
         XMLGregorianCalendar fom = convertDateToXMLGregorianCalendar(periodeFom);
@@ -91,7 +90,7 @@ public class ArenaOppfolgingRessurs {
         Bruker bruker = Bruker.fraFnr(fnr)
                 .medAktoerIdSupplier(() -> aktorService.getAktorId(fnr).orElseThrow(IngenTilgang::new));
 
-        pepClient.sjekkLesetilgang(AbacPersonId.fnr(bruker.getFoedselsnummer()));
+        pepClient.sjekkLesetilgangTilFnr(bruker.getFoedselsnummer());
 
         no.nav.fo.veilarboppfolging.domain.ArenaOppfolging arenaData = arenaOppfolgingService.hentArenaOppfolging(fnr);
         Oppfolgingsenhet enhet = hentEnhet(arenaData.getOppfolgingsenhet());
@@ -123,8 +122,8 @@ public class ArenaOppfolgingRessurs {
                 .medAktoerIdSupplier(() -> aktorService.getAktorId(fnr).orElseThrow(IngenTilgang::new));
 
         PepClientComparator.get(
-                () -> pepClient.sjekkLesetilgang(AbacPersonId.fnr(fnr)),
-                () -> pepClient.sjekkLesetilgang(AbacPersonId.aktorId(bruker.getAktoerId()))
+                () -> pepClient.sjekkLesetilgangTilFnr(fnr),
+                () -> pepClient.sjekkLesetilgangTilAktorId(bruker.getAktoerId())
         );
 
         OppfolgingEnhetMedVeileder res;

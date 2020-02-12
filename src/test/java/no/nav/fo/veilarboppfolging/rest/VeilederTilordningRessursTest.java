@@ -17,7 +17,6 @@ import no.nav.fo.veilarboppfolging.db.VeilederTilordningerRepository;
 import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingFeedDTO;
 import no.nav.fo.veilarboppfolging.rest.domain.TilordneVeilederResponse;
 import no.nav.fo.veilarboppfolging.rest.domain.VeilederTilordning;
-import no.nav.sbl.dialogarena.common.abac.pep.AbacPersonId;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
 import org.junit.Before;
 import org.junit.Rule;
@@ -123,8 +122,8 @@ public class VeilederTilordningRessursTest {
         tilordninger.add(harTilgang2);
         tilordninger.add(harIkkeTilgang2);
 
-        doThrow(NotAuthorizedException.class).when(pepClient).sjekkSkrivetilgang(AbacPersonId.fnr("FNR2"));
-        doThrow(PepException.class).when(pepClient).sjekkSkrivetilgang(AbacPersonId.fnr("FNR4"));
+        doThrow(NotAuthorizedException.class).when(pepClient).sjekkSkrivetilgangTilFnr("FNR2");
+        doThrow(PepException.class).when(pepClient).sjekkSkrivetilgangTilFnr("FNR4");
 
         when(aktorServiceMock.getAktorId("FNR1")).thenReturn(of("AKTOERID1"));
         when(aktorServiceMock.getAktorId("FNR2")).thenReturn(of("AKTOERID2"));
@@ -288,7 +287,7 @@ public class VeilederTilordningRessursTest {
 
         when(aktorServiceMock.getAktorId("FNR1")).thenReturn(of("AKTOERID1"));
         when(aktorServiceMock.getAktorId("FNR2")).thenReturn(of("AKTOERID2"));
-        doThrow(Exception.class).when(pepClient).sjekkSkrivetilgang(any(AbacPersonId.class));
+        doThrow(Exception.class).when(pepClient).sjekkSkrivetilgangTilFnr(any(String.class));
 
         Response response = veilederTilordningRessurs.postVeilederTilordninger(tilordninger);
         List<VeilederTilordning> feilendeTilordninger = ((TilordneVeilederResponse) response.getEntity()).getFeilendeTilordninger();
@@ -310,7 +309,7 @@ public class VeilederTilordningRessursTest {
                 return null;
             }
             return null;
-        }).when(pepClient).sjekkSkrivetilgang(any(AbacPersonId.class));
+        }).when(pepClient).sjekkSkrivetilgangTilFnr(any(String.class));
 
         when(aktorServiceMock.getAktorId("FNR1")).thenReturn(of("AKTOERID1"));
 
