@@ -1,6 +1,6 @@
 package no.nav.fo.veilarboppfolging.rest;
 
-import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
+import no.nav.apiapp.security.PepClient;
 import no.nav.fo.veilarboppfolging.domain.OppfolgingskontraktData;
 import no.nav.fo.veilarboppfolging.domain.OppfolgingskontraktResponse;
 import no.nav.fo.veilarboppfolging.mappers.OppfolgingMapper;
@@ -47,7 +47,7 @@ public class YtelsesRessursTest {
 
     @Mock
     @SuppressWarnings("unused")
-    private VeilarbAbacPepClient pepClient;
+    private PepClient pepClient;
 
     @Mock
     private AutorisasjonService autorisasjonService;

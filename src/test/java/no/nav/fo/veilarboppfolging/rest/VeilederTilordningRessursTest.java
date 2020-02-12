@@ -1,8 +1,6 @@
 package no.nav.fo.veilarboppfolging.rest;
 
-import lombok.val;
 import no.nav.apiapp.security.PepClient;
-import no.nav.apiapp.security.veilarbabac.Bruker;
 import no.nav.brukerdialog.security.context.SubjectRule;
 import no.nav.brukerdialog.security.domain.IdentType;
 import no.nav.common.auth.SsoToken;
@@ -122,8 +120,8 @@ public class VeilederTilordningRessursTest {
         tilordninger.add(harTilgang2);
         tilordninger.add(harIkkeTilgang2);
 
-        doThrow(NotAuthorizedException.class).when(pepClient).sjekkSkrivetilgangTilFnr("FNR2");
-        doThrow(PepException.class).when(pepClient).sjekkSkrivetilgangTilFnr("FNR4");
+        doThrow(NotAuthorizedException.class).when(pepClient).sjekkSkrivetilgangTilAktorId("AKTOERID2");
+        doThrow(PepException.class).when(pepClient).sjekkSkrivetilgangTilAktorId("AKTOERID4");
 
         when(aktorServiceMock.getAktorId("FNR1")).thenReturn(of("AKTOERID1"));
         when(aktorServiceMock.getAktorId("FNR2")).thenReturn(of("AKTOERID2"));
@@ -287,7 +285,7 @@ public class VeilederTilordningRessursTest {
 
         when(aktorServiceMock.getAktorId("FNR1")).thenReturn(of("AKTOERID1"));
         when(aktorServiceMock.getAktorId("FNR2")).thenReturn(of("AKTOERID2"));
-        doThrow(Exception.class).when(pepClient).sjekkSkrivetilgangTilFnr(any(String.class));
+        doThrow(Exception.class).when(pepClient).sjekkSkrivetilgangTilAktorId(any(String.class));
 
         Response response = veilederTilordningRessurs.postVeilederTilordninger(tilordninger);
         List<VeilederTilordning> feilendeTilordninger = ((TilordneVeilederResponse) response.getEntity()).getFeilendeTilordninger();
@@ -360,9 +358,5 @@ public class VeilederTilordningRessursTest {
                 .setFraVeilederId(null)
                 .setTilVeilederId("4321")
                 .setBrukerFnr("1234");
-    }
-
-    private Bruker bruker(String fnr) {
-        return Bruker.fraFnr(fnr).medAktoerIdSupplier(()->null);
     }
 }

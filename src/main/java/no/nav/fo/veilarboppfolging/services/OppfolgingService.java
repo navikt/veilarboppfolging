@@ -4,8 +4,6 @@ import lombok.SneakyThrows;
 import lombok.val;
 import no.nav.apiapp.feil.IngenTilgang;
 import no.nav.apiapp.security.PepClient;
-import no.nav.apiapp.security.PepClientComparator;
-import no.nav.apiapp.security.veilarbabac.Bruker;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingsStatusRepository;
@@ -28,6 +26,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static java.lang.System.currentTimeMillis;
+import static no.nav.fo.veilarboppfolging.utils.FnrUtils.getAktorIdOrElseThrow;
 
 @Component
 public class OppfolgingService {
@@ -181,11 +180,10 @@ public class OppfolgingService {
     }
 
     private Optional<OppfolgingTable> getOppfolgingStatus(String fnr) {
-        Bruker bruker = Bruker.fraFnr(fnr)
-                .medAktoerIdSupplier(() -> aktorService.getAktorId(fnr)
-                        .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktørid")));
-        pepClient.sjekkLesetilgangTilFnr(fnr);
-        return Optional.ofNullable(oppfolgingsStatusRepository.fetch(bruker.getAktoerId()));
+        AktorId aktorId = getAktorIdOrElseThrow(aktorService, fnr);
+
+        pepClient.sjekkLesetilgangTilAktorId(aktorId.getAktorId());
+        return Optional.ofNullable(oppfolgingsStatusRepository.fetch(aktorId.getAktorId()));
     }
 
     public UnderOppfolgingDTO oppfolgingData(String fnr) {
@@ -201,14 +199,9 @@ public class OppfolgingService {
 
     @Transactional
     public boolean underOppfolgingNiva3(String fnr) throws Exception {
-        Bruker bruker = Bruker.fraFnr(fnr)
-                .medAktoerIdSupplier(() -> aktorService.getAktorId(fnr)
-                        .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktørid")));
+        AktorId aktorId = getAktorIdOrElseThrow(aktorService, fnr);
 
-        PepClientComparator.get(
-                () -> pepClient.sjekkTilgangTilPerson(AbacPersonId.fnr(fnr), ActionId.READ, ResourceType.VeilArbUnderOppfolging),
-                () -> pepClient.sjekkTilgangTilPerson(AbacPersonId.aktorId(bruker.getAktoerId()), ActionId.READ, ResourceType.VeilArbUnderOppfolging)
-        );
+        pepClient.sjekkTilgangTilPerson(AbacPersonId.aktorId(aktorId.getAktorId()), ActionId.READ, ResourceType.VeilArbUnderOppfolging);
 
         val resolver = OppfolgingResolver.lagOppfolgingResolver(fnr, oppfolgingResolverDependencies);
         resolver.sjekkStatusIArenaOgOppdaterOppfolging();

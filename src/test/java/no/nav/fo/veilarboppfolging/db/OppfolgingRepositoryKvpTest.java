@@ -1,6 +1,6 @@
 package no.nav.fo.veilarboppfolging.db;
 
-import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
+import no.nav.apiapp.security.PepClient;
 import no.nav.fo.DatabaseTest;
 import no.nav.fo.veilarboppfolging.domain.Oppfolging;
 import org.junit.Test;
@@ -18,7 +18,7 @@ public class OppfolgingRepositoryKvpTest extends DatabaseTest {
     private static final String BEGRUNNELSE = "begrunnelse";
 
     @Inject
-    private VeilarbAbacPepClient pepClientMock;
+    private PepClient pepClientMock;
 
     @Inject
     private KvpRepository kvpRepository;

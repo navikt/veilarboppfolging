@@ -3,9 +3,7 @@ package no.nav.fo.veilarboppfolging.rest;
 import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.apiapp.security.PepClient;
-import no.nav.apiapp.security.PepClientComparator;
 import no.nav.apiapp.security.SubjectService;
-import no.nav.apiapp.security.veilarbabac.Bruker;
 import no.nav.common.auth.SubjectHandler;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.feed.producer.FeedProducer;
@@ -31,6 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+import static no.nav.fo.veilarboppfolging.utils.FnrUtils.getAktorIdOrElseThrow;
 import static org.slf4j.LoggerFactory.getLogger;
 
 @Component
@@ -91,20 +90,15 @@ public class VeilederTilordningRessurs {
             tilordning.setInnloggetVeilederId(innloggetVeilederId);
 
             try {
-                Bruker bruker = lagBrukerFraFnr(tilordning.getBrukerFnr());
+                String aktorId = getAktorIdOrElseThrow(aktorService, tilordning.getBrukerFnr()).getAktorId();
 
-                PepClientComparator.get(
-                        () -> pepClient.sjekkSkrivetilgangTilFnr(bruker.getFoedselsnummer()),
-                        () -> pepClient.sjekkSkrivetilgangTilAktorId(bruker.getAktoerId())
-                );
+                pepClient.sjekkSkrivetilgangTilAktorId(aktorId);
 
+                tilordning.setAktoerId(aktorId);
 
-                String aktoerId = bruker.getAktoerId();
-                tilordning.setAktoerId(aktoerId);
+                String eksisterendeVeileder = veilederTilordningerRepository.hentTilordningForAktoer(aktorId);
 
-                String eksisterendeVeileder = veilederTilordningerRepository.hentTilordningForAktoer(aktoerId);
-
-                feilendeTilordninger = tildelVeileder(feilendeTilordninger, tilordning, aktoerId, eksisterendeVeileder);
+                feilendeTilordninger = tildelVeileder(feilendeTilordninger, tilordning, aktorId, eksisterendeVeileder);
 
             } catch (Exception e) {
                 feilendeTilordninger.add(tilordning);
@@ -151,12 +145,12 @@ public class VeilederTilordningRessurs {
     @Path("{fnr}/lestaktivitetsplan/")
     public void lestAktivitetsplan(@PathParam("fnr") String fnr) {
 
-        Bruker bruker = lagBrukerFraFnr(fnr);
+        String aktorId = getAktorIdOrElseThrow(aktorService, fnr).getAktorId();
 
         autorisasjonService.skalVereInternBruker();
-        pepClient.sjekkLesetilgangTilFnr(bruker.getFoedselsnummer());
+        pepClient.sjekkLesetilgangTilAktorId(aktorId);
 
-        veilederTilordningerRepository.hentTilordnetVeileder(bruker.getAktoerId())
+        veilederTilordningerRepository.hentTilordnetVeileder(aktorId)
                 .filter(Tilordning::isNyForVeileder)
                 .filter(this::erVeilederFor)
                 .map(FunksjonelleMetrikker::lestAvVeileder)
@@ -232,12 +226,4 @@ public class VeilederTilordningRessurs {
     private boolean nyVeilederHarTilgang(VeilederTilordning veilederTilordning) {
         return autorisasjonService.harVeilederSkriveTilgangTilFnr(veilederTilordning.getTilVeilederId(), veilederTilordning.getBrukerFnr());
     }
-
-    private Bruker lagBrukerFraFnr(String fnr) {
-        return Bruker.fraFnr(fnr)
-                .medAktoerIdSupplier(() -> aktorService.getAktorId(fnr)
-                        .orElseThrow(() -> new IllegalArgumentException("Aktoerid ikke funnet")));
-    }
-
-
 }
