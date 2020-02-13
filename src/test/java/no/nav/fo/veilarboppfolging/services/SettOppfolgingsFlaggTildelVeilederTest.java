@@ -1,7 +1,6 @@
 package no.nav.fo.veilarboppfolging.services;
 
 import no.nav.apiapp.security.PepClient;
-import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
 import no.nav.brukerdialog.security.context.SubjectRule;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.feed.producer.FeedProducer;
@@ -28,9 +27,6 @@ public class SettOppfolgingsFlaggTildelVeilederTest {
     private VeilederTilordningerRepository veilederTilordningerRepository;
 
     @Mock
-    private VeilarbAbacPepClient veilarbAbacPepClient;
-
-    @Mock
     private PepClient pepClient;
 
     @Mock
@@ -55,7 +51,7 @@ public class SettOppfolgingsFlaggTildelVeilederTest {
         VeilederHistorikkRepository veilederHistorikkRepository = new VeilederHistorikkRepository(db);
         veilederTilordningerRepository = new VeilederTilordningerRepository(database);
         OppfolgingRepository oppfolgingRepository = new OppfolgingRepository(
-                veilarbAbacPepClient,
+                pepClient,
                 new OppfolgingsStatusRepository(database),
                 new OppfolgingsPeriodeRepository(database),
                 mock(MaalRepository.class),
