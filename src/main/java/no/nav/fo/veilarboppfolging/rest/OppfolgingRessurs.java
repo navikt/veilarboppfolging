@@ -265,8 +265,8 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
                 .setHarSkriveTilgang(true)
                 .setServicegruppe(oppfolgingStatusData.getServicegruppe())
                 .setFormidlingsgruppe(oppfolgingStatusData.getFormidlingsgruppe())
-                .setRettighetsgruppe(oppfolgingStatusData.getRettighetsgruppe());
-
+                .setRettighetsgruppe(oppfolgingStatusData.getRettighetsgruppe())
+                .setKanVarsles(oppfolgingStatusData.kanVarsles);
 
         if (AutorisasjonService.erInternBruker()) {
             status
@@ -280,8 +280,7 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
                     )
                     .setOppfolgingUtgang(oppfolgingStatusData.getOppfolgingUtgang())
                     .setHarSkriveTilgang(oppfolgingStatusData.harSkriveTilgang)
-                    .setInaktivIArena(oppfolgingStatusData.inaktivIArena)
-                    .setKanVarsles(oppfolgingStatusData.kanVarsles);
+                    .setInaktivIArena(oppfolgingStatusData.inaktivIArena);
         }
 
         return status;
