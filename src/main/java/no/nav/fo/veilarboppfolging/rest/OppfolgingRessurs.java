@@ -266,12 +266,12 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
                 .setServicegruppe(oppfolgingStatusData.getServicegruppe())
                 .setFormidlingsgruppe(oppfolgingStatusData.getFormidlingsgruppe())
                 .setRettighetsgruppe(oppfolgingStatusData.getRettighetsgruppe())
-                .setKanVarsles(oppfolgingStatusData.kanVarsles);
+                .setKanVarsles(oppfolgingStatusData.kanVarsles)
+                .setUnderKvp(oppfolgingStatusData.underKvp);
 
         if (AutorisasjonService.erInternBruker()) {
             status
                     .setVeilederId(oppfolgingStatusData.veilederId)
-                    .setUnderKvp(oppfolgingStatusData.underKvp)
                     .setKanStarteOppfolging(oppfolgingStatusData.isKanStarteOppfolging())
                     .setAvslutningStatus(
                             ofNullable(oppfolgingStatusData.getAvslutningStatusData())
@@ -289,13 +289,13 @@ public class OppfolgingRessurs implements OppfolgingController, VeilederOppfolgi
     private OppfolgingPeriodeDTO tilDTO(Oppfolgingsperiode oppfolgingsperiode) {
         OppfolgingPeriodeDTO periode = new OppfolgingPeriodeDTO()
                 .setSluttDato(oppfolgingsperiode.getSluttDato())
-                .setStartDato(oppfolgingsperiode.getStartDato());
+                .setStartDato(oppfolgingsperiode.getStartDato())
+                .setKvpPerioder(oppfolgingsperiode.getKvpPerioder().stream().map(this::tilDTO).collect(toList()));
 
         if (AutorisasjonService.erInternBruker()) {
             periode.setVeileder(oppfolgingsperiode.getVeileder())
                     .setAktorId(oppfolgingsperiode.getAktorId())
                     .setBegrunnelse(oppfolgingsperiode.getBegrunnelse())
-                    .setKvpPerioder(oppfolgingsperiode.getKvpPerioder().stream().map(this::tilDTO).collect(toList()))
             ;
         }
 
