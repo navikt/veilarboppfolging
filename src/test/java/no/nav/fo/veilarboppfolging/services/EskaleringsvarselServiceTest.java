@@ -50,7 +50,7 @@ public class EskaleringsvarselServiceTest {
     public void dialogUrl() throws Exception {
         assertThat(
                 eskaleringsvarselService.dialogUrl(DIALOG_ID),
-                equalTo("https://aktivitetsplan.no/dialog/1")
+                equalTo("https://arbeidsrettet_dialog.no/1")
         );
     }
 }
