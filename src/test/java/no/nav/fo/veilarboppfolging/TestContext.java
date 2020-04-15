@@ -36,7 +36,7 @@ public class TestContext {
     private static final String VEILARBLOGIN_REDIRECT_URL_ALIAS = "veilarblogin.redirect-url";
     private static final String AZURE_AD_B2C_DISCOVERY_ALIAS = "aad_b2c_discovery";
     private static final String AAD_B2C_CLIENTID_ALIAS = "aad_b2c_clientid";
-    private static final String AKTIVITETSPLAN_ALIAS = "aktivitetsplan";
+    private static final String ARBEIDSRETTET_DIALOG_ALIAS = "arbeidsrettet_dialog";
     private static final String VEILARBAKTIVITETAPI_ALIAS = "veilArbAktivitetAPI";
     private static final String VIRKSOMHET_DIGITALKONTAKINFORMASJON_V1_ALIAS = "virksomhet:DigitalKontakinformasjon_v1";
     private static final String VIRKSOMHET_YTELSESKONTRAKT_V3_ALIAS = "virksomhet:Ytelseskontrakt_v3";
@@ -70,7 +70,7 @@ public class TestContext {
         setProperty(AKTOER_V2_URL_PROPERTY, getWebServiceEndpoint(AKTOER_V2_ALIAS).getUrl());
         setProperty(UNLEASH_API_URL_PROPERTY_NAME, getRestService(UNLEASH_API).getUrl());
 
-        setProperty(AKTIVITETSPLAN_URL_PROPERTY, getBaseUrl(AKTIVITETSPLAN_ALIAS));
+        setProperty(ARBEIDSRETTET_DIALOG_PROPERTY, getBaseUrl(ARBEIDSRETTET_DIALOG_ALIAS));
         setProperty(VEILARBAKTIVITETAPI_URL_PROPERTY, getRestService(VEILARBAKTIVITETAPI_ALIAS).getUrl());
         setProperty(VIRKSOMHET_DIGITALKONTAKINFORMASJON_V1_PROPERTY, getWebServiceEndpoint(VIRKSOMHET_DIGITALKONTAKINFORMASJON_V1_ALIAS, "q2").getUrl());
         setProperty(VIRKSOMHET_YTELSESKONTRAKT_V3_PROPERTY, getWebServiceEndpoint(VIRKSOMHET_YTELSESKONTRAKT_V3_ALIAS).getUrl());
