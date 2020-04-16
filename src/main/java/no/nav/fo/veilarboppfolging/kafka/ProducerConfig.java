@@ -1,6 +1,7 @@
 package no.nav.fo.veilarboppfolging.kafka;
 
 import no.nav.fo.veilarboppfolging.db.AvsluttOppfolgingEndringRepository;
+import no.nav.fo.veilarboppfolging.db.OppfolgingFeedRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
@@ -29,5 +30,9 @@ public class ProducerConfig {
         return new AvsluttOppfolgingProducer(kafkaTemplate, avsluttOppfolgingEndringRepository, KAFKA_PRODUCER_TOPIC);
     }
 
-
+    @Bean
+    public OppfolgingKafkaProducer oppfolgingStatusProducer(OppfolgingFeedRepository repository) {
+        KafkaTemplate<String, String> kafkaTemplate =  new KafkaTemplate<>(producerFactory());
+        return new OppfolgingKafkaProducer(kafkaTemplate, repository);
+    }
 }
