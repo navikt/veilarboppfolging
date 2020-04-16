@@ -1,24 +1,23 @@
 package no.nav.fo.veilarboppfolging.db;
 
-import no.nav.metrics.utils.MetricsUtils;
-import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingFeedDTO;
-import no.nav.fo.veilarboppfolging.utils.OppfolgingFeedUtil;
-import no.nav.sbl.sql.SqlUtils;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Transactional;
-
 import lombok.extern.slf4j.Slf4j;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor;
+import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingFeedDTO;
+import no.nav.fo.veilarboppfolging.utils.OppfolgingFeedUtil;
+import no.nav.metrics.utils.MetricsUtils;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
-import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
+import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 
 @Slf4j
@@ -32,9 +31,51 @@ public class OppfolgingFeedRepository {
     private final LockingTaskExecutor taskExecutor;
 
     @Inject
-    OppfolgingFeedRepository(JdbcTemplate db, LockingTaskExecutor taskExecutor) {
+    public OppfolgingFeedRepository(JdbcTemplate db, LockingTaskExecutor taskExecutor) {
         this.db = db;
         this.taskExecutor = taskExecutor;
+    }
+
+    public Optional<OppfolgingFeedDTO> hentOppfolgingStatus(String aktoerId) {
+
+        String sql = "SELECT "
+                     + "os.AKTOR_ID, "
+                     + "os.VEILEDER, "
+                     + "os.UNDER_OPPFOLGING, "
+                     + "os.NY_FOR_VEILEDER, "
+                     + "os.OPPDATERT, "
+                     + "ms.MANUELL, "
+                     + "siste_periode.STARTDATO "
+                     + "from "
+                     + "OPPFOLGINGSTATUS os LEFT JOIN MANUELL_STATUS ms "
+                     + "on (os.GJELDENDE_MANUELL_STATUS = ms.ID) "
+                     + ", "
+                     + "(select "
+                     + "AKTOR_ID, "
+                     + "STARTDATO "
+                     + "from OPPFOLGINGSPERIODE "
+                     + "   where AKTOR_ID = ? "
+                     + "   order by OPPDATERT desc "
+                     + "   fetch next 1 rows only "
+                     + "  ) siste_periode "
+                     + "where os.AKTOR_ID = siste_periode.AKTOR_ID";
+
+        OppfolgingFeedDTO dto = db.queryForObject(sql, new Object[]{aktoerId}, rowMapper());
+        return ofNullable(dto);
+    }
+
+    private RowMapper<OppfolgingFeedDTO> rowMapper() {
+        return (rs, rowNum) ->
+                OppfolgingFeedDTO
+                        .builder()
+                        .aktoerid(rs.getString("AKTOR_ID"))
+                        .veileder(rs.getString("VEILEDER"))
+                        .oppfolging(rs.getBoolean("UNDER_OPPFOLGING"))
+                        .nyForVeileder(rs.getBoolean("NY_FOR_VEILEDER"))
+                        .endretTimestamp(rs.getTimestamp("OPPDATERT"))
+                        .startDato((rs.getTimestamp("STARTDATO")))
+                        .manuell(rs.getBoolean("MANUELL"))
+                        .build();
     }
 
     @Transactional
