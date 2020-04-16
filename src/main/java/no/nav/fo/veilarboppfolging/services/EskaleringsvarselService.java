@@ -16,7 +16,7 @@ import javax.inject.Inject;
 import javax.ws.rs.core.Response;
 import java.util.UUID;
 
-import static no.nav.fo.veilarboppfolging.config.ApplicationConfig.AKTIVITETSPLAN_URL_PROPERTY;
+import static no.nav.fo.veilarboppfolging.config.ApplicationConfig.ARBEIDSRETTET_DIALOG_PROPERTY;
 import static no.nav.sbl.util.ExceptionUtils.throwUnchecked;
 import static no.nav.sbl.util.PropertyUtils.getRequiredProperty;
 
@@ -28,7 +28,7 @@ public class EskaleringsvarselService {
     @Inject
     private VarseloppgaveV1 varseloppgaveV1;
 
-    private String aktivitetsplanBaseUrl = getRequiredProperty(AKTIVITETSPLAN_URL_PROPERTY);
+    private String dialogBaseUrl = getRequiredProperty(ARBEIDSRETTET_DIALOG_PROPERTY);
 
     public void sendEskaleringsvarsel(String aktorId, long dialogId) {
         AktoerId aktor = new AktoerId();
@@ -76,7 +76,7 @@ public class EskaleringsvarselService {
 
 
     protected String dialogUrl(long dialogId) {
-        return aktivitetsplanBaseUrl + "/dialog/" + dialogId;
+        return dialogBaseUrl + "/" + dialogId;
     }
 
     private BestillVarselOppgaveRequest lagBestillVarselOppgaveRequest(Aktoer aktoer, long dialogId) {
