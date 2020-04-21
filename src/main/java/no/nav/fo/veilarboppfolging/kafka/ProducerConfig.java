@@ -3,6 +3,7 @@ package no.nav.fo.veilarboppfolging.kafka;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.db.AvsluttOppfolgingEndringRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingFeedRepository;
+import no.nav.fo.veilarboppfolging.db.OppfolgingKafkaFeiletMeldingRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
@@ -11,7 +12,7 @@ import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.kafka.support.LoggingProducerListener;
 
 import static no.nav.fo.veilarboppfolging.config.ApplicationConfig.APP_ENVIRONMENT_NAME;
-import static no.nav.sbl.util.EnvironmentUtils.*;
+import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 
 @Configuration
 public class ProducerConfig {
@@ -32,8 +33,8 @@ public class ProducerConfig {
     }
 
     @Bean
-    public OppfolgingKafkaProducer oppfolgingStatusProducer(OppfolgingFeedRepository repository, AktorService aktorService) {
+    public OppfolgingKafkaProducer oppfolgingStatusProducer(OppfolgingFeedRepository repository, OppfolgingKafkaFeiletMeldingRepository feiletMeldingRepository,  AktorService aktorService) {
         KafkaTemplate<String, String> kafkaTemplate =  new KafkaTemplate<>(producerFactory());
-        return new OppfolgingKafkaProducer(kafkaTemplate, repository, aktorService);
+        return new OppfolgingKafkaProducer(kafkaTemplate, repository, feiletMeldingRepository, aktorService);
     }
 }

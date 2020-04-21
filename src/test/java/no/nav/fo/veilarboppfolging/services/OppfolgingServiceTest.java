@@ -135,21 +135,21 @@ public class OppfolgingServiceTest {
     public void skal_publisere_paa_kafka_ved_oppdatering_av_manuell_status() {
         when(pepClientMock.harTilgangTilEnhet(any())).thenReturn(true);
         oppfolgingService.oppdaterManuellStatus(FNR, true, "test", SYSTEM, "test");
-        verify(kafkaProducer, times(1)).send(FNR);
+        verify(kafkaProducer, times(1)).send(fnr());
     }
 
     @Test
     public void skal_publisere_paa_kafka_ved_start_paa_oppfolging() {
         when(pepClientMock.harTilgangTilEnhet(any())).thenReturn(true);
         oppfolgingService.startOppfolging(FNR);
-        verify(kafkaProducer, times(1)).send(FNR);
+        verify(kafkaProducer, times(1)).send(fnr());
     }
 
     @Test
     public void skal_publisere_paa_kafka_ved_avsluttet_oppfolging() {
         when(pepClientMock.harTilgangTilEnhet(any())).thenReturn(true);
         oppfolgingService.avsluttOppfolging(FNR, VEILEDER, "");
-        verify(kafkaProducer, times(1)).send(FNR);
+        verify(kafkaProducer, times(1)).send(fnr());
     }
 
     @Test(expected = IngenTilgang.class)
@@ -500,6 +500,10 @@ public class OppfolgingServiceTest {
         response.getYtelseskontraktListe().addAll(ytelser);
 
         when(ytelseskontraktV3.hentYtelseskontraktListe(request)).thenReturn(response);
+    }
+
+    private static Fnr fnr() {
+        return new Fnr(FNR);
     }
 
 }
