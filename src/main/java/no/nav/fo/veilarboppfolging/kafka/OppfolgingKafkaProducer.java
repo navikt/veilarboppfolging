@@ -81,11 +81,16 @@ public class OppfolgingKafkaProducer {
         };
     }
 
-    private static byte[] getCorrelationIdAsBytes() {
-        try {
-            return MDC.get(PREFERRED_NAV_CALL_ID_HEADER_NAME).getBytes();
-        } catch (IllegalArgumentException e) {
-            return IdUtils.generateId().getBytes();
+    static byte[] getCorrelationIdAsBytes() {
+        String correlationId = MDC.get(PREFERRED_NAV_CALL_ID_HEADER_NAME);
+
+        if (correlationId == null) {
+            correlationId = MDC.get("jobId");
         }
+        if (correlationId == null) {
+            correlationId = IdUtils.generateId();
+        }
+
+        return correlationId.getBytes();
     }
 }
