@@ -20,6 +20,7 @@ import static no.nav.sbl.jdbc.Database.hentDato;
 @Component
 public class OppfolgingsPeriodeRepository {
     private final Database database;
+    public static final String TABLE_NAME = "OPPFOLGINGSPERIODE";
 
     @Inject
     public OppfolgingsPeriodeRepository(Database database) {

@@ -17,12 +17,14 @@ import no.nav.fo.veilarboppfolging.rest.AutorisasjonService;
 import no.nav.sbl.dialogarena.common.abac.pep.AbacPersonId;
 import no.nav.sbl.dialogarena.common.abac.pep.domain.ResourceType;
 import no.nav.sbl.dialogarena.common.abac.pep.domain.request.Action;
+import no.nav.sbl.dialogarena.test.junit.SystemPropertiesRule;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt.WSYtelseskontrakt;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeRequest;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeResponse;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Answers;
@@ -89,7 +91,6 @@ public class OppfolgingServiceTest {
 
     @Mock
     private WSHentYtelseskontraktListeResponse ytelser;
-
 
     private static final String FNR = "fnr";
     private static final String AKTOR_ID = "aktorId";

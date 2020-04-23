@@ -5,11 +5,15 @@ import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.db.OppfolgingFeedRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingKafkaFeiletMeldingRepository;
 import no.nav.fo.veilarboppfolging.domain.AktorId;
+import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingFeedDTO;
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.ProducerRecord;
 import org.bouncycastle.util.Strings;
 import org.junit.Test;
 import org.slf4j.MDC;
-import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.kafka.support.SendResult;
+
+import java.util.Optional;
+import java.util.concurrent.Future;
 
 import static no.nav.log.LogFilter.PREFERRED_NAV_CALL_ID_HEADER_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -46,40 +50,43 @@ public class OppfolgingKafkaProducerTest {
     @Test
     public void skal_slette_melding_i_database_ved_suksess() {
         val repoMock = mock(OppfolgingKafkaFeiletMeldingRepository.class);
-        OppfolgingKafkaProducer producer = createMockProducer(repoMock);
+        val feedRepoMock = mock(OppfolgingFeedRepository.class);
+        when(feedRepoMock.hentOppfolgingStatus(anyString())).thenReturn(testDto());
+        OppfolgingKafkaProducer producer = createMockProducer(repoMock, feedRepoMock);
 
-        producer.onSuccess(testId()).onSuccess(mock(SendResult.class));
+        producer.send(testId());
         verify(repoMock, times(1)).deleteFeiletMelding(any());
     }
 
-    @Test
-    public void skal_inserte_feilmelding_ved_error() {
+    @Test(expected = IllegalStateException.class)
+    public void skal_feile_om_oppfolgingsstatus_for_bruker_ikke_finnes_i_repo() {
         val repoMock = mock(OppfolgingKafkaFeiletMeldingRepository.class);
-        OppfolgingKafkaProducer producer = createMockProducer(repoMock);
+        val feedRepoMock = mock(OppfolgingFeedRepository.class);
+        OppfolgingKafkaProducer producer = createMockProducer(repoMock, feedRepoMock);
 
-        producer.onError(testId()).onFailure(new RuntimeException());
-        verify(repoMock, times(1)).insertFeiletMelding(any());
+        producer.send(testId());
     }
 
-    @Test
-    public void skal_feile_og_returnere_om_oppfolgingsstatus_for_bruker_ikke_finnes_i_repo() {
-        val repoMock = mock(OppfolgingKafkaFeiletMeldingRepository.class);
-        val producer = createMockProducer(repoMock);
-
-        val future = producer.send(testId());
-        assertThat(future.isCompletedExceptionally()).isTrue();
+    private static Optional<OppfolgingFeedDTO> testDto() {
+        return Optional.of(
+                OppfolgingFeedDTO.builder()
+                        .aktoerid(testId().getAktorId())
+                        .build()
+        );
     }
 
     private static AktorId testId() {
         return new AktorId("test");
     }
 
-    private static OppfolgingKafkaProducer createMockProducer(OppfolgingKafkaFeiletMeldingRepository kafkaRepoMock) {
+    private static OppfolgingKafkaProducer createMockProducer(OppfolgingKafkaFeiletMeldingRepository kafkaRepoMock, OppfolgingFeedRepository feedRepositoryMock) {
+        val kafkaMock = mock(KafkaProducer.class);
+        when(kafkaMock.send(any(ProducerRecord.class))).thenReturn(mock(Future.class));
         return new OppfolgingKafkaProducer(
-                mock(KafkaTemplate.class),
-                mock(OppfolgingFeedRepository.class),
+                kafkaMock,
+                feedRepositoryMock,
                 kafkaRepoMock,
-                mock(AktorService.class)
-        );
+                mock(AktorService.class),
+                "test");
     }
 }

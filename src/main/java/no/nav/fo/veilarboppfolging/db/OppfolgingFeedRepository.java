@@ -3,9 +3,12 @@ package no.nav.fo.veilarboppfolging.db;
 import lombok.extern.slf4j.Slf4j;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor;
+import no.nav.fo.veilarboppfolging.domain.AktorId;
 import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingFeedDTO;
 import no.nav.fo.veilarboppfolging.utils.OppfolgingFeedUtil;
 import no.nav.metrics.utils.MetricsUtils;
+import no.nav.sbl.sql.SqlUtils;
+import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -13,6 +16,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
+import java.sql.SQLException;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -34,6 +38,14 @@ public class OppfolgingFeedRepository {
     public OppfolgingFeedRepository(JdbcTemplate db, LockingTaskExecutor taskExecutor) {
         this.db = db;
         this.taskExecutor = taskExecutor;
+    }
+
+    public List<AktorId> hentAlleBrukereUnderOppfolging() {
+        return SqlUtils
+                .select(db, "OPPFOLGINGSTATUS", rs -> new AktorId(rs.getString("AKTOR_ID")))
+                .column("*")
+                .where(WhereClause.equals("UNDER_OPPFOLGING", 1))
+                .executeToList();
     }
 
     public Optional<OppfolgingFeedDTO> hentOppfolgingStatus(String aktoerId) {

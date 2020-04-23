@@ -33,7 +33,7 @@ public class OppfolgingKafkaFeilSchedule {
         if(isLeader()) {
             List<AktorId> aktorIds = repository.hentFeiledeMeldinger();
             log.info("Starter jobb for legge til avslutning av {} brukere på kafka", aktorIds.size());
-            aktorIds.forEach(producer::send);
+            aktorIds.forEach(producer::sendAsync);
         }
     }
 
