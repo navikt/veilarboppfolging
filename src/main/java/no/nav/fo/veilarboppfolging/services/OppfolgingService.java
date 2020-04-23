@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static java.lang.System.currentTimeMillis;
+import static java.util.concurrent.CompletableFuture.runAsync;
 import static no.nav.fo.veilarboppfolging.utils.FnrUtils.getAktorIdOrElseThrow;
 
 @Component
@@ -100,7 +101,7 @@ public class OppfolgingService {
             resolver.startOppfolging();
         }
 
-        kafkaProducer.send(new Fnr(fnr));
+        runAsync(() -> kafkaProducer.send(new Fnr(fnr)));
         return getOppfolgingStatusData(fnr, resolver);
     }
 
@@ -118,7 +119,8 @@ public class OppfolgingService {
         resolver.avsluttOppfolging(veileder, begrunnelse);
         resolver.reloadOppfolging();
 
-        kafkaProducer.send(new Fnr(fnr));
+        runAsync(() -> kafkaProducer.send(new Fnr(fnr)));
+
         return getOppfolgingStatusDataMedAvslutningStatus(fnr, resolver);
     }
 
@@ -155,7 +157,7 @@ public class OppfolgingService {
             resolver.reloadOppfolging();
         }
 
-        kafkaProducer.send(new Fnr(fnr));
+        runAsync(() -> kafkaProducer.send(new Fnr(fnr)));
         return getOppfolgingStatusData(fnr, resolver);
     }
 

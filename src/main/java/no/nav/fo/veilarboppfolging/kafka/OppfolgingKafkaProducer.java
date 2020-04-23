@@ -11,21 +11,17 @@ import no.nav.fo.veilarboppfolging.domain.Fnr;
 import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingFeedDTO;
 import no.nav.fo.veilarboppfolging.rest.domain.VeilederTilordning;
 import no.nav.fo.veilarboppfolging.utils.FnrUtils;
-import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.header.internals.RecordHeader;
 import org.slf4j.MDC;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.util.concurrent.FailureCallback;
-import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.SuccessCallback;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Function;
 
 import static java.util.Collections.singletonList;
 import static no.nav.json.JsonUtils.toJson;
