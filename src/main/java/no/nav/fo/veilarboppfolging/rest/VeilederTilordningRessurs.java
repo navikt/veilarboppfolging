@@ -121,7 +121,7 @@ public class VeilederTilordningRessurs {
             CompletableFuture.runAsync(this::kallWebhook);
         }
 
-        kafka.send(tilordninger);
+        kafka.sendAsync(tilordninger);
 
         timer.stop();
         timer.report();

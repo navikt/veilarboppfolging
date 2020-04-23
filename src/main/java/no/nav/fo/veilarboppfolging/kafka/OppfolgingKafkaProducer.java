@@ -24,6 +24,8 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import static java.util.Collections.singletonList;
+import static java.util.concurrent.CompletableFuture.runAsync;
+import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static no.nav.json.JsonUtils.toJson;
 import static no.nav.log.LogFilter.PREFERRED_NAV_CALL_ID_HEADER_NAME;
 import static no.nav.sbl.util.EnvironmentUtils.getEnvironmentName;
@@ -48,16 +50,20 @@ public class OppfolgingKafkaProducer {
         this.aktorService = aktorService;
     }
 
-    public void send(List<VeilederTilordning> tilordninger) {
+    public void sendAsync(List<VeilederTilordning> tilordninger) {
         for (VeilederTilordning tilordning : tilordninger) {
             val aktoerId = new AktorId(tilordning.getAktoerId());
-            send(aktoerId);
+            sendAsync(aktoerId);
         }
     }
 
-    public void send(Fnr fnr) {
-        AktorId aktoerId = FnrUtils.getAktorIdOrElseThrow(aktorService, fnr.getFnr());
-        send(aktoerId);
+    public void sendAsync(Fnr fnr) {
+        CompletableFuture<AktorId> fetchAktoerId = supplyAsync(() -> FnrUtils.getAktorIdOrElseThrow(aktorService, fnr.getFnr()));
+        fetchAktoerId.thenAccept(this::sendAsync);
+    }
+
+    public void sendAsync(AktorId aktorId) {
+        supplyAsync(() -> send(aktorId));
     }
 
     public CompletableFuture<AktorId> send(AktorId aktoerId) {
