@@ -59,11 +59,13 @@ public class OppfolgingFeedRepositoryTest {
     }
 
     @Test
-    public void skal_hente_startdato_for_siste_oppfolgingsperiode() {
+    public void skal_hente_startdato_for_siste_oppfolgingsperiode() throws InterruptedException {
         tilordningerRepository.upsertVeilederTilordning(AKTOR_ID, VEILEDER);
 
         periodeRepository.start(AKTOR_ID);
         periodeRepository.avslutt(AKTOR_ID, VEILEDER, "test");
+
+        Thread.sleep(1);
 
         periodeRepository.start(AKTOR_ID);
         periodeRepository.avslutt(AKTOR_ID, VEILEDER, "test");
