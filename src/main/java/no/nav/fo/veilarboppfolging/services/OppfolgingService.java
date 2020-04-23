@@ -8,6 +8,7 @@ import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingsStatusRepository;
 import no.nav.fo.veilarboppfolging.domain.*;
+import no.nav.fo.veilarboppfolging.kafka.OppfolgingKafkaProducer;
 import no.nav.fo.veilarboppfolging.mappers.VeilarbArenaOppfolging;
 import no.nav.fo.veilarboppfolging.rest.AutorisasjonService;
 import no.nav.fo.veilarboppfolging.rest.domain.DkifResponse;
@@ -40,6 +41,7 @@ public class OppfolgingService {
     private final OppfolgingsbrukerService oppfolgingsbrukerService;
     private final UnleashService unleashService;
     private final AutorisasjonService autorisasjonService;
+    private final OppfolgingKafkaProducer kafkaProducer;
 
     @Inject
     public OppfolgingService(
@@ -51,7 +53,8 @@ public class OppfolgingService {
             ManuellStatusService manuellStatusService,
             OppfolgingsbrukerService oppfolgingsbrukerService,
             UnleashService unleashService,
-            AutorisasjonService autorisasjonService) {
+            AutorisasjonService autorisasjonService,
+            OppfolgingKafkaProducer kafkaProducer) {
         this.oppfolgingResolverDependencies = oppfolgingResolverDependencies;
         this.aktorService = aktorService;
         this.oppfolgingRepository = oppfolgingRepository;
@@ -61,6 +64,7 @@ public class OppfolgingService {
         this.oppfolgingsbrukerService = oppfolgingsbrukerService;
         this.unleashService = unleashService;
         this.autorisasjonService = autorisasjonService;
+        this.kafkaProducer = kafkaProducer;
     }
 
     @SneakyThrows
@@ -96,6 +100,7 @@ public class OppfolgingService {
             resolver.startOppfolging();
         }
 
+        kafkaProducer.send(new Fnr(fnr));
         return getOppfolgingStatusData(fnr, resolver);
     }
 
@@ -113,6 +118,7 @@ public class OppfolgingService {
         resolver.avsluttOppfolging(veileder, begrunnelse);
         resolver.reloadOppfolging();
 
+        kafkaProducer.send(new Fnr(fnr));
         return getOppfolgingStatusDataMedAvslutningStatus(fnr, resolver);
     }
 
@@ -149,6 +155,7 @@ public class OppfolgingService {
             resolver.reloadOppfolging();
         }
 
+        kafkaProducer.send(new Fnr(fnr));
         return getOppfolgingStatusData(fnr, resolver);
     }
 
