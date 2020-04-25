@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Optional;
 
 import static java.lang.System.currentTimeMillis;
-import static java.util.concurrent.CompletableFuture.runAsync;
 import static no.nav.fo.veilarboppfolging.utils.FnrUtils.getAktorIdOrElseThrow;
 
 @Component

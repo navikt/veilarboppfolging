@@ -3,7 +3,6 @@ package no.nav.fo.veilarboppfolging.db;
 import no.nav.fo.DatabaseTest;
 import no.nav.fo.veilarboppfolging.domain.Tilordning;
 import org.junit.jupiter.api.Test;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.inject.Inject;
 import java.util.Optional;

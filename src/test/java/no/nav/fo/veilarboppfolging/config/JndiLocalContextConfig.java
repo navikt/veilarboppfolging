@@ -11,6 +11,7 @@ import javax.sql.DataSource;
 
 import static java.lang.System.getProperty;
 import static no.nav.fasit.FasitUtils.getDbCredentials;
+import static no.nav.fo.veilarboppfolging.config.ApplicationConfig.APPLICATION_NAME;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 
