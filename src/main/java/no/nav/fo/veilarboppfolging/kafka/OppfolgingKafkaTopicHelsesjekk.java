@@ -13,7 +13,6 @@ import static no.nav.fo.veilarboppfolging.kafka.ProducerConfig.KAFKA_PRODUCER_TO
 
 
 @Slf4j
-@Component
 public class OppfolgingKafkaTopicHelsesjekk implements Helsesjekk {
 
     KafkaProducer<String, String> kafkaProducer;
