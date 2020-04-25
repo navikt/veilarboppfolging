@@ -1,18 +1,13 @@
 package no.nav.fo.veilarboppfolging.kafka;
 
-import lombok.extern.slf4j.Slf4j;
 import no.nav.apiapp.selftest.Helsesjekk;
 import no.nav.apiapp.selftest.HelsesjekkMetadata;
 import org.apache.kafka.clients.producer.KafkaProducer;
-import org.springframework.stereotype.Component;
-
-import javax.inject.Inject;
 
 import static no.nav.fo.veilarboppfolging.kafka.KafkaPropsConfig.KAFKA_BROKERS;
 import static no.nav.fo.veilarboppfolging.kafka.ProducerConfig.KAFKA_PRODUCER_TOPIC_OPPFOLGING;
 
 
-@Slf4j
 public class OppfolgingKafkaTopicHelsesjekk implements Helsesjekk {
 
     KafkaProducer<String, String> kafkaProducer;

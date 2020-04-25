@@ -11,6 +11,8 @@ import no.nav.dialogarena.aktor.AktorConfig;
 import no.nav.fo.veilarboppfolging.db.OppfolgingFeedRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingsenhetHistorikkRepository;
 import no.nav.fo.veilarboppfolging.kafka.OppfolgingKafkaProducer;
+import no.nav.fo.veilarboppfolging.kafka.OppfolgingKafkaTopicHelsesjekk;
+import no.nav.fo.veilarboppfolging.kafka.ProducerConfig;
 import no.nav.fo.veilarboppfolging.security.SecurityTokenServiceOidcProvider;
 import no.nav.fo.veilarboppfolging.security.SecurityTokenServiceOidcProviderConfig;
 import no.nav.internal.PopulerOppfolgingHistorikkServlet;
@@ -29,6 +31,7 @@ import java.util.concurrent.Executors;
 
 import static no.nav.brukerdialog.security.Constants.AZUREADB2C_OIDC_COOKIE_NAME_FSS;
 import static no.nav.fo.veilarboppfolging.config.DatabaseConfig.migrateDatabase;
+import static no.nav.fo.veilarboppfolging.kafka.ProducerConfig.createKafkaProducer;
 import static no.nav.sbl.featuretoggle.unleash.UnleashServiceConfig.resolveFromEnvironment;
 import static no.nav.sbl.util.EnvironmentUtils.Type.PUBLIC;
 import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
@@ -134,6 +137,8 @@ public class ApplicationConfig implements ApiApplication {
                 .validateAzureAdInternalUsersTokens(config)
                 .customSecurityLevelForExternalUsers(SecurityLevel.Level3, "niva3")
                 .issoLogin()
-                .oidcProvider(securityTokenServiceOidcProvider);
+                .oidcProvider(securityTokenServiceOidcProvider)
+                .selfTests(new OppfolgingKafkaTopicHelsesjekk(createKafkaProducer()));
+
     }
 }
