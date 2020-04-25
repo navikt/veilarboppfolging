@@ -2,9 +2,12 @@ package no.nav.internal;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import no.nav.fo.veilarboppfolging.db.OppfolgingFeedRepository;
 import no.nav.fo.veilarboppfolging.domain.AktorId;
 import no.nav.fo.veilarboppfolging.kafka.OppfolgingKafkaProducer;
+import no.nav.jobutils.JobUtils;
+import no.nav.jobutils.RunningJob;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServlet;
@@ -34,9 +37,14 @@ public class PopulerOppfolgingKafkaTopicServlet extends HttpServlet {
         if (isBasicAuthAuthorized(req)) {
             log.info("Hentet ut alle brukere under oppfolging");
             List<AktorId> aktorIds = oppfolgingFeedRepository.hentAlleBrukereUnderOppfolging();
+
             log.info("Publiserer {} brukere på kafka", aktorIds.size());
-            aktorIds.forEach(oppfolgingKafkaProducer::sendAsync);
+            val job = JobUtils.runAsyncJob(() -> aktorIds.forEach(oppfolgingKafkaProducer::send));
+
+            val mld = String.format("Startet jobb med id %s på pod %s", job.getJobId(), job.getPodName());
             resp.setStatus(SC_OK);
+            resp.getWriter().write(mld);
+
         } else {
             AuthorizationUtils.writeUnauthorized(resp);
         }
