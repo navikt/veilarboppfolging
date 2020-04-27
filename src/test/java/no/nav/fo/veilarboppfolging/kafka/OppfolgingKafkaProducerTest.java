@@ -6,6 +6,7 @@ import no.nav.fo.veilarboppfolging.db.OppfolgingFeedRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingKafkaFeiletMeldingRepository;
 import no.nav.fo.veilarboppfolging.domain.AktorId;
 import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingFeedDTO;
+import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingKafkaDTO;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.bouncycastle.util.Strings;
@@ -67,9 +68,9 @@ public class OppfolgingKafkaProducerTest {
         producer.send(testId());
     }
 
-    private static Optional<OppfolgingFeedDTO> testDto() {
+    private static Optional<OppfolgingKafkaDTO> testDto() {
         return Optional.of(
-                OppfolgingFeedDTO.builder()
+                OppfolgingKafkaDTO.builder()
                         .aktoerid(testId().getAktorId())
                         .build()
         );

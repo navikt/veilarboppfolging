@@ -61,7 +61,7 @@ public class OppfolgingKafkaProducer {
         future.exceptionally(e -> onError(aktoerId));
     }
 
-    Void onError(AktorId aktoerId) {
+    public Void onError(AktorId aktoerId) {
         kafkaRepository.insertFeiletMelding(aktoerId);
         log.error("Kunne ikke publisere melding for bruker med aktoerId {} på topic {}", aktoerId, topicName);
         return null;

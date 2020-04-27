@@ -5,6 +5,7 @@ import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import no.nav.fo.veilarboppfolging.domain.AktorId;
 import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingFeedDTO;
+import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingKafkaDTO;
 import no.nav.fo.veilarboppfolging.utils.OppfolgingFeedUtil;
 import no.nav.metrics.utils.MetricsUtils;
 import no.nav.sbl.sql.SqlUtils;
@@ -48,7 +49,7 @@ public class OppfolgingFeedRepository {
                 .executeToList();
     }
 
-    public Optional<OppfolgingFeedDTO> hentOppfolgingStatus(String aktoerId) {
+    public Optional<OppfolgingKafkaDTO> hentOppfolgingStatus(String aktoerId) {
 
         String sql = "SELECT "
                      + "os.AKTOR_ID, "
@@ -72,13 +73,13 @@ public class OppfolgingFeedRepository {
                      + "  ) siste_periode "
                      + "where os.AKTOR_ID = siste_periode.AKTOR_ID";
 
-        OppfolgingFeedDTO dto = db.queryForObject(sql, new Object[]{aktoerId}, rowMapper());
+        OppfolgingKafkaDTO dto = db.queryForObject(sql, new Object[]{aktoerId}, rowMapper());
         return ofNullable(dto);
     }
 
-    private RowMapper<OppfolgingFeedDTO> rowMapper() {
+    private RowMapper<OppfolgingKafkaDTO> rowMapper() {
         return (rs, rowNum) ->
-                OppfolgingFeedDTO
+                OppfolgingKafkaDTO
                         .builder()
                         .aktoerid(rs.getString("AKTOR_ID"))
                         .veileder(rs.getString("VEILEDER"))

@@ -4,7 +4,7 @@ import lombok.val;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import no.nav.fo.veilarboppfolging.domain.AktorId;
 import no.nav.fo.veilarboppfolging.domain.Oppfolgingsperiode;
-import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingFeedDTO;
+import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingKafkaDTO;
 import no.nav.sbl.jdbc.Database;
 import org.junit.After;
 import org.junit.BeforeClass;
@@ -58,7 +58,7 @@ public class OppfolgingFeedRepositoryTest {
         tilordningerRepository.upsertVeilederTilordning(AKTOR_ID, VEILEDER);
         periodeRepository.start(AKTOR_ID);
 
-        Optional<OppfolgingFeedDTO> oppfolgingStatus = feedRepository.hentOppfolgingStatus(AKTOR_ID);
+        Optional<OppfolgingKafkaDTO> oppfolgingStatus = feedRepository.hentOppfolgingStatus(AKTOR_ID);
 
         assertThat(oppfolgingStatus.isPresent()).isTrue();
         assertThat(oppfolgingStatus.get().getAktoerid()).isEqualTo(AKTOR_ID);

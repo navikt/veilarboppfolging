@@ -24,8 +24,8 @@ import static org.apache.kafka.clients.producer.ProducerConfig.*;
 @Configuration
 public class ProducerConfig {
 
-    static final String KAFKA_PRODUCER_TOPIC_AVSLUTT_OPPFOLGING = "aapen-fo-endringPaaAvsluttOppfolging-v1" + "-" + getRequiredProperty(APP_ENVIRONMENT_NAME);
-    static final String KAFKA_PRODUCER_TOPIC_OPPFOLGING = "aapen-fo-oppfolgingOppdatert-v1-" + requireEnvironmentName();
+    public static final String KAFKA_PRODUCER_TOPIC_AVSLUTT_OPPFOLGING = "aapen-fo-endringPaaAvsluttOppfolging-v1" + "-" + getRequiredProperty(APP_ENVIRONMENT_NAME);
+    public static final String KAFKA_PRODUCER_TOPIC_OPPFOLGING = "aapen-fo-oppfolgingOppdatert-v1-" + requireEnvironmentName();
 
     static ProducerFactory<String, String> producerFactory() {
         return new DefaultKafkaProducerFactory<>(kafkaProducerProperties());

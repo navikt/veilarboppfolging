@@ -39,7 +39,13 @@ public class PopulerOppfolgingKafkaTopicServlet extends HttpServlet {
             List<AktorId> aktorIds = oppfolgingFeedRepository.hentAlleBrukereUnderOppfolging();
 
             log.info("Publiserer {} brukere på kafka", aktorIds.size());
-            val job = JobUtils.runAsyncJob(() -> aktorIds.forEach(oppfolgingKafkaProducer::send));
+            val job = JobUtils.runAsyncJob(() -> aktorIds.forEach(aktorId -> {
+                try {
+                    oppfolgingKafkaProducer.send(aktorId);
+                } catch (Exception e) {
+                    oppfolgingKafkaProducer.onError(aktorId);
+                }
+            }));
 
             val mld = String.format("Startet jobb med id %s på pod %s", job.getJobId(), job.getPodName());
             resp.setStatus(SC_OK);
