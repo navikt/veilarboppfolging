@@ -69,10 +69,13 @@ public class OppfolgingKafkaProducer {
 
     @SneakyThrows
     public void send(AktorId aktoerId) {
+        log.info("Henter oppfolgingsstatur for bruker {}", aktoerId);
         val dto = repository.hentOppfolgingStatus(aktoerId.getAktorId()).orElseThrow(IllegalStateException::new);
+
         val header = new RecordHeader(PREFERRED_NAV_CALL_ID_HEADER_NAME, getCorrelationIdAsBytes());
         val record = new ProducerRecord<>(topicName, 0, aktoerId.getAktorId(), toJson(dto), singletonList(header));
 
+        log.info("Legger ut bruker med aktoerId {} å topic {}", aktoerId, topicName);
         kafkaProducer.send(record).get(10, SECONDS);
         kafkaRepository.deleteFeiletMelding(aktoerId);
         log.info("Bruker med aktoerId {} er lagt på topic {}", aktoerId, topicName);
