@@ -48,7 +48,7 @@ public class ProducerConfig {
     public OppfolgingKafkaProducer oppfolgingStatusProducer(OppfolgingFeedRepository repository, OppfolgingKafkaFeiletMeldingRepository feiletMeldingRepository,  AktorService aktorService) {
         HashMap<String, Object> config = kafkaProducerProperties();
 
-        config.put(ACKS_CONFIG, 1);                  // Leader will now wait for ACKs from all followers
+        config.put(ACKS_CONFIG, "1");                  // Leader will now wait for ACKs from all followers
         config.put(BATCH_SIZE_CONFIG, 1024*300);     // 300KiB batch size
         config.put(MAX_BLOCK_MS_CONFIG, 60*10_000);  // 10s timeout
 
