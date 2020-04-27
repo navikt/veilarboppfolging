@@ -1,5 +1,6 @@
 package no.nav.fo.veilarboppfolging.kafka;
 
+import lombok.val;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.db.AvsluttOppfolgingEndringRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingFeedRepository;
@@ -12,10 +13,13 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.kafka.support.LoggingProducerListener;
 
+import java.util.HashMap;
+
 import static no.nav.fo.veilarboppfolging.config.ApplicationConfig.APP_ENVIRONMENT_NAME;
 import static no.nav.fo.veilarboppfolging.kafka.KafkaPropsConfig.kafkaProducerProperties;
 import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 import static no.nav.sbl.util.EnvironmentUtils.requireEnvironmentName;
+import static org.apache.kafka.clients.producer.ProducerConfig.*;
 
 @Configuration
 public class ProducerConfig {
@@ -42,6 +46,13 @@ public class ProducerConfig {
 
     @Bean
     public OppfolgingKafkaProducer oppfolgingStatusProducer(OppfolgingFeedRepository repository, OppfolgingKafkaFeiletMeldingRepository feiletMeldingRepository,  AktorService aktorService) {
-        return new OppfolgingKafkaProducer(createKafkaProducer(), repository, feiletMeldingRepository, aktorService, KAFKA_PRODUCER_TOPIC_OPPFOLGING);
+        HashMap<String, Object> config = kafkaProducerProperties();
+
+        config.put(ACKS_CONFIG, 1);                  // Leader will now wait for ACKs from all followers
+        config.put(BATCH_SIZE_CONFIG, 1024*300);     // 300KiB batch size
+        config.put(MAX_BLOCK_MS_CONFIG, 60*10_000);  // 10s timeout
+
+        val kafkaProducer = new KafkaProducer<String, String>(config);
+        return new OppfolgingKafkaProducer(kafkaProducer, repository, feiletMeldingRepository, aktorService, KAFKA_PRODUCER_TOPIC_OPPFOLGING);
     }
 }
