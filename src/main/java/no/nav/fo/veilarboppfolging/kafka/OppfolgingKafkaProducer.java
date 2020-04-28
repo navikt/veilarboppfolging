@@ -69,7 +69,7 @@ public class OppfolgingKafkaProducer {
 
     @SneakyThrows
     public void send(AktorId aktoerId) {
-        log.info("Henter oppfolgingsstatur for bruker {}", aktoerId);
+        log.info("Henter oppfolgingsstatus for bruker {}", aktoerId);
         val dto = repository.hentOppfolgingStatus(aktoerId.getAktorId()).orElseThrow(IllegalStateException::new);
 
         val header = new RecordHeader(PREFERRED_NAV_CALL_ID_HEADER_NAME, getCorrelationIdAsBytes());
