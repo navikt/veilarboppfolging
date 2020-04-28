@@ -1,5 +1,6 @@
 package no.nav.internal;
 
+import io.vavr.control.Try;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -10,6 +11,7 @@ import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingFeedDTO;
 import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingKafkaDTO;
 import no.nav.jobutils.JobUtils;
 import no.nav.jobutils.RunningJob;
+import org.apache.kafka.clients.producer.RecordMetadata;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServlet;
@@ -48,7 +50,15 @@ public class PopulerOppfolgingKafkaTopicServlet extends HttpServlet {
             List<AktorId> aktorIds = oppfolgingFeedRepository.hentAlleBrukereUnderOppfolging();
 
             log.info("Publiserer {} brukere på kafka", aktorIds.size());
-            val job = runAsyncJob(() -> aktorIds.forEach(oppfolgingKafkaProducer::send));
+            val job = runAsyncJob(() -> {
+                        val count = aktorIds.stream()
+                                .map(oppfolgingKafkaProducer::send)
+                                .filter(Try::isSuccess)
+                                .count();
+
+                        log.info("Fullført! Sendte {} meldinger på kafka", count);
+                    }
+            );
 
             val mld = String.format("Startet jobb med id %s på pod %s", job.getJobId(), job.getPodName());
             resp.setStatus(SC_OK);

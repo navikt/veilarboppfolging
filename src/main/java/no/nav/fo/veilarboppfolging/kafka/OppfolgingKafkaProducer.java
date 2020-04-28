@@ -65,13 +65,10 @@ public class OppfolgingKafkaProducer {
 
     @SneakyThrows
     public Try<RecordMetadata> send(AktorId aktoerId) {
-        log.info("Henter oppfolgingsstatus for bruker {}", aktoerId);
+        log.info("Henter oppfølgingsstatus for bruker {}", aktoerId);
 
         val result = repository.hentOppfolgingStatus(aktoerId.getAktorId());
-        if (result.isFailure()) {
-            log.error("Kunne ikke hente oppfolgingsstatus for bruker {} \n {}", aktoerId, result.getCause());
-        }
-
+        result.onFailure(t -> log.error("Kunne ikke hente oppfølgingsstatus for bruker {} {}", aktoerId.getAktorId(), t));
         return result.flatMap(this::send);
     }
 
@@ -80,14 +77,13 @@ public class OppfolgingKafkaProducer {
         val header = new RecordHeader(PREFERRED_NAV_CALL_ID_HEADER_NAME, getCorrelationIdAsBytes());
         val record = new ProducerRecord<>(topicName, 0, aktoerId, toJson(dto), singletonList(header));
 
-        log.info("Legger ut bruker med aktoerId {} å topic {}", aktoerId, topicName);
+        log.info("Legger ut bruker med aktoerId {} på topic {}", aktoerId, topicName);
 
         val result = Try.of(() -> kafkaProducer.send(record).get(10, SECONDS));
-        if (result.isFailure()) {
-            log.error("Kunne ikke sende melding på kafka for bruker {} \n {}", aktoerId, result.getCause());
+        result.onFailure(t -> {
+            log.error("Kunne ikke sende melding på kafka for bruker {} {}", aktoerId, t);
             kafkaRepository.insertFeiletMelding(new AktorId(aktoerId));
-            return result;
-        }
+        });
 
         kafkaRepository.deleteFeiletMelding(new AktorId(aktoerId));
         return result;
