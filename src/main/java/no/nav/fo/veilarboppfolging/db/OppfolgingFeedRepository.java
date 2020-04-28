@@ -1,6 +1,8 @@
 package no.nav.fo.veilarboppfolging.db;
 
+import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import no.nav.fo.veilarboppfolging.domain.AktorId;
@@ -17,12 +19,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
-import java.sql.SQLException;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
-import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 
 @Slf4j
@@ -49,32 +49,36 @@ public class OppfolgingFeedRepository {
                 .executeToList();
     }
 
-    public Optional<OppfolgingKafkaDTO> hentOppfolgingStatus(String aktoerId) {
+    public Try<OppfolgingKafkaDTO> hentOppfolgingStatus(String aktoerId) {
 
-        String sql = "SELECT "
-                     + "os.AKTOR_ID, "
-                     + "os.VEILEDER, "
-                     + "os.UNDER_OPPFOLGING, "
-                     + "os.NY_FOR_VEILEDER, "
-                     + "os.OPPDATERT, "
-                     + "ms.MANUELL, "
-                     + "siste_periode.STARTDATO "
-                     + "from "
-                     + "OPPFOLGINGSTATUS os LEFT JOIN MANUELL_STATUS ms "
-                     + "on (os.GJELDENDE_MANUELL_STATUS = ms.ID) "
-                     + ", "
-                     + "(select "
-                     + "AKTOR_ID, "
-                     + "STARTDATO "
-                     + "from OPPFOLGINGSPERIODE "
-                     + "   where AKTOR_ID = ? "
-                     + "   order by OPPDATERT desc "
-                     + "   fetch next 1 rows only "
-                     + "  ) siste_periode "
-                     + "where os.AKTOR_ID = siste_periode.AKTOR_ID";
+        val sql = "SELECT "
+                + "os.AKTOR_ID, "
+                + "os.VEILEDER, "
+                + "os.UNDER_OPPFOLGING, "
+                + "os.NY_FOR_VEILEDER, "
+                + "os.OPPDATERT, "
+                + "ms.MANUELL, "
+                + "siste_periode.STARTDATO "
+                + "from "
+                + "OPPFOLGINGSTATUS os LEFT JOIN MANUELL_STATUS ms "
+                + "on (os.GJELDENDE_MANUELL_STATUS = ms.ID) "
+                + ", "
+                + "(select "
+                + "AKTOR_ID, "
+                + "STARTDATO "
+                + "from OPPFOLGINGSPERIODE "
+                + "   where AKTOR_ID = ? "
+                + "   order by OPPDATERT desc "
+                + "   fetch next 1 rows only "
+                + "  ) siste_periode "
+                + "where os.AKTOR_ID = siste_periode.AKTOR_ID";
 
-        OppfolgingKafkaDTO dto = db.queryForObject(sql, new Object[]{aktoerId}, rowMapper());
-        return ofNullable(dto);
+        val result = Try.of(() -> db.queryForObject(sql, new Object[]{aktoerId}, rowMapper()));
+
+        if (result.isSuccess() && result.get() == null) {
+            return Try.failure(new IllegalStateException("Result was empty"));
+        }
+        return result;
     }
 
     private RowMapper<OppfolgingKafkaDTO> rowMapper() {

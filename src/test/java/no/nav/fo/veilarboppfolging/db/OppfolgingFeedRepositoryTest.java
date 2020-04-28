@@ -4,7 +4,6 @@ import lombok.val;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import no.nav.fo.veilarboppfolging.domain.AktorId;
 import no.nav.fo.veilarboppfolging.domain.Oppfolgingsperiode;
-import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingKafkaDTO;
 import no.nav.sbl.jdbc.Database;
 import org.junit.After;
 import org.junit.BeforeClass;
@@ -14,7 +13,7 @@ import org.springframework.jdbc.datasource.AbstractDataSource;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
+import java.util.function.Supplier;
 import java.util.stream.IntStream;
 
 import static java.util.Comparator.comparing;
@@ -53,14 +52,36 @@ public class OppfolgingFeedRepositoryTest {
         jdbc.execute("TRUNCATE TABLE " + OppfolgingsPeriodeRepository.TABLE_NAME);
     }
 
+
+    @Test
+    public void skal_returnere_feilende_resultat_om_bruker_ikke_har_oppfolgingsperiode() {
+        val sql = "INSERT INTO "
+                + "OPPFOLGINGSTATUS "
+                + "(AKTOR_ID, UNDER_OPPFOLGING, VEILEDER, NY_FOR_VEILEDER) "
+                + "VALUES ('10101010101', 1, 'Z000000', 0)";
+
+        jdbc.execute(sql);
+
+        val man = "INSERT INTO "
+                + "MANUELL_STATUS "
+                + "(ID, AKTOR_ID, MANUELL, OPPRETTET_AV) "
+                + "VALUES (1, '10101010101', 0, 'SYSTEM')";
+
+        jdbc.execute(man);
+
+        val result = feedRepository.hentOppfolgingStatus("10101010101");
+
+        assertThat(result.isFailure()).isTrue();
+    }
+
     @Test
     public void skal_hente_bruker() {
         tilordningerRepository.upsertVeilederTilordning(AKTOR_ID, VEILEDER);
         periodeRepository.start(AKTOR_ID);
 
-        Optional<OppfolgingKafkaDTO> oppfolgingStatus = feedRepository.hentOppfolgingStatus(AKTOR_ID);
+        val oppfolgingStatus = feedRepository.hentOppfolgingStatus(AKTOR_ID);
 
-        assertThat(oppfolgingStatus.isPresent()).isTrue();
+        assertThat(oppfolgingStatus.isSuccess()).isTrue();
         assertThat(oppfolgingStatus.get().getAktoerid()).isEqualTo(AKTOR_ID);
     }
 
@@ -79,17 +100,17 @@ public class OppfolgingFeedRepositoryTest {
         val perioder = periodeRepository.hentOppfolgingsperioder(AKTOR_ID);
 
         val forstePeriode = perioder.stream()
-                                   .min(comparing(Oppfolgingsperiode::getStartDato))
-                                   .orElseThrow(IllegalStateException::new);
+                .min(comparing(Oppfolgingsperiode::getStartDato))
+                .orElseThrow(IllegalStateException::new);
 
         val sistePeriode = perioder.stream()
-                                   .max(comparing(Oppfolgingsperiode::getStartDato))
-                                   .orElseThrow(IllegalStateException::new);
+                .max(comparing(Oppfolgingsperiode::getStartDato))
+                .orElseThrow(IllegalStateException::new);
 
         val startDato = feedRepository.hentOppfolgingStatus(AKTOR_ID)
-                                      .map(dto -> dto.getStartDato().getTime())
-                                      .map(Date::new)
-                                      .orElseThrow(IllegalStateException::new);
+                .map(dto -> dto.getStartDato().getTime())
+                .map(Date::new)
+                .getOrElseThrow((Supplier<IllegalStateException>) IllegalStateException::new);
 
         assertThat(startDato.getTime()).isEqualTo(sistePeriode.getStartDato().getTime());
         assertThat(startDato.getTime()).isNotEqualTo(forstePeriode.getStartDato().getTime());

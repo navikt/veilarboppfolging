@@ -1,5 +1,6 @@
 package no.nav.fo.veilarboppfolging.kafka;
 
+import io.vavr.control.Try;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -9,9 +10,11 @@ import no.nav.fo.veilarboppfolging.db.OppfolgingFeedRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingKafkaFeiletMeldingRepository;
 import no.nav.fo.veilarboppfolging.domain.AktorId;
 import no.nav.fo.veilarboppfolging.domain.Fnr;
+import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingKafkaDTO;
 import no.nav.fo.veilarboppfolging.rest.domain.VeilederTilordning;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.header.internals.RecordHeader;
 import org.slf4j.MDC;
 
@@ -57,28 +60,37 @@ public class OppfolgingKafkaProducer {
     }
 
     public void sendAsync(AktorId aktoerId) {
-        val future = runAsync(() -> send(aktoerId));
-        future.exceptionally(e -> onError(aktoerId));
-    }
-
-    public Void onError(AktorId aktoerId) {
-        kafkaRepository.insertFeiletMelding(aktoerId);
-        log.error("Kunne ikke publisere melding for bruker med aktoerId {} på topic {}", aktoerId, topicName);
-        return null;
+        runAsync(() -> send(aktoerId));
     }
 
     @SneakyThrows
-    public void send(AktorId aktoerId) {
+    public Try<RecordMetadata> send(AktorId aktoerId) {
         log.info("Henter oppfolgingsstatus for bruker {}", aktoerId);
-        val dto = repository.hentOppfolgingStatus(aktoerId.getAktorId()).orElseThrow(IllegalStateException::new);
 
+        val result = repository.hentOppfolgingStatus(aktoerId.getAktorId());
+        if (result.isFailure()) {
+            log.error("Kunne ikke hente oppfolgingsstatus for bruker {} \n {}", aktoerId, result.getCause());
+        }
+
+        return result.flatMap(this::send);
+    }
+
+    private Try<RecordMetadata> send(OppfolgingKafkaDTO dto) {
+        val aktoerId = dto.getAktoerid();
         val header = new RecordHeader(PREFERRED_NAV_CALL_ID_HEADER_NAME, getCorrelationIdAsBytes());
-        val record = new ProducerRecord<>(topicName, 0, aktoerId.getAktorId(), toJson(dto), singletonList(header));
+        val record = new ProducerRecord<>(topicName, 0, aktoerId, toJson(dto), singletonList(header));
 
         log.info("Legger ut bruker med aktoerId {} å topic {}", aktoerId, topicName);
-        kafkaProducer.send(record).get(10, SECONDS);
-        kafkaRepository.deleteFeiletMelding(aktoerId);
-        log.info("Bruker med aktoerId {} er lagt på topic {}", aktoerId, topicName);
+
+        val result = Try.of(() -> kafkaProducer.send(record).get(10, SECONDS));
+        if (result.isFailure()) {
+            log.error("Kunne ikke sende melding på kafka for bruker {} \n {}", aktoerId, result.getCause());
+            kafkaRepository.insertFeiletMelding(new AktorId(aktoerId));
+            return result;
+        }
+
+        kafkaRepository.deleteFeiletMelding(new AktorId(aktoerId));
+        return result;
     }
 
     static byte[] getCorrelationIdAsBytes() {
