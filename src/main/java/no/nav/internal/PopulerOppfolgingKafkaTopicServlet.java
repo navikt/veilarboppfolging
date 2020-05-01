@@ -13,10 +13,11 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
 
 import static javax.servlet.http.HttpServletResponse.SC_OK;
 import static no.nav.internal.AuthorizationUtils.isBasicAuthAuthorized;
-import static no.nav.jobutils.JobUtils.runAsyncJob;
 
 @Slf4j
 public class PopulerOppfolgingKafkaTopicServlet extends HttpServlet {
@@ -39,21 +40,22 @@ public class PopulerOppfolgingKafkaTopicServlet extends HttpServlet {
             List<AktorId> aktorIds = oppfolgingFeedRepository.hentAlleBrukereUnderOppfolging();
 
             log.info("Publiserer {} brukere på kafka", aktorIds.size());
-            val job = runAsyncJob(() -> {
+            Supplier<Long> supplier = () -> aktorIds.stream()
+                    .map(AktorId::getAktorId)
+                    .map(aktorId -> OppfolgingKafkaDTO.builder().aktoerid(aktorId).build())
+                    .map(oppfolgingKafkaProducer::send)
+                    .count();
 
-                                      val count = aktorIds.stream()
-                                                          .map(AktorId::getAktorId)
-                                                          .map(aktorId -> OppfolgingKafkaDTO.builder().aktoerid(aktorId).build())
-                                                          .map(oppfolgingKafkaProducer::send)
-                                                          .count();
+            val future = CompletableFuture.supplyAsync(supplier);
 
-                                      log.info("Fullført! Sendte {} asynce meldinger på kafka", count);
-                                  }
-            );
+            while (!future.isDone()) {
+                //busy wait
+            }
 
-            val mld = String.format("Startet jobb med id %s på pod %s", job.getJobId(), job.getPodName());
+            log.info("Fullført! Sendte {} asynce meldinger på kafka", future.get());
+
             resp.setStatus(SC_OK);
-            resp.getWriter().write(mld);
+            resp.getWriter().write("Ferdig");
 
         } else {
             AuthorizationUtils.writeUnauthorized(resp);

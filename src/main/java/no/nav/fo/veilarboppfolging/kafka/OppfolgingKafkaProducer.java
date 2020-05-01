@@ -51,8 +51,8 @@ public class OppfolgingKafkaProducer {
 
     public void sendAsync(List<VeilederTilordning> tilordninger) {
         tilordninger.stream()
-                .map(VeilederTilordning::toAktorId)
-                .forEach(this::sendAsync);
+                    .map(VeilederTilordning::toAktorId)
+                    .forEach(this::sendAsync);
     }
 
     public void sendAsync(Fnr fnr) {
@@ -81,8 +81,9 @@ public class OppfolgingKafkaProducer {
         Callback callback = (metadata, exception) -> {
             if (exception != null) {
                 log.error("Kunne ikke sende melding på kafka for bruker {} \n{}", aktoerId, exception.getStackTrace());
+            } else {
+                log.info("La ut bruker med aktoerId {} på topic {}", aktoerId, topicName);
             }
-            log.info("La ut bruker med aktoerId {} på topic {}", aktoerId, topicName);
         };
 
         return kafkaProducer.send(record, callback);
