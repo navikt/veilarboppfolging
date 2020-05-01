@@ -1,30 +1,19 @@
 package no.nav.internal;
 
-import io.vavr.control.Try;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import no.nav.fo.veilarboppfolging.db.OppfolgingFeedRepository;
 import no.nav.fo.veilarboppfolging.domain.AktorId;
 import no.nav.fo.veilarboppfolging.kafka.OppfolgingKafkaProducer;
-import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingFeedDTO;
 import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingKafkaDTO;
-import no.nav.jobutils.JobUtils;
-import no.nav.jobutils.RunningJob;
-import org.apache.kafka.clients.producer.RecordMetadata;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.util.Comparator;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
-import static java.util.stream.Collectors.toList;
 import static javax.servlet.http.HttpServletResponse.SC_OK;
 import static no.nav.internal.AuthorizationUtils.isBasicAuthAuthorized;
 import static no.nav.jobutils.JobUtils.runAsyncJob;
@@ -51,13 +40,15 @@ public class PopulerOppfolgingKafkaTopicServlet extends HttpServlet {
 
             log.info("Publiserer {} brukere på kafka", aktorIds.size());
             val job = runAsyncJob(() -> {
-                        val count = aktorIds.stream()
-                                .map(oppfolgingKafkaProducer::send)
-                                .filter(Try::isSuccess)
-                                .count();
 
-                        log.info("Fullført! Sendte {} meldinger på kafka", count);
-                    }
+                                      val count = aktorIds.stream()
+                                                          .map(AktorId::getAktorId)
+                                                          .map(aktorId -> OppfolgingKafkaDTO.builder().aktoerid(aktorId).build())
+                                                          .map(oppfolgingKafkaProducer::send)
+                                                          .count();
+
+                                      log.info("Fullført! Sendte {} asynce meldinger på kafka", count);
+                                  }
             );
 
             val mld = String.format("Startet jobb med id %s på pod %s", job.getJobId(), job.getPodName());
