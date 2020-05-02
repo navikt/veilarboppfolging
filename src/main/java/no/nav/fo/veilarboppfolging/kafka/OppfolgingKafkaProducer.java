@@ -20,11 +20,11 @@ import org.apache.kafka.common.header.internals.RecordHeader;
 import org.slf4j.MDC;
 
 import java.util.List;
+import java.util.concurrent.Future;
 
 import static java.util.Collections.singletonList;
 import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static no.nav.fo.veilarboppfolging.utils.FnrUtils.getAktorIdOrElseThrow;
 import static no.nav.json.JsonUtils.toJson;
 import static no.nav.log.LogFilter.PREFERRED_NAV_CALL_ID_HEADER_NAME;
@@ -73,8 +73,7 @@ public class OppfolgingKafkaProducer {
         return result.onSuccess(this::send);
     }
 
-    @SneakyThrows
-    public RecordMetadata send(OppfolgingKafkaDTO dto) {
+    public Future<RecordMetadata> send(OppfolgingKafkaDTO dto) {
         val aktoerId = dto.getAktoerid();
         val header = new RecordHeader(PREFERRED_NAV_CALL_ID_HEADER_NAME, getCorrelationIdAsBytes());
         val record = new ProducerRecord<>(topicName, 0, aktoerId, toJson(dto), singletonList(header));
@@ -87,7 +86,7 @@ public class OppfolgingKafkaProducer {
             }
         };
 
-        return kafkaProducer.send(record, callback).get(10, SECONDS);
+        return kafkaProducer.send(record, callback);
     }
 
     static byte[] getCorrelationIdAsBytes() {
