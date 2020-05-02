@@ -16,6 +16,7 @@ import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
+import org.apache.kafka.common.KafkaException;
 import org.apache.kafka.common.header.internals.RecordHeader;
 import org.slf4j.MDC;
 
@@ -51,8 +52,8 @@ public class OppfolgingKafkaProducer {
 
     public void sendAsync(List<VeilederTilordning> tilordninger) {
         tilordninger.stream()
-                    .map(VeilederTilordning::toAktorId)
-                    .forEach(this::sendAsync);
+                .map(VeilederTilordning::toAktorId)
+                .forEach(this::sendAsync);
     }
 
     public void sendAsync(Fnr fnr) {
@@ -67,13 +68,12 @@ public class OppfolgingKafkaProducer {
     @SneakyThrows
     public Try<OppfolgingKafkaDTO> send(AktorId aktoerId) {
         log.info("Henter oppfølgingsstatus for bruker {}", aktoerId);
-
         val result = repository.hentOppfolgingStatus(aktoerId.getAktorId());
         result.onFailure(t -> log.error("Kunne ikke hente oppfølgingsstatus for bruker {} {}", aktoerId.getAktorId(), t));
         return result.onSuccess(this::send);
     }
 
-    public Future<RecordMetadata> send(OppfolgingKafkaDTO dto) {
+    private Future<RecordMetadata> send(OppfolgingKafkaDTO dto) {
         val aktoerId = dto.getAktoerid();
         val header = new RecordHeader(PREFERRED_NAV_CALL_ID_HEADER_NAME, getCorrelationIdAsBytes());
         val record = new ProducerRecord<>(topicName, 0, aktoerId, toJson(dto), singletonList(header));
