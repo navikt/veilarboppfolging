@@ -2,17 +2,14 @@ package no.nav.internal;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.utils.IdUtils;
-import no.nav.fo.veilarboppfolging.db.OppfolgingFeedRepository;
-import no.nav.fo.veilarboppfolging.domain.AktorId;
 import no.nav.fo.veilarboppfolging.kafka.OppfolgingKafkaProducer;
-import org.slf4j.MDC;
+import no.nav.jobutils.JobUtils;
+import no.nav.jobutils.RunningJob;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.List;
 
 import static javax.servlet.http.HttpServletResponse.SC_OK;
 import static no.nav.internal.AuthorizationUtils.isBasicAuthAuthorized;
@@ -21,34 +18,20 @@ import static no.nav.internal.AuthorizationUtils.isBasicAuthAuthorized;
 public class PopulerOppfolgingKafkaTopicServlet extends HttpServlet {
 
     private final OppfolgingKafkaProducer kafka;
-    private final OppfolgingFeedRepository oppfolgingFeedRepository;
 
     @Inject
-    public PopulerOppfolgingKafkaTopicServlet(OppfolgingKafkaProducer kafka,
-                                              OppfolgingFeedRepository oppfolgingFeedRepository) {
+    public PopulerOppfolgingKafkaTopicServlet(OppfolgingKafkaProducer kafka) {
         this.kafka = kafka;
-        this.oppfolgingFeedRepository = oppfolgingFeedRepository;
     }
 
     @Override
     @SneakyThrows
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) {
         if (isBasicAuthAuthorized(req)) {
-            log.info("Hentet ut alle brukere under oppfolging");
-            List<AktorId> aktorIds = oppfolgingFeedRepository.hentAlleBrukereUnderOppfolging();
-
-            log.info("Publiserer {} brukere på kafka", aktorIds.size());
-
-            String jobId = IdUtils.generateId();
-            MDC.put("jobId", jobId);
-
-            aktorIds.forEach(kafka::send);
-
+            RunningJob job = JobUtils.runAsyncJob(kafka::publiserAlleBrukere);
             resp.setStatus(SC_OK);
-            String ferdig = String.format("Startet populering av kafka med jobId: %s", jobId);
+            String ferdig = String.format("Startet populering av kafka med jobId: %s på pod: %s", job.getJobId(), job.getPodName());
             resp.getWriter().write(ferdig);
-            MDC.remove("jobId");
-
         } else {
             AuthorizationUtils.writeUnauthorized(resp);
         }

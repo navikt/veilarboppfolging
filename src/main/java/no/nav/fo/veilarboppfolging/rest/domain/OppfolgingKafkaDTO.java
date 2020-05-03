@@ -12,7 +12,7 @@ public class OppfolgingKafkaDTO {
     String veileder;
     boolean oppfolging;
     boolean nyForVeileder;
-    boolean manuell;
+    Boolean manuell;
     Timestamp endretTimestamp;
     Timestamp startDato;
 }

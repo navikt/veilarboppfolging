@@ -81,6 +81,55 @@ public class OppfolgingFeedRepository {
         return result;
     }
 
+    public Optional<Long> hentAntallBrukere() {
+        val sql = "SELECT "
+                + "count(*) "
+                + "from "
+                + "OPPFOLGINGSTATUS os LEFT JOIN MANUELL_STATUS ms "
+                + "on (os.GJELDENDE_MANUELL_STATUS = ms.ID) "
+                + ", "
+                + "(select "
+                + "AKTOR_ID, "
+                + "STARTDATO "
+                + "from OPPFOLGINGSPERIODE "
+                + "where SLUTTDATO is null "
+                + "  ) siste_periode "
+                + "where os.AKTOR_ID = siste_periode.AKTOR_ID";
+
+        Long count = db.query(sql, rs -> {
+            rs.next();
+            return rs.getLong(1);
+        });
+        return Optional.ofNullable(count);
+    }
+
+    public List<OppfolgingKafkaDTO> hentOppfolgingStatus(int offset) {
+
+        val sql = "SELECT "
+                + "os.AKTOR_ID, "
+                + "os.VEILEDER, "
+                + "os.UNDER_OPPFOLGING, "
+                + "os.NY_FOR_VEILEDER, "
+                + "os.OPPDATERT, "
+                + "ms.MANUELL, "
+                + "siste_periode.STARTDATO "
+                + "from "
+                + "OPPFOLGINGSTATUS os LEFT JOIN MANUELL_STATUS ms "
+                + "on (os.GJELDENDE_MANUELL_STATUS = ms.ID) "
+                + ", "
+                + "(select "
+                + "AKTOR_ID, "
+                + "STARTDATO "
+                + "from OPPFOLGINGSPERIODE "
+                + "where SLUTTDATO is null "
+                + "  ) siste_periode "
+                + "where os.AKTOR_ID = siste_periode.AKTOR_ID "
+                + "OFFSET ? ROWS FETCH NEXT 1000 ROWS ONLY";
+
+        return db.query(sql, new Object[]{offset}, rowMapper());
+    }
+
+
     private RowMapper<OppfolgingKafkaDTO> rowMapper() {
         return (rs, rowNum) ->
                 OppfolgingKafkaDTO

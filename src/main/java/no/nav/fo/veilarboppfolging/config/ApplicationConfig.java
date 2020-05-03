@@ -111,7 +111,7 @@ public class ApplicationConfig implements ApiApplication {
         migrateDatabase(dataSource);
 
         ServletUtil.leggTilServlet(servletContext, new PopulerOppfolgingHistorikkServlet(oppfolgingsenhetHistorikkRepository, systemUserTokenProvider), "/internal/populer_enhet_historikk");
-        ServletUtil.leggTilServlet(servletContext, new PopulerOppfolgingKafkaTopicServlet(oppfolgingKafkaProducer, oppfolgingFeedRepository), "/internal/populer_oppfolging_kafka");
+        ServletUtil.leggTilServlet(servletContext, new PopulerOppfolgingKafkaTopicServlet(oppfolgingKafkaProducer), "/internal/populer_oppfolging_kafka");
         ServletUtil.leggTilServlet(servletContext, new PubliserOppfolgingKafkaTopicServlet(oppfolgingKafkaProducer), "/internal/publiser_oppfolging_kafka");
     }
 

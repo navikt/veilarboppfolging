@@ -4,7 +4,6 @@ import lombok.val;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.db.AvsluttOppfolgingEndringRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingFeedRepository;
-import no.nav.fo.veilarboppfolging.db.OppfolgingKafkaFeiletMeldingRepository;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -45,7 +44,7 @@ public class ProducerConfig {
     }
 
     @Bean
-    public OppfolgingKafkaProducer oppfolgingStatusProducer(OppfolgingFeedRepository repository, OppfolgingKafkaFeiletMeldingRepository feiletMeldingRepository,  AktorService aktorService) {
+    public OppfolgingKafkaProducer oppfolgingStatusProducer(OppfolgingFeedRepository repository, AktorService aktorService) {
         HashMap<String, Object> config = kafkaProducerProperties();
 
         config.put(ACKS_CONFIG, "0");                  // Fire-and-forget, we do not care about acks when hydrating
@@ -54,6 +53,6 @@ public class ProducerConfig {
         config.put(REQUEST_TIMEOUT_MS_CONFIG, 1000);   // 1s timeout for waiting on reply from server
 
         val kafkaProducer = new KafkaProducer<String, String>(config);
-        return new OppfolgingKafkaProducer(kafkaProducer, repository, feiletMeldingRepository, aktorService, KAFKA_PRODUCER_TOPIC_OPPFOLGING);
+        return new OppfolgingKafkaProducer(kafkaProducer, repository, aktorService, KAFKA_PRODUCER_TOPIC_OPPFOLGING);
     }
 }

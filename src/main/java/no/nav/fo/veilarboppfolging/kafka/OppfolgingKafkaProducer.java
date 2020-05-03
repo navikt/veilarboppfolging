@@ -7,7 +7,6 @@ import lombok.val;
 import no.nav.common.utils.IdUtils;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.db.OppfolgingFeedRepository;
-import no.nav.fo.veilarboppfolging.db.OppfolgingKafkaFeiletMeldingRepository;
 import no.nav.fo.veilarboppfolging.domain.AktorId;
 import no.nav.fo.veilarboppfolging.domain.Fnr;
 import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingKafkaDTO;
@@ -16,7 +15,6 @@ import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
-import org.apache.kafka.common.KafkaException;
 import org.apache.kafka.common.header.internals.RecordHeader;
 import org.slf4j.MDC;
 
@@ -35,17 +33,14 @@ public class OppfolgingKafkaProducer {
 
     private final KafkaProducer<String, String> kafkaProducer;
     private final OppfolgingFeedRepository repository;
-    private final OppfolgingKafkaFeiletMeldingRepository kafkaRepository;
     private final AktorService aktorService;
     private final String topicName;
 
     public OppfolgingKafkaProducer(KafkaProducer<String, String> kafkaProducer,
                                    OppfolgingFeedRepository repository,
-                                   OppfolgingKafkaFeiletMeldingRepository kafkaRepository,
                                    AktorService aktorService, String topicName) {
         this.kafkaProducer = kafkaProducer;
         this.repository = repository;
-        this.kafkaRepository = kafkaRepository;
         this.aktorService = aktorService;
         this.topicName = topicName;
     }
@@ -66,10 +61,14 @@ public class OppfolgingKafkaProducer {
     }
 
     @SneakyThrows
-    public Try<OppfolgingKafkaDTO> send(AktorId aktoerId) {
-        log.info("Henter oppfølgingsstatus for bruker {}", aktoerId);
-        val result = repository.hentOppfolgingStatus(aktoerId.getAktorId());
-        result.onFailure(t -> log.error("Kunne ikke hente oppfølgingsstatus for bruker {} {}", aktoerId.getAktorId(), t));
+    public Try<OppfolgingKafkaDTO> send(AktorId aktorId) {
+        val aktoerId = aktorId.getAktorId();
+        val result = repository.hentOppfolgingStatus(aktoerId);
+
+        if (result.isFailure()) {
+            log.error("Kunne ikke hente oppfølgingsstatus for bruker {} {}", aktoerId, result.getCause());
+            return result;
+        }
         return result.onSuccess(this::send);
     }
 
@@ -87,6 +86,22 @@ public class OppfolgingKafkaProducer {
         };
 
         return kafkaProducer.send(record, callback);
+    }
+
+    public int publiserAlleBrukere() {
+        val antallBrukere = repository.hentAntallBrukere().orElseThrow(IllegalStateException::new);
+        val BATCH_SIZE = 1000;
+        int offset = 0;
+
+        do {
+            List<OppfolgingKafkaDTO> brukere = repository.hentOppfolgingStatus(offset);
+            log.info("Hentet {}/{} brukere fra db", offset + BATCH_SIZE, antallBrukere);
+            brukere.forEach(this::send);
+            offset = offset + BATCH_SIZE;
+        }
+        while (offset <= antallBrukere);
+
+        return offset;
     }
 
     static byte[] getCorrelationIdAsBytes() {
