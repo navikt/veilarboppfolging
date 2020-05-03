@@ -79,9 +79,9 @@ public class OppfolgingKafkaProducer {
 
         Callback callback = (metadata, exception) -> {
             if (exception != null) {
-                log.error("Kunne ikke sende melding på kafka for bruker {} \n{}", aktoerId, exception.getStackTrace());
+                log.error("Kunne ikke publisere oppfølging for bruker {} \n{}", aktoerId, exception.getStackTrace());
             } else {
-                log.info("La ut bruker med aktoerId {} på topic {}", aktoerId, topicName);
+                log.info("Publiserte oppfølging for bruker {} på topic {}", aktoerId, topicName);
             }
         };
 
@@ -95,7 +95,6 @@ public class OppfolgingKafkaProducer {
 
         do {
             List<OppfolgingKafkaDTO> brukere = repository.hentOppfolgingStatus(offset);
-            log.info("Hentet {}/{} brukere fra db", offset + BATCH_SIZE, antallBrukere);
             brukere.forEach(this::send);
             offset = offset + BATCH_SIZE;
         }
