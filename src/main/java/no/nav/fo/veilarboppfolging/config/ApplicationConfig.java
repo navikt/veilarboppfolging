@@ -8,10 +8,16 @@ import no.nav.brukerdialog.security.oidc.SystemUserTokenProvider;
 import no.nav.brukerdialog.security.oidc.provider.AzureADB2CConfig;
 import no.nav.common.auth.SecurityLevel;
 import no.nav.dialogarena.aktor.AktorConfig;
+import no.nav.fo.veilarboppfolging.db.OppfolgingFeedRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingsenhetHistorikkRepository;
+import no.nav.fo.veilarboppfolging.kafka.OppfolgingKafkaProducer;
+import no.nav.fo.veilarboppfolging.kafka.OppfolgingKafkaTopicHelsesjekk;
+import no.nav.fo.veilarboppfolging.kafka.ProducerConfig;
 import no.nav.fo.veilarboppfolging.security.SecurityTokenServiceOidcProvider;
 import no.nav.fo.veilarboppfolging.security.SecurityTokenServiceOidcProviderConfig;
 import no.nav.internal.PopulerOppfolgingHistorikkServlet;
+import no.nav.internal.PopulerOppfolgingKafkaTopicServlet;
+import no.nav.internal.PubliserOppfolgingKafkaTopicServlet;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.springframework.context.annotation.*;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -25,6 +31,7 @@ import java.util.concurrent.Executors;
 
 import static no.nav.brukerdialog.security.Constants.AZUREADB2C_OIDC_COOKIE_NAME_FSS;
 import static no.nav.fo.veilarboppfolging.config.DatabaseConfig.migrateDatabase;
+import static no.nav.fo.veilarboppfolging.kafka.ProducerConfig.createKafkaProducer;
 import static no.nav.sbl.featuretoggle.unleash.UnleashServiceConfig.resolveFromEnvironment;
 import static no.nav.sbl.util.EnvironmentUtils.Type.PUBLIC;
 import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
@@ -77,6 +84,12 @@ public class ApplicationConfig implements ApiApplication {
     @Inject
     public SystemUserTokenProvider systemUserTokenProvider;
 
+    @Inject
+    public OppfolgingKafkaProducer oppfolgingKafkaProducer;
+
+    @Inject
+    public OppfolgingFeedRepository oppfolgingFeedRepository;
+
     @Bean
     public UnleashService unleashService() {
         return new UnleashService(resolveFromEnvironment());
@@ -98,6 +111,8 @@ public class ApplicationConfig implements ApiApplication {
         migrateDatabase(dataSource);
 
         ServletUtil.leggTilServlet(servletContext, new PopulerOppfolgingHistorikkServlet(oppfolgingsenhetHistorikkRepository, systemUserTokenProvider), "/internal/populer_enhet_historikk");
+        ServletUtil.leggTilServlet(servletContext, new PopulerOppfolgingKafkaTopicServlet(oppfolgingKafkaProducer), "/internal/populer_oppfolging_kafka");
+        ServletUtil.leggTilServlet(servletContext, new PubliserOppfolgingKafkaTopicServlet(oppfolgingKafkaProducer), "/internal/publiser_oppfolging_kafka");
     }
 
     @Override
@@ -122,6 +137,8 @@ public class ApplicationConfig implements ApiApplication {
                 .validateAzureAdInternalUsersTokens(config)
                 .customSecurityLevelForExternalUsers(SecurityLevel.Level3, "niva3")
                 .issoLogin()
-                .oidcProvider(securityTokenServiceOidcProvider);
+                .oidcProvider(securityTokenServiceOidcProvider)
+                .selfTests(new OppfolgingKafkaTopicHelsesjekk(createKafkaProducer()));
+
     }
 }

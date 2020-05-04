@@ -1,23 +1,27 @@
 package no.nav.fo.veilarboppfolging.db;
 
-import no.nav.metrics.utils.MetricsUtils;
-import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingFeedDTO;
-import no.nav.fo.veilarboppfolging.utils.OppfolgingFeedUtil;
-import no.nav.sbl.sql.SqlUtils;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Transactional;
-
+import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor;
+import no.nav.fo.veilarboppfolging.domain.AktorId;
+import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingFeedDTO;
+import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingKafkaDTO;
+import no.nav.fo.veilarboppfolging.utils.OppfolgingFeedUtil;
+import no.nav.metrics.utils.MetricsUtils;
+import no.nav.sbl.sql.SqlUtils;
+import no.nav.sbl.sql.where.WhereClause;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
-import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 import static java.util.stream.Collectors.toList;
 
@@ -32,9 +36,112 @@ public class OppfolgingFeedRepository {
     private final LockingTaskExecutor taskExecutor;
 
     @Inject
-    OppfolgingFeedRepository(JdbcTemplate db, LockingTaskExecutor taskExecutor) {
+    public OppfolgingFeedRepository(JdbcTemplate db, LockingTaskExecutor taskExecutor) {
         this.db = db;
         this.taskExecutor = taskExecutor;
+    }
+
+    public List<AktorId> hentAlleBrukereUnderOppfolging() {
+        return SqlUtils
+                .select(db, "OPPFOLGINGSTATUS", rs -> new AktorId(rs.getString("AKTOR_ID")))
+                .column("*")
+                .where(WhereClause.equals("UNDER_OPPFOLGING", 1))
+                .executeToList();
+    }
+
+    public Try<OppfolgingKafkaDTO> hentOppfolgingStatus(String aktoerId) {
+
+        val sql = "SELECT "
+                + "os.AKTOR_ID, "
+                + "os.VEILEDER, "
+                + "os.UNDER_OPPFOLGING, "
+                + "os.NY_FOR_VEILEDER, "
+                + "os.OPPDATERT, "
+                + "ms.MANUELL, "
+                + "siste_periode.STARTDATO "
+                + "from "
+                + "OPPFOLGINGSTATUS os LEFT JOIN MANUELL_STATUS ms "
+                + "on (os.GJELDENDE_MANUELL_STATUS = ms.ID) "
+                + ", "
+                + "(select "
+                + "AKTOR_ID, "
+                + "STARTDATO "
+                + "from OPPFOLGINGSPERIODE "
+                + "   where AKTOR_ID = ? "
+                + "   order by OPPDATERT desc "
+                + "   fetch next 1 rows only "
+                + "  ) siste_periode "
+                + "where os.AKTOR_ID = siste_periode.AKTOR_ID";
+
+        val result = Try.of(() -> db.queryForObject(sql, new Object[]{aktoerId}, rowMapper()));
+
+        if (result.isSuccess() && result.get() == null) {
+            return Try.failure(new IllegalStateException("Result was empty"));
+        }
+        return result;
+    }
+
+    public Optional<Long> hentAntallBrukere() {
+        val sql = "SELECT "
+                + "count(*) "
+                + "from "
+                + "OPPFOLGINGSTATUS os LEFT JOIN MANUELL_STATUS ms "
+                + "on (os.GJELDENDE_MANUELL_STATUS = ms.ID) "
+                + ", "
+                + "(select "
+                + "AKTOR_ID, "
+                + "STARTDATO "
+                + "from OPPFOLGINGSPERIODE "
+                + "where SLUTTDATO is null "
+                + "  ) siste_periode "
+                + "where os.AKTOR_ID = siste_periode.AKTOR_ID";
+
+        Long count = db.query(sql, rs -> {
+            rs.next();
+            return rs.getLong(1);
+        });
+        return Optional.ofNullable(count);
+    }
+
+    public List<OppfolgingKafkaDTO> hentOppfolgingStatus(int offset) {
+
+        val sql = "SELECT "
+                + "os.AKTOR_ID, "
+                + "os.VEILEDER, "
+                + "os.UNDER_OPPFOLGING, "
+                + "os.NY_FOR_VEILEDER, "
+                + "os.OPPDATERT, "
+                + "ms.MANUELL, "
+                + "siste_periode.STARTDATO "
+                + "from "
+                + "OPPFOLGINGSTATUS os LEFT JOIN MANUELL_STATUS ms "
+                + "on (os.GJELDENDE_MANUELL_STATUS = ms.ID) "
+                + ", "
+                + "(select "
+                + "AKTOR_ID, "
+                + "STARTDATO "
+                + "from OPPFOLGINGSPERIODE "
+                + "where SLUTTDATO is null "
+                + "  ) siste_periode "
+                + "where os.AKTOR_ID = siste_periode.AKTOR_ID "
+                + "OFFSET ? ROWS FETCH NEXT 1000 ROWS ONLY";
+
+        return db.query(sql, new Object[]{offset}, rowMapper());
+    }
+
+
+    private RowMapper<OppfolgingKafkaDTO> rowMapper() {
+        return (rs, rowNum) ->
+                OppfolgingKafkaDTO
+                        .builder()
+                        .aktoerid(rs.getString("AKTOR_ID"))
+                        .veileder(rs.getString("VEILEDER"))
+                        .oppfolging(rs.getBoolean("UNDER_OPPFOLGING"))
+                        .nyForVeileder(rs.getBoolean("NY_FOR_VEILEDER"))
+                        .endretTimestamp(rs.getTimestamp("OPPDATERT"))
+                        .startDato((rs.getTimestamp("STARTDATO")))
+                        .manuell(rs.getBoolean("MANUELL"))
+                        .build();
     }
 
     @Transactional

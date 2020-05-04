@@ -6,6 +6,7 @@ import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.feed.producer.FeedProducer;
 import no.nav.fo.veilarboppfolging.TestTransactor;
 import no.nav.fo.veilarboppfolging.db.*;
+import no.nav.fo.veilarboppfolging.kafka.OppfolgingKafkaProducer;
 import no.nav.fo.veilarboppfolging.rest.AutorisasjonService;
 import no.nav.fo.veilarboppfolging.rest.VeilederTilordningRessurs;
 import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingFeedDTO;
@@ -60,7 +61,17 @@ public class SettOppfolgingsFlaggTildelVeilederTest {
                 mock(KvpRepository.class),
                 mock(NyeBrukereFeedRepository.class)
         );
-        veilederTilordningRessurs = new VeilederTilordningRessurs(aktorServiceMock, veilederTilordningerRepository, pepClient, feed, autorisasjonService, oppfolgingRepository, veilederHistorikkRepository, new TestTransactor());
+        veilederTilordningRessurs = new VeilederTilordningRessurs(
+                aktorServiceMock,
+                veilederTilordningerRepository,
+                pepClient,
+                feed,
+                autorisasjonService,
+                oppfolgingRepository,
+                veilederHistorikkRepository,
+                new TestTransactor(),
+                mock(OppfolgingKafkaProducer.class)
+        );
 
     }
 

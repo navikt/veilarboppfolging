@@ -11,17 +11,20 @@ import no.nav.fo.veilarboppfolging.db.OppfolgingsStatusRepository;
 import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.fo.veilarboppfolging.domain.arena.AktivitetStatus;
 import no.nav.fo.veilarboppfolging.domain.arena.ArenaAktivitetDTO;
+import no.nav.fo.veilarboppfolging.kafka.OppfolgingKafkaProducer;
 import no.nav.fo.veilarboppfolging.mappers.VeilarbArenaOppfolging;
 import no.nav.fo.veilarboppfolging.rest.AutorisasjonService;
 import no.nav.sbl.dialogarena.common.abac.pep.AbacPersonId;
 import no.nav.sbl.dialogarena.common.abac.pep.domain.ResourceType;
 import no.nav.sbl.dialogarena.common.abac.pep.domain.request.Action;
+import no.nav.sbl.dialogarena.test.junit.SystemPropertiesRule;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt.WSYtelseskontrakt;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeRequest;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeResponse;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Answers;
@@ -36,6 +39,7 @@ import static java.util.Arrays.asList;
 import static java.util.Optional.of;
 import static java.util.stream.Collectors.toList;
 import static no.nav.fo.veilarboppfolging.domain.KodeverkBruker.NAV;
+import static no.nav.fo.veilarboppfolging.domain.KodeverkBruker.SYSTEM;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
@@ -82,6 +86,12 @@ public class OppfolgingServiceTest {
     @Mock
     private UnleashService unleashService;
 
+    @Mock
+    private OppfolgingKafkaProducer kafkaProducer;
+
+    @Mock
+    private WSHentYtelseskontraktListeResponse ytelser;
+
     private static final String FNR = "fnr";
     private static final String AKTOR_ID = "aktorId";
     private static final String ENHET = "enhet";
@@ -116,7 +126,31 @@ public class OppfolgingServiceTest {
         when(oppfolgingResolverDependencies.getUnleashService()).thenReturn(unleashService);
         when(oppfolgingResolverDependencies.getDkifService()).thenReturn(dkifService);
         when(oppfolgingsbrukerService.hentOppfolgingsbruker(FNR)).thenReturn(Optional.of(veilarbArenaOppfolging));
+
+        when(ytelseskontraktV3.hentYtelseskontraktListe(any())).thenReturn(mock(WSHentYtelseskontraktListeResponse.class));
+
         gittOppfolgingStatus("", "");
+    }
+
+    @Test
+    public void skal_publisere_paa_kafka_ved_oppdatering_av_manuell_status() {
+        when(pepClientMock.harTilgangTilEnhet(any())).thenReturn(true);
+        oppfolgingService.oppdaterManuellStatus(FNR, true, "test", SYSTEM, "test");
+        verify(kafkaProducer, times(1)).sendAsync(fnr());
+    }
+
+    @Test
+    public void skal_publisere_paa_kafka_ved_start_paa_oppfolging() {
+        when(pepClientMock.harTilgangTilEnhet(any())).thenReturn(true);
+        oppfolgingService.startOppfolging(FNR);
+        verify(kafkaProducer, times(1)).sendAsync(fnr());
+    }
+
+    @Test
+    public void skal_publisere_paa_kafka_ved_avsluttet_oppfolging() {
+        when(pepClientMock.harTilgangTilEnhet(any())).thenReturn(true);
+        oppfolgingService.avsluttOppfolging(FNR, VEILEDER, "");
+        verify(kafkaProducer, times(1)).sendAsync(fnr());
     }
 
     @Test(expected = IngenTilgang.class)
@@ -467,6 +501,10 @@ public class OppfolgingServiceTest {
         response.getYtelseskontraktListe().addAll(ytelser);
 
         when(ytelseskontraktV3.hentYtelseskontraktListe(request)).thenReturn(response);
+    }
+
+    private static Fnr fnr() {
+        return new Fnr(FNR);
     }
 
 }

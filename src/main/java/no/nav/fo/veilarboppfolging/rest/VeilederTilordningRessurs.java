@@ -12,6 +12,7 @@ import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.db.VeilederHistorikkRepository;
 import no.nav.fo.veilarboppfolging.db.VeilederTilordningerRepository;
 import no.nav.fo.veilarboppfolging.domain.Tilordning;
+import no.nav.fo.veilarboppfolging.kafka.OppfolgingKafkaProducer;
 import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingFeedDTO;
 import no.nav.fo.veilarboppfolging.rest.domain.TilordneVeilederResponse;
 import no.nav.fo.veilarboppfolging.rest.domain.VeilederTilordning;
@@ -50,6 +51,7 @@ public class VeilederTilordningRessurs {
     private final OppfolgingRepository oppfolgingRepository;
     private final VeilederHistorikkRepository veilederHistorikkRepository;
     private final Transactor transactor;
+    private final OppfolgingKafkaProducer kafka;
 
     public VeilederTilordningRessurs(AktorService aktorService,
                                      VeilederTilordningerRepository veilederTilordningerRepository,
@@ -58,8 +60,8 @@ public class VeilederTilordningRessurs {
                                      AutorisasjonService autorisasjonService,
                                      OppfolgingRepository oppfolgingRepository,
                                      VeilederHistorikkRepository veilederHistorikkRepository,
-                                     Transactor transactor
-    ) {
+                                     Transactor transactor,
+                                     OppfolgingKafkaProducer oppfolgingKafkaProducer) {
         this.autorisasjonService = autorisasjonService;
         this.aktorService = aktorService;
         this.veilederTilordningerRepository = veilederTilordningerRepository;
@@ -69,6 +71,7 @@ public class VeilederTilordningRessurs {
         this.veilederHistorikkRepository = veilederHistorikkRepository;
         this.transactor = transactor;
         this.timer = MetricsFactory.createTimer("veilarboppfolging.veiledertilordning");
+        this.kafka = oppfolgingKafkaProducer;
     }
 
     @POST
@@ -117,6 +120,8 @@ public class VeilederTilordningRessurs {
             //Kaller denne asynkront siden resultatet ikke er interessant og operasjonen tar litt tid.
             CompletableFuture.runAsync(this::kallWebhook);
         }
+
+        kafka.sendAsync(tilordninger);
 
         timer.stop();
         timer.report();
