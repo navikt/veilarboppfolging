@@ -10,14 +10,13 @@ import no.nav.common.auth.SecurityLevel;
 import no.nav.dialogarena.aktor.AktorConfig;
 import no.nav.fo.veilarboppfolging.db.OppfolgingFeedRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingsenhetHistorikkRepository;
-import no.nav.fo.veilarboppfolging.kafka.OppfolgingKafkaProducer;
-import no.nav.fo.veilarboppfolging.kafka.OppfolgingKafkaTopicHelsesjekk;
-import no.nav.fo.veilarboppfolging.kafka.ProducerConfig;
+import no.nav.fo.veilarboppfolging.kafka.OppfolgingStatusKafkaProducer;
+import no.nav.fo.veilarboppfolging.kafka.OppfolgingStatusTopicHelsesjekk;
 import no.nav.fo.veilarboppfolging.security.SecurityTokenServiceOidcProvider;
 import no.nav.fo.veilarboppfolging.security.SecurityTokenServiceOidcProviderConfig;
 import no.nav.internal.PopulerOppfolgingHistorikkServlet;
-import no.nav.internal.PopulerOppfolgingKafkaTopicServlet;
-import no.nav.internal.PubliserOppfolgingKafkaTopicServlet;
+import no.nav.internal.PubliserHistorikkServlet;
+import no.nav.internal.PubliserOppfolgingStatusServlet;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.springframework.context.annotation.*;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -85,7 +84,7 @@ public class ApplicationConfig implements ApiApplication {
     public SystemUserTokenProvider systemUserTokenProvider;
 
     @Inject
-    public OppfolgingKafkaProducer oppfolgingKafkaProducer;
+    public OppfolgingStatusKafkaProducer oppfolgingStatusKafkaProducer;
 
     @Inject
     public OppfolgingFeedRepository oppfolgingFeedRepository;
@@ -111,8 +110,8 @@ public class ApplicationConfig implements ApiApplication {
         migrateDatabase(dataSource);
 
         ServletUtil.leggTilServlet(servletContext, new PopulerOppfolgingHistorikkServlet(oppfolgingsenhetHistorikkRepository, systemUserTokenProvider), "/internal/populer_enhet_historikk");
-        ServletUtil.leggTilServlet(servletContext, new PopulerOppfolgingKafkaTopicServlet(oppfolgingKafkaProducer), "/internal/populer_oppfolging_kafka");
-        ServletUtil.leggTilServlet(servletContext, new PubliserOppfolgingKafkaTopicServlet(oppfolgingKafkaProducer), "/internal/publiser_oppfolging_kafka");
+        ServletUtil.leggTilServlet(servletContext, new PubliserHistorikkServlet(oppfolgingStatusKafkaProducer), "/internal/publiser_oppfolging_status_historikk");
+        ServletUtil.leggTilServlet(servletContext, new PubliserOppfolgingStatusServlet(oppfolgingStatusKafkaProducer), "/internal/publiser_oppfolging_status");
     }
 
     @Override
@@ -138,7 +137,7 @@ public class ApplicationConfig implements ApiApplication {
                 .customSecurityLevelForExternalUsers(SecurityLevel.Level3, "niva3")
                 .issoLogin()
                 .oidcProvider(securityTokenServiceOidcProvider)
-                .selfTests(new OppfolgingKafkaTopicHelsesjekk(createKafkaProducer()));
+                .selfTests(new OppfolgingStatusTopicHelsesjekk(createKafkaProducer()));
 
     }
 }

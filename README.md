@@ -1,21 +1,42 @@
 # Veilarboppfolging
-Applikasjonen kjører på Embedded Jetty lokalt. Den lokale configen legges i ApplicationMockConfig.
+Tjeneste som lagrer informasjon om status for arbeidsrettet oppfølging for en bruker.
 
-#### domenebrukernavn/domenepassord
-Applikasjonen er avhengig av variabler fra Fasit. I miljø går dette av seg selv, men lokalt må man autentisere seg selv
-mot Fasit for å få tilgang til disse. Dette gjøres ved å legge inn brukernavn/passord til Fasit som miljøvariabler
-på operativsystemet. Disse må ha navnene: domenebrukernavn/domenepassord. Intellij må gjennom en manuell restart for å
-klare å plukke opp disse. File --> Invalidate Caches / Restart --> Just Restart er ikke tilstrekkelig. Må krysses ut
-og startes på nytt.
+## Kafka
+### Topic for endring på oppfølgingstatus
+Ved endring på oppfølgingstatus for en bruker publiseres det en melding på følgende topic: 
 
-#### Sending av veiledertilordninger til Portefølje
-Riktig databaselink, brukernavn og passord må oppgis i metoden ``setupJndiLocalContext()`` i klassen
-``JndiLocalContextConfig``. Gå til Fasit --> søk på veilarboppfolgingDB --> velg riktig miljø.
+prod-fss:
+- `aapen-fo-endringPaaOppfolgingStatus-v1-p`
 
-Kjør ``https://localhost:8485/veilarboppfolging/api/sendalleveiledertilordninger`` i nettleseren.
+dev-fss:
+- `aapen-fo-endringPaaOppfolgingStatus-v1-q0`
+- `aapen-fo-endringPaaOppfolgingStatus-v1-q1`
 
-*OBS OBS!!* Husk at veilarbportefolje og veilarbportefoljeindeks må kjøre samtidig.
+Denne topicen er konfigurert med log compaction på aktørID, og inneholder historikk for alle brukere under arbeidsrettet oppfølging.
 
-#### For å kjøre Webservicen (soap)
-``veilarboppfolging-vilkar`` må klones ned til samme mappe som ``veilarboppfolging`` ligger i. I tillegg må 
-``mvn clean install`` kjøres fra roten.
+Eksempel på melding:
+
+```json
+{
+  "aktoerid": "00000000000",
+  "veileder": "Z000000",
+  "oppfolging": true,
+  "nyForVeileder": false,
+  "manuell": false,
+  "endretTimestamp": "2020-05-01T14:54:02.13+02:00",
+  "startDato": "2020-01-01T14:54:02.13+01:00"
+}
+```
+
+Meldingen inkluderer også en header `Nav-Call-Id` som kan benyttes som korrelasjonsID.
+
+### Hvordan oppdatere en topic
+Se beskrivelse av hvordan man kan oppdaterer topics i https://github.com/navikt/pto-config (privat repo)
+
+## Interne endepunkter
+
+| Endepunkt                                               | Beskrivelse                                                        |      
+| --------------------------------------------------------| -------------------------------------------------------------------|
+| `/internal/publiser_oppfolging_status_historikk`           | Legg ut *alle* brukere på topic for endring av oppfølgingstatus  |
+| `/internal/publiser_oppfolging_status?aktoerId=<aktoerId>` | Publiser oppfølgingstatus på nytt for gjeldende bruker           |
+

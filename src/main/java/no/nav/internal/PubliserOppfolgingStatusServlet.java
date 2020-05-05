@@ -3,7 +3,7 @@ package no.nav.internal;
 import lombok.SneakyThrows;
 import lombok.val;
 import no.nav.fo.veilarboppfolging.domain.AktorId;
-import no.nav.fo.veilarboppfolging.kafka.OppfolgingKafkaProducer;
+import no.nav.fo.veilarboppfolging.kafka.OppfolgingStatusKafkaProducer;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServlet;
@@ -14,13 +14,13 @@ import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static javax.servlet.http.HttpServletResponse.SC_OK;
 import static no.nav.internal.AuthorizationUtils.isBasicAuthAuthorized;
 
-public class PubliserOppfolgingKafkaTopicServlet extends HttpServlet {
+public class PubliserOppfolgingStatusServlet extends HttpServlet {
 
-    private final OppfolgingKafkaProducer oppfolgingKafkaProducer;
+    private final OppfolgingStatusKafkaProducer oppfolgingStatusKafkaProducer;
 
     @Inject
-    public PubliserOppfolgingKafkaTopicServlet(OppfolgingKafkaProducer oppfolgingKafkaProducer) {
-        this.oppfolgingKafkaProducer = oppfolgingKafkaProducer;
+    public PubliserOppfolgingStatusServlet(OppfolgingStatusKafkaProducer oppfolgingStatusKafkaProducer) {
+        this.oppfolgingStatusKafkaProducer = oppfolgingStatusKafkaProducer;
     }
 
     @Override
@@ -29,12 +29,11 @@ public class PubliserOppfolgingKafkaTopicServlet extends HttpServlet {
         if (isBasicAuthAuthorized(req)) {
             String aktoerId = req.getParameter("aktoerId");
             if (aktoerId == null) {
-                resp.getWriter().write("Ingen gyldig aktoerId oppgitt: /internal/publiser_oppfolging_kafka?aktoerId=<aktoerId>");
+                resp.getWriter().write("Ingen gyldig aktoerId oppgitt: /internal/publiser_oppfolging?aktoerId=<aktoerId>");
                 resp.setStatus(SC_BAD_REQUEST);
                 return;
             }
-            oppfolgingKafkaProducer.sendAsync(new AktorId(aktoerId));
-
+            oppfolgingStatusKafkaProducer.sendAsync(new AktorId(aktoerId));
             val mld = String.format("Sendte melding på kafka for bruker %s", aktoerId);
             resp.setStatus(SC_OK);
             resp.getWriter().write(mld);

@@ -2,7 +2,7 @@ package no.nav.internal;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.fo.veilarboppfolging.kafka.OppfolgingKafkaProducer;
+import no.nav.fo.veilarboppfolging.kafka.OppfolgingStatusKafkaProducer;
 import no.nav.jobutils.JobUtils;
 import no.nav.jobutils.RunningJob;
 
@@ -15,12 +15,12 @@ import static javax.servlet.http.HttpServletResponse.SC_OK;
 import static no.nav.internal.AuthorizationUtils.isBasicAuthAuthorized;
 
 @Slf4j
-public class PopulerOppfolgingKafkaTopicServlet extends HttpServlet {
+public class PubliserHistorikkServlet extends HttpServlet {
 
-    private final OppfolgingKafkaProducer kafka;
+    private final OppfolgingStatusKafkaProducer kafka;
 
     @Inject
-    public PopulerOppfolgingKafkaTopicServlet(OppfolgingKafkaProducer kafka) {
+    public PubliserHistorikkServlet(OppfolgingStatusKafkaProducer kafka) {
         this.kafka = kafka;
     }
 

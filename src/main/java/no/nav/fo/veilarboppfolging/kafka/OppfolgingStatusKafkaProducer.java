@@ -29,17 +29,17 @@ import static no.nav.json.JsonUtils.toJson;
 import static no.nav.log.LogFilter.PREFERRED_NAV_CALL_ID_HEADER_NAME;
 
 @Slf4j
-public class OppfolgingKafkaProducer {
+public class OppfolgingStatusKafkaProducer {
 
-    private final KafkaProducer<String, String> kafkaProducer;
+    private final KafkaProducer<String, String> kafka;
     private final OppfolgingFeedRepository repository;
     private final AktorService aktorService;
     private final String topicName;
 
-    public OppfolgingKafkaProducer(KafkaProducer<String, String> kafkaProducer,
-                                   OppfolgingFeedRepository repository,
-                                   AktorService aktorService, String topicName) {
-        this.kafkaProducer = kafkaProducer;
+    public OppfolgingStatusKafkaProducer(KafkaProducer<String, String> kafka,
+                                         OppfolgingFeedRepository repository,
+                                         AktorService aktorService, String topicName) {
+        this.kafka = kafka;
         this.repository = repository;
         this.aktorService = aktorService;
         this.topicName = topicName;
@@ -61,7 +61,7 @@ public class OppfolgingKafkaProducer {
     }
 
     @SneakyThrows
-    public Try<OppfolgingKafkaDTO> send(AktorId aktorId) {
+    Try<OppfolgingKafkaDTO> send(AktorId aktorId) {
         val aktoerId = aktorId.getAktorId();
         val result = repository.hentOppfolgingStatus(aktoerId);
 
@@ -69,23 +69,23 @@ public class OppfolgingKafkaProducer {
             log.error("Kunne ikke hente oppfølgingsstatus for bruker {} {}", aktoerId, result.getCause());
             return result;
         }
-        return result.onSuccess(this::send);
+        return result.onSuccess(this::sendAsync);
     }
 
-    private Future<RecordMetadata> send(OppfolgingKafkaDTO dto) {
+    private Future<RecordMetadata> sendAsync(OppfolgingKafkaDTO dto) {
         val aktoerId = dto.getAktoerid();
         val header = new RecordHeader(PREFERRED_NAV_CALL_ID_HEADER_NAME, getCorrelationIdAsBytes());
         val record = new ProducerRecord<>(topicName, 0, aktoerId, toJson(dto), singletonList(header));
 
         Callback callback = (metadata, exception) -> {
             if (exception != null) {
-                log.error("Kunne ikke publisere oppfølging for bruker {} \n{}", aktoerId, exception.getStackTrace());
+                log.error("Kunne ikke publisere oppfølgingsstatus for bruker {} \n{}", aktoerId, exception.getStackTrace());
             } else {
-                log.info("Publiserte oppfølging for bruker {} på topic {}", aktoerId, topicName);
+                log.info("Publiserte oppfølgingsstatus for bruker {} på topic {}", aktoerId, topicName);
             }
         };
 
-        return kafkaProducer.send(record, callback);
+        return kafka.send(record, callback);
     }
 
     public int publiserAlleBrukere() {
@@ -95,7 +95,7 @@ public class OppfolgingKafkaProducer {
 
         do {
             List<OppfolgingKafkaDTO> brukere = repository.hentOppfolgingStatus(offset);
-            brukere.forEach(this::send);
+            brukere.forEach(this::sendAsync);
             offset = offset + BATCH_SIZE;
         }
         while (offset <= antallBrukere);
