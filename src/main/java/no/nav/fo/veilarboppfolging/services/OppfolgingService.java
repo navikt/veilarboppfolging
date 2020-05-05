@@ -8,7 +8,7 @@ import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingsStatusRepository;
 import no.nav.fo.veilarboppfolging.domain.*;
-import no.nav.fo.veilarboppfolging.kafka.OppfolgingKafkaProducer;
+import no.nav.fo.veilarboppfolging.kafka.OppfolgingStatusKafkaProducer;
 import no.nav.fo.veilarboppfolging.mappers.VeilarbArenaOppfolging;
 import no.nav.fo.veilarboppfolging.rest.AutorisasjonService;
 import no.nav.fo.veilarboppfolging.rest.domain.DkifResponse;
@@ -41,7 +41,7 @@ public class OppfolgingService {
     private final OppfolgingsbrukerService oppfolgingsbrukerService;
     private final UnleashService unleashService;
     private final AutorisasjonService autorisasjonService;
-    private final OppfolgingKafkaProducer kafkaProducer;
+    private final OppfolgingStatusKafkaProducer kafkaProducer;
 
     @Inject
     public OppfolgingService(
@@ -54,7 +54,7 @@ public class OppfolgingService {
             OppfolgingsbrukerService oppfolgingsbrukerService,
             UnleashService unleashService,
             AutorisasjonService autorisasjonService,
-            OppfolgingKafkaProducer kafkaProducer) {
+            OppfolgingStatusKafkaProducer kafkaProducer) {
         this.oppfolgingResolverDependencies = oppfolgingResolverDependencies;
         this.aktorService = aktorService;
         this.oppfolgingRepository = oppfolgingRepository;

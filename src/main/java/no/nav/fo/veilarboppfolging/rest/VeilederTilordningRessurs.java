@@ -12,7 +12,7 @@ import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.db.VeilederHistorikkRepository;
 import no.nav.fo.veilarboppfolging.db.VeilederTilordningerRepository;
 import no.nav.fo.veilarboppfolging.domain.Tilordning;
-import no.nav.fo.veilarboppfolging.kafka.OppfolgingKafkaProducer;
+import no.nav.fo.veilarboppfolging.kafka.OppfolgingStatusKafkaProducer;
 import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingFeedDTO;
 import no.nav.fo.veilarboppfolging.rest.domain.TilordneVeilederResponse;
 import no.nav.fo.veilarboppfolging.rest.domain.VeilederTilordning;
@@ -51,7 +51,7 @@ public class VeilederTilordningRessurs {
     private final OppfolgingRepository oppfolgingRepository;
     private final VeilederHistorikkRepository veilederHistorikkRepository;
     private final Transactor transactor;
-    private final OppfolgingKafkaProducer kafka;
+    private final OppfolgingStatusKafkaProducer kafka;
 
     public VeilederTilordningRessurs(AktorService aktorService,
                                      VeilederTilordningerRepository veilederTilordningerRepository,
@@ -61,7 +61,7 @@ public class VeilederTilordningRessurs {
                                      OppfolgingRepository oppfolgingRepository,
                                      VeilederHistorikkRepository veilederHistorikkRepository,
                                      Transactor transactor,
-                                     OppfolgingKafkaProducer oppfolgingKafkaProducer) {
+                                     OppfolgingStatusKafkaProducer oppfolgingStatusKafkaProducer) {
         this.autorisasjonService = autorisasjonService;
         this.aktorService = aktorService;
         this.veilederTilordningerRepository = veilederTilordningerRepository;
@@ -71,7 +71,7 @@ public class VeilederTilordningRessurs {
         this.veilederHistorikkRepository = veilederHistorikkRepository;
         this.transactor = transactor;
         this.timer = MetricsFactory.createTimer("veilarboppfolging.veiledertilordning");
-        this.kafka = oppfolgingKafkaProducer;
+        this.kafka = oppfolgingStatusKafkaProducer;
     }
 
     @POST

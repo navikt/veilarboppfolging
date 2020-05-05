@@ -23,8 +23,8 @@ import static org.apache.kafka.clients.producer.ProducerConfig.*;
 @Configuration
 public class ProducerConfig {
 
-    public static final String KAFKA_PRODUCER_TOPIC_AVSLUTT_OPPFOLGING = "aapen-fo-endringPaaAvsluttOppfolging-v1" + "-" + getRequiredProperty(APP_ENVIRONMENT_NAME);
-    public static final String KAFKA_PRODUCER_TOPIC_OPPFOLGING = "aapen-fo-oppfolgingOppdatert-v1-" + requireEnvironmentName();
+    public static final String TOPIC_AVSLUTT_OPPFOLGING = "aapen-fo-endringPaaAvsluttOppfolging-v1" + "-" + getRequiredProperty(APP_ENVIRONMENT_NAME);
+    public static final String TOPIC_OPPFOLGING_STATUS = "aapen-fo-endringPaaOppfolgingStatus-v1-" + requireEnvironmentName();
 
     static ProducerFactory<String, String> producerFactory() {
         return new DefaultKafkaProducerFactory<>(kafkaProducerProperties());
@@ -40,11 +40,11 @@ public class ProducerConfig {
         LoggingProducerListener<String, String> producerListener = new LoggingProducerListener<>();
         producerListener.setIncludeContents(false);
         kafkaTemplate.setProducerListener(producerListener);
-        return new AvsluttOppfolgingProducer(kafkaTemplate, avsluttOppfolgingEndringRepository, KAFKA_PRODUCER_TOPIC_AVSLUTT_OPPFOLGING);
+        return new AvsluttOppfolgingProducer(kafkaTemplate, avsluttOppfolgingEndringRepository, TOPIC_AVSLUTT_OPPFOLGING);
     }
 
     @Bean
-    public OppfolgingKafkaProducer oppfolgingStatusProducer(OppfolgingFeedRepository repository, AktorService aktorService) {
+    public OppfolgingStatusKafkaProducer oppfolgingStatusProducer(OppfolgingFeedRepository repository, AktorService aktorService) {
         HashMap<String, Object> config = kafkaProducerProperties();
 
         config.put(ACKS_CONFIG, "0");                  // Fire-and-forget, we do not care about acks when hydrating
@@ -53,6 +53,6 @@ public class ProducerConfig {
         config.put(REQUEST_TIMEOUT_MS_CONFIG, 1000);   // 1s timeout for waiting on reply from server
 
         val kafkaProducer = new KafkaProducer<String, String>(config);
-        return new OppfolgingKafkaProducer(kafkaProducer, repository, aktorService, KAFKA_PRODUCER_TOPIC_OPPFOLGING);
+        return new OppfolgingStatusKafkaProducer(kafkaProducer, repository, aktorService, TOPIC_OPPFOLGING_STATUS);
     }
 }

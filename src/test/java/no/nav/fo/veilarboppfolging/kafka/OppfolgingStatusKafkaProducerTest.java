@@ -22,7 +22,7 @@ import static no.nav.log.LogFilter.PREFERRED_NAV_CALL_ID_HEADER_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
-public class OppfolgingKafkaProducerTest {
+public class OppfolgingStatusKafkaProducerTest {
 
     @Test
     public void skal_publisere_all_brukere() {
@@ -43,7 +43,7 @@ public class OppfolgingKafkaProducerTest {
     public void skal_fallbacke_til_mdc_job_id() {
         String jobId = "test";
         MDC.put("jobId", jobId);
-        byte[] correlationId = OppfolgingKafkaProducer.getCorrelationIdAsBytes();
+        byte[] correlationId = OppfolgingStatusKafkaProducer.getCorrelationIdAsBytes();
         String id = Strings.fromByteArray(correlationId);
         assertThat(id).isEqualTo(jobId);
     }
@@ -52,14 +52,14 @@ public class OppfolgingKafkaProducerTest {
     public void skal_fallbacke_til_mdc_call_id() {
         String jobId = "test";
         MDC.put(PREFERRED_NAV_CALL_ID_HEADER_NAME, jobId);
-        byte[] correlationId = OppfolgingKafkaProducer.getCorrelationIdAsBytes();
+        byte[] correlationId = OppfolgingStatusKafkaProducer.getCorrelationIdAsBytes();
         String id = Strings.fromByteArray(correlationId);
         assertThat(id).isEqualTo(jobId);
     }
 
     @Test
     public void skal_fallbacke_til_generert_id() {
-        byte[] correlationId = OppfolgingKafkaProducer.getCorrelationIdAsBytes();
+        byte[] correlationId = OppfolgingStatusKafkaProducer.getCorrelationIdAsBytes();
         String id = Strings.fromByteArray(correlationId);
         assertThat(id).isNotBlank();
         assertThat(id).isNotEmpty();
@@ -68,7 +68,7 @@ public class OppfolgingKafkaProducerTest {
     @Test
     public void skal_returnere_feilresultat_om_bruker_ikke_har_oppfolgingsstatus() {
         val feedRepoMock = mock(OppfolgingFeedRepository.class);
-        OppfolgingKafkaProducer producer = createMockProducer(feedRepoMock);
+        OppfolgingStatusKafkaProducer producer = createMockProducer(feedRepoMock);
         when(feedRepoMock.hentOppfolgingStatus(anyString())).thenReturn(Try.failure(new IllegalStateException()));
 
         Try<OppfolgingKafkaDTO> result = producer.send(testId());
@@ -79,11 +79,11 @@ public class OppfolgingKafkaProducerTest {
         return new AktorId("test");
     }
 
-    private static OppfolgingKafkaProducer createMockProducer(OppfolgingFeedRepository repoMock) {
+    private static OppfolgingStatusKafkaProducer createMockProducer(OppfolgingFeedRepository repoMock) {
         val kafkaMock = mock(KafkaProducer.class);
         when(kafkaMock.send(any(ProducerRecord.class))).thenReturn(mock(Future.class));
 
-        return new OppfolgingKafkaProducer(
+        return new OppfolgingStatusKafkaProducer(
                 kafkaMock,
                 repoMock,
                 mock(AktorService.class),

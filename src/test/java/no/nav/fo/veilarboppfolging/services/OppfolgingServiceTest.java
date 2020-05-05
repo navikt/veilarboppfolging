@@ -11,20 +11,18 @@ import no.nav.fo.veilarboppfolging.db.OppfolgingsStatusRepository;
 import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.fo.veilarboppfolging.domain.arena.AktivitetStatus;
 import no.nav.fo.veilarboppfolging.domain.arena.ArenaAktivitetDTO;
-import no.nav.fo.veilarboppfolging.kafka.OppfolgingKafkaProducer;
+import no.nav.fo.veilarboppfolging.kafka.OppfolgingStatusKafkaProducer;
 import no.nav.fo.veilarboppfolging.mappers.VeilarbArenaOppfolging;
 import no.nav.fo.veilarboppfolging.rest.AutorisasjonService;
 import no.nav.sbl.dialogarena.common.abac.pep.AbacPersonId;
 import no.nav.sbl.dialogarena.common.abac.pep.domain.ResourceType;
 import no.nav.sbl.dialogarena.common.abac.pep.domain.request.Action;
-import no.nav.sbl.dialogarena.test.junit.SystemPropertiesRule;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt.WSYtelseskontrakt;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeRequest;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeResponse;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Answers;
@@ -87,7 +85,7 @@ public class OppfolgingServiceTest {
     private UnleashService unleashService;
 
     @Mock
-    private OppfolgingKafkaProducer kafkaProducer;
+    private OppfolgingStatusKafkaProducer kafkaProducer;
 
     @Mock
     private WSHentYtelseskontraktListeResponse ytelser;
