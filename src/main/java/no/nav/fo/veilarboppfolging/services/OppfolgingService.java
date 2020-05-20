@@ -100,7 +100,7 @@ public class OppfolgingService {
             resolver.startOppfolging();
         }
 
-        kafkaProducer.sendAsync(new Fnr(fnr));
+        kafkaProducer.send(new Fnr(fnr));
         return getOppfolgingStatusData(fnr, resolver);
     }
 
@@ -118,7 +118,7 @@ public class OppfolgingService {
         resolver.avsluttOppfolging(veileder, begrunnelse);
         resolver.reloadOppfolging();
 
-        kafkaProducer.sendAsync(new Fnr(fnr));
+        kafkaProducer.send(new Fnr(fnr));
 
         return getOppfolgingStatusDataMedAvslutningStatus(fnr, resolver);
     }
@@ -156,7 +156,7 @@ public class OppfolgingService {
             resolver.reloadOppfolging();
         }
 
-        kafkaProducer.sendAsync(new Fnr(fnr));
+        kafkaProducer.send(new Fnr(fnr));
         return getOppfolgingStatusData(fnr, resolver);
     }
 

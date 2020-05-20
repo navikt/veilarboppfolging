@@ -11,6 +11,7 @@ import no.nav.fo.veilarboppfolging.db.OppfolgingFeedRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.db.VeilederHistorikkRepository;
 import no.nav.fo.veilarboppfolging.db.VeilederTilordningerRepository;
+import no.nav.fo.veilarboppfolging.domain.AktorId;
 import no.nav.fo.veilarboppfolging.domain.Tilordning;
 import no.nav.fo.veilarboppfolging.kafka.OppfolgingStatusKafkaProducer;
 import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingFeedDTO;
@@ -121,8 +122,6 @@ public class VeilederTilordningRessurs {
             CompletableFuture.runAsync(this::kallWebhook);
         }
 
-        kafka.sendAsync(tilordninger);
-
         timer.stop();
         timer.report();
 
@@ -206,6 +205,7 @@ public class VeilederTilordningRessurs {
             veilederTilordningerRepository.upsertVeilederTilordning(aktoerId, veileder);
             veilederHistorikkRepository.insertTilordnetVeilederForAktorId(aktoerId, veileder);
             oppfolgingRepository.startOppfolgingHvisIkkeAlleredeStartet(aktoerId);
+            kafka.send(new AktorId(aktoerId));
         });
 
         LOG.debug(String.format("Veileder %s tilordnet aktoer %s", veileder, aktoerId));

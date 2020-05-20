@@ -10,7 +10,6 @@ import no.nav.fo.veilarboppfolging.db.OppfolgingFeedRepository;
 import no.nav.fo.veilarboppfolging.domain.AktorId;
 import no.nav.fo.veilarboppfolging.domain.Fnr;
 import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingKafkaDTO;
-import no.nav.fo.veilarboppfolging.rest.domain.VeilederTilordning;
 import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -19,10 +18,8 @@ import org.apache.kafka.common.header.internals.RecordHeader;
 import org.slf4j.MDC;
 
 import java.util.List;
-import java.util.concurrent.Future;
 
 import static java.util.Collections.singletonList;
-import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static no.nav.fo.veilarboppfolging.utils.FnrUtils.getAktorIdOrElseThrow;
 import static no.nav.json.JsonUtils.toJson;
@@ -45,23 +42,13 @@ public class OppfolgingStatusKafkaProducer {
         this.topicName = topicName;
     }
 
-    public void sendAsync(List<VeilederTilordning> tilordninger) {
-        tilordninger.stream()
-                .map(VeilederTilordning::toAktorId)
-                .forEach(this::sendAsync);
-    }
-
-    public void sendAsync(Fnr fnr) {
+    public void send(Fnr fnr) {
         val fetchAktoerId = supplyAsync(() -> getAktorIdOrElseThrow(aktorService, fnr.getFnr()));
-        fetchAktoerId.thenAccept(this::sendAsync);
-    }
-
-    public void sendAsync(AktorId aktoerId) {
-        runAsync(() -> send(aktoerId));
+        fetchAktoerId.thenAccept(this::send);
     }
 
     @SneakyThrows
-    Try<OppfolgingKafkaDTO> send(AktorId aktorId) {
+    public Try<OppfolgingKafkaDTO> send(AktorId aktorId) {
         val aktoerId = aktorId.getAktorId();
         val result = repository.hentOppfolgingStatus(aktoerId);
 
@@ -69,23 +56,18 @@ public class OppfolgingStatusKafkaProducer {
             log.error("Kunne ikke hente oppfølgingsstatus for bruker {} {}", aktoerId, result.getCause());
             return result;
         }
-        return result.onSuccess(this::sendAsync);
+        
+        return result
+                .onSuccess(this::send)
+                .onFailure(t -> log.error("Feilet under sending til kafka for bruker " + aktoerId, t));
     }
 
-    private Future<RecordMetadata> sendAsync(OppfolgingKafkaDTO dto) {
+    @SneakyThrows
+    private RecordMetadata send(OppfolgingKafkaDTO dto) {
         val aktoerId = dto.getAktoerid();
         val header = new RecordHeader(PREFERRED_NAV_CALL_ID_HEADER_NAME, getCorrelationIdAsBytes());
         val record = new ProducerRecord<>(topicName, 0, aktoerId, toJson(dto), singletonList(header));
-
-        Callback callback = (metadata, exception) -> {
-            if (exception != null) {
-                log.error("Kunne ikke publisere oppfølgingsstatus for bruker {} \n{}", aktoerId, exception.getStackTrace());
-            } else {
-                log.info("Publiserte oppfølgingsstatus for bruker {} på topic {}", aktoerId, topicName);
-            }
-        };
-
-        return kafka.send(record, callback);
+        return kafka.send(record).get();
     }
 
     public int publiserAlleBrukere() {
@@ -95,7 +77,7 @@ public class OppfolgingStatusKafkaProducer {
 
         do {
             List<OppfolgingKafkaDTO> brukere = repository.hentOppfolgingStatus(offset);
-            brukere.forEach(this::sendAsync);
+            brukere.forEach(this::send);
             offset = offset + BATCH_SIZE;
         }
         while (offset <= antallBrukere);

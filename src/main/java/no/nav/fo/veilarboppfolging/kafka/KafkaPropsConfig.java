@@ -10,6 +10,7 @@ import java.util.HashMap;
 
 import static no.nav.fo.veilarboppfolging.config.ApplicationConfig.KAFKA_BROKERS_URL_PROPERTY;
 import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
+import static org.apache.kafka.clients.CommonClientConfigs.REQUEST_TIMEOUT_MS_CONFIG;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.*;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG;
 import static org.apache.kafka.clients.producer.ProducerConfig.*;
@@ -27,6 +28,7 @@ public class KafkaPropsConfig {
         props.put(SaslConfigs.SASL_MECHANISM, "PLAIN");
         props.put(SaslConfigs.SASL_JAAS_CONFIG, "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"" + USERNAME + "\" password=\"" + PASSWORD + "\";");
         props.put(ACKS_CONFIG, "all");
+        props.put(REQUEST_TIMEOUT_MS_CONFIG, 3000);
         props.put(KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         props.put(VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         props.put(CLIENT_ID_CONFIG, "veilarboppfolging-producer");
