@@ -1,20 +1,14 @@
 package no.nav.fo.veilarboppfolging.services;
 
+import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import no.nav.fo.veilarboppfolging.domain.ArenaOppfolging;
 import no.nav.sbl.dialogarena.test.junit.SystemPropertiesRule;
-import no.nav.sbl.featuretoggle.unleash.UnleashService;
+import no.nav.sbl.rest.RestUtils;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.informasjon.Bruker;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.informasjon.Oppfoelgingskontrakt;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingskontraktListeRequest;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingskontraktListeResponse;
-import no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v2.binding.HentOppfoelgingsstatusPersonIkkeFunnet;
-import no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v2.binding.HentOppfoelgingsstatusSikkerhetsbegrensning;
-import no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v2.binding.HentOppfoelgingsstatusUgyldigInput;
-import no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v2.binding.OppfoelgingsstatusV2;
-import no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v2.feil.PersonIkkeFunnet;
-import no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v2.feil.Sikkerhetsbegrensning;
-import no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v2.feil.UgyldigInput;
 import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Rule;
@@ -26,12 +20,15 @@ import org.mockito.junit.MockitoJUnitRunner;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.NotFoundException;
-import javax.ws.rs.client.Client;
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.time.LocalDate;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static no.nav.fo.veilarboppfolging.config.ApplicationConfig.VEILARBARENAAPI_URL_PROPERTY;
 import static no.nav.fo.veilarboppfolging.utils.CalendarConverter.convertDateToXMLGregorianCalendar;
+import static no.nav.json.JsonUtils.toJson;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -40,7 +37,12 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class ArenaOppfolgingServiceTest {
 
+    private static final String MOCK_FNR = "1234";
     private static final String MOCK_ENHET_ID = "1331";
+    private static final String MOCK_FORMIDLINGSGRUPPE = "ARBS";
+    private static final String MOCK_SERVICEGRUPPE = "servicegruppe";
+    private static final boolean MOCK_KAN_ENKELT_REAKTIVERES = true;
+    private static final String MOCK_RETTIGHETSGRUPPE = "rettighetsgruppe";
 
     private ArenaOppfolgingService arenaOppfolgingService;
 
@@ -48,21 +50,15 @@ public class ArenaOppfolgingServiceTest {
     public SystemPropertiesRule systemPropertiesRule = new SystemPropertiesRule();
 
     @Mock
-    private OppfoelgingsstatusV2 oppfoelgingsstatusV2Service;
-
-    @Mock
     private OppfoelgingPortType oppfoelgingPortType;
 
-    @Mock
-    Client restClient;
-
-    @Mock
-    UnleashService unleash;
+    @Rule
+    public WireMockRule wireMockRule = new WireMockRule(0);
 
     @Before
     public void setup() {
-        systemPropertiesRule.setProperty(VEILARBARENAAPI_URL_PROPERTY, "test");
-        arenaOppfolgingService = new ArenaOppfolgingService(oppfoelgingsstatusV2Service, oppfoelgingPortType, restClient, unleash);
+        systemPropertiesRule.setProperty(VEILARBARENAAPI_URL_PROPERTY, "http://localhost:" + wireMockRule.port());
+        arenaOppfolgingService = new ArenaOppfolgingService(oppfoelgingPortType, RestUtils.createClient());
     }
 
     @Test
@@ -81,55 +77,52 @@ public class ArenaOppfolgingServiceTest {
     }
 
     @Test
-    public void skalMappeTilOppfolgingsstatusV2() throws Exception {
-        when(oppfoelgingsstatusV2Service.hentOppfoelgingsstatus(any())).thenReturn(lagMockResponseV2());
+    public void skalMappeTilOppfolgingsstatusV2() {
+        givenThat(get(urlEqualTo("/oppfolgingsstatus/" + MOCK_FNR))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+                        .withBody(toJson(arenaOppfolgingResponse())))
+        );
 
-        ArenaOppfolging arenaOppfolging = arenaOppfolgingService.hentArenaOppfolging("1234");
-        Assertions.assertThat(arenaOppfolging.getFormidlingsgruppe()).isEqualTo("ARBS");
+        ArenaOppfolging arenaOppfolging = arenaOppfolgingService.hentArenaOppfolging(MOCK_FNR);
+        Assertions.assertThat(arenaOppfolging.getFormidlingsgruppe()).isEqualTo(MOCK_FORMIDLINGSGRUPPE);
         Assertions.assertThat(arenaOppfolging.getOppfolgingsenhet()).isEqualTo(MOCK_ENHET_ID);
-        Assertions.assertThat(arenaOppfolging.getRettighetsgruppe()).isEqualTo("rettighetsgruppe");
-        Assertions.assertThat(arenaOppfolging.getServicegruppe()).isEqualTo("servicegruppe");
-        Assertions.assertThat(arenaOppfolging.getKanEnkeltReaktiveres()).isEqualTo(Boolean.TRUE);
+        Assertions.assertThat(arenaOppfolging.getRettighetsgruppe()).isEqualTo(MOCK_RETTIGHETSGRUPPE);
+        Assertions.assertThat(arenaOppfolging.getServicegruppe()).isEqualTo(MOCK_SERVICEGRUPPE);
+        Assertions.assertThat(arenaOppfolging.getKanEnkeltReaktiveres()).isEqualTo(MOCK_KAN_ENKELT_REAKTIVERES);
     }
 
     @Test(expected = NotFoundException.class)
-    public void skalKasteNotFoundOmPersonIkkeFunnet() throws Exception {
-        when(oppfoelgingsstatusV2Service.hentOppfoelgingsstatus(any())).thenReturn(lagMockResponseV2());
-        when(oppfoelgingsstatusV2Service.hentOppfoelgingsstatus(any())).thenThrow(new HentOppfoelgingsstatusPersonIkkeFunnet("", new PersonIkkeFunnet()));
-        arenaOppfolgingService.hentArenaOppfolging("1234");
+    public void skalKasteNotFoundOmPersonIkkeFunnet() {
+        givenThat(get(urlEqualTo("/oppfolgingsstatus/" + MOCK_FNR))
+                .willReturn(aResponse().withStatus(404)));
+
+        arenaOppfolgingService.hentArenaOppfolging(MOCK_FNR);
     }
 
     @Test(expected = ForbiddenException.class)
-    public void skalKasteForbiddenOmManIkkeHarTilgang() throws Exception {
-        when(oppfoelgingsstatusV2Service.hentOppfoelgingsstatus(any())).thenReturn(lagMockResponseV2());
-        when(oppfoelgingsstatusV2Service.hentOppfoelgingsstatus(any())).thenThrow(new HentOppfoelgingsstatusSikkerhetsbegrensning("", new Sikkerhetsbegrensning()));
-        arenaOppfolgingService.hentArenaOppfolging("1234");
+    public void skalKasteForbiddenOmManIkkeHarTilgang() {
+        givenThat(get(urlEqualTo("/oppfolgingsstatus/" +MOCK_FNR))
+                .willReturn(aResponse().withStatus(403)));
+
+        arenaOppfolgingService.hentArenaOppfolging(MOCK_FNR);
     }
 
     @Test(expected = BadRequestException.class)
-    public void skalKasteBadRequestOmUgyldigIdentifikator() throws Exception {
-        when(oppfoelgingsstatusV2Service.hentOppfoelgingsstatus(any())).thenThrow(new HentOppfoelgingsstatusUgyldigInput("", new UgyldigInput()));
-        arenaOppfolgingService.hentArenaOppfolging("1234");
+    public void skalKasteBadRequestOmUgyldigIdentifikator() {
+        givenThat(get(urlEqualTo("/oppfolgingsstatus/" + MOCK_FNR))
+                .willReturn(aResponse().withStatus(400)));
+
+        arenaOppfolgingService.hentArenaOppfolging(MOCK_FNR);
     }
 
-    private no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v2.meldinger.HentOppfoelgingsstatusResponse lagMockResponseV2() {
-        no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v2.meldinger.HentOppfoelgingsstatusResponse response = new no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v2.meldinger.HentOppfoelgingsstatusResponse();
-
-        no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v2.informasjon.Formidlingsgrupper formidlingsgrupper = new no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v2.informasjon.Formidlingsgrupper();
-        formidlingsgrupper.setValue("ARBS");
-
-        no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v2.informasjon.Rettighetsgrupper rettighetsgrupper = new no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v2.informasjon.Rettighetsgrupper();
-        rettighetsgrupper.setValue("rettighetsgruppe");
-
-        no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v2.informasjon.ServicegruppeKoder servicegruppeKoder = new no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v2.informasjon.ServicegruppeKoder();
-        servicegruppeKoder.setValue("servicegruppe");
-
-        response.setRettighetsgruppeKode(rettighetsgrupper);
-        response.setFormidlingsgruppeKode(formidlingsgrupper);
-        response.setNavOppfoelgingsenhet(MOCK_ENHET_ID);
-        response.setServicegruppeKode(servicegruppeKoder);
-        response.setKanEnkeltReaktiveres(Boolean.TRUE);
-        return response;
+    private ArenaOppfolging arenaOppfolgingResponse() {
+        return new ArenaOppfolging()
+                .setFormidlingsgruppe(MOCK_FORMIDLINGSGRUPPE)
+                .setServicegruppe(MOCK_SERVICEGRUPPE)
+                .setOppfolgingsenhet(MOCK_ENHET_ID)
+                .setKanEnkeltReaktiveres(MOCK_KAN_ENKELT_REAKTIVERES)
+                .setRettighetsgruppe(MOCK_RETTIGHETSGRUPPE);
     }
-
 }

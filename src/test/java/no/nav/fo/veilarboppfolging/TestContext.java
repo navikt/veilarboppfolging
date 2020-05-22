@@ -41,7 +41,6 @@ public class TestContext {
     private static final String VIRKSOMHET_DIGITALKONTAKINFORMASJON_V1_ALIAS = "virksomhet:DigitalKontakinformasjon_v1";
     private static final String VIRKSOMHET_YTELSESKONTRAKT_V3_ALIAS = "virksomhet:Ytelseskontrakt_v3";
     private static final String VIRKSOMHET_OPPFOLGING_V1_ALIAS = "virksomhet:Oppfolging_v1";
-    private static final String VIRKSOMHET_OPPFOELGINGSSTATUS_V2_ALIAS = "virksomhet:Oppfoelgingsstatus_v2";
     private static final String VIRKSOMHET_ORGANISASJONENHET_V2_ALIAS = "virksomhet:OrganisasjonEnhet_v2";
     private static final String VARSELOPPGAVE_V1_ALIAS = "Varseloppgave_v1";
     private static final String VIRKSOMHET_BEHANDLEARBEIDSSOEKER_V1_ALIAS = "virksomhet:BehandleArbeidssoeker_v1";
@@ -75,7 +74,6 @@ public class TestContext {
         setProperty(VIRKSOMHET_DIGITALKONTAKINFORMASJON_V1_PROPERTY, getWebServiceEndpoint(VIRKSOMHET_DIGITALKONTAKINFORMASJON_V1_ALIAS, "q2").getUrl());
         setProperty(VIRKSOMHET_YTELSESKONTRAKT_V3_PROPERTY, getWebServiceEndpoint(VIRKSOMHET_YTELSESKONTRAKT_V3_ALIAS).getUrl());
         setProperty(VIRKSOMHET_OPPFOLGING_V1_PROPERTY, getWebServiceEndpoint(VIRKSOMHET_OPPFOLGING_V1_ALIAS).getUrl());
-        setProperty(VIRKSOMHET_OPPFOELGINGSSTATUS_V2_PROPERTY, getWebServiceEndpoint(VIRKSOMHET_OPPFOELGINGSSTATUS_V2_ALIAS).getUrl());
         setProperty(VIRKSOMHET_ORGANISASJONENHET_V2_PROPERTY, getWebServiceEndpoint(VIRKSOMHET_ORGANISASJONENHET_V2_ALIAS).getUrl());
         setProperty(VARSELOPPGAVE_V1_PROPERTY, getWebServiceEndpoint(VARSELOPPGAVE_V1_ALIAS).getUrl());
         setProperty(VIRKSOMHET_BEHANDLEARBEIDSSOEKER_V1_PROPERTY, getWebServiceEndpoint(VIRKSOMHET_BEHANDLEARBEIDSSOEKER_V1_ALIAS).getUrl());
