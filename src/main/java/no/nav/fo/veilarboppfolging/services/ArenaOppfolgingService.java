@@ -2,24 +2,14 @@ package no.nav.fo.veilarboppfolging.services;
 
 import io.micrometer.core.instrument.Counter;
 import no.nav.fo.veilarboppfolging.domain.ArenaOppfolging;
-import no.nav.fo.veilarboppfolging.mappers.ArenaOppfolgingMapper;
-import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.HentOppfoelgingskontraktListeSikkerhetsbegrensning;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.informasjon.Periode;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingskontraktListeRequest;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingskontraktListeResponse;
-import no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v2.binding.HentOppfoelgingsstatusPersonIkkeFunnet;
-import no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v2.binding.HentOppfoelgingsstatusSikkerhetsbegrensning;
-import no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v2.binding.HentOppfoelgingsstatusUgyldigInput;
-import no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v2.binding.OppfoelgingsstatusV2;
-import no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v2.meldinger.HentOppfoelgingsstatusRequest;
-import no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v2.meldinger.HentOppfoelgingsstatusResponse;
 import org.slf4j.Logger;
 
-import javax.ws.rs.BadRequestException;
 import javax.ws.rs.ForbiddenException;
-import javax.ws.rs.NotFoundException;
 import javax.ws.rs.client.Client;
 import javax.xml.datatype.XMLGregorianCalendar;
 
@@ -36,34 +26,22 @@ public class ArenaOppfolgingService {
 
     private static final Logger LOG = getLogger(ArenaOppfolgingService.class);
     private final OppfoelgingPortType oppfoelgingPortType;
-    private OppfoelgingsstatusV2 oppfoelgingsstatusV2Service;
     private final Client restClient;
     private final String host;
-    private final UnleashService unleash;
     private Counter counter;
 
-    public ArenaOppfolgingService(OppfoelgingsstatusV2 oppfoelgingsstatusV2Service,
-                                  OppfoelgingPortType oppfoelgingPortType,
-                                  Client restClient,
-                                  UnleashService unleash) {
-        this.oppfoelgingsstatusV2Service = oppfoelgingsstatusV2Service;
+    public ArenaOppfolgingService(OppfoelgingPortType oppfoelgingPortType,
+                                  Client restClient) {
         this.oppfoelgingPortType = oppfoelgingPortType;
         this.restClient = restClient;
         this.host = getOptionalProperty(VEILARBARENAAPI_URL_PROPERTY).orElseGet(() ->
                 joinPaths(clusterUrlForApplication("veilarbarena"), "veilarbarena", "api"));
-        this.unleash = unleash;
         counter = Counter.builder("veilarboppfolging.kall_mot_arena_oppfolging").register(getMeterRegistry());
     }
 
     public ArenaOppfolging hentArenaOppfolging(String identifikator) {
-
         counter.increment();
-
-        if (unleash.isEnabled("veilarboppfolging.use_ords_for_oppfolgingsstatus")) {
-            return getArenaOppfolgingsstatus(identifikator);
-        } else {
-            return getArenaOppfolgingsstatusSoap(identifikator);
-        }
+        return getArenaOppfolgingsstatus(identifikator);
     }
 
     public HentOppfoelgingskontraktListeResponse hentOppfolgingskontraktListe(XMLGregorianCalendar fom, XMLGregorianCalendar tom, String fnr) {
@@ -93,33 +71,4 @@ public class ArenaOppfolgingService {
                         .header(ACCEPT, APPLICATION_JSON)
                         .get(ArenaOppfolging.class);
     }
-
-    private ArenaOppfolging getArenaOppfolgingsstatusSoap(String identifikator) {
-
-        no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v2.informasjon.Person person = new no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v2.informasjon.Person();
-        person.setIdent(identifikator);
-
-        HentOppfoelgingsstatusRequest request = new HentOppfoelgingsstatusRequest();
-        request.setBruker(person);
-        try {
-            HentOppfoelgingsstatusResponse hentOppfoelgingsstatusResponse = oppfoelgingsstatusV2Service.hentOppfoelgingsstatus(request);
-            return ArenaOppfolgingMapper.mapTilArenaOppfolgingsstatusV2(hentOppfoelgingsstatusResponse);
-        } catch (java.lang.reflect.UndeclaredThrowableException e) {
-            Throwable undeclared = e.getUndeclaredThrowable();
-            throw undeclared != null  && undeclared.getCause() instanceof HentOppfoelgingsstatusPersonIkkeFunnet 
-                    ? notFound(identifikator, undeclared.getCause()) 
-                    : e;
-        } catch (HentOppfoelgingsstatusPersonIkkeFunnet e) {
-            throw notFound(identifikator, e);
-        } catch (HentOppfoelgingsstatusSikkerhetsbegrensning e) {
-            throw new ForbiddenException("Ikke tilgang til bruker " + identifikator, e);
-        } catch (HentOppfoelgingsstatusUgyldigInput e) {
-            throw new BadRequestException("Ugyldig bruker identifikator: " + identifikator, e);
-        }
-    }
-
-    private NotFoundException notFound(String identifikator, Throwable t) {
-        return new NotFoundException("Fant ikke bruker: " + identifikator, t);
-    }
-
 }

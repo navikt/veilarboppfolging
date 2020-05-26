@@ -5,7 +5,6 @@ import no.nav.sbl.dialogarena.common.cxf.CXFClient;
 import no.nav.sbl.dialogarena.types.Pingable;
 import no.nav.sbl.dialogarena.types.Pingable.Ping.PingMetadata;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
-import no.nav.tjeneste.virksomhet.oppfoelgingsstatus.v2.binding.OppfoelgingsstatusV2;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3;
 import org.apache.cxf.interceptor.LoggingOutInterceptor;
 import org.slf4j.Logger;
@@ -39,14 +38,6 @@ public class ArenaServiceConfig {
                 .address(url);
     }
 
-    public static CXFClient<OppfoelgingsstatusV2> oppfoelgingstatusV2PortType() {
-        final String url = getRequiredProperty(VIRKSOMHET_OPPFOELGINGSSTATUS_V2_PROPERTY);
-        LOG.info("URL for OppfoelgingStatus_V2 er {}", url);
-        return new CXFClient<>(OppfoelgingsstatusV2.class)
-                .withOutInterceptor(new LoggingOutInterceptor())
-                .address(url);
-    }
-
     @Bean
     Pingable ytelseskontraktPing() {
         final YtelseskontraktV3 ytelseskontraktPing = ytelseskontraktPortType()
@@ -62,31 +53,6 @@ public class ArenaServiceConfig {
         return () -> {
             try {
                 ytelseskontraktPing.ping();
-                return lyktes(metadata);
-            } catch (Exception e) {
-                return feilet(metadata, e);
-            }
-        };
-    }
-
-    @Bean
-    Pingable oppfoelgingstatusV2Ping() {
-        final String url = getRequiredProperty(VIRKSOMHET_OPPFOELGINGSSTATUS_V2_PROPERTY);
-        LOG.info("URL for Oppfoelgingstatus_V2 er {}", url);
-        OppfoelgingsstatusV2 oppfoelgingsstatusV2 = oppfoelgingstatusV2PortType()
-                .configureStsForSystemUserInFSS()
-                .build();
-
-
-        PingMetadata metadata = new PingMetadata(UUID.randomUUID().toString(),
-                "OPPFOELGINGSTATUS_V2 via " + getRequiredProperty(VIRKSOMHET_OPPFOELGINGSSTATUS_V2_PROPERTY),
-                "Ping av oppfolgingstatus_v2. Henter informasjon om oppfølgingsstatus fra arena.",
-                true
-        );
-
-        return () -> {
-            try {
-                oppfoelgingsstatusV2.ping();
                 return lyktes(metadata);
             } catch (Exception e) {
                 return feilet(metadata, e);
