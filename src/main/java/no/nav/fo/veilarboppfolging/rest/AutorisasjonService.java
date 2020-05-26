@@ -8,7 +8,16 @@ import no.nav.brukerdialog.security.oidc.OidcTokenValidatorResult;
 import no.nav.brukerdialog.security.oidc.provider.IssoOidcProvider;
 import no.nav.common.auth.SubjectHandler;
 import no.nav.dialogarena.aktor.AktorService;
+import no.nav.fo.veilarboppfolging.config.PepConfig;
 import no.nav.fo.veilarboppfolging.domain.AktorId;
+import no.nav.sbl.dialogarena.common.abac.pep.AbacPersonId;
+import no.nav.sbl.dialogarena.common.abac.pep.Pep;
+import no.nav.sbl.dialogarena.common.abac.pep.RequestData;
+import no.nav.sbl.dialogarena.common.abac.pep.domain.ResourceType;
+import no.nav.sbl.dialogarena.common.abac.pep.domain.request.Action;
+import no.nav.sbl.dialogarena.common.abac.pep.domain.response.BiasedDecisionResponse;
+import no.nav.sbl.dialogarena.common.abac.pep.domain.response.Decision;
+import no.nav.sbl.dialogarena.common.abac.pep.service.AbacServiceConfig;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
@@ -24,13 +33,16 @@ public class AutorisasjonService {
     Provider<HttpServletRequest> httpServletRequestProvider;
 
     @Inject
-    VeilArbAbacService veilArbAbacService;
-
-    @Inject
     AktorService aktorService;
 
     @Inject
     PepClient pepClient;
+
+    @Inject
+    Pep pep;
+
+    @Inject
+    AbacServiceConfig abacServiceConfig;
 
     private OidcTokenValidator oidcTokenValidator = new OidcTokenValidator();
     private IssoOidcProvider issoProvider = new IssoOidcProvider();
@@ -65,7 +77,17 @@ public class AutorisasjonService {
     }
 
     public boolean harVeilederSkriveTilgangTilFnr(String veilederId, String fnr) {
-        return veilArbAbacService.harVeilederSkriveTilgangTilFnr(veilederId, fnr);
+        RequestData requestData = new RequestData()
+                .withAction(Action.ActionId.WRITE)
+                .withDomain(PepConfig.DOMAIN_VEILARB)
+                .withSubjectId(veilederId)
+                .withPersonId(AbacPersonId.fnr(fnr))
+                .withResourceType(ResourceType.Person)
+                .withCredentialResource(abacServiceConfig.getUsername());
+
+        BiasedDecisionResponse response = pep.harTilgang(requestData);
+
+        return response.getBiasedDecision() == Decision.Permit;
     }
 
     public void sjekkLesetilgangTilBruker(String fnr) {
