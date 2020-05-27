@@ -68,14 +68,14 @@ public class OppfolgingService {
     }
 
     @SneakyThrows
-    public OppfolgingResolver sjekkTilgangTilEnhet(String fnr){
+    public OppfolgingResolver sjekkTilgangTilEnhet(String fnr) {
         autorisasjonService.sjekkLesetilgangTilBruker(fnr);
 
         val resolver = OppfolgingResolver.lagOppfolgingResolver(fnr, oppfolgingResolverDependencies);
 
         boolean harTilgangTilEnhet = pepClient.harTilgangTilEnhet(resolver.getOppfolgingsEnhet());
 
-        if(!harTilgangTilEnhet) {
+        if (!harTilgangTilEnhet) {
             throw new IngenTilgang();
         }
         return resolver;
@@ -98,9 +98,11 @@ public class OppfolgingService {
         val resolver = sjekkTilgangTilEnhet(fnr);
         if (resolver.getKanSettesUnderOppfolging()) {
             resolver.startOppfolging();
+            AktorId aktorId = new AktorId(resolver.getAktorId());
+            kafkaProducer.send(aktorId);
         }
 
-        kafkaProducer.send(new Fnr(fnr));
+
         return getOppfolgingStatusData(fnr, resolver);
     }
 
@@ -117,8 +119,6 @@ public class OppfolgingService {
 
         resolver.avsluttOppfolging(veileder, begrunnelse);
         resolver.reloadOppfolging();
-
-        kafkaProducer.send(new Fnr(fnr));
 
         return getOppfolgingStatusDataMedAvslutningStatus(fnr, resolver);
     }
@@ -154,9 +154,11 @@ public class OppfolgingService {
                     .setOpprettetAvBrukerId(opprettetAvBrukerId);
             oppfolgingRepository.opprettManuellStatus(nyStatus);
             resolver.reloadOppfolging();
+
+            AktorId aktorId = new AktorId(resolver.getAktorId());
+            kafkaProducer.send(aktorId);
         }
 
-        kafkaProducer.send(new Fnr(fnr));
         return getOppfolgingStatusData(fnr, resolver);
     }
 
@@ -175,7 +177,7 @@ public class OppfolgingService {
     @SneakyThrows
     public VeilederTilgang hentVeilederTilgang(String fnr) {
         autorisasjonService.sjekkLesetilgangTilBruker(fnr);
-        if(unleashService.isEnabled("veilarboppfolging.hentVeilederTilgang.fra.veilarbarena")) {
+        if (unleashService.isEnabled("veilarboppfolging.hentVeilederTilgang.fra.veilarbarena")) {
             Optional<VeilarbArenaOppfolging> arenaBruker = oppfolgingsbrukerService.hentOppfolgingsbruker(fnr);
             String oppfolgingsenhet = arenaBruker.map(VeilarbArenaOppfolging::getNav_kontor).orElse(null);
             boolean tilgangTilEnhet = pepClient.harTilgangTilEnhet(oppfolgingsenhet);

@@ -86,7 +86,6 @@ public class OppfolgingStatusKafkaProducerTest {
         return new OppfolgingStatusKafkaProducer(
                 kafkaMock,
                 repoMock,
-                mock(AktorService.class),
                 "test"
         );
     }

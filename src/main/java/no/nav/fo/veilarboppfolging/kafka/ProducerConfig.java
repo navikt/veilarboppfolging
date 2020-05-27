@@ -44,7 +44,7 @@ public class ProducerConfig {
     }
 
     @Bean
-    public OppfolgingStatusKafkaProducer oppfolgingStatusProducer(OppfolgingFeedRepository repository, AktorService aktorService) {
+    public OppfolgingStatusKafkaProducer oppfolgingStatusProducer(OppfolgingFeedRepository repository) {
         HashMap<String, Object> config = kafkaProducerProperties();
 
         config.put(ACKS_CONFIG, "0");                  // Fire-and-forget, we do not care about acks when hydrating
@@ -53,6 +53,6 @@ public class ProducerConfig {
         config.put(REQUEST_TIMEOUT_MS_CONFIG, 1000);   // 1s timeout for waiting on reply from server
 
         val kafkaProducer = new KafkaProducer<String, String>(config);
-        return new OppfolgingStatusKafkaProducer(kafkaProducer, repository, aktorService, TOPIC_OPPFOLGING_STATUS);
+        return new OppfolgingStatusKafkaProducer(kafkaProducer, repository, TOPIC_OPPFOLGING_STATUS);
     }
 }
