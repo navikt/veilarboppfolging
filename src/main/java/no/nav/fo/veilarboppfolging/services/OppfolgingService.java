@@ -41,7 +41,7 @@ public class OppfolgingService {
     private final OppfolgingsbrukerService oppfolgingsbrukerService;
     private final UnleashService unleashService;
     private final AutorisasjonService autorisasjonService;
-    private final OppfolgingStatusKafkaProducer kafkaProducer;
+    private final OppfolgingStatusKafkaProducer kafka;
 
     @Inject
     public OppfolgingService(
@@ -54,7 +54,7 @@ public class OppfolgingService {
             OppfolgingsbrukerService oppfolgingsbrukerService,
             UnleashService unleashService,
             AutorisasjonService autorisasjonService,
-            OppfolgingStatusKafkaProducer kafkaProducer) {
+            OppfolgingStatusKafkaProducer kafka) {
         this.oppfolgingResolverDependencies = oppfolgingResolverDependencies;
         this.aktorService = aktorService;
         this.oppfolgingRepository = oppfolgingRepository;
@@ -64,7 +64,7 @@ public class OppfolgingService {
         this.oppfolgingsbrukerService = oppfolgingsbrukerService;
         this.unleashService = unleashService;
         this.autorisasjonService = autorisasjonService;
-        this.kafkaProducer = kafkaProducer;
+        this.kafka = kafka;
     }
 
     @SneakyThrows
@@ -97,11 +97,9 @@ public class OppfolgingService {
     public OppfolgingStatusData startOppfolging(String fnr) {
         val resolver = sjekkTilgangTilEnhet(fnr);
         if (resolver.getKanSettesUnderOppfolging()) {
-            resolver.startOppfolging();
-            AktorId aktorId = new AktorId(resolver.getAktorId());
-            kafkaProducer.send(aktorId);
+            Oppfolging oppfolging = resolver.startOppfolging();
+            kafka.sendStartOppfolging(oppfolging);
         }
-
 
         return getOppfolgingStatusData(fnr, resolver);
     }
@@ -117,8 +115,11 @@ public class OppfolgingService {
     public OppfolgingStatusData avsluttOppfolging(String fnr, String veileder, String begrunnelse) {
         val resolver = sjekkTilgangTilEnhet(fnr);
 
-        resolver.avsluttOppfolging(veileder, begrunnelse);
-        resolver.reloadOppfolging();
+        boolean avsluttet = resolver.avsluttOppfolging(veileder, begrunnelse);
+        Oppfolging oppfolging = resolver.reloadOppfolging();
+        if (avsluttet) {
+            kafka.sendAvsluttOppfolging(oppfolging);
+        }
 
         return getOppfolgingStatusDataMedAvslutningStatus(fnr, resolver);
     }
@@ -153,10 +154,9 @@ public class OppfolgingService {
                     .setOpprettetAv(opprettetAv)
                     .setOpprettetAvBrukerId(opprettetAvBrukerId);
             oppfolgingRepository.opprettManuellStatus(nyStatus);
-            resolver.reloadOppfolging();
+            Oppfolging oppfolging = resolver.reloadOppfolging();
 
-            AktorId aktorId = new AktorId(resolver.getAktorId());
-            kafkaProducer.send(aktorId);
+            kafka.sendOpppdaterManuellStatus(oppfolging);
         }
 
         return getOppfolgingStatusData(fnr, resolver);

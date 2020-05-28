@@ -6,6 +6,7 @@ import lombok.val;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import no.nav.fo.veilarboppfolging.domain.AktorId;
+import no.nav.fo.veilarboppfolging.kafka.OppfolgingStatusKafkaProducer;
 import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingFeedDTO;
 import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingKafkaDTO;
 import no.nav.fo.veilarboppfolging.utils.OppfolgingFeedUtil;
@@ -24,6 +25,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static java.util.stream.Collectors.toList;
+import static no.nav.fo.veilarboppfolging.utils.DateUtils.toZonedDateTime;
 
 @Slf4j
 @Component
@@ -49,7 +51,7 @@ public class OppfolgingFeedRepository {
                 .executeToList();
     }
 
-    public Try<OppfolgingKafkaDTO> hentOppfolgingStatus(String aktoerId) {
+    public Try<OppfolgingStatusKafkaProducer.Melding> hentOppfolgingStatus(String aktoerId) {
 
         val sql = "SELECT "
                 + "os.AKTOR_ID, "
@@ -103,7 +105,7 @@ public class OppfolgingFeedRepository {
         return Optional.ofNullable(count);
     }
 
-    public List<OppfolgingKafkaDTO> hentOppfolgingStatus(int offset) {
+    public List<OppfolgingStatusKafkaProducer.Melding> hentOppfolgingStatus(int offset) {
 
         val sql = "SELECT "
                 + "os.AKTOR_ID, "
@@ -130,18 +132,18 @@ public class OppfolgingFeedRepository {
     }
 
 
-    private RowMapper<OppfolgingKafkaDTO> rowMapper() {
+    private RowMapper<OppfolgingStatusKafkaProducer.Melding> rowMapper() {
         return (rs, rowNum) ->
-                OppfolgingKafkaDTO
+                OppfolgingStatusKafkaProducer.Melding
                         .builder()
                         .aktoerid(rs.getString("AKTOR_ID"))
                         .veileder(rs.getString("VEILEDER"))
                         .oppfolging(rs.getBoolean("UNDER_OPPFOLGING"))
                         .nyForVeileder(rs.getBoolean("NY_FOR_VEILEDER"))
-                        .endretTimestamp(rs.getTimestamp("OPPDATERT"))
-                        .startDato((rs.getTimestamp("STARTDATO")))
+                        .startDato(toZonedDateTime(rs.getTimestamp("STARTDATO")))
                         .manuell(rs.getBoolean("MANUELL"))
                         .build();
+
     }
 
     @Transactional

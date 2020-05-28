@@ -1,11 +1,7 @@
 package no.nav.fo.veilarboppfolging.kafka;
 
-import io.vavr.control.Try;
 import lombok.val;
-import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarboppfolging.db.OppfolgingFeedRepository;
-import no.nav.fo.veilarboppfolging.domain.AktorId;
-import no.nav.fo.veilarboppfolging.rest.domain.OppfolgingKafkaDTO;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.bouncycastle.util.Strings;
@@ -65,20 +61,6 @@ public class OppfolgingStatusKafkaProducerTest {
         assertThat(id).isNotEmpty();
     }
 
-    @Test
-    public void skal_returnere_feilresultat_om_bruker_ikke_har_oppfolgingsstatus() {
-        val feedRepoMock = mock(OppfolgingFeedRepository.class);
-        OppfolgingStatusKafkaProducer producer = createMockProducer(feedRepoMock);
-        when(feedRepoMock.hentOppfolgingStatus(anyString())).thenReturn(Try.failure(new IllegalStateException()));
-
-        Try<OppfolgingKafkaDTO> result = producer.send(testId());
-        assertThat(result.isFailure()).isTrue();
-    }
-
-    private static AktorId testId() {
-        return new AktorId("test");
-    }
-
     private static OppfolgingStatusKafkaProducer createMockProducer(OppfolgingFeedRepository repoMock) {
         val kafkaMock = mock(KafkaProducer.class);
         when(kafkaMock.send(any(ProducerRecord.class))).thenReturn(mock(Future.class));
@@ -90,11 +72,11 @@ public class OppfolgingStatusKafkaProducerTest {
         );
     }
 
-    private List<OppfolgingKafkaDTO> createTestBrukere(int antall) {
+    private static List<OppfolgingStatusKafkaProducer.Melding> createTestBrukere(int antall) {
         return IntStream
                 .range(0, antall)
                 .mapToObj(n ->
-                        OppfolgingKafkaDTO
+                        OppfolgingStatusKafkaProducer.Melding
                                 .builder()
                                 .aktoerid(String.valueOf(n))
                                 .build()

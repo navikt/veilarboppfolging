@@ -160,7 +160,10 @@ public class VeilederTilordningRessurs {
                 .map(FunksjonelleMetrikker::lestAvVeileder)
                 .map(Tilordning::getAktorId)
                 .map(veilederTilordningerRepository::markerSomLestAvVeileder)
-                .ifPresent(i -> kallWebhook());
+                .ifPresent(i -> {
+                    kallWebhook();
+                    kafka.sendAktivitetsplanLestAvVeileder(aktorId);
+                });
     }
 
     private void loggFeilOppfolging(Exception e, VeilederTilordning tilordning) {
@@ -205,7 +208,7 @@ public class VeilederTilordningRessurs {
             veilederTilordningerRepository.upsertVeilederTilordning(aktoerId, veileder);
             veilederHistorikkRepository.insertTilordnetVeilederForAktorId(aktoerId, veileder);
             oppfolgingRepository.startOppfolgingHvisIkkeAlleredeStartet(aktoerId);
-            kafka.send(new AktorId(aktoerId));
+            kafka.sendVeilederTilordning(aktoerId, veileder);
         });
 
         LOG.debug(String.format("Veileder %s tilordnet aktoer %s", veileder, aktoerId));

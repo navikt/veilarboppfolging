@@ -17,7 +17,6 @@ import no.nav.fo.veilarboppfolging.db.KvpRepository;
 import no.nav.fo.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.fo.veilarboppfolging.domain.*;
 import no.nav.fo.veilarboppfolging.kafka.AvsluttOppfolgingProducer;
-import no.nav.fo.veilarboppfolging.kafka.OppfolgingStatusKafkaProducer;
 import no.nav.fo.veilarboppfolging.mappers.VeilarbArenaOppfolging;
 import no.nav.fo.veilarboppfolging.rest.domain.DkifResponse;
 import no.nav.fo.veilarboppfolging.utils.FunksjonelleMetrikker;
@@ -110,8 +109,9 @@ public class OppfolgingResolver {
         }
     }
 
-    void reloadOppfolging() {
+    Oppfolging reloadOppfolging() {
         oppfolging = hentOppfolging();
+        return oppfolging;
     }
 
     void sjekkStatusIArenaOgOppdaterOppfolging() {
@@ -268,9 +268,10 @@ public class OppfolgingResolver {
                 .orElse(false);
     }
 
-    void startOppfolging() {
+    Oppfolging startOppfolging() {
         deps.getOppfolgingRepository().startOppfolgingHvisIkkeAlleredeStartet(aktorId);
         oppfolging = hentOppfolging();
+        return oppfolging;
     }
 
     boolean erUnderOppfolgingIArena() {
@@ -396,7 +397,6 @@ public class OppfolgingResolver {
     void avsluttOppfolgingOgSendPaKafka(String veileder, String begrunnelse) {
         deps.getOppfolgingRepository().avsluttOppfolging(aktorId, veileder, begrunnelse);
         deps.getAvsluttOppfolgingProducer().avsluttOppfolgingEvent(aktorId, LocalDateTime.now());
-        deps.getOppfolgingStatusKafkaProducer().send(new AktorId(aktorId));
     }
 
     private Oppfolging hentOppfolging() {
@@ -607,9 +607,6 @@ public class OppfolgingResolver {
 
         @Inject
         private AvsluttOppfolgingProducer avsluttOppfolgingProducer;
-
-        @Inject
-        private OppfolgingStatusKafkaProducer oppfolgingStatusKafkaProducer;
 
     }
 

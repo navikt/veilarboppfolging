@@ -33,7 +33,7 @@ public class PubliserOppfolgingStatusServlet extends HttpServlet {
                 resp.setStatus(SC_BAD_REQUEST);
                 return;
             }
-            oppfolgingStatusKafkaProducer.send(new AktorId(aktoerId));
+            oppfolgingStatusKafkaProducer.send(aktoerId);
             val mld = String.format("Sendte melding på kafka for bruker %s", aktoerId);
             resp.setStatus(SC_OK);
             resp.getWriter().write(mld);
