@@ -72,7 +72,7 @@ public class AutorisasjonService {
         String systemToken = httpServletRequestProvider.get().getHeader("SystemAuthorization");
         OidcTokenValidatorResult validatedIssoToken = oidcTokenValidator.validate(systemToken, issoProvider);
         if (!validatedIssoToken.isValid()) {
-            throw new IngenTilgang();
+            throw new IngenTilgang(validatedIssoToken.getErrorMessage());
         }
     }
 
