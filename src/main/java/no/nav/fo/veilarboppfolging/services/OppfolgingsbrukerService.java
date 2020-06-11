@@ -3,7 +3,7 @@ package no.nav.fo.veilarboppfolging.services;
 import no.nav.fo.veilarboppfolging.mappers.VeilarbArenaOppfolging;
 
 import javax.ws.rs.client.Client;
-
+import javax.ws.rs.core.Response;
 import java.util.Optional;
 
 import static javax.ws.rs.core.HttpHeaders.ACCEPT;
@@ -21,12 +21,15 @@ public class OppfolgingsbrukerService {
     }
 
     public Optional<VeilarbArenaOppfolging> hentOppfolgingsbruker(String fnr) {
-        return Optional.ofNullable(
-                restClient.target(String.format("%s/oppfolgingsbruker/%s", host, fnr))
-                        .request()
-                        .header(ACCEPT, APPLICATION_JSON)
-                        .get(VeilarbArenaOppfolging.class)
-        );
-    }
+        Response response = restClient.target(String.format("%s/oppfolgingsbruker/%s", host, fnr))
+                .request()
+                .header(ACCEPT, APPLICATION_JSON)
+                .get();
 
+        if (response.getStatus() >= 300) {
+            return Optional.empty();
+        }
+
+        return Optional.ofNullable(response.readEntity(VeilarbArenaOppfolging.class));
+    }
 }
