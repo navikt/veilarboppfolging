@@ -82,11 +82,11 @@ public class OppfolgingService {
     }
 
     @Transactional
-    public OppfolgingStatusData hentOppfolgingsStatus(String fnr, boolean brukArenaDirekte) {
+    public OppfolgingStatusData hentOppfolgingsStatus(String fnr) {
 
         autorisasjonService.sjekkLesetilgangTilBruker(fnr);
 
-        val resolver = OppfolgingResolver.lagOppfolgingResolver(fnr, oppfolgingResolverDependencies, brukArenaDirekte);
+        val resolver = OppfolgingResolver.lagOppfolgingResolver(fnr, oppfolgingResolverDependencies);
 
         resolver.sjekkStatusIArenaOgOppdaterOppfolging();
 

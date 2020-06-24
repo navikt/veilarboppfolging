@@ -438,7 +438,7 @@ public class OppfolgingServiceTest {
     }
 
     private OppfolgingStatusData hentOppfolgingStatus() throws Exception {
-        return oppfolgingService.hentOppfolgingsStatus(FNR, true);
+        return oppfolgingService.hentOppfolgingsStatus(FNR);
     }
 
     private void gittOppfolging(Oppfolging oppfolging) {
