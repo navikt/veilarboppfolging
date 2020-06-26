@@ -213,7 +213,6 @@ public class OppfolgingResolver {
         });
     }
 
-
     private void inaktiverBruker() {
         log.info("Avslutter oppfølgingsperiode for bruker");
         avsluttOppfolging(null, "Oppfølging avsluttet automatisk pga. inaktiv bruker som ikke kan reaktiveres");
