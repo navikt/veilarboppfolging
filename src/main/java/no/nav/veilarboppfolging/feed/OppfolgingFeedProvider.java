@@ -4,7 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.fo.feed.common.FeedElement;
 import no.nav.fo.feed.producer.FeedProvider;
 import no.nav.veilarboppfolging.db.OppfolgingFeedRepository;
-import no.nav.veilarboppfolging.rest.domain.OppfolgingFeedDTO;
+import no.nav.veilarboppfolging.controller.domain.OppfolgingFeedDTO;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;

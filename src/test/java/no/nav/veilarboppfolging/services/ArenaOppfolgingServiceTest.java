@@ -1,7 +1,7 @@
 package no.nav.veilarboppfolging.services;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import no.nav.veilarboppfolging.client.ArenaOppfolgingService;
+import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolgingService;
 import no.nav.veilarboppfolging.domain.ArenaOppfolging;
 import no.nav.sbl.dialogarena.test.junit.SystemPropertiesRule;
 import no.nav.sbl.rest.RestUtils;

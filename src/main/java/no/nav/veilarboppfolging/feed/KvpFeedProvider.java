@@ -4,7 +4,7 @@ import no.nav.fo.feed.common.FeedElement;
 import no.nav.fo.feed.producer.FeedProvider;
 import no.nav.veilarboppfolging.db.KvpRepository;
 import no.nav.veilarboppfolging.utils.mappers.KvpMapper;
-import no.nav.veilarboppfolging.rest.domain.KvpDTO;
+import no.nav.veilarboppfolging.controller.domain.KvpDTO;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;

@@ -2,8 +2,8 @@ package no.nav.veilarboppfolging.services;
 
 import no.nav.apiapp.security.PepClient;
 import no.nav.dialogarena.aktor.AktorService;
-import no.nav.veilarboppfolging.client.ArenaOppfolgingService;
-import no.nav.veilarboppfolging.client.OppfolgingsbrukerService;
+import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolgingService;
+import no.nav.veilarboppfolging.client.veilarbarena.OppfolgingsbrukerService;
 import no.nav.veilarboppfolging.db.KvpRepository;
 import no.nav.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.veilarboppfolging.domain.ArenaOppfolging;

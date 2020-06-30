@@ -1,42 +1,36 @@
 package no.nav.veilarboppfolging.config;
 
-import net.sf.ehcache.config.CacheConfiguration;
-import org.springframework.cache.CacheManager;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import org.springframework.cache.Cache;
 import org.springframework.cache.annotation.EnableCaching;
-import org.springframework.cache.ehcache.EhCacheCacheManager;
+import org.springframework.cache.caffeine.CaffeineCache;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import static net.sf.ehcache.store.MemoryStoreEvictionPolicy.LRU;
-import static no.nav.dialogarena.aktor.AktorConfig.AKTOR_ID_FROM_FNR_CACHE;
-import static no.nav.dialogarena.aktor.AktorConfig.FNR_FROM_AKTOR_ID_CACHE;
-import static no.nav.sbl.dialogarena.common.abac.pep.context.AbacContext.ABAC_CACHE;
+import java.util.concurrent.TimeUnit;
 
 @Configuration
 @EnableCaching
 public class CacheConfig {
 
-    public static final String HENT_ENHET = "hentEnhet";
-    public static final String HENT_ARBEIDSFORHOLD = "hentArbeidsforhold";
+    public static final String HENT_ENHET_CACHE_NAME = "hent_enhet_cache";
 
-    private static final CacheConfiguration HENT_ENHET_CACHE = new CacheConfiguration(HENT_ENHET, 10000)
-            .memoryStoreEvictionPolicy(LRU)
-            .timeToIdleSeconds(3600)
-            .timeToLiveSeconds(3600);
-
-    private static final CacheConfiguration HENT_ARBEIDSFORHOLD_CACHE = new CacheConfiguration(HENT_ARBEIDSFORHOLD, 100000)
-            .memoryStoreEvictionPolicy(LRU)
-            .timeToIdleSeconds(3600)
-            .timeToLiveSeconds(3600);
+    public static final String HENT_ARBEIDSFORHOLD_CACHE_NAME = "hent_arbeidsforhold_cache";
 
     @Bean
-    public CacheManager cacheManager() {
-        net.sf.ehcache.config.Configuration config = new net.sf.ehcache.config.Configuration();
-        config.addCache(HENT_ENHET_CACHE);
-        config.addCache(ABAC_CACHE);
-        config.addCache(AKTOR_ID_FROM_FNR_CACHE);
-        config.addCache(FNR_FROM_AKTOR_ID_CACHE);
-        config.addCache(HENT_ARBEIDSFORHOLD_CACHE);
-        return new EhCacheCacheManager(net.sf.ehcache.CacheManager.newInstance(config));
+    public Cache hentEnhetCache() {
+        return new CaffeineCache(HENT_ENHET_CACHE_NAME, Caffeine.newBuilder()
+                .expireAfterWrite(1, TimeUnit.HOURS)
+                .maximumSize(10000)
+                .build());
     }
+
+    @Bean
+    public Cache hentArbeidsforholdCache() {
+        return new CaffeineCache(HENT_ARBEIDSFORHOLD_CACHE_NAME, Caffeine.newBuilder()
+                .expireAfterWrite(1, TimeUnit.HOURS)
+                .maximumSize(10000)
+                .build());
+    }
+
 }

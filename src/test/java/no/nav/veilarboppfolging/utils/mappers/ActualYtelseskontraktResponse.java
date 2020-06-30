@@ -1,7 +1,7 @@
 package no.nav.veilarboppfolging.utils.mappers;
 
 import no.nav.veilarboppfolging.mock.YtelseskontraktV3Mock;
-import no.nav.veilarboppfolging.rest.domain.YtelseskontraktResponse;
+import no.nav.veilarboppfolging.controller.domain.YtelseskontraktResponse;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.HentOppfoelgingskontraktListeSikkerhetsbegrensning;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.HentYtelseskontraktListeSikkerhetsbegrensning;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3;

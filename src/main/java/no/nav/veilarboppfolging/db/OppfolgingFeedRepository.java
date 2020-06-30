@@ -6,8 +6,8 @@ import lombok.val;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import no.nav.veilarboppfolging.domain.AktorId;
-import no.nav.veilarboppfolging.rest.domain.OppfolgingFeedDTO;
-import no.nav.veilarboppfolging.rest.domain.OppfolgingKafkaDTO;
+import no.nav.veilarboppfolging.controller.domain.OppfolgingFeedDTO;
+import no.nav.veilarboppfolging.controller.domain.OppfolgingKafkaDTO;
 import no.nav.veilarboppfolging.utils.OppfolgingFeedUtil;
 import no.nav.metrics.utils.MetricsUtils;
 import no.nav.sbl.sql.SqlUtils;
@@ -15,7 +15,6 @@ import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 

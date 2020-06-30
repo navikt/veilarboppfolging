@@ -1,6 +1,5 @@
 package no.nav.veilarboppfolging.services;
 
-import no.nav.veilarboppfolging.client.OrganisasjonEnhetService;
 import no.nav.veilarboppfolging.domain.Oppfolgingsenhet;
 import no.nav.tjeneste.virksomhet.organisasjonenhet.v2.OrganisasjonEnhetV2;
 import no.nav.tjeneste.virksomhet.organisasjonenhet.v2.informasjon.WSOrganisasjonsenhet;

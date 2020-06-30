@@ -1,7 +1,7 @@
 package no.nav.veilarboppfolging.utils.mappers;
 
 import no.nav.veilarboppfolging.domain.Kvp;
-import no.nav.veilarboppfolging.rest.domain.KvpDTO;
+import no.nav.veilarboppfolging.controller.domain.KvpDTO;
 
 public class KvpMapper {
 

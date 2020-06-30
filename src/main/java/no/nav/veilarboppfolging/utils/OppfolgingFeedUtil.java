@@ -1,7 +1,7 @@
 package no.nav.veilarboppfolging.utils;
 
 
-import no.nav.veilarboppfolging.rest.domain.OppfolgingFeedDTO;
+import no.nav.veilarboppfolging.controller.domain.OppfolgingFeedDTO;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;

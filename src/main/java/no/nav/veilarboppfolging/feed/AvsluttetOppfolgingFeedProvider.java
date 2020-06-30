@@ -3,9 +3,8 @@ package no.nav.veilarboppfolging.feed;
 import no.nav.fo.feed.common.FeedElement;
 import no.nav.fo.feed.producer.FeedProvider;
 import no.nav.veilarboppfolging.domain.AvsluttetOppfolgingFeedData;
-import no.nav.veilarboppfolging.rest.domain.AvsluttetOppfolgingFeedDTO;
+import no.nav.veilarboppfolging.controller.domain.AvsluttetOppfolgingFeedDTO;
 import no.nav.veilarboppfolging.services.OppfolgingService;
-import no.nav.veilarboppfolging.utils.DateUtils;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;

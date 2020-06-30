@@ -4,7 +4,7 @@ import lombok.val;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import no.nav.veilarboppfolging.domain.AktorId;
 import no.nav.veilarboppfolging.domain.Oppfolgingsperiode;
-import no.nav.veilarboppfolging.rest.domain.OppfolgingKafkaDTO;
+import no.nav.veilarboppfolging.controller.domain.OppfolgingKafkaDTO;
 import no.nav.sbl.jdbc.Database;
 import org.junit.After;
 import org.junit.BeforeClass;

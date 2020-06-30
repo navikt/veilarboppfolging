@@ -5,7 +5,7 @@ import lombok.val;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.veilarboppfolging.db.OppfolgingFeedRepository;
 import no.nav.veilarboppfolging.domain.AktorId;
-import no.nav.veilarboppfolging.rest.domain.OppfolgingKafkaDTO;
+import no.nav.veilarboppfolging.controller.domain.OppfolgingKafkaDTO;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.bouncycastle.util.Strings;

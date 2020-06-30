@@ -1,8 +1,8 @@
 package no.nav.veilarboppfolging.utils.mappers;
 
-import no.nav.veilarboppfolging.rest.domain.Vedtak;
-import no.nav.veilarboppfolging.rest.domain.Ytelseskontrakt;
-import no.nav.veilarboppfolging.rest.domain.YtelseskontraktResponse;
+import no.nav.veilarboppfolging.controller.domain.Vedtak;
+import no.nav.veilarboppfolging.controller.domain.Ytelseskontrakt;
+import no.nav.veilarboppfolging.controller.domain.YtelseskontraktResponse;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt.WSBruker;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt.WSRettighetsgruppe;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt.WSVedtak;

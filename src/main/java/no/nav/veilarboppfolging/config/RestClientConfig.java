@@ -1,7 +1,5 @@
 package no.nav.veilarboppfolging.config;
 
-import no.nav.veilarboppfolging.client.DkifService;
-import no.nav.veilarboppfolging.client.VeilarbaktivtetService;
 import no.nav.sbl.dialogarena.restclient.RestClient;
 import no.nav.sbl.util.EnvironmentUtils;
 import org.springframework.context.annotation.Bean;

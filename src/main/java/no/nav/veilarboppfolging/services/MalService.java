@@ -6,7 +6,6 @@ import no.nav.apiapp.security.PepClient;
 import no.nav.veilarboppfolging.db.KvpRepository;
 import no.nav.veilarboppfolging.domain.Kvp;
 import no.nav.veilarboppfolging.domain.MalData;
-import no.nav.veilarboppfolging.rest.AutorisasjonService;
 import no.nav.veilarboppfolging.services.OppfolgingResolver.OppfolgingResolverDependencies;
 import no.nav.veilarboppfolging.utils.FunksjonelleMetrikker;
 import no.nav.veilarboppfolging.utils.KvpUtils;

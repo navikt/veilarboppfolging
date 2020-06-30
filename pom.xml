@@ -19,7 +19,7 @@
 
     <properties>
         <java.version>11</java.version>
-        <common.version>2.2020.05.29_11.07-5849331d146f</common.version>
+        <common.version>2.2020.06.17_15.42-c373dd9dde69</common.version>
         <springfox.version>2.9.2</springfox.version>
         <tjenestespesifikasjoner.version>1.2019.04.03-23.09-56488320520a</tjenestespesifikasjoner.version>
     </properties>
@@ -137,6 +137,11 @@
         </dependency>
 
         <!-- Common Dependencies -->
+        <dependency>
+            <groupId>no.nav.common</groupId>
+            <artifactId>feature-toggle</artifactId>
+            <version>${common.version}</version>
+        </dependency>
         <dependency>
             <groupId>no.nav.common</groupId>
             <artifactId>leader-election</artifactId>
