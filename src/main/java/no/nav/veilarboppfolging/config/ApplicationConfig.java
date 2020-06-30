@@ -1,52 +1,24 @@
 package no.nav.veilarboppfolging.config;
 
 import lombok.extern.slf4j.Slf4j;
-import no.nav.apiapp.ApiApplication;
-import no.nav.apiapp.ServletUtil;
-import no.nav.apiapp.config.ApiAppConfigurator;
-import no.nav.brukerdialog.security.domain.IdentType;
-import no.nav.brukerdialog.security.oidc.SystemUserTokenProvider;
-import no.nav.brukerdialog.security.oidc.provider.AzureADB2CConfig;
 import no.nav.common.abac.Pep;
 import no.nav.common.abac.VeilarbPep;
 import no.nav.common.abac.audit.SpringAuditRequestInfoSupplier;
-import no.nav.common.auth.SecurityLevel;
+import no.nav.common.cxf.StsConfig;
 import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.sts.NaisSystemUserTokenProvider;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.utils.Credentials;
 import no.nav.common.utils.NaisUtils;
-import no.nav.dialogarena.aktor.AktorConfig;
-import no.nav.veilarboppfolging.db.OppfolgingFeedRepository;
-import no.nav.veilarboppfolging.db.OppfolgingsenhetHistorikkRepository;
-import no.nav.veilarboppfolging.kafka.OppfolgingStatusKafkaProducer;
-import no.nav.veilarboppfolging.kafka.OppfolgingStatusTopicHelsesjekk;
-import no.nav.veilarboppfolging.security.SecurityTokenServiceOidcProvider;
-import no.nav.veilarboppfolging.security.SecurityTokenServiceOidcProviderConfig;
-import no.nav.veilarboppfolging.internal.PopulerOppfolgingHistorikkServlet;
-import no.nav.veilarboppfolging.internal.PubliserHistorikkServlet;
-import no.nav.veilarboppfolging.internal.PubliserOppfolgingStatusServlet;
-import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.*;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
-import javax.inject.Inject;
-import javax.servlet.ServletContext;
-import javax.sql.DataSource;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
-import static no.nav.brukerdialog.security.Constants.AZUREADB2C_OIDC_COOKIE_NAME_FSS;
 import static no.nav.common.featuretoggle.UnleashServiceConfig.resolveFromEnvironment;
-import static no.nav.veilarboppfolging.config.DatabaseConfig.migrateDatabase;
-import static no.nav.veilarboppfolging.kafka.ProducerConfig.createKafkaProducer;
-import static no.nav.sbl.featuretoggle.unleash.UnleashServiceConfig.resolveFromEnvironment;
-import static no.nav.sbl.util.EnvironmentUtils.Type.PUBLIC;
-import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
-import static no.nav.sbl.util.EnvironmentUtils.setProperty;
-
+import static no.nav.common.utils.NaisUtils.getCredentials;
 
 @Slf4j
 @Configuration
@@ -77,6 +49,20 @@ public class ApplicationConfig {
     public static final String STS_OIDC_CONFIGURATION_URL_PROPERTY = "SECURITY_TOKEN_SERVICE_OPENID_CONFIGURATION_URL";
     public static final String KAFKA_BROKERS_URL_PROPERTY = "KAFKA_BROKERS_URL";
     public static final String APP_ENVIRONMENT_NAME = "APP_ENVIRONMENT_NAME";
+
+    @Bean
+    public Credentials serviceUserCredentials() {
+        return getCredentials("service_user");
+    }
+
+    @Bean
+    public static StsConfig stsConfig(EnvironmentProperties properties, Credentials serviceUserCredentials) {
+        return StsConfig.builder()
+                .url(properties.getSoapStsUrl())
+                .username(serviceUserCredentials.username)
+                .password(serviceUserCredentials.password)
+                .build();
+    }
 
     @Bean
     public UnleashService unleashService() {

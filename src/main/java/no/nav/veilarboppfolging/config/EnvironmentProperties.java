@@ -35,4 +35,10 @@ public class EnvironmentProperties {
 
     private String dbUrl;
 
+    private String arbeidsrettetDialogUrl;
+
+    // SOAP Endpoints
+
+    private String varselOppgaveV1Endpoint;
+
 }
