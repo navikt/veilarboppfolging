@@ -3,7 +3,7 @@ package no.nav.veilarboppfolging.services;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarboppfolging.db.OppfolgingsenhetHistorikkRepository;
 import no.nav.veilarboppfolging.domain.OppfolgingsenhetEndringData;
-import no.nav.veilarboppfolging.mappers.VeilarbArenaOppfolgingEndret;
+import no.nav.veilarboppfolging.utils.mappers.VeilarbArenaOppfolgingEndret;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;

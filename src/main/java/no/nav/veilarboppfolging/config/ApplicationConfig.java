@@ -1,5 +1,6 @@
 package no.nav.veilarboppfolging.config;
 
+import lombok.extern.slf4j.Slf4j;
 import no.nav.apiapp.ApiApplication;
 import no.nav.apiapp.ServletUtil;
 import no.nav.apiapp.config.ApiAppConfigurator;
@@ -18,6 +19,7 @@ import no.nav.veilarboppfolging.internal.PopulerOppfolgingHistorikkServlet;
 import no.nav.veilarboppfolging.internal.PubliserHistorikkServlet;
 import no.nav.veilarboppfolging.internal.PubliserOppfolgingStatusServlet;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.*;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -36,14 +38,12 @@ import static no.nav.sbl.util.EnvironmentUtils.Type.PUBLIC;
 import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 import static no.nav.sbl.util.EnvironmentUtils.setProperty;
 
+
+@Slf4j
 @Configuration
 @EnableScheduling
-@ComponentScan(
-        basePackages = "no.nav.fo.veilarboppfolging",
-        excludeFilters = {@ComponentScan.Filter(type = FilterType.REGEX, pattern = ".*Test")}
-)
-@Import(AktorConfig.class)
-public class ApplicationConfig implements ApiApplication {
+@EnableConfigurationProperties({EnvironmentProperties.class})
+public class ApplicationConfig {
 
     public static final String APPLICATION_NAME = "veilarboppfolging";
     public static final String AKTOER_V2_URL_PROPERTY = "AKTOER_V2_ENDPOINTURL";

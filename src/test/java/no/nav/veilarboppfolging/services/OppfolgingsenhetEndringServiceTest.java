@@ -3,7 +3,7 @@ package no.nav.veilarboppfolging.services;
 import no.nav.veilarboppfolging.test.DatabaseTest;
 import no.nav.veilarboppfolging.db.OppfolgingsenhetHistorikkRepository;
 import no.nav.veilarboppfolging.domain.OppfolgingsenhetEndringData;
-import no.nav.veilarboppfolging.mappers.VeilarbArenaOppfolgingEndret;
+import no.nav.veilarboppfolging.utils.mappers.VeilarbArenaOppfolgingEndret;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 

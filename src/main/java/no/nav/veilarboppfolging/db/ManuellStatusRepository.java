@@ -5,6 +5,7 @@ import no.nav.veilarboppfolging.domain.KodeverkBruker;
 import no.nav.veilarboppfolging.domain.ManuellStatus;
 import no.nav.sbl.jdbc.Database;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
@@ -16,7 +17,7 @@ import static no.nav.apiapp.util.EnumUtils.valueOfOptional;
 import static no.nav.veilarboppfolging.db.OppfolgingsStatusRepository.AKTOR_ID;
 import static no.nav.veilarboppfolging.db.OppfolgingsStatusRepository.GJELDENDE_MANUELL_STATUS;
 
-@Component
+@Repository
 public class ManuellStatusRepository {
 
     private final Database database;

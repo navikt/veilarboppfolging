@@ -16,6 +16,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
@@ -26,7 +27,7 @@ import java.util.Optional;
 import static java.util.stream.Collectors.toList;
 
 @Slf4j
-@Component
+@Repository
 public class OppfolgingFeedRepository {
 
     public static final int INSERT_ID_INTERVAL = 500;

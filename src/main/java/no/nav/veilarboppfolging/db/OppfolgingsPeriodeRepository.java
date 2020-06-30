@@ -5,6 +5,7 @@ import no.nav.veilarboppfolging.domain.AvsluttetOppfolgingFeedData;
 import no.nav.veilarboppfolging.domain.Oppfolgingsperiode;
 import no.nav.sbl.jdbc.Database;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
@@ -17,7 +18,7 @@ import static no.nav.veilarboppfolging.db.OppfolgingsStatusRepository.AKTOR_ID;
 import static no.nav.veilarboppfolging.db.OppfolgingsStatusRepository.UNDER_OPPFOLGING;
 import static no.nav.sbl.jdbc.Database.hentDato;
 
-@Component
+@Repository
 public class OppfolgingsPeriodeRepository {
     private final Database database;
     public static final String TABLE_NAME = "OPPFOLGINGSPERIODE";

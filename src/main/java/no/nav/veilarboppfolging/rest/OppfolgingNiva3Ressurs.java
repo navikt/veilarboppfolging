@@ -10,6 +10,7 @@ import javax.ws.rs.Produces;
 import io.micrometer.core.instrument.MeterRegistry;
 import no.nav.veilarboppfolging.rest.domain.UnderOppfolgingNiva3DTO;
 import no.nav.metrics.MetricsFactory;
+import no.nav.veilarboppfolging.utils.FnrParameterUtil;
 import org.springframework.stereotype.Component;
 
 import io.swagger.annotations.Api;

@@ -9,7 +9,7 @@ import no.nav.veilarboppfolging.db.OppfolgingsStatusRepository;
 import no.nav.veilarboppfolging.domain.IservMapper;
 import no.nav.veilarboppfolging.domain.OppfolgingTable;
 
-import no.nav.veilarboppfolging.mappers.VeilarbArenaOppfolgingEndret;
+import no.nav.veilarboppfolging.utils.mappers.VeilarbArenaOppfolgingEndret;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;

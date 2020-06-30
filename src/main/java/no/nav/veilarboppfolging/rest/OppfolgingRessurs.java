@@ -25,6 +25,7 @@ import no.nav.veilarboppfolging.services.KvpService;
 import no.nav.veilarboppfolging.services.MalService;
 import no.nav.veilarboppfolging.services.OppfolgingService;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
+import no.nav.veilarboppfolging.utils.FnrParameterUtil;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;

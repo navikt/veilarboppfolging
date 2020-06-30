@@ -12,13 +12,18 @@ import no.nav.apiapp.security.SecurityLevelAuthorizationModule;
 import no.nav.brukerdialog.security.oidc.SystemUserTokenProvider;
 import no.nav.common.auth.SubjectHandler;
 import no.nav.dialogarena.aktor.AktorService;
+import no.nav.veilarboppfolging.client.ArenaOppfolgingService;
+import no.nav.veilarboppfolging.client.DkifService;
+import no.nav.veilarboppfolging.client.OppfolgingsbrukerService;
+import no.nav.veilarboppfolging.client.VeilarbaktivtetService;
 import no.nav.veilarboppfolging.domain.arena.ArenaAktivitetDTO;
 import no.nav.veilarboppfolging.db.KvpRepository;
 import no.nav.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.veilarboppfolging.domain.*;
 import no.nav.veilarboppfolging.kafka.AvsluttOppfolgingProducer;
-import no.nav.veilarboppfolging.mappers.VeilarbArenaOppfolging;
+import no.nav.veilarboppfolging.utils.mappers.VeilarbArenaOppfolging;
 import no.nav.veilarboppfolging.rest.domain.DkifResponse;
+import no.nav.veilarboppfolging.utils.ArenaUtils;
 import no.nav.veilarboppfolging.utils.FunksjonelleMetrikker;
 import no.nav.veilarboppfolging.utils.StringUtils;
 import no.nav.metrics.MetricsFactory;
@@ -49,7 +54,7 @@ import static java.util.Optional.ofNullable;
 import static no.nav.veilarboppfolging.domain.KodeverkBruker.SYSTEM;
 import static no.nav.veilarboppfolging.domain.arena.AktivitetStatus.AVBRUTT;
 import static no.nav.veilarboppfolging.domain.arena.AktivitetStatus.FULLFORT;
-import static no.nav.veilarboppfolging.services.ArenaUtils.*;
+import static no.nav.veilarboppfolging.utils.ArenaUtils.*;
 import static no.nav.veilarboppfolging.utils.FnrUtils.getAktorIdOrElseThrow;
 
 

@@ -8,7 +8,6 @@ import no.nav.brukerdialog.security.oidc.OidcTokenValidatorResult;
 import no.nav.brukerdialog.security.oidc.provider.IssoOidcProvider;
 import no.nav.common.auth.SubjectHandler;
 import no.nav.dialogarena.aktor.AktorService;
-import no.nav.veilarboppfolging.config.PepConfig;
 import no.nav.veilarboppfolging.domain.AktorId;
 import no.nav.sbl.dialogarena.common.abac.pep.AbacPersonId;
 import no.nav.sbl.dialogarena.common.abac.pep.Pep;

@@ -1,6 +1,6 @@
 package no.nav.veilarboppfolging.kafka;
 
-import no.nav.veilarboppfolging.mappers.VeilarbArenaOppfolgingEndret;
+import no.nav.veilarboppfolging.utils.mappers.VeilarbArenaOppfolgingEndret;
 import no.nav.veilarboppfolging.services.Iserv28Service;
 import no.nav.veilarboppfolging.services.OppfolgingsenhetEndringService;
 import no.nav.veilarboppfolging.utils.FunksjonelleMetrikker;

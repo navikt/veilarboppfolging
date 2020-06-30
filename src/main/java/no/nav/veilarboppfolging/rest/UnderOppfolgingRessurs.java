@@ -6,6 +6,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 
+import no.nav.veilarboppfolging.utils.FnrParameterUtil;
 import org.springframework.stereotype.Component;
 
 import io.swagger.annotations.Api;

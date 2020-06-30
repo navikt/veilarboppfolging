@@ -6,6 +6,7 @@ import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
@@ -14,7 +15,7 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Component
+@Repository
 public class AvsluttOppfolgingEndringRepository {
     private final static String KAFKA_TABLE = "KAFKA_AVSLUTT_OPPFOLGING";
     private final static String AKTOR_ID = "AKTOR_ID";

@@ -4,13 +4,14 @@ import no.nav.veilarboppfolging.domain.Oppfolging;
 import no.nav.veilarboppfolging.domain.OppfolgingTable;
 import no.nav.sbl.jdbc.Database;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
 import javax.inject.Inject;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
-@Component
+@Repository
 public class OppfolgingsStatusRepository {
 
     static final String GJELDENE_ESKALERINGSVARSEL = "gjeldende_eskaleringsvarsel";

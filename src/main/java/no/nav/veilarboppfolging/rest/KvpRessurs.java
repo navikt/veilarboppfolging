@@ -8,7 +8,7 @@ import no.nav.brukerdialog.tools.Utils;
 import no.nav.common.auth.SubjectHandler;
 import no.nav.veilarboppfolging.db.KvpRepository;
 import no.nav.veilarboppfolging.domain.Kvp;
-import no.nav.veilarboppfolging.mappers.KvpMapper;
+import no.nav.veilarboppfolging.utils.mappers.KvpMapper;
 import no.nav.veilarboppfolging.rest.domain.KvpDTO;
 import org.springframework.stereotype.Component;
 

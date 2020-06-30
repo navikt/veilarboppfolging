@@ -8,7 +8,7 @@ import no.nav.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.veilarboppfolging.db.OppfolgingsStatusRepository;
 import no.nav.veilarboppfolging.domain.IservMapper;
 import no.nav.veilarboppfolging.domain.OppfolgingTable;
-import no.nav.veilarboppfolging.mappers.VeilarbArenaOppfolgingEndret;
+import no.nav.veilarboppfolging.utils.mappers.VeilarbArenaOppfolgingEndret;
 import no.nav.veilarboppfolging.utils.FunksjonelleMetrikker;
 import no.nav.metrics.utils.MetricsUtils;
 import no.nav.sbl.sql.SqlUtils;
@@ -26,8 +26,8 @@ import java.util.List;
 
 import static java.util.stream.Collectors.toList;
 import static no.nav.common.auth.SubjectHandler.withSubject;
-import static no.nav.veilarboppfolging.services.ArenaUtils.erIserv;
-import static no.nav.veilarboppfolging.services.ArenaUtils.erUnderOppfolging;
+import static no.nav.veilarboppfolging.utils.ArenaUtils.erIserv;
+import static no.nav.veilarboppfolging.utils.ArenaUtils.erUnderOppfolging;
 import static no.nav.veilarboppfolging.services.Iserv28Service.AvslutteOppfolgingResultat.*;
 import static no.nav.sbl.sql.DbConstants.CURRENT_TIMESTAMP;
 

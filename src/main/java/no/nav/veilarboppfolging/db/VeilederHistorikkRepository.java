@@ -6,6 +6,7 @@ import no.nav.sbl.sql.order.OrderClause;
 import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
 import javax.inject.Inject;
 import java.sql.ResultSet;
@@ -13,7 +14,7 @@ import java.sql.SQLException;
 import java.util.List;
 import static no.nav.sbl.jdbc.Database.hentDato;
 
-@Component
+@Repository
 public class VeilederHistorikkRepository {
     private final JdbcTemplate jdbc;
 

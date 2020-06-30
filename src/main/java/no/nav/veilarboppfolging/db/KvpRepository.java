@@ -6,6 +6,7 @@ import no.nav.veilarboppfolging.domain.Kvp;
 import no.nav.sbl.jdbc.Database;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
@@ -17,7 +18,7 @@ import static no.nav.apiapp.util.EnumUtils.valueOfOptional;
 import static no.nav.veilarboppfolging.domain.KodeverkBruker.NAV;
 import static no.nav.sbl.jdbc.Database.hentDato;
 
-@Component
+@Repository
 public class KvpRepository {
 
     private Database database;

@@ -4,6 +4,7 @@ import lombok.SneakyThrows;
 import no.nav.veilarboppfolging.domain.MalData;
 import no.nav.sbl.jdbc.Database;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
@@ -13,7 +14,7 @@ import java.util.List;
 import static no.nav.veilarboppfolging.db.OppfolgingsStatusRepository.AKTOR_ID;
 import static no.nav.veilarboppfolging.db.OppfolgingsStatusRepository.GJELDENDE_MAL;
 
-@Component
+@Repository
 public class MaalRepository {
     private final Database database;
 

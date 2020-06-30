@@ -2,7 +2,6 @@ package no.nav.veilarboppfolging.test;
 
 import no.nav.apiapp.security.PepClient;
 import no.nav.veilarboppfolging.config.DatabaseConfig;
-import no.nav.veilarboppfolging.config.DatabaseRepositoryConfig;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -22,7 +21,6 @@ import org.springframework.transaction.support.TransactionTemplate;
 import javax.sql.DataSource;
 import java.io.IOException;
 
-import static no.nav.veilarboppfolging.config.DatabaseConfig.*;
 import static no.nav.veilarboppfolging.db.testdriver.TestDriver.createInMemoryDatabaseUrl;
 import static no.nav.sbl.dialogarena.test.SystemProperties.setTemporaryProperty;
 import static org.mockito.Mockito.mock;

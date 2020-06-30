@@ -8,6 +8,7 @@ import no.nav.apiapp.feil.Feil;
 import no.nav.apiapp.security.PepClient;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
@@ -20,7 +21,7 @@ import static no.nav.apiapp.feil.FeilType.UGYLDIG_HANDLING;
 import static no.nav.veilarboppfolging.utils.KvpUtils.sjekkTilgangGittKvp;
 
 @Slf4j
-@Component
+@Repository
 public class OppfolgingRepository {
 
     private final PepClient pepClient;

@@ -2,12 +2,14 @@ package no.nav.veilarboppfolging.services;
 
 import no.nav.apiapp.security.PepClient;
 import no.nav.dialogarena.aktor.AktorService;
+import no.nav.veilarboppfolging.client.ArenaOppfolgingService;
+import no.nav.veilarboppfolging.client.OppfolgingsbrukerService;
 import no.nav.veilarboppfolging.db.KvpRepository;
 import no.nav.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.veilarboppfolging.domain.ArenaOppfolging;
 import no.nav.veilarboppfolging.domain.Kvp;
 import no.nav.veilarboppfolging.domain.Oppfolging;
-import no.nav.veilarboppfolging.mappers.VeilarbArenaOppfolging;
+import no.nav.veilarboppfolging.utils.mappers.VeilarbArenaOppfolging;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.junit.Before;

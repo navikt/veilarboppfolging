@@ -4,7 +4,6 @@ import io.vavr.control.Try;
 import no.nav.apiapp.security.PepClient;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.veilarboppfolging.config.DatabaseConfig;
-import no.nav.veilarboppfolging.config.DatabaseRepositoryConfig;
 import no.nav.veilarboppfolging.db.NyeBrukereFeedRepository;
 import no.nav.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.veilarboppfolging.db.OppfolgingsPeriodeRepository;
@@ -22,7 +21,6 @@ import org.springframework.context.annotation.*;
 import javax.sql.DataSource;
 import java.util.Optional;
 
-import static no.nav.veilarboppfolging.config.DatabaseConfig.*;
 import static no.nav.veilarboppfolging.db.testdriver.TestDriver.createInMemoryDatabaseUrl;
 import static no.nav.sbl.dialogarena.test.SystemProperties.setTemporaryProperty;
 import static org.assertj.core.api.Java6Assertions.assertThat;

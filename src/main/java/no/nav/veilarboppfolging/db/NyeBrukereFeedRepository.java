@@ -9,13 +9,14 @@ import no.nav.veilarboppfolging.domain.Oppfolgingsbruker;
 import no.nav.veilarboppfolging.domain.SykmeldtBrukerType;
 import no.nav.sbl.jdbc.Database;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
 import javax.inject.Inject;
 import java.sql.ResultSet;
 import java.util.List;
 
 @Slf4j
-@Component
+@Repository
 public class NyeBrukereFeedRepository {
 
     private final Database database;

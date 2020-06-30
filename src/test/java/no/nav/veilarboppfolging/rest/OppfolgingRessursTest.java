@@ -11,6 +11,7 @@ import no.nav.veilarboppfolging.domain.Fnr;
 import no.nav.veilarboppfolging.domain.SykmeldtBrukerType;
 import no.nav.veilarboppfolging.services.AktiverBrukerService;
 import no.nav.veilarboppfolging.services.OppfolgingService;
+import no.nav.veilarboppfolging.utils.FnrParameterUtil;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;

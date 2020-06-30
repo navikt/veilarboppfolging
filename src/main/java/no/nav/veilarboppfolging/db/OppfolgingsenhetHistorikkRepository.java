@@ -9,6 +9,7 @@ import no.nav.sbl.sql.order.OrderClause;
 import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
 import javax.inject.Inject;
 import java.sql.ResultSet;
@@ -17,7 +18,7 @@ import java.util.List;
 
 import static no.nav.sbl.jdbc.Database.hentDato;
 
-@Component
+@Repository
 public class OppfolgingsenhetHistorikkRepository {
     private final JdbcTemplate jdbc;
 

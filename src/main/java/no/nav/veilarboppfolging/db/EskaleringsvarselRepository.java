@@ -4,6 +4,7 @@ import lombok.SneakyThrows;
 import no.nav.veilarboppfolging.domain.EskaleringsvarselData;
 import no.nav.sbl.jdbc.Database;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
@@ -14,7 +15,7 @@ import static no.nav.veilarboppfolging.db.OppfolgingsStatusRepository.AKTOR_ID;
 import static no.nav.veilarboppfolging.db.OppfolgingsStatusRepository.GJELDENE_ESKALERINGSVARSEL;
 import static no.nav.sbl.jdbc.Database.hentDato;
 
-@Component
+@Repository
 public class EskaleringsvarselRepository {
 
     private final Database database;

@@ -5,6 +5,7 @@ import lombok.SneakyThrows;
 import no.nav.veilarboppfolging.domain.Tilordning;
 import no.nav.sbl.jdbc.Database;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
 import javax.inject.Inject;
 import java.sql.ResultSet;
@@ -13,7 +14,7 @@ import java.util.Optional;
 
 import static no.nav.veilarboppfolging.db.OppfolgingsStatusRepository.*;
 
-@Component
+@Repository
 public class VeilederTilordningerRepository {
 
     private final Database db;
