@@ -7,8 +7,15 @@ import no.nav.apiapp.config.ApiAppConfigurator;
 import no.nav.brukerdialog.security.domain.IdentType;
 import no.nav.brukerdialog.security.oidc.SystemUserTokenProvider;
 import no.nav.brukerdialog.security.oidc.provider.AzureADB2CConfig;
+import no.nav.common.abac.Pep;
+import no.nav.common.abac.VeilarbPep;
+import no.nav.common.abac.audit.SpringAuditRequestInfoSupplier;
 import no.nav.common.auth.SecurityLevel;
 import no.nav.common.featuretoggle.UnleashService;
+import no.nav.common.sts.NaisSystemUserTokenProvider;
+import no.nav.common.sts.SystemUserTokenProvider;
+import no.nav.common.utils.Credentials;
+import no.nav.common.utils.NaisUtils;
 import no.nav.dialogarena.aktor.AktorConfig;
 import no.nav.veilarboppfolging.db.OppfolgingFeedRepository;
 import no.nav.veilarboppfolging.db.OppfolgingsenhetHistorikkRepository;
@@ -71,25 +78,6 @@ public class ApplicationConfig {
     public static final String KAFKA_BROKERS_URL_PROPERTY = "KAFKA_BROKERS_URL";
     public static final String APP_ENVIRONMENT_NAME = "APP_ENVIRONMENT_NAME";
 
-
-    @Inject
-    private DataSource dataSource;
-
-    @Inject
-    private JdbcTemplate jdbcTemplate;
-
-    @Inject
-    private OppfolgingsenhetHistorikkRepository oppfolgingsenhetHistorikkRepository;
-
-    @Inject
-    public SystemUserTokenProvider systemUserTokenProvider;
-
-    @Inject
-    public OppfolgingStatusKafkaProducer oppfolgingStatusKafkaProducer;
-
-    @Inject
-    public OppfolgingFeedRepository oppfolgingFeedRepository;
-
     @Bean
     public UnleashService unleashService() {
         return new UnleashService(resolveFromEnvironment());
@@ -100,6 +88,19 @@ public class ApplicationConfig {
         return Executors.newScheduledThreadPool(5);
     }
 
+    @Bean
+    public SystemUserTokenProvider systemUserTokenProvider(EnvironmentProperties properties, Credentials serviceUserCredentials) {
+        return new NaisSystemUserTokenProvider(properties.getStsDiscoveryUrl(), serviceUserCredentials.username, serviceUserCredentials.password);
+    }
+
+    @Bean
+    public Pep veilarbPep(EnvironmentProperties properties) {
+        Credentials serviceUserCredentials = NaisUtils.getCredentials("service_user");
+        return new VeilarbPep(
+                properties.getAbacUrl(), serviceUserCredentials.username,
+                serviceUserCredentials.password, new SpringAuditRequestInfoSupplier()
+        );
+    }
 
 //    setProperty(OPPFOLGING_FEED_BRUKERTILGANG_PROPERTY, "srvveilarbportefolje,srvpam-cv-api", PUBLIC);
 //    setProperty(AVSLUTTETOPPFOLGING_FEED_BRUKERTILGANG_PROPERTY, "srvveilarbdialog,srvveilarbaktivitet,srvveilarbjobbsoke", PUBLIC);
@@ -112,30 +113,4 @@ public class ApplicationConfig {
 //        ServletUtil.leggTilServlet(servletContext, new PubliserHistorikkServlet(oppfolgingStatusKafkaProducer), "/internal/publiser_oppfolging_status_historikk");
 //        ServletUtil.leggTilServlet(servletContext, new PubliserOppfolgingStatusServlet(oppfolgingStatusKafkaProducer), "/internal/publiser_oppfolging_status");
 
-    @Override
-    public void configure(ApiAppConfigurator apiAppConfigurator) {
-        String discoveryUrl = getRequiredProperty("AAD_DISCOVERY_URL");
-        String clientId = getRequiredProperty("VEILARBLOGIN_AAD_CLIENT_ID");
-
-        AzureADB2CConfig config = AzureADB2CConfig.builder()
-                .discoveryUrl(discoveryUrl)
-                .expectedAudience(clientId)
-                .identType(IdentType.InternBruker)
-                .tokenName(AZUREADB2C_OIDC_COOKIE_NAME_FSS)
-                .build();
-
-        SecurityTokenServiceOidcProvider securityTokenServiceOidcProvider = new SecurityTokenServiceOidcProvider(SecurityTokenServiceOidcProviderConfig.builder()
-                .discoveryUrl(getRequiredProperty(STS_OIDC_CONFIGURATION_URL_PROPERTY))
-                .build());
-
-        apiAppConfigurator
-                .sts()
-                .validateAzureAdExternalUserTokens(SecurityLevel.Level4)
-                .validateAzureAdInternalUsersTokens(config)
-                .customSecurityLevelForExternalUsers(SecurityLevel.Level3, "niva3")
-                .issoLogin()
-                .oidcProvider(securityTokenServiceOidcProvider)
-                .selfTests(new OppfolgingStatusTopicHelsesjekk(createKafkaProducer()));
-
-    }
 }

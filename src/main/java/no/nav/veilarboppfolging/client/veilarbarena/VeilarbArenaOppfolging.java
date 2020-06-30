@@ -1,4 +1,4 @@
-package no.nav.veilarboppfolging.utils.mappers;
+package no.nav.veilarboppfolging.client.veilarbarena;
 
 import lombok.*;
 import lombok.experimental.Accessors;

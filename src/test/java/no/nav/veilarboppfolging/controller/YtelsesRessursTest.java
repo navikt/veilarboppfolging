@@ -10,8 +10,6 @@ import no.nav.veilarboppfolging.controller.domain.Vedtak;
 import no.nav.veilarboppfolging.controller.domain.YtelserResponse;
 import no.nav.veilarboppfolging.controller.domain.Ytelseskontrakt;
 import no.nav.veilarboppfolging.controller.domain.YtelseskontraktResponse;
-import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolgingService;
-import no.nav.veilarboppfolging.client.YtelseskontraktService;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;

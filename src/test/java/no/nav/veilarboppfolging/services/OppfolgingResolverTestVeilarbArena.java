@@ -2,7 +2,7 @@ package no.nav.veilarboppfolging.services;
 
 import no.nav.veilarboppfolging.domain.ArenaOppfolging;
 import no.nav.veilarboppfolging.domain.Oppfolging;
-import no.nav.veilarboppfolging.utils.mappers.VeilarbArenaOppfolging;
+import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 import org.junit.Test;
 
 import java.util.Optional;

@@ -15,19 +15,17 @@ spec:
   port: 8080
   prometheus:
     enabled: true
-    path: veilarboppfolging/internal/metrics
+    path: veilarboppfolging/internal/prometheus
   liveness:
     path: veilarboppfolging/internal/isAlive
-    port: 8080
-    initialDelay: 20
+    initialDelay: 30
   readiness:
     path: veilarboppfolging/internal/isReady
-    port: 8080
-    initialDelay: 20
+    initialDelay: 30
   replicas:
     min: 2
     max: 4
-    cpuThresholdPercentage: 50
+    cpuThresholdPercentage: 75
   resources:
     limits:
       cpu: "2"

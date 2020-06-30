@@ -1,6 +1,6 @@
 package no.nav.veilarboppfolging.kafka;
 
-import no.nav.veilarboppfolging.utils.mappers.VeilarbArenaOppfolging;
+import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;

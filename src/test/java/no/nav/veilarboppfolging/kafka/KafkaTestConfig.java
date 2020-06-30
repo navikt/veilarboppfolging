@@ -1,6 +1,6 @@
 package no.nav.veilarboppfolging.kafka;
 
-import no.nav.veilarboppfolging.utils.mappers.VeilarbArenaOppfolging;
+import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 import no.nav.veilarboppfolging.services.Iserv28Service;
 import no.nav.veilarboppfolging.services.OppfolgingsenhetEndringService;
 import org.apache.kafka.common.serialization.StringDeserializer;

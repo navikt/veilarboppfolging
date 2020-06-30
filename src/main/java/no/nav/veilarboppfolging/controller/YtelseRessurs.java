@@ -8,8 +8,6 @@ import no.nav.veilarboppfolging.utils.mappers.OppfolgingMapper;
 import no.nav.veilarboppfolging.utils.mappers.YtelseskontraktMapper;
 import no.nav.veilarboppfolging.controller.domain.YtelserResponse;
 import no.nav.veilarboppfolging.controller.domain.YtelseskontraktResponse;
-import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolgingService;
-import no.nav.veilarboppfolging.client.YtelseskontraktService;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;

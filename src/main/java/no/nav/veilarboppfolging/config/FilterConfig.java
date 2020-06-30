@@ -18,6 +18,8 @@ import static no.nav.common.utils.EnvironmentUtils.requireApplicationName;
 @Configuration
 public class FilterConfig {
 
+    // TODO: Missing config for Open AM STS and NAIS STS
+
     private OidcAuthenticatorConfig openAmAuthConfig(EnvironmentProperties properties) {
         return new OidcAuthenticatorConfig()
                 .withDiscoveryUrl(properties.getOpenAmDiscoveryUrl())
