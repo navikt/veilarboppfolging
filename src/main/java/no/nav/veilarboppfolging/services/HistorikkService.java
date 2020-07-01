@@ -2,20 +2,16 @@ package no.nav.veilarboppfolging.services;
 
 import lombok.SneakyThrows;
 import lombok.val;
-import no.nav.apiapp.security.PepClient;
 import no.nav.common.featuretoggle.UnleashService;
-import no.nav.dialogarena.aktor.AktorService;
 import no.nav.veilarboppfolging.db.KvpRepository;
 import no.nav.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.veilarboppfolging.db.OppfolgingsenhetHistorikkRepository;
 import no.nav.veilarboppfolging.db.VeilederHistorikkRepository;
 import no.nav.veilarboppfolging.domain.*;
 import no.nav.veilarboppfolging.utils.KvpUtils;
-import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.inject.Inject;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -170,7 +166,7 @@ public class HistorikkService {
         if(unleashService.isEnabled("veilarboppfolging.tildel_veileder")) {
             veilederTilordningerInnstillingHistorikk =  veilederHistorikkRepository.hentTilordnedeVeiledereForAktorId(aktorId).stream()
                     .map(this::tilDTO)
-                    .filter((historikk) -> KvpUtils.sjekkTilgangGittKvp(pepClient, kvpHistorikk, historikk::getDato));
+                    .filter((historikk) -> KvpUtils.sjekkTilgangGittKvp(authService, kvpHistorikk, historikk::getDato));
         }
 
         Stream<InnstillingsHistorikk> kvpInnstillingHistorikk = kvpHistorikk.stream()
@@ -184,17 +180,17 @@ public class HistorikkService {
         Stream<InnstillingsHistorikk> manuellInnstillingHistorikk = oppfolgingRepository.hentManuellHistorikk(aktorId)
                 .stream()
                 .map(this::tilDTO)
-                .filter((historikk) -> KvpUtils.sjekkTilgangGittKvp(pepClient, kvpHistorikk, historikk::getDato));
+                .filter((historikk) -> KvpUtils.sjekkTilgangGittKvp(authService, kvpHistorikk, historikk::getDato));
 
         Stream <InnstillingsHistorikk> eskaleringInnstillingHistorikk = oppfolgingRepository.hentEskaleringhistorikk(aktorId).stream()
                 .map(this::tilDTO)
                 .flatMap(List::stream)
-                .filter((historikk) -> KvpUtils.sjekkTilgangGittKvp(pepClient, kvpHistorikk, historikk::getDato));
+                .filter((historikk) -> KvpUtils.sjekkTilgangGittKvp(authService, kvpHistorikk, historikk::getDato));
 
         Stream <InnstillingsHistorikk> enhetEndringHistorikk = oppfolgingsenhetHistorikkRepository.hentOppfolgingsenhetEndringerForAktorId(aktorId)
                 .stream()
                 .map(this::tilDTO)
-                .filter((historikk) -> KvpUtils.sjekkTilgangGittKvp(pepClient, kvpHistorikk, historikk::getDato));
+                .filter((historikk) -> KvpUtils.sjekkTilgangGittKvp(authService, kvpHistorikk, historikk::getDato));
 
 
         return Stream.of(

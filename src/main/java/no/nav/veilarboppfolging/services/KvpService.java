@@ -22,6 +22,8 @@ public class KvpService {
 
     static final String ESKALERING_AVSLUTTET_FORDI_KVP_BLE_AVSLUTTET = "Eskalering avsluttet fordi KVP ble avsluttet";
 
+    private final MetricsService metricsService;
+
     private final KvpRepository kvpRepository;
 
     private final OppfolgingClient oppfolgingClient;
@@ -33,12 +35,14 @@ public class KvpService {
     private final AuthService authService;
 
     public KvpService(
+            MetricsService metricsService,
             KvpRepository kvpRepository,
             OppfolgingClient oppfolgingClient,
             OppfolgingsStatusRepository oppfolgingsStatusRepository,
             EskaleringsvarselRepository eskaleringsvarselRepository,
             AuthService authService
     ) {
+        this.metricsService = metricsService;
         this.kvpRepository = kvpRepository;
         this.oppfolgingClient = oppfolgingClient;
         this.oppfolgingsStatusRepository = oppfolgingsStatusRepository;
@@ -75,7 +79,7 @@ public class KvpService {
                 authService.getInnloggetVeilederIdent(),
                 begrunnelse);
 
-        MetricsService.startKvp();
+        metricsService.startKvp();
     }
 
     @SneakyThrows
@@ -83,6 +87,7 @@ public class KvpService {
         String aktorId = authService.getAktorIdOrThrow(fnr);
 
         authService.sjekkLesetilgangMedAktorId(aktorId);
+
         if(!authService.harTilgangTilEnhet(oppfolgingClient.finnEnhetId(fnr))){
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         }
@@ -114,7 +119,7 @@ public class KvpService {
                 begrunnelse,
                 kodeverkBruker);
 
-        MetricsService.stopKvp();
+        metricsService.stopKvp();
     }
 
     Kvp gjeldendeKvp(String aktorId) {

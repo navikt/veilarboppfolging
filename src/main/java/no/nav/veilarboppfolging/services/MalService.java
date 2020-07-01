@@ -1,37 +1,44 @@
 package no.nav.veilarboppfolging.services;
 
 import lombok.SneakyThrows;
-import no.nav.apiapp.feil.Feil;
-import no.nav.apiapp.security.PepClient;
 import no.nav.veilarboppfolging.db.KvpRepository;
 import no.nav.veilarboppfolging.domain.Kvp;
 import no.nav.veilarboppfolging.domain.MalData;
 import no.nav.veilarboppfolging.services.OppfolgingResolver.OppfolgingResolverDependencies;
 import no.nav.veilarboppfolging.utils.KvpUtils;
-import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
-import javax.inject.Inject;
 import java.util.List;
 
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
-import static no.nav.apiapp.feil.FeilType.INGEN_TILGANG;
 
 @Service
 public class MalService {
 
-    @Inject
-    private OppfolgingResolverDependencies oppfolgingResolverDependencies;
+    private final MetricsService metricsService;
 
-    @Inject
-    private PepClient pepClient;
+    private final OppfolgingResolverDependencies oppfolgingResolverDependencies;
 
-    @Inject
-    private KvpRepository kvpRepository;
+    private final KvpRepository kvpRepository;
 
-    @Inject
-    AuthService authService;
+    private final AuthService authService;
+
+    @Autowired
+    public MalService(
+            MetricsService metricsService,
+            OppfolgingResolverDependencies oppfolgingResolverDependencies,
+            KvpRepository kvpRepository,
+            AuthService authService
+    ) {
+        this.metricsService = metricsService;
+        this.oppfolgingResolverDependencies = oppfolgingResolverDependencies;
+        this.kvpRepository = kvpRepository;
+        this.authService = authService;
+    }
 
     public MalData hentMal(String fnr) {
         authService.sjekkLesetilgangMedFnr(fnr);
@@ -44,7 +51,7 @@ public class MalService {
         }
 
         List<Kvp> kvpList = kvpRepository.hentKvpHistorikk(resolver.getAktorId());
-        if (!KvpUtils.sjekkTilgangGittKvp(pepClient, kvpList, gjeldendeMal::getDato)) {
+        if (!KvpUtils.sjekkTilgangGittKvp(authService, kvpList, gjeldendeMal::getDato)) {
             return new MalData();
         }
         return gjeldendeMal;
@@ -57,7 +64,7 @@ public class MalService {
         List<MalData> malList = resolver.getMalList();
 
         List<Kvp> kvpList = kvpRepository.hentKvpHistorikk(resolver.getAktorId());
-        return malList.stream().filter(mal -> KvpUtils.sjekkTilgangGittKvp(pepClient, kvpList, mal::getDato)).collect(toList());
+        return malList.stream().filter(mal -> KvpUtils.sjekkTilgangGittKvp(authService, kvpList, mal::getDato)).collect(toList());
     }
 
     public MalData oppdaterMal(String mal, String fnr, String endretAvVeileder) {
@@ -69,16 +76,13 @@ public class MalService {
         ofNullable(kvp).ifPresent(this::sjekkEnhetTilgang);
 
         MalData malData = resolver.oppdaterMal(mal, endretAvVeileder);
-        MetricsService.oppdatertMittMal(malData, resolver.getMalList().size());
+        metricsService.oppdatertMittMal(malData, resolver.getMalList().size());
         return malData;
     }
 
-
-
-    @SneakyThrows
     private void sjekkEnhetTilgang(Kvp kvp) {
-        if(!pepClient.harTilgangTilEnhet(kvp.getEnhet())) {
-            throw new Feil(INGEN_TILGANG);
+        if (!authService.harTilgangTilEnhet(kvp.getEnhet())) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         }
     }
 

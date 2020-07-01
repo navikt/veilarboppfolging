@@ -2,6 +2,7 @@ package no.nav.veilarboppfolging.utils;
 
 import lombok.SneakyThrows;
 import no.nav.veilarboppfolging.domain.Kvp;
+import no.nav.veilarboppfolging.services.AuthService;
 
 import java.util.Date;
 import java.util.List;
@@ -11,15 +12,15 @@ import static java.util.Collections.singletonList;
 
 public class KvpUtils {
 
-    public static boolean sjekkTilgangGittKvp(PepClient pepClient, Kvp kvp, Supplier<Date> dateSupplier) {
-        return kvp == null || sjekkTilgangGittKvp(pepClient, singletonList(kvp), dateSupplier);
+    public static boolean sjekkTilgangGittKvp(AuthService authService, Kvp kvp, Supplier<Date> dateSupplier) {
+        return kvp == null || sjekkTilgangGittKvp(authService, singletonList(kvp), dateSupplier);
     }
 
     @SneakyThrows
-    public static boolean sjekkTilgangGittKvp(PepClient pepClient, List<Kvp> kvpList, Supplier<Date> dateSupplier) {
+    public static boolean sjekkTilgangGittKvp(AuthService authService, List<Kvp> kvpList, Supplier<Date> dateSupplier) {
         for (Kvp kvp : kvpList) {
             if (between(kvp.getOpprettetDato(), kvp.getAvsluttetDato(), dateSupplier.get())) {
-                return pepClient.harTilgangTilEnhet(kvp.getEnhet());
+                return authService.harTilgangTilEnhet(kvp.getEnhet());
             }
         }
         return true;
