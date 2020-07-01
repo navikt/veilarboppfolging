@@ -1,72 +1,64 @@
 package no.nav.veilarboppfolging.controller;
 
-
-import io.swagger.annotations.Api;
-import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.apiapp.security.PepClient;
-import no.nav.dialogarena.aktor.AktorService;
+import no.nav.common.client.norg2.Norg2Client;
+import no.nav.common.featuretoggle.UnleashService;
+import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
 import no.nav.veilarboppfolging.db.VeilederTilordningerRepository;
-import no.nav.veilarboppfolging.domain.AktorId;
 import no.nav.veilarboppfolging.domain.Oppfolgingsenhet;
-import no.nav.veilarboppfolging.services.AutorisasjonService;
+import no.nav.veilarboppfolging.services.AuthService;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 import no.nav.veilarboppfolging.controller.domain.OppfolgingEnhetMedVeileder;
-import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
-import no.nav.sbl.featuretoggle.unleash.UnleashService;
-import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.ws.rs.*;
 import java.util.Optional;
 
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-import static no.nav.veilarboppfolging.utils.FnrUtils.getAktorIdOrElseThrow;
-
 @Slf4j
-@Component
-@Api(value = "Oppfølging")
-@Path("/person/{fnr}")
-@Produces(APPLICATION_JSON)
+@RestController
+@RequestMapping("/api/person")
 public class ArenaOppfolgingController {
 
-    private final ArenaOppfolgingService arenaOppfolgingService;
-    private final OrganisasjonEnhetService organisasjonEnhetService;
+    private final AuthService authService;
+
+    private final Norg2Client norg2Client;
+
     private final VeilederTilordningerRepository veilederTilordningerRepository;
-    private final OppfolgingsbrukerService oppfolgingsbrukerService;
+
+    private final VeilarbarenaClient veilarbarenaClient;
+
     private final UnleashService unleash;
 
-    public ArenaOppfolgingController(
-            ArenaOppfolgingService arenaOppfolgingService,
-            PepClient pepClient,
-            OrganisasjonEnhetService organisasjonEnhetService,
-            AktorService aktorService,
+    @Autowired
+    public ArenaOppfolgingController (
+            AuthService authService,
+            Norg2Client norg2Client,
             VeilederTilordningerRepository veilederTilordningerRepository,
-            OppfolgingsbrukerService oppfolgingsbrukerService,
+            VeilarbarenaClient veilarbarenaClient,
             UnleashService unleash
     ) {
-        this.arenaOppfolgingService = arenaOppfolgingService;
-        this.pepClient = pepClient;
-        this.organisasjonEnhetService = organisasjonEnhetService;
-        this.aktorService = aktorService;
+        this.authService = authService;
+        this.norg2Client = norg2Client;
         this.veilederTilordningerRepository = veilederTilordningerRepository;
-        this.oppfolgingsbrukerService = oppfolgingsbrukerService;
+        this.veilarbarenaClient = veilarbarenaClient;
         this.unleash = unleash;
     }
 
     /*
      API used by veilarbmaofs. Contains only the necessary information
      */
-    @GET
-    @Path("/oppfolgingsstatus")
-    public OppfolgingEnhetMedVeileder getOppfolginsstatus(@PathParam("fnr") String fnr) throws PepException {
+    @GetMapping("/{fnr}/oppfolgingsstatus")
+    public OppfolgingEnhetMedVeileder getOppfolginsstatus(@PathVariable("fnr") String fnr) {
 
-        AktorId aktorId = getAktorIdOrElseThrow(aktorService, fnr);
-
-        pepClient.sjekkLesetilgangTilAktorId(aktorId.getAktorId());
+        authService.sjekkLesetilgangMedFnr(fnr);
 
         OppfolgingEnhetMedVeileder res;
         if(unleash.isEnabled("veilarboppfolging.oppfolgingsstatus.fra.veilarbarena")) {
-            VeilarbArenaOppfolging veilarbArenaOppfolging = oppfolgingsbrukerService.hentOppfolgingsbruker(fnr).orElseThrow(() -> new NotFoundException("Bruker ikke funnet"));
+            VeilarbArenaOppfolging veilarbArenaOppfolging = veilarbarenaClient.hentOppfolgingsbruker(fnr).orElseThrow(() -> new NotFoundException("Bruker ikke funnet"));
             res = new OppfolgingEnhetMedVeileder()
                     .setServicegruppe(veilarbArenaOppfolging.getKvalifiseringsgruppekode())
                     .setFormidlingsgruppe(veilarbArenaOppfolging.getFormidlingsgruppekode())
@@ -74,8 +66,8 @@ public class ArenaOppfolgingController {
                     .setHovedmaalkode(veilarbArenaOppfolging.getHovedmaalkode());
 
         } else {
-            no.nav.veilarboppfolging.domain.ArenaOppfolging arenaData = arenaOppfolgingService.hentArenaOppfolging(fnr);
-            Optional<VeilarbArenaOppfolging> oppfolgingsbrukerStatus = oppfolgingsbrukerService.hentOppfolgingsbruker(fnr);
+            no.nav.veilarboppfolging.domain.ArenaOppfolging arenaData = veilarbarenaClient.getArenaOppfolgingsstatus(fnr);
+            Optional<VeilarbArenaOppfolging> oppfolgingsbrukerStatus = veilarbarenaClient.hentOppfolgingsbruker(fnr);
             res = new OppfolgingEnhetMedVeileder()
                 .setServicegruppe(arenaData.getServicegruppe())
                 .setFormidlingsgruppe(arenaData.getFormidlingsgruppe())
@@ -83,20 +75,26 @@ public class ArenaOppfolgingController {
                 .setHovedmaalkode(oppfolgingsbrukerStatus.map(VeilarbArenaOppfolging::getHovedmaalkode).orElse(null));
         }
 
-        if (AutorisasjonService.erInternBruker()) {
-            String brukersAktoerId = aktorService.getAktorId(fnr)
-                    .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktør for fnr: " + fnr));
-
+        if (AuthService.erInternBruker()) {
+            String brukersAktoerId = authService.getAktorIdOrThrow(fnr);
             log.info("Henter tilordning for bruker med aktørId {}", brukersAktoerId);
             String veilederIdent = veilederTilordningerRepository.hentTilordningForAktoer(brukersAktoerId);
             res.setVeilederId(veilederIdent);
         }
+
         return res;
     }
 
     private Oppfolgingsenhet hentEnhet(String oppfolgingsenhetId) {
-        Optional<String> enhetNavn = Try.of(() -> organisasjonEnhetService.hentEnhet(oppfolgingsenhetId).getNavn()).toJavaOptional();
-        return new Oppfolgingsenhet().withEnhetId(oppfolgingsenhetId).withNavn(enhetNavn.orElse(""));
+        Oppfolgingsenhet enhet = new Oppfolgingsenhet()
+                .withEnhetId(oppfolgingsenhetId);
+
+        try {
+            return enhet.withNavn(norg2Client.hentEnhet(oppfolgingsenhetId).getNavn());
+        } catch (Exception e) {
+            log.warn("Fant ikke navn på enhet", e);
+            return enhet.withNavn("");
+        }
     }
 
 }

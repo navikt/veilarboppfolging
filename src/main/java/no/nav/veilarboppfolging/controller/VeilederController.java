@@ -5,7 +5,7 @@ import no.nav.dialogarena.aktor.AktorService;
 import no.nav.veilarboppfolging.db.VeilederTilordningerRepository;
 import no.nav.veilarboppfolging.domain.AktorId;
 import no.nav.veilarboppfolging.controller.domain.Veileder;
-import no.nav.veilarboppfolging.services.AutorisasjonService;
+import no.nav.veilarboppfolging.services.AuthService;
 import org.springframework.stereotype.Component;
 
 import javax.ws.rs.GET;
@@ -20,25 +20,25 @@ import static no.nav.veilarboppfolging.utils.FnrUtils.getAktorIdOrElseThrow;
 @Path("/person/{fnr}")
 @Produces(APPLICATION_JSON)
 @Api(value = "Veileder")
-public class VeilederRessurs {
+public class VeilederController {
 
     private AktorService aktorService;
     private VeilederTilordningerRepository veilederTilordningerRepository;
-    private AutorisasjonService autorisasjonService;
+    private AuthService authService;
 
-    public VeilederRessurs(AktorService aktorService,
-                           VeilederTilordningerRepository veilederTilordningerRepository,
-                           AutorisasjonService autorisasjonService) {
+    public VeilederController(AktorService aktorService,
+                              VeilederTilordningerRepository veilederTilordningerRepository,
+                              AuthService authService) {
         this.aktorService = aktorService;
         this.veilederTilordningerRepository = veilederTilordningerRepository;
-        this.autorisasjonService = autorisasjonService;
+        this.authService = authService;
     }
 
     @GET
     @Path("/veileder")
     public Veileder getVeileder(@PathParam("fnr") String fnr) {
-        autorisasjonService.skalVereInternBruker();
-        autorisasjonService.sjekkLesetilgangTilBruker(fnr);
+        authService.skalVereInternBruker();
+        authService.sjekkLesetilgangMedFnr(fnr);
 
         AktorId aktorId = getAktorIdOrElseThrow(aktorService, fnr);
         String veilederIdent = veilederTilordningerRepository.hentTilordningForAktoer(aktorId.getAktorId());

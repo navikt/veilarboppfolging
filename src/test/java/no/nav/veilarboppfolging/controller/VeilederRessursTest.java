@@ -3,7 +3,7 @@ package no.nav.veilarboppfolging.controller;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.veilarboppfolging.db.VeilederTilordningerRepository;
 import no.nav.veilarboppfolging.controller.domain.Veileder;
-import no.nav.veilarboppfolging.services.AutorisasjonService;
+import no.nav.veilarboppfolging.services.AuthService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -21,7 +21,7 @@ import static org.mockito.Mockito.when;
 public class VeilederRessursTest {
 
     @InjectMocks
-    private VeilederRessurs veilederRessurs;
+    private VeilederController veilederController;
 
     @Mock
     private VeilederTilordningerRepository veilederTilordningerRepository;
@@ -30,7 +30,7 @@ public class VeilederRessursTest {
     private AktorService aktorServiceMock;
 
     @Mock
-    private AutorisasjonService autorisasjonService;
+    private AuthService authService;
 
     @Test
     public void getVeilederSkalReturnereVeileder() {
@@ -39,7 +39,7 @@ public class VeilederRessursTest {
         when(veilederTilordningerRepository.hentTilordningForAktoer(anyString()))
                 .thenReturn(forventetIdent);
 
-        final Veileder veileder = veilederRessurs.getVeileder("fnr");
+        final Veileder veileder = veilederController.getVeileder("fnr");
         assertNotNull(veileder);
         assertNotNull(veileder.getVeilederident());
         assertThat(veileder.getVeilederident(), is(forventetIdent));

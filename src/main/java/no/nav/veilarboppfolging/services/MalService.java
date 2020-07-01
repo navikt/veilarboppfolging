@@ -31,10 +31,10 @@ public class MalService {
     private KvpRepository kvpRepository;
 
     @Inject
-    AutorisasjonService autorisasjonService;
+    AuthService authService;
 
     public MalData hentMal(String fnr) {
-        autorisasjonService.sjekkLesetilgangTilBruker(fnr);
+        authService.sjekkLesetilgangMedFnr(fnr);
 
         OppfolgingResolver resolver = OppfolgingResolver.lagOppfolgingResolver(fnr, oppfolgingResolverDependencies);
         MalData gjeldendeMal = resolver.getOppfolging().getGjeldendeMal();
@@ -51,7 +51,7 @@ public class MalService {
     }
 
     public List<MalData> hentMalList(String fnr) {
-        autorisasjonService.sjekkLesetilgangTilBruker(fnr);
+        authService.sjekkLesetilgangMedFnr(fnr);
 
         OppfolgingResolver resolver = OppfolgingResolver.lagOppfolgingResolver(fnr, oppfolgingResolverDependencies);
         List<MalData> malList = resolver.getMalList();
@@ -61,7 +61,7 @@ public class MalService {
     }
 
     public MalData oppdaterMal(String mal, String fnr, String endretAvVeileder) {
-        autorisasjonService.sjekkLesetilgangTilBruker(fnr);
+        authService.sjekkLesetilgangMedFnr(fnr);
 
         OppfolgingResolver resolver = OppfolgingResolver.lagOppfolgingResolver(fnr, oppfolgingResolverDependencies);
 

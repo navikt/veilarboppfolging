@@ -21,13 +21,13 @@ import no.nav.veilarboppfolging.services.OppfolgingService;
 @Path("")
 @Api(value = "UnderOppfølging")
 @Produces(APPLICATION_JSON)
-public class UnderOppfolgingRessurs {
+public class UnderOppfolgingController {
 
     private final OppfolgingService oppfolgingService;
 
     private final FnrParameterUtil fnrParameterUtil;
 
-    public UnderOppfolgingRessurs(OppfolgingService oppfolgingService, FnrParameterUtil fnrParameterUtil) {
+    public UnderOppfolgingController(OppfolgingService oppfolgingService, FnrParameterUtil fnrParameterUtil) {
         this.oppfolgingService = oppfolgingService;
         this.fnrParameterUtil = fnrParameterUtil;
     }

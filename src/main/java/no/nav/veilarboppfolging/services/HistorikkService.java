@@ -3,6 +3,7 @@ package no.nav.veilarboppfolging.services;
 import lombok.SneakyThrows;
 import lombok.val;
 import no.nav.apiapp.security.PepClient;
+import no.nav.common.featuretoggle.UnleashService;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.veilarboppfolging.db.KvpRepository;
 import no.nav.veilarboppfolging.db.OppfolgingRepository;

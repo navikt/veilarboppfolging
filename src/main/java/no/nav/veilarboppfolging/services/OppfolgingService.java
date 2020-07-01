@@ -4,6 +4,7 @@ import lombok.SneakyThrows;
 import lombok.val;
 import no.nav.apiapp.feil.IngenTilgang;
 import no.nav.apiapp.security.PepClient;
+import no.nav.common.featuretoggle.UnleashService;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.veilarboppfolging.db.OppfolgingsStatusRepository;
@@ -39,7 +40,7 @@ public class OppfolgingService {
     private final ManuellStatusService manuellStatusService;
     private final OppfolgingsbrukerService oppfolgingsbrukerService;
     private final UnleashService unleashService;
-    private final AutorisasjonService autorisasjonService;
+    private final AuthService authService;
     private final OppfolgingStatusKafkaProducer kafkaProducer;
 
     @Inject
@@ -52,7 +53,7 @@ public class OppfolgingService {
             ManuellStatusService manuellStatusService,
             OppfolgingsbrukerService oppfolgingsbrukerService,
             UnleashService unleashService,
-            AutorisasjonService autorisasjonService,
+            AuthService authService,
             OppfolgingStatusKafkaProducer kafkaProducer) {
         this.oppfolgingResolverDependencies = oppfolgingResolverDependencies;
         this.aktorService = aktorService;
@@ -62,13 +63,13 @@ public class OppfolgingService {
         this.manuellStatusService = manuellStatusService;
         this.oppfolgingsbrukerService = oppfolgingsbrukerService;
         this.unleashService = unleashService;
-        this.autorisasjonService = autorisasjonService;
+        this.authService = authService;
         this.kafkaProducer = kafkaProducer;
     }
 
     @SneakyThrows
     public OppfolgingResolver sjekkTilgangTilEnhet(String fnr){
-        autorisasjonService.sjekkLesetilgangTilBruker(fnr);
+        authService.sjekkLesetilgangMedFnr(fnr);
 
         val resolver = OppfolgingResolver.lagOppfolgingResolver(fnr, oppfolgingResolverDependencies);
 
@@ -83,7 +84,7 @@ public class OppfolgingService {
     @Transactional
     public OppfolgingStatusData hentOppfolgingsStatus(String fnr) {
 
-        autorisasjonService.sjekkLesetilgangTilBruker(fnr);
+        authService.sjekkLesetilgangMedFnr(fnr);
 
         val resolver = OppfolgingResolver.lagOppfolgingResolver(fnr, oppfolgingResolverDependencies);
 
@@ -104,7 +105,7 @@ public class OppfolgingService {
     }
 
     public OppfolgingStatusData hentAvslutningStatus(String fnr) {
-        autorisasjonService.sjekkLesetilgangTilBruker(fnr);
+        authService.sjekkLesetilgangMedFnr(fnr);
         val resolver = OppfolgingResolver.lagOppfolgingResolver(fnr, oppfolgingResolverDependencies);
         return getOppfolgingStatusDataMedAvslutningStatus(fnr, resolver);
     }
@@ -173,7 +174,7 @@ public class OppfolgingService {
 
     @SneakyThrows
     public VeilederTilgang hentVeilederTilgang(String fnr) {
-        autorisasjonService.sjekkLesetilgangTilBruker(fnr);
+        authService.sjekkLesetilgangMedFnr(fnr);
         if(unleashService.isEnabled("veilarboppfolging.hentVeilederTilgang.fra.veilarbarena")) {
             Optional<VeilarbArenaOppfolging> arenaBruker = oppfolgingsbrukerService.hentOppfolgingsbruker(fnr);
             String oppfolgingsenhet = arenaBruker.map(VeilarbArenaOppfolging::getNav_kontor).orElse(null);
@@ -194,7 +195,7 @@ public class OppfolgingService {
     }
 
     public UnderOppfolgingDTO oppfolgingData(String fnr) {
-        autorisasjonService.sjekkLesetilgangTilBruker(fnr);
+        authService.sjekkLesetilgangMedFnr(fnr);
 
         return getOppfolgingStatus(fnr)
                 .map(oppfolgingsstatus -> {

@@ -1,14 +1,8 @@
 package no.nav.veilarboppfolging.services;
 
 import lombok.SneakyThrows;
-import lombok.val;
-import no.nav.apiapp.feil.Feil;
-import no.nav.apiapp.feil.FeilType;
-import no.nav.apiapp.feil.IngenTilgang;
-import no.nav.apiapp.feil.UlovligHandling;
-import no.nav.apiapp.security.PepClient;
-import no.nav.common.auth.SubjectHandler;
-import no.nav.dialogarena.aktor.AktorService;
+import lombok.extern.slf4j.Slf4j;
+import no.nav.veilarboppfolging.client.oppfolging.OppfolgingClient;
 import no.nav.veilarboppfolging.db.EskaleringsvarselRepository;
 import no.nav.veilarboppfolging.db.KvpRepository;
 import no.nav.veilarboppfolging.db.OppfolgingsStatusRepository;
@@ -16,65 +10,70 @@ import no.nav.veilarboppfolging.domain.KodeverkBruker;
 import no.nav.veilarboppfolging.domain.Kvp;
 import no.nav.veilarboppfolging.domain.OppfolgingTable;
 import no.nav.veilarboppfolging.utils.FunksjonelleMetrikker;
-import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
-import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingsstatusRequest;
-import org.springframework.stereotype.Component;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
-import javax.inject.Inject;
-
+import static java.lang.String.format;
 import static no.nav.veilarboppfolging.domain.KodeverkBruker.NAV;
-import static no.nav.veilarboppfolging.utils.FnrUtils.getAktorIdOrElseThrow;
 
-@Component
+@Slf4j
+@Service
 public class KvpService {
 
     static final String ESKALERING_AVSLUTTET_FORDI_KVP_BLE_AVSLUTTET = "Eskalering avsluttet fordi KVP ble avsluttet";
 
-    @Inject
-    private KvpRepository kvpRepository;
+    private final KvpRepository kvpRepository;
 
-    @Inject
-    private AktorService aktorService;
+    private final OppfolgingClient oppfolgingClient;
 
-    @Inject
-    private OppfoelgingPortType oppfoelgingPortType;
+    private final OppfolgingsStatusRepository oppfolgingsStatusRepository;
 
-    @Inject
-    private PepClient pepClient;
+    private final EskaleringsvarselRepository eskaleringsvarselRepository;
 
-    @Inject
-    private OppfolgingsStatusRepository oppfolgingsStatusRepository;
+    private final AuthService authService;
 
-    @Inject 
-    private EskaleringsvarselRepository eskaleringsvarselRepository;
-    
+    public KvpService(
+            KvpRepository kvpRepository,
+            OppfolgingClient oppfolgingClient,
+            OppfolgingsStatusRepository oppfolgingsStatusRepository,
+            EskaleringsvarselRepository eskaleringsvarselRepository,
+            AuthService authService
+    ) {
+        this.kvpRepository = kvpRepository;
+        this.oppfolgingClient = oppfolgingClient;
+        this.oppfolgingsStatusRepository = oppfolgingsStatusRepository;
+        this.eskaleringsvarselRepository = eskaleringsvarselRepository;
+        this.authService = authService;
+    }
+
     @SneakyThrows
     public void startKvp(String fnr, String begrunnelse) {
+        String aktorId = authService.getAktorIdOrThrow(fnr);
 
-        String aktorId = getAktorIdOrElseThrow(aktorService, fnr).getAktorId();
-
-        pepClient.sjekkLesetilgangTilAktorId(aktorId);
+        authService.sjekkLesetilgangMedAktorId(aktorId);
 
         OppfolgingTable oppfolgingTable = oppfolgingsStatusRepository.fetch(aktorId);
 
         if (oppfolgingTable == null || !oppfolgingTable.isUnderOppfolging()) {
-            throw new UlovligHandling();
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
 
-        String enhet = getEnhet(fnr);
-        if(!pepClient.harTilgangTilEnhet(enhet)) {
-            throw new IngenTilgang(String.format("Ingen tilgang til enhet '%s'", enhet));
+        String enhet = oppfolgingClient.finnEnhetId(fnr);
+        if(!authService.harTilgangTilEnhet(enhet)) {
+            log.warn(format("Ingen tilgang til enhet '%s'", enhet));
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
 
         if (oppfolgingTable.getGjeldendeKvpId() != 0) {
-            throw new Feil(FeilType.UGYLDIG_REQUEST, "Aktøren er allerede under en KVP-periode.");
+            log.warn(format("Aktøren er allerede under en KVP-periode. AktorId: %s", aktorId));
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
 
-        String veilederId = SubjectHandler.getIdent().orElseThrow(RuntimeException::new);
         kvpRepository.startKvp(
                 aktorId,
                 enhet,
-                veilederId,
+                authService.getInnloggetVeilederIdent(),
                 begrunnelse);
 
         FunksjonelleMetrikker.startKvp();
@@ -82,25 +81,23 @@ public class KvpService {
 
     @SneakyThrows
     public void stopKvp(String fnr, String begrunnelse) {
+        String aktorId = authService.getAktorIdOrThrow(fnr);
 
-        String aktorId = getAktorIdOrElseThrow(aktorService, fnr).getAktorId();
-
-        pepClient.sjekkLesetilgangTilAktorId(aktorId);
-        if(!pepClient.harTilgangTilEnhet(getEnhet(fnr))){
-            throw new IngenTilgang();
+        authService.sjekkLesetilgangMedAktorId(aktorId);
+        if(!authService.harTilgangTilEnhet(oppfolgingClient.finnEnhetId(fnr))){
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         }
 
         stopKvpUtenEnhetSjekk(aktorId, begrunnelse, NAV);
     }
 
     public void stopKvpUtenEnhetSjekk(String aktorId, String begrunnelse, KodeverkBruker kodeverkBruker) {
-        String veilederId = SubjectHandler.getIdent().orElseThrow(RuntimeException::new);
-
+        String veilederId = authService.getInnloggetVeilederIdent();
         OppfolgingTable oppfolgingTable = oppfolgingsStatusRepository.fetch(aktorId);
-
         long gjeldendeKvp = oppfolgingTable.getGjeldendeKvpId();
+
         if (gjeldendeKvp == 0) {
-            throw new Feil(FeilType.UGYLDIG_REQUEST, "Aktøren har ingen KVP-periode.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
 
         if(oppfolgingTable.getGjeldendeEskaleringsvarselId() != 0) {
@@ -123,14 +120,6 @@ public class KvpService {
 
     Kvp gjeldendeKvp(String aktorId) {
         return kvpRepository.fetch(kvpRepository.gjeldendeKvp(aktorId));
-    }
-
-    @SneakyThrows
-    private String getEnhet(String fnr) {
-        val req = new HentOppfoelgingsstatusRequest();
-        req.setPersonidentifikator(fnr);
-        val res = oppfoelgingPortType.hentOppfoelgingsstatus(req);
-        return res.getNavOppfoelgingsenhet();
     }
 
 }

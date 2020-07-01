@@ -6,7 +6,7 @@ import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.feed.producer.FeedProducer;
 import no.nav.veilarboppfolging.test.TestTransactor;
 import no.nav.veilarboppfolging.kafka.OppfolgingStatusKafkaProducer;
-import no.nav.veilarboppfolging.controller.VeilederTilordningRessurs;
+import no.nav.veilarboppfolging.controller.VeilederTilordningController;
 import no.nav.veilarboppfolging.controller.domain.OppfolgingFeedDTO;
 import no.nav.sbl.jdbc.Database;
 import org.junit.Before;
@@ -35,9 +35,9 @@ public class SettOppfolgingsFlaggTildelVeilederTest {
     private FeedProducer<OppfolgingFeedDTO> feed;
 
     @Mock
-    private AutorisasjonService autorisasjonService;
+    private AuthService authService;
 
-    private VeilederTilordningRessurs veilederTilordningRessurs;
+    private VeilederTilordningController veilederTilordningController;
 
     @Rule
     public SubjectRule subjectRule = new SubjectRule();
@@ -59,12 +59,12 @@ public class SettOppfolgingsFlaggTildelVeilederTest {
                 mock(KvpRepository.class),
                 mock(NyeBrukereFeedRepository.class)
         );
-        veilederTilordningRessurs = new VeilederTilordningRessurs(
+        veilederTilordningController = new VeilederTilordningController(
                 aktorServiceMock,
                 veilederTilordningerRepository,
                 pepClient,
                 feed,
-                autorisasjonService,
+                authService,
                 oppfolgingRepository,
                 veilederHistorikkRepository,
                 new TestTransactor(),
@@ -79,7 +79,7 @@ public class SettOppfolgingsFlaggTildelVeilederTest {
                 "VALUES ('1111111', CURRENT_TIMESTAMP, 0)");
 
         assertTrue(db.queryForList("SELECT * FROM OPPFOLGINGSTATUS WHERE aktor_id = '1111111'").get(0).get("under_oppfolging").toString().equals("0"));
-        veilederTilordningRessurs.skrivTilDatabase("1111111", "VEILEDER1");
+        veilederTilordningController.skrivTilDatabase("1111111", "VEILEDER1");
         assertTrue(db.queryForList("SELECT * FROM OPPFOLGINGSTATUS WHERE aktor_id = '1111111'").get(0).get("under_oppfolging").toString().equals("1"));
 
     }

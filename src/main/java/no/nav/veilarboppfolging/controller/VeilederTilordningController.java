@@ -17,7 +17,7 @@ import no.nav.veilarboppfolging.kafka.OppfolgingStatusKafkaProducer;
 import no.nav.veilarboppfolging.controller.domain.OppfolgingFeedDTO;
 import no.nav.veilarboppfolging.controller.domain.TilordneVeilederResponse;
 import no.nav.veilarboppfolging.controller.domain.VeilederTilordning;
-import no.nav.veilarboppfolging.services.AutorisasjonService;
+import no.nav.veilarboppfolging.services.AuthService;
 import no.nav.veilarboppfolging.utils.FunksjonelleMetrikker;
 import no.nav.metrics.MetricsFactory;
 import no.nav.metrics.Timer;
@@ -39,14 +39,14 @@ import static org.slf4j.LoggerFactory.getLogger;
 @Path("")
 @Api(value = "VeilederTilordningRessurs")
 @Slf4j
-public class VeilederTilordningRessurs {
+public class VeilederTilordningController {
 
-    private static final Logger LOG = getLogger(VeilederTilordningRessurs.class);
+    private static final Logger LOG = getLogger(VeilederTilordningController.class);
 
     private final AktorService aktorService;
     private final VeilederTilordningerRepository veilederTilordningerRepository;
     private final PepClient pepClient;
-    private final AutorisasjonService autorisasjonService;
+    private final AuthService authService;
     private final Timer timer;
     private FeedProducer<OppfolgingFeedDTO> oppfolgingFeed;
     private final SubjectService subjectService = new SubjectService();
@@ -55,16 +55,16 @@ public class VeilederTilordningRessurs {
     private final Transactor transactor;
     private final OppfolgingStatusKafkaProducer kafka;
 
-    public VeilederTilordningRessurs(AktorService aktorService,
-                                     VeilederTilordningerRepository veilederTilordningerRepository,
-                                     PepClient pepClient,
-                                     FeedProducer<OppfolgingFeedDTO> oppfolgingFeed,
-                                     AutorisasjonService autorisasjonService,
-                                     OppfolgingRepository oppfolgingRepository,
-                                     VeilederHistorikkRepository veilederHistorikkRepository,
-                                     Transactor transactor,
-                                     OppfolgingStatusKafkaProducer oppfolgingStatusKafkaProducer) {
-        this.autorisasjonService = autorisasjonService;
+    public VeilederTilordningController(AktorService aktorService,
+                                        VeilederTilordningerRepository veilederTilordningerRepository,
+                                        PepClient pepClient,
+                                        FeedProducer<OppfolgingFeedDTO> oppfolgingFeed,
+                                        AuthService authService,
+                                        OppfolgingRepository oppfolgingRepository,
+                                        VeilederHistorikkRepository veilederHistorikkRepository,
+                                        Transactor transactor,
+                                        OppfolgingStatusKafkaProducer oppfolgingStatusKafkaProducer) {
+        this.authService = authService;
         this.aktorService = aktorService;
         this.veilederTilordningerRepository = veilederTilordningerRepository;
         this.pepClient = pepClient;
@@ -84,7 +84,7 @@ public class VeilederTilordningRessurs {
 
         timer.start();
 
-        autorisasjonService.skalVereInternBruker();
+        authService.skalVereInternBruker();
         String innloggetVeilederId = SubjectHandler.getIdent().orElseThrow(IllegalStateException::new);
 
         log.info("{} Prøver å tildele veileder", innloggetVeilederId);
@@ -152,7 +152,7 @@ public class VeilederTilordningRessurs {
 
         String aktorId = getAktorIdOrElseThrow(aktorService, fnr).getAktorId();
 
-        autorisasjonService.skalVereInternBruker();
+        authService.skalVereInternBruker();
         pepClient.sjekkLesetilgangTilAktorId(aktorId);
 
         veilederTilordningerRepository.hentTilordnetVeileder(aktorId)
@@ -230,6 +230,6 @@ public class VeilederTilordningRessurs {
     }
 
     private boolean nyVeilederHarTilgang(VeilederTilordning veilederTilordning) {
-        return autorisasjonService.harVeilederSkriveTilgangTilFnr(veilederTilordning.getTilVeilederId(), veilederTilordning.getBrukerFnr());
+        return authService.harVeilederSkriveTilgangTilFnr(veilederTilordning.getTilVeilederId(), veilederTilordning.getBrukerFnr());
     }
 }

@@ -1,6 +1,8 @@
-package no.nav.veilarboppfolging.client.oppfolgingskontrakt;
+package no.nav.veilarboppfolging.client.oppfolging;
 
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import no.nav.common.cxf.CXFClient;
 import no.nav.common.cxf.StsConfig;
 import no.nav.common.health.HealthCheckResult;
@@ -9,29 +11,25 @@ import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.informasjon.Periode;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingskontraktListeRequest;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingskontraktListeResponse;
-import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.HentYtelseskontraktListeSikkerhetsbegrensning;
-import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3;
-import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt.WSPeriode;
-import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeRequest;
-import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeResponse;
+import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingsstatusRequest;
 import org.apache.cxf.interceptor.LoggingOutInterceptor;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 import javax.ws.rs.ForbiddenException;
 import javax.xml.datatype.XMLGregorianCalendar;
 
-import static no.nav.veilarboppfolging.config.ApplicationConfig.VIRKSOMHET_OPPFOLGING_V1_PROPERTY;
-
 /**
- * Klient for å hente oppfølgingskontrakt fra Arena.
+ * Klient for å hente oppfølgingsinformasjon fra Arena.
  */
 @Slf4j
-public class OppfolgingskontraktClientImpl implements OppfolgingskontraktClient {
+public class OppfolgingClientImpl implements OppfolgingClient {
 
     private final OppfoelgingPortType oppfoelgingPortType;
 
     private final OppfoelgingPortType oppfoelgingPortTypePing;
 
-    public OppfolgingskontraktClientImpl(String virksomhetOppfolgingV1Endpoint, StsConfig stsConfig) {
+    public OppfolgingClientImpl(String virksomhetOppfolgingV1Endpoint, StsConfig stsConfig) {
         oppfoelgingPortType = new CXFClient<>(OppfoelgingPortType.class)
                 .withOutInterceptor(new LoggingOutInterceptor())
                 .configureStsForSubject(stsConfig)
@@ -58,12 +56,20 @@ public class OppfolgingskontraktClientImpl implements OppfolgingskontraktClient 
         try {
             response = oppfoelgingPortType.hentOppfoelgingskontraktListe(request);
         } catch (HentOppfoelgingskontraktListeSikkerhetsbegrensning hentOppfoelgingskontraktListeSikkerhetsbegrensning) {
-            String logMessage = "Veileder har ikke tilgang til å søke opp bruker";
-            log.warn(logMessage, hentOppfoelgingskontraktListeSikkerhetsbegrensning);
-            throw new ForbiddenException(logMessage, hentOppfoelgingskontraktListeSikkerhetsbegrensning);
+            log.warn("Veileder har ikke tilgang til å søke opp bruker", hentOppfoelgingskontraktListeSikkerhetsbegrensning);
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         }
 
         return response;
+    }
+
+    @SneakyThrows
+    @Override
+    public String finnEnhetId(String fnr) {
+        val req = new HentOppfoelgingsstatusRequest();
+        req.setPersonidentifikator(fnr);
+        val res = oppfoelgingPortType.hentOppfoelgingsstatus(req);
+        return res.getNavOppfoelgingsenhet();
     }
 
     @Override

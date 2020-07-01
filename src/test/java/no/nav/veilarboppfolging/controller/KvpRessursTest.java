@@ -36,7 +36,7 @@ public class KvpRessursTest {
     private KvpRepository kvpRepositoryMock;
 
     @InjectMocks
-    private KvpRessurs kvpRessurs;
+    private KvpController kvpController;
 
     @BeforeClass
     public static void before() {
@@ -83,7 +83,7 @@ public class KvpRessursTest {
 
     private Response getKvpStatus() {
         Subject authorizedSubject = new Subject(AUTHORIZED_USER, IdentType.InternBruker, SsoToken.oidcToken("token"));
-        return SubjectHandler.withSubject(authorizedSubject, () -> kvpRessurs.getKvpStatus(AKTOR_ID));
+        return SubjectHandler.withSubject(authorizedSubject, () -> kvpController.getKvpStatus(AKTOR_ID));
     }
 
     private Kvp kvp() {

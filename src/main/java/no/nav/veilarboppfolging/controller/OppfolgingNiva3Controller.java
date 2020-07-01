@@ -24,14 +24,14 @@ import no.nav.veilarboppfolging.services.OppfolgingService;
 @Path("/niva3")
 @Api(value = "OppfølgingNiva3")
 @Produces(APPLICATION_JSON)
-public class OppfolgingNiva3Ressurs {
+public class OppfolgingNiva3Controller {
 
     private final OppfolgingService oppfolgingService;
     private final FnrParameterUtil fnrParameterUtil;
     private static final MeterRegistry meterRegistry = MetricsFactory.getMeterRegistry();
 
 
-    public OppfolgingNiva3Ressurs(OppfolgingService oppfolgingService, FnrParameterUtil fnrParameterUtil) {
+    public OppfolgingNiva3Controller(OppfolgingService oppfolgingService, FnrParameterUtil fnrParameterUtil) {
         this.oppfolgingService = oppfolgingService;
         this.fnrParameterUtil = fnrParameterUtil;
     }

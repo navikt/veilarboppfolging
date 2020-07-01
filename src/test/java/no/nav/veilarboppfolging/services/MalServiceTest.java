@@ -64,7 +64,7 @@ public class MalServiceTest {
     private AktorService aktorServiceMock;
 
     @Mock
-    private AutorisasjonService autorisasjonService;
+    private AuthService authService;
 
     @InjectMocks
     private MalService malService;

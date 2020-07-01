@@ -4,17 +4,18 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarboppfolging.db.OppfolgingsenhetHistorikkRepository;
 import no.nav.veilarboppfolging.domain.OppfolgingsenhetEndringData;
 import no.nav.veilarboppfolging.utils.mappers.VeilarbArenaOppfolgingEndret;
-import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
-import javax.inject.Inject;
 import java.util.List;
 
 @Slf4j
-@Component
+@Service
 public class OppfolgingsenhetEndringService {
+
     private final OppfolgingsenhetHistorikkRepository enhetHistorikkRepository;
 
-    @Inject
+    @Autowired
     public OppfolgingsenhetEndringService(OppfolgingsenhetHistorikkRepository enhetHistorikkRepository) {
         this.enhetHistorikkRepository = enhetHistorikkRepository;
     }
@@ -32,4 +33,5 @@ public class OppfolgingsenhetEndringService {
             enhetHistorikkRepository.insertOppfolgingsenhetEndringForAktorId(aktoerid, arenaNavKontor);
         }
     }
+
 }

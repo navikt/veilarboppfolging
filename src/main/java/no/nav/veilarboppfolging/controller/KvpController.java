@@ -1,34 +1,26 @@
 package no.nav.veilarboppfolging.controller;
 
-import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import no.nav.brukerdialog.tools.Utils;
-import no.nav.common.auth.SubjectHandler;
 import no.nav.veilarboppfolging.db.KvpRepository;
 import no.nav.veilarboppfolging.domain.Kvp;
 import no.nav.veilarboppfolging.utils.mappers.KvpMapper;
 import no.nav.veilarboppfolging.controller.domain.KvpDTO;
-import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 import java.util.List;
 
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static no.nav.veilarboppfolging.config.ApplicationConfig.KVP_API_BRUKERTILGANG_PROPERTY;
-import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 
-@Path("/kvp/{aktorId}")
-@Component
-@Produces(APPLICATION_JSON)
-@Api(value = "KVP")
-public class KvpRessurs {
+@RestController
+@RequestMapping("/kvp/{aktorId}")
+public class KvpController {
 
     @Inject
     private KvpRepository repository;

@@ -3,7 +3,7 @@ package no.nav.veilarboppfolging.controller;
 import no.nav.apiapp.security.PepClient;
 import no.nav.veilarboppfolging.domain.OppfolgingskontraktData;
 import no.nav.veilarboppfolging.domain.OppfolgingskontraktResponse;
-import no.nav.veilarboppfolging.services.AutorisasjonService;
+import no.nav.veilarboppfolging.services.AuthService;
 import no.nav.veilarboppfolging.utils.mappers.OppfolgingMapper;
 import no.nav.veilarboppfolging.utils.mappers.YtelseskontraktMapper;
 import no.nav.veilarboppfolging.controller.domain.Vedtak;
@@ -28,7 +28,7 @@ import static org.mockito.Mockito.when;
 public class YtelsesRessursTest {
 
     @InjectMocks
-    private YtelseRessurs ytelseRessurs;
+    private YtelseController ytelseController;
 
     @Mock
     private YtelseskontraktMapper ytelseskontraktMapper;
@@ -49,7 +49,7 @@ public class YtelsesRessursTest {
     private PepClient pepClient;
 
     @Mock
-    private AutorisasjonService autorisasjonService;
+    private AuthService authService;
 
     @BeforeClass
     public static void setup() {
@@ -67,7 +67,7 @@ public class YtelsesRessursTest {
                 new OppfolgingskontraktResponse(singletonList(new OppfolgingskontraktData()))
         );
 
-        final YtelserResponse ytelser = ytelseRessurs.getYtelser("fnr");
+        final YtelserResponse ytelser = ytelseController.getYtelser("fnr");
 
         assertThat(ytelser.getOppfoelgingskontrakter().isEmpty(), is(false));
         assertThat(ytelser.getVedtaksliste().isEmpty(), is(false));

@@ -57,7 +57,7 @@ public class OppfolgingServiceTest {
     private AktorService aktorServiceMock;
 
     @Mock
-    private AutorisasjonService autorisasjonService;
+    private AuthService authService;
 
     @Mock
     private ArenaOppfolgingService arenaOppfolgingService;
