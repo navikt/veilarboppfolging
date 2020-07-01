@@ -6,6 +6,9 @@ import no.nav.common.abac.VeilarbPep;
 import no.nav.common.abac.audit.SpringAuditRequestInfoSupplier;
 import no.nav.common.cxf.StsConfig;
 import no.nav.common.featuretoggle.UnleashService;
+import no.nav.common.metrics.InfluxClient;
+import no.nav.common.metrics.MetricsClient;
+import no.nav.common.metrics.SensuConfig;
 import no.nav.common.sts.NaisSystemUserTokenProvider;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.utils.Credentials;
@@ -53,6 +56,11 @@ public class ApplicationConfig {
     @Bean
     public Credentials serviceUserCredentials() {
         return getCredentials("service_user");
+    }
+
+    @Bean
+    public MetricsClient metricsClient() {
+        return new InfluxClient(SensuConfig.defaultConfig());
     }
 
     @Bean

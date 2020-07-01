@@ -2,7 +2,9 @@ package no.nav.veilarboppfolging.controller.domain;
 
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import no.nav.veilarboppfolging.domain.OppfolgingskontraktData;
+import no.nav.veilarboppfolging.client.ytelseskontrakt.Vedtak;
+import no.nav.veilarboppfolging.client.ytelseskontrakt.Ytelseskontrakt;
+import no.nav.veilarboppfolging.client.oppfolging.OppfolgingskontraktData;
 
 import java.util.List;
 

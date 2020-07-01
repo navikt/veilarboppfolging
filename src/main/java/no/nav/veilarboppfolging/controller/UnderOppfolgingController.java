@@ -1,41 +1,38 @@
 package no.nav.veilarboppfolging.controller;
 
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+import no.nav.veilarboppfolging.services.AuthService;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-
-import no.nav.veilarboppfolging.utils.FnrParameterUtil;
-import org.springframework.stereotype.Component;
-
-import io.swagger.annotations.Api;
 import no.nav.veilarboppfolging.controller.domain.UnderOppfolgingDTO;
 import no.nav.veilarboppfolging.services.OppfolgingService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * Denne ressursen skal kun brukes til å hente data som veilarboppfolging har selv, uavhengig av integrasjoner. Hvis
  * behovet ikke dekkes av veilarboppfolging på egen hånd, bruk eksisterende OppfolgingRessurs
  */
-@Component
-@Path("")
-@Api(value = "UnderOppfølging")
-@Produces(APPLICATION_JSON)
+@RestController
+@RequestMapping("/api/underoppfolging")
 public class UnderOppfolgingController {
 
     private final OppfolgingService oppfolgingService;
 
-    private final FnrParameterUtil fnrParameterUtil;
+    private final AuthService authService;
 
-    public UnderOppfolgingController(OppfolgingService oppfolgingService, FnrParameterUtil fnrParameterUtil) {
+    @Autowired
+    public UnderOppfolgingController(OppfolgingService oppfolgingService, AuthService authService) {
         this.oppfolgingService = oppfolgingService;
-        this.fnrParameterUtil = fnrParameterUtil;
+        this.authService = authService;
     }
 
-    @GET
-    @Path("/underoppfolging")
-    public UnderOppfolgingDTO underOppfolging() {
-        return oppfolgingService.oppfolgingData(fnrParameterUtil.getFnr());
+    @GetMapping
+    public UnderOppfolgingDTO underOppfolging(@RequestParam(value = "fnr", required = false) String fnr) {
+        // TODO: Hvis dette endepunktet kun blir brukt av interne brukere så kan vi gjøre fnr query param required
+        String fodselsnummer = authService.hentIdentForEksternEllerIntern(fnr);
+        return oppfolgingService.oppfolgingData(fodselsnummer);
     }
 
 }

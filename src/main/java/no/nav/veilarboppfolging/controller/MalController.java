@@ -14,7 +14,7 @@ import static java.util.stream.Collectors.toList;
 import static no.nav.veilarboppfolging.utils.mappers.DtoMappers.tilDto;
 
 @RestController
-@RequestMapping("/oppfolging")
+@RequestMapping("/api/oppfolging")
 public class MalController {
 
     private final MalService malService;

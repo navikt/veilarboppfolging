@@ -4,28 +4,15 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.cxf.CXFClient;
 import no.nav.common.cxf.StsConfig;
 import no.nav.common.health.HealthCheckResult;
-import no.nav.common.health.HealthCheckUtils;
-import no.nav.common.rest.client.RestClient;
-import no.nav.common.rest.client.RestUtils;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.HentYtelseskontraktListeSikkerhetsbegrensning;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt.WSPeriode;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeRequest;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeResponse;
-import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
 import org.apache.cxf.interceptor.LoggingOutInterceptor;
 
 import javax.ws.rs.ForbiddenException;
 import javax.xml.datatype.XMLGregorianCalendar;
-import java.util.Optional;
-
-import static no.nav.common.utils.UrlUtils.joinPaths;
-import static no.nav.veilarboppfolging.config.ApplicationConfig.VIRKSOMHET_YTELSESKONTRAKT_V3_PROPERTY;
-import static org.springframework.http.HttpHeaders.ACCEPT;
-import static org.springframework.http.HttpHeaders.AUTHORIZATION;
-import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 /**
  * Klient for å hente ytelser fra Arena
@@ -52,7 +39,7 @@ public class YtelseskontraktClientImpl implements YtelseskontraktClient {
     }
 
     @Override
-    public WSHentYtelseskontraktListeResponse hentYtelseskontraktListe(XMLGregorianCalendar periodeFom, XMLGregorianCalendar periodeTom, String personId) {
+    public YtelseskontraktResponse hentYtelseskontraktListe(XMLGregorianCalendar periodeFom, XMLGregorianCalendar periodeTom, String personId) {
         final WSPeriode periode = new WSPeriode();
         periode.setFom(periodeFom);
         periode.setTom(periodeTom);
@@ -61,7 +48,8 @@ public class YtelseskontraktClientImpl implements YtelseskontraktClient {
                 .withPersonidentifikator(personId);
         try {
             log.info("Sender request til Ytelseskontrakt_v3");
-            return ytelseskontrakt.hentYtelseskontraktListe(request);
+            WSHentYtelseskontraktListeResponse response = ytelseskontrakt.hentYtelseskontraktListe(request);
+            return YtelseskontraktMapper.tilYtelseskontrakt(response);
         } catch (HentYtelseskontraktListeSikkerhetsbegrensning hentYtelseskontraktListeSikkerhetsbegrensning) {
             String logMessage = "Veileder har ikke tilgang til å søke opp " + personId;
             log.warn(logMessage, hentYtelseskontraktListeSikkerhetsbegrensning);

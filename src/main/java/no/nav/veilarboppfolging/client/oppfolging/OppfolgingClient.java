@@ -4,10 +4,11 @@ import no.nav.common.health.HealthCheck;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingskontraktListeResponse;
 
 import javax.xml.datatype.XMLGregorianCalendar;
+import java.util.List;
 
 public interface OppfolgingClient extends HealthCheck {
 
-    HentOppfoelgingskontraktListeResponse hentOppfolgingskontraktListe(XMLGregorianCalendar fom, XMLGregorianCalendar tom, String fnr);
+    List<OppfolgingskontraktData> hentOppfolgingskontraktListe(XMLGregorianCalendar fom, XMLGregorianCalendar tom, String fnr);
 
     String finnEnhetId(String fnr);
 

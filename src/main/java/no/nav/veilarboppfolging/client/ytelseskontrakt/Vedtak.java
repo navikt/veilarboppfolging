@@ -1,4 +1,4 @@
-package no.nav.veilarboppfolging.controller.domain;
+package no.nav.veilarboppfolging.client.ytelseskontrakt;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 

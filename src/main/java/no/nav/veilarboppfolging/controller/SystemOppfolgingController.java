@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/oppfolging")
+@RequestMapping("/api/oppfolging")
 public class SystemOppfolgingController {
 
     private final AuthService authService;

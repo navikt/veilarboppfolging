@@ -1,8 +1,8 @@
 package no.nav.veilarboppfolging.utils.mappers;
 
 
-import no.nav.veilarboppfolging.controller.domain.Vedtak;
-import no.nav.veilarboppfolging.controller.domain.Ytelseskontrakt;
+import no.nav.veilarboppfolging.client.ytelseskontrakt.Vedtak;
+import no.nav.veilarboppfolging.client.ytelseskontrakt.Ytelseskontrakt;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -75,8 +75,11 @@ public class AuthService {
     }
 
     public void sjekkSkrivetilgangMedFnr(String fnr) {
-        AbacPersonId personId = AbacPersonId.aktorId(getAktorIdOrThrow(fnr));
-        if (veilarbPep.harTilgangTilPerson(getInnloggetBrukerToken(), ActionId.WRITE, personId)) {
+        sjekkSkrivetilgangMedAktorId(getAktorIdOrThrow(fnr));
+    }
+
+    public void sjekkSkrivetilgangMedAktorId(String aktorId) {
+        if (veilarbPep.harTilgangTilPerson(getInnloggetBrukerToken(), ActionId.WRITE, AbacPersonId.aktorId(aktorId))) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         }
     }

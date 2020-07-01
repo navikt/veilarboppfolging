@@ -1,7 +1,7 @@
 package no.nav.veilarboppfolging.utils.mappers;
 
-import no.nav.veilarboppfolging.domain.OppfolgingskontraktData;
-import no.nav.veilarboppfolging.domain.OppfolgingskontraktResponse;
+import no.nav.veilarboppfolging.client.oppfolging.OppfolgingMapper;
+import no.nav.veilarboppfolging.client.oppfolging.OppfolgingskontraktData;
 import no.nav.veilarboppfolging.mock.OppfoelgingV1Mock;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.HentOppfoelgingskontraktListeSikkerhetsbegrensning;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;

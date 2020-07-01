@@ -25,7 +25,7 @@ import static no.nav.common.utils.EnvironmentUtils.getRequiredProperty;
 import static no.nav.veilarboppfolging.config.ApplicationConfig.KVP_API_BRUKERTILGANG_PROPERTY;
 
 @RestController
-@RequestMapping("/kvp")
+@RequestMapping("/api/kvp")
 public class KvpController {
 
     private final KvpRepository repository;

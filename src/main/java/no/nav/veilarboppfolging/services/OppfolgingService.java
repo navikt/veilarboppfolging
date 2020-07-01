@@ -206,7 +206,7 @@ public class OppfolgingService {
     }
 
     @Transactional
-    public boolean underOppfolgingNiva3(String fnr) throws Exception {
+    public boolean underOppfolgingNiva3(String fnr) {
         AktorId aktorId = getAktorIdOrElseThrow(aktorService, fnr);
 
         pepClient.sjekkTilgangTilPerson(AbacPersonId.aktorId(aktorId.getAktorId()), ActionId.READ, ResourceType.VeilArbUnderOppfolging);

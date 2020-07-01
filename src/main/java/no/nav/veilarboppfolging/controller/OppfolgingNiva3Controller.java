@@ -1,55 +1,51 @@
 package no.nav.veilarboppfolging.controller;
 
 import static java.lang.String.valueOf;
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-
-import io.micrometer.core.instrument.MeterRegistry;
+import no.nav.common.metrics.Event;
+import no.nav.common.metrics.MetricsClient;
 import no.nav.veilarboppfolging.controller.domain.UnderOppfolgingNiva3DTO;
-import no.nav.metrics.MetricsFactory;
-import no.nav.veilarboppfolging.utils.FnrParameterUtil;
-import org.springframework.stereotype.Component;
+import no.nav.veilarboppfolging.services.AuthService;
+import org.springframework.beans.factory.annotation.Autowired;
 
-import io.swagger.annotations.Api;
 import no.nav.veilarboppfolging.services.OppfolgingService;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * Denne ressursen er dedikert til å håndtere forespørsler på vegne av brukere som har innloggingstoken med nivå 3.
  * Ressursen ble opprettet for å dekke behov fra Ditt Nav.
  */
-@Component
-@Path("/niva3")
-@Api(value = "OppfølgingNiva3")
-@Produces(APPLICATION_JSON)
+@RestController
+@RequestMapping("/api/niva3")
 public class OppfolgingNiva3Controller {
 
     private final OppfolgingService oppfolgingService;
-    private final FnrParameterUtil fnrParameterUtil;
-    private static final MeterRegistry meterRegistry = MetricsFactory.getMeterRegistry();
 
+    private final MetricsClient metricsClient;
 
-    public OppfolgingNiva3Controller(OppfolgingService oppfolgingService, FnrParameterUtil fnrParameterUtil) {
+    private final AuthService authService;
+
+    @Autowired
+    public OppfolgingNiva3Controller(OppfolgingService oppfolgingService, MetricsClient metricsClient, AuthService authService) {
         this.oppfolgingService = oppfolgingService;
-        this.fnrParameterUtil = fnrParameterUtil;
+        this.metricsClient = metricsClient;
+        this.authService = authService;
     }
 
-    @GET
-    @Path("/underoppfolging")
-    public UnderOppfolgingNiva3DTO underOppfolgingNiva3() throws Exception {
-        UnderOppfolgingNiva3DTO underOppfolgingNiva3DTO = new UnderOppfolgingNiva3DTO().setUnderOppfolging(oppfolgingService.underOppfolgingNiva3(fnrParameterUtil.getFnr()));
+    @GetMapping("/underoppfolging")
+    public UnderOppfolgingNiva3DTO underOppfolgingNiva3() {
+        String fnr = authService.getInnloggetBrukerIdent();
 
-        meterRegistry.counter("request_niva3_underoppfolging",
-                "underoppfolging",
-                valueOf(underOppfolgingNiva3DTO.isUnderOppfolging()))
-                .increment();
+        UnderOppfolgingNiva3DTO underOppfolgingNiva3DTO = new UnderOppfolgingNiva3DTO()
+                .setUnderOppfolging(oppfolgingService.underOppfolgingNiva3(fnr));
 
-        MetricsFactory.createEvent("request.niva3.underoppfolging")
-                .addTagToReport("underoppfolging", valueOf(underOppfolgingNiva3DTO.isUnderOppfolging()))
-                .report();
+        Event event = new Event("request.niva3.underoppfolging");
+        event.addTagToReport("underoppfolging", valueOf(underOppfolgingNiva3DTO.isUnderOppfolging()));
+        metricsClient.report(event);
 
         return underOppfolgingNiva3DTO;
     }
+
 }

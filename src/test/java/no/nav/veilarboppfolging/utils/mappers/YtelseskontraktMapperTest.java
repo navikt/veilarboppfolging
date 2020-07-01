@@ -1,8 +1,8 @@
 package no.nav.veilarboppfolging.utils.mappers;
 
-import no.nav.veilarboppfolging.controller.domain.Vedtak;
-import no.nav.veilarboppfolging.controller.domain.Ytelseskontrakt;
-import no.nav.veilarboppfolging.controller.domain.YtelseskontraktResponse;
+import no.nav.veilarboppfolging.client.ytelseskontrakt.Vedtak;
+import no.nav.veilarboppfolging.client.ytelseskontrakt.Ytelseskontrakt;
+import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktResponse;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.HentOppfoelgingskontraktListeSikkerhetsbegrensning;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.HentYtelseskontraktListeSikkerhetsbegrensning;
 import org.junit.Test;

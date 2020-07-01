@@ -16,7 +16,7 @@ import java.util.List;
 
 import static no.nav.veilarboppfolging.utils.mappers.DtoMappers.tilDto;
 
-@RequestMapping("/oppfolging")
+@RequestMapping("/api/oppfolging")
 @RestController
 public class OppfolgingController {
     

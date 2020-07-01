@@ -1,15 +1,13 @@
-package no.nav.veilarboppfolging.controller.domain;
-
+package no.nav.veilarboppfolging.client.ytelseskontrakt;
 
 @SuppressWarnings("unused")
-class Dato {
+public class Dato {
 
     private final int year;
     private final int month;
     private final int day;
 
-    Dato(int year, int month, int day) {
-
+    public Dato(int year, int month, int day) {
         this.year = year;
         this.month = month;
         this.day = day;

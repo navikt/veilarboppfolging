@@ -2,11 +2,6 @@ package no.nav.veilarboppfolging.controller;
 
 import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.apiapp.security.PepClient;
-import no.nav.apiapp.security.SubjectService;
-import no.nav.common.auth.SubjectHandler;
-import no.nav.dialogarena.aktor.AktorService;
-import no.nav.fo.feed.producer.FeedProducer;
 import no.nav.veilarboppfolging.db.OppfolgingFeedRepository;
 import no.nav.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.veilarboppfolging.db.VeilederHistorikkRepository;
@@ -19,92 +14,53 @@ import no.nav.veilarboppfolging.controller.domain.TilordneVeilederResponse;
 import no.nav.veilarboppfolging.controller.domain.VeilederTilordning;
 import no.nav.veilarboppfolging.services.AuthService;
 import no.nav.veilarboppfolging.utils.FunksjonelleMetrikker;
-import no.nav.metrics.MetricsFactory;
-import no.nav.metrics.Timer;
-import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
-import no.nav.sbl.jdbc.Transactor;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.ws.rs.*;
-import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-import static no.nav.veilarboppfolging.utils.FnrUtils.getAktorIdOrElseThrow;
-import static org.slf4j.LoggerFactory.getLogger;
+// TODO: Det meste i denne klassen burde flyttes inn i en service
 
-@Component
-@Path("")
-@Api(value = "VeilederTilordningRessurs")
 @Slf4j
+@RestController
+@RequestMapping("/api")
 public class VeilederTilordningController {
 
-    private static final Logger LOG = getLogger(VeilederTilordningController.class);
-
-    private final AktorService aktorService;
     private final VeilederTilordningerRepository veilederTilordningerRepository;
-    private final PepClient pepClient;
     private final AuthService authService;
-    private final Timer timer;
-    private FeedProducer<OppfolgingFeedDTO> oppfolgingFeed;
-    private final SubjectService subjectService = new SubjectService();
+    private final FeedProducer<OppfolgingFeedDTO> oppfolgingFeed;
     private final OppfolgingRepository oppfolgingRepository;
     private final VeilederHistorikkRepository veilederHistorikkRepository;
-    private final Transactor transactor;
+    private final TransactionTemplate transactor;
     private final OppfolgingStatusKafkaProducer kafka;
 
-    public VeilederTilordningController(AktorService aktorService,
-                                        VeilederTilordningerRepository veilederTilordningerRepository,
-                                        PepClient pepClient,
-                                        FeedProducer<OppfolgingFeedDTO> oppfolgingFeed,
-                                        AuthService authService,
-                                        OppfolgingRepository oppfolgingRepository,
-                                        VeilederHistorikkRepository veilederHistorikkRepository,
-                                        Transactor transactor,
-                                        OppfolgingStatusKafkaProducer oppfolgingStatusKafkaProducer) {
-        this.authService = authService;
-        this.aktorService = aktorService;
-        this.veilederTilordningerRepository = veilederTilordningerRepository;
-        this.pepClient = pepClient;
-        this.oppfolgingFeed = oppfolgingFeed;
-        this.oppfolgingRepository = oppfolgingRepository;
-        this.veilederHistorikkRepository = veilederHistorikkRepository;
-        this.transactor = transactor;
-        this.timer = MetricsFactory.createTimer("veilarboppfolging.veiledertilordning");
-        this.kafka = oppfolgingStatusKafkaProducer;
-    }
-
-    @POST
-    @Consumes("application/json")
-    @Produces("application/json")
-    @Path("/tilordneveileder")
-    public Response postVeilederTilordninger(List<VeilederTilordning> tilordninger) {
-
-        timer.start();
-
+    @PostMapping("/tilordneveileder")
+    public TilordneVeilederResponse postVeilederTilordninger(List<VeilederTilordning> tilordninger) {
         authService.skalVereInternBruker();
-        String innloggetVeilederId = SubjectHandler.getIdent().orElseThrow(IllegalStateException::new);
+        String innloggetVeilederId = authService.getInnloggetVeilederIdent();
 
         log.info("{} Prøver å tildele veileder", innloggetVeilederId);
 
         List<VeilederTilordning> feilendeTilordninger = new ArrayList<>();
-        for (VeilederTilordning tilordning : tilordninger) {
 
+        for (VeilederTilordning tilordning : tilordninger) {
             tilordning.setInnloggetVeilederId(innloggetVeilederId);
 
             try {
-                String aktorId = getAktorIdOrElseThrow(aktorService, tilordning.getBrukerFnr()).getAktorId();
-
-                pepClient.sjekkSkrivetilgangTilAktorId(aktorId);
+                String aktorId = authService.getAktorIdOrThrow(tilordning.getBrukerFnr());
+                authService.sjekkSkrivetilgangMedAktorId(aktorId);
 
                 tilordning.setAktoerId(aktorId);
-
                 String eksisterendeVeileder = veilederTilordningerRepository.hentTilordningForAktoer(aktorId);
 
                 feilendeTilordninger = tildelVeileder(feilendeTilordninger, tilordning, aktorId, eksisterendeVeileder);
-
             } catch (Exception e) {
                 feilendeTilordninger.add(tilordning);
                 loggFeilOppfolging(e, tilordning);
@@ -123,10 +79,7 @@ public class VeilederTilordningController {
             CompletableFuture.runAsync(this::kallWebhook);
         }
 
-        timer.stop();
-        timer.report();
-
-        return Response.ok().entity(response).build();
+        return response;
     }
 
     private List<VeilederTilordning> tildelVeileder(List<VeilederTilordning> feilendeTilordninger, VeilederTilordning tilordning, String aktoerId, String eksisterendeVeileder) {
@@ -134,11 +87,11 @@ public class VeilederTilordningController {
             if (nyVeilederHarTilgang(tilordning)) {
                 skrivTilDatabase(aktoerId, tilordning.getTilVeilederId());
             } else {
-                LOG.info("Aktoerid {} kunne ikke tildeles. Ny veileder {} har ikke tilgang.", aktoerId, tilordning.getTilVeilederId());
+                log.info("Aktoerid {} kunne ikke tildeles. Ny veileder {} har ikke tilgang.", aktoerId, tilordning.getTilVeilederId());
                 feilendeTilordninger.add(tilordning);
             }
         } else {
-            LOG.info("Aktoerid {} kunne ikke tildeles. Oppgitt fraVeileder {} er feil eller tilVeileder {} er feil. Faktisk veileder: {}",
+            log.info("Aktoerid {} kunne ikke tildeles. Oppgitt fraVeileder {} er feil eller tilVeileder {} er feil. Faktisk veileder: {}",
                     aktoerId, tilordning.getFraVeilederId(), tilordning.getTilVeilederId(), eksisterendeVeileder);
             feilendeTilordninger.add(tilordning);
         }
@@ -149,11 +102,10 @@ public class VeilederTilordningController {
     @POST
     @Path("{fnr}/lestaktivitetsplan/")
     public void lestAktivitetsplan(@PathParam("fnr") String fnr) {
-
-        String aktorId = getAktorIdOrElseThrow(aktorService, fnr).getAktorId();
+        String aktorId = authService.getAktorIdOrThrow(fnr);
 
         authService.skalVereInternBruker();
-        pepClient.sjekkLesetilgangTilAktorId(aktorId);
+        authService.sjekkLesetilgangMedAktorId(aktorId);
 
         veilederTilordningerRepository.hentTilordnetVeileder(aktorId)
                 .filter(Tilordning::isNyForVeileder)
@@ -172,21 +124,17 @@ public class VeilederTilordningController {
         String aktoerId = tilordning.getAktoerId();
 
         if (e instanceof NotAuthorizedException) {
-            LOG.warn("Feil ved tildeling av veileder: innlogget veileder: {}, fraVeileder: {} tilVeileder: {} bruker(aktørId): {} årsak: request is not authorized", innloggetVeilederId, fraVeilederId, tilVeilederId, aktoerId, e);
-        } else if (e instanceof PepException) {
-            LOG.error("Feil ved tildeling av veileder: innlogget veileder: {}, fraVeileder: {} tilVeileder: {} bruker(aktørId): {}, årsak: kall til ABAC feilet", innloggetVeilederId, fraVeilederId, tilVeilederId, aktoerId, e);
+            log.warn("Feil ved tildeling av veileder: innlogget veileder: {}, fraVeileder: {} tilVeileder: {} bruker(aktørId): {} årsak: request is not authorized", innloggetVeilederId, fraVeilederId, tilVeilederId, aktoerId, e);
         } else if (e instanceof IllegalArgumentException) {
-            LOG.error("Feil ved tildeling av veileder: innlogget veileder: {}, fraVeileder: {} tilVeileder: {} årsak: Fant ikke aktørId for bruker", innloggetVeilederId, tilordning.getFraVeilederId(), tilordning.getTilVeilederId(), e);
+            log.error("Feil ved tildeling av veileder: innlogget veileder: {}, fraVeileder: {} tilVeileder: {} årsak: Fant ikke aktørId for bruker", innloggetVeilederId, tilordning.getFraVeilederId(), tilordning.getTilVeilederId(), e);
         } else {
-            LOG.error("Feil ved tildeling av veileder: innlogget veileder: {}, fraVeileder: {} tilVeileder: {} bruker(aktørId): {} årsak: ukjent årsak", innloggetVeilederId, fraVeilederId, tilVeilederId, aktoerId, e);
+            log.error("Feil ved tildeling av veileder: innlogget veileder: {}, fraVeileder: {} tilVeileder: {} bruker(aktørId): {} årsak: ukjent årsak", innloggetVeilederId, fraVeilederId, tilVeilederId, aktoerId, e);
         }
     }
 
 
     private boolean erVeilederFor(Tilordning tilordning) {
-        return subjectService.getUserId()
-                .map((userId) -> userId.equals(tilordning.getVeilederId()))
-                .orElse(false);
+        return authService.getInnloggetVeilederIdent().equals(tilordning.getVeilederId());
     }
 
     private void kallWebhook() {
@@ -197,19 +145,19 @@ public class VeilederTilordningController {
         } catch (Exception e) {
             // Logger feilen, men bryr oss ikke om det. At webhooken feiler påvirker ikke funksjonaliteten
             // men gjør at endringen kommer senere inn i portefølje
-            LOG.warn("Webhook feilet", e);
+            log.warn("Webhook feilet", e);
         }
     }
 
     public void skrivTilDatabase(String aktoerId, String veileder) {
-        transactor.inTransaction(() -> {
+        transactor.executeWithoutResult((status) -> {
             veilederTilordningerRepository.upsertVeilederTilordning(aktoerId, veileder);
             veilederHistorikkRepository.insertTilordnetVeilederForAktorId(aktoerId, veileder);
             oppfolgingRepository.startOppfolgingHvisIkkeAlleredeStartet(aktoerId);
             kafka.send(new AktorId(aktoerId));
         });
 
-        LOG.debug(String.format("Veileder %s tilordnet aktoer %s", veileder, aktoerId));
+        log.debug(String.format("Veileder %s tilordnet aktoer %s", veileder, aktoerId));
     }
 
     static boolean kanTilordneVeileder(String eksisterendeVeileder, VeilederTilordning veilederTilordning) {

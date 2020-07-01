@@ -1,14 +1,10 @@
-package no.nav.veilarboppfolging.utils.mappers;
+package no.nav.veilarboppfolging.client.ytelseskontrakt;
 
-import no.nav.veilarboppfolging.controller.domain.Vedtak;
-import no.nav.veilarboppfolging.controller.domain.Ytelseskontrakt;
-import no.nav.veilarboppfolging.controller.domain.YtelseskontraktResponse;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt.WSBruker;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt.WSRettighetsgruppe;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt.WSVedtak;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt.WSYtelseskontrakt;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeResponse;
-import org.springframework.stereotype.Component;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.util.Collection;
@@ -17,14 +13,11 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-@Component
 public class YtelseskontraktMapper {
 
-    public YtelseskontraktResponse tilYtelseskontrakt(WSHentYtelseskontraktListeResponse response) {
-
+    static YtelseskontraktResponse tilYtelseskontrakt(WSHentYtelseskontraktListeResponse response) {
         final List<Vedtak> vedtakList = mapVedtak(response);
         final List<Ytelseskontrakt> ytelser = mapYtelser(response);
-
         return new YtelseskontraktResponse(vedtakList, ytelser);
     }
 

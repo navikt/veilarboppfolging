@@ -1,56 +1,46 @@
 package no.nav.veilarboppfolging.controller;
 
-import io.swagger.annotations.Api;
-import no.nav.veilarboppfolging.domain.OppfolgingskontraktResponse;
+import no.nav.veilarboppfolging.client.oppfolging.OppfolgingClient;
+import no.nav.veilarboppfolging.client.oppfolging.OppfolgingskontraktData;
+import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktClient;
 import no.nav.veilarboppfolging.services.AuthService;
-import no.nav.veilarboppfolging.utils.mappers.YtelseskontraktMapper;
 import no.nav.veilarboppfolging.controller.domain.YtelserResponse;
-import no.nav.veilarboppfolging.controller.domain.YtelseskontraktResponse;
-import org.slf4j.Logger;
+import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktResponse;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.time.LocalDate;
+import java.util.List;
 
 import static no.nav.veilarboppfolging.utils.CalendarConverter.convertDateToXMLGregorianCalendar;
-import static org.slf4j.LoggerFactory.getLogger;
 
-@Api(value = "Ytelser")
 @RestController
-@RequestMapping("/api/person/{fnr}")
+@RequestMapping("/api/person")
 public class YtelseController {
-    private static final Logger LOG = getLogger(YtelseController.class);
     private static final int MANEDER_BAK_I_TID = 2;
     private static final int MANEDER_FREM_I_TID = 1;
 
-    final private YtelseskontraktService ytelseskontraktService;
-    final private ArenaOppfolgingService arenaOppfolgingService;
-    final private OppfolgingMapper oppfolgingMapper;
-    final private YtelseskontraktMapper ytelseskontraktMapper;
+    private final OppfolgingClient oppfolgingClient;
+    private final YtelseskontraktClient ytelseskontraktClient;
     private final AuthService authService;
-    private final AktorService aktorService;
 
-    public YtelseController(YtelseskontraktService ytelseskontraktService,
-                            ArenaOppfolgingService arenaOppfolgingService,
-                            OppfolgingMapper oppfolgingMapper,
-                            YtelseskontraktMapper ytelseskontraktMapper,
-                            AuthService authService,
-                            AktorService aktorService) {
-        this.ytelseskontraktService = ytelseskontraktService;
-        this.arenaOppfolgingService = arenaOppfolgingService;
-        this.oppfolgingMapper = oppfolgingMapper;
-        this.ytelseskontraktMapper = ytelseskontraktMapper;
+    @Autowired
+    public YtelseController(
+            OppfolgingClient oppfolgingClient,
+            YtelseskontraktClient ytelseskontraktClient,
+            AuthService authService
+    ) {
+        this.oppfolgingClient = oppfolgingClient;
+        this.ytelseskontraktClient = ytelseskontraktClient;
         this.authService = authService;
-        this.aktorService = aktorService;
     }
 
-    @GET
-    @Path("/ytelser")
-    public YtelserResponse getYtelser(@PathParam("fnr") String fnr) throws PepException {
+    @GetMapping("/{fnr}/ytelser")
+    public YtelserResponse getYtelser(@PathVariable("fnr") String fnr) {
         authService.skalVereInternBruker();
         authService.sjekkLesetilgangMedFnr(fnr);
 
@@ -59,13 +49,12 @@ public class YtelseController {
         XMLGregorianCalendar fom = convertDateToXMLGregorianCalendar(periodeFom);
         XMLGregorianCalendar tom = convertDateToXMLGregorianCalendar(periodeTom);
 
-        LOG.info("Henter ytelse for fnr");
-        final YtelseskontraktResponse ytelseskontraktResponse = ytelseskontraktMapper.tilYtelseskontrakt(ytelseskontraktService.hentYtelseskontraktListe(fom, tom, fnr));
-        final OppfolgingskontraktResponse oppfolgingskontraktResponse = oppfolgingMapper.tilOppfolgingskontrakt(arenaOppfolgingService.hentOppfolgingskontraktListe(fom, tom, fnr));
+        final YtelseskontraktResponse ytelseskontraktResponse = ytelseskontraktClient.hentYtelseskontraktListe(fom, tom, fnr);
+        final List<OppfolgingskontraktData> kontrakter = oppfolgingClient.hentOppfolgingskontraktListe(fom, tom, fnr);
 
         return new YtelserResponse()
                 .withVedtaksliste(ytelseskontraktResponse.getVedtaksliste())
                 .withYtelser(ytelseskontraktResponse.getYtelser())
-                .withOppfoelgingskontrakter(oppfolgingskontraktResponse.getOppfoelgingskontrakter());
+                .withOppfoelgingskontrakter(kontrakter);
     }
 }

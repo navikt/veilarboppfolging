@@ -18,6 +18,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import javax.ws.rs.ForbiddenException;
 import javax.xml.datatype.XMLGregorianCalendar;
+import java.util.List;
 
 /**
  * Klient for å hente oppfølgingsinformasjon fra Arena.
@@ -44,23 +45,21 @@ public class OppfolgingClientImpl implements OppfolgingClient {
     }
 
     @Override
-    public HentOppfoelgingskontraktListeResponse hentOppfolgingskontraktListe(XMLGregorianCalendar fom, XMLGregorianCalendar tom, String fnr) {
+    public List<OppfolgingskontraktData> hentOppfolgingskontraktListe(XMLGregorianCalendar fom, XMLGregorianCalendar tom, String fnr) {
         HentOppfoelgingskontraktListeRequest request = new HentOppfoelgingskontraktListeRequest();
         final Periode periode = new Periode();
         periode.setFom(fom);
         periode.setTom(tom);
         request.setPeriode(periode);
         request.setPersonidentifikator(fnr);
-        HentOppfoelgingskontraktListeResponse response;
 
         try {
-            response = oppfoelgingPortType.hentOppfoelgingskontraktListe(request);
+            HentOppfoelgingskontraktListeResponse response = oppfoelgingPortType.hentOppfoelgingskontraktListe(request);
+            return OppfolgingMapper.tilOppfolgingskontrakt(response);
         } catch (HentOppfoelgingskontraktListeSikkerhetsbegrensning hentOppfoelgingskontraktListeSikkerhetsbegrensning) {
             log.warn("Veileder har ikke tilgang til å søke opp bruker", hentOppfoelgingskontraktListeSikkerhetsbegrensning);
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         }
-
-        return response;
     }
 
     @SneakyThrows

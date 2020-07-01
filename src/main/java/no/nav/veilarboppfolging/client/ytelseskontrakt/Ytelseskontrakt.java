@@ -1,11 +1,10 @@
-package no.nav.veilarboppfolging.controller.domain;
+package no.nav.veilarboppfolging.client.ytelseskontrakt;
 
 
 import javax.xml.datatype.XMLGregorianCalendar;
 
 @SuppressWarnings("unused")
 public class Ytelseskontrakt {
-
     private String status;
 
     private String ytelsestype;

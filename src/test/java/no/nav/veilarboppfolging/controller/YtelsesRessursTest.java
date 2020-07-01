@@ -1,15 +1,14 @@
 package no.nav.veilarboppfolging.controller;
 
 import no.nav.apiapp.security.PepClient;
-import no.nav.veilarboppfolging.domain.OppfolgingskontraktData;
-import no.nav.veilarboppfolging.domain.OppfolgingskontraktResponse;
+import no.nav.veilarboppfolging.client.oppfolging.OppfolgingskontraktData;
 import no.nav.veilarboppfolging.services.AuthService;
-import no.nav.veilarboppfolging.utils.mappers.OppfolgingMapper;
-import no.nav.veilarboppfolging.utils.mappers.YtelseskontraktMapper;
-import no.nav.veilarboppfolging.controller.domain.Vedtak;
+import no.nav.veilarboppfolging.client.oppfolging.OppfolgingMapper;
+import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktMapper;
+import no.nav.veilarboppfolging.client.ytelseskontrakt.Vedtak;
 import no.nav.veilarboppfolging.controller.domain.YtelserResponse;
-import no.nav.veilarboppfolging.controller.domain.Ytelseskontrakt;
-import no.nav.veilarboppfolging.controller.domain.YtelseskontraktResponse;
+import no.nav.veilarboppfolging.client.ytelseskontrakt.Ytelseskontrakt;
+import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktResponse;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
