@@ -6,10 +6,13 @@ import no.nav.common.abac.VeilarbPep;
 import no.nav.common.abac.audit.SpringAuditRequestInfoSupplier;
 import no.nav.common.cxf.StsConfig;
 import no.nav.common.featuretoggle.UnleashService;
+import no.nav.common.leaderelection.LeaderElectionClient;
+import no.nav.common.leaderelection.LeaderElectionHttpClient;
 import no.nav.common.metrics.InfluxClient;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.metrics.SensuConfig;
 import no.nav.common.sts.NaisSystemUserTokenProvider;
+import no.nav.common.sts.OpenAmSystemUserTokenProvider;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.utils.Credentials;
 import no.nav.common.utils.NaisUtils;
@@ -61,6 +64,16 @@ public class ApplicationConfig {
     @Bean
     public MetricsClient metricsClient() {
         return new InfluxClient(SensuConfig.defaultConfig());
+    }
+
+    @Bean
+    public LeaderElectionClient leaderElectionClient() {
+        return new LeaderElectionHttpClient();
+    }
+
+    @Bean
+    public OpenAmSystemUserTokenProvider openAmSystemUserTokenProvider() {
+        return new OpenAmSystemUserTokenProvider("", "", "", "");
     }
 
     @Bean

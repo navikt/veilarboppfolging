@@ -3,7 +3,7 @@ package no.nav.veilarboppfolging.kafka;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarboppfolging.domain.VeilarbArenaOppfolgingEndret;
-import no.nav.veilarboppfolging.services.Iserv28Service;
+import no.nav.veilarboppfolging.services.IservService;
 import no.nav.json.JsonUtils;
 
 import org.junit.Test;
@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit;
 public class ConsumerKafkaTest extends KafkaTest {
 
     @Inject
-    private Iserv28Service iserv28Service;
+    private IservService iservService;
 
     @Test(timeout=1000)
     public void testConsume() throws InterruptedException {
@@ -43,7 +43,7 @@ public class ConsumerKafkaTest extends KafkaTest {
         while(!prosessert) {
             try {
                 Thread.sleep(10);
-                verify(iserv28Service).behandleEndretBruker(eq(Consumer.deserialisereBruker(kafkaMelding)));
+                verify(iservService).behandleEndretBruker(eq(Consumer.deserialisereBruker(kafkaMelding)));
                 prosessert = true;
             } catch(Throwable a) {
             }

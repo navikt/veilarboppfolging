@@ -12,13 +12,11 @@ import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
 
 import static no.nav.veilarboppfolging.config.ApplicationConfig.APP_ENVIRONMENT_NAME;
-import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 
 @Configuration
 @Import({ KafkaHelsesjekk.class })
 @EnableKafka
 public class ConsumerConfig {
-
 
     @Bean
     public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<String, VeilarbArenaOppfolging>> kafkaListenerContainerFactory(KafkaHelsesjekk kafkaHelsesjekk) {

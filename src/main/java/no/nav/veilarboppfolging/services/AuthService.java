@@ -109,6 +109,10 @@ public class AuthService {
         return aktorregisterClient.hentAktorId(fnr);
     }
 
+    public String getFnrOrThrow(String aktorId) {
+        return aktorregisterClient.hentFnr(aktorId);
+    }
+
     public String getInnloggetBrukerToken() {
         return SubjectHandler
                 .getSsoToken()
