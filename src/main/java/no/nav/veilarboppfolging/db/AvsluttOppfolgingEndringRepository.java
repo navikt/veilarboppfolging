@@ -2,14 +2,11 @@ package no.nav.veilarboppfolging.db;
 
 import lombok.SneakyThrows;
 import no.nav.veilarboppfolging.domain.AvsluttOppfolgingKafkaDTO;
-import no.nav.sbl.sql.SqlUtils;
-import no.nav.sbl.sql.where.WhereClause;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.inject.Inject;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
@@ -17,12 +14,14 @@ import java.util.List;
 
 @Repository
 public class AvsluttOppfolgingEndringRepository {
+
     private final static String KAFKA_TABLE = "KAFKA_AVSLUTT_OPPFOLGING";
     private final static String AKTOR_ID = "AKTOR_ID";
     private final static String SLUTTDATO = "SLUTTDATO";
+
     private final JdbcTemplate db;
 
-    @Inject
+    @Autowired
     public AvsluttOppfolgingEndringRepository(JdbcTemplate db) {
         this.db = db;
     }
