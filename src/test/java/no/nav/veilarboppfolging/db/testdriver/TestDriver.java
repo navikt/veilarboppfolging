@@ -1,6 +1,6 @@
 package no.nav.veilarboppfolging.db.testdriver;
 
-import no.nav.veilarboppfolging.utils.ProxyUtils;
+import no.nav.veilarboppfolging.test.ProxyUtils;
 
 import java.sql.*;
 import java.util.Properties;

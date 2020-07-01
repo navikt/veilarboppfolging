@@ -1,7 +1,6 @@
 package no.nav.veilarboppfolging.utils;
 
 import lombok.SneakyThrows;
-import no.nav.apiapp.security.PepClient;
 import no.nav.veilarboppfolging.domain.Kvp;
 
 import java.util.Date;
@@ -14,7 +13,6 @@ public class KvpUtils {
 
     public static boolean sjekkTilgangGittKvp(PepClient pepClient, Kvp kvp, Supplier<Date> dateSupplier) {
         return kvp == null || sjekkTilgangGittKvp(pepClient, singletonList(kvp), dateSupplier);
-
     }
 
     @SneakyThrows

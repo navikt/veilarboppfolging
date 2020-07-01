@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-import static no.nav.veilarboppfolging.utils.mappers.DtoMappers.tilDto;
+import static no.nav.veilarboppfolging.utils.DtoMappers.tilDto;
 
 @RequestMapping("/api/oppfolging")
 @RestController

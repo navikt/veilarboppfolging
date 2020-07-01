@@ -3,7 +3,7 @@ package no.nav.veilarboppfolging.feed;
 import no.nav.fo.feed.common.FeedElement;
 import no.nav.fo.feed.producer.FeedProvider;
 import no.nav.veilarboppfolging.db.KvpRepository;
-import no.nav.veilarboppfolging.utils.mappers.DtoMappers;
+import no.nav.veilarboppfolging.utils.DtoMappers;
 import no.nav.veilarboppfolging.controller.domain.KvpDTO;
 import org.springframework.stereotype.Component;
 

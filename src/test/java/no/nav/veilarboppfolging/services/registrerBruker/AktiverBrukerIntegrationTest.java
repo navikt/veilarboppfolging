@@ -137,7 +137,7 @@ class AktiverBrukerIntegrationTest {
                 OppfolgingRepository oppfolgingRepository,
                 NyeBrukereFeedRepository nyeBrukereFeedRepository) {
             return new AktiverBrukerService(
-                    oppfolgingRepository,
+                    authService, oppfolgingRepository,
                     aktorService,
                     behandleArbeidssoekerV1,
                     nyeBrukereFeedRepository

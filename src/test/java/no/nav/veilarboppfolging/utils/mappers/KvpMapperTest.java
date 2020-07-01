@@ -2,6 +2,7 @@ package no.nav.veilarboppfolging.utils.mappers;
 
 import no.nav.veilarboppfolging.domain.Kvp;
 import no.nav.veilarboppfolging.controller.domain.KvpDTO;
+import no.nav.veilarboppfolging.utils.DtoMappers;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.is;

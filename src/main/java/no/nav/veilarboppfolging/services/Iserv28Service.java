@@ -8,14 +8,14 @@ import no.nav.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.veilarboppfolging.db.OppfolgingsStatusRepository;
 import no.nav.veilarboppfolging.domain.IservMapper;
 import no.nav.veilarboppfolging.domain.OppfolgingTable;
-import no.nav.veilarboppfolging.utils.mappers.VeilarbArenaOppfolgingEndret;
-import no.nav.veilarboppfolging.utils.FunksjonelleMetrikker;
+import no.nav.veilarboppfolging.domain.VeilarbArenaOppfolgingEndret;
 import no.nav.metrics.utils.MetricsUtils;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
@@ -31,8 +31,8 @@ import static no.nav.veilarboppfolging.utils.ArenaUtils.erUnderOppfolging;
 import static no.nav.veilarboppfolging.services.Iserv28Service.AvslutteOppfolgingResultat.*;
 import static no.nav.sbl.sql.DbConstants.CURRENT_TIMESTAMP;
 
-@Component
 @Slf4j
+@Service
 public class Iserv28Service{
 
     enum AvslutteOppfolgingResultat {
@@ -135,7 +135,7 @@ public class Iserv28Service{
     private void startOppfolging(VeilarbArenaOppfolgingEndret oppfolgingEndret) {
         log.info("Starter oppfølging automatisk for bruker med aktørid {}", oppfolgingEndret.getAktoerid());
         oppfolgingRepository.startOppfolgingHvisIkkeAlleredeStartet(oppfolgingEndret.getAktoerid());
-        FunksjonelleMetrikker.startetOppfolgingAutomatisk(oppfolgingEndret.getFormidlingsgruppekode(), oppfolgingEndret.getKvalifiseringsgruppekode());
+        MetricsService.startetOppfolgingAutomatisk(oppfolgingEndret.getFormidlingsgruppekode(), oppfolgingEndret.getKvalifiseringsgruppekode());
     }
 
     private void oppdaterUtmeldingTabell(VeilarbArenaOppfolgingEndret oppfolgingEndret) {
@@ -203,7 +203,7 @@ public class Iserv28Service{
                 resultat = oppfolgingAvsluttet ? AVSLUTTET_OK : IKKE_AVSLUTTET;
                 if(oppfolgingAvsluttet) {
                     slettBrukerFraUtmeldingTabell(aktoerId);
-                    FunksjonelleMetrikker.antallBrukereAvsluttetAutomatisk();
+                    MetricsService.antallBrukereAvsluttetAutomatisk();
                 }
             }
         } catch (Exception e) {

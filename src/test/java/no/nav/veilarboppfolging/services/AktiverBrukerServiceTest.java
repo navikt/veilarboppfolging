@@ -38,7 +38,7 @@ class AktiverBrukerServiceTest {
 
         aktiverBrukerService =
                 new AktiverBrukerService(
-                        oppfolgingRepository,
+                        authService, oppfolgingRepository,
                         aktorService,
                         behandleArbeidssoekerV1,
                         nyeBrukereFeedRepository);

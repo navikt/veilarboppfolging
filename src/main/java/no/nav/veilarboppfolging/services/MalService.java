@@ -7,9 +7,9 @@ import no.nav.veilarboppfolging.db.KvpRepository;
 import no.nav.veilarboppfolging.domain.Kvp;
 import no.nav.veilarboppfolging.domain.MalData;
 import no.nav.veilarboppfolging.services.OppfolgingResolver.OppfolgingResolverDependencies;
-import no.nav.veilarboppfolging.utils.FunksjonelleMetrikker;
 import no.nav.veilarboppfolging.utils.KvpUtils;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
 import java.util.List;
@@ -18,7 +18,7 @@ import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 import static no.nav.apiapp.feil.FeilType.INGEN_TILGANG;
 
-@Component
+@Service
 public class MalService {
 
     @Inject
@@ -69,7 +69,7 @@ public class MalService {
         ofNullable(kvp).ifPresent(this::sjekkEnhetTilgang);
 
         MalData malData = resolver.oppdaterMal(mal, endretAvVeileder);
-        FunksjonelleMetrikker.oppdatertMittMal(malData, resolver.getMalList().size());
+        MetricsService.oppdatertMittMal(malData, resolver.getMalList().size());
         return malData;
     }
 

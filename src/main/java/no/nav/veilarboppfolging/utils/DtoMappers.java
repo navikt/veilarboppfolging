@@ -1,4 +1,4 @@
-package no.nav.veilarboppfolging.utils.mappers;
+package no.nav.veilarboppfolging.utils;
 
 import no.nav.veilarboppfolging.controller.domain.*;
 import no.nav.veilarboppfolging.domain.*;

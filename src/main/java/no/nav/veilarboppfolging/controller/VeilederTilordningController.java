@@ -1,6 +1,5 @@
 package no.nav.veilarboppfolging.controller;
 
-import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarboppfolging.db.OppfolgingFeedRepository;
 import no.nav.veilarboppfolging.db.OppfolgingRepository;
@@ -9,13 +8,11 @@ import no.nav.veilarboppfolging.db.VeilederTilordningerRepository;
 import no.nav.veilarboppfolging.domain.AktorId;
 import no.nav.veilarboppfolging.domain.Tilordning;
 import no.nav.veilarboppfolging.kafka.OppfolgingStatusKafkaProducer;
-import no.nav.veilarboppfolging.controller.domain.OppfolgingFeedDTO;
 import no.nav.veilarboppfolging.controller.domain.TilordneVeilederResponse;
 import no.nav.veilarboppfolging.controller.domain.VeilederTilordning;
 import no.nav.veilarboppfolging.services.AuthService;
-import no.nav.veilarboppfolging.utils.FunksjonelleMetrikker;
-import org.slf4j.Logger;
-import org.springframework.stereotype.Component;
+import no.nav.veilarboppfolging.services.MetricsService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,13 +30,33 @@ import java.util.concurrent.CompletableFuture;
 @RequestMapping("/api")
 public class VeilederTilordningController {
 
+    private final MetricsService metricsService;
     private final VeilederTilordningerRepository veilederTilordningerRepository;
     private final AuthService authService;
-    private final FeedProducer<OppfolgingFeedDTO> oppfolgingFeed;
+//    private final FeedProducer<OppfolgingFeedDTO> oppfolgingFeed;
     private final OppfolgingRepository oppfolgingRepository;
     private final VeilederHistorikkRepository veilederHistorikkRepository;
     private final TransactionTemplate transactor;
     private final OppfolgingStatusKafkaProducer kafka;
+
+    @Autowired
+    public VeilederTilordningController(
+            MetricsService metricsService,
+            VeilederTilordningerRepository veilederTilordningerRepository,
+            AuthService authService,
+            OppfolgingRepository oppfolgingRepository,
+            VeilederHistorikkRepository veilederHistorikkRepository,
+            TransactionTemplate transactor,
+            OppfolgingStatusKafkaProducer kafka
+    ) {
+        this.metricsService = metricsService;
+        this.veilederTilordningerRepository = veilederTilordningerRepository;
+        this.authService = authService;
+        this.oppfolgingRepository = oppfolgingRepository;
+        this.veilederHistorikkRepository = veilederHistorikkRepository;
+        this.transactor = transactor;
+        this.kafka = kafka;
+    }
 
     @PostMapping("/tilordneveileder")
     public TilordneVeilederResponse postVeilederTilordninger(List<VeilederTilordning> tilordninger) {
@@ -110,7 +127,7 @@ public class VeilederTilordningController {
         veilederTilordningerRepository.hentTilordnetVeileder(aktorId)
                 .filter(Tilordning::isNyForVeileder)
                 .filter(this::erVeilederFor)
-                .map(FunksjonelleMetrikker::lestAvVeileder)
+                .map(metricsService::lestAvVeileder)
                 .map(Tilordning::getAktorId)
                 .map(veilederTilordningerRepository::markerSomLestAvVeileder)
                 .ifPresent(i -> kallWebhook());
@@ -141,7 +158,9 @@ public class VeilederTilordningController {
         try {
             //Venter for å gi tid til å populere ID-er i feeden
             Thread.sleep(OppfolgingFeedRepository.INSERT_ID_INTERVAL);
-            oppfolgingFeed.activateWebhook();
+
+            // TODO: Add feed
+//            oppfolgingFeed.activateWebhook();
         } catch (Exception e) {
             // Logger feilen, men bryr oss ikke om det. At webhooken feiler påvirker ikke funksjonaliteten
             // men gjør at endringen kommer senere inn i portefølje

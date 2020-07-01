@@ -6,6 +6,8 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import no.nav.apiapp.feil.Feil;
 import no.nav.apiapp.security.PepClient;
+import no.nav.veilarboppfolging.domain.Oppfolging;
+import no.nav.veilarboppfolging.domain.Oppfolgingsbruker;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;

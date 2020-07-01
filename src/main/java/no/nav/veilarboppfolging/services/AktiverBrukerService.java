@@ -7,31 +7,34 @@ import no.nav.veilarboppfolging.db.NyeBrukereFeedRepository;
 import no.nav.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.veilarboppfolging.domain.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.ws.rs.core.Response;
-
 import static java.util.Optional.ofNullable;
-import static javax.ws.rs.core.Response.Status.FORBIDDEN;
-import static no.nav.veilarboppfolging.utils.FnrUtils.*;
 
 @Slf4j
-@Component
+@Service
 public class AktiverBrukerService {
 
+    private final AuthService authService;
+
     private final AktorregisterClient aktorregisterClient;
+
     private final BehandleArbeidssokerClient behandleArbeidssokerClient;
 
     private final OppfolgingRepository oppfolgingRepository;
+
     private final NyeBrukereFeedRepository nyeBrukereFeedRepository;
 
     @Autowired
-    public AktiverBrukerService(OppfolgingRepository oppfolgingRepository,
-                                AktorregisterClient aktorregisterClient,
-                                BehandleArbeidssokerClient behandleArbeidssokerClient,
-                                NyeBrukereFeedRepository nyeBrukereFeedRepository
+    public AktiverBrukerService(
+            AuthService authService,
+            OppfolgingRepository oppfolgingRepository,
+            AktorregisterClient aktorregisterClient,
+            BehandleArbeidssokerClient behandleArbeidssokerClient,
+            NyeBrukereFeedRepository nyeBrukereFeedRepository
     ) {
+        this.authService = authService;
         this.aktorregisterClient = aktorregisterClient;
         this.behandleArbeidssokerClient = behandleArbeidssokerClient;
         this.oppfolgingRepository = oppfolgingRepository;
@@ -41,21 +44,18 @@ public class AktiverBrukerService {
     @Transactional
     public void aktiverBruker(AktiverArbeidssokerData bruker) {
         String fnr = ofNullable(bruker.getFnr())
-                .map(f -> f.getFnr())
+                .map(Fnr::getFnr)
                 .orElse("");
 
-        AktorId aktorId = getAktorIdOrElseThrow(aktorregisterClient, fnr);
+        AktorId aktorId = new AktorId(authService.getAktorIdOrThrow(fnr));
 
         aktiverBrukerOgOppfolging(fnr, aktorId, bruker.getInnsatsgruppe());
     }
 
     @Transactional
     public void reaktiverBruker(Fnr fnr) {
-
-        AktorId aktorId = getAktorIdOrElseThrow(aktorregisterClient, fnr.getFnr());
-
+        AktorId aktorId = new AktorId(authService.getAktorIdOrThrow(fnr.getFnr()));
         startReaktiveringAvBrukerOgOppfolging(fnr, aktorId);
-
     }
 
     private void startReaktiveringAvBrukerOgOppfolging(Fnr fnr, AktorId aktorId) {
@@ -82,33 +82,15 @@ public class AktiverBrukerService {
         nyeBrukereFeedRepository.tryLeggTilFeedIdPaAlleElementerUtenFeedId();
     }
 
-
     @Transactional
     public void aktiverSykmeldt(String uid, SykmeldtBrukerType sykmeldtBrukerType) {
         Oppfolgingsbruker oppfolgingsbruker = Oppfolgingsbruker.builder()
                 .sykmeldtBrukerType(sykmeldtBrukerType)
-                .aktoerId(getAktorIdOrElseThrow(aktorregisterClient, uid).getAktorId())
+                .aktoerId(authService.getAktorIdOrThrow(uid))
                 .build();
 
         oppfolgingRepository.startOppfolgingHvisIkkeAlleredeStartet(oppfolgingsbruker);
     }
 
-    private class ArenaFeilType implements Feil.Type {
-        private String feilType;
-
-        public ArenaFeilType(String feilType) {
-            this.feilType = feilType;
-        }
-
-        @Override
-        public String getName() {
-            return feilType;
-        }
-
-        @Override
-        public Response.Status getStatus() {
-            return FORBIDDEN;
-        }
-    }
 }
 

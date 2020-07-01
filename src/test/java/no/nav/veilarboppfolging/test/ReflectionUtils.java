@@ -1,4 +1,4 @@
-package no.nav.veilarboppfolging.utils;
+package no.nav.veilarboppfolging.test;
 
 import lombok.SneakyThrows;
 

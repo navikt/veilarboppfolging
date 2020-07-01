@@ -7,11 +7,6 @@ import lombok.SneakyThrows;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import no.nav.apiapp.security.PepClient;
-import no.nav.apiapp.security.SecurityLevelAuthorizationModule;
-import no.nav.brukerdialog.security.oidc.SystemUserTokenProvider;
-import no.nav.common.auth.SubjectHandler;
-import no.nav.dialogarena.aktor.AktorService;
 import no.nav.veilarboppfolging.client.veilarbaktivitet.ArenaAktivitetDTO;
 import no.nav.veilarboppfolging.db.KvpRepository;
 import no.nav.veilarboppfolging.db.OppfolgingRepository;
@@ -20,11 +15,7 @@ import no.nav.veilarboppfolging.kafka.AvsluttOppfolgingProducer;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 import no.nav.veilarboppfolging.controller.domain.DkifResponse;
 import no.nav.veilarboppfolging.utils.ArenaUtils;
-import no.nav.veilarboppfolging.utils.FunksjonelleMetrikker;
 import no.nav.veilarboppfolging.utils.StringUtils;
-import no.nav.metrics.MetricsFactory;
-import no.nav.sbl.featuretoggle.unleash.UnleashService;
-import no.nav.sbl.jdbc.Transactor;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt.WSYtelseskontrakt;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeRequest;
@@ -32,9 +23,6 @@ import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskont
 import org.json.JSONObject;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-
-import javax.inject.Inject;
-import javax.ws.rs.NotFoundException;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
@@ -51,7 +39,6 @@ import static no.nav.veilarboppfolging.domain.KodeverkBruker.SYSTEM;
 import static no.nav.veilarboppfolging.domain.arena.AktivitetStatus.AVBRUTT;
 import static no.nav.veilarboppfolging.domain.arena.AktivitetStatus.FULLFORT;
 import static no.nav.veilarboppfolging.utils.ArenaUtils.*;
-import static no.nav.veilarboppfolging.utils.FnrUtils.getAktorIdOrElseThrow;
 
 
 @Slf4j
@@ -547,7 +534,7 @@ public class OppfolgingResolver {
         arenaOppfolgingTilstand().ifPresent(status -> {
             if (brukerHarByttetKontor(status, gjeldendeKvp)) {
                 deps.getKvpService().stopKvpUtenEnhetSjekk(aktorId, "KVP avsluttet automatisk pga. endret Nav-enhet", SYSTEM);
-                FunksjonelleMetrikker.stopKvpDueToChangedUnit();
+                MetricsService.stopKvpDueToChangedUnit();
                 reloadOppfolging();
             }
         });

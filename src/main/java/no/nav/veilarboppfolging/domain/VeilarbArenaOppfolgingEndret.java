@@ -1,4 +1,4 @@
-package no.nav.veilarboppfolging.utils.mappers;
+package no.nav.veilarboppfolging.domain;
 
 import lombok.Data;
 import lombok.experimental.Accessors;

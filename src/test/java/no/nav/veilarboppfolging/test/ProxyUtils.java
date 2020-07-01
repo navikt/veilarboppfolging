@@ -1,4 +1,4 @@
-package no.nav.veilarboppfolging.utils;
+package no.nav.veilarboppfolging.test;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;

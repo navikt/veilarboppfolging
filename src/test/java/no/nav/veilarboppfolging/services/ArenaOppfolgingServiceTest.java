@@ -27,7 +27,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static no.nav.veilarboppfolging.config.ApplicationConfig.VEILARBARENAAPI_URL_PROPERTY;
-import static no.nav.veilarboppfolging.utils.CalendarConverter.convertDateToXMLGregorianCalendar;
+import static no.nav.veilarboppfolging.utils.DateUtils.convertDateToXMLGregorianCalendar;
 import static no.nav.json.JsonUtils.toJson;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;

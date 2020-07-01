@@ -2,7 +2,7 @@ package no.nav.veilarboppfolging.kafka;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.veilarboppfolging.utils.mappers.VeilarbArenaOppfolgingEndret;
+import no.nav.veilarboppfolging.domain.VeilarbArenaOppfolgingEndret;
 import no.nav.veilarboppfolging.services.Iserv28Service;
 import no.nav.json.JsonUtils;
 

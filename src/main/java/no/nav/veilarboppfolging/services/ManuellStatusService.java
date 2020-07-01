@@ -3,11 +3,12 @@ package no.nav.veilarboppfolging.services;
 import no.nav.veilarboppfolging.db.ManuellStatusRepository;
 import no.nav.veilarboppfolging.domain.OppfolgingTable;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
 import java.util.Optional;
 
-@Component
+@Service
 public class ManuellStatusService {
 
     @Inject

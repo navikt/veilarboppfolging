@@ -1,11 +1,11 @@
 package no.nav.veilarboppfolging.mock;
 
-import no.nav.veilarboppfolging.utils.CalendarConverter;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.HentYtelseskontraktListeSikkerhetsbegrensning;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt.*;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeRequest;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeResponse;
+import no.nav.veilarboppfolging.utils.DateUtils;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.time.LocalDate;
@@ -18,11 +18,11 @@ public class YtelseskontraktV3Mock implements YtelseskontraktV3 {
     private static final int FAGSYSTEM_SAK_ID_1 = 111111111;
     public static final String YT_STATUS_1 = "Aktiv";
     public static final String YTELSESTYPE_1 = "Arbeidsavklaringspenger";
-    public static final XMLGregorianCalendar YT_FOM_GYLDIGHETSPERIODE_1 = CalendarConverter.convertDateToXMLGregorianCalendar(LocalDate.of(2016, 10, 18));
-    public static final XMLGregorianCalendar YT_DATO_KRAV_MOTTATT_1 = CalendarConverter.convertDateToXMLGregorianCalendar(LocalDate.of(2016, 10, 19));
-    public static final XMLGregorianCalendar YT_FOM_GYLDIGHETSPERIODE_2 = CalendarConverter.convertDateToXMLGregorianCalendar(LocalDate.of(2016, 4, 1));
-    public static final XMLGregorianCalendar YT_TOM_GYLDIGHETSPERIODE_2 = CalendarConverter.convertDateToXMLGregorianCalendar(LocalDate.of(2016, 8, 29));
-    public static final XMLGregorianCalendar YT_DATO_KRAV_MOTTATT_2 = CalendarConverter.convertDateToXMLGregorianCalendar(LocalDate.of(2016, 4, 1));
+    public static final XMLGregorianCalendar YT_FOM_GYLDIGHETSPERIODE_1 = DateUtils.convertDateToXMLGregorianCalendar(LocalDate.of(2016, 10, 18));
+    public static final XMLGregorianCalendar YT_DATO_KRAV_MOTTATT_1 = DateUtils.convertDateToXMLGregorianCalendar(LocalDate.of(2016, 10, 19));
+    public static final XMLGregorianCalendar YT_FOM_GYLDIGHETSPERIODE_2 = DateUtils.convertDateToXMLGregorianCalendar(LocalDate.of(2016, 4, 1));
+    public static final XMLGregorianCalendar YT_TOM_GYLDIGHETSPERIODE_2 = DateUtils.convertDateToXMLGregorianCalendar(LocalDate.of(2016, 8, 29));
+    public static final XMLGregorianCalendar YT_DATO_KRAV_MOTTATT_2 = DateUtils.convertDateToXMLGregorianCalendar(LocalDate.of(2016, 4, 1));
     private static final int FAGSYSTEM_SAK_ID_2 = 222222222;
 
     public static final String YTELSESTYPE_2 = "Arbeidsavklaringspenger";
@@ -83,7 +83,7 @@ public class YtelseskontraktV3Mock implements YtelseskontraktV3 {
         wsVedtak.setUttaksgrad(100);
 
         final WSPeriode wsPeriode = new WSPeriode();
-        wsPeriode.setFom(CalendarConverter.convertDateToXMLGregorianCalendar(LocalDate.of(2016, 10, 18)));
+        wsPeriode.setFom(DateUtils.convertDateToXMLGregorianCalendar(LocalDate.of(2016, 10, 18)));
         wsVedtak.setVedtaksperiode(wsPeriode);
 
         wsVedtak.setStatus(VED_STATUS_1);
@@ -95,13 +95,13 @@ public class YtelseskontraktV3Mock implements YtelseskontraktV3 {
     private void leggTilVedtak2(WSYtelseskontrakt ytelseskontrakt) {
         final List<WSVedtak> vedtak = ytelseskontrakt.getIhtVedtak();
         final WSVedtak wsVedtak = new WSVedtak();
-        wsVedtak.setBeslutningsdato(CalendarConverter.convertDateToXMLGregorianCalendar(LocalDate.of(2016, 4, 2)));
+        wsVedtak.setBeslutningsdato(DateUtils.convertDateToXMLGregorianCalendar(LocalDate.of(2016, 4, 2)));
         wsVedtak.setPeriodetypeForYtelse("Stans");
         wsVedtak.setUttaksgrad(100);
 
         final WSPeriode wsPeriode = new WSPeriode();
         wsVedtak.setVedtaksperiode(wsPeriode);
-        wsPeriode.setFom(CalendarConverter.convertDateToXMLGregorianCalendar(LocalDate.of(2016, 4, 1)));
+        wsPeriode.setFom(DateUtils.convertDateToXMLGregorianCalendar(LocalDate.of(2016, 4, 1)));
 
         wsVedtak.setStatus(VED_STATUS_2);
         wsVedtak.setVedtakstype(VEDTAKSTYPE_2);
@@ -112,14 +112,14 @@ public class YtelseskontraktV3Mock implements YtelseskontraktV3 {
     private void leggTilVedtak3(WSYtelseskontrakt ytelseskontrakt) {
         final List<WSVedtak> vedtak = ytelseskontrakt.getIhtVedtak();
         final WSVedtak wsVedtak = new WSVedtak();
-        wsVedtak.setBeslutningsdato(CalendarConverter.convertDateToXMLGregorianCalendar(LocalDate.of(2016, 4, 2)));
+        wsVedtak.setBeslutningsdato(DateUtils.convertDateToXMLGregorianCalendar(LocalDate.of(2016, 4, 2)));
         wsVedtak.setPeriodetypeForYtelse("Stans");
         wsVedtak.setUttaksgrad(100);
         wsVedtak.setVedtakBruttoBeloep(500000);
         wsVedtak.setVedtakNettoBeloep(500000);
 
         final WSPeriode wsPeriode = new WSPeriode();
-        wsPeriode.setFom(CalendarConverter.convertDateToXMLGregorianCalendar(LocalDate.of(2016, 4, 1)));
+        wsPeriode.setFom(DateUtils.convertDateToXMLGregorianCalendar(LocalDate.of(2016, 4, 1)));
         wsVedtak.setVedtaksperiode(wsPeriode);
 
         wsVedtak.setStatus(VED_STATUS_3);

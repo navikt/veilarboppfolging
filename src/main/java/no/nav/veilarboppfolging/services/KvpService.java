@@ -9,7 +9,6 @@ import no.nav.veilarboppfolging.db.OppfolgingsStatusRepository;
 import no.nav.veilarboppfolging.domain.KodeverkBruker;
 import no.nav.veilarboppfolging.domain.Kvp;
 import no.nav.veilarboppfolging.domain.OppfolgingTable;
-import no.nav.veilarboppfolging.utils.FunksjonelleMetrikker;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -76,7 +75,7 @@ public class KvpService {
                 authService.getInnloggetVeilederIdent(),
                 begrunnelse);
 
-        FunksjonelleMetrikker.startKvp();
+        MetricsService.startKvp();
     }
 
     @SneakyThrows
@@ -115,7 +114,7 @@ public class KvpService {
                 begrunnelse,
                 kodeverkBruker);
 
-        FunksjonelleMetrikker.stopKvp();
+        MetricsService.stopKvp();
     }
 
     Kvp gjeldendeKvp(String aktorId) {

@@ -17,7 +17,7 @@ import java.util.List;
 
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
-import static no.nav.veilarboppfolging.utils.CalendarConverter.convertDateToXMLGregorianCalendar;
+import static no.nav.veilarboppfolging.utils.DateUtils.convertDateToXMLGregorianCalendar;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 

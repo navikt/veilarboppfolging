@@ -12,7 +12,8 @@ import no.nav.veilarboppfolging.db.VeilederHistorikkRepository;
 import no.nav.veilarboppfolging.domain.*;
 import no.nav.veilarboppfolging.utils.KvpUtils;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
-import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
 import java.util.Arrays;
@@ -26,41 +27,47 @@ import static no.nav.veilarboppfolging.domain.InnstillingsHistorikk.Type.*;
 import static no.nav.veilarboppfolging.domain.KodeverkBruker.NAV;
 import static no.nav.veilarboppfolging.domain.KodeverkBruker.SYSTEM;
 
-@Component
+@Service
 public class HistorikkService {
 
-    @Inject
-    private AktorService aktorService;
+    private final AuthService authService;
 
-    @Inject
-    private KvpRepository kvpRepository;
+    private final KvpRepository kvpRepository;
+    
+    private final OppfolgingRepository oppfolgingRepository;
 
-    @Inject
-    private PepClient pepClient;
+    private final VeilederHistorikkRepository veilederHistorikkRepository;
 
-    @Inject
-    private OppfolgingRepository oppfolgingRepository;
+    private final UnleashService unleashService;
 
-    @Inject
-    private VeilederHistorikkRepository veilederHistorikkRepository;
+    private final OppfolgingsenhetHistorikkRepository oppfolgingsenhetHistorikkRepository;
 
-    @Inject
-    private UnleashService unleashService;
-
-    @Inject
-    private OppfolgingsenhetHistorikkRepository oppfolgingsenhetHistorikkRepository;
+    @Autowired
+    public HistorikkService(
+            AuthService authService,
+            KvpRepository kvpRepository,
+            OppfolgingRepository oppfolgingRepository,
+            VeilederHistorikkRepository veilederHistorikkRepository,
+            UnleashService unleashService,
+            OppfolgingsenhetHistorikkRepository oppfolgingsenhetHistorikkRepository
+    ) {
+        this.authService = authService;
+        this.kvpRepository = kvpRepository;
+        this.oppfolgingRepository = oppfolgingRepository;
+        this.veilederHistorikkRepository = veilederHistorikkRepository;
+        this.unleashService = unleashService;
+        this.oppfolgingsenhetHistorikkRepository = oppfolgingsenhetHistorikkRepository;
+    }
 
 
     public List<InnstillingsHistorikk> hentInstillingsHistorikk(String fnr) {
-        String aktorId = aktorService.getAktorId(fnr)
-                .orElseThrow(() -> new IllegalArgumentException("Fant ikke aktør for fnr: " + fnr));
-
+        String aktorId = authService.getAktorIdOrThrow(fnr);
         return hentInstillingHistorikk(aktorId).filter(Objects::nonNull).flatMap(s -> s).collect(Collectors.toList());
     }
 
     @SneakyThrows
     private boolean harTilgangTilEnhet(Kvp kvp) {
-        return pepClient.harTilgangTilEnhet(kvp.getEnhet());
+        return authService.harTilgangTilEnhet(kvp.getEnhet());
     }
 
     private InnstillingsHistorikk tilDTO(VeilederTilordningerData veilederTilordningerData) {

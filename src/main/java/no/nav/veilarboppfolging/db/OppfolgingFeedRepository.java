@@ -8,7 +8,6 @@ import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import no.nav.veilarboppfolging.domain.AktorId;
 import no.nav.veilarboppfolging.controller.domain.OppfolgingFeedDTO;
 import no.nav.veilarboppfolging.controller.domain.OppfolgingKafkaDTO;
-import no.nav.veilarboppfolging.utils.OppfolgingFeedUtil;
 import no.nav.metrics.utils.MetricsUtils;
 import no.nav.sbl.sql.SqlUtils;
 import no.nav.sbl.sql.where.WhereClause;
@@ -19,8 +18,11 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static java.util.stream.Collectors.toList;
@@ -176,7 +178,7 @@ public class OppfolgingFeedRepository {
                 sinceId,
                 pageSize
         ).stream()
-                .map(OppfolgingFeedUtil::mapRadTilOppfolgingFeedDTO)
+                .map(OppfolgingFeedRepository::mapRadTilOppfolgingFeedDTO)
                 .collect(toList());
     }
 
@@ -204,5 +206,19 @@ public class OppfolgingFeedRepository {
                 log.info("Satte feed-id på {} rader. Tid brukt: {} ms", updatedRows, System.currentTimeMillis() - start);
             }
         });
+    }
+
+    public static OppfolgingFeedDTO mapRadTilOppfolgingFeedDTO(Map<String, Object> rad) {
+        return OppfolgingFeedDTO
+                .builder()
+                .aktoerid((String) rad.get("AKTOR_ID"))
+                .veileder((String) rad.get("VEILEDER"))
+                .oppfolging(rad.get("UNDER_OPPFOLGING").equals(BigDecimal.ONE))
+                .nyForVeileder(rad.get("NY_FOR_VEILEDER").equals(BigDecimal.ONE))
+                .endretTimestamp((Timestamp) (rad.get("OPPDATERT")))
+                .startDato((Timestamp) (rad.get("STARTDATO")))
+                .feedId((BigDecimal) rad.get("FEED_ID"))
+                .manuell(BigDecimal.ONE.equals(rad.get("MANUELL")))
+                .build();
     }
 }

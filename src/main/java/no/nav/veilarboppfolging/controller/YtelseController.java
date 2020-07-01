@@ -16,7 +16,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import java.time.LocalDate;
 import java.util.List;
 
-import static no.nav.veilarboppfolging.utils.CalendarConverter.convertDateToXMLGregorianCalendar;
+import static no.nav.veilarboppfolging.utils.DateUtils.convertDateToXMLGregorianCalendar;
 
 @RestController
 @RequestMapping("/api/person")

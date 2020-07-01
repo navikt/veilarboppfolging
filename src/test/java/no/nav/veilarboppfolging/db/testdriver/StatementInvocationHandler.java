@@ -5,7 +5,7 @@ import java.lang.reflect.Method;
 import java.sql.Statement;
 
 import static no.nav.veilarboppfolging.db.testdriver.DatabaseSyntaxMapper.h2Syntax;
-import static no.nav.veilarboppfolging.utils.ReflectionUtils.getMethod;
+import static no.nav.veilarboppfolging.test.ReflectionUtils.getMethod;
 
 public class StatementInvocationHandler implements InvocationHandler {
 

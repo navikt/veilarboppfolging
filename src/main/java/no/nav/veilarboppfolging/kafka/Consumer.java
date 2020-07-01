@@ -1,9 +1,9 @@
 package no.nav.veilarboppfolging.kafka;
 
-import no.nav.veilarboppfolging.utils.mappers.VeilarbArenaOppfolgingEndret;
+import no.nav.veilarboppfolging.domain.VeilarbArenaOppfolgingEndret;
 import no.nav.veilarboppfolging.services.Iserv28Service;
 import no.nav.veilarboppfolging.services.OppfolgingsenhetEndringService;
-import no.nav.veilarboppfolging.utils.FunksjonelleMetrikker;
+import no.nav.veilarboppfolging.services.MetricsService;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
@@ -41,7 +41,7 @@ public class Consumer {
         } catch (Throwable t) {
             log.error("Feilet ved behandling av kafka-melding: {}\n{}", kafkaMelding, t.getMessage(), t);
         } finally {
-            FunksjonelleMetrikker.antallMeldingerKonsumertAvKafka();
+            MetricsService.antallMeldingerKonsumertAvKafka();
         }
     }
 

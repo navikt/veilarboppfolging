@@ -5,8 +5,8 @@ import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.Statement;
 
-import static no.nav.veilarboppfolging.utils.ProxyUtils.proxy;
-import static no.nav.veilarboppfolging.utils.ReflectionUtils.getMethod;
+import static no.nav.veilarboppfolging.test.ProxyUtils.proxy;
+import static no.nav.veilarboppfolging.test.ReflectionUtils.getMethod;
 
 public class ConnectionInvocationHandler implements InvocationHandler {
 

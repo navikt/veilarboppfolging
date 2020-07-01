@@ -4,14 +4,14 @@ import no.nav.veilarboppfolging.controller.domain.Mal;
 import no.nav.veilarboppfolging.domain.MalData;
 import no.nav.veilarboppfolging.services.AuthService;
 import no.nav.veilarboppfolging.services.MalService;
-import no.nav.veilarboppfolging.utils.mappers.DtoMappers;
+import no.nav.veilarboppfolging.utils.DtoMappers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 import static java.util.stream.Collectors.toList;
-import static no.nav.veilarboppfolging.utils.mappers.DtoMappers.tilDto;
+import static no.nav.veilarboppfolging.utils.DtoMappers.tilDto;
 
 @RestController
 @RequestMapping("/api/oppfolging")

@@ -6,7 +6,7 @@ import io.swagger.annotations.ApiResponses;
 import no.nav.common.auth.subject.SubjectHandler;
 import no.nav.veilarboppfolging.db.KvpRepository;
 import no.nav.veilarboppfolging.domain.Kvp;
-import no.nav.veilarboppfolging.utils.mappers.DtoMappers;
+import no.nav.veilarboppfolging.utils.DtoMappers;
 import no.nav.veilarboppfolging.controller.domain.KvpDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
