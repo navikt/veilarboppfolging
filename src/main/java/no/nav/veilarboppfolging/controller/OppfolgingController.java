@@ -1,13 +1,7 @@
 package no.nav.veilarboppfolging.controller;
 
 import no.nav.veilarboppfolging.domain.*;
-import no.nav.veilarboppfolging.controller.api.VeilederOppfolgingController;
-import no.nav.veilarboppfolging.controller.domain.AvslutningStatus;
 import no.nav.veilarboppfolging.controller.domain.Bruker;
-import no.nav.veilarboppfolging.controller.domain.Eskaleringsvarsel;
-import no.nav.veilarboppfolging.controller.domain.KvpPeriodeDTO;
-import no.nav.veilarboppfolging.controller.domain.Mal;
-import no.nav.veilarboppfolging.controller.domain.OppfolgingPeriodeDTO;
 import no.nav.veilarboppfolging.controller.domain.OppfolgingStatus;
 import no.nav.veilarboppfolging.controller.domain.StartEskaleringDTO;
 import no.nav.veilarboppfolging.controller.domain.StartKvpDTO;
@@ -15,244 +9,149 @@ import no.nav.veilarboppfolging.controller.domain.StoppEskaleringDTO;
 import no.nav.veilarboppfolging.controller.domain.StoppKvpDTO;
 import no.nav.veilarboppfolging.controller.domain.VeilederBegrunnelseDTO;
 import no.nav.veilarboppfolging.services.*;
-import no.nav.veilarboppfolging.utils.FnrParameterUtil;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
-import static java.util.Optional.ofNullable;
-import static java.util.stream.Collectors.toList;
+import static no.nav.veilarboppfolging.utils.mappers.DtoMappers.tilDto;
 
 @RequestMapping("/oppfolging")
 @RestController
 public class OppfolgingController {
+    
+    private final OppfolgingService oppfolgingService;
+    
+    private final KvpService kvpService;
+    
+    private final HistorikkService historikkService;
+    
+    private final MalService malService;
 
-    @Inject
-    private OppfolgingService oppfolgingService;
+    private final AktiverBrukerService aktiverBrukerService;
+    
+    private final AuthService authService;
 
-    @Inject
-    private KvpService kvpService;
-
-    @Inject
-    private HistorikkService historikkService;
-
-    @Inject
-    private MalService malService;
-
-    @Inject
-    private FnrParameterUtil fnrParameterUtil;
-
-    @Inject
-    private AktiverBrukerService aktiverBrukerService;
-
-    @Inject
-    private AuthService authService;
-
-    @Inject
-    private PepClient pepClient;
-
-    @Inject
-    private AktorService aktorService;
+    @Autowired
+    public OppfolgingController(
+            OppfolgingService oppfolgingService,
+            KvpService kvpService,
+            HistorikkService historikkService,
+            MalService malService,
+            AktiverBrukerService aktiverBrukerService,
+            AuthService authService
+    ) {
+        this.oppfolgingService = oppfolgingService;
+        this.kvpService = kvpService;
+        this.historikkService = historikkService;
+        this.malService = malService;
+        this.aktiverBrukerService = aktiverBrukerService;
+        this.authService = authService;
+    }
 
     @GetMapping("/me")
     public Bruker hentBrukerInfo() {
         return new Bruker()
-                .setId(getUid())
-                .setErVeileder(AuthService.erInternBruker())
-                .setErBruker(AuthService.erEksternBruker());
+                .setId(authService.getInnloggetBrukerIdent())
+                .setErVeileder(authService.erInternBruker())
+                .setErBruker(authService.erEksternBruker());
     }
 
     @GetMapping
-    public OppfolgingStatus hentOppfolgingsStatus() {
-        return tilDto(oppfolgingService.hentOppfolgingsStatus(getFnr()));
+    public OppfolgingStatus hentOppfolgingsStatus(@RequestParam(value = "fnr", required = false) String fnr) {
+        String fodselsnummer = authService.hentIdentForEksternEllerIntern(fnr);
+        return tilDto(oppfolgingService.hentOppfolgingsStatus(fodselsnummer), authService.erInternBruker());
     }
 
     @PostMapping("/startOppfolging")
-    public OppfolgingStatus startOppfolging() {
+    public OppfolgingStatus startOppfolging(@RequestParam("fnr") String fnr) {
         authService.skalVereInternBruker();
-        return tilDto(oppfolgingService.startOppfolging(getFnr()));
+        return tilDto(oppfolgingService.startOppfolging(fnr), authService.erInternBruker());
     }
 
     @GetMapping("/avslutningStatus")
-    public OppfolgingStatus hentAvslutningStatus() {
+    public OppfolgingStatus hentAvslutningStatus(@RequestParam("fnr") String fnr) {
         authService.skalVereInternBruker();
-        return tilDto(oppfolgingService.hentAvslutningStatus(getFnr()));
+        return tilDto(oppfolgingService.hentAvslutningStatus(fnr), authService.erInternBruker());
     }
 
     @PostMapping("/avsluttOppfolging")
-    public OppfolgingStatus avsluttOppfolging(VeilederBegrunnelseDTO dto) {
+    public OppfolgingStatus avsluttOppfolging(@RequestBody VeilederBegrunnelseDTO dto, @RequestParam("fnr") String fnr) {
         authService.skalVereInternBruker();
         return tilDto(oppfolgingService.avsluttOppfolging(
-                getFnr(),
+                fnr,
                 dto.veilederId,
                 dto.begrunnelse
-        ));
+        ), authService.erInternBruker());
     }
 
     @PostMapping("/settManuell")
-    public OppfolgingStatus settTilManuell(VeilederBegrunnelseDTO dto) {
+    public OppfolgingStatus settTilManuell(@RequestBody VeilederBegrunnelseDTO dto, @RequestParam("fnr") String fnr) {
         authService.skalVereInternBruker();
-        return tilDto(oppfolgingService.oppdaterManuellStatus(getFnr(),
+        return tilDto(oppfolgingService.oppdaterManuellStatus(fnr,
                 true,
                 dto.begrunnelse,
                 KodeverkBruker.NAV,
-                hentBrukerInfo().getId())
+                hentBrukerInfo().getId()),
+                authService.erInternBruker()
         );
     }
 
     @PostMapping("/settDigital")
-    public OppfolgingStatus settTilDigital(VeilederBegrunnelseDTO dto) {
+    public OppfolgingStatus settTilDigital(@RequestBody VeilederBegrunnelseDTO dto, @RequestParam(value = "fnr", required = false) String fnr) {
+        String fodselsnummer = authService.hentIdentForEksternEllerIntern(fnr);
 
-        if (AuthService.erEksternBruker()) {
-            return tilDto(oppfolgingService.settDigitalBruker(getFnr()));
+        if (authService.erEksternBruker()) {
+            return tilDto(oppfolgingService.settDigitalBruker(fodselsnummer), authService.erInternBruker());
         }
 
-        return tilDto(oppfolgingService.oppdaterManuellStatus(getFnr(),
+        return tilDto(oppfolgingService.oppdaterManuellStatus(fodselsnummer,
                 false,
                 dto.begrunnelse,
                 KodeverkBruker.NAV,
-                hentBrukerInfo().getId())
+                hentBrukerInfo().getId()),
+                authService.erInternBruker()
         );
     }
 
     @GetMapping("/innstillingsHistorikk")
-    public List<InnstillingsHistorikk> hentInnstillingsHistorikk() {
+    public List<InnstillingsHistorikk> hentInnstillingsHistorikk(@RequestParam("fnr") String fnr) {
         authService.skalVereInternBruker();
-        return historikkService.hentInstillingsHistorikk(getFnr());
+        return historikkService.hentInstillingsHistorikk(fnr);
     }
 
     @PostMapping("/startEskalering")
-    public void startEskalering(StartEskaleringDTO startEskalering) {
+    public void startEskalering(@RequestBody StartEskaleringDTO startEskalering, @RequestParam("fnr") String fnr) {
         authService.skalVereInternBruker();
         oppfolgingService.startEskalering(
-                getFnr(),
+                fnr,
                 startEskalering.getBegrunnelse(),
                 startEskalering.getDialogId()
         );
     }
 
     @PostMapping("/stoppEskalering")
-    public void stoppEskalering(StoppEskaleringDTO stoppEskalering) {
+    public void stoppEskalering(@RequestBody StoppEskaleringDTO stoppEskalering, @RequestParam("fnr") String fnr) {
         authService.skalVereInternBruker();
-        oppfolgingService.stoppEskalering(getFnr(), stoppEskalering.getBegrunnelse());
+        oppfolgingService.stoppEskalering(fnr, stoppEskalering.getBegrunnelse());
     }
 
     @PostMapping("/startKvp")
-    public void startKvp(StartKvpDTO startKvp) {
+    public void startKvp(@RequestBody StartKvpDTO startKvp, @RequestParam("fnr") String fnr) {
         authService.skalVereInternBruker();
-        kvpService.startKvp(getFnr(), startKvp.getBegrunnelse());
+        kvpService.startKvp(fnr, startKvp.getBegrunnelse());
     }
 
     @PostMapping("/stoppKvp")
-    public void stoppKvp(StoppKvpDTO stoppKvp) {
+    public void stoppKvp(@RequestBody StoppKvpDTO stoppKvp, @RequestParam("fnr") String fnr) {
         authService.skalVereInternBruker();
-        kvpService.stopKvp(getFnr(), stoppKvp.getBegrunnelse());
+        kvpService.stopKvp(fnr, stoppKvp.getBegrunnelse());
     }
 
     @GetMapping("/veilederTilgang")
-    public VeilederTilgang hentVeilederTilgang() {
+    public VeilederTilgang hentVeilederTilgang(@RequestParam("fnr") String fnr) {
         authService.skalVereInternBruker();
-        return oppfolgingService.hentVeilederTilgang(getFnr());
+        return oppfolgingService.hentVeilederTilgang(fnr);
     }
 
-    private Eskaleringsvarsel tilDto(EskaleringsvarselData eskaleringsvarselData) {
-        return Optional.ofNullable(eskaleringsvarselData)
-                .map(eskalering -> Eskaleringsvarsel.builder()
-                        .varselId(eskalering.getVarselId())
-                        .aktorId(eskalering.getAktorId())
-                        .opprettetAv(AuthService.erInternBruker() ? eskalering.getOpprettetAv() : null)
-                        .opprettetDato(eskalering.getOpprettetDato())
-                        .avsluttetDato(eskalering.getAvsluttetDato())
-                        .tilhorendeDialogId(eskalering.getTilhorendeDialogId())
-                        .build()
-                ).orElse(null);
-    }
-
-    private String getUid() {
-        return SubjectHandler.getIdent().orElseThrow(RuntimeException::new);
-    }
-
-    private String getFnr() {
-        return fnrParameterUtil.getFnr();
-    }
-
-    private AvslutningStatus tilDto(AvslutningStatusData avslutningStatusData) {
-        return new AvslutningStatus(
-                avslutningStatusData.kanAvslutte,
-                avslutningStatusData.underOppfolging,
-                avslutningStatusData.harYtelser,
-                avslutningStatusData.harTiltak,
-                avslutningStatusData.underKvp,
-                avslutningStatusData.inaktiveringsDato
-        );
-    }
-
-    private OppfolgingStatus tilDto(OppfolgingStatusData oppfolgingStatusData) {
-        OppfolgingStatus status = new OppfolgingStatus()
-                .setFnr(oppfolgingStatusData.fnr)
-                .setAktorId(oppfolgingStatusData.aktorId)
-                .setUnderOppfolging(oppfolgingStatusData.underOppfolging)
-                .setManuell(oppfolgingStatusData.manuell)
-                .setReservasjonKRR(oppfolgingStatusData.reservasjonKRR)
-                .setOppfolgingUtgang(oppfolgingStatusData.getOppfolgingUtgang())
-                .setKanReaktiveres(oppfolgingStatusData.kanReaktiveres)
-                .setOppfolgingsPerioder(oppfolgingStatusData.oppfolgingsperioder.stream().map(this::tilDTO).collect(toList()))
-                .setInaktiveringsdato(oppfolgingStatusData.inaktiveringsdato)
-                .setGjeldendeEskaleringsvarsel(tilDto(oppfolgingStatusData.getGjeldendeEskaleringsvarsel()))
-                .setErIkkeArbeidssokerUtenOppfolging(oppfolgingStatusData.getErSykmeldtMedArbeidsgiver())
-                .setErSykmeldtMedArbeidsgiver(oppfolgingStatusData.getErSykmeldtMedArbeidsgiver())
-                .setHarSkriveTilgang(true)
-                .setServicegruppe(oppfolgingStatusData.getServicegruppe())
-                .setFormidlingsgruppe(oppfolgingStatusData.getFormidlingsgruppe())
-                .setRettighetsgruppe(oppfolgingStatusData.getRettighetsgruppe())
-                .setKanVarsles(oppfolgingStatusData.kanVarsles)
-                .setUnderKvp(oppfolgingStatusData.underKvp);
-
-        if (AuthService.erInternBruker()) {
-            status
-                    .setVeilederId(oppfolgingStatusData.veilederId)
-                    .setKanStarteOppfolging(oppfolgingStatusData.isKanStarteOppfolging())
-                    .setAvslutningStatus(
-                            ofNullable(oppfolgingStatusData.getAvslutningStatusData())
-                                    .map(this::tilDto)
-                                    .orElse(null)
-                    )
-                    .setOppfolgingUtgang(oppfolgingStatusData.getOppfolgingUtgang())
-                    .setHarSkriveTilgang(oppfolgingStatusData.harSkriveTilgang)
-                    .setInaktivIArena(oppfolgingStatusData.inaktivIArena);
-        }
-
-        return status;
-    }
-
-    private OppfolgingPeriodeDTO tilDTO(Oppfolgingsperiode oppfolgingsperiode) {
-        OppfolgingPeriodeDTO periode = new OppfolgingPeriodeDTO()
-                .setSluttDato(oppfolgingsperiode.getSluttDato())
-                .setStartDato(oppfolgingsperiode.getStartDato())
-                .setKvpPerioder(oppfolgingsperiode.getKvpPerioder().stream().map(this::tilDTO).collect(toList()));
-
-        if (AuthService.erInternBruker()) {
-            periode.setVeileder(oppfolgingsperiode.getVeileder())
-                    .setAktorId(oppfolgingsperiode.getAktorId())
-                    .setBegrunnelse(oppfolgingsperiode.getBegrunnelse())
-            ;
-        }
-
-        return periode;
-    }
-
-    private KvpPeriodeDTO tilDTO(Kvp kvp) {
-        return new KvpPeriodeDTO(kvp.getOpprettetDato(), kvp.getAvsluttetDato());
-    }
-
-    private Mal tilDto(MalData malData) {
-        return new Mal()
-                .setMal(malData.getMal())
-                .setEndretAv(malData.getEndretAvFormattert())
-                .setDato(malData.getDato());
-    }
 }

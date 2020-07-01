@@ -75,7 +75,7 @@ public class ArenaOppfolgingController {
                 .setHovedmaalkode(oppfolgingsbrukerStatus.map(VeilarbArenaOppfolging::getHovedmaalkode).orElse(null));
         }
 
-        if (AuthService.erInternBruker()) {
+        if (authService.erInternBruker()) {
             String brukersAktoerId = authService.getAktorIdOrThrow(fnr);
             log.info("Henter tilordning for bruker med aktørId {}", brukersAktoerId);
             String veilederIdent = veilederTilordningerRepository.hentTilordningForAktoer(brukersAktoerId);

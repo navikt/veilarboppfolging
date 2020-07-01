@@ -3,7 +3,7 @@ package no.nav.veilarboppfolging.feed;
 import no.nav.fo.feed.common.FeedElement;
 import no.nav.fo.feed.producer.FeedProvider;
 import no.nav.veilarboppfolging.db.KvpRepository;
-import no.nav.veilarboppfolging.utils.mappers.KvpMapper;
+import no.nav.veilarboppfolging.utils.mappers.DtoMappers;
 import no.nav.veilarboppfolging.controller.domain.KvpDTO;
 import org.springframework.stereotype.Component;
 
@@ -29,7 +29,7 @@ public class KvpFeedProvider implements FeedProvider<KvpDTO> {
                 .stream()
                 .map(o -> new FeedElement<KvpDTO>()
                         .setId(Long.toString(o.getSerial()))
-                        .setElement(KvpMapper.KvpToDTO(o))
+                        .setElement(DtoMappers.kvpToDTO(o))
                 );
     }
 }

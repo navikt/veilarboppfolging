@@ -19,7 +19,7 @@ public class KvpMapperTest {
                 .serial(298)
                 .enhet("foobar")
                 .build();
-        KvpDTO dest = KvpMapper.KvpToDTO(src);
+        KvpDTO dest = DtoMappers.kvpToDTO(src);
         assertThat(dest.getKvpId(), is(src.getKvpId()));
         assertThat(dest.getSerial(), is(src.getSerial()));
         assertThat(dest.getEnhet(), is(src.getEnhet()));
