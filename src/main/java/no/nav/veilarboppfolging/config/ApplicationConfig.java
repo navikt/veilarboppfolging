@@ -114,10 +114,5 @@ public class ApplicationConfig {
 //    setProperty(KVP_FEED_BRUKERTILGANG_PROPERTY, "srvveilarbdialog,srvveilarbaktivitet", PUBLIC);
 //    setProperty(NYEBRUKERE_FEED_BRUKERTILGANG_PROPERTY, "srvveilarbdirigent", PUBLIC);
 //    setProperty(KVP_API_BRUKERTILGANG_PROPERTY, "srvveilarbdialog,srvveilarbaktivitet", PUBLIC);
-//
-//
-//        ServletUtil.leggTilServlet(servletContext, new PopulerOppfolgingHistorikkServlet(oppfolgingsenhetHistorikkRepository, systemUserTokenProvider), "/internal/populer_enhet_historikk");
-//        ServletUtil.leggTilServlet(servletContext, new PubliserHistorikkServlet(oppfolgingStatusKafkaProducer), "/internal/publiser_oppfolging_status_historikk");
-//        ServletUtil.leggTilServlet(servletContext, new PubliserOppfolgingStatusServlet(oppfolgingStatusKafkaProducer), "/internal/publiser_oppfolging_status");
 
 }

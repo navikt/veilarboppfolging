@@ -8,7 +8,7 @@ import no.nav.common.health.HealthCheckUtils;
 import no.nav.common.json.JsonUtils;
 import no.nav.common.rest.client.RestClient;
 import no.nav.common.rest.client.RestUtils;
-import no.nav.veilarbperson.config.CacheConfig;
+import no.nav.veilarboppfolging.config.CacheConfig;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -17,7 +17,7 @@ import org.springframework.cache.annotation.Cacheable;
 import java.util.Optional;
 
 import static no.nav.common.utils.UrlUtils.joinPaths;
-import static no.nav.veilarbperson.utils.RestClientUtils.authHeaderMedInnloggetBruker;
+import static no.nav.veilarboppfolging.utils.RestClientUtils.authHeaderMedInnloggetBruker;
 import static org.springframework.http.HttpHeaders.ACCEPT;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;

@@ -8,10 +8,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.Base64;
 import java.util.Objects;
 
-import static java.lang.System.getProperty;
-import static no.nav.brukerdialog.tools.SecurityConstants.SYSTEMUSER_PASSWORD;
-import static no.nav.brukerdialog.tools.SecurityConstants.SYSTEMUSER_USERNAME;
-
 @Slf4j
 class AuthorizationUtils {
 
@@ -20,7 +16,7 @@ class AuthorizationUtils {
     private static final String AUTHORIZATION = "Authorization";
     private static final Base64.Decoder decoder = Base64.getDecoder();
 
-    static boolean isBasicAuthAuthorized(HttpServletRequest request) {
+    static boolean isBasicAuthAuthorized(HttpServletRequest request, String expectedSystemUserName, String expectedSystemUserPassword) {
         String auth = request.getHeader(AUTHORIZATION);
         if (Objects.isNull(auth) || !auth.toLowerCase().startsWith("basic ")) {
             return false;
@@ -31,10 +27,8 @@ class AuthorizationUtils {
 
         String username = basicAuthDecoded.split(":")[0].toLowerCase();
         String password = basicAuthDecoded.split(":")[1];
-        String srvUsername = getProperty(SYSTEMUSER_USERNAME).toLowerCase();
-        String srvPassword = getProperty(SYSTEMUSER_PASSWORD);
 
-        return username.equals(srvUsername) && password.equals(srvPassword);
+        return username.equals(expectedSystemUserName) && password.equals(expectedSystemUserPassword);
     }
 
     @SneakyThrows

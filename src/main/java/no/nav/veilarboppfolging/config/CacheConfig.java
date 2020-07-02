@@ -17,11 +17,13 @@ public class CacheConfig {
 
     public static final String HENT_ARBEIDSFORHOLD_CACHE_NAME = "hent_arbeidsforhold_cache";
 
+    public static final String DKIF_KONTAKTINFO_CACHE_NAME = "dkif_kontaktinfo_cache";
+
     @Bean
     public Cache hentEnhetCache() {
         return new CaffeineCache(HENT_ENHET_CACHE_NAME, Caffeine.newBuilder()
                 .expireAfterWrite(1, TimeUnit.HOURS)
-                .maximumSize(10000)
+                .maximumSize(10_000)
                 .build());
     }
 
@@ -29,7 +31,15 @@ public class CacheConfig {
     public Cache hentArbeidsforholdCache() {
         return new CaffeineCache(HENT_ARBEIDSFORHOLD_CACHE_NAME, Caffeine.newBuilder()
                 .expireAfterWrite(1, TimeUnit.HOURS)
-                .maximumSize(10000)
+                .maximumSize(10_000)
+                .build());
+    }
+
+    @Bean
+    public Cache dkifKontaktinfoCache() {
+        return new CaffeineCache(DKIF_KONTAKTINFO_CACHE_NAME, Caffeine.newBuilder()
+                .expireAfterWrite(1, TimeUnit.HOURS)
+                .maximumSize(10_000)
                 .build());
     }
 

@@ -1,7 +1,7 @@
 package no.nav.veilarboppfolging.db;
 
 import no.nav.veilarboppfolging.domain.OppfolgingsenhetEndringData;
-import no.nav.veilarboppfolging.internal.OppfolgingEnhetDTO;
+import no.nav.veilarboppfolging.client.veilarbportefolje.OppfolgingEnhetDTO;
 import no.nav.veilarboppfolging.utils.DbUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;

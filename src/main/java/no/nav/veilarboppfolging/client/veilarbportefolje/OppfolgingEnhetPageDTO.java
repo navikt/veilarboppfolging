@@ -1,4 +1,4 @@
-package no.nav.veilarboppfolging.internal;
+package no.nav.veilarboppfolging.client.veilarbportefolje;
 
 import lombok.Value;
 

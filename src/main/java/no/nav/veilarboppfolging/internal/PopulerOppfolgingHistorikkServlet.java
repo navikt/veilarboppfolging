@@ -2,15 +2,16 @@ package no.nav.veilarboppfolging.internal;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.brukerdialog.security.oidc.SystemUserTokenProvider;
-import no.nav.common.utils.IdUtils;
-import no.nav.veilarboppfolging.db.OppfolgingsenhetHistorikkRepository;
-import no.nav.jobutils.JobUtils;
-import no.nav.jobutils.RunningJob;
-import no.nav.sbl.rest.RestUtils;
-import no.nav.sbl.util.EnvironmentUtils;
 
-import javax.inject.Inject;
+import no.nav.common.utils.Credentials;
+import no.nav.common.utils.job.JobUtils;
+import no.nav.common.utils.job.RunningJob;
+import no.nav.veilarboppfolging.client.veilarbportefolje.OppfolgingEnhetPageDTO;
+import no.nav.veilarboppfolging.client.veilarbportefolje.VeilarbportefoljeClient;
+import no.nav.veilarboppfolging.db.OppfolgingsenhetHistorikkRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -19,24 +20,28 @@ import java.util.Optional;
 
 import static java.lang.Integer.parseInt;
 import static javax.servlet.http.HttpServletResponse.SC_OK;
-import static javax.ws.rs.core.HttpHeaders.AUTHORIZATION;
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
 import static no.nav.veilarboppfolging.internal.AuthorizationUtils.isBasicAuthAuthorized;
 
 @Slf4j
+@WebServlet(
+        name = "PopulerOppfolgingHistorikk",
+        urlPatterns = {"/internal/populer_enhet_historikk"}
+)
 public class PopulerOppfolgingHistorikkServlet extends HttpServlet {
 
     private static final Integer MAX_PAGE_NUMBER = 1000;
 
-    private static final String VEILARBPORTEFOLJE_API_URL = EnvironmentUtils.getRequiredProperty("VEILARBPORTEFOLJEAPI_URL");
+    private final OppfolgingsenhetHistorikkRepository repository;
 
-    private OppfolgingsenhetHistorikkRepository repository;
-    private SystemUserTokenProvider systemUserTokenProvider;
+    private final VeilarbportefoljeClient veilarbportefoljeClient;
 
-    @Inject
-    public PopulerOppfolgingHistorikkServlet(OppfolgingsenhetHistorikkRepository repository, SystemUserTokenProvider systemUserTokenProvider) {
+    private final Credentials serviceUserCredentials;
+
+    @Autowired
+    public PopulerOppfolgingHistorikkServlet(OppfolgingsenhetHistorikkRepository repository, VeilarbportefoljeClient veilarbportefoljeClient, Credentials serviceUserCredentials) {
         this.repository = repository;
-        this.systemUserTokenProvider = systemUserTokenProvider;
+        this.veilarbportefoljeClient = veilarbportefoljeClient;
+        this.serviceUserCredentials = serviceUserCredentials;
     }
 
     @Override
@@ -46,7 +51,7 @@ public class PopulerOppfolgingHistorikkServlet extends HttpServlet {
         int pageNumber = Optional.of(parseInt(req.getParameter("page_number"))).orElse(1);
         int pageSize = Optional.of(parseInt(req.getParameter("page_size"))).orElse(100);
 
-        if (isBasicAuthAuthorized(req)) {
+        if (isBasicAuthAuthorized(req, serviceUserCredentials.username, serviceUserCredentials.password)) {
             RunningJob job = JobUtils.runAsyncJob(() -> fetchPages(pageNumber, pageSize));
             resp.getWriter().write(String.format("Startet populering av enhetshistorikk med jobId %s på pod %s  (page_number: %s page_size: %s", job.getJobId(), job.getPodName(), pageNumber, pageSize));
             resp.setStatus(SC_OK);
@@ -64,7 +69,9 @@ public class PopulerOppfolgingHistorikkServlet extends HttpServlet {
         repository.truncateOppfolgingsenhetEndret();
 
         do {
-            OppfolgingEnhetPageDTO page = fetchPage(pageNumber, pageSize);
+            log.info("Fetching page {}", pageNumber);
+
+            OppfolgingEnhetPageDTO page = veilarbportefoljeClient.hentEnhetPage(pageNumber, pageSize);
 
             log.info("Inserting {} elements from page {} into database", page.getUsers().size(), page.getPage_number());
             repository.insertOppfolgingsenhetEndring(page.getUsers());
@@ -80,17 +87,4 @@ public class PopulerOppfolgingHistorikkServlet extends HttpServlet {
         log.info("Finished fetching {} pages", totalNumberOfPages);
     }
 
-    private OppfolgingEnhetPageDTO fetchPage(int pageNumber, int pageSize) {
-
-        log.info("Fetching page {}", pageNumber);
-
-        return RestUtils.withClient(client -> client.target(VEILARBPORTEFOLJE_API_URL + "/oppfolgingenhet")
-                .queryParam("page_number", pageNumber)
-                .queryParam("page_size", pageSize)
-                .request(APPLICATION_JSON_TYPE)
-                .header(AUTHORIZATION, "Bearer " + systemUserTokenProvider.getToken())
-                .header("Nav-Call-Id", IdUtils.generateId())
-                .header("Nav-Consumer-Id", EnvironmentUtils.getApplicationName())
-                .get(OppfolgingEnhetPageDTO.class));
-    }
 }
