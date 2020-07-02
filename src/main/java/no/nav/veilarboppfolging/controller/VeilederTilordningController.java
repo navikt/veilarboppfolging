@@ -1,7 +1,6 @@
 package no.nav.veilarboppfolging.controller;
 
 import lombok.extern.slf4j.Slf4j;
-import no.nav.veilarboppfolging.db.OppfolgingFeedRepository;
 import no.nav.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.veilarboppfolging.db.VeilederHistorikkRepository;
 import no.nav.veilarboppfolging.db.VeilederTilordningerRepository;

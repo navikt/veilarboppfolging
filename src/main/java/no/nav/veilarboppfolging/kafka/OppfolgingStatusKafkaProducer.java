@@ -4,8 +4,8 @@ import io.vavr.control.Try;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import no.nav.common.client.aktorregister.AktorregisterClient;
 import no.nav.common.utils.IdUtils;
-import no.nav.dialogarena.aktor.AktorService;
 import no.nav.veilarboppfolging.db.OppfolgingFeedRepository;
 import no.nav.veilarboppfolging.domain.AktorId;
 import no.nav.veilarboppfolging.domain.Fnr;
@@ -20,29 +20,31 @@ import java.util.List;
 
 import static java.util.Collections.singletonList;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
-import static no.nav.veilarboppfolging.utils.FnrUtils.getAktorIdOrElseThrow;
-import static no.nav.json.JsonUtils.toJson;
-import static no.nav.log.LogFilter.PREFERRED_NAV_CALL_ID_HEADER_NAME;
+import static no.nav.common.json.JsonUtils.toJson;
+import static no.nav.common.log.LogFilter.PREFERRED_NAV_CALL_ID_HEADER_NAME;
 
 @Slf4j
 public class OppfolgingStatusKafkaProducer {
 
     private final KafkaProducer<String, String> kafka;
     private final OppfolgingFeedRepository repository;
-    private final AktorService aktorService;
+    private final AktorregisterClient aktorregisterClient;
     private final String topicName;
 
-    public OppfolgingStatusKafkaProducer(KafkaProducer<String, String> kafka,
-                                         OppfolgingFeedRepository repository,
-                                         AktorService aktorService, String topicName) {
+    public OppfolgingStatusKafkaProducer(
+            KafkaProducer<String, String> kafka,
+            OppfolgingFeedRepository repository,
+            AktorregisterClient aktorregisterClient,
+            String topicName
+    ) {
         this.kafka = kafka;
         this.repository = repository;
-        this.aktorService = aktorService;
+        this.aktorregisterClient = aktorregisterClient;
         this.topicName = topicName;
     }
 
     public void send(Fnr fnr) {
-        val fetchAktoerId = supplyAsync(() -> getAktorIdOrElseThrow(aktorService, fnr.getFnr()));
+        val fetchAktoerId = supplyAsync(() -> new AktorId(aktorregisterClient.hentAktorId(fnr.getFnr())));
         fetchAktoerId.thenAccept(this::send);
     }
 

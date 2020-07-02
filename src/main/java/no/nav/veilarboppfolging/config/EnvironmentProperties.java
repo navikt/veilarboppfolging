@@ -37,6 +37,8 @@ public class EnvironmentProperties {
 
     private String arbeidsrettetDialogUrl;
 
+    private String kafkaBrokersUrl;
+
     // SOAP Endpoints
 
     private String varselOppgaveV1Endpoint;
