@@ -1,14 +1,12 @@
 package no.nav.veilarboppfolging.db;
 
-import lombok.SneakyThrows;
 import no.nav.veilarboppfolging.domain.AvsluttetOppfolgingFeedData;
 import no.nav.veilarboppfolging.domain.Oppfolgingsperiode;
-import no.nav.sbl.jdbc.Database;
-import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.inject.Inject;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -16,16 +14,20 @@ import java.util.List;
 
 import static no.nav.veilarboppfolging.db.OppfolgingsStatusRepository.AKTOR_ID;
 import static no.nav.veilarboppfolging.db.OppfolgingsStatusRepository.UNDER_OPPFOLGING;
-import static no.nav.sbl.jdbc.Database.hentDato;
+import static no.nav.veilarboppfolging.utils.DbUtils.hentDato;
 
 @Repository
 public class OppfolgingsPeriodeRepository {
-    private final Database database;
-    public static final String TABLE_NAME = "OPPFOLGINGSPERIODE";
 
-    @Inject
-    public OppfolgingsPeriodeRepository(Database database) {
-        this.database = database;
+    private final JdbcTemplate db;
+
+    private final static String hentOppfolingsperioderSQL =
+            "SELECT aktor_id, avslutt_veileder, startdato, sluttdato, avslutt_begrunnelse " +
+                    "FROM OPPFOLGINGSPERIODE ";
+
+    @Autowired
+    public OppfolgingsPeriodeRepository(JdbcTemplate db) {
+        this.db = db;
     }
 
     @Transactional
@@ -41,7 +43,7 @@ public class OppfolgingsPeriodeRepository {
     }
 
     public List<AvsluttetOppfolgingFeedData> fetchAvsluttetEtterDato(Timestamp timestamp, int pageSize) {
-        return database
+        return db
                 .query("SELECT * FROM (SELECT aktor_id, sluttdato, oppdatert " +
                                 "FROM OPPFOLGINGSPERIODE " +
                                 "WHERE oppdatert >= ? and sluttdato is not null order by oppdatert) " +
@@ -52,53 +54,30 @@ public class OppfolgingsPeriodeRepository {
     }
 
     public List<Oppfolgingsperiode> hentOppfolgingsperioder(String aktorId) {
-        return database.query(hentOppfolingsperioderSQL +
+        return db.query(hentOppfolingsperioderSQL +
                         "WHERE aktor_id = ?",
-                this::mapTilOppfolgingsperiode,
+                OppfolgingsPeriodeRepository::mapTilOppfolgingsperiode,
                 aktorId
         );
     }
 
     public List<Oppfolgingsperiode> hentAvsluttetOppfolgingsperioder(String aktorId) {
-        return database.query(hentOppfolingsperioderSQL +
+        return db.query(hentOppfolingsperioderSQL +
                         "WHERE aktor_id = ? AND sluttdato is not null",
-                this::mapTilOppfolgingsperiode,
+                OppfolgingsPeriodeRepository::mapTilOppfolgingsperiode,
                 aktorId
         );
     }
 
-    private final static String hentOppfolingsperioderSQL =
-            "SELECT aktor_id, avslutt_veileder, startdato, sluttdato, avslutt_begrunnelse " +
-                    "FROM OPPFOLGINGSPERIODE ";
-
-    private Oppfolgingsperiode mapTilOppfolgingsperiode(ResultSet result) throws SQLException {
-        return Oppfolgingsperiode.builder()
-                .aktorId(result.getString("aktor_id"))
-                .veileder(result.getString("avslutt_veileder"))
-                .startDato(hentDato(result, "startdato"))
-                .sluttDato(hentDato(result, "sluttdato"))
-                .begrunnelse(result.getString("avslutt_begrunnelse"))
-                .build();
-    }
-
-    @SneakyThrows
-    private AvsluttetOppfolgingFeedData mapRadTilAvsluttetOppfolging(ResultSet rs) {
-        return AvsluttetOppfolgingFeedData.builder()
-                .aktoerid(rs.getString("aktor_id"))
-                .sluttdato(rs.getTimestamp("sluttdato"))
-                .oppdatert(rs.getTimestamp("oppdatert"))
-                .build();
-    }
-
     private void insert(String aktorId) {
-        database.update("" +
+        db.update("" +
                         "INSERT INTO OPPFOLGINGSPERIODE(aktor_id, startDato, oppdatert) " +
                         "VALUES (?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
                 aktorId);
     }
 
     private void setActive(String aktorId) {
-        database.update("UPDATE " +
+        db.update("UPDATE " +
                         OppfolgingsStatusRepository.TABLE_NAME +
                         " SET " + UNDER_OPPFOLGING + "= 1, " +
                         "oppdatert = CURRENT_TIMESTAMP, " +
@@ -108,7 +87,7 @@ public class OppfolgingsPeriodeRepository {
     }
 
     private void endPeriode(String aktorId, String veileder, String begrunnelse) {
-        database.update("" +
+        db.update("" +
                         "UPDATE OPPFOLGINGSPERIODE " +
                         "SET avslutt_veileder = ?, " +
                         "avslutt_begrunnelse = ?, " +
@@ -122,7 +101,7 @@ public class OppfolgingsPeriodeRepository {
     }
 
     private void avsluttOppfolging(String aktorId) {
-        database.update("UPDATE " +
+        db.update("UPDATE " +
                         OppfolgingsStatusRepository.TABLE_NAME +
                         " SET under_oppfolging = 0, "
                         + "veileder = null, "
@@ -136,5 +115,22 @@ public class OppfolgingsPeriodeRepository {
         );
     }
 
+    private static Oppfolgingsperiode mapTilOppfolgingsperiode(ResultSet result, int row) throws SQLException {
+        return Oppfolgingsperiode.builder()
+                .aktorId(result.getString("aktor_id"))
+                .veileder(result.getString("avslutt_veileder"))
+                .startDato(hentDato(result, "startdato"))
+                .sluttDato(hentDato(result, "sluttdato"))
+                .begrunnelse(result.getString("avslutt_begrunnelse"))
+                .build();
+    }
+
+    private AvsluttetOppfolgingFeedData mapRadTilAvsluttetOppfolging(ResultSet rs, int row) throws SQLException {
+        return AvsluttetOppfolgingFeedData.builder()
+                .aktoerid(rs.getString("aktor_id"))
+                .sluttdato(rs.getTimestamp("sluttdato"))
+                .oppdatert(rs.getTimestamp("oppdatert"))
+                .build();
+    }
 
 }

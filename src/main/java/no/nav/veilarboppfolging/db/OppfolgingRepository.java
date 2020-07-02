@@ -4,28 +4,29 @@ package no.nav.veilarboppfolging.db;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import no.nav.apiapp.feil.Feil;
-import no.nav.apiapp.security.PepClient;
 import no.nav.veilarboppfolging.domain.*;
+import no.nav.veilarboppfolging.services.AuthService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
-import org.springframework.stereotype.Component;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
-import javax.inject.Inject;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 
 import static java.util.stream.Collectors.toList;
-import static no.nav.apiapp.feil.FeilType.UGYLDIG_HANDLING;
 import static no.nav.veilarboppfolging.utils.KvpUtils.sjekkTilgangGittKvp;
 
 @Slf4j
 @Repository
 public class OppfolgingRepository {
 
-    private final PepClient pepClient;
+    // TODO: Fjern bruk av andre repositories og auth service, dette burde gjøres i en service
+
+    private final AuthService authService;
     private final OppfolgingsStatusRepository statusRepository;
     private final OppfolgingsPeriodeRepository periodeRepository;
     private final MaalRepository maalRepository;
@@ -34,9 +35,9 @@ public class OppfolgingRepository {
     private final KvpRepository kvpRepository;
     private final NyeBrukereFeedRepository nyeBrukereFeedRepository;
 
-    @Inject
+    @Autowired
     public OppfolgingRepository(
-            PepClient pepClient,
+            AuthService authService,
             OppfolgingsStatusRepository statusRepository,
             OppfolgingsPeriodeRepository periodeRepository,
             MaalRepository maalRepository,
@@ -45,7 +46,7 @@ public class OppfolgingRepository {
             KvpRepository kvpRepository,
             NyeBrukereFeedRepository nyeBrukereFeedRepository
     ) {
-        this.pepClient = pepClient;
+        this.authService = authService;
         this.statusRepository = statusRepository;
         this.periodeRepository = periodeRepository;
         this.maalRepository = maalRepository;
@@ -70,7 +71,7 @@ public class OppfolgingRepository {
         Kvp kvp = null;
         if (t.getGjeldendeKvpId() != 0) {
             kvp = kvpRepository.fetch(t.getGjeldendeKvpId());
-            if (pepClient.harTilgangTilEnhet(kvp.getEnhet())) {
+            if (authService.harTilgangTilEnhet(kvp.getEnhet())) {
                 o.setGjeldendeKvp(kvp);
             }
         }
@@ -78,7 +79,7 @@ public class OppfolgingRepository {
         // Gjeldende eskaleringsvarsel inkluderes i resultatet kun hvis den innloggede veilederen har tilgang til brukers enhet.
         if (t.getGjeldendeEskaleringsvarselId() != 0) {
             EskaleringsvarselData varsel = eskaleringsvarselRepository.fetch(t.getGjeldendeEskaleringsvarselId());
-            if (sjekkTilgangGittKvp(pepClient, kvp, varsel::getOpprettetDato)) {
+            if (sjekkTilgangGittKvp(authService, kvp, varsel::getOpprettetDato)) {
                 o.setGjeldendeEskaleringsvarsel(varsel);
             }
         }
@@ -131,8 +132,9 @@ public class OppfolgingRepository {
     @Transactional
     public void startEskalering(String aktorId, String opprettetAv, String opprettetBegrunnelse, long tilhorendeDialogId) {
         long gjeldendeEskaleringsvarselId = statusRepository.fetch(aktorId).getGjeldendeEskaleringsvarselId();
+
         if (gjeldendeEskaleringsvarselId > 0) {
-            throw new Feil(UGYLDIG_HANDLING, "Brukeren har allerede et aktivt eskaleringsvarsel.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Brukeren har allerede et aktivt eskaleringsvarsel.");
         }
 
         val e = EskaleringsvarselData.builder()
@@ -141,18 +143,19 @@ public class OppfolgingRepository {
                 .opprettetBegrunnelse(opprettetBegrunnelse)
                 .tilhorendeDialogId(tilhorendeDialogId)
                 .build();
+
         eskaleringsvarselRepository.create(e);
     }
 
     @Transactional
     public void stoppEskalering(String aktorId, String avsluttetAv, String avsluttetBegrunnelse) {
         long gjeldendeEskaleringsvarselId = statusRepository.fetch(aktorId).getGjeldendeEskaleringsvarselId();
+
         if(gjeldendeEskaleringsvarselId == 0) {
-            throw new Feil(UGYLDIG_HANDLING, "Brukeren har ikke et aktivt eskaleringsvarsel.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Brukeren har ikke et aktivt eskaleringsvarsel.");
         }
 
         eskaleringsvarselRepository.finish(aktorId, gjeldendeEskaleringsvarselId, avsluttetAv, avsluttetBegrunnelse);
-        
     }
 
     private List<Oppfolgingsperiode> populerKvpPerioder(List<Oppfolgingsperiode> oppfolgingsPerioder, List<Kvp> kvpPerioder) {
@@ -166,7 +169,7 @@ public class OppfolgingRepository {
     }
 
     private boolean erKvpIPeriode(Kvp kvp, Oppfolgingsperiode periode) {
-        return harTilgangTilEnhet(kvp)
+        return authService.harTilgangTilEnhet(kvp.getEnhet())
                 && kvpEtterStartenAvPeriode(kvp, periode)
                 && kvpForSluttenAvPeriode(kvp, periode);
     }
@@ -180,13 +183,7 @@ public class OppfolgingRepository {
                 || !periode.getSluttDato().before(kvp.getOpprettetDato());
     }
 
-    @SneakyThrows
-    private boolean harTilgangTilEnhet(Kvp kvp) {
-        return pepClient.harTilgangTilEnhet(kvp.getEnhet());
-    }
-
     // FIXME: go directly to the repository instead.
-
     public void avsluttOppfolging(String aktorId, String veileder, String begrunnelse) {
         periodeRepository.avslutt(aktorId, veileder, begrunnelse);
     }

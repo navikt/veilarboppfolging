@@ -2,11 +2,10 @@ package no.nav.veilarboppfolging.db;
 
 import no.nav.veilarboppfolging.domain.Oppfolging;
 import no.nav.veilarboppfolging.domain.OppfolgingTable;
-import no.nav.sbl.jdbc.Database;
-import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
-import javax.inject.Inject;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
@@ -25,10 +24,10 @@ public class OppfolgingsStatusRepository {
     static final String SIST_TILORDNET = "sist_tilordnet";
     static final String OPPDATERT = "oppdatert";
 
-    private final Database db;
+    private final JdbcTemplate db;
 
-    @Inject
-    public OppfolgingsStatusRepository(Database db) {
+    @Autowired
+    public OppfolgingsStatusRepository(JdbcTemplate db) {
         this.db = db;
     }
 
@@ -38,6 +37,7 @@ public class OppfolgingsStatusRepository {
                 OppfolgingsStatusRepository::map,
                 aktorId
         );
+
         return !t.isEmpty() ? t.get(0) : null;
     }
 
@@ -54,14 +54,14 @@ public class OppfolgingsStatusRepository {
         return new Oppfolging().setAktorId(aktorId).setUnderOppfolging(false);
     }
 
-    public static OppfolgingTable map(ResultSet r) throws SQLException {
+    public static OppfolgingTable map(ResultSet rs, int row) throws SQLException {
         return new OppfolgingTable()
-                .setAktorId(r.getString(AKTOR_ID))
-                .setGjeldendeManuellStatusId(r.getLong(GJELDENDE_MANUELL_STATUS))
-                .setGjeldendeMaalId(r.getLong(GJELDENDE_MAL))
-                .setGjeldendeEskaleringsvarselId(r.getLong(GJELDENE_ESKALERINGSVARSEL))
-                .setGjeldendeKvpId(r.getLong("gjeldende_kvp"))
-                .setVeilederId(r.getString(VEILEDER))
-                .setUnderOppfolging(r.getBoolean(UNDER_OPPFOLGING));
+                .setAktorId(rs.getString(AKTOR_ID))
+                .setGjeldendeManuellStatusId(rs.getLong(GJELDENDE_MANUELL_STATUS))
+                .setGjeldendeMaalId(rs.getLong(GJELDENDE_MAL))
+                .setGjeldendeEskaleringsvarselId(rs.getLong(GJELDENE_ESKALERINGSVARSEL))
+                .setGjeldendeKvpId(rs.getLong("gjeldende_kvp"))
+                .setVeilederId(rs.getString(VEILEDER))
+                .setUnderOppfolging(rs.getBoolean(UNDER_OPPFOLGING));
     }
 }

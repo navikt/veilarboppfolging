@@ -2,61 +2,42 @@ package no.nav.veilarboppfolging.db;
 
 import no.nav.veilarboppfolging.domain.OppfolgingsenhetEndringData;
 import no.nav.veilarboppfolging.internal.OppfolgingEnhetDTO;
-import no.nav.sbl.sql.DbConstants;
-import no.nav.sbl.sql.InsertBatchQuery;
-import no.nav.sbl.sql.SqlUtils;
-import no.nav.sbl.sql.order.OrderClause;
-import no.nav.sbl.sql.where.WhereClause;
+import no.nav.veilarboppfolging.utils.DbUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 
-import javax.inject.Inject;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
-import static no.nav.sbl.jdbc.Database.hentDato;
+import static no.nav.veilarboppfolging.utils.DbUtils.hentDato;
 
 @Repository
 public class OppfolgingsenhetHistorikkRepository {
-    private final JdbcTemplate jdbc;
 
-    @Inject
-    public OppfolgingsenhetHistorikkRepository(JdbcTemplate jdbc) {
-        this.jdbc = jdbc;
+    private final JdbcTemplate db;
+
+    @Autowired
+    public OppfolgingsenhetHistorikkRepository(JdbcTemplate db) {
+        this.db = db;
     }
 
-    public static final String TABLENAME = "OPPFOLGINGSENHET_ENDRET";
-
     public void insertOppfolgingsenhetEndring(List<OppfolgingEnhetDTO> dtoer) {
-        new InsertBatchQuery<OppfolgingEnhetDTO>(jdbc, TABLENAME)
-                .add("aktor_id", OppfolgingEnhetDTO::getAktorId, String.class)
-                .add("enhet", OppfolgingEnhetDTO::getEnhetId, String.class)
-                .add("endret_dato", DbConstants.CURRENT_TIMESTAMP)
-                .add("enhet_seq", DbConstants.nextSeq("ENHET_SEQ"))
-                .execute(dtoer);
+        dtoer.forEach(dto -> insertOppfolgingsenhetEndringForAktorId(dto.getAktorId(), dto.getEnhetId()));
     }
 
     public void insertOppfolgingsenhetEndringForAktorId(String aktorId, String enhet) {
-        SqlUtils.insert(jdbc, TABLENAME)
-                .value("aktor_id", aktorId)
-                .value("enhet", enhet)
-                .value("endret_dato", DbConstants.CURRENT_TIMESTAMP)
-                .value("enhet_seq", DbConstants.nextSeq("ENHET_SEQ"))
-                .execute();
+        String sql = "INSERT INTO OPPFOLGINGSENHET_ENDRET (aktor_id, enhet, endret_dato, enhet_seq) VALUES(?, ?, CURRENT_TIMESTAMP, ?)";
+        db.update(sql, aktorId, enhet, DbUtils.nesteFraSekvens(db, "ENHET_SEQ"));
     }
 
     public List<OppfolgingsenhetEndringData> hentOppfolgingsenhetEndringerForAktorId(String aktorId) {
-        return SqlUtils.select(jdbc, TABLENAME, OppfolgingsenhetHistorikkRepository::mapper)
-                .column("enhet")
-                .column("endret_dato")
-                .where(WhereClause.equals("aktor_id", aktorId))
-                .orderBy(OrderClause.desc("enhet_seq"))
-                .executeToList();
+        String sql = "SELECT enhet, endret_dato FROM OPPFOLGINGSENHET_ENDRET WHERE aktor_id = ? ORDER BY enhet_seq DESC";
+        return db.query(sql, OppfolgingsenhetHistorikkRepository::mapper, aktorId);
     }
 
-    private static OppfolgingsenhetEndringData mapper(ResultSet resultset) throws SQLException {
+    private static OppfolgingsenhetEndringData mapper(ResultSet resultset, int rows) throws SQLException {
         return OppfolgingsenhetEndringData.builder()
                 .enhet(resultset.getString("enhet"))
                 .endretDato(hentDato(resultset, "endret_dato"))
@@ -64,6 +45,7 @@ public class OppfolgingsenhetHistorikkRepository {
     }
 
     public void truncateOppfolgingsenhetEndret() {
-        jdbc.execute("TRUNCATE TABLE " + TABLENAME);
+        db.execute("TRUNCATE TABLE OPPFOLGINGSENHET_ENDRET");
     }
+
 }

@@ -3,51 +3,51 @@ package no.nav.veilarboppfolging.db;
 import lombok.SneakyThrows;
 import no.nav.veilarboppfolging.domain.KodeverkBruker;
 import no.nav.veilarboppfolging.domain.ManuellStatus;
-import no.nav.sbl.jdbc.Database;
-import org.springframework.stereotype.Component;
+import no.nav.veilarboppfolging.utils.DbUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.inject.Inject;
 import java.sql.ResultSet;
 import java.util.List;
 
-import static no.nav.apiapp.util.EnumUtils.getName;
-import static no.nav.apiapp.util.EnumUtils.valueOfOptional;
 import static no.nav.veilarboppfolging.db.OppfolgingsStatusRepository.AKTOR_ID;
 import static no.nav.veilarboppfolging.db.OppfolgingsStatusRepository.GJELDENDE_MANUELL_STATUS;
+import static no.nav.veilarboppfolging.utils.EnumUtils.getName;
+import static no.nav.veilarboppfolging.utils.EnumUtils.valueOfOptional;
 
 @Repository
 public class ManuellStatusRepository {
 
-    private final Database database;
+    private final JdbcTemplate db;
 
-    @Inject
-    public ManuellStatusRepository(Database database) {
-        this.database = database;
+    @Autowired
+    public ManuellStatusRepository(JdbcTemplate db) {
+        this.db = db;
     }
 
     @Transactional
     public void create(ManuellStatus manuellStatus) {
-        manuellStatus.setId(database.nesteFraSekvens("status_seq"));
+        manuellStatus.setId(DbUtils.nesteFraSekvens(db,"status_seq"));
         insert(manuellStatus);
         setActive(manuellStatus);
     }
 
     public ManuellStatus fetch(Long id) {
         String sql = "SELECT * FROM MANUELL_STATUS WHERE id = ?";
-        List<ManuellStatus> manuellStatusList = database.query(sql, ManuellStatusRepository::map, id);
+        List<ManuellStatus> manuellStatusList = db.query(sql, ManuellStatusRepository::map, id);
         return manuellStatusList.isEmpty() ? null : manuellStatusList.get(0);
     }
 
     public List<ManuellStatus> history(String aktorId) {
-        return database.query("SELECT * FROM MANUELL_STATUS WHERE aktor_id = ?",
+        return db.query("SELECT * FROM MANUELL_STATUS WHERE aktor_id = ?",
                 ManuellStatusRepository::map,
                 aktorId);
     }
 
     @SneakyThrows
-    public static ManuellStatus map(ResultSet result) {
+    public static ManuellStatus map(ResultSet result, int row) {
         return new ManuellStatus()
                 .setId(result.getLong("id"))
                 .setAktorId(result.getString("aktor_id"))
@@ -59,7 +59,7 @@ public class ManuellStatusRepository {
     }
 
     private void insert(ManuellStatus manuellStatus) {
-        database.update(
+        db.update(
                 "INSERT INTO MANUELL_STATUS(" +
                         "id, " +
                         "aktor_id, " +
@@ -80,7 +80,7 @@ public class ManuellStatusRepository {
     }
 
     private void setActive(ManuellStatus gjeldendeManuellStatus) {
-        database.update("UPDATE " +
+        db.update("UPDATE " +
                         OppfolgingsStatusRepository.TABLE_NAME +
                         " SET " + GJELDENDE_MANUELL_STATUS + " = ?, " +
                         "oppdatert = CURRENT_TIMESTAMP, " +

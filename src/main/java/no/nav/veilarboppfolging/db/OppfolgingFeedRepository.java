@@ -3,24 +3,17 @@ package no.nav.veilarboppfolging.db;
 import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import net.javacrumbs.shedlock.core.LockConfiguration;
-import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import no.nav.veilarboppfolging.domain.AktorId;
 import no.nav.veilarboppfolging.controller.domain.OppfolgingFeedDTO;
 import no.nav.veilarboppfolging.controller.domain.OppfolgingKafkaDTO;
-import no.nav.metrics.utils.MetricsUtils;
-import no.nav.sbl.sql.SqlUtils;
-import no.nav.sbl.sql.where.WhereClause;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.inject.Inject;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -31,24 +24,16 @@ import static java.util.stream.Collectors.toList;
 @Repository
 public class OppfolgingFeedRepository {
 
-    public static final int INSERT_ID_INTERVAL = 500;
-    private static final long ADD_FEED_ID_MAX_LOCK = 10;
-
     private final JdbcTemplate db;
-    private final LockingTaskExecutor taskExecutor;
 
-    @Inject
-    public OppfolgingFeedRepository(JdbcTemplate db, LockingTaskExecutor taskExecutor) {
+    @Autowired
+    public OppfolgingFeedRepository(JdbcTemplate db) {
         this.db = db;
-        this.taskExecutor = taskExecutor;
     }
 
     public List<AktorId> hentAlleBrukereUnderOppfolging() {
-        return SqlUtils
-                .select(db, "OPPFOLGINGSTATUS", rs -> new AktorId(rs.getString("AKTOR_ID")))
-                .column("*")
-                .where(WhereClause.equals("UNDER_OPPFOLGING", 1))
-                .executeToList();
+        String sql = "SELECT * FROM OPPFOLGINGSTATUS WHERE UNDER_OPPFOLGING = 1";
+        return db.query(sql, (rs, row) -> new AktorId(rs.getString("AKTOR_ID")));
     }
 
     public Try<OppfolgingKafkaDTO> hentOppfolgingStatus(String aktoerId) {
@@ -80,6 +65,7 @@ public class OppfolgingFeedRepository {
         if (result.isSuccess() && result.get() == null) {
             return Try.failure(new IllegalStateException("Result was empty"));
         }
+
         return result;
     }
 
@@ -182,30 +168,16 @@ public class OppfolgingFeedRepository {
                 .collect(toList());
     }
 
-    @Scheduled(fixedDelay = INSERT_ID_INTERVAL)
     @Transactional
-    public void settIderPaFeedElementer() {
-        insertFeedIdWithLock();
-    }
-
-    private void insertFeedIdWithLock() {
-        Instant lockAtMostUntil = Instant.now().plusSeconds(ADD_FEED_ID_MAX_LOCK);
-        taskExecutor.executeWithLock(
-                () -> insertFeedId(),
-                new LockConfiguration("oppdaterOppfolgingFeedId", lockAtMostUntil));
-    }
-
-    private void insertFeedId() {
-        MetricsUtils.timed("oppfolging.feedid", () -> {
-            long start = System.currentTimeMillis();
-            int updatedRows = db.update(
-                    "UPDATE OPPFOLGINGSTATUS " +
-                            "SET FEED_ID = OPPFOLGING_FEED_SEQ.NEXTVAL " +
-                            "WHERE FEED_ID IS NULL");
-            if (updatedRows > 0) {
-                log.info("Satte feed-id på {} rader. Tid brukt: {} ms", updatedRows, System.currentTimeMillis() - start);
-            }
-        });
+    public void insertFeedId() {
+        long start = System.currentTimeMillis();
+        int updatedRows = db.update(
+                "UPDATE OPPFOLGINGSTATUS " +
+                        "SET FEED_ID = OPPFOLGING_FEED_SEQ.NEXTVAL " +
+                        "WHERE FEED_ID IS NULL");
+        if (updatedRows > 0) {
+            log.info("Satte feed-id på {} rader. Tid brukt: {} ms", updatedRows, System.currentTimeMillis() - start);
+        }
     }
 
     public static OppfolgingFeedDTO mapRadTilOppfolgingFeedDTO(Map<String, Object> rad) {

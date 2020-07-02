@@ -3,37 +3,37 @@ package no.nav.veilarboppfolging.db;
 import lombok.SneakyThrows;
 import no.nav.veilarboppfolging.domain.KodeverkBruker;
 import no.nav.veilarboppfolging.domain.Kvp;
-import no.nav.sbl.jdbc.Database;
+import no.nav.veilarboppfolging.utils.DbUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.stereotype.Component;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.inject.Inject;
 import java.sql.ResultSet;
 import java.util.List;
 
-import static no.nav.apiapp.util.EnumUtils.getName;
-import static no.nav.apiapp.util.EnumUtils.valueOfOptional;
 import static no.nav.veilarboppfolging.domain.KodeverkBruker.NAV;
-import static no.nav.sbl.jdbc.Database.hentDato;
+import static no.nav.veilarboppfolging.utils.DbUtils.hentDato;
+import static no.nav.veilarboppfolging.utils.EnumUtils.getName;
+import static no.nav.veilarboppfolging.utils.EnumUtils.valueOfOptional;
 
 @Repository
 public class KvpRepository {
 
-    private Database database;
+    private final JdbcTemplate db;
 
-    @Inject
-    public KvpRepository(Database database) {
-        this.database = database;
+    @Autowired
+    public KvpRepository(JdbcTemplate db) {
+        this.db = db;
     }
 
     @Transactional
     public void startKvp(String aktorId, String enhet, String opprettetAv, String opprettetBegrunnelse) {
+        long id = DbUtils.nesteFraSekvens(db,"KVP_SEQ");
+        long nextSerial = DbUtils.nesteFraSekvens(db,"KVP_SERIAL_SEQ");
 
-        long id = database.nesteFraSekvens("KVP_SEQ");
-        long nextSerial = database.nesteFraSekvens("KVP_SERIAL_SEQ");
-        database.update("INSERT INTO KVP (" +
+        db.update("INSERT INTO KVP (" +
                         "kvp_id, " +
                         "serial, " +
                         "aktor_id, " +
@@ -51,7 +51,8 @@ public class KvpRepository {
                 opprettetBegrunnelse,
                 getName(NAV)
         );
-        database.update("UPDATE OPPFOLGINGSTATUS " +
+
+        db.update("UPDATE OPPFOLGINGSTATUS " +
                         "SET gjeldende_kvp = ?, " +
                         "oppdatert = CURRENT_TIMESTAMP, " +
                         "FEED_ID = null " +
@@ -62,11 +63,11 @@ public class KvpRepository {
 
     }
 
+    @Transactional
     public void stopKvp(long kvpId, String aktorId, String avsluttetAv, String avsluttetBegrunnelse, KodeverkBruker kodeverkBruker) {
+        long nextSerial = DbUtils.nesteFraSekvens(db, "KVP_SERIAL_SEQ");
 
-        long nextSerial = database.nesteFraSekvens("KVP_SERIAL_SEQ");
-
-        database.update("UPDATE KVP " +
+        db.update("UPDATE KVP " +
                         "SET serial = ?, " +
                         "avsluttet_av = ?, " +
                         "avsluttet_dato = CURRENT_TIMESTAMP, " +
@@ -80,7 +81,8 @@ public class KvpRepository {
                 kvpId
 
         );
-        database.update("UPDATE OPPFOLGINGSTATUS " +
+
+        db.update("UPDATE OPPFOLGINGSTATUS " +
                         "SET gjeldende_kvp = NULL, " +
                         "oppdatert = CURRENT_TIMESTAMP, " +
                         "FEED_ID = null " +
@@ -90,7 +92,7 @@ public class KvpRepository {
     }
 
     public List<Kvp> hentKvpHistorikk(String aktorId) {
-        return database.query("SELECT * " +
+        return db.query("SELECT * " +
                         "FROM kvp " +
                         "WHERE aktor_id = ?",
                 KvpRepository::mapTilKvp,
@@ -103,20 +105,13 @@ public class KvpRepository {
      * The serial number is the number of updates the table has undergone.
      */
     public List<Kvp> serialGreaterThan(long serial, long pageSize) {
-        return database.query("SELECT * FROM kvp WHERE serial > ? AND rownum <= ? ORDER BY serial ASC",
-                KvpRepository::mapTilKvp,
-                serial,
-                pageSize);
+        String sql = "SELECT * FROM kvp WHERE serial > ? AND rownum <= ? ORDER BY serial ASC";
+        return db.query(sql, KvpRepository::mapTilKvp, serial, pageSize);
     }
 
     public Kvp fetch(long id) {
-        return database.query("SELECT * " +
-                        "FROM KVP " +
-                        "WHERE kvp_id = ?",
-                KvpRepository::mapTilKvp, id)
-                .stream()
-                .findAny()
-                .orElse(null);
+        String sql = "SELECT * FROM KVP WHERE kvp_id = ?";
+        return db.queryForObject(sql, KvpRepository::mapTilKvp, id);
     }
 
     /**
@@ -126,8 +121,8 @@ public class KvpRepository {
      */
     public long gjeldendeKvp(String aktorId) {
         try {
-            return database.queryForObject("SELECT gjeldende_kvp FROM oppfolgingstatus WHERE aktor_id = ?",
-                    (rs) -> rs.getLong("gjeldende_kvp"),
+            return db.queryForObject("SELECT gjeldende_kvp FROM oppfolgingstatus WHERE aktor_id = ?",
+                    (rs, row) -> rs.getLong("gjeldende_kvp"),
                     aktorId);
         } catch (EmptyResultDataAccessException e) {
             return 0;
@@ -135,7 +130,7 @@ public class KvpRepository {
     }
 
     @SneakyThrows
-    protected static Kvp mapTilKvp(ResultSet rs) {
+    protected static Kvp mapTilKvp(ResultSet rs, int row) {
         return Kvp.builder()
                 .kvpId(rs.getLong("kvp_id"))
                 .serial(rs.getLong("serial"))

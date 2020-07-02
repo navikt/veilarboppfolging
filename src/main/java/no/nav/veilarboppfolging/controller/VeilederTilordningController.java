@@ -10,6 +10,7 @@ import no.nav.veilarboppfolging.domain.Tilordning;
 import no.nav.veilarboppfolging.kafka.OppfolgingStatusKafkaProducer;
 import no.nav.veilarboppfolging.controller.domain.TilordneVeilederResponse;
 import no.nav.veilarboppfolging.controller.domain.VeilederTilordning;
+import no.nav.veilarboppfolging.schedule.IdPaOppfolgingFeedSchedule;
 import no.nav.veilarboppfolging.services.AuthService;
 import no.nav.veilarboppfolging.services.MetricsService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -157,7 +158,7 @@ public class VeilederTilordningController {
     private void kallWebhook() {
         try {
             //Venter for å gi tid til å populere ID-er i feeden
-            Thread.sleep(OppfolgingFeedRepository.INSERT_ID_INTERVAL);
+            Thread.sleep(IdPaOppfolgingFeedSchedule.INSERT_ID_INTERVAL);
 
             // TODO: Add feed
 //            oppfolgingFeed.activateWebhook();

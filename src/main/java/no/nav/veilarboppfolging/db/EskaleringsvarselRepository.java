@@ -2,32 +2,32 @@ package no.nav.veilarboppfolging.db;
 
 import lombok.SneakyThrows;
 import no.nav.veilarboppfolging.domain.EskaleringsvarselData;
-import no.nav.sbl.jdbc.Database;
-import org.springframework.stereotype.Component;
+import no.nav.veilarboppfolging.utils.DbUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.inject.Inject;
 import java.sql.ResultSet;
 import java.util.List;
 
 import static no.nav.veilarboppfolging.db.OppfolgingsStatusRepository.AKTOR_ID;
 import static no.nav.veilarboppfolging.db.OppfolgingsStatusRepository.GJELDENE_ESKALERINGSVARSEL;
-import static no.nav.sbl.jdbc.Database.hentDato;
+import static no.nav.veilarboppfolging.utils.DbUtils.hentDato;
 
 @Repository
 public class EskaleringsvarselRepository {
 
-    private final Database database;
+    private final JdbcTemplate db;
 
-    @Inject
-    public EskaleringsvarselRepository(Database database) {
-        this.database = database;
+    @Autowired
+    public EskaleringsvarselRepository(JdbcTemplate db) {
+        this.db = db;
     }
 
     @Transactional
     public void create(EskaleringsvarselData e) {
-        long id = database.nesteFraSekvens("ESKALERINGSVARSEL_SEQ");
+        long id = DbUtils.nesteFraSekvens(db, "ESKALERINGSVARSEL_SEQ");
         e = e.withVarselId(id);
         insert(e);
         setActive(e);
@@ -35,7 +35,7 @@ public class EskaleringsvarselRepository {
 
     public EskaleringsvarselData fetch(Long id) {
         String sql = "SELECT * FROM ESKALERINGSVARSEL WHERE varsel_id = ?";
-        return database.query(sql, EskaleringsvarselRepository::map, id).get(0);
+        return db.query(sql, EskaleringsvarselRepository::map, id).get(0);
     }
 
     @Transactional
@@ -46,13 +46,13 @@ public class EskaleringsvarselRepository {
 
 
     public List<EskaleringsvarselData> history(String aktorId) {
-        return database.query("SELECT * FROM ESKALERINGSVARSEL WHERE aktor_id = ?",
+        return db.query("SELECT * FROM ESKALERINGSVARSEL WHERE aktor_id = ?",
                 EskaleringsvarselRepository::map,
                 aktorId);
     }
 
     @SneakyThrows
-    private static EskaleringsvarselData map(ResultSet result) {
+    private static EskaleringsvarselData map(ResultSet result, int row) {
         return EskaleringsvarselData.builder()
                 .varselId(result.getLong("varsel_id"))
                 .aktorId(result.getString("aktor_id"))
@@ -67,24 +67,15 @@ public class EskaleringsvarselRepository {
     }
 
     private void insert(EskaleringsvarselData e) {
-        database.update("" +
-                        "INSERT INTO ESKALERINGSVARSEL(" +
-                        "varsel_id, " +
-                        "aktor_id, " +
-                        "opprettet_av, " +
-                        "opprettet_dato, " +
-                        "opprettet_begrunnelse, " +
-                        "tilhorende_dialog_id) " +
-                        "VALUES(?, ?, ?, CURRENT_TIMESTAMP, ?, ?)",
-                e.getVarselId(),
-                e.getAktorId(),
-                e.getOpprettetAv(),
-                e.getOpprettetBegrunnelse(),
-                e.getTilhorendeDialogId());
+        String sql = "INSERT INTO ESKALERINGSVARSEL" +
+                "(varsel_id, aktor_id, opprettet_av, opprettet_dato, opprettet_begrunnelse, tilhorende_dialog_id)" +
+                " VALUES(?, ?, ?, CURRENT_TIMESTAMP, ?, ?)";
+
+        db.update(sql, e.getVarselId(), e.getAktorId(), e.getOpprettetAv(), e.getOpprettetBegrunnelse(), e.getTilhorendeDialogId());
     }
 
     private void setActive(EskaleringsvarselData e) {
-        database.update("" +
+        db.update("" +
                         "UPDATE " + OppfolgingsStatusRepository.TABLE_NAME +
                         " SET " + GJELDENE_ESKALERINGSVARSEL + " = ?, " +
                         "oppdatert = CURRENT_TIMESTAMP, " +
@@ -96,7 +87,7 @@ public class EskaleringsvarselRepository {
     }
 
     void avsluttEskaleringsVarsel(String avsluttetBegrunnelse, String avsluttetAv, long varselId) {
-        database.update("" +
+        db.update("" +
                         "UPDATE ESKALERINGSVARSEL " +
                         "SET avsluttet_dato = CURRENT_TIMESTAMP, avsluttet_begrunnelse = ?, avsluttet_av = ? " +
                         "WHERE varsel_id = ?",
@@ -106,7 +97,7 @@ public class EskaleringsvarselRepository {
     }
 
     private void removeActive(String aktorId) {
-        database.update("" +
+        db.update("" +
                         "UPDATE " + OppfolgingsStatusRepository.TABLE_NAME +
                         " SET " + GJELDENE_ESKALERINGSVARSEL + " = null, " +
                         "oppdatert = CURRENT_TIMESTAMP, " +

@@ -1,11 +1,9 @@
 package no.nav.veilarboppfolging.db;
 
 import lombok.val;
-import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import no.nav.veilarboppfolging.domain.AktorId;
 import no.nav.veilarboppfolging.domain.Oppfolgingsperiode;
 import no.nav.veilarboppfolging.controller.domain.OppfolgingKafkaDTO;
-import no.nav.sbl.jdbc.Database;
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -18,7 +16,6 @@ import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
 
-import static java.lang.String.format;
 import static java.util.Comparator.comparing;
 import static no.nav.veilarboppfolging.config.JndiLocalContextConfig.setupInMemoryDatabase;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -52,7 +49,7 @@ public class OppfolgingFeedRepositoryTest {
     public void tearDown() {
         jdbc.execute("ALTER TABLE " + OppfolgingsStatusRepository.TABLE_NAME + " SET REFERENTIAL_INTEGRITY FALSE");
         jdbc.execute("TRUNCATE TABLE " + OppfolgingsStatusRepository.TABLE_NAME);
-        jdbc.execute("TRUNCATE TABLE " + OppfolgingsPeriodeRepository.TABLE_NAME);
+        jdbc.execute("TRUNCATE TABLE OPPFOLGINGSPERIODE");
     }
 
     @Test
