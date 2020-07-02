@@ -1,13 +1,13 @@
 package no.nav.veilarboppfolging.feed;
 
-import no.nav.fo.feed.common.FeedElement;
-import no.nav.fo.feed.producer.FeedProvider;
 import no.nav.veilarboppfolging.domain.AvsluttetOppfolgingFeedData;
 import no.nav.veilarboppfolging.controller.domain.AvsluttetOppfolgingFeedDTO;
+import no.nav.veilarboppfolging.feed.cjm.common.FeedElement;
+import no.nav.veilarboppfolging.feed.cjm.producer.FeedProvider;
 import no.nav.veilarboppfolging.services.OppfolgingService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.inject.Inject;
 import java.sql.Timestamp;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -16,16 +16,15 @@ import java.util.stream.Stream;
 @Component
 public class AvsluttetOppfolgingFeedProvider implements FeedProvider<AvsluttetOppfolgingFeedDTO> {
 
-    private OppfolgingService oppfolgingService;
+    private final OppfolgingService oppfolgingService;
 
-    @Inject
+    @Autowired
     public AvsluttetOppfolgingFeedProvider(OppfolgingService oppfolgingService) {
         this.oppfolgingService = oppfolgingService;
     }
 
     @Override
     public Stream<FeedElement<AvsluttetOppfolgingFeedDTO>> fetchData(String sinceId, int pageSize) {
-
         Timestamp timestamp = Timestamp.from(ZonedDateTime.parse(sinceId).toInstant());
 
         return oppfolgingService

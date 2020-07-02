@@ -1,6 +1,6 @@
 package no.nav.veilarboppfolging.db;
 
-import no.nav.veilarboppfolging.domain.NyeBrukereFeedDTO;
+import no.nav.veilarboppfolging.feed.NyeBrukereFeedDTO;
 import no.nav.veilarboppfolging.domain.Oppfolgingsbruker;
 import no.nav.sbl.jdbc.Database;
 import org.junit.jupiter.api.BeforeEach;

@@ -1,23 +1,23 @@
 package no.nav.veilarboppfolging.feed;
 
 import lombok.extern.slf4j.Slf4j;
-import no.nav.fo.feed.common.FeedElement;
-import no.nav.fo.feed.producer.FeedProvider;
 import no.nav.veilarboppfolging.db.OppfolgingFeedRepository;
 import no.nav.veilarboppfolging.controller.domain.OppfolgingFeedDTO;
+import no.nav.veilarboppfolging.feed.cjm.common.FeedElement;
+import no.nav.veilarboppfolging.feed.cjm.producer.FeedProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.inject.Inject;
 import java.util.List;
 import java.util.stream.Stream;
 
-@Component
 @Slf4j
+@Component
 public class OppfolgingFeedProvider implements FeedProvider<OppfolgingFeedDTO> {
 
-    private OppfolgingFeedRepository repository;
+    private final OppfolgingFeedRepository repository;
 
-    @Inject
+    @Autowired
     public OppfolgingFeedProvider(OppfolgingFeedRepository repository) {
         this.repository = repository;
     }

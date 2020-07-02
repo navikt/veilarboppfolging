@@ -1,17 +1,12 @@
 package no.nav.veilarboppfolging.feed;
 
-import no.nav.brukerdialog.security.oidc.OidcFeedAuthorizationModule;
-
-import no.nav.brukerdialog.security.oidc.OidcFeedOutInterceptor;
-import no.nav.fo.feed.controller.FeedController;
-import no.nav.fo.feed.producer.FeedProducer;
 import no.nav.veilarboppfolging.db.KvpRepository;
 import no.nav.veilarboppfolging.db.NyeBrukereFeedRepository;
 import no.nav.veilarboppfolging.db.OppfolgingFeedRepository;
-import no.nav.veilarboppfolging.domain.NyeBrukereFeedDTO;
 import no.nav.veilarboppfolging.controller.domain.AvsluttetOppfolgingFeedDTO;
 import no.nav.veilarboppfolging.controller.domain.KvpDTO;
 import no.nav.veilarboppfolging.controller.domain.OppfolgingFeedDTO;
+import no.nav.veilarboppfolging.feed.cjm.producer.FeedProducer;
 import no.nav.veilarboppfolging.services.*;
 
 import org.springframework.context.annotation.Bean;
@@ -19,28 +14,13 @@ import org.springframework.context.annotation.Configuration;
 
 import static java.util.Collections.singletonList;
 
-
 @Configuration
 public class FeedConfig {
+
     public static final String OPPFOLGING_FEED_NAME = "oppfolging";
     public static final String AVSLUTTET_OPPFOLGING_FEED_NAME = "avsluttetoppfolging";
     public static final String NYE_BRUKERE_FEED_NAME = "nyebrukere";
-
-    @Bean
-    public FeedController feedController(
-            FeedProducer<OppfolgingFeedDTO> oppfolgingFeed,
-            FeedProducer<AvsluttetOppfolgingFeedDTO> avsluttetOppfolgingFeed,
-            FeedProducer<KvpDTO> kvpFeed,
-            FeedProducer<NyeBrukereFeedDTO> nyeBrukereFeed) {
-        FeedController feedServerController = new FeedController();
-
-        feedServerController.addFeed(OPPFOLGING_FEED_NAME, oppfolgingFeed);
-        feedServerController.addFeed(AVSLUTTET_OPPFOLGING_FEED_NAME, avsluttetOppfolgingFeed);
-        feedServerController.addFeed(KvpDTO.FEED_NAME, kvpFeed);
-        feedServerController.addFeed(NYE_BRUKERE_FEED_NAME, nyeBrukereFeed);
-
-        return feedServerController;
-    }
+    public static final String KVP_FEED_NAME = "kvp";
 
     @Bean
     public FeedProducer<OppfolgingFeedDTO> oppfolgingFeed(OppfolgingFeedRepository oppfolgingFeedRepository) {

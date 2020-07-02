@@ -4,7 +4,7 @@ import io.vavr.control.Try;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarboppfolging.domain.Innsatsgruppe;
-import no.nav.veilarboppfolging.domain.NyeBrukereFeedDTO;
+import no.nav.veilarboppfolging.feed.NyeBrukereFeedDTO;
 import no.nav.veilarboppfolging.domain.Oppfolgingsbruker;
 import no.nav.veilarboppfolging.domain.SykmeldtBrukerType;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,8 +1,8 @@
-package no.nav.veilarboppfolging.domain;
+package no.nav.veilarboppfolging.feed;
 
 import lombok.Builder;
 import lombok.Value;
-import no.nav.fo.feed.common.FeedElement;
+import no.nav.veilarboppfolging.feed.cjm.common.FeedElement;
 
 import java.util.Date;
 
