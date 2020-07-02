@@ -8,4 +8,6 @@ public interface YtelseskontraktClient extends HealthCheck {
 
     YtelseskontraktResponse hentYtelseskontraktListe(XMLGregorianCalendar periodeFom, XMLGregorianCalendar periodeTom, String personId);
 
+    YtelseskontraktResponse hentYtelseskontraktListe(String personId);
+
 }

@@ -21,6 +21,10 @@ public class MetricsService {
         this.metricsClient = metricsClient;
     }
 
+    public void report(Event event) {
+        metricsClient.report(event);
+    }
+
     public Tilordning lestAvVeileder(Tilordning tilordning) {
         Event event = new Event("tilordnet.veileder.lest");
 
@@ -37,6 +41,12 @@ public class MetricsService {
 
     private static long msSiden(long time){
         return new Date().getTime() - time;
+    }
+
+    public void raporterAutomatiskAvslutningAvOppfolging(boolean success) {
+        Event event = new Event("oppfolging.automatisk.avslutning");
+        event.addFieldToReport("success", success);
+        metricsClient.report(event);
     }
 
     public void startKvp() {

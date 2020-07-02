@@ -6,8 +6,17 @@ import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
-import lombok.val;
+import no.nav.common.auth.subject.SubjectHandler;
+import no.nav.common.featuretoggle.UnleashService;
+import no.nav.common.metrics.Event;
+import no.nav.veilarboppfolging.client.dkif.DkifClient;
+import no.nav.veilarboppfolging.client.dkif.DkifKontaktinfo;
+import no.nav.veilarboppfolging.client.varseloppgave.VarseloppgaveClient;
 import no.nav.veilarboppfolging.client.veilarbaktivitet.ArenaAktivitetDTO;
+import no.nav.veilarboppfolging.client.veilarbaktivitet.VeilarbaktivitetClient;
+import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
+import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktClient;
+import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktResponse;
 import no.nav.veilarboppfolging.db.KvpRepository;
 import no.nav.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.veilarboppfolging.domain.*;
@@ -16,13 +25,11 @@ import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 import no.nav.veilarboppfolging.controller.domain.DkifResponse;
 import no.nav.veilarboppfolging.utils.ArenaUtils;
 import no.nav.veilarboppfolging.utils.StringUtils;
-import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3;
-import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt.WSYtelseskontrakt;
-import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeRequest;
-import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeResponse;
-import org.json.JSONObject;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
@@ -53,7 +60,7 @@ public class OppfolgingResolver {
     private Oppfolging oppfolging;
     private Optional<Either<VeilarbArenaOppfolging, ArenaOppfolging>> arenaOppfolgingTilstand;
     private DkifResponse dkifResponse;
-    private WSHentYtelseskontraktListeResponse ytelser;
+    private YtelseskontraktResponse ytelser;
     private List<ArenaAktivitetDTO> arenaAktiviteter;
     private Boolean inaktivIArena;
     private Boolean kanReaktiveres;
@@ -67,7 +74,7 @@ public class OppfolgingResolver {
         this.deps = deps;
         this.arenaOppfolgingTilstand = Optional.empty();
 
-        this.aktorId = getAktorIdOrElseThrow(this.deps.getAktorService(), fnr).getAktorId();
+        this.aktorId = deps.authService.getAktorIdOrThrow(fnr);
         this.oppfolging = hentOppfolging();
 
         avsluttKvpVedEnhetBytte();
@@ -205,7 +212,7 @@ public class OppfolgingResolver {
         log.info("Avslutter oppfølgingsperiode for bruker");
         avsluttOppfolging(null, "Oppfølging avsluttet automatisk pga. inaktiv bruker som ikke kan reaktiveres");
         reloadOppfolging();
-        MetricsFactory.createEvent("oppfolging.automatisk.avslutning").addFieldToReport("success", !oppfolging.isUnderOppfolging()).report();
+        deps.getMetricsService().raporterAutomatiskAvslutningAvOppfolging(!oppfolging.isUnderOppfolging());
     }
 
     List<MalData> getMalList() {
@@ -268,12 +275,12 @@ public class OppfolgingResolver {
 
     boolean harPagaendeYtelse() {
         if (ytelser == null) {
-            hentYtelseskontrakt();
+            this.ytelser = deps.getYtelseskontraktClient().hentYtelseskontraktListe(fnr);
         }
-        return ytelser.getYtelseskontraktListe()
+
+        return ytelser.getYtelser()
                 .stream()
-                .map(WSYtelseskontrakt::getStatus)
-                .anyMatch(AKTIV_YTELSE_STATUS::equals);
+                .anyMatch(ytelseskontrakt -> AKTIV_YTELSE_STATUS.equals(ytelseskontrakt.getStatus()));
     }
 
     boolean harAktiveTiltak() {
@@ -298,7 +305,7 @@ public class OppfolgingResolver {
     @SneakyThrows
     private boolean tilgangTilEnhet(long kvpId) {
         String enhet = deps.getKvpRepository().fetch(kvpId).getEnhet();
-        return deps.getPepClient().harTilgangTilEnhet(enhet);
+        return deps.getAuthService().harTilgangTilEnhet(enhet);
     }
 
     boolean kanAvslutteOppfolging() {
@@ -391,9 +398,9 @@ public class OppfolgingResolver {
 
     void startEskalering(String begrunnelse, long tilhorendeDialogId) {
         String veilederId = SubjectHandler.getIdent().orElseThrow(RuntimeException::new);
-        deps.getTransactor().inTransaction(() -> {
+        deps.getTransactor().executeWithoutResult((status) -> {
             deps.getOppfolgingRepository().startEskalering(aktorId, veilederId, begrunnelse, tilhorendeDialogId);
-            deps.getEskaleringsvarselService().sendEskaleringsvarsel(aktorId, tilhorendeDialogId);
+            deps.getVarseloppgaveClient().sendEskaleringsvarsel(aktorId, tilhorendeDialogId);
         });
     }
 
@@ -444,33 +451,28 @@ public class OppfolgingResolver {
             return;
         }
 
-        arenaOppfolgingTilstand = Try.of(() -> deps.getArenaOppfolgingService().hentArenaOppfolging(fnr))
-                .onFailure(e -> {
-                    if (!(e instanceof NotFoundException)) {
-                        log.warn("Feil fra Arena for aktørId: {}", aktorId, e);
-                    }
-                })
+        arenaOppfolgingTilstand = Try.of(() -> deps.getVeilarbarenaClient().getArenaOppfolgingsstatus(fnr))
+                .onFailure(e -> log.warn("Feil fra Arena for aktørId: {}", aktorId, e))
                 .toJavaOptional().map(Either::right);
     }
 
     private void oppfolgingDirekteFraArenaMetrikk() {
-        MetricsFactory.createEvent("veilarboppfolging.oppfolgingdirektefraarena")
+        Event event = new Event("veilarboppfolging.oppfolgingdirektefraarena")
                 .addTagToReport("formidlingsgruppe", arenaOppfolgingTilstand().map(ArenaOppfolgingTilstand::getFormidlingsgruppe).orElse("INGEN_VERDI"))
                 .addTagToReport("servicegruppe", arenaOppfolgingTilstand().map(ArenaOppfolgingTilstand::getServicegruppe).orElse("INGEN_VERDI"))
                 .addTagToReport("underOppfolging", Boolean.toString(oppfolging.isUnderOppfolging()))
-                .addTagToReport("manueltRegistrert", (oppfolging.getGjeldendeManuellStatus() != null && oppfolging.getGjeldendeManuellStatus().isManuell()) ? "ja" : "nei")
-                .addTagToReport("level", SubjectHandler.getSubject().map(SecurityLevelAuthorizationModule::getSecurityLevel).map(x -> Integer.toString(x.getSecurityLevel())).orElse("INGEN_VERDI"))
-                .report();
+                .addTagToReport("manueltRegistrert", (oppfolging.getGjeldendeManuellStatus() != null && oppfolging.getGjeldendeManuellStatus().isManuell()) ? "ja" : "nei");
+
+        deps.getMetricsService().report(event);
     }
 
 
     private void hentOppfolgingstatusFraVeilarbArena() {
         if (!arenaOppfolgingTilstand.isPresent()) {
             Optional<VeilarbArenaOppfolging> veilarbArenaOppfolging =
-                    deps.getOppfolgingsbrukerService().hentOppfolgingsbruker(fnr);
+                    deps.getVeilarbarenaClient().hentOppfolgingsbruker(fnr);
 
             arenaOppfolgingTilstand = veilarbArenaOppfolging.map(Either::left);
-
         }
     }
 
@@ -494,15 +496,11 @@ public class OppfolgingResolver {
 
     @SneakyThrows
     private DkifResponse sjekkKrr() {
-        String responseBody = deps.getDkifService().sjekkDkifRest(fnr);
-
         try {
-            JSONObject dkifJson = new JSONObject(responseBody)
-                    .getJSONObject("kontaktinfo")
-                    .getJSONObject(fnr);
+            DkifKontaktinfo kontaktinfo = deps.getDkifClient().hentKontaktInfo(fnr);
 
-            boolean kanVarsles = dkifJson.getBoolean("kanVarsles");
-            boolean krr = dkifJson.getBoolean("reservert");
+            boolean kanVarsles = kontaktinfo.isKanVarsles();
+            boolean krr = kontaktinfo.isReservert();
 
             log.info("Dkif-response: {}: kanVarsles: {} krr: {}", aktorId, kanVarsles, krr);
 
@@ -513,15 +511,8 @@ public class OppfolgingResolver {
         }
     }
 
-    @SneakyThrows
-    private void hentYtelseskontrakt() {
-        val wsHentYtelseskontraktListeRequest = new WSHentYtelseskontraktListeRequest();
-        wsHentYtelseskontraktListeRequest.setPersonidentifikator(fnr);
-        this.ytelser = deps.getYtelseskontraktV3().hentYtelseskontraktListe(wsHentYtelseskontraktListeRequest);
-    }
-
     private void hentArenaAktiviteter() {
-        this.arenaAktiviteter = deps.getVeilarbaktivtetService().hentArenaAktiviteter(fnr);
+        this.arenaAktiviteter = deps.getVeilarbaktivitetClient().hentArenaAktiviteter(fnr);
     }
 
     private void avsluttKvpVedEnhetBytte() {
@@ -534,7 +525,7 @@ public class OppfolgingResolver {
         arenaOppfolgingTilstand().ifPresent(status -> {
             if (brukerHarByttetKontor(status, gjeldendeKvp)) {
                 deps.getKvpService().stopKvpUtenEnhetSjekk(aktorId, "KVP avsluttet automatisk pga. endret Nav-enhet", SYSTEM);
-                MetricsService.stopKvpDueToChangedUnit();
+                deps.getMetricsService().stopKvpDueToChangedUnit();
                 reloadOppfolging();
             }
         });
@@ -548,49 +539,43 @@ public class OppfolgingResolver {
     @Getter
     public static class OppfolgingResolverDependencies {
 
-        @Inject
-        private PepClient pepClient;
+        @Autowired
+        private MetricsService metricsService;
 
-        @Inject
-        private Transactor transactor;
+        @Autowired
+        private AuthService authService;
 
-        @Inject
-        private AktorService aktorService;
+        @Autowired
+        private VeilarbarenaClient veilarbarenaClient;
 
-        @Inject
+        @Autowired
+        private TransactionTemplate transactor;
+
+        @Autowired
         private OppfolgingRepository oppfolgingRepository;
 
-        @Inject
-        private ArenaOppfolgingService arenaOppfolgingService;
+        @Autowired
+        private DkifClient dkifClient;
 
-        @Inject
-        private OppfolgingsbrukerService oppfolgingsbrukerService;
+        @Autowired
+        private YtelseskontraktClient ytelseskontraktClient;
 
-        @Inject
-        private DkifService dkifService;
+        @Autowired
+        private VeilarbaktivitetClient veilarbaktivitetClient;
 
-        @Inject
-        private YtelseskontraktV3 ytelseskontraktV3;
-
-        @Inject
-        private VeilarbaktivtetService veilarbaktivtetService;
-
-        @Inject
-        private EskaleringsvarselService eskaleringsvarselService;
-
-        @Inject
+        @Autowired
         private KvpRepository kvpRepository;
 
-        @Inject
+        @Autowired
         private KvpService kvpService;
 
-        @Inject
-        private SystemUserTokenProvider systemUserTokenProvider;
+        @Autowired
+        private VarseloppgaveClient varseloppgaveClient;
 
-        @Inject
+        @Autowired
         private UnleashService unleashService;
 
-        @Inject
+        @Autowired
         private AvsluttOppfolgingProducer avsluttOppfolgingProducer;
 
     }

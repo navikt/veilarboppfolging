@@ -46,6 +46,19 @@ public class YtelseskontraktClientImpl implements YtelseskontraktClient {
         WSHentYtelseskontraktListeRequest request = new WSHentYtelseskontraktListeRequest()
                 .withPeriode(periode)
                 .withPersonidentifikator(personId);
+
+        return hentYtelseskontraktListe(request, personId);
+    }
+
+    @Override
+    public YtelseskontraktResponse hentYtelseskontraktListe(String personId) {
+        WSHentYtelseskontraktListeRequest request = new WSHentYtelseskontraktListeRequest()
+                .withPersonidentifikator(personId);
+
+        return hentYtelseskontraktListe(request, personId);
+    }
+
+    private YtelseskontraktResponse hentYtelseskontraktListe(WSHentYtelseskontraktListeRequest request, String personId) {
         try {
             log.info("Sender request til Ytelseskontrakt_v3");
             WSHentYtelseskontraktListeResponse response = ytelseskontrakt.hentYtelseskontraktListe(request);
