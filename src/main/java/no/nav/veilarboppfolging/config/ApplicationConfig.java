@@ -33,11 +33,6 @@ import static no.nav.common.utils.NaisUtils.getCredentials;
 public class ApplicationConfig {
 
     public static final String APPLICATION_NAME = "veilarboppfolging";
-    public static final String AKTOER_V2_URL_PROPERTY = "AKTOER_V2_ENDPOINTURL";
-    public static final String VEILARBLOGIN_REDIRECT_URL_URL_PROPERTY = "VEILARBLOGIN_REDIRECT_URL_URL";
-    public static final String AAD_B2C_CLIENTID_USERNAME_PROPERTY = "AAD_B2C_CLIENTID_USERNAME";
-    public static final String AAD_B2C_CLIENTID_PASSWORD_PROPERTY = "AAD_B2C_CLIENTID_PASSWORD";
-    public static final String VEILARBAKTIVITETAPI_URL_PROPERTY = "VEILARBAKTIVITETAPI_URL";
     public static final String ARBEIDSRETTET_DIALOG_PROPERTY = "ARBEIDSRETTET_DIALOG_URL";
     public static final String VIRKSOMHET_DIGITALKONTAKINFORMASJON_V1_PROPERTY = "VIRKSOMHET_DIGITALKONTAKINFORMASJON_V1_ENDPOINTURL";
     public static final String VIRKSOMHET_YTELSESKONTRAKT_V3_PROPERTY = "VIRKSOMHET_YTELSESKONTRAKT_V3_ENDPOINTURL";
@@ -46,15 +41,10 @@ public class ApplicationConfig {
     public static final String VARSELOPPGAVE_V1_PROPERTY = "VARSELOPPGAVE_V1_ENDPOINTURL";
     public static final String VIRKSOMHET_BEHANDLEARBEIDSSOEKER_V1_PROPERTY = "VIRKSOMHET_BEHANDLEARBEIDSSOEKER_V1_ENDPOINTURL";
     public static final String KAFKA_BROKERS_PROPERTY = "KAFKA_BROKERS_URL";
-    public static final String OPPFOLGING_FEED_BRUKERTILGANG_PROPERTY = "oppfolging.feed.brukertilgang";
-    public static final String AVSLUTTETOPPFOLGING_FEED_BRUKERTILGANG_PROPERTY = "avsluttetoppfolging.feed.brukertilgang";
-    public static final String KVP_FEED_BRUKERTILGANG_PROPERTY = "kvp.feed.brukertilgang";
-    public static final String NYEBRUKERE_FEED_BRUKERTILGANG_PROPERTY = "nyebrukere.feed.brukertilgang";
     public static final String KVP_API_BRUKERTILGANG_PROPERTY = "kvp.api.brukertilgang";
     public static final String VEILARBARENAAPI_URL_PROPERTY = "VEILARBARENAAPI_URL";
     public static final String STS_OIDC_CONFIGURATION_URL_PROPERTY = "SECURITY_TOKEN_SERVICE_OPENID_CONFIGURATION_URL";
-    public static final String KAFKA_BROKERS_URL_PROPERTY = "KAFKA_BROKERS_URL";
-    public static final String APP_ENVIRONMENT_NAME = "APP_ENVIRONMENT_NAME";
+
 
     @Bean
     public Credentials serviceUserCredentials() {

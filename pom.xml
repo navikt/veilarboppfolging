@@ -105,11 +105,6 @@
         <!-- Tjenestespesifikasjoner -->
         <dependency>
             <groupId>no.nav.tjenestespesifikasjoner</groupId>
-            <artifactId>organisasjonenhet-v2-tjenestespesifikasjon</artifactId>
-            <version>${tjenestespesifikasjoner.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>no.nav.tjenestespesifikasjoner</groupId>
             <artifactId>nav-fim-oppfoelging-v1.2.0-tjenestespesifikasjon</artifactId>
             <version>${tjenestespesifikasjoner.version}</version>
         </dependency>

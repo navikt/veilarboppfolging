@@ -35,8 +35,6 @@ spec:
   envFrom:
     - configmap: pto-config
   env:
-    - name: APP_ENVIRONMENT_NAME
-      value: {{namespace}}
     - name: MAKS_ALDER_AUTOMATISK_REGISTRERING
       value: "0"
     - name: MIN_ALDER_AUTOMATISK_REGISTRERING
@@ -53,14 +51,6 @@ spec:
       value: "true"
     - name: KVP_API_BRUKERTILGANG
       value: srvveilarbdialog,srvveilarbaktivitet
-    - name: OPPFOLGING_FEED_BRUKERTILGANG
-      value: srvveilarbportefolje
-    - name: AVSLUTTETOPPFOLGING_FEED_BRUKERTILGANG
-      value: srvveilarbdialog,srvveilarbaktivitet,srvveilarbjobbsoke
-    - name: KVP_FEED_BRUKERTILGANG
-      value: srvveilarbdialog,srvveilarbaktivitet
-    - name: NYEBRUKERE_FEED_BRUKERTILGANG
-      value: srvveilarbdirigent
   vault:
     enabled: true
     paths:

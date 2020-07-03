@@ -41,6 +41,12 @@ public class EnvironmentProperties {
 
     // SOAP Endpoints
 
+    private String ytelseskontraktV3Endpoint;
+
+    private String virksomhetOppfolgingV1Endpoint;
+
     private String varselOppgaveV1Endpoint;
+
+    private String behandleArbeidssoekerV1Endpoint;
 
 }
