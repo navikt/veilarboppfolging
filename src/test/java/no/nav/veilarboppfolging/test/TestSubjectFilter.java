@@ -11,7 +11,7 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import java.util.Collections;
 
-import static no.nav.veilarbvedtaksstotte.utils.TestData.TEST_VEILEDER_IDENT;
+import static no.nav.veilarboppfolging.test.TestData.TEST_VEILEDER_IDENT;
 
 public class TestSubjectFilter implements Filter {
 

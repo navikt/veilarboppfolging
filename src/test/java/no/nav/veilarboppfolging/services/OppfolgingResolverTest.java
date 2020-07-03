@@ -1,15 +1,12 @@
 package no.nav.veilarboppfolging.services;
 
-import no.nav.apiapp.security.PepClient;
-import no.nav.dialogarena.aktor.AktorService;
+import no.nav.common.featuretoggle.UnleashService;
+import no.nav.veilarboppfolging.client.oppfolging.OppfolgingClient;
+import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
 import no.nav.veilarboppfolging.db.KvpRepository;
 import no.nav.veilarboppfolging.db.OppfolgingRepository;
-import no.nav.veilarboppfolging.domain.ArenaOppfolging;
 import no.nav.veilarboppfolging.domain.Kvp;
 import no.nav.veilarboppfolging.domain.Oppfolging;
-import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
-import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
-import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -17,8 +14,6 @@ import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.MockitoJUnitRunner;
-
-import java.util.Optional;
 
 import static java.util.Optional.of;
 import static no.nav.veilarboppfolging.domain.KodeverkBruker.SYSTEM;
@@ -48,22 +43,19 @@ abstract class OppfolgingResolverTest {
     protected OppfolgingRepository oppfolgingRepositoryMock;
 
     @Mock
-    private AktorService aktorServiceMock;
-
-    @Mock
     private KvpRepository kvpRepositoryMock;
 
     @Mock
     private KvpService kvpServiceMock;
 
     @Mock
-    protected ArenaOppfolgingService arenaOppfolgingServiceMock;
+    protected VeilarbarenaClient veilarbarenaClient;
 
     @Mock
-    protected OppfolgingsbrukerService oppfolgingsbrukerServiceMock;
+    protected OppfolgingClient oppfolgingClient;
 
     @Mock
-    private PepClient pepClientMock;
+    private AuthService authService;
 
     @Mock
     private UnleashService unleashServiceMock;
@@ -75,11 +67,11 @@ abstract class OppfolgingResolverTest {
 
         MockitoAnnotations.initMocks(this);
 
-        when(oppfolgingResolverDependenciesMock.getAktorService()).thenReturn(aktorServiceMock);
+//        when(oppfolgingResolverDependenciesMock.getAktorService()).thenReturn(aktorServiceMock);
         when(oppfolgingResolverDependenciesMock.getOppfolgingRepository()).thenReturn(oppfolgingRepositoryMock);
         when(oppfolgingResolverDependenciesMock.getKvpRepository()).thenReturn(kvpRepositoryMock);
 
-        when(oppfolgingResolverDependenciesMock.getPepClient()).thenReturn(pepClientMock);
+//        when(oppfolgingResolverDependenciesMock.getPepClient()).thenReturn(pepClientMock);
         when(oppfolgingResolverDependenciesMock.getKvpService()).thenReturn(kvpServiceMock);
         when(oppfolgingResolverDependenciesMock.getUnleashService()).thenReturn(unleashServiceMock);
 
@@ -89,7 +81,7 @@ abstract class OppfolgingResolverTest {
             setupVeilarbArenaService();
         }
 
-        when(aktorServiceMock.getAktorId(FNR)).thenReturn(of(AKTOR_ID));
+//        when(aktorServiceMock.getAktorId(FNR)).thenReturn(of(AKTOR_ID));
         when(oppfolgingRepositoryMock.hentOppfolging(AKTOR_ID)).thenReturn(of(oppfolging));
         when(unleashServiceMock.isEnabled("veilarboppfolging.oppfolgingresolver.bruk_arena_direkte")).thenReturn(brukArenaDirekte);
 
@@ -105,20 +97,20 @@ abstract class OppfolgingResolverTest {
     }
 
     @Test
-    public void veileder_skal_ha_skrivetilgang_tilbruker_som_er_pa_kvp_hvis_han_har_tilgang_til_enheten() throws PepException {
+    public void veileder_skal_ha_skrivetilgang_tilbruker_som_er_pa_kvp_hvis_han_har_tilgang_til_enheten() {
         when(kvpRepositoryMock.gjeldendeKvp(AKTOR_ID)).thenReturn(KVP_ID);
         when(kvpRepositoryMock.fetch(KVP_ID)).thenReturn(Kvp.builder().kvpId(KVP_ID).aktorId(AKTOR_ID).enhet(ENHET).build());
-        when(pepClientMock.harTilgangTilEnhet(ENHET)).thenReturn(true);
+//        when(pepClientMock.harTilgangTilEnhet(ENHET)).thenReturn(true);
 
         oppfolgingResolver = OppfolgingResolver.lagOppfolgingResolver(FNR, oppfolgingResolverDependenciesMock);
         assertThat(oppfolgingResolver.harSkrivetilgangTilBruker()).isEqualTo(true);
     }
 
     @Test
-    public void veilder_skal_ikke_ha_skrivetilgang_til_bruker_som_er_pa_kvp_pa_en_enhet_han_ikke_har_tilgang_til() throws PepException {
+    public void veilder_skal_ikke_ha_skrivetilgang_til_bruker_som_er_pa_kvp_pa_en_enhet_han_ikke_har_tilgang_til() {
         when(kvpRepositoryMock.gjeldendeKvp(AKTOR_ID)).thenReturn(KVP_ID);
         when(kvpRepositoryMock.fetch(KVP_ID)).thenReturn(Kvp.builder().kvpId(KVP_ID).aktorId(AKTOR_ID).enhet(OTHER_ENHET).build());
-        when(pepClientMock.harTilgangTilEnhet(OTHER_ENHET)).thenReturn(false);
+//        when(pepClientMock.harTilgangTilEnhet(OTHER_ENHET)).thenReturn(false);
 
         oppfolgingResolver = OppfolgingResolver.lagOppfolgingResolver(FNR, oppfolgingResolverDependenciesMock);
         assertThat(oppfolgingResolver.harSkrivetilgangTilBruker()).isEqualTo(false);
@@ -143,18 +135,18 @@ abstract class OppfolgingResolverTest {
 
     protected void mockSvarFraArena(String enhet) {
         if (brukArenaDirekte) {
-            when(arenaOppfolgingServiceMock.hentArenaOppfolging(any())).thenReturn(new ArenaOppfolging().setOppfolgingsenhet(enhet));
+//            when(arenaOppfolgingServiceMock.hentArenaOppfolging(any())).thenReturn(new ArenaOppfolging().setOppfolgingsenhet(enhet));
         } else {
-            when(oppfolgingsbrukerServiceMock.hentOppfolgingsbruker(any())).thenReturn(Optional.of(new VeilarbArenaOppfolging().setNav_kontor(enhet)));
+//            when(oppfolgingClient.hentOppfolgingsbruker(any())).thenReturn(Optional.of(new VeilarbArenaOppfolging().setNav_kontor(enhet)));
         }
     }
 
     protected void setupVeilarbArenaService() {
-        when(oppfolgingResolverDependenciesMock.getOppfolgingsbrukerService()).thenReturn(oppfolgingsbrukerServiceMock);
+//        when(oppfolgingResolverDependenciesMock.getOppfolgingsbrukerService()).thenReturn(oppfolgingClient);
     }
 
     protected void setupArenaService() {
-        when(oppfolgingResolverDependenciesMock.getArenaOppfolgingService()).thenReturn(arenaOppfolgingServiceMock);
+//        when(oppfolgingResolverDependenciesMock.getArenaOppfolgingService()).thenReturn(arenaOppfolgingServiceMock);
     }
 
 }

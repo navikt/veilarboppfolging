@@ -3,7 +3,7 @@ package no.nav.veilarboppfolging.utils;
 import java.util.HashSet;
 import java.util.Set;
 
-import no.nav.veilarboppfolging.domain.ArenaOppfolging;
+import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolging;
 
 import static java.lang.Boolean.TRUE;
 import static java.util.Arrays.asList;

@@ -18,8 +18,6 @@ public class AktiverBrukerService {
 
     private final AuthService authService;
 
-    private final AktorregisterClient aktorregisterClient;
-
     private final BehandleArbeidssokerClient behandleArbeidssokerClient;
 
     private final OppfolgingRepository oppfolgingRepository;
@@ -30,14 +28,12 @@ public class AktiverBrukerService {
     public AktiverBrukerService(
             AuthService authService,
             OppfolgingRepository oppfolgingRepository,
-            AktorregisterClient aktorregisterClient,
             BehandleArbeidssokerClient behandleArbeidssokerClient,
             NyeBrukereFeedRepository nyeBrukereFeedRepository
     ) {
         this.authService = authService;
-        this.aktorregisterClient = aktorregisterClient;
-        this.behandleArbeidssokerClient = behandleArbeidssokerClient;
         this.oppfolgingRepository = oppfolgingRepository;
+        this.behandleArbeidssokerClient = behandleArbeidssokerClient;
         this.nyeBrukereFeedRepository = nyeBrukereFeedRepository;
     }
 

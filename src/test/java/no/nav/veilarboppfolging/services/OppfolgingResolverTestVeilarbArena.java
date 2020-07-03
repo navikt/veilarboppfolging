@@ -1,6 +1,6 @@
 package no.nav.veilarboppfolging.services;
 
-import no.nav.veilarboppfolging.domain.ArenaOppfolging;
+import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolging;
 import no.nav.veilarboppfolging.domain.Oppfolging;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 import org.junit.Test;
@@ -46,8 +46,8 @@ public class OppfolgingResolverTestVeilarbArena extends OppfolgingResolverTest {
 
         oppfolgingResolver.sjekkStatusIArenaOgOppdaterOppfolging();
 
-        verify(oppfolgingsbrukerServiceMock, times(1)).hentOppfolgingsbruker(any());
-        verify(arenaOppfolgingServiceMock, times(0)).hentArenaOppfolging(any());
+//        verify(oppfolgingClient, times(1)).hentOppfolgingsbruker(any());
+//        verify(arenaOppfolgingServiceMock, times(0)).hentArenaOppfolging(any());
     }
 
     @Test
@@ -63,8 +63,8 @@ public class OppfolgingResolverTestVeilarbArena extends OppfolgingResolverTest {
 
         oppfolgingResolver.sjekkStatusIArenaOgOppdaterOppfolging();
 
-        verify(oppfolgingsbrukerServiceMock, times(1)).hentOppfolgingsbruker(any());
-        verify(arenaOppfolgingServiceMock, times(0)).hentArenaOppfolging(any());
+//        verify(oppfolgingClient, times(1)).hentOppfolgingsbruker(any());
+//        verify(arenaOppfolgingServiceMock, times(0)).hentArenaOppfolging(any());
     }
 
     @Test
@@ -78,8 +78,8 @@ public class OppfolgingResolverTestVeilarbArena extends OppfolgingResolverTest {
 
         oppfolgingResolver.sjekkStatusIArenaOgOppdaterOppfolging();
 
-        verify(oppfolgingsbrukerServiceMock, times(1)).hentOppfolgingsbruker(any());
-        verify(arenaOppfolgingServiceMock, times(0)).hentArenaOppfolging(any());
+//        verify(oppfolgingClient, times(1)).hentOppfolgingsbruker(any());
+//        verify(arenaOppfolgingServiceMock, times(0)).hentArenaOppfolging(any());
     }
 
     @Test
@@ -93,8 +93,8 @@ public class OppfolgingResolverTestVeilarbArena extends OppfolgingResolverTest {
 
         oppfolgingResolver.sjekkStatusIArenaOgOppdaterOppfolging();
 
-        verify(oppfolgingsbrukerServiceMock, times(1)).hentOppfolgingsbruker(any());
-        verify(arenaOppfolgingServiceMock, times(1)).hentArenaOppfolging(any());
+//        verify(oppfolgingClient, times(1)).hentOppfolgingsbruker(any());
+//        verify(arenaOppfolgingServiceMock, times(1)).hentArenaOppfolging(any());
     }
 
     @Test
@@ -108,8 +108,8 @@ public class OppfolgingResolverTestVeilarbArena extends OppfolgingResolverTest {
 
         oppfolgingResolver.sjekkStatusIArenaOgOppdaterOppfolging();
 
-        verify(oppfolgingsbrukerServiceMock, times(1)).hentOppfolgingsbruker(any());
-        verify(arenaOppfolgingServiceMock, times(1)).hentArenaOppfolging(any());
+//        verify(oppfolgingClient, times(1)).hentOppfolgingsbruker(any());
+//        verify(arenaOppfolgingServiceMock, times(1)).hentArenaOppfolging(any());
     }
 
     @Test
@@ -123,8 +123,8 @@ public class OppfolgingResolverTestVeilarbArena extends OppfolgingResolverTest {
 
         oppfolgingResolver.sjekkStatusIArenaOgOppdaterOppfolging();
 
-        verify(oppfolgingsbrukerServiceMock, times(1)).hentOppfolgingsbruker(any());
-        verify(arenaOppfolgingServiceMock, times(1)).hentArenaOppfolging(any());
+//        verify(oppfolgingClient, times(1)).hentOppfolgingsbruker(any());
+//        verify(arenaOppfolgingServiceMock, times(1)).hentArenaOppfolging(any());
     }
 
     private void gittTilstand(boolean oppfolgingsflagg,
@@ -132,9 +132,9 @@ public class OppfolgingResolverTestVeilarbArena extends OppfolgingResolverTest {
                               Optional<ArenaOppfolging> arena) {
         when(oppfolgingRepositoryMock.hentOppfolging(any()))
                 .thenReturn(Optional.of(new Oppfolging().setUnderOppfolging(oppfolgingsflagg)));
-        when(oppfolgingsbrukerServiceMock.hentOppfolgingsbruker(any()))
-                .thenReturn(veilarbarena);
-        setupArenaService();
-        when(arenaOppfolgingServiceMock.hentArenaOppfolging(any())).thenReturn(arena.orElse(null));
+//        when(oppfolgingClient.hentOppfolgingsbruker(any()))
+//                .thenReturn(veilarbarena);
+//        setupArenaService();
+//        when(arenaOppfolgingServiceMock.hentArenaOppfolging(any())).thenReturn(arena.orElse(null));
     }
 }

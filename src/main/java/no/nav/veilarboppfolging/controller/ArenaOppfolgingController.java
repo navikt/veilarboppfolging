@@ -3,6 +3,7 @@ package no.nav.veilarboppfolging.controller;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.client.norg2.Norg2Client;
 import no.nav.common.featuretoggle.UnleashService;
+import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolging;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
 import no.nav.veilarboppfolging.db.VeilederTilordningerRepository;
 import no.nav.veilarboppfolging.domain.Oppfolgingsenhet;
@@ -66,7 +67,7 @@ public class ArenaOppfolgingController {
                     .setHovedmaalkode(veilarbArenaOppfolging.getHovedmaalkode());
 
         } else {
-            no.nav.veilarboppfolging.domain.ArenaOppfolging arenaData = veilarbarenaClient.getArenaOppfolgingsstatus(fnr);
+            ArenaOppfolging arenaData = veilarbarenaClient.getArenaOppfolgingsstatus(fnr);
             Optional<VeilarbArenaOppfolging> oppfolgingsbrukerStatus = veilarbarenaClient.hentOppfolgingsbruker(fnr);
             res = new OppfolgingEnhetMedVeileder()
                 .setServicegruppe(arenaData.getServicegruppe())

@@ -3,22 +3,21 @@ package no.nav.veilarboppfolging.services;
 import no.nav.veilarboppfolging.db.OppfolgingsenhetHistorikkRepository;
 import no.nav.veilarboppfolging.domain.OppfolgingsenhetEndringData;
 import no.nav.veilarboppfolging.domain.VeilarbArenaOppfolgingEndret;
+import no.nav.veilarboppfolging.test.LocalH2Database;
 import org.junit.jupiter.api.Test;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.List;
 
-import static no.nav.veilarboppfolging.config.JndiLocalContextConfig.setupInMemoryDatabase;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 
-class OppfolgingsenhetEndringServiceTest extends DatabaseTest {
+class OppfolgingsenhetEndringServiceTest {
     private final static String AKTOERID = "123";
     private final static String NYTT_NAV_KONTOR = "1111";
 
-    private OppfolgingsenhetHistorikkRepository repo = new OppfolgingsenhetHistorikkRepository(new JdbcTemplate(setupInMemoryDatabase()));
+    private OppfolgingsenhetHistorikkRepository repo = new OppfolgingsenhetHistorikkRepository(LocalH2Database.getDb());
     private OppfolgingsenhetEndringService service = new OppfolgingsenhetEndringService(repo);
 
     @Test

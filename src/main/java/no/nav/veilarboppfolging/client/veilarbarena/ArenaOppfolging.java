@@ -1,4 +1,4 @@
-package no.nav.veilarboppfolging.domain;
+package no.nav.veilarboppfolging.client.veilarbarena;
 
 import lombok.Data;
 import lombok.experimental.Accessors;

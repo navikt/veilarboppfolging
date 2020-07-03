@@ -1,20 +1,21 @@
 package no.nav.veilarboppfolging.services;
 
-import no.nav.apiapp.security.PepClient;
-import no.nav.dialogarena.aktor.AktorService;
+import no.nav.common.featuretoggle.UnleashService;
+import no.nav.veilarboppfolging.db.KvpRepository;
+import no.nav.veilarboppfolging.db.OppfolgingRepository;
+import no.nav.veilarboppfolging.db.OppfolgingsenhetHistorikkRepository;
+import no.nav.veilarboppfolging.db.VeilederHistorikkRepository;
 import no.nav.veilarboppfolging.domain.EskaleringsvarselData;
 import no.nav.veilarboppfolging.domain.InnstillingsHistorikk;
 import no.nav.veilarboppfolging.domain.Kvp;
 import no.nav.veilarboppfolging.domain.ManuellStatus;
-import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
-import no.nav.sbl.featuretoggle.unleash.UnleashService;
-import no.nav.sbl.jdbc.Transactor;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -26,7 +27,6 @@ import static java.time.temporal.ChronoUnit.HOURS;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static java.util.Date.from;
-import static java.util.Optional.of;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
@@ -35,19 +35,16 @@ import static org.mockito.Mockito.when;
 public class HistorikkServiceTest {
 
     @Mock
-    private AktorService aktorServiceMock;
+    private AuthService AuthService;
 
     @Mock
     private KvpRepository kvpRepositoryMock;
 
     @Mock
-    private PepClient pepClientMock;
-
-    @Mock
     private OppfolgingRepository oppfolgingRepositoryMock;
 
     @Mock
-    private Transactor transactor;
+    private TransactionTemplate transactor;
 
     @Mock
     private UnleashService unleashService;
@@ -75,7 +72,7 @@ public class HistorikkServiceTest {
 
     @Before
     public void setup() {
-        when(aktorServiceMock.getAktorId(FNR)).thenReturn(of(AKTOR_ID));
+//        when(aktorServiceMock.getAktorId(FNR)).thenReturn(of(AKTOR_ID));
 
         gitt_kvp();
         gitt_eskaleringsvarsel_historikk();
@@ -83,8 +80,8 @@ public class HistorikkServiceTest {
     }
 
     @Test
-    public void saksbehandler_har_ikke_tilgang_til_enhet() throws PepException {
-        when(pepClientMock.harTilgangTilEnhet(ENHET)).thenReturn(false);
+    public void saksbehandler_har_ikke_tilgang_til_enhet() {
+//        when(pepClientMock.harTilgangTilEnhet(ENHET)).thenReturn(false);
 
         List<InnstillingsHistorikk> historikk = historikkService.hentInstillingsHistorikk(FNR);
         List<String> begrunnelser = historikk.stream()
@@ -95,8 +92,8 @@ public class HistorikkServiceTest {
     }
 
     @Test
-    public void saksbehandler_har_tilgang_til_enhet() throws PepException {
-        when(pepClientMock.harTilgangTilEnhet(ENHET)).thenReturn(true);
+    public void saksbehandler_har_tilgang_til_enhet() {
+//        when(pepClientMock.harTilgangTilEnhet(ENHET)).thenReturn(true);
 
         List<InnstillingsHistorikk> historikk = historikkService.hentInstillingsHistorikk(FNR);
         List<String> begrunnelser = historikk.stream()
