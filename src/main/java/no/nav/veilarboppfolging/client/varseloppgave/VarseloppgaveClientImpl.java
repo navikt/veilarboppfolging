@@ -5,26 +5,17 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.cxf.CXFClient;
 import no.nav.common.cxf.StsConfig;
 import no.nav.common.health.HealthCheckResult;
-import no.nav.tjeneste.virksomhet.behandlearbeidssoeker.v1.binding.BehandleArbeidssoekerV1;
-import no.nav.tjeneste.virksomhet.behandlearbeidssoeker.v1.informasjon.Brukerident;
-import no.nav.tjeneste.virksomhet.behandlearbeidssoeker.v1.meldinger.AktiverBrukerRequest;
-import no.nav.tjeneste.virksomhet.behandlearbeidssoeker.v1.meldinger.ReaktiverBrukerForenkletRequest;
 import no.nav.tjeneste.virksomhet.varseloppgave.v1.binding.BestillVarselOppgaveBrukerHarIkkeTilstrekkeligPaaloggingsnivaa;
 import no.nav.tjeneste.virksomhet.varseloppgave.v1.binding.BestillVarselOppgaveBrukerIkkeRegistrertIIdporten;
 import no.nav.tjeneste.virksomhet.varseloppgave.v1.binding.BestillVarselOppgaveSikkerhetsbegrensning;
 import no.nav.tjeneste.virksomhet.varseloppgave.v1.binding.VarseloppgaveV1;
 import no.nav.tjeneste.virksomhet.varseloppgave.v1.informasjon.*;
 import no.nav.tjeneste.virksomhet.varseloppgave.v1.meldinger.BestillVarselOppgaveRequest;
-import no.nav.veilarboppfolging.domain.Fnr;
-import no.nav.veilarboppfolging.domain.Innsatsgruppe;
 import org.apache.cxf.interceptor.LoggingOutInterceptor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
-import javax.ws.rs.core.Response;
 import java.util.UUID;
-
-import static no.nav.veilarboppfolging.config.ApplicationConfig.ARBEIDSRETTET_DIALOG_PROPERTY;
 
 /**
  * Brukes for å sende eskaleringsvarsel

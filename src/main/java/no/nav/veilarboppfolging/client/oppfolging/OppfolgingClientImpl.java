@@ -16,7 +16,6 @@ import org.apache.cxf.interceptor.LoggingOutInterceptor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
-import javax.ws.rs.ForbiddenException;
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.util.List;
 

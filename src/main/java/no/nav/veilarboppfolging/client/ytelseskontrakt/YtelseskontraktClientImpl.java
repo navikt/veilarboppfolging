@@ -10,8 +10,9 @@ import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeRequest;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeResponse;
 import org.apache.cxf.interceptor.LoggingOutInterceptor;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
-import javax.ws.rs.ForbiddenException;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 /**
@@ -66,7 +67,7 @@ public class YtelseskontraktClientImpl implements YtelseskontraktClient {
         } catch (HentYtelseskontraktListeSikkerhetsbegrensning hentYtelseskontraktListeSikkerhetsbegrensning) {
             String logMessage = "Veileder har ikke tilgang til å søke opp " + personId;
             log.warn(logMessage, hentYtelseskontraktListeSikkerhetsbegrensning);
-            throw new ForbiddenException(logMessage, hentYtelseskontraktListeSikkerhetsbegrensning);
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         }
     }
 

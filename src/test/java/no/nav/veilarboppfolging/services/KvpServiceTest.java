@@ -4,12 +4,12 @@ import lombok.val;
 import no.nav.common.auth.subject.SsoToken;
 import no.nav.common.auth.subject.Subject;
 import no.nav.common.auth.subject.SubjectHandler;
+import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
+import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingsstatusResponse;
 import no.nav.veilarboppfolging.db.EskaleringsvarselRepository;
 import no.nav.veilarboppfolging.db.KvpRepository;
 import no.nav.veilarboppfolging.db.OppfolgingsStatusRepository;
 import no.nav.veilarboppfolging.domain.OppfolgingTable;
-import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
-import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingsstatusResponse;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -20,7 +20,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Collections;
 
-import static java.util.Optional.of;
 import static no.nav.common.auth.subject.IdentType.InternBruker;
 import static no.nav.veilarboppfolging.domain.KodeverkBruker.NAV;
 import static org.mockito.ArgumentMatchers.any;
@@ -91,7 +90,7 @@ public class KvpServiceTest {
     @Test(expected = ResponseStatusException.class)
     public void startKvp_feiler_dersom_bruker_allerede_er_under_kvp() {
 
-        when(oppfolgingsStatusRepository.fetch(AKTOR_ID)).thenReturn(new OppfolgingTable().setUnderOppfolging(true).setGjeldendeKvpId((long) 2));
+        when(oppfolgingsStatusRepository.fetch(AKTOR_ID)).thenReturn(new OppfolgingTable().setUnderOppfolging(true).setGjeldendeKvpId(2));
         SubjectHandler.withSubject(new Subject(VEILEDER, InternBruker, SsoToken.oidcToken("token", Collections.emptyMap())),
                 () -> kvpService.startKvp(FNR, START_BEGRUNNELSE)
         );

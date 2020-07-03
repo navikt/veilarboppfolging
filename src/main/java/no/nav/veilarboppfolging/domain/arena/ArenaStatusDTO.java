@@ -9,5 +9,5 @@ public enum ArenaStatusDTO {
     JATAKK,
     NEITAKK,
     TILBUD,
-    VENTELISTE;
+    VENTELISTE
 }

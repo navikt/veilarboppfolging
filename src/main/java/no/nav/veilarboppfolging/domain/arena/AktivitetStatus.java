@@ -5,5 +5,5 @@ public enum AktivitetStatus {
     GJENNOMFORES,
     FULLFORT,
     BRUKER_ER_INTERESSERT,
-    AVBRUTT;
+    AVBRUTT
 }

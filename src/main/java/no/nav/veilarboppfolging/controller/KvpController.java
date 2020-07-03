@@ -4,19 +4,18 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import no.nav.common.auth.subject.SubjectHandler;
+import no.nav.veilarboppfolging.controller.domain.KvpDTO;
 import no.nav.veilarboppfolging.db.KvpRepository;
 import no.nav.veilarboppfolging.domain.Kvp;
 import no.nav.veilarboppfolging.utils.DtoMappers;
-import no.nav.veilarboppfolging.controller.domain.KvpDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -35,8 +34,7 @@ public class KvpController {
         this.repository = repository;
     }
 
-    @GET
-    @Path("/{aktorId}/currentStatus")
+    @GetMapping("/{aktorId}/currentStatus")
     @ApiOperation(
             value = "Extract KVP status for an actor",
             notes = "This API endpoint is only available for system users, set in the property '" + KVP_API_BRUKERTILGANG_PROPERTY + "'."

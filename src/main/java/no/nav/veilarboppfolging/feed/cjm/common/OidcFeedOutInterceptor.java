@@ -1,8 +1,7 @@
 package no.nav.veilarboppfolging.feed.cjm.common;
 
 import no.nav.common.sts.SystemUserTokenProvider;
-
-import javax.ws.rs.client.Invocation;
+import okhttp3.Request;
 
 public class OidcFeedOutInterceptor implements OutInterceptor {
 
@@ -13,7 +12,7 @@ public class OidcFeedOutInterceptor implements OutInterceptor {
     }
 
     @Override
-    public void apply(Invocation.Builder builder) {
+    public void apply(Request.Builder builder) {
         builder.header("Authorization", "Bearer " + systemUserTokenProvider.getSystemUserToken());
     }
 

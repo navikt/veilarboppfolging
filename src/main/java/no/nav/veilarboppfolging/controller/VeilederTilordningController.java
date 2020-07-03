@@ -2,6 +2,8 @@ package no.nav.veilarboppfolging.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarboppfolging.controller.domain.OppfolgingFeedDTO;
+import no.nav.veilarboppfolging.controller.domain.TilordneVeilederResponse;
+import no.nav.veilarboppfolging.controller.domain.VeilederTilordning;
 import no.nav.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.veilarboppfolging.db.VeilederHistorikkRepository;
 import no.nav.veilarboppfolging.db.VeilederTilordningerRepository;
@@ -9,18 +11,17 @@ import no.nav.veilarboppfolging.domain.AktorId;
 import no.nav.veilarboppfolging.domain.Tilordning;
 import no.nav.veilarboppfolging.feed.cjm.producer.FeedProducer;
 import no.nav.veilarboppfolging.kafka.OppfolgingStatusKafkaProducer;
-import no.nav.veilarboppfolging.controller.domain.TilordneVeilederResponse;
-import no.nav.veilarboppfolging.controller.domain.VeilederTilordning;
 import no.nav.veilarboppfolging.schedule.IdPaOppfolgingFeedSchedule;
 import no.nav.veilarboppfolging.services.AuthService;
 import no.nav.veilarboppfolging.services.MetricsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
-import javax.ws.rs.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -119,9 +120,8 @@ public class VeilederTilordningController {
         return feilendeTilordninger;
     }
 
-    @POST
-    @Path("{fnr}/lestaktivitetsplan/")
-    public void lestAktivitetsplan(@PathParam("fnr") String fnr) {
+    @PostMapping("{fnr}/lestaktivitetsplan/")
+    public void lestAktivitetsplan(@PathVariable("fnr") String fnr) {
         String aktorId = authService.getAktorIdOrThrow(fnr);
 
         authService.skalVereInternBruker();
@@ -143,7 +143,7 @@ public class VeilederTilordningController {
         String innloggetVeilederId = tilordning.getInnloggetVeilederId();
         String aktoerId = tilordning.getAktoerId();
 
-        if (e instanceof NotAuthorizedException) {
+        if (e instanceof ResponseStatusException) {
             log.warn("Feil ved tildeling av veileder: innlogget veileder: {}, fraVeileder: {} tilVeileder: {} bruker(aktørId): {} årsak: request is not authorized", innloggetVeilederId, fraVeilederId, tilVeilederId, aktoerId, e);
         } else if (e instanceof IllegalArgumentException) {
             log.error("Feil ved tildeling av veileder: innlogget veileder: {}, fraVeileder: {} tilVeileder: {} årsak: Fant ikke aktørId for bruker", innloggetVeilederId, tilordning.getFraVeilederId(), tilordning.getTilVeilederId(), e);

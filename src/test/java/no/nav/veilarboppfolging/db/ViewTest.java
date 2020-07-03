@@ -8,9 +8,8 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
@@ -76,6 +75,6 @@ public class ViewTest {
     }
 
     private static String lesInnholdFraFil(String filNavn) {
-        return new Scanner(ViewTest.class.getClassLoader().getResourceAsStream(filNavn), "UTF-8").useDelimiter("\\A").next();
+        return new Scanner(ViewTest.class.getClassLoader().getResourceAsStream(filNavn), StandardCharsets.UTF_8).useDelimiter("\\A").next();
     }
 }

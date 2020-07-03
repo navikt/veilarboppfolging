@@ -4,19 +4,20 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.client.norg2.Norg2Client;
 import no.nav.common.featuretoggle.UnleashService;
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolging;
+import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
+import no.nav.veilarboppfolging.controller.domain.OppfolgingEnhetMedVeileder;
 import no.nav.veilarboppfolging.db.VeilederTilordningerRepository;
 import no.nav.veilarboppfolging.domain.Oppfolgingsenhet;
 import no.nav.veilarboppfolging.services.AuthService;
-import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
-import no.nav.veilarboppfolging.controller.domain.OppfolgingEnhetMedVeileder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
-import javax.ws.rs.*;
 import java.util.Optional;
 
 @Slf4j
@@ -59,7 +60,8 @@ public class ArenaOppfolgingController {
 
         OppfolgingEnhetMedVeileder res;
         if(unleash.isEnabled("veilarboppfolging.oppfolgingsstatus.fra.veilarbarena")) {
-            VeilarbArenaOppfolging veilarbArenaOppfolging = veilarbarenaClient.hentOppfolgingsbruker(fnr).orElseThrow(() -> new NotFoundException("Bruker ikke funnet"));
+            VeilarbArenaOppfolging veilarbArenaOppfolging = veilarbarenaClient.hentOppfolgingsbruker(fnr)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Bruker ikke funnet"));
             res = new OppfolgingEnhetMedVeileder()
                     .setServicegruppe(veilarbArenaOppfolging.getKvalifiseringsgruppekode())
                     .setFormidlingsgruppe(veilarbArenaOppfolging.getFormidlingsgruppekode())

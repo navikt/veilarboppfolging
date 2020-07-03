@@ -1,13 +1,13 @@
 package no.nav.veilarboppfolging.controller;
 
-import no.nav.veilarboppfolging.client.oppfolging.OppfolgingskontraktData;
-import no.nav.veilarboppfolging.services.AuthService;
 import no.nav.veilarboppfolging.client.oppfolging.OppfolgingMapper;
-import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktMapper;
+import no.nav.veilarboppfolging.client.oppfolging.OppfolgingskontraktData;
 import no.nav.veilarboppfolging.client.ytelseskontrakt.Vedtak;
-import no.nav.veilarboppfolging.controller.domain.YtelserResponse;
 import no.nav.veilarboppfolging.client.ytelseskontrakt.Ytelseskontrakt;
+import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktMapper;
 import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktResponse;
+import no.nav.veilarboppfolging.controller.domain.YtelserResponse;
+import no.nav.veilarboppfolging.services.AuthService;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -46,10 +46,10 @@ public class YtelsesRessursTest {
     @Test
     public void getOppfoelgingSkalReturnereEnRespons() {
 
-        when(ytelseskontraktMapper.tilYtelseskontrakt(any())).thenReturn(
+        when(YtelseskontraktMapper.tilYtelseskontrakt(any())).thenReturn(
                 new YtelseskontraktResponse(singletonList(new Vedtak()), singletonList(new Ytelseskontrakt()))
         );
-        when(oppfolgingMapper.tilOppfolgingskontrakt(any())).thenReturn(singletonList(new OppfolgingskontraktData()));
+        when(OppfolgingMapper.tilOppfolgingskontrakt(any())).thenReturn(singletonList(new OppfolgingskontraktData()));
 
         final YtelserResponse ytelser = ytelseController.getYtelser("fnr");
 

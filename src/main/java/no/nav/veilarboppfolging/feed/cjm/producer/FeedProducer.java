@@ -1,14 +1,16 @@
 package no.nav.veilarboppfolging.feed.cjm.producer;
 
 import lombok.Builder;
+import no.nav.common.rest.client.RestClient;
 import no.nav.veilarboppfolging.feed.cjm.common.*;
 import no.nav.veilarboppfolging.feed.cjm.util.MetricsUtils;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 import org.slf4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.Invocation;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -17,7 +19,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toMap;
-import static javax.ws.rs.HttpMethod.HEAD;
 import static no.nav.veilarboppfolging.feed.cjm.util.UrlValidator.validateUrl;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -25,7 +26,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 public class FeedProducer<DOMAINOBJECT extends Comparable<DOMAINOBJECT>> implements Authorization {
 
     private static final Logger LOG = getLogger(FeedProducer.class);
-    private static final Client REST_CLIENT = null;
+    private static final OkHttpClient client = RestClient.baseClient();
 
     @Builder.Default
     private int maxPageSize = 10000;
@@ -89,15 +90,19 @@ public class FeedProducer<DOMAINOBJECT extends Comparable<DOMAINOBJECT>> impleme
     }
 
     private int tryActivateWebHook(String url) {
-        try {
-            Invocation.Builder request = REST_CLIENT.target(url).request();
-            this.interceptors.forEach(interceptor -> interceptor.apply(request));
-            LOG.debug("activate webhook til url {}", url);
-            int status = request.build(HEAD).invoke().getStatus();
-            if(status != 200) {
-                LOG.warn("Fikk ikke forventet status fra kall til webhook. Url {}, returnert status {}", url, status);
+        Request.Builder requestBuilder = new Request.Builder()
+                .url(url)
+                .head();
+
+        this.interceptors.forEach(interceptor -> interceptor.apply(requestBuilder));
+
+        try (Response response = client.newCall(requestBuilder.build()).execute()) {
+
+            if (response.code() != 200) {
+                LOG.warn("Fikk ikke forventet status fra kall til webhook. Url {}, returnert status {}", url, response.code());
             }
-            return status;
+
+            return response.code();
         } catch (Exception e) {
             LOG.warn("Feil ved activate webhook til url {}, {}", url, e.getMessage(), e);
             return 500;
@@ -121,6 +126,6 @@ public class FeedProducer<DOMAINOBJECT extends Comparable<DOMAINOBJECT>> impleme
     }
 
     private static int getPageSize(int pageSize, int maxPageSize) {
-        return pageSize > maxPageSize ? maxPageSize : pageSize;
+        return Math.min(pageSize, maxPageSize);
     }
 }

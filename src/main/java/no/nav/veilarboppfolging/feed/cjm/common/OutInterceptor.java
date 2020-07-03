@@ -1,7 +1,7 @@
 package no.nav.veilarboppfolging.feed.cjm.common;
 
-import javax.ws.rs.client.Invocation;
+import okhttp3.Request;
 
 public interface OutInterceptor {
-    void apply(Invocation.Builder builder);
+    void apply(Request.Builder builder);
 }
