@@ -13,7 +13,6 @@ import static org.junit.Assert.assertThat;
 
 public class OppfolgingStatusDataTest {
 
-    
     @Test
     public void getOppfolgingUtgang_returnererNullHVisIngenPerioder() {
         assertThat(new OppfolgingStatusData().getOppfolgingUtgang(), nullValue());

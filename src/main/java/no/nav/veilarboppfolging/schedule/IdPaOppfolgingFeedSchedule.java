@@ -1,7 +1,7 @@
 package no.nav.veilarboppfolging.schedule;
 
 import no.nav.common.leaderelection.LeaderElectionClient;
-import no.nav.veilarboppfolging.db.OppfolgingFeedRepository;
+import no.nav.veilarboppfolging.repository.OppfolgingFeedRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;

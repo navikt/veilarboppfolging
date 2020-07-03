@@ -1,8 +1,8 @@
 package no.nav.veilarboppfolging.controller;
 
 import no.nav.veilarboppfolging.controller.domain.KvpDTO;
-import no.nav.veilarboppfolging.db.KvpRepository;
 import no.nav.veilarboppfolging.domain.Kvp;
+import no.nav.veilarboppfolging.repository.KvpRepository;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;

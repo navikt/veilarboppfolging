@@ -1,10 +1,10 @@
 package no.nav.veilarboppfolging.services;
 
-import no.nav.veilarboppfolging.db.KvpRepository;
-import no.nav.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.veilarboppfolging.domain.Kvp;
 import no.nav.veilarboppfolging.domain.MalData;
 import no.nav.veilarboppfolging.domain.Oppfolging;
+import no.nav.veilarboppfolging.repository.KvpRepository;
+import no.nav.veilarboppfolging.repository.OppfolgingRepository;
 import no.nav.veilarboppfolging.services.OppfolgingResolver.OppfolgingResolverDependencies;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,8 +27,7 @@ import static java.util.Collections.singletonList;
 import static java.util.Optional.of;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class MalServiceTest {

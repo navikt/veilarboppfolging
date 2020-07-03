@@ -1,10 +1,10 @@
 package no.nav.veilarboppfolging.feed;
 
-import no.nav.veilarboppfolging.db.KvpRepository;
+import no.nav.veilarboppfolging.controller.domain.KvpDTO;
 import no.nav.veilarboppfolging.feed.cjm.common.FeedElement;
 import no.nav.veilarboppfolging.feed.cjm.producer.FeedProvider;
+import no.nav.veilarboppfolging.repository.KvpRepository;
 import no.nav.veilarboppfolging.utils.DtoMappers;
-import no.nav.veilarboppfolging.controller.domain.KvpDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

@@ -1,10 +1,10 @@
 package no.nav.veilarboppfolging.feed;
 
 import lombok.extern.slf4j.Slf4j;
-import no.nav.veilarboppfolging.db.OppfolgingFeedRepository;
 import no.nav.veilarboppfolging.controller.domain.OppfolgingFeedDTO;
 import no.nav.veilarboppfolging.feed.cjm.common.FeedElement;
 import no.nav.veilarboppfolging.feed.cjm.producer.FeedProvider;
+import no.nav.veilarboppfolging.repository.OppfolgingFeedRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

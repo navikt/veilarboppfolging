@@ -4,7 +4,7 @@ import lombok.val;
 import no.nav.common.client.aktorregister.AktorregisterClient;
 import no.nav.common.utils.Credentials;
 import no.nav.veilarboppfolging.config.EnvironmentProperties;
-import no.nav.veilarboppfolging.db.OppfolgingFeedRepository;
+import no.nav.veilarboppfolging.repository.OppfolgingFeedRepository;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -28,7 +28,6 @@ import java.util.HashMap;
 
 import static no.nav.veilarboppfolging.utils.KafkaUtils.requireKafkaTopicPrefix;
 import static org.apache.kafka.clients.producer.ProducerConfig.*;
-import static org.apache.kafka.clients.producer.ProducerConfig.REQUEST_TIMEOUT_MS_CONFIG;
 
 @EnableKafka
 @Configuration

@@ -1,14 +1,14 @@
 package no.nav.veilarboppfolging.services;
 
 import no.nav.common.featuretoggle.UnleashService;
-import no.nav.veilarboppfolging.db.KvpRepository;
-import no.nav.veilarboppfolging.db.OppfolgingRepository;
-import no.nav.veilarboppfolging.db.OppfolgingsenhetHistorikkRepository;
-import no.nav.veilarboppfolging.db.VeilederHistorikkRepository;
 import no.nav.veilarboppfolging.domain.EskaleringsvarselData;
 import no.nav.veilarboppfolging.domain.InnstillingsHistorikk;
 import no.nav.veilarboppfolging.domain.Kvp;
 import no.nav.veilarboppfolging.domain.ManuellStatus;
+import no.nav.veilarboppfolging.repository.KvpRepository;
+import no.nav.veilarboppfolging.repository.OppfolgingRepository;
+import no.nav.veilarboppfolging.repository.OppfolgingsenhetHistorikkRepository;
+import no.nav.veilarboppfolging.repository.VeilederHistorikkRepository;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

@@ -1,8 +1,8 @@
 package no.nav.veilarboppfolging.kafka;
 
 import lombok.extern.slf4j.Slf4j;
-import no.nav.veilarboppfolging.db.AvsluttOppfolgingEndringRepository;
 import no.nav.veilarboppfolging.domain.AvsluttOppfolgingKafkaDTO;
+import no.nav.veilarboppfolging.repository.AvsluttOppfolgingEndringRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;

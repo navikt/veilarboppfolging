@@ -1,11 +1,10 @@
 package no.nav.veilarboppfolging.services;
 
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.client.aktorregister.AktorregisterClient;
 import no.nav.veilarboppfolging.client.behandle_arbeidssoker.BehandleArbeidssokerClient;
-import no.nav.veilarboppfolging.db.NyeBrukereFeedRepository;
-import no.nav.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.veilarboppfolging.domain.*;
+import no.nav.veilarboppfolging.repository.NyeBrukereFeedRepository;
+import no.nav.veilarboppfolging.repository.OppfolgingRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

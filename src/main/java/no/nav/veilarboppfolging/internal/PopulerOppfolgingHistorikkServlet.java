@@ -2,20 +2,18 @@ package no.nav.veilarboppfolging.internal;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-
 import no.nav.common.utils.Credentials;
 import no.nav.common.utils.job.JobUtils;
 import no.nav.common.utils.job.RunningJob;
 import no.nav.veilarboppfolging.client.veilarbportefolje.OppfolgingEnhetPageDTO;
 import no.nav.veilarboppfolging.client.veilarbportefolje.VeilarbportefoljeClient;
-import no.nav.veilarboppfolging.db.OppfolgingsenhetHistorikkRepository;
+import no.nav.veilarboppfolging.repository.OppfolgingsenhetHistorikkRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import java.util.Optional;
 
 import static java.lang.Integer.parseInt;

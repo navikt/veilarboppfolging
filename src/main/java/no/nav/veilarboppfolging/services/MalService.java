@@ -1,9 +1,8 @@
 package no.nav.veilarboppfolging.services;
 
-import lombok.SneakyThrows;
-import no.nav.veilarboppfolging.db.KvpRepository;
 import no.nav.veilarboppfolging.domain.Kvp;
 import no.nav.veilarboppfolging.domain.MalData;
+import no.nav.veilarboppfolging.repository.KvpRepository;
 import no.nav.veilarboppfolging.services.OppfolgingResolver.OppfolgingResolverDependencies;
 import no.nav.veilarboppfolging.utils.KvpUtils;
 import org.springframework.beans.factory.annotation.Autowired;

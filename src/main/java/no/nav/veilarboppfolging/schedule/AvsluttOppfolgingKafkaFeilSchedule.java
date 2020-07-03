@@ -2,9 +2,9 @@ package no.nav.veilarboppfolging.schedule;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.leaderelection.LeaderElectionClient;
-import no.nav.veilarboppfolging.db.AvsluttOppfolgingEndringRepository;
 import no.nav.veilarboppfolging.domain.AvsluttOppfolgingKafkaDTO;
 import no.nav.veilarboppfolging.kafka.AvsluttOppfolgingProducer;
+import no.nav.veilarboppfolging.repository.AvsluttOppfolgingEndringRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;

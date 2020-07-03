@@ -1,9 +1,9 @@
 package no.nav.veilarboppfolging.client;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClientImpl;
-import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolging;
 import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
+import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolging;
+import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClientImpl;
 import org.assertj.core.api.Assertions;
 import org.junit.Rule;
 import org.junit.Test;
@@ -44,7 +44,7 @@ public class VeilarbarenaClientImplTest {
 
     @Test
     public void skalMappeTilOppfolgingsstatusV2() {
-        VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl("");
+        VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl("", () -> "TOKEN");
 
         givenThat(get(urlEqualTo("/oppfolgingsstatus/" + MOCK_FNR))
                 .willReturn(aResponse()
@@ -63,7 +63,7 @@ public class VeilarbarenaClientImplTest {
 
     @Test(expected = NotFoundException.class)
     public void skalKasteNotFoundOmPersonIkkeFunnet() {
-        VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl("");
+        VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl("", () -> "TOKEN");
 
         givenThat(get(urlEqualTo("/oppfolgingsstatus/" + MOCK_FNR))
                 .willReturn(aResponse().withStatus(404)));
@@ -73,7 +73,7 @@ public class VeilarbarenaClientImplTest {
 
     @Test(expected = ForbiddenException.class)
     public void skalKasteForbiddenOmManIkkeHarTilgang() {
-        VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl("");
+        VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl("", () -> "TOKEN");
 
         givenThat(get(urlEqualTo("/oppfolgingsstatus/" +MOCK_FNR))
                 .willReturn(aResponse().withStatus(403)));
@@ -83,7 +83,7 @@ public class VeilarbarenaClientImplTest {
 
     @Test(expected = BadRequestException.class)
     public void skalKasteBadRequestOmUgyldigIdentifikator() {
-        VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl("");
+        VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl("", () -> "TOKEN");
 
         givenThat(get(urlEqualTo("/oppfolgingsstatus/" + MOCK_FNR))
                 .willReturn(aResponse().withStatus(400)));

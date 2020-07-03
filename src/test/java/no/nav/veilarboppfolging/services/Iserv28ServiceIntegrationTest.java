@@ -1,19 +1,15 @@
 package no.nav.veilarboppfolging.services;
 
-import no.nav.veilarboppfolging.db.OppfolgingRepository;
-import no.nav.veilarboppfolging.db.OppfolgingsStatusRepository;
-import no.nav.veilarboppfolging.domain.IservMapper;
 import no.nav.veilarboppfolging.domain.OppfolgingTable;
-
 import no.nav.veilarboppfolging.domain.VeilarbArenaOppfolgingEndret;
+import no.nav.veilarboppfolging.repository.OppfolgingRepository;
+import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.time.ZonedDateTime;
 
 import static java.time.ZonedDateTime.now;
-import static java.util.Optional.of;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 

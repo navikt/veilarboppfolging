@@ -1,10 +1,10 @@
 package no.nav.veilarboppfolging.config;
 
 import no.nav.common.client.aktorregister.AktorregisterClient;
-import no.nav.veilarboppfolging.db.OppfolgingFeedRepository;
 import no.nav.veilarboppfolging.kafka.AvsluttOppfolgingProducer;
 import no.nav.veilarboppfolging.kafka.KafkaTopics;
 import no.nav.veilarboppfolging.kafka.OppfolgingStatusKafkaProducer;
+import no.nav.veilarboppfolging.repository.OppfolgingFeedRepository;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;

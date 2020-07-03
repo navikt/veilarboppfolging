@@ -1,26 +1,23 @@
 package no.nav.veilarboppfolging.services;
 
 import io.vavr.control.Try;
-import no.nav.veilarboppfolging.config.DatabaseConfig;
-import no.nav.veilarboppfolging.db.NyeBrukereFeedRepository;
-import no.nav.veilarboppfolging.db.OppfolgingRepository;
-import no.nav.veilarboppfolging.db.OppfolgingsPeriodeRepository;
+import no.nav.tjeneste.virksomhet.behandlearbeidssoeker.v1.binding.BehandleArbeidssoekerV1;
 import no.nav.veilarboppfolging.domain.AktiverArbeidssokerData;
 import no.nav.veilarboppfolging.domain.Fnr;
 import no.nav.veilarboppfolging.domain.Innsatsgruppe;
 import no.nav.veilarboppfolging.domain.Oppfolging;
-import no.nav.tjeneste.virksomhet.behandlearbeidssoeker.v1.binding.BehandleArbeidssoekerV1;
+import no.nav.veilarboppfolging.repository.OppfolgingRepository;
+import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
-import javax.sql.DataSource;
 import java.util.Optional;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doThrow;
 
 class AktiverBrukerIntegrationTest {
 

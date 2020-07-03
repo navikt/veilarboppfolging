@@ -1,6 +1,6 @@
 package no.nav.veilarboppfolging.schedule;
 
-import no.nav.veilarboppfolging.db.NyeBrukereFeedRepository;
+import no.nav.veilarboppfolging.repository.NyeBrukereFeedRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;

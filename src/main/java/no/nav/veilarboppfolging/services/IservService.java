@@ -1,12 +1,12 @@
 package no.nav.veilarboppfolging.services;
 
 import lombok.extern.slf4j.Slf4j;
-import no.nav.veilarboppfolging.db.OppfolgingRepository;
-import no.nav.veilarboppfolging.db.OppfolgingsStatusRepository;
-import no.nav.veilarboppfolging.db.UtmeldingRepository;
 import no.nav.veilarboppfolging.domain.IservMapper;
 import no.nav.veilarboppfolging.domain.OppfolgingTable;
 import no.nav.veilarboppfolging.domain.VeilarbArenaOppfolgingEndret;
+import no.nav.veilarboppfolging.repository.OppfolgingRepository;
+import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
+import no.nav.veilarboppfolging.repository.UtmeldingRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,9 +14,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static java.util.stream.Collectors.toList;
+import static no.nav.veilarboppfolging.services.IservService.AvslutteOppfolgingResultat.*;
 import static no.nav.veilarboppfolging.utils.ArenaUtils.erIserv;
 import static no.nav.veilarboppfolging.utils.ArenaUtils.erUnderOppfolging;
-import static no.nav.veilarboppfolging.services.IservService.AvslutteOppfolgingResultat.*;
 
 @Slf4j
 @Service

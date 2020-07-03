@@ -1,7 +1,7 @@
 package no.nav.veilarboppfolging.services;
 
-import no.nav.veilarboppfolging.db.ManuellStatusRepository;
 import no.nav.veilarboppfolging.domain.OppfolgingTable;
+import no.nav.veilarboppfolging.repository.ManuellStatusRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

@@ -4,27 +4,24 @@ import no.nav.common.auth.subject.IdentType;
 import no.nav.common.auth.subject.SsoToken;
 import no.nav.common.auth.subject.Subject;
 import no.nav.common.auth.subject.SubjectHandler;
-import no.nav.veilarboppfolging.feed.cjm.producer.FeedProducer;
-import no.nav.veilarboppfolging.services.AuthService;
-import no.nav.veilarboppfolging.db.OppfolgingRepository;
-import no.nav.veilarboppfolging.db.VeilederHistorikkRepository;
-import no.nav.veilarboppfolging.db.VeilederTilordningerRepository;
-import no.nav.veilarboppfolging.kafka.OppfolgingStatusKafkaProducer;
 import no.nav.veilarboppfolging.controller.domain.OppfolgingFeedDTO;
 import no.nav.veilarboppfolging.controller.domain.TilordneVeilederResponse;
 import no.nav.veilarboppfolging.controller.domain.VeilederTilordning;
+import no.nav.veilarboppfolging.feed.cjm.producer.FeedProducer;
+import no.nav.veilarboppfolging.kafka.OppfolgingStatusKafkaProducer;
+import no.nav.veilarboppfolging.repository.OppfolgingRepository;
+import no.nav.veilarboppfolging.repository.VeilederHistorikkRepository;
+import no.nav.veilarboppfolging.repository.VeilederTilordningerRepository;
+import no.nav.veilarboppfolging.services.AuthService;
 import no.nav.veilarboppfolging.services.MetricsService;
 import no.nav.veilarboppfolging.test.LocalH2Database;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.jdbc.BadSqlGrammarException;
 
-import javax.ws.rs.NotAuthorizedException;
-import javax.ws.rs.core.Response;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,13 +29,10 @@ import java.util.List;
 import java.util.concurrent.*;
 
 import static java.util.Arrays.asList;
-import static java.util.Optional.empty;
-import static java.util.Optional.of;
 import static no.nav.veilarboppfolging.controller.VeilederTilordningController.kanTilordneVeileder;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.Silent.class)

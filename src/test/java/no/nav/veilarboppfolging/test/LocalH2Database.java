@@ -1,5 +1,6 @@
 package no.nav.veilarboppfolging.test;
 
+import org.flywaydb.core.Flyway;
 import org.h2.jdbcx.JdbcDataSource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
@@ -12,7 +13,7 @@ public class LocalH2Database {
     public static JdbcTemplate getDb() {
         if (db == null) {
             JdbcDataSource dataSource = new JdbcDataSource();
-            dataSource.setURL("jdbc:h2:mem:veilarboppfolging-local;DB_CLOSE_DELAY=-1;MODE=Oracle;TRACE_LEVEL_SYSTEM_OUT=3");
+            dataSource.setURL("jdbc:h2:mem:veilarboppfolging-local;DB_CLOSE_DELAY=-1;MODE=Oracle;TRACE_LEVEL_SYSTEM_OUT=3;");
 
             db = new JdbcTemplate(dataSource);
             initDb(db);
@@ -26,9 +27,9 @@ public class LocalH2Database {
     }
 
     private static void initDb(JdbcTemplate db) {
-//        Flyway flyway = new Flyway();
-//        flyway.setDataSource(db.getDataSource());
-//        flyway.migrate();
+        Flyway flyway = new Flyway();
+        flyway.setDataSource(db.getDataSource());
+        flyway.migrate();
     }
 
 }

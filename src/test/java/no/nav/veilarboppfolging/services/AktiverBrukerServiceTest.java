@@ -1,20 +1,22 @@
 package no.nav.veilarboppfolging.services;
 
+import no.nav.tjeneste.virksomhet.behandlearbeidssoeker.v1.binding.*;
 import no.nav.veilarboppfolging.client.behandle_arbeidssoker.BehandleArbeidssokerClient;
-import no.nav.veilarboppfolging.db.NyeBrukereFeedRepository;
-import no.nav.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.veilarboppfolging.domain.AktiverArbeidssokerData;
 import no.nav.veilarboppfolging.domain.Fnr;
 import no.nav.veilarboppfolging.domain.Innsatsgruppe;
-import no.nav.tjeneste.virksomhet.behandlearbeidssoeker.v1.binding.*;
+import no.nav.veilarboppfolging.repository.NyeBrukereFeedRepository;
+import no.nav.veilarboppfolging.repository.OppfolgingRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotAuthorizedException;
+
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 
 class AktiverBrukerServiceTest {
 
