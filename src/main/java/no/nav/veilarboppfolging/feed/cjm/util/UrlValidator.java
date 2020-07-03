@@ -1,7 +1,8 @@
 package no.nav.veilarboppfolging.feed.cjm.util;
 
 import lombok.SneakyThrows;
-import no.nav.veilarboppfolging.feed.cjm.exception.InvalidUrlException;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.regex.Pattern;
 
@@ -21,7 +22,7 @@ public class UrlValidator {
     @SneakyThrows
     public static void validateUrl(String url) {
         if (isInvalidUrl(url)) {
-            throw new InvalidUrlException();
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid url");
         }
     }
 }

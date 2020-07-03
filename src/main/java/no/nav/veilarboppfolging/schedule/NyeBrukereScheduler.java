@@ -1,6 +1,7 @@
 package no.nav.veilarboppfolging.schedule;
 
 import no.nav.veilarboppfolging.db.NyeBrukereFeedRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -8,8 +9,9 @@ import org.springframework.stereotype.Component;
 @Component
 public class NyeBrukereScheduler {
 
-    private NyeBrukereFeedRepository nyeBrukereFeedRepository;
+    private final NyeBrukereFeedRepository nyeBrukereFeedRepository;
 
+    @Autowired
     public NyeBrukereScheduler(NyeBrukereFeedRepository nyeBrukereFeedRepository) {
         this.nyeBrukereFeedRepository = nyeBrukereFeedRepository;
     }

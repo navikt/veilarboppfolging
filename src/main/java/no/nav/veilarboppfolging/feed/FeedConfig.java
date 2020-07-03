@@ -1,17 +1,16 @@
 package no.nav.veilarboppfolging.feed;
 
-import no.nav.common.sts.OpenAmSystemUserTokenProvider;
-import no.nav.veilarboppfolging.db.KvpRepository;
-import no.nav.veilarboppfolging.db.NyeBrukereFeedRepository;
-import no.nav.veilarboppfolging.db.OppfolgingFeedRepository;
+import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.veilarboppfolging.controller.domain.AvsluttetOppfolgingFeedDTO;
 import no.nav.veilarboppfolging.controller.domain.KvpDTO;
 import no.nav.veilarboppfolging.controller.domain.OppfolgingFeedDTO;
+import no.nav.veilarboppfolging.db.KvpRepository;
+import no.nav.veilarboppfolging.db.NyeBrukereFeedRepository;
+import no.nav.veilarboppfolging.db.OppfolgingFeedRepository;
 import no.nav.veilarboppfolging.feed.cjm.common.OidcFeedAuthorizationModule;
 import no.nav.veilarboppfolging.feed.cjm.common.OidcFeedOutInterceptor;
 import no.nav.veilarboppfolging.feed.cjm.producer.FeedProducer;
-import no.nav.veilarboppfolging.services.*;
-
+import no.nav.veilarboppfolging.services.OppfolgingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,10 +28,10 @@ public class FeedConfig {
     static final String NYE_BRUKERE_FEED_NAME = "nyebrukere";
     static final String KVP_FEED_NAME = "kvp";
 
-    private final OpenAmSystemUserTokenProvider openAmSystemUserTokenProvider;
+    private final SystemUserTokenProvider openAmSystemUserTokenProvider;
 
     @Autowired
-    public FeedConfig(OpenAmSystemUserTokenProvider openAmSystemUserTokenProvider) {
+    public FeedConfig(SystemUserTokenProvider openAmSystemUserTokenProvider) {
         this.openAmSystemUserTokenProvider = openAmSystemUserTokenProvider;
     }
 

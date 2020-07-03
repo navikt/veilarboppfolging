@@ -2,13 +2,13 @@ package no.nav.veilarboppfolging.feed.cjm.producer;
 
 import lombok.Builder;
 import no.nav.veilarboppfolging.feed.cjm.common.*;
-import no.nav.veilarboppfolging.feed.cjm.exception.InvalidUrlException;
 import no.nav.veilarboppfolging.feed.cjm.util.MetricsUtils;
 import org.slf4j.Logger;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Invocation;
-
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -107,7 +107,7 @@ public class FeedProducer<DOMAINOBJECT extends Comparable<DOMAINOBJECT>> impleme
     public boolean createWebhook(FeedWebhookRequest request) {
         return Optional.ofNullable(request.callbackUrl)
                 .map(this::createWebhook)
-                .orElseThrow(InvalidUrlException::new);
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid url"));
     }
 
     @Override

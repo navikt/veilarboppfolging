@@ -1,6 +1,5 @@
 package no.nav.veilarboppfolging.test;
 
-import org.flywaydb.core.Flyway;
 import org.h2.jdbcx.JdbcDataSource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
@@ -27,9 +26,9 @@ public class LocalH2Database {
     }
 
     private static void initDb(JdbcTemplate db) {
-        Flyway flyway = new Flyway();
-        flyway.setDataSource(db.getDataSource());
-        flyway.migrate();
+//        Flyway flyway = new Flyway();
+//        flyway.setDataSource(db.getDataSource());
+//        flyway.migrate();
     }
 
 }

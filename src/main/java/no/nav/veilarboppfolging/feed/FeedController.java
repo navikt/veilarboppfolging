@@ -8,17 +8,16 @@ import no.nav.veilarboppfolging.feed.cjm.common.Authorization;
 import no.nav.veilarboppfolging.feed.cjm.common.FeedRequest;
 import no.nav.veilarboppfolging.feed.cjm.common.FeedResponse;
 import no.nav.veilarboppfolging.feed.cjm.common.FeedWebhookRequest;
-import no.nav.veilarboppfolging.feed.cjm.exception.MissingIdException;
 import no.nav.veilarboppfolging.feed.cjm.producer.FeedProducer;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
-import javax.ws.rs.*;
-import javax.ws.rs.core.Response;
 import java.util.*;
 
 import static java.util.Optional.ofNullable;
 import static no.nav.veilarboppfolging.feed.FeedConfig.*;
-import static no.nav.veilarboppfolging.feed.cjm.util.MetricsUtils.timed;
 import static no.nav.veilarboppfolging.feed.cjm.util.UrlUtils.QUERY_PARAM_ID;
 import static no.nav.veilarboppfolging.feed.cjm.util.UrlUtils.QUERY_PARAM_PAGE_SIZE;
 
@@ -56,12 +55,16 @@ public class FeedController {
     }
 
     @PutMapping("/{name}/webhook")
-    public Response registerWebhook(FeedWebhookRequest request, @PathVariable("name") String name) {
-        return timed(String.format("feed.%s.createwebhook", name), () -> ofNullable(producers.get(name))
+    public ResponseEntity registerWebhook(FeedWebhookRequest request, @PathVariable("name") String name) {
+        var maybeIsCreated = ofNullable(producers.get(name))
                 .map((producer) -> authorizeRequest(producer, name))
-                .map((feed) -> feed.createWebhook(request))
-                .map((created) -> Response.status(created ? 201 : 200))
-                .orElse(Response.status(Response.Status.BAD_REQUEST)).build());
+                .map((feed) -> feed.createWebhook(request));
+
+        if (maybeIsCreated.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        }
+
+        return ResponseEntity.status(maybeIsCreated.get() ? 201 : 200).build();
     }
 
     @GetMapping("/{name}")
@@ -70,14 +73,12 @@ public class FeedController {
             @RequestParam(QUERY_PARAM_ID) String id,
             @RequestParam(QUERY_PARAM_PAGE_SIZE) Integer pageSize
     ) {
-        return timed(String.format("feed.%s.poll", name), () -> {
-            FeedProducer feedProducer = ofNullable(producers.get(name)).orElseThrow(NotFoundException::new);
-            authorizeRequest(feedProducer, name);
-            FeedRequest request = new FeedRequest()
-                    .setSinceId(ofNullable(id).orElseThrow(MissingIdException::new))
-                    .setPageSize(ofNullable(pageSize).orElse(DEFAULT_PAGE_SIZE));
-            return feedProducer.getFeedPage(name, request);
-        });
+        FeedProducer feedProducer = ofNullable(producers.get(name)).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        authorizeRequest(feedProducer, name);
+        FeedRequest request = new FeedRequest()
+                .setSinceId(ofNullable(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Request må inneholde id")))
+                .setPageSize(ofNullable(pageSize).orElse(DEFAULT_PAGE_SIZE));
+        return feedProducer.getFeedPage(name, request);
     }
 
     @GetMapping("/feedname")
@@ -87,8 +88,9 @@ public class FeedController {
 
     private <T extends Authorization> T authorizeRequest(T feed, String name) {
         if (!feed.getAuthorizationModule().isRequestAuthorized(name)) {
-            throw new WebApplicationException(Response.Status.FORBIDDEN);
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         }
+
         return feed;
     }
 
