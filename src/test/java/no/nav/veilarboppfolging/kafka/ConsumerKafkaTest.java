@@ -2,14 +2,13 @@ package no.nav.veilarboppfolging.kafka;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.json.JsonUtils;
 import no.nav.veilarboppfolging.domain.VeilarbArenaOppfolgingEndret;
 import no.nav.veilarboppfolging.services.IservService;
-import no.nav.json.JsonUtils;
 
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.support.SendResult;
-
-import javax.inject.Inject;
 
 import static org.mockito.Mockito.*;
 
@@ -19,11 +18,11 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class ConsumerKafkaTest extends KafkaTest {
 
-    @Inject
+    @Autowired
     private IservService iservService;
 
     @Test(timeout=1000)
-    public void testConsume() throws InterruptedException {
+    public void testConsume() {
         VeilarbArenaOppfolgingEndret bruker = new VeilarbArenaOppfolgingEndret();
         bruker.setAktoerid("1234");
         bruker.setFodselsnr("4321");
@@ -43,7 +42,7 @@ public class ConsumerKafkaTest extends KafkaTest {
         while(!prosessert) {
             try {
                 Thread.sleep(10);
-                verify(iservService).behandleEndretBruker(eq(Consumer.deserialisereBruker(kafkaMelding)));
+                verify(iservService).behandleEndretBruker(eq(EndringPaOppfolgingBrukerConsumer.deserialisereBruker(kafkaMelding)));
                 prosessert = true;
             } catch(Throwable a) {
             }

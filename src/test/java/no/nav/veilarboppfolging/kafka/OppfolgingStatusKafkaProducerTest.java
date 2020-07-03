@@ -2,10 +2,11 @@ package no.nav.veilarboppfolging.kafka;
 
 import io.vavr.control.Try;
 import lombok.val;
-import no.nav.dialogarena.aktor.AktorService;
+import no.nav.common.client.aktorregister.AktorregisterClient;
 import no.nav.veilarboppfolging.db.OppfolgingFeedRepository;
 import no.nav.veilarboppfolging.domain.AktorId;
 import no.nav.veilarboppfolging.controller.domain.OppfolgingKafkaDTO;
+import no.nav.veilarboppfolging.services.AuthService;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.bouncycastle.util.Strings;
@@ -18,7 +19,7 @@ import java.util.concurrent.Future;
 import java.util.stream.IntStream;
 
 import static java.util.stream.Collectors.toList;
-import static no.nav.log.LogFilter.PREFERRED_NAV_CALL_ID_HEADER_NAME;
+import static no.nav.common.log.LogFilter.PREFERRED_NAV_CALL_ID_HEADER_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
@@ -86,7 +87,7 @@ public class OppfolgingStatusKafkaProducerTest {
         return new OppfolgingStatusKafkaProducer(
                 kafkaMock,
                 repoMock,
-                mock(AktorService.class),
+                mock(AktorregisterClient.class),
                 "test"
         );
     }
