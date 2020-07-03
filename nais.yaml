@@ -11,6 +11,7 @@ spec:
     - https://veilarboppfolging.nais.adeo.no
     - https://app.adeo.no/veilarboppfolging
   leaderElection: true
+  webproxy: true
   port: 8080
   prometheus:
     enabled: true
@@ -34,23 +35,6 @@ spec:
       memory: 2048Mi
   envFrom:
     - configmap: pto-config
-  env:
-    - name: ROLE
-      value: 0000-GA-Modia-Oppfolging
-    - name: LDAP_FALLBACK
-      value: "false"
-    - name: FEATURE_SKIP_VALIDERING_DIFI
-      value: "false"
-    - name: KVP_API_BRUKERTILGANG
-      value: srvveilarbdialog,srvveilarbaktivitet
-    - name: MIN_ALDER_AUTOMATISK_REGISTRERING
-      value: "0"
-    - name: MAKS_ALDER_AUTOMATISK_REGISTRERING
-      value: "0"
-    - name: ESKALERINGSVARSEL_VARSELTYPE
-      value: DittNAV_000008
-    - name: ESKALERINGSVARSEL_OPPGAVETYPE
-      value: "0004"
   vault:
     enabled: true
     paths:
@@ -60,4 +44,3 @@ spec:
         mountPath: /var/run/secrets/nais.io/service_user
       - kvPath: /kv/prod/fss/veilarboppfolging/default
         mountPath: /var/run/secrets/nais.io/vault
-  webproxy: true
