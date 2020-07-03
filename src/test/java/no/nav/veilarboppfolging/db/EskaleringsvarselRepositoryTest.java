@@ -1,11 +1,10 @@
 package no.nav.veilarboppfolging.db;
 
-import no.nav.veilarboppfolging.test.DatabaseTest;
 import no.nav.veilarboppfolging.domain.EskaleringsvarselData;
 import no.nav.veilarboppfolging.domain.Oppfolging;
+import no.nav.veilarboppfolging.test.LocalH2Database;
 import org.junit.Test;
 
-import javax.inject.Inject;
 import java.util.List;
 
 import static org.hamcrest.Matchers.is;
@@ -13,17 +12,15 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class EskaleringsvarselRepositoryTest extends DatabaseTest {
+public class EskaleringsvarselRepositoryTest {
 
     private static final String AKTOR_ID = "aktorId";
     private static final String SAKSBEHANDLER_ID = "saksbehandlerId";
     private static final String BEGRUNNELSE = "Begrunnelse";
     private static final int NUM_ITEMS = 10;
 
-    @Inject
     private OppfolgingRepository oppfolgingRepository;
 
-    @Inject
     private EskaleringsvarselRepository repository;
 
     /**

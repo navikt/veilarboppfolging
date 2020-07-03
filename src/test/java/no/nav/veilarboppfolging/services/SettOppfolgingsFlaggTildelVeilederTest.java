@@ -4,7 +4,6 @@ import no.nav.apiapp.security.PepClient;
 import no.nav.brukerdialog.security.context.SubjectRule;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.feed.producer.FeedProducer;
-import no.nav.veilarboppfolging.test.TestTransactor;
 import no.nav.veilarboppfolging.kafka.OppfolgingStatusKafkaProducer;
 import no.nav.veilarboppfolging.controller.VeilederTilordningController;
 import no.nav.veilarboppfolging.controller.domain.OppfolgingFeedDTO;

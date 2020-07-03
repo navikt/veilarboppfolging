@@ -4,6 +4,7 @@ import lombok.val;
 import no.nav.veilarboppfolging.domain.AktorId;
 import no.nav.veilarboppfolging.domain.Oppfolgingsperiode;
 import no.nav.veilarboppfolging.controller.domain.OppfolgingKafkaDTO;
+import no.nav.veilarboppfolging.test.LocalH2Database;
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -17,7 +18,6 @@ import java.util.function.Supplier;
 import java.util.stream.IntStream;
 
 import static java.util.Comparator.comparing;
-import static no.nav.veilarboppfolging.config.JndiLocalContextConfig.setupInMemoryDatabase;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
@@ -30,26 +30,23 @@ public class OppfolgingFeedRepositoryTest {
     private static OppfolgingsPeriodeRepository periodeRepository;
     private static VeilederTilordningerRepository tilordningerRepository;
     private static OppfolgingsStatusRepository oppfolgingsStatusRepository;
-    private static JdbcTemplate jdbc;
 
     @BeforeClass
     public static void setup() {
-
-        AbstractDataSource ds = setupInMemoryDatabase();
-        jdbc = new JdbcTemplate(ds);
-        Database db = new Database(jdbc);
-
+        JdbcTemplate db = LocalH2Database.getDb();
         tilordningerRepository = new VeilederTilordningerRepository(db);
-        feedRepository = new OppfolgingFeedRepository(jdbc, mock(LockingTaskExecutor.class));
+        feedRepository = new OppfolgingFeedRepository(db);
         periodeRepository = new OppfolgingsPeriodeRepository(db);
         oppfolgingsStatusRepository = new OppfolgingsStatusRepository(db);
     }
 
     @After
     public void tearDown() {
-        jdbc.execute("ALTER TABLE " + OppfolgingsStatusRepository.TABLE_NAME + " SET REFERENTIAL_INTEGRITY FALSE");
-        jdbc.execute("TRUNCATE TABLE " + OppfolgingsStatusRepository.TABLE_NAME);
-        jdbc.execute("TRUNCATE TABLE OPPFOLGINGSPERIODE");
+        JdbcTemplate db = LocalH2Database.getDb();
+
+        db.execute("ALTER TABLE " + OppfolgingsStatusRepository.TABLE_NAME + " SET REFERENTIAL_INTEGRITY FALSE");
+        db.execute("TRUNCATE TABLE " + OppfolgingsStatusRepository.TABLE_NAME);
+        db.execute("TRUNCATE TABLE OPPFOLGINGSPERIODE");
     }
 
     @Test
@@ -101,19 +98,21 @@ public class OppfolgingFeedRepositoryTest {
 
     @Test
     public void skal_returnere_feilende_resultat_om_bruker_ikke_har_oppfolgingsperiode() {
+        JdbcTemplate db = LocalH2Database.getDb();
+
         val sql = "INSERT INTO "
                 + "OPPFOLGINGSTATUS "
                 + "(AKTOR_ID, UNDER_OPPFOLGING, VEILEDER, NY_FOR_VEILEDER) "
                 + "VALUES ('10101010101', 1, 'Z000000', 0)";
 
-        jdbc.execute(sql);
+        db.execute(sql);
 
         val man = "INSERT INTO "
                 + "MANUELL_STATUS "
                 + "(ID, AKTOR_ID, MANUELL, OPPRETTET_AV) "
                 + "VALUES (1, '10101010101', 0, 'SYSTEM')";
 
-        jdbc.execute(man);
+        db.execute(man);
 
         val result = feedRepository.hentOppfolgingStatus("10101010101");
 

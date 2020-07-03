@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 
 public class OppfolgingMapper {
 
-    static List<OppfolgingskontraktData> tilOppfolgingskontrakt(HentOppfoelgingskontraktListeResponse response) {
+    public static List<OppfolgingskontraktData> tilOppfolgingskontrakt(HentOppfoelgingskontraktListeResponse response) {
         return response.getOppfoelgingskontraktListe().stream()
                 .map(tilOppfolgingskontrakt).collect(Collectors.toList());
     }

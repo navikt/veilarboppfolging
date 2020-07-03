@@ -3,7 +3,6 @@ package no.nav.veilarboppfolging.services;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 
 import no.nav.dialogarena.aktor.AktorService;
-import no.nav.veilarboppfolging.test.DatabaseTest;
 import no.nav.veilarboppfolging.db.OppfolgingRepository;
 import no.nav.veilarboppfolging.db.OppfolgingsStatusRepository;
 import no.nav.veilarboppfolging.domain.IservMapper;

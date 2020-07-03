@@ -1,25 +1,20 @@
 package no.nav.veilarboppfolging.db;
 
-import no.nav.veilarboppfolging.test.DatabaseTest;
 import no.nav.veilarboppfolging.domain.Tilordning;
 import org.junit.jupiter.api.Test;
 
-import javax.inject.Inject;
 import java.util.Optional;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
-public class VeilederTilordningerRepositoryTest extends DatabaseTest {
+public class VeilederTilordningerRepositoryTest {
 
     private static final String AKTOR_ID = "2222";
     public static final String VEILEDER = "4321";
     public static final String OTHER_VEILEDER = "5432";
 
-
-    @Inject
     private VeilederTilordningerRepository repository;
-
 
     @Test
     public void skalLeggeTilBruker() {

@@ -1,29 +1,20 @@
 package no.nav.veilarboppfolging.db;
 
-import no.nav.apiapp.security.PepClient;
-import no.nav.veilarboppfolging.test.DatabaseTest;
 import no.nav.veilarboppfolging.domain.Oppfolging;
 import org.junit.Test;
-
-import javax.inject.Inject;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
-public class OppfolgingRepositoryKvpTest extends DatabaseTest {
+public class OppfolgingRepositoryKvpTest {
 
     private static final String AKTOR_ID = "2222";
     private static final String ENHET = "1234";
     private static final String SAKSBEHANDLER = "4321";
     private static final String BEGRUNNELSE = "begrunnelse";
 
-    @Inject
-    private PepClient pepClientMock;
-
-    @Inject
     private KvpRepository kvpRepository;
 
-    @Inject
     private OppfolgingRepository oppfolgingRepository;
 
     @Test
@@ -36,7 +27,6 @@ public class OppfolgingRepositoryKvpTest extends DatabaseTest {
 
     @Test
     public void test_eskaleringsvarsel_i_kvp_med_tilgang() throws Exception {
-        when(pepClientMock.harTilgangTilEnhet(ENHET)).thenReturn(true);
         gitt_oppfolging_med_aktiv_kvp_og_eskalering(AKTOR_ID);
 
         Oppfolging oppfolging = oppfolgingRepository.hentOppfolging(AKTOR_ID).orElseThrow(Exception::new);

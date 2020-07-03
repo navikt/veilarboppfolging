@@ -1,19 +1,20 @@
 package no.nav.veilarboppfolging.test;
 
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.Date;
+import lombok.SneakyThrows;
 
-import static no.bekk.bekkopen.person.FodselsnummerCalculator.getFodselsnummerForDate;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class TestUtils {
 
-    public static String getFodselsnummerOnDateMinusYears(LocalDate localDate, int minusYears) {
-        Date date = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).minusYears(minusYears).toInstant());
-        return getFodselsnummerForDate(date).toString();
+    @SneakyThrows
+    public static String readTestResourceFile(String fileName) {
+        URL fileUrl = TestUtils.class.getClassLoader().getResource(fileName);
+        Path resPath = Paths.get(fileUrl.toURI());
+        return Files.readString(resPath);
     }
 
-    public static String getFodselsnummerForPersonWithAge(int age) {
-        return getFodselsnummerOnDateMinusYears(LocalDate.now(), age);
-    }
+
 }

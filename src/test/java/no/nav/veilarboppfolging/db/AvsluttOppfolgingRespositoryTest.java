@@ -1,24 +1,30 @@
 package no.nav.veilarboppfolging.db;
 
 import no.nav.veilarboppfolging.domain.AvsluttOppfolgingKafkaDTO;
+import no.nav.veilarboppfolging.test.DbTestUtils;
+import no.nav.veilarboppfolging.test.LocalH2Database;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static no.nav.veilarboppfolging.config.JndiLocalContextConfig.setupInMemoryDatabase;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class AvsluttOppfolgingRespositoryTest {
+
     private AvsluttOppfolgingEndringRepository avsluttOppfolgingEndringRepository;
-    private JdbcTemplate db;
+
+    @BeforeEach
+    public void cleanup() {
+        DbTestUtils.cleanupTestDb();
+    }
 
     @Before
     public void setup() {
-        db = new JdbcTemplate(setupInMemoryDatabase());
-        avsluttOppfolgingEndringRepository = new AvsluttOppfolgingEndringRepository(db);
+        avsluttOppfolgingEndringRepository = new AvsluttOppfolgingEndringRepository(LocalH2Database.getDb());
     }
 
     @Test

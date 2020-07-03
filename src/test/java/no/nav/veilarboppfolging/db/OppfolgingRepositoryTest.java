@@ -1,13 +1,9 @@
 package no.nav.veilarboppfolging.db;
 
-import no.nav.apiapp.security.PepClient;
-import no.nav.veilarboppfolging.test.DatabaseTest;
 import no.nav.veilarboppfolging.domain.*;
-import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
-import no.nav.sbl.jdbc.Database;
+import no.nav.veilarboppfolging.test.LocalH2Database;
 import org.junit.Test;
 
-import javax.inject.Inject;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
@@ -19,7 +15,7 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.when;
 
-public class OppfolgingRepositoryTest extends DatabaseTest {
+public class OppfolgingRepositoryTest {
 
     private static final String AKTOR_ID = "aktorId";
     private static final String ENHET = "enhet";
@@ -27,16 +23,8 @@ public class OppfolgingRepositoryTest extends DatabaseTest {
     private static final String BEGRUNNELSE = "begrunnelse";
     private static final String OTHER_ENHET = "otherEnhet";
 
-    @Inject
-    private PepClient pepClientMock;
-
-    @Inject
     private KvpRepository kvpRepository;
 
-    @Inject
-    private Database db;
-
-    @Inject
     private OppfolgingRepository oppfolgingRepository;
 
     @Test
@@ -48,8 +36,8 @@ public class OppfolgingRepositoryTest extends DatabaseTest {
     }
 
     @Test
-    public void oppfolging_periode_med_kvp_perioder() throws PepException {
-        when(pepClientMock.harTilgangTilEnhet(ENHET)).thenReturn(true);
+    public void oppfolging_periode_med_kvp_perioder() {
+//        when(pepClientMock.harTilgangTilEnhet(ENHET)).thenReturn(true);
 
         gittOppfolgingForAktor(AKTOR_ID);
         gitt_kvp_periode(ENHET);
@@ -60,9 +48,9 @@ public class OppfolgingRepositoryTest extends DatabaseTest {
     }
 
     @Test
-    public void oppfolging_periode_med_kvp_perioder_bare_tilgang_til_en() throws PepException {
-        when(pepClientMock.harTilgangTilEnhet(ENHET)).thenReturn(true);
-        when(pepClientMock.harTilgangTilEnhet(OTHER_ENHET)).thenReturn(false);
+    public void oppfolging_periode_med_kvp_perioder_bare_tilgang_til_en() {
+//        when(pepClientMock.harTilgangTilEnhet(ENHET)).thenReturn(true);
+//        when(pepClientMock.harTilgangTilEnhet(OTHER_ENHET)).thenReturn(false);
 
         gittOppfolgingForAktor(AKTOR_ID);
         gitt_kvp_periode(ENHET);
@@ -202,7 +190,7 @@ public class OppfolgingRepositoryTest extends DatabaseTest {
     //Men siden hentOppfolging henter opp veilder er det likevel aktuelt å teste her at veileder returneres
     //dersom det er satt i databasen. 
     private void settVeileder(String veilederId, String aktorId) {
-        db.update("UPDATE OPPFOLGINGSTATUS SET VEILEDER = ? where aktor_id = ?", veilederId, aktorId);
+        LocalH2Database.getDb().update("UPDATE OPPFOLGINGSTATUS SET VEILEDER = ? where aktor_id = ?", veilederId, aktorId);
     }
 
     private Oppfolging gittOppfolgingForAktor(String aktorId) {

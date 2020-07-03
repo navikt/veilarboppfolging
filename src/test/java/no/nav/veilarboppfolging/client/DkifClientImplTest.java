@@ -5,19 +5,18 @@ import no.nav.common.auth.subject.IdentType;
 import no.nav.common.auth.subject.SsoToken;
 import no.nav.common.auth.subject.Subject;
 import no.nav.common.auth.subject.SubjectHandler;
-import no.nav.veilarbperson.client.dkif.DkifClient;
-import no.nav.veilarbperson.client.dkif.DkifClientImpl;
-import no.nav.veilarbperson.client.dkif.DkifKontaktinfo;
-import no.nav.veilarbperson.utils.TestUtils;
+import no.nav.veilarboppfolging.client.dkif.DkifClient;
+import no.nav.veilarboppfolging.client.dkif.DkifClientImpl;
+import no.nav.veilarboppfolging.client.dkif.DkifKontaktinfo;
+import no.nav.veilarboppfolging.test.TestUtils;
 import org.junit.Rule;
 import org.junit.Test;
 
 import java.util.HashMap;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
-import static no.nav.veilarbperson.utils.TestData.TEST_FNR;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static no.nav.veilarboppfolging.test.TestData.TEST_FNR;
+import static org.junit.Assert.*;
 
 public class DkifClientImplTest {
 

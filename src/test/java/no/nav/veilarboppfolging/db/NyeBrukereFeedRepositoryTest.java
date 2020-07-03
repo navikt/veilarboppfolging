@@ -2,26 +2,22 @@ package no.nav.veilarboppfolging.db;
 
 import no.nav.veilarboppfolging.feed.NyeBrukereFeedDTO;
 import no.nav.veilarboppfolging.domain.Oppfolgingsbruker;
-import no.nav.sbl.jdbc.Database;
+import no.nav.veilarboppfolging.test.LocalH2Database;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.List;
 
 import static java.util.stream.Collectors.toList;
-import static no.nav.veilarboppfolging.config.JndiLocalContextConfig.setupInMemoryDatabase;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
 class NyeBrukereFeedRepositoryTest {
 
-    private static Database database;
     private static NyeBrukereFeedRepository nyeBrukereFeedRepository;
 
     @BeforeEach
     public void setup() {
-        database = new Database(new JdbcTemplate(setupInMemoryDatabase()));
-        nyeBrukereFeedRepository = new NyeBrukereFeedRepository(database);
+        nyeBrukereFeedRepository = new NyeBrukereFeedRepository(LocalH2Database.getDb());
     }
 
     @Test

@@ -1,36 +1,23 @@
 package no.nav.veilarboppfolging.db;
 
-import no.nav.apiapp.security.PepClient;
-import no.nav.veilarboppfolging.test.DatabaseTest;
 import no.nav.veilarboppfolging.domain.Kvp;
 import no.nav.veilarboppfolging.domain.Oppfolging;
-import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
-import no.nav.sbl.jdbc.Database;
+import no.nav.veilarboppfolging.test.LocalH2Database;
 import org.junit.Test;
-
-import javax.inject.Inject;
 
 import static no.nav.veilarboppfolging.domain.KodeverkBruker.NAV;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
 
-public class KvpRepositoryTest extends DatabaseTest {
+public class KvpRepositoryTest {
 
     private static final String AKTOR_ID = "aktorId";
     private static final String SAKSBEHANDLER_ID = "saksbehandlerId";
     private static final String BEGRUNNELSE = "Begrunnelse";
 
-    private Database db = getBean(Database.class);
-
-    @Inject
-    private PepClient pepClientMock;
-
-    @Inject
     private OppfolgingRepository oppfolgingRepository;
 
-    private KvpRepository kvpRepository = new KvpRepository(db);
+    private KvpRepository kvpRepository = new KvpRepository(LocalH2Database.getDb());
 
     @Test
     public void stopKvp() {
@@ -56,11 +43,10 @@ public class KvpRepositoryTest extends DatabaseTest {
      * Test that the serial field is incremented when a record is started and stopped.
      */
     @Test
-    public void testSerial() throws PepException {
+    public void testSerial() {
         Kvp kvp;
         long serial;
 
-        when(pepClientMock.harTilgangTilEnhet(anyString())).thenReturn(true);
         gittOppfolgingForAktor(AKTOR_ID);
 
         start_kvp();

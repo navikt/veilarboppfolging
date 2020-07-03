@@ -1,6 +1,5 @@
 package no.nav.veilarboppfolging.controller;
 
-import no.nav.apiapp.security.PepClient;
 import no.nav.veilarboppfolging.client.oppfolging.OppfolgingskontraktData;
 import no.nav.veilarboppfolging.services.AuthService;
 import no.nav.veilarboppfolging.client.oppfolging.OppfolgingMapper;
@@ -33,19 +32,7 @@ public class YtelsesRessursTest {
     private YtelseskontraktMapper ytelseskontraktMapper;
 
     @Mock
-    @SuppressWarnings("unused")
-    private YtelseskontraktService ytelseskontraktService;
-
-    @Mock
     private OppfolgingMapper oppfolgingMapper;
-
-    @Mock
-    @SuppressWarnings("unused")
-    private ArenaOppfolgingService arenaOppfolgingService;
-
-    @Mock
-    @SuppressWarnings("unused")
-    private PepClient pepClient;
 
     @Mock
     private AuthService authService;
@@ -57,14 +44,12 @@ public class YtelsesRessursTest {
     }
 
     @Test
-    public void getOppfoelgingSkalReturnereEnRespons() throws Exception {
+    public void getOppfoelgingSkalReturnereEnRespons() {
 
         when(ytelseskontraktMapper.tilYtelseskontrakt(any())).thenReturn(
                 new YtelseskontraktResponse(singletonList(new Vedtak()), singletonList(new Ytelseskontrakt()))
         );
-        when(oppfolgingMapper.tilOppfolgingskontrakt(any())).thenReturn(
-                new OppfolgingskontraktResponse(singletonList(new OppfolgingskontraktData()))
-        );
+        when(oppfolgingMapper.tilOppfolgingskontrakt(any())).thenReturn(singletonList(new OppfolgingskontraktData()));
 
         final YtelserResponse ytelser = ytelseController.getYtelser("fnr");
 

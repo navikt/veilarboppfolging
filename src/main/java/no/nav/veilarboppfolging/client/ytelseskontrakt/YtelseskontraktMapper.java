@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 
 public class YtelseskontraktMapper {
 
-    static YtelseskontraktResponse tilYtelseskontrakt(WSHentYtelseskontraktListeResponse response) {
+    public static YtelseskontraktResponse tilYtelseskontrakt(WSHentYtelseskontraktListeResponse response) {
         final List<Vedtak> vedtakList = mapVedtak(response);
         final List<Ytelseskontrakt> ytelser = mapYtelser(response);
         return new YtelseskontraktResponse(vedtakList, ytelser);

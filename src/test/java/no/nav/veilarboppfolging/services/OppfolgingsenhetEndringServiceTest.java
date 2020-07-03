@@ -1,6 +1,5 @@
 package no.nav.veilarboppfolging.services;
 
-import no.nav.veilarboppfolging.test.DatabaseTest;
 import no.nav.veilarboppfolging.db.OppfolgingsenhetHistorikkRepository;
 import no.nav.veilarboppfolging.domain.OppfolgingsenhetEndringData;
 import no.nav.veilarboppfolging.domain.VeilarbArenaOppfolgingEndret;

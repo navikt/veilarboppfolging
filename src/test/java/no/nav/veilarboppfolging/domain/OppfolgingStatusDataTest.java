@@ -15,12 +15,12 @@ public class OppfolgingStatusDataTest {
 
     
     @Test
-    public void getOppfolgingUtgang_returnererNullHVisIngenPerioder() throws Exception {
+    public void getOppfolgingUtgang_returnererNullHVisIngenPerioder() {
         assertThat(new OppfolgingStatusData().getOppfolgingUtgang(), nullValue());
     }
     
     @Test
-    public void getOppfolgingUtgang_returnererNullHvisPeriodeUtenSluttdatoFinnes() throws Exception {
+    public void getOppfolgingUtgang_returnererNullHvisPeriodeUtenSluttdatoFinnes() {
         assertThat(new OppfolgingStatusData().setOppfolgingsperioder(asList(tilPeriode(null))).getOppfolgingUtgang(), nullValue());
     }
 
@@ -29,7 +29,7 @@ public class OppfolgingStatusDataTest {
     }
     
     @Test
-    public void getOppfolgingUtgang_returnererSisteDatoHvisFlerePerioderFinnes() throws Exception {
+    public void getOppfolgingUtgang_returnererSisteDatoHvisFlerePerioderFinnes() {
         Date tidligsteDato = new Date();
         Date sisteDato = new Date(tidligsteDato.getTime() + 1);
         OppfolgingStatusData setOppfolgingsperioder = new OppfolgingStatusData().setOppfolgingsperioder(lagPerioder(sisteDato, null, tidligsteDato));

@@ -1,25 +1,23 @@
 package no.nav.veilarboppfolging.db;
 
-import no.nav.veilarboppfolging.test.DatabaseTest;
 import no.nav.veilarboppfolging.domain.OppfolgingsenhetEndringData;
+import no.nav.veilarboppfolging.test.LocalH2Database;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.List;
 
-import static no.nav.veilarboppfolging.config.JndiLocalContextConfig.setupInMemoryDatabase;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
-public class OppfolgingsenhetHistorikkRepositoryTest extends DatabaseTest {
+public class OppfolgingsenhetHistorikkRepositoryTest {
     private static OppfolgingsenhetHistorikkRepository oppfolgingsenhetHistorikkRepository;
     private static final String AKTOR_ID = "11111";
 
     @Before
     public void setup() {
-        oppfolgingsenhetHistorikkRepository = new OppfolgingsenhetHistorikkRepository(new JdbcTemplate(setupInMemoryDatabase()));
+        oppfolgingsenhetHistorikkRepository = new OppfolgingsenhetHistorikkRepository(LocalH2Database.getDb());
     }
 
     @Test

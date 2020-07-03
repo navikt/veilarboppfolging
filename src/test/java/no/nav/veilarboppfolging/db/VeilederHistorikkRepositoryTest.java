@@ -1,6 +1,7 @@
 package no.nav.veilarboppfolging.db;
 
 import no.nav.veilarboppfolging.domain.VeilederTilordningerData;
+import no.nav.veilarboppfolging.test.LocalH2Database;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -8,8 +9,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import java.util.List;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
-
-import static no.nav.veilarboppfolging.config.JndiLocalContextConfig.setupInMemoryDatabase;
 
 
 public class VeilederHistorikkRepositoryTest {
@@ -20,7 +19,7 @@ public class VeilederHistorikkRepositoryTest {
 
     @Before
     public void setup() {
-        veilederHistorikkRepository = new VeilederHistorikkRepository(new JdbcTemplate(setupInMemoryDatabase()));
+        veilederHistorikkRepository = new VeilederHistorikkRepository(LocalH2Database.getDb());
     }
 
     @Test

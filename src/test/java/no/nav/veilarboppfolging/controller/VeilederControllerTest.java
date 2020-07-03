@@ -1,6 +1,5 @@
 package no.nav.veilarboppfolging.controller;
 
-import no.nav.dialogarena.aktor.AktorService;
 import no.nav.veilarboppfolging.db.VeilederTilordningerRepository;
 import no.nav.veilarboppfolging.controller.domain.Veileder;
 import no.nav.veilarboppfolging.services.AuthService;
@@ -18,7 +17,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class VeilederRessursTest {
+public class VeilederControllerTest {
 
     @InjectMocks
     private VeilederController veilederController;
@@ -27,15 +26,12 @@ public class VeilederRessursTest {
     private VeilederTilordningerRepository veilederTilordningerRepository;
 
     @Mock
-    private AktorService aktorServiceMock;
-
-    @Mock
     private AuthService authService;
 
     @Test
     public void getVeilederSkalReturnereVeileder() {
         final String forventetIdent = "4321";
-        when(aktorServiceMock.getAktorId(anyString())).thenReturn(of("test-id"));
+        when(authService.getAktorIdOrThrow(anyString())).thenReturn("test-id");
         when(veilederTilordningerRepository.hentTilordningForAktoer(anyString()))
                 .thenReturn(forventetIdent);
 

@@ -1,16 +1,16 @@
 package no.nav.veilarboppfolging.db;
 
-import no.nav.veilarboppfolging.test.DatabaseTest;
-import no.nav.json.JsonUtils;
+import no.nav.common.json.JsonUtils;
+import no.nav.veilarboppfolging.test.LocalH2Database;
 import org.json.JSONArray;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import javax.inject.Inject;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
@@ -18,7 +18,7 @@ import java.util.Scanner;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(value = Parameterized.class)
-public class ViewTest extends DatabaseTest {
+public class ViewTest {
 
     @Parameters(name = "{0}")
     public static Object[] views() {
@@ -29,9 +29,6 @@ public class ViewTest extends DatabaseTest {
         };
     }
 
-    @Inject
-    private JdbcTemplate jdbcTemplate;
-
     @Parameter(value = 0)
     public String viewName;
 
@@ -39,7 +36,7 @@ public class ViewTest extends DatabaseTest {
 
     @Test
     public void database_skal_ha_riktig_antall_views() {
-        long count = (long) jdbcTemplate.queryForList("" +
+        long count = (long) LocalH2Database.getDb().queryForList("" +
                 "SELECT " +
                 "COUNT(*) AS VIEW_COUNT " +
                 "FROM INFORMATION_SCHEMA.VIEWS;"
@@ -50,7 +47,7 @@ public class ViewTest extends DatabaseTest {
 
     @Test
     public void view_eksisterer() {
-        List<Map<String, Object>> viewData = jdbcTemplate.queryForList("SELECT * FROM " + viewName + ";");
+        List<Map<String, Object>> viewData = LocalH2Database.getDb().queryForList("SELECT * FROM " + viewName + ";");
 
         assertThat(viewData).isNotNull();
     }
@@ -68,7 +65,7 @@ public class ViewTest extends DatabaseTest {
     }
 
     private List<Map<String, Object>> hentKolonneDataForView(String view) {
-        return jdbcTemplate.queryForList(
+        return LocalH2Database.getDb().queryForList(
                 "SELECT " +
                         "COLUMN_NAME, " +
                         "TYPE_NAME, " +

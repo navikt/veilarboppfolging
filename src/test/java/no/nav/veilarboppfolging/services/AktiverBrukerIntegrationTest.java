@@ -1,4 +1,4 @@
-package no.nav.veilarboppfolging.services.registrerBruker;
+package no.nav.veilarboppfolging.services;
 
 import io.vavr.control.Try;
 import no.nav.apiapp.security.PepClient;
