@@ -16,18 +16,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
-
-import static no.nav.common.utils.EnvironmentUtils.getRequiredProperty;
-import static no.nav.veilarboppfolging.config.ApplicationConfig.KVP_API_BRUKERTILGANG_PROPERTY;
 
 @RestController
 @RequestMapping("/api/kvp")
 public class KvpController {
 
     private final KvpRepository repository;
+
+    private final List<String> allowedUsers = List.of("srvveilarbdialog", "srvveilarbaktivitet");
 
     @Autowired
     public KvpController(KvpRepository repository) {
@@ -37,7 +34,7 @@ public class KvpController {
     @GetMapping("/{aktorId}/currentStatus")
     @ApiOperation(
             value = "Extract KVP status for an actor",
-            notes = "This API endpoint is only available for system users, set in the property '" + KVP_API_BRUKERTILGANG_PROPERTY + "'."
+            notes = "This API endpoint is only available for system users"
     )
     @ApiResponses({
             @ApiResponse(code = 200, message = "Actor is currently in a KVP period.", response = KvpDTO.class),
@@ -69,11 +66,6 @@ public class KvpController {
 
     private boolean isRequestAuthorized() {
         String username = SubjectHandler.getIdent().orElse("").toLowerCase();
-        String allowedUsersString = getRequiredProperty(KVP_API_BRUKERTILGANG_PROPERTY);
-        List<String> allowedUsers = Arrays.stream(allowedUsersString.split(","))
-                .map(String::trim)
-                .collect(Collectors.toList());
-
         return allowedUsers.contains(username);
     }
 }

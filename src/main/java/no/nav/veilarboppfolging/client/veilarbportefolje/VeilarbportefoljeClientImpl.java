@@ -20,13 +20,13 @@ public class VeilarbportefoljeClientImpl implements VeilarbportefoljeClient {
 
     private final String veilarbportefoljeUrl;
 
-    private final SystemUserTokenProvider openAmTokenProvider;
+    private final SystemUserTokenProvider systemUserTokenProvider;
 
     private final OkHttpClient client;
 
-    public VeilarbportefoljeClientImpl(String veilarbportefoljeUrl, SystemUserTokenProvider openAmTokenProvider) {
+    public VeilarbportefoljeClientImpl(String veilarbportefoljeUrl, SystemUserTokenProvider systemUserTokenProvider) {
         this.veilarbportefoljeUrl = veilarbportefoljeUrl;
-        this.openAmTokenProvider = openAmTokenProvider;
+        this.systemUserTokenProvider = systemUserTokenProvider;
         this.client = RestClient.baseClient();
     }
 
@@ -36,7 +36,7 @@ public class VeilarbportefoljeClientImpl implements VeilarbportefoljeClient {
         Request request = new Request.Builder()
                 .url(joinPaths(veilarbportefoljeUrl, format("/oppfolgingenhet?page_number=%d&page_size=%d", pageNumber, pageSize)))
                 .header(ACCEPT, APPLICATION_JSON_VALUE)
-                .header(AUTHORIZATION, "Bearer " + openAmTokenProvider.getSystemUserToken())
+                .header(AUTHORIZATION, "Bearer " + systemUserTokenProvider.getSystemUserToken())
                 .build();
 
         try (Response response = client.newCall(request).execute()) {

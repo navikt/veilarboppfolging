@@ -8,8 +8,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import static no.nav.veilarboppfolging.config.ApplicationConfig.ARBEIDSRETTET_DIALOG_PROPERTY;
-
 @RunWith(MockitoJUnitRunner.class)
 public class EskaleringsvarselServiceTest {
 
@@ -18,7 +16,7 @@ public class EskaleringsvarselServiceTest {
 
     @BeforeClass
     public static void setUp() throws Exception {
-        System.setProperty(ARBEIDSRETTET_DIALOG_PROPERTY, "https://arbeidsrettet_dialog.no");
+//        System.setProperty(ARBEIDSRETTET_DIALOG_PROPERTY, "https://arbeidsrettet_dialog.no");
     }
 
     @Mock

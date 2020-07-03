@@ -1,12 +1,8 @@
 package no.nav.veilarboppfolging.controller;
 
-import no.nav.common.auth.subject.IdentType;
-import no.nav.common.auth.subject.SsoToken;
-import no.nav.common.auth.subject.Subject;
-import no.nav.common.auth.subject.SubjectHandler;
+import no.nav.veilarboppfolging.controller.domain.KvpDTO;
 import no.nav.veilarboppfolging.db.KvpRepository;
 import no.nav.veilarboppfolging.domain.Kvp;
-import no.nav.veilarboppfolging.controller.domain.KvpDTO;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -16,11 +12,9 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import javax.ws.rs.core.Response;
-import java.util.Collections;
 import java.util.Date;
 
 import static java.lang.System.setProperty;
-import static no.nav.veilarboppfolging.config.ApplicationConfig.KVP_API_BRUKERTILGANG_PROPERTY;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
@@ -47,12 +41,12 @@ public class KvpRessursTest {
 
     @Before
     public void setup() {
-        setProperty(KVP_API_BRUKERTILGANG_PROPERTY, AUTHORIZED_USER);
+//        setProperty(KVP_API_BRUKERTILGANG_PROPERTY, AUTHORIZED_USER);
     }
 
     @Test
     public void unauthorized_user() {
-        setProperty(KVP_API_BRUKERTILGANG_PROPERTY, "unauthorizedUser");
+//        setProperty(KVP_API_BRUKERTILGANG_PROPERTY, "unauthorizedUser");
         Response kvpStatus = getKvpStatus();
         assertThat(kvpStatus.getStatus()).isEqualTo(403);
     }
