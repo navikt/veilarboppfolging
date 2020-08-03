@@ -2,8 +2,11 @@ package no.nav.veilarboppfolging.repository;
 
 import no.nav.veilarboppfolging.domain.Kvp;
 import no.nav.veilarboppfolging.domain.Oppfolging;
+import no.nav.veilarboppfolging.service.OppfolgingRepositoryService;
+import no.nav.veilarboppfolging.test.DbTestUtils;
 import no.nav.veilarboppfolging.test.LocalH2Database;
 import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
 
 import static no.nav.veilarboppfolging.domain.KodeverkBruker.NAV;
 import static org.hamcrest.Matchers.*;
@@ -15,9 +18,16 @@ public class KvpRepositoryTest {
     private static final String SAKSBEHANDLER_ID = "saksbehandlerId";
     private static final String BEGRUNNELSE = "Begrunnelse";
 
-    private OppfolgingRepository oppfolgingRepository;
+    private OppfolgingsStatusRepository oppfolgingsStatusRepository;
+
+    private OppfolgingRepositoryService oppfolgingRepositoryService;
 
     private KvpRepository kvpRepository = new KvpRepository(LocalH2Database.getDb());
+
+    @BeforeEach
+    public void cleanup() {
+        DbTestUtils.cleanupTestDb();
+    }
 
     @Test
     public void stopKvp() {
@@ -68,14 +78,14 @@ public class KvpRepositoryTest {
     }
 
     private Kvp hentGjeldendeKvp(String aktorId) {
-        return oppfolgingRepository.hentOppfolging(aktorId).get().getGjeldendeKvp();
+        return oppfolgingRepositoryService.hentOppfolging(aktorId).get().getGjeldendeKvp();
     }
 
     private Oppfolging gittOppfolgingForAktor(String aktorId) {
-        Oppfolging oppfolging = oppfolgingRepository.hentOppfolging(aktorId)
-                .orElseGet(() -> oppfolgingRepository.opprettOppfolging(aktorId));
+        Oppfolging oppfolging = oppfolgingRepositoryService.hentOppfolging(aktorId)
+                .orElseGet(() -> oppfolgingsStatusRepository.opprettOppfolging(aktorId));
 
-        oppfolgingRepository.startOppfolgingHvisIkkeAlleredeStartet(aktorId);
+        oppfolgingRepositoryService.startOppfolgingHvisIkkeAlleredeStartet(aktorId);
         oppfolging.setUnderOppfolging(true);
         return oppfolging;
     }

@@ -1,19 +1,18 @@
-package no.nav.veilarboppfolging.repository;
+package no.nav.veilarboppfolging.service;
 
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import no.nav.veilarboppfolging.domain.*;
-import no.nav.veilarboppfolging.service.AuthService;
+import no.nav.veilarboppfolging.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,10 +20,10 @@ import static java.util.stream.Collectors.toList;
 import static no.nav.veilarboppfolging.utils.KvpUtils.sjekkTilgangGittKvp;
 
 @Slf4j
-@Repository
-public class OppfolgingRepository {
+@Service
+public class OppfolgingRepositoryService {
 
-    // TODO: Fjern bruk av andre repositories og auth service, dette burde gjøres i en service
+    // TODO: Merge med OppfolgingService
 
     private final AuthService authService;
     private final OppfolgingsStatusRepository statusRepository;
@@ -36,7 +35,7 @@ public class OppfolgingRepository {
     private final NyeBrukereFeedRepository nyeBrukereFeedRepository;
 
     @Autowired
-    public OppfolgingRepository(
+    public OppfolgingRepositoryService(
             AuthService authService,
             OppfolgingsStatusRepository statusRepository,
             OppfolgingsPeriodeRepository periodeRepository,
@@ -116,7 +115,7 @@ public class OppfolgingRepository {
             // hvor oppfølging har blitt insertet av en annen node etter at den har sjekket at oppfølging
             // ikke ligger i databasen.
             try {
-                return opprettOppfolging(aktoerId);
+                return statusRepository.opprettOppfolging(aktoerId);
             } catch (DuplicateKeyException e) {
                 log.info("Race condition oppstod under oppretting av ny oppfølging for bruker: " + aktoerId);
                 return hentOppfolging(aktoerId).orElse(null);
@@ -181,55 +180,6 @@ public class OppfolgingRepository {
     private boolean kvpForSluttenAvPeriode(Kvp kvp, Oppfolgingsperiode periode) {
         return periode.getSluttDato() == null
                 || !periode.getSluttDato().before(kvp.getOpprettetDato());
-    }
-
-    // FIXME: go directly to the repository instead.
-    public void avsluttOppfolging(String aktorId, String veileder, String begrunnelse) {
-        periodeRepository.avslutt(aktorId, veileder, begrunnelse);
-    }
-
-    // FIXME: OPPFOLGINGSSTATUS table should have a foreign key constraint on GJELDENDE_MANUELL_STATUS
-    // FIXME: go directly to the repository instead.
-    public void opprettManuellStatus(ManuellStatus manuellStatus) {
-        manuellStatusRepository.create(manuellStatus);
-    }
-
-
-    // FIXME: go directly to the repository instead.
-    public Oppfolging opprettOppfolging(String aktorId) {
-        return statusRepository.create(aktorId);
-    }
-
-
-    // FIXME: go directly to the repository instead.
-    public List<AvsluttetOppfolgingFeedData> hentAvsluttetOppfolgingEtterDato(Timestamp timestamp, int pageSize) {
-        return periodeRepository.fetchAvsluttetEtterDato(timestamp, pageSize);
-    }
-
-    // FIXME: go directly to the repository instead.
-    public List<ManuellStatus> hentManuellHistorikk(String aktorId) {
-        return manuellStatusRepository.history(aktorId);
-    }
-
-    // FIXME: go directly to the repository instead.
-    public List<Oppfolgingsperiode> hentAvsluttetOppfolgingsperioder(String aktorId) {
-        return periodeRepository.hentAvsluttetOppfolgingsperioder(aktorId);
-    }
-
-    // FIXME: go directly to the repository instead.
-    public List<EskaleringsvarselData> hentEskaleringhistorikk(String aktorId) {
-        return eskaleringsvarselRepository.history(aktorId);
-    }
-
-    // FIXME: go directly to maalRepository instead.
-    public List<MalData> hentMalList(String aktorId) {
-        return maalRepository.aktorMal(aktorId);
-    }
-
-    // FIXME: OPPFOLGINGSSTATUS table should have a foreign key constraint on GJELDENDE_MAL
-    // FIXME: go directly to maalRepository instead.
-    public void opprettMal(MalData mal) {
-        maalRepository.opprett(mal);
     }
 
 }

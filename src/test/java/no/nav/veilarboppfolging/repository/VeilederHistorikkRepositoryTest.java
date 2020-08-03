@@ -1,9 +1,11 @@
 package no.nav.veilarboppfolging.repository;
 
 import no.nav.veilarboppfolging.domain.VeilederTilordningerData;
+import no.nav.veilarboppfolging.test.DbTestUtils;
 import no.nav.veilarboppfolging.test.LocalH2Database;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
 
 import java.util.List;
 
@@ -16,6 +18,11 @@ public class VeilederHistorikkRepositoryTest {
     private static final String AKTOR_ID = "2222";
     private static final String VEILEDER1 = "Veileder1";
     private static final String VEILEDER2 = "Veileder2";
+
+    @BeforeEach
+    public void cleanup() {
+        DbTestUtils.cleanupTestDb();
+    }
 
     @Before
     public void setup() {

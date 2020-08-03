@@ -6,7 +6,6 @@ import no.nav.veilarboppfolging.domain.AktiverArbeidssokerData;
 import no.nav.veilarboppfolging.domain.Fnr;
 import no.nav.veilarboppfolging.domain.Innsatsgruppe;
 import no.nav.veilarboppfolging.repository.NyeBrukereFeedRepository;
-import no.nav.veilarboppfolging.repository.OppfolgingRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -23,20 +22,20 @@ class AktiverBrukerServiceTest {
     private AuthService authService;
     private AktiverBrukerService aktiverBrukerService;
     private BehandleArbeidssokerClient behandleArbeidssokerClient;
-    private OppfolgingRepository oppfolgingRepository;
+    private OppfolgingRepositoryService oppfolgingRepositoryService;
     private NyeBrukereFeedRepository nyeBrukereFeedRepository;
 
     @BeforeEach
     public void setup() {
         authService = mock(AuthService.class);
         behandleArbeidssokerClient = mock(BehandleArbeidssokerClient.class);
-        oppfolgingRepository = mock(OppfolgingRepository.class);
+        oppfolgingRepositoryService = mock(OppfolgingRepositoryService.class);
         nyeBrukereFeedRepository = mock(NyeBrukereFeedRepository.class);
 
         aktiverBrukerService =
                 new AktiverBrukerService(
                         authService,
-                        oppfolgingRepository,
+                        oppfolgingRepositoryService,
                         behandleArbeidssokerClient,
                         nyeBrukereFeedRepository);
 

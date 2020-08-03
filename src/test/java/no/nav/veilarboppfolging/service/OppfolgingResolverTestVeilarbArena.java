@@ -1,8 +1,8 @@
 package no.nav.veilarboppfolging.service;
 
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolging;
-import no.nav.veilarboppfolging.domain.Oppfolging;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
+import no.nav.veilarboppfolging.domain.Oppfolging;
 import org.junit.Test;
 
 import java.util.Optional;
@@ -30,7 +30,7 @@ public class OppfolgingResolverTestVeilarbArena extends OppfolgingResolverTest {
 
         oppfolgingResolver.sjekkStatusIArenaOgOppdaterOppfolging();
 
-        verify(oppfolgingRepositoryMock).startOppfolgingHvisIkkeAlleredeStartet(anyString());
+        verify(oppfolgingRepositoryServiceMock).startOppfolgingHvisIkkeAlleredeStartet(anyString());
     }
 
     @Test
@@ -130,7 +130,7 @@ public class OppfolgingResolverTestVeilarbArena extends OppfolgingResolverTest {
     private void gittTilstand(boolean oppfolgingsflagg,
                               Optional<VeilarbArenaOppfolging> veilarbarena,
                               Optional<ArenaOppfolging> arena) {
-        when(oppfolgingRepositoryMock.hentOppfolging(any()))
+        when(oppfolgingRepositoryServiceMock.hentOppfolging(any()))
                 .thenReturn(Optional.of(new Oppfolging().setUnderOppfolging(oppfolgingsflagg)));
 //        when(oppfolgingClient.hentOppfolgingsbruker(any()))
 //                .thenReturn(veilarbarena);

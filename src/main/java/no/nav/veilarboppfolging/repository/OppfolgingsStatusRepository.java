@@ -41,7 +41,7 @@ public class OppfolgingsStatusRepository {
         return !t.isEmpty() ? t.get(0) : null;
     }
 
-    public Oppfolging create(String aktorId) {
+    public Oppfolging opprettOppfolging(String aktorId) {
         db.update("INSERT INTO OPPFOLGINGSTATUS(" +
                         "aktor_id, " +
                         "under_oppfolging, " +

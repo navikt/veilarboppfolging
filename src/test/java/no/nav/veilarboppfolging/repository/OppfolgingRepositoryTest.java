@@ -1,8 +1,11 @@
 package no.nav.veilarboppfolging.repository;
 
 import no.nav.veilarboppfolging.domain.*;
+import no.nav.veilarboppfolging.service.OppfolgingRepositoryService;
+import no.nav.veilarboppfolging.test.DbTestUtils;
 import no.nav.veilarboppfolging.test.LocalH2Database;
 import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
 
 import java.sql.Timestamp;
 import java.util.List;
@@ -22,14 +25,27 @@ public class OppfolgingRepositoryTest {
     private static final String BEGRUNNELSE = "begrunnelse";
     private static final String OTHER_ENHET = "otherEnhet";
 
+    private OppfolgingsStatusRepository oppfolgingsStatusRepository;
+
     private KvpRepository kvpRepository;
 
-    private OppfolgingRepository oppfolgingRepository;
+    private OppfolgingRepositoryService oppfolgingRepositoryService;
+
+    private MaalRepository maalRepository;
+
+    private OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
+
+    private ManuellStatusRepository manuellStatusRepository;
+
+    @BeforeEach
+    public void cleanup() {
+        DbTestUtils.cleanupTestDb();
+    }
 
     @Test
     public void oppfolging_periode_uten_kvp_perioder() {
         gittOppfolgingForAktor(AKTOR_ID);
-        Oppfolging oppfolging = oppfolgingRepository.hentOppfolging(AKTOR_ID).get();
+        Oppfolging oppfolging = oppfolgingRepositoryService.hentOppfolging(AKTOR_ID).get();
 
         assertThat(oppfolging.getOppfolgingsperioder().get(0).getKvpPerioder()).hasSize(0);
     }
@@ -41,7 +57,7 @@ public class OppfolgingRepositoryTest {
         gittOppfolgingForAktor(AKTOR_ID);
         gitt_kvp_periode(ENHET);
         gitt_kvp_periode(ENHET);
-        Oppfolging oppfolging = oppfolgingRepository.hentOppfolging(AKTOR_ID).get();
+        Oppfolging oppfolging = oppfolgingRepositoryService.hentOppfolging(AKTOR_ID).get();
 
         assertThat(oppfolging.getOppfolgingsperioder().get(0).getKvpPerioder()).hasSize(2);
     }
@@ -54,7 +70,7 @@ public class OppfolgingRepositoryTest {
         gittOppfolgingForAktor(AKTOR_ID);
         gitt_kvp_periode(ENHET);
         gitt_kvp_periode(OTHER_ENHET);
-        Oppfolging oppfolging = oppfolgingRepository.hentOppfolging(AKTOR_ID).get();
+        Oppfolging oppfolging = oppfolgingRepositoryService.hentOppfolging(AKTOR_ID).get();
 
         assertThat(oppfolging.getOppfolgingsperioder().get(0).getKvpPerioder()).hasSize(1);
     }
@@ -82,11 +98,11 @@ public class OppfolgingRepositoryTest {
     }
 
     private MalData getGjeldendeMal(String aktorId) {
-        return oppfolgingRepository.hentOppfolging(aktorId).get().getGjeldendeMal();
+        return oppfolgingRepositoryService.hentOppfolging(aktorId).get().getGjeldendeMal();
     }
 
     private List<MalData> hentMal(String aktorId) {
-        return oppfolgingRepository.hentMalList(aktorId);
+        return maalRepository.aktorMal(aktorId);
     }
 
     @Test
@@ -97,8 +113,8 @@ public class OppfolgingRepositoryTest {
 
     @Test
     public void kanHenteForventetOppfolging() throws Exception {
-        oppfolgingRepository.opprettOppfolging(AKTOR_ID);
-        oppfolgingRepository.startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
+        oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
+        oppfolgingRepositoryService.startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
         Oppfolging uthentetOppfolging = hentOppfolging(AKTOR_ID).get();
         assertThat(uthentetOppfolging.getAktorId(), equalTo(AKTOR_ID));
         assertThat(uthentetOppfolging.isUnderOppfolging(), is(true));
@@ -107,26 +123,26 @@ public class OppfolgingRepositoryTest {
 
     @Test
     public void avsluttOppfolgingResetterVeileder_Manuellstatus_Mal_Og_Vilkar() throws Exception {
-        oppfolgingRepository.opprettOppfolging(AKTOR_ID);
-        oppfolgingRepository.startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
+        oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
+        oppfolgingRepositoryService.startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
         String veilederId = "veilederId";
         String maal = "Mål";
         settVeileder(veilederId, AKTOR_ID);
-        oppfolgingRepository.opprettManuellStatus(
+        manuellStatusRepository.create(
                 new ManuellStatus()
                         .setAktorId(AKTOR_ID)
                         .setManuell(true)
                         .setDato(new Timestamp(currentTimeMillis()))
                         .setBegrunnelse("Test")
                         .setOpprettetAv(KodeverkBruker.SYSTEM));
-        oppfolgingRepository.opprettMal(new MalData().setAktorId(AKTOR_ID).setMal(maal).setEndretAv("bruker").setDato(new Timestamp(currentTimeMillis())));
+        maalRepository.opprett(new MalData().setAktorId(AKTOR_ID).setMal(maal).setEndretAv("bruker").setDato(new Timestamp(currentTimeMillis())));
         Oppfolging oppfolging = hentOppfolging(AKTOR_ID).get();
         assertThat(oppfolging.isUnderOppfolging(), is(true));
         assertThat(oppfolging.getVeilederId(), equalTo(veilederId));
         assertThat(oppfolging.getGjeldendeManuellStatus().isManuell(), is(true));
         assertThat(oppfolging.getGjeldendeMal().getMal(), equalTo(maal));
 
-        oppfolgingRepository.avsluttOppfolging(AKTOR_ID, veilederId, "Funnet arbeid");
+        oppfolgingsPeriodeRepository.avslutt(AKTOR_ID, veilederId, "Funnet arbeid");
         Oppfolging avsluttetOppfolging = hentOppfolging(AKTOR_ID).get();
         assertThat(avsluttetOppfolging.isUnderOppfolging(), is(false));
         assertThat(avsluttetOppfolging.getVeilederId(), nullValue());
@@ -142,44 +158,44 @@ public class OppfolgingRepositoryTest {
 
     @Test
     public void kanHenteOppfolgingMedIngenOppfolgingsperioder() throws Exception {
-        oppfolgingRepository.opprettOppfolging(AKTOR_ID);
-        Oppfolging oppfolging = oppfolgingRepository.hentOppfolging(AKTOR_ID).get();
+        oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
+        Oppfolging oppfolging = oppfolgingRepositoryService.hentOppfolging(AKTOR_ID).get();
         assertThat(oppfolging.getOppfolgingsperioder(), empty());
     }
 
     @Test
     public void kanHenteOppfolgingMedOppfolgingsperioder() throws Exception {
-        oppfolgingRepository.opprettOppfolging(AKTOR_ID);
-        oppfolgingRepository.startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
-        List<Oppfolgingsperiode> oppfolgingsperioder = oppfolgingRepository.hentOppfolging(AKTOR_ID).get().getOppfolgingsperioder();
+        oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
+        oppfolgingRepositoryService.startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
+        List<Oppfolgingsperiode> oppfolgingsperioder = oppfolgingRepositoryService.hentOppfolging(AKTOR_ID).get().getOppfolgingsperioder();
         assertThat(oppfolgingsperioder, hasSize(1));
         assertThat(oppfolgingsperioder.get(0).getStartDato(), not(nullValue()));
         assertThat(oppfolgingsperioder.get(0).getSluttDato(), nullValue());
 
-        oppfolgingRepository.avsluttOppfolging(AKTOR_ID, "veileder", "begrunnelse");
-        oppfolgingsperioder = oppfolgingRepository.hentOppfolging(AKTOR_ID).get().getOppfolgingsperioder();
+        oppfolgingsPeriodeRepository.avslutt(AKTOR_ID, "veileder", "begrunnelse");
+        oppfolgingsperioder = oppfolgingRepositoryService.hentOppfolging(AKTOR_ID).get().getOppfolgingsperioder();
         assertThat(oppfolgingsperioder, hasSize(1));
         assertThat(oppfolgingsperioder.get(0).getSluttDato(), not(nullValue()));
 
-        oppfolgingRepository.startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
-        oppfolgingsperioder = oppfolgingRepository.hentOppfolging(AKTOR_ID).get().getOppfolgingsperioder();
+        oppfolgingRepositoryService.startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
+        oppfolgingsperioder = oppfolgingRepositoryService.hentOppfolging(AKTOR_ID).get().getOppfolgingsperioder();
         assertThat(oppfolgingsperioder, hasSize(2));
     }
 
 
     @Test
     public void utenVeileder() throws Exception {
-        oppfolgingRepository.opprettOppfolging(AKTOR_ID);
-        Oppfolging oppfolging = oppfolgingRepository.hentOppfolging(AKTOR_ID).get();
+        oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
+        Oppfolging oppfolging = oppfolgingRepositoryService.hentOppfolging(AKTOR_ID).get();
         assertThat(oppfolging.getVeilederId(), nullValue());
     }
 
     @Test
     public void medVeilederPaaNyBruker() throws Exception {
         String veilederId = "veilederId";
-        oppfolgingRepository.opprettOppfolging(AKTOR_ID);
+        oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
         settVeileder(veilederId, AKTOR_ID);
-        Oppfolging oppfolging = oppfolgingRepository.hentOppfolging(AKTOR_ID).get();
+        Oppfolging oppfolging = oppfolgingRepositoryService.hentOppfolging(AKTOR_ID).get();
         assertThat(oppfolging.getVeilederId(), equalTo(veilederId));
     }
 
@@ -193,10 +209,10 @@ public class OppfolgingRepositoryTest {
     }
 
     private Oppfolging gittOppfolgingForAktor(String aktorId) {
-        Oppfolging oppfolging = oppfolgingRepository.hentOppfolging(aktorId)
-                .orElseGet(() -> oppfolgingRepository.opprettOppfolging(aktorId));
+        Oppfolging oppfolging = oppfolgingRepositoryService.hentOppfolging(aktorId)
+                .orElseGet(() -> oppfolgingsStatusRepository.opprettOppfolging(aktorId));
 
-        oppfolgingRepository.startOppfolgingHvisIkkeAlleredeStartet(aktorId);
+        oppfolgingRepositoryService.startOppfolgingHvisIkkeAlleredeStartet(aktorId);
         oppfolging.setUnderOppfolging(true);
         return oppfolging;
     }
@@ -206,7 +222,7 @@ public class OppfolgingRepositoryTest {
     }
 
     private Optional<Oppfolging> hentOppfolging(String ukjentAktorId) {
-        return oppfolgingRepository.hentOppfolging(ukjentAktorId);
+        return oppfolgingRepositoryService.hentOppfolging(ukjentAktorId);
     }
 
     private void opprettMal(String aktorId, String mal) {
@@ -215,7 +231,7 @@ public class OppfolgingRepositoryTest {
                 .setMal(mal)
                 .setEndretAv(aktorId)
                 .setDato(new Timestamp(System.currentTimeMillis()));
-        oppfolgingRepository.opprettMal(input);
+        maalRepository.opprett(input);
     }
 
     private void gitt_kvp_periode(String enhet) {

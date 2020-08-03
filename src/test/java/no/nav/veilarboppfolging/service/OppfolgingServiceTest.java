@@ -17,7 +17,7 @@ import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
 import no.nav.veilarboppfolging.domain.*;
 import no.nav.veilarboppfolging.domain.arena.AktivitetStatus;
 import no.nav.veilarboppfolging.kafka.OppfolgingStatusKafkaProducer;
-import no.nav.veilarboppfolging.repository.OppfolgingRepository;
+import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
 import org.junit.Before;
 import org.junit.Test;
@@ -49,7 +49,7 @@ public class OppfolgingServiceTest {
     private DkifClient dkifClient;
 
     @Mock
-    private OppfolgingRepository oppfolgingRepositoryMock;
+    private OppfolgingRepositoryService oppfolgingRepositoryServiceMock;
 
     @Mock
     private AuthService authService;
@@ -65,6 +65,9 @@ public class OppfolgingServiceTest {
 
     @Mock
     private OppfolgingsStatusRepository oppfolgingsStatusRepository;
+
+    @Mock
+    private OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
 
     @Mock(answer = Answers.RETURNS_MOCKS)
     private OppfolgingResolver.OppfolgingResolverDependencies oppfolgingResolverDependencies;
@@ -94,9 +97,9 @@ public class OppfolgingServiceTest {
     @Before
     public void setup() throws Exception {
         arenaOppfolging = new ArenaOppfolging();
-        when(oppfolgingRepositoryMock.hentOppfolging(anyString())).thenReturn(Optional.of(oppfolging));
+        when(oppfolgingRepositoryServiceMock.hentOppfolging(anyString())).thenReturn(Optional.of(oppfolging));
 
-        doAnswer((a) -> oppfolging.setUnderOppfolging(true)).when(oppfolgingRepositoryMock).startOppfolgingHvisIkkeAlleredeStartet(anyString());
+        doAnswer((a) -> oppfolging.setUnderOppfolging(true)).when(oppfolgingRepositoryServiceMock).startOppfolgingHvisIkkeAlleredeStartet(anyString());
 
 //        when(veilarbarenaClient.hentArenaOppfolging(any(String.class)))
 //                .thenReturn(arenaOppfolging);
@@ -229,7 +232,7 @@ public class OppfolgingServiceTest {
         gittOppfolging(oppfolging);
         OppfolgingStatusData oppfolgingStatusData = hentOppfolgingStatus();
 
-        verify(oppfolgingRepositoryMock, never()).startOppfolgingHvisIkkeAlleredeStartet(anyString());
+        verify(oppfolgingRepositoryServiceMock, never()).startOppfolgingHvisIkkeAlleredeStartet(anyString());
         assertThat(oppfolgingStatusData.underOppfolging, is(false));
     }
 
@@ -240,7 +243,7 @@ public class OppfolgingServiceTest {
 
         OppfolgingStatusData oppfolgingStatusData = hentOppfolgingStatus();
 
-        verify(oppfolgingRepositoryMock).startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
+        verify(oppfolgingRepositoryServiceMock).startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
         assertThat(oppfolgingStatusData.underOppfolging, is(true));
     }
 
@@ -261,7 +264,7 @@ public class OppfolgingServiceTest {
 
         hentOppfolgingStatus();
 
-        verify(oppfolgingRepositoryMock).avsluttOppfolging(eq(AKTOR_ID), eq(null), any(String.class));
+        verify(oppfolgingsPeriodeRepository).avslutt(eq(AKTOR_ID), eq(null), any(String.class));
     }
 
     @Test
@@ -430,7 +433,7 @@ public class OppfolgingServiceTest {
     }
 
     private void gittOppfolging(Oppfolging oppfolging) {
-        when(oppfolgingRepositoryMock.hentOppfolging(AKTOR_ID)).thenReturn(Optional.of(oppfolging));
+        when(oppfolgingRepositoryServiceMock.hentOppfolging(AKTOR_ID)).thenReturn(Optional.of(oppfolging));
     }
 
     private void gittReservasjonIKrr() {

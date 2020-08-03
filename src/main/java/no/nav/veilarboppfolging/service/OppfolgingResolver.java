@@ -26,7 +26,9 @@ import no.nav.veilarboppfolging.domain.ManuellStatus;
 import no.nav.veilarboppfolging.domain.Oppfolging;
 import no.nav.veilarboppfolging.kafka.AvsluttOppfolgingProducer;
 import no.nav.veilarboppfolging.repository.KvpRepository;
-import no.nav.veilarboppfolging.repository.OppfolgingRepository;
+import no.nav.veilarboppfolging.repository.MaalRepository;
+import no.nav.veilarboppfolging.repository.ManuellStatusRepository;
+import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
 import no.nav.veilarboppfolging.utils.ArenaUtils;
 import no.nav.veilarboppfolging.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -125,7 +127,7 @@ public class OppfolgingResolver {
     private void sjekkOgStartOppfolging() {
         arenaOppfolgingTilstand().ifPresent(arenaOppfolging -> {
             if (erUnderOppfolging(arenaOppfolging.getFormidlingsgruppe(), arenaOppfolging.getServicegruppe())) {
-                deps.getOppfolgingRepository().startOppfolgingHvisIkkeAlleredeStartet(aktorId);
+                deps.getOppfolgingRepositoryService().startOppfolgingHvisIkkeAlleredeStartet(aktorId);
                 reloadOppfolging();
             }
         });
@@ -219,7 +221,7 @@ public class OppfolgingResolver {
     }
 
     List<MalData> getMalList() {
-        return deps.getOppfolgingRepository().hentMalList(aktorId);
+        return deps.maalRepository.aktorMal(aktorId);
     }
 
     MalData oppdaterMal(String mal, String endretAvVeileder) {
@@ -228,7 +230,7 @@ public class OppfolgingResolver {
                 .setMal(mal)
                 .setEndretAv(StringUtils.of(endretAvVeileder).orElse(aktorId))
                 .setDato(new Timestamp(currentTimeMillis()));
-        deps.getOppfolgingRepository().opprettMal(malData);
+        deps.getMaalRepository().opprett(malData);
         return hentOppfolging().getGjeldendeMal();
     }
 
@@ -265,7 +267,7 @@ public class OppfolgingResolver {
     }
 
     void startOppfolging() {
-        deps.getOppfolgingRepository().startOppfolgingHvisIkkeAlleredeStartet(aktorId);
+        deps.getOppfolgingRepositoryService().startOppfolgingHvisIkkeAlleredeStartet(aktorId);
         oppfolging = hentOppfolging();
     }
 
@@ -390,26 +392,26 @@ public class OppfolgingResolver {
     @SneakyThrows
     @Transactional
     void avsluttOppfolgingOgSendPaKafka(String veileder, String begrunnelse) {
-        deps.getOppfolgingRepository().avsluttOppfolging(aktorId, veileder, begrunnelse);
+        deps.getOppfolgingsPeriodeRepository().avslutt(aktorId, veileder, begrunnelse);
         deps.getAvsluttOppfolgingProducer().avsluttOppfolgingEvent(aktorId, LocalDateTime.now());
     }
 
     private Oppfolging hentOppfolging() {
-        return deps.getOppfolgingRepository().hentOppfolging(aktorId)
+        return deps.getOppfolgingRepositoryService().hentOppfolging(aktorId)
                 .orElseGet(() -> new Oppfolging().setAktorId(aktorId).setUnderOppfolging(false));
     }
 
     void startEskalering(String begrunnelse, long tilhorendeDialogId) {
         String veilederId = SubjectHandler.getIdent().orElseThrow(RuntimeException::new);
         deps.getTransactor().executeWithoutResult((status) -> {
-            deps.getOppfolgingRepository().startEskalering(aktorId, veilederId, begrunnelse, tilhorendeDialogId);
+            deps.getOppfolgingRepositoryService().startEskalering(aktorId, veilederId, begrunnelse, tilhorendeDialogId);
             deps.getVarseloppgaveClient().sendEskaleringsvarsel(aktorId, tilhorendeDialogId);
         });
     }
 
     void stoppEskalering(String begrunnelse) {
         String veilederId = SubjectHandler.getIdent().orElseThrow(RuntimeException::new);
-        deps.getOppfolgingRepository().stoppEskalering(aktorId, veilederId, begrunnelse);
+        deps.getOppfolgingRepositoryService().stoppEskalering(aktorId, veilederId, begrunnelse);
     }
 
     @SneakyThrows
@@ -483,7 +485,7 @@ public class OppfolgingResolver {
         if (oppfolging.isUnderOppfolging()) {
             this.dkifResponse = sjekkKrr();
             if (!manuell() && dkifResponse.isKrr()) {
-                deps.getOppfolgingRepository().opprettManuellStatus(
+                deps.getManuellStatusRepository().create(
                         new ManuellStatus()
                                 .setAktorId(oppfolging.getAktorId())
                                 .setManuell(true)
@@ -555,7 +557,16 @@ public class OppfolgingResolver {
         private TransactionTemplate transactor;
 
         @Autowired
-        private OppfolgingRepository oppfolgingRepository;
+        private OppfolgingRepositoryService oppfolgingRepositoryService;
+
+        @Autowired
+        private MaalRepository maalRepository;
+
+        @Autowired
+        private OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
+
+        @Autowired
+        private ManuellStatusRepository manuellStatusRepository;
 
         @Autowired
         private DkifClient dkifClient;

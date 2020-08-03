@@ -4,10 +4,12 @@ import lombok.val;
 import no.nav.veilarboppfolging.controller.domain.OppfolgingKafkaDTO;
 import no.nav.veilarboppfolging.domain.AktorId;
 import no.nav.veilarboppfolging.domain.Oppfolgingsperiode;
+import no.nav.veilarboppfolging.test.DbTestUtils;
 import no.nav.veilarboppfolging.test.LocalH2Database;
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.Date;
@@ -28,6 +30,11 @@ public class OppfolgingFeedRepositoryTest {
     private static OppfolgingsPeriodeRepository periodeRepository;
     private static VeilederTilordningerRepository tilordningerRepository;
     private static OppfolgingsStatusRepository oppfolgingsStatusRepository;
+
+    @BeforeEach
+    public void cleanup() {
+        DbTestUtils.cleanupTestDb();
+    }
 
     @BeforeClass
     public static void setup() {
@@ -166,13 +173,13 @@ public class OppfolgingFeedRepositoryTest {
                 .range(1, 11)
                 .mapToObj(String::valueOf)
                 .forEach(aktoerId -> {
-                    oppfolgingsStatusRepository.create(aktoerId);
+                    oppfolgingsStatusRepository.opprettOppfolging(aktoerId);
                     periodeRepository.start(aktoerId);
                 });
 
         // lage 1 bruker som ikke er under oppfølging
         String ikkeUnderOppfolging = "testId";
-        oppfolgingsStatusRepository.create(ikkeUnderOppfolging);
+        oppfolgingsStatusRepository.opprettOppfolging(ikkeUnderOppfolging);
         periodeRepository.start(ikkeUnderOppfolging);
         periodeRepository.avslutt(ikkeUnderOppfolging, "", "");
 
@@ -184,7 +191,7 @@ public class OppfolgingFeedRepositoryTest {
         IntStream
                 .range(1, antall+1)
                 .forEach(n -> {
-                    oppfolgingsStatusRepository.create(String.valueOf(n));
+                    oppfolgingsStatusRepository.opprettOppfolging(String.valueOf(n));
                     periodeRepository.start(String.valueOf(n));
                 });
     }

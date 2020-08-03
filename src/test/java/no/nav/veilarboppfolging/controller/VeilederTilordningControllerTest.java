@@ -9,11 +9,11 @@ import no.nav.veilarboppfolging.controller.domain.TilordneVeilederResponse;
 import no.nav.veilarboppfolging.controller.domain.VeilederTilordning;
 import no.nav.veilarboppfolging.feed.cjm.producer.FeedProducer;
 import no.nav.veilarboppfolging.kafka.OppfolgingStatusKafkaProducer;
-import no.nav.veilarboppfolging.repository.OppfolgingRepository;
 import no.nav.veilarboppfolging.repository.VeilederHistorikkRepository;
 import no.nav.veilarboppfolging.repository.VeilederTilordningerRepository;
 import no.nav.veilarboppfolging.service.AuthService;
 import no.nav.veilarboppfolging.service.MetricsService;
+import no.nav.veilarboppfolging.service.OppfolgingRepositoryService;
 import no.nav.veilarboppfolging.test.LocalH2Database;
 import org.junit.Before;
 import org.junit.Test;
@@ -45,7 +45,7 @@ public class VeilederTilordningControllerTest {
     private VeilederHistorikkRepository veilederHistorikkRepository;
 
     @Mock
-    private OppfolgingRepository oppfolgingRepository;
+    private OppfolgingRepositoryService oppfolgingRepositoryService;
 
     @Mock
     private FeedProducer<OppfolgingFeedDTO> feed;
@@ -67,7 +67,7 @@ public class VeilederTilordningControllerTest {
                     veilederTilordningerRepository,
                     authService,
                     feed,
-                    oppfolgingRepository,
+                    oppfolgingRepositoryService,
                     veilederHistorikkRepository,
                     LocalH2Database.getTransactor(),
                     mock(OppfolgingStatusKafkaProducer.class)

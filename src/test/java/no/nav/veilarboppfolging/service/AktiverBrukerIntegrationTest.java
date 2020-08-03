@@ -6,8 +6,8 @@ import no.nav.veilarboppfolging.domain.AktiverArbeidssokerData;
 import no.nav.veilarboppfolging.domain.Fnr;
 import no.nav.veilarboppfolging.domain.Innsatsgruppe;
 import no.nav.veilarboppfolging.domain.Oppfolging;
-import no.nav.veilarboppfolging.repository.OppfolgingRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
+import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,7 +23,8 @@ class AktiverBrukerIntegrationTest {
 
     private AnnotationConfigApplicationContext context;
 
-    private OppfolgingRepository oppfolgingRepository;
+    private OppfolgingsStatusRepository oppfolgingsStatusRepository;
+    private OppfolgingRepositoryService oppfolgingRepositoryService;
     private OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
     private BehandleArbeidssoekerV1 behandleArbeidssoekerV1;
     private AktiverBrukerService aktiverBrukerService;
@@ -67,7 +68,7 @@ class AktiverBrukerIntegrationTest {
         Try<Void> run = Try.run(() -> aktiverBrukerService.aktiverBruker(data));
         assertThat(run.isFailure()).isTrue();
 
-        Optional<Oppfolging> oppfolging = oppfolgingRepository.hentOppfolging(ident);
+        Optional<Oppfolging> oppfolging = oppfolgingRepositoryService.hentOppfolging(ident);
 
         assertThat(oppfolging.isPresent()).isFalse();
     }
@@ -78,7 +79,7 @@ class AktiverBrukerIntegrationTest {
 
         aktiverBrukerService.aktiverBruker(lagBruker(ident));
 
-        Optional<Oppfolging> oppfolging = oppfolgingRepository.hentOppfolging(ident);
+        Optional<Oppfolging> oppfolging = oppfolgingRepositoryService.hentOppfolging(ident);
 
         assertThat(oppfolging.isPresent()).isTrue();
     }
@@ -86,12 +87,12 @@ class AktiverBrukerIntegrationTest {
     @Test
     public void skalHaandtereAtOppfolgingstatusAlleredeFinnes() {
         cofigureMocks();
-        oppfolgingRepository.opprettOppfolging(ident);
+        oppfolgingsStatusRepository.opprettOppfolging(ident);
         oppfolgingsPeriodeRepository.avslutt(ident, "veilederid", "begrunnelse");
 
         aktiverBrukerService.aktiverBruker(lagBruker(ident));
 
-        Optional<Oppfolging> oppfolging = oppfolgingRepository.hentOppfolging(ident);
+        Optional<Oppfolging> oppfolging = oppfolgingRepositoryService.hentOppfolging(ident);
 
         assertThat(oppfolging.get().isUnderOppfolging()).isTrue();
     }

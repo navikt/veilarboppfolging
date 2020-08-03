@@ -9,7 +9,8 @@ import no.nav.veilarboppfolging.controller.domain.DkifResponse;
 import no.nav.veilarboppfolging.controller.domain.UnderOppfolgingDTO;
 import no.nav.veilarboppfolging.domain.*;
 import no.nav.veilarboppfolging.kafka.OppfolgingStatusKafkaProducer;
-import no.nav.veilarboppfolging.repository.OppfolgingRepository;
+import no.nav.veilarboppfolging.repository.ManuellStatusRepository;
+import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
 import no.nav.veilarboppfolging.service.OppfolgingResolver.OppfolgingResolverDependencies;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,8 +30,10 @@ public class OppfolgingService {
 
     private final AuthService authService;
     private final OppfolgingResolverDependencies oppfolgingResolverDependencies;
-    private final OppfolgingRepository oppfolgingRepository;
+    private final OppfolgingRepositoryService oppfolgingRepositoryService;
     private final OppfolgingsStatusRepository oppfolgingsStatusRepository;
+    private final OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
+    private final ManuellStatusRepository manuellStatusRepository;
     private final ManuellStatusService manuellStatusService;
     private final VeilarbarenaClient veilarbarenaClient;
     private final UnleashService unleashService;
@@ -40,17 +43,19 @@ public class OppfolgingService {
     public OppfolgingService(
             AuthService authService,
             OppfolgingResolverDependencies oppfolgingResolverDependencies,
-            OppfolgingRepository oppfolgingRepository,
+            OppfolgingRepositoryService oppfolgingRepositoryService,
             OppfolgingsStatusRepository oppfolgingsStatusRepository,
-            ManuellStatusService manuellStatusService,
+            OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository, ManuellStatusRepository manuellStatusRepository, ManuellStatusService manuellStatusService,
             VeilarbarenaClient veilarbarenaClient,
             UnleashService unleashService,
             OppfolgingStatusKafkaProducer kafkaProducer
     ) {
         this.authService = authService;
         this.oppfolgingResolverDependencies = oppfolgingResolverDependencies;
-        this.oppfolgingRepository = oppfolgingRepository;
+        this.oppfolgingRepositoryService = oppfolgingRepositoryService;
         this.oppfolgingsStatusRepository = oppfolgingsStatusRepository;
+        this.oppfolgingsPeriodeRepository = oppfolgingsPeriodeRepository;
+        this.manuellStatusRepository = manuellStatusRepository;
         this.manuellStatusService = manuellStatusService;
         this.veilarbarenaClient = veilarbarenaClient;
         this.unleashService = unleashService;
@@ -120,7 +125,7 @@ public class OppfolgingService {
     }
 
     public List<AvsluttetOppfolgingFeedData> hentAvsluttetOppfolgingEtterDato(Timestamp timestamp, int pageSize) {
-        return oppfolgingRepository.hentAvsluttetOppfolgingEtterDato(timestamp, pageSize);
+        return oppfolgingsPeriodeRepository.fetchAvsluttetEtterDato(timestamp, pageSize);
     }
 
     @SneakyThrows
@@ -141,7 +146,7 @@ public class OppfolgingService {
                     .setBegrunnelse(begrunnelse)
                     .setOpprettetAv(opprettetAv)
                     .setOpprettetAvBrukerId(opprettetAvBrukerId);
-            oppfolgingRepository.opprettManuellStatus(nyStatus);
+            manuellStatusRepository.create(nyStatus);
             resolver.reloadOppfolging();
         }
 

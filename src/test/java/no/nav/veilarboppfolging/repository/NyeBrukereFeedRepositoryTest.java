@@ -2,6 +2,7 @@ package no.nav.veilarboppfolging.repository;
 
 import no.nav.veilarboppfolging.domain.Oppfolgingsbruker;
 import no.nav.veilarboppfolging.feed.NyeBrukereFeedDTO;
+import no.nav.veilarboppfolging.test.DbTestUtils;
 import no.nav.veilarboppfolging.test.LocalH2Database;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -11,13 +12,13 @@ import java.util.List;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
-class NyeBrukereFeedRepositoryTest {
+public class NyeBrukereFeedRepositoryTest {
 
-    private static NyeBrukereFeedRepository nyeBrukereFeedRepository;
+    private static NyeBrukereFeedRepository nyeBrukereFeedRepository = new NyeBrukereFeedRepository(LocalH2Database.getDb());
 
     @BeforeEach
-    public void setup() {
-        nyeBrukereFeedRepository = new NyeBrukereFeedRepository(LocalH2Database.getDb());
+    public void cleanup() {
+        DbTestUtils.cleanupTestDb();
     }
 
     @Test

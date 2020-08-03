@@ -24,19 +24,6 @@ public class LocalH2Database {
         return db;
     }
 
-//    public static AbstractDataSource setupInMemoryDatabase() {
-//        DriverManagerDataSource ds = new DriverManagerDataSource();
-//        ds.setDriverClassName(TestDriver.class.getName());
-//        ds.setUrl(TestDriver.createInMemoryDatabaseUrl());
-//        ds.setUsername("sa");
-//        ds.setPassword("");
-//
-//        int antallMigreringer = migrerDatabase(ds);
-//        assertThat(antallMigreringer, greaterThan(0));
-//
-//        return ds;
-//    }
-
     public static TransactionTemplate getTransactor() {
         return new TransactionTemplate(new DataSourceTransactionManager(getDb().getDataSource()));
     }
@@ -44,7 +31,6 @@ public class LocalH2Database {
     private static void initDb(JdbcTemplate db) {
         Flyway flyway = new Flyway();
         flyway.setDataSource(db.getDataSource());
-        flyway.setBaselineOnMigrate(true);
         flyway.migrate();
     }
 

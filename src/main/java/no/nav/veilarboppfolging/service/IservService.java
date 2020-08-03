@@ -4,7 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarboppfolging.domain.IservMapper;
 import no.nav.veilarboppfolging.domain.OppfolgingTable;
 import no.nav.veilarboppfolging.domain.VeilarbArenaOppfolgingEndret;
-import no.nav.veilarboppfolging.repository.OppfolgingRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
 import no.nav.veilarboppfolging.repository.UtmeldingRepository;
 import org.springframework.stereotype.Service;
@@ -33,7 +32,7 @@ public class IservService {
     private final UtmeldingRepository utmeldingRepository;
     private final OppfolgingService oppfolgingService;
     private final OppfolgingsStatusRepository oppfolgingsStatusRepository;
-    private final OppfolgingRepository oppfolgingRepository;
+    private final OppfolgingRepositoryService oppfolgingRepositoryService;
     private final AuthService authService;
 
     public IservService(
@@ -41,14 +40,14 @@ public class IservService {
             UtmeldingRepository utmeldingRepository,
             OppfolgingService oppfolgingService,
             OppfolgingsStatusRepository oppfolgingsStatusRepository,
-            OppfolgingRepository oppfolgingRepository,
+            OppfolgingRepositoryService oppfolgingRepositoryService,
             AuthService authService
     ) {
         this.metricsService = metricsService;
         this.utmeldingRepository = utmeldingRepository;
         this.oppfolgingService = oppfolgingService;
         this.oppfolgingsStatusRepository = oppfolgingsStatusRepository;
-        this.oppfolgingRepository = oppfolgingRepository;
+        this.oppfolgingRepositoryService = oppfolgingRepositoryService;
         this.authService = authService;
     }
 
@@ -109,7 +108,7 @@ public class IservService {
 
     private void startOppfolging(VeilarbArenaOppfolgingEndret oppfolgingEndret) {
         log.info("Starter oppfølging automatisk for bruker med aktørid {}", oppfolgingEndret.getAktoerid());
-        oppfolgingRepository.startOppfolgingHvisIkkeAlleredeStartet(oppfolgingEndret.getAktoerid());
+        oppfolgingRepositoryService.startOppfolgingHvisIkkeAlleredeStartet(oppfolgingEndret.getAktoerid());
         metricsService.startetOppfolgingAutomatisk(oppfolgingEndret.getFormidlingsgruppekode(), oppfolgingEndret.getKvalifiseringsgruppekode());
     }
 

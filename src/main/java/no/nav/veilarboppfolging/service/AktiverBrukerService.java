@@ -4,7 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarboppfolging.client.behandle_arbeidssoker.BehandleArbeidssokerClient;
 import no.nav.veilarboppfolging.domain.*;
 import no.nav.veilarboppfolging.repository.NyeBrukereFeedRepository;
-import no.nav.veilarboppfolging.repository.OppfolgingRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,19 +18,19 @@ public class AktiverBrukerService {
 
     private final BehandleArbeidssokerClient behandleArbeidssokerClient;
 
-    private final OppfolgingRepository oppfolgingRepository;
+    private final OppfolgingRepositoryService oppfolgingRepositoryService;
 
     private final NyeBrukereFeedRepository nyeBrukereFeedRepository;
 
     @Autowired
     public AktiverBrukerService(
             AuthService authService,
-            OppfolgingRepository oppfolgingRepository,
+            OppfolgingRepositoryService oppfolgingRepositoryService,
             BehandleArbeidssokerClient behandleArbeidssokerClient,
             NyeBrukereFeedRepository nyeBrukereFeedRepository
     ) {
         this.authService = authService;
-        this.oppfolgingRepository = oppfolgingRepository;
+        this.oppfolgingRepositoryService = oppfolgingRepositoryService;
         this.behandleArbeidssokerClient = behandleArbeidssokerClient;
         this.nyeBrukereFeedRepository = nyeBrukereFeedRepository;
     }
@@ -54,7 +53,7 @@ public class AktiverBrukerService {
     }
 
     private void startReaktiveringAvBrukerOgOppfolging(Fnr fnr, AktorId aktorId) {
-        oppfolgingRepository.startOppfolgingHvisIkkeAlleredeStartet(
+        oppfolgingRepositoryService.startOppfolgingHvisIkkeAlleredeStartet(
                 Oppfolgingsbruker.builder()
                         .aktoerId(aktorId.getAktorId())
                         .build()
@@ -65,7 +64,7 @@ public class AktiverBrukerService {
 
     private void aktiverBrukerOgOppfolging(String fnr, AktorId aktorId, Innsatsgruppe innsatsgruppe) {
 
-        oppfolgingRepository.startOppfolgingHvisIkkeAlleredeStartet(
+        oppfolgingRepositoryService.startOppfolgingHvisIkkeAlleredeStartet(
                 Oppfolgingsbruker.builder()
                         .aktoerId(aktorId.getAktorId())
                         .innsatsgruppe(innsatsgruppe)
@@ -84,7 +83,7 @@ public class AktiverBrukerService {
                 .aktoerId(authService.getAktorIdOrThrow(uid))
                 .build();
 
-        oppfolgingRepository.startOppfolgingHvisIkkeAlleredeStartet(oppfolgingsbruker);
+        oppfolgingRepositoryService.startOppfolgingHvisIkkeAlleredeStartet(oppfolgingsbruker);
     }
 
 }

@@ -6,7 +6,6 @@ import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
 import no.nav.veilarboppfolging.domain.Kvp;
 import no.nav.veilarboppfolging.domain.Oppfolging;
 import no.nav.veilarboppfolging.repository.KvpRepository;
-import no.nav.veilarboppfolging.repository.OppfolgingRepository;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -40,7 +39,7 @@ abstract class OppfolgingResolverTest {
     protected OppfolgingResolver.OppfolgingResolverDependencies oppfolgingResolverDependenciesMock;
 
     @Mock
-    protected OppfolgingRepository oppfolgingRepositoryMock;
+    protected OppfolgingRepositoryService oppfolgingRepositoryServiceMock;
 
     @Mock
     private KvpRepository kvpRepositoryMock;
@@ -68,7 +67,7 @@ abstract class OppfolgingResolverTest {
         MockitoAnnotations.initMocks(this);
 
 //        when(oppfolgingResolverDependenciesMock.getAktorService()).thenReturn(aktorServiceMock);
-        when(oppfolgingResolverDependenciesMock.getOppfolgingRepository()).thenReturn(oppfolgingRepositoryMock);
+        when(oppfolgingResolverDependenciesMock.getOppfolgingRepositoryService()).thenReturn(oppfolgingRepositoryServiceMock);
         when(oppfolgingResolverDependenciesMock.getKvpRepository()).thenReturn(kvpRepositoryMock);
 
 //        when(oppfolgingResolverDependenciesMock.getPepClient()).thenReturn(pepClientMock);
@@ -82,7 +81,7 @@ abstract class OppfolgingResolverTest {
         }
 
 //        when(aktorServiceMock.getAktorId(FNR)).thenReturn(of(AKTOR_ID));
-        when(oppfolgingRepositoryMock.hentOppfolging(AKTOR_ID)).thenReturn(of(oppfolging));
+        when(oppfolgingRepositoryServiceMock.hentOppfolging(AKTOR_ID)).thenReturn(of(oppfolging));
         when(unleashServiceMock.isEnabled("veilarboppfolging.oppfolgingresolver.bruk_arena_direkte")).thenReturn(brukArenaDirekte);
 
         oppfolgingResolver = OppfolgingResolver.lagOppfolgingResolver(FNR, oppfolgingResolverDependenciesMock);

@@ -17,7 +17,7 @@ public class DbTestUtils {
     }
 
     private static void deleteAllFromTable(JdbcTemplate db, String tableName) {
-        db.execute("TRUNCATE TABLE " + tableName);
+        db.execute("DELETE FROM " + tableName);
     }
 
 }

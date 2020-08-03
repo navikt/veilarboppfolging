@@ -2,7 +2,11 @@ package no.nav.veilarboppfolging.repository;
 
 import no.nav.veilarboppfolging.domain.EskaleringsvarselData;
 import no.nav.veilarboppfolging.domain.Oppfolging;
+import no.nav.veilarboppfolging.service.OppfolgingRepositoryService;
+import no.nav.veilarboppfolging.test.DbTestUtils;
+import no.nav.veilarboppfolging.test.LocalH2Database;
 import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
 
 import java.util.List;
 
@@ -18,9 +22,16 @@ public class EskaleringsvarselRepositoryTest {
     private static final String BEGRUNNELSE = "Begrunnelse";
     private static final int NUM_ITEMS = 10;
 
-    private OppfolgingRepository oppfolgingRepository;
+    private OppfolgingsStatusRepository oppfolgingsStatusRepository;
 
-    private EskaleringsvarselRepository repository;
+    private OppfolgingRepositoryService oppfolgingRepositoryService;
+
+    private EskaleringsvarselRepository eskaleringsvarselRepository = new EskaleringsvarselRepository(LocalH2Database.getDb());
+
+    @BeforeEach
+    public void cleanup() {
+        DbTestUtils.cleanupTestDb();
+    }
 
     /**
      * Test that creating an escalation warning inserts a record in the database,
@@ -32,7 +43,7 @@ public class EskaleringsvarselRepositoryTest {
 
         // Create the escalation warning, and test that retrieving
         // the current warning yields the object we just created.
-        repository.create(EskaleringsvarselData.builder()
+        eskaleringsvarselRepository.create(EskaleringsvarselData.builder()
                 .aktorId(AKTOR_ID)
                 .opprettetAv(SAKSBEHANDLER_ID)
                 .opprettetBegrunnelse(BEGRUNNELSE)
@@ -46,7 +57,7 @@ public class EskaleringsvarselRepositoryTest {
 
         // Finish the escalation warning, and test that retrieving
         // the current warning yields nothing.
-        repository.finish(AKTOR_ID, e.getVarselId(), SAKSBEHANDLER_ID, "Begrunnelse");
+        eskaleringsvarselRepository.finish(AKTOR_ID, e.getVarselId(), SAKSBEHANDLER_ID, "Begrunnelse");
 
         assertNull(gjeldendeEskaleringsVarsel(AKTOR_ID));
     }
@@ -66,22 +77,22 @@ public class EskaleringsvarselRepositoryTest {
                     .opprettetAv(SAKSBEHANDLER_ID)
                     .opprettetBegrunnelse(BEGRUNNELSE)
                     .build();
-            repository.create(e);
+            eskaleringsvarselRepository.create(e);
         }
 
-        list = oppfolgingRepository.hentEskaleringhistorikk(AKTOR_ID);
+        list = eskaleringsvarselRepository.history(AKTOR_ID);
         assertEquals(list.size(), NUM_ITEMS);
     }
 
     private EskaleringsvarselData gjeldendeEskaleringsVarsel(String aktorId) {
-        return oppfolgingRepository.hentOppfolging(aktorId).get().getGjeldendeEskaleringsvarsel();
+        return oppfolgingRepositoryService.hentOppfolging(aktorId).get().getGjeldendeEskaleringsvarsel();
     }
 
     private void gittOppfolgingForAktor(String aktorId) {
-        Oppfolging oppfolging = oppfolgingRepository.hentOppfolging(aktorId)
-                .orElseGet(() -> oppfolgingRepository.opprettOppfolging(aktorId));
+        Oppfolging oppfolging = oppfolgingRepositoryService.hentOppfolging(aktorId)
+                .orElseGet(() -> oppfolgingsStatusRepository.opprettOppfolging(aktorId));
 
-        oppfolgingRepository.startOppfolgingHvisIkkeAlleredeStartet(aktorId);
+        oppfolgingRepositoryService.startOppfolgingHvisIkkeAlleredeStartet(aktorId);
         oppfolging.setUnderOppfolging(true);
     }
 }

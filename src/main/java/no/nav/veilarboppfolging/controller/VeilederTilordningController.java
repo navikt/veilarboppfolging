@@ -8,12 +8,12 @@ import no.nav.veilarboppfolging.domain.AktorId;
 import no.nav.veilarboppfolging.domain.Tilordning;
 import no.nav.veilarboppfolging.feed.cjm.producer.FeedProducer;
 import no.nav.veilarboppfolging.kafka.OppfolgingStatusKafkaProducer;
-import no.nav.veilarboppfolging.repository.OppfolgingRepository;
 import no.nav.veilarboppfolging.repository.VeilederHistorikkRepository;
 import no.nav.veilarboppfolging.repository.VeilederTilordningerRepository;
 import no.nav.veilarboppfolging.schedule.IdPaOppfolgingFeedSchedule;
 import no.nav.veilarboppfolging.service.AuthService;
 import no.nav.veilarboppfolging.service.MetricsService;
+import no.nav.veilarboppfolging.service.OppfolgingRepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -37,7 +37,7 @@ public class VeilederTilordningController {
     private final VeilederTilordningerRepository veilederTilordningerRepository;
     private final AuthService authService;
     private final FeedProducer<OppfolgingFeedDTO> oppfolgingFeed;
-    private final OppfolgingRepository oppfolgingRepository;
+    private final OppfolgingRepositoryService oppfolgingRepositoryService;
     private final VeilederHistorikkRepository veilederHistorikkRepository;
     private final TransactionTemplate transactor;
     private final OppfolgingStatusKafkaProducer kafka;
@@ -47,7 +47,7 @@ public class VeilederTilordningController {
             MetricsService metricsService,
             VeilederTilordningerRepository veilederTilordningerRepository,
             AuthService authService,
-            FeedProducer<OppfolgingFeedDTO> oppfolgingFeed, OppfolgingRepository oppfolgingRepository,
+            FeedProducer<OppfolgingFeedDTO> oppfolgingFeed, OppfolgingRepositoryService oppfolgingRepositoryService,
             VeilederHistorikkRepository veilederHistorikkRepository,
             TransactionTemplate transactor,
             OppfolgingStatusKafkaProducer kafka
@@ -56,7 +56,7 @@ public class VeilederTilordningController {
         this.veilederTilordningerRepository = veilederTilordningerRepository;
         this.authService = authService;
         this.oppfolgingFeed = oppfolgingFeed;
-        this.oppfolgingRepository = oppfolgingRepository;
+        this.oppfolgingRepositoryService = oppfolgingRepositoryService;
         this.veilederHistorikkRepository = veilederHistorikkRepository;
         this.transactor = transactor;
         this.kafka = kafka;
@@ -174,7 +174,7 @@ public class VeilederTilordningController {
         transactor.executeWithoutResult((status) -> {
             veilederTilordningerRepository.upsertVeilederTilordning(aktoerId, veileder);
             veilederHistorikkRepository.insertTilordnetVeilederForAktorId(aktoerId, veileder);
-            oppfolgingRepository.startOppfolgingHvisIkkeAlleredeStartet(aktoerId);
+            oppfolgingRepositoryService.startOppfolgingHvisIkkeAlleredeStartet(aktoerId);
             kafka.send(new AktorId(aktoerId));
         });
 

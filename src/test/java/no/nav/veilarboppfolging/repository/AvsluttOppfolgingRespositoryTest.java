@@ -3,7 +3,6 @@ package no.nav.veilarboppfolging.repository;
 import no.nav.veilarboppfolging.domain.AvsluttOppfolgingKafkaDTO;
 import no.nav.veilarboppfolging.test.DbTestUtils;
 import no.nav.veilarboppfolging.test.LocalH2Database;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.jupiter.api.BeforeEach;
 
@@ -14,16 +13,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class AvsluttOppfolgingRespositoryTest {
 
-    private AvsluttOppfolgingEndringRepository avsluttOppfolgingEndringRepository;
+    private AvsluttOppfolgingEndringRepository avsluttOppfolgingEndringRepository = new AvsluttOppfolgingEndringRepository(LocalH2Database.getDb());
 
     @BeforeEach
     public void cleanup() {
         DbTestUtils.cleanupTestDb();
-    }
-
-    @Before
-    public void setup() {
-        avsluttOppfolgingEndringRepository = new AvsluttOppfolgingEndringRepository(LocalH2Database.getDb());
     }
 
     @Test

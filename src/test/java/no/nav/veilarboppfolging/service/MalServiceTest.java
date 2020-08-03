@@ -4,7 +4,7 @@ import no.nav.veilarboppfolging.domain.Kvp;
 import no.nav.veilarboppfolging.domain.MalData;
 import no.nav.veilarboppfolging.domain.Oppfolging;
 import no.nav.veilarboppfolging.repository.KvpRepository;
-import no.nav.veilarboppfolging.repository.OppfolgingRepository;
+import no.nav.veilarboppfolging.repository.MaalRepository;
 import no.nav.veilarboppfolging.service.OppfolgingResolver.OppfolgingResolverDependencies;
 import org.junit.Before;
 import org.junit.Test;
@@ -51,10 +51,13 @@ public class MalServiceTest {
     private KvpRepository kvpRepositoryMock;
 
     @Mock
-    private OppfolgingRepository oppfolgingRepositoryMock;
+    private OppfolgingRepositoryService oppfolgingRepositoryServiceMock;
 
     @Mock
     private AuthService authService;
+
+    @Mock
+    private MaalRepository maalRepository;
 
     @InjectMocks
     private MalService malService;
@@ -62,10 +65,10 @@ public class MalServiceTest {
     @Before
     public void setup() {
 //        when(oppfolgingResolverDependenciesMock.getAktorService()).thenReturn(aktorServiceMock);
-        when(oppfolgingResolverDependenciesMock.getOppfolgingRepository()).thenReturn(oppfolgingRepositoryMock);
+        when(oppfolgingResolverDependenciesMock.getOppfolgingRepositoryService()).thenReturn(oppfolgingRepositoryServiceMock);
 
 //        when(aktorServiceMock.getAktorId(FNR)).thenReturn(of(AKTOR_ID));
-        when(oppfolgingRepositoryMock.hentOppfolging(AKTOR_ID)).thenReturn(of(oppfolging(from(BEFORE_KVP))));
+        when(oppfolgingRepositoryServiceMock.hentOppfolging(AKTOR_ID)).thenReturn(of(oppfolging(from(BEFORE_KVP))));
 
     }
 
@@ -79,7 +82,7 @@ public class MalServiceTest {
 
     @Test
     public void gjeldendeMal_ikke_satt() {
-        when(oppfolgingRepositoryMock.hentOppfolging(AKTOR_ID)).thenReturn(of(new Oppfolging()));
+        when(oppfolgingRepositoryServiceMock.hentOppfolging(AKTOR_ID)).thenReturn(of(new Oppfolging()));
 
         MalData malData = malService.hentMal(FNR);
         assertThat(malData.getId()).isEqualTo(0L);
@@ -102,7 +105,7 @@ public class MalServiceTest {
     @Test
     public void hent_mal_opprettet_etter_kvp_veileder_har_ikke_tilgang() {
         when(kvpRepositoryMock.hentKvpHistorikk(AKTOR_ID)).thenReturn(kvpHistorikk());
-        when(oppfolgingRepositoryMock.hentOppfolging(AKTOR_ID)).thenReturn(of(oppfolging(from(IN_KVP))));
+        when(oppfolgingRepositoryServiceMock.hentOppfolging(AKTOR_ID)).thenReturn(of(oppfolging(from(IN_KVP))));
 //        when(pepClientMock.harTilgangTilEnhet(ENHET)).thenReturn(false);
 
         MalData malData = malService.hentMal(FNR);
@@ -112,7 +115,7 @@ public class MalServiceTest {
     @Test
     public void hent_mal_opprettet_etter_kvp_veileder_har_tilgang() {
         when(kvpRepositoryMock.hentKvpHistorikk(AKTOR_ID)).thenReturn(kvpHistorikk());
-        when(oppfolgingRepositoryMock.hentOppfolging(AKTOR_ID)).thenReturn(of(oppfolging(from(IN_KVP))));
+        when(oppfolgingRepositoryServiceMock.hentOppfolging(AKTOR_ID)).thenReturn(of(oppfolging(from(IN_KVP))));
 //        when(pepClientMock.harTilgangTilEnhet(ENHET)).thenReturn(true);
 
         MalData malData = malService.hentMal(FNR);
@@ -123,7 +126,7 @@ public class MalServiceTest {
     public void hent_mal_historikk_med_kvp_i_midten_veileder_har_Tilgang() {
         when(kvpRepositoryMock.hentKvpHistorikk(AKTOR_ID)).thenReturn(kvpHistorikk());
 //        when(pepClientMock.harTilgangTilEnhet(ENHET)).thenReturn(true);
-        when(oppfolgingRepositoryMock.hentMalList(AKTOR_ID)).thenReturn(malList());
+        when(maalRepository.aktorMal(AKTOR_ID)).thenReturn(malList());
 
         List<MalData> malData = malService.hentMalList(FNR);
         List<Long> ids = malData.stream().map(MalData::getId).collect(toList());
@@ -134,7 +137,7 @@ public class MalServiceTest {
     public void hent_mal_historikk_med_kvp_i_midten_veileder_har_ikke_Tilgang() {
         when(kvpRepositoryMock.hentKvpHistorikk(AKTOR_ID)).thenReturn(kvpHistorikk());
 //        when(pepClientMock.harTilgangTilEnhet(ENHET)).thenReturn(false);
-        when(oppfolgingRepositoryMock.hentMalList(AKTOR_ID)).thenReturn(malList());
+        when(maalRepository.aktorMal(AKTOR_ID)).thenReturn(malList());
 
         List<MalData> malData = malService.hentMalList(FNR);
         List<Long> ids = malData.stream().map(MalData::getId).collect(toList());

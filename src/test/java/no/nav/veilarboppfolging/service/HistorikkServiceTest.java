@@ -5,10 +5,7 @@ import no.nav.veilarboppfolging.domain.EskaleringsvarselData;
 import no.nav.veilarboppfolging.domain.InnstillingsHistorikk;
 import no.nav.veilarboppfolging.domain.Kvp;
 import no.nav.veilarboppfolging.domain.ManuellStatus;
-import no.nav.veilarboppfolging.repository.KvpRepository;
-import no.nav.veilarboppfolging.repository.OppfolgingRepository;
-import no.nav.veilarboppfolging.repository.OppfolgingsenhetHistorikkRepository;
-import no.nav.veilarboppfolging.repository.VeilederHistorikkRepository;
+import no.nav.veilarboppfolging.repository.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -41,7 +38,7 @@ public class HistorikkServiceTest {
     private KvpRepository kvpRepositoryMock;
 
     @Mock
-    private OppfolgingRepository oppfolgingRepositoryMock;
+    private OppfolgingRepositoryService oppfolgingRepositoryServiceMock;
 
     @Mock
     private TransactionTemplate transactor;
@@ -54,6 +51,12 @@ public class HistorikkServiceTest {
 
     @Mock
     private OppfolgingsenhetHistorikkRepository oppfolgingsenhetHistorikkRepository;
+
+    @Mock
+    private ManuellStatusRepository manuellStatusRepository;
+
+    @Mock
+    private EskaleringsvarselRepository eskaleringsvarselRepository;
 
     @InjectMocks
     private HistorikkService historikkService;
@@ -129,7 +132,7 @@ public class HistorikkServiceTest {
                         .avsluttetBegrunnelse("OUTSIDE_KVP")
                         .build()
         );
-        when(oppfolgingRepositoryMock.hentEskaleringhistorikk(AKTOR_ID)).thenReturn(eskaleringsvarsel);
+        when(eskaleringsvarselRepository.history(AKTOR_ID)).thenReturn(eskaleringsvarsel);
 
     }
 
@@ -167,7 +170,7 @@ public class HistorikkServiceTest {
                         .setBegrunnelse("OUTSIDE_KVP")
                         .setManuell(false)
         );
-        when(oppfolgingRepositoryMock.hentManuellHistorikk(AKTOR_ID)).thenReturn(manuellStatus);
+        when(manuellStatusRepository.history(AKTOR_ID)).thenReturn(manuellStatus);
     }
 
     private void gitt_kvp() {

@@ -1,6 +1,9 @@
 package no.nav.veilarboppfolging.repository;
 
 import no.nav.veilarboppfolging.domain.Tilordning;
+import no.nav.veilarboppfolging.test.DbTestUtils;
+import no.nav.veilarboppfolging.test.LocalH2Database;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
@@ -14,7 +17,12 @@ public class VeilederTilordningerRepositoryTest {
     public static final String VEILEDER = "4321";
     public static final String OTHER_VEILEDER = "5432";
 
-    private VeilederTilordningerRepository repository;
+    private VeilederTilordningerRepository repository = new VeilederTilordningerRepository(LocalH2Database.getDb());
+
+    @BeforeEach
+    public void cleanup() {
+        DbTestUtils.cleanupTestDb();
+    }
 
     @Test
     public void skalLeggeTilBruker() {

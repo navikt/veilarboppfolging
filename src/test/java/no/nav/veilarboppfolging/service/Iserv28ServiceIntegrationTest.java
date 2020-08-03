@@ -2,7 +2,6 @@ package no.nav.veilarboppfolging.service;
 
 import no.nav.veilarboppfolging.domain.OppfolgingTable;
 import no.nav.veilarboppfolging.domain.VeilarbArenaOppfolgingEndret;
-import no.nav.veilarboppfolging.repository.OppfolgingRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
 import org.junit.Before;
 import org.junit.Test;
@@ -25,7 +24,7 @@ public class Iserv28ServiceIntegrationTest {
     private OppfolgingsStatusRepository oppfolgingStatusRepository = mock(OppfolgingsStatusRepository.class);
 
     private OppfolgingService oppfolgingService = mock(OppfolgingService.class);
-    private OppfolgingRepository oppfolgingRepository = mock(OppfolgingRepository.class);
+    private OppfolgingRepositoryService oppfolgingRepositoryService = mock(OppfolgingRepositoryService.class);
 
     @Before
     public void setup() throws Exception {
@@ -83,7 +82,7 @@ public class Iserv28ServiceIntegrationTest {
         when(oppfolgingStatusRepository.fetch(anyString())).thenReturn(new OppfolgingTable().setUnderOppfolging(false));
 
         iservService.behandleEndretBruker(veilarbArenaOppfolging);
-        verify(oppfolgingRepository).startOppfolgingHvisIkkeAlleredeStartet(AKTORID);
+        verify(oppfolgingRepositoryService).startOppfolgingHvisIkkeAlleredeStartet(AKTORID);
     }
 
     @Test
@@ -92,7 +91,7 @@ public class Iserv28ServiceIntegrationTest {
         veilarbArenaOppfolging.setFormidlingsgruppekode("ARBS");
 
         iservService.behandleEndretBruker(veilarbArenaOppfolging);
-        verifyZeroInteractions(oppfolgingRepository);
+        verifyZeroInteractions(oppfolgingRepositoryService);
     }
   
     @Test
@@ -103,7 +102,7 @@ public class Iserv28ServiceIntegrationTest {
         when(oppfolgingStatusRepository.fetch(anyString())).thenReturn(new OppfolgingTable().setUnderOppfolging(false));
 
         iservService.behandleEndretBruker(veilarbArenaOppfolging);
-        verifyZeroInteractions(oppfolgingRepository);
+        verifyZeroInteractions(oppfolgingRepositoryService);
     }
 
     @Test

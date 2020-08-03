@@ -4,10 +4,7 @@ import lombok.SneakyThrows;
 import lombok.val;
 import no.nav.common.featuretoggle.UnleashService;
 import no.nav.veilarboppfolging.domain.*;
-import no.nav.veilarboppfolging.repository.KvpRepository;
-import no.nav.veilarboppfolging.repository.OppfolgingRepository;
-import no.nav.veilarboppfolging.repository.OppfolgingsenhetHistorikkRepository;
-import no.nav.veilarboppfolging.repository.VeilederHistorikkRepository;
+import no.nav.veilarboppfolging.repository.*;
 import no.nav.veilarboppfolging.utils.KvpUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -30,7 +27,7 @@ public class HistorikkService {
 
     private final KvpRepository kvpRepository;
     
-    private final OppfolgingRepository oppfolgingRepository;
+    private final OppfolgingRepositoryService oppfolgingRepositoryService;
 
     private final VeilederHistorikkRepository veilederHistorikkRepository;
 
@@ -38,21 +35,30 @@ public class HistorikkService {
 
     private final OppfolgingsenhetHistorikkRepository oppfolgingsenhetHistorikkRepository;
 
+    private final EskaleringsvarselRepository eskaleringsvarselRepository;
+
+    private final OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
+
+    private final ManuellStatusRepository manuellStatusRepository;
+
     @Autowired
     public HistorikkService(
             AuthService authService,
             KvpRepository kvpRepository,
-            OppfolgingRepository oppfolgingRepository,
+            OppfolgingRepositoryService oppfolgingRepositoryService,
             VeilederHistorikkRepository veilederHistorikkRepository,
             UnleashService unleashService,
-            OppfolgingsenhetHistorikkRepository oppfolgingsenhetHistorikkRepository
-    ) {
+            OppfolgingsenhetHistorikkRepository oppfolgingsenhetHistorikkRepository,
+            EskaleringsvarselRepository eskaleringsvarselRepository, OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository, ManuellStatusRepository manuellStatusRepository) {
         this.authService = authService;
         this.kvpRepository = kvpRepository;
-        this.oppfolgingRepository = oppfolgingRepository;
+        this.oppfolgingRepositoryService = oppfolgingRepositoryService;
         this.veilederHistorikkRepository = veilederHistorikkRepository;
         this.unleashService = unleashService;
         this.oppfolgingsenhetHistorikkRepository = oppfolgingsenhetHistorikkRepository;
+        this.eskaleringsvarselRepository = eskaleringsvarselRepository;
+        this.oppfolgingsPeriodeRepository = oppfolgingsPeriodeRepository;
+        this.manuellStatusRepository = manuellStatusRepository;
     }
 
 
@@ -173,16 +179,16 @@ public class HistorikkService {
                 .filter(this::harTilgangTilEnhet)
                 .map(this::tilDTO).flatMap(List::stream);
 
-        Stream<InnstillingsHistorikk> avluttetOppfolgingInnstillingHistorikk = oppfolgingRepository.hentAvsluttetOppfolgingsperioder(aktorId)
+        Stream<InnstillingsHistorikk> avluttetOppfolgingInnstillingHistorikk = oppfolgingsPeriodeRepository.hentAvsluttetOppfolgingsperioder(aktorId)
                 .stream()
                 .map(this::tilDTO);
 
-        Stream<InnstillingsHistorikk> manuellInnstillingHistorikk = oppfolgingRepository.hentManuellHistorikk(aktorId)
+        Stream<InnstillingsHistorikk> manuellInnstillingHistorikk = manuellStatusRepository.history(aktorId)
                 .stream()
                 .map(this::tilDTO)
                 .filter((historikk) -> KvpUtils.sjekkTilgangGittKvp(authService, kvpHistorikk, historikk::getDato));
 
-        Stream <InnstillingsHistorikk> eskaleringInnstillingHistorikk = oppfolgingRepository.hentEskaleringhistorikk(aktorId).stream()
+        Stream <InnstillingsHistorikk> eskaleringInnstillingHistorikk = eskaleringsvarselRepository.history(aktorId).stream()
                 .map(this::tilDTO)
                 .flatMap(List::stream)
                 .filter((historikk) -> KvpUtils.sjekkTilgangGittKvp(authService, kvpHistorikk, historikk::getDato));
