@@ -4,7 +4,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.json.JsonUtils;
 import no.nav.veilarboppfolging.domain.VeilarbArenaOppfolgingEndret;
-import no.nav.veilarboppfolging.services.IservService;
+import no.nav.veilarboppfolging.service.IservService;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;

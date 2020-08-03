@@ -1,4 +1,4 @@
-package no.nav.veilarboppfolging.services;
+package no.nav.veilarboppfolging.service;
 
 import io.vavr.control.Try;
 import no.nav.tjeneste.virksomhet.behandlearbeidssoeker.v1.binding.BehandleArbeidssoekerV1;

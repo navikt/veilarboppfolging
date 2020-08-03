@@ -1,9 +1,9 @@
 package no.nav.veilarboppfolging.controller;
 
-import no.nav.veilarboppfolging.services.AuthService;
+import no.nav.veilarboppfolging.service.AuthService;
 
 import no.nav.veilarboppfolging.controller.domain.UnderOppfolgingDTO;
-import no.nav.veilarboppfolging.services.OppfolgingService;
+import no.nav.veilarboppfolging.service.OppfolgingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

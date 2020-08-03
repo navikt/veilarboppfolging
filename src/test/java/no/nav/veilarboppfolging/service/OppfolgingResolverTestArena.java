@@ -1,9 +1,6 @@
-package no.nav.veilarboppfolging.services;
+package no.nav.veilarboppfolging.service;
 
 import org.junit.Test;
-
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
 
 public class OppfolgingResolverTestArena extends OppfolgingResolverTest {
 

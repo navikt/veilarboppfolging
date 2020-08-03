@@ -5,10 +5,10 @@ import static java.lang.String.valueOf;
 import no.nav.common.metrics.Event;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.veilarboppfolging.controller.domain.UnderOppfolgingNiva3DTO;
-import no.nav.veilarboppfolging.services.AuthService;
+import no.nav.veilarboppfolging.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import no.nav.veilarboppfolging.services.OppfolgingService;
+import no.nav.veilarboppfolging.service.OppfolgingService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;

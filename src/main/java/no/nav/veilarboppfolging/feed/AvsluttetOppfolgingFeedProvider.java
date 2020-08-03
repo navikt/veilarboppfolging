@@ -4,7 +4,7 @@ import no.nav.veilarboppfolging.domain.AvsluttetOppfolgingFeedData;
 import no.nav.veilarboppfolging.controller.domain.AvsluttetOppfolgingFeedDTO;
 import no.nav.veilarboppfolging.feed.cjm.common.FeedElement;
 import no.nav.veilarboppfolging.feed.cjm.producer.FeedProvider;
-import no.nav.veilarboppfolging.services.OppfolgingService;
+import no.nav.veilarboppfolging.service.OppfolgingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

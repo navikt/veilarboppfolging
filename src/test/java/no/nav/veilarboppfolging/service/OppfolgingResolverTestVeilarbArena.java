@@ -1,4 +1,4 @@
-package no.nav.veilarboppfolging.services;
+package no.nav.veilarboppfolging.service;
 
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolging;
 import no.nav.veilarboppfolging.domain.Oppfolging;

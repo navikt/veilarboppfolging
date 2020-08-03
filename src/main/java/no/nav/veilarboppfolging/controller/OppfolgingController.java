@@ -8,7 +8,7 @@ import no.nav.veilarboppfolging.controller.domain.StartKvpDTO;
 import no.nav.veilarboppfolging.controller.domain.StoppEskaleringDTO;
 import no.nav.veilarboppfolging.controller.domain.StoppKvpDTO;
 import no.nav.veilarboppfolging.controller.domain.VeilederBegrunnelseDTO;
-import no.nav.veilarboppfolging.services.*;
+import no.nav.veilarboppfolging.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 

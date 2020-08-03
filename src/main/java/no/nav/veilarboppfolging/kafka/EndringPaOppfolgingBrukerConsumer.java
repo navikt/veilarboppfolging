@@ -2,9 +2,9 @@ package no.nav.veilarboppfolging.kafka;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarboppfolging.domain.VeilarbArenaOppfolgingEndret;
-import no.nav.veilarboppfolging.services.IservService;
-import no.nav.veilarboppfolging.services.MetricsService;
-import no.nav.veilarboppfolging.services.OppfolgingsenhetEndringService;
+import no.nav.veilarboppfolging.service.IservService;
+import no.nav.veilarboppfolging.service.MetricsService;
+import no.nav.veilarboppfolging.service.OppfolgingsenhetEndringService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.handler.annotation.Payload;

@@ -2,7 +2,7 @@ package no.nav.veilarboppfolging.controller;
 
 import no.nav.veilarboppfolging.controller.domain.Veileder;
 import no.nav.veilarboppfolging.repository.VeilederTilordningerRepository;
-import no.nav.veilarboppfolging.services.AuthService;
+import no.nav.veilarboppfolging.service.AuthService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;

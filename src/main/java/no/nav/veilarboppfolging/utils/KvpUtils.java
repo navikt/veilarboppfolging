@@ -2,7 +2,7 @@ package no.nav.veilarboppfolging.utils;
 
 import lombok.SneakyThrows;
 import no.nav.veilarboppfolging.domain.Kvp;
-import no.nav.veilarboppfolging.services.AuthService;
+import no.nav.veilarboppfolging.service.AuthService;
 
 import java.util.Date;
 import java.util.List;

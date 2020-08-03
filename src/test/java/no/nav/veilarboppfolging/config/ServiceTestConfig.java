@@ -1,6 +1,6 @@
 package no.nav.veilarboppfolging.config;
 
-import no.nav.veilarboppfolging.services.*;
+import no.nav.veilarboppfolging.service.*;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 

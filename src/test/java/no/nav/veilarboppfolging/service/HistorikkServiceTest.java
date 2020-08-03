@@ -1,4 +1,4 @@
-package no.nav.veilarboppfolging.services;
+package no.nav.veilarboppfolging.service;
 
 import no.nav.common.featuretoggle.UnleashService;
 import no.nav.veilarboppfolging.domain.EskaleringsvarselData;

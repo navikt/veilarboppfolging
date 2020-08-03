@@ -1,4 +1,4 @@
-package no.nav.veilarboppfolging.services;
+package no.nav.veilarboppfolging.service;
 
 import lombok.SneakyThrows;
 import lombok.val;
@@ -11,7 +11,7 @@ import no.nav.veilarboppfolging.domain.*;
 import no.nav.veilarboppfolging.kafka.OppfolgingStatusKafkaProducer;
 import no.nav.veilarboppfolging.repository.OppfolgingRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
-import no.nav.veilarboppfolging.services.OppfolgingResolver.OppfolgingResolverDependencies;
+import no.nav.veilarboppfolging.service.OppfolgingResolver.OppfolgingResolverDependencies;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;

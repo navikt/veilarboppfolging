@@ -1,9 +1,9 @@
-package no.nav.veilarboppfolging.services;
+package no.nav.veilarboppfolging.service;
 
 import no.nav.veilarboppfolging.domain.Kvp;
 import no.nav.veilarboppfolging.domain.MalData;
 import no.nav.veilarboppfolging.repository.KvpRepository;
-import no.nav.veilarboppfolging.services.OppfolgingResolver.OppfolgingResolverDependencies;
+import no.nav.veilarboppfolging.service.OppfolgingResolver.OppfolgingResolverDependencies;
 import no.nav.veilarboppfolging.utils.KvpUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

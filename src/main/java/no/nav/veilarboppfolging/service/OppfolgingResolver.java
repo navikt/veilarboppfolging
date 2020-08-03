@@ -1,4 +1,4 @@
-package no.nav.veilarboppfolging.services;
+package no.nav.veilarboppfolging.service;
 
 import io.vavr.control.Either;
 import io.vavr.control.Try;

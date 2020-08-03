@@ -1,11 +1,11 @@
-package no.nav.veilarboppfolging.services;
+package no.nav.veilarboppfolging.service;
 
 import no.nav.veilarboppfolging.domain.Kvp;
 import no.nav.veilarboppfolging.domain.MalData;
 import no.nav.veilarboppfolging.domain.Oppfolging;
 import no.nav.veilarboppfolging.repository.KvpRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingRepository;
-import no.nav.veilarboppfolging.services.OppfolgingResolver.OppfolgingResolverDependencies;
+import no.nav.veilarboppfolging.service.OppfolgingResolver.OppfolgingResolverDependencies;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

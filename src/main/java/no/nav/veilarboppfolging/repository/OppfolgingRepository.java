@@ -5,7 +5,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import no.nav.veilarboppfolging.domain.*;
-import no.nav.veilarboppfolging.services.AuthService;
+import no.nav.veilarboppfolging.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;

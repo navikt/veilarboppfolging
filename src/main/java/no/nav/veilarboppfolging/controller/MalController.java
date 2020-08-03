@@ -2,8 +2,8 @@ package no.nav.veilarboppfolging.controller;
 
 import no.nav.veilarboppfolging.controller.domain.Mal;
 import no.nav.veilarboppfolging.domain.MalData;
-import no.nav.veilarboppfolging.services.AuthService;
-import no.nav.veilarboppfolging.services.MalService;
+import no.nav.veilarboppfolging.service.AuthService;
+import no.nav.veilarboppfolging.service.MalService;
 import no.nav.veilarboppfolging.utils.DtoMappers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;

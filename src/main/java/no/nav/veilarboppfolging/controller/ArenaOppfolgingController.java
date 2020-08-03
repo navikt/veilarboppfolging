@@ -9,7 +9,7 @@ import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
 import no.nav.veilarboppfolging.controller.domain.OppfolgingEnhetMedVeileder;
 import no.nav.veilarboppfolging.domain.Oppfolgingsenhet;
 import no.nav.veilarboppfolging.repository.VeilederTilordningerRepository;
-import no.nav.veilarboppfolging.services.AuthService;
+import no.nav.veilarboppfolging.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;

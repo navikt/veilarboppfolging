@@ -7,7 +7,7 @@ import no.nav.common.utils.Credentials;
 import no.nav.veilarboppfolging.feed.FeedConfig;
 import no.nav.veilarboppfolging.kafka.KafkaTopics;
 import no.nav.veilarboppfolging.mock.PepMock;
-import no.nav.veilarboppfolging.services.OppfolgingResolver;
+import no.nav.veilarboppfolging.service.OppfolgingResolver;
 import no.nav.veilarboppfolging.test.LocalH2Database;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;

@@ -3,8 +3,8 @@ package no.nav.veilarboppfolging.controller;
 import no.nav.veilarboppfolging.domain.AktiverArbeidssokerData;
 import no.nav.veilarboppfolging.domain.Fnr;
 import no.nav.veilarboppfolging.domain.SykmeldtBrukerType;
-import no.nav.veilarboppfolging.services.AktiverBrukerService;
-import no.nav.veilarboppfolging.services.AuthService;
+import no.nav.veilarboppfolging.service.AktiverBrukerService;
+import no.nav.veilarboppfolging.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 

@@ -1,8 +1,8 @@
 package no.nav.veilarboppfolging.kafka;
 
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
-import no.nav.veilarboppfolging.services.IservService;
-import no.nav.veilarboppfolging.services.OppfolgingsenhetEndringService;
+import no.nav.veilarboppfolging.service.IservService;
+import no.nav.veilarboppfolging.service.OppfolgingsenhetEndringService;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.kafka.annotation.EnableKafka;

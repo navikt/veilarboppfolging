@@ -3,7 +3,7 @@ package no.nav.veilarboppfolging.controller;
 import no.nav.veilarboppfolging.client.oppfolging.OppfolgingClient;
 import no.nav.veilarboppfolging.client.oppfolging.OppfolgingskontraktData;
 import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktClient;
-import no.nav.veilarboppfolging.services.AuthService;
+import no.nav.veilarboppfolging.service.AuthService;
 import no.nav.veilarboppfolging.controller.domain.YtelserResponse;
 import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktResponse;
 import org.springframework.beans.factory.annotation.Autowired;

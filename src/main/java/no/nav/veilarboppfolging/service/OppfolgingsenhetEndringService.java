@@ -1,4 +1,4 @@
-package no.nav.veilarboppfolging.services;
+package no.nav.veilarboppfolging.service;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarboppfolging.domain.OppfolgingsenhetEndringData;

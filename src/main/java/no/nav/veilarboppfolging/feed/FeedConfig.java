@@ -10,7 +10,7 @@ import no.nav.veilarboppfolging.feed.cjm.producer.FeedProducer;
 import no.nav.veilarboppfolging.repository.KvpRepository;
 import no.nav.veilarboppfolging.repository.NyeBrukereFeedRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingFeedRepository;
-import no.nav.veilarboppfolging.services.OppfolgingService;
+import no.nav.veilarboppfolging.service.OppfolgingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

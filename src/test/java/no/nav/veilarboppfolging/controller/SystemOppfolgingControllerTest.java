@@ -7,10 +7,9 @@ import no.nav.common.auth.subject.SubjectHandler;
 import no.nav.veilarboppfolging.domain.AktiverArbeidssokerData;
 import no.nav.veilarboppfolging.domain.Fnr;
 import no.nav.veilarboppfolging.domain.SykmeldtBrukerType;
-import no.nav.veilarboppfolging.services.AktiverBrukerService;
-import no.nav.veilarboppfolging.services.AuthService;
-import no.nav.veilarboppfolging.services.OppfolgingService;
-import org.junit.Rule;
+import no.nav.veilarboppfolging.service.AktiverBrukerService;
+import no.nav.veilarboppfolging.service.AuthService;
+import no.nav.veilarboppfolging.service.OppfolgingService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -18,7 +17,6 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Collections;
-import java.util.Optional;
 
 import static org.mockito.Mockito.*;
 
