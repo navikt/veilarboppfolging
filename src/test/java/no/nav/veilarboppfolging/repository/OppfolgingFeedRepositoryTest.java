@@ -7,9 +7,8 @@ import no.nav.veilarboppfolging.domain.Oppfolgingsperiode;
 import no.nav.veilarboppfolging.test.DbTestUtils;
 import no.nav.veilarboppfolging.test.LocalH2Database;
 import org.junit.After;
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.Test;
-import org.junit.jupiter.api.BeforeEach;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.Date;
@@ -26,23 +25,14 @@ public class OppfolgingFeedRepositoryTest {
     private static final String AKTOR_ID = "2222";
     private static final String VEILEDER = "1234";
 
-    private static OppfolgingFeedRepository feedRepository;
-    private static OppfolgingsPeriodeRepository periodeRepository;
-    private static VeilederTilordningerRepository tilordningerRepository;
-    private static OppfolgingsStatusRepository oppfolgingsStatusRepository;
+    private OppfolgingFeedRepository oppfolgingFeedRepository = new OppfolgingFeedRepository(LocalH2Database.getDb());
+    private OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository = new OppfolgingsPeriodeRepository(LocalH2Database.getDb());
+    private VeilederTilordningerRepository veilederTilordningerRepository = new VeilederTilordningerRepository(LocalH2Database.getDb());
+    private OppfolgingsStatusRepository oppfolgingsStatusRepository = new OppfolgingsStatusRepository(LocalH2Database.getDb());
 
-    @BeforeEach
+    @Before
     public void cleanup() {
         DbTestUtils.cleanupTestDb();
-    }
-
-    @BeforeClass
-    public static void setup() {
-        JdbcTemplate db = LocalH2Database.getDb();
-        tilordningerRepository = new VeilederTilordningerRepository(db);
-        feedRepository = new OppfolgingFeedRepository(db);
-        periodeRepository = new OppfolgingsPeriodeRepository(db);
-        oppfolgingsStatusRepository = new OppfolgingsStatusRepository(db);
     }
 
     @After
@@ -59,7 +49,7 @@ public class OppfolgingFeedRepositoryTest {
         int expectedCount = 10;
         createAntallTestBrukere(expectedCount);
 
-        Optional<Long> actualCount = feedRepository.hentAntallBrukere();
+        Optional<Long> actualCount = oppfolgingFeedRepository.hentAntallBrukere();
         assertThat(actualCount.isPresent()).isTrue();
         assertThat(actualCount.get()).isEqualTo(expectedCount);
     }
@@ -67,21 +57,21 @@ public class OppfolgingFeedRepositoryTest {
     @Test
     public void skal_hente_kun_en_bruker_siden_offset_i_oracle_er_ekslusiv() {
         createAntallTestBrukere(11);
-        List<OppfolgingKafkaDTO> dto = feedRepository.hentOppfolgingStatus(10);
+        List<OppfolgingKafkaDTO> dto = oppfolgingFeedRepository.hentOppfolgingStatus(10);
         assertThat(dto.size()).isEqualTo(1);
     }
 
     @Test
     public void skal_hente_alle_brukere_selv_om_det_ikke_er_1000_brukere_igjen() {
         createAntallTestBrukere(15);
-        List<OppfolgingKafkaDTO> brukere = feedRepository.hentOppfolgingStatus(10);
+        List<OppfolgingKafkaDTO> brukere = oppfolgingFeedRepository.hentOppfolgingStatus(10);
         assertThat(brukere.size()).isEqualTo(5);
     }
 
     @Test
     public void skal_hente_null_brukere_om_offset_er_hoyere_en_antall_brukere() {
         createAntallTestBrukere(10);
-        List<OppfolgingKafkaDTO> brukere = feedRepository.hentOppfolgingStatus(20);
+        List<OppfolgingKafkaDTO> brukere = oppfolgingFeedRepository.hentOppfolgingStatus(20);
         assertThat(brukere.size()).isEqualTo(0);
     }
 
@@ -89,12 +79,12 @@ public class OppfolgingFeedRepositoryTest {
     public void skal_sortere_elementer_i_paging_basert_paa_aktoer_id() {
         createAntallTestBrukere(2000);
 
-        List<OppfolgingKafkaDTO> page1 = feedRepository.hentOppfolgingStatus(0);
+        List<OppfolgingKafkaDTO> page1 = oppfolgingFeedRepository.hentOppfolgingStatus(0);
         assertThat(page1.size()).isEqualTo(1000);
 
         String sisteElementPage1 = page1.get(999).getAktoerid();
 
-        List<OppfolgingKafkaDTO> page2 = feedRepository.hentOppfolgingStatus(999);
+        List<OppfolgingKafkaDTO> page2 = oppfolgingFeedRepository.hentOppfolgingStatus(999);
         String foersteElementPage2 = page2.get(0).getAktoerid();
 
         assertThat(sisteElementPage1).isEqualTo(foersteElementPage2);
@@ -119,17 +109,17 @@ public class OppfolgingFeedRepositoryTest {
 
         db.execute(man);
 
-        val result = feedRepository.hentOppfolgingStatus("10101010101");
+        val result = oppfolgingFeedRepository.hentOppfolgingStatus("10101010101");
 
         assertThat(result.isFailure()).isTrue();
     }
 
     @Test
     public void skal_hente_bruker() {
-        tilordningerRepository.upsertVeilederTilordning(AKTOR_ID, VEILEDER);
-        periodeRepository.start(AKTOR_ID);
+        veilederTilordningerRepository.upsertVeilederTilordning(AKTOR_ID, VEILEDER);
+        oppfolgingsPeriodeRepository.start(AKTOR_ID);
 
-        val oppfolgingStatus = feedRepository.hentOppfolgingStatus(AKTOR_ID);
+        val oppfolgingStatus = oppfolgingFeedRepository.hentOppfolgingStatus(AKTOR_ID);
 
         assertThat(oppfolgingStatus.isSuccess()).isTrue();
         assertThat(oppfolgingStatus.get().getAktoerid()).isEqualTo(AKTOR_ID);
@@ -137,17 +127,17 @@ public class OppfolgingFeedRepositoryTest {
 
     @Test
     public void skal_hente_startdato_for_siste_oppfolgingsperiode() throws InterruptedException {
-        tilordningerRepository.upsertVeilederTilordning(AKTOR_ID, VEILEDER);
+        veilederTilordningerRepository.upsertVeilederTilordning(AKTOR_ID, VEILEDER);
 
-        periodeRepository.start(AKTOR_ID);
-        periodeRepository.avslutt(AKTOR_ID, VEILEDER, "test");
+        oppfolgingsPeriodeRepository.start(AKTOR_ID);
+        oppfolgingsPeriodeRepository.avslutt(AKTOR_ID, VEILEDER, "test");
 
         Thread.sleep(1);
 
-        periodeRepository.start(AKTOR_ID);
-        periodeRepository.avslutt(AKTOR_ID, VEILEDER, "test");
+        oppfolgingsPeriodeRepository.start(AKTOR_ID);
+        oppfolgingsPeriodeRepository.avslutt(AKTOR_ID, VEILEDER, "test");
 
-        val perioder = periodeRepository.hentOppfolgingsperioder(AKTOR_ID);
+        val perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(AKTOR_ID);
 
         val forstePeriode = perioder.stream()
                 .min(comparing(Oppfolgingsperiode::getStartDato))
@@ -157,7 +147,7 @@ public class OppfolgingFeedRepositoryTest {
                 .max(comparing(Oppfolgingsperiode::getStartDato))
                 .orElseThrow(IllegalStateException::new);
 
-        val startDato = feedRepository.hentOppfolgingStatus(AKTOR_ID)
+        val startDato = oppfolgingFeedRepository.hentOppfolgingStatus(AKTOR_ID)
                 .map(dto -> dto.getStartDato().getTime())
                 .map(Date::new)
                 .getOrElseThrow((Supplier<IllegalStateException>) IllegalStateException::new);
@@ -174,16 +164,16 @@ public class OppfolgingFeedRepositoryTest {
                 .mapToObj(String::valueOf)
                 .forEach(aktoerId -> {
                     oppfolgingsStatusRepository.opprettOppfolging(aktoerId);
-                    periodeRepository.start(aktoerId);
+                    oppfolgingsPeriodeRepository.start(aktoerId);
                 });
 
         // lage 1 bruker som ikke er under oppfølging
         String ikkeUnderOppfolging = "testId";
         oppfolgingsStatusRepository.opprettOppfolging(ikkeUnderOppfolging);
-        periodeRepository.start(ikkeUnderOppfolging);
-        periodeRepository.avslutt(ikkeUnderOppfolging, "", "");
+        oppfolgingsPeriodeRepository.start(ikkeUnderOppfolging);
+        oppfolgingsPeriodeRepository.avslutt(ikkeUnderOppfolging, "", "");
 
-        List<AktorId> aktorIds = feedRepository.hentAlleBrukereUnderOppfolging();
+        List<AktorId> aktorIds = oppfolgingFeedRepository.hentAlleBrukereUnderOppfolging();
         assertThat(aktorIds.size()).isEqualTo(10);
     }
 
@@ -192,7 +182,7 @@ public class OppfolgingFeedRepositoryTest {
                 .range(1, antall+1)
                 .forEach(n -> {
                     oppfolgingsStatusRepository.opprettOppfolging(String.valueOf(n));
-                    periodeRepository.start(String.valueOf(n));
+                    oppfolgingsPeriodeRepository.start(String.valueOf(n));
                 });
     }
 }

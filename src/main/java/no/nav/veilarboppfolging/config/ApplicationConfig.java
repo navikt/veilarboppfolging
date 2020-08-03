@@ -50,8 +50,8 @@ public class ApplicationConfig {
     }
 
     @Bean
-    public SystemUserTokenProvider openAmSystemUserTokenProvider() {
-        return new OpenAmSystemUserTokenProvider("", "", "", "");
+    public SystemUserTokenProvider openAmSystemUserTokenProvider(Credentials serviceUserCredentials) {
+        return new OpenAmSystemUserTokenProvider("", "", new Credentials("", ""), serviceUserCredentials);
     }
 
     @Bean

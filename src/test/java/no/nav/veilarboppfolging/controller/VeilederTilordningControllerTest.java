@@ -14,6 +14,7 @@ import no.nav.veilarboppfolging.repository.VeilederTilordningerRepository;
 import no.nav.veilarboppfolging.service.AuthService;
 import no.nav.veilarboppfolging.service.MetricsService;
 import no.nav.veilarboppfolging.service.OppfolgingRepositoryService;
+import no.nav.veilarboppfolging.test.DbTestUtils;
 import no.nav.veilarboppfolging.test.LocalH2Database;
 import org.junit.Before;
 import org.junit.Test;
@@ -69,7 +70,7 @@ public class VeilederTilordningControllerTest {
                     feed,
                     oppfolgingRepositoryService,
                     veilederHistorikkRepository,
-                    LocalH2Database.getTransactor(),
+                    DbTestUtils.getTransactor(LocalH2Database.getDb()),
                     mock(OppfolgingStatusKafkaProducer.class)
             ); 
         });

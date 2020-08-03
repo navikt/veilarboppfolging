@@ -1,18 +1,15 @@
 package no.nav.veilarboppfolging.repository;
 
 import no.nav.veilarboppfolging.domain.Kvp;
-import no.nav.veilarboppfolging.domain.Oppfolging;
-import no.nav.veilarboppfolging.service.OppfolgingRepositoryService;
-import no.nav.veilarboppfolging.test.DbTestUtils;
-import no.nav.veilarboppfolging.test.LocalH2Database;
+import no.nav.veilarboppfolging.test.IsolatedDatabaseTest;
+import org.junit.Before;
 import org.junit.Test;
-import org.junit.jupiter.api.BeforeEach;
 
 import static no.nav.veilarboppfolging.domain.KodeverkBruker.NAV;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 
-public class KvpRepositoryTest {
+public class KvpRepositoryTest extends IsolatedDatabaseTest {
 
     private static final String AKTOR_ID = "aktorId";
     private static final String SAKSBEHANDLER_ID = "saksbehandlerId";
@@ -20,13 +17,12 @@ public class KvpRepositoryTest {
 
     private OppfolgingsStatusRepository oppfolgingsStatusRepository;
 
-    private OppfolgingRepositoryService oppfolgingRepositoryService;
+    private KvpRepository kvpRepository;
 
-    private KvpRepository kvpRepository = new KvpRepository(LocalH2Database.getDb());
-
-    @BeforeEach
-    public void cleanup() {
-        DbTestUtils.cleanupTestDb();
+    @Before
+    public void setup() {
+        oppfolgingsStatusRepository = new OppfolgingsStatusRepository(db);
+        kvpRepository = new KvpRepository(db);
     }
 
     @Test
@@ -78,15 +74,13 @@ public class KvpRepositoryTest {
     }
 
     private Kvp hentGjeldendeKvp(String aktorId) {
-        return oppfolgingRepositoryService.hentOppfolging(aktorId).get().getGjeldendeKvp();
+        long kvpId = oppfolgingsStatusRepository.fetch(aktorId).getGjeldendeKvpId();
+        return kvpRepository.fetch(kvpId);
     }
 
-    private Oppfolging gittOppfolgingForAktor(String aktorId) {
-        Oppfolging oppfolging = oppfolgingRepositoryService.hentOppfolging(aktorId)
-                .orElseGet(() -> oppfolgingsStatusRepository.opprettOppfolging(aktorId));
+    private void gittOppfolgingForAktor(String aktorId) {
+        oppfolgingsStatusRepository.opprettOppfolging(aktorId);
 
-        oppfolgingRepositoryService.startOppfolgingHvisIkkeAlleredeStartet(aktorId);
-        oppfolging.setUnderOppfolging(true);
-        return oppfolging;
+//        oppfolgingRepositoryService.startOppfolgingHvisIkkeAlleredeStartet(aktorId);
     }
 }

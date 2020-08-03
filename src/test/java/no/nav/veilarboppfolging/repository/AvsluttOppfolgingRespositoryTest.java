@@ -3,8 +3,8 @@ package no.nav.veilarboppfolging.repository;
 import no.nav.veilarboppfolging.domain.AvsluttOppfolgingKafkaDTO;
 import no.nav.veilarboppfolging.test.DbTestUtils;
 import no.nav.veilarboppfolging.test.LocalH2Database;
+import org.junit.Before;
 import org.junit.Test;
-import org.junit.jupiter.api.BeforeEach;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -15,7 +15,7 @@ public class AvsluttOppfolgingRespositoryTest {
 
     private AvsluttOppfolgingEndringRepository avsluttOppfolgingEndringRepository = new AvsluttOppfolgingEndringRepository(LocalH2Database.getDb());
 
-    @BeforeEach
+    @Before
     public void cleanup() {
         DbTestUtils.cleanupTestDb();
     }

@@ -5,7 +5,6 @@ import no.nav.veilarboppfolging.test.DbTestUtils;
 import no.nav.veilarboppfolging.test.LocalH2Database;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.jupiter.api.BeforeEach;
 
 import java.util.List;
 
@@ -14,17 +13,13 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 public class OppfolgingsenhetHistorikkRepositoryTest {
-    private static OppfolgingsenhetHistorikkRepository oppfolgingsenhetHistorikkRepository;
     private static final String AKTOR_ID = "11111";
 
-    @BeforeEach
-    public void cleanup() {
-        DbTestUtils.cleanupTestDb();
-    }
+    private static OppfolgingsenhetHistorikkRepository oppfolgingsenhetHistorikkRepository = new OppfolgingsenhetHistorikkRepository(LocalH2Database.getDb());
 
     @Before
-    public void setup() {
-        oppfolgingsenhetHistorikkRepository = new OppfolgingsenhetHistorikkRepository(LocalH2Database.getDb());
+    public void cleanup() {
+        DbTestUtils.cleanupTestDb();
     }
 
     @Test

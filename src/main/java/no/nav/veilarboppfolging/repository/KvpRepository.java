@@ -111,7 +111,8 @@ public class KvpRepository {
 
     public Kvp fetch(long id) {
         String sql = "SELECT * FROM KVP WHERE kvp_id = ?";
-        return db.queryForObject(sql, KvpRepository::mapTilKvp, id);
+        List<Kvp> kvper = db.query(sql, KvpRepository::mapTilKvp, id);
+        return kvper.isEmpty() ? null : kvper.get(0);
     }
 
     /**

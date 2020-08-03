@@ -1,7 +1,7 @@
-package no.nav.veilarboppfolging.repository;
+package no.nav.veilarboppfolging.service;
 
 import no.nav.veilarboppfolging.domain.*;
-import no.nav.veilarboppfolging.service.OppfolgingRepositoryService;
+import no.nav.veilarboppfolging.repository.*;
 import no.nav.veilarboppfolging.test.DbTestUtils;
 import no.nav.veilarboppfolging.test.LocalH2Database;
 import org.junit.Test;
@@ -17,7 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 
-public class OppfolgingRepositoryTest {
+public class OppfolgingRepositoryServiceTest {
 
     private static final String AKTOR_ID = "aktorId";
     private static final String ENHET = "enhet";

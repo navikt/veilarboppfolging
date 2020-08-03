@@ -1,12 +1,11 @@
 package no.nav.veilarboppfolging.repository;
 
 import no.nav.veilarboppfolging.domain.EskaleringsvarselData;
-import no.nav.veilarboppfolging.domain.Oppfolging;
-import no.nav.veilarboppfolging.service.OppfolgingRepositoryService;
+import no.nav.veilarboppfolging.domain.OppfolgingTable;
 import no.nav.veilarboppfolging.test.DbTestUtils;
 import no.nav.veilarboppfolging.test.LocalH2Database;
+import org.junit.Before;
 import org.junit.Test;
-import org.junit.jupiter.api.BeforeEach;
 
 import java.util.List;
 
@@ -22,13 +21,11 @@ public class EskaleringsvarselRepositoryTest {
     private static final String BEGRUNNELSE = "Begrunnelse";
     private static final int NUM_ITEMS = 10;
 
-    private OppfolgingsStatusRepository oppfolgingsStatusRepository;
-
-    private OppfolgingRepositoryService oppfolgingRepositoryService;
+    private OppfolgingsStatusRepository oppfolgingsStatusRepository = new OppfolgingsStatusRepository(LocalH2Database.getDb());
 
     private EskaleringsvarselRepository eskaleringsvarselRepository = new EskaleringsvarselRepository(LocalH2Database.getDb());
 
-    @BeforeEach
+    @Before
     public void cleanup() {
         DbTestUtils.cleanupTestDb();
     }
@@ -39,7 +36,7 @@ public class EskaleringsvarselRepositoryTest {
      */
     @Test
     public void testCreateAndFinish() {
-        gittOppfolgingForAktor(AKTOR_ID);
+        oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
 
         // Create the escalation warning, and test that retrieving
         // the current warning yields the object we just created.
@@ -85,15 +82,9 @@ public class EskaleringsvarselRepositoryTest {
     }
 
     private EskaleringsvarselData gjeldendeEskaleringsVarsel(String aktorId) {
-        return oppfolgingRepositoryService.hentOppfolging(aktorId).get().getGjeldendeEskaleringsvarsel();
+        OppfolgingTable oppfolging = oppfolgingsStatusRepository.fetch(aktorId);
+        return eskaleringsvarselRepository.fetch(oppfolging.getGjeldendeEskaleringsvarselId());
     }
 
-    private void gittOppfolgingForAktor(String aktorId) {
-        Oppfolging oppfolging = oppfolgingRepositoryService.hentOppfolging(aktorId)
-                .orElseGet(() -> oppfolgingsStatusRepository.opprettOppfolging(aktorId));
-
-        oppfolgingRepositoryService.startOppfolgingHvisIkkeAlleredeStartet(aktorId);
-        oppfolging.setUnderOppfolging(true);
-    }
 }
 

@@ -35,7 +35,8 @@ public class EskaleringsvarselRepository {
 
     public EskaleringsvarselData fetch(Long id) {
         String sql = "SELECT * FROM ESKALERINGSVARSEL WHERE varsel_id = ?";
-        return db.query(sql, EskaleringsvarselRepository::map, id).get(0);
+        List<EskaleringsvarselData> data = db.query(sql, EskaleringsvarselRepository::map, id);
+        return data.isEmpty() ? null : data.get(0);
     }
 
     @Transactional
