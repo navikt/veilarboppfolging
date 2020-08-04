@@ -352,7 +352,7 @@ public class OppfolgingResolver {
 
     String getOppfolgingsEnhet() {
         hentOppfolgingstatusFraArena();
-        return arenaOppfolgingTilstand().map(status -> status.getOppfolgingsenhet()).orElse(null);
+        return arenaOppfolgingTilstand().map(ArenaOppfolgingTilstand::getOppfolgingsenhet).orElse(null);
     }
 
     Boolean getInaktivIArena() {

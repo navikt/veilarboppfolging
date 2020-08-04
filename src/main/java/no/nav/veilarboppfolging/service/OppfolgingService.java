@@ -68,7 +68,7 @@ public class OppfolgingService {
 
         val resolver = OppfolgingResolver.lagOppfolgingResolver(fnr, oppfolgingResolverDependencies);
 
-        if(!authService.harTilgangTilEnhet(resolver.getOppfolgingsEnhet())) {
+        if (!authService.harTilgangTilEnhet(resolver.getOppfolgingsEnhet())) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         }
 
@@ -90,11 +90,13 @@ public class OppfolgingService {
     @SneakyThrows
     public OppfolgingStatusData startOppfolging(String fnr) {
         val resolver = sjekkTilgangTilEnhet(fnr);
+
         if (resolver.getKanSettesUnderOppfolging()) {
             resolver.startOppfolging();
         }
 
         kafkaProducer.send(new Fnr(fnr));
+
         return getOppfolgingStatusData(fnr, resolver);
     }
 
@@ -169,7 +171,8 @@ public class OppfolgingService {
     @SneakyThrows
     public VeilederTilgang hentVeilederTilgang(String fnr) {
         authService.sjekkLesetilgangMedFnr(fnr);
-        if(unleashService.isEnabled("veilarboppfolging.hentVeilederTilgang.fra.veilarbarena")) {
+
+        if (unleashService.isEnabled("veilarboppfolging.hentVeilederTilgang.fra.veilarbarena")) {
             Optional<VeilarbArenaOppfolging> arenaBruker = veilarbarenaClient.hentOppfolgingsbruker(fnr);
             String oppfolgingsenhet = arenaBruker.map(VeilarbArenaOppfolging::getNav_kontor).orElse(null);
             boolean tilgangTilEnhet = authService.harTilgangTilEnhet(oppfolgingsenhet);
