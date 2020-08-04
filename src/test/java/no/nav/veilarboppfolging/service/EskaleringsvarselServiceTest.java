@@ -15,7 +15,7 @@ public class EskaleringsvarselServiceTest {
     private static final int DIALOG_ID = 1;
 
     @BeforeClass
-    public static void setUp() throws Exception {
+    public static void setUp() {
 //        System.setProperty(ARBEIDSRETTET_DIALOG_PROPERTY, "https://arbeidsrettet_dialog.no");
     }
 
@@ -23,20 +23,20 @@ public class EskaleringsvarselServiceTest {
     private VarseloppgaveClient varseloppgaveClient;
 
     @Test
-    public void sendEskaleringsvarsel() throws Exception {
+    public void sendEskaleringsvarsel() {
 //        eskaleringsvarselService.sendEskaleringsvarsel(AKTOR_ID, DIALOG_ID);
 //        verify(varseloppgaveV1, times(DIALOG_ID))
 //                .bestillVarselOppgave(any(BestillVarselOppgaveRequest.class));
     }
 
     @Test(expected = BestillVarselOppgaveUgyldigInput.class)
-    public void sendEskaleringFeiler() throws Exception {
+    public void sendEskaleringFeiler() {
 //        when(varseloppgaveV1.bestillVarselOppgave(any())).thenThrow(BestillVarselOppgaveUgyldigInput.class);
 //        eskaleringsvarselService.sendEskaleringsvarsel(AKTOR_ID, DIALOG_ID);
     }
 
     @Test
-    public void dialogUrl() throws Exception {
+    public void dialogUrl() {
 //        assertThat(
 //                eskaleringsvarselService.dialogUrl(DIALOG_ID),
 //                equalTo("https://arbeidsrettet_dialog.no/1")

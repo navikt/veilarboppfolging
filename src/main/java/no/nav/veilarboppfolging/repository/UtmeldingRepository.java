@@ -1,5 +1,6 @@
 package no.nav.veilarboppfolging.repository;
 
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarboppfolging.domain.IservMapper;
 import no.nav.veilarboppfolging.domain.VeilarbArenaOppfolgingEndret;
@@ -13,6 +14,8 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
 
+import static no.nav.veilarboppfolging.utils.DbUtils.firstOrNull;
+
 @Slf4j
 public class UtmeldingRepository {
 
@@ -23,13 +26,14 @@ public class UtmeldingRepository {
         this.db = db;
     }
 
-    public IservMapper eksisterendeIservBruker(VeilarbArenaOppfolgingEndret oppfolgingEndret){
+    public IservMapper eksisterendeIservBruker(VeilarbArenaOppfolgingEndret oppfolgingEndret) {
         String sql = "SELECT * FROM UTMELDING WHERE aktor_id = ?";
-        return db.queryForObject(sql, UtmeldingRepository::mapper, oppfolgingEndret.getAktoerid());
+        return firstOrNull(db.query(sql, UtmeldingRepository::mapper, oppfolgingEndret.getAktoerid()));
     }
 
+    @SneakyThrows
     public void updateUtmeldingTabell(VeilarbArenaOppfolgingEndret oppfolgingEndret) {
-        String sql = "UPDATE UTMELDING SET iserv_fra_dato = ? AND oppdatert_dato = CURRENT_TIMESTAMP WHERE aktor_id = ?";
+        String sql = "UPDATE UTMELDING SET iserv_fra_dato = ?, oppdatert_dato = CURRENT_TIMESTAMP WHERE aktor_id = ?";
         Timestamp nyIservFraDato = Timestamp.from(oppfolgingEndret.getIserv_fra_dato().toInstant());
 
         db.update(sql, nyIservFraDato, oppfolgingEndret.getAktoerid());

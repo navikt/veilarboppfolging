@@ -88,6 +88,7 @@ public class IservService {
 
     private List<AvslutteOppfolgingResultat> finnBrukereOgAvslutt() {
         List<AvslutteOppfolgingResultat> resultater = new ArrayList<>();
+
         try {
             log.info("Starter jobb for automatisk avslutning av brukere");
             List<IservMapper> iservert28DagerBrukere = utmeldingRepository.finnBrukereMedIservI28Dager();
@@ -103,6 +104,7 @@ public class IservService {
         } catch (Exception e) {
             log.error("Feil ved automatisk avslutning av brukere", e);
         }
+
         return resultater;
     }
 

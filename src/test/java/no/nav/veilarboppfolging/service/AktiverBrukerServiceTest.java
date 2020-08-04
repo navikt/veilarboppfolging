@@ -47,19 +47,19 @@ class AktiverBrukerServiceTest {
     }
 
     @Test
-    void skalRegistrereIArena() throws Exception {
+    void skalRegistrereIArena() {
         aktiverBrukerService.aktiverBruker(hentBruker());
 //        verify(behandleArbeidssoekerV1, times(1)).aktiverBruker(any());
     }
 
     @Test
-    void brukerSomHarInaktivStatusSkalKunneReaktivereSeg() throws Exception {
+    void brukerSomHarInaktivStatusSkalKunneReaktivereSeg() {
         aktiverBrukerService.reaktiverBruker(new Fnr("fnr"));
 //        verify(behandleArbeidssoekerV1, times(1)).reaktiverBrukerForenklet(any());
     }
 
     @Test
-    void brukerSomIkkeKanReaktiveresForenkletIArenaSkalGiRiktigFeil() throws Exception {
+    void brukerSomIkkeKanReaktiveresForenkletIArenaSkalGiRiktigFeil() {
         doThrow(mock(ReaktiverBrukerForenkletBrukerKanIkkeReaktiveresForenklet.class)).when(aktiverBrukerService).reaktiverBruker(any());
 //        Feil e = reaktiverBrukerMotArenaOgReturnerFeil(new Fnr("fnr"));
 //        assertThat(e.getType().getStatus()).isNotNull();
@@ -68,7 +68,7 @@ class AktiverBrukerServiceTest {
     }
 
     @Test
-    void brukerSomIkkeFinnesIArenaSkalGiRiktigStatus() throws Exception {
+    void brukerSomIkkeFinnesIArenaSkalGiRiktigStatus() {
         doThrow(mock(AktiverBrukerBrukerFinnesIkke.class)).when(aktiverBrukerService).aktiverBruker(any());
 //        Feil e = aktiverBrukerMotArenaOgReturnerFeil(hentBruker());
 //        assertThat(e.getType().getStatus()).isNotNull();
@@ -77,7 +77,7 @@ class AktiverBrukerServiceTest {
     }
 
     @Test
-    void brukerSomIkkeKanReaktiveresIArenaSkalGiGiRiktigStatus() throws Exception {
+    void brukerSomIkkeKanReaktiveresIArenaSkalGiGiRiktigStatus() {
         doThrow(mock(AktiverBrukerBrukerIkkeReaktivert.class)).when(aktiverBrukerService).aktiverBruker(any());
 //        Feil e = aktiverBrukerMotArenaOgReturnerFeil(hentBruker());
 //        assertThat(e.getType().getStatus()).isNotNull();
@@ -86,7 +86,7 @@ class AktiverBrukerServiceTest {
     }
 
     @Test
-    void brukerSomIkkeKanAktiveresIArenaSkalGiRiktigStatus() throws Exception {
+    void brukerSomIkkeKanAktiveresIArenaSkalGiRiktigStatus() {
         doThrow(mock(AktiverBrukerBrukerKanIkkeAktiveres.class)).when(aktiverBrukerService).aktiverBruker(any());
 //        Feil e = aktiverBrukerMotArenaOgReturnerFeil(hentBruker());
 //        assertThat(e.getType().getStatus()).isNotNull();
@@ -95,7 +95,7 @@ class AktiverBrukerServiceTest {
     }
 
     @Test
-    void brukerSomManglerArbeidstillatelseSkalGiRiktigStatus() throws Exception {
+    void brukerSomManglerArbeidstillatelseSkalGiRiktigStatus() {
         doThrow(mock(AktiverBrukerBrukerManglerArbeidstillatelse.class)).when(aktiverBrukerService).aktiverBruker(any());
 //        Feil e = aktiverBrukerMotArenaOgReturnerFeil(hentBruker());
 //        assertThat(e.getType().getStatus()).isNotNull();
@@ -104,13 +104,13 @@ class AktiverBrukerServiceTest {
     }
 
     @Test
-    void brukerSomIkkeHarTilgangSkalGiNotAuthorizedException() throws Exception {
+    void brukerSomIkkeHarTilgangSkalGiNotAuthorizedException() {
         doThrow(mock(AktiverBrukerSikkerhetsbegrensning.class)).when(aktiverBrukerService).aktiverBruker(any());
         assertThrows(NotAuthorizedException.class, () -> aktiverBrukerService.aktiverBruker(hentBruker()));
     }
 
     @Test
-    void ugyldigInputSkalGiBadRequestException() throws Exception {
+    void ugyldigInputSkalGiBadRequestException() {
         doThrow(mock(AktiverBrukerUgyldigInput.class)).when(aktiverBrukerService).aktiverBruker(any());
         assertThrows(BadRequestException.class, () -> aktiverBrukerService.aktiverBruker(hentBruker()));
     }

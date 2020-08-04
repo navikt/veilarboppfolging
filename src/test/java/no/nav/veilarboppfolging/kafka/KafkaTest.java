@@ -1,7 +1,10 @@
 package no.nav.veilarboppfolging.kafka;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.junit.*;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.listener.KafkaMessageListenerContainer;
@@ -24,7 +27,7 @@ public abstract class KafkaTest {
 //    public static KafkaEmbedded embeddedKafka = new KafkaEmbedded(1, true, RECEIVER_TOPIC);
 
     @BeforeClass
-    public static void configureKafkaBroker() throws Exception {
+    public static void configureKafkaBroker() {
 //        Map<String, Object> consumerProperties = KafkaTestUtils.consumerProps("template", "false", embeddedKafka);
 //        DefaultKafkaConsumerFactory<String, String> consumerFactory = new DefaultKafkaConsumerFactory<>(consumerProperties);
 //        ContainerProperties containerProperties = new ContainerProperties(RECEIVER_TOPIC);

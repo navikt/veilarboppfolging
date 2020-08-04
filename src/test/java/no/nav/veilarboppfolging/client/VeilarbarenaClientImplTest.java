@@ -1,26 +1,17 @@
 package no.nav.veilarboppfolging.client;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolging;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClientImpl;
 import org.assertj.core.api.Assertions;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
-
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.ForbiddenException;
-import javax.ws.rs.NotFoundException;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static no.nav.common.json.JsonUtils.toJson;
 
-@RunWith(MockitoJUnitRunner.class)
 public class VeilarbarenaClientImplTest {
 
     private static final String MOCK_FNR = "1234";
@@ -30,23 +21,15 @@ public class VeilarbarenaClientImplTest {
     private static final boolean MOCK_KAN_ENKELT_REAKTIVERES = true;
     private static final String MOCK_RETTIGHETSGRUPPE = "rettighetsgruppe";
 
-    @Mock
-    private OppfoelgingPortType oppfoelgingPortType;
-
     @Rule
     public WireMockRule wireMockRule = new WireMockRule(0);
 
-//    @Before
-//    public void setup() {
-//        systemPropertiesRule.setProperty(VEILARBARENAAPI_URL_PROPERTY, "http://localhost:" + wireMockRule.port());
-//        arenaOppfolgingService = new ArenaOppfolgingService(oppfoelgingPortType, RestUtils.createClient());
-//    }
-
     @Test
     public void skalMappeTilOppfolgingsstatusV2() {
-        VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl("", () -> "TOKEN");
+        String apiUrl = "http://localhost:" + wireMockRule.port();
+        VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl(apiUrl, () -> "TOKEN");
 
-        givenThat(get(urlEqualTo("/oppfolgingsstatus/" + MOCK_FNR))
+        givenThat(get(urlEqualTo("/api/oppfolgingsstatus/" + MOCK_FNR))
                 .willReturn(aResponse()
                         .withStatus(200)
                         .withHeader(CONTENT_TYPE, APPLICATION_JSON)
@@ -61,31 +44,34 @@ public class VeilarbarenaClientImplTest {
         Assertions.assertThat(arenaOppfolging.getKanEnkeltReaktiveres()).isEqualTo(MOCK_KAN_ENKELT_REAKTIVERES);
     }
 
-    @Test(expected = NotFoundException.class)
+    @Test(expected = RuntimeException.class)
     public void skalKasteNotFoundOmPersonIkkeFunnet() {
-        VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl("", () -> "TOKEN");
+        String apiUrl = "http://localhost:" + wireMockRule.port();
+        VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl(apiUrl, () -> "TOKEN");
 
-        givenThat(get(urlEqualTo("/oppfolgingsstatus/" + MOCK_FNR))
+        givenThat(get(urlEqualTo("/api/oppfolgingsstatus/" + MOCK_FNR))
                 .willReturn(aResponse().withStatus(404)));
 
         veilarbarenaClient.getArenaOppfolgingsstatus(MOCK_FNR);
     }
 
-    @Test(expected = ForbiddenException.class)
+    @Test(expected = RuntimeException.class)
     public void skalKasteForbiddenOmManIkkeHarTilgang() {
-        VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl("", () -> "TOKEN");
+        String apiUrl = "http://localhost:" + wireMockRule.port();
+        VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl(apiUrl, () -> "TOKEN");
 
-        givenThat(get(urlEqualTo("/oppfolgingsstatus/" +MOCK_FNR))
+        givenThat(get(urlEqualTo("/api/oppfolgingsstatus/" +MOCK_FNR))
                 .willReturn(aResponse().withStatus(403)));
 
         veilarbarenaClient.getArenaOppfolgingsstatus(MOCK_FNR);
     }
 
-    @Test(expected = BadRequestException.class)
+    @Test(expected = RuntimeException.class)
     public void skalKasteBadRequestOmUgyldigIdentifikator() {
-        VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl("", () -> "TOKEN");
+        String apiUrl = "http://localhost:" + wireMockRule.port();
+        VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl(apiUrl, () -> "TOKEN");
 
-        givenThat(get(urlEqualTo("/oppfolgingsstatus/" + MOCK_FNR))
+        givenThat(get(urlEqualTo("/api/oppfolgingsstatus/" + MOCK_FNR))
                 .willReturn(aResponse().withStatus(400)));
 
         veilarbarenaClient.getArenaOppfolgingsstatus(MOCK_FNR);

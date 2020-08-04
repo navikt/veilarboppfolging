@@ -17,7 +17,8 @@ public class DbTestUtils {
             "OPPFOLGINGSPERIODE",
             "OPPFOLGINGSTATUS",
             "ESKALERINGSVARSEL",
-            "KVP"
+            "KVP",
+            "UTMELDING"
     );
 
     public static void cleanupTestDb() {

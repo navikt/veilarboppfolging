@@ -74,7 +74,7 @@ class AktiverBrukerIntegrationTest {
     }
 
     @Test
-    public void skalLagreIDatabaseDersomKallTilArenaErOK() throws Exception {
+    public void skalLagreIDatabaseDersomKallTilArenaErOK() {
         cofigureMocks();
 
         aktiverBrukerService.aktiverBruker(lagBruker(ident));

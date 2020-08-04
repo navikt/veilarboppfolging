@@ -2,10 +2,9 @@ package no.nav.veilarboppfolging.service;
 
 import no.nav.veilarboppfolging.domain.*;
 import no.nav.veilarboppfolging.repository.*;
-import no.nav.veilarboppfolging.test.DbTestUtils;
-import no.nav.veilarboppfolging.test.LocalH2Database;
+import no.nav.veilarboppfolging.test.IsolatedDatabaseTest;
+import org.junit.Before;
 import org.junit.Test;
-import org.junit.jupiter.api.BeforeEach;
 
 import java.sql.Timestamp;
 import java.util.List;
@@ -16,8 +15,10 @@ import static no.nav.veilarboppfolging.domain.KodeverkBruker.NAV;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-public class OppfolgingRepositoryServiceTest {
+public class OppfolgingRepositoryServiceTest extends IsolatedDatabaseTest {
 
     private static final String AKTOR_ID = "aktorId";
     private static final String ENHET = "enhet";
@@ -25,11 +26,11 @@ public class OppfolgingRepositoryServiceTest {
     private static final String BEGRUNNELSE = "begrunnelse";
     private static final String OTHER_ENHET = "otherEnhet";
 
+    private AuthService authService = mock(AuthService.class);
+    
     private OppfolgingsStatusRepository oppfolgingsStatusRepository;
 
     private KvpRepository kvpRepository;
-
-    private OppfolgingRepositoryService oppfolgingRepositoryService;
 
     private MaalRepository maalRepository;
 
@@ -37,9 +38,25 @@ public class OppfolgingRepositoryServiceTest {
 
     private ManuellStatusRepository manuellStatusRepository;
 
-    @BeforeEach
-    public void cleanup() {
-        DbTestUtils.cleanupTestDb();
+    private OppfolgingRepositoryService oppfolgingRepositoryService;
+    
+    @Before
+    public void setup() {
+        oppfolgingsStatusRepository = new OppfolgingsStatusRepository(db);
+
+        kvpRepository = new KvpRepository(db);
+
+        maalRepository = new MaalRepository(db);
+
+        oppfolgingsPeriodeRepository = new OppfolgingsPeriodeRepository(db);
+
+        manuellStatusRepository = new ManuellStatusRepository(db);
+
+        oppfolgingRepositoryService = new OppfolgingRepositoryService(
+                authService, oppfolgingsStatusRepository, oppfolgingsPeriodeRepository,
+                maalRepository, manuellStatusRepository, new EskaleringsvarselRepository(db),
+                new KvpRepository(db), new NyeBrukereFeedRepository(db)
+        );
     }
 
     @Test
@@ -52,7 +69,7 @@ public class OppfolgingRepositoryServiceTest {
 
     @Test
     public void oppfolging_periode_med_kvp_perioder() {
-//        when(pepClientMock.harTilgangTilEnhet(ENHET)).thenReturn(true);
+        when(authService.harTilgangTilEnhet(ENHET)).thenReturn(true);
 
         gittOppfolgingForAktor(AKTOR_ID);
         gitt_kvp_periode(ENHET);
@@ -64,8 +81,8 @@ public class OppfolgingRepositoryServiceTest {
 
     @Test
     public void oppfolging_periode_med_kvp_perioder_bare_tilgang_til_en() {
-//        when(pepClientMock.harTilgangTilEnhet(ENHET)).thenReturn(true);
-//        when(pepClientMock.harTilgangTilEnhet(OTHER_ENHET)).thenReturn(false);
+        when(authService.harTilgangTilEnhet(ENHET)).thenReturn(true);
+        when(authService.harTilgangTilEnhet(OTHER_ENHET)).thenReturn(false);
 
         gittOppfolgingForAktor(AKTOR_ID);
         gitt_kvp_periode(ENHET);
@@ -106,13 +123,13 @@ public class OppfolgingRepositoryServiceTest {
     }
 
     @Test
-    public void manglerOppfolging() throws Exception {
+    public void manglerOppfolging() {
         sjekkAtOppfolgingMangler(hentOppfolging("ukjentAktorId"));
         sjekkAtOppfolgingMangler(hentOppfolging(null));
     }
 
     @Test
-    public void kanHenteForventetOppfolging() throws Exception {
+    public void kanHenteForventetOppfolging() {
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
         oppfolgingRepositoryService.startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
         Oppfolging uthentetOppfolging = hentOppfolging(AKTOR_ID).get();
@@ -122,7 +139,7 @@ public class OppfolgingRepositoryServiceTest {
     }
 
     @Test
-    public void avsluttOppfolgingResetterVeileder_Manuellstatus_Mal_Og_Vilkar() throws Exception {
+    public void avsluttOppfolgingResetterVeileder_Manuellstatus_Mal_Og_Vilkar() {
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
         oppfolgingRepositoryService.startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
         String veilederId = "veilederId";
@@ -151,20 +168,18 @@ public class OppfolgingRepositoryServiceTest {
 
         List<Oppfolgingsperiode> oppfolgingsperioder = avsluttetOppfolging.getOppfolgingsperioder();
         assertThat(oppfolgingsperioder.size(), is(1));
-
-
     }
 
 
     @Test
-    public void kanHenteOppfolgingMedIngenOppfolgingsperioder() throws Exception {
+    public void kanHenteOppfolgingMedIngenOppfolgingsperioder() {
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
         Oppfolging oppfolging = oppfolgingRepositoryService.hentOppfolging(AKTOR_ID).get();
         assertThat(oppfolging.getOppfolgingsperioder(), empty());
     }
 
     @Test
-    public void kanHenteOppfolgingMedOppfolgingsperioder() throws Exception {
+    public void kanHenteOppfolgingMedOppfolgingsperioder() {
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
         oppfolgingRepositoryService.startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
         List<Oppfolgingsperiode> oppfolgingsperioder = oppfolgingRepositoryService.hentOppfolging(AKTOR_ID).get().getOppfolgingsperioder();
@@ -184,14 +199,14 @@ public class OppfolgingRepositoryServiceTest {
 
 
     @Test
-    public void utenVeileder() throws Exception {
+    public void utenVeileder() {
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
         Oppfolging oppfolging = oppfolgingRepositoryService.hentOppfolging(AKTOR_ID).get();
         assertThat(oppfolging.getVeilederId(), nullValue());
     }
 
     @Test
-    public void medVeilederPaaNyBruker() throws Exception {
+    public void medVeilederPaaNyBruker() {
         String veilederId = "veilederId";
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
         settVeileder(veilederId, AKTOR_ID);
@@ -205,7 +220,7 @@ public class OppfolgingRepositoryServiceTest {
     //Men siden hentOppfolging henter opp veilder er det likevel aktuelt å teste her at veileder returneres
     //dersom det er satt i databasen. 
     private void settVeileder(String veilederId, String aktorId) {
-        LocalH2Database.getDb().update("UPDATE OPPFOLGINGSTATUS SET VEILEDER = ? where aktor_id = ?", veilederId, aktorId);
+        db.update("UPDATE OPPFOLGINGSTATUS SET VEILEDER = ? where aktor_id = ?", veilederId, aktorId);
     }
 
     private Oppfolging gittOppfolgingForAktor(String aktorId) {

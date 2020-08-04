@@ -185,7 +185,7 @@ public class OppfolgingServiceTest {
     }
 
     @Test
-    public void medEnhetTilgang() throws Exception {
+    public void medEnhetTilgang() {
 //        when(pepClientMock.harTilgangTilEnhet(ENHET)).thenReturn(true);
 
         gittEnhet(ENHET);
@@ -195,7 +195,7 @@ public class OppfolgingServiceTest {
     }
 
     @Test
-    public void utenEnhetTilgang() throws Exception {
+    public void utenEnhetTilgang() {
 //        when(pepClientMock.harTilgangTilEnhet(anyString())).thenReturn(false);
 
         gittEnhet(ENHET);
@@ -205,13 +205,13 @@ public class OppfolgingServiceTest {
     }
 
     @Test
-    public void ukjentAktor() throws Exception {
+    public void ukjentAktor() {
 //        doReturn(Optional.empty()).when(aktorServiceMock).getAktorId(FNR);
         assertThrows(IllegalArgumentException.class, this::hentOppfolgingStatus);
     }
 
     @Test
-    public void riktigFnr() throws Exception {
+    public void riktigFnr() {
         gittOppfolging(oppfolging);
 
         OppfolgingStatusData oppfolgingStatusData = hentOppfolgingStatus();
@@ -219,7 +219,7 @@ public class OppfolgingServiceTest {
     }
 
     @Test
-    public void riktigServicegruppe() throws Exception {
+    public void riktigServicegruppe() {
         String servicegruppe = "BATT";
         gittServicegruppe(servicegruppe);
 
@@ -228,7 +228,7 @@ public class OppfolgingServiceTest {
     }
 
     @Test
-    public void hentOppfolgingStatus_brukerSomIkkeErUnderOppfolgingOppdateresIkkeDersomIkkeUnderOppfolgingIArena() throws Exception {
+    public void hentOppfolgingStatus_brukerSomIkkeErUnderOppfolgingOppdateresIkkeDersomIkkeUnderOppfolgingIArena() {
         gittOppfolging(oppfolging);
         OppfolgingStatusData oppfolgingStatusData = hentOppfolgingStatus();
 
@@ -237,7 +237,7 @@ public class OppfolgingServiceTest {
     }
 
     @Test
-    public void hentOppfolgingStatus_brukerSomIkkeErUnderOppfolgingSettesUnderOppfolgingDersomArenaHarRiktigStatus() throws Exception {
+    public void hentOppfolgingStatus_brukerSomIkkeErUnderOppfolgingSettesUnderOppfolgingDersomArenaHarRiktigStatus() {
         gittOppfolging(oppfolging);
         gittOppfolgingStatus("ARBS", "");
 
@@ -257,7 +257,7 @@ public class OppfolgingServiceTest {
     }
 
     @Test
-    public void hentOppfolgingStatus_brukerSomErUnderOppfolgingOgISERVMeldesUtDersomArenaSierReaktiveringIkkeErMulig() throws Exception {
+    public void hentOppfolgingStatus_brukerSomErUnderOppfolgingOgISERVMeldesUtDersomArenaSierReaktiveringIkkeErMulig() {
         oppfolging.setUnderOppfolging(true);
         gittOppfolging(oppfolging);
         gittInaktivOppfolgingStatus(false);
@@ -268,7 +268,7 @@ public class OppfolgingServiceTest {
     }
 
     @Test
-    public void hentOppfolgingStatus_brukerSomErUnderOppfolgingOgISERVSkalReaktiveresDersomArenaSierReaktiveringErMulig() throws Exception {
+    public void hentOppfolgingStatus_brukerSomErUnderOppfolgingOgISERVSkalReaktiveresDersomArenaSierReaktiveringErMulig() {
         oppfolging.setUnderOppfolging(true);
         gittOppfolging(oppfolging);
         gittInaktivOppfolgingStatus(true);
@@ -280,7 +280,7 @@ public class OppfolgingServiceTest {
     }
 
     @Test
-    public void hentOppfolgingStatus_brukerSomErKRRSkalVareManuell() throws Exception {
+    public void hentOppfolgingStatus_brukerSomErKRRSkalVareManuell() {
         oppfolging.setUnderOppfolging(true);
         gittReservasjonIKrr();
         OppfolgingStatusData status = hentOppfolgingStatus();
@@ -290,7 +290,7 @@ public class OppfolgingServiceTest {
     }
 
     @Test
-    public void utenReservasjon() throws Exception {
+    public void utenReservasjon() {
 
         OppfolgingStatusData oppfolgingStatusData = hentOppfolgingStatus();
 
@@ -298,7 +298,7 @@ public class OppfolgingServiceTest {
     }
 
     @Test
-    public void utenKontaktInformasjon() throws Exception {
+    public void utenKontaktInformasjon() {
         gittKRRFeil();
         gittOppfolgingStatus("ARBS", "");
 
@@ -308,7 +308,7 @@ public class OppfolgingServiceTest {
     }
 
     @Test
-    public void medReservasjonOgUnderOppfolging() throws Exception {
+    public void medReservasjonOgUnderOppfolging() {
         gittReservasjonIKrr();
         gittOppfolgingStatus("ARBS", "");
 
@@ -318,7 +318,7 @@ public class OppfolgingServiceTest {
     }
 
     @Test
-    public void underOppfolging() throws Exception {
+    public void underOppfolging() {
         gittOppfolging(oppfolging);
         gittOppfolgingStatus("ARBS", "");
 
@@ -328,7 +328,7 @@ public class OppfolgingServiceTest {
     }
 
     @Test
-    public void ikkeArbeidssokerUnderOppfolging() throws Exception {
+    public void ikkeArbeidssokerUnderOppfolging() {
         gittOppfolging(oppfolging);
         gittOppfolgingStatus("IARBS", "BATT");
 
@@ -338,7 +338,7 @@ public class OppfolgingServiceTest {
     }
 
     @Test
-    public void ikkeArbeidssokerIkkeUnderOppfolging() throws Exception {
+    public void ikkeArbeidssokerIkkeUnderOppfolging() {
         gittOppfolging(oppfolging);
         gittOppfolgingStatus("IARBS", "");
 
