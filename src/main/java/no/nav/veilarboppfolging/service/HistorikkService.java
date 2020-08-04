@@ -49,7 +49,10 @@ public class HistorikkService {
             VeilederHistorikkRepository veilederHistorikkRepository,
             UnleashService unleashService,
             OppfolgingsenhetHistorikkRepository oppfolgingsenhetHistorikkRepository,
-            EskaleringsvarselRepository eskaleringsvarselRepository, OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository, ManuellStatusRepository manuellStatusRepository) {
+            EskaleringsvarselRepository eskaleringsvarselRepository,
+            OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository,
+            ManuellStatusRepository manuellStatusRepository
+    ) {
         this.authService = authService;
         this.kvpRepository = kvpRepository;
         this.oppfolgingRepositoryService = oppfolgingRepositoryService;
@@ -60,7 +63,6 @@ public class HistorikkService {
         this.oppfolgingsPeriodeRepository = oppfolgingsPeriodeRepository;
         this.manuellStatusRepository = manuellStatusRepository;
     }
-
 
     public List<InnstillingsHistorikk> hentInstillingsHistorikk(String fnr) {
         String aktorId = authService.getAktorIdOrThrow(fnr);
@@ -169,7 +171,7 @@ public class HistorikkService {
 
         Stream <InnstillingsHistorikk> veilederTilordningerInnstillingHistorikk = null;
 
-        if(unleashService.isEnabled("veilarboppfolging.tildel_veileder")) {
+        if (unleashService.isEnabled("veilarboppfolging.tildel_veileder")) {
             veilederTilordningerInnstillingHistorikk =  veilederHistorikkRepository.hentTilordnedeVeiledereForAktorId(aktorId).stream()
                     .map(this::tilDTO)
                     .filter((historikk) -> KvpUtils.sjekkTilgangGittKvp(authService, kvpHistorikk, historikk::getDato));

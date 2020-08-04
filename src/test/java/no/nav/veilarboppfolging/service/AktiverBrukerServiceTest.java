@@ -5,34 +5,39 @@ import no.nav.veilarboppfolging.domain.AktiverArbeidssokerData;
 import no.nav.veilarboppfolging.domain.Fnr;
 import no.nav.veilarboppfolging.domain.Innsatsgruppe;
 import no.nav.veilarboppfolging.repository.NyeBrukereFeedRepository;
+import no.nav.veilarboppfolging.test.DbTestUtils;
+import no.nav.veilarboppfolging.test.LocalH2Database;
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.class)
 public class AktiverBrukerServiceTest {
 
-    @Mock
     private AuthService authService;
 
-    @Mock
     private BehandleArbeidssokerClient behandleArbeidssokerClient;
 
-    @Mock
     private OppfolgingRepositoryService oppfolgingRepositoryService;
 
-    @Mock
-    private NyeBrukereFeedRepository nyeBrukereFeedRepository;
-
-    @InjectMocks
     private AktiverBrukerService aktiverBrukerService;
+
+    @Before
+    public void setup() {
+        authService = mock(AuthService.class);
+        behandleArbeidssokerClient = mock(BehandleArbeidssokerClient.class);
+        oppfolgingRepositoryService = mock(OppfolgingRepositoryService.class);
+
+        aktiverBrukerService = new AktiverBrukerService(
+                authService,
+                oppfolgingRepositoryService,
+                behandleArbeidssokerClient,
+                new NyeBrukereFeedRepository(LocalH2Database.getDb()),
+                DbTestUtils.getTransactor(LocalH2Database.getDb())
+        );
+    }
 
     @Test
     public void skalRegistrereIArena() {

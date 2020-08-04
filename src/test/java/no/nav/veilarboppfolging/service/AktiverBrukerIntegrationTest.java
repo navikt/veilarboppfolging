@@ -52,7 +52,8 @@ public class AktiverBrukerIntegrationTest {
 
         aktiverBrukerService = new AktiverBrukerService(
                 authService, oppfolgingRepositoryService,
-                behandleArbeidssokerClient, new NyeBrukereFeedRepository(db)
+                behandleArbeidssokerClient, new NyeBrukereFeedRepository(db),
+                DbTestUtils.getTransactor(db)
         );
 
         DbTestUtils.cleanupTestDb();

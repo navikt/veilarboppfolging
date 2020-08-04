@@ -6,7 +6,7 @@ import no.nav.veilarboppfolging.domain.*;
 import no.nav.veilarboppfolging.repository.NyeBrukereFeedRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import static java.util.Optional.ofNullable;
 
@@ -22,34 +22,40 @@ public class AktiverBrukerService {
 
     private final NyeBrukereFeedRepository nyeBrukereFeedRepository;
 
+    private final TransactionTemplate transactor;
+
     @Autowired
     public AktiverBrukerService(
             AuthService authService,
             OppfolgingRepositoryService oppfolgingRepositoryService,
             BehandleArbeidssokerClient behandleArbeidssokerClient,
-            NyeBrukereFeedRepository nyeBrukereFeedRepository
+            NyeBrukereFeedRepository nyeBrukereFeedRepository,
+            TransactionTemplate transactor
     ) {
         this.authService = authService;
         this.oppfolgingRepositoryService = oppfolgingRepositoryService;
         this.behandleArbeidssokerClient = behandleArbeidssokerClient;
         this.nyeBrukereFeedRepository = nyeBrukereFeedRepository;
+        this.transactor = transactor;
     }
 
-    @Transactional
     public void aktiverBruker(AktiverArbeidssokerData bruker) {
         String fnr = ofNullable(bruker.getFnr())
                 .map(Fnr::getFnr)
                 .orElse("");
 
-        AktorId aktorId = new AktorId(authService.getAktorIdOrThrow(fnr));
+        transactor.executeWithoutResult((status) -> {
+            AktorId aktorId = new AktorId(authService.getAktorIdOrThrow(fnr));
 
-        aktiverBrukerOgOppfolging(fnr, aktorId, bruker.getInnsatsgruppe());
+            aktiverBrukerOgOppfolging(fnr, aktorId, bruker.getInnsatsgruppe());
+        });
     }
 
-    @Transactional
     public void reaktiverBruker(Fnr fnr) {
-        AktorId aktorId = new AktorId(authService.getAktorIdOrThrow(fnr.getFnr()));
-        startReaktiveringAvBrukerOgOppfolging(fnr, aktorId);
+        transactor.executeWithoutResult((status) -> {
+            AktorId aktorId = new AktorId(authService.getAktorIdOrThrow(fnr.getFnr()));
+            startReaktiveringAvBrukerOgOppfolging(fnr, aktorId);
+        });
     }
 
     private void startReaktiveringAvBrukerOgOppfolging(Fnr fnr, AktorId aktorId) {
@@ -75,14 +81,15 @@ public class AktiverBrukerService {
         nyeBrukereFeedRepository.tryLeggTilFeedIdPaAlleElementerUtenFeedId();
     }
 
-    @Transactional
     public void aktiverSykmeldt(String uid, SykmeldtBrukerType sykmeldtBrukerType) {
-        Oppfolgingsbruker oppfolgingsbruker = Oppfolgingsbruker.builder()
-                .sykmeldtBrukerType(sykmeldtBrukerType)
-                .aktoerId(authService.getAktorIdOrThrow(uid))
-                .build();
+        transactor.executeWithoutResult((status) -> {
+            Oppfolgingsbruker oppfolgingsbruker = Oppfolgingsbruker.builder()
+                    .sykmeldtBrukerType(sykmeldtBrukerType)
+                    .aktoerId(authService.getAktorIdOrThrow(uid))
+                    .build();
 
-        oppfolgingRepositoryService.startOppfolgingHvisIkkeAlleredeStartet(oppfolgingsbruker);
+            oppfolgingRepositoryService.startOppfolgingHvisIkkeAlleredeStartet(oppfolgingsbruker);
+        });
     }
 
 }

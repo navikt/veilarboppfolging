@@ -114,8 +114,8 @@ public class VeilederTilordningControllerTest {
         tilordninger.add(harTilgang2);
         tilordninger.add(harIkkeTilgang2);
 
-//        doThrow(NotAuthorizedException.class).when(pepClient).sjekkSkrivetilgangTilAktorId("AKTOERID2");
-//        doThrow(PepException.class).when(pepClient).sjekkSkrivetilgangTilAktorId("AKTOERID4");
+        doThrow(new RuntimeException()).when(authService).sjekkSkrivetilgangMedAktorId("AKTOERID2");
+        doThrow(new RuntimeException()).when(authService).sjekkSkrivetilgangMedAktorId("AKTOERID4");
 
         when(authService.getAktorIdOrThrow("FNR1")).thenReturn("AKTOERID1");
         when(authService.getAktorIdOrThrow("FNR2")).thenReturn("AKTOERID2");
@@ -252,10 +252,10 @@ public class VeilederTilordningControllerTest {
         tilordninger.add(tilordningOK2);
         tilordninger.add(tilordningERROR2);
 
-//        when(aktorServiceMock.getAktorId("FNR3")).thenReturn(empty());
-//        when(aktorServiceMock.getAktorId("FNR2")).thenReturn(empty());
-//        when(aktorServiceMock.getAktorId("FNR1")).thenReturn(of("AKTOERID1"));
-//        when(aktorServiceMock.getAktorId("FNR4")).thenReturn(of("AKTOERID4"));
+        when(authService.getAktorIdOrThrow("FNR1")).thenReturn("AKTOERID1");
+        when(authService.getAktorIdOrThrow("FNR2")).thenThrow(new RuntimeException());
+        when(authService.getAktorIdOrThrow("FNR3")).thenThrow(new RuntimeException());
+        when(authService.getAktorIdOrThrow("FNR4")).thenReturn("AKTOERID4");
 
         TilordneVeilederResponse response = veilederTilordningController.postVeilederTilordninger(tilordninger);
         List<VeilederTilordning> feilendeTilordninger = response.getFeilendeTilordninger();
@@ -278,7 +278,7 @@ public class VeilederTilordningControllerTest {
 
         when(authService.getAktorIdOrThrow("FNR1")).thenReturn("AKTOERID1");
         when(authService.getAktorIdOrThrow("FNR2")).thenReturn("AKTOERID2");
-//        doThrow(Exception.class).when(pepClient).sjekkSkrivetilgangTilAktorId(any(String.class));
+        doThrow(new RuntimeException()).when(authService).sjekkSkrivetilgangMedAktorId(anyString());
 
         TilordneVeilederResponse response = veilederTilordningController.postVeilederTilordninger(tilordninger);
         List<VeilederTilordning> feilendeTilordninger = response.getFeilendeTilordninger();
@@ -289,20 +289,20 @@ public class VeilederTilordningControllerTest {
 
     @Test
     public void toOppdateringerSkalIkkeGaaIBeinaPaaHverandre() throws ExecutionException, InterruptedException {
-
         VeilederTilordning tilordningOKBruker1 = new VeilederTilordning().setBrukerFnr("FNR1").setFraVeilederId("FRAVEILEDER1").setTilVeilederId("TILVEILEDER1");
         VeilederTilordning tilordningERRORBruker2 = new VeilederTilordning().setBrukerFnr("FNR2").setFraVeilederId("FRAVEILEDER2").setTilVeilederId("TILVEILEDER2");
 
-//        doAnswer(invocation -> {
-//            //Simulerer at pep-kallet tar noe tid for fnr1
-//            if ("FNR1".equals(invocation.getArguments()[0])) {
-//                Thread.sleep(20);
-//                return null;
-//            }
-//            return null;
-//        }).when(pepClient).sjekkSkrivetilgangTilFnr(any(String.class));
+        doAnswer(invocation -> {
+            if ("FNR1".equals(invocation.getArguments()[0])) {
+                Thread.sleep(20);
+                return null;
+            }
+            return null;
+        }).when(authService).sjekkSkrivetilgangMedFnr(anyString());
 
         when(authService.getAktorIdOrThrow("FNR1")).thenReturn("AKTOERID1");
+
+        doThrow(new RuntimeException()).when(authService).getAktorIdOrThrow("FNR2");
 
         //Starter to tråder som gjør to separate tilordninger gjennom samme portefoljeressurs. Dette simulerer
         //at to brukere kaller rest-operasjonen samtidig. Den første tilordningen tar lenger tid siden pep-kallet tar lenger tid.
@@ -340,7 +340,7 @@ public class VeilederTilordningControllerTest {
 
     @Test
     public void noCallToDAOWhenAktoerIdServiceFails() {
-//        when(aktorServiceMock.getAktorId(any(String.class))).thenReturn(empty());
+        when(authService.getAktorIdOrThrow(anyString())).thenThrow(new RuntimeException("MOCK INGEN AKTOR ID"));
         veilederTilordningController.postVeilederTilordninger(Collections.singletonList(testData()));
         verify(veilederTilordningerRepository, never()).upsertVeilederTilordning(anyString(), anyString());
     }

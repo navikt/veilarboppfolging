@@ -32,7 +32,7 @@ import static org.mockito.Mockito.when;
 public class HistorikkServiceTest {
 
     @Mock
-    private AuthService AuthService;
+    private AuthService authService;
 
     @Mock
     private KvpRepository kvpRepositoryMock;
@@ -58,6 +58,9 @@ public class HistorikkServiceTest {
     @Mock
     private EskaleringsvarselRepository eskaleringsvarselRepository;
 
+    @Mock
+    private OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
+
     @InjectMocks
     private HistorikkService historikkService;
 
@@ -75,8 +78,7 @@ public class HistorikkServiceTest {
 
     @Before
     public void setup() {
-//        when(aktorServiceMock.getAktorId(FNR)).thenReturn(of(AKTOR_ID));
-
+        when(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID);
         gitt_kvp();
         gitt_eskaleringsvarsel_historikk();
         gitt_manuell_hitsorikk();
@@ -84,7 +86,7 @@ public class HistorikkServiceTest {
 
     @Test
     public void saksbehandler_har_ikke_tilgang_til_enhet() {
-//        when(pepClientMock.harTilgangTilEnhet(ENHET)).thenReturn(false);
+        when(authService.harTilgangTilEnhet(ENHET)).thenReturn(false);
 
         List<InnstillingsHistorikk> historikk = historikkService.hentInstillingsHistorikk(FNR);
         List<String> begrunnelser = historikk.stream()
@@ -96,7 +98,7 @@ public class HistorikkServiceTest {
 
     @Test
     public void saksbehandler_har_tilgang_til_enhet() {
-//        when(pepClientMock.harTilgangTilEnhet(ENHET)).thenReturn(true);
+        when(authService.harTilgangTilEnhet(ENHET)).thenReturn(true);
 
         List<InnstillingsHistorikk> historikk = historikkService.hentInstillingsHistorikk(FNR);
         List<String> begrunnelser = historikk.stream()
@@ -132,12 +134,11 @@ public class HistorikkServiceTest {
                         .avsluttetBegrunnelse("OUTSIDE_KVP")
                         .build()
         );
-        when(eskaleringsvarselRepository.history(AKTOR_ID)).thenReturn(eskaleringsvarsel);
 
+        when(eskaleringsvarselRepository.history(AKTOR_ID)).thenReturn(eskaleringsvarsel);
     }
 
     private void gitt_manuell_hitsorikk() {
-
         List<ManuellStatus> manuellStatus = asList(
                 new ManuellStatus()
                         .setAktorId(AKTOR_ID)
@@ -170,11 +171,11 @@ public class HistorikkServiceTest {
                         .setBegrunnelse("OUTSIDE_KVP")
                         .setManuell(false)
         );
+
         when(manuellStatusRepository.history(AKTOR_ID)).thenReturn(manuellStatus);
     }
 
     private void gitt_kvp() {
-
         List<Kvp> kvp = singletonList(
                 Kvp.builder()
                         .aktorId(AKTOR_ID)
@@ -189,7 +190,6 @@ public class HistorikkServiceTest {
         );
 
         when(kvpRepositoryMock.hentKvpHistorikk(AKTOR_ID)).thenReturn(kvp);
-
     }
 
 }
