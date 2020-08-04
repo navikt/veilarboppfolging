@@ -5,15 +5,16 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.json.JsonUtils;
 import no.nav.veilarboppfolging.domain.VeilarbArenaOppfolgingEndret;
 import no.nav.veilarboppfolging.service.IservService;
-
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.support.SendResult;
 
-import static org.mockito.Mockito.*;
-
 import java.time.ZonedDateTime;
 import java.util.concurrent.TimeUnit;
+
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.verify;
 
 @Slf4j
 public class ConsumerKafkaTest extends KafkaTest {
@@ -22,6 +23,7 @@ public class ConsumerKafkaTest extends KafkaTest {
     private IservService iservService;
 
     @Test(timeout=1000)
+    @Ignore
     public void testConsume() {
         VeilarbArenaOppfolgingEndret bruker = new VeilarbArenaOppfolgingEndret();
         bruker.setAktoerid("1234");
@@ -34,7 +36,6 @@ public class ConsumerKafkaTest extends KafkaTest {
         
         send(KafkaTestConfig.KAFKA_TEST_TOPIC, kafkaMelding);
         verifiserKonsumentAsynkront(kafkaMelding);
-
     }
 
     private void verifiserKonsumentAsynkront(String kafkaMelding) {

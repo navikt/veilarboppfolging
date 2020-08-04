@@ -4,13 +4,12 @@ import no.nav.common.metrics.Event;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.veilarboppfolging.domain.MalData;
 import no.nav.veilarboppfolging.domain.Tilordning;
-
-import static no.nav.veilarboppfolging.utils.StringUtils.of;
+import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.Optional;
 
-import org.springframework.stereotype.Service;
+import static no.nav.veilarboppfolging.utils.StringUtils.of;
 
 @Service
 public class MetricsService {
@@ -49,11 +48,11 @@ public class MetricsService {
         metricsClient.report(event);
     }
 
-    public void startKvp() {
+    public void kvpStartet() {
         metricsClient.report(new Event("kvp.started"));
     }
 
-    public void stopKvp() {
+    public void kvpStoppet() {
         metricsClient.report(new Event("kvp.stopped"));
     }
 

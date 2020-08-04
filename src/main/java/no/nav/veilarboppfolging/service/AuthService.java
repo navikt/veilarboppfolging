@@ -50,6 +50,11 @@ public class AuthService {
         return IdentType.InternBruker.equals(identType);
     }
 
+    public boolean erSystemBruker() {
+        IdentType identType = SubjectHandler.getIdentType().orElse(null);
+        return IdentType.Systemressurs.equals(identType);
+    }
+
     public boolean erEksternBruker() {
         IdentType identType = SubjectHandler.getIdentType().orElse(null);
         return IdentType.EksternBruker.equals(identType);

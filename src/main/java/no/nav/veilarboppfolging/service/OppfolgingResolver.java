@@ -79,7 +79,7 @@ public class OppfolgingResolver {
         this.deps = deps;
         this.arenaOppfolgingTilstand = Optional.empty();
 
-        this.aktorId = deps.authService.getAktorIdOrThrow(fnr);
+        this.aktorId = deps.getAuthService().getAktorIdOrThrow(fnr);
         this.oppfolging = hentOppfolging();
 
         avsluttKvpVedEnhetBytte();
@@ -221,7 +221,7 @@ public class OppfolgingResolver {
     }
 
     List<MalData> getMalList() {
-        return deps.maalRepository.aktorMal(aktorId);
+        return deps.getMaalRepository().aktorMal(aktorId);
     }
 
     MalData oppdaterMal(String mal, String endretAvVeileder) {

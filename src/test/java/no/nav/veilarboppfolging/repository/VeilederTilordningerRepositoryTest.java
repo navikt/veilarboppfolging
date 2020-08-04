@@ -4,7 +4,7 @@ import no.nav.veilarboppfolging.domain.Tilordning;
 import no.nav.veilarboppfolging.test.DbTestUtils;
 import no.nav.veilarboppfolging.test.LocalH2Database;
 import org.junit.Before;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import java.util.Optional;
 
@@ -43,7 +43,7 @@ public class VeilederTilordningerRepositoryTest {
     }
 
     @Test
-    void kanMarkeresSomLest() {
+    public void kanMarkeresSomLest() {
         veilederTilordningerRepository.upsertVeilederTilordning(AKTOR_ID, VEILEDER);
         veilederTilordningerRepository.markerSomLestAvVeileder(AKTOR_ID);
         Optional<Tilordning> veileder = veilederTilordningerRepository.hentTilordnetVeileder(AKTOR_ID);
@@ -51,7 +51,7 @@ public class VeilederTilordningerRepositoryTest {
     }
 
     @Test
-    void blirNyVedNVeileder() {
+    public void blirNyVedNVeileder() {
         veilederTilordningerRepository.upsertVeilederTilordning(AKTOR_ID, VEILEDER);
         veilederTilordningerRepository.markerSomLestAvVeileder(AKTOR_ID);
         veilederTilordningerRepository.upsertVeilederTilordning(AKTOR_ID, OTHER_VEILEDER);

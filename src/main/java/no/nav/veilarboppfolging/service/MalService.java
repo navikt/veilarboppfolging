@@ -53,6 +53,7 @@ public class MalService {
         if (!KvpUtils.sjekkTilgangGittKvp(authService, kvpList, gjeldendeMal::getDato)) {
             return new MalData();
         }
+
         return gjeldendeMal;
     }
 

@@ -1,11 +1,9 @@
 package no.nav.veilarboppfolging.service;
 
-import lombok.val;
 import no.nav.common.auth.subject.SsoToken;
 import no.nav.common.auth.subject.Subject;
 import no.nav.common.auth.subject.SubjectHandler;
-import no.nav.tjeneste.virksomhet.oppfoelging.v1.OppfoelgingPortType;
-import no.nav.tjeneste.virksomhet.oppfoelging.v1.meldinger.HentOppfoelgingsstatusResponse;
+import no.nav.veilarboppfolging.client.oppfolging.OppfolgingClient;
 import no.nav.veilarboppfolging.domain.OppfolgingTable;
 import no.nav.veilarboppfolging.repository.EskaleringsvarselRepository;
 import no.nav.veilarboppfolging.repository.KvpRepository;
@@ -16,18 +14,19 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Collections;
 
 import static no.nav.common.auth.subject.IdentType.InternBruker;
 import static no.nav.veilarboppfolging.domain.KodeverkBruker.NAV;
-import static org.mockito.ArgumentMatchers.any;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class KvpServiceTest {
-   
+
     @Mock
     private KvpRepository kvpRepositoryMock;
 
@@ -35,13 +34,16 @@ public class KvpServiceTest {
     private AuthService authService;
 
     @Mock
-    private OppfoelgingPortType oppfoelgingPortTypeMock;
-
-    @Mock
     private OppfolgingsStatusRepository oppfolgingsStatusRepository;
 
     @Mock
     private EskaleringsvarselRepository eskaleringsvarselRepository;
+
+    @Mock
+    private OppfolgingClient oppfolgingClient;
+
+    @Mock
+    private MetricsService metricsService;
 
     @InjectMocks
     private KvpService kvpService;
@@ -54,37 +56,41 @@ public class KvpServiceTest {
     private static final String VEILEDER = "1234";
 
     @Before
-    public void initialize() throws Exception {
-//        when(aktorServiceMock.getAktorId(FNR)).thenReturn(of(AKTOR_ID));
-        val res = new HentOppfoelgingsstatusResponse();
-        res.setNavOppfoelgingsenhet(ENHET);
-        when(oppfoelgingPortTypeMock.hentOppfoelgingsstatus(any())).thenReturn(res);
-        
+    public void initialize() {
         when(oppfolgingsStatusRepository.fetch(AKTOR_ID)).thenReturn(new OppfolgingTable().setUnderOppfolging(true));
-//        doReturn(true).when(pepClientMock).harTilgangTilEnhet(any());
+        when(oppfolgingClient.finnEnhetId(FNR)).thenReturn(ENHET);
+
+        when(authService.harTilgangTilEnhet(anyString())).thenReturn(true);
+        when(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID);
+        when(authService.getInnloggetVeilederIdent()).thenReturn(VEILEDER);
     }
 
-    @Test(expected = ResponseStatusException.class)
+    @Test
     public void start_kvp_uten_oppfolging_er_ulovlig_handling() {
         when(oppfolgingsStatusRepository.fetch(AKTOR_ID)).thenReturn(new OppfolgingTable().setUnderOppfolging(false));
-        kvpService.startKvp(FNR, START_BEGRUNNELSE);
+
+        try {
+            kvpService.startKvp(FNR, START_BEGRUNNELSE);
+        } catch (ResponseStatusException e) {
+            assertEquals(HttpStatus.BAD_REQUEST, e.getStatus());
+        }
     }
 
-    @Test(expected = ResponseStatusException.class)
+    @Test
     public void start_kvp_uten_bruker_i_oppfolgingtabell_er_ulovlig_handling() {
         when(oppfolgingsStatusRepository.fetch(AKTOR_ID)).thenReturn(null);
-        kvpService.startKvp(FNR, START_BEGRUNNELSE);
-    }
-    
-    @Test
-    public void startKvp()  {
-        SubjectHandler.withSubject(new Subject(VEILEDER, InternBruker, SsoToken.oidcToken("token", Collections.emptyMap())),
-                () -> kvpService.startKvp(FNR, START_BEGRUNNELSE)
-        );
 
-//        verify(pepClientMock, times(1)).sjekkLesetilgangTilAktorId(AKTOR_ID);
+        try {
+            kvpService.startKvp(FNR, START_BEGRUNNELSE);
+        } catch (ResponseStatusException e) {
+            assertEquals(HttpStatus.BAD_REQUEST, e.getStatus());
+        }
+    }
+
+    @Test
+    public void startKvp() {
+        kvpService.startKvp(FNR, START_BEGRUNNELSE);
         verify(kvpRepositoryMock, times(1)).startKvp(eq(AKTOR_ID), eq(ENHET), eq(VEILEDER), eq(START_BEGRUNNELSE));
-//        verify(pepClientMock, times(1)).harTilgangTilEnhet(ENHET);
     }
 
     @Test(expected = ResponseStatusException.class)
@@ -98,7 +104,7 @@ public class KvpServiceTest {
     }
 
     @Test
-    public void stopKvp()  {
+    public void stopKvp() {
         long kvpId = 2;
         when(oppfolgingsStatusRepository.fetch(AKTOR_ID)).thenReturn(new OppfolgingTable().setUnderOppfolging(true).setGjeldendeKvpId(kvpId));
 
@@ -111,7 +117,7 @@ public class KvpServiceTest {
         verify(kvpRepositoryMock, times(1)).stopKvp(eq(kvpId), eq(AKTOR_ID), eq(VEILEDER), eq(STOP_BEGRUNNELSE), eq(NAV));
 //        verify(pepClientMock, times(1)).harTilgangTilEnhet(ENHET);
     }
-    
+
     @Test
     public void stopKvp_avslutter_eskalering() {
         long kvpId = 2;
@@ -124,39 +130,36 @@ public class KvpServiceTest {
         verify(eskaleringsvarselRepository).finish(AKTOR_ID, 1, VEILEDER, KvpService.ESKALERING_AVSLUTTET_FORDI_KVP_BLE_AVSLUTTET);
         verify(kvpRepositoryMock, times(1)).stopKvp(eq(kvpId), eq(AKTOR_ID), eq(VEILEDER), eq(STOP_BEGRUNNELSE), eq(NAV));
     }
-    
-    @Test(expected = ResponseStatusException.class)
+
+    @Test
     public void stopKvp_UtenAktivPeriode_feiler() {
-        SubjectHandler.withSubject(new Subject(VEILEDER, InternBruker, SsoToken.oidcToken("token", Collections.emptyMap())),
-                () -> kvpService.stopKvp(FNR, STOP_BEGRUNNELSE)
-        );
+        try {
+            kvpService.stopKvp(FNR, STOP_BEGRUNNELSE);
+        } catch(ResponseStatusException e){
+            assertEquals(HttpStatus.BAD_REQUEST, e.getStatus());
+        }
     }
 
-    @Test(expected = ResponseStatusException.class)
-    public void startKvpIkkeTilgang() {
-//        doThrow(IngenTilgang.class).when(pepClientMock).sjekkLesetilgangTilAktorId(AKTOR_ID);
-        kvpService.startKvp(FNR, START_BEGRUNNELSE);
+    @Test
+    public void startKvpInhenEnhetTilgang() {
+        when(authService.harTilgangTilEnhet(ENHET)).thenReturn(false);
+
+        try {
+            kvpService.startKvp(FNR, START_BEGRUNNELSE);
+        } catch(ResponseStatusException e){
+            assertEquals(HttpStatus.UNAUTHORIZED, e.getStatus());
+        }
     }
 
-    @Test(expected = ResponseStatusException.class)
-    public void startKvpInhenEnhetTilgang()  {
-//        doReturn(false).when(pepClientMock).harTilgangTilEnhet(any());
-
-        kvpService.startKvp(FNR, START_BEGRUNNELSE);
-    }
-
-    @Test(expected = ResponseStatusException.class)
-    public void stoppKvpIkkeTilgang() {
-//        doThrow(IngenTilgang.class).when(pepClientMock).sjekkLesetilgangTilAktorId(AKTOR_ID);
-
-        kvpService.stopKvp(FNR, STOP_BEGRUNNELSE);
-    }
-
-    @Test(expected = ResponseStatusException.class)
+    @Test
     public void stopKvpInhenEnhetTilgang() {
-//        doThrow(IngenTilgang.class).when(pepClientMock).harTilgangTilEnhet(any());
+        when(authService.harTilgangTilEnhet(ENHET)).thenReturn(false);
 
-        kvpService.stopKvp(FNR, STOP_BEGRUNNELSE);
+        try {
+            kvpService.stopKvp(FNR, STOP_BEGRUNNELSE);
+        } catch(ResponseStatusException e){
+            assertEquals(HttpStatus.UNAUTHORIZED, e.getStatus());
+        }
     }
 
 }

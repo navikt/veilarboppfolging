@@ -9,7 +9,6 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.listener.KafkaMessageListenerContainer;
 
-import java.io.IOException;
 import java.util.concurrent.BlockingQueue;
 
 public abstract class KafkaTest {
@@ -50,7 +49,7 @@ public abstract class KafkaTest {
     }
 
     @BeforeClass
-    public static void setupFelles() throws IOException {
+    public static void setupFelles() {
         annotationConfigApplicationContext = new AnnotationConfigApplicationContext(KafkaTestConfig.class);
         annotationConfigApplicationContext.start();
     }

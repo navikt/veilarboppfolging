@@ -150,7 +150,7 @@ public class OppfolgingRepositoryService {
     public void stoppEskalering(String aktorId, String avsluttetAv, String avsluttetBegrunnelse) {
         long gjeldendeEskaleringsvarselId = statusRepository.fetch(aktorId).getGjeldendeEskaleringsvarselId();
 
-        if(gjeldendeEskaleringsvarselId == 0) {
+        if (gjeldendeEskaleringsvarselId == 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Brukeren har ikke et aktivt eskaleringsvarsel.");
         }
 

@@ -7,6 +7,7 @@ import no.nav.common.auth.subject.SubjectHandler;
 import no.nav.veilarboppfolging.controller.domain.KvpDTO;
 import no.nav.veilarboppfolging.domain.Kvp;
 import no.nav.veilarboppfolging.repository.KvpRepository;
+import no.nav.veilarboppfolging.service.AuthService;
 import no.nav.veilarboppfolging.utils.DtoMappers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -24,11 +25,14 @@ public class KvpController {
 
     private final KvpRepository repository;
 
+    private final AuthService authService;
+
     private final List<String> allowedUsers = List.of("srvveilarbdialog", "srvveilarbaktivitet");
 
     @Autowired
-    public KvpController(KvpRepository repository) {
+    public KvpController(KvpRepository repository, AuthService authService) {
         this.repository = repository;
+        this.authService = authService;
     }
 
     @GetMapping("/{aktorId}/currentStatus")
@@ -66,6 +70,6 @@ public class KvpController {
 
     private boolean isRequestAuthorized() {
         String username = SubjectHandler.getIdent().orElse("").toLowerCase();
-        return allowedUsers.contains(username);
+        return authService.erSystemBruker() && allowedUsers.contains(username);
     }
 }

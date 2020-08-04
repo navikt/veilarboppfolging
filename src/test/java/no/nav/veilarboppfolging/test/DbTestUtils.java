@@ -18,7 +18,8 @@ public class DbTestUtils {
             "OPPFOLGINGSTATUS",
             "ESKALERINGSVARSEL",
             "KVP",
-            "UTMELDING"
+            "UTMELDING",
+            "OPPFOLGINGSENHET_ENDRET"
     );
 
     public static void cleanupTestDb() {

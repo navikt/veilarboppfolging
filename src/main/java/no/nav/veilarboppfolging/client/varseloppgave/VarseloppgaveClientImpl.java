@@ -63,7 +63,7 @@ public class VarseloppgaveClientImpl implements VarseloppgaveClient {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "BRUKER_HAR_IKKE_TILSTREKKELIG_PAALOGGINGSNIVAA");
         } catch (Exception e) {
             log.error("Sending av eskaleringsvarsel feilet for aktørId {} og dialogId {}", aktorId, dialogId, e);
-            throw e;
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

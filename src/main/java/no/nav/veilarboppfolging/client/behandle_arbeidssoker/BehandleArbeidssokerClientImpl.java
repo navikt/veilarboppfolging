@@ -4,13 +4,15 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.cxf.CXFClient;
 import no.nav.common.cxf.StsConfig;
 import no.nav.common.health.HealthCheckResult;
-import no.nav.tjeneste.virksomhet.behandlearbeidssoeker.v1.binding.*;
+import no.nav.tjeneste.virksomhet.behandlearbeidssoeker.v1.binding.BehandleArbeidssoekerV1;
 import no.nav.tjeneste.virksomhet.behandlearbeidssoeker.v1.informasjon.Brukerident;
 import no.nav.tjeneste.virksomhet.behandlearbeidssoeker.v1.meldinger.AktiverBrukerRequest;
 import no.nav.tjeneste.virksomhet.behandlearbeidssoeker.v1.meldinger.ReaktiverBrukerForenkletRequest;
 import no.nav.veilarboppfolging.domain.Fnr;
 import no.nav.veilarboppfolging.domain.Innsatsgruppe;
 import org.apache.cxf.interceptor.LoggingOutInterceptor;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 /**
  * Klient for å behandle arbeidssøkere gjennom Arena.
@@ -53,6 +55,7 @@ public class BehandleArbeidssokerClientImpl implements BehandleArbeidssokerClien
             behandleArbeidssoeker.aktiverBruker(request);
         } catch (Exception e) {
             log.error("Klarte ikke å aktivere bruker i Arena", e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
 //            Case($(instanceOf(AktiverBrukerBrukerFinnesIkke.class)), (t) -> new Feil(new AktiverBrukerService.ArenaFeilType("BRUKER_ER_UKJENT"))),
 //                    Case($(instanceOf(AktiverBrukerBrukerIkkeReaktivert.class)), (t) -> new Feil(new AktiverBrukerService.ArenaFeilType("BRUKER_KAN_IKKE_REAKTIVERES"))),
 //                    Case($(instanceOf(AktiverBrukerBrukerKanIkkeAktiveres.class)), (t) -> new Feil(new AktiverBrukerService.ArenaFeilType("BRUKER_ER_DOD_UTVANDRET_ELLER_FORSVUNNET"))),
@@ -74,6 +77,7 @@ public class BehandleArbeidssokerClientImpl implements BehandleArbeidssokerClien
             behandleArbeidssoeker.reaktiverBrukerForenklet(request);
         } catch (Exception e) {
             log.error("Klarte ikke å reaktivere bruker i Arena", e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
 //            Case($(instanceOf(ReaktiverBrukerForenkletBrukerFinnesIkke.class)), (t) -> new Feil(new AktiverBrukerService.ArenaFeilType("BRUKER_ER_UKJENT"))),
 //                    Case($(instanceOf(ReaktiverBrukerForenkletBrukerKanIkkeAktiveres.class)), (t) -> new Feil(new AktiverBrukerService.ArenaFeilType("BRUKER_ER_DOD_UTVANDRET_ELLER_FORSVUNNET"))),
 //                    Case($(instanceOf(ReaktiverBrukerForenkletBrukerKanIkkeReaktiveresForenklet.class)), (t) -> new Feil(new AktiverBrukerService.ArenaFeilType("BRUKER_KAN_IKKE_REAKTIVERES_FORENKLET"))),

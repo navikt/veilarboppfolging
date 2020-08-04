@@ -1,145 +1,101 @@
 package no.nav.veilarboppfolging.service;
 
 import io.vavr.control.Try;
-import no.nav.tjeneste.virksomhet.behandlearbeidssoeker.v1.binding.BehandleArbeidssoekerV1;
+import no.nav.veilarboppfolging.client.behandle_arbeidssoker.BehandleArbeidssokerClient;
 import no.nav.veilarboppfolging.domain.AktiverArbeidssokerData;
 import no.nav.veilarboppfolging.domain.Fnr;
 import no.nav.veilarboppfolging.domain.Innsatsgruppe;
 import no.nav.veilarboppfolging.domain.Oppfolging;
-import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
-import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import no.nav.veilarboppfolging.repository.*;
+import no.nav.veilarboppfolging.test.DbTestUtils;
+import no.nav.veilarboppfolging.test.LocalH2Database;
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.Optional;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.*;
 
-class AktiverBrukerIntegrationTest {
-
-    private AnnotationConfigApplicationContext context;
+public class AktiverBrukerIntegrationTest {
 
     private OppfolgingsStatusRepository oppfolgingsStatusRepository;
-    private OppfolgingRepositoryService oppfolgingRepositoryService;
+
     private OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
-    private BehandleArbeidssoekerV1 behandleArbeidssoekerV1;
+
+    private AuthService authService;
+
+    private BehandleArbeidssokerClient behandleArbeidssokerClient;
+
+    private OppfolgingRepositoryService oppfolgingRepositoryService;
+
     private AktiverBrukerService aktiverBrukerService;
-    private String ident = "1111";
 
-    @BeforeEach
+    private final String IDENT = "1111";
+
+    @Before
     public void setup() {
-//        setTemporaryProperty(VEILARBOPPFOLGINGDB_URL_PROPERTY, createInMemoryDatabaseUrl(), () -> {
-//            setTemporaryProperty(VEILARBOPPFOLGINGDB_USERNAME_PROPERTY, "sa", () -> {
-//                setTemporaryProperty(VEILARBOPPFOLGINGDB_PASSWORD_PROPERTY, "pw", () -> {
-//                    context = new AnnotationConfigApplicationContext(
-//                            DatabaseConfig.class,
-//                            BrukerregistreringConfigTest.class
-//                    );
-//
-//                    context.start();
-//
-//                    aktiverBrukerService = context.getBean(AktiverBrukerService.class);
-//                    oppfolgingRepository = context.getBean(OppfolgingRepository.class);
-//                    oppfolgingsPeriodeRepository = context.getBean(OppfolgingsPeriodeRepository.class);
-//                    aktorService = context.getBean(AktorService.class);
-//                    behandleArbeidssoekerV1 = context.getBean(BehandleArbeidssoekerV1.class);
-//                    migrateDatabase(context.getBean(DataSource.class));
-//                });
-//            });
-//        });
-    }
+        JdbcTemplate db = LocalH2Database.getDb();
+        oppfolgingsStatusRepository = new OppfolgingsStatusRepository(db);
+        oppfolgingsPeriodeRepository = new OppfolgingsPeriodeRepository(db);
 
-    @AfterEach
-    public void tearDown() {
-        context.stop();
+        authService = mock(AuthService.class);
+        behandleArbeidssokerClient = mock(BehandleArbeidssokerClient.class);
+
+        oppfolgingRepositoryService = new OppfolgingRepositoryService(
+                authService, oppfolgingsStatusRepository, oppfolgingsPeriodeRepository,
+                new MaalRepository(db), new ManuellStatusRepository(db), new EskaleringsvarselRepository(db),
+                new KvpRepository(db), new NyeBrukereFeedRepository(db)
+        );
+
+        aktiverBrukerService = new AktiverBrukerService(
+                authService, oppfolgingRepositoryService,
+                behandleArbeidssokerClient, new NyeBrukereFeedRepository(db)
+        );
+
+        DbTestUtils.cleanupTestDb();
+        when(authService.getAktorIdOrThrow(any())).thenReturn(IDENT);
     }
 
     @Test
-    public void skalRulleTilbakeDatabaseDersomKallTilArenaFeiler() throws Exception {
-        cofigureMocks();
-        doThrow(new RuntimeException()).when(behandleArbeidssoekerV1).aktiverBruker(any());
+    public void skalRulleTilbakeDatabaseDersomKallTilArenaFeiler() {
+        doThrow(new RuntimeException()).when(behandleArbeidssokerClient).opprettBrukerIArena(anyString(), any());
 
-        AktiverArbeidssokerData data = lagBruker(ident);
+        AktiverArbeidssokerData data = lagBruker(IDENT);
 
         Try<Void> run = Try.run(() -> aktiverBrukerService.aktiverBruker(data));
         assertThat(run.isFailure()).isTrue();
 
-        Optional<Oppfolging> oppfolging = oppfolgingRepositoryService.hentOppfolging(ident);
+        Optional<Oppfolging> oppfolging = oppfolgingRepositoryService.hentOppfolging(IDENT);
 
         assertThat(oppfolging.isPresent()).isFalse();
     }
 
     @Test
     public void skalLagreIDatabaseDersomKallTilArenaErOK() {
-        cofigureMocks();
+        aktiverBrukerService.aktiverBruker(lagBruker(IDENT));
 
-        aktiverBrukerService.aktiverBruker(lagBruker(ident));
-
-        Optional<Oppfolging> oppfolging = oppfolgingRepositoryService.hentOppfolging(ident);
+        Optional<Oppfolging> oppfolging = oppfolgingRepositoryService.hentOppfolging(IDENT);
 
         assertThat(oppfolging.isPresent()).isTrue();
     }
 
     @Test
     public void skalHaandtereAtOppfolgingstatusAlleredeFinnes() {
-        cofigureMocks();
-        oppfolgingsStatusRepository.opprettOppfolging(ident);
-        oppfolgingsPeriodeRepository.avslutt(ident, "veilederid", "begrunnelse");
+        oppfolgingsStatusRepository.opprettOppfolging(IDENT);
+        oppfolgingsPeriodeRepository.avslutt(IDENT, "veilederid", "begrunnelse");
 
-        aktiverBrukerService.aktiverBruker(lagBruker(ident));
+        aktiverBrukerService.aktiverBruker(lagBruker(IDENT));
 
-        Optional<Oppfolging> oppfolging = oppfolgingRepositoryService.hentOppfolging(ident);
+        Optional<Oppfolging> oppfolging = oppfolgingRepositoryService.hentOppfolging(IDENT);
 
         assertThat(oppfolging.get().isUnderOppfolging()).isTrue();
-    }
-
-    private void cofigureMocks() {
-//        when(aktorService.getAktorId(any())).thenReturn(Optional.of(ident));
     }
 
     private AktiverArbeidssokerData lagBruker(String ident) {
         return new AktiverArbeidssokerData(new Fnr(ident), Innsatsgruppe.STANDARD_INNSATS);
     }
-
-//    @Configuration
-//    @ComponentScan
-//    @Import({
-//            DatabaseRepositoryConfig.class
-//    })
-//    public static class BrukerregistreringConfigTest {
-//
-//        @Bean
-//        public AktorService aktoerService() {
-//            return mock(AktorService.class);
-//        }
-//
-//        @Bean
-//        public BehandleArbeidssoekerV1 behandleArbeidssoekerV1() {
-//            return mock(BehandleArbeidssoekerV1.class);
-//        }
-//
-//        @Bean
-//        AktiverBrukerService aktiverBrukerService(
-//                AktorService aktorService,
-//                BehandleArbeidssoekerV1 behandleArbeidssoekerV1,
-//                OppfolgingRepository oppfolgingRepository,
-//                NyeBrukereFeedRepository nyeBrukereFeedRepository) {
-//            return new AktiverBrukerService(
-//                    authService, oppfolgingRepository,
-//                    aktorService,
-//                    behandleArbeidssoekerV1,
-//                    nyeBrukereFeedRepository
-//            );
-//        }
-//
-//        @Bean
-//        PepClient pepClient() {
-//            return mock(PepClient.class);
-//        }
-//    }
 
 }

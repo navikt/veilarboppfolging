@@ -63,9 +63,9 @@ public class KvpService {
         }
 
         String enhet = oppfolgingClient.finnEnhetId(fnr);
-        if(!authService.harTilgangTilEnhet(enhet)) {
+        if (!authService.harTilgangTilEnhet(enhet)) {
             log.warn(format("Ingen tilgang til enhet '%s'", enhet));
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         }
 
         if (oppfolgingTable.getGjeldendeKvpId() != 0) {
@@ -73,13 +73,8 @@ public class KvpService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
 
-        kvpRepository.startKvp(
-                aktorId,
-                enhet,
-                authService.getInnloggetVeilederIdent(),
-                begrunnelse);
-
-        metricsService.startKvp();
+        kvpRepository.startKvp(aktorId, enhet, authService.getInnloggetVeilederIdent(), begrunnelse);
+        metricsService.kvpStartet();
     }
 
     @SneakyThrows
@@ -88,7 +83,7 @@ public class KvpService {
 
         authService.sjekkLesetilgangMedAktorId(aktorId);
 
-        if(!authService.harTilgangTilEnhet(oppfolgingClient.finnEnhetId(fnr))){
+        if (!authService.harTilgangTilEnhet(oppfolgingClient.finnEnhetId(fnr))) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         }
 
@@ -104,7 +99,7 @@ public class KvpService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
 
-        if(oppfolgingTable.getGjeldendeEskaleringsvarselId() != 0) {
+        if (oppfolgingTable.getGjeldendeEskaleringsvarselId() != 0) {
             eskaleringsvarselRepository.finish(
                     aktorId, 
                     oppfolgingTable.getGjeldendeEskaleringsvarselId(), 
@@ -112,14 +107,8 @@ public class KvpService {
                     ESKALERING_AVSLUTTET_FORDI_KVP_BLE_AVSLUTTET);
         }
 
-        kvpRepository.stopKvp(
-                gjeldendeKvp,
-                aktorId,
-                veilederId,
-                begrunnelse,
-                kodeverkBruker);
-
-        metricsService.stopKvp();
+        kvpRepository.stopKvp(gjeldendeKvp, aktorId, veilederId, begrunnelse, kodeverkBruker);
+        metricsService.kvpStoppet();
     }
 
     Kvp gjeldendeKvp(String aktorId) {

@@ -5,7 +5,7 @@ import no.nav.veilarboppfolging.feed.NyeBrukereFeedDTO;
 import no.nav.veilarboppfolging.test.DbTestUtils;
 import no.nav.veilarboppfolging.test.LocalH2Database;
 import org.junit.Before;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import java.util.List;
 

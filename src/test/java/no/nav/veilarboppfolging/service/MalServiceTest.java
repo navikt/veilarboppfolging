@@ -27,6 +27,8 @@ import static java.util.Collections.singletonList;
 import static java.util.Optional.of;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -59,24 +61,28 @@ public class MalServiceTest {
     @Mock
     private MaalRepository maalRepository;
 
+    @Mock
+    private MetricsService metricsService;
+
     @InjectMocks
     private MalService malService;
 
     @Before
     public void setup() {
-//        when(oppfolgingResolverDependenciesMock.getAktorService()).thenReturn(aktorServiceMock);
+        when(oppfolgingResolverDependenciesMock.getAuthService()).thenReturn(authService);
+        when(oppfolgingResolverDependenciesMock.getMaalRepository()).thenReturn(maalRepository);
         when(oppfolgingResolverDependenciesMock.getOppfolgingRepositoryService()).thenReturn(oppfolgingRepositoryServiceMock);
 
-//        when(aktorServiceMock.getAktorId(FNR)).thenReturn(of(AKTOR_ID));
+        when(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID);
         when(oppfolgingRepositoryServiceMock.hentOppfolging(AKTOR_ID)).thenReturn(of(oppfolging(from(BEFORE_KVP))));
-
     }
 
     @Test(expected = ResponseStatusException.class)
     public void oppdater_mal_for_kvp_uten_tilgang() {
-        when(kvpRepositoryMock.gjeldendeKvp(AKTOR_ID)).thenReturn(KVP_ID);
-        when(kvpRepositoryMock.fetch(KVP_ID)).thenReturn(aktivKvp());
-//        doReturn(false).when(pepClientMock).harTilgangTilEnhet(any());
+        when(kvpRepositoryMock.gjeldendeKvp(anyString())).thenReturn(KVP_ID);
+        when(kvpRepositoryMock.fetch(anyLong())).thenReturn(aktivKvp());
+        when(authService.harTilgangTilEnhet(ENHET)).thenReturn(false);
+
         malService.oppdaterMal("mal", FNR, VEILEDER);
     }
 
@@ -106,7 +112,7 @@ public class MalServiceTest {
     public void hent_mal_opprettet_etter_kvp_veileder_har_ikke_tilgang() {
         when(kvpRepositoryMock.hentKvpHistorikk(AKTOR_ID)).thenReturn(kvpHistorikk());
         when(oppfolgingRepositoryServiceMock.hentOppfolging(AKTOR_ID)).thenReturn(of(oppfolging(from(IN_KVP))));
-//        when(pepClientMock.harTilgangTilEnhet(ENHET)).thenReturn(false);
+        when(authService.harTilgangTilEnhet(ENHET)).thenReturn(false);
 
         MalData malData = malService.hentMal(FNR);
         assertThat(malData.getId()).isEqualTo(0L);
@@ -116,7 +122,7 @@ public class MalServiceTest {
     public void hent_mal_opprettet_etter_kvp_veileder_har_tilgang() {
         when(kvpRepositoryMock.hentKvpHistorikk(AKTOR_ID)).thenReturn(kvpHistorikk());
         when(oppfolgingRepositoryServiceMock.hentOppfolging(AKTOR_ID)).thenReturn(of(oppfolging(from(IN_KVP))));
-//        when(pepClientMock.harTilgangTilEnhet(ENHET)).thenReturn(true);
+        when(authService.harTilgangTilEnhet(ENHET)).thenReturn(true);
 
         MalData malData = malService.hentMal(FNR);
         assertThat(malData.getId()).isEqualTo(MAL_ID);
@@ -125,7 +131,7 @@ public class MalServiceTest {
     @Test
     public void hent_mal_historikk_med_kvp_i_midten_veileder_har_Tilgang() {
         when(kvpRepositoryMock.hentKvpHistorikk(AKTOR_ID)).thenReturn(kvpHistorikk());
-//        when(pepClientMock.harTilgangTilEnhet(ENHET)).thenReturn(true);
+        when(authService.harTilgangTilEnhet(ENHET)).thenReturn(true);
         when(maalRepository.aktorMal(AKTOR_ID)).thenReturn(malList());
 
         List<MalData> malData = malService.hentMalList(FNR);
@@ -136,7 +142,7 @@ public class MalServiceTest {
     @Test
     public void hent_mal_historikk_med_kvp_i_midten_veileder_har_ikke_Tilgang() {
         when(kvpRepositoryMock.hentKvpHistorikk(AKTOR_ID)).thenReturn(kvpHistorikk());
-//        when(pepClientMock.harTilgangTilEnhet(ENHET)).thenReturn(false);
+        when(authService.harTilgangTilEnhet(ENHET)).thenReturn(false);
         when(maalRepository.aktorMal(AKTOR_ID)).thenReturn(malList());
 
         List<MalData> malData = malService.hentMalList(FNR);
@@ -145,7 +151,6 @@ public class MalServiceTest {
     }
 
     private List<MalData> malList() {
-
         return asList(new MalData()
                         .setId(1L)
                         .setAktorId(AKTOR_ID)
