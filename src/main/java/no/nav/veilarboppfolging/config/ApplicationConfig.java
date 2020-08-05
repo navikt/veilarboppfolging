@@ -20,9 +20,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-
 import static no.nav.common.featuretoggle.UnleashServiceConfig.resolveFromEnvironment;
 import static no.nav.common.utils.NaisUtils.getCredentials;
 
@@ -69,11 +66,6 @@ public class ApplicationConfig {
     @Bean
     public UnleashService unleashService() {
         return new UnleashService(resolveFromEnvironment());
-    }
-
-    @Bean
-    public Executor taskScheduler() {
-        return Executors.newScheduledThreadPool(5);
     }
 
 //    @Bean
