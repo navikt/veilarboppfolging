@@ -1,6 +1,7 @@
 package no.nav.veilarboppfolging.test;
 
 import lombok.SneakyThrows;
+import no.nav.veilarboppfolging.test.testdriver.TestDriver;
 import org.junit.After;
 import org.junit.Before;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -23,6 +24,8 @@ public abstract class IsolatedDatabaseTest {
 
     @Before
     public void setupIsolatedDatabase() {
+        TestDriver.init();
+
         String dbUrl = format("jdbc:h2:mem:veilarboppfolging-local-%d;DB_CLOSE_DELAY=-1;MODE=Oracle;", databaseCounter.incrementAndGet());
         DataSource testDataSource = DbTestUtils.createTestDataSource(dbUrl);
 

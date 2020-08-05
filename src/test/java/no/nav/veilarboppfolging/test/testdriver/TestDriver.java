@@ -1,24 +1,32 @@
 package no.nav.veilarboppfolging.test.testdriver;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.sql.*;
 import java.util.Properties;
 import java.util.logging.Logger;
 
-import static java.sql.DriverManager.deregisterDriver;
-import static java.sql.DriverManager.registerDriver;
-
+@Slf4j
 public class TestDriver implements Driver {
 
-    static {
-        try {
-            registerDriver(new TestDriver());
-            // Deregistrerer opprinnelig h2 driver for å sikre at TestDriver benyttes for h2-databaser.
-            // load() returnerer den registrerte instansen av h2-driveren.
-            deregisterDriver(org.h2.Driver.load());
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
+    private static volatile boolean isInitialized = false;
+
+    public static synchronized void init() {
+       if (isInitialized) {
+           return;
+       }
+
+       isInitialized = true;
+
+       try {
+           // Registrer test driver og deregistrer h2-driver slik at den ikke blir brukt med et uhell
+           log.info("Registering TestDriver");
+           DriverManager.registerDriver(new TestDriver());
+           DriverManager.deregisterDriver(org.h2.Driver.load());
+       } catch (SQLException e) {
+           e.printStackTrace();
+       }
+   }
 
     private Driver driver = new org.h2.Driver();
 
