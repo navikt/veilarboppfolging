@@ -2,6 +2,7 @@ package no.nav.veilarboppfolging.config;
 
 import no.nav.common.client.aktorregister.AktorregisterClient;
 import no.nav.veilarboppfolging.kafka.AvsluttOppfolgingProducer;
+import no.nav.veilarboppfolging.kafka.EndringPaOppfolgingBrukerConsumer;
 import no.nav.veilarboppfolging.kafka.KafkaTopics;
 import no.nav.veilarboppfolging.kafka.OppfolgingStatusKafkaProducer;
 import no.nav.veilarboppfolging.repository.OppfolgingFeedRepository;
@@ -32,7 +33,8 @@ import static org.apache.kafka.clients.producer.ProducerConfig.VALUE_SERIALIZER_
 @EnableKafka
 @Configuration
 @Import({
-        AvsluttOppfolgingProducer.class
+        AvsluttOppfolgingProducer.class,
+        EndringPaOppfolgingBrukerConsumer.class
 })
 public class KafkaTestConfig {
 

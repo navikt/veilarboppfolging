@@ -16,11 +16,11 @@ import static no.nav.common.json.JsonUtils.fromJson;
 @Component
 public class EndringPaOppfolgingBrukerConsumer {
 
-    private final String endringPaaOppfolgingBrukerTopic;
-
     private final MetricsService metricsService;
 
     private final IservService iservService;
+
+    private final KafkaTopics kafkaTopics;
 
     private final OppfolgingsenhetEndringService oppfolgingsenhetEndringService;
 
@@ -31,21 +31,21 @@ public class EndringPaOppfolgingBrukerConsumer {
             IservService iservService,
             OppfolgingsenhetEndringService oppfolgingsenhetEndringService
     ) {
-        this.endringPaaOppfolgingBrukerTopic = kafkaTopics.getEndringPaaOppfolgingBruker();
+        this.kafkaTopics = kafkaTopics;
         this.metricsService = metricsService;
         this.iservService = iservService;
         this.oppfolgingsenhetEndringService = oppfolgingsenhetEndringService;
     }
 
-    // TODO: Sjekk at dette fungerer
-    @KafkaListener(topics = "#{endringPaaOppfolgingBrukerTopic}")
+    // 'kafkaTopics' blir hentet inn som en bean
+    @KafkaListener(topics = "#{kafkaTopics.getEndringPaaOppfolgingBruker()}")
     public void consumeEndringPaOppfolgingBruker(@Payload String kafkaMelding) {
         try {
             final VeilarbArenaOppfolgingEndret deserialisertBruker = deserialisereBruker(kafkaMelding);
             iservService.behandleEndretBruker(deserialisertBruker);
             oppfolgingsenhetEndringService.behandleBrukerEndring(deserialisertBruker);
         } catch (Throwable t) {
-            log.error("Feilet ved behandling av kafka-melding: {}\n{}\n{}", endringPaaOppfolgingBrukerTopic, kafkaMelding, t.getMessage(), t);
+            log.error("Feilet ved behandling av kafka-melding: {}\n{}\n{}", kafkaTopics.getEndringPaaOppfolgingBruker(), kafkaMelding, t.getMessage(), t);
         } finally {
             metricsService.antallMeldingerKonsumertAvKafka();
         }
