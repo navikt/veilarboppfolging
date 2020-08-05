@@ -6,6 +6,7 @@ import no.nav.veilarboppfolging.domain.IservMapper;
 import no.nav.veilarboppfolging.domain.VeilarbArenaOppfolgingEndret;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -17,6 +18,7 @@ import java.util.List;
 import static no.nav.veilarboppfolging.utils.DbUtils.firstOrNull;
 
 @Slf4j
+@Repository
 public class UtmeldingRepository {
 
     private final JdbcTemplate db;
