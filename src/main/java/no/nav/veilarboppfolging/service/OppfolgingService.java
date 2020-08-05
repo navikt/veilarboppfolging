@@ -30,7 +30,6 @@ public class OppfolgingService {
 
     private final AuthService authService;
     private final OppfolgingResolverDependencies oppfolgingResolverDependencies;
-    private final OppfolgingRepositoryService oppfolgingRepositoryService;
     private final OppfolgingsStatusRepository oppfolgingsStatusRepository;
     private final OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
     private final ManuellStatusRepository manuellStatusRepository;
@@ -43,16 +42,16 @@ public class OppfolgingService {
     public OppfolgingService(
             AuthService authService,
             OppfolgingResolverDependencies oppfolgingResolverDependencies,
-            OppfolgingRepositoryService oppfolgingRepositoryService,
             OppfolgingsStatusRepository oppfolgingsStatusRepository,
-            OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository, ManuellStatusRepository manuellStatusRepository, ManuellStatusService manuellStatusService,
+            OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository,
+            ManuellStatusRepository manuellStatusRepository,
+            ManuellStatusService manuellStatusService,
             VeilarbarenaClient veilarbarenaClient,
             UnleashService unleashService,
             OppfolgingStatusKafkaProducer kafkaProducer
     ) {
         this.authService = authService;
         this.oppfolgingResolverDependencies = oppfolgingResolverDependencies;
-        this.oppfolgingRepositoryService = oppfolgingRepositoryService;
         this.oppfolgingsStatusRepository = oppfolgingsStatusRepository;
         this.oppfolgingsPeriodeRepository = oppfolgingsPeriodeRepository;
         this.manuellStatusRepository = manuellStatusRepository;

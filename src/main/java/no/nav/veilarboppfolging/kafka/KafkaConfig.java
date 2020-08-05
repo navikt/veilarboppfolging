@@ -37,16 +37,13 @@ public class KafkaConfig {
 
     private final Credentials serviceUserCredentials;
 
-    private final KafkaTopics kafkaTopics;
-
     private final String brokersUrl;
 
     @Autowired
-    public KafkaConfig(EnvironmentProperties properties, KafkaHelsesjekk kafkaHelsesjekk, Credentials serviceUserCredentials, KafkaTopics kafkaTopics) {
+    public KafkaConfig(EnvironmentProperties properties, KafkaHelsesjekk kafkaHelsesjekk, Credentials serviceUserCredentials) {
         brokersUrl = properties.getKafkaBrokersUrl();
         this.kafkaHelsesjekk = kafkaHelsesjekk;
         this.serviceUserCredentials = serviceUserCredentials;
-        this.kafkaTopics = kafkaTopics;
     }
 
     @Bean
@@ -73,7 +70,7 @@ public class KafkaConfig {
     }
 
     @Bean
-    public OppfolgingStatusKafkaProducer oppfolgingStatusKafkaProducer(OppfolgingFeedRepository oppfolgingFeedRepository, AktorregisterClient aktorregisterClient) {
+    public OppfolgingStatusKafkaProducer oppfolgingStatusKafkaProducer(KafkaTopics kafkaTopics, OppfolgingFeedRepository oppfolgingFeedRepository, AktorregisterClient aktorregisterClient) {
         HashMap<String, Object> config = kafkaProducerProperties(brokersUrl, serviceUserCredentials);
 
         config.put(ACKS_CONFIG, "0");                  // Fire-and-forget, we do not care about acks when hydrating
