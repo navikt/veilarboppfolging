@@ -6,9 +6,12 @@ import no.nav.common.auth.subject.IdentType;
 import no.nav.common.log.LogFilter;
 import no.nav.common.rest.filter.SetStandardHttpHeadersFilter;
 import no.nav.veilarboppfolging.utils.PingFilter;
+import no.nav.veilarboppfolging.utils.ServiceUserTokenFinder;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import java.util.Optional;
 
 import static no.nav.common.auth.Constants.*;
 import static no.nav.common.auth.oidc.filter.OidcAuthenticator.fromConfigs;
@@ -35,6 +38,7 @@ public class FilterConfig {
         return new OidcAuthenticatorConfig()
                 .withDiscoveryUrl(properties.getOpenAmDiscoveryUrl())
                 .withClientId(properties.getOpenAmClientId())
+                .withIdTokenFinder(new ServiceUserTokenFinder())
                 .withIdentType(IdentType.Systemressurs);
     }
 
@@ -51,6 +55,7 @@ public class FilterConfig {
                 .withClientId(properties.getOpenAmClientId())
                 .withIdTokenCookieName(OPEN_AM_ID_TOKEN_COOKIE_NAME)
                 .withRefreshTokenCookieName(REFRESH_TOKEN_COOKIE_NAME)
+                .withIdTokenFinder((req) -> Optional.empty()) // This overrides the default finder which checks the Authorization header for tokens
                 .withRefreshUrl(properties.getOpenAmRefreshUrl())
                 .withIdentType(IdentType.InternBruker);
     }
@@ -89,7 +94,9 @@ public class FilterConfig {
         OidcAuthenticationFilter authenticationFilter = new OidcAuthenticationFilter(
                 fromConfigs(
                         openAmAuthConfig(properties), azureAdAuthConfig(properties),
-                        azureAdB2CAuthConfig(properties), naisStsAuthConfig(properties)
+                        azureAdB2CAuthConfig(properties),
+                        openAmStsAuthConfig(properties),
+                        naisStsAuthConfig(properties)
                 )
         );
 
