@@ -15,15 +15,27 @@ public class EnvironmentProperties {
 
     private String openAmRefreshUrl;
 
+    private String openAmRedirectUrl;
+
+    private String openAmIssoRpUsername;
+
+    private String openAmIssoRpPassword;
+
+
     private String aadDiscoveryUrl;
 
     private String aadClientId;
+
 
     private String aadB2cDiscoveryUrl;
 
     private String aadB2cClientId;
 
-    private String stsDiscoveryUrl;
+
+    private String naisStsDiscoveryUrl;
+
+    private String naisStsClientId;
+
 
     private String abacUrl;
 

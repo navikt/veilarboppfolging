@@ -18,7 +18,32 @@ import static no.nav.common.utils.EnvironmentUtils.requireApplicationName;
 @Configuration
 public class FilterConfig {
 
-    // TODO: Missing config for Open AM STS and NAIS STS
+    /*
+        TODO:
+        Må finne ut hvordan vi skal håndtere at OpenAM STSen bruker samme key og audience som OpenAM for interne brukere.
+        Vi skal helst vekk fra OpenAM STSen så fort som mulig, men inntil videre så trenger vi en fix.
+
+        En mulighet er å bruke ".withIdTokenFinder((req) -> Optional.empty())"
+        for vanlig OpenAM slik at den ikke sjekker header etter tokens.
+
+        Og i OpenAM STS configen så sjekker vi kun på header.
+        For at ikke alle som sender token med header skal bli satt som systembruker så må vi også ha custom logikk i
+        IdTokenFinder som sjekker at subject er en systembruker og hvis ikke returner empty().
+     */
+
+    private OidcAuthenticatorConfig openAmStsAuthConfig(EnvironmentProperties properties) {
+        return new OidcAuthenticatorConfig()
+                .withDiscoveryUrl(properties.getOpenAmDiscoveryUrl())
+                .withClientId(properties.getOpenAmClientId())
+                .withIdentType(IdentType.Systemressurs);
+    }
+
+    private OidcAuthenticatorConfig naisStsAuthConfig(EnvironmentProperties properties) {
+        return new OidcAuthenticatorConfig()
+                .withDiscoveryUrl(properties.getNaisStsDiscoveryUrl())
+                .withClientId(properties.getNaisStsClientId())
+                .withIdentType(IdentType.Systemressurs);
+    }
 
     private OidcAuthenticatorConfig openAmAuthConfig(EnvironmentProperties properties) {
         return new OidcAuthenticatorConfig()
@@ -62,7 +87,10 @@ public class FilterConfig {
     public FilterRegistrationBean authenticationFilterRegistrationBean(EnvironmentProperties properties) {
         FilterRegistrationBean<OidcAuthenticationFilter> registration = new FilterRegistrationBean<>();
         OidcAuthenticationFilter authenticationFilter = new OidcAuthenticationFilter(
-                fromConfigs(openAmAuthConfig(properties), azureAdAuthConfig(properties), azureAdB2CAuthConfig(properties))
+                fromConfigs(
+                        openAmAuthConfig(properties), azureAdAuthConfig(properties),
+                        azureAdB2CAuthConfig(properties), naisStsAuthConfig(properties)
+                )
         );
 
         registration.setFilter(authenticationFilter);
