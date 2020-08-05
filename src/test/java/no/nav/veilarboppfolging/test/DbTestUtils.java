@@ -19,7 +19,8 @@ public class DbTestUtils {
             "ESKALERINGSVARSEL",
             "KVP",
             "UTMELDING",
-            "OPPFOLGINGSENHET_ENDRET"
+            "OPPFOLGINGSENHET_ENDRET",
+            "NYE_BRUKERE_FEED"
     );
 
     public static void cleanupTestDb() {
