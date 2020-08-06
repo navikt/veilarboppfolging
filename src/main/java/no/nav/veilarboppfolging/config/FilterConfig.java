@@ -3,14 +3,15 @@ package no.nav.veilarboppfolging.config;
 import no.nav.common.auth.oidc.filter.OidcAuthenticationFilter;
 import no.nav.common.auth.oidc.filter.OidcAuthenticatorConfig;
 import no.nav.common.auth.subject.IdentType;
+import no.nav.common.auth.utils.ServiceUserTokenFinder;
 import no.nav.common.log.LogFilter;
 import no.nav.common.rest.filter.SetStandardHttpHeadersFilter;
 import no.nav.veilarboppfolging.utils.PingFilter;
-import no.nav.veilarboppfolging.utils.ServiceUserTokenFinder;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.List;
 import java.util.Optional;
 
 import static no.nav.common.auth.Constants.*;
@@ -21,18 +22,9 @@ import static no.nav.common.utils.EnvironmentUtils.requireApplicationName;
 @Configuration
 public class FilterConfig {
 
-    /*
-        TODO:
-        Må finne ut hvordan vi skal håndtere at OpenAM STSen bruker samme key og audience som OpenAM for interne brukere.
-        Vi skal helst vekk fra OpenAM STSen så fort som mulig, men inntil videre så trenger vi en fix.
-
-        En mulighet er å bruke ".withIdTokenFinder((req) -> Optional.empty())"
-        for vanlig OpenAM slik at den ikke sjekker header etter tokens.
-
-        Og i OpenAM STS configen så sjekker vi kun på header.
-        For at ikke alle som sender token med header skal bli satt som systembruker så må vi også ha custom logikk i
-        IdTokenFinder som sjekker at subject er en systembruker og hvis ikke returner empty().
-     */
+    private final List<String> ALLOWED_SERVICE_USERS = List.of(
+            "srvveilarbportefolje", "srvveilarbdialog", "srvveilarbaktivitet", "srvveilarbjobbsoke", "srvveilarbdirigent"
+    );
 
     private OidcAuthenticatorConfig openAmStsAuthConfig(EnvironmentProperties properties) {
         return new OidcAuthenticatorConfig()
@@ -45,7 +37,7 @@ public class FilterConfig {
     private OidcAuthenticatorConfig naisStsAuthConfig(EnvironmentProperties properties) {
         return new OidcAuthenticatorConfig()
                 .withDiscoveryUrl(properties.getNaisStsDiscoveryUrl())
-                .withClientId(properties.getNaisStsClientId())
+                .withClientIds(ALLOWED_SERVICE_USERS)
                 .withIdentType(IdentType.Systemressurs);
     }
 
