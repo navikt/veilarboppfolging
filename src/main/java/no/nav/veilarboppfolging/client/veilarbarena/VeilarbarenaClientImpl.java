@@ -56,7 +56,7 @@ public class VeilarbarenaClientImpl implements VeilarbarenaClient {
         Request request = new Request.Builder()
                 .url(joinPaths(veilarbarenaUrl, "/api/oppfolgingsstatus/" + fnr))
                 .header(ACCEPT, APPLICATION_JSON_VALUE)
-                .header(AUTHORIZATION, "System user token")
+                .header(AUTHORIZATION, "Bearer " + systemUserTokenProvider.getSystemUserToken())
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
