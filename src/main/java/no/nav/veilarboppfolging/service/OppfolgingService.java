@@ -118,10 +118,13 @@ public class OppfolgingService {
         return getOppfolgingStatusDataMedAvslutningStatus(fnr, resolver);
     }
 
-    @SneakyThrows
     @Transactional
     public boolean avsluttOppfolgingForSystemBruker(String fnr, String veileder, String begrunnelse) {
-        val resolver = sjekkTilgangTilEnhet(fnr);
+        /*
+            TODO: Fjernet tilgangskontroll her siden det ikke gir mening å sjekke tilgang på en cron job.
+                Gjør avklaring på at tilgangskontroll ikke trengs.
+         */
+        val resolver = OppfolgingResolver.lagOppfolgingResolver(fnr, oppfolgingResolverDependencies);
         return resolver.avsluttOppfolging(veileder, begrunnelse);
     }
 
