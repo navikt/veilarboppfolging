@@ -1,4 +1,4 @@
-package no.nav.veilarboppfolging.controller;
+package no.nav.veilarboppfolging.service;
 
 import no.nav.common.auth.subject.IdentType;
 import no.nav.common.auth.subject.SsoToken;
@@ -11,9 +11,6 @@ import no.nav.veilarboppfolging.feed.cjm.producer.FeedProducer;
 import no.nav.veilarboppfolging.kafka.OppfolgingStatusKafkaProducer;
 import no.nav.veilarboppfolging.repository.VeilederHistorikkRepository;
 import no.nav.veilarboppfolging.repository.VeilederTilordningerRepository;
-import no.nav.veilarboppfolging.service.AuthService;
-import no.nav.veilarboppfolging.service.MetricsService;
-import no.nav.veilarboppfolging.service.OppfolgingRepositoryService;
 import no.nav.veilarboppfolging.test.DbTestUtils;
 import no.nav.veilarboppfolging.test.LocalH2Database;
 import org.junit.Before;
@@ -30,14 +27,14 @@ import java.util.List;
 import java.util.concurrent.*;
 
 import static java.util.Arrays.asList;
-import static no.nav.veilarboppfolging.controller.VeilederTilordningController.kanTilordneVeileder;
+import static no.nav.veilarboppfolging.service.VeilederTilordningService.kanTilordneVeileder;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.Silent.class)
-public class VeilederTilordningControllerTest {
+public class VeilederTilordningServiceTest {
 
     @Mock
     private VeilederTilordningerRepository veilederTilordningerRepository;
@@ -57,13 +54,13 @@ public class VeilederTilordningControllerTest {
     @Mock
     private MetricsService metricsService;
     
-    private VeilederTilordningController veilederTilordningController;
+    private VeilederTilordningService veilederTilordningService;
     
     @Before
     public void setup() {
         when(authService.harVeilederSkriveTilgangTilFnr(anyString(), anyString())).thenReturn(true);
         SubjectHandler.withSubject(new Subject("Z000000", IdentType.InternBruker, SsoToken.oidcToken("XOXO", Collections.emptyMap())), () -> {
-            veilederTilordningController = new VeilederTilordningController(
+            veilederTilordningService = new VeilederTilordningService(
                     metricsService,
                     veilederTilordningerRepository,
                     authService,
@@ -122,7 +119,7 @@ public class VeilederTilordningControllerTest {
         when(authService.getAktorIdOrThrow("FNR3")).thenReturn("AKTOERID3");
         when(authService.getAktorIdOrThrow("FNR4")).thenReturn("AKTOERID4");
 
-        TilordneVeilederResponse response = veilederTilordningController.postVeilederTilordninger(tilordninger);
+        TilordneVeilederResponse response = veilederTilordningService.tilordneVeiledere(tilordninger);
         List<VeilederTilordning> feilendeTilordninger = response.getFeilendeTilordninger();
 
         assertThat(feilendeTilordninger).contains(harIkkeTilgang1);
@@ -162,7 +159,7 @@ public class VeilederTilordningControllerTest {
         when(veilederTilordningerRepository.hentTilordningForAktoer("AKTOERID4"))
                 .thenReturn("IKKE_FRAVEILEDER4");
 
-        TilordneVeilederResponse response = veilederTilordningController.postVeilederTilordninger(tilordninger);
+        TilordneVeilederResponse response = veilederTilordningService.tilordneVeiledere(tilordninger);
         List<VeilederTilordning> feilendeTilordninger = response.getFeilendeTilordninger();
 
         assertThat(feilendeTilordninger).contains(kanIkkeTilordne1);
@@ -194,7 +191,7 @@ public class VeilederTilordningControllerTest {
 
         when(veilederTilordningerRepository.hentTilordningForAktoer("AKTOERID3")).thenThrow(new BadSqlGrammarException("AKTOER", "Dette er bare en test", new SQLException()));
 
-        TilordneVeilederResponse response = veilederTilordningController.postVeilederTilordninger(tilordninger);
+        TilordneVeilederResponse response = veilederTilordningService.tilordneVeiledere(tilordninger);
         List<VeilederTilordning> feilendeTilordninger = response.getFeilendeTilordninger();
 
         assertThat(feilendeTilordninger).contains(tilordningERROR1);
@@ -229,7 +226,7 @@ public class VeilederTilordningControllerTest {
         doThrow(new BadSqlGrammarException("AKTOER", "Dette er bare en test", new SQLException()))
                 .when(veilederTilordningerRepository).upsertVeilederTilordning(eq("AKTOERID4"), anyString());
 
-        TilordneVeilederResponse response = veilederTilordningController.postVeilederTilordninger(tilordninger);
+        TilordneVeilederResponse response = veilederTilordningService.tilordneVeiledere(tilordninger);
         List<VeilederTilordning> feilendeTilordninger = response.getFeilendeTilordninger();
 
         assertThat(feilendeTilordninger).contains(tilordningERROR1);
@@ -257,7 +254,7 @@ public class VeilederTilordningControllerTest {
         when(authService.getAktorIdOrThrow("FNR3")).thenThrow(new RuntimeException());
         when(authService.getAktorIdOrThrow("FNR4")).thenReturn("AKTOERID4");
 
-        TilordneVeilederResponse response = veilederTilordningController.postVeilederTilordninger(tilordninger);
+        TilordneVeilederResponse response = veilederTilordningService.tilordneVeiledere(tilordninger);
         List<VeilederTilordning> feilendeTilordninger = response.getFeilendeTilordninger();
 
         assertThat(feilendeTilordninger).contains(tilordningERROR1);
@@ -280,7 +277,7 @@ public class VeilederTilordningControllerTest {
         when(authService.getAktorIdOrThrow("FNR2")).thenReturn("AKTOERID2");
         doThrow(new RuntimeException()).when(authService).sjekkSkrivetilgangMedAktorId(anyString());
 
-        TilordneVeilederResponse response = veilederTilordningController.postVeilederTilordninger(tilordninger);
+        TilordneVeilederResponse response = veilederTilordningService.tilordneVeiledere(tilordninger);
         List<VeilederTilordning> feilendeTilordninger = response.getFeilendeTilordninger();
 
         assertThat(feilendeTilordninger).contains(tilordningERROR1);
@@ -307,8 +304,8 @@ public class VeilederTilordningControllerTest {
         //Starter to tråder som gjør to separate tilordninger gjennom samme portefoljeressurs. Dette simulerer
         //at to brukere kaller rest-operasjonen samtidig. Den første tilordningen tar lenger tid siden pep-kallet tar lenger tid.
         ExecutorService pool = Executors.newFixedThreadPool(2);
-        Future<TilordneVeilederResponse> response1 = pool.submit(portefoljeRessursCallable(veilederTilordningController, asList(tilordningOKBruker1)));
-        Future<TilordneVeilederResponse> response2 = pool.submit(portefoljeRessursCallable(veilederTilordningController, asList(tilordningERRORBruker2)));
+        Future<TilordneVeilederResponse> response1 = pool.submit(portefoljeRessursCallable(veilederTilordningService, asList(tilordningOKBruker1)));
+        Future<TilordneVeilederResponse> response2 = pool.submit(portefoljeRessursCallable(veilederTilordningService, asList(tilordningERRORBruker2)));
 
         List<VeilederTilordning> feilendeTilordninger1 = response1.get().getFeilendeTilordninger();
         List<VeilederTilordning> feilendeTilordninger2 = response2.get().getFeilendeTilordninger();
@@ -317,8 +314,8 @@ public class VeilederTilordningControllerTest {
         assertThat(feilendeTilordninger2).contains(tilordningERRORBruker2);
     }
 
-    private Callable<TilordneVeilederResponse> portefoljeRessursCallable(VeilederTilordningController veilederTilordningController, List<VeilederTilordning> tilordninger) {
-        return () -> SubjectHandler.withSubject(new Subject("foo", IdentType.InternBruker, SsoToken.oidcToken("xoxo", Collections.emptyMap())), () -> veilederTilordningController.postVeilederTilordninger(tilordninger));
+    private Callable<TilordneVeilederResponse> portefoljeRessursCallable(VeilederTilordningService veilederTilordningService, List<VeilederTilordning> tilordninger) {
+        return () -> SubjectHandler.withSubject(new Subject("foo", IdentType.InternBruker, SsoToken.oidcToken("xoxo", Collections.emptyMap())), () -> veilederTilordningService.tilordneVeiledere(tilordninger));
     }
 
     @Test
@@ -332,7 +329,7 @@ public class VeilederTilordningControllerTest {
         when(authService.getAktorIdOrThrow("FNR1")).thenReturn("AKTOERID1");
         doThrow(new RuntimeException("Test")).when(feed).activateWebhook();
 
-        TilordneVeilederResponse response = veilederTilordningController.postVeilederTilordninger(tilordninger);
+        TilordneVeilederResponse response = veilederTilordningService.tilordneVeiledere(tilordninger);
         List<VeilederTilordning> feilendeTilordninger = response.getFeilendeTilordninger();
 
         assertThat(feilendeTilordninger).isEmpty();
@@ -341,7 +338,7 @@ public class VeilederTilordningControllerTest {
     @Test
     public void noCallToDAOWhenAktoerIdServiceFails() {
         when(authService.getAktorIdOrThrow(anyString())).thenThrow(new RuntimeException("MOCK INGEN AKTOR ID"));
-        veilederTilordningController.postVeilederTilordninger(Collections.singletonList(testData()));
+        veilederTilordningService.tilordneVeiledere(Collections.singletonList(testData()));
         verify(veilederTilordningerRepository, never()).upsertVeilederTilordning(anyString(), anyString());
     }
 

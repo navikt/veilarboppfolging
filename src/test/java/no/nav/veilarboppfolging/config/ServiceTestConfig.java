@@ -15,7 +15,7 @@ import org.springframework.context.annotation.Import;
         ManuellStatusService.class,
         MetricsService.class,
         OppfolgingsenhetEndringService.class,
-        OppfolgingService.class
-
+        OppfolgingService.class,
+        VeilederTilordningService.class
 })
 public class ServiceTestConfig {}
