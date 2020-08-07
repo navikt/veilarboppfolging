@@ -74,8 +74,8 @@ public class AuthService {
     }
 
     public void sjekkLesetilgangMedAktorId(String aktorId) {
-        if (veilarbPep.harTilgangTilPerson(getInnloggetBrukerToken(), ActionId.READ, AbacPersonId.aktorId(aktorId))) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+        if (!veilarbPep.harTilgangTilPerson(getInnloggetBrukerToken(), ActionId.READ, AbacPersonId.aktorId(aktorId))) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
     }
 
@@ -84,8 +84,8 @@ public class AuthService {
     }
 
     public void sjekkSkrivetilgangMedAktorId(String aktorId) {
-        if (veilarbPep.harTilgangTilPerson(getInnloggetBrukerToken(), ActionId.WRITE, AbacPersonId.aktorId(aktorId))) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+        if (!veilarbPep.harTilgangTilPerson(getInnloggetBrukerToken(), ActionId.WRITE, AbacPersonId.aktorId(aktorId))) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
     }
 
