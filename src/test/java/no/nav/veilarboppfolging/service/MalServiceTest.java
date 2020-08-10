@@ -2,14 +2,13 @@ package no.nav.veilarboppfolging.service;
 
 import no.nav.veilarboppfolging.domain.Kvp;
 import no.nav.veilarboppfolging.domain.MalData;
-import no.nav.veilarboppfolging.domain.Oppfolging;
+import no.nav.veilarboppfolging.domain.OppfolgingTable;
 import no.nav.veilarboppfolging.repository.KvpRepository;
 import no.nav.veilarboppfolging.repository.MaalRepository;
-import no.nav.veilarboppfolging.service.OppfolgingResolver.OppfolgingResolverDependencies;
+import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Answers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
@@ -24,7 +23,6 @@ import static java.sql.Timestamp.from;
 import static java.time.temporal.ChronoUnit.DAYS;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
-import static java.util.Optional.of;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -46,14 +44,8 @@ public class MalServiceTest {
     private static final Instant AFTER_KVP = START_KVP.plus(3, DAYS);
     private static final String VEILEDER = "veileder";
 
-    @Mock(answer = Answers.RETURNS_MOCKS)
-    private OppfolgingResolverDependencies oppfolgingResolverDependenciesMock;
-
     @Mock
     private KvpRepository kvpRepositoryMock;
-
-    @Mock
-    private OppfolgingService oppfolgingService;
 
     @Mock
     private AuthService authService;
@@ -64,17 +56,17 @@ public class MalServiceTest {
     @Mock
     private MetricsService metricsService;
 
+    @Mock
+    private OppfolgingsStatusRepository oppfolgingsStatusRepository;
+
     @InjectMocks
     private MalService malService;
 
     @Before
     public void setup() {
-        when(oppfolgingResolverDependenciesMock.getAuthService()).thenReturn(authService);
-        when(oppfolgingResolverDependenciesMock.getMaalRepository()).thenReturn(maalRepository);
-        when(oppfolgingResolverDependenciesMock.getOppfolgingService()).thenReturn(oppfolgingService);
-
         when(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID);
-        when(oppfolgingService.hentOppfolging(AKTOR_ID)).thenReturn(of(oppfolging(from(BEFORE_KVP))));
+        when(oppfolgingsStatusRepository.fetch(AKTOR_ID)).thenReturn(new OppfolgingTable().setGjeldendeMaalId(MAL_ID));
+        when(maalRepository.fetch(MAL_ID)).thenReturn(mal(from(BEFORE_KVP)));
     }
 
     @Test(expected = ResponseStatusException.class)
@@ -88,7 +80,7 @@ public class MalServiceTest {
 
     @Test
     public void gjeldendeMal_ikke_satt() {
-        when(oppfolgingService.hentOppfolging(AKTOR_ID)).thenReturn(of(new Oppfolging()));
+        when(oppfolgingsStatusRepository.fetch(AKTOR_ID)).thenReturn(new OppfolgingTable().setGjeldendeMaalId(0));
 
         MalData malData = malService.hentMal(FNR);
         assertThat(malData.getId()).isEqualTo(0L);
@@ -111,7 +103,7 @@ public class MalServiceTest {
     @Test
     public void hent_mal_opprettet_etter_kvp_veileder_har_ikke_tilgang() {
         when(kvpRepositoryMock.hentKvpHistorikk(AKTOR_ID)).thenReturn(kvpHistorikk());
-        when(oppfolgingService.hentOppfolging(AKTOR_ID)).thenReturn(of(oppfolging(from(IN_KVP))));
+        when(maalRepository.fetch(MAL_ID)).thenReturn(mal(from(IN_KVP)));
         when(authService.harTilgangTilEnhet(ENHET)).thenReturn(false);
 
         MalData malData = malService.hentMal(FNR);
@@ -121,7 +113,7 @@ public class MalServiceTest {
     @Test
     public void hent_mal_opprettet_etter_kvp_veileder_har_tilgang() {
         when(kvpRepositoryMock.hentKvpHistorikk(AKTOR_ID)).thenReturn(kvpHistorikk());
-        when(oppfolgingService.hentOppfolging(AKTOR_ID)).thenReturn(of(oppfolging(from(IN_KVP))));
+        when(maalRepository.fetch(MAL_ID)).thenReturn(mal(from(IN_KVP)));
         when(authService.harTilgangTilEnhet(ENHET)).thenReturn(true);
 
         MalData malData = malService.hentMal(FNR);
@@ -183,12 +175,11 @@ public class MalServiceTest {
                 .build());
     }
 
-    private Oppfolging oppfolging(Timestamp malDato) {
-        MalData mal = new MalData()
+    private MalData mal(Timestamp malDato) {
+        return new MalData()
                 .setId(MAL_ID)
                 .setAktorId(AKTOR_ID)
                 .setDato(malDato);
-        return new Oppfolging().setGjeldendeMal(mal);
     }
 
 }

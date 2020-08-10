@@ -13,7 +13,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.util.List;
-import java.util.Optional;
 
 import static no.nav.common.auth.Constants.*;
 import static no.nav.common.auth.oidc.filter.OidcAuthenticator.fromConfigs;
@@ -86,7 +85,8 @@ public class FilterConfig {
         FilterRegistrationBean<OidcAuthenticationFilter> registration = new FilterRegistrationBean<>();
         OidcAuthenticationFilter authenticationFilter = new OidcAuthenticationFilter(
                 fromConfigs(
-                        openAmAuthConfig(properties), azureAdAuthConfig(properties),
+                        openAmAuthConfig(properties),
+                        azureAdAuthConfig(properties),
                         azureAdB2CAuthConfig(properties),
                         openAmStsAuthConfig(properties),
                         naisStsAuthConfig(properties)

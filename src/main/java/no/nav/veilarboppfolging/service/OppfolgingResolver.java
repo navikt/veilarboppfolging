@@ -21,16 +21,13 @@ import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktClient;
 import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktResponse;
 import no.nav.veilarboppfolging.controller.domain.DkifResponse;
 import no.nav.veilarboppfolging.domain.Kvp;
-import no.nav.veilarboppfolging.domain.MalData;
 import no.nav.veilarboppfolging.domain.ManuellStatus;
 import no.nav.veilarboppfolging.domain.Oppfolging;
 import no.nav.veilarboppfolging.kafka.AvsluttOppfolgingProducer;
 import no.nav.veilarboppfolging.repository.KvpRepository;
-import no.nav.veilarboppfolging.repository.MaalRepository;
 import no.nav.veilarboppfolging.repository.ManuellStatusRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
 import no.nav.veilarboppfolging.utils.ArenaUtils;
-import no.nav.veilarboppfolging.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -218,20 +215,6 @@ public class OppfolgingResolver {
         avsluttOppfolging(null, "Oppfølging avsluttet automatisk pga. inaktiv bruker som ikke kan reaktiveres");
         reloadOppfolging();
         deps.getMetricsService().raporterAutomatiskAvslutningAvOppfolging(!oppfolging.isUnderOppfolging());
-    }
-
-    List<MalData> getMalList() {
-        return deps.getMaalRepository().aktorMal(aktorId);
-    }
-
-    MalData oppdaterMal(String mal, String endretAvVeileder) {
-        MalData malData = new MalData()
-                .setAktorId(aktorId)
-                .setMal(mal)
-                .setEndretAv(StringUtils.of(endretAvVeileder).orElse(aktorId))
-                .setDato(new Timestamp(currentTimeMillis()));
-        deps.getMaalRepository().opprett(malData);
-        return hentOppfolging().getGjeldendeMal();
     }
 
     Oppfolging getOppfolging() {
@@ -558,9 +541,6 @@ public class OppfolgingResolver {
 
         @Autowired
         private OppfolgingService oppfolgingService;
-
-        @Autowired
-        private MaalRepository maalRepository;
 
         @Autowired
         private OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
