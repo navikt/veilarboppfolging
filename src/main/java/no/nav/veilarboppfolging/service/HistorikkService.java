@@ -26,8 +26,6 @@ public class HistorikkService {
     private final AuthService authService;
 
     private final KvpRepository kvpRepository;
-    
-    private final OppfolgingRepositoryService oppfolgingRepositoryService;
 
     private final VeilederHistorikkRepository veilederHistorikkRepository;
 
@@ -45,7 +43,6 @@ public class HistorikkService {
     public HistorikkService(
             AuthService authService,
             KvpRepository kvpRepository,
-            OppfolgingRepositoryService oppfolgingRepositoryService,
             VeilederHistorikkRepository veilederHistorikkRepository,
             UnleashService unleashService,
             OppfolgingsenhetHistorikkRepository oppfolgingsenhetHistorikkRepository,
@@ -55,7 +52,6 @@ public class HistorikkService {
     ) {
         this.authService = authService;
         this.kvpRepository = kvpRepository;
-        this.oppfolgingRepositoryService = oppfolgingRepositoryService;
         this.veilederHistorikkRepository = veilederHistorikkRepository;
         this.unleashService = unleashService;
         this.oppfolgingsenhetHistorikkRepository = oppfolgingsenhetHistorikkRepository;

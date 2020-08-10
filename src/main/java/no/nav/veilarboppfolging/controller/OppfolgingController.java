@@ -1,14 +1,13 @@
 package no.nav.veilarboppfolging.controller;
 
-import no.nav.veilarboppfolging.domain.*;
-import no.nav.veilarboppfolging.controller.domain.Bruker;
-import no.nav.veilarboppfolging.controller.domain.OppfolgingStatus;
-import no.nav.veilarboppfolging.controller.domain.StartEskaleringDTO;
-import no.nav.veilarboppfolging.controller.domain.StartKvpDTO;
-import no.nav.veilarboppfolging.controller.domain.StoppEskaleringDTO;
-import no.nav.veilarboppfolging.controller.domain.StoppKvpDTO;
-import no.nav.veilarboppfolging.controller.domain.VeilederBegrunnelseDTO;
-import no.nav.veilarboppfolging.service.*;
+import no.nav.veilarboppfolging.controller.domain.*;
+import no.nav.veilarboppfolging.domain.InnstillingsHistorikk;
+import no.nav.veilarboppfolging.domain.KodeverkBruker;
+import no.nav.veilarboppfolging.domain.VeilederTilgang;
+import no.nav.veilarboppfolging.service.AuthService;
+import no.nav.veilarboppfolging.service.HistorikkService;
+import no.nav.veilarboppfolging.service.KvpService;
+import no.nav.veilarboppfolging.service.OppfolgingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,10 +25,6 @@ public class OppfolgingController {
     
     private final HistorikkService historikkService;
     
-    private final MalService malService;
-
-    private final AktiverBrukerService aktiverBrukerService;
-    
     private final AuthService authService;
 
     @Autowired
@@ -37,15 +32,11 @@ public class OppfolgingController {
             OppfolgingService oppfolgingService,
             KvpService kvpService,
             HistorikkService historikkService,
-            MalService malService,
-            AktiverBrukerService aktiverBrukerService,
             AuthService authService
     ) {
         this.oppfolgingService = oppfolgingService;
         this.kvpService = kvpService;
         this.historikkService = historikkService;
-        this.malService = malService;
-        this.aktiverBrukerService = aktiverBrukerService;
         this.authService = authService;
     }
 
