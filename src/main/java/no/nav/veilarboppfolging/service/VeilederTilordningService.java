@@ -28,7 +28,7 @@ public class VeilederTilordningService {
     private final VeilederTilordningerRepository veilederTilordningerRepository;
     private final AuthService authService;
     private final FeedProducer<OppfolgingFeedDTO> oppfolgingFeed;
-    private final OppfolgingRepositoryService oppfolgingRepositoryService;
+    private final OppfolgingService oppfolgingService;
     private final VeilederHistorikkRepository veilederHistorikkRepository;
     private final TransactionTemplate transactor;
     private final OppfolgingStatusKafkaProducer kafka;
@@ -39,7 +39,7 @@ public class VeilederTilordningService {
             VeilederTilordningerRepository veilederTilordningerRepository,
             AuthService authService,
             FeedProducer<OppfolgingFeedDTO> oppfolgingFeed,
-            OppfolgingRepositoryService oppfolgingRepositoryService,
+            OppfolgingService oppfolgingService,
             VeilederHistorikkRepository veilederHistorikkRepository,
             TransactionTemplate transactor,
             OppfolgingStatusKafkaProducer kafka
@@ -48,7 +48,7 @@ public class VeilederTilordningService {
         this.veilederTilordningerRepository = veilederTilordningerRepository;
         this.authService = authService;
         this.oppfolgingFeed = oppfolgingFeed;
-        this.oppfolgingRepositoryService = oppfolgingRepositoryService;
+        this.oppfolgingService = oppfolgingService;
         this.veilederHistorikkRepository = veilederHistorikkRepository;
         this.transactor = transactor;
         this.kafka = kafka;
@@ -165,7 +165,7 @@ public class VeilederTilordningService {
         transactor.executeWithoutResult((status) -> {
             veilederTilordningerRepository.upsertVeilederTilordning(aktoerId, veileder);
             veilederHistorikkRepository.insertTilordnetVeilederForAktorId(aktoerId, veileder);
-            oppfolgingRepositoryService.startOppfolgingHvisIkkeAlleredeStartet(aktoerId);
+            oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(aktoerId);
             kafka.send(new AktorId(aktoerId));
         });
 

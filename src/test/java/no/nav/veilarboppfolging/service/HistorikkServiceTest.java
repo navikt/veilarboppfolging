@@ -38,9 +38,6 @@ public class HistorikkServiceTest {
     private KvpRepository kvpRepositoryMock;
 
     @Mock
-    private OppfolgingRepositoryService oppfolgingRepositoryServiceMock;
-
-    @Mock
     private TransactionTemplate transactor;
 
     @Mock

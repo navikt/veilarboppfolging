@@ -18,7 +18,11 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class OppfolgingRepositoryServiceTest extends IsolatedDatabaseTest {
+/**
+ * Dette lå orginalt i en annen service, men har blitt merget inn med OppfolgingService.
+ * Det er kun testene fra den andre servicen som har blitt merget inn som blir testet her, resten av testene blir gjort i OppfolgingServiceTest.
+ */
+public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
 
     private static final String AKTOR_ID = "aktorId";
     private static final String ENHET = "enhet";
@@ -38,7 +42,7 @@ public class OppfolgingRepositoryServiceTest extends IsolatedDatabaseTest {
 
     private ManuellStatusRepository manuellStatusRepository;
 
-    private OppfolgingRepositoryService oppfolgingRepositoryService;
+    private OppfolgingService oppfolgingService;
     
     @Before
     public void setup() {
@@ -52,17 +56,18 @@ public class OppfolgingRepositoryServiceTest extends IsolatedDatabaseTest {
 
         manuellStatusRepository = new ManuellStatusRepository(db);
 
-        oppfolgingRepositoryService = new OppfolgingRepositoryService(
-                authService, oppfolgingsStatusRepository, oppfolgingsPeriodeRepository,
-                maalRepository, manuellStatusRepository, new EskaleringsvarselRepository(db),
-                new KvpRepository(db), new NyeBrukereFeedRepository(db)
+        oppfolgingService = new OppfolgingService(
+                authService, null, oppfolgingsStatusRepository,
+                oppfolgingsPeriodeRepository, manuellStatusRepository, null,
+                null, null, null, null,
+                new KvpRepository(db), new NyeBrukereFeedRepository(db), maalRepository
         );
     }
 
     @Test
     public void oppfolging_periode_uten_kvp_perioder() {
         gittOppfolgingForAktor(AKTOR_ID);
-        Oppfolging oppfolging = oppfolgingRepositoryService.hentOppfolging(AKTOR_ID).get();
+        Oppfolging oppfolging = oppfolgingService.hentOppfolging(AKTOR_ID).get();
 
         assertThat(oppfolging.getOppfolgingsperioder().get(0).getKvpPerioder()).hasSize(0);
     }
@@ -74,7 +79,7 @@ public class OppfolgingRepositoryServiceTest extends IsolatedDatabaseTest {
         gittOppfolgingForAktor(AKTOR_ID);
         gitt_kvp_periode(ENHET);
         gitt_kvp_periode(ENHET);
-        Oppfolging oppfolging = oppfolgingRepositoryService.hentOppfolging(AKTOR_ID).get();
+        Oppfolging oppfolging = oppfolgingService.hentOppfolging(AKTOR_ID).get();
 
         assertThat(oppfolging.getOppfolgingsperioder().get(0).getKvpPerioder()).hasSize(2);
     }
@@ -87,7 +92,7 @@ public class OppfolgingRepositoryServiceTest extends IsolatedDatabaseTest {
         gittOppfolgingForAktor(AKTOR_ID);
         gitt_kvp_periode(ENHET);
         gitt_kvp_periode(OTHER_ENHET);
-        Oppfolging oppfolging = oppfolgingRepositoryService.hentOppfolging(AKTOR_ID).get();
+        Oppfolging oppfolging = oppfolgingService.hentOppfolging(AKTOR_ID).get();
 
         assertThat(oppfolging.getOppfolgingsperioder().get(0).getKvpPerioder()).hasSize(1);
     }
@@ -115,7 +120,7 @@ public class OppfolgingRepositoryServiceTest extends IsolatedDatabaseTest {
     }
 
     private MalData getGjeldendeMal(String aktorId) {
-        return oppfolgingRepositoryService.hentOppfolging(aktorId).get().getGjeldendeMal();
+        return oppfolgingService.hentOppfolging(aktorId).get().getGjeldendeMal();
     }
 
     private List<MalData> hentMal(String aktorId) {
@@ -131,7 +136,7 @@ public class OppfolgingRepositoryServiceTest extends IsolatedDatabaseTest {
     @Test
     public void kanHenteForventetOppfolging() {
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
-        oppfolgingRepositoryService.startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
+        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
         Oppfolging uthentetOppfolging = hentOppfolging(AKTOR_ID).get();
         assertThat(uthentetOppfolging.getAktorId(), equalTo(AKTOR_ID));
         assertThat(uthentetOppfolging.isUnderOppfolging(), is(true));
@@ -141,7 +146,7 @@ public class OppfolgingRepositoryServiceTest extends IsolatedDatabaseTest {
     @Test
     public void avsluttOppfolgingResetterVeileder_Manuellstatus_Mal_Og_Vilkar() {
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
-        oppfolgingRepositoryService.startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
+        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
         String veilederId = "veilederId";
         String maal = "Mål";
         settVeileder(veilederId, AKTOR_ID);
@@ -174,26 +179,26 @@ public class OppfolgingRepositoryServiceTest extends IsolatedDatabaseTest {
     @Test
     public void kanHenteOppfolgingMedIngenOppfolgingsperioder() {
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
-        Oppfolging oppfolging = oppfolgingRepositoryService.hentOppfolging(AKTOR_ID).get();
+        Oppfolging oppfolging = oppfolgingService.hentOppfolging(AKTOR_ID).get();
         assertThat(oppfolging.getOppfolgingsperioder(), empty());
     }
 
     @Test
     public void kanHenteOppfolgingMedOppfolgingsperioder() {
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
-        oppfolgingRepositoryService.startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
-        List<Oppfolgingsperiode> oppfolgingsperioder = oppfolgingRepositoryService.hentOppfolging(AKTOR_ID).get().getOppfolgingsperioder();
+        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
+        List<Oppfolgingsperiode> oppfolgingsperioder = oppfolgingService.hentOppfolging(AKTOR_ID).get().getOppfolgingsperioder();
         assertThat(oppfolgingsperioder, hasSize(1));
         assertThat(oppfolgingsperioder.get(0).getStartDato(), not(nullValue()));
         assertThat(oppfolgingsperioder.get(0).getSluttDato(), nullValue());
 
         oppfolgingsPeriodeRepository.avslutt(AKTOR_ID, "veileder", "begrunnelse");
-        oppfolgingsperioder = oppfolgingRepositoryService.hentOppfolging(AKTOR_ID).get().getOppfolgingsperioder();
+        oppfolgingsperioder = oppfolgingService.hentOppfolging(AKTOR_ID).get().getOppfolgingsperioder();
         assertThat(oppfolgingsperioder, hasSize(1));
         assertThat(oppfolgingsperioder.get(0).getSluttDato(), not(nullValue()));
 
-        oppfolgingRepositoryService.startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
-        oppfolgingsperioder = oppfolgingRepositoryService.hentOppfolging(AKTOR_ID).get().getOppfolgingsperioder();
+        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
+        oppfolgingsperioder = oppfolgingService.hentOppfolging(AKTOR_ID).get().getOppfolgingsperioder();
         assertThat(oppfolgingsperioder, hasSize(2));
     }
 
@@ -201,7 +206,7 @@ public class OppfolgingRepositoryServiceTest extends IsolatedDatabaseTest {
     @Test
     public void utenVeileder() {
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
-        Oppfolging oppfolging = oppfolgingRepositoryService.hentOppfolging(AKTOR_ID).get();
+        Oppfolging oppfolging = oppfolgingService.hentOppfolging(AKTOR_ID).get();
         assertThat(oppfolging.getVeilederId(), nullValue());
     }
 
@@ -210,7 +215,7 @@ public class OppfolgingRepositoryServiceTest extends IsolatedDatabaseTest {
         String veilederId = "veilederId";
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
         settVeileder(veilederId, AKTOR_ID);
-        Oppfolging oppfolging = oppfolgingRepositoryService.hentOppfolging(AKTOR_ID).get();
+        Oppfolging oppfolging = oppfolgingService.hentOppfolging(AKTOR_ID).get();
         assertThat(oppfolging.getVeilederId(), equalTo(veilederId));
     }
 
@@ -224,10 +229,10 @@ public class OppfolgingRepositoryServiceTest extends IsolatedDatabaseTest {
     }
 
     private Oppfolging gittOppfolgingForAktor(String aktorId) {
-        Oppfolging oppfolging = oppfolgingRepositoryService.hentOppfolging(aktorId)
+        Oppfolging oppfolging = oppfolgingService.hentOppfolging(aktorId)
                 .orElseGet(() -> oppfolgingsStatusRepository.opprettOppfolging(aktorId));
 
-        oppfolgingRepositoryService.startOppfolgingHvisIkkeAlleredeStartet(aktorId);
+        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(aktorId);
         oppfolging.setUnderOppfolging(true);
         return oppfolging;
     }
@@ -237,7 +242,7 @@ public class OppfolgingRepositoryServiceTest extends IsolatedDatabaseTest {
     }
 
     private Optional<Oppfolging> hentOppfolging(String ukjentAktorId) {
-        return oppfolgingRepositoryService.hentOppfolging(ukjentAktorId);
+        return oppfolgingService.hentOppfolging(ukjentAktorId);
     }
 
     private void opprettMal(String aktorId, String mal) {

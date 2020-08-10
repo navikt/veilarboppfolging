@@ -36,8 +36,6 @@ public class IservServiceIntegrationTest {
 
     private OppfolgingService oppfolgingService = mock(OppfolgingService.class);
 
-    private OppfolgingRepositoryService oppfolgingRepositoryService = mock(OppfolgingRepositoryService.class);
-
     @Before
     public void setup() {
         JdbcTemplate db = LocalH2Database.getDb();
@@ -52,8 +50,7 @@ public class IservServiceIntegrationTest {
 
         iservService = new IservService(
                 mock(MetricsService.class), utmeldingRepository,
-                oppfolgingService, oppfolgingStatusRepository,
-                oppfolgingRepositoryService, authService);
+                oppfolgingService, oppfolgingStatusRepository, authService);
     }
 
     @Test
@@ -102,7 +99,7 @@ public class IservServiceIntegrationTest {
         when(oppfolgingStatusRepository.fetch(anyString())).thenReturn(new OppfolgingTable().setUnderOppfolging(false));
 
         iservService.behandleEndretBruker(veilarbArenaOppfolging);
-        verify(oppfolgingRepositoryService).startOppfolgingHvisIkkeAlleredeStartet(AKTORID);
+        verify(oppfolgingService).startOppfolgingHvisIkkeAlleredeStartet(AKTORID);
     }
 
     @Test
@@ -111,7 +108,7 @@ public class IservServiceIntegrationTest {
         veilarbArenaOppfolging.setFormidlingsgruppekode("ARBS");
 
         iservService.behandleEndretBruker(veilarbArenaOppfolging);
-        verifyZeroInteractions(oppfolgingRepositoryService);
+        verifyZeroInteractions(oppfolgingService);
     }
   
     @Test
@@ -122,7 +119,7 @@ public class IservServiceIntegrationTest {
         when(oppfolgingStatusRepository.fetch(anyString())).thenReturn(new OppfolgingTable().setUnderOppfolging(false));
 
         iservService.behandleEndretBruker(veilarbArenaOppfolging);
-        verifyZeroInteractions(oppfolgingRepositoryService);
+        verifyZeroInteractions(oppfolgingService);
     }
 
     @Test

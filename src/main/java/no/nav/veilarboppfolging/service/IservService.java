@@ -32,7 +32,6 @@ public class IservService {
     private final UtmeldingRepository utmeldingRepository;
     private final OppfolgingService oppfolgingService;
     private final OppfolgingsStatusRepository oppfolgingsStatusRepository;
-    private final OppfolgingRepositoryService oppfolgingRepositoryService;
     private final AuthService authService;
 
     public IservService(
@@ -40,14 +39,12 @@ public class IservService {
             UtmeldingRepository utmeldingRepository,
             OppfolgingService oppfolgingService,
             OppfolgingsStatusRepository oppfolgingsStatusRepository,
-            OppfolgingRepositoryService oppfolgingRepositoryService,
             AuthService authService
     ) {
         this.metricsService = metricsService;
         this.utmeldingRepository = utmeldingRepository;
         this.oppfolgingService = oppfolgingService;
         this.oppfolgingsStatusRepository = oppfolgingsStatusRepository;
-        this.oppfolgingRepositoryService = oppfolgingRepositoryService;
         this.authService = authService;
     }
 
@@ -110,7 +107,7 @@ public class IservService {
 
     private void startOppfolging(VeilarbArenaOppfolgingEndret oppfolgingEndret) {
         log.info("Starter oppfølging automatisk for bruker med aktørid {}", oppfolgingEndret.getAktoerid());
-        oppfolgingRepositoryService.startOppfolgingHvisIkkeAlleredeStartet(oppfolgingEndret.getAktoerid());
+        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(oppfolgingEndret.getAktoerid());
         metricsService.startetOppfolgingAutomatisk(oppfolgingEndret.getFormidlingsgruppekode(), oppfolgingEndret.getKvalifiseringsgruppekode());
     }
 

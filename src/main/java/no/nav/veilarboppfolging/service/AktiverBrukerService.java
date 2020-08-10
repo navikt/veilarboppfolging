@@ -18,7 +18,7 @@ public class AktiverBrukerService {
 
     private final BehandleArbeidssokerClient behandleArbeidssokerClient;
 
-    private final OppfolgingRepositoryService oppfolgingRepositoryService;
+    private final OppfolgingService oppfolgingService;
 
     private final NyeBrukereFeedRepository nyeBrukereFeedRepository;
 
@@ -27,13 +27,13 @@ public class AktiverBrukerService {
     @Autowired
     public AktiverBrukerService(
             AuthService authService,
-            OppfolgingRepositoryService oppfolgingRepositoryService,
+            OppfolgingService oppfolgingService,
             BehandleArbeidssokerClient behandleArbeidssokerClient,
             NyeBrukereFeedRepository nyeBrukereFeedRepository,
             TransactionTemplate transactor
     ) {
         this.authService = authService;
-        this.oppfolgingRepositoryService = oppfolgingRepositoryService;
+        this.oppfolgingService = oppfolgingService;
         this.behandleArbeidssokerClient = behandleArbeidssokerClient;
         this.nyeBrukereFeedRepository = nyeBrukereFeedRepository;
         this.transactor = transactor;
@@ -59,7 +59,7 @@ public class AktiverBrukerService {
     }
 
     private void startReaktiveringAvBrukerOgOppfolging(Fnr fnr, AktorId aktorId) {
-        oppfolgingRepositoryService.startOppfolgingHvisIkkeAlleredeStartet(
+        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(
                 Oppfolgingsbruker.builder()
                         .aktoerId(aktorId.getAktorId())
                         .build()
@@ -69,7 +69,7 @@ public class AktiverBrukerService {
     }
 
     private void aktiverBrukerOgOppfolging(String fnr, AktorId aktorId, Innsatsgruppe innsatsgruppe) {
-        oppfolgingRepositoryService.startOppfolgingHvisIkkeAlleredeStartet(
+        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(
                 Oppfolgingsbruker.builder()
                         .aktoerId(aktorId.getAktorId())
                         .innsatsgruppe(innsatsgruppe)
@@ -88,7 +88,7 @@ public class AktiverBrukerService {
                     .aktoerId(authService.getAktorIdOrThrow(uid))
                     .build();
 
-            oppfolgingRepositoryService.startOppfolgingHvisIkkeAlleredeStartet(oppfolgingsbruker);
+            oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(oppfolgingsbruker);
         });
     }
 

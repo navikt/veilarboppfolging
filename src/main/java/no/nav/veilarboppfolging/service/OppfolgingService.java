@@ -1,6 +1,7 @@
 package no.nav.veilarboppfolging.service;
 
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import no.nav.common.featuretoggle.UnleashService;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
@@ -9,13 +10,12 @@ import no.nav.veilarboppfolging.controller.domain.DkifResponse;
 import no.nav.veilarboppfolging.controller.domain.UnderOppfolgingDTO;
 import no.nav.veilarboppfolging.domain.*;
 import no.nav.veilarboppfolging.kafka.OppfolgingStatusKafkaProducer;
-import no.nav.veilarboppfolging.repository.ManuellStatusRepository;
-import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
-import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
+import no.nav.veilarboppfolging.repository.*;
 import no.nav.veilarboppfolging.service.OppfolgingResolver.OppfolgingResolverDependencies;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -24,8 +24,11 @@ import java.util.List;
 import java.util.Optional;
 
 import static java.lang.System.currentTimeMillis;
+import static java.util.stream.Collectors.toList;
+import static no.nav.veilarboppfolging.utils.KvpUtils.sjekkTilgangGittKvp;
 
-@Component
+@Slf4j
+@Service
 public class OppfolgingService {
 
     private final AuthService authService;
@@ -37,6 +40,10 @@ public class OppfolgingService {
     private final VeilarbarenaClient veilarbarenaClient;
     private final UnleashService unleashService;
     private final OppfolgingStatusKafkaProducer kafkaProducer;
+    private final EskaleringsvarselRepository eskaleringsvarselRepository;
+    private final KvpRepository kvpRepository;
+    private final NyeBrukereFeedRepository nyeBrukereFeedRepository;
+    private final MaalRepository maalRepository;
 
     @Autowired
     public OppfolgingService(
@@ -48,7 +55,11 @@ public class OppfolgingService {
             ManuellStatusService manuellStatusService,
             VeilarbarenaClient veilarbarenaClient,
             UnleashService unleashService,
-            OppfolgingStatusKafkaProducer kafkaProducer
+            OppfolgingStatusKafkaProducer kafkaProducer,
+            EskaleringsvarselRepository eskaleringsvarselRepository,
+            KvpRepository kvpRepository,
+            NyeBrukereFeedRepository nyeBrukereFeedRepository,
+            MaalRepository maalRepository
     ) {
         this.authService = authService;
         this.oppfolgingResolverDependencies = oppfolgingResolverDependencies;
@@ -59,6 +70,10 @@ public class OppfolgingService {
         this.veilarbarenaClient = veilarbarenaClient;
         this.unleashService = unleashService;
         this.kafkaProducer = kafkaProducer;
+        this.eskaleringsvarselRepository = eskaleringsvarselRepository;
+        this.kvpRepository = kvpRepository;
+        this.nyeBrukereFeedRepository = nyeBrukereFeedRepository;
+        this.maalRepository = maalRepository;
     }
 
     @SneakyThrows
@@ -186,12 +201,6 @@ public class OppfolgingService {
         }
     }
 
-    private Optional<OppfolgingTable> getOppfolgingStatus(String fnr) {
-        String aktorId = authService.getAktorIdOrThrow(fnr);
-        authService.sjekkLesetilgangMedAktorId(aktorId);
-        return Optional.ofNullable(oppfolgingsStatusRepository.fetch(aktorId));
-    }
-
     public UnderOppfolgingDTO oppfolgingData(String fnr) {
         authService.sjekkLesetilgangMedFnr(fnr);
 
@@ -216,6 +225,41 @@ public class OppfolgingService {
         resolver.sjekkStatusIArenaOgOppdaterOppfolging();
 
         return getOppfolgingStatusData(fnr, resolver).isUnderOppfolging();
+    }
+
+    @Transactional
+    public void startEskalering(String aktorId, String opprettetAv, String opprettetBegrunnelse, long tilhorendeDialogId) {
+        long gjeldendeEskaleringsvarselId = oppfolgingsStatusRepository.fetch(aktorId).getGjeldendeEskaleringsvarselId();
+
+        if (gjeldendeEskaleringsvarselId > 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Brukeren har allerede et aktivt eskaleringsvarsel.");
+        }
+
+        val e = EskaleringsvarselData.builder()
+                .aktorId(aktorId)
+                .opprettetAv(opprettetAv)
+                .opprettetBegrunnelse(opprettetBegrunnelse)
+                .tilhorendeDialogId(tilhorendeDialogId)
+                .build();
+
+        eskaleringsvarselRepository.create(e);
+    }
+
+    @Transactional
+    public void stoppEskalering(String aktorId, String avsluttetAv, String avsluttetBegrunnelse) {
+        long gjeldendeEskaleringsvarselId = oppfolgingsStatusRepository.fetch(aktorId).getGjeldendeEskaleringsvarselId();
+
+        if (gjeldendeEskaleringsvarselId == 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Brukeren har ikke et aktivt eskaleringsvarsel.");
+        }
+
+        eskaleringsvarselRepository.finish(aktorId, gjeldendeEskaleringsvarselId, avsluttetAv, avsluttetBegrunnelse);
+    }
+
+    private Optional<OppfolgingTable> getOppfolgingStatus(String fnr) {
+        String aktorId = authService.getAktorIdOrThrow(fnr);
+        authService.sjekkLesetilgangMedAktorId(aktorId);
+        return Optional.ofNullable(oppfolgingsStatusRepository.fetch(aktorId));
     }
 
     private OppfolgingStatusData getOppfolgingStatusData(String fnr, OppfolgingResolver oppfolgingResolver) {
@@ -264,6 +308,105 @@ public class OppfolgingService {
                 .build();
 
         return getOppfolgingStatusData(fnr, oppfolgingResolver, avslutningStatusData);
+    }
+
+
+    @SneakyThrows
+    public Optional<Oppfolging> hentOppfolging(String aktorId) {
+        OppfolgingTable t = oppfolgingsStatusRepository.fetch(aktorId);
+        if (t == null) {
+            return Optional.empty();
+        }
+
+        Oppfolging o = new Oppfolging()
+                .setAktorId(t.getAktorId())
+                .setVeilederId(t.getVeilederId())
+                .setUnderOppfolging(t.isUnderOppfolging());
+
+        Kvp kvp = null;
+        if (t.getGjeldendeKvpId() != 0) {
+            kvp = kvpRepository.fetch(t.getGjeldendeKvpId());
+            if (authService.harTilgangTilEnhet(kvp.getEnhet())) {
+                o.setGjeldendeKvp(kvp);
+            }
+        }
+
+        // Gjeldende eskaleringsvarsel inkluderes i resultatet kun hvis den innloggede veilederen har tilgang til brukers enhet.
+        if (t.getGjeldendeEskaleringsvarselId() != 0) {
+            EskaleringsvarselData varsel = eskaleringsvarselRepository.fetch(t.getGjeldendeEskaleringsvarselId());
+            if (sjekkTilgangGittKvp(authService, kvp, varsel::getOpprettetDato)) {
+                o.setGjeldendeEskaleringsvarsel(varsel);
+            }
+        }
+
+        if (t.getGjeldendeMaalId() != 0) {
+            o.setGjeldendeMal(maalRepository.fetch(t.getGjeldendeMaalId()));
+        }
+
+        if (t.getGjeldendeManuellStatusId() != 0) {
+            o.setGjeldendeManuellStatus(manuellStatusRepository.fetch(t.getGjeldendeManuellStatusId()));
+        }
+
+        List<Kvp> kvpPerioder = kvpRepository.hentKvpHistorikk(aktorId);
+        o.setOppfolgingsperioder(populerKvpPerioder(oppfolgingsPeriodeRepository.hentOppfolgingsperioder(t.getAktorId()), kvpPerioder));
+
+        return Optional.of(o);
+    }
+
+    @Transactional
+    public void startOppfolgingHvisIkkeAlleredeStartet(String aktorId) {
+        startOppfolgingHvisIkkeAlleredeStartet(
+                Oppfolgingsbruker.builder()
+                        .aktoerId(aktorId)
+                        .build()
+        );
+    }
+
+    @Transactional
+    public void startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker oppfolgingsbruker) {
+        String aktoerId = oppfolgingsbruker.getAktoerId();
+
+        Oppfolging oppfolgingsstatus = hentOppfolging(aktoerId).orElseGet(() -> {
+            // Siden det blir gjort mange kall samtidig til flere noder kan det oppstå en race condition
+            // hvor oppfølging har blitt insertet av en annen node etter at den har sjekket at oppfølging
+            // ikke ligger i databasen.
+            try {
+                return oppfolgingsStatusRepository.opprettOppfolging(aktoerId);
+            } catch (DuplicateKeyException e) {
+                log.info("Race condition oppstod under oppretting av ny oppfølging for bruker: " + aktoerId);
+                return hentOppfolging(aktoerId).orElse(null);
+            }
+        });
+
+        if (oppfolgingsstatus != null && !oppfolgingsstatus.isUnderOppfolging()) {
+            oppfolgingsPeriodeRepository.start(aktoerId);
+            nyeBrukereFeedRepository.leggTil(oppfolgingsbruker);
+        }
+    }
+
+    private List<Oppfolgingsperiode> populerKvpPerioder(List<Oppfolgingsperiode> oppfolgingsPerioder, List<Kvp> kvpPerioder) {
+        return oppfolgingsPerioder.stream()
+                .map(periode -> periode.toBuilder().kvpPerioder(
+                        kvpPerioder.stream()
+                                .filter(kvp -> erKvpIPeriode(kvp, periode))
+                                .collect(toList())
+                ).build())
+                .collect(toList());
+    }
+
+    private boolean erKvpIPeriode(Kvp kvp, Oppfolgingsperiode periode) {
+        return authService.harTilgangTilEnhet(kvp.getEnhet())
+                && kvpEtterStartenAvPeriode(kvp, periode)
+                && kvpForSluttenAvPeriode(kvp, periode);
+    }
+
+    private boolean kvpEtterStartenAvPeriode(Kvp kvp, Oppfolgingsperiode periode) {
+        return !periode.getStartDato().after(kvp.getOpprettetDato());
+    }
+
+    private boolean kvpForSluttenAvPeriode(Kvp kvp, Oppfolgingsperiode periode) {
+        return periode.getSluttDato() == null
+                || !periode.getSluttDato().before(kvp.getOpprettetDato());
     }
 
 }

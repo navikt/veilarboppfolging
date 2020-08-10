@@ -53,7 +53,7 @@ public class MalServiceTest {
     private KvpRepository kvpRepositoryMock;
 
     @Mock
-    private OppfolgingRepositoryService oppfolgingRepositoryServiceMock;
+    private OppfolgingService oppfolgingService;
 
     @Mock
     private AuthService authService;
@@ -71,10 +71,10 @@ public class MalServiceTest {
     public void setup() {
         when(oppfolgingResolverDependenciesMock.getAuthService()).thenReturn(authService);
         when(oppfolgingResolverDependenciesMock.getMaalRepository()).thenReturn(maalRepository);
-        when(oppfolgingResolverDependenciesMock.getOppfolgingRepositoryService()).thenReturn(oppfolgingRepositoryServiceMock);
+        when(oppfolgingResolverDependenciesMock.getOppfolgingService()).thenReturn(oppfolgingService);
 
         when(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID);
-        when(oppfolgingRepositoryServiceMock.hentOppfolging(AKTOR_ID)).thenReturn(of(oppfolging(from(BEFORE_KVP))));
+        when(oppfolgingService.hentOppfolging(AKTOR_ID)).thenReturn(of(oppfolging(from(BEFORE_KVP))));
     }
 
     @Test(expected = ResponseStatusException.class)
@@ -88,7 +88,7 @@ public class MalServiceTest {
 
     @Test
     public void gjeldendeMal_ikke_satt() {
-        when(oppfolgingRepositoryServiceMock.hentOppfolging(AKTOR_ID)).thenReturn(of(new Oppfolging()));
+        when(oppfolgingService.hentOppfolging(AKTOR_ID)).thenReturn(of(new Oppfolging()));
 
         MalData malData = malService.hentMal(FNR);
         assertThat(malData.getId()).isEqualTo(0L);
@@ -111,7 +111,7 @@ public class MalServiceTest {
     @Test
     public void hent_mal_opprettet_etter_kvp_veileder_har_ikke_tilgang() {
         when(kvpRepositoryMock.hentKvpHistorikk(AKTOR_ID)).thenReturn(kvpHistorikk());
-        when(oppfolgingRepositoryServiceMock.hentOppfolging(AKTOR_ID)).thenReturn(of(oppfolging(from(IN_KVP))));
+        when(oppfolgingService.hentOppfolging(AKTOR_ID)).thenReturn(of(oppfolging(from(IN_KVP))));
         when(authService.harTilgangTilEnhet(ENHET)).thenReturn(false);
 
         MalData malData = malService.hentMal(FNR);
@@ -121,7 +121,7 @@ public class MalServiceTest {
     @Test
     public void hent_mal_opprettet_etter_kvp_veileder_har_tilgang() {
         when(kvpRepositoryMock.hentKvpHistorikk(AKTOR_ID)).thenReturn(kvpHistorikk());
-        when(oppfolgingRepositoryServiceMock.hentOppfolging(AKTOR_ID)).thenReturn(of(oppfolging(from(IN_KVP))));
+        when(oppfolgingService.hentOppfolging(AKTOR_ID)).thenReturn(of(oppfolging(from(IN_KVP))));
         when(authService.harTilgangTilEnhet(ENHET)).thenReturn(true);
 
         MalData malData = malService.hentMal(FNR);

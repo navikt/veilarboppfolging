@@ -33,7 +33,7 @@ public class OppfolgingResolverTestVeilarbArena extends OppfolgingResolverTest {
 
         oppfolgingResolver.sjekkStatusIArenaOgOppdaterOppfolging();
 
-        verify(oppfolgingRepositoryServiceMock).startOppfolgingHvisIkkeAlleredeStartet(anyString());
+        verify(oppfolgingService).startOppfolgingHvisIkkeAlleredeStartet(anyString());
     }
 
     @Test
@@ -133,7 +133,7 @@ public class OppfolgingResolverTestVeilarbArena extends OppfolgingResolverTest {
     private void gittTilstand(boolean oppfolgingsflagg,
                               Optional<VeilarbArenaOppfolging> veilarbarena,
                               Optional<ArenaOppfolging> arena) {
-        when(oppfolgingRepositoryServiceMock.hentOppfolging(any()))
+        when(oppfolgingService.hentOppfolging(any()))
                 .thenReturn(Optional.of(new Oppfolging().setUnderOppfolging(oppfolgingsflagg)));
 //        when(oppfolgingClient.hentOppfolgingsbruker(any()))
 //                .thenReturn(veilarbarena);

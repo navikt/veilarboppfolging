@@ -20,7 +20,7 @@ public class AktiverBrukerServiceTest {
 
     private BehandleArbeidssokerClient behandleArbeidssokerClient;
 
-    private OppfolgingRepositoryService oppfolgingRepositoryService;
+    private OppfolgingService oppfolgingService;
 
     private AktiverBrukerService aktiverBrukerService;
 
@@ -28,11 +28,11 @@ public class AktiverBrukerServiceTest {
     public void setup() {
         authService = mock(AuthService.class);
         behandleArbeidssokerClient = mock(BehandleArbeidssokerClient.class);
-        oppfolgingRepositoryService = mock(OppfolgingRepositoryService.class);
+        oppfolgingService = mock(OppfolgingService.class);
 
         aktiverBrukerService = new AktiverBrukerService(
                 authService,
-                oppfolgingRepositoryService,
+                oppfolgingService,
                 behandleArbeidssokerClient,
                 new NyeBrukereFeedRepository(LocalH2Database.getDb()),
                 DbTestUtils.getTransactor(LocalH2Database.getDb())

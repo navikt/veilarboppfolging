@@ -29,7 +29,7 @@ public class AktiverBrukerIntegrationTest {
 
     private BehandleArbeidssokerClient behandleArbeidssokerClient;
 
-    private OppfolgingRepositoryService oppfolgingRepositoryService;
+    private OppfolgingService oppfolgingService;
 
     private AktiverBrukerService aktiverBrukerService;
 
@@ -44,14 +44,17 @@ public class AktiverBrukerIntegrationTest {
         authService = mock(AuthService.class);
         behandleArbeidssokerClient = mock(BehandleArbeidssokerClient.class);
 
-        oppfolgingRepositoryService = new OppfolgingRepositoryService(
-                authService, oppfolgingsStatusRepository, oppfolgingsPeriodeRepository,
-                new MaalRepository(db), new ManuellStatusRepository(db), new EskaleringsvarselRepository(db),
-                new KvpRepository(db), new NyeBrukereFeedRepository(db)
+        oppfolgingService = new OppfolgingService(
+                authService, null,
+                oppfolgingsStatusRepository, oppfolgingsPeriodeRepository,
+                new ManuellStatusRepository(db), null,
+                null, null, null,
+                new EskaleringsvarselRepository(db), new KvpRepository(db),
+                new NyeBrukereFeedRepository(db), new MaalRepository(db)
         );
 
         aktiverBrukerService = new AktiverBrukerService(
-                authService, oppfolgingRepositoryService,
+                authService, oppfolgingService,
                 behandleArbeidssokerClient, new NyeBrukereFeedRepository(db),
                 DbTestUtils.getTransactor(db)
         );
@@ -69,7 +72,7 @@ public class AktiverBrukerIntegrationTest {
         Try<Void> run = Try.run(() -> aktiverBrukerService.aktiverBruker(data));
         assertThat(run.isFailure()).isTrue();
 
-        Optional<Oppfolging> oppfolging = oppfolgingRepositoryService.hentOppfolging(IDENT);
+        Optional<Oppfolging> oppfolging = oppfolgingService.hentOppfolging(IDENT);
 
         assertThat(oppfolging.isPresent()).isFalse();
     }
@@ -78,7 +81,7 @@ public class AktiverBrukerIntegrationTest {
     public void skalLagreIDatabaseDersomKallTilArenaErOK() {
         aktiverBrukerService.aktiverBruker(lagBruker(IDENT));
 
-        Optional<Oppfolging> oppfolging = oppfolgingRepositoryService.hentOppfolging(IDENT);
+        Optional<Oppfolging> oppfolging = oppfolgingService.hentOppfolging(IDENT);
 
         assertThat(oppfolging.isPresent()).isTrue();
     }
@@ -90,7 +93,7 @@ public class AktiverBrukerIntegrationTest {
 
         aktiverBrukerService.aktiverBruker(lagBruker(IDENT));
 
-        Optional<Oppfolging> oppfolging = oppfolgingRepositoryService.hentOppfolging(IDENT);
+        Optional<Oppfolging> oppfolging = oppfolgingService.hentOppfolging(IDENT);
 
         assertThat(oppfolging.get().isUnderOppfolging()).isTrue();
     }

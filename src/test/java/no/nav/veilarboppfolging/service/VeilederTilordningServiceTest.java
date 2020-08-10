@@ -43,7 +43,7 @@ public class VeilederTilordningServiceTest {
     private VeilederHistorikkRepository veilederHistorikkRepository;
 
     @Mock
-    private OppfolgingRepositoryService oppfolgingRepositoryService;
+    private OppfolgingService oppfolgingService;
 
     @Mock
     private FeedProducer<OppfolgingFeedDTO> feed;
@@ -65,7 +65,7 @@ public class VeilederTilordningServiceTest {
                     veilederTilordningerRepository,
                     authService,
                     feed,
-                    oppfolgingRepositoryService,
+                    oppfolgingService,
                     veilederHistorikkRepository,
                     DbTestUtils.getTransactor(LocalH2Database.getDb()),
                     mock(OppfolgingStatusKafkaProducer.class)

@@ -31,7 +31,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
-import java.util.Optional;
 
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
@@ -50,9 +49,6 @@ public class OppfolgingServiceTest {
 
     @Mock
     private DkifClient dkifClient;
-
-    @Mock
-    private OppfolgingRepositoryService oppfolgingRepositoryServiceMock;
 
     @Mock
     private AuthService authService;
@@ -100,9 +96,9 @@ public class OppfolgingServiceTest {
     @Before
     public void setup() throws Exception {
         arenaOppfolging = new ArenaOppfolging();
-        when(oppfolgingRepositoryServiceMock.hentOppfolging(anyString())).thenReturn(Optional.of(oppfolging));
-
-        doAnswer((a) -> oppfolging.setUnderOppfolging(true)).when(oppfolgingRepositoryServiceMock).startOppfolgingHvisIkkeAlleredeStartet(anyString());
+//        when(oppfolgingRepositoryServiceMock.hentOppfolging(anyString())).thenReturn(Optional.of(oppfolging));
+//
+//        doAnswer((a) -> oppfolging.setUnderOppfolging(true)).when(oppfolgingRepositoryServiceMock).startOppfolgingHvisIkkeAlleredeStartet(anyString());
 
 //        when(veilarbarenaClient.hentArenaOppfolging(any(String.class)))
 //                .thenReturn(arenaOppfolging);
@@ -236,7 +232,7 @@ public class OppfolgingServiceTest {
         gittOppfolging(oppfolging);
         OppfolgingStatusData oppfolgingStatusData = hentOppfolgingStatus();
 
-        verify(oppfolgingRepositoryServiceMock, never()).startOppfolgingHvisIkkeAlleredeStartet(anyString());
+//        verify(oppfolgingRepositoryServiceMock, never()).startOppfolgingHvisIkkeAlleredeStartet(anyString());
         assertFalse(oppfolgingStatusData.underOppfolging);
     }
 
@@ -247,7 +243,7 @@ public class OppfolgingServiceTest {
 
         OppfolgingStatusData oppfolgingStatusData = hentOppfolgingStatus();
 
-        verify(oppfolgingRepositoryServiceMock).startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
+//        verify(oppfolgingRepositoryServiceMock).startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
         assertTrue(oppfolgingStatusData.underOppfolging);
     }
 
@@ -435,7 +431,7 @@ public class OppfolgingServiceTest {
     }
 
     private void gittOppfolging(Oppfolging oppfolging) {
-        when(oppfolgingRepositoryServiceMock.hentOppfolging(AKTOR_ID)).thenReturn(Optional.of(oppfolging));
+//        when(oppfolgingRepositoryServiceMock.hentOppfolging(AKTOR_ID)).thenReturn(Optional.of(oppfolging));
     }
 
     private void gittReservasjonIKrr() {

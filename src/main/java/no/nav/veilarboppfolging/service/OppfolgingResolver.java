@@ -127,7 +127,7 @@ public class OppfolgingResolver {
     private void sjekkOgStartOppfolging() {
         arenaOppfolgingTilstand().ifPresent(arenaOppfolging -> {
             if (erUnderOppfolging(arenaOppfolging.getFormidlingsgruppe(), arenaOppfolging.getServicegruppe())) {
-                deps.getOppfolgingRepositoryService().startOppfolgingHvisIkkeAlleredeStartet(aktorId);
+                deps.getOppfolgingService().startOppfolgingHvisIkkeAlleredeStartet(aktorId);
                 reloadOppfolging();
             }
         });
@@ -267,7 +267,7 @@ public class OppfolgingResolver {
     }
 
     void startOppfolging() {
-        deps.getOppfolgingRepositoryService().startOppfolgingHvisIkkeAlleredeStartet(aktorId);
+        deps.getOppfolgingService().startOppfolgingHvisIkkeAlleredeStartet(aktorId);
         oppfolging = hentOppfolging();
     }
 
@@ -397,21 +397,21 @@ public class OppfolgingResolver {
     }
 
     private Oppfolging hentOppfolging() {
-        return deps.getOppfolgingRepositoryService().hentOppfolging(aktorId)
+        return deps.getOppfolgingService().hentOppfolging(aktorId)
                 .orElseGet(() -> new Oppfolging().setAktorId(aktorId).setUnderOppfolging(false));
     }
 
     void startEskalering(String begrunnelse, long tilhorendeDialogId) {
         String veilederId = SubjectHandler.getIdent().orElseThrow(RuntimeException::new);
         deps.getTransactor().executeWithoutResult((status) -> {
-            deps.getOppfolgingRepositoryService().startEskalering(aktorId, veilederId, begrunnelse, tilhorendeDialogId);
+            deps.getOppfolgingService().startEskalering(aktorId, veilederId, begrunnelse, tilhorendeDialogId);
             deps.getVarseloppgaveClient().sendEskaleringsvarsel(aktorId, tilhorendeDialogId);
         });
     }
 
     void stoppEskalering(String begrunnelse) {
         String veilederId = SubjectHandler.getIdent().orElseThrow(RuntimeException::new);
-        deps.getOppfolgingRepositoryService().stoppEskalering(aktorId, veilederId, begrunnelse);
+        deps.getOppfolgingService().stoppEskalering(aktorId, veilederId, begrunnelse);
     }
 
     @SneakyThrows
@@ -557,7 +557,7 @@ public class OppfolgingResolver {
         private TransactionTemplate transactor;
 
         @Autowired
-        private OppfolgingRepositoryService oppfolgingRepositoryService;
+        private OppfolgingService oppfolgingService;
 
         @Autowired
         private MaalRepository maalRepository;
