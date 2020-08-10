@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.auth.subject.SubjectHandler;
 import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.metrics.Event;
 import no.nav.veilarboppfolging.client.dkif.DkifClient;
@@ -365,7 +364,8 @@ public class OppfolgingResolver {
         }
 
         if (Optional.ofNullable(oppfolging.getGjeldendeEskaleringsvarsel()).isPresent()) {
-            stoppEskalering("Eskalering avsluttet fordi oppfølging ble avsluttet");
+            String veilederId = deps.getAuthService().getInnloggetVeilederIdent();
+            deps.getEskaleringService().stoppEskalering(aktorId, veilederId, begrunnelse);
         }
 
         avsluttOppfolgingOgSendPaKafka(veileder, begrunnelse);
@@ -382,19 +382,6 @@ public class OppfolgingResolver {
     private Oppfolging hentOppfolging() {
         return deps.getOppfolgingService().hentOppfolging(aktorId)
                 .orElseGet(() -> new Oppfolging().setAktorId(aktorId).setUnderOppfolging(false));
-    }
-
-    void startEskalering(String begrunnelse, long tilhorendeDialogId) {
-        String veilederId = SubjectHandler.getIdent().orElseThrow(RuntimeException::new);
-        deps.getTransactor().executeWithoutResult((status) -> {
-            deps.getOppfolgingService().startEskalering(aktorId, veilederId, begrunnelse, tilhorendeDialogId);
-            deps.getVarseloppgaveClient().sendEskaleringsvarsel(aktorId, tilhorendeDialogId);
-        });
-    }
-
-    void stoppEskalering(String begrunnelse) {
-        String veilederId = SubjectHandler.getIdent().orElseThrow(RuntimeException::new);
-        deps.getOppfolgingService().stoppEskalering(aktorId, veilederId, begrunnelse);
     }
 
     @SneakyThrows
@@ -541,6 +528,9 @@ public class OppfolgingResolver {
 
         @Autowired
         private OppfolgingService oppfolgingService;
+
+        @Autowired
+        private EskaleringService eskaleringService;
 
         @Autowired
         private OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;

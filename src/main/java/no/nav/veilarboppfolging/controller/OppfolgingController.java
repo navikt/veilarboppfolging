@@ -4,10 +4,7 @@ import no.nav.veilarboppfolging.controller.domain.*;
 import no.nav.veilarboppfolging.domain.InnstillingsHistorikk;
 import no.nav.veilarboppfolging.domain.KodeverkBruker;
 import no.nav.veilarboppfolging.domain.VeilederTilgang;
-import no.nav.veilarboppfolging.service.AuthService;
-import no.nav.veilarboppfolging.service.HistorikkService;
-import no.nav.veilarboppfolging.service.KvpService;
-import no.nav.veilarboppfolging.service.OppfolgingService;
+import no.nav.veilarboppfolging.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,17 +24,20 @@ public class OppfolgingController {
     
     private final AuthService authService;
 
+    private final EskaleringService eskaleringService;
+
     @Autowired
     public OppfolgingController(
             OppfolgingService oppfolgingService,
             KvpService kvpService,
             HistorikkService historikkService,
-            AuthService authService
-    ) {
+            AuthService authService,
+            EskaleringService eskaleringService) {
         this.oppfolgingService = oppfolgingService;
         this.kvpService = kvpService;
         this.historikkService = historikkService;
         this.authService = authService;
+        this.eskaleringService = eskaleringService;
     }
 
     @GetMapping("/me")
@@ -114,8 +114,9 @@ public class OppfolgingController {
     @PostMapping("/startEskalering")
     public void startEskalering(@RequestBody StartEskaleringDTO startEskalering, @RequestParam("fnr") String fnr) {
         authService.skalVereInternBruker();
-        oppfolgingService.startEskalering(
+        eskaleringService.startEskalering(
                 fnr,
+                authService.getInnloggetVeilederIdent(),
                 startEskalering.getBegrunnelse(),
                 startEskalering.getDialogId()
         );
@@ -124,7 +125,7 @@ public class OppfolgingController {
     @PostMapping("/stoppEskalering")
     public void stoppEskalering(@RequestBody StoppEskaleringDTO stoppEskalering, @RequestParam("fnr") String fnr) {
         authService.skalVereInternBruker();
-        oppfolgingService.stoppEskalering(fnr, stoppEskalering.getBegrunnelse());
+        eskaleringService.stoppEskalering(fnr, authService.getInnloggetVeilederIdent(), stoppEskalering.getBegrunnelse());
     }
 
     @PostMapping("/startKvp")

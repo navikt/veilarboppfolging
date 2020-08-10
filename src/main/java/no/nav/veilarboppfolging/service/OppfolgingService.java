@@ -174,18 +174,6 @@ public class OppfolgingService {
     }
 
     @SneakyThrows
-    public void startEskalering(String fnr, String begrunnelse, long tilhorendeDialogId) {
-        val resolver = sjekkTilgangTilEnhet(fnr);
-        resolver.startEskalering(begrunnelse, tilhorendeDialogId);
-    }
-
-    @SneakyThrows
-    public void stoppEskalering(String fnr, String begrunnelse) {
-        val resolver = sjekkTilgangTilEnhet(fnr);
-        resolver.stoppEskalering(begrunnelse);
-    }
-
-    @SneakyThrows
     public VeilederTilgang hentVeilederTilgang(String fnr) {
         authService.sjekkLesetilgangMedFnr(fnr);
 
@@ -225,35 +213,6 @@ public class OppfolgingService {
         resolver.sjekkStatusIArenaOgOppdaterOppfolging();
 
         return getOppfolgingStatusData(fnr, resolver).isUnderOppfolging();
-    }
-
-    @Transactional
-    public void startEskalering(String aktorId, String opprettetAv, String opprettetBegrunnelse, long tilhorendeDialogId) {
-        long gjeldendeEskaleringsvarselId = oppfolgingsStatusRepository.fetch(aktorId).getGjeldendeEskaleringsvarselId();
-
-        if (gjeldendeEskaleringsvarselId > 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Brukeren har allerede et aktivt eskaleringsvarsel.");
-        }
-
-        val e = EskaleringsvarselData.builder()
-                .aktorId(aktorId)
-                .opprettetAv(opprettetAv)
-                .opprettetBegrunnelse(opprettetBegrunnelse)
-                .tilhorendeDialogId(tilhorendeDialogId)
-                .build();
-
-        eskaleringsvarselRepository.create(e);
-    }
-
-    @Transactional
-    public void stoppEskalering(String aktorId, String avsluttetAv, String avsluttetBegrunnelse) {
-        long gjeldendeEskaleringsvarselId = oppfolgingsStatusRepository.fetch(aktorId).getGjeldendeEskaleringsvarselId();
-
-        if (gjeldendeEskaleringsvarselId == 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Brukeren har ikke et aktivt eskaleringsvarsel.");
-        }
-
-        eskaleringsvarselRepository.finish(aktorId, gjeldendeEskaleringsvarselId, avsluttetAv, avsluttetBegrunnelse);
     }
 
     private Optional<OppfolgingTable> getOppfolgingStatus(String fnr) {
