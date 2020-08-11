@@ -23,7 +23,6 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 
-import static java.lang.System.currentTimeMillis;
 import static java.util.stream.Collectors.toList;
 import static no.nav.veilarboppfolging.utils.KvpUtils.sjekkTilgangGittKvp;
 
@@ -76,19 +75,6 @@ public class OppfolgingService {
         this.maalRepository = maalRepository;
     }
 
-    @SneakyThrows
-    public OppfolgingResolver sjekkTilgangTilEnhet(String fnr){
-        authService.sjekkLesetilgangMedFnr(fnr);
-
-        val resolver = OppfolgingResolver.lagOppfolgingResolver(fnr, oppfolgingResolverDependencies);
-
-        if (!authService.harTilgangTilEnhet(resolver.getOppfolgingsEnhet())) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
-        }
-
-        return resolver;
-    }
-
     @Transactional
     public OppfolgingStatusData hentOppfolgingsStatus(String fnr) {
 
@@ -99,6 +85,12 @@ public class OppfolgingService {
         resolver.sjekkStatusIArenaOgOppdaterOppfolging();
 
         return getOppfolgingStatusData(fnr, resolver);
+    }
+
+    public OppfolgingStatusData hentAvslutningStatus(String fnr) {
+        authService.sjekkLesetilgangMedFnr(fnr);
+        val resolver = OppfolgingResolver.lagOppfolgingResolver(fnr, oppfolgingResolverDependencies);
+        return getOppfolgingStatusDataMedAvslutningStatus(fnr, resolver);
     }
 
     @SneakyThrows
@@ -112,12 +104,6 @@ public class OppfolgingService {
         kafkaProducer.send(new Fnr(fnr));
 
         return getOppfolgingStatusData(fnr, resolver);
-    }
-
-    public OppfolgingStatusData hentAvslutningStatus(String fnr) {
-        authService.sjekkLesetilgangMedFnr(fnr);
-        val resolver = OppfolgingResolver.lagOppfolgingResolver(fnr, oppfolgingResolverDependencies);
-        return getOppfolgingStatusDataMedAvslutningStatus(fnr, resolver);
     }
 
     @SneakyThrows
@@ -145,32 +131,6 @@ public class OppfolgingService {
 
     public List<AvsluttetOppfolgingFeedData> hentAvsluttetOppfolgingEtterDato(Timestamp timestamp, int pageSize) {
         return oppfolgingsPeriodeRepository.fetchAvsluttetEtterDato(timestamp, pageSize);
-    }
-
-    @SneakyThrows
-    public OppfolgingStatusData settDigitalBruker(String fnr) {
-        val resolver = sjekkTilgangTilEnhet(fnr);
-        return oppdaterManuellStatus(fnr, false, "Brukeren endret til digital oppfølging", KodeverkBruker.EKSTERN, resolver.getAktorId());
-    }
-
-    @SneakyThrows
-    public OppfolgingStatusData oppdaterManuellStatus(String fnr, boolean manuell, String begrunnelse, KodeverkBruker opprettetAv, String opprettetAvBrukerId) {
-        val resolver = sjekkTilgangTilEnhet(fnr);
-
-        if (resolver.getOppfolging().isUnderOppfolging() && (resolver.manuell() != manuell) && (!resolver.reservertIKrr().isKrr() || manuell)) {
-            val nyStatus = new ManuellStatus()
-                    .setAktorId(resolver.getAktorId())
-                    .setManuell(manuell)
-                    .setDato(new Timestamp(currentTimeMillis()))
-                    .setBegrunnelse(begrunnelse)
-                    .setOpprettetAv(opprettetAv)
-                    .setOpprettetAvBrukerId(opprettetAvBrukerId);
-            manuellStatusRepository.create(nyStatus);
-            resolver.reloadOppfolging();
-        }
-
-        kafkaProducer.send(new Fnr(fnr));
-        return getOppfolgingStatusData(fnr, resolver);
     }
 
     @SneakyThrows
@@ -262,7 +222,7 @@ public class OppfolgingService {
                 .underOppfolging(oppfolgingResolver.erUnderOppfolgingIArena())
                 .harYtelser(oppfolgingResolver.harPagaendeYtelse())
                 .harTiltak(oppfolgingResolver.harAktiveTiltak())
-                .underKvp(oppfolgingResolver.erUnderKvp())
+                .underKvp(oppfolgingResolverDependencies.getKvpService().erUnderKvp(authService.getAktorIdOrThrow(fnr)))
                 .inaktiveringsDato(oppfolgingResolver.getInaktiveringsDato())
                 .build();
 
@@ -273,6 +233,7 @@ public class OppfolgingService {
     @SneakyThrows
     public Optional<Oppfolging> hentOppfolging(String aktorId) {
         OppfolgingTable t = oppfolgingsStatusRepository.fetch(aktorId);
+
         if (t == null) {
             return Optional.empty();
         }
@@ -341,6 +302,19 @@ public class OppfolgingService {
             oppfolgingsPeriodeRepository.start(aktoerId);
             nyeBrukereFeedRepository.leggTil(oppfolgingsbruker);
         }
+    }
+
+    @SneakyThrows
+    private OppfolgingResolver sjekkTilgangTilEnhet(String fnr){
+        authService.sjekkLesetilgangMedFnr(fnr);
+
+        val resolver = OppfolgingResolver.lagOppfolgingResolver(fnr, oppfolgingResolverDependencies);
+
+        if (!authService.harTilgangTilEnhet(resolver.getOppfolgingsEnhet())) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+        }
+
+        return resolver;
     }
 
     private List<Oppfolgingsperiode> populerKvpPerioder(List<Oppfolgingsperiode> oppfolgingsPerioder, List<Kvp> kvpPerioder) {

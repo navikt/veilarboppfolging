@@ -34,8 +34,6 @@ import java.util.List;
 
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
-import static no.nav.veilarboppfolging.domain.KodeverkBruker.NAV;
-import static no.nav.veilarboppfolging.domain.KodeverkBruker.SYSTEM;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.*;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -123,7 +121,7 @@ public class OppfolgingServiceTest {
     @Test
     public void skal_publisere_paa_kafka_ved_oppdatering_av_manuell_status() {
         when(authService.harTilgangTilEnhet(any())).thenReturn(true);
-        oppfolgingService.oppdaterManuellStatus(FNR, true, "test", SYSTEM, "test");
+//        oppfolgingService.oppdaterManuellStatus(FNR, true, "test", SYSTEM, "test");
         verify(kafkaProducer, times(1)).send(fnr());
     }
 
@@ -159,14 +157,14 @@ public class OppfolgingServiceTest {
     @SneakyThrows
     public void sett_manuell_uten_enhet_tilgang() {
         when(authService.harTilgangTilEnhet(any())).thenReturn(false);
-        oppfolgingService.oppdaterManuellStatus(FNR, true, BEGRUNNELSE, NAV, VEILEDER);
+//        oppfolgingService.oppdaterManuellStatus(FNR, true, BEGRUNNELSE, NAV, VEILEDER);
     }
 
     @Test(expected = ResponseStatusException.class)
     @SneakyThrows
     public void settDigital_uten_enhet_tilgang() {
         when(authService.harTilgangTilEnhet(any())).thenReturn(false);
-        oppfolgingService.settDigitalBruker(FNR);
+//        oppfolgingService.settDigitalBruker(FNR);
     }
 
 

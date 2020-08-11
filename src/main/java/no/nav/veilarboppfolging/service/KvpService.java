@@ -90,6 +90,10 @@ public class KvpService {
         stopKvpUtenEnhetSjekk(aktorId, begrunnelse, NAV);
     }
 
+    public boolean erUnderKvp(String aktorId) {
+        return kvpRepository.gjeldendeKvp(aktorId) != 0L;
+    }
+
     public void stopKvpUtenEnhetSjekk(String aktorId, String begrunnelse, KodeverkBruker kodeverkBruker) {
         String veilederId = authService.getInnloggetVeilederIdent();
         OppfolgingTable oppfolgingTable = oppfolgingsStatusRepository.fetch(aktorId);

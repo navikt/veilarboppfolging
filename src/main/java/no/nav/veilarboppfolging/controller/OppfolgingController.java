@@ -26,18 +26,23 @@ public class OppfolgingController {
 
     private final EskaleringService eskaleringService;
 
+    private final ManuellStatusService manuellStatusService;
+
     @Autowired
     public OppfolgingController(
             OppfolgingService oppfolgingService,
             KvpService kvpService,
             HistorikkService historikkService,
             AuthService authService,
-            EskaleringService eskaleringService) {
+            EskaleringService eskaleringService,
+            ManuellStatusService manuellStatusService
+    ) {
         this.oppfolgingService = oppfolgingService;
         this.kvpService = kvpService;
         this.historikkService = historikkService;
         this.authService = authService;
         this.eskaleringService = eskaleringService;
+        this.manuellStatusService = manuellStatusService;
     }
 
     @GetMapping("/me")
@@ -76,33 +81,35 @@ public class OppfolgingController {
         ), authService.erInternBruker());
     }
 
+    // TODO: Ikke returner OppfolgingStatus
     @PostMapping("/settManuell")
     public OppfolgingStatus settTilManuell(@RequestBody VeilederBegrunnelseDTO dto, @RequestParam("fnr") String fnr) {
         authService.skalVereInternBruker();
-        return tilDto(oppfolgingService.oppdaterManuellStatus(fnr,
-                true,
-                dto.begrunnelse,
-                KodeverkBruker.NAV,
-                hentBrukerInfo().getId()),
-                authService.erInternBruker()
+
+        manuellStatusService.oppdaterManuellStatus(
+                fnr, true, dto.begrunnelse,
+                KodeverkBruker.NAV, authService.getInnloggetBrukerIdent()
         );
+
+        return tilDto(oppfolgingService.hentOppfolgingsStatus(fnr),  authService.erInternBruker());
     }
 
+    // TODO: Ikke returner OppfolgingStatus
     @PostMapping("/settDigital")
     public OppfolgingStatus settTilDigital(@RequestBody VeilederBegrunnelseDTO dto, @RequestParam(value = "fnr", required = false) String fnr) {
         String fodselsnummer = authService.hentIdentForEksternEllerIntern(fnr);
 
         if (authService.erEksternBruker()) {
-            return tilDto(oppfolgingService.settDigitalBruker(fodselsnummer), authService.erInternBruker());
+            manuellStatusService.settDigitalBruker(fodselsnummer);
+            return tilDto(oppfolgingService.hentOppfolgingsStatus(fnr), authService.erInternBruker());
         }
 
-        return tilDto(oppfolgingService.oppdaterManuellStatus(fodselsnummer,
-                false,
-                dto.begrunnelse,
-                KodeverkBruker.NAV,
-                hentBrukerInfo().getId()),
-                authService.erInternBruker()
+        manuellStatusService.oppdaterManuellStatus(
+                fodselsnummer, false, dto.begrunnelse,
+                KodeverkBruker.NAV, hentBrukerInfo().getId()
         );
+
+        return tilDto(oppfolgingService.hentOppfolgingsStatus(fnr), authService.erInternBruker());
     }
 
     @GetMapping("/innstillingsHistorikk")

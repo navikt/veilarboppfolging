@@ -260,6 +260,7 @@ public class OppfolgingResolver {
                 .orElse(false);
     }
 
+    // TODO: Move out
     boolean harPagaendeYtelse() {
         if (ytelser == null) {
             this.ytelser = deps.getYtelseskontraktClient().hentYtelseskontraktListe(fnr);
@@ -270,6 +271,7 @@ public class OppfolgingResolver {
                 .anyMatch(ytelseskontrakt -> AKTIV_YTELSE_STATUS.equals(ytelseskontrakt.getStatus()));
     }
 
+    // TODO: Move out
     boolean harAktiveTiltak() {
         if (arenaAktiviteter == null) {
             hentArenaAktiviteter();
@@ -278,10 +280,6 @@ public class OppfolgingResolver {
                 .stream()
                 .map(ArenaAktivitetDTO::getStatus)
                 .anyMatch(status -> status != AVBRUTT && status != FULLFORT);
-    }
-
-    boolean erUnderKvp() {
-        return deps.getKvpRepository().gjeldendeKvp(getAktorId()) != 0L;
     }
 
     boolean harSkrivetilgangTilBruker() {
@@ -296,11 +294,12 @@ public class OppfolgingResolver {
     }
 
     boolean kanAvslutteOppfolging() {
+        boolean ikkeUnderKvp = !deps.getKvpService().erUnderKvp(aktorId);
         log.info("Kan oppfolging avsluttes for aktorid {}?, oppfolging.isUnderOppfolging(): {}, erIservIArena(): {}, !erUnderKvp(): {}",
-                aktorId, oppfolging.isUnderOppfolging(), erIservIArena(), !erUnderKvp());
+                aktorId, oppfolging.isUnderOppfolging(), erIservIArena(), ikkeUnderKvp);
         return oppfolging.isUnderOppfolging()
                 && erIservIArena()
-                && !erUnderKvp();
+                && ikkeUnderKvp;
     }
 
     private boolean erIservIArena() {
