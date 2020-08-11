@@ -3,6 +3,7 @@ package no.nav.veilarboppfolging.kafka;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarboppfolging.domain.VeilarbArenaOppfolgingEndret;
 import no.nav.veilarboppfolging.service.IservService;
+import no.nav.veilarboppfolging.service.KvpService;
 import no.nav.veilarboppfolging.service.MetricsService;
 import no.nav.veilarboppfolging.service.OppfolgingsenhetEndringService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,8 @@ import static no.nav.common.json.JsonUtils.fromJson;
 @Component
 public class EndringPaOppfolgingBrukerConsumer {
 
+    private final KvpService kvpService;
+
     private final MetricsService metricsService;
 
     private final IservService iservService;
@@ -26,11 +29,13 @@ public class EndringPaOppfolgingBrukerConsumer {
 
     @Autowired
     public EndringPaOppfolgingBrukerConsumer(
+            KvpService kvpService,
             KafkaTopics kafkaTopics,
             MetricsService metricsService,
             IservService iservService,
             OppfolgingsenhetEndringService oppfolgingsenhetEndringService
     ) {
+        this.kvpService = kvpService;
         this.kafkaTopics = kafkaTopics;
         this.metricsService = metricsService;
         this.iservService = iservService;
@@ -42,6 +47,7 @@ public class EndringPaOppfolgingBrukerConsumer {
     public void consumeEndringPaOppfolgingBruker(@Payload String kafkaMelding) {
         try {
             final VeilarbArenaOppfolgingEndret deserialisertBruker = deserialisereBruker(kafkaMelding);
+            kvpService.avsluttKvpVedEnhetBytte(deserialisertBruker);
             iservService.behandleEndretBruker(deserialisertBruker);
             oppfolgingsenhetEndringService.behandleBrukerEndring(deserialisertBruker);
         } catch (Throwable t) {

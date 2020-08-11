@@ -6,6 +6,7 @@ import no.nav.veilarboppfolging.client.oppfolging.OppfolgingClient;
 import no.nav.veilarboppfolging.domain.KodeverkBruker;
 import no.nav.veilarboppfolging.domain.Kvp;
 import no.nav.veilarboppfolging.domain.OppfolgingTable;
+import no.nav.veilarboppfolging.domain.VeilarbArenaOppfolgingEndret;
 import no.nav.veilarboppfolging.repository.EskaleringsvarselRepository;
 import no.nav.veilarboppfolging.repository.KvpRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
@@ -15,6 +16,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import static java.lang.String.format;
 import static no.nav.veilarboppfolging.domain.KodeverkBruker.NAV;
+import static no.nav.veilarboppfolging.domain.KodeverkBruker.SYSTEM;
 
 @Slf4j
 @Service
@@ -113,6 +115,21 @@ public class KvpService {
 
         kvpRepository.stopKvp(gjeldendeKvp, aktorId, veilederId, begrunnelse, kodeverkBruker);
         metricsService.kvpStoppet();
+    }
+
+    public void avsluttKvpVedEnhetBytte(VeilarbArenaOppfolgingEndret endretBruker) {
+        Kvp gjeldendeKvp = gjeldendeKvp(endretBruker.aktoerid);
+
+        if (gjeldendeKvp == null) {
+            return;
+        }
+
+        boolean harByttetKontor = !endretBruker.getNav_kontor().equals(gjeldendeKvp.getEnhet());
+
+        if (harByttetKontor) {
+            stopKvpUtenEnhetSjekk(endretBruker.aktoerid, "KVP avsluttet automatisk pga. endret Nav-enhet", SYSTEM);
+            metricsService.stopKvpDueToChangedUnit();
+        }
     }
 
     Kvp gjeldendeKvp(String aktorId) {

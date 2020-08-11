@@ -19,7 +19,6 @@ import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
 import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktClient;
 import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktResponse;
 import no.nav.veilarboppfolging.controller.domain.DkifResponse;
-import no.nav.veilarboppfolging.domain.Kvp;
 import no.nav.veilarboppfolging.domain.ManuellStatus;
 import no.nav.veilarboppfolging.domain.Oppfolging;
 import no.nav.veilarboppfolging.kafka.AvsluttOppfolgingProducer;
@@ -77,8 +76,6 @@ public class OppfolgingResolver {
 
         this.aktorId = deps.getAuthService().getAktorIdOrThrow(fnr);
         this.oppfolging = hentOppfolging();
-
-        avsluttKvpVedEnhetBytte();
     }
 
     public static OppfolgingResolver lagOppfolgingResolver(String fnr, OppfolgingResolverDependencies deps, boolean brukArenaDirekte) {
@@ -130,7 +127,6 @@ public class OppfolgingResolver {
     }
 
     private void sjekkOgOppdaterBruker(ArenaOppfolgingTilstand arenaOppfolgingTilstand) {
-
         oppdatertErSykmeldtMedArbeidsgiver(arenaOppfolgingTilstand);
         oppdaterInaktivIArena(arenaOppfolgingTilstand);
 
@@ -177,7 +173,6 @@ public class OppfolgingResolver {
     }
 
     private void oppdatertErSykmeldtMedArbeidsgiver(ArenaOppfolgingTilstand arenaOppfolgingTilstand) {
-
         erSykmeldtMedArbeidsgiver = ArenaUtils.erIARBSUtenOppfolging(
                 arenaOppfolgingTilstand.getFormidlingsgruppe(),
                 arenaOppfolgingTilstand.getServicegruppe()
@@ -187,7 +182,6 @@ public class OppfolgingResolver {
     private void oppdaterInaktivIArena(ArenaOppfolgingTilstand arenaOppfolgingTilstand) {
         inaktivIArena = erIserv(arenaOppfolgingTilstand.getFormidlingsgruppe());
     }
-
 
     private void sjekkOgOppdaterBrukerDirekteFraArena() {
         hentOppfolgingstatusDirekteFraArena();
@@ -487,26 +481,6 @@ public class OppfolgingResolver {
 
     private void hentArenaAktiviteter() {
         this.arenaAktiviteter = deps.getVeilarbaktivitetClient().hentArenaAktiviteter(fnr);
-    }
-
-    private void avsluttKvpVedEnhetBytte() {
-        Kvp gjeldendeKvp = deps.getKvpService().gjeldendeKvp(aktorId);
-        if (gjeldendeKvp == null) {
-            return;
-        }
-
-        hentOppfolgingstatusFraArena();
-        arenaOppfolgingTilstand().ifPresent(status -> {
-            if (brukerHarByttetKontor(status, gjeldendeKvp)) {
-                deps.getKvpService().stopKvpUtenEnhetSjekk(aktorId, "KVP avsluttet automatisk pga. endret Nav-enhet", SYSTEM);
-                deps.getMetricsService().stopKvpDueToChangedUnit();
-                reloadOppfolging();
-            }
-        });
-    }
-
-    private boolean brukerHarByttetKontor(ArenaOppfolgingTilstand statusIArena, Kvp kvp) {
-        return !statusIArena.getOppfolgingsenhet().equals(kvp.getEnhet());
     }
 
     @Component
