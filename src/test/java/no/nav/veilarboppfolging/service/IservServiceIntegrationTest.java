@@ -49,7 +49,7 @@ public class IservServiceIntegrationTest {
         utmeldingRepository = new UtmeldingRepository(db);
 
         iservService = new IservService(
-                mock(MetricsService.class), utmeldingRepository,
+                serviceUserCredentials, systemUserTokenProvider, mock(MetricsService.class), utmeldingRepository,
                 oppfolgingService, oppfolgingStatusRepository, authService);
     }
 

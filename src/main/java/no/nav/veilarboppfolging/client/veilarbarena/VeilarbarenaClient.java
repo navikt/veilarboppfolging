@@ -8,6 +8,6 @@ public interface VeilarbarenaClient extends HealthCheck {
 
     Optional<VeilarbArenaOppfolging> hentOppfolgingsbruker(String fnr);
 
-    ArenaOppfolging getArenaOppfolgingsstatus(String fnr);
+    Optional<ArenaOppfolging> getArenaOppfolgingsstatus(String fnr);
 
 }

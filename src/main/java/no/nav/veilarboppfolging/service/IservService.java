@@ -1,6 +1,11 @@
 package no.nav.veilarboppfolging.service;
 
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.auth.subject.IdentType;
+import no.nav.common.auth.subject.SsoToken;
+import no.nav.common.auth.subject.Subject;
+import no.nav.common.sts.SystemUserTokenProvider;
+import no.nav.common.utils.Credentials;
 import no.nav.veilarboppfolging.domain.IservMapper;
 import no.nav.veilarboppfolging.domain.OppfolgingTable;
 import no.nav.veilarboppfolging.domain.VeilarbArenaOppfolgingEndret;
@@ -10,9 +15,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static java.util.stream.Collectors.toList;
+import static no.nav.common.auth.subject.SubjectHandler.withSubject;
 import static no.nav.veilarboppfolging.service.IservService.AvslutteOppfolgingResultat.*;
 import static no.nav.veilarboppfolging.utils.ArenaUtils.erIserv;
 import static no.nav.veilarboppfolging.utils.ArenaUtils.erUnderOppfolging;
@@ -28,6 +35,8 @@ public class IservService {
         AVSLUTTET_FEILET
     }
 
+    private final Credentials serviceUserCredentials;
+    private final SystemUserTokenProvider systemUserTokenProvider;
     private final MetricsService metricsService;
     private final UtmeldingRepository utmeldingRepository;
     private final OppfolgingService oppfolgingService;
@@ -35,12 +44,14 @@ public class IservService {
     private final AuthService authService;
 
     public IservService(
-            MetricsService metricsService,
+            Credentials serviceUserCredentials, SystemUserTokenProvider systemUserTokenProvider, MetricsService metricsService,
             UtmeldingRepository utmeldingRepository,
             OppfolgingService oppfolgingService,
             OppfolgingsStatusRepository oppfolgingsStatusRepository,
             AuthService authService
     ) {
+        this.serviceUserCredentials = serviceUserCredentials;
+        this.systemUserTokenProvider = systemUserTokenProvider;
         this.metricsService = metricsService;
         this.utmeldingRepository = utmeldingRepository;
         this.oppfolgingService = oppfolgingService;
@@ -91,13 +102,17 @@ public class IservService {
             List<IservMapper> iservert28DagerBrukere = utmeldingRepository.finnBrukereMedIservI28Dager();
             log.info("Fant {} brukere som har vært ISERV mer enn 28 dager", iservert28DagerBrukere.size());
 
-            // TODO: Check if we need to wrap with new subject
-            // withSubject(systemUserSubjectProvider.getSystemUserSubject(), () -> {});
+            Subject subject = new Subject(
+                    serviceUserCredentials.username,
+                    IdentType.Systemressurs,
+                    SsoToken.oidcToken(systemUserTokenProvider.getSystemUserToken(), Collections.emptyMap())
+            );
 
-            resultater.addAll(iservert28DagerBrukere.stream()
-                    .map(iservMapper -> avslutteOppfolging(iservMapper.aktor_Id))
-                    .collect(toList()));
-
+            withSubject(subject, () -> {
+                resultater.addAll(iservert28DagerBrukere.stream()
+                        .map(iservMapper -> avslutteOppfolging(iservMapper.aktor_Id))
+                        .collect(toList()));
+            });
         } catch (Exception e) {
             log.error("Feil ved automatisk avslutning av brukere", e);
         }

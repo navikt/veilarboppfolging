@@ -1,9 +1,10 @@
 package no.nav.veilarboppfolging.utils;
 
+import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolging;
+import no.nav.veilarboppfolging.domain.ArenaOppfolgingTilstand;
+
 import java.util.HashSet;
 import java.util.Set;
-
-import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolging;
 
 import static java.lang.Boolean.TRUE;
 import static java.util.Arrays.asList;
@@ -43,6 +44,17 @@ public class ArenaUtils {
 
     public static boolean erIserv(String formidlingsgruppe) {
         return ISERV.equals(formidlingsgruppe);
+    }
+
+    public static boolean erSykmeldtMedArbeidsgiver(ArenaOppfolgingTilstand arenaOppfolgingTilstand) {
+        return ArenaUtils.erIARBSUtenOppfolging(
+                arenaOppfolgingTilstand.getFormidlingsgruppe(),
+                arenaOppfolgingTilstand.getServicegruppe()
+        );
+    }
+
+    public static boolean erInaktivIArena(ArenaOppfolgingTilstand arenaOppfolgingTilstand) {
+        return erIserv(arenaOppfolgingTilstand.getFormidlingsgruppe());
     }
 
     public static boolean kanEnkeltReaktiveres(ArenaOppfolging arenaStatus) {

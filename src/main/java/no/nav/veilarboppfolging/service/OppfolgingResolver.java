@@ -4,7 +4,6 @@ import io.vavr.control.Either;
 import io.vavr.control.Try;
 import lombok.Getter;
 import lombok.SneakyThrows;
-import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.metrics.Event;
@@ -19,6 +18,7 @@ import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
 import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktClient;
 import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktResponse;
 import no.nav.veilarboppfolging.controller.domain.DkifResponse;
+import no.nav.veilarboppfolging.domain.ArenaOppfolgingTilstand;
 import no.nav.veilarboppfolging.domain.ManuellStatus;
 import no.nav.veilarboppfolging.domain.Oppfolging;
 import no.nav.veilarboppfolging.kafka.AvsluttOppfolgingProducer;
@@ -32,10 +32,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.sql.Timestamp;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -65,11 +63,8 @@ public class OppfolgingResolver {
     private Boolean inaktivIArena;
     private Boolean kanReaktiveres;
     private Boolean erSykmeldtMedArbeidsgiver;
-    private final boolean brukArenaDirekte;
 
-    private OppfolgingResolver(String fnr, OppfolgingResolverDependencies deps, boolean brukArenaDirekte) {
-        this.brukArenaDirekte = brukArenaDirekte;
-
+    private OppfolgingResolver(String fnr, OppfolgingResolverDependencies deps) {
         this.fnr = fnr;
         this.deps = deps;
         this.arenaOppfolgingTilstand = Optional.empty();
@@ -78,12 +73,8 @@ public class OppfolgingResolver {
         this.oppfolging = hentOppfolging();
     }
 
-    public static OppfolgingResolver lagOppfolgingResolver(String fnr, OppfolgingResolverDependencies deps, boolean brukArenaDirekte) {
-        return new OppfolgingResolver(fnr, deps, brukArenaDirekte);
-    }
-
     public static OppfolgingResolver lagOppfolgingResolver(String fnr, OppfolgingResolverDependencies deps) {
-        return lagOppfolgingResolver(fnr, deps, false);
+        return new OppfolgingResolver(fnr, deps);
     }
 
     private Optional<ArenaOppfolging> oppfolgingDirekteFraArena() {
@@ -383,35 +374,30 @@ public class OppfolgingResolver {
             return;
         }
 
-        if (brukArenaDirekte || deps.getUnleashService().isEnabled("veilarboppfolging.oppfolgingresolver.bruk_arena_direkte")) {
+        hentOppfolgingstatusFraVeilarbArena();
+
+        boolean harTilstand = arenaOppfolgingTilstand.isPresent();
+        boolean erUnderOppfolgingIVeilarbarena = arenaOppfolgingTilstand().filter(oppfolgingTilstand ->
+                ArenaUtils.erUnderOppfolging(oppfolgingTilstand.getFormidlingsgruppe(), oppfolgingTilstand.getServicegruppe())
+        ).isPresent();
+
+        boolean harIkkeDataIVeilarbarena = !harTilstand;
+        boolean erIkkeUnderOppfolgingIVeilarbarena = !erUnderOppfolgingIVeilarbarena;
+
+        // Fallbackløsning for å hente direkte fra Arena dersom data fra veilarbarena ikke stemmer overens
+        // med oppfølgingsflagg:
+
+        if ((harIkkeDataIVeilarbarena || erIkkeUnderOppfolgingIVeilarbarena) && oppfolging.isUnderOppfolging()) {
+            // Dette kan forekomme direkte etter registrering, før data har blitt synkronisert fra Arena til veilarbarena.
+            // Enten kan det mangle data i veilarbarena, eller så kan det være gammel data som ikke er fra den nye registreringen
+            oppfolgingDirekteFraArenaMetrikk();
             hentOppfolgingstatusDirekteFraArena();
-        } else {
-            hentOppfolgingstatusFraVeilarbArena();
-
-            boolean harTilstand = arenaOppfolgingTilstand.isPresent();
-            boolean erUnderOppfolgingIVeilarbarena = arenaOppfolgingTilstand().filter(oppfolgingTilstand ->
-                    ArenaUtils.erUnderOppfolging(oppfolgingTilstand.getFormidlingsgruppe(), oppfolgingTilstand.getServicegruppe())
-            ).isPresent();
-
-            boolean harIkkeDataIVeilarbarena = !harTilstand;
-            boolean erIkkeUnderOppfolgingIVeilarbarena = !erUnderOppfolgingIVeilarbarena;
-
-            // Fallbackløsning for å hente direkte fra Arena dersom data fra veilarbarena ikke stemmer overens
-            // med oppfølgingsflagg:
-
-            if ((harIkkeDataIVeilarbarena || erIkkeUnderOppfolgingIVeilarbarena) && oppfolging.isUnderOppfolging()) {
-                // Dette kan forekomme direkte etter registrering, før data har blitt synkronisert fra Arena til veilarbarena.
-                // Enten kan det mangle data i veilarbarena, eller så kan det være gammel data som ikke er fra den nye registreringen
-                oppfolgingDirekteFraArenaMetrikk();
-                hentOppfolgingstatusDirekteFraArena();
-            } else if (!oppfolging.isUnderOppfolging() && erUnderOppfolgingIVeilarbarena) {
-                // Dette kan forekomme etter at bruker er tatt ut av oppfølging, men før før data har blitt synkronisert fra Arena til veilarbarena.
-                oppfolgingDirekteFraArenaMetrikk();
-                hentOppfolgingstatusDirekteFraArena();
-            }
+        } else if (!oppfolging.isUnderOppfolging() && erUnderOppfolgingIVeilarbarena) {
+            // Dette kan forekomme etter at bruker er tatt ut av oppfølging, men før før data har blitt synkronisert fra Arena til veilarbarena.
+            oppfolgingDirekteFraArenaMetrikk();
+            hentOppfolgingstatusDirekteFraArena();
         }
     }
-
 
     @SneakyThrows
     private void hentOppfolgingstatusDirekteFraArena() {
@@ -540,34 +526,4 @@ public class OppfolgingResolver {
 
 }
 
-/**
- * Felles struktur for data som kan hentes både fra Arena og veilarbarena
- */
-@Value
-class ArenaOppfolgingTilstand {
-    String formidlingsgruppe;
-    String servicegruppe;
-    String rettighetsgruppe;
-    String oppfolgingsenhet;
-    LocalDate inaktiveringsdato;
 
-    static ArenaOppfolgingTilstand fraArenaOppfolging(ArenaOppfolging arenaOppfolging) {
-        return new ArenaOppfolgingTilstand(
-                arenaOppfolging.getFormidlingsgruppe(),
-                arenaOppfolging.getServicegruppe(),
-                arenaOppfolging.getRettighetsgruppe(),
-                arenaOppfolging.getOppfolgingsenhet(),
-                arenaOppfolging.getInaktiveringsdato());
-    }
-
-    static ArenaOppfolgingTilstand fraArenaBruker(VeilarbArenaOppfolging veilarbArenaOppfolging) {
-        return new ArenaOppfolgingTilstand(
-                veilarbArenaOppfolging.getFormidlingsgruppekode(),
-                veilarbArenaOppfolging.getKvalifiseringsgruppekode(),
-                veilarbArenaOppfolging.getRettighetsgruppekode(),
-                veilarbArenaOppfolging.getNav_kontor(),
-                Optional.ofNullable(veilarbArenaOppfolging.getIserv_fra_dato()).map(ZonedDateTime::toLocalDate).orElse(null)
-        );
-    }
-
-}

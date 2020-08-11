@@ -45,13 +45,13 @@ public class AktiverBrukerIntegrationTest {
         behandleArbeidssokerClient = mock(BehandleArbeidssokerClient.class);
 
         oppfolgingService = new OppfolgingService(
-                authService, null,
+                kvpService, metricsService, arenaOppfolgingService, authService, null,
                 oppfolgingsStatusRepository, oppfolgingsPeriodeRepository,
                 new ManuellStatusRepository(db), null,
                 null, null, null,
-                new EskaleringsvarselRepository(db), new KvpRepository(db),
-                new NyeBrukereFeedRepository(db), new MaalRepository(db)
-        );
+                eskaleringService, new EskaleringsvarselRepository(db), new KvpRepository(db),
+                new NyeBrukereFeedRepository(db), new MaalRepository(db),
+                avsluttOppfolgingProducer);
 
         aktiverBrukerService = new AktiverBrukerService(
                 authService, oppfolgingService,

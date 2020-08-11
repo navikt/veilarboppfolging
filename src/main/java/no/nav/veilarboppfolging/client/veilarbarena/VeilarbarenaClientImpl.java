@@ -38,30 +38,31 @@ public class VeilarbarenaClientImpl implements VeilarbarenaClient {
         Request request = new Request.Builder()
                 .url(joinPaths(veilarbarenaUrl, "/api/oppfolgingsbruker/" + fnr))
                 .header(ACCEPT, APPLICATION_JSON_VALUE)
-                .header(AUTHORIZATION, "Bearer " + systemUserTokenProvider.getSystemUserToken())
+                .header(AUTHORIZATION, "Bearer " + getInnloggetBrukerToken())
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
             RestUtils.throwIfNotSuccessful(response);
             return Optional.of(RestUtils.parseJsonResponseOrThrow(response, VeilarbArenaOppfolging.class));
         } catch (Exception e) {
-            log.warn("Kall til veilarbarena feilet", e);
             return Optional.empty();
         }
     }
 
     @SneakyThrows
     @Override
-    public ArenaOppfolging getArenaOppfolgingsstatus(String fnr) {
+    public Optional<ArenaOppfolging> getArenaOppfolgingsstatus(String fnr) {
         Request request = new Request.Builder()
                 .url(joinPaths(veilarbarenaUrl, "/api/oppfolgingsstatus/" + fnr))
                 .header(ACCEPT, APPLICATION_JSON_VALUE)
-                .header(AUTHORIZATION, "Bearer " + systemUserTokenProvider.getSystemUserToken())
+                .header(AUTHORIZATION, "Bearer " + getInnloggetBrukerToken())
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
             RestUtils.throwIfNotSuccessful(response);
-            return RestUtils.parseJsonResponseOrThrow(response, ArenaOppfolging.class);
+            return Optional.of(RestUtils.parseJsonResponseOrThrow(response, ArenaOppfolging.class));
+        } catch (Exception e) {
+            return Optional.empty();
         }
     }
 
