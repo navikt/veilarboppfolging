@@ -6,6 +6,7 @@ import no.nav.common.auth.subject.SsoToken;
 import no.nav.common.auth.subject.Subject;
 import no.nav.common.auth.subject.SubjectHandler;
 import no.nav.common.client.aktorregister.AktorregisterClient;
+import no.nav.common.utils.Credentials;
 import no.nav.veilarboppfolging.controller.domain.KvpDTO;
 import no.nav.veilarboppfolging.domain.Kvp;
 import no.nav.veilarboppfolging.repository.KvpRepository;
@@ -34,7 +35,7 @@ public class KvpControllerTest {
 
     private KvpRepository kvpRepositoryMock = mock(KvpRepository.class);
 
-    private AuthService authService = new AuthService(mock(VeilarbPep.class), mock(AktorregisterClient.class));
+    private AuthService authService = new AuthService(mock(VeilarbPep.class), mock(AktorregisterClient.class), new Credentials("srvtest", ""));
 
     private KvpController kvpController = new KvpController(kvpRepositoryMock, authService);
 

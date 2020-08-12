@@ -197,10 +197,7 @@ public class OppfolgingService {
     public boolean underOppfolgingNiva3(String fnr) {
         String aktorId = authService.getAktorIdOrThrow(fnr);
 
-        // TODO: Fjern denne
-        authService.sjekkLesetilgangMedAktorId(aktorId);
-        // TODO: Implementer sjekken under
-        // pepClient.sjekkTilgangTilPerson(AbacPersonId.aktorId(aktorId.getAktorId()), ActionId.READ, ResourceType.VeilArbUnderOppfolging);
+        authService.sjekkTilgangTilPersonMedNiva3(aktorId);
 
         return ofNullable(oppfolgingsStatusRepository.fetch(aktorId))
                 .map(OppfolgingTable::isUnderOppfolging)
@@ -493,7 +490,7 @@ public class OppfolgingService {
     private void inaktiverBruker(String aktorId, boolean kanAvslutteOppfolging) {
         log.info("Avslutter oppfølgingsperiode for bruker");
 
-        if (!kanAvslutteOppfolging) {
+        if (kanAvslutteOppfolging) {
             avsluttOppfolgingForBruker(aktorId, null, "Oppfølging avsluttet automatisk pga. inaktiv bruker som ikke kan reaktiveres");
         } else {
             log.info("Avslutting av oppfølging ikke tillatt for aktorid {}", aktorId);

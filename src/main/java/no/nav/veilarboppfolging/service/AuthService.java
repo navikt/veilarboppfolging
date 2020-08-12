@@ -1,19 +1,29 @@
 package no.nav.veilarboppfolging.service;
 
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.abac.AbacUtils;
 import no.nav.common.abac.Pep;
+import no.nav.common.abac.XacmlResponseParser;
+import no.nav.common.abac.constants.AbacDomain;
+import no.nav.common.abac.constants.NavAttributter;
+import no.nav.common.abac.constants.StandardAttributter;
 import no.nav.common.abac.domain.AbacPersonId;
-import no.nav.common.abac.domain.request.ActionId;
+import no.nav.common.abac.domain.Attribute;
+import no.nav.common.abac.domain.request.*;
+import no.nav.common.abac.domain.response.XacmlResponse;
 import no.nav.common.auth.subject.IdentType;
 import no.nav.common.auth.subject.SsoToken;
 import no.nav.common.auth.subject.SubjectHandler;
 import no.nav.common.client.aktorregister.AktorregisterClient;
+import no.nav.common.utils.Credentials;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import static java.lang.String.format;
+import static no.nav.common.abac.XacmlRequestBuilder.lagEnvironment;
+import static no.nav.common.abac.XacmlRequestBuilder.personIdAttribute;
 
 @Slf4j
 @Service
@@ -23,10 +33,13 @@ public class AuthService {
 
     private final AktorregisterClient aktorregisterClient;
 
+    private final Credentials serviceUserCredentials;
+
     @Autowired
-    public AuthService(Pep veilarbPep, AktorregisterClient aktorregisterClient) {
+    public AuthService(Pep veilarbPep, AktorregisterClient aktorregisterClient, Credentials serviceUserCredentials) {
         this.veilarbPep = veilarbPep;
         this.aktorregisterClient = aktorregisterClient;
+        this.serviceUserCredentials = serviceUserCredentials;
     }
 
     private void skalVere(IdentType forventetIdentType) {
@@ -87,6 +100,37 @@ public class AuthService {
         if (!veilarbPep.harTilgangTilPerson(getInnloggetBrukerToken(), ActionId.WRITE, AbacPersonId.aktorId(aktorId))) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
+    }
+
+    public void sjekkTilgangTilPersonMedNiva3(String aktorId) {
+        XacmlRequest tilgangTilNiva3Request = lagSjekkTilgangTilNiva3Request(serviceUserCredentials.username, getInnloggetBrukerToken(), aktorId);
+
+        XacmlResponse response = veilarbPep.getAbacClient().sendRequest(tilgangTilNiva3Request);
+
+        if (!XacmlResponseParser.harTilgang(response)) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+        }
+    }
+
+    private XacmlRequest lagSjekkTilgangTilNiva3Request(String serviceUserName, String userOidcToken, String aktorId) {
+        String oidcTokenBody = AbacUtils.extractOidcTokenBody(userOidcToken);
+        Environment environment = lagEnvironment(serviceUserName);
+        environment.getAttribute().add(new Attribute(NavAttributter.ENVIRONMENT_FELLES_OIDC_TOKEN_BODY, oidcTokenBody));
+
+        Action action = new Action();
+        action.addAttribute(new Attribute(StandardAttributter.ACTION_ID, ActionId.READ.name()));
+
+        Resource resource = new Resource();
+        resource.getAttribute().add(new Attribute(NavAttributter.RESOURCE_FELLES_RESOURCE_TYPE, NavAttributter.RESOURCE_VEILARB_UNDER_OPPFOLGING));
+        resource.getAttribute().add(new Attribute(NavAttributter.RESOURCE_FELLES_DOMENE, AbacDomain.VEILARB_DOMAIN));
+        resource.getAttribute().add(personIdAttribute(AbacPersonId.aktorId(aktorId)));
+
+        Request request = new Request()
+                .withEnvironment(environment)
+                .withAction(action)
+                .withResource(resource);
+
+        return new XacmlRequest().withRequest(request);
     }
 
     // TODO: Det er hårete å måtte skille på ekstern og intern
