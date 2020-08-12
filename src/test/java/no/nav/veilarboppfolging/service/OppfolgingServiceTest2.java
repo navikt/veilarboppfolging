@@ -57,7 +57,7 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
         manuellStatusRepository = new ManuellStatusRepository(db);
 
         oppfolgingService = new OppfolgingService(
-                kvpService, metricsService, arenaOppfolgingService, authService, null, oppfolgingsStatusRepository,
+                ytelserOgAktiviteterService, dkifClient, kvpService, metricsService, arenaOppfolgingService, authService, null, oppfolgingsStatusRepository,
                 oppfolgingsPeriodeRepository, manuellStatusRepository, null,
                 null, null, null, eskaleringService, null,
                 new KvpRepository(db), new NyeBrukereFeedRepository(db), maalRepository,

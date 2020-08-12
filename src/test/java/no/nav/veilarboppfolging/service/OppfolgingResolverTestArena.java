@@ -7,10 +7,6 @@ import org.junit.Test;
 @Ignore
 public class OppfolgingResolverTestArena extends OppfolgingResolverTest {
 
-    public OppfolgingResolverTestArena() {
-        super(true);
-    }
-
     @Test
     public void sjekkStatusIArenaOgOppdaterOppfolging__skal_fungere_selv_om_arena_feiler() {
 

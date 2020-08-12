@@ -3,16 +3,16 @@ package no.nav.veilarboppfolging.service;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import no.nav.common.featuretoggle.UnleashService;
+import no.nav.veilarboppfolging.client.dkif.DkifClient;
+import no.nav.veilarboppfolging.client.dkif.DkifKontaktinfo;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
-import no.nav.veilarboppfolging.controller.domain.DkifResponse;
 import no.nav.veilarboppfolging.controller.domain.UnderOppfolgingDTO;
 import no.nav.veilarboppfolging.domain.*;
 import no.nav.veilarboppfolging.kafka.AvsluttOppfolgingProducer;
 import no.nav.veilarboppfolging.kafka.OppfolgingStatusKafkaProducer;
 import no.nav.veilarboppfolging.repository.*;
-import no.nav.veilarboppfolging.service.OppfolgingResolver.OppfolgingResolverDependencies;
+import no.nav.veilarboppfolging.utils.ArenaUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
@@ -22,13 +22,17 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
 import static java.lang.Boolean.TRUE;
+import static java.lang.System.currentTimeMillis;
 import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
+import static no.nav.veilarboppfolging.domain.KodeverkBruker.SYSTEM;
 import static no.nav.veilarboppfolging.utils.ArenaUtils.*;
 import static no.nav.veilarboppfolging.utils.KvpUtils.sjekkTilgangGittKvp;
 
@@ -36,17 +40,17 @@ import static no.nav.veilarboppfolging.utils.KvpUtils.sjekkTilgangGittKvp;
 @Service
 public class OppfolgingService {
 
+    private final YtelserOgAktiviteterService ytelserOgAktiviteterService;
+    private final DkifClient dkifClient;
     private final KvpService kvpService;
     private final MetricsService metricsService;
     private final ArenaOppfolgingService arenaOppfolgingService;
     private final AuthService authService;
-    private final OppfolgingResolverDependencies oppfolgingResolverDependencies;
     private final OppfolgingsStatusRepository oppfolgingsStatusRepository;
     private final OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
     private final ManuellStatusRepository manuellStatusRepository;
     private final ManuellStatusService manuellStatusService;
     private final VeilarbarenaClient veilarbarenaClient;
-    private final UnleashService unleashService;
     private final OppfolgingStatusKafkaProducer kafkaProducer;
     private final EskaleringService eskaleringService;
     private final EskaleringsvarselRepository eskaleringsvarselRepository;
@@ -57,35 +61,36 @@ public class OppfolgingService {
 
     @Autowired
     public OppfolgingService(
+            YtelserOgAktiviteterService ytelserOgAktiviteterService,
+            DkifClient dkifClient,
             KvpService kvpService,
             MetricsService metricsService,
             ArenaOppfolgingService arenaOppfolgingService,
             AuthService authService,
-            OppfolgingResolverDependencies oppfolgingResolverDependencies,
             OppfolgingsStatusRepository oppfolgingsStatusRepository,
             OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository,
             ManuellStatusRepository manuellStatusRepository,
             ManuellStatusService manuellStatusService,
             VeilarbarenaClient veilarbarenaClient,
-            UnleashService unleashService,
             OppfolgingStatusKafkaProducer kafkaProducer,
             EskaleringService eskaleringService,
             EskaleringsvarselRepository eskaleringsvarselRepository,
             KvpRepository kvpRepository,
             NyeBrukereFeedRepository nyeBrukereFeedRepository,
             MaalRepository maalRepository,
-            AvsluttOppfolgingProducer avsluttOppfolgingProducer) {
+            AvsluttOppfolgingProducer avsluttOppfolgingProducer
+    ) {
+        this.ytelserOgAktiviteterService = ytelserOgAktiviteterService;
+        this.dkifClient = dkifClient;
         this.kvpService = kvpService;
         this.metricsService = metricsService;
         this.arenaOppfolgingService = arenaOppfolgingService;
         this.authService = authService;
-        this.oppfolgingResolverDependencies = oppfolgingResolverDependencies;
         this.oppfolgingsStatusRepository = oppfolgingsStatusRepository;
         this.oppfolgingsPeriodeRepository = oppfolgingsPeriodeRepository;
         this.manuellStatusRepository = manuellStatusRepository;
         this.manuellStatusService = manuellStatusService;
         this.veilarbarenaClient = veilarbarenaClient;
-        this.unleashService = unleashService;
         this.kafkaProducer = kafkaProducer;
         this.eskaleringService = eskaleringService;
         this.eskaleringsvarselRepository = eskaleringsvarselRepository;
@@ -99,61 +104,70 @@ public class OppfolgingService {
     public OppfolgingStatusData hentOppfolgingsStatus(String fnr) {
         authService.sjekkLesetilgangMedFnr(fnr);
 
-        val resolver = OppfolgingResolver.lagOppfolgingResolver(fnr, oppfolgingResolverDependencies);
+        sjekkStatusIArenaOgOppdaterOppfolging(fnr);
 
-        resolver.sjekkStatusIArenaOgOppdaterOppfolging();
-
-
-
-
-        return getOppfolgingStatusData(fnr, resolver);
+        return getOppfolgingStatusData(fnr, null);
     }
 
     public OppfolgingStatusData hentAvslutningStatus(String fnr) {
         authService.sjekkLesetilgangMedFnr(fnr);
-        val resolver = OppfolgingResolver.lagOppfolgingResolver(fnr, oppfolgingResolverDependencies);
-        return getOppfolgingStatusDataMedAvslutningStatus(fnr, resolver);
+        return getOppfolgingStatusDataMedAvslutningStatus(fnr);
     }
 
     @SneakyThrows
     public OppfolgingStatusData startOppfolging(String fnr) {
-        val resolver = sjekkTilgangTilEnhet(fnr);
+        String aktorId = authService.getAktorIdOrThrow(fnr);
+        ArenaOppfolgingTilstand arenaOppfolgingTilstand = sjekkTilgangTilEnhet(fnr);
 
-        if (resolver.getKanSettesUnderOppfolging()) {
-            resolver.startOppfolging();
+        OppfolgingTable oppfolging = oppfolgingsStatusRepository.fetch(aktorId);
+
+        if (ArenaUtils.kanSettesUnderOppfolging(arenaOppfolgingTilstand, oppfolging.isUnderOppfolging())) {
+            startOppfolgingHvisIkkeAlleredeStartet(aktorId);
         }
 
         kafkaProducer.send(new Fnr(fnr));
 
-        return getOppfolgingStatusData(fnr, resolver);
+        return getOppfolgingStatusData(fnr, null);
     }
 
     @SneakyThrows
     @Transactional
     public OppfolgingStatusData avsluttOppfolging(String fnr, String veilederId, String begrunnelse) {
-        val resolver = sjekkTilgangTilEnhet(fnr);
+        String aktorId = authService.getAktorIdOrThrow(fnr);
+        ArenaOppfolgingTilstand arenaOppfolgingTilstand = sjekkTilgangTilEnhet(fnr);
 
-        resolver.avsluttOppfolging(veilederId, begrunnelse);
-        resolver.reloadOppfolging();
+        OppfolgingTable oppfolging = oppfolgingsStatusRepository.fetch(aktorId);
+
+        boolean erIserv = erIserv(arenaOppfolgingTilstand.getFormidlingsgruppe());
+
+        if (kanAvslutteOppfolging(aktorId, oppfolging.isUnderOppfolging(), erIserv)) {
+            avsluttOppfolgingForBruker(aktorId, veilederId, begrunnelse);
+        }
 
         kafkaProducer.send(new Fnr(fnr));
 
-        return getOppfolgingStatusDataMedAvslutningStatus(fnr, resolver);
+        return getOppfolgingStatusDataMedAvslutningStatus(fnr);
     }
 
     @Transactional
-    public boolean avsluttOppfolgingForSystemBruker(String fnr, String veileder, String begrunnelse) {
-        /*
-            TODO: Fjernet tilgangskontroll her siden det ikke gir mening å sjekke tilgang på en cron job.
-                Gjør avklaring på at tilgangskontroll ikke trengs.
-         */
+    public boolean avsluttOppfolgingForSystemBruker(String fnr) {
+        String aktorId = authService.getAktorIdOrThrow(fnr);
 
-        // TODO: Log
-//        arenaOppfolgingTilstand().ifPresent(arenaStatus ->
-//                log.info("Avslutting av oppfølging, tilstand i Arena for aktorid {}: {}", aktorId, arenaStatus));
+        ArenaOppfolgingTilstand arenaOppfolgingTilstand = arenaOppfolgingService.hentOppfolgingTilstand(fnr)
+                .orElseThrow();
 
-        val resolver = OppfolgingResolver.lagOppfolgingResolver(fnr, oppfolgingResolverDependencies);
-        return resolver.avsluttOppfolging(veileder, begrunnelse);
+        log.info("Avslutting av oppfølging, tilstand i Arena for aktorid {}: {}", aktorId, arenaOppfolgingTilstand);
+
+        OppfolgingTable oppfolging = oppfolgingsStatusRepository.fetch(aktorId);
+
+        boolean erIserv = erIserv(arenaOppfolgingTilstand.getFormidlingsgruppe());
+
+        if (!kanAvslutteOppfolging(aktorId, oppfolging.isUnderOppfolging(), erIserv)) {
+            return false;
+        }
+
+        avsluttOppfolgingForBruker(aktorId, "System", "Oppfolging avsluttet autmatisk for grunn av iservert 28 dager");
+        return true;
     }
 
     public List<AvsluttetOppfolgingFeedData> hentAvsluttetOppfolgingEtterDato(Timestamp timestamp, int pageSize) {
@@ -163,17 +177,10 @@ public class OppfolgingService {
     @SneakyThrows
     public VeilederTilgang hentVeilederTilgang(String fnr) {
         authService.sjekkLesetilgangMedFnr(fnr);
-
-        if (unleashService.isEnabled("veilarboppfolging.hentVeilederTilgang.fra.veilarbarena")) {
-            Optional<VeilarbArenaOppfolging> arenaBruker = veilarbarenaClient.hentOppfolgingsbruker(fnr);
-            String oppfolgingsenhet = arenaBruker.map(VeilarbArenaOppfolging::getNav_kontor).orElse(null);
-            boolean tilgangTilEnhet = authService.harTilgangTilEnhet(oppfolgingsenhet);
-            return new VeilederTilgang().setTilgangTilBrukersKontor(tilgangTilEnhet);
-        } else {
-            val resolver = OppfolgingResolver.lagOppfolgingResolver(fnr, oppfolgingResolverDependencies);
-            boolean tilgangTilEnhet = authService.harTilgangTilEnhet(resolver.getOppfolgingsEnhet());
-            return new VeilederTilgang().setTilgangTilBrukersKontor(tilgangTilEnhet);
-        }
+        Optional<VeilarbArenaOppfolging> arenaBruker = veilarbarenaClient.hentOppfolgingsbruker(fnr);
+        String oppfolgingsenhet = arenaBruker.map(VeilarbArenaOppfolging::getNav_kontor).orElse(null);
+        boolean tilgangTilEnhet = authService.harTilgangTilEnhet(oppfolgingsenhet);
+        return new VeilederTilgang().setTilgangTilBrukersKontor(tilgangTilEnhet);
     }
 
     public UnderOppfolgingDTO oppfolgingData(String fnr) {
@@ -206,16 +213,45 @@ public class OppfolgingService {
         return ofNullable(oppfolgingsStatusRepository.fetch(aktorId));
     }
 
-    private OppfolgingStatusData getOppfolgingStatusData(String fnr, OppfolgingResolver oppfolgingResolver) {
-        return getOppfolgingStatusData(fnr, oppfolgingResolver, null);
-    }
+    private OppfolgingStatusData getOppfolgingStatusData(String fnr, AvslutningStatusData avslutningStatusData) {
+        String aktorId = authService.getAktorIdOrThrow(fnr);
 
-    private OppfolgingStatusData getOppfolgingStatusData(String fnr, OppfolgingResolver oppfolgingResolver, AvslutningStatusData avslutningStatusData) {
-        Oppfolging oppfolging = oppfolgingResolver.getOppfolging();
+        Oppfolging oppfolging = hentOppfolging(aktorId)
+                .orElse(new Oppfolging().setAktorId(aktorId).setUnderOppfolging(false));
 
-        DkifResponse dkifResponse = oppfolgingResolver.reservertIKrr();
-        boolean krr = dkifResponse.isKrr();
-        boolean manuell = oppfolgingResolver.manuell();
+        boolean erManuell = ofNullable(oppfolging.getGjeldendeManuellStatus())
+                .map(ManuellStatus::isManuell)
+                .orElse(false);
+
+        DkifKontaktinfo dkifKontaktinfo = hentDkifInfoOgOppdaterManuellStatus(aktorId, fnr, erManuell);
+        boolean krr = dkifKontaktinfo.isReservert();
+
+        // TODO: Burde kanskje heller feile istedenfor å bruke Optional
+        Optional<ArenaOppfolgingTilstand> maybeArenaOppfolging = arenaOppfolgingService.hentOppfolgingTilstand(fnr);
+
+        boolean kanSettesUnderOppfolging = !oppfolging.isUnderOppfolging() && maybeArenaOppfolging
+                .map(s -> kanSettesUnderOppfolging(s.getFormidlingsgruppe(), s.getServicegruppe()))
+                .orElse(false);
+
+        long kvpId = kvpRepository.gjeldendeKvp(aktorId);
+        boolean harSkrivetilgangTilBruker = !kvpService.erUnderKvp(kvpId) || authService.harTilgangTilEnhet(kvpRepository.fetch(kvpId).getEnhet());
+
+        Boolean erInaktivIArena = maybeArenaOppfolging.map(ao -> erIserv(ao.getFormidlingsgruppe())).orElse(null);
+
+        Optional<Boolean> maybeKanEnkeltReaktiveres = maybeArenaOppfolging.map(ArenaOppfolgingTilstand::getKanEnkeltReaktiveres);
+
+        Boolean kanReaktiveres = maybeKanEnkeltReaktiveres
+                .map(kr -> oppfolging.isUnderOppfolging() && kr)
+                .orElse(null);
+
+        Boolean erSykmeldtMedArbeidsgiver = maybeArenaOppfolging
+                .map(ao -> ArenaUtils.erIARBSUtenOppfolging(ao.getFormidlingsgruppe(), ao.getServicegruppe()))
+                .orElse(null);
+
+        Date inaktiveringsDato = maybeArenaOppfolging
+                .map(ArenaOppfolgingTilstand::getInaktiveringsdato)
+                .map(d -> Date.from(d.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant()))
+                .orElse(null);
 
         return new OppfolgingStatusData()
                 .setFnr(fnr)
@@ -224,36 +260,55 @@ public class OppfolgingService {
                 .setUnderOppfolging(oppfolging.isUnderOppfolging())
                 .setUnderKvp(oppfolging.getGjeldendeKvp() != null)
                 .setReservasjonKRR(krr)
-                .setManuell(manuell || krr)
-                .setKanStarteOppfolging(oppfolgingResolver.getKanSettesUnderOppfolging())
+                .setManuell(erManuell || krr)
+                .setKanStarteOppfolging(kanSettesUnderOppfolging)
                 .setAvslutningStatusData(avslutningStatusData)
                 .setGjeldendeEskaleringsvarsel(oppfolging.getGjeldendeEskaleringsvarsel())
                 .setOppfolgingsperioder(oppfolging.getOppfolgingsperioder())
-                .setHarSkriveTilgang(oppfolgingResolver.harSkrivetilgangTilBruker())
-                .setInaktivIArena(oppfolgingResolver.getInaktivIArena())
-                .setKanReaktiveres(oppfolgingResolver.getKanReaktiveres())
-                .setErSykmeldtMedArbeidsgiver(oppfolgingResolver.getErSykmeldtMedArbeidsgiver())
-                .setErIkkeArbeidssokerUtenOppfolging(oppfolgingResolver.getErSykmeldtMedArbeidsgiver())
-                .setInaktiveringsdato(oppfolgingResolver.getInaktiveringsDato())
-                .setServicegruppe(oppfolgingResolver.getServicegruppe())
-                .setFormidlingsgruppe(oppfolgingResolver.getFormidlingsgruppe())
-                .setRettighetsgruppe(oppfolgingResolver.getRettighetsgruppe())
-                .setKanVarsles(!manuell && dkifResponse.isKanVarsles());
+                .setHarSkriveTilgang(harSkrivetilgangTilBruker)
+                .setInaktivIArena(erInaktivIArena)
+                .setKanReaktiveres(kanReaktiveres)
+                .setErSykmeldtMedArbeidsgiver(erSykmeldtMedArbeidsgiver)
+                .setErIkkeArbeidssokerUtenOppfolging(erSykmeldtMedArbeidsgiver)
+                .setInaktiveringsdato(inaktiveringsDato)
+                .setServicegruppe(maybeArenaOppfolging.map(ArenaOppfolgingTilstand::getServicegruppe).orElse(null))
+                .setFormidlingsgruppe(maybeArenaOppfolging.map(ArenaOppfolgingTilstand::getFormidlingsgruppe).orElse(null))
+                .setRettighetsgruppe(maybeArenaOppfolging.map(ArenaOppfolgingTilstand::getRettighetsgruppe).orElse(null))
+                .setKanVarsles(!erManuell && dkifKontaktinfo.isKanVarsles());
     }
 
-    private OppfolgingStatusData getOppfolgingStatusDataMedAvslutningStatus(String fnr, OppfolgingResolver oppfolgingResolver) {
+    private OppfolgingStatusData getOppfolgingStatusDataMedAvslutningStatus(String fnr) {
+        String aktorId = authService.getAktorIdOrThrow(fnr);
+
+        OppfolgingTable oppfolging = oppfolgingsStatusRepository.fetch(aktorId);
+
+        Optional<ArenaOppfolgingTilstand> maybeArenaOppfolging = arenaOppfolgingService.hentOppfolgingTilstand(fnr);
+
+        boolean erIserv = maybeArenaOppfolging.map(ao -> erIserv(ao.getFormidlingsgruppe())).orElse(false);
+
+        boolean kanAvslutte = kanAvslutteOppfolging(aktorId, oppfolging.isUnderOppfolging(), erIserv);
+
+        boolean erUnderOppfolging = maybeArenaOppfolging
+                .map(status -> erUnderOppfolging(status.getFormidlingsgruppe(), status.getServicegruppe()))
+                .orElse(false);
+
+        // TODO: Refactor into function?
+        Date inaktiveringsDato = maybeArenaOppfolging
+                .map(ArenaOppfolgingTilstand::getInaktiveringsdato)
+                .map(d -> Date.from(d.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant()))
+                .orElse(null);
+
         val avslutningStatusData = AvslutningStatusData.builder()
-                .kanAvslutte(oppfolgingResolver.kanAvslutteOppfolging())
-                .underOppfolging(oppfolgingResolver.erUnderOppfolgingIArena())
-                .harYtelser(oppfolgingResolver.harPagaendeYtelse())
-                .harTiltak(oppfolgingResolver.harAktiveTiltak())
-                .underKvp(oppfolgingResolverDependencies.getKvpService().erUnderKvp(authService.getAktorIdOrThrow(fnr)))
-                .inaktiveringsDato(oppfolgingResolver.getInaktiveringsDato())
+                .kanAvslutte(kanAvslutte)
+                .underOppfolging(erUnderOppfolging)
+                .harYtelser(ytelserOgAktiviteterService.harPagaendeYtelse(fnr))
+                .harTiltak(ytelserOgAktiviteterService.harAktiveTiltak(fnr))
+                .underKvp(kvpService.erUnderKvp(authService.getAktorIdOrThrow(fnr)))
+                .inaktiveringsDato(inaktiveringsDato)
                 .build();
 
-        return getOppfolgingStatusData(fnr, oppfolgingResolver, avslutningStatusData);
+        return getOppfolgingStatusData(fnr, avslutningStatusData);
     }
-
 
     @SneakyThrows
     public Optional<Oppfolging> hentOppfolging(String aktorId) {
@@ -329,17 +384,17 @@ public class OppfolgingService {
         }
     }
 
-    @SneakyThrows
-    private OppfolgingResolver sjekkTilgangTilEnhet(String fnr){
+    private ArenaOppfolgingTilstand sjekkTilgangTilEnhet(String fnr){
         authService.sjekkLesetilgangMedFnr(fnr);
 
-        val resolver = OppfolgingResolver.lagOppfolgingResolver(fnr, oppfolgingResolverDependencies);
+        ArenaOppfolgingTilstand arenaOppfolgingTilstand = arenaOppfolgingService.hentOppfolgingTilstand(fnr)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR));
 
-        if (!authService.harTilgangTilEnhet(resolver.getOppfolgingsEnhet())) {
+        if (!authService.harTilgangTilEnhet(arenaOppfolgingTilstand.getOppfolgingsenhet())) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         }
 
-        return resolver;
+        return arenaOppfolgingTilstand;
     }
 
     private List<Oppfolgingsperiode> populerKvpPerioder(List<Oppfolgingsperiode> oppfolgingsPerioder, List<Kvp> kvpPerioder) {
@@ -428,8 +483,9 @@ public class OppfolgingService {
                     arenaOppfolgingTilstand.toString());
 
             if (skalAvsluttes) {
-                boolean kanAvslutte = kanAvslutteOppfolging();
-                inaktiverBruker(oppfolging.isUnderOppfolging());
+                String aktorId = authService.getAktorIdOrThrow(fnr);
+                boolean kanAvslutte = kanAvslutteOppfolging(aktorId, oppfolging.isUnderOppfolging(), erIserv(tilstandDirekteFraArena.getFormidlingsgruppe()));
+                inaktiverBruker(aktorId, kanAvslutte);
             }
         });
     }
@@ -468,6 +524,31 @@ public class OppfolgingService {
 
         oppfolgingsPeriodeRepository.avslutt(aktorId, veilederId, begrunnelse);
         avsluttOppfolgingProducer.avsluttOppfolgingEvent(aktorId, LocalDateTime.now());
+    }
+
+    private DkifKontaktinfo hentDkifInfoOgOppdaterManuellStatus(String aktorId, String fnr, boolean erManuell) {
+        DkifKontaktinfo kontaktinfo;
+
+        try {
+            kontaktinfo = dkifClient.hentKontaktInfo(fnr);
+            if (!erManuell && kontaktinfo.isReservert()) {
+                manuellStatusRepository.create(
+                        new ManuellStatus()
+                                .setAktorId(aktorId)
+                                .setManuell(true)
+                                .setDato(new Timestamp(currentTimeMillis()))
+                                .setBegrunnelse("Reservert og under oppfølging")
+                                .setOpprettetAv(SYSTEM)
+                );
+            }
+        } catch (Exception e) {
+            kontaktinfo = new DkifKontaktinfo();
+            kontaktinfo.setPersonident(fnr);
+            kontaktinfo.setKanVarsles(true);
+            kontaktinfo.setReservert(false);
+        }
+
+        return kontaktinfo;
     }
 
 }

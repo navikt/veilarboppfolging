@@ -26,6 +26,10 @@ public class ArenaUtils {
         return erIARBSUtenOppfolging(formidlingsgruppeKode, servicegruppeKode);
     }
 
+    public static boolean kanSettesUnderOppfolging(ArenaOppfolgingTilstand arenaOppfolging, boolean erUnderOppfolging) {
+        return !erUnderOppfolging && kanSettesUnderOppfolging(arenaOppfolging.getFormidlingsgruppe(), arenaOppfolging.getServicegruppe());
+    }
+
     private static boolean erIARBSMedOppfolging(String formidlingsgruppeKode, String servicegruppeKode) {
         return IKKE_ARBEIDSSOKER.equals(formidlingsgruppeKode) && OPPFOLGING_SERVICEGRUPPEKODER.contains(servicegruppeKode);
     }

@@ -154,11 +154,7 @@ public class IservService {
             } else {
                 String fnr = authService.getFnrOrThrow(aktoerId);
 
-                boolean oppfolgingAvsluttet = oppfolgingService.avsluttOppfolgingForSystemBruker(
-                        fnr,
-                        "System",
-                        "Oppfolging avsluttet autmatisk for grunn av iservert 28 dager"
-                );
+                boolean oppfolgingAvsluttet = oppfolgingService.avsluttOppfolgingForSystemBruker(fnr);
 
                 resultat = oppfolgingAvsluttet ? AVSLUTTET_OK : IKKE_AVSLUTTET;
 

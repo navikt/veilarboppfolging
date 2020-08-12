@@ -24,7 +24,6 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Answers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
@@ -66,8 +65,8 @@ public class OppfolgingServiceTest {
     @Mock
     private OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
 
-    @Mock(answer = Answers.RETURNS_MOCKS)
-    private OppfolgingResolver.OppfolgingResolverDependencies oppfolgingResolverDependencies;
+//    @Mock(answer = Answers.RETURNS_MOCKS)
+//    private OppfolgingResolver.OppfolgingResolverDependencies oppfolgingResolverDependencies;
 
     @Mock
     private UnleashService unleashService;

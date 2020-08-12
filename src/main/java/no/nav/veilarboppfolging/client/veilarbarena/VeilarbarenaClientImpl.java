@@ -14,6 +14,7 @@ import okhttp3.Response;
 import java.util.Optional;
 
 import static no.nav.common.utils.UrlUtils.joinPaths;
+import static no.nav.veilarboppfolging.service.AuthService.getInnloggetBrukerToken;
 import static org.springframework.http.HttpHeaders.ACCEPT;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;

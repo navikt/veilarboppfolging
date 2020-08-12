@@ -93,7 +93,12 @@ public class KvpService {
     }
 
     public boolean erUnderKvp(String aktorId) {
-        return kvpRepository.gjeldendeKvp(aktorId) != 0L;
+        return erUnderKvp(kvpRepository.gjeldendeKvp(aktorId));
+    }
+
+    // Kan være statisk
+    public boolean erUnderKvp(long kvpId) {
+        return kvpId != 0L;
     }
 
     public void stopKvpUtenEnhetSjekk(String aktorId, String begrunnelse, KodeverkBruker kodeverkBruker) {
