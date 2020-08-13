@@ -13,6 +13,8 @@ import org.springframework.web.server.ResponseStatusException;
 @Service
 public class EskaleringService {
 
+    private final ArenaOppfolgingService arenaOppfolgingService;
+
     private final AuthService authService;
 
     private final TransactionTemplate transactor;
@@ -25,11 +27,14 @@ public class EskaleringService {
 
     @Autowired
     public EskaleringService(
+            ArenaOppfolgingService arenaOppfolgingService,
             AuthService authService,
             TransactionTemplate transactor,
             VarseloppgaveClient varseloppgaveClient,
             OppfolgingsStatusRepository oppfolgingsStatusRepository,
-            EskaleringsvarselRepository eskaleringsvarselRepository) {
+            EskaleringsvarselRepository eskaleringsvarselRepository
+    ) {
+        this.arenaOppfolgingService = arenaOppfolgingService;
         this.authService = authService;
         this.transactor = transactor;
         this.varseloppgaveClient = varseloppgaveClient;
@@ -40,7 +45,7 @@ public class EskaleringService {
     public void startEskalering(String fnr, String veilederId, String begrunnelse, long tilhorendeDialogId) {
         String aktorId = authService.getAktorIdOrThrow(fnr);
 
-        // TODO: sjekkTilgangTilEnhet
+        authService.sjekkTilgangTilPersonOgEnhet(fnr);
 
         transactor.executeWithoutResult((status) -> {
             long gjeldendeEskaleringsvarselId = oppfolgingsStatusRepository.fetch(aktorId).getGjeldendeEskaleringsvarselId();
@@ -65,15 +70,25 @@ public class EskaleringService {
     public void stoppEskalering(String fnr, String veilederId, String begrunnelse) {
         String aktorId = authService.getAktorIdOrThrow(fnr);
 
-        // TODO: sjekkTilgangTilEnhet
+        authService.sjekkTilgangTilPersonOgEnhet(fnr);
 
         long gjeldendeEskaleringsvarselId = oppfolgingsStatusRepository.fetch(aktorId).getGjeldendeEskaleringsvarselId();
 
         if (gjeldendeEskaleringsvarselId == 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Brukeren har ikke et aktivt eskaleringsvarsel.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Brukeren har ikke et aktivt eskaleringsvarsel");
         }
 
         eskaleringsvarselRepository.finish(aktorId, gjeldendeEskaleringsvarselId, veilederId, begrunnelse);
+    }
+
+    public void stoppEskaleringForAvsluttOppfolging(String fnr, String veilederId, String begrunnelse) {
+        String aktorId = authService.getAktorIdOrThrow(fnr);
+
+        long gjeldendeEskaleringsvarselId = oppfolgingsStatusRepository.fetch(aktorId).getGjeldendeEskaleringsvarselId();
+
+        if (gjeldendeEskaleringsvarselId != 0) {
+            eskaleringsvarselRepository.finish(aktorId, gjeldendeEskaleringsvarselId, veilederId, begrunnelse);
+        }
     }
 
 }

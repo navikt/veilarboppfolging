@@ -1,5 +1,6 @@
 package no.nav.veilarboppfolging.service;
 
+import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
 import no.nav.veilarboppfolging.domain.ArenaOppfolgingTilstand;
 import no.nav.veilarboppfolging.domain.OppfolgingTable;
@@ -26,6 +27,12 @@ public class ArenaOppfolgingService {
         this.oppfolgingsStatusRepository = oppfolgingsStatusRepository;
     }
 
+    // Bruker endepunktet i veilarbarena som henter fra database som er synket med Arena (har et delay på et par min)
+    public Optional<VeilarbArenaOppfolging> hentOppfolgingFraVeilarbarena(String fnr) {
+        return veilarbarenaClient.hentOppfolgingsbruker(fnr);
+    }
+
+    // Bruker endepunktet i veilarbarena som henter direkte fra Arena
     public Optional<ArenaOppfolgingTilstand> hentOppfolgingTilstandDirekteFraArena(String fnr) {
         return veilarbarenaClient.getArenaOppfolgingsstatus(fnr).map(ArenaOppfolgingTilstand::fraArenaOppfolging);
     }

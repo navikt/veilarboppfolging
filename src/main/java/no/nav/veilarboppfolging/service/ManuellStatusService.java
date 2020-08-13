@@ -2,12 +2,16 @@ package no.nav.veilarboppfolging.service;
 
 import lombok.SneakyThrows;
 import lombok.val;
+import no.nav.veilarboppfolging.client.dkif.DkifClient;
+import no.nav.veilarboppfolging.client.dkif.DkifKontaktinfo;
+import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 import no.nav.veilarboppfolging.domain.Fnr;
 import no.nav.veilarboppfolging.domain.KodeverkBruker;
 import no.nav.veilarboppfolging.domain.ManuellStatus;
 import no.nav.veilarboppfolging.domain.OppfolgingTable;
 import no.nav.veilarboppfolging.kafka.OppfolgingStatusKafkaProducer;
 import no.nav.veilarboppfolging.repository.ManuellStatusRepository;
+import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -25,15 +29,26 @@ public class ManuellStatusService {
 
     private final ManuellStatusRepository manuellStatusRepository;
 
+    private final ArenaOppfolgingService arenaOppfolgingService;
+
+    private final OppfolgingsStatusRepository oppfolgingsStatusRepository;
+
+    private final DkifClient dkifClient;
+
     @Autowired
     public ManuellStatusService(
             AuthService authService,
             OppfolgingStatusKafkaProducer oppfolgingStatusKafkaProducer,
-            ManuellStatusRepository manuellStatusRepository
-    ) {
+            ManuellStatusRepository manuellStatusRepository,
+            ArenaOppfolgingService arenaOppfolgingService,
+            OppfolgingsStatusRepository oppfolgingsStatusRepository,
+            DkifClient dkifClient) {
         this.authService = authService;
         this.oppfolgingStatusKafkaProducer = oppfolgingStatusKafkaProducer;
         this.manuellStatusRepository = manuellStatusRepository;
+        this.arenaOppfolgingService = arenaOppfolgingService;
+        this.oppfolgingsStatusRepository = oppfolgingsStatusRepository;
+        this.dkifClient = dkifClient;
     }
 
     @SneakyThrows
@@ -47,13 +62,16 @@ public class ManuellStatusService {
         String aktorId = authService.getAktorIdOrThrow(fnr);
         authService.sjekkLesetilgangMedAktorId(aktorId);
 
-        //        TODO: Mangler sjekk på tilgang til enhet
-//        val resolver = sjekkTilgangTilEnhet(fnr);
+        VeilarbArenaOppfolging arenaOppfolging = arenaOppfolgingService.hentOppfolgingFraVeilarbarena(fnr).orElseThrow();
 
-        // TODO: retrieve booleans
-        boolean erUnderOppfolging = false;
-        boolean gjeldendeErManuell = true;
-        boolean reservertIKrr = false;
+        authService.sjekkTilgangTilEnhet(arenaOppfolging.getNav_kontor());
+
+        OppfolgingTable oppfolging = oppfolgingsStatusRepository.fetch(aktorId);
+        DkifKontaktinfo kontaktinfo = dkifClient.hentKontaktInfo(fnr);
+
+        boolean erUnderOppfolging = oppfolging.isUnderOppfolging();
+        boolean gjeldendeErManuell = erManuell(oppfolging);
+        boolean reservertIKrr = kontaktinfo.isReservert();
 
         if (erUnderOppfolging && (gjeldendeErManuell != manuell) && (!reservertIKrr || manuell)) {
             val nyStatus = new ManuellStatus()

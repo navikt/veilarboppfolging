@@ -34,11 +34,7 @@ public class AvsluttOppfolgingProducer {
         final AvsluttOppfolgingKafkaDTO avsluttOppfolgingKafkaDTO = toDTO(aktorId, sluttdato);
         final String serialisertBruker = toJson(avsluttOppfolgingKafkaDTO);
 
-        kafkaTemplate.send(
-                topic,
-                aktorId,
-                serialisertBruker
-        ).addCallback(
+        kafkaTemplate.send(topic, aktorId, serialisertBruker).addCallback(
                 sendResult -> onSuccess(avsluttOppfolgingKafkaDTO),
                 throwable -> onError(throwable, avsluttOppfolgingKafkaDTO)
         );

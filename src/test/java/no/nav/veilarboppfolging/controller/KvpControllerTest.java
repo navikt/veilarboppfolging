@@ -35,7 +35,7 @@ public class KvpControllerTest {
 
     private KvpRepository kvpRepositoryMock = mock(KvpRepository.class);
 
-    private AuthService authService = new AuthService(mock(VeilarbPep.class), mock(AktorregisterClient.class), new Credentials("srvtest", ""));
+    private AuthService authService = new AuthService(arenaOppfolgingService, mock(VeilarbPep.class), mock(AktorregisterClient.class), new Credentials("srvtest", ""));
 
     private KvpController kvpController = new KvpController(kvpRepositoryMock, authService);
 

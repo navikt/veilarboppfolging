@@ -6,7 +6,6 @@ import lombok.val;
 import no.nav.veilarboppfolging.client.dkif.DkifClient;
 import no.nav.veilarboppfolging.client.dkif.DkifKontaktinfo;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
-import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
 import no.nav.veilarboppfolging.controller.domain.UnderOppfolgingDTO;
 import no.nav.veilarboppfolging.domain.*;
 import no.nav.veilarboppfolging.kafka.AvsluttOppfolgingProducer;
@@ -50,7 +49,6 @@ public class OppfolgingService {
     private final OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
     private final ManuellStatusRepository manuellStatusRepository;
     private final ManuellStatusService manuellStatusService;
-    private final VeilarbarenaClient veilarbarenaClient;
     private final OppfolgingStatusKafkaProducer kafkaProducer;
     private final EskaleringService eskaleringService;
     private final EskaleringsvarselRepository eskaleringsvarselRepository;
@@ -71,7 +69,6 @@ public class OppfolgingService {
             OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository,
             ManuellStatusRepository manuellStatusRepository,
             ManuellStatusService manuellStatusService,
-            VeilarbarenaClient veilarbarenaClient,
             OppfolgingStatusKafkaProducer kafkaProducer,
             EskaleringService eskaleringService,
             EskaleringsvarselRepository eskaleringsvarselRepository,
@@ -90,7 +87,6 @@ public class OppfolgingService {
         this.oppfolgingsPeriodeRepository = oppfolgingsPeriodeRepository;
         this.manuellStatusRepository = manuellStatusRepository;
         this.manuellStatusService = manuellStatusService;
-        this.veilarbarenaClient = veilarbarenaClient;
         this.kafkaProducer = kafkaProducer;
         this.eskaleringService = eskaleringService;
         this.eskaleringsvarselRepository = eskaleringsvarselRepository;
@@ -117,7 +113,13 @@ public class OppfolgingService {
     @SneakyThrows
     public OppfolgingStatusData startOppfolging(String fnr) {
         String aktorId = authService.getAktorIdOrThrow(fnr);
-        ArenaOppfolgingTilstand arenaOppfolgingTilstand = sjekkTilgangTilEnhet(fnr);
+
+        authService.sjekkLesetilgangMedFnr(fnr);
+
+        ArenaOppfolgingTilstand arenaOppfolgingTilstand = arenaOppfolgingService.hentOppfolgingTilstand(fnr)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR));
+
+        authService.sjekkTilgangTilEnhet(arenaOppfolgingTilstand.getOppfolgingsenhet());
 
         OppfolgingTable oppfolging = oppfolgingsStatusRepository.fetch(aktorId);
 
@@ -134,13 +136,20 @@ public class OppfolgingService {
     @Transactional
     public OppfolgingStatusData avsluttOppfolging(String fnr, String veilederId, String begrunnelse) {
         String aktorId = authService.getAktorIdOrThrow(fnr);
-        ArenaOppfolgingTilstand arenaOppfolgingTilstand = sjekkTilgangTilEnhet(fnr);
+
+        authService.sjekkLesetilgangMedFnr(fnr);
+
+        ArenaOppfolgingTilstand arenaOppfolgingTilstand = arenaOppfolgingService.hentOppfolgingTilstand(fnr)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR));
+
+        authService.sjekkTilgangTilEnhet(arenaOppfolgingTilstand.getOppfolgingsenhet());
 
         OppfolgingTable oppfolging = oppfolgingsStatusRepository.fetch(aktorId);
 
         boolean erIserv = erIserv(arenaOppfolgingTilstand.getFormidlingsgruppe());
 
         if (kanAvslutteOppfolging(aktorId, oppfolging.isUnderOppfolging(), erIserv)) {
+            log.info("Avslutting av oppfølging, tilstand i Arena for aktorid {}: {}", aktorId, arenaOppfolgingTilstand);
             avsluttOppfolgingForBruker(aktorId, veilederId, begrunnelse);
         }
 
@@ -177,7 +186,7 @@ public class OppfolgingService {
     @SneakyThrows
     public VeilederTilgang hentVeilederTilgang(String fnr) {
         authService.sjekkLesetilgangMedFnr(fnr);
-        Optional<VeilarbArenaOppfolging> arenaBruker = veilarbarenaClient.hentOppfolgingsbruker(fnr);
+        Optional<VeilarbArenaOppfolging> arenaBruker = arenaOppfolgingService.hentOppfolgingFraVeilarbarena(fnr);
         String oppfolgingsenhet = arenaBruker.map(VeilarbArenaOppfolging::getNav_kontor).orElse(null);
         boolean tilgangTilEnhet = authService.harTilgangTilEnhet(oppfolgingsenhet);
         return new VeilederTilgang().setTilgangTilBrukersKontor(tilgangTilEnhet);
@@ -381,19 +390,6 @@ public class OppfolgingService {
         }
     }
 
-    private ArenaOppfolgingTilstand sjekkTilgangTilEnhet(String fnr){
-        authService.sjekkLesetilgangMedFnr(fnr);
-
-        ArenaOppfolgingTilstand arenaOppfolgingTilstand = arenaOppfolgingService.hentOppfolgingTilstand(fnr)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR));
-
-        if (!authService.harTilgangTilEnhet(arenaOppfolgingTilstand.getOppfolgingsenhet())) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
-        }
-
-        return arenaOppfolgingTilstand;
-    }
-
     private List<Oppfolgingsperiode> populerKvpPerioder(List<Oppfolgingsperiode> oppfolgingsPerioder, List<Kvp> kvpPerioder) {
         return oppfolgingsPerioder.stream()
                 .map(periode -> periode.toBuilder().kvpPerioder(
@@ -511,13 +507,8 @@ public class OppfolgingService {
     }
 
     private void avsluttOppfolgingForBruker(String aktorId, String veilederId, String begrunnelse) {
-        try {
-            // TODO: Sjekk om vi kan bruke veilederId istedenfor
-            String brukerIdent = authService.getInnloggetBrukerIdent();
-            eskaleringService.stoppEskalering(aktorId, brukerIdent, begrunnelse);
-        } catch (Exception e) {
-            log.warn("Klarte ikke å stoppe eskalering for bruker={} med veileder={}", aktorId, e);
-        }
+        String brukerIdent = authService.getInnloggetBrukerIdent();
+        eskaleringService.stoppEskaleringForAvsluttOppfolging(aktorId, brukerIdent, begrunnelse);
 
         oppfolgingsPeriodeRepository.avslutt(aktorId, veilederId, begrunnelse);
         avsluttOppfolgingProducer.avsluttOppfolgingEvent(aktorId, LocalDateTime.now());
