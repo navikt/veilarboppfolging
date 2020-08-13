@@ -10,6 +10,7 @@ import no.nav.common.utils.Credentials;
 import no.nav.veilarboppfolging.controller.domain.KvpDTO;
 import no.nav.veilarboppfolging.domain.Kvp;
 import no.nav.veilarboppfolging.repository.KvpRepository;
+import no.nav.veilarboppfolging.service.ArenaOppfolgingService;
 import no.nav.veilarboppfolging.service.AuthService;
 import org.junit.Test;
 import org.springframework.http.HttpStatus;
@@ -35,7 +36,7 @@ public class KvpControllerTest {
 
     private KvpRepository kvpRepositoryMock = mock(KvpRepository.class);
 
-    private AuthService authService = new AuthService(arenaOppfolgingService, mock(VeilarbPep.class), mock(AktorregisterClient.class), new Credentials("srvtest", ""));
+    private AuthService authService = new AuthService(mock(ArenaOppfolgingService.class), mock(VeilarbPep.class), mock(AktorregisterClient.class), new Credentials("srvtest", ""));
 
     private KvpController kvpController = new KvpController(kvpRepositoryMock, authService);
 

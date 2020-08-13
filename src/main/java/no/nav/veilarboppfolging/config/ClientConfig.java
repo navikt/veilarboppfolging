@@ -24,6 +24,7 @@ import no.nav.veilarboppfolging.client.veilarbportefolje.VeilarbportefoljeClient
 import no.nav.veilarboppfolging.client.veilarbportefolje.VeilarbportefoljeClientImpl;
 import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktClient;
 import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktClientImpl;
+import no.nav.veilarboppfolging.service.AuthService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -73,9 +74,9 @@ public class ClientConfig {
     }
 
     @Bean
-    public VeilarbarenaClient veilarbarenaClient(SystemUserTokenProvider openAmTokenProvider) {
+    public VeilarbarenaClient veilarbarenaClient() {
         String url = clusterUrlForApplication("veilarbarena", true);
-        return new VeilarbarenaClientImpl(url, openAmTokenProvider);
+        return new VeilarbarenaClientImpl(url, AuthService::getInnloggetBrukerToken);
     }
 
     @Bean

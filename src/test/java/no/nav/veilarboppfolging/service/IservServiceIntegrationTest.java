@@ -1,5 +1,6 @@
 package no.nav.veilarboppfolging.service;
 
+import no.nav.common.utils.Credentials;
 import no.nav.veilarboppfolging.domain.IservMapper;
 import no.nav.veilarboppfolging.domain.OppfolgingTable;
 import no.nav.veilarboppfolging.domain.VeilarbArenaOppfolgingEndret;
@@ -43,14 +44,15 @@ public class IservServiceIntegrationTest {
         DbTestUtils.cleanupTestDb();
 
         when(oppfolgingStatusRepository.fetch(anyString())).thenReturn(new OppfolgingTable().setUnderOppfolging(true));
-//        when(oppfolgingService.avsluttOppfolgingForSystemBruker(anyString(), anyString(), anyString())).thenReturn(true);
+        when(oppfolgingService.avsluttOppfolgingForSystemBruker(anyString())).thenReturn(true);
         when(authService.getFnrOrThrow(anyString())).thenReturn(AKTORID);
 
         utmeldingRepository = new UtmeldingRepository(db);
 
-//        iservService = new IservService(
-//                serviceUserCredentials, systemUserTokenProvider, mock(MetricsService.class), utmeldingRepository,
-//                oppfolgingService, oppfolgingStatusRepository, authService);
+        iservService = new IservService(
+                new Credentials("srvtest", ""), () -> "token", mock(MetricsService.class),
+                utmeldingRepository, oppfolgingService, oppfolgingStatusRepository, authService
+        );
     }
 
     @Test
@@ -141,7 +143,7 @@ public class IservServiceIntegrationTest {
 
         iservService.avslutteOppfolging(veilarbArenaOppfolging.aktoerid);
 
-//        verify(oppfolgingService).avsluttOppfolgingForSystemBruker(anyString(), anyString(), anyString());
+        verify(oppfolgingService).avsluttOppfolgingForSystemBruker(anyString());
         assertThat(utmeldingRepository.eksisterendeIservBruker(veilarbArenaOppfolging)).isNull();
     }
 
@@ -168,7 +170,7 @@ public class IservServiceIntegrationTest {
     @Test
     public void automatiskAvslutteOppfolging_skalIkkeFjerneBrukerSomErIserv28dagerMenIkkeAvsluttet(){
         VeilarbArenaOppfolgingEndret bruker = insertIservBruker(now().minusDays(30));
-//        when(oppfolgingService.avsluttOppfolgingForSystemBruker(anyString(), anyString(), anyString())).thenReturn(false);
+        when(oppfolgingService.avsluttOppfolgingForSystemBruker(anyString())).thenReturn(false);
 
         iservService.automatiskAvslutteOppfolging();
 

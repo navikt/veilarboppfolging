@@ -44,7 +44,9 @@ public class IservService {
     private final AuthService authService;
 
     public IservService(
-            Credentials serviceUserCredentials, SystemUserTokenProvider systemUserTokenProvider, MetricsService metricsService,
+            Credentials serviceUserCredentials,
+            SystemUserTokenProvider systemUserTokenProvider,
+            MetricsService metricsService,
             UtmeldingRepository utmeldingRepository,
             OppfolgingService oppfolgingService,
             OppfolgingsStatusRepository oppfolgingsStatusRepository,

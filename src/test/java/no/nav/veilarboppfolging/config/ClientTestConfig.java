@@ -199,8 +199,8 @@ public class ClientTestConfig {
             }
 
             @Override
-            public ArenaOppfolging getArenaOppfolgingsstatus(String fnr) {
-                return null;
+            public Optional<ArenaOppfolging> getArenaOppfolgingsstatus(String fnr) {
+                return Optional.empty();
             }
 
             @Override

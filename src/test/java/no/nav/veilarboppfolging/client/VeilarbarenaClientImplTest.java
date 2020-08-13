@@ -11,6 +11,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static no.nav.common.json.JsonUtils.toJson;
+import static no.nav.common.utils.AssertUtils.assertTrue;
 
 public class VeilarbarenaClientImplTest {
 
@@ -36,7 +37,8 @@ public class VeilarbarenaClientImplTest {
                         .withBody(toJson(arenaOppfolgingResponse())))
         );
 
-        ArenaOppfolging arenaOppfolging = veilarbarenaClient.getArenaOppfolgingsstatus(MOCK_FNR);
+        ArenaOppfolging arenaOppfolging = veilarbarenaClient.getArenaOppfolgingsstatus(MOCK_FNR).orElseThrow();
+
         Assertions.assertThat(arenaOppfolging.getFormidlingsgruppe()).isEqualTo(MOCK_FORMIDLINGSGRUPPE);
         Assertions.assertThat(arenaOppfolging.getOppfolgingsenhet()).isEqualTo(MOCK_ENHET_ID);
         Assertions.assertThat(arenaOppfolging.getRettighetsgruppe()).isEqualTo(MOCK_RETTIGHETSGRUPPE);
@@ -44,37 +46,37 @@ public class VeilarbarenaClientImplTest {
         Assertions.assertThat(arenaOppfolging.getKanEnkeltReaktiveres()).isEqualTo(MOCK_KAN_ENKELT_REAKTIVERES);
     }
 
-    @Test(expected = RuntimeException.class)
-    public void skalKasteNotFoundOmPersonIkkeFunnet() {
+    @Test
+    public void skal_returnere_empty_om_person_ikke_funnet() {
         String apiUrl = "http://localhost:" + wireMockRule.port();
         VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl(apiUrl, () -> "TOKEN");
 
         givenThat(get(urlEqualTo("/api/oppfolgingsstatus/" + MOCK_FNR))
                 .willReturn(aResponse().withStatus(404)));
 
-        veilarbarenaClient.getArenaOppfolgingsstatus(MOCK_FNR);
+        assertTrue(veilarbarenaClient.getArenaOppfolgingsstatus(MOCK_FNR).isEmpty());
     }
 
-    @Test(expected = RuntimeException.class)
-    public void skalKasteForbiddenOmManIkkeHarTilgang() {
+    @Test
+    public void skal_returnere_empty_om_man_ikke_har_tilgang() {
         String apiUrl = "http://localhost:" + wireMockRule.port();
         VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl(apiUrl, () -> "TOKEN");
 
-        givenThat(get(urlEqualTo("/api/oppfolgingsstatus/" +MOCK_FNR))
+        givenThat(get(urlEqualTo("/api/oppfolgingsstatus/" + MOCK_FNR))
                 .willReturn(aResponse().withStatus(403)));
 
-        veilarbarenaClient.getArenaOppfolgingsstatus(MOCK_FNR);
+        assertTrue(veilarbarenaClient.getArenaOppfolgingsstatus(MOCK_FNR).isEmpty());
     }
 
-    @Test(expected = RuntimeException.class)
-    public void skalKasteBadRequestOmUgyldigIdentifikator() {
+    @Test
+    public void skal_returnere_empty_om_ugyldig_identifikator() {
         String apiUrl = "http://localhost:" + wireMockRule.port();
         VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl(apiUrl, () -> "TOKEN");
 
         givenThat(get(urlEqualTo("/api/oppfolgingsstatus/" + MOCK_FNR))
                 .willReturn(aResponse().withStatus(400)));
 
-        veilarbarenaClient.getArenaOppfolgingsstatus(MOCK_FNR);
+        assertTrue(veilarbarenaClient.getArenaOppfolgingsstatus(MOCK_FNR).isEmpty());
     }
 
     private ArenaOppfolging arenaOppfolgingResponse() {
