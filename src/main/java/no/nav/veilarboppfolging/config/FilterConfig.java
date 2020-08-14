@@ -3,10 +3,10 @@ package no.nav.veilarboppfolging.config;
 import no.nav.common.auth.oidc.filter.OidcAuthenticationFilter;
 import no.nav.common.auth.oidc.filter.OidcAuthenticatorConfig;
 import no.nav.common.auth.subject.IdentType;
-import no.nav.common.auth.utils.ServiceUserTokenFinder;
 import no.nav.common.auth.utils.UserTokenFinder;
 import no.nav.common.log.LogFilter;
 import no.nav.common.rest.filter.SetStandardHttpHeadersFilter;
+import no.nav.veilarboppfolging.utils.CustomServiceUserTokenFinder;
 import no.nav.veilarboppfolging.utils.PingFilter;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
@@ -30,7 +30,7 @@ public class FilterConfig {
         return new OidcAuthenticatorConfig()
                 .withDiscoveryUrl(properties.getOpenAmDiscoveryUrl())
                 .withClientId(properties.getOpenAmClientId())
-                .withIdTokenFinder(new ServiceUserTokenFinder())
+                .withIdTokenFinder(new CustomServiceUserTokenFinder())
                 .withIdentType(IdentType.Systemressurs);
     }
 
