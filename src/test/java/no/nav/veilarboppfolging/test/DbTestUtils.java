@@ -20,7 +20,8 @@ public class DbTestUtils {
             "KVP",
             "UTMELDING",
             "OPPFOLGINGSENHET_ENDRET",
-            "NYE_BRUKERE_FEED"
+            "NYE_BRUKERE_FEED",
+            "FEILET_KAFKA_MELDING"
     );
 
     public static void cleanupTestDb() {
