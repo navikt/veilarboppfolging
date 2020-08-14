@@ -6,6 +6,7 @@ import no.nav.veilarboppfolging.domain.SykmeldtBrukerType;
 import no.nav.veilarboppfolging.service.AktiverBrukerService;
 import no.nav.veilarboppfolging.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -16,6 +17,8 @@ public class SystemOppfolgingController {
 
     private final AktiverBrukerService aktiverBrukerService;
 
+    // Veilarbregistrering forventer 204, som forsåvidt er riktig status for disse endepunktene
+
     @Autowired
     public SystemOppfolgingController (AuthService authService, AktiverBrukerService aktiverBrukerService) {
         this.authService = authService;
@@ -23,23 +26,26 @@ public class SystemOppfolgingController {
     }
 
     @PostMapping("/aktiverbruker")
-    public void aktiverBruker(@RequestBody AktiverArbeidssokerData aktiverArbeidssokerData) {
+    public ResponseEntity aktiverBruker(@RequestBody AktiverArbeidssokerData aktiverArbeidssokerData) {
         authService.skalVereSystemBruker();
         authService.sjekkLesetilgangMedFnr(aktiverArbeidssokerData.getFnr().getFnr());
         aktiverBrukerService.aktiverBruker(aktiverArbeidssokerData);
+        return ResponseEntity.status(204).build();
     }
 
     @PostMapping("/reaktiverbruker")
-    public void reaktiverBruker(@RequestBody Fnr fnr) {
+    public ResponseEntity reaktiverBruker(@RequestBody Fnr fnr) {
         authService.skalVereSystemBruker();
         authService.sjekkLesetilgangMedFnr(fnr.getFnr());
         aktiverBrukerService.reaktiverBruker(fnr);
+        return ResponseEntity.status(204).build();
     }
 
     @PostMapping("/aktiverSykmeldt")
-    public void aktiverSykmeldt(@RequestBody SykmeldtBrukerType sykmeldtBrukerType, @RequestParam String fnr) {
+    public ResponseEntity aktiverSykmeldt(@RequestBody SykmeldtBrukerType sykmeldtBrukerType, @RequestParam String fnr) {
         authService.skalVereSystemBruker();
         aktiverBrukerService.aktiverSykmeldt(fnr, sykmeldtBrukerType);
+        return ResponseEntity.status(204).build();
     }
 
 }
