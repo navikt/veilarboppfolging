@@ -1,5 +1,6 @@
 package no.nav.veilarboppfolging.service;
 
+import no.nav.common.client.aktorregister.AktorregisterClient;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
 import no.nav.veilarboppfolging.domain.ArenaOppfolgingTilstand;
@@ -14,15 +15,16 @@ import java.util.Optional;
 @Service
 public class ArenaOppfolgingService {
 
-    private final AuthService authService;
+    // Bruker AktorregisterClient istedenfor authService for å unngå sirkulær avhengighet
+    private final AktorregisterClient aktorregisterClient;
 
     private final VeilarbarenaClient veilarbarenaClient;
 
     private final OppfolgingsStatusRepository oppfolgingsStatusRepository;
 
     @Autowired
-    public ArenaOppfolgingService(AuthService authService, VeilarbarenaClient veilarbarenaClient, OppfolgingsStatusRepository oppfolgingsStatusRepository) {
-        this.authService = authService;
+    public ArenaOppfolgingService(AktorregisterClient aktorregisterClient, VeilarbarenaClient veilarbarenaClient, OppfolgingsStatusRepository oppfolgingsStatusRepository) {
+        this.aktorregisterClient = aktorregisterClient;
         this.veilarbarenaClient = veilarbarenaClient;
         this.oppfolgingsStatusRepository = oppfolgingsStatusRepository;
     }
@@ -38,7 +40,7 @@ public class ArenaOppfolgingService {
     }
 
     public Optional<ArenaOppfolgingTilstand> hentOppfolgingTilstand(String fnr) {
-        String aktorId = authService.getAktorIdOrThrow(fnr);
+        String aktorId = aktorregisterClient.hentAktorId(fnr);
 
         Optional<ArenaOppfolgingTilstand> maybeArenaOppfolging = veilarbarenaClient.hentOppfolgingsbruker(fnr)
                 .map(ArenaOppfolgingTilstand::fraArenaBruker);
