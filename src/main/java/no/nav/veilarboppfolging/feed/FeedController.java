@@ -55,7 +55,7 @@ public class FeedController {
     }
 
     @PutMapping("/{name}/webhook")
-    public ResponseEntity registerWebhook(FeedWebhookRequest request, @PathVariable("name") String name) {
+    public ResponseEntity registerWebhook(@RequestBody FeedWebhookRequest request, @PathVariable("name") String name) {
         var maybeIsCreated = ofNullable(producers.get(name))
                 .map((producer) -> authorizeRequest(producer, name))
                 .map((feed) -> feed.createWebhook(request));
