@@ -23,7 +23,8 @@ import static no.nav.common.utils.EnvironmentUtils.requireApplicationName;
 public class FilterConfig {
 
     private final List<String> ALLOWED_SERVICE_USERS = List.of(
-            "srvveilarbportefolje", "srvveilarbdialog", "srvveilarbaktivitet", "srvveilarbjobbsoke", "srvveilarbdirigent"
+            "srvveilarbportefolje", "srvveilarbdialog", "srvveilarbaktivitet",
+            "srvveilarbjobbsoke", "srvveilarbdirigent", "srvveilarbregistre"
     );
 
     private OidcAuthenticatorConfig openAmStsAuthConfig(EnvironmentProperties properties) {
