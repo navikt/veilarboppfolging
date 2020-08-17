@@ -24,33 +24,31 @@ public class FeiletKafkaMeldingRepositoryTest {
     public void skal_lage_og_hente_melding() {
         feiletKafkaMeldingRepository.lagreFeiletKafkaMelding("topic", "key", "payload");
 
-        List<FeiletKafkaMelding> feiledeVedtakSendt = feiletKafkaMeldingRepository.hentFeiledeKafkaMeldinger("topic");
+        List<FeiletKafkaMelding> feiledeVedtakSendt = feiletKafkaMeldingRepository.hentFeiledeKafkaMeldinger(10);
 
         assertEquals(1, feiledeVedtakSendt.size());
+        assertEquals(feiledeVedtakSendt.get(0).getTopicName(), "topic");
         assertEquals(feiledeVedtakSendt.get(0).getMessageKey(), "key");
         assertEquals(feiledeVedtakSendt.get(0).getJsonPayload(), "payload");
     }
 
     @Test
-    public void skal_hente_melding_fra_riktig_topic() {
+    public void skal_kun_hente_1_melding() {
         feiletKafkaMeldingRepository.lagreFeiletKafkaMelding("topic", "key", "payload");
-        feiletKafkaMeldingRepository.lagreFeiletKafkaMelding("topic1", "key1", "payload1");
-        feiletKafkaMeldingRepository.lagreFeiletKafkaMelding("topic2", "key2", "payload2");
+        feiletKafkaMeldingRepository.lagreFeiletKafkaMelding("topic", "key1", "payload1");
 
-        List<FeiletKafkaMelding> feiledeVedtakSendt = feiletKafkaMeldingRepository.hentFeiledeKafkaMeldinger("topic");
+        List<FeiletKafkaMelding> feiledeVedtakSendt = feiletKafkaMeldingRepository.hentFeiledeKafkaMeldinger(1);
 
         assertEquals(1, feiledeVedtakSendt.size());
-        assertEquals(feiledeVedtakSendt.get(0).getMessageKey(), "key");
-        assertEquals(feiledeVedtakSendt.get(0).getJsonPayload(), "payload");
     }
 
     @Test
     public void skal_slette_feilet_melding() {
         feiletKafkaMeldingRepository.lagreFeiletKafkaMelding("topic", "key", "payload");
-        List<FeiletKafkaMelding> feiletKafkaMeldinger = feiletKafkaMeldingRepository.hentFeiledeKafkaMeldinger("topic");
+        List<FeiletKafkaMelding> feiletKafkaMeldinger = feiletKafkaMeldingRepository.hentFeiledeKafkaMeldinger(10);
         feiletKafkaMeldingRepository.slettFeiletKafkaMelding(feiletKafkaMeldinger.get(0).getId());
 
-        assertTrue(feiletKafkaMeldingRepository.hentFeiledeKafkaMeldinger("topic").isEmpty());
+        assertTrue(feiletKafkaMeldingRepository.hentFeiledeKafkaMeldinger(10).isEmpty());
     }
 
 }

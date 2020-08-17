@@ -3,7 +3,7 @@ package no.nav.veilarboppfolging.repository;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarboppfolging.domain.IservMapper;
-import no.nav.veilarboppfolging.domain.VeilarbArenaOppfolgingEndret;
+import no.nav.veilarboppfolging.domain.kafka.VeilarbArenaOppfolgingEndret;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;

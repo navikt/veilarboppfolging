@@ -1,6 +1,7 @@
 package no.nav.veilarboppfolging.service;
 
 import no.nav.veilarboppfolging.domain.*;
+import no.nav.veilarboppfolging.kafka.KafkaMessagePublisher;
 import no.nav.veilarboppfolging.repository.*;
 import no.nav.veilarboppfolging.test.IsolatedDatabaseTest;
 import org.junit.Before;
@@ -57,7 +58,7 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
         manuellStatusRepository = new ManuellStatusRepository(db);
 
         oppfolgingService = new OppfolgingService(
-                kafkaMessagePublisher, null, null, null, null, null, authService,
+                mock(KafkaMessagePublisher.class), null, null, null, null, null, authService,
                 oppfolgingsStatusRepository, oppfolgingsPeriodeRepository,
                 manuellStatusRepository, null,
                 null, null, new EskaleringsvarselRepository(db),

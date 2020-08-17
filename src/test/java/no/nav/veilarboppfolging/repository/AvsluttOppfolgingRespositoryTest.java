@@ -1,6 +1,6 @@
 package no.nav.veilarboppfolging.repository;
 
-import no.nav.veilarboppfolging.domain.AvsluttOppfolgingKafkaDTO;
+import no.nav.veilarboppfolging.domain.kafka.AvsluttOppfolgingKafkaDTO;
 import no.nav.veilarboppfolging.test.DbTestUtils;
 import no.nav.veilarboppfolging.test.LocalH2Database;
 import org.junit.Before;

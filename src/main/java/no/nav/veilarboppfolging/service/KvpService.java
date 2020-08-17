@@ -6,13 +6,17 @@ import no.nav.veilarboppfolging.client.oppfolging.OppfolgingClient;
 import no.nav.veilarboppfolging.domain.KodeverkBruker;
 import no.nav.veilarboppfolging.domain.Kvp;
 import no.nav.veilarboppfolging.domain.OppfolgingTable;
-import no.nav.veilarboppfolging.domain.VeilarbArenaOppfolgingEndret;
+import no.nav.veilarboppfolging.domain.kafka.KvpEndringKafkaDTO;
+import no.nav.veilarboppfolging.domain.kafka.VeilarbArenaOppfolgingEndret;
+import no.nav.veilarboppfolging.kafka.KafkaMessagePublisher;
 import no.nav.veilarboppfolging.repository.EskaleringsvarselRepository;
 import no.nav.veilarboppfolging.repository.KvpRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.time.ZonedDateTime;
 
 import static java.lang.String.format;
 import static no.nav.veilarboppfolging.domain.KodeverkBruker.NAV;
@@ -23,6 +27,8 @@ import static no.nav.veilarboppfolging.domain.KodeverkBruker.SYSTEM;
 public class KvpService {
 
     static final String ESKALERING_AVSLUTTET_FORDI_KVP_BLE_AVSLUTTET = "Eskalering avsluttet fordi KVP ble avsluttet";
+
+    private final KafkaMessagePublisher kafkaMessagePublisher;
 
     private final MetricsService metricsService;
 
@@ -37,6 +43,7 @@ public class KvpService {
     private final AuthService authService;
 
     public KvpService(
+            KafkaMessagePublisher kafkaMessagePublisher,
             MetricsService metricsService,
             KvpRepository kvpRepository,
             OppfolgingClient oppfolgingClient,
@@ -44,6 +51,7 @@ public class KvpService {
             EskaleringsvarselRepository eskaleringsvarselRepository,
             AuthService authService
     ) {
+        this.kafkaMessagePublisher = kafkaMessagePublisher;
         this.metricsService = metricsService;
         this.kvpRepository = kvpRepository;
         this.oppfolgingClient = oppfolgingClient;
@@ -75,7 +83,15 @@ public class KvpService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
 
+        KvpEndringKafkaDTO kvpEndring = new KvpEndringKafkaDTO()
+                .setAktorId(aktorId)
+                .setEnhetId(enhet)
+                .setOpprettetAv(authService.getInnloggetVeilederIdent())
+                .setOpprettetBegrunnelse(begrunnelse)
+                .setOpprettetDato(ZonedDateTime.now());
+
         kvpRepository.startKvp(aktorId, enhet, authService.getInnloggetVeilederIdent(), begrunnelse);
+        kafkaMessagePublisher.publiserKvpEndring(kvpEndring);
         metricsService.kvpStartet();
     }
 
@@ -104,9 +120,9 @@ public class KvpService {
     public void stopKvpUtenEnhetSjekk(String aktorId, String begrunnelse, KodeverkBruker kodeverkBruker) {
         String veilederId = authService.getInnloggetVeilederIdent();
         OppfolgingTable oppfolgingTable = oppfolgingsStatusRepository.fetch(aktorId);
-        long gjeldendeKvp = oppfolgingTable.getGjeldendeKvpId();
+        long gjeldendeKvpId = oppfolgingTable.getGjeldendeKvpId();
 
-        if (gjeldendeKvp == 0) {
+        if (gjeldendeKvpId == 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
 
@@ -118,7 +134,17 @@ public class KvpService {
                     ESKALERING_AVSLUTTET_FORDI_KVP_BLE_AVSLUTTET);
         }
 
-        kvpRepository.stopKvp(gjeldendeKvp, aktorId, veilederId, begrunnelse, kodeverkBruker);
+        Kvp gjeldendeKvp = kvpRepository.fetch(gjeldendeKvpId);
+
+        KvpEndringKafkaDTO kvpEndring = new KvpEndringKafkaDTO()
+                .setAktorId(aktorId)
+                .setEnhetId(gjeldendeKvp.getEnhet())
+                .setAvsluttetAv(veilederId)
+                .setAvsluttetBegrunnelse(begrunnelse)
+                .setAvsluttetDato(ZonedDateTime.now());
+
+        kvpRepository.stopKvp(gjeldendeKvpId, aktorId, veilederId, begrunnelse, kodeverkBruker);
+        kafkaMessagePublisher.publiserKvpEndring(kvpEndring);
         metricsService.kvpStoppet();
     }
 

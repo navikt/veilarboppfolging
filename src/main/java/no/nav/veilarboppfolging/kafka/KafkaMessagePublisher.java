@@ -1,8 +1,9 @@
 package no.nav.veilarboppfolging.kafka;
 
 import lombok.extern.slf4j.Slf4j;
-import no.nav.veilarboppfolging.controller.domain.OppfolgingStartetKafkaDTO;
 import no.nav.veilarboppfolging.domain.FeiletKafkaMelding;
+import no.nav.veilarboppfolging.domain.kafka.KvpEndringKafkaDTO;
+import no.nav.veilarboppfolging.domain.kafka.OppfolgingStartetKafkaDTO;
 import no.nav.veilarboppfolging.repository.FeiletKafkaMeldingRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -30,6 +31,10 @@ public class KafkaMessagePublisher {
 
     public void publiserOppfolgingStartet(OppfolgingStartetKafkaDTO oppfolgingStartetKafkaDTO) {
         publiser(kafkaTopics.getOppfolgingStartet(), oppfolgingStartetKafkaDTO.getAktorId(), toJson(oppfolgingStartetKafkaDTO));
+    }
+
+    public void publiserKvpEndring(KvpEndringKafkaDTO kvpEndringKafkaDTO) {
+        publiser(kafkaTopics.getEndringPaKvp(), kvpEndringKafkaDTO.getAktorId(), toJson(kvpEndringKafkaDTO));
     }
 
     public void publiserTidligereFeiletMelding(FeiletKafkaMelding feiletKafkaMelding) {

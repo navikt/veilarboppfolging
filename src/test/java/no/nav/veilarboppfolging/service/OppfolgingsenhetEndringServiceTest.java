@@ -1,7 +1,7 @@
 package no.nav.veilarboppfolging.service;
 
 import no.nav.veilarboppfolging.domain.OppfolgingsenhetEndringData;
-import no.nav.veilarboppfolging.domain.VeilarbArenaOppfolgingEndret;
+import no.nav.veilarboppfolging.domain.kafka.VeilarbArenaOppfolgingEndret;
 import no.nav.veilarboppfolging.repository.OppfolgingsenhetHistorikkRepository;
 import no.nav.veilarboppfolging.test.DbTestUtils;
 import no.nav.veilarboppfolging.test.LocalH2Database;

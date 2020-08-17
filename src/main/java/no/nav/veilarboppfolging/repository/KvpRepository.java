@@ -28,6 +28,7 @@ public class KvpRepository {
         this.db = db;
     }
 
+    // TODO: Foretrekker å sende med dato istedenfor CURRENT_TIMESTAMP slik at det ikke blir en mismatch med datoen som f.eks blir brukt på kafka
     @Transactional
     public void startKvp(String aktorId, String enhet, String opprettetAv, String opprettetBegrunnelse) {
         long id = DbUtils.nesteFraSekvens(db,"KVP_SEQ");
@@ -63,6 +64,7 @@ public class KvpRepository {
 
     }
 
+    // TODO: Foretrekker å sende med dato istedenfor CURRENT_TIMESTAMP slik at det ikke blir en mismatch med datoen som f.eks blir brukt på kafka
     @Transactional
     public void stopKvp(long kvpId, String aktorId, String avsluttetAv, String avsluttetBegrunnelse, KodeverkBruker kodeverkBruker) {
         long nextSerial = DbUtils.nesteFraSekvens(db, "KVP_SERIAL_SEQ");

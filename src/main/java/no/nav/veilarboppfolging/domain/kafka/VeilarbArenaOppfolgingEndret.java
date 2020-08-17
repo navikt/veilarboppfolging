@@ -1,4 +1,4 @@
-package no.nav.veilarboppfolging.domain;
+package no.nav.veilarboppfolging.domain.kafka;
 
 import lombok.Data;
 import lombok.experimental.Accessors;

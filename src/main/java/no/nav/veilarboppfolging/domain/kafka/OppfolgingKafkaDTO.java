@@ -1,4 +1,4 @@
-package no.nav.veilarboppfolging.controller.domain;
+package no.nav.veilarboppfolging.domain.kafka;
 
 import lombok.Builder;
 import lombok.Value;

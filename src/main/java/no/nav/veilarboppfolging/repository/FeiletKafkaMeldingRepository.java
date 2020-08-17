@@ -36,13 +36,13 @@ public class FeiletKafkaMeldingRepository {
         db.update(sql, topicName, messageKey, payload);
     }
 
-    public List<FeiletKafkaMelding> hentFeiledeKafkaMeldinger(String topicName) {
+    public List<FeiletKafkaMelding> hentFeiledeKafkaMeldinger(int maxMeldinger) {
         String sql = format(
-                "SELECT * FROM %s WHERE %s = ?",
-                FEILET_KAFKA_MELDING_TABLE, TOPIC_NAME
+                "SELECT * FROM %s FETCH NEXT %d ROWS ONLY",
+                FEILET_KAFKA_MELDING_TABLE, maxMeldinger
         );
 
-        return db.query(sql, FeiletKafkaMeldingRepository::mapFeiletKafkaMelding, topicName);
+        return db.query(sql, FeiletKafkaMeldingRepository::mapFeiletKafkaMelding);
     }
 
     public void slettFeiletKafkaMelding(long feiletMeldingId) {

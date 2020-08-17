@@ -1,9 +1,9 @@
 package no.nav.veilarboppfolging.repository;
 
 import lombok.val;
-import no.nav.veilarboppfolging.controller.domain.OppfolgingKafkaDTO;
 import no.nav.veilarboppfolging.domain.AktorId;
 import no.nav.veilarboppfolging.domain.Oppfolgingsperiode;
+import no.nav.veilarboppfolging.domain.kafka.OppfolgingKafkaDTO;
 import no.nav.veilarboppfolging.test.DbTestUtils;
 import no.nav.veilarboppfolging.test.LocalH2Database;
 import org.junit.After;

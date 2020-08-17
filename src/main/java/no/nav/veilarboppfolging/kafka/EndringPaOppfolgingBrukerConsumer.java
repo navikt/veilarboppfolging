@@ -1,7 +1,7 @@
 package no.nav.veilarboppfolging.kafka;
 
 import lombok.extern.slf4j.Slf4j;
-import no.nav.veilarboppfolging.domain.VeilarbArenaOppfolgingEndret;
+import no.nav.veilarboppfolging.domain.kafka.VeilarbArenaOppfolgingEndret;
 import no.nav.veilarboppfolging.service.IservService;
 import no.nav.veilarboppfolging.service.KvpService;
 import no.nav.veilarboppfolging.service.MetricsService;

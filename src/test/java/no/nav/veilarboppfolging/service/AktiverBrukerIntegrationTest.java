@@ -6,6 +6,7 @@ import no.nav.veilarboppfolging.domain.AktiverArbeidssokerData;
 import no.nav.veilarboppfolging.domain.Fnr;
 import no.nav.veilarboppfolging.domain.Innsatsgruppe;
 import no.nav.veilarboppfolging.domain.Oppfolging;
+import no.nav.veilarboppfolging.kafka.KafkaMessagePublisher;
 import no.nav.veilarboppfolging.repository.*;
 import no.nav.veilarboppfolging.test.DbTestUtils;
 import no.nav.veilarboppfolging.test.LocalH2Database;
@@ -45,7 +46,7 @@ public class AktiverBrukerIntegrationTest {
         behandleArbeidssokerClient = mock(BehandleArbeidssokerClient.class);
 
         oppfolgingService = new OppfolgingService(
-                kafkaMessagePublisher, null, null, null, null, null, authService,
+                mock(KafkaMessagePublisher.class), null, null, null, null, null, authService,
                 oppfolgingsStatusRepository, oppfolgingsPeriodeRepository,
                 new ManuellStatusRepository(db), null,
                 null, null, new EskaleringsvarselRepository(db),

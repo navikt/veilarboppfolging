@@ -1,6 +1,6 @@
 package no.nav.veilarboppfolging.kafka;
 
-import no.nav.veilarboppfolging.domain.AvsluttOppfolgingKafkaDTO;
+import no.nav.veilarboppfolging.domain.kafka.AvsluttOppfolgingKafkaDTO;
 import no.nav.veilarboppfolging.repository.AvsluttOppfolgingEndringRepository;
 import no.nav.veilarboppfolging.test.LocalH2Database;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
