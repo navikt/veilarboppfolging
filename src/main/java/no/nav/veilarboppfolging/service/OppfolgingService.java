@@ -6,9 +6,11 @@ import lombok.val;
 import no.nav.veilarboppfolging.client.dkif.DkifClient;
 import no.nav.veilarboppfolging.client.dkif.DkifKontaktinfo;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
+import no.nav.veilarboppfolging.controller.domain.OppfolgingStartetKafkaDTO;
 import no.nav.veilarboppfolging.controller.domain.UnderOppfolgingDTO;
 import no.nav.veilarboppfolging.domain.*;
 import no.nav.veilarboppfolging.kafka.AvsluttOppfolgingProducer;
+import no.nav.veilarboppfolging.kafka.KafkaMessagePublisher;
 import no.nav.veilarboppfolging.kafka.OppfolgingStatusKafkaProducer;
 import no.nav.veilarboppfolging.repository.*;
 import no.nav.veilarboppfolging.utils.ArenaUtils;
@@ -39,6 +41,7 @@ import static no.nav.veilarboppfolging.utils.KvpUtils.sjekkTilgangGittKvp;
 @Service
 public class OppfolgingService {
 
+    private final KafkaMessagePublisher kafkaMessagePublisher;
     private final YtelserOgAktiviteterService ytelserOgAktiviteterService;
     private final DkifClient dkifClient;
     private final KvpService kvpService;
@@ -59,6 +62,7 @@ public class OppfolgingService {
 
     @Autowired
     public OppfolgingService(
+            KafkaMessagePublisher kafkaMessagePublisher,
             YtelserOgAktiviteterService ytelserOgAktiviteterService,
             DkifClient dkifClient,
             KvpService kvpService,
@@ -77,6 +81,7 @@ public class OppfolgingService {
             MaalRepository maalRepository,
             AvsluttOppfolgingProducer avsluttOppfolgingProducer
     ) {
+        this.kafkaMessagePublisher = kafkaMessagePublisher;
         this.ytelserOgAktiviteterService = ytelserOgAktiviteterService;
         this.dkifClient = dkifClient;
         this.kvpService = kvpService;
@@ -387,6 +392,7 @@ public class OppfolgingService {
         if (oppfolgingsstatus != null && !oppfolgingsstatus.isUnderOppfolging()) {
             oppfolgingsPeriodeRepository.start(aktoerId);
             nyeBrukereFeedRepository.leggTil(oppfolgingsbruker);
+            kafkaMessagePublisher.publiserOppfolgingStartet(new OppfolgingStartetKafkaDTO(aktoerId, LocalDateTime.now()));
         }
     }
 

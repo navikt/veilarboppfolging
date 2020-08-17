@@ -31,6 +31,7 @@ public class OppfolgingFeedRepository {
         this.db = db;
     }
 
+    // TODO: Brukes kun i 1 test, kan løses på en annen måte
     public List<AktorId> hentAlleBrukereUnderOppfolging() {
         String sql = "SELECT * FROM OPPFOLGINGSTATUS WHERE UNDER_OPPFOLGING = 1";
         return db.query(sql, (rs, row) -> new AktorId(rs.getString("AKTOR_ID")));

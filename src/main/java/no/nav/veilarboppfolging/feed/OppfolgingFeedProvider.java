@@ -26,9 +26,7 @@ public class OppfolgingFeedProvider implements FeedProvider<OppfolgingFeedDTO> {
     public Stream<FeedElement<OppfolgingFeedDTO>> fetchData(String sinceId, int pageSize) {
         log.info("OppfolgingFeedProviderDebug requested sinceId: {}", sinceId);
 
-        List<OppfolgingFeedDTO> oppfolgingStatuser;
-
-        oppfolgingStatuser = repository.hentEndringerEtterId(sinceId, pageSize);
+        List<OppfolgingFeedDTO> oppfolgingStatuser = repository.hentEndringerEtterId(sinceId, pageSize);
 
         log.info("OppfolgingFeedProviderDebug: {} oppfolgingsfeed dtoer fra databasen", oppfolgingStatuser.size());
         log.info("OppfolgingFeedProviderDebug: {}", oppfolgingStatuser);

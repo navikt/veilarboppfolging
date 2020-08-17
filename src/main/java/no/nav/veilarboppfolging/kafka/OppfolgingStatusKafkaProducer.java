@@ -26,19 +26,19 @@ import static no.nav.common.log.LogFilter.PREFERRED_NAV_CALL_ID_HEADER_NAME;
 @Slf4j
 public class OppfolgingStatusKafkaProducer {
 
-    private final KafkaProducer<String, String> kafka;
-    private final OppfolgingFeedRepository repository;
+    private final KafkaProducer<String, String> kafkaProducer;
+    private final OppfolgingFeedRepository oppfolgingFeedRepository;
     private final AktorregisterClient aktorregisterClient;
     private final String topicName;
 
     public OppfolgingStatusKafkaProducer(
-            KafkaProducer<String, String> kafka,
-            OppfolgingFeedRepository repository,
+            KafkaProducer<String, String> kafkaProducer,
+            OppfolgingFeedRepository oppfolgingFeedRepository,
             AktorregisterClient aktorregisterClient,
             String topicName
     ) {
-        this.kafka = kafka;
-        this.repository = repository;
+        this.kafkaProducer = kafkaProducer;
+        this.oppfolgingFeedRepository = oppfolgingFeedRepository;
         this.aktorregisterClient = aktorregisterClient;
         this.topicName = topicName;
     }
@@ -51,7 +51,7 @@ public class OppfolgingStatusKafkaProducer {
     @SneakyThrows
     public Try<OppfolgingKafkaDTO> send(AktorId aktorId) {
         val aktoerId = aktorId.getAktorId();
-        val result = repository.hentOppfolgingStatus(aktoerId);
+        val result = oppfolgingFeedRepository.hentOppfolgingStatus(aktoerId);
 
         if (result.isFailure()) {
             log.error("Kunne ikke hente oppfølgingsstatus for bruker {} {}", aktoerId, result.getCause());
@@ -68,16 +68,16 @@ public class OppfolgingStatusKafkaProducer {
         val aktoerId = dto.getAktoerid();
         val header = new RecordHeader(PREFERRED_NAV_CALL_ID_HEADER_NAME, getCorrelationIdAsBytes());
         val record = new ProducerRecord<>(topicName, 0, aktoerId, toJson(dto), singletonList(header));
-        return kafka.send(record).get();
+        return kafkaProducer.send(record).get();
     }
 
     public int publiserAlleBrukere() {
-        val antallBrukere = repository.hentAntallBrukere().orElseThrow(IllegalStateException::new);
+        val antallBrukere = oppfolgingFeedRepository.hentAntallBrukere().orElseThrow(IllegalStateException::new);
         val BATCH_SIZE = 1000;
         int offset = 0;
 
         do {
-            List<OppfolgingKafkaDTO> brukere = repository.hentOppfolgingStatus(offset);
+            List<OppfolgingKafkaDTO> brukere = oppfolgingFeedRepository.hentOppfolgingStatus(offset);
             brukere.forEach(this::send);
             offset = offset + BATCH_SIZE;
         }
