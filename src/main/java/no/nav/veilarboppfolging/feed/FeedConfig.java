@@ -15,7 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.util.Collections;
 import java.util.List;
 
 import static java.util.Collections.singletonList;
@@ -37,7 +36,7 @@ public class FeedConfig {
 
     @Bean
     public FeedProducer<OppfolgingFeedDTO> oppfolgingFeed(OppfolgingFeedRepository oppfolgingFeedRepository) {
-        List<String> oppfolgingFeedAllowedUsers = Collections.singletonList("srvveilarbportefolje");
+        List<String> oppfolgingFeedAllowedUsers = List.of("srvveilarbportefolje", "srvpam-cv-api");
         return FeedProducer.<OppfolgingFeedDTO>builder()
                 .provider(new OppfolgingFeedProvider(oppfolgingFeedRepository))
                 .maxPageSize(1000)
