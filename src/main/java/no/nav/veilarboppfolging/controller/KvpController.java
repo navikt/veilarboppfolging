@@ -11,6 +11,7 @@ import no.nav.veilarboppfolging.service.AuthService;
 import no.nav.veilarboppfolging.utils.DtoMappers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -46,7 +47,7 @@ public class KvpController {
             @ApiResponse(code = 403, message = "The API endpoint is requested by a user which is not in the allowed users list."),
             @ApiResponse(code = 500, message = "There is a server-side bug which should be fixed.")
     })
-    public KvpDTO getKvpStatus(@PathVariable("aktorId") String aktorId) {
+    public ResponseEntity<KvpDTO> getKvpStatus(@PathVariable("aktorId") String aktorId) {
         // KVP information is only available to certain system users. We trust these users here,
         // so that we can avoid doing an ABAC query on each request.
         if (!isRequestAuthorized()) {
@@ -55,7 +56,7 @@ public class KvpController {
 
         long kvpId = repository.gjeldendeKvp(aktorId);
         if (kvpId == 0) {
-            return null;
+            return ResponseEntity.status(204).build();
         }
 
         // This shouldn't happen, and signifies a bug in the dataset.
@@ -65,7 +66,7 @@ public class KvpController {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        return DtoMappers.kvpToDTO(kvp);
+        return ResponseEntity.ok(DtoMappers.kvpToDTO(kvp));
     }
 
     private boolean isRequestAuthorized() {

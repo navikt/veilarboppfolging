@@ -77,7 +77,7 @@ public class KvpControllerTest {
     }
 
     private KvpDTO getKvpStatus(Subject subject) {
-        return SubjectHandler.withSubject(subject, () -> kvpController.getKvpStatus(AKTOR_ID));
+        return SubjectHandler.withSubject(subject, () -> kvpController.getKvpStatus(AKTOR_ID).getBody());
     }
 
     private Kvp kvp() {
