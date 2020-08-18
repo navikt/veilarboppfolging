@@ -1,20 +1,22 @@
-package no.nav.veilarboppfolging.kafka;
+package no.nav.veilarboppfolging.service;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarboppfolging.domain.FeiletKafkaMelding;
+import no.nav.veilarboppfolging.domain.kafka.AvsluttOppfolgingKafkaDTO;
 import no.nav.veilarboppfolging.domain.kafka.KvpEndringKafkaDTO;
 import no.nav.veilarboppfolging.domain.kafka.OppfolgingStartetKafkaDTO;
+import no.nav.veilarboppfolging.kafka.KafkaTopics;
 import no.nav.veilarboppfolging.repository.FeiletKafkaMeldingRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import static java.lang.String.format;
 import static no.nav.common.json.JsonUtils.toJson;
 
 @Slf4j
-@Component
-public class KafkaMessagePublisher {
+@Service
+public class KafkaProducerService {
 
     private final KafkaTopics kafkaTopics;
 
@@ -23,10 +25,14 @@ public class KafkaMessagePublisher {
     private final FeiletKafkaMeldingRepository feiletKafkaMeldingRepository;
 
     @Autowired
-    public KafkaMessagePublisher(KafkaTopics kafkaTopics, KafkaTemplate<String, String> kafkaTemplate, FeiletKafkaMeldingRepository feiletKafkaMeldingRepository) {
+    public KafkaProducerService(KafkaTopics kafkaTopics, KafkaTemplate<String, String> kafkaTemplate, FeiletKafkaMeldingRepository feiletKafkaMeldingRepository) {
         this.kafkaTopics = kafkaTopics;
         this.kafkaTemplate = kafkaTemplate;
         this.feiletKafkaMeldingRepository = feiletKafkaMeldingRepository;
+    }
+
+    public void publiserOppfolgingAvsluttet(AvsluttOppfolgingKafkaDTO avsluttOppfolgingKafkaDTO) {
+        publiser(kafkaTopics.getEndringPaaAvsluttOppfolging(), avsluttOppfolgingKafkaDTO.getAktorId(), toJson(avsluttOppfolgingKafkaDTO));
     }
 
     public void publiserOppfolgingStartet(OppfolgingStartetKafkaDTO oppfolgingStartetKafkaDTO) {

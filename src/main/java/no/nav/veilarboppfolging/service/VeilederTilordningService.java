@@ -166,6 +166,7 @@ public class VeilederTilordningService {
             veilederTilordningerRepository.upsertVeilederTilordning(aktoerId, veileder);
             veilederHistorikkRepository.insertTilordnetVeilederForAktorId(aktoerId, veileder);
             oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(aktoerId);
+            // TODO: Sjekk om det går greit å lese i midten av en transaction før endringene potensielt har blitt skrevet
             kafka.send(new AktorId(aktoerId));
         });
 

@@ -16,6 +16,7 @@ import org.springframework.context.annotation.Import;
         MetricsService.class,
         OppfolgingsenhetEndringService.class,
         OppfolgingService.class,
-        VeilederTilordningService.class
+        VeilederTilordningService.class,
+        KafkaProducerService.class
 })
 public class ServiceTestConfig {}

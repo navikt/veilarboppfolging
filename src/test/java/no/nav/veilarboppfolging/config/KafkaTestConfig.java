@@ -1,7 +1,6 @@
 package no.nav.veilarboppfolging.config;
 
 import no.nav.common.client.aktorregister.AktorregisterClient;
-import no.nav.veilarboppfolging.kafka.AvsluttOppfolgingProducer;
 import no.nav.veilarboppfolging.kafka.EndringPaOppfolgingBrukerConsumer;
 import no.nav.veilarboppfolging.kafka.KafkaTopics;
 import no.nav.veilarboppfolging.kafka.OppfolgingStatusKafkaProducer;
@@ -32,10 +31,7 @@ import static org.apache.kafka.clients.producer.ProducerConfig.VALUE_SERIALIZER_
 
 @EnableKafka
 @Configuration
-@Import({
-        AvsluttOppfolgingProducer.class,
-        EndringPaOppfolgingBrukerConsumer.class
-})
+@Import({EndringPaOppfolgingBrukerConsumer.class})
 public class KafkaTestConfig {
 
     private final KafkaTopics kafkaTopics;

@@ -8,7 +8,6 @@ import no.nav.veilarboppfolging.domain.Kvp;
 import no.nav.veilarboppfolging.domain.OppfolgingTable;
 import no.nav.veilarboppfolging.domain.kafka.KvpEndringKafkaDTO;
 import no.nav.veilarboppfolging.domain.kafka.VeilarbArenaOppfolgingEndret;
-import no.nav.veilarboppfolging.kafka.KafkaMessagePublisher;
 import no.nav.veilarboppfolging.repository.EskaleringsvarselRepository;
 import no.nav.veilarboppfolging.repository.KvpRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
@@ -28,7 +27,7 @@ public class KvpService {
 
     static final String ESKALERING_AVSLUTTET_FORDI_KVP_BLE_AVSLUTTET = "Eskalering avsluttet fordi KVP ble avsluttet";
 
-    private final KafkaMessagePublisher kafkaMessagePublisher;
+    private final KafkaProducerService kafkaProducerService;
 
     private final MetricsService metricsService;
 
@@ -43,7 +42,7 @@ public class KvpService {
     private final AuthService authService;
 
     public KvpService(
-            KafkaMessagePublisher kafkaMessagePublisher,
+            KafkaProducerService kafkaProducerService,
             MetricsService metricsService,
             KvpRepository kvpRepository,
             OppfolgingClient oppfolgingClient,
@@ -51,7 +50,7 @@ public class KvpService {
             EskaleringsvarselRepository eskaleringsvarselRepository,
             AuthService authService
     ) {
-        this.kafkaMessagePublisher = kafkaMessagePublisher;
+        this.kafkaProducerService = kafkaProducerService;
         this.metricsService = metricsService;
         this.kvpRepository = kvpRepository;
         this.oppfolgingClient = oppfolgingClient;
@@ -91,7 +90,7 @@ public class KvpService {
                 .setOpprettetDato(ZonedDateTime.now());
 
         kvpRepository.startKvp(aktorId, enhet, authService.getInnloggetVeilederIdent(), begrunnelse);
-        kafkaMessagePublisher.publiserKvpEndring(kvpEndring);
+        kafkaProducerService.publiserKvpEndring(kvpEndring);
         metricsService.kvpStartet();
     }
 
@@ -144,7 +143,7 @@ public class KvpService {
                 .setAvsluttetDato(ZonedDateTime.now());
 
         kvpRepository.stopKvp(gjeldendeKvpId, aktorId, veilederId, begrunnelse, kodeverkBruker);
-        kafkaMessagePublisher.publiserKvpEndring(kvpEndring);
+        kafkaProducerService.publiserKvpEndring(kvpEndring);
         metricsService.kvpStoppet();
     }
 
