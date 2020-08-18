@@ -4,6 +4,7 @@ import no.nav.veilarboppfolging.controller.domain.TilordneVeilederResponse;
 import no.nav.veilarboppfolging.controller.domain.VeilederTilordning;
 import no.nav.veilarboppfolging.service.VeilederTilordningService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,8 +26,9 @@ public class VeilederTilordningController {
     }
 
     @PostMapping("{fnr}/lestaktivitetsplan")
-    public void lestAktivitetsplan(@PathVariable("fnr") String fnr) {
+    public ResponseEntity lestAktivitetsplan(@PathVariable("fnr") String fnr) {
         veilederTilordningService.lestAktivitetsplan(fnr);
+        return ResponseEntity.status(204).build();
     }
 
 }

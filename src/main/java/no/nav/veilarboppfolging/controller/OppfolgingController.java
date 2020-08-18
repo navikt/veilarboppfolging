@@ -6,6 +6,7 @@ import no.nav.veilarboppfolging.domain.KodeverkBruker;
 import no.nav.veilarboppfolging.domain.VeilederTilgang;
 import no.nav.veilarboppfolging.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -119,7 +120,7 @@ public class OppfolgingController {
     }
 
     @PostMapping("/startEskalering")
-    public void startEskalering(@RequestBody StartEskaleringDTO startEskalering, @RequestParam("fnr") String fnr) {
+    public ResponseEntity startEskalering(@RequestBody StartEskaleringDTO startEskalering, @RequestParam("fnr") String fnr) {
         authService.skalVereInternBruker();
         eskaleringService.startEskalering(
                 fnr,
@@ -127,24 +128,29 @@ public class OppfolgingController {
                 startEskalering.getBegrunnelse(),
                 startEskalering.getDialogId()
         );
+
+        return ResponseEntity.status(204).build();
     }
 
     @PostMapping("/stoppEskalering")
-    public void stoppEskalering(@RequestBody StoppEskaleringDTO stoppEskalering, @RequestParam("fnr") String fnr) {
+    public ResponseEntity stoppEskalering(@RequestBody StoppEskaleringDTO stoppEskalering, @RequestParam("fnr") String fnr) {
         authService.skalVereInternBruker();
         eskaleringService.stoppEskalering(fnr, authService.getInnloggetVeilederIdent(), stoppEskalering.getBegrunnelse());
+        return ResponseEntity.status(204).build();
     }
 
     @PostMapping("/startKvp")
-    public void startKvp(@RequestBody StartKvpDTO startKvp, @RequestParam("fnr") String fnr) {
+    public ResponseEntity startKvp(@RequestBody StartKvpDTO startKvp, @RequestParam("fnr") String fnr) {
         authService.skalVereInternBruker();
         kvpService.startKvp(fnr, startKvp.getBegrunnelse());
+        return ResponseEntity.status(204).build();
     }
 
     @PostMapping("/stoppKvp")
-    public void stoppKvp(@RequestBody StoppKvpDTO stoppKvp, @RequestParam("fnr") String fnr) {
+    public ResponseEntity stoppKvp(@RequestBody StoppKvpDTO stoppKvp, @RequestParam("fnr") String fnr) {
         authService.skalVereInternBruker();
         kvpService.stopKvp(fnr, stoppKvp.getBegrunnelse());
+        return ResponseEntity.status(204).build();
     }
 
     @GetMapping("/veilederTilgang")
