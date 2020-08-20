@@ -1,4 +1,4 @@
-package no.nav.veilarboppfolging.internal;
+package no.nav.veilarboppfolging.controller;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -9,23 +9,21 @@ import no.nav.veilarboppfolging.client.veilarbportefolje.OppfolgingEnhetPageDTO;
 import no.nav.veilarboppfolging.client.veilarbportefolje.VeilarbportefoljeClient;
 import no.nav.veilarboppfolging.repository.OppfolgingsenhetHistorikkRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.util.Optional;
 
-import static java.lang.Integer.parseInt;
-import static javax.servlet.http.HttpServletResponse.SC_OK;
-import static no.nav.veilarboppfolging.internal.AuthorizationUtils.isBasicAuthAuthorized;
+import static java.util.Optional.ofNullable;
+import static no.nav.veilarboppfolging.utils.AuthorizationUtils.isBasicAuthAuthorized;
 
 @Slf4j
-@WebServlet(
-        name = "PopulerOppfolgingHistorikk",
-        urlPatterns = {"/internal/populer_enhet_historikk"}
-)
-public class PopulerOppfolgingHistorikkServlet extends HttpServlet {
+@RestController
+@RequestMapping("/internal/populer_enhet_historikk")
+public class PopulerOppfolgingHistorikkController {
 
     private static final Integer MAX_PAGE_NUMBER = 1000;
 
@@ -36,26 +34,26 @@ public class PopulerOppfolgingHistorikkServlet extends HttpServlet {
     private final Credentials serviceUserCredentials;
 
     @Autowired
-    public PopulerOppfolgingHistorikkServlet(OppfolgingsenhetHistorikkRepository repository, VeilarbportefoljeClient veilarbportefoljeClient, Credentials serviceUserCredentials) {
+    public PopulerOppfolgingHistorikkController(OppfolgingsenhetHistorikkRepository repository, VeilarbportefoljeClient veilarbportefoljeClient, Credentials serviceUserCredentials) {
         this.repository = repository;
         this.veilarbportefoljeClient = veilarbportefoljeClient;
         this.serviceUserCredentials = serviceUserCredentials;
     }
 
-    @Override
-    @SneakyThrows
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) {
+    @GetMapping
+    public ResponseEntity populerOppfolgingHistorikk(HttpServletRequest req) {
+        int pageNumber = ofNullable(req.getParameter("page_number")).map(Integer::parseInt).orElse(1);
+        int pageSize = ofNullable(req.getParameter("page_size")).map(Integer::parseInt).orElse(100);
 
-        int pageNumber = Optional.of(parseInt(req.getParameter("page_number"))).orElse(1);
-        int pageSize = Optional.of(parseInt(req.getParameter("page_size"))).orElse(100);
-
-        if (isBasicAuthAuthorized(req, serviceUserCredentials.username, serviceUserCredentials.password)) {
-            RunningJob job = JobUtils.runAsyncJob(() -> fetchPages(pageNumber, pageSize));
-            resp.getWriter().write(String.format("Startet populering av enhetshistorikk med jobId %s på pod %s  (page_number: %s page_size: %s", job.getJobId(), job.getPodName(), pageNumber, pageSize));
-            resp.setStatus(SC_OK);
-        } else {
-            AuthorizationUtils.writeUnauthorized(resp);
+        if (!isBasicAuthAuthorized(req, serviceUserCredentials.username, serviceUserCredentials.password)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
+
+        RunningJob job = JobUtils.runAsyncJob(() -> fetchPages(pageNumber, pageSize));
+
+        String message = String.format("Startet populering av enhetshistorikk med jobId %s på pod %s  (page_number: %s page_size: %s", job.getJobId(), job.getPodName(), pageNumber, pageSize);
+
+        return ResponseEntity.ok(message);
     }
 
     @SneakyThrows
