@@ -17,6 +17,7 @@ import org.springframework.context.annotation.Import;
         OppfolgingsStatusRepository.class,
         UtmeldingRepository.class,
         VeilederHistorikkRepository.class,
-        VeilederTilordningerRepository.class
+        VeilederTilordningerRepository.class,
+        FeiletKafkaMeldingRepository.class
 })
 public class RepositoryTestConfig {}
