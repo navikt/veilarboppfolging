@@ -121,8 +121,6 @@ public class OppfolgingService {
             startOppfolgingHvisIkkeAlleredeStartet(aktorId);
         }
 
-        kafkaProducerService.publiserOppfolgingStatusEndret(aktorId);
-
         return getOppfolgingStatusData(fnr, null);
     }
 
@@ -146,8 +144,6 @@ public class OppfolgingService {
             log.info("Avslutting av oppfølging, tilstand i Arena for aktorid {}: {}", aktorId, arenaOppfolgingTilstand);
             avsluttOppfolgingForBruker(aktorId, veilederId, begrunnelse);
         }
-
-        kafkaProducerService.publiserOppfolgingStatusEndret(aktorId);
 
         return getOppfolgingStatusDataMedAvslutningStatus(fnr);
     }

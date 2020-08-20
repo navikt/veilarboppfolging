@@ -1,9 +1,6 @@
 package no.nav.veilarboppfolging.service;
 
-import no.nav.veilarboppfolging.domain.kafka.AvsluttOppfolgingKafkaDTO;
-import no.nav.veilarboppfolging.domain.kafka.KvpEndringKafkaDTO;
-import no.nav.veilarboppfolging.domain.kafka.OppfolgingKafkaDTO;
-import no.nav.veilarboppfolging.domain.kafka.OppfolgingStartetKafkaDTO;
+import no.nav.veilarboppfolging.domain.kafka.*;
 import no.nav.veilarboppfolging.kafka.KafkaMessagePublisher;
 import no.nav.veilarboppfolging.repository.OppfolgingFeedRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,9 +22,19 @@ public class KafkaProducerService {
         this.oppfolgingFeedRepository = oppfolgingFeedRepository;
     }
 
-    public void publiserOppfolgingStatusEndret(String aktorId) {
-        OppfolgingKafkaDTO oppfolgingKafkaDTO = oppfolgingFeedRepository.hentOppfolgingStatus(aktorId);
-        kafkaMessagePublisher.publiserOppfolgingStatusEndret(oppfolgingKafkaDTO);
+    public void publiserEndringPaManuellStatus(String aktorId, boolean erManuell) {
+        EndringPaManuellStatusKafkaDTO endringPaManuellStatusKafkaDTO = new EndringPaManuellStatusKafkaDTO(aktorId, erManuell);
+        kafkaMessagePublisher.publiserEndringPaManuellStatus(endringPaManuellStatusKafkaDTO);
+    }
+
+    public void publiserNyForVeileder(String aktorId, boolean erNyForVeileder) {
+        EndringPaNyForVeilederKafkaDTO endringPaManuellStatusKafkaDTO = new EndringPaNyForVeilederKafkaDTO(aktorId, erNyForVeileder);
+        kafkaMessagePublisher.publiserNyForVeileder(endringPaManuellStatusKafkaDTO);
+    }
+
+    public void publiserVeilederTilordnet(String aktorId, String tildeltVeilederId) {
+        VeilederTilordnetKafkaDTO veilederTilordnetKafkaDTO = new VeilederTilordnetKafkaDTO(aktorId, tildeltVeilederId);
+        kafkaMessagePublisher.publiserVeilederTilordnet(veilederTilordnetKafkaDTO);
     }
 
     public void publiserOppfolgingStartet(String aktorId) {

@@ -80,9 +80,9 @@ public class ManuellStatusService {
                     .setOpprettetAvBrukerId(opprettetAvBrukerId);
 
             manuellStatusRepository.create(nyStatus);
+            kafkaProducerService.publiserEndringPaManuellStatus(aktorId, manuell);
         }
 
-        kafkaProducerService.publiserOppfolgingStatusEndret(aktorId);
     }
 
     public boolean erManuell (OppfolgingTable eksisterendeOppfolgingstatus) {

@@ -29,7 +29,7 @@ public class OppfolgingRepositoryKvpTest extends IsolatedDatabaseTest {
         kvpRepository = new KvpRepository(db);
     }
 
-    // TODO: tilgangskontroll skal ikke gjøres i databasen, flytt til en service
+    // TODO: tilgangskontroll skal ikke gjøres så nært databasen, flytt til en service
 //    @Test
 //    public void test_eskaleringsvarsel_i_kvp_ingen_tilgang() {
 //        gitt_oppfolging_med_aktiv_kvp_og_eskalering(AKTOR_ID);

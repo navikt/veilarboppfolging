@@ -2,10 +2,7 @@ package no.nav.veilarboppfolging.kafka;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarboppfolging.domain.FeiletKafkaMelding;
-import no.nav.veilarboppfolging.domain.kafka.AvsluttOppfolgingKafkaDTO;
-import no.nav.veilarboppfolging.domain.kafka.KvpEndringKafkaDTO;
-import no.nav.veilarboppfolging.domain.kafka.OppfolgingKafkaDTO;
-import no.nav.veilarboppfolging.domain.kafka.OppfolgingStartetKafkaDTO;
+import no.nav.veilarboppfolging.domain.kafka.*;
 import no.nav.veilarboppfolging.repository.FeiletKafkaMeldingRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -31,8 +28,16 @@ public class KafkaMessagePublisher {
         this.feiletKafkaMeldingRepository = feiletKafkaMeldingRepository;
     }
 
-    public void publiserOppfolgingStatusEndret(OppfolgingKafkaDTO oppfolgingKafkaDTO) {
-        publiser(kafkaTopics.getEndringPaaOppfolgingStatus(), oppfolgingKafkaDTO.getAktoerid(), toJson(oppfolgingKafkaDTO));
+    public void publiserEndringPaManuellStatus(EndringPaManuellStatusKafkaDTO endringPaManuellStatusKafkaDTO) {
+        publiser(kafkaTopics.getEndringPaManuellStatus(), endringPaManuellStatusKafkaDTO.getAktorId(), toJson(endringPaManuellStatusKafkaDTO));
+    }
+
+    public void publiserNyForVeileder(EndringPaNyForVeilederKafkaDTO endringPaNyForVeilederKafkaDTO) {
+        publiser(kafkaTopics.getNyForVeileder(), endringPaNyForVeilederKafkaDTO.getAktorId(), toJson(endringPaNyForVeilederKafkaDTO));
+    }
+
+    public void publiserVeilederTilordnet(VeilederTilordnetKafkaDTO veilederTilordnetKafkaDTO) {
+        publiser(kafkaTopics.getVeilederTilordnet(), veilederTilordnetKafkaDTO.getAktorId(), toJson(veilederTilordnetKafkaDTO));
     }
 
     public void publiserOppfolgingAvsluttet(AvsluttOppfolgingKafkaDTO avsluttOppfolgingKafkaDTO) {

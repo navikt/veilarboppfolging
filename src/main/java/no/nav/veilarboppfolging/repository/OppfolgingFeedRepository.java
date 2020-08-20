@@ -37,38 +37,6 @@ public class OppfolgingFeedRepository {
         return db.query(sql, (rs, row) -> new AktorId(rs.getString("AKTOR_ID")));
     }
 
-    public OppfolgingKafkaDTO hentOppfolgingStatus(String aktoerId) {
-
-        val sql = "SELECT "
-                + "os.AKTOR_ID, "
-                + "os.VEILEDER, "
-                + "os.UNDER_OPPFOLGING, "
-                + "os.NY_FOR_VEILEDER, "
-                + "os.OPPDATERT, "
-                + "ms.MANUELL, "
-                + "siste_periode.STARTDATO "
-                + "from "
-                + "OPPFOLGINGSTATUS os LEFT JOIN MANUELL_STATUS ms "
-                + "on (os.GJELDENDE_MANUELL_STATUS = ms.ID) "
-                + ", "
-                + "(select "
-                + "AKTOR_ID, "
-                + "STARTDATO "
-                + "from OPPFOLGINGSPERIODE "
-                + "   where AKTOR_ID = ? "
-                + "   order by OPPDATERT desc "
-                + "   fetch next 1 rows only "
-                + "  ) siste_periode "
-                + "where os.AKTOR_ID = siste_periode.AKTOR_ID";
-
-
-        try {
-            return db.queryForObject(sql, new Object[]{aktoerId}, rowMapper());
-        } catch (EmptyResultDataAccessException e) {
-            return null;
-        }
-    }
-
     public Optional<Long> hentAntallBrukere() {
         val sql = "SELECT "
                 + "count(*) "

@@ -117,21 +117,21 @@ public class OppfolgingServiceTest {
     public void skal_publisere_paa_kafka_ved_oppdatering_av_manuell_status() {
         when(authService.harTilgangTilEnhet(any())).thenReturn(true);
 //        oppfolgingService.oppdaterManuellStatus(FNR, true, "test", SYSTEM, "test");
-        verify(kafkaProducerService, times(1)).publiserOppfolgingStatusEndret(AKTOR_ID);
+        verify(kafkaProducerService, times(1)).publiserEndringPaManuellStatus(AKTOR_ID, true);
     }
 
     @Test
     public void skal_publisere_paa_kafka_ved_start_paa_oppfolging() {
         when(authService.harTilgangTilEnhet(any())).thenReturn(true);
         oppfolgingService.startOppfolging(FNR);
-        verify(kafkaProducerService, times(1)).publiserOppfolgingStatusEndret(AKTOR_ID);
+        verify(kafkaProducerService, times(1)).publiserOppfolgingStartet(AKTOR_ID);
     }
 
     @Test
     public void skal_publisere_paa_kafka_ved_avsluttet_oppfolging() {
         when(authService.harTilgangTilEnhet(any())).thenReturn(true);
         oppfolgingService.avsluttOppfolging(FNR, VEILEDER, "");
-        verify(kafkaProducerService, times(1)).publiserOppfolgingStatusEndret(AKTOR_ID);
+        verify(kafkaProducerService, times(1)).publiserOppfolgingAvsluttet(AKTOR_ID);
     }
 
     @Test(expected = ResponseStatusException.class)
