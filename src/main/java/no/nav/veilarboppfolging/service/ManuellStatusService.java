@@ -5,11 +5,9 @@ import lombok.val;
 import no.nav.veilarboppfolging.client.dkif.DkifClient;
 import no.nav.veilarboppfolging.client.dkif.DkifKontaktinfo;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
-import no.nav.veilarboppfolging.domain.Fnr;
 import no.nav.veilarboppfolging.domain.KodeverkBruker;
 import no.nav.veilarboppfolging.domain.ManuellStatus;
 import no.nav.veilarboppfolging.domain.OppfolgingTable;
-import no.nav.veilarboppfolging.kafka.OppfolgingStatusKafkaProducer;
 import no.nav.veilarboppfolging.repository.ManuellStatusRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,8 +23,6 @@ public class ManuellStatusService {
 
     private final AuthService authService;
 
-    private final OppfolgingStatusKafkaProducer oppfolgingStatusKafkaProducer;
-
     private final ManuellStatusRepository manuellStatusRepository;
 
     private final ArenaOppfolgingService arenaOppfolgingService;
@@ -35,20 +31,21 @@ public class ManuellStatusService {
 
     private final DkifClient dkifClient;
 
+    private final KafkaProducerService kafkaProducerService;
+
     @Autowired
     public ManuellStatusService(
             AuthService authService,
-            OppfolgingStatusKafkaProducer oppfolgingStatusKafkaProducer,
             ManuellStatusRepository manuellStatusRepository,
             ArenaOppfolgingService arenaOppfolgingService,
             OppfolgingsStatusRepository oppfolgingsStatusRepository,
-            DkifClient dkifClient) {
+            DkifClient dkifClient, KafkaProducerService kafkaProducerService) {
         this.authService = authService;
-        this.oppfolgingStatusKafkaProducer = oppfolgingStatusKafkaProducer;
         this.manuellStatusRepository = manuellStatusRepository;
         this.arenaOppfolgingService = arenaOppfolgingService;
         this.oppfolgingsStatusRepository = oppfolgingsStatusRepository;
         this.dkifClient = dkifClient;
+        this.kafkaProducerService = kafkaProducerService;
     }
 
     @SneakyThrows
@@ -85,7 +82,7 @@ public class ManuellStatusService {
             manuellStatusRepository.create(nyStatus);
         }
 
-        oppfolgingStatusKafkaProducer.send(new Fnr(fnr));
+        kafkaProducerService.publiserOppfolgingStatusEndret(aktorId);
     }
 
     public boolean erManuell (OppfolgingTable eksisterendeOppfolgingstatus) {

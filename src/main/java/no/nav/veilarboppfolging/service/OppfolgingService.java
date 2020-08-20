@@ -8,9 +8,6 @@ import no.nav.veilarboppfolging.client.dkif.DkifKontaktinfo;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 import no.nav.veilarboppfolging.controller.domain.UnderOppfolgingDTO;
 import no.nav.veilarboppfolging.domain.*;
-import no.nav.veilarboppfolging.domain.kafka.AvsluttOppfolgingKafkaDTO;
-import no.nav.veilarboppfolging.domain.kafka.OppfolgingStartetKafkaDTO;
-import no.nav.veilarboppfolging.kafka.OppfolgingStatusKafkaProducer;
 import no.nav.veilarboppfolging.repository.*;
 import no.nav.veilarboppfolging.utils.ArenaUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,9 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -52,7 +47,6 @@ public class OppfolgingService {
     private final OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
     private final ManuellStatusRepository manuellStatusRepository;
     private final ManuellStatusService manuellStatusService;
-    private final OppfolgingStatusKafkaProducer kafkaProducer;
     private final EskaleringService eskaleringService;
     private final EskaleringsvarselRepository eskaleringsvarselRepository;
     private final KvpRepository kvpRepository;
@@ -72,7 +66,6 @@ public class OppfolgingService {
             OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository,
             ManuellStatusRepository manuellStatusRepository,
             ManuellStatusService manuellStatusService,
-            OppfolgingStatusKafkaProducer kafkaProducer,
             EskaleringService eskaleringService,
             EskaleringsvarselRepository eskaleringsvarselRepository,
             KvpRepository kvpRepository,
@@ -90,7 +83,6 @@ public class OppfolgingService {
         this.oppfolgingsPeriodeRepository = oppfolgingsPeriodeRepository;
         this.manuellStatusRepository = manuellStatusRepository;
         this.manuellStatusService = manuellStatusService;
-        this.kafkaProducer = kafkaProducer;
         this.eskaleringService = eskaleringService;
         this.eskaleringsvarselRepository = eskaleringsvarselRepository;
         this.kvpRepository = kvpRepository;
@@ -129,7 +121,7 @@ public class OppfolgingService {
             startOppfolgingHvisIkkeAlleredeStartet(aktorId);
         }
 
-        kafkaProducer.send(new Fnr(fnr));
+        kafkaProducerService.publiserOppfolgingStatusEndret(aktorId);
 
         return getOppfolgingStatusData(fnr, null);
     }
@@ -155,7 +147,7 @@ public class OppfolgingService {
             avsluttOppfolgingForBruker(aktorId, veilederId, begrunnelse);
         }
 
-        kafkaProducer.send(new Fnr(fnr));
+        kafkaProducerService.publiserOppfolgingStatusEndret(aktorId);
 
         return getOppfolgingStatusDataMedAvslutningStatus(fnr);
     }
@@ -389,7 +381,7 @@ public class OppfolgingService {
         if (oppfolgingsstatus != null && !oppfolgingsstatus.isUnderOppfolging()) {
             oppfolgingsPeriodeRepository.start(aktoerId);
             nyeBrukereFeedRepository.leggTil(oppfolgingsbruker);
-            kafkaProducerService.publiserOppfolgingStartet(new OppfolgingStartetKafkaDTO(aktoerId, ZonedDateTime.now()));
+            kafkaProducerService.publiserOppfolgingStartet(aktoerId);
         }
     }
 
@@ -513,12 +505,8 @@ public class OppfolgingService {
         String brukerIdent = authService.getInnloggetBrukerIdent();
         eskaleringService.stoppEskaleringForAvsluttOppfolging(aktorId, brukerIdent, begrunnelse);
 
-        AvsluttOppfolgingKafkaDTO avsluttOppfolgingKafkaDTO = new AvsluttOppfolgingKafkaDTO()
-                .setAktorId(aktorId)
-                .setSluttdato(LocalDateTime.now());
-
         oppfolgingsPeriodeRepository.avslutt(aktorId, veilederId, begrunnelse);
-        kafkaProducerService.publiserOppfolgingAvsluttet(avsluttOppfolgingKafkaDTO);
+        kafkaProducerService.publiserOppfolgingAvsluttet(aktorId);
     }
 
     private DkifKontaktinfo hentDkifInfoOgOppdaterManuellStatus(String aktorId, String fnr, boolean erManuell) {

@@ -17,7 +17,6 @@ import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
 import no.nav.veilarboppfolging.domain.*;
 import no.nav.veilarboppfolging.domain.arena.AktivitetStatus;
-import no.nav.veilarboppfolging.kafka.OppfolgingStatusKafkaProducer;
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
 import org.junit.Before;
@@ -44,6 +43,12 @@ import static org.mockito.Mockito.*;
 @RunWith(MockitoJUnitRunner.class)
 public class OppfolgingServiceTest {
 
+    private static final String FNR = "fnr";
+    private static final String AKTOR_ID = "aktorId";
+    private static final String ENHET = "enhet";
+    private static final String VEILEDER = "veileder";
+    private static final String BEGRUNNELSE = "begrunnelse";
+
     @Mock
     private DkifClient dkifClient;
 
@@ -65,23 +70,14 @@ public class OppfolgingServiceTest {
     @Mock
     private OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
 
-//    @Mock(answer = Answers.RETURNS_MOCKS)
-//    private OppfolgingResolver.OppfolgingResolverDependencies oppfolgingResolverDependencies;
-
     @Mock
     private UnleashService unleashService;
 
     @Mock
-    private OppfolgingStatusKafkaProducer kafkaProducer;
-
-    @Mock
     private WSHentYtelseskontraktListeResponse ytelser;
 
-    private static final String FNR = "fnr";
-    private static final String AKTOR_ID = "aktorId";
-    private static final String ENHET = "enhet";
-    private static final String VEILEDER = "veileder";
-    private static final String BEGRUNNELSE = "begrunnelse";
+    @Mock
+    private KafkaProducerService kafkaProducerService;
 
     @InjectMocks
     private OppfolgingService oppfolgingService;
@@ -121,21 +117,21 @@ public class OppfolgingServiceTest {
     public void skal_publisere_paa_kafka_ved_oppdatering_av_manuell_status() {
         when(authService.harTilgangTilEnhet(any())).thenReturn(true);
 //        oppfolgingService.oppdaterManuellStatus(FNR, true, "test", SYSTEM, "test");
-        verify(kafkaProducer, times(1)).send(fnr());
+        verify(kafkaProducerService, times(1)).publiserOppfolgingStatusEndret(AKTOR_ID);
     }
 
     @Test
     public void skal_publisere_paa_kafka_ved_start_paa_oppfolging() {
         when(authService.harTilgangTilEnhet(any())).thenReturn(true);
         oppfolgingService.startOppfolging(FNR);
-        verify(kafkaProducer, times(1)).send(fnr());
+        verify(kafkaProducerService, times(1)).publiserOppfolgingStatusEndret(AKTOR_ID);
     }
 
     @Test
     public void skal_publisere_paa_kafka_ved_avsluttet_oppfolging() {
         when(authService.harTilgangTilEnhet(any())).thenReturn(true);
         oppfolgingService.avsluttOppfolging(FNR, VEILEDER, "");
-        verify(kafkaProducer, times(1)).send(fnr());
+        verify(kafkaProducerService, times(1)).publiserOppfolgingStatusEndret(AKTOR_ID);
     }
 
     @Test(expected = ResponseStatusException.class)

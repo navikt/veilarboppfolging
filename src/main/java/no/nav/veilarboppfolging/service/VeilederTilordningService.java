@@ -4,10 +4,8 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarboppfolging.controller.domain.OppfolgingFeedDTO;
 import no.nav.veilarboppfolging.controller.domain.TilordneVeilederResponse;
 import no.nav.veilarboppfolging.controller.domain.VeilederTilordning;
-import no.nav.veilarboppfolging.domain.AktorId;
 import no.nav.veilarboppfolging.domain.Tilordning;
 import no.nav.veilarboppfolging.feed.cjm.producer.FeedProducer;
-import no.nav.veilarboppfolging.kafka.OppfolgingStatusKafkaProducer;
 import no.nav.veilarboppfolging.repository.VeilederHistorikkRepository;
 import no.nav.veilarboppfolging.repository.VeilederTilordningerRepository;
 import no.nav.veilarboppfolging.schedule.IdPaOppfolgingFeedSchedule;
@@ -31,7 +29,7 @@ public class VeilederTilordningService {
     private final OppfolgingService oppfolgingService;
     private final VeilederHistorikkRepository veilederHistorikkRepository;
     private final TransactionTemplate transactor;
-    private final OppfolgingStatusKafkaProducer kafka;
+    private final KafkaProducerService kafkaProducerService;
 
     @Autowired
     public VeilederTilordningService(
@@ -42,8 +40,7 @@ public class VeilederTilordningService {
             OppfolgingService oppfolgingService,
             VeilederHistorikkRepository veilederHistorikkRepository,
             TransactionTemplate transactor,
-            OppfolgingStatusKafkaProducer kafka
-    ) {
+            KafkaProducerService kafkaProducerService) {
         this.metricsService = metricsService;
         this.veilederTilordningerRepository = veilederTilordningerRepository;
         this.authService = authService;
@@ -51,7 +48,7 @@ public class VeilederTilordningService {
         this.oppfolgingService = oppfolgingService;
         this.veilederHistorikkRepository = veilederHistorikkRepository;
         this.transactor = transactor;
-        this.kafka = kafka;
+        this.kafkaProducerService = kafkaProducerService;
     }
 
     public TilordneVeilederResponse tilordneVeiledere(List<VeilederTilordning> tilordninger) {
@@ -166,11 +163,10 @@ public class VeilederTilordningService {
             veilederTilordningerRepository.upsertVeilederTilordning(aktoerId, veileder);
             veilederHistorikkRepository.insertTilordnetVeilederForAktorId(aktoerId, veileder);
             oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(aktoerId);
-            // TODO: Sjekk om det går greit å lese i midten av en transaction før endringene potensielt har blitt skrevet
-            kafka.send(new AktorId(aktoerId));
         });
 
         log.debug(String.format("Veileder %s tilordnet aktoer %s", veileder, aktoerId));
+        kafkaProducerService.publiserOppfolgingStatusEndret(aktoerId);
     }
 
     static boolean kanTilordneVeileder(String eksisterendeVeileder, VeilederTilordning veilederTilordning) {

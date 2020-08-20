@@ -1,86 +1,67 @@
 package no.nav.veilarboppfolging.service;
 
-import lombok.extern.slf4j.Slf4j;
-import no.nav.veilarboppfolging.domain.FeiletKafkaMelding;
 import no.nav.veilarboppfolging.domain.kafka.AvsluttOppfolgingKafkaDTO;
 import no.nav.veilarboppfolging.domain.kafka.KvpEndringKafkaDTO;
+import no.nav.veilarboppfolging.domain.kafka.OppfolgingKafkaDTO;
 import no.nav.veilarboppfolging.domain.kafka.OppfolgingStartetKafkaDTO;
-import no.nav.veilarboppfolging.kafka.KafkaTopics;
-import no.nav.veilarboppfolging.repository.FeiletKafkaMeldingRepository;
+import no.nav.veilarboppfolging.kafka.KafkaMessagePublisher;
+import no.nav.veilarboppfolging.repository.OppfolgingFeedRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
-import static java.lang.String.format;
-import static no.nav.common.json.JsonUtils.toJson;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
-@Slf4j
 @Service
 public class KafkaProducerService {
 
-    private final KafkaTopics kafkaTopics;
+    private final KafkaMessagePublisher kafkaMessagePublisher;
 
-    private final KafkaTemplate<String, String> kafkaTemplate;
-
-    private final FeiletKafkaMeldingRepository feiletKafkaMeldingRepository;
+    private final OppfolgingFeedRepository oppfolgingFeedRepository;
 
     @Autowired
-    public KafkaProducerService(KafkaTopics kafkaTopics, KafkaTemplate<String, String> kafkaTemplate, FeiletKafkaMeldingRepository feiletKafkaMeldingRepository) {
-        this.kafkaTopics = kafkaTopics;
-        this.kafkaTemplate = kafkaTemplate;
-        this.feiletKafkaMeldingRepository = feiletKafkaMeldingRepository;
+    public KafkaProducerService(KafkaMessagePublisher kafkaMessagePublisher, OppfolgingFeedRepository oppfolgingFeedRepository) {
+        this.kafkaMessagePublisher = kafkaMessagePublisher;
+        this.oppfolgingFeedRepository = oppfolgingFeedRepository;
     }
 
-    public void publiserOppfolgingAvsluttet(AvsluttOppfolgingKafkaDTO avsluttOppfolgingKafkaDTO) {
-        publiser(kafkaTopics.getEndringPaaAvsluttOppfolging(), avsluttOppfolgingKafkaDTO.getAktorId(), toJson(avsluttOppfolgingKafkaDTO));
+    public void publiserOppfolgingStatusEndret(String aktorId) {
+        OppfolgingKafkaDTO oppfolgingKafkaDTO = oppfolgingFeedRepository.hentOppfolgingStatus(aktorId);
+        kafkaMessagePublisher.publiserOppfolgingStatusEndret(oppfolgingKafkaDTO);
     }
 
-    public void publiserOppfolgingStartet(OppfolgingStartetKafkaDTO oppfolgingStartetKafkaDTO) {
-        publiser(kafkaTopics.getOppfolgingStartet(), oppfolgingStartetKafkaDTO.getAktorId(), toJson(oppfolgingStartetKafkaDTO));
+    public void publiserOppfolgingStartet(String aktorId) {
+        kafkaMessagePublisher.publiserOppfolgingStartet(new OppfolgingStartetKafkaDTO(aktorId, ZonedDateTime.now()));
     }
 
-    public void publiserKvpEndring(KvpEndringKafkaDTO kvpEndringKafkaDTO) {
-        publiser(kafkaTopics.getEndringPaKvp(), kvpEndringKafkaDTO.getAktorId(), toJson(kvpEndringKafkaDTO));
+    public void publiserOppfolgingAvsluttet(String aktorId) {
+        AvsluttOppfolgingKafkaDTO avsluttOppfolgingKafkaDTO = new AvsluttOppfolgingKafkaDTO()
+                .setAktorId(aktorId)
+                .setSluttdato(LocalDateTime.now());
+
+        kafkaMessagePublisher.publiserOppfolgingAvsluttet(avsluttOppfolgingKafkaDTO);
     }
 
-    public void publiserTidligereFeiletMelding(FeiletKafkaMelding feiletKafkaMelding) {
-        kafkaTemplate.send(feiletKafkaMelding.getTopicName(), feiletKafkaMelding.getMessageKey(), feiletKafkaMelding.getJsonPayload())
-                .addCallback(
-                        sendResult -> onSuccessTidligereFeilet(feiletKafkaMelding),
-                        throwable -> onErrorTidligereFeilet(feiletKafkaMelding, throwable)
-                );
+    public void publiserKvpStartet(String aktorId, String enhetId, String opprettetAvVeilederId, String begrunnelse) {
+        KvpEndringKafkaDTO kvpEndring = new KvpEndringKafkaDTO()
+                .setAktorId(aktorId)
+                .setEnhetId(enhetId)
+                .setOpprettetAv(opprettetAvVeilederId)
+                .setOpprettetBegrunnelse(begrunnelse)
+                .setOpprettetDato(ZonedDateTime.now());
+
+        kafkaMessagePublisher.publiserKvpEndring(kvpEndring);
     }
 
-    private void publiser(String topicName, String messageKey, String jsonPayload) {
-        kafkaTemplate.send(topicName, messageKey, jsonPayload)
-                .addCallback(
-                        sendResult -> onSuccess(topicName, messageKey),
-                        throwable -> onError(topicName, messageKey, jsonPayload, throwable)
-                );
-    }
+    public void publiserKvpAvsluttet(String aktorId, String enhetId, String avsluttetAvVeilederId, String begrunnelse) {
+        KvpEndringKafkaDTO kvpEndring = new KvpEndringKafkaDTO()
+                .setAktorId(aktorId)
+                .setEnhetId(enhetId)
+                .setAvsluttetAv(avsluttetAvVeilederId)
+                .setAvsluttetBegrunnelse(begrunnelse)
+                .setAvsluttetDato(ZonedDateTime.now());
 
-    private void onSuccess(String topic, String key) {
-        log.info(format("Publiserte melding på topic %s med key %s", topic, key));
-    }
-
-    private void onError(String topicName, String messageKey, String jsonPayload, Throwable throwable) {
-        log.error(format("Kunne ikke publisere melding på topic %s med key %s \nERROR: %s", topicName, messageKey, throwable));
-        feiletKafkaMeldingRepository.lagreFeiletKafkaMelding(topicName, messageKey, jsonPayload);
-    }
-
-    private void onSuccessTidligereFeilet(FeiletKafkaMelding feiletKafkaMelding) {
-        String topicName = feiletKafkaMelding.getTopicName();
-        String messageKey = feiletKafkaMelding.getMessageKey();
-
-        log.info(format("Publiserte tidligere feilet melding på topic %s med key %s", topicName, messageKey));
-        feiletKafkaMeldingRepository.slettFeiletKafkaMelding(feiletKafkaMelding.getId());
-    }
-
-    private void onErrorTidligereFeilet(FeiletKafkaMelding feiletKafkaMelding, Throwable throwable) {
-        String topicName = feiletKafkaMelding.getTopicName();
-        String messageKey = feiletKafkaMelding.getMessageKey();
-
-        log.error(format("Kunne ikke publisere tidligere feilet melding på topic %s med key %s \nERROR: %s", topicName, messageKey, throwable));
+        kafkaMessagePublisher.publiserKvpEndring(kvpEndring);
     }
 
 }

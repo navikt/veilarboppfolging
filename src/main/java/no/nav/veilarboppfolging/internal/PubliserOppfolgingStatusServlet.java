@@ -3,8 +3,7 @@ package no.nav.veilarboppfolging.internal;
 import lombok.SneakyThrows;
 import lombok.val;
 import no.nav.common.utils.Credentials;
-import no.nav.veilarboppfolging.domain.AktorId;
-import no.nav.veilarboppfolging.kafka.OppfolgingStatusKafkaProducer;
+import no.nav.veilarboppfolging.service.KafkaProducerService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.servlet.annotation.WebServlet;
@@ -22,13 +21,13 @@ import static no.nav.veilarboppfolging.internal.AuthorizationUtils.isBasicAuthAu
 )
 public class PubliserOppfolgingStatusServlet extends HttpServlet {
 
-    private final OppfolgingStatusKafkaProducer oppfolgingStatusKafkaProducer;
+    private final KafkaProducerService kafkaProducerService;
 
     private final Credentials serviceUserCredentials;
 
     @Autowired
-    public PubliserOppfolgingStatusServlet(OppfolgingStatusKafkaProducer oppfolgingStatusKafkaProducer, Credentials serviceUserCredentials) {
-        this.oppfolgingStatusKafkaProducer = oppfolgingStatusKafkaProducer;
+    public PubliserOppfolgingStatusServlet(KafkaProducerService kafkaProducerService, Credentials serviceUserCredentials) {
+        this.kafkaProducerService = kafkaProducerService;
         this.serviceUserCredentials = serviceUserCredentials;
     }
 
@@ -42,7 +41,7 @@ public class PubliserOppfolgingStatusServlet extends HttpServlet {
                 resp.setStatus(SC_BAD_REQUEST);
                 return;
             }
-            oppfolgingStatusKafkaProducer.send(new AktorId(aktoerId));
+            kafkaProducerService.publiserOppfolgingStatusEndret(aktoerId);
             val mld = String.format("Sendte melding på kafka for bruker %s", aktoerId);
             resp.setStatus(SC_OK);
             resp.getWriter().write(mld);

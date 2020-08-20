@@ -13,6 +13,7 @@ import org.springframework.kafka.support.SendResult;
 import java.time.ZonedDateTime;
 import java.util.concurrent.TimeUnit;
 
+import static no.nav.common.json.JsonUtils.fromJson;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.verify;
 
@@ -40,10 +41,11 @@ public class ConsumerKafkaTest extends KafkaTest {
 
     private void verifiserKonsumentAsynkront(String kafkaMelding) {
         boolean prosessert = false;
+        VeilarbArenaOppfolgingEndret veilarbArenaOppfolgingEndret = fromJson(kafkaMelding, VeilarbArenaOppfolgingEndret.class);
         while(!prosessert) {
             try {
                 Thread.sleep(10);
-                verify(iservService).behandleEndretBruker(eq(EndringPaOppfolgingBrukerConsumer.deserialisereBruker(kafkaMelding)));
+                verify(iservService).behandleEndretBruker(eq(veilarbArenaOppfolgingEndret));
                 prosessert = true;
             } catch(Throwable a) {
             }

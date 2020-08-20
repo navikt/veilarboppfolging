@@ -6,7 +6,6 @@ import no.nav.veilarboppfolging.client.oppfolging.OppfolgingClient;
 import no.nav.veilarboppfolging.domain.KodeverkBruker;
 import no.nav.veilarboppfolging.domain.Kvp;
 import no.nav.veilarboppfolging.domain.OppfolgingTable;
-import no.nav.veilarboppfolging.domain.kafka.KvpEndringKafkaDTO;
 import no.nav.veilarboppfolging.domain.kafka.VeilarbArenaOppfolgingEndret;
 import no.nav.veilarboppfolging.repository.EskaleringsvarselRepository;
 import no.nav.veilarboppfolging.repository.KvpRepository;
@@ -14,8 +13,6 @@ import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
-
-import java.time.ZonedDateTime;
 
 import static java.lang.String.format;
 import static no.nav.veilarboppfolging.domain.KodeverkBruker.NAV;
@@ -82,15 +79,13 @@ public class KvpService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
 
-        KvpEndringKafkaDTO kvpEndring = new KvpEndringKafkaDTO()
-                .setAktorId(aktorId)
-                .setEnhetId(enhet)
-                .setOpprettetAv(authService.getInnloggetVeilederIdent())
-                .setOpprettetBegrunnelse(begrunnelse)
-                .setOpprettetDato(ZonedDateTime.now());
+        String veilederId = authService.getInnloggetVeilederIdent();
 
-        kvpRepository.startKvp(aktorId, enhet, authService.getInnloggetVeilederIdent(), begrunnelse);
-        kafkaProducerService.publiserKvpEndring(kvpEndring);
+        kvpRepository.startKvp(aktorId, enhet, veilederId, begrunnelse);
+
+        log.info("KVP startet for bruker med aktorId {} på enhet {} av veileder {}", aktorId, enhet, veilederId);
+
+        kafkaProducerService.publiserKvpStartet(aktorId, enhet, veilederId, begrunnelse);
         metricsService.kvpStartet();
     }
 
@@ -133,17 +128,14 @@ public class KvpService {
                     ESKALERING_AVSLUTTET_FORDI_KVP_BLE_AVSLUTTET);
         }
 
+        // TODO: Ikke sikkert at vi trenger å hente gjeldende KVP for å sende med enhetId på Kafka
         Kvp gjeldendeKvp = kvpRepository.fetch(gjeldendeKvpId);
 
-        KvpEndringKafkaDTO kvpEndring = new KvpEndringKafkaDTO()
-                .setAktorId(aktorId)
-                .setEnhetId(gjeldendeKvp.getEnhet())
-                .setAvsluttetAv(veilederId)
-                .setAvsluttetBegrunnelse(begrunnelse)
-                .setAvsluttetDato(ZonedDateTime.now());
-
         kvpRepository.stopKvp(gjeldendeKvpId, aktorId, veilederId, begrunnelse, kodeverkBruker);
-        kafkaProducerService.publiserKvpEndring(kvpEndring);
+
+        log.info("KVP avsluttet for bruker med aktorId {} på enhet {} av veileder {}", aktorId, gjeldendeKvp.getEnhet(), veilederId);
+
+        kafkaProducerService.publiserKvpAvsluttet(aktorId, gjeldendeKvp.getEnhet(), veilederId, begrunnelse);
         metricsService.kvpStoppet();
     }
 

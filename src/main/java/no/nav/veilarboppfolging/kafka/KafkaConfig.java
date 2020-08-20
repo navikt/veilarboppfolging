@@ -1,13 +1,9 @@
 package no.nav.veilarboppfolging.kafka;
 
-import lombok.val;
-import no.nav.common.client.aktorregister.AktorregisterClient;
 import no.nav.common.utils.Credentials;
 import no.nav.veilarboppfolging.config.EnvironmentProperties;
-import no.nav.veilarboppfolging.repository.OppfolgingFeedRepository;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.config.SaslConfigs;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -27,7 +23,6 @@ import org.springframework.kafka.support.LoggingProducerListener;
 import java.util.HashMap;
 
 import static no.nav.veilarboppfolging.utils.KafkaUtils.requireKafkaTopicPrefix;
-import static org.apache.kafka.clients.producer.ProducerConfig.*;
 
 @EnableKafka
 @Configuration
@@ -67,19 +62,6 @@ public class KafkaConfig {
         producerListener.setIncludeContents(false);
         template.setProducerListener(producerListener);
         return template;
-    }
-
-    @Bean
-    public OppfolgingStatusKafkaProducer oppfolgingStatusKafkaProducer(KafkaTopics kafkaTopics, OppfolgingFeedRepository oppfolgingFeedRepository, AktorregisterClient aktorregisterClient) {
-        HashMap<String, Object> config = kafkaProducerProperties(brokersUrl, serviceUserCredentials);
-
-        config.put(ACKS_CONFIG, "0");                  // Fire-and-forget, we do not care about acks when hydrating
-        config.put(BATCH_SIZE_CONFIG, 25*1024*1000);   // 25MiB Buffer
-        config.put(MAX_BLOCK_MS_CONFIG, 60*20*1000);   // 20s timeout when buffer is full or requesting metadata for topic
-        config.put(REQUEST_TIMEOUT_MS_CONFIG, 1000);   // 1s timeout for waiting on reply from server
-
-        val kafkaProducer = new KafkaProducer<String, String>(config);
-        return new OppfolgingStatusKafkaProducer(kafkaProducer, oppfolgingFeedRepository, aktorregisterClient, kafkaTopics.getEndringPaaOppfolgingStatus());
     }
 
     private static HashMap<String, Object> kafkaBaseProperties(String kafkaBrokersUrl, Credentials serviceUserCredentials) {

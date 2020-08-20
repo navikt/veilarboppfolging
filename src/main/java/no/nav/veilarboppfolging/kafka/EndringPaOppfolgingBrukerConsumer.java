@@ -46,7 +46,7 @@ public class EndringPaOppfolgingBrukerConsumer {
     @KafkaListener(topics = "#{kafkaTopics.getEndringPaaOppfolgingBruker()}")
     public void consumeEndringPaOppfolgingBruker(@Payload String kafkaMelding) {
         try {
-            final VeilarbArenaOppfolgingEndret deserialisertBruker = deserialisereBruker(kafkaMelding);
+            final VeilarbArenaOppfolgingEndret deserialisertBruker = fromJson(kafkaMelding, VeilarbArenaOppfolgingEndret.class);
             kvpService.avsluttKvpVedEnhetBytte(deserialisertBruker);
             iservService.behandleEndretBruker(deserialisertBruker);
             oppfolgingsenhetEndringService.behandleBrukerEndring(deserialisertBruker);
@@ -55,10 +55,6 @@ public class EndringPaOppfolgingBrukerConsumer {
         } finally {
             metricsService.antallMeldingerKonsumertAvKafka();
         }
-    }
-
-    public static VeilarbArenaOppfolgingEndret deserialisereBruker(String arenaBruker) {
-        return fromJson(arenaBruker, VeilarbArenaOppfolgingEndret.class);
     }
 
 }

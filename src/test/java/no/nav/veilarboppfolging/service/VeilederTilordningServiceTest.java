@@ -8,7 +8,6 @@ import no.nav.veilarboppfolging.controller.domain.OppfolgingFeedDTO;
 import no.nav.veilarboppfolging.controller.domain.TilordneVeilederResponse;
 import no.nav.veilarboppfolging.controller.domain.VeilederTilordning;
 import no.nav.veilarboppfolging.feed.cjm.producer.FeedProducer;
-import no.nav.veilarboppfolging.kafka.OppfolgingStatusKafkaProducer;
 import no.nav.veilarboppfolging.repository.VeilederHistorikkRepository;
 import no.nav.veilarboppfolging.repository.VeilederTilordningerRepository;
 import no.nav.veilarboppfolging.test.DbTestUtils;
@@ -68,8 +67,7 @@ public class VeilederTilordningServiceTest {
                     oppfolgingService,
                     veilederHistorikkRepository,
                     DbTestUtils.getTransactor(LocalH2Database.getDb()),
-                    mock(OppfolgingStatusKafkaProducer.class)
-            ); 
+                    mock(KafkaProducerService.class));
         });
     }
 

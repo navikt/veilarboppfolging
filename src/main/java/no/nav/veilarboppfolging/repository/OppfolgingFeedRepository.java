@@ -1,12 +1,12 @@
 package no.nav.veilarboppfolging.repository;
 
-import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import no.nav.veilarboppfolging.controller.domain.OppfolgingFeedDTO;
 import no.nav.veilarboppfolging.domain.AktorId;
 import no.nav.veilarboppfolging.domain.kafka.OppfolgingKafkaDTO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -37,7 +37,7 @@ public class OppfolgingFeedRepository {
         return db.query(sql, (rs, row) -> new AktorId(rs.getString("AKTOR_ID")));
     }
 
-    public Try<OppfolgingKafkaDTO> hentOppfolgingStatus(String aktoerId) {
+    public OppfolgingKafkaDTO hentOppfolgingStatus(String aktoerId) {
 
         val sql = "SELECT "
                 + "os.AKTOR_ID, "
@@ -61,13 +61,12 @@ public class OppfolgingFeedRepository {
                 + "  ) siste_periode "
                 + "where os.AKTOR_ID = siste_periode.AKTOR_ID";
 
-        val result = Try.of(() -> db.queryForObject(sql, new Object[]{aktoerId}, rowMapper()));
 
-        if (result.isSuccess() && result.get() == null) {
-            return Try.failure(new IllegalStateException("Result was empty"));
+        try {
+            return db.queryForObject(sql, new Object[]{aktoerId}, rowMapper());
+        } catch (EmptyResultDataAccessException e) {
+            return null;
         }
-
-        return result;
     }
 
     public Optional<Long> hentAntallBrukere() {

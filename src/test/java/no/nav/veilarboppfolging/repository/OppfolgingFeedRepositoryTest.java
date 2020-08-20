@@ -14,11 +14,12 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Supplier;
 import java.util.stream.IntStream;
 
 import static java.util.Comparator.comparing;
+import static java.util.Optional.ofNullable;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.*;
 
 public class OppfolgingFeedRepositoryTest {
 
@@ -111,7 +112,7 @@ public class OppfolgingFeedRepositoryTest {
 
         val result = oppfolgingFeedRepository.hentOppfolgingStatus("10101010101");
 
-        assertThat(result.isFailure()).isTrue();
+        assertNull(result);
     }
 
     @Test
@@ -121,8 +122,8 @@ public class OppfolgingFeedRepositoryTest {
 
         val oppfolgingStatus = oppfolgingFeedRepository.hentOppfolgingStatus(AKTOR_ID);
 
-        assertThat(oppfolgingStatus.isSuccess()).isTrue();
-        assertThat(oppfolgingStatus.get().getAktoerid()).isEqualTo(AKTOR_ID);
+        assertNotNull(oppfolgingStatus);
+        assertEquals(AKTOR_ID, oppfolgingStatus.getAktoerid());
     }
 
     @Test
@@ -147,10 +148,10 @@ public class OppfolgingFeedRepositoryTest {
                 .max(comparing(Oppfolgingsperiode::getStartDato))
                 .orElseThrow(IllegalStateException::new);
 
-        val startDato = oppfolgingFeedRepository.hentOppfolgingStatus(AKTOR_ID)
+        val startDato = ofNullable(oppfolgingFeedRepository.hentOppfolgingStatus(AKTOR_ID))
                 .map(dto -> dto.getStartDato().getTime())
                 .map(Date::new)
-                .getOrElseThrow((Supplier<IllegalStateException>) IllegalStateException::new);
+                .orElseThrow(IllegalStateException::new);
 
         assertThat(startDato.getTime()).isEqualTo(sistePeriode.getStartDato().getTime());
         assertThat(startDato.getTime()).isNotEqualTo(forstePeriode.getStartDato().getTime());

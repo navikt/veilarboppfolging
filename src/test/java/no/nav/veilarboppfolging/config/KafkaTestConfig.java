@@ -1,11 +1,8 @@
 package no.nav.veilarboppfolging.config;
 
-import no.nav.common.client.aktorregister.AktorregisterClient;
 import no.nav.veilarboppfolging.kafka.EndringPaOppfolgingBrukerConsumer;
+import no.nav.veilarboppfolging.kafka.KafkaMessagePublisher;
 import no.nav.veilarboppfolging.kafka.KafkaTopics;
-import no.nav.veilarboppfolging.kafka.OppfolgingStatusKafkaProducer;
-import no.nav.veilarboppfolging.repository.OppfolgingFeedRepository;
-import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
@@ -31,7 +28,7 @@ import static org.apache.kafka.clients.producer.ProducerConfig.VALUE_SERIALIZER_
 
 @EnableKafka
 @Configuration
-@Import({EndringPaOppfolgingBrukerConsumer.class})
+@Import({EndringPaOppfolgingBrukerConsumer.class, KafkaMessagePublisher.class})
 public class KafkaTestConfig {
 
     private final KafkaTopics kafkaTopics;
@@ -39,16 +36,6 @@ public class KafkaTestConfig {
     @Autowired
     public KafkaTestConfig(KafkaTopics kafkaTopics) {
         this.kafkaTopics = kafkaTopics;
-    }
-
-    @Bean
-    public OppfolgingStatusKafkaProducer oppfolgingStatusKafkaProducer(
-            EmbeddedKafkaBroker embeddedKafkaBroker,
-            OppfolgingFeedRepository oppfolgingFeedRepository,
-            AktorregisterClient aktorregisterClient
-    ) {
-        KafkaProducer kafkaProducer = new KafkaProducer<String, String>(producerConfig(embeddedKafkaBroker.getBrokersAsString()));
-        return new OppfolgingStatusKafkaProducer(kafkaProducer, oppfolgingFeedRepository, aktorregisterClient, kafkaTopics.getEndringPaaOppfolgingStatus());
     }
 
     @Bean

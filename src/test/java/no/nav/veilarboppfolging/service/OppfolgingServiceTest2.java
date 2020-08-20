@@ -57,10 +57,11 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
         manuellStatusRepository = new ManuellStatusRepository(db);
 
         oppfolgingService = new OppfolgingService(
-                mock(KafkaProducerService.class), null, null, null, null, null, authService,
+                mock(KafkaProducerService.class), null, null,
+                null, null, null, authService,
                 oppfolgingsStatusRepository, oppfolgingsPeriodeRepository,
                 manuellStatusRepository, null,
-                null, null, new EskaleringsvarselRepository(db),
+                null, new EskaleringsvarselRepository(db),
                 new KvpRepository(db), new NyeBrukereFeedRepository(db), maalRepository);
     }
 
