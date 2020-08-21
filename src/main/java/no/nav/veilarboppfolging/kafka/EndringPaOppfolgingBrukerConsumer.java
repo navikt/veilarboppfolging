@@ -42,7 +42,7 @@ public class EndringPaOppfolgingBrukerConsumer {
         this.oppfolgingsenhetEndringService = oppfolgingsenhetEndringService;
     }
 
-    // 'kafkaTopics' blir hentet inn som en bean
+    // 'kafkaTopics' blir hentet inn som en bean, ikke fra klasse instansen
     @KafkaListener(topics = "#{kafkaTopics.getEndringPaaOppfolgingBruker()}")
     public void consumeEndringPaOppfolgingBruker(@Payload String kafkaMelding) {
         try {

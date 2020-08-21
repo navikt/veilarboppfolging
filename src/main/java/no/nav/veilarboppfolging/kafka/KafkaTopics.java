@@ -19,7 +19,7 @@ public class KafkaTopics {
 
     private String veilederTilordnet;
 
-    private String nyForVeileder;
+    private String endringPaNyForVeileder;
 
     public static KafkaTopics create(String topicPrefix) {
         KafkaTopics kafkaTopics = new KafkaTopics();
@@ -33,7 +33,7 @@ public class KafkaTopics {
         kafkaTopics.setOppfolgingStartet("aapen-arbeidsrettetOppfolging-oppfolgingStartet-v1-" + topicPrefix);
         kafkaTopics.setEndringPaManuellStatus("aapen-arbeidsrettetOppfolging-endringPaManuellStatus-v1-" + topicPrefix);
         kafkaTopics.setVeilederTilordnet("aapen-arbeidsrettetOppfolging-veilederTilordnet-v1-" + topicPrefix);
-        kafkaTopics.setNyForVeileder("aapen-arbeidsrettetOppfolging-nyForVeileder-v1-" + topicPrefix);
+        kafkaTopics.setEndringPaNyForVeileder("aapen-arbeidsrettetOppfolging-endringPaNyForVeileder-v1-" + topicPrefix);
 
         return kafkaTopics;
     }
@@ -46,7 +46,7 @@ public class KafkaTopics {
                 this.getOppfolgingStartet(),
                 this.getEndringPaManuellStatus(),
                 this.getVeilederTilordnet(),
-                this.getNyForVeileder(),
+                this.getEndringPaNyForVeileder(),
         };
     }
 

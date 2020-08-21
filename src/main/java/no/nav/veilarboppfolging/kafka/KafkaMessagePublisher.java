@@ -32,8 +32,8 @@ public class KafkaMessagePublisher {
         publiser(kafkaTopics.getEndringPaManuellStatus(), endringPaManuellStatusKafkaDTO.getAktorId(), toJson(endringPaManuellStatusKafkaDTO));
     }
 
-    public void publiserNyForVeileder(EndringPaNyForVeilederKafkaDTO endringPaNyForVeilederKafkaDTO) {
-        publiser(kafkaTopics.getNyForVeileder(), endringPaNyForVeilederKafkaDTO.getAktorId(), toJson(endringPaNyForVeilederKafkaDTO));
+    public void publiserEndringPaNyForVeileder(EndringPaNyForVeilederKafkaDTO endringPaNyForVeilederKafkaDTO) {
+        publiser(kafkaTopics.getEndringPaNyForVeileder(), endringPaNyForVeilederKafkaDTO.getAktorId(), toJson(endringPaNyForVeilederKafkaDTO));
     }
 
     public void publiserVeilederTilordnet(VeilederTilordnetKafkaDTO veilederTilordnetKafkaDTO) {

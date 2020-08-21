@@ -27,9 +27,9 @@ public class KafkaProducerService {
         kafkaMessagePublisher.publiserEndringPaManuellStatus(endringPaManuellStatusKafkaDTO);
     }
 
-    public void publiserNyForVeileder(String aktorId, boolean erNyForVeileder) {
+    public void publiserEndringPaNyForVeileder(String aktorId, boolean erNyForVeileder) {
         EndringPaNyForVeilederKafkaDTO endringPaManuellStatusKafkaDTO = new EndringPaNyForVeilederKafkaDTO(aktorId, erNyForVeileder);
-        kafkaMessagePublisher.publiserNyForVeileder(endringPaManuellStatusKafkaDTO);
+        kafkaMessagePublisher.publiserEndringPaNyForVeileder(endringPaManuellStatusKafkaDTO);
     }
 
     public void publiserVeilederTilordnet(String aktorId, String tildeltVeilederId) {

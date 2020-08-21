@@ -106,7 +106,7 @@ public class VeilederTilordningService {
                 .map(veilederTilordningerRepository::markerSomLestAvVeileder)
                 .ifPresent(i -> {
                     kallWebhook();
-                    kafkaProducerService.publiserNyForVeileder(aktorId, false);
+                    kafkaProducerService.publiserEndringPaNyForVeileder(aktorId, false);
                 });
     }
 
@@ -169,7 +169,7 @@ public class VeilederTilordningService {
         });
 
         log.debug(String.format("Veileder %s tilordnet aktoer %s", veileder, aktorId));
-        kafkaProducerService.publiserNyForVeileder(aktorId, true);
+        kafkaProducerService.publiserEndringPaNyForVeileder(aktorId, true);
         kafkaProducerService.publiserVeilederTilordnet(aktorId, veileder);
     }
 
