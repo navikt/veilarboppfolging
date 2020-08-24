@@ -60,11 +60,11 @@ public class KafkaProducerService {
         kafkaMessagePublisher.publiserKvpEndring(kvpEndring);
     }
 
-    public void publiserKvpAvsluttet(String aktorId, String enhetId, String avsluttetAvVeilederId, String begrunnelse) {
+    public void publiserKvpAvsluttet(String aktorId, String enhetId, String avsluttetAv, String begrunnelse) {
         KvpEndringKafkaDTO kvpEndring = new KvpEndringKafkaDTO()
                 .setAktorId(aktorId)
                 .setEnhetId(enhetId)
-                .setAvsluttetAv(avsluttetAvVeilederId)
+                .setAvsluttetAv(avsluttetAv) // veilederId eller System
                 .setAvsluttetBegrunnelse(begrunnelse)
                 .setAvsluttetDato(ZonedDateTime.now());
 

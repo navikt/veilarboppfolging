@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import static java.lang.String.format;
+import static no.nav.veilarboppfolging.config.ApplicationConfig.SYSTEM_USER_NAME;
 import static no.nav.veilarboppfolging.domain.KodeverkBruker.NAV;
 import static no.nav.veilarboppfolging.domain.KodeverkBruker.SYSTEM;
 
@@ -99,7 +100,8 @@ public class KvpService {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         }
 
-        stopKvpUtenEnhetSjekk(aktorId, begrunnelse, NAV);
+        String veilederId = authService.getInnloggetVeilederIdent();
+        stopKvpUtenEnhetSjekk(veilederId, aktorId, begrunnelse, NAV);
     }
 
     public boolean erUnderKvp(String aktorId) {
@@ -111,8 +113,7 @@ public class KvpService {
         return kvpId != 0L;
     }
 
-    public void stopKvpUtenEnhetSjekk(String aktorId, String begrunnelse, KodeverkBruker kodeverkBruker) {
-        String veilederId = authService.getInnloggetVeilederIdent();
+    private void stopKvpUtenEnhetSjekk(String avsluttetAv, String aktorId, String begrunnelse, KodeverkBruker kodeverkBruker) {
         OppfolgingTable oppfolgingTable = oppfolgingsStatusRepository.fetch(aktorId);
         long gjeldendeKvpId = oppfolgingTable.getGjeldendeKvpId();
 
@@ -123,19 +124,19 @@ public class KvpService {
         if (oppfolgingTable.getGjeldendeEskaleringsvarselId() != 0) {
             eskaleringsvarselRepository.finish(
                     aktorId, 
-                    oppfolgingTable.getGjeldendeEskaleringsvarselId(), 
-                    veilederId, 
+                    oppfolgingTable.getGjeldendeEskaleringsvarselId(),
+                    avsluttetAv,
                     ESKALERING_AVSLUTTET_FORDI_KVP_BLE_AVSLUTTET);
         }
 
         // TODO: Ikke sikkert at vi trenger å hente gjeldende KVP for å sende med enhetId på Kafka
         Kvp gjeldendeKvp = kvpRepository.fetch(gjeldendeKvpId);
 
-        kvpRepository.stopKvp(gjeldendeKvpId, aktorId, veilederId, begrunnelse, kodeverkBruker);
+        kvpRepository.stopKvp(gjeldendeKvpId, aktorId, avsluttetAv, begrunnelse, kodeverkBruker);
 
-        log.info("KVP avsluttet for bruker med aktorId {} på enhet {} av veileder {}", aktorId, gjeldendeKvp.getEnhet(), veilederId);
+        log.info("KVP avsluttet for bruker med aktorId {} på enhet {} av veileder {}", aktorId, gjeldendeKvp.getEnhet(), avsluttetAv);
 
-        kafkaProducerService.publiserKvpAvsluttet(aktorId, gjeldendeKvp.getEnhet(), veilederId, begrunnelse);
+        kafkaProducerService.publiserKvpAvsluttet(aktorId, gjeldendeKvp.getEnhet(), avsluttetAv, begrunnelse);
         metricsService.kvpStoppet();
     }
 
@@ -149,7 +150,7 @@ public class KvpService {
         boolean harByttetKontor = !endretBruker.getNav_kontor().equals(gjeldendeKvp.getEnhet());
 
         if (harByttetKontor) {
-            stopKvpUtenEnhetSjekk(endretBruker.aktoerid, "KVP avsluttet automatisk pga. endret Nav-enhet", SYSTEM);
+            stopKvpUtenEnhetSjekk(SYSTEM_USER_NAME, endretBruker.aktoerid, "KVP avsluttet automatisk pga. endret Nav-enhet", SYSTEM);
             metricsService.stopKvpDueToChangedUnit();
         }
     }

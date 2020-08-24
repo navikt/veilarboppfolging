@@ -28,6 +28,7 @@ import static java.lang.System.currentTimeMillis;
 import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
+import static no.nav.veilarboppfolging.config.ApplicationConfig.SYSTEM_USER_NAME;
 import static no.nav.veilarboppfolging.domain.KodeverkBruker.SYSTEM;
 import static no.nav.veilarboppfolging.utils.ArenaUtils.*;
 import static no.nav.veilarboppfolging.utils.KvpUtils.sjekkTilgangGittKvp;
@@ -165,7 +166,7 @@ public class OppfolgingService {
             return false;
         }
 
-        avsluttOppfolgingForBruker(aktorId, "System", "Oppfolging avsluttet autmatisk for grunn av iservert 28 dager");
+        avsluttOppfolgingForBruker(aktorId, SYSTEM_USER_NAME, "Oppfolging avsluttet autmatisk for grunn av iservert 28 dager");
         return true;
     }
 

@@ -31,6 +31,8 @@ public class ApplicationConfig {
 
     public static final String APPLICATION_NAME = "veilarboppfolging";
 
+    public static final String SYSTEM_USER_NAME = "System";
+
     @Bean
     public Credentials serviceUserCredentials() {
         return getCredentials("service_user");
