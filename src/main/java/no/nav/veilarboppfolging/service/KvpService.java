@@ -129,14 +129,11 @@ public class KvpService {
                     ESKALERING_AVSLUTTET_FORDI_KVP_BLE_AVSLUTTET);
         }
 
-        // TODO: Ikke sikkert at vi trenger å hente gjeldende KVP for å sende med enhetId på Kafka
-        Kvp gjeldendeKvp = kvpRepository.fetch(gjeldendeKvpId);
-
         kvpRepository.stopKvp(gjeldendeKvpId, aktorId, avsluttetAv, begrunnelse, kodeverkBruker);
 
-        log.info("KVP avsluttet for bruker med aktorId {} på enhet {} av veileder {}", aktorId, gjeldendeKvp.getEnhet(), avsluttetAv);
+        log.info("KVP avsluttet for bruker med aktorId {} av {}", aktorId, avsluttetAv);
 
-        kafkaProducerService.publiserKvpAvsluttet(aktorId, gjeldendeKvp.getEnhet(), avsluttetAv, begrunnelse);
+        kafkaProducerService.publiserKvpAvsluttet(aktorId, avsluttetAv, begrunnelse);
         metricsService.kvpStoppet();
     }
 

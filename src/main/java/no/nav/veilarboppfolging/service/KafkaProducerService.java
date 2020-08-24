@@ -2,7 +2,6 @@ package no.nav.veilarboppfolging.service;
 
 import no.nav.veilarboppfolging.domain.kafka.*;
 import no.nav.veilarboppfolging.kafka.KafkaMessagePublisher;
-import no.nav.veilarboppfolging.repository.OppfolgingFeedRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,12 +13,9 @@ public class KafkaProducerService {
 
     private final KafkaMessagePublisher kafkaMessagePublisher;
 
-    private final OppfolgingFeedRepository oppfolgingFeedRepository;
-
     @Autowired
-    public KafkaProducerService(KafkaMessagePublisher kafkaMessagePublisher, OppfolgingFeedRepository oppfolgingFeedRepository) {
+    public KafkaProducerService(KafkaMessagePublisher kafkaMessagePublisher) {
         this.kafkaMessagePublisher = kafkaMessagePublisher;
-        this.oppfolgingFeedRepository = oppfolgingFeedRepository;
     }
 
     public void publiserEndringPaManuellStatus(String aktorId, boolean erManuell) {
@@ -42,33 +38,33 @@ public class KafkaProducerService {
     }
 
     public void publiserOppfolgingAvsluttet(String aktorId) {
-        AvsluttOppfolgingKafkaDTO avsluttOppfolgingKafkaDTO = new AvsluttOppfolgingKafkaDTO()
+        OppfolgingAvsluttetKafkaDTO oppfolgingAvsluttetKafkaDTO = new OppfolgingAvsluttetKafkaDTO()
                 .setAktorId(aktorId)
                 .setSluttdato(LocalDateTime.now());
 
-        kafkaMessagePublisher.publiserOppfolgingAvsluttet(avsluttOppfolgingKafkaDTO);
+        kafkaMessagePublisher.publiserOppfolgingAvsluttet(oppfolgingAvsluttetKafkaDTO);
+        kafkaMessagePublisher.publiserEndringPaAvsluttOppfolging(oppfolgingAvsluttetKafkaDTO);
     }
 
     public void publiserKvpStartet(String aktorId, String enhetId, String opprettetAvVeilederId, String begrunnelse) {
-        KvpEndringKafkaDTO kvpEndring = new KvpEndringKafkaDTO()
+        KvpStartetKafkaDTO kvpStartetKafkaDTO = new KvpStartetKafkaDTO()
                 .setAktorId(aktorId)
                 .setEnhetId(enhetId)
                 .setOpprettetAv(opprettetAvVeilederId)
                 .setOpprettetBegrunnelse(begrunnelse)
                 .setOpprettetDato(ZonedDateTime.now());
 
-        kafkaMessagePublisher.publiserKvpEndring(kvpEndring);
+        kafkaMessagePublisher.publiserKvpStartet(kvpStartetKafkaDTO);
     }
 
-    public void publiserKvpAvsluttet(String aktorId, String enhetId, String avsluttetAv, String begrunnelse) {
-        KvpEndringKafkaDTO kvpEndring = new KvpEndringKafkaDTO()
+    public void publiserKvpAvsluttet(String aktorId, String avsluttetAv, String begrunnelse) {
+        KvpAvsluttetKafkaDTO kvpAvsluttetKafkaDTO = new KvpAvsluttetKafkaDTO()
                 .setAktorId(aktorId)
-                .setEnhetId(enhetId)
                 .setAvsluttetAv(avsluttetAv) // veilederId eller System
                 .setAvsluttetBegrunnelse(begrunnelse)
                 .setAvsluttetDato(ZonedDateTime.now());
 
-        kafkaMessagePublisher.publiserKvpEndring(kvpEndring);
+        kafkaMessagePublisher.publiserKvpAvsluttet(kvpAvsluttetKafkaDTO);
     }
 
 }

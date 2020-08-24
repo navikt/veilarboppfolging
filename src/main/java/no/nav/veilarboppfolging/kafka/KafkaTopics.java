@@ -9,11 +9,15 @@ public class KafkaTopics {
 
     private String endringPaaOppfolgingBruker;
 
-    private String endringPaaAvsluttOppfolging;
-
-    private String endringPaKvp;
+    private String endringPaaAvsluttOppfolging; // Deprecated, erstattes av 'oppfolgingAvsluttet'
 
     private String oppfolgingStartet;
+
+    private String oppfolgingAvsluttet;
+
+    private String kvpStartet;
+
+    private String kvpAvlsuttet;
 
     private String endringPaManuellStatus;
 
@@ -29,8 +33,10 @@ public class KafkaTopics {
 
         // Producer topics
         kafkaTopics.setEndringPaaAvsluttOppfolging("aapen-fo-endringPaaAvsluttOppfolging-v1-" + topicPrefix);
-        kafkaTopics.setEndringPaKvp("aapen-arbeidsrettetOppfolging-endringPaKvp-v1-" + topicPrefix);
         kafkaTopics.setOppfolgingStartet("aapen-arbeidsrettetOppfolging-oppfolgingStartet-v1-" + topicPrefix);
+        kafkaTopics.setOppfolgingStartet("aapen-arbeidsrettetOppfolging-oppfolgingAvsluttet-v1-" + topicPrefix);
+        kafkaTopics.setKvpStartet("aapen-arbeidsrettetOppfolging-kvpStartet-v1-" + topicPrefix);
+        kafkaTopics.setKvpAvlsuttet("aapen-arbeidsrettetOppfolging-kvpAvsluttet-v1-" + topicPrefix);
         kafkaTopics.setEndringPaManuellStatus("aapen-arbeidsrettetOppfolging-endringPaManuellStatus-v1-" + topicPrefix);
         kafkaTopics.setVeilederTilordnet("aapen-arbeidsrettetOppfolging-veilederTilordnet-v1-" + topicPrefix);
         kafkaTopics.setEndringPaNyForVeileder("aapen-arbeidsrettetOppfolging-endringPaNyForVeileder-v1-" + topicPrefix);
@@ -42,7 +48,8 @@ public class KafkaTopics {
         return new String[] {
                 this.getEndringPaaOppfolgingBruker(),
                 this.getEndringPaaAvsluttOppfolging(),
-                this.getEndringPaKvp(),
+                this.getKvpStartet(),
+                this.getKvpAvlsuttet(),
                 this.getOppfolgingStartet(),
                 this.getEndringPaManuellStatus(),
                 this.getVeilederTilordnet(),

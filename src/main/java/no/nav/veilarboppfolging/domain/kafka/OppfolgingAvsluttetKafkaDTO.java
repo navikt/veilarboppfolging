@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 
 @Data
 @Accessors(chain = true)
-public class AvsluttOppfolgingKafkaDTO {
+public class OppfolgingAvsluttetKafkaDTO {
     private String aktorId;
     private LocalDateTime sluttdato;
 }

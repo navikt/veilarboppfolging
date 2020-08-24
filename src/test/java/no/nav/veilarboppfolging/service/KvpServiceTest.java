@@ -4,7 +4,6 @@ import no.nav.common.auth.subject.SsoToken;
 import no.nav.common.auth.subject.Subject;
 import no.nav.common.auth.subject.SubjectHandler;
 import no.nav.veilarboppfolging.client.oppfolging.OppfolgingClient;
-import no.nav.veilarboppfolging.domain.Kvp;
 import no.nav.veilarboppfolging.domain.OppfolgingTable;
 import no.nav.veilarboppfolging.repository.EskaleringsvarselRepository;
 import no.nav.veilarboppfolging.repository.KvpRepository;
@@ -111,7 +110,6 @@ public class KvpServiceTest {
     public void stopKvp() {
         long kvpId = 2;
         when(oppfolgingsStatusRepository.fetch(AKTOR_ID)).thenReturn(new OppfolgingTable().setUnderOppfolging(true).setGjeldendeKvpId(kvpId));
-        when(kvpRepositoryMock.fetch(kvpId)).thenReturn(Kvp.builder().aktorId(AKTOR_ID).enhet(ENHET).build());
 
         SubjectHandler.withSubject(new Subject(VEILEDER, InternBruker, SsoToken.oidcToken("token", Collections.emptyMap())),
                 () -> kvpService.stopKvp(FNR, STOP_BEGRUNNELSE)
@@ -127,7 +125,6 @@ public class KvpServiceTest {
     public void stopKvp_avslutter_eskalering() {
         long kvpId = 2;
         when(oppfolgingsStatusRepository.fetch(AKTOR_ID)).thenReturn(new OppfolgingTable().setUnderOppfolging(true).setGjeldendeEskaleringsvarselId(1).setGjeldendeKvpId(kvpId));
-        when(kvpRepositoryMock.fetch(kvpId)).thenReturn(Kvp.builder().aktorId(AKTOR_ID).enhet(ENHET).build());
 
         SubjectHandler.withSubject(new Subject(VEILEDER, InternBruker, SsoToken.oidcToken("token", Collections.emptyMap())),
                 () -> kvpService.stopKvp(FNR, STOP_BEGRUNNELSE)

@@ -40,16 +40,25 @@ public class KafkaMessagePublisher {
         publiser(kafkaTopics.getVeilederTilordnet(), veilederTilordnetKafkaDTO.getAktorId(), toJson(veilederTilordnetKafkaDTO));
     }
 
-    public void publiserOppfolgingAvsluttet(AvsluttOppfolgingKafkaDTO avsluttOppfolgingKafkaDTO) {
-        publiser(kafkaTopics.getEndringPaaAvsluttOppfolging(), avsluttOppfolgingKafkaDTO.getAktorId(), toJson(avsluttOppfolgingKafkaDTO));
+    // Deprecated
+    public void publiserEndringPaAvsluttOppfolging(OppfolgingAvsluttetKafkaDTO oppfolgingAvsluttetKafkaDTO) {
+        publiser(kafkaTopics.getEndringPaaAvsluttOppfolging(), oppfolgingAvsluttetKafkaDTO.getAktorId(), toJson(oppfolgingAvsluttetKafkaDTO));
     }
 
     public void publiserOppfolgingStartet(OppfolgingStartetKafkaDTO oppfolgingStartetKafkaDTO) {
         publiser(kafkaTopics.getOppfolgingStartet(), oppfolgingStartetKafkaDTO.getAktorId(), toJson(oppfolgingStartetKafkaDTO));
     }
 
-    public void publiserKvpEndring(KvpEndringKafkaDTO kvpEndringKafkaDTO) {
-        publiser(kafkaTopics.getEndringPaKvp(), kvpEndringKafkaDTO.getAktorId(), toJson(kvpEndringKafkaDTO));
+    public void publiserOppfolgingAvsluttet(OppfolgingAvsluttetKafkaDTO oppfolgingAvsluttetKafkaDTO) {
+        publiser(kafkaTopics.getOppfolgingAvsluttet(), oppfolgingAvsluttetKafkaDTO.getAktorId(), toJson(oppfolgingAvsluttetKafkaDTO));
+    }
+
+    public void publiserKvpStartet(KvpStartetKafkaDTO kvpStartetKafkaDTO) {
+        publiser(kafkaTopics.getKvpStartet(), kvpStartetKafkaDTO.getAktorId(), toJson(kvpStartetKafkaDTO));
+    }
+
+    public void publiserKvpAvsluttet(KvpAvsluttetKafkaDTO kvpAvsluttetKafkaDTO) {
+        publiser(kafkaTopics.getKvpAvlsuttet(), kvpAvsluttetKafkaDTO.getAktorId(), toJson(kvpAvsluttetKafkaDTO));
     }
 
     public void publiserTidligereFeiletMelding(FeiletKafkaMelding feiletKafkaMelding) {

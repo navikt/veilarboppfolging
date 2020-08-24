@@ -7,17 +7,9 @@ import java.time.ZonedDateTime;
 
 @Data
 @Accessors(chain = true)
-public class KvpEndringKafkaDTO {
-
+public class KvpAvsluttetKafkaDTO {
     private String aktorId;
-    private String enhetId;
-
-    private String opprettetAv;
-    private ZonedDateTime opprettetDato;
-    private String opprettetBegrunnelse;
-
     private String avsluttetAv;
     private ZonedDateTime avsluttetDato;
     private String avsluttetBegrunnelse;
-
 }
