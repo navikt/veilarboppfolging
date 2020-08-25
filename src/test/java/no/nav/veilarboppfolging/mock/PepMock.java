@@ -4,15 +4,17 @@ import no.nav.common.abac.AbacClient;
 import no.nav.common.abac.Pep;
 import no.nav.common.abac.domain.AbacPersonId;
 import no.nav.common.abac.domain.request.ActionId;
+import no.nav.common.abac.domain.request.XacmlRequest;
+import no.nav.common.abac.domain.response.XacmlResponse;
+import no.nav.common.health.HealthCheckResult;
 
 public class PepMock implements Pep {
 
     private final AbacClient abacClient;
 
-    public PepMock(AbacClient abacClient) {
-        this.abacClient = abacClient;
+    public PepMock() {
+        this.abacClient = new AbacClientMock();
     }
-
 
     @Override
     public boolean harVeilederTilgangTilEnhet(String veilederIdent, String enhetId) {
@@ -57,5 +59,22 @@ public class PepMock implements Pep {
     @Override
     public AbacClient getAbacClient() {
         return abacClient;
+    }
+
+    class AbacClientMock implements AbacClient {
+        @Override
+        public String sendRawRequest(String s) {
+            return null;
+        }
+
+        @Override
+        public XacmlResponse sendRequest(XacmlRequest xacmlRequest) {
+            return null;
+        }
+
+        @Override
+        public HealthCheckResult checkHealth() {
+            return HealthCheckResult.healthy();
+        }
     }
 }
