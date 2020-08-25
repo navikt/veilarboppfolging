@@ -5,8 +5,10 @@ import no.nav.veilarboppfolging.client.behandle_arbeidssoker.BehandleArbeidssoke
 import no.nav.veilarboppfolging.domain.*;
 import no.nav.veilarboppfolging.repository.NyeBrukereFeedRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.web.server.ResponseStatusException;
 
 import static java.util.Optional.ofNullable;
 
@@ -42,20 +44,17 @@ public class AktiverBrukerService {
     public void aktiverBruker(AktiverArbeidssokerData bruker) {
         String fnr = ofNullable(bruker.getFnr())
                 .map(Fnr::getFnr)
-                .orElse("");
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "FNR mangler"));
 
-        transactor.executeWithoutResult((status) -> {
-            AktorId aktorId = new AktorId(authService.getAktorIdOrThrow(fnr));
+        AktorId aktorId = new AktorId(authService.getAktorIdOrThrow(fnr));
 
-            aktiverBrukerOgOppfolging(fnr, aktorId, bruker.getInnsatsgruppe());
-        });
+        transactor.executeWithoutResult((status) -> aktiverBrukerOgOppfolging(fnr, aktorId, bruker.getInnsatsgruppe()));
     }
 
     public void reaktiverBruker(Fnr fnr) {
-        transactor.executeWithoutResult((status) -> {
-            AktorId aktorId = new AktorId(authService.getAktorIdOrThrow(fnr.getFnr()));
-            startReaktiveringAvBrukerOgOppfolging(fnr, aktorId);
-        });
+        AktorId aktorId = new AktorId(authService.getAktorIdOrThrow(fnr.getFnr()));
+
+        transactor.executeWithoutResult((status) -> startReaktiveringAvBrukerOgOppfolging(fnr, aktorId));
     }
 
     private void startReaktiveringAvBrukerOgOppfolging(Fnr fnr, AktorId aktorId) {

@@ -56,13 +56,6 @@ public class BehandleArbeidssokerClientImpl implements BehandleArbeidssokerClien
         } catch (Exception e) {
             log.error("Klarte ikke å aktivere bruker i Arena", e);
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
-//            Case($(instanceOf(AktiverBrukerBrukerFinnesIkke.class)), (t) -> new Feil(new AktiverBrukerService.ArenaFeilType("BRUKER_ER_UKJENT"))),
-//                    Case($(instanceOf(AktiverBrukerBrukerIkkeReaktivert.class)), (t) -> new Feil(new AktiverBrukerService.ArenaFeilType("BRUKER_KAN_IKKE_REAKTIVERES"))),
-//                    Case($(instanceOf(AktiverBrukerBrukerKanIkkeAktiveres.class)), (t) -> new Feil(new AktiverBrukerService.ArenaFeilType("BRUKER_ER_DOD_UTVANDRET_ELLER_FORSVUNNET"))),
-//                    Case($(instanceOf(AktiverBrukerBrukerManglerArbeidstillatelse.class)), (t) -> new Feil(new AktiverBrukerService.ArenaFeilType("BRUKER_MANGLER_ARBEIDSTILLATELSE"))),
-//                    Case($(instanceOf(AktiverBrukerSikkerhetsbegrensning.class)), (t) -> new NotAuthorizedException(t)),
-//                    Case($(instanceOf(AktiverBrukerUgyldigInput.class)), (t) -> new BadRequestException(t)),
-//                    Case($(), (t) -> new InternalServerErrorException(t))
         }
     }
 
@@ -78,13 +71,6 @@ public class BehandleArbeidssokerClientImpl implements BehandleArbeidssokerClien
         } catch (Exception e) {
             log.error("Klarte ikke å reaktivere bruker i Arena", e);
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
-//            Case($(instanceOf(ReaktiverBrukerForenkletBrukerFinnesIkke.class)), (t) -> new Feil(new AktiverBrukerService.ArenaFeilType("BRUKER_ER_UKJENT"))),
-//                    Case($(instanceOf(ReaktiverBrukerForenkletBrukerKanIkkeAktiveres.class)), (t) -> new Feil(new AktiverBrukerService.ArenaFeilType("BRUKER_ER_DOD_UTVANDRET_ELLER_FORSVUNNET"))),
-//                    Case($(instanceOf(ReaktiverBrukerForenkletBrukerKanIkkeReaktiveresForenklet.class)), (t) -> new Feil(new AktiverBrukerService.ArenaFeilType("BRUKER_KAN_IKKE_REAKTIVERES_FORENKLET"))),
-//                    Case($(instanceOf(ReaktiverBrukerForenkletBrukerManglerArbeidstillatelse.class)), (t) -> new Feil(new AktiverBrukerService.ArenaFeilType("BRUKER_MANGLER_ARBEIDSTILLATELSE"))),
-//                    Case($(instanceOf(ReaktiverBrukerForenkletSikkerhetsbegrensning.class)), (t) -> new NotAuthorizedException(t)),
-//                    Case($(instanceOf(ReaktiverBrukerForenkletUgyldigInput.class)), (t) -> new BadRequestException(t)),
-//                    Case($(), (t) -> new InternalServerErrorException(t))
         }
     }
 
