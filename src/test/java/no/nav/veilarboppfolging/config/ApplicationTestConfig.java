@@ -5,10 +5,12 @@ import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.utils.Credentials;
 import no.nav.veilarboppfolging.feed.FeedConfig;
-import no.nav.veilarboppfolging.kafka.KafkaHelsesjekk;
+import no.nav.veilarboppfolging.kafka.KafkaConsumerHealthCheck;
+import no.nav.veilarboppfolging.kafka.KafkaProducerHealthCheck;
 import no.nav.veilarboppfolging.kafka.KafkaTopics;
 import no.nav.veilarboppfolging.mock.PepMock;
 import no.nav.veilarboppfolging.mock.UnleashServiceMock;
+import no.nav.veilarboppfolging.repository.FeiletKafkaMeldingRepository;
 import no.nav.veilarboppfolging.test.LocalH2Database;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -51,8 +53,13 @@ public class ApplicationTestConfig {
     }
 
     @Bean
-    public KafkaHelsesjekk kafkaHelsesjekk() {
-        return new KafkaHelsesjekk();
+    public KafkaConsumerHealthCheck kafkaHelsesjekk() {
+        return new KafkaConsumerHealthCheck();
+    }
+
+    @Bean
+    public KafkaProducerHealthCheck kafkaProducerHealthCheck(FeiletKafkaMeldingRepository feiletKafkaMeldingRepository) {
+        return new KafkaProducerHealthCheck(feiletKafkaMeldingRepository);
     }
 
     @Bean

@@ -28,16 +28,16 @@ import static no.nav.veilarboppfolging.utils.KafkaUtils.requireKafkaTopicPrefix;
 @Configuration
 public class KafkaConfig {
 
-    private final KafkaHelsesjekk kafkaHelsesjekk;
+    private final KafkaConsumerHealthCheck kafkaConsumerHealthCheck;
 
     private final Credentials serviceUserCredentials;
 
     private final String brokersUrl;
 
     @Autowired
-    public KafkaConfig(EnvironmentProperties properties, KafkaHelsesjekk kafkaHelsesjekk, Credentials serviceUserCredentials) {
+    public KafkaConfig(EnvironmentProperties properties, KafkaConsumerHealthCheck kafkaConsumerHealthCheck, Credentials serviceUserCredentials) {
         brokersUrl = properties.getKafkaBrokersUrl();
-        this.kafkaHelsesjekk = kafkaHelsesjekk;
+        this.kafkaConsumerHealthCheck = kafkaConsumerHealthCheck;
         this.serviceUserCredentials = serviceUserCredentials;
     }
 
@@ -50,7 +50,7 @@ public class KafkaConfig {
     public KafkaListenerContainerFactory kafkaListenerContainerFactory() {
         ConcurrentKafkaListenerContainerFactory factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(new DefaultKafkaConsumerFactory<>(kafkaConsumerProperties(brokersUrl, serviceUserCredentials)));
-        factory.setErrorHandler(kafkaHelsesjekk);
+        factory.setErrorHandler(kafkaConsumerHealthCheck);
         return factory;
     }
 

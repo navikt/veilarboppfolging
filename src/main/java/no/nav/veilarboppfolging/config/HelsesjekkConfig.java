@@ -13,7 +13,8 @@ import no.nav.veilarboppfolging.client.behandle_arbeidssoker.BehandleArbeidssoke
 import no.nav.veilarboppfolging.client.oppfolging.OppfolgingClient;
 import no.nav.veilarboppfolging.client.varseloppgave.VarseloppgaveClient;
 import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktClient;
-import no.nav.veilarboppfolging.kafka.KafkaHelsesjekk;
+import no.nav.veilarboppfolging.kafka.KafkaConsumerHealthCheck;
+import no.nav.veilarboppfolging.kafka.KafkaProducerHealthCheck;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -26,7 +27,8 @@ import java.util.List;
 public class HelsesjekkConfig {
 
     @Bean
-    public SelfTestChecks selfTestChecks(KafkaHelsesjekk kafkaHelsesjekk,
+    public SelfTestChecks selfTestChecks(KafkaConsumerHealthCheck kafkaConsumerHealthCheck,
+                                         KafkaProducerHealthCheck kafkaProducerHealthCheck,
                                          BehandleArbeidssokerClient behandleArbeidssokerClient,
                                          YtelseskontraktClient ytelseskontraktClient,
                                          OppfolgingClient oppfolgingClient,
@@ -36,7 +38,8 @@ public class HelsesjekkConfig {
                                          AktorregisterClient aktorregisterClient,
                                          UnleashService unleashService) {
         List<SelfTestCheck> selfTestChecks = Arrays.asList(
-                new SelfTestCheck("Kafka consumer", false, kafkaHelsesjekk),
+                new SelfTestCheck("Kafka consumer", false, kafkaConsumerHealthCheck),
+                new SelfTestCheck("Kafka producer", false, kafkaProducerHealthCheck),
                 new SelfTestCheck("Ping av BehandleArbeidssoker_V1. Registrerer arbeidssoker i Arena.", true, behandleArbeidssokerClient),
                 new SelfTestCheck("Ping av ytelseskontrakt_V3. Henter informasjon om ytelser fra Arena.", false, ytelseskontraktClient),
                 new SelfTestCheck("Ping av oppfolging_v1. Henter informasjon om oppfølgingsstatus fra arena.", true, oppfolgingClient),
