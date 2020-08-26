@@ -80,6 +80,7 @@ public class BehandleArbeidssokerClientImpl implements BehandleArbeidssokerClien
             behandleArbeidssoekerPing.ping();
             return HealthCheckResult.healthy();
         } catch (Exception e) {
+            log.warn("Feil ved ping av BehandleArbeidssoekerV1", e);
             return HealthCheckResult.unhealthy(e);
         }
     }

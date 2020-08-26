@@ -76,6 +76,7 @@ public class OppfolgingClientImpl implements OppfolgingClient {
             oppfoelgingPortTypePing.ping();
             return HealthCheckResult.healthy();
         } catch (Exception e) {
+            log.warn("Feil ved ping av OppfoelgingV1", e);
             return HealthCheckResult.unhealthy(e);
         }
     }
