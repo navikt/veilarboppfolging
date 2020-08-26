@@ -14,7 +14,7 @@ import java.util.List;
 
 @Slf4j
 @Component
-public class KafkaHelsesjekk implements HealthCheck, ContainerAwareErrorHandler {
+public class KafkaConsumerHealthCheck implements HealthCheck, ContainerAwareErrorHandler {
 
     private long lastThrownExceptionTime;
 

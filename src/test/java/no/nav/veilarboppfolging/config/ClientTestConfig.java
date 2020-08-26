@@ -57,7 +57,7 @@ public class ClientTestConfig {
 
             @Override
             public HealthCheckResult checkHealth() {
-                return null;
+                return HealthCheckResult.healthy();
             }
         };
     }
@@ -87,7 +87,7 @@ public class ClientTestConfig {
 
             @Override
             public HealthCheckResult checkHealth() {
-                return null;
+                return HealthCheckResult.healthy();
             }
         };
     }
@@ -120,7 +120,7 @@ public class ClientTestConfig {
 
             @Override
             public HealthCheckResult checkHealth() {
-                return null;
+                return HealthCheckResult.healthy();
             }
         };
     }
@@ -135,7 +135,7 @@ public class ClientTestConfig {
 
             @Override
             public HealthCheckResult checkHealth() {
-                return null;
+                return HealthCheckResult.healthy();
             }
         };
     }
@@ -155,7 +155,7 @@ public class ClientTestConfig {
 
             @Override
             public HealthCheckResult checkHealth() {
-                return null;
+                return HealthCheckResult.healthy();
             }
         };
     }
@@ -170,7 +170,7 @@ public class ClientTestConfig {
 
             @Override
             public HealthCheckResult checkHealth() {
-                return null;
+                return HealthCheckResult.healthy();
             }
         };
     }
@@ -185,7 +185,7 @@ public class ClientTestConfig {
 
             @Override
             public HealthCheckResult checkHealth() {
-                return null;
+                return HealthCheckResult.healthy();
             }
         };
     }
@@ -205,7 +205,7 @@ public class ClientTestConfig {
 
             @Override
             public HealthCheckResult checkHealth() {
-                return null;
+                return HealthCheckResult.healthy();
             }
         };
     }
@@ -220,7 +220,7 @@ public class ClientTestConfig {
 
             @Override
             public HealthCheckResult checkHealth() {
-                return null;
+                return HealthCheckResult.healthy();
             }
         };
     }
@@ -240,7 +240,7 @@ public class ClientTestConfig {
 
             @Override
             public HealthCheckResult checkHealth() {
-                return null;
+                return HealthCheckResult.healthy();
             }
         };
     }

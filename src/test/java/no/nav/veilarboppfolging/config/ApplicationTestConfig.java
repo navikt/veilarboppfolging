@@ -5,8 +5,12 @@ import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.utils.Credentials;
 import no.nav.veilarboppfolging.feed.FeedConfig;
+import no.nav.veilarboppfolging.kafka.KafkaConsumerHealthCheck;
+import no.nav.veilarboppfolging.kafka.KafkaProducerHealthCheck;
 import no.nav.veilarboppfolging.kafka.KafkaTopics;
 import no.nav.veilarboppfolging.mock.PepMock;
+import no.nav.veilarboppfolging.mock.UnleashServiceMock;
+import no.nav.veilarboppfolging.repository.FeiletKafkaMeldingRepository;
 import no.nav.veilarboppfolging.test.LocalH2Database;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -18,8 +22,6 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.sql.DataSource;
 
-import static org.mockito.Mockito.mock;
-
 @Configuration
 @EnableConfigurationProperties({EnvironmentProperties.class})
 @Import({
@@ -30,7 +32,8 @@ import static org.mockito.Mockito.mock;
         ServiceTestConfig.class,
         FilterTestConfig.class,
         KafkaTestConfig.class,
-        FeedConfig.class
+        FeedConfig.class,
+        HelsesjekkConfig.class
 })
 public class ApplicationTestConfig {
 
@@ -41,12 +44,22 @@ public class ApplicationTestConfig {
 
     @Bean
     public UnleashService unleashService() {
-        return mock(UnleashService.class);
+        return UnleashServiceMock.getMock();
     }
 
     @Bean
     public KafkaTopics kafkaTopics() {
         return KafkaTopics.create("local");
+    }
+
+    @Bean
+    public KafkaConsumerHealthCheck kafkaHelsesjekk() {
+        return new KafkaConsumerHealthCheck();
+    }
+
+    @Bean
+    public KafkaProducerHealthCheck kafkaProducerHealthCheck(FeiletKafkaMeldingRepository feiletKafkaMeldingRepository) {
+        return new KafkaProducerHealthCheck(feiletKafkaMeldingRepository);
     }
 
     @Bean
@@ -56,7 +69,7 @@ public class ApplicationTestConfig {
 
     @Bean
     public Pep veilarbPep() {
-        return new PepMock(null);
+        return new PepMock();
     }
 
     @Bean
