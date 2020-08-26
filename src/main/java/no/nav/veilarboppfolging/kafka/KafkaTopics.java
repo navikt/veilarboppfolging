@@ -34,7 +34,7 @@ public class KafkaTopics {
         // Producer topics
         kafkaTopics.setEndringPaaAvsluttOppfolging("aapen-fo-endringPaaAvsluttOppfolging-v1-" + topicPrefix);
         kafkaTopics.setOppfolgingStartet("aapen-arbeidsrettetOppfolging-oppfolgingStartet-v1-" + topicPrefix);
-        kafkaTopics.setOppfolgingStartet("aapen-arbeidsrettetOppfolging-oppfolgingAvsluttet-v1-" + topicPrefix);
+        kafkaTopics.setOppfolgingAvsluttet("aapen-arbeidsrettetOppfolging-oppfolgingAvsluttet-v1-" + topicPrefix);
         kafkaTopics.setKvpStartet("aapen-arbeidsrettetOppfolging-kvpStartet-v1-" + topicPrefix);
         kafkaTopics.setKvpAvlsuttet("aapen-arbeidsrettetOppfolging-kvpAvsluttet-v1-" + topicPrefix);
         kafkaTopics.setEndringPaManuellStatus("aapen-arbeidsrettetOppfolging-endringPaManuellStatus-v1-" + topicPrefix);
