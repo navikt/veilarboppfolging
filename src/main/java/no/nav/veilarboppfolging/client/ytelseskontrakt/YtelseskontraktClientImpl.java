@@ -77,6 +77,7 @@ public class YtelseskontraktClientImpl implements YtelseskontraktClient {
             ytelseskontraktPing.ping();
             return HealthCheckResult.healthy();
         } catch (Exception e) {
+            log.warn("Feil ved ping av YtelseskontraktV3", e);
             return HealthCheckResult.unhealthy(e);
         }
     }
