@@ -78,7 +78,7 @@ public class AuthService {
     }
 
     public boolean harTilgangTilEnhet(String enhetId) {
-        return veilarbPep.harVeilederTilgangTilEnhet(getInnloggetVeilederIdent(), enhetId);
+        return veilarbPep.harVeilederTilgangTilEnhet(getInnloggetBrukerIdent(), enhetId);
     }
 
     public boolean harVeilederSkriveTilgangTilFnr(String veilederId, String fnr) {
