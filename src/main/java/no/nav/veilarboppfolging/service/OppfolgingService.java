@@ -325,7 +325,8 @@ public class OppfolgingService {
         Kvp kvp = null;
         if (t.getGjeldendeKvpId() != 0) {
             kvp = kvpRepository.fetch(t.getGjeldendeKvpId());
-            if (authService.harVeilederTilgangTilEnhet(kvp.getEnhet())) {
+            boolean erEksternBruker = authService.erEksternBruker() && authService.getFnrOrThrow(aktorId).equals(authService.getInnloggetBrukerIdent());
+            if (erEksternBruker || authService.harVeilederTilgangTilEnhet(kvp.getEnhet())) {
                 o.setGjeldendeKvp(kvp);
             }
         }
