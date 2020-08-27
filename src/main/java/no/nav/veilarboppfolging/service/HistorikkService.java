@@ -67,7 +67,7 @@ public class HistorikkService {
 
     @SneakyThrows
     private boolean harTilgangTilEnhet(Kvp kvp) {
-        return authService.harTilgangTilEnhet(kvp.getEnhet());
+        return authService.harVeilederTilgangTilEnhet(kvp.getEnhet());
     }
 
     private InnstillingsHistorikk tilDTO(VeilederTilordningerData veilederTilordningerData) {

@@ -63,7 +63,7 @@ public class KvpServiceTest {
         when(oppfolgingsStatusRepository.fetch(AKTOR_ID)).thenReturn(new OppfolgingTable().setUnderOppfolging(true));
         when(oppfolgingClient.finnEnhetId(FNR)).thenReturn(ENHET);
 
-        when(authService.harTilgangTilEnhet(anyString())).thenReturn(true);
+        when(authService.harVeilederTilgangTilEnhet(anyString())).thenReturn(true);
         when(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID);
         when(authService.getInnloggetVeilederIdent()).thenReturn(VEILEDER);
     }
@@ -118,7 +118,7 @@ public class KvpServiceTest {
         verify(authService, times(1)).sjekkLesetilgangMedAktorId(AKTOR_ID);
         verify(oppfolgingsStatusRepository, times(1)).fetch(AKTOR_ID);
         verify(kvpRepositoryMock, times(1)).stopKvp(eq(kvpId), eq(AKTOR_ID), eq(VEILEDER), eq(STOP_BEGRUNNELSE), eq(NAV));
-        verify(authService, times(1)).harTilgangTilEnhet(ENHET);
+        verify(authService, times(1)).harVeilederTilgangTilEnhet(ENHET);
     }
 
     @Test
@@ -145,7 +145,7 @@ public class KvpServiceTest {
 
     @Test
     public void startKvpInhenEnhetTilgang() {
-        when(authService.harTilgangTilEnhet(ENHET)).thenReturn(false);
+        when(authService.harVeilederTilgangTilEnhet(ENHET)).thenReturn(false);
 
         try {
             kvpService.startKvp(FNR, START_BEGRUNNELSE);
@@ -156,7 +156,7 @@ public class KvpServiceTest {
 
     @Test
     public void stopKvpInhenEnhetTilgang() {
-        when(authService.harTilgangTilEnhet(ENHET)).thenReturn(false);
+        when(authService.harVeilederTilgangTilEnhet(ENHET)).thenReturn(false);
 
         try {
             kvpService.stopKvp(FNR, STOP_BEGRUNNELSE);

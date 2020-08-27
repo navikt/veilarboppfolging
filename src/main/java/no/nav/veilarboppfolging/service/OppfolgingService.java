@@ -179,7 +179,7 @@ public class OppfolgingService {
         authService.sjekkLesetilgangMedFnr(fnr);
         Optional<VeilarbArenaOppfolging> arenaBruker = arenaOppfolgingService.hentOppfolgingFraVeilarbarena(fnr);
         String oppfolgingsenhet = arenaBruker.map(VeilarbArenaOppfolging::getNav_kontor).orElse(null);
-        boolean tilgangTilEnhet = authService.harTilgangTilEnhet(oppfolgingsenhet);
+        boolean tilgangTilEnhet = authService.harVeilederTilgangTilEnhet(oppfolgingsenhet);
         return new VeilederTilgang().setTilgangTilBrukersKontor(tilgangTilEnhet);
     }
 
@@ -231,7 +231,9 @@ public class OppfolgingService {
                 .orElse(false);
 
         long kvpId = kvpRepository.gjeldendeKvp(aktorId);
-        boolean harSkrivetilgangTilBruker = !kvpService.erUnderKvp(kvpId) || authService.harTilgangTilEnhet(kvpRepository.fetch(kvpId).getEnhet());
+        boolean harSkrivetilgangTilBruker = (authService.erEksternBruker() && fnr.equals(authService.getInnloggetBrukerIdent()))
+                || !kvpService.erUnderKvp(kvpId)
+                || authService.harVeilederTilgangTilEnhet(kvpRepository.fetch(kvpId).getEnhet());
 
         Boolean erInaktivIArena = maybeArenaOppfolging.map(ao -> erIserv(ao.getFormidlingsgruppe())).orElse(null);
 
@@ -323,7 +325,7 @@ public class OppfolgingService {
         Kvp kvp = null;
         if (t.getGjeldendeKvpId() != 0) {
             kvp = kvpRepository.fetch(t.getGjeldendeKvpId());
-            if (authService.harTilgangTilEnhet(kvp.getEnhet())) {
+            if (authService.harVeilederTilgangTilEnhet(kvp.getEnhet())) {
                 o.setGjeldendeKvp(kvp);
             }
         }
@@ -393,7 +395,7 @@ public class OppfolgingService {
     }
 
     private boolean erKvpIPeriode(Kvp kvp, Oppfolgingsperiode periode) {
-        return authService.harTilgangTilEnhet(kvp.getEnhet())
+        return authService.harVeilederTilgangTilEnhet(kvp.getEnhet())
                 && kvpEtterStartenAvPeriode(kvp, periode)
                 && kvpForSluttenAvPeriode(kvp, periode);
     }

@@ -83,7 +83,7 @@ public class HistorikkServiceTest {
 
     @Test
     public void saksbehandler_har_ikke_tilgang_til_enhet() {
-        when(authService.harTilgangTilEnhet(ENHET)).thenReturn(false);
+        when(authService.harVeilederTilgangTilEnhet(ENHET)).thenReturn(false);
 
         List<InnstillingsHistorikk> historikk = historikkService.hentInstillingsHistorikk(FNR);
         List<String> begrunnelser = historikk.stream()
@@ -95,7 +95,7 @@ public class HistorikkServiceTest {
 
     @Test
     public void saksbehandler_har_tilgang_til_enhet() {
-        when(authService.harTilgangTilEnhet(ENHET)).thenReturn(true);
+        when(authService.harVeilederTilgangTilEnhet(ENHET)).thenReturn(true);
 
         List<InnstillingsHistorikk> historikk = historikkService.hentInstillingsHistorikk(FNR);
         List<String> begrunnelser = historikk.stream()
