@@ -115,21 +115,21 @@ public class OppfolgingServiceTest {
 
     @Test
     public void skal_publisere_paa_kafka_ved_oppdatering_av_manuell_status() {
-        when(authService.harTilgangTilEnhet(any())).thenReturn(true);
+        when(authService.harVeilederTilgangTilEnhet(any())).thenReturn(true);
 //        oppfolgingService.oppdaterManuellStatus(FNR, true, "test", SYSTEM, "test");
         verify(kafkaProducerService, times(1)).publiserEndringPaManuellStatus(AKTOR_ID, true);
     }
 
     @Test
     public void skal_publisere_paa_kafka_ved_start_paa_oppfolging() {
-        when(authService.harTilgangTilEnhet(any())).thenReturn(true);
+        when(authService.harVeilederTilgangTilEnhet(any())).thenReturn(true);
         oppfolgingService.startOppfolging(FNR);
         verify(kafkaProducerService, times(1)).publiserOppfolgingStartet(AKTOR_ID);
     }
 
     @Test
     public void skal_publisere_paa_kafka_ved_avsluttet_oppfolging() {
-        when(authService.harTilgangTilEnhet(any())).thenReturn(true);
+        when(authService.harVeilederTilgangTilEnhet(any())).thenReturn(true);
         oppfolgingService.avsluttOppfolging(FNR, VEILEDER, "");
         verify(kafkaProducerService, times(1)).publiserOppfolgingAvsluttet(AKTOR_ID);
     }
@@ -137,35 +137,35 @@ public class OppfolgingServiceTest {
     @Test(expected = ResponseStatusException.class)
     @SneakyThrows
     public void start_oppfolging_uten_enhet_tilgang() {
-        when(authService.harTilgangTilEnhet(any())).thenReturn(false);
+        when(authService.harVeilederTilgangTilEnhet(any())).thenReturn(false);
         oppfolgingService.startOppfolging(FNR);
     }
 
     @Test(expected = ResponseStatusException.class)
     @SneakyThrows
     public void avslutt_oppfolging_uten_enhet_tilgang() {
-        when(authService.harTilgangTilEnhet(any())).thenReturn(false);
+        when(authService.harVeilederTilgangTilEnhet(any())).thenReturn(false);
         oppfolgingService.avsluttOppfolging(FNR, VEILEDER, BEGRUNNELSE);
     }
 
     @Test(expected = ResponseStatusException.class)
     @SneakyThrows
     public void sett_manuell_uten_enhet_tilgang() {
-        when(authService.harTilgangTilEnhet(any())).thenReturn(false);
+        when(authService.harVeilederTilgangTilEnhet(any())).thenReturn(false);
 //        oppfolgingService.oppdaterManuellStatus(FNR, true, BEGRUNNELSE, NAV, VEILEDER);
     }
 
     @Test(expected = ResponseStatusException.class)
     @SneakyThrows
     public void settDigital_uten_enhet_tilgang() {
-        when(authService.harTilgangTilEnhet(any())).thenReturn(false);
+        when(authService.harVeilederTilgangTilEnhet(any())).thenReturn(false);
 //        oppfolgingService.settDigitalBruker(FNR);
     }
 
 
     @Test
     public void medEnhetTilgang() {
-        when(authService.harTilgangTilEnhet(any())).thenReturn(true);
+        when(authService.harVeilederTilgangTilEnhet(any())).thenReturn(true);
 
         gittEnhet(ENHET);
 
@@ -175,7 +175,7 @@ public class OppfolgingServiceTest {
 
     @Test
     public void utenEnhetTilgang() {
-        when(authService.harTilgangTilEnhet(any())).thenReturn(false);
+        when(authService.harVeilederTilgangTilEnhet(any())).thenReturn(false);
 
         gittEnhet(ENHET);
 
