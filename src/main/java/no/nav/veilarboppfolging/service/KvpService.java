@@ -70,7 +70,7 @@ public class KvpService {
         }
 
         String enhet = oppfolgingClient.finnEnhetId(fnr);
-        if (!authService.harVeilederTilgangTilEnhet(enhet)) {
+        if (!authService.harTilgangTilEnhet(enhet)) {
             log.warn(format("Ingen tilgang til enhet '%s'", enhet));
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         }
@@ -96,7 +96,7 @@ public class KvpService {
 
         authService.sjekkLesetilgangMedAktorId(aktorId);
 
-        if (!authService.harVeilederTilgangTilEnhet(oppfolgingClient.finnEnhetId(fnr))) {
+        if (!authService.harTilgangTilEnhet(oppfolgingClient.finnEnhetId(fnr))) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         }
 

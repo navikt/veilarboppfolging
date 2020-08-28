@@ -102,7 +102,7 @@ public class MalService {
     }
 
     private void sjekkEnhetTilgang(Kvp kvp) {
-        if (!authService.harVeilederTilgangTilEnhet(kvp.getEnhet())) {
+        if (!authService.harTilgangTilEnhet(kvp.getEnhet())) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         }
     }

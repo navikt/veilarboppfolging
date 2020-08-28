@@ -77,8 +77,8 @@ public class AuthService {
         return IdentType.EksternBruker.equals(identType);
     }
 
-    public boolean harVeilederTilgangTilEnhet(String enhetId) {
-        return veilarbPep.harVeilederTilgangTilEnhet(getInnloggetVeilederIdent(), enhetId);
+    public boolean harTilgangTilEnhet(String enhetId) {
+        return veilarbPep.harTilgangTilEnhet(getInnloggetBrukerToken(), enhetId);
     }
 
     public boolean harVeilederSkriveTilgangTilFnr(String veilederId, String fnr) {
@@ -107,7 +107,7 @@ public class AuthService {
     }
 
     public void sjekkTilgangTilEnhet(String enhetId) {
-        if (!harVeilederTilgangTilEnhet(enhetId)) {
+        if (!harTilgangTilEnhet(enhetId)) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         }
     }

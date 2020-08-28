@@ -70,11 +70,6 @@ public class ApplicationConfig {
         return new UnleashService(resolveFromEnvironment());
     }
 
-//    @Bean
-//    public SystemUserTokenProvider systemUserTokenProvider(EnvironmentProperties properties, Credentials serviceUserCredentials) {
-//        return new NaisSystemUserTokenProvider(properties.getStsDiscoveryUrl(), serviceUserCredentials.username, serviceUserCredentials.password);
-//    }
-
     @Bean
     public Pep veilarbPep(EnvironmentProperties properties) {
         Credentials serviceUserCredentials = NaisUtils.getCredentials("service_user");

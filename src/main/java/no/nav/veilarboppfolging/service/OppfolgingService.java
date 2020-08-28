@@ -179,7 +179,7 @@ public class OppfolgingService {
         authService.sjekkLesetilgangMedFnr(fnr);
         Optional<VeilarbArenaOppfolging> arenaBruker = arenaOppfolgingService.hentOppfolgingFraVeilarbarena(fnr);
         String oppfolgingsenhet = arenaBruker.map(VeilarbArenaOppfolging::getNav_kontor).orElse(null);
-        boolean tilgangTilEnhet = authService.harVeilederTilgangTilEnhet(oppfolgingsenhet);
+        boolean tilgangTilEnhet = authService.harTilgangTilEnhet(oppfolgingsenhet);
         return new VeilederTilgang().setTilgangTilBrukersKontor(tilgangTilEnhet);
     }
 
@@ -231,9 +231,7 @@ public class OppfolgingService {
                 .orElse(false);
 
         long kvpId = kvpRepository.gjeldendeKvp(aktorId);
-        boolean harSkrivetilgangTilBruker = (authService.erEksternBruker() && fnr.equals(authService.getInnloggetBrukerIdent()))
-                || !kvpService.erUnderKvp(kvpId)
-                || authService.harVeilederTilgangTilEnhet(kvpRepository.fetch(kvpId).getEnhet());
+        boolean harSkrivetilgangTilBruker = !kvpService.erUnderKvp(kvpId) || authService.harTilgangTilEnhet(kvpRepository.fetch(kvpId).getEnhet());
 
         Boolean erInaktivIArena = maybeArenaOppfolging.map(ao -> erIserv(ao.getFormidlingsgruppe())).orElse(null);
 
@@ -325,8 +323,7 @@ public class OppfolgingService {
         Kvp kvp = null;
         if (t.getGjeldendeKvpId() != 0) {
             kvp = kvpRepository.fetch(t.getGjeldendeKvpId());
-            boolean erEksternBruker = authService.erEksternBruker() && authService.getFnrOrThrow(aktorId).equals(authService.getInnloggetBrukerIdent());
-            if (erEksternBruker || authService.harVeilederTilgangTilEnhet(kvp.getEnhet())) {
+            if (authService.harTilgangTilEnhet(kvp.getEnhet())) {
                 o.setGjeldendeKvp(kvp);
             }
         }
@@ -396,7 +393,7 @@ public class OppfolgingService {
     }
 
     private boolean erKvpIPeriode(Kvp kvp, Oppfolgingsperiode periode) {
-        return authService.harVeilederTilgangTilEnhet(kvp.getEnhet())
+        return authService.harTilgangTilEnhet(kvp.getEnhet())
                 && kvpEtterStartenAvPeriode(kvp, periode)
                 && kvpForSluttenAvPeriode(kvp, periode);
     }
