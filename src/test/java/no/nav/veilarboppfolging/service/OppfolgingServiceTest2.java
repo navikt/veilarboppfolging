@@ -75,7 +75,7 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
 
     @Test
     public void oppfolging_periode_med_kvp_perioder() {
-        when(authService.harVeilederTilgangTilEnhet(ENHET)).thenReturn(true);
+        when(authService.harTilgangTilEnhet(ENHET)).thenReturn(true);
 
         gittOppfolgingForAktor(AKTOR_ID);
         gitt_kvp_periode(ENHET);
@@ -87,8 +87,8 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
 
     @Test
     public void oppfolging_periode_med_kvp_perioder_bare_tilgang_til_en() {
-        when(authService.harVeilederTilgangTilEnhet(ENHET)).thenReturn(true);
-        when(authService.harVeilederTilgangTilEnhet(OTHER_ENHET)).thenReturn(false);
+        when(authService.harTilgangTilEnhet(ENHET)).thenReturn(true);
+        when(authService.harTilgangTilEnhet(OTHER_ENHET)).thenReturn(false);
 
         gittOppfolgingForAktor(AKTOR_ID);
         gitt_kvp_periode(ENHET);

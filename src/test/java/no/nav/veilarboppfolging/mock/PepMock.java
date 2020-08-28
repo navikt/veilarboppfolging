@@ -22,6 +22,11 @@ public class PepMock implements Pep {
     }
 
     @Override
+    public boolean harTilgangTilEnhet(String innloggetBrukerIdToken, String enhetId) {
+        return true;
+    }
+
+    @Override
     public boolean harVeilederTilgangTilPerson(String veilederIdent, ActionId actionId, AbacPersonId personId) {
         return true;
     }
