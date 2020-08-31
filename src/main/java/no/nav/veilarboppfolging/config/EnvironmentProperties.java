@@ -11,7 +11,7 @@ public class EnvironmentProperties {
 
     private String openAmDiscoveryUrl;
 
-    private String openAmClientId;
+    private String veilarbloginOpenAmClientId;
 
     private String openAmRefreshUrl;
 
@@ -24,7 +24,7 @@ public class EnvironmentProperties {
 
     private String aadDiscoveryUrl;
 
-    private String aadClientId;
+    private String veilarbloginAadClientId;
 
 
     private String aadB2cDiscoveryUrl;

@@ -30,7 +30,7 @@ public class FilterConfig {
     private OidcAuthenticatorConfig openAmStsAuthConfig(EnvironmentProperties properties) {
         return new OidcAuthenticatorConfig()
                 .withDiscoveryUrl(properties.getOpenAmDiscoveryUrl())
-                .withClientId(properties.getOpenAmClientId())
+                .withClientId(properties.getVeilarbloginOpenAmClientId())
                 .withIdTokenFinder(new CustomServiceUserTokenFinder())
                 .withIdentType(IdentType.Systemressurs);
     }
@@ -45,7 +45,7 @@ public class FilterConfig {
     private OidcAuthenticatorConfig openAmAuthConfig(EnvironmentProperties properties) {
         return new OidcAuthenticatorConfig()
                 .withDiscoveryUrl(properties.getOpenAmDiscoveryUrl())
-                .withClientId(properties.getOpenAmClientId())
+                .withClientId(properties.getVeilarbloginOpenAmClientId())
                 .withIdTokenCookieName(OPEN_AM_ID_TOKEN_COOKIE_NAME)
                 .withRefreshTokenCookieName(REFRESH_TOKEN_COOKIE_NAME)
                 .withIdTokenFinder(new UserTokenFinder())
@@ -56,7 +56,7 @@ public class FilterConfig {
     private OidcAuthenticatorConfig azureAdAuthConfig(EnvironmentProperties properties) {
         return new OidcAuthenticatorConfig()
                 .withDiscoveryUrl(properties.getAadDiscoveryUrl())
-                .withClientId(properties.getAadClientId())
+                .withClientId(properties.getVeilarbloginAadClientId())
                 .withIdTokenCookieName(AZURE_AD_ID_TOKEN_COOKIE_NAME)
                 .withIdentType(IdentType.InternBruker);
     }
