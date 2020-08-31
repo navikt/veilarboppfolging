@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import static java.lang.String.format;
+import static java.util.Optional.ofNullable;
 import static no.nav.common.abac.XacmlRequestBuilder.lagEnvironment;
 import static no.nav.common.abac.XacmlRequestBuilder.personIdAttribute;
 
@@ -78,7 +79,11 @@ public class AuthService {
     }
 
     public boolean harTilgangTilEnhet(String enhetId) {
-        return veilarbPep.harTilgangTilEnhet(getInnloggetBrukerToken(), enhetId);
+        //  ABAC feiler hvis man spør om tilgang til udefinerte enheter (null) men tillater å spørre om tilgang
+        //  til enheter som ikke finnes (f.eks. tom streng)
+        //  Ved å konvertere null til tom streng muliggjør vi å spørre om tilgang til enhet for brukere som
+        //  ikke har enhet. Sluttbrukere da få permit mens veiledere vil få deny.
+        return veilarbPep.harTilgangTilEnhet(getInnloggetBrukerToken(), ofNullable(enhetId).orElse(""));
     }
 
     public boolean harVeilederSkriveTilgangTilFnr(String veilederId, String fnr) {
