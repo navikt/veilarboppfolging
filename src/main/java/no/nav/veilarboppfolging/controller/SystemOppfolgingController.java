@@ -44,6 +44,7 @@ public class SystemOppfolgingController {
     @PostMapping("/aktiverSykmeldt")
     public ResponseEntity aktiverSykmeldt(@RequestBody SykmeldtBrukerType sykmeldtBrukerType, @RequestParam String fnr) {
         authService.skalVereSystemBruker();
+        authService.sjekkLesetilgangMedFnr(fnr);
         aktiverBrukerService.aktiverSykmeldt(fnr, sykmeldtBrukerType);
         return ResponseEntity.status(204).build();
     }
