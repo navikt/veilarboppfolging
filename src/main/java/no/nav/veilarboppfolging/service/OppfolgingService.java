@@ -403,8 +403,7 @@ public class OppfolgingService {
     }
 
     private boolean kvpForSluttenAvPeriode(Kvp kvp, Oppfolgingsperiode periode) {
-        return periode.getSluttDato() == null
-                || !periode.getSluttDato().before(kvp.getOpprettetDato());
+        return periode.getSluttDato() == null || !periode.getSluttDato().before(kvp.getOpprettetDato());
     }
 
     private void sjekkStatusIArenaOgOppdaterOppfolging(String fnr) {
@@ -412,16 +411,17 @@ public class OppfolgingService {
         Optional<ArenaOppfolgingTilstand> arenaOppfolgingTilstand = arenaOppfolgingService.hentOppfolgingTilstand(fnr);
 
         arenaOppfolgingTilstand.ifPresent((oppfolgingTilstand) -> {
-            OppfolgingTable oppfolging = oppfolgingsStatusRepository.fetch(aktorId);
+            Optional<OppfolgingTable> maybeOppfolging = ofNullable(oppfolgingsStatusRepository.fetch(aktorId));
 
+            boolean erBrukerUnderOppfolging = maybeOppfolging.map(OppfolgingTable::isUnderOppfolging).orElse(false);
             boolean erUnderOppfolgingIArena = erUnderOppfolging(oppfolgingTilstand.getFormidlingsgruppe(), oppfolgingTilstand.getServicegruppe());
 
-            if (!oppfolging.isUnderOppfolging() && erUnderOppfolgingIArena) {
+            if (!erBrukerUnderOppfolging && erUnderOppfolgingIArena) {
                 startOppfolgingHvisIkkeAlleredeStartet(aktorId);
             } else {
                 boolean erSykmeldtMedArbeidsgiver = erSykmeldtMedArbeidsgiver(oppfolgingTilstand);
                 boolean erInaktivIArena = erInaktivIArena(oppfolgingTilstand);
-                boolean sjekkIArenaOmBrukerSkalAvsluttes = oppfolging.isUnderOppfolging() && erInaktivIArena;
+                boolean sjekkIArenaOmBrukerSkalAvsluttes = erBrukerUnderOppfolging && erInaktivIArena;
 
                 log.info("Statuser for reaktivering og inaktivering basert på {}: "
                                 + "Aktiv Oppfølgingsperiode={} "
@@ -430,14 +430,14 @@ public class OppfolgingService {
                                 + "aktorId={} "
                                 + "Tilstand i Arena: {}",
                         oppfolgingTilstand.isDirekteFraArena() ? "Arena" : "Veilarbarena",
-                        oppfolging.isUnderOppfolging(),
+                        erBrukerUnderOppfolging,
                         erSykmeldtMedArbeidsgiver,
                         erInaktivIArena,
                         aktorId,
                         arenaOppfolgingTilstand.toString());
 
                 if (sjekkIArenaOmBrukerSkalAvsluttes) {
-                    sjekkOgOppdaterBrukerDirekteFraArena(fnr, oppfolgingTilstand, oppfolging);
+                    sjekkOgOppdaterBrukerDirekteFraArena(fnr, oppfolgingTilstand, maybeOppfolging.get());
                 }
             }
         });
