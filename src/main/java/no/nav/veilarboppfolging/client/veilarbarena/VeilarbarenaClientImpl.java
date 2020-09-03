@@ -42,6 +42,10 @@ public class VeilarbarenaClientImpl implements VeilarbarenaClient {
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
+            if (response.code() == 404) {
+                return Optional.empty();
+            }
+
             RestUtils.throwIfNotSuccessful(response);
             return Optional.of(RestUtils.parseJsonResponseOrThrow(response, VeilarbArenaOppfolging.class));
         } catch (Exception e) {
@@ -59,6 +63,10 @@ public class VeilarbarenaClientImpl implements VeilarbarenaClient {
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
+            if (response.code() == 404) {
+                return Optional.empty();
+            }
+
             RestUtils.throwIfNotSuccessful(response);
             return Optional.of(RestUtils.parseJsonResponseOrThrow(response, ArenaOppfolging.class));
         } catch (Exception e) {
