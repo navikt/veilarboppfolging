@@ -1,0 +1,11 @@
+{
+  "kontaktinfo": {
+    "12345678900": {
+      "personident": "12345678900",
+      "kanVarsles": true,
+      "reservert": false,
+      "epostadresse": "noreply@nav.no",
+      "mobiltelefonnummer": "11111111"
+    }
+  }
+}

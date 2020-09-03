@@ -10,26 +10,22 @@ spec:
   ingresses:
     - https://veilarboppfolging-{{namespace}}.nais.preprod.local
     - https://app-{{namespace}}.adeo.no/veilarboppfolging
-    - https://app-{{namespace}}.adeo.no/veilarboppfolging-ws
   leaderElection: true
+  webproxy: true
   port: 8080
   prometheus:
     enabled: true
-    path: veilarboppfolging/internal/metrics
+    path: veilarboppfolging/internal/prometheus
   liveness:
     path: veilarboppfolging/internal/isAlive
-    port: 8080
-    initialDelay: 20
-    timeout: 10
+    initialDelay: 30
   readiness:
     path: veilarboppfolging/internal/isReady
-    port: 8080
-    initialDelay: 20
-    timeout: 10
+    initialDelay: 30
   replicas:
-    min: 2
-    max: 4
-    cpuThresholdPercentage: 50
+    min: 1
+    max: 2
+    cpuThresholdPercentage: 75
   resources:
     limits:
       cpu: "2"
@@ -39,35 +35,6 @@ spec:
       memory: 2Gi
   envFrom:
     - configmap: pto-config
-  env:
-    - name: APP_ENVIRONMENT_NAME
-      value: {{namespace}}
-    - name: VEILARBOPPFOLGINGDB_URL
-      value: jdbc:oracle:thin:@a01dbfl032.adeo.no:1521/veilarboppfolging_{{namespace}}
-    - name: MAKS_ALDER_AUTOMATISK_REGISTRERING
-      value: "0"
-    - name: MIN_ALDER_AUTOMATISK_REGISTRERING
-      value: "0"
-    - name: ROLE
-      value: 0000-GA-Modia-Oppfolging
-    - name: LDAP_FALLBACK
-      value: "false"
-    - name: ESKALERINGSVARSEL_OPPGAVETYPE
-      value: "0004"
-    - name: ESKALERINGSVARSEL_VARSELTYPE
-      value: DittNAV_000008
-    - name: FEATURE_SKIP_VALIDERING_DIFI
-      value: "true"
-    - name: KVP_API_BRUKERTILGANG
-      value: srvveilarbdialog,srvveilarbaktivitet
-    - name: OPPFOLGING_FEED_BRUKERTILGANG
-      value: srvveilarbportefolje
-    - name: AVSLUTTETOPPFOLGING_FEED_BRUKERTILGANG
-      value: srvveilarbdialog,srvveilarbaktivitet,srvveilarbjobbsoke
-    - name: KVP_FEED_BRUKERTILGANG
-      value: srvveilarbdialog,srvveilarbaktivitet
-    - name: NYEBRUKERE_FEED_BRUKERTILGANG
-      value: srvveilarbdirigent
   vault:
     enabled: true
     paths:
@@ -77,4 +44,3 @@ spec:
         mountPath: /var/run/secrets/nais.io/service_user
       - kvPath: /kv/preprod/fss/veilarboppfolging/{{namespace}}
         mountPath: /var/run/secrets/nais.io/vault
-  webproxy: true
