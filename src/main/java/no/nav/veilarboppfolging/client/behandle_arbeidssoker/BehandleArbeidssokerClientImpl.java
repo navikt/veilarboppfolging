@@ -4,7 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.cxf.CXFClient;
 import no.nav.common.cxf.StsConfig;
 import no.nav.common.health.HealthCheckResult;
-import no.nav.tjeneste.virksomhet.behandlearbeidssoeker.v1.binding.BehandleArbeidssoekerV1;
+import no.nav.tjeneste.virksomhet.behandlearbeidssoeker.v1.binding.*;
 import no.nav.tjeneste.virksomhet.behandlearbeidssoeker.v1.informasjon.Brukerident;
 import no.nav.tjeneste.virksomhet.behandlearbeidssoeker.v1.meldinger.AktiverBrukerRequest;
 import no.nav.tjeneste.virksomhet.behandlearbeidssoeker.v1.meldinger.ReaktiverBrukerForenkletRequest;
@@ -54,7 +54,21 @@ public class BehandleArbeidssokerClientImpl implements BehandleArbeidssokerClien
         try {
             behandleArbeidssoeker.aktiverBruker(request);
         } catch (Exception e) {
-            log.error("Klarte ikke å aktivere bruker i Arena", e);
+            log.warn("Klarte ikke å aktivere bruker i Arena: {}", e.getClass().getSimpleName(), e);
+
+            if (
+                    e instanceof AktiverBrukerBrukerFinnesIkke
+                    || e instanceof AktiverBrukerBrukerIkkeReaktivert
+                    || e instanceof AktiverBrukerBrukerKanIkkeAktiveres
+                    || e instanceof AktiverBrukerBrukerManglerArbeidstillatelse
+            ) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+            } else if (e instanceof AktiverBrukerSikkerhetsbegrensning) {
+                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+            } else if (e instanceof AktiverBrukerUgyldigInput) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+            }
+
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -69,7 +83,21 @@ public class BehandleArbeidssokerClientImpl implements BehandleArbeidssokerClien
         try {
             behandleArbeidssoeker.reaktiverBrukerForenklet(request);
         } catch (Exception e) {
-            log.error("Klarte ikke å reaktivere bruker i Arena", e);
+            log.warn("Klarte ikke å reaktivere bruker i Arena: {}", e.getClass().getSimpleName(), e);
+
+            if (
+                    e instanceof ReaktiverBrukerForenkletBrukerFinnesIkke
+                    || e instanceof ReaktiverBrukerForenkletBrukerKanIkkeAktiveres
+                    || e instanceof ReaktiverBrukerForenkletBrukerKanIkkeReaktiveresForenklet
+                    || e instanceof ReaktiverBrukerForenkletBrukerManglerArbeidstillatelse
+            ) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+            } else if (e instanceof ReaktiverBrukerForenkletSikkerhetsbegrensning) {
+                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+            } else if (e instanceof ReaktiverBrukerForenkletUgyldigInput) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+            }
+
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
