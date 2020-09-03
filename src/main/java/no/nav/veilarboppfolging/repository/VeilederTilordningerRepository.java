@@ -12,6 +12,7 @@ import java.util.Optional;
 
 import static java.lang.String.format;
 import static no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository.*;
+import static no.nav.veilarboppfolging.utils.DbUtils.queryForNullableObject;
 
 @Repository
 public class VeilederTilordningerRepository {
@@ -31,7 +32,7 @@ public class VeilederTilordningerRepository {
 
     public Optional<Tilordning> hentTilordnetVeileder(String aktorId) {
         String sql = format("SELECT * FROM %s WHERE %s = ?", TABLE_NAME, AKTOR_ID);
-        return Optional.ofNullable(db.queryForObject(sql, VeilederTilordningerRepository::map, aktorId));
+        return queryForNullableObject(db, sql, VeilederTilordningerRepository::map, aktorId);
     }
 
     public void upsertVeilederTilordning(String aktoerId, String veileder) {
