@@ -1,6 +1,8 @@
 package no.nav.veilarboppfolging.utils;
 
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -26,4 +28,11 @@ public class DbUtils {
                 .orElse(null);
     }
 
+    public static <T> Optional<T> queryForNullableObject(JdbcTemplate db, String sql, RowMapper<T> rowMapper, Object... args) {
+        try {
+            return Optional.ofNullable(db.queryForObject(sql, rowMapper, args));
+        } catch (EmptyResultDataAccessException e) {
+            return Optional.empty();
+        }
+    }
 }
