@@ -1,6 +1,9 @@
 package no.nav.veilarboppfolging.controller;
 
-import no.nav.common.health.selftest.*;
+import no.nav.common.health.selftest.SelfTestChecks;
+import no.nav.common.health.selftest.SelfTestUtils;
+import no.nav.common.health.selftest.SelftTestCheckResult;
+import no.nav.common.health.selftest.SelftestHtmlGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -10,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-import static no.nav.common.health.selftest.SelfTestUtils.checkAllParallel;
+import static no.nav.common.health.selftest.SelfTestUtils.checkAll;
 
 @RestController
 @RequestMapping("/internal")
@@ -31,7 +34,7 @@ public class InternalController {
 
     @GetMapping("/selftest")
     public ResponseEntity selftest() {
-        List<SelftTestCheckResult> checkResults = checkAllParallel(selftestChecks.getSelfTestChecks());
+        List<SelftTestCheckResult> checkResults = checkAll(selftestChecks.getSelfTestChecks());
         String html = SelftestHtmlGenerator.generate(checkResults);
         int status = SelfTestUtils.findHttpStatusCode(checkResults, true);
 
