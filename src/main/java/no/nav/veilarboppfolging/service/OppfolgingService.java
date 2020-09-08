@@ -511,21 +511,22 @@ public class OppfolgingService {
 
         try {
             kontaktinfo = dkifClient.hentKontaktInfo(fnr);
-            if (!erManuell && kontaktinfo.isReservert()) {
-                manuellStatusRepository.create(
-                        new ManuellStatus()
-                                .setAktorId(aktorId)
-                                .setManuell(true)
-                                .setDato(new Timestamp(currentTimeMillis()))
-                                .setBegrunnelse("Reservert og under oppfølging")
-                                .setOpprettetAv(SYSTEM)
-                );
-            }
         } catch (Exception e) {
             kontaktinfo = new DkifKontaktinfo();
             kontaktinfo.setPersonident(fnr);
             kontaktinfo.setKanVarsles(true);
             kontaktinfo.setReservert(false);
+        }
+
+        if (!erManuell && kontaktinfo.isReservert()) {
+            manuellStatusRepository.create(
+                    new ManuellStatus()
+                            .setAktorId(aktorId)
+                            .setManuell(true)
+                            .setDato(new Timestamp(currentTimeMillis()))
+                            .setBegrunnelse("Reservert og under oppfølging")
+                            .setOpprettetAv(SYSTEM)
+            );
         }
 
         return kontaktinfo;
