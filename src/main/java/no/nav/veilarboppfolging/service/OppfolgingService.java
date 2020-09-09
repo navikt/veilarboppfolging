@@ -97,13 +97,7 @@ public class OppfolgingService {
 
         sjekkStatusIArenaOgOppdaterOppfolging(fnr);
 
-        log.info("Henter oppfolgingStatusData");
-
-        OppfolgingStatusData oppfolgingStatusData = getOppfolgingStatusData(fnr, null);
-
-        log.info("Returnerer oppfolgingStatusData");
-
-        return oppfolgingStatusData;
+        return getOppfolgingStatusData(fnr, null);
     }
 
     public OppfolgingStatusData hentAvslutningStatus(String fnr) {
@@ -226,7 +220,7 @@ public class OppfolgingService {
                 .map(ManuellStatus::isManuell)
                 .orElse(false);
 
-        DkifKontaktinfo dkifKontaktinfo = hentDkifInfoOgOppdaterManuellStatus(aktorId, fnr, erManuell);
+        DkifKontaktinfo dkifKontaktinfo = hentDkifInfoOgOppdaterManuellStatus(aktorId, fnr, erManuell, oppfolging.isUnderOppfolging());
         boolean krr = dkifKontaktinfo.isReservert();
 
         // TODO: Burde kanskje heller feile istedenfor å bruke Optional
@@ -238,8 +232,6 @@ public class OppfolgingService {
 
         long kvpId = kvpRepository.gjeldendeKvp(aktorId);
         boolean harSkrivetilgangTilBruker = !kvpService.erUnderKvp(kvpId) || authService.harTilgangTilEnhet(kvpRepository.fetch(kvpId).getEnhet());
-
-        log.info("Starter på utleding av informasjon");
 
         Boolean erInaktivIArena = maybeArenaOppfolging.map(ao -> erIserv(ao.getFormidlingsgruppe())).orElse(null);
 
@@ -257,8 +249,6 @@ public class OppfolgingService {
                 .map(ArenaOppfolgingTilstand::getInaktiveringsdato)
                 .map(d -> Date.from(d.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant()))
                 .orElse(null);
-
-        log.info("Ferdig utledet");
 
         return new OppfolgingStatusData()
                 .setFnr(fnr)
@@ -515,17 +505,23 @@ public class OppfolgingService {
         kafkaProducerService.publiserOppfolgingAvsluttet(aktorId);
     }
 
-    private DkifKontaktinfo hentDkifInfoOgOppdaterManuellStatus(String aktorId, String fnr, boolean erManuell) {
-        DkifKontaktinfo kontaktinfo;
+    private DkifKontaktinfo hentDkifInfoOgOppdaterManuellStatus(String aktorId,
+                                                                String fnr,
+                                                                boolean erManuell,
+                                                                boolean erUnderOppfolging) {
+        DkifKontaktinfo kontaktinfo = new DkifKontaktinfo();
+        kontaktinfo.setPersonident(fnr);
+        kontaktinfo.setKanVarsles(true);
+        kontaktinfo.setReservert(false);
+
+        if (!erUnderOppfolging) {
+            return kontaktinfo;
+        }
 
         try {
             kontaktinfo = dkifClient.hentKontaktInfo(fnr);
         } catch (Exception e) {
             log.warn("Kall mot DKIF feilet, faller tilbake til default verdier", e);
-            kontaktinfo = new DkifKontaktinfo();
-            kontaktinfo.setPersonident(fnr);
-            kontaktinfo.setKanVarsles(true);
-            kontaktinfo.setReservert(false);
         }
 
         if (!erManuell && kontaktinfo.isReservert()) {

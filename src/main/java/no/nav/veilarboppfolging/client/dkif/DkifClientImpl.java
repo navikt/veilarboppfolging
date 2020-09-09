@@ -16,6 +16,7 @@ import org.springframework.cache.annotation.Cacheable;
 
 import java.util.Optional;
 
+import static java.util.Optional.ofNullable;
 import static no.nav.common.utils.UrlUtils.joinPaths;
 import static no.nav.veilarboppfolging.utils.RestClientUtils.authHeaderMedInnloggetBruker;
 import static org.springframework.http.HttpHeaders.ACCEPT;
@@ -49,13 +50,18 @@ public class DkifClientImpl implements DkifClient {
             Optional<String> json = RestUtils.getBodyStr(response);
 
             if (json.isEmpty()) {
-                throw new IllegalStateException("Dkif body is missing");
+                throw new IllegalStateException("DKIF body is missing");
             }
 
             ObjectMapper mapper = JsonUtils.getMapper();
             JsonNode node = mapper.readTree(json.get());
 
-            return mapper.treeToValue(node.get("kontaktinfo").get(fnr), DkifKontaktinfo.class);
+            JsonNode kontaktinfoNode = ofNullable(node.get("kontaktinfo")).map(n -> n.get(fnr)).orElse(null);
+            if (kontaktinfoNode == null) {
+                throw new IllegalStateException("Mangler kontaktinfo fra DKIF");
+            }
+
+            return mapper.treeToValue(kontaktinfoNode, DkifKontaktinfo.class);
         }
     }
 
