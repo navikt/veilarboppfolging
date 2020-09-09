@@ -220,8 +220,18 @@ public class OppfolgingService {
                 .map(ManuellStatus::isManuell)
                 .orElse(false);
 
-        DkifKontaktinfo dkifKontaktinfo = hentDkifInfoOgOppdaterManuellStatus(aktorId, fnr, erManuell, oppfolging.isUnderOppfolging());
-        boolean krr = dkifKontaktinfo.isReservert();
+        DkifKontaktinfo dkifKontaktinfo = dkifClient.hentKontaktInfo(fnr);
+
+        if (oppfolging.isUnderOppfolging() && !erManuell && dkifKontaktinfo.isReservert()) {
+            manuellStatusRepository.create(
+                    new ManuellStatus()
+                            .setAktorId(aktorId)
+                            .setManuell(true)
+                            .setDato(new Timestamp(currentTimeMillis()))
+                            .setBegrunnelse("Reservert og under oppfølging")
+                            .setOpprettetAv(SYSTEM)
+            );
+        }
 
         // TODO: Burde kanskje heller feile istedenfor å bruke Optional
         Optional<ArenaOppfolgingTilstand> maybeArenaOppfolging = arenaOppfolgingService.hentOppfolgingTilstand(fnr);
@@ -256,8 +266,8 @@ public class OppfolgingService {
                 .setVeilederId(oppfolging.getVeilederId())
                 .setUnderOppfolging(oppfolging.isUnderOppfolging())
                 .setUnderKvp(oppfolging.getGjeldendeKvp() != null)
-                .setReservasjonKRR(krr)
-                .setManuell(erManuell || krr)
+                .setReservasjonKRR(dkifKontaktinfo.isReservert())
+                .setManuell(erManuell || dkifKontaktinfo.isReservert())
                 .setKanStarteOppfolging(kanSettesUnderOppfolging)
                 .setAvslutningStatusData(avslutningStatusData)
                 .setGjeldendeEskaleringsvarsel(oppfolging.getGjeldendeEskaleringsvarsel())
@@ -503,39 +513,6 @@ public class OppfolgingService {
 
         oppfolgingsPeriodeRepository.avslutt(aktorId, veilederId, begrunnelse);
         kafkaProducerService.publiserOppfolgingAvsluttet(aktorId);
-    }
-
-    private DkifKontaktinfo hentDkifInfoOgOppdaterManuellStatus(String aktorId,
-                                                                String fnr,
-                                                                boolean erManuell,
-                                                                boolean erUnderOppfolging) {
-        DkifKontaktinfo kontaktinfo = new DkifKontaktinfo();
-        kontaktinfo.setPersonident(fnr);
-        kontaktinfo.setKanVarsles(true);
-        kontaktinfo.setReservert(false);
-
-        if (!erUnderOppfolging) {
-            return kontaktinfo;
-        }
-
-        try {
-            kontaktinfo = dkifClient.hentKontaktInfo(fnr);
-        } catch (Exception e) {
-            log.warn("Kall mot DKIF feilet, faller tilbake til default verdier", e);
-        }
-
-        if (!erManuell && kontaktinfo.isReservert()) {
-            manuellStatusRepository.create(
-                    new ManuellStatus()
-                            .setAktorId(aktorId)
-                            .setManuell(true)
-                            .setDato(new Timestamp(currentTimeMillis()))
-                            .setBegrunnelse("Reservert og under oppfølging")
-                            .setOpprettetAv(SYSTEM)
-            );
-        }
-
-        return kontaktinfo;
     }
 
 }
