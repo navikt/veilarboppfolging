@@ -350,7 +350,6 @@ public class OppfolgingService {
         return Optional.of(o);
     }
 
-    @Transactional
     public void startOppfolgingHvisIkkeAlleredeStartet(String aktorId) {
         startOppfolgingHvisIkkeAlleredeStartet(
                 Oppfolgingsbruker.builder()
@@ -512,6 +511,7 @@ public class OppfolgingService {
         try {
             kontaktinfo = dkifClient.hentKontaktInfo(fnr);
         } catch (Exception e) {
+            log.warn("Kall mot DKIF feilet, faller tilbake til default verdier", e);
             kontaktinfo = new DkifKontaktinfo();
             kontaktinfo.setPersonident(fnr);
             kontaktinfo.setKanVarsles(true);
