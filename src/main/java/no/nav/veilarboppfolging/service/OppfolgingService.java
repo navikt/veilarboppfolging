@@ -97,7 +97,13 @@ public class OppfolgingService {
 
         sjekkStatusIArenaOgOppdaterOppfolging(fnr);
 
-        return getOppfolgingStatusData(fnr, null);
+        log.info("Henter oppfolgingStatusData");
+
+        OppfolgingStatusData oppfolgingStatusData = getOppfolgingStatusData(fnr, null);
+
+        log.info("Returnerer oppfolgingStatusData");
+
+        return oppfolgingStatusData;
     }
 
     public OppfolgingStatusData hentAvslutningStatus(String fnr) {
@@ -233,6 +239,8 @@ public class OppfolgingService {
         long kvpId = kvpRepository.gjeldendeKvp(aktorId);
         boolean harSkrivetilgangTilBruker = !kvpService.erUnderKvp(kvpId) || authService.harTilgangTilEnhet(kvpRepository.fetch(kvpId).getEnhet());
 
+        log.info("Starter på utleding av informasjon");
+
         Boolean erInaktivIArena = maybeArenaOppfolging.map(ao -> erIserv(ao.getFormidlingsgruppe())).orElse(null);
 
         Optional<Boolean> maybeKanEnkeltReaktiveres = maybeArenaOppfolging.map(ArenaOppfolgingTilstand::getKanEnkeltReaktiveres);
@@ -249,6 +257,8 @@ public class OppfolgingService {
                 .map(ArenaOppfolgingTilstand::getInaktiveringsdato)
                 .map(d -> Date.from(d.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant()))
                 .orElse(null);
+
+        log.info("Ferdig utledet");
 
         return new OppfolgingStatusData()
                 .setFnr(fnr)
@@ -350,7 +360,6 @@ public class OppfolgingService {
         return Optional.of(o);
     }
 
-    @Transactional
     public void startOppfolgingHvisIkkeAlleredeStartet(String aktorId) {
         startOppfolgingHvisIkkeAlleredeStartet(
                 Oppfolgingsbruker.builder()
@@ -511,21 +520,23 @@ public class OppfolgingService {
 
         try {
             kontaktinfo = dkifClient.hentKontaktInfo(fnr);
-            if (!erManuell && kontaktinfo.isReservert()) {
-                manuellStatusRepository.create(
-                        new ManuellStatus()
-                                .setAktorId(aktorId)
-                                .setManuell(true)
-                                .setDato(new Timestamp(currentTimeMillis()))
-                                .setBegrunnelse("Reservert og under oppfølging")
-                                .setOpprettetAv(SYSTEM)
-                );
-            }
         } catch (Exception e) {
+            log.warn("Kall mot DKIF feilet, faller tilbake til default verdier", e);
             kontaktinfo = new DkifKontaktinfo();
             kontaktinfo.setPersonident(fnr);
             kontaktinfo.setKanVarsles(true);
             kontaktinfo.setReservert(false);
+        }
+
+        if (!erManuell && kontaktinfo.isReservert()) {
+            manuellStatusRepository.create(
+                    new ManuellStatus()
+                            .setAktorId(aktorId)
+                            .setManuell(true)
+                            .setDato(new Timestamp(currentTimeMillis()))
+                            .setBegrunnelse("Reservert og under oppfølging")
+                            .setOpprettetAv(SYSTEM)
+            );
         }
 
         return kontaktinfo;

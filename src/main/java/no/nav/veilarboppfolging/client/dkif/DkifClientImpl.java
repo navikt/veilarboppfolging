@@ -48,7 +48,7 @@ public class DkifClientImpl implements DkifClient {
             RestUtils.throwIfNotSuccessful(response);
             Optional<String> json = RestUtils.getBodyStr(response);
 
-            if (!json.isPresent()) {
+            if (json.isEmpty()) {
                 throw new IllegalStateException("Dkif body is missing");
             }
 

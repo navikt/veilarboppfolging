@@ -24,7 +24,8 @@ public class FilterConfig {
 
     private final List<String> ALLOWED_SERVICE_USERS = List.of(
             "srvveilarbportefolje", "srvveilarbdialog", "srvveilarbaktivitet",
-            "srvveilarbjobbsoke", "srvveilarbdirigent", "srvveilarbregistre"
+            "srvveilarbjobbsoke", "srvveilarbdirigent", "srvveilarbregistre",
+            "srvpam-cv-api"
     );
 
     private OidcAuthenticatorConfig openAmStsAuthConfig(EnvironmentProperties properties) {
