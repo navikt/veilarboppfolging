@@ -97,7 +97,13 @@ public class OppfolgingService {
 
         sjekkStatusIArenaOgOppdaterOppfolging(fnr);
 
-        return getOppfolgingStatusData(fnr, null);
+        log.info("Henter oppfolgingStatusData");
+
+        OppfolgingStatusData oppfolgingStatusData = getOppfolgingStatusData(fnr, null);
+
+        log.info("Returnerer oppfolgingStatusData");
+
+        return oppfolgingStatusData;
     }
 
     public OppfolgingStatusData hentAvslutningStatus(String fnr) {
@@ -233,6 +239,8 @@ public class OppfolgingService {
         long kvpId = kvpRepository.gjeldendeKvp(aktorId);
         boolean harSkrivetilgangTilBruker = !kvpService.erUnderKvp(kvpId) || authService.harTilgangTilEnhet(kvpRepository.fetch(kvpId).getEnhet());
 
+        log.info("Starter på utleding av informasjon");
+
         Boolean erInaktivIArena = maybeArenaOppfolging.map(ao -> erIserv(ao.getFormidlingsgruppe())).orElse(null);
 
         Optional<Boolean> maybeKanEnkeltReaktiveres = maybeArenaOppfolging.map(ArenaOppfolgingTilstand::getKanEnkeltReaktiveres);
@@ -249,6 +257,8 @@ public class OppfolgingService {
                 .map(ArenaOppfolgingTilstand::getInaktiveringsdato)
                 .map(d -> Date.from(d.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant()))
                 .orElse(null);
+
+        log.info("Ferdig utledet");
 
         return new OppfolgingStatusData()
                 .setFnr(fnr)
