@@ -102,7 +102,7 @@ public class OppfolgingController {
 
         if (authService.erEksternBruker()) {
             manuellStatusService.settDigitalBruker(fodselsnummer);
-            return tilDto(oppfolgingService.hentOppfolgingsStatus(fnr), authService.erInternBruker());
+            return tilDto(oppfolgingService.hentOppfolgingsStatus(fodselsnummer), authService.erInternBruker());
         }
 
         manuellStatusService.oppdaterManuellStatus(
@@ -110,7 +110,7 @@ public class OppfolgingController {
                 KodeverkBruker.NAV, hentBrukerInfo().getId()
         );
 
-        return tilDto(oppfolgingService.hentOppfolgingsStatus(fnr), authService.erInternBruker());
+        return tilDto(oppfolgingService.hentOppfolgingsStatus(fodselsnummer), authService.erInternBruker());
     }
 
     @GetMapping("/innstillingsHistorikk")
