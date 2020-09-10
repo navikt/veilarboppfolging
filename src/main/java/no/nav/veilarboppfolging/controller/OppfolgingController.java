@@ -6,8 +6,10 @@ import no.nav.veilarboppfolging.domain.KodeverkBruker;
 import no.nav.veilarboppfolging.domain.VeilederTilgang;
 import no.nav.veilarboppfolging.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -97,12 +99,17 @@ public class OppfolgingController {
 
     // TODO: Ikke returner OppfolgingStatus
     @PostMapping("/settDigital")
-    public OppfolgingStatus settTilDigital(@RequestBody VeilederBegrunnelseDTO dto, @RequestParam(value = "fnr", required = false) String fnr) {
+    public OppfolgingStatus settTilDigital(@RequestBody(required = false) VeilederBegrunnelseDTO dto, @RequestParam(value = "fnr", required = false) String fnr) {
         String fodselsnummer = authService.hentIdentForEksternEllerIntern(fnr);
 
         if (authService.erEksternBruker()) {
             manuellStatusService.settDigitalBruker(fodselsnummer);
             return tilDto(oppfolgingService.hentOppfolgingsStatus(fodselsnummer), authService.erInternBruker());
+        }
+
+        // Påkrevd for intern bruker
+        if (dto == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
 
         manuellStatusService.oppdaterManuellStatus(
