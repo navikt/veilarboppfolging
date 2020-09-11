@@ -40,7 +40,7 @@ public class SystemOppfolgingController {
             // veilarbregistrering må ha body i response som inneholder årsak til feil fra Arena
             return ResponseEntity
                     .status(FORBIDDEN)
-                    .body(new ArenaFeilDTO(exception.type));
+                    .body(new ArenaFeilDTO().setType(exception.type));
         }
 
         return ResponseEntity.status(204).build();
@@ -57,7 +57,7 @@ public class SystemOppfolgingController {
             // veilarbregistrering må ha body i response som inneholder årsak til feil fra Arena
              return ResponseEntity
                      .status(FORBIDDEN)
-                     .body(new ArenaFeilDTO(exception.type));
+                     .body(new ArenaFeilDTO().setType(exception.type));
         }
 
         return ResponseEntity.status(204).build();
