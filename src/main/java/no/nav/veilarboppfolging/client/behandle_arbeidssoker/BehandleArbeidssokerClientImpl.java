@@ -14,6 +14,9 @@ import org.apache.cxf.interceptor.LoggingOutInterceptor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
+import static no.nav.veilarboppfolging.client.behandle_arbeidssoker.ArenaFeilException.Type.*;
+
+
 /**
  * Klient for å behandle arbeidssøkere gjennom Arena.
  */
@@ -56,14 +59,12 @@ public class BehandleArbeidssokerClientImpl implements BehandleArbeidssokerClien
         } catch (Exception e) {
             log.warn("Klarte ikke å aktivere bruker i Arena: {}", e.getClass().getSimpleName(), e);
 
-            if (
-                    e instanceof AktiverBrukerBrukerFinnesIkke
-                    || e instanceof AktiverBrukerBrukerIkkeReaktivert
-                    || e instanceof AktiverBrukerBrukerKanIkkeAktiveres
-                    || e instanceof AktiverBrukerBrukerManglerArbeidstillatelse
-            ) {
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN);
-            } else if (e instanceof AktiverBrukerSikkerhetsbegrensning) {
+            ArenaFeilException.Type arenaFeilType = mapExceptionTilArenaFeilType(e);
+            if (arenaFeilType != null) {
+                throw new ArenaFeilException(arenaFeilType);
+            }
+
+            if (e instanceof AktiverBrukerSikkerhetsbegrensning) {
                 throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
             } else if (e instanceof AktiverBrukerUgyldigInput) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
@@ -85,20 +86,41 @@ public class BehandleArbeidssokerClientImpl implements BehandleArbeidssokerClien
         } catch (Exception e) {
             log.warn("Klarte ikke å reaktivere bruker i Arena: {}", e.getClass().getSimpleName(), e);
 
-            if (
-                    e instanceof ReaktiverBrukerForenkletBrukerFinnesIkke
-                    || e instanceof ReaktiverBrukerForenkletBrukerKanIkkeAktiveres
-                    || e instanceof ReaktiverBrukerForenkletBrukerKanIkkeReaktiveresForenklet
-                    || e instanceof ReaktiverBrukerForenkletBrukerManglerArbeidstillatelse
-            ) {
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN);
-            } else if (e instanceof ReaktiverBrukerForenkletSikkerhetsbegrensning) {
+            ArenaFeilException.Type arenaFeilType = mapExceptionTilArenaFeilType(e);
+            if (arenaFeilType != null) {
+                throw new ArenaFeilException(arenaFeilType);
+            }
+
+            if (e instanceof ReaktiverBrukerForenkletSikkerhetsbegrensning) {
                 throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
             } else if (e instanceof ReaktiverBrukerForenkletUgyldigInput) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
             }
 
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    private ArenaFeilException.Type mapExceptionTilArenaFeilType(Exception exception) {
+        if (exception instanceof AktiverBrukerBrukerFinnesIkke ||
+                exception instanceof ReaktiverBrukerForenkletBrukerFinnesIkke) {
+            return BRUKER_ER_UKJENT;
+        }
+        else if (exception instanceof AktiverBrukerBrukerIkkeReaktivert) {
+            return BRUKER_KAN_IKKE_REAKTIVERES;
+        }
+        else if (exception instanceof AktiverBrukerBrukerKanIkkeAktiveres ||
+                exception instanceof ReaktiverBrukerForenkletBrukerKanIkkeAktiveres) {
+            return BRUKER_ER_DOD_UTVANDRET_ELLER_FORSVUNNET;
+        }
+        else if (exception instanceof AktiverBrukerBrukerManglerArbeidstillatelse ||
+                exception instanceof ReaktiverBrukerForenkletBrukerManglerArbeidstillatelse) {
+            return BRUKER_MANGLER_ARBEIDSTILLATELSE;
+        }
+        else if (exception instanceof ReaktiverBrukerForenkletBrukerKanIkkeReaktiveresForenklet) {
+            return BRUKER_KAN_IKKE_REAKTIVERES_FORENKLET;
+        } else {
+            return null;
         }
     }
 
