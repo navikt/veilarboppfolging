@@ -23,16 +23,8 @@ public class YtelseskontraktClientImpl implements YtelseskontraktClient {
 
     private final YtelseskontraktV3 ytelseskontrakt;
 
-    private final YtelseskontraktV3 ytelseskontraktPing;
-
     public YtelseskontraktClientImpl(String ytelseskontraktV3Endpoint, StsConfig stsConfig) {
         ytelseskontrakt = new CXFClient<>(YtelseskontraktV3.class)
-                .withOutInterceptor(new LoggingOutInterceptor())
-                .configureStsForSubject(stsConfig)
-                .address(ytelseskontraktV3Endpoint)
-                .build();
-
-        ytelseskontraktPing = new CXFClient<>(YtelseskontraktV3.class)
                 .withOutInterceptor(new LoggingOutInterceptor())
                 .configureStsForSystemUser(stsConfig)
                 .address(ytelseskontraktV3Endpoint)
@@ -74,7 +66,7 @@ public class YtelseskontraktClientImpl implements YtelseskontraktClient {
     @Override
     public HealthCheckResult checkHealth() {
         try {
-            ytelseskontraktPing.ping();
+            ytelseskontrakt.ping();
             return HealthCheckResult.healthy();
         } catch (Exception e) {
             log.warn("Feil ved ping av YtelseskontraktV3", e);
