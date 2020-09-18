@@ -6,12 +6,12 @@ import no.nav.common.health.HealthCheckResult;
 import no.nav.common.health.HealthCheckUtils;
 import no.nav.common.rest.client.RestClient;
 import no.nav.common.rest.client.RestUtils;
-import no.nav.common.sts.SystemUserTokenProvider;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import static no.nav.common.utils.UrlUtils.joinPaths;
 import static org.springframework.http.HttpHeaders.ACCEPT;
@@ -23,13 +23,13 @@ public class VeilarbarenaClientImpl implements VeilarbarenaClient {
 
     private final String veilarbarenaUrl;
 
-    private final SystemUserTokenProvider systemUserTokenProvider;
+    private final Supplier<String> userTokenProvider;
 
     private final OkHttpClient client;
 
-    public VeilarbarenaClientImpl(String veilarbarenaUrl, SystemUserTokenProvider systemUserTokenProvider) {
+    public VeilarbarenaClientImpl(String veilarbarenaUrl, Supplier<String> userTokenProvider) {
         this.veilarbarenaUrl = veilarbarenaUrl;
-        this.systemUserTokenProvider = systemUserTokenProvider;
+        this.userTokenProvider = userTokenProvider;
         this.client = RestClient.baseClient();
     }
 
@@ -38,7 +38,7 @@ public class VeilarbarenaClientImpl implements VeilarbarenaClient {
         Request request = new Request.Builder()
                 .url(joinPaths(veilarbarenaUrl, "/api/oppfolgingsbruker/" + fnr))
                 .header(ACCEPT, APPLICATION_JSON_VALUE)
-                .header(AUTHORIZATION, "Bearer " + systemUserTokenProvider.getSystemUserToken())
+                .header(AUTHORIZATION, "Bearer " + userTokenProvider.get())
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
@@ -59,7 +59,7 @@ public class VeilarbarenaClientImpl implements VeilarbarenaClient {
         Request request = new Request.Builder()
                 .url(joinPaths(veilarbarenaUrl, "/api/oppfolgingsstatus/" + fnr))
                 .header(ACCEPT, APPLICATION_JSON_VALUE)
-                .header(AUTHORIZATION, "Bearer " + systemUserTokenProvider.getSystemUserToken())
+                .header(AUTHORIZATION, "Bearer " + userTokenProvider.get())
                 .build();
 
         try (Response response = client.newCall(request).execute()) {

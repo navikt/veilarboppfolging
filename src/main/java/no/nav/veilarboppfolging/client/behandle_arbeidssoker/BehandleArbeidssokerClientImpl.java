@@ -29,19 +29,11 @@ public class BehandleArbeidssokerClientImpl implements BehandleArbeidssokerClien
 
     private final BehandleArbeidssoekerV1 behandleArbeidssoeker;
 
-    private final BehandleArbeidssoekerV1 behandleArbeidssoekerPing;
-
     public BehandleArbeidssokerClientImpl(String behandleArbeidssoekerV1Endpoint, StsConfig stsConfig) {
         behandleArbeidssoeker = new CXFClient<>(BehandleArbeidssoekerV1.class)
                 .withOutInterceptor(new LoggingOutInterceptor())
                 .configureStsForSystemUser(stsConfig)
                 .timeout(CONNECTION_TIMEOUT, RECEIVE_TIMEOUT)
-                .address(behandleArbeidssoekerV1Endpoint)
-                .build();
-
-        behandleArbeidssoekerPing = new CXFClient<>(BehandleArbeidssoekerV1.class)
-                .withOutInterceptor(new LoggingOutInterceptor())
-                .configureStsForSystemUser(stsConfig)
                 .address(behandleArbeidssoekerV1Endpoint)
                 .build();
     }
@@ -127,7 +119,7 @@ public class BehandleArbeidssokerClientImpl implements BehandleArbeidssokerClien
     @Override
     public HealthCheckResult checkHealth() {
         try {
-            behandleArbeidssoekerPing.ping();
+            behandleArbeidssoeker.ping();
             return HealthCheckResult.healthy();
         } catch (Exception e) {
             log.warn("Feil ved ping av BehandleArbeidssoekerV1", e);

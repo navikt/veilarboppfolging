@@ -186,7 +186,7 @@ public class AuthService {
         return aktorregisterClient.hentFnr(aktorId);
     }
 
-    public static String getInnloggetBrukerToken() {
+    public String getInnloggetBrukerToken() {
         return SubjectHandler
                 .getSsoToken()
                 .map(SsoToken::getToken)

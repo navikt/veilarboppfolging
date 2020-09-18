@@ -2,6 +2,7 @@ package no.nav.veilarboppfolging.config;
 
 import no.nav.common.abac.Pep;
 import no.nav.common.featuretoggle.UnleashService;
+import no.nav.common.sts.OpenAmSystemUserTokenProvider;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.utils.Credentials;
 import no.nav.veilarboppfolging.feed.FeedConfig;
@@ -22,6 +23,9 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.sql.DataSource;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 @Configuration
 @EnableConfigurationProperties({EnvironmentProperties.class})
 @Import({
@@ -38,8 +42,15 @@ import javax.sql.DataSource;
 public class ApplicationTestConfig {
 
     @Bean
-    public SystemUserTokenProvider openAmSystemUserTokenProvider() {
-        return () -> "OPEN_AM_SYSTEM_USER_TOKEN";
+    public OpenAmSystemUserTokenProvider openAmSystemUserTokenProvider() {
+        OpenAmSystemUserTokenProvider mockProvider = mock(OpenAmSystemUserTokenProvider.class);
+        when(mockProvider.getSystemUserToken()).thenReturn("OPEN_AM_SYSTEM_USER_TOKEN");
+        return mockProvider;
+    }
+
+    @Bean
+    public SystemUserTokenProvider systemUserTokenProvider() {
+        return () -> "NAIS_SYSTEM_USER_TOKEN";
     }
 
     @Bean

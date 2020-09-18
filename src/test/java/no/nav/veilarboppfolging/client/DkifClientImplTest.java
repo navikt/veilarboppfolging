@@ -27,10 +27,11 @@ public class DkifClientImplTest {
     public void skal_hente_kontaktinfo() {
         String kodeverkJson = TestUtils.readTestResourceFile("dkif-kontaktinfo.json");
         String apiUrl = "http://localhost:" + wireMockRule.port();
-        DkifClient dkifClient = new DkifClientImpl(apiUrl);
+        DkifClient dkifClient = new DkifClientImpl(apiUrl, () -> "TOKEN");
 
         givenThat(get(anyUrl())
                 .withHeader("Nav-Personidenter", equalTo(TEST_FNR))
+                .withHeader("Authorization", equalTo("Bearer TOKEN"))
                 .willReturn(aResponse()
                         .withStatus(200)
                         .withBody(kodeverkJson))
