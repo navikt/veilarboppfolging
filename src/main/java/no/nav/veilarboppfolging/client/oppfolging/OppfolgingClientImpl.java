@@ -48,8 +48,8 @@ public class OppfolgingClientImpl implements OppfolgingClient {
             HentOppfoelgingskontraktListeResponse response = oppfoelgingPortType.hentOppfoelgingskontraktListe(request);
             return OppfolgingMapper.tilOppfolgingskontrakt(response);
         } catch (HentOppfoelgingskontraktListeSikkerhetsbegrensning hentOppfoelgingskontraktListeSikkerhetsbegrensning) {
-            log.warn("Veileder har ikke tilgang til å søke opp bruker", hentOppfoelgingskontraktListeSikkerhetsbegrensning);
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+            log.error("Systembruker har ikke tilgang til å søke opp bruker", hentOppfoelgingskontraktListeSikkerhetsbegrensning);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
