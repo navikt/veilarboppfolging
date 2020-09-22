@@ -6,11 +6,10 @@ import no.nav.veilarboppfolging.test.IsolatedDatabaseTest;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.sql.Timestamp;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import static java.lang.System.currentTimeMillis;
 import static no.nav.veilarboppfolging.domain.KodeverkBruker.NAV;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -155,10 +154,10 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
                 new ManuellStatus()
                         .setAktorId(AKTOR_ID)
                         .setManuell(true)
-                        .setDato(new Timestamp(currentTimeMillis()))
+                        .setDato(ZonedDateTime.now())
                         .setBegrunnelse("Test")
                         .setOpprettetAv(KodeverkBruker.SYSTEM));
-        maalRepository.opprett(new MalData().setAktorId(AKTOR_ID).setMal(maal).setEndretAv("bruker").setDato(new Timestamp(currentTimeMillis())));
+        maalRepository.opprett(new MalData().setAktorId(AKTOR_ID).setMal(maal).setEndretAv("bruker").setDato(ZonedDateTime.now()));
         Oppfolging oppfolging = hentOppfolging(AKTOR_ID).get();
         assertThat(oppfolging.isUnderOppfolging(), is(true));
         assertThat(oppfolging.getVeilederId(), equalTo(veilederId));
@@ -251,7 +250,7 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
                 .setAktorId(aktorId)
                 .setMal(mal)
                 .setEndretAv(aktorId)
-                .setDato(new Timestamp(System.currentTimeMillis()));
+                .setDato(ZonedDateTime.now());
         maalRepository.opprett(input);
     }
 

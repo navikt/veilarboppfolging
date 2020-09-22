@@ -13,6 +13,7 @@ import java.util.List;
 
 import static no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository.AKTOR_ID;
 import static no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository.GJELDENDE_MAL;
+import static no.nav.veilarboppfolging.utils.DbUtils.hentZonedDateTime;
 
 @Repository
 public class MaalRepository {
@@ -65,7 +66,7 @@ public class MaalRepository {
                 .setAktorId(result.getString("aktor_id"))
                 .setMal(result.getString("mal"))
                 .setEndretAv(result.getString("endret_av"))
-                .setDato(result.getTimestamp("dato"));
+                .setDato(hentZonedDateTime(result, "dato"));
     }
 
 }

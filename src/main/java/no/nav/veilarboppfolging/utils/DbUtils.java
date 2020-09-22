@@ -6,8 +6,8 @@ import org.springframework.jdbc.core.RowMapper;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.util.Date;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,10 +21,9 @@ public class DbUtils {
         return dataList.isEmpty() ? null : dataList.get(0);
     }
 
-    public static Date hentDato(ResultSet rs, String kolonneNavn) throws SQLException {
+    public static ZonedDateTime hentZonedDateTime(ResultSet rs, String kolonneNavn) throws SQLException {
         return Optional.ofNullable(rs.getTimestamp(kolonneNavn))
-                .map(Timestamp::getTime)
-                .map(Date::new)
+                .map(timestamp -> timestamp.toLocalDateTime().atZone(ZoneId.systemDefault()))
                 .orElse(null);
     }
 

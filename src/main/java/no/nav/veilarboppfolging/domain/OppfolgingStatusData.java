@@ -3,7 +3,11 @@ package no.nav.veilarboppfolging.domain;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
-import java.util.*;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 
 import static java.util.Comparator.naturalOrder;
 
@@ -26,7 +30,7 @@ public class OppfolgingStatusData {
     public boolean harSkriveTilgang;
     public Boolean inaktivIArena;
     public Boolean kanReaktiveres;
-    public Date inaktiveringsdato;
+    public LocalDate inaktiveringsdato;
     public Boolean erSykmeldtMedArbeidsgiver;
     public String servicegruppe;
     public String formidlingsgruppe;
@@ -35,7 +39,7 @@ public class OppfolgingStatusData {
     @Deprecated
     public Boolean erIkkeArbeidssokerUtenOppfolging;
 
-    public Date getOppfolgingUtgang() {
+    public ZonedDateTime getOppfolgingUtgang() {
         return oppfolgingsperioder.stream().map(Oppfolgingsperiode::getSluttDato).filter(Objects::nonNull).max(naturalOrder()).orElse(null);
     }
 

@@ -8,7 +8,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
-import static no.nav.veilarboppfolging.utils.DbUtils.hentDato;
+import static no.nav.veilarboppfolging.utils.DbUtils.hentZonedDateTime;
 
 @Repository
 public class VeilederHistorikkRepository {
@@ -35,7 +35,7 @@ public class VeilederHistorikkRepository {
     private static VeilederTilordningerData mapper(ResultSet resultSet, int rows) throws SQLException {
         return VeilederTilordningerData.builder()
                 .veileder(resultSet.getString("veileder"))
-                .sistTilordnet(hentDato(resultSet, "sist_tilordnet"))
+                .sistTilordnet(hentZonedDateTime(resultSet, "sist_tilordnet"))
                 .build();
     }
 }

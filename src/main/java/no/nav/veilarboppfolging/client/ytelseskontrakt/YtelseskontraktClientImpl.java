@@ -40,7 +40,7 @@ public class YtelseskontraktClientImpl implements YtelseskontraktClient {
                 .withPeriode(periode)
                 .withPersonidentifikator(personId);
 
-        return hentYtelseskontraktListe(request, personId);
+        return hentYtelseskontraktListe(request);
     }
 
     @Override
@@ -48,18 +48,16 @@ public class YtelseskontraktClientImpl implements YtelseskontraktClient {
         WSHentYtelseskontraktListeRequest request = new WSHentYtelseskontraktListeRequest()
                 .withPersonidentifikator(personId);
 
-        return hentYtelseskontraktListe(request, personId);
+        return hentYtelseskontraktListe(request);
     }
 
-    private YtelseskontraktResponse hentYtelseskontraktListe(WSHentYtelseskontraktListeRequest request, String personId) {
+    private YtelseskontraktResponse hentYtelseskontraktListe(WSHentYtelseskontraktListeRequest request) {
         try {
-            log.info("Sender request til Ytelseskontrakt_v3");
             WSHentYtelseskontraktListeResponse response = ytelseskontrakt.hentYtelseskontraktListe(request);
             return YtelseskontraktMapper.tilYtelseskontrakt(response);
         } catch (HentYtelseskontraktListeSikkerhetsbegrensning hentYtelseskontraktListeSikkerhetsbegrensning) {
-            String logMessage = "Veileder har ikke tilgang til å søke opp " + personId;
-            log.warn(logMessage, hentYtelseskontraktListeSikkerhetsbegrensning);
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+            log.error("Systembruker har ikke tilgang til å søke opp bruker", hentYtelseskontraktListeSikkerhetsbegrensning);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

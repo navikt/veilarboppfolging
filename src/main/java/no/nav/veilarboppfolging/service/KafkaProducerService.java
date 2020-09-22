@@ -5,7 +5,6 @@ import no.nav.veilarboppfolging.kafka.KafkaMessagePublisher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 
 @Service
@@ -40,7 +39,7 @@ public class KafkaProducerService {
     public void publiserOppfolgingAvsluttet(String aktorId) {
         OppfolgingAvsluttetKafkaDTO oppfolgingAvsluttetKafkaDTO = new OppfolgingAvsluttetKafkaDTO()
                 .setAktorId(aktorId)
-                .setSluttdato(LocalDateTime.now());
+                .setSluttdato(ZonedDateTime.now());
 
         kafkaMessagePublisher.publiserOppfolgingAvsluttet(oppfolgingAvsluttetKafkaDTO);
         kafkaMessagePublisher.publiserEndringPaAvsluttOppfolging(oppfolgingAvsluttetKafkaDTO);

@@ -15,7 +15,7 @@ import org.junit.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.Date;
+import java.time.ZonedDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -83,7 +83,7 @@ public class KvpControllerTest {
         return Kvp.builder()
                 .kvpId(KVP_ID)
                 .aktorId(AKTOR_ID)
-                .opprettetDato(new Date())
+                .opprettetDato(ZonedDateTime.now())
                 .enhet(ENHET_ID)
                 .build();
     }

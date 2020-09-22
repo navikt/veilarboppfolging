@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Value;
 import no.nav.veilarboppfolging.feed.cjm.common.FeedElement;
 
+import java.time.ZonedDateTime;
 import java.util.Date;
 
 @Value
@@ -13,7 +14,7 @@ public class NyeBrukereFeedDTO implements Comparable<NyeBrukereFeedDTO>{
     private String aktorId;
     private String foreslattInnsatsgruppe;
     private String sykmeldtBrukerType;
-    private Date opprettet;
+    private ZonedDateTime opprettet;
 
     @Override
     public int compareTo(NyeBrukereFeedDTO o) {
