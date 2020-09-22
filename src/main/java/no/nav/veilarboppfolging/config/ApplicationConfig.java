@@ -11,6 +11,7 @@ import no.nav.common.leaderelection.LeaderElectionHttpClient;
 import no.nav.common.metrics.InfluxClient;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.metrics.SensuConfig;
+import no.nav.common.sts.NaisSystemUserTokenProvider;
 import no.nav.common.sts.OpenAmSystemUserTokenProvider;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.utils.Credentials;
@@ -48,12 +49,18 @@ public class ApplicationConfig {
         return new LeaderElectionHttpClient();
     }
 
+    // TODO: Brukes kun av feedene, skal snart fjernes.
     @Bean
-    public SystemUserTokenProvider openAmSystemUserTokenProvider(EnvironmentProperties properties, Credentials serviceUserCredentials) {
+    public OpenAmSystemUserTokenProvider openAmSystemUserTokenProvider(EnvironmentProperties properties, Credentials serviceUserCredentials) {
         return new OpenAmSystemUserTokenProvider(
                 properties.getOpenAmDiscoveryUrl(), properties.getOpenAmRedirectUrl(),
                 new Credentials(properties.getOpenAmIssoRpUsername(), properties.getOpenAmIssoRpPassword()), serviceUserCredentials
         );
+    }
+
+    @Bean
+    public SystemUserTokenProvider systemUserTokenProvider(EnvironmentProperties properties, Credentials serviceUserCredentials) {
+        return new NaisSystemUserTokenProvider(properties.getNaisStsDiscoveryUrl(), serviceUserCredentials.username, serviceUserCredentials.password);
     }
 
     @Bean

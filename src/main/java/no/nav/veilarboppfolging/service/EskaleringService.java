@@ -44,8 +44,10 @@ public class EskaleringService {
 
     public void startEskalering(String fnr, String veilederId, String begrunnelse, long tilhorendeDialogId) {
         String aktorId = authService.getAktorIdOrThrow(fnr);
+        String oppfolgingsEnhet = hentOppfolgingsEnhet(fnr);
 
-        authService.sjekkTilgangTilPersonOgEnhet(fnr);
+        authService.sjekkLesetilgangMedAktorId(aktorId);
+        authService.sjekkTilgangTilEnhet(oppfolgingsEnhet);
 
         transactor.executeWithoutResult((status) -> {
             long gjeldendeEskaleringsvarselId = oppfolgingsStatusRepository.fetch(aktorId).getGjeldendeEskaleringsvarselId();
@@ -69,8 +71,10 @@ public class EskaleringService {
 
     public void stoppEskalering(String fnr, String veilederId, String begrunnelse) {
         String aktorId = authService.getAktorIdOrThrow(fnr);
+        String oppfolgingsEnhet = hentOppfolgingsEnhet(fnr);
 
-        authService.sjekkTilgangTilPersonOgEnhet(fnr);
+        authService.sjekkLesetilgangMedAktorId(aktorId);
+        authService.sjekkTilgangTilEnhet(oppfolgingsEnhet);
 
         long gjeldendeEskaleringsvarselId = oppfolgingsStatusRepository.fetch(aktorId).getGjeldendeEskaleringsvarselId();
 
@@ -89,6 +93,11 @@ public class EskaleringService {
         if (gjeldendeEskaleringsvarselId != 0) {
             eskaleringsvarselRepository.finish(aktorId, gjeldendeEskaleringsvarselId, veilederId, begrunnelse);
         }
+    }
+
+    private String hentOppfolgingsEnhet(String fnr) {
+        return arenaOppfolgingService.hentOppfolgingFraVeilarbarena(fnr)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR)).getNav_kontor();
     }
 
 }

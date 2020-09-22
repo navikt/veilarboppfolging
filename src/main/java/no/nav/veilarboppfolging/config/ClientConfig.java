@@ -35,9 +35,9 @@ import static no.nav.veilarboppfolging.config.ApplicationConfig.APPLICATION_NAME
 public class ClientConfig {
 
     @Bean
-    public AktorregisterClient aktorregisterClient(EnvironmentProperties properties, SystemUserTokenProvider tokenProvider) {
+    public AktorregisterClient aktorregisterClient(EnvironmentProperties properties, SystemUserTokenProvider systemUserTokenProvider) {
         AktorregisterClient aktorregisterClient = new AktorregisterHttpClient(
-                properties.getAktorregisterUrl(), APPLICATION_NAME, tokenProvider::getSystemUserToken
+                properties.getAktorregisterUrl(), APPLICATION_NAME, systemUserTokenProvider::getSystemUserToken
         );
         return new CachedAktorregisterClient(aktorregisterClient);
     }
@@ -53,8 +53,8 @@ public class ClientConfig {
     }
 
     @Bean
-    public DkifClient dkifClient() {
-        return new DkifClientImpl("http://dkif.default.svc.nais.local");
+    public DkifClient dkifClient(SystemUserTokenProvider systemUserTokenProvider) {
+        return new DkifClientImpl("http://dkif.default.svc.nais.local", systemUserTokenProvider);
     }
 
     @Bean
@@ -68,21 +68,21 @@ public class ClientConfig {
     }
 
     @Bean
-    public VeilarbaktivitetClient veilarbaktivitetClient(SystemUserTokenProvider openAmTokenProvider) {
+    public VeilarbaktivitetClient veilarbaktivitetClient(SystemUserTokenProvider systemUserTokenProvider) {
         String url = clusterUrlForApplication("veilarbaktivitet", true);
-        return new VeilarbaktivitetClientImpl(url, openAmTokenProvider);
+        return new VeilarbaktivitetClientImpl(url, systemUserTokenProvider);
     }
 
     @Bean
-    public VeilarbarenaClient veilarbarenaClient() {
+    public VeilarbarenaClient veilarbarenaClient(AuthService authService) {
         String url = clusterUrlForApplication("veilarbarena", true);
-        return new VeilarbarenaClientImpl(url, AuthService::getInnloggetBrukerToken);
+        return new VeilarbarenaClientImpl(url, authService::getInnloggetBrukerToken);
     }
 
     @Bean
-    public VeilarbportefoljeClient veilarbportefoljeClient(SystemUserTokenProvider openAmTokenProvider) {
+    public VeilarbportefoljeClient veilarbportefoljeClient(SystemUserTokenProvider systemUserTokenProvider) {
         String url = clusterUrlForApplication("veilarbportefolje", true);
-        return new VeilarbportefoljeClientImpl(url, openAmTokenProvider);
+        return new VeilarbportefoljeClientImpl(url, systemUserTokenProvider);
     }
 
     @Bean

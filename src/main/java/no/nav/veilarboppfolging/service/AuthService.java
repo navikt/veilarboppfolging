@@ -14,7 +14,6 @@ import no.nav.common.abac.domain.response.XacmlResponse;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.client.aktorregister.AktorregisterClient;
 import no.nav.common.utils.Credentials;
-import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -28,8 +27,6 @@ import static no.nav.common.abac.XacmlRequestBuilder.personIdAttribute;
 @Service
 public class AuthService {
 
-    private final ArenaOppfolgingService arenaOppfolgingService;
-
     private final Pep veilarbPep;
 
     private final AktorregisterClient aktorregisterClient;
@@ -37,8 +34,7 @@ public class AuthService {
     private final Credentials serviceUserCredentials;
 
     @Autowired
-    public AuthService(ArenaOppfolgingService arenaOppfolgingService, Pep veilarbPep, AktorregisterClient aktorregisterClient, Credentials serviceUserCredentials) {
-        this.arenaOppfolgingService = arenaOppfolgingService;
+    public AuthService(Pep veilarbPep, AktorregisterClient aktorregisterClient, Credentials serviceUserCredentials) {
         this.veilarbPep = veilarbPep;
         this.aktorregisterClient = aktorregisterClient;
         this.serviceUserCredentials = serviceUserCredentials;
@@ -105,15 +101,6 @@ public class AuthService {
         if (!harTilgangTilEnhet(enhetId)) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         }
-    }
-
-    public void sjekkTilgangTilPersonOgEnhet(String fnr) {
-        sjekkLesetilgangMedFnr(fnr);
-
-        VeilarbArenaOppfolging oppfolgingTilstand = arenaOppfolgingService.hentOppfolgingFraVeilarbarena(fnr)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR));
-
-        sjekkTilgangTilEnhet(oppfolgingTilstand.getNav_kontor());
     }
 
     public void sjekkTilgangTilPersonMedNiva3(String aktorId) {
