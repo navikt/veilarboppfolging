@@ -314,12 +314,8 @@ public class VeilederTilordningServiceTest {
     }
 
     private Callable<TilordneVeilederResponse> portefoljeRessursCallable(VeilederTilordningService veilederTilordningService, List<VeilederTilordning> tilordninger) {
-        var context = new AuthContext(
-                UserRole.INTERN,
-                null
-        );
-
-        return () -> AuthContextHolder.withContext(context, () -> veilederTilordningService.tilordneVeiledere(tilordninger));
+        AuthContext authContext = AuthTestUtils.createAuthContext(UserRole.INTERN, "veileder");
+        return () -> AuthContextHolder.withContext(authContext, () -> veilederTilordningService.tilordneVeiledere(tilordninger));
     }
 
     @Test

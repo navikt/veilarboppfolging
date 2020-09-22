@@ -8,6 +8,7 @@ import no.nav.common.client.norg2.Norg2Client;
 import no.nav.common.health.HealthCheckResult;
 import no.nav.common.metrics.Event;
 import no.nav.common.metrics.MetricsClient;
+import no.nav.common.types.identer.AktorId;
 import no.nav.veilarboppfolging.client.behandle_arbeidssoker.BehandleArbeidssokerClient;
 import no.nav.veilarboppfolging.client.dkif.DkifClient;
 import no.nav.veilarboppfolging.client.dkif.DkifKontaktinfo;
@@ -66,27 +67,27 @@ public class ClientTestConfig {
     public AktorregisterClient aktorregisterClient() {
         return new AktorregisterClient() {
             @Override
-            public String hentFnr(String aktorId) {
+            public no.nav.common.types.identer.Fnr hentFnr(AktorId aktorId) {
                 return null;
             }
 
             @Override
-            public String hentAktorId(String fnr) {
+            public AktorId hentAktorId(no.nav.common.types.identer.Fnr fnr) {
                 return null;
             }
 
             @Override
-            public List<IdentOppslag> hentFnr(List<String> aktorIdListe) {
+            public List<IdentOppslag> hentFnr(List<AktorId> list) {
                 return null;
             }
 
             @Override
-            public List<IdentOppslag> hentAktorId(List<String> fnrListe) {
+            public List<IdentOppslag> hentAktorId(List<no.nav.common.types.identer.Fnr> list) {
                 return null;
             }
 
             @Override
-            public List<String> hentAktorIder(String s) {
+            public List<AktorId> hentAktorIder(no.nav.common.types.identer.Fnr fnr) {
                 return null;
             }
 

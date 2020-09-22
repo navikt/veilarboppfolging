@@ -7,12 +7,15 @@ import no.nav.common.abac.XacmlResponseParser;
 import no.nav.common.abac.constants.AbacDomain;
 import no.nav.common.abac.constants.NavAttributter;
 import no.nav.common.abac.constants.StandardAttributter;
-import no.nav.common.abac.domain.AbacPersonId;
 import no.nav.common.abac.domain.Attribute;
 import no.nav.common.abac.domain.request.*;
 import no.nav.common.abac.domain.response.XacmlResponse;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.client.aktorregister.AktorregisterClient;
+import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.EnhetId;
+import no.nav.common.types.identer.Fnr;
+import no.nav.common.types.identer.NavIdent;
 import no.nav.common.utils.Credentials;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -69,12 +72,11 @@ public class AuthService {
         //  til enheter som ikke finnes (f.eks. tom streng)
         //  Ved å konvertere null til tom streng muliggjør vi å spørre om tilgang til enhet for brukere som
         //  ikke har enhet. Sluttbrukere da få permit mens veiledere vil få deny.
-        return veilarbPep.harTilgangTilEnhet(getInnloggetBrukerToken(), ofNullable(enhetId).orElse(""));
+        return veilarbPep.harTilgangTilEnhet(getInnloggetBrukerToken(), ofNullable(enhetId).map(EnhetId::of).orElse(EnhetId.of("")));
     }
 
     public boolean harVeilederSkriveTilgangTilFnr(String veilederId, String fnr) {
-        AbacPersonId personId = AbacPersonId.aktorId(getAktorIdOrThrow(fnr));
-        return veilarbPep.harVeilederTilgangTilPerson(veilederId, ActionId.WRITE, personId);
+        return veilarbPep.harVeilederTilgangTilPerson(NavIdent.of(veilederId), ActionId.WRITE, AktorId.of(getAktorIdOrThrow(fnr)));
     }
 
     public void sjekkLesetilgangMedFnr(String fnr) {
@@ -82,7 +84,7 @@ public class AuthService {
     }
 
     public void sjekkLesetilgangMedAktorId(String aktorId) {
-        if (!veilarbPep.harTilgangTilPerson(getInnloggetBrukerToken(), ActionId.READ, AbacPersonId.aktorId(aktorId))) {
+        if (!veilarbPep.harTilgangTilPerson(getInnloggetBrukerToken(), ActionId.READ, AktorId.of(aktorId))) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
     }
@@ -92,7 +94,7 @@ public class AuthService {
     }
 
     public void sjekkSkrivetilgangMedAktorId(String aktorId) {
-        if (!veilarbPep.harTilgangTilPerson(getInnloggetBrukerToken(), ActionId.WRITE, AbacPersonId.aktorId(aktorId))) {
+        if (!veilarbPep.harTilgangTilPerson(getInnloggetBrukerToken(), ActionId.WRITE, AktorId.of(aktorId))) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
     }
@@ -124,7 +126,7 @@ public class AuthService {
         Resource resource = new Resource();
         resource.getAttribute().add(new Attribute(NavAttributter.RESOURCE_FELLES_RESOURCE_TYPE, NavAttributter.RESOURCE_VEILARB_UNDER_OPPFOLGING));
         resource.getAttribute().add(new Attribute(NavAttributter.RESOURCE_FELLES_DOMENE, AbacDomain.VEILARB_DOMAIN));
-        resource.getAttribute().add(personIdAttribute(AbacPersonId.aktorId(aktorId)));
+        resource.getAttribute().add(personIdAttribute(AktorId.of(aktorId)));
 
         Request request = new Request()
                 .withEnvironment(environment)
@@ -156,11 +158,11 @@ public class AuthService {
     }
 
     public String getAktorIdOrThrow(String fnr) {
-        return aktorregisterClient.hentAktorId(fnr);
+        return aktorregisterClient.hentAktorId(Fnr.of(fnr)).get();
     }
 
     public String getFnrOrThrow(String aktorId) {
-        return aktorregisterClient.hentFnr(aktorId);
+        return aktorregisterClient.hentFnr(AktorId.of(aktorId)).get();
     }
 
     public String getInnloggetBrukerToken() {

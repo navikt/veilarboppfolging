@@ -1,6 +1,7 @@
 package no.nav.veilarboppfolging.service;
 
 import no.nav.common.client.aktorregister.AktorregisterClient;
+import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
 import no.nav.veilarboppfolging.domain.ArenaOppfolgingTilstand;
@@ -40,7 +41,7 @@ public class ArenaOppfolgingService {
     }
 
     public Optional<ArenaOppfolgingTilstand> hentOppfolgingTilstand(String fnr) {
-        String aktorId = aktorregisterClient.hentAktorId(fnr);
+        String aktorId = aktorregisterClient.hentAktorId(Fnr.of(fnr)).get();
 
         Optional<ArenaOppfolgingTilstand> maybeArenaOppfolging = veilarbarenaClient.hentOppfolgingsbruker(fnr)
                 .map(ArenaOppfolgingTilstand::fraArenaBruker);
