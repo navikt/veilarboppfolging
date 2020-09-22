@@ -11,9 +11,7 @@ import no.nav.common.abac.domain.AbacPersonId;
 import no.nav.common.abac.domain.Attribute;
 import no.nav.common.abac.domain.request.*;
 import no.nav.common.abac.domain.response.XacmlResponse;
-import no.nav.common.auth.subject.IdentType;
-import no.nav.common.auth.subject.SsoToken;
-import no.nav.common.auth.subject.SubjectHandler;
+import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.client.aktorregister.AktorregisterClient;
 import no.nav.common.utils.Credentials;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
@@ -22,7 +20,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
 import static no.nav.common.abac.XacmlRequestBuilder.lagEnvironment;
 import static no.nav.common.abac.XacmlRequestBuilder.personIdAttribute;
@@ -47,35 +44,28 @@ public class AuthService {
         this.serviceUserCredentials = serviceUserCredentials;
     }
 
-    private void skalVere(IdentType forventetIdentType) {
-        IdentType identType = SubjectHandler.getIdentType().orElse(null);
-        if (identType != forventetIdentType) {
-            log.warn(format("Forventet bruker av type %s, men fikk %s", identType, forventetIdentType));
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
-        }
-    }
-
     public void skalVereInternBruker() {
-        skalVere(IdentType.InternBruker);
+        if (!AuthContextHolder.erInternBruker()){
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Ugyldig bruker type");
+        };
     }
 
     public void skalVereSystemBruker() {
-        skalVere(IdentType.Systemressurs);
+        if (!AuthContextHolder.erSystemBruker()){
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Ugyldig bruker type");
+        };
     }
 
     public boolean erInternBruker() {
-        IdentType identType = SubjectHandler.getIdentType().orElse(null);
-        return IdentType.InternBruker.equals(identType);
+        return AuthContextHolder.erInternBruker();
     }
 
     public boolean erSystemBruker() {
-        IdentType identType = SubjectHandler.getIdentType().orElse(null);
-        return IdentType.Systemressurs.equals(identType);
+        return AuthContextHolder.erSystemBruker();
     }
 
     public boolean erEksternBruker() {
-        IdentType identType = SubjectHandler.getIdentType().orElse(null);
-        return IdentType.EksternBruker.equals(identType);
+        return AuthContextHolder.erEksternBruker();
     }
 
     public boolean harTilgangTilEnhet(String enhetId) {
@@ -187,17 +177,12 @@ public class AuthService {
     }
 
     public static String getInnloggetBrukerToken() {
-        return SubjectHandler
-                .getSsoToken()
-                .map(SsoToken::getToken)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Fant ikke token for innlogget bruker"));
+        return AuthContextHolder.getIdTokenString().orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Fant ikke token for innlogget bruker"));
     }
 
     // NAV ident, fnr eller annen ID
     public String getInnloggetBrukerIdent() {
-        return SubjectHandler
-                .getIdent()
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Fant ikke ident for innlogget bruker"));
+        return AuthContextHolder.getSubject().orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "NAV ident is missing"));
     }
 
     public String getInnloggetVeilederIdent() {
@@ -206,5 +191,4 @@ public class AuthService {
         }
         return getInnloggetBrukerIdent();
     }
-
 }

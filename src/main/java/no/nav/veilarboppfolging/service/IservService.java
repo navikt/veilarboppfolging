@@ -1,9 +1,10 @@
 package no.nav.veilarboppfolging.service;
 
+import com.nimbusds.jwt.JWTParser;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.auth.subject.IdentType;
-import no.nav.common.auth.subject.SsoToken;
-import no.nav.common.auth.subject.Subject;
+import no.nav.common.auth.context.AuthContext;
+import no.nav.common.auth.context.AuthContextHolder;
+import no.nav.common.auth.context.UserRole;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.utils.Credentials;
 import no.nav.veilarboppfolging.domain.IservMapper;
@@ -15,11 +16,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import static java.util.stream.Collectors.toList;
-import static no.nav.common.auth.subject.SubjectHandler.withSubject;
 import static no.nav.veilarboppfolging.service.IservService.AvslutteOppfolgingResultat.*;
 import static no.nav.veilarboppfolging.utils.ArenaUtils.erIserv;
 import static no.nav.veilarboppfolging.utils.ArenaUtils.erUnderOppfolging;
@@ -104,17 +103,17 @@ public class IservService {
             List<IservMapper> iservert28DagerBrukere = utmeldingRepository.finnBrukereMedIservI28Dager();
             log.info("Fant {} brukere som har vært ISERV mer enn 28 dager", iservert28DagerBrukere.size());
 
-            Subject subject = new Subject(
-                    serviceUserCredentials.username,
-                    IdentType.Systemressurs,
-                    SsoToken.oidcToken(systemUserTokenProvider.getSystemUserToken(), Collections.emptyMap())
+
+            var context = new AuthContext(
+                    UserRole.SYSTEM,
+                    JWTParser.parse(systemUserTokenProvider.getSystemUserToken())
+            );
+            AuthContextHolder.withContext(context, () ->
+                    resultater.addAll(iservert28DagerBrukere.stream()
+                            .map(iservMapper -> avslutteOppfolging(iservMapper.aktor_Id))
+                            .collect(toList()))
             );
 
-            withSubject(subject, () -> {
-                resultater.addAll(iservert28DagerBrukere.stream()
-                        .map(iservMapper -> avslutteOppfolging(iservMapper.aktor_Id))
-                        .collect(toList()));
-            });
         } catch (Exception e) {
             log.error("Feil ved automatisk avslutning av brukere", e);
         }

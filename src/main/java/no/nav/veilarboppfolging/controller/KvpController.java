@@ -3,7 +3,7 @@ package no.nav.veilarboppfolging.controller;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import no.nav.common.auth.subject.SubjectHandler;
+import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.veilarboppfolging.controller.domain.KvpDTO;
 import no.nav.veilarboppfolging.domain.Kvp;
 import no.nav.veilarboppfolging.repository.KvpRepository;
@@ -70,7 +70,7 @@ public class KvpController {
     }
 
     private boolean isRequestAuthorized() {
-        String username = SubjectHandler.getIdent().orElse("").toLowerCase();
+        String username = AuthContextHolder.getSubject().orElse("").toLowerCase();
         return authService.erSystemBruker() && allowedUsers.contains(username);
     }
 }

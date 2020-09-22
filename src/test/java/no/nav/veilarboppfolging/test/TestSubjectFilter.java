@@ -1,25 +1,20 @@
 package no.nav.veilarboppfolging.test;
 
-import no.nav.common.auth.subject.IdentType;
-import no.nav.common.auth.subject.SsoToken;
-import no.nav.common.auth.subject.Subject;
-import no.nav.common.auth.subject.SubjectHandler;
+import no.nav.common.auth.context.AuthContext;
+import no.nav.common.auth.context.AuthContextHolder;
+import no.nav.common.auth.context.UserRole;
+import no.nav.common.test.auth.AuthTestUtils;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
-import java.util.Collections;
-
-import static no.nav.veilarboppfolging.test.TestData.TEST_VEILEDER_IDENT;
 
 public class TestSubjectFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) {
-        SsoToken ssoToken = SsoToken.oidcToken("veileder_test_token", Collections.EMPTY_MAP);
-        Subject testSubject = new Subject(TEST_VEILEDER_IDENT, IdentType.InternBruker, ssoToken);
-        SubjectHandler.withSubject(testSubject, () -> filterChain.doFilter(servletRequest, servletResponse));
+        AuthContextHolder.withContext(AuthTestUtils.createAuthContext(UserRole.INTERN, "uid"), () -> filterChain.doFilter(servletRequest, servletResponse));
     }
 
 }
