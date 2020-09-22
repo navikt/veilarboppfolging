@@ -9,7 +9,7 @@ import java.time.ZonedDateTime;
 import java.util.Optional;
 
 /**
- * Felles struktur for data som kan hentes både fra Arena() og veilarbarena
+ * Felles struktur for data som kan hentes både fra Arena og veilarbarena
  */
 @Value
 public class ArenaOppfolgingTilstand {

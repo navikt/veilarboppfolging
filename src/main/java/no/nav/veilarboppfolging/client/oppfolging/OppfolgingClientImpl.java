@@ -27,8 +27,16 @@ public class OppfolgingClientImpl implements OppfolgingClient {
 
     private final OppfoelgingPortType oppfoelgingPortType;
 
+    private final OppfoelgingPortType oppfoelgingPortTypePing;
+
     public OppfolgingClientImpl(String virksomhetOppfolgingV1Endpoint, StsConfig stsConfig) {
         oppfoelgingPortType = new CXFClient<>(OppfoelgingPortType.class)
+                .withOutInterceptor(new LoggingOutInterceptor())
+                .configureStsForSubject(stsConfig)
+                .address(virksomhetOppfolgingV1Endpoint)
+                .build();
+
+        oppfoelgingPortTypePing = new CXFClient<>(OppfoelgingPortType.class)
                 .withOutInterceptor(new LoggingOutInterceptor())
                 .configureStsForSystemUser(stsConfig)
                 .address(virksomhetOppfolgingV1Endpoint)
@@ -48,8 +56,8 @@ public class OppfolgingClientImpl implements OppfolgingClient {
             HentOppfoelgingskontraktListeResponse response = oppfoelgingPortType.hentOppfoelgingskontraktListe(request);
             return OppfolgingMapper.tilOppfolgingskontrakt(response);
         } catch (HentOppfoelgingskontraktListeSikkerhetsbegrensning hentOppfoelgingskontraktListeSikkerhetsbegrensning) {
-            log.error("Systembruker har ikke tilgang til å søke opp bruker", hentOppfoelgingskontraktListeSikkerhetsbegrensning);
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
+            log.error("Veileder har ikke tilgang til å søke opp bruker", hentOppfoelgingskontraktListeSikkerhetsbegrensning);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
     }
 
@@ -65,7 +73,7 @@ public class OppfolgingClientImpl implements OppfolgingClient {
     @Override
     public HealthCheckResult checkHealth() {
         try {
-            oppfoelgingPortType.ping();
+            oppfoelgingPortTypePing.ping();
             return HealthCheckResult.healthy();
         } catch (Exception e) {
             log.warn("Feil ved ping av OppfoelgingV1", e);
