@@ -3,13 +3,13 @@ package no.nav.veilarboppfolging.domain;
 import lombok.Builder;
 import lombok.Value;
 
-import java.util.Date;
+import java.time.ZonedDateTime;
 
 @Value
 @Builder
 public class InnstillingsHistorikk {
     private Type type;
-    private Date dato;
+    private ZonedDateTime dato;
     private String begrunnelse;
     private KodeverkBruker opprettetAv;
     private String opprettetAvBrukerId;

@@ -3,6 +3,7 @@ package no.nav.veilarboppfolging.repository;
 
 import lombok.SneakyThrows;
 import no.nav.veilarboppfolging.domain.Tilordning;
+import no.nav.veilarboppfolging.utils.DbUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -63,7 +64,7 @@ public class VeilederTilordningerRepository {
                 .setOppfolging(resultSet.getBoolean(UNDER_OPPFOLGING))
                 .setVeilederId(resultSet.getString(VEILEDER))
                 .setNyForVeileder(resultSet.getBoolean(NY_FOR_VEILEDER))
-                .setSistTilordnet(resultSet.getDate(SIST_TILORDNET))
-                .setSistOppdatert(resultSet.getDate(OPPDATERT));
+                .setSistTilordnet(DbUtils.hentZonedDateTime(resultSet, SIST_TILORDNET))
+                .setSistOppdatert(DbUtils.hentZonedDateTime(resultSet, OPPDATERT));
     }
 }

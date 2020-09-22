@@ -14,16 +14,13 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import java.sql.Timestamp;
-import java.time.Instant;
-import java.time.OffsetDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 import static java.time.temporal.ChronoUnit.DAYS;
 import static java.time.temporal.ChronoUnit.HOURS;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
-import static java.util.Date.from;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
@@ -65,12 +62,12 @@ public class HistorikkServiceTest {
     private static final String AKTOR_ID = "aktorId";
     private static final String ENHET = "enhet";
 
-    private static final Instant BEFORE_KVP = OffsetDateTime.now().toInstant();
-    private static final Instant ALSO_BEFORE_KVP = BEFORE_KVP.plus(1, HOURS);
-    private static final Instant KVP_START = BEFORE_KVP.plus(1, DAYS);
-    private static final Instant IN_KVP = BEFORE_KVP.plus(2, DAYS);
-    private static final Instant KVP_STOP = BEFORE_KVP.plus(3, DAYS);
-    private static final Instant AFTER_KVP = BEFORE_KVP.plus(4, DAYS);
+    private static final ZonedDateTime BEFORE_KVP = ZonedDateTime.now();
+    private static final ZonedDateTime ALSO_BEFORE_KVP = BEFORE_KVP.plus(1, HOURS);
+    private static final ZonedDateTime KVP_START = BEFORE_KVP.plus(1, DAYS);
+    private static final ZonedDateTime IN_KVP = BEFORE_KVP.plus(2, DAYS);
+    private static final ZonedDateTime KVP_STOP = BEFORE_KVP.plus(3, DAYS);
+    private static final ZonedDateTime AFTER_KVP = BEFORE_KVP.plus(4, DAYS);
 
 
     @Before
@@ -109,25 +106,25 @@ public class HistorikkServiceTest {
                 EskaleringsvarselData.builder()
                         .aktorId(AKTOR_ID)
                         .varselId(1L)
-                        .opprettetDato(from(BEFORE_KVP))
+                        .opprettetDato(BEFORE_KVP)
                         .opprettetBegrunnelse("OUTSIDE_KVP")
-                        .avsluttetDato(from(ALSO_BEFORE_KVP))
+                        .avsluttetDato(ALSO_BEFORE_KVP)
                         .avsluttetBegrunnelse("OUTSIDE_KVP")
                         .build(),
                 EskaleringsvarselData.builder()
                         .aktorId(AKTOR_ID)
                         .varselId(2L)
-                        .opprettetDato(from(BEFORE_KVP))
+                        .opprettetDato(BEFORE_KVP)
                         .opprettetBegrunnelse("OUTSIDE_KVP")
-                        .avsluttetDato(from(IN_KVP))
+                        .avsluttetDato(IN_KVP)
                         .avsluttetBegrunnelse("IN_KVP")
                         .build(),
                 EskaleringsvarselData.builder()
                         .aktorId(AKTOR_ID)
                         .varselId(3L)
-                        .opprettetDato(from(IN_KVP))
+                        .opprettetDato(IN_KVP)
                         .opprettetBegrunnelse("IN_KVP")
-                        .avsluttetDato(from(AFTER_KVP))
+                        .avsluttetDato(AFTER_KVP)
                         .avsluttetBegrunnelse("OUTSIDE_KVP")
                         .build()
         );
@@ -139,32 +136,32 @@ public class HistorikkServiceTest {
         List<ManuellStatus> manuellStatus = asList(
                 new ManuellStatus()
                         .setAktorId(AKTOR_ID)
-                        .setDato(Timestamp.from(BEFORE_KVP))
+                        .setDato(BEFORE_KVP)
                         .setBegrunnelse("OUTSIDE_KVP")
                         .setManuell(true),
                 new ManuellStatus()
                         .setAktorId(AKTOR_ID)
-                        .setDato(Timestamp.from(BEFORE_KVP))
+                        .setDato(BEFORE_KVP)
                         .setBegrunnelse("OUTSIDE_KVP")
                         .setManuell(false),
                 new ManuellStatus()
                         .setAktorId(AKTOR_ID)
-                        .setDato(Timestamp.from(IN_KVP))
+                        .setDato(IN_KVP)
                         .setBegrunnelse("IN_KVP")
                         .setManuell(true),
                 new ManuellStatus()
                         .setAktorId(AKTOR_ID)
-                        .setDato(Timestamp.from(IN_KVP))
+                        .setDato(IN_KVP)
                         .setBegrunnelse("IN_KVP")
                         .setManuell(false),
                 new ManuellStatus()
                         .setAktorId(AKTOR_ID)
-                        .setDato(Timestamp.from(AFTER_KVP))
+                        .setDato(AFTER_KVP)
                         .setBegrunnelse("OUTSIDE_KVP")
                         .setManuell(true),
                 new ManuellStatus()
                         .setAktorId(AKTOR_ID)
-                        .setDato(Timestamp.from(AFTER_KVP))
+                        .setDato(AFTER_KVP)
                         .setBegrunnelse("OUTSIDE_KVP")
                         .setManuell(false)
         );
@@ -177,9 +174,9 @@ public class HistorikkServiceTest {
                 Kvp.builder()
                         .aktorId(AKTOR_ID)
                         .kvpId(1L)
-                        .opprettetDato(from(KVP_START))
+                        .opprettetDato(KVP_START)
                         .opprettetBegrunnelse("IN_KVP")
-                        .avsluttetDato(from(KVP_STOP))
+                        .avsluttetDato(KVP_STOP)
                         .avsluttetBegrunnelse("IN_KVP")
                         .enhet(ENHET)
                         .build()

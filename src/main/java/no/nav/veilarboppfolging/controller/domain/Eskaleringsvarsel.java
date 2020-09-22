@@ -4,7 +4,7 @@ import lombok.Builder;
 import lombok.Value;
 import lombok.experimental.Wither;
 
-import java.util.Date;
+import java.time.ZonedDateTime;
 
 @Value
 @Builder
@@ -14,8 +14,8 @@ public class Eskaleringsvarsel {
     private long varselId;
     private String aktorId;
     private String opprettetAv;
-    private Date opprettetDato;
-    private Date avsluttetDato;
+    private ZonedDateTime opprettetDato;
+    private ZonedDateTime avsluttetDato;
     private long tilhorendeDialogId;
 
 }

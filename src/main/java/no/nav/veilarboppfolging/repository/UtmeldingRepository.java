@@ -4,6 +4,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarboppfolging.domain.IservMapper;
 import no.nav.veilarboppfolging.domain.kafka.VeilarbArenaOppfolgingEndret;
+import no.nav.veilarboppfolging.utils.DbUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -12,7 +13,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.List;
 
 import static no.nav.veilarboppfolging.utils.DbUtils.firstOrNull;
@@ -75,7 +75,7 @@ public class UtmeldingRepository {
     private static IservMapper mapper(ResultSet resultSet, int row) throws SQLException {
         return new IservMapper(
                 resultSet.getString("aktor_id"),
-                resultSet.getTimestamp("iserv_fra_dato").toLocalDateTime().atZone(ZoneId.systemDefault())
+                DbUtils.hentZonedDateTime(resultSet, "iserv_fra_dato")
         );
     }
 

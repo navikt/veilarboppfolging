@@ -3,11 +3,11 @@ package no.nav.veilarboppfolging.domain;
 import lombok.Builder;
 import lombok.Value;
 
-import java.util.Date;
+import java.time.ZonedDateTime;
 
 @Value
 @Builder
 public class OppfolgingsenhetEndringData {
     private String enhet;
-    private Date endretDato;
+    private ZonedDateTime endretDato;
 }

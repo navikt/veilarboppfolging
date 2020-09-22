@@ -14,7 +14,7 @@ import java.util.List;
 
 import static no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository.AKTOR_ID;
 import static no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository.UNDER_OPPFOLGING;
-import static no.nav.veilarboppfolging.utils.DbUtils.hentDato;
+import static no.nav.veilarboppfolging.utils.DbUtils.hentZonedDateTime;
 
 @Repository
 public class OppfolgingsPeriodeRepository {
@@ -119,8 +119,8 @@ public class OppfolgingsPeriodeRepository {
         return Oppfolgingsperiode.builder()
                 .aktorId(result.getString("aktor_id"))
                 .veileder(result.getString("avslutt_veileder"))
-                .startDato(hentDato(result, "startdato"))
-                .sluttDato(hentDato(result, "sluttdato"))
+                .startDato(hentZonedDateTime(result, "startdato"))
+                .sluttDato(hentZonedDateTime(result, "sluttdato"))
                 .begrunnelse(result.getString("avslutt_begrunnelse"))
                 .build();
     }
@@ -128,8 +128,8 @@ public class OppfolgingsPeriodeRepository {
     private AvsluttetOppfolgingFeedData mapRadTilAvsluttetOppfolging(ResultSet rs, int row) throws SQLException {
         return AvsluttetOppfolgingFeedData.builder()
                 .aktoerid(rs.getString("aktor_id"))
-                .sluttdato(rs.getTimestamp("sluttdato"))
-                .oppdatert(rs.getTimestamp("oppdatert"))
+                .sluttdato(hentZonedDateTime(rs, "sluttdato"))
+                .oppdatert(hentZonedDateTime(rs, "oppdatert"))
                 .build();
     }
 

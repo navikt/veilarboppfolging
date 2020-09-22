@@ -14,12 +14,9 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.sql.Timestamp;
-import java.time.Instant;
-import java.time.OffsetDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 
-import static java.sql.Timestamp.from;
 import static java.time.temporal.ChronoUnit.DAYS;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
@@ -37,11 +34,11 @@ public class MalServiceTest {
     private static final long MAL_ID = 1L;
     private static final long KVP_ID = 1L;
     private static final String ENHET = "enhet";
-    private static final Instant START_KVP = OffsetDateTime.now().toInstant();
-    private static final Instant BEFORE_KVP = START_KVP.minus(1, DAYS);
-    private static final Instant IN_KVP = START_KVP.plus(1, DAYS);
-    private static final Instant STOP_KVP = START_KVP.plus(2, DAYS);
-    private static final Instant AFTER_KVP = START_KVP.plus(3, DAYS);
+    private static final ZonedDateTime START_KVP = ZonedDateTime.now();
+    private static final ZonedDateTime BEFORE_KVP = START_KVP.minus(1, DAYS);
+    private static final ZonedDateTime IN_KVP = START_KVP.plus(1, DAYS);
+    private static final ZonedDateTime STOP_KVP = START_KVP.plus(2, DAYS);
+    private static final ZonedDateTime AFTER_KVP = START_KVP.plus(3, DAYS);
     private static final String VEILEDER = "veileder";
 
     @Mock
@@ -66,7 +63,7 @@ public class MalServiceTest {
     public void setup() {
         when(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID);
         when(oppfolgingsStatusRepository.fetch(AKTOR_ID)).thenReturn(new OppfolgingTable().setGjeldendeMaalId(MAL_ID));
-        when(maalRepository.fetch(MAL_ID)).thenReturn(mal(from(BEFORE_KVP)));
+        when(maalRepository.fetch(MAL_ID)).thenReturn(mal(BEFORE_KVP));
     }
 
     @Test(expected = ResponseStatusException.class)
@@ -103,7 +100,7 @@ public class MalServiceTest {
     @Test
     public void hent_mal_opprettet_etter_kvp_veileder_har_ikke_tilgang() {
         when(kvpRepositoryMock.hentKvpHistorikk(AKTOR_ID)).thenReturn(kvpHistorikk());
-        when(maalRepository.fetch(MAL_ID)).thenReturn(mal(from(IN_KVP)));
+        when(maalRepository.fetch(MAL_ID)).thenReturn(mal(IN_KVP));
         when(authService.harTilgangTilEnhet(ENHET)).thenReturn(false);
 
         MalData malData = malService.hentMal(FNR);
@@ -113,7 +110,7 @@ public class MalServiceTest {
     @Test
     public void hent_mal_opprettet_etter_kvp_veileder_har_tilgang() {
         when(kvpRepositoryMock.hentKvpHistorikk(AKTOR_ID)).thenReturn(kvpHistorikk());
-        when(maalRepository.fetch(MAL_ID)).thenReturn(mal(from(IN_KVP)));
+        when(maalRepository.fetch(MAL_ID)).thenReturn(mal(IN_KVP));
         when(authService.harTilgangTilEnhet(ENHET)).thenReturn(true);
 
         MalData malData = malService.hentMal(FNR);
@@ -146,15 +143,15 @@ public class MalServiceTest {
         return asList(new MalData()
                         .setId(1L)
                         .setAktorId(AKTOR_ID)
-                        .setDato(from(BEFORE_KVP)),
+                        .setDato(BEFORE_KVP),
                 new MalData()
                         .setId(2L)
                         .setAktorId(AKTOR_ID)
-                        .setDato(from(IN_KVP)),
+                        .setDato(IN_KVP),
                 new MalData()
                         .setId(3L)
                         .setAktorId(AKTOR_ID)
-                        .setDato(from(AFTER_KVP))
+                        .setDato(AFTER_KVP)
         );
     }
 
@@ -162,7 +159,7 @@ public class MalServiceTest {
         return Kvp.builder()
                 .kvpId(KVP_ID)
                 .enhet(ENHET)
-                .opprettetDato(from(START_KVP))
+                .opprettetDato(START_KVP)
                 .build();
     }
 
@@ -170,16 +167,16 @@ public class MalServiceTest {
         return singletonList(Kvp.builder()
                 .kvpId(KVP_ID)
                 .enhet(ENHET)
-                .opprettetDato(from(START_KVP))
-                .avsluttetDato(from(STOP_KVP))
+                .opprettetDato(START_KVP)
+                .avsluttetDato(STOP_KVP)
                 .build());
     }
 
-    private MalData mal(Timestamp malDato) {
+    private MalData mal(ZonedDateTime dateTime) {
         return new MalData()
                 .setId(MAL_ID)
                 .setAktorId(AKTOR_ID)
-                .setDato(malDato);
+                .setDato(dateTime);
     }
 
 }

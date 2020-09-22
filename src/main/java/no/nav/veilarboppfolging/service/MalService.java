@@ -13,10 +13,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.sql.Timestamp;
+import java.time.ZonedDateTime;
 import java.util.List;
 
-import static java.lang.System.currentTimeMillis;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 
@@ -92,7 +91,7 @@ public class MalService {
                 .setAktorId(aktorId)
                 .setMal(mal)
                 .setEndretAv(StringUtils.of(endretAvVeileder).orElse(aktorId))
-                .setDato(new Timestamp(currentTimeMillis()));
+                .setDato(ZonedDateTime.now());
 
         maalRepository.opprett(malData);
 

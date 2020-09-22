@@ -6,6 +6,7 @@ import no.nav.veilarboppfolging.domain.MalData;
 import no.nav.veilarboppfolging.domain.Tilordning;
 import org.springframework.stereotype.Service;
 
+import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.Optional;
 
@@ -20,16 +21,11 @@ public class MetricsService {
         this.metricsClient = metricsClient;
     }
 
-    public void report(Event event) {
-        metricsClient.report(event);
-    }
-
     public Tilordning lestAvVeileder(Tilordning tilordning) {
         Event event = new Event("tilordnet.veileder.lest");
 
         Optional.of(tilordning)
                 .map(Tilordning::getSistTilordnet)
-                .map(Date::getTime)
                 .map(MetricsService::msSiden)
                 .ifPresent(ms -> event.addFieldToReport("ms", ms));
 
@@ -38,8 +34,8 @@ public class MetricsService {
         return tilordning;
     }
 
-    private static long msSiden(long time){
-        return new Date().getTime() - time;
+    private static long msSiden(ZonedDateTime time){
+        return ZonedDateTime.now().minusSeconds(time.toEpochSecond()).toInstant().toEpochMilli();
     }
 
     public void raporterAutomatiskAvslutningAvOppfolging(boolean success) {

@@ -13,7 +13,7 @@ import java.util.List;
 
 import static no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository.AKTOR_ID;
 import static no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository.GJELDENE_ESKALERINGSVARSEL;
-import static no.nav.veilarboppfolging.utils.DbUtils.hentDato;
+import static no.nav.veilarboppfolging.utils.DbUtils.hentZonedDateTime;
 
 @Repository
 public class EskaleringsvarselRepository {
@@ -58,9 +58,9 @@ public class EskaleringsvarselRepository {
                 .varselId(result.getLong("varsel_id"))
                 .aktorId(result.getString("aktor_id"))
                 .opprettetAv(result.getString("opprettet_av"))
-                .opprettetDato(hentDato(result, "opprettet_dato"))
+                .opprettetDato(hentZonedDateTime(result, "opprettet_dato"))
                 .opprettetBegrunnelse(result.getString("opprettet_begrunnelse"))
-                .avsluttetDato(hentDato(result, "avsluttet_dato"))
+                .avsluttetDato(hentZonedDateTime(result, "avsluttet_dato"))
                 .avsluttetBegrunnelse(result.getString( "avsluttet_begrunnelse"))
                 .avsluttetAv(result.getString( "avsluttet_av"))
                 .tilhorendeDialogId(result.getLong("tilhorende_dialog_id"))

@@ -3,7 +3,7 @@ package no.nav.veilarboppfolging.domain;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
-import java.sql.Timestamp;
+import java.time.ZonedDateTime;
 
 @Data
 @Accessors(chain = true)
@@ -13,7 +13,7 @@ public class MalData {
     private String aktorId;
     private String mal;
     private String endretAv;
-    private Timestamp dato;
+    private ZonedDateTime dato;
 
     public String getEndretAvFormattert() {
         return erEndretAvBruker()? "BRUKER" : "VEILEDER";
