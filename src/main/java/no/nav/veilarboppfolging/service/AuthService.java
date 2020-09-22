@@ -42,13 +42,13 @@ public class AuthService {
 
     public void skalVereInternBruker() {
         if (!AuthContextHolder.erInternBruker()){
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Ugyldig bruker type");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Ugyldig bruker type");
         };
     }
 
     public void skalVereSystemBruker() {
         if (!AuthContextHolder.erSystemBruker()){
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Ugyldig bruker type");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Ugyldig bruker type");
         };
     }
 
@@ -164,7 +164,7 @@ public class AuthService {
     }
 
     public static String getInnloggetBrukerToken() {
-        return AuthContextHolder.getIdTokenString().orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Fant ikke token for innlogget bruker"));
+        return AuthContextHolder.getIdTokenString().orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Fant ikke token for innlogget bruker"));
     }
 
     // NAV ident, fnr eller annen ID
