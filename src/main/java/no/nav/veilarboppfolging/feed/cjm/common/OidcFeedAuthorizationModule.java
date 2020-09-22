@@ -1,7 +1,6 @@
 package no.nav.veilarboppfolging.feed.cjm.common;
 
-import no.nav.common.auth.subject.Subject;
-import no.nav.common.auth.subject.SubjectHandler;
+import no.nav.common.auth.context.AuthContextHolder;
 
 import java.util.List;
 
@@ -15,8 +14,8 @@ public class OidcFeedAuthorizationModule implements FeedAuthorizationModule {
 
     @Override
     public boolean isRequestAuthorized(String feedname) {
-        return SubjectHandler.getSubject()
-                .map(Subject::getUid)
+        return AuthContextHolder
+                .getSubject()
                 .map(String::toLowerCase)
                 .map(allowedUsers::contains)
                 .orElse(false);

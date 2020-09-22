@@ -1,17 +1,14 @@
 package no.nav.veilarboppfolging.controller;
 
-import no.nav.common.auth.subject.IdentType;
-import no.nav.common.auth.subject.SsoToken;
-import no.nav.common.auth.subject.Subject;
-import no.nav.common.auth.subject.SubjectHandler;
+import no.nav.common.auth.context.AuthContextHolder;
+import no.nav.common.auth.context.UserRole;
+import no.nav.common.test.auth.AuthTestUtils;
 import no.nav.veilarboppfolging.domain.AktiverArbeidssokerData;
 import no.nav.veilarboppfolging.domain.Fnr;
 import no.nav.veilarboppfolging.domain.SykmeldtBrukerType;
 import no.nav.veilarboppfolging.service.AktiverBrukerService;
 import no.nav.veilarboppfolging.service.AuthService;
 import org.junit.Test;
-
-import java.util.Collections;
 
 import static org.mockito.Mockito.*;
 
@@ -41,7 +38,7 @@ public class SystemOppfolgingControllerTest {
 
     @Test
     public void aktiverSykmeldt() {
-        SubjectHandler.withSubject(new Subject("uid", IdentType.EksternBruker, SsoToken.oidcToken("oidcToken", Collections.emptyMap())), () -> {
+        AuthContextHolder.withContext(AuthTestUtils.createAuthContext(UserRole.EKSTERN, "uid"), () -> {
             systemOppfolgingController.aktiverSykmeldt(SykmeldtBrukerType.SKAL_TIL_SAMME_ARBEIDSGIVER, "fnr");
             verify(authService,  times(1)).skalVereSystemBruker();
         });

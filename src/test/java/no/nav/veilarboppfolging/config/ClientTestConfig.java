@@ -86,6 +86,11 @@ public class ClientTestConfig {
             }
 
             @Override
+            public List<String> hentAktorIder(String s) {
+                return null;
+            }
+
+            @Override
             public HealthCheckResult checkHealth() {
                 return HealthCheckResult.healthy();
             }
