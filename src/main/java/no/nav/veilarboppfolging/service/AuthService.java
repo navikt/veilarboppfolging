@@ -163,7 +163,7 @@ public class AuthService {
         return aktorregisterClient.hentFnr(aktorId);
     }
 
-    public static String getInnloggetBrukerToken() {
+    public String getInnloggetBrukerToken() {
         return AuthContextHolder.getIdTokenString().orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Fant ikke token for innlogget bruker"));
     }
 
