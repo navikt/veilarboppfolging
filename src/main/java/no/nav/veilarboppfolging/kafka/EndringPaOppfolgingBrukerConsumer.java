@@ -1,9 +1,10 @@
 package no.nav.veilarboppfolging.kafka;
 
+import com.nimbusds.jwt.JWTParser;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.auth.subject.IdentType;
-import no.nav.common.auth.subject.SsoToken;
-import no.nav.common.auth.subject.Subject;
+import no.nav.common.auth.context.AuthContext;
+import no.nav.common.auth.context.AuthContextHolder;
+import no.nav.common.auth.context.UserRole;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.utils.Credentials;
 import no.nav.veilarboppfolging.domain.kafka.VeilarbArenaOppfolgingEndret;
@@ -16,9 +17,6 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 
-import java.util.Collections;
-
-import static no.nav.common.auth.subject.SubjectHandler.withSubject;
 import static no.nav.common.json.JsonUtils.fromJson;
 
 @Slf4j
@@ -62,13 +60,13 @@ public class EndringPaOppfolgingBrukerConsumer {
     @KafkaListener(topics = "#{kafkaTopics.getEndringPaaOppfolgingBruker()}")
     public void consumeEndringPaOppfolgingBruker(@Payload String kafkaMelding) {
         try {
-            Subject subject = new Subject(
-                    serviceUserCredentials.username,
-                    IdentType.Systemressurs,
-                    SsoToken.oidcToken(systemUserTokenProvider.getSystemUserToken(), Collections.emptyMap())
+
+            var context = new AuthContext(
+                    UserRole.SYSTEM,
+                    JWTParser.parse(systemUserTokenProvider.getSystemUserToken())
             );
 
-            withSubject(subject, () -> {
+            AuthContextHolder.withContext(context, () -> {
                 final VeilarbArenaOppfolgingEndret deserialisertBruker = fromJson(kafkaMelding, VeilarbArenaOppfolgingEndret.class);
                 kvpService.avsluttKvpVedEnhetBytte(deserialisertBruker);
                 iservService.behandleEndretBruker(deserialisertBruker);

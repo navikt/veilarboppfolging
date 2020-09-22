@@ -1,8 +1,8 @@
 package no.nav.veilarboppfolging.config;
 
+import no.nav.common.auth.context.UserRole;
 import no.nav.common.auth.oidc.filter.OidcAuthenticationFilter;
 import no.nav.common.auth.oidc.filter.OidcAuthenticatorConfig;
-import no.nav.common.auth.subject.IdentType;
 import no.nav.common.auth.utils.UserTokenFinder;
 import no.nav.common.log.LogFilter;
 import no.nav.common.rest.filter.SetStandardHttpHeadersFilter;
@@ -33,14 +33,14 @@ public class FilterConfig {
                 .withDiscoveryUrl(properties.getOpenAmDiscoveryUrl())
                 .withClientId(properties.getVeilarbloginOpenAmClientId())
                 .withIdTokenFinder(new CustomServiceUserTokenFinder())
-                .withIdentType(IdentType.Systemressurs);
+                .withUserRole(UserRole.SYSTEM);
     }
 
     private OidcAuthenticatorConfig naisStsAuthConfig(EnvironmentProperties properties) {
         return new OidcAuthenticatorConfig()
                 .withDiscoveryUrl(properties.getNaisStsDiscoveryUrl())
                 .withClientIds(ALLOWED_SERVICE_USERS)
-                .withIdentType(IdentType.Systemressurs);
+                .withUserRole(UserRole.SYSTEM);
     }
 
     private OidcAuthenticatorConfig openAmAuthConfig(EnvironmentProperties properties) {
@@ -51,7 +51,7 @@ public class FilterConfig {
                 .withRefreshTokenCookieName(REFRESH_TOKEN_COOKIE_NAME)
                 .withIdTokenFinder(new UserTokenFinder())
                 .withRefreshUrl(properties.getOpenAmRefreshUrl())
-                .withIdentType(IdentType.InternBruker);
+                .withUserRole(UserRole.INTERN);
     }
 
     private OidcAuthenticatorConfig azureAdAuthConfig(EnvironmentProperties properties) {
@@ -59,7 +59,7 @@ public class FilterConfig {
                 .withDiscoveryUrl(properties.getAadDiscoveryUrl())
                 .withClientId(properties.getVeilarbloginAadClientId())
                 .withIdTokenCookieName(AZURE_AD_ID_TOKEN_COOKIE_NAME)
-                .withIdentType(IdentType.InternBruker);
+                .withUserRole(UserRole.INTERN);
     }
 
     private OidcAuthenticatorConfig azureAdB2CAuthConfig(EnvironmentProperties properties) {
@@ -67,7 +67,7 @@ public class FilterConfig {
                 .withDiscoveryUrl(properties.getAadB2cDiscoveryUrl())
                 .withClientId(properties.getAadB2cClientId())
                 .withIdTokenCookieName(AZURE_AD_B2C_ID_TOKEN_COOKIE_NAME)
-                .withIdentType(IdentType.EksternBruker);
+                .withUserRole(UserRole.EKSTERN);
     }
 
     @Bean
