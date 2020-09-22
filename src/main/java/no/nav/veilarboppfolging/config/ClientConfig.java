@@ -76,7 +76,7 @@ public class ClientConfig {
     @Bean
     public VeilarbarenaClient veilarbarenaClient(AuthService authService) {
         String url = clusterUrlForApplication("veilarbarena", true);
-        return new VeilarbarenaClientImpl(url, authService::getInnloggetBrukerToken);
+        return new VeilarbarenaClientImpl(url, AuthService::getInnloggetBrukerToken);
     }
 
     @Bean
