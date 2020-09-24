@@ -1,7 +1,5 @@
 package no.nav.veilarboppfolging.controller;
 
-import no.nav.veilarboppfolging.client.oppfolging.OppfolgingClient;
-import no.nav.veilarboppfolging.client.oppfolging.OppfolgingskontraktData;
 import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktClient;
 import no.nav.veilarboppfolging.service.AuthService;
 import no.nav.veilarboppfolging.controller.domain.YtelserResponse;
@@ -24,17 +22,14 @@ public class YtelseController {
     private static final int MANEDER_BAK_I_TID = 2;
     private static final int MANEDER_FREM_I_TID = 1;
 
-    private final OppfolgingClient oppfolgingClient;
     private final YtelseskontraktClient ytelseskontraktClient;
     private final AuthService authService;
 
     @Autowired
     public YtelseController(
-            OppfolgingClient oppfolgingClient,
             YtelseskontraktClient ytelseskontraktClient,
             AuthService authService
     ) {
-        this.oppfolgingClient = oppfolgingClient;
         this.ytelseskontraktClient = ytelseskontraktClient;
         this.authService = authService;
     }
@@ -50,11 +45,9 @@ public class YtelseController {
         XMLGregorianCalendar tom = convertDateToXMLGregorianCalendar(periodeTom);
 
         final YtelseskontraktResponse ytelseskontraktResponse = ytelseskontraktClient.hentYtelseskontraktListe(fom, tom, fnr);
-        final List<OppfolgingskontraktData> kontrakter = oppfolgingClient.hentOppfolgingskontraktListe(fom, tom, fnr);
 
         return new YtelserResponse()
                 .withVedtaksliste(ytelseskontraktResponse.getVedtaksliste())
-                .withYtelser(ytelseskontraktResponse.getYtelser())
-                .withOppfoelgingskontrakter(kontrakter);
+                .withYtelser(ytelseskontraktResponse.getYtelser());
     }
 }

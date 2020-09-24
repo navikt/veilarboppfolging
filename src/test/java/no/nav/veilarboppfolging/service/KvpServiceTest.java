@@ -3,7 +3,8 @@ package no.nav.veilarboppfolging.service;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.UserRole;
 import no.nav.common.test.auth.AuthTestUtils;
-import no.nav.veilarboppfolging.client.oppfolging.OppfolgingClient;
+import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
+import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
 import no.nav.veilarboppfolging.domain.OppfolgingTable;
 import no.nav.veilarboppfolging.repository.EskaleringsvarselRepository;
 import no.nav.veilarboppfolging.repository.KvpRepository;
@@ -16,6 +17,8 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.util.Optional;
 
 import static no.nav.veilarboppfolging.domain.KodeverkBruker.NAV;
 import static org.junit.Assert.assertEquals;
@@ -37,7 +40,7 @@ public class KvpServiceTest {
     private EskaleringsvarselRepository eskaleringsvarselRepository;
 
     @Mock
-    private OppfolgingClient oppfolgingClient;
+    private VeilarbarenaClient veilarbarenaClient;
 
     @Mock
     private MetricsService metricsService;
@@ -58,7 +61,10 @@ public class KvpServiceTest {
     @Before
     public void initialize() {
         when(oppfolgingsStatusRepository.fetch(AKTOR_ID)).thenReturn(new OppfolgingTable().setUnderOppfolging(true));
-        when(oppfolgingClient.finnEnhetId(FNR)).thenReturn(ENHET);
+
+        VeilarbArenaOppfolging veilarbArenaOppfolging = new VeilarbArenaOppfolging();
+        veilarbArenaOppfolging.setNav_kontor(ENHET);
+        when(veilarbarenaClient.hentOppfolgingsbruker(FNR)).thenReturn(Optional.of(veilarbArenaOppfolging));
 
         when(authService.harTilgangTilEnhet(anyString())).thenReturn(true);
         when(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID);
