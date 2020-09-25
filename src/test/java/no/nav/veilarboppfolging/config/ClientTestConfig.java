@@ -12,8 +12,6 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.veilarboppfolging.client.behandle_arbeidssoker.BehandleArbeidssokerClient;
 import no.nav.veilarboppfolging.client.dkif.DkifClient;
 import no.nav.veilarboppfolging.client.dkif.DkifKontaktinfo;
-import no.nav.veilarboppfolging.client.oppfolging.OppfolgingClient;
-import no.nav.veilarboppfolging.client.oppfolging.OppfolgingskontraktData;
 import no.nav.veilarboppfolging.client.varseloppgave.VarseloppgaveClient;
 import no.nav.veilarboppfolging.client.veilarbaktivitet.ArenaAktivitetDTO;
 import no.nav.veilarboppfolging.client.veilarbaktivitet.VeilarbaktivitetClient;
@@ -136,26 +134,6 @@ public class ClientTestConfig {
         return new DkifClient() {
             @Override
             public DkifKontaktinfo hentKontaktInfo(String fnr) {
-                return null;
-            }
-
-            @Override
-            public HealthCheckResult checkHealth() {
-                return HealthCheckResult.healthy();
-            }
-        };
-    }
-
-    @Bean
-    public OppfolgingClient oppfolgingClient() {
-        return new OppfolgingClient() {
-            @Override
-            public List<OppfolgingskontraktData> hentOppfolgingskontraktListe(XMLGregorianCalendar fom, XMLGregorianCalendar tom, String fnr) {
-                return null;
-            }
-
-            @Override
-            public String finnEnhetId(String fnr) {
                 return null;
             }
 

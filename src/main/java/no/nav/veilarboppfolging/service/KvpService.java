@@ -2,7 +2,8 @@ package no.nav.veilarboppfolging.service;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.veilarboppfolging.client.oppfolging.OppfolgingClient;
+import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
+import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
 import no.nav.veilarboppfolging.domain.KodeverkBruker;
 import no.nav.veilarboppfolging.domain.Kvp;
 import no.nav.veilarboppfolging.domain.OppfolgingTable;
@@ -31,7 +32,7 @@ public class KvpService {
 
     private final KvpRepository kvpRepository;
 
-    private final OppfolgingClient oppfolgingClient;
+    private final VeilarbarenaClient veilarbarenaClient;
 
     private final OppfolgingsStatusRepository oppfolgingsStatusRepository;
 
@@ -43,7 +44,7 @@ public class KvpService {
             KafkaProducerService kafkaProducerService,
             MetricsService metricsService,
             KvpRepository kvpRepository,
-            OppfolgingClient oppfolgingClient,
+            VeilarbarenaClient veilarbarenaClient,
             OppfolgingsStatusRepository oppfolgingsStatusRepository,
             EskaleringsvarselRepository eskaleringsvarselRepository,
             AuthService authService
@@ -51,7 +52,7 @@ public class KvpService {
         this.kafkaProducerService = kafkaProducerService;
         this.metricsService = metricsService;
         this.kvpRepository = kvpRepository;
-        this.oppfolgingClient = oppfolgingClient;
+        this.veilarbarenaClient = veilarbarenaClient;
         this.oppfolgingsStatusRepository = oppfolgingsStatusRepository;
         this.eskaleringsvarselRepository = eskaleringsvarselRepository;
         this.authService = authService;
@@ -69,7 +70,8 @@ public class KvpService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
 
-        String enhet = oppfolgingClient.finnEnhetId(fnr);
+        String enhet = veilarbarenaClient.hentOppfolgingsbruker(fnr)
+                .map(VeilarbArenaOppfolging::getNav_kontor).orElse(null);
         if (!authService.harTilgangTilEnhet(enhet)) {
             log.warn(format("Ingen tilgang til enhet '%s'", enhet));
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
@@ -95,8 +97,10 @@ public class KvpService {
         String aktorId = authService.getAktorIdOrThrow(fnr);
 
         authService.sjekkLesetilgangMedAktorId(aktorId);
+        String enhet = veilarbarenaClient.hentOppfolgingsbruker(fnr)
+                .map(VeilarbArenaOppfolging::getNav_kontor).orElse(null);
 
-        if (!authService.harTilgangTilEnhet(oppfolgingClient.finnEnhetId(fnr))) {
+        if (!authService.harTilgangTilEnhet(enhet)) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         }
 

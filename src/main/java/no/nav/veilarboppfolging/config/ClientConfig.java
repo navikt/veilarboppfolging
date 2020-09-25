@@ -12,8 +12,6 @@ import no.nav.veilarboppfolging.client.behandle_arbeidssoker.BehandleArbeidssoke
 import no.nav.veilarboppfolging.client.behandle_arbeidssoker.BehandleArbeidssokerClientImpl;
 import no.nav.veilarboppfolging.client.dkif.DkifClient;
 import no.nav.veilarboppfolging.client.dkif.DkifClientImpl;
-import no.nav.veilarboppfolging.client.oppfolging.OppfolgingClient;
-import no.nav.veilarboppfolging.client.oppfolging.OppfolgingClientImpl;
 import no.nav.veilarboppfolging.client.varseloppgave.VarseloppgaveClient;
 import no.nav.veilarboppfolging.client.varseloppgave.VarseloppgaveClientImpl;
 import no.nav.veilarboppfolging.client.veilarbaktivitet.VeilarbaktivitetClient;
@@ -55,11 +53,6 @@ public class ClientConfig {
     @Bean
     public DkifClient dkifClient(SystemUserTokenProvider systemUserTokenProvider) {
         return new DkifClientImpl("http://dkif.default.svc.nais.local", systemUserTokenProvider);
-    }
-
-    @Bean
-    public OppfolgingClient oppfolgingClient(EnvironmentProperties properties, StsConfig stsConfig) {
-        return new OppfolgingClientImpl(properties.getVirksomhetOppfolgingV1Endpoint(), stsConfig);
     }
 
     @Bean

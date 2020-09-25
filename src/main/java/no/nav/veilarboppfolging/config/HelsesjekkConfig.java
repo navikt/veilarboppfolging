@@ -10,7 +10,6 @@ import no.nav.common.health.selftest.SelfTestCheck;
 import no.nav.common.health.selftest.SelfTestChecks;
 import no.nav.common.health.selftest.SelfTestMeterBinder;
 import no.nav.veilarboppfolging.client.behandle_arbeidssoker.BehandleArbeidssokerClient;
-import no.nav.veilarboppfolging.client.oppfolging.OppfolgingClient;
 import no.nav.veilarboppfolging.client.varseloppgave.VarseloppgaveClient;
 import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktClient;
 import no.nav.veilarboppfolging.kafka.KafkaConsumerHealthCheck;
@@ -31,7 +30,6 @@ public class HelsesjekkConfig {
                                          KafkaProducerHealthCheck kafkaProducerHealthCheck,
                                          BehandleArbeidssokerClient behandleArbeidssokerClient,
                                          YtelseskontraktClient ytelseskontraktClient,
-                                         OppfolgingClient oppfolgingClient,
                                          JdbcTemplate jdbcTemplate,
                                          Pep pep,
                                          VarseloppgaveClient varseloppgaveClient,
@@ -42,7 +40,6 @@ public class HelsesjekkConfig {
                 new SelfTestCheck("Kafka producer", false, kafkaProducerHealthCheck),
                 new SelfTestCheck("Ping av BehandleArbeidssoker_V1. Registrerer arbeidssoker i Arena.", true, behandleArbeidssokerClient),
                 new SelfTestCheck("Ping av ytelseskontrakt_V3. Henter informasjon om ytelser fra Arena.", false, ytelseskontraktClient),
-                new SelfTestCheck("Ping av oppfolging_v1. Henter informasjon om oppfølgingsstatus fra arena.", true, oppfolgingClient),
                 new SelfTestCheck("Enkel spørring mot Databasen til veilarboppfolging.", true, checkDbHealth(jdbcTemplate)),
                 new SelfTestCheck("ABAC tilgangskontroll - ping", true, pep.getAbacClient()),
                 new SelfTestCheck("Brukes for å sende eskaleringsvarsel", false, varseloppgaveClient),
