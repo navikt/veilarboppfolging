@@ -1,6 +1,7 @@
 package no.nav.veilarboppfolging.client.ytelseskontrakt;
 
 
+import javax.xml.datatype.XMLGregorianCalendar;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -12,39 +13,47 @@ public class ExpectedYtelseskontrakt {
 
     public static List<Vedtak> getExpectedVedtakUtenRettighetsgruppe() {
         final List<Vedtak> expectedVedtak = getExpectedVedtak();
-        return expectedVedtak.stream().map(vedtak -> vedtak.withRettighetsgruppe(null)).collect(Collectors.toList());
+        return expectedVedtak.stream().map(vedtak -> vedtak.setRettighetsgruppe(null)).collect(Collectors.toList());
     }
 
     public static List<Vedtak> getExpectedVedtakUtenVedtaksgruppe() {
         final List<Vedtak> expectedVedtak = getExpectedVedtak();
-        return expectedVedtak.stream().map(vedtak -> vedtak.withVedtakstype(null)).collect(Collectors.toList());
+        return expectedVedtak.stream().map(vedtak -> vedtak.setVedtakstype(null)).collect(Collectors.toList());
     }
 
     public static List<Vedtak> getExpectedVedtakUtenAktivitetsfase() {
         final List<Vedtak> expectedVedtak = getExpectedVedtak();
-        return expectedVedtak.stream().map(vedtak -> vedtak.withAktivitetsfase(null)).collect(Collectors.toList());
+        return expectedVedtak.stream().map(vedtak -> vedtak.setAktivitetsfase(null)).collect(Collectors.toList());
     }
 
     static List<Vedtak> getExpectedVedtak() {
 
         Vedtak vedtak1 = new Vedtak()
-                .withAktivitetsfase(AKTIVITETSFASE_1)
-                .withStatus(VED_STATUS_1)
-                .withVedtakstype(VEDTAKSTYPE_1)
-                .withRettighetsgruppe(RETTIGHETSGRUPPE);
+                .setAktivitetsfase(AKTIVITETSFASE_1)
+                .setStatus(VED_STATUS_1)
+                .setVedtakstype(VEDTAKSTYPE_1)
+                .setRettighetsgruppe(RETTIGHETSGRUPPE)
+                .setFradato(tilDato(YT_FOM_GYLDIGHETSPERIODE_1));
 
         Vedtak vedtak2 = new Vedtak()
-                .withAktivitetsfase(AKTIVITETSFASE_2)
-                .withStatus(VED_STATUS_2)
-                .withVedtakstype(VEDTAKSTYPE_2)
-                .withRettighetsgruppe(RETTIGHETSGRUPPE);
+                .setAktivitetsfase(AKTIVITETSFASE_2)
+                .setStatus(VED_STATUS_2)
+                .setVedtakstype(VEDTAKSTYPE_2)
+                .setRettighetsgruppe(RETTIGHETSGRUPPE)
+                .setFradato(tilDato(YT_FOM_GYLDIGHETSPERIODE_2));
 
         Vedtak vedtak3 = new Vedtak()
-                .withAktivitetsfase(AKTIVITETSFASE_3)
-                .withStatus(VED_STATUS_3)
-                .withVedtakstype(VEDTAKSTYPE_3)
-                .withRettighetsgruppe(RETTIGHETSGRUPPE);
+                .setAktivitetsfase(AKTIVITETSFASE_3)
+                .setStatus(VED_STATUS_3)
+                .setVedtakstype(VEDTAKSTYPE_3)
+                .setRettighetsgruppe(RETTIGHETSGRUPPE)
+                .setFradato(tilDato(YT_FOM_GYLDIGHETSPERIODE_2));
+
         return asList(vedtak1, vedtak2, vedtak3);
+    }
+
+    private static Dato tilDato(XMLGregorianCalendar dato) {
+        return new Dato(dato.getYear(), dato.getMonth(), dato.getDay());
     }
 
 

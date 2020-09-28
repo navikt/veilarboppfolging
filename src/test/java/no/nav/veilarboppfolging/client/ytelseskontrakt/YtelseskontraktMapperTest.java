@@ -37,7 +37,7 @@ public class YtelseskontraktMapperTest {
 
         List<Ytelseskontrakt> expectedYtelser = ExpectedYtelseskontrakt.getExpectedYtelseskontrakter();
 
-        assertThat(response.getYtelser(), is((expectedYtelser)));
+        assertThat(response.getYtelser(), is(expectedYtelser));
     }
 
     @Test

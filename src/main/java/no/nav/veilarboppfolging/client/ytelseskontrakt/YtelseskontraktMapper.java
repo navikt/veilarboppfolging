@@ -59,12 +59,12 @@ public class YtelseskontraktMapper {
         final Optional<XMLGregorianCalendar> tomdato = Optional.ofNullable(wsVedtak.getVedtaksperiode().getTom());
 
         final Vedtak ytelse = new Vedtak()
-                .withVedtakstype(wsVedtak.getVedtakstype())
-                .withStatus(wsVedtak.getStatus())
-                .withAktivitetsfase(wsVedtak.getAktivitetsfase());
+                .setVedtakstype(wsVedtak.getVedtakstype())
+                .setStatus(wsVedtak.getStatus())
+                .setAktivitetsfase(wsVedtak.getAktivitetsfase());
 
-        fomdato.ifPresent(ytelse::withFradato);
-        tomdato.ifPresent(ytelse::withTildato);
+        fomdato.ifPresent((fd) -> ytelse.setFradato(new Dato(fd.getYear(), fd.getMonth(), fd.getDay())));
+        tomdato.ifPresent((td) -> ytelse.setTildato(new Dato(td.getYear(), td.getMonth(), td.getDay())));
 
         return ytelse;
     };

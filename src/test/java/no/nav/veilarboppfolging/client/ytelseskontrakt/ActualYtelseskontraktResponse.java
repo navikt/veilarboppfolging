@@ -20,19 +20,19 @@ public class ActualYtelseskontraktResponse {
 
     public static YtelseskontraktResponse getResponseUtenRettighetsgruppe() throws HentYtelseskontraktListeSikkerhetsbegrensning {
         final YtelseskontraktResponse komplettResponse = getKomplettResponse();
-        komplettResponse.getVedtaksliste().forEach(vedtak -> vedtak.withRettighetsgruppe(null));
+        komplettResponse.getVedtaksliste().forEach(vedtak -> vedtak.setRettighetsgruppe(null));
         return komplettResponse;
     }
 
     public static YtelseskontraktResponse getResponseUtenVedtakstype() throws HentYtelseskontraktListeSikkerhetsbegrensning {
         final YtelseskontraktResponse komplettResponse = getKomplettResponse();
-        komplettResponse.getVedtaksliste().forEach(vedtak -> vedtak.withVedtakstype(null));
+        komplettResponse.getVedtaksliste().forEach(vedtak -> vedtak.setVedtakstype(null));
         return komplettResponse;
     }
 
     public static YtelseskontraktResponse getResponseUtenAktivitetsfase() throws HentYtelseskontraktListeSikkerhetsbegrensning {
         final YtelseskontraktResponse komplettResponse = getKomplettResponse();
-        komplettResponse.getVedtaksliste().forEach(vedtak -> vedtak.withAktivitetsfase(null));
+        komplettResponse.getVedtaksliste().forEach(vedtak -> vedtak.setAktivitetsfase(null));
         return komplettResponse;
     }
 
