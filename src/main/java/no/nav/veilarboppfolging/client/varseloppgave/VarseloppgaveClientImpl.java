@@ -27,9 +27,17 @@ public class VarseloppgaveClientImpl implements VarseloppgaveClient {
 
     private final VarseloppgaveV1 varseloppgave;
 
+    private final VarseloppgaveV1 varseloppgavePing;
+
     public VarseloppgaveClientImpl(String arbeidsrettetDialogUrl, String varselOppgaveV1Endpoint, StsConfig stsConfig) {
         this.arbeidsrettetDialogUrl = arbeidsrettetDialogUrl;
         varseloppgave = new CXFClient<>(VarseloppgaveV1.class)
+                .withOutInterceptor(new LoggingOutInterceptor())
+                .configureStsForSubject(stsConfig)
+                .address(varselOppgaveV1Endpoint)
+                .build();
+
+        varseloppgavePing = new CXFClient<>(VarseloppgaveV1.class)
                 .withOutInterceptor(new LoggingOutInterceptor())
                 .configureStsForSystemUser(stsConfig)
                 .address(varselOppgaveV1Endpoint)
@@ -102,7 +110,7 @@ public class VarseloppgaveClientImpl implements VarseloppgaveClient {
     @Override
     public HealthCheckResult checkHealth() {
         try {
-            varseloppgave.ping();
+            varseloppgavePing.ping();
             return HealthCheckResult.healthy();
         } catch (Exception e) {
             return HealthCheckResult.unhealthy(e);
