@@ -3,11 +3,11 @@ package no.nav.veilarboppfolging.domain;
 import lombok.Builder;
 import lombok.Value;
 
-import java.util.Date;
+import java.time.ZonedDateTime;
 
 @Value
 @Builder
 public class VeilederTilordningerData {
     private String veileder;
-    private Date sistTilordnet;
+    private ZonedDateTime sistTilordnet;
 }

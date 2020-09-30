@@ -14,6 +14,7 @@ import java.util.List;
 
 import static no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository.AKTOR_ID;
 import static no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository.GJELDENDE_MANUELL_STATUS;
+import static no.nav.veilarboppfolging.utils.DbUtils.hentZonedDateTime;
 import static no.nav.veilarboppfolging.utils.EnumUtils.getName;
 import static no.nav.veilarboppfolging.utils.EnumUtils.valueOfOptional;
 
@@ -52,7 +53,7 @@ public class ManuellStatusRepository {
                 .setId(result.getLong("id"))
                 .setAktorId(result.getString("aktor_id"))
                 .setManuell(result.getBoolean("manuell"))
-                .setDato(result.getTimestamp("opprettet_dato"))
+                .setDato(hentZonedDateTime(result, "opprettet_dato"))
                 .setBegrunnelse(result.getString("begrunnelse"))
                 .setOpprettetAv(valueOfOptional(KodeverkBruker.class, result.getString("opprettet_av")).orElse(null))
                 .setOpprettetAvBrukerId(result.getString("opprettet_av_brukerid"));

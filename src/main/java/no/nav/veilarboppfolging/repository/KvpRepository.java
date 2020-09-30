@@ -14,7 +14,7 @@ import java.sql.ResultSet;
 import java.util.List;
 
 import static no.nav.veilarboppfolging.domain.KodeverkBruker.NAV;
-import static no.nav.veilarboppfolging.utils.DbUtils.hentDato;
+import static no.nav.veilarboppfolging.utils.DbUtils.hentZonedDateTime;
 import static no.nav.veilarboppfolging.utils.EnumUtils.getName;
 import static no.nav.veilarboppfolging.utils.EnumUtils.valueOfOptional;
 
@@ -140,12 +140,12 @@ public class KvpRepository {
                 .aktorId(rs.getString("aktor_id"))
                 .enhet(rs.getString("enhet"))
                 .opprettetAv(rs.getString("opprettet_av"))
-                .opprettetDato(hentDato(rs, "opprettet_dato"))
+                .opprettetDato(hentZonedDateTime(rs, "opprettet_dato"))
                 .opprettetBegrunnelse(rs.getString("opprettet_begrunnelse"))
                 .opprettetKodeverkbruker(valueOfOptional(KodeverkBruker.class,
                         rs.getString("opprettet_kodeverkbruker")).orElse(null))
                 .avsluttetAv(rs.getString("avsluttet_av"))
-                .avsluttetDato(hentDato(rs, "avsluttet_dato"))
+                .avsluttetDato(hentZonedDateTime(rs, "avsluttet_dato"))
                 .avsluttetBegrunnelse(rs.getString("avsluttet_begrunnelse"))
                 .avsluttetKodeverkbruker(valueOfOptional(KodeverkBruker.class,
                         rs.getString("avsluttet_kodeverkbruker")).orElse(null))

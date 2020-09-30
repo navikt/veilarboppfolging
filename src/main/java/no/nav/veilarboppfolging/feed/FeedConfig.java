@@ -1,6 +1,6 @@
 package no.nav.veilarboppfolging.feed;
 
-import no.nav.common.sts.SystemUserTokenProvider;
+import no.nav.common.sts.OpenAmSystemUserTokenProvider;
 import no.nav.veilarboppfolging.controller.domain.AvsluttetOppfolgingFeedDTO;
 import no.nav.veilarboppfolging.controller.domain.KvpDTO;
 import no.nav.veilarboppfolging.controller.domain.OppfolgingFeedDTO;
@@ -27,10 +27,10 @@ public class FeedConfig {
     static final String NYE_BRUKERE_FEED_NAME = "nyebrukere";
     static final String KVP_FEED_NAME = "kvp";
 
-    private final SystemUserTokenProvider openAmSystemUserTokenProvider;
+    private final OpenAmSystemUserTokenProvider openAmSystemUserTokenProvider;
 
     @Autowired
-    public FeedConfig(SystemUserTokenProvider openAmSystemUserTokenProvider) {
+    public FeedConfig(OpenAmSystemUserTokenProvider openAmSystemUserTokenProvider) {
         this.openAmSystemUserTokenProvider = openAmSystemUserTokenProvider;
     }
 

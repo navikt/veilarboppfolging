@@ -7,6 +7,7 @@ import no.nav.veilarboppfolging.domain.Innsatsgruppe;
 import no.nav.veilarboppfolging.domain.Oppfolgingsbruker;
 import no.nav.veilarboppfolging.domain.SykmeldtBrukerType;
 import no.nav.veilarboppfolging.feed.NyeBrukereFeedDTO;
+import no.nav.veilarboppfolging.utils.DbUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -63,7 +64,7 @@ public class NyeBrukereFeedRepository {
                 .aktorId(rs.getString("AKTOR_ID"))
                 .foreslattInnsatsgruppe(rs.getString("FORESLATT_INNSATSGRUPPE"))
                 .sykmeldtBrukerType(rs.getString("SYKMELDTBRUKERTYPE"))
-                .opprettet(rs.getTimestamp("OPPRETTET_TIMESTAMP"))
+                .opprettet(DbUtils.hentZonedDateTime(rs, "OPPRETTET_TIMESTAMP"))
                 .build();
     }
 }

@@ -8,11 +8,10 @@ import no.nav.common.client.norg2.Norg2Client;
 import no.nav.common.health.HealthCheckResult;
 import no.nav.common.metrics.Event;
 import no.nav.common.metrics.MetricsClient;
+import no.nav.common.types.identer.AktorId;
 import no.nav.veilarboppfolging.client.behandle_arbeidssoker.BehandleArbeidssokerClient;
 import no.nav.veilarboppfolging.client.dkif.DkifClient;
 import no.nav.veilarboppfolging.client.dkif.DkifKontaktinfo;
-import no.nav.veilarboppfolging.client.oppfolging.OppfolgingClient;
-import no.nav.veilarboppfolging.client.oppfolging.OppfolgingskontraktData;
 import no.nav.veilarboppfolging.client.varseloppgave.VarseloppgaveClient;
 import no.nav.veilarboppfolging.client.veilarbaktivitet.ArenaAktivitetDTO;
 import no.nav.veilarboppfolging.client.veilarbaktivitet.VeilarbaktivitetClient;
@@ -66,22 +65,27 @@ public class ClientTestConfig {
     public AktorregisterClient aktorregisterClient() {
         return new AktorregisterClient() {
             @Override
-            public String hentFnr(String aktorId) {
+            public no.nav.common.types.identer.Fnr hentFnr(AktorId aktorId) {
                 return null;
             }
 
             @Override
-            public String hentAktorId(String fnr) {
+            public AktorId hentAktorId(no.nav.common.types.identer.Fnr fnr) {
                 return null;
             }
 
             @Override
-            public List<IdentOppslag> hentFnr(List<String> aktorIdListe) {
+            public List<IdentOppslag> hentFnr(List<AktorId> list) {
                 return null;
             }
 
             @Override
-            public List<IdentOppslag> hentAktorId(List<String> fnrListe) {
+            public List<IdentOppslag> hentAktorId(List<no.nav.common.types.identer.Fnr> list) {
+                return null;
+            }
+
+            @Override
+            public List<AktorId> hentAktorIder(no.nav.common.types.identer.Fnr fnr) {
                 return null;
             }
 
@@ -130,26 +134,6 @@ public class ClientTestConfig {
         return new DkifClient() {
             @Override
             public DkifKontaktinfo hentKontaktInfo(String fnr) {
-                return null;
-            }
-
-            @Override
-            public HealthCheckResult checkHealth() {
-                return HealthCheckResult.healthy();
-            }
-        };
-    }
-
-    @Bean
-    public OppfolgingClient oppfolgingClient() {
-        return new OppfolgingClient() {
-            @Override
-            public List<OppfolgingskontraktData> hentOppfolgingskontraktListe(XMLGregorianCalendar fom, XMLGregorianCalendar tom, String fnr) {
-                return null;
-            }
-
-            @Override
-            public String finnEnhetId(String fnr) {
                 return null;
             }
 

@@ -4,7 +4,7 @@ import lombok.Builder;
 import lombok.Value;
 import lombok.experimental.Wither;
 
-import java.util.Date;
+import java.time.ZonedDateTime;
 
 @Value
 @Builder
@@ -16,11 +16,11 @@ public class Kvp {
     private String aktorId;
     private String enhet;
     private String opprettetAv;
-    private Date opprettetDato;
+    private ZonedDateTime opprettetDato;
     private String opprettetBegrunnelse;
     private KodeverkBruker opprettetKodeverkbruker;
     private String avsluttetAv;
-    private Date avsluttetDato;
+    private ZonedDateTime avsluttetDato;
     private String avsluttetBegrunnelse;
     private KodeverkBruker avsluttetKodeverkbruker;
 

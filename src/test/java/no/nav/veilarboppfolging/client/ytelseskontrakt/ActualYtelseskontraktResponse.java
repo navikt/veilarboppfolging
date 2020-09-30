@@ -1,6 +1,5 @@
 package no.nav.veilarboppfolging.client.ytelseskontrakt;
 
-import no.nav.tjeneste.virksomhet.oppfoelging.v1.HentOppfoelgingskontraktListeSikkerhetsbegrensning;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.HentYtelseskontraktListeSikkerhetsbegrensning;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt.WSPeriode;
@@ -19,25 +18,25 @@ public class ActualYtelseskontraktResponse {
     private static final int MANEDER_BAK_I_TID = 2;
     private static final int MANEDER_FREM_I_TID = 1;
 
-    public static YtelseskontraktResponse getResponseUtenRettighetsgruppe() throws HentOppfoelgingskontraktListeSikkerhetsbegrensning, HentYtelseskontraktListeSikkerhetsbegrensning {
+    public static YtelseskontraktResponse getResponseUtenRettighetsgruppe() throws HentYtelseskontraktListeSikkerhetsbegrensning {
         final YtelseskontraktResponse komplettResponse = getKomplettResponse();
-        komplettResponse.getVedtaksliste().forEach(vedtak -> vedtak.withRettighetsgruppe(null));
+        komplettResponse.getVedtaksliste().forEach(vedtak -> vedtak.setRettighetsgruppe(null));
         return komplettResponse;
     }
 
-    public static YtelseskontraktResponse getResponseUtenVedtakstype() throws HentOppfoelgingskontraktListeSikkerhetsbegrensning, HentYtelseskontraktListeSikkerhetsbegrensning {
+    public static YtelseskontraktResponse getResponseUtenVedtakstype() throws HentYtelseskontraktListeSikkerhetsbegrensning {
         final YtelseskontraktResponse komplettResponse = getKomplettResponse();
-        komplettResponse.getVedtaksliste().forEach(vedtak -> vedtak.withVedtakstype(null));
+        komplettResponse.getVedtaksliste().forEach(vedtak -> vedtak.setVedtakstype(null));
         return komplettResponse;
     }
 
-    public static YtelseskontraktResponse getResponseUtenAktivitetsfase() throws HentOppfoelgingskontraktListeSikkerhetsbegrensning, HentYtelseskontraktListeSikkerhetsbegrensning {
+    public static YtelseskontraktResponse getResponseUtenAktivitetsfase() throws HentYtelseskontraktListeSikkerhetsbegrensning {
         final YtelseskontraktResponse komplettResponse = getKomplettResponse();
-        komplettResponse.getVedtaksliste().forEach(vedtak -> vedtak.withAktivitetsfase(null));
+        komplettResponse.getVedtaksliste().forEach(vedtak -> vedtak.setAktivitetsfase(null));
         return komplettResponse;
     }
 
-    public static YtelseskontraktResponse getKomplettResponse() throws HentOppfoelgingskontraktListeSikkerhetsbegrensning, HentYtelseskontraktListeSikkerhetsbegrensning {
+    public static YtelseskontraktResponse getKomplettResponse() throws HentYtelseskontraktListeSikkerhetsbegrensning {
         YtelseskontraktV3 ytelseskontraktMock = new YtelseskontraktV3Mock();
 
         final WSHentYtelseskontraktListeRequest request = getWSHentYtelseskontraktListeRequest();

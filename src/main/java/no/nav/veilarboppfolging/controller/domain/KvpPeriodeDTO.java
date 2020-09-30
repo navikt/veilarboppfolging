@@ -2,12 +2,12 @@ package no.nav.veilarboppfolging.controller.domain;
 
 import lombok.Value;
 
-import java.util.Date;
+import java.time.ZonedDateTime;
 
 @Value
 public class KvpPeriodeDTO {
 
-    private Date opprettetDato;
-    private Date avsluttetDato;
+    private ZonedDateTime opprettetDato;
+    private ZonedDateTime avsluttetDato;
 
 }

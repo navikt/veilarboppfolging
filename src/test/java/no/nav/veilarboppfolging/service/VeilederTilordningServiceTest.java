@@ -1,9 +1,9 @@
 package no.nav.veilarboppfolging.service;
 
-import no.nav.common.auth.subject.IdentType;
-import no.nav.common.auth.subject.SsoToken;
-import no.nav.common.auth.subject.Subject;
-import no.nav.common.auth.subject.SubjectHandler;
+import no.nav.common.auth.context.AuthContext;
+import no.nav.common.auth.context.AuthContextHolder;
+import no.nav.common.auth.context.UserRole;
+import no.nav.common.test.auth.AuthTestUtils;
 import no.nav.veilarboppfolging.controller.domain.OppfolgingFeedDTO;
 import no.nav.veilarboppfolging.controller.domain.TilordneVeilederResponse;
 import no.nav.veilarboppfolging.controller.domain.VeilederTilordning;
@@ -58,7 +58,8 @@ public class VeilederTilordningServiceTest {
     @Before
     public void setup() {
         when(authService.harVeilederSkriveTilgangTilFnr(anyString(), anyString())).thenReturn(true);
-        SubjectHandler.withSubject(new Subject("Z000000", IdentType.InternBruker, SsoToken.oidcToken("XOXO", Collections.emptyMap())), () -> {
+
+        AuthContextHolder.withContext(AuthTestUtils.createAuthContext(UserRole.INTERN, "uid"), () -> {
             veilederTilordningService = new VeilederTilordningService(
                     metricsService,
                     veilederTilordningerRepository,
@@ -313,7 +314,8 @@ public class VeilederTilordningServiceTest {
     }
 
     private Callable<TilordneVeilederResponse> portefoljeRessursCallable(VeilederTilordningService veilederTilordningService, List<VeilederTilordning> tilordninger) {
-        return () -> SubjectHandler.withSubject(new Subject("foo", IdentType.InternBruker, SsoToken.oidcToken("xoxo", Collections.emptyMap())), () -> veilederTilordningService.tilordneVeiledere(tilordninger));
+        AuthContext authContext = AuthTestUtils.createAuthContext(UserRole.INTERN, "veileder");
+        return () -> AuthContextHolder.withContext(authContext, () -> veilederTilordningService.tilordneVeiledere(tilordninger));
     }
 
     @Test

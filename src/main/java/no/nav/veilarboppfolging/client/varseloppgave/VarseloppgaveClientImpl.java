@@ -31,7 +31,6 @@ public class VarseloppgaveClientImpl implements VarseloppgaveClient {
 
     public VarseloppgaveClientImpl(String arbeidsrettetDialogUrl, String varselOppgaveV1Endpoint, StsConfig stsConfig) {
         this.arbeidsrettetDialogUrl = arbeidsrettetDialogUrl;
-
         varseloppgave = new CXFClient<>(VarseloppgaveV1.class)
                 .withOutInterceptor(new LoggingOutInterceptor())
                 .configureStsForSubject(stsConfig)
@@ -87,7 +86,6 @@ public class VarseloppgaveClientImpl implements VarseloppgaveClient {
         varselOppgaveBestilling.setMottaker(aktoer);
 
         return varselOppgaveBestilling;
-
     }
 
     private OppgaveHenvendelse lagOppgaveHenvendelse(long dialogId) {

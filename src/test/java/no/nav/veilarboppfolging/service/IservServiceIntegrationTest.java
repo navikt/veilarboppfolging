@@ -1,5 +1,7 @@
 package no.nav.veilarboppfolging.service;
 
+import no.nav.common.auth.context.UserRole;
+import no.nav.common.test.auth.AuthTestUtils;
 import no.nav.common.utils.Credentials;
 import no.nav.veilarboppfolging.domain.IservMapper;
 import no.nav.veilarboppfolging.domain.OppfolgingTable;
@@ -50,7 +52,9 @@ public class IservServiceIntegrationTest {
         utmeldingRepository = new UtmeldingRepository(db);
 
         iservService = new IservService(
-                new Credentials("srvtest", ""), () -> "token", mock(MetricsService.class),
+                new Credentials("srvtest", ""),
+                () -> AuthTestUtils.createAuthContext(UserRole.SYSTEM, "srvtest").getIdToken().serialize(),
+                mock(MetricsService.class),
                 utmeldingRepository, oppfolgingService, oppfolgingStatusRepository, authService
         );
     }

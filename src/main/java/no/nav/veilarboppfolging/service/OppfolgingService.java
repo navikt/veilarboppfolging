@@ -18,13 +18,14 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
 import static java.lang.Boolean.TRUE;
-import static java.lang.System.currentTimeMillis;
 import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
@@ -227,7 +228,7 @@ public class OppfolgingService {
                     new ManuellStatus()
                             .setAktorId(aktorId)
                             .setManuell(true)
-                            .setDato(new Timestamp(currentTimeMillis()))
+                            .setDato(ZonedDateTime.now())
                             .setBegrunnelse("Reservert og under oppfølging")
                             .setOpprettetAv(SYSTEM)
             );
@@ -255,9 +256,8 @@ public class OppfolgingService {
                 .map(ao -> ArenaUtils.erIARBSUtenOppfolging(ao.getFormidlingsgruppe(), ao.getServicegruppe()))
                 .orElse(null);
 
-        Date inaktiveringsDato = maybeArenaOppfolging
+        LocalDate inaktiveringsDato = maybeArenaOppfolging
                 .map(ArenaOppfolgingTilstand::getInaktiveringsdato)
-                .map(d -> Date.from(d.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant()))
                 .orElse(null);
 
         return new OppfolgingStatusData()
@@ -299,10 +299,8 @@ public class OppfolgingService {
                 .map(status -> erUnderOppfolging(status.getFormidlingsgruppe(), status.getServicegruppe()))
                 .orElse(false);
 
-        // TODO: Refactor into function?
-        Date inaktiveringsDato = maybeArenaOppfolging
+        LocalDate inaktiveringsDato = maybeArenaOppfolging
                 .map(ArenaOppfolgingTilstand::getInaktiveringsdato)
-                .map(d -> Date.from(d.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant()))
                 .orElse(null);
 
         val avslutningStatusData = AvslutningStatusData.builder()
@@ -408,11 +406,11 @@ public class OppfolgingService {
     }
 
     private boolean kvpEtterStartenAvPeriode(Kvp kvp, Oppfolgingsperiode periode) {
-        return !periode.getStartDato().after(kvp.getOpprettetDato());
+        return !periode.getStartDato().isAfter(kvp.getOpprettetDato());
     }
 
     private boolean kvpForSluttenAvPeriode(Kvp kvp, Oppfolgingsperiode periode) {
-        return periode.getSluttDato() == null || !periode.getSluttDato().before(kvp.getOpprettetDato());
+        return periode.getSluttDato() == null || !periode.getSluttDato().isBefore(kvp.getOpprettetDato());
     }
 
     private void sjekkStatusIArenaOgOppdaterOppfolging(String fnr) {

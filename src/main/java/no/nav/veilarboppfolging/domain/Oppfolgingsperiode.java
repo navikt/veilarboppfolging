@@ -3,7 +3,7 @@ package no.nav.veilarboppfolging.domain;
 import lombok.Builder;
 import lombok.Value;
 
-import java.util.Date;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 @Value
@@ -11,8 +11,8 @@ import java.util.List;
 public class Oppfolgingsperiode {
     String aktorId;
     String veileder;
-    Date startDato;
-    Date sluttDato;
+    ZonedDateTime startDato;
+    ZonedDateTime sluttDato;
     String begrunnelse;
     List<Kvp> kvpPerioder;
 }

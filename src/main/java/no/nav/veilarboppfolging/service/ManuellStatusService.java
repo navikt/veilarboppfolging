@@ -13,10 +13,8 @@ import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.sql.Timestamp;
+import java.time.ZonedDateTime;
 import java.util.Optional;
-
-import static java.lang.System.currentTimeMillis;
 
 @Service
 public class ManuellStatusService {
@@ -74,7 +72,7 @@ public class ManuellStatusService {
             val nyStatus = new ManuellStatus()
                     .setAktorId(aktorId)
                     .setManuell(manuell)
-                    .setDato(new Timestamp(currentTimeMillis()))
+                    .setDato(ZonedDateTime.now())
                     .setBegrunnelse(begrunnelse)
                     .setOpprettetAv(opprettetAv)
                     .setOpprettetAvBrukerId(opprettetAvBrukerId);

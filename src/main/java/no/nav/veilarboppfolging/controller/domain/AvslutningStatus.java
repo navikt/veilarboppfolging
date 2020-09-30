@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Value;
 import lombok.experimental.Accessors;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 @Value
@@ -18,6 +19,6 @@ public class AvslutningStatus {
     public boolean harYtelser;
     public boolean harTiltak;
     public boolean underKvp;
-    public Date inaktiveringsDato;
+    public LocalDate inaktiveringsDato;
 
 }

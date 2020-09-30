@@ -11,7 +11,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
-import static no.nav.veilarboppfolging.utils.DbUtils.hentDato;
+import static no.nav.veilarboppfolging.utils.DbUtils.hentZonedDateTime;
 
 @Repository
 public class OppfolgingsenhetHistorikkRepository {
@@ -40,7 +40,7 @@ public class OppfolgingsenhetHistorikkRepository {
     private static OppfolgingsenhetEndringData mapper(ResultSet resultset, int rows) throws SQLException {
         return OppfolgingsenhetEndringData.builder()
                 .enhet(resultset.getString("enhet"))
-                .endretDato(hentDato(resultset, "endret_dato"))
+                .endretDato(hentZonedDateTime(resultset, "endret_dato"))
                 .build();
     }
 

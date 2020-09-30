@@ -3,6 +3,7 @@ package no.nav.veilarboppfolging.domain;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
+import java.time.ZonedDateTime;
 import java.util.Date;
 
 @Data
@@ -12,6 +13,6 @@ public class Tilordning {
     String veilederId;
     boolean oppfolging;
     boolean nyForVeileder;
-    Date sistTilordnet;
-    Date sistOppdatert;
+    ZonedDateTime sistTilordnet;
+    ZonedDateTime sistOppdatert;
 }

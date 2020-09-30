@@ -3,7 +3,8 @@ package no.nav.veilarboppfolging.controller.domain;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
-import java.util.Date;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 @Data
@@ -18,7 +19,7 @@ public class OppfolgingStatus {
     public boolean underOppfolging;
     public boolean underKvp;
 
-    public Date oppfolgingUtgang;
+    public ZonedDateTime oppfolgingUtgang;
     public Eskaleringsvarsel gjeldendeEskaleringsvarsel;
     private boolean kanStarteOppfolging;
     private AvslutningStatus avslutningStatus;
@@ -26,7 +27,7 @@ public class OppfolgingStatus {
     private boolean harSkriveTilgang;
     private Boolean inaktivIArena;
     private Boolean kanReaktiveres;
-    public Date inaktiveringsdato;
+    public LocalDate inaktiveringsdato;
     private Boolean erSykmeldtMedArbeidsgiver;
     private String servicegruppe;
     private String formidlingsgruppe;

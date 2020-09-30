@@ -7,22 +7,21 @@ import no.nav.common.abac.XacmlResponseParser;
 import no.nav.common.abac.constants.AbacDomain;
 import no.nav.common.abac.constants.NavAttributter;
 import no.nav.common.abac.constants.StandardAttributter;
-import no.nav.common.abac.domain.AbacPersonId;
 import no.nav.common.abac.domain.Attribute;
 import no.nav.common.abac.domain.request.*;
 import no.nav.common.abac.domain.response.XacmlResponse;
-import no.nav.common.auth.subject.IdentType;
-import no.nav.common.auth.subject.SsoToken;
-import no.nav.common.auth.subject.SubjectHandler;
+import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.client.aktorregister.AktorregisterClient;
+import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.EnhetId;
+import no.nav.common.types.identer.Fnr;
+import no.nav.common.types.identer.NavIdent;
 import no.nav.common.utils.Credentials;
-import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
 import static no.nav.common.abac.XacmlRequestBuilder.lagEnvironment;
 import static no.nav.common.abac.XacmlRequestBuilder.personIdAttribute;
@@ -31,8 +30,6 @@ import static no.nav.common.abac.XacmlRequestBuilder.personIdAttribute;
 @Service
 public class AuthService {
 
-    private final ArenaOppfolgingService arenaOppfolgingService;
-
     private final Pep veilarbPep;
 
     private final AktorregisterClient aktorregisterClient;
@@ -40,42 +37,34 @@ public class AuthService {
     private final Credentials serviceUserCredentials;
 
     @Autowired
-    public AuthService(ArenaOppfolgingService arenaOppfolgingService, Pep veilarbPep, AktorregisterClient aktorregisterClient, Credentials serviceUserCredentials) {
-        this.arenaOppfolgingService = arenaOppfolgingService;
+    public AuthService(Pep veilarbPep, AktorregisterClient aktorregisterClient, Credentials serviceUserCredentials) {
         this.veilarbPep = veilarbPep;
         this.aktorregisterClient = aktorregisterClient;
         this.serviceUserCredentials = serviceUserCredentials;
     }
 
-    private void skalVere(IdentType forventetIdentType) {
-        IdentType identType = SubjectHandler.getIdentType().orElse(null);
-        if (identType != forventetIdentType) {
-            log.warn(format("Forventet bruker av type %s, men fikk %s", identType, forventetIdentType));
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
-        }
-    }
-
     public void skalVereInternBruker() {
-        skalVere(IdentType.InternBruker);
+        if (!AuthContextHolder.erInternBruker()){
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Ugyldig bruker type");
+        };
     }
 
     public void skalVereSystemBruker() {
-        skalVere(IdentType.Systemressurs);
+        if (!AuthContextHolder.erSystemBruker()){
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Ugyldig bruker type");
+        };
     }
 
     public boolean erInternBruker() {
-        IdentType identType = SubjectHandler.getIdentType().orElse(null);
-        return IdentType.InternBruker.equals(identType);
+        return AuthContextHolder.erInternBruker();
     }
 
     public boolean erSystemBruker() {
-        IdentType identType = SubjectHandler.getIdentType().orElse(null);
-        return IdentType.Systemressurs.equals(identType);
+        return AuthContextHolder.erSystemBruker();
     }
 
     public boolean erEksternBruker() {
-        IdentType identType = SubjectHandler.getIdentType().orElse(null);
-        return IdentType.EksternBruker.equals(identType);
+        return AuthContextHolder.erEksternBruker();
     }
 
     public boolean harTilgangTilEnhet(String enhetId) {
@@ -83,12 +72,11 @@ public class AuthService {
         //  til enheter som ikke finnes (f.eks. tom streng)
         //  Ved å konvertere null til tom streng muliggjør vi å spørre om tilgang til enhet for brukere som
         //  ikke har enhet. Sluttbrukere da få permit mens veiledere vil få deny.
-        return veilarbPep.harTilgangTilEnhet(getInnloggetBrukerToken(), ofNullable(enhetId).orElse(""));
+        return veilarbPep.harTilgangTilEnhet(getInnloggetBrukerToken(), ofNullable(enhetId).map(EnhetId::of).orElse(EnhetId.of("")));
     }
 
     public boolean harVeilederSkriveTilgangTilFnr(String veilederId, String fnr) {
-        AbacPersonId personId = AbacPersonId.aktorId(getAktorIdOrThrow(fnr));
-        return veilarbPep.harVeilederTilgangTilPerson(veilederId, ActionId.WRITE, personId);
+        return veilarbPep.harVeilederTilgangTilPerson(NavIdent.of(veilederId), ActionId.WRITE, AktorId.of(getAktorIdOrThrow(fnr)));
     }
 
     public void sjekkLesetilgangMedFnr(String fnr) {
@@ -96,7 +84,7 @@ public class AuthService {
     }
 
     public void sjekkLesetilgangMedAktorId(String aktorId) {
-        if (!veilarbPep.harTilgangTilPerson(getInnloggetBrukerToken(), ActionId.READ, AbacPersonId.aktorId(aktorId))) {
+        if (!veilarbPep.harTilgangTilPerson(getInnloggetBrukerToken(), ActionId.READ, AktorId.of(aktorId))) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
     }
@@ -106,7 +94,7 @@ public class AuthService {
     }
 
     public void sjekkSkrivetilgangMedAktorId(String aktorId) {
-        if (!veilarbPep.harTilgangTilPerson(getInnloggetBrukerToken(), ActionId.WRITE, AbacPersonId.aktorId(aktorId))) {
+        if (!veilarbPep.harTilgangTilPerson(getInnloggetBrukerToken(), ActionId.WRITE, AktorId.of(aktorId))) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
     }
@@ -115,15 +103,6 @@ public class AuthService {
         if (!harTilgangTilEnhet(enhetId)) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         }
-    }
-
-    public void sjekkTilgangTilPersonOgEnhet(String fnr) {
-        sjekkLesetilgangMedFnr(fnr);
-
-        VeilarbArenaOppfolging oppfolgingTilstand = arenaOppfolgingService.hentOppfolgingFraVeilarbarena(fnr)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR));
-
-        sjekkTilgangTilEnhet(oppfolgingTilstand.getNav_kontor());
     }
 
     public void sjekkTilgangTilPersonMedNiva3(String aktorId) {
@@ -147,7 +126,7 @@ public class AuthService {
         Resource resource = new Resource();
         resource.getAttribute().add(new Attribute(NavAttributter.RESOURCE_FELLES_RESOURCE_TYPE, NavAttributter.RESOURCE_VEILARB_UNDER_OPPFOLGING));
         resource.getAttribute().add(new Attribute(NavAttributter.RESOURCE_FELLES_DOMENE, AbacDomain.VEILARB_DOMAIN));
-        resource.getAttribute().add(personIdAttribute(AbacPersonId.aktorId(aktorId)));
+        resource.getAttribute().add(personIdAttribute(AktorId.of(aktorId)));
 
         Request request = new Request()
                 .withEnvironment(environment)
@@ -179,25 +158,20 @@ public class AuthService {
     }
 
     public String getAktorIdOrThrow(String fnr) {
-        return aktorregisterClient.hentAktorId(fnr);
+        return aktorregisterClient.hentAktorId(Fnr.of(fnr)).get();
     }
 
     public String getFnrOrThrow(String aktorId) {
-        return aktorregisterClient.hentFnr(aktorId);
+        return aktorregisterClient.hentFnr(AktorId.of(aktorId)).get();
     }
 
-    public static String getInnloggetBrukerToken() {
-        return SubjectHandler
-                .getSsoToken()
-                .map(SsoToken::getToken)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Fant ikke token for innlogget bruker"));
+    public String getInnloggetBrukerToken() {
+        return AuthContextHolder.getIdTokenString().orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Fant ikke token for innlogget bruker"));
     }
 
     // NAV ident, fnr eller annen ID
     public String getInnloggetBrukerIdent() {
-        return SubjectHandler
-                .getIdent()
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Fant ikke ident for innlogget bruker"));
+        return AuthContextHolder.getSubject().orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "NAV ident is missing"));
     }
 
     public String getInnloggetVeilederIdent() {
@@ -206,5 +180,4 @@ public class AuthService {
         }
         return getInnloggetBrukerIdent();
     }
-
 }

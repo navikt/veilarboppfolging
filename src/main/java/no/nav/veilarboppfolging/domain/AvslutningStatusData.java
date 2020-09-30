@@ -3,6 +3,7 @@ package no.nav.veilarboppfolging.domain;
 import lombok.Builder;
 import lombok.Data;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 @Data
@@ -14,6 +15,6 @@ public class AvslutningStatusData {
     public final boolean harYtelser;
     public final boolean harTiltak;
     public final boolean underKvp;
-    public final Date inaktiveringsDato;
+    public final LocalDate inaktiveringsDato;
 
 }

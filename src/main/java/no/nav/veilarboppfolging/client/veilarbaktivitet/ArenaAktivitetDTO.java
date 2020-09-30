@@ -7,7 +7,7 @@ import no.nav.veilarboppfolging.domain.arena.ArenaAktivitetTypeDTO;
 import no.nav.veilarboppfolging.domain.arena.ArenaStatusDTO;
 import no.nav.veilarboppfolging.domain.arena.MoteplanDTO;
 
-import java.util.Date;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 @Data
@@ -19,9 +19,9 @@ public class ArenaAktivitetDTO {
     ArenaAktivitetTypeDTO type;
     String tittel;
     String beskrivelse;
-    Date fraDato;
-    Date tilDato;
-    Date opprettetDato;
+    ZonedDateTime fraDato; // TODO: Usikker på om dette skal være LocalDate
+    ZonedDateTime tilDato; // TODO: Usikker på om dette skal være LocalDate
+    ZonedDateTime opprettetDato; // TODO: Usikker på om dette skal være LocalDate
     boolean avtalt;
     public ArenaStatusDTO etikett;
 
@@ -32,7 +32,7 @@ public class ArenaAktivitetDTO {
     String arrangoer;
     String bedriftsnummer;
     Float antallDagerPerUke;
-    Date statusSistEndret;
+    ZonedDateTime statusSistEndret; // TODO: Usikker på om dette skal være LocalDate
 
     // Gruppeaktivitet
     List<MoteplanDTO> moeteplanListe;

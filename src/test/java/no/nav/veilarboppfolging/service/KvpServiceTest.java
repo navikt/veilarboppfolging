@@ -1,9 +1,10 @@
 package no.nav.veilarboppfolging.service;
 
-import no.nav.common.auth.subject.SsoToken;
-import no.nav.common.auth.subject.Subject;
-import no.nav.common.auth.subject.SubjectHandler;
-import no.nav.veilarboppfolging.client.oppfolging.OppfolgingClient;
+import no.nav.common.auth.context.AuthContextHolder;
+import no.nav.common.auth.context.UserRole;
+import no.nav.common.test.auth.AuthTestUtils;
+import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
+import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
 import no.nav.veilarboppfolging.domain.OppfolgingTable;
 import no.nav.veilarboppfolging.repository.EskaleringsvarselRepository;
 import no.nav.veilarboppfolging.repository.KvpRepository;
@@ -17,9 +18,8 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.Collections;
+import java.util.Optional;
 
-import static no.nav.common.auth.subject.IdentType.InternBruker;
 import static no.nav.veilarboppfolging.domain.KodeverkBruker.NAV;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
@@ -40,7 +40,7 @@ public class KvpServiceTest {
     private EskaleringsvarselRepository eskaleringsvarselRepository;
 
     @Mock
-    private OppfolgingClient oppfolgingClient;
+    private VeilarbarenaClient veilarbarenaClient;
 
     @Mock
     private MetricsService metricsService;
@@ -61,7 +61,10 @@ public class KvpServiceTest {
     @Before
     public void initialize() {
         when(oppfolgingsStatusRepository.fetch(AKTOR_ID)).thenReturn(new OppfolgingTable().setUnderOppfolging(true));
-        when(oppfolgingClient.finnEnhetId(FNR)).thenReturn(ENHET);
+
+        VeilarbArenaOppfolging veilarbArenaOppfolging = new VeilarbArenaOppfolging();
+        veilarbArenaOppfolging.setNav_kontor(ENHET);
+        when(veilarbarenaClient.hentOppfolgingsbruker(FNR)).thenReturn(Optional.of(veilarbArenaOppfolging));
 
         when(authService.harTilgangTilEnhet(anyString())).thenReturn(true);
         when(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID);
@@ -100,7 +103,8 @@ public class KvpServiceTest {
     public void startKvp_feiler_dersom_bruker_allerede_er_under_kvp() {
 
         when(oppfolgingsStatusRepository.fetch(AKTOR_ID)).thenReturn(new OppfolgingTable().setUnderOppfolging(true).setGjeldendeKvpId(2));
-        SubjectHandler.withSubject(new Subject(VEILEDER, InternBruker, SsoToken.oidcToken("token", Collections.emptyMap())),
+
+        AuthContextHolder.withContext(AuthTestUtils.createAuthContext(UserRole.INTERN, VEILEDER),
                 () -> kvpService.startKvp(FNR, START_BEGRUNNELSE)
         );
 
@@ -111,7 +115,7 @@ public class KvpServiceTest {
         long kvpId = 2;
         when(oppfolgingsStatusRepository.fetch(AKTOR_ID)).thenReturn(new OppfolgingTable().setUnderOppfolging(true).setGjeldendeKvpId(kvpId));
 
-        SubjectHandler.withSubject(new Subject(VEILEDER, InternBruker, SsoToken.oidcToken("token", Collections.emptyMap())),
+        AuthContextHolder.withContext(AuthTestUtils.createAuthContext(UserRole.INTERN, VEILEDER),
                 () -> kvpService.stopKvp(FNR, STOP_BEGRUNNELSE)
         );
 
@@ -126,7 +130,7 @@ public class KvpServiceTest {
         long kvpId = 2;
         when(oppfolgingsStatusRepository.fetch(AKTOR_ID)).thenReturn(new OppfolgingTable().setUnderOppfolging(true).setGjeldendeEskaleringsvarselId(1).setGjeldendeKvpId(kvpId));
 
-        SubjectHandler.withSubject(new Subject(VEILEDER, InternBruker, SsoToken.oidcToken("token", Collections.emptyMap())),
+        AuthContextHolder.withContext(AuthTestUtils.createAuthContext(UserRole.INTERN, VEILEDER),
                 () -> kvpService.stopKvp(FNR, STOP_BEGRUNNELSE)
         );
 
