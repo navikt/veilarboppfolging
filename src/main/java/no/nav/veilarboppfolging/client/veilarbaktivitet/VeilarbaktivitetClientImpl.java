@@ -5,7 +5,7 @@ import no.nav.common.health.HealthCheckResult;
 import no.nav.common.health.HealthCheckUtils;
 import no.nav.common.rest.client.RestClient;
 import no.nav.common.rest.client.RestUtils;
-import no.nav.common.sts.SystemUserTokenProvider;
+import no.nav.common.sts.OpenAmSystemUserTokenProvider;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -21,13 +21,13 @@ public class VeilarbaktivitetClientImpl implements VeilarbaktivitetClient {
 
     private final String veilarbaktivitetUrl;
 
-    private final SystemUserTokenProvider systemUserTokenProvider;
+    private final OpenAmSystemUserTokenProvider openAmSystemUserTokenProvider;
 
     private final OkHttpClient client;
 
-    public VeilarbaktivitetClientImpl(String veilarbaktivitetUrl, SystemUserTokenProvider systemUserTokenProvider) {
+    public VeilarbaktivitetClientImpl(String veilarbaktivitetUrl, OpenAmSystemUserTokenProvider openAmSystemUserTokenProvider) {
         this.veilarbaktivitetUrl = veilarbaktivitetUrl;
-        this.systemUserTokenProvider = systemUserTokenProvider;
+        this.openAmSystemUserTokenProvider = openAmSystemUserTokenProvider;
         this.client = RestClient.baseClient();
     }
 
@@ -37,7 +37,7 @@ public class VeilarbaktivitetClientImpl implements VeilarbaktivitetClient {
         Request request = new Request.Builder()
                 .url(joinPaths(veilarbaktivitetUrl, "/api/aktivitet/arena?fnr=" + fnr))
                 .header(ACCEPT, APPLICATION_JSON_VALUE)
-                .header(AUTHORIZATION, "Bearer " + systemUserTokenProvider.getSystemUserToken())
+                .header(AUTHORIZATION, "Bearer " + openAmSystemUserTokenProvider.getSystemUserToken())
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
