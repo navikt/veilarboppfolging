@@ -5,12 +5,12 @@ import no.nav.common.health.HealthCheckResult;
 import no.nav.common.health.HealthCheckUtils;
 import no.nav.common.rest.client.RestClient;
 import no.nav.common.rest.client.RestUtils;
-import no.nav.common.sts.OpenAmSystemUserTokenProvider;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
 import java.util.List;
+import java.util.function.Supplier;
 
 import static no.nav.common.utils.UrlUtils.joinPaths;
 import static org.springframework.http.HttpHeaders.ACCEPT;
@@ -21,13 +21,13 @@ public class VeilarbaktivitetClientImpl implements VeilarbaktivitetClient {
 
     private final String veilarbaktivitetUrl;
 
-    private final OpenAmSystemUserTokenProvider openAmSystemUserTokenProvider;
+    private final Supplier<String> userTokenProvider;
 
     private final OkHttpClient client;
 
-    public VeilarbaktivitetClientImpl(String veilarbaktivitetUrl, OpenAmSystemUserTokenProvider openAmSystemUserTokenProvider) {
+    public VeilarbaktivitetClientImpl(String veilarbaktivitetUrl, Supplier<String> userTokenProvider) {
         this.veilarbaktivitetUrl = veilarbaktivitetUrl;
-        this.openAmSystemUserTokenProvider = openAmSystemUserTokenProvider;
+        this.userTokenProvider = userTokenProvider;
         this.client = RestClient.baseClient();
     }
 
@@ -37,7 +37,7 @@ public class VeilarbaktivitetClientImpl implements VeilarbaktivitetClient {
         Request request = new Request.Builder()
                 .url(joinPaths(veilarbaktivitetUrl, "/api/aktivitet/arena?fnr=" + fnr))
                 .header(ACCEPT, APPLICATION_JSON_VALUE)
-                .header(AUTHORIZATION, "Bearer " + openAmSystemUserTokenProvider.getSystemUserToken())
+                .header(AUTHORIZATION, "Bearer " + userTokenProvider.get())
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
