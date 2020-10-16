@@ -7,7 +7,6 @@ import no.nav.common.client.norg2.CachedNorg2Client;
 import no.nav.common.client.norg2.Norg2Client;
 import no.nav.common.client.norg2.NorgHttp2Client;
 import no.nav.common.cxf.StsConfig;
-import no.nav.common.sts.OpenAmSystemUserTokenProvider;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.veilarboppfolging.client.behandle_arbeidssoker.BehandleArbeidssokerClient;
 import no.nav.veilarboppfolging.client.behandle_arbeidssoker.BehandleArbeidssokerClientImpl;
@@ -62,9 +61,9 @@ public class ClientConfig {
     }
 
     @Bean
-    public VeilarbaktivitetClient veilarbaktivitetClient(OpenAmSystemUserTokenProvider openAmSystemUserTokenProvider) {
+    public VeilarbaktivitetClient veilarbaktivitetClient(AuthService authService) {
         String url = clusterUrlForApplication("veilarbaktivitet", true);
-        return new VeilarbaktivitetClientImpl(url, openAmSystemUserTokenProvider);
+        return new VeilarbaktivitetClientImpl(url, authService::getInnloggetBrukerToken);
     }
 
     @Bean
