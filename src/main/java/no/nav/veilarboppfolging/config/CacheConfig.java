@@ -38,7 +38,7 @@ public class CacheConfig {
     @Bean
     public Cache dkifKontaktinfoCache() {
         return new CaffeineCache(DKIF_KONTAKTINFO_CACHE_NAME, Caffeine.newBuilder()
-                .expireAfterWrite(1, TimeUnit.HOURS)
+                .expireAfterWrite(1, TimeUnit.MINUTES)
                 .maximumSize(10_000)
                 .build());
     }
