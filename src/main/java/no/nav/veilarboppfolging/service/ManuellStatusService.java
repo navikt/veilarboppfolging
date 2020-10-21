@@ -59,7 +59,9 @@ public class ManuellStatusService {
 
         VeilarbArenaOppfolging arenaOppfolging = arenaOppfolgingService.hentOppfolgingFraVeilarbarena(fnr).orElseThrow();
 
-        authService.sjekkTilgangTilEnhet(arenaOppfolging.getNav_kontor());
+        if (!authService.erEksternBruker()) {
+            authService.sjekkTilgangTilEnhet(arenaOppfolging.getNav_kontor());
+        }
 
         OppfolgingTable oppfolging = oppfolgingsStatusRepository.fetch(aktorId);
         DkifKontaktinfo kontaktinfo = dkifClient.hentKontaktInfo(fnr);
