@@ -75,6 +75,10 @@ public class AuthService {
         return veilarbPep.harTilgangTilEnhet(getInnloggetBrukerToken(), ofNullable(enhetId).map(EnhetId::of).orElse(EnhetId.of("")));
     }
 
+    public boolean harTilgangTilEnhetMedSperre(String enhetId) {
+        return veilarbPep.harTilgangTilEnhetMedSperre(getInnloggetBrukerToken(), EnhetId.of(enhetId));
+    }
+
     public boolean harVeilederSkriveTilgangTilFnr(String veilederId, String fnr) {
         return veilarbPep.harVeilederTilgangTilPerson(NavIdent.of(veilederId), ActionId.WRITE, AktorId.of(getAktorIdOrThrow(fnr)));
     }
