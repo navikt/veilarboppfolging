@@ -85,7 +85,7 @@ public class MalService {
         authService.sjekkSkrivetilgangMedAktorId(aktorId);
 
         Kvp kvp = kvpRepository.fetch(kvpRepository.gjeldendeKvp(aktorId));
-        ofNullable(kvp).ifPresent(this::sjekkEnhetTilgang);
+        ofNullable(kvp).ifPresent(this::sjekkKvpEnhetTilgang);
 
         MalData malData = new MalData()
                 .setAktorId(aktorId)
@@ -100,8 +100,8 @@ public class MalService {
         return malData;
     }
 
-    private void sjekkEnhetTilgang(Kvp kvp) {
-        if (!authService.harTilgangTilEnhet(kvp.getEnhet())) {
+    private void sjekkKvpEnhetTilgang(Kvp kvp) {
+        if (!authService.harTilgangTilEnhetMedSperre(kvp.getEnhet())) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         }
     }
