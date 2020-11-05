@@ -8,6 +8,7 @@ import no.nav.veilarboppfolging.repository.MaalRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
 import org.junit.Before;
 import org.junit.Test;
+
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -22,6 +23,8 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
+
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
@@ -70,9 +73,19 @@ public class MalServiceTest {
     public void oppdater_mal_for_kvp_uten_tilgang() {
         when(kvpRepositoryMock.gjeldendeKvp(anyString())).thenReturn(KVP_ID);
         when(kvpRepositoryMock.fetch(anyLong())).thenReturn(aktivKvp());
-        when(authService.harTilgangTilEnhet(ENHET)).thenReturn(false);
+        when(authService.harTilgangTilEnhetMedSperre(ENHET)).thenReturn(false);
 
         malService.oppdaterMal("mal", FNR, VEILEDER);
+    }
+
+    @Test
+    public void oppdaterMal_veilederMedTilgang_KvpBruker_kasterIkkeException() {
+        when(kvpRepositoryMock.gjeldendeKvp(anyString())).thenReturn(KVP_ID);
+        when(kvpRepositoryMock.fetch(anyLong())).thenReturn(aktivKvp());
+        when(authService.harTilgangTilEnhetMedSperre(ENHET)).thenReturn(true);
+        MalData resultat = malService.oppdaterMal("mal", FNR, VEILEDER);
+
+        assertEquals("mal", resultat.getMal());
     }
 
     @Test
