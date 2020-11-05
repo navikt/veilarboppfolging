@@ -20,7 +20,7 @@ public class KvpUtils {
     public static boolean sjekkTilgangGittKvp(AuthService authService, List<Kvp> kvpList, Supplier<ZonedDateTime> dateSupplier) {
         for (Kvp kvp : kvpList) {
             if (between(kvp.getOpprettetDato(), kvp.getAvsluttetDato(), dateSupplier.get())) {
-                return authService.harTilgangTilEnhet(kvp.getEnhet());
+                return authService.harTilgangTilEnhetMedSperre(kvp.getEnhet());
             }
         }
         return true;
