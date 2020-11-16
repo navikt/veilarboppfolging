@@ -46,4 +46,4 @@ spec:
       - kvPath: /kv/preprod/fss/veilarboppfolging/{{namespace}}
         mountPath: /var/run/secrets/nais.io/vault
       - kvPath: /oracle/data/dev/config/veilarboppfolging_{{namespace}}
-        mountPath: /secrets/database/config
+        mountPath: /var/run/secrets/nais.io/oracle_config

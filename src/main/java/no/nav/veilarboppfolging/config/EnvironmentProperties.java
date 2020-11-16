@@ -45,8 +45,6 @@ public class EnvironmentProperties {
 
     private String soapStsUrl;
 
-    private String dbUrl;
-
     private String arbeidsrettetDialogUrl;
 
     private String kafkaBrokersUrl;
