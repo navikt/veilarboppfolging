@@ -35,6 +35,7 @@ spec:
       memory: 2048Mi
   envFrom:
     - configmap: pto-config
+    - configmap: loginservice-idporten
   vault:
     enabled: true
     paths:
@@ -44,3 +45,5 @@ spec:
         mountPath: /var/run/secrets/nais.io/service_user
       - kvPath: /kv/prod/fss/veilarboppfolging/default
         mountPath: /var/run/secrets/nais.io/vault
+      - kvPath: /oracle/data/prod/config/veilarboppfolging
+        mountPath: /var/run/secrets/nais.io/oracle_config
