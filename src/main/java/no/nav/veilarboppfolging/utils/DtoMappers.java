@@ -39,7 +39,6 @@ public class DtoMappers {
                 avslutningStatusData.kanAvslutte,
                 avslutningStatusData.underOppfolging,
                 avslutningStatusData.harYtelser,
-                avslutningStatusData.harTiltak,
                 avslutningStatusData.underKvp,
                 avslutningStatusData.inaktiveringsDato
         );
@@ -70,11 +69,6 @@ public class DtoMappers {
             status
                     .setVeilederId(oppfolgingStatusData.veilederId)
                     .setKanStarteOppfolging(oppfolgingStatusData.isKanStarteOppfolging())
-                    .setAvslutningStatus(
-                            ofNullable(oppfolgingStatusData.getAvslutningStatusData())
-                                    .map(DtoMappers::tilDto)
-                                    .orElse(null)
-                    )
                     .setOppfolgingUtgang(oppfolgingStatusData.getOppfolgingUtgang())
                     .setHarSkriveTilgang(oppfolgingStatusData.harSkriveTilgang)
                     .setInaktivIArena(oppfolgingStatusData.inaktivIArena);
