@@ -23,8 +23,6 @@ public class OppfolgingStatusData {
     public boolean underKvp;
     public boolean kanStarteOppfolging;
     public boolean kanVarsles;
-    @Deprecated
-    public AvslutningStatusData avslutningStatusData;
     private EskaleringsvarselData gjeldendeEskaleringsvarsel;
     public List<Oppfolgingsperiode> oppfolgingsperioder = Collections.emptyList();
     public List<Kvp> kvpPerioder;
