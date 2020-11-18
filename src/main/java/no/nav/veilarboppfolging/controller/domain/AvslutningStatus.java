@@ -17,7 +17,6 @@ public class AvslutningStatus {
     public boolean kanAvslutte;
     public boolean underOppfolging;
     public boolean harYtelser;
-    public boolean harTiltak;
     public boolean underKvp;
     public LocalDate inaktiveringsDato;
 
