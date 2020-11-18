@@ -22,7 +22,6 @@ public class OppfolgingStatus {
     public ZonedDateTime oppfolgingUtgang;
     public Eskaleringsvarsel gjeldendeEskaleringsvarsel;
     private boolean kanStarteOppfolging;
-    private AvslutningStatus avslutningStatus;
     private List<OppfolgingPeriodeDTO> oppfolgingsPerioder;
     private boolean harSkriveTilgang;
     private Boolean inaktivIArena;
