@@ -349,20 +349,6 @@ public class OppfolgingServiceTest {
     }
 
     @Test
-    public void kanAvslutteMedAktiveTiltak() throws Exception {
-        gittOppfolging(oppfolging.setUnderOppfolging(true));
-        gittOppfolgingStatus("ISERV", "");
-        gittAktiveTiltak();
-        gittYtelserMedStatus();
-
-        OppfolgingStatusData oppfolgingStatusData = oppfolgingService.hentAvslutningStatus(FNR);
-        AvslutningStatusData avslutningStatusData = oppfolgingStatusData.avslutningStatusData;
-
-        assertTrue(avslutningStatusData.harTiltak);
-        assertTrue(avslutningStatusData.kanAvslutte);
-    }
-
-    @Test
     public void kanAvslutteMedVarselOmAktiveYtelser() throws Exception {
         gittOppfolging(oppfolging.setUnderOppfolging(true));
         gittOppfolgingStatus("ISERV", "");
