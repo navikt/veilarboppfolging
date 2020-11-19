@@ -69,19 +69,19 @@ public class OppfolgingController {
     }
 
     @GetMapping("/avslutningStatus")
-    public OppfolgingStatus hentAvslutningStatus(@RequestParam("fnr") String fnr) {
+    public AvslutningStatus hentAvslutningStatus(@RequestParam("fnr") String fnr) {
         authService.skalVereInternBruker();
-        return tilDto(oppfolgingService.hentAvslutningStatus(fnr), authService.erInternBruker());
+        return tilDto(oppfolgingService.hentAvslutningStatus(fnr));
     }
 
     @PostMapping("/avsluttOppfolging")
-    public OppfolgingStatus avsluttOppfolging(@RequestBody VeilederBegrunnelseDTO dto, @RequestParam("fnr") String fnr) {
+    public AvslutningStatus avsluttOppfolging(@RequestBody VeilederBegrunnelseDTO dto, @RequestParam("fnr") String fnr) {
         authService.skalVereInternBruker();
         return tilDto(oppfolgingService.avsluttOppfolging(
                 fnr,
                 dto.veilederId,
                 dto.begrunnelse
-        ), authService.erInternBruker());
+        ));
     }
 
     // TODO: Ikke returner OppfolgingStatus

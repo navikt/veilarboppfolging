@@ -2,7 +2,6 @@ package no.nav.veilarboppfolging.service;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import lombok.val;
 import no.nav.veilarboppfolging.client.dkif.DkifClient;
 import no.nav.veilarboppfolging.client.dkif.DkifKontaktinfo;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
@@ -98,12 +97,12 @@ public class OppfolgingService {
 
         sjekkStatusIArenaOgOppdaterOppfolging(fnr);
 
-        return getOppfolgingStatusData(fnr, null);
+        return getOppfolgingStatusData(fnr);
     }
 
-    public OppfolgingStatusData hentAvslutningStatus(String fnr) {
+    public AvslutningStatusData hentAvslutningStatus(String fnr) {
         authService.sjekkLesetilgangMedFnr(fnr);
-        return getOppfolgingStatusDataMedAvslutningStatus(fnr);
+        return getAvslutningStatus(fnr);
     }
 
     @SneakyThrows
@@ -123,12 +122,12 @@ public class OppfolgingService {
             startOppfolgingHvisIkkeAlleredeStartet(aktorId);
         }
 
-        return getOppfolgingStatusData(fnr, null);
+        return getOppfolgingStatusData(fnr);
     }
 
     @SneakyThrows
     @Transactional
-    public OppfolgingStatusData avsluttOppfolging(String fnr, String veilederId, String begrunnelse) {
+    public AvslutningStatusData avsluttOppfolging(String fnr, String veilederId, String begrunnelse) {
         String aktorId = authService.getAktorIdOrThrow(fnr);
 
         authService.sjekkLesetilgangMedFnr(fnr);
@@ -147,7 +146,7 @@ public class OppfolgingService {
             avsluttOppfolgingForBruker(aktorId, veilederId, begrunnelse);
         }
 
-        return getOppfolgingStatusDataMedAvslutningStatus(fnr);
+        return getAvslutningStatus(fnr);
     }
 
     @Transactional
@@ -211,7 +210,7 @@ public class OppfolgingService {
         return ofNullable(oppfolgingsStatusRepository.fetch(aktorId));
     }
 
-    private OppfolgingStatusData getOppfolgingStatusData(String fnr, AvslutningStatusData avslutningStatusData) {
+    private OppfolgingStatusData getOppfolgingStatusData(String fnr) {
         String aktorId = authService.getAktorIdOrThrow(fnr);
 
         Oppfolging oppfolging = hentOppfolging(aktorId)
@@ -269,7 +268,6 @@ public class OppfolgingService {
                 .setReservasjonKRR(dkifKontaktinfo.isReservert())
                 .setManuell(erManuell || dkifKontaktinfo.isReservert())
                 .setKanStarteOppfolging(kanSettesUnderOppfolging)
-                .setAvslutningStatusData(avslutningStatusData)
                 .setGjeldendeEskaleringsvarsel(oppfolging.getGjeldendeEskaleringsvarsel())
                 .setOppfolgingsperioder(oppfolging.getOppfolgingsperioder())
                 .setHarSkriveTilgang(harSkrivetilgangTilBruker)
@@ -284,7 +282,7 @@ public class OppfolgingService {
                 .setKanVarsles(!erManuell && dkifKontaktinfo.isKanVarsles());
     }
 
-    private OppfolgingStatusData getOppfolgingStatusDataMedAvslutningStatus(String fnr) {
+    private AvslutningStatusData getAvslutningStatus(String fnr) {
         String aktorId = authService.getAktorIdOrThrow(fnr);
 
         OppfolgingTable oppfolging = oppfolgingsStatusRepository.fetch(aktorId);
@@ -303,16 +301,13 @@ public class OppfolgingService {
                 .map(ArenaOppfolgingTilstand::getInaktiveringsdato)
                 .orElse(null);
 
-        val avslutningStatusData = AvslutningStatusData.builder()
+        return AvslutningStatusData.builder()
                 .kanAvslutte(kanAvslutte)
                 .underOppfolging(erUnderOppfolging)
                 .harYtelser(ytelserOgAktiviteterService.harPagaendeYtelse(fnr))
-                .harTiltak(ytelserOgAktiviteterService.harAktiveTiltak(fnr))
                 .underKvp(kvpService.erUnderKvp(authService.getAktorIdOrThrow(fnr)))
                 .inaktiveringsDato(inaktiveringsDato)
                 .build();
-
-        return getOppfolgingStatusData(fnr, avslutningStatusData);
     }
 
     @SneakyThrows

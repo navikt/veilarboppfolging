@@ -330,8 +330,7 @@ public class OppfolgingServiceTest {
         gittOppfolging(oppfolging.setUnderOppfolging(false));
         gittYtelserMedStatus();
 
-        OppfolgingStatusData oppfolgingStatusData = oppfolgingService.hentAvslutningStatus(FNR);
-        AvslutningStatusData avslutningStatusData = oppfolgingStatusData.avslutningStatusData;
+        AvslutningStatusData avslutningStatusData = oppfolgingService.hentAvslutningStatus(FNR);
 
         assertFalse(avslutningStatusData.kanAvslutte);
     }
@@ -342,24 +341,9 @@ public class OppfolgingServiceTest {
         gittOppfolgingStatus("ARBS", null);
         gittYtelserMedStatus();
 
-        OppfolgingStatusData oppfolgingStatusData = oppfolgingService.hentAvslutningStatus(FNR);
-        AvslutningStatusData avslutningStatusData = oppfolgingStatusData.avslutningStatusData;
+        AvslutningStatusData avslutningStatusData = oppfolgingService.hentAvslutningStatus(FNR);
 
         assertFalse(avslutningStatusData.kanAvslutte);
-    }
-
-    @Test
-    public void kanAvslutteMedAktiveTiltak() throws Exception {
-        gittOppfolging(oppfolging.setUnderOppfolging(true));
-        gittOppfolgingStatus("ISERV", "");
-        gittAktiveTiltak();
-        gittYtelserMedStatus();
-
-        OppfolgingStatusData oppfolgingStatusData = oppfolgingService.hentAvslutningStatus(FNR);
-        AvslutningStatusData avslutningStatusData = oppfolgingStatusData.avslutningStatusData;
-
-        assertTrue(avslutningStatusData.harTiltak);
-        assertTrue(avslutningStatusData.kanAvslutte);
     }
 
     @Test
@@ -369,8 +353,7 @@ public class OppfolgingServiceTest {
         gittIngenAktiveTiltak();
         gittYtelserMedStatus("Inaktiv", "Aktiv");
 
-        OppfolgingStatusData oppfolgingStatusData = oppfolgingService.hentAvslutningStatus(FNR);
-        AvslutningStatusData avslutningStatusData = oppfolgingStatusData.avslutningStatusData;
+        AvslutningStatusData avslutningStatusData = oppfolgingService.hentAvslutningStatus(FNR);
 
         assertTrue(avslutningStatusData.kanAvslutte);
         assertTrue(avslutningStatusData.harYtelser);
