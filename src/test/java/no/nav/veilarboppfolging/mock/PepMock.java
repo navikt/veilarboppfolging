@@ -40,7 +40,7 @@ public class PepMock implements Pep {
 
     @Override
     public boolean harTilgangTilPerson(String s, ActionId actionId, EksternBrukerId eksternBrukerId) {
-        return false;
+        return true;
     }
 
     @Override
