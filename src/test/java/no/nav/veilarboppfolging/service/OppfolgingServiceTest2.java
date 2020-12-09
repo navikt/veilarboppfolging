@@ -13,9 +13,12 @@ import java.util.Optional;
 import static no.nav.veilarboppfolging.domain.KodeverkBruker.NAV;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import no.nav.common.types.identer.AktorId;
 
 /**
  * Dette lå orginalt i en annen service, men har blitt merget inn med OppfolgingService.
@@ -24,10 +27,13 @@ import static org.mockito.Mockito.when;
 public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
 
     private static final String AKTOR_ID = "aktorId";
+    private static final String AKTOR_ID2 = "2312321";
+
     private static final String ENHET = "enhet";
     private static final String VEILERDER = "veileder";
     private static final String BEGRUNNELSE = "begrunnelse";
     private static final String OTHER_ENHET = "otherEnhet";
+    private static final String FNR = "21432432423";
 
     private AuthService authService = mock(AuthService.class);
     
@@ -42,7 +48,7 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
     private ManuellStatusRepository manuellStatusRepository;
 
     private OppfolgingService oppfolgingService;
-    
+
     @Before
     public void setup() {
         oppfolgingsStatusRepository = new OppfolgingsStatusRepository(db);
@@ -61,7 +67,45 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
                 oppfolgingsStatusRepository, oppfolgingsPeriodeRepository,
                 manuellStatusRepository, null,
                 null, new EskaleringsvarselRepository(db),
-                new KvpRepository(db), new NyeBrukereFeedRepository(db), maalRepository);
+                new KvpRepository(db), new NyeBrukereFeedRepository(db), maalRepository, mock(BrukerOppslagFlereOppfolgingAktorRepository.class));
+    }
+
+    @Test
+    public void hentHarFlereAktorIderMedOppfolging_harEnAktorIdMedOppfolging_returnererFalse(){
+
+        oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
+        oppfolgingsPeriodeRepository.start(AKTOR_ID);
+
+        when(authService.getAlleAktorIderOrThrow(FNR)).thenReturn(List.of(AktorId.of(AKTOR_ID)));
+        assertFalse(oppfolgingService.hentHarFlereAktorIderMedOppfolging(FNR));
+
+    }
+
+    @Test
+    public void hentHarFlereAktorIderMedOppfolging_harFlereAktorIdUtenOppfolging_returnererFalse(){
+
+        oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
+        oppfolgingsPeriodeRepository.start(AKTOR_ID);
+
+        when(authService.getAlleAktorIderOrThrow(FNR)).thenReturn(List.of(AktorId.of(AKTOR_ID), AktorId.of(AKTOR_ID2)));
+
+        assertFalse(oppfolgingService.hentHarFlereAktorIderMedOppfolging(FNR));
+
+    }
+
+    @Test
+    public void hentHarFlereAktorIderMedOppfolging_harFlereAktorIdMedOppf_returnererTrue(){
+
+        oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
+        oppfolgingsPeriodeRepository.start(AKTOR_ID);
+
+        oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID2);
+        oppfolgingsPeriodeRepository.start(AKTOR_ID2);
+
+        when(authService.getAlleAktorIderOrThrow(FNR)).thenReturn(List.of(AktorId.of(AKTOR_ID), AktorId.of(AKTOR_ID2)));
+
+        assertTrue(oppfolgingService.hentHarFlereAktorIderMedOppfolging(FNR));
+
     }
 
     @Test

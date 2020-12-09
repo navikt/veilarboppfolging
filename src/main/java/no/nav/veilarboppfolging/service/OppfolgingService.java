@@ -2,6 +2,7 @@ package no.nav.veilarboppfolging.service;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.types.identer.AktorId;
 import no.nav.veilarboppfolging.client.dkif.DkifClient;
 import no.nav.veilarboppfolging.client.dkif.DkifKontaktinfo;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
@@ -18,9 +19,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -53,6 +52,7 @@ public class OppfolgingService {
     private final KvpRepository kvpRepository;
     private final NyeBrukereFeedRepository nyeBrukereFeedRepository;
     private final MaalRepository maalRepository;
+    private final BrukerOppslagFlereOppfolgingAktorRepository brukerOppslagFlereOppfolgingAktorRepository;
 
     @Autowired
     public OppfolgingService(
@@ -71,7 +71,8 @@ public class OppfolgingService {
             EskaleringsvarselRepository eskaleringsvarselRepository,
             KvpRepository kvpRepository,
             NyeBrukereFeedRepository nyeBrukereFeedRepository,
-            MaalRepository maalRepository
+            MaalRepository maalRepository,
+            BrukerOppslagFlereOppfolgingAktorRepository brukerOppslagFlereOppfolgingAktorRepository
     ) {
         this.kafkaProducerService = kafkaProducerService;
         this.ytelserOgAktiviteterService = ytelserOgAktiviteterService;
@@ -89,6 +90,7 @@ public class OppfolgingService {
         this.kvpRepository = kvpRepository;
         this.nyeBrukereFeedRepository = nyeBrukereFeedRepository;
         this.maalRepository = maalRepository;
+        this.brukerOppslagFlereOppfolgingAktorRepository = brukerOppslagFlereOppfolgingAktorRepository;
     }
 
     @Transactional
@@ -98,6 +100,26 @@ public class OppfolgingService {
         sjekkStatusIArenaOgOppdaterOppfolging(fnr);
 
         return getOppfolgingStatusData(fnr);
+    }
+
+    private List<AktorId> hentAktorIderMedOppfolging(String fnr) {
+        authService.sjekkLesetilgangMedFnr(fnr);
+        var aktorIder = authService.getAlleAktorIderOrThrow(fnr);
+        return aktorIder
+                .stream()
+                .filter(aktorId -> !oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId.get()).isEmpty())
+                .collect(toList());
+
+    }
+
+    public boolean hentHarFlereAktorIderMedOppfolging(String fnr) {
+        boolean harFlereAktorIdMedOppfolging = hentAktorIderMedOppfolging(fnr).size() > 1;
+
+        if(harFlereAktorIdMedOppfolging) {
+            brukerOppslagFlereOppfolgingAktorRepository.insertBrukerHvisNy(fnr);
+        }
+
+        return harFlereAktorIdMedOppfolging;
     }
 
     public AvslutningStatusData hentAvslutningStatus(String fnr) {

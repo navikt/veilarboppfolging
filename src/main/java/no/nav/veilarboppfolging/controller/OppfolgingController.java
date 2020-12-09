@@ -166,4 +166,17 @@ public class OppfolgingController {
         return oppfolgingService.hentVeilederTilgang(fnr);
     }
 
+    /**
+     * Returnerer informasjon om bruker har oppfølgingsperioder
+     * på flere forskjellige aktørIder
+     *
+     * @param fnr fødselsnummer på brukeren
+     * @return true dersom bruker både har flere aktørIder og har oppfølgingsperioder på flere av disse
+     */
+    @GetMapping("/harFlereAktorIderMedOppfolging")
+    public boolean harFlereAktorIderMedOppfolging(@RequestParam("fnr") String fnr) {
+        String fodselsnummer = authService.hentIdentForEksternEllerIntern(fnr);
+        return oppfolgingService.hentHarFlereAktorIderMedOppfolging(fodselsnummer);
+    }
+
 }
