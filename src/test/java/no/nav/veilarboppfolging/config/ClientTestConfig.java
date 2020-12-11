@@ -71,7 +71,7 @@ public class ClientTestConfig {
 
             @Override
             public AktorId hentAktorId(no.nav.common.types.identer.Fnr fnr) {
-                return null;
+                return new AktorId(fnr.get());
             }
 
             @Override
@@ -86,7 +86,7 @@ public class ClientTestConfig {
 
             @Override
             public List<AktorId> hentAktorIder(no.nav.common.types.identer.Fnr fnr) {
-                return null;
+                return List.of(new AktorId(fnr.get()), new AktorId("1000010101001"));
             }
 
             @Override
