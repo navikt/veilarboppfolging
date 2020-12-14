@@ -22,6 +22,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.List;
+
 import static java.util.Optional.ofNullable;
 import static no.nav.common.abac.XacmlRequestBuilder.lagEnvironment;
 import static no.nav.common.abac.XacmlRequestBuilder.personIdAttribute;
@@ -46,13 +48,13 @@ public class AuthService {
     public void skalVereInternBruker() {
         if (!AuthContextHolder.erInternBruker()){
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Ugyldig bruker type");
-        };
+        }
     }
 
     public void skalVereSystemBruker() {
         if (!AuthContextHolder.erSystemBruker()){
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Ugyldig bruker type");
-        };
+        }
     }
 
     public boolean erInternBruker() {
@@ -167,6 +169,10 @@ public class AuthService {
 
     public String getFnrOrThrow(String aktorId) {
         return aktorregisterClient.hentFnr(AktorId.of(aktorId)).get();
+    }
+
+    public List<AktorId> getAlleAktorIderOrThrow(String fnr) {
+        return aktorregisterClient.hentAktorIder(Fnr.of(fnr));
     }
 
     public String getInnloggetBrukerToken() {

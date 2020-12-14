@@ -49,7 +49,7 @@ public class AktiverBrukerIntegrationTest {
                 oppfolgingsStatusRepository, oppfolgingsPeriodeRepository,
                 new ManuellStatusRepository(db), null,
                 null, new EskaleringsvarselRepository(db),
-                new KvpRepository(db), new NyeBrukereFeedRepository(db), new MaalRepository(db));
+                new KvpRepository(db), new NyeBrukereFeedRepository(db), new MaalRepository(db), mock(BrukerOppslagFlereOppfolgingAktorRepository.class));
 
         aktiverBrukerService = new AktiverBrukerService(
                 authService, oppfolgingService,
