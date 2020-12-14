@@ -27,8 +27,8 @@ public class BrukerOppslagFlereOppfolgingAktorRepository {
     }
 
     private void insertBrukerOppslag(String norskIdent) {
-        long id = DbUtils.nesteFraSekvens(db, "BRUKER_OPPSLAG_MED_FLERE_AKTORID_SEQ");
-        db.update("INSERT INTO BRUKER_OPPSLAG_MED_FLERE_AKTORID(" +
+        long id = DbUtils.nesteFraSekvens(db, "BRUKER_MED_FLERE_AKTORID_SEQ");
+        db.update("INSERT INTO BRUKER_MED_FLERE_AKTORID(" +
                         "BRUKER_SEQ, " +
                         "OPPSLAG_BRUKER_ID, " +
                         "CREATED) " +
@@ -39,7 +39,7 @@ public class BrukerOppslagFlereOppfolgingAktorRepository {
 
     private boolean getBrukerLogget(String norskIdent) {
         int hits = db.queryForObject("SELECT count(*) " +
-                "FROM BRUKER_OPPSLAG_MED_FLERE_AKTORID " +
+                "FROM BRUKER_MED_FLERE_AKTORID " +
                 "WHERE OPPSLAG_BRUKER_ID=?",
                 new Object[] {norskIdent},
                 Integer.class);
