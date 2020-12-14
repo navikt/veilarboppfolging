@@ -5,6 +5,7 @@ import no.nav.veilarboppfolging.utils.DbUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
@@ -17,7 +18,7 @@ public class BrukerOppslagFlereOppfolgingAktorRepository {
         this.db = db;
     }
 
-    @Transactional
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     public void insertBrukerHvisNy(String norskIdent){
         if (getBrukerLogget(norskIdent)) {
             return;
