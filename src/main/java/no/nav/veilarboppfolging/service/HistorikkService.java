@@ -167,11 +167,9 @@ public class HistorikkService {
 
         Stream <InnstillingsHistorikk> veilederTilordningerInnstillingHistorikk = null;
 
-        if (unleashService.isEnabled("veilarboppfolging.tildel_veileder")) {
-            veilederTilordningerInnstillingHistorikk =  veilederHistorikkRepository.hentTilordnedeVeiledereForAktorId(aktorId).stream()
-                    .map(this::tilDTO)
-                    .filter((historikk) -> KvpUtils.sjekkTilgangGittKvp(authService, kvpHistorikk, historikk::getDato));
-        }
+        veilederTilordningerInnstillingHistorikk = veilederHistorikkRepository.hentTilordnedeVeiledereForAktorId(aktorId).stream()
+                .map(this::tilDTO)
+                .filter((historikk) -> KvpUtils.sjekkTilgangGittKvp(authService, kvpHistorikk, historikk::getDato));
 
         Stream<InnstillingsHistorikk> kvpInnstillingHistorikk = kvpHistorikk.stream()
                 .filter(this::harTilgangTilEnhet)
