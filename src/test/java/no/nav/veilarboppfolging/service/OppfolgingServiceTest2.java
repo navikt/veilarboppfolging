@@ -67,7 +67,8 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
                 oppfolgingsStatusRepository, oppfolgingsPeriodeRepository,
                 manuellStatusRepository, null,
                 null, new EskaleringsvarselRepository(db),
-                new KvpRepository(db), new NyeBrukereFeedRepository(db), maalRepository, mock(BrukerOppslagFlereOppfolgingAktorRepository.class));
+                new KvpRepository(db), new NyeBrukereFeedRepository(db), maalRepository,
+                new BrukerOppslagFlereOppfolgingAktorRepository(db));
     }
 
     @Test
@@ -105,7 +106,21 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
         when(authService.getAlleAktorIderOrThrow(FNR)).thenReturn(List.of(AktorId.of(AKTOR_ID), AktorId.of(AKTOR_ID2)));
 
         assertTrue(oppfolgingService.hentHarFlereAktorIderMedOppfolging(FNR));
+    }
 
+    @Test
+    public void skalIkkeKasteExceptionVedFlereKall(){
+
+        oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
+        oppfolgingsPeriodeRepository.start(AKTOR_ID);
+
+        oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID2);
+        oppfolgingsPeriodeRepository.start(AKTOR_ID2);
+
+        when(authService.getAlleAktorIderOrThrow(FNR)).thenReturn(List.of(AktorId.of(AKTOR_ID), AktorId.of(AKTOR_ID2)));
+
+        assertTrue(oppfolgingService.hentHarFlereAktorIderMedOppfolging(FNR));
+        assertTrue(oppfolgingService.hentHarFlereAktorIderMedOppfolging(FNR));
     }
 
     @Test

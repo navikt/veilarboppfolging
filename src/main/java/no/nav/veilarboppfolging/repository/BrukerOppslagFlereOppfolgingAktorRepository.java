@@ -3,6 +3,7 @@ package no.nav.veilarboppfolging.repository;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarboppfolging.utils.DbUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Isolation;
@@ -18,12 +19,13 @@ public class BrukerOppslagFlereOppfolgingAktorRepository {
         this.db = db;
     }
 
-    @Transactional(isolation = Isolation.SERIALIZABLE)
     public void insertBrukerHvisNy(String norskIdent){
-        if (getBrukerLogget(norskIdent)) {
-            return;
+        try {
+            insertBrukerOppslag(norskIdent);
+        } catch (DuplicateKeyException e) {
+            //Flere som kjører paralelt
+            //Eller allerede registrert
         }
-        insertBrukerOppslag(norskIdent);
     }
 
     private void insertBrukerOppslag(String norskIdent) {
@@ -35,15 +37,5 @@ public class BrukerOppslagFlereOppfolgingAktorRepository {
                         "VALUES(?, ?, CURRENT_TIMESTAMP)",
                 id,
                 norskIdent);
-    }
-
-    private boolean getBrukerLogget(String norskIdent) {
-        int hits = db.queryForObject("SELECT count(*) " +
-                "FROM BRUKER_MED_FLERE_AKTORID " +
-                "WHERE OPPSLAG_BRUKER_ID=?",
-                new Object[] {norskIdent},
-                Integer.class);
-
-        return hits != 0;
     }
 }
