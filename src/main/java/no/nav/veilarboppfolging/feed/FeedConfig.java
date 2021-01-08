@@ -36,7 +36,7 @@ public class FeedConfig {
 
     @Bean
     public FeedProducer<OppfolgingFeedDTO> oppfolgingFeed(OppfolgingFeedRepository oppfolgingFeedRepository) {
-        List<String> oppfolgingFeedAllowedUsers = List.of("srvveilarbportefolje", "srvpam-cv-api");
+        List<String> oppfolgingFeedAllowedUsers = List.of("srvpam-cv-api");
         return FeedProducer.<OppfolgingFeedDTO>builder()
                 .provider(new OppfolgingFeedProvider(oppfolgingFeedRepository))
                 .maxPageSize(1000)
