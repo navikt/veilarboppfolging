@@ -410,6 +410,7 @@ public class OppfolgingService {
         return oppfolgingsPerioder.stream()
                 .map(periode -> periode.toBuilder().kvpPerioder(
                         kvpPerioder.stream()
+                                .filter(kvp -> authService.harTilgangTilEnhetMedSperre(kvp.getEnhet()) )
                                 .filter(kvp -> erKvpIPeriode(kvp, periode))
                                 .collect(toList())
                 ).build())
@@ -417,8 +418,7 @@ public class OppfolgingService {
     }
 
     private boolean erKvpIPeriode(Kvp kvp, Oppfolgingsperiode periode) {
-        return authService.harTilgangTilEnhet(kvp.getEnhet())
-                && kvpEtterStartenAvPeriode(kvp, periode)
+        return kvpEtterStartenAvPeriode(kvp, periode)
                 && kvpForSluttenAvPeriode(kvp, periode);
     }
 
