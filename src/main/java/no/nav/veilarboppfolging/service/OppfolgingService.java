@@ -383,8 +383,16 @@ public class OppfolgingService {
         );
     }
 
-    @Transactional
     public void startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker oppfolgingsbruker) {
+        startOppfolgingHvisIkkeAlleredeStartet(oppfolgingsbruker, true);
+    }
+
+    /**
+     * Det er veldig hacky å legge til et flagg for å kontrollere funksjonalitet, men slik som veilarboppfolging er i dag
+     * så er det ikke noen bedre alternativer for å håndtere async ting som skjer i midten av en transaksjon som ikke kan rulles tilbake.
+     */
+    @Transactional
+    public void startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker oppfolgingsbruker, boolean publishOnKafka) {
         String aktoerId = oppfolgingsbruker.getAktoerId();
 
         Oppfolging oppfolgingsstatus = hentOppfolging(aktoerId).orElseGet(() -> {
@@ -402,7 +410,9 @@ public class OppfolgingService {
         if (oppfolgingsstatus != null && !oppfolgingsstatus.isUnderOppfolging()) {
             oppfolgingsPeriodeRepository.start(aktoerId);
             nyeBrukereFeedRepository.leggTil(oppfolgingsbruker);
-            kafkaProducerService.publiserOppfolgingStartet(aktoerId);
+            if (publishOnKafka) {
+                kafkaProducerService.publiserOppfolgingStartet(aktoerId);
+            }
         }
     }
 
@@ -410,6 +420,7 @@ public class OppfolgingService {
         return oppfolgingsPerioder.stream()
                 .map(periode -> periode.toBuilder().kvpPerioder(
                         kvpPerioder.stream()
+                                .filter(kvp -> authService.harTilgangTilEnhetMedSperre(kvp.getEnhet()) )
                                 .filter(kvp -> erKvpIPeriode(kvp, periode))
                                 .collect(toList())
                 ).build())
@@ -417,8 +428,7 @@ public class OppfolgingService {
     }
 
     private boolean erKvpIPeriode(Kvp kvp, Oppfolgingsperiode periode) {
-        return authService.harTilgangTilEnhet(kvp.getEnhet())
-                && kvpEtterStartenAvPeriode(kvp, periode)
+        return kvpEtterStartenAvPeriode(kvp, periode)
                 && kvpForSluttenAvPeriode(kvp, periode);
     }
 

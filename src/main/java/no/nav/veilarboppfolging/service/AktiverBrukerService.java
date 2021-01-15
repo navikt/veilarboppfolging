@@ -22,6 +22,8 @@ public class AktiverBrukerService {
 
     private final OppfolgingService oppfolgingService;
 
+    private final KafkaProducerService kafkaProducerService;
+
     private final NyeBrukereFeedRepository nyeBrukereFeedRepository;
 
     private final TransactionTemplate transactor;
@@ -31,12 +33,14 @@ public class AktiverBrukerService {
             AuthService authService,
             OppfolgingService oppfolgingService,
             BehandleArbeidssokerClient behandleArbeidssokerClient,
+            KafkaProducerService kafkaProducerService,
             NyeBrukereFeedRepository nyeBrukereFeedRepository,
             TransactionTemplate transactor
     ) {
         this.authService = authService;
         this.oppfolgingService = oppfolgingService;
         this.behandleArbeidssokerClient = behandleArbeidssokerClient;
+        this.kafkaProducerService = kafkaProducerService;
         this.nyeBrukereFeedRepository = nyeBrukereFeedRepository;
         this.transactor = transactor;
     }
@@ -62,9 +66,12 @@ public class AktiverBrukerService {
                 Oppfolgingsbruker.builder()
                         .aktoerId(aktorId.getAktorId())
                         .build()
+                ,false
         );
 
         behandleArbeidssokerClient.reaktiverBrukerIArena(fnr);
+
+        kafkaProducerService.publiserOppfolgingStartet(aktorId.getAktorId());
     }
 
     private void aktiverBrukerOgOppfolging(String fnr, AktorId aktorId, Innsatsgruppe innsatsgruppe) {
@@ -73,11 +80,14 @@ public class AktiverBrukerService {
                         .aktoerId(aktorId.getAktorId())
                         .innsatsgruppe(innsatsgruppe)
                         .build()
+                ,false
         );
 
         behandleArbeidssokerClient.opprettBrukerIArena(fnr, innsatsgruppe);
 
         nyeBrukereFeedRepository.tryLeggTilFeedIdPaAlleElementerUtenFeedId();
+
+        kafkaProducerService.publiserOppfolgingStartet(aktorId.getAktorId());
     }
 
     public void aktiverSykmeldt(String uid, SykmeldtBrukerType sykmeldtBrukerType) {
