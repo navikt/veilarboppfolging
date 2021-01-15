@@ -34,7 +34,7 @@ public class AktiverBrukerServiceTest {
                 authService,
                 oppfolgingService,
                 behandleArbeidssokerClient,
-                new NyeBrukereFeedRepository(LocalH2Database.getDb()),
+                mock(KafkaProducerService.class), new NyeBrukereFeedRepository(LocalH2Database.getDb()),
                 DbTestUtils.getTransactor(LocalH2Database.getDb())
         );
     }
