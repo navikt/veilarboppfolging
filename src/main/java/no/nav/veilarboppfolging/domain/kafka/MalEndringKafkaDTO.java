@@ -8,9 +8,9 @@ import java.time.ZonedDateTime;
 @Data
 @Accessors(chain = true)
 public class MalEndringKafkaDTO {
-        private String aktorId;
-        private ZonedDateTime endretTidspunk;
-        private InnsenderData lagtInnAv;
+    String aktorId;
+    ZonedDateTime endretTidspunk;
+    InnsenderData lagtInnAv;
 
     public enum InnsenderData {
         BRUKER,

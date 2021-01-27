@@ -57,6 +57,9 @@ public class MalServiceTest {
     private MetricsService metricsService;
 
     @Mock
+    private KafkaProducerService kafkaProducerService;
+
+    @Mock
     private OppfolgingsStatusRepository oppfolgingsStatusRepository;
 
     @InjectMocks
