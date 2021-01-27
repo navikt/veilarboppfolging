@@ -61,6 +61,10 @@ public class KafkaMessagePublisher {
         publiser(kafkaTopics.getKvpAvlsuttet(), kvpAvsluttetKafkaDTO.getAktorId(), toJson(kvpAvsluttetKafkaDTO));
     }
 
+    public void publiserEndringPaMal(MalEndringKafkaDTO malEndringKafkaDTO) {
+        publiser(kafkaTopics.getEndringPaMal(), malEndringKafkaDTO.getAktorId(), toJson(malEndringKafkaDTO));
+    }
+
     public void publiserTidligereFeiletMelding(FeiletKafkaMelding feiletKafkaMelding) {
         kafkaTemplate.send(feiletKafkaMelding.getTopicName(), feiletKafkaMelding.getMessageKey(), feiletKafkaMelding.getJsonPayload())
                 .addCallback(
