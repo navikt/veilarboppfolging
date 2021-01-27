@@ -66,4 +66,14 @@ public class KafkaProducerService {
         kafkaMessagePublisher.publiserKvpAvsluttet(kvpAvsluttetKafkaDTO);
     }
 
+    public void publiserEndretMal(String aktorId, String veilederIdent){
+        MalEndringKafkaDTO malEndringKafkaDTO = new MalEndringKafkaDTO()
+                .setAktorId(aktorId)
+                .setEndretTidspunk(ZonedDateTime.now())
+                .setLagtInnAv(veilederIdent == null
+                        ? MalEndringKafkaDTO.InnsenderData.BRUKER
+                        : MalEndringKafkaDTO.InnsenderData.NAV);
+        kafkaMessagePublisher.publiserEndringPaMal(malEndringKafkaDTO);
+    }
+
 }

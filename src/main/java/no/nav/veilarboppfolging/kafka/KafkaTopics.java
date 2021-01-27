@@ -25,6 +25,8 @@ public class KafkaTopics {
 
     private String endringPaNyForVeileder;
 
+    private String endringPaMal;
+
     public static KafkaTopics create(String topicPrefix) {
         KafkaTopics kafkaTopics = new KafkaTopics();
 
@@ -40,6 +42,7 @@ public class KafkaTopics {
         kafkaTopics.setEndringPaManuellStatus("aapen-arbeidsrettetOppfolging-endringPaManuellStatus-v1-" + topicPrefix);
         kafkaTopics.setVeilederTilordnet("aapen-arbeidsrettetOppfolging-veilederTilordnet-v1-" + topicPrefix);
         kafkaTopics.setEndringPaNyForVeileder("aapen-arbeidsrettetOppfolging-endringPaNyForVeileder-v1-" + topicPrefix);
+        kafkaTopics.setEndringPaMal("aapen-arbeidsrettetOppfolging-endringPaMal-v1-" + topicPrefix);
 
         return kafkaTopics;
     }

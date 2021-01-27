@@ -22,6 +22,8 @@ import static java.util.stream.Collectors.toList;
 @Service
 public class MalService {
 
+    private final KafkaProducerService kafkaProducerService;
+
     private final MetricsService metricsService;
 
     private final OppfolgingsStatusRepository oppfolgingsStatusRepository;
@@ -34,11 +36,12 @@ public class MalService {
 
     @Autowired
     public MalService(
-            MetricsService metricsService,
+            KafkaProducerService kafkaProducerService, MetricsService metricsService,
             OppfolgingsStatusRepository oppfolgingsStatusRepository,
             KvpRepository kvpRepository,
             AuthService authService,
             MaalRepository maalRepository) {
+        this.kafkaProducerService = kafkaProducerService;
         this.metricsService = metricsService;
         this.oppfolgingsStatusRepository = oppfolgingsStatusRepository;
         this.kvpRepository = kvpRepository;
@@ -94,8 +97,8 @@ public class MalService {
                 .setDato(ZonedDateTime.now());
 
         maalRepository.opprett(malData);
-
         metricsService.oppdatertMittMal(malData, maalRepository.aktorMal(aktorId).size());
+        kafkaProducerService.publiserEndretMal(aktorId, endretAvVeileder);
 
         return malData;
     }
