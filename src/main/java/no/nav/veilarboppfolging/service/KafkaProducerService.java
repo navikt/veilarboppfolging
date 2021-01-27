@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.ZonedDateTime;
 
+import static no.nav.common.auth.context.AuthContextHolder.erEksternBruker;
+
 @Service
 public class KafkaProducerService {
 
@@ -70,7 +72,8 @@ public class KafkaProducerService {
         MalEndringKafkaDTO malEndringKafkaDTO = new MalEndringKafkaDTO()
                 .setAktorId(aktorId)
                 .setEndretTidspunk(ZonedDateTime.now())
-                .setLagtInnAv(veilederIdent == null
+                .setVeilederIdent(veilederIdent)
+                .setLagtInnAv(erEksternBruker()
                         ? MalEndringKafkaDTO.InnsenderData.BRUKER
                         : MalEndringKafkaDTO.InnsenderData.NAV);
         kafkaMessagePublisher.publiserEndringPaMal(malEndringKafkaDTO);

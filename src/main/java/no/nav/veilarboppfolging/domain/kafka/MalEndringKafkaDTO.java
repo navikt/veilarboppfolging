@@ -11,6 +11,7 @@ public class MalEndringKafkaDTO {
     String aktorId;
     ZonedDateTime endretTidspunk;
     InnsenderData lagtInnAv;
+    String veilederIdent;
 
     public enum InnsenderData {
         BRUKER,
