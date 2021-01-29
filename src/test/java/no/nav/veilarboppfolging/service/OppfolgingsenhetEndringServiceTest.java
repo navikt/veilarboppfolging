@@ -77,7 +77,8 @@ public class OppfolgingsenhetEndringServiceTest {
     private void behandle_ny_enhets_endring(String navKontor) {
         VeilarbArenaOppfolgingEndret arenaEndring = new VeilarbArenaOppfolgingEndret()
                 .setAktoerid(AKTOERID)
-                .setNav_kontor(navKontor);
+                .setNav_kontor(navKontor)
+                .setFormidlingsgruppekode("ARBS");
 
         service.behandleBrukerEndring(arenaEndring);
     }
