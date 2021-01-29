@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+import static no.nav.veilarboppfolging.utils.ArenaUtils.erUnderOppfolging;
+
 @Slf4j
 @Service
 public class OppfolgingsenhetEndringService {
@@ -25,7 +27,10 @@ public class OppfolgingsenhetEndringService {
         String arenaNavKontor = arenaOppfolging.getNav_kontor();
         List<OppfolgingsenhetEndringData> eksisterendeHistorikk = enhetHistorikkRepository.hentOppfolgingsenhetEndringerForAktorId(aktoerid);
 
-        if (eksisterendeHistorikk.isEmpty()) {
+        if (arenaNavKontor == null || !erUnderOppfolging(arenaOppfolging.getFormidlingsgruppekode(), arenaOppfolging.getKvalifiseringsgruppekode())) {
+            log.info(String.format("Legger ikke til historikkinnslag for på aktørid: %s fordi enhet mangler og/eller bruker er ikke under oppfølging", aktoerid));
+        }
+        else if (eksisterendeHistorikk.isEmpty()) {
             log.info(String.format("Legger til første historikkinnslag for endret oppfolgingsenhet på aktørid: %s", aktoerid));
             enhetHistorikkRepository.insertOppfolgingsenhetEndringForAktorId(aktoerid, arenaNavKontor);
         } else if (!arenaNavKontor.equals(eksisterendeHistorikk.get(0).getEnhet())) {
