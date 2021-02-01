@@ -18,8 +18,6 @@ import no.nav.veilarboppfolging.client.veilarbaktivitet.VeilarbaktivitetClient;
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolging;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
-import no.nav.veilarboppfolging.client.veilarbportefolje.OppfolgingEnhetPageDTO;
-import no.nav.veilarboppfolging.client.veilarbportefolje.VeilarbportefoljeClient;
 import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktClient;
 import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktResponse;
 import no.nav.veilarboppfolging.domain.Fnr;
@@ -185,21 +183,6 @@ public class ClientTestConfig {
             @Override
             public Optional<ArenaOppfolging> getArenaOppfolgingsstatus(String fnr) {
                 return Optional.empty();
-            }
-
-            @Override
-            public HealthCheckResult checkHealth() {
-                return HealthCheckResult.healthy();
-            }
-        };
-    }
-
-    @Bean
-    public VeilarbportefoljeClient veilarbportefoljeClient() {
-        return new VeilarbportefoljeClient() {
-            @Override
-            public OppfolgingEnhetPageDTO hentEnhetPage(int pageNumber, int pageSize) {
-                return null;
             }
 
             @Override
