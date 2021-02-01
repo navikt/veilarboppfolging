@@ -16,7 +16,6 @@ import org.springframework.context.annotation.Import;
         UnderOppfolgingController.class,
         VeilederController.class,
         VeilederTilordningController.class,
-        YtelseController.class,
-        PopulerOppfolgingHistorikkController.class
+        YtelseController.class
 })
 public class ControllerTestConfig {}

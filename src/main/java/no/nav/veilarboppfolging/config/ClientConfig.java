@@ -20,8 +20,6 @@ import no.nav.veilarboppfolging.client.veilarbaktivitet.VeilarbaktivitetClient;
 import no.nav.veilarboppfolging.client.veilarbaktivitet.VeilarbaktivitetClientImpl;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClientImpl;
-import no.nav.veilarboppfolging.client.veilarbportefolje.VeilarbportefoljeClient;
-import no.nav.veilarboppfolging.client.veilarbportefolje.VeilarbportefoljeClientImpl;
 import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktClient;
 import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktClientImpl;
 import no.nav.veilarboppfolging.service.AuthService;
@@ -74,12 +72,6 @@ public class ClientConfig {
     public VeilarbarenaClient veilarbarenaClient(AuthService authService) {
         String url = naisPreprodOrNaisAdeoIngress("veilarbarena", true);
         return new VeilarbarenaClientImpl(url, authService::getInnloggetBrukerToken);
-    }
-
-    @Bean
-    public VeilarbportefoljeClient veilarbportefoljeClient(SystemUserTokenProvider systemUserTokenProvider) {
-        String url = naisPreprodOrNaisAdeoIngress("veilarbportefolje", true);
-        return new VeilarbportefoljeClientImpl(url, systemUserTokenProvider);
     }
 
     @Bean
