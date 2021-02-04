@@ -2,8 +2,10 @@ package no.nav.veilarboppfolging.config;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.abac.Pep;
-import no.nav.common.abac.VeilarbPep;
+import no.nav.common.abac.VeilarbPepFactory;
+import no.nav.common.abac.audit.AuditLogFilterUtils;
 import no.nav.common.abac.audit.SpringAuditRequestInfoSupplier;
+import no.nav.common.abac.constants.NavAttributter;
 import no.nav.common.cxf.StsConfig;
 import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.leaderelection.LeaderElectionClient;
@@ -21,6 +23,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
+import static no.nav.common.abac.audit.AuditLogFilterUtils.anyResourceAttributeFilter;
 import static no.nav.common.featuretoggle.UnleashServiceConfig.resolveFromEnvironment;
 import static no.nav.common.utils.NaisUtils.getCredentials;
 
@@ -79,9 +82,14 @@ public class ApplicationConfig {
     @Bean
     public Pep veilarbPep(EnvironmentProperties properties) {
         Credentials serviceUserCredentials = NaisUtils.getCredentials("service_user");
-        return new VeilarbPep(
+        return veilarbPep(properties, serviceUserCredentials);
+    }
+
+    protected Pep veilarbPep(EnvironmentProperties properties, Credentials serviceUserCredentials) {
+        return VeilarbPepFactory.get(
                 properties.getAbacUrl(), serviceUserCredentials.username,
-                serviceUserCredentials.password, new SpringAuditRequestInfoSupplier()
+                serviceUserCredentials.password, new SpringAuditRequestInfoSupplier(),
+                AuditLogFilterUtils.not(anyResourceAttributeFilter(NavAttributter.RESOURCE_VEILARB_ENHET_EIENDEL::equals))
         );
     }
 
