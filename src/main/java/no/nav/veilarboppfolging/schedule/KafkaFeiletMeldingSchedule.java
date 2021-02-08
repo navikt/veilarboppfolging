@@ -1,7 +1,8 @@
 package no.nav.veilarboppfolging.schedule;
 
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.leaderelection.LeaderElectionClient;
+import no.nav.common.job.JobRunner;
+import no.nav.common.job.leader_election.LeaderElectionClient;
 import no.nav.veilarboppfolging.domain.FeiletKafkaMelding;
 import no.nav.veilarboppfolging.kafka.KafkaMessagePublisher;
 import no.nav.veilarboppfolging.repository.FeiletKafkaMeldingRepository;
@@ -39,8 +40,10 @@ public class KafkaFeiletMeldingSchedule {
     @Scheduled(fixedDelay = FIVE_MINUTES, initialDelay = ONE_MINUTE)
     public void publiserTidligereFeilet() {
         if (leaderElectionClient.isLeader()) {
-            List<FeiletKafkaMelding> feiledeMeldinger = feiletKafkaMeldingRepository.hentFeiledeKafkaMeldinger(1000);
-            feiledeMeldinger.forEach(kafkaMessagePublisher::publiserTidligereFeiletMelding);
+            JobRunner.run("publiser_tidligere_feilet", () -> {
+                List<FeiletKafkaMelding> feiledeMeldinger = feiletKafkaMeldingRepository.hentFeiledeKafkaMeldinger(1000);
+                feiledeMeldinger.forEach(kafkaMessagePublisher::publiserTidligereFeiletMelding);
+            });
         }
     }
 
