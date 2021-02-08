@@ -1,7 +1,8 @@
 package no.nav.veilarboppfolging.schedule;
 
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.leaderelection.LeaderElectionClient;
+import no.nav.common.job.JobRunner;
+import no.nav.common.job.leader_election.LeaderElectionClient;
 import no.nav.veilarboppfolging.service.IservService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -25,7 +26,7 @@ public class Iserv28Schedule {
     @Scheduled(cron="0 0 * * * *")
     public void scheduledAvslutteOppfolging() {
         if (leaderElectionClient.isLeader()) {
-            iservService.automatiskAvslutteOppfolging();
+            JobRunner.run("iserv28_avslutt_oppfolging", iservService::automatiskAvslutteOppfolging);
         }
     }
 
