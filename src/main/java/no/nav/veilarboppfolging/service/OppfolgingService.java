@@ -205,6 +205,12 @@ public class OppfolgingService {
         return new VeilederTilgang().setTilgangTilBrukersKontor(tilgangTilEnhet);
     }
 
+    public List<Oppfolgingsperiode> hentOppfolgingsperioder(String fnr) {
+        authService.sjekkLesetilgangMedFnr(fnr);
+        String aktorId = authService.getAktorIdOrThrow(fnr);
+        return oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId);
+    }
+
     public UnderOppfolgingDTO oppfolgingData(String fnr) {
         authService.sjekkLesetilgangMedFnr(fnr);
 

@@ -6,8 +6,9 @@ import no.nav.common.abac.VeilarbPepFactory;
 import no.nav.common.abac.audit.AuditLogFilterUtils;
 import no.nav.common.abac.audit.SpringAuditRequestInfoSupplier;
 import no.nav.common.abac.constants.NavAttributter;
+import no.nav.common.auth.context.AuthContextHolder;
+import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.common.cxf.StsConfig;
-import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.job.leader_election.LeaderElectionClient;
 import no.nav.common.job.leader_election.LeaderElectionHttpClient;
 import no.nav.common.metrics.InfluxClient;
@@ -24,7 +25,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 import static no.nav.common.abac.audit.AuditLogFilterUtils.anyResourceAttributeFilter;
-import static no.nav.common.featuretoggle.UnleashServiceConfig.resolveFromEnvironment;
 import static no.nav.common.utils.NaisUtils.getCredentials;
 
 @Slf4j
@@ -53,6 +53,11 @@ public class ApplicationConfig {
     }
 
     @Bean
+    public AuthContextHolder authContextHolder() {
+        return AuthContextHolderThreadLocal.instance();
+    }
+
+    @Bean
     public OpenAmSystemUserTokenProvider openAmSystemUserTokenProvider(EnvironmentProperties properties, Credentials serviceUserCredentials) {
         return new OpenAmSystemUserTokenProvider(
                 properties.getOpenAmDiscoveryUrl(), properties.getOpenAmRedirectUrl(),
@@ -72,11 +77,6 @@ public class ApplicationConfig {
                 .username(serviceUserCredentials.username)
                 .password(serviceUserCredentials.password)
                 .build();
-    }
-
-    @Bean
-    public UnleashService unleashService() {
-        return new UnleashService(resolveFromEnvironment());
     }
 
     @Bean

@@ -2,7 +2,6 @@ package no.nav.veilarboppfolging.config;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.client.aktorregister.AktorregisterClient;
-import no.nav.common.client.aktorregister.IdentOppslag;
 import no.nav.common.client.norg2.Enhet;
 import no.nav.common.client.norg2.Norg2Client;
 import no.nav.common.health.HealthCheckResult;
@@ -73,12 +72,12 @@ public class ClientTestConfig {
             }
 
             @Override
-            public List<IdentOppslag> hentFnr(List<AktorId> list) {
+            public Map<AktorId, no.nav.common.types.identer.Fnr> hentFnrBolk(List<AktorId> list) {
                 return null;
             }
 
             @Override
-            public List<IdentOppslag> hentAktorId(List<no.nav.common.types.identer.Fnr> list) {
+            public Map<no.nav.common.types.identer.Fnr, AktorId> hentAktorIdBolk(List<no.nav.common.types.identer.Fnr> list) {
                 return null;
             }
 

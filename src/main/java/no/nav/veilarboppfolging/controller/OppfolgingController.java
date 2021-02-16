@@ -12,7 +12,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
+import static no.nav.veilarboppfolging.utils.DtoMappers.tilDTO;
 import static no.nav.veilarboppfolging.utils.DtoMappers.tilDto;
 
 @RequestMapping("/api/oppfolging")
@@ -164,6 +166,16 @@ public class OppfolgingController {
     public VeilederTilgang hentVeilederTilgang(@RequestParam("fnr") String fnr) {
         authService.skalVereInternBruker();
         return oppfolgingService.hentVeilederTilgang(fnr);
+    }
+
+    @GetMapping("/oppfolgingsperioder")
+    public List<OppfolgingPeriodeDTO> hentOppfolgingsperioder(@RequestParam("fnr") String fnr) {
+        authService.skalVereSystemBruker();
+
+        return oppfolgingService.hentOppfolgingsperioder(fnr)
+                .stream()
+                .map(op -> tilDTO(op, true))
+                .collect(Collectors.toList());
     }
 
     /**

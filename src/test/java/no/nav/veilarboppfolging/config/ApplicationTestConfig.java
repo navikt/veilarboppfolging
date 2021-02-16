@@ -1,7 +1,6 @@
 package no.nav.veilarboppfolging.config;
 
 import no.nav.common.abac.Pep;
-import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.sts.OpenAmSystemUserTokenProvider;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.utils.Credentials;
@@ -10,7 +9,6 @@ import no.nav.veilarboppfolging.kafka.KafkaConsumerHealthCheck;
 import no.nav.veilarboppfolging.kafka.KafkaProducerHealthCheck;
 import no.nav.veilarboppfolging.kafka.KafkaTopics;
 import no.nav.veilarboppfolging.mock.PepMock;
-import no.nav.veilarboppfolging.mock.UnleashServiceMock;
 import no.nav.veilarboppfolging.repository.FeiletKafkaMeldingRepository;
 import no.nav.veilarboppfolging.test.LocalH2Database;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -51,11 +49,6 @@ public class ApplicationTestConfig {
     @Bean
     public SystemUserTokenProvider systemUserTokenProvider() {
         return () -> "NAIS_SYSTEM_USER_TOKEN";
-    }
-
-    @Bean
-    public UnleashService unleashService() {
-        return UnleashServiceMock.getMock();
     }
 
     @Bean

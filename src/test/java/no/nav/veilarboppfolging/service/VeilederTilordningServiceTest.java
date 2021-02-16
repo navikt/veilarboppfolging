@@ -1,7 +1,7 @@
 package no.nav.veilarboppfolging.service;
 
 import no.nav.common.auth.context.AuthContext;
-import no.nav.common.auth.context.AuthContextHolder;
+import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.common.auth.context.UserRole;
 import no.nav.common.test.auth.AuthTestUtils;
 import no.nav.veilarboppfolging.controller.domain.OppfolgingFeedDTO;
@@ -59,7 +59,7 @@ public class VeilederTilordningServiceTest {
     public void setup() {
         when(authService.harVeilederSkriveTilgangTilFnr(anyString(), anyString())).thenReturn(true);
 
-        AuthContextHolder.withContext(AuthTestUtils.createAuthContext(UserRole.INTERN, "uid"), () -> {
+        AuthContextHolderThreadLocal.instance().withContext(AuthTestUtils.createAuthContext(UserRole.INTERN, "uid"), () -> {
             veilederTilordningService = new VeilederTilordningService(
                     metricsService,
                     veilederTilordningerRepository,
@@ -315,7 +315,7 @@ public class VeilederTilordningServiceTest {
 
     private Callable<TilordneVeilederResponse> portefoljeRessursCallable(VeilederTilordningService veilederTilordningService, List<VeilederTilordning> tilordninger) {
         AuthContext authContext = AuthTestUtils.createAuthContext(UserRole.INTERN, "veileder");
-        return () -> AuthContextHolder.withContext(authContext, () -> veilederTilordningService.tilordneVeiledere(tilordninger));
+        return () -> AuthContextHolderThreadLocal.instance().withContext(authContext, () -> veilederTilordningService.tilordneVeiledere(tilordninger));
     }
 
     @Test

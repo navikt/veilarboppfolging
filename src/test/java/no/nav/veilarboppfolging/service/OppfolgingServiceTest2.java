@@ -1,5 +1,6 @@
 package no.nav.veilarboppfolging.service;
 
+import no.nav.common.types.identer.AktorId;
 import no.nav.veilarboppfolging.domain.*;
 import no.nav.veilarboppfolging.repository.*;
 import no.nav.veilarboppfolging.test.IsolatedDatabaseTest;
@@ -14,11 +15,10 @@ import static no.nav.veilarboppfolging.domain.KodeverkBruker.NAV;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import no.nav.common.types.identer.AktorId;
 
 /**
  * Dette lå orginalt i en annen service, men har blitt merget inn med OppfolgingService.
@@ -133,7 +133,7 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
 
     @Test
     public void oppfolging_periode_med_kvp_perioder() {
-        when(authService.harTilgangTilEnhet(ENHET)).thenReturn(true);
+        when(authService.harTilgangTilEnhetMedSperre(ENHET)).thenReturn(true);
 
         gittOppfolgingForAktor(AKTOR_ID);
         gitt_kvp_periode(ENHET);
@@ -145,8 +145,8 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
 
     @Test
     public void oppfolging_periode_med_kvp_perioder_bare_tilgang_til_en() {
-        when(authService.harTilgangTilEnhet(ENHET)).thenReturn(true);
-        when(authService.harTilgangTilEnhet(OTHER_ENHET)).thenReturn(false);
+        when(authService.harTilgangTilEnhetMedSperre(ENHET)).thenReturn(true);
+        when(authService.harTilgangTilEnhetMedSperre(OTHER_ENHET)).thenReturn(false);
 
         gittOppfolgingForAktor(AKTOR_ID);
         gitt_kvp_periode(ENHET);

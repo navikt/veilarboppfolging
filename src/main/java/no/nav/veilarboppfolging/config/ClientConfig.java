@@ -1,8 +1,9 @@
 package no.nav.veilarboppfolging.config;
 
+import no.nav.common.client.aktoroppslag.AktorOppslagClient;
+import no.nav.common.client.aktoroppslag.CachedAktorOppslagClient;
 import no.nav.common.client.aktorregister.AktorregisterClient;
 import no.nav.common.client.aktorregister.AktorregisterHttpClient;
-import no.nav.common.client.aktorregister.CachedAktorregisterClient;
 import no.nav.common.client.norg2.CachedNorg2Client;
 import no.nav.common.client.norg2.Norg2Client;
 import no.nav.common.client.norg2.NorgHttp2Client;
@@ -35,10 +36,14 @@ public class ClientConfig {
 
     @Bean
     public AktorregisterClient aktorregisterClient(EnvironmentProperties properties, SystemUserTokenProvider systemUserTokenProvider) {
-        AktorregisterClient aktorregisterClient = new AktorregisterHttpClient(
+        return new AktorregisterHttpClient(
                 properties.getAktorregisterUrl(), APPLICATION_NAME, systemUserTokenProvider::getSystemUserToken
         );
-        return new CachedAktorregisterClient(aktorregisterClient);
+    }
+
+    @Bean
+    public AktorOppslagClient aktorOppslagClient(AktorregisterClient aktorregisterClient) {
+        return new CachedAktorOppslagClient(aktorregisterClient);
     }
 
     @Bean

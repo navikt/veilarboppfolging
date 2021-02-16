@@ -2,7 +2,7 @@ package no.nav.veilarboppfolging.client;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import no.nav.common.auth.context.AuthContext;
-import no.nav.common.auth.context.AuthContextHolder;
+import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.common.auth.context.UserRole;
 import no.nav.common.test.auth.AuthTestUtils;
 import no.nav.veilarboppfolging.client.dkif.DkifClient;
@@ -35,7 +35,7 @@ public class DkifClientImplTest {
                         .withBody(kodeverkJson))
         );
         AuthContext context = AuthTestUtils.createAuthContext(UserRole.INTERN, "test");
-        AuthContextHolder.withContext(context, () -> {
+        AuthContextHolderThreadLocal.instance().withContext(context, () -> {
             DkifKontaktinfo kontaktinfo = dkifClient.hentKontaktInfo(TEST_FNR);
             assertEquals(kontaktinfo.getPersonident(), TEST_FNR);
             assertTrue(kontaktinfo.isKanVarsles());

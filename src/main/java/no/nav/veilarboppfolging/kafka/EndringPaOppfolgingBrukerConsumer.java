@@ -6,7 +6,6 @@ import no.nav.common.auth.context.AuthContext;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.UserRole;
 import no.nav.common.sts.SystemUserTokenProvider;
-import no.nav.common.utils.Credentials;
 import no.nav.veilarboppfolging.domain.kafka.VeilarbArenaOppfolgingEndret;
 import no.nav.veilarboppfolging.service.IservService;
 import no.nav.veilarboppfolging.service.KvpService;
@@ -23,7 +22,7 @@ import static no.nav.common.json.JsonUtils.fromJson;
 @Component
 public class EndringPaOppfolgingBrukerConsumer {
 
-    private final Credentials serviceUserCredentials;
+    private final AuthContextHolder authContextHolder;
 
     private final SystemUserTokenProvider systemUserTokenProvider;
 
@@ -39,7 +38,7 @@ public class EndringPaOppfolgingBrukerConsumer {
 
     @Autowired
     public EndringPaOppfolgingBrukerConsumer(
-            Credentials serviceUserCredentials,
+            AuthContextHolder authContextHolder,
             SystemUserTokenProvider systemUserTokenProvider,
             KvpService kvpService,
             KafkaTopics kafkaTopics,
@@ -47,7 +46,7 @@ public class EndringPaOppfolgingBrukerConsumer {
             IservService iservService,
             OppfolgingsenhetEndringService oppfolgingsenhetEndringService
     ) {
-        this.serviceUserCredentials = serviceUserCredentials;
+        this.authContextHolder = authContextHolder;
         this.systemUserTokenProvider = systemUserTokenProvider;
         this.kvpService = kvpService;
         this.kafkaTopics = kafkaTopics;
@@ -66,7 +65,7 @@ public class EndringPaOppfolgingBrukerConsumer {
                     JWTParser.parse(systemUserTokenProvider.getSystemUserToken())
             );
 
-            AuthContextHolder.withContext(context, () -> {
+            authContextHolder.withContext(context, () -> {
                 final VeilarbArenaOppfolgingEndret deserialisertBruker = fromJson(kafkaMelding, VeilarbArenaOppfolgingEndret.class);
                 kvpService.avsluttKvpVedEnhetBytte(deserialisertBruker);
                 iservService.behandleEndretBruker(deserialisertBruker);

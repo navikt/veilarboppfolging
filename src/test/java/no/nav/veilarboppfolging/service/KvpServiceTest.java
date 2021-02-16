@@ -1,6 +1,6 @@
 package no.nav.veilarboppfolging.service;
 
-import no.nav.common.auth.context.AuthContextHolder;
+import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.common.auth.context.UserRole;
 import no.nav.common.test.auth.AuthTestUtils;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
@@ -104,7 +104,7 @@ public class KvpServiceTest {
 
         when(oppfolgingsStatusRepository.fetch(AKTOR_ID)).thenReturn(new OppfolgingTable().setUnderOppfolging(true).setGjeldendeKvpId(2));
 
-        AuthContextHolder.withContext(AuthTestUtils.createAuthContext(UserRole.INTERN, VEILEDER),
+        AuthContextHolderThreadLocal.instance().withContext(AuthTestUtils.createAuthContext(UserRole.INTERN, VEILEDER),
                 () -> kvpService.startKvp(FNR, START_BEGRUNNELSE)
         );
 
@@ -115,7 +115,7 @@ public class KvpServiceTest {
         long kvpId = 2;
         when(oppfolgingsStatusRepository.fetch(AKTOR_ID)).thenReturn(new OppfolgingTable().setUnderOppfolging(true).setGjeldendeKvpId(kvpId));
 
-        AuthContextHolder.withContext(AuthTestUtils.createAuthContext(UserRole.INTERN, VEILEDER),
+        AuthContextHolderThreadLocal.instance().withContext(AuthTestUtils.createAuthContext(UserRole.INTERN, VEILEDER),
                 () -> kvpService.stopKvp(FNR, STOP_BEGRUNNELSE)
         );
 
@@ -130,7 +130,7 @@ public class KvpServiceTest {
         long kvpId = 2;
         when(oppfolgingsStatusRepository.fetch(AKTOR_ID)).thenReturn(new OppfolgingTable().setUnderOppfolging(true).setGjeldendeEskaleringsvarselId(1).setGjeldendeKvpId(kvpId));
 
-        AuthContextHolder.withContext(AuthTestUtils.createAuthContext(UserRole.INTERN, VEILEDER),
+        AuthContextHolderThreadLocal.instance().withContext(AuthTestUtils.createAuthContext(UserRole.INTERN, VEILEDER),
                 () -> kvpService.stopKvp(FNR, STOP_BEGRUNNELSE)
         );
 
