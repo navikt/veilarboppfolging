@@ -1,6 +1,5 @@
 package no.nav.veilarboppfolging.service;
 
-import no.nav.common.featuretoggle.UnleashService;
 import no.nav.veilarboppfolging.domain.EskaleringsvarselData;
 import no.nav.veilarboppfolging.domain.InnstillingsHistorikk;
 import no.nav.veilarboppfolging.domain.Kvp;
@@ -36,9 +35,6 @@ public class HistorikkServiceTest {
 
     @Mock
     private TransactionTemplate transactor;
-
-    @Mock
-    private UnleashService unleashService;
 
     @Mock
     private VeilederHistorikkRepository veilederHistorikkRepository;

@@ -3,7 +3,6 @@ package no.nav.veilarboppfolging.config;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.abac.Pep;
 import no.nav.common.client.aktorregister.AktorregisterClient;
-import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.health.HealthCheck;
 import no.nav.common.health.HealthCheckResult;
 import no.nav.common.health.selftest.SelfTestCheck;
@@ -33,8 +32,7 @@ public class HelsesjekkConfig {
                                          JdbcTemplate jdbcTemplate,
                                          Pep pep,
                                          VarseloppgaveClient varseloppgaveClient,
-                                         AktorregisterClient aktorregisterClient,
-                                         UnleashService unleashService) {
+                                         AktorregisterClient aktorregisterClient) {
         List<SelfTestCheck> selfTestChecks = Arrays.asList(
                 new SelfTestCheck("Kafka consumer", false, kafkaConsumerHealthCheck),
                 new SelfTestCheck("Kafka producer", false, kafkaProducerHealthCheck),
@@ -43,8 +41,7 @@ public class HelsesjekkConfig {
                 new SelfTestCheck("Enkel spørring mot Databasen til veilarboppfolging.", true, checkDbHealth(jdbcTemplate)),
                 new SelfTestCheck("ABAC tilgangskontroll - ping", true, pep.getAbacClient()),
                 new SelfTestCheck("Brukes for å sende eskaleringsvarsel", false, varseloppgaveClient),
-                new SelfTestCheck("Ping av aktorregister (konvertere mellom aktorId og Fnr).", true, aktorregisterClient),
-                new SelfTestCheck("Sjekker at feature-toggles kan hentes fra Unleash", false, unleashService)
+                new SelfTestCheck("Ping av aktorregister (konvertere mellom aktorId og Fnr).", true, aktorregisterClient)
         );
 
         return new SelfTestChecks(selfTestChecks);

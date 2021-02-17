@@ -6,7 +6,6 @@ import no.nav.common.auth.context.AuthContext;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.UserRole;
 import no.nav.common.sts.SystemUserTokenProvider;
-import no.nav.common.utils.Credentials;
 import no.nav.veilarboppfolging.domain.IservMapper;
 import no.nav.veilarboppfolging.domain.OppfolgingTable;
 import no.nav.veilarboppfolging.domain.kafka.VeilarbArenaOppfolgingEndret;
@@ -34,7 +33,7 @@ public class IservService {
         AVSLUTTET_FEILET
     }
 
-    private final Credentials serviceUserCredentials;
+    private final AuthContextHolder authContextHolder;
     private final SystemUserTokenProvider systemUserTokenProvider;
     private final MetricsService metricsService;
     private final UtmeldingRepository utmeldingRepository;
@@ -43,7 +42,7 @@ public class IservService {
     private final AuthService authService;
 
     public IservService(
-            Credentials serviceUserCredentials,
+            AuthContextHolder authContextHolder,
             SystemUserTokenProvider systemUserTokenProvider,
             MetricsService metricsService,
             UtmeldingRepository utmeldingRepository,
@@ -51,7 +50,7 @@ public class IservService {
             OppfolgingsStatusRepository oppfolgingsStatusRepository,
             AuthService authService
     ) {
-        this.serviceUserCredentials = serviceUserCredentials;
+        this.authContextHolder = authContextHolder;
         this.systemUserTokenProvider = systemUserTokenProvider;
         this.metricsService = metricsService;
         this.utmeldingRepository = utmeldingRepository;
@@ -108,7 +107,8 @@ public class IservService {
                     UserRole.SYSTEM,
                     JWTParser.parse(systemUserTokenProvider.getSystemUserToken())
             );
-            AuthContextHolder.withContext(context, () ->
+
+            authContextHolder.withContext(context, () ->
                     resultater.addAll(iservert28DagerBrukere.stream()
                             .map(iservMapper -> avslutteOppfolging(iservMapper.aktor_Id))
                             .collect(toList()))

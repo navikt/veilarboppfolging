@@ -1,6 +1,6 @@
 package no.nav.veilarboppfolging.controller;
 
-import no.nav.common.auth.context.AuthContextHolder;
+import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.common.auth.context.UserRole;
 import no.nav.common.test.auth.AuthTestUtils;
 import no.nav.veilarboppfolging.domain.AktiverArbeidssokerData;
@@ -38,7 +38,7 @@ public class SystemOppfolgingControllerTest {
 
     @Test
     public void aktiverSykmeldt() {
-        AuthContextHolder.withContext(AuthTestUtils.createAuthContext(UserRole.EKSTERN, "uid"), () -> {
+        AuthContextHolderThreadLocal.instance().withContext(AuthTestUtils.createAuthContext(UserRole.EKSTERN, "uid"), () -> {
             systemOppfolgingController.aktiverSykmeldt(SykmeldtBrukerType.SKAL_TIL_SAMME_ARBEIDSGIVER, "fnr");
             verify(authService,  times(1)).skalVereSystemBruker();
         });

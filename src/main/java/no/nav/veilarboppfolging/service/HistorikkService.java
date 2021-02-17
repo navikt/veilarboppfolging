@@ -2,7 +2,6 @@ package no.nav.veilarboppfolging.service;
 
 import lombok.SneakyThrows;
 import lombok.val;
-import no.nav.common.featuretoggle.UnleashService;
 import no.nav.veilarboppfolging.domain.*;
 import no.nav.veilarboppfolging.repository.*;
 import no.nav.veilarboppfolging.utils.KvpUtils;
@@ -29,8 +28,6 @@ public class HistorikkService {
 
     private final VeilederHistorikkRepository veilederHistorikkRepository;
 
-    private final UnleashService unleashService;
-
     private final OppfolgingsenhetHistorikkRepository oppfolgingsenhetHistorikkRepository;
 
     private final EskaleringsvarselRepository eskaleringsvarselRepository;
@@ -44,7 +41,6 @@ public class HistorikkService {
             AuthService authService,
             KvpRepository kvpRepository,
             VeilederHistorikkRepository veilederHistorikkRepository,
-            UnleashService unleashService,
             OppfolgingsenhetHistorikkRepository oppfolgingsenhetHistorikkRepository,
             EskaleringsvarselRepository eskaleringsvarselRepository,
             OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository,
@@ -53,7 +49,6 @@ public class HistorikkService {
         this.authService = authService;
         this.kvpRepository = kvpRepository;
         this.veilederHistorikkRepository = veilederHistorikkRepository;
-        this.unleashService = unleashService;
         this.oppfolgingsenhetHistorikkRepository = oppfolgingsenhetHistorikkRepository;
         this.eskaleringsvarselRepository = eskaleringsvarselRepository;
         this.oppfolgingsPeriodeRepository = oppfolgingsPeriodeRepository;

@@ -1,5 +1,6 @@
 package no.nav.veilarboppfolging.feed;
 
+import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.sts.OpenAmSystemUserTokenProvider;
 import no.nav.veilarboppfolging.controller.domain.AvsluttetOppfolgingFeedDTO;
 import no.nav.veilarboppfolging.controller.domain.KvpDTO;
@@ -27,10 +28,13 @@ public class FeedConfig {
     static final String NYE_BRUKERE_FEED_NAME = "nyebrukere";
     static final String KVP_FEED_NAME = "kvp";
 
+    private final AuthContextHolder authContextHolder;
+
     private final OpenAmSystemUserTokenProvider openAmSystemUserTokenProvider;
 
     @Autowired
-    public FeedConfig(OpenAmSystemUserTokenProvider openAmSystemUserTokenProvider) {
+    public FeedConfig(AuthContextHolder authContextHolder, OpenAmSystemUserTokenProvider openAmSystemUserTokenProvider) {
+        this.authContextHolder = authContextHolder;
         this.openAmSystemUserTokenProvider = openAmSystemUserTokenProvider;
     }
 
@@ -41,7 +45,7 @@ public class FeedConfig {
                 .provider(new OppfolgingFeedProvider(oppfolgingFeedRepository))
                 .maxPageSize(1000)
                 .interceptors(singletonList(new OidcFeedOutInterceptor(openAmSystemUserTokenProvider)))
-                .authorizationModule(new OidcFeedAuthorizationModule(oppfolgingFeedAllowedUsers))
+                .authorizationModule(new OidcFeedAuthorizationModule(authContextHolder, oppfolgingFeedAllowedUsers))
                 .build();
     }
 
@@ -52,7 +56,7 @@ public class FeedConfig {
                 .provider(new AvsluttetOppfolgingFeedProvider(oppfolgingService))
                 .maxPageSize(1000)
                 .interceptors(singletonList(new OidcFeedOutInterceptor(openAmSystemUserTokenProvider)) )
-                .authorizationModule(new OidcFeedAuthorizationModule(avsluttOppfolgingFeedAllowedUsers))
+                .authorizationModule(new OidcFeedAuthorizationModule(authContextHolder, avsluttOppfolgingFeedAllowedUsers))
                 .build();
     }
 
@@ -63,7 +67,7 @@ public class FeedConfig {
                 .provider(new KvpFeedProvider(repo))
                 .maxPageSize(1000)
                 .interceptors(singletonList(new OidcFeedOutInterceptor(openAmSystemUserTokenProvider)) )
-                .authorizationModule(new OidcFeedAuthorizationModule(kvpFeedAllowedUsers))
+                .authorizationModule(new OidcFeedAuthorizationModule(authContextHolder, kvpFeedAllowedUsers))
                 .build();
     }
 
@@ -73,7 +77,7 @@ public class FeedConfig {
         return FeedProducer.<NyeBrukereFeedDTO>builder()
                 .provider((id, pageSize) -> repo.hentElementerStorreEnnId(id, pageSize).stream().map(NyeBrukereFeedDTO::toFeedElement))
                 .maxPageSize(1000)
-                .authorizationModule(new OidcFeedAuthorizationModule(nyeBrukereFeedAllowedUsers))
+                .authorizationModule(new OidcFeedAuthorizationModule(authContextHolder, nyeBrukereFeedAllowedUsers))
                 .build();
     }
 }

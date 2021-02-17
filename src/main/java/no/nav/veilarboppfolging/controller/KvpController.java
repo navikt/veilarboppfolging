@@ -28,12 +28,15 @@ public class KvpController {
 
     private final AuthService authService;
 
+    private final AuthContextHolder authContextHolder;
+
     private final List<String> allowedUsers = List.of("srvveilarbdialog", "srvveilarbaktivitet");
 
     @Autowired
-    public KvpController(KvpRepository repository, AuthService authService) {
+    public KvpController(KvpRepository repository, AuthService authService, AuthContextHolder authContextHolder) {
         this.repository = repository;
         this.authService = authService;
+        this.authContextHolder = authContextHolder;
     }
 
     @GetMapping("/{aktorId}/currentStatus")
@@ -70,7 +73,7 @@ public class KvpController {
     }
 
     private boolean isRequestAuthorized() {
-        String username = AuthContextHolder.getSubject().orElse("").toLowerCase();
+        String username = authContextHolder.getSubject().orElse("").toLowerCase();
         return authService.erSystemBruker() && allowedUsers.contains(username);
     }
 }
