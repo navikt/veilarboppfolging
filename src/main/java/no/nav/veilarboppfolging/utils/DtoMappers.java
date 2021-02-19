@@ -3,6 +3,7 @@ package no.nav.veilarboppfolging.utils;
 import no.nav.veilarboppfolging.controller.domain.*;
 import no.nav.veilarboppfolging.domain.*;
 
+import java.util.Collections;
 import java.util.Optional;
 
 import static java.util.Optional.ofNullable;
@@ -81,7 +82,10 @@ public class DtoMappers {
         OppfolgingPeriodeDTO periode = new OppfolgingPeriodeDTO()
                 .setSluttDato(oppfolgingsperiode.getSluttDato())
                 .setStartDato(oppfolgingsperiode.getStartDato())
-                .setKvpPerioder(oppfolgingsperiode.getKvpPerioder().stream().map(DtoMappers::tilDTO).collect(toList()));
+                .setKvpPerioder(
+                        ofNullable(oppfolgingsperiode.getKvpPerioder()).orElseGet(Collections::emptyList)
+                                .stream().map(DtoMappers::tilDTO).collect(toList())
+                );
 
         if (erInternBruker) {
             periode.setVeileder(oppfolgingsperiode.getVeileder())
