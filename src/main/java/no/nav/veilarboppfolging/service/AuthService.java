@@ -11,6 +11,7 @@ import no.nav.common.abac.domain.Attribute;
 import no.nav.common.abac.domain.request.*;
 import no.nav.common.abac.domain.response.XacmlResponse;
 import no.nav.common.auth.context.AuthContextHolder;
+import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.client.aktorregister.AktorregisterClient;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
@@ -32,41 +33,47 @@ import static no.nav.common.abac.XacmlRequestBuilder.personIdAttribute;
 @Service
 public class AuthService {
 
+    private final AuthContextHolder authContextHolder;
+
     private final Pep veilarbPep;
+
+    private final AktorOppslagClient aktorOppslagClient;
 
     private final AktorregisterClient aktorregisterClient;
 
     private final Credentials serviceUserCredentials;
 
     @Autowired
-    public AuthService(Pep veilarbPep, AktorregisterClient aktorregisterClient, Credentials serviceUserCredentials) {
+    public AuthService(AuthContextHolder authContextHolder, Pep veilarbPep, AktorOppslagClient aktorOppslagClient, AktorregisterClient aktorregisterClient, Credentials serviceUserCredentials) {
+        this.authContextHolder = authContextHolder;
         this.veilarbPep = veilarbPep;
+        this.aktorOppslagClient = aktorOppslagClient;
         this.aktorregisterClient = aktorregisterClient;
         this.serviceUserCredentials = serviceUserCredentials;
     }
 
     public void skalVereInternBruker() {
-        if (!AuthContextHolder.erInternBruker()){
+        if (!authContextHolder.erInternBruker()){
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Ugyldig bruker type");
         }
     }
 
     public void skalVereSystemBruker() {
-        if (!AuthContextHolder.erSystemBruker()){
+        if (!authContextHolder.erSystemBruker()){
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Ugyldig bruker type");
         }
     }
 
     public boolean erInternBruker() {
-        return AuthContextHolder.erInternBruker();
+        return authContextHolder.erInternBruker();
     }
 
     public boolean erSystemBruker() {
-        return AuthContextHolder.erSystemBruker();
+        return authContextHolder.erSystemBruker();
     }
 
     public boolean erEksternBruker() {
-        return AuthContextHolder.erEksternBruker();
+        return authContextHolder.erEksternBruker();
     }
 
     public boolean harTilgangTilEnhet(String enhetId) {
@@ -164,11 +171,11 @@ public class AuthService {
     }
 
     public String getAktorIdOrThrow(String fnr) {
-        return aktorregisterClient.hentAktorId(Fnr.of(fnr)).get();
+        return aktorOppslagClient.hentAktorId(Fnr.of(fnr)).get();
     }
 
     public String getFnrOrThrow(String aktorId) {
-        return aktorregisterClient.hentFnr(AktorId.of(aktorId)).get();
+        return aktorOppslagClient.hentFnr(AktorId.of(aktorId)).get();
     }
 
     public List<AktorId> getAlleAktorIderOrThrow(String fnr) {
@@ -176,12 +183,12 @@ public class AuthService {
     }
 
     public String getInnloggetBrukerToken() {
-        return AuthContextHolder.getIdTokenString().orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Fant ikke token for innlogget bruker"));
+        return authContextHolder.getIdTokenString().orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Fant ikke token for innlogget bruker"));
     }
 
     // NAV ident, fnr eller annen ID
     public String getInnloggetBrukerIdent() {
-        return AuthContextHolder.getSubject().orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "NAV ident is missing"));
+        return authContextHolder.getSubject().orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "NAV ident is missing"));
     }
 
     public String getInnloggetVeilederIdent() {

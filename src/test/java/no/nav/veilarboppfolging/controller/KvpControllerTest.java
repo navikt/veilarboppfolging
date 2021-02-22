@@ -1,89 +1,117 @@
 package no.nav.veilarboppfolging.controller;
 
-import no.nav.common.abac.VeilarbPep;
-import no.nav.common.auth.context.AuthContext;
 import no.nav.common.auth.context.AuthContextHolder;
-import no.nav.common.auth.context.UserRole;
-import no.nav.common.client.aktorregister.AktorregisterClient;
-import no.nav.common.test.auth.AuthTestUtils;
-import no.nav.common.utils.Credentials;
+import no.nav.common.json.JsonUtils;
 import no.nav.veilarboppfolging.controller.domain.KvpDTO;
 import no.nav.veilarboppfolging.domain.Kvp;
 import no.nav.veilarboppfolging.repository.KvpRepository;
 import no.nav.veilarboppfolging.service.AuthService;
-import org.junit.Test;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
+import no.nav.veilarboppfolging.utils.DtoMappers;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.web.servlet.MockMvc;
 
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@WebMvcTest(controllers = KvpController.class)
 public class KvpControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockBean
+    private KvpRepository kvpRepository;
+
+    @MockBean
+    private AuthService authService;
+
+    @MockBean
+    private AuthContextHolder authContextHolder;
 
     private static final String AKTOR_ID = "1234";
     private static final long KVP_ID = 1L;
     private static final String ENHET_ID = "0001";
 
-    private static final AuthContext AUTHORIZED_CONTEXT = AuthTestUtils.createAuthContext(UserRole.SYSTEM, "srvveilarbdialog");
-    private static final AuthContext UNAUTHORIZED_CONTEXT = AuthTestUtils.createAuthContext(UserRole.EKSTERN, "user");
-
-
-    private KvpRepository kvpRepositoryMock = mock(KvpRepository.class);
-
-    private AuthService authService = new AuthService(mock(VeilarbPep.class), mock(AktorregisterClient.class), new Credentials("srvtest", ""));
-
-    private KvpController kvpController = new KvpController(kvpRepositoryMock, authService);
-
     @Test
-    public void unauthorized_user() {
-        try {
-            getKvpStatus(UNAUTHORIZED_CONTEXT);
-        } catch (ResponseStatusException e) {
-            assertEquals(HttpStatus.UNAUTHORIZED, e.getStatus());
-        }
+    public void user_missing() throws Exception {
+        when(authContextHolder.getSubject()).thenReturn(Optional.empty());
+
+        mockMvc.perform(get("/api/kvp/1234/currentStatus"))
+                .andExpect(status().is(401));
     }
 
     @Test
-    public void no_active_kvp() {
-        when(kvpRepositoryMock.gjeldendeKvp(anyString())).thenReturn(0L);
-        KvpDTO kvp = getKvpStatus(AUTHORIZED_CONTEXT);
-        assertThat(kvp).isNull();
+    public void unauthorized_user_() throws Exception {
+        when(authContextHolder.getSubject()).thenReturn(Optional.of("not_authorized_user"));
+
+        mockMvc.perform(get("/api/kvp/1234/currentStatus"))
+                .andExpect(status().is(401));
     }
 
     @Test
-    public void with_active_kvp() {
-        when(kvpRepositoryMock.gjeldendeKvp(AKTOR_ID)).thenReturn(KVP_ID);
-        when(kvpRepositoryMock.fetch(KVP_ID)).thenReturn(kvp());
+    public void not_system_user() throws Exception {
+        when(authContextHolder.getSubject()).thenReturn(Optional.of("srvveilarbdialog"));
+        when(authService.erSystemBruker()).thenReturn(false);
 
-        KvpDTO kvp = getKvpStatus(AUTHORIZED_CONTEXT);
-        assertEquals(kvp.getEnhet(), ENHET_ID);
+        mockMvc.perform(get("/api/kvp/1234/currentStatus"))
+                .andExpect(status().is(401));
     }
 
     @Test
-    public void with_active_kvp_but_unable_to_fetch_kvp_object() {
-        when(kvpRepositoryMock.gjeldendeKvp(AKTOR_ID)).thenReturn(KVP_ID);
-        when(kvpRepositoryMock.fetch(KVP_ID)).thenReturn(null);
-        try {
-            getKvpStatus(AUTHORIZED_CONTEXT);
-        } catch (ResponseStatusException e) {
-            assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, e.getStatus());
-        }
+    public void no_active_kvp() throws Exception {
+        when(authContextHolder.getSubject()).thenReturn(Optional.of("srvveilarbdialog"));
+        when(authService.erSystemBruker()).thenReturn(true);
+
+        when(kvpRepository.gjeldendeKvp(anyString())).thenReturn(0L);
+
+        mockMvc.perform(get("/api/kvp/1234/currentStatus"))
+                .andExpect(content().string(""))
+                .andExpect(status().is(204));
     }
 
-    private KvpDTO getKvpStatus(AuthContext context) {
-        return AuthContextHolder.withContext(context, () -> kvpController.getKvpStatus(AKTOR_ID).getBody());
+    @Test
+    public void with_active_kvp() throws Exception {
+        when(authContextHolder.getSubject()).thenReturn(Optional.of("srvveilarbdialog"));
+        when(authService.erSystemBruker()).thenReturn(true);
+
+        when(kvpRepository.gjeldendeKvp(AKTOR_ID)).thenReturn(KVP_ID);
+        when(kvpRepository.fetch(KVP_ID)).thenReturn(kvp());
+
+        KvpDTO expectedKvp = DtoMappers.kvpToDTO(kvp());
+
+        mockMvc.perform(get("/api/kvp/1234/currentStatus"))
+                .andExpect(content().json(JsonUtils.toJson(expectedKvp)))
+                .andExpect(status().is(200));
+    }
+
+    @Test
+    public void with_active_kvp_but_unable_to_fetch_kvp_object() throws Exception {
+        when(authContextHolder.getSubject()).thenReturn(Optional.of("srvveilarbdialog"));
+        when(authService.erSystemBruker()).thenReturn(true);
+
+        when(kvpRepository.gjeldendeKvp(AKTOR_ID)).thenReturn(KVP_ID);
+        when(kvpRepository.fetch(KVP_ID)).thenReturn(null);
+
+        mockMvc.perform(get("/api/kvp/1234/currentStatus"))
+                .andExpect(content().string(""))
+                .andExpect(status().is(500));
     }
 
     private Kvp kvp() {
         return Kvp.builder()
                 .kvpId(KVP_ID)
                 .aktorId(AKTOR_ID)
-                .opprettetDato(ZonedDateTime.now())
+                .opprettetDato(ZonedDateTime.of(2020, 5, 4, 3, 2, 1, 0, ZoneId.systemDefault()))
                 .enhet(ENHET_ID)
                 .build();
     }

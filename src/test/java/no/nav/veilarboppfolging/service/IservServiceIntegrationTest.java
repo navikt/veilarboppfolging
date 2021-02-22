@@ -1,8 +1,8 @@
 package no.nav.veilarboppfolging.service;
 
+import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.common.auth.context.UserRole;
 import no.nav.common.test.auth.AuthTestUtils;
-import no.nav.common.utils.Credentials;
 import no.nav.veilarboppfolging.domain.IservMapper;
 import no.nav.veilarboppfolging.domain.OppfolgingTable;
 import no.nav.veilarboppfolging.domain.kafka.VeilarbArenaOppfolgingEndret;
@@ -52,7 +52,7 @@ public class IservServiceIntegrationTest {
         utmeldingRepository = new UtmeldingRepository(db);
 
         iservService = new IservService(
-                new Credentials("srvtest", ""),
+                AuthContextHolderThreadLocal.instance(),
                 () -> AuthTestUtils.createAuthContext(UserRole.SYSTEM, "srvtest").getIdToken().serialize(),
                 mock(MetricsService.class),
                 utmeldingRepository, oppfolgingService, oppfolgingStatusRepository, authService

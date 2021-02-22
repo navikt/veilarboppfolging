@@ -1,5 +1,6 @@
 package no.nav.veilarboppfolging.service;
 
+import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.veilarboppfolging.domain.kafka.*;
 import no.nav.veilarboppfolging.kafka.KafkaMessagePublisher;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,15 +8,16 @@ import org.springframework.stereotype.Service;
 
 import java.time.ZonedDateTime;
 
-import static no.nav.common.auth.context.AuthContextHolder.erEksternBruker;
-
 @Service
 public class KafkaProducerService {
+
+    private final AuthContextHolder authContextHolder;
 
     private final KafkaMessagePublisher kafkaMessagePublisher;
 
     @Autowired
-    public KafkaProducerService(KafkaMessagePublisher kafkaMessagePublisher) {
+    public KafkaProducerService(AuthContextHolder authContextHolder, KafkaMessagePublisher kafkaMessagePublisher) {
+        this.authContextHolder = authContextHolder;
         this.kafkaMessagePublisher = kafkaMessagePublisher;
     }
 
@@ -73,7 +75,7 @@ public class KafkaProducerService {
                 .setAktorId(aktorId)
                 .setEndretTidspunk(ZonedDateTime.now())
                 .setVeilederIdent(veilederIdent)
-                .setLagtInnAv(erEksternBruker()
+                .setLagtInnAv(authContextHolder.erEksternBruker()
                         ? MalEndringKafkaDTO.InnsenderData.BRUKER
                         : MalEndringKafkaDTO.InnsenderData.NAV);
         kafkaMessagePublisher.publiserEndringPaMal(malEndringKafkaDTO);

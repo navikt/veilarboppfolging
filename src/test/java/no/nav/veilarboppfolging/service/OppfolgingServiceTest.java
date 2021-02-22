@@ -3,7 +3,6 @@ package no.nav.veilarboppfolging.service;
 import io.vavr.collection.Stream;
 import lombok.SneakyThrows;
 import lombok.val;
-import no.nav.common.featuretoggle.UnleashService;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt.WSYtelseskontrakt;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeRequest;
@@ -69,9 +68,6 @@ public class OppfolgingServiceTest {
 
     @Mock
     private OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
-
-    @Mock
-    private UnleashService unleashService;
 
     @Mock
     private WSHentYtelseskontraktListeResponse ytelser;
