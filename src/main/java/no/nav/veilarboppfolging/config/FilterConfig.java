@@ -44,9 +44,13 @@ public class FilterConfig {
     }
 
     private OidcAuthenticatorConfig openAmAuthConfig(EnvironmentProperties properties) {
+        List<String> clientIds = List.of(
+                properties.getVeilarbloginOpenAmClientId(),
+                properties.getModialoginOpenAmClientId()
+        );
         return new OidcAuthenticatorConfig()
                 .withDiscoveryUrl(properties.getOpenAmDiscoveryUrl())
-                .withClientId(properties.getVeilarbloginOpenAmClientId())
+                .withClientIds(clientIds)
                 .withIdTokenCookieName(OPEN_AM_ID_TOKEN_COOKIE_NAME)
                 .withRefreshTokenCookieName(REFRESH_TOKEN_COOKIE_NAME)
                 .withIdTokenFinder(new UserTokenFinder())
