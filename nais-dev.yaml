@@ -48,3 +48,6 @@ spec:
         mountPath: /var/run/secrets/nais.io/vault
       - kvPath: /oracle/data/dev/config/veilarboppfolging_q1
         mountPath: /var/run/secrets/nais.io/oracle_config
+  env:
+    name: MODIABLOGIN_OPENAM_CLIENT_ID
+    value: "modia-q1"
