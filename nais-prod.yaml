@@ -49,4 +49,4 @@ spec:
         mountPath: /var/run/secrets/nais.io/oracle_config
   env:
     - name: MODIABLOGIN_OPENAM_CLIENT_ID
-      value: "modia-p"
+      value: "modialogin-p"
