@@ -13,6 +13,8 @@ public class EnvironmentProperties {
 
     private String veilarbloginOpenAmClientId;
 
+    private String modialoginOpenAmClientId;
+
     private String openAmRefreshUrl;
 
     private String openAmRedirectUrl;
