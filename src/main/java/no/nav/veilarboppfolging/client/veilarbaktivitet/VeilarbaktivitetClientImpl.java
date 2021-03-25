@@ -35,7 +35,7 @@ public class VeilarbaktivitetClientImpl implements VeilarbaktivitetClient {
     @Override
     public List<ArenaAktivitetDTO> hentArenaAktiviteter(String fnr) {
         Request request = new Request.Builder()
-                .url(joinPaths(veilarbaktivitetUrl, "/api/aktivitet/arena?fnr=" + fnr))
+                .url(joinPaths(veilarbaktivitetUrl, "/api/arena/tiltak?fnr=" + fnr))
                 .header(ACCEPT, APPLICATION_JSON_VALUE)
                 .header(AUTHORIZATION, "Bearer " + userTokenProvider.get())
                 .build();
