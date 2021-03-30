@@ -47,14 +47,6 @@ class DatabaseSyntaxMapper {
                 "ALTER TABLE STATUS alter column BEGRUNNELSE NVARCHAR2(500)"
         );
         map(
-                "ALTER TABLE KODEVERK_BRUKER MODIFY ENDRET NOT NULL",
-                "ALTER TABLE KODEVERK_BRUKER alter column ENDRET SET NOT NULL;"
-        );
-        map(
-                "ALTER TABLE KODEVERK_BRUKER MODIFY ENDRET_AV NOT NULL",
-                "ALTER TABLE KODEVERK_BRUKER alter column ENDRET_AV SET NOT NULL;"
-        );
-        map(
                 "ALTER TABLE MAL MODIFY DATO NOT NULL",
                 "ALTER TABLE MAL alter column  DATO SET NOT NULL;"
         );
