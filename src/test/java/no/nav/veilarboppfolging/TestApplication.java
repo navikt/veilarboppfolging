@@ -1,8 +1,10 @@
 package no.nav.veilarboppfolging;
 
+import io.vavr.collection.Array;
 import no.nav.veilarboppfolging.config.ApplicationTestConfig;
 import no.nav.veilarboppfolging.test.LocalH2Database;
 import no.nav.veilarboppfolging.test.testdriver.TestDriver;
+import org.junit.Test;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.Import;
@@ -11,6 +13,7 @@ import org.springframework.context.annotation.Import;
 @Import(ApplicationTestConfig.class)
 public class TestApplication {
 
+    //TODO Må fikse AuthService og AuthContextHolder mock
     public static void main(String[] args) {
         // We need to initialize the driver before spring starts or Flyway will not be able to use the driver
         LocalH2Database.setUsePersistentDb();
@@ -19,6 +22,14 @@ public class TestApplication {
         SpringApplication application = new SpringApplication(TestApplication.class);
         application.setAdditionalProfiles("local");
         application.run(args);
+    }
+
+    @Test
+    public void testMain() {
+        System.setProperty("server.port", "0");
+        String[] strings = new String[]{};
+
+        main(strings);
     }
 
 }

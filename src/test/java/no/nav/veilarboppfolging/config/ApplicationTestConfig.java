@@ -1,6 +1,7 @@
 package no.nav.veilarboppfolging.config;
 
 import no.nav.common.abac.Pep;
+import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.sts.OpenAmSystemUserTokenProvider;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.utils.Credentials;
@@ -10,6 +11,7 @@ import no.nav.veilarboppfolging.kafka.KafkaProducerHealthCheck;
 import no.nav.veilarboppfolging.kafka.KafkaTopics;
 import no.nav.veilarboppfolging.mock.PepMock;
 import no.nav.veilarboppfolging.repository.FeiletKafkaMeldingRepository;
+import no.nav.veilarboppfolging.service.AuthService;
 import no.nav.veilarboppfolging.test.LocalH2Database;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -44,6 +46,15 @@ public class ApplicationTestConfig {
         OpenAmSystemUserTokenProvider mockProvider = mock(OpenAmSystemUserTokenProvider.class);
         when(mockProvider.getSystemUserToken()).thenReturn("OPEN_AM_SYSTEM_USER_TOKEN");
         return mockProvider;
+    }
+    @Bean
+    public AuthService authService() {
+        return mock(AuthService.class);
+    };
+
+    @Bean
+    public AuthContextHolder authContextHolder() {
+        return mock(AuthContextHolder.class);
     }
 
     @Bean

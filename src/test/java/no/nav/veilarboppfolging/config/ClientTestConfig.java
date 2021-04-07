@@ -12,8 +12,6 @@ import no.nav.veilarboppfolging.client.behandle_arbeidssoker.BehandleArbeidssoke
 import no.nav.veilarboppfolging.client.dkif.DkifClient;
 import no.nav.veilarboppfolging.client.dkif.DkifKontaktinfo;
 import no.nav.veilarboppfolging.client.varseloppgave.VarseloppgaveClient;
-import no.nav.veilarboppfolging.client.veilarbaktivitet.ArenaAktivitetDTO;
-import no.nav.veilarboppfolging.client.veilarbaktivitet.VeilarbaktivitetClient;
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolging;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
@@ -147,21 +145,6 @@ public class ClientTestConfig {
             @Override
             public void sendEskaleringsvarsel(String aktorId, long dialogId) {
 
-            }
-
-            @Override
-            public HealthCheckResult checkHealth() {
-                return HealthCheckResult.healthy();
-            }
-        };
-    }
-
-    @Bean
-    public VeilarbaktivitetClient veilarbaktivitetClient() {
-        return new VeilarbaktivitetClient() {
-            @Override
-            public List<ArenaAktivitetDTO> hentArenaAktiviteter(String fnr) {
-                return null;
             }
 
             @Override
