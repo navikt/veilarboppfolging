@@ -15,8 +15,10 @@ import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 
 import static java.time.ZonedDateTime.now;
+import static java.time.temporal.ChronoUnit.MILLIS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
@@ -69,7 +71,7 @@ public class IservServiceIntegrationTest {
         IservMapper iservMapper = utmeldingRepository.eksisterendeIservBruker(veilarbArenaOppfolging);
         assertThat(iservMapper).isNotNull();
         assertThat(iservMapper.getAktor_Id()).isEqualTo(AKTORID);
-        assertThat(iservMapper.getIservSiden()).isEqualTo(iservFraDato);
+        assertThat(iservMapper.getIservSiden().truncatedTo(MILLIS)).isEqualTo(iservFraDato.truncatedTo(MILLIS));
     }
 
     @Test
@@ -84,7 +86,7 @@ public class IservServiceIntegrationTest {
         IservMapper iservMapper = utmeldingRepository.eksisterendeIservBruker(veilarbArenaOppfolging);
         assertThat(iservMapper).isNotNull();
         assertThat(iservMapper.getAktor_Id()).isEqualTo(AKTORID);
-        assertThat(iservMapper.getIservSiden()).isEqualTo(veilarbArenaOppfolging.getIserv_fra_dato());
+        assertThat(iservMapper.getIservSiden().truncatedTo(MILLIS)).isEqualTo(veilarbArenaOppfolging.getIserv_fra_dato().truncatedTo(MILLIS));
     }
 
     @Test
