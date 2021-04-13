@@ -128,6 +128,7 @@ public class OppfolgingService {
     }
 
     @SneakyThrows
+    @Transactional
     public OppfolgingStatusData startOppfolging(String fnr) {
         String aktorId = authService.getAktorIdOrThrow(fnr);
 
@@ -381,6 +382,7 @@ public class OppfolgingService {
         return Optional.of(o);
     }
 
+    @Transactional
     public void startOppfolgingHvisIkkeAlleredeStartet(String aktorId) {
         startOppfolgingHvisIkkeAlleredeStartet(
                 Oppfolgingsbruker.builder()
@@ -389,6 +391,7 @@ public class OppfolgingService {
         );
     }
 
+    @Transactional
     public void startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker oppfolgingsbruker) {
         startOppfolgingHvisIkkeAlleredeStartet(oppfolgingsbruker, true);
     }
@@ -450,7 +453,7 @@ public class OppfolgingService {
         String aktorId = authService.getAktorIdOrThrow(fnr);
         Optional<ArenaOppfolgingTilstand> arenaOppfolgingTilstand = arenaOppfolgingService.hentOppfolgingTilstand(fnr);
 
-        arenaOppfolgingTilstand.ifPresent((oppfolgingTilstand) -> {
+        arenaOppfolgingTilstand.ifPresent(oppfolgingTilstand -> {
             Optional<OppfolgingTable> maybeOppfolging = ofNullable(oppfolgingsStatusRepository.fetch(aktorId));
 
             boolean erBrukerUnderOppfolging = maybeOppfolging.map(OppfolgingTable::isUnderOppfolging).orElse(false);
@@ -474,7 +477,7 @@ public class OppfolgingService {
                         erSykmeldtMedArbeidsgiver,
                         erInaktivIArena,
                         aktorId,
-                        arenaOppfolgingTilstand.toString());
+                        arenaOppfolgingTilstand);
 
                 if (sjekkIArenaOmBrukerSkalAvsluttes) {
                     sjekkOgOppdaterBrukerDirekteFraArena(fnr, oppfolgingTilstand, maybeOppfolging.get());
@@ -505,7 +508,7 @@ public class OppfolgingService {
                     erInaktivIArena,
                     skalAvsluttes,
                     oppfolging.getAktorId(),
-                    arenaOppfolgingTilstand.toString());
+                    arenaOppfolgingTilstand);
 
             if (skalAvsluttes) {
                 String aktorId = authService.getAktorIdOrThrow(fnr);
