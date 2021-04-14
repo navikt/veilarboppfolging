@@ -6,11 +6,7 @@ import no.nav.common.sts.OpenAmSystemUserTokenProvider;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.utils.Credentials;
 import no.nav.veilarboppfolging.feed.FeedConfig;
-import no.nav.veilarboppfolging.kafka.KafkaConsumerHealthCheck;
-import no.nav.veilarboppfolging.kafka.KafkaProducerHealthCheck;
-import no.nav.veilarboppfolging.kafka.KafkaTopics;
 import no.nav.veilarboppfolging.mock.PepMock;
-import no.nav.veilarboppfolging.repository.FeiletKafkaMeldingRepository;
 import no.nav.veilarboppfolging.service.AuthService;
 import no.nav.veilarboppfolging.test.LocalH2Database;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -60,21 +56,6 @@ public class ApplicationTestConfig {
     @Bean
     public SystemUserTokenProvider systemUserTokenProvider() {
         return () -> "NAIS_SYSTEM_USER_TOKEN";
-    }
-
-    @Bean
-    public KafkaTopics kafkaTopics() {
-        return KafkaTopics.create("local");
-    }
-
-    @Bean
-    public KafkaConsumerHealthCheck kafkaHelsesjekk() {
-        return new KafkaConsumerHealthCheck();
-    }
-
-    @Bean
-    public KafkaProducerHealthCheck kafkaProducerHealthCheck(FeiletKafkaMeldingRepository feiletKafkaMeldingRepository) {
-        return new KafkaProducerHealthCheck(feiletKafkaMeldingRepository);
     }
 
     @Bean

@@ -1,8 +1,6 @@
 package no.nav.veilarboppfolging.config;
 
-import no.nav.veilarboppfolging.kafka.EndringPaOppfolgingBrukerConsumer;
-import no.nav.veilarboppfolging.kafka.KafkaMessagePublisher;
-import no.nav.veilarboppfolging.kafka.KafkaTopics;
+import no.nav.veilarboppfolging.service.KafkaConsumerService;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
@@ -28,20 +26,17 @@ import static org.apache.kafka.clients.producer.ProducerConfig.VALUE_SERIALIZER_
 
 @EnableKafka
 @Configuration
-@Import({EndringPaOppfolgingBrukerConsumer.class, KafkaMessagePublisher.class})
+@Import({KafkaConsumerService.class})
 public class KafkaTestConfig {
 
-    private final KafkaTopics kafkaTopics;
 
     @Autowired
-    public KafkaTestConfig(KafkaTopics kafkaTopics) {
-        this.kafkaTopics = kafkaTopics;
+    public KafkaTestConfig() {
     }
 
     @Bean
     public EmbeddedKafkaBroker embeddedKafkaBroker() {
-        EmbeddedKafkaBroker embeddedKafkaBroker = new EmbeddedKafkaBroker(1, true, kafkaTopics.getAllTopics());
-        return embeddedKafkaBroker;
+        return null; // TODO
     }
 
     @Bean
