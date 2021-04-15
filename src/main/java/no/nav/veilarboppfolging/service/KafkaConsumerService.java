@@ -9,6 +9,7 @@ import no.nav.common.auth.context.UserRole;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.veilarboppfolging.domain.kafka.VeilarbArenaOppfolgingEndret;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -31,15 +32,15 @@ public class KafkaConsumerService {
     public KafkaConsumerService(
             AuthContextHolder authContextHolder,
             SystemUserTokenProvider systemUserTokenProvider,
-            KvpService kvpService,
             MetricsService metricsService,
-            IservService iservService,
+            @Lazy KvpService kvpService,
+            @Lazy IservService iservService,
             OppfolgingsenhetEndringService oppfolgingsenhetEndringService
     ) {
         this.authContextHolder = authContextHolder;
         this.systemUserTokenProvider = systemUserTokenProvider;
-        this.kvpService = kvpService;
         this.metricsService = metricsService;
+        this.kvpService = kvpService;
         this.iservService = iservService;
         this.oppfolgingsenhetEndringService = oppfolgingsenhetEndringService;
     }

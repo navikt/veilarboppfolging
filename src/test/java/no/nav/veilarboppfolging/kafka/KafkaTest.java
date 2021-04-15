@@ -11,6 +11,7 @@ import org.springframework.kafka.listener.KafkaMessageListenerContainer;
 
 import java.util.concurrent.BlockingQueue;
 
+// TODO slett?
 public abstract class KafkaTest {
 
     protected static String RECEIVER_TOPIC = "receiver.t";
@@ -50,7 +51,7 @@ public abstract class KafkaTest {
 
     @BeforeClass
     public static void setupFelles() {
-        annotationConfigApplicationContext = new AnnotationConfigApplicationContext(KafkaTestConfig.class);
+//        annotationConfigApplicationContext = new AnnotationConfigApplicationContext(KafkaTestConfig.class);
         annotationConfigApplicationContext.start();
     }
 

@@ -1,13 +1,16 @@
 package no.nav.veilarboppfolging.config;
 
+import net.javacrumbs.shedlock.core.LockProvider;
+import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
 import no.nav.common.abac.Pep;
 import no.nav.common.auth.context.AuthContextHolder;
+import no.nav.common.auth.context.AuthContextHolderThreadLocal;
+import no.nav.common.job.leader_election.LeaderElectionClient;
 import no.nav.common.sts.OpenAmSystemUserTokenProvider;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.utils.Credentials;
 import no.nav.veilarboppfolging.feed.FeedConfig;
 import no.nav.veilarboppfolging.mock.PepMock;
-import no.nav.veilarboppfolging.service.AuthService;
 import no.nav.veilarboppfolging.test.LocalH2Database;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -43,14 +46,10 @@ public class ApplicationTestConfig {
         when(mockProvider.getSystemUserToken()).thenReturn("OPEN_AM_SYSTEM_USER_TOKEN");
         return mockProvider;
     }
-    @Bean
-    public AuthService authService() {
-        return mock(AuthService.class);
-    };
 
     @Bean
     public AuthContextHolder authContextHolder() {
-        return mock(AuthContextHolder.class);
+        return AuthContextHolderThreadLocal.instance();
     }
 
     @Bean
@@ -83,5 +82,13 @@ public class ApplicationTestConfig {
         return new JdbcTemplate(dataSource);
     }
 
+    @Bean
+    public LeaderElectionClient leaderElectionClient() {
+        return () -> true;
+    }
 
+    @Bean
+    public LockProvider lockProvider(JdbcTemplate jdbcTemplate) {
+        return new JdbcTemplateLockProvider(jdbcTemplate);
+    }
 }

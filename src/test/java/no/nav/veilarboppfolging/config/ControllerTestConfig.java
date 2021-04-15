@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Import;
         KvpController.class,
         MalController.class,
         OppfolgingControllerTest.class,
+        OppfolgingController.class,
         OppfolgingNiva3Controller.class,
         SystemOppfolgingController.class,
         UnderOppfolgingController.class,

@@ -35,7 +35,7 @@ public class ConsumerKafkaTest extends KafkaTest {
 
         String kafkaMelding = JsonUtils.toJson(bruker);
         
-        send(KafkaTestConfig.KAFKA_TEST_TOPIC, kafkaMelding);
+//        send(KafkaTestConfig.KAFKA_TEST_TOPIC, kafkaMelding);
         verifiserKonsumentAsynkront(kafkaMelding);
     }
 
