@@ -18,10 +18,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.kafka.test.EmbeddedKafkaBroker;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.testcontainers.containers.KafkaContainer;
 
 import java.util.Map;
 import java.util.Properties;
@@ -42,7 +42,7 @@ import static org.junit.Assert.assertEquals;
 public class KafkaIntegrationTest {
 
     @Autowired
-    EmbeddedKafkaBroker embeddedKafkaBroker;
+    KafkaContainer kafkaContainer;
 
     @Autowired
     KafkaProperties kafkaProperties;
@@ -55,7 +55,7 @@ public class KafkaIntegrationTest {
                 .setFormidlingsgruppekode("ARBS");
 
         KafkaProducer<String, String> producer = new KafkaProducer<>(Map.of(
-                BOOTSTRAP_SERVERS_CONFIG, embeddedKafkaBroker.getBrokersAsString(),
+                BOOTSTRAP_SERVERS_CONFIG, kafkaContainer.getBootstrapServers(),
                 KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class,
                 VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class
         ));
@@ -67,9 +67,8 @@ public class KafkaIntegrationTest {
 
         AtomicReference<OppfolgingStartetKafkaDTO> konsumertMelding = new AtomicReference<>(null);
         KafkaConsumerClientBuilder.<String, String>builder()
-                .withProps(kafkaTestConsumerProperties(embeddedKafkaBroker.getBrokersAsString()))
+                .withProps(kafkaTestConsumerProperties(kafkaContainer.getBootstrapServers()))
                 .withConsumer(kafkaProperties.getOppfolgingStartet(),jsonConsumer(OppfolgingStartetKafkaDTO.class, newValue -> {
-                    System.out.println("MOTTATT MELDING: " + newValue);
                     konsumertMelding.set(newValue);
                 })).build().start();
 

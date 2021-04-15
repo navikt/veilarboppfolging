@@ -27,7 +27,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.kafka.test.EmbeddedKafkaBroker;
+import org.testcontainers.containers.KafkaContainer;
+import org.testcontainers.utility.DockerImageName;
 
 import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
@@ -42,23 +43,13 @@ import static no.nav.veilarboppfolging.config.KafkaConfig.PRODUCER_CLIENT_ID;
 @EnableConfigurationProperties({KafkaProperties.class})
 public class KafkaTestConfig {
 
+    public static final String KAFKA_IMAGE = "confluentinc/cp-kafka:5.4.3";
+
     @Bean
-    public EmbeddedKafkaBroker embeddedKafkaBroker(KafkaProperties kafkaProperties) {
-        EmbeddedKafkaBroker embeddedKafkaBroker = new EmbeddedKafkaBroker(
-                1,
-                true,
-                kafkaProperties.getEndringPaaOppfolgingBruker(),
-                kafkaProperties.getEndringPaaAvsluttOppfolging(),
-                kafkaProperties.getOppfolgingStartet(),
-                kafkaProperties.getOppfolgingAvsluttet(),
-                kafkaProperties.getKvpStartet(),
-                kafkaProperties.getKvpAvlsuttet(),
-                kafkaProperties.getEndringPaManuellStatus(),
-                kafkaProperties.getVeilederTilordnet(),
-                kafkaProperties.getEndringPaNyForVeileder(),
-                kafkaProperties.getEndringPaMal()
-        );
-        return embeddedKafkaBroker;
+    public KafkaContainer kafkaContainer() {
+        KafkaContainer kafkaContainer = new KafkaContainer(DockerImageName.parse(KAFKA_IMAGE));
+        kafkaContainer.start();
+        return kafkaContainer;
     }
 
     @Autowired
@@ -96,12 +87,12 @@ public class KafkaTestConfig {
     public KafkaConsumerClient<String, String> consumerClient(
             Map<String, TopicConsumer<String, String>> topicConsumers,
             KafkaConsumerRepository kafkaConsumerRepository,
-            EmbeddedKafkaBroker embeddedKafkaBroker
+            KafkaContainer kafkaContainer
     ) {
         Properties properties = KafkaPropertiesBuilder.consumerBuilder()
                 .withBaseProperties(1000)
                 .withConsumerGroupId(CONSUMER_GROUP_ID)
-                .withBrokerUrl(embeddedKafkaBroker.getBrokersAsString())
+                .withBrokerUrl(kafkaContainer.getBootstrapServers())
                 .withDeserializers(StringDeserializer.class, StringDeserializer.class)
                 .build();
 
@@ -147,20 +138,20 @@ public class KafkaTestConfig {
     public KafkaProducerRecordProcessor producerRecordProcessor(
             LeaderElectionClient leaderElectionClient,
             KafkaProducerRepository producerRepository,
-            EmbeddedKafkaBroker embeddedKafkaBroker
+            KafkaContainer kafkaContainer
     ) {
         KafkaProducerClient<byte[], byte[]> producerClient = KafkaProducerClientBuilder.<byte[], byte[]>builder()
-                .withProperties(producerProperties(embeddedKafkaBroker))
+                .withProperties(producerProperties(kafkaContainer))
                 .build();
 
         return new KafkaProducerRecordProcessor(producerRepository, producerClient, leaderElectionClient);
     }
 
-    private Properties producerProperties(EmbeddedKafkaBroker embeddedKafkaBroker) {
+    private Properties producerProperties(KafkaContainer kafkaContainer) {
         return KafkaPropertiesBuilder.producerBuilder()
                 .withBaseProperties()
                 .withProducerId(PRODUCER_CLIENT_ID)
-                .withBrokerUrl(embeddedKafkaBroker.getBrokersAsString())
+                .withBrokerUrl(kafkaContainer.getBootstrapServers())
                 .withSerializers(ByteArraySerializer.class, ByteArraySerializer.class)
                 .build();
     }
