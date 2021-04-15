@@ -1,5 +1,7 @@
 package no.nav.veilarboppfolging.config;
 
+import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.PlainJWT;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
 import no.nav.common.abac.Pep;
@@ -54,7 +56,7 @@ public class ApplicationTestConfig {
 
     @Bean
     public SystemUserTokenProvider systemUserTokenProvider() {
-        return () -> "NAIS_SYSTEM_USER_TOKEN";
+        return () -> new PlainJWT(new JWTClaimsSet.Builder().build()).serialize();
     }
 
     @Bean

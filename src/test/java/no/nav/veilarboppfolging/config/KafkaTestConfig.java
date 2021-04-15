@@ -1,6 +1,5 @@
 package no.nav.veilarboppfolging.config;
 
-import io.micrometer.core.instrument.MeterRegistry;
 import net.javacrumbs.shedlock.core.LockProvider;
 import no.nav.common.job.leader_election.LeaderElectionClient;
 import no.nav.common.kafka.consumer.KafkaConsumerClient;
@@ -97,8 +96,7 @@ public class KafkaTestConfig {
     public KafkaConsumerClient<String, String> consumerClient(
             Map<String, TopicConsumer<String, String>> topicConsumers,
             KafkaConsumerRepository kafkaConsumerRepository,
-            EmbeddedKafkaBroker embeddedKafkaBroker,
-            MeterRegistry meterRegistry
+            EmbeddedKafkaBroker embeddedKafkaBroker
     ) {
         Properties properties = KafkaPropertiesBuilder.consumerBuilder()
                 .withBaseProperties(1000)
@@ -112,7 +110,6 @@ public class KafkaTestConfig {
                 .withRepository(kafkaConsumerRepository)
                 .withSerializers(new StringSerializer(), new StringSerializer())
                 .withStoreOnFailureConsumers(topicConsumers)
-                .withMetrics(meterRegistry)
                 .withLogging()
                 .build();
     }
@@ -150,12 +147,10 @@ public class KafkaTestConfig {
     public KafkaProducerRecordProcessor producerRecordProcessor(
             LeaderElectionClient leaderElectionClient,
             KafkaProducerRepository producerRepository,
-            MeterRegistry meterRegistry,
             EmbeddedKafkaBroker embeddedKafkaBroker
     ) {
         KafkaProducerClient<byte[], byte[]> producerClient = KafkaProducerClientBuilder.<byte[], byte[]>builder()
                 .withProperties(producerProperties(embeddedKafkaBroker))
-                .withMetrics(meterRegistry)
                 .build();
 
         return new KafkaProducerRecordProcessor(producerRepository, producerClient, leaderElectionClient);
