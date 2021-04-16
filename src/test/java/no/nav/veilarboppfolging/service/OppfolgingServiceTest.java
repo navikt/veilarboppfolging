@@ -9,13 +9,10 @@ import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskont
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeResponse;
 import no.nav.veilarboppfolging.client.dkif.DkifClient;
 import no.nav.veilarboppfolging.client.dkif.DkifKontaktinfo;
-import no.nav.veilarboppfolging.client.veilarbaktivitet.ArenaAktivitetDTO;
-import no.nav.veilarboppfolging.client.veilarbaktivitet.VeilarbaktivitetClient;
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolging;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
 import no.nav.veilarboppfolging.domain.*;
-import no.nav.veilarboppfolging.domain.arena.AktivitetStatus;
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
 import org.junit.Before;
@@ -29,7 +26,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
-import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.*;
@@ -57,8 +53,6 @@ public class OppfolgingServiceTest {
     @Mock
     private VeilarbarenaClient veilarbarenaClient;
 
-    @Mock
-    private VeilarbaktivitetClient veilarbaktivitetClient;
 
     @Mock
     private YtelseskontraktV3 ytelseskontraktV3;
@@ -346,7 +340,6 @@ public class OppfolgingServiceTest {
     public void kanAvslutteMedVarselOmAktiveYtelser() throws Exception {
         gittOppfolging(oppfolging.setUnderOppfolging(true));
         gittOppfolgingStatus("ISERV", "");
-        gittIngenAktiveTiltak();
         gittYtelserMedStatus("Inaktiv", "Aktiv");
 
         AvslutningStatusData avslutningStatusData = oppfolgingService.hentAvslutningStatus(FNR);
@@ -408,23 +401,6 @@ public class OppfolgingServiceTest {
 //                "}");
     }
 
-    private void gittAktiveTiltak() {
-        when(veilarbaktivitetClient.hentArenaAktiviteter(FNR)).thenReturn(
-                asList(
-                        new ArenaAktivitetDTO().setStatus(AktivitetStatus.GJENNOMFORES),
-                        new ArenaAktivitetDTO().setStatus(AktivitetStatus.PLANLAGT)
-                )
-        );
-    }
-
-    private void gittIngenAktiveTiltak() {
-        when(veilarbaktivitetClient.hentArenaAktiviteter(FNR)).thenReturn(
-                asList(
-                        new ArenaAktivitetDTO().setStatus(AktivitetStatus.AVBRUTT),
-                        new ArenaAktivitetDTO().setStatus(AktivitetStatus.FULLFORT)
-                )
-        );
-    }
 
     private void gittYtelserMedStatus(String... statuser) throws Exception {
         WSHentYtelseskontraktListeRequest request = new WSHentYtelseskontraktListeRequest();

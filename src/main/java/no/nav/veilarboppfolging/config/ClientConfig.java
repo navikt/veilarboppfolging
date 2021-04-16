@@ -17,8 +17,6 @@ import no.nav.veilarboppfolging.client.dkif.DkifClient;
 import no.nav.veilarboppfolging.client.dkif.DkifClientImpl;
 import no.nav.veilarboppfolging.client.varseloppgave.VarseloppgaveClient;
 import no.nav.veilarboppfolging.client.varseloppgave.VarseloppgaveClientImpl;
-import no.nav.veilarboppfolging.client.veilarbaktivitet.VeilarbaktivitetClient;
-import no.nav.veilarboppfolging.client.veilarbaktivitet.VeilarbaktivitetClientImpl;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClientImpl;
 import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktClient;
@@ -67,11 +65,6 @@ public class ClientConfig {
         return new VarseloppgaveClientImpl(properties.getArbeidsrettetDialogUrl(), properties.getVarselOppgaveV1Endpoint(), stsConfig);
     }
 
-    @Bean
-    public VeilarbaktivitetClient veilarbaktivitetClient(AuthService authService) {
-        String url = naisPreprodOrNaisAdeoIngress("veilarbaktivitet", true);
-        return new VeilarbaktivitetClientImpl(url, authService::getInnloggetBrukerToken);
-    }
 
     @Bean
     public VeilarbarenaClient veilarbarenaClient(AuthService authService) {

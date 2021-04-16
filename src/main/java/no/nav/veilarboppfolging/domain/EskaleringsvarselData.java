@@ -2,13 +2,14 @@ package no.nav.veilarboppfolging.domain;
 
 import lombok.Builder;
 import lombok.Value;
+import lombok.With;
 import lombok.experimental.Wither;
 
 import java.time.ZonedDateTime;
 
 @Value
 @Builder
-@Wither
+@With
 public class EskaleringsvarselData {
     private long varselId;
     private String aktorId;
