@@ -8,12 +8,13 @@ import org.junit.Test;
 
 import java.util.List;
 
+import static org.apache.commons.lang3.RandomStringUtils.randomNumeric;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 public class OppfolgingsenhetHistorikkRepositoryTest {
-    private static final String AKTOR_ID = "11111";
+    private static final String AKTOR_ID = randomNumeric(10);
 
     private static OppfolgingsenhetHistorikkRepository oppfolgingsenhetHistorikkRepository = new OppfolgingsenhetHistorikkRepository(LocalH2Database.getDb());
 

@@ -8,12 +8,13 @@ import org.junit.Test;
 
 import java.util.Optional;
 
+import static org.apache.commons.lang3.RandomStringUtils.randomNumeric;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 public class VeilederTilordningerRepositoryTest {
 
-    private static final String AKTOR_ID = "2222";
+    private static final String AKTOR_ID = randomNumeric(10);
     private static final String VEILEDER = "4321";
     private static final String OTHER_VEILEDER = "5432";
 

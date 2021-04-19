@@ -18,12 +18,13 @@ import java.util.stream.IntStream;
 
 import static java.util.Comparator.comparing;
 import static java.util.Optional.ofNullable;
+import static org.apache.commons.lang3.RandomStringUtils.randomNumeric;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.*;
 
 public class OppfolgingFeedRepositoryTest {
 
-    private static final String AKTOR_ID = "2222";
+    private static final String AKTOR_ID = randomNumeric(10);
     private static final String VEILEDER = "1234";
 
     private OppfolgingFeedRepository oppfolgingFeedRepository = new OppfolgingFeedRepository(LocalH2Database.getDb());

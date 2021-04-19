@@ -25,7 +25,7 @@ public class PepMock implements Pep {
 
     @Override
     public boolean harTilgangTilEnhet(String s, EnhetId enhetId) {
-        return false;
+        return true;
     }
 
     @Override

@@ -7,11 +7,12 @@ import no.nav.veilarboppfolging.test.IsolatedDatabaseTest;
 import org.junit.Before;
 import org.junit.Test;
 
+import static org.apache.commons.lang3.RandomStringUtils.randomNumeric;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class OppfolgingRepositoryKvpTest extends IsolatedDatabaseTest {
 
-    private static final String AKTOR_ID = "2222";
+    private static final String AKTOR_ID = randomNumeric(10);
     private static final String ENHET = "1234";
     private static final String SAKSBEHANDLER = "4321";
     private static final String BEGRUNNELSE = "begrunnelse";

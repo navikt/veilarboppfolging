@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Import;
         InternalController.class,
         KvpController.class,
         MalController.class,
-        OppfolgingControllerTest.class,
+        OppfolgingController.class,
         OppfolgingNiva3Controller.class,
         SystemOppfolgingController.class,
         UnderOppfolgingController.class,

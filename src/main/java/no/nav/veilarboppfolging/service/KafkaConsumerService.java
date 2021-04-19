@@ -1,26 +1,20 @@
-package no.nav.veilarboppfolging.kafka;
+package no.nav.veilarboppfolging.service;
 
 import com.nimbusds.jwt.JWTParser;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.auth.context.AuthContext;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.UserRole;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.veilarboppfolging.domain.kafka.VeilarbArenaOppfolgingEndret;
-import no.nav.veilarboppfolging.service.IservService;
-import no.nav.veilarboppfolging.service.KvpService;
-import no.nav.veilarboppfolging.service.MetricsService;
-import no.nav.veilarboppfolging.service.OppfolgingsenhetEndringService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.stereotype.Component;
-
-import static no.nav.common.json.JsonUtils.fromJson;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Service;
 
 @Slf4j
-@Component
-public class EndringPaOppfolgingBrukerConsumer {
+@Service
+public class KafkaConsumerService {
 
     private final AuthContextHolder authContextHolder;
 
@@ -32,32 +26,27 @@ public class EndringPaOppfolgingBrukerConsumer {
 
     private final IservService iservService;
 
-    private final KafkaTopics kafkaTopics;
-
     private final OppfolgingsenhetEndringService oppfolgingsenhetEndringService;
 
     @Autowired
-    public EndringPaOppfolgingBrukerConsumer(
+    public KafkaConsumerService(
             AuthContextHolder authContextHolder,
             SystemUserTokenProvider systemUserTokenProvider,
-            KvpService kvpService,
-            KafkaTopics kafkaTopics,
             MetricsService metricsService,
-            IservService iservService,
+            @Lazy KvpService kvpService,
+            @Lazy IservService iservService,
             OppfolgingsenhetEndringService oppfolgingsenhetEndringService
     ) {
         this.authContextHolder = authContextHolder;
         this.systemUserTokenProvider = systemUserTokenProvider;
-        this.kvpService = kvpService;
-        this.kafkaTopics = kafkaTopics;
         this.metricsService = metricsService;
+        this.kvpService = kvpService;
         this.iservService = iservService;
         this.oppfolgingsenhetEndringService = oppfolgingsenhetEndringService;
     }
 
-    // 'kafkaTopics' blir hentet inn som en bean, ikke fra klasse instansen
-    @KafkaListener(topics = "#{kafkaTopics.getEndringPaaOppfolgingBruker()}")
-    public void consumeEndringPaOppfolgingBruker(@Payload String kafkaMelding) {
+    @SneakyThrows
+    public void consumeEndringPaOppfolgingBruker(VeilarbArenaOppfolgingEndret kafkaMelding) {
         try {
 
             var context = new AuthContext(
@@ -66,13 +55,13 @@ public class EndringPaOppfolgingBrukerConsumer {
             );
 
             authContextHolder.withContext(context, () -> {
-                final VeilarbArenaOppfolgingEndret deserialisertBruker = fromJson(kafkaMelding, VeilarbArenaOppfolgingEndret.class);
-                kvpService.avsluttKvpVedEnhetBytte(deserialisertBruker);
-                iservService.behandleEndretBruker(deserialisertBruker);
-                oppfolgingsenhetEndringService.behandleBrukerEndring(deserialisertBruker);
+                kvpService.avsluttKvpVedEnhetBytte(kafkaMelding);
+                iservService.behandleEndretBruker(kafkaMelding);
+                oppfolgingsenhetEndringService.behandleBrukerEndring(kafkaMelding);
             });
         } catch (Throwable t) {
-            log.error("Feilet ved behandling av kafka-melding: {}\n{}\n{}", kafkaTopics.getEndringPaaOppfolgingBruker(), kafkaMelding, t.getMessage(), t);
+            log.error("Feilet ved behandling av kafka-melding for endring på oppfølgingsbruker:\n{}", t.getMessage(), t);
+            throw t;
         } finally {
             metricsService.antallMeldingerKonsumertAvKafka();
         }

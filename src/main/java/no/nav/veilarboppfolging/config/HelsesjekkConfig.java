@@ -11,8 +11,6 @@ import no.nav.common.health.selftest.SelfTestMeterBinder;
 import no.nav.veilarboppfolging.client.behandle_arbeidssoker.BehandleArbeidssokerClient;
 import no.nav.veilarboppfolging.client.varseloppgave.VarseloppgaveClient;
 import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktClient;
-import no.nav.veilarboppfolging.kafka.KafkaConsumerHealthCheck;
-import no.nav.veilarboppfolging.kafka.KafkaProducerHealthCheck;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -25,17 +23,13 @@ import java.util.List;
 public class HelsesjekkConfig {
 
     @Bean
-    public SelfTestChecks selfTestChecks(KafkaConsumerHealthCheck kafkaConsumerHealthCheck,
-                                         KafkaProducerHealthCheck kafkaProducerHealthCheck,
-                                         BehandleArbeidssokerClient behandleArbeidssokerClient,
+    public SelfTestChecks selfTestChecks(BehandleArbeidssokerClient behandleArbeidssokerClient,
                                          YtelseskontraktClient ytelseskontraktClient,
                                          JdbcTemplate jdbcTemplate,
                                          Pep pep,
                                          VarseloppgaveClient varseloppgaveClient,
                                          AktorregisterClient aktorregisterClient) {
         List<SelfTestCheck> selfTestChecks = Arrays.asList(
-                new SelfTestCheck("Kafka consumer", false, kafkaConsumerHealthCheck),
-                new SelfTestCheck("Kafka producer", false, kafkaProducerHealthCheck),
                 new SelfTestCheck("Ping av BehandleArbeidssoker_V1. Registrerer arbeidssoker i Arena.", true, behandleArbeidssokerClient),
                 new SelfTestCheck("Ping av ytelseskontrakt_V3. Henter informasjon om ytelser fra Arena.", false, ytelseskontraktClient),
                 new SelfTestCheck("Enkel spørring mot Databasen til veilarboppfolging.", true, checkDbHealth(jdbcTemplate)),

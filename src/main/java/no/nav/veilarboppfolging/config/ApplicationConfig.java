@@ -1,6 +1,8 @@
 package no.nav.veilarboppfolging.config;
 
 import lombok.extern.slf4j.Slf4j;
+import net.javacrumbs.shedlock.core.LockProvider;
+import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
 import no.nav.common.abac.Pep;
 import no.nav.common.abac.VeilarbPepFactory;
 import no.nav.common.abac.audit.AuditLogFilterUtils;
@@ -22,6 +24,7 @@ import no.nav.common.utils.NaisUtils;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 import static no.nav.common.abac.audit.AuditLogFilterUtils.anyResourceAttributeFilter;
@@ -93,4 +96,8 @@ public class ApplicationConfig {
         );
     }
 
+    @Bean
+    public LockProvider lockProvider(JdbcTemplate jdbcTemplate) {
+        return new JdbcTemplateLockProvider(jdbcTemplate);
+    }
 }
