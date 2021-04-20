@@ -13,6 +13,7 @@ import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.utils.Credentials;
 import no.nav.veilarboppfolging.feed.FeedConfig;
 import no.nav.veilarboppfolging.mock.PepMock;
+import no.nav.veilarboppfolging.test.DbTestUtils;
 import no.nav.veilarboppfolging.test.LocalH2Database;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -71,7 +72,9 @@ public class ApplicationTestConfig {
 
     @Bean
     public DataSource dataSource() {
-        return LocalH2Database.getDb().getDataSource();
+        DataSource dataSource = LocalH2Database.getDb().getDataSource();
+        DbTestUtils.setupDatabaseFunctions(dataSource);
+        return dataSource;
     }
 
     @Bean

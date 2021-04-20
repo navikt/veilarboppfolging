@@ -8,6 +8,7 @@ import javax.sql.DataSource;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static no.nav.veilarboppfolging.test.DbTestUtils.initDb;
+import static no.nav.veilarboppfolging.test.DbTestUtils.runScript;
 
 public class LocalH2Database {
 
@@ -19,11 +20,10 @@ public class LocalH2Database {
     }
 
     public static JdbcTemplate getDb() {
-
-        if(useInnMemory.get()) {
-            return getDb("jdbc:h2:mem:veilarboppfolging-local;DB_CLOSE_DELAY=-1;MODE=Oracle;");
+        if (useInnMemory.get()) {
+            return getDb("jdbc:h2:mem:veilarboppfolging-local;DB_CLOSE_DELAY=-1;MODE=Oracle;BUILTIN_ALIAS_OVERRIDE=1;");
         }
-        return getDb("jdbc:h2:file:~/database/veilarboppfolging;DB_CLOSE_DELAY=-1;MODE=Oracle;AUTO_SERVER=TRUE;");
+        return getDb("jdbc:h2:file:~/database/veilarboppfolging;DB_CLOSE_DELAY=-1;MODE=Oracle;AUTO_SERVER=TRUE;BUILTIN_ALIAS_OVERRIDE=1;");
     }
 
     public static synchronized JdbcTemplate getDb(String dbUrl) {
