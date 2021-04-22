@@ -32,22 +32,22 @@ public class KafkaProducerService {
 
     public void publiserEndringPaManuellStatus(String aktorId, boolean erManuell) {
         EndringPaManuellStatusKafkaDTO dto = new EndringPaManuellStatusKafkaDTO(aktorId, erManuell);
-        store(kafkaProperties.getEndringPaManuellStatus(), dto.getAktorId(), dto);
+        store(kafkaProperties.getEndringPaManuellStatusTopic(), dto.getAktorId(), dto);
     }
 
     public void publiserEndringPaNyForVeileder(String aktorId, boolean erNyForVeileder) {
         EndringPaNyForVeilederKafkaDTO dto = new EndringPaNyForVeilederKafkaDTO(aktorId, erNyForVeileder);
-        store(kafkaProperties.getEndringPaNyForVeileder(), aktorId, dto);
+        store(kafkaProperties.getEndringPaNyForVeilederTopic(), aktorId, dto);
     }
 
     public void publiserVeilederTilordnet(String aktorId, String tildeltVeilederId) {
         VeilederTilordnetKafkaDTO dto = new VeilederTilordnetKafkaDTO(aktorId, tildeltVeilederId);
-        store(kafkaProperties.getVeilederTilordnet(), aktorId, dto);
+        store(kafkaProperties.getVeilederTilordnetTopic(), aktorId, dto);
     }
 
     public void publiserOppfolgingStartet(String aktorId) {
         OppfolgingStartetKafkaDTO dto = new OppfolgingStartetKafkaDTO(aktorId, ZonedDateTime.now());
-        store(kafkaProperties.getOppfolgingStartet(), aktorId, dto);
+        store(kafkaProperties.getOppfolgingStartetTopic(), aktorId, dto);
     }
 
     public void publiserOppfolgingAvsluttet(String aktorId) {
@@ -55,10 +55,10 @@ public class KafkaProducerService {
                 .setAktorId(aktorId)
                 .setSluttdato(ZonedDateTime.now());
 
-        store(kafkaProperties.getOppfolgingAvsluttet(), aktorId, dto);
+        store(kafkaProperties.getOppfolgingAvsluttetTopic(), aktorId, dto);
 
         // Deprecated
-        store(kafkaProperties.getEndringPaaAvsluttOppfolging(), aktorId, dto);
+        store(kafkaProperties.getEndringPaaAvsluttOppfolgingTopic(), aktorId, dto);
     }
 
     public void publiserKvpStartet(String aktorId, String enhetId, String opprettetAvVeilederId, String begrunnelse) {
@@ -69,7 +69,7 @@ public class KafkaProducerService {
                 .setOpprettetBegrunnelse(begrunnelse)
                 .setOpprettetDato(ZonedDateTime.now());
 
-        store(kafkaProperties.getKvpStartet(), aktorId, dto);
+        store(kafkaProperties.getKvpStartetTopic(), aktorId, dto);
     }
 
     public void publiserKvpAvsluttet(String aktorId, String avsluttetAv, String begrunnelse) {
@@ -79,7 +79,7 @@ public class KafkaProducerService {
                 .setAvsluttetBegrunnelse(begrunnelse)
                 .setAvsluttetDato(ZonedDateTime.now());
 
-        store(kafkaProperties.getKvpAvlsuttet(), aktorId, kvpAvsluttetKafkaDTO);
+        store(kafkaProperties.getKvpAvlsuttetTopic(), aktorId, kvpAvsluttetKafkaDTO);
     }
 
     public void publiserEndretMal(String aktorId, String veilederIdent){
@@ -91,7 +91,7 @@ public class KafkaProducerService {
                         ? MalEndringKafkaDTO.InnsenderData.BRUKER
                         : MalEndringKafkaDTO.InnsenderData.NAV);
 
-        store(kafkaProperties.getEndringPaMal(), aktorId, malEndringKafkaDTO);
+        store(kafkaProperties.getEndringPaMalTopic(), aktorId, malEndringKafkaDTO);
     }
 
     private void store(String topic, String key, Object value) {

@@ -9,14 +9,14 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "app.kafka")
 public class KafkaProperties {
     String brokersUrl;
-    String endringPaaOppfolgingBruker;
-    String endringPaaAvsluttOppfolging; // Deprecated, erstattes av 'oppfolgingAvsluttet'
-    String oppfolgingStartet;
-    String oppfolgingAvsluttet;
-    String kvpStartet;
-    String kvpAvlsuttet;
-    String endringPaManuellStatus;
-    String veilederTilordnet;
-    String endringPaNyForVeileder;
-    String endringPaMal;
+    String endringPaaOppfolgingBrukerTopic;
+    String endringPaaAvsluttOppfolgingTopic; // Deprecated, erstattes av 'oppfolgingAvsluttet'
+    String oppfolgingStartetTopic;
+    String oppfolgingAvsluttetTopic;
+    String kvpStartetTopic;
+    String kvpAvlsuttetTopic;
+    String endringPaManuellStatusTopic;
+    String veilederTilordnetTopic;
+    String endringPaNyForVeilederTopic;
+    String endringPaMalTopic;
 }
