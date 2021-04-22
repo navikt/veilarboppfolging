@@ -78,7 +78,7 @@ public class KafkaTestConfig {
             KafkaProperties kafkaProperties
     ) {
         return Map.of(
-                kafkaProperties.getEndringPaaOppfolgingBruker(),
+                kafkaProperties.getEndringPaaOppfolgingBrukerTopic(),
                 jsonConsumer(VeilarbArenaOppfolgingEndret.class, endringPaOppfolgingBrukerConsumerService::consumeEndringPaOppfolgingBruker)
         );
     }

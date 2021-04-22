@@ -61,14 +61,14 @@ public class KafkaIntegrationTest {
         ));
 
         producer.send(new ProducerRecord(
-                kafkaProperties.getEndringPaaOppfolgingBruker(),
+                kafkaProperties.getEndringPaaOppfolgingBrukerTopic(),
                 oppfolgingEndret.getAktoerid(),
                 JsonUtils.toJson(oppfolgingEndret)));
 
         AtomicReference<OppfolgingStartetKafkaDTO> konsumertMelding = new AtomicReference<>(null);
         KafkaConsumerClientBuilder.<String, String>builder()
                 .withProps(kafkaTestConsumerProperties(kafkaContainer.getBootstrapServers()))
-                .withConsumer(kafkaProperties.getOppfolgingStartet(),jsonConsumer(OppfolgingStartetKafkaDTO.class, newValue -> {
+                .withConsumer(kafkaProperties.getOppfolgingStartetTopic(),jsonConsumer(OppfolgingStartetKafkaDTO.class, newValue -> {
                     konsumertMelding.set(newValue);
                 })).build().start();
 
