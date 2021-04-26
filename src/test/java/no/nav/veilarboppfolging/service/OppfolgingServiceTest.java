@@ -24,6 +24,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.ZonedDateTime;
 import java.util.List;
 
 import static java.util.stream.Collectors.toList;
@@ -114,7 +115,7 @@ public class OppfolgingServiceTest {
     public void skal_publisere_paa_kafka_ved_start_paa_oppfolging() {
         when(authService.harTilgangTilEnhet(any())).thenReturn(true);
         oppfolgingService.startOppfolging(FNR);
-        verify(kafkaProducerService, times(1)).publiserOppfolgingStartet(AKTOR_ID);
+        verify(kafkaProducerService, times(1)).publiserOppfolgingStartet(AKTOR_ID, ZonedDateTime.now());
     }
 
     @Test

@@ -66,12 +66,9 @@ public class AktiverBrukerService {
                 Oppfolgingsbruker.builder()
                         .aktoerId(aktorId.getAktorId())
                         .build()
-                ,false
         );
 
         behandleArbeidssokerClient.reaktiverBrukerIArena(fnr);
-
-        kafkaProducerService.publiserOppfolgingStartet(aktorId.getAktorId());
     }
 
     private void aktiverBrukerOgOppfolging(String fnr, AktorId aktorId, Innsatsgruppe innsatsgruppe) {
@@ -79,15 +76,11 @@ public class AktiverBrukerService {
                 Oppfolgingsbruker.builder()
                         .aktoerId(aktorId.getAktorId())
                         .innsatsgruppe(innsatsgruppe)
-                        .build()
-                ,false
-        );
+                        .build());
 
         behandleArbeidssokerClient.opprettBrukerIArena(fnr, innsatsgruppe);
 
         nyeBrukereFeedRepository.tryLeggTilFeedIdPaAlleElementerUtenFeedId();
-
-        kafkaProducerService.publiserOppfolgingStartet(aktorId.getAktorId());
     }
 
     public void aktiverSykmeldt(String uid, SykmeldtBrukerType sykmeldtBrukerType) {
