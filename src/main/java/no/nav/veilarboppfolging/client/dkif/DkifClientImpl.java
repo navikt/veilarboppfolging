@@ -55,7 +55,8 @@ public class DkifClientImpl implements DkifClient {
             Optional<String> json = RestUtils.getBodyStr(response);
 
             if (json.isEmpty()) {
-                throw new IllegalStateException("DKIF body is missing");
+                log.warn("DKIF body is missing");
+                return fallbackKontaktinfo(fnr);
             }
 
             ObjectMapper mapper = JsonUtils.getMapper();
@@ -64,17 +65,23 @@ public class DkifClientImpl implements DkifClient {
             JsonNode kontaktinfoNode = ofNullable(node.get("kontaktinfo")).map(n -> n.get(fnr)).orElse(null);
 
             if (kontaktinfoNode == null) {
-                throw new IllegalStateException("Mangler kontaktinfo fra DKIF");
+                log.warn("Mangler kontaktinfo fra DKIF");
+                return fallbackKontaktinfo(fnr);
             }
 
             return mapper.treeToValue(kontaktinfoNode, DkifKontaktinfo.class);
         } catch (Exception e) {
-            DkifKontaktinfo kontaktinfo = new DkifKontaktinfo();
-            kontaktinfo.setPersonident(fnr);
-            kontaktinfo.setKanVarsles(true);
-            kontaktinfo.setReservert(false);
-            return kontaktinfo;
+            log.error("Feil under henting av data fra DKIF", e);
+            return fallbackKontaktinfo(fnr);
         }
+    }
+
+    private DkifKontaktinfo fallbackKontaktinfo(String fnr) {
+        DkifKontaktinfo kontaktinfo = new DkifKontaktinfo();
+        kontaktinfo.setPersonident(fnr);
+        kontaktinfo.setKanVarsles(true);
+        kontaktinfo.setReservert(false);
+        return kontaktinfo;
     }
 
     @Override

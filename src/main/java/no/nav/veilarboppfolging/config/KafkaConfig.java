@@ -1,5 +1,6 @@
 package no.nav.veilarboppfolging.config;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import net.javacrumbs.shedlock.core.LockProvider;
 import no.nav.common.job.leader_election.LeaderElectionClient;
 import no.nav.common.kafka.consumer.KafkaConsumerClient;
@@ -18,17 +19,15 @@ import no.nav.common.kafka.producer.feilhandtering.KafkaProducerRepository;
 import no.nav.common.kafka.producer.feilhandtering.OracleProducerRepository;
 import no.nav.common.kafka.producer.util.KafkaProducerClientBuilder;
 import no.nav.common.kafka.util.KafkaPropertiesBuilder;
+import no.nav.common.utils.Credentials;
 import no.nav.veilarboppfolging.domain.kafka.VeilarbArenaOppfolgingEndret;
 import no.nav.veilarboppfolging.service.KafkaConsumerService;
-import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.testcontainers.containers.KafkaContainer;
-import org.testcontainers.utility.DockerImageName;
 
 import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
@@ -36,21 +35,15 @@ import java.util.Map;
 import java.util.Properties;
 
 import static no.nav.common.kafka.consumer.util.ConsumerUtils.jsonConsumer;
-import static no.nav.veilarboppfolging.config.KafkaConfig.CONSUMER_GROUP_ID;
-import static no.nav.veilarboppfolging.config.KafkaConfig.PRODUCER_CLIENT_ID;
+import static no.nav.common.kafka.util.KafkaPropertiesPreset.onPremByteProducerProperties;
+
 
 @Configuration
 @EnableConfigurationProperties({KafkaProperties.class})
-public class KafkaTestConfig {
+public class KafkaConfig {
 
-    public static final String KAFKA_IMAGE = "confluentinc/cp-kafka:5.4.3";
-
-    @Bean
-    public KafkaContainer kafkaContainer() {
-        KafkaContainer kafkaContainer = new KafkaContainer(DockerImageName.parse(KAFKA_IMAGE));
-        kafkaContainer.start();
-        return kafkaContainer;
-    }
+    public final static String CONSUMER_GROUP_ID = "veilarboppfolging-consumer";
+    public final static String PRODUCER_CLIENT_ID = "veilarboppfolging-producer";
 
     @Autowired
     KafkaConsumerClient<String, String> consumerClient;
@@ -87,12 +80,15 @@ public class KafkaTestConfig {
     public KafkaConsumerClient<String, String> consumerClient(
             Map<String, TopicConsumer<String, String>> topicConsumers,
             KafkaConsumerRepository kafkaConsumerRepository,
-            KafkaContainer kafkaContainer
+            Credentials credentials,
+            KafkaProperties kafkaProperties,
+            MeterRegistry meterRegistry
     ) {
         Properties properties = KafkaPropertiesBuilder.consumerBuilder()
                 .withBaseProperties(1000)
                 .withConsumerGroupId(CONSUMER_GROUP_ID)
-                .withBrokerUrl(kafkaContainer.getBootstrapServers())
+                .withBrokerUrl(kafkaProperties.getBrokersUrl())
+                .withOnPremAuth(credentials)
                 .withDeserializers(StringDeserializer.class, StringDeserializer.class)
                 .build();
 
@@ -101,6 +97,7 @@ public class KafkaTestConfig {
                 .withRepository(kafkaConsumerRepository)
                 .withSerializers(new StringSerializer(), new StringSerializer())
                 .withStoreOnFailureConsumers(topicConsumers)
+                .withMetrics(meterRegistry)
                 .withLogging()
                 .build();
     }
@@ -137,23 +134,17 @@ public class KafkaTestConfig {
     @Bean
     public KafkaProducerRecordProcessor producerRecordProcessor(
             LeaderElectionClient leaderElectionClient,
+            KafkaProperties kafkaProperties,
             KafkaProducerRepository producerRepository,
-            KafkaContainer kafkaContainer
+            Credentials credentials,
+            MeterRegistry meterRegistry
     ) {
         KafkaProducerClient<byte[], byte[]> producerClient = KafkaProducerClientBuilder.<byte[], byte[]>builder()
-                .withProperties(producerProperties(kafkaContainer))
+                .withProperties(onPremByteProducerProperties(PRODUCER_CLIENT_ID, kafkaProperties.getBrokersUrl(), credentials))
+                .withMetrics(meterRegistry)
                 .build();
 
         return new KafkaProducerRecordProcessor(producerRepository, producerClient, leaderElectionClient);
-    }
-
-    private Properties producerProperties(KafkaContainer kafkaContainer) {
-        return KafkaPropertiesBuilder.producerBuilder()
-                .withBaseProperties()
-                .withProducerId(PRODUCER_CLIENT_ID)
-                .withBrokerUrl(kafkaContainer.getBootstrapServers())
-                .withSerializers(ByteArraySerializer.class, ByteArraySerializer.class)
-                .build();
     }
 
     @PostConstruct

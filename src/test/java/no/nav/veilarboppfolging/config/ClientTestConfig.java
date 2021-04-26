@@ -159,7 +159,10 @@ public class ClientTestConfig {
         return new VeilarbarenaClient() {
             @Override
             public Optional<VeilarbArenaOppfolging> hentOppfolgingsbruker(String fnr) {
-                return Optional.empty();
+                return Optional.of(
+                        new VeilarbArenaOppfolging()
+                                .setFodselsnr(fnr)
+                );
             }
 
             @Override

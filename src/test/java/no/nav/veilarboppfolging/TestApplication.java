@@ -1,10 +1,8 @@
 package no.nav.veilarboppfolging;
 
-import io.vavr.collection.Array;
 import no.nav.veilarboppfolging.config.ApplicationTestConfig;
 import no.nav.veilarboppfolging.test.LocalH2Database;
 import no.nav.veilarboppfolging.test.testdriver.TestDriver;
-import org.junit.Test;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.Import;
@@ -23,13 +21,4 @@ public class TestApplication {
         application.setAdditionalProfiles("local");
         application.run(args);
     }
-
-    @Test
-    public void testMain() {
-        System.setProperty("server.port", "0");
-        String[] strings = new String[]{};
-
-        main(strings);
-    }
-
 }
