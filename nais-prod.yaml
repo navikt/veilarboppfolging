@@ -52,7 +52,7 @@ spec:
     accessPolicy:
       inbound:
         rules:
-          - application: tilretteleggingsbehov-innsyn
+          - application: finn-kandidat-api
             namespace: arbeidsgiver
             cluster: prod-gcp
   env:

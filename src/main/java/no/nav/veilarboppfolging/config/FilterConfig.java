@@ -66,7 +66,7 @@ public class FilterConfig {
                 .withUserRole(UserRole.INTERN);
     }
 
-    // Brukes pr i dag kun av tilretteleggingsbehov-innsyn som gjør kall mot /api/underoppfolging
+    // Brukes pr i dag kun av finn-kandidat-api som gjør kall mot /api/underoppfolging
     private OidcAuthenticatorConfig tokenXAuthConfig(EnvironmentProperties properties) {
         return new OidcAuthenticatorConfig()
                 .withDiscoveryUrl(properties.getTokenXDiscoveryUrl())
