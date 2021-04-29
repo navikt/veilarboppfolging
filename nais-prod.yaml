@@ -47,6 +47,14 @@ spec:
         mountPath: /var/run/secrets/nais.io/vault
       - kvPath: /oracle/data/prod/config/veilarboppfolging
         mountPath: /var/run/secrets/nais.io/oracle_config
+  tokenx:
+    enabled: true
+    accessPolicy:
+      inbound:
+        rules:
+          - application: tilretteleggingsbehov-innsyn
+            namespace: arbeidsgiver
+            cluster: prod-gcp
   env:
     - name: MODIABLOGIN_OPENAM_CLIENT_ID
       value: "modialogin-p"

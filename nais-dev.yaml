@@ -48,6 +48,14 @@ spec:
         mountPath: /var/run/secrets/nais.io/vault
       - kvPath: /oracle/data/dev/config/veilarboppfolging_q1
         mountPath: /var/run/secrets/nais.io/oracle_config
+  tokenx:
+    enabled: true
+  accessPolicy:
+    inbound:
+      rules:
+        - application: tilretteleggingsbehov-innsyn
+          namespace: arbeidsgiver
+          cluster: dev-gcp
   env:
     - name: MODIABLOGIN_OPENAM_CLIENT_ID
       value: "modialogin-q1"

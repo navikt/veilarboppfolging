@@ -66,6 +66,15 @@ public class FilterConfig {
                 .withUserRole(UserRole.INTERN);
     }
 
+    // Brukes pr i dag kun av tilretteleggingsbehov-innsyn som gjør kall mot /api/underoppfolging
+    private OidcAuthenticatorConfig tokenXAuthConfig(EnvironmentProperties properties) {
+        return new OidcAuthenticatorConfig()
+                .withDiscoveryUrl(properties.getTokenXDiscoveryUrl())
+                .withClientId(properties.getTokenXClientId())
+                .withIdTokenFinder(new CustomServiceUserTokenFinder()) // Token is always sent in Authorization header
+                .withUserRole(UserRole.EKSTERN);
+    }
+
     private OidcAuthenticatorConfig loginserviceIdportenConfig(EnvironmentProperties properties) {
         return new OidcAuthenticatorConfig()
                 .withDiscoveryUrl(properties.getLoginserviceIdportenDiscoveryUrl())
@@ -95,7 +104,8 @@ public class FilterConfig {
                         azureAdAuthConfig(properties),
                         loginserviceIdportenConfig(properties),
                         openAmStsAuthConfig(properties),
-                        naisStsAuthConfig(properties)
+                        naisStsAuthConfig(properties),
+                        tokenXAuthConfig(properties)
                 )
         );
 
