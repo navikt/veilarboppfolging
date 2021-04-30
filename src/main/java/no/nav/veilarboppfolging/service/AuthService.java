@@ -1,6 +1,5 @@
 package no.nav.veilarboppfolging.service;
 
-import com.nimbusds.jwt.JWTClaimsSet;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.abac.AbacUtils;
 import no.nav.common.abac.Pep;
@@ -25,7 +24,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
-import java.util.Optional;
 
 import static java.util.Optional.ofNullable;
 import static no.nav.common.abac.XacmlRequestBuilder.lagEnvironment;
@@ -170,27 +168,6 @@ public class AuthService {
         }
 
         return fnr;
-    }
-
-    /**
-     * Hent ekstern bruker fnr/dnr fra et TokenX token.
-     * @param expectedAudience the expected audience for the TokenX token. Used to verify that the token is issued from TokenX
-     * @return identen til brukeren hvis de er logget inn med TokenX
-     */
-    public Optional<String> hentIdentFraTokenX(String expectedAudience) {
-        Optional<JWTClaimsSet> tokenClaims = authContextHolder.getIdTokenClaims();
-
-        return tokenClaims.map(claims -> {
-            try {
-                if (claims.getAudience().contains(expectedAudience)) {
-                    return claims.getStringClaim("pid");
-                }
-            } catch (Exception e) {
-                log.error("Feilet under henting av ident for bruker med TokenX", e);
-            }
-
-            return null;
-        });
     }
 
     public String getAktorIdOrThrow(String fnr) {

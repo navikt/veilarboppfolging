@@ -59,8 +59,4 @@ public class EnvironmentProperties {
 
     private String behandleArbeidssoekerV1Endpoint;
 
-    private String tokenXDiscoveryUrl;
-
-    private String tokenXClientId;
-
 }
