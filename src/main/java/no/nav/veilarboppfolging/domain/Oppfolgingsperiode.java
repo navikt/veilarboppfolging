@@ -9,6 +9,7 @@ import java.util.List;
 @Value
 @Builder(toBuilder = true)
 public class Oppfolgingsperiode {
+    long id;
     String aktorId;
     String veileder;
     ZonedDateTime startDato;

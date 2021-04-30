@@ -10,6 +10,7 @@ import java.util.List;
 @Accessors(chain = true)
 public class OppfolgingPeriodeDTO {
 
+    public long id;
     public String aktorId;
     public String veileder;
     public ZonedDateTime startDato;

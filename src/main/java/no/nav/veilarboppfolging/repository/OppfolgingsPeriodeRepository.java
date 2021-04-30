@@ -22,7 +22,7 @@ public class OppfolgingsPeriodeRepository {
     private final JdbcTemplate db;
 
     private final static String hentOppfolingsperioderSQL =
-            "SELECT aktor_id, avslutt_veileder, startdato, sluttdato, avslutt_begrunnelse " +
+            "SELECT id, aktor_id, avslutt_veileder, startdato, sluttdato, avslutt_begrunnelse " +
                     "FROM OPPFOLGINGSPERIODE ";
 
     @Autowired
@@ -117,6 +117,7 @@ public class OppfolgingsPeriodeRepository {
 
     private static Oppfolgingsperiode mapTilOppfolgingsperiode(ResultSet result, int row) throws SQLException {
         return Oppfolgingsperiode.builder()
+                .id(result.getLong("id"))
                 .aktorId(result.getString("aktor_id"))
                 .veileder(result.getString("avslutt_veileder"))
                 .startDato(hentZonedDateTime(result, "startdato"))

@@ -80,6 +80,7 @@ public class DtoMappers {
 
     public static OppfolgingPeriodeDTO tilDTO(Oppfolgingsperiode oppfolgingsperiode, boolean erInternBruker) {
         OppfolgingPeriodeDTO periode = new OppfolgingPeriodeDTO()
+                .setId(oppfolgingsperiode.getId())
                 .setSluttDato(oppfolgingsperiode.getSluttDato())
                 .setStartDato(oppfolgingsperiode.getStartDato())
                 .setKvpPerioder(
