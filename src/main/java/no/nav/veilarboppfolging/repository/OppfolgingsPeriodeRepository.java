@@ -59,8 +59,8 @@ public class OppfolgingsPeriodeRepository {
         return queryForNullableObject(
                 db,
                 hentOppfolingsperioderSQL +
-                        "WHERE aktor_id = ? AND sluttdato = null" +
-                        "ORDER BY startdato DESC" +
+                        "WHERE aktor_id = ? AND sluttdato IS NULL " +
+                        "ORDER BY startdato DESC " +
                         "FETCH NEXT 1 ROWS ONLY",
                 OppfolgingsPeriodeRepository::mapTilOppfolgingsperiode,
                 aktorId
