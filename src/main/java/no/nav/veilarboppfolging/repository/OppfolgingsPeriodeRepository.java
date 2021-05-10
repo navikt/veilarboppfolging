@@ -70,19 +70,6 @@ public class OppfolgingsPeriodeRepository {
         );
     }
 
-    public List<String> hentOppfolgingsPeriodeRowIdUtenUuid() {
-        return db.query(
-                 "SELECT ROWID FROM OPPFOLGINGSPERIODE WHERE uuid is null FETCH NEXT 1000 ROWS ONLY",
-                (result, row) -> result.getString("ROWID")
-        );
-    }
-
-    public void initialiserUuidPaOppfolgingsperiode(String rowId) {
-        db.update("UPDATE OPPFOLGINGSPERIODE SET uuid = ? WHERE uuid IS NULL AND ROWID = ?",
-                UUID.randomUUID().toString(), rowId
-        );
-    }
-
     private void insert(String aktorId) {
         db.update("" +
                         "INSERT INTO OPPFOLGINGSPERIODE(uuid, aktor_id, startDato, oppdatert) " +
@@ -130,9 +117,8 @@ public class OppfolgingsPeriodeRepository {
     }
 
     private static Oppfolgingsperiode mapTilOppfolgingsperiode(ResultSet result, int row) throws SQLException {
-        String uuid = result.getString("uuid");
         return Oppfolgingsperiode.builder()
-                .uuid(uuid != null ? UUID.fromString(uuid) : null)
+                .uuid(UUID.fromString(result.getString("uuid")))
                 .aktorId(result.getString("aktor_id"))
                 .veileder(result.getString("avslutt_veileder"))
                 .startDato(hentZonedDateTime(result, "startdato"))
