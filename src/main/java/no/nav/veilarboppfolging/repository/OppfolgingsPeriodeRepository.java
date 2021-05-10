@@ -81,7 +81,7 @@ public class OppfolgingsPeriodeRepository {
         Timestamp startDato = Timestamp.valueOf(oppfolgingsperiode.getStartDato().toLocalDateTime());
 
         db.update("UPDATE OPPFOLGINGSPERIODE SET uuid = ? WHERE uuid IS NULL AND aktor_id = ? AND to_char(STARTDATO, 'YYYY-MM-DD HH24:MI:SS.FF6') = ?",
-                UUID.randomUUID(), oppfolgingsperiode.getAktorId(), startDato.toString()
+                UUID.randomUUID().toString(), oppfolgingsperiode.getAktorId(), startDato.toString()
         );
     }
 
@@ -89,7 +89,7 @@ public class OppfolgingsPeriodeRepository {
         db.update("" +
                         "INSERT INTO OPPFOLGINGSPERIODE(uuid, aktor_id, startDato, oppdatert) " +
                         "VALUES (?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
-                UUID.randomUUID(), aktorId);
+                UUID.randomUUID().toString(), aktorId);
     }
 
     private void setActive(String aktorId) {
