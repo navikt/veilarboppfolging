@@ -2,7 +2,6 @@ package no.nav.veilarboppfolging.schedule;
 
 import lombok.RequiredArgsConstructor;
 import no.nav.common.job.leader_election.LeaderElectionClient;
-import no.nav.veilarboppfolging.domain.Oppfolgingsperiode;
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -20,10 +19,10 @@ public class OppfolgingsperiodeUuidSchedule {
     private final OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
 
     @Scheduled(initialDelay = TEN_SECONDS, fixedRate = 1000)
-    public void settIdeerPaFeedElementer() {
+    public void settUuidPaOppfolgingsperioder() {
         if (leaderElectionClient.isLeader()) {
-            List<Oppfolgingsperiode> oppfolgingsperioder = oppfolgingsPeriodeRepository.hentOppfolgingsPeriodeUtenUuid();
-            oppfolgingsperioder.forEach(oppfolgingsPeriodeRepository::initialiserUuidPaOppfolgingsperiode);
+            List<String> oppfolgingsperiodeRowIds = oppfolgingsPeriodeRepository.hentOppfolgingsPeriodeRowIdUtenUuid();
+            oppfolgingsperiodeRowIds.forEach(oppfolgingsPeriodeRepository::initialiserUuidPaOppfolgingsperiode);
         }
     }
 

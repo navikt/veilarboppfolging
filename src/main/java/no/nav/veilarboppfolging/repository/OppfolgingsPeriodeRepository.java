@@ -70,18 +70,16 @@ public class OppfolgingsPeriodeRepository {
         );
     }
 
-    public List<Oppfolgingsperiode> hentOppfolgingsPeriodeUtenUuid() {
+    public List<String> hentOppfolgingsPeriodeRowIdUtenUuid() {
         return db.query(
-                hentOppfolingsperioderSQL + "WHERE uuid is null FETCH NEXT 1000 ROWS ONLY",
-                OppfolgingsPeriodeRepository::mapTilOppfolgingsperiode
+                 "SELECT ROWID FROM OPPFOLGINGSPERIODE WHERE uuid is null FETCH NEXT 1000 ROWS ONLY",
+                (result, row) -> result.getString("ROWID")
         );
     }
 
-    public void initialiserUuidPaOppfolgingsperiode(Oppfolgingsperiode oppfolgingsperiode) {
-        Timestamp startDato = Timestamp.valueOf(oppfolgingsperiode.getStartDato().toLocalDateTime());
-
-        db.update("UPDATE OPPFOLGINGSPERIODE SET uuid = ? WHERE uuid IS NULL AND aktor_id = ? AND to_char(STARTDATO, 'YYYY-MM-DD HH24:MI:SS.FF6') = ?",
-                UUID.randomUUID().toString(), oppfolgingsperiode.getAktorId(), startDato.toString()
+    public void initialiserUuidPaOppfolgingsperiode(String rowId) {
+        db.update("UPDATE OPPFOLGINGSPERIODE SET uuid = ? WHERE uuid IS NULL AND ROWID = ?",
+                UUID.randomUUID().toString(), rowId
         );
     }
 
