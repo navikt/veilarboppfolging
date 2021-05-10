@@ -11,6 +11,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.UUID;
 
 import static no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository.AKTOR_ID;
 import static no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository.UNDER_OPPFOLGING;
@@ -22,7 +23,7 @@ public class OppfolgingsPeriodeRepository {
     private final JdbcTemplate db;
 
     private final static String hentOppfolingsperioderSQL =
-            "SELECT aktor_id, avslutt_veileder, startdato, sluttdato, avslutt_begrunnelse " +
+            "SELECT uuid, aktor_id, avslutt_veileder, startdato, sluttdato, avslutt_begrunnelse " +
                     "FROM OPPFOLGINGSPERIODE ";
 
     @Autowired
@@ -69,11 +70,26 @@ public class OppfolgingsPeriodeRepository {
         );
     }
 
+    public List<Oppfolgingsperiode> hentOppfolgingsPeriodeUtenUuid() {
+        return db.query(
+                hentOppfolingsperioderSQL + "WHERE uuid is null FETCH NEXT 1000 ROWS ONLY",
+                OppfolgingsPeriodeRepository::mapTilOppfolgingsperiode
+        );
+    }
+
+    public void initialiserUuidPaOppfolgingsperiode(Oppfolgingsperiode oppfolgingsperiode) {
+        Timestamp startDato = Timestamp.valueOf(oppfolgingsperiode.getStartDato().toLocalDateTime());
+
+        db.update("UPDATE OPPFOLGINGSPERIODE SET uuid = ? WHERE uuid IS NULL AND aktor_id = ? AND startDato = ?",
+                UUID.randomUUID(), oppfolgingsperiode.getAktorId(), startDato
+        );
+    }
+
     private void insert(String aktorId) {
         db.update("" +
-                        "INSERT INTO OPPFOLGINGSPERIODE(aktor_id, startDato, oppdatert) " +
-                        "VALUES (?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
-                aktorId);
+                        "INSERT INTO OPPFOLGINGSPERIODE(uuid, aktor_id, startDato, oppdatert) " +
+                        "VALUES (?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
+                UUID.randomUUID(), aktorId);
     }
 
     private void setActive(String aktorId) {
@@ -116,7 +132,9 @@ public class OppfolgingsPeriodeRepository {
     }
 
     private static Oppfolgingsperiode mapTilOppfolgingsperiode(ResultSet result, int row) throws SQLException {
+        String uuid = result.getString("uuid");
         return Oppfolgingsperiode.builder()
+                .uuid(uuid != null ? UUID.fromString(uuid) : null)
                 .aktorId(result.getString("aktor_id"))
                 .veileder(result.getString("avslutt_veileder"))
                 .startDato(hentZonedDateTime(result, "startdato"))
