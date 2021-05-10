@@ -80,8 +80,8 @@ public class OppfolgingsPeriodeRepository {
     public void initialiserUuidPaOppfolgingsperiode(Oppfolgingsperiode oppfolgingsperiode) {
         Timestamp startDato = Timestamp.valueOf(oppfolgingsperiode.getStartDato().toLocalDateTime());
 
-        db.update("UPDATE OPPFOLGINGSPERIODE SET uuid = ? WHERE uuid IS NULL AND aktor_id = ? AND startDato = ?",
-                UUID.randomUUID(), oppfolgingsperiode.getAktorId(), startDato
+        db.update("UPDATE OPPFOLGINGSPERIODE SET uuid = ? WHERE uuid IS NULL AND aktor_id = ? AND to_char(STARTDATO, 'YYYY-MM-DD HH24:MI:SS.FF6') = ?",
+                UUID.randomUUID(), oppfolgingsperiode.getAktorId(), startDato.toString()
         );
     }
 
