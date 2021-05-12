@@ -16,7 +16,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static no.nav.veilarboppfolging.utils.DtoMappers.tilDTO;
+import static no.nav.veilarboppfolging.utils.DtoMappers.tilOppfolgingPeriodeDTO;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -75,7 +75,7 @@ public class OppfolgingControllerTest {
 
         String expectedJson = JsonUtils.toJson(
                 perioder.stream()
-                .map(op -> tilDTO(op, true))
+                .map(op -> tilOppfolgingPeriodeDTO(op, true))
                 .collect(Collectors.toList())
         );
 

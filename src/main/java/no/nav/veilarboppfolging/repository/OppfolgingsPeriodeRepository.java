@@ -54,6 +54,13 @@ public class OppfolgingsPeriodeRepository {
                         pageSize);
     }
 
+    public Oppfolgingsperiode hentOppfolgingsperiode(String id) {
+        return db.queryForObject(hentOppfolingsperioderSQL +
+                        "WHERE UUID = ?",
+                Oppfolgingsperiode.class,
+                id
+        );
+    }
     public List<Oppfolgingsperiode> hentOppfolgingsperioder(String aktorId) {
         return db.query(hentOppfolingsperioderSQL +
                         "WHERE aktor_id = ?",
