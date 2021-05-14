@@ -168,11 +168,11 @@ public class OppfolgingController {
         return oppfolgingService.hentVeilederTilgang(fnr);
     }
 
-    @GetMapping("/hentPeriode")
+    @GetMapping("/oppfolgingsperiode/{uuid}")
     public OppfolgingPeriodeMinimalDTO hentOppfolgingsPeriode(@RequestParam(value = "fnr", required = false) String fnr, @PathVariable String uuid){
         String fodselsnummer = authService.hentIdentForEksternEllerIntern(fnr);
         authService.sjekkLesetilgangMedFnr(fodselsnummer);
-        return tilOppfolgingPeriodeMinimalDTO(oppfolgingService.hentPeriode(uuid), authService.erInternBruker());
+        return tilOppfolgingPeriodeMinimalDTO(oppfolgingService.hentPeriode(uuid));
 
     }
 

@@ -97,8 +97,9 @@ public class DtoMappers {
         return periode;
     }
 
-    public static OppfolgingPeriodeMinimalDTO tilOppfolgingPeriodeMinimalDTO(Oppfolgingsperiode oppfolgingsperiode, boolean erInternBruker) {
+    public static OppfolgingPeriodeMinimalDTO tilOppfolgingPeriodeMinimalDTO(Oppfolgingsperiode oppfolgingsperiode) {
         return new OppfolgingPeriodeMinimalDTO()
+                .setUuid(oppfolgingsperiode.getUuid())
                 .setSluttDato(oppfolgingsperiode.getSluttDato())
                 .setStartDato(oppfolgingsperiode.getStartDato());
 

@@ -54,13 +54,14 @@ public class OppfolgingsPeriodeRepository {
                         pageSize);
     }
 
-    public Oppfolgingsperiode hentOppfolgingsperiode(String id) {
+    public Oppfolgingsperiode hentOppfolgingsperiode(String uuid) {
         return db.queryForObject(hentOppfolingsperioderSQL +
                         "WHERE UUID = ?",
-                Oppfolgingsperiode.class,
-                id
+                OppfolgingsPeriodeRepository::mapTilOppfolgingsperiode,
+                uuid
         );
     }
+
     public List<Oppfolgingsperiode> hentOppfolgingsperioder(String aktorId) {
         return db.query(hentOppfolingsperioderSQL +
                         "WHERE aktor_id = ?",
