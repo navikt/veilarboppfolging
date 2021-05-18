@@ -40,9 +40,7 @@ class OppfolgingControllerIntegrationTest {
 
         mockHappyPathBruker();
 
-        assertThrows(EmptyResultDataAccessException.class, () -> {
-            oppfolgingController.hentOppfolgingsPeriode(fnr, "123");
-        });
+        assertThrows(EmptyResultDataAccessException.class, () -> oppfolgingController.hentOppfolgingsPeriode("123"));
     }
 
     @Test
@@ -56,7 +54,7 @@ class OppfolgingControllerIntegrationTest {
 
         var forstePeriode = perioder.get(0);
         var uuid = forstePeriode.uuid;
-        var periode = oppfolgingController.hentOppfolgingsPeriode(fnr, uuid.toString());
+        var periode = oppfolgingController.hentOppfolgingsPeriode(uuid.toString());
 
         Assertions.assertEquals(uuid, periode.getUuid());
         Assertions.assertNotNull(forstePeriode.startDato);

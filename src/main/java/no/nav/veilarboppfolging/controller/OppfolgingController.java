@@ -169,10 +169,11 @@ public class OppfolgingController {
     }
 
     @GetMapping("/oppfolgingsperiode/{uuid}")
-    public OppfolgingPeriodeMinimalDTO hentOppfolgingsPeriode(@RequestParam(value = "fnr", required = false) String fnr, @PathVariable String uuid){
-        String fodselsnummer = authService.hentIdentForEksternEllerIntern(fnr);
-        authService.sjekkLesetilgangMedFnr(fodselsnummer);
-        return tilOppfolgingPeriodeMinimalDTO(oppfolgingService.hentPeriode(uuid));
+    public OppfolgingPeriodeMinimalDTO hentOppfolgingsPeriode(@PathVariable String uuid){
+        var periode = oppfolgingService.hentPeriode(uuid);
+        authService.sjekkLesetilgangMedAktorId(periode.getAktorId());
+
+        return tilOppfolgingPeriodeMinimalDTO(periode);
 
     }
 
