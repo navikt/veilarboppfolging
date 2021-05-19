@@ -1,6 +1,12 @@
 package no.nav.veilarboppfolging.controller;
 
+import no.nav.common.abac.Pep;
+import no.nav.common.auth.context.AuthContextHolder;
+import no.nav.common.client.aktoroppslag.AktorOppslagClient;
+import no.nav.common.client.aktorregister.AktorregisterClient;
+import no.nav.common.health.selftest.SelfTestChecks;
 import no.nav.common.json.JsonUtils;
+import no.nav.common.utils.Credentials;
 import no.nav.veilarboppfolging.domain.Kvp;
 import no.nav.veilarboppfolging.domain.Oppfolgingsperiode;
 import no.nav.veilarboppfolging.service.*;
