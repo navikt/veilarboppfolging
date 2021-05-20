@@ -10,6 +10,8 @@ import no.nav.veilarboppfolging.controller.domain.UnderOppfolgingDTO;
 import no.nav.veilarboppfolging.domain.*;
 import no.nav.veilarboppfolging.repository.*;
 import no.nav.veilarboppfolging.utils.ArenaUtils;
+import no.nav.veilarboppfolging.utils.DtoMappers;
+import no.nav.veilarboppfolging.utils.OppfolgingsperiodeUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
@@ -402,25 +404,30 @@ public class OppfolgingService {
      */
     @Transactional
     public void startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker oppfolgingsbruker, boolean publishOnKafka) {
-        String aktoerId = oppfolgingsbruker.getAktoerId();
+        String aktorId = oppfolgingsbruker.getAktoerId();
 
-        Oppfolging oppfolgingsstatus = hentOppfolging(aktoerId).orElseGet(() -> {
+        Oppfolging oppfolgingsstatus = hentOppfolging(aktorId).orElseGet(() -> {
             // Siden det blir gjort mange kall samtidig til flere noder kan det oppstå en race condition
             // hvor oppfølging har blitt insertet av en annen node etter at den har sjekket at oppfølging
             // ikke ligger i databasen.
             try {
-                return oppfolgingsStatusRepository.opprettOppfolging(aktoerId);
+                return oppfolgingsStatusRepository.opprettOppfolging(aktorId);
             } catch (DuplicateKeyException e) {
-                log.info("Race condition oppstod under oppretting av ny oppfølging for bruker: " + aktoerId);
-                return hentOppfolging(aktoerId).orElse(null);
+                log.info("Race condition oppstod under oppretting av ny oppfølging for bruker: " + aktorId);
+                return hentOppfolging(aktorId).orElse(null);
             }
         });
 
         if (oppfolgingsstatus != null && !oppfolgingsstatus.isUnderOppfolging()) {
-            oppfolgingsPeriodeRepository.start(aktoerId);
+            oppfolgingsPeriodeRepository.start(aktorId);
             nyeBrukereFeedRepository.leggTil(oppfolgingsbruker);
+
             if (publishOnKafka) {
-                kafkaProducerService.publiserOppfolgingStartet(aktoerId);
+                List<Oppfolgingsperiode> perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId);
+                Oppfolgingsperiode sistePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(perioder);
+
+                kafkaProducerService.publiserOppfolgingsperiode(DtoMappers.tilOppfolgingsperiodeKafkaDto(sistePeriode));
+                kafkaProducerService.publiserOppfolgingStartet(aktorId);
             }
         }
     }
@@ -546,6 +553,11 @@ public class OppfolgingService {
         eskaleringService.stoppEskaleringForAvsluttOppfolging(aktorId, brukerIdent, begrunnelse);
 
         oppfolgingsPeriodeRepository.avslutt(aktorId, veilederId, begrunnelse);
+
+        List<Oppfolgingsperiode> perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId);
+        Oppfolgingsperiode sistePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(perioder);
+
+        kafkaProducerService.publiserOppfolgingsperiode(DtoMappers.tilOppfolgingsperiodeKafkaDto(sistePeriode));
         kafkaProducerService.publiserOppfolgingAvsluttet(aktorId);
     }
 

@@ -74,3 +74,5 @@ spec:
       value: aapen-arbeidsrettetOppfolging-endringPaNyForVeileder-v1-p
     - name: ENDRING_PA_MAL_TOPIC
       value: aapen-arbeidsrettetOppfolging-endringPaMal-v1-p
+    - name: OPPFOLGINGSPERIODE_TOPIC
+      value: xxxx-prod
