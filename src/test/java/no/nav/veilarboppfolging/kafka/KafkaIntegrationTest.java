@@ -72,7 +72,7 @@ public class KafkaIntegrationTest {
                     konsumertMelding.set(newValue);
                 })).build().start();
 
-        TestUtils.verifiserAsynkront(10, TimeUnit.SECONDS, () -> {
+        TestUtils.verifiserAsynkront(100, TimeUnit.SECONDS, () -> {
             assertEquals(oppfolgingEndret.getAktoerid(), konsumertMelding.get().getAktorId());
         });
     }
