@@ -341,6 +341,10 @@ public class OppfolgingService {
                 .build();
     }
 
+    public Oppfolgingsperiode hentPeriode(String uuid) {
+        return oppfolgingsPeriodeRepository.hentOppfolgingsperiode(uuid);
+    }
+
     @SneakyThrows
     public Optional<Oppfolging> hentOppfolging(String aktorId) {
         OppfolgingTable t = oppfolgingsStatusRepository.fetch(aktorId);

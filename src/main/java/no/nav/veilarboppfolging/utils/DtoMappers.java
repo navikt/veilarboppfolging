@@ -56,7 +56,7 @@ public class DtoMappers {
                 .setReservasjonKRR(oppfolgingStatusData.reservasjonKRR)
                 .setOppfolgingUtgang(oppfolgingStatusData.getOppfolgingUtgang())
                 .setKanReaktiveres(oppfolgingStatusData.kanReaktiveres)
-                .setOppfolgingsPerioder(oppfolgingStatusData.oppfolgingsperioder.stream().map(o -> tilDTO(o, erInternBruker)).collect(toList()))
+                .setOppfolgingsPerioder(oppfolgingStatusData.oppfolgingsperioder.stream().map(o -> tilOppfolgingPeriodeDTO(o, erInternBruker)).collect(toList()))
                 .setInaktiveringsdato(oppfolgingStatusData.inaktiveringsdato)
                 .setGjeldendeEskaleringsvarsel(tilDto(oppfolgingStatusData.getGjeldendeEskaleringsvarsel(), erInternBruker))
                 .setErIkkeArbeidssokerUtenOppfolging(oppfolgingStatusData.getErSykmeldtMedArbeidsgiver())
@@ -80,7 +80,7 @@ public class DtoMappers {
         return status;
     }
 
-    public static OppfolgingPeriodeDTO tilDTO(Oppfolgingsperiode oppfolgingsperiode, boolean erInternBruker) {
+    public static OppfolgingPeriodeDTO tilOppfolgingPeriodeDTO(Oppfolgingsperiode oppfolgingsperiode, boolean erInternBruker) {
         OppfolgingPeriodeDTO periode = new OppfolgingPeriodeDTO()
                 .setUuid(oppfolgingsperiode.getUuid())
                 .setSluttDato(oppfolgingsperiode.getSluttDato())
@@ -106,6 +106,13 @@ public class DtoMappers {
                 oppfolgingsperiode.getStartDato(),
                 oppfolgingsperiode.getSluttDato()
         );
+    }
+
+    public static OppfolgingPeriodeMinimalDTO tilOppfolgingPeriodeMinimalDTO(Oppfolgingsperiode oppfolgingsperiode) {
+        return new OppfolgingPeriodeMinimalDTO()
+                .setUuid(oppfolgingsperiode.getUuid())
+                .setSluttDato(oppfolgingsperiode.getSluttDato())
+                .setStartDato(oppfolgingsperiode.getStartDato());
     }
 
     public static KvpPeriodeDTO tilDTO(Kvp kvp) {
