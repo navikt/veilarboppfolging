@@ -45,7 +45,7 @@ public class KafkaRepubliseringService {
         Oppfolgingsperiode sistePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(perioder);
         OppfolgingsperiodeKafkaDto kafkaDto = DtoMappers.tilOppfolgingsperiodeKafkaDto(sistePeriode);
 
-        kafkaProducerService.publiserOppfolgingsperiode(kafkaDto);
+        kafkaProducerService.publiserSisteOppfolgingsperiode(kafkaDto);
     }
 
 }

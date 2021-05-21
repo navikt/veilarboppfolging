@@ -426,7 +426,7 @@ public class OppfolgingService {
                 List<Oppfolgingsperiode> perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId);
                 Oppfolgingsperiode sistePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(perioder);
 
-                kafkaProducerService.publiserOppfolgingsperiode(DtoMappers.tilOppfolgingsperiodeKafkaDto(sistePeriode));
+                kafkaProducerService.publiserSisteOppfolgingsperiode(DtoMappers.tilOppfolgingsperiodeKafkaDto(sistePeriode));
                 kafkaProducerService.publiserOppfolgingStartet(aktorId);
             }
         }
@@ -557,7 +557,7 @@ public class OppfolgingService {
         List<Oppfolgingsperiode> perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId);
         Oppfolgingsperiode sistePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(perioder);
 
-        kafkaProducerService.publiserOppfolgingsperiode(DtoMappers.tilOppfolgingsperiodeKafkaDto(sistePeriode));
+        kafkaProducerService.publiserSisteOppfolgingsperiode(DtoMappers.tilOppfolgingsperiodeKafkaDto(sistePeriode));
         kafkaProducerService.publiserOppfolgingAvsluttet(aktorId);
     }
 

@@ -30,8 +30,8 @@ public class KafkaProducerService {
         this.kafkaProperties = kafkaProperties;
     }
 
-    public void publiserOppfolgingsperiode(OppfolgingsperiodeKafkaDto dto) {
-        store(kafkaProperties.getOppfolgingsperiodeTopic(), dto.getAktorId().get(), dto);
+    public void publiserSisteOppfolgingsperiode(OppfolgingsperiodeKafkaDto dto) {
+        store(kafkaProperties.getSisteOppfolgingsperiodeTopic(), dto.getAktorId().get(), dto);
     }
 
     public void publiserEndringPaManuellStatus(String aktorId, boolean erManuell) {
