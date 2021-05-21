@@ -34,6 +34,10 @@ public class KafkaProducerService {
         store(kafkaProperties.getSisteOppfolgingsperiodeTopic(), dto.getAktorId().get(), dto);
     }
 
+    public void publiserSisteVeilederTilordnet(SisteVeilederTilordnetKafkaDTO dto) {
+        store(kafkaProperties.getSisteVeilederTilordnetTopic(), dto.getAktorId().get(), dto);
+    }
+
     public void publiserEndringPaManuellStatus(String aktorId, boolean erManuell) {
         EndringPaManuellStatusKafkaDTO dto = new EndringPaManuellStatusKafkaDTO(aktorId, erManuell);
         store(kafkaProperties.getEndringPaManuellStatusTopic(), dto.getAktorId(), dto);

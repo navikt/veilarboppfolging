@@ -10,6 +10,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
+import static java.lang.String.format;
+
 @Repository
 public class OppfolgingsStatusRepository {
 
@@ -52,6 +54,11 @@ public class OppfolgingsStatusRepository {
 
         // FIXME: return the actual database object.
         return new Oppfolging().setAktorId(aktorId).setUnderOppfolging(false);
+    }
+
+    public List<String> hentUnikeBrukerePage(int offset, int pageSize) {
+        String sql = format("SELECT DISTINCT aktor_id FROM OPPFOLGINGSTATUS ORDER BY aktor_id OFFSET %d FETCH NEXT %d ROWS ONLY", offset, pageSize);
+        return db.query(sql, (rs, rowNum) -> rs.getString("aktor_id"));
     }
 
     public static OppfolgingTable map(ResultSet rs, int row) throws SQLException {

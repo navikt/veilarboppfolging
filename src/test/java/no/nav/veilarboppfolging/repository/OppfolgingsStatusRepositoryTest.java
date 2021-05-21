@@ -10,13 +10,11 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
-public class OppfolgingsPeriodeRepositoryTest {
+public class OppfolgingsStatusRepositoryTest {
 
     private final JdbcTemplate jdbcTemplate = LocalH2Database.getDb();
 
     private final OppfolgingsStatusRepository oppfolgingsStatusRepository = new OppfolgingsStatusRepository(jdbcTemplate);
-
-    private final OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository = new OppfolgingsPeriodeRepository(jdbcTemplate);
 
     @Before
     public void cleanup() {
@@ -33,15 +31,11 @@ public class OppfolgingsPeriodeRepositoryTest {
         oppfolgingsStatusRepository.opprettOppfolging(aktorId2);
         oppfolgingsStatusRepository.opprettOppfolging(aktorId3);
 
-        oppfolgingsPeriodeRepository.start(aktorId1);
-        oppfolgingsPeriodeRepository.start(aktorId2);
-        oppfolgingsPeriodeRepository.start(aktorId3);
-
-        List<String> unikeBrukerePage1 = oppfolgingsPeriodeRepository.hentUnikeBrukerePage(0, 1);
+        List<String> unikeBrukerePage1 = oppfolgingsStatusRepository.hentUnikeBrukerePage(0, 1);
         assertEquals(1, unikeBrukerePage1.size());
         assertEquals(aktorId1, unikeBrukerePage1.get(0));
 
-        List<String> unikeBrukerePage2 = oppfolgingsPeriodeRepository.hentUnikeBrukerePage(1, 2);
+        List<String> unikeBrukerePage2 = oppfolgingsStatusRepository.hentUnikeBrukerePage(1, 2);
         assertEquals(2, unikeBrukerePage2.size());
         assertEquals(aktorId2, unikeBrukerePage2.get(0));
         assertEquals(aktorId3, unikeBrukerePage2.get(1));

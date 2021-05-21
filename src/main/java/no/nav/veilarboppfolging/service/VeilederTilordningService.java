@@ -9,6 +9,7 @@ import no.nav.veilarboppfolging.feed.cjm.producer.FeedProducer;
 import no.nav.veilarboppfolging.repository.VeilederHistorikkRepository;
 import no.nav.veilarboppfolging.repository.VeilederTilordningerRepository;
 import no.nav.veilarboppfolging.schedule.IdPaOppfolgingFeedSchedule;
+import no.nav.veilarboppfolging.utils.DtoMappers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -16,6 +17,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 @Slf4j
@@ -161,16 +163,24 @@ public class VeilederTilordningService {
         }
     }
 
-    private void skrivTilDatabase(String aktorId, String veileder) {
+    private void skrivTilDatabase(String aktorId, String veilederId) {
         transactor.executeWithoutResult((status) -> {
-            veilederTilordningerRepository.upsertVeilederTilordning(aktorId, veileder);
-            veilederHistorikkRepository.insertTilordnetVeilederForAktorId(aktorId, veileder);
+            veilederTilordningerRepository.upsertVeilederTilordning(aktorId, veilederId);
+            veilederHistorikkRepository.insertTilordnetVeilederForAktorId(aktorId, veilederId);
             oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(aktorId);
         });
 
-        log.debug(String.format("Veileder %s tilordnet aktoer %s", veileder, aktorId));
+        log.debug(String.format("Veileder %s tilordnet aktoer %s", veilederId, aktorId));
+
+        Optional<Tilordning> maybeTilordning = veilederTilordningerRepository.hentTilordnetVeileder(aktorId);
+
+        maybeTilordning.ifPresentOrElse(tilordning -> {
+            var dto = DtoMappers.tilSisteVeilederTilordnetKafkaDTO(tilordning);
+            kafkaProducerService.publiserSisteVeilederTilordnet(dto);
+        }, () -> log.error("Fant ikke tilordning til nylig tilordnet veileder. AktorId={} VeilederId={}", aktorId, veilederId));
+
         kafkaProducerService.publiserEndringPaNyForVeileder(aktorId, true);
-        kafkaProducerService.publiserVeilederTilordnet(aktorId, veileder);
+        kafkaProducerService.publiserVeilederTilordnet(aktorId, veilederId);
     }
 
     static boolean kanTilordneVeileder(String eksisterendeVeileder, VeilederTilordning veilederTilordning) {
