@@ -170,8 +170,12 @@ public class AuthService {
         return fnr;
     }
 
+    public String getAktorIdOrThrow(Fnr fnr) {
+        return aktorOppslagClient.hentAktorId(fnr).get();
+    }
+
     public String getAktorIdOrThrow(String fnr) {
-        return aktorOppslagClient.hentAktorId(Fnr.of(fnr)).get();
+        return getAktorIdOrThrow(Fnr.of(fnr));
     }
 
     public String getFnrOrThrow(String aktorId) {

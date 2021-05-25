@@ -19,7 +19,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,7 +27,6 @@ import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 import static no.nav.veilarboppfolging.config.ApplicationConfig.SYSTEM_USER_NAME;
-import static no.nav.veilarboppfolging.domain.KodeverkBruker.SYSTEM;
 import static no.nav.veilarboppfolging.utils.ArenaUtils.*;
 import static no.nav.veilarboppfolging.utils.KvpUtils.sjekkTilgangGittKvp;
 
@@ -250,17 +248,6 @@ public class OppfolgingService {
                 .orElse(false);
 
         DkifKontaktinfo dkifKontaktinfo = dkifClient.hentKontaktInfo(fnr);
-
-        if (oppfolging.isUnderOppfolging() && !erManuell && dkifKontaktinfo.isReservert()) {
-            manuellStatusRepository.create(
-                    new ManuellStatus()
-                            .setAktorId(aktorId)
-                            .setManuell(true)
-                            .setDato(ZonedDateTime.now())
-                            .setBegrunnelse("Reservert og under oppfølging")
-                            .setOpprettetAv(SYSTEM)
-            );
-        }
 
         // TODO: Burde kanskje heller feile istedenfor å bruke Optional
         Optional<ArenaOppfolgingTilstand> maybeArenaOppfolging = arenaOppfolgingService.hentOppfolgingTilstand(fnr);
