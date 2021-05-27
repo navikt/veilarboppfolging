@@ -14,7 +14,7 @@ public class DtoMappersTest {
                 .kvpPerioder(null)
                 .build();
 
-        OppfolgingPeriodeDTO periodeDTO = DtoMappers.tilDTO(oppfolgingsperiode, false);
+        OppfolgingPeriodeDTO periodeDTO = DtoMappers.tilOppfolgingPeriodeDTO(oppfolgingsperiode, false);
         assertTrue(periodeDTO.kvpPerioder.isEmpty());
     }
 

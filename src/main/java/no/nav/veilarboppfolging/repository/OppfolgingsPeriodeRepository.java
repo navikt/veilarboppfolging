@@ -12,6 +12,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository.AKTOR_ID;
 import static no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository.UNDER_OPPFOLGING;
@@ -24,7 +25,7 @@ public class OppfolgingsPeriodeRepository {
     private final JdbcTemplate db;
 
     private final static String hentOppfolingsperioderSQL =
-            "SELECT aktor_id, avslutt_veileder, startdato, sluttdato, avslutt_begrunnelse " +
+            "SELECT uuid, aktor_id, avslutt_veileder, startdato, sluttdato, avslutt_begrunnelse " +
                     "FROM OPPFOLGINGSPERIODE ";
 
     @Autowired
@@ -53,6 +54,14 @@ public class OppfolgingsPeriodeRepository {
                         this::mapRadTilAvsluttetOppfolging,
                         timestamp,
                         pageSize);
+    }
+
+    public Oppfolgingsperiode hentOppfolgingsperiode(String uuid) {
+        return db.queryForObject(hentOppfolingsperioderSQL +
+                        "WHERE UUID = ?",
+                OppfolgingsPeriodeRepository::mapTilOppfolgingsperiode,
+                uuid
+        );
     }
 
     public Optional<Oppfolgingsperiode> hentGjeldendeOppfolgingsperiode(String aktorId) {
@@ -85,9 +94,9 @@ public class OppfolgingsPeriodeRepository {
 
     private void insert(String aktorId) {
         db.update("" +
-                        "INSERT INTO OPPFOLGINGSPERIODE(aktor_id, startDato, oppdatert) " +
-                        "VALUES (?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
-                aktorId);
+                        "INSERT INTO OPPFOLGINGSPERIODE(uuid, aktor_id, startDato, oppdatert) " +
+                        "VALUES (?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
+                UUID.randomUUID().toString(), aktorId);
     }
 
     private void setActive(String aktorId) {
@@ -131,6 +140,7 @@ public class OppfolgingsPeriodeRepository {
 
     private static Oppfolgingsperiode mapTilOppfolgingsperiode(ResultSet result, int row) throws SQLException {
         return Oppfolgingsperiode.builder()
+                .uuid(UUID.fromString(result.getString("uuid")))
                 .aktorId(result.getString("aktor_id"))
                 .veileder(result.getString("avslutt_veileder"))
                 .startDato(hentZonedDateTime(result, "startdato"))

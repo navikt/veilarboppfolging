@@ -1,6 +1,12 @@
 package no.nav.veilarboppfolging.controller;
 
+import no.nav.common.abac.Pep;
+import no.nav.common.auth.context.AuthContextHolder;
+import no.nav.common.client.aktoroppslag.AktorOppslagClient;
+import no.nav.common.client.aktorregister.AktorregisterClient;
+import no.nav.common.health.selftest.SelfTestChecks;
 import no.nav.common.json.JsonUtils;
+import no.nav.common.utils.Credentials;
 import no.nav.veilarboppfolging.domain.Kvp;
 import no.nav.veilarboppfolging.domain.Oppfolgingsperiode;
 import no.nav.veilarboppfolging.service.*;
@@ -16,7 +22,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static no.nav.veilarboppfolging.utils.DtoMappers.tilDTO;
+import static no.nav.veilarboppfolging.utils.DtoMappers.tilOppfolgingPeriodeDTO;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -75,7 +81,7 @@ public class OppfolgingControllerTest {
 
         String expectedJson = JsonUtils.toJson(
                 perioder.stream()
-                .map(op -> tilDTO(op, true))
+                .map(op -> tilOppfolgingPeriodeDTO(op, true))
                 .collect(Collectors.toList())
         );
 
