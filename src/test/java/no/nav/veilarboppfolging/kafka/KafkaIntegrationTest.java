@@ -67,7 +67,7 @@ public class KafkaIntegrationTest {
 
         AtomicReference<OppfolgingStartetKafkaDTO> konsumertMelding = new AtomicReference<>(null);
         KafkaConsumerClientBuilder.<String, String>builder()
-                .withProps(kafkaTestConsumerProperties(kafkaContainer.getBootstrapServers()))
+                .withProperties(kafkaTestConsumerProperties(kafkaContainer.getBootstrapServers()))
                 .withConsumer(kafkaProperties.getOppfolgingStartetTopic(),jsonConsumer(OppfolgingStartetKafkaDTO.class, newValue -> {
                     konsumertMelding.set(newValue);
                 })).build().start();

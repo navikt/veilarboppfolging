@@ -46,7 +46,7 @@ public class KafkaConfig {
     public final static String PRODUCER_CLIENT_ID = "veilarboppfolging-producer";
 
     @Autowired
-    KafkaConsumerClient<String, String> consumerClient;
+    KafkaConsumerClient consumerClient;
 
     @Autowired
     KafkaConsumerRecordProcessor consumerRecordProcessor;
@@ -77,7 +77,7 @@ public class KafkaConfig {
     }
 
     @Bean
-    public KafkaConsumerClient<String, String> consumerClient(
+    public KafkaConsumerClient consumerClient(
             Map<String, TopicConsumer<String, String>> topicConsumers,
             KafkaConsumerRepository kafkaConsumerRepository,
             Credentials credentials,
@@ -93,7 +93,7 @@ public class KafkaConfig {
                 .build();
 
         return KafkaConsumerClientBuilder.<String, String>builder()
-                .withProps(properties)
+                .withProperties(properties)
                 .withRepository(kafkaConsumerRepository)
                 .withSerializers(new StringSerializer(), new StringSerializer())
                 .withStoreOnFailureConsumers(topicConsumers)

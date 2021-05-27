@@ -53,7 +53,7 @@ public class KafkaTestConfig {
     }
 
     @Autowired
-    KafkaConsumerClient<String, String> consumerClient;
+    KafkaConsumerClient consumerClient;
 
     @Autowired
     KafkaConsumerRecordProcessor consumerRecordProcessor;
@@ -84,7 +84,7 @@ public class KafkaTestConfig {
     }
 
     @Bean
-    public KafkaConsumerClient<String, String> consumerClient(
+    public KafkaConsumerClient consumerClient(
             Map<String, TopicConsumer<String, String>> topicConsumers,
             KafkaConsumerRepository kafkaConsumerRepository,
             KafkaContainer kafkaContainer
@@ -97,7 +97,7 @@ public class KafkaTestConfig {
                 .build();
 
         return KafkaConsumerClientBuilder.<String, String>builder()
-                .withProps(properties)
+                .withProperties(properties)
                 .withRepository(kafkaConsumerRepository)
                 .withSerializers(new StringSerializer(), new StringSerializer())
                 .withStoreOnFailureConsumers(topicConsumers)
