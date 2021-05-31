@@ -20,7 +20,6 @@ import org.springframework.web.server.ResponseStatusException;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -258,7 +257,7 @@ public class OppfolgingService {
                             .setAktorId(aktorId)
                             .setManuell(true)
                             .setDato(ZonedDateTime.now())
-                            .setBegrunnelse("Reservert og under oppfølging")
+                            .setBegrunnelse("Brukeren er reservert i Kontakt- og reservasjonsregisteret")
                             .setOpprettetAv(SYSTEM)
             );
         }
