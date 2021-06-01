@@ -257,7 +257,7 @@ public class OppfolgingService {
                             .setAktorId(aktorId)
                             .setManuell(true)
                             .setDato(ZonedDateTime.now())
-                            .setBegrunnelse("Reservert og under oppfølging")
+                            .setBegrunnelse("Brukeren er reservert i Kontakt- og reservasjonsregisteret")
                             .setOpprettetAv(SYSTEM)
             );
         }
@@ -339,6 +339,10 @@ public class OppfolgingService {
                 .build();
     }
 
+    public Oppfolgingsperiode hentPeriode(String uuid) {
+        return oppfolgingsPeriodeRepository.hentOppfolgingsperiode(uuid);
+    }
+
     @SneakyThrows
     public Optional<Oppfolging> hentOppfolging(String aktorId) {
         OppfolgingTable t = oppfolgingsStatusRepository.fetch(aktorId);
@@ -393,36 +397,34 @@ public class OppfolgingService {
 
     @Transactional
     public void startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker oppfolgingsbruker) {
-        startOppfolgingHvisIkkeAlleredeStartet(oppfolgingsbruker, true);
-    }
+        String aktorId = oppfolgingsbruker.getAktoerId();
 
-    /**
-     * Det er veldig hacky å legge til et flagg for å kontrollere funksjonalitet, men slik som veilarboppfolging er i dag
-     * så er det ikke noen bedre alternativer for å håndtere async ting som skjer i midten av en transaksjon som ikke kan rulles tilbake.
-     */
-    @Transactional
-    public void startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker oppfolgingsbruker, boolean publishOnKafka) {
-        String aktoerId = oppfolgingsbruker.getAktoerId();
+        OppfolgingTable eksisterendeOppfolging = oppfolgingsStatusRepository.fetch(aktorId);
 
-        Oppfolging oppfolgingsstatus = hentOppfolging(aktoerId).orElseGet(() -> {
+        if (eksisterendeOppfolging != null && eksisterendeOppfolging.isUnderOppfolging()) {
+            return;
+        }
+
+        if (eksisterendeOppfolging == null) {
             // Siden det blir gjort mange kall samtidig til flere noder kan det oppstå en race condition
             // hvor oppfølging har blitt insertet av en annen node etter at den har sjekket at oppfølging
             // ikke ligger i databasen.
             try {
-                return oppfolgingsStatusRepository.opprettOppfolging(aktoerId);
+                oppfolgingsStatusRepository.opprettOppfolging(aktorId);
             } catch (DuplicateKeyException e) {
-                log.info("Race condition oppstod under oppretting av ny oppfølging for bruker: " + aktoerId);
-                return hentOppfolging(aktoerId).orElse(null);
-            }
-        });
-
-        if (oppfolgingsstatus != null && !oppfolgingsstatus.isUnderOppfolging()) {
-            oppfolgingsPeriodeRepository.start(aktoerId);
-            nyeBrukereFeedRepository.leggTil(oppfolgingsbruker);
-            if (publishOnKafka) {
-                kafkaProducerService.publiserOppfolgingStartet(aktoerId);
+                log.warn("Race condition oppstod under oppretting av ny oppfølging for bruker: " + aktorId);
+                return;
             }
         }
+
+        oppfolgingsPeriodeRepository.start(aktorId);
+        nyeBrukereFeedRepository.leggTil(oppfolgingsbruker);
+
+        Oppfolgingsperiode gjeldende =
+                oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId)
+                .orElseThrow(() -> new IllegalStateException("Forventet å finne oppfølging etter start av oppfølging"));
+
+        kafkaProducerService.publiserOppfolgingStartet(aktorId, gjeldende.getStartDato());
     }
 
     private List<Oppfolgingsperiode> populerKvpPerioder(List<Oppfolgingsperiode> oppfolgingsPerioder, List<Kvp> kvpPerioder) {

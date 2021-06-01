@@ -1,31 +1,26 @@
 package no.nav.veilarboppfolging.repository;
 
-import lombok.val;
 import no.nav.veilarboppfolging.domain.AktorId;
-import no.nav.veilarboppfolging.domain.Oppfolgingsperiode;
 import no.nav.veilarboppfolging.domain.kafka.OppfolgingKafkaDTO;
 import no.nav.veilarboppfolging.test.DbTestUtils;
 import no.nav.veilarboppfolging.test.LocalH2Database;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.IntStream;
 
-import static java.util.Comparator.comparing;
-import static java.util.Optional.ofNullable;
 import static org.apache.commons.lang3.RandomStringUtils.randomNumeric;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class OppfolgingFeedRepositoryTest {
-
-    private static final String AKTOR_ID = randomNumeric(10);
-    private static final String VEILEDER = "1234";
 
     private OppfolgingFeedRepository oppfolgingFeedRepository = new OppfolgingFeedRepository(LocalH2Database.getDb());
     private OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository = new OppfolgingsPeriodeRepository(LocalH2Database.getDb());
@@ -112,6 +107,48 @@ public class OppfolgingFeedRepositoryTest {
 
         List<AktorId> aktorIds = oppfolgingFeedRepository.hentAlleBrukereUnderOppfolging();
         assertThat(aktorIds.size()).isEqualTo(10);
+    }
+
+    @Test
+    public void hentOppfolgingsperiode_ingenTreff_skalKasteException() {
+        assertThrows(EmptyResultDataAccessException.class, () -> oppfolgingsPeriodeRepository.hentOppfolgingsperiode("123"));
+    }
+
+    @Test
+    public void hentOppfolgingsperiode_periodeFinnes() {
+        String aktorId = randomNumeric(10);
+        oppfolgingsStatusRepository.opprettOppfolging(aktorId);
+        oppfolgingsPeriodeRepository.start(aktorId);
+        var perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId);
+
+        Assert.assertEquals(1, perioder.size());
+
+        var periode = oppfolgingsPeriodeRepository.hentOppfolgingsperiode(perioder.get(0).getUuid().toString());
+
+        assertNotNull(periode);
+        assertEquals(perioder.get(0).getStartDato(), periode.getStartDato());
+        assertEquals(perioder.get(0).getSluttDato(), periode.getSluttDato());
+
+    }
+
+    @Test
+    public void hentOppfolgingsperiode_flerePerioder() {
+        String aktorId = randomNumeric(10);
+        oppfolgingsStatusRepository.opprettOppfolging(aktorId);
+        oppfolgingsPeriodeRepository.start(aktorId);
+        oppfolgingsPeriodeRepository.avslutt(aktorId, "V123", "Fordi atte");
+        oppfolgingsPeriodeRepository.start(aktorId);
+
+        var avsluttetPeriode = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId).stream().filter(x -> x.getSluttDato() != null);
+
+        var eldstePeriode = avsluttetPeriode.findFirst().orElse(null);
+
+        var periode = oppfolgingsPeriodeRepository.hentOppfolgingsperiode(eldstePeriode.getUuid().toString());
+
+        assertNotNull(periode);
+        assertEquals(eldstePeriode.getStartDato(), periode.getStartDato());
+        assertEquals(eldstePeriode.getSluttDato(), periode.getSluttDato());
+
     }
 
     private void createAntallTestBrukere(int antall) {

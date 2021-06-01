@@ -11,11 +11,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository.AKTOR_ID;
 import static no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository.UNDER_OPPFOLGING;
 import static no.nav.veilarboppfolging.utils.DbUtils.hentZonedDateTime;
+import static no.nav.veilarboppfolging.utils.DbUtils.queryForNullableObject;
 
 @Repository
 public class OppfolgingsPeriodeRepository {
@@ -52,6 +54,26 @@ public class OppfolgingsPeriodeRepository {
                         this::mapRadTilAvsluttetOppfolging,
                         timestamp,
                         pageSize);
+    }
+
+    public Oppfolgingsperiode hentOppfolgingsperiode(String uuid) {
+        return db.queryForObject(hentOppfolingsperioderSQL +
+                        "WHERE UUID = ?",
+                OppfolgingsPeriodeRepository::mapTilOppfolgingsperiode,
+                uuid
+        );
+    }
+
+    public Optional<Oppfolgingsperiode> hentGjeldendeOppfolgingsperiode(String aktorId) {
+        return queryForNullableObject(
+                db,
+                hentOppfolingsperioderSQL +
+                        "WHERE aktor_id = ? AND sluttdato IS NULL " +
+                        "ORDER BY startdato DESC " +
+                        "FETCH NEXT 1 ROWS ONLY",
+                OppfolgingsPeriodeRepository::mapTilOppfolgingsperiode,
+                aktorId
+        );
     }
 
     public List<Oppfolgingsperiode> hentOppfolgingsperioder(String aktorId) {
