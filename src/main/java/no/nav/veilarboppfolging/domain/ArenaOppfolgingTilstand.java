@@ -1,6 +1,8 @@
 package no.nav.veilarboppfolging.domain;
 
-import lombok.Value;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolging;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 
@@ -11,7 +13,9 @@ import java.util.Optional;
 /**
  * Felles struktur for data som kan hentes både fra Arena og veilarbarena
  */
-@Value
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class ArenaOppfolgingTilstand {
     String formidlingsgruppe;
     String servicegruppe;

@@ -49,8 +49,8 @@ public class KafkaProducerService {
         store(kafkaProperties.getVeilederTilordnetTopic(), aktorId, dto);
     }
 
-    public void publiserOppfolgingStartet(String aktorId) {
-        OppfolgingStartetKafkaDTO dto = new OppfolgingStartetKafkaDTO(aktorId, ZonedDateTime.now());
+    public void publiserOppfolgingStartet(String aktorId, ZonedDateTime oppfolgingStartet) {
+        OppfolgingStartetKafkaDTO dto = new OppfolgingStartetKafkaDTO(aktorId, oppfolgingStartet);
         store(kafkaProperties.getOppfolgingStartetTopic(), aktorId, dto);
     }
 

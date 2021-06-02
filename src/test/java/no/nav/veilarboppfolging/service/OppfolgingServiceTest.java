@@ -3,28 +3,30 @@ package no.nav.veilarboppfolging.service;
 import io.vavr.collection.Stream;
 import lombok.SneakyThrows;
 import lombok.val;
-import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt.WSYtelseskontrakt;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeRequest;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeResponse;
 import no.nav.veilarboppfolging.client.dkif.DkifClient;
 import no.nav.veilarboppfolging.client.dkif.DkifKontaktinfo;
-import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolging;
-import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
+import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktClient;
+import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktMapper;
+import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktResponse;
 import no.nav.veilarboppfolging.domain.*;
-import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
-import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
+import no.nav.veilarboppfolging.repository.*;
+import no.nav.veilarboppfolging.test.IsolatedDatabaseTest;
+import no.nav.veilarboppfolging.utils.DateUtils;
+import no.nav.veilarboppfolging.utils.OppfolgingsperiodeUtils;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.Matchers.equalTo;
@@ -33,10 +35,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-// TODO: Ignorer disse testene til OppfolgingResolver har blitt fjernet
-@Ignore
 @RunWith(MockitoJUnitRunner.class)
-public class OppfolgingServiceTest {
+public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
     private static final String FNR = "fnr";
     private static final String AKTOR_ID = "aktorId";
@@ -44,82 +44,90 @@ public class OppfolgingServiceTest {
     private static final String VEILEDER = "veileder";
     private static final String BEGRUNNELSE = "begrunnelse";
 
-    @Mock
-    private DkifClient dkifClient;
+    private ArenaOppfolgingTilstand arenaOppfolgingTilstand;
 
-    @Mock
-    private AuthService authService;
+    private VeilarbarenaClient veilarbarenaClient = mock(VeilarbarenaClient.class);
+    private DkifClient dkifClient = mock(DkifClient.class);
+    private AuthService authService = mock(AuthService.class);
+    private KafkaProducerService kafkaProducerService = mock(KafkaProducerService.class);
+    private YtelseskontraktClient ytelseskontraktClient = mock(YtelseskontraktClient.class);
+    private ArenaOppfolgingService arenaOppfolgingService = mock(ArenaOppfolgingService.class);
+    private EskaleringService eskaleringService = mock(EskaleringService.class);
+    private NyeBrukereFeedRepository nyeBrukereFeedRepository = mock(NyeBrukereFeedRepository.class);
+    private KvpService kvpService = mock(KvpService.class);
+    private KvpRepository kvpRepository = mock(KvpRepository.class);
+    private MetricsService metricsService = mock(MetricsService.class);
 
-    @Mock
-    private VeilarbarenaClient veilarbarenaClient;
-
-
-    @Mock
-    private YtelseskontraktV3 ytelseskontraktV3;
-
-    @Mock
     private OppfolgingsStatusRepository oppfolgingsStatusRepository;
-
-    @Mock
     private OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
-
-    @Mock
-    private WSHentYtelseskontraktListeResponse ytelser;
-
-    @Mock
-    private KafkaProducerService kafkaProducerService;
-
-    @InjectMocks
+    private ManuellStatusRepository manuellStatusRepository;
     private OppfolgingService oppfolgingService;
 
-    private Oppfolging oppfolging = new Oppfolging().setAktorId(AKTOR_ID);
-    private VeilarbArenaOppfolging veilarbArenaOppfolging = new VeilarbArenaOppfolging();
-    private ArenaOppfolging arenaOppfolging;
-
     @Before
-    public void setup() throws Exception {
-        arenaOppfolging = new ArenaOppfolging();
-//        when(oppfolgingRepositoryServiceMock.hentOppfolging(anyString())).thenReturn(Optional.of(oppfolging));
-//
-//        doAnswer((a) -> oppfolging.setUnderOppfolging(true)).when(oppfolgingRepositoryServiceMock).startOppfolgingHvisIkkeAlleredeStartet(anyString());
+    public void setup() {
 
-//        when(veilarbarenaClient.hentArenaOppfolging(any(String.class)))
-//                .thenReturn(arenaOppfolging);
-//        when(aktorServiceMock.getAktorId(FNR)).thenReturn(of(AKTOR_ID));
-//        when(unleashService.isEnabled("veilarboppfolging.oppfolgingresolver.bruk_arena_direkte")).thenReturn(true);
-//        when(unleashService.isEnabled("veilarboppfolging.hentVeilederTilgang.fra.veilarbarena")).thenReturn(true);
-//
-//        when(oppfolgingResolverDependencies.getAktorService()).thenReturn(aktorServiceMock);
-//        when(oppfolgingResolverDependencies.getOppfolgingRepository()).thenReturn(oppfolgingRepositoryMock);
-//        when(oppfolgingResolverDependencies.getArenaOppfolgingService()).thenReturn(veilarbarenaClient);
-//        when(oppfolgingResolverDependencies.getVeilarbaktivtetService()).thenReturn(veilarbaktivitetClient);
-//        when(oppfolgingResolverDependencies.getYtelseskontraktV3()).thenReturn(ytelseskontraktV3);
-//        when(oppfolgingResolverDependencies.getUnleashService()).thenReturn(unleashService);
-//        when(oppfolgingResolverDependencies.getDkifService()).thenReturn(dkifClient);
-//        when(oppfolgingsbrukerService.hentOppfolgingsbruker(FNR)).thenReturn(Optional.of(veilarbArenaOppfolging));
 
-        when(ytelseskontraktV3.hentYtelseskontraktListe(any())).thenReturn(mock(WSHentYtelseskontraktListeResponse.class));
+        arenaOppfolgingTilstand = new ArenaOppfolgingTilstand();
+        oppfolgingsStatusRepository = new OppfolgingsStatusRepository(db);
+        oppfolgingsPeriodeRepository = new OppfolgingsPeriodeRepository(db);
+        manuellStatusRepository = new ManuellStatusRepository(db);
 
-        gittOppfolgingStatus("", "");
-    }
+        oppfolgingService = new OppfolgingService(kafkaProducerService,
+                new YtelserOgAktiviteterService(ytelseskontraktClient),
+                dkifClient,
+                kvpService,
+                metricsService,
+                arenaOppfolgingService,
+                authService,
+                oppfolgingsStatusRepository,
+                oppfolgingsPeriodeRepository,
+                manuellStatusRepository,
+                null,
+                eskaleringService,
+                null,
+                kvpRepository,
+                nyeBrukereFeedRepository,
+                null,
+                null);
 
-    @Test
-    public void skal_publisere_paa_kafka_ved_oppdatering_av_manuell_status() {
-        when(authService.harTilgangTilEnhet(any())).thenReturn(true);
-//        oppfolgingService.oppdaterManuellStatus(FNR, true, "test", SYSTEM, "test");
-        verify(kafkaProducerService, times(1)).publiserEndringPaManuellStatus(AKTOR_ID, true);
+
+        gittArenaOppfolgingStatus("", "");
+
+        when(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID);
+        when(arenaOppfolgingService.hentOppfolgingTilstand(FNR)).thenReturn(Optional.of(arenaOppfolgingTilstand));
+        when(ytelseskontraktClient.hentYtelseskontraktListe(any())).thenReturn(mock(YtelseskontraktResponse.class));
+        when(dkifClient.hentKontaktInfo(FNR)).thenReturn(new DkifKontaktinfo());
     }
 
     @Test
     public void skal_publisere_paa_kafka_ved_start_paa_oppfolging() {
-        when(authService.harTilgangTilEnhet(any())).thenReturn(true);
+        arenaOppfolgingTilstand.setFormidlingsgruppe("IARBS");
+        oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
+
+        when(kvpService.erUnderKvp(anyLong())).thenReturn(false);
+
+        assertTrue(oppfolgingsPeriodeRepository.hentOppfolgingsperioder(AKTOR_ID).isEmpty());
+
         oppfolgingService.startOppfolging(FNR);
-        verify(kafkaProducerService, times(1)).publiserOppfolgingStartet(AKTOR_ID);
+
+        assertUnderOppfolgingLagret(AKTOR_ID);
+
+        List<Oppfolgingsperiode> oppfolgingsperioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(AKTOR_ID);
+        assertEquals(1, oppfolgingsperioder.size());
+
+        verify(kafkaProducerService, times(1)).publiserOppfolgingStartet(AKTOR_ID, oppfolgingsperioder.get(0).getStartDato());
     }
 
     @Test
     public void skal_publisere_paa_kafka_ved_avsluttet_oppfolging() {
-        when(authService.harTilgangTilEnhet(any())).thenReturn(true);
+        arenaOppfolgingTilstand.setFormidlingsgruppe("IARBS");
+        oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
+        oppfolgingService.startOppfolging(FNR);
+
+        assertUnderOppfolgingLagret(AKTOR_ID);
+
+        arenaOppfolgingTilstand.setFormidlingsgruppe("ISERV");
+
         oppfolgingService.avsluttOppfolging(FNR, VEILEDER, "");
         verify(kafkaProducerService, times(1)).publiserOppfolgingAvsluttet(AKTOR_ID);
     }
@@ -128,6 +136,8 @@ public class OppfolgingServiceTest {
     @SneakyThrows
     public void start_oppfolging_uten_enhet_tilgang() {
         when(authService.harTilgangTilEnhet(any())).thenReturn(false);
+        doCallRealMethod().when(authService).sjekkTilgangTilEnhet(any());
+
         oppfolgingService.startOppfolging(FNR);
     }
 
@@ -135,29 +145,15 @@ public class OppfolgingServiceTest {
     @SneakyThrows
     public void avslutt_oppfolging_uten_enhet_tilgang() {
         when(authService.harTilgangTilEnhet(any())).thenReturn(false);
+        doCallRealMethod().when(authService).sjekkTilgangTilEnhet(any());
         oppfolgingService.avsluttOppfolging(FNR, VEILEDER, BEGRUNNELSE);
     }
-
-    @Test(expected = ResponseStatusException.class)
-    @SneakyThrows
-    public void sett_manuell_uten_enhet_tilgang() {
-        when(authService.harTilgangTilEnhet(any())).thenReturn(false);
-//        oppfolgingService.oppdaterManuellStatus(FNR, true, BEGRUNNELSE, NAV, VEILEDER);
-    }
-
-    @Test(expected = ResponseStatusException.class)
-    @SneakyThrows
-    public void settDigital_uten_enhet_tilgang() {
-        when(authService.harTilgangTilEnhet(any())).thenReturn(false);
-//        oppfolgingService.settDigitalBruker(FNR);
-    }
-
 
     @Test
     public void medEnhetTilgang() {
         when(authService.harTilgangTilEnhet(any())).thenReturn(true);
 
-        gittEnhet(ENHET);
+        arenaOppfolgingTilstand.setOppfolgingsenhet(ENHET);
 
         VeilederTilgang veilederTilgang = oppfolgingService.hentVeilederTilgang(FNR);
         assertTrue(veilederTilgang.isTilgangTilBrukersKontor());
@@ -167,7 +163,7 @@ public class OppfolgingServiceTest {
     public void utenEnhetTilgang() {
         when(authService.harTilgangTilEnhet(any())).thenReturn(false);
 
-        gittEnhet(ENHET);
+        arenaOppfolgingTilstand.setOppfolgingsenhet(ENHET);
 
         VeilederTilgang veilederTilgang = oppfolgingService.hentVeilederTilgang(FNR);
         assertThat(veilederTilgang.isTilgangTilBrukersKontor(), equalTo(false));
@@ -175,15 +171,13 @@ public class OppfolgingServiceTest {
 
     @Test
     public void ukjentAktor() {
-        doThrow(new RuntimeException()).when(authService).getAktorIdOrThrow(FNR);
-//        doReturn(Optional.empty()).when(aktorServiceMock).getAktorId(FNR);
+        doCallRealMethod().when(authService).sjekkLesetilgangMedFnr(any());
+        doThrow(new IllegalArgumentException()).when(authService).getAktorIdOrThrow(FNR);
         assertThrows(IllegalArgumentException.class, this::hentOppfolgingStatus);
     }
 
     @Test
     public void riktigFnr() {
-        gittOppfolging(oppfolging);
-
         OppfolgingStatusData oppfolgingStatusData = hentOppfolgingStatus();
         assertEquals(FNR, oppfolgingStatusData.fnr);
     }
@@ -191,7 +185,7 @@ public class OppfolgingServiceTest {
     @Test
     public void riktigServicegruppe() {
         String servicegruppe = "BATT";
-        gittServicegruppe(servicegruppe);
+        arenaOppfolgingTilstand.setServicegruppe(servicegruppe);
 
         OppfolgingStatusData oppfolgingStatusData = hentOppfolgingStatus();
         assertEquals(servicegruppe, oppfolgingStatusData.servicegruppe);
@@ -199,60 +193,59 @@ public class OppfolgingServiceTest {
 
     @Test
     public void hentOppfolgingStatus_brukerSomIkkeErUnderOppfolgingOppdateresIkkeDersomIkkeUnderOppfolgingIArena() {
-        gittOppfolging(oppfolging);
         OppfolgingStatusData oppfolgingStatusData = hentOppfolgingStatus();
 
-//        verify(oppfolgingRepositoryServiceMock, never()).startOppfolgingHvisIkkeAlleredeStartet(anyString());
         assertFalse(oppfolgingStatusData.underOppfolging);
     }
 
     @Test
     public void hentOppfolgingStatus_brukerSomIkkeErUnderOppfolgingSettesUnderOppfolgingDersomArenaHarRiktigStatus() {
-        gittOppfolging(oppfolging);
-        gittOppfolgingStatus("ARBS", "");
+        oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
 
+        assertFalse(oppfolgingsStatusRepository.fetch(AKTOR_ID).isUnderOppfolging());
+
+        gittArenaOppfolgingStatus("ARBS", "");
         OppfolgingStatusData oppfolgingStatusData = hentOppfolgingStatus();
 
-//        verify(oppfolgingRepositoryServiceMock).startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
+        assertUnderOppfolgingLagret(AKTOR_ID);
         assertTrue(oppfolgingStatusData.underOppfolging);
-    }
-
-    private void gittInaktivOppfolgingStatus(Boolean kanEnkeltReaktiveres) {
-        arenaOppfolging.setFormidlingsgruppe("ISERV");
-        arenaOppfolging.setKanEnkeltReaktiveres(kanEnkeltReaktiveres);
-    }
-
-    private void gittServicegruppe(String servicegruppe) {
-        arenaOppfolging.setServicegruppe(servicegruppe);
     }
 
     @Test
     public void hentOppfolgingStatus_brukerSomErUnderOppfolgingOgISERVMeldesUtDersomArenaSierReaktiveringIkkeErMulig() {
-        oppfolging.setUnderOppfolging(true);
-        gittOppfolging(oppfolging);
+        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
+        assertUnderOppfolgingLagret(AKTOR_ID);
+
         gittInaktivOppfolgingStatus(false);
+        when(arenaOppfolgingService.hentOppfolgingTilstandDirekteFraArena(FNR)).thenReturn(Optional.of(arenaOppfolgingTilstand));
 
         hentOppfolgingStatus();
 
-        verify(oppfolgingsPeriodeRepository).avslutt(eq(AKTOR_ID), eq(null), any(String.class));
+        assertEquals(
+                oppfolgingsPeriodeRepository.hentAvsluttetOppfolgingsperioder(AKTOR_ID).size(),
+                oppfolgingsPeriodeRepository.hentOppfolgingsperioder(AKTOR_ID).size()
+        );
+        assertHarIkkeGjeldendeOppfolgingsperiode(AKTOR_ID);
+        assertFalse(oppfolgingsStatusRepository.fetch(AKTOR_ID).isUnderOppfolging());
     }
 
     @Test
     public void hentOppfolgingStatus_brukerSomErUnderOppfolgingOgISERVSkalReaktiveresDersomArenaSierReaktiveringErMulig() {
-        oppfolging.setUnderOppfolging(true);
-        gittOppfolging(oppfolging);
+        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
+        assertUnderOppfolgingLagret(AKTOR_ID);
+
         gittInaktivOppfolgingStatus(true);
 
         OppfolgingStatusData status = hentOppfolgingStatus();
 
         assertTrue(status.kanReaktiveres);
         assertTrue(status.inaktivIArena);
+        assertTrue(status.underOppfolging);
     }
 
     @Test
     public void hentOppfolgingStatus_brukerSomErKRRSkalVareManuell() {
-        oppfolging.setUnderOppfolging(true);
-        gittReservasjonIKrr();
+        gittReservasjonIKrr(true);
         OppfolgingStatusData status = hentOppfolgingStatus();
 
         assertTrue(status.reservasjonKRR);
@@ -261,44 +254,35 @@ public class OppfolgingServiceTest {
 
     @Test
     public void utenReservasjon() {
+        gittReservasjonIKrr(false);
         OppfolgingStatusData oppfolgingStatusData = hentOppfolgingStatus();
         assertFalse(oppfolgingStatusData.reservasjonKRR);
     }
 
     @Test
-    public void utenKontaktInformasjon() {
-        gittKRRFeil();
-        gittOppfolgingStatus("ARBS", "");
-
-        OppfolgingStatusData oppfolgingStatusData = hentOppfolgingStatus();
-
-        assertTrue(oppfolgingStatusData.reservasjonKRR);
-    }
-
-    @Test
     public void medReservasjonOgUnderOppfolging() {
-        gittReservasjonIKrr();
-        gittOppfolgingStatus("ARBS", "");
+        gittReservasjonIKrr(true);
+        gittArenaOppfolgingStatus("ARBS", "");
 
         OppfolgingStatusData oppfolgingStatusData = hentOppfolgingStatus();
 
+        assertUnderOppfolgingLagret(AKTOR_ID);
         assertTrue(oppfolgingStatusData.reservasjonKRR);
     }
 
     @Test
     public void underOppfolging() {
-        gittOppfolging(oppfolging);
-        gittOppfolgingStatus("ARBS", "");
+        gittArenaOppfolgingStatus("ARBS", "");
 
         OppfolgingStatusData oppfolgingStatusData = hentOppfolgingStatus();
 
+        assertUnderOppfolgingLagret(AKTOR_ID);
         assertTrue(oppfolgingStatusData.underOppfolging);
     }
 
     @Test
     public void ikkeArbeidssokerUnderOppfolging() {
-        gittOppfolging(oppfolging);
-        gittOppfolgingStatus("IARBS", "BATT");
+        gittArenaOppfolgingStatus("IARBS", "BATT");
 
         val oppfolgingOgVilkarStatus = hentOppfolgingStatus();
 
@@ -307,8 +291,7 @@ public class OppfolgingServiceTest {
 
     @Test
     public void ikkeArbeidssokerIkkeUnderOppfolging() {
-        gittOppfolging(oppfolging);
-        gittOppfolgingStatus("IARBS", "");
+        gittArenaOppfolgingStatus("IARBS", "");
 
         val oppfolgingOgVilkarStatus = hentOppfolgingStatus();
 
@@ -317,7 +300,7 @@ public class OppfolgingServiceTest {
 
     @Test
     public void kanIkkeAvslutteNarManIkkeErUnderOppfolging() throws Exception {
-        gittOppfolging(oppfolging.setUnderOppfolging(false));
+        oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
         gittYtelserMedStatus();
 
         AvslutningStatusData avslutningStatusData = oppfolgingService.hentAvslutningStatus(FNR);
@@ -327,8 +310,10 @@ public class OppfolgingServiceTest {
 
     @Test
     public void kanIkkeAvslutteNarManIkkeErUnderOppfolgingIArena() throws Exception {
-        gittOppfolging(oppfolging.setUnderOppfolging(true));
-        gittOppfolgingStatus("ARBS", null);
+        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
+        assertUnderOppfolgingLagret(AKTOR_ID);
+
+        gittArenaOppfolgingStatus("ARBS", null);
         gittYtelserMedStatus();
 
         AvslutningStatusData avslutningStatusData = oppfolgingService.hentAvslutningStatus(FNR);
@@ -338,8 +323,10 @@ public class OppfolgingServiceTest {
 
     @Test
     public void kanAvslutteMedVarselOmAktiveYtelser() throws Exception {
-        gittOppfolging(oppfolging.setUnderOppfolging(true));
-        gittOppfolgingStatus("ISERV", "");
+        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
+        assertUnderOppfolgingLagret(AKTOR_ID);
+
+        gittArenaOppfolgingStatus("ISERV", "");
         gittYtelserMedStatus("Inaktiv", "Aktiv");
 
         AvslutningStatusData avslutningStatusData = oppfolgingService.hentAvslutningStatus(FNR);
@@ -350,57 +337,72 @@ public class OppfolgingServiceTest {
 
     @Test(expected = ResponseStatusException.class)
     public void underOppfolgingNiva3_skalFeileHvisIkkeTilgang() {
-//        doThrow(IngenTilgang.class).when(pepClientMock)
-//                .sjekkTilgangTilPerson(any(AbacPersonId.class), any(Action.ActionId.class), eq(ResourceType.VeilArbUnderOppfolging));
+        doThrow(new ResponseStatusException(HttpStatus.UNAUTHORIZED))
+                .when(authService).sjekkTilgangTilPersonMedNiva3(AKTOR_ID);
 
         oppfolgingService.underOppfolgingNiva3(FNR);
     }
 
     @Test
     public void underOppfolgingNiva3_skalReturnereFalseHvisIngenDataOmBruker() {
-        assertTrue(oppfolgingService.underOppfolgingNiva3(FNR));
+        assertFalse(oppfolgingService.underOppfolgingNiva3(FNR));
     }
 
     @Test
     public void underOppfolgingNiva3_skalReturnereTrueHvisBrukerHarOppfolgingsflagg() {
-        gittOppfolging(oppfolging.setUnderOppfolging(true));
+        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
+        assertUnderOppfolgingLagret(AKTOR_ID);
 
         assertTrue(oppfolgingService.underOppfolgingNiva3(FNR));
     }
 
-    private void gittOppfolgingStatus(String formidlingskode, String kvalifiseringsgruppekode) {
-        arenaOppfolging.setFormidlingsgruppe(formidlingskode);
-        arenaOppfolging.setServicegruppe(kvalifiseringsgruppekode);
+    private void assertUnderOppfolgingLagret(String aktorId) {
+        assertTrue(oppfolgingsStatusRepository.fetch(aktorId).isUnderOppfolging());
+
+        assertHarGjeldendeOppfolgingsperiode(aktorId);
+
+        assertEquals(
+                oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId).size(),
+                oppfolgingsPeriodeRepository.hentAvsluttetOppfolgingsperioder(aktorId).size() + 1
+        );
     }
 
-    private void gittEnhet(String enhet) {
-        arenaOppfolging.setOppfolgingsenhet(enhet);
-        veilarbArenaOppfolging.setNav_kontor(enhet);
+
+    private void assertHarGjeldendeOppfolgingsperiode(String aktorId) {
+        assertTrue(harGjeldendeOppfolgingsperiode(aktorId));
+    }
+
+    private void assertHarIkkeGjeldendeOppfolgingsperiode(String aktorId) {
+        assertFalse(harGjeldendeOppfolgingsperiode(aktorId));
+    }
+    private boolean harGjeldendeOppfolgingsperiode(String aktorId) {
+        List<Oppfolgingsperiode> oppfolgingsperioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId);
+        Oppfolgingsperiode sisteOppfolgingsperiode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(oppfolgingsperioder);
+        return sisteOppfolgingsperiode != null && sisteOppfolgingsperiode.getStartDato() != null && sisteOppfolgingsperiode.getSluttDato() == null;
+    }
+
+    private void gittInaktivOppfolgingStatus(Boolean kanEnkeltReaktiveres) {
+        arenaOppfolgingTilstand.setFormidlingsgruppe("ISERV");
+        arenaOppfolgingTilstand.setKanEnkeltReaktiveres(kanEnkeltReaktiveres);
+    }
+
+    private void gittArenaOppfolgingStatus(String formidlingskode, String kvalifiseringsgruppekode) {
+        arenaOppfolgingTilstand.setFormidlingsgruppe(formidlingskode);
+        arenaOppfolgingTilstand.setServicegruppe(kvalifiseringsgruppekode);
     }
 
     private OppfolgingStatusData hentOppfolgingStatus() {
         return oppfolgingService.hentOppfolgingsStatus(FNR);
     }
 
-    private void gittOppfolging(Oppfolging oppfolging) {
-//        when(oppfolgingRepositoryServiceMock.hentOppfolging(AKTOR_ID)).thenReturn(Optional.of(oppfolging));
-    }
-
-    private void gittReservasjonIKrr() {
+    private void gittReservasjonIKrr(boolean reservert) {
         DkifKontaktinfo kontaktinfo = new DkifKontaktinfo();
         kontaktinfo.setPersonident("fnr");
         kontaktinfo.setKanVarsles(false);
-        kontaktinfo.setReservert(true);
+        kontaktinfo.setReservert(reservert);
 
         when(dkifClient.hentKontaktInfo(FNR)).thenReturn(kontaktinfo);
     }
-
-    private void gittKRRFeil() {
-//        when(dkifClient.sjekkDkifRest(FNR)).thenReturn("{\n" +
-//                "  \"melding\": \"Tilgang nektet\"\n" +
-//                "}");
-    }
-
 
     private void gittYtelserMedStatus(String... statuser) throws Exception {
         WSHentYtelseskontraktListeRequest request = new WSHentYtelseskontraktListeRequest();
@@ -411,17 +413,14 @@ public class OppfolgingServiceTest {
                 .map((status) -> {
                     WSYtelseskontrakt ytelse = new WSYtelseskontrakt();
                     ytelse.setStatus(status);
+                    ytelse.setDatoKravMottatt(DateUtils.convertDateToXMLGregorianCalendar(LocalDate.now()));
                     return ytelse;
                 })
                 .collect(toList());
 
         response.getYtelseskontraktListe().addAll(ytelser);
 
-        when(ytelseskontraktV3.hentYtelseskontraktListe(request)).thenReturn(response);
+        when(ytelseskontraktClient.hentYtelseskontraktListe(FNR))
+                .thenReturn(YtelseskontraktMapper.tilYtelseskontrakt(response));
     }
-
-    private static Fnr fnr() {
-        return new Fnr(FNR);
-    }
-
 }
