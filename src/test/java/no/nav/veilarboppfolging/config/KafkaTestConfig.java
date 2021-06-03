@@ -1,6 +1,6 @@
 package no.nav.veilarboppfolging.config;
 
-import net.javacrumbs.shedlock.core.LockProvider;
+import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
 import no.nav.common.job.leader_election.LeaderElectionClient;
 import no.nav.common.kafka.consumer.KafkaConsumerClient;
 import no.nav.common.kafka.consumer.TopicConsumer;
@@ -23,15 +23,14 @@ import no.nav.veilarboppfolging.service.KafkaConsumerService;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.testcontainers.containers.KafkaContainer;
 import org.testcontainers.utility.DockerImageName;
 
 import javax.annotation.PostConstruct;
-import javax.sql.DataSource;
 import java.util.Map;
 import java.util.Properties;
 
@@ -45,50 +44,33 @@ public class KafkaTestConfig {
 
     public static final String KAFKA_IMAGE = "confluentinc/cp-kafka:5.4.3";
 
-    @Bean
-    public KafkaContainer kafkaContainer() {
-        KafkaContainer kafkaContainer = new KafkaContainer(DockerImageName.parse(KAFKA_IMAGE));
-        kafkaContainer.start();
-        return kafkaContainer;
-    }
+    private final KafkaContainer kafkaContainer;
 
-    @Autowired
-    KafkaConsumerClient consumerClient;
+    private final KafkaConsumerClient consumerClient;
 
-    @Autowired
-    KafkaConsumerRecordProcessor consumerRecordProcessor;
+    private final KafkaConsumerRecordProcessor consumerRecordProcessor;
 
-    @Autowired
-    KafkaProducerRecordProcessor producerRecordProcessor;
+    private final KafkaProducerRecordProcessor producerRecordProcessor;
 
+    private final KafkaProducerRecordStorage<String, String> producerRecordStorage;
 
-    @Bean
-    public KafkaConsumerRepository kafkaConsumerRepository(DataSource dataSource) {
-        return new OracleConsumerRepository(dataSource);
-    }
-
-    @Bean
-    public KafkaProducerRepository producerRepository(DataSource dataSource) {
-        return new OracleProducerRepository(dataSource);
-    }
-
-    @Bean
-    public Map<String, TopicConsumer<String, String>> topicConsumers(
-            KafkaConsumerService endringPaOppfolgingBrukerConsumerService,
+    public KafkaTestConfig(
+            LeaderElectionClient leaderElectionClient,
+            JdbcTemplate jdbcTemplate,
+            KafkaConsumerService kafkaConsumerService,
             KafkaProperties kafkaProperties
     ) {
-        return Map.of(
-                kafkaProperties.getEndringPaaOppfolgingBrukerTopic(),
-                jsonConsumer(VeilarbArenaOppfolgingEndret.class, endringPaOppfolgingBrukerConsumerService::consumeEndringPaOppfolgingBruker)
-        );
-    }
+        kafkaContainer = new KafkaContainer(DockerImageName.parse(KAFKA_IMAGE));
+        kafkaContainer.start();
 
-    @Bean
-    public KafkaConsumerClient consumerClient(
-            Map<String, TopicConsumer<String, String>> topicConsumers,
-            KafkaConsumerRepository kafkaConsumerRepository,
-            KafkaContainer kafkaContainer
-    ) {
+        KafkaConsumerRepository consumerRepository = new OracleConsumerRepository(jdbcTemplate.getDataSource());
+        KafkaProducerRepository producerRepository = new OracleProducerRepository(jdbcTemplate.getDataSource());
+
+        Map<String, TopicConsumer<String, String>> topicConsumers = Map.of(
+                kafkaProperties.getEndringPaaOppfolgingBrukerTopic(),
+                jsonConsumer(VeilarbArenaOppfolgingEndret.class, kafkaConsumerService::consumeEndringPaOppfolgingBruker)
+        );
+
         Properties properties = KafkaPropertiesBuilder.consumerBuilder()
                 .withBaseProperties(1000)
                 .withConsumerGroupId(CONSUMER_GROUP_ID)
@@ -96,55 +78,49 @@ public class KafkaTestConfig {
                 .withDeserializers(StringDeserializer.class, StringDeserializer.class)
                 .build();
 
-        return KafkaConsumerClientBuilder.<String, String>builder()
+        consumerClient = KafkaConsumerClientBuilder.<String, String>builder()
                 .withProperties(properties)
-                .withRepository(kafkaConsumerRepository)
+                .withRepository(consumerRepository)
                 .withSerializers(new StringSerializer(), new StringSerializer())
                 .withStoreOnFailureConsumers(topicConsumers)
                 .withLogging()
                 .build();
-    }
 
-    @Bean
-    public KafkaConsumerRecordProcessor consumerRecordProcessor(
-            LockProvider lockProvider,
-            KafkaConsumerRepository kafkaConsumerRepository,
-            Map<String, TopicConsumer<String, String>> topicConsumers
-    ) {
+
         Map<String, StoredRecordConsumer> storedRecordConsumers = ConsumerUtils.toStoredRecordConsumerMap(
                 topicConsumers,
                 new StringDeserializer(),
                 new StringDeserializer()
         );
 
-        return KafkaConsumerRecordProcessorBuilder
+        consumerRecordProcessor = KafkaConsumerRecordProcessorBuilder
                 .builder()
-                .withLockProvider(lockProvider)
-                .withKafkaConsumerRepository(kafkaConsumerRepository)
+                .withLockProvider(new JdbcTemplateLockProvider(jdbcTemplate))
+                .withKafkaConsumerRepository(consumerRepository)
                 .withRecordConsumers(storedRecordConsumers)
                 .build();
-    }
 
-    @Bean
-    public KafkaProducerRecordStorage<String, String> producerRecordStorage(KafkaProducerRepository kafkaProducerRepository) {
-        return new KafkaProducerRecordStorage<>(
-                kafkaProducerRepository,
+        producerRecordStorage = new KafkaProducerRecordStorage<>(
+                producerRepository,
                 new StringSerializer(),
                 new StringSerializer()
         );
-    }
 
-    @Bean
-    public KafkaProducerRecordProcessor producerRecordProcessor(
-            LeaderElectionClient leaderElectionClient,
-            KafkaProducerRepository producerRepository,
-            KafkaContainer kafkaContainer
-    ) {
         KafkaProducerClient<byte[], byte[]> producerClient = KafkaProducerClientBuilder.<byte[], byte[]>builder()
                 .withProperties(producerProperties(kafkaContainer))
                 .build();
 
-        return new KafkaProducerRecordProcessor(producerRepository, producerClient, leaderElectionClient);
+        producerRecordProcessor = new KafkaProducerRecordProcessor(producerRepository, producerClient, leaderElectionClient);
+    }
+
+    @Bean
+    public KafkaContainer kafkaContainer() {
+        return kafkaContainer;
+    }
+
+    @Bean
+    public KafkaProducerRecordStorage<String, String> producerRecordStorage() {
+        return producerRecordStorage;
     }
 
     private Properties producerProperties(KafkaContainer kafkaContainer) {

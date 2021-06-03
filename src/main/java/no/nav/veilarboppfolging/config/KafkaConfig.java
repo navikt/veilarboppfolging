@@ -1,7 +1,7 @@
 package no.nav.veilarboppfolging.config;
 
 import io.micrometer.core.instrument.MeterRegistry;
-import net.javacrumbs.shedlock.core.LockProvider;
+import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
 import no.nav.common.job.leader_election.LeaderElectionClient;
 import no.nav.common.kafka.consumer.KafkaConsumerClient;
 import no.nav.common.kafka.consumer.TopicConsumer;
@@ -18,24 +18,22 @@ import no.nav.common.kafka.producer.feilhandtering.KafkaProducerRecordStorage;
 import no.nav.common.kafka.producer.feilhandtering.KafkaProducerRepository;
 import no.nav.common.kafka.producer.feilhandtering.OracleProducerRepository;
 import no.nav.common.kafka.producer.util.KafkaProducerClientBuilder;
-import no.nav.common.kafka.util.KafkaPropertiesBuilder;
 import no.nav.common.utils.Credentials;
 import no.nav.veilarboppfolging.domain.kafka.VeilarbArenaOppfolgingEndret;
 import no.nav.veilarboppfolging.service.KafkaConsumerService;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.annotation.PostConstruct;
-import javax.sql.DataSource;
 import java.util.Map;
-import java.util.Properties;
 
 import static no.nav.common.kafka.consumer.util.ConsumerUtils.jsonConsumer;
 import static no.nav.common.kafka.util.KafkaPropertiesPreset.onPremByteProducerProperties;
+import static no.nav.common.kafka.util.KafkaPropertiesPreset.onPremDefaultConsumerProperties;
 
 
 @Configuration
@@ -45,106 +43,69 @@ public class KafkaConfig {
     public final static String CONSUMER_GROUP_ID = "veilarboppfolging-consumer";
     public final static String PRODUCER_CLIENT_ID = "veilarboppfolging-producer";
 
-    @Autowired
-    KafkaConsumerClient consumerClient;
+    private final KafkaConsumerClient consumerClient;
 
-    @Autowired
-    KafkaConsumerRecordProcessor consumerRecordProcessor;
+    private final KafkaConsumerRecordProcessor consumerRecordProcessor;
 
-    @Autowired
-    KafkaProducerRecordProcessor producerRecordProcessor;
+    private final KafkaProducerRecordProcessor producerRecordProcessor;
 
+    private final KafkaProducerRecordStorage<String, String> producerRecordStorage;
 
-    @Bean
-    public KafkaConsumerRepository kafkaConsumerRepository(DataSource dataSource) {
-        return new OracleConsumerRepository(dataSource);
-    }
-
-    @Bean
-    public KafkaProducerRepository producerRepository(DataSource dataSource) {
-        return new OracleProducerRepository(dataSource);
-    }
-
-    @Bean
-    public Map<String, TopicConsumer<String, String>> topicConsumers(
-            KafkaConsumerService endringPaOppfolgingBrukerConsumerService,
-            KafkaProperties kafkaProperties
-    ) {
-        return Map.of(
-                kafkaProperties.getEndringPaaOppfolgingBrukerTopic(),
-                jsonConsumer(VeilarbArenaOppfolgingEndret.class, endringPaOppfolgingBrukerConsumerService::consumeEndringPaOppfolgingBruker)
-        );
-    }
-
-    @Bean
-    public KafkaConsumerClient consumerClient(
-            Map<String, TopicConsumer<String, String>> topicConsumers,
-            KafkaConsumerRepository kafkaConsumerRepository,
-            Credentials credentials,
+    public KafkaConfig(
+            LeaderElectionClient leaderElectionClient,
+            JdbcTemplate jdbcTemplate,
+            KafkaConsumerService kafkaConsumerService,
             KafkaProperties kafkaProperties,
+            Credentials credentials,
             MeterRegistry meterRegistry
     ) {
-        Properties properties = KafkaPropertiesBuilder.consumerBuilder()
-                .withBaseProperties(1000)
-                .withConsumerGroupId(CONSUMER_GROUP_ID)
-                .withBrokerUrl(kafkaProperties.getBrokersUrl())
-                .withOnPremAuth(credentials)
-                .withDeserializers(StringDeserializer.class, StringDeserializer.class)
-                .build();
+        KafkaConsumerRepository consumerRepository = new OracleConsumerRepository(jdbcTemplate.getDataSource());
+        KafkaProducerRepository producerRepository = new OracleProducerRepository(jdbcTemplate.getDataSource());
 
-        return KafkaConsumerClientBuilder.<String, String>builder()
-                .withProperties(properties)
-                .withRepository(kafkaConsumerRepository)
+        Map<String, TopicConsumer<String, String>> topicConsumers = Map.of(
+                kafkaProperties.getEndringPaaOppfolgingBrukerTopic(),
+                jsonConsumer(VeilarbArenaOppfolgingEndret.class, kafkaConsumerService::consumeEndringPaOppfolgingBruker)
+        );
+
+        consumerClient = KafkaConsumerClientBuilder.<String, String>builder()
+                .withProperties(onPremDefaultConsumerProperties(CONSUMER_GROUP_ID, kafkaProperties.getBrokersUrl(), credentials))
+                .withRepository(consumerRepository)
                 .withSerializers(new StringSerializer(), new StringSerializer())
                 .withStoreOnFailureConsumers(topicConsumers)
                 .withMetrics(meterRegistry)
                 .withLogging()
                 .build();
-    }
 
-    @Bean
-    public KafkaConsumerRecordProcessor consumerRecordProcessor(
-            LockProvider lockProvider,
-            KafkaConsumerRepository kafkaConsumerRepository,
-            Map<String, TopicConsumer<String, String>> topicConsumers
-    ) {
         Map<String, StoredRecordConsumer> storedRecordConsumers = ConsumerUtils.toStoredRecordConsumerMap(
                 topicConsumers,
                 new StringDeserializer(),
                 new StringDeserializer()
         );
 
-        return KafkaConsumerRecordProcessorBuilder
+        consumerRecordProcessor = KafkaConsumerRecordProcessorBuilder
                 .builder()
-                .withLockProvider(lockProvider)
-                .withKafkaConsumerRepository(kafkaConsumerRepository)
+                .withLockProvider(new JdbcTemplateLockProvider(jdbcTemplate))
+                .withKafkaConsumerRepository(consumerRepository)
                 .withRecordConsumers(storedRecordConsumers)
                 .build();
-    }
 
-    @Bean
-    public KafkaProducerRecordStorage<String, String> producerRecordStorage(KafkaProducerRepository kafkaProducerRepository) {
-        return new KafkaProducerRecordStorage<>(
-                kafkaProducerRepository,
+        producerRecordStorage = new KafkaProducerRecordStorage<>(
+                producerRepository,
                 new StringSerializer(),
                 new StringSerializer()
         );
-    }
 
-    @Bean
-    public KafkaProducerRecordProcessor producerRecordProcessor(
-            LeaderElectionClient leaderElectionClient,
-            KafkaProperties kafkaProperties,
-            KafkaProducerRepository producerRepository,
-            Credentials credentials,
-            MeterRegistry meterRegistry
-    ) {
         KafkaProducerClient<byte[], byte[]> producerClient = KafkaProducerClientBuilder.<byte[], byte[]>builder()
                 .withProperties(onPremByteProducerProperties(PRODUCER_CLIENT_ID, kafkaProperties.getBrokersUrl(), credentials))
                 .withMetrics(meterRegistry)
                 .build();
 
-        return new KafkaProducerRecordProcessor(producerRepository, producerClient, leaderElectionClient);
+        producerRecordProcessor = new KafkaProducerRecordProcessor(producerRepository, producerClient, leaderElectionClient);
+    }
+
+    @Bean
+    public KafkaProducerRecordStorage<String, String> producerRecordProcessor() {
+        return producerRecordStorage;
     }
 
     @PostConstruct
