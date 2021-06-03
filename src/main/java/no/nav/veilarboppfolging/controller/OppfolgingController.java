@@ -14,7 +14,6 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static no.nav.veilarboppfolging.utils.DtoMappers.tilDto;
 import static no.nav.veilarboppfolging.utils.DtoMappers.*;
 
 @RequestMapping("/api/oppfolging")

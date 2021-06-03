@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.3.0.RELEASE</version>
+        <version>2.5.0</version>
         <relativePath/>
     </parent>
 
@@ -19,7 +19,7 @@
 
     <properties>
         <java.version>11</java.version>
-        <common.version>2.2021.04.20_08.12-16c57e1be991</common.version>
+        <common.version>2.2021.06.02_14.36-b9fcb1c8ae0b</common.version>
         <springfox.version>2.9.2</springfox.version>
         <tjenestespesifikasjoner.version>1.2019.04.03-23.09-56488320520a</tjenestespesifikasjoner.version>
         <testcontainers.version>1.15.2</testcontainers.version>
@@ -123,13 +123,6 @@
             <groupId>net.javacrumbs.shedlock</groupId>
             <artifactId>shedlock-provider-jdbc-template</artifactId>
             <version>4.21.0</version>
-        </dependency>
-
-        <!--  Overskriv gammel avhengighet fra nimbus -->
-        <dependency>
-            <groupId>net.minidev</groupId>
-            <artifactId>json-smart</artifactId>
-            <version>2.3</version>
         </dependency>
 
         <!-- Tjenestespesifikasjoner -->

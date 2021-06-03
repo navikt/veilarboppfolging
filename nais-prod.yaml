@@ -36,6 +36,8 @@ spec:
   envFrom:
     - configmap: pto-config
     - configmap: loginservice-idporten
+  kafka:
+    pool: nav-prod
   vault:
     enabled: true
     paths:

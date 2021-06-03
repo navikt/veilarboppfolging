@@ -1,7 +1,9 @@
 package no.nav.veilarboppfolging.utils;
 
+import no.nav.common.types.identer.AktorId;
 import no.nav.veilarboppfolging.controller.domain.*;
 import no.nav.veilarboppfolging.domain.*;
+import no.nav.veilarboppfolging.domain.kafka.OppfolgingsperiodeKafkaDto;
 
 import java.util.Collections;
 import java.util.Optional;
@@ -97,12 +99,20 @@ public class DtoMappers {
         return periode;
     }
 
+    public static OppfolgingsperiodeKafkaDto tilOppfolgingsperiodeKafkaDto(Oppfolgingsperiode oppfolgingsperiode) {
+        return new OppfolgingsperiodeKafkaDto(
+                oppfolgingsperiode.getUuid(),
+                AktorId.of(oppfolgingsperiode.getAktorId()),
+                oppfolgingsperiode.getStartDato(),
+                oppfolgingsperiode.getSluttDato()
+        );
+    }
+
     public static OppfolgingPeriodeMinimalDTO tilOppfolgingPeriodeMinimalDTO(Oppfolgingsperiode oppfolgingsperiode) {
         return new OppfolgingPeriodeMinimalDTO()
                 .setUuid(oppfolgingsperiode.getUuid())
                 .setSluttDato(oppfolgingsperiode.getSluttDato())
                 .setStartDato(oppfolgingsperiode.getStartDato());
-
     }
 
     public static KvpPeriodeDTO tilDTO(Kvp kvp) {

@@ -10,6 +10,8 @@ import no.nav.veilarboppfolging.controller.domain.UnderOppfolgingDTO;
 import no.nav.veilarboppfolging.domain.*;
 import no.nav.veilarboppfolging.repository.*;
 import no.nav.veilarboppfolging.utils.ArenaUtils;
+import no.nav.veilarboppfolging.utils.DtoMappers;
+import no.nav.veilarboppfolging.utils.OppfolgingsperiodeUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
@@ -420,11 +422,11 @@ public class OppfolgingService {
         oppfolgingsPeriodeRepository.start(aktorId);
         nyeBrukereFeedRepository.leggTil(oppfolgingsbruker);
 
-        Oppfolgingsperiode gjeldende =
-                oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId)
-                .orElseThrow(() -> new IllegalStateException("Forventet å finne oppfølging etter start av oppfølging"));
+        List<Oppfolgingsperiode> perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId);
+        Oppfolgingsperiode sistePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(perioder);
 
-        kafkaProducerService.publiserOppfolgingStartet(aktorId, gjeldende.getStartDato());
+        kafkaProducerService.publiserSisteOppfolgingsperiode(DtoMappers.tilOppfolgingsperiodeKafkaDto(sistePeriode));
+        kafkaProducerService.publiserOppfolgingStartet(aktorId, sistePeriode.getStartDato());
     }
 
     private List<Oppfolgingsperiode> populerKvpPerioder(List<Oppfolgingsperiode> oppfolgingsPerioder, List<Kvp> kvpPerioder) {
@@ -548,6 +550,11 @@ public class OppfolgingService {
         eskaleringService.stoppEskaleringForAvsluttOppfolging(aktorId, brukerIdent, begrunnelse);
 
         oppfolgingsPeriodeRepository.avslutt(aktorId, veilederId, begrunnelse);
+
+        List<Oppfolgingsperiode> perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId);
+        Oppfolgingsperiode sistePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(perioder);
+
+        kafkaProducerService.publiserSisteOppfolgingsperiode(DtoMappers.tilOppfolgingsperiodeKafkaDto(sistePeriode));
         kafkaProducerService.publiserOppfolgingAvsluttet(aktorId);
     }
 

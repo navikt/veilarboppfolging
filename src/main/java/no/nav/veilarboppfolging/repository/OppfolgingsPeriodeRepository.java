@@ -11,13 +11,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
+import static java.lang.String.format;
 import static no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository.AKTOR_ID;
 import static no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository.UNDER_OPPFOLGING;
 import static no.nav.veilarboppfolging.utils.DbUtils.hentZonedDateTime;
-import static no.nav.veilarboppfolging.utils.DbUtils.queryForNullableObject;
 
 @Repository
 public class OppfolgingsPeriodeRepository {
@@ -45,6 +44,11 @@ public class OppfolgingsPeriodeRepository {
         avsluttOppfolging(aktorId);
     }
 
+    public List<String> hentUnikeBrukerePage(int offset, int pageSize) {
+        String sql = format("SELECT DISTINCT aktor_id FROM OPPFOLGINGSPERIODE ORDER BY aktor_id OFFSET %d FETCH NEXT %d ROWS ONLY", offset, pageSize);
+        return db.query(sql, (rs, rowNum) -> rs.getString("aktor_id"));
+    }
+
     public List<AvsluttetOppfolgingFeedData> fetchAvsluttetEtterDato(Timestamp timestamp, int pageSize) {
         return db
                 .query("SELECT * FROM (SELECT aktor_id, sluttdato, oppdatert " +
@@ -61,18 +65,6 @@ public class OppfolgingsPeriodeRepository {
                         "WHERE UUID = ?",
                 OppfolgingsPeriodeRepository::mapTilOppfolgingsperiode,
                 uuid
-        );
-    }
-
-    public Optional<Oppfolgingsperiode> hentGjeldendeOppfolgingsperiode(String aktorId) {
-        return queryForNullableObject(
-                db,
-                hentOppfolingsperioderSQL +
-                        "WHERE aktor_id = ? AND sluttdato IS NULL " +
-                        "ORDER BY startdato DESC " +
-                        "FETCH NEXT 1 ROWS ONLY",
-                OppfolgingsPeriodeRepository::mapTilOppfolgingsperiode,
-                aktorId
         );
     }
 

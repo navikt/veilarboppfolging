@@ -1,56 +1,50 @@
 package no.nav.veilarboppfolging.repository;
 
-import no.nav.veilarboppfolging.domain.Oppfolgingsperiode;
-import no.nav.veilarboppfolging.test.IsolatedDatabaseTest;
+import no.nav.veilarboppfolging.test.DbTestUtils;
+import no.nav.veilarboppfolging.test.LocalH2Database;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.jdbc.core.JdbcTemplate;
 
-import java.time.ZonedDateTime;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
-public class OppfolgingsPeriodeRepositoryTest extends IsolatedDatabaseTest {
+public class OppfolgingsPeriodeRepositoryTest {
 
-    private OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
-    private OppfolgingsStatusRepository oppfolgingsStatusRepository;
+    private final JdbcTemplate jdbcTemplate = LocalH2Database.getDb();
+
+    private final OppfolgingsStatusRepository oppfolgingsStatusRepository = new OppfolgingsStatusRepository(jdbcTemplate);
+
+    private final OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository = new OppfolgingsPeriodeRepository(jdbcTemplate);
 
     @Before
-    public void setup() {
-        oppfolgingsPeriodeRepository = new OppfolgingsPeriodeRepository(db);
-        oppfolgingsStatusRepository = new OppfolgingsStatusRepository(db);
+    public void cleanup() {
+        DbTestUtils.cleanupTestDb();
     }
 
     @Test
-    public void skal_hente_siste_gjeldende_oppfolgingsperiode() {
-        String aktorId = "123";
-        ZonedDateTime now = ZonedDateTime.now();
-        UUID forventetPeriodeUUID = UUID.randomUUID();
-        oppfolgingsStatusRepository.opprettOppfolging(aktorId);
-        insertOppfolgingsperiode(UUID.randomUUID(), aktorId, now.minusDays(10), now.minusDays(9));
-        insertOppfolgingsperiode(forventetPeriodeUUID,aktorId, now.minusDays(3).plusMinutes(2), null);
-        insertOppfolgingsperiode(UUID.randomUUID(),aktorId, now.minusDays(3), null);
-        insertOppfolgingsperiode(UUID.randomUUID(),aktorId, now.minusDays(12), now.minusDays(11));
+    public void hentUnikeBrukerePage__skal_hente_page_med_unike_brukere() {
+        String aktorId1 = "aktorId1";
+        String aktorId2 = "aktorId2";
+        String aktorId3 = "aktorId3";
 
-        Optional<Oppfolgingsperiode> gjeldendeOppfolgingsperiode =
-                oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId);
+        oppfolgingsStatusRepository.opprettOppfolging(aktorId1);
+        oppfolgingsStatusRepository.opprettOppfolging(aktorId2);
+        oppfolgingsStatusRepository.opprettOppfolging(aktorId3);
 
-        assertTrue("Skal ha gjeldende oppfølgingsperiode", gjeldendeOppfolgingsperiode.isPresent());
-        assertEquals(forventetPeriodeUUID, gjeldendeOppfolgingsperiode.get().getUuid());
-        assertEquals(now.minusDays(3).plusMinutes(2), gjeldendeOppfolgingsperiode.get().getStartDato());
+        oppfolgingsPeriodeRepository.start(aktorId1);
+        oppfolgingsPeriodeRepository.start(aktorId2);
+        oppfolgingsPeriodeRepository.start(aktorId3);
 
+        List<String> unikeBrukerePage1 = oppfolgingsPeriodeRepository.hentUnikeBrukerePage(0, 1);
+        assertEquals(1, unikeBrukerePage1.size());
+        assertEquals(aktorId1, unikeBrukerePage1.get(0));
+
+        List<String> unikeBrukerePage2 = oppfolgingsPeriodeRepository.hentUnikeBrukerePage(1, 2);
+        assertEquals(2, unikeBrukerePage2.size());
+        assertEquals(aktorId2, unikeBrukerePage2.get(0));
+        assertEquals(aktorId3, unikeBrukerePage2.get(1));
     }
 
-    private void insertOppfolgingsperiode(UUID uuid, String aktorId, ZonedDateTime startDato, ZonedDateTime sluttDato) {
-        db.update(
-                "INSERT INTO OPPFOLGINGSPERIODE(uuid, aktor_id, startDato, sluttDato, oppdatert) " +
-                        "VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)",
-                uuid.toString(),
-                aktorId,
-                startDato,
-                sluttDato
-        );
-    }
 }
