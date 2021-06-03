@@ -62,7 +62,7 @@ public class KafkaRepubliseringService {
 
             log.info("Republiserer tilordnet veileder. CurrentOffset={} BatchSize={}", currentOffset, unikeAktorIder.size());
 
-            unikeAktorIder.forEach(this::republiseTilordnetVeilederForBruker);
+            unikeAktorIder.forEach(this::republiserSisteTilordnetVeilederForBruker);
         }
     }
 
@@ -80,10 +80,15 @@ public class KafkaRepubliseringService {
         kafkaProducerService.publiserSisteOppfolgingsperiode(kafkaDto);
     }
 
-    private void republiseTilordnetVeilederForBruker(String aktorId) {
+    private void republiserSisteTilordnetVeilederForBruker(String aktorId) {
         Optional<Tilordning> maybeTilordning = veilederTilordningerRepository.hentTilordnetVeileder(aktorId);
 
         maybeTilordning.ifPresent(tilordning -> {
+            // Skal ikke publisere for brukere som ikke har fått veileder
+            if (tilordning.getVeilederId() == null) {
+                return;
+            }
+
             var dto = DtoMappers.tilSisteTilordnetVeilederKafkaDTO(tilordning);
             kafkaProducerService.publiserSisteTilordnetVeileder(dto);
         });
