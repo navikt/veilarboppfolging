@@ -36,6 +36,8 @@ spec:
   envFrom:
     - configmap: pto-config
     - configmap: loginservice-idporten
+  kafka:
+    pool: nav-prod
   vault:
     enabled: true
     paths:
@@ -74,7 +76,3 @@ spec:
       value: aapen-arbeidsrettetOppfolging-endringPaNyForVeileder-v1-p
     - name: ENDRING_PA_MAL_TOPIC
       value: aapen-arbeidsrettetOppfolging-endringPaMal-v1-p
-    - name: SISTE_OPPFOLGINGSPERIODE_TOPIC
-      value: arbeidsrettetOppfolging-siste-oppfolgingsperiode-v1-prod
-    - name: SISTE_VEILEDER_TILORDNET_TOPIC
-      value: arbeidsrettetOppfolging-siste-veileder-tilordnet-v1-prod

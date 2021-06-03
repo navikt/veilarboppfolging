@@ -168,26 +168,27 @@ public class VeilederTilordningService {
             veilederTilordningerRepository.upsertVeilederTilordning(aktorId, veilederId);
             veilederHistorikkRepository.insertTilordnetVeilederForAktorId(aktorId, veilederId);
             oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(aktorId);
+
+            log.debug(String.format("Veileder %s tilordnet aktoer %s", veilederId, aktorId));
+
+            Optional<Tilordning> maybeTilordning = veilederTilordningerRepository.hentTilordnetVeileder(aktorId);
+
+            maybeTilordning.ifPresentOrElse(tilordning -> {
+                var dto = DtoMappers.tilSisteVeilederTilordnetKafkaDTO(tilordning);
+                kafkaProducerService.publiserSisteVeilederTilordnet(dto);
+            }, () -> log.error("Fant ikke tilordning til nylig tilordnet veileder. AktorId={} VeilederId={}", aktorId, veilederId));
+
+            kafkaProducerService.publiserEndringPaNyForVeileder(aktorId, true);
+            kafkaProducerService.publiserVeilederTilordnet(aktorId, veilederId);
         });
-
-        log.debug(String.format("Veileder %s tilordnet aktoer %s", veilederId, aktorId));
-
-        Optional<Tilordning> maybeTilordning = veilederTilordningerRepository.hentTilordnetVeileder(aktorId);
-
-        maybeTilordning.ifPresentOrElse(tilordning -> {
-            var dto = DtoMappers.tilSisteVeilederTilordnetKafkaDTO(tilordning);
-            kafkaProducerService.publiserSisteVeilederTilordnet(dto);
-        }, () -> log.error("Fant ikke tilordning til nylig tilordnet veileder. AktorId={} VeilederId={}", aktorId, veilederId));
-
-        kafkaProducerService.publiserEndringPaNyForVeileder(aktorId, true);
-        kafkaProducerService.publiserVeilederTilordnet(aktorId, veilederId);
     }
 
     static boolean kanTilordneVeileder(String eksisterendeVeileder, VeilederTilordning veilederTilordning) {
         return eksisterendeVeileder == null || validerVeilederTilordning(eksisterendeVeileder, veilederTilordning);
     }
 
-    private static boolean validerVeilederTilordning(String eksisterendeVeileder, VeilederTilordning veilederTilordning) {
+    private static boolean validerVeilederTilordning(String eksisterendeVeileder, VeilederTilordning
+            veilederTilordning) {
         return eksisterendeVeilederErSammeSomFra(eksisterendeVeileder, veilederTilordning.getFraVeilederId()) &&
                 tildelesTilAnnenVeileder(eksisterendeVeileder, veilederTilordning.getTilVeilederId());
     }

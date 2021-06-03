@@ -22,9 +22,11 @@ public class KafkaProducerService {
     private final KafkaProperties kafkaProperties;
 
     @Autowired
-    public KafkaProducerService(AuthContextHolder authContextHolder,
-                                KafkaProducerRecordStorage<String, String> producerRecordStorage,
-                                KafkaProperties kafkaProperties) {
+    public KafkaProducerService(
+            AuthContextHolder authContextHolder,
+            KafkaProducerRecordStorage<String, String> producerRecordStorage,
+            KafkaProperties kafkaProperties
+    ) {
         this.authContextHolder = authContextHolder;
         this.producerRecordStorage = producerRecordStorage;
         this.kafkaProperties = kafkaProperties;
@@ -35,7 +37,7 @@ public class KafkaProducerService {
     }
 
     public void publiserSisteVeilederTilordnet(SisteVeilederTilordnetKafkaDTO dto) {
-        store(kafkaProperties.getSisteVeilederTilordnetTopic(), dto.getAktorId().get(), dto);
+        store(kafkaProperties.getSisteTilordnetVeilederTopic(), dto.getAktorId().get(), dto);
     }
 
     public void publiserEndringPaManuellStatus(String aktorId, boolean erManuell) {
@@ -53,8 +55,8 @@ public class KafkaProducerService {
         store(kafkaProperties.getVeilederTilordnetTopic(), aktorId, dto);
     }
 
-    public void publiserOppfolgingStartet(String aktorId) {
-        OppfolgingStartetKafkaDTO dto = new OppfolgingStartetKafkaDTO(aktorId, ZonedDateTime.now());
+    public void publiserOppfolgingStartet(String aktorId, ZonedDateTime oppfolgingStartet) {
+        OppfolgingStartetKafkaDTO dto = new OppfolgingStartetKafkaDTO(aktorId, oppfolgingStartet);
         store(kafkaProperties.getOppfolgingStartetTopic(), aktorId, dto);
     }
 

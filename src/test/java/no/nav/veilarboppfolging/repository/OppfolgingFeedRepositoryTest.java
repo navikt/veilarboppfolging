@@ -116,7 +116,7 @@ public class OppfolgingFeedRepositoryTest {
     }
 
     @Test
-    public void hentOppfolgingsperiode_periodeFinnes_skalKasteException() {
+    public void hentOppfolgingsperiode_periodeFinnes() {
         String aktorId = randomNumeric(10);
         oppfolgingsStatusRepository.opprettOppfolging(aktorId);
         oppfolgingsPeriodeRepository.start(aktorId);
@@ -133,16 +133,16 @@ public class OppfolgingFeedRepositoryTest {
     }
 
     @Test
-    public void hentOppfolgingsperiode_flerePerioder_skalKasteException() {
+    public void hentOppfolgingsperiode_flerePerioder() {
         String aktorId = randomNumeric(10);
         oppfolgingsStatusRepository.opprettOppfolging(aktorId);
         oppfolgingsPeriodeRepository.start(aktorId);
         oppfolgingsPeriodeRepository.avslutt(aktorId, "V123", "Fordi atte");
         oppfolgingsPeriodeRepository.start(aktorId);
 
-        var ikkeAvsluttetPeriode = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId).stream().filter(x -> x.getSluttDato() != null);
+        var avsluttetPeriode = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId).stream().filter(x -> x.getSluttDato() != null);
 
-        var eldstePeriode = ikkeAvsluttetPeriode.findFirst().orElse(null);
+        var eldstePeriode = avsluttetPeriode.findFirst().orElse(null);
 
         var periode = oppfolgingsPeriodeRepository.hentOppfolgingsperiode(eldstePeriode.getUuid().toString());
 

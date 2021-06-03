@@ -20,5 +20,5 @@ public class KafkaProperties {
     String endringPaNyForVeilederTopic;
     String endringPaMalTopic;
     String sisteOppfolgingsperiodeTopic;
-    String sisteVeilederTilordnetTopic;
+    String sisteTilordnetVeilederTopic;
 }

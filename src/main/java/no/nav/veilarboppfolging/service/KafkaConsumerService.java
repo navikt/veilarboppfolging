@@ -8,6 +8,7 @@ import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.UserRole;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.veilarboppfolging.domain.kafka.VeilarbArenaOppfolgingEndret;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -46,8 +47,9 @@ public class KafkaConsumerService {
     }
 
     @SneakyThrows
-    public void consumeEndringPaOppfolgingBruker(VeilarbArenaOppfolgingEndret kafkaMelding) {
+    public void consumeEndringPaOppfolgingBruker(ConsumerRecord<String, VeilarbArenaOppfolgingEndret> kafkaMelding) {
         try {
+            VeilarbArenaOppfolgingEndret oppfolgingEndret = kafkaMelding.value();
 
             var context = new AuthContext(
                     UserRole.SYSTEM,
@@ -55,9 +57,9 @@ public class KafkaConsumerService {
             );
 
             authContextHolder.withContext(context, () -> {
-                kvpService.avsluttKvpVedEnhetBytte(kafkaMelding);
-                iservService.behandleEndretBruker(kafkaMelding);
-                oppfolgingsenhetEndringService.behandleBrukerEndring(kafkaMelding);
+                kvpService.avsluttKvpVedEnhetBytte(oppfolgingEndret);
+                iservService.behandleEndretBruker(oppfolgingEndret);
+                oppfolgingsenhetEndringService.behandleBrukerEndring(oppfolgingEndret);
             });
         } catch (Throwable t) {
             log.error("Feilet ved behandling av kafka-melding for endring på oppfølgingsbruker:\n{}", t.getMessage(), t);
