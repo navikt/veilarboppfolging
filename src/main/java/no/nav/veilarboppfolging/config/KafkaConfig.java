@@ -29,8 +29,7 @@ import javax.annotation.PostConstruct;
 import java.util.List;
 
 import static no.nav.common.kafka.consumer.util.ConsumerUtils.findConsumerConfigsWithStoreOnFailure;
-import static no.nav.common.kafka.util.KafkaPropertiesPreset.onPremByteProducerProperties;
-import static no.nav.common.kafka.util.KafkaPropertiesPreset.onPremDefaultConsumerProperties;
+import static no.nav.common.kafka.util.KafkaPropertiesPreset.*;
 
 
 @Configuration
@@ -44,9 +43,12 @@ public class KafkaConfig {
 
     private final KafkaConsumerRecordProcessor consumerRecordProcessor;
 
-    private final KafkaProducerRecordProcessor producerRecordProcessor;
+    private final KafkaProducerRecordProcessor onPremProducerRecordProcessor;
+
+    private final KafkaProducerRecordProcessor aivenProducerRecordProcessor;
 
     private final KafkaProducerRecordStorage<String, String> producerRecordStorage;
+
 
     public KafkaConfig(
             LeaderElectionClient leaderElectionClient,
@@ -90,12 +92,39 @@ public class KafkaConfig {
                 new StringSerializer()
         );
 
-        KafkaProducerClient<byte[], byte[]> producerClient = KafkaProducerClientBuilder.<byte[], byte[]>builder()
+        KafkaProducerClient<byte[], byte[]> onPremProducerClient = KafkaProducerClientBuilder.<byte[], byte[]>builder()
                 .withProperties(onPremByteProducerProperties(PRODUCER_CLIENT_ID, kafkaProperties.getBrokersUrl(), credentials))
                 .withMetrics(meterRegistry)
                 .build();
 
-        producerRecordProcessor = new KafkaProducerRecordProcessor(producerRepository, producerClient, leaderElectionClient);
+        onPremProducerRecordProcessor = new KafkaProducerRecordProcessor(
+                producerRepository,
+                onPremProducerClient,
+                leaderElectionClient,
+                List.of(
+                        kafkaProperties.getEndringPaManuellStatusTopic(),
+                        kafkaProperties.getEndringPaNyForVeilederTopic(),
+                        kafkaProperties.getVeilederTilordnetTopic(),
+                        kafkaProperties.getOppfolgingStartetTopic(),
+                        kafkaProperties.getOppfolgingAvsluttetTopic(),
+                        kafkaProperties.getEndringPaaAvsluttOppfolgingTopic(),
+                        kafkaProperties.getKvpStartetTopic(),
+                        kafkaProperties.getKvpAvlsuttetTopic(),
+                        kafkaProperties.getEndringPaMalTopic()
+                )
+        );
+
+        KafkaProducerClient<byte[], byte[]> aivenProducerClient = KafkaProducerClientBuilder.<byte[], byte[]>builder()
+                .withProperties(aivenByteProducerProperties(PRODUCER_CLIENT_ID))
+                .withMetrics(meterRegistry)
+                .build();
+
+        aivenProducerRecordProcessor = new KafkaProducerRecordProcessor(
+                producerRepository,
+                aivenProducerClient,
+                leaderElectionClient,
+                List.of(kafkaProperties.getSisteOppfolgingsperiodeTopic())
+        );
     }
 
     @Bean
@@ -107,6 +136,7 @@ public class KafkaConfig {
     public void start() {
         consumerClient.start();
         consumerRecordProcessor.start();
-        producerRecordProcessor.start();
+        onPremProducerRecordProcessor.start();
+        aivenProducerRecordProcessor.start();
     }
 }
