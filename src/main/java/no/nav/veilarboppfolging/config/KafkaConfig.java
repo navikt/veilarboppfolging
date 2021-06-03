@@ -4,14 +4,12 @@ import io.micrometer.core.instrument.MeterRegistry;
 import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
 import no.nav.common.job.leader_election.LeaderElectionClient;
 import no.nav.common.kafka.consumer.KafkaConsumerClient;
-import no.nav.common.kafka.consumer.TopicConsumer;
 import no.nav.common.kafka.consumer.feilhandtering.KafkaConsumerRecordProcessor;
 import no.nav.common.kafka.consumer.feilhandtering.KafkaConsumerRepository;
 import no.nav.common.kafka.consumer.feilhandtering.OracleConsumerRepository;
-import no.nav.common.kafka.consumer.feilhandtering.StoredRecordConsumer;
 import no.nav.common.kafka.consumer.feilhandtering.util.KafkaConsumerRecordProcessorBuilder;
-import no.nav.common.kafka.consumer.util.ConsumerUtils;
 import no.nav.common.kafka.consumer.util.KafkaConsumerClientBuilder;
+import no.nav.common.kafka.consumer.util.deserializer.Deserializers;
 import no.nav.common.kafka.producer.KafkaProducerClient;
 import no.nav.common.kafka.producer.feilhandtering.KafkaProducerRecordProcessor;
 import no.nav.common.kafka.producer.feilhandtering.KafkaProducerRecordStorage;
@@ -21,7 +19,6 @@ import no.nav.common.kafka.producer.util.KafkaProducerClientBuilder;
 import no.nav.common.utils.Credentials;
 import no.nav.veilarboppfolging.domain.kafka.VeilarbArenaOppfolgingEndret;
 import no.nav.veilarboppfolging.service.KafkaConsumerService;
-import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -29,9 +26,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.annotation.PostConstruct;
-import java.util.Map;
+import java.util.List;
 
-import static no.nav.common.kafka.consumer.util.ConsumerUtils.jsonConsumer;
+import static no.nav.common.kafka.consumer.util.ConsumerUtils.findConsumerConfigsWithStoreOnFailure;
 import static no.nav.common.kafka.util.KafkaPropertiesPreset.onPremByteProducerProperties;
 import static no.nav.common.kafka.util.KafkaPropertiesPreset.onPremDefaultConsumerProperties;
 
@@ -62,31 +59,29 @@ public class KafkaConfig {
         KafkaConsumerRepository consumerRepository = new OracleConsumerRepository(jdbcTemplate.getDataSource());
         KafkaProducerRepository producerRepository = new OracleProducerRepository(jdbcTemplate.getDataSource());
 
-        Map<String, TopicConsumer<String, String>> topicConsumers = Map.of(
-                kafkaProperties.getEndringPaaOppfolgingBrukerTopic(),
-                jsonConsumer(VeilarbArenaOppfolgingEndret.class, kafkaConsumerService::consumeEndringPaOppfolgingBruker)
+        List<KafkaConsumerClientBuilder.TopicConfig<?, ?>> topicConfigs = List.of(
+                new KafkaConsumerClientBuilder.TopicConfig<String, VeilarbArenaOppfolgingEndret>()
+                        .withLogging()
+                        .withMetrics(meterRegistry)
+                        .withStoreOnFailure(consumerRepository)
+                        .withConsumerConfig(
+                                kafkaProperties.getEndringPaaOppfolgingBrukerTopic(),
+                                Deserializers.stringDeserializer(),
+                                Deserializers.jsonDeserializer(VeilarbArenaOppfolgingEndret.class),
+                                kafkaConsumerService::consumeEndringPaOppfolgingBruker
+                        )
         );
 
-        consumerClient = KafkaConsumerClientBuilder.<String, String>builder()
+        consumerClient = KafkaConsumerClientBuilder.builder()
                 .withProperties(onPremDefaultConsumerProperties(CONSUMER_GROUP_ID, kafkaProperties.getBrokersUrl(), credentials))
-                .withRepository(consumerRepository)
-                .withSerializers(new StringSerializer(), new StringSerializer())
-                .withStoreOnFailureConsumers(topicConsumers)
-                .withMetrics(meterRegistry)
-                .withLogging()
+                .withTopicConfigs(topicConfigs)
                 .build();
-
-        Map<String, StoredRecordConsumer> storedRecordConsumers = ConsumerUtils.toStoredRecordConsumerMap(
-                topicConsumers,
-                new StringDeserializer(),
-                new StringDeserializer()
-        );
 
         consumerRecordProcessor = KafkaConsumerRecordProcessorBuilder
                 .builder()
                 .withLockProvider(new JdbcTemplateLockProvider(jdbcTemplate))
                 .withKafkaConsumerRepository(consumerRepository)
-                .withRecordConsumers(storedRecordConsumers)
+                .withConsumerConfigs(findConsumerConfigsWithStoreOnFailure(topicConfigs))
                 .build();
 
         producerRecordStorage = new KafkaProducerRecordStorage<>(

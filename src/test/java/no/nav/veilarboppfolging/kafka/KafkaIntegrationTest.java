@@ -12,7 +12,7 @@ import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.common.serialization.StringDeserializer;
+import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -28,7 +28,8 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static no.nav.common.kafka.consumer.util.ConsumerUtils.jsonConsumer;
+import static no.nav.common.kafka.consumer.util.deserializer.Deserializers.jsonDeserializer;
+import static no.nav.common.kafka.consumer.util.deserializer.Deserializers.stringDeserializer;
 import static org.apache.commons.lang3.RandomStringUtils.randomNumeric;
 import static org.apache.kafka.clients.CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG;
 import static org.apache.kafka.clients.producer.ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG;
@@ -66,11 +67,22 @@ public class KafkaIntegrationTest {
                 JsonUtils.toJson(oppfolgingEndret)));
 
         AtomicReference<OppfolgingStartetKafkaDTO> konsumertMelding = new AtomicReference<>(null);
-        KafkaConsumerClientBuilder.<String, String>builder()
+
+        KafkaConsumerClientBuilder.builder()
                 .withProperties(kafkaTestConsumerProperties(kafkaContainer.getBootstrapServers()))
-                .withConsumer(kafkaProperties.getOppfolgingStartetTopic(),jsonConsumer(OppfolgingStartetKafkaDTO.class, newValue -> {
-                    konsumertMelding.set(newValue);
-                })).build().start();
+                .withTopicConfig(
+                        new KafkaConsumerClientBuilder.TopicConfig<String, OppfolgingStartetKafkaDTO>()
+                                .withConsumerConfig(
+                                        kafkaProperties.getOppfolgingStartetTopic(),
+                                        stringDeserializer(),
+                                        jsonDeserializer(OppfolgingStartetKafkaDTO.class),
+                                        record -> {
+                                            konsumertMelding.set(record.value());
+                                        }
+                                )
+                )
+                .build()
+                .start();
 
         TestUtils.verifiserAsynkront(100, TimeUnit.SECONDS, () -> {
             assertEquals(oppfolgingEndret.getAktoerid(), konsumertMelding.get().getAktorId());
@@ -80,8 +92,8 @@ public class KafkaIntegrationTest {
     public static Properties kafkaTestConsumerProperties(String brokerUrl) {
         Properties props = new Properties();
         props.put(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, brokerUrl);
-        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, ByteArrayDeserializer.class);
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ByteArrayDeserializer.class);
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
         props.put(ConsumerConfig.GROUP_ID_CONFIG, "test-consumer");
         props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 5 * 60 * 1000);
