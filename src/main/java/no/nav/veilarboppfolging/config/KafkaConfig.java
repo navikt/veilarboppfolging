@@ -123,7 +123,10 @@ public class KafkaConfig {
                 producerRepository,
                 aivenProducerClient,
                 leaderElectionClient,
-                List.of(kafkaProperties.getSisteOppfolgingsperiodeTopic())
+                List.of(
+                        kafkaProperties.getSisteOppfolgingsperiodeTopic(),
+                        kafkaProperties.getSisteTilordnetVeilederTopic()
+                )
         );
     }
 

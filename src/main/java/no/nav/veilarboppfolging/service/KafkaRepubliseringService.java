@@ -78,8 +78,8 @@ public class KafkaRepubliseringService {
         Optional<Tilordning> maybeTilordning = veilederTilordningerRepository.hentTilordnetVeileder(aktorId);
 
         maybeTilordning.ifPresent(tilordning -> {
-            var dto = DtoMappers.tilSisteVeilederTilordnetKafkaDTO(tilordning);
-            kafkaProducerService.publiserSisteVeilederTilordnet(dto);
+            var dto = DtoMappers.tilSisteTilordnetVeilederKafkaDTO(tilordning);
+            kafkaProducerService.publiserSisteTilordnetVeileder(dto);
         });
     }
 

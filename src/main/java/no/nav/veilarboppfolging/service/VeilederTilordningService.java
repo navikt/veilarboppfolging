@@ -174,8 +174,8 @@ public class VeilederTilordningService {
             Optional<Tilordning> maybeTilordning = veilederTilordningerRepository.hentTilordnetVeileder(aktorId);
 
             maybeTilordning.ifPresentOrElse(tilordning -> {
-                var dto = DtoMappers.tilSisteVeilederTilordnetKafkaDTO(tilordning);
-                kafkaProducerService.publiserSisteVeilederTilordnet(dto);
+                var dto = DtoMappers.tilSisteTilordnetVeilederKafkaDTO(tilordning);
+                kafkaProducerService.publiserSisteTilordnetVeileder(dto);
             }, () -> log.error("Fant ikke tilordning til nylig tilordnet veileder. AktorId={} VeilederId={}", aktorId, veilederId));
 
             kafkaProducerService.publiserEndringPaNyForVeileder(aktorId, true);

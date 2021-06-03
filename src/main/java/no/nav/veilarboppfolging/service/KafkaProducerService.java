@@ -36,7 +36,7 @@ public class KafkaProducerService {
         store(kafkaProperties.getSisteOppfolgingsperiodeTopic(), dto.getAktorId().get(), dto);
     }
 
-    public void publiserSisteVeilederTilordnet(SisteVeilederTilordnetKafkaDTO dto) {
+    public void publiserSisteTilordnetVeileder(SisteTilordnetVeilederKafkaDTO dto) {
         store(kafkaProperties.getSisteTilordnetVeilederTopic(), dto.getAktorId().get(), dto);
     }
 

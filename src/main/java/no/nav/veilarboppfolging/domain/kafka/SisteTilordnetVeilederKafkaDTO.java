@@ -7,7 +7,7 @@ import no.nav.common.types.identer.NavIdent;
 import java.time.ZonedDateTime;
 
 @Value
-public class SisteVeilederTilordnetKafkaDTO {
+public class SisteTilordnetVeilederKafkaDTO {
     AktorId aktorId;
     NavIdent veilederId;
     ZonedDateTime tilordnet;
