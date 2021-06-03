@@ -69,6 +69,12 @@ public class KafkaRepubliseringService {
     private void republiserOppfolgingsperiodeForBruker(String aktorId) {
         List<Oppfolgingsperiode> perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId);
         Oppfolgingsperiode sistePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(perioder);
+
+        if (sistePeriode == null) {
+            log.error("Bruker med aktorId={} ligger i OPPFOLGINGSTATUS men har ingen oppfølgingsperioder", aktorId);
+            return;
+        }
+
         OppfolgingsperiodeKafkaDto kafkaDto = DtoMappers.tilOppfolgingsperiodeKafkaDto(sistePeriode);
 
         kafkaProducerService.publiserSisteOppfolgingsperiode(kafkaDto);
