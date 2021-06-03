@@ -13,7 +13,6 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.UUID;
 
-import static java.lang.String.format;
 import static no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository.AKTOR_ID;
 import static no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository.UNDER_OPPFOLGING;
 import static no.nav.veilarboppfolging.utils.DbUtils.hentZonedDateTime;
@@ -42,11 +41,6 @@ public class OppfolgingsPeriodeRepository {
     public void avslutt(String aktorId, String veileder, String begrunnelse) {
         endPeriode(aktorId, veileder, begrunnelse);
         avsluttOppfolging(aktorId);
-    }
-
-    public List<String> hentUnikeBrukerePage(int offset, int pageSize) {
-        String sql = format("SELECT DISTINCT aktor_id FROM OPPFOLGINGSPERIODE ORDER BY aktor_id OFFSET %d FETCH NEXT %d ROWS ONLY", offset, pageSize);
-        return db.query(sql, (rs, rowNum) -> rs.getString("aktor_id"));
     }
 
     public List<AvsluttetOppfolgingFeedData> fetchAvsluttetEtterDato(Timestamp timestamp, int pageSize) {
