@@ -166,11 +166,12 @@ public class VeilederTilordningService {
             veilederTilordningerRepository.upsertVeilederTilordning(aktorId, veileder);
             veilederHistorikkRepository.insertTilordnetVeilederForAktorId(aktorId, veileder);
             oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(aktorId);
-        });
 
-        log.debug(String.format("Veileder %s tilordnet aktoer %s", veileder, aktorId));
-        kafkaProducerService.publiserEndringPaNyForVeileder(aktorId, true);
-        kafkaProducerService.publiserVeilederTilordnet(aktorId, veileder);
+            kafkaProducerService.publiserEndringPaNyForVeileder(aktorId, true);
+            kafkaProducerService.publiserVeilederTilordnet(aktorId, veileder);
+
+            log.debug(String.format("Veileder %s tilordnet aktoer %s", veileder, aktorId));
+        });
     }
 
     static boolean kanTilordneVeileder(String eksisterendeVeileder, VeilederTilordning veilederTilordning) {
