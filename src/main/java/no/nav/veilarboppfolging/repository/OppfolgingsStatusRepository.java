@@ -57,7 +57,7 @@ public class OppfolgingsStatusRepository {
     }
 
     public List<String> hentUnikeBrukerePage(int offset, int pageSize) {
-        String sql = format("SELECT DISTINCT aktor_id FROM OPPFOLGINGSTATUS ORDER BY aktor_id OFFSET %d FETCH NEXT %d ROWS ONLY", offset, pageSize);
+        String sql = format("SELECT DISTINCT aktor_id FROM OPPFOLGINGSTATUS ORDER BY aktor_id OFFSET %d ROWS FETCH NEXT %d ROWS ONLY", offset, pageSize);
         return db.query(sql, (rs, rowNum) -> rs.getString("aktor_id"));
     }
 
