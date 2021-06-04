@@ -23,13 +23,13 @@ public class AdminController {
     private final KafkaRepubliseringService kafkaRepubliseringService;
 
     @PostMapping("/republiser/oppfolgingsperioder")
-    public String replubliserOppfolgingsperioder() {
+    public String republiserOppfolgingsperioder() {
         sjekkTilgangTilAdmin();
         return JobRunner.runAsync("republiser-oppfolgingsperioder", kafkaRepubliseringService::republiserOppfolgingsperioder);
     }
 
     @PostMapping("/republiser/tilordnet-veileder")
-    public String replubliserTilordnetVeileder() {
+    public String republiserTilordnetVeileder() {
         sjekkTilgangTilAdmin();
         return JobRunner.runAsync("republiser-tilordnet-veileder", kafkaRepubliseringService::republiserTilordnetVeileder);
     }
