@@ -4,6 +4,6 @@ import lombok.Value;
 
 @Value
 public class VeilederTilordnetKafkaDTO {
-    private String aktorId;
-    private String veilederId;
+    String aktorId;
+    String veilederId;
 }

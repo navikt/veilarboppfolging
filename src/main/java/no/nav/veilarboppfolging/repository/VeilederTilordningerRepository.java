@@ -36,18 +36,18 @@ public class VeilederTilordningerRepository {
         return queryForNullableObject(db, sql, VeilederTilordningerRepository::map, aktorId);
     }
 
-    public void upsertVeilederTilordning(String aktoerId, String veileder) {
+    public void upsertVeilederTilordning(String aktorId, String veilederId) {
         String insertSql = "INSERT INTO OPPFOLGINGSTATUS(aktor_id, veileder, under_oppfolging, ny_for_veileder, sist_tilordnet, oppdatert, FEED_ID) " +
                 "SELECT ?, ?, 0, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, null FROM DUAL " +
                 "WHERE NOT EXISTS(SELECT * FROM OPPFOLGINGSTATUS WHERE aktor_id = ?)";
 
-        int rowsUpdated = db.update(insertSql, aktoerId, veileder, aktoerId);
+        int rowsUpdated = db.update(insertSql, aktorId, veilederId, aktorId);
 
         if (rowsUpdated == 0) {
             String updateSql = "UPDATE OPPFOLGINGSTATUS SET veileder = ?, ny_for_veileder = 1, " +
                     "sist_tilordnet = CURRENT_TIMESTAMP, oppdatert = CURRENT_TIMESTAMP, FEED_ID = null WHERE aktor_id = ?";
 
-            db.update(updateSql, veileder, aktoerId);
+            db.update(updateSql, veilederId, aktorId);
         }
 
     }

@@ -1,22 +1,21 @@
 package no.nav.veilarboppfolging.controller;
+
 import no.nav.common.abac.Pep;
 import no.nav.common.abac.domain.request.ActionId;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.client.aktorregister.AktorregisterClient;
 import no.nav.common.types.identer.AktorId;
-import no.nav.veilarboppfolging.controller.domain.OppfolgingPeriodeDTO;
-
-import no.nav.veilarboppfolging.domain.Fnr;
 import no.nav.veilarboppfolging.config.ApplicationTestConfig;
+import no.nav.veilarboppfolging.controller.domain.OppfolgingPeriodeDTO;
 import no.nav.veilarboppfolging.domain.AktiverArbeidssokerData;
+import no.nav.veilarboppfolging.domain.Fnr;
 import no.nav.veilarboppfolging.domain.Innsatsgruppe;
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
-import no.nav.veilarboppfolging.service.*;
+import no.nav.veilarboppfolging.service.AuthService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -27,7 +26,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
 
 @SpringBootTest(classes = {ApplicationTestConfig.class})
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)

@@ -16,6 +16,7 @@ import no.nav.veilarboppfolging.domain.*;
 import no.nav.veilarboppfolging.repository.*;
 import no.nav.veilarboppfolging.test.IsolatedDatabaseTest;
 import no.nav.veilarboppfolging.utils.DateUtils;
+import no.nav.veilarboppfolging.utils.OppfolgingsperiodeUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -224,7 +225,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
                 oppfolgingsPeriodeRepository.hentAvsluttetOppfolgingsperioder(AKTOR_ID).size(),
                 oppfolgingsPeriodeRepository.hentOppfolgingsperioder(AKTOR_ID).size()
         );
-        assertTrue(oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(AKTOR_ID).isEmpty());
+        assertHarIkkeGjeldendeOppfolgingsperiode(AKTOR_ID);
         assertFalse(oppfolgingsStatusRepository.fetch(AKTOR_ID).isUnderOppfolging());
     }
 
@@ -357,11 +358,27 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
     private void assertUnderOppfolgingLagret(String aktorId) {
         assertTrue(oppfolgingsStatusRepository.fetch(aktorId).isUnderOppfolging());
-        assertTrue(oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId).isPresent());
+
+        assertHarGjeldendeOppfolgingsperiode(aktorId);
+
         assertEquals(
                 oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId).size(),
                 oppfolgingsPeriodeRepository.hentAvsluttetOppfolgingsperioder(aktorId).size() + 1
         );
+    }
+
+
+    private void assertHarGjeldendeOppfolgingsperiode(String aktorId) {
+        assertTrue(harGjeldendeOppfolgingsperiode(aktorId));
+    }
+
+    private void assertHarIkkeGjeldendeOppfolgingsperiode(String aktorId) {
+        assertFalse(harGjeldendeOppfolgingsperiode(aktorId));
+    }
+    private boolean harGjeldendeOppfolgingsperiode(String aktorId) {
+        List<Oppfolgingsperiode> oppfolgingsperioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId);
+        Oppfolgingsperiode sisteOppfolgingsperiode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(oppfolgingsperioder);
+        return sisteOppfolgingsperiode != null && sisteOppfolgingsperiode.getStartDato() != null && sisteOppfolgingsperiode.getSluttDato() == null;
     }
 
     private void gittInaktivOppfolgingStatus(Boolean kanEnkeltReaktiveres) {

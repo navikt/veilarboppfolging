@@ -22,12 +22,22 @@ public class KafkaProducerService {
     private final KafkaProperties kafkaProperties;
 
     @Autowired
-    public KafkaProducerService(AuthContextHolder authContextHolder,
-                                KafkaProducerRecordStorage<String, String> producerRecordStorage,
-                                KafkaProperties kafkaProperties) {
+    public KafkaProducerService(
+            AuthContextHolder authContextHolder,
+            KafkaProducerRecordStorage<String, String> producerRecordStorage,
+            KafkaProperties kafkaProperties
+    ) {
         this.authContextHolder = authContextHolder;
         this.producerRecordStorage = producerRecordStorage;
         this.kafkaProperties = kafkaProperties;
+    }
+
+    public void publiserSisteOppfolgingsperiode(OppfolgingsperiodeKafkaDto dto) {
+        store(kafkaProperties.getSisteOppfolgingsperiodeTopic(), dto.getAktorId().get(), dto);
+    }
+
+    public void publiserSisteTilordnetVeileder(SisteTilordnetVeilederKafkaDTO dto) {
+        store(kafkaProperties.getSisteTilordnetVeilederTopic(), dto.getAktorId().get(), dto);
     }
 
     public void publiserEndringPaManuellStatus(String aktorId, boolean erManuell) {
