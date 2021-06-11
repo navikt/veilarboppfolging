@@ -2,29 +2,36 @@ package no.nav.veilarboppfolging.service;
 
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.kafka.producer.feilhandtering.KafkaProducerRecordStorage;
+import no.nav.common.kafka.producer.serializer.JsonValidationSerializer;
+import no.nav.pto_schema.kafka.json.topic.SisteOppfolgingsperiodeV1;
 import no.nav.veilarboppfolging.config.KafkaProperties;
 import no.nav.veilarboppfolging.domain.kafka.*;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.serialization.Serializer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.ZonedDateTime;
 
-import static no.nav.common.kafka.producer.util.ProducerUtils.toJsonProducerRecord;
+import static no.nav.common.kafka.producer.util.ProducerUtils.*;
+import static no.nav.pto_schema.kafka.json.JsonSchemaLocator.getKafkaSchema;
 
 @Service
 public class KafkaProducerService {
 
     private final AuthContextHolder authContextHolder;
 
-    private final KafkaProducerRecordStorage<String, String> producerRecordStorage;
+    private final KafkaProducerRecordStorage producerRecordStorage;
 
     private final KafkaProperties kafkaProperties;
+
+    private final Serializer<SisteOppfolgingsperiodeV1> sisteOppfolgingsperiodeV1Serializer
+            = new JsonValidationSerializer<>(getKafkaSchema(SisteOppfolgingsperiodeV1.class));
 
     @Autowired
     public KafkaProducerService(
             AuthContextHolder authContextHolder,
-            KafkaProducerRecordStorage<String, String> producerRecordStorage,
+            KafkaProducerRecordStorage producerRecordStorage,
             KafkaProperties kafkaProperties
     ) {
         this.authContextHolder = authContextHolder;
@@ -32,8 +39,14 @@ public class KafkaProducerService {
         this.kafkaProperties = kafkaProperties;
     }
 
-    public void publiserSisteOppfolgingsperiode(OppfolgingsperiodeKafkaDto dto) {
-        store(kafkaProperties.getSisteOppfolgingsperiodeTopic(), dto.getAktorId().get(), dto);
+    public void publiserSisteOppfolgingsperiode(SisteOppfolgingsperiodeV1 sisteOppfolgingsperiodeV1) {
+        var record = new ProducerRecord<>(
+                kafkaProperties.getSisteOppfolgingsperiodeTopic(),
+                sisteOppfolgingsperiodeV1.getAktorId(),
+                sisteOppfolgingsperiodeV1
+        );
+
+        producerRecordStorage.store(serializeRecord(record, STRING_SERIALIZER, sisteOppfolgingsperiodeV1Serializer));
     }
 
     public void publiserSisteTilordnetVeileder(SisteTilordnetVeilederKafkaDTO dto) {
@@ -105,7 +118,7 @@ public class KafkaProducerService {
     }
 
     private void store(String topic, String key, Object value) {
-        ProducerRecord<String, String> record = toJsonProducerRecord(topic, key, value);
+        ProducerRecord<byte[], byte[]> record = serializeJsonRecord(new ProducerRecord<>(topic, key, value));
         producerRecordStorage.store(record);
     }
 

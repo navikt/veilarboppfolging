@@ -19,11 +19,19 @@
 
     <properties>
         <java.version>11</java.version>
-        <common.version>2.2021.06.02_14.36-b9fcb1c8ae0b</common.version>
+        <common.version>2.2021.06.11_06.26-ecbd6c9186d9</common.version>
         <springfox.version>2.9.2</springfox.version>
         <tjenestespesifikasjoner.version>1.2019.04.03-23.09-56488320520a</tjenestespesifikasjoner.version>
         <testcontainers.version>1.15.2</testcontainers.version>
     </properties>
+
+    <repositories>
+        <repository>
+            <id>github</id>
+            <name>GitHub Packages</name>
+            <url>https://maven.pkg.github.com/navikt/maven-release</url>
+        </repository>
+    </repositories>
 
     <build>
         <plugins>
@@ -140,6 +148,12 @@
             <groupId>no.nav.tjenestespesifikasjoner</groupId>
             <artifactId>varseloppgave-v1-tjenestespesifikasjon</artifactId>
             <version>${tjenestespesifikasjoner.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>no.nav</groupId>
+            <artifactId>pto-schema</artifactId>
+            <version>1.2021.06.11_08.49-53af6e481914</version>
         </dependency>
 
         <!-- Common Dependencies -->
