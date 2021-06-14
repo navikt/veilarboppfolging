@@ -1,11 +1,9 @@
 package no.nav.veilarboppfolging.utils;
 
-import no.nav.common.types.identer.AktorId;
-import no.nav.common.types.identer.NavIdent;
 import no.nav.pto_schema.kafka.json.topic.SisteOppfolgingsperiodeV1;
+import no.nav.pto_schema.kafka.json.topic.SisteTilordnetVeilederV1;
 import no.nav.veilarboppfolging.controller.domain.*;
 import no.nav.veilarboppfolging.domain.*;
-import no.nav.veilarboppfolging.domain.kafka.SisteTilordnetVeilederKafkaDTO;
 
 import java.util.Collections;
 import java.util.Optional;
@@ -101,10 +99,10 @@ public class DtoMappers {
         return periode;
     }
 
-    public static SisteTilordnetVeilederKafkaDTO tilSisteTilordnetVeilederKafkaDTO(Tilordning tilordning) {
-        return new SisteTilordnetVeilederKafkaDTO(
-                AktorId.of(tilordning.getAktorId()),
-                NavIdent.of(tilordning.getVeilederId()),
+    public static SisteTilordnetVeilederV1 tilSisteTilordnetVeilederKafkaDTO(Tilordning tilordning) {
+        return new SisteTilordnetVeilederV1(
+                tilordning.getAktorId(),
+                tilordning.getVeilederId(),
                 tilordning.getSistOppdatert()
         );
     }

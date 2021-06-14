@@ -4,8 +4,9 @@ import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.kafka.producer.feilhandtering.KafkaProducerRecordStorage;
 import no.nav.common.kafka.producer.serializer.JsonValidationSerializer;
 import no.nav.pto_schema.kafka.json.topic.SisteOppfolgingsperiodeV1;
+import no.nav.pto_schema.kafka.json.topic.SisteTilordnetVeilederV1;
+import no.nav.pto_schema.kafka.json.topic.onprem.*;
 import no.nav.veilarboppfolging.config.KafkaProperties;
-import no.nav.veilarboppfolging.domain.kafka.*;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.Serializer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,72 +50,70 @@ public class KafkaProducerService {
         producerRecordStorage.store(serializeRecord(record, STRING_SERIALIZER, sisteOppfolgingsperiodeV1Serializer));
     }
 
-    public void publiserSisteTilordnetVeileder(SisteTilordnetVeilederKafkaDTO dto) {
-        store(kafkaProperties.getSisteTilordnetVeilederTopic(), dto.getAktorId().get(), dto);
+    public void publiserSisteTilordnetVeileder(SisteTilordnetVeilederV1 recordValue) {
+        store(kafkaProperties.getSisteTilordnetVeilederTopic(), recordValue.getAktorId(), recordValue);
     }
 
     public void publiserEndringPaManuellStatus(String aktorId, boolean erManuell) {
-        EndringPaManuellStatusKafkaDTO dto = new EndringPaManuellStatusKafkaDTO(aktorId, erManuell);
-        store(kafkaProperties.getEndringPaManuellStatusTopic(), dto.getAktorId(), dto);
+        EndringPaManuellStatusV1 recordValue = new EndringPaManuellStatusV1(aktorId, erManuell);
+        store(kafkaProperties.getEndringPaManuellStatusTopic(), recordValue.getAktorId(), recordValue);
     }
 
     public void publiserEndringPaNyForVeileder(String aktorId, boolean erNyForVeileder) {
-        EndringPaNyForVeilederKafkaDTO dto = new EndringPaNyForVeilederKafkaDTO(aktorId, erNyForVeileder);
-        store(kafkaProperties.getEndringPaNyForVeilederTopic(), aktorId, dto);
+        EndringPaNyForVeilederV1 recordValue = new EndringPaNyForVeilederV1(aktorId, erNyForVeileder);
+        store(kafkaProperties.getEndringPaNyForVeilederTopic(), aktorId, recordValue);
     }
 
     public void publiserVeilederTilordnet(String aktorId, String tildeltVeilederId) {
-        VeilederTilordnetKafkaDTO dto = new VeilederTilordnetKafkaDTO(aktorId, tildeltVeilederId);
-        store(kafkaProperties.getVeilederTilordnetTopic(), aktorId, dto);
+        VeilederTilordnetV1 recordValue = new VeilederTilordnetV1(aktorId, tildeltVeilederId);
+        store(kafkaProperties.getVeilederTilordnetTopic(), aktorId, recordValue);
     }
 
     public void publiserOppfolgingStartet(String aktorId, ZonedDateTime oppfolgingStartet) {
-        OppfolgingStartetKafkaDTO dto = new OppfolgingStartetKafkaDTO(aktorId, oppfolgingStartet);
-        store(kafkaProperties.getOppfolgingStartetTopic(), aktorId, dto);
+        OppfolgingStartetV1 recordValue = new OppfolgingStartetV1(aktorId, oppfolgingStartet);
+        store(kafkaProperties.getOppfolgingStartetTopic(), aktorId, recordValue);
     }
 
     public void publiserOppfolgingAvsluttet(String aktorId) {
-        OppfolgingAvsluttetKafkaDTO dto = new OppfolgingAvsluttetKafkaDTO()
-                .setAktorId(aktorId)
-                .setSluttdato(ZonedDateTime.now());
+        OppfolgingAvsluttetV1 recordValue = new OppfolgingAvsluttetV1(aktorId, ZonedDateTime.now());
 
-        store(kafkaProperties.getOppfolgingAvsluttetTopic(), aktorId, dto);
+        store(kafkaProperties.getOppfolgingAvsluttetTopic(), aktorId, recordValue);
 
         // Deprecated
-        store(kafkaProperties.getEndringPaaAvsluttOppfolgingTopic(), aktorId, dto);
+        store(kafkaProperties.getEndringPaaAvsluttOppfolgingTopic(), aktorId, recordValue);
     }
 
     public void publiserKvpStartet(String aktorId, String enhetId, String opprettetAvVeilederId, String begrunnelse) {
-        KvpStartetKafkaDTO dto = new KvpStartetKafkaDTO()
+        KvpStartetV1 recordValue = new KvpStartetV1()
                 .setAktorId(aktorId)
                 .setEnhetId(enhetId)
                 .setOpprettetAv(opprettetAvVeilederId)
                 .setOpprettetBegrunnelse(begrunnelse)
                 .setOpprettetDato(ZonedDateTime.now());
 
-        store(kafkaProperties.getKvpStartetTopic(), aktorId, dto);
+        store(kafkaProperties.getKvpStartetTopic(), aktorId, recordValue);
     }
 
     public void publiserKvpAvsluttet(String aktorId, String avsluttetAv, String begrunnelse) {
-        KvpAvsluttetKafkaDTO kvpAvsluttetKafkaDTO = new KvpAvsluttetKafkaDTO()
+        KvpAvsluttetV1 recordValue = new KvpAvsluttetV1()
                 .setAktorId(aktorId)
                 .setAvsluttetAv(avsluttetAv) // veilederId eller System
                 .setAvsluttetBegrunnelse(begrunnelse)
                 .setAvsluttetDato(ZonedDateTime.now());
 
-        store(kafkaProperties.getKvpAvlsuttetTopic(), aktorId, kvpAvsluttetKafkaDTO);
+        store(kafkaProperties.getKvpAvlsuttetTopic(), aktorId, recordValue);
     }
 
     public void publiserEndretMal(String aktorId, String veilederIdent){
-        MalEndringKafkaDTO malEndringKafkaDTO = new MalEndringKafkaDTO()
+        EndringPaMalV1 recordValue = new EndringPaMalV1()
                 .setAktorId(aktorId)
                 .setEndretTidspunk(ZonedDateTime.now())
                 .setVeilederIdent(veilederIdent)
                 .setLagtInnAv(authContextHolder.erEksternBruker()
-                        ? MalEndringKafkaDTO.InnsenderData.BRUKER
-                        : MalEndringKafkaDTO.InnsenderData.NAV);
+                        ? EndringPaMalV1.InnsenderData.BRUKER
+                        : EndringPaMalV1.InnsenderData.NAV);
 
-        store(kafkaProperties.getEndringPaMalTopic(), aktorId, malEndringKafkaDTO);
+        store(kafkaProperties.getEndringPaMalTopic(), aktorId, recordValue);
     }
 
     private void store(String topic, String key, Object value) {

@@ -1,8 +1,8 @@
 package no.nav.veilarboppfolging.service;
 
 import lombok.extern.slf4j.Slf4j;
+import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV1;
 import no.nav.veilarboppfolging.domain.OppfolgingsenhetEndringData;
-import no.nav.veilarboppfolging.domain.kafka.VeilarbArenaOppfolgingEndret;
 import no.nav.veilarboppfolging.repository.OppfolgingsenhetHistorikkRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,7 +22,7 @@ public class OppfolgingsenhetEndringService {
         this.enhetHistorikkRepository = enhetHistorikkRepository;
     }
 
-    public void behandleBrukerEndring(VeilarbArenaOppfolgingEndret arenaOppfolging) {
+    public void behandleBrukerEndring(EndringPaaOppfoelgingsBrukerV1 arenaOppfolging) {
         String aktoerid = arenaOppfolging.getAktoerid();
         String arenaNavKontor = arenaOppfolging.getNav_kontor();
         List<OppfolgingsenhetEndringData> eksisterendeHistorikk = enhetHistorikkRepository.hentOppfolgingsenhetEndringerForAktorId(aktoerid);

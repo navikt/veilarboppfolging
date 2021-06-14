@@ -1,6 +1,5 @@
 package no.nav.veilarboppfolging.repository;
 
-import no.nav.veilarboppfolging.domain.kafka.OppfolgingKafkaDTO;
 import no.nav.veilarboppfolging.test.DbTestUtils;
 import no.nav.veilarboppfolging.test.LocalH2Database;
 import org.junit.After;
@@ -48,43 +47,6 @@ public class OppfolgingFeedRepositoryTest {
         Optional<Long> actualCount = oppfolgingFeedRepository.hentAntallBrukere();
         assertThat(actualCount.isPresent()).isTrue();
         assertThat(actualCount.get()).isEqualTo(expectedCount);
-    }
-
-    @Test
-    public void skal_hente_kun_en_bruker_siden_offset_i_oracle_er_ekslusiv() {
-        createAntallTestBrukere(11);
-        List<OppfolgingKafkaDTO> dto = oppfolgingFeedRepository.hentOppfolgingStatus(10);
-        assertThat(dto.size()).isEqualTo(1);
-    }
-
-    @Test
-    public void skal_hente_alle_brukere_selv_om_det_ikke_er_1000_brukere_igjen() {
-        createAntallTestBrukere(15);
-        List<OppfolgingKafkaDTO> brukere = oppfolgingFeedRepository.hentOppfolgingStatus(10);
-        assertThat(brukere.size()).isEqualTo(5);
-    }
-
-    @Test
-    public void skal_hente_null_brukere_om_offset_er_hoyere_en_antall_brukere() {
-        createAntallTestBrukere(10);
-        List<OppfolgingKafkaDTO> brukere = oppfolgingFeedRepository.hentOppfolgingStatus(20);
-        assertThat(brukere.size()).isEqualTo(0);
-    }
-
-    @Test
-    public void skal_sortere_elementer_i_paging_basert_paa_aktoer_id() {
-        createAntallTestBrukere(2000);
-
-        List<OppfolgingKafkaDTO> page1 = oppfolgingFeedRepository.hentOppfolgingStatus(0);
-        assertThat(page1.size()).isEqualTo(1000);
-
-        String sisteElementPage1 = page1.get(999).getAktoerid();
-
-        List<OppfolgingKafkaDTO> page2 = oppfolgingFeedRepository.hentOppfolgingStatus(999);
-        String foersteElementPage2 = page2.get(0).getAktoerid();
-
-        assertThat(sisteElementPage1).isEqualTo(foersteElementPage2);
-
     }
 
     @Test

@@ -2,8 +2,8 @@ package no.nav.veilarboppfolging.repository;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV1;
 import no.nav.veilarboppfolging.domain.IservMapper;
-import no.nav.veilarboppfolging.domain.kafka.VeilarbArenaOppfolgingEndret;
 import no.nav.veilarboppfolging.utils.DbUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -28,13 +28,15 @@ public class UtmeldingRepository {
         this.db = db;
     }
 
-    public IservMapper eksisterendeIservBruker(VeilarbArenaOppfolgingEndret oppfolgingEndret) {
+    // TODO: Skal ikke trenger å sende DTOen fra kafka ned til repository
+
+    public IservMapper eksisterendeIservBruker(EndringPaaOppfoelgingsBrukerV1 oppfolgingEndret) {
         String sql = "SELECT * FROM UTMELDING WHERE aktor_id = ?";
         return firstOrNull(db.query(sql, UtmeldingRepository::mapper, oppfolgingEndret.getAktoerid()));
     }
 
     @SneakyThrows
-    public void updateUtmeldingTabell(VeilarbArenaOppfolgingEndret oppfolgingEndret) {
+    public void updateUtmeldingTabell(EndringPaaOppfoelgingsBrukerV1 oppfolgingEndret) {
         String sql = "UPDATE UTMELDING SET iserv_fra_dato = ?, oppdatert_dato = CURRENT_TIMESTAMP WHERE aktor_id = ?";
         Timestamp nyIservFraDato = Timestamp.from(oppfolgingEndret.getIserv_fra_dato().toInstant());
 
@@ -43,7 +45,7 @@ public class UtmeldingRepository {
         log.info("ISERV bruker med aktorid {} har blitt oppdatert inn i UTMELDING tabell", oppfolgingEndret.getAktoerid());
     }
 
-    public void insertUtmeldingTabell(VeilarbArenaOppfolgingEndret oppfolgingEndret) {
+    public void insertUtmeldingTabell(EndringPaaOppfoelgingsBrukerV1 oppfolgingEndret) {
         Timestamp iservFraDato = Timestamp.from(oppfolgingEndret.getIserv_fra_dato().toInstant());
 
         String sql = "INSERT INTO UTMELDING (aktor_id, iserv_fra_dato, oppdatert_dato) VALUES (?, ?, CURRENT_TIMESTAMP)";

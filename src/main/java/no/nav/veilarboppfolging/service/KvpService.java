@@ -2,12 +2,12 @@ package no.nav.veilarboppfolging.service;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV1;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
 import no.nav.veilarboppfolging.domain.KodeverkBruker;
 import no.nav.veilarboppfolging.domain.Kvp;
 import no.nav.veilarboppfolging.domain.OppfolgingTable;
-import no.nav.veilarboppfolging.domain.kafka.VeilarbArenaOppfolgingEndret;
 import no.nav.veilarboppfolging.repository.EskaleringsvarselRepository;
 import no.nav.veilarboppfolging.repository.KvpRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
@@ -141,8 +141,8 @@ public class KvpService {
         metricsService.kvpStoppet();
     }
 
-    public void avsluttKvpVedEnhetBytte(VeilarbArenaOppfolgingEndret endretBruker) {
-        Kvp gjeldendeKvp = gjeldendeKvp(endretBruker.aktoerid);
+    public void avsluttKvpVedEnhetBytte(EndringPaaOppfoelgingsBrukerV1 endretBruker) {
+        Kvp gjeldendeKvp = gjeldendeKvp(endretBruker.getAktoerid());
 
         if (gjeldendeKvp == null) {
             return;
@@ -151,7 +151,7 @@ public class KvpService {
         boolean harByttetKontor = !endretBruker.getNav_kontor().equals(gjeldendeKvp.getEnhet());
 
         if (harByttetKontor) {
-            stopKvpUtenEnhetSjekk(SYSTEM_USER_NAME, endretBruker.aktoerid, "KVP avsluttet automatisk pga. endret Nav-enhet", SYSTEM);
+            stopKvpUtenEnhetSjekk(SYSTEM_USER_NAME, endretBruker.getAktoerid(), "KVP avsluttet automatisk pga. endret Nav-enhet", SYSTEM);
             metricsService.stopKvpDueToChangedUnit();
         }
     }

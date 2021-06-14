@@ -7,7 +7,7 @@ import no.nav.common.auth.context.AuthContext;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.UserRole;
 import no.nav.common.sts.SystemUserTokenProvider;
-import no.nav.veilarboppfolging.domain.kafka.VeilarbArenaOppfolgingEndret;
+import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV1;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -47,9 +47,9 @@ public class KafkaConsumerService {
     }
 
     @SneakyThrows
-    public void consumeEndringPaOppfolgingBruker(ConsumerRecord<String, VeilarbArenaOppfolgingEndret> kafkaMelding) {
+    public void consumeEndringPaOppfolgingBruker(ConsumerRecord<String, EndringPaaOppfoelgingsBrukerV1> kafkaMelding) {
         try {
-            VeilarbArenaOppfolgingEndret oppfolgingEndret = kafkaMelding.value();
+            EndringPaaOppfoelgingsBrukerV1 oppfolgingEndret = kafkaMelding.value();
 
             var context = new AuthContext(
                     UserRole.SYSTEM,

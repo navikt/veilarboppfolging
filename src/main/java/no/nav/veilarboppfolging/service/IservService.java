@@ -6,9 +6,9 @@ import no.nav.common.auth.context.AuthContext;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.UserRole;
 import no.nav.common.sts.SystemUserTokenProvider;
+import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV1;
 import no.nav.veilarboppfolging.domain.IservMapper;
 import no.nav.veilarboppfolging.domain.OppfolgingTable;
-import no.nav.veilarboppfolging.domain.kafka.VeilarbArenaOppfolgingEndret;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
 import no.nav.veilarboppfolging.repository.UtmeldingRepository;
 import org.springframework.stereotype.Service;
@@ -76,7 +76,7 @@ public class IservService {
     }
 
     @Transactional
-    public void behandleEndretBruker(VeilarbArenaOppfolgingEndret oppfolgingEndret) {
+    public void behandleEndretBruker(EndringPaaOppfoelgingsBrukerV1 oppfolgingEndret) {
         log.info("Behandler bruker: {}", oppfolgingEndret);
 
         if (erIserv(oppfolgingEndret.getFormidlingsgruppekode())) {
@@ -121,13 +121,13 @@ public class IservService {
         return resultater;
     }
 
-    private void startOppfolging(VeilarbArenaOppfolgingEndret oppfolgingEndret) {
+    private void startOppfolging(EndringPaaOppfoelgingsBrukerV1 oppfolgingEndret) {
         log.info("Starter oppfølging automatisk for bruker med aktørid {}", oppfolgingEndret.getAktoerid());
         oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(oppfolgingEndret.getAktoerid());
         metricsService.startetOppfolgingAutomatisk(oppfolgingEndret.getFormidlingsgruppekode(), oppfolgingEndret.getKvalifiseringsgruppekode());
     }
 
-    private void oppdaterUtmeldingTabell(VeilarbArenaOppfolgingEndret oppfolgingEndret) {
+    private void oppdaterUtmeldingTabell(EndringPaaOppfoelgingsBrukerV1 oppfolgingEndret) {
         if (finnesIUtmeldingTabell(oppfolgingEndret)) {
             utmeldingRepository.updateUtmeldingTabell(oppfolgingEndret);
         } else if (brukerHarOppfolgingsflagg(oppfolgingEndret.getAktoerid())) {
@@ -140,7 +140,7 @@ public class IservService {
         return eksisterendeOppfolgingstatus != null && eksisterendeOppfolgingstatus.isUnderOppfolging();
     }
 
-    private boolean finnesIUtmeldingTabell(VeilarbArenaOppfolgingEndret oppfolgingEndret) {
+    private boolean finnesIUtmeldingTabell(EndringPaaOppfoelgingsBrukerV1 oppfolgingEndret) {
         return utmeldingRepository.eksisterendeIservBruker(oppfolgingEndret) != null;
     }
 

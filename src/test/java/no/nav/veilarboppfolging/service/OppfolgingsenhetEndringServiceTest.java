@@ -1,7 +1,7 @@
 package no.nav.veilarboppfolging.service;
 
+import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV1;
 import no.nav.veilarboppfolging.domain.OppfolgingsenhetEndringData;
-import no.nav.veilarboppfolging.domain.kafka.VeilarbArenaOppfolgingEndret;
 import no.nav.veilarboppfolging.repository.OppfolgingsenhetHistorikkRepository;
 import no.nav.veilarboppfolging.test.DbTestUtils;
 import no.nav.veilarboppfolging.test.LocalH2Database;
@@ -75,7 +75,7 @@ public class OppfolgingsenhetEndringServiceTest {
 
 
     private void behandle_ny_enhets_endring(String navKontor) {
-        VeilarbArenaOppfolgingEndret arenaEndring = new VeilarbArenaOppfolgingEndret()
+        EndringPaaOppfoelgingsBrukerV1 arenaEndring = new EndringPaaOppfoelgingsBrukerV1()
                 .setAktoerid(AKTOERID)
                 .setNav_kontor(navKontor)
                 .setFormidlingsgruppekode("ARBS");
