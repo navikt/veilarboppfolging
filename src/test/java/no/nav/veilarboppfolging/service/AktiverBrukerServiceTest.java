@@ -34,19 +34,21 @@ public class AktiverBrukerServiceTest {
                 authService,
                 oppfolgingService,
                 behandleArbeidssokerClient,
-                mock(KafkaProducerService.class), new NyeBrukereFeedRepository(LocalH2Database.getDb()),
+                new NyeBrukereFeedRepository(LocalH2Database.getDb()),
                 DbTestUtils.getTransactor(LocalH2Database.getDb())
         );
     }
 
     @Test
     public void skalRegistrereIArena() {
+        when(authService.getAktorIdOrThrow(any())).thenReturn("1234");
         aktiverBrukerService.aktiverBruker(hentBruker());
         verify(behandleArbeidssokerClient, times(1)).opprettBrukerIArena(any(), any());
     }
 
     @Test
     public void brukerSomHarInaktivStatusSkalKunneReaktivereSeg() {
+        when(authService.getAktorIdOrThrow(any())).thenReturn("1234");
         aktiverBrukerService.reaktiverBruker(new Fnr("fnr"));
         verify(behandleArbeidssokerClient, times(1)).reaktiverBrukerIArena(any());
     }

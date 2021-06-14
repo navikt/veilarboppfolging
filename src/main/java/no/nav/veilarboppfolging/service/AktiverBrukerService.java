@@ -1,6 +1,7 @@
 package no.nav.veilarboppfolging.service;
 
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.types.identer.AktorId;
 import no.nav.veilarboppfolging.client.behandle_arbeidssoker.BehandleArbeidssokerClient;
 import no.nav.veilarboppfolging.domain.*;
 import no.nav.veilarboppfolging.repository.NyeBrukereFeedRepository;
@@ -22,8 +23,6 @@ public class AktiverBrukerService {
 
     private final OppfolgingService oppfolgingService;
 
-    private final KafkaProducerService kafkaProducerService;
-
     private final NyeBrukereFeedRepository nyeBrukereFeedRepository;
 
     private final TransactionTemplate transactor;
@@ -33,14 +32,12 @@ public class AktiverBrukerService {
             AuthService authService,
             OppfolgingService oppfolgingService,
             BehandleArbeidssokerClient behandleArbeidssokerClient,
-            KafkaProducerService kafkaProducerService,
             NyeBrukereFeedRepository nyeBrukereFeedRepository,
             TransactionTemplate transactor
     ) {
         this.authService = authService;
         this.oppfolgingService = oppfolgingService;
         this.behandleArbeidssokerClient = behandleArbeidssokerClient;
-        this.kafkaProducerService = kafkaProducerService;
         this.nyeBrukereFeedRepository = nyeBrukereFeedRepository;
         this.transactor = transactor;
     }
@@ -50,7 +47,7 @@ public class AktiverBrukerService {
                 .map(Fnr::getFnr)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "FNR mangler"));
 
-        AktorId aktorId = new AktorId(authService.getAktorIdOrThrow(fnr));
+        AktorId aktorId = AktorId.of(authService.getAktorIdOrThrow(fnr));
 
         transactor.executeWithoutResult((status) -> aktiverBrukerOgOppfolging(fnr, aktorId, bruker.getInnsatsgruppe()));
     }
@@ -64,7 +61,7 @@ public class AktiverBrukerService {
     private void startReaktiveringAvBrukerOgOppfolging(Fnr fnr, AktorId aktorId) {
         oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(
                 Oppfolgingsbruker.builder()
-                        .aktoerId(aktorId.getAktorId())
+                        .aktoerId(aktorId.get())
                         .build()
         );
 
@@ -74,7 +71,7 @@ public class AktiverBrukerService {
     private void aktiverBrukerOgOppfolging(String fnr, AktorId aktorId, Innsatsgruppe innsatsgruppe) {
         oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(
                 Oppfolgingsbruker.builder()
-                        .aktoerId(aktorId.getAktorId())
+                        .aktoerId(aktorId.get())
                         .innsatsgruppe(innsatsgruppe)
                         .build());
 

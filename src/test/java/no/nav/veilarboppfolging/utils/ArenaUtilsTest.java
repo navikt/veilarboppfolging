@@ -1,4 +1,4 @@
-package no.nav.veilarboppfolging.service;
+package no.nav.veilarboppfolging.utils;
 
 import org.junit.Test;
 
@@ -6,9 +6,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static java.util.Arrays.asList;
-import static no.nav.veilarboppfolging.utils.ArenaUtils.OPPFOLGING_SERVICEGRUPPEKODER;
-import static no.nav.veilarboppfolging.utils.ArenaUtils.erUnderOppfolging;
-import static no.nav.veilarboppfolging.utils.ArenaUtils.kanSettesUnderOppfolging;
+import static no.nav.veilarboppfolging.utils.ArenaUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class ArenaUtilsTest {

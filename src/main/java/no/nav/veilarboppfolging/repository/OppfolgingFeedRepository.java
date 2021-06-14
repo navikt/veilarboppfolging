@@ -3,10 +3,8 @@ package no.nav.veilarboppfolging.repository;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import no.nav.veilarboppfolging.controller.domain.OppfolgingFeedDTO;
-import no.nav.veilarboppfolging.domain.AktorId;
 import no.nav.veilarboppfolging.domain.kafka.OppfolgingKafkaDTO;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -29,12 +27,6 @@ public class OppfolgingFeedRepository {
     @Autowired
     public OppfolgingFeedRepository(JdbcTemplate db) {
         this.db = db;
-    }
-
-    // TODO: Brukes kun i 1 test, kan løses på en annen måte
-    public List<AktorId> hentAlleBrukereUnderOppfolging() {
-        String sql = "SELECT * FROM OPPFOLGINGSTATUS WHERE UNDER_OPPFOLGING = 1";
-        return db.query(sql, (rs, row) -> new AktorId(rs.getString("AKTOR_ID")));
     }
 
     public Optional<Long> hentAntallBrukere() {

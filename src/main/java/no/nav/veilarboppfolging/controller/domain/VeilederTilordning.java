@@ -2,7 +2,6 @@ package no.nav.veilarboppfolging.controller.domain;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
-import no.nav.veilarboppfolging.domain.AktorId;
 
 @Data
 @Accessors(chain = true)
@@ -12,8 +11,4 @@ public class VeilederTilordning {
     String innloggetVeilederId;
     String fraVeilederId;
     String tilVeilederId;
-
-    public AktorId toAktorId() {
-        return new AktorId(aktoerId);
-    }
 }

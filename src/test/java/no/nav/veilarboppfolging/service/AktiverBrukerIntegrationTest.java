@@ -53,7 +53,8 @@ public class AktiverBrukerIntegrationTest {
 
         aktiverBrukerService = new AktiverBrukerService(
                 authService, oppfolgingService,
-                behandleArbeidssokerClient, mock(KafkaProducerService.class), new NyeBrukereFeedRepository(db),
+                behandleArbeidssokerClient,
+                new NyeBrukereFeedRepository(db),
                 DbTestUtils.getTransactor(db)
         );
 

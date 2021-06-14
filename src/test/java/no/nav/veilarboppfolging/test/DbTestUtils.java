@@ -31,7 +31,11 @@ public class DbTestUtils {
     }
 
     public static void cleanupTestDb() {
-        ALL_TABLES.forEach((table) -> deleteAllFromTable(LocalH2Database.getDb(), table));
+        cleanupTestDb(LocalH2Database.getDb());
+    }
+
+    public static void cleanupTestDb(JdbcTemplate db) {
+        ALL_TABLES.forEach((table) -> deleteAllFromTable(db, table));
     }
 
     public static TransactionTemplate getTransactor(JdbcTemplate db) {

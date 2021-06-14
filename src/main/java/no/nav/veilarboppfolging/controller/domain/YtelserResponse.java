@@ -6,7 +6,6 @@ import no.nav.veilarboppfolging.client.ytelseskontrakt.Ytelseskontrakt;
 
 import java.util.List;
 
-@SuppressWarnings("unused")
 public class YtelserResponse {
     private List<Vedtak> vedtaksliste;
     private List<Ytelseskontrakt> ytelser;

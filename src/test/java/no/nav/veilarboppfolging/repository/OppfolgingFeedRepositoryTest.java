@@ -1,6 +1,5 @@
 package no.nav.veilarboppfolging.repository;
 
-import no.nav.veilarboppfolging.domain.AktorId;
 import no.nav.veilarboppfolging.domain.kafka.OppfolgingKafkaDTO;
 import no.nav.veilarboppfolging.test.DbTestUtils;
 import no.nav.veilarboppfolging.test.LocalH2Database;
@@ -23,10 +22,11 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class OppfolgingFeedRepositoryTest {
 
-    private OppfolgingFeedRepository oppfolgingFeedRepository = new OppfolgingFeedRepository(LocalH2Database.getDb());
-    private OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository = new OppfolgingsPeriodeRepository(LocalH2Database.getDb());
-    private VeilederTilordningerRepository veilederTilordningerRepository = new VeilederTilordningerRepository(LocalH2Database.getDb());
-    private OppfolgingsStatusRepository oppfolgingsStatusRepository = new OppfolgingsStatusRepository(LocalH2Database.getDb());
+    private final JdbcTemplate db = LocalH2Database.getDb();
+
+    private OppfolgingFeedRepository oppfolgingFeedRepository = new OppfolgingFeedRepository(db);
+    private OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository = new OppfolgingsPeriodeRepository(db);
+    private OppfolgingsStatusRepository oppfolgingsStatusRepository = new OppfolgingsStatusRepository(db);
 
     @Before
     public void cleanup() {
@@ -35,8 +35,6 @@ public class OppfolgingFeedRepositoryTest {
 
     @After
     public void tearDown() {
-        JdbcTemplate db = LocalH2Database.getDb();
-
         db.execute("ALTER TABLE " + OppfolgingsStatusRepository.TABLE_NAME + " SET REFERENTIAL_INTEGRITY FALSE");
         db.execute("TRUNCATE TABLE " + OppfolgingsStatusRepository.TABLE_NAME);
         db.execute("TRUNCATE TABLE OPPFOLGINGSPERIODE");
@@ -106,7 +104,7 @@ public class OppfolgingFeedRepositoryTest {
         oppfolgingsPeriodeRepository.start(ikkeUnderOppfolging);
         oppfolgingsPeriodeRepository.avslutt(ikkeUnderOppfolging, "", "");
 
-        List<AktorId> aktorIds = oppfolgingFeedRepository.hentAlleBrukereUnderOppfolging();
+        List<String> aktorIds = hentAlleBrukereUnderOppfolging(LocalH2Database.getDb());
         assertThat(aktorIds.size()).isEqualTo(10);
     }
 
@@ -150,6 +148,11 @@ public class OppfolgingFeedRepositoryTest {
         assertEquals(eldstePeriode.getStartDato(), periode.getStartDato());
         assertEquals(eldstePeriode.getSluttDato(), periode.getSluttDato());
 
+    }
+
+    private List<String> hentAlleBrukereUnderOppfolging(JdbcTemplate db) {
+        String sql = "SELECT * FROM OPPFOLGINGSTATUS WHERE UNDER_OPPFOLGING = 1";
+        return db.query(sql, (rs, row) -> rs.getString("AKTOR_ID"));
     }
 
     private void createAntallTestBrukere(int antall) {
