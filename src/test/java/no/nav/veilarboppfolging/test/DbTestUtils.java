@@ -22,8 +22,7 @@ public class DbTestUtils {
             "KVP",
             "UTMELDING",
             "OPPFOLGINGSENHET_ENDRET",
-            "NYE_BRUKERE_FEED",
-            "FEILET_KAFKA_MELDING"
+            "NYE_BRUKERE_FEED"
     );
 
     public static void setupDatabaseFunctions(DataSource dataSource) {
