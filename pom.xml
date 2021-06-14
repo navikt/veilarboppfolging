@@ -27,15 +27,11 @@
 
     <repositories>
         <repository>
-            <id>github</id>
-            <url>https://maven.pkg.github.com/navikt/maven-release</url>
-        </repository>
-        <repository>
             <id>confluent</id>
             <url>https://packages.confluent.io/maven/</url>
         </repository>
         <repository>
-            <id>jitpack.io</id>
+            <id>jitpack</id>
             <url>https://jitpack.io</url>
         </repository>
     </repositories>
@@ -158,9 +154,9 @@
         </dependency>
 
         <dependency>
-            <groupId>no.nav</groupId>
+            <groupId>com.github.navikt</groupId>
             <artifactId>pto-schema</artifactId>
-            <version>1.2021.06.11_08.49-53af6e481914</version>
+            <version>1.2021.06.14_08.58-0b06b1eac98e</version>
         </dependency>
 
         <!-- Common Dependencies -->
