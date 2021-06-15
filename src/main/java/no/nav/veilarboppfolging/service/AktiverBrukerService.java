@@ -58,7 +58,7 @@ public class AktiverBrukerService {
     }
 
     public void reaktiverBruker(Fnr fnr) {
-        AktorId aktorId = new AktorId(authService.getAktorIdOrThrow(fnr.get()));
+        AktorId aktorId = authService.getAktorIdOrThrow(fnr);
 
         transactor.executeWithoutResult((status) -> startReaktiveringAvBrukerOgOppfolging(fnr, aktorId));
     }

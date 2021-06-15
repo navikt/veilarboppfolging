@@ -170,7 +170,7 @@ public class VeilederTilordningService {
         transactor.executeWithoutResult((status) -> {
             veilederTilordningerRepository.upsertVeilederTilordning(aktorId, veilederId);
             veilederHistorikkRepository.insertTilordnetVeilederForAktorId(aktorId, veilederId);
-            oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(aktorId.get());
+            oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(aktorId);
 
             log.debug(String.format("Veileder %s tilordnet aktoer %s", veilederId, aktorId));
 
@@ -205,7 +205,7 @@ public class VeilederTilordningService {
     }
 
     private boolean nyVeilederHarTilgang(VeilederTilordning veilederTilordning) {
-        return authService.harVeilederSkriveTilgangTilFnr(veilederTilordning.getTilVeilederId(), veilederTilordning.getBrukerFnr());
+        return authService.harVeilederSkriveTilgangTilFnr(veilederTilordning.getTilVeilederId(), Fnr.of(veilederTilordning.getBrukerFnr()));
     }
 
 }

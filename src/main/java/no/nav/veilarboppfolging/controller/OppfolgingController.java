@@ -1,6 +1,8 @@
 package no.nav.veilarboppfolging.controller;
 
 import lombok.RequiredArgsConstructor;
+import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.controller.request.*;
 import no.nav.veilarboppfolging.controller.response.*;
 import no.nav.veilarboppfolging.domain.KodeverkBruker;
@@ -41,26 +43,27 @@ public class OppfolgingController {
     }
 
     @GetMapping
-    public OppfolgingStatus hentOppfolgingsStatus(@RequestParam(value = "fnr", required = false) String fnr) {
-        String fodselsnummer = authService.hentIdentForEksternEllerIntern(fnr);
+    public OppfolgingStatus hentOppfolgingsStatus(@RequestParam(value = "fnr", required = false) Fnr fnr) {
+        Fnr fodselsnummer = authService.hentIdentForEksternEllerIntern(fnr);
         return tilDto(oppfolgingService.hentOppfolgingsStatus(fodselsnummer), authService.erInternBruker());
     }
 
     @PostMapping("/startOppfolging")
-    public OppfolgingStatus startOppfolging(@RequestParam("fnr") String fnr) {
+    public OppfolgingStatus startOppfolging(@RequestParam("fnr") Fnr fnr) {
         authService.skalVereInternBruker();
         return tilDto(oppfolgingService.startOppfolging(fnr), authService.erInternBruker());
     }
 
     @GetMapping("/avslutningStatus")
-    public AvslutningStatus hentAvslutningStatus(@RequestParam("fnr") String fnr) {
+    public AvslutningStatus hentAvslutningStatus(@RequestParam("fnr") Fnr fnr) {
         authService.skalVereInternBruker();
         return tilDto(oppfolgingService.hentAvslutningStatus(fnr));
     }
 
     @PostMapping("/avsluttOppfolging")
-    public AvslutningStatus avsluttOppfolging(@RequestBody VeilederBegrunnelseDTO dto, @RequestParam("fnr") String fnr) {
+    public AvslutningStatus avsluttOppfolging(@RequestBody VeilederBegrunnelseDTO dto, @RequestParam("fnr") Fnr fnr) {
         authService.skalVereInternBruker();
+
         return tilDto(oppfolgingService.avsluttOppfolging(
                 fnr,
                 dto.veilederId,
@@ -70,7 +73,7 @@ public class OppfolgingController {
 
     // TODO: Ikke returner OppfolgingStatus
     @PostMapping("/settManuell")
-    public OppfolgingStatus settTilManuell(@RequestBody VeilederBegrunnelseDTO dto, @RequestParam("fnr") String fnr) {
+    public OppfolgingStatus settTilManuell(@RequestBody VeilederBegrunnelseDTO dto, @RequestParam("fnr") Fnr fnr) {
         authService.skalVereInternBruker();
 
         manuellStatusService.oppdaterManuellStatus(
@@ -83,8 +86,10 @@ public class OppfolgingController {
 
     // TODO: Ikke returner OppfolgingStatus
     @PostMapping("/settDigital")
-    public OppfolgingStatus settTilDigital(@RequestBody(required = false) VeilederBegrunnelseDTO dto, @RequestParam(value = "fnr", required = false) String fnr) {
-        String fodselsnummer = authService.hentIdentForEksternEllerIntern(fnr);
+    public OppfolgingStatus settTilDigital(
+            @RequestBody(required = false) VeilederBegrunnelseDTO dto,
+            @RequestParam(value = "fnr", required = false) Fnr fnr) {
+        Fnr fodselsnummer = authService.hentIdentForEksternEllerIntern(fnr);
 
         if (authService.erEksternBruker()) {
             manuellStatusService.settDigitalBruker(fodselsnummer);
@@ -105,13 +110,13 @@ public class OppfolgingController {
     }
 
     @GetMapping("/innstillingsHistorikk")
-    public List<InnstillingsHistorikk> hentInnstillingsHistorikk(@RequestParam("fnr") String fnr) {
+    public List<InnstillingsHistorikk> hentInnstillingsHistorikk(@RequestParam("fnr") Fnr fnr) {
         authService.skalVereInternBruker();
         return historikkService.hentInstillingsHistorikk(fnr);
     }
 
     @PostMapping("/startEskalering")
-    public ResponseEntity startEskalering(@RequestBody StartEskaleringDTO startEskalering, @RequestParam("fnr") String fnr) {
+    public ResponseEntity startEskalering(@RequestBody StartEskaleringDTO startEskalering, @RequestParam("fnr") Fnr fnr) {
         authService.skalVereInternBruker();
         eskaleringService.startEskalering(
                 fnr,
@@ -124,28 +129,28 @@ public class OppfolgingController {
     }
 
     @PostMapping("/stoppEskalering")
-    public ResponseEntity stoppEskalering(@RequestBody StoppEskaleringDTO stoppEskalering, @RequestParam("fnr") String fnr) {
+    public ResponseEntity stoppEskalering(@RequestBody StoppEskaleringDTO stoppEskalering, @RequestParam("fnr") Fnr fnr) {
         authService.skalVereInternBruker();
         eskaleringService.stoppEskalering(fnr, authService.getInnloggetVeilederIdent(), stoppEskalering.getBegrunnelse());
         return ResponseEntity.status(204).build();
     }
 
     @PostMapping("/startKvp")
-    public ResponseEntity startKvp(@RequestBody StartKvpDTO startKvp, @RequestParam("fnr") String fnr) {
+    public ResponseEntity startKvp(@RequestBody StartKvpDTO startKvp, @RequestParam("fnr") Fnr fnr) {
         authService.skalVereInternBruker();
         kvpService.startKvp(fnr, startKvp.getBegrunnelse());
         return ResponseEntity.status(204).build();
     }
 
     @PostMapping("/stoppKvp")
-    public ResponseEntity stoppKvp(@RequestBody StoppKvpDTO stoppKvp, @RequestParam("fnr") String fnr) {
+    public ResponseEntity stoppKvp(@RequestBody StoppKvpDTO stoppKvp, @RequestParam("fnr") Fnr fnr) {
         authService.skalVereInternBruker();
         kvpService.stopKvp(fnr, stoppKvp.getBegrunnelse());
         return ResponseEntity.status(204).build();
     }
 
     @GetMapping("/veilederTilgang")
-    public VeilederTilgang hentVeilederTilgang(@RequestParam("fnr") String fnr) {
+    public VeilederTilgang hentVeilederTilgang(@RequestParam("fnr") Fnr fnr) {
         authService.skalVereInternBruker();
         return oppfolgingService.hentVeilederTilgang(fnr);
     }
@@ -153,14 +158,14 @@ public class OppfolgingController {
     @GetMapping("/oppfolgingsperiode/{uuid}")
     public OppfolgingPeriodeMinimalDTO hentOppfolgingsPeriode(@PathVariable String uuid){
         var periode = oppfolgingService.hentPeriode(uuid);
-        authService.sjekkLesetilgangMedAktorId(periode.getAktorId());
+        authService.sjekkLesetilgangMedAktorId(AktorId.of(periode.getAktorId()));
 
         return tilOppfolgingPeriodeMinimalDTO(periode);
 
     }
 
     @GetMapping("/oppfolgingsperioder")
-    public List<OppfolgingPeriodeDTO> hentOppfolgingsperioder(@RequestParam("fnr") String fnr) {
+    public List<OppfolgingPeriodeDTO> hentOppfolgingsperioder(@RequestParam("fnr") Fnr fnr) {
         authService.skalVereSystemBruker();
 
         return oppfolgingService.hentOppfolgingsperioder(fnr)
@@ -177,8 +182,8 @@ public class OppfolgingController {
      * @return true dersom bruker både har flere aktørIder og har oppfølgingsperioder på flere av disse
      */
     @GetMapping("/harFlereAktorIderMedOppfolging")
-    public boolean harFlereAktorIderMedOppfolging(@RequestParam(value = "fnr", required = false) String fnr) {
-        String fodselsnummer = authService.hentIdentForEksternEllerIntern(fnr);
+    public boolean harFlereAktorIderMedOppfolging(@RequestParam(value = "fnr", required = false) Fnr fnr) {
+        Fnr fodselsnummer = authService.hentIdentForEksternEllerIntern(fnr);
         return oppfolgingService.hentHarFlereAktorIderMedOppfolging(fodselsnummer);
     }
 

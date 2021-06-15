@@ -55,8 +55,8 @@ public class KafkaProducerService {
         store(kafkaProperties.getSisteTilordnetVeilederTopic(), recordValue.getAktorId(), recordValue);
     }
 
-    public void publiserEndringPaManuellStatus(String aktorId, boolean erManuell) {
-        EndringPaManuellStatusV1 recordValue = new EndringPaManuellStatusV1(aktorId, erManuell);
+    public void publiserEndringPaManuellStatus(AktorId aktorId, boolean erManuell) {
+        EndringPaManuellStatusV1 recordValue = new EndringPaManuellStatusV1(aktorId.get(), erManuell);
         store(kafkaProperties.getEndringPaManuellStatusTopic(), recordValue.getAktorId(), recordValue);
     }
 
@@ -70,51 +70,51 @@ public class KafkaProducerService {
         store(kafkaProperties.getVeilederTilordnetTopic(), aktorId.get(), recordValue);
     }
 
-    public void publiserOppfolgingStartet(String aktorId, ZonedDateTime oppfolgingStartet) {
-        OppfolgingStartetV1 recordValue = new OppfolgingStartetV1(aktorId, oppfolgingStartet);
-        store(kafkaProperties.getOppfolgingStartetTopic(), aktorId, recordValue);
+    public void publiserOppfolgingStartet(AktorId aktorId, ZonedDateTime oppfolgingStartet) {
+        OppfolgingStartetV1 recordValue = new OppfolgingStartetV1(aktorId.get(), oppfolgingStartet);
+        store(kafkaProperties.getOppfolgingStartetTopic(), aktorId.get(), recordValue);
     }
 
-    public void publiserOppfolgingAvsluttet(String aktorId) {
-        OppfolgingAvsluttetV1 recordValue = new OppfolgingAvsluttetV1(aktorId, ZonedDateTime.now());
+    public void publiserOppfolgingAvsluttet(AktorId aktorId) {
+        OppfolgingAvsluttetV1 recordValue = new OppfolgingAvsluttetV1(aktorId.get(), ZonedDateTime.now());
 
-        store(kafkaProperties.getOppfolgingAvsluttetTopic(), aktorId, recordValue);
+        store(kafkaProperties.getOppfolgingAvsluttetTopic(), aktorId.get(), recordValue);
 
         // Deprecated
-        store(kafkaProperties.getEndringPaaAvsluttOppfolgingTopic(), aktorId, recordValue);
+        store(kafkaProperties.getEndringPaaAvsluttOppfolgingTopic(), aktorId.get(), recordValue);
     }
 
-    public void publiserKvpStartet(String aktorId, String enhetId, String opprettetAvVeilederId, String begrunnelse) {
+    public void publiserKvpStartet(AktorId aktorId, String enhetId, String opprettetAvVeilederId, String begrunnelse) {
         KvpStartetV1 recordValue = new KvpStartetV1()
-                .setAktorId(aktorId)
+                .setAktorId(aktorId.get())
                 .setEnhetId(enhetId)
                 .setOpprettetAv(opprettetAvVeilederId)
                 .setOpprettetBegrunnelse(begrunnelse)
                 .setOpprettetDato(ZonedDateTime.now());
 
-        store(kafkaProperties.getKvpStartetTopic(), aktorId, recordValue);
+        store(kafkaProperties.getKvpStartetTopic(), aktorId.get(), recordValue);
     }
 
-    public void publiserKvpAvsluttet(String aktorId, String avsluttetAv, String begrunnelse) {
+    public void publiserKvpAvsluttet(AktorId aktorId, String avsluttetAv, String begrunnelse) {
         KvpAvsluttetV1 recordValue = new KvpAvsluttetV1()
-                .setAktorId(aktorId)
+                .setAktorId(aktorId.get())
                 .setAvsluttetAv(avsluttetAv) // veilederId eller System
                 .setAvsluttetBegrunnelse(begrunnelse)
                 .setAvsluttetDato(ZonedDateTime.now());
 
-        store(kafkaProperties.getKvpAvlsuttetTopic(), aktorId, recordValue);
+        store(kafkaProperties.getKvpAvlsuttetTopic(), aktorId.get(), recordValue);
     }
 
-    public void publiserEndretMal(String aktorId, String veilederIdent){
+    public void publiserEndretMal(AktorId aktorId, String veilederIdent){
         EndringPaMalV1 recordValue = new EndringPaMalV1()
-                .setAktorId(aktorId)
+                .setAktorId(aktorId.get())
                 .setEndretTidspunk(ZonedDateTime.now())
                 .setVeilederIdent(veilederIdent)
                 .setLagtInnAv(authContextHolder.erEksternBruker()
                         ? EndringPaMalV1.InnsenderData.BRUKER
                         : EndringPaMalV1.InnsenderData.NAV);
 
-        store(kafkaProperties.getEndringPaMalTopic(), aktorId, recordValue);
+        store(kafkaProperties.getEndringPaMalTopic(), aktorId.get(), recordValue);
     }
 
     private void store(String topic, String key, Object value) {

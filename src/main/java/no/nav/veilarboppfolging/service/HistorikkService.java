@@ -3,6 +3,7 @@ package no.nav.veilarboppfolging.service;
 import lombok.SneakyThrows;
 import lombok.val;
 import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.controller.response.InnstillingsHistorikk;
 import no.nav.veilarboppfolging.domain.*;
 import no.nav.veilarboppfolging.repository.*;
@@ -57,8 +58,8 @@ public class HistorikkService {
         this.manuellStatusRepository = manuellStatusRepository;
     }
 
-    public List<InnstillingsHistorikk> hentInstillingsHistorikk(String fnr) {
-        String aktorId = authService.getAktorIdOrThrow(fnr);
+    public List<InnstillingsHistorikk> hentInstillingsHistorikk(Fnr fnr) {
+        AktorId aktorId = authService.getAktorIdOrThrow(fnr);
         return hentInstillingHistorikk(aktorId).filter(Objects::nonNull).flatMap(s -> s).collect(Collectors.toList());
     }
 
@@ -159,12 +160,12 @@ public class HistorikkService {
         return singletonList(kvpStart);
     }
 
-    private Stream<Stream<InnstillingsHistorikk>> hentInstillingHistorikk (String aktorId) {
+    private Stream<Stream<InnstillingsHistorikk>> hentInstillingHistorikk (AktorId aktorId) {
         List<Kvp> kvpHistorikk = kvpRepository.hentKvpHistorikk(aktorId);
 
         Stream <InnstillingsHistorikk> veilederTilordningerInnstillingHistorikk = null;
 
-        veilederTilordningerInnstillingHistorikk = veilederHistorikkRepository.hentTilordnedeVeiledereForAktorId(AktorId.of(aktorId))
+        veilederTilordningerInnstillingHistorikk = veilederHistorikkRepository.hentTilordnedeVeiledereForAktorId(aktorId)
                 .stream()
                 .map(this::tilDTO)
                 .filter((historikk) -> KvpUtils.sjekkTilgangGittKvp(authService, kvpHistorikk, historikk::getDato));

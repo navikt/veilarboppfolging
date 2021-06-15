@@ -1,6 +1,7 @@
 package no.nav.veilarboppfolging.repository;
 
 import lombok.SneakyThrows;
+import no.nav.common.types.identer.AktorId;
 import no.nav.veilarboppfolging.domain.KodeverkBruker;
 import no.nav.veilarboppfolging.domain.ManuellStatus;
 import no.nav.veilarboppfolging.utils.DbUtils;
@@ -41,10 +42,12 @@ public class ManuellStatusRepository {
         return manuellStatusList.isEmpty() ? null : manuellStatusList.get(0);
     }
 
-    public List<ManuellStatus> history(String aktorId) {
-        return db.query("SELECT * FROM MANUELL_STATUS WHERE aktor_id = ?",
+    public List<ManuellStatus> history(AktorId aktorId) {
+        return db.query(
+                "SELECT * FROM MANUELL_STATUS WHERE aktor_id = ?",
                 ManuellStatusRepository::map,
-                aktorId);
+                aktorId.get()
+        );
     }
 
     @SneakyThrows

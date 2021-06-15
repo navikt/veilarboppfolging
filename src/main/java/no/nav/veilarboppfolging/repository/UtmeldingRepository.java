@@ -2,6 +2,7 @@ package no.nav.veilarboppfolging.repository;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.types.identer.AktorId;
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV1;
 import no.nav.veilarboppfolging.domain.IservMapper;
 import no.nav.veilarboppfolging.utils.DbUtils;
@@ -58,13 +59,13 @@ public class UtmeldingRepository {
         );
     }
 
-    public void slettBrukerFraUtmeldingTabell(String aktoerId) {
+    public void slettBrukerFraUtmeldingTabell(AktorId aktorId) {
         String sql = "DELETE FROM UTMELDING WHERE aktor_id = ?";
         
-        int rowsDeleted = db.update(sql, aktoerId);
+        int rowsDeleted = db.update(sql, aktorId.get());
         
         if (rowsDeleted > 0) {
-            log.info("Aktorid {} har blitt slettet fra UTMELDING tabell", aktoerId);
+            log.info("Aktorid {} har blitt slettet fra UTMELDING tabell", aktorId);
         }
     }
 

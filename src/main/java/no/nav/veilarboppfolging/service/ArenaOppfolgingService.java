@@ -70,7 +70,7 @@ public class ArenaOppfolgingService {
         Optional<ArenaOppfolgingTilstand> maybeArenaOppfolging = veilarbarenaClient.hentOppfolgingsbruker(fnr)
                 .map(ArenaOppfolgingTilstand::fraArenaBruker);
 
-        Optional<OppfolgingTable> oppfolging = Optional.ofNullable(oppfolgingsStatusRepository.fetch(aktorId.get()));
+        Optional<OppfolgingTable> oppfolging = Optional.ofNullable(oppfolgingsStatusRepository.fetch(aktorId));
 
         boolean erUnderOppfolging = oppfolging.map(OppfolgingTable::isUnderOppfolging).orElse(false);
 

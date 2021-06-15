@@ -1,6 +1,7 @@
 package no.nav.veilarboppfolging.repository;
 
 import lombok.SneakyThrows;
+import no.nav.common.types.identer.AktorId;
 import no.nav.veilarboppfolging.domain.EskaleringsvarselData;
 import no.nav.veilarboppfolging.utils.DbUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,16 +41,16 @@ public class EskaleringsvarselRepository {
     }
 
     @Transactional
-    public void finish(String aktorId, long varselId, String avsluttetAv, String avsluttetBegrunnelse) {
+    public void finish(AktorId aktorId, long varselId, String avsluttetAv, String avsluttetBegrunnelse) {
         avsluttEskaleringsVarsel(avsluttetBegrunnelse, avsluttetAv, varselId);
         removeActive(aktorId);
     }
 
 
-    public List<EskaleringsvarselData> history(String aktorId) {
+    public List<EskaleringsvarselData> history(AktorId aktorId) {
         return db.query("SELECT * FROM ESKALERINGSVARSEL WHERE aktor_id = ?",
                 EskaleringsvarselRepository::map,
-                aktorId);
+                aktorId.get());
     }
 
     @SneakyThrows
@@ -97,14 +98,14 @@ public class EskaleringsvarselRepository {
                 varselId);
     }
 
-    private void removeActive(String aktorId) {
+    private void removeActive(AktorId aktorId) {
         db.update("" +
                         "UPDATE " + OppfolgingsStatusRepository.TABLE_NAME +
                         " SET " + GJELDENE_ESKALERINGSVARSEL + " = null, " +
                         "oppdatert = CURRENT_TIMESTAMP, " +
                         "FEED_ID = null " +
                         "WHERE " + AKTOR_ID + " = ?",
-                aktorId
+                aktorId.get()
         );
     }
 }

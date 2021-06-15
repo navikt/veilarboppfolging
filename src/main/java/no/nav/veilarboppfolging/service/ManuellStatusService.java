@@ -2,6 +2,7 @@ package no.nav.veilarboppfolging.service;
 
 import lombok.SneakyThrows;
 import lombok.val;
+import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.client.dkif.DkifClient;
 import no.nav.veilarboppfolging.client.dkif.DkifKontaktinfo;
@@ -48,17 +49,17 @@ public class ManuellStatusService {
     }
 
     @SneakyThrows
-    public void settDigitalBruker(String fnr) {
-        String aktorId = authService.getAktorIdOrThrow(fnr);
-        oppdaterManuellStatus(fnr, false, "Brukeren endret til digital oppfølging", KodeverkBruker.EKSTERN, aktorId);
+    public void settDigitalBruker(Fnr fnr) {
+        AktorId aktorId = authService.getAktorIdOrThrow(fnr);
+        oppdaterManuellStatus(fnr, false, "Brukeren endret til digital oppfølging", KodeverkBruker.EKSTERN, aktorId.get());
     }
 
     @SneakyThrows
-    public void oppdaterManuellStatus(String fnr, boolean manuell, String begrunnelse, KodeverkBruker opprettetAv, String opprettetAvBrukerId) {
-        String aktorId = authService.getAktorIdOrThrow(fnr);
+    public void oppdaterManuellStatus(Fnr fnr, boolean manuell, String begrunnelse, KodeverkBruker opprettetAv, String opprettetAvBrukerId) {
+        AktorId aktorId = authService.getAktorIdOrThrow(fnr);
         authService.sjekkLesetilgangMedAktorId(aktorId);
 
-        VeilarbArenaOppfolging arenaOppfolging = arenaOppfolgingService.hentOppfolgingFraVeilarbarena(Fnr.of(fnr)).orElseThrow();
+        VeilarbArenaOppfolging arenaOppfolging = arenaOppfolgingService.hentOppfolgingFraVeilarbarena(fnr).orElseThrow();
 
         if (!authService.erEksternBruker()) {
             authService.sjekkTilgangTilEnhet(arenaOppfolging.getNav_kontor());
@@ -73,7 +74,7 @@ public class ManuellStatusService {
 
         if (erUnderOppfolging && (gjeldendeErManuell != manuell) && (!reservertIKrr || manuell)) {
             val nyStatus = new ManuellStatus()
-                    .setAktorId(aktorId)
+                    .setAktorId(aktorId.get())
                     .setManuell(manuell)
                     .setDato(ZonedDateTime.now())
                     .setBegrunnelse(begrunnelse)

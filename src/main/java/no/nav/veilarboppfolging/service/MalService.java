@@ -1,5 +1,7 @@
 package no.nav.veilarboppfolging.service;
 
+import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.domain.Kvp;
 import no.nav.veilarboppfolging.domain.MalData;
 import no.nav.veilarboppfolging.domain.OppfolgingTable;
@@ -36,11 +38,13 @@ public class MalService {
 
     @Autowired
     public MalService(
-            KafkaProducerService kafkaProducerService, MetricsService metricsService,
+            KafkaProducerService kafkaProducerService,
+            MetricsService metricsService,
             OppfolgingsStatusRepository oppfolgingsStatusRepository,
             KvpRepository kvpRepository,
             AuthService authService,
-            MaalRepository maalRepository) {
+            MaalRepository maalRepository
+    ) {
         this.kafkaProducerService = kafkaProducerService;
         this.metricsService = metricsService;
         this.oppfolgingsStatusRepository = oppfolgingsStatusRepository;
@@ -49,8 +53,8 @@ public class MalService {
         this.maalRepository = maalRepository;
     }
 
-    public MalData hentMal(String fnr) {
-        String aktorId = authService.getAktorIdOrThrow(fnr);
+    public MalData hentMal(Fnr fnr) {
+        AktorId aktorId = authService.getAktorIdOrThrow(fnr);
         authService.sjekkLesetilgangMedAktorId(aktorId);
 
         OppfolgingTable oppfolgingsStatus = oppfolgingsStatusRepository.fetch(aktorId);
@@ -73,8 +77,8 @@ public class MalService {
         return gjeldendeMal;
     }
 
-    public List<MalData> hentMalList(String fnr) {
-        String aktorId = authService.getAktorIdOrThrow(fnr);
+    public List<MalData> hentMalList(Fnr fnr) {
+        AktorId aktorId = authService.getAktorIdOrThrow(fnr);
         authService.sjekkLesetilgangMedAktorId(aktorId);
 
         List<MalData> malList = maalRepository.aktorMal(aktorId);
@@ -83,17 +87,17 @@ public class MalService {
         return malList.stream().filter(mal -> KvpUtils.sjekkTilgangGittKvp(authService, kvpList, mal::getDato)).collect(toList());
     }
 
-    public MalData oppdaterMal(String mal, String fnr, String endretAvVeileder) {
-        String aktorId = authService.getAktorIdOrThrow(fnr);
+    public MalData oppdaterMal(String mal, Fnr fnr, String endretAvVeileder) {
+        AktorId aktorId = authService.getAktorIdOrThrow(fnr);
         authService.sjekkSkrivetilgangMedAktorId(aktorId);
 
         Kvp kvp = kvpRepository.fetch(kvpRepository.gjeldendeKvp(aktorId));
         ofNullable(kvp).ifPresent(this::sjekkKvpEnhetTilgang);
 
         MalData malData = new MalData()
-                .setAktorId(aktorId)
+                .setAktorId(aktorId.get())
                 .setMal(mal)
-                .setEndretAv(StringUtils.of(endretAvVeileder).orElse(aktorId))
+                .setEndretAv(StringUtils.of(endretAvVeileder).orElse(aktorId.get()))
                 .setDato(ZonedDateTime.now());
 
         maalRepository.opprett(malData);

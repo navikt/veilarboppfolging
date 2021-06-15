@@ -28,7 +28,7 @@ public class SystemOppfolgingController {
     @PostMapping("/aktiverbruker")
     public ResponseEntity aktiverBruker(@RequestBody AktiverArbeidssokerData aktiverArbeidssokerData) {
         authService.skalVereSystemBruker();
-        authService.sjekkLesetilgangMedFnr(aktiverArbeidssokerData.getFnr().getFnr());
+        authService.sjekkLesetilgangMedFnr(Fnr.of(aktiverArbeidssokerData.getFnr().getFnr()));
 
         try {
             aktiverBrukerService.aktiverBruker(aktiverArbeidssokerData);

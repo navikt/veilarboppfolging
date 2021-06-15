@@ -17,6 +17,10 @@ import static org.mockito.Mockito.*;
 
 public class AktiverBrukerServiceTest {
 
+    private final static Fnr FNR = Fnr.of("12343312");
+
+    private final static AktorId AKTOR_ID = AktorId.of("1234767554");
+
     private AuthService authService;
 
     private BehandleArbeidssokerClient behandleArbeidssokerClient;
@@ -42,15 +46,15 @@ public class AktiverBrukerServiceTest {
 
     @Test
     public void skalRegistrereIArena() {
-        when(authService.getAktorIdOrThrow(any(Fnr.class))).thenReturn(AktorId.of("1234"));
+        when(authService.getAktorIdOrThrow(any(Fnr.class))).thenReturn(AKTOR_ID);
         aktiverBrukerService.aktiverBruker(hentBruker());
         verify(behandleArbeidssokerClient, times(1)).opprettBrukerIArena(any(), any());
     }
 
     @Test
     public void brukerSomHarInaktivStatusSkalKunneReaktivereSeg() {
-        when(authService.getAktorIdOrThrow(any(String.class))).thenReturn("1234");
-        aktiverBrukerService.reaktiverBruker(Fnr.of("fnr"));
+        when(authService.getAktorIdOrThrow(any())).thenReturn(AKTOR_ID);
+        aktiverBrukerService.reaktiverBruker(FNR);
         verify(behandleArbeidssokerClient, times(1)).reaktiverBrukerIArena(any());
     }
 

@@ -60,27 +60,27 @@ public class ClientTestConfig {
     public AktorregisterClient aktorregisterClient() {
         return new AktorregisterClient() {
             @Override
-            public no.nav.common.types.identer.Fnr hentFnr(AktorId aktorId) {
+            public Fnr hentFnr(AktorId aktorId) {
                 return null;
             }
 
             @Override
-            public AktorId hentAktorId(no.nav.common.types.identer.Fnr fnr) {
+            public AktorId hentAktorId(Fnr fnr) {
                 return new AktorId(fnr.get());
             }
 
             @Override
-            public Map<AktorId, no.nav.common.types.identer.Fnr> hentFnrBolk(List<AktorId> list) {
+            public Map<AktorId, Fnr> hentFnrBolk(List<AktorId> list) {
                 return null;
             }
 
             @Override
-            public Map<no.nav.common.types.identer.Fnr, AktorId> hentAktorIdBolk(List<no.nav.common.types.identer.Fnr> list) {
+            public Map<Fnr, AktorId> hentAktorIdBolk(List<Fnr> list) {
                 return null;
             }
 
             @Override
-            public List<AktorId> hentAktorIder(no.nav.common.types.identer.Fnr fnr) {
+            public List<AktorId> hentAktorIder(Fnr fnr) {
                 return List.of(new AktorId(fnr.get()), new AktorId("1000010101001"));
             }
 
@@ -128,7 +128,7 @@ public class ClientTestConfig {
     public DkifClient dkifClient() {
         return new DkifClient() {
             @Override
-            public DkifKontaktinfo hentKontaktInfo(String fnr) {
+            public DkifKontaktinfo hentKontaktInfo(Fnr fnr) {
                 return null;
             }
 
@@ -143,7 +143,7 @@ public class ClientTestConfig {
     public VarseloppgaveClient varseloppgaveClient() {
         return new VarseloppgaveClient() {
             @Override
-            public void sendEskaleringsvarsel(String aktorId, long dialogId) {
+            public void sendEskaleringsvarsel(AktorId aktorId, long dialogId) {
 
             }
 
@@ -181,12 +181,12 @@ public class ClientTestConfig {
     public YtelseskontraktClient ytelseskontraktClient() {
         return new YtelseskontraktClient() {
             @Override
-            public YtelseskontraktResponse hentYtelseskontraktListe(XMLGregorianCalendar periodeFom, XMLGregorianCalendar periodeTom, String personId) {
+            public YtelseskontraktResponse hentYtelseskontraktListe(XMLGregorianCalendar periodeFom, XMLGregorianCalendar periodeTom, Fnr personId) {
                 return null;
             }
 
             @Override
-            public YtelseskontraktResponse hentYtelseskontraktListe(String personId) {
+            public YtelseskontraktResponse hentYtelseskontraktListe(Fnr personId) {
                 return null;
             }
 

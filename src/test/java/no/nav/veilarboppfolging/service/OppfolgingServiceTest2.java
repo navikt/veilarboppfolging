@@ -1,6 +1,7 @@
 package no.nav.veilarboppfolging.service;
 
 import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.domain.*;
 import no.nav.veilarboppfolging.repository.*;
 import no.nav.veilarboppfolging.test.IsolatedDatabaseTest;
@@ -26,14 +27,14 @@ import static org.mockito.Mockito.when;
  */
 public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
 
-    private static final String AKTOR_ID = "aktorId";
-    private static final String AKTOR_ID2 = "2312321";
+    private static final AktorId AKTOR_ID = AktorId.of("aktorId");
+    private static final AktorId AKTOR_ID2 = AktorId.of("2312321");
 
     private static final String ENHET = "enhet";
     private static final String VEILERDER = "veileder";
     private static final String BEGRUNNELSE = "begrunnelse";
     private static final String OTHER_ENHET = "otherEnhet";
-    private static final String FNR = "21432432423";
+    private static final Fnr FNR = Fnr.of("21432432423");
 
     private AuthService authService = mock(AuthService.class);
     
@@ -77,7 +78,7 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
         oppfolgingsPeriodeRepository.start(AKTOR_ID);
 
-        when(authService.getAlleAktorIderOrThrow(FNR)).thenReturn(List.of(AktorId.of(AKTOR_ID)));
+        when(authService.getAlleAktorIderOrThrow(FNR)).thenReturn(List.of(AKTOR_ID));
         assertFalse(oppfolgingService.hentHarFlereAktorIderMedOppfolging(FNR));
 
     }
@@ -88,7 +89,7 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
         oppfolgingsPeriodeRepository.start(AKTOR_ID);
 
-        when(authService.getAlleAktorIderOrThrow(FNR)).thenReturn(List.of(AktorId.of(AKTOR_ID), AktorId.of(AKTOR_ID2)));
+        when(authService.getAlleAktorIderOrThrow(FNR)).thenReturn(List.of(AKTOR_ID, AKTOR_ID2));
 
         assertFalse(oppfolgingService.hentHarFlereAktorIderMedOppfolging(FNR));
 
@@ -103,7 +104,7 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID2);
         oppfolgingsPeriodeRepository.start(AKTOR_ID2);
 
-        when(authService.getAlleAktorIderOrThrow(FNR)).thenReturn(List.of(AktorId.of(AKTOR_ID), AktorId.of(AKTOR_ID2)));
+        when(authService.getAlleAktorIderOrThrow(FNR)).thenReturn(List.of(AKTOR_ID, AKTOR_ID2));
 
         assertTrue(oppfolgingService.hentHarFlereAktorIderMedOppfolging(FNR));
     }
@@ -117,7 +118,7 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID2);
         oppfolgingsPeriodeRepository.start(AKTOR_ID2);
 
-        when(authService.getAlleAktorIderOrThrow(FNR)).thenReturn(List.of(AktorId.of(AKTOR_ID), AktorId.of(AKTOR_ID2)));
+        when(authService.getAlleAktorIderOrThrow(FNR)).thenReturn(List.of(AKTOR_ID, AKTOR_ID2));
 
         assertTrue(oppfolgingService.hentHarFlereAktorIderMedOppfolging(FNR));
         assertTrue(oppfolgingService.hentHarFlereAktorIderMedOppfolging(FNR));
@@ -162,7 +163,7 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
         opprettMal(AKTOR_ID, "Dette er et mål");
 
         MalData mal = getGjeldendeMal(AKTOR_ID);
-        assertThat(mal.getAktorId(), equalTo(AKTOR_ID));
+        assertThat(mal.getAktorId(), equalTo(AKTOR_ID.get()));
         assertThat(mal.getMal(), equalTo("Dette er et mål"));
     }
 
@@ -178,18 +179,17 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
         assertThat(malList.size(), greaterThan(1));
     }
 
-    private MalData getGjeldendeMal(String aktorId) {
+    private MalData getGjeldendeMal(AktorId aktorId) {
         return oppfolgingService.hentOppfolging(aktorId).get().getGjeldendeMal();
     }
 
-    private List<MalData> hentMal(String aktorId) {
+    private List<MalData> hentMal(AktorId aktorId) {
         return maalRepository.aktorMal(aktorId);
     }
 
     @Test
     public void manglerOppfolging() {
-        sjekkAtOppfolgingMangler(hentOppfolging("ukjentAktorId"));
-        sjekkAtOppfolgingMangler(hentOppfolging(null));
+        sjekkAtOppfolgingMangler(hentOppfolging(AktorId.of("ukjentAktorId")));
     }
 
     @Test
@@ -197,7 +197,7 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
         oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
         Oppfolging uthentetOppfolging = hentOppfolging(AKTOR_ID).get();
-        assertThat(uthentetOppfolging.getAktorId(), equalTo(AKTOR_ID));
+        assertThat(uthentetOppfolging.getAktorId(), equalTo(AKTOR_ID.get()));
         assertThat(uthentetOppfolging.isUnderOppfolging(), is(true));
         assertThat(uthentetOppfolging.getOppfolgingsperioder().size(), is(1));
     }
@@ -211,12 +211,12 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
         settVeileder(veilederId, AKTOR_ID);
         manuellStatusRepository.create(
                 new ManuellStatus()
-                        .setAktorId(AKTOR_ID)
+                        .setAktorId(AKTOR_ID.get())
                         .setManuell(true)
                         .setDato(ZonedDateTime.now())
                         .setBegrunnelse("Test")
                         .setOpprettetAv(KodeverkBruker.SYSTEM));
-        maalRepository.opprett(new MalData().setAktorId(AKTOR_ID).setMal(maal).setEndretAv("bruker").setDato(ZonedDateTime.now()));
+        maalRepository.opprett(new MalData().setAktorId(AKTOR_ID.get()).setMal(maal).setEndretAv("bruker").setDato(ZonedDateTime.now()));
         Oppfolging oppfolging = hentOppfolging(AKTOR_ID).get();
         assertThat(oppfolging.isUnderOppfolging(), is(true));
         assertThat(oppfolging.getVeilederId(), equalTo(veilederId));
@@ -283,11 +283,11 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
     //OppfolgingRepository. Dette finnes kun i OppfolgingFeedRepository (og tilbys i PortefoljeRessurs) p.t.
     //Men siden hentOppfolging henter opp veilder er det likevel aktuelt å teste her at veileder returneres
     //dersom det er satt i databasen. 
-    private void settVeileder(String veilederId, String aktorId) {
-        db.update("UPDATE OPPFOLGINGSTATUS SET VEILEDER = ? where aktor_id = ?", veilederId, aktorId);
+    private void settVeileder(String veilederId, AktorId aktorId) {
+        db.update("UPDATE OPPFOLGINGSTATUS SET VEILEDER = ? where aktor_id = ?", veilederId, aktorId.get());
     }
 
-    private Oppfolging gittOppfolgingForAktor(String aktorId) {
+    private Oppfolging gittOppfolgingForAktor(AktorId aktorId) {
         Oppfolging oppfolging = oppfolgingService.hentOppfolging(aktorId)
                 .orElseGet(() -> oppfolgingsStatusRepository.opprettOppfolging(aktorId));
 
@@ -300,16 +300,17 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
         assertThat(oppfolging.isPresent(), is(false));
     }
 
-    private Optional<Oppfolging> hentOppfolging(String ukjentAktorId) {
+    private Optional<Oppfolging> hentOppfolging(AktorId ukjentAktorId) {
         return oppfolgingService.hentOppfolging(ukjentAktorId);
     }
 
-    private void opprettMal(String aktorId, String mal) {
+    private void opprettMal(AktorId aktorId, String mal) {
         MalData input = new MalData()
-                .setAktorId(aktorId)
+                .setAktorId(aktorId.get())
                 .setMal(mal)
-                .setEndretAv(aktorId)
+                .setEndretAv(aktorId.get())
                 .setDato(ZonedDateTime.now());
+
         maalRepository.opprett(input);
     }
 

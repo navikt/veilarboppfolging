@@ -69,7 +69,7 @@ public class VeilederTilordningServiceTest {
     
     @Before
     public void setup() {
-        when(authService.harVeilederSkriveTilgangTilFnr(anyString(), anyString())).thenReturn(true);
+        when(authService.harVeilederSkriveTilgangTilFnr(anyString(), any())).thenReturn(true);
 
         AuthContextHolderThreadLocal.instance().withContext(AuthTestUtils.createAuthContext(UserRole.INTERN, "uid"), () -> {
             veilederTilordningService = new VeilederTilordningService(
@@ -283,9 +283,9 @@ public class VeilederTilordningServiceTest {
         tilordninger.add(tilordningERROR1);
         tilordninger.add(tilordningERROR2);
 
-        when(authService.getAktorIdOrThrow("FNR1")).thenReturn("AKTOERID1");
-        when(authService.getAktorIdOrThrow("FNR2")).thenReturn("AKTOERID2");
-        doThrow(new RuntimeException()).when(authService).sjekkSkrivetilgangMedAktorId(anyString());
+        when(authService.getAktorIdOrThrow(fnr1)).thenReturn(aktorId1);
+        when(authService.getAktorIdOrThrow(fnr2)).thenReturn(aktorId2);
+        doThrow(new RuntimeException()).when(authService).sjekkSkrivetilgangMedAktorId(any());
 
         TilordneVeilederResponse response = veilederTilordningService.tilordneVeiledere(tilordninger);
         List<VeilederTilordning> feilendeTilordninger = response.getFeilendeTilordninger();
@@ -298,14 +298,6 @@ public class VeilederTilordningServiceTest {
     public void toOppdateringerSkalIkkeGaaIBeinaPaaHverandre() throws ExecutionException, InterruptedException {
         VeilederTilordning tilordningOKBruker1 = new VeilederTilordning().setBrukerFnr("FNR1").setFraVeilederId("FRAVEILEDER1").setTilVeilederId("TILVEILEDER1");
         VeilederTilordning tilordningERRORBruker2 = new VeilederTilordning().setBrukerFnr("FNR2").setFraVeilederId("FRAVEILEDER2").setTilVeilederId("TILVEILEDER2");
-
-        doAnswer(invocation -> {
-            if ("FNR1".equals(invocation.getArguments()[0])) {
-                Thread.sleep(20);
-                return null;
-            }
-            return null;
-        }).when(authService).sjekkSkrivetilgangMedFnr(anyString());
 
         when(authService.getAktorIdOrThrow(fnr1)).thenReturn(aktorId1);
 
@@ -348,7 +340,7 @@ public class VeilederTilordningServiceTest {
 
     @Test
     public void noCallToDAOWhenAktoerIdServiceFails() {
-        when(authService.getAktorIdOrThrow(anyString())).thenThrow(new RuntimeException("MOCK INGEN AKTOR ID"));
+        when(authService.getAktorIdOrThrow(any())).thenThrow(new RuntimeException("MOCK INGEN AKTOR ID"));
         veilederTilordningService.tilordneVeiledere(Collections.singletonList(testData()));
         verify(veilederTilordningerRepository, never()).upsertVeilederTilordning(any(), anyString());
     }

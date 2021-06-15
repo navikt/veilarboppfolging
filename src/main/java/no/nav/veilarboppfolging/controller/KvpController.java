@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import no.nav.common.auth.context.AuthContextHolder;
+import no.nav.common.types.identer.AktorId;
 import no.nav.veilarboppfolging.controller.response.KvpDTO;
 import no.nav.veilarboppfolging.domain.Kvp;
 import no.nav.veilarboppfolging.repository.KvpRepository;
@@ -45,12 +46,14 @@ public class KvpController {
             @ApiResponse(code = 403, message = "The API endpoint is requested by a user which is not in the allowed users list."),
             @ApiResponse(code = 500, message = "There is a server-side bug which should be fixed.")
     })
-    public ResponseEntity<KvpDTO> getKvpStatus(@PathVariable("aktorId") String aktorId) {
+    public ResponseEntity<KvpDTO> getKvpStatus(@PathVariable("aktorId") AktorId aktorId) {
         // KVP information is only available to certain system users. We trust these users here,
         // so that we can avoid doing an ABAC query on each request.
         if (!isRequestAuthorized()) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         }
+
+        // TODO: Do this inside a service
 
         long kvpId = repository.gjeldendeKvp(aktorId);
         if (kvpId == 0) {

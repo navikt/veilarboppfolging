@@ -1,5 +1,6 @@
 package no.nav.veilarboppfolging.service;
 
+import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.client.dkif.DkifClient;
 import no.nav.veilarboppfolging.client.dkif.DkifKontaktinfo;
@@ -23,8 +24,8 @@ import static org.mockito.Mockito.*;
 
 public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
 
-    private static final String FNR = "fnr";
-    private static final String AKTOR_ID = "aktorId";
+    private static final Fnr FNR = Fnr.of("fnr");
+    private static final AktorId AKTOR_ID = AktorId.of("aktorId");
     private static final String ENHET = "enhet";
     private static final String VEILEDER = "veileder";
     private static final String BEGRUNNELSE = "begrunnelse";
@@ -41,7 +42,7 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
 
     @Before
     public void setup() {
-        when(arenaOppfolgingService.hentOppfolgingFraVeilarbarena(Fnr.of(FNR)))
+        when(arenaOppfolgingService.hentOppfolgingFraVeilarbarena(FNR))
                 .thenReturn(Optional.of(new VeilarbArenaOppfolging().setNav_kontor(ENHET)));
         doCallRealMethod().when(authService).sjekkTilgangTilEnhet(any());
         when(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID);
@@ -72,7 +73,7 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
         long gjeldendeManuellStatusId = oppfolgingsStatusRepository.fetch(AKTOR_ID).getGjeldendeManuellStatusId();
         ManuellStatus gjeldendeManuellStatus = manuellStatusRepository.fetch(gjeldendeManuellStatusId);
 
-        assertEquals(AKTOR_ID, gjeldendeManuellStatus.getAktorId());
+        assertEquals(AKTOR_ID.get(), gjeldendeManuellStatus.getAktorId());
         assertEquals(SYSTEM, gjeldendeManuellStatus.getOpprettetAv());
         assertEquals(begrunnelse, gjeldendeManuellStatus.getBegrunnelse());
         assertEquals(SYSTEM, gjeldendeManuellStatus.getOpprettetAv());
@@ -95,8 +96,8 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
         manuellStatusService.settDigitalBruker(FNR);
     }
 
-    private void gittAktivOppfolging(String aktorId) {
+    private void gittAktivOppfolging(AktorId aktorId) {
         oppfolgingsStatusRepository.opprettOppfolging(aktorId);
-        db.update("UPDATE OPPFOLGINGSTATUS SET UNDER_OPPFOLGING = ? WHERE AKTOR_ID = ?", true, aktorId);
+        db.update("UPDATE OPPFOLGINGSTATUS SET UNDER_OPPFOLGING = ? WHERE AKTOR_ID = ?", true, aktorId.get());
     }
 }

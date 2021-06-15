@@ -35,7 +35,7 @@ public class KafkaRepubliseringService {
         int currentOffset = 0;
 
         while (true) {
-            List<String> unikeAktorIder = oppfolgingsStatusRepository.hentUnikeBrukerePage(currentOffset, OPPFOLGINGSPERIODE_PAGE_SIZE);
+            List<AktorId> unikeAktorIder = oppfolgingsStatusRepository.hentUnikeBrukerePage(currentOffset, OPPFOLGINGSPERIODE_PAGE_SIZE);
 
             if (unikeAktorIder.isEmpty()) {
                 break;
@@ -53,7 +53,7 @@ public class KafkaRepubliseringService {
         int currentOffset = 0;
 
         while (true) {
-            List<String> unikeAktorIder = oppfolgingsStatusRepository.hentUnikeBrukerePage(currentOffset, OPPFOLGINGSPERIODE_PAGE_SIZE);
+            List<AktorId> unikeAktorIder = oppfolgingsStatusRepository.hentUnikeBrukerePage(currentOffset, OPPFOLGINGSPERIODE_PAGE_SIZE);
 
             if (unikeAktorIder.isEmpty()) {
                 break;
@@ -67,7 +67,7 @@ public class KafkaRepubliseringService {
         }
     }
 
-    private void republiserOppfolgingsperiodeForBruker(String aktorId) {
+    private void republiserOppfolgingsperiodeForBruker(AktorId aktorId) {
         List<Oppfolgingsperiode> perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId);
         Oppfolgingsperiode sistePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(perioder);
 
@@ -81,8 +81,8 @@ public class KafkaRepubliseringService {
         kafkaProducerService.publiserSisteOppfolgingsperiode(sisteOppfolgingsperiodeV1);
     }
 
-    private void republiserSisteTilordnetVeilederForBruker(String aktorId) {
-        Optional<Tilordning> maybeTilordning = veilederTilordningerRepository.hentTilordnetVeileder(AktorId.of(aktorId));
+    private void republiserSisteTilordnetVeilederForBruker(AktorId aktorId) {
+        Optional<Tilordning> maybeTilordning = veilederTilordningerRepository.hentTilordnetVeileder(aktorId);
 
         maybeTilordning.ifPresent(tilordning -> {
             // Skal ikke publisere for brukere som ikke har fått veileder

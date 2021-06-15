@@ -3,6 +3,7 @@ package no.nav.veilarboppfolging.controller;
 import lombok.RequiredArgsConstructor;
 import no.nav.common.metrics.Event;
 import no.nav.common.metrics.MetricsClient;
+import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.controller.response.UnderOppfolgingNiva3DTO;
 import no.nav.veilarboppfolging.service.AuthService;
 import no.nav.veilarboppfolging.service.OppfolgingService;
@@ -29,7 +30,7 @@ public class OppfolgingNiva3Controller {
 
     @GetMapping("/underoppfolging")
     public UnderOppfolgingNiva3DTO underOppfolgingNiva3() {
-        String fnr = authService.getInnloggetBrukerIdent();
+        Fnr fnr = Fnr.of(authService.getInnloggetBrukerIdent());
 
         UnderOppfolgingNiva3DTO underOppfolgingNiva3DTO = new UnderOppfolgingNiva3DTO()
                 .setUnderOppfolging(oppfolgingService.underOppfolgingNiva3(fnr));

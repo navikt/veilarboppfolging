@@ -1,6 +1,7 @@
 package no.nav.veilarboppfolging.controller;
 
 import lombok.RequiredArgsConstructor;
+import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktClient;
 import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktResponse;
 import no.nav.veilarboppfolging.controller.response.YtelserResponse;
@@ -26,7 +27,7 @@ public class YtelseController {
     private final AuthService authService;
 
     @GetMapping("/{fnr}/ytelser")
-    public YtelserResponse getYtelser(@PathVariable("fnr") String fnr) {
+    public YtelserResponse getYtelser(@PathVariable("fnr") Fnr fnr) {
         authService.skalVereInternBruker();
         authService.sjekkLesetilgangMedFnr(fnr);
 

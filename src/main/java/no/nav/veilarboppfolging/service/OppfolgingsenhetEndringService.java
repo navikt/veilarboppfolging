@@ -1,6 +1,7 @@
 package no.nav.veilarboppfolging.service;
 
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.types.identer.AktorId;
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV1;
 import no.nav.veilarboppfolging.domain.OppfolgingsenhetEndringData;
 import no.nav.veilarboppfolging.repository.OppfolgingsenhetHistorikkRepository;
@@ -23,19 +24,20 @@ public class OppfolgingsenhetEndringService {
     }
 
     public void behandleBrukerEndring(EndringPaaOppfoelgingsBrukerV1 arenaOppfolging) {
-        String aktoerid = arenaOppfolging.getAktoerid();
+        AktorId aktorId = AktorId.of(arenaOppfolging.getAktoerid());
         String arenaNavKontor = arenaOppfolging.getNav_kontor();
-        List<OppfolgingsenhetEndringData> eksisterendeHistorikk = enhetHistorikkRepository.hentOppfolgingsenhetEndringerForAktorId(aktoerid);
+
+        List<OppfolgingsenhetEndringData> eksisterendeHistorikk = enhetHistorikkRepository.hentOppfolgingsenhetEndringerForAktorId(aktorId);
 
         if (arenaNavKontor == null || !erUnderOppfolging(arenaOppfolging.getFormidlingsgruppekode(), arenaOppfolging.getKvalifiseringsgruppekode())) {
-            log.info(String.format("Legger ikke til historikkinnslag for på aktørid: %s fordi enhet mangler og/eller bruker er ikke under oppfølging", aktoerid));
+            log.info(String.format("Legger ikke til historikkinnslag for på aktørid: %s fordi enhet mangler og/eller bruker er ikke under oppfølging", aktorId));
         }
         else if (eksisterendeHistorikk.isEmpty()) {
-            log.info(String.format("Legger til første historikkinnslag for endret oppfolgingsenhet på aktørid: %s", aktoerid));
-            enhetHistorikkRepository.insertOppfolgingsenhetEndringForAktorId(aktoerid, arenaNavKontor);
+            log.info(String.format("Legger til første historikkinnslag for endret oppfolgingsenhet på aktørid: %s", aktorId));
+            enhetHistorikkRepository.insertOppfolgingsenhetEndringForAktorId(aktorId, arenaNavKontor);
         } else if (!arenaNavKontor.equals(eksisterendeHistorikk.get(0).getEnhet())) {
-            log.info(String.format("Legger til historikkinnslag for endret oppfolgingsenhet på aktørid: %s", aktoerid));
-            enhetHistorikkRepository.insertOppfolgingsenhetEndringForAktorId(aktoerid, arenaNavKontor);
+            log.info(String.format("Legger til historikkinnslag for endret oppfolgingsenhet på aktørid: %s", aktorId));
+            enhetHistorikkRepository.insertOppfolgingsenhetEndringForAktorId(aktorId, arenaNavKontor);
         }
     }
 

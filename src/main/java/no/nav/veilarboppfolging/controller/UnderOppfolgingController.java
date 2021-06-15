@@ -1,6 +1,7 @@
 package no.nav.veilarboppfolging.controller;
 
 import lombok.RequiredArgsConstructor;
+import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.controller.response.UnderOppfolgingDTO;
 import no.nav.veilarboppfolging.service.AuthService;
 import no.nav.veilarboppfolging.service.OppfolgingService;
@@ -23,9 +24,9 @@ public class UnderOppfolgingController {
     private final AuthService authService;
 
     @GetMapping
-    public UnderOppfolgingDTO underOppfolging(@RequestParam(value = "fnr", required = false) String fnr) {
+    public UnderOppfolgingDTO underOppfolging(@RequestParam(value = "fnr", required = false) Fnr fnr) {
         // TODO: Hvis dette endepunktet kun blir brukt av interne brukere så kan vi gjøre fnr query param required
-        String fodselsnummer = authService.hentIdentForEksternEllerIntern(fnr);
+        Fnr fodselsnummer = authService.hentIdentForEksternEllerIntern(fnr);
         return oppfolgingService.oppfolgingData(fodselsnummer);
     }
 

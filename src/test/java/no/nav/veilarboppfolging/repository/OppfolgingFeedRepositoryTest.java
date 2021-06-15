@@ -1,5 +1,6 @@
 package no.nav.veilarboppfolging.repository;
 
+import no.nav.common.types.identer.AktorId;
 import no.nav.veilarboppfolging.test.DbTestUtils;
 import no.nav.veilarboppfolging.test.LocalH2Database;
 import org.junit.After;
@@ -55,13 +56,14 @@ public class OppfolgingFeedRepositoryTest {
         IntStream
                 .range(1, 11)
                 .mapToObj(String::valueOf)
-                .forEach(aktoerId -> {
-                    oppfolgingsStatusRepository.opprettOppfolging(aktoerId);
-                    oppfolgingsPeriodeRepository.start(aktoerId);
+                .map(AktorId::of)
+                .forEach(aktorId -> {
+                    oppfolgingsStatusRepository.opprettOppfolging(aktorId);
+                    oppfolgingsPeriodeRepository.start(aktorId);
                 });
 
         // lage 1 bruker som ikke er under oppfølging
-        String ikkeUnderOppfolging = "testId";
+        AktorId ikkeUnderOppfolging = AktorId.of("testId");
         oppfolgingsStatusRepository.opprettOppfolging(ikkeUnderOppfolging);
         oppfolgingsPeriodeRepository.start(ikkeUnderOppfolging);
         oppfolgingsPeriodeRepository.avslutt(ikkeUnderOppfolging, "", "");
@@ -77,7 +79,7 @@ public class OppfolgingFeedRepositoryTest {
 
     @Test
     public void hentOppfolgingsperiode_periodeFinnes() {
-        String aktorId = randomNumeric(10);
+        AktorId aktorId = AktorId.of(randomNumeric(10));
         oppfolgingsStatusRepository.opprettOppfolging(aktorId);
         oppfolgingsPeriodeRepository.start(aktorId);
         var perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId);
@@ -94,7 +96,7 @@ public class OppfolgingFeedRepositoryTest {
 
     @Test
     public void hentOppfolgingsperiode_flerePerioder() {
-        String aktorId = randomNumeric(10);
+        AktorId aktorId = AktorId.of(randomNumeric(10));
         oppfolgingsStatusRepository.opprettOppfolging(aktorId);
         oppfolgingsPeriodeRepository.start(aktorId);
         oppfolgingsPeriodeRepository.avslutt(aktorId, "V123", "Fordi atte");
@@ -120,9 +122,11 @@ public class OppfolgingFeedRepositoryTest {
     private void createAntallTestBrukere(int antall) {
         IntStream
                 .range(1, antall+1)
-                .forEach(n -> {
-                    oppfolgingsStatusRepository.opprettOppfolging(String.valueOf(n));
-                    oppfolgingsPeriodeRepository.start(String.valueOf(n));
+                .mapToObj(String::valueOf)
+                .map(AktorId::of)
+                .forEach(aktorId -> {
+                    oppfolgingsStatusRepository.opprettOppfolging(aktorId);
+                    oppfolgingsPeriodeRepository.start(aktorId);
                 });
     }
 }

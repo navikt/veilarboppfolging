@@ -1,13 +1,12 @@
 package no.nav.veilarboppfolging.repository;
 
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.utils.DbUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Repository
@@ -19,7 +18,7 @@ public class BrukerOppslagFlereOppfolgingAktorRepository {
         this.db = db;
     }
 
-    public void insertBrukerHvisNy(String norskIdent){
+    public void insertBrukerHvisNy(Fnr norskIdent){
         try {
             insertBrukerOppslag(norskIdent);
         } catch (DuplicateKeyException e) {
@@ -28,7 +27,7 @@ public class BrukerOppslagFlereOppfolgingAktorRepository {
         }
     }
 
-    private void insertBrukerOppslag(String norskIdent) {
+    private void insertBrukerOppslag(Fnr norskIdent) {
         long id = DbUtils.nesteFraSekvens(db, "BRUKER_MED_FLERE_AKTORID_SEQ");
         db.update("INSERT INTO BRUKER_MED_FLERE_AKTORID(" +
                         "BRUKER_SEQ, " +
@@ -36,6 +35,6 @@ public class BrukerOppslagFlereOppfolgingAktorRepository {
                         "CREATED) " +
                         "VALUES(?, ?, CURRENT_TIMESTAMP)",
                 id,
-                norskIdent);
+                norskIdent.get());
     }
 }

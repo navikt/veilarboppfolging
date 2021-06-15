@@ -1,5 +1,6 @@
 package no.nav.veilarboppfolging.service;
 
+import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.client.varseloppgave.VarseloppgaveClient;
 import no.nav.veilarboppfolging.domain.EskaleringsvarselData;
@@ -43,8 +44,8 @@ public class EskaleringService {
         this.eskaleringsvarselRepository = eskaleringsvarselRepository;
     }
 
-    public void startEskalering(String fnr, String veilederId, String begrunnelse, long tilhorendeDialogId) {
-        String aktorId = authService.getAktorIdOrThrow(fnr);
+    public void startEskalering(Fnr fnr, String veilederId, String begrunnelse, long tilhorendeDialogId) {
+        AktorId aktorId = authService.getAktorIdOrThrow(fnr);
         String oppfolgingsEnhet = hentOppfolgingsEnhet(fnr);
 
         authService.sjekkLesetilgangMedAktorId(aktorId);
@@ -58,7 +59,7 @@ public class EskaleringService {
             }
 
             EskaleringsvarselData eskaleringsvarselData = EskaleringsvarselData.builder()
-                    .aktorId(aktorId)
+                    .aktorId(aktorId.get())
                     .opprettetAv(veilederId)
                     .opprettetBegrunnelse(begrunnelse)
                     .tilhorendeDialogId(tilhorendeDialogId)
@@ -70,8 +71,8 @@ public class EskaleringService {
         });
     }
 
-    public void stoppEskalering(String fnr, String veilederId, String begrunnelse) {
-        String aktorId = authService.getAktorIdOrThrow(fnr);
+    public void stoppEskalering(Fnr fnr, String veilederId, String begrunnelse) {
+        AktorId aktorId = authService.getAktorIdOrThrow(fnr);
         String oppfolgingsEnhet = hentOppfolgingsEnhet(fnr);
 
         authService.sjekkLesetilgangMedAktorId(aktorId);
@@ -86,9 +87,7 @@ public class EskaleringService {
         eskaleringsvarselRepository.finish(aktorId, gjeldendeEskaleringsvarselId, veilederId, begrunnelse);
     }
 
-    public void stoppEskaleringForAvsluttOppfolging(String fnr, String veilederId, String begrunnelse) {
-        String aktorId = authService.getAktorIdOrThrow(fnr);
-
+    public void stoppEskaleringForAvsluttOppfolging(AktorId aktorId, String veilederId, String begrunnelse) {
         long gjeldendeEskaleringsvarselId = oppfolgingsStatusRepository.fetch(aktorId).getGjeldendeEskaleringsvarselId();
 
         if (gjeldendeEskaleringsvarselId != 0) {
@@ -96,8 +95,8 @@ public class EskaleringService {
         }
     }
 
-    private String hentOppfolgingsEnhet(String fnr) {
-        return arenaOppfolgingService.hentOppfolgingFraVeilarbarena(Fnr.of(fnr))
+    private String hentOppfolgingsEnhet(Fnr fnr) {
+        return arenaOppfolgingService.hentOppfolgingFraVeilarbarena(fnr)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR)).getNav_kontor();
     }
 

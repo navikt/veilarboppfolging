@@ -2,6 +2,7 @@ package no.nav.veilarboppfolging.service;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV1;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
@@ -60,8 +61,8 @@ public class KvpService {
     }
 
     @SneakyThrows
-    public void startKvp(String fnr, String begrunnelse) {
-        String aktorId = authService.getAktorIdOrThrow(fnr);
+    public void startKvp(Fnr fnr, String begrunnelse) {
+        AktorId aktorId = authService.getAktorIdOrThrow(fnr);
 
         authService.sjekkLesetilgangMedAktorId(aktorId);
 
@@ -71,7 +72,7 @@ public class KvpService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
 
-        String enhet = veilarbarenaClient.hentOppfolgingsbruker(Fnr.of(fnr))
+        String enhet = veilarbarenaClient.hentOppfolgingsbruker(fnr)
                 .map(VeilarbArenaOppfolging::getNav_kontor).orElse(null);
         if (!authService.harTilgangTilEnhet(enhet)) {
             log.warn(format("Ingen tilgang til enhet '%s'", enhet));
@@ -85,6 +86,8 @@ public class KvpService {
 
         String veilederId = authService.getInnloggetVeilederIdent();
 
+        // TODO: Send med dato til repository og kafkaProducerService
+
         kvpRepository.startKvp(aktorId, enhet, veilederId, begrunnelse);
 
         log.info("KVP startet for bruker med aktorId {} på enhet {} av veileder {}", aktorId, enhet, veilederId);
@@ -94,11 +97,11 @@ public class KvpService {
     }
 
     @SneakyThrows
-    public void stopKvp(String fnr, String begrunnelse) {
-        String aktorId = authService.getAktorIdOrThrow(fnr);
+    public void stopKvp(Fnr fnr, String begrunnelse) {
+        AktorId aktorId = authService.getAktorIdOrThrow(fnr);
 
         authService.sjekkLesetilgangMedAktorId(aktorId);
-        String enhet = veilarbarenaClient.hentOppfolgingsbruker(Fnr.of(fnr))
+        String enhet = veilarbarenaClient.hentOppfolgingsbruker(fnr)
                 .map(VeilarbArenaOppfolging::getNav_kontor).orElse(null);
 
         if (!authService.harTilgangTilEnhet(enhet)) {
@@ -109,7 +112,7 @@ public class KvpService {
         stopKvpUtenEnhetSjekk(veilederId, aktorId, begrunnelse, NAV);
     }
 
-    public boolean erUnderKvp(String aktorId) {
+    public boolean erUnderKvp(AktorId aktorId) {
         return erUnderKvp(kvpRepository.gjeldendeKvp(aktorId));
     }
 
@@ -118,7 +121,7 @@ public class KvpService {
         return kvpId != 0L;
     }
 
-    private void stopKvpUtenEnhetSjekk(String avsluttetAv, String aktorId, String begrunnelse, KodeverkBruker kodeverkBruker) {
+    private void stopKvpUtenEnhetSjekk(String avsluttetAv, AktorId aktorId, String begrunnelse, KodeverkBruker kodeverkBruker) {
         OppfolgingTable oppfolgingTable = oppfolgingsStatusRepository.fetch(aktorId);
         long gjeldendeKvpId = oppfolgingTable.getGjeldendeKvpId();
 
@@ -143,7 +146,8 @@ public class KvpService {
     }
 
     public void avsluttKvpVedEnhetBytte(EndringPaaOppfoelgingsBrukerV1 endretBruker) {
-        Kvp gjeldendeKvp = gjeldendeKvp(endretBruker.getAktoerid());
+        AktorId aktorId = AktorId.of(endretBruker.getAktoerid());
+        Kvp gjeldendeKvp = gjeldendeKvp(aktorId);
 
         if (gjeldendeKvp == null) {
             return;
@@ -152,12 +156,12 @@ public class KvpService {
         boolean harByttetKontor = !endretBruker.getNav_kontor().equals(gjeldendeKvp.getEnhet());
 
         if (harByttetKontor) {
-            stopKvpUtenEnhetSjekk(SYSTEM_USER_NAME, endretBruker.getAktoerid(), "KVP avsluttet automatisk pga. endret Nav-enhet", SYSTEM);
+            stopKvpUtenEnhetSjekk(SYSTEM_USER_NAME, aktorId, "KVP avsluttet automatisk pga. endret Nav-enhet", SYSTEM);
             metricsService.stopKvpDueToChangedUnit();
         }
     }
 
-    Kvp gjeldendeKvp(String aktorId) {
+    Kvp gjeldendeKvp(AktorId aktorId) {
         return kvpRepository.fetch(kvpRepository.gjeldendeKvp(aktorId));
     }
 
