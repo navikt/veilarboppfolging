@@ -2,7 +2,7 @@ package no.nav.veilarboppfolging.utils;
 
 import no.nav.pto_schema.kafka.json.topic.SisteOppfolgingsperiodeV1;
 import no.nav.pto_schema.kafka.json.topic.SisteTilordnetVeilederV1;
-import no.nav.veilarboppfolging.controller.domain.*;
+import no.nav.veilarboppfolging.controller.response.*;
 import no.nav.veilarboppfolging.domain.*;
 
 import java.util.Collections;

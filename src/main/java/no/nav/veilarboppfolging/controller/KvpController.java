@@ -4,7 +4,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import no.nav.common.auth.context.AuthContextHolder;
-import no.nav.veilarboppfolging.controller.domain.KvpDTO;
+import no.nav.veilarboppfolging.controller.response.KvpDTO;
 import no.nav.veilarboppfolging.domain.Kvp;
 import no.nav.veilarboppfolging.repository.KvpRepository;
 import no.nav.veilarboppfolging.service.AuthService;

@@ -1,11 +1,11 @@
 package no.nav.veilarboppfolging.service;
 
 import lombok.extern.slf4j.Slf4j;
-import no.nav.veilarboppfolging.controller.domain.OppfolgingFeedDTO;
-import no.nav.veilarboppfolging.controller.domain.TilordneVeilederResponse;
-import no.nav.veilarboppfolging.controller.domain.VeilederTilordning;
+import no.nav.veilarboppfolging.controller.request.VeilederTilordning;
+import no.nav.veilarboppfolging.controller.response.TilordneVeilederResponse;
 import no.nav.veilarboppfolging.domain.Tilordning;
 import no.nav.veilarboppfolging.feed.cjm.producer.FeedProducer;
+import no.nav.veilarboppfolging.feed.domain.OppfolgingFeedDTO;
 import no.nav.veilarboppfolging.repository.VeilederHistorikkRepository;
 import no.nav.veilarboppfolging.repository.VeilederTilordningerRepository;
 import no.nav.veilarboppfolging.schedule.IdPaOppfolgingFeedSchedule;

@@ -1,6 +1,6 @@
 package no.nav.veilarboppfolging.controller;
 
-import no.nav.veilarboppfolging.controller.domain.Mal;
+import no.nav.veilarboppfolging.controller.response.Mal;
 import no.nav.veilarboppfolging.domain.MalData;
 import no.nav.veilarboppfolging.service.AuthService;
 import no.nav.veilarboppfolging.service.MalService;

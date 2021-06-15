@@ -4,8 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.client.norg2.Norg2Client;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
-import no.nav.veilarboppfolging.controller.domain.OppfolgingEnhetMedVeileder;
-import no.nav.veilarboppfolging.domain.Oppfolgingsenhet;
+import no.nav.veilarboppfolging.controller.response.OppfolgingEnhetMedVeilederResponse;
 import no.nav.veilarboppfolging.repository.VeilederTilordningerRepository;
 import no.nav.veilarboppfolging.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,14 +45,14 @@ public class ArenaOppfolgingController {
      API used by veilarbmaofs. Contains only the necessary information
      */
     @GetMapping("/{fnr}/oppfolgingsstatus")
-    public OppfolgingEnhetMedVeileder getOppfolginsstatus(@PathVariable("fnr") String fnr) {
+    public OppfolgingEnhetMedVeilederResponse getOppfolginsstatus(@PathVariable("fnr") String fnr) {
 
         authService.sjekkLesetilgangMedFnr(fnr);
 
         VeilarbArenaOppfolging veilarbArenaOppfolging = veilarbarenaClient.hentOppfolgingsbruker(fnr)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Bruker ikke funnet"));
 
-        OppfolgingEnhetMedVeileder oppfolgingEnhetMedVeileder = new OppfolgingEnhetMedVeileder()
+        OppfolgingEnhetMedVeilederResponse oppfolgingEnhetMedVeileder = new OppfolgingEnhetMedVeilederResponse()
                 .setServicegruppe(veilarbArenaOppfolging.getKvalifiseringsgruppekode())
                 .setFormidlingsgruppe(veilarbArenaOppfolging.getFormidlingsgruppekode())
                 .setOppfolgingsenhet(hentEnhet(veilarbArenaOppfolging.getNav_kontor()))
@@ -69,16 +68,16 @@ public class ArenaOppfolgingController {
         return oppfolgingEnhetMedVeileder;
     }
 
-    private Oppfolgingsenhet hentEnhet(String oppfolgingsenhetId) {
-        Oppfolgingsenhet enhet = new Oppfolgingsenhet()
-                .withEnhetId(oppfolgingsenhetId);
+    private OppfolgingEnhetMedVeilederResponse.Oppfolgingsenhet hentEnhet(String enhetId) {
+        String enhetNavn = "";
 
         try {
-            return enhet.withNavn(norg2Client.hentEnhet(oppfolgingsenhetId).getNavn());
+            enhetNavn = norg2Client.hentEnhet(enhetId).getNavn();
         } catch (Exception e) {
             log.warn("Fant ikke navn på enhet", e);
-            return enhet.withNavn("");
         }
+
+       return new OppfolgingEnhetMedVeilederResponse.Oppfolgingsenhet(enhetNavn, enhetId);
     }
 
 }

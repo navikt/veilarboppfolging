@@ -2,7 +2,7 @@ package no.nav.veilarboppfolging.controller;
 
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.json.JsonUtils;
-import no.nav.veilarboppfolging.controller.domain.KvpDTO;
+import no.nav.veilarboppfolging.controller.response.KvpDTO;
 import no.nav.veilarboppfolging.domain.Kvp;
 import no.nav.veilarboppfolging.repository.KvpRepository;
 import no.nav.veilarboppfolging.service.AuthService;

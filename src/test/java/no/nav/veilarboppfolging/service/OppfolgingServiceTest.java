@@ -8,11 +8,14 @@ import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskont
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeResponse;
 import no.nav.veilarboppfolging.client.dkif.DkifClient;
 import no.nav.veilarboppfolging.client.dkif.DkifKontaktinfo;
-import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
 import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktClient;
 import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktMapper;
 import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktResponse;
-import no.nav.veilarboppfolging.domain.*;
+import no.nav.veilarboppfolging.controller.response.VeilederTilgang;
+import no.nav.veilarboppfolging.domain.ArenaOppfolgingTilstand;
+import no.nav.veilarboppfolging.domain.AvslutningStatusData;
+import no.nav.veilarboppfolging.domain.OppfolgingStatusData;
+import no.nav.veilarboppfolging.domain.Oppfolgingsperiode;
 import no.nav.veilarboppfolging.repository.*;
 import no.nav.veilarboppfolging.test.IsolatedDatabaseTest;
 import no.nav.veilarboppfolging.utils.DateUtils;
@@ -46,7 +49,6 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
     private ArenaOppfolgingTilstand arenaOppfolgingTilstand;
 
-    private VeilarbarenaClient veilarbarenaClient = mock(VeilarbarenaClient.class);
     private DkifClient dkifClient = mock(DkifClient.class);
     private AuthService authService = mock(AuthService.class);
     private KafkaProducerService kafkaProducerService = mock(KafkaProducerService.class);
@@ -171,7 +173,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
     @Test
     public void ukjentAktor() {
-        doCallRealMethod().when(authService).sjekkLesetilgangMedFnr(any());
+        doCallRealMethod().when(authService).sjekkLesetilgangMedFnr(any(String.class));
         doThrow(new IllegalArgumentException()).when(authService).getAktorIdOrThrow(FNR);
         assertThrows(IllegalArgumentException.class, this::hentOppfolgingStatus);
     }

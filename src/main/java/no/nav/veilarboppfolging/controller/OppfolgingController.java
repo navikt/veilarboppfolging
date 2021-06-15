@@ -1,9 +1,8 @@
 package no.nav.veilarboppfolging.controller;
 
-import no.nav.veilarboppfolging.controller.domain.*;
-import no.nav.veilarboppfolging.domain.InnstillingsHistorikk;
+import no.nav.veilarboppfolging.controller.request.*;
+import no.nav.veilarboppfolging.controller.response.*;
 import no.nav.veilarboppfolging.domain.KodeverkBruker;
-import no.nav.veilarboppfolging.domain.VeilederTilgang;
 import no.nav.veilarboppfolging.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

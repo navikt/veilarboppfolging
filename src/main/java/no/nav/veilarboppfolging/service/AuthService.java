@@ -96,8 +96,16 @@ public class AuthService {
         sjekkLesetilgangMedAktorId(getAktorIdOrThrow(fnr));
     }
 
+    public void sjekkLesetilgangMedFnr(Fnr fnr) {
+        sjekkLesetilgangMedAktorId(getAktorIdOrThrow(fnr));
+    }
+
     public void sjekkLesetilgangMedAktorId(String aktorId) {
-        if (!veilarbPep.harTilgangTilPerson(getInnloggetBrukerToken(), ActionId.READ, AktorId.of(aktorId))) {
+        sjekkLesetilgangMedAktorId(AktorId.of(aktorId));
+    }
+
+    public void sjekkLesetilgangMedAktorId(AktorId aktorId) {
+        if (!veilarbPep.harTilgangTilPerson(getInnloggetBrukerToken(), ActionId.READ, aktorId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
     }
@@ -172,6 +180,10 @@ public class AuthService {
 
     public String getAktorIdOrThrow(String fnr) {
         return aktorOppslagClient.hentAktorId(Fnr.of(fnr)).get();
+    }
+
+    public AktorId getAktorIdOrThrow(Fnr fnr) {
+        return aktorOppslagClient.hentAktorId(fnr);
     }
 
     public String getFnrOrThrow(String aktorId) {

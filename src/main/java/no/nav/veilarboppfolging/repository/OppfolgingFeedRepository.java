@@ -2,7 +2,7 @@ package no.nav.veilarboppfolging.repository;
 
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import no.nav.veilarboppfolging.controller.domain.OppfolgingFeedDTO;
+import no.nav.veilarboppfolging.feed.domain.OppfolgingFeedDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;

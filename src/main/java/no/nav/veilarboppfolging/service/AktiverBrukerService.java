@@ -2,8 +2,12 @@ package no.nav.veilarboppfolging.service;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.client.behandle_arbeidssoker.BehandleArbeidssokerClient;
-import no.nav.veilarboppfolging.domain.*;
+import no.nav.veilarboppfolging.controller.request.AktiverArbeidssokerData;
+import no.nav.veilarboppfolging.controller.request.SykmeldtBrukerType;
+import no.nav.veilarboppfolging.domain.Innsatsgruppe;
+import no.nav.veilarboppfolging.domain.Oppfolgingsbruker;
 import no.nav.veilarboppfolging.repository.NyeBrukereFeedRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -43,17 +47,18 @@ public class AktiverBrukerService {
     }
 
     public void aktiverBruker(AktiverArbeidssokerData bruker) {
-        String fnr = ofNullable(bruker.getFnr())
-                .map(Fnr::getFnr)
+        no.nav.veilarboppfolging.controller.request.Fnr requestFnr = ofNullable(bruker.getFnr())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "FNR mangler"));
 
-        AktorId aktorId = AktorId.of(authService.getAktorIdOrThrow(fnr));
+        Fnr fnr = Fnr.of(requestFnr.getFnr());
+
+        AktorId aktorId = authService.getAktorIdOrThrow(fnr);
 
         transactor.executeWithoutResult((status) -> aktiverBrukerOgOppfolging(fnr, aktorId, bruker.getInnsatsgruppe()));
     }
 
     public void reaktiverBruker(Fnr fnr) {
-        AktorId aktorId = new AktorId(authService.getAktorIdOrThrow(fnr.getFnr()));
+        AktorId aktorId = new AktorId(authService.getAktorIdOrThrow(fnr.get()));
 
         transactor.executeWithoutResult((status) -> startReaktiveringAvBrukerOgOppfolging(fnr, aktorId));
     }
@@ -68,7 +73,7 @@ public class AktiverBrukerService {
         behandleArbeidssokerClient.reaktiverBrukerIArena(fnr);
     }
 
-    private void aktiverBrukerOgOppfolging(String fnr, AktorId aktorId, Innsatsgruppe innsatsgruppe) {
+    private void aktiverBrukerOgOppfolging(Fnr fnr, AktorId aktorId, Innsatsgruppe innsatsgruppe) {
         oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(
                 Oppfolgingsbruker.builder()
                         .aktoerId(aktorId.get())
@@ -80,11 +85,11 @@ public class AktiverBrukerService {
         nyeBrukereFeedRepository.tryLeggTilFeedIdPaAlleElementerUtenFeedId();
     }
 
-    public void aktiverSykmeldt(String uid, SykmeldtBrukerType sykmeldtBrukerType) {
+    public void aktiverSykmeldt(Fnr fnr, SykmeldtBrukerType sykmeldtBrukerType) {
         transactor.executeWithoutResult((status) -> {
             Oppfolgingsbruker oppfolgingsbruker = Oppfolgingsbruker.builder()
                     .sykmeldtBrukerType(sykmeldtBrukerType)
-                    .aktoerId(authService.getAktorIdOrThrow(uid))
+                    .aktoerId(authService.getAktorIdOrThrow(fnr).get())
                     .build();
 
             oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(oppfolgingsbruker);

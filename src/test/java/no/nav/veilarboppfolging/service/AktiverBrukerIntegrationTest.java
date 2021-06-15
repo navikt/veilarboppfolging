@@ -1,9 +1,10 @@
 package no.nav.veilarboppfolging.service;
 
 import io.vavr.control.Try;
+import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.client.behandle_arbeidssoker.BehandleArbeidssokerClient;
-import no.nav.veilarboppfolging.domain.AktiverArbeidssokerData;
-import no.nav.veilarboppfolging.domain.Fnr;
+import no.nav.veilarboppfolging.controller.request.AktiverArbeidssokerData;
 import no.nav.veilarboppfolging.domain.Innsatsgruppe;
 import no.nav.veilarboppfolging.domain.Oppfolging;
 import no.nav.veilarboppfolging.repository.*;
@@ -59,12 +60,12 @@ public class AktiverBrukerIntegrationTest {
         );
 
         DbTestUtils.cleanupTestDb();
-        when(authService.getAktorIdOrThrow(any())).thenReturn(IDENT);
+        when(authService.getAktorIdOrThrow(any(Fnr.class))).thenReturn(AktorId.of(IDENT));
     }
 
     @Test
     public void skalRulleTilbakeDatabaseDersomKallTilArenaFeiler() {
-        doThrow(new RuntimeException()).when(behandleArbeidssokerClient).opprettBrukerIArena(anyString(), any());
+        doThrow(new RuntimeException()).when(behandleArbeidssokerClient).opprettBrukerIArena(any(), any());
 
         AktiverArbeidssokerData data = lagBruker(IDENT);
 
@@ -97,8 +98,8 @@ public class AktiverBrukerIntegrationTest {
         assertThat(oppfolging.get().isUnderOppfolging()).isTrue();
     }
 
-    private AktiverArbeidssokerData lagBruker(String ident) {
-        return new AktiverArbeidssokerData(new Fnr(ident), Innsatsgruppe.STANDARD_INNSATS);
+    private AktiverArbeidssokerData lagBruker(String fnr) {
+        return new AktiverArbeidssokerData(new no.nav.veilarboppfolging.controller.request.Fnr(fnr), Innsatsgruppe.STANDARD_INNSATS);
     }
 
 }

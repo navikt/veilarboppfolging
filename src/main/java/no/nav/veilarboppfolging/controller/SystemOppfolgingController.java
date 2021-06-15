@@ -1,10 +1,11 @@
 package no.nav.veilarboppfolging.controller;
 
+import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.client.behandle_arbeidssoker.ArenaFeilException;
-import no.nav.veilarboppfolging.controller.domain.ArenaFeilDTO;
-import no.nav.veilarboppfolging.domain.AktiverArbeidssokerData;
-import no.nav.veilarboppfolging.domain.Fnr;
-import no.nav.veilarboppfolging.domain.SykmeldtBrukerType;
+import no.nav.veilarboppfolging.controller.request.AktiverArbeidssokerData;
+import no.nav.veilarboppfolging.controller.request.ReaktiverBrukerRequest;
+import no.nav.veilarboppfolging.controller.request.SykmeldtBrukerType;
+import no.nav.veilarboppfolging.controller.response.ArenaFeilDTO;
 import no.nav.veilarboppfolging.service.AktiverBrukerService;
 import no.nav.veilarboppfolging.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,12 +48,12 @@ public class SystemOppfolgingController {
     }
 
     @PostMapping("/reaktiverbruker")
-    public ResponseEntity reaktiverBruker(@RequestBody Fnr fnr) {
+    public ResponseEntity reaktiverBruker(@RequestBody ReaktiverBrukerRequest request) {
         authService.skalVereSystemBruker();
-        authService.sjekkLesetilgangMedFnr(fnr.getFnr());
+        authService.sjekkLesetilgangMedFnr(request.getFnr());
 
         try {
-            aktiverBrukerService.reaktiverBruker(fnr);
+            aktiverBrukerService.reaktiverBruker(request.getFnr());
         } catch (ArenaFeilException exception) {
             // veilarbregistrering må ha body i response som inneholder årsak til feil fra Arena
              return ResponseEntity
@@ -64,7 +65,7 @@ public class SystemOppfolgingController {
     }
 
     @PostMapping("/aktiverSykmeldt")
-    public ResponseEntity aktiverSykmeldt(@RequestBody SykmeldtBrukerType sykmeldtBrukerType, @RequestParam String fnr) {
+    public ResponseEntity aktiverSykmeldt(@RequestBody SykmeldtBrukerType sykmeldtBrukerType, @RequestParam Fnr fnr) {
         authService.skalVereSystemBruker();
         authService.sjekkLesetilgangMedFnr(fnr);
         aktiverBrukerService.aktiverSykmeldt(fnr, sykmeldtBrukerType);

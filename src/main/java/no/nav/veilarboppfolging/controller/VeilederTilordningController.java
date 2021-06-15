@@ -1,7 +1,7 @@
 package no.nav.veilarboppfolging.controller;
 
-import no.nav.veilarboppfolging.controller.domain.TilordneVeilederResponse;
-import no.nav.veilarboppfolging.controller.domain.VeilederTilordning;
+import no.nav.veilarboppfolging.controller.request.VeilederTilordning;
+import no.nav.veilarboppfolging.controller.response.TilordneVeilederResponse;
 import no.nav.veilarboppfolging.service.VeilederTilordningService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

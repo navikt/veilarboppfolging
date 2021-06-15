@@ -1,6 +1,6 @@
 package no.nav.veilarboppfolging.controller;
 
-import no.nav.veilarboppfolging.controller.domain.Veileder;
+import no.nav.veilarboppfolging.controller.response.Veileder;
 import no.nav.veilarboppfolging.repository.VeilederTilordningerRepository;
 import no.nav.veilarboppfolging.service.AuthService;
 import org.springframework.web.bind.annotation.GetMapping;

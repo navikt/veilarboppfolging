@@ -1,14 +1,15 @@
 package no.nav.veilarboppfolging.feed;
 
 import lombok.extern.slf4j.Slf4j;
-import no.nav.veilarboppfolging.controller.domain.AvsluttetOppfolgingFeedDTO;
-import no.nav.veilarboppfolging.controller.domain.KvpDTO;
-import no.nav.veilarboppfolging.controller.domain.OppfolgingFeedDTO;
+import no.nav.veilarboppfolging.controller.response.KvpDTO;
 import no.nav.veilarboppfolging.feed.cjm.common.Authorization;
 import no.nav.veilarboppfolging.feed.cjm.common.FeedRequest;
 import no.nav.veilarboppfolging.feed.cjm.common.FeedResponse;
 import no.nav.veilarboppfolging.feed.cjm.common.FeedWebhookRequest;
 import no.nav.veilarboppfolging.feed.cjm.producer.FeedProducer;
+import no.nav.veilarboppfolging.feed.domain.AvsluttetOppfolgingFeedDTO;
+import no.nav.veilarboppfolging.feed.domain.NyeBrukereFeedDTO;
+import no.nav.veilarboppfolging.feed.domain.OppfolgingFeedDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

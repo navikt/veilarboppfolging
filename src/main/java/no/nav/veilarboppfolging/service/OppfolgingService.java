@@ -6,7 +6,8 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.veilarboppfolging.client.dkif.DkifClient;
 import no.nav.veilarboppfolging.client.dkif.DkifKontaktinfo;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
-import no.nav.veilarboppfolging.controller.domain.UnderOppfolgingDTO;
+import no.nav.veilarboppfolging.controller.response.UnderOppfolgingDTO;
+import no.nav.veilarboppfolging.controller.response.VeilederTilgang;
 import no.nav.veilarboppfolging.domain.*;
 import no.nav.veilarboppfolging.repository.*;
 import no.nav.veilarboppfolging.utils.ArenaUtils;
@@ -336,7 +337,7 @@ public class OppfolgingService {
                 .kanAvslutte(kanAvslutte)
                 .underOppfolging(erUnderOppfolging)
                 .harYtelser(ytelserOgAktiviteterService.harPagaendeYtelse(fnr))
-                .underKvp(kvpService.erUnderKvp(authService.getAktorIdOrThrow(fnr)))
+                .underKvp(kvpService.erUnderKvp(aktorId))
                 .inaktiveringsDato(inaktiveringsDato)
                 .build();
     }

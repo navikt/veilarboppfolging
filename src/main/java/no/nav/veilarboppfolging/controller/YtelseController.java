@@ -1,9 +1,9 @@
 package no.nav.veilarboppfolging.controller;
 
 import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktClient;
-import no.nav.veilarboppfolging.service.AuthService;
-import no.nav.veilarboppfolging.controller.domain.YtelserResponse;
 import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktResponse;
+import no.nav.veilarboppfolging.controller.response.YtelserResponse;
+import no.nav.veilarboppfolging.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.time.LocalDate;
-import java.util.List;
 
 import static no.nav.veilarboppfolging.utils.DateUtils.convertDateToXMLGregorianCalendar;
 

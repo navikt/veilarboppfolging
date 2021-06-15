@@ -1,8 +1,9 @@
 package no.nav.veilarboppfolging.service;
 
+import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.client.behandle_arbeidssoker.BehandleArbeidssokerClient;
-import no.nav.veilarboppfolging.domain.AktiverArbeidssokerData;
-import no.nav.veilarboppfolging.domain.Fnr;
+import no.nav.veilarboppfolging.controller.request.AktiverArbeidssokerData;
 import no.nav.veilarboppfolging.domain.Innsatsgruppe;
 import no.nav.veilarboppfolging.repository.NyeBrukereFeedRepository;
 import no.nav.veilarboppfolging.test.DbTestUtils;
@@ -41,15 +42,15 @@ public class AktiverBrukerServiceTest {
 
     @Test
     public void skalRegistrereIArena() {
-        when(authService.getAktorIdOrThrow(any())).thenReturn("1234");
+        when(authService.getAktorIdOrThrow(any(Fnr.class))).thenReturn(AktorId.of("1234"));
         aktiverBrukerService.aktiverBruker(hentBruker());
         verify(behandleArbeidssokerClient, times(1)).opprettBrukerIArena(any(), any());
     }
 
     @Test
     public void brukerSomHarInaktivStatusSkalKunneReaktivereSeg() {
-        when(authService.getAktorIdOrThrow(any())).thenReturn("1234");
-        aktiverBrukerService.reaktiverBruker(new Fnr("fnr"));
+        when(authService.getAktorIdOrThrow(any(String.class))).thenReturn("1234");
+        aktiverBrukerService.reaktiverBruker(Fnr.of("fnr"));
         verify(behandleArbeidssokerClient, times(1)).reaktiverBrukerIArena(any());
     }
 
@@ -125,7 +126,7 @@ public class AktiverBrukerServiceTest {
     }
 
     private AktiverArbeidssokerData hentBruker() {
-        return new AktiverArbeidssokerData(new Fnr("fnr"), Innsatsgruppe.STANDARD_INNSATS);
+        return new AktiverArbeidssokerData(new no.nav.veilarboppfolging.controller.request.Fnr("fnr"), Innsatsgruppe.STANDARD_INNSATS);
     }
 
 }
