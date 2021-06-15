@@ -1,5 +1,6 @@
 package no.nav.veilarboppfolging.controller;
 
+import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.controller.response.Veileder;
 import no.nav.veilarboppfolging.repository.VeilederTilordningerRepository;
 import no.nav.veilarboppfolging.service.AuthService;
@@ -22,7 +23,7 @@ public class VeilederController {
     }
 
     @GetMapping("/{fnr}/veileder")
-    public Veileder getVeileder(@PathVariable("fnr") String fnr) {
+    public Veileder getVeileder(@PathVariable("fnr") Fnr fnr) {
         authService.skalVereInternBruker();
         authService.sjekkLesetilgangMedFnr(fnr);
 

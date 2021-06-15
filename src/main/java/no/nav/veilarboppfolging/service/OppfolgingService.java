@@ -3,6 +3,7 @@ package no.nav.veilarboppfolging.service;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.client.dkif.DkifClient;
 import no.nav.veilarboppfolging.client.dkif.DkifKontaktinfo;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
@@ -137,7 +138,7 @@ public class OppfolgingService {
 
         authService.sjekkLesetilgangMedFnr(fnr);
 
-        ArenaOppfolgingTilstand arenaOppfolgingTilstand = arenaOppfolgingService.hentOppfolgingTilstand(fnr)
+        ArenaOppfolgingTilstand arenaOppfolgingTilstand = arenaOppfolgingService.hentOppfolgingTilstand(Fnr.of(fnr))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR));
 
         authService.sjekkTilgangTilEnhet(arenaOppfolgingTilstand.getOppfolgingsenhet());
@@ -158,7 +159,7 @@ public class OppfolgingService {
 
         authService.sjekkLesetilgangMedFnr(fnr);
 
-        ArenaOppfolgingTilstand arenaOppfolgingTilstand = arenaOppfolgingService.hentOppfolgingTilstand(fnr)
+        ArenaOppfolgingTilstand arenaOppfolgingTilstand = arenaOppfolgingService.hentOppfolgingTilstand(Fnr.of(fnr))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR));
 
         authService.sjekkTilgangTilEnhet(arenaOppfolgingTilstand.getOppfolgingsenhet());
@@ -179,7 +180,7 @@ public class OppfolgingService {
     public boolean avsluttOppfolgingForSystemBruker(String fnr) {
         String aktorId = authService.getAktorIdOrThrow(fnr);
 
-        ArenaOppfolgingTilstand arenaOppfolgingTilstand = arenaOppfolgingService.hentOppfolgingTilstand(fnr)
+        ArenaOppfolgingTilstand arenaOppfolgingTilstand = arenaOppfolgingService.hentOppfolgingTilstand(Fnr.of(fnr))
                 .orElseThrow();
 
         log.info("Avslutting av oppfølging, tilstand i Arena for aktorid {}: {}", aktorId, arenaOppfolgingTilstand);
@@ -203,7 +204,7 @@ public class OppfolgingService {
     @SneakyThrows
     public VeilederTilgang hentVeilederTilgang(String fnr) {
         authService.sjekkLesetilgangMedFnr(fnr);
-        Optional<VeilarbArenaOppfolging> arenaBruker = arenaOppfolgingService.hentOppfolgingFraVeilarbarena(fnr);
+        Optional<VeilarbArenaOppfolging> arenaBruker = arenaOppfolgingService.hentOppfolgingFraVeilarbarena(Fnr.of(fnr));
         String oppfolgingsenhet = arenaBruker.map(VeilarbArenaOppfolging::getNav_kontor).orElse(null);
         boolean tilgangTilEnhet = authService.harTilgangTilEnhet(oppfolgingsenhet);
         return new VeilederTilgang().setTilgangTilBrukersKontor(tilgangTilEnhet);
@@ -266,7 +267,7 @@ public class OppfolgingService {
         }
 
         // TODO: Burde kanskje heller feile istedenfor å bruke Optional
-        Optional<ArenaOppfolgingTilstand> maybeArenaOppfolging = arenaOppfolgingService.hentOppfolgingTilstand(fnr);
+        Optional<ArenaOppfolgingTilstand> maybeArenaOppfolging = arenaOppfolgingService.hentOppfolgingTilstand(Fnr.of(fnr));
 
         boolean kanSettesUnderOppfolging = !oppfolging.isUnderOppfolging() && maybeArenaOppfolging
                 .map(s -> kanSettesUnderOppfolging(s.getFormidlingsgruppe(), s.getServicegruppe()))
@@ -319,7 +320,7 @@ public class OppfolgingService {
 
         OppfolgingTable oppfolging = oppfolgingsStatusRepository.fetch(aktorId);
 
-        Optional<ArenaOppfolgingTilstand> maybeArenaOppfolging = arenaOppfolgingService.hentOppfolgingTilstand(fnr);
+        Optional<ArenaOppfolgingTilstand> maybeArenaOppfolging = arenaOppfolgingService.hentOppfolgingTilstand(Fnr.of(fnr));
 
         boolean erIserv = maybeArenaOppfolging.map(ao -> erIserv(ao.getFormidlingsgruppe())).orElse(false);
 
@@ -456,7 +457,7 @@ public class OppfolgingService {
 
     private void sjekkStatusIArenaOgOppdaterOppfolging(String fnr) {
         String aktorId = authService.getAktorIdOrThrow(fnr);
-        Optional<ArenaOppfolgingTilstand> arenaOppfolgingTilstand = arenaOppfolgingService.hentOppfolgingTilstand(fnr);
+        Optional<ArenaOppfolgingTilstand> arenaOppfolgingTilstand = arenaOppfolgingService.hentOppfolgingTilstand(Fnr.of(fnr));
 
         arenaOppfolgingTilstand.ifPresent(oppfolgingTilstand -> {
             Optional<OppfolgingTable> maybeOppfolging = ofNullable(oppfolgingsStatusRepository.fetch(aktorId));
@@ -494,7 +495,7 @@ public class OppfolgingService {
     private void sjekkOgOppdaterBrukerDirekteFraArena(String fnr, ArenaOppfolgingTilstand arenaOppfolgingTilstand, OppfolgingTable oppfolging) {
         Optional<ArenaOppfolgingTilstand> maybeTilstandDirekteFraArena = arenaOppfolgingTilstand.isDirekteFraArena()
                 ? of(arenaOppfolgingTilstand)
-                : arenaOppfolgingService.hentOppfolgingTilstandDirekteFraArena(fnr);
+                : arenaOppfolgingService.hentOppfolgingTilstandDirekteFraArena(Fnr.of(fnr));
 
         maybeTilstandDirekteFraArena.ifPresent(tilstandDirekteFraArena -> {
             boolean erInaktivIArena = erInaktivIArena(tilstandDirekteFraArena);

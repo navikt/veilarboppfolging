@@ -3,6 +3,7 @@ package no.nav.veilarboppfolging.service;
 import io.vavr.collection.Stream;
 import lombok.SneakyThrows;
 import lombok.val;
+import no.nav.common.types.identer.Fnr;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt.WSYtelseskontrakt;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeRequest;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeResponse;
@@ -96,7 +97,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         gittArenaOppfolgingStatus("", "");
 
         when(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID);
-        when(arenaOppfolgingService.hentOppfolgingTilstand(FNR)).thenReturn(Optional.of(arenaOppfolgingTilstand));
+        when(arenaOppfolgingService.hentOppfolgingTilstand(Fnr.of(FNR))).thenReturn(Optional.of(arenaOppfolgingTilstand));
         when(ytelseskontraktClient.hentYtelseskontraktListe(any())).thenReturn(mock(YtelseskontraktResponse.class));
         when(dkifClient.hentKontaktInfo(FNR)).thenReturn(new DkifKontaktinfo());
     }
@@ -219,7 +220,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         assertUnderOppfolgingLagret(AKTOR_ID);
 
         gittInaktivOppfolgingStatus(false);
-        when(arenaOppfolgingService.hentOppfolgingTilstandDirekteFraArena(FNR)).thenReturn(Optional.of(arenaOppfolgingTilstand));
+        when(arenaOppfolgingService.hentOppfolgingTilstandDirekteFraArena(Fnr.of(FNR))).thenReturn(Optional.of(arenaOppfolgingTilstand));
 
         hentOppfolgingStatus();
 

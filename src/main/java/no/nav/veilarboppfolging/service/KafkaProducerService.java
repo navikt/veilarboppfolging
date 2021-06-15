@@ -3,6 +3,7 @@ package no.nav.veilarboppfolging.service;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.kafka.producer.feilhandtering.KafkaProducerRecordStorage;
 import no.nav.common.kafka.producer.serializer.JsonValidationSerializer;
+import no.nav.common.types.identer.AktorId;
 import no.nav.pto_schema.kafka.json.topic.SisteOppfolgingsperiodeV1;
 import no.nav.pto_schema.kafka.json.topic.SisteTilordnetVeilederV1;
 import no.nav.pto_schema.kafka.json.topic.onprem.*;
@@ -59,14 +60,14 @@ public class KafkaProducerService {
         store(kafkaProperties.getEndringPaManuellStatusTopic(), recordValue.getAktorId(), recordValue);
     }
 
-    public void publiserEndringPaNyForVeileder(String aktorId, boolean erNyForVeileder) {
-        EndringPaNyForVeilederV1 recordValue = new EndringPaNyForVeilederV1(aktorId, erNyForVeileder);
-        store(kafkaProperties.getEndringPaNyForVeilederTopic(), aktorId, recordValue);
+    public void publiserEndringPaNyForVeileder(AktorId aktorId, boolean erNyForVeileder) {
+        EndringPaNyForVeilederV1 recordValue = new EndringPaNyForVeilederV1(aktorId.get(), erNyForVeileder);
+        store(kafkaProperties.getEndringPaNyForVeilederTopic(), aktorId.get(), recordValue);
     }
 
-    public void publiserVeilederTilordnet(String aktorId, String tildeltVeilederId) {
-        VeilederTilordnetV1 recordValue = new VeilederTilordnetV1(aktorId, tildeltVeilederId);
-        store(kafkaProperties.getVeilederTilordnetTopic(), aktorId, recordValue);
+    public void publiserVeilederTilordnet(AktorId aktorId, String tildeltVeilederId) {
+        VeilederTilordnetV1 recordValue = new VeilederTilordnetV1(aktorId.get(), tildeltVeilederId);
+        store(kafkaProperties.getVeilederTilordnetTopic(), aktorId.get(), recordValue);
     }
 
     public void publiserOppfolgingStartet(String aktorId, ZonedDateTime oppfolgingStartet) {

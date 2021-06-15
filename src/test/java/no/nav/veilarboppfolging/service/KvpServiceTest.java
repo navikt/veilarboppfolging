@@ -3,6 +3,7 @@ package no.nav.veilarboppfolging.service;
 import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.common.auth.context.UserRole;
 import no.nav.common.test.auth.AuthTestUtils;
+import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
 import no.nav.veilarboppfolging.domain.OppfolgingTable;
@@ -64,7 +65,7 @@ public class KvpServiceTest {
 
         VeilarbArenaOppfolging veilarbArenaOppfolging = new VeilarbArenaOppfolging();
         veilarbArenaOppfolging.setNav_kontor(ENHET);
-        when(veilarbarenaClient.hentOppfolgingsbruker(FNR)).thenReturn(Optional.of(veilarbArenaOppfolging));
+        when(veilarbarenaClient.hentOppfolgingsbruker(Fnr.of(FNR))).thenReturn(Optional.of(veilarbArenaOppfolging));
 
         when(authService.harTilgangTilEnhet(anyString())).thenReturn(true);
         when(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID);

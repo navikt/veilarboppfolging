@@ -1,5 +1,6 @@
 package no.nav.veilarboppfolging.service;
 
+import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.client.dkif.DkifClient;
 import no.nav.veilarboppfolging.client.dkif.DkifKontaktinfo;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
@@ -40,7 +41,7 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
 
     @Before
     public void setup() {
-        when(arenaOppfolgingService.hentOppfolgingFraVeilarbarena(FNR))
+        when(arenaOppfolgingService.hentOppfolgingFraVeilarbarena(Fnr.of(FNR)))
                 .thenReturn(Optional.of(new VeilarbArenaOppfolging().setNav_kontor(ENHET)));
         doCallRealMethod().when(authService).sjekkTilgangTilEnhet(any());
         when(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID);

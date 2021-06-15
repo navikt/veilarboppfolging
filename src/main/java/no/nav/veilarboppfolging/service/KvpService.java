@@ -2,6 +2,7 @@ package no.nav.veilarboppfolging.service;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.types.identer.Fnr;
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV1;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
@@ -70,7 +71,7 @@ public class KvpService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
 
-        String enhet = veilarbarenaClient.hentOppfolgingsbruker(fnr)
+        String enhet = veilarbarenaClient.hentOppfolgingsbruker(Fnr.of(fnr))
                 .map(VeilarbArenaOppfolging::getNav_kontor).orElse(null);
         if (!authService.harTilgangTilEnhet(enhet)) {
             log.warn(format("Ingen tilgang til enhet '%s'", enhet));
@@ -97,7 +98,7 @@ public class KvpService {
         String aktorId = authService.getAktorIdOrThrow(fnr);
 
         authService.sjekkLesetilgangMedAktorId(aktorId);
-        String enhet = veilarbarenaClient.hentOppfolgingsbruker(fnr)
+        String enhet = veilarbarenaClient.hentOppfolgingsbruker(Fnr.of(fnr))
                 .map(VeilarbArenaOppfolging::getNav_kontor).orElse(null);
 
         if (!authService.harTilgangTilEnhet(enhet)) {

@@ -4,6 +4,8 @@ import no.nav.common.auth.context.AuthContext;
 import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.common.auth.context.UserRole;
 import no.nav.common.test.auth.AuthTestUtils;
+import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.controller.request.VeilederTilordning;
 import no.nav.veilarboppfolging.controller.response.TilordneVeilederResponse;
 import no.nav.veilarboppfolging.feed.cjm.producer.FeedProducer;
@@ -34,6 +36,16 @@ import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.Silent.class)
 public class VeilederTilordningServiceTest {
+
+    private final Fnr fnr1 = Fnr.of("FNR1");
+    private final Fnr fnr2 = Fnr.of("FNR2");
+    private final Fnr fnr3 = Fnr.of("FNR3");
+    private final Fnr fnr4 = Fnr.of("FNR4");
+
+    private final AktorId aktorId1 = AktorId.of("AKTOERID1");
+    private final AktorId aktorId2 = AktorId.of("AKTOERID2");
+    private final AktorId aktorId3 = AktorId.of("AKTOERID3");
+    private final AktorId aktorId4 = AktorId.of("AKTOERID4");
 
     @Mock
     private VeilederTilordningerRepository veilederTilordningerRepository;
@@ -110,13 +122,13 @@ public class VeilederTilordningServiceTest {
         tilordninger.add(harTilgang2);
         tilordninger.add(harIkkeTilgang2);
 
-        doThrow(new RuntimeException()).when(authService).sjekkSkrivetilgangMedAktorId("AKTOERID2");
-        doThrow(new RuntimeException()).when(authService).sjekkSkrivetilgangMedAktorId("AKTOERID4");
+        doThrow(new RuntimeException()).when(authService).sjekkSkrivetilgangMedAktorId(aktorId2);
+        doThrow(new RuntimeException()).when(authService).sjekkSkrivetilgangMedAktorId(aktorId4);
 
-        when(authService.getAktorIdOrThrow("FNR1")).thenReturn("AKTOERID1");
-        when(authService.getAktorIdOrThrow("FNR2")).thenReturn("AKTOERID2");
-        when(authService.getAktorIdOrThrow("FNR3")).thenReturn("AKTOERID3");
-        when(authService.getAktorIdOrThrow("FNR4")).thenReturn("AKTOERID4");
+        when(authService.getAktorIdOrThrow(fnr1)).thenReturn(aktorId1);
+        when(authService.getAktorIdOrThrow(fnr2)).thenReturn(aktorId2);
+        when(authService.getAktorIdOrThrow(fnr3)).thenReturn(aktorId3);
+        when(authService.getAktorIdOrThrow(fnr4)).thenReturn(aktorId4);
 
         TilordneVeilederResponse response = veilederTilordningService.tilordneVeiledere(tilordninger);
         List<VeilederTilordning> feilendeTilordninger = response.getFeilendeTilordninger();
@@ -141,21 +153,20 @@ public class VeilederTilordningServiceTest {
         tilordninger.add(kanTilordne2);
         tilordninger.add(kanIkkeTilordne2);
 
-
-        when(authService.getAktorIdOrThrow("FNR1")).thenReturn("AKTOERID1");
-        when(veilederTilordningerRepository.hentTilordningForAktoer("AKTOERID1"))
+        when(authService.getAktorIdOrThrow(fnr1)).thenReturn(aktorId1);
+        when(veilederTilordningerRepository.hentTilordningForAktoer(aktorId1))
                 .thenReturn("FRAVEILEDER1");
 
-        when(authService.getAktorIdOrThrow("FNR2")).thenReturn("AKTOERID2");
-        when(veilederTilordningerRepository.hentTilordningForAktoer("AKTOERID2"))
+        when(authService.getAktorIdOrThrow(fnr2)).thenReturn(aktorId2);
+        when(veilederTilordningerRepository.hentTilordningForAktoer(aktorId2))
                 .thenReturn("IKKE_FRAVEILEDER2");
 
-        when(authService.getAktorIdOrThrow("FNR3")).thenReturn("AKTOERID3");
-        when(veilederTilordningerRepository.hentTilordningForAktoer("AKTOERID3"))
+        when(authService.getAktorIdOrThrow(fnr3)).thenReturn(aktorId3);
+        when(veilederTilordningerRepository.hentTilordningForAktoer(aktorId3))
                 .thenReturn("FRAVEILEDER3");
 
-        when(authService.getAktorIdOrThrow("FNR4")).thenReturn("AKTOERID4");
-        when(veilederTilordningerRepository.hentTilordningForAktoer("AKTOERID4"))
+        when(authService.getAktorIdOrThrow(fnr4)).thenReturn(aktorId4);
+        when(veilederTilordningerRepository.hentTilordningForAktoer(aktorId4))
                 .thenReturn("IKKE_FRAVEILEDER4");
 
         TilordneVeilederResponse response = veilederTilordningService.tilordneVeiledere(tilordninger);
@@ -181,14 +192,14 @@ public class VeilederTilordningServiceTest {
         tilordninger.add(tilordningOK2);
         tilordninger.add(tilordningERROR2);
 
-        when(authService.getAktorIdOrThrow("FNR1")).thenReturn("AKTOERID1");
-        when(authService.getAktorIdOrThrow("FNR2")).thenReturn("AKTOERID2");
-        when(authService.getAktorIdOrThrow("FNR3")).thenReturn("AKTOERID3");
-        when(authService.getAktorIdOrThrow("FNR4")).thenReturn("AKTOERID4");
+        when(authService.getAktorIdOrThrow(fnr1)).thenReturn(aktorId1);
+        when(authService.getAktorIdOrThrow(fnr2)).thenReturn(aktorId2);
+        when(authService.getAktorIdOrThrow(fnr3)).thenReturn(aktorId3);
+        when(authService.getAktorIdOrThrow(fnr4)).thenReturn(aktorId4);
 
-        when(veilederTilordningerRepository.hentTilordningForAktoer("AKTOERID2")).thenThrow(new BadSqlGrammarException("AKTOER", "Dette er bare en test", new SQLException()));
+        when(veilederTilordningerRepository.hentTilordningForAktoer(aktorId2)).thenThrow(new BadSqlGrammarException("AKTOER", "Dette er bare en test", new SQLException()));
 
-        when(veilederTilordningerRepository.hentTilordningForAktoer("AKTOERID3")).thenThrow(new BadSqlGrammarException("AKTOER", "Dette er bare en test", new SQLException()));
+        when(veilederTilordningerRepository.hentTilordningForAktoer(aktorId3)).thenThrow(new BadSqlGrammarException("AKTOER", "Dette er bare en test", new SQLException()));
 
         TilordneVeilederResponse response = veilederTilordningService.tilordneVeiledere(tilordninger);
         List<VeilederTilordning> feilendeTilordninger = response.getFeilendeTilordninger();
@@ -213,17 +224,17 @@ public class VeilederTilordningServiceTest {
         tilordninger.add(tilordningOK2);
         tilordninger.add(tilordningERROR2);
 
-        when(authService.getAktorIdOrThrow("FNR1")).thenReturn("AKTOERID1");
-        when(authService.getAktorIdOrThrow("FNR2")).thenReturn("AKTOERID2");
-        when(authService.getAktorIdOrThrow("FNR3")).thenReturn("AKTOERID3");
-        when(authService.getAktorIdOrThrow("FNR4")).thenReturn("AKTOERID4");
+        when(authService.getAktorIdOrThrow(fnr1)).thenReturn(aktorId1);
+        when(authService.getAktorIdOrThrow(fnr2)).thenReturn(aktorId2);
+        when(authService.getAktorIdOrThrow(fnr3)).thenReturn(aktorId3);
+        when(authService.getAktorIdOrThrow(fnr4)).thenReturn(aktorId4);
 
 
         doThrow(new BadSqlGrammarException("AKTOER", "Dette er bare en test", new SQLException()))
-                .when(veilederTilordningerRepository).upsertVeilederTilordning(eq("AKTOERID2"), anyString());
+                .when(veilederTilordningerRepository).upsertVeilederTilordning(eq(aktorId2), anyString());
 
         doThrow(new BadSqlGrammarException("AKTOER", "Dette er bare en test", new SQLException()))
-                .when(veilederTilordningerRepository).upsertVeilederTilordning(eq("AKTOERID4"), anyString());
+                .when(veilederTilordningerRepository).upsertVeilederTilordning(eq(aktorId4), anyString());
 
         TilordneVeilederResponse response = veilederTilordningService.tilordneVeiledere(tilordninger);
         List<VeilederTilordning> feilendeTilordninger = response.getFeilendeTilordninger();
@@ -248,10 +259,10 @@ public class VeilederTilordningServiceTest {
         tilordninger.add(tilordningOK2);
         tilordninger.add(tilordningERROR2);
 
-        when(authService.getAktorIdOrThrow("FNR1")).thenReturn("AKTOERID1");
-        when(authService.getAktorIdOrThrow("FNR2")).thenThrow(new RuntimeException());
-        when(authService.getAktorIdOrThrow("FNR3")).thenThrow(new RuntimeException());
-        when(authService.getAktorIdOrThrow("FNR4")).thenReturn("AKTOERID4");
+        when(authService.getAktorIdOrThrow(fnr1)).thenReturn(aktorId1);
+        when(authService.getAktorIdOrThrow(fnr2)).thenThrow(new RuntimeException());
+        when(authService.getAktorIdOrThrow(fnr3)).thenThrow(new RuntimeException());
+        when(authService.getAktorIdOrThrow(fnr4)).thenReturn(aktorId4);
 
         TilordneVeilederResponse response = veilederTilordningService.tilordneVeiledere(tilordninger);
         List<VeilederTilordning> feilendeTilordninger = response.getFeilendeTilordninger();
@@ -296,9 +307,9 @@ public class VeilederTilordningServiceTest {
             return null;
         }).when(authService).sjekkSkrivetilgangMedFnr(anyString());
 
-        when(authService.getAktorIdOrThrow("FNR1")).thenReturn("AKTOERID1");
+        when(authService.getAktorIdOrThrow(fnr1)).thenReturn(aktorId1);
 
-        doThrow(new RuntimeException()).when(authService).getAktorIdOrThrow("FNR2");
+        doThrow(new RuntimeException()).when(authService).getAktorIdOrThrow(fnr2);
 
         //Starter to tråder som gjør to separate tilordninger gjennom samme portefoljeressurs. Dette simulerer
         //at to brukere kaller rest-operasjonen samtidig. Den første tilordningen tar lenger tid siden pep-kallet tar lenger tid.
@@ -326,7 +337,7 @@ public class VeilederTilordningServiceTest {
 
         tilordninger.add(tilordningOK1);
 
-        when(authService.getAktorIdOrThrow("FNR1")).thenReturn("AKTOERID1");
+        when(authService.getAktorIdOrThrow(fnr1)).thenReturn(aktorId1);
         doThrow(new RuntimeException("Test")).when(feed).activateWebhook();
 
         TilordneVeilederResponse response = veilederTilordningService.tilordneVeiledere(tilordninger);
@@ -339,7 +350,7 @@ public class VeilederTilordningServiceTest {
     public void noCallToDAOWhenAktoerIdServiceFails() {
         when(authService.getAktorIdOrThrow(anyString())).thenThrow(new RuntimeException("MOCK INGEN AKTOR ID"));
         veilederTilordningService.tilordneVeiledere(Collections.singletonList(testData()));
-        verify(veilederTilordningerRepository, never()).upsertVeilederTilordning(anyString(), anyString());
+        verify(veilederTilordningerRepository, never()).upsertVeilederTilordning(any(), anyString());
     }
 
     private VeilederTilordning testData() {

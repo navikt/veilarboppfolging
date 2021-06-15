@@ -115,7 +115,11 @@ public class AuthService {
     }
 
     public void sjekkSkrivetilgangMedAktorId(String aktorId) {
-        if (!veilarbPep.harTilgangTilPerson(getInnloggetBrukerToken(), ActionId.WRITE, AktorId.of(aktorId))) {
+        sjekkLesetilgangMedAktorId(AktorId.of(aktorId));
+    }
+
+    public void sjekkSkrivetilgangMedAktorId(AktorId aktorId) {
+        if (!veilarbPep.harTilgangTilPerson(getInnloggetBrukerToken(), ActionId.WRITE, aktorId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
     }

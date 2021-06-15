@@ -2,6 +2,7 @@ package no.nav.veilarboppfolging.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.types.identer.AktorId;
 import no.nav.pto_schema.kafka.json.topic.SisteOppfolgingsperiodeV1;
 import no.nav.veilarboppfolging.domain.Oppfolgingsperiode;
 import no.nav.veilarboppfolging.domain.Tilordning;
@@ -81,7 +82,7 @@ public class KafkaRepubliseringService {
     }
 
     private void republiserSisteTilordnetVeilederForBruker(String aktorId) {
-        Optional<Tilordning> maybeTilordning = veilederTilordningerRepository.hentTilordnetVeileder(aktorId);
+        Optional<Tilordning> maybeTilordning = veilederTilordningerRepository.hentTilordnetVeileder(AktorId.of(aktorId));
 
         maybeTilordning.ifPresent(tilordning -> {
             // Skal ikke publisere for brukere som ikke har fått veileder

@@ -1,5 +1,6 @@
 package no.nav.veilarboppfolging.service;
 
+import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.client.varseloppgave.VarseloppgaveClient;
 import no.nav.veilarboppfolging.domain.EskaleringsvarselData;
 import no.nav.veilarboppfolging.repository.EskaleringsvarselRepository;
@@ -96,7 +97,7 @@ public class EskaleringService {
     }
 
     private String hentOppfolgingsEnhet(String fnr) {
-        return arenaOppfolgingService.hentOppfolgingFraVeilarbarena(fnr)
+        return arenaOppfolgingService.hentOppfolgingFraVeilarbarena(Fnr.of(fnr))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR)).getNav_kontor();
     }
 
