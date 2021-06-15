@@ -26,14 +26,8 @@ public class InternalController {
         this.selftestChecks = selfTestChecks;
     }
 
-    @GetMapping("/isAlive")
-    public void isAlive() {}
-
-    @GetMapping("/isReady")
-    public void isReady() {}
-
     @GetMapping("/selftest")
-    public ResponseEntity selftest() {
+    public ResponseEntity<String> selftest() {
         List<SelftTestCheckResult> checkResults = checkAll(selftestChecks.getSelfTestChecks());
         String html = SelftestHtmlGenerator.generate(checkResults);
         int status = SelfTestUtils.findHttpStatusCode(checkResults, true);
