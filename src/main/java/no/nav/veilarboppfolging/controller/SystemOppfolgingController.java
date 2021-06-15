@@ -1,5 +1,6 @@
 package no.nav.veilarboppfolging.controller;
 
+import lombok.RequiredArgsConstructor;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.client.behandle_arbeidssoker.ArenaFeilException;
 import no.nav.veilarboppfolging.controller.request.AktiverArbeidssokerData;
@@ -8,13 +9,13 @@ import no.nav.veilarboppfolging.controller.request.SykmeldtBrukerType;
 import no.nav.veilarboppfolging.controller.response.ArenaFeilDTO;
 import no.nav.veilarboppfolging.service.AktiverBrukerService;
 import no.nav.veilarboppfolging.service.AuthService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/oppfolging")
 public class SystemOppfolgingController {
 
@@ -23,12 +24,6 @@ public class SystemOppfolgingController {
     private final AktiverBrukerService aktiverBrukerService;
 
     // Veilarbregistrering forventer 204, som forsåvidt er riktig status for disse endepunktene
-
-    @Autowired
-    public SystemOppfolgingController (AuthService authService, AktiverBrukerService aktiverBrukerService) {
-        this.authService = authService;
-        this.aktiverBrukerService = aktiverBrukerService;
-    }
 
     @PostMapping("/aktiverbruker")
     public ResponseEntity aktiverBruker(@RequestBody AktiverArbeidssokerData aktiverArbeidssokerData) {

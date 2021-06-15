@@ -1,10 +1,10 @@
 package no.nav.veilarboppfolging.controller;
 
+import lombok.RequiredArgsConstructor;
 import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktClient;
 import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktResponse;
 import no.nav.veilarboppfolging.controller.response.YtelserResponse;
 import no.nav.veilarboppfolging.service.AuthService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,6 +16,7 @@ import java.time.LocalDate;
 import static no.nav.veilarboppfolging.utils.DateUtils.convertDateToXMLGregorianCalendar;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/person")
 public class YtelseController {
     private static final int MANEDER_BAK_I_TID = 2;
@@ -23,15 +24,6 @@ public class YtelseController {
 
     private final YtelseskontraktClient ytelseskontraktClient;
     private final AuthService authService;
-
-    @Autowired
-    public YtelseController(
-            YtelseskontraktClient ytelseskontraktClient,
-            AuthService authService
-    ) {
-        this.ytelseskontraktClient = ytelseskontraktClient;
-        this.authService = authService;
-    }
 
     @GetMapping("/{fnr}/ytelser")
     public YtelserResponse getYtelser(@PathVariable("fnr") String fnr) {

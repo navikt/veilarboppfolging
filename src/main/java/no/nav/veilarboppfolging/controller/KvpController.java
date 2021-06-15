@@ -3,13 +3,13 @@ package no.nav.veilarboppfolging.controller;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import lombok.RequiredArgsConstructor;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.veilarboppfolging.controller.response.KvpDTO;
 import no.nav.veilarboppfolging.domain.Kvp;
 import no.nav.veilarboppfolging.repository.KvpRepository;
 import no.nav.veilarboppfolging.service.AuthService;
 import no.nav.veilarboppfolging.utils.DtoMappers;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,8 +21,11 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/kvp")
 public class KvpController {
+
+    private final List<String> allowedUsers = List.of("srvveilarbdialog", "srvveilarbaktivitet");
 
     private final KvpRepository repository;
 
@@ -30,14 +33,6 @@ public class KvpController {
 
     private final AuthContextHolder authContextHolder;
 
-    private final List<String> allowedUsers = List.of("srvveilarbdialog", "srvveilarbaktivitet");
-
-    @Autowired
-    public KvpController(KvpRepository repository, AuthService authService, AuthContextHolder authContextHolder) {
-        this.repository = repository;
-        this.authService = authService;
-        this.authContextHolder = authContextHolder;
-    }
 
     @GetMapping("/{aktorId}/currentStatus")
     @ApiOperation(

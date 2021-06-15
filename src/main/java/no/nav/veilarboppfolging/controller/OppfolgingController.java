@@ -1,10 +1,10 @@
 package no.nav.veilarboppfolging.controller;
 
+import lombok.RequiredArgsConstructor;
 import no.nav.veilarboppfolging.controller.request.*;
 import no.nav.veilarboppfolging.controller.response.*;
 import no.nav.veilarboppfolging.domain.KodeverkBruker;
 import no.nav.veilarboppfolging.service.*;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,8 +15,9 @@ import java.util.stream.Collectors;
 
 import static no.nav.veilarboppfolging.utils.DtoMappers.*;
 
-@RequestMapping("/api/oppfolging")
 @RestController
+@RequiredArgsConstructor
+@RequestMapping("/api/oppfolging")
 public class OppfolgingController {
     
     private final OppfolgingService oppfolgingService;
@@ -30,23 +31,6 @@ public class OppfolgingController {
     private final EskaleringService eskaleringService;
 
     private final ManuellStatusService manuellStatusService;
-
-    @Autowired
-    public OppfolgingController(
-            OppfolgingService oppfolgingService,
-            KvpService kvpService,
-            HistorikkService historikkService,
-            AuthService authService,
-            EskaleringService eskaleringService,
-            ManuellStatusService manuellStatusService
-    ) {
-        this.oppfolgingService = oppfolgingService;
-        this.kvpService = kvpService;
-        this.historikkService = historikkService;
-        this.authService = authService;
-        this.eskaleringService = eskaleringService;
-        this.manuellStatusService = manuellStatusService;
-    }
 
     @GetMapping("/me")
     public Bruker hentBrukerInfo() {

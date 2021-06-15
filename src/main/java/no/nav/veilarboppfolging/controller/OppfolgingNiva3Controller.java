@@ -1,11 +1,11 @@
 package no.nav.veilarboppfolging.controller;
 
+import lombok.RequiredArgsConstructor;
 import no.nav.common.metrics.Event;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.veilarboppfolging.controller.response.UnderOppfolgingNiva3DTO;
 import no.nav.veilarboppfolging.service.AuthService;
 import no.nav.veilarboppfolging.service.OppfolgingService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -17,6 +17,7 @@ import static java.lang.String.valueOf;
  * Ressursen ble opprettet for å dekke behov fra Ditt Nav.
  */
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/niva3")
 public class OppfolgingNiva3Controller {
 
@@ -25,13 +26,6 @@ public class OppfolgingNiva3Controller {
     private final MetricsClient metricsClient;
 
     private final AuthService authService;
-
-    @Autowired
-    public OppfolgingNiva3Controller(OppfolgingService oppfolgingService, MetricsClient metricsClient, AuthService authService) {
-        this.oppfolgingService = oppfolgingService;
-        this.metricsClient = metricsClient;
-        this.authService = authService;
-    }
 
     @GetMapping("/underoppfolging")
     public UnderOppfolgingNiva3DTO underOppfolgingNiva3() {
