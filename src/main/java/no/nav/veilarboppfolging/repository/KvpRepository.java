@@ -18,6 +18,7 @@ import static no.nav.veilarboppfolging.domain.KodeverkBruker.NAV;
 import static no.nav.veilarboppfolging.utils.DbUtils.hentZonedDateTime;
 import static no.nav.veilarboppfolging.utils.EnumUtils.getName;
 import static no.nav.veilarboppfolging.utils.EnumUtils.valueOfOptional;
+import static no.nav.veilarboppfolging.utils.ListUtils.firstOrNull;
 
 @Repository
 public class KvpRepository {
@@ -114,8 +115,7 @@ public class KvpRepository {
 
     public Kvp fetch(long id) {
         String sql = "SELECT * FROM KVP WHERE kvp_id = ?";
-        List<Kvp> kvper = db.query(sql, KvpRepository::mapTilKvp, id);
-        return kvper.isEmpty() ? null : kvper.get(0);
+        return firstOrNull(db.query(sql, KvpRepository::mapTilKvp, id));
     }
 
     /**

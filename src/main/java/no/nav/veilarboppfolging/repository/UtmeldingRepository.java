@@ -16,7 +16,7 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static no.nav.veilarboppfolging.utils.DbUtils.firstOrNull;
+import static no.nav.veilarboppfolging.utils.ListUtils.firstOrNull;
 
 @Slf4j
 @Repository

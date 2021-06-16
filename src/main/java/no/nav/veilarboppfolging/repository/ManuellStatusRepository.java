@@ -18,6 +18,7 @@ import static no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository.GJ
 import static no.nav.veilarboppfolging.utils.DbUtils.hentZonedDateTime;
 import static no.nav.veilarboppfolging.utils.EnumUtils.getName;
 import static no.nav.veilarboppfolging.utils.EnumUtils.valueOfOptional;
+import static no.nav.veilarboppfolging.utils.ListUtils.firstOrNull;
 
 @Repository
 public class ManuellStatusRepository {
@@ -38,8 +39,7 @@ public class ManuellStatusRepository {
 
     public ManuellStatus fetch(Long id) {
         String sql = "SELECT * FROM MANUELL_STATUS WHERE id = ?";
-        List<ManuellStatus> manuellStatusList = db.query(sql, ManuellStatusRepository::map, id);
-        return manuellStatusList.isEmpty() ? null : manuellStatusList.get(0);
+        return firstOrNull(db.query(sql, ManuellStatusRepository::map, id));
     }
 
     public List<ManuellStatus> history(AktorId aktorId) {

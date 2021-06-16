@@ -15,6 +15,7 @@ import java.util.List;
 import static no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository.AKTOR_ID;
 import static no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository.GJELDENE_ESKALERINGSVARSEL;
 import static no.nav.veilarboppfolging.utils.DbUtils.hentZonedDateTime;
+import static no.nav.veilarboppfolging.utils.ListUtils.firstOrNull;
 
 @Repository
 public class EskaleringsvarselRepository {
@@ -36,8 +37,7 @@ public class EskaleringsvarselRepository {
 
     public EskaleringsvarselData fetch(Long id) {
         String sql = "SELECT * FROM ESKALERINGSVARSEL WHERE varsel_id = ?";
-        List<EskaleringsvarselData> data = db.query(sql, EskaleringsvarselRepository::map, id);
-        return data.isEmpty() ? null : data.get(0);
+        return firstOrNull(db.query(sql, EskaleringsvarselRepository::map, id));
     }
 
     @Transactional

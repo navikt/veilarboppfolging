@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
+import static no.nav.veilarboppfolging.utils.ListUtils.firstOrNull;
 
 @Repository
 public class OppfolgingsStatusRepository {
@@ -36,13 +37,13 @@ public class OppfolgingsStatusRepository {
     }
 
     public OppfolgingTable fetch(AktorId aktorId) {
-        List<OppfolgingTable> t = db.query(
+        List<OppfolgingTable> oppfolging = db.query(
                 "SELECT * FROM OPPFOLGINGSTATUS WHERE aktor_id = ?",
                 OppfolgingsStatusRepository::map,
                 aktorId.get()
         );
 
-        return !t.isEmpty() ? t.get(0) : null;
+        return firstOrNull(oppfolging);
     }
 
     public Oppfolging opprettOppfolging(AktorId aktorId) {
