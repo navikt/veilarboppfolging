@@ -37,7 +37,7 @@ public class DbTestUtils {
         ALL_TABLES.forEach((table) -> deleteAllFromTable(db, table));
     }
 
-    public static TransactionTemplate getTransactor(JdbcTemplate db) {
+    public static TransactionTemplate createTransactor(JdbcTemplate db) {
         return new TransactionTemplate(new DataSourceTransactionManager(db.getDataSource()));
     }
 

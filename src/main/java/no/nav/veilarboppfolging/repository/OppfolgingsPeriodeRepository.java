@@ -6,7 +6,7 @@ import no.nav.veilarboppfolging.domain.Oppfolgingsperiode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -23,25 +23,30 @@ public class OppfolgingsPeriodeRepository {
 
     private final JdbcTemplate db;
 
+    private final TransactionTemplate transactor;
+
     private final static String hentOppfolingsperioderSQL =
             "SELECT uuid, aktor_id, avslutt_veileder, startdato, sluttdato, avslutt_begrunnelse " +
                     "FROM OPPFOLGINGSPERIODE ";
 
     @Autowired
-    public OppfolgingsPeriodeRepository(JdbcTemplate db) {
+    public OppfolgingsPeriodeRepository(JdbcTemplate db, TransactionTemplate transactor) {
         this.db = db;
+        this.transactor = transactor;
     }
 
-    @Transactional
     public void start(AktorId aktorId) {
-        insert(aktorId);
-        setActive(aktorId);
+        transactor.executeWithoutResult((ignored) -> {
+            insert(aktorId);
+            setActive(aktorId);
+        });
     }
 
-    @Transactional
     public void avslutt(AktorId aktorId, String veileder, String begrunnelse) {
-        endPeriode(aktorId, veileder, begrunnelse);
-        avsluttOppfolging(aktorId);
+        transactor.executeWithoutResult((ignored) -> {
+            endPeriode(aktorId, veileder, begrunnelse);
+            avsluttOppfolging(aktorId);
+        });
     }
 
     public List<AvsluttetOppfolgingFeedData> fetchAvsluttetEtterDato(Timestamp timestamp, int pageSize) {

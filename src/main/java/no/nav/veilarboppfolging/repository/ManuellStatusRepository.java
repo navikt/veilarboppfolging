@@ -8,7 +8,7 @@ import no.nav.veilarboppfolging.utils.DbUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.sql.ResultSet;
 import java.util.List;
@@ -25,16 +25,20 @@ public class ManuellStatusRepository {
 
     private final JdbcTemplate db;
 
+    private final TransactionTemplate transactor;
+
     @Autowired
-    public ManuellStatusRepository(JdbcTemplate db) {
+    public ManuellStatusRepository(JdbcTemplate db, TransactionTemplate transactor) {
         this.db = db;
+        this.transactor = transactor;
     }
 
-    @Transactional
     public void create(ManuellStatus manuellStatus) {
-        manuellStatus.setId(DbUtils.nesteFraSekvens(db,"status_seq"));
-        insert(manuellStatus);
-        setActive(manuellStatus);
+        transactor.executeWithoutResult((ignored) -> {
+            manuellStatus.setId(DbUtils.nesteFraSekvens(db,"status_seq"));
+            insert(manuellStatus);
+            setActive(manuellStatus);
+        });
     }
 
     public ManuellStatus fetch(Long id) {

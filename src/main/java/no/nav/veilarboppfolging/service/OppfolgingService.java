@@ -18,7 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.sql.Timestamp;
@@ -57,6 +57,7 @@ public class OppfolgingService {
     private final NyeBrukereFeedRepository nyeBrukereFeedRepository;
     private final MaalRepository maalRepository;
     private final BrukerOppslagFlereOppfolgingAktorRepository brukerOppslagFlereOppfolgingAktorRepository;
+    private final TransactionTemplate transactor;
 
     @Autowired
     public OppfolgingService(
@@ -76,7 +77,8 @@ public class OppfolgingService {
             KvpRepository kvpRepository,
             NyeBrukereFeedRepository nyeBrukereFeedRepository,
             MaalRepository maalRepository,
-            BrukerOppslagFlereOppfolgingAktorRepository brukerOppslagFlereOppfolgingAktorRepository
+            BrukerOppslagFlereOppfolgingAktorRepository brukerOppslagFlereOppfolgingAktorRepository,
+            TransactionTemplate transactor
     ) {
         this.kafkaProducerService = kafkaProducerService;
         this.ytelserOgAktiviteterService = ytelserOgAktiviteterService;
@@ -95,15 +97,17 @@ public class OppfolgingService {
         this.nyeBrukereFeedRepository = nyeBrukereFeedRepository;
         this.maalRepository = maalRepository;
         this.brukerOppslagFlereOppfolgingAktorRepository = brukerOppslagFlereOppfolgingAktorRepository;
+        this.transactor = transactor;
     }
 
-    @Transactional
     public OppfolgingStatusData hentOppfolgingsStatus(Fnr fnr) {
-        authService.sjekkLesetilgangMedFnr(fnr);
+        return transactor.execute((ignored) -> {
+            authService.sjekkLesetilgangMedFnr(fnr);
 
-        sjekkStatusIArenaOgOppdaterOppfolging(fnr);
+            sjekkStatusIArenaOgOppdaterOppfolging(fnr);
 
-        return getOppfolgingStatusData(fnr);
+            return getOppfolgingStatusData(fnr);
+        });
     }
 
     private List<AktorId> hentAktorIderMedOppfolging(Fnr fnr) {
@@ -132,69 +136,72 @@ public class OppfolgingService {
     }
 
     @SneakyThrows
-    @Transactional
     public OppfolgingStatusData startOppfolging(Fnr fnr) {
-        AktorId aktorId = authService.getAktorIdOrThrow(fnr);
+        return transactor.execute((ignored) -> {
+            AktorId aktorId = authService.getAktorIdOrThrow(fnr);
 
-        authService.sjekkLesetilgangMedFnr(fnr);
+            authService.sjekkLesetilgangMedFnr(fnr);
 
-        ArenaOppfolgingTilstand arenaOppfolgingTilstand = arenaOppfolgingService.hentOppfolgingTilstand(fnr)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR));
+            ArenaOppfolgingTilstand arenaOppfolgingTilstand = arenaOppfolgingService.hentOppfolgingTilstand(fnr)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR));
 
-        authService.sjekkTilgangTilEnhet(arenaOppfolgingTilstand.getOppfolgingsenhet());
+            authService.sjekkTilgangTilEnhet(arenaOppfolgingTilstand.getOppfolgingsenhet());
 
-        OppfolgingTable oppfolging = oppfolgingsStatusRepository.fetch(aktorId);
+            OppfolgingTable oppfolging = oppfolgingsStatusRepository.fetch(aktorId);
 
-        if (ArenaUtils.kanSettesUnderOppfolging(arenaOppfolgingTilstand, oppfolging.isUnderOppfolging())) {
-            startOppfolgingHvisIkkeAlleredeStartet(aktorId);
-        }
+            if (ArenaUtils.kanSettesUnderOppfolging(arenaOppfolgingTilstand, oppfolging.isUnderOppfolging())) {
+                startOppfolgingHvisIkkeAlleredeStartet(aktorId);
+            }
 
-        return getOppfolgingStatusData(fnr);
+            return getOppfolgingStatusData(fnr);
+        });
     }
 
     @SneakyThrows
-    @Transactional
     public AvslutningStatusData avsluttOppfolging(Fnr fnr, String veilederId, String begrunnelse) {
-        AktorId aktorId = authService.getAktorIdOrThrow(fnr);
+        return transactor.execute((ignored) -> {
+            AktorId aktorId = authService.getAktorIdOrThrow(fnr);
 
-        authService.sjekkLesetilgangMedFnr(fnr);
+            authService.sjekkLesetilgangMedFnr(fnr);
 
-        ArenaOppfolgingTilstand arenaOppfolgingTilstand = arenaOppfolgingService.hentOppfolgingTilstand(fnr)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR));
+            ArenaOppfolgingTilstand arenaOppfolgingTilstand = arenaOppfolgingService.hentOppfolgingTilstand(fnr)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR));
 
-        authService.sjekkTilgangTilEnhet(arenaOppfolgingTilstand.getOppfolgingsenhet());
+            authService.sjekkTilgangTilEnhet(arenaOppfolgingTilstand.getOppfolgingsenhet());
 
-        OppfolgingTable oppfolging = oppfolgingsStatusRepository.fetch(aktorId);
+            OppfolgingTable oppfolging = oppfolgingsStatusRepository.fetch(aktorId);
 
-        boolean erIserv = erIserv(arenaOppfolgingTilstand.getFormidlingsgruppe());
+            boolean erIserv = erIserv(arenaOppfolgingTilstand.getFormidlingsgruppe());
 
-        if (kanAvslutteOppfolging(aktorId, oppfolging.isUnderOppfolging(), erIserv)) {
-            log.info("Avslutting av oppfølging, tilstand i Arena for aktorid {}: {}", aktorId, arenaOppfolgingTilstand);
-            avsluttOppfolgingForBruker(aktorId, veilederId, begrunnelse);
-        }
+            if (kanAvslutteOppfolging(aktorId, oppfolging.isUnderOppfolging(), erIserv)) {
+                log.info("Avslutting av oppfølging, tilstand i Arena for aktorid {}: {}", aktorId, arenaOppfolgingTilstand);
+                avsluttOppfolgingForBruker(aktorId, veilederId, begrunnelse);
+            }
 
-        return getAvslutningStatus(fnr);
+            return getAvslutningStatus(fnr);
+        });
     }
 
-    @Transactional
     public boolean avsluttOppfolgingForSystemBruker(Fnr fnr) {
-        AktorId aktorId = authService.getAktorIdOrThrow(fnr);
+        return transactor.execute((ignored) -> {
+            AktorId aktorId = authService.getAktorIdOrThrow(fnr);
 
-        ArenaOppfolgingTilstand arenaOppfolgingTilstand = arenaOppfolgingService.hentOppfolgingTilstand(fnr)
-                .orElseThrow();
+            ArenaOppfolgingTilstand arenaOppfolgingTilstand = arenaOppfolgingService.hentOppfolgingTilstand(fnr)
+                    .orElseThrow();
 
-        log.info("Avslutting av oppfølging, tilstand i Arena for aktorid {}: {}", aktorId, arenaOppfolgingTilstand);
+            log.info("Avslutting av oppfølging, tilstand i Arena for aktorid {}: {}", aktorId, arenaOppfolgingTilstand);
 
-        OppfolgingTable oppfolging = oppfolgingsStatusRepository.fetch(aktorId);
+            OppfolgingTable oppfolging = oppfolgingsStatusRepository.fetch(aktorId);
 
-        boolean erIserv = erIserv(arenaOppfolgingTilstand.getFormidlingsgruppe());
+            boolean erIserv = erIserv(arenaOppfolgingTilstand.getFormidlingsgruppe());
 
-        if (!kanAvslutteOppfolging(aktorId, oppfolging.isUnderOppfolging(), erIserv)) {
-            return false;
-        }
+            if (!kanAvslutteOppfolging(aktorId, oppfolging.isUnderOppfolging(), erIserv)) {
+                return false;
+            }
 
-        avsluttOppfolgingForBruker(aktorId, SYSTEM_USER_NAME, "Oppfolging avsluttet autmatisk for grunn av iservert 28 dager");
-        return true;
+            avsluttOppfolgingForBruker(aktorId, SYSTEM_USER_NAME, "Oppfolging avsluttet autmatisk for grunn av iservert 28 dager");
+            return true;
+        });
     }
 
     public List<AvsluttetOppfolgingFeedData> hentAvsluttetOppfolgingEtterDato(Timestamp timestamp, int pageSize) {
@@ -390,7 +397,6 @@ public class OppfolgingService {
         return Optional.of(o);
     }
 
-    @Transactional
     public void startOppfolgingHvisIkkeAlleredeStartet(AktorId aktorId) {
         startOppfolgingHvisIkkeAlleredeStartet(
                 Oppfolgingsbruker.builder()
@@ -399,43 +405,45 @@ public class OppfolgingService {
         );
     }
 
-    @Transactional
     public void startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker oppfolgingsbruker) {
-        AktorId aktorId = AktorId.of(oppfolgingsbruker.getAktoerId());
+        transactor.executeWithoutResult((ignored) -> {
+            AktorId aktorId = AktorId.of(oppfolgingsbruker.getAktoerId());
 
-        OppfolgingTable eksisterendeOppfolging = oppfolgingsStatusRepository.fetch(aktorId);
+            OppfolgingTable eksisterendeOppfolging = oppfolgingsStatusRepository.fetch(aktorId);
 
-        if (eksisterendeOppfolging != null && eksisterendeOppfolging.isUnderOppfolging()) {
-            return;
-        }
-
-        if (eksisterendeOppfolging == null) {
-            // Siden det blir gjort mange kall samtidig til flere noder kan det oppstå en race condition
-            // hvor oppfølging har blitt insertet av en annen node etter at den har sjekket at oppfølging
-            // ikke ligger i databasen.
-            try {
-                oppfolgingsStatusRepository.opprettOppfolging(aktorId);
-            } catch (DuplicateKeyException e) {
-                log.warn("Race condition oppstod under oppretting av ny oppfølging for bruker: " + aktorId);
+            if (eksisterendeOppfolging != null && eksisterendeOppfolging.isUnderOppfolging()) {
                 return;
             }
-        }
 
-        oppfolgingsPeriodeRepository.start(aktorId);
-        nyeBrukereFeedRepository.leggTil(oppfolgingsbruker);
+            if (eksisterendeOppfolging == null) {
+                // Siden det blir gjort mange kall samtidig til flere noder kan det oppstå en race condition
+                // hvor oppfølging har blitt insertet av en annen node etter at den har sjekket at oppfølging
+                // ikke ligger i databasen.
+                try {
+                    oppfolgingsStatusRepository.opprettOppfolging(aktorId);
+                } catch (DuplicateKeyException e) {
+                    log.warn("Race condition oppstod under oppretting av ny oppfølging for bruker: " + aktorId);
+                    return;
+                }
+            }
 
-        List<Oppfolgingsperiode> perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId);
-        Oppfolgingsperiode sistePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(perioder);
+            oppfolgingsPeriodeRepository.start(aktorId);
+            nyeBrukereFeedRepository.leggTil(oppfolgingsbruker);
 
-        kafkaProducerService.publiserSisteOppfolgingsperiode(DtoMappers.tilSisteOppfolgingsperiodeV1(sistePeriode));
-        kafkaProducerService.publiserOppfolgingStartet(aktorId, sistePeriode.getStartDato());
+            List<Oppfolgingsperiode> perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId);
+            Oppfolgingsperiode sistePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(perioder);
+
+            kafkaProducerService.publiserSisteOppfolgingsperiode(DtoMappers.tilSisteOppfolgingsperiodeV1(sistePeriode));
+            kafkaProducerService.publiserOppfolgingStartet(aktorId, sistePeriode.getStartDato());
+        });
     }
 
-    private List<Oppfolgingsperiode> populerKvpPerioder(List<Oppfolgingsperiode> oppfolgingsPerioder, List<Kvp> kvpPerioder) {
+    private List<Oppfolgingsperiode> populerKvpPerioder
+            (List<Oppfolgingsperiode> oppfolgingsPerioder, List<Kvp> kvpPerioder) {
         return oppfolgingsPerioder.stream()
                 .map(periode -> periode.toBuilder().kvpPerioder(
                         kvpPerioder.stream()
-                                .filter(kvp -> authService.harTilgangTilEnhetMedSperre(kvp.getEnhet()) )
+                                .filter(kvp -> authService.harTilgangTilEnhetMedSperre(kvp.getEnhet()))
                                 .filter(kvp -> erKvpIPeriode(kvp, periode))
                                 .collect(toList())
                 ).build())
@@ -492,7 +500,8 @@ public class OppfolgingService {
         });
     }
 
-    private void sjekkOgOppdaterBrukerDirekteFraArena(Fnr fnr, ArenaOppfolgingTilstand arenaOppfolgingTilstand, OppfolgingTable oppfolging) {
+    private void sjekkOgOppdaterBrukerDirekteFraArena(Fnr fnr, ArenaOppfolgingTilstand
+            arenaOppfolgingTilstand, OppfolgingTable oppfolging) {
         Optional<ArenaOppfolgingTilstand> maybeTilstandDirekteFraArena = arenaOppfolgingTilstand.isDirekteFraArena()
                 ? of(arenaOppfolgingTilstand)
                 : arenaOppfolgingService.hentOppfolgingTilstandDirekteFraArena(fnr);

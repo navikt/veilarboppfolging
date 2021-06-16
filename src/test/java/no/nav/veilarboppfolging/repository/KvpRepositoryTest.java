@@ -2,9 +2,11 @@ package no.nav.veilarboppfolging.repository;
 
 import no.nav.common.types.identer.AktorId;
 import no.nav.veilarboppfolging.domain.Kvp;
+import no.nav.veilarboppfolging.test.DbTestUtils;
 import no.nav.veilarboppfolging.test.IsolatedDatabaseTest;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import static no.nav.veilarboppfolging.domain.KodeverkBruker.NAV;
 import static org.hamcrest.Matchers.*;
@@ -22,8 +24,9 @@ public class KvpRepositoryTest extends IsolatedDatabaseTest {
 
     @Before
     public void setup() {
+        TransactionTemplate transactor = DbTestUtils.createTransactor(db);
         oppfolgingsStatusRepository = new OppfolgingsStatusRepository(db);
-        kvpRepository = new KvpRepository(db);
+        kvpRepository = new KvpRepository(db, transactor);
     }
 
     @Test

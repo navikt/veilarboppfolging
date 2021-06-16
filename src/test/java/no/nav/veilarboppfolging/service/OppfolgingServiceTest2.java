@@ -4,9 +4,11 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.domain.*;
 import no.nav.veilarboppfolging.repository.*;
+import no.nav.veilarboppfolging.test.DbTestUtils;
 import no.nav.veilarboppfolging.test.IsolatedDatabaseTest;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -52,52 +54,49 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
 
     @Before
     public void setup() {
+        TransactionTemplate transactor = DbTestUtils.createTransactor(db);
+
         oppfolgingsStatusRepository = new OppfolgingsStatusRepository(db);
 
-        kvpRepository = new KvpRepository(db);
+        kvpRepository = new KvpRepository(db, transactor);
 
-        maalRepository = new MaalRepository(db);
+        maalRepository = new MaalRepository(db, transactor);
 
-        oppfolgingsPeriodeRepository = new OppfolgingsPeriodeRepository(db);
+        oppfolgingsPeriodeRepository = new OppfolgingsPeriodeRepository(db, transactor);
 
-        manuellStatusRepository = new ManuellStatusRepository(db);
+        manuellStatusRepository = new ManuellStatusRepository(db, transactor);
 
         oppfolgingService = new OppfolgingService(
                 mock(KafkaProducerService.class), null, null,
                 null, null, null, authService,
                 oppfolgingsStatusRepository, oppfolgingsPeriodeRepository,
                 manuellStatusRepository, null,
-                null, new EskaleringsvarselRepository(db),
-                new KvpRepository(db), new NyeBrukereFeedRepository(db), maalRepository,
-                new BrukerOppslagFlereOppfolgingAktorRepository(db));
+                null, new EskaleringsvarselRepository(db, transactor),
+                new KvpRepository(db, transactor), new NyeBrukereFeedRepository(db), maalRepository,
+                new BrukerOppslagFlereOppfolgingAktorRepository(db), transactor);
     }
 
     @Test
     public void hentHarFlereAktorIderMedOppfolging_harEnAktorIdMedOppfolging_returnererFalse(){
-
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
         oppfolgingsPeriodeRepository.start(AKTOR_ID);
 
         when(authService.getAlleAktorIderOrThrow(FNR)).thenReturn(List.of(AKTOR_ID));
         assertFalse(oppfolgingService.hentHarFlereAktorIderMedOppfolging(FNR));
-
     }
 
     @Test
     public void hentHarFlereAktorIderMedOppfolging_harFlereAktorIdUtenOppfolging_returnererFalse(){
-
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
         oppfolgingsPeriodeRepository.start(AKTOR_ID);
 
         when(authService.getAlleAktorIderOrThrow(FNR)).thenReturn(List.of(AKTOR_ID, AKTOR_ID2));
 
         assertFalse(oppfolgingService.hentHarFlereAktorIderMedOppfolging(FNR));
-
     }
 
     @Test
     public void hentHarFlereAktorIderMedOppfolging_harFlereAktorIdMedOppf_returnererTrue(){
-
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
         oppfolgingsPeriodeRepository.start(AKTOR_ID);
 
@@ -111,7 +110,6 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
 
     @Test
     public void skalIkkeKasteExceptionVedFlereKall(){
-
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
         oppfolgingsPeriodeRepository.start(AKTOR_ID);
 

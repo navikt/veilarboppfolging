@@ -79,7 +79,7 @@ public class VeilederTilordningServiceTest {
                     feed,
                     oppfolgingService,
                     veilederHistorikkRepository,
-                    DbTestUtils.getTransactor(LocalH2Database.getDb()),
+                    DbTestUtils.createTransactor(LocalH2Database.getDb()),
                     mock(KafkaProducerService.class));
         });
     }

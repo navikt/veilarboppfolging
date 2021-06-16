@@ -7,7 +7,7 @@ import no.nav.veilarboppfolging.utils.DbUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.sql.ResultSet;
 import java.util.List;
@@ -21,9 +21,12 @@ public class MaalRepository {
 
     private final JdbcTemplate db;
 
+    private final TransactionTemplate transactor;
+
     @Autowired
-    public MaalRepository(JdbcTemplate db) {
+    public MaalRepository(JdbcTemplate db, TransactionTemplate transactor) {
         this.db = db;
+        this.transactor = transactor;
     }
 
     public List<MalData> aktorMal(AktorId aktorId) {
@@ -37,11 +40,12 @@ public class MaalRepository {
         return db.query(sql, MaalRepository::map, id).get(0);
     }
 
-    @Transactional
     public void opprett(MalData maal) {
-        maal.setId(DbUtils.nesteFraSekvens(db, "MAL_SEQ"));
-        insert(maal);
-        setActive(maal);
+        transactor.executeWithoutResult((ignored) -> {
+            maal.setId(DbUtils.nesteFraSekvens(db, "MAL_SEQ"));
+            insert(maal);
+            setActive(maal);
+        });
     }
 
     private void insert(MalData maal) {

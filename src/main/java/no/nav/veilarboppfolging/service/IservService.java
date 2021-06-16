@@ -14,7 +14,7 @@ import no.nav.veilarboppfolging.domain.OppfolgingTable;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
 import no.nav.veilarboppfolging.repository.UtmeldingRepository;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,6 +42,7 @@ public class IservService {
     private final OppfolgingService oppfolgingService;
     private final OppfolgingsStatusRepository oppfolgingsStatusRepository;
     private final AuthService authService;
+    private final TransactionTemplate transactor;
 
     public IservService(
             AuthContextHolder authContextHolder,
@@ -50,7 +51,8 @@ public class IservService {
             UtmeldingRepository utmeldingRepository,
             OppfolgingService oppfolgingService,
             OppfolgingsStatusRepository oppfolgingsStatusRepository,
-            AuthService authService
+            AuthService authService,
+            TransactionTemplate transactor
     ) {
         this.authContextHolder = authContextHolder;
         this.systemUserTokenProvider = systemUserTokenProvider;
@@ -59,8 +61,8 @@ public class IservService {
         this.oppfolgingService = oppfolgingService;
         this.oppfolgingsStatusRepository = oppfolgingsStatusRepository;
         this.authService = authService;
+        this.transactor = transactor;
     }
-
 
     /**
      * Brukes av Iserv28Schedule for å automatisk avslutte oppfølging av brukere som har vært ISERV i mer enn 28 dager
@@ -77,25 +79,26 @@ public class IservService {
                 resultater.size());
     }
 
-    @Transactional
     public void behandleEndretBruker(EndringPaaOppfoelgingsBrukerV1 oppfolgingEndret) {
-        log.info("Behandler bruker: {}", oppfolgingEndret);
+        transactor.executeWithoutResult((ignored) -> {
+            log.info("Behandler bruker: {}", oppfolgingEndret);
 
-        AktorId aktorId = AktorId.of(oppfolgingEndret.getAktoerid());
+            AktorId aktorId = AktorId.of(oppfolgingEndret.getAktoerid());
 
-        if (erIserv(oppfolgingEndret.getFormidlingsgruppekode())) {
-            oppdaterUtmeldingTabell(oppfolgingEndret);
-        } else {
-            utmeldingRepository.slettBrukerFraUtmeldingTabell(aktorId);
+            if (erIserv(oppfolgingEndret.getFormidlingsgruppekode())) {
+                oppdaterUtmeldingTabell(oppfolgingEndret);
+            } else {
+                utmeldingRepository.slettBrukerFraUtmeldingTabell(aktorId);
 
-            if (erUnderOppfolging(oppfolgingEndret.getFormidlingsgruppekode(), oppfolgingEndret.getKvalifiseringsgruppekode())) {
-                if (brukerHarOppfolgingsflagg(aktorId)) {
-                    log.info("Bruker med aktørid {} er allerede under oppfølging", oppfolgingEndret.getAktoerid());
-                } else {
-                    startOppfolging(oppfolgingEndret);
+                if (erUnderOppfolging(oppfolgingEndret.getFormidlingsgruppekode(), oppfolgingEndret.getKvalifiseringsgruppekode())) {
+                    if (brukerHarOppfolgingsflagg(aktorId)) {
+                        log.info("Bruker med aktørid {} er allerede under oppfølging", oppfolgingEndret.getAktoerid());
+                    } else {
+                        startOppfolging(oppfolgingEndret);
+                    }
                 }
             }
-        }
+        });
     }
 
     private List<AvslutteOppfolgingResultat> finnBrukereOgAvslutt() {
