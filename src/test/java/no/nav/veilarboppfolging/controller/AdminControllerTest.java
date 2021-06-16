@@ -10,7 +10,9 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
+import static no.nav.veilarboppfolging.test.TestUtils.verifiserAsynkront;
 import static org.hamcrest.Matchers.matchesPattern;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -24,10 +26,10 @@ public class AdminControllerTest {
     private MockMvc mockMvc;
 
     @MockBean
-    private KafkaRepubliseringService kafkaRepubliseringService;
+    private AuthContextHolder authContextHolder;
 
     @MockBean
-    private AuthContextHolder authContextHolder;
+    private KafkaRepubliseringService kafkaRepubliseringService;
 
     @Test
     public void republiserOppfolgingsperioder__should_return_401_if_user_missing() throws Exception {
@@ -72,9 +74,11 @@ public class AdminControllerTest {
 
         mockMvc.perform(post("/api/admin/republiser/oppfolgingsperioder"))
                 .andExpect(status().is(200))
-                .andExpect(content().string(matchesPattern("^([a-f0-9]{32})$")));
+                .andExpect(content().string(matchesPattern("^([a-f0-9]+)$")));
 
-        verify(kafkaRepubliseringService, times(1)).republiserOppfolgingsperioder();
+        verifiserAsynkront(3, TimeUnit.SECONDS, () -> {
+            verify(kafkaRepubliseringService, times(1)).republiserOppfolgingsperioder();
+        });
     }
 
 
@@ -122,9 +126,11 @@ public class AdminControllerTest {
 
         mockMvc.perform(post("/api/admin/republiser/tilordnet-veileder"))
                 .andExpect(status().is(200))
-                .andExpect(content().string(matchesPattern("^([a-f0-9]{32})$")));
+                .andExpect(content().string(matchesPattern("^([a-f0-9]+)$")));
 
-        verify(kafkaRepubliseringService, times(1)).republiserTilordnetVeileder();
+        verifiserAsynkront(3, TimeUnit.SECONDS, () -> {
+            verify(kafkaRepubliseringService, times(1)).republiserTilordnetVeileder();
+        });
     }
 
 }
