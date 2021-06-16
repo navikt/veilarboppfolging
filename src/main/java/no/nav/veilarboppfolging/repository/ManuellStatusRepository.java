@@ -1,6 +1,7 @@
 package no.nav.veilarboppfolging.repository;
 
 import lombok.SneakyThrows;
+import no.nav.common.types.identer.AktorId;
 import no.nav.veilarboppfolging.domain.KodeverkBruker;
 import no.nav.veilarboppfolging.domain.ManuellStatus;
 import no.nav.veilarboppfolging.utils.DbUtils;
@@ -17,6 +18,7 @@ import static no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository.GJ
 import static no.nav.veilarboppfolging.utils.DbUtils.hentZonedDateTime;
 import static no.nav.veilarboppfolging.utils.EnumUtils.getName;
 import static no.nav.veilarboppfolging.utils.EnumUtils.valueOfOptional;
+import static no.nav.veilarboppfolging.utils.ListUtils.firstOrNull;
 
 @Repository
 public class ManuellStatusRepository {
@@ -37,14 +39,15 @@ public class ManuellStatusRepository {
 
     public ManuellStatus fetch(Long id) {
         String sql = "SELECT * FROM MANUELL_STATUS WHERE id = ?";
-        List<ManuellStatus> manuellStatusList = db.query(sql, ManuellStatusRepository::map, id);
-        return manuellStatusList.isEmpty() ? null : manuellStatusList.get(0);
+        return firstOrNull(db.query(sql, ManuellStatusRepository::map, id));
     }
 
-    public List<ManuellStatus> history(String aktorId) {
-        return db.query("SELECT * FROM MANUELL_STATUS WHERE aktor_id = ?",
+    public List<ManuellStatus> history(AktorId aktorId) {
+        return db.query(
+                "SELECT * FROM MANUELL_STATUS WHERE aktor_id = ?",
                 ManuellStatusRepository::map,
-                aktorId);
+                aktorId.get()
+        );
     }
 
     @SneakyThrows

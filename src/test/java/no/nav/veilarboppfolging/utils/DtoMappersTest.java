@@ -1,6 +1,6 @@
 package no.nav.veilarboppfolging.utils;
 
-import no.nav.veilarboppfolging.controller.domain.OppfolgingPeriodeDTO;
+import no.nav.veilarboppfolging.controller.response.OppfolgingPeriodeDTO;
 import no.nav.veilarboppfolging.domain.Oppfolgingsperiode;
 import org.junit.Test;
 

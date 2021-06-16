@@ -1,11 +1,13 @@
 package no.nav.veilarboppfolging.service;
 
 import lombok.extern.slf4j.Slf4j;
-import no.nav.veilarboppfolging.controller.domain.OppfolgingFeedDTO;
-import no.nav.veilarboppfolging.controller.domain.TilordneVeilederResponse;
-import no.nav.veilarboppfolging.controller.domain.VeilederTilordning;
+import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.Fnr;
+import no.nav.veilarboppfolging.controller.request.VeilederTilordning;
+import no.nav.veilarboppfolging.controller.response.TilordneVeilederResponse;
 import no.nav.veilarboppfolging.domain.Tilordning;
 import no.nav.veilarboppfolging.feed.cjm.producer.FeedProducer;
+import no.nav.veilarboppfolging.feed.domain.OppfolgingFeedDTO;
 import no.nav.veilarboppfolging.repository.VeilederHistorikkRepository;
 import no.nav.veilarboppfolging.repository.VeilederTilordningerRepository;
 import no.nav.veilarboppfolging.schedule.IdPaOppfolgingFeedSchedule;
@@ -65,10 +67,10 @@ public class VeilederTilordningService {
             tilordning.setInnloggetVeilederId(innloggetVeilederId);
 
             try {
-                String aktorId = authService.getAktorIdOrThrow(tilordning.getBrukerFnr());
+                AktorId aktorId = authService.getAktorIdOrThrow(Fnr.of(tilordning.getBrukerFnr()));
                 authService.sjekkSkrivetilgangMedAktorId(aktorId);
 
-                tilordning.setAktoerId(aktorId);
+                tilordning.setAktoerId(aktorId.get());
                 String eksisterendeVeileder = veilederTilordningerRepository.hentTilordningForAktoer(aktorId);
 
                 feilendeTilordninger = tildelVeileder(feilendeTilordninger, tilordning, aktorId, eksisterendeVeileder);
@@ -95,7 +97,7 @@ public class VeilederTilordningService {
     }
 
     public void lestAktivitetsplan(String fnr) {
-        String aktorId = authService.getAktorIdOrThrow(fnr);
+        AktorId aktorId = authService.getAktorIdOrThrow(Fnr.of(fnr));
 
         authService.skalVereInternBruker();
         authService.sjekkLesetilgangMedAktorId(aktorId);
@@ -105,6 +107,7 @@ public class VeilederTilordningService {
                 .filter(this::erVeilederFor)
                 .map(metricsService::lestAvVeileder)
                 .map(Tilordning::getAktorId)
+                .map(AktorId::of)
                 .map(veilederTilordningerRepository::markerSomLestAvVeileder)
                 .ifPresent(i -> {
                     kallWebhook();
@@ -112,17 +115,17 @@ public class VeilederTilordningService {
                 });
     }
 
-    private List<VeilederTilordning> tildelVeileder(List<VeilederTilordning> feilendeTilordninger, VeilederTilordning tilordning, String aktoerId, String eksisterendeVeileder) {
+    private List<VeilederTilordning> tildelVeileder(List<VeilederTilordning> feilendeTilordninger, VeilederTilordning tilordning, AktorId aktorId, String eksisterendeVeileder) {
         if (kanTilordneVeileder(eksisterendeVeileder, tilordning)) {
             if (nyVeilederHarTilgang(tilordning)) {
-                skrivTilDatabase(aktoerId, tilordning.getTilVeilederId());
+                skrivTilDatabase(aktorId, tilordning.getTilVeilederId());
             } else {
-                log.info("Aktoerid {} kunne ikke tildeles. Ny veileder {} har ikke tilgang.", aktoerId, tilordning.getTilVeilederId());
+                log.info("Aktoerid {} kunne ikke tildeles. Ny veileder {} har ikke tilgang.", aktorId, tilordning.getTilVeilederId());
                 feilendeTilordninger.add(tilordning);
             }
         } else {
             log.info("Aktoerid {} kunne ikke tildeles. Oppgitt fraVeileder {} er feil eller tilVeileder {} er feil. Faktisk veileder: {}",
-                    aktoerId, tilordning.getFraVeilederId(), tilordning.getTilVeilederId(), eksisterendeVeileder);
+                    aktorId, tilordning.getFraVeilederId(), tilordning.getTilVeilederId(), eksisterendeVeileder);
             feilendeTilordninger.add(tilordning);
         }
 
@@ -163,7 +166,7 @@ public class VeilederTilordningService {
         }
     }
 
-    private void skrivTilDatabase(String aktorId, String veilederId) {
+    private void skrivTilDatabase(AktorId aktorId, String veilederId) {
         transactor.executeWithoutResult((status) -> {
             veilederTilordningerRepository.upsertVeilederTilordning(aktorId, veilederId);
             veilederHistorikkRepository.insertTilordnetVeilederForAktorId(aktorId, veilederId);
@@ -202,7 +205,7 @@ public class VeilederTilordningService {
     }
 
     private boolean nyVeilederHarTilgang(VeilederTilordning veilederTilordning) {
-        return authService.harVeilederSkriveTilgangTilFnr(veilederTilordning.getTilVeilederId(), veilederTilordning.getBrukerFnr());
+        return authService.harVeilederSkriveTilgangTilFnr(veilederTilordning.getTilVeilederId(), Fnr.of(veilederTilordning.getBrukerFnr()));
     }
 
 }

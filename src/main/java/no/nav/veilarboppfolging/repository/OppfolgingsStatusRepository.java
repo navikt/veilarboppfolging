@@ -1,5 +1,6 @@
 package no.nav.veilarboppfolging.repository;
 
+import no.nav.common.types.identer.AktorId;
 import no.nav.veilarboppfolging.domain.Oppfolging;
 import no.nav.veilarboppfolging.domain.OppfolgingTable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,8 +10,10 @@ import org.springframework.stereotype.Repository;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static java.lang.String.format;
+import static no.nav.veilarboppfolging.utils.ListUtils.firstOrNull;
 
 @Repository
 public class OppfolgingsStatusRepository {
@@ -33,32 +36,35 @@ public class OppfolgingsStatusRepository {
         this.db = db;
     }
 
-    public OppfolgingTable fetch(String aktorId) {
-        List<OppfolgingTable> t = db.query(
+    public OppfolgingTable fetch(AktorId aktorId) {
+        List<OppfolgingTable> oppfolging = db.query(
                 "SELECT * FROM OPPFOLGINGSTATUS WHERE aktor_id = ?",
                 OppfolgingsStatusRepository::map,
-                aktorId
+                aktorId.get()
         );
 
-        return !t.isEmpty() ? t.get(0) : null;
+        return firstOrNull(oppfolging);
     }
 
-    public Oppfolging opprettOppfolging(String aktorId) {
+    public Oppfolging opprettOppfolging(AktorId aktorId) {
         db.update("INSERT INTO OPPFOLGINGSTATUS(" +
                         "aktor_id, " +
                         "under_oppfolging, " +
                         "oppdatert) " +
                         "VALUES(?, ?, CURRENT_TIMESTAMP)",
-                aktorId,
+                aktorId.get(),
                 false);
 
         // FIXME: return the actual database object.
-        return new Oppfolging().setAktorId(aktorId).setUnderOppfolging(false);
+        return new Oppfolging().setAktorId(aktorId.get()).setUnderOppfolging(false);
     }
 
-    public List<String> hentUnikeBrukerePage(int offset, int pageSize) {
+    public List<AktorId> hentUnikeBrukerePage(int offset, int pageSize) {
         String sql = format("SELECT DISTINCT aktor_id FROM OPPFOLGINGSTATUS ORDER BY aktor_id OFFSET %d ROWS FETCH NEXT %d ROWS ONLY", offset, pageSize);
-        return db.query(sql, (rs, rowNum) -> rs.getString("aktor_id"));
+        return db.query(sql, (rs, rowNum) -> rs.getString("aktor_id"))
+                .stream()
+                .map(AktorId::of)
+                .collect(Collectors.toList());
     }
 
     public static OppfolgingTable map(ResultSet rs, int row) throws SQLException {

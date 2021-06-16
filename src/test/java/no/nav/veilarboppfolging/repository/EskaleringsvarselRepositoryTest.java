@@ -1,5 +1,6 @@
 package no.nav.veilarboppfolging.repository;
 
+import no.nav.common.types.identer.AktorId;
 import no.nav.veilarboppfolging.domain.EskaleringsvarselData;
 import no.nav.veilarboppfolging.domain.OppfolgingTable;
 import no.nav.veilarboppfolging.test.DbTestUtils;
@@ -16,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class EskaleringsvarselRepositoryTest {
 
-    private static final String AKTOR_ID = "aktorId";
+    private static final AktorId AKTOR_ID = AktorId.of("aktorId");
     private static final String SAKSBEHANDLER_ID = "saksbehandlerId";
     private static final String BEGRUNNELSE = "Begrunnelse";
     private static final int NUM_ITEMS = 10;
@@ -41,14 +42,14 @@ public class EskaleringsvarselRepositoryTest {
         // Create the escalation warning, and test that retrieving
         // the current warning yields the object we just created.
         eskaleringsvarselRepository.create(EskaleringsvarselData.builder()
-                .aktorId(AKTOR_ID)
+                .aktorId(AKTOR_ID.get())
                 .opprettetAv(SAKSBEHANDLER_ID)
                 .opprettetBegrunnelse(BEGRUNNELSE)
                 .build());
 
         EskaleringsvarselData e = gjeldendeEskaleringsVarsel(AKTOR_ID);
 
-        assertThat(e.getAktorId(), is(AKTOR_ID));
+        assertThat(e.getAktorId(), is(AKTOR_ID.get()));
         assertThat(e.getOpprettetAv(), is(SAKSBEHANDLER_ID));
         assertThat(e.getOpprettetBegrunnelse(), is(BEGRUNNELSE));
 
@@ -70,7 +71,7 @@ public class EskaleringsvarselRepositoryTest {
 
         for (int i = 0; i < NUM_ITEMS; i++) {
             e = EskaleringsvarselData.builder()
-                    .aktorId(AKTOR_ID)
+                    .aktorId(AKTOR_ID.get())
                     .opprettetAv(SAKSBEHANDLER_ID)
                     .opprettetBegrunnelse(BEGRUNNELSE)
                     .build();
@@ -81,7 +82,7 @@ public class EskaleringsvarselRepositoryTest {
         assertEquals(list.size(), NUM_ITEMS);
     }
 
-    private EskaleringsvarselData gjeldendeEskaleringsVarsel(String aktorId) {
+    private EskaleringsvarselData gjeldendeEskaleringsVarsel(AktorId aktorId) {
         OppfolgingTable oppfolging = oppfolgingsStatusRepository.fetch(aktorId);
         return eskaleringsvarselRepository.fetch(oppfolging.getGjeldendeEskaleringsvarselId());
     }

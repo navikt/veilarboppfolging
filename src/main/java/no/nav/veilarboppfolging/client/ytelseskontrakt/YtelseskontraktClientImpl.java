@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.cxf.CXFClient;
 import no.nav.common.cxf.StsConfig;
 import no.nav.common.health.HealthCheckResult;
+import no.nav.common.types.identer.Fnr;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.HentYtelseskontraktListeSikkerhetsbegrensning;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt.WSPeriode;
@@ -32,21 +33,21 @@ public class YtelseskontraktClientImpl implements YtelseskontraktClient {
     }
 
     @Override
-    public YtelseskontraktResponse hentYtelseskontraktListe(XMLGregorianCalendar periodeFom, XMLGregorianCalendar periodeTom, String personId) {
+    public YtelseskontraktResponse hentYtelseskontraktListe(XMLGregorianCalendar periodeFom, XMLGregorianCalendar periodeTom, Fnr personId) {
         final WSPeriode periode = new WSPeriode();
         periode.setFom(periodeFom);
         periode.setTom(periodeTom);
         WSHentYtelseskontraktListeRequest request = new WSHentYtelseskontraktListeRequest()
                 .withPeriode(periode)
-                .withPersonidentifikator(personId);
+                .withPersonidentifikator(personId.get());
 
         return hentYtelseskontraktListe(request);
     }
 
     @Override
-    public YtelseskontraktResponse hentYtelseskontraktListe(String personId) {
+    public YtelseskontraktResponse hentYtelseskontraktListe(Fnr personId) {
         WSHentYtelseskontraktListeRequest request = new WSHentYtelseskontraktListeRequest()
-                .withPersonidentifikator(personId);
+                .withPersonidentifikator(personId.get());
 
         return hentYtelseskontraktListe(request);
     }

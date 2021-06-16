@@ -1,8 +1,8 @@
 package no.nav.veilarboppfolging.service;
 
 import no.nav.veilarboppfolging.controller.VeilederTilordningController;
-import no.nav.veilarboppfolging.controller.domain.OppfolgingFeedDTO;
 import no.nav.veilarboppfolging.feed.cjm.producer.FeedProducer;
+import no.nav.veilarboppfolging.feed.domain.OppfolgingFeedDTO;
 import no.nav.veilarboppfolging.repository.VeilederTilordningerRepository;
 import org.junit.Before;
 import org.junit.Test;

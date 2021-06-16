@@ -1,6 +1,7 @@
 package no.nav.veilarboppfolging.repository;
 
 import lombok.SneakyThrows;
+import no.nav.common.types.identer.AktorId;
 import no.nav.veilarboppfolging.domain.MalData;
 import no.nav.veilarboppfolging.utils.DbUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,10 +26,10 @@ public class MaalRepository {
         this.db = db;
     }
 
-    public List<MalData> aktorMal(String aktorId) {
+    public List<MalData> aktorMal(AktorId aktorId) {
         return db.query("SELECT * FROM MAL WHERE aktor_id = ? ORDER BY ID DESC",
                 MaalRepository::map,
-                aktorId);
+                aktorId.get());
     }
 
     public MalData fetch(Long id) {

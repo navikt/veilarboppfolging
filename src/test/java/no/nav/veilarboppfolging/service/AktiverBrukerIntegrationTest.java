@@ -1,9 +1,10 @@
 package no.nav.veilarboppfolging.service;
 
 import io.vavr.control.Try;
+import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.client.behandle_arbeidssoker.BehandleArbeidssokerClient;
-import no.nav.veilarboppfolging.domain.AktiverArbeidssokerData;
-import no.nav.veilarboppfolging.domain.Fnr;
+import no.nav.veilarboppfolging.controller.request.AktiverArbeidssokerData;
 import no.nav.veilarboppfolging.domain.Innsatsgruppe;
 import no.nav.veilarboppfolging.domain.Oppfolging;
 import no.nav.veilarboppfolging.repository.*;
@@ -33,7 +34,9 @@ public class AktiverBrukerIntegrationTest {
 
     private AktiverBrukerService aktiverBrukerService;
 
-    private final String IDENT = "1111";
+    private final Fnr FNR = Fnr.of("1111");
+
+    private final AktorId AKTOR_ID = AktorId.of("1234523423");
 
     @Before
     public void setup() {
@@ -53,51 +56,52 @@ public class AktiverBrukerIntegrationTest {
 
         aktiverBrukerService = new AktiverBrukerService(
                 authService, oppfolgingService,
-                behandleArbeidssokerClient, mock(KafkaProducerService.class), new NyeBrukereFeedRepository(db),
+                behandleArbeidssokerClient,
+                new NyeBrukereFeedRepository(db),
                 DbTestUtils.getTransactor(db)
         );
 
         DbTestUtils.cleanupTestDb();
-        when(authService.getAktorIdOrThrow(any())).thenReturn(IDENT);
+        when(authService.getAktorIdOrThrow(any(Fnr.class))).thenReturn(AKTOR_ID);
     }
 
     @Test
     public void skalRulleTilbakeDatabaseDersomKallTilArenaFeiler() {
-        doThrow(new RuntimeException()).when(behandleArbeidssokerClient).opprettBrukerIArena(anyString(), any());
+        doThrow(new RuntimeException()).when(behandleArbeidssokerClient).opprettBrukerIArena(any(), any());
 
-        AktiverArbeidssokerData data = lagBruker(IDENT);
+        AktiverArbeidssokerData data = lagBruker(FNR);
 
         Try<Void> run = Try.run(() -> aktiverBrukerService.aktiverBruker(data));
         assertThat(run.isFailure()).isTrue();
 
-        Optional<Oppfolging> oppfolging = oppfolgingService.hentOppfolging(IDENT);
+        Optional<Oppfolging> oppfolging = oppfolgingService.hentOppfolging(AKTOR_ID);
 
         assertThat(oppfolging.isPresent()).isFalse();
     }
 
     @Test
     public void skalLagreIDatabaseDersomKallTilArenaErOK() {
-        aktiverBrukerService.aktiverBruker(lagBruker(IDENT));
+        aktiverBrukerService.aktiverBruker(lagBruker(FNR));
 
-        Optional<Oppfolging> oppfolging = oppfolgingService.hentOppfolging(IDENT);
+        Optional<Oppfolging> oppfolging = oppfolgingService.hentOppfolging(AKTOR_ID);
 
         assertThat(oppfolging.isPresent()).isTrue();
     }
 
     @Test
     public void skalHaandtereAtOppfolgingstatusAlleredeFinnes() {
-        oppfolgingsStatusRepository.opprettOppfolging(IDENT);
-        oppfolgingsPeriodeRepository.avslutt(IDENT, "veilederid", "begrunnelse");
+        oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
+        oppfolgingsPeriodeRepository.avslutt(AKTOR_ID, "veilederid", "begrunnelse");
 
-        aktiverBrukerService.aktiverBruker(lagBruker(IDENT));
+        aktiverBrukerService.aktiverBruker(lagBruker(FNR));
 
-        Optional<Oppfolging> oppfolging = oppfolgingService.hentOppfolging(IDENT);
+        Optional<Oppfolging> oppfolging = oppfolgingService.hentOppfolging(AKTOR_ID);
 
         assertThat(oppfolging.get().isUnderOppfolging()).isTrue();
     }
 
-    private AktiverArbeidssokerData lagBruker(String ident) {
-        return new AktiverArbeidssokerData(new Fnr(ident), Innsatsgruppe.STANDARD_INNSATS);
+    private AktiverArbeidssokerData lagBruker(Fnr fnr) {
+        return new AktiverArbeidssokerData(new no.nav.veilarboppfolging.controller.request.Fnr(fnr.get()), Innsatsgruppe.STANDARD_INNSATS);
     }
 
 }

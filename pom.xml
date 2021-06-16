@@ -27,12 +27,12 @@
 
     <repositories>
         <repository>
-            <id>confluent</id>
-            <url>https://packages.confluent.io/maven/</url>
-        </repository>
-        <repository>
             <id>jitpack</id>
             <url>https://jitpack.io</url>
+        </repository>
+        <repository>
+            <id>confluent</id>
+            <url>https://packages.confluent.io/maven/</url>
         </repository>
     </repositories>
 
@@ -156,7 +156,7 @@
         <dependency>
             <groupId>com.github.navikt</groupId>
             <artifactId>pto-schema</artifactId>
-            <version>1.2021.06.14_08.58-0b06b1eac98e</version>
+            <version>1.2021.06.14_14.41-fa58fae3a44d</version>
         </dependency>
 
         <!-- Common Dependencies -->
@@ -242,7 +242,12 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.12</version>
+            <version>4.13.1</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.vintage</groupId>
+            <artifactId>junit-vintage-engine</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

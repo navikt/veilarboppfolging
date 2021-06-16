@@ -1,7 +1,8 @@
 package no.nav.veilarboppfolging.service;
 
+import no.nav.common.types.identer.AktorId;
+import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV1;
 import no.nav.veilarboppfolging.domain.OppfolgingsenhetEndringData;
-import no.nav.veilarboppfolging.domain.kafka.VeilarbArenaOppfolgingEndret;
 import no.nav.veilarboppfolging.repository.OppfolgingsenhetHistorikkRepository;
 import no.nav.veilarboppfolging.test.DbTestUtils;
 import no.nav.veilarboppfolging.test.LocalH2Database;
@@ -16,7 +17,7 @@ import static org.junit.Assert.assertThat;
 
 
 public class OppfolgingsenhetEndringServiceTest {
-    private final static String AKTOERID = "123";
+    private final static AktorId AKTOR_ID = AktorId.of("123");
     private final static String NYTT_NAV_KONTOR = "1111";
 
     private OppfolgingsenhetHistorikkRepository repo = new OppfolgingsenhetHistorikkRepository(LocalH2Database.getDb());
@@ -32,7 +33,7 @@ public class OppfolgingsenhetEndringServiceTest {
         gitt_eksisterende_historikk(NYTT_NAV_KONTOR);
         behandle_ny_enhets_endring("2222");
 
-        List<OppfolgingsenhetEndringData> historikk = repo.hentOppfolgingsenhetEndringerForAktorId(AKTOERID);
+        List<OppfolgingsenhetEndringData> historikk = repo.hentOppfolgingsenhetEndringerForAktorId(AKTOR_ID);
 
         assertThat(historikk.size(), is(2));
         assertThat(historikk.get(0).getEnhet(), equalTo("2222"));
@@ -42,7 +43,7 @@ public class OppfolgingsenhetEndringServiceTest {
     @Test
     public void skal_legge_til_ny_enhet_i_historikk_gitt_tom_historikk() {
         behandle_ny_enhets_endring(NYTT_NAV_KONTOR);
-        List<OppfolgingsenhetEndringData> historikk = repo.hentOppfolgingsenhetEndringerForAktorId(AKTOERID);
+        List<OppfolgingsenhetEndringData> historikk = repo.hentOppfolgingsenhetEndringerForAktorId(AKTOR_ID);
 
         assertThat(historikk.size(), is(1));
         assertThat(historikk.get(0).getEnhet(), equalTo(NYTT_NAV_KONTOR));
@@ -53,7 +54,7 @@ public class OppfolgingsenhetEndringServiceTest {
         gitt_eksisterende_historikk(NYTT_NAV_KONTOR);
         behandle_ny_enhets_endring(NYTT_NAV_KONTOR);
 
-        List<OppfolgingsenhetEndringData> historikk = repo.hentOppfolgingsenhetEndringerForAktorId(AKTOERID);
+        List<OppfolgingsenhetEndringData> historikk = repo.hentOppfolgingsenhetEndringerForAktorId(AKTOR_ID);
 
         assertThat(historikk.size(), is(1));
         assertThat(historikk.get(0).getEnhet(), equalTo(NYTT_NAV_KONTOR));
@@ -67,7 +68,7 @@ public class OppfolgingsenhetEndringServiceTest {
 
         behandle_ny_enhets_endring(NYTT_NAV_KONTOR);
 
-        List<OppfolgingsenhetEndringData> historikk = repo.hentOppfolgingsenhetEndringerForAktorId(AKTOERID);
+        List<OppfolgingsenhetEndringData> historikk = repo.hentOppfolgingsenhetEndringerForAktorId(AKTOR_ID);
 
         assertThat(historikk.size(), is(4));
         assertThat(historikk.get(0).getEnhet(), equalTo(NYTT_NAV_KONTOR));
@@ -75,8 +76,8 @@ public class OppfolgingsenhetEndringServiceTest {
 
 
     private void behandle_ny_enhets_endring(String navKontor) {
-        VeilarbArenaOppfolgingEndret arenaEndring = new VeilarbArenaOppfolgingEndret()
-                .setAktoerid(AKTOERID)
+        EndringPaaOppfoelgingsBrukerV1 arenaEndring = new EndringPaaOppfoelgingsBrukerV1()
+                .setAktoerid(AKTOR_ID.get())
                 .setNav_kontor(navKontor)
                 .setFormidlingsgruppekode("ARBS");
 
@@ -84,6 +85,6 @@ public class OppfolgingsenhetEndringServiceTest {
     }
 
     private void gitt_eksisterende_historikk(String navKontor) {
-        repo.insertOppfolgingsenhetEndringForAktorId(AKTOERID, navKontor);
+        repo.insertOppfolgingsenhetEndringForAktorId(AKTOR_ID, navKontor);
     }
 }

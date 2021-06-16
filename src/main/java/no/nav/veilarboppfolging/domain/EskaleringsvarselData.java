@@ -3,7 +3,6 @@ package no.nav.veilarboppfolging.domain;
 import lombok.Builder;
 import lombok.Value;
 import lombok.With;
-import lombok.experimental.Wither;
 
 import java.time.ZonedDateTime;
 
@@ -11,13 +10,13 @@ import java.time.ZonedDateTime;
 @Builder
 @With
 public class EskaleringsvarselData {
-    private long varselId;
-    private String aktorId;
-    private String opprettetAv;
-    private ZonedDateTime opprettetDato;
-    private String opprettetBegrunnelse;
-    private ZonedDateTime avsluttetDato;
-    private String avsluttetAv;
-    private String avsluttetBegrunnelse;
-    private long tilhorendeDialogId;
+    long varselId;
+    String aktorId;
+    String opprettetAv;
+    ZonedDateTime opprettetDato;
+    String opprettetBegrunnelse;
+    ZonedDateTime avsluttetDato;
+    String avsluttetAv;
+    String avsluttetBegrunnelse;
+    long tilhorendeDialogId;
 }

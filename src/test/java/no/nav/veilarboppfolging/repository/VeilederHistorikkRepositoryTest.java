@@ -1,5 +1,6 @@
 package no.nav.veilarboppfolging.repository;
 
+import no.nav.common.types.identer.AktorId;
 import no.nav.veilarboppfolging.domain.VeilederTilordningerData;
 import no.nav.veilarboppfolging.test.DbTestUtils;
 import no.nav.veilarboppfolging.test.LocalH2Database;
@@ -14,7 +15,7 @@ import static org.junit.Assert.assertThat;
 
 
 public class VeilederHistorikkRepositoryTest {
-    private static final String AKTOR_ID = randomNumeric(10);
+    private static final AktorId AKTOR_ID = AktorId.of(randomNumeric(10));
     private static final String VEILEDER1 = "Veileder1";
     private static final String VEILEDER2 = "Veileder2";
 

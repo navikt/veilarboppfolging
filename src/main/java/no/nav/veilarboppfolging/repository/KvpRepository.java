@@ -1,6 +1,7 @@
 package no.nav.veilarboppfolging.repository;
 
 import lombok.SneakyThrows;
+import no.nav.common.types.identer.AktorId;
 import no.nav.veilarboppfolging.domain.KodeverkBruker;
 import no.nav.veilarboppfolging.domain.Kvp;
 import no.nav.veilarboppfolging.utils.DbUtils;
@@ -17,6 +18,7 @@ import static no.nav.veilarboppfolging.domain.KodeverkBruker.NAV;
 import static no.nav.veilarboppfolging.utils.DbUtils.hentZonedDateTime;
 import static no.nav.veilarboppfolging.utils.EnumUtils.getName;
 import static no.nav.veilarboppfolging.utils.EnumUtils.valueOfOptional;
+import static no.nav.veilarboppfolging.utils.ListUtils.firstOrNull;
 
 @Repository
 public class KvpRepository {
@@ -30,7 +32,7 @@ public class KvpRepository {
 
     // TODO: Foretrekker å sende med dato istedenfor CURRENT_TIMESTAMP slik at det ikke blir en mismatch med datoen som f.eks blir brukt på kafka
     @Transactional
-    public void startKvp(String aktorId, String enhet, String opprettetAv, String opprettetBegrunnelse) {
+    public void startKvp(AktorId aktorId, String enhet, String opprettetAv, String opprettetBegrunnelse) {
         long id = DbUtils.nesteFraSekvens(db,"KVP_SEQ");
         long nextSerial = DbUtils.nesteFraSekvens(db,"KVP_SERIAL_SEQ");
 
@@ -46,7 +48,7 @@ public class KvpRepository {
                         "VALUES(?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?)",
                 id,
                 nextSerial,
-                aktorId,
+                aktorId.get(),
                 enhet,
                 opprettetAv,
                 opprettetBegrunnelse,
@@ -59,14 +61,14 @@ public class KvpRepository {
                         "FEED_ID = null " +
                         "WHERE aktor_id = ?",
                 id,
-                aktorId
+                aktorId.get()
         );
 
     }
 
     // TODO: Foretrekker å sende med dato istedenfor CURRENT_TIMESTAMP slik at det ikke blir en mismatch med datoen som f.eks blir brukt på kafka
     @Transactional
-    public void stopKvp(long kvpId, String aktorId, String avsluttetAv, String avsluttetBegrunnelse, KodeverkBruker kodeverkBruker) {
+    public void stopKvp(long kvpId, AktorId aktorId, String avsluttetAv, String avsluttetBegrunnelse, KodeverkBruker kodeverkBruker) {
         long nextSerial = DbUtils.nesteFraSekvens(db, "KVP_SERIAL_SEQ");
 
         db.update("UPDATE KVP " +
@@ -89,16 +91,16 @@ public class KvpRepository {
                         "oppdatert = CURRENT_TIMESTAMP, " +
                         "FEED_ID = null " +
                         "WHERE aktor_id = ?",
-                aktorId
+                aktorId.get()
         );
     }
 
-    public List<Kvp> hentKvpHistorikk(String aktorId) {
+    public List<Kvp> hentKvpHistorikk(AktorId aktorId) {
         return db.query("SELECT * " +
                         "FROM kvp " +
                         "WHERE aktor_id = ?",
                 KvpRepository::mapTilKvp,
-                aktorId
+                aktorId.get()
         );
     }
 
@@ -113,8 +115,7 @@ public class KvpRepository {
 
     public Kvp fetch(long id) {
         String sql = "SELECT * FROM KVP WHERE kvp_id = ?";
-        List<Kvp> kvper = db.query(sql, KvpRepository::mapTilKvp, id);
-        return kvper.isEmpty() ? null : kvper.get(0);
+        return firstOrNull(db.query(sql, KvpRepository::mapTilKvp, id));
     }
 
     /**
@@ -122,11 +123,11 @@ public class KvpRepository {
      * @return A positive integer pointing to the KVP primary key,
      * or zero if there is no current KVP period.
      */
-    public long gjeldendeKvp(String aktorId) {
+    public long gjeldendeKvp(AktorId aktorId) {
         try {
             return db.queryForObject("SELECT gjeldende_kvp FROM oppfolgingstatus WHERE aktor_id = ?",
                     (rs, row) -> rs.getLong("gjeldende_kvp"),
-                    aktorId);
+                    aktorId.get());
         } catch (EmptyResultDataAccessException e) {
             return 0;
         }

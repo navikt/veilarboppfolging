@@ -1,0 +1,10 @@
+{
+  "oppfolgingsenhet": {
+    "navn": "NAV Testheim",
+    "enhetId": "1234"
+  },
+  "veilederId": "Z12345",
+  "formidlingsgruppe": "ARBS",
+  "servicegruppe": "BKART",
+  "hovedmaalkode": "BEHOLDEA"
+}

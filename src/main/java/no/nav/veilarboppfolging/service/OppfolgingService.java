@@ -3,10 +3,12 @@ package no.nav.veilarboppfolging.service;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.client.dkif.DkifClient;
 import no.nav.veilarboppfolging.client.dkif.DkifKontaktinfo;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
-import no.nav.veilarboppfolging.controller.domain.UnderOppfolgingDTO;
+import no.nav.veilarboppfolging.controller.response.UnderOppfolgingDTO;
+import no.nav.veilarboppfolging.controller.response.VeilederTilgang;
 import no.nav.veilarboppfolging.domain.*;
 import no.nav.veilarboppfolging.repository.*;
 import no.nav.veilarboppfolging.utils.ArenaUtils;
@@ -96,7 +98,7 @@ public class OppfolgingService {
     }
 
     @Transactional
-    public OppfolgingStatusData hentOppfolgingsStatus(String fnr) {
+    public OppfolgingStatusData hentOppfolgingsStatus(Fnr fnr) {
         authService.sjekkLesetilgangMedFnr(fnr);
 
         sjekkStatusIArenaOgOppdaterOppfolging(fnr);
@@ -104,35 +106,35 @@ public class OppfolgingService {
         return getOppfolgingStatusData(fnr);
     }
 
-    private List<AktorId> hentAktorIderMedOppfolging(String fnr) {
+    private List<AktorId> hentAktorIderMedOppfolging(Fnr fnr) {
         authService.sjekkLesetilgangMedFnr(fnr);
         var aktorIder = authService.getAlleAktorIderOrThrow(fnr);
         return aktorIder
                 .stream()
-                .filter(aktorId -> !oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId.get()).isEmpty())
+                .filter(aktorId -> !oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId).isEmpty())
                 .collect(toList());
 
     }
 
-    public boolean hentHarFlereAktorIderMedOppfolging(String fnr) {
+    public boolean hentHarFlereAktorIderMedOppfolging(Fnr fnr) {
         boolean harFlereAktorIdMedOppfolging = hentAktorIderMedOppfolging(fnr).size() > 1;
 
-        if(harFlereAktorIdMedOppfolging) {
+        if (harFlereAktorIdMedOppfolging) {
             brukerOppslagFlereOppfolgingAktorRepository.insertBrukerHvisNy(fnr);
         }
 
         return harFlereAktorIdMedOppfolging;
     }
 
-    public AvslutningStatusData hentAvslutningStatus(String fnr) {
+    public AvslutningStatusData hentAvslutningStatus(Fnr fnr) {
         authService.sjekkLesetilgangMedFnr(fnr);
         return getAvslutningStatus(fnr);
     }
 
     @SneakyThrows
     @Transactional
-    public OppfolgingStatusData startOppfolging(String fnr) {
-        String aktorId = authService.getAktorIdOrThrow(fnr);
+    public OppfolgingStatusData startOppfolging(Fnr fnr) {
+        AktorId aktorId = authService.getAktorIdOrThrow(fnr);
 
         authService.sjekkLesetilgangMedFnr(fnr);
 
@@ -152,8 +154,8 @@ public class OppfolgingService {
 
     @SneakyThrows
     @Transactional
-    public AvslutningStatusData avsluttOppfolging(String fnr, String veilederId, String begrunnelse) {
-        String aktorId = authService.getAktorIdOrThrow(fnr);
+    public AvslutningStatusData avsluttOppfolging(Fnr fnr, String veilederId, String begrunnelse) {
+        AktorId aktorId = authService.getAktorIdOrThrow(fnr);
 
         authService.sjekkLesetilgangMedFnr(fnr);
 
@@ -175,8 +177,8 @@ public class OppfolgingService {
     }
 
     @Transactional
-    public boolean avsluttOppfolgingForSystemBruker(String fnr) {
-        String aktorId = authService.getAktorIdOrThrow(fnr);
+    public boolean avsluttOppfolgingForSystemBruker(Fnr fnr) {
+        AktorId aktorId = authService.getAktorIdOrThrow(fnr);
 
         ArenaOppfolgingTilstand arenaOppfolgingTilstand = arenaOppfolgingService.hentOppfolgingTilstand(fnr)
                 .orElseThrow();
@@ -200,7 +202,7 @@ public class OppfolgingService {
     }
 
     @SneakyThrows
-    public VeilederTilgang hentVeilederTilgang(String fnr) {
+    public VeilederTilgang hentVeilederTilgang(Fnr fnr) {
         authService.sjekkLesetilgangMedFnr(fnr);
         Optional<VeilarbArenaOppfolging> arenaBruker = arenaOppfolgingService.hentOppfolgingFraVeilarbarena(fnr);
         String oppfolgingsenhet = arenaBruker.map(VeilarbArenaOppfolging::getNav_kontor).orElse(null);
@@ -208,13 +210,13 @@ public class OppfolgingService {
         return new VeilederTilgang().setTilgangTilBrukersKontor(tilgangTilEnhet);
     }
 
-    public List<Oppfolgingsperiode> hentOppfolgingsperioder(String fnr) {
+    public List<Oppfolgingsperiode> hentOppfolgingsperioder(Fnr fnr) {
         authService.sjekkLesetilgangMedFnr(fnr);
-        String aktorId = authService.getAktorIdOrThrow(fnr);
+        AktorId aktorId = authService.getAktorIdOrThrow(fnr);
         return oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId);
     }
 
-    public UnderOppfolgingDTO oppfolgingData(String fnr) {
+    public UnderOppfolgingDTO oppfolgingData(Fnr fnr) {
         authService.sjekkLesetilgangMedFnr(fnr);
 
         return getOppfolgingStatus(fnr)
@@ -225,8 +227,8 @@ public class OppfolgingService {
                 .orElse(new UnderOppfolgingDTO().setUnderOppfolging(false).setErManuell(false));
     }
 
-    public boolean underOppfolgingNiva3(String fnr) {
-        String aktorId = authService.getAktorIdOrThrow(fnr);
+    public boolean underOppfolgingNiva3(Fnr fnr) {
+        AktorId aktorId = authService.getAktorIdOrThrow(fnr);
 
         authService.sjekkTilgangTilPersonMedNiva3(aktorId);
 
@@ -235,17 +237,17 @@ public class OppfolgingService {
                 .orElse(false);
     }
 
-    private Optional<OppfolgingTable> getOppfolgingStatus(String fnr) {
-        String aktorId = authService.getAktorIdOrThrow(fnr);
+    private Optional<OppfolgingTable> getOppfolgingStatus(Fnr fnr) {
+        AktorId aktorId = authService.getAktorIdOrThrow(fnr);
         authService.sjekkLesetilgangMedAktorId(aktorId);
         return ofNullable(oppfolgingsStatusRepository.fetch(aktorId));
     }
 
-    private OppfolgingStatusData getOppfolgingStatusData(String fnr) {
-        String aktorId = authService.getAktorIdOrThrow(fnr);
+    private OppfolgingStatusData getOppfolgingStatusData(Fnr fnr) {
+        AktorId aktorId = authService.getAktorIdOrThrow(fnr);
 
         Oppfolging oppfolging = hentOppfolging(aktorId)
-                .orElse(new Oppfolging().setAktorId(aktorId).setUnderOppfolging(false));
+                .orElse(new Oppfolging().setAktorId(aktorId.get()).setUnderOppfolging(false));
 
         boolean erManuell = ofNullable(oppfolging.getGjeldendeManuellStatus())
                 .map(ManuellStatus::isManuell)
@@ -256,7 +258,7 @@ public class OppfolgingService {
         if (oppfolging.isUnderOppfolging() && !erManuell && dkifKontaktinfo.isReservert()) {
             manuellStatusRepository.create(
                     new ManuellStatus()
-                            .setAktorId(aktorId)
+                            .setAktorId(aktorId.get())
                             .setManuell(true)
                             .setDato(ZonedDateTime.now())
                             .setBegrunnelse("Brukeren er reservert i Kontakt- og reservasjonsregisteret")
@@ -291,7 +293,7 @@ public class OppfolgingService {
                 .orElse(null);
 
         return new OppfolgingStatusData()
-                .setFnr(fnr)
+                .setFnr(fnr.get())
                 .setAktorId(oppfolging.getAktorId())
                 .setVeilederId(oppfolging.getVeilederId())
                 .setUnderOppfolging(oppfolging.isUnderOppfolging())
@@ -313,8 +315,8 @@ public class OppfolgingService {
                 .setKanVarsles(!erManuell && dkifKontaktinfo.isKanVarsles());
     }
 
-    private AvslutningStatusData getAvslutningStatus(String fnr) {
-        String aktorId = authService.getAktorIdOrThrow(fnr);
+    private AvslutningStatusData getAvslutningStatus(Fnr fnr) {
+        AktorId aktorId = authService.getAktorIdOrThrow(fnr);
 
         OppfolgingTable oppfolging = oppfolgingsStatusRepository.fetch(aktorId);
 
@@ -336,7 +338,7 @@ public class OppfolgingService {
                 .kanAvslutte(kanAvslutte)
                 .underOppfolging(erUnderOppfolging)
                 .harYtelser(ytelserOgAktiviteterService.harPagaendeYtelse(fnr))
-                .underKvp(kvpService.erUnderKvp(authService.getAktorIdOrThrow(fnr)))
+                .underKvp(kvpService.erUnderKvp(aktorId))
                 .inaktiveringsDato(inaktiveringsDato)
                 .build();
     }
@@ -346,7 +348,7 @@ public class OppfolgingService {
     }
 
     @SneakyThrows
-    public Optional<Oppfolging> hentOppfolging(String aktorId) {
+    public Optional<Oppfolging> hentOppfolging(AktorId aktorId) {
         OppfolgingTable t = oppfolgingsStatusRepository.fetch(aktorId);
 
         if (t == null) {
@@ -383,23 +385,23 @@ public class OppfolgingService {
         }
 
         List<Kvp> kvpPerioder = kvpRepository.hentKvpHistorikk(aktorId);
-        o.setOppfolgingsperioder(populerKvpPerioder(oppfolgingsPeriodeRepository.hentOppfolgingsperioder(t.getAktorId()), kvpPerioder));
+        o.setOppfolgingsperioder(populerKvpPerioder(oppfolgingsPeriodeRepository.hentOppfolgingsperioder(AktorId.of(t.getAktorId())), kvpPerioder));
 
         return Optional.of(o);
     }
 
     @Transactional
-    public void startOppfolgingHvisIkkeAlleredeStartet(String aktorId) {
+    public void startOppfolgingHvisIkkeAlleredeStartet(AktorId aktorId) {
         startOppfolgingHvisIkkeAlleredeStartet(
                 Oppfolgingsbruker.builder()
-                        .aktoerId(aktorId)
+                        .aktoerId(aktorId.get())
                         .build()
         );
     }
 
     @Transactional
     public void startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker oppfolgingsbruker) {
-        String aktorId = oppfolgingsbruker.getAktoerId();
+        AktorId aktorId = AktorId.of(oppfolgingsbruker.getAktoerId());
 
         OppfolgingTable eksisterendeOppfolging = oppfolgingsStatusRepository.fetch(aktorId);
 
@@ -453,8 +455,8 @@ public class OppfolgingService {
         return periode.getSluttDato() == null || !periode.getSluttDato().isBefore(kvp.getOpprettetDato());
     }
 
-    private void sjekkStatusIArenaOgOppdaterOppfolging(String fnr) {
-        String aktorId = authService.getAktorIdOrThrow(fnr);
+    private void sjekkStatusIArenaOgOppdaterOppfolging(Fnr fnr) {
+        AktorId aktorId = authService.getAktorIdOrThrow(fnr);
         Optional<ArenaOppfolgingTilstand> arenaOppfolgingTilstand = arenaOppfolgingService.hentOppfolgingTilstand(fnr);
 
         arenaOppfolgingTilstand.ifPresent(oppfolgingTilstand -> {
@@ -490,7 +492,7 @@ public class OppfolgingService {
         });
     }
 
-    private void sjekkOgOppdaterBrukerDirekteFraArena(String fnr, ArenaOppfolgingTilstand arenaOppfolgingTilstand, OppfolgingTable oppfolging) {
+    private void sjekkOgOppdaterBrukerDirekteFraArena(Fnr fnr, ArenaOppfolgingTilstand arenaOppfolgingTilstand, OppfolgingTable oppfolging) {
         Optional<ArenaOppfolgingTilstand> maybeTilstandDirekteFraArena = arenaOppfolgingTilstand.isDirekteFraArena()
                 ? of(arenaOppfolgingTilstand)
                 : arenaOppfolgingService.hentOppfolgingTilstandDirekteFraArena(fnr);
@@ -515,14 +517,14 @@ public class OppfolgingService {
                     arenaOppfolgingTilstand);
 
             if (skalAvsluttes) {
-                String aktorId = authService.getAktorIdOrThrow(fnr);
+                AktorId aktorId = authService.getAktorIdOrThrow(fnr);
                 boolean kanAvslutte = kanAvslutteOppfolging(aktorId, oppfolging.isUnderOppfolging(), erIserv(tilstandDirekteFraArena.getFormidlingsgruppe()));
                 inaktiverBruker(aktorId, kanAvslutte);
             }
         });
     }
 
-    private void inaktiverBruker(String aktorId, boolean kanAvslutteOppfolging) {
+    private void inaktiverBruker(AktorId aktorId, boolean kanAvslutteOppfolging) {
         log.info("Avslutter oppfølgingsperiode for bruker");
 
         if (kanAvslutteOppfolging) {
@@ -534,7 +536,7 @@ public class OppfolgingService {
         metricsService.raporterAutomatiskAvslutningAvOppfolging(!kanAvslutteOppfolging);
     }
 
-    public boolean kanAvslutteOppfolging(String aktorId, boolean erUnderOppfolging, boolean erIservIArena) {
+    public boolean kanAvslutteOppfolging(AktorId aktorId, boolean erUnderOppfolging, boolean erIservIArena) {
         boolean ikkeUnderKvp = !kvpService.erUnderKvp(aktorId);
 
         log.info("Kan oppfolging avsluttes for aktorid {}?, oppfolging.isUnderOppfolging(): {}, erIservIArena(): {}, !erUnderKvp(): {}",
@@ -545,7 +547,7 @@ public class OppfolgingService {
                 && ikkeUnderKvp;
     }
 
-    private void avsluttOppfolgingForBruker(String aktorId, String veilederId, String begrunnelse) {
+    private void avsluttOppfolgingForBruker(AktorId aktorId, String veilederId, String begrunnelse) {
         String brukerIdent = authService.getInnloggetBrukerIdent();
         eskaleringService.stoppEskaleringForAvsluttOppfolging(aktorId, brukerIdent, begrunnelse);
 

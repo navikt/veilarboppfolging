@@ -3,9 +3,11 @@ package no.nav.veilarboppfolging.service;
 import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.common.auth.context.UserRole;
 import no.nav.common.test.auth.AuthTestUtils;
+import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.Fnr;
+import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV1;
 import no.nav.veilarboppfolging.domain.IservMapper;
 import no.nav.veilarboppfolging.domain.OppfolgingTable;
-import no.nav.veilarboppfolging.domain.kafka.VeilarbArenaOppfolgingEndret;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
 import no.nav.veilarboppfolging.repository.UtmeldingRepository;
 import no.nav.veilarboppfolging.test.DbTestUtils;
@@ -15,17 +17,17 @@ import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.ZonedDateTime;
-import java.time.temporal.ChronoUnit;
 
 import static java.time.ZonedDateTime.now;
 import static java.time.temporal.ChronoUnit.MILLIS;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 public class IservServiceIntegrationTest {
 
-    private final static String AKTORID = "1234";
+    private final static Fnr FNR = Fnr.of("879037942");
+
+    private final static AktorId AKTOR_ID = AktorId.of("1234");
 
     private static int nesteAktorId;
 
@@ -47,9 +49,9 @@ public class IservServiceIntegrationTest {
 
         DbTestUtils.cleanupTestDb();
 
-        when(oppfolgingStatusRepository.fetch(anyString())).thenReturn(new OppfolgingTable().setUnderOppfolging(true));
-        when(oppfolgingService.avsluttOppfolgingForSystemBruker(anyString())).thenReturn(true);
-        when(authService.getFnrOrThrow(anyString())).thenReturn(AKTORID);
+        when(oppfolgingStatusRepository.fetch(any())).thenReturn(new OppfolgingTable().setUnderOppfolging(true));
+        when(oppfolgingService.avsluttOppfolgingForSystemBruker(any())).thenReturn(true);
+        when(authService.getFnrOrThrow(any())).thenReturn(FNR);
 
         utmeldingRepository = new UtmeldingRepository(db);
 
@@ -63,35 +65,35 @@ public class IservServiceIntegrationTest {
 
     @Test
     public void behandleEndretBruker_skalLagreNyIservBruker() {
-        VeilarbArenaOppfolgingEndret veilarbArenaOppfolging = getArenaBruker();
+        EndringPaaOppfoelgingsBrukerV1 veilarbArenaOppfolging = getArenaBruker();
         assertThat(utmeldingRepository.eksisterendeIservBruker(veilarbArenaOppfolging)).isNull();
 
         iservService.behandleEndretBruker(veilarbArenaOppfolging);
 
         IservMapper iservMapper = utmeldingRepository.eksisterendeIservBruker(veilarbArenaOppfolging);
         assertThat(iservMapper).isNotNull();
-        assertThat(iservMapper.getAktor_Id()).isEqualTo(AKTORID);
+        assertThat(iservMapper.getAktor_Id()).isEqualTo(AKTOR_ID.get());
         assertThat(iservMapper.getIservSiden().truncatedTo(MILLIS)).isEqualTo(iservFraDato.truncatedTo(MILLIS));
     }
 
     @Test
     public void behandleEndretBruker_skalOppdatereEksisterendeIservBruker() {
-        VeilarbArenaOppfolgingEndret veilarbArenaOppfolging = getArenaBruker();
+        EndringPaaOppfoelgingsBrukerV1 veilarbArenaOppfolging = getArenaBruker();
         utmeldingRepository.insertUtmeldingTabell(veilarbArenaOppfolging);
         assertThat(utmeldingRepository.eksisterendeIservBruker(veilarbArenaOppfolging)).isNotNull();
 
-        veilarbArenaOppfolging.setIserv_fra_dato(veilarbArenaOppfolging.iserv_fra_dato.plusDays(2));
+        veilarbArenaOppfolging.setIserv_fra_dato(veilarbArenaOppfolging.getIserv_fra_dato().plusDays(2));
         iservService.behandleEndretBruker(veilarbArenaOppfolging);
 
         IservMapper iservMapper = utmeldingRepository.eksisterendeIservBruker(veilarbArenaOppfolging);
         assertThat(iservMapper).isNotNull();
-        assertThat(iservMapper.getAktor_Id()).isEqualTo(AKTORID);
+        assertThat(iservMapper.getAktor_Id()).isEqualTo(AKTOR_ID.get());
         assertThat(iservMapper.getIservSiden().truncatedTo(MILLIS)).isEqualTo(veilarbArenaOppfolging.getIserv_fra_dato().truncatedTo(MILLIS));
     }
 
     @Test
     public void behandleEndretBruker_skalSletteBrukerSomIkkeLengerErIserv() {
-        VeilarbArenaOppfolgingEndret veilarbArenaOppfolging = getArenaBruker();
+        EndringPaaOppfoelgingsBrukerV1 veilarbArenaOppfolging = getArenaBruker();
         utmeldingRepository.insertUtmeldingTabell(veilarbArenaOppfolging);
         assertThat(utmeldingRepository.eksisterendeIservBruker(veilarbArenaOppfolging)).isNotNull();
 
@@ -102,17 +104,17 @@ public class IservServiceIntegrationTest {
 
     @Test
     public void behandleEndretBruker_skalStarteBrukerSomHarOppfolgingsstatus() {
-        VeilarbArenaOppfolgingEndret veilarbArenaOppfolging = getArenaBruker();
+        EndringPaaOppfoelgingsBrukerV1 veilarbArenaOppfolging = getArenaBruker();
         veilarbArenaOppfolging.setFormidlingsgruppekode("ARBS");
-        when(oppfolgingStatusRepository.fetch(anyString())).thenReturn(new OppfolgingTable().setUnderOppfolging(false));
+        when(oppfolgingStatusRepository.fetch(any())).thenReturn(new OppfolgingTable().setUnderOppfolging(false));
 
         iservService.behandleEndretBruker(veilarbArenaOppfolging);
-        verify(oppfolgingService).startOppfolgingHvisIkkeAlleredeStartet(AKTORID);
+        verify(oppfolgingService).startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
     }
 
     @Test
     public void behandleEndretBruker_skalIkkeStarteBrukerSomHarOppfolgingsstatusDersomAlleredeUnderOppfolging() {
-        VeilarbArenaOppfolgingEndret veilarbArenaOppfolging = getArenaBruker();
+        EndringPaaOppfoelgingsBrukerV1 veilarbArenaOppfolging = getArenaBruker();
         veilarbArenaOppfolging.setFormidlingsgruppekode("ARBS");
 
         iservService.behandleEndretBruker(veilarbArenaOppfolging);
@@ -121,10 +123,10 @@ public class IservServiceIntegrationTest {
   
     @Test
     public void behandleEndretBruker_skalIkkeStarteBrukerSomIkkeHarOppfolgingsstatus() {
-        VeilarbArenaOppfolgingEndret veilarbArenaOppfolging = getArenaBruker();
+        EndringPaaOppfoelgingsBrukerV1 veilarbArenaOppfolging = getArenaBruker();
         veilarbArenaOppfolging.setFormidlingsgruppekode("IARBS");
         veilarbArenaOppfolging.setKvalifiseringsgruppekode("IkkeOppfolging");
-        when(oppfolgingStatusRepository.fetch(anyString())).thenReturn(new OppfolgingTable().setUnderOppfolging(false));
+        when(oppfolgingStatusRepository.fetch(any())).thenReturn(new OppfolgingTable().setUnderOppfolging(false));
 
         iservService.behandleEndretBruker(veilarbArenaOppfolging);
         verifyZeroInteractions(oppfolgingService);
@@ -144,18 +146,18 @@ public class IservServiceIntegrationTest {
 
     @Test
     public void avsluttOppfolging(){
-        VeilarbArenaOppfolgingEndret veilarbArenaOppfolging = insertIservBruker(iservFraDato);
+        EndringPaaOppfoelgingsBrukerV1 veilarbArenaOppfolging = insertIservBruker(iservFraDato);
         assertThat(utmeldingRepository.eksisterendeIservBruker(veilarbArenaOppfolging)).isNotNull();
 
-        iservService.avslutteOppfolging(veilarbArenaOppfolging.aktoerid);
+        iservService.avslutteOppfolging(AktorId.of(veilarbArenaOppfolging.getAktoerid()));
 
-        verify(oppfolgingService).avsluttOppfolgingForSystemBruker(anyString());
+        verify(oppfolgingService).avsluttOppfolgingForSystemBruker(any());
         assertThat(utmeldingRepository.eksisterendeIservBruker(veilarbArenaOppfolging)).isNull();
     }
 
     @Test
     public void automatiskAvslutteOppfolging_skalAvslutteBrukerSomErIserv28dagerOgUnderOppfolging(){
-        VeilarbArenaOppfolgingEndret bruker = insertIservBruker(now().minusDays(30));
+        EndringPaaOppfoelgingsBrukerV1 bruker = insertIservBruker(now().minusDays(30));
 
         iservService.automatiskAvslutteOppfolging();
 
@@ -164,8 +166,8 @@ public class IservServiceIntegrationTest {
 
     @Test
     public void automatiskAvslutteOppfolging_skalFjerneBrukerSomErIserv28dagerOgIkkeUnderOppfolging(){
-        VeilarbArenaOppfolgingEndret bruker = insertIservBruker(now().minusDays(30));
-        when(oppfolgingStatusRepository.fetch(bruker.aktoerid)).thenReturn(new OppfolgingTable().setUnderOppfolging(false));
+        EndringPaaOppfoelgingsBrukerV1 bruker = insertIservBruker(now().minusDays(30));
+        when(oppfolgingStatusRepository.fetch(AktorId.of(bruker.getAktoerid()))).thenReturn(new OppfolgingTable().setUnderOppfolging(false));
 
         iservService.automatiskAvslutteOppfolging();
 
@@ -175,24 +177,24 @@ public class IservServiceIntegrationTest {
     
     @Test
     public void automatiskAvslutteOppfolging_skalIkkeFjerneBrukerSomErIserv28dagerMenIkkeAvsluttet(){
-        VeilarbArenaOppfolgingEndret bruker = insertIservBruker(now().minusDays(30));
-        when(oppfolgingService.avsluttOppfolgingForSystemBruker(anyString())).thenReturn(false);
+        EndringPaaOppfoelgingsBrukerV1 bruker = insertIservBruker(now().minusDays(30));
+        when(oppfolgingService.avsluttOppfolgingForSystemBruker(any())).thenReturn(false);
 
         iservService.automatiskAvslutteOppfolging();
 
         assertThat(utmeldingRepository.eksisterendeIservBruker(bruker)).isNotNull();
     }
     
-    private VeilarbArenaOppfolgingEndret getArenaBruker() {
-        VeilarbArenaOppfolgingEndret veilarbArenaOppfolging = new VeilarbArenaOppfolgingEndret();
-        veilarbArenaOppfolging.setAktoerid(AKTORID);
+    private EndringPaaOppfoelgingsBrukerV1 getArenaBruker() {
+        EndringPaaOppfoelgingsBrukerV1 veilarbArenaOppfolging = new EndringPaaOppfoelgingsBrukerV1();
+        veilarbArenaOppfolging.setAktoerid(AKTOR_ID.get());
         veilarbArenaOppfolging.setFormidlingsgruppekode("ISERV");
         veilarbArenaOppfolging.setIserv_fra_dato(iservFraDato);
         return veilarbArenaOppfolging;
     }
 
-    private VeilarbArenaOppfolgingEndret insertIservBruker(ZonedDateTime iservFraDato) {
-        VeilarbArenaOppfolgingEndret veilarbArenaOppfolging = new VeilarbArenaOppfolgingEndret();
+    private EndringPaaOppfoelgingsBrukerV1 insertIservBruker(ZonedDateTime iservFraDato) {
+        EndringPaaOppfoelgingsBrukerV1 veilarbArenaOppfolging = new EndringPaaOppfoelgingsBrukerV1();
         veilarbArenaOppfolging.setAktoerid(Integer.toString(nesteAktorId++));
         veilarbArenaOppfolging.setFormidlingsgruppekode("ISERV");
         veilarbArenaOppfolging.setIserv_fra_dato(iservFraDato);

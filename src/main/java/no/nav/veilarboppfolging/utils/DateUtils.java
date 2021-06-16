@@ -8,6 +8,7 @@ import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.GregorianCalendar;
 
 @Slf4j
@@ -31,4 +32,9 @@ public class DateUtils {
 
         return null;
     }
+
+    public static boolean between(ZonedDateTime start, ZonedDateTime stop, ZonedDateTime date) {
+        return !date.isBefore(start) && (stop == null || !date.isAfter(stop));
+    }
+
 }

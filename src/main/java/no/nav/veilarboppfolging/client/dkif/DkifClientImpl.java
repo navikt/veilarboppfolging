@@ -10,6 +10,7 @@ import no.nav.common.json.JsonUtils;
 import no.nav.common.rest.client.RestClient;
 import no.nav.common.rest.client.RestUtils;
 import no.nav.common.sts.SystemUserTokenProvider;
+import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.config.CacheConfig;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -42,12 +43,12 @@ public class DkifClientImpl implements DkifClient {
     @Cacheable(CacheConfig.DKIF_KONTAKTINFO_CACHE_NAME)
     @SneakyThrows
     @Override
-    public DkifKontaktinfo hentKontaktInfo(String fnr) {
+    public DkifKontaktinfo hentKontaktInfo(Fnr fnr) {
         Request request = new Request.Builder()
                 .url(joinPaths(dkifUrl, "/api/v1/personer/kontaktinformasjon?inkluderSikkerDigitalPost=false"))
                 .header(ACCEPT, APPLICATION_JSON_VALUE)
                 .header(AUTHORIZATION, "Bearer " + systemUserTokenProvider.getSystemUserToken())
-                .header("Nav-Personidenter", fnr)
+                .header("Nav-Personidenter", fnr.get())
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
@@ -62,7 +63,9 @@ public class DkifClientImpl implements DkifClient {
             ObjectMapper mapper = JsonUtils.getMapper();
 
             JsonNode node = mapper.readTree(json.get());
-            JsonNode kontaktinfoNode = ofNullable(node.get("kontaktinfo")).map(n -> n.get(fnr)).orElse(null);
+            JsonNode kontaktinfoNode = ofNullable(node.get("kontaktinfo"))
+                    .map(n -> n.get(fnr.get()))
+                    .orElse(null);
 
             if (kontaktinfoNode == null) {
                 log.warn("Mangler kontaktinfo fra DKIF");
@@ -76,9 +79,9 @@ public class DkifClientImpl implements DkifClient {
         }
     }
 
-    private DkifKontaktinfo fallbackKontaktinfo(String fnr) {
+    private DkifKontaktinfo fallbackKontaktinfo(Fnr fnr) {
         DkifKontaktinfo kontaktinfo = new DkifKontaktinfo();
-        kontaktinfo.setPersonident(fnr);
+        kontaktinfo.setPersonident(fnr.get());
         kontaktinfo.setKanVarsles(true);
         kontaktinfo.setReservert(false);
         return kontaktinfo;

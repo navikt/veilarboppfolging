@@ -1,5 +1,6 @@
 package no.nav.veilarboppfolging.repository;
 
+import no.nav.common.types.identer.AktorId;
 import no.nav.veilarboppfolging.domain.Tilordning;
 import no.nav.veilarboppfolging.test.DbTestUtils;
 import no.nav.veilarboppfolging.test.LocalH2Database;
@@ -14,7 +15,7 @@ import static org.junit.Assert.assertThat;
 
 public class VeilederTilordningerRepositoryTest {
 
-    private static final String AKTOR_ID = randomNumeric(10);
+    private static final AktorId AKTOR_ID = AktorId.of(randomNumeric(10));
     private static final String VEILEDER = "4321";
     private static final String OTHER_VEILEDER = "5432";
 
@@ -35,7 +36,7 @@ public class VeilederTilordningerRepositoryTest {
 
     @Test
     public void skalOppdatereBrukerDersomDenFinnes() {
-        String aktoerid = "1111111";
+        AktorId aktoerid = AktorId.of("1111111");
 
         veilederTilordningerRepository.upsertVeilederTilordning(aktoerid, VEILEDER);
         veilederTilordningerRepository.upsertVeilederTilordning(aktoerid, OTHER_VEILEDER);

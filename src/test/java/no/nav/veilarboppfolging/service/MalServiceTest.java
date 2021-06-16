@@ -1,5 +1,7 @@
 package no.nav.veilarboppfolging.service;
 
+import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.domain.Kvp;
 import no.nav.veilarboppfolging.domain.MalData;
 import no.nav.veilarboppfolging.domain.OppfolgingTable;
@@ -8,7 +10,6 @@ import no.nav.veilarboppfolging.repository.MaalRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
 import org.junit.Before;
 import org.junit.Test;
-
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -24,16 +25,15 @@ import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
-
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class MalServiceTest {
 
-    private static final String FNR = "fnr";
-    private static final String AKTOR_ID = "aktorId";
+    private static final Fnr FNR = Fnr.of("fnr");
+    private static final AktorId AKTOR_ID = AktorId.of("aktorId");
     private static final long MAL_ID = 1L;
     private static final long KVP_ID = 1L;
     private static final String ENHET = "enhet";
@@ -74,7 +74,7 @@ public class MalServiceTest {
 
     @Test(expected = ResponseStatusException.class)
     public void oppdaterMal_veilederUtenTilgang_KvpBruker_kasterException() {
-        when(kvpRepositoryMock.gjeldendeKvp(anyString())).thenReturn(KVP_ID);
+        when(kvpRepositoryMock.gjeldendeKvp(any())).thenReturn(KVP_ID);
         when(kvpRepositoryMock.fetch(anyLong())).thenReturn(aktivKvp());
         when(authService.harTilgangTilEnhetMedSperre(ENHET)).thenReturn(false);
 
@@ -83,7 +83,7 @@ public class MalServiceTest {
 
     @Test
     public void oppdaterMal_veilederMedTilgang_KvpBruker_kasterIkkeException() {
-        when(kvpRepositoryMock.gjeldendeKvp(anyString())).thenReturn(KVP_ID);
+        when(kvpRepositoryMock.gjeldendeKvp(any())).thenReturn(KVP_ID);
         when(kvpRepositoryMock.fetch(anyLong())).thenReturn(aktivKvp());
         when(authService.harTilgangTilEnhetMedSperre(ENHET)).thenReturn(true);
         MalData resultat = malService.oppdaterMal("mal", FNR, VEILEDER);
@@ -158,15 +158,15 @@ public class MalServiceTest {
     private List<MalData> malList() {
         return asList(new MalData()
                         .setId(1L)
-                        .setAktorId(AKTOR_ID)
+                        .setAktorId(AKTOR_ID.get())
                         .setDato(BEFORE_KVP),
                 new MalData()
                         .setId(2L)
-                        .setAktorId(AKTOR_ID)
+                        .setAktorId(AKTOR_ID.get())
                         .setDato(IN_KVP),
                 new MalData()
                         .setId(3L)
-                        .setAktorId(AKTOR_ID)
+                        .setAktorId(AKTOR_ID.get())
                         .setDato(AFTER_KVP)
         );
     }
@@ -191,7 +191,7 @@ public class MalServiceTest {
     private MalData mal(ZonedDateTime dateTime) {
         return new MalData()
                 .setId(MAL_ID)
-                .setAktorId(AKTOR_ID)
+                .setAktorId(AKTOR_ID.get())
                 .setDato(dateTime);
     }
 
