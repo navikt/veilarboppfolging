@@ -88,7 +88,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
                 oppfolgingsStatusRepository,
                 oppfolgingsPeriodeRepository,
                 manuellStatusRepository,
-                null,
+                mock(ManuellStatusService.class),
                 eskaleringService,
                 null,
                 kvpRepository,

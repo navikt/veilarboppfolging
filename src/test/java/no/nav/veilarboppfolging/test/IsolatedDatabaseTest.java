@@ -5,6 +5,7 @@ import no.nav.veilarboppfolging.test.testdriver.TestDriver;
 import org.junit.After;
 import org.junit.Before;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -22,6 +23,8 @@ public abstract class IsolatedDatabaseTest {
 
     protected JdbcTemplate db;
 
+    protected TransactionTemplate transactor;
+
     @Before
     public void setupIsolatedDatabase() {
         TestDriver.init();
@@ -32,6 +35,7 @@ public abstract class IsolatedDatabaseTest {
         initDb(testDataSource);
 
         db = new JdbcTemplate(testDataSource);
+        transactor = DbTestUtils.createTransactor(db);
     }
 
     @After

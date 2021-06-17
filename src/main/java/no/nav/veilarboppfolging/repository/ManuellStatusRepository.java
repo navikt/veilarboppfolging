@@ -12,10 +12,12 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import java.sql.ResultSet;
 import java.util.List;
+import java.util.Optional;
 
 import static no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository.AKTOR_ID;
 import static no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository.GJELDENDE_MANUELL_STATUS;
 import static no.nav.veilarboppfolging.utils.DbUtils.hentZonedDateTime;
+import static no.nav.veilarboppfolging.utils.DbUtils.queryForNullableObject;
 import static no.nav.veilarboppfolging.utils.EnumUtils.getName;
 import static no.nav.veilarboppfolging.utils.EnumUtils.valueOfOptional;
 import static no.nav.veilarboppfolging.utils.ListUtils.firstOrNull;
@@ -52,6 +54,11 @@ public class ManuellStatusRepository {
                 ManuellStatusRepository::map,
                 aktorId.get()
         );
+    }
+
+    public Optional<ManuellStatus> hentSisteManuellStatus(AktorId aktorId) {
+        String sql = "SELECT * FROM MANUELL_STATUS WHERE aktor_id = ? ORDER BY OPPRETTET_DATO DESC FETCH NEXT 1 ROWS ONLY";
+        return queryForNullableObject(db, sql, ManuellStatusRepository::map, aktorId.get());
     }
 
     @SneakyThrows

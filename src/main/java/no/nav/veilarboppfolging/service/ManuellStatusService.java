@@ -1,6 +1,5 @@
 package no.nav.veilarboppfolging.service;
 
-import lombok.SneakyThrows;
 import lombok.val;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
@@ -14,9 +13,11 @@ import no.nav.veilarboppfolging.repository.ManuellStatusRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.ZonedDateTime;
-import java.util.Optional;
+
+import static no.nav.veilarboppfolging.domain.KodeverkBruker.SYSTEM;
 
 @Service
 public class ManuellStatusService {
@@ -33,28 +34,66 @@ public class ManuellStatusService {
 
     private final KafkaProducerService kafkaProducerService;
 
+    private final TransactionTemplate transactor;
+
     @Autowired
     public ManuellStatusService(
             AuthService authService,
             ManuellStatusRepository manuellStatusRepository,
             ArenaOppfolgingService arenaOppfolgingService,
             OppfolgingsStatusRepository oppfolgingsStatusRepository,
-            DkifClient dkifClient, KafkaProducerService kafkaProducerService) {
+            DkifClient dkifClient,
+            KafkaProducerService kafkaProducerService,
+            TransactionTemplate transactor
+    ) {
         this.authService = authService;
         this.manuellStatusRepository = manuellStatusRepository;
         this.arenaOppfolgingService = arenaOppfolgingService;
         this.oppfolgingsStatusRepository = oppfolgingsStatusRepository;
         this.dkifClient = dkifClient;
         this.kafkaProducerService = kafkaProducerService;
+        this.transactor = transactor;
     }
 
-    @SneakyThrows
+    public boolean erManuell(AktorId aktorId) {
+        return manuellStatusRepository.hentSisteManuellStatus(aktorId)
+                .map(ManuellStatus::isManuell)
+                .orElse(false);
+    }
+
+    /**
+     * Gjør en sjekk i DKIF om bruker er reservert.
+     * Hvis bruker er reservert så sett manuell status på bruker hvis det ikke allerede er gjort.
+     * Bruker må være under oppfølging for å oppdatere manuell status.
+     * @param fnr fnr/dnr til bruker som det skal sjekkes på
+     */
+    public void synkroniserManuellStatusMedDkif(Fnr fnr) {
+        AktorId aktorId = authService.getAktorIdOrThrow(fnr);
+
+        // Bruker er allerede manuell, trenger ikke å sjekke i DKIF
+        if (erManuell(aktorId)) {
+            return;
+        }
+
+        DkifKontaktinfo dkifKontaktinfo = dkifClient.hentKontaktInfo(fnr);
+
+        if (dkifKontaktinfo.isReservert()) {
+            var manuellStatus = new ManuellStatus()
+                    .setAktorId(aktorId.get())
+                    .setManuell(true)
+                    .setDato(ZonedDateTime.now())
+                    .setBegrunnelse("Brukeren er reservert i Kontakt- og reservasjonsregisteret")
+                    .setOpprettetAv(SYSTEM);
+
+            oppdaterManuellStatus(aktorId, manuellStatus);
+        }
+    }
+
     public void settDigitalBruker(Fnr fnr) {
         AktorId aktorId = authService.getAktorIdOrThrow(fnr);
         oppdaterManuellStatus(fnr, false, "Brukeren endret til digital oppfølging", KodeverkBruker.EKSTERN, aktorId.get());
     }
 
-    @SneakyThrows
     public void oppdaterManuellStatus(Fnr fnr, boolean manuell, String begrunnelse, KodeverkBruker opprettetAv, String opprettetAvBrukerId) {
         AktorId aktorId = authService.getAktorIdOrThrow(fnr);
         authService.sjekkLesetilgangMedAktorId(aktorId);
@@ -69,7 +108,7 @@ public class ManuellStatusService {
         DkifKontaktinfo kontaktinfo = dkifClient.hentKontaktInfo(fnr);
 
         boolean erUnderOppfolging = oppfolging.isUnderOppfolging();
-        boolean gjeldendeErManuell = erManuell(oppfolging);
+        boolean gjeldendeErManuell = erManuell(aktorId);
         boolean reservertIKrr = kontaktinfo.isReservert();
 
         if (erUnderOppfolging && (gjeldendeErManuell != manuell) && (!reservertIKrr || manuell)) {
@@ -81,19 +120,15 @@ public class ManuellStatusService {
                     .setOpprettetAv(opprettetAv)
                     .setOpprettetAvBrukerId(opprettetAvBrukerId);
 
-            manuellStatusRepository.create(nyStatus);
-            kafkaProducerService.publiserEndringPaManuellStatus(aktorId, manuell);
+            oppdaterManuellStatus(aktorId, nyStatus);
         }
-
     }
 
-    public boolean erManuell (OppfolgingTable eksisterendeOppfolgingstatus) {
-        return Optional.ofNullable(eksisterendeOppfolgingstatus)
-                .map(oppfolgingstatus ->  {
-                    long gjeldendeManuellStatusId = eksisterendeOppfolgingstatus.getGjeldendeManuellStatusId();
-                    return gjeldendeManuellStatusId > 0 && manuellStatusRepository.fetch(gjeldendeManuellStatusId).isManuell();
-                })
-                .orElse(false);
+    private void oppdaterManuellStatus(AktorId aktorId, ManuellStatus manuellStatus) {
+        transactor.executeWithoutResult((ignored) -> {
+            manuellStatusRepository.create(manuellStatus);
+            kafkaProducerService.publiserEndringPaManuellStatus(aktorId, manuellStatus.isManuell());
+        });
     }
 
 }
