@@ -15,6 +15,7 @@ import no.nav.veilarboppfolging.test.LocalH2Database;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.ZonedDateTime;
 
@@ -46,6 +47,7 @@ public class IservServiceIntegrationTest {
     @Before
     public void setup() {
         JdbcTemplate db = LocalH2Database.getDb();
+        TransactionTemplate transactor = DbTestUtils.createTransactor(db);
 
         DbTestUtils.cleanupTestDb();
 
@@ -59,7 +61,7 @@ public class IservServiceIntegrationTest {
                 AuthContextHolderThreadLocal.instance(),
                 () -> AuthTestUtils.createAuthContext(UserRole.SYSTEM, "srvtest").getIdToken().serialize(),
                 mock(MetricsService.class),
-                utmeldingRepository, oppfolgingService, oppfolgingStatusRepository, authService
+                utmeldingRepository, oppfolgingService, oppfolgingStatusRepository, authService, transactor
         );
     }
 

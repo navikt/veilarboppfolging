@@ -4,11 +4,9 @@ import no.nav.veilarboppfolging.test.testdriver.TestDriver;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.sql.DataSource;
-
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static no.nav.veilarboppfolging.test.DbTestUtils.initDb;
-import static no.nav.veilarboppfolging.test.DbTestUtils.runScript;
 
 public class LocalH2Database {
 

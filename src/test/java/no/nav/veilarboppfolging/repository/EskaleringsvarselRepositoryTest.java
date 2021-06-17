@@ -7,6 +7,8 @@ import no.nav.veilarboppfolging.test.DbTestUtils;
 import no.nav.veilarboppfolging.test.LocalH2Database;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.List;
 
@@ -22,9 +24,13 @@ public class EskaleringsvarselRepositoryTest {
     private static final String BEGRUNNELSE = "Begrunnelse";
     private static final int NUM_ITEMS = 10;
 
-    private OppfolgingsStatusRepository oppfolgingsStatusRepository = new OppfolgingsStatusRepository(LocalH2Database.getDb());
+    private JdbcTemplate db = LocalH2Database.getDb();
 
-    private EskaleringsvarselRepository eskaleringsvarselRepository = new EskaleringsvarselRepository(LocalH2Database.getDb());
+    private TransactionTemplate transactor = DbTestUtils.createTransactor(db);
+
+    private OppfolgingsStatusRepository oppfolgingsStatusRepository = new OppfolgingsStatusRepository(db);
+
+    private EskaleringsvarselRepository eskaleringsvarselRepository = new EskaleringsvarselRepository(db, transactor);
 
     @Before
     public void cleanup() {

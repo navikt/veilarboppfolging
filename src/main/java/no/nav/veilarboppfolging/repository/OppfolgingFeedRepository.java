@@ -6,7 +6,6 @@ import no.nav.veilarboppfolging.feed.domain.OppfolgingFeedDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -21,7 +20,6 @@ import static java.util.stream.Collectors.toList;
 public class OppfolgingFeedRepository {
 
     private final JdbcTemplate db;
-
     @Autowired
     public OppfolgingFeedRepository(JdbcTemplate db) {
         this.db = db;
@@ -49,7 +47,6 @@ public class OppfolgingFeedRepository {
         return Optional.ofNullable(count);
     }
 
-    @Transactional
     public List<OppfolgingFeedDTO> hentEndringerEtterId(String sinceId, int pageSize) {
 
         // 1. Join sammen Tabellen OPPFOLGINGSPERIODE og OPPFOLGINGSTATUS på AKTOR_ID
@@ -85,7 +82,6 @@ public class OppfolgingFeedRepository {
                 .collect(toList());
     }
 
-    @Transactional
     public void insertFeedId() {
         long start = System.currentTimeMillis();
         int updatedRows = db.update(

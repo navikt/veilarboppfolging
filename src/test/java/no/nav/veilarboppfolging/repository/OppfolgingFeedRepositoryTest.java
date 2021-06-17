@@ -9,6 +9,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.List;
 import java.util.Optional;
@@ -23,9 +24,11 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 public class OppfolgingFeedRepositoryTest {
 
     private final JdbcTemplate db = LocalH2Database.getDb();
+    private final TransactionTemplate transactor = DbTestUtils.createTransactor(db);
+
 
     private OppfolgingFeedRepository oppfolgingFeedRepository = new OppfolgingFeedRepository(db);
-    private OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository = new OppfolgingsPeriodeRepository(db);
+    private OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository = new OppfolgingsPeriodeRepository(db, transactor);
     private OppfolgingsStatusRepository oppfolgingsStatusRepository = new OppfolgingsStatusRepository(db);
 
     @Before

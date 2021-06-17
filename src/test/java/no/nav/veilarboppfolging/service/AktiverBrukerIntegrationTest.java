@@ -13,6 +13,7 @@ import no.nav.veilarboppfolging.test.LocalH2Database;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.Optional;
 
@@ -41,8 +42,10 @@ public class AktiverBrukerIntegrationTest {
     @Before
     public void setup() {
         JdbcTemplate db = LocalH2Database.getDb();
+        TransactionTemplate transactor = DbTestUtils.createTransactor(db);
+
         oppfolgingsStatusRepository = new OppfolgingsStatusRepository(db);
-        oppfolgingsPeriodeRepository = new OppfolgingsPeriodeRepository(db);
+        oppfolgingsPeriodeRepository = new OppfolgingsPeriodeRepository(db, transactor);
 
         authService = mock(AuthService.class);
         behandleArbeidssokerClient = mock(BehandleArbeidssokerClient.class);
@@ -50,15 +53,19 @@ public class AktiverBrukerIntegrationTest {
         oppfolgingService = new OppfolgingService(
                 mock(KafkaProducerService.class), null, null, null, null, null, authService,
                 oppfolgingsStatusRepository, oppfolgingsPeriodeRepository,
-                new ManuellStatusRepository(db), null,
-                null, new EskaleringsvarselRepository(db),
-                new KvpRepository(db), new NyeBrukereFeedRepository(db), new MaalRepository(db), mock(BrukerOppslagFlereOppfolgingAktorRepository.class));
+                new ManuellStatusRepository(db, transactor), null,
+                null, new EskaleringsvarselRepository(db, transactor),
+                new KvpRepository(db, transactor), new NyeBrukereFeedRepository(db),
+                new MaalRepository(db, transactor),
+                mock(BrukerOppslagFlereOppfolgingAktorRepository.class),
+                transactor
+        );
 
         aktiverBrukerService = new AktiverBrukerService(
                 authService, oppfolgingService,
                 behandleArbeidssokerClient,
                 new NyeBrukereFeedRepository(db),
-                DbTestUtils.getTransactor(db)
+                DbTestUtils.createTransactor(db)
         );
 
         DbTestUtils.cleanupTestDb();

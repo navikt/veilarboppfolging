@@ -8,9 +8,11 @@ import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 import no.nav.veilarboppfolging.domain.ManuellStatus;
 import no.nav.veilarboppfolging.repository.ManuellStatusRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
+import no.nav.veilarboppfolging.test.DbTestUtils;
 import no.nav.veilarboppfolging.test.IsolatedDatabaseTest;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
@@ -42,13 +44,15 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
 
     @Before
     public void setup() {
+        TransactionTemplate transactor = DbTestUtils.createTransactor(db);
+
         when(arenaOppfolgingService.hentOppfolgingFraVeilarbarena(FNR))
                 .thenReturn(Optional.of(new VeilarbArenaOppfolging().setNav_kontor(ENHET)));
         doCallRealMethod().when(authService).sjekkTilgangTilEnhet(any());
         when(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID);
 
         oppfolgingsStatusRepository = new OppfolgingsStatusRepository(db);
-        manuellStatusRepository = new ManuellStatusRepository(db);
+        manuellStatusRepository = new ManuellStatusRepository(db, transactor);
 
         manuellStatusService = new ManuellStatusService(
                 authService,

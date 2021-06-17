@@ -19,6 +19,7 @@ import no.nav.veilarboppfolging.domain.AvslutningStatusData;
 import no.nav.veilarboppfolging.domain.OppfolgingStatusData;
 import no.nav.veilarboppfolging.domain.Oppfolgingsperiode;
 import no.nav.veilarboppfolging.repository.*;
+import no.nav.veilarboppfolging.test.DbTestUtils;
 import no.nav.veilarboppfolging.test.IsolatedDatabaseTest;
 import no.nav.veilarboppfolging.utils.DateUtils;
 import no.nav.veilarboppfolging.utils.OppfolgingsperiodeUtils;
@@ -27,6 +28,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.http.HttpStatus;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
@@ -69,10 +71,12 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
     @Before
     public void setup() {
+        TransactionTemplate transactor = DbTestUtils.createTransactor(db);
+
         arenaOppfolgingTilstand = new ArenaOppfolgingTilstand();
         oppfolgingsStatusRepository = new OppfolgingsStatusRepository(db);
-        oppfolgingsPeriodeRepository = new OppfolgingsPeriodeRepository(db);
-        manuellStatusRepository = new ManuellStatusRepository(db);
+        oppfolgingsPeriodeRepository = new OppfolgingsPeriodeRepository(db, transactor);
+        manuellStatusRepository = new ManuellStatusRepository(db, transactor);
 
         oppfolgingService = new OppfolgingService(kafkaProducerService,
                 new YtelserOgAktiviteterService(ytelseskontraktClient),
@@ -90,7 +94,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
                 kvpRepository,
                 nyeBrukereFeedRepository,
                 null,
-                null);
+                null, transactor);
 
 
         gittArenaOppfolgingStatus("", "");

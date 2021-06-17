@@ -40,7 +40,7 @@ public class AktiverBrukerServiceTest {
                 oppfolgingService,
                 behandleArbeidssokerClient,
                 new NyeBrukereFeedRepository(LocalH2Database.getDb()),
-                DbTestUtils.getTransactor(LocalH2Database.getDb())
+                DbTestUtils.createTransactor(LocalH2Database.getDb())
         );
     }
 

@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.sql.ResultSet;
 import java.util.List;
@@ -25,74 +25,78 @@ public class KvpRepository {
 
     private final JdbcTemplate db;
 
+    private final TransactionTemplate transactor;
+
     @Autowired
-    public KvpRepository(JdbcTemplate db) {
+    public KvpRepository(JdbcTemplate db, TransactionTemplate transactor) {
         this.db = db;
+        this.transactor = transactor;
     }
 
     // TODO: Foretrekker å sende med dato istedenfor CURRENT_TIMESTAMP slik at det ikke blir en mismatch med datoen som f.eks blir brukt på kafka
-    @Transactional
     public void startKvp(AktorId aktorId, String enhet, String opprettetAv, String opprettetBegrunnelse) {
-        long id = DbUtils.nesteFraSekvens(db,"KVP_SEQ");
-        long nextSerial = DbUtils.nesteFraSekvens(db,"KVP_SERIAL_SEQ");
+        transactor.executeWithoutResult((ignored) -> {
+            long id = DbUtils.nesteFraSekvens(db, "KVP_SEQ");
+            long nextSerial = DbUtils.nesteFraSekvens(db, "KVP_SERIAL_SEQ");
 
-        db.update("INSERT INTO KVP (" +
-                        "kvp_id, " +
-                        "serial, " +
-                        "aktor_id, " +
-                        "enhet, " +
-                        "opprettet_av, " +
-                        "opprettet_dato, " +
-                        "opprettet_begrunnelse, " +
-                        "opprettet_kodeverkbruker) " +
-                        "VALUES(?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?)",
-                id,
-                nextSerial,
-                aktorId.get(),
-                enhet,
-                opprettetAv,
-                opprettetBegrunnelse,
-                getName(NAV)
-        );
+            db.update("INSERT INTO KVP (" +
+                            "kvp_id, " +
+                            "serial, " +
+                            "aktor_id, " +
+                            "enhet, " +
+                            "opprettet_av, " +
+                            "opprettet_dato, " +
+                            "opprettet_begrunnelse, " +
+                            "opprettet_kodeverkbruker) " +
+                            "VALUES(?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?)",
+                    id,
+                    nextSerial,
+                    aktorId.get(),
+                    enhet,
+                    opprettetAv,
+                    opprettetBegrunnelse,
+                    getName(NAV)
+            );
 
-        db.update("UPDATE OPPFOLGINGSTATUS " +
-                        "SET gjeldende_kvp = ?, " +
-                        "oppdatert = CURRENT_TIMESTAMP, " +
-                        "FEED_ID = null " +
-                        "WHERE aktor_id = ?",
-                id,
-                aktorId.get()
-        );
-
+            db.update("UPDATE OPPFOLGINGSTATUS " +
+                            "SET gjeldende_kvp = ?, " +
+                            "oppdatert = CURRENT_TIMESTAMP, " +
+                            "FEED_ID = null " +
+                            "WHERE aktor_id = ?",
+                    id,
+                    aktorId.get()
+            );
+        });
     }
 
     // TODO: Foretrekker å sende med dato istedenfor CURRENT_TIMESTAMP slik at det ikke blir en mismatch med datoen som f.eks blir brukt på kafka
-    @Transactional
     public void stopKvp(long kvpId, AktorId aktorId, String avsluttetAv, String avsluttetBegrunnelse, KodeverkBruker kodeverkBruker) {
-        long nextSerial = DbUtils.nesteFraSekvens(db, "KVP_SERIAL_SEQ");
+        transactor.executeWithoutResult((ignored) -> {
+            long nextSerial = DbUtils.nesteFraSekvens(db, "KVP_SERIAL_SEQ");
 
-        db.update("UPDATE KVP " +
-                        "SET serial = ?, " +
-                        "avsluttet_av = ?, " +
-                        "avsluttet_dato = CURRENT_TIMESTAMP, " +
-                        "avsluttet_begrunnelse = ?, " +
-                        "avsluttet_kodeverkbruker = ? " +
-                        "WHERE kvp_id = ?",
-                nextSerial,
-                avsluttetAv,
-                avsluttetBegrunnelse,
-                getName(kodeverkBruker),
-                kvpId
+            db.update("UPDATE KVP " +
+                            "SET serial = ?, " +
+                            "avsluttet_av = ?, " +
+                            "avsluttet_dato = CURRENT_TIMESTAMP, " +
+                            "avsluttet_begrunnelse = ?, " +
+                            "avsluttet_kodeverkbruker = ? " +
+                            "WHERE kvp_id = ?",
+                    nextSerial,
+                    avsluttetAv,
+                    avsluttetBegrunnelse,
+                    getName(kodeverkBruker),
+                    kvpId
 
-        );
+            );
 
-        db.update("UPDATE OPPFOLGINGSTATUS " +
-                        "SET gjeldende_kvp = NULL, " +
-                        "oppdatert = CURRENT_TIMESTAMP, " +
-                        "FEED_ID = null " +
-                        "WHERE aktor_id = ?",
-                aktorId.get()
-        );
+            db.update("UPDATE OPPFOLGINGSTATUS " +
+                            "SET gjeldende_kvp = NULL, " +
+                            "oppdatert = CURRENT_TIMESTAMP, " +
+                            "FEED_ID = null " +
+                            "WHERE aktor_id = ?",
+                    aktorId.get()
+            );
+        });
     }
 
     public List<Kvp> hentKvpHistorikk(AktorId aktorId) {

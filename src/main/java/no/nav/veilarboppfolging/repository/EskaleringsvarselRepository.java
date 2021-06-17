@@ -7,7 +7,7 @@ import no.nav.veilarboppfolging.utils.DbUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.sql.ResultSet;
 import java.util.List;
@@ -22,17 +22,21 @@ public class EskaleringsvarselRepository {
 
     private final JdbcTemplate db;
 
+    private final TransactionTemplate transactor;
+
     @Autowired
-    public EskaleringsvarselRepository(JdbcTemplate db) {
+    public EskaleringsvarselRepository(JdbcTemplate db, TransactionTemplate transactor) {
         this.db = db;
+        this.transactor = transactor;
     }
 
-    @Transactional
     public void create(EskaleringsvarselData e) {
-        long id = DbUtils.nesteFraSekvens(db, "ESKALERINGSVARSEL_SEQ");
-        e = e.withVarselId(id);
-        insert(e);
-        setActive(e);
+        transactor.executeWithoutResult((ignored) -> {
+            long id = DbUtils.nesteFraSekvens(db, "ESKALERINGSVARSEL_SEQ");
+            EskaleringsvarselData varsel = e.withVarselId(id);
+            insert(varsel);
+            setActive(varsel);
+        });
     }
 
     public EskaleringsvarselData fetch(Long id) {
@@ -40,10 +44,11 @@ public class EskaleringsvarselRepository {
         return firstOrNull(db.query(sql, EskaleringsvarselRepository::map, id));
     }
 
-    @Transactional
     public void finish(AktorId aktorId, long varselId, String avsluttetAv, String avsluttetBegrunnelse) {
-        avsluttEskaleringsVarsel(avsluttetBegrunnelse, avsluttetAv, varselId);
-        removeActive(aktorId);
+        transactor.executeWithoutResult((ignored) -> {
+            avsluttEskaleringsVarsel(avsluttetBegrunnelse, avsluttetAv, varselId);
+            removeActive(aktorId);
+        });
     }
 
 

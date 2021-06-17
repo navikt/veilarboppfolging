@@ -6,7 +6,6 @@ import no.nav.common.utils.Credentials;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import javax.sql.DataSource;
 
@@ -14,7 +13,6 @@ import static no.nav.common.utils.NaisUtils.getCredentials;
 import static no.nav.common.utils.NaisUtils.getFileContent;
 
 @Configuration
-@EnableTransactionManagement
 public class DatabaseConfig {
 
     private final Credentials oracleCredentials;

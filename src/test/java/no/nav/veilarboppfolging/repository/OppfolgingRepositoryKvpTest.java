@@ -4,9 +4,11 @@ import lombok.val;
 import no.nav.common.types.identer.AktorId;
 import no.nav.veilarboppfolging.domain.EskaleringsvarselData;
 import no.nav.veilarboppfolging.domain.OppfolgingTable;
+import no.nav.veilarboppfolging.test.DbTestUtils;
 import no.nav.veilarboppfolging.test.IsolatedDatabaseTest;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import static org.apache.commons.lang3.RandomStringUtils.randomNumeric;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -26,9 +28,10 @@ public class OppfolgingRepositoryKvpTest extends IsolatedDatabaseTest {
 
     @Before
     public void setup() {
+        TransactionTemplate transactor = DbTestUtils.createTransactor(db);
         oppfolgingsStatusRepository = new OppfolgingsStatusRepository(db);
-        eskaleringsvarselRepository = new EskaleringsvarselRepository(db);
-        kvpRepository = new KvpRepository(db);
+        eskaleringsvarselRepository = new EskaleringsvarselRepository(db, transactor);
+        kvpRepository = new KvpRepository(db, transactor);
     }
 
     // TODO: tilgangskontroll skal ikke gjøres så nært databasen, flytt til en service
