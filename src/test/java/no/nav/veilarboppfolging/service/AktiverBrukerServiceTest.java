@@ -1,8 +1,9 @@
 package no.nav.veilarboppfolging.service;
 
+import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.client.behandle_arbeidssoker.BehandleArbeidssokerClient;
-import no.nav.veilarboppfolging.domain.AktiverArbeidssokerData;
-import no.nav.veilarboppfolging.domain.Fnr;
+import no.nav.veilarboppfolging.controller.request.AktiverArbeidssokerData;
 import no.nav.veilarboppfolging.domain.Innsatsgruppe;
 import no.nav.veilarboppfolging.repository.NyeBrukereFeedRepository;
 import no.nav.veilarboppfolging.test.DbTestUtils;
@@ -15,6 +16,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 public class AktiverBrukerServiceTest {
+
+    private final static Fnr FNR = Fnr.of("12343312");
+
+    private final static AktorId AKTOR_ID = AktorId.of("1234767554");
 
     private AuthService authService;
 
@@ -34,20 +39,22 @@ public class AktiverBrukerServiceTest {
                 authService,
                 oppfolgingService,
                 behandleArbeidssokerClient,
-                mock(KafkaProducerService.class), new NyeBrukereFeedRepository(LocalH2Database.getDb()),
-                DbTestUtils.getTransactor(LocalH2Database.getDb())
+                new NyeBrukereFeedRepository(LocalH2Database.getDb()),
+                DbTestUtils.createTransactor(LocalH2Database.getDb())
         );
     }
 
     @Test
     public void skalRegistrereIArena() {
+        when(authService.getAktorIdOrThrow(any(Fnr.class))).thenReturn(AKTOR_ID);
         aktiverBrukerService.aktiverBruker(hentBruker());
         verify(behandleArbeidssokerClient, times(1)).opprettBrukerIArena(any(), any());
     }
 
     @Test
     public void brukerSomHarInaktivStatusSkalKunneReaktivereSeg() {
-        aktiverBrukerService.reaktiverBruker(new Fnr("fnr"));
+        when(authService.getAktorIdOrThrow(any())).thenReturn(AKTOR_ID);
+        aktiverBrukerService.reaktiverBruker(FNR);
         verify(behandleArbeidssokerClient, times(1)).reaktiverBrukerIArena(any());
     }
 
@@ -123,7 +130,7 @@ public class AktiverBrukerServiceTest {
     }
 
     private AktiverArbeidssokerData hentBruker() {
-        return new AktiverArbeidssokerData(new Fnr("fnr"), Innsatsgruppe.STANDARD_INNSATS);
+        return new AktiverArbeidssokerData(new no.nav.veilarboppfolging.controller.request.Fnr("fnr"), Innsatsgruppe.STANDARD_INNSATS);
     }
 
 }

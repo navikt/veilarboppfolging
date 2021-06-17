@@ -1,9 +1,12 @@
 package no.nav.veilarboppfolging.repository;
 
+import no.nav.common.types.identer.AktorId;
 import no.nav.veilarboppfolging.domain.Kvp;
+import no.nav.veilarboppfolging.test.DbTestUtils;
 import no.nav.veilarboppfolging.test.IsolatedDatabaseTest;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import static no.nav.veilarboppfolging.domain.KodeverkBruker.NAV;
 import static org.hamcrest.Matchers.*;
@@ -11,7 +14,7 @@ import static org.junit.Assert.assertThat;
 
 public class KvpRepositoryTest extends IsolatedDatabaseTest {
 
-    private static final String AKTOR_ID = "aktorId";
+    private static final AktorId AKTOR_ID = AktorId.of("aktorId");
     private static final String SAKSBEHANDLER_ID = "saksbehandlerId";
     private static final String BEGRUNNELSE = "Begrunnelse";
 
@@ -21,8 +24,9 @@ public class KvpRepositoryTest extends IsolatedDatabaseTest {
 
     @Before
     public void setup() {
+        TransactionTemplate transactor = DbTestUtils.createTransactor(db);
         oppfolgingsStatusRepository = new OppfolgingsStatusRepository(db);
-        kvpRepository = new KvpRepository(db);
+        kvpRepository = new KvpRepository(db, transactor);
     }
 
     @Test
@@ -73,14 +77,12 @@ public class KvpRepositoryTest extends IsolatedDatabaseTest {
         kvpRepository.startKvp(AKTOR_ID, "0123", SAKSBEHANDLER_ID, BEGRUNNELSE);
     }
 
-    private Kvp hentGjeldendeKvp(String aktorId) {
+    private Kvp hentGjeldendeKvp(AktorId aktorId) {
         long kvpId = oppfolgingsStatusRepository.fetch(aktorId).getGjeldendeKvpId();
         return kvpRepository.fetch(kvpId);
     }
 
-    private void gittOppfolgingForAktor(String aktorId) {
+    private void gittOppfolgingForAktor(AktorId aktorId) {
         oppfolgingsStatusRepository.opprettOppfolging(aktorId);
-
-//        oppfolgingRepositoryService.startOppfolgingHvisIkkeAlleredeStartet(aktorId);
     }
 }

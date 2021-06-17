@@ -6,7 +6,6 @@ import no.nav.common.auth.oidc.filter.OidcAuthenticatorConfig;
 import no.nav.common.auth.utils.UserTokenFinder;
 import no.nav.common.log.LogFilter;
 import no.nav.common.rest.filter.SetStandardHttpHeadersFilter;
-import no.nav.veilarboppfolging.utils.CustomServiceUserTokenFinder;
 import no.nav.veilarboppfolging.utils.PingFilter;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
@@ -33,7 +32,6 @@ public class FilterConfig {
         return new OidcAuthenticatorConfig()
                 .withDiscoveryUrl(properties.getOpenAmDiscoveryUrl())
                 .withClientId(properties.getVeilarbloginOpenAmClientId())
-                .withIdTokenFinder(new CustomServiceUserTokenFinder())
                 .withUserRole(UserRole.SYSTEM);
     }
 

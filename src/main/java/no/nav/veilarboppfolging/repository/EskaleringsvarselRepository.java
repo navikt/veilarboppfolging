@@ -1,12 +1,13 @@
 package no.nav.veilarboppfolging.repository;
 
 import lombok.SneakyThrows;
+import no.nav.common.types.identer.AktorId;
 import no.nav.veilarboppfolging.domain.EskaleringsvarselData;
 import no.nav.veilarboppfolging.utils.DbUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.sql.ResultSet;
 import java.util.List;
@@ -14,42 +15,47 @@ import java.util.List;
 import static no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository.AKTOR_ID;
 import static no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository.GJELDENE_ESKALERINGSVARSEL;
 import static no.nav.veilarboppfolging.utils.DbUtils.hentZonedDateTime;
+import static no.nav.veilarboppfolging.utils.ListUtils.firstOrNull;
 
 @Repository
 public class EskaleringsvarselRepository {
 
     private final JdbcTemplate db;
 
+    private final TransactionTemplate transactor;
+
     @Autowired
-    public EskaleringsvarselRepository(JdbcTemplate db) {
+    public EskaleringsvarselRepository(JdbcTemplate db, TransactionTemplate transactor) {
         this.db = db;
+        this.transactor = transactor;
     }
 
-    @Transactional
     public void create(EskaleringsvarselData e) {
-        long id = DbUtils.nesteFraSekvens(db, "ESKALERINGSVARSEL_SEQ");
-        e = e.withVarselId(id);
-        insert(e);
-        setActive(e);
+        transactor.executeWithoutResult((ignored) -> {
+            long id = DbUtils.nesteFraSekvens(db, "ESKALERINGSVARSEL_SEQ");
+            EskaleringsvarselData varsel = e.withVarselId(id);
+            insert(varsel);
+            setActive(varsel);
+        });
     }
 
     public EskaleringsvarselData fetch(Long id) {
         String sql = "SELECT * FROM ESKALERINGSVARSEL WHERE varsel_id = ?";
-        List<EskaleringsvarselData> data = db.query(sql, EskaleringsvarselRepository::map, id);
-        return data.isEmpty() ? null : data.get(0);
+        return firstOrNull(db.query(sql, EskaleringsvarselRepository::map, id));
     }
 
-    @Transactional
-    public void finish(String aktorId, long varselId, String avsluttetAv, String avsluttetBegrunnelse) {
-        avsluttEskaleringsVarsel(avsluttetBegrunnelse, avsluttetAv, varselId);
-        removeActive(aktorId);
+    public void finish(AktorId aktorId, long varselId, String avsluttetAv, String avsluttetBegrunnelse) {
+        transactor.executeWithoutResult((ignored) -> {
+            avsluttEskaleringsVarsel(avsluttetBegrunnelse, avsluttetAv, varselId);
+            removeActive(aktorId);
+        });
     }
 
 
-    public List<EskaleringsvarselData> history(String aktorId) {
+    public List<EskaleringsvarselData> history(AktorId aktorId) {
         return db.query("SELECT * FROM ESKALERINGSVARSEL WHERE aktor_id = ?",
                 EskaleringsvarselRepository::map,
-                aktorId);
+                aktorId.get());
     }
 
     @SneakyThrows
@@ -97,14 +103,14 @@ public class EskaleringsvarselRepository {
                 varselId);
     }
 
-    private void removeActive(String aktorId) {
+    private void removeActive(AktorId aktorId) {
         db.update("" +
                         "UPDATE " + OppfolgingsStatusRepository.TABLE_NAME +
                         " SET " + GJELDENE_ESKALERINGSVARSEL + " = null, " +
                         "oppdatert = CURRENT_TIMESTAMP, " +
                         "FEED_ID = null " +
                         "WHERE " + AKTOR_ID + " = ?",
-                aktorId
+                aktorId.get()
         );
     }
 }

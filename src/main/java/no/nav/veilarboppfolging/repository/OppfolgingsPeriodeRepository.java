@@ -1,11 +1,12 @@
 package no.nav.veilarboppfolging.repository;
 
+import no.nav.common.types.identer.AktorId;
 import no.nav.veilarboppfolging.domain.AvsluttetOppfolgingFeedData;
 import no.nav.veilarboppfolging.domain.Oppfolgingsperiode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -22,25 +23,30 @@ public class OppfolgingsPeriodeRepository {
 
     private final JdbcTemplate db;
 
+    private final TransactionTemplate transactor;
+
     private final static String hentOppfolingsperioderSQL =
             "SELECT uuid, aktor_id, avslutt_veileder, startdato, sluttdato, avslutt_begrunnelse " +
                     "FROM OPPFOLGINGSPERIODE ";
 
     @Autowired
-    public OppfolgingsPeriodeRepository(JdbcTemplate db) {
+    public OppfolgingsPeriodeRepository(JdbcTemplate db, TransactionTemplate transactor) {
         this.db = db;
+        this.transactor = transactor;
     }
 
-    @Transactional
-    public void start(String aktorId) {
-        insert(aktorId);
-        setActive(aktorId);
+    public void start(AktorId aktorId) {
+        transactor.executeWithoutResult((ignored) -> {
+            insert(aktorId);
+            setActive(aktorId);
+        });
     }
 
-    @Transactional
-    public void avslutt(String aktorId, String veileder, String begrunnelse) {
-        endPeriode(aktorId, veileder, begrunnelse);
-        avsluttOppfolging(aktorId);
+    public void avslutt(AktorId aktorId, String veileder, String begrunnelse) {
+        transactor.executeWithoutResult((ignored) -> {
+            endPeriode(aktorId, veileder, begrunnelse);
+            avsluttOppfolging(aktorId);
+        });
     }
 
     public List<AvsluttetOppfolgingFeedData> fetchAvsluttetEtterDato(Timestamp timestamp, int pageSize) {
@@ -62,40 +68,40 @@ public class OppfolgingsPeriodeRepository {
         );
     }
 
-    public List<Oppfolgingsperiode> hentOppfolgingsperioder(String aktorId) {
+    public List<Oppfolgingsperiode> hentOppfolgingsperioder(AktorId aktorId) {
         return db.query(hentOppfolingsperioderSQL +
                         "WHERE aktor_id = ?",
                 OppfolgingsPeriodeRepository::mapTilOppfolgingsperiode,
-                aktorId
+                aktorId.get()
         );
     }
 
-    public List<Oppfolgingsperiode> hentAvsluttetOppfolgingsperioder(String aktorId) {
+    public List<Oppfolgingsperiode> hentAvsluttetOppfolgingsperioder(AktorId aktorId) {
         return db.query(hentOppfolingsperioderSQL +
                         "WHERE aktor_id = ? AND sluttdato is not null",
                 OppfolgingsPeriodeRepository::mapTilOppfolgingsperiode,
-                aktorId
+                aktorId.get()
         );
     }
 
-    private void insert(String aktorId) {
+    private void insert(AktorId aktorId) {
         db.update("" +
                         "INSERT INTO OPPFOLGINGSPERIODE(uuid, aktor_id, startDato, oppdatert) " +
                         "VALUES (?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
-                UUID.randomUUID().toString(), aktorId);
+                UUID.randomUUID().toString(), aktorId.get());
     }
 
-    private void setActive(String aktorId) {
+    private void setActive(AktorId aktorId) {
         db.update("UPDATE " +
                         OppfolgingsStatusRepository.TABLE_NAME +
                         " SET " + UNDER_OPPFOLGING + "= 1, " +
                         "oppdatert = CURRENT_TIMESTAMP, " +
                         "FEED_ID = null " +
                         "WHERE " + AKTOR_ID + " = ?",
-                aktorId);
+                aktorId.get());
     }
 
-    private void endPeriode(String aktorId, String veileder, String begrunnelse) {
+    private void endPeriode(AktorId aktorId, String veileder, String begrunnelse) {
         db.update("" +
                         "UPDATE OPPFOLGINGSPERIODE " +
                         "SET avslutt_veileder = ?, " +
@@ -106,10 +112,10 @@ public class OppfolgingsPeriodeRepository {
                         "AND sluttDato IS NULL",
                 veileder,
                 begrunnelse,
-                aktorId);
+                aktorId.get());
     }
 
-    private void avsluttOppfolging(String aktorId) {
+    private void avsluttOppfolging(AktorId aktorId) {
         db.update("UPDATE " +
                         OppfolgingsStatusRepository.TABLE_NAME +
                         " SET under_oppfolging = 0, "
@@ -120,7 +126,7 @@ public class OppfolgingsPeriodeRepository {
                         + "oppdatert = CURRENT_TIMESTAMP, "
                         + "FEED_ID = null "
                         + "WHERE aktor_id = ?",
-                aktorId
+                aktorId.get()
         );
     }
 

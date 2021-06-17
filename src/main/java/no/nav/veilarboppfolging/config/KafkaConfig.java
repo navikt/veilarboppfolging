@@ -17,9 +17,8 @@ import no.nav.common.kafka.producer.feilhandtering.KafkaProducerRepository;
 import no.nav.common.kafka.producer.feilhandtering.OracleProducerRepository;
 import no.nav.common.kafka.producer.util.KafkaProducerClientBuilder;
 import no.nav.common.utils.Credentials;
-import no.nav.veilarboppfolging.domain.kafka.VeilarbArenaOppfolgingEndret;
+import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV1;
 import no.nav.veilarboppfolging.service.KafkaConsumerService;
-import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -47,7 +46,7 @@ public class KafkaConfig {
 
     private final KafkaProducerRecordProcessor aivenProducerRecordProcessor;
 
-    private final KafkaProducerRecordStorage<String, String> producerRecordStorage;
+    private final KafkaProducerRecordStorage producerRecordStorage;
 
 
     public KafkaConfig(
@@ -62,14 +61,14 @@ public class KafkaConfig {
         KafkaProducerRepository producerRepository = new OracleProducerRepository(jdbcTemplate.getDataSource());
 
         List<KafkaConsumerClientBuilder.TopicConfig<?, ?>> topicConfigs = List.of(
-                new KafkaConsumerClientBuilder.TopicConfig<String, VeilarbArenaOppfolgingEndret>()
+                new KafkaConsumerClientBuilder.TopicConfig<String, EndringPaaOppfoelgingsBrukerV1>()
                         .withLogging()
                         .withMetrics(meterRegistry)
                         .withStoreOnFailure(consumerRepository)
                         .withConsumerConfig(
                                 kafkaProperties.getEndringPaaOppfolgingBrukerTopic(),
                                 Deserializers.stringDeserializer(),
-                                Deserializers.jsonDeserializer(VeilarbArenaOppfolgingEndret.class),
+                                Deserializers.jsonDeserializer(EndringPaaOppfoelgingsBrukerV1.class),
                                 kafkaConsumerService::consumeEndringPaOppfolgingBruker
                         )
         );
@@ -86,11 +85,7 @@ public class KafkaConfig {
                 .withConsumerConfigs(findConsumerConfigsWithStoreOnFailure(topicConfigs))
                 .build();
 
-        producerRecordStorage = new KafkaProducerRecordStorage<>(
-                producerRepository,
-                new StringSerializer(),
-                new StringSerializer()
-        );
+        producerRecordStorage = new KafkaProducerRecordStorage(producerRepository);
 
         KafkaProducerClient<byte[], byte[]> onPremProducerClient = KafkaProducerClientBuilder.<byte[], byte[]>builder()
                 .withProperties(onPremByteProducerProperties(PRODUCER_CLIENT_ID, kafkaProperties.getBrokersUrl(), credentials))
@@ -131,7 +126,7 @@ public class KafkaConfig {
     }
 
     @Bean
-    public KafkaProducerRecordStorage<String, String> producerRecordProcessor() {
+    public KafkaProducerRecordStorage producerRecordProcessor() {
         return producerRecordStorage;
     }
 

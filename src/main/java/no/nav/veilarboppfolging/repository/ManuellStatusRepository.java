@@ -1,13 +1,14 @@
 package no.nav.veilarboppfolging.repository;
 
 import lombok.SneakyThrows;
+import no.nav.common.types.identer.AktorId;
 import no.nav.veilarboppfolging.domain.KodeverkBruker;
 import no.nav.veilarboppfolging.domain.ManuellStatus;
 import no.nav.veilarboppfolging.utils.DbUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.sql.ResultSet;
 import java.util.List;
@@ -17,34 +18,40 @@ import static no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository.GJ
 import static no.nav.veilarboppfolging.utils.DbUtils.hentZonedDateTime;
 import static no.nav.veilarboppfolging.utils.EnumUtils.getName;
 import static no.nav.veilarboppfolging.utils.EnumUtils.valueOfOptional;
+import static no.nav.veilarboppfolging.utils.ListUtils.firstOrNull;
 
 @Repository
 public class ManuellStatusRepository {
 
     private final JdbcTemplate db;
 
+    private final TransactionTemplate transactor;
+
     @Autowired
-    public ManuellStatusRepository(JdbcTemplate db) {
+    public ManuellStatusRepository(JdbcTemplate db, TransactionTemplate transactor) {
         this.db = db;
+        this.transactor = transactor;
     }
 
-    @Transactional
     public void create(ManuellStatus manuellStatus) {
-        manuellStatus.setId(DbUtils.nesteFraSekvens(db,"status_seq"));
-        insert(manuellStatus);
-        setActive(manuellStatus);
+        transactor.executeWithoutResult((ignored) -> {
+            manuellStatus.setId(DbUtils.nesteFraSekvens(db,"status_seq"));
+            insert(manuellStatus);
+            setActive(manuellStatus);
+        });
     }
 
     public ManuellStatus fetch(Long id) {
         String sql = "SELECT * FROM MANUELL_STATUS WHERE id = ?";
-        List<ManuellStatus> manuellStatusList = db.query(sql, ManuellStatusRepository::map, id);
-        return manuellStatusList.isEmpty() ? null : manuellStatusList.get(0);
+        return firstOrNull(db.query(sql, ManuellStatusRepository::map, id));
     }
 
-    public List<ManuellStatus> history(String aktorId) {
-        return db.query("SELECT * FROM MANUELL_STATUS WHERE aktor_id = ?",
+    public List<ManuellStatus> history(AktorId aktorId) {
+        return db.query(
+                "SELECT * FROM MANUELL_STATUS WHERE aktor_id = ?",
                 ManuellStatusRepository::map,
-                aktorId);
+                aktorId.get()
+        );
     }
 
     @SneakyThrows

@@ -2,6 +2,9 @@ package no.nav.veilarboppfolging.service;
 
 import lombok.SneakyThrows;
 import lombok.val;
+import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.Fnr;
+import no.nav.veilarboppfolging.controller.response.InnstillingsHistorikk;
 import no.nav.veilarboppfolging.domain.*;
 import no.nav.veilarboppfolging.repository.*;
 import no.nav.veilarboppfolging.utils.KvpUtils;
@@ -15,7 +18,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.util.Collections.singletonList;
-import static no.nav.veilarboppfolging.domain.InnstillingsHistorikk.Type.*;
+import static no.nav.veilarboppfolging.controller.response.InnstillingsHistorikk.Type.*;
 import static no.nav.veilarboppfolging.domain.KodeverkBruker.NAV;
 import static no.nav.veilarboppfolging.domain.KodeverkBruker.SYSTEM;
 
@@ -55,8 +58,8 @@ public class HistorikkService {
         this.manuellStatusRepository = manuellStatusRepository;
     }
 
-    public List<InnstillingsHistorikk> hentInstillingsHistorikk(String fnr) {
-        String aktorId = authService.getAktorIdOrThrow(fnr);
+    public List<InnstillingsHistorikk> hentInstillingsHistorikk(Fnr fnr) {
+        AktorId aktorId = authService.getAktorIdOrThrow(fnr);
         return hentInstillingHistorikk(aktorId).filter(Objects::nonNull).flatMap(s -> s).collect(Collectors.toList());
     }
 
@@ -157,12 +160,13 @@ public class HistorikkService {
         return singletonList(kvpStart);
     }
 
-    private Stream<Stream<InnstillingsHistorikk>> hentInstillingHistorikk (String aktorId) {
+    private Stream<Stream<InnstillingsHistorikk>> hentInstillingHistorikk (AktorId aktorId) {
         List<Kvp> kvpHistorikk = kvpRepository.hentKvpHistorikk(aktorId);
 
         Stream <InnstillingsHistorikk> veilederTilordningerInnstillingHistorikk = null;
 
-        veilederTilordningerInnstillingHistorikk = veilederHistorikkRepository.hentTilordnedeVeiledereForAktorId(aktorId).stream()
+        veilederTilordningerInnstillingHistorikk = veilederHistorikkRepository.hentTilordnedeVeiledereForAktorId(aktorId)
+                .stream()
                 .map(this::tilDTO)
                 .filter((historikk) -> KvpUtils.sjekkTilgangGittKvp(authService, kvpHistorikk, historikk::getDato));
 

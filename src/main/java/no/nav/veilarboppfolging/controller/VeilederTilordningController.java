@@ -1,24 +1,20 @@
 package no.nav.veilarboppfolging.controller;
 
-import no.nav.veilarboppfolging.controller.domain.TilordneVeilederResponse;
-import no.nav.veilarboppfolging.controller.domain.VeilederTilordning;
+import lombok.RequiredArgsConstructor;
+import no.nav.veilarboppfolging.controller.request.VeilederTilordning;
+import no.nav.veilarboppfolging.controller.response.TilordneVeilederResponse;
 import no.nav.veilarboppfolging.service.VeilederTilordningService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api")
 public class VeilederTilordningController {
 
     private final VeilederTilordningService veilederTilordningService;
-
-    @Autowired
-    public VeilederTilordningController(VeilederTilordningService veilederTilordningService) {
-      this.veilederTilordningService = veilederTilordningService;
-    }
 
     @PostMapping("/tilordneveileder")
     public TilordneVeilederResponse tilordneVeiledere(@RequestBody List<VeilederTilordning> tilordninger) {

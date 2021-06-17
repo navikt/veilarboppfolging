@@ -22,8 +22,7 @@ public class DbTestUtils {
             "KVP",
             "UTMELDING",
             "OPPFOLGINGSENHET_ENDRET",
-            "NYE_BRUKERE_FEED",
-            "FEILET_KAFKA_MELDING"
+            "NYE_BRUKERE_FEED"
     );
 
     public static void setupDatabaseFunctions(DataSource dataSource) {
@@ -31,10 +30,14 @@ public class DbTestUtils {
     }
 
     public static void cleanupTestDb() {
-        ALL_TABLES.forEach((table) -> deleteAllFromTable(LocalH2Database.getDb(), table));
+        cleanupTestDb(LocalH2Database.getDb());
     }
 
-    public static TransactionTemplate getTransactor(JdbcTemplate db) {
+    public static void cleanupTestDb(JdbcTemplate db) {
+        ALL_TABLES.forEach((table) -> deleteAllFromTable(db, table));
+    }
+
+    public static TransactionTemplate createTransactor(JdbcTemplate db) {
         return new TransactionTemplate(new DataSourceTransactionManager(db.getDataSource()));
     }
 

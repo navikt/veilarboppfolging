@@ -3,17 +3,23 @@ package no.nav.veilarboppfolging.service;
 import io.vavr.collection.Stream;
 import lombok.SneakyThrows;
 import lombok.val;
+import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.Fnr;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt.WSYtelseskontrakt;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeRequest;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeResponse;
 import no.nav.veilarboppfolging.client.dkif.DkifClient;
 import no.nav.veilarboppfolging.client.dkif.DkifKontaktinfo;
-import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
 import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktClient;
 import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktMapper;
 import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktResponse;
-import no.nav.veilarboppfolging.domain.*;
+import no.nav.veilarboppfolging.controller.response.VeilederTilgang;
+import no.nav.veilarboppfolging.domain.ArenaOppfolgingTilstand;
+import no.nav.veilarboppfolging.domain.AvslutningStatusData;
+import no.nav.veilarboppfolging.domain.OppfolgingStatusData;
+import no.nav.veilarboppfolging.domain.Oppfolgingsperiode;
 import no.nav.veilarboppfolging.repository.*;
+import no.nav.veilarboppfolging.test.DbTestUtils;
 import no.nav.veilarboppfolging.test.IsolatedDatabaseTest;
 import no.nav.veilarboppfolging.utils.DateUtils;
 import no.nav.veilarboppfolging.utils.OppfolgingsperiodeUtils;
@@ -22,6 +28,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.http.HttpStatus;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
@@ -38,15 +45,14 @@ import static org.mockito.Mockito.*;
 @RunWith(MockitoJUnitRunner.class)
 public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
-    private static final String FNR = "fnr";
-    private static final String AKTOR_ID = "aktorId";
+    private static final Fnr FNR = Fnr.of("fnr");
+    private static final AktorId AKTOR_ID = AktorId.of("aktorId");
     private static final String ENHET = "enhet";
     private static final String VEILEDER = "veileder";
     private static final String BEGRUNNELSE = "begrunnelse";
 
     private ArenaOppfolgingTilstand arenaOppfolgingTilstand;
 
-    private VeilarbarenaClient veilarbarenaClient = mock(VeilarbarenaClient.class);
     private DkifClient dkifClient = mock(DkifClient.class);
     private AuthService authService = mock(AuthService.class);
     private KafkaProducerService kafkaProducerService = mock(KafkaProducerService.class);
@@ -65,12 +71,12 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
     @Before
     public void setup() {
-
+        TransactionTemplate transactor = DbTestUtils.createTransactor(db);
 
         arenaOppfolgingTilstand = new ArenaOppfolgingTilstand();
         oppfolgingsStatusRepository = new OppfolgingsStatusRepository(db);
-        oppfolgingsPeriodeRepository = new OppfolgingsPeriodeRepository(db);
-        manuellStatusRepository = new ManuellStatusRepository(db);
+        oppfolgingsPeriodeRepository = new OppfolgingsPeriodeRepository(db, transactor);
+        manuellStatusRepository = new ManuellStatusRepository(db, transactor);
 
         oppfolgingService = new OppfolgingService(kafkaProducerService,
                 new YtelserOgAktiviteterService(ytelseskontraktClient),
@@ -88,7 +94,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
                 kvpRepository,
                 nyeBrukereFeedRepository,
                 null,
-                null);
+                null, transactor);
 
 
         gittArenaOppfolgingStatus("", "");
@@ -179,7 +185,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     @Test
     public void riktigFnr() {
         OppfolgingStatusData oppfolgingStatusData = hentOppfolgingStatus();
-        assertEquals(FNR, oppfolgingStatusData.fnr);
+        assertEquals(FNR.get(), oppfolgingStatusData.fnr);
     }
 
     @Test
@@ -356,7 +362,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         assertTrue(oppfolgingService.underOppfolgingNiva3(FNR));
     }
 
-    private void assertUnderOppfolgingLagret(String aktorId) {
+    private void assertUnderOppfolgingLagret(AktorId aktorId) {
         assertTrue(oppfolgingsStatusRepository.fetch(aktorId).isUnderOppfolging());
 
         assertHarGjeldendeOppfolgingsperiode(aktorId);
@@ -368,14 +374,14 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     }
 
 
-    private void assertHarGjeldendeOppfolgingsperiode(String aktorId) {
+    private void assertHarGjeldendeOppfolgingsperiode(AktorId aktorId) {
         assertTrue(harGjeldendeOppfolgingsperiode(aktorId));
     }
 
-    private void assertHarIkkeGjeldendeOppfolgingsperiode(String aktorId) {
+    private void assertHarIkkeGjeldendeOppfolgingsperiode(AktorId aktorId) {
         assertFalse(harGjeldendeOppfolgingsperiode(aktorId));
     }
-    private boolean harGjeldendeOppfolgingsperiode(String aktorId) {
+    private boolean harGjeldendeOppfolgingsperiode(AktorId aktorId) {
         List<Oppfolgingsperiode> oppfolgingsperioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId);
         Oppfolgingsperiode sisteOppfolgingsperiode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(oppfolgingsperioder);
         return sisteOppfolgingsperiode != null && sisteOppfolgingsperiode.getStartDato() != null && sisteOppfolgingsperiode.getSluttDato() == null;
@@ -404,9 +410,9 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         when(dkifClient.hentKontaktInfo(FNR)).thenReturn(kontaktinfo);
     }
 
-    private void gittYtelserMedStatus(String... statuser) throws Exception {
+    private void gittYtelserMedStatus(String... statuser) {
         WSHentYtelseskontraktListeRequest request = new WSHentYtelseskontraktListeRequest();
-        request.setPersonidentifikator(FNR);
+        request.setPersonidentifikator(FNR.get());
         WSHentYtelseskontraktListeResponse response = new WSHentYtelseskontraktListeResponse();
 
         List<WSYtelseskontrakt> ytelser = Stream.of(statuser)

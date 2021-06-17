@@ -2,9 +2,10 @@ package no.nav.veilarboppfolging.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.types.identer.AktorId;
+import no.nav.pto_schema.kafka.json.topic.SisteOppfolgingsperiodeV1;
 import no.nav.veilarboppfolging.domain.Oppfolgingsperiode;
 import no.nav.veilarboppfolging.domain.Tilordning;
-import no.nav.veilarboppfolging.domain.kafka.OppfolgingsperiodeKafkaDto;
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
 import no.nav.veilarboppfolging.repository.VeilederTilordningerRepository;
@@ -34,7 +35,7 @@ public class KafkaRepubliseringService {
         int currentOffset = 0;
 
         while (true) {
-            List<String> unikeAktorIder = oppfolgingsStatusRepository.hentUnikeBrukerePage(currentOffset, OPPFOLGINGSPERIODE_PAGE_SIZE);
+            List<AktorId> unikeAktorIder = oppfolgingsStatusRepository.hentUnikeBrukerePage(currentOffset, OPPFOLGINGSPERIODE_PAGE_SIZE);
 
             if (unikeAktorIder.isEmpty()) {
                 break;
@@ -52,7 +53,7 @@ public class KafkaRepubliseringService {
         int currentOffset = 0;
 
         while (true) {
-            List<String> unikeAktorIder = oppfolgingsStatusRepository.hentUnikeBrukerePage(currentOffset, OPPFOLGINGSPERIODE_PAGE_SIZE);
+            List<AktorId> unikeAktorIder = oppfolgingsStatusRepository.hentUnikeBrukerePage(currentOffset, OPPFOLGINGSPERIODE_PAGE_SIZE);
 
             if (unikeAktorIder.isEmpty()) {
                 break;
@@ -66,7 +67,7 @@ public class KafkaRepubliseringService {
         }
     }
 
-    private void republiserOppfolgingsperiodeForBruker(String aktorId) {
+    private void republiserOppfolgingsperiodeForBruker(AktorId aktorId) {
         List<Oppfolgingsperiode> perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId);
         Oppfolgingsperiode sistePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(perioder);
 
@@ -75,12 +76,12 @@ public class KafkaRepubliseringService {
             return;
         }
 
-        OppfolgingsperiodeKafkaDto kafkaDto = DtoMappers.tilOppfolgingsperiodeKafkaDto(sistePeriode);
+        SisteOppfolgingsperiodeV1 sisteOppfolgingsperiodeV1 = DtoMappers.tilSisteOppfolgingsperiodeV1(sistePeriode);
 
-        kafkaProducerService.publiserSisteOppfolgingsperiode(kafkaDto);
+        kafkaProducerService.publiserSisteOppfolgingsperiode(sisteOppfolgingsperiodeV1);
     }
 
-    private void republiserSisteTilordnetVeilederForBruker(String aktorId) {
+    private void republiserSisteTilordnetVeilederForBruker(AktorId aktorId) {
         Optional<Tilordning> maybeTilordning = veilederTilordningerRepository.hentTilordnetVeileder(aktorId);
 
         maybeTilordning.ifPresent(tilordning -> {

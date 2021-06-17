@@ -6,10 +6,10 @@ import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.client.aktorregister.AktorregisterClient;
 import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.config.ApplicationTestConfig;
-import no.nav.veilarboppfolging.controller.domain.OppfolgingPeriodeDTO;
-import no.nav.veilarboppfolging.domain.AktiverArbeidssokerData;
-import no.nav.veilarboppfolging.domain.Fnr;
+import no.nav.veilarboppfolging.controller.request.AktiverArbeidssokerData;
+import no.nav.veilarboppfolging.controller.response.OppfolgingPeriodeDTO;
 import no.nav.veilarboppfolging.domain.Innsatsgruppe;
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
 import no.nav.veilarboppfolging.service.AuthService;
@@ -31,9 +31,12 @@ import static org.mockito.Mockito.when;
 @SpringBootTest(classes = {ApplicationTestConfig.class})
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 class OppfolgingControllerIntegrationTest {
-    private final static String fnr = "123";
-    private final static String aktorId = fnr;
-    private final String token = "token";
+
+    private final static Fnr FNR = Fnr.of("123");
+
+    private final static AktorId AKTOR_ID = AktorId.of("3409823");
+
+    private final static String TOKEN = "token";
 
     @MockBean
     Pep veilarbPep;
@@ -85,16 +88,19 @@ class OppfolgingControllerIntegrationTest {
 
         var forstePeriode = perioder.get(0);
         var uuid = forstePeriode.uuid.toString();
-        when(veilarbPep.harTilgangTilPerson(token, ActionId.READ, AktorId.of(aktorId))).thenReturn(false);
+        when(veilarbPep.harTilgangTilPerson(TOKEN, ActionId.READ, AKTOR_ID)).thenReturn(false);
 
         assertThrows(ResponseStatusException.class, () -> oppfolgingController.hentOppfolgingsPeriode(uuid));
 
     }
 
     private List<OppfolgingPeriodeDTO> startOppfolging() {
-        var aktiverArbeidssokerData = new AktiverArbeidssokerData(new Fnr(fnr), Innsatsgruppe.STANDARD_INNSATS);
+        var aktiverArbeidssokerData = new AktiverArbeidssokerData(
+                new no.nav.veilarboppfolging.controller.request.Fnr(FNR.get()),
+                Innsatsgruppe.STANDARD_INNSATS
+        );
         systemOppfolgingController.aktiverBruker(aktiverArbeidssokerData);
-        return oppfolgingController.hentOppfolgingsperioder(fnr);
+        return oppfolgingController.hentOppfolgingsperioder(FNR);
     }
 
     private void mockHappyPathVeileder() {
@@ -103,10 +109,10 @@ class OppfolgingControllerIntegrationTest {
 
     private void mockAuthOK() {
         String token = "token";
-        when(veilarbPep.harTilgangTilPerson(token, ActionId.READ, AktorId.of(aktorId))).thenReturn(true);
+        when(veilarbPep.harTilgangTilPerson(token, ActionId.READ, AKTOR_ID)).thenReturn(true);
         when(authContextHolder.getIdTokenString()).thenReturn(Optional.of(token));
 
         when(authContextHolder.erSystemBruker()).thenReturn(true);
-        when(aktorOppslagClient.hentAktorId(new no.nav.common.types.identer.Fnr(fnr))).thenReturn(AktorId.of(aktorId));
+        when(aktorOppslagClient.hentAktorId(FNR)).thenReturn(AKTOR_ID);
     }
 }

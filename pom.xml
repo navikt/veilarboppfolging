@@ -19,11 +19,22 @@
 
     <properties>
         <java.version>11</java.version>
-        <common.version>2.2021.06.02_14.36-b9fcb1c8ae0b</common.version>
+        <common.version>2.2021.06.11_06.26-ecbd6c9186d9</common.version>
         <springfox.version>2.9.2</springfox.version>
         <tjenestespesifikasjoner.version>1.2019.04.03-23.09-56488320520a</tjenestespesifikasjoner.version>
         <testcontainers.version>1.15.2</testcontainers.version>
     </properties>
+
+    <repositories>
+        <repository>
+            <id>jitpack</id>
+            <url>https://jitpack.io</url>
+        </repository>
+        <repository>
+            <id>confluent</id>
+            <url>https://packages.confluent.io/maven/</url>
+        </repository>
+    </repositories>
 
     <build>
         <plugins>
@@ -142,6 +153,12 @@
             <version>${tjenestespesifikasjoner.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.github.navikt</groupId>
+            <artifactId>pto-schema</artifactId>
+            <version>1.2021.06.14_14.41-fa58fae3a44d</version>
+        </dependency>
+
         <!-- Common Dependencies -->
         <dependency>
             <groupId>no.nav.common</groupId>
@@ -225,7 +242,12 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.12</version>
+            <version>4.13.1</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.vintage</groupId>
+            <artifactId>junit-vintage-engine</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

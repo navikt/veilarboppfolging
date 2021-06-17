@@ -1,6 +1,7 @@
 package no.nav.veilarboppfolging.controller;
 
 import no.nav.common.json.JsonUtils;
+import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.domain.Kvp;
 import no.nav.veilarboppfolging.domain.Oppfolgingsperiode;
 import no.nav.veilarboppfolging.service.*;
@@ -47,11 +48,11 @@ public class OppfolgingControllerTest {
 
     @Test
     public void oppfolgingsperioder_skal_sjekke_at_bruker_er_systembruker() throws Exception {
-        String fnr = "1234";
+        Fnr fnr = Fnr.of("1234");
 
         when(oppfolgingService.hentOppfolgingsperioder(eq(fnr))).thenReturn(Collections.emptyList());
 
-        mockMvc.perform(get("/api/oppfolging/oppfolgingsperioder").queryParam("fnr", fnr));
+        mockMvc.perform(get("/api/oppfolging/oppfolgingsperioder").queryParam("fnr", fnr.get()));
 
         verify(authService, times(1)).skalVereSystemBruker();
         verify(oppfolgingService, times(1)).hentOppfolgingsperioder(eq(fnr));
@@ -59,7 +60,7 @@ public class OppfolgingControllerTest {
 
     @Test
     public void oppfolgingsperioder_skal_returnere_oppfolgingsperioder() throws Exception {
-        String fnr = "1234";
+        Fnr fnr = Fnr.of("1234");
 
         List<Oppfolgingsperiode> perioder = new ArrayList<>();
         perioder.add(
@@ -81,7 +82,7 @@ public class OppfolgingControllerTest {
 
         when(oppfolgingService.hentOppfolgingsperioder(eq(fnr))).thenReturn(perioder);
 
-        mockMvc.perform(get("/api/oppfolging/oppfolgingsperioder").queryParam("fnr", fnr))
+        mockMvc.perform(get("/api/oppfolging/oppfolgingsperioder").queryParam("fnr", fnr.get()))
                 .andExpect(content().json(expectedJson));
     }
 

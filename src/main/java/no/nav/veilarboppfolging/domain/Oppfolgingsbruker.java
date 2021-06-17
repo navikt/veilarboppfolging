@@ -2,11 +2,12 @@ package no.nav.veilarboppfolging.domain;
 
 import lombok.Builder;
 import lombok.Value;
+import no.nav.veilarboppfolging.controller.request.SykmeldtBrukerType;
 
 @Value
 @Builder
 public class Oppfolgingsbruker {
-    private String aktoerId;
-    private Innsatsgruppe innsatsgruppe;
-    private SykmeldtBrukerType sykmeldtBrukerType;
+    String aktoerId;
+    Innsatsgruppe innsatsgruppe;
+    SykmeldtBrukerType sykmeldtBrukerType;
 }

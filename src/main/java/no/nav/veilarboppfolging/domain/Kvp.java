@@ -2,26 +2,24 @@ package no.nav.veilarboppfolging.domain;
 
 import lombok.Builder;
 import lombok.Value;
-import lombok.experimental.Wither;
+import lombok.With;
 
 import java.time.ZonedDateTime;
 
 @Value
 @Builder
-@Wither
+@With
 public class Kvp {
-
-    private long kvpId;
-    private long serial;
-    private String aktorId;
-    private String enhet;
-    private String opprettetAv;
-    private ZonedDateTime opprettetDato;
-    private String opprettetBegrunnelse;
-    private KodeverkBruker opprettetKodeverkbruker;
-    private String avsluttetAv;
-    private ZonedDateTime avsluttetDato;
-    private String avsluttetBegrunnelse;
-    private KodeverkBruker avsluttetKodeverkbruker;
-
+    long kvpId;
+    long serial;
+    String aktorId;
+    String enhet;
+    String opprettetAv;
+    ZonedDateTime opprettetDato;
+    String opprettetBegrunnelse;
+    KodeverkBruker opprettetKodeverkbruker;
+    String avsluttetAv;
+    ZonedDateTime avsluttetDato;
+    String avsluttetBegrunnelse;
+    KodeverkBruker avsluttetKodeverkbruker;
 }

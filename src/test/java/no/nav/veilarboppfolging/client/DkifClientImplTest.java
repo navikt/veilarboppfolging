@@ -28,7 +28,7 @@ public class DkifClientImplTest {
         DkifClient dkifClient = new DkifClientImpl(apiUrl, () -> "TOKEN");
 
         givenThat(get(anyUrl())
-                .withHeader("Nav-Personidenter", equalTo(TEST_FNR))
+                .withHeader("Nav-Personidenter", equalTo(TEST_FNR.get()))
                 .withHeader("Authorization", equalTo("Bearer TOKEN"))
                 .willReturn(aResponse()
                         .withStatus(200)
@@ -37,7 +37,7 @@ public class DkifClientImplTest {
         AuthContext context = AuthTestUtils.createAuthContext(UserRole.INTERN, "test");
         AuthContextHolderThreadLocal.instance().withContext(context, () -> {
             DkifKontaktinfo kontaktinfo = dkifClient.hentKontaktInfo(TEST_FNR);
-            assertEquals(kontaktinfo.getPersonident(), TEST_FNR);
+            assertEquals(kontaktinfo.getPersonident(), TEST_FNR.get());
             assertTrue(kontaktinfo.isKanVarsles());
             assertFalse(kontaktinfo.isReservert());
             assertEquals(kontaktinfo.getEpostadresse(), "noreply@nav.no");

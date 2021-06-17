@@ -1,6 +1,7 @@
 package no.nav.veilarboppfolging.client;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolging;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClientImpl;
 import org.assertj.core.api.Assertions;
@@ -15,7 +16,7 @@ import static no.nav.common.utils.AssertUtils.assertTrue;
 
 public class VeilarbarenaClientImplTest {
 
-    private static final String MOCK_FNR = "1234";
+    private static final Fnr MOCK_FNR = Fnr.of("1234");
     private static final String MOCK_ENHET_ID = "1331";
     private static final String MOCK_FORMIDLINGSGRUPPE = "ARBS";
     private static final String MOCK_SERVICEGRUPPE = "servicegruppe";

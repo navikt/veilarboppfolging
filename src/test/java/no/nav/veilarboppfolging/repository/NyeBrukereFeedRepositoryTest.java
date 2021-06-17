@@ -1,10 +1,8 @@
 package no.nav.veilarboppfolging.repository;
 
 import no.nav.veilarboppfolging.domain.Oppfolgingsbruker;
-import no.nav.veilarboppfolging.feed.NyeBrukereFeedDTO;
-import no.nav.veilarboppfolging.test.DbTestUtils;
+import no.nav.veilarboppfolging.feed.domain.NyeBrukereFeedDTO;
 import no.nav.veilarboppfolging.test.IsolatedDatabaseTest;
-import no.nav.veilarboppfolging.test.LocalH2Database;
 import org.junit.Before;
 import org.junit.Test;
 
