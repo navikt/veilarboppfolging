@@ -7,7 +7,6 @@ import no.nav.veilarboppfolging.domain.Tilordning;
 import org.springframework.stereotype.Service;
 
 import java.time.ZonedDateTime;
-import java.util.Date;
 import java.util.Optional;
 
 import static no.nav.veilarboppfolging.utils.StringUtils.of;
@@ -64,10 +63,6 @@ public class MetricsService {
                 .addFieldToReport("endretAv", endretAv + " " +  bleOpprettet);
 
         metricsClient.report(event);
-    }
-
-    public void antallMeldingerKonsumertAvKafka() {
-        metricsClient.report(new Event("kafka.konsumert.meldinger"));
     }
 
     public void antallBrukereAvsluttetAutomatisk(){

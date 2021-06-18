@@ -67,7 +67,7 @@ public class ArenaUtilsTest {
 
     @Test
     public void kanSettesUnderOppfolging_IARBSogOppfolgingskoder_false(){
-        OPPFOLGING_SERVICEGRUPPEKODER.forEach((servicegruppeode) -> {
+        OPPFOLGING_KVALIFISERINGSGRUPPEKODER.forEach((servicegruppeode) -> {
             assertThat(kanSettesUnderOppfolging("IARBS", servicegruppeode)).isFalse();
         });
     }

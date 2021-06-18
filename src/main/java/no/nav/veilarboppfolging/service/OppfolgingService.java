@@ -553,7 +553,7 @@ public class OppfolgingService {
                 && ikkeUnderKvp;
     }
 
-    private void avsluttOppfolgingForBruker(AktorId aktorId, String veilederId, String begrunnelse) {
+    public void avsluttOppfolgingForBruker(AktorId aktorId, String veilederId, String begrunnelse) {
         String brukerIdent = authService.getInnloggetBrukerIdent();
         eskaleringService.stoppEskaleringForAvsluttOppfolging(aktorId, brukerIdent, begrunnelse);
 
