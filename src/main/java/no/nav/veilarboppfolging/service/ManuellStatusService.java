@@ -144,13 +144,10 @@ public class ManuellStatusService {
 
     public DkifKontaktinfo hentDkifKontaktinfo(Fnr fnr){
         return dkifClient.hentKontaktInfo(fnr)
-                .orElseGet(() -> {
-                    DkifKontaktinfo fallbackKontaktInfo = new DkifKontaktinfo();
-                    fallbackKontaktInfo.setPersonident(fnr.get());
-                    fallbackKontaktInfo.setKanVarsles(true);
-                    fallbackKontaktInfo.setReservert(false);
-                    return fallbackKontaktInfo;
-                });
+                .orElseGet(() -> new DkifKontaktinfo()
+                .setPersonident(fnr.get())
+                .setKanVarsles(true)
+                .setReservert(false));
     }
 
     private void oppdaterManuellStatus(AktorId aktorId, ManuellStatus manuellStatus) {

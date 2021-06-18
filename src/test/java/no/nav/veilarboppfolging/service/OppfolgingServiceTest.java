@@ -362,6 +362,24 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         assertTrue(oppfolgingService.underOppfolgingNiva3(FNR));
     }
 
+    @Test
+    public void startOppfolgingHvisIkkeAlleredeStartet__skal_opprette_ikke_opprette_manuell_status_hvis_ikke_reservert_i_krr() {
+        gittReservasjonIKrr(false);
+
+        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
+
+        verify(manuellStatusService, never()).settBrukerTilManuellGrunnetReservasjonIKRR(any());
+    }
+
+    @Test
+    public void startOppfolgingHvisIkkeAlleredeStartet__skal_opprette_manuell_status_hvis_reservert_i_krr() {
+        gittReservasjonIKrr(true);
+
+        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
+
+        verify(manuellStatusService, times(1)).settBrukerTilManuellGrunnetReservasjonIKRR(AKTOR_ID);
+    }
+
     private void assertUnderOppfolgingLagret(AktorId aktorId) {
         assertTrue(oppfolgingsStatusRepository.fetch(aktorId).isUnderOppfolging());
 
