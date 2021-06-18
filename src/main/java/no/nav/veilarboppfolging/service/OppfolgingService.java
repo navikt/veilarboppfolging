@@ -535,7 +535,7 @@ public class OppfolgingService {
             log.info("Avslutting av oppfølging ikke tillatt for aktorid {}", aktorId);
         }
 
-        metricsService.raporterAutomatiskAvslutningAvOppfolging(!kanAvslutteOppfolging);
+        metricsService.rapporterAutomatiskAvslutningAvOppfolging(!kanAvslutteOppfolging);
     }
 
     public boolean kanAvslutteOppfolging(AktorId aktorId, boolean erUnderOppfolging, boolean erIservIArena) {

@@ -37,7 +37,7 @@ public class MetricsService {
         return ZonedDateTime.now().minusSeconds(time.toEpochSecond()).toInstant().toEpochMilli();
     }
 
-    public void raporterAutomatiskAvslutningAvOppfolging(boolean success) {
+    public void rapporterAutomatiskAvslutningAvOppfolging(boolean success) {
         Event event = new Event("oppfolging.automatisk.avslutning");
         event.addFieldToReport("success", success);
         metricsClient.report(event);

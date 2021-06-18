@@ -77,7 +77,7 @@ public class OppfolgingEndringService {
                 if (skalAvsluttes) {
                     log.info("Automatisk avslutting av oppfølging på bruker. aktorId={}", aktorId);
                     oppfolgingService.avsluttOppfolgingForBruker(aktorId, null, "Oppfølging avsluttet automatisk pga. inaktiv bruker som ikke kan reaktiveres");
-                    metricsService.raporterAutomatiskAvslutningAvOppfolging(true);
+                    metricsService.rapporterAutomatiskAvslutningAvOppfolging(true);
                 }
             } else {
                 log.warn("Bruker har ikke oppfølgingtilstand i Arena. aktorId={}", aktorId);
