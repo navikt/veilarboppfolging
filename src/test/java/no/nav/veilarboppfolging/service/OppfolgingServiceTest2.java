@@ -1,7 +1,10 @@
 package no.nav.veilarboppfolging.service;
 
+import no.nav.common.health.HealthCheckResult;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.veilarboppfolging.client.dkif.DkifClient;
+import no.nav.veilarboppfolging.client.dkif.DkifKontaktinfo;
 import no.nav.veilarboppfolging.domain.*;
 import no.nav.veilarboppfolging.repository.*;
 import no.nav.veilarboppfolging.test.DbTestUtils;
@@ -66,12 +69,24 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
 
         manuellStatusRepository = new ManuellStatusRepository(db, transactor);
 
+        DkifClient dkifClient = new DkifClient() {
+            @Override
+            public Optional<DkifKontaktinfo> hentKontaktInfo(Fnr fnr) {
+                return Optional.empty();
+            }
+
+            @Override
+            public HealthCheckResult checkHealth() {
+                return null;
+            }
+        };
+
         ManuellStatusService manuellStatusService = new ManuellStatusService(
-                mock(AuthService.class),
+                authService,
                 manuellStatusRepository,
                 null,
                 oppfolgingsStatusRepository,
-                null,
+                dkifClient,
                 null,
                 transactor
         );
@@ -84,6 +99,8 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
                 null, new EskaleringsvarselRepository(db, transactor),
                 new KvpRepository(db, transactor), new NyeBrukereFeedRepository(db), maalRepository,
                 new BrukerOppslagFlereOppfolgingAktorRepository(db), transactor);
+
+        when(authService.getFnrOrThrow(AKTOR_ID)).thenReturn(FNR);
     }
 
     @Test

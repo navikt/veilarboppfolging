@@ -98,6 +98,8 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         gittArenaOppfolgingStatus("", "");
 
         when(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID);
+        when(authService.getFnrOrThrow(AKTOR_ID)).thenReturn(FNR);
+
         when(arenaOppfolgingService.hentOppfolgingTilstand(FNR)).thenReturn(Optional.of(arenaOppfolgingTilstand));
         when(ytelseskontraktClient.hentYtelseskontraktListe(any())).thenReturn(mock(YtelseskontraktResponse.class));
         when(manuellStatusService.hentDkifKontaktinfo(FNR)).thenReturn(new DkifKontaktinfo());
@@ -303,7 +305,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     }
 
     @Test
-    public void kanIkkeAvslutteNarManIkkeErUnderOppfolging() throws Exception {
+    public void kanIkkeAvslutteNarManIkkeErUnderOppfolging() {
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
         gittYtelserMedStatus();
 
@@ -313,7 +315,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     }
 
     @Test
-    public void kanIkkeAvslutteNarManIkkeErUnderOppfolgingIArena() throws Exception {
+    public void kanIkkeAvslutteNarManIkkeErUnderOppfolgingIArena() {
         oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
         assertUnderOppfolgingLagret(AKTOR_ID);
 
@@ -326,7 +328,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     }
 
     @Test
-    public void kanAvslutteMedVarselOmAktiveYtelser() throws Exception {
+    public void kanAvslutteMedVarselOmAktiveYtelser() {
         oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
         assertUnderOppfolgingLagret(AKTOR_ID);
 

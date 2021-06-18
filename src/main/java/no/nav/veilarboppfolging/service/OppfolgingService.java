@@ -253,10 +253,6 @@ public class OppfolgingService {
         Oppfolging oppfolging = hentOppfolging(aktorId)
                 .orElse(new Oppfolging().setAktorId(aktorId.get()).setUnderOppfolging(false));
 
-        if (oppfolging.isUnderOppfolging()) {
-            manuellStatusService.synkroniserManuellStatusMedDkif(fnr);
-        }
-
         boolean erManuell = manuellStatusService.erManuell(aktorId);
 
         DkifKontaktinfo dkifKontaktinfo = manuellStatusService.hentDkifKontaktinfo(fnr);
@@ -395,9 +391,11 @@ public class OppfolgingService {
     }
 
     public void startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker oppfolgingsbruker) {
-        transactor.executeWithoutResult((ignored) -> {
-            AktorId aktorId = AktorId.of(oppfolgingsbruker.getAktoerId());
+        AktorId aktorId = AktorId.of(oppfolgingsbruker.getAktoerId());
+        Fnr fnr = authService.getFnrOrThrow(aktorId);
+        DkifKontaktinfo kontaktinfo = manuellStatusService.hentDkifKontaktinfo(fnr);
 
+        transactor.executeWithoutResult((ignored) -> {
             OppfolgingTable eksisterendeOppfolging = oppfolgingsStatusRepository.fetch(aktorId);
 
             if (eksisterendeOppfolging != null && eksisterendeOppfolging.isUnderOppfolging()) {
@@ -418,6 +416,10 @@ public class OppfolgingService {
 
             oppfolgingsPeriodeRepository.start(aktorId);
             nyeBrukereFeedRepository.leggTil(oppfolgingsbruker);
+
+            if (kontaktinfo.isReservert()) {
+                manuellStatusService.settBrukerTilManuellGrunnetReservasjonIKRR(aktorId);
+            }
 
             List<Oppfolgingsperiode> perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId);
             Oppfolgingsperiode sistePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(perioder);

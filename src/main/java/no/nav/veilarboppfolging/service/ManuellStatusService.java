@@ -82,24 +82,29 @@ public class ManuellStatusService {
     public void synkroniserManuellStatusMedDkif(Fnr fnr) {
         AktorId aktorId = authService.getAktorIdOrThrow(fnr);
 
-        // Bruker er allerede manuell, trenger ikke å sjekke i DKIF
-        if (erManuell(aktorId)) {
-            return;
-        }
-
         DkifKontaktinfo dkifKontaktinfo = hentDkifKontaktinfo(fnr);
 
         if (dkifKontaktinfo.isReservert()) {
-            var manuellStatus = new ManuellStatus()
-                    .setAktorId(aktorId.get())
-                    .setManuell(true)
-                    .setDato(ZonedDateTime.now())
-                    .setBegrunnelse("Brukeren er reservert i Kontakt- og reservasjonsregisteret")
-                    .setOpprettetAv(SYSTEM);
-
-            log.info("Bruker er reservert i KRR, setter bruker aktorId={} til manuell", aktorId);
-            oppdaterManuellStatus(aktorId, manuellStatus);
+            settBrukerTilManuellGrunnetReservasjonIKRR(aktorId);
         }
+    }
+
+    public void settBrukerTilManuellGrunnetReservasjonIKRR(AktorId aktorId) {
+        // Hvis bruker allerede er manuell så trenger vi ikke å sette status på nytt
+        if (erManuell(aktorId)) {
+            log.info("Bruker er allerede manuell og trenger ikke å oppdateres med reservasjon fra KRR");
+            return;
+        }
+
+        var manuellStatus = new ManuellStatus()
+                .setAktorId(aktorId.get())
+                .setManuell(true)
+                .setDato(ZonedDateTime.now())
+                .setBegrunnelse("Brukeren er reservert i Kontakt- og reservasjonsregisteret")
+                .setOpprettetAv(SYSTEM);
+
+        log.info("Bruker er reservert i KRR, setter bruker aktorId={} til manuell", aktorId);
+        oppdaterManuellStatus(aktorId, manuellStatus);
     }
 
     public void settDigitalBruker(Fnr fnr) {
