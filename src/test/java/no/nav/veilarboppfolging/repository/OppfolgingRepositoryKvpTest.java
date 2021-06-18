@@ -34,17 +34,6 @@ public class OppfolgingRepositoryKvpTest extends IsolatedDatabaseTest {
         kvpRepository = new KvpRepository(db, transactor);
     }
 
-    // TODO: tilgangskontroll skal ikke gjøres så nært databasen, flytt til en service
-//    @Test
-//    public void test_eskaleringsvarsel_i_kvp_ingen_tilgang() {
-//        gitt_oppfolging_med_aktiv_kvp_og_eskalering(AKTOR_ID);
-//
-//        OppfolgingTable oppfolging = oppfolgingsStatusRepository.fetch(AKTOR_ID);
-//        EskaleringsvarselData eskaleringsvarsel = eskaleringsvarselRepository.fetch(oppfolging.getGjeldendeEskaleringsvarselId());
-//
-//        assertThat(eskaleringsvarsel).isNull();
-//    }
-
     @Test
     public void test_eskaleringsvarsel_i_kvp_med_tilgang() {
         gitt_oppfolging_med_aktiv_kvp_og_eskalering(AKTOR_ID);
@@ -64,7 +53,6 @@ public class OppfolgingRepositoryKvpTest extends IsolatedDatabaseTest {
 
         assertThat(eskaleringsvarsel).isNotNull();
     }
-
 
     private void gitt_oppfolging_med_aktiv_kvp_og_eskalering(AktorId aktorId) {
         oppfolgingsStatusRepository.opprettOppfolging(aktorId);

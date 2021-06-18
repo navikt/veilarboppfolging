@@ -13,6 +13,7 @@ import no.nav.veilarboppfolging.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.ZonedDateTime;
@@ -36,6 +37,8 @@ public class MalService {
 
     private final MaalRepository maalRepository;
 
+    private final TransactionTemplate transactor;
+
     @Autowired
     public MalService(
             KafkaProducerService kafkaProducerService,
@@ -43,7 +46,8 @@ public class MalService {
             OppfolgingsStatusRepository oppfolgingsStatusRepository,
             KvpRepository kvpRepository,
             AuthService authService,
-            MaalRepository maalRepository
+            MaalRepository maalRepository,
+            TransactionTemplate transactor
     ) {
         this.kafkaProducerService = kafkaProducerService;
         this.metricsService = metricsService;
@@ -51,6 +55,7 @@ public class MalService {
         this.kvpRepository = kvpRepository;
         this.authService = authService;
         this.maalRepository = maalRepository;
+        this.transactor = transactor;
     }
 
     public MalData hentMal(Fnr fnr) {
@@ -100,9 +105,12 @@ public class MalService {
                 .setEndretAv(StringUtils.of(endretAvVeileder).orElse(aktorId.get()))
                 .setDato(ZonedDateTime.now());
 
-        maalRepository.opprett(malData);
+        transactor.executeWithoutResult((ignored) -> {
+            maalRepository.opprett(malData);
+            kafkaProducerService.publiserEndretMal(aktorId, endretAvVeileder);
+        });
+
         metricsService.oppdatertMittMal(malData, maalRepository.aktorMal(aktorId).size());
-        kafkaProducerService.publiserEndretMal(aktorId, endretAvVeileder);
 
         return malData;
     }
