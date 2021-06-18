@@ -17,6 +17,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.ZonedDateTime;
+import java.util.List;
+import java.util.Optional;
 
 import static no.nav.veilarboppfolging.domain.KodeverkBruker.SYSTEM;
 
@@ -63,6 +65,14 @@ public class ManuellStatusService {
                 .orElse(false);
     }
 
+    public Optional<ManuellStatus> hentManuellStatus(long manuellStatusId) {
+        return Optional.ofNullable(manuellStatusRepository.fetch(manuellStatusId));
+    }
+
+    public List<ManuellStatus> hentManuellStatusHistorikk(AktorId aktorId) {
+        return manuellStatusRepository.history(aktorId);
+    }
+
     /**
      * Gjør en sjekk i DKIF om bruker er reservert.
      * Hvis bruker er reservert så sett manuell status på bruker hvis det ikke allerede er gjort.
@@ -77,7 +87,7 @@ public class ManuellStatusService {
             return;
         }
 
-        DkifKontaktinfo dkifKontaktinfo = dkifClient.hentKontaktInfo(fnr);
+        DkifKontaktinfo dkifKontaktinfo = hentDkifKontaktinfo(fnr);
 
         if (dkifKontaktinfo.isReservert()) {
             var manuellStatus = new ManuellStatus()
@@ -108,7 +118,7 @@ public class ManuellStatusService {
         }
 
         OppfolgingTable oppfolging = oppfolgingsStatusRepository.fetch(aktorId);
-        DkifKontaktinfo kontaktinfo = dkifClient.hentKontaktInfo(fnr);
+        DkifKontaktinfo kontaktinfo = hentDkifKontaktinfo(fnr);
 
         boolean erUnderOppfolging = oppfolging.isUnderOppfolging();
         boolean gjeldendeErManuell = erManuell(aktorId);
@@ -125,6 +135,17 @@ public class ManuellStatusService {
 
             oppdaterManuellStatus(aktorId, nyStatus);
         }
+    }
+
+    public DkifKontaktinfo hentDkifKontaktinfo(Fnr fnr){
+        return dkifClient.hentKontaktInfo(fnr)
+                .orElseGet(() -> {
+                    DkifKontaktinfo fallbackKontaktInfo = new DkifKontaktinfo();
+                    fallbackKontaktInfo.setPersonident(fnr.get());
+                    fallbackKontaktInfo.setKanVarsles(true);
+                    fallbackKontaktInfo.setReservert(false);
+                    return fallbackKontaktInfo;
+                });
     }
 
     private void oppdaterManuellStatus(AktorId aktorId, ManuellStatus manuellStatus) {

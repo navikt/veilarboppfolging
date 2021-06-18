@@ -45,7 +45,7 @@ public class HistorikkServiceTest {
     private OppfolgingsenhetHistorikkRepository oppfolgingsenhetHistorikkRepository;
 
     @Mock
-    private ManuellStatusRepository manuellStatusRepository;
+    private ManuellStatusService manuellStatusService;
 
     @Mock
     private EskaleringsvarselRepository eskaleringsvarselRepository;
@@ -164,7 +164,7 @@ public class HistorikkServiceTest {
                         .setManuell(false)
         );
 
-        when(manuellStatusRepository.history(AKTOR_ID)).thenReturn(manuellStatus);
+        when(manuellStatusService.hentManuellStatusHistorikk(AKTOR_ID)).thenReturn(manuellStatus);
     }
 
     private void gitt_kvp() {

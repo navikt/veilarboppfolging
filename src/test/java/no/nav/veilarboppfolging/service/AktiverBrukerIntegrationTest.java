@@ -51,9 +51,8 @@ public class AktiverBrukerIntegrationTest {
         behandleArbeidssokerClient = mock(BehandleArbeidssokerClient.class);
 
         oppfolgingService = new OppfolgingService(
-                mock(KafkaProducerService.class), null, null, null, null, null, authService,
-                oppfolgingsStatusRepository, oppfolgingsPeriodeRepository,
-                new ManuellStatusRepository(db, transactor), null,
+                mock(KafkaProducerService.class), null, null, null, null, authService,
+                oppfolgingsStatusRepository, oppfolgingsPeriodeRepository, null,
                 null, new EskaleringsvarselRepository(db, transactor),
                 new KvpRepository(db, transactor), new NyeBrukereFeedRepository(db),
                 new MaalRepository(db, transactor),

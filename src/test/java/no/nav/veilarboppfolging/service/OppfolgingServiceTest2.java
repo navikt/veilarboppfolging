@@ -66,11 +66,21 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
 
         manuellStatusRepository = new ManuellStatusRepository(db, transactor);
 
+        ManuellStatusService manuellStatusService = new ManuellStatusService(
+                mock(AuthService.class),
+                manuellStatusRepository,
+                null,
+                oppfolgingsStatusRepository,
+                null,
+                null,
+                transactor
+        );
+
         oppfolgingService = new OppfolgingService(
-                mock(KafkaProducerService.class), null, null,
+                mock(KafkaProducerService.class), null,
                 null, null, null, authService,
                 oppfolgingsStatusRepository, oppfolgingsPeriodeRepository,
-                manuellStatusRepository, null,
+                manuellStatusService,
                 null, new EskaleringsvarselRepository(db, transactor),
                 new KvpRepository(db, transactor), new NyeBrukereFeedRepository(db), maalRepository,
                 new BrukerOppslagFlereOppfolgingAktorRepository(db), transactor);
@@ -214,6 +224,7 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
                         .setDato(ZonedDateTime.now())
                         .setBegrunnelse("Test")
                         .setOpprettetAv(KodeverkBruker.SYSTEM));
+        
         maalRepository.opprett(new MalData().setAktorId(AKTOR_ID.get()).setMal(maal).setEndretAv("bruker").setDato(ZonedDateTime.now()));
         Oppfolging oppfolging = hentOppfolging(AKTOR_ID).get();
         assertThat(oppfolging.isUnderOppfolging(), is(true));
