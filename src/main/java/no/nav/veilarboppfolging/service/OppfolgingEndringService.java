@@ -39,29 +39,49 @@ public class OppfolgingEndringService {
         AktorId aktorId = authService.getAktorIdOrThrow(fnr);
 
         String formidlingsgruppe = endringPaaOppfoelgingsBrukerV1.getFormidlingsgruppekode();
-        String kvalifiseringsgruppekode = endringPaaOppfoelgingsBrukerV1.getKvalifiseringsgruppekode();
+        String kvalifiseringsgruppe = endringPaaOppfoelgingsBrukerV1.getKvalifiseringsgruppekode();
 
         Optional<OppfolgingTable> maybeOppfolging = ofNullable(oppfolgingsStatusRepository.fetch(aktorId));
 
         boolean erBrukerUnderOppfolging = maybeOppfolging.map(OppfolgingTable::isUnderOppfolging).orElse(false);
-        boolean erUnderOppfolgingIArena = erUnderOppfolging(formidlingsgruppe, kvalifiseringsgruppekode);
+        boolean erUnderOppfolgingIArena = erUnderOppfolging(formidlingsgruppe, kvalifiseringsgruppe);
         boolean erInaktivIArena = erIserv(formidlingsgruppe);
 
+        log.info(
+                "Status for automatisk oppdatering av oppfølging."
+                        + " aktorId={} erUnderOppfølgingIVeilarboppfolging={}"
+                        + " erUnderOppfølgingIArena={} erInaktivIArena={}"
+                        + " formidlingsgruppe={} kvalifiseringsgruppe={}",
+                aktorId, erBrukerUnderOppfolging,
+                erUnderOppfolgingIArena, erInaktivIArena,
+                formidlingsgruppe, kvalifiseringsgruppe
+        );
+
         if (!erBrukerUnderOppfolging && erUnderOppfolgingIArena) {
+            log.info("Starter oppfølging på bruker som er under oppfølging i Arena, men ikke i veilarboppfolging. aktorId={}", aktorId);
             oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(aktorId);
         } else if (erBrukerUnderOppfolging && !erUnderOppfolgingIArena && erInaktivIArena) {
-            Optional<ArenaOppfolgingTilstand> arenaOppfolgingTilstand = arenaOppfolgingService.hentOppfolgingTilstandDirekteFraArena(fnr);
+            Optional<ArenaOppfolgingTilstand> maybeArenaTilstand = arenaOppfolgingService.hentOppfolgingTilstandDirekteFraArena(fnr);
 
-            arenaOppfolgingTilstand.ifPresent(tilstand -> {
+            if (maybeArenaTilstand.isPresent()) {
+                ArenaOppfolgingTilstand tilstand = maybeArenaTilstand.get();
                 boolean kanEnkeltReaktiveres = TRUE.equals(tilstand.getKanEnkeltReaktiveres());
                 boolean erUnderKvp = kvpService.erUnderKvp(aktorId);
                 boolean skalAvsluttes = !kanEnkeltReaktiveres && !erUnderKvp;
 
+                log.info(
+                        "Status for automatisk avslutting av oppfølging. aktorId={} kanEnkeltReaktiveres={} erUnderKvp={} skalAvsluttes={}",
+                        aktorId, kanEnkeltReaktiveres, erUnderKvp, skalAvsluttes
+                );
+
                 if (skalAvsluttes) {
+                    log.info("Automatisk avslutting av oppfølging på bruker. aktorId={}", aktorId);
                     oppfolgingService.avsluttOppfolgingForBruker(aktorId, null, "Oppfølging avsluttet automatisk pga. inaktiv bruker som ikke kan reaktiveres");
                     metricsService.raporterAutomatiskAvslutningAvOppfolging(true);
                 }
-            });
+            } else {
+                log.warn("Bruker har ikke oppfølgingtilstand i Arena. aktorId={}", aktorId);
+            }
         }
     }
 
