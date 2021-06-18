@@ -17,7 +17,10 @@ import no.nav.veilarboppfolging.domain.ArenaOppfolgingTilstand;
 import no.nav.veilarboppfolging.domain.AvslutningStatusData;
 import no.nav.veilarboppfolging.domain.OppfolgingStatusData;
 import no.nav.veilarboppfolging.domain.Oppfolgingsperiode;
-import no.nav.veilarboppfolging.repository.*;
+import no.nav.veilarboppfolging.repository.KvpRepository;
+import no.nav.veilarboppfolging.repository.NyeBrukereFeedRepository;
+import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
+import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
 import no.nav.veilarboppfolging.test.DbTestUtils;
 import no.nav.veilarboppfolging.test.IsolatedDatabaseTest;
 import no.nav.veilarboppfolging.utils.DateUtils;
@@ -65,7 +68,6 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
     private OppfolgingsStatusRepository oppfolgingsStatusRepository;
     private OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
-    private ManuellStatusRepository manuellStatusRepository;
     private OppfolgingService oppfolgingService;
 
     @Before
@@ -75,7 +77,6 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         arenaOppfolgingTilstand = new ArenaOppfolgingTilstand();
         oppfolgingsStatusRepository = new OppfolgingsStatusRepository(db);
         oppfolgingsPeriodeRepository = new OppfolgingsPeriodeRepository(db, transactor);
-        manuellStatusRepository = new ManuellStatusRepository(db, transactor);
 
         oppfolgingService = new OppfolgingService(kafkaProducerService,
                 new YtelserOgAktiviteterService(ytelseskontraktClient),
@@ -85,7 +86,6 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
                 authService,
                 oppfolgingsStatusRepository,
                 oppfolgingsPeriodeRepository,
-                manuellStatusRepository,
                 manuellStatusService,
                 eskaleringService,
                 null,

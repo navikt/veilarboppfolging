@@ -17,6 +17,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.ZonedDateTime;
+import java.util.List;
+import java.util.Optional;
 
 import static no.nav.veilarboppfolging.domain.KodeverkBruker.SYSTEM;
 
@@ -61,6 +63,14 @@ public class ManuellStatusService {
         return manuellStatusRepository.hentSisteManuellStatus(aktorId)
                 .map(ManuellStatus::isManuell)
                 .orElse(false);
+    }
+
+    public Optional<ManuellStatus> hentManuellStatus(long manuellStatusId) {
+        return Optional.ofNullable(manuellStatusRepository.fetch(manuellStatusId));
+    }
+
+    public List<ManuellStatus> hentManuellStatusHistorikk(AktorId aktorId) {
+        return manuellStatusRepository.history(aktorId);
     }
 
     /**

@@ -45,7 +45,6 @@ public class OppfolgingService {
     private final AuthService authService;
     private final OppfolgingsStatusRepository oppfolgingsStatusRepository;
     private final OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
-    private final ManuellStatusRepository manuellStatusRepository;
     private final ManuellStatusService manuellStatusService;
     private final EskaleringService eskaleringService;
     private final EskaleringsvarselRepository eskaleringsvarselRepository;
@@ -65,7 +64,6 @@ public class OppfolgingService {
             AuthService authService,
             OppfolgingsStatusRepository oppfolgingsStatusRepository,
             OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository,
-            ManuellStatusRepository manuellStatusRepository,
             ManuellStatusService manuellStatusService,
             EskaleringService eskaleringService,
             EskaleringsvarselRepository eskaleringsvarselRepository,
@@ -83,7 +81,6 @@ public class OppfolgingService {
         this.authService = authService;
         this.oppfolgingsStatusRepository = oppfolgingsStatusRepository;
         this.oppfolgingsPeriodeRepository = oppfolgingsPeriodeRepository;
-        this.manuellStatusRepository = manuellStatusRepository;
         this.manuellStatusService = manuellStatusService;
         this.eskaleringService = eskaleringService;
         this.eskaleringsvarselRepository = eskaleringsvarselRepository;
@@ -379,7 +376,8 @@ public class OppfolgingService {
         }
 
         if (t.getGjeldendeManuellStatusId() != 0) {
-            o.setGjeldendeManuellStatus(manuellStatusRepository.fetch(t.getGjeldendeManuellStatusId()));
+            Optional<ManuellStatus> manuellStatus = manuellStatusService.hentManuellStatus(t.getGjeldendeManuellStatusId());
+            manuellStatus.ifPresent(o::setGjeldendeManuellStatus);
         }
 
         List<Kvp> kvpPerioder = kvpRepository.hentKvpHistorikk(aktorId);
