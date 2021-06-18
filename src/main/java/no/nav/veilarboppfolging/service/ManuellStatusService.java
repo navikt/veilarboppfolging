@@ -77,7 +77,7 @@ public class ManuellStatusService {
             return;
         }
 
-        DkifKontaktinfo dkifKontaktinfo = dkifClient.hentKontaktInfo(fnr);
+        DkifKontaktinfo dkifKontaktinfo = hentDkifKontaktinfo(fnr);
 
         if (dkifKontaktinfo.isReservert()) {
             var manuellStatus = new ManuellStatus()
@@ -108,7 +108,7 @@ public class ManuellStatusService {
         }
 
         OppfolgingTable oppfolging = oppfolgingsStatusRepository.fetch(aktorId);
-        DkifKontaktinfo kontaktinfo = dkifClient.hentKontaktInfo(fnr);
+        DkifKontaktinfo kontaktinfo = hentDkifKontaktinfo(fnr);
 
         boolean erUnderOppfolging = oppfolging.isUnderOppfolging();
         boolean gjeldendeErManuell = erManuell(aktorId);
@@ -125,6 +125,17 @@ public class ManuellStatusService {
 
             oppdaterManuellStatus(aktorId, nyStatus);
         }
+    }
+
+    public DkifKontaktinfo hentDkifKontaktinfo(Fnr fnr){
+        return dkifClient.hentKontaktInfo(fnr)
+                .orElseGet(() -> {
+                    DkifKontaktinfo fallbackKontaktInfo = new DkifKontaktinfo();
+                    fallbackKontaktInfo.setPersonident(fnr.get());
+                    fallbackKontaktInfo.setKanVarsles(true);
+                    fallbackKontaktInfo.setReservert(false);
+                    return fallbackKontaktInfo;
+                });
     }
 
     private void oppdaterManuellStatus(AktorId aktorId, ManuellStatus manuellStatus) {

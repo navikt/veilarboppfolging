@@ -128,8 +128,8 @@ public class ClientTestConfig {
     public DkifClient dkifClient() {
         return new DkifClient() {
             @Override
-            public DkifKontaktinfo hentKontaktInfo(Fnr fnr) {
-                return null;
+            public Optional<DkifKontaktinfo> hentKontaktInfo(Fnr fnr) {
+                return Optional.empty();
             }
 
             @Override

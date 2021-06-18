@@ -68,7 +68,7 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
     @Test
     public void oppdaterManuellStatus_oppretter_manuell_status_og_publiserer_paa_kafka_ved_oppdatering_av_manuell_status() {
         when(authService.harTilgangTilEnhet(any())).thenReturn(true);
-        when(dkifClient.hentKontaktInfo(FNR)).thenReturn(new DkifKontaktinfo());
+        when(dkifClient.hentKontaktInfo(FNR)).thenReturn(Optional.of(new DkifKontaktinfo()));
         gittAktivOppfolging(AKTOR_ID);
 
         String begrunnelse = "test begrunnelse";

@@ -4,7 +4,6 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.veilarboppfolging.client.dkif.DkifClient;
 import no.nav.veilarboppfolging.client.dkif.DkifKontaktinfo;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 import no.nav.veilarboppfolging.controller.response.UnderOppfolgingDTO;
@@ -40,7 +39,6 @@ public class OppfolgingService {
 
     private final KafkaProducerService kafkaProducerService;
     private final YtelserOgAktiviteterService ytelserOgAktiviteterService;
-    private final DkifClient dkifClient;
     private final KvpService kvpService;
     private final MetricsService metricsService;
     private final ArenaOppfolgingService arenaOppfolgingService;
@@ -61,7 +59,6 @@ public class OppfolgingService {
     public OppfolgingService(
             KafkaProducerService kafkaProducerService,
             YtelserOgAktiviteterService ytelserOgAktiviteterService,
-            DkifClient dkifClient,
             KvpService kvpService,
             MetricsService metricsService,
             ArenaOppfolgingService arenaOppfolgingService,
@@ -80,7 +77,6 @@ public class OppfolgingService {
     ) {
         this.kafkaProducerService = kafkaProducerService;
         this.ytelserOgAktiviteterService = ytelserOgAktiviteterService;
-        this.dkifClient = dkifClient;
         this.kvpService = kvpService;
         this.metricsService = metricsService;
         this.arenaOppfolgingService = arenaOppfolgingService;
@@ -266,7 +262,7 @@ public class OppfolgingService {
 
         boolean erManuell = manuellStatusService.erManuell(aktorId);
 
-        DkifKontaktinfo dkifKontaktinfo = dkifClient.hentKontaktInfo(fnr);
+        DkifKontaktinfo dkifKontaktinfo = manuellStatusService.hentDkifKontaktinfo(fnr);
 
         // TODO: Burde kanskje heller feile istedenfor å bruke Optional
         Optional<ArenaOppfolgingTilstand> maybeArenaOppfolging = arenaOppfolgingService.hentOppfolgingTilstand(fnr);

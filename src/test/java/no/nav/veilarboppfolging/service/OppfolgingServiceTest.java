@@ -8,7 +8,6 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt.WSYtelseskontrakt;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeRequest;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeResponse;
-import no.nav.veilarboppfolging.client.dkif.DkifClient;
 import no.nav.veilarboppfolging.client.dkif.DkifKontaktinfo;
 import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktClient;
 import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktMapper;
@@ -53,7 +52,6 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
     private ArenaOppfolgingTilstand arenaOppfolgingTilstand;
 
-    private DkifClient dkifClient = mock(DkifClient.class);
     private AuthService authService = mock(AuthService.class);
     private KafkaProducerService kafkaProducerService = mock(KafkaProducerService.class);
     private YtelseskontraktClient ytelseskontraktClient = mock(YtelseskontraktClient.class);
@@ -63,6 +61,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     private KvpService kvpService = mock(KvpService.class);
     private KvpRepository kvpRepository = mock(KvpRepository.class);
     private MetricsService metricsService = mock(MetricsService.class);
+    private ManuellStatusService manuellStatusService = mock(ManuellStatusService.class);
 
     private OppfolgingsStatusRepository oppfolgingsStatusRepository;
     private OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
@@ -80,7 +79,6 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
         oppfolgingService = new OppfolgingService(kafkaProducerService,
                 new YtelserOgAktiviteterService(ytelseskontraktClient),
-                dkifClient,
                 kvpService,
                 metricsService,
                 arenaOppfolgingService,
@@ -88,7 +86,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
                 oppfolgingsStatusRepository,
                 oppfolgingsPeriodeRepository,
                 manuellStatusRepository,
-                mock(ManuellStatusService.class),
+                manuellStatusService,
                 eskaleringService,
                 null,
                 kvpRepository,
@@ -102,7 +100,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         when(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID);
         when(arenaOppfolgingService.hentOppfolgingTilstand(FNR)).thenReturn(Optional.of(arenaOppfolgingTilstand));
         when(ytelseskontraktClient.hentYtelseskontraktListe(any())).thenReturn(mock(YtelseskontraktResponse.class));
-        when(dkifClient.hentKontaktInfo(FNR)).thenReturn(new DkifKontaktinfo());
+        when(manuellStatusService.hentDkifKontaktinfo(FNR)).thenReturn(new DkifKontaktinfo());
     }
 
     @Test
@@ -407,7 +405,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         kontaktinfo.setKanVarsles(false);
         kontaktinfo.setReservert(reservert);
 
-        when(dkifClient.hentKontaktInfo(FNR)).thenReturn(kontaktinfo);
+        when(manuellStatusService.hentDkifKontaktinfo(FNR)).thenReturn(kontaktinfo);
     }
 
     private void gittYtelserMedStatus(String... statuser) {
