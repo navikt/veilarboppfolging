@@ -1,5 +1,6 @@
 package no.nav.veilarboppfolging.service;
 
+import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
@@ -19,6 +20,7 @@ import java.time.ZonedDateTime;
 
 import static no.nav.veilarboppfolging.domain.KodeverkBruker.SYSTEM;
 
+@Slf4j
 @Service
 public class ManuellStatusService {
 
@@ -85,6 +87,7 @@ public class ManuellStatusService {
                     .setBegrunnelse("Brukeren er reservert i Kontakt- og reservasjonsregisteret")
                     .setOpprettetAv(SYSTEM);
 
+            log.info("Bruker er reservert i KRR, setter bruker aktorId={} til manuell", aktorId);
             oppdaterManuellStatus(aktorId, manuellStatus);
         }
     }
