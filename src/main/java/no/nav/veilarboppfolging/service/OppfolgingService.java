@@ -4,7 +4,6 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.veilarboppfolging.client.dkif.DkifClient;
 import no.nav.veilarboppfolging.client.dkif.DkifKontaktinfo;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 import no.nav.veilarboppfolging.controller.response.UnderOppfolgingDTO;
@@ -40,14 +39,12 @@ public class OppfolgingService {
 
     private final KafkaProducerService kafkaProducerService;
     private final YtelserOgAktiviteterService ytelserOgAktiviteterService;
-    private final DkifClient dkifClient;
     private final KvpService kvpService;
     private final MetricsService metricsService;
     private final ArenaOppfolgingService arenaOppfolgingService;
     private final AuthService authService;
     private final OppfolgingsStatusRepository oppfolgingsStatusRepository;
     private final OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
-    private final ManuellStatusRepository manuellStatusRepository;
     private final ManuellStatusService manuellStatusService;
     private final EskaleringService eskaleringService;
     private final EskaleringsvarselRepository eskaleringsvarselRepository;
@@ -61,14 +58,12 @@ public class OppfolgingService {
     public OppfolgingService(
             KafkaProducerService kafkaProducerService,
             YtelserOgAktiviteterService ytelserOgAktiviteterService,
-            DkifClient dkifClient,
             KvpService kvpService,
             MetricsService metricsService,
             ArenaOppfolgingService arenaOppfolgingService,
             AuthService authService,
             OppfolgingsStatusRepository oppfolgingsStatusRepository,
             OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository,
-            ManuellStatusRepository manuellStatusRepository,
             ManuellStatusService manuellStatusService,
             EskaleringService eskaleringService,
             EskaleringsvarselRepository eskaleringsvarselRepository,
@@ -80,14 +75,12 @@ public class OppfolgingService {
     ) {
         this.kafkaProducerService = kafkaProducerService;
         this.ytelserOgAktiviteterService = ytelserOgAktiviteterService;
-        this.dkifClient = dkifClient;
         this.kvpService = kvpService;
         this.metricsService = metricsService;
         this.arenaOppfolgingService = arenaOppfolgingService;
         this.authService = authService;
         this.oppfolgingsStatusRepository = oppfolgingsStatusRepository;
         this.oppfolgingsPeriodeRepository = oppfolgingsPeriodeRepository;
-        this.manuellStatusRepository = manuellStatusRepository;
         this.manuellStatusService = manuellStatusService;
         this.eskaleringService = eskaleringService;
         this.eskaleringsvarselRepository = eskaleringsvarselRepository;
@@ -260,13 +253,9 @@ public class OppfolgingService {
         Oppfolging oppfolging = hentOppfolging(aktorId)
                 .orElse(new Oppfolging().setAktorId(aktorId.get()).setUnderOppfolging(false));
 
-        if (oppfolging.isUnderOppfolging()) {
-            manuellStatusService.synkroniserManuellStatusMedDkif(fnr);
-        }
-
         boolean erManuell = manuellStatusService.erManuell(aktorId);
 
-        DkifKontaktinfo dkifKontaktinfo = dkifClient.hentKontaktInfo(fnr);
+        DkifKontaktinfo dkifKontaktinfo = manuellStatusService.hentDkifKontaktinfo(fnr);
 
         // TODO: Burde kanskje heller feile istedenfor å bruke Optional
         Optional<ArenaOppfolgingTilstand> maybeArenaOppfolging = arenaOppfolgingService.hentOppfolgingTilstand(fnr);
@@ -383,7 +372,8 @@ public class OppfolgingService {
         }
 
         if (t.getGjeldendeManuellStatusId() != 0) {
-            o.setGjeldendeManuellStatus(manuellStatusRepository.fetch(t.getGjeldendeManuellStatusId()));
+            Optional<ManuellStatus> manuellStatus = manuellStatusService.hentManuellStatus(t.getGjeldendeManuellStatusId());
+            manuellStatus.ifPresent(o::setGjeldendeManuellStatus);
         }
 
         List<Kvp> kvpPerioder = kvpRepository.hentKvpHistorikk(aktorId);
@@ -401,9 +391,11 @@ public class OppfolgingService {
     }
 
     public void startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker oppfolgingsbruker) {
-        transactor.executeWithoutResult((ignored) -> {
-            AktorId aktorId = AktorId.of(oppfolgingsbruker.getAktoerId());
+        AktorId aktorId = AktorId.of(oppfolgingsbruker.getAktoerId());
+        Fnr fnr = authService.getFnrOrThrow(aktorId);
+        DkifKontaktinfo kontaktinfo = manuellStatusService.hentDkifKontaktinfo(fnr);
 
+        transactor.executeWithoutResult((ignored) -> {
             OppfolgingTable eksisterendeOppfolging = oppfolgingsStatusRepository.fetch(aktorId);
 
             if (eksisterendeOppfolging != null && eksisterendeOppfolging.isUnderOppfolging()) {
@@ -424,6 +416,10 @@ public class OppfolgingService {
 
             oppfolgingsPeriodeRepository.start(aktorId);
             nyeBrukereFeedRepository.leggTil(oppfolgingsbruker);
+
+            if (kontaktinfo.isReservert()) {
+                manuellStatusService.settBrukerTilManuellGrunnetReservasjonIKRR(aktorId);
+            }
 
             List<Oppfolgingsperiode> perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId);
             Oppfolgingsperiode sistePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(perioder);

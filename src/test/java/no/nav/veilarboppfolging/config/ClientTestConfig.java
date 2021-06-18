@@ -61,12 +61,12 @@ public class ClientTestConfig {
         return new AktorregisterClient() {
             @Override
             public Fnr hentFnr(AktorId aktorId) {
-                return null;
+                return Fnr.of("fnr-" + aktorId.get());
             }
 
             @Override
             public AktorId hentAktorId(Fnr fnr) {
-                return new AktorId(fnr.get());
+                return new AktorId("aktorId-" + fnr.get());
             }
 
             @Override
@@ -128,8 +128,8 @@ public class ClientTestConfig {
     public DkifClient dkifClient() {
         return new DkifClient() {
             @Override
-            public DkifKontaktinfo hentKontaktInfo(Fnr fnr) {
-                return null;
+            public Optional<DkifKontaktinfo> hentKontaktInfo(Fnr fnr) {
+                return Optional.empty();
             }
 
             @Override

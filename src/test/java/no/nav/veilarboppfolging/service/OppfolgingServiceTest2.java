@@ -1,7 +1,10 @@
 package no.nav.veilarboppfolging.service;
 
+import no.nav.common.health.HealthCheckResult;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.veilarboppfolging.client.dkif.DkifClient;
+import no.nav.veilarboppfolging.client.dkif.DkifKontaktinfo;
 import no.nav.veilarboppfolging.domain.*;
 import no.nav.veilarboppfolging.repository.*;
 import no.nav.veilarboppfolging.test.DbTestUtils;
@@ -66,14 +69,38 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
 
         manuellStatusRepository = new ManuellStatusRepository(db, transactor);
 
+        DkifClient dkifClient = new DkifClient() {
+            @Override
+            public Optional<DkifKontaktinfo> hentKontaktInfo(Fnr fnr) {
+                return Optional.empty();
+            }
+
+            @Override
+            public HealthCheckResult checkHealth() {
+                return null;
+            }
+        };
+
+        ManuellStatusService manuellStatusService = new ManuellStatusService(
+                authService,
+                manuellStatusRepository,
+                null,
+                oppfolgingsStatusRepository,
+                dkifClient,
+                null,
+                transactor
+        );
+
         oppfolgingService = new OppfolgingService(
-                mock(KafkaProducerService.class), null, null,
+                mock(KafkaProducerService.class), null,
                 null, null, null, authService,
                 oppfolgingsStatusRepository, oppfolgingsPeriodeRepository,
-                manuellStatusRepository, null,
+                manuellStatusService,
                 null, new EskaleringsvarselRepository(db, transactor),
                 new KvpRepository(db, transactor), new NyeBrukereFeedRepository(db), maalRepository,
                 new BrukerOppslagFlereOppfolgingAktorRepository(db), transactor);
+
+        when(authService.getFnrOrThrow(AKTOR_ID)).thenReturn(FNR);
     }
 
     @Test
@@ -214,6 +241,7 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
                         .setDato(ZonedDateTime.now())
                         .setBegrunnelse("Test")
                         .setOpprettetAv(KodeverkBruker.SYSTEM));
+        
         maalRepository.opprett(new MalData().setAktorId(AKTOR_ID.get()).setMal(maal).setEndretAv("bruker").setDato(ZonedDateTime.now()));
         Oppfolging oppfolging = hentOppfolging(AKTOR_ID).get();
         assertThat(oppfolging.isUnderOppfolging(), is(true));

@@ -8,7 +8,6 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt.WSYtelseskontrakt;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeRequest;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeResponse;
-import no.nav.veilarboppfolging.client.dkif.DkifClient;
 import no.nav.veilarboppfolging.client.dkif.DkifKontaktinfo;
 import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktClient;
 import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktMapper;
@@ -18,7 +17,10 @@ import no.nav.veilarboppfolging.domain.ArenaOppfolgingTilstand;
 import no.nav.veilarboppfolging.domain.AvslutningStatusData;
 import no.nav.veilarboppfolging.domain.OppfolgingStatusData;
 import no.nav.veilarboppfolging.domain.Oppfolgingsperiode;
-import no.nav.veilarboppfolging.repository.*;
+import no.nav.veilarboppfolging.repository.KvpRepository;
+import no.nav.veilarboppfolging.repository.NyeBrukereFeedRepository;
+import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
+import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
 import no.nav.veilarboppfolging.test.DbTestUtils;
 import no.nav.veilarboppfolging.test.IsolatedDatabaseTest;
 import no.nav.veilarboppfolging.utils.DateUtils;
@@ -53,7 +55,6 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
     private ArenaOppfolgingTilstand arenaOppfolgingTilstand;
 
-    private DkifClient dkifClient = mock(DkifClient.class);
     private AuthService authService = mock(AuthService.class);
     private KafkaProducerService kafkaProducerService = mock(KafkaProducerService.class);
     private YtelseskontraktClient ytelseskontraktClient = mock(YtelseskontraktClient.class);
@@ -63,10 +64,10 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     private KvpService kvpService = mock(KvpService.class);
     private KvpRepository kvpRepository = mock(KvpRepository.class);
     private MetricsService metricsService = mock(MetricsService.class);
+    private ManuellStatusService manuellStatusService = mock(ManuellStatusService.class);
 
     private OppfolgingsStatusRepository oppfolgingsStatusRepository;
     private OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
-    private ManuellStatusRepository manuellStatusRepository;
     private OppfolgingService oppfolgingService;
 
     @Before
@@ -76,19 +77,16 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         arenaOppfolgingTilstand = new ArenaOppfolgingTilstand();
         oppfolgingsStatusRepository = new OppfolgingsStatusRepository(db);
         oppfolgingsPeriodeRepository = new OppfolgingsPeriodeRepository(db, transactor);
-        manuellStatusRepository = new ManuellStatusRepository(db, transactor);
 
         oppfolgingService = new OppfolgingService(kafkaProducerService,
                 new YtelserOgAktiviteterService(ytelseskontraktClient),
-                dkifClient,
                 kvpService,
                 metricsService,
                 arenaOppfolgingService,
                 authService,
                 oppfolgingsStatusRepository,
                 oppfolgingsPeriodeRepository,
-                manuellStatusRepository,
-                mock(ManuellStatusService.class),
+                manuellStatusService,
                 eskaleringService,
                 null,
                 kvpRepository,
@@ -100,9 +98,11 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         gittArenaOppfolgingStatus("", "");
 
         when(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID);
+        when(authService.getFnrOrThrow(AKTOR_ID)).thenReturn(FNR);
+
         when(arenaOppfolgingService.hentOppfolgingTilstand(FNR)).thenReturn(Optional.of(arenaOppfolgingTilstand));
         when(ytelseskontraktClient.hentYtelseskontraktListe(any())).thenReturn(mock(YtelseskontraktResponse.class));
-        when(dkifClient.hentKontaktInfo(FNR)).thenReturn(new DkifKontaktinfo());
+        when(manuellStatusService.hentDkifKontaktinfo(FNR)).thenReturn(new DkifKontaktinfo());
     }
 
     @Test
@@ -305,7 +305,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     }
 
     @Test
-    public void kanIkkeAvslutteNarManIkkeErUnderOppfolging() throws Exception {
+    public void kanIkkeAvslutteNarManIkkeErUnderOppfolging() {
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
         gittYtelserMedStatus();
 
@@ -315,7 +315,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     }
 
     @Test
-    public void kanIkkeAvslutteNarManIkkeErUnderOppfolgingIArena() throws Exception {
+    public void kanIkkeAvslutteNarManIkkeErUnderOppfolgingIArena() {
         oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
         assertUnderOppfolgingLagret(AKTOR_ID);
 
@@ -328,7 +328,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     }
 
     @Test
-    public void kanAvslutteMedVarselOmAktiveYtelser() throws Exception {
+    public void kanAvslutteMedVarselOmAktiveYtelser() {
         oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
         assertUnderOppfolgingLagret(AKTOR_ID);
 
@@ -360,6 +360,24 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         assertUnderOppfolgingLagret(AKTOR_ID);
 
         assertTrue(oppfolgingService.underOppfolgingNiva3(FNR));
+    }
+
+    @Test
+    public void startOppfolgingHvisIkkeAlleredeStartet__skal_opprette_ikke_opprette_manuell_status_hvis_ikke_reservert_i_krr() {
+        gittReservasjonIKrr(false);
+
+        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
+
+        verify(manuellStatusService, never()).settBrukerTilManuellGrunnetReservasjonIKRR(any());
+    }
+
+    @Test
+    public void startOppfolgingHvisIkkeAlleredeStartet__skal_opprette_manuell_status_hvis_reservert_i_krr() {
+        gittReservasjonIKrr(true);
+
+        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
+
+        verify(manuellStatusService, times(1)).settBrukerTilManuellGrunnetReservasjonIKRR(AKTOR_ID);
     }
 
     private void assertUnderOppfolgingLagret(AktorId aktorId) {
@@ -407,7 +425,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         kontaktinfo.setKanVarsles(false);
         kontaktinfo.setReservert(reservert);
 
-        when(dkifClient.hentKontaktInfo(FNR)).thenReturn(kontaktinfo);
+        when(manuellStatusService.hentDkifKontaktinfo(FNR)).thenReturn(kontaktinfo);
     }
 
     private void gittYtelserMedStatus(String... statuser) {

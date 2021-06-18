@@ -17,6 +17,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.ZonedDateTime;
+import java.util.List;
+import java.util.Optional;
 
 import static no.nav.veilarboppfolging.domain.KodeverkBruker.SYSTEM;
 
@@ -63,6 +65,14 @@ public class ManuellStatusService {
                 .orElse(false);
     }
 
+    public Optional<ManuellStatus> hentManuellStatus(long manuellStatusId) {
+        return Optional.ofNullable(manuellStatusRepository.fetch(manuellStatusId));
+    }
+
+    public List<ManuellStatus> hentManuellStatusHistorikk(AktorId aktorId) {
+        return manuellStatusRepository.history(aktorId);
+    }
+
     /**
      * Gjør en sjekk i DKIF om bruker er reservert.
      * Hvis bruker er reservert så sett manuell status på bruker hvis det ikke allerede er gjort.
@@ -72,24 +82,29 @@ public class ManuellStatusService {
     public void synkroniserManuellStatusMedDkif(Fnr fnr) {
         AktorId aktorId = authService.getAktorIdOrThrow(fnr);
 
-        // Bruker er allerede manuell, trenger ikke å sjekke i DKIF
+        DkifKontaktinfo dkifKontaktinfo = hentDkifKontaktinfo(fnr);
+
+        if (dkifKontaktinfo.isReservert()) {
+            settBrukerTilManuellGrunnetReservasjonIKRR(aktorId);
+        }
+    }
+
+    public void settBrukerTilManuellGrunnetReservasjonIKRR(AktorId aktorId) {
+        // Hvis bruker allerede er manuell så trenger vi ikke å sette status på nytt
         if (erManuell(aktorId)) {
+            log.info("Bruker er allerede manuell og trenger ikke å oppdateres med reservasjon fra KRR");
             return;
         }
 
-        DkifKontaktinfo dkifKontaktinfo = dkifClient.hentKontaktInfo(fnr);
+        var manuellStatus = new ManuellStatus()
+                .setAktorId(aktorId.get())
+                .setManuell(true)
+                .setDato(ZonedDateTime.now())
+                .setBegrunnelse("Brukeren er reservert i Kontakt- og reservasjonsregisteret")
+                .setOpprettetAv(SYSTEM);
 
-        if (dkifKontaktinfo.isReservert()) {
-            var manuellStatus = new ManuellStatus()
-                    .setAktorId(aktorId.get())
-                    .setManuell(true)
-                    .setDato(ZonedDateTime.now())
-                    .setBegrunnelse("Brukeren er reservert i Kontakt- og reservasjonsregisteret")
-                    .setOpprettetAv(SYSTEM);
-
-            log.info("Bruker er reservert i KRR, setter bruker aktorId={} til manuell", aktorId);
-            oppdaterManuellStatus(aktorId, manuellStatus);
-        }
+        log.info("Bruker er reservert i KRR, setter bruker aktorId={} til manuell", aktorId);
+        oppdaterManuellStatus(aktorId, manuellStatus);
     }
 
     public void settDigitalBruker(Fnr fnr) {
@@ -108,7 +123,7 @@ public class ManuellStatusService {
         }
 
         OppfolgingTable oppfolging = oppfolgingsStatusRepository.fetch(aktorId);
-        DkifKontaktinfo kontaktinfo = dkifClient.hentKontaktInfo(fnr);
+        DkifKontaktinfo kontaktinfo = hentDkifKontaktinfo(fnr);
 
         boolean erUnderOppfolging = oppfolging.isUnderOppfolging();
         boolean gjeldendeErManuell = erManuell(aktorId);
@@ -125,6 +140,14 @@ public class ManuellStatusService {
 
             oppdaterManuellStatus(aktorId, nyStatus);
         }
+    }
+
+    public DkifKontaktinfo hentDkifKontaktinfo(Fnr fnr){
+        return dkifClient.hentKontaktInfo(fnr)
+                .orElseGet(() -> new DkifKontaktinfo()
+                .setPersonident(fnr.get())
+                .setKanVarsles(true)
+                .setReservert(false));
     }
 
     private void oppdaterManuellStatus(AktorId aktorId, ManuellStatus manuellStatus) {

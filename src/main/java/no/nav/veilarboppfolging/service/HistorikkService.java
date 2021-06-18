@@ -37,7 +37,7 @@ public class HistorikkService {
 
     private final OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
 
-    private final ManuellStatusRepository manuellStatusRepository;
+    private final ManuellStatusService manuellStatusService;
 
     @Autowired
     public HistorikkService(
@@ -47,7 +47,7 @@ public class HistorikkService {
             OppfolgingsenhetHistorikkRepository oppfolgingsenhetHistorikkRepository,
             EskaleringsvarselRepository eskaleringsvarselRepository,
             OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository,
-            ManuellStatusRepository manuellStatusRepository
+            ManuellStatusService manuellStatusService
     ) {
         this.authService = authService;
         this.kvpRepository = kvpRepository;
@@ -55,7 +55,7 @@ public class HistorikkService {
         this.oppfolgingsenhetHistorikkRepository = oppfolgingsenhetHistorikkRepository;
         this.eskaleringsvarselRepository = eskaleringsvarselRepository;
         this.oppfolgingsPeriodeRepository = oppfolgingsPeriodeRepository;
-        this.manuellStatusRepository = manuellStatusRepository;
+        this.manuellStatusService = manuellStatusService;
     }
 
     public List<InnstillingsHistorikk> hentInstillingsHistorikk(Fnr fnr) {
@@ -178,7 +178,7 @@ public class HistorikkService {
                 .stream()
                 .map(this::tilDTO);
 
-        Stream<InnstillingsHistorikk> manuellInnstillingHistorikk = manuellStatusRepository.history(aktorId)
+        Stream<InnstillingsHistorikk> manuellInnstillingHistorikk = manuellStatusService.hentManuellStatusHistorikk(aktorId)
                 .stream()
                 .map(this::tilDTO)
                 .filter((historikk) -> KvpUtils.sjekkTilgangGittKvp(authService, kvpHistorikk, historikk::getDato));
