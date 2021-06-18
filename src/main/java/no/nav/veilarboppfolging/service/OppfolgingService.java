@@ -23,7 +23,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -32,7 +31,6 @@ import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 import static no.nav.veilarboppfolging.config.ApplicationConfig.SYSTEM_USER_NAME;
-import static no.nav.veilarboppfolging.domain.KodeverkBruker.SYSTEM;
 import static no.nav.veilarboppfolging.utils.ArenaUtils.*;
 import static no.nav.veilarboppfolging.utils.KvpUtils.sjekkTilgangGittKvp;
 
@@ -224,12 +222,18 @@ public class OppfolgingService {
     }
 
     public UnderOppfolgingDTO oppfolgingData(Fnr fnr) {
+        AktorId aktorId = authService.getAktorIdOrThrow(fnr);
+
         authService.sjekkLesetilgangMedFnr(fnr);
 
         return getOppfolgingStatus(fnr)
                 .map(oppfolgingsstatus -> {
                     boolean isUnderOppfolging = oppfolgingsstatus.isUnderOppfolging();
-                    return new UnderOppfolgingDTO().setUnderOppfolging(isUnderOppfolging).setErManuell(isUnderOppfolging && manuellStatusService.erManuell(oppfolgingsstatus));
+                    boolean erManuell = manuellStatusService.erManuell(aktorId);
+
+                    return new UnderOppfolgingDTO()
+                            .setUnderOppfolging(isUnderOppfolging)
+                            .setErManuell(isUnderOppfolging && erManuell);
                 })
                 .orElse(new UnderOppfolgingDTO().setUnderOppfolging(false).setErManuell(false));
     }
@@ -256,22 +260,13 @@ public class OppfolgingService {
         Oppfolging oppfolging = hentOppfolging(aktorId)
                 .orElse(new Oppfolging().setAktorId(aktorId.get()).setUnderOppfolging(false));
 
-        boolean erManuell = ofNullable(oppfolging.getGjeldendeManuellStatus())
-                .map(ManuellStatus::isManuell)
-                .orElse(false);
+        if (oppfolging.isUnderOppfolging()) {
+            manuellStatusService.synkroniserManuellStatusMedDkif(fnr);
+        }
+
+        boolean erManuell = manuellStatusService.erManuell(aktorId);
 
         DkifKontaktinfo dkifKontaktinfo = dkifClient.hentKontaktInfo(fnr);
-
-        if (oppfolging.isUnderOppfolging() && !erManuell && dkifKontaktinfo.isReservert()) {
-            manuellStatusRepository.create(
-                    new ManuellStatus()
-                            .setAktorId(aktorId.get())
-                            .setManuell(true)
-                            .setDato(ZonedDateTime.now())
-                            .setBegrunnelse("Brukeren er reservert i Kontakt- og reservasjonsregisteret")
-                            .setOpprettetAv(SYSTEM)
-            );
-        }
 
         // TODO: Burde kanskje heller feile istedenfor å bruke Optional
         Optional<ArenaOppfolgingTilstand> maybeArenaOppfolging = arenaOppfolgingService.hentOppfolgingTilstand(fnr);
@@ -438,8 +433,7 @@ public class OppfolgingService {
         });
     }
 
-    private List<Oppfolgingsperiode> populerKvpPerioder
-            (List<Oppfolgingsperiode> oppfolgingsPerioder, List<Kvp> kvpPerioder) {
+    private List<Oppfolgingsperiode> populerKvpPerioder(List<Oppfolgingsperiode> oppfolgingsPerioder, List<Kvp> kvpPerioder) {
         return oppfolgingsPerioder.stream()
                 .map(periode -> periode.toBuilder().kvpPerioder(
                         kvpPerioder.stream()
@@ -500,8 +494,11 @@ public class OppfolgingService {
         });
     }
 
-    private void sjekkOgOppdaterBrukerDirekteFraArena(Fnr fnr, ArenaOppfolgingTilstand
-            arenaOppfolgingTilstand, OppfolgingTable oppfolging) {
+    private void sjekkOgOppdaterBrukerDirekteFraArena(
+            Fnr fnr,
+            ArenaOppfolgingTilstand arenaOppfolgingTilstand,
+            OppfolgingTable oppfolging
+    ) {
         Optional<ArenaOppfolgingTilstand> maybeTilstandDirekteFraArena = arenaOppfolgingTilstand.isDirekteFraArena()
                 ? of(arenaOppfolgingTilstand)
                 : arenaOppfolgingService.hentOppfolgingTilstandDirekteFraArena(fnr);

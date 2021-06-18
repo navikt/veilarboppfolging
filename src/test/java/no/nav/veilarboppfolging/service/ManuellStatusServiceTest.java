@@ -60,7 +60,9 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
                 arenaOppfolgingService,
                 oppfolgingsStatusRepository,
                 dkifClient,
-                kafkaProducerService);
+                kafkaProducerService,
+                transactor
+        );
     }
 
     @Test
