@@ -114,5 +114,7 @@ class OppfolgingControllerIntegrationTest {
 
         when(authContextHolder.erSystemBruker()).thenReturn(true);
         when(aktorOppslagClient.hentAktorId(FNR)).thenReturn(AKTOR_ID);
+        when(aktorOppslagClient.hentFnr(AKTOR_ID)).thenReturn(FNR);
+
     }
 }

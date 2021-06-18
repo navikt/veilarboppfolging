@@ -98,6 +98,8 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         gittArenaOppfolgingStatus("", "");
 
         when(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID);
+        when(authService.getFnrOrThrow(AKTOR_ID)).thenReturn(FNR);
+
         when(arenaOppfolgingService.hentOppfolgingTilstand(FNR)).thenReturn(Optional.of(arenaOppfolgingTilstand));
         when(ytelseskontraktClient.hentYtelseskontraktListe(any())).thenReturn(mock(YtelseskontraktResponse.class));
         when(manuellStatusService.hentDkifKontaktinfo(FNR)).thenReturn(new DkifKontaktinfo());
@@ -303,7 +305,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     }
 
     @Test
-    public void kanIkkeAvslutteNarManIkkeErUnderOppfolging() throws Exception {
+    public void kanIkkeAvslutteNarManIkkeErUnderOppfolging() {
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
         gittYtelserMedStatus();
 
@@ -313,7 +315,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     }
 
     @Test
-    public void kanIkkeAvslutteNarManIkkeErUnderOppfolgingIArena() throws Exception {
+    public void kanIkkeAvslutteNarManIkkeErUnderOppfolgingIArena() {
         oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
         assertUnderOppfolgingLagret(AKTOR_ID);
 
@@ -326,7 +328,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     }
 
     @Test
-    public void kanAvslutteMedVarselOmAktiveYtelser() throws Exception {
+    public void kanAvslutteMedVarselOmAktiveYtelser() {
         oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
         assertUnderOppfolgingLagret(AKTOR_ID);
 
@@ -358,6 +360,24 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         assertUnderOppfolgingLagret(AKTOR_ID);
 
         assertTrue(oppfolgingService.underOppfolgingNiva3(FNR));
+    }
+
+    @Test
+    public void startOppfolgingHvisIkkeAlleredeStartet__skal_opprette_ikke_opprette_manuell_status_hvis_ikke_reservert_i_krr() {
+        gittReservasjonIKrr(false);
+
+        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
+
+        verify(manuellStatusService, never()).settBrukerTilManuellGrunnetReservasjonIKRR(any());
+    }
+
+    @Test
+    public void startOppfolgingHvisIkkeAlleredeStartet__skal_opprette_manuell_status_hvis_reservert_i_krr() {
+        gittReservasjonIKrr(true);
+
+        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
+
+        verify(manuellStatusService, times(1)).settBrukerTilManuellGrunnetReservasjonIKRR(AKTOR_ID);
     }
 
     private void assertUnderOppfolgingLagret(AktorId aktorId) {
