@@ -3,10 +3,10 @@ package no.nav.veilarboppfolging.service;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.controller.response.InnstillingsHistorikk;
-import no.nav.veilarboppfolging.domain.EskaleringsvarselData;
-import no.nav.veilarboppfolging.domain.Kvp;
-import no.nav.veilarboppfolging.domain.ManuellStatus;
 import no.nav.veilarboppfolging.repository.*;
+import no.nav.veilarboppfolging.repository.entity.EskaleringsvarselEntity;
+import no.nav.veilarboppfolging.repository.entity.KvpEntity;
+import no.nav.veilarboppfolging.repository.entity.ManuellStatusEntity;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -100,8 +100,8 @@ public class HistorikkServiceTest {
     }
 
     private void gitt_eskaleringsvarsel_historikk() {
-        List<EskaleringsvarselData> eskaleringsvarsel = asList(
-                EskaleringsvarselData.builder()
+        List<EskaleringsvarselEntity> eskaleringsvarsel = asList(
+                EskaleringsvarselEntity.builder()
                         .aktorId(AKTOR_ID.get())
                         .varselId(1L)
                         .opprettetDato(BEFORE_KVP)
@@ -109,7 +109,7 @@ public class HistorikkServiceTest {
                         .avsluttetDato(ALSO_BEFORE_KVP)
                         .avsluttetBegrunnelse("OUTSIDE_KVP")
                         .build(),
-                EskaleringsvarselData.builder()
+                EskaleringsvarselEntity.builder()
                         .aktorId(AKTOR_ID.get())
                         .varselId(2L)
                         .opprettetDato(BEFORE_KVP)
@@ -117,7 +117,7 @@ public class HistorikkServiceTest {
                         .avsluttetDato(IN_KVP)
                         .avsluttetBegrunnelse("IN_KVP")
                         .build(),
-                EskaleringsvarselData.builder()
+                EskaleringsvarselEntity.builder()
                         .aktorId(AKTOR_ID.get())
                         .varselId(3L)
                         .opprettetDato(IN_KVP)
@@ -131,33 +131,33 @@ public class HistorikkServiceTest {
     }
 
     private void gitt_manuell_hitsorikk() {
-        List<ManuellStatus> manuellStatus = asList(
-                new ManuellStatus()
+        List<ManuellStatusEntity> manuellStatus = asList(
+                new ManuellStatusEntity()
                         .setAktorId(AKTOR_ID.get())
                         .setDato(BEFORE_KVP)
                         .setBegrunnelse("OUTSIDE_KVP")
                         .setManuell(true),
-                new ManuellStatus()
+                new ManuellStatusEntity()
                         .setAktorId(AKTOR_ID.get())
                         .setDato(BEFORE_KVP)
                         .setBegrunnelse("OUTSIDE_KVP")
                         .setManuell(false),
-                new ManuellStatus()
+                new ManuellStatusEntity()
                         .setAktorId(AKTOR_ID.get())
                         .setDato(IN_KVP)
                         .setBegrunnelse("IN_KVP")
                         .setManuell(true),
-                new ManuellStatus()
+                new ManuellStatusEntity()
                         .setAktorId(AKTOR_ID.get())
                         .setDato(IN_KVP)
                         .setBegrunnelse("IN_KVP")
                         .setManuell(false),
-                new ManuellStatus()
+                new ManuellStatusEntity()
                         .setAktorId(AKTOR_ID.get())
                         .setDato(AFTER_KVP)
                         .setBegrunnelse("OUTSIDE_KVP")
                         .setManuell(true),
-                new ManuellStatus()
+                new ManuellStatusEntity()
                         .setAktorId(AKTOR_ID.get())
                         .setDato(AFTER_KVP)
                         .setBegrunnelse("OUTSIDE_KVP")
@@ -168,8 +168,8 @@ public class HistorikkServiceTest {
     }
 
     private void gitt_kvp() {
-        List<Kvp> kvp = singletonList(
-                Kvp.builder()
+        List<KvpEntity> kvp = singletonList(
+                KvpEntity.builder()
                         .aktorId(AKTOR_ID.get())
                         .kvpId(1L)
                         .opprettetDato(KVP_START)

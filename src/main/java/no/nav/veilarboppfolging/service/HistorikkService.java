@@ -5,8 +5,8 @@ import lombok.val;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.controller.response.InnstillingsHistorikk;
-import no.nav.veilarboppfolging.domain.*;
 import no.nav.veilarboppfolging.repository.*;
+import no.nav.veilarboppfolging.repository.entity.*;
 import no.nav.veilarboppfolging.utils.KvpUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,8 +19,8 @@ import java.util.stream.Stream;
 
 import static java.util.Collections.singletonList;
 import static no.nav.veilarboppfolging.controller.response.InnstillingsHistorikk.Type.*;
-import static no.nav.veilarboppfolging.domain.KodeverkBruker.NAV;
-import static no.nav.veilarboppfolging.domain.KodeverkBruker.SYSTEM;
+import static no.nav.veilarboppfolging.repository.enums.KodeverkBruker.NAV;
+import static no.nav.veilarboppfolging.repository.enums.KodeverkBruker.SYSTEM;
 
 @Service
 public class HistorikkService {
@@ -64,20 +64,20 @@ public class HistorikkService {
     }
 
     @SneakyThrows
-    private boolean harTilgangTilEnhet(Kvp kvp) {
+    private boolean harTilgangTilEnhet(KvpEntity kvp) {
         return authService.harTilgangTilEnhet(kvp.getEnhet());
     }
 
-    private InnstillingsHistorikk tilDTO(VeilederTilordningerData veilederTilordningerData) {
+    private InnstillingsHistorikk tilDTO(VeilederTilordningHistorikkEntity veilederTilordningHistorikk) {
         return InnstillingsHistorikk.builder()
                 .type(VEILEDER_TILORDNET)
-                .begrunnelse("Brukeren er tildelt veileder " +  veilederTilordningerData.getVeileder())
-                .dato(veilederTilordningerData.getSistTilordnet())
+                .begrunnelse("Brukeren er tildelt veileder " +  veilederTilordningHistorikk.getVeileder())
+                .dato(veilederTilordningHistorikk.getSistTilordnet())
                 .opprettetAv(NAV)
                 .build();
     }
 
-    private InnstillingsHistorikk tilDTO(OppfolgingsenhetEndringData oppfolgingsenhetEndringData) {
+    private InnstillingsHistorikk tilDTO(OppfolgingsenhetEndringEntity oppfolgingsenhetEndringData) {
         String enhet = oppfolgingsenhetEndringData.getEnhet();
         return InnstillingsHistorikk.builder()
                 .type(OPPFOLGINGSENHET_ENDRET)
@@ -88,7 +88,7 @@ public class HistorikkService {
                 .build();
     }
 
-    private InnstillingsHistorikk tilDTO(Oppfolgingsperiode oppfolgingsperiode) {
+    private InnstillingsHistorikk tilDTO(OppfolgingsperiodeEntity oppfolgingsperiode) {
         String veilderId = oppfolgingsperiode.getVeileder();
         return InnstillingsHistorikk.builder()
                 .type(AVSLUTTET_OPPFOLGINGSPERIODE)
@@ -99,7 +99,7 @@ public class HistorikkService {
                 .build();
     }
 
-    private InnstillingsHistorikk tilDTO(ManuellStatus historikkData) {
+    private InnstillingsHistorikk tilDTO(ManuellStatusEntity historikkData) {
         return InnstillingsHistorikk.builder()
                 .type(historikkData.isManuell() ? SATT_TIL_MANUELL : SATT_TIL_DIGITAL)
                 .begrunnelse(historikkData.getBegrunnelse())
@@ -109,7 +109,7 @@ public class HistorikkService {
                 .build();
     }
 
-    private List<InnstillingsHistorikk> tilDTO(EskaleringsvarselData data) {
+    private List<InnstillingsHistorikk> tilDTO(EskaleringsvarselEntity data) {
         val harAvsluttetEskalering = data.getAvsluttetDato() != null;
 
         val startetEskalering = InnstillingsHistorikk
@@ -138,7 +138,7 @@ public class HistorikkService {
         }
     }
 
-    private List<InnstillingsHistorikk> tilDTO(Kvp kvp) {
+    private List<InnstillingsHistorikk> tilDTO(KvpEntity kvp) {
         InnstillingsHistorikk kvpStart = InnstillingsHistorikk.builder()
                 .type(KVP_STARTET)
                 .begrunnelse(kvp.getOpprettetBegrunnelse())
@@ -161,7 +161,7 @@ public class HistorikkService {
     }
 
     private Stream<Stream<InnstillingsHistorikk>> hentInstillingHistorikk (AktorId aktorId) {
-        List<Kvp> kvpHistorikk = kvpRepository.hentKvpHistorikk(aktorId);
+        List<KvpEntity> kvpHistorikk = kvpRepository.hentKvpHistorikk(aktorId);
 
         Stream <InnstillingsHistorikk> veilederTilordningerInnstillingHistorikk = null;
 

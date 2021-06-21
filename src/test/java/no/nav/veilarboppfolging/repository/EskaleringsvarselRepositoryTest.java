@@ -1,8 +1,8 @@
 package no.nav.veilarboppfolging.repository;
 
 import no.nav.common.types.identer.AktorId;
-import no.nav.veilarboppfolging.domain.EskaleringsvarselData;
-import no.nav.veilarboppfolging.domain.OppfolgingTable;
+import no.nav.veilarboppfolging.repository.entity.EskaleringsvarselEntity;
+import no.nav.veilarboppfolging.repository.entity.OppfolgingEntity;
 import no.nav.veilarboppfolging.test.DbTestUtils;
 import no.nav.veilarboppfolging.test.LocalH2Database;
 import org.junit.Before;
@@ -48,13 +48,13 @@ public class EskaleringsvarselRepositoryTest {
 
         // Create the escalation warning, and test that retrieving
         // the current warning yields the object we just created.
-        eskaleringsvarselRepository.create(EskaleringsvarselData.builder()
+        eskaleringsvarselRepository.create(EskaleringsvarselEntity.builder()
                 .aktorId(AKTOR_ID.get())
                 .opprettetAv(SAKSBEHANDLER_ID)
                 .opprettetBegrunnelse(BEGRUNNELSE)
                 .build());
 
-        EskaleringsvarselData e = gjeldendeEskaleringsVarsel(AKTOR_ID);
+        EskaleringsvarselEntity e = gjeldendeEskaleringsVarsel(AKTOR_ID);
 
         assertThat(e.getAktorId(), is(AKTOR_ID.get()));
         assertThat(e.getOpprettetAv(), is(SAKSBEHANDLER_ID));
@@ -73,11 +73,11 @@ public class EskaleringsvarselRepositoryTest {
      */
     @Test
     public void testHistory() {
-        List<EskaleringsvarselData> list;
-        EskaleringsvarselData e;
+        List<EskaleringsvarselEntity> list;
+        EskaleringsvarselEntity e;
 
         for (int i = 0; i < NUM_ITEMS; i++) {
-            e = EskaleringsvarselData.builder()
+            e = EskaleringsvarselEntity.builder()
                     .aktorId(AKTOR_ID.get())
                     .opprettetAv(SAKSBEHANDLER_ID)
                     .opprettetBegrunnelse(BEGRUNNELSE)
@@ -89,8 +89,8 @@ public class EskaleringsvarselRepositoryTest {
         assertEquals(list.size(), NUM_ITEMS);
     }
 
-    private EskaleringsvarselData gjeldendeEskaleringsVarsel(AktorId aktorId) {
-        OppfolgingTable oppfolging = oppfolgingsStatusRepository.fetch(aktorId);
+    private EskaleringsvarselEntity gjeldendeEskaleringsVarsel(AktorId aktorId) {
+        OppfolgingEntity oppfolging = oppfolgingsStatusRepository.fetch(aktorId);
         return eskaleringsvarselRepository.fetch(oppfolging.getGjeldendeEskaleringsvarselId());
     }
 

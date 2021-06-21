@@ -1,13 +1,14 @@
-package no.nav.veilarboppfolging.domain;
+package no.nav.veilarboppfolging.repository.entity;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
+import no.nav.veilarboppfolging.repository.enums.KodeverkBruker;
 
 import java.time.ZonedDateTime;
 
 @Data
 @Accessors(chain = true)
-public class ManuellStatus {
+public class ManuellStatusEntity {
     private long id;
     private String aktorId;
     private boolean manuell;

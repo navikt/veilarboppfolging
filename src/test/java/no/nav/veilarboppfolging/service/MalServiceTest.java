@@ -2,12 +2,12 @@ package no.nav.veilarboppfolging.service;
 
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.veilarboppfolging.domain.Kvp;
-import no.nav.veilarboppfolging.domain.MalData;
-import no.nav.veilarboppfolging.domain.OppfolgingTable;
 import no.nav.veilarboppfolging.repository.KvpRepository;
 import no.nav.veilarboppfolging.repository.MaalRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
+import no.nav.veilarboppfolging.repository.entity.KvpEntity;
+import no.nav.veilarboppfolging.repository.entity.MaalEntity;
+import no.nav.veilarboppfolging.repository.entity.OppfolgingEntity;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -74,7 +74,7 @@ public class MalServiceTest {
     @Before
     public void setup() {
         when(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID);
-        when(oppfolgingsStatusRepository.fetch(AKTOR_ID)).thenReturn(new OppfolgingTable().setGjeldendeMaalId(MAL_ID));
+        when(oppfolgingsStatusRepository.fetch(AKTOR_ID)).thenReturn(new OppfolgingEntity().setGjeldendeMaalId(MAL_ID));
         when(maalRepository.fetch(MAL_ID)).thenReturn(mal(BEFORE_KVP));
         doAnswer((mock) -> {
             Consumer consumer = mock.getArgument(0);
@@ -97,22 +97,22 @@ public class MalServiceTest {
         when(kvpRepositoryMock.gjeldendeKvp(any())).thenReturn(KVP_ID);
         when(kvpRepositoryMock.fetch(anyLong())).thenReturn(aktivKvp());
         when(authService.harTilgangTilEnhetMedSperre(ENHET)).thenReturn(true);
-        MalData resultat = malService.oppdaterMal("mal", FNR, VEILEDER);
+        MaalEntity resultat = malService.oppdaterMal("mal", FNR, VEILEDER);
 
         assertEquals("mal", resultat.getMal());
     }
 
     @Test
     public void gjeldendeMal_ikke_satt() {
-        when(oppfolgingsStatusRepository.fetch(AKTOR_ID)).thenReturn(new OppfolgingTable().setGjeldendeMaalId(0));
+        when(oppfolgingsStatusRepository.fetch(AKTOR_ID)).thenReturn(new OppfolgingEntity().setGjeldendeMaalId(0));
 
-        MalData malData = malService.hentMal(FNR);
+        MaalEntity malData = malService.hentMal(FNR);
         assertThat(malData.getId()).isEqualTo(0L);
     }
 
     @Test
     public void hent_mal_ingen_kvp() {
-        MalData malData = malService.hentMal(FNR);
+        MaalEntity malData = malService.hentMal(FNR);
         assertThat(malData.getId()).isEqualTo(MAL_ID);
     }
 
@@ -120,7 +120,7 @@ public class MalServiceTest {
     public void hent_mal_opprettet_for_kvp() {
         when(kvpRepositoryMock.hentKvpHistorikk(AKTOR_ID)).thenReturn(kvpHistorikk());
 
-        MalData malData = malService.hentMal(FNR);
+        MaalEntity malData = malService.hentMal(FNR);
         assertThat(malData.getId()).isEqualTo(MAL_ID);
     }
 
@@ -130,7 +130,7 @@ public class MalServiceTest {
         when(maalRepository.fetch(MAL_ID)).thenReturn(mal(IN_KVP));
         when(authService.harTilgangTilEnhetMedSperre(ENHET)).thenReturn(false);
 
-        MalData malData = malService.hentMal(FNR);
+        MaalEntity malData = malService.hentMal(FNR);
         assertThat(malData.getId()).isEqualTo(0L);
     }
 
@@ -140,7 +140,7 @@ public class MalServiceTest {
         when(maalRepository.fetch(MAL_ID)).thenReturn(mal(IN_KVP));
         when(authService.harTilgangTilEnhetMedSperre(ENHET)).thenReturn(true);
 
-        MalData malData = malService.hentMal(FNR);
+        MaalEntity malData = malService.hentMal(FNR);
         assertThat(malData.getId()).isEqualTo(MAL_ID);
     }
 
@@ -150,8 +150,8 @@ public class MalServiceTest {
         when(authService.harTilgangTilEnhetMedSperre(ENHET)).thenReturn(true);
         when(maalRepository.aktorMal(AKTOR_ID)).thenReturn(malList());
 
-        List<MalData> malData = malService.hentMalList(FNR);
-        List<Long> ids = malData.stream().map(MalData::getId).collect(toList());
+        List<MaalEntity> malData = malService.hentMalList(FNR);
+        List<Long> ids = malData.stream().map(MaalEntity::getId).collect(toList());
         assertThat(ids).containsExactly(1L, 2L, 3L);
     }
 
@@ -161,37 +161,37 @@ public class MalServiceTest {
         when(authService.harTilgangTilEnhetMedSperre(ENHET)).thenReturn(false);
         when(maalRepository.aktorMal(AKTOR_ID)).thenReturn(malList());
 
-        List<MalData> malData = malService.hentMalList(FNR);
-        List<Long> ids = malData.stream().map(MalData::getId).collect(toList());
+        List<MaalEntity> malData = malService.hentMalList(FNR);
+        List<Long> ids = malData.stream().map(MaalEntity::getId).collect(toList());
         assertThat(ids).containsExactly(1L, 3L);
     }
 
-    private List<MalData> malList() {
-        return asList(new MalData()
+    private List<MaalEntity> malList() {
+        return asList(new MaalEntity()
                         .setId(1L)
                         .setAktorId(AKTOR_ID.get())
                         .setDato(BEFORE_KVP),
-                new MalData()
+                new MaalEntity()
                         .setId(2L)
                         .setAktorId(AKTOR_ID.get())
                         .setDato(IN_KVP),
-                new MalData()
+                new MaalEntity()
                         .setId(3L)
                         .setAktorId(AKTOR_ID.get())
                         .setDato(AFTER_KVP)
         );
     }
 
-    private Kvp aktivKvp() {
-        return Kvp.builder()
+    private KvpEntity aktivKvp() {
+        return KvpEntity.builder()
                 .kvpId(KVP_ID)
                 .enhet(ENHET)
                 .opprettetDato(START_KVP)
                 .build();
     }
 
-    private List<Kvp> kvpHistorikk() {
-        return singletonList(Kvp.builder()
+    private List<KvpEntity> kvpHistorikk() {
+        return singletonList(KvpEntity.builder()
                 .kvpId(KVP_ID)
                 .enhet(ENHET)
                 .opprettetDato(START_KVP)
@@ -199,8 +199,8 @@ public class MalServiceTest {
                 .build());
     }
 
-    private MalData mal(ZonedDateTime dateTime) {
-        return new MalData()
+    private MaalEntity mal(ZonedDateTime dateTime) {
+        return new MaalEntity()
                 .setId(MAL_ID)
                 .setAktorId(AKTOR_ID.get())
                 .setDato(dateTime);

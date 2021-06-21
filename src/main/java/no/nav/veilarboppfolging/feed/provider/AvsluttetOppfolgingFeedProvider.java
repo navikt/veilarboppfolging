@@ -1,9 +1,9 @@
 package no.nav.veilarboppfolging.feed.provider;
 
-import no.nav.veilarboppfolging.domain.AvsluttetOppfolgingFeedData;
 import no.nav.veilarboppfolging.feed.cjm.common.FeedElement;
 import no.nav.veilarboppfolging.feed.cjm.producer.FeedProvider;
 import no.nav.veilarboppfolging.feed.domain.AvsluttetOppfolgingFeedDTO;
+import no.nav.veilarboppfolging.repository.entity.AvsluttetOppfolgingFeedEntity;
 import no.nav.veilarboppfolging.service.OppfolgingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -31,15 +31,15 @@ public class AvsluttetOppfolgingFeedProvider implements FeedProvider<AvsluttetOp
                 .hentAvsluttetOppfolgingEtterDato(timestamp, pageSize)
                 .stream()
                 .map(o -> new FeedElement<AvsluttetOppfolgingFeedDTO>()
-                        .setId(ZonedDateTime.ofInstant(o.oppdatert.toInstant(), ZoneId.systemDefault()).toString())
+                        .setId(ZonedDateTime.ofInstant(o.getOppdatert().toInstant(), ZoneId.systemDefault()).toString())
                         .setElement(tilDTO(o))
                 );
     }
 
-    private AvsluttetOppfolgingFeedDTO tilDTO(AvsluttetOppfolgingFeedData avsluttetOppfolgingFeedData) {
+    private AvsluttetOppfolgingFeedDTO tilDTO(AvsluttetOppfolgingFeedEntity avsluttetOppfolgingFeedData) {
         return new AvsluttetOppfolgingFeedDTO()
-                .setAktoerid(avsluttetOppfolgingFeedData.aktoerid)
-                .setOppdatert(avsluttetOppfolgingFeedData.oppdatert)
-                .setSluttdato(avsluttetOppfolgingFeedData.sluttdato);
+                .setAktoerid(avsluttetOppfolgingFeedData.getAktoerid())
+                .setOppdatert(avsluttetOppfolgingFeedData.getOppdatert())
+                .setSluttdato(avsluttetOppfolgingFeedData.getSluttdato());
     }
 }

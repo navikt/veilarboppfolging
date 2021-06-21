@@ -1,12 +1,11 @@
 package no.nav.veilarboppfolging.utils;
 
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolging;
-import no.nav.veilarboppfolging.domain.ArenaOppfolgingTilstand;
+import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolgingTilstand;
 
 import java.util.HashSet;
 import java.util.Set;
 
-import static java.lang.Boolean.TRUE;
 import static java.util.Arrays.asList;
 
 public class ArenaUtils {

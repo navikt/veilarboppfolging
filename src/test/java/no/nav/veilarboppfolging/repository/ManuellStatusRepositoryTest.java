@@ -1,9 +1,9 @@
 package no.nav.veilarboppfolging.repository;
 
 import no.nav.common.types.identer.AktorId;
-import no.nav.veilarboppfolging.domain.KodeverkBruker;
-import no.nav.veilarboppfolging.domain.ManuellStatus;
-import no.nav.veilarboppfolging.domain.OppfolgingTable;
+import no.nav.veilarboppfolging.repository.entity.ManuellStatusEntity;
+import no.nav.veilarboppfolging.repository.entity.OppfolgingEntity;
+import no.nav.veilarboppfolging.repository.enums.KodeverkBruker;
 import no.nav.veilarboppfolging.test.IsolatedDatabaseTest;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,12 +29,12 @@ public class ManuellStatusRepositoryTest extends IsolatedDatabaseTest {
 
     @Test
     public void fetch__should_return_manuell_status() {
-        ManuellStatus manuellStatus = createManuellStatus(TEST_AKTOR_ID);
+        ManuellStatusEntity manuellStatus = createManuellStatus(TEST_AKTOR_ID);
 
         oppfolgingsStatusRepository.opprettOppfolging(TEST_AKTOR_ID);
         manuellStatusRepository.create(manuellStatus);
 
-        OppfolgingTable oppfolging = oppfolgingsStatusRepository.fetch(TEST_AKTOR_ID);
+        OppfolgingEntity oppfolging = oppfolgingsStatusRepository.fetch(TEST_AKTOR_ID);
 
         assertEquals(manuellStatus, manuellStatusRepository.fetch(oppfolging.getGjeldendeManuellStatusId()));
     }
@@ -46,15 +46,15 @@ public class ManuellStatusRepositoryTest extends IsolatedDatabaseTest {
 
     @Test
     public void history__should_return_all_manuell_statuser_for_user() {
-        ManuellStatus manuellStatus1 = createManuellStatus(TEST_AKTOR_ID)
+        ManuellStatusEntity manuellStatus1 = createManuellStatus(TEST_AKTOR_ID)
                 .setManuell(false)
                 .setDato(ZonedDateTime.now().minusSeconds(10));
 
-        ManuellStatus manuellStatus2 = createManuellStatus(TEST_AKTOR_ID)
+        ManuellStatusEntity manuellStatus2 = createManuellStatus(TEST_AKTOR_ID)
                 .setManuell(true)
                 .setDato(ZonedDateTime.now());
 
-        ManuellStatus manuellStatus3 = createManuellStatus(TEST_AKTOR_ID_2)
+        ManuellStatusEntity manuellStatus3 = createManuellStatus(TEST_AKTOR_ID_2)
                 .setManuell(true)
                 .setDato(ZonedDateTime.now());
 
@@ -77,13 +77,13 @@ public class ManuellStatusRepositoryTest extends IsolatedDatabaseTest {
 
     @Test
     public void hentSisteManuellStatus__should_return_status() {
-        ManuellStatus manuellStatus = createManuellStatus(TEST_AKTOR_ID);
+        ManuellStatusEntity manuellStatus = createManuellStatus(TEST_AKTOR_ID);
 
         oppfolgingsStatusRepository.opprettOppfolging(TEST_AKTOR_ID);
 
         manuellStatusRepository.create(manuellStatus);
 
-        Optional<ManuellStatus> maybeManuellStatus = manuellStatusRepository.hentSisteManuellStatus(TEST_AKTOR_ID);
+        Optional<ManuellStatusEntity> maybeManuellStatus = manuellStatusRepository.hentSisteManuellStatus(TEST_AKTOR_ID);
 
         assertTrue(maybeManuellStatus.isPresent());
         assertEquals(manuellStatus, maybeManuellStatus.get());
@@ -91,11 +91,11 @@ public class ManuellStatusRepositoryTest extends IsolatedDatabaseTest {
 
     @Test
     public void hentSisteManuellStatus__should_return_last_status() {
-        ManuellStatus manuellStatus1 = createManuellStatus(TEST_AKTOR_ID)
+        ManuellStatusEntity manuellStatus1 = createManuellStatus(TEST_AKTOR_ID)
                 .setManuell(false)
                 .setDato(ZonedDateTime.now().minusSeconds(10));
 
-        ManuellStatus manuellStatus2 = createManuellStatus(TEST_AKTOR_ID)
+        ManuellStatusEntity manuellStatus2 = createManuellStatus(TEST_AKTOR_ID)
                 .setManuell(true)
                 .setDato(ZonedDateTime.now());
 
@@ -104,14 +104,14 @@ public class ManuellStatusRepositoryTest extends IsolatedDatabaseTest {
         manuellStatusRepository.create(manuellStatus1);
         manuellStatusRepository.create(manuellStatus2);
 
-        Optional<ManuellStatus> maybeManuellStatus = manuellStatusRepository.hentSisteManuellStatus(TEST_AKTOR_ID);
+        Optional<ManuellStatusEntity> maybeManuellStatus = manuellStatusRepository.hentSisteManuellStatus(TEST_AKTOR_ID);
 
         assertTrue(maybeManuellStatus.isPresent());
         assertEquals(manuellStatus2, maybeManuellStatus.get());
     }
 
-    private ManuellStatus createManuellStatus(AktorId aktorId) {
-        return new ManuellStatus()
+    private ManuellStatusEntity createManuellStatus(AktorId aktorId) {
+        return new ManuellStatusEntity()
                 .setAktorId(aktorId.get())
                 .setManuell(true)
                 .setDato(ZonedDateTime.now())

@@ -1,7 +1,7 @@
 package no.nav.veilarboppfolging.repository;
 
 import no.nav.common.types.identer.AktorId;
-import no.nav.veilarboppfolging.domain.Kvp;
+import no.nav.veilarboppfolging.repository.entity.KvpEntity;
 import no.nav.veilarboppfolging.test.DbTestUtils;
 import no.nav.veilarboppfolging.test.IsolatedDatabaseTest;
 import org.junit.Before;
@@ -10,7 +10,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.ZonedDateTime;
 
-import static no.nav.veilarboppfolging.domain.KodeverkBruker.NAV;
+import static no.nav.veilarboppfolging.repository.enums.KodeverkBruker.NAV;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 
@@ -56,7 +56,7 @@ public class KvpRepositoryTest extends IsolatedDatabaseTest {
      */
     @Test
     public void testSerial() {
-        Kvp kvp;
+        KvpEntity kvp;
         long serial;
 
         gittOppfolgingForAktor(AKTOR_ID);
@@ -79,7 +79,7 @@ public class KvpRepositoryTest extends IsolatedDatabaseTest {
         kvpRepository.startKvp(AKTOR_ID, "0123", SAKSBEHANDLER_ID, BEGRUNNELSE, ZonedDateTime.now());
     }
 
-    private Kvp hentGjeldendeKvp(AktorId aktorId) {
+    private KvpEntity hentGjeldendeKvp(AktorId aktorId) {
         long kvpId = oppfolgingsStatusRepository.fetch(aktorId).getGjeldendeKvpId();
         return kvpRepository.fetch(kvpId);
     }

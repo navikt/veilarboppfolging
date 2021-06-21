@@ -4,7 +4,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV1;
-import no.nav.veilarboppfolging.domain.IservMapper;
+import no.nav.veilarboppfolging.repository.entity.UtmeldingEntity;
 import no.nav.veilarboppfolging.utils.DbUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -31,7 +31,7 @@ public class UtmeldingRepository {
 
     // TODO: Skal ikke trenger å sende DTOen fra kafka ned til repository
 
-    public IservMapper eksisterendeIservBruker(EndringPaaOppfoelgingsBrukerV1 oppfolgingEndret) {
+    public UtmeldingEntity eksisterendeIservBruker(EndringPaaOppfoelgingsBrukerV1 oppfolgingEndret) {
         String sql = "SELECT * FROM UTMELDING WHERE aktor_id = ?";
         return firstOrNull(db.query(sql, UtmeldingRepository::mapper, oppfolgingEndret.getAktoerid()));
     }
@@ -69,14 +69,14 @@ public class UtmeldingRepository {
         }
     }
 
-    public List<IservMapper> finnBrukereMedIservI28Dager() {
+    public List<UtmeldingEntity> finnBrukereMedIservI28Dager() {
         Timestamp tilbake28 = Timestamp.valueOf(LocalDateTime.now().minusDays(28));
         String sql = "SELECT * FROM UTMELDING WHERE aktor_id IS NOT NULL AND iserv_fra_dato < ?";
         return db.query(sql, UtmeldingRepository::mapper, tilbake28);
     }
 
-    private static IservMapper mapper(ResultSet resultSet, int row) throws SQLException {
-        return new IservMapper(
+    private static UtmeldingEntity mapper(ResultSet resultSet, int row) throws SQLException {
+        return new UtmeldingEntity(
                 resultSet.getString("aktor_id"),
                 DbUtils.hentZonedDateTime(resultSet, "iserv_fra_dato")
         );

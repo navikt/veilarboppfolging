@@ -2,8 +2,8 @@ package no.nav.veilarboppfolging.service;
 
 import no.nav.common.metrics.Event;
 import no.nav.common.metrics.MetricsClient;
-import no.nav.veilarboppfolging.domain.MalData;
-import no.nav.veilarboppfolging.domain.Tilordning;
+import no.nav.veilarboppfolging.repository.entity.MaalEntity;
+import no.nav.veilarboppfolging.repository.entity.VeilederTilordningEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.ZonedDateTime;
@@ -20,11 +20,11 @@ public class MetricsService {
         this.metricsClient = metricsClient;
     }
 
-    public Tilordning lestAvVeileder(Tilordning tilordning) {
+    public VeilederTilordningEntity lestAvVeileder(VeilederTilordningEntity tilordning) {
         Event event = new Event("tilordnet.veileder.lest");
 
         Optional.of(tilordning)
-                .map(Tilordning::getSistTilordnet)
+                .map(VeilederTilordningEntity::getSistTilordnet)
                 .map(MetricsService::msSiden)
                 .ifPresent(ms -> event.addFieldToReport("ms", ms));
 
@@ -55,7 +55,7 @@ public class MetricsService {
         metricsClient.report(new Event("kvp.stopped.byttet_enhet"));
     }
 
-    public void oppdatertMittMal(MalData malData, int antallMal) {
+    public void oppdatertMittMal(MaalEntity malData, int antallMal) {
         String endretAv = malData.getEndretAvFormattert().toLowerCase();
         String bleOpprettet = antallMal == 1 ? "opprettet" : "endret";
 

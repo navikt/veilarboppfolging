@@ -1,7 +1,7 @@
 package no.nav.veilarboppfolging.utils;
 
 import no.nav.veilarboppfolging.controller.response.OppfolgingPeriodeDTO;
-import no.nav.veilarboppfolging.domain.Oppfolgingsperiode;
+import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
 import org.junit.Test;
 
 import static org.junit.Assert.assertTrue;
@@ -10,7 +10,7 @@ public class DtoMappersTest {
 
     @Test
     public void oppfolgingsperiode_tilDTO_skal_handtere_manglende_kvp() {
-        Oppfolgingsperiode oppfolgingsperiode = Oppfolgingsperiode.builder()
+        OppfolgingsperiodeEntity oppfolgingsperiode = OppfolgingsperiodeEntity.builder()
                 .kvpPerioder(null)
                 .build();
 

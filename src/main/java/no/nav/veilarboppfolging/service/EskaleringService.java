@@ -3,9 +3,9 @@ package no.nav.veilarboppfolging.service;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.client.varseloppgave.VarseloppgaveClient;
-import no.nav.veilarboppfolging.domain.EskaleringsvarselData;
 import no.nav.veilarboppfolging.repository.EskaleringsvarselRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
+import no.nav.veilarboppfolging.repository.entity.EskaleringsvarselEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -60,14 +60,14 @@ public class EskaleringService {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Brukeren har allerede et aktivt eskaleringsvarsel.");
             }
 
-            EskaleringsvarselData eskaleringsvarselData = EskaleringsvarselData.builder()
+            EskaleringsvarselEntity eskaleringsvarselEntity = EskaleringsvarselEntity.builder()
                     .aktorId(aktorId.get())
                     .opprettetAv(veilederId)
                     .opprettetBegrunnelse(begrunnelse)
                     .tilhorendeDialogId(tilhorendeDialogId)
                     .build();
 
-            eskaleringsvarselRepository.create(eskaleringsvarselData);
+            eskaleringsvarselRepository.create(eskaleringsvarselEntity);
 
             varseloppgaveClient.sendEskaleringsvarsel(aktorId, tilhorendeDialogId);
         });

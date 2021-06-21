@@ -5,11 +5,11 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.controller.request.VeilederTilordning;
 import no.nav.veilarboppfolging.controller.response.TilordneVeilederResponse;
-import no.nav.veilarboppfolging.domain.Tilordning;
 import no.nav.veilarboppfolging.feed.cjm.producer.FeedProducer;
 import no.nav.veilarboppfolging.feed.domain.OppfolgingFeedDTO;
 import no.nav.veilarboppfolging.repository.VeilederHistorikkRepository;
 import no.nav.veilarboppfolging.repository.VeilederTilordningerRepository;
+import no.nav.veilarboppfolging.repository.entity.VeilederTilordningEntity;
 import no.nav.veilarboppfolging.schedule.IdPaOppfolgingFeedSchedule;
 import no.nav.veilarboppfolging.utils.DtoMappers;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -103,10 +103,10 @@ public class VeilederTilordningService {
         authService.sjekkLesetilgangMedAktorId(aktorId);
 
         veilederTilordningerRepository.hentTilordnetVeileder(aktorId)
-                .filter(Tilordning::isNyForVeileder)
+                .filter(VeilederTilordningEntity::isNyForVeileder)
                 .filter(this::erVeilederFor)
                 .map(metricsService::lestAvVeileder)
-                .map(Tilordning::getAktorId)
+                .map(VeilederTilordningEntity::getAktorId)
                 .map(AktorId::of)
                 .map(veilederTilordningerRepository::markerSomLestAvVeileder)
                 .ifPresent(i -> {
@@ -149,7 +149,7 @@ public class VeilederTilordningService {
     }
 
 
-    private boolean erVeilederFor(Tilordning tilordning) {
+    private boolean erVeilederFor(VeilederTilordningEntity tilordning) {
         return authService.getInnloggetVeilederIdent().equals(tilordning.getVeilederId());
     }
 
@@ -174,7 +174,7 @@ public class VeilederTilordningService {
 
             log.debug(String.format("Veileder %s tilordnet aktoer %s", veilederId, aktorId));
 
-            Optional<Tilordning> maybeTilordning = veilederTilordningerRepository.hentTilordnetVeileder(aktorId);
+            Optional<VeilederTilordningEntity> maybeTilordning = veilederTilordningerRepository.hentTilordnetVeileder(aktorId);
 
             maybeTilordning.ifPresentOrElse(tilordning -> {
                 var dto = DtoMappers.tilSisteTilordnetVeilederKafkaDTO(tilordning);

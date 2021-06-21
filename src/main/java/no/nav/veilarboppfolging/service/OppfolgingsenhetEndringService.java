@@ -3,8 +3,8 @@ package no.nav.veilarboppfolging.service;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV1;
-import no.nav.veilarboppfolging.domain.OppfolgingsenhetEndringData;
 import no.nav.veilarboppfolging.repository.OppfolgingsenhetHistorikkRepository;
+import no.nav.veilarboppfolging.repository.entity.OppfolgingsenhetEndringEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -27,7 +27,7 @@ public class OppfolgingsenhetEndringService {
         AktorId aktorId = AktorId.of(arenaOppfolging.getAktoerid());
         String arenaNavKontor = arenaOppfolging.getNav_kontor();
 
-        List<OppfolgingsenhetEndringData> eksisterendeHistorikk = enhetHistorikkRepository.hentOppfolgingsenhetEndringerForAktorId(aktorId);
+        List<OppfolgingsenhetEndringEntity> eksisterendeHistorikk = enhetHistorikkRepository.hentOppfolgingsenhetEndringerForAktorId(aktorId);
 
         if (arenaNavKontor == null || !erUnderOppfolging(arenaOppfolging.getFormidlingsgruppekode(), arenaOppfolging.getKvalifiseringsgruppekode())) {
             log.info(String.format("Legger ikke til historikkinnslag for på aktørid: %s fordi enhet mangler og/eller bruker er ikke under oppfølging", aktorId));

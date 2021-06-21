@@ -9,10 +9,10 @@ import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV1;
-import no.nav.veilarboppfolging.domain.IservMapper;
-import no.nav.veilarboppfolging.domain.OppfolgingTable;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
 import no.nav.veilarboppfolging.repository.UtmeldingRepository;
+import no.nav.veilarboppfolging.repository.entity.OppfolgingEntity;
+import no.nav.veilarboppfolging.repository.entity.UtmeldingEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -106,7 +106,7 @@ public class IservService {
 
         try {
             log.info("Starter jobb for automatisk avslutning av brukere");
-            List<IservMapper> iservert28DagerBrukere = utmeldingRepository.finnBrukereMedIservI28Dager();
+            List<UtmeldingEntity> iservert28DagerBrukere = utmeldingRepository.finnBrukereMedIservI28Dager();
             log.info("Fant {} brukere som har vært ISERV mer enn 28 dager", iservert28DagerBrukere.size());
 
 
@@ -117,7 +117,7 @@ public class IservService {
 
             authContextHolder.withContext(context, () ->
                     resultater.addAll(iservert28DagerBrukere.stream()
-                            .map(iservMapper -> avslutteOppfolging(AktorId.of(iservMapper.aktor_Id)))
+                            .map(utmeldingEntity -> avslutteOppfolging(AktorId.of(utmeldingEntity.aktor_Id)))
                             .collect(toList()))
             );
 
@@ -143,7 +143,7 @@ public class IservService {
     }
 
     private boolean brukerHarOppfolgingsflagg(AktorId aktoerId) {
-        OppfolgingTable eksisterendeOppfolgingstatus = oppfolgingsStatusRepository.fetch(aktoerId);
+        OppfolgingEntity eksisterendeOppfolgingstatus = oppfolgingsStatusRepository.fetch(aktoerId);
         return eksisterendeOppfolgingstatus != null && eksisterendeOppfolgingstatus.isUnderOppfolging();
     }
 

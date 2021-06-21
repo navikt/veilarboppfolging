@@ -2,7 +2,7 @@ package no.nav.veilarboppfolging.repository;
 
 import no.nav.common.types.identer.AktorId;
 import no.nav.veilarboppfolging.domain.Oppfolging;
-import no.nav.veilarboppfolging.domain.OppfolgingTable;
+import no.nav.veilarboppfolging.repository.entity.OppfolgingEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -36,8 +36,8 @@ public class OppfolgingsStatusRepository {
         this.db = db;
     }
 
-    public OppfolgingTable fetch(AktorId aktorId) {
-        List<OppfolgingTable> oppfolging = db.query(
+    public OppfolgingEntity fetch(AktorId aktorId) {
+        List<OppfolgingEntity> oppfolging = db.query(
                 "SELECT * FROM OPPFOLGINGSTATUS WHERE aktor_id = ?",
                 OppfolgingsStatusRepository::map,
                 aktorId.get()
@@ -67,8 +67,8 @@ public class OppfolgingsStatusRepository {
                 .collect(Collectors.toList());
     }
 
-    public static OppfolgingTable map(ResultSet rs, int row) throws SQLException {
-        return new OppfolgingTable()
+    public static OppfolgingEntity map(ResultSet rs, int row) throws SQLException {
+        return new OppfolgingEntity()
                 .setAktorId(rs.getString(AKTOR_ID))
                 .setGjeldendeManuellStatusId(rs.getLong(GJELDENDE_MANUELL_STATUS))
                 .setGjeldendeMaalId(rs.getLong(GJELDENDE_MAL))

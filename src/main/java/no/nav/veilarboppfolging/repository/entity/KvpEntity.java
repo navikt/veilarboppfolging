@@ -1,15 +1,16 @@
-package no.nav.veilarboppfolging.domain;
+package no.nav.veilarboppfolging.repository.entity;
 
 import lombok.Builder;
 import lombok.Value;
 import lombok.With;
+import no.nav.veilarboppfolging.repository.enums.KodeverkBruker;
 
 import java.time.ZonedDateTime;
 
 @Value
 @Builder
 @With
-public class Kvp {
+public class KvpEntity {
     long kvpId;
     long serial;
     String aktorId;

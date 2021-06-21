@@ -1,4 +1,4 @@
-package no.nav.veilarboppfolging.domain;
+package no.nav.veilarboppfolging.controller.request;
 
 public enum Innsatsgruppe {
     STANDARD_INNSATS("IKVAL"),
