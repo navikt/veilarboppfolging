@@ -41,7 +41,7 @@ public class OppfolgingRepositoryKvpTest extends IsolatedDatabaseTest {
     public void test_eskaleringsvarsel_i_kvp_med_tilgang() {
         gitt_oppfolging_med_aktiv_kvp_og_eskalering(AKTOR_ID);
 
-        OppfolgingEntity oppfolging = oppfolgingsStatusRepository.fetch(AKTOR_ID);
+        OppfolgingEntity oppfolging = oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID).orElseThrow();
         Optional<EskaleringsvarselEntity> maybeEskaleringsvarsel = eskaleringsvarselRepository.hentEskaleringsvarsel(oppfolging.getGjeldendeEskaleringsvarselId());
 
         assertTrue(maybeEskaleringsvarsel.isPresent());
@@ -51,7 +51,7 @@ public class OppfolgingRepositoryKvpTest extends IsolatedDatabaseTest {
     public void test_eskaleringsvarsel_uten_kvp() {
         gitt_oppfolging_uten_aktiv_kvp_men_med_eskalering(AKTOR_ID);
 
-        OppfolgingEntity oppfolging = oppfolgingsStatusRepository.fetch(AKTOR_ID);
+        OppfolgingEntity oppfolging = oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID).orElseThrow();
         Optional<EskaleringsvarselEntity> maybeEskaleringsvarsel = eskaleringsvarselRepository.hentEskaleringsvarsel(oppfolging.getGjeldendeEskaleringsvarselId());
 
         assertTrue(maybeEskaleringsvarsel.isPresent());

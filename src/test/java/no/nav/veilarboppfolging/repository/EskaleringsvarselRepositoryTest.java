@@ -95,7 +95,7 @@ public class EskaleringsvarselRepositoryTest {
     }
 
     private Optional<EskaleringsvarselEntity> gjeldendeEskaleringsVarsel(AktorId aktorId) {
-        OppfolgingEntity oppfolging = oppfolgingsStatusRepository.fetch(aktorId);
+        OppfolgingEntity oppfolging = oppfolgingsStatusRepository.hentOppfolging(aktorId).orElseThrow();
         return eskaleringsvarselRepository.hentEskaleringsvarsel(oppfolging.getGjeldendeEskaleringsvarselId());
     }
 

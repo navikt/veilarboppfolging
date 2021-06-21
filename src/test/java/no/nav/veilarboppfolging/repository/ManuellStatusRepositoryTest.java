@@ -35,7 +35,7 @@ public class ManuellStatusRepositoryTest extends IsolatedDatabaseTest {
         oppfolgingsStatusRepository.opprettOppfolging(TEST_AKTOR_ID);
         manuellStatusRepository.create(manuellStatus);
 
-        OppfolgingEntity oppfolging = oppfolgingsStatusRepository.fetch(TEST_AKTOR_ID);
+        OppfolgingEntity oppfolging = oppfolgingsStatusRepository.hentOppfolging(TEST_AKTOR_ID).orElseThrow();
 
         var maybeManuellStatus = manuellStatusRepository.hentManuellStatus(oppfolging.getGjeldendeManuellStatusId());
 

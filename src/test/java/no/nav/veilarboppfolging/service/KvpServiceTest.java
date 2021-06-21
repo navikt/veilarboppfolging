@@ -67,7 +67,7 @@ public class KvpServiceTest {
 
     @Before
     public void initialize() {
-        when(oppfolgingsStatusRepository.fetch(AKTOR_ID)).thenReturn(new OppfolgingEntity().setUnderOppfolging(true));
+        when(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID)).thenReturn(Optional.of(new OppfolgingEntity().setUnderOppfolging(true)));
 
         VeilarbArenaOppfolging veilarbArenaOppfolging = new VeilarbArenaOppfolging();
         veilarbArenaOppfolging.setNav_kontor(ENHET);
@@ -85,7 +85,7 @@ public class KvpServiceTest {
 
     @Test
     public void start_kvp_uten_oppfolging_er_ulovlig_handling() {
-        when(oppfolgingsStatusRepository.fetch(AKTOR_ID)).thenReturn(new OppfolgingEntity().setUnderOppfolging(false));
+        when(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID)).thenReturn(Optional.of(new OppfolgingEntity().setUnderOppfolging(false)));
 
         try {
             kvpService.startKvp(FNR, START_BEGRUNNELSE);
@@ -96,7 +96,7 @@ public class KvpServiceTest {
 
     @Test
     public void start_kvp_uten_bruker_i_oppfolgingtabell_er_ulovlig_handling() {
-        when(oppfolgingsStatusRepository.fetch(AKTOR_ID)).thenReturn(null);
+        when(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID)).thenReturn(Optional.empty());
 
         try {
             kvpService.startKvp(FNR, START_BEGRUNNELSE);
@@ -114,7 +114,7 @@ public class KvpServiceTest {
     @Test(expected = ResponseStatusException.class)
     public void startKvp_feiler_dersom_bruker_allerede_er_under_kvp() {
 
-        when(oppfolgingsStatusRepository.fetch(AKTOR_ID)).thenReturn(new OppfolgingEntity().setUnderOppfolging(true).setGjeldendeKvpId(2));
+        when(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID)).thenReturn(Optional.of(new OppfolgingEntity().setUnderOppfolging(true).setGjeldendeKvpId(2)));
 
         AuthContextHolderThreadLocal.instance().withContext(AuthTestUtils.createAuthContext(UserRole.INTERN, VEILEDER),
                 () -> kvpService.startKvp(FNR, START_BEGRUNNELSE)
@@ -125,14 +125,14 @@ public class KvpServiceTest {
     @Test
     public void stopKvp() {
         long kvpId = 2;
-        when(oppfolgingsStatusRepository.fetch(AKTOR_ID)).thenReturn(new OppfolgingEntity().setUnderOppfolging(true).setGjeldendeKvpId(kvpId));
+        when(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID)).thenReturn(Optional.of(new OppfolgingEntity().setUnderOppfolging(true).setGjeldendeKvpId(kvpId)));
 
         AuthContextHolderThreadLocal.instance().withContext(AuthTestUtils.createAuthContext(UserRole.INTERN, VEILEDER),
                 () -> kvpService.stopKvp(FNR, STOP_BEGRUNNELSE)
         );
 
         verify(authService, times(1)).sjekkLesetilgangMedAktorId(AKTOR_ID);
-        verify(oppfolgingsStatusRepository, times(1)).fetch(AKTOR_ID);
+        verify(oppfolgingsStatusRepository, times(1)).hentOppfolging(AKTOR_ID);
         verify(kvpRepositoryMock, times(1)).stopKvp(eq(kvpId), eq(AKTOR_ID), eq(VEILEDER), eq(STOP_BEGRUNNELSE), eq(NAV), any());
         verify(authService, times(1)).harTilgangTilEnhet(ENHET);
     }
@@ -140,7 +140,7 @@ public class KvpServiceTest {
     @Test
     public void stopKvp_avslutter_eskalering() {
         long kvpId = 2;
-        when(oppfolgingsStatusRepository.fetch(AKTOR_ID)).thenReturn(new OppfolgingEntity().setUnderOppfolging(true).setGjeldendeEskaleringsvarselId(1).setGjeldendeKvpId(kvpId));
+        when(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID)).thenReturn(Optional.of(new OppfolgingEntity().setUnderOppfolging(true).setGjeldendeEskaleringsvarselId(1).setGjeldendeKvpId(kvpId)));
 
         AuthContextHolderThreadLocal.instance().withContext(AuthTestUtils.createAuthContext(UserRole.INTERN, VEILEDER),
                 () -> kvpService.stopKvp(FNR, STOP_BEGRUNNELSE)

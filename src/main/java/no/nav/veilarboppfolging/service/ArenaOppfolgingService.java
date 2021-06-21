@@ -70,8 +70,8 @@ public class ArenaOppfolgingService {
         Optional<ArenaOppfolgingTilstand> maybeArenaOppfolging = veilarbarenaClient.hentOppfolgingsbruker(fnr)
                 .map(ArenaOppfolgingTilstand::fraArenaBruker);
 
-        Optional<OppfolgingEntity> oppfolging = Optional.ofNullable(oppfolgingsStatusRepository.fetch(aktorId));
-
+        // TODO: Kan hente erUnderOppfolging gjennom OppfolgingService
+        Optional<OppfolgingEntity> oppfolging = oppfolgingsStatusRepository.hentOppfolging(aktorId);
         boolean erUnderOppfolging = oppfolging.map(OppfolgingEntity::isUnderOppfolging).orElse(false);
 
         boolean erUnderOppfolgingIVeilarbarena = maybeArenaOppfolging

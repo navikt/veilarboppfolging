@@ -6,9 +6,7 @@ import no.nav.common.test.auth.AuthTestUtils;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV1;
-import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
 import no.nav.veilarboppfolging.repository.UtmeldingRepository;
-import no.nav.veilarboppfolging.repository.entity.OppfolgingEntity;
 import no.nav.veilarboppfolging.repository.entity.UtmeldingEntity;
 import no.nav.veilarboppfolging.test.DbTestUtils;
 import no.nav.veilarboppfolging.test.LocalH2Database;
@@ -40,8 +38,6 @@ public class IservServiceIntegrationTest {
 
     private AuthService authService = mock(AuthService.class);
 
-    private OppfolgingsStatusRepository oppfolgingStatusRepository = mock(OppfolgingsStatusRepository.class);
-
     private OppfolgingService oppfolgingService = mock(OppfolgingService.class);
 
     @Before
@@ -51,7 +47,7 @@ public class IservServiceIntegrationTest {
 
         DbTestUtils.cleanupTestDb();
 
-        when(oppfolgingStatusRepository.fetch(any())).thenReturn(new OppfolgingEntity().setUnderOppfolging(true));
+        when(oppfolgingService.erUnderOppfolging(any())).thenReturn(true);
         when(oppfolgingService.avsluttOppfolgingForSystemBruker(any())).thenReturn(true);
         when(authService.getFnrOrThrow(any())).thenReturn(FNR);
 
@@ -61,7 +57,7 @@ public class IservServiceIntegrationTest {
                 AuthContextHolderThreadLocal.instance(),
                 () -> AuthTestUtils.createAuthContext(UserRole.SYSTEM, "srvtest").getIdToken().serialize(),
                 mock(MetricsService.class),
-                utmeldingRepository, oppfolgingService, oppfolgingStatusRepository, authService, transactor
+                utmeldingRepository, oppfolgingService, authService, transactor
         );
     }
 
@@ -108,7 +104,7 @@ public class IservServiceIntegrationTest {
     public void behandleEndretBruker_skalStarteBrukerSomHarOppfolgingsstatus() {
         EndringPaaOppfoelgingsBrukerV1 veilarbArenaOppfolging = getArenaBruker();
         veilarbArenaOppfolging.setFormidlingsgruppekode("ARBS");
-        when(oppfolgingStatusRepository.fetch(any())).thenReturn(new OppfolgingEntity().setUnderOppfolging(false));
+        when(oppfolgingService.erUnderOppfolging(any())).thenReturn(false);
 
         iservService.behandleEndretBruker(veilarbArenaOppfolging);
         verify(oppfolgingService).startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
@@ -120,7 +116,7 @@ public class IservServiceIntegrationTest {
         veilarbArenaOppfolging.setFormidlingsgruppekode("ARBS");
 
         iservService.behandleEndretBruker(veilarbArenaOppfolging);
-        verifyZeroInteractions(oppfolgingService);
+        verify(oppfolgingService, never()).startOppfolgingHvisIkkeAlleredeStartet(any(AktorId.class));
     }
   
     @Test
@@ -128,10 +124,10 @@ public class IservServiceIntegrationTest {
         EndringPaaOppfoelgingsBrukerV1 veilarbArenaOppfolging = getArenaBruker();
         veilarbArenaOppfolging.setFormidlingsgruppekode("IARBS");
         veilarbArenaOppfolging.setKvalifiseringsgruppekode("IkkeOppfolging");
-        when(oppfolgingStatusRepository.fetch(any())).thenReturn(new OppfolgingEntity().setUnderOppfolging(false));
+        when(oppfolgingService.erUnderOppfolging(any())).thenReturn(false);
 
         iservService.behandleEndretBruker(veilarbArenaOppfolging);
-        verifyZeroInteractions(oppfolgingService);
+        verifyNoInteractions(oppfolgingService);
     }
 
     @Test
@@ -169,11 +165,12 @@ public class IservServiceIntegrationTest {
     @Test
     public void automatiskAvslutteOppfolging_skalFjerneBrukerSomErIserv28dagerOgIkkeUnderOppfolging(){
         EndringPaaOppfoelgingsBrukerV1 bruker = insertIservBruker(now().minusDays(30));
-        when(oppfolgingStatusRepository.fetch(AktorId.of(bruker.getAktoerid()))).thenReturn(new OppfolgingEntity().setUnderOppfolging(false));
+        when(oppfolgingService.erUnderOppfolging(AktorId.of(bruker.getAktoerid()))).thenReturn(false);
 
         iservService.automatiskAvslutteOppfolging();
 
-        verifyNoInteractions(oppfolgingService);
+        verify(oppfolgingService, never()).avsluttOppfolgingForSystemBruker(any(Fnr.class));
+
         assertThat(utmeldingRepository.eksisterendeIservBruker(AKTOR_ID)).isNull();
     }
     

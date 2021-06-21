@@ -63,12 +63,14 @@ public class MalService {
         AktorId aktorId = authService.getAktorIdOrThrow(fnr);
         authService.sjekkLesetilgangMedAktorId(aktorId);
 
-        OppfolgingEntity oppfolgingsStatus = oppfolgingsStatusRepository.fetch(aktorId);
+        Optional<OppfolgingEntity> maybeOppfolging = oppfolgingsStatusRepository.hentOppfolging(aktorId);
+
+        long gjeldendeMaalId = maybeOppfolging.map(OppfolgingEntity::getGjeldendeMaalId).orElse(0L);
 
         Optional<MaalEntity> maybeGjeldendeMaal = empty();
 
-        if (oppfolgingsStatus.getGjeldendeMaalId() != 0) {
-            maybeGjeldendeMaal = maalRepository.hentMaal(oppfolgingsStatus.getGjeldendeMaalId());
+        if (gjeldendeMaalId != 0) {
+            maybeGjeldendeMaal = maalRepository.hentMaal(gjeldendeMaalId);
         }
 
         if (maybeGjeldendeMaal.isEmpty()) {

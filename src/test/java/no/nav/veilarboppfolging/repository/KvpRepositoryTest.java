@@ -81,7 +81,7 @@ public class KvpRepositoryTest extends IsolatedDatabaseTest {
     }
 
     private Optional<KvpPeriodeEntity> hentGjeldendeKvp(AktorId aktorId) {
-        long kvpId = oppfolgingsStatusRepository.fetch(aktorId).getGjeldendeKvpId();
+        long kvpId = oppfolgingsStatusRepository.hentOppfolging(aktorId).orElseThrow().getGjeldendeKvpId();
         return kvpRepository.hentKvpPeriode(kvpId);
     }
 

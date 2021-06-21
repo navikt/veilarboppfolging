@@ -10,10 +10,11 @@ import org.springframework.stereotype.Repository;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
-import static no.nav.veilarboppfolging.utils.ListUtils.firstOrNull;
+import static no.nav.veilarboppfolging.utils.DbUtils.queryForNullableObject;
 
 @Repository
 public class OppfolgingsStatusRepository {
@@ -36,14 +37,14 @@ public class OppfolgingsStatusRepository {
         this.db = db;
     }
 
-    public OppfolgingEntity fetch(AktorId aktorId) {
-        List<OppfolgingEntity> oppfolging = db.query(
-                "SELECT * FROM OPPFOLGINGSTATUS WHERE aktor_id = ?",
-                OppfolgingsStatusRepository::map,
-                aktorId.get()
+    public Optional<OppfolgingEntity> hentOppfolging(AktorId aktorId) {
+        return queryForNullableObject(() ->
+                db.queryForObject(
+                    "SELECT * FROM OPPFOLGINGSTATUS WHERE aktor_id = ?",
+                    OppfolgingsStatusRepository::map,
+                    aktorId.get()
+                )
         );
-
-        return firstOrNull(oppfolging);
     }
 
     public Oppfolging opprettOppfolging(AktorId aktorId) {

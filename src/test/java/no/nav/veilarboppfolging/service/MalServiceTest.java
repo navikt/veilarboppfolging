@@ -75,7 +75,7 @@ public class MalServiceTest {
     @Before
     public void setup() {
         when(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID);
-        when(oppfolgingsStatusRepository.fetch(AKTOR_ID)).thenReturn(new OppfolgingEntity().setGjeldendeMaalId(MAL_ID));
+        when(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID)).thenReturn(Optional.of(new OppfolgingEntity().setGjeldendeMaalId(MAL_ID)));
         when(maalRepository.hentMaal(MAL_ID)).thenReturn(Optional.of(mal(BEFORE_KVP)));
         doAnswer((mock) -> {
             Consumer consumer = mock.getArgument(0);
@@ -105,7 +105,7 @@ public class MalServiceTest {
 
     @Test
     public void gjeldendeMal_ikke_satt() {
-        when(oppfolgingsStatusRepository.fetch(AKTOR_ID)).thenReturn(new OppfolgingEntity().setGjeldendeMaalId(0));
+        when(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID)).thenReturn(Optional.of(new OppfolgingEntity().setGjeldendeMaalId(0)));
 
         MaalEntity malData = malService.hentMal(FNR);
         assertThat(malData.getId()).isEqualTo(0L);

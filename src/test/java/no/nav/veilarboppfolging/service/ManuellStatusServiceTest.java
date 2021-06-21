@@ -34,14 +34,20 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
     private static final String BEGRUNNELSE = "begrunnelse";
 
     private AuthService authService = mock(AuthService.class);
+
     private ArenaOppfolgingService arenaOppfolgingService = mock(ArenaOppfolgingService.class);
+
     private DkifClient dkifClient = mock(DkifClient.class);
+
     private KafkaProducerService kafkaProducerService = mock(KafkaProducerService.class);
 
     private OppfolgingsStatusRepository oppfolgingsStatusRepository;
+
     private ManuellStatusRepository manuellStatusRepository;
 
     private ManuellStatusService manuellStatusService;
+
+    private OppfolgingService oppfolgingService = mock(OppfolgingService.class);
 
     @Before
     public void setup() {
@@ -59,7 +65,7 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
                 authService,
                 manuellStatusRepository,
                 arenaOppfolgingService,
-                oppfolgingsStatusRepository,
+                oppfolgingService,
                 dkifClient,
                 kafkaProducerService,
                 transactor
@@ -68,6 +74,7 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
 
     @Test
     public void oppdaterManuellStatus_oppretter_manuell_status_og_publiserer_paa_kafka_ved_oppdatering_av_manuell_status() {
+        when(oppfolgingService.erUnderOppfolging(AKTOR_ID)).thenReturn(true);
         when(authService.harTilgangTilEnhet(any())).thenReturn(true);
         when(dkifClient.hentKontaktInfo(FNR)).thenReturn(Optional.of(new DkifKontaktinfo()));
         gittAktivOppfolging(AKTOR_ID);
@@ -77,7 +84,7 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
 
         manuellStatusService.oppdaterManuellStatus(FNR, true, begrunnelse, SYSTEM, opprettetAvBruker);
 
-        long gjeldendeManuellStatusId = oppfolgingsStatusRepository.fetch(AKTOR_ID).getGjeldendeManuellStatusId();
+        long gjeldendeManuellStatusId = oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID).orElseThrow().getGjeldendeManuellStatusId();
         Optional<ManuellStatusEntity> maybeGjeldendeManuellStatus = manuellStatusRepository.hentManuellStatus(gjeldendeManuellStatusId);
 
         assertTrue(maybeGjeldendeManuellStatus.isPresent());
