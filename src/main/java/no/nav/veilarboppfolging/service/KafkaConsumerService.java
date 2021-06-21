@@ -23,50 +23,44 @@ public class KafkaConsumerService {
 
     private final KvpService kvpService;
 
-    private final MetricsService metricsService;
-
     private final IservService iservService;
 
     private final OppfolgingsenhetEndringService oppfolgingsenhetEndringService;
+
+    private final OppfolgingEndringService oppfolgingEndringService;
 
     @Autowired
     public KafkaConsumerService(
             AuthContextHolder authContextHolder,
             SystemUserTokenProvider systemUserTokenProvider,
-            MetricsService metricsService,
             @Lazy KvpService kvpService,
             @Lazy IservService iservService,
-            OppfolgingsenhetEndringService oppfolgingsenhetEndringService
+            OppfolgingsenhetEndringService oppfolgingsenhetEndringService,
+            @Lazy OppfolgingEndringService oppfolgingEndringService
     ) {
         this.authContextHolder = authContextHolder;
         this.systemUserTokenProvider = systemUserTokenProvider;
-        this.metricsService = metricsService;
         this.kvpService = kvpService;
         this.iservService = iservService;
         this.oppfolgingsenhetEndringService = oppfolgingsenhetEndringService;
+        this.oppfolgingEndringService = oppfolgingEndringService;
     }
 
     @SneakyThrows
     public void consumeEndringPaOppfolgingBruker(ConsumerRecord<String, EndringPaaOppfoelgingsBrukerV1> kafkaMelding) {
-        try {
-            EndringPaaOppfoelgingsBrukerV1 oppfolgingEndret = kafkaMelding.value();
+        EndringPaaOppfoelgingsBrukerV1 endringPaBruker = kafkaMelding.value();
 
-            var context = new AuthContext(
-                    UserRole.SYSTEM,
-                    JWTParser.parse(systemUserTokenProvider.getSystemUserToken())
-            );
+        var context = new AuthContext(
+                UserRole.SYSTEM,
+                JWTParser.parse(systemUserTokenProvider.getSystemUserToken())
+        );
 
-            authContextHolder.withContext(context, () -> {
-                kvpService.avsluttKvpVedEnhetBytte(oppfolgingEndret);
-                iservService.behandleEndretBruker(oppfolgingEndret);
-                oppfolgingsenhetEndringService.behandleBrukerEndring(oppfolgingEndret);
-            });
-        } catch (Throwable t) {
-            log.error("Feilet ved behandling av kafka-melding for endring på oppfølgingsbruker:\n{}", t.getMessage(), t);
-            throw t;
-        } finally {
-            metricsService.antallMeldingerKonsumertAvKafka();
-        }
+        authContextHolder.withContext(context, () -> {
+            kvpService.avsluttKvpVedEnhetBytte(endringPaBruker);
+            iservService.behandleEndretBruker(endringPaBruker);
+            oppfolgingsenhetEndringService.behandleBrukerEndring(endringPaBruker);
+            oppfolgingEndringService.oppdaterOppfolgingMedStatusFraArena(endringPaBruker);
+        });
     }
 
 }

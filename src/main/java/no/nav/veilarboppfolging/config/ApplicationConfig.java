@@ -9,6 +9,8 @@ import no.nav.common.abac.constants.NavAttributter;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.common.cxf.StsConfig;
+import no.nav.common.featuretoggle.UnleashClient;
+import no.nav.common.featuretoggle.UnleashClientImpl;
 import no.nav.common.job.leader_election.LeaderElectionClient;
 import no.nav.common.job.leader_election.LeaderElectionHttpClient;
 import no.nav.common.metrics.InfluxClient;
@@ -63,6 +65,11 @@ public class ApplicationConfig {
                 properties.getOpenAmDiscoveryUrl(), properties.getOpenAmRedirectUrl(),
                 new Credentials(properties.getOpenAmIssoRpUsername(), properties.getOpenAmIssoRpPassword()), serviceUserCredentials
         );
+    }
+
+    @Bean
+    public UnleashClient unleashClient(EnvironmentProperties properties) {
+        return new UnleashClientImpl(properties.getUnleashUrl(), APPLICATION_NAME);
     }
 
     @Bean

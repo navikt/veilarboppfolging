@@ -2,9 +2,12 @@ package no.nav.veilarboppfolging.config;
 
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.PlainJWT;
+import no.finn.unleash.UnleashContext;
 import no.nav.common.abac.Pep;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.AuthContextHolderThreadLocal;
+import no.nav.common.featuretoggle.UnleashClient;
+import no.nav.common.health.HealthCheckResult;
 import no.nav.common.job.leader_election.LeaderElectionClient;
 import no.nav.common.sts.OpenAmSystemUserTokenProvider;
 import no.nav.common.sts.SystemUserTokenProvider;
@@ -73,6 +76,26 @@ public class ApplicationTestConfig {
         DataSource dataSource = LocalH2Database.getDb().getDataSource();
         DbTestUtils.setupDatabaseFunctions(dataSource);
         return dataSource;
+    }
+
+    @Bean
+    public UnleashClient unleashClient() {
+        return new UnleashClient() {
+            @Override
+            public boolean isEnabled(String s) {
+                return true;
+            }
+
+            @Override
+            public boolean isEnabled(String s, UnleashContext unleashContext) {
+                return true;
+            }
+
+            @Override
+            public HealthCheckResult checkHealth() {
+                return HealthCheckResult.healthy();
+            }
+        };
     }
 
     @Bean

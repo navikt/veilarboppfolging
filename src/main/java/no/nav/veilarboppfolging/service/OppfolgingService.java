@@ -529,7 +529,7 @@ public class OppfolgingService {
             log.info("Avslutting av oppfølging ikke tillatt for aktorid {}", aktorId);
         }
 
-        metricsService.raporterAutomatiskAvslutningAvOppfolging(!kanAvslutteOppfolging);
+        metricsService.rapporterAutomatiskAvslutningAvOppfolging(!kanAvslutteOppfolging);
     }
 
     public boolean kanAvslutteOppfolging(AktorId aktorId, boolean erUnderOppfolging, boolean erIservIArena) {
@@ -543,7 +543,7 @@ public class OppfolgingService {
                 && ikkeUnderKvp;
     }
 
-    private void avsluttOppfolgingForBruker(AktorId aktorId, String veilederId, String begrunnelse) {
+    public void avsluttOppfolgingForBruker(AktorId aktorId, String veilederId, String begrunnelse) {
         String brukerIdent = authService.getInnloggetBrukerIdent();
 
         transactor.executeWithoutResult((ignored) -> {
