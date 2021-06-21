@@ -13,7 +13,8 @@ import java.util.Optional;
 
 import static no.nav.veilarboppfolging.test.TestData.TEST_AKTOR_ID;
 import static no.nav.veilarboppfolging.test.TestData.TEST_AKTOR_ID_2;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class ManuellStatusRepositoryTest extends IsolatedDatabaseTest {
 
@@ -28,7 +29,7 @@ public class ManuellStatusRepositoryTest extends IsolatedDatabaseTest {
     }
 
     @Test
-    public void fetch__should_return_manuell_status() {
+    public void hentManuellStatus__should_return_manuell_status() {
         ManuellStatusEntity manuellStatus = createManuellStatus(TEST_AKTOR_ID);
 
         oppfolgingsStatusRepository.opprettOppfolging(TEST_AKTOR_ID);
@@ -36,12 +37,15 @@ public class ManuellStatusRepositoryTest extends IsolatedDatabaseTest {
 
         OppfolgingEntity oppfolging = oppfolgingsStatusRepository.fetch(TEST_AKTOR_ID);
 
-        assertEquals(manuellStatus, manuellStatusRepository.fetch(oppfolging.getGjeldendeManuellStatusId()));
+        var maybeManuellStatus = manuellStatusRepository.hentManuellStatus(oppfolging.getGjeldendeManuellStatusId());
+
+        assertTrue(maybeManuellStatus.isPresent());
+        assertEquals(manuellStatus, maybeManuellStatus.get());
     }
 
     @Test
-    public void fetch__should_return_null_if_no_manuell_status() {
-        assertNull(manuellStatusRepository.fetch(42L));
+    public void hentManuellStatus__should_return_null_if_no_manuell_status() {
+        assertTrue(manuellStatusRepository.hentManuellStatus(42L).isEmpty());
     }
 
     @Test

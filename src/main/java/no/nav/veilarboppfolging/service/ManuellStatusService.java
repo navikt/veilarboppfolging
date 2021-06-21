@@ -66,7 +66,7 @@ public class ManuellStatusService {
     }
 
     public Optional<ManuellStatusEntity> hentManuellStatus(long manuellStatusId) {
-        return Optional.ofNullable(manuellStatusRepository.fetch(manuellStatusId));
+        return manuellStatusRepository.hentManuellStatus(manuellStatusId);
     }
 
     public List<ManuellStatusEntity> hentManuellStatusHistorikk(AktorId aktorId) {

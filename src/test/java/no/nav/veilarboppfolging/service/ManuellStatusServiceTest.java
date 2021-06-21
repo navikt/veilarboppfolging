@@ -78,7 +78,11 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
         manuellStatusService.oppdaterManuellStatus(FNR, true, begrunnelse, SYSTEM, opprettetAvBruker);
 
         long gjeldendeManuellStatusId = oppfolgingsStatusRepository.fetch(AKTOR_ID).getGjeldendeManuellStatusId();
-        ManuellStatusEntity gjeldendeManuellStatus = manuellStatusRepository.fetch(gjeldendeManuellStatusId);
+        Optional<ManuellStatusEntity> maybeGjeldendeManuellStatus = manuellStatusRepository.hentManuellStatus(gjeldendeManuellStatusId);
+
+        assertTrue(maybeGjeldendeManuellStatus.isPresent());
+
+        ManuellStatusEntity gjeldendeManuellStatus = maybeGjeldendeManuellStatus.get();
 
         assertEquals(AKTOR_ID.get(), gjeldendeManuellStatus.getAktorId());
         assertEquals(SYSTEM, gjeldendeManuellStatus.getOpprettetAv());
