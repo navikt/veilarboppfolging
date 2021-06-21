@@ -18,5 +18,5 @@ public class Oppfolging {
     private EskaleringsvarselEntity gjeldendeEskaleringsvarsel;
     private MaalEntity gjeldendeMal;
     private List<OppfolgingsperiodeEntity> oppfolgingsperioder = emptyList();
-    private KvpEntity gjeldendeKvp;
+    private KvpPeriodeEntity gjeldendeKvp;
 }

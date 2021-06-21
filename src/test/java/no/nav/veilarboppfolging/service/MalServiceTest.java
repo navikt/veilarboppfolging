@@ -5,7 +5,7 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.repository.KvpRepository;
 import no.nav.veilarboppfolging.repository.MaalRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
-import no.nav.veilarboppfolging.repository.entity.KvpEntity;
+import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity;
 import no.nav.veilarboppfolging.repository.entity.MaalEntity;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingEntity;
 import org.junit.Before;
@@ -19,6 +19,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 import static java.time.temporal.ChronoUnit.DAYS;
@@ -86,7 +87,7 @@ public class MalServiceTest {
     @Test(expected = ResponseStatusException.class)
     public void oppdaterMal_veilederUtenTilgang_KvpBruker_kasterException() {
         when(kvpRepositoryMock.gjeldendeKvp(any())).thenReturn(KVP_ID);
-        when(kvpRepositoryMock.fetch(anyLong())).thenReturn(aktivKvp());
+        when(kvpRepositoryMock.hentKvpPeriode(anyLong())).thenReturn(Optional.of(aktivKvp()));
         when(authService.harTilgangTilEnhetMedSperre(ENHET)).thenReturn(false);
 
         malService.oppdaterMal("mal", FNR, VEILEDER);
@@ -95,7 +96,7 @@ public class MalServiceTest {
     @Test
     public void oppdaterMal_veilederMedTilgang_KvpBruker_kasterIkkeException() {
         when(kvpRepositoryMock.gjeldendeKvp(any())).thenReturn(KVP_ID);
-        when(kvpRepositoryMock.fetch(anyLong())).thenReturn(aktivKvp());
+        when(kvpRepositoryMock.hentKvpPeriode(anyLong())).thenReturn(Optional.of(aktivKvp()));
         when(authService.harTilgangTilEnhetMedSperre(ENHET)).thenReturn(true);
         MaalEntity resultat = malService.oppdaterMal("mal", FNR, VEILEDER);
 
@@ -182,16 +183,16 @@ public class MalServiceTest {
         );
     }
 
-    private KvpEntity aktivKvp() {
-        return KvpEntity.builder()
+    private KvpPeriodeEntity aktivKvp() {
+        return KvpPeriodeEntity.builder()
                 .kvpId(KVP_ID)
                 .enhet(ENHET)
                 .opprettetDato(START_KVP)
                 .build();
     }
 
-    private List<KvpEntity> kvpHistorikk() {
-        return singletonList(KvpEntity.builder()
+    private List<KvpPeriodeEntity> kvpHistorikk() {
+        return singletonList(KvpPeriodeEntity.builder()
                 .kvpId(KVP_ID)
                 .enhet(ENHET)
                 .opprettetDato(START_KVP)

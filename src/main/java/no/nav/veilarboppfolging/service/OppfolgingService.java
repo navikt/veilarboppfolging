@@ -31,8 +31,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static java.lang.Boolean.TRUE;
-import static java.util.Optional.of;
-import static java.util.Optional.ofNullable;
+import static java.util.Optional.*;
 import static java.util.stream.Collectors.toList;
 import static no.nav.veilarboppfolging.config.ApplicationConfig.SYSTEM_USER_NAME;
 import static no.nav.veilarboppfolging.utils.ArenaUtils.*;
@@ -264,7 +263,12 @@ public class OppfolgingService {
                 .orElse(false);
 
         long kvpId = kvpRepository.gjeldendeKvp(aktorId);
-        boolean harSkrivetilgangTilBruker = !kvpService.erUnderKvp(kvpId) || authService.harTilgangTilEnhet(kvpRepository.fetch(kvpId).getEnhet());
+        boolean harSkrivetilgangTilBruker = !kvpService.erUnderKvp(kvpId)
+                || authService.harTilgangTilEnhet(
+                        kvpRepository.hentKvpPeriode(kvpId)
+                                .orElseThrow()
+                                .getEnhet()
+        );
 
         Boolean erInaktivIArena = maybeArenaOppfolging.map(ao -> erIserv(ao.getFormidlingsgruppe())).orElse(null);
 
@@ -345,17 +349,21 @@ public class OppfolgingService {
             return Optional.empty();
         }
 
-        Oppfolging o = new Oppfolging()
+        Oppfolging oppfolging = new Oppfolging()
                 .setAktorId(t.getAktorId())
                 .setVeilederId(t.getVeilederId())
                 .setUnderOppfolging(t.isUnderOppfolging());
 
-        KvpEntity kvp = null;
+        Optional<KvpPeriodeEntity> maybeKvpPeriode = empty();
+
         if (t.getGjeldendeKvpId() != 0) {
-            kvp = kvpRepository.fetch(t.getGjeldendeKvpId());
-            if (authService.harTilgangTilEnhet(kvp.getEnhet())) {
-                o.setGjeldendeKvp(kvp);
-            }
+            maybeKvpPeriode = kvpRepository.hentKvpPeriode(t.getGjeldendeKvpId());
+
+            maybeKvpPeriode.ifPresentOrElse((kvpPeriode) -> {
+                if (authService.harTilgangTilEnhet(kvpPeriode.getEnhet())) {
+                    oppfolging.setGjeldendeKvp(kvpPeriode);
+                }
+            }, () -> log.error("Fant ikke KVP periode for id " + t.getGjeldendeKvpId()));
         }
 
         // Gjeldende eskaleringsvarsel inkluderes i resultatet kun hvis den innloggede veilederen har tilgang til brukers enhet.
@@ -365,27 +373,29 @@ public class OppfolgingService {
             if (maybeEskaleringsvarsel.isPresent()) {
                 EskaleringsvarselEntity eskaleringsvarsel = maybeEskaleringsvarsel.get();
 
-                if (sjekkTilgangGittKvp(authService, kvp, eskaleringsvarsel::getOpprettetDato)) {
-                    o.setGjeldendeEskaleringsvarsel(eskaleringsvarsel);
-                }
+                maybeKvpPeriode.ifPresent((kvpPeriode) -> {
+                    if (sjekkTilgangGittKvp(authService, kvpPeriode, eskaleringsvarsel::getOpprettetDato)) {
+                        oppfolging.setGjeldendeEskaleringsvarsel(eskaleringsvarsel);
+                    }
+                });
             } else {
                 log.error("Fant ikke eskaleringsvarsel for id " + t.getGjeldendeEskaleringsvarselId());
             }
         }
 
         if (t.getGjeldendeMaalId() != 0) {
-            o.setGjeldendeMal(maalRepository.fetch(t.getGjeldendeMaalId()));
+            oppfolging.setGjeldendeMal(maalRepository.fetch(t.getGjeldendeMaalId()));
         }
 
         if (t.getGjeldendeManuellStatusId() != 0) {
             Optional<ManuellStatusEntity> manuellStatus = manuellStatusService.hentManuellStatus(t.getGjeldendeManuellStatusId());
-            manuellStatus.ifPresent(o::setGjeldendeManuellStatus);
+            manuellStatus.ifPresent(oppfolging::setGjeldendeManuellStatus);
         }
 
-        List<KvpEntity> kvpPerioder = kvpRepository.hentKvpHistorikk(aktorId);
-        o.setOppfolgingsperioder(populerKvpPerioder(oppfolgingsPeriodeRepository.hentOppfolgingsperioder(AktorId.of(t.getAktorId())), kvpPerioder));
+        List<KvpPeriodeEntity> kvpPerioder = kvpRepository.hentKvpHistorikk(aktorId);
+        oppfolging.setOppfolgingsperioder(populerKvpPerioder(oppfolgingsPeriodeRepository.hentOppfolgingsperioder(AktorId.of(t.getAktorId())), kvpPerioder));
 
-        return Optional.of(o);
+        return Optional.of(oppfolging);
     }
 
     public void startOppfolgingHvisIkkeAlleredeStartet(AktorId aktorId) {
@@ -435,7 +445,7 @@ public class OppfolgingService {
         });
     }
 
-    private List<OppfolgingsperiodeEntity> populerKvpPerioder(List<OppfolgingsperiodeEntity> oppfolgingsPerioder, List<KvpEntity> kvpPerioder) {
+    private List<OppfolgingsperiodeEntity> populerKvpPerioder(List<OppfolgingsperiodeEntity> oppfolgingsPerioder, List<KvpPeriodeEntity> kvpPerioder) {
         return oppfolgingsPerioder.stream()
                 .map(periode -> periode.toBuilder().kvpPerioder(
                         kvpPerioder.stream()
@@ -446,16 +456,16 @@ public class OppfolgingService {
                 .collect(toList());
     }
 
-    private boolean erKvpIPeriode(KvpEntity kvp, OppfolgingsperiodeEntity periode) {
+    private boolean erKvpIPeriode(KvpPeriodeEntity kvp, OppfolgingsperiodeEntity periode) {
         return kvpEtterStartenAvPeriode(kvp, periode)
                 && kvpForSluttenAvPeriode(kvp, periode);
     }
 
-    private boolean kvpEtterStartenAvPeriode(KvpEntity kvp, OppfolgingsperiodeEntity periode) {
+    private boolean kvpEtterStartenAvPeriode(KvpPeriodeEntity kvp, OppfolgingsperiodeEntity periode) {
         return !periode.getStartDato().isAfter(kvp.getOpprettetDato());
     }
 
-    private boolean kvpForSluttenAvPeriode(KvpEntity kvp, OppfolgingsperiodeEntity periode) {
+    private boolean kvpForSluttenAvPeriode(KvpPeriodeEntity kvp, OppfolgingsperiodeEntity periode) {
         return periode.getSluttDato() == null || !periode.getSluttDato().isBefore(kvp.getOpprettetDato());
     }
 

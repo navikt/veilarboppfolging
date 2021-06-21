@@ -2,7 +2,7 @@ package no.nav.veilarboppfolging.controller;
 
 import no.nav.common.json.JsonUtils;
 import no.nav.common.types.identer.Fnr;
-import no.nav.veilarboppfolging.repository.entity.KvpEntity;
+import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
 import no.nav.veilarboppfolging.service.*;
 import org.junit.jupiter.api.Test;
@@ -70,7 +70,7 @@ public class OppfolgingControllerTest {
                         .startDato(ZonedDateTime.now())
                         .sluttDato(ZonedDateTime.now().plusDays(1))
                         .veileder("test")
-                        .kvpPerioder(List.of(KvpEntity.builder().aktorId("test2").build()))
+                        .kvpPerioder(List.of(KvpPeriodeEntity.builder().aktorId("test2").build()))
                         .build()
         );
 

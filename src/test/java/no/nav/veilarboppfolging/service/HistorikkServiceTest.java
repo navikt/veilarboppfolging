@@ -5,7 +5,7 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.controller.response.InnstillingsHistorikk;
 import no.nav.veilarboppfolging.repository.*;
 import no.nav.veilarboppfolging.repository.entity.EskaleringsvarselEntity;
-import no.nav.veilarboppfolging.repository.entity.KvpEntity;
+import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity;
 import no.nav.veilarboppfolging.repository.entity.ManuellStatusEntity;
 import org.junit.Before;
 import org.junit.Test;
@@ -168,8 +168,8 @@ public class HistorikkServiceTest {
     }
 
     private void gitt_kvp() {
-        List<KvpEntity> kvp = singletonList(
-                KvpEntity.builder()
+        List<KvpPeriodeEntity> kvp = singletonList(
+                KvpPeriodeEntity.builder()
                         .aktorId(AKTOR_ID.get())
                         .kvpId(1L)
                         .opprettetDato(KVP_START)

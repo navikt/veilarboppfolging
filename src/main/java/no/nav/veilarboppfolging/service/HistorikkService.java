@@ -64,7 +64,7 @@ public class HistorikkService {
     }
 
     @SneakyThrows
-    private boolean harTilgangTilEnhet(KvpEntity kvp) {
+    private boolean harTilgangTilEnhet(KvpPeriodeEntity kvp) {
         return authService.harTilgangTilEnhet(kvp.getEnhet());
     }
 
@@ -138,7 +138,7 @@ public class HistorikkService {
         }
     }
 
-    private List<InnstillingsHistorikk> tilDTO(KvpEntity kvp) {
+    private List<InnstillingsHistorikk> tilDTO(KvpPeriodeEntity kvp) {
         InnstillingsHistorikk kvpStart = InnstillingsHistorikk.builder()
                 .type(KVP_STARTET)
                 .begrunnelse(kvp.getOpprettetBegrunnelse())
@@ -161,7 +161,7 @@ public class HistorikkService {
     }
 
     private Stream<Stream<InnstillingsHistorikk>> hentInstillingHistorikk (AktorId aktorId) {
-        List<KvpEntity> kvpHistorikk = kvpRepository.hentKvpHistorikk(aktorId);
+        List<KvpPeriodeEntity> kvpHistorikk = kvpRepository.hentKvpHistorikk(aktorId);
 
         Stream <InnstillingsHistorikk> veilederTilordningerInnstillingHistorikk = null;
 

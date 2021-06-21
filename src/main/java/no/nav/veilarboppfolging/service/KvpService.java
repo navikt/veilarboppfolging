@@ -10,7 +10,7 @@ import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
 import no.nav.veilarboppfolging.repository.EskaleringsvarselRepository;
 import no.nav.veilarboppfolging.repository.KvpRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
-import no.nav.veilarboppfolging.repository.entity.KvpEntity;
+import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingEntity;
 import no.nav.veilarboppfolging.repository.enums.KodeverkBruker;
 import org.springframework.http.HttpStatus;
@@ -19,6 +19,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.ZonedDateTime;
+import java.util.Optional;
 
 import static java.lang.String.format;
 import static no.nav.veilarboppfolging.config.ApplicationConfig.SYSTEM_USER_NAME;
@@ -162,13 +163,13 @@ public class KvpService {
 
     public void avsluttKvpVedEnhetBytte(EndringPaaOppfoelgingsBrukerV1 endretBruker) {
         AktorId aktorId = AktorId.of(endretBruker.getAktoerid());
-        KvpEntity gjeldendeKvp = gjeldendeKvp(aktorId);
+        Optional<KvpPeriodeEntity> maybeGjeldendeKvpPeriode = gjeldendeKvp(aktorId);
 
-        if (gjeldendeKvp == null) {
+        if (maybeGjeldendeKvpPeriode.isEmpty()) {
             return;
         }
 
-        boolean harByttetKontor = !endretBruker.getNav_kontor().equals(gjeldendeKvp.getEnhet());
+        boolean harByttetKontor = !endretBruker.getNav_kontor().equals(maybeGjeldendeKvpPeriode.get().getEnhet());
 
         if (harByttetKontor) {
             stopKvpUtenEnhetSjekk(SYSTEM_USER_NAME, aktorId, "KVP avsluttet automatisk pga. endret Nav-enhet", SYSTEM);
@@ -176,8 +177,8 @@ public class KvpService {
         }
     }
 
-    KvpEntity gjeldendeKvp(AktorId aktorId) {
-        return kvpRepository.fetch(kvpRepository.gjeldendeKvp(aktorId));
+    Optional<KvpPeriodeEntity> gjeldendeKvp(AktorId aktorId) {
+        return kvpRepository.hentKvpPeriode(kvpRepository.gjeldendeKvp(aktorId));
     }
 
 }

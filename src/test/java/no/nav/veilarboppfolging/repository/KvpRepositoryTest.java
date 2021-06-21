@@ -1,7 +1,7 @@
 package no.nav.veilarboppfolging.repository;
 
 import no.nav.common.types.identer.AktorId;
-import no.nav.veilarboppfolging.repository.entity.KvpEntity;
+import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity;
 import no.nav.veilarboppfolging.test.DbTestUtils;
 import no.nav.veilarboppfolging.test.IsolatedDatabaseTest;
 import org.junit.Before;
@@ -9,10 +9,11 @@ import org.junit.Test;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.ZonedDateTime;
+import java.util.Optional;
 
 import static no.nav.veilarboppfolging.repository.enums.KodeverkBruker.NAV;
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class KvpRepositoryTest extends IsolatedDatabaseTest {
 
@@ -37,7 +38,7 @@ public class KvpRepositoryTest extends IsolatedDatabaseTest {
         start_kvp();
         stop_kvp();
 
-        assertThat(hentGjeldendeKvp(AKTOR_ID), nullValue());
+        assertTrue(hentGjeldendeKvp(AKTOR_ID).isEmpty());
     }
 
     @Test
@@ -48,7 +49,7 @@ public class KvpRepositoryTest extends IsolatedDatabaseTest {
         start_kvp();
         stop_kvp();
 
-        assertThat(kvpRepository.hentKvpHistorikk(AKTOR_ID), hasSize(2));
+        assertEquals(2, kvpRepository.hentKvpHistorikk(AKTOR_ID).size());
     }
 
     /**
@@ -56,18 +57,18 @@ public class KvpRepositoryTest extends IsolatedDatabaseTest {
      */
     @Test
     public void testSerial() {
-        KvpEntity kvp;
         long serial;
 
         gittOppfolgingForAktor(AKTOR_ID);
 
         start_kvp();
-        kvp = hentGjeldendeKvp(AKTOR_ID);
+        KvpPeriodeEntity kvp = hentGjeldendeKvp(AKTOR_ID).orElseThrow();
         serial = kvp.getSerial();
 
         stop_kvp();
-        kvp = kvpRepository.fetch(kvp.getKvpId());
-        assertThat(kvp.getSerial(), is(serial + 1));
+        var maybeKvp = kvpRepository.hentKvpPeriode(kvp.getKvpId());
+        assertTrue(maybeKvp.isPresent());
+        assertEquals(serial + 1, maybeKvp.get().getSerial());
     }
 
     private void stop_kvp() {
@@ -79,9 +80,9 @@ public class KvpRepositoryTest extends IsolatedDatabaseTest {
         kvpRepository.startKvp(AKTOR_ID, "0123", SAKSBEHANDLER_ID, BEGRUNNELSE, ZonedDateTime.now());
     }
 
-    private KvpEntity hentGjeldendeKvp(AktorId aktorId) {
+    private Optional<KvpPeriodeEntity> hentGjeldendeKvp(AktorId aktorId) {
         long kvpId = oppfolgingsStatusRepository.fetch(aktorId).getGjeldendeKvpId();
-        return kvpRepository.fetch(kvpId);
+        return kvpRepository.hentKvpPeriode(kvpId);
     }
 
     private void gittOppfolgingForAktor(AktorId aktorId) {

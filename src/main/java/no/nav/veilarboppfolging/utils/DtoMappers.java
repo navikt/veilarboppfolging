@@ -25,7 +25,7 @@ public class DtoMappers {
     /**
      * Given a Kvp object, return its DTO representation. All fields are included.
      */
-    public static KvpDTO kvpToDTO(KvpEntity k) {
+    public static KvpDTO kvpToDTO(KvpPeriodeEntity k) {
         return new KvpDTO()
                 .setKvpId(k.getKvpId())
                 .setSerial(k.getSerial())
@@ -125,7 +125,7 @@ public class DtoMappers {
                 .setStartDato(oppfolgingsperiode.getStartDato());
     }
 
-    public static KvpPeriodeDTO tilDTO(KvpEntity kvp) {
+    public static KvpPeriodeDTO tilDTO(KvpPeriodeEntity kvp) {
         return new KvpPeriodeDTO(kvp.getOpprettetDato(), kvp.getAvsluttetDato());
     }
 
