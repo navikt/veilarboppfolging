@@ -2,8 +2,8 @@ package no.nav.veilarboppfolging.repository;
 
 import lombok.SneakyThrows;
 import no.nav.common.types.identer.AktorId;
-import no.nav.veilarboppfolging.domain.KodeverkBruker;
-import no.nav.veilarboppfolging.domain.ManuellStatus;
+import no.nav.veilarboppfolging.repository.entity.ManuellStatusEntity;
+import no.nav.veilarboppfolging.repository.enums.KodeverkBruker;
 import no.nav.veilarboppfolging.utils.DbUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -35,7 +35,7 @@ public class ManuellStatusRepository {
         this.transactor = transactor;
     }
 
-    public void create(ManuellStatus manuellStatus) {
+    public void create(ManuellStatusEntity manuellStatus) {
         transactor.executeWithoutResult((ignored) -> {
             manuellStatus.setId(DbUtils.nesteFraSekvens(db,"status_seq"));
             insert(manuellStatus);
@@ -43,12 +43,12 @@ public class ManuellStatusRepository {
         });
     }
 
-    public ManuellStatus fetch(Long id) {
+    public ManuellStatusEntity fetch(Long id) {
         String sql = "SELECT * FROM MANUELL_STATUS WHERE id = ?";
         return firstOrNull(db.query(sql, ManuellStatusRepository::map, id));
     }
 
-    public List<ManuellStatus> history(AktorId aktorId) {
+    public List<ManuellStatusEntity> history(AktorId aktorId) {
         return db.query(
                 "SELECT * FROM MANUELL_STATUS WHERE aktor_id = ?",
                 ManuellStatusRepository::map,
@@ -56,14 +56,14 @@ public class ManuellStatusRepository {
         );
     }
 
-    public Optional<ManuellStatus> hentSisteManuellStatus(AktorId aktorId) {
+    public Optional<ManuellStatusEntity> hentSisteManuellStatus(AktorId aktorId) {
         String sql = "SELECT * FROM MANUELL_STATUS WHERE aktor_id = ? ORDER BY OPPRETTET_DATO DESC FETCH NEXT 1 ROWS ONLY";
         return queryForNullableObject(db, sql, ManuellStatusRepository::map, aktorId.get());
     }
 
     @SneakyThrows
-    public static ManuellStatus map(ResultSet result, int row) {
-        return new ManuellStatus()
+    public static ManuellStatusEntity map(ResultSet result, int row) {
+        return new ManuellStatusEntity()
                 .setId(result.getLong("id"))
                 .setAktorId(result.getString("aktor_id"))
                 .setManuell(result.getBoolean("manuell"))
@@ -73,7 +73,7 @@ public class ManuellStatusRepository {
                 .setOpprettetAvBrukerId(result.getString("opprettet_av_brukerid"));
     }
 
-    private void insert(ManuellStatus manuellStatus) {
+    private void insert(ManuellStatusEntity manuellStatus) {
         db.update(
                 "INSERT INTO MANUELL_STATUS(" +
                         "id, " +
@@ -94,7 +94,7 @@ public class ManuellStatusRepository {
         );
     }
 
-    private void setActive(ManuellStatus gjeldendeManuellStatus) {
+    private void setActive(ManuellStatusEntity gjeldendeManuellStatus) {
         db.update("UPDATE " +
                         OppfolgingsStatusRepository.TABLE_NAME +
                         " SET " + GJELDENDE_MANUELL_STATUS + " = ?, " +

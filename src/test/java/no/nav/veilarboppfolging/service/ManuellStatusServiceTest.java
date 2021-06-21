@@ -5,9 +5,9 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.client.dkif.DkifClient;
 import no.nav.veilarboppfolging.client.dkif.DkifKontaktinfo;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
-import no.nav.veilarboppfolging.domain.ManuellStatus;
 import no.nav.veilarboppfolging.repository.ManuellStatusRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
+import no.nav.veilarboppfolging.repository.entity.ManuellStatusEntity;
 import no.nav.veilarboppfolging.test.DbTestUtils;
 import no.nav.veilarboppfolging.test.IsolatedDatabaseTest;
 import org.junit.Before;
@@ -19,8 +19,8 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import static no.nav.veilarboppfolging.domain.KodeverkBruker.NAV;
-import static no.nav.veilarboppfolging.domain.KodeverkBruker.SYSTEM;
+import static no.nav.veilarboppfolging.repository.enums.KodeverkBruker.NAV;
+import static no.nav.veilarboppfolging.repository.enums.KodeverkBruker.SYSTEM;
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -78,7 +78,7 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
         manuellStatusService.oppdaterManuellStatus(FNR, true, begrunnelse, SYSTEM, opprettetAvBruker);
 
         long gjeldendeManuellStatusId = oppfolgingsStatusRepository.fetch(AKTOR_ID).getGjeldendeManuellStatusId();
-        ManuellStatus gjeldendeManuellStatus = manuellStatusRepository.fetch(gjeldendeManuellStatusId);
+        ManuellStatusEntity gjeldendeManuellStatus = manuellStatusRepository.fetch(gjeldendeManuellStatusId);
 
         assertEquals(AKTOR_ID.get(), gjeldendeManuellStatus.getAktorId());
         assertEquals(SYSTEM, gjeldendeManuellStatus.getOpprettetAv());
@@ -118,7 +118,7 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
 
         manuellStatusService.synkroniserManuellStatusMedDkif(FNR);
 
-        List<ManuellStatus> history = manuellStatusRepository.history(AKTOR_ID);
+        List<ManuellStatusEntity> history = manuellStatusRepository.history(AKTOR_ID);
 
         assertEquals(1, history.size());
     }
@@ -136,7 +136,7 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
 
         manuellStatusService.synkroniserManuellStatusMedDkif(FNR);
 
-        List<ManuellStatus> history = manuellStatusRepository.history(AKTOR_ID);
+        List<ManuellStatusEntity> history = manuellStatusRepository.history(AKTOR_ID);
 
         assertTrue(history.isEmpty());
     }
@@ -147,7 +147,7 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
 
         manuellStatusService.settBrukerTilManuellGrunnetReservasjonIKRR(AKTOR_ID);
 
-        ManuellStatus manuellStatus = manuellStatusRepository.hentSisteManuellStatus(AKTOR_ID).orElseThrow();
+        ManuellStatusEntity manuellStatus = manuellStatusRepository.hentSisteManuellStatus(AKTOR_ID).orElseThrow();
 
         assertTrue(manuellStatus.getId() > 0);
         assertEquals("Brukeren er reservert i Kontakt- og reservasjonsregisteret", manuellStatus.getBegrunnelse());
@@ -160,7 +160,7 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
     public void settBrukerTilManuellGrunnetReservasjonIKRR__skal_ikke_lage_manuell_status_hvis_allerede_manuell() {
         gittAktivOppfolging(AKTOR_ID);
 
-        ManuellStatus manuellStatus = new ManuellStatus()
+        ManuellStatusEntity manuellStatus = new ManuellStatusEntity()
                 .setManuell(true)
                 .setAktorId(AKTOR_ID.get())
                 .setBegrunnelse("test");
@@ -169,7 +169,7 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
 
         manuellStatusService.settBrukerTilManuellGrunnetReservasjonIKRR(AKTOR_ID);
 
-        List<ManuellStatus> history = manuellStatusRepository.history(AKTOR_ID);
+        List<ManuellStatusEntity> history = manuellStatusRepository.history(AKTOR_ID);
 
         assertEquals(1, history.size());
     }

@@ -4,8 +4,8 @@ import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.json.JsonUtils;
 import no.nav.common.types.identer.AktorId;
 import no.nav.veilarboppfolging.controller.response.KvpDTO;
-import no.nav.veilarboppfolging.domain.Kvp;
 import no.nav.veilarboppfolging.repository.KvpRepository;
+import no.nav.veilarboppfolging.repository.entity.KvpEntity;
 import no.nav.veilarboppfolging.service.AuthService;
 import no.nav.veilarboppfolging.utils.DtoMappers;
 import org.junit.jupiter.api.Test;
@@ -108,8 +108,8 @@ public class KvpControllerTest {
                 .andExpect(status().is(500));
     }
 
-    private Kvp kvp() {
-        return Kvp.builder()
+    private KvpEntity kvp() {
+        return KvpEntity.builder()
                 .kvpId(KVP_ID)
                 .aktorId(AKTOR_ID.get())
                 .opprettetDato(ZonedDateTime.of(2020, 5, 4, 3, 2, 1, 0, ZoneId.systemDefault()))

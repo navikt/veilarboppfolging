@@ -3,7 +3,7 @@ package no.nav.veilarboppfolging.repository;
 
 import lombok.SneakyThrows;
 import no.nav.common.types.identer.AktorId;
-import no.nav.veilarboppfolging.domain.Tilordning;
+import no.nav.veilarboppfolging.repository.entity.VeilederTilordningEntity;
 import no.nav.veilarboppfolging.utils.DbUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -28,11 +28,11 @@ public class VeilederTilordningerRepository {
 
     public String hentTilordningForAktoer(AktorId aktorId) {
         return hentTilordnetVeileder(aktorId)
-                .map(Tilordning::getVeilederId)
+                .map(VeilederTilordningEntity::getVeilederId)
                 .orElse(null);
     }
 
-    public Optional<Tilordning> hentTilordnetVeileder(AktorId aktorId) {
+    public Optional<VeilederTilordningEntity> hentTilordnetVeileder(AktorId aktorId) {
         String sql = format("SELECT * FROM %s WHERE %s = ?", TABLE_NAME, AKTOR_ID);
         return queryForNullableObject(db, sql, VeilederTilordningerRepository::map, aktorId.get());
     }
@@ -59,8 +59,8 @@ public class VeilederTilordningerRepository {
     }
 
     @SneakyThrows
-    private static Tilordning map(ResultSet resultSet, int row) {
-        return new Tilordning()
+    private static VeilederTilordningEntity map(ResultSet resultSet, int row) {
+        return new VeilederTilordningEntity()
                 .setAktorId(resultSet.getString(AKTOR_ID))
                 .setOppfolging(resultSet.getBoolean(UNDER_OPPFOLGING))
                 .setVeilederId(resultSet.getString(VEILEDER))

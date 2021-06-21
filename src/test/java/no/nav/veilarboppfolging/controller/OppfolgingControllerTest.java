@@ -2,8 +2,8 @@ package no.nav.veilarboppfolging.controller;
 
 import no.nav.common.json.JsonUtils;
 import no.nav.common.types.identer.Fnr;
-import no.nav.veilarboppfolging.domain.Kvp;
-import no.nav.veilarboppfolging.domain.Oppfolgingsperiode;
+import no.nav.veilarboppfolging.repository.entity.KvpEntity;
+import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
 import no.nav.veilarboppfolging.service.*;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,15 +62,15 @@ public class OppfolgingControllerTest {
     public void oppfolgingsperioder_skal_returnere_oppfolgingsperioder() throws Exception {
         Fnr fnr = Fnr.of("1234");
 
-        List<Oppfolgingsperiode> perioder = new ArrayList<>();
+        List<OppfolgingsperiodeEntity> perioder = new ArrayList<>();
         perioder.add(
-                Oppfolgingsperiode.builder()
+                OppfolgingsperiodeEntity.builder()
                         .aktorId("test1")
                         .begrunnelse("begrunnelse")
                         .startDato(ZonedDateTime.now())
                         .sluttDato(ZonedDateTime.now().plusDays(1))
                         .veileder("test")
-                        .kvpPerioder(List.of(Kvp.builder().aktorId("test2").build()))
+                        .kvpPerioder(List.of(KvpEntity.builder().aktorId("test2").build()))
                         .build()
         );
 

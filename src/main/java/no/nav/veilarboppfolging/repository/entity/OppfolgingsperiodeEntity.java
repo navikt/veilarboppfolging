@@ -1,4 +1,4 @@
-package no.nav.veilarboppfolging.domain;
+package no.nav.veilarboppfolging.repository.entity;
 
 import lombok.Builder;
 import lombok.Value;
@@ -9,12 +9,12 @@ import java.util.UUID;
 
 @Value
 @Builder(toBuilder = true)
-public class Oppfolgingsperiode {
+public class OppfolgingsperiodeEntity {
     UUID uuid;
     String aktorId;
     String veileder;
     ZonedDateTime startDato;
     ZonedDateTime sluttDato;
     String begrunnelse;
-    List<Kvp> kvpPerioder;
+    List<KvpEntity> kvpPerioder;
 }

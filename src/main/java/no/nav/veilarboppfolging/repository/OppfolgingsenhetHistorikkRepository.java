@@ -1,7 +1,7 @@
 package no.nav.veilarboppfolging.repository;
 
 import no.nav.common.types.identer.AktorId;
-import no.nav.veilarboppfolging.domain.OppfolgingsenhetEndringData;
+import no.nav.veilarboppfolging.repository.entity.OppfolgingsenhetEndringEntity;
 import no.nav.veilarboppfolging.utils.DbUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -28,13 +28,13 @@ public class OppfolgingsenhetHistorikkRepository {
         db.update(sql, aktorId.get(), enhet, DbUtils.nesteFraSekvens(db, "ENHET_SEQ"));
     }
 
-    public List<OppfolgingsenhetEndringData> hentOppfolgingsenhetEndringerForAktorId(AktorId aktorId) {
+    public List<OppfolgingsenhetEndringEntity> hentOppfolgingsenhetEndringerForAktorId(AktorId aktorId) {
         String sql = "SELECT enhet, endret_dato FROM OPPFOLGINGSENHET_ENDRET WHERE aktor_id = ? ORDER BY enhet_seq DESC";
         return db.query(sql, OppfolgingsenhetHistorikkRepository::mapper, aktorId.get());
     }
 
-    private static OppfolgingsenhetEndringData mapper(ResultSet resultset, int rows) throws SQLException {
-        return OppfolgingsenhetEndringData.builder()
+    private static OppfolgingsenhetEndringEntity mapper(ResultSet resultset, int rows) throws SQLException {
+        return OppfolgingsenhetEndringEntity.builder()
                 .enhet(resultset.getString("enhet"))
                 .endretDato(hentZonedDateTime(resultset, "endret_dato"))
                 .build();

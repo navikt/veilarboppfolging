@@ -4,11 +4,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto_schema.kafka.json.topic.SisteOppfolgingsperiodeV1;
-import no.nav.veilarboppfolging.domain.Oppfolgingsperiode;
-import no.nav.veilarboppfolging.domain.Tilordning;
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
 import no.nav.veilarboppfolging.repository.VeilederTilordningerRepository;
+import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
+import no.nav.veilarboppfolging.repository.entity.VeilederTilordningEntity;
 import no.nav.veilarboppfolging.utils.DtoMappers;
 import no.nav.veilarboppfolging.utils.OppfolgingsperiodeUtils;
 import org.springframework.stereotype.Service;
@@ -68,8 +68,8 @@ public class KafkaRepubliseringService {
     }
 
     private void republiserOppfolgingsperiodeForBruker(AktorId aktorId) {
-        List<Oppfolgingsperiode> perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId);
-        Oppfolgingsperiode sistePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(perioder);
+        List<OppfolgingsperiodeEntity> perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId);
+        OppfolgingsperiodeEntity sistePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(perioder);
 
         if (sistePeriode == null) {
             log.error("Bruker med aktorId={} ligger i OPPFOLGINGSTATUS men har ingen oppfølgingsperioder", aktorId);
@@ -82,7 +82,7 @@ public class KafkaRepubliseringService {
     }
 
     private void republiserSisteTilordnetVeilederForBruker(AktorId aktorId) {
-        Optional<Tilordning> maybeTilordning = veilederTilordningerRepository.hentTilordnetVeileder(aktorId);
+        Optional<VeilederTilordningEntity> maybeTilordning = veilederTilordningerRepository.hentTilordnetVeileder(aktorId);
 
         maybeTilordning.ifPresent(tilordning -> {
             // Skal ikke publisere for brukere som ikke har fått veileder

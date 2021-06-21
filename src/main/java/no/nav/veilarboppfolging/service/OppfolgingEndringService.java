@@ -5,9 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV1;
-import no.nav.veilarboppfolging.domain.ArenaOppfolgingTilstand;
-import no.nav.veilarboppfolging.domain.OppfolgingTable;
+import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolgingTilstand;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
+import no.nav.veilarboppfolging.repository.entity.OppfolgingEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -43,9 +43,9 @@ public class OppfolgingEndringService {
         String formidlingsgruppe = endringPaaOppfoelgingsBrukerV1.getFormidlingsgruppekode();
         String kvalifiseringsgruppe = endringPaaOppfoelgingsBrukerV1.getKvalifiseringsgruppekode();
 
-        Optional<OppfolgingTable> maybeOppfolging = ofNullable(oppfolgingsStatusRepository.fetch(aktorId));
+        Optional<OppfolgingEntity> maybeOppfolging = ofNullable(oppfolgingsStatusRepository.fetch(aktorId));
 
-        boolean erBrukerUnderOppfolging = maybeOppfolging.map(OppfolgingTable::isUnderOppfolging).orElse(false);
+        boolean erBrukerUnderOppfolging = maybeOppfolging.map(OppfolgingEntity::isUnderOppfolging).orElse(false);
         boolean erUnderOppfolgingIArena = erUnderOppfolging(formidlingsgruppe, kvalifiseringsgruppe);
         boolean erInaktivIArena = erIserv(formidlingsgruppe);
 

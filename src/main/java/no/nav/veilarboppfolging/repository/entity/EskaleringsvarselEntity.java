@@ -1,4 +1,4 @@
-package no.nav.veilarboppfolging.domain;
+package no.nav.veilarboppfolging.repository.entity;
 
 import lombok.Builder;
 import lombok.Value;
@@ -9,7 +9,7 @@ import java.time.ZonedDateTime;
 @Value
 @Builder
 @With
-public class EskaleringsvarselData {
+public class EskaleringsvarselEntity {
     long varselId;
     String aktorId;
     String opprettetAv;

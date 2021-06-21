@@ -5,7 +5,7 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.controller.request.*;
 import no.nav.veilarboppfolging.controller.response.*;
-import no.nav.veilarboppfolging.domain.KodeverkBruker;
+import no.nav.veilarboppfolging.repository.enums.KodeverkBruker;
 import no.nav.veilarboppfolging.service.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

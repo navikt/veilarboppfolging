@@ -7,8 +7,8 @@ import lombok.RequiredArgsConstructor;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.types.identer.AktorId;
 import no.nav.veilarboppfolging.controller.response.KvpDTO;
-import no.nav.veilarboppfolging.domain.Kvp;
 import no.nav.veilarboppfolging.repository.KvpRepository;
+import no.nav.veilarboppfolging.repository.entity.KvpEntity;
 import no.nav.veilarboppfolging.service.AuthService;
 import no.nav.veilarboppfolging.utils.DtoMappers;
 import org.springframework.http.HttpStatus;
@@ -62,7 +62,7 @@ public class KvpController {
 
         // This shouldn't happen, and signifies a bug in the dataset.
         // Throw a 500 error in order to make someone[tm] aware of the problem.
-        Kvp kvp = repository.fetch(kvpId);
+        KvpEntity kvp = repository.fetch(kvpId);
         if (kvp == null) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
         }

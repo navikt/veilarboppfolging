@@ -2,7 +2,7 @@ package no.nav.veilarboppfolging.repository;
 
 import lombok.SneakyThrows;
 import no.nav.common.types.identer.AktorId;
-import no.nav.veilarboppfolging.domain.EskaleringsvarselData;
+import no.nav.veilarboppfolging.repository.entity.EskaleringsvarselEntity;
 import no.nav.veilarboppfolging.utils.DbUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -31,16 +31,16 @@ public class EskaleringsvarselRepository {
         this.transactor = transactor;
     }
 
-    public void create(EskaleringsvarselData e) {
+    public void create(EskaleringsvarselEntity e) {
         transactor.executeWithoutResult((ignored) -> {
             long id = DbUtils.nesteFraSekvens(db, "ESKALERINGSVARSEL_SEQ");
-            EskaleringsvarselData varsel = e.withVarselId(id);
+            EskaleringsvarselEntity varsel = e.withVarselId(id);
             insert(varsel);
             setActive(varsel);
         });
     }
 
-    public EskaleringsvarselData fetch(Long id) {
+    public EskaleringsvarselEntity fetch(Long id) {
         String sql = "SELECT * FROM ESKALERINGSVARSEL WHERE varsel_id = ?";
         return firstOrNull(db.query(sql, EskaleringsvarselRepository::map, id));
     }
@@ -53,15 +53,15 @@ public class EskaleringsvarselRepository {
     }
 
 
-    public List<EskaleringsvarselData> history(AktorId aktorId) {
+    public List<EskaleringsvarselEntity> history(AktorId aktorId) {
         return db.query("SELECT * FROM ESKALERINGSVARSEL WHERE aktor_id = ?",
                 EskaleringsvarselRepository::map,
                 aktorId.get());
     }
 
     @SneakyThrows
-    private static EskaleringsvarselData map(ResultSet result, int row) {
-        return EskaleringsvarselData.builder()
+    private static EskaleringsvarselEntity map(ResultSet result, int row) {
+        return EskaleringsvarselEntity.builder()
                 .varselId(result.getLong("varsel_id"))
                 .aktorId(result.getString("aktor_id"))
                 .opprettetAv(result.getString("opprettet_av"))
@@ -74,7 +74,7 @@ public class EskaleringsvarselRepository {
                 .build();
     }
 
-    private void insert(EskaleringsvarselData e) {
+    private void insert(EskaleringsvarselEntity e) {
         String sql = "INSERT INTO ESKALERINGSVARSEL" +
                 "(varsel_id, aktor_id, opprettet_av, opprettet_dato, opprettet_begrunnelse, tilhorende_dialog_id)" +
                 " VALUES(?, ?, ?, CURRENT_TIMESTAMP, ?, ?)";
@@ -82,7 +82,7 @@ public class EskaleringsvarselRepository {
         db.update(sql, e.getVarselId(), e.getAktorId(), e.getOpprettetAv(), e.getOpprettetBegrunnelse(), e.getTilhorendeDialogId());
     }
 
-    private void setActive(EskaleringsvarselData e) {
+    private void setActive(EskaleringsvarselEntity e) {
         db.update("" +
                         "UPDATE " + OppfolgingsStatusRepository.TABLE_NAME +
                         " SET " + GJELDENE_ESKALERINGSVARSEL + " = ?, " +

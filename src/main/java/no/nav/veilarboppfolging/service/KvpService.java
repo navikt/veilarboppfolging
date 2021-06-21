@@ -7,12 +7,12 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV1;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
-import no.nav.veilarboppfolging.domain.KodeverkBruker;
-import no.nav.veilarboppfolging.domain.Kvp;
-import no.nav.veilarboppfolging.domain.OppfolgingTable;
 import no.nav.veilarboppfolging.repository.EskaleringsvarselRepository;
 import no.nav.veilarboppfolging.repository.KvpRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
+import no.nav.veilarboppfolging.repository.entity.KvpEntity;
+import no.nav.veilarboppfolging.repository.entity.OppfolgingEntity;
+import no.nav.veilarboppfolging.repository.enums.KodeverkBruker;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -22,8 +22,8 @@ import java.time.ZonedDateTime;
 
 import static java.lang.String.format;
 import static no.nav.veilarboppfolging.config.ApplicationConfig.SYSTEM_USER_NAME;
-import static no.nav.veilarboppfolging.domain.KodeverkBruker.NAV;
-import static no.nav.veilarboppfolging.domain.KodeverkBruker.SYSTEM;
+import static no.nav.veilarboppfolging.repository.enums.KodeverkBruker.NAV;
+import static no.nav.veilarboppfolging.repository.enums.KodeverkBruker.SYSTEM;
 
 @Slf4j
 @Service
@@ -73,9 +73,9 @@ public class KvpService {
 
         authService.sjekkLesetilgangMedAktorId(aktorId);
 
-        OppfolgingTable oppfolgingTable = oppfolgingsStatusRepository.fetch(aktorId);
+        OppfolgingEntity oppfolging = oppfolgingsStatusRepository.fetch(aktorId);
 
-        if (oppfolgingTable == null || !oppfolgingTable.isUnderOppfolging()) {
+        if (oppfolging == null || !oppfolging.isUnderOppfolging()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
 
@@ -86,7 +86,7 @@ public class KvpService {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         }
 
-        if (oppfolgingTable.getGjeldendeKvpId() != 0) {
+        if (oppfolging.getGjeldendeKvpId() != 0) {
             log.warn(format("Aktøren er allerede under en KVP-periode. AktorId: %s", aktorId));
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
@@ -131,8 +131,8 @@ public class KvpService {
     }
 
     private void stopKvpUtenEnhetSjekk(String avsluttetAv, AktorId aktorId, String begrunnelse, KodeverkBruker kodeverkBruker) {
-        OppfolgingTable oppfolgingTable = oppfolgingsStatusRepository.fetch(aktorId);
-        long gjeldendeKvpId = oppfolgingTable.getGjeldendeKvpId();
+        OppfolgingEntity oppfolging = oppfolgingsStatusRepository.fetch(aktorId);
+        long gjeldendeKvpId = oppfolging.getGjeldendeKvpId();
 
         if (gjeldendeKvpId == 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
@@ -141,10 +141,10 @@ public class KvpService {
         transactor.executeWithoutResult((ignored) -> {
             ZonedDateTime sluttDato = ZonedDateTime.now();
 
-            if (oppfolgingTable.getGjeldendeEskaleringsvarselId() != 0) {
+            if (oppfolging.getGjeldendeEskaleringsvarselId() != 0) {
                 eskaleringsvarselRepository.finish(
                         aktorId,
-                        oppfolgingTable.getGjeldendeEskaleringsvarselId(),
+                        oppfolging.getGjeldendeEskaleringsvarselId(),
                         avsluttetAv,
                         ESKALERING_AVSLUTTET_FORDI_KVP_BLE_AVSLUTTET,
                         sluttDato
@@ -162,7 +162,7 @@ public class KvpService {
 
     public void avsluttKvpVedEnhetBytte(EndringPaaOppfoelgingsBrukerV1 endretBruker) {
         AktorId aktorId = AktorId.of(endretBruker.getAktoerid());
-        Kvp gjeldendeKvp = gjeldendeKvp(aktorId);
+        KvpEntity gjeldendeKvp = gjeldendeKvp(aktorId);
 
         if (gjeldendeKvp == null) {
             return;
@@ -176,7 +176,7 @@ public class KvpService {
         }
     }
 
-    Kvp gjeldendeKvp(AktorId aktorId) {
+    KvpEntity gjeldendeKvp(AktorId aktorId) {
         return kvpRepository.fetch(kvpRepository.gjeldendeKvp(aktorId));
     }
 

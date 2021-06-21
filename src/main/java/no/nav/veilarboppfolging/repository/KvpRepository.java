@@ -2,8 +2,8 @@ package no.nav.veilarboppfolging.repository;
 
 import lombok.SneakyThrows;
 import no.nav.common.types.identer.AktorId;
-import no.nav.veilarboppfolging.domain.KodeverkBruker;
-import no.nav.veilarboppfolging.domain.Kvp;
+import no.nav.veilarboppfolging.repository.entity.KvpEntity;
+import no.nav.veilarboppfolging.repository.enums.KodeverkBruker;
 import no.nav.veilarboppfolging.utils.DbUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -15,7 +15,7 @@ import java.sql.ResultSet;
 import java.time.ZonedDateTime;
 import java.util.List;
 
-import static no.nav.veilarboppfolging.domain.KodeverkBruker.NAV;
+import static no.nav.veilarboppfolging.repository.enums.KodeverkBruker.NAV;
 import static no.nav.veilarboppfolging.utils.DbUtils.hentZonedDateTime;
 import static no.nav.veilarboppfolging.utils.EnumUtils.getName;
 import static no.nav.veilarboppfolging.utils.EnumUtils.valueOfOptional;
@@ -102,7 +102,7 @@ public class KvpRepository {
         });
     }
 
-    public List<Kvp> hentKvpHistorikk(AktorId aktorId) {
+    public List<KvpEntity> hentKvpHistorikk(AktorId aktorId) {
         return db.query("SELECT * " +
                         "FROM kvp " +
                         "WHERE aktor_id = ?",
@@ -115,12 +115,12 @@ public class KvpRepository {
      * Return a list of KVP objects where the serial number is greater than N.
      * The serial number is the number of updates the table has undergone.
      */
-    public List<Kvp> serialGreaterThan(long serial, long pageSize) {
+    public List<KvpEntity> serialGreaterThan(long serial, long pageSize) {
         String sql = "SELECT * FROM kvp WHERE serial > ? AND rownum <= ? ORDER BY serial ASC";
         return db.query(sql, KvpRepository::mapTilKvp, serial, pageSize);
     }
 
-    public Kvp fetch(long id) {
+    public KvpEntity fetch(long id) {
         String sql = "SELECT * FROM KVP WHERE kvp_id = ?";
         return firstOrNull(db.query(sql, KvpRepository::mapTilKvp, id));
     }
@@ -141,8 +141,8 @@ public class KvpRepository {
     }
 
     @SneakyThrows
-    protected static Kvp mapTilKvp(ResultSet rs, int row) {
-        return Kvp.builder()
+    protected static KvpEntity mapTilKvp(ResultSet rs, int row) {
+        return KvpEntity.builder()
                 .kvpId(rs.getLong("kvp_id"))
                 .serial(rs.getLong("serial"))
                 .aktorId(rs.getString("aktor_id"))

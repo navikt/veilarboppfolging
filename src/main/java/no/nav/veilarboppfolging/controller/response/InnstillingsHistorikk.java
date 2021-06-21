@@ -2,7 +2,7 @@ package no.nav.veilarboppfolging.controller.response;
 
 import lombok.Builder;
 import lombok.Value;
-import no.nav.veilarboppfolging.domain.KodeverkBruker;
+import no.nav.veilarboppfolging.repository.enums.KodeverkBruker;
 
 import java.time.ZonedDateTime;
 

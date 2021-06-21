@@ -5,11 +5,16 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.client.dkif.DkifKontaktinfo;
+import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolgingTilstand;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 import no.nav.veilarboppfolging.controller.response.UnderOppfolgingDTO;
 import no.nav.veilarboppfolging.controller.response.VeilederTilgang;
-import no.nav.veilarboppfolging.domain.*;
+import no.nav.veilarboppfolging.domain.AvslutningStatusData;
+import no.nav.veilarboppfolging.domain.Oppfolging;
+import no.nav.veilarboppfolging.domain.OppfolgingStatusData;
+import no.nav.veilarboppfolging.domain.Oppfolgingsbruker;
 import no.nav.veilarboppfolging.repository.*;
+import no.nav.veilarboppfolging.repository.entity.*;
 import no.nav.veilarboppfolging.utils.ArenaUtils;
 import no.nav.veilarboppfolging.utils.DtoMappers;
 import no.nav.veilarboppfolging.utils.OppfolgingsperiodeUtils;
@@ -137,7 +142,7 @@ public class OppfolgingService {
 
         authService.sjekkTilgangTilEnhet(arenaOppfolgingTilstand.getOppfolgingsenhet());
 
-        OppfolgingTable oppfolging = oppfolgingsStatusRepository.fetch(aktorId);
+        OppfolgingEntity oppfolging = oppfolgingsStatusRepository.fetch(aktorId);
 
         if (ArenaUtils.kanSettesUnderOppfolging(arenaOppfolgingTilstand, oppfolging.isUnderOppfolging())) {
             startOppfolgingHvisIkkeAlleredeStartet(aktorId);
@@ -157,7 +162,7 @@ public class OppfolgingService {
 
         authService.sjekkTilgangTilEnhet(arenaOppfolgingTilstand.getOppfolgingsenhet());
 
-        OppfolgingTable oppfolging = oppfolgingsStatusRepository.fetch(aktorId);
+        OppfolgingEntity oppfolging = oppfolgingsStatusRepository.fetch(aktorId);
 
         boolean erIserv = erIserv(arenaOppfolgingTilstand.getFormidlingsgruppe());
 
@@ -177,7 +182,7 @@ public class OppfolgingService {
 
         log.info("Avslutting av oppfølging, tilstand i Arena for aktorid {}: {}", aktorId, arenaOppfolgingTilstand);
 
-        OppfolgingTable oppfolging = oppfolgingsStatusRepository.fetch(aktorId);
+        OppfolgingEntity oppfolging = oppfolgingsStatusRepository.fetch(aktorId);
 
         boolean erIserv = erIserv(arenaOppfolgingTilstand.getFormidlingsgruppe());
 
@@ -189,7 +194,7 @@ public class OppfolgingService {
         return true;
     }
 
-    public List<AvsluttetOppfolgingFeedData> hentAvsluttetOppfolgingEtterDato(Timestamp timestamp, int pageSize) {
+    public List<AvsluttetOppfolgingFeedEntity> hentAvsluttetOppfolgingEtterDato(Timestamp timestamp, int pageSize) {
         return oppfolgingsPeriodeRepository.fetchAvsluttetEtterDato(timestamp, pageSize);
     }
 
@@ -202,7 +207,7 @@ public class OppfolgingService {
         return new VeilederTilgang().setTilgangTilBrukersKontor(tilgangTilEnhet);
     }
 
-    public List<Oppfolgingsperiode> hentOppfolgingsperioder(Fnr fnr) {
+    public List<OppfolgingsperiodeEntity> hentOppfolgingsperioder(Fnr fnr) {
         authService.sjekkLesetilgangMedFnr(fnr);
         AktorId aktorId = authService.getAktorIdOrThrow(fnr);
         return oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId);
@@ -231,11 +236,11 @@ public class OppfolgingService {
         authService.sjekkTilgangTilPersonMedNiva3(aktorId);
 
         return ofNullable(oppfolgingsStatusRepository.fetch(aktorId))
-                .map(OppfolgingTable::isUnderOppfolging)
+                .map(OppfolgingEntity::isUnderOppfolging)
                 .orElse(false);
     }
 
-    private Optional<OppfolgingTable> getOppfolgingStatus(Fnr fnr) {
+    private Optional<OppfolgingEntity> getOppfolgingStatus(Fnr fnr) {
         AktorId aktorId = authService.getAktorIdOrThrow(fnr);
         authService.sjekkLesetilgangMedAktorId(aktorId);
         return ofNullable(oppfolgingsStatusRepository.fetch(aktorId));
@@ -303,7 +308,7 @@ public class OppfolgingService {
     private AvslutningStatusData getAvslutningStatus(Fnr fnr) {
         AktorId aktorId = authService.getAktorIdOrThrow(fnr);
 
-        OppfolgingTable oppfolging = oppfolgingsStatusRepository.fetch(aktorId);
+        OppfolgingEntity oppfolging = oppfolgingsStatusRepository.fetch(aktorId);
 
         Optional<ArenaOppfolgingTilstand> maybeArenaOppfolging = arenaOppfolgingService.hentOppfolgingTilstand(fnr);
 
@@ -328,13 +333,13 @@ public class OppfolgingService {
                 .build();
     }
 
-    public Oppfolgingsperiode hentPeriode(String uuid) {
+    public OppfolgingsperiodeEntity hentPeriode(String uuid) {
         return oppfolgingsPeriodeRepository.hentOppfolgingsperiode(uuid);
     }
 
     @SneakyThrows
     public Optional<Oppfolging> hentOppfolging(AktorId aktorId) {
-        OppfolgingTable t = oppfolgingsStatusRepository.fetch(aktorId);
+        OppfolgingEntity t = oppfolgingsStatusRepository.fetch(aktorId);
 
         if (t == null) {
             return Optional.empty();
@@ -345,7 +350,7 @@ public class OppfolgingService {
                 .setVeilederId(t.getVeilederId())
                 .setUnderOppfolging(t.isUnderOppfolging());
 
-        Kvp kvp = null;
+        KvpEntity kvp = null;
         if (t.getGjeldendeKvpId() != 0) {
             kvp = kvpRepository.fetch(t.getGjeldendeKvpId());
             if (authService.harTilgangTilEnhet(kvp.getEnhet())) {
@@ -355,7 +360,7 @@ public class OppfolgingService {
 
         // Gjeldende eskaleringsvarsel inkluderes i resultatet kun hvis den innloggede veilederen har tilgang til brukers enhet.
         if (t.getGjeldendeEskaleringsvarselId() != 0) {
-            EskaleringsvarselData varsel = eskaleringsvarselRepository.fetch(t.getGjeldendeEskaleringsvarselId());
+            EskaleringsvarselEntity varsel = eskaleringsvarselRepository.fetch(t.getGjeldendeEskaleringsvarselId());
             if (sjekkTilgangGittKvp(authService, kvp, varsel::getOpprettetDato)) {
                 o.setGjeldendeEskaleringsvarsel(varsel);
             }
@@ -366,11 +371,11 @@ public class OppfolgingService {
         }
 
         if (t.getGjeldendeManuellStatusId() != 0) {
-            Optional<ManuellStatus> manuellStatus = manuellStatusService.hentManuellStatus(t.getGjeldendeManuellStatusId());
+            Optional<ManuellStatusEntity> manuellStatus = manuellStatusService.hentManuellStatus(t.getGjeldendeManuellStatusId());
             manuellStatus.ifPresent(o::setGjeldendeManuellStatus);
         }
 
-        List<Kvp> kvpPerioder = kvpRepository.hentKvpHistorikk(aktorId);
+        List<KvpEntity> kvpPerioder = kvpRepository.hentKvpHistorikk(aktorId);
         o.setOppfolgingsperioder(populerKvpPerioder(oppfolgingsPeriodeRepository.hentOppfolgingsperioder(AktorId.of(t.getAktorId())), kvpPerioder));
 
         return Optional.of(o);
@@ -390,7 +395,7 @@ public class OppfolgingService {
         DkifKontaktinfo kontaktinfo = manuellStatusService.hentDkifKontaktinfo(fnr);
 
         transactor.executeWithoutResult((ignored) -> {
-            OppfolgingTable eksisterendeOppfolging = oppfolgingsStatusRepository.fetch(aktorId);
+            OppfolgingEntity eksisterendeOppfolging = oppfolgingsStatusRepository.fetch(aktorId);
 
             if (eksisterendeOppfolging != null && eksisterendeOppfolging.isUnderOppfolging()) {
                 return;
@@ -415,15 +420,15 @@ public class OppfolgingService {
                 manuellStatusService.settBrukerTilManuellGrunnetReservasjonIKRR(aktorId);
             }
 
-            List<Oppfolgingsperiode> perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId);
-            Oppfolgingsperiode sistePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(perioder);
+            List<OppfolgingsperiodeEntity> perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId);
+            OppfolgingsperiodeEntity sistePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(perioder);
 
             kafkaProducerService.publiserSisteOppfolgingsperiode(DtoMappers.tilSisteOppfolgingsperiodeV1(sistePeriode));
             kafkaProducerService.publiserOppfolgingStartet(aktorId, sistePeriode.getStartDato());
         });
     }
 
-    private List<Oppfolgingsperiode> populerKvpPerioder(List<Oppfolgingsperiode> oppfolgingsPerioder, List<Kvp> kvpPerioder) {
+    private List<OppfolgingsperiodeEntity> populerKvpPerioder(List<OppfolgingsperiodeEntity> oppfolgingsPerioder, List<KvpEntity> kvpPerioder) {
         return oppfolgingsPerioder.stream()
                 .map(periode -> periode.toBuilder().kvpPerioder(
                         kvpPerioder.stream()
@@ -434,16 +439,16 @@ public class OppfolgingService {
                 .collect(toList());
     }
 
-    private boolean erKvpIPeriode(Kvp kvp, Oppfolgingsperiode periode) {
+    private boolean erKvpIPeriode(KvpEntity kvp, OppfolgingsperiodeEntity periode) {
         return kvpEtterStartenAvPeriode(kvp, periode)
                 && kvpForSluttenAvPeriode(kvp, periode);
     }
 
-    private boolean kvpEtterStartenAvPeriode(Kvp kvp, Oppfolgingsperiode periode) {
+    private boolean kvpEtterStartenAvPeriode(KvpEntity kvp, OppfolgingsperiodeEntity periode) {
         return !periode.getStartDato().isAfter(kvp.getOpprettetDato());
     }
 
-    private boolean kvpForSluttenAvPeriode(Kvp kvp, Oppfolgingsperiode periode) {
+    private boolean kvpForSluttenAvPeriode(KvpEntity kvp, OppfolgingsperiodeEntity periode) {
         return periode.getSluttDato() == null || !periode.getSluttDato().isBefore(kvp.getOpprettetDato());
     }
 
@@ -452,9 +457,9 @@ public class OppfolgingService {
         Optional<ArenaOppfolgingTilstand> arenaOppfolgingTilstand = arenaOppfolgingService.hentOppfolgingTilstand(fnr);
 
         arenaOppfolgingTilstand.ifPresent(oppfolgingTilstand -> {
-            Optional<OppfolgingTable> maybeOppfolging = ofNullable(oppfolgingsStatusRepository.fetch(aktorId));
+            Optional<OppfolgingEntity> maybeOppfolging = ofNullable(oppfolgingsStatusRepository.fetch(aktorId));
 
-            boolean erBrukerUnderOppfolging = maybeOppfolging.map(OppfolgingTable::isUnderOppfolging).orElse(false);
+            boolean erBrukerUnderOppfolging = maybeOppfolging.map(OppfolgingEntity::isUnderOppfolging).orElse(false);
             boolean erUnderOppfolgingIArena = erUnderOppfolging(oppfolgingTilstand.getFormidlingsgruppe(), oppfolgingTilstand.getServicegruppe());
 
             if (!erBrukerUnderOppfolging && erUnderOppfolgingIArena) {
@@ -487,7 +492,7 @@ public class OppfolgingService {
     private void sjekkOgOppdaterBrukerDirekteFraArena(
             Fnr fnr,
             ArenaOppfolgingTilstand arenaOppfolgingTilstand,
-            OppfolgingTable oppfolging
+            OppfolgingEntity oppfolging
     ) {
         Optional<ArenaOppfolgingTilstand> maybeTilstandDirekteFraArena = arenaOppfolgingTilstand.isDirekteFraArena()
                 ? of(arenaOppfolgingTilstand)
@@ -551,8 +556,8 @@ public class OppfolgingService {
 
             oppfolgingsPeriodeRepository.avslutt(aktorId, veilederId, begrunnelse);
 
-            List<Oppfolgingsperiode> perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId);
-            Oppfolgingsperiode sistePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(perioder);
+            List<OppfolgingsperiodeEntity> perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId);
+            OppfolgingsperiodeEntity sistePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(perioder);
 
             kafkaProducerService.publiserSisteOppfolgingsperiode(DtoMappers.tilSisteOppfolgingsperiodeV1(sistePeriode));
             kafkaProducerService.publiserOppfolgingAvsluttet(aktorId);

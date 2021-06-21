@@ -7,11 +7,11 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.client.dkif.DkifClient;
 import no.nav.veilarboppfolging.client.dkif.DkifKontaktinfo;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
-import no.nav.veilarboppfolging.domain.KodeverkBruker;
-import no.nav.veilarboppfolging.domain.ManuellStatus;
-import no.nav.veilarboppfolging.domain.OppfolgingTable;
 import no.nav.veilarboppfolging.repository.ManuellStatusRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
+import no.nav.veilarboppfolging.repository.entity.ManuellStatusEntity;
+import no.nav.veilarboppfolging.repository.entity.OppfolgingEntity;
+import no.nav.veilarboppfolging.repository.enums.KodeverkBruker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -20,7 +20,7 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import static no.nav.veilarboppfolging.domain.KodeverkBruker.SYSTEM;
+import static no.nav.veilarboppfolging.repository.enums.KodeverkBruker.SYSTEM;
 
 @Slf4j
 @Service
@@ -61,15 +61,15 @@ public class ManuellStatusService {
 
     public boolean erManuell(AktorId aktorId) {
         return manuellStatusRepository.hentSisteManuellStatus(aktorId)
-                .map(ManuellStatus::isManuell)
+                .map(ManuellStatusEntity::isManuell)
                 .orElse(false);
     }
 
-    public Optional<ManuellStatus> hentManuellStatus(long manuellStatusId) {
+    public Optional<ManuellStatusEntity> hentManuellStatus(long manuellStatusId) {
         return Optional.ofNullable(manuellStatusRepository.fetch(manuellStatusId));
     }
 
-    public List<ManuellStatus> hentManuellStatusHistorikk(AktorId aktorId) {
+    public List<ManuellStatusEntity> hentManuellStatusHistorikk(AktorId aktorId) {
         return manuellStatusRepository.history(aktorId);
     }
 
@@ -96,7 +96,7 @@ public class ManuellStatusService {
             return;
         }
 
-        var manuellStatus = new ManuellStatus()
+        var manuellStatus = new ManuellStatusEntity()
                 .setAktorId(aktorId.get())
                 .setManuell(true)
                 .setDato(ZonedDateTime.now())
@@ -122,7 +122,7 @@ public class ManuellStatusService {
             authService.sjekkTilgangTilEnhet(arenaOppfolging.getNav_kontor());
         }
 
-        OppfolgingTable oppfolging = oppfolgingsStatusRepository.fetch(aktorId);
+        OppfolgingEntity oppfolging = oppfolgingsStatusRepository.fetch(aktorId);
         DkifKontaktinfo kontaktinfo = hentDkifKontaktinfo(fnr);
 
         boolean erUnderOppfolging = oppfolging.isUnderOppfolging();
@@ -130,7 +130,7 @@ public class ManuellStatusService {
         boolean reservertIKrr = kontaktinfo.isReservert();
 
         if (erUnderOppfolging && (gjeldendeErManuell != manuell) && (!reservertIKrr || manuell)) {
-            val nyStatus = new ManuellStatus()
+            val nyStatus = new ManuellStatusEntity()
                     .setAktorId(aktorId.get())
                     .setManuell(manuell)
                     .setDato(ZonedDateTime.now())
@@ -150,7 +150,7 @@ public class ManuellStatusService {
                 .setReservert(false));
     }
 
-    private void oppdaterManuellStatus(AktorId aktorId, ManuellStatus manuellStatus) {
+    private void oppdaterManuellStatus(AktorId aktorId, ManuellStatusEntity manuellStatus) {
         transactor.executeWithoutResult((ignored) -> {
             manuellStatusRepository.create(manuellStatus);
             kafkaProducerService.publiserEndringPaManuellStatus(aktorId, manuellStatus.isManuell());

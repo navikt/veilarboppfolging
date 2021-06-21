@@ -2,8 +2,8 @@ package no.nav.veilarboppfolging.repository;
 
 import lombok.val;
 import no.nav.common.types.identer.AktorId;
-import no.nav.veilarboppfolging.domain.EskaleringsvarselData;
-import no.nav.veilarboppfolging.domain.OppfolgingTable;
+import no.nav.veilarboppfolging.repository.entity.EskaleringsvarselEntity;
+import no.nav.veilarboppfolging.repository.entity.OppfolgingEntity;
 import no.nav.veilarboppfolging.test.DbTestUtils;
 import no.nav.veilarboppfolging.test.IsolatedDatabaseTest;
 import org.junit.Before;
@@ -40,8 +40,8 @@ public class OppfolgingRepositoryKvpTest extends IsolatedDatabaseTest {
     public void test_eskaleringsvarsel_i_kvp_med_tilgang() {
         gitt_oppfolging_med_aktiv_kvp_og_eskalering(AKTOR_ID);
 
-        OppfolgingTable oppfolging = oppfolgingsStatusRepository.fetch(AKTOR_ID);
-        EskaleringsvarselData eskaleringsvarsel = eskaleringsvarselRepository.fetch(oppfolging.getGjeldendeEskaleringsvarselId());
+        OppfolgingEntity oppfolging = oppfolgingsStatusRepository.fetch(AKTOR_ID);
+        EskaleringsvarselEntity eskaleringsvarsel = eskaleringsvarselRepository.fetch(oppfolging.getGjeldendeEskaleringsvarselId());
 
         assertThat(eskaleringsvarsel).isNotNull();
     }
@@ -50,8 +50,8 @@ public class OppfolgingRepositoryKvpTest extends IsolatedDatabaseTest {
     public void test_eskaleringsvarsel_uten_kvp() {
         gitt_oppfolging_uten_aktiv_kvp_men_med_eskalering(AKTOR_ID);
 
-        OppfolgingTable oppfolging = oppfolgingsStatusRepository.fetch(AKTOR_ID);
-        EskaleringsvarselData eskaleringsvarsel = eskaleringsvarselRepository.fetch(oppfolging.getGjeldendeEskaleringsvarselId());
+        OppfolgingEntity oppfolging = oppfolgingsStatusRepository.fetch(AKTOR_ID);
+        EskaleringsvarselEntity eskaleringsvarsel = eskaleringsvarselRepository.fetch(oppfolging.getGjeldendeEskaleringsvarselId());
 
         assertThat(eskaleringsvarsel).isNotNull();
     }
@@ -68,7 +68,7 @@ public class OppfolgingRepositoryKvpTest extends IsolatedDatabaseTest {
     }
 
     private void startEskalering() {
-        val e = EskaleringsvarselData.builder()
+        val e = EskaleringsvarselEntity.builder()
                 .aktorId(AKTOR_ID.get())
                 .opprettetAv(SAKSBEHANDLER)
                 .opprettetBegrunnelse(BEGRUNNELSE)
