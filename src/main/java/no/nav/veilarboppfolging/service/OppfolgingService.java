@@ -128,71 +128,65 @@ public class OppfolgingService {
 
     @SneakyThrows
     public OppfolgingStatusData startOppfolging(Fnr fnr) {
-        return transactor.execute((ignored) -> {
-            AktorId aktorId = authService.getAktorIdOrThrow(fnr);
+        AktorId aktorId = authService.getAktorIdOrThrow(fnr);
 
-            authService.sjekkLesetilgangMedFnr(fnr);
+        authService.sjekkLesetilgangMedFnr(fnr);
 
-            ArenaOppfolgingTilstand arenaOppfolgingTilstand = arenaOppfolgingService.hentOppfolgingTilstand(fnr)
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR));
+        ArenaOppfolgingTilstand arenaOppfolgingTilstand = arenaOppfolgingService.hentOppfolgingTilstand(fnr)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR));
 
-            authService.sjekkTilgangTilEnhet(arenaOppfolgingTilstand.getOppfolgingsenhet());
+        authService.sjekkTilgangTilEnhet(arenaOppfolgingTilstand.getOppfolgingsenhet());
 
-            OppfolgingTable oppfolging = oppfolgingsStatusRepository.fetch(aktorId);
+        OppfolgingTable oppfolging = oppfolgingsStatusRepository.fetch(aktorId);
 
-            if (ArenaUtils.kanSettesUnderOppfolging(arenaOppfolgingTilstand, oppfolging.isUnderOppfolging())) {
-                startOppfolgingHvisIkkeAlleredeStartet(aktorId);
-            }
+        if (ArenaUtils.kanSettesUnderOppfolging(arenaOppfolgingTilstand, oppfolging.isUnderOppfolging())) {
+            startOppfolgingHvisIkkeAlleredeStartet(aktorId);
+        }
 
-            return getOppfolgingStatusData(fnr);
-        });
+        return getOppfolgingStatusData(fnr);
     }
 
     @SneakyThrows
     public AvslutningStatusData avsluttOppfolging(Fnr fnr, String veilederId, String begrunnelse) {
-        return transactor.execute((ignored) -> {
-            AktorId aktorId = authService.getAktorIdOrThrow(fnr);
+        AktorId aktorId = authService.getAktorIdOrThrow(fnr);
 
-            authService.sjekkLesetilgangMedFnr(fnr);
+        authService.sjekkLesetilgangMedFnr(fnr);
 
-            ArenaOppfolgingTilstand arenaOppfolgingTilstand = arenaOppfolgingService.hentOppfolgingTilstand(fnr)
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR));
+        ArenaOppfolgingTilstand arenaOppfolgingTilstand = arenaOppfolgingService.hentOppfolgingTilstand(fnr)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR));
 
-            authService.sjekkTilgangTilEnhet(arenaOppfolgingTilstand.getOppfolgingsenhet());
+        authService.sjekkTilgangTilEnhet(arenaOppfolgingTilstand.getOppfolgingsenhet());
 
-            OppfolgingTable oppfolging = oppfolgingsStatusRepository.fetch(aktorId);
+        OppfolgingTable oppfolging = oppfolgingsStatusRepository.fetch(aktorId);
 
-            boolean erIserv = erIserv(arenaOppfolgingTilstand.getFormidlingsgruppe());
+        boolean erIserv = erIserv(arenaOppfolgingTilstand.getFormidlingsgruppe());
 
-            if (kanAvslutteOppfolging(aktorId, oppfolging.isUnderOppfolging(), erIserv)) {
-                log.info("Avslutting av oppfølging, tilstand i Arena for aktorid {}: {}", aktorId, arenaOppfolgingTilstand);
-                avsluttOppfolgingForBruker(aktorId, veilederId, begrunnelse);
-            }
+        if (kanAvslutteOppfolging(aktorId, oppfolging.isUnderOppfolging(), erIserv)) {
+            log.info("Avslutting av oppfølging, tilstand i Arena for aktorid {}: {}", aktorId, arenaOppfolgingTilstand);
+            avsluttOppfolgingForBruker(aktorId, veilederId, begrunnelse);
+        }
 
-            return getAvslutningStatus(fnr);
-        });
+        return getAvslutningStatus(fnr);
     }
 
     public boolean avsluttOppfolgingForSystemBruker(Fnr fnr) {
-        return transactor.execute((ignored) -> {
-            AktorId aktorId = authService.getAktorIdOrThrow(fnr);
+        AktorId aktorId = authService.getAktorIdOrThrow(fnr);
 
-            ArenaOppfolgingTilstand arenaOppfolgingTilstand = arenaOppfolgingService.hentOppfolgingTilstand(fnr)
-                    .orElseThrow();
+        ArenaOppfolgingTilstand arenaOppfolgingTilstand = arenaOppfolgingService.hentOppfolgingTilstand(fnr)
+                .orElseThrow();
 
-            log.info("Avslutting av oppfølging, tilstand i Arena for aktorid {}: {}", aktorId, arenaOppfolgingTilstand);
+        log.info("Avslutting av oppfølging, tilstand i Arena for aktorid {}: {}", aktorId, arenaOppfolgingTilstand);
 
-            OppfolgingTable oppfolging = oppfolgingsStatusRepository.fetch(aktorId);
+        OppfolgingTable oppfolging = oppfolgingsStatusRepository.fetch(aktorId);
 
-            boolean erIserv = erIserv(arenaOppfolgingTilstand.getFormidlingsgruppe());
+        boolean erIserv = erIserv(arenaOppfolgingTilstand.getFormidlingsgruppe());
 
-            if (!kanAvslutteOppfolging(aktorId, oppfolging.isUnderOppfolging(), erIserv)) {
-                return false;
-            }
+        if (!kanAvslutteOppfolging(aktorId, oppfolging.isUnderOppfolging(), erIserv)) {
+            return false;
+        }
 
-            avsluttOppfolgingForBruker(aktorId, SYSTEM_USER_NAME, "Oppfolging avsluttet autmatisk for grunn av iservert 28 dager");
-            return true;
-        });
+        avsluttOppfolgingForBruker(aktorId, SYSTEM_USER_NAME, "Oppfolging avsluttet autmatisk for grunn av iservert 28 dager");
+        return true;
     }
 
     public List<AvsluttetOppfolgingFeedData> hentAvsluttetOppfolgingEtterDato(Timestamp timestamp, int pageSize) {
@@ -551,15 +545,18 @@ public class OppfolgingService {
 
     public void avsluttOppfolgingForBruker(AktorId aktorId, String veilederId, String begrunnelse) {
         String brukerIdent = authService.getInnloggetBrukerIdent();
-        eskaleringService.stoppEskaleringForAvsluttOppfolging(aktorId, brukerIdent, begrunnelse);
 
-        oppfolgingsPeriodeRepository.avslutt(aktorId, veilederId, begrunnelse);
+        transactor.executeWithoutResult((ignored) -> {
+            eskaleringService.stoppEskaleringForAvsluttOppfolging(aktorId, brukerIdent, begrunnelse);
 
-        List<Oppfolgingsperiode> perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId);
-        Oppfolgingsperiode sistePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(perioder);
+            oppfolgingsPeriodeRepository.avslutt(aktorId, veilederId, begrunnelse);
 
-        kafkaProducerService.publiserSisteOppfolgingsperiode(DtoMappers.tilSisteOppfolgingsperiodeV1(sistePeriode));
-        kafkaProducerService.publiserOppfolgingAvsluttet(aktorId);
+            List<Oppfolgingsperiode> perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId);
+            Oppfolgingsperiode sistePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(perioder);
+
+            kafkaProducerService.publiserSisteOppfolgingsperiode(DtoMappers.tilSisteOppfolgingsperiodeV1(sistePeriode));
+            kafkaProducerService.publiserOppfolgingAvsluttet(aktorId);
+        });
     }
 
 }

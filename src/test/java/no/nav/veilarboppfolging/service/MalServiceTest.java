@@ -14,10 +14,12 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.function.Consumer;
 
 import static java.time.temporal.ChronoUnit.DAYS;
 import static java.util.Arrays.asList;
@@ -27,6 +29,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -62,6 +65,9 @@ public class MalServiceTest {
     @Mock
     private OppfolgingsStatusRepository oppfolgingsStatusRepository;
 
+    @Mock
+    private TransactionTemplate transactor;
+
     @InjectMocks
     private MalService malService;
 
@@ -70,6 +76,11 @@ public class MalServiceTest {
         when(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID);
         when(oppfolgingsStatusRepository.fetch(AKTOR_ID)).thenReturn(new OppfolgingTable().setGjeldendeMaalId(MAL_ID));
         when(maalRepository.fetch(MAL_ID)).thenReturn(mal(BEFORE_KVP));
+        doAnswer((mock) -> {
+            Consumer consumer = mock.getArgument(0);
+            consumer.accept(null);
+            return null;
+        }).when(transactor).executeWithoutResult(any(Consumer.class));
     }
 
     @Test(expected = ResponseStatusException.class)

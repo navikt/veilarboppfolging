@@ -15,6 +15,7 @@ import no.nav.veilarboppfolging.repository.KvpRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
 import static java.lang.String.format;
@@ -42,6 +43,8 @@ public class KvpService {
 
     private final AuthService authService;
 
+    private final TransactionTemplate transactor;
+
     public KvpService(
             KafkaProducerService kafkaProducerService,
             MetricsService metricsService,
@@ -49,7 +52,8 @@ public class KvpService {
             VeilarbarenaClient veilarbarenaClient,
             OppfolgingsStatusRepository oppfolgingsStatusRepository,
             EskaleringsvarselRepository eskaleringsvarselRepository,
-            AuthService authService
+            AuthService authService,
+            TransactionTemplate transactor
     ) {
         this.kafkaProducerService = kafkaProducerService;
         this.metricsService = metricsService;
@@ -58,6 +62,7 @@ public class KvpService {
         this.oppfolgingsStatusRepository = oppfolgingsStatusRepository;
         this.eskaleringsvarselRepository = eskaleringsvarselRepository;
         this.authService = authService;
+        this.transactor = transactor;
     }
 
     @SneakyThrows
@@ -86,13 +91,14 @@ public class KvpService {
 
         String veilederId = authService.getInnloggetVeilederIdent();
 
-        // TODO: Send med dato til repository og kafkaProducerService
+        transactor.executeWithoutResult((ignored) -> {
+            // TODO: Send med dato istedenfor CURRENT_TIMESTAMP
+            kvpRepository.startKvp(aktorId, enhet, veilederId, begrunnelse);
+            kafkaProducerService.publiserKvpStartet(aktorId, enhet, veilederId, begrunnelse);
 
-        kvpRepository.startKvp(aktorId, enhet, veilederId, begrunnelse);
+            log.info("KVP startet for bruker med aktorId {} på enhet {} av veileder {}", aktorId, enhet, veilederId);
+        });
 
-        log.info("KVP startet for bruker med aktorId {} på enhet {} av veileder {}", aktorId, enhet, veilederId);
-
-        kafkaProducerService.publiserKvpStartet(aktorId, enhet, veilederId, begrunnelse);
         metricsService.kvpStartet();
     }
 
@@ -129,19 +135,23 @@ public class KvpService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
 
-        if (oppfolgingTable.getGjeldendeEskaleringsvarselId() != 0) {
-            eskaleringsvarselRepository.finish(
-                    aktorId, 
-                    oppfolgingTable.getGjeldendeEskaleringsvarselId(),
-                    avsluttetAv,
-                    ESKALERING_AVSLUTTET_FORDI_KVP_BLE_AVSLUTTET);
-        }
+        transactor.executeWithoutResult((ignored) -> {
+            if (oppfolgingTable.getGjeldendeEskaleringsvarselId() != 0) {
+                eskaleringsvarselRepository.finish(
+                        aktorId,
+                        oppfolgingTable.getGjeldendeEskaleringsvarselId(),
+                        avsluttetAv,
+                        ESKALERING_AVSLUTTET_FORDI_KVP_BLE_AVSLUTTET
+                );
+            }
 
-        kvpRepository.stopKvp(gjeldendeKvpId, aktorId, avsluttetAv, begrunnelse, kodeverkBruker);
+            // TODO: Send med dato istedenfor CURRENT_TIMESTAMP
+            kvpRepository.stopKvp(gjeldendeKvpId, aktorId, avsluttetAv, begrunnelse, kodeverkBruker);
+            kafkaProducerService.publiserKvpAvsluttet(aktorId, avsluttetAv, begrunnelse);
 
-        log.info("KVP avsluttet for bruker med aktorId {} av {}", aktorId, avsluttetAv);
+            log.info("KVP avsluttet for bruker med aktorId {} av {}", aktorId, avsluttetAv);
+        });
 
-        kafkaProducerService.publiserKvpAvsluttet(aktorId, avsluttetAv, begrunnelse);
         metricsService.kvpStoppet();
     }
 

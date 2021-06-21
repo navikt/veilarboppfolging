@@ -18,9 +18,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.http.HttpStatus;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
+import java.util.function.Consumer;
 
 import static no.nav.veilarboppfolging.domain.KodeverkBruker.NAV;
 import static org.junit.Assert.assertEquals;
@@ -50,6 +52,9 @@ public class KvpServiceTest {
     @Mock
     private KafkaProducerService kafkaProducerService;
 
+    @Mock
+    private TransactionTemplate transactor;
+
     @InjectMocks
     private KvpService kvpService;
 
@@ -71,6 +76,11 @@ public class KvpServiceTest {
         when(authService.harTilgangTilEnhet(anyString())).thenReturn(true);
         when(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID);
         when(authService.getInnloggetVeilederIdent()).thenReturn(VEILEDER);
+        doAnswer((mock) -> {
+            Consumer consumer = mock.getArgument(0);
+            consumer.accept(null);
+            return null;
+        }).when(transactor).executeWithoutResult(any(Consumer.class));
     }
 
     @Test
