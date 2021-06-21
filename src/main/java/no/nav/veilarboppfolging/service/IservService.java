@@ -16,6 +16,7 @@ import no.nav.veilarboppfolging.repository.entity.UtmeldingEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -135,10 +136,13 @@ public class IservService {
     }
 
     private void oppdaterUtmeldingTabell(EndringPaaOppfoelgingsBrukerV1 oppfolgingEndret) {
+        AktorId aktorId = AktorId.of(oppfolgingEndret.getAktoerid());
+        ZonedDateTime iservFraDato = oppfolgingEndret.getIserv_fra_dato();
+
         if (finnesIUtmeldingTabell(oppfolgingEndret)) {
-            utmeldingRepository.updateUtmeldingTabell(oppfolgingEndret);
-        } else if (brukerHarOppfolgingsflagg(AktorId.of(oppfolgingEndret.getAktoerid()))) {
-            utmeldingRepository.insertUtmeldingTabell(oppfolgingEndret);
+            utmeldingRepository.updateUtmeldingTabell(aktorId, iservFraDato);
+        } else if (brukerHarOppfolgingsflagg(aktorId)) {
+            utmeldingRepository.insertUtmeldingTabell(aktorId, iservFraDato);
         }
     }
 
@@ -148,7 +152,7 @@ public class IservService {
     }
 
     private boolean finnesIUtmeldingTabell(EndringPaaOppfoelgingsBrukerV1 oppfolgingEndret) {
-        return utmeldingRepository.eksisterendeIservBruker(oppfolgingEndret) != null;
+        return utmeldingRepository.eksisterendeIservBruker(AktorId.of(oppfolgingEndret.getAktoerid())) != null;
     }
 
     AvslutteOppfolgingResultat avslutteOppfolging(AktorId aktorId) {
