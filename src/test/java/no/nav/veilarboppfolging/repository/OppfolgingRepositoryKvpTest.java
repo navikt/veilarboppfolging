@@ -11,9 +11,10 @@ import org.junit.Test;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.ZonedDateTime;
+import java.util.Optional;
 
 import static org.apache.commons.lang3.RandomStringUtils.randomNumeric;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertTrue;
 
 public class OppfolgingRepositoryKvpTest extends IsolatedDatabaseTest {
 
@@ -41,9 +42,9 @@ public class OppfolgingRepositoryKvpTest extends IsolatedDatabaseTest {
         gitt_oppfolging_med_aktiv_kvp_og_eskalering(AKTOR_ID);
 
         OppfolgingEntity oppfolging = oppfolgingsStatusRepository.fetch(AKTOR_ID);
-        EskaleringsvarselEntity eskaleringsvarsel = eskaleringsvarselRepository.fetch(oppfolging.getGjeldendeEskaleringsvarselId());
+        Optional<EskaleringsvarselEntity> maybeEskaleringsvarsel = eskaleringsvarselRepository.hentEskaleringsvarsel(oppfolging.getGjeldendeEskaleringsvarselId());
 
-        assertThat(eskaleringsvarsel).isNotNull();
+        assertTrue(maybeEskaleringsvarsel.isPresent());
     }
 
     @Test
@@ -51,9 +52,9 @@ public class OppfolgingRepositoryKvpTest extends IsolatedDatabaseTest {
         gitt_oppfolging_uten_aktiv_kvp_men_med_eskalering(AKTOR_ID);
 
         OppfolgingEntity oppfolging = oppfolgingsStatusRepository.fetch(AKTOR_ID);
-        EskaleringsvarselEntity eskaleringsvarsel = eskaleringsvarselRepository.fetch(oppfolging.getGjeldendeEskaleringsvarselId());
+        Optional<EskaleringsvarselEntity> maybeEskaleringsvarsel = eskaleringsvarselRepository.hentEskaleringsvarsel(oppfolging.getGjeldendeEskaleringsvarselId());
 
-        assertThat(eskaleringsvarsel).isNotNull();
+        assertTrue(maybeEskaleringsvarsel.isPresent());
     }
 
     private void gitt_oppfolging_med_aktiv_kvp_og_eskalering(AktorId aktorId) {

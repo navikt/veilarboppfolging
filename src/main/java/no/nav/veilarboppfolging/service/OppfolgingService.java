@@ -360,9 +360,16 @@ public class OppfolgingService {
 
         // Gjeldende eskaleringsvarsel inkluderes i resultatet kun hvis den innloggede veilederen har tilgang til brukers enhet.
         if (t.getGjeldendeEskaleringsvarselId() != 0) {
-            EskaleringsvarselEntity varsel = eskaleringsvarselRepository.fetch(t.getGjeldendeEskaleringsvarselId());
-            if (sjekkTilgangGittKvp(authService, kvp, varsel::getOpprettetDato)) {
-                o.setGjeldendeEskaleringsvarsel(varsel);
+            Optional<EskaleringsvarselEntity> maybeEskaleringsvarsel = eskaleringsvarselRepository.hentEskaleringsvarsel(t.getGjeldendeEskaleringsvarselId());
+
+            if (maybeEskaleringsvarsel.isPresent()) {
+                EskaleringsvarselEntity eskaleringsvarsel = maybeEskaleringsvarsel.get();
+
+                if (sjekkTilgangGittKvp(authService, kvp, eskaleringsvarsel::getOpprettetDato)) {
+                    o.setGjeldendeEskaleringsvarsel(eskaleringsvarsel);
+                }
+            } else {
+                log.error("Fant ikke eskaleringsvarsel for id " + t.getGjeldendeEskaleringsvarselId());
             }
         }
 

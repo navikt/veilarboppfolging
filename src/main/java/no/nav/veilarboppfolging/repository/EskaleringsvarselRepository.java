@@ -12,11 +12,12 @@ import org.springframework.transaction.support.TransactionTemplate;
 import java.sql.ResultSet;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository.AKTOR_ID;
 import static no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository.GJELDENE_ESKALERINGSVARSEL;
 import static no.nav.veilarboppfolging.utils.DbUtils.hentZonedDateTime;
-import static no.nav.veilarboppfolging.utils.ListUtils.firstOrNull;
+import static no.nav.veilarboppfolging.utils.DbUtils.queryForNullableObject;
 
 @Repository
 public class EskaleringsvarselRepository {
@@ -40,9 +41,9 @@ public class EskaleringsvarselRepository {
         });
     }
 
-    public EskaleringsvarselEntity fetch(Long id) {
+    public Optional<EskaleringsvarselEntity> hentEskaleringsvarsel(Long id) {
         String sql = "SELECT * FROM ESKALERINGSVARSEL WHERE varsel_id = ?";
-        return firstOrNull(db.query(sql, EskaleringsvarselRepository::map, id));
+        return queryForNullableObject(() -> db.queryForObject(sql, EskaleringsvarselRepository::map, id));
     }
 
     public void finish(AktorId aktorId, long varselId, String avsluttetAv, String avsluttetBegrunnelse, ZonedDateTime sluttDato) {

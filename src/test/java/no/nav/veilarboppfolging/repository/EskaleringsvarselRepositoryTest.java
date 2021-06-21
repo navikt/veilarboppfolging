@@ -12,10 +12,9 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Optional;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class EskaleringsvarselRepositoryTest {
@@ -54,17 +53,23 @@ public class EskaleringsvarselRepositoryTest {
                 .opprettetBegrunnelse(BEGRUNNELSE)
                 .build());
 
-        EskaleringsvarselEntity e = gjeldendeEskaleringsVarsel(AKTOR_ID);
+        Optional<EskaleringsvarselEntity> maybeEskaleringsvarsel1 = gjeldendeEskaleringsVarsel(AKTOR_ID);
 
-        assertThat(e.getAktorId(), is(AKTOR_ID.get()));
-        assertThat(e.getOpprettetAv(), is(SAKSBEHANDLER_ID));
-        assertThat(e.getOpprettetBegrunnelse(), is(BEGRUNNELSE));
+        assertTrue(maybeEskaleringsvarsel1.isPresent());
+
+        EskaleringsvarselEntity eskaleringsvarsel = maybeEskaleringsvarsel1.get();
+
+        assertEquals(AKTOR_ID.get(), eskaleringsvarsel.getAktorId());
+        assertEquals(SAKSBEHANDLER_ID, eskaleringsvarsel.getOpprettetAv());
+        assertEquals(BEGRUNNELSE, eskaleringsvarsel.getOpprettetBegrunnelse());
 
         // Finish the escalation warning, and test that retrieving
         // the current warning yields nothing.
-        eskaleringsvarselRepository.finish(AKTOR_ID, e.getVarselId(), SAKSBEHANDLER_ID, "Begrunnelse", ZonedDateTime.now());
+        eskaleringsvarselRepository.finish(AKTOR_ID, eskaleringsvarsel.getVarselId(), SAKSBEHANDLER_ID, "Begrunnelse", ZonedDateTime.now());
 
-        assertNull(gjeldendeEskaleringsVarsel(AKTOR_ID));
+        Optional<EskaleringsvarselEntity> maybeIngenEskaleringsvarsel = gjeldendeEskaleringsVarsel(AKTOR_ID);
+
+        assertTrue(maybeIngenEskaleringsvarsel.isEmpty());
     }
 
     /**
@@ -89,9 +94,9 @@ public class EskaleringsvarselRepositoryTest {
         assertEquals(list.size(), NUM_ITEMS);
     }
 
-    private EskaleringsvarselEntity gjeldendeEskaleringsVarsel(AktorId aktorId) {
+    private Optional<EskaleringsvarselEntity> gjeldendeEskaleringsVarsel(AktorId aktorId) {
         OppfolgingEntity oppfolging = oppfolgingsStatusRepository.fetch(aktorId);
-        return eskaleringsvarselRepository.fetch(oppfolging.getGjeldendeEskaleringsvarselId());
+        return eskaleringsvarselRepository.hentEskaleringsvarsel(oppfolging.getGjeldendeEskaleringsvarselId());
     }
 
 }
