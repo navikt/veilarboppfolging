@@ -157,7 +157,14 @@ public class OppfolgingController {
 
     @GetMapping("/oppfolgingsperiode/{uuid}")
     public OppfolgingPeriodeMinimalDTO hentOppfolgingsPeriode(@PathVariable String uuid){
-        var periode = oppfolgingService.hentPeriode(uuid);
+        var maybePeriode = oppfolgingService.hentOppfolgingsperiode(uuid);
+
+        if (maybePeriode.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+
+        var periode = maybePeriode.get();
+
         authService.sjekkLesetilgangMedAktorId(AktorId.of(periode.getAktorId()));
 
         return tilOppfolgingPeriodeMinimalDTO(periode);

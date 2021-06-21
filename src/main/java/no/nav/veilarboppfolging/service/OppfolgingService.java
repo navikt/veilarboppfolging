@@ -337,7 +337,7 @@ public class OppfolgingService {
                 .build();
     }
 
-    public OppfolgingsperiodeEntity hentPeriode(String uuid) {
+    public Optional<OppfolgingsperiodeEntity> hentOppfolgingsperiode(String uuid) {
         return oppfolgingsPeriodeRepository.hentOppfolgingsperiode(uuid);
     }
 
