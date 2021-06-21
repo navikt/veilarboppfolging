@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.ZonedDateTime;
+
 @Service
 public class EskaleringService {
 
@@ -84,14 +86,14 @@ public class EskaleringService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Brukeren har ikke et aktivt eskaleringsvarsel");
         }
 
-        eskaleringsvarselRepository.finish(aktorId, gjeldendeEskaleringsvarselId, veilederId, begrunnelse);
+        eskaleringsvarselRepository.finish(aktorId, gjeldendeEskaleringsvarselId, veilederId, begrunnelse, ZonedDateTime.now());
     }
 
     public void stoppEskaleringForAvsluttOppfolging(AktorId aktorId, String veilederId, String begrunnelse) {
         long gjeldendeEskaleringsvarselId = oppfolgingsStatusRepository.fetch(aktorId).getGjeldendeEskaleringsvarselId();
 
         if (gjeldendeEskaleringsvarselId != 0) {
-            eskaleringsvarselRepository.finish(aktorId, gjeldendeEskaleringsvarselId, veilederId, begrunnelse);
+            eskaleringsvarselRepository.finish(aktorId, gjeldendeEskaleringsvarselId, veilederId, begrunnelse, ZonedDateTime.now());
         }
     }
 

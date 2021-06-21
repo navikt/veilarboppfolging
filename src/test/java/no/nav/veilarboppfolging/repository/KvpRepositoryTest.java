@@ -8,6 +8,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import java.time.ZonedDateTime;
+
 import static no.nav.veilarboppfolging.domain.KodeverkBruker.NAV;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
@@ -70,11 +72,11 @@ public class KvpRepositoryTest extends IsolatedDatabaseTest {
 
     private void stop_kvp() {
         long kvpId = kvpRepository.gjeldendeKvp(AKTOR_ID);
-        kvpRepository.stopKvp(kvpId, AKTOR_ID, SAKSBEHANDLER_ID, BEGRUNNELSE, NAV);
+        kvpRepository.stopKvp(kvpId, AKTOR_ID, SAKSBEHANDLER_ID, BEGRUNNELSE, NAV, ZonedDateTime.now());
     }
 
     private void start_kvp() {
-        kvpRepository.startKvp(AKTOR_ID, "0123", SAKSBEHANDLER_ID, BEGRUNNELSE);
+        kvpRepository.startKvp(AKTOR_ID, "0123", SAKSBEHANDLER_ID, BEGRUNNELSE, ZonedDateTime.now());
     }
 
     private Kvp hentGjeldendeKvp(AktorId aktorId) {

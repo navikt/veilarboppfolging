@@ -108,7 +108,7 @@ public class KvpServiceTest {
     @Test
     public void startKvp() {
         kvpService.startKvp(FNR, START_BEGRUNNELSE);
-        verify(kvpRepositoryMock, times(1)).startKvp(eq(AKTOR_ID), eq(ENHET), eq(VEILEDER), eq(START_BEGRUNNELSE));
+        verify(kvpRepositoryMock, times(1)).startKvp(eq(AKTOR_ID), eq(ENHET), eq(VEILEDER), eq(START_BEGRUNNELSE), any());
     }
 
     @Test(expected = ResponseStatusException.class)
@@ -133,7 +133,7 @@ public class KvpServiceTest {
 
         verify(authService, times(1)).sjekkLesetilgangMedAktorId(AKTOR_ID);
         verify(oppfolgingsStatusRepository, times(1)).fetch(AKTOR_ID);
-        verify(kvpRepositoryMock, times(1)).stopKvp(eq(kvpId), eq(AKTOR_ID), eq(VEILEDER), eq(STOP_BEGRUNNELSE), eq(NAV));
+        verify(kvpRepositoryMock, times(1)).stopKvp(eq(kvpId), eq(AKTOR_ID), eq(VEILEDER), eq(STOP_BEGRUNNELSE), eq(NAV), any());
         verify(authService, times(1)).harTilgangTilEnhet(ENHET);
     }
 
@@ -146,8 +146,8 @@ public class KvpServiceTest {
                 () -> kvpService.stopKvp(FNR, STOP_BEGRUNNELSE)
         );
 
-        verify(eskaleringsvarselRepository).finish(AKTOR_ID, 1, VEILEDER, KvpService.ESKALERING_AVSLUTTET_FORDI_KVP_BLE_AVSLUTTET);
-        verify(kvpRepositoryMock, times(1)).stopKvp(eq(kvpId), eq(AKTOR_ID), eq(VEILEDER), eq(STOP_BEGRUNNELSE), eq(NAV));
+        verify(eskaleringsvarselRepository).finish(eq(AKTOR_ID), eq(1L), eq(VEILEDER), eq(KvpService.ESKALERING_AVSLUTTET_FORDI_KVP_BLE_AVSLUTTET), any());
+        verify(kvpRepositoryMock, times(1)).stopKvp(eq(kvpId), eq(AKTOR_ID), eq(VEILEDER), eq(STOP_BEGRUNNELSE), eq(NAV), any());
     }
 
     @Test

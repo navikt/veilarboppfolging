@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.sql.ResultSet;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 import static no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository.AKTOR_ID;
@@ -44,10 +45,10 @@ public class EskaleringsvarselRepository {
         return firstOrNull(db.query(sql, EskaleringsvarselRepository::map, id));
     }
 
-    public void finish(AktorId aktorId, long varselId, String avsluttetAv, String avsluttetBegrunnelse) {
+    public void finish(AktorId aktorId, long varselId, String avsluttetAv, String avsluttetBegrunnelse, ZonedDateTime sluttDato) {
         transactor.executeWithoutResult((ignored) -> {
-            avsluttEskaleringsVarsel(avsluttetBegrunnelse, avsluttetAv, varselId);
-            removeActive(aktorId);
+            avsluttEskaleringsVarsel(avsluttetBegrunnelse, avsluttetAv, varselId, sluttDato);
+            removeActive(aktorId, sluttDato);
         });
     }
 
@@ -93,23 +94,25 @@ public class EskaleringsvarselRepository {
         );
     }
 
-    void avsluttEskaleringsVarsel(String avsluttetBegrunnelse, String avsluttetAv, long varselId) {
+    void avsluttEskaleringsVarsel(String avsluttetBegrunnelse, String avsluttetAv, long varselId, ZonedDateTime sluttDato) {
         db.update("" +
                         "UPDATE ESKALERINGSVARSEL " +
-                        "SET avsluttet_dato = CURRENT_TIMESTAMP, avsluttet_begrunnelse = ?, avsluttet_av = ? " +
+                        "SET avsluttet_dato = ?, avsluttet_begrunnelse = ?, avsluttet_av = ? " +
                         "WHERE varsel_id = ?",
+                sluttDato,
                 avsluttetBegrunnelse,
                 avsluttetAv,
                 varselId);
     }
 
-    private void removeActive(AktorId aktorId) {
+    private void removeActive(AktorId aktorId, ZonedDateTime oppdatert) {
         db.update("" +
                         "UPDATE " + OppfolgingsStatusRepository.TABLE_NAME +
                         " SET " + GJELDENE_ESKALERINGSVARSEL + " = null, " +
-                        "oppdatert = CURRENT_TIMESTAMP, " +
+                        "oppdatert = ?, " +
                         "FEED_ID = null " +
                         "WHERE " + AKTOR_ID + " = ?",
+                oppdatert,
                 aktorId.get()
         );
     }

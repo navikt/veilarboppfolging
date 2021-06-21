@@ -12,6 +12,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.sql.ResultSet;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 import static no.nav.veilarboppfolging.domain.KodeverkBruker.NAV;
@@ -33,8 +34,7 @@ public class KvpRepository {
         this.transactor = transactor;
     }
 
-    // TODO: Foretrekker å sende med dato istedenfor CURRENT_TIMESTAMP slik at det ikke blir en mismatch med datoen som f.eks blir brukt på kafka
-    public void startKvp(AktorId aktorId, String enhet, String opprettetAv, String opprettetBegrunnelse) {
+    public void startKvp(AktorId aktorId, String enhet, String opprettetAv, String opprettetBegrunnelse, ZonedDateTime startDato) {
         transactor.executeWithoutResult((ignored) -> {
             long id = DbUtils.nesteFraSekvens(db, "KVP_SEQ");
             long nextSerial = DbUtils.nesteFraSekvens(db, "KVP_SERIAL_SEQ");
@@ -48,41 +48,43 @@ public class KvpRepository {
                             "opprettet_dato, " +
                             "opprettet_begrunnelse, " +
                             "opprettet_kodeverkbruker) " +
-                            "VALUES(?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?)",
+                            "VALUES(?, ?, ?, ?, ?, ?, ?, ?)",
                     id,
                     nextSerial,
                     aktorId.get(),
                     enhet,
                     opprettetAv,
+                    startDato,
                     opprettetBegrunnelse,
                     getName(NAV)
             );
 
             db.update("UPDATE OPPFOLGINGSTATUS " +
                             "SET gjeldende_kvp = ?, " +
-                            "oppdatert = CURRENT_TIMESTAMP, " +
+                            "oppdatert = ?, " +
                             "FEED_ID = null " +
                             "WHERE aktor_id = ?",
                     id,
+                    startDato,
                     aktorId.get()
             );
         });
     }
 
-    // TODO: Foretrekker å sende med dato istedenfor CURRENT_TIMESTAMP slik at det ikke blir en mismatch med datoen som f.eks blir brukt på kafka
-    public void stopKvp(long kvpId, AktorId aktorId, String avsluttetAv, String avsluttetBegrunnelse, KodeverkBruker kodeverkBruker) {
+    public void stopKvp(long kvpId, AktorId aktorId, String avsluttetAv, String avsluttetBegrunnelse, KodeverkBruker kodeverkBruker, ZonedDateTime sluttDato) {
         transactor.executeWithoutResult((ignored) -> {
             long nextSerial = DbUtils.nesteFraSekvens(db, "KVP_SERIAL_SEQ");
 
             db.update("UPDATE KVP " +
                             "SET serial = ?, " +
                             "avsluttet_av = ?, " +
-                            "avsluttet_dato = CURRENT_TIMESTAMP, " +
+                            "avsluttet_dato = ?, " +
                             "avsluttet_begrunnelse = ?, " +
                             "avsluttet_kodeverkbruker = ? " +
                             "WHERE kvp_id = ?",
                     nextSerial,
                     avsluttetAv,
+                    sluttDato,
                     avsluttetBegrunnelse,
                     getName(kodeverkBruker),
                     kvpId
@@ -91,9 +93,10 @@ public class KvpRepository {
 
             db.update("UPDATE OPPFOLGINGSTATUS " +
                             "SET gjeldende_kvp = NULL, " +
-                            "oppdatert = CURRENT_TIMESTAMP, " +
+                            "oppdatert = ?, " +
                             "FEED_ID = null " +
                             "WHERE aktor_id = ?",
+                    sluttDato,
                     aktorId.get()
             );
         });
