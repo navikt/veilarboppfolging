@@ -384,7 +384,12 @@ public class OppfolgingService {
         }
 
         if (t.getGjeldendeMaalId() != 0) {
-            oppfolging.setGjeldendeMal(maalRepository.fetch(t.getGjeldendeMaalId()));
+            Optional<MaalEntity> maybeMaal = maalRepository.hentMaal(t.getGjeldendeMaalId());
+
+            maybeMaal.ifPresentOrElse(
+                    oppfolging::setGjeldendeMal,
+                    () -> log.error("Fant ikke maal for id " + t.getGjeldendeMaalId())
+            );
         }
 
         if (t.getGjeldendeManuellStatusId() != 0) {

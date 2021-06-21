@@ -76,7 +76,7 @@ public class MalServiceTest {
     public void setup() {
         when(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID);
         when(oppfolgingsStatusRepository.fetch(AKTOR_ID)).thenReturn(new OppfolgingEntity().setGjeldendeMaalId(MAL_ID));
-        when(maalRepository.fetch(MAL_ID)).thenReturn(mal(BEFORE_KVP));
+        when(maalRepository.hentMaal(MAL_ID)).thenReturn(Optional.of(mal(BEFORE_KVP)));
         doAnswer((mock) -> {
             Consumer consumer = mock.getArgument(0);
             consumer.accept(null);
@@ -128,7 +128,7 @@ public class MalServiceTest {
     @Test
     public void hent_mal_opprettet_etter_kvp_veileder_har_ikke_tilgang() {
         when(kvpRepositoryMock.hentKvpHistorikk(AKTOR_ID)).thenReturn(kvpHistorikk());
-        when(maalRepository.fetch(MAL_ID)).thenReturn(mal(IN_KVP));
+        when(maalRepository.hentMaal(MAL_ID)).thenReturn(Optional.of(mal(IN_KVP)));
         when(authService.harTilgangTilEnhetMedSperre(ENHET)).thenReturn(false);
 
         MaalEntity malData = malService.hentMal(FNR);
@@ -138,7 +138,7 @@ public class MalServiceTest {
     @Test
     public void hent_mal_opprettet_etter_kvp_veileder_har_tilgang() {
         when(kvpRepositoryMock.hentKvpHistorikk(AKTOR_ID)).thenReturn(kvpHistorikk());
-        when(maalRepository.fetch(MAL_ID)).thenReturn(mal(IN_KVP));
+        when(maalRepository.hentMaal(MAL_ID)).thenReturn(Optional.of(mal(IN_KVP)));
         when(authService.harTilgangTilEnhetMedSperre(ENHET)).thenReturn(true);
 
         MaalEntity malData = malService.hentMal(FNR);

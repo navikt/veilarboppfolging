@@ -20,6 +20,7 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import static java.util.Optional.empty;
 import static java.util.stream.Collectors.toList;
 
 @Service
@@ -64,22 +65,25 @@ public class MalService {
 
         OppfolgingEntity oppfolgingsStatus = oppfolgingsStatusRepository.fetch(aktorId);
 
-        MaalEntity gjeldendeMal = null;
+        Optional<MaalEntity> maybeGjeldendeMaal = empty();
 
         if (oppfolgingsStatus.getGjeldendeMaalId() != 0) {
-            gjeldendeMal = maalRepository.fetch(oppfolgingsStatus.getGjeldendeMaalId());
+            maybeGjeldendeMaal = maalRepository.hentMaal(oppfolgingsStatus.getGjeldendeMaalId());
         }
 
-        if (gjeldendeMal == null) {
+        if (maybeGjeldendeMaal.isEmpty()) {
             return new MaalEntity();
         }
+
+        MaalEntity gjeldendeMaal = maybeGjeldendeMaal.get();
 
         List<KvpPeriodeEntity> kvpList = kvpRepository.hentKvpHistorikk(aktorId);
-        if (!KvpUtils.sjekkTilgangGittKvp(authService, kvpList, gjeldendeMal::getDato)) {
+
+        if (!KvpUtils.sjekkTilgangGittKvp(authService, kvpList, gjeldendeMaal::getDato)) {
             return new MaalEntity();
         }
 
-        return gjeldendeMal;
+        return gjeldendeMaal;
     }
 
     public List<MaalEntity> hentMalList(Fnr fnr) {
