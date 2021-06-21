@@ -139,16 +139,17 @@ public class KvpService {
         }
 
         transactor.executeWithoutResult((ignored) -> {
+            ZonedDateTime sluttDato = ZonedDateTime.now();
+
             if (oppfolgingTable.getGjeldendeEskaleringsvarselId() != 0) {
                 eskaleringsvarselRepository.finish(
                         aktorId,
                         oppfolgingTable.getGjeldendeEskaleringsvarselId(),
                         avsluttetAv,
-                        ESKALERING_AVSLUTTET_FORDI_KVP_BLE_AVSLUTTET
+                        ESKALERING_AVSLUTTET_FORDI_KVP_BLE_AVSLUTTET,
+                        sluttDato
                 );
             }
-
-            ZonedDateTime sluttDato = ZonedDateTime.now();
 
             kvpRepository.stopKvp(gjeldendeKvpId, aktorId, avsluttetAv, begrunnelse, kodeverkBruker, sluttDato);
             kafkaProducerService.publiserKvpAvsluttet(aktorId, avsluttetAv, begrunnelse, sluttDato);

@@ -10,6 +10,7 @@ import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import java.time.ZonedDateTime;
 import java.util.List;
 
 import static org.hamcrest.Matchers.is;
@@ -61,7 +62,7 @@ public class EskaleringsvarselRepositoryTest {
 
         // Finish the escalation warning, and test that retrieving
         // the current warning yields nothing.
-        eskaleringsvarselRepository.finish(AKTOR_ID, e.getVarselId(), SAKSBEHANDLER_ID, "Begrunnelse");
+        eskaleringsvarselRepository.finish(AKTOR_ID, e.getVarselId(), SAKSBEHANDLER_ID, "Begrunnelse", ZonedDateTime.now());
 
         assertNull(gjeldendeEskaleringsVarsel(AKTOR_ID));
     }

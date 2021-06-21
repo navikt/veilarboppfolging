@@ -146,7 +146,7 @@ public class KvpServiceTest {
                 () -> kvpService.stopKvp(FNR, STOP_BEGRUNNELSE)
         );
 
-        verify(eskaleringsvarselRepository).finish(AKTOR_ID, 1, VEILEDER, KvpService.ESKALERING_AVSLUTTET_FORDI_KVP_BLE_AVSLUTTET);
+        verify(eskaleringsvarselRepository).finish(eq(AKTOR_ID), eq(1L), eq(VEILEDER), eq(KvpService.ESKALERING_AVSLUTTET_FORDI_KVP_BLE_AVSLUTTET), any());
         verify(kvpRepositoryMock, times(1)).stopKvp(eq(kvpId), eq(AKTOR_ID), eq(VEILEDER), eq(STOP_BEGRUNNELSE), eq(NAV), any());
     }
 
