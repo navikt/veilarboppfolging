@@ -10,6 +10,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import java.time.ZonedDateTime;
+
 import static org.apache.commons.lang3.RandomStringUtils.randomNumeric;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -56,7 +58,7 @@ public class OppfolgingRepositoryKvpTest extends IsolatedDatabaseTest {
 
     private void gitt_oppfolging_med_aktiv_kvp_og_eskalering(AktorId aktorId) {
         oppfolgingsStatusRepository.opprettOppfolging(aktorId);
-        kvpRepository.startKvp(AKTOR_ID, ENHET, SAKSBEHANDLER, BEGRUNNELSE);
+        kvpRepository.startKvp(AKTOR_ID, ENHET, SAKSBEHANDLER, BEGRUNNELSE, ZonedDateTime.now());
         startEskalering();
     }
 

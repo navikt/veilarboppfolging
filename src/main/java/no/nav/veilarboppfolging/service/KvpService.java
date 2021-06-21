@@ -18,6 +18,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.ZonedDateTime;
+
 import static java.lang.String.format;
 import static no.nav.veilarboppfolging.config.ApplicationConfig.SYSTEM_USER_NAME;
 import static no.nav.veilarboppfolging.domain.KodeverkBruker.NAV;
@@ -92,9 +94,10 @@ public class KvpService {
         String veilederId = authService.getInnloggetVeilederIdent();
 
         transactor.executeWithoutResult((ignored) -> {
-            // TODO: Send med dato istedenfor CURRENT_TIMESTAMP
-            kvpRepository.startKvp(aktorId, enhet, veilederId, begrunnelse);
-            kafkaProducerService.publiserKvpStartet(aktorId, enhet, veilederId, begrunnelse);
+            ZonedDateTime startDato = ZonedDateTime.now();
+
+            kvpRepository.startKvp(aktorId, enhet, veilederId, begrunnelse, startDato);
+            kafkaProducerService.publiserKvpStartet(aktorId, enhet, veilederId, begrunnelse, startDato);
 
             log.info("KVP startet for bruker med aktorId {} på enhet {} av veileder {}", aktorId, enhet, veilederId);
         });
@@ -145,9 +148,10 @@ public class KvpService {
                 );
             }
 
-            // TODO: Send med dato istedenfor CURRENT_TIMESTAMP
-            kvpRepository.stopKvp(gjeldendeKvpId, aktorId, avsluttetAv, begrunnelse, kodeverkBruker);
-            kafkaProducerService.publiserKvpAvsluttet(aktorId, avsluttetAv, begrunnelse);
+            ZonedDateTime sluttDato = ZonedDateTime.now();
+
+            kvpRepository.stopKvp(gjeldendeKvpId, aktorId, avsluttetAv, begrunnelse, kodeverkBruker, sluttDato);
+            kafkaProducerService.publiserKvpAvsluttet(aktorId, avsluttetAv, begrunnelse, sluttDato);
 
             log.info("KVP avsluttet for bruker med aktorId {} av {}", aktorId, avsluttetAv);
         });

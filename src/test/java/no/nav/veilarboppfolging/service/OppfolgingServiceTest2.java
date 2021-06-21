@@ -341,8 +341,8 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
     }
 
     private void gitt_kvp_periode(String enhet) {
-        kvpRepository.startKvp(AKTOR_ID, enhet, VEILERDER, BEGRUNNELSE);
+        kvpRepository.startKvp(AKTOR_ID, enhet, VEILERDER, BEGRUNNELSE, ZonedDateTime.now());
         long kvpId = kvpRepository.gjeldendeKvp(AKTOR_ID);
-        kvpRepository.stopKvp(kvpId, AKTOR_ID, VEILERDER, BEGRUNNELSE, NAV);
+        kvpRepository.stopKvp(kvpId, AKTOR_ID, VEILERDER, BEGRUNNELSE, NAV, ZonedDateTime.now());
     }
 }
