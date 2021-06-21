@@ -7,7 +7,6 @@ import no.nav.veilarboppfolging.domain.Tilordning;
 import org.springframework.stereotype.Service;
 
 import java.time.ZonedDateTime;
-import java.util.Date;
 import java.util.Optional;
 
 import static no.nav.veilarboppfolging.utils.StringUtils.of;
@@ -38,7 +37,7 @@ public class MetricsService {
         return ZonedDateTime.now().minusSeconds(time.toEpochSecond()).toInstant().toEpochMilli();
     }
 
-    public void raporterAutomatiskAvslutningAvOppfolging(boolean success) {
+    public void rapporterAutomatiskAvslutningAvOppfolging(boolean success) {
         Event event = new Event("oppfolging.automatisk.avslutning");
         event.addFieldToReport("success", success);
         metricsClient.report(event);
@@ -64,10 +63,6 @@ public class MetricsService {
                 .addFieldToReport("endretAv", endretAv + " " +  bleOpprettet);
 
         metricsClient.report(event);
-    }
-
-    public void antallMeldingerKonsumertAvKafka() {
-        metricsClient.report(new Event("kafka.konsumert.meldinger"));
     }
 
     public void antallBrukereAvsluttetAutomatisk(){
