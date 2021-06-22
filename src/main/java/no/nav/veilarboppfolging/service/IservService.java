@@ -143,7 +143,7 @@ public class IservService {
     }
 
     private boolean finnesIUtmeldingTabell(EndringPaaOppfoelgingsBrukerV1 oppfolgingEndret) {
-        return utmeldingRepository.eksisterendeIservBruker(AktorId.of(oppfolgingEndret.getAktoerid())) != null;
+        return utmeldingRepository.eksisterendeIservBruker(AktorId.of(oppfolgingEndret.getAktoerid())).isPresent();
     }
 
     AvslutteOppfolgingResultat avslutteOppfolging(AktorId aktorId) {
