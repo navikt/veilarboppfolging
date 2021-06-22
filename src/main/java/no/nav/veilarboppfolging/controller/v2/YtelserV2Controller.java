@@ -1,33 +1,32 @@
-package no.nav.veilarboppfolging.controller;
+package no.nav.veilarboppfolging.controller.v2;
 
 import lombok.RequiredArgsConstructor;
 import no.nav.common.types.identer.Fnr;
-import no.nav.veilarboppfolging.controller.response.YtelserResponse;
+import no.nav.veilarboppfolging.controller.v2.response.YtelserV2Response;
 import no.nav.veilarboppfolging.service.AuthService;
 import no.nav.veilarboppfolging.service.YtelserOgAktiviteterService;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@RequestMapping("/api/v2/ytelser")
 @RequiredArgsConstructor
-@RequestMapping("/api/person")
-public class YtelseController {
+public class YtelserV2Controller {
 
     private final YtelserOgAktiviteterService ytelserOgAktiviteterService;
 
     private final AuthService authService;
 
-    @GetMapping("/{fnr}/ytelser")
-    public YtelserResponse hentYtelser(@PathVariable("fnr") Fnr fnr) {
+    @GetMapping
+    public YtelserV2Response hentYtelser(@RequestParam("fnr") Fnr fnr) {
         authService.skalVereInternBruker();
         authService.sjekkLesetilgangMedFnr(fnr);
 
-        var ytelseskontrakt = ytelserOgAktiviteterService.hentYtelseskontrakt(fnr);
+        var ytelseskontrakt =  ytelserOgAktiviteterService.hentYtelseskontrakt(fnr);
 
-        return new YtelserResponse()
-                .withVedtaksliste(ytelseskontrakt.getVedtaksliste())
-                .withYtelser(ytelseskontrakt.getYtelser());
+        return new YtelserV2Response(ytelseskontrakt.getVedtaksliste(), ytelseskontrakt.getYtelser());
     }
+
 }
