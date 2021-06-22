@@ -2,9 +2,10 @@ package no.nav.veilarboppfolging.controller;
 
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.json.JsonUtils;
-import no.nav.veilarboppfolging.controller.domain.KvpDTO;
-import no.nav.veilarboppfolging.domain.Kvp;
+import no.nav.common.types.identer.AktorId;
+import no.nav.veilarboppfolging.controller.response.KvpDTO;
 import no.nav.veilarboppfolging.repository.KvpRepository;
+import no.nav.veilarboppfolging.repository.entity.KvpEntity;
 import no.nav.veilarboppfolging.service.AuthService;
 import no.nav.veilarboppfolging.utils.DtoMappers;
 import org.junit.jupiter.api.Test;
@@ -17,7 +18,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -38,7 +39,7 @@ public class KvpControllerTest {
     @MockBean
     private AuthContextHolder authContextHolder;
 
-    private static final String AKTOR_ID = "1234";
+    private static final AktorId AKTOR_ID = AktorId.of("1234");
     private static final long KVP_ID = 1L;
     private static final String ENHET_ID = "0001";
 
@@ -72,7 +73,7 @@ public class KvpControllerTest {
         when(authContextHolder.getSubject()).thenReturn(Optional.of("srvveilarbdialog"));
         when(authService.erSystemBruker()).thenReturn(true);
 
-        when(kvpRepository.gjeldendeKvp(anyString())).thenReturn(0L);
+        when(kvpRepository.gjeldendeKvp(any())).thenReturn(0L);
 
         mockMvc.perform(get("/api/kvp/1234/currentStatus"))
                 .andExpect(content().string(""))
@@ -107,10 +108,10 @@ public class KvpControllerTest {
                 .andExpect(status().is(500));
     }
 
-    private Kvp kvp() {
-        return Kvp.builder()
+    private KvpEntity kvp() {
+        return KvpEntity.builder()
                 .kvpId(KVP_ID)
-                .aktorId(AKTOR_ID)
+                .aktorId(AKTOR_ID.get())
                 .opprettetDato(ZonedDateTime.of(2020, 5, 4, 3, 2, 1, 0, ZoneId.systemDefault()))
                 .enhet(ENHET_ID)
                 .build();

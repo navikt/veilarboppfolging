@@ -4,12 +4,12 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.cxf.CXFClient;
 import no.nav.common.cxf.StsConfig;
 import no.nav.common.health.HealthCheckResult;
+import no.nav.common.types.identer.Fnr;
 import no.nav.tjeneste.virksomhet.behandlearbeidssoeker.v1.binding.*;
 import no.nav.tjeneste.virksomhet.behandlearbeidssoeker.v1.informasjon.Brukerident;
 import no.nav.tjeneste.virksomhet.behandlearbeidssoeker.v1.meldinger.AktiverBrukerRequest;
 import no.nav.tjeneste.virksomhet.behandlearbeidssoeker.v1.meldinger.ReaktiverBrukerForenkletRequest;
-import no.nav.veilarboppfolging.domain.Fnr;
-import no.nav.veilarboppfolging.domain.Innsatsgruppe;
+import no.nav.veilarboppfolging.controller.request.Innsatsgruppe;
 import org.apache.cxf.interceptor.LoggingOutInterceptor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
@@ -39,9 +39,9 @@ public class BehandleArbeidssokerClientImpl implements BehandleArbeidssokerClien
     }
 
     @Override
-    public void opprettBrukerIArena(String fnr, Innsatsgruppe innsatsgruppe) {
+    public void opprettBrukerIArena(Fnr fnr, Innsatsgruppe innsatsgruppe) {
         Brukerident brukerident = new Brukerident();
-        brukerident.setBrukerident(fnr);
+        brukerident.setBrukerident(fnr.get());
         AktiverBrukerRequest request = new AktiverBrukerRequest();
         request.setIdent(brukerident);
         request.setKvalifiseringsgruppekode(innsatsgruppe.getKode());
@@ -69,7 +69,7 @@ public class BehandleArbeidssokerClientImpl implements BehandleArbeidssokerClien
     @Override
     public void reaktiverBrukerIArena(Fnr fnr) {
         Brukerident brukerident = new Brukerident();
-        brukerident.setBrukerident(fnr.getFnr());
+        brukerident.setBrukerident(fnr.get());
         ReaktiverBrukerForenkletRequest request = new ReaktiverBrukerForenkletRequest();
         request.setIdent(brukerident);
 

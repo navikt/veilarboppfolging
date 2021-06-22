@@ -2,8 +2,11 @@ package no.nav.veilarboppfolging.service;
 
 import lombok.SneakyThrows;
 import lombok.val;
-import no.nav.veilarboppfolging.domain.*;
+import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.Fnr;
+import no.nav.veilarboppfolging.controller.response.InnstillingsHistorikk;
 import no.nav.veilarboppfolging.repository.*;
+import no.nav.veilarboppfolging.repository.entity.*;
 import no.nav.veilarboppfolging.utils.KvpUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,9 +18,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.util.Collections.singletonList;
-import static no.nav.veilarboppfolging.domain.InnstillingsHistorikk.Type.*;
-import static no.nav.veilarboppfolging.domain.KodeverkBruker.NAV;
-import static no.nav.veilarboppfolging.domain.KodeverkBruker.SYSTEM;
+import static no.nav.veilarboppfolging.controller.response.InnstillingsHistorikk.Type.*;
+import static no.nav.veilarboppfolging.repository.enums.KodeverkBruker.NAV;
+import static no.nav.veilarboppfolging.repository.enums.KodeverkBruker.SYSTEM;
 
 @Service
 public class HistorikkService {
@@ -34,7 +37,7 @@ public class HistorikkService {
 
     private final OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
 
-    private final ManuellStatusRepository manuellStatusRepository;
+    private final ManuellStatusService manuellStatusService;
 
     @Autowired
     public HistorikkService(
@@ -44,7 +47,7 @@ public class HistorikkService {
             OppfolgingsenhetHistorikkRepository oppfolgingsenhetHistorikkRepository,
             EskaleringsvarselRepository eskaleringsvarselRepository,
             OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository,
-            ManuellStatusRepository manuellStatusRepository
+            ManuellStatusService manuellStatusService
     ) {
         this.authService = authService;
         this.kvpRepository = kvpRepository;
@@ -52,29 +55,29 @@ public class HistorikkService {
         this.oppfolgingsenhetHistorikkRepository = oppfolgingsenhetHistorikkRepository;
         this.eskaleringsvarselRepository = eskaleringsvarselRepository;
         this.oppfolgingsPeriodeRepository = oppfolgingsPeriodeRepository;
-        this.manuellStatusRepository = manuellStatusRepository;
+        this.manuellStatusService = manuellStatusService;
     }
 
-    public List<InnstillingsHistorikk> hentInstillingsHistorikk(String fnr) {
-        String aktorId = authService.getAktorIdOrThrow(fnr);
+    public List<InnstillingsHistorikk> hentInstillingsHistorikk(Fnr fnr) {
+        AktorId aktorId = authService.getAktorIdOrThrow(fnr);
         return hentInstillingHistorikk(aktorId).filter(Objects::nonNull).flatMap(s -> s).collect(Collectors.toList());
     }
 
     @SneakyThrows
-    private boolean harTilgangTilEnhet(Kvp kvp) {
+    private boolean harTilgangTilEnhet(KvpEntity kvp) {
         return authService.harTilgangTilEnhet(kvp.getEnhet());
     }
 
-    private InnstillingsHistorikk tilDTO(VeilederTilordningerData veilederTilordningerData) {
+    private InnstillingsHistorikk tilDTO(VeilederTilordningHistorikkEntity veilederTilordningHistorikk) {
         return InnstillingsHistorikk.builder()
                 .type(VEILEDER_TILORDNET)
-                .begrunnelse("Brukeren er tildelt veileder " +  veilederTilordningerData.getVeileder())
-                .dato(veilederTilordningerData.getSistTilordnet())
+                .begrunnelse("Brukeren er tildelt veileder " +  veilederTilordningHistorikk.getVeileder())
+                .dato(veilederTilordningHistorikk.getSistTilordnet())
                 .opprettetAv(NAV)
                 .build();
     }
 
-    private InnstillingsHistorikk tilDTO(OppfolgingsenhetEndringData oppfolgingsenhetEndringData) {
+    private InnstillingsHistorikk tilDTO(OppfolgingsenhetEndringEntity oppfolgingsenhetEndringData) {
         String enhet = oppfolgingsenhetEndringData.getEnhet();
         return InnstillingsHistorikk.builder()
                 .type(OPPFOLGINGSENHET_ENDRET)
@@ -85,7 +88,7 @@ public class HistorikkService {
                 .build();
     }
 
-    private InnstillingsHistorikk tilDTO(Oppfolgingsperiode oppfolgingsperiode) {
+    private InnstillingsHistorikk tilDTO(OppfolgingsperiodeEntity oppfolgingsperiode) {
         String veilderId = oppfolgingsperiode.getVeileder();
         return InnstillingsHistorikk.builder()
                 .type(AVSLUTTET_OPPFOLGINGSPERIODE)
@@ -96,7 +99,7 @@ public class HistorikkService {
                 .build();
     }
 
-    private InnstillingsHistorikk tilDTO(ManuellStatus historikkData) {
+    private InnstillingsHistorikk tilDTO(ManuellStatusEntity historikkData) {
         return InnstillingsHistorikk.builder()
                 .type(historikkData.isManuell() ? SATT_TIL_MANUELL : SATT_TIL_DIGITAL)
                 .begrunnelse(historikkData.getBegrunnelse())
@@ -106,7 +109,7 @@ public class HistorikkService {
                 .build();
     }
 
-    private List<InnstillingsHistorikk> tilDTO(EskaleringsvarselData data) {
+    private List<InnstillingsHistorikk> tilDTO(EskaleringsvarselEntity data) {
         val harAvsluttetEskalering = data.getAvsluttetDato() != null;
 
         val startetEskalering = InnstillingsHistorikk
@@ -135,7 +138,7 @@ public class HistorikkService {
         }
     }
 
-    private List<InnstillingsHistorikk> tilDTO(Kvp kvp) {
+    private List<InnstillingsHistorikk> tilDTO(KvpEntity kvp) {
         InnstillingsHistorikk kvpStart = InnstillingsHistorikk.builder()
                 .type(KVP_STARTET)
                 .begrunnelse(kvp.getOpprettetBegrunnelse())
@@ -157,12 +160,13 @@ public class HistorikkService {
         return singletonList(kvpStart);
     }
 
-    private Stream<Stream<InnstillingsHistorikk>> hentInstillingHistorikk (String aktorId) {
-        List<Kvp> kvpHistorikk = kvpRepository.hentKvpHistorikk(aktorId);
+    private Stream<Stream<InnstillingsHistorikk>> hentInstillingHistorikk (AktorId aktorId) {
+        List<KvpEntity> kvpHistorikk = kvpRepository.hentKvpHistorikk(aktorId);
 
         Stream <InnstillingsHistorikk> veilederTilordningerInnstillingHistorikk = null;
 
-        veilederTilordningerInnstillingHistorikk = veilederHistorikkRepository.hentTilordnedeVeiledereForAktorId(aktorId).stream()
+        veilederTilordningerInnstillingHistorikk = veilederHistorikkRepository.hentTilordnedeVeiledereForAktorId(aktorId)
+                .stream()
                 .map(this::tilDTO)
                 .filter((historikk) -> KvpUtils.sjekkTilgangGittKvp(authService, kvpHistorikk, historikk::getDato));
 
@@ -174,7 +178,7 @@ public class HistorikkService {
                 .stream()
                 .map(this::tilDTO);
 
-        Stream<InnstillingsHistorikk> manuellInnstillingHistorikk = manuellStatusRepository.history(aktorId)
+        Stream<InnstillingsHistorikk> manuellInnstillingHistorikk = manuellStatusService.hentManuellStatusHistorikk(aktorId)
                 .stream()
                 .map(this::tilDTO)
                 .filter((historikk) -> KvpUtils.sjekkTilgangGittKvp(authService, kvpHistorikk, historikk::getDato));

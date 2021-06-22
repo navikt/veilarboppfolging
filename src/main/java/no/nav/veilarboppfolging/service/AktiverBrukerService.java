@@ -1,8 +1,13 @@
 package no.nav.veilarboppfolging.service;
 
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.client.behandle_arbeidssoker.BehandleArbeidssokerClient;
-import no.nav.veilarboppfolging.domain.*;
+import no.nav.veilarboppfolging.controller.request.AktiverArbeidssokerData;
+import no.nav.veilarboppfolging.controller.request.Innsatsgruppe;
+import no.nav.veilarboppfolging.controller.request.SykmeldtBrukerType;
+import no.nav.veilarboppfolging.domain.Oppfolgingsbruker;
 import no.nav.veilarboppfolging.repository.NyeBrukereFeedRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -22,8 +27,6 @@ public class AktiverBrukerService {
 
     private final OppfolgingService oppfolgingService;
 
-    private final KafkaProducerService kafkaProducerService;
-
     private final NyeBrukereFeedRepository nyeBrukereFeedRepository;
 
     private final TransactionTemplate transactor;
@@ -33,30 +36,29 @@ public class AktiverBrukerService {
             AuthService authService,
             OppfolgingService oppfolgingService,
             BehandleArbeidssokerClient behandleArbeidssokerClient,
-            KafkaProducerService kafkaProducerService,
             NyeBrukereFeedRepository nyeBrukereFeedRepository,
             TransactionTemplate transactor
     ) {
         this.authService = authService;
         this.oppfolgingService = oppfolgingService;
         this.behandleArbeidssokerClient = behandleArbeidssokerClient;
-        this.kafkaProducerService = kafkaProducerService;
         this.nyeBrukereFeedRepository = nyeBrukereFeedRepository;
         this.transactor = transactor;
     }
 
     public void aktiverBruker(AktiverArbeidssokerData bruker) {
-        String fnr = ofNullable(bruker.getFnr())
-                .map(Fnr::getFnr)
+        no.nav.veilarboppfolging.controller.request.Fnr requestFnr = ofNullable(bruker.getFnr())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "FNR mangler"));
 
-        AktorId aktorId = new AktorId(authService.getAktorIdOrThrow(fnr));
+        Fnr fnr = Fnr.of(requestFnr.getFnr());
+
+        AktorId aktorId = authService.getAktorIdOrThrow(fnr);
 
         transactor.executeWithoutResult((status) -> aktiverBrukerOgOppfolging(fnr, aktorId, bruker.getInnsatsgruppe()));
     }
 
     public void reaktiverBruker(Fnr fnr) {
-        AktorId aktorId = new AktorId(authService.getAktorIdOrThrow(fnr.getFnr()));
+        AktorId aktorId = authService.getAktorIdOrThrow(fnr);
 
         transactor.executeWithoutResult((status) -> startReaktiveringAvBrukerOgOppfolging(fnr, aktorId));
     }
@@ -64,37 +66,30 @@ public class AktiverBrukerService {
     private void startReaktiveringAvBrukerOgOppfolging(Fnr fnr, AktorId aktorId) {
         oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(
                 Oppfolgingsbruker.builder()
-                        .aktoerId(aktorId.getAktorId())
+                        .aktoerId(aktorId.get())
                         .build()
-                ,false
         );
 
         behandleArbeidssokerClient.reaktiverBrukerIArena(fnr);
-
-        kafkaProducerService.publiserOppfolgingStartet(aktorId.getAktorId());
     }
 
-    private void aktiverBrukerOgOppfolging(String fnr, AktorId aktorId, Innsatsgruppe innsatsgruppe) {
+    private void aktiverBrukerOgOppfolging(Fnr fnr, AktorId aktorId, Innsatsgruppe innsatsgruppe) {
         oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(
                 Oppfolgingsbruker.builder()
-                        .aktoerId(aktorId.getAktorId())
+                        .aktoerId(aktorId.get())
                         .innsatsgruppe(innsatsgruppe)
-                        .build()
-                ,false
-        );
+                        .build());
 
         behandleArbeidssokerClient.opprettBrukerIArena(fnr, innsatsgruppe);
 
         nyeBrukereFeedRepository.tryLeggTilFeedIdPaAlleElementerUtenFeedId();
-
-        kafkaProducerService.publiserOppfolgingStartet(aktorId.getAktorId());
     }
 
-    public void aktiverSykmeldt(String uid, SykmeldtBrukerType sykmeldtBrukerType) {
+    public void aktiverSykmeldt(Fnr fnr, SykmeldtBrukerType sykmeldtBrukerType) {
         transactor.executeWithoutResult((status) -> {
             Oppfolgingsbruker oppfolgingsbruker = Oppfolgingsbruker.builder()
                     .sykmeldtBrukerType(sykmeldtBrukerType)
-                    .aktoerId(authService.getAktorIdOrThrow(uid))
+                    .aktoerId(authService.getAktorIdOrThrow(fnr).get())
                     .build();
 
             oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(oppfolgingsbruker);

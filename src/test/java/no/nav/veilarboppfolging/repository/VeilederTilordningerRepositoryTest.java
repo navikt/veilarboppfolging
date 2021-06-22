@@ -1,6 +1,7 @@
 package no.nav.veilarboppfolging.repository;
 
-import no.nav.veilarboppfolging.domain.Tilordning;
+import no.nav.common.types.identer.AktorId;
+import no.nav.veilarboppfolging.repository.entity.VeilederTilordningEntity;
 import no.nav.veilarboppfolging.test.DbTestUtils;
 import no.nav.veilarboppfolging.test.LocalH2Database;
 import org.junit.Before;
@@ -14,7 +15,7 @@ import static org.junit.Assert.assertThat;
 
 public class VeilederTilordningerRepositoryTest {
 
-    private static final String AKTOR_ID = randomNumeric(10);
+    private static final AktorId AKTOR_ID = AktorId.of(randomNumeric(10));
     private static final String VEILEDER = "4321";
     private static final String OTHER_VEILEDER = "5432";
 
@@ -29,13 +30,13 @@ public class VeilederTilordningerRepositoryTest {
     public void skalLeggeTilBruker() {
         veilederTilordningerRepository.upsertVeilederTilordning(AKTOR_ID, VEILEDER);
         assertThat(veilederTilordningerRepository.hentTilordningForAktoer(AKTOR_ID), is(VEILEDER));
-        Optional<Tilordning> veileder = veilederTilordningerRepository.hentTilordnetVeileder(AKTOR_ID);
-        assertThat(veileder.map(Tilordning::isNyForVeileder).get(), is(true));
+        Optional<VeilederTilordningEntity> veileder = veilederTilordningerRepository.hentTilordnetVeileder(AKTOR_ID);
+        assertThat(veileder.map(VeilederTilordningEntity::isNyForVeileder).get(), is(true));
     }
 
     @Test
     public void skalOppdatereBrukerDersomDenFinnes() {
-        String aktoerid = "1111111";
+        AktorId aktoerid = AktorId.of("1111111");
 
         veilederTilordningerRepository.upsertVeilederTilordning(aktoerid, VEILEDER);
         veilederTilordningerRepository.upsertVeilederTilordning(aktoerid, OTHER_VEILEDER);
@@ -47,8 +48,8 @@ public class VeilederTilordningerRepositoryTest {
     public void kanMarkeresSomLest() {
         veilederTilordningerRepository.upsertVeilederTilordning(AKTOR_ID, VEILEDER);
         veilederTilordningerRepository.markerSomLestAvVeileder(AKTOR_ID);
-        Optional<Tilordning> veileder = veilederTilordningerRepository.hentTilordnetVeileder(AKTOR_ID);
-        assertThat(veileder.map(Tilordning::isNyForVeileder).get(), is(false));
+        Optional<VeilederTilordningEntity> veileder = veilederTilordningerRepository.hentTilordnetVeileder(AKTOR_ID);
+        assertThat(veileder.map(VeilederTilordningEntity::isNyForVeileder).get(), is(false));
     }
 
     @Test
@@ -56,8 +57,8 @@ public class VeilederTilordningerRepositoryTest {
         veilederTilordningerRepository.upsertVeilederTilordning(AKTOR_ID, VEILEDER);
         veilederTilordningerRepository.markerSomLestAvVeileder(AKTOR_ID);
         veilederTilordningerRepository.upsertVeilederTilordning(AKTOR_ID, OTHER_VEILEDER);
-        Optional<Tilordning> veileder = veilederTilordningerRepository.hentTilordnetVeileder(AKTOR_ID);
-        assertThat(veileder.map(Tilordning::isNyForVeileder).get(), is(true));
+        Optional<VeilederTilordningEntity> veileder = veilederTilordningerRepository.hentTilordnetVeileder(AKTOR_ID);
+        assertThat(veileder.map(VeilederTilordningEntity::isNyForVeileder).get(), is(true));
     }
 
 

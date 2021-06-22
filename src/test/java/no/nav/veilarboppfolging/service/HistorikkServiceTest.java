@@ -1,10 +1,12 @@
 package no.nav.veilarboppfolging.service;
 
-import no.nav.veilarboppfolging.domain.EskaleringsvarselData;
-import no.nav.veilarboppfolging.domain.InnstillingsHistorikk;
-import no.nav.veilarboppfolging.domain.Kvp;
-import no.nav.veilarboppfolging.domain.ManuellStatus;
+import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.Fnr;
+import no.nav.veilarboppfolging.controller.response.InnstillingsHistorikk;
 import no.nav.veilarboppfolging.repository.*;
+import no.nav.veilarboppfolging.repository.entity.EskaleringsvarselEntity;
+import no.nav.veilarboppfolging.repository.entity.KvpEntity;
+import no.nav.veilarboppfolging.repository.entity.ManuellStatusEntity;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -43,7 +45,7 @@ public class HistorikkServiceTest {
     private OppfolgingsenhetHistorikkRepository oppfolgingsenhetHistorikkRepository;
 
     @Mock
-    private ManuellStatusRepository manuellStatusRepository;
+    private ManuellStatusService manuellStatusService;
 
     @Mock
     private EskaleringsvarselRepository eskaleringsvarselRepository;
@@ -54,8 +56,8 @@ public class HistorikkServiceTest {
     @InjectMocks
     private HistorikkService historikkService;
 
-    private static final String FNR = "fnr";
-    private static final String AKTOR_ID = "aktorId";
+    private static final Fnr FNR = Fnr.of("fnr");
+    private static final AktorId AKTOR_ID = AktorId.of("aktorId");
     private static final String ENHET = "enhet";
 
     private static final ZonedDateTime BEFORE_KVP = ZonedDateTime.now();
@@ -98,25 +100,25 @@ public class HistorikkServiceTest {
     }
 
     private void gitt_eskaleringsvarsel_historikk() {
-        List<EskaleringsvarselData> eskaleringsvarsel = asList(
-                EskaleringsvarselData.builder()
-                        .aktorId(AKTOR_ID)
+        List<EskaleringsvarselEntity> eskaleringsvarsel = asList(
+                EskaleringsvarselEntity.builder()
+                        .aktorId(AKTOR_ID.get())
                         .varselId(1L)
                         .opprettetDato(BEFORE_KVP)
                         .opprettetBegrunnelse("OUTSIDE_KVP")
                         .avsluttetDato(ALSO_BEFORE_KVP)
                         .avsluttetBegrunnelse("OUTSIDE_KVP")
                         .build(),
-                EskaleringsvarselData.builder()
-                        .aktorId(AKTOR_ID)
+                EskaleringsvarselEntity.builder()
+                        .aktorId(AKTOR_ID.get())
                         .varselId(2L)
                         .opprettetDato(BEFORE_KVP)
                         .opprettetBegrunnelse("OUTSIDE_KVP")
                         .avsluttetDato(IN_KVP)
                         .avsluttetBegrunnelse("IN_KVP")
                         .build(),
-                EskaleringsvarselData.builder()
-                        .aktorId(AKTOR_ID)
+                EskaleringsvarselEntity.builder()
+                        .aktorId(AKTOR_ID.get())
                         .varselId(3L)
                         .opprettetDato(IN_KVP)
                         .opprettetBegrunnelse("IN_KVP")
@@ -129,46 +131,46 @@ public class HistorikkServiceTest {
     }
 
     private void gitt_manuell_hitsorikk() {
-        List<ManuellStatus> manuellStatus = asList(
-                new ManuellStatus()
-                        .setAktorId(AKTOR_ID)
+        List<ManuellStatusEntity> manuellStatus = asList(
+                new ManuellStatusEntity()
+                        .setAktorId(AKTOR_ID.get())
                         .setDato(BEFORE_KVP)
                         .setBegrunnelse("OUTSIDE_KVP")
                         .setManuell(true),
-                new ManuellStatus()
-                        .setAktorId(AKTOR_ID)
+                new ManuellStatusEntity()
+                        .setAktorId(AKTOR_ID.get())
                         .setDato(BEFORE_KVP)
                         .setBegrunnelse("OUTSIDE_KVP")
                         .setManuell(false),
-                new ManuellStatus()
-                        .setAktorId(AKTOR_ID)
+                new ManuellStatusEntity()
+                        .setAktorId(AKTOR_ID.get())
                         .setDato(IN_KVP)
                         .setBegrunnelse("IN_KVP")
                         .setManuell(true),
-                new ManuellStatus()
-                        .setAktorId(AKTOR_ID)
+                new ManuellStatusEntity()
+                        .setAktorId(AKTOR_ID.get())
                         .setDato(IN_KVP)
                         .setBegrunnelse("IN_KVP")
                         .setManuell(false),
-                new ManuellStatus()
-                        .setAktorId(AKTOR_ID)
+                new ManuellStatusEntity()
+                        .setAktorId(AKTOR_ID.get())
                         .setDato(AFTER_KVP)
                         .setBegrunnelse("OUTSIDE_KVP")
                         .setManuell(true),
-                new ManuellStatus()
-                        .setAktorId(AKTOR_ID)
+                new ManuellStatusEntity()
+                        .setAktorId(AKTOR_ID.get())
                         .setDato(AFTER_KVP)
                         .setBegrunnelse("OUTSIDE_KVP")
                         .setManuell(false)
         );
 
-        when(manuellStatusRepository.history(AKTOR_ID)).thenReturn(manuellStatus);
+        when(manuellStatusService.hentManuellStatusHistorikk(AKTOR_ID)).thenReturn(manuellStatus);
     }
 
     private void gitt_kvp() {
-        List<Kvp> kvp = singletonList(
-                Kvp.builder()
-                        .aktorId(AKTOR_ID)
+        List<KvpEntity> kvp = singletonList(
+                KvpEntity.builder()
+                        .aktorId(AKTOR_ID.get())
                         .kvpId(1L)
                         .opprettetDato(KVP_START)
                         .opprettetBegrunnelse("IN_KVP")

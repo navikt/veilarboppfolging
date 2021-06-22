@@ -1,5 +1,6 @@
 package no.nav.veilarboppfolging.service;
 
+import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktClient;
 import org.springframework.stereotype.Service;
 
@@ -15,7 +16,7 @@ public class YtelserOgAktiviteterService {
         this.ytelseskontraktClient = ytelseskontraktClient;
     }
 
-    public boolean harPagaendeYtelse(String fnr) {
+    public boolean harPagaendeYtelse(Fnr fnr) {
         return ytelseskontraktClient.hentYtelseskontraktListe(fnr)
                 .getYtelser()
                 .stream()

@@ -1,17 +1,22 @@
 package no.nav.veilarboppfolging.repository;
 
-import no.nav.veilarboppfolging.domain.Kvp;
+import no.nav.common.types.identer.AktorId;
+import no.nav.veilarboppfolging.repository.entity.KvpEntity;
+import no.nav.veilarboppfolging.test.DbTestUtils;
 import no.nav.veilarboppfolging.test.IsolatedDatabaseTest;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.transaction.support.TransactionTemplate;
 
-import static no.nav.veilarboppfolging.domain.KodeverkBruker.NAV;
+import java.time.ZonedDateTime;
+
+import static no.nav.veilarboppfolging.repository.enums.KodeverkBruker.NAV;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 
 public class KvpRepositoryTest extends IsolatedDatabaseTest {
 
-    private static final String AKTOR_ID = "aktorId";
+    private static final AktorId AKTOR_ID = AktorId.of("aktorId");
     private static final String SAKSBEHANDLER_ID = "saksbehandlerId";
     private static final String BEGRUNNELSE = "Begrunnelse";
 
@@ -21,8 +26,9 @@ public class KvpRepositoryTest extends IsolatedDatabaseTest {
 
     @Before
     public void setup() {
+        TransactionTemplate transactor = DbTestUtils.createTransactor(db);
         oppfolgingsStatusRepository = new OppfolgingsStatusRepository(db);
-        kvpRepository = new KvpRepository(db);
+        kvpRepository = new KvpRepository(db, transactor);
     }
 
     @Test
@@ -50,7 +56,7 @@ public class KvpRepositoryTest extends IsolatedDatabaseTest {
      */
     @Test
     public void testSerial() {
-        Kvp kvp;
+        KvpEntity kvp;
         long serial;
 
         gittOppfolgingForAktor(AKTOR_ID);
@@ -66,21 +72,19 @@ public class KvpRepositoryTest extends IsolatedDatabaseTest {
 
     private void stop_kvp() {
         long kvpId = kvpRepository.gjeldendeKvp(AKTOR_ID);
-        kvpRepository.stopKvp(kvpId, AKTOR_ID, SAKSBEHANDLER_ID, BEGRUNNELSE, NAV);
+        kvpRepository.stopKvp(kvpId, AKTOR_ID, SAKSBEHANDLER_ID, BEGRUNNELSE, NAV, ZonedDateTime.now());
     }
 
     private void start_kvp() {
-        kvpRepository.startKvp(AKTOR_ID, "0123", SAKSBEHANDLER_ID, BEGRUNNELSE);
+        kvpRepository.startKvp(AKTOR_ID, "0123", SAKSBEHANDLER_ID, BEGRUNNELSE, ZonedDateTime.now());
     }
 
-    private Kvp hentGjeldendeKvp(String aktorId) {
+    private KvpEntity hentGjeldendeKvp(AktorId aktorId) {
         long kvpId = oppfolgingsStatusRepository.fetch(aktorId).getGjeldendeKvpId();
         return kvpRepository.fetch(kvpId);
     }
 
-    private void gittOppfolgingForAktor(String aktorId) {
+    private void gittOppfolgingForAktor(AktorId aktorId) {
         oppfolgingsStatusRepository.opprettOppfolging(aktorId);
-
-//        oppfolgingRepositoryService.startOppfolgingHvisIkkeAlleredeStartet(aktorId);
     }
 }

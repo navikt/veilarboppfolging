@@ -6,7 +6,6 @@ import no.nav.common.auth.oidc.filter.OidcAuthenticatorConfig;
 import no.nav.common.auth.utils.UserTokenFinder;
 import no.nav.common.log.LogFilter;
 import no.nav.common.rest.filter.SetStandardHttpHeadersFilter;
-import no.nav.veilarboppfolging.utils.CustomServiceUserTokenFinder;
 import no.nav.veilarboppfolging.utils.PingFilter;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
@@ -18,6 +17,7 @@ import static no.nav.common.auth.Constants.*;
 import static no.nav.common.auth.oidc.filter.OidcAuthenticator.fromConfigs;
 import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
 import static no.nav.common.utils.EnvironmentUtils.requireApplicationName;
+import static no.nav.veilarboppfolging.controller.AdminController.PTO_ADMIN_SERVICE_USER;
 
 @Configuration
 public class FilterConfig {
@@ -25,14 +25,13 @@ public class FilterConfig {
     private final List<String> ALLOWED_SERVICE_USERS = List.of(
             "srvveilarbportefolje", "srvveilarbdialog", "srvveilarbaktivitet",
             "srvveilarbjobbsoke", "srvveilarbdirigent", "srvveilarbregistre",
-            "srvpam-cv-api", "srvveilarbvedtakss"
+            "srvpam-cv-api", "srvveilarbvedtakss", PTO_ADMIN_SERVICE_USER
     );
 
     private OidcAuthenticatorConfig openAmStsAuthConfig(EnvironmentProperties properties) {
         return new OidcAuthenticatorConfig()
                 .withDiscoveryUrl(properties.getOpenAmDiscoveryUrl())
                 .withClientId(properties.getVeilarbloginOpenAmClientId())
-                .withIdTokenFinder(new CustomServiceUserTokenFinder())
                 .withUserRole(UserRole.SYSTEM);
     }
 
@@ -66,15 +65,6 @@ public class FilterConfig {
                 .withUserRole(UserRole.INTERN);
     }
 
-    // Brukes pr i dag kun av finn-kandidat-api som gjør kall mot /api/underoppfolging
-    private OidcAuthenticatorConfig tokenXAuthConfig(EnvironmentProperties properties) {
-        return new OidcAuthenticatorConfig()
-                .withDiscoveryUrl(properties.getTokenXDiscoveryUrl())
-                .withClientId(properties.getTokenXClientId())
-                .withIdTokenFinder(new CustomServiceUserTokenFinder()) // Token is always sent in Authorization header
-                .withUserRole(UserRole.EKSTERN);
-    }
-
     private OidcAuthenticatorConfig loginserviceIdportenConfig(EnvironmentProperties properties) {
         return new OidcAuthenticatorConfig()
                 .withDiscoveryUrl(properties.getLoginserviceIdportenDiscoveryUrl())
@@ -104,8 +94,7 @@ public class FilterConfig {
                         azureAdAuthConfig(properties),
                         loginserviceIdportenConfig(properties),
                         openAmStsAuthConfig(properties),
-                        naisStsAuthConfig(properties),
-                        tokenXAuthConfig(properties)
+                        naisStsAuthConfig(properties)
                 )
         );
 

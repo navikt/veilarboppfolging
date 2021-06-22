@@ -2,7 +2,8 @@ package no.nav.veilarboppfolging.repository;
 
 
 import lombok.SneakyThrows;
-import no.nav.veilarboppfolging.domain.Tilordning;
+import no.nav.common.types.identer.AktorId;
+import no.nav.veilarboppfolging.repository.entity.VeilederTilordningEntity;
 import no.nav.veilarboppfolging.utils.DbUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -25,41 +26,41 @@ public class VeilederTilordningerRepository {
         this.db = db;
     }
 
-    public String hentTilordningForAktoer(String aktorId) {
+    public String hentTilordningForAktoer(AktorId aktorId) {
         return hentTilordnetVeileder(aktorId)
-                .map(Tilordning::getVeilederId)
+                .map(VeilederTilordningEntity::getVeilederId)
                 .orElse(null);
     }
 
-    public Optional<Tilordning> hentTilordnetVeileder(String aktorId) {
+    public Optional<VeilederTilordningEntity> hentTilordnetVeileder(AktorId aktorId) {
         String sql = format("SELECT * FROM %s WHERE %s = ?", TABLE_NAME, AKTOR_ID);
-        return queryForNullableObject(db, sql, VeilederTilordningerRepository::map, aktorId);
+        return queryForNullableObject(db, sql, VeilederTilordningerRepository::map, aktorId.get());
     }
 
-    public void upsertVeilederTilordning(String aktoerId, String veileder) {
+    public void upsertVeilederTilordning(AktorId aktorId, String veilederId) {
         String insertSql = "INSERT INTO OPPFOLGINGSTATUS(aktor_id, veileder, under_oppfolging, ny_for_veileder, sist_tilordnet, oppdatert, FEED_ID) " +
                 "SELECT ?, ?, 0, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, null FROM DUAL " +
                 "WHERE NOT EXISTS(SELECT * FROM OPPFOLGINGSTATUS WHERE aktor_id = ?)";
 
-        int rowsUpdated = db.update(insertSql, aktoerId, veileder, aktoerId);
+        int rowsUpdated = db.update(insertSql, aktorId.get(), veilederId, aktorId.get());
 
         if (rowsUpdated == 0) {
             String updateSql = "UPDATE OPPFOLGINGSTATUS SET veileder = ?, ny_for_veileder = 1, " +
                     "sist_tilordnet = CURRENT_TIMESTAMP, oppdatert = CURRENT_TIMESTAMP, FEED_ID = null WHERE aktor_id = ?";
 
-            db.update(updateSql, veileder, aktoerId);
+            db.update(updateSql, veilederId, aktorId.get());
         }
 
     }
 
-    public int markerSomLestAvVeileder(String aktorId) {
+    public int markerSomLestAvVeileder(AktorId aktorId) {
         String sql = "UPDATE OPPFOLGINGSTATUS SET ny_for_veileder = ?, oppdatert = CURRENT_TIMESTAMP, FEED_ID = null WHERE aktor_id = ?";
-        return db.update(sql, 0, aktorId);
+        return db.update(sql, 0, aktorId.get());
     }
 
     @SneakyThrows
-    private static Tilordning map(ResultSet resultSet, int row) {
-        return new Tilordning()
+    private static VeilederTilordningEntity map(ResultSet resultSet, int row) {
+        return new VeilederTilordningEntity()
                 .setAktorId(resultSet.getString(AKTOR_ID))
                 .setOppfolging(resultSet.getBoolean(UNDER_OPPFOLGING))
                 .setVeilederId(resultSet.getString(VEILEDER))

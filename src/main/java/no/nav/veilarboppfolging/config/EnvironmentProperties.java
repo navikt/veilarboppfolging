@@ -51,6 +51,8 @@ public class EnvironmentProperties {
 
     private String kafkaBrokersUrl;
 
+    private String unleashUrl;
+
     // SOAP Endpoints
 
     private String ytelseskontraktV3Endpoint;
@@ -58,9 +60,5 @@ public class EnvironmentProperties {
     private String varselOppgaveV1Endpoint;
 
     private String behandleArbeidssoekerV1Endpoint;
-
-    private String tokenXDiscoveryUrl;
-
-    private String tokenXClientId;
 
 }

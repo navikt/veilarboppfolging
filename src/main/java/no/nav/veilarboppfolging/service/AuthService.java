@@ -1,6 +1,5 @@
 package no.nav.veilarboppfolging.service;
 
-import com.nimbusds.jwt.JWTClaimsSet;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.abac.AbacUtils;
 import no.nav.common.abac.Pep;
@@ -25,7 +24,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
-import java.util.Optional;
 
 import static java.util.Optional.ofNullable;
 import static no.nav.common.abac.XacmlRequestBuilder.lagEnvironment;
@@ -90,26 +88,22 @@ public class AuthService {
         return veilarbPep.harTilgangTilEnhetMedSperre(getInnloggetBrukerToken(), EnhetId.of(enhetId));
     }
 
-    public boolean harVeilederSkriveTilgangTilFnr(String veilederId, String fnr) {
-        return veilarbPep.harVeilederTilgangTilPerson(NavIdent.of(veilederId), ActionId.WRITE, AktorId.of(getAktorIdOrThrow(fnr)));
+    public boolean harVeilederSkriveTilgangTilFnr(String veilederId, Fnr fnr) {
+        return veilarbPep.harVeilederTilgangTilPerson(NavIdent.of(veilederId), ActionId.WRITE, getAktorIdOrThrow(fnr));
     }
 
-    public void sjekkLesetilgangMedFnr(String fnr) {
+    public void sjekkLesetilgangMedFnr(Fnr fnr) {
         sjekkLesetilgangMedAktorId(getAktorIdOrThrow(fnr));
     }
 
-    public void sjekkLesetilgangMedAktorId(String aktorId) {
-        if (!veilarbPep.harTilgangTilPerson(getInnloggetBrukerToken(), ActionId.READ, AktorId.of(aktorId))) {
+    public void sjekkLesetilgangMedAktorId(AktorId aktorId) {
+        if (!veilarbPep.harTilgangTilPerson(getInnloggetBrukerToken(), ActionId.READ, aktorId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
     }
 
-    public void sjekkSkrivetilgangMedFnr(String fnr) {
-        sjekkSkrivetilgangMedAktorId(getAktorIdOrThrow(fnr));
-    }
-
-    public void sjekkSkrivetilgangMedAktorId(String aktorId) {
-        if (!veilarbPep.harTilgangTilPerson(getInnloggetBrukerToken(), ActionId.WRITE, AktorId.of(aktorId))) {
+    public void sjekkSkrivetilgangMedAktorId(AktorId aktorId) {
+        if (!veilarbPep.harTilgangTilPerson(getInnloggetBrukerToken(), ActionId.WRITE, aktorId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
     }
@@ -120,7 +114,7 @@ public class AuthService {
         }
     }
 
-    public void sjekkTilgangTilPersonMedNiva3(String aktorId) {
+    public void sjekkTilgangTilPersonMedNiva3(AktorId aktorId) {
         XacmlRequest tilgangTilNiva3Request = lagSjekkTilgangTilNiva3Request(serviceUserCredentials.username, getInnloggetBrukerToken(), aktorId);
 
         XacmlResponse response = veilarbPep.getAbacClient().sendRequest(tilgangTilNiva3Request);
@@ -130,7 +124,7 @@ public class AuthService {
         }
     }
 
-    private XacmlRequest lagSjekkTilgangTilNiva3Request(String serviceUserName, String userOidcToken, String aktorId) {
+    private XacmlRequest lagSjekkTilgangTilNiva3Request(String serviceUserName, String userOidcToken, AktorId aktorId) {
         String oidcTokenBody = AbacUtils.extractOidcTokenBody(userOidcToken);
         Environment environment = lagEnvironment(serviceUserName);
         environment.getAttribute().add(new Attribute(NavAttributter.ENVIRONMENT_FELLES_OIDC_TOKEN_BODY, oidcTokenBody));
@@ -141,7 +135,7 @@ public class AuthService {
         Resource resource = new Resource();
         resource.getAttribute().add(new Attribute(NavAttributter.RESOURCE_FELLES_RESOURCE_TYPE, NavAttributter.RESOURCE_VEILARB_UNDER_OPPFOLGING));
         resource.getAttribute().add(new Attribute(NavAttributter.RESOURCE_FELLES_DOMENE, AbacDomain.VEILARB_DOMAIN));
-        resource.getAttribute().add(personIdAttribute(AktorId.of(aktorId)));
+        resource.getAttribute().add(personIdAttribute(aktorId));
 
         Request request = new Request()
                 .withEnvironment(environment)
@@ -153,13 +147,13 @@ public class AuthService {
 
     // TODO: Det er hårete å måtte skille på ekstern og intern
     //  Lag istedenfor en egen controller for interne operasjoner og en annen for eksterne
-    public String hentIdentForEksternEllerIntern(String queryParamFnr) {
-        String fnr;
+    public Fnr hentIdentForEksternEllerIntern(Fnr queryParamFnr) {
+        Fnr fnr;
 
         if (erInternBruker()) {
             fnr = queryParamFnr;
         } else if (erEksternBruker()) {
-            fnr = getInnloggetBrukerIdent();
+            fnr = Fnr.of(getInnloggetBrukerIdent());
         } else {
             // Systembruker har ikke tilgang
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
@@ -172,37 +166,16 @@ public class AuthService {
         return fnr;
     }
 
-    /**
-     * Hent ekstern bruker fnr/dnr fra et TokenX token.
-     * @param expectedAudience the expected audience for the TokenX token. Used to verify that the token is issued from TokenX
-     * @return identen til brukeren hvis de er logget inn med TokenX
-     */
-    public Optional<String> hentIdentFraTokenX(String expectedAudience) {
-        Optional<JWTClaimsSet> tokenClaims = authContextHolder.getIdTokenClaims();
-
-        return tokenClaims.map(claims -> {
-            try {
-                if (claims.getAudience().contains(expectedAudience)) {
-                    return claims.getStringClaim("pid");
-                }
-            } catch (Exception e) {
-                log.error("Feilet under henting av ident for bruker med TokenX", e);
-            }
-
-            return null;
-        });
+    public AktorId getAktorIdOrThrow(Fnr fnr) {
+        return aktorOppslagClient.hentAktorId(fnr);
     }
 
-    public String getAktorIdOrThrow(String fnr) {
-        return aktorOppslagClient.hentAktorId(Fnr.of(fnr)).get();
+    public Fnr getFnrOrThrow(AktorId aktorId) {
+        return aktorOppslagClient.hentFnr(aktorId);
     }
 
-    public String getFnrOrThrow(String aktorId) {
-        return aktorOppslagClient.hentFnr(AktorId.of(aktorId)).get();
-    }
-
-    public List<AktorId> getAlleAktorIderOrThrow(String fnr) {
-        return aktorregisterClient.hentAktorIder(Fnr.of(fnr));
+    public List<AktorId> getAlleAktorIderOrThrow(Fnr fnr) {
+        return aktorregisterClient.hentAktorIder(fnr);
     }
 
     public String getInnloggetBrukerToken() {

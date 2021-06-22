@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.cxf.CXFClient;
 import no.nav.common.cxf.StsConfig;
 import no.nav.common.health.HealthCheckResult;
+import no.nav.common.types.identer.AktorId;
 import no.nav.tjeneste.virksomhet.varseloppgave.v1.binding.BestillVarselOppgaveBrukerHarIkkeTilstrekkeligPaaloggingsnivaa;
 import no.nav.tjeneste.virksomhet.varseloppgave.v1.binding.BestillVarselOppgaveBrukerIkkeRegistrertIIdporten;
 import no.nav.tjeneste.virksomhet.varseloppgave.v1.binding.BestillVarselOppgaveSikkerhetsbegrensning;
@@ -46,9 +47,9 @@ public class VarseloppgaveClientImpl implements VarseloppgaveClient {
 
     @SneakyThrows
     @Override
-    public void sendEskaleringsvarsel(String aktorId, long dialogId) {
+    public void sendEskaleringsvarsel(AktorId aktorId, long dialogId) {
         AktoerId aktor = new AktoerId();
-        aktor.setAktoerId(aktorId);
+        aktor.setAktoerId(aktorId.get());
         try {
             varseloppgave.bestillVarselOppgave(lagBestillVarselOppgaveRequest(aktor, dialogId));
         } catch (BestillVarselOppgaveSikkerhetsbegrensning e) {

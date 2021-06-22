@@ -6,6 +6,7 @@ import no.nav.common.health.HealthCheckResult;
 import no.nav.common.health.HealthCheckUtils;
 import no.nav.common.rest.client.RestClient;
 import no.nav.common.rest.client.RestUtils;
+import no.nav.common.types.identer.Fnr;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -34,9 +35,9 @@ public class VeilarbarenaClientImpl implements VeilarbarenaClient {
     }
 
     @Override
-    public Optional<VeilarbArenaOppfolging> hentOppfolgingsbruker(String fnr) {
+    public Optional<VeilarbArenaOppfolging> hentOppfolgingsbruker(Fnr fnr) {
         Request request = new Request.Builder()
-                .url(joinPaths(veilarbarenaUrl, "/api/oppfolgingsbruker/" + fnr))
+                .url(joinPaths(veilarbarenaUrl, "/api/oppfolgingsbruker/" + fnr.get()))
                 .header(ACCEPT, APPLICATION_JSON_VALUE)
                 .header(AUTHORIZATION, "Bearer " + userTokenProvider.get())
                 .build();
@@ -55,9 +56,9 @@ public class VeilarbarenaClientImpl implements VeilarbarenaClient {
 
     @SneakyThrows
     @Override
-    public Optional<ArenaOppfolging> getArenaOppfolgingsstatus(String fnr) {
+    public Optional<ArenaOppfolging> getArenaOppfolgingsstatus(Fnr fnr) {
         Request request = new Request.Builder()
-                .url(joinPaths(veilarbarenaUrl, "/api/oppfolgingsstatus/" + fnr))
+                .url(joinPaths(veilarbarenaUrl, "/api/oppfolgingsstatus/" + fnr.get()))
                 .header(ACCEPT, APPLICATION_JSON_VALUE)
                 .header(AUTHORIZATION, "Bearer " + userTokenProvider.get())
                 .build();

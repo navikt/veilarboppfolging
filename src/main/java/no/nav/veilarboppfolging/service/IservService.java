@@ -6,14 +6,17 @@ import no.nav.common.auth.context.AuthContext;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.UserRole;
 import no.nav.common.sts.SystemUserTokenProvider;
-import no.nav.veilarboppfolging.domain.IservMapper;
-import no.nav.veilarboppfolging.domain.OppfolgingTable;
-import no.nav.veilarboppfolging.domain.kafka.VeilarbArenaOppfolgingEndret;
+import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.Fnr;
+import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV1;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
 import no.nav.veilarboppfolging.repository.UtmeldingRepository;
+import no.nav.veilarboppfolging.repository.entity.OppfolgingEntity;
+import no.nav.veilarboppfolging.repository.entity.UtmeldingEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,6 +43,7 @@ public class IservService {
     private final OppfolgingService oppfolgingService;
     private final OppfolgingsStatusRepository oppfolgingsStatusRepository;
     private final AuthService authService;
+    private final TransactionTemplate transactor;
 
     public IservService(
             AuthContextHolder authContextHolder,
@@ -48,7 +52,8 @@ public class IservService {
             UtmeldingRepository utmeldingRepository,
             OppfolgingService oppfolgingService,
             OppfolgingsStatusRepository oppfolgingsStatusRepository,
-            AuthService authService
+            AuthService authService,
+            TransactionTemplate transactor
     ) {
         this.authContextHolder = authContextHolder;
         this.systemUserTokenProvider = systemUserTokenProvider;
@@ -57,8 +62,8 @@ public class IservService {
         this.oppfolgingService = oppfolgingService;
         this.oppfolgingsStatusRepository = oppfolgingsStatusRepository;
         this.authService = authService;
+        this.transactor = transactor;
     }
-
 
     /**
      * Brukes av Iserv28Schedule for å automatisk avslutte oppfølging av brukere som har vært ISERV i mer enn 28 dager
@@ -75,23 +80,26 @@ public class IservService {
                 resultater.size());
     }
 
-    @Transactional
-    public void behandleEndretBruker(VeilarbArenaOppfolgingEndret oppfolgingEndret) {
-        log.info("Behandler bruker: {}", oppfolgingEndret);
+    public void behandleEndretBruker(EndringPaaOppfoelgingsBrukerV1 oppfolgingEndret) {
+        transactor.executeWithoutResult((ignored) -> {
+            log.info("Behandler bruker: {}", oppfolgingEndret);
 
-        if (erIserv(oppfolgingEndret.getFormidlingsgruppekode())) {
-            oppdaterUtmeldingTabell(oppfolgingEndret);
-        } else {
-            utmeldingRepository.slettBrukerFraUtmeldingTabell(oppfolgingEndret.getAktoerid());
+            AktorId aktorId = AktorId.of(oppfolgingEndret.getAktoerid());
 
-            if (erUnderOppfolging(oppfolgingEndret.getFormidlingsgruppekode(), oppfolgingEndret.getKvalifiseringsgruppekode())) {
-                if (brukerHarOppfolgingsflagg(oppfolgingEndret.getAktoerid())) {
-                    log.info("Bruker med aktørid {} er allerede under oppfølging", oppfolgingEndret.getAktoerid());
-                } else {
-                    startOppfolging(oppfolgingEndret);
+            if (erIserv(oppfolgingEndret.getFormidlingsgruppekode())) {
+                oppdaterUtmeldingTabell(oppfolgingEndret);
+            } else {
+                utmeldingRepository.slettBrukerFraUtmeldingTabell(aktorId);
+
+                if (erUnderOppfolging(oppfolgingEndret.getFormidlingsgruppekode(), oppfolgingEndret.getKvalifiseringsgruppekode())) {
+                    if (brukerHarOppfolgingsflagg(aktorId)) {
+                        log.info("Bruker med aktørid {} er allerede under oppfølging", oppfolgingEndret.getAktoerid());
+                    } else {
+                        startOppfolging(oppfolgingEndret);
+                    }
                 }
             }
-        }
+        });
     }
 
     private List<AvslutteOppfolgingResultat> finnBrukereOgAvslutt() {
@@ -99,7 +107,7 @@ public class IservService {
 
         try {
             log.info("Starter jobb for automatisk avslutning av brukere");
-            List<IservMapper> iservert28DagerBrukere = utmeldingRepository.finnBrukereMedIservI28Dager();
+            List<UtmeldingEntity> iservert28DagerBrukere = utmeldingRepository.finnBrukereMedIservI28Dager();
             log.info("Fant {} brukere som har vært ISERV mer enn 28 dager", iservert28DagerBrukere.size());
 
 
@@ -110,7 +118,7 @@ public class IservService {
 
             authContextHolder.withContext(context, () ->
                     resultater.addAll(iservert28DagerBrukere.stream()
-                            .map(iservMapper -> avslutteOppfolging(iservMapper.aktor_Id))
+                            .map(utmeldingEntity -> avslutteOppfolging(AktorId.of(utmeldingEntity.aktor_Id)))
                             .collect(toList()))
             );
 
@@ -121,51 +129,54 @@ public class IservService {
         return resultater;
     }
 
-    private void startOppfolging(VeilarbArenaOppfolgingEndret oppfolgingEndret) {
+    private void startOppfolging(EndringPaaOppfoelgingsBrukerV1 oppfolgingEndret) {
         log.info("Starter oppfølging automatisk for bruker med aktørid {}", oppfolgingEndret.getAktoerid());
-        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(oppfolgingEndret.getAktoerid());
+        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(AktorId.of(oppfolgingEndret.getAktoerid()));
         metricsService.startetOppfolgingAutomatisk(oppfolgingEndret.getFormidlingsgruppekode(), oppfolgingEndret.getKvalifiseringsgruppekode());
     }
 
-    private void oppdaterUtmeldingTabell(VeilarbArenaOppfolgingEndret oppfolgingEndret) {
+    private void oppdaterUtmeldingTabell(EndringPaaOppfoelgingsBrukerV1 oppfolgingEndret) {
+        AktorId aktorId = AktorId.of(oppfolgingEndret.getAktoerid());
+        ZonedDateTime iservFraDato = oppfolgingEndret.getIserv_fra_dato();
+
         if (finnesIUtmeldingTabell(oppfolgingEndret)) {
-            utmeldingRepository.updateUtmeldingTabell(oppfolgingEndret);
-        } else if (brukerHarOppfolgingsflagg(oppfolgingEndret.getAktoerid())) {
-            utmeldingRepository.insertUtmeldingTabell(oppfolgingEndret);
+            utmeldingRepository.updateUtmeldingTabell(aktorId, iservFraDato);
+        } else if (brukerHarOppfolgingsflagg(aktorId)) {
+            utmeldingRepository.insertUtmeldingTabell(aktorId, iservFraDato);
         }
     }
 
-    private boolean brukerHarOppfolgingsflagg(String aktoerId) {
-        OppfolgingTable eksisterendeOppfolgingstatus = oppfolgingsStatusRepository.fetch(aktoerId);
+    private boolean brukerHarOppfolgingsflagg(AktorId aktoerId) {
+        OppfolgingEntity eksisterendeOppfolgingstatus = oppfolgingsStatusRepository.fetch(aktoerId);
         return eksisterendeOppfolgingstatus != null && eksisterendeOppfolgingstatus.isUnderOppfolging();
     }
 
-    private boolean finnesIUtmeldingTabell(VeilarbArenaOppfolgingEndret oppfolgingEndret) {
-        return utmeldingRepository.eksisterendeIservBruker(oppfolgingEndret) != null;
+    private boolean finnesIUtmeldingTabell(EndringPaaOppfoelgingsBrukerV1 oppfolgingEndret) {
+        return utmeldingRepository.eksisterendeIservBruker(AktorId.of(oppfolgingEndret.getAktoerid())) != null;
     }
 
-    AvslutteOppfolgingResultat avslutteOppfolging(String aktoerId) {
+    AvslutteOppfolgingResultat avslutteOppfolging(AktorId aktorId) {
         AvslutteOppfolgingResultat resultat;
 
         try {
-            if (!brukerHarOppfolgingsflagg(aktoerId)) {
-                log.info("Bruker med aktørid {} har ikke oppfølgingsflagg. Sletter fra utmelding-tabell", aktoerId);
-                utmeldingRepository.slettBrukerFraUtmeldingTabell(aktoerId);
+            if (!brukerHarOppfolgingsflagg(aktorId)) {
+                log.info("Bruker med aktørid {} har ikke oppfølgingsflagg. Sletter fra utmelding-tabell", aktorId);
+                utmeldingRepository.slettBrukerFraUtmeldingTabell(aktorId);
                 resultat = IKKE_LENGER_UNDER_OPPFØLGING;
             } else {
-                String fnr = authService.getFnrOrThrow(aktoerId);
+                Fnr fnr = authService.getFnrOrThrow(aktorId);
 
                 boolean oppfolgingAvsluttet = oppfolgingService.avsluttOppfolgingForSystemBruker(fnr);
 
                 resultat = oppfolgingAvsluttet ? AVSLUTTET_OK : IKKE_AVSLUTTET;
 
                 if (oppfolgingAvsluttet) {
-                    utmeldingRepository.slettBrukerFraUtmeldingTabell(aktoerId);
+                    utmeldingRepository.slettBrukerFraUtmeldingTabell(aktorId);
                     metricsService.antallBrukereAvsluttetAutomatisk();
                 }
             }
         } catch (Exception e) {
-            log.error("Automatisk avsluttOppfolging feilet for aktoerid {} ", aktoerId, e);
+            log.error("Automatisk avsluttOppfolging feilet for aktoerid {} ", aktorId, e);
             resultat = AVSLUTTET_FEILET;
         }
 

@@ -18,10 +18,10 @@ spec:
     enabled: true
     path: veilarboppfolging/internal/prometheus
   liveness:
-    path: veilarboppfolging/internal/isAlive
+    path: veilarboppfolging/internal/health/liveness
     initialDelay: 30
   readiness:
-    path: veilarboppfolging/internal/isReady
+    path: veilarboppfolging/internal/health/readiness
     initialDelay: 30
   replicas:
     min: 1
@@ -37,6 +37,8 @@ spec:
   envFrom:
     - configmap: pto-config
     - configmap: loginservice-idporten
+  kafka:
+    pool: nav-dev
   vault:
     enabled: true
     paths:
@@ -48,14 +50,6 @@ spec:
         mountPath: /var/run/secrets/nais.io/vault
       - kvPath: /oracle/data/dev/config/veilarboppfolging_q1
         mountPath: /var/run/secrets/nais.io/oracle_config
-  tokenx:
-    enabled: true
-  accessPolicy:
-    inbound:
-      rules:
-        - application: finn-kandidat-api
-          namespace: arbeidsgiver
-          cluster: dev-gcp
   env:
     - name: MODIABLOGIN_OPENAM_CLIENT_ID
       value: "modialogin-q1"

@@ -10,6 +10,7 @@ import no.nav.common.json.JsonUtils;
 import no.nav.common.rest.client.RestClient;
 import no.nav.common.rest.client.RestUtils;
 import no.nav.common.sts.SystemUserTokenProvider;
+import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.config.CacheConfig;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -18,6 +19,7 @@ import org.springframework.cache.annotation.Cacheable;
 
 import java.util.Optional;
 
+import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 import static no.nav.common.utils.UrlUtils.joinPaths;
 import static org.springframework.http.HttpHeaders.ACCEPT;
@@ -42,46 +44,35 @@ public class DkifClientImpl implements DkifClient {
     @Cacheable(CacheConfig.DKIF_KONTAKTINFO_CACHE_NAME)
     @SneakyThrows
     @Override
-    public DkifKontaktinfo hentKontaktInfo(String fnr) {
+    public Optional<DkifKontaktinfo> hentKontaktInfo(Fnr fnr) {
         Request request = new Request.Builder()
                 .url(joinPaths(dkifUrl, "/api/v1/personer/kontaktinformasjon?inkluderSikkerDigitalPost=false"))
                 .header(ACCEPT, APPLICATION_JSON_VALUE)
                 .header(AUTHORIZATION, "Bearer " + systemUserTokenProvider.getSystemUserToken())
-                .header("Nav-Personidenter", fnr)
+                .header("Nav-Personidenter", fnr.get())
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
             RestUtils.throwIfNotSuccessful(response);
-            Optional<String> json = RestUtils.getBodyStr(response);
-
-            if (json.isEmpty()) {
-                log.warn("DKIF body is missing");
-                return fallbackKontaktinfo(fnr);
-            }
+            String json = RestUtils.getBodyStr(response)
+                    .orElseThrow(() -> new IllegalStateException("Response body from DKIF did is missing"));
 
             ObjectMapper mapper = JsonUtils.getMapper();
 
-            JsonNode node = mapper.readTree(json.get());
-            JsonNode kontaktinfoNode = ofNullable(node.get("kontaktinfo")).map(n -> n.get(fnr)).orElse(null);
+            JsonNode node = mapper.readTree(json);
+            JsonNode kontaktinfoNode = ofNullable(node.get("kontaktinfo"))
+                    .map(n -> n.get(fnr.get()))
+                    .orElse(null);
 
             if (kontaktinfoNode == null) {
-                log.warn("Mangler kontaktinfo fra DKIF");
-                return fallbackKontaktinfo(fnr);
+                return empty();
             }
 
-            return mapper.treeToValue(kontaktinfoNode, DkifKontaktinfo.class);
+            return Optional.of(mapper.treeToValue(kontaktinfoNode, DkifKontaktinfo.class));
         } catch (Exception e) {
             log.error("Feil under henting av data fra DKIF", e);
-            return fallbackKontaktinfo(fnr);
+            return empty();
         }
-    }
-
-    private DkifKontaktinfo fallbackKontaktinfo(String fnr) {
-        DkifKontaktinfo kontaktinfo = new DkifKontaktinfo();
-        kontaktinfo.setPersonident(fnr);
-        kontaktinfo.setKanVarsles(true);
-        kontaktinfo.setReservert(false);
-        return kontaktinfo;
     }
 
     @Override

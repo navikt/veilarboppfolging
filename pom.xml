@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.3.10.RELEASE</version>
+        <version>2.5.0</version>
         <relativePath/>
     </parent>
 
@@ -19,11 +19,22 @@
 
     <properties>
         <java.version>11</java.version>
-        <common.version>2.2021.04.20_08.12-16c57e1be991</common.version>
+        <common.version>2.2021.06.11_06.26-ecbd6c9186d9</common.version>
         <springfox.version>2.9.2</springfox.version>
         <tjenestespesifikasjoner.version>1.2019.04.03-23.09-56488320520a</tjenestespesifikasjoner.version>
         <testcontainers.version>1.15.2</testcontainers.version>
     </properties>
+
+    <repositories>
+        <repository>
+            <id>jitpack</id>
+            <url>https://jitpack.io</url>
+        </repository>
+        <repository>
+            <id>confluent</id>
+            <url>https://packages.confluent.io/maven/</url>
+        </repository>
+    </repositories>
 
     <build>
         <plugins>
@@ -125,13 +136,6 @@
             <version>4.21.0</version>
         </dependency>
 
-        <!--  Overskriv gammel avhengighet fra nimbus -->
-        <dependency>
-            <groupId>net.minidev</groupId>
-            <artifactId>json-smart</artifactId>
-            <version>2.3</version>
-        </dependency>
-
         <!-- Tjenestespesifikasjoner -->
         <dependency>
             <groupId>no.nav.tjenestespesifikasjoner</groupId>
@@ -147,6 +151,12 @@
             <groupId>no.nav.tjenestespesifikasjoner</groupId>
             <artifactId>varseloppgave-v1-tjenestespesifikasjon</artifactId>
             <version>${tjenestespesifikasjoner.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.navikt</groupId>
+            <artifactId>pto-schema</artifactId>
+            <version>1.2021.06.14_14.41-fa58fae3a44d</version>
         </dependency>
 
         <!-- Common Dependencies -->
@@ -232,7 +242,12 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.12</version>
+            <version>4.13.1</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.vintage</groupId>
+            <artifactId>junit-vintage-engine</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

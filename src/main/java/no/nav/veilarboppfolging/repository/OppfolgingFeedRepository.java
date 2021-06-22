@@ -2,15 +2,10 @@ package no.nav.veilarboppfolging.repository;
 
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import no.nav.veilarboppfolging.controller.domain.OppfolgingFeedDTO;
-import no.nav.veilarboppfolging.domain.AktorId;
-import no.nav.veilarboppfolging.domain.kafka.OppfolgingKafkaDTO;
+import no.nav.veilarboppfolging.feed.domain.OppfolgingFeedDTO;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -25,16 +20,9 @@ import static java.util.stream.Collectors.toList;
 public class OppfolgingFeedRepository {
 
     private final JdbcTemplate db;
-
     @Autowired
     public OppfolgingFeedRepository(JdbcTemplate db) {
         this.db = db;
-    }
-
-    // TODO: Brukes kun i 1 test, kan løses på en annen måte
-    public List<AktorId> hentAlleBrukereUnderOppfolging() {
-        String sql = "SELECT * FROM OPPFOLGINGSTATUS WHERE UNDER_OPPFOLGING = 1";
-        return db.query(sql, (rs, row) -> new AktorId(rs.getString("AKTOR_ID")));
     }
 
     public Optional<Long> hentAntallBrukere() {
@@ -59,48 +47,6 @@ public class OppfolgingFeedRepository {
         return Optional.ofNullable(count);
     }
 
-    public List<OppfolgingKafkaDTO> hentOppfolgingStatus(int offset) {
-
-        val sql = "SELECT "
-                + "os.AKTOR_ID, "
-                + "os.VEILEDER, "
-                + "os.UNDER_OPPFOLGING, "
-                + "os.NY_FOR_VEILEDER, "
-                + "os.OPPDATERT, "
-                + "ms.MANUELL, "
-                + "siste_periode.STARTDATO "
-                + "from "
-                + "OPPFOLGINGSTATUS os LEFT JOIN MANUELL_STATUS ms "
-                + "on (os.GJELDENDE_MANUELL_STATUS = ms.ID) "
-                + ", "
-                + "(select "
-                + "AKTOR_ID, "
-                + "STARTDATO "
-                + "from OPPFOLGINGSPERIODE "
-                + "where SLUTTDATO is null "
-                + "  ) siste_periode "
-                + "where os.AKTOR_ID = siste_periode.AKTOR_ID "
-                + "OFFSET ? ROWS FETCH NEXT 1000 ROWS ONLY";
-
-        return db.query(sql, new Object[]{offset}, rowMapper());
-    }
-
-
-    private RowMapper<OppfolgingKafkaDTO> rowMapper() {
-        return (rs, rowNum) ->
-                OppfolgingKafkaDTO
-                        .builder()
-                        .aktoerid(rs.getString("AKTOR_ID"))
-                        .veileder(rs.getString("VEILEDER"))
-                        .oppfolging(rs.getBoolean("UNDER_OPPFOLGING"))
-                        .nyForVeileder(rs.getBoolean("NY_FOR_VEILEDER"))
-                        .endretTimestamp(rs.getTimestamp("OPPDATERT"))
-                        .startDato((rs.getTimestamp("STARTDATO")))
-                        .manuell(rs.getBoolean("MANUELL"))
-                        .build();
-    }
-
-    @Transactional
     public List<OppfolgingFeedDTO> hentEndringerEtterId(String sinceId, int pageSize) {
 
         // 1. Join sammen Tabellen OPPFOLGINGSPERIODE og OPPFOLGINGSTATUS på AKTOR_ID
@@ -136,7 +82,6 @@ public class OppfolgingFeedRepository {
                 .collect(toList());
     }
 
-    @Transactional
     public void insertFeedId() {
         long start = System.currentTimeMillis();
         int updatedRows = db.update(

@@ -1,7 +1,11 @@
 package no.nav.veilarboppfolging.utils;
 
-import no.nav.veilarboppfolging.controller.domain.*;
-import no.nav.veilarboppfolging.domain.*;
+import no.nav.pto_schema.kafka.json.topic.SisteOppfolgingsperiodeV1;
+import no.nav.pto_schema.kafka.json.topic.SisteTilordnetVeilederV1;
+import no.nav.veilarboppfolging.controller.response.*;
+import no.nav.veilarboppfolging.domain.AvslutningStatusData;
+import no.nav.veilarboppfolging.domain.OppfolgingStatusData;
+import no.nav.veilarboppfolging.repository.entity.*;
 
 import java.util.Collections;
 import java.util.Optional;
@@ -11,7 +15,7 @@ import static java.util.stream.Collectors.toList;
 
 public class DtoMappers {
 
-    public static Mal tilDto(MalData malData) {
+    public static Mal tilDto(MaalEntity malData) {
         return new Mal()
                 .setMal(malData.getMal())
                 .setEndretAv(malData.getEndretAvFormattert())
@@ -21,7 +25,7 @@ public class DtoMappers {
     /**
      * Given a Kvp object, return its DTO representation. All fields are included.
      */
-    public static KvpDTO kvpToDTO(Kvp k) {
+    public static KvpDTO kvpToDTO(KvpEntity k) {
         return new KvpDTO()
                 .setKvpId(k.getKvpId())
                 .setSerial(k.getSerial())
@@ -54,7 +58,7 @@ public class DtoMappers {
                 .setReservasjonKRR(oppfolgingStatusData.reservasjonKRR)
                 .setOppfolgingUtgang(oppfolgingStatusData.getOppfolgingUtgang())
                 .setKanReaktiveres(oppfolgingStatusData.kanReaktiveres)
-                .setOppfolgingsPerioder(oppfolgingStatusData.oppfolgingsperioder.stream().map(o -> tilDTO(o, erInternBruker)).collect(toList()))
+                .setOppfolgingsPerioder(oppfolgingStatusData.oppfolgingsperioder.stream().map(o -> tilOppfolgingPeriodeDTO(o, erInternBruker)).collect(toList()))
                 .setInaktiveringsdato(oppfolgingStatusData.inaktiveringsdato)
                 .setGjeldendeEskaleringsvarsel(tilDto(oppfolgingStatusData.getGjeldendeEskaleringsvarsel(), erInternBruker))
                 .setErIkkeArbeidssokerUtenOppfolging(oppfolgingStatusData.getErSykmeldtMedArbeidsgiver())
@@ -78,8 +82,9 @@ public class DtoMappers {
         return status;
     }
 
-    public static OppfolgingPeriodeDTO tilDTO(Oppfolgingsperiode oppfolgingsperiode, boolean erInternBruker) {
+    public static OppfolgingPeriodeDTO tilOppfolgingPeriodeDTO(OppfolgingsperiodeEntity oppfolgingsperiode, boolean erInternBruker) {
         OppfolgingPeriodeDTO periode = new OppfolgingPeriodeDTO()
+                .setUuid(oppfolgingsperiode.getUuid())
                 .setSluttDato(oppfolgingsperiode.getSluttDato())
                 .setStartDato(oppfolgingsperiode.getStartDato())
                 .setKvpPerioder(
@@ -96,12 +101,36 @@ public class DtoMappers {
         return periode;
     }
 
-    public static KvpPeriodeDTO tilDTO(Kvp kvp) {
+    public static SisteTilordnetVeilederV1 tilSisteTilordnetVeilederKafkaDTO(VeilederTilordningEntity tilordning) {
+        return new SisteTilordnetVeilederV1(
+                tilordning.getAktorId(),
+                tilordning.getVeilederId(),
+                tilordning.getSistOppdatert()
+        );
+    }
+
+    public static SisteOppfolgingsperiodeV1 tilSisteOppfolgingsperiodeV1(OppfolgingsperiodeEntity oppfolgingsperiode) {
+        return new SisteOppfolgingsperiodeV1(
+                oppfolgingsperiode.getUuid(),
+                oppfolgingsperiode.getAktorId(),
+                oppfolgingsperiode.getStartDato(),
+                oppfolgingsperiode.getSluttDato()
+        );
+    }
+
+    public static OppfolgingPeriodeMinimalDTO tilOppfolgingPeriodeMinimalDTO(OppfolgingsperiodeEntity oppfolgingsperiode) {
+        return new OppfolgingPeriodeMinimalDTO()
+                .setUuid(oppfolgingsperiode.getUuid())
+                .setSluttDato(oppfolgingsperiode.getSluttDato())
+                .setStartDato(oppfolgingsperiode.getStartDato());
+    }
+
+    public static KvpPeriodeDTO tilDTO(KvpEntity kvp) {
         return new KvpPeriodeDTO(kvp.getOpprettetDato(), kvp.getAvsluttetDato());
     }
 
-    public static Eskaleringsvarsel tilDto(EskaleringsvarselData eskaleringsvarselData, boolean erInternBruker) {
-        return Optional.ofNullable(eskaleringsvarselData)
+    public static Eskaleringsvarsel tilDto(EskaleringsvarselEntity eskaleringsvarselEntity, boolean erInternBruker) {
+        return Optional.ofNullable(eskaleringsvarselEntity)
                 .map(eskalering -> Eskaleringsvarsel.builder()
                         .varselId(eskalering.getVarselId())
                         .aktorId(eskalering.getAktorId())

@@ -2,23 +2,28 @@ package no.nav.veilarboppfolging.service;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.Fnr;
+import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV1;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
-import no.nav.veilarboppfolging.domain.KodeverkBruker;
-import no.nav.veilarboppfolging.domain.Kvp;
-import no.nav.veilarboppfolging.domain.OppfolgingTable;
-import no.nav.veilarboppfolging.domain.kafka.VeilarbArenaOppfolgingEndret;
 import no.nav.veilarboppfolging.repository.EskaleringsvarselRepository;
 import no.nav.veilarboppfolging.repository.KvpRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
+import no.nav.veilarboppfolging.repository.entity.KvpEntity;
+import no.nav.veilarboppfolging.repository.entity.OppfolgingEntity;
+import no.nav.veilarboppfolging.repository.enums.KodeverkBruker;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.time.ZonedDateTime;
 
 import static java.lang.String.format;
 import static no.nav.veilarboppfolging.config.ApplicationConfig.SYSTEM_USER_NAME;
-import static no.nav.veilarboppfolging.domain.KodeverkBruker.NAV;
-import static no.nav.veilarboppfolging.domain.KodeverkBruker.SYSTEM;
+import static no.nav.veilarboppfolging.repository.enums.KodeverkBruker.NAV;
+import static no.nav.veilarboppfolging.repository.enums.KodeverkBruker.SYSTEM;
 
 @Slf4j
 @Service
@@ -40,6 +45,8 @@ public class KvpService {
 
     private final AuthService authService;
 
+    private final TransactionTemplate transactor;
+
     public KvpService(
             KafkaProducerService kafkaProducerService,
             MetricsService metricsService,
@@ -47,7 +54,8 @@ public class KvpService {
             VeilarbarenaClient veilarbarenaClient,
             OppfolgingsStatusRepository oppfolgingsStatusRepository,
             EskaleringsvarselRepository eskaleringsvarselRepository,
-            AuthService authService
+            AuthService authService,
+            TransactionTemplate transactor
     ) {
         this.kafkaProducerService = kafkaProducerService;
         this.metricsService = metricsService;
@@ -56,17 +64,18 @@ public class KvpService {
         this.oppfolgingsStatusRepository = oppfolgingsStatusRepository;
         this.eskaleringsvarselRepository = eskaleringsvarselRepository;
         this.authService = authService;
+        this.transactor = transactor;
     }
 
     @SneakyThrows
-    public void startKvp(String fnr, String begrunnelse) {
-        String aktorId = authService.getAktorIdOrThrow(fnr);
+    public void startKvp(Fnr fnr, String begrunnelse) {
+        AktorId aktorId = authService.getAktorIdOrThrow(fnr);
 
         authService.sjekkLesetilgangMedAktorId(aktorId);
 
-        OppfolgingTable oppfolgingTable = oppfolgingsStatusRepository.fetch(aktorId);
+        OppfolgingEntity oppfolging = oppfolgingsStatusRepository.fetch(aktorId);
 
-        if (oppfolgingTable == null || !oppfolgingTable.isUnderOppfolging()) {
+        if (oppfolging == null || !oppfolging.isUnderOppfolging()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
 
@@ -77,24 +86,28 @@ public class KvpService {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         }
 
-        if (oppfolgingTable.getGjeldendeKvpId() != 0) {
+        if (oppfolging.getGjeldendeKvpId() != 0) {
             log.warn(format("Aktøren er allerede under en KVP-periode. AktorId: %s", aktorId));
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
 
         String veilederId = authService.getInnloggetVeilederIdent();
 
-        kvpRepository.startKvp(aktorId, enhet, veilederId, begrunnelse);
+        transactor.executeWithoutResult((ignored) -> {
+            ZonedDateTime startDato = ZonedDateTime.now();
 
-        log.info("KVP startet for bruker med aktorId {} på enhet {} av veileder {}", aktorId, enhet, veilederId);
+            kvpRepository.startKvp(aktorId, enhet, veilederId, begrunnelse, startDato);
+            kafkaProducerService.publiserKvpStartet(aktorId, enhet, veilederId, begrunnelse, startDato);
 
-        kafkaProducerService.publiserKvpStartet(aktorId, enhet, veilederId, begrunnelse);
+            log.info("KVP startet for bruker med aktorId {} på enhet {} av veileder {}", aktorId, enhet, veilederId);
+        });
+
         metricsService.kvpStartet();
     }
 
     @SneakyThrows
-    public void stopKvp(String fnr, String begrunnelse) {
-        String aktorId = authService.getAktorIdOrThrow(fnr);
+    public void stopKvp(Fnr fnr, String begrunnelse) {
+        AktorId aktorId = authService.getAktorIdOrThrow(fnr);
 
         authService.sjekkLesetilgangMedAktorId(aktorId);
         String enhet = veilarbarenaClient.hentOppfolgingsbruker(fnr)
@@ -108,7 +121,7 @@ public class KvpService {
         stopKvpUtenEnhetSjekk(veilederId, aktorId, begrunnelse, NAV);
     }
 
-    public boolean erUnderKvp(String aktorId) {
+    public boolean erUnderKvp(AktorId aktorId) {
         return erUnderKvp(kvpRepository.gjeldendeKvp(aktorId));
     }
 
@@ -117,32 +130,39 @@ public class KvpService {
         return kvpId != 0L;
     }
 
-    private void stopKvpUtenEnhetSjekk(String avsluttetAv, String aktorId, String begrunnelse, KodeverkBruker kodeverkBruker) {
-        OppfolgingTable oppfolgingTable = oppfolgingsStatusRepository.fetch(aktorId);
-        long gjeldendeKvpId = oppfolgingTable.getGjeldendeKvpId();
+    private void stopKvpUtenEnhetSjekk(String avsluttetAv, AktorId aktorId, String begrunnelse, KodeverkBruker kodeverkBruker) {
+        OppfolgingEntity oppfolging = oppfolgingsStatusRepository.fetch(aktorId);
+        long gjeldendeKvpId = oppfolging.getGjeldendeKvpId();
 
         if (gjeldendeKvpId == 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
 
-        if (oppfolgingTable.getGjeldendeEskaleringsvarselId() != 0) {
-            eskaleringsvarselRepository.finish(
-                    aktorId, 
-                    oppfolgingTable.getGjeldendeEskaleringsvarselId(),
-                    avsluttetAv,
-                    ESKALERING_AVSLUTTET_FORDI_KVP_BLE_AVSLUTTET);
-        }
+        transactor.executeWithoutResult((ignored) -> {
+            ZonedDateTime sluttDato = ZonedDateTime.now();
 
-        kvpRepository.stopKvp(gjeldendeKvpId, aktorId, avsluttetAv, begrunnelse, kodeverkBruker);
+            if (oppfolging.getGjeldendeEskaleringsvarselId() != 0) {
+                eskaleringsvarselRepository.finish(
+                        aktorId,
+                        oppfolging.getGjeldendeEskaleringsvarselId(),
+                        avsluttetAv,
+                        ESKALERING_AVSLUTTET_FORDI_KVP_BLE_AVSLUTTET,
+                        sluttDato
+                );
+            }
 
-        log.info("KVP avsluttet for bruker med aktorId {} av {}", aktorId, avsluttetAv);
+            kvpRepository.stopKvp(gjeldendeKvpId, aktorId, avsluttetAv, begrunnelse, kodeverkBruker, sluttDato);
+            kafkaProducerService.publiserKvpAvsluttet(aktorId, avsluttetAv, begrunnelse, sluttDato);
 
-        kafkaProducerService.publiserKvpAvsluttet(aktorId, avsluttetAv, begrunnelse);
+            log.info("KVP avsluttet for bruker med aktorId {} av {}", aktorId, avsluttetAv);
+        });
+
         metricsService.kvpStoppet();
     }
 
-    public void avsluttKvpVedEnhetBytte(VeilarbArenaOppfolgingEndret endretBruker) {
-        Kvp gjeldendeKvp = gjeldendeKvp(endretBruker.aktoerid);
+    public void avsluttKvpVedEnhetBytte(EndringPaaOppfoelgingsBrukerV1 endretBruker) {
+        AktorId aktorId = AktorId.of(endretBruker.getAktoerid());
+        KvpEntity gjeldendeKvp = gjeldendeKvp(aktorId);
 
         if (gjeldendeKvp == null) {
             return;
@@ -151,12 +171,12 @@ public class KvpService {
         boolean harByttetKontor = !endretBruker.getNav_kontor().equals(gjeldendeKvp.getEnhet());
 
         if (harByttetKontor) {
-            stopKvpUtenEnhetSjekk(SYSTEM_USER_NAME, endretBruker.aktoerid, "KVP avsluttet automatisk pga. endret Nav-enhet", SYSTEM);
+            stopKvpUtenEnhetSjekk(SYSTEM_USER_NAME, aktorId, "KVP avsluttet automatisk pga. endret Nav-enhet", SYSTEM);
             metricsService.stopKvpDueToChangedUnit();
         }
     }
 
-    Kvp gjeldendeKvp(String aktorId) {
+    KvpEntity gjeldendeKvp(AktorId aktorId) {
         return kvpRepository.fetch(kvpRepository.gjeldendeKvp(aktorId));
     }
 

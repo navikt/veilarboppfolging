@@ -1,8 +1,9 @@
 package no.nav.veilarboppfolging.controller;
 
 import no.nav.common.json.JsonUtils;
-import no.nav.veilarboppfolging.domain.Kvp;
-import no.nav.veilarboppfolging.domain.Oppfolgingsperiode;
+import no.nav.common.types.identer.Fnr;
+import no.nav.veilarboppfolging.repository.entity.KvpEntity;
+import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
 import no.nav.veilarboppfolging.service.*;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +17,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static no.nav.veilarboppfolging.utils.DtoMappers.tilDTO;
+import static no.nav.veilarboppfolging.utils.DtoMappers.tilOppfolgingPeriodeDTO;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -47,11 +48,11 @@ public class OppfolgingControllerTest {
 
     @Test
     public void oppfolgingsperioder_skal_sjekke_at_bruker_er_systembruker() throws Exception {
-        String fnr = "1234";
+        Fnr fnr = Fnr.of("1234");
 
         when(oppfolgingService.hentOppfolgingsperioder(eq(fnr))).thenReturn(Collections.emptyList());
 
-        mockMvc.perform(get("/api/oppfolging/oppfolgingsperioder").queryParam("fnr", fnr));
+        mockMvc.perform(get("/api/oppfolging/oppfolgingsperioder").queryParam("fnr", fnr.get()));
 
         verify(authService, times(1)).skalVereSystemBruker();
         verify(oppfolgingService, times(1)).hentOppfolgingsperioder(eq(fnr));
@@ -59,29 +60,29 @@ public class OppfolgingControllerTest {
 
     @Test
     public void oppfolgingsperioder_skal_returnere_oppfolgingsperioder() throws Exception {
-        String fnr = "1234";
+        Fnr fnr = Fnr.of("1234");
 
-        List<Oppfolgingsperiode> perioder = new ArrayList<>();
+        List<OppfolgingsperiodeEntity> perioder = new ArrayList<>();
         perioder.add(
-                Oppfolgingsperiode.builder()
+                OppfolgingsperiodeEntity.builder()
                         .aktorId("test1")
                         .begrunnelse("begrunnelse")
                         .startDato(ZonedDateTime.now())
                         .sluttDato(ZonedDateTime.now().plusDays(1))
                         .veileder("test")
-                        .kvpPerioder(List.of(Kvp.builder().aktorId("test2").build()))
+                        .kvpPerioder(List.of(KvpEntity.builder().aktorId("test2").build()))
                         .build()
         );
 
         String expectedJson = JsonUtils.toJson(
                 perioder.stream()
-                .map(op -> tilDTO(op, true))
+                .map(op -> tilOppfolgingPeriodeDTO(op, true))
                 .collect(Collectors.toList())
         );
 
         when(oppfolgingService.hentOppfolgingsperioder(eq(fnr))).thenReturn(perioder);
 
-        mockMvc.perform(get("/api/oppfolging/oppfolgingsperioder").queryParam("fnr", fnr))
+        mockMvc.perform(get("/api/oppfolging/oppfolgingsperioder").queryParam("fnr", fnr.get()))
                 .andExpect(content().json(expectedJson));
     }
 

@@ -1,14 +1,18 @@
 package no.nav.veilarboppfolging.service;
 
+import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.client.varseloppgave.VarseloppgaveClient;
-import no.nav.veilarboppfolging.domain.EskaleringsvarselData;
 import no.nav.veilarboppfolging.repository.EskaleringsvarselRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
+import no.nav.veilarboppfolging.repository.entity.EskaleringsvarselEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.time.ZonedDateTime;
 
 @Service
 public class EskaleringService {
@@ -42,8 +46,8 @@ public class EskaleringService {
         this.eskaleringsvarselRepository = eskaleringsvarselRepository;
     }
 
-    public void startEskalering(String fnr, String veilederId, String begrunnelse, long tilhorendeDialogId) {
-        String aktorId = authService.getAktorIdOrThrow(fnr);
+    public void startEskalering(Fnr fnr, String veilederId, String begrunnelse, long tilhorendeDialogId) {
+        AktorId aktorId = authService.getAktorIdOrThrow(fnr);
         String oppfolgingsEnhet = hentOppfolgingsEnhet(fnr);
 
         authService.sjekkLesetilgangMedAktorId(aktorId);
@@ -56,21 +60,21 @@ public class EskaleringService {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Brukeren har allerede et aktivt eskaleringsvarsel.");
             }
 
-            EskaleringsvarselData eskaleringsvarselData = EskaleringsvarselData.builder()
-                    .aktorId(aktorId)
+            EskaleringsvarselEntity eskaleringsvarselEntity = EskaleringsvarselEntity.builder()
+                    .aktorId(aktorId.get())
                     .opprettetAv(veilederId)
                     .opprettetBegrunnelse(begrunnelse)
                     .tilhorendeDialogId(tilhorendeDialogId)
                     .build();
 
-            eskaleringsvarselRepository.create(eskaleringsvarselData);
+            eskaleringsvarselRepository.create(eskaleringsvarselEntity);
 
             varseloppgaveClient.sendEskaleringsvarsel(aktorId, tilhorendeDialogId);
         });
     }
 
-    public void stoppEskalering(String fnr, String veilederId, String begrunnelse) {
-        String aktorId = authService.getAktorIdOrThrow(fnr);
+    public void stoppEskalering(Fnr fnr, String veilederId, String begrunnelse) {
+        AktorId aktorId = authService.getAktorIdOrThrow(fnr);
         String oppfolgingsEnhet = hentOppfolgingsEnhet(fnr);
 
         authService.sjekkLesetilgangMedAktorId(aktorId);
@@ -82,20 +86,18 @@ public class EskaleringService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Brukeren har ikke et aktivt eskaleringsvarsel");
         }
 
-        eskaleringsvarselRepository.finish(aktorId, gjeldendeEskaleringsvarselId, veilederId, begrunnelse);
+        eskaleringsvarselRepository.finish(aktorId, gjeldendeEskaleringsvarselId, veilederId, begrunnelse, ZonedDateTime.now());
     }
 
-    public void stoppEskaleringForAvsluttOppfolging(String fnr, String veilederId, String begrunnelse) {
-        String aktorId = authService.getAktorIdOrThrow(fnr);
-
+    public void stoppEskaleringForAvsluttOppfolging(AktorId aktorId, String veilederId, String begrunnelse) {
         long gjeldendeEskaleringsvarselId = oppfolgingsStatusRepository.fetch(aktorId).getGjeldendeEskaleringsvarselId();
 
         if (gjeldendeEskaleringsvarselId != 0) {
-            eskaleringsvarselRepository.finish(aktorId, gjeldendeEskaleringsvarselId, veilederId, begrunnelse);
+            eskaleringsvarselRepository.finish(aktorId, gjeldendeEskaleringsvarselId, veilederId, begrunnelse, ZonedDateTime.now());
         }
     }
 
-    private String hentOppfolgingsEnhet(String fnr) {
+    private String hentOppfolgingsEnhet(Fnr fnr) {
         return arenaOppfolgingService.hentOppfolgingFraVeilarbarena(fnr)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR)).getNav_kontor();
     }

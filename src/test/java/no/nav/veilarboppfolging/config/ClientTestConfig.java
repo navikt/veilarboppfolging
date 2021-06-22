@@ -8,6 +8,7 @@ import no.nav.common.health.HealthCheckResult;
 import no.nav.common.metrics.Event;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.client.behandle_arbeidssoker.BehandleArbeidssokerClient;
 import no.nav.veilarboppfolging.client.dkif.DkifClient;
 import no.nav.veilarboppfolging.client.dkif.DkifKontaktinfo;
@@ -17,8 +18,7 @@ import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
 import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktClient;
 import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktResponse;
-import no.nav.veilarboppfolging.domain.Fnr;
-import no.nav.veilarboppfolging.domain.Innsatsgruppe;
+import no.nav.veilarboppfolging.controller.request.Innsatsgruppe;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -60,27 +60,27 @@ public class ClientTestConfig {
     public AktorregisterClient aktorregisterClient() {
         return new AktorregisterClient() {
             @Override
-            public no.nav.common.types.identer.Fnr hentFnr(AktorId aktorId) {
+            public Fnr hentFnr(AktorId aktorId) {
+                return Fnr.of("fnr-" + aktorId.get());
+            }
+
+            @Override
+            public AktorId hentAktorId(Fnr fnr) {
+                return new AktorId("aktorId-" + fnr.get());
+            }
+
+            @Override
+            public Map<AktorId, Fnr> hentFnrBolk(List<AktorId> list) {
                 return null;
             }
 
             @Override
-            public AktorId hentAktorId(no.nav.common.types.identer.Fnr fnr) {
-                return new AktorId(fnr.get());
-            }
-
-            @Override
-            public Map<AktorId, no.nav.common.types.identer.Fnr> hentFnrBolk(List<AktorId> list) {
+            public Map<Fnr, AktorId> hentAktorIdBolk(List<Fnr> list) {
                 return null;
             }
 
             @Override
-            public Map<no.nav.common.types.identer.Fnr, AktorId> hentAktorIdBolk(List<no.nav.common.types.identer.Fnr> list) {
-                return null;
-            }
-
-            @Override
-            public List<AktorId> hentAktorIder(no.nav.common.types.identer.Fnr fnr) {
+            public List<AktorId> hentAktorIder(Fnr fnr) {
                 return List.of(new AktorId(fnr.get()), new AktorId("1000010101001"));
             }
 
@@ -108,7 +108,7 @@ public class ClientTestConfig {
     public BehandleArbeidssokerClient behandleArbeidssokerClient() {
         return new BehandleArbeidssokerClient() {
             @Override
-            public void opprettBrukerIArena(String fnr, Innsatsgruppe innsatsgruppe) {
+            public void opprettBrukerIArena(Fnr fnr, Innsatsgruppe innsatsgruppe) {
 
             }
 
@@ -128,8 +128,8 @@ public class ClientTestConfig {
     public DkifClient dkifClient() {
         return new DkifClient() {
             @Override
-            public DkifKontaktinfo hentKontaktInfo(String fnr) {
-                return null;
+            public Optional<DkifKontaktinfo> hentKontaktInfo(Fnr fnr) {
+                return Optional.empty();
             }
 
             @Override
@@ -143,7 +143,7 @@ public class ClientTestConfig {
     public VarseloppgaveClient varseloppgaveClient() {
         return new VarseloppgaveClient() {
             @Override
-            public void sendEskaleringsvarsel(String aktorId, long dialogId) {
+            public void sendEskaleringsvarsel(AktorId aktorId, long dialogId) {
 
             }
 
@@ -158,15 +158,15 @@ public class ClientTestConfig {
     public VeilarbarenaClient veilarbarenaClient() {
         return new VeilarbarenaClient() {
             @Override
-            public Optional<VeilarbArenaOppfolging> hentOppfolgingsbruker(String fnr) {
+            public Optional<VeilarbArenaOppfolging> hentOppfolgingsbruker(Fnr fnr) {
                 return Optional.of(
                         new VeilarbArenaOppfolging()
-                                .setFodselsnr(fnr)
+                                .setFodselsnr(fnr.get())
                 );
             }
 
             @Override
-            public Optional<ArenaOppfolging> getArenaOppfolgingsstatus(String fnr) {
+            public Optional<ArenaOppfolging> getArenaOppfolgingsstatus(Fnr fnr) {
                 return Optional.empty();
             }
 
@@ -181,12 +181,12 @@ public class ClientTestConfig {
     public YtelseskontraktClient ytelseskontraktClient() {
         return new YtelseskontraktClient() {
             @Override
-            public YtelseskontraktResponse hentYtelseskontraktListe(XMLGregorianCalendar periodeFom, XMLGregorianCalendar periodeTom, String personId) {
+            public YtelseskontraktResponse hentYtelseskontraktListe(XMLGregorianCalendar periodeFom, XMLGregorianCalendar periodeTom, Fnr personId) {
                 return null;
             }
 
             @Override
-            public YtelseskontraktResponse hentYtelseskontraktListe(String personId) {
+            public YtelseskontraktResponse hentYtelseskontraktListe(Fnr personId) {
                 return null;
             }
 
