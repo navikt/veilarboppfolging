@@ -16,5 +16,5 @@ public class OppfolgingsperiodeEntity {
     ZonedDateTime startDato;
     ZonedDateTime sluttDato;
     String begrunnelse;
-    List<KvpEntity> kvpPerioder;
+    List<KvpPeriodeEntity> kvpPerioder;
 }

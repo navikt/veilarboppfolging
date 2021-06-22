@@ -10,7 +10,7 @@ import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
 import no.nav.veilarboppfolging.repository.EskaleringsvarselRepository;
 import no.nav.veilarboppfolging.repository.KvpRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
-import no.nav.veilarboppfolging.repository.entity.KvpEntity;
+import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingEntity;
 import no.nav.veilarboppfolging.repository.enums.KodeverkBruker;
 import org.springframework.http.HttpStatus;
@@ -19,6 +19,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.ZonedDateTime;
+import java.util.Optional;
 
 import static java.lang.String.format;
 import static no.nav.veilarboppfolging.config.ApplicationConfig.SYSTEM_USER_NAME;
@@ -73,20 +74,21 @@ public class KvpService {
 
         authService.sjekkLesetilgangMedAktorId(aktorId);
 
-        OppfolgingEntity oppfolging = oppfolgingsStatusRepository.fetch(aktorId);
+        Optional<OppfolgingEntity> maybeOppfolging = oppfolgingsStatusRepository.hentOppfolging(aktorId);
 
-        if (oppfolging == null || !oppfolging.isUnderOppfolging()) {
+        if (maybeOppfolging.isEmpty() || !maybeOppfolging.get().isUnderOppfolging()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
 
         String enhet = veilarbarenaClient.hentOppfolgingsbruker(fnr)
                 .map(VeilarbArenaOppfolging::getNav_kontor).orElse(null);
+
         if (!authService.harTilgangTilEnhet(enhet)) {
             log.warn(format("Ingen tilgang til enhet '%s'", enhet));
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         }
 
-        if (oppfolging.getGjeldendeKvpId() != 0) {
+        if (maybeOppfolging.get().getGjeldendeKvpId() != 0) {
             log.warn(format("Aktøren er allerede under en KVP-periode. AktorId: %s", aktorId));
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
@@ -131,8 +133,10 @@ public class KvpService {
     }
 
     private void stopKvpUtenEnhetSjekk(String avsluttetAv, AktorId aktorId, String begrunnelse, KodeverkBruker kodeverkBruker) {
-        OppfolgingEntity oppfolging = oppfolgingsStatusRepository.fetch(aktorId);
-        long gjeldendeKvpId = oppfolging.getGjeldendeKvpId();
+        Optional<OppfolgingEntity> maybeOppfolging = oppfolgingsStatusRepository.hentOppfolging(aktorId);
+
+        long gjeldendeKvpId = maybeOppfolging.map(OppfolgingEntity::getGjeldendeKvpId).orElse(0L);
+        long gjeldendeEskaleringsvarselId = maybeOppfolging.map(OppfolgingEntity::getGjeldendeEskaleringsvarselId).orElse(0L);
 
         if (gjeldendeKvpId == 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
@@ -141,10 +145,10 @@ public class KvpService {
         transactor.executeWithoutResult((ignored) -> {
             ZonedDateTime sluttDato = ZonedDateTime.now();
 
-            if (oppfolging.getGjeldendeEskaleringsvarselId() != 0) {
+            if (gjeldendeEskaleringsvarselId != 0) {
                 eskaleringsvarselRepository.finish(
                         aktorId,
-                        oppfolging.getGjeldendeEskaleringsvarselId(),
+                        gjeldendeEskaleringsvarselId,
                         avsluttetAv,
                         ESKALERING_AVSLUTTET_FORDI_KVP_BLE_AVSLUTTET,
                         sluttDato
@@ -162,13 +166,13 @@ public class KvpService {
 
     public void avsluttKvpVedEnhetBytte(EndringPaaOppfoelgingsBrukerV1 endretBruker) {
         AktorId aktorId = AktorId.of(endretBruker.getAktoerid());
-        KvpEntity gjeldendeKvp = gjeldendeKvp(aktorId);
+        Optional<KvpPeriodeEntity> maybeGjeldendeKvpPeriode = gjeldendeKvp(aktorId);
 
-        if (gjeldendeKvp == null) {
+        if (maybeGjeldendeKvpPeriode.isEmpty()) {
             return;
         }
 
-        boolean harByttetKontor = !endretBruker.getNav_kontor().equals(gjeldendeKvp.getEnhet());
+        boolean harByttetKontor = !endretBruker.getNav_kontor().equals(maybeGjeldendeKvpPeriode.get().getEnhet());
 
         if (harByttetKontor) {
             stopKvpUtenEnhetSjekk(SYSTEM_USER_NAME, aktorId, "KVP avsluttet automatisk pga. endret Nav-enhet", SYSTEM);
@@ -176,8 +180,8 @@ public class KvpService {
         }
     }
 
-    KvpEntity gjeldendeKvp(AktorId aktorId) {
-        return kvpRepository.fetch(kvpRepository.gjeldendeKvp(aktorId));
+    Optional<KvpPeriodeEntity> gjeldendeKvp(AktorId aktorId) {
+        return kvpRepository.hentKvpPeriode(kvpRepository.gjeldendeKvp(aktorId));
     }
 
 }

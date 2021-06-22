@@ -3,7 +3,7 @@ package no.nav.veilarboppfolging.domain;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import no.nav.veilarboppfolging.repository.entity.EskaleringsvarselEntity;
-import no.nav.veilarboppfolging.repository.entity.KvpEntity;
+import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
 
 import java.time.LocalDate;
@@ -28,7 +28,7 @@ public class OppfolgingStatusData {
     public boolean kanVarsles;
     private EskaleringsvarselEntity gjeldendeEskaleringsvarsel;
     public List<OppfolgingsperiodeEntity> oppfolgingsperioder = Collections.emptyList();
-    public List<KvpEntity> kvpPerioder;
+    public List<KvpPeriodeEntity> kvpPerioder;
     public boolean harSkriveTilgang;
     public Boolean inaktivIArena;
     public Boolean kanReaktiveres;

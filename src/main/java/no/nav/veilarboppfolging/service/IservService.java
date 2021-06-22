@@ -9,9 +9,7 @@ import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV1;
-import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
 import no.nav.veilarboppfolging.repository.UtmeldingRepository;
-import no.nav.veilarboppfolging.repository.entity.OppfolgingEntity;
 import no.nav.veilarboppfolging.repository.entity.UtmeldingEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -41,7 +39,6 @@ public class IservService {
     private final MetricsService metricsService;
     private final UtmeldingRepository utmeldingRepository;
     private final OppfolgingService oppfolgingService;
-    private final OppfolgingsStatusRepository oppfolgingsStatusRepository;
     private final AuthService authService;
     private final TransactionTemplate transactor;
 
@@ -51,7 +48,6 @@ public class IservService {
             MetricsService metricsService,
             UtmeldingRepository utmeldingRepository,
             OppfolgingService oppfolgingService,
-            OppfolgingsStatusRepository oppfolgingsStatusRepository,
             AuthService authService,
             TransactionTemplate transactor
     ) {
@@ -60,7 +56,6 @@ public class IservService {
         this.metricsService = metricsService;
         this.utmeldingRepository = utmeldingRepository;
         this.oppfolgingService = oppfolgingService;
-        this.oppfolgingsStatusRepository = oppfolgingsStatusRepository;
         this.authService = authService;
         this.transactor = transactor;
     }
@@ -91,8 +86,9 @@ public class IservService {
             } else {
                 utmeldingRepository.slettBrukerFraUtmeldingTabell(aktorId);
 
+                // TODO: Denne logikken ligger også i OppfolgingEndringService, den trenger trolig å ligge kun 1 sted
                 if (erUnderOppfolging(oppfolgingEndret.getFormidlingsgruppekode(), oppfolgingEndret.getKvalifiseringsgruppekode())) {
-                    if (brukerHarOppfolgingsflagg(aktorId)) {
+                    if (oppfolgingService.erUnderOppfolging(aktorId)) {
                         log.info("Bruker med aktørid {} er allerede under oppfølging", oppfolgingEndret.getAktoerid());
                     } else {
                         startOppfolging(oppfolgingEndret);
@@ -141,25 +137,20 @@ public class IservService {
 
         if (finnesIUtmeldingTabell(oppfolgingEndret)) {
             utmeldingRepository.updateUtmeldingTabell(aktorId, iservFraDato);
-        } else if (brukerHarOppfolgingsflagg(aktorId)) {
+        } else if (oppfolgingService.erUnderOppfolging(aktorId)) {
             utmeldingRepository.insertUtmeldingTabell(aktorId, iservFraDato);
         }
     }
 
-    private boolean brukerHarOppfolgingsflagg(AktorId aktoerId) {
-        OppfolgingEntity eksisterendeOppfolgingstatus = oppfolgingsStatusRepository.fetch(aktoerId);
-        return eksisterendeOppfolgingstatus != null && eksisterendeOppfolgingstatus.isUnderOppfolging();
-    }
-
     private boolean finnesIUtmeldingTabell(EndringPaaOppfoelgingsBrukerV1 oppfolgingEndret) {
-        return utmeldingRepository.eksisterendeIservBruker(AktorId.of(oppfolgingEndret.getAktoerid())) != null;
+        return utmeldingRepository.eksisterendeIservBruker(AktorId.of(oppfolgingEndret.getAktoerid())).isPresent();
     }
 
     AvslutteOppfolgingResultat avslutteOppfolging(AktorId aktorId) {
         AvslutteOppfolgingResultat resultat;
 
         try {
-            if (!brukerHarOppfolgingsflagg(aktorId)) {
+            if (!oppfolgingService.erUnderOppfolging(aktorId)) {
                 log.info("Bruker med aktørid {} har ikke oppfølgingsflagg. Sletter fra utmelding-tabell", aktorId);
                 utmeldingRepository.slettBrukerFraUtmeldingTabell(aktorId);
                 resultat = IKKE_LENGER_UNDER_OPPFØLGING;

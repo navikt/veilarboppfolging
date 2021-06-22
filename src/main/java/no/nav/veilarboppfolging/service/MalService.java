@@ -5,7 +5,7 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.repository.KvpRepository;
 import no.nav.veilarboppfolging.repository.MaalRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
-import no.nav.veilarboppfolging.repository.entity.KvpEntity;
+import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity;
 import no.nav.veilarboppfolging.repository.entity.MaalEntity;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingEntity;
 import no.nav.veilarboppfolging.utils.KvpUtils;
@@ -18,8 +18,9 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Optional;
 
-import static java.util.Optional.ofNullable;
+import static java.util.Optional.empty;
 import static java.util.stream.Collectors.toList;
 
 @Service
@@ -62,24 +63,29 @@ public class MalService {
         AktorId aktorId = authService.getAktorIdOrThrow(fnr);
         authService.sjekkLesetilgangMedAktorId(aktorId);
 
-        OppfolgingEntity oppfolgingsStatus = oppfolgingsStatusRepository.fetch(aktorId);
+        Optional<OppfolgingEntity> maybeOppfolging = oppfolgingsStatusRepository.hentOppfolging(aktorId);
 
-        MaalEntity gjeldendeMal = null;
+        long gjeldendeMaalId = maybeOppfolging.map(OppfolgingEntity::getGjeldendeMaalId).orElse(0L);
 
-        if (oppfolgingsStatus.getGjeldendeMaalId() != 0) {
-            gjeldendeMal = maalRepository.fetch(oppfolgingsStatus.getGjeldendeMaalId());
+        Optional<MaalEntity> maybeGjeldendeMaal = empty();
+
+        if (gjeldendeMaalId != 0) {
+            maybeGjeldendeMaal = maalRepository.hentMaal(gjeldendeMaalId);
         }
 
-        if (gjeldendeMal == null) {
+        if (maybeGjeldendeMaal.isEmpty()) {
             return new MaalEntity();
         }
 
-        List<KvpEntity> kvpList = kvpRepository.hentKvpHistorikk(aktorId);
-        if (!KvpUtils.sjekkTilgangGittKvp(authService, kvpList, gjeldendeMal::getDato)) {
+        MaalEntity gjeldendeMaal = maybeGjeldendeMaal.get();
+
+        List<KvpPeriodeEntity> kvpList = kvpRepository.hentKvpHistorikk(aktorId);
+
+        if (!KvpUtils.sjekkTilgangGittKvp(authService, kvpList, gjeldendeMaal::getDato)) {
             return new MaalEntity();
         }
 
-        return gjeldendeMal;
+        return gjeldendeMaal;
     }
 
     public List<MaalEntity> hentMalList(Fnr fnr) {
@@ -88,7 +94,7 @@ public class MalService {
 
         List<MaalEntity> malList = maalRepository.aktorMal(aktorId);
 
-        List<KvpEntity> kvpList = kvpRepository.hentKvpHistorikk(aktorId);
+        List<KvpPeriodeEntity> kvpList = kvpRepository.hentKvpHistorikk(aktorId);
         return malList.stream().filter(mal -> KvpUtils.sjekkTilgangGittKvp(authService, kvpList, mal::getDato)).collect(toList());
     }
 
@@ -96,8 +102,8 @@ public class MalService {
         AktorId aktorId = authService.getAktorIdOrThrow(fnr);
         authService.sjekkSkrivetilgangMedAktorId(aktorId);
 
-        KvpEntity kvp = kvpRepository.fetch(kvpRepository.gjeldendeKvp(aktorId));
-        ofNullable(kvp).ifPresent(this::sjekkKvpEnhetTilgang);
+        Optional<KvpPeriodeEntity> maybeKvpPeriode = kvpRepository.hentKvpPeriode(kvpRepository.gjeldendeKvp(aktorId));
+        maybeKvpPeriode.ifPresent(this::sjekkKvpEnhetTilgang);
 
         MaalEntity malData = new MaalEntity()
                 .setAktorId(aktorId.get())
@@ -115,7 +121,7 @@ public class MalService {
         return malData;
     }
 
-    private void sjekkKvpEnhetTilgang(KvpEntity kvp) {
+    private void sjekkKvpEnhetTilgang(KvpPeriodeEntity kvp) {
         if (!authService.harTilgangTilEnhetMedSperre(kvp.getEnhet())) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         }

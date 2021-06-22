@@ -11,10 +11,12 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import java.sql.ResultSet;
 import java.util.List;
+import java.util.Optional;
 
 import static no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository.AKTOR_ID;
 import static no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository.GJELDENDE_MAL;
 import static no.nav.veilarboppfolging.utils.DbUtils.hentZonedDateTime;
+import static no.nav.veilarboppfolging.utils.DbUtils.queryForNullableObject;
 
 @Repository
 public class MaalRepository {
@@ -31,13 +33,13 @@ public class MaalRepository {
 
     public List<MaalEntity> aktorMal(AktorId aktorId) {
         return db.query("SELECT * FROM MAL WHERE aktor_id = ? ORDER BY ID DESC",
-                MaalRepository::map,
+                MaalRepository::mapMaalEntity,
                 aktorId.get());
     }
 
-    public MaalEntity fetch(Long id) {
+    public Optional<MaalEntity> hentMaal(long id) {
         String sql = "SELECT * FROM MAL WHERE id = ?";
-        return db.query(sql, MaalRepository::map, id).get(0);
+        return queryForNullableObject(() -> db.queryForObject(sql, MaalRepository::mapMaalEntity, id));
     }
 
     public void opprett(MaalEntity maal) {
@@ -53,19 +55,19 @@ public class MaalRepository {
         db.update(sql, maal.getId(), maal.getAktorId(), maal.getMal(), maal.getEndretAv(), maal.getDato());
     }
 
-    private void setActive(MaalEntity mal) {
+    private void setActive(MaalEntity maal) {
         db.update("UPDATE OPPFOLGINGSTATUS " +
                         " SET " + GJELDENDE_MAL + " = ?," +
                         " oppdatert = CURRENT_TIMESTAMP, " +
                         " FEED_ID = null " +
                         "WHERE " + AKTOR_ID + " = ?",
-                mal.getId(),
-                mal.getAktorId()
+                maal.getId(),
+                maal.getAktorId()
         );
     }
 
     @SneakyThrows
-    private static MaalEntity map(ResultSet result, int row) {
+    private static MaalEntity mapMaalEntity(ResultSet result, int row) {
         return new MaalEntity()
                 .setId(result.getLong("id"))
                 .setAktorId(result.getString("aktor_id"))

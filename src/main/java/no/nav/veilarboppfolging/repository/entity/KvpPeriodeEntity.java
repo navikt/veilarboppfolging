@@ -10,7 +10,7 @@ import java.time.ZonedDateTime;
 @Value
 @Builder
 @With
-public class KvpEntity {
+public class KvpPeriodeEntity {
     long kvpId;
     long serial;
     String aktorId;

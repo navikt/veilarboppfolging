@@ -12,11 +12,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository.AKTOR_ID;
 import static no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository.UNDER_OPPFOLGING;
 import static no.nav.veilarboppfolging.utils.DbUtils.hentZonedDateTime;
+import static no.nav.veilarboppfolging.utils.DbUtils.queryForNullableObject;
 
 @Repository
 public class OppfolgingsPeriodeRepository {
@@ -60,11 +62,12 @@ public class OppfolgingsPeriodeRepository {
                         pageSize);
     }
 
-    public OppfolgingsperiodeEntity hentOppfolgingsperiode(String uuid) {
-        return db.queryForObject(hentOppfolingsperioderSQL +
-                        "WHERE UUID = ?",
-                OppfolgingsPeriodeRepository::mapTilOppfolgingsperiode,
-                uuid
+    public Optional<OppfolgingsperiodeEntity> hentOppfolgingsperiode(String uuid) {
+        return queryForNullableObject(
+                () -> db.queryForObject(
+                hentOppfolingsperioderSQL + "WHERE UUID = ?",
+                        OppfolgingsPeriodeRepository::mapTilOppfolgingsperiode, uuid
+                )
         );
     }
 

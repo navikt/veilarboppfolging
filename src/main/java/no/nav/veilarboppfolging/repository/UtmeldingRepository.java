@@ -15,8 +15,9 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Optional;
 
-import static no.nav.veilarboppfolging.utils.ListUtils.firstOrNull;
+import static no.nav.veilarboppfolging.utils.DbUtils.queryForNullableObject;
 
 @Slf4j
 @Repository
@@ -29,9 +30,9 @@ public class UtmeldingRepository {
         this.db = db;
     }
 
-    public UtmeldingEntity eksisterendeIservBruker(AktorId aktorId) {
+    public Optional<UtmeldingEntity> eksisterendeIservBruker(AktorId aktorId) {
         String sql = "SELECT * FROM UTMELDING WHERE aktor_id = ?";
-        return firstOrNull(db.query(sql, UtmeldingRepository::mapper, aktorId.get()));
+        return queryForNullableObject(() -> db.queryForObject(sql, UtmeldingRepository::mapper, aktorId.get()));
     }
 
     @SneakyThrows

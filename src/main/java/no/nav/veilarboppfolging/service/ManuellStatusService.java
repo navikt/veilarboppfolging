@@ -8,9 +8,7 @@ import no.nav.veilarboppfolging.client.dkif.DkifClient;
 import no.nav.veilarboppfolging.client.dkif.DkifKontaktinfo;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 import no.nav.veilarboppfolging.repository.ManuellStatusRepository;
-import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
 import no.nav.veilarboppfolging.repository.entity.ManuellStatusEntity;
-import no.nav.veilarboppfolging.repository.entity.OppfolgingEntity;
 import no.nav.veilarboppfolging.repository.enums.KodeverkBruker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -32,7 +30,7 @@ public class ManuellStatusService {
 
     private final ArenaOppfolgingService arenaOppfolgingService;
 
-    private final OppfolgingsStatusRepository oppfolgingsStatusRepository;
+    private final OppfolgingService oppfolgingService;
 
     private final DkifClient dkifClient;
 
@@ -45,7 +43,7 @@ public class ManuellStatusService {
             AuthService authService,
             ManuellStatusRepository manuellStatusRepository,
             ArenaOppfolgingService arenaOppfolgingService,
-            OppfolgingsStatusRepository oppfolgingsStatusRepository,
+            OppfolgingService oppfolgingService,
             DkifClient dkifClient,
             KafkaProducerService kafkaProducerService,
             TransactionTemplate transactor
@@ -53,7 +51,7 @@ public class ManuellStatusService {
         this.authService = authService;
         this.manuellStatusRepository = manuellStatusRepository;
         this.arenaOppfolgingService = arenaOppfolgingService;
-        this.oppfolgingsStatusRepository = oppfolgingsStatusRepository;
+        this.oppfolgingService = oppfolgingService;
         this.dkifClient = dkifClient;
         this.kafkaProducerService = kafkaProducerService;
         this.transactor = transactor;
@@ -66,7 +64,7 @@ public class ManuellStatusService {
     }
 
     public Optional<ManuellStatusEntity> hentManuellStatus(long manuellStatusId) {
-        return Optional.ofNullable(manuellStatusRepository.fetch(manuellStatusId));
+        return manuellStatusRepository.hentManuellStatus(manuellStatusId);
     }
 
     public List<ManuellStatusEntity> hentManuellStatusHistorikk(AktorId aktorId) {
@@ -122,10 +120,9 @@ public class ManuellStatusService {
             authService.sjekkTilgangTilEnhet(arenaOppfolging.getNav_kontor());
         }
 
-        OppfolgingEntity oppfolging = oppfolgingsStatusRepository.fetch(aktorId);
         DkifKontaktinfo kontaktinfo = hentDkifKontaktinfo(fnr);
 
-        boolean erUnderOppfolging = oppfolging.isUnderOppfolging();
+        boolean erUnderOppfolging = oppfolgingService.erUnderOppfolging(aktorId);
         boolean gjeldendeErManuell = erManuell(aktorId);
         boolean reservertIKrr = kontaktinfo.isReservert();
 

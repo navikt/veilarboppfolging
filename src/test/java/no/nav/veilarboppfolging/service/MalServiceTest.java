@@ -5,7 +5,7 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.repository.KvpRepository;
 import no.nav.veilarboppfolging.repository.MaalRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
-import no.nav.veilarboppfolging.repository.entity.KvpEntity;
+import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity;
 import no.nav.veilarboppfolging.repository.entity.MaalEntity;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingEntity;
 import org.junit.Before;
@@ -19,6 +19,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 import static java.time.temporal.ChronoUnit.DAYS;
@@ -74,8 +75,8 @@ public class MalServiceTest {
     @Before
     public void setup() {
         when(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID);
-        when(oppfolgingsStatusRepository.fetch(AKTOR_ID)).thenReturn(new OppfolgingEntity().setGjeldendeMaalId(MAL_ID));
-        when(maalRepository.fetch(MAL_ID)).thenReturn(mal(BEFORE_KVP));
+        when(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID)).thenReturn(Optional.of(new OppfolgingEntity().setGjeldendeMaalId(MAL_ID)));
+        when(maalRepository.hentMaal(MAL_ID)).thenReturn(Optional.of(mal(BEFORE_KVP)));
         doAnswer((mock) -> {
             Consumer consumer = mock.getArgument(0);
             consumer.accept(null);
@@ -86,7 +87,7 @@ public class MalServiceTest {
     @Test(expected = ResponseStatusException.class)
     public void oppdaterMal_veilederUtenTilgang_KvpBruker_kasterException() {
         when(kvpRepositoryMock.gjeldendeKvp(any())).thenReturn(KVP_ID);
-        when(kvpRepositoryMock.fetch(anyLong())).thenReturn(aktivKvp());
+        when(kvpRepositoryMock.hentKvpPeriode(anyLong())).thenReturn(Optional.of(aktivKvp()));
         when(authService.harTilgangTilEnhetMedSperre(ENHET)).thenReturn(false);
 
         malService.oppdaterMal("mal", FNR, VEILEDER);
@@ -95,7 +96,7 @@ public class MalServiceTest {
     @Test
     public void oppdaterMal_veilederMedTilgang_KvpBruker_kasterIkkeException() {
         when(kvpRepositoryMock.gjeldendeKvp(any())).thenReturn(KVP_ID);
-        when(kvpRepositoryMock.fetch(anyLong())).thenReturn(aktivKvp());
+        when(kvpRepositoryMock.hentKvpPeriode(anyLong())).thenReturn(Optional.of(aktivKvp()));
         when(authService.harTilgangTilEnhetMedSperre(ENHET)).thenReturn(true);
         MaalEntity resultat = malService.oppdaterMal("mal", FNR, VEILEDER);
 
@@ -104,7 +105,7 @@ public class MalServiceTest {
 
     @Test
     public void gjeldendeMal_ikke_satt() {
-        when(oppfolgingsStatusRepository.fetch(AKTOR_ID)).thenReturn(new OppfolgingEntity().setGjeldendeMaalId(0));
+        when(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID)).thenReturn(Optional.of(new OppfolgingEntity().setGjeldendeMaalId(0)));
 
         MaalEntity malData = malService.hentMal(FNR);
         assertThat(malData.getId()).isEqualTo(0L);
@@ -127,7 +128,7 @@ public class MalServiceTest {
     @Test
     public void hent_mal_opprettet_etter_kvp_veileder_har_ikke_tilgang() {
         when(kvpRepositoryMock.hentKvpHistorikk(AKTOR_ID)).thenReturn(kvpHistorikk());
-        when(maalRepository.fetch(MAL_ID)).thenReturn(mal(IN_KVP));
+        when(maalRepository.hentMaal(MAL_ID)).thenReturn(Optional.of(mal(IN_KVP)));
         when(authService.harTilgangTilEnhetMedSperre(ENHET)).thenReturn(false);
 
         MaalEntity malData = malService.hentMal(FNR);
@@ -137,7 +138,7 @@ public class MalServiceTest {
     @Test
     public void hent_mal_opprettet_etter_kvp_veileder_har_tilgang() {
         when(kvpRepositoryMock.hentKvpHistorikk(AKTOR_ID)).thenReturn(kvpHistorikk());
-        when(maalRepository.fetch(MAL_ID)).thenReturn(mal(IN_KVP));
+        when(maalRepository.hentMaal(MAL_ID)).thenReturn(Optional.of(mal(IN_KVP)));
         when(authService.harTilgangTilEnhetMedSperre(ENHET)).thenReturn(true);
 
         MaalEntity malData = malService.hentMal(FNR);
@@ -182,16 +183,16 @@ public class MalServiceTest {
         );
     }
 
-    private KvpEntity aktivKvp() {
-        return KvpEntity.builder()
+    private KvpPeriodeEntity aktivKvp() {
+        return KvpPeriodeEntity.builder()
                 .kvpId(KVP_ID)
                 .enhet(ENHET)
                 .opprettetDato(START_KVP)
                 .build();
     }
 
-    private List<KvpEntity> kvpHistorikk() {
-        return singletonList(KvpEntity.builder()
+    private List<KvpPeriodeEntity> kvpHistorikk() {
+        return singletonList(KvpPeriodeEntity.builder()
                 .kvpId(KVP_ID)
                 .enhet(ENHET)
                 .opprettetDato(START_KVP)

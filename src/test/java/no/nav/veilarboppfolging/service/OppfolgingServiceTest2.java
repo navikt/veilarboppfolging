@@ -59,6 +59,8 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
 
     private OppfolgingService oppfolgingService;
 
+    private OppfolgingService oppfolgingServiceMock = mock(OppfolgingService.class);
+
     @Before
     public void setup() {
         TransactionTemplate transactor = DbTestUtils.createTransactor(db);
@@ -89,7 +91,7 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
                 authService,
                 manuellStatusRepository,
                 null,
-                oppfolgingsStatusRepository,
+                oppfolgingServiceMock,
                 dkifClient,
                 null,
                 transactor

@@ -20,7 +20,6 @@ import static no.nav.veilarboppfolging.utils.DbUtils.hentZonedDateTime;
 import static no.nav.veilarboppfolging.utils.DbUtils.queryForNullableObject;
 import static no.nav.veilarboppfolging.utils.EnumUtils.getName;
 import static no.nav.veilarboppfolging.utils.EnumUtils.valueOfOptional;
-import static no.nav.veilarboppfolging.utils.ListUtils.firstOrNull;
 
 @Repository
 public class ManuellStatusRepository {
@@ -43,9 +42,9 @@ public class ManuellStatusRepository {
         });
     }
 
-    public ManuellStatusEntity fetch(Long id) {
+    public Optional<ManuellStatusEntity> hentManuellStatus(Long id) {
         String sql = "SELECT * FROM MANUELL_STATUS WHERE id = ?";
-        return firstOrNull(db.query(sql, ManuellStatusRepository::map, id));
+        return queryForNullableObject(() -> db.queryForObject(sql, ManuellStatusRepository::map, id));
     }
 
     public List<ManuellStatusEntity> history(AktorId aktorId) {

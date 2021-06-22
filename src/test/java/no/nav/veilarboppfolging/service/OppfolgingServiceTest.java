@@ -208,7 +208,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     public void hentOppfolgingStatus_brukerSomIkkeErUnderOppfolgingSettesUnderOppfolgingDersomArenaHarRiktigStatus() {
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
 
-        assertFalse(oppfolgingsStatusRepository.fetch(AKTOR_ID).isUnderOppfolging());
+        assertFalse(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID).orElseThrow().isUnderOppfolging());
 
         gittArenaOppfolgingStatus("ARBS", "");
         OppfolgingStatusData oppfolgingStatusData = hentOppfolgingStatus();
@@ -232,7 +232,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
                 oppfolgingsPeriodeRepository.hentOppfolgingsperioder(AKTOR_ID).size()
         );
         assertHarIkkeGjeldendeOppfolgingsperiode(AKTOR_ID);
-        assertFalse(oppfolgingsStatusRepository.fetch(AKTOR_ID).isUnderOppfolging());
+        assertFalse(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID).orElseThrow().isUnderOppfolging());
     }
 
     @Test
@@ -381,7 +381,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     }
 
     private void assertUnderOppfolgingLagret(AktorId aktorId) {
-        assertTrue(oppfolgingsStatusRepository.fetch(aktorId).isUnderOppfolging());
+        assertTrue(oppfolgingsStatusRepository.hentOppfolging(aktorId).orElseThrow().isUnderOppfolging());
 
         assertHarGjeldendeOppfolgingsperiode(aktorId);
 

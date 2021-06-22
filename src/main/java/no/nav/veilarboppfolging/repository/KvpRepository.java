@@ -2,7 +2,7 @@ package no.nav.veilarboppfolging.repository;
 
 import lombok.SneakyThrows;
 import no.nav.common.types.identer.AktorId;
-import no.nav.veilarboppfolging.repository.entity.KvpEntity;
+import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity;
 import no.nav.veilarboppfolging.repository.enums.KodeverkBruker;
 import no.nav.veilarboppfolging.utils.DbUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,12 +14,13 @@ import org.springframework.transaction.support.TransactionTemplate;
 import java.sql.ResultSet;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static no.nav.veilarboppfolging.repository.enums.KodeverkBruker.NAV;
 import static no.nav.veilarboppfolging.utils.DbUtils.hentZonedDateTime;
+import static no.nav.veilarboppfolging.utils.DbUtils.queryForNullableObject;
 import static no.nav.veilarboppfolging.utils.EnumUtils.getName;
 import static no.nav.veilarboppfolging.utils.EnumUtils.valueOfOptional;
-import static no.nav.veilarboppfolging.utils.ListUtils.firstOrNull;
 
 @Repository
 public class KvpRepository {
@@ -102,7 +103,7 @@ public class KvpRepository {
         });
     }
 
-    public List<KvpEntity> hentKvpHistorikk(AktorId aktorId) {
+    public List<KvpPeriodeEntity> hentKvpHistorikk(AktorId aktorId) {
         return db.query("SELECT * " +
                         "FROM kvp " +
                         "WHERE aktor_id = ?",
@@ -115,14 +116,14 @@ public class KvpRepository {
      * Return a list of KVP objects where the serial number is greater than N.
      * The serial number is the number of updates the table has undergone.
      */
-    public List<KvpEntity> serialGreaterThan(long serial, long pageSize) {
+    public List<KvpPeriodeEntity> serialGreaterThan(long serial, long pageSize) {
         String sql = "SELECT * FROM kvp WHERE serial > ? AND rownum <= ? ORDER BY serial ASC";
         return db.query(sql, KvpRepository::mapTilKvp, serial, pageSize);
     }
 
-    public KvpEntity fetch(long id) {
+    public Optional<KvpPeriodeEntity> hentKvpPeriode(long id) {
         String sql = "SELECT * FROM KVP WHERE kvp_id = ?";
-        return firstOrNull(db.query(sql, KvpRepository::mapTilKvp, id));
+        return queryForNullableObject(() -> db.queryForObject(sql, KvpRepository::mapTilKvp, id));
     }
 
     /**
@@ -141,8 +142,8 @@ public class KvpRepository {
     }
 
     @SneakyThrows
-    protected static KvpEntity mapTilKvp(ResultSet rs, int row) {
-        return KvpEntity.builder()
+    protected static KvpPeriodeEntity mapTilKvp(ResultSet rs, int row) {
+        return KvpPeriodeEntity.builder()
                 .kvpId(rs.getLong("kvp_id"))
                 .serial(rs.getLong("serial"))
                 .aktorId(rs.getString("aktor_id"))
