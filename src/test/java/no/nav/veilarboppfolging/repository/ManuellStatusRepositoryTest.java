@@ -32,6 +32,7 @@ public class ManuellStatusRepositoryTest extends IsolatedDatabaseTest {
     @Test
     public void hentManuellStatus__should_return_manuell_status() {
         ManuellStatusEntity manuellStatus = createManuellStatus(TEST_AKTOR_ID);
+        manuellStatus.setDato(manuellStatus.getDato().truncatedTo(MILLIS));
 
         oppfolgingsStatusRepository.opprettOppfolging(TEST_AKTOR_ID);
         manuellStatusRepository.create(manuellStatus);
