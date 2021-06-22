@@ -11,6 +11,7 @@ import org.junit.Test;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
+import static java.time.temporal.ChronoUnit.MILLIS;
 import static no.nav.veilarboppfolging.test.TestData.TEST_AKTOR_ID;
 import static no.nav.veilarboppfolging.test.TestData.TEST_AKTOR_ID_2;
 import static org.junit.Assert.*;
@@ -36,7 +37,10 @@ public class ManuellStatusRepositoryTest extends IsolatedDatabaseTest {
 
         OppfolgingEntity oppfolging = oppfolgingsStatusRepository.fetch(TEST_AKTOR_ID);
 
-        assertEquals(manuellStatus, manuellStatusRepository.fetch(oppfolging.getGjeldendeManuellStatusId()));
+        manuellStatus.setDato(manuellStatus.getDato().truncatedTo(MILLIS));
+        ManuellStatusEntity fetched = manuellStatusRepository.fetch(oppfolging.getGjeldendeManuellStatusId());
+        fetched.setDato(fetched.getDato().truncatedTo(MILLIS));
+        assertEquals(manuellStatus, fetched);
     }
 
     @Test
@@ -86,6 +90,9 @@ public class ManuellStatusRepositoryTest extends IsolatedDatabaseTest {
         Optional<ManuellStatusEntity> maybeManuellStatus = manuellStatusRepository.hentSisteManuellStatus(TEST_AKTOR_ID);
 
         assertTrue(maybeManuellStatus.isPresent());
+        manuellStatus.setDato(manuellStatus.getDato().truncatedTo(MILLIS));
+        ManuellStatusEntity gotten = maybeManuellStatus.get();
+        gotten.setDato(gotten.getDato().truncatedTo(MILLIS));
         assertEquals(manuellStatus, maybeManuellStatus.get());
     }
 
@@ -107,7 +114,10 @@ public class ManuellStatusRepositoryTest extends IsolatedDatabaseTest {
         Optional<ManuellStatusEntity> maybeManuellStatus = manuellStatusRepository.hentSisteManuellStatus(TEST_AKTOR_ID);
 
         assertTrue(maybeManuellStatus.isPresent());
-        assertEquals(manuellStatus2, maybeManuellStatus.get());
+        manuellStatus2.setDato(manuellStatus2.getDato().truncatedTo(MILLIS));
+        ManuellStatusEntity gotten = maybeManuellStatus.get();
+        gotten.setDato(gotten.getDato().truncatedTo(MILLIS));
+        assertEquals(manuellStatus2, gotten);
     }
 
     private ManuellStatusEntity createManuellStatus(AktorId aktorId) {
