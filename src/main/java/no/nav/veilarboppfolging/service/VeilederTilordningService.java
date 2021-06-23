@@ -96,8 +96,8 @@ public class VeilederTilordningService {
         return response;
     }
 
-    public void lestAktivitetsplan(String fnr) {
-        AktorId aktorId = authService.getAktorIdOrThrow(Fnr.of(fnr));
+    public void lestAktivitetsplan(Fnr fnr) {
+        AktorId aktorId = authService.getAktorIdOrThrow(fnr);
 
         authService.skalVereInternBruker();
         authService.sjekkLesetilgangMedAktorId(aktorId);

@@ -3,14 +3,14 @@ package no.nav.veilarboppfolging.controller.v2;
 import lombok.RequiredArgsConstructor;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.client.behandle_arbeidssoker.ArenaFeilException;
-import no.nav.veilarboppfolging.controller.request.AktiverArbeidssokerData;
-import no.nav.veilarboppfolging.controller.request.ReaktiverBrukerRequest;
-import no.nav.veilarboppfolging.controller.request.SykmeldtBrukerType;
 import no.nav.veilarboppfolging.controller.response.ArenaFeilDTO;
 import no.nav.veilarboppfolging.service.AktiverBrukerService;
 import no.nav.veilarboppfolging.service.AuthService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 
@@ -26,12 +26,12 @@ public class SystemOppfolgingV2Controller {
     // Veilarbregistrering forventer 204, som forsåvidt er riktig status for disse endepunktene
 
     @PostMapping("/aktiver-bruker")
-    public ResponseEntity<?> aktiverBruker(@RequestBody AktiverArbeidssokerData aktiverArbeidssokerData) {
+    public ResponseEntity<?> aktiverBruker(@RequestParam("fnr") Fnr fnr) {
         authService.skalVereSystemBruker();
-        authService.sjekkLesetilgangMedFnr(Fnr.of(aktiverArbeidssokerData.getFnr().getFnr()));
+        authService.sjekkLesetilgangMedFnr(fnr);
 
         try {
-            aktiverBrukerService.aktiverBruker(aktiverArbeidssokerData);
+            aktiverBrukerService.aktiverBruker(fnr, null);
         } catch (ArenaFeilException exception) {
             // veilarbregistrering må ha body i response som inneholder årsak til feil fra Arena
             return ResponseEntity
@@ -43,12 +43,12 @@ public class SystemOppfolgingV2Controller {
     }
 
     @PostMapping("/reaktiver-bruker")
-    public ResponseEntity<?> reaktiverBruker(@RequestBody ReaktiverBrukerRequest request) {
+    public ResponseEntity<?> reaktiverBruker(@RequestParam("fnr") Fnr fnr) {
         authService.skalVereSystemBruker();
-        authService.sjekkLesetilgangMedFnr(request.getFnr());
+        authService.sjekkLesetilgangMedFnr(fnr);
 
         try {
-            aktiverBrukerService.reaktiverBruker(request.getFnr());
+            aktiverBrukerService.reaktiverBruker(fnr);
         } catch (ArenaFeilException exception) {
             // veilarbregistrering må ha body i response som inneholder årsak til feil fra Arena
             return ResponseEntity
@@ -60,10 +60,10 @@ public class SystemOppfolgingV2Controller {
     }
 
     @PostMapping("/aktiver-sykmeldt")
-    public ResponseEntity<?> aktiverSykmeldt(@RequestBody SykmeldtBrukerType sykmeldtBrukerType, @RequestParam Fnr fnr) {
+    public ResponseEntity<?> aktiverSykmeldt(@RequestParam("fnr") Fnr fnr) {
         authService.skalVereSystemBruker();
         authService.sjekkLesetilgangMedFnr(fnr);
-        aktiverBrukerService.aktiverSykmeldt(fnr, sykmeldtBrukerType);
+        aktiverBrukerService.aktiverSykmeldt(fnr, null);
 
         return ResponseEntity.status(204).build();
     }

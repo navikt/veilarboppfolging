@@ -30,7 +30,7 @@ public class MaalV2Controller {
     }
 
     @GetMapping("/historikk") // TODO: /alle?
-    public List<Maal> hentMalListe(@RequestParam(required = false) Fnr fnr) {
+    public List<Maal> hentMalListe(@RequestParam(value = "fnr", required = false) Fnr fnr) {
         Fnr fodselsnummer = authService.hentIdentForEksternEllerIntern(fnr);
         List<MaalEntity> malDataList = maalService.hentMalList(fodselsnummer);
 
@@ -40,7 +40,7 @@ public class MaalV2Controller {
     }
 
     @PostMapping
-    public Maal oppdaterMal(@RequestBody Maal maal, @RequestParam(required = false) Fnr fnr) {
+    public Maal oppdaterMal(@RequestBody Maal maal, @RequestParam(value = "fnr", required = false) Fnr fnr) {
         Fnr fodselsnummer = authService.hentIdentForEksternEllerIntern(fnr);
         String endretAvVeileder = authService.erEksternBruker() ? null : authService.getInnloggetBrukerIdent();
 

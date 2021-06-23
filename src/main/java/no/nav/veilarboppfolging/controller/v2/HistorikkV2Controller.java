@@ -21,6 +21,7 @@ public class HistorikkV2Controller {
 
     private final AuthService authService;
 
+    // TODO: Hadde det vært greit å wrappe listen med hendelser i egen respons klasse for å gjøre det lettere å legge til endringer?
     @GetMapping
     public List<HistorikkHendelse> hentInnstillingsHistorikk(@RequestParam("fnr") Fnr fnr) {
         authService.skalVereInternBruker();

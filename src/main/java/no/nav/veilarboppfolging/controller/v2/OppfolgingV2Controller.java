@@ -81,7 +81,7 @@ public class OppfolgingV2Controller {
     }
 
     @GetMapping("/periode/{uuid}")
-    public OppfolgingPeriodeMinimalDTO hentOppfolgingsPeriode(@PathVariable String uuid){
+    public OppfolgingPeriodeMinimalDTO hentOppfolgingsPeriode(@PathVariable("uuid") String uuid){
         var maybePeriode = oppfolgingService.hentOppfolgingsperiode(uuid);
 
         if (maybePeriode.isEmpty()) {

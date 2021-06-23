@@ -40,7 +40,7 @@ public class VeilederV2Controller {
     }
 
     @PostMapping("/lest-aktivitetsplan")
-    public ResponseEntity<?> lestAktivitetsplan(@RequestParam("fnr") String fnr) {
+    public ResponseEntity<?> lestAktivitetsplan(@RequestParam("fnr") Fnr fnr) {
         veilederTilordningService.lestAktivitetsplan(fnr);
         return ResponseEntity.status(204).build();
     }

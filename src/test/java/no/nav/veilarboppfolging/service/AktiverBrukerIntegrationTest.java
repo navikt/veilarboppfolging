@@ -5,7 +5,6 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.client.behandle_arbeidssoker.BehandleArbeidssokerClient;
 import no.nav.veilarboppfolging.client.dkif.DkifKontaktinfo;
-import no.nav.veilarboppfolging.controller.request.AktiverArbeidssokerData;
 import no.nav.veilarboppfolging.controller.request.Innsatsgruppe;
 import no.nav.veilarboppfolging.domain.Oppfolging;
 import no.nav.veilarboppfolging.repository.*;
@@ -86,9 +85,7 @@ public class AktiverBrukerIntegrationTest {
     public void skalRulleTilbakeDatabaseDersomKallTilArenaFeiler() {
         doThrow(new RuntimeException()).when(behandleArbeidssokerClient).opprettBrukerIArena(any(), any());
 
-        AktiverArbeidssokerData data = lagBruker(FNR);
-
-        Try<Void> run = Try.run(() -> aktiverBrukerService.aktiverBruker(data));
+        Try<Void> run = Try.run(() -> aktiverBrukerService.aktiverBruker(FNR, Innsatsgruppe.STANDARD_INNSATS));
         assertThat(run.isFailure()).isTrue();
 
         Optional<Oppfolging> oppfolging = oppfolgingService.hentOppfolging(AKTOR_ID);
@@ -98,7 +95,7 @@ public class AktiverBrukerIntegrationTest {
 
     @Test
     public void skalLagreIDatabaseDersomKallTilArenaErOK() {
-        aktiverBrukerService.aktiverBruker(lagBruker(FNR));
+        aktiverBrukerService.aktiverBruker(FNR, Innsatsgruppe.STANDARD_INNSATS);
 
         Optional<Oppfolging> oppfolging = oppfolgingService.hentOppfolging(AKTOR_ID);
 
@@ -110,15 +107,11 @@ public class AktiverBrukerIntegrationTest {
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
         oppfolgingsPeriodeRepository.avslutt(AKTOR_ID, "veilederid", "begrunnelse");
 
-        aktiverBrukerService.aktiverBruker(lagBruker(FNR));
+        aktiverBrukerService.aktiverBruker(FNR, Innsatsgruppe.STANDARD_INNSATS);
 
         Optional<Oppfolging> oppfolging = oppfolgingService.hentOppfolging(AKTOR_ID);
 
         assertThat(oppfolging.get().isUnderOppfolging()).isTrue();
-    }
-
-    private AktiverArbeidssokerData lagBruker(Fnr fnr) {
-        return new AktiverArbeidssokerData(new AktiverArbeidssokerData.Fnr(fnr.get()), Innsatsgruppe.STANDARD_INNSATS);
     }
 
 }
