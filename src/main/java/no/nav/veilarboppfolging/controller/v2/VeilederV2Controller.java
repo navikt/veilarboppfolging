@@ -7,6 +7,7 @@ import no.nav.veilarboppfolging.controller.response.TilordneVeilederResponse;
 import no.nav.veilarboppfolging.controller.v2.response.HentVeilederV2Response;
 import no.nav.veilarboppfolging.service.AuthService;
 import no.nav.veilarboppfolging.service.VeilederTilordningService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,7 +30,7 @@ public class VeilederV2Controller {
         var maybeVeilederIdent = veilederTilordningService.hentTilordnetVeilederIdent(fnr);
 
         if (maybeVeilederIdent.isEmpty()) {
-            return ResponseEntity.status(204).build();
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
         }
 
         return ResponseEntity.ok(new HentVeilederV2Response(maybeVeilederIdent.get()));
@@ -43,7 +44,7 @@ public class VeilederV2Controller {
     @PostMapping("/lest-aktivitetsplan")
     public ResponseEntity<?> lestAktivitetsplan(@RequestParam("fnr") Fnr fnr) {
         veilederTilordningService.lestAktivitetsplan(fnr);
-        return ResponseEntity.status(204).build();
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
 }

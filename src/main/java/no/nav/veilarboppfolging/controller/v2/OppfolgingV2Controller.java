@@ -1,22 +1,24 @@
 package no.nav.veilarboppfolging.controller.v2;
 
 import lombok.RequiredArgsConstructor;
-import no.nav.common.metrics.Event;
-import no.nav.common.metrics.MetricsClient;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.veilarboppfolging.controller.request.VeilederBegrunnelseDTO;
-import no.nav.veilarboppfolging.controller.response.*;
+import no.nav.veilarboppfolging.controller.response.AvslutningStatus;
+import no.nav.veilarboppfolging.controller.response.OppfolgingPeriodeDTO;
+import no.nav.veilarboppfolging.controller.response.OppfolgingPeriodeMinimalDTO;
+import no.nav.veilarboppfolging.controller.response.OppfolgingStatus;
+import no.nav.veilarboppfolging.controller.v2.request.AvsluttOppfolgingV2Request;
+import no.nav.veilarboppfolging.controller.v2.response.UnderOppfolgingV2Response;
 import no.nav.veilarboppfolging.service.AuthService;
 import no.nav.veilarboppfolging.service.OppfolgingService;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static java.lang.String.valueOf;
 import static no.nav.veilarboppfolging.utils.DtoMappers.*;
 
 @RestController
@@ -26,52 +28,41 @@ public class OppfolgingV2Controller {
 
     private final OppfolgingService oppfolgingService;
 
-    private final MetricsClient metricsClient;
-
     private final AuthService authService;
 
     @GetMapping("/niva3")
-    public UnderOppfolgingNiva3DTO underOppfolgingNiva3() {
+    public UnderOppfolgingV2Response underOppfolgingNiva3() {
         Fnr fnr = Fnr.of(authService.getInnloggetBrukerIdent());
-
-        UnderOppfolgingNiva3DTO underOppfolgingNiva3DTO = new UnderOppfolgingNiva3DTO()
-                .setUnderOppfolging(oppfolgingService.underOppfolgingNiva3(fnr));
-
-        Event event = new Event("request.niva3.underoppfolging");
-        event.addTagToReport("underoppfolging", valueOf(underOppfolgingNiva3DTO.isUnderOppfolging()));
-        metricsClient.report(event);
-
-        return underOppfolgingNiva3DTO;
+        return new UnderOppfolgingV2Response(oppfolgingService.erUnderOppfolgingNiva3(fnr));
     }
 
     @GetMapping
-    public UnderOppfolgingDTO underOppfolging(@RequestParam(value = "fnr", required = false) Fnr fnr) {
+    public UnderOppfolgingV2Response underOppfolging(@RequestParam(value = "fnr", required = false) Fnr fnr) {
         // TODO: Hvis dette endepunktet kun blir brukt av interne brukere så kan vi gjøre fnr query param required
         Fnr fodselsnummer = authService.hentIdentForEksternEllerIntern(fnr);
-        return oppfolgingService.oppfolgingData(fodselsnummer);
+        return new UnderOppfolgingV2Response(oppfolgingService.erUnderOppfolging(fodselsnummer));
     }
 
-    @GetMapping
+    @GetMapping("/status")
     public OppfolgingStatus hentOppfolgingsStatus(@RequestParam(value = "fnr", required = false) Fnr fnr) {
         Fnr fodselsnummer = authService.hentIdentForEksternEllerIntern(fnr);
         return tilDto(oppfolgingService.hentOppfolgingsStatus(fodselsnummer), authService.erInternBruker());
     }
 
     @PostMapping("/start")
-    public OppfolgingStatus startOppfolging(@RequestParam("fnr") Fnr fnr) {
+    public ResponseEntity<?> startOppfolging(@RequestParam("fnr") Fnr fnr) {
         authService.skalVereInternBruker();
-        return tilDto(oppfolgingService.startOppfolging(fnr), authService.erInternBruker());
+        oppfolgingService.startOppfolging(fnr);
+
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @PostMapping("/avslutt")
-    public AvslutningStatus avsluttOppfolging(@RequestBody VeilederBegrunnelseDTO dto, @RequestParam("fnr") Fnr fnr) {
+    public ResponseEntity<?> avsluttOppfolging(@RequestBody AvsluttOppfolgingV2Request request) {
         authService.skalVereInternBruker();
+        oppfolgingService.avsluttOppfolging(request.getFnr(), request.getVeilederId().get(), request.getBegrunnelse());
 
-        return tilDto(oppfolgingService.avsluttOppfolging(
-                fnr,
-                dto.veilederId,
-                dto.begrunnelse
-        ));
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @GetMapping("/avslutning-status")
@@ -93,7 +84,6 @@ public class OppfolgingV2Controller {
         authService.sjekkLesetilgangMedAktorId(AktorId.of(periode.getAktorId()));
 
         return tilOppfolgingPeriodeMinimalDTO(periode);
-
     }
 
     @GetMapping("/perioder")

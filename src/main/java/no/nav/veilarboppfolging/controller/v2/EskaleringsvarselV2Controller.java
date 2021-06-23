@@ -5,6 +5,7 @@ import no.nav.veilarboppfolging.controller.v2.request.StartEskaleringV2Request;
 import no.nav.veilarboppfolging.controller.v2.request.StoppEskaleringV2Request;
 import no.nav.veilarboppfolging.service.AuthService;
 import no.nav.veilarboppfolging.service.EskaleringService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -31,7 +32,7 @@ public class EskaleringsvarselV2Controller {
                 request.getDialogId()
         );
 
-        return ResponseEntity.status(204).build();
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @PostMapping("/stopp")
@@ -40,7 +41,7 @@ public class EskaleringsvarselV2Controller {
 
         eskaleringService.stoppEskalering(request.getFnr(), authService.getInnloggetVeilederIdent(), request.getBegrunnelse());
 
-        return ResponseEntity.status(204).build();
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
 }

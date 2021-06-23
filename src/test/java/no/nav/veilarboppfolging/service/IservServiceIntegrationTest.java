@@ -49,7 +49,7 @@ public class IservServiceIntegrationTest {
 
         DbTestUtils.cleanupTestDb();
 
-        when(oppfolgingService.erUnderOppfolging(any())).thenReturn(true);
+        when(oppfolgingService.erUnderOppfolging(any(AktorId.class))).thenReturn(true);
         when(oppfolgingService.avsluttOppfolgingForSystemBruker(any())).thenReturn(true);
         when(authService.getFnrOrThrow(any())).thenReturn(FNR);
 
@@ -114,7 +114,7 @@ public class IservServiceIntegrationTest {
     public void behandleEndretBruker_skalStarteBrukerSomHarOppfolgingsstatus() {
         EndringPaaOppfoelgingsBrukerV1 veilarbArenaOppfolging = getArenaBruker();
         veilarbArenaOppfolging.setFormidlingsgruppekode("ARBS");
-        when(oppfolgingService.erUnderOppfolging(any())).thenReturn(false);
+        when(oppfolgingService.erUnderOppfolging(any(AktorId.class))).thenReturn(false);
 
         iservService.behandleEndretBruker(veilarbArenaOppfolging);
         verify(oppfolgingService).startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
@@ -134,7 +134,7 @@ public class IservServiceIntegrationTest {
         EndringPaaOppfoelgingsBrukerV1 veilarbArenaOppfolging = getArenaBruker();
         veilarbArenaOppfolging.setFormidlingsgruppekode("IARBS");
         veilarbArenaOppfolging.setKvalifiseringsgruppekode("IkkeOppfolging");
-        when(oppfolgingService.erUnderOppfolging(any())).thenReturn(false);
+        when(oppfolgingService.erUnderOppfolging(any(AktorId.class))).thenReturn(false);
 
         iservService.behandleEndretBruker(veilarbArenaOppfolging);
         verifyNoInteractions(oppfolgingService);

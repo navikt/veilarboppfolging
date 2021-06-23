@@ -346,12 +346,12 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         doThrow(new ResponseStatusException(HttpStatus.UNAUTHORIZED))
                 .when(authService).sjekkTilgangTilPersonMedNiva3(AKTOR_ID);
 
-        oppfolgingService.underOppfolgingNiva3(FNR);
+        oppfolgingService.erUnderOppfolgingNiva3(FNR);
     }
 
     @Test
     public void underOppfolgingNiva3_skalReturnereFalseHvisIngenDataOmBruker() {
-        assertFalse(oppfolgingService.underOppfolgingNiva3(FNR));
+        assertFalse(oppfolgingService.erUnderOppfolgingNiva3(FNR));
     }
 
     @Test
@@ -359,7 +359,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
         assertUnderOppfolgingLagret(AKTOR_ID);
 
-        assertTrue(oppfolgingService.underOppfolgingNiva3(FNR));
+        assertTrue(oppfolgingService.erUnderOppfolgingNiva3(FNR));
     }
 
     @Test

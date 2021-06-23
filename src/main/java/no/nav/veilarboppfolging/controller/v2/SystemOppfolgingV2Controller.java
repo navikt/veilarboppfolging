@@ -6,6 +6,7 @@ import no.nav.veilarboppfolging.client.behandle_arbeidssoker.ArenaFeilException;
 import no.nav.veilarboppfolging.controller.response.ArenaFeilDTO;
 import no.nav.veilarboppfolging.service.AktiverBrukerService;
 import no.nav.veilarboppfolging.service.AuthService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -39,7 +40,7 @@ public class SystemOppfolgingV2Controller {
                     .body(new ArenaFeilDTO().setType(exception.type));
         }
 
-        return ResponseEntity.status(204).build();
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @PostMapping("/reaktiver-bruker")
@@ -56,7 +57,7 @@ public class SystemOppfolgingV2Controller {
                     .body(new ArenaFeilDTO().setType(exception.type));
         }
 
-        return ResponseEntity.status(204).build();
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @PostMapping("/aktiver-sykmeldt")
@@ -65,7 +66,7 @@ public class SystemOppfolgingV2Controller {
         authService.sjekkLesetilgangMedFnr(fnr);
         aktiverBrukerService.aktiverSykmeldt(fnr, null);
 
-        return ResponseEntity.status(204).build();
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
 }

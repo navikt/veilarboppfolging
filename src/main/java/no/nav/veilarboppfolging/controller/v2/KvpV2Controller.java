@@ -47,7 +47,7 @@ public class KvpV2Controller {
 
         return kvpService.hentGjeldendeKvpPeriode(aktorId)
                 .map(periode -> ResponseEntity.ok(DtoMappers.kvpToDTO(periode)))
-                .orElseGet(() -> ResponseEntity.status(204).build());
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NO_CONTENT).build());
     }
 
     private boolean isRequestAuthorized() {
