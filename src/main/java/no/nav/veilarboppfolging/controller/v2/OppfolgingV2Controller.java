@@ -24,8 +24,6 @@ public class OppfolgingV2Controller {
 
     private final AuthService authService;
 
-
-
     @GetMapping("/niva3")
     public UnderOppfolgingNiva3DTO underOppfolgingNiva3() {
         Fnr fnr = Fnr.of(authService.getInnloggetBrukerIdent());
