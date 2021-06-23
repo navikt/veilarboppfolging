@@ -1,19 +1,20 @@
 package no.nav.veilarboppfolging.controller;
 
-import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.common.types.identer.NavIdent;
 import no.nav.veilarboppfolging.controller.response.Veileder;
-import no.nav.veilarboppfolging.repository.VeilederTilordningerRepository;
 import no.nav.veilarboppfolging.service.AuthService;
+import no.nav.veilarboppfolging.service.VeilederTilordningService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import static org.hamcrest.CoreMatchers.is;
+import java.util.Optional;
+
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -24,21 +25,20 @@ public class VeilederControllerTest {
     private VeilederController veilederController;
 
     @Mock
-    private VeilederTilordningerRepository veilederTilordningerRepository;
+    private VeilederTilordningService veilederTilordningService;
 
     @Mock
     private AuthService authService;
 
     @Test
     public void getVeilederSkalReturnereVeileder() {
-        final String forventetIdent = "4321";
-        when(authService.getAktorIdOrThrow(any(Fnr.class))).thenReturn(AktorId.of("test-id"));
-        when(veilederTilordningerRepository.hentTilordningForAktoer(any()))
-                .thenReturn(forventetIdent);
+        final NavIdent forventetIdent = NavIdent.of("Z4321");
+        when(veilederTilordningService.hentTilordnetVeilederIdent(any()))
+                .thenReturn(Optional.of(forventetIdent));
 
         final Veileder veileder = veilederController.getVeileder(Fnr.of("fnr"));
         assertNotNull(veileder);
         assertNotNull(veileder.getVeilederident());
-        assertThat(veileder.getVeilederident(), is(forventetIdent));
+        assertEquals(forventetIdent.get(), veileder.getVeilederident());
     }
 }

@@ -3,6 +3,7 @@ package no.nav.veilarboppfolging.service;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.common.types.identer.NavIdent;
 import no.nav.veilarboppfolging.controller.request.VeilederTilordning;
 import no.nav.veilarboppfolging.controller.response.TilordneVeilederResponse;
 import no.nav.veilarboppfolging.feed.cjm.producer.FeedProducer;
@@ -44,7 +45,8 @@ public class VeilederTilordningService {
             OppfolgingService oppfolgingService,
             VeilederHistorikkRepository veilederHistorikkRepository,
             TransactionTemplate transactor,
-            KafkaProducerService kafkaProducerService) {
+            KafkaProducerService kafkaProducerService
+    ) {
         this.metricsService = metricsService;
         this.veilederTilordningerRepository = veilederTilordningerRepository;
         this.authService = authService;
@@ -53,6 +55,13 @@ public class VeilederTilordningService {
         this.veilederHistorikkRepository = veilederHistorikkRepository;
         this.transactor = transactor;
         this.kafkaProducerService = kafkaProducerService;
+    }
+
+    public Optional<NavIdent> hentTilordnetVeilederIdent(Fnr fnr) {
+        AktorId aktorId = authService.getAktorIdOrThrow(fnr);
+
+        return veilederTilordningerRepository.hentTilordnetVeileder(aktorId)
+                .map((v) -> NavIdent.of(v.getVeilederId()));
     }
 
     public TilordneVeilederResponse tilordneVeiledere(List<VeilederTilordning> tilordninger) {
@@ -102,6 +111,7 @@ public class VeilederTilordningService {
         authService.skalVereInternBruker();
         authService.sjekkLesetilgangMedAktorId(aktorId);
 
+        // TODO: Skriveoperasjonene burde gjøres i en transaksjon
         veilederTilordningerRepository.hentTilordnetVeileder(aktorId)
                 .filter(VeilederTilordningEntity::isNyForVeileder)
                 .filter(this::erVeilederFor)

@@ -4,8 +4,7 @@ import lombok.RequiredArgsConstructor;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.controller.request.VeilederTilordning;
 import no.nav.veilarboppfolging.controller.response.TilordneVeilederResponse;
-import no.nav.veilarboppfolging.controller.response.Veileder;
-import no.nav.veilarboppfolging.repository.VeilederTilordningerRepository;
+import no.nav.veilarboppfolging.controller.v2.response.HentVeilederV2Response;
 import no.nav.veilarboppfolging.service.AuthService;
 import no.nav.veilarboppfolging.service.VeilederTilordningService;
 import org.springframework.http.ResponseEntity;
@@ -20,18 +19,20 @@ public class VeilederV2Controller {
 
     private final VeilederTilordningService veilederTilordningService;
 
-    // TODO: Skal hente gjennom service
-    private final VeilederTilordningerRepository veilederTilordningerRepository;
-
     private final AuthService authService;
 
     @GetMapping
-    public Veileder hentVeileder(@RequestParam("fnr") Fnr fnr) {
+    public ResponseEntity<HentVeilederV2Response> hentVeileder(@RequestParam("fnr") Fnr fnr) {
         authService.skalVereInternBruker();
         authService.sjekkLesetilgangMedFnr(fnr);
 
-        String veilederIdent = veilederTilordningerRepository.hentTilordningForAktoer(authService.getAktorIdOrThrow(fnr));
-        return new Veileder(veilederIdent);
+        var maybeVeilederIdent = veilederTilordningService.hentTilordnetVeilederIdent(fnr);
+
+        if (maybeVeilederIdent.isEmpty()) {
+            return ResponseEntity.status(204).build();
+        }
+
+        return ResponseEntity.ok(new HentVeilederV2Response(maybeVeilederIdent.get()));
     }
 
     @PostMapping("/tilordne")

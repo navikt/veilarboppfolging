@@ -2,9 +2,10 @@ package no.nav.veilarboppfolging.controller;
 
 import lombok.RequiredArgsConstructor;
 import no.nav.common.types.identer.Fnr;
+import no.nav.common.types.identer.NavIdent;
 import no.nav.veilarboppfolging.controller.response.Veileder;
-import no.nav.veilarboppfolging.repository.VeilederTilordningerRepository;
 import no.nav.veilarboppfolging.service.AuthService;
+import no.nav.veilarboppfolging.service.VeilederTilordningService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/person")
 public class VeilederController {
 
-    private final VeilederTilordningerRepository veilederTilordningerRepository;
+    private final VeilederTilordningService veilederTilordningService;
 
     private final AuthService authService;
 
@@ -24,7 +25,10 @@ public class VeilederController {
         authService.skalVereInternBruker();
         authService.sjekkLesetilgangMedFnr(fnr);
 
-        String veilederIdent = veilederTilordningerRepository.hentTilordningForAktoer(authService.getAktorIdOrThrow(fnr));
+        var veilederIdent = veilederTilordningService.hentTilordnetVeilederIdent(fnr)
+                .map(NavIdent::get)
+                .orElse(null);
+
         return new Veileder(veilederIdent);
     }
 
