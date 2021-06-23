@@ -29,7 +29,7 @@ public class MaalV2Controller {
         return tilDto(malService.hentMal(fodselsnummer));
     }
 
-    @GetMapping("/historikk")
+    @GetMapping("/historikk") // TODO: /alle?
     public List<Mal> hentMalListe(@RequestParam(required = false) Fnr fnr) {
         Fnr fodselsnummer = authService.hentIdentForEksternEllerIntern(fnr);
         List<MaalEntity> malDataList = malService.hentMalList(fodselsnummer);
