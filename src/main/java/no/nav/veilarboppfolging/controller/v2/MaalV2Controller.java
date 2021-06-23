@@ -2,10 +2,10 @@ package no.nav.veilarboppfolging.controller.v2;
 
 import lombok.RequiredArgsConstructor;
 import no.nav.common.types.identer.Fnr;
-import no.nav.veilarboppfolging.controller.response.Mal;
+import no.nav.veilarboppfolging.controller.response.Maal;
 import no.nav.veilarboppfolging.repository.entity.MaalEntity;
 import no.nav.veilarboppfolging.service.AuthService;
-import no.nav.veilarboppfolging.service.MalService;
+import no.nav.veilarboppfolging.service.MaalService;
 import no.nav.veilarboppfolging.utils.DtoMappers;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,20 +19,20 @@ import static no.nav.veilarboppfolging.utils.DtoMappers.tilDto;
 @RequiredArgsConstructor
 public class MaalV2Controller {
 
-    private final MalService malService;
+    private final MaalService maalService;
 
     private final AuthService authService;
 
     @GetMapping
-    public Mal hentMal(@RequestParam(required = false) Fnr fnr) {
+    public Maal hentMal(@RequestParam(required = false) Fnr fnr) {
         Fnr fodselsnummer = authService.hentIdentForEksternEllerIntern(fnr);
-        return tilDto(malService.hentMal(fodselsnummer));
+        return tilDto(maalService.hentMal(fodselsnummer));
     }
 
     @GetMapping("/historikk") // TODO: /alle?
-    public List<Mal> hentMalListe(@RequestParam(required = false) Fnr fnr) {
+    public List<Maal> hentMalListe(@RequestParam(required = false) Fnr fnr) {
         Fnr fodselsnummer = authService.hentIdentForEksternEllerIntern(fnr);
-        List<MaalEntity> malDataList = malService.hentMalList(fodselsnummer);
+        List<MaalEntity> malDataList = maalService.hentMalList(fodselsnummer);
 
         return malDataList.stream()
                 .map(DtoMappers::tilDto)
@@ -40,11 +40,11 @@ public class MaalV2Controller {
     }
 
     @PostMapping
-    public Mal oppdaterMal(@RequestBody Mal mal, @RequestParam(required = false) Fnr fnr) {
+    public Maal oppdaterMal(@RequestBody Maal maal, @RequestParam(required = false) Fnr fnr) {
         Fnr fodselsnummer = authService.hentIdentForEksternEllerIntern(fnr);
         String endretAvVeileder = authService.erEksternBruker() ? null : authService.getInnloggetBrukerIdent();
 
-        return tilDto(malService.oppdaterMal(mal.getMal(), fodselsnummer, endretAvVeileder));
+        return tilDto(maalService.oppdaterMal(maal.getMal(), fodselsnummer, endretAvVeileder));
     }
 
 }

@@ -2,7 +2,7 @@ package no.nav.veilarboppfolging.controller.v2;
 
 import lombok.RequiredArgsConstructor;
 import no.nav.common.types.identer.Fnr;
-import no.nav.veilarboppfolging.controller.response.InnstillingsHistorikk;
+import no.nav.veilarboppfolging.controller.response.HistorikkHendelse;
 import no.nav.veilarboppfolging.service.AuthService;
 import no.nav.veilarboppfolging.service.HistorikkService;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,7 +22,7 @@ public class HistorikkV2Controller {
     private final AuthService authService;
 
     @GetMapping
-    public List<InnstillingsHistorikk> hentInnstillingsHistorikk(@RequestParam("fnr") Fnr fnr) {
+    public List<HistorikkHendelse> hentInnstillingsHistorikk(@RequestParam("fnr") Fnr fnr) {
         authService.skalVereInternBruker();
         return historikkService.hentInstillingsHistorikk(fnr);
     }

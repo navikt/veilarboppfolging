@@ -118,7 +118,7 @@ public class AktiverBrukerIntegrationTest {
     }
 
     private AktiverArbeidssokerData lagBruker(Fnr fnr) {
-        return new AktiverArbeidssokerData(new no.nav.veilarboppfolging.controller.request.Fnr(fnr.get()), Innsatsgruppe.STANDARD_INNSATS);
+        return new AktiverArbeidssokerData(new AktiverArbeidssokerData.Fnr(fnr.get()), Innsatsgruppe.STANDARD_INNSATS);
     }
 
 }

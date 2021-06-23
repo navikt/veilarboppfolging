@@ -130,7 +130,7 @@ public class AktiverBrukerServiceTest {
     }
 
     private AktiverArbeidssokerData hentBruker() {
-        return new AktiverArbeidssokerData(new no.nav.veilarboppfolging.controller.request.Fnr("fnr"), Innsatsgruppe.STANDARD_INNSATS);
+        return new AktiverArbeidssokerData(new AktiverArbeidssokerData.Fnr("fnr"), Innsatsgruppe.STANDARD_INNSATS);
     }
 
 }

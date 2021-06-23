@@ -47,7 +47,7 @@ public class AktiverBrukerService {
     }
 
     public void aktiverBruker(AktiverArbeidssokerData bruker) {
-        no.nav.veilarboppfolging.controller.request.Fnr requestFnr = ofNullable(bruker.getFnr())
+        AktiverArbeidssokerData.Fnr requestFnr = ofNullable(bruker.getFnr())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "FNR mangler"));
 
         Fnr fnr = Fnr.of(requestFnr.getFnr());

@@ -15,8 +15,8 @@ import static java.util.stream.Collectors.toList;
 
 public class DtoMappers {
 
-    public static Mal tilDto(MaalEntity malData) {
-        return new Mal()
+    public static Maal tilDto(MaalEntity malData) {
+        return new Maal()
                 .setMal(malData.getMal())
                 .setEndretAv(malData.getEndretAvFormattert())
                 .setDato(malData.getDato());

@@ -96,7 +96,7 @@ class OppfolgingControllerIntegrationTest {
 
     private List<OppfolgingPeriodeDTO> startOppfolging() {
         var aktiverArbeidssokerData = new AktiverArbeidssokerData(
-                new no.nav.veilarboppfolging.controller.request.Fnr(FNR.get()),
+                new AktiverArbeidssokerData.Fnr(FNR.get()),
                 Innsatsgruppe.STANDARD_INNSATS
         );
         systemOppfolgingController.aktiverBruker(aktiverArbeidssokerData);

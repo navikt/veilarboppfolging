@@ -8,7 +8,7 @@ import java.time.ZonedDateTime;
 
 @Value
 @Builder
-public class InnstillingsHistorikk {
+public class HistorikkHendelse {
     Type type;
     ZonedDateTime dato;
     String begrunnelse;

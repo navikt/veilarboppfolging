@@ -70,7 +70,7 @@ public class MalServiceTest {
     private TransactionTemplate transactor;
 
     @InjectMocks
-    private MalService malService;
+    private MaalService maalService;
 
     @Before
     public void setup() {
@@ -90,7 +90,7 @@ public class MalServiceTest {
         when(kvpRepositoryMock.hentKvpPeriode(anyLong())).thenReturn(Optional.of(aktivKvp()));
         when(authService.harTilgangTilEnhetMedSperre(ENHET)).thenReturn(false);
 
-        malService.oppdaterMal("mal", FNR, VEILEDER);
+        maalService.oppdaterMal("mal", FNR, VEILEDER);
     }
 
     @Test
@@ -98,7 +98,7 @@ public class MalServiceTest {
         when(kvpRepositoryMock.gjeldendeKvp(any())).thenReturn(KVP_ID);
         when(kvpRepositoryMock.hentKvpPeriode(anyLong())).thenReturn(Optional.of(aktivKvp()));
         when(authService.harTilgangTilEnhetMedSperre(ENHET)).thenReturn(true);
-        MaalEntity resultat = malService.oppdaterMal("mal", FNR, VEILEDER);
+        MaalEntity resultat = maalService.oppdaterMal("mal", FNR, VEILEDER);
 
         assertEquals("mal", resultat.getMal());
     }
@@ -107,13 +107,13 @@ public class MalServiceTest {
     public void gjeldendeMal_ikke_satt() {
         when(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID)).thenReturn(Optional.of(new OppfolgingEntity().setGjeldendeMaalId(0)));
 
-        MaalEntity malData = malService.hentMal(FNR);
+        MaalEntity malData = maalService.hentMal(FNR);
         assertThat(malData.getId()).isEqualTo(0L);
     }
 
     @Test
     public void hent_mal_ingen_kvp() {
-        MaalEntity malData = malService.hentMal(FNR);
+        MaalEntity malData = maalService.hentMal(FNR);
         assertThat(malData.getId()).isEqualTo(MAL_ID);
     }
 
@@ -121,7 +121,7 @@ public class MalServiceTest {
     public void hent_mal_opprettet_for_kvp() {
         when(kvpRepositoryMock.hentKvpHistorikk(AKTOR_ID)).thenReturn(kvpHistorikk());
 
-        MaalEntity malData = malService.hentMal(FNR);
+        MaalEntity malData = maalService.hentMal(FNR);
         assertThat(malData.getId()).isEqualTo(MAL_ID);
     }
 
@@ -131,7 +131,7 @@ public class MalServiceTest {
         when(maalRepository.hentMaal(MAL_ID)).thenReturn(Optional.of(mal(IN_KVP)));
         when(authService.harTilgangTilEnhetMedSperre(ENHET)).thenReturn(false);
 
-        MaalEntity malData = malService.hentMal(FNR);
+        MaalEntity malData = maalService.hentMal(FNR);
         assertThat(malData.getId()).isEqualTo(0L);
     }
 
@@ -141,7 +141,7 @@ public class MalServiceTest {
         when(maalRepository.hentMaal(MAL_ID)).thenReturn(Optional.of(mal(IN_KVP)));
         when(authService.harTilgangTilEnhetMedSperre(ENHET)).thenReturn(true);
 
-        MaalEntity malData = malService.hentMal(FNR);
+        MaalEntity malData = maalService.hentMal(FNR);
         assertThat(malData.getId()).isEqualTo(MAL_ID);
     }
 
@@ -151,7 +151,7 @@ public class MalServiceTest {
         when(authService.harTilgangTilEnhetMedSperre(ENHET)).thenReturn(true);
         when(maalRepository.aktorMal(AKTOR_ID)).thenReturn(malList());
 
-        List<MaalEntity> malData = malService.hentMalList(FNR);
+        List<MaalEntity> malData = maalService.hentMalList(FNR);
         List<Long> ids = malData.stream().map(MaalEntity::getId).collect(toList());
         assertThat(ids).containsExactly(1L, 2L, 3L);
     }
@@ -162,7 +162,7 @@ public class MalServiceTest {
         when(authService.harTilgangTilEnhetMedSperre(ENHET)).thenReturn(false);
         when(maalRepository.aktorMal(AKTOR_ID)).thenReturn(malList());
 
-        List<MaalEntity> malData = malService.hentMalList(FNR);
+        List<MaalEntity> malData = maalService.hentMalList(FNR);
         List<Long> ids = malData.stream().map(MaalEntity::getId).collect(toList());
         assertThat(ids).containsExactly(1L, 3L);
     }

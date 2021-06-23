@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Import;
         IservService.class,
         KvpService.class,
         EskaleringService.class,
-        MalService.class,
+        MaalService.class,
         ManuellStatusService.class,
         MetricsService.class,
         OppfolgingsenhetEndringService.class,
