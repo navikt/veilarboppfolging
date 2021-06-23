@@ -2,7 +2,10 @@ package no.nav.veilarboppfolging.controller.v2;
 
 import lombok.RequiredArgsConstructor;
 import no.nav.common.types.identer.Fnr;
+import no.nav.veilarboppfolging.client.dkif.DkifKontaktinfo;
 import no.nav.veilarboppfolging.controller.request.VeilederBegrunnelseDTO;
+import no.nav.veilarboppfolging.controller.v2.response.ManuellStatusV2Response;
+import no.nav.veilarboppfolging.controller.v2.response.ManuellV2Response;
 import no.nav.veilarboppfolging.repository.enums.KodeverkBruker;
 import no.nav.veilarboppfolging.service.AuthService;
 import no.nav.veilarboppfolging.service.ManuellStatusService;
@@ -18,6 +21,33 @@ public class ManuellStatusV2Controller {
     private final AuthService authService;
 
     private final ManuellStatusService manuellStatusService;
+
+    // TODO: Kan hende at det holder med /status
+    @GetMapping
+    public ManuellV2Response hentErUnderManuellOppfolging(@RequestParam("fnr") Fnr fnr) {
+        authService.skalVereInternBruker();
+        authService.sjekkLesetilgangMedFnr(fnr);
+
+        boolean erManuell = manuellStatusService.erManuell(fnr);
+
+        return new ManuellV2Response(erManuell);
+    }
+
+    @GetMapping("/status")
+    public ManuellStatusV2Response hentManuellStatus(@RequestParam("fnr") Fnr fnr) {
+        authService.skalVereInternBruker();
+        authService.sjekkLesetilgangMedFnr(fnr);
+
+        DkifKontaktinfo kontaktinfo = manuellStatusService.hentDkifKontaktinfo(fnr);
+        boolean erManuell = manuellStatusService.erManuell(fnr);
+
+        return new ManuellStatusV2Response(
+                erManuell,
+                new ManuellStatusV2Response.KrrStatus(
+                        kontaktinfo.isKanVarsles(), kontaktinfo.isReservert()
+                )
+        );
+    }
 
     /**
      * Brukes av veilarbpersonflatefs for å manuelt trigge synkronisering av manuell status med reservasjon fra DKIF(KRR).
