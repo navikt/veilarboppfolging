@@ -3,6 +3,7 @@ package no.nav.veilarboppfolging.utils;
 import no.nav.pto_schema.kafka.json.topic.SisteOppfolgingsperiodeV1;
 import no.nav.pto_schema.kafka.json.topic.SisteTilordnetVeilederV1;
 import no.nav.veilarboppfolging.controller.response.*;
+import no.nav.veilarboppfolging.controller.v2.response.EskaleringsvarselV2Response;
 import no.nav.veilarboppfolging.domain.AvslutningStatusData;
 import no.nav.veilarboppfolging.domain.OppfolgingStatusData;
 import no.nav.veilarboppfolging.repository.entity.*;
@@ -14,6 +15,18 @@ import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 
 public class DtoMappers {
+
+    public static EskaleringsvarselV2Response mapToResponse(EskaleringsvarselEntity eskaleringsvarsel) {
+        return new EskaleringsvarselV2Response()
+                .setVarselId(eskaleringsvarsel.getVarselId())
+                .setOpprettetAv(eskaleringsvarsel.getOpprettetAv())
+                .setOpprettetDato(eskaleringsvarsel.getOpprettetDato())
+                .setOpprettetBegrunnelse(eskaleringsvarsel.getOpprettetBegrunnelse())
+                .setAvsluttetAv(eskaleringsvarsel.getAvsluttetAv())
+                .setAvsluttetDato(eskaleringsvarsel.getAvsluttetDato())
+                .setAvsluttetBegrunnelse(eskaleringsvarsel.getAvsluttetBegrunnelse())
+                .setTilhorendeDialogId(eskaleringsvarsel.getTilhorendeDialogId());
+    }
 
     public static Maal tilDto(MaalEntity malData) {
         return new Maal()

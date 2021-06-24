@@ -46,13 +46,17 @@ public class EskaleringsvarselRepository {
         return queryForNullableObject(() -> db.queryForObject(sql, EskaleringsvarselRepository::map, id));
     }
 
+    public Optional<EskaleringsvarselEntity> hentGjeldendeEskaleringsvarsel(AktorId aktorId) {
+        String sql = "SELECT * FROM ESKALERINGSVARSEL WHERE aktor_id = ? AND avsluttet_dato IS NULL ORDER BY opprettet_dato DESC FETCH NEXT 1 ROWS ONLY";
+        return queryForNullableObject(() -> db.queryForObject(sql, EskaleringsvarselRepository::map, aktorId.get()));
+    }
+
     public void finish(AktorId aktorId, long varselId, String avsluttetAv, String avsluttetBegrunnelse, ZonedDateTime sluttDato) {
         transactor.executeWithoutResult((ignored) -> {
             avsluttEskaleringsVarsel(avsluttetBegrunnelse, avsluttetAv, varselId, sluttDato);
             removeActive(aktorId, sluttDato);
         });
     }
-
 
     public List<EskaleringsvarselEntity> history(AktorId aktorId) {
         return db.query("SELECT * FROM ESKALERINGSVARSEL WHERE aktor_id = ?",
