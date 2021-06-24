@@ -77,9 +77,9 @@ public class IservService {
 
     public void behandleEndretBruker(EndringPaaOppfoelgingsBrukerV1 oppfolgingEndret) {
         transactor.executeWithoutResult((ignored) -> {
-            log.info("Behandler bruker: {}", oppfolgingEndret);
-
             AktorId aktorId = AktorId.of(oppfolgingEndret.getAktoerid());
+
+            log.info("Behandler bruker: {}", aktorId);
 
             if (erIserv(oppfolgingEndret.getFormidlingsgruppekode())) {
                 oppdaterUtmeldingTabell(oppfolgingEndret);
