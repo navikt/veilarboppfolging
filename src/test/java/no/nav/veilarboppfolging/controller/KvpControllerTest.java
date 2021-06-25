@@ -4,8 +4,8 @@ import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.json.JsonUtils;
 import no.nav.common.types.identer.AktorId;
 import no.nav.veilarboppfolging.controller.response.KvpDTO;
-import no.nav.veilarboppfolging.domain.Kvp;
 import no.nav.veilarboppfolging.repository.KvpRepository;
+import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity;
 import no.nav.veilarboppfolging.service.AuthService;
 import no.nav.veilarboppfolging.utils.DtoMappers;
 import org.junit.jupiter.api.Test;
@@ -86,7 +86,7 @@ public class KvpControllerTest {
         when(authService.erSystemBruker()).thenReturn(true);
 
         when(kvpRepository.gjeldendeKvp(AKTOR_ID)).thenReturn(KVP_ID);
-        when(kvpRepository.fetch(KVP_ID)).thenReturn(kvp());
+        when(kvpRepository.hentKvpPeriode(KVP_ID)).thenReturn(Optional.of(kvp()));
 
         KvpDTO expectedKvp = DtoMappers.kvpToDTO(kvp());
 
@@ -101,15 +101,15 @@ public class KvpControllerTest {
         when(authService.erSystemBruker()).thenReturn(true);
 
         when(kvpRepository.gjeldendeKvp(AKTOR_ID)).thenReturn(KVP_ID);
-        when(kvpRepository.fetch(KVP_ID)).thenReturn(null);
+        when(kvpRepository.hentKvpPeriode(KVP_ID)).thenReturn(Optional.empty());
 
         mockMvc.perform(get("/api/kvp/1234/currentStatus"))
                 .andExpect(content().string(""))
                 .andExpect(status().is(500));
     }
 
-    private Kvp kvp() {
-        return Kvp.builder()
+    private KvpPeriodeEntity kvp() {
+        return KvpPeriodeEntity.builder()
                 .kvpId(KVP_ID)
                 .aktorId(AKTOR_ID.get())
                 .opprettetDato(ZonedDateTime.of(2020, 5, 4, 3, 2, 1, 0, ZoneId.systemDefault()))

@@ -1,8 +1,8 @@
 package no.nav.veilarboppfolging.repository;
 
 import no.nav.common.types.identer.AktorId;
-import no.nav.veilarboppfolging.domain.AvsluttetOppfolgingFeedData;
-import no.nav.veilarboppfolging.domain.Oppfolgingsperiode;
+import no.nav.veilarboppfolging.repository.entity.AvsluttetOppfolgingFeedEntity;
+import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -12,11 +12,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository.AKTOR_ID;
 import static no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository.UNDER_OPPFOLGING;
 import static no.nav.veilarboppfolging.utils.DbUtils.hentZonedDateTime;
+import static no.nav.veilarboppfolging.utils.DbUtils.queryForNullableObject;
 
 @Repository
 public class OppfolgingsPeriodeRepository {
@@ -49,7 +51,7 @@ public class OppfolgingsPeriodeRepository {
         });
     }
 
-    public List<AvsluttetOppfolgingFeedData> fetchAvsluttetEtterDato(Timestamp timestamp, int pageSize) {
+    public List<AvsluttetOppfolgingFeedEntity> fetchAvsluttetEtterDato(Timestamp timestamp, int pageSize) {
         return db
                 .query("SELECT * FROM (SELECT aktor_id, sluttdato, oppdatert " +
                                 "FROM OPPFOLGINGSPERIODE " +
@@ -60,15 +62,16 @@ public class OppfolgingsPeriodeRepository {
                         pageSize);
     }
 
-    public Oppfolgingsperiode hentOppfolgingsperiode(String uuid) {
-        return db.queryForObject(hentOppfolingsperioderSQL +
-                        "WHERE UUID = ?",
-                OppfolgingsPeriodeRepository::mapTilOppfolgingsperiode,
-                uuid
+    public Optional<OppfolgingsperiodeEntity> hentOppfolgingsperiode(String uuid) {
+        return queryForNullableObject(
+                () -> db.queryForObject(
+                hentOppfolingsperioderSQL + "WHERE UUID = ?",
+                        OppfolgingsPeriodeRepository::mapTilOppfolgingsperiode, uuid
+                )
         );
     }
 
-    public List<Oppfolgingsperiode> hentOppfolgingsperioder(AktorId aktorId) {
+    public List<OppfolgingsperiodeEntity> hentOppfolgingsperioder(AktorId aktorId) {
         return db.query(hentOppfolingsperioderSQL +
                         "WHERE aktor_id = ?",
                 OppfolgingsPeriodeRepository::mapTilOppfolgingsperiode,
@@ -76,7 +79,7 @@ public class OppfolgingsPeriodeRepository {
         );
     }
 
-    public List<Oppfolgingsperiode> hentAvsluttetOppfolgingsperioder(AktorId aktorId) {
+    public List<OppfolgingsperiodeEntity> hentAvsluttetOppfolgingsperioder(AktorId aktorId) {
         return db.query(hentOppfolingsperioderSQL +
                         "WHERE aktor_id = ? AND sluttdato is not null",
                 OppfolgingsPeriodeRepository::mapTilOppfolgingsperiode,
@@ -130,8 +133,8 @@ public class OppfolgingsPeriodeRepository {
         );
     }
 
-    private static Oppfolgingsperiode mapTilOppfolgingsperiode(ResultSet result, int row) throws SQLException {
-        return Oppfolgingsperiode.builder()
+    private static OppfolgingsperiodeEntity mapTilOppfolgingsperiode(ResultSet result, int row) throws SQLException {
+        return OppfolgingsperiodeEntity.builder()
                 .uuid(UUID.fromString(result.getString("uuid")))
                 .aktorId(result.getString("aktor_id"))
                 .veileder(result.getString("avslutt_veileder"))
@@ -141,8 +144,8 @@ public class OppfolgingsPeriodeRepository {
                 .build();
     }
 
-    private AvsluttetOppfolgingFeedData mapRadTilAvsluttetOppfolging(ResultSet rs, int row) throws SQLException {
-        return AvsluttetOppfolgingFeedData.builder()
+    private AvsluttetOppfolgingFeedEntity mapRadTilAvsluttetOppfolging(ResultSet rs, int row) throws SQLException {
+        return AvsluttetOppfolgingFeedEntity.builder()
                 .aktoerid(rs.getString("aktor_id"))
                 .sluttdato(hentZonedDateTime(rs, "sluttdato"))
                 .oppdatert(hentZonedDateTime(rs, "oppdatert"))

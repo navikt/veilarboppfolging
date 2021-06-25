@@ -7,20 +7,24 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV1;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
-import no.nav.veilarboppfolging.domain.KodeverkBruker;
-import no.nav.veilarboppfolging.domain.Kvp;
-import no.nav.veilarboppfolging.domain.OppfolgingTable;
 import no.nav.veilarboppfolging.repository.EskaleringsvarselRepository;
 import no.nav.veilarboppfolging.repository.KvpRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
+import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity;
+import no.nav.veilarboppfolging.repository.entity.OppfolgingEntity;
+import no.nav.veilarboppfolging.repository.enums.KodeverkBruker;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.time.ZonedDateTime;
+import java.util.Optional;
 
 import static java.lang.String.format;
 import static no.nav.veilarboppfolging.config.ApplicationConfig.SYSTEM_USER_NAME;
-import static no.nav.veilarboppfolging.domain.KodeverkBruker.NAV;
-import static no.nav.veilarboppfolging.domain.KodeverkBruker.SYSTEM;
+import static no.nav.veilarboppfolging.repository.enums.KodeverkBruker.NAV;
+import static no.nav.veilarboppfolging.repository.enums.KodeverkBruker.SYSTEM;
 
 @Slf4j
 @Service
@@ -42,6 +46,8 @@ public class KvpService {
 
     private final AuthService authService;
 
+    private final TransactionTemplate transactor;
+
     public KvpService(
             KafkaProducerService kafkaProducerService,
             MetricsService metricsService,
@@ -49,7 +55,8 @@ public class KvpService {
             VeilarbarenaClient veilarbarenaClient,
             OppfolgingsStatusRepository oppfolgingsStatusRepository,
             EskaleringsvarselRepository eskaleringsvarselRepository,
-            AuthService authService
+            AuthService authService,
+            TransactionTemplate transactor
     ) {
         this.kafkaProducerService = kafkaProducerService;
         this.metricsService = metricsService;
@@ -58,6 +65,7 @@ public class KvpService {
         this.oppfolgingsStatusRepository = oppfolgingsStatusRepository;
         this.eskaleringsvarselRepository = eskaleringsvarselRepository;
         this.authService = authService;
+        this.transactor = transactor;
     }
 
     @SneakyThrows
@@ -66,33 +74,36 @@ public class KvpService {
 
         authService.sjekkLesetilgangMedAktorId(aktorId);
 
-        OppfolgingTable oppfolgingTable = oppfolgingsStatusRepository.fetch(aktorId);
+        Optional<OppfolgingEntity> maybeOppfolging = oppfolgingsStatusRepository.hentOppfolging(aktorId);
 
-        if (oppfolgingTable == null || !oppfolgingTable.isUnderOppfolging()) {
+        if (maybeOppfolging.isEmpty() || !maybeOppfolging.get().isUnderOppfolging()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
 
         String enhet = veilarbarenaClient.hentOppfolgingsbruker(fnr)
                 .map(VeilarbArenaOppfolging::getNav_kontor).orElse(null);
+
         if (!authService.harTilgangTilEnhet(enhet)) {
             log.warn(format("Ingen tilgang til enhet '%s'", enhet));
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         }
 
-        if (oppfolgingTable.getGjeldendeKvpId() != 0) {
+        if (maybeOppfolging.get().getGjeldendeKvpId() != 0) {
             log.warn(format("Aktøren er allerede under en KVP-periode. AktorId: %s", aktorId));
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
 
         String veilederId = authService.getInnloggetVeilederIdent();
 
-        // TODO: Send med dato til repository og kafkaProducerService
+        transactor.executeWithoutResult((ignored) -> {
+            ZonedDateTime startDato = ZonedDateTime.now();
 
-        kvpRepository.startKvp(aktorId, enhet, veilederId, begrunnelse);
+            kvpRepository.startKvp(aktorId, enhet, veilederId, begrunnelse, startDato);
+            kafkaProducerService.publiserKvpStartet(aktorId, enhet, veilederId, begrunnelse, startDato);
 
-        log.info("KVP startet for bruker med aktorId {} på enhet {} av veileder {}", aktorId, enhet, veilederId);
+            log.info("KVP startet for bruker med aktorId {} på enhet {} av veileder {}", aktorId, enhet, veilederId);
+        });
 
-        kafkaProducerService.publiserKvpStartet(aktorId, enhet, veilederId, begrunnelse);
         metricsService.kvpStartet();
     }
 
@@ -122,38 +133,46 @@ public class KvpService {
     }
 
     private void stopKvpUtenEnhetSjekk(String avsluttetAv, AktorId aktorId, String begrunnelse, KodeverkBruker kodeverkBruker) {
-        OppfolgingTable oppfolgingTable = oppfolgingsStatusRepository.fetch(aktorId);
-        long gjeldendeKvpId = oppfolgingTable.getGjeldendeKvpId();
+        Optional<OppfolgingEntity> maybeOppfolging = oppfolgingsStatusRepository.hentOppfolging(aktorId);
+
+        long gjeldendeKvpId = maybeOppfolging.map(OppfolgingEntity::getGjeldendeKvpId).orElse(0L);
+        long gjeldendeEskaleringsvarselId = maybeOppfolging.map(OppfolgingEntity::getGjeldendeEskaleringsvarselId).orElse(0L);
 
         if (gjeldendeKvpId == 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
 
-        if (oppfolgingTable.getGjeldendeEskaleringsvarselId() != 0) {
-            eskaleringsvarselRepository.finish(
-                    aktorId, 
-                    oppfolgingTable.getGjeldendeEskaleringsvarselId(),
-                    avsluttetAv,
-                    ESKALERING_AVSLUTTET_FORDI_KVP_BLE_AVSLUTTET);
-        }
+        transactor.executeWithoutResult((ignored) -> {
+            ZonedDateTime sluttDato = ZonedDateTime.now();
 
-        kvpRepository.stopKvp(gjeldendeKvpId, aktorId, avsluttetAv, begrunnelse, kodeverkBruker);
+            if (gjeldendeEskaleringsvarselId != 0) {
+                eskaleringsvarselRepository.finish(
+                        aktorId,
+                        gjeldendeEskaleringsvarselId,
+                        avsluttetAv,
+                        ESKALERING_AVSLUTTET_FORDI_KVP_BLE_AVSLUTTET,
+                        sluttDato
+                );
+            }
 
-        log.info("KVP avsluttet for bruker med aktorId {} av {}", aktorId, avsluttetAv);
+            kvpRepository.stopKvp(gjeldendeKvpId, aktorId, avsluttetAv, begrunnelse, kodeverkBruker, sluttDato);
+            kafkaProducerService.publiserKvpAvsluttet(aktorId, avsluttetAv, begrunnelse, sluttDato);
 
-        kafkaProducerService.publiserKvpAvsluttet(aktorId, avsluttetAv, begrunnelse);
+            log.info("KVP avsluttet for bruker med aktorId {} av {}", aktorId, avsluttetAv);
+        });
+
         metricsService.kvpStoppet();
     }
 
     public void avsluttKvpVedEnhetBytte(EndringPaaOppfoelgingsBrukerV1 endretBruker) {
         AktorId aktorId = AktorId.of(endretBruker.getAktoerid());
-        Kvp gjeldendeKvp = gjeldendeKvp(aktorId);
+        Optional<KvpPeriodeEntity> maybeGjeldendeKvpPeriode = gjeldendeKvp(aktorId);
 
-        if (gjeldendeKvp == null) {
+        if (maybeGjeldendeKvpPeriode.isEmpty()) {
             return;
         }
 
-        boolean harByttetKontor = !endretBruker.getNav_kontor().equals(gjeldendeKvp.getEnhet());
+        boolean harByttetKontor = !endretBruker.getNav_kontor().equals(maybeGjeldendeKvpPeriode.get().getEnhet());
 
         if (harByttetKontor) {
             stopKvpUtenEnhetSjekk(SYSTEM_USER_NAME, aktorId, "KVP avsluttet automatisk pga. endret Nav-enhet", SYSTEM);
@@ -161,8 +180,8 @@ public class KvpService {
         }
     }
 
-    Kvp gjeldendeKvp(AktorId aktorId) {
-        return kvpRepository.fetch(kvpRepository.gjeldendeKvp(aktorId));
+    Optional<KvpPeriodeEntity> gjeldendeKvp(AktorId aktorId) {
+        return kvpRepository.hentKvpPeriode(kvpRepository.gjeldendeKvp(aktorId));
     }
 
 }

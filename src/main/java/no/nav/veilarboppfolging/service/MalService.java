@@ -2,23 +2,25 @@ package no.nav.veilarboppfolging.service;
 
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.veilarboppfolging.domain.Kvp;
-import no.nav.veilarboppfolging.domain.MalData;
-import no.nav.veilarboppfolging.domain.OppfolgingTable;
 import no.nav.veilarboppfolging.repository.KvpRepository;
 import no.nav.veilarboppfolging.repository.MaalRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
+import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity;
+import no.nav.veilarboppfolging.repository.entity.MaalEntity;
+import no.nav.veilarboppfolging.repository.entity.OppfolgingEntity;
 import no.nav.veilarboppfolging.utils.KvpUtils;
 import no.nav.veilarboppfolging.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Optional;
 
-import static java.util.Optional.ofNullable;
+import static java.util.Optional.empty;
 import static java.util.stream.Collectors.toList;
 
 @Service
@@ -36,6 +38,8 @@ public class MalService {
 
     private final MaalRepository maalRepository;
 
+    private final TransactionTemplate transactor;
+
     @Autowired
     public MalService(
             KafkaProducerService kafkaProducerService,
@@ -43,7 +47,8 @@ public class MalService {
             OppfolgingsStatusRepository oppfolgingsStatusRepository,
             KvpRepository kvpRepository,
             AuthService authService,
-            MaalRepository maalRepository
+            MaalRepository maalRepository,
+            TransactionTemplate transactor
     ) {
         this.kafkaProducerService = kafkaProducerService;
         this.metricsService = metricsService;
@@ -51,63 +56,72 @@ public class MalService {
         this.kvpRepository = kvpRepository;
         this.authService = authService;
         this.maalRepository = maalRepository;
+        this.transactor = transactor;
     }
 
-    public MalData hentMal(Fnr fnr) {
+    public MaalEntity hentMal(Fnr fnr) {
         AktorId aktorId = authService.getAktorIdOrThrow(fnr);
         authService.sjekkLesetilgangMedAktorId(aktorId);
 
-        OppfolgingTable oppfolgingsStatus = oppfolgingsStatusRepository.fetch(aktorId);
+        Optional<OppfolgingEntity> maybeOppfolging = oppfolgingsStatusRepository.hentOppfolging(aktorId);
 
-        MalData gjeldendeMal = null;
+        long gjeldendeMaalId = maybeOppfolging.map(OppfolgingEntity::getGjeldendeMaalId).orElse(0L);
 
-        if (oppfolgingsStatus.getGjeldendeMaalId() != 0) {
-            gjeldendeMal = maalRepository.fetch(oppfolgingsStatus.getGjeldendeMaalId());
+        Optional<MaalEntity> maybeGjeldendeMaal = empty();
+
+        if (gjeldendeMaalId != 0) {
+            maybeGjeldendeMaal = maalRepository.hentMaal(gjeldendeMaalId);
         }
 
-        if (gjeldendeMal == null) {
-            return new MalData();
+        if (maybeGjeldendeMaal.isEmpty()) {
+            return new MaalEntity();
         }
 
-        List<Kvp> kvpList = kvpRepository.hentKvpHistorikk(aktorId);
-        if (!KvpUtils.sjekkTilgangGittKvp(authService, kvpList, gjeldendeMal::getDato)) {
-            return new MalData();
+        MaalEntity gjeldendeMaal = maybeGjeldendeMaal.get();
+
+        List<KvpPeriodeEntity> kvpList = kvpRepository.hentKvpHistorikk(aktorId);
+
+        if (!KvpUtils.sjekkTilgangGittKvp(authService, kvpList, gjeldendeMaal::getDato)) {
+            return new MaalEntity();
         }
 
-        return gjeldendeMal;
+        return gjeldendeMaal;
     }
 
-    public List<MalData> hentMalList(Fnr fnr) {
+    public List<MaalEntity> hentMalList(Fnr fnr) {
         AktorId aktorId = authService.getAktorIdOrThrow(fnr);
         authService.sjekkLesetilgangMedAktorId(aktorId);
 
-        List<MalData> malList = maalRepository.aktorMal(aktorId);
+        List<MaalEntity> malList = maalRepository.aktorMal(aktorId);
 
-        List<Kvp> kvpList = kvpRepository.hentKvpHistorikk(aktorId);
+        List<KvpPeriodeEntity> kvpList = kvpRepository.hentKvpHistorikk(aktorId);
         return malList.stream().filter(mal -> KvpUtils.sjekkTilgangGittKvp(authService, kvpList, mal::getDato)).collect(toList());
     }
 
-    public MalData oppdaterMal(String mal, Fnr fnr, String endretAvVeileder) {
+    public MaalEntity oppdaterMal(String mal, Fnr fnr, String endretAvVeileder) {
         AktorId aktorId = authService.getAktorIdOrThrow(fnr);
         authService.sjekkSkrivetilgangMedAktorId(aktorId);
 
-        Kvp kvp = kvpRepository.fetch(kvpRepository.gjeldendeKvp(aktorId));
-        ofNullable(kvp).ifPresent(this::sjekkKvpEnhetTilgang);
+        Optional<KvpPeriodeEntity> maybeKvpPeriode = kvpRepository.hentKvpPeriode(kvpRepository.gjeldendeKvp(aktorId));
+        maybeKvpPeriode.ifPresent(this::sjekkKvpEnhetTilgang);
 
-        MalData malData = new MalData()
+        MaalEntity malData = new MaalEntity()
                 .setAktorId(aktorId.get())
                 .setMal(mal)
                 .setEndretAv(StringUtils.of(endretAvVeileder).orElse(aktorId.get()))
                 .setDato(ZonedDateTime.now());
 
-        maalRepository.opprett(malData);
+        transactor.executeWithoutResult((ignored) -> {
+            maalRepository.opprett(malData);
+            kafkaProducerService.publiserEndretMal(aktorId, endretAvVeileder);
+        });
+
         metricsService.oppdatertMittMal(malData, maalRepository.aktorMal(aktorId).size());
-        kafkaProducerService.publiserEndretMal(aktorId, endretAvVeileder);
 
         return malData;
     }
 
-    private void sjekkKvpEnhetTilgang(Kvp kvp) {
+    private void sjekkKvpEnhetTilgang(KvpPeriodeEntity kvp) {
         if (!authService.harTilgangTilEnhetMedSperre(kvp.getEnhet())) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         }

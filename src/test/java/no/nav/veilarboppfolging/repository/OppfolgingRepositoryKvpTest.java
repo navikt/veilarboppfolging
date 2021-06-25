@@ -2,16 +2,19 @@ package no.nav.veilarboppfolging.repository;
 
 import lombok.val;
 import no.nav.common.types.identer.AktorId;
-import no.nav.veilarboppfolging.domain.EskaleringsvarselData;
-import no.nav.veilarboppfolging.domain.OppfolgingTable;
+import no.nav.veilarboppfolging.repository.entity.EskaleringsvarselEntity;
+import no.nav.veilarboppfolging.repository.entity.OppfolgingEntity;
 import no.nav.veilarboppfolging.test.DbTestUtils;
 import no.nav.veilarboppfolging.test.IsolatedDatabaseTest;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import java.time.ZonedDateTime;
+import java.util.Optional;
+
 import static org.apache.commons.lang3.RandomStringUtils.randomNumeric;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertTrue;
 
 public class OppfolgingRepositoryKvpTest extends IsolatedDatabaseTest {
 
@@ -34,41 +37,29 @@ public class OppfolgingRepositoryKvpTest extends IsolatedDatabaseTest {
         kvpRepository = new KvpRepository(db, transactor);
     }
 
-    // TODO: tilgangskontroll skal ikke gjøres så nært databasen, flytt til en service
-//    @Test
-//    public void test_eskaleringsvarsel_i_kvp_ingen_tilgang() {
-//        gitt_oppfolging_med_aktiv_kvp_og_eskalering(AKTOR_ID);
-//
-//        OppfolgingTable oppfolging = oppfolgingsStatusRepository.fetch(AKTOR_ID);
-//        EskaleringsvarselData eskaleringsvarsel = eskaleringsvarselRepository.fetch(oppfolging.getGjeldendeEskaleringsvarselId());
-//
-//        assertThat(eskaleringsvarsel).isNull();
-//    }
-
     @Test
     public void test_eskaleringsvarsel_i_kvp_med_tilgang() {
         gitt_oppfolging_med_aktiv_kvp_og_eskalering(AKTOR_ID);
 
-        OppfolgingTable oppfolging = oppfolgingsStatusRepository.fetch(AKTOR_ID);
-        EskaleringsvarselData eskaleringsvarsel = eskaleringsvarselRepository.fetch(oppfolging.getGjeldendeEskaleringsvarselId());
+        OppfolgingEntity oppfolging = oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID).orElseThrow();
+        Optional<EskaleringsvarselEntity> maybeEskaleringsvarsel = eskaleringsvarselRepository.hentEskaleringsvarsel(oppfolging.getGjeldendeEskaleringsvarselId());
 
-        assertThat(eskaleringsvarsel).isNotNull();
+        assertTrue(maybeEskaleringsvarsel.isPresent());
     }
 
     @Test
     public void test_eskaleringsvarsel_uten_kvp() {
         gitt_oppfolging_uten_aktiv_kvp_men_med_eskalering(AKTOR_ID);
 
-        OppfolgingTable oppfolging = oppfolgingsStatusRepository.fetch(AKTOR_ID);
-        EskaleringsvarselData eskaleringsvarsel = eskaleringsvarselRepository.fetch(oppfolging.getGjeldendeEskaleringsvarselId());
+        OppfolgingEntity oppfolging = oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID).orElseThrow();
+        Optional<EskaleringsvarselEntity> maybeEskaleringsvarsel = eskaleringsvarselRepository.hentEskaleringsvarsel(oppfolging.getGjeldendeEskaleringsvarselId());
 
-        assertThat(eskaleringsvarsel).isNotNull();
+        assertTrue(maybeEskaleringsvarsel.isPresent());
     }
-
 
     private void gitt_oppfolging_med_aktiv_kvp_og_eskalering(AktorId aktorId) {
         oppfolgingsStatusRepository.opprettOppfolging(aktorId);
-        kvpRepository.startKvp(AKTOR_ID, ENHET, SAKSBEHANDLER, BEGRUNNELSE);
+        kvpRepository.startKvp(AKTOR_ID, ENHET, SAKSBEHANDLER, BEGRUNNELSE, ZonedDateTime.now());
         startEskalering();
     }
 
@@ -78,7 +69,7 @@ public class OppfolgingRepositoryKvpTest extends IsolatedDatabaseTest {
     }
 
     private void startEskalering() {
-        val e = EskaleringsvarselData.builder()
+        val e = EskaleringsvarselEntity.builder()
                 .aktorId(AKTOR_ID.get())
                 .opprettetAv(SAKSBEHANDLER)
                 .opprettetBegrunnelse(BEGRUNNELSE)

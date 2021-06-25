@@ -1,10 +1,8 @@
-package no.nav.veilarboppfolging.domain;
+package no.nav.veilarboppfolging.client.veilarbarena;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolging;
-import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;

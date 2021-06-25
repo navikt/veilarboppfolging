@@ -2,6 +2,7 @@ package no.nav.veilarboppfolging.domain;
 
 import lombok.Builder;
 import lombok.Value;
+import no.nav.veilarboppfolging.controller.request.Innsatsgruppe;
 import no.nav.veilarboppfolging.controller.request.SykmeldtBrukerType;
 
 @Value

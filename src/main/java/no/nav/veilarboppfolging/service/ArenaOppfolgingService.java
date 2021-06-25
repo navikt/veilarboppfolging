@@ -5,13 +5,13 @@ import no.nav.common.client.aktorregister.AktorregisterClient;
 import no.nav.common.client.norg2.Norg2Client;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolgingTilstand;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
 import no.nav.veilarboppfolging.controller.response.OppfolgingEnhetMedVeilederResponse;
-import no.nav.veilarboppfolging.domain.ArenaOppfolgingTilstand;
-import no.nav.veilarboppfolging.domain.OppfolgingTable;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
 import no.nav.veilarboppfolging.repository.VeilederTilordningerRepository;
+import no.nav.veilarboppfolging.repository.entity.OppfolgingEntity;
 import no.nav.veilarboppfolging.utils.ArenaUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -70,9 +70,9 @@ public class ArenaOppfolgingService {
         Optional<ArenaOppfolgingTilstand> maybeArenaOppfolging = veilarbarenaClient.hentOppfolgingsbruker(fnr)
                 .map(ArenaOppfolgingTilstand::fraArenaBruker);
 
-        Optional<OppfolgingTable> oppfolging = Optional.ofNullable(oppfolgingsStatusRepository.fetch(aktorId));
-
-        boolean erUnderOppfolging = oppfolging.map(OppfolgingTable::isUnderOppfolging).orElse(false);
+        // TODO: Kan hente erUnderOppfolging gjennom OppfolgingService
+        Optional<OppfolgingEntity> oppfolging = oppfolgingsStatusRepository.hentOppfolging(aktorId);
+        boolean erUnderOppfolging = oppfolging.map(OppfolgingEntity::isUnderOppfolging).orElse(false);
 
         boolean erUnderOppfolgingIVeilarbarena = maybeArenaOppfolging
                 .map(o ->  ArenaUtils.erUnderOppfolging(o.getFormidlingsgruppe(), o.getServicegruppe()))

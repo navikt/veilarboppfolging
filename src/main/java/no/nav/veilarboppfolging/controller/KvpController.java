@@ -7,8 +7,8 @@ import lombok.RequiredArgsConstructor;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.types.identer.AktorId;
 import no.nav.veilarboppfolging.controller.response.KvpDTO;
-import no.nav.veilarboppfolging.domain.Kvp;
 import no.nav.veilarboppfolging.repository.KvpRepository;
+import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity;
 import no.nav.veilarboppfolging.service.AuthService;
 import no.nav.veilarboppfolging.utils.DtoMappers;
 import org.springframework.http.HttpStatus;
@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
@@ -62,12 +63,13 @@ public class KvpController {
 
         // This shouldn't happen, and signifies a bug in the dataset.
         // Throw a 500 error in order to make someone[tm] aware of the problem.
-        Kvp kvp = repository.fetch(kvpId);
-        if (kvp == null) {
+        Optional<KvpPeriodeEntity> maybeKvpPeriode = repository.hentKvpPeriode(kvpId);
+
+        if (maybeKvpPeriode.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        return ResponseEntity.ok(DtoMappers.kvpToDTO(kvp));
+        return ResponseEntity.ok(DtoMappers.kvpToDTO(maybeKvpPeriode.get()));
     }
 
     private boolean isRequestAuthorized() {

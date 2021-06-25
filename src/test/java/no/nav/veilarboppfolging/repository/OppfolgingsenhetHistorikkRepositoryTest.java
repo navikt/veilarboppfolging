@@ -1,7 +1,7 @@
 package no.nav.veilarboppfolging.repository;
 
 import no.nav.common.types.identer.AktorId;
-import no.nav.veilarboppfolging.domain.OppfolgingsenhetEndringData;
+import no.nav.veilarboppfolging.repository.entity.OppfolgingsenhetEndringEntity;
 import no.nav.veilarboppfolging.test.DbTestUtils;
 import no.nav.veilarboppfolging.test.LocalH2Database;
 import org.junit.Before;
@@ -10,9 +10,7 @@ import org.junit.Test;
 import java.util.List;
 
 import static org.apache.commons.lang3.RandomStringUtils.randomNumeric;
-import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 
 public class OppfolgingsenhetHistorikkRepositoryTest {
 
@@ -34,9 +32,9 @@ public class OppfolgingsenhetHistorikkRepositoryTest {
         oppfolgingsenhetHistorikkRepository.insertOppfolgingsenhetEndringForAktorId(AKTOR_ID, "1");
         oppfolgingsenhetHistorikkRepository.insertOppfolgingsenhetEndringForAktorId(AKTOR_ID, "0");
 
-        List<OppfolgingsenhetEndringData> enhetsHistorikk = oppfolgingsenhetHistorikkRepository.hentOppfolgingsenhetEndringerForAktorId(AKTOR_ID);
+        List<OppfolgingsenhetEndringEntity> enhetsHistorikk = oppfolgingsenhetHistorikkRepository.hentOppfolgingsenhetEndringerForAktorId(AKTOR_ID);
 
-        assertThat(enhetsHistorikk.size(), equalTo(6));
+        assertEquals(6, enhetsHistorikk.size());
 
         assertEquals("0", enhetsHistorikk.get(0).getEnhet());
         assertEquals("1", enhetsHistorikk.get(1).getEnhet());

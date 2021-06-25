@@ -1,9 +1,16 @@
 package no.nav.veilarboppfolging.service;
 
+import no.nav.common.health.HealthCheckResult;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.veilarboppfolging.domain.*;
+import no.nav.veilarboppfolging.client.dkif.DkifClient;
+import no.nav.veilarboppfolging.client.dkif.DkifKontaktinfo;
+import no.nav.veilarboppfolging.domain.Oppfolging;
 import no.nav.veilarboppfolging.repository.*;
+import no.nav.veilarboppfolging.repository.entity.MaalEntity;
+import no.nav.veilarboppfolging.repository.entity.ManuellStatusEntity;
+import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
+import no.nav.veilarboppfolging.repository.enums.KodeverkBruker;
 import no.nav.veilarboppfolging.test.DbTestUtils;
 import no.nav.veilarboppfolging.test.IsolatedDatabaseTest;
 import org.junit.Before;
@@ -14,7 +21,7 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import static no.nav.veilarboppfolging.domain.KodeverkBruker.NAV;
+import static no.nav.veilarboppfolging.repository.enums.KodeverkBruker.NAV;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertFalse;
@@ -52,6 +59,8 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
 
     private OppfolgingService oppfolgingService;
 
+    private OppfolgingService oppfolgingServiceMock = mock(OppfolgingService.class);
+
     @Before
     public void setup() {
         TransactionTemplate transactor = DbTestUtils.createTransactor(db);
@@ -66,14 +75,38 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
 
         manuellStatusRepository = new ManuellStatusRepository(db, transactor);
 
+        DkifClient dkifClient = new DkifClient() {
+            @Override
+            public Optional<DkifKontaktinfo> hentKontaktInfo(Fnr fnr) {
+                return Optional.empty();
+            }
+
+            @Override
+            public HealthCheckResult checkHealth() {
+                return null;
+            }
+        };
+
+        ManuellStatusService manuellStatusService = new ManuellStatusService(
+                authService,
+                manuellStatusRepository,
+                null,
+                oppfolgingServiceMock,
+                dkifClient,
+                null,
+                transactor
+        );
+
         oppfolgingService = new OppfolgingService(
-                mock(KafkaProducerService.class), null, null,
+                mock(KafkaProducerService.class), null,
                 null, null, null, authService,
                 oppfolgingsStatusRepository, oppfolgingsPeriodeRepository,
-                manuellStatusRepository, null,
+                manuellStatusService,
                 null, new EskaleringsvarselRepository(db, transactor),
                 new KvpRepository(db, transactor), new NyeBrukereFeedRepository(db), maalRepository,
                 new BrukerOppslagFlereOppfolgingAktorRepository(db), transactor);
+
+        when(authService.getFnrOrThrow(AKTOR_ID)).thenReturn(FNR);
     }
 
     @Test
@@ -160,7 +193,7 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
         gittOppfolgingForAktor(AKTOR_ID);
         opprettMal(AKTOR_ID, "Dette er et mål");
 
-        MalData mal = getGjeldendeMal(AKTOR_ID);
+        MaalEntity mal = getGjeldendeMal(AKTOR_ID);
         assertThat(mal.getAktorId(), equalTo(AKTOR_ID.get()));
         assertThat(mal.getMal(), equalTo("Dette er et mål"));
     }
@@ -171,17 +204,17 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
         opprettMal(AKTOR_ID, "Dette er et mål");
         opprettMal(AKTOR_ID, "Dette er et oppdatert mål");
 
-        MalData mal = getGjeldendeMal(AKTOR_ID);
+        MaalEntity mal = getGjeldendeMal(AKTOR_ID);
         assertThat(mal.getMal(), equalTo("Dette er et oppdatert mål"));
-        List<MalData> malList = hentMal(AKTOR_ID);
+        List<MaalEntity> malList = hentMal(AKTOR_ID);
         assertThat(malList.size(), greaterThan(1));
     }
 
-    private MalData getGjeldendeMal(AktorId aktorId) {
+    private MaalEntity getGjeldendeMal(AktorId aktorId) {
         return oppfolgingService.hentOppfolging(aktorId).get().getGjeldendeMal();
     }
 
-    private List<MalData> hentMal(AktorId aktorId) {
+    private List<MaalEntity> hentMal(AktorId aktorId) {
         return maalRepository.aktorMal(aktorId);
     }
 
@@ -208,13 +241,14 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
         String maal = "Mål";
         settVeileder(veilederId, AKTOR_ID);
         manuellStatusRepository.create(
-                new ManuellStatus()
+                new ManuellStatusEntity()
                         .setAktorId(AKTOR_ID.get())
                         .setManuell(true)
                         .setDato(ZonedDateTime.now())
                         .setBegrunnelse("Test")
                         .setOpprettetAv(KodeverkBruker.SYSTEM));
-        maalRepository.opprett(new MalData().setAktorId(AKTOR_ID.get()).setMal(maal).setEndretAv("bruker").setDato(ZonedDateTime.now()));
+        
+        maalRepository.opprett(new MaalEntity().setAktorId(AKTOR_ID.get()).setMal(maal).setEndretAv("bruker").setDato(ZonedDateTime.now()));
         Oppfolging oppfolging = hentOppfolging(AKTOR_ID).get();
         assertThat(oppfolging.isUnderOppfolging(), is(true));
         assertThat(oppfolging.getVeilederId(), equalTo(veilederId));
@@ -228,7 +262,7 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
         assertThat(avsluttetOppfolging.getGjeldendeManuellStatus(), nullValue());
         assertThat(avsluttetOppfolging.getGjeldendeMal(), nullValue());
 
-        List<Oppfolgingsperiode> oppfolgingsperioder = avsluttetOppfolging.getOppfolgingsperioder();
+        List<OppfolgingsperiodeEntity> oppfolgingsperioder = avsluttetOppfolging.getOppfolgingsperioder();
         assertThat(oppfolgingsperioder.size(), is(1));
     }
 
@@ -244,7 +278,7 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
     public void kanHenteOppfolgingMedOppfolgingsperioder() {
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
         oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
-        List<Oppfolgingsperiode> oppfolgingsperioder = oppfolgingService.hentOppfolging(AKTOR_ID).get().getOppfolgingsperioder();
+        List<OppfolgingsperiodeEntity> oppfolgingsperioder = oppfolgingService.hentOppfolging(AKTOR_ID).get().getOppfolgingsperioder();
         assertThat(oppfolgingsperioder, hasSize(1));
         assertThat(oppfolgingsperioder.get(0).getStartDato(), not(nullValue()));
         assertThat(oppfolgingsperioder.get(0).getSluttDato(), nullValue());
@@ -303,7 +337,7 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
     }
 
     private void opprettMal(AktorId aktorId, String mal) {
-        MalData input = new MalData()
+        MaalEntity input = new MaalEntity()
                 .setAktorId(aktorId.get())
                 .setMal(mal)
                 .setEndretAv(aktorId.get())
@@ -313,8 +347,8 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
     }
 
     private void gitt_kvp_periode(String enhet) {
-        kvpRepository.startKvp(AKTOR_ID, enhet, VEILERDER, BEGRUNNELSE);
+        kvpRepository.startKvp(AKTOR_ID, enhet, VEILERDER, BEGRUNNELSE, ZonedDateTime.now());
         long kvpId = kvpRepository.gjeldendeKvp(AKTOR_ID);
-        kvpRepository.stopKvp(kvpId, AKTOR_ID, VEILERDER, BEGRUNNELSE, NAV);
+        kvpRepository.stopKvp(kvpId, AKTOR_ID, VEILERDER, BEGRUNNELSE, NAV, ZonedDateTime.now());
     }
 }

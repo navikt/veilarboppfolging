@@ -2,6 +2,9 @@ package no.nav.veilarboppfolging.domain;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
+import no.nav.veilarboppfolging.repository.entity.EskaleringsvarselEntity;
+import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity;
+import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -23,9 +26,9 @@ public class OppfolgingStatusData {
     public boolean underKvp;
     public boolean kanStarteOppfolging;
     public boolean kanVarsles;
-    private EskaleringsvarselData gjeldendeEskaleringsvarsel;
-    public List<Oppfolgingsperiode> oppfolgingsperioder = Collections.emptyList();
-    public List<Kvp> kvpPerioder;
+    private EskaleringsvarselEntity gjeldendeEskaleringsvarsel;
+    public List<OppfolgingsperiodeEntity> oppfolgingsperioder = Collections.emptyList();
+    public List<KvpPeriodeEntity> kvpPerioder;
     public boolean harSkriveTilgang;
     public Boolean inaktivIArena;
     public Boolean kanReaktiveres;
@@ -39,7 +42,7 @@ public class OppfolgingStatusData {
     public Boolean erIkkeArbeidssokerUtenOppfolging;
 
     public ZonedDateTime getOppfolgingUtgang() {
-        return oppfolgingsperioder.stream().map(Oppfolgingsperiode::getSluttDato).filter(Objects::nonNull).max(naturalOrder()).orElse(null);
+        return oppfolgingsperioder.stream().map(OppfolgingsperiodeEntity::getSluttDato).filter(Objects::nonNull).max(naturalOrder()).orElse(null);
     }
 
 }

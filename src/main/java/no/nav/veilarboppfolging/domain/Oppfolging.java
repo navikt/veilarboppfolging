@@ -2,6 +2,7 @@ package no.nav.veilarboppfolging.domain;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
+import no.nav.veilarboppfolging.repository.entity.*;
 
 import java.util.List;
 
@@ -13,9 +14,9 @@ public class Oppfolging {
     private String aktorId;
     private String veilederId;
     private boolean underOppfolging;
-    private ManuellStatus gjeldendeManuellStatus;
-    private EskaleringsvarselData gjeldendeEskaleringsvarsel;
-    private MalData gjeldendeMal;
-    private List<Oppfolgingsperiode> oppfolgingsperioder = emptyList();
-    private Kvp gjeldendeKvp;
+    private ManuellStatusEntity gjeldendeManuellStatus;
+    private EskaleringsvarselEntity gjeldendeEskaleringsvarsel;
+    private MaalEntity gjeldendeMal;
+    private List<OppfolgingsperiodeEntity> oppfolgingsperioder = emptyList();
+    private KvpPeriodeEntity gjeldendeKvp;
 }

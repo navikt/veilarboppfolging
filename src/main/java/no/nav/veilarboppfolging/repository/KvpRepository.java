@@ -2,8 +2,8 @@ package no.nav.veilarboppfolging.repository;
 
 import lombok.SneakyThrows;
 import no.nav.common.types.identer.AktorId;
-import no.nav.veilarboppfolging.domain.KodeverkBruker;
-import no.nav.veilarboppfolging.domain.Kvp;
+import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity;
+import no.nav.veilarboppfolging.repository.enums.KodeverkBruker;
 import no.nav.veilarboppfolging.utils.DbUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -12,13 +12,15 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.sql.ResultSet;
+import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Optional;
 
-import static no.nav.veilarboppfolging.domain.KodeverkBruker.NAV;
+import static no.nav.veilarboppfolging.repository.enums.KodeverkBruker.NAV;
 import static no.nav.veilarboppfolging.utils.DbUtils.hentZonedDateTime;
+import static no.nav.veilarboppfolging.utils.DbUtils.queryForNullableObject;
 import static no.nav.veilarboppfolging.utils.EnumUtils.getName;
 import static no.nav.veilarboppfolging.utils.EnumUtils.valueOfOptional;
-import static no.nav.veilarboppfolging.utils.ListUtils.firstOrNull;
 
 @Repository
 public class KvpRepository {
@@ -33,8 +35,7 @@ public class KvpRepository {
         this.transactor = transactor;
     }
 
-    // TODO: Foretrekker å sende med dato istedenfor CURRENT_TIMESTAMP slik at det ikke blir en mismatch med datoen som f.eks blir brukt på kafka
-    public void startKvp(AktorId aktorId, String enhet, String opprettetAv, String opprettetBegrunnelse) {
+    public void startKvp(AktorId aktorId, String enhet, String opprettetAv, String opprettetBegrunnelse, ZonedDateTime startDato) {
         transactor.executeWithoutResult((ignored) -> {
             long id = DbUtils.nesteFraSekvens(db, "KVP_SEQ");
             long nextSerial = DbUtils.nesteFraSekvens(db, "KVP_SERIAL_SEQ");
@@ -48,41 +49,43 @@ public class KvpRepository {
                             "opprettet_dato, " +
                             "opprettet_begrunnelse, " +
                             "opprettet_kodeverkbruker) " +
-                            "VALUES(?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?)",
+                            "VALUES(?, ?, ?, ?, ?, ?, ?, ?)",
                     id,
                     nextSerial,
                     aktorId.get(),
                     enhet,
                     opprettetAv,
+                    startDato,
                     opprettetBegrunnelse,
                     getName(NAV)
             );
 
             db.update("UPDATE OPPFOLGINGSTATUS " +
                             "SET gjeldende_kvp = ?, " +
-                            "oppdatert = CURRENT_TIMESTAMP, " +
+                            "oppdatert = ?, " +
                             "FEED_ID = null " +
                             "WHERE aktor_id = ?",
                     id,
+                    startDato,
                     aktorId.get()
             );
         });
     }
 
-    // TODO: Foretrekker å sende med dato istedenfor CURRENT_TIMESTAMP slik at det ikke blir en mismatch med datoen som f.eks blir brukt på kafka
-    public void stopKvp(long kvpId, AktorId aktorId, String avsluttetAv, String avsluttetBegrunnelse, KodeverkBruker kodeverkBruker) {
+    public void stopKvp(long kvpId, AktorId aktorId, String avsluttetAv, String avsluttetBegrunnelse, KodeverkBruker kodeverkBruker, ZonedDateTime sluttDato) {
         transactor.executeWithoutResult((ignored) -> {
             long nextSerial = DbUtils.nesteFraSekvens(db, "KVP_SERIAL_SEQ");
 
             db.update("UPDATE KVP " +
                             "SET serial = ?, " +
                             "avsluttet_av = ?, " +
-                            "avsluttet_dato = CURRENT_TIMESTAMP, " +
+                            "avsluttet_dato = ?, " +
                             "avsluttet_begrunnelse = ?, " +
                             "avsluttet_kodeverkbruker = ? " +
                             "WHERE kvp_id = ?",
                     nextSerial,
                     avsluttetAv,
+                    sluttDato,
                     avsluttetBegrunnelse,
                     getName(kodeverkBruker),
                     kvpId
@@ -91,15 +94,16 @@ public class KvpRepository {
 
             db.update("UPDATE OPPFOLGINGSTATUS " +
                             "SET gjeldende_kvp = NULL, " +
-                            "oppdatert = CURRENT_TIMESTAMP, " +
+                            "oppdatert = ?, " +
                             "FEED_ID = null " +
                             "WHERE aktor_id = ?",
+                    sluttDato,
                     aktorId.get()
             );
         });
     }
 
-    public List<Kvp> hentKvpHistorikk(AktorId aktorId) {
+    public List<KvpPeriodeEntity> hentKvpHistorikk(AktorId aktorId) {
         return db.query("SELECT * " +
                         "FROM kvp " +
                         "WHERE aktor_id = ?",
@@ -112,14 +116,14 @@ public class KvpRepository {
      * Return a list of KVP objects where the serial number is greater than N.
      * The serial number is the number of updates the table has undergone.
      */
-    public List<Kvp> serialGreaterThan(long serial, long pageSize) {
+    public List<KvpPeriodeEntity> serialGreaterThan(long serial, long pageSize) {
         String sql = "SELECT * FROM kvp WHERE serial > ? AND rownum <= ? ORDER BY serial ASC";
         return db.query(sql, KvpRepository::mapTilKvp, serial, pageSize);
     }
 
-    public Kvp fetch(long id) {
+    public Optional<KvpPeriodeEntity> hentKvpPeriode(long id) {
         String sql = "SELECT * FROM KVP WHERE kvp_id = ?";
-        return firstOrNull(db.query(sql, KvpRepository::mapTilKvp, id));
+        return queryForNullableObject(() -> db.queryForObject(sql, KvpRepository::mapTilKvp, id));
     }
 
     /**
@@ -138,8 +142,8 @@ public class KvpRepository {
     }
 
     @SneakyThrows
-    protected static Kvp mapTilKvp(ResultSet rs, int row) {
-        return Kvp.builder()
+    protected static KvpPeriodeEntity mapTilKvp(ResultSet rs, int row) {
+        return KvpPeriodeEntity.builder()
                 .kvpId(rs.getLong("kvp_id"))
                 .serial(rs.getLong("serial"))
                 .aktorId(rs.getString("aktor_id"))

@@ -1,5 +1,6 @@
 package no.nav.veilarboppfolging.domain;
 
+import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
 import org.junit.Test;
 
 import java.time.ZonedDateTime;
@@ -24,8 +25,10 @@ public class OppfolgingStatusDataTest {
         assertThat(new OppfolgingStatusData().setOppfolgingsperioder(asList(tilPeriode(null))).getOppfolgingUtgang(), nullValue());
     }
 
-    private Oppfolgingsperiode tilPeriode(ZonedDateTime sluttDato) {
-        return new Oppfolgingsperiode.OppfolgingsperiodeBuilder().sluttDato(sluttDato).build();
+    private OppfolgingsperiodeEntity tilPeriode(ZonedDateTime sluttDato) {
+        return OppfolgingsperiodeEntity.builder()
+                .sluttDato(sluttDato)
+                .build();
     }
     
     @Test
@@ -36,7 +39,7 @@ public class OppfolgingStatusDataTest {
         assertThat(setOppfolgingsperioder.getOppfolgingUtgang(), equalTo(sisteDato));
     }
 
-    private List<Oppfolgingsperiode> lagPerioder(ZonedDateTime... sluttDatoer) {
+    private List<OppfolgingsperiodeEntity> lagPerioder(ZonedDateTime... sluttDatoer) {
         return Arrays.stream(sluttDatoer).map(this::tilPeriode).collect(toList());
     }
 

@@ -9,6 +9,7 @@ import java.sql.SQLException;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 public class DbUtils {
 
@@ -29,4 +30,13 @@ public class DbUtils {
             return Optional.empty();
         }
     }
+
+    public static <T> Optional<T> queryForNullableObject(Supplier<T> objectSupplier) {
+        try {
+            return Optional.ofNullable(objectSupplier.get());
+        } catch (EmptyResultDataAccessException e) {
+            return Optional.empty();
+        }
+    }
+
 }

@@ -18,7 +18,7 @@ import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
 import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktClient;
 import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktResponse;
-import no.nav.veilarboppfolging.domain.Innsatsgruppe;
+import no.nav.veilarboppfolging.controller.request.Innsatsgruppe;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -61,12 +61,12 @@ public class ClientTestConfig {
         return new AktorregisterClient() {
             @Override
             public Fnr hentFnr(AktorId aktorId) {
-                return null;
+                return Fnr.of("fnr-" + aktorId.get());
             }
 
             @Override
             public AktorId hentAktorId(Fnr fnr) {
-                return new AktorId(fnr.get());
+                return new AktorId("aktorId-" + fnr.get());
             }
 
             @Override
@@ -128,8 +128,8 @@ public class ClientTestConfig {
     public DkifClient dkifClient() {
         return new DkifClient() {
             @Override
-            public DkifKontaktinfo hentKontaktInfo(Fnr fnr) {
-                return null;
+            public Optional<DkifKontaktinfo> hentKontaktInfo(Fnr fnr) {
+                return Optional.empty();
             }
 
             @Override

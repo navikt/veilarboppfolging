@@ -9,7 +9,7 @@ import no.nav.tjeneste.virksomhet.behandlearbeidssoeker.v1.binding.*;
 import no.nav.tjeneste.virksomhet.behandlearbeidssoeker.v1.informasjon.Brukerident;
 import no.nav.tjeneste.virksomhet.behandlearbeidssoeker.v1.meldinger.AktiverBrukerRequest;
 import no.nav.tjeneste.virksomhet.behandlearbeidssoeker.v1.meldinger.ReaktiverBrukerForenkletRequest;
-import no.nav.veilarboppfolging.domain.Innsatsgruppe;
+import no.nav.veilarboppfolging.controller.request.Innsatsgruppe;
 import org.apache.cxf.interceptor.LoggingOutInterceptor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;

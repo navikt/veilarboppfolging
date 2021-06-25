@@ -7,10 +7,10 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
-import no.nav.veilarboppfolging.domain.OppfolgingTable;
 import no.nav.veilarboppfolging.repository.EskaleringsvarselRepository;
 import no.nav.veilarboppfolging.repository.KvpRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
+import no.nav.veilarboppfolging.repository.entity.OppfolgingEntity;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -18,11 +18,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.http.HttpStatus;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
+import java.util.function.Consumer;
 
-import static no.nav.veilarboppfolging.domain.KodeverkBruker.NAV;
+import static no.nav.veilarboppfolging.repository.enums.KodeverkBruker.NAV;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
 
@@ -50,6 +52,9 @@ public class KvpServiceTest {
     @Mock
     private KafkaProducerService kafkaProducerService;
 
+    @Mock
+    private TransactionTemplate transactor;
+
     @InjectMocks
     private KvpService kvpService;
 
@@ -62,7 +67,7 @@ public class KvpServiceTest {
 
     @Before
     public void initialize() {
-        when(oppfolgingsStatusRepository.fetch(AKTOR_ID)).thenReturn(new OppfolgingTable().setUnderOppfolging(true));
+        when(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID)).thenReturn(Optional.of(new OppfolgingEntity().setUnderOppfolging(true)));
 
         VeilarbArenaOppfolging veilarbArenaOppfolging = new VeilarbArenaOppfolging();
         veilarbArenaOppfolging.setNav_kontor(ENHET);
@@ -71,11 +76,16 @@ public class KvpServiceTest {
         when(authService.harTilgangTilEnhet(anyString())).thenReturn(true);
         when(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID);
         when(authService.getInnloggetVeilederIdent()).thenReturn(VEILEDER);
+        doAnswer((mock) -> {
+            Consumer consumer = mock.getArgument(0);
+            consumer.accept(null);
+            return null;
+        }).when(transactor).executeWithoutResult(any(Consumer.class));
     }
 
     @Test
     public void start_kvp_uten_oppfolging_er_ulovlig_handling() {
-        when(oppfolgingsStatusRepository.fetch(AKTOR_ID)).thenReturn(new OppfolgingTable().setUnderOppfolging(false));
+        when(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID)).thenReturn(Optional.of(new OppfolgingEntity().setUnderOppfolging(false)));
 
         try {
             kvpService.startKvp(FNR, START_BEGRUNNELSE);
@@ -86,7 +96,7 @@ public class KvpServiceTest {
 
     @Test
     public void start_kvp_uten_bruker_i_oppfolgingtabell_er_ulovlig_handling() {
-        when(oppfolgingsStatusRepository.fetch(AKTOR_ID)).thenReturn(null);
+        when(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID)).thenReturn(Optional.empty());
 
         try {
             kvpService.startKvp(FNR, START_BEGRUNNELSE);
@@ -98,13 +108,13 @@ public class KvpServiceTest {
     @Test
     public void startKvp() {
         kvpService.startKvp(FNR, START_BEGRUNNELSE);
-        verify(kvpRepositoryMock, times(1)).startKvp(eq(AKTOR_ID), eq(ENHET), eq(VEILEDER), eq(START_BEGRUNNELSE));
+        verify(kvpRepositoryMock, times(1)).startKvp(eq(AKTOR_ID), eq(ENHET), eq(VEILEDER), eq(START_BEGRUNNELSE), any());
     }
 
     @Test(expected = ResponseStatusException.class)
     public void startKvp_feiler_dersom_bruker_allerede_er_under_kvp() {
 
-        when(oppfolgingsStatusRepository.fetch(AKTOR_ID)).thenReturn(new OppfolgingTable().setUnderOppfolging(true).setGjeldendeKvpId(2));
+        when(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID)).thenReturn(Optional.of(new OppfolgingEntity().setUnderOppfolging(true).setGjeldendeKvpId(2)));
 
         AuthContextHolderThreadLocal.instance().withContext(AuthTestUtils.createAuthContext(UserRole.INTERN, VEILEDER),
                 () -> kvpService.startKvp(FNR, START_BEGRUNNELSE)
@@ -115,29 +125,29 @@ public class KvpServiceTest {
     @Test
     public void stopKvp() {
         long kvpId = 2;
-        when(oppfolgingsStatusRepository.fetch(AKTOR_ID)).thenReturn(new OppfolgingTable().setUnderOppfolging(true).setGjeldendeKvpId(kvpId));
+        when(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID)).thenReturn(Optional.of(new OppfolgingEntity().setUnderOppfolging(true).setGjeldendeKvpId(kvpId)));
 
         AuthContextHolderThreadLocal.instance().withContext(AuthTestUtils.createAuthContext(UserRole.INTERN, VEILEDER),
                 () -> kvpService.stopKvp(FNR, STOP_BEGRUNNELSE)
         );
 
         verify(authService, times(1)).sjekkLesetilgangMedAktorId(AKTOR_ID);
-        verify(oppfolgingsStatusRepository, times(1)).fetch(AKTOR_ID);
-        verify(kvpRepositoryMock, times(1)).stopKvp(eq(kvpId), eq(AKTOR_ID), eq(VEILEDER), eq(STOP_BEGRUNNELSE), eq(NAV));
+        verify(oppfolgingsStatusRepository, times(1)).hentOppfolging(AKTOR_ID);
+        verify(kvpRepositoryMock, times(1)).stopKvp(eq(kvpId), eq(AKTOR_ID), eq(VEILEDER), eq(STOP_BEGRUNNELSE), eq(NAV), any());
         verify(authService, times(1)).harTilgangTilEnhet(ENHET);
     }
 
     @Test
     public void stopKvp_avslutter_eskalering() {
         long kvpId = 2;
-        when(oppfolgingsStatusRepository.fetch(AKTOR_ID)).thenReturn(new OppfolgingTable().setUnderOppfolging(true).setGjeldendeEskaleringsvarselId(1).setGjeldendeKvpId(kvpId));
+        when(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID)).thenReturn(Optional.of(new OppfolgingEntity().setUnderOppfolging(true).setGjeldendeEskaleringsvarselId(1).setGjeldendeKvpId(kvpId)));
 
         AuthContextHolderThreadLocal.instance().withContext(AuthTestUtils.createAuthContext(UserRole.INTERN, VEILEDER),
                 () -> kvpService.stopKvp(FNR, STOP_BEGRUNNELSE)
         );
 
-        verify(eskaleringsvarselRepository).finish(AKTOR_ID, 1, VEILEDER, KvpService.ESKALERING_AVSLUTTET_FORDI_KVP_BLE_AVSLUTTET);
-        verify(kvpRepositoryMock, times(1)).stopKvp(eq(kvpId), eq(AKTOR_ID), eq(VEILEDER), eq(STOP_BEGRUNNELSE), eq(NAV));
+        verify(eskaleringsvarselRepository).finish(eq(AKTOR_ID), eq(1L), eq(VEILEDER), eq(KvpService.ESKALERING_AVSLUTTET_FORDI_KVP_BLE_AVSLUTTET), any());
+        verify(kvpRepositoryMock, times(1)).stopKvp(eq(kvpId), eq(AKTOR_ID), eq(VEILEDER), eq(STOP_BEGRUNNELSE), eq(NAV), any());
     }
 
     @Test

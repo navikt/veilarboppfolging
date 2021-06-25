@@ -1,14 +1,13 @@
-package no.nav.veilarboppfolging.domain;
+package no.nav.veilarboppfolging.repository.entity;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
 
 import java.time.ZonedDateTime;
-import java.util.Date;
 
 @Data
 @Accessors(chain = true)
-public class Tilordning {
+public class VeilederTilordningEntity {
     String aktorId;
     String veilederId;
     boolean oppfolging;

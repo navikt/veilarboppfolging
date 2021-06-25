@@ -4,8 +4,9 @@ import io.vavr.control.Try;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.client.behandle_arbeidssoker.BehandleArbeidssokerClient;
+import no.nav.veilarboppfolging.client.dkif.DkifKontaktinfo;
 import no.nav.veilarboppfolging.controller.request.AktiverArbeidssokerData;
-import no.nav.veilarboppfolging.domain.Innsatsgruppe;
+import no.nav.veilarboppfolging.controller.request.Innsatsgruppe;
 import no.nav.veilarboppfolging.domain.Oppfolging;
 import no.nav.veilarboppfolging.repository.*;
 import no.nav.veilarboppfolging.test.DbTestUtils;
@@ -35,6 +36,8 @@ public class AktiverBrukerIntegrationTest {
 
     private AktiverBrukerService aktiverBrukerService;
 
+    private ManuellStatusService manuellStatusService;
+
     private final Fnr FNR = Fnr.of("1111");
 
     private final AktorId AKTOR_ID = AktorId.of("1234523423");
@@ -50,10 +53,16 @@ public class AktiverBrukerIntegrationTest {
         authService = mock(AuthService.class);
         behandleArbeidssokerClient = mock(BehandleArbeidssokerClient.class);
 
+        manuellStatusService = mock(ManuellStatusService.class);
+
         oppfolgingService = new OppfolgingService(
-                mock(KafkaProducerService.class), null, null, null, null, null, authService,
+                mock(KafkaProducerService.class),
+                null,
+                null,
+                null,
+                null, authService,
                 oppfolgingsStatusRepository, oppfolgingsPeriodeRepository,
-                new ManuellStatusRepository(db, transactor), null,
+                manuellStatusService,
                 null, new EskaleringsvarselRepository(db, transactor),
                 new KvpRepository(db, transactor), new NyeBrukereFeedRepository(db),
                 new MaalRepository(db, transactor),
@@ -70,6 +79,7 @@ public class AktiverBrukerIntegrationTest {
 
         DbTestUtils.cleanupTestDb();
         when(authService.getAktorIdOrThrow(any(Fnr.class))).thenReturn(AKTOR_ID);
+        when(manuellStatusService.hentDkifKontaktinfo(any())).thenReturn(new DkifKontaktinfo());
     }
 
     @Test

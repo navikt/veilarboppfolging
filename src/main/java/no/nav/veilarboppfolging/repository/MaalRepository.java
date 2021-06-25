@@ -2,7 +2,7 @@ package no.nav.veilarboppfolging.repository;
 
 import lombok.SneakyThrows;
 import no.nav.common.types.identer.AktorId;
-import no.nav.veilarboppfolging.domain.MalData;
+import no.nav.veilarboppfolging.repository.entity.MaalEntity;
 import no.nav.veilarboppfolging.utils.DbUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -11,10 +11,12 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import java.sql.ResultSet;
 import java.util.List;
+import java.util.Optional;
 
 import static no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository.AKTOR_ID;
 import static no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository.GJELDENDE_MAL;
 import static no.nav.veilarboppfolging.utils.DbUtils.hentZonedDateTime;
+import static no.nav.veilarboppfolging.utils.DbUtils.queryForNullableObject;
 
 @Repository
 public class MaalRepository {
@@ -29,18 +31,18 @@ public class MaalRepository {
         this.transactor = transactor;
     }
 
-    public List<MalData> aktorMal(AktorId aktorId) {
+    public List<MaalEntity> aktorMal(AktorId aktorId) {
         return db.query("SELECT * FROM MAL WHERE aktor_id = ? ORDER BY ID DESC",
-                MaalRepository::map,
+                MaalRepository::mapMaalEntity,
                 aktorId.get());
     }
 
-    public MalData fetch(Long id) {
+    public Optional<MaalEntity> hentMaal(long id) {
         String sql = "SELECT * FROM MAL WHERE id = ?";
-        return db.query(sql, MaalRepository::map, id).get(0);
+        return queryForNullableObject(() -> db.queryForObject(sql, MaalRepository::mapMaalEntity, id));
     }
 
-    public void opprett(MalData maal) {
+    public void opprett(MaalEntity maal) {
         transactor.executeWithoutResult((ignored) -> {
             maal.setId(DbUtils.nesteFraSekvens(db, "MAL_SEQ"));
             insert(maal);
@@ -48,25 +50,25 @@ public class MaalRepository {
         });
     }
 
-    private void insert(MalData maal) {
+    private void insert(MaalEntity maal) {
         String sql = "INSERT INTO MAL(id, aktor_id, mal, endret_av, dato) VALUES(?, ?, ?, ?, ?)";
         db.update(sql, maal.getId(), maal.getAktorId(), maal.getMal(), maal.getEndretAv(), maal.getDato());
     }
 
-    private void setActive(MalData mal) {
+    private void setActive(MaalEntity maal) {
         db.update("UPDATE OPPFOLGINGSTATUS " +
                         " SET " + GJELDENDE_MAL + " = ?," +
                         " oppdatert = CURRENT_TIMESTAMP, " +
                         " FEED_ID = null " +
                         "WHERE " + AKTOR_ID + " = ?",
-                mal.getId(),
-                mal.getAktorId()
+                maal.getId(),
+                maal.getAktorId()
         );
     }
 
     @SneakyThrows
-    private static MalData map(ResultSet result, int row) {
-        return new MalData()
+    private static MaalEntity mapMaalEntity(ResultSet result, int row) {
+        return new MaalEntity()
                 .setId(result.getLong("id"))
                 .setAktorId(result.getString("aktor_id"))
                 .setMal(result.getString("mal"))

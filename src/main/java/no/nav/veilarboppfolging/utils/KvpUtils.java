@@ -1,6 +1,6 @@
 package no.nav.veilarboppfolging.utils;
 
-import no.nav.veilarboppfolging.domain.Kvp;
+import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity;
 import no.nav.veilarboppfolging.service.AuthService;
 
 import java.time.ZonedDateTime;
@@ -11,12 +11,12 @@ import static java.util.Collections.singletonList;
 
 public class KvpUtils {
 
-    public static boolean sjekkTilgangGittKvp(AuthService authService, Kvp kvp, Supplier<ZonedDateTime> dateSupplier) {
+    public static boolean sjekkTilgangGittKvp(AuthService authService, KvpPeriodeEntity kvp, Supplier<ZonedDateTime> dateSupplier) {
         return kvp == null || sjekkTilgangGittKvp(authService, singletonList(kvp), dateSupplier);
     }
 
-    public static boolean sjekkTilgangGittKvp(AuthService authService, List<Kvp> kvpList, Supplier<ZonedDateTime> dateSupplier) {
-        for (Kvp kvp : kvpList) {
+    public static boolean sjekkTilgangGittKvp(AuthService authService, List<KvpPeriodeEntity> kvpList, Supplier<ZonedDateTime> dateSupplier) {
+        for (KvpPeriodeEntity kvp : kvpList) {
             if (DateUtils.between(kvp.getOpprettetDato(), kvp.getAvsluttetDato(), dateSupplier.get())) {
                 return authService.harTilgangTilEnhetMedSperre(kvp.getEnhet());
             }

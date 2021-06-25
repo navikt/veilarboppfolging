@@ -84,23 +84,23 @@ public class KafkaProducerService {
         store(kafkaProperties.getEndringPaaAvsluttOppfolgingTopic(), aktorId.get(), recordValue);
     }
 
-    public void publiserKvpStartet(AktorId aktorId, String enhetId, String opprettetAvVeilederId, String begrunnelse) {
+    public void publiserKvpStartet(AktorId aktorId, String enhetId, String opprettetAvVeilederId, String begrunnelse, ZonedDateTime startDato) {
         KvpStartetV1 recordValue = new KvpStartetV1()
                 .setAktorId(aktorId.get())
                 .setEnhetId(enhetId)
                 .setOpprettetAv(opprettetAvVeilederId)
                 .setOpprettetBegrunnelse(begrunnelse)
-                .setOpprettetDato(ZonedDateTime.now());
+                .setOpprettetDato(startDato);
 
         store(kafkaProperties.getKvpStartetTopic(), aktorId.get(), recordValue);
     }
 
-    public void publiserKvpAvsluttet(AktorId aktorId, String avsluttetAv, String begrunnelse) {
+    public void publiserKvpAvsluttet(AktorId aktorId, String avsluttetAv, String begrunnelse, ZonedDateTime sluttDato) {
         KvpAvsluttetV1 recordValue = new KvpAvsluttetV1()
                 .setAktorId(aktorId.get())
                 .setAvsluttetAv(avsluttetAv) // veilederId eller System
                 .setAvsluttetBegrunnelse(begrunnelse)
-                .setAvsluttetDato(ZonedDateTime.now());
+                .setAvsluttetDato(sluttDato);
 
         store(kafkaProperties.getKvpAvlsuttetTopic(), aktorId.get(), recordValue);
     }

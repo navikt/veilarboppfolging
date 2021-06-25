@@ -5,7 +5,7 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.controller.request.*;
 import no.nav.veilarboppfolging.controller.response.*;
-import no.nav.veilarboppfolging.domain.KodeverkBruker;
+import no.nav.veilarboppfolging.repository.enums.KodeverkBruker;
 import no.nav.veilarboppfolging.service.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -157,7 +157,14 @@ public class OppfolgingController {
 
     @GetMapping("/oppfolgingsperiode/{uuid}")
     public OppfolgingPeriodeMinimalDTO hentOppfolgingsPeriode(@PathVariable String uuid){
-        var periode = oppfolgingService.hentPeriode(uuid);
+        var maybePeriode = oppfolgingService.hentOppfolgingsperiode(uuid);
+
+        if (maybePeriode.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+
+        var periode = maybePeriode.get();
+
         authService.sjekkLesetilgangMedAktorId(AktorId.of(periode.getAktorId()));
 
         return tilOppfolgingPeriodeMinimalDTO(periode);

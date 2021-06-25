@@ -7,7 +7,6 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -18,8 +17,7 @@ import java.util.stream.IntStream;
 import static org.apache.commons.lang3.RandomStringUtils.randomNumeric;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.Assert.assertTrue;
 
 public class OppfolgingFeedRepositoryTest {
 
@@ -76,8 +74,8 @@ public class OppfolgingFeedRepositoryTest {
     }
 
     @Test
-    public void hentOppfolgingsperiode_ingenTreff_skalKasteException() {
-        assertThrows(EmptyResultDataAccessException.class, () -> oppfolgingsPeriodeRepository.hentOppfolgingsperiode("123"));
+    public void hentOppfolgingsperiode_ingenTreff_skalVereEmpty() {
+        assertTrue(oppfolgingsPeriodeRepository.hentOppfolgingsperiode("123").isEmpty());
     }
 
     @Test
@@ -86,14 +84,18 @@ public class OppfolgingFeedRepositoryTest {
         oppfolgingsStatusRepository.opprettOppfolging(aktorId);
         oppfolgingsPeriodeRepository.start(aktorId);
         var perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId);
+        var forstePeriode = perioder.get(0);
 
         Assert.assertEquals(1, perioder.size());
 
-        var periode = oppfolgingsPeriodeRepository.hentOppfolgingsperiode(perioder.get(0).getUuid().toString());
+        var maybePeriode = oppfolgingsPeriodeRepository.hentOppfolgingsperiode(perioder.get(0).getUuid().toString());
 
-        assertNotNull(periode);
-        assertEquals(perioder.get(0).getStartDato(), periode.getStartDato());
-        assertEquals(perioder.get(0).getSluttDato(), periode.getSluttDato());
+        assertTrue(maybePeriode.isPresent());
+
+        var periode = maybePeriode.get();
+
+        assertEquals(forstePeriode.getStartDato(), periode.getStartDato());
+        assertEquals(forstePeriode.getSluttDato(), periode.getSluttDato());
 
     }
 
@@ -109,9 +111,12 @@ public class OppfolgingFeedRepositoryTest {
 
         var eldstePeriode = avsluttetPeriode.findFirst().orElse(null);
 
-        var periode = oppfolgingsPeriodeRepository.hentOppfolgingsperiode(eldstePeriode.getUuid().toString());
+        var maybePeriode = oppfolgingsPeriodeRepository.hentOppfolgingsperiode(eldstePeriode.getUuid().toString());
 
-        assertNotNull(periode);
+        assertTrue(maybePeriode.isPresent());
+
+        var periode = maybePeriode.get();
+
         assertEquals(eldstePeriode.getStartDato(), periode.getStartDato());
         assertEquals(eldstePeriode.getSluttDato(), periode.getSluttDato());
 

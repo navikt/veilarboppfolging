@@ -1,8 +1,8 @@
 package no.nav.veilarboppfolging.repository;
 
 import no.nav.common.types.identer.AktorId;
-import no.nav.veilarboppfolging.domain.EskaleringsvarselData;
-import no.nav.veilarboppfolging.domain.OppfolgingTable;
+import no.nav.veilarboppfolging.repository.entity.EskaleringsvarselEntity;
+import no.nav.veilarboppfolging.repository.entity.OppfolgingEntity;
 import no.nav.veilarboppfolging.test.DbTestUtils;
 import no.nav.veilarboppfolging.test.LocalH2Database;
 import org.junit.Before;
@@ -10,11 +10,11 @@ import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Optional;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class EskaleringsvarselRepositoryTest {
@@ -47,23 +47,29 @@ public class EskaleringsvarselRepositoryTest {
 
         // Create the escalation warning, and test that retrieving
         // the current warning yields the object we just created.
-        eskaleringsvarselRepository.create(EskaleringsvarselData.builder()
+        eskaleringsvarselRepository.create(EskaleringsvarselEntity.builder()
                 .aktorId(AKTOR_ID.get())
                 .opprettetAv(SAKSBEHANDLER_ID)
                 .opprettetBegrunnelse(BEGRUNNELSE)
                 .build());
 
-        EskaleringsvarselData e = gjeldendeEskaleringsVarsel(AKTOR_ID);
+        Optional<EskaleringsvarselEntity> maybeEskaleringsvarsel1 = gjeldendeEskaleringsVarsel(AKTOR_ID);
 
-        assertThat(e.getAktorId(), is(AKTOR_ID.get()));
-        assertThat(e.getOpprettetAv(), is(SAKSBEHANDLER_ID));
-        assertThat(e.getOpprettetBegrunnelse(), is(BEGRUNNELSE));
+        assertTrue(maybeEskaleringsvarsel1.isPresent());
+
+        EskaleringsvarselEntity eskaleringsvarsel = maybeEskaleringsvarsel1.get();
+
+        assertEquals(AKTOR_ID.get(), eskaleringsvarsel.getAktorId());
+        assertEquals(SAKSBEHANDLER_ID, eskaleringsvarsel.getOpprettetAv());
+        assertEquals(BEGRUNNELSE, eskaleringsvarsel.getOpprettetBegrunnelse());
 
         // Finish the escalation warning, and test that retrieving
         // the current warning yields nothing.
-        eskaleringsvarselRepository.finish(AKTOR_ID, e.getVarselId(), SAKSBEHANDLER_ID, "Begrunnelse");
+        eskaleringsvarselRepository.finish(AKTOR_ID, eskaleringsvarsel.getVarselId(), SAKSBEHANDLER_ID, "Begrunnelse", ZonedDateTime.now());
 
-        assertNull(gjeldendeEskaleringsVarsel(AKTOR_ID));
+        Optional<EskaleringsvarselEntity> maybeIngenEskaleringsvarsel = gjeldendeEskaleringsVarsel(AKTOR_ID);
+
+        assertTrue(maybeIngenEskaleringsvarsel.isEmpty());
     }
 
     /**
@@ -72,11 +78,11 @@ public class EskaleringsvarselRepositoryTest {
      */
     @Test
     public void testHistory() {
-        List<EskaleringsvarselData> list;
-        EskaleringsvarselData e;
+        List<EskaleringsvarselEntity> list;
+        EskaleringsvarselEntity e;
 
         for (int i = 0; i < NUM_ITEMS; i++) {
-            e = EskaleringsvarselData.builder()
+            e = EskaleringsvarselEntity.builder()
                     .aktorId(AKTOR_ID.get())
                     .opprettetAv(SAKSBEHANDLER_ID)
                     .opprettetBegrunnelse(BEGRUNNELSE)
@@ -88,9 +94,9 @@ public class EskaleringsvarselRepositoryTest {
         assertEquals(list.size(), NUM_ITEMS);
     }
 
-    private EskaleringsvarselData gjeldendeEskaleringsVarsel(AktorId aktorId) {
-        OppfolgingTable oppfolging = oppfolgingsStatusRepository.fetch(aktorId);
-        return eskaleringsvarselRepository.fetch(oppfolging.getGjeldendeEskaleringsvarselId());
+    private Optional<EskaleringsvarselEntity> gjeldendeEskaleringsVarsel(AktorId aktorId) {
+        OppfolgingEntity oppfolging = oppfolgingsStatusRepository.hentOppfolging(aktorId).orElseThrow();
+        return eskaleringsvarselRepository.hentEskaleringsvarsel(oppfolging.getGjeldendeEskaleringsvarselId());
     }
 
 }

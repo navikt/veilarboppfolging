@@ -84,7 +84,7 @@ public class KafkaIntegrationTest {
                 .build()
                 .start();
 
-        TestUtils.verifiserAsynkront(100, TimeUnit.SECONDS, () -> {
+        TestUtils.verifiserAsynkront(15, TimeUnit.SECONDS, () -> {
             assertEquals(oppfolgingEndret.getAktoerid(), konsumertMelding.get().getAktorId());
         });
     }
