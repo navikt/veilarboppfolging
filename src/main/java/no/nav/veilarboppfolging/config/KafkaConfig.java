@@ -1,7 +1,7 @@
 package no.nav.veilarboppfolging.config;
 
 import io.micrometer.core.instrument.MeterRegistry;
-import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
+import net.javacrumbs.shedlock.core.LockProvider;
 import no.nav.common.job.leader_election.LeaderElectionClient;
 import no.nav.common.kafka.consumer.KafkaConsumerClient;
 import no.nav.common.kafka.consumer.feilhandtering.KafkaConsumerRecordProcessor;
@@ -52,6 +52,7 @@ public class KafkaConfig {
     public KafkaConfig(
             LeaderElectionClient leaderElectionClient,
             JdbcTemplate jdbcTemplate,
+            LockProvider lockProvider,
             KafkaConsumerService kafkaConsumerService,
             KafkaProperties kafkaProperties,
             Credentials credentials,
@@ -80,7 +81,7 @@ public class KafkaConfig {
 
         consumerRecordProcessor = KafkaConsumerRecordProcessorBuilder
                 .builder()
-                .withLockProvider(new JdbcTemplateLockProvider(jdbcTemplate))
+                .withLockProvider(lockProvider)
                 .withKafkaConsumerRepository(consumerRepository)
                 .withConsumerConfigs(findConsumerConfigsWithStoreOnFailure(topicConfigs))
                 .build();

@@ -10,7 +10,6 @@ spec:
   ingresses:
     - https://veilarboppfolging.nais.adeo.no
     - https://app.adeo.no/veilarboppfolging
-  leaderElection: true
   webproxy: true
   port: 8080
   prometheus:
