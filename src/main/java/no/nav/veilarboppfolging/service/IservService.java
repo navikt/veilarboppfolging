@@ -12,7 +12,6 @@ import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV1;
 import no.nav.veilarboppfolging.repository.UtmeldingRepository;
 import no.nav.veilarboppfolging.repository.entity.UtmeldingEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -21,7 +20,6 @@ import java.util.List;
 import static java.util.stream.Collectors.toList;
 import static no.nav.veilarboppfolging.service.IservService.AvslutteOppfolgingResultat.*;
 import static no.nav.veilarboppfolging.utils.ArenaUtils.erIserv;
-import static no.nav.veilarboppfolging.utils.ArenaUtils.erUnderOppfolging;
 
 @Slf4j
 @Service
@@ -40,7 +38,6 @@ public class IservService {
     private final UtmeldingRepository utmeldingRepository;
     private final OppfolgingService oppfolgingService;
     private final AuthService authService;
-    private final TransactionTemplate transactor;
 
     public IservService(
             AuthContextHolder authContextHolder,
@@ -48,8 +45,7 @@ public class IservService {
             MetricsService metricsService,
             UtmeldingRepository utmeldingRepository,
             OppfolgingService oppfolgingService,
-            AuthService authService,
-            TransactionTemplate transactor
+            AuthService authService
     ) {
         this.authContextHolder = authContextHolder;
         this.systemUserTokenProvider = systemUserTokenProvider;
@@ -57,7 +53,6 @@ public class IservService {
         this.utmeldingRepository = utmeldingRepository;
         this.oppfolgingService = oppfolgingService;
         this.authService = authService;
-        this.transactor = transactor;
     }
 
     /**
@@ -76,26 +71,15 @@ public class IservService {
     }
 
     public void behandleEndretBruker(EndringPaaOppfoelgingsBrukerV1 oppfolgingEndret) {
-        transactor.executeWithoutResult((ignored) -> {
-            AktorId aktorId = AktorId.of(oppfolgingEndret.getAktoerid());
+        AktorId aktorId = AktorId.of(oppfolgingEndret.getAktoerid());
 
-            log.info("Behandler bruker: {}", aktorId);
-
-            if (erIserv(oppfolgingEndret.getFormidlingsgruppekode())) {
-                oppdaterUtmeldingTabell(oppfolgingEndret);
-            } else {
-                utmeldingRepository.slettBrukerFraUtmeldingTabell(aktorId);
-
-                // TODO: Denne logikken ligger også i OppfolgingEndringService, den trenger trolig å ligge kun 1 sted
-                if (erUnderOppfolging(oppfolgingEndret.getFormidlingsgruppekode(), oppfolgingEndret.getKvalifiseringsgruppekode())) {
-                    if (oppfolgingService.erUnderOppfolging(aktorId)) {
-                        log.info("Bruker med aktørid {} er allerede under oppfølging", oppfolgingEndret.getAktoerid());
-                    } else {
-                        startOppfolging(oppfolgingEndret);
-                    }
-                }
-            }
-        });
+        if (erIserv(oppfolgingEndret.getFormidlingsgruppekode())) {
+            log.info("Oppdaterer eller insert i utmelding tabell. aktorId={}", aktorId);
+            oppdaterUtmeldingTabell(oppfolgingEndret);
+        } else {
+            log.info("Sletter fra utmelding tabell. aktorId={}", aktorId);
+            utmeldingRepository.slettBrukerFraUtmeldingTabell(aktorId);
+        }
     }
 
     private List<AvslutteOppfolgingResultat> finnBrukereOgAvslutt() {
@@ -123,12 +107,6 @@ public class IservService {
         }
 
         return resultater;
-    }
-
-    private void startOppfolging(EndringPaaOppfoelgingsBrukerV1 oppfolgingEndret) {
-        log.info("Starter oppfølging automatisk for bruker med aktørid {}", oppfolgingEndret.getAktoerid());
-        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(AktorId.of(oppfolgingEndret.getAktoerid()));
-        metricsService.startetOppfolgingAutomatisk(oppfolgingEndret.getFormidlingsgruppekode(), oppfolgingEndret.getKvalifiseringsgruppekode());
     }
 
     private void oppdaterUtmeldingTabell(EndringPaaOppfoelgingsBrukerV1 oppfolgingEndret) {
