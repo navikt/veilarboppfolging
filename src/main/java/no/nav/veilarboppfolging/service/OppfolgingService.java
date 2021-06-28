@@ -58,6 +58,7 @@ public class OppfolgingService {
     private final NyeBrukereFeedRepository nyeBrukereFeedRepository;
     private final MaalRepository maalRepository;
     private final BrukerOppslagFlereOppfolgingAktorRepository brukerOppslagFlereOppfolgingAktorRepository;
+    private final UnleashService unleashService;
     private final TransactionTemplate transactor;
 
     @Autowired
@@ -78,6 +79,7 @@ public class OppfolgingService {
             NyeBrukereFeedRepository nyeBrukereFeedRepository,
             MaalRepository maalRepository,
             BrukerOppslagFlereOppfolgingAktorRepository brukerOppslagFlereOppfolgingAktorRepository,
+            UnleashService unleashService,
             TransactionTemplate transactor
     ) {
         this.kafkaProducerService = kafkaProducerService;
@@ -95,6 +97,7 @@ public class OppfolgingService {
         this.nyeBrukereFeedRepository = nyeBrukereFeedRepository;
         this.maalRepository = maalRepository;
         this.brukerOppslagFlereOppfolgingAktorRepository = brukerOppslagFlereOppfolgingAktorRepository;
+        this.unleashService = unleashService;
         this.transactor = transactor;
     }
 
@@ -518,6 +521,11 @@ public class OppfolgingService {
             boolean erUnderOppfolgingIArena = ArenaUtils.erUnderOppfolging(oppfolgingTilstand.getFormidlingsgruppe(), oppfolgingTilstand.getServicegruppe());
 
             if (!erBrukerUnderOppfolging && erUnderOppfolgingIArena) {
+                if (unleashService.skalOppdaterOppfolgingMedKafka()) {
+                    log.info("Oppdatering av oppfølging med kafka er skrudd på. Stopper sideeffekt for start av oppfølging for aktorId={}", aktorId);
+                    return;
+                }
+
                 startOppfolgingHvisIkkeAlleredeStartet(aktorId);
             } else {
                 boolean erSykmeldtMedArbeidsgiver = erSykmeldtMedArbeidsgiver(oppfolgingTilstand);
@@ -584,6 +592,11 @@ public class OppfolgingService {
         log.info("Avslutter oppfølgingsperiode for bruker");
 
         if (kanAvslutteOppfolging) {
+            if (unleashService.skalOppdaterOppfolgingMedKafka()) {
+                log.info("Oppdatering av oppfølging med kafka er skrudd på. Stopper sideeffekt for avslutting av oppfølging for aktorId={}", aktorId);
+                return;
+            }
+
             avsluttOppfolgingForBruker(aktorId, null, "Oppfølging avsluttet automatisk pga. inaktiv bruker som ikke kan reaktiveres");
         } else {
             log.info("Avslutting av oppfølging ikke tillatt for aktorid {}", aktorId);
