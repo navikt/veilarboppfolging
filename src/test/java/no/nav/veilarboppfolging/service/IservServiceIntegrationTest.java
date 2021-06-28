@@ -13,7 +13,6 @@ import no.nav.veilarboppfolging.test.LocalH2Database;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.ZonedDateTime;
 import java.util.Optional;
@@ -45,7 +44,6 @@ public class IservServiceIntegrationTest {
     @Before
     public void setup() {
         JdbcTemplate db = LocalH2Database.getDb();
-        TransactionTemplate transactor = DbTestUtils.createTransactor(db);
 
         DbTestUtils.cleanupTestDb();
 
@@ -59,7 +57,7 @@ public class IservServiceIntegrationTest {
                 AuthContextHolderThreadLocal.instance(),
                 () -> AuthTestUtils.createAuthContext(UserRole.SYSTEM, "srvtest").getIdToken().serialize(),
                 mock(MetricsService.class),
-                utmeldingRepository, oppfolgingService, authService, transactor
+                utmeldingRepository, oppfolgingService, authService
         );
     }
 
@@ -108,25 +106,6 @@ public class IservServiceIntegrationTest {
         veilarbArenaOppfolging.setFormidlingsgruppekode("ARBS");
         iservService.behandleEndretBruker(veilarbArenaOppfolging);
         assertTrue(utmeldingRepository.eksisterendeIservBruker(AKTOR_ID).isEmpty());
-    }
-
-    @Test
-    public void behandleEndretBruker_skalStarteBrukerSomHarOppfolgingsstatus() {
-        EndringPaaOppfoelgingsBrukerV1 veilarbArenaOppfolging = getArenaBruker();
-        veilarbArenaOppfolging.setFormidlingsgruppekode("ARBS");
-        when(oppfolgingService.erUnderOppfolging(any())).thenReturn(false);
-
-        iservService.behandleEndretBruker(veilarbArenaOppfolging);
-        verify(oppfolgingService).startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
-    }
-
-    @Test
-    public void behandleEndretBruker_skalIkkeStarteBrukerSomHarOppfolgingsstatusDersomAlleredeUnderOppfolging() {
-        EndringPaaOppfoelgingsBrukerV1 veilarbArenaOppfolging = getArenaBruker();
-        veilarbArenaOppfolging.setFormidlingsgruppekode("ARBS");
-
-        iservService.behandleEndretBruker(veilarbArenaOppfolging);
-        verify(oppfolgingService, never()).startOppfolgingHvisIkkeAlleredeStartet(any(AktorId.class));
     }
   
     @Test

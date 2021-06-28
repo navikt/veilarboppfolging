@@ -67,6 +67,7 @@ public class AktiverBrukerIntegrationTest {
                 new KvpRepository(db, transactor), new NyeBrukereFeedRepository(db),
                 new MaalRepository(db, transactor),
                 mock(BrukerOppslagFlereOppfolgingAktorRepository.class),
+                null,
                 transactor
         );
 
