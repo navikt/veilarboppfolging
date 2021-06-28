@@ -521,8 +521,8 @@ public class OppfolgingService {
             boolean erUnderOppfolgingIArena = ArenaUtils.erUnderOppfolging(oppfolgingTilstand.getFormidlingsgruppe(), oppfolgingTilstand.getServicegruppe());
 
             if (!erBrukerUnderOppfolging && erUnderOppfolgingIArena) {
-                if (unleashService.skalOppdaterOppfolgingMedKafka()) {
-                    log.info("Oppdatering av oppfølging med kafka er skrudd på. Stopper sideeffekt for start av oppfølging for aktorId={}", aktorId);
+                if (unleashService.skalIkkeOppdatereMedSideeffekt()) {
+                    log.info("Oppdatering av oppfølging med sideffekt er skrudd av. Stopper sideeffekt for start av oppfølging for aktorId={}", aktorId);
                     return;
                 }
 
@@ -592,8 +592,8 @@ public class OppfolgingService {
         log.info("Avslutter oppfølgingsperiode for bruker");
 
         if (kanAvslutteOppfolging) {
-            if (unleashService.skalOppdaterOppfolgingMedKafka()) {
-                log.info("Oppdatering av oppfølging med kafka er skrudd på. Stopper sideeffekt for avslutting av oppfølging for aktorId={}", aktorId);
+            if (unleashService.skalIkkeOppdatereMedSideeffekt()) {
+                log.info("Oppdatering av oppfølging med sideffekt er skrudd av. Stopper sideeffekt for avslutting av oppfølging for aktorId={}", aktorId);
                 return;
             }
 

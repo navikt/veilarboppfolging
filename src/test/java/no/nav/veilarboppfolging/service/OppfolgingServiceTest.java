@@ -106,7 +106,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         when(ytelseskontraktClient.hentYtelseskontraktListe(any())).thenReturn(mock(YtelseskontraktResponse.class));
         when(manuellStatusService.hentDkifKontaktinfo(FNR)).thenReturn(new DkifKontaktinfo());
 
-        when(unleashService.skalOppdaterOppfolgingMedKafka()).thenReturn(false);
+        when(unleashService.skalIkkeOppdatereMedSideeffekt()).thenReturn(false);
     }
 
     @Test
