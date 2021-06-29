@@ -374,11 +374,9 @@ public class OppfolgingService {
             if (maybeEskaleringsvarsel.isPresent()) {
                 EskaleringsvarselEntity eskaleringsvarsel = maybeEskaleringsvarsel.get();
 
-                maybeKvpPeriode.ifPresent((kvpPeriode) -> {
-                    if (sjekkTilgangGittKvp(authService, kvpPeriode, eskaleringsvarsel::getOpprettetDato)) {
-                        oppfolging.setGjeldendeEskaleringsvarsel(eskaleringsvarsel);
-                    }
-                });
+                if (sjekkTilgangGittKvp(authService, maybeKvpPeriode.orElse(null), eskaleringsvarsel::getOpprettetDato)) {
+                    oppfolging.setGjeldendeEskaleringsvarsel(eskaleringsvarsel);
+                }
             } else {
                 log.error("Fant ikke eskaleringsvarsel for id " + oppfolgingEntity.getGjeldendeEskaleringsvarselId());
             }
