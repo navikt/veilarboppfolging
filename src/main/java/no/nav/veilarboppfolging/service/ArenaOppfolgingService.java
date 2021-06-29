@@ -79,7 +79,21 @@ public class ArenaOppfolgingService {
                 .orElse(false);
 
         if (erUnderOppfolgingIVeilarbarena != erUnderOppfolging) {
-            return hentOppfolgingTilstandDirekteFraArena(fnr);
+            var oppfolgingTilstand = hentOppfolgingTilstandDirekteFraArena(fnr);
+
+            maybeArenaOppfolging.ifPresent(arenaOppfolging -> {
+                log.info(
+                        "Differanse mellom oppfolging fra veilarbarena og direkte fra Arena."
+                        + " veilarbarena.formidlingsgruppe={} veilarbarena.servicegruppe={}"
+                        + " arena.formidlingsgruppe={} arena.servicegruppe={}",
+                        arenaOppfolging.getFormidlingsgruppe(),
+                        arenaOppfolging.getServicegruppe(),
+                        oppfolgingTilstand.map(ArenaOppfolgingTilstand::getFormidlingsgruppe).orElse(null),
+                        oppfolgingTilstand.map(ArenaOppfolgingTilstand::getServicegruppe).orElse(null)
+                );
+            });
+
+            return oppfolgingTilstand;
         }
 
         return maybeArenaOppfolging;
