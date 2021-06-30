@@ -28,7 +28,8 @@ import javax.annotation.PostConstruct;
 import java.util.List;
 
 import static no.nav.common.kafka.consumer.util.ConsumerUtils.findConsumerConfigsWithStoreOnFailure;
-import static no.nav.common.kafka.util.KafkaPropertiesPreset.*;
+import static no.nav.common.kafka.util.KafkaPropertiesPreset.aivenByteProducerProperties;
+import static no.nav.common.kafka.util.KafkaPropertiesPreset.onPremByteProducerProperties;
 
 
 @Configuration
@@ -38,7 +39,7 @@ public class KafkaConfig {
     public final static String CONSUMER_GROUP_ID = "veilarboppfolging-consumer";
     public final static String PRODUCER_CLIENT_ID = "veilarboppfolging-producer";
 
-    private final KafkaConsumerClient consumerClient;
+    private final KafkaConsumerClient aivenConsumerClient;
 
     private final KafkaConsumerRecordProcessor consumerRecordProcessor;
 
@@ -74,8 +75,8 @@ public class KafkaConfig {
                         )
         );
 
-        consumerClient = KafkaConsumerClientBuilder.builder()
-                .withProperties(onPremDefaultConsumerProperties(CONSUMER_GROUP_ID, kafkaProperties.getBrokersUrl(), credentials))
+        aivenConsumerClient = KafkaConsumerClientBuilder.builder()
+                .withProperties(aivenByteProducerProperties(CONSUMER_GROUP_ID))
                 .withTopicConfigs(topicConfigs)
                 .build();
 
@@ -133,7 +134,7 @@ public class KafkaConfig {
 
     @PostConstruct
     public void start() {
-        consumerClient.start();
+        aivenConsumerClient.start();
         consumerRecordProcessor.start();
         onPremProducerRecordProcessor.start();
         aivenProducerRecordProcessor.start();
