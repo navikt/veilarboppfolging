@@ -28,8 +28,7 @@ import javax.annotation.PostConstruct;
 import java.util.List;
 
 import static no.nav.common.kafka.consumer.util.ConsumerUtils.findConsumerConfigsWithStoreOnFailure;
-import static no.nav.common.kafka.util.KafkaPropertiesPreset.aivenByteProducerProperties;
-import static no.nav.common.kafka.util.KafkaPropertiesPreset.onPremByteProducerProperties;
+import static no.nav.common.kafka.util.KafkaPropertiesPreset.*;
 
 
 @Configuration
@@ -76,7 +75,7 @@ public class KafkaConfig {
         );
 
         aivenConsumerClient = KafkaConsumerClientBuilder.builder()
-                .withProperties(aivenByteProducerProperties(CONSUMER_GROUP_ID))
+                .withProperties(aivenDefaultConsumerProperties(CONSUMER_GROUP_ID))
                 .withTopicConfigs(topicConfigs)
                 .build();
 
