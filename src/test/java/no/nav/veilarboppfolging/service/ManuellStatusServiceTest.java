@@ -123,6 +123,8 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
                 .setEpostadresse("email")
                 .setMobiltelefonnummer("12345");
 
+        when(oppfolgingService.erUnderOppfolging(AKTOR_ID)).thenReturn(true);
+
         when(dkifClient.hentKontaktInfo(FNR)).thenReturn(Optional.of(kontaktinfo));
 
         gittAktivOppfolging(AKTOR_ID);
@@ -135,6 +137,19 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
     }
 
     @Test
+    public void synkroniserManuellStatusMedDkif__skal_ikke_lage_manuell_status_hvis_ikke_under_oppfolging() {
+        when(oppfolgingService.erUnderOppfolging(AKTOR_ID)).thenReturn(false);
+
+        manuellStatusService.synkroniserManuellStatusMedDkif(FNR);
+
+        verifyNoInteractions(dkifClient);
+
+        List<ManuellStatusEntity> history = manuellStatusRepository.history(AKTOR_ID);
+
+        assertTrue(history.isEmpty());
+    }
+
+    @Test
     public void synkroniserManuellStatusMedDkif__skal_ikke_lage_manuell_status_hvis_ikke_reservert() {
         DkifKontaktinfo kontaktinfo = new DkifKontaktinfo()
                 .setPersonident(FNR.get())
@@ -142,6 +157,8 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
                 .setReservert(false)
                 .setEpostadresse("email")
                 .setMobiltelefonnummer("12345");
+
+        when(oppfolgingService.erUnderOppfolging(AKTOR_ID)).thenReturn(true);
 
         when(dkifClient.hentKontaktInfo(FNR)).thenReturn(Optional.of(kontaktinfo));
 
