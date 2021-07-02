@@ -1,7 +1,9 @@
 package no.nav.veilarboppfolging.service;
 
 import no.nav.common.types.identer.AktorId;
-import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV1;
+import no.nav.pto_schema.enums.arena.Formidlingsgruppe;
+import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe;
+import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolgingTilstand;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingEntity;
@@ -39,12 +41,13 @@ public class OppfolgingEndringServiceTest {
         when(authService.getAktorIdOrThrow(TEST_FNR)).thenReturn(TEST_AKTOR_ID);
         when(oppfolgingsStatusRepository.hentOppfolging(TEST_AKTOR_ID)).thenReturn(Optional.of(new OppfolgingEntity().setUnderOppfolging(false)));
 
-        EndringPaaOppfoelgingsBrukerV1 endringPaaOppfoelgingsBrukerV1 = new EndringPaaOppfoelgingsBrukerV1()
-                .setFodselsnr(TEST_FNR.get())
-                .setFormidlingsgruppekode("ISERV")
-                .setKvalifiseringsgruppekode("VURDI");
+        EndringPaaOppfoelgingsBrukerV2 brukverV2 = EndringPaaOppfoelgingsBrukerV2.builder()
+                .fodselsnummer(TEST_FNR.get())
+                .formidlingsgruppe(Formidlingsgruppe.ISERV)
+                .kvalifiseringsgruppe(Kvalifiseringsgruppe.VURDI)
+                .build();
 
-        oppfolgingEndringService.oppdaterOppfolgingMedStatusFraArena(endringPaaOppfoelgingsBrukerV1);
+        oppfolgingEndringService.oppdaterOppfolgingMedStatusFraArena(brukverV2);
 
         verify(oppfolgingService, never()).startOppfolgingHvisIkkeAlleredeStartet(any(AktorId.class));
         verify(oppfolgingService, never()).avsluttOppfolgingForBruker(any(), any(), any());
@@ -56,12 +59,13 @@ public class OppfolgingEndringServiceTest {
         when(oppfolgingsStatusRepository.hentOppfolging(TEST_AKTOR_ID)).thenReturn(Optional.of(new OppfolgingEntity().setUnderOppfolging(false)));
         when(unleashService.skalOppdaterOppfolgingMedKafka()).thenReturn(true);
 
-        EndringPaaOppfoelgingsBrukerV1 endringPaaOppfoelgingsBrukerV1 = new EndringPaaOppfoelgingsBrukerV1()
-                .setFodselsnr(TEST_FNR.get())
-                .setFormidlingsgruppekode("ARBS")
-                .setKvalifiseringsgruppekode("VURDI");
+        EndringPaaOppfoelgingsBrukerV2 brukverV2 = EndringPaaOppfoelgingsBrukerV2.builder()
+                .fodselsnummer(TEST_FNR.get())
+                .formidlingsgruppe(Formidlingsgruppe.ARBS)
+                .kvalifiseringsgruppe(Kvalifiseringsgruppe.VURDI)
+                .build();
 
-        oppfolgingEndringService.oppdaterOppfolgingMedStatusFraArena(endringPaaOppfoelgingsBrukerV1);
+        oppfolgingEndringService.oppdaterOppfolgingMedStatusFraArena(brukverV2);
 
         verify(oppfolgingService, times(1)).startOppfolgingHvisIkkeAlleredeStartet(TEST_AKTOR_ID);
         verify(oppfolgingService, never()).avsluttOppfolgingForBruker(any(), any(), any());
@@ -73,12 +77,13 @@ public class OppfolgingEndringServiceTest {
         when(oppfolgingsStatusRepository.hentOppfolging(TEST_AKTOR_ID)).thenReturn(Optional.of(new OppfolgingEntity().setUnderOppfolging(false)));
         when(unleashService.skalOppdaterOppfolgingMedKafka()).thenReturn(false);
 
-        EndringPaaOppfoelgingsBrukerV1 endringPaaOppfoelgingsBrukerV1 = new EndringPaaOppfoelgingsBrukerV1()
-                .setFodselsnr(TEST_FNR.get())
-                .setFormidlingsgruppekode("ARBS")
-                .setKvalifiseringsgruppekode("VURDI");
+        EndringPaaOppfoelgingsBrukerV2 brukverV2 = EndringPaaOppfoelgingsBrukerV2.builder()
+                .fodselsnummer(TEST_FNR.get())
+                .formidlingsgruppe(Formidlingsgruppe.ARBS)
+                .kvalifiseringsgruppe(Kvalifiseringsgruppe.VURDI)
+                .build();
 
-        oppfolgingEndringService.oppdaterOppfolgingMedStatusFraArena(endringPaaOppfoelgingsBrukerV1);
+        oppfolgingEndringService.oppdaterOppfolgingMedStatusFraArena(brukverV2);
 
         verify(oppfolgingService, never()).startOppfolgingHvisIkkeAlleredeStartet(any(AktorId.class));
         verify(oppfolgingService, never()).avsluttOppfolgingForBruker(any(), any(), any());
@@ -96,12 +101,13 @@ public class OppfolgingEndringServiceTest {
         when(unleashService.skalOppdaterOppfolgingMedKafka()).thenReturn(true);
 
 
-        EndringPaaOppfoelgingsBrukerV1 endringPaaOppfoelgingsBrukerV1 = new EndringPaaOppfoelgingsBrukerV1()
-                .setFodselsnr(TEST_FNR.get())
-                .setFormidlingsgruppekode("ISERV")
-                .setKvalifiseringsgruppekode("VURDI");
+        EndringPaaOppfoelgingsBrukerV2 brukverV2 = EndringPaaOppfoelgingsBrukerV2.builder()
+                .fodselsnummer(TEST_FNR.get())
+                .formidlingsgruppe(Formidlingsgruppe.ISERV)
+                .kvalifiseringsgruppe(Kvalifiseringsgruppe.VURDI)
+                .build();
 
-        oppfolgingEndringService.oppdaterOppfolgingMedStatusFraArena(endringPaaOppfoelgingsBrukerV1);
+        oppfolgingEndringService.oppdaterOppfolgingMedStatusFraArena(brukverV2);
 
 
         verify(oppfolgingService, never()).startOppfolgingHvisIkkeAlleredeStartet(any(AktorId.class));
@@ -125,12 +131,13 @@ public class OppfolgingEndringServiceTest {
         when(unleashService.skalOppdaterOppfolgingMedKafka()).thenReturn(false);
 
 
-        EndringPaaOppfoelgingsBrukerV1 endringPaaOppfoelgingsBrukerV1 = new EndringPaaOppfoelgingsBrukerV1()
-                .setFodselsnr(TEST_FNR.get())
-                .setFormidlingsgruppekode("ISERV")
-                .setKvalifiseringsgruppekode("VURDI");
+        EndringPaaOppfoelgingsBrukerV2 brukverV2 = EndringPaaOppfoelgingsBrukerV2.builder()
+                .fodselsnummer(TEST_FNR.get())
+                .formidlingsgruppe(Formidlingsgruppe.ISERV)
+                .kvalifiseringsgruppe(Kvalifiseringsgruppe.VURDI)
+                .build();
 
-        oppfolgingEndringService.oppdaterOppfolgingMedStatusFraArena(endringPaaOppfoelgingsBrukerV1);
+        oppfolgingEndringService.oppdaterOppfolgingMedStatusFraArena(brukverV2);
 
 
         verify(oppfolgingService, never()).startOppfolgingHvisIkkeAlleredeStartet(any(AktorId.class));
@@ -148,12 +155,13 @@ public class OppfolgingEndringServiceTest {
         when(arenaOppfolgingService.hentOppfolgingTilstandDirekteFraArena(TEST_FNR)).thenReturn(Optional.of(arenaTilstand));
         when(kvpService.erUnderKvp(TEST_AKTOR_ID)).thenReturn(false);
 
-        EndringPaaOppfoelgingsBrukerV1 endringPaaOppfoelgingsBrukerV1 = new EndringPaaOppfoelgingsBrukerV1()
-                .setFodselsnr(TEST_FNR.get())
-                .setFormidlingsgruppekode("ISERV")
-                .setKvalifiseringsgruppekode("VURDI");
+        EndringPaaOppfoelgingsBrukerV2 brukverV2 = EndringPaaOppfoelgingsBrukerV2.builder()
+                .fodselsnummer(TEST_FNR.get())
+                .formidlingsgruppe(Formidlingsgruppe.ISERV)
+                .kvalifiseringsgruppe(Kvalifiseringsgruppe.VURDI)
+                .build();
 
-        oppfolgingEndringService.oppdaterOppfolgingMedStatusFraArena(endringPaaOppfoelgingsBrukerV1);
+        oppfolgingEndringService.oppdaterOppfolgingMedStatusFraArena(brukverV2);
 
 
         verify(oppfolgingService, never()).startOppfolgingHvisIkkeAlleredeStartet(any(AktorId.class));
@@ -170,12 +178,13 @@ public class OppfolgingEndringServiceTest {
         when(arenaOppfolgingService.hentOppfolgingTilstandDirekteFraArena(TEST_FNR)).thenReturn(Optional.of(arenaTilstand));
         when(kvpService.erUnderKvp(TEST_AKTOR_ID)).thenReturn(true);
 
-        EndringPaaOppfoelgingsBrukerV1 endringPaaOppfoelgingsBrukerV1 = new EndringPaaOppfoelgingsBrukerV1()
-                .setFodselsnr(TEST_FNR.get())
-                .setFormidlingsgruppekode("ISERV")
-                .setKvalifiseringsgruppekode("VURDI");
+        EndringPaaOppfoelgingsBrukerV2 brukverV2 = EndringPaaOppfoelgingsBrukerV2.builder()
+                .fodselsnummer(TEST_FNR.get())
+                .formidlingsgruppe(Formidlingsgruppe.ISERV)
+                .kvalifiseringsgruppe(Kvalifiseringsgruppe.VURDI)
+                .build();
 
-        oppfolgingEndringService.oppdaterOppfolgingMedStatusFraArena(endringPaaOppfoelgingsBrukerV1);
+        oppfolgingEndringService.oppdaterOppfolgingMedStatusFraArena(brukverV2);
 
 
         verify(oppfolgingService, never()).startOppfolgingHvisIkkeAlleredeStartet(any(AktorId.class));

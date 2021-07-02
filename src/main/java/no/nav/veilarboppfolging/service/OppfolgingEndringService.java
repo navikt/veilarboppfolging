@@ -4,7 +4,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV1;
+import no.nav.pto_schema.enums.arena.Formidlingsgruppe;
+import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe;
+import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolgingTilstand;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingEntity;
@@ -13,6 +15,7 @@ import org.springframework.stereotype.Service;
 import java.util.Optional;
 
 import static java.lang.Boolean.TRUE;
+import static java.util.Optional.ofNullable;
 import static no.nav.veilarboppfolging.utils.ArenaUtils.erIserv;
 import static no.nav.veilarboppfolging.utils.ArenaUtils.erUnderOppfolging;
 
@@ -35,12 +38,12 @@ public class OppfolgingEndringService {
 
     private final UnleashService unleashService;
 
-    public void oppdaterOppfolgingMedStatusFraArena(EndringPaaOppfoelgingsBrukerV1 endringPaaOppfoelgingsBrukerV1) {
-        Fnr fnr = Fnr.of(endringPaaOppfoelgingsBrukerV1.getFodselsnr());
+    public void oppdaterOppfolgingMedStatusFraArena(EndringPaaOppfoelgingsBrukerV2 brukerV2) {
+        Fnr fnr = Fnr.of(brukerV2.getFodselsnummer());
         AktorId aktorId = authService.getAktorIdOrThrow(fnr);
 
-        String formidlingsgruppe = endringPaaOppfoelgingsBrukerV1.getFormidlingsgruppekode();
-        String kvalifiseringsgruppe = endringPaaOppfoelgingsBrukerV1.getKvalifiseringsgruppekode();
+        String formidlingsgruppe = ofNullable(brukerV2.getFormidlingsgruppe()).map(Formidlingsgruppe::toString).orElse(null);
+        String kvalifiseringsgruppe = ofNullable(brukerV2.getKvalifiseringsgruppe()).map(Kvalifiseringsgruppe::toString).orElse(null);
 
         Optional<OppfolgingEntity> maybeOppfolging = oppfolgingsStatusRepository.hentOppfolging(aktorId);
 
