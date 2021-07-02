@@ -8,15 +8,18 @@ import no.nav.common.auth.context.UserRole;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV1;
+import no.nav.pto_schema.enums.arena.Formidlingsgruppe;
+import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
 import no.nav.veilarboppfolging.repository.UtmeldingRepository;
 import no.nav.veilarboppfolging.repository.entity.UtmeldingEntity;
 import org.springframework.stereotype.Service;
 
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
+import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 import static no.nav.veilarboppfolging.service.IservService.AvslutteOppfolgingResultat.*;
 import static no.nav.veilarboppfolging.utils.ArenaUtils.erIserv;
@@ -70,12 +73,14 @@ public class IservService {
                 resultater.size());
     }
 
-    public void behandleEndretBruker(EndringPaaOppfoelgingsBrukerV1 oppfolgingEndret) {
-        AktorId aktorId = AktorId.of(oppfolgingEndret.getAktoerid());
+    public void behandleEndretBruker(EndringPaaOppfoelgingsBrukerV2 brukerV2) {
+        AktorId aktorId = authService.getAktorIdOrThrow(Fnr.of(brukerV2.getFodselsnummer()));
 
-        if (erIserv(oppfolgingEndret.getFormidlingsgruppekode())) {
+        String formidlingsgruppe = ofNullable(brukerV2.getFormidlingsgruppe()).map(Formidlingsgruppe::toString).orElse(null);
+
+        if (erIserv(formidlingsgruppe)) {
             log.info("Oppdaterer eller insert i utmelding tabell. aktorId={}", aktorId);
-            oppdaterUtmeldingTabell(oppfolgingEndret);
+            oppdaterUtmeldingTabell(brukerV2);
         } else {
             log.info("Sletter fra utmelding tabell. aktorId={}", aktorId);
             utmeldingRepository.slettBrukerFraUtmeldingTabell(aktorId);
@@ -109,19 +114,24 @@ public class IservService {
         return resultater;
     }
 
-    private void oppdaterUtmeldingTabell(EndringPaaOppfoelgingsBrukerV1 oppfolgingEndret) {
-        AktorId aktorId = AktorId.of(oppfolgingEndret.getAktoerid());
-        ZonedDateTime iservFraDato = oppfolgingEndret.getIserv_fra_dato();
+    private void oppdaterUtmeldingTabell(EndringPaaOppfoelgingsBrukerV2 oppfolgingEndret) {
+        AktorId aktorId = authService.getAktorIdOrThrow(Fnr.of(oppfolgingEndret.getFodselsnummer()));
+        LocalDate iservFraDato = oppfolgingEndret.getIservFraDato();
 
-        if (finnesIUtmeldingTabell(oppfolgingEndret)) {
-            utmeldingRepository.updateUtmeldingTabell(aktorId, iservFraDato);
+        if (iservFraDato == null) {
+            log.error("Kan ikke oppdatere utmeldingstabell med bruker siden iservFraDato mangler. aktorId={}", aktorId);
+            throw new IllegalArgumentException("iservFraDato mangler på EndringPaaOppfoelgingsBrukerV2");
+        }
+
+        if (finnesIUtmeldingTabell(aktorId)) {
+            utmeldingRepository.updateUtmeldingTabell(aktorId, iservFraDato.atStartOfDay(ZoneId.systemDefault()));
         } else if (oppfolgingService.erUnderOppfolging(aktorId)) {
-            utmeldingRepository.insertUtmeldingTabell(aktorId, iservFraDato);
+            utmeldingRepository.insertUtmeldingTabell(aktorId, iservFraDato.atStartOfDay(ZoneId.systemDefault()));
         }
     }
 
-    private boolean finnesIUtmeldingTabell(EndringPaaOppfoelgingsBrukerV1 oppfolgingEndret) {
-        return utmeldingRepository.eksisterendeIservBruker(AktorId.of(oppfolgingEndret.getAktoerid())).isPresent();
+    private boolean finnesIUtmeldingTabell(AktorId aktorId) {
+        return utmeldingRepository.eksisterendeIservBruker(aktorId).isPresent();
     }
 
     AvslutteOppfolgingResultat avslutteOppfolging(AktorId aktorId) {

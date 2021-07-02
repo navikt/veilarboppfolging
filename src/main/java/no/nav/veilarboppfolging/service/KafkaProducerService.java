@@ -85,34 +85,39 @@ public class KafkaProducerService {
     }
 
     public void publiserKvpStartet(AktorId aktorId, String enhetId, String opprettetAvVeilederId, String begrunnelse, ZonedDateTime startDato) {
-        KvpStartetV1 recordValue = new KvpStartetV1()
-                .setAktorId(aktorId.get())
-                .setEnhetId(enhetId)
-                .setOpprettetAv(opprettetAvVeilederId)
-                .setOpprettetBegrunnelse(begrunnelse)
-                .setOpprettetDato(startDato);
+        KvpStartetV1 recordValue = KvpStartetV1.builder()
+                .aktorId(aktorId.get())
+                .enhetId(enhetId)
+                .opprettetAv(opprettetAvVeilederId)
+                .opprettetBegrunnelse(begrunnelse)
+                .opprettetDato(startDato)
+                .build();
 
         store(kafkaProperties.getKvpStartetTopic(), aktorId.get(), recordValue);
     }
 
     public void publiserKvpAvsluttet(AktorId aktorId, String avsluttetAv, String begrunnelse, ZonedDateTime sluttDato) {
-        KvpAvsluttetV1 recordValue = new KvpAvsluttetV1()
-                .setAktorId(aktorId.get())
-                .setAvsluttetAv(avsluttetAv) // veilederId eller System
-                .setAvsluttetBegrunnelse(begrunnelse)
-                .setAvsluttetDato(sluttDato);
+        KvpAvsluttetV1 recordValue = KvpAvsluttetV1.builder()
+                .aktorId(aktorId.get())
+                .avsluttetAv(avsluttetAv) // veilederId eller System
+                .avsluttetBegrunnelse(begrunnelse)
+                .avsluttetDato(sluttDato)
+                .build();
 
         store(kafkaProperties.getKvpAvlsuttetTopic(), aktorId.get(), recordValue);
     }
 
-    public void publiserEndretMal(AktorId aktorId, String veilederIdent){
-        EndringPaMalV1 recordValue = new EndringPaMalV1()
-                .setAktorId(aktorId.get())
-                .setEndretTidspunk(ZonedDateTime.now())
-                .setVeilederIdent(veilederIdent)
-                .setLagtInnAv(authContextHolder.erEksternBruker()
-                        ? EndringPaMalV1.InnsenderData.BRUKER
-                        : EndringPaMalV1.InnsenderData.NAV);
+    public void publiserEndretMal(AktorId aktorId, String veilederIdent) {
+        EndringPaMalV1 recordValue = EndringPaMalV1.builder()
+                .aktorId(aktorId.get())
+                .endretTidspunk(ZonedDateTime.now())
+                .veilederIdent(veilederIdent)
+                .lagtInnAv(
+                        authContextHolder.erEksternBruker()
+                            ? EndringPaMalV1.InnsenderData.BRUKER
+                            : EndringPaMalV1.InnsenderData.NAV
+                )
+                .build();
 
         store(kafkaProperties.getEndringPaMalTopic(), aktorId.get(), recordValue);
     }
