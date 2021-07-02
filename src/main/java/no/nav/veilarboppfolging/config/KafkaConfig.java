@@ -1,7 +1,7 @@
 package no.nav.veilarboppfolging.config;
 
 import io.micrometer.core.instrument.MeterRegistry;
-import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
+import net.javacrumbs.shedlock.core.LockProvider;
 import no.nav.common.job.leader_election.LeaderElectionClient;
 import no.nav.common.kafka.consumer.KafkaConsumerClient;
 import no.nav.common.kafka.consumer.feilhandtering.KafkaConsumerRecordProcessor;
@@ -17,7 +17,7 @@ import no.nav.common.kafka.producer.feilhandtering.KafkaProducerRepository;
 import no.nav.common.kafka.producer.feilhandtering.OracleProducerRepository;
 import no.nav.common.kafka.producer.util.KafkaProducerClientBuilder;
 import no.nav.common.utils.Credentials;
-import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV1;
+import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
 import no.nav.veilarboppfolging.service.KafkaConsumerService;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -38,7 +38,7 @@ public class KafkaConfig {
     public final static String CONSUMER_GROUP_ID = "veilarboppfolging-consumer";
     public final static String PRODUCER_CLIENT_ID = "veilarboppfolging-producer";
 
-    private final KafkaConsumerClient consumerClient;
+    private final KafkaConsumerClient aivenConsumerClient;
 
     private final KafkaConsumerRecordProcessor consumerRecordProcessor;
 
@@ -52,6 +52,7 @@ public class KafkaConfig {
     public KafkaConfig(
             LeaderElectionClient leaderElectionClient,
             JdbcTemplate jdbcTemplate,
+            LockProvider lockProvider,
             KafkaConsumerService kafkaConsumerService,
             KafkaProperties kafkaProperties,
             Credentials credentials,
@@ -61,26 +62,26 @@ public class KafkaConfig {
         KafkaProducerRepository producerRepository = new OracleProducerRepository(jdbcTemplate.getDataSource());
 
         List<KafkaConsumerClientBuilder.TopicConfig<?, ?>> topicConfigs = List.of(
-                new KafkaConsumerClientBuilder.TopicConfig<String, EndringPaaOppfoelgingsBrukerV1>()
+                new KafkaConsumerClientBuilder.TopicConfig<String, EndringPaaOppfoelgingsBrukerV2>()
                         .withLogging()
                         .withMetrics(meterRegistry)
                         .withStoreOnFailure(consumerRepository)
                         .withConsumerConfig(
                                 kafkaProperties.getEndringPaaOppfolgingBrukerTopic(),
                                 Deserializers.stringDeserializer(),
-                                Deserializers.jsonDeserializer(EndringPaaOppfoelgingsBrukerV1.class),
+                                Deserializers.jsonDeserializer(EndringPaaOppfoelgingsBrukerV2.class),
                                 kafkaConsumerService::consumeEndringPaOppfolgingBruker
                         )
         );
 
-        consumerClient = KafkaConsumerClientBuilder.builder()
-                .withProperties(onPremDefaultConsumerProperties(CONSUMER_GROUP_ID, kafkaProperties.getBrokersUrl(), credentials))
+        aivenConsumerClient = KafkaConsumerClientBuilder.builder()
+                .withProperties(aivenDefaultConsumerProperties(CONSUMER_GROUP_ID))
                 .withTopicConfigs(topicConfigs)
                 .build();
 
         consumerRecordProcessor = KafkaConsumerRecordProcessorBuilder
                 .builder()
-                .withLockProvider(new JdbcTemplateLockProvider(jdbcTemplate))
+                .withLockProvider(lockProvider)
                 .withKafkaConsumerRepository(consumerRepository)
                 .withConsumerConfigs(findConsumerConfigsWithStoreOnFailure(topicConfigs))
                 .build();
@@ -132,7 +133,7 @@ public class KafkaConfig {
 
     @PostConstruct
     public void start() {
-        consumerClient.start();
+        aivenConsumerClient.start();
         consumerRecordProcessor.start();
         onPremProducerRecordProcessor.start();
         aivenProducerRecordProcessor.start();

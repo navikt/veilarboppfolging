@@ -7,7 +7,7 @@ import no.nav.common.auth.context.AuthContext;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.UserRole;
 import no.nav.common.sts.SystemUserTokenProvider;
-import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV1;
+import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -47,8 +47,8 @@ public class KafkaConsumerService {
     }
 
     @SneakyThrows
-    public void consumeEndringPaOppfolgingBruker(ConsumerRecord<String, EndringPaaOppfoelgingsBrukerV1> kafkaMelding) {
-        EndringPaaOppfoelgingsBrukerV1 endringPaBruker = kafkaMelding.value();
+    public void consumeEndringPaOppfolgingBruker(ConsumerRecord<String, EndringPaaOppfoelgingsBrukerV2> kafkaMelding) {
+        EndringPaaOppfoelgingsBrukerV2 endringPaBruker = kafkaMelding.value();
 
         var context = new AuthContext(
                 UserRole.SYSTEM,

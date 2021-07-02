@@ -8,20 +8,21 @@ import no.nav.common.auth.context.UserRole;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV1;
+import no.nav.pto_schema.enums.arena.Formidlingsgruppe;
+import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
 import no.nav.veilarboppfolging.repository.UtmeldingRepository;
 import no.nav.veilarboppfolging.repository.entity.UtmeldingEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.support.TransactionTemplate;
 
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
+import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 import static no.nav.veilarboppfolging.service.IservService.AvslutteOppfolgingResultat.*;
 import static no.nav.veilarboppfolging.utils.ArenaUtils.erIserv;
-import static no.nav.veilarboppfolging.utils.ArenaUtils.erUnderOppfolging;
 
 @Slf4j
 @Service
@@ -40,7 +41,6 @@ public class IservService {
     private final UtmeldingRepository utmeldingRepository;
     private final OppfolgingService oppfolgingService;
     private final AuthService authService;
-    private final TransactionTemplate transactor;
 
     public IservService(
             AuthContextHolder authContextHolder,
@@ -48,8 +48,7 @@ public class IservService {
             MetricsService metricsService,
             UtmeldingRepository utmeldingRepository,
             OppfolgingService oppfolgingService,
-            AuthService authService,
-            TransactionTemplate transactor
+            AuthService authService
     ) {
         this.authContextHolder = authContextHolder;
         this.systemUserTokenProvider = systemUserTokenProvider;
@@ -57,7 +56,6 @@ public class IservService {
         this.utmeldingRepository = utmeldingRepository;
         this.oppfolgingService = oppfolgingService;
         this.authService = authService;
-        this.transactor = transactor;
     }
 
     /**
@@ -75,27 +73,18 @@ public class IservService {
                 resultater.size());
     }
 
-    public void behandleEndretBruker(EndringPaaOppfoelgingsBrukerV1 oppfolgingEndret) {
-        transactor.executeWithoutResult((ignored) -> {
-            log.info("Behandler bruker: {}", oppfolgingEndret);
+    public void behandleEndretBruker(EndringPaaOppfoelgingsBrukerV2 brukerV2) {
+        AktorId aktorId = authService.getAktorIdOrThrow(Fnr.of(brukerV2.getFodselsnummer()));
 
-            AktorId aktorId = AktorId.of(oppfolgingEndret.getAktoerid());
+        String formidlingsgruppe = ofNullable(brukerV2.getFormidlingsgruppe()).map(Formidlingsgruppe::toString).orElse(null);
 
-            if (erIserv(oppfolgingEndret.getFormidlingsgruppekode())) {
-                oppdaterUtmeldingTabell(oppfolgingEndret);
-            } else {
-                utmeldingRepository.slettBrukerFraUtmeldingTabell(aktorId);
-
-                // TODO: Denne logikken ligger også i OppfolgingEndringService, den trenger trolig å ligge kun 1 sted
-                if (erUnderOppfolging(oppfolgingEndret.getFormidlingsgruppekode(), oppfolgingEndret.getKvalifiseringsgruppekode())) {
-                    if (oppfolgingService.erUnderOppfolging(aktorId)) {
-                        log.info("Bruker med aktørid {} er allerede under oppfølging", oppfolgingEndret.getAktoerid());
-                    } else {
-                        startOppfolging(oppfolgingEndret);
-                    }
-                }
-            }
-        });
+        if (erIserv(formidlingsgruppe)) {
+            log.info("Oppdaterer eller insert i utmelding tabell. aktorId={}", aktorId);
+            oppdaterUtmeldingTabell(brukerV2);
+        } else {
+            log.info("Sletter fra utmelding tabell. aktorId={}", aktorId);
+            utmeldingRepository.slettBrukerFraUtmeldingTabell(aktorId);
+        }
     }
 
     private List<AvslutteOppfolgingResultat> finnBrukereOgAvslutt() {
@@ -125,25 +114,24 @@ public class IservService {
         return resultater;
     }
 
-    private void startOppfolging(EndringPaaOppfoelgingsBrukerV1 oppfolgingEndret) {
-        log.info("Starter oppfølging automatisk for bruker med aktørid {}", oppfolgingEndret.getAktoerid());
-        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(AktorId.of(oppfolgingEndret.getAktoerid()));
-        metricsService.startetOppfolgingAutomatisk(oppfolgingEndret.getFormidlingsgruppekode(), oppfolgingEndret.getKvalifiseringsgruppekode());
-    }
+    private void oppdaterUtmeldingTabell(EndringPaaOppfoelgingsBrukerV2 oppfolgingEndret) {
+        AktorId aktorId = authService.getAktorIdOrThrow(Fnr.of(oppfolgingEndret.getFodselsnummer()));
+        LocalDate iservFraDato = oppfolgingEndret.getIservFraDato();
 
-    private void oppdaterUtmeldingTabell(EndringPaaOppfoelgingsBrukerV1 oppfolgingEndret) {
-        AktorId aktorId = AktorId.of(oppfolgingEndret.getAktoerid());
-        ZonedDateTime iservFraDato = oppfolgingEndret.getIserv_fra_dato();
+        if (iservFraDato == null) {
+            log.error("Kan ikke oppdatere utmeldingstabell med bruker siden iservFraDato mangler. aktorId={}", aktorId);
+            throw new IllegalArgumentException("iservFraDato mangler på EndringPaaOppfoelgingsBrukerV2");
+        }
 
-        if (finnesIUtmeldingTabell(oppfolgingEndret)) {
-            utmeldingRepository.updateUtmeldingTabell(aktorId, iservFraDato);
+        if (finnesIUtmeldingTabell(aktorId)) {
+            utmeldingRepository.updateUtmeldingTabell(aktorId, iservFraDato.atStartOfDay(ZoneId.systemDefault()));
         } else if (oppfolgingService.erUnderOppfolging(aktorId)) {
-            utmeldingRepository.insertUtmeldingTabell(aktorId, iservFraDato);
+            utmeldingRepository.insertUtmeldingTabell(aktorId, iservFraDato.atStartOfDay(ZoneId.systemDefault()));
         }
     }
 
-    private boolean finnesIUtmeldingTabell(EndringPaaOppfoelgingsBrukerV1 oppfolgingEndret) {
-        return utmeldingRepository.eksisterendeIservBruker(AktorId.of(oppfolgingEndret.getAktoerid())).isPresent();
+    private boolean finnesIUtmeldingTabell(AktorId aktorId) {
+        return utmeldingRepository.eksisterendeIservBruker(aktorId).isPresent();
     }
 
     AvslutteOppfolgingResultat avslutteOppfolging(AktorId aktorId) {

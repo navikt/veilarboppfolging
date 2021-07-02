@@ -1,6 +1,6 @@
 package no.nav.veilarboppfolging.config;
 
-import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
+import net.javacrumbs.shedlock.core.LockProvider;
 import no.nav.common.job.leader_election.LeaderElectionClient;
 import no.nav.common.kafka.consumer.KafkaConsumerClient;
 import no.nav.common.kafka.consumer.feilhandtering.KafkaConsumerRecordProcessor;
@@ -16,7 +16,7 @@ import no.nav.common.kafka.producer.feilhandtering.KafkaProducerRepository;
 import no.nav.common.kafka.producer.feilhandtering.OracleProducerRepository;
 import no.nav.common.kafka.producer.util.KafkaProducerClientBuilder;
 import no.nav.common.kafka.util.KafkaPropertiesBuilder;
-import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV1;
+import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
 import no.nav.veilarboppfolging.service.KafkaConsumerService;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
@@ -54,6 +54,7 @@ public class KafkaTestConfig {
     public KafkaTestConfig(
             LeaderElectionClient leaderElectionClient,
             JdbcTemplate jdbcTemplate,
+            LockProvider lockProvider,
             KafkaConsumerService kafkaConsumerService,
             KafkaProperties kafkaProperties
     ) {
@@ -64,13 +65,13 @@ public class KafkaTestConfig {
         KafkaProducerRepository producerRepository = new OracleProducerRepository(jdbcTemplate.getDataSource());
 
         List<KafkaConsumerClientBuilder.TopicConfig<?, ?>> topicConfigs = List.of(
-                new KafkaConsumerClientBuilder.TopicConfig<String, EndringPaaOppfoelgingsBrukerV1>()
+                new KafkaConsumerClientBuilder.TopicConfig<String, EndringPaaOppfoelgingsBrukerV2>()
                         .withLogging()
                         .withStoreOnFailure(consumerRepository)
                         .withConsumerConfig(
                                 kafkaProperties.getEndringPaaOppfolgingBrukerTopic(),
                                 Deserializers.stringDeserializer(),
-                                Deserializers.jsonDeserializer(EndringPaaOppfoelgingsBrukerV1.class),
+                                Deserializers.jsonDeserializer(EndringPaaOppfoelgingsBrukerV2.class),
                                 kafkaConsumerService::consumeEndringPaOppfolgingBruker
                         )
         );
@@ -89,7 +90,7 @@ public class KafkaTestConfig {
 
         consumerRecordProcessor = KafkaConsumerRecordProcessorBuilder
                 .builder()
-                .withLockProvider(new JdbcTemplateLockProvider(jdbcTemplate))
+                .withLockProvider(lockProvider)
                 .withKafkaConsumerRepository(consumerRepository)
                 .withConsumerConfigs(findConsumerConfigsWithStoreOnFailure(topicConfigs))
                 .build();

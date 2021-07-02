@@ -11,7 +11,6 @@ spec:
     - https://veilarboppfolging-q1.nais.preprod.local
     - https://app-q1.adeo.no/veilarboppfolging
     - https://app-q1.dev.adeo.no/veilarboppfolging
-  leaderElection: true
   webproxy: true
   port: 8080
   prometheus:
@@ -53,10 +52,6 @@ spec:
   env:
     - name: MODIABLOGIN_OPENAM_CLIENT_ID
       value: "modialogin-q1"
-
-    # consumer topic
-    - name: ENDRING_PAA_OPPFOELGINGSBRUKER_TOPIC
-      value: aapen-fo-endringPaaOppfoelgingsBruker-v1-q1
 
     # producer topics
     - name: ENDRING_PAA_AVSLUTT_OPPFOLGING_TOPIC

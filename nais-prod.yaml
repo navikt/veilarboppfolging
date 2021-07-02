@@ -10,7 +10,6 @@ spec:
   ingresses:
     - https://veilarboppfolging.nais.adeo.no
     - https://app.adeo.no/veilarboppfolging
-  leaderElection: true
   webproxy: true
   port: 8080
   prometheus:
@@ -52,10 +51,6 @@ spec:
   env:
     - name: MODIABLOGIN_OPENAM_CLIENT_ID
       value: "modialogin-p"
-
-    # consumer topic
-    - name: ENDRING_PAA_OPPFOELGINGSBRUKER_TOPIC
-      value: aapen-fo-endringPaaOppfoelgingsBruker-v1-p
 
     # producer topics
     - name: ENDRING_PAA_AVSLUTT_OPPFOLGING_TOPIC

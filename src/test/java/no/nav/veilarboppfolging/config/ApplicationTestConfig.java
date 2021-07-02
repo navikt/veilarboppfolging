@@ -2,6 +2,8 @@ package no.nav.veilarboppfolging.config;
 
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.PlainJWT;
+import net.javacrumbs.shedlock.core.LockProvider;
+import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
 import no.finn.unleash.UnleashContext;
 import no.nav.common.abac.Pep;
 import no.nav.common.auth.context.AuthContextHolder;
@@ -106,6 +108,11 @@ public class ApplicationTestConfig {
     @Bean
     public JdbcTemplate jdbcTemplate(DataSource dataSource) {
         return new JdbcTemplate(dataSource);
+    }
+
+    @Bean
+    public LockProvider lockProvider(JdbcTemplate jdbcTemplate) {
+        return new JdbcTemplateLockProvider(jdbcTemplate);
     }
 
     @Bean
