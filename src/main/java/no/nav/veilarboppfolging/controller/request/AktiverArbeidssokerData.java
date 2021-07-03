@@ -10,4 +10,11 @@ import lombok.NoArgsConstructor;
 public class AktiverArbeidssokerData {
     Fnr fnr;
     Innsatsgruppe innsatsgruppe;
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class Fnr {
+        private String fnr;
+    }
 }

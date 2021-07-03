@@ -24,7 +24,7 @@ import static java.util.Optional.empty;
 import static java.util.stream.Collectors.toList;
 
 @Service
-public class MalService {
+public class MaalService {
 
     private final KafkaProducerService kafkaProducerService;
 
@@ -41,7 +41,7 @@ public class MalService {
     private final TransactionTemplate transactor;
 
     @Autowired
-    public MalService(
+    public MaalService(
             KafkaProducerService kafkaProducerService,
             MetricsService metricsService,
             OppfolgingsStatusRepository oppfolgingsStatusRepository,

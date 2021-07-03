@@ -63,6 +63,10 @@ public class ManuellStatusService {
                 .orElse(false);
     }
 
+    public boolean erManuell(Fnr fnr) {
+        return erManuell(authService.getAktorIdOrThrow(fnr));
+    }
+
     public Optional<ManuellStatusEntity> hentManuellStatus(long manuellStatusId) {
         return manuellStatusRepository.hentManuellStatus(manuellStatusId);
     }

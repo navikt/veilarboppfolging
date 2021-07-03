@@ -7,7 +7,7 @@ import java.time.ZonedDateTime;
 
 @Data
 @Accessors(chain = true)
-public class Mal {
+public class Maal {
     private String mal;
     private String endretAv;
     private ZonedDateTime dato;

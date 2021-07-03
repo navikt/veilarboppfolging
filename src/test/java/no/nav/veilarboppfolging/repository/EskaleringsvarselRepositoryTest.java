@@ -37,6 +37,54 @@ public class EskaleringsvarselRepositoryTest {
         DbTestUtils.cleanupTestDb();
     }
 
+    @Test
+    public void hentGjeldendeEskaleringsvarsel__skal_hente_gjeldende_eskaleringsvarsel() {
+        oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
+
+        eskaleringsvarselRepository.create(EskaleringsvarselEntity.builder()
+                .aktorId(AKTOR_ID.get())
+                .opprettetAv(SAKSBEHANDLER_ID)
+                .opprettetBegrunnelse(BEGRUNNELSE)
+                .build());
+
+        var maybeEskaleringsvarsel = eskaleringsvarselRepository.hentGjeldendeEskaleringsvarsel(AKTOR_ID);
+
+        assertTrue(maybeEskaleringsvarsel.isPresent());
+    }
+
+    @Test
+    public void hentGjeldendeEskaleringsvarsel__skal_hente_gjeldende_eskaleringsvarsel_med_flere_tidligere_varsler() {
+        String saksbehandler2 = "Z12345";
+
+        oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
+
+        eskaleringsvarselRepository.create(EskaleringsvarselEntity.builder()
+                .aktorId(AKTOR_ID.get())
+                .opprettetAv(SAKSBEHANDLER_ID)
+                .opprettetBegrunnelse(BEGRUNNELSE)
+                .build());
+
+        eskaleringsvarselRepository.create(EskaleringsvarselEntity.builder()
+                .aktorId(AKTOR_ID.get())
+                .opprettetAv(saksbehandler2)
+                .opprettetBegrunnelse(BEGRUNNELSE)
+                .build());
+
+        var maybeEskaleringsvarsel = eskaleringsvarselRepository.hentGjeldendeEskaleringsvarsel(AKTOR_ID);
+
+        assertTrue(maybeEskaleringsvarsel.isPresent());
+        assertEquals(saksbehandler2, maybeEskaleringsvarsel.get().getOpprettetAv());
+    }
+
+    @Test
+    public void hentGjeldendeEskaleringsvarsel__skal_returnere_empty_hvis_ingen_gjeldende_eskaleringsvarsel() {
+        oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
+
+        var maybeEskaleringsvarsel = eskaleringsvarselRepository.hentGjeldendeEskaleringsvarsel(AKTOR_ID);
+
+        assertTrue(maybeEskaleringsvarsel.isEmpty());
+    }
+
     /**
      * Test that creating an escalation warning inserts a record in the database,
      * and creates a connection to the OPPFOLGING table as well.

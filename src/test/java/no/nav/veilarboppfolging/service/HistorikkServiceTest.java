@@ -2,7 +2,7 @@ package no.nav.veilarboppfolging.service;
 
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.veilarboppfolging.controller.response.InnstillingsHistorikk;
+import no.nav.veilarboppfolging.controller.response.HistorikkHendelse;
 import no.nav.veilarboppfolging.repository.*;
 import no.nav.veilarboppfolging.repository.entity.EskaleringsvarselEntity;
 import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity;
@@ -80,9 +80,9 @@ public class HistorikkServiceTest {
     public void saksbehandler_har_ikke_tilgang_til_enhet() {
         when(authService.harTilgangTilEnhet(ENHET)).thenReturn(false);
 
-        List<InnstillingsHistorikk> historikk = historikkService.hentInstillingsHistorikk(FNR);
+        List<HistorikkHendelse> historikk = historikkService.hentInstillingsHistorikk(FNR);
         List<String> begrunnelser = historikk.stream()
-                .map(InnstillingsHistorikk::getBegrunnelse).collect(toList());
+                .map(HistorikkHendelse::getBegrunnelse).collect(toList());
 
         assertThat(begrunnelser).doesNotContain("IN_KVP");
         assertThat(begrunnelser).contains("OUTSIDE_KVP");
@@ -92,9 +92,9 @@ public class HistorikkServiceTest {
     public void saksbehandler_har_tilgang_til_enhet() {
         when(authService.harTilgangTilEnhet(ENHET)).thenReturn(true);
 
-        List<InnstillingsHistorikk> historikk = historikkService.hentInstillingsHistorikk(FNR);
+        List<HistorikkHendelse> historikk = historikkService.hentInstillingsHistorikk(FNR);
         List<String> begrunnelser = historikk.stream()
-                .map(InnstillingsHistorikk::getBegrunnelse).collect(toList());
+                .map(HistorikkHendelse::getBegrunnelse).collect(toList());
 
         assertThat(begrunnelser).contains("IN_KVP", "OUTSIDE_KVP");
     }

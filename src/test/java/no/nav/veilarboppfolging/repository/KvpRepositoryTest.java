@@ -33,6 +33,39 @@ public class KvpRepositoryTest extends IsolatedDatabaseTest {
     }
 
     @Test
+    public void hentGjeldendeKvpPeriode__skal_hente_gjeldende_periode() {
+        gittOppfolgingForAktor(AKTOR_ID);
+
+        kvpRepository.startKvp(AKTOR_ID, "0123", SAKSBEHANDLER_ID, BEGRUNNELSE, ZonedDateTime.now().minusSeconds(5));
+
+        stop_kvp();
+
+        kvpRepository.startKvp(AKTOR_ID, "5678", SAKSBEHANDLER_ID, BEGRUNNELSE, ZonedDateTime.now());
+
+        Optional<KvpPeriodeEntity> maybeGjeldendePeriode = kvpRepository.hentGjeldendeKvpPeriode(AKTOR_ID);
+
+        assertTrue(maybeGjeldendePeriode.isPresent());
+        assertEquals("5678", maybeGjeldendePeriode.get().getEnhet());
+    }
+
+    @Test
+    public void hentGjeldendeKvpPeriode__skal_hente_gjeldende_periode_med_flere_perioder() {
+        gittOppfolgingForAktor(AKTOR_ID);
+        start_kvp();
+
+        Optional<KvpPeriodeEntity> maybeGjeldendePeriode = kvpRepository.hentGjeldendeKvpPeriode(AKTOR_ID);
+
+        assertTrue(maybeGjeldendePeriode.isPresent());
+    }
+
+    @Test
+    public void hentGjeldendeKvpPeriode__skal_returnere_empty_hvis_ingen_gjeldende_periode() {
+        Optional<KvpPeriodeEntity> maybeGjeldendePeriode = kvpRepository.hentGjeldendeKvpPeriode(AKTOR_ID);
+
+        assertTrue(maybeGjeldendePeriode.isEmpty());
+    }
+
+    @Test
     public void stopKvp() {
         gittOppfolgingForAktor(AKTOR_ID);
         start_kvp();

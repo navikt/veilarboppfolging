@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Import;
         ArenaOppfolgingController.class,
         InternalController.class,
         KvpController.class,
-        MalController.class,
+        MaalController.class,
         OppfolgingController.class,
         OppfolgingNiva3Controller.class,
         SystemOppfolgingController.class,
