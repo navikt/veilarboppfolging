@@ -31,12 +31,11 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
-import static java.lang.Boolean.TRUE;
 import static java.util.Optional.empty;
-import static java.util.Optional.of;
 import static java.util.stream.Collectors.toList;
 import static no.nav.veilarboppfolging.config.ApplicationConfig.SYSTEM_USER_NAME;
-import static no.nav.veilarboppfolging.utils.ArenaUtils.*;
+import static no.nav.veilarboppfolging.utils.ArenaUtils.erIserv;
+import static no.nav.veilarboppfolging.utils.ArenaUtils.kanSettesUnderOppfolging;
 import static no.nav.veilarboppfolging.utils.KvpUtils.sjekkTilgangGittKvp;
 
 @Slf4j
@@ -46,7 +45,6 @@ public class OppfolgingService {
     private final KafkaProducerService kafkaProducerService;
     private final YtelserOgAktiviteterService ytelserOgAktiviteterService;
     private final KvpService kvpService;
-    private final MetricsService metricsService;
     private final ArenaOppfolgingService arenaOppfolgingService;
     private final AuthService authService;
     private final OppfolgingsStatusRepository oppfolgingsStatusRepository;
@@ -58,7 +56,6 @@ public class OppfolgingService {
     private final NyeBrukereFeedRepository nyeBrukereFeedRepository;
     private final MaalRepository maalRepository;
     private final BrukerOppslagFlereOppfolgingAktorRepository brukerOppslagFlereOppfolgingAktorRepository;
-    private final UnleashService unleashService;
     private final TransactionTemplate transactor;
 
     @Autowired
@@ -66,7 +63,6 @@ public class OppfolgingService {
             KafkaProducerService kafkaProducerService,
             YtelserOgAktiviteterService ytelserOgAktiviteterService,
             KvpService kvpService,
-            MetricsService metricsService,
             ArenaOppfolgingService arenaOppfolgingService,
             AuthService authService,
             OppfolgingsStatusRepository oppfolgingsStatusRepository,
@@ -79,13 +75,11 @@ public class OppfolgingService {
             NyeBrukereFeedRepository nyeBrukereFeedRepository,
             MaalRepository maalRepository,
             BrukerOppslagFlereOppfolgingAktorRepository brukerOppslagFlereOppfolgingAktorRepository,
-            UnleashService unleashService,
             TransactionTemplate transactor
     ) {
         this.kafkaProducerService = kafkaProducerService;
         this.ytelserOgAktiviteterService = ytelserOgAktiviteterService;
         this.kvpService = kvpService;
-        this.metricsService = metricsService;
         this.arenaOppfolgingService = arenaOppfolgingService;
         this.authService = authService;
         this.oppfolgingsStatusRepository = oppfolgingsStatusRepository;
@@ -97,18 +91,12 @@ public class OppfolgingService {
         this.nyeBrukereFeedRepository = nyeBrukereFeedRepository;
         this.maalRepository = maalRepository;
         this.brukerOppslagFlereOppfolgingAktorRepository = brukerOppslagFlereOppfolgingAktorRepository;
-        this.unleashService = unleashService;
         this.transactor = transactor;
     }
 
     public OppfolgingStatusData hentOppfolgingsStatus(Fnr fnr) {
-        return transactor.execute((ignored) -> {
-            authService.sjekkLesetilgangMedFnr(fnr);
-
-            sjekkStatusIArenaOgOppdaterOppfolging(fnr);
-
-            return getOppfolgingStatusData(fnr);
-        });
+        authService.sjekkLesetilgangMedFnr(fnr);
+        return getOppfolgingStatusData(fnr);
     }
 
     private List<AktorId> hentAktorIderMedOppfolging(Fnr fnr) {
@@ -506,101 +494,6 @@ public class OppfolgingService {
 
     private boolean kvpForSluttenAvPeriode(KvpPeriodeEntity kvp, OppfolgingsperiodeEntity periode) {
         return periode.getSluttDato() == null || !periode.getSluttDato().isBefore(kvp.getOpprettetDato());
-    }
-
-    private void sjekkStatusIArenaOgOppdaterOppfolging(Fnr fnr) {
-        AktorId aktorId = authService.getAktorIdOrThrow(fnr);
-        Optional<ArenaOppfolgingTilstand> arenaOppfolgingTilstand = arenaOppfolgingService.hentOppfolgingTilstand(fnr);
-
-        arenaOppfolgingTilstand.ifPresent(oppfolgingTilstand -> {
-            Optional<OppfolgingEntity> maybeOppfolging = oppfolgingsStatusRepository.hentOppfolging(aktorId);
-
-            boolean erBrukerUnderOppfolging = maybeOppfolging.map(OppfolgingEntity::isUnderOppfolging).orElse(false);
-            boolean erUnderOppfolgingIArena = ArenaUtils.erUnderOppfolging(oppfolgingTilstand.getFormidlingsgruppe(), oppfolgingTilstand.getServicegruppe());
-
-            if (!erBrukerUnderOppfolging && erUnderOppfolgingIArena) {
-                if (unleashService.skalIkkeOppdatereMedSideeffekt()) {
-                    log.info("Oppdatering av oppfølging med sideffekt er skrudd av. Stopper sideeffekt for start av oppfølging for aktorId={}", aktorId);
-                    return;
-                }
-
-                startOppfolgingHvisIkkeAlleredeStartet(aktorId);
-            } else {
-                boolean erSykmeldtMedArbeidsgiver = erSykmeldtMedArbeidsgiver(oppfolgingTilstand);
-                boolean erInaktivIArena = erInaktivIArena(oppfolgingTilstand);
-                boolean sjekkIArenaOmBrukerSkalAvsluttes = erBrukerUnderOppfolging && erInaktivIArena;
-
-                log.info("Statuser for reaktivering og inaktivering basert på {}: "
-                                + "Aktiv Oppfølgingsperiode={} "
-                                + "erSykmeldtMedArbeidsgiver={} "
-                                + "inaktivIArena={} "
-                                + "aktorId={} "
-                                + "Tilstand i Arena: {}",
-                        oppfolgingTilstand.isDirekteFraArena() ? "Arena" : "Veilarbarena",
-                        erBrukerUnderOppfolging,
-                        erSykmeldtMedArbeidsgiver,
-                        erInaktivIArena,
-                        aktorId,
-                        arenaOppfolgingTilstand);
-
-                if (sjekkIArenaOmBrukerSkalAvsluttes) {
-                    sjekkOgOppdaterBrukerDirekteFraArena(fnr, oppfolgingTilstand, maybeOppfolging.get());
-                }
-            }
-        });
-    }
-
-    private void sjekkOgOppdaterBrukerDirekteFraArena(
-            Fnr fnr,
-            ArenaOppfolgingTilstand arenaOppfolgingTilstand,
-            OppfolgingEntity oppfolging
-    ) {
-        Optional<ArenaOppfolgingTilstand> maybeTilstandDirekteFraArena = arenaOppfolgingTilstand.isDirekteFraArena()
-                ? of(arenaOppfolgingTilstand)
-                : arenaOppfolgingService.hentOppfolgingTilstandDirekteFraArena(fnr);
-
-        maybeTilstandDirekteFraArena.ifPresent(tilstandDirekteFraArena -> {
-            boolean erInaktivIArena = erInaktivIArena(tilstandDirekteFraArena);
-            boolean kanEnkeltReaktiveres = TRUE.equals(tilstandDirekteFraArena.getKanEnkeltReaktiveres());
-            boolean skalAvsluttes = oppfolging.isUnderOppfolging() && erInaktivIArena && !kanEnkeltReaktiveres;
-
-            log.info("Mulig avslutting av oppfølging "
-                            + "erUnderOppfolging={} "
-                            + "kanEnkeltReaktiveres={} "
-                            + "inaktivIArena={} "
-                            + "skalAvsluttes={} "
-                            + "aktorId={} "
-                            + "Tilstand i Arena: {}",
-                    oppfolging.isUnderOppfolging(),
-                    kanEnkeltReaktiveres,
-                    erInaktivIArena,
-                    skalAvsluttes,
-                    oppfolging.getAktorId(),
-                    arenaOppfolgingTilstand);
-
-            if (skalAvsluttes) {
-                AktorId aktorId = authService.getAktorIdOrThrow(fnr);
-                boolean kanAvslutte = kanAvslutteOppfolging(aktorId, oppfolging.isUnderOppfolging(), erIserv(tilstandDirekteFraArena.getFormidlingsgruppe()));
-                inaktiverBruker(aktorId, kanAvslutte);
-            }
-        });
-    }
-
-    private void inaktiverBruker(AktorId aktorId, boolean kanAvslutteOppfolging) {
-        log.info("Avslutter oppfølgingsperiode for bruker");
-
-        if (kanAvslutteOppfolging) {
-            if (unleashService.skalIkkeOppdatereMedSideeffekt()) {
-                log.info("Oppdatering av oppfølging med sideffekt er skrudd av. Stopper sideeffekt for avslutting av oppfølging for aktorId={}", aktorId);
-                return;
-            }
-
-            avsluttOppfolgingForBruker(aktorId, null, "Oppfølging avsluttet automatisk pga. inaktiv bruker som ikke kan reaktiveres");
-        } else {
-            log.info("Avslutting av oppfølging ikke tillatt for aktorid {}", aktorId);
-        }
-
-        metricsService.rapporterAutomatiskAvslutningAvOppfolging(!kanAvslutteOppfolging);
     }
 
 }

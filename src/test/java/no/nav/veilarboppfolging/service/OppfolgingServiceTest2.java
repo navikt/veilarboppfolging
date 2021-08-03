@@ -99,12 +99,12 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
 
         oppfolgingService = new OppfolgingService(
                 mock(KafkaProducerService.class), null,
-                null, null, null, authService,
+                null, null, authService,
                 oppfolgingsStatusRepository, oppfolgingsPeriodeRepository,
                 manuellStatusService,
                 null, new EskaleringsvarselRepository(db, transactor),
                 new KvpRepository(db, transactor), new NyeBrukereFeedRepository(db), maalRepository,
-                new BrukerOppslagFlereOppfolgingAktorRepository(db), null, transactor);
+                new BrukerOppslagFlereOppfolgingAktorRepository(db), transactor);
 
         when(authService.getFnrOrThrow(AKTOR_ID)).thenReturn(FNR);
     }

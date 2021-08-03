@@ -59,7 +59,6 @@ public class AktiverBrukerIntegrationTest {
                 mock(KafkaProducerService.class),
                 null,
                 null,
-                null,
                 null, authService,
                 oppfolgingsStatusRepository, oppfolgingsPeriodeRepository,
                 manuellStatusService,
@@ -67,7 +66,6 @@ public class AktiverBrukerIntegrationTest {
                 new KvpRepository(db, transactor), new NyeBrukereFeedRepository(db),
                 new MaalRepository(db, transactor),
                 mock(BrukerOppslagFlereOppfolgingAktorRepository.class),
-                null,
                 transactor
         );
 

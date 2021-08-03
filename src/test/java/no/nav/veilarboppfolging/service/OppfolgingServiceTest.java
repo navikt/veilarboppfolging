@@ -2,7 +2,6 @@ package no.nav.veilarboppfolging.service;
 
 import io.vavr.collection.Stream;
 import lombok.SneakyThrows;
-import lombok.val;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt.WSYtelseskontrakt;
@@ -63,9 +62,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     private NyeBrukereFeedRepository nyeBrukereFeedRepository = mock(NyeBrukereFeedRepository.class);
     private KvpService kvpService = mock(KvpService.class);
     private KvpRepository kvpRepository = mock(KvpRepository.class);
-    private MetricsService metricsService = mock(MetricsService.class);
     private ManuellStatusService manuellStatusService = mock(ManuellStatusService.class);
-    private UnleashService unleashService = mock(UnleashService.class);
 
     private OppfolgingsStatusRepository oppfolgingsStatusRepository;
     private OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
@@ -82,7 +79,6 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         oppfolgingService = new OppfolgingService(kafkaProducerService,
                 new YtelserOgAktiviteterService(ytelseskontraktClient),
                 kvpService,
-                metricsService,
                 arenaOppfolgingService,
                 authService,
                 oppfolgingsStatusRepository,
@@ -94,7 +90,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
                 nyeBrukereFeedRepository,
                 null,
                 null,
-                unleashService, transactor);
+                transactor);
 
 
         gittArenaOppfolgingStatus("", "");
@@ -105,8 +101,6 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         when(arenaOppfolgingService.hentOppfolgingTilstand(FNR)).thenReturn(Optional.of(arenaOppfolgingTilstand));
         when(ytelseskontraktClient.hentYtelseskontraktListe(any())).thenReturn(mock(YtelseskontraktResponse.class));
         when(manuellStatusService.hentDkifKontaktinfo(FNR)).thenReturn(new DkifKontaktinfo());
-
-        when(unleashService.skalIkkeOppdatereMedSideeffekt()).thenReturn(false);
     }
 
     @Test
@@ -202,44 +196,6 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     }
 
     @Test
-    public void hentOppfolgingStatus_brukerSomIkkeErUnderOppfolgingOppdateresIkkeDersomIkkeUnderOppfolgingIArena() {
-        OppfolgingStatusData oppfolgingStatusData = hentOppfolgingStatus();
-
-        assertFalse(oppfolgingStatusData.underOppfolging);
-    }
-
-    @Test
-    public void hentOppfolgingStatus_brukerSomIkkeErUnderOppfolgingSettesUnderOppfolgingDersomArenaHarRiktigStatus() {
-        oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
-
-        assertFalse(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID).orElseThrow().isUnderOppfolging());
-
-        gittArenaOppfolgingStatus("ARBS", "");
-        OppfolgingStatusData oppfolgingStatusData = hentOppfolgingStatus();
-
-        assertUnderOppfolgingLagret(AKTOR_ID);
-        assertTrue(oppfolgingStatusData.underOppfolging);
-    }
-
-    @Test
-    public void hentOppfolgingStatus_brukerSomErUnderOppfolgingOgISERVMeldesUtDersomArenaSierReaktiveringIkkeErMulig() {
-        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
-        assertUnderOppfolgingLagret(AKTOR_ID);
-
-        gittInaktivOppfolgingStatus(false);
-        when(arenaOppfolgingService.hentOppfolgingTilstandDirekteFraArena(FNR)).thenReturn(Optional.of(arenaOppfolgingTilstand));
-
-        hentOppfolgingStatus();
-
-        assertEquals(
-                oppfolgingsPeriodeRepository.hentAvsluttetOppfolgingsperioder(AKTOR_ID).size(),
-                oppfolgingsPeriodeRepository.hentOppfolgingsperioder(AKTOR_ID).size()
-        );
-        assertHarIkkeGjeldendeOppfolgingsperiode(AKTOR_ID);
-        assertFalse(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID).orElseThrow().isUnderOppfolging());
-    }
-
-    @Test
     public void hentOppfolgingStatus_brukerSomErUnderOppfolgingOgISERVSkalReaktiveresDersomArenaSierReaktiveringErMulig() {
         oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
         assertUnderOppfolgingLagret(AKTOR_ID);
@@ -267,45 +223,6 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         gittReservasjonIKrr(false);
         OppfolgingStatusData oppfolgingStatusData = hentOppfolgingStatus();
         assertFalse(oppfolgingStatusData.reservasjonKRR);
-    }
-
-    @Test
-    public void medReservasjonOgUnderOppfolging() {
-        gittReservasjonIKrr(true);
-        gittArenaOppfolgingStatus("ARBS", "");
-
-        OppfolgingStatusData oppfolgingStatusData = hentOppfolgingStatus();
-
-        assertUnderOppfolgingLagret(AKTOR_ID);
-        assertTrue(oppfolgingStatusData.reservasjonKRR);
-    }
-
-    @Test
-    public void underOppfolging() {
-        gittArenaOppfolgingStatus("ARBS", "");
-
-        OppfolgingStatusData oppfolgingStatusData = hentOppfolgingStatus();
-
-        assertUnderOppfolgingLagret(AKTOR_ID);
-        assertTrue(oppfolgingStatusData.underOppfolging);
-    }
-
-    @Test
-    public void ikkeArbeidssokerUnderOppfolging() {
-        gittArenaOppfolgingStatus("IARBS", "BATT");
-
-        val oppfolgingOgVilkarStatus = hentOppfolgingStatus();
-
-        assertTrue(oppfolgingOgVilkarStatus.underOppfolging);
-    }
-
-    @Test
-    public void ikkeArbeidssokerIkkeUnderOppfolging() {
-        gittArenaOppfolgingStatus("IARBS", "");
-
-        val oppfolgingOgVilkarStatus = hentOppfolgingStatus();
-
-        assertFalse(oppfolgingOgVilkarStatus.underOppfolging);
     }
 
     @Test
@@ -400,9 +317,6 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         assertTrue(harGjeldendeOppfolgingsperiode(aktorId));
     }
 
-    private void assertHarIkkeGjeldendeOppfolgingsperiode(AktorId aktorId) {
-        assertFalse(harGjeldendeOppfolgingsperiode(aktorId));
-    }
     private boolean harGjeldendeOppfolgingsperiode(AktorId aktorId) {
         List<OppfolgingsperiodeEntity> oppfolgingsperioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId);
         OppfolgingsperiodeEntity sisteOppfolgingsperiode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(oppfolgingsperioder);

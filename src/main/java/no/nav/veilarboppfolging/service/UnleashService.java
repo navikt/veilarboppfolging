@@ -8,19 +8,9 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class UnleashService {
 
-    private final static String OPPDATER_OPPFOLGING_KAFKA = "veilarboppfolging.oppdater_oppfolging_kafka";
-
-    private final static String IKKE_OPPDATER_OPPFOLGING_MED_SIDEEFFEKT = "veilarboppfolging.ikke_oppdater_oppfolging_med_sideeffekt";
-
-
+    @SuppressWarnings("unused")
     private final UnleashClient unleashClient;
 
-    public boolean skalOppdaterOppfolgingMedKafka() {
-        return unleashClient.isEnabled(OPPDATER_OPPFOLGING_KAFKA);
-    }
-
-    public boolean skalIkkeOppdatereMedSideeffekt() {
-        return unleashClient.isEnabled(IKKE_OPPDATER_OPPFOLGING_MED_SIDEEFFEKT);
-    }
+    // If using unleash feature toggles add them here, dont remove this class
 
 }
