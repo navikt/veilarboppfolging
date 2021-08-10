@@ -133,4 +133,54 @@ public class AdminControllerTest {
         });
     }
 
+
+    @Test
+    public void republiserEndringPaNyForVeileder__should_return_401_if_user_missing() throws Exception {
+        when(authContextHolder.getSubject()).thenReturn(Optional.empty());
+        when(authContextHolder.getRole()).thenReturn(Optional.of(UserRole.SYSTEM));
+
+        mockMvc.perform(post("/api/admin/republiser/endring-pa-ny-for-veileder"))
+                .andExpect(status().is(401));
+    }
+
+    @Test
+    public void republiserEndringPaNyForVeileder__should_return_401_if_role_missing() throws Exception {
+        when(authContextHolder.getSubject()).thenReturn(Optional.of("srvpto-admin"));
+        when(authContextHolder.getRole()).thenReturn(Optional.empty());
+
+        mockMvc.perform(post("/api/admin/republiser/endring-pa-ny-for-veileder"))
+                .andExpect(status().is(401));
+    }
+
+    @Test
+    public void republiserEndringPaNyForVeileder__should_return_403_if_not_pto_admin() throws Exception {
+        when(authContextHolder.getSubject()).thenReturn(Optional.of("srvmyapp"));
+        when(authContextHolder.getRole()).thenReturn(Optional.of(UserRole.SYSTEM));
+
+        mockMvc.perform(post("/api/admin/republiser/endring-pa-ny-for-veileder"))
+                .andExpect(status().is(403));
+    }
+
+    @Test
+    public void republiserEndringPaNyForVeileder__should_return_403_if_not_system_user() throws Exception {
+        when(authContextHolder.getSubject()).thenReturn(Optional.of("srvpto-admin"));
+        when(authContextHolder.getRole()).thenReturn(Optional.of(UserRole.EKSTERN));
+
+        mockMvc.perform(post("/api/admin/republiser/endring-pa-ny-for-veileder"))
+                .andExpect(status().is(403));
+    }
+
+    @Test
+    public void republiserEndringPaNyForVeileder__should_return_job_id_and_republish() throws Exception {
+        when(authContextHolder.getSubject()).thenReturn(Optional.of("srvpto-admin"));
+        when(authContextHolder.getRole()).thenReturn(Optional.of(UserRole.SYSTEM));
+
+        mockMvc.perform(post("/api/admin/republiser/endring-pa-ny-for-veileder"))
+                .andExpect(status().is(200))
+                .andExpect(content().string(matchesPattern("^([a-f0-9]+)$")));
+
+        verifiserAsynkront(3, TimeUnit.SECONDS, () -> {
+            verify(kafkaRepubliseringService, times(1)).republiserEndringPaNyForVeileder();
+        });
+    }
 }

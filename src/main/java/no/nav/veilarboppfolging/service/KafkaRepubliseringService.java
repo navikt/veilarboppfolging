@@ -95,4 +95,31 @@ public class KafkaRepubliseringService {
         });
     }
 
+    public void republiserEndringPaNyForVeileder() {
+        int currentOffset = 0;
+
+        while (true) {
+            List<AktorId> unikeAktorIder = oppfolgingsStatusRepository.hentUnikeBrukerePage(currentOffset, OPPFOLGINGSPERIODE_PAGE_SIZE);
+
+            if (unikeAktorIder.isEmpty()) {
+                break;
+            }
+
+            currentOffset += unikeAktorIder.size();
+
+            log.info("Republiserer endring på ny for veileder. CurrentOffset={} BatchSize={}", currentOffset, unikeAktorIder.size());
+
+            unikeAktorIder
+                    .forEach(this::republiserEndringPaNyForVeilederForBruker);
+        }
+    }
+
+    private void republiserEndringPaNyForVeilederForBruker(AktorId aktorId) {
+        veilederTilordningerRepository.hentTilordnetVeileder(aktorId)
+                .filter(veilederTilordning -> veilederTilordning.getVeilederId() != null)
+                .ifPresent(veilederTilordning ->
+                kafkaProducerService.publiserEndringPaNyForVeileder(aktorId, veilederTilordning.isNyForVeileder())
+        );
+    }
+
 }

@@ -34,6 +34,15 @@ public class AdminController {
         return JobRunner.runAsync("republiser-tilordnet-veileder", kafkaRepubliseringService::republiserTilordnetVeileder);
     }
 
+    @PostMapping("/republiser/endring-pa-ny-for-veileder")
+    public String republiserEndringPaNyForVeileder() {
+        sjekkTilgangTilAdmin();
+        return JobRunner.runAsync(
+                "republiser-endring-pa-ny-for-veileder",
+                kafkaRepubliseringService::republiserEndringPaNyForVeileder
+        );
+    }
+
     private void sjekkTilgangTilAdmin() {
         String subject = authContextHolder.getSubject()
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
