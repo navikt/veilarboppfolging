@@ -175,12 +175,12 @@ public class AdminControllerTest {
         when(authContextHolder.getSubject()).thenReturn(Optional.of("srvpto-admin"));
         when(authContextHolder.getRole()).thenReturn(Optional.of(UserRole.SYSTEM));
 
-        mockMvc.perform(post("/api/admin/republiser/endring-pa-ny-for-veileder"))
+        mockMvc.perform(post("/api/admin/republiser/endring-pa-ny-for-veileder-brukere-under-oppfolging"))
                 .andExpect(status().is(200))
                 .andExpect(content().string(matchesPattern("^([a-f0-9]+)$")));
 
         verifiserAsynkront(3, TimeUnit.SECONDS, () -> {
-            verify(kafkaRepubliseringService, times(1)).republiserEndringPaNyForVeileder();
+            verify(kafkaRepubliseringService, times(1)).republiserEndringPaNyForVeilederForBrukereUnderOppfolging();
         });
     }
 }

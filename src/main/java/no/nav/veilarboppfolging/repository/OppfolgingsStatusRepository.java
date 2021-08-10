@@ -68,6 +68,14 @@ public class OppfolgingsStatusRepository {
                 .collect(Collectors.toList());
     }
 
+    public List<AktorId> hentUnikeBrukereUnderOppfolgingPage(int offset, int pageSize) {
+        String sql = format("SELECT DISTINCT aktor_id FROM OPPFOLGINGSTATUS WHERE UNDER_OPPFOLGING = 1 ORDER BY aktor_id OFFSET %d ROWS FETCH NEXT %d ROWS ONLY", offset, pageSize);
+        return db.query(sql, (rs, rowNum) -> rs.getString("aktor_id"))
+                .stream()
+                .map(AktorId::of)
+                .collect(Collectors.toList());
+    }
+
     public static OppfolgingEntity map(ResultSet rs, int row) throws SQLException {
         return new OppfolgingEntity()
                 .setAktorId(rs.getString(AKTOR_ID))

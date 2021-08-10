@@ -95,11 +95,12 @@ public class KafkaRepubliseringService {
         });
     }
 
-    public void republiserEndringPaNyForVeileder() {
+    public void republiserEndringPaNyForVeilederForBrukereUnderOppfolging() {
         int currentOffset = 0;
 
         while (true) {
-            List<AktorId> unikeAktorIder = oppfolgingsStatusRepository.hentUnikeBrukerePage(currentOffset, OPPFOLGINGSPERIODE_PAGE_SIZE);
+            List<AktorId> unikeAktorIder = oppfolgingsStatusRepository
+                    .hentUnikeBrukereUnderOppfolgingPage(currentOffset, OPPFOLGINGSPERIODE_PAGE_SIZE);
 
             if (unikeAktorIder.isEmpty()) {
                 break;

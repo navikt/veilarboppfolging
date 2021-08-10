@@ -34,12 +34,12 @@ public class AdminController {
         return JobRunner.runAsync("republiser-tilordnet-veileder", kafkaRepubliseringService::republiserTilordnetVeileder);
     }
 
-    @PostMapping("/republiser/endring-pa-ny-for-veileder")
+    @PostMapping("/republiser/endring-pa-ny-for-veileder-brukere-under-oppfolging")
     public String republiserEndringPaNyForVeileder() {
         sjekkTilgangTilAdmin();
         return JobRunner.runAsync(
-                "republiser-endring-pa-ny-for-veileder",
-                kafkaRepubliseringService::republiserEndringPaNyForVeileder
+                "republiser-endring-pa-ny-for-veileder-brukere-under-oppfolging",
+                kafkaRepubliseringService::republiserEndringPaNyForVeilederForBrukereUnderOppfolging
         );
     }
 
