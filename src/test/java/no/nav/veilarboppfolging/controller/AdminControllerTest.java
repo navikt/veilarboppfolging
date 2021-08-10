@@ -139,7 +139,7 @@ public class AdminControllerTest {
         when(authContextHolder.getSubject()).thenReturn(Optional.empty());
         when(authContextHolder.getRole()).thenReturn(Optional.of(UserRole.SYSTEM));
 
-        mockMvc.perform(post("/api/admin/republiser/endring-pa-ny-for-veileder"))
+        mockMvc.perform(post("/api/admin/republiser/endring-pa-ny-for-veileder-brukere-under-oppfolging"))
                 .andExpect(status().is(401));
     }
 
@@ -148,7 +148,7 @@ public class AdminControllerTest {
         when(authContextHolder.getSubject()).thenReturn(Optional.of("srvpto-admin"));
         when(authContextHolder.getRole()).thenReturn(Optional.empty());
 
-        mockMvc.perform(post("/api/admin/republiser/endring-pa-ny-for-veileder"))
+        mockMvc.perform(post("/api/admin/republiser/endring-pa-ny-for-veileder-brukere-under-oppfolging"))
                 .andExpect(status().is(401));
     }
 
@@ -157,7 +157,7 @@ public class AdminControllerTest {
         when(authContextHolder.getSubject()).thenReturn(Optional.of("srvmyapp"));
         when(authContextHolder.getRole()).thenReturn(Optional.of(UserRole.SYSTEM));
 
-        mockMvc.perform(post("/api/admin/republiser/endring-pa-ny-for-veileder"))
+        mockMvc.perform(post("/api/admin/republiser/endring-pa-ny-for-veileder-brukere-under-oppfolging"))
                 .andExpect(status().is(403));
     }
 
@@ -166,7 +166,7 @@ public class AdminControllerTest {
         when(authContextHolder.getSubject()).thenReturn(Optional.of("srvpto-admin"));
         when(authContextHolder.getRole()).thenReturn(Optional.of(UserRole.EKSTERN));
 
-        mockMvc.perform(post("/api/admin/republiser/endring-pa-ny-for-veileder"))
+        mockMvc.perform(post("/api/admin/republiser/endring-pa-ny-for-veileder-brukere-under-oppfolging"))
                 .andExpect(status().is(403));
     }
 
