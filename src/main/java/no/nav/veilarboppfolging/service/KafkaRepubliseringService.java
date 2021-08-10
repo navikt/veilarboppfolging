@@ -96,23 +96,11 @@ public class KafkaRepubliseringService {
     }
 
     public void republiserEndringPaNyForVeilederForBrukereUnderOppfolging() {
-        int currentOffset = 0;
+        List<AktorId> unikeAktorIder = oppfolgingsStatusRepository.hentUnikeBrukereUnderOppfolgingPage();
 
-        while (true) {
-            List<AktorId> unikeAktorIder = oppfolgingsStatusRepository
-                    .hentUnikeBrukereUnderOppfolgingPage(currentOffset, OPPFOLGINGSPERIODE_PAGE_SIZE);
+        log.info("Republiserer endring på ny for veileder for brukere under oppfølging. Antall={}", unikeAktorIder.size());
 
-            if (unikeAktorIder.isEmpty()) {
-                break;
-            }
-
-            currentOffset += unikeAktorIder.size();
-
-            log.info("Republiserer endring på ny for veileder. CurrentOffset={} BatchSize={}", currentOffset, unikeAktorIder.size());
-
-            unikeAktorIder
-                    .forEach(this::republiserEndringPaNyForVeilederForBruker);
-        }
+        unikeAktorIder.forEach(this::republiserEndringPaNyForVeilederForBruker);
     }
 
     private void republiserEndringPaNyForVeilederForBruker(AktorId aktorId) {

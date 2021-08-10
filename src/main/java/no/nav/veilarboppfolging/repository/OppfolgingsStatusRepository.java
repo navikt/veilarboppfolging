@@ -68,8 +68,8 @@ public class OppfolgingsStatusRepository {
                 .collect(Collectors.toList());
     }
 
-    public List<AktorId> hentUnikeBrukereUnderOppfolgingPage(int offset, int pageSize) {
-        String sql = format("SELECT DISTINCT aktor_id FROM OPPFOLGINGSTATUS WHERE UNDER_OPPFOLGING = 1 ORDER BY aktor_id OFFSET %d ROWS FETCH NEXT %d ROWS ONLY", offset, pageSize);
+    public List<AktorId> hentUnikeBrukereUnderOppfolgingPage() {
+        String sql = format("SELECT DISTINCT aktor_id FROM OPPFOLGINGSTATUS WHERE UNDER_OPPFOLGING = 1");
         return db.query(sql, (rs, rowNum) -> rs.getString("aktor_id"))
                 .stream()
                 .map(AktorId::of)

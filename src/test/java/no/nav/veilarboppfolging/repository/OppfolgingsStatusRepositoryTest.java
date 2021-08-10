@@ -51,7 +51,7 @@ public class OppfolgingsStatusRepositoryTest {
     }
 
     @Test
-    public void hentUnikeBrukereUnderOppfolgingPage__skal_hente_page_med_unike_brukere_under_oppfolging() {
+    public void hentUnikeBrukereUnderOppfolgingPage__skal_unike_brukere_under_oppfolging() {
         AktorId aktorId1 = AktorId.of("aktorId1");
         AktorId aktorId2 = AktorId.of("aktorId2");
         AktorId aktorId3 = AktorId.of("aktorId3");
@@ -70,15 +70,10 @@ public class OppfolgingsStatusRepositoryTest {
         oppfolgingsPeriodeRepository.start(aktorId4);
         oppfolgingsPeriodeRepository.start(aktorId5);
 
-        List<AktorId> unikeBrukerePage1 = oppfolgingsStatusRepository
-                .hentUnikeBrukereUnderOppfolgingPage(0, 1);
-        assertEquals(1, unikeBrukerePage1.size());
-        assertEquals(aktorId2, unikeBrukerePage1.get(0));
-
-        List<AktorId> unikeBrukerePage2 = oppfolgingsStatusRepository
-                .hentUnikeBrukereUnderOppfolgingPage(1, 2);
-        assertEquals(2, unikeBrukerePage2.size());
-        assertEquals(aktorId4, unikeBrukerePage2.get(0));
-        assertEquals(aktorId5, unikeBrukerePage2.get(1));
+        List<AktorId> unikeBrukere = oppfolgingsStatusRepository.hentUnikeBrukereUnderOppfolgingPage();
+        assertEquals(3, unikeBrukere.size());
+        assertEquals(aktorId2, unikeBrukere.get(0));
+        assertEquals(aktorId4, unikeBrukere.get(1));
+        assertEquals(aktorId5, unikeBrukere.get(2));
     }
 }
