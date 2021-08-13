@@ -12,6 +12,8 @@ public class UnleashService {
 
     private final static String IKKE_OPPDATER_OPPFOLGING_MED_SIDEEFFEKT = "veilarboppfolging.ikke_oppdater_oppfolging_med_sideeffekt";
 
+    private final static String IKKE_START_OPPFOLGING_VED_TILORDNING_AV_VEILEDER = "veilarboppfolging.ikke_start_oppfolging_automatisk_ved_tilordning_av_veileder";
+
 
     private final UnleashClient unleashClient;
 
@@ -23,4 +25,7 @@ public class UnleashService {
         return unleashClient.isEnabled(IKKE_OPPDATER_OPPFOLGING_MED_SIDEEFFEKT);
     }
 
+    public boolean skalIkkeAutomatiskStarteOppfolgingVedTilordningAvVeileder() {
+        return unleashClient.isEnabled(IKKE_START_OPPFOLGING_VED_TILORDNING_AV_VEILEDER);
+    }
 }
