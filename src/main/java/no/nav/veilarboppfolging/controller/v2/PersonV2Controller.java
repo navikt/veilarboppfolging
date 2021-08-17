@@ -14,6 +14,8 @@ public class PersonV2Controller {
 
     private final AuthService authService;
 
+    // TODO: Sjekk om dette er i bruk
+
     @GetMapping("/me")
     public Bruker hentBrukerInfo() {
         return new Bruker()
@@ -21,6 +23,5 @@ public class PersonV2Controller {
                 .setErVeileder(authService.erInternBruker())
                 .setErBruker(authService.erEksternBruker());
     }
-
 
 }

@@ -44,7 +44,7 @@ public class VeilederV2Controller {
     @PostMapping("/lest-aktivitetsplan")
     public ResponseEntity<?> lestAktivitetsplan(@RequestParam("fnr") Fnr fnr) {
         veilederTilordningService.lestAktivitetsplan(fnr);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 
 }

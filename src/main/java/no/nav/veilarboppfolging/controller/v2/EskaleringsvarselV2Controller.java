@@ -49,7 +49,7 @@ public class EskaleringsvarselV2Controller {
                 request.getDialogId()
         );
 
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @PostMapping("/stopp")
@@ -58,7 +58,7 @@ public class EskaleringsvarselV2Controller {
 
         eskaleringService.stoppEskalering(request.getFnr(), authService.getInnloggetVeilederIdent(), request.getBegrunnelse());
 
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 
 }

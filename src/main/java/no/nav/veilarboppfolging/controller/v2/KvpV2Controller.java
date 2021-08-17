@@ -32,7 +32,7 @@ public class KvpV2Controller {
 
     private final AuthContextHolder authContextHolder;
 
-    @GetMapping("/gjeldende")
+    @GetMapping
     @ApiResponses({
             @ApiResponse(code = 200, message = "Actor is currently in a KVP period.", response = KvpDTO.class),
             @ApiResponse(code = 204, message = "Actor is currently not in a KVP period."),

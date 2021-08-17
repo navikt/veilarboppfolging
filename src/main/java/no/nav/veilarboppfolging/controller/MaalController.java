@@ -32,7 +32,7 @@ public class MaalController {
     @GetMapping("/malListe")
     public List<Maal> hentMalListe(@RequestParam(required = false) Fnr fnr) {
         Fnr fodselsnummer = authService.hentIdentForEksternEllerIntern(fnr);
-        List<MaalEntity> malDataList = maalService.hentMalList(fodselsnummer);
+        List<MaalEntity> malDataList = maalService.hentMaalList(fodselsnummer);
 
         return malDataList.stream()
                 .map(DtoMappers::tilDto)
@@ -44,7 +44,7 @@ public class MaalController {
         Fnr fodselsnummer = authService.hentIdentForEksternEllerIntern(fnr);
         String endretAvVeileder = authService.erEksternBruker() ? null : authService.getInnloggetBrukerIdent();
 
-        return tilDto(maalService.oppdaterMal(maal.getMal(), fodselsnummer, endretAvVeileder));
+        return tilDto(maalService.oppdaterMaal(maal.getMal(), fodselsnummer, endretAvVeileder));
     }
 
 }

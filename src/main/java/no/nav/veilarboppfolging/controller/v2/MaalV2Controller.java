@@ -24,15 +24,15 @@ public class MaalV2Controller {
     private final AuthService authService;
 
     @GetMapping
-    public Maal hentMal(@RequestParam(required = false) Fnr fnr) {
+    public Maal hentMaal(@RequestParam(required = false) Fnr fnr) {
         Fnr fodselsnummer = authService.hentIdentForEksternEllerIntern(fnr);
         return tilDto(maalService.hentMal(fodselsnummer));
     }
 
-    @GetMapping("/historikk") // TODO: /alle?
-    public List<Maal> hentMalListe(@RequestParam(value = "fnr", required = false) Fnr fnr) {
+    @GetMapping("/alle")
+    public List<Maal> hentMaalListe(@RequestParam(value = "fnr", required = false) Fnr fnr) {
         Fnr fodselsnummer = authService.hentIdentForEksternEllerIntern(fnr);
-        List<MaalEntity> malDataList = maalService.hentMalList(fodselsnummer);
+        List<MaalEntity> malDataList = maalService.hentMaalList(fodselsnummer);
 
         return malDataList.stream()
                 .map(DtoMappers::tilDto)
@@ -40,11 +40,11 @@ public class MaalV2Controller {
     }
 
     @PostMapping
-    public Maal oppdaterMal(@RequestBody Maal maal, @RequestParam(value = "fnr", required = false) Fnr fnr) {
+    public Maal oppdaterMaal(@RequestBody Maal maal, @RequestParam(value = "fnr", required = false) Fnr fnr) {
         Fnr fodselsnummer = authService.hentIdentForEksternEllerIntern(fnr);
         String endretAvVeileder = authService.erEksternBruker() ? null : authService.getInnloggetBrukerIdent();
 
-        return tilDto(maalService.oppdaterMal(maal.getMal(), fodselsnummer, endretAvVeileder));
+        return tilDto(maalService.oppdaterMaal(maal.getMal(), fodselsnummer, endretAvVeileder));
     }
 
 }

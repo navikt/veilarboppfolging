@@ -22,7 +22,8 @@ public class ManuellStatusV2Controller {
 
     private final ManuellStatusService manuellStatusService;
 
-    // TODO: Kan hende at det holder med /status
+    // TODO: Sjekk om vi trenger begge endepunktene. Dvs / og /status
+
     @GetMapping
     public ManuellV2Response hentErUnderManuellOppfolging(@RequestParam("fnr") Fnr fnr) {
         authService.skalVereInternBruker();

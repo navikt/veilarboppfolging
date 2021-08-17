@@ -6,7 +6,6 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.controller.response.AvslutningStatus;
 import no.nav.veilarboppfolging.controller.response.OppfolgingPeriodeDTO;
 import no.nav.veilarboppfolging.controller.response.OppfolgingPeriodeMinimalDTO;
-import no.nav.veilarboppfolging.controller.response.OppfolgingStatus;
 import no.nav.veilarboppfolging.controller.v2.request.AvsluttOppfolgingV2Request;
 import no.nav.veilarboppfolging.controller.v2.response.UnderOppfolgingV2Response;
 import no.nav.veilarboppfolging.service.AuthService;
@@ -30,23 +29,11 @@ public class OppfolgingV2Controller {
 
     private final AuthService authService;
 
-    @GetMapping("/niva3")
-    public UnderOppfolgingV2Response underOppfolgingNiva3() {
-        Fnr fnr = Fnr.of(authService.getInnloggetBrukerIdent());
-        return new UnderOppfolgingV2Response(oppfolgingService.erUnderOppfolgingNiva3(fnr));
-    }
-
     @GetMapping
     public UnderOppfolgingV2Response underOppfolging(@RequestParam(value = "fnr", required = false) Fnr fnr) {
         // TODO: Hvis dette endepunktet kun blir brukt av interne brukere så kan vi gjøre fnr query param required
         Fnr fodselsnummer = authService.hentIdentForEksternEllerIntern(fnr);
         return new UnderOppfolgingV2Response(oppfolgingService.erUnderOppfolging(fodselsnummer));
-    }
-
-    @GetMapping("/status")
-    public OppfolgingStatus hentOppfolgingsStatus(@RequestParam(value = "fnr", required = false) Fnr fnr) {
-        Fnr fodselsnummer = authService.hentIdentForEksternEllerIntern(fnr);
-        return tilDto(oppfolgingService.hentOppfolgingsStatus(fodselsnummer), authService.erInternBruker());
     }
 
     @PostMapping("/start")

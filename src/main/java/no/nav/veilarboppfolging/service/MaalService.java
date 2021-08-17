@@ -88,7 +88,7 @@ public class MaalService {
         return gjeldendeMaal;
     }
 
-    public List<MaalEntity> hentMalList(Fnr fnr) {
+    public List<MaalEntity> hentMaalList(Fnr fnr) {
         AktorId aktorId = authService.getAktorIdOrThrow(fnr);
         authService.sjekkLesetilgangMedAktorId(aktorId);
 
@@ -98,7 +98,7 @@ public class MaalService {
         return malList.stream().filter(mal -> KvpUtils.sjekkTilgangGittKvp(authService, kvpList, mal::getDato)).collect(toList());
     }
 
-    public MaalEntity oppdaterMal(String mal, Fnr fnr, String endretAvVeileder) {
+    public MaalEntity oppdaterMaal(String mal, Fnr fnr, String endretAvVeileder) {
         AktorId aktorId = authService.getAktorIdOrThrow(fnr);
         authService.sjekkSkrivetilgangMedAktorId(aktorId);
 
