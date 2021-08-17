@@ -1,6 +1,7 @@
 package no.nav.veilarboppfolging.config;
 
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.client.aktoroppslag.BrukerIdenter;
 import no.nav.common.client.aktorregister.AktorregisterClient;
 import no.nav.common.client.norg2.Enhet;
 import no.nav.common.client.norg2.Norg2Client;
@@ -8,6 +9,7 @@ import no.nav.common.health.HealthCheckResult;
 import no.nav.common.metrics.Event;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.EksternBrukerId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.client.behandle_arbeidssoker.BehandleArbeidssokerClient;
 import no.nav.veilarboppfolging.client.dkif.DkifClient;
@@ -76,6 +78,11 @@ public class ClientTestConfig {
 
             @Override
             public Map<Fnr, AktorId> hentAktorIdBolk(List<Fnr> list) {
+                return null;
+            }
+
+            @Override
+            public BrukerIdenter hentIdenter(EksternBrukerId brukerId) {
                 return null;
             }
 

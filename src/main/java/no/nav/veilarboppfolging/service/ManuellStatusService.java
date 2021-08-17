@@ -84,6 +84,12 @@ public class ManuellStatusService {
     public void synkroniserManuellStatusMedDkif(Fnr fnr) {
         AktorId aktorId = authService.getAktorIdOrThrow(fnr);
 
+        boolean erUnderOppfolging = oppfolgingService.erUnderOppfolging(aktorId);
+
+        if (!erUnderOppfolging) {
+            return;
+        }
+
         DkifKontaktinfo dkifKontaktinfo = hentDkifKontaktinfo(fnr);
 
         if (dkifKontaktinfo.isReservert()) {

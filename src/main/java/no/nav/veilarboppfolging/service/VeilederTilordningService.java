@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
+import static java.lang.String.format;
+
 @Slf4j
 @Service
 public class VeilederTilordningService {
@@ -35,6 +37,7 @@ public class VeilederTilordningService {
     private final VeilederHistorikkRepository veilederHistorikkRepository;
     private final TransactionTemplate transactor;
     private final KafkaProducerService kafkaProducerService;
+    private final UnleashService unleashService;
 
     @Autowired
     public VeilederTilordningService(
@@ -45,8 +48,9 @@ public class VeilederTilordningService {
             OppfolgingService oppfolgingService,
             VeilederHistorikkRepository veilederHistorikkRepository,
             TransactionTemplate transactor,
-            KafkaProducerService kafkaProducerService
-    ) {
+            KafkaProducerService kafkaProducerService,
+            UnleashService unleashService) {
+
         this.metricsService = metricsService;
         this.veilederTilordningerRepository = veilederTilordningerRepository;
         this.authService = authService;
@@ -55,6 +59,7 @@ public class VeilederTilordningService {
         this.veilederHistorikkRepository = veilederHistorikkRepository;
         this.transactor = transactor;
         this.kafkaProducerService = kafkaProducerService;
+        this.unleashService = unleashService;
     }
 
     public Optional<NavIdent> hentTilordnetVeilederIdent(Fnr fnr) {
@@ -180,9 +185,25 @@ public class VeilederTilordningService {
         transactor.executeWithoutResult((status) -> {
             veilederTilordningerRepository.upsertVeilederTilordning(aktorId, veilederId);
             veilederHistorikkRepository.insertTilordnetVeilederForAktorId(aktorId, veilederId);
-            oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(aktorId);
 
-            log.debug(String.format("Veileder %s tilordnet aktoer %s", veilederId, aktorId));
+            boolean skalAutomatiskStarteOppfolging =
+                    !unleashService.skalIkkeAutomatiskStarteOppfolgingVedTilordningAvVeileder();
+            boolean erUnderOppfolging = oppfolgingService.erUnderOppfolging(aktorId);
+
+            if (skalAutomatiskStarteOppfolging) {
+                if (!erUnderOppfolging) {
+                    log.warn("Bruker med aktør-id {} som ikke er under oppfølging får oppfølging startet pga tilordning av veileder", aktorId);
+                }
+                oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(aktorId);
+            } else {
+                if (!erUnderOppfolging) {
+                    throw new IllegalStateException(
+                            format("Bruker med aktør-id %s som ikke er under oppfølging kan ikke få tilordnet veileder", aktorId)
+                    );
+                }
+            }
+
+            log.debug(format("Veileder %s tilordnet aktoer %s", veilederId, aktorId));
 
             Optional<VeilederTilordningEntity> maybeTilordning = veilederTilordningerRepository.hentTilordnetVeileder(aktorId);
 
