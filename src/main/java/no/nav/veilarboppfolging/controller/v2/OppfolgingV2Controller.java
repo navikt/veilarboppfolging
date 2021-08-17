@@ -31,8 +31,7 @@ public class OppfolgingV2Controller {
 
     @GetMapping
     public UnderOppfolgingV2Response underOppfolging(@RequestParam(value = "fnr", required = false) Fnr fnr) {
-        // TODO: Hvis dette endepunktet kun blir brukt av interne brukere så kan vi gjøre fnr query param required
-        Fnr fodselsnummer = authService.hentIdentForEksternEllerIntern(fnr);
+        Fnr fodselsnummer = authService.hentIdentFraQueryParamEllerToken(fnr);
         return new UnderOppfolgingV2Response(oppfolgingService.erUnderOppfolging(fodselsnummer));
     }
 

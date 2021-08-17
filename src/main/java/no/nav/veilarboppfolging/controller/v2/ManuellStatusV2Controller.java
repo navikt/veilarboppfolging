@@ -1,6 +1,7 @@
 package no.nav.veilarboppfolging.controller.v2;
 
 import lombok.RequiredArgsConstructor;
+import no.nav.common.auth.context.UserRole;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.client.dkif.DkifKontaktinfo;
 import no.nav.veilarboppfolging.controller.request.VeilederBegrunnelseDTO;
@@ -13,16 +14,18 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v2/manuell")
 @RequiredArgsConstructor
 public class ManuellStatusV2Controller {
 
+    private final static List<UserRole> INTERN_OR_SYSTEM = List.of(UserRole.INTERN, UserRole.SYSTEM);
+
     private final AuthService authService;
 
     private final ManuellStatusService manuellStatusService;
-
-    // TODO: Sjekk om vi trenger begge endepunktene. Dvs / og /status
 
     @GetMapping
     public ManuellV2Response hentErUnderManuellOppfolging(@RequestParam("fnr") Fnr fnr) {
@@ -36,7 +39,7 @@ public class ManuellStatusV2Controller {
 
     @GetMapping("/status")
     public ManuellStatusV2Response hentManuellStatus(@RequestParam("fnr") Fnr fnr) {
-        authService.skalVereInternBruker();
+        authService.skalVereEnAv(INTERN_OR_SYSTEM);
         authService.sjekkLesetilgangMedFnr(fnr);
 
         DkifKontaktinfo kontaktinfo = manuellStatusService.hentDkifKontaktinfo(fnr);
