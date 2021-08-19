@@ -55,11 +55,6 @@ public class ManuellStatusRepository {
         );
     }
 
-    public Optional<ManuellStatusEntity> hentSisteManuellStatus(AktorId aktorId) {
-        String sql = "SELECT * FROM MANUELL_STATUS WHERE aktor_id = ? ORDER BY OPPRETTET_DATO DESC FETCH NEXT 1 ROWS ONLY";
-        return queryForNullableObject(db, sql, ManuellStatusRepository::map, aktorId.get());
-    }
-
     @SneakyThrows
     public static ManuellStatusEntity map(ResultSet result, int row) {
         return new ManuellStatusEntity()

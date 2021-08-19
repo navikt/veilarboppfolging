@@ -1,5 +1,6 @@
 package no.nav.veilarboppfolging.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import no.nav.common.types.identer.AktorId;
@@ -8,9 +9,10 @@ import no.nav.veilarboppfolging.client.dkif.DkifClient;
 import no.nav.veilarboppfolging.client.dkif.DkifKontaktinfo;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 import no.nav.veilarboppfolging.repository.ManuellStatusRepository;
+import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
 import no.nav.veilarboppfolging.repository.entity.ManuellStatusEntity;
+import no.nav.veilarboppfolging.repository.entity.OppfolgingEntity;
 import no.nav.veilarboppfolging.repository.enums.KodeverkBruker;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -22,6 +24,7 @@ import static no.nav.veilarboppfolging.repository.enums.KodeverkBruker.SYSTEM;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class ManuellStatusService {
 
     private final AuthService authService;
@@ -32,43 +35,34 @@ public class ManuellStatusService {
 
     private final OppfolgingService oppfolgingService;
 
+    private final OppfolgingsStatusRepository oppfolgingsStatusRepository;
+
     private final DkifClient dkifClient;
 
     private final KafkaProducerService kafkaProducerService;
 
     private final TransactionTemplate transactor;
 
-    @Autowired
-    public ManuellStatusService(
-            AuthService authService,
-            ManuellStatusRepository manuellStatusRepository,
-            ArenaOppfolgingService arenaOppfolgingService,
-            OppfolgingService oppfolgingService,
-            DkifClient dkifClient,
-            KafkaProducerService kafkaProducerService,
-            TransactionTemplate transactor
-    ) {
-        this.authService = authService;
-        this.manuellStatusRepository = manuellStatusRepository;
-        this.arenaOppfolgingService = arenaOppfolgingService;
-        this.oppfolgingService = oppfolgingService;
-        this.dkifClient = dkifClient;
-        this.kafkaProducerService = kafkaProducerService;
-        this.transactor = transactor;
+    public Optional<ManuellStatusEntity> hentManuellStatus(AktorId aktorId) {
+        Long manuellStatusId = oppfolgingsStatusRepository.hentOppfolging(aktorId)
+                .map(OppfolgingEntity::getGjeldendeManuellStatusId)
+                .orElse(null);
+
+        if (manuellStatusId == null) {
+            return Optional.empty();
+        }
+
+        return manuellStatusRepository.hentManuellStatus(manuellStatusId);
     }
 
     public boolean erManuell(AktorId aktorId) {
-        return manuellStatusRepository.hentSisteManuellStatus(aktorId)
+        return hentManuellStatus(aktorId)
                 .map(ManuellStatusEntity::isManuell)
                 .orElse(false);
     }
 
     public boolean erManuell(Fnr fnr) {
         return erManuell(authService.getAktorIdOrThrow(fnr));
-    }
-
-    public Optional<ManuellStatusEntity> hentManuellStatus(long manuellStatusId) {
-        return manuellStatusRepository.hentManuellStatus(manuellStatusId);
     }
 
     public List<ManuellStatusEntity> hentManuellStatusHistorikk(AktorId aktorId) {
