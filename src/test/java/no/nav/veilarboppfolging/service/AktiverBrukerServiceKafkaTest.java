@@ -29,12 +29,15 @@ import org.springframework.test.context.ActiveProfiles;
 import org.testcontainers.containers.KafkaContainer;
 
 import javax.sql.DataSource;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static no.nav.veilarboppfolging.test.TestUtils.verifiserAsynkront;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
 
@@ -78,7 +81,7 @@ public class AktiverBrukerServiceKafkaTest {
         konsumerteOppfolgingStartetMeldinger.set(new HashMap<>());
         konsumerteSisteOppfolgingsperiodeMeldinger.set(new HashMap<>());
         aktiverArbeidssokerData = new AktiverArbeidssokerData();
-        aktiverArbeidssokerData.setFnr(new no.nav.veilarboppfolging.controller.request.Fnr(fnr.get()));
+        aktiverArbeidssokerData.setFnr(new AktiverArbeidssokerData.Fnr(fnr.get()));
         aktiverArbeidssokerData.setInnsatsgruppe(innsatsgruppe);
 
         when(aktorregisterClient.hentAktorId(fnr)).thenReturn(aktorId);
@@ -117,7 +120,7 @@ public class AktiverBrukerServiceKafkaTest {
 
         consumerClient.start();
 
-        aktiverBrukerService.aktiverBruker(aktiverArbeidssokerData);
+        aktiverBrukerService.aktiverBruker(Fnr.of(aktiverArbeidssokerData.getFnr().getFnr()), aktiverArbeidssokerData.getInnsatsgruppe());
 
         verifiserAsynkront(8, TimeUnit.SECONDS, () -> {
             assertEquals(1,
@@ -143,7 +146,7 @@ public class AktiverBrukerServiceKafkaTest {
 
         boolean feilet = false;
         try {
-            aktiverBrukerService.aktiverBruker(aktiverArbeidssokerData);
+            aktiverBrukerService.aktiverBruker(Fnr.of(aktiverArbeidssokerData.getFnr().getFnr()), aktiverArbeidssokerData.getInnsatsgruppe());
         } catch (RuntimeException e) {
             if (!e.getMessage().equals("Feiler fra Arena")) {
                 throw e;

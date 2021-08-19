@@ -33,7 +33,7 @@ public class OppfolgingNiva3Controller {
         Fnr fnr = Fnr.of(authService.getInnloggetBrukerIdent());
 
         UnderOppfolgingNiva3DTO underOppfolgingNiva3DTO = new UnderOppfolgingNiva3DTO()
-                .setUnderOppfolging(oppfolgingService.underOppfolgingNiva3(fnr));
+                .setUnderOppfolging(oppfolgingService.erUnderOppfolgingNiva3(fnr));
 
         Event event = new Event("request.niva3.underoppfolging");
         event.addTagToReport("underoppfolging", valueOf(underOppfolgingNiva3DTO.isUnderOppfolging()));

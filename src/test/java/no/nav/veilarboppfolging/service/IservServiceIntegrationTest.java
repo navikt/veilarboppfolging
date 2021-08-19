@@ -48,7 +48,7 @@ public class IservServiceIntegrationTest {
 
         DbTestUtils.cleanupTestDb();
 
-        when(oppfolgingService.erUnderOppfolging(any())).thenReturn(true);
+        when(oppfolgingService.erUnderOppfolging(any(AktorId.class))).thenReturn(true);
         when(oppfolgingService.avsluttOppfolgingForSystemBruker(any())).thenReturn(true);
         when(authService.getFnrOrThrow(any())).thenReturn(FNR);
 
@@ -129,7 +129,7 @@ public class IservServiceIntegrationTest {
                 .kvalifiseringsgruppe(Kvalifiseringsgruppe.VURDU)
                 .build();
 
-        when(oppfolgingService.erUnderOppfolging(any())).thenReturn(false);
+        when(oppfolgingService.erUnderOppfolging(AKTOR_ID)).thenReturn(false);
 
         iservService.behandleEndretBruker(brukerV2);
         verifyNoInteractions(oppfolgingService);

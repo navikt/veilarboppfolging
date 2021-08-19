@@ -9,9 +9,12 @@ import no.nav.veilarboppfolging.controller.request.SykmeldtBrukerType;
 import no.nav.veilarboppfolging.controller.response.ArenaFeilDTO;
 import no.nav.veilarboppfolging.service.AktiverBrukerService;
 import no.nav.veilarboppfolging.service.AuthService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
+import static java.util.Optional.ofNullable;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 
 @RestController
@@ -28,10 +31,16 @@ public class SystemOppfolgingController {
     @PostMapping("/aktiverbruker")
     public ResponseEntity aktiverBruker(@RequestBody AktiverArbeidssokerData aktiverArbeidssokerData) {
         authService.skalVereSystemBruker();
-        authService.sjekkLesetilgangMedFnr(Fnr.of(aktiverArbeidssokerData.getFnr().getFnr()));
+
+        AktiverArbeidssokerData.Fnr requestFnr = ofNullable(aktiverArbeidssokerData.getFnr())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "FNR mangler"));
+
+        Fnr fnr = Fnr.of(requestFnr.getFnr());
+
+        authService.sjekkLesetilgangMedFnr(fnr);
 
         try {
-            aktiverBrukerService.aktiverBruker(aktiverArbeidssokerData);
+            aktiverBrukerService.aktiverBruker(fnr, aktiverArbeidssokerData.getInnsatsgruppe());
         } catch (ArenaFeilException exception) {
             // veilarbregistrering må ha body i response som inneholder årsak til feil fra Arena
             return ResponseEntity

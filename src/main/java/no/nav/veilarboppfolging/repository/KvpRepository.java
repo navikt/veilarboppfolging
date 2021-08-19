@@ -6,7 +6,6 @@ import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity;
 import no.nav.veilarboppfolging.repository.enums.KodeverkBruker;
 import no.nav.veilarboppfolging.utils.DbUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -132,13 +131,19 @@ public class KvpRepository {
      * or zero if there is no current KVP period.
      */
     public long gjeldendeKvp(AktorId aktorId) {
-        try {
-            return db.queryForObject("SELECT gjeldende_kvp FROM oppfolgingstatus WHERE aktor_id = ?",
-                    (rs, row) -> rs.getLong("gjeldende_kvp"),
-                    aktorId.get());
-        } catch (EmptyResultDataAccessException e) {
-            return 0;
-        }
+        return queryForNullableObject(
+                () -> db.queryForObject("SELECT gjeldende_kvp FROM oppfolgingstatus WHERE aktor_id = ?",
+                (rs, row) -> rs.getLong("gjeldende_kvp"),
+                aktorId.get())
+        ).orElse(0L);
+    }
+
+    public Optional<KvpPeriodeEntity> hentGjeldendeKvpPeriode(AktorId aktorId) {
+        return queryForNullableObject(
+                () -> db.queryForObject("SELECT * FROM KVP WHERE aktor_id = ? AND avsluttet_dato IS NULL ORDER BY opprettet_dato FETCH NEXT 1 ROWS ONLY",
+                        KvpRepository::mapTilKvp,
+                        aktorId.get())
+        );
     }
 
     @SneakyThrows

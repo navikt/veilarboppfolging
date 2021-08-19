@@ -3,6 +3,7 @@ package no.nav.veilarboppfolging.service;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.common.types.identer.NavIdent;
 import no.nav.veilarboppfolging.controller.request.VeilederTilordning;
 import no.nav.veilarboppfolging.controller.response.TilordneVeilederResponse;
 import no.nav.veilarboppfolging.feed.cjm.producer.FeedProducer;
@@ -49,6 +50,7 @@ public class VeilederTilordningService {
             TransactionTemplate transactor,
             KafkaProducerService kafkaProducerService,
             UnleashService unleashService) {
+
         this.metricsService = metricsService;
         this.veilederTilordningerRepository = veilederTilordningerRepository;
         this.authService = authService;
@@ -58,6 +60,13 @@ public class VeilederTilordningService {
         this.transactor = transactor;
         this.kafkaProducerService = kafkaProducerService;
         this.unleashService = unleashService;
+    }
+
+    public Optional<NavIdent> hentTilordnetVeilederIdent(Fnr fnr) {
+        AktorId aktorId = authService.getAktorIdOrThrow(fnr);
+
+        return veilederTilordningerRepository.hentTilordnetVeileder(aktorId)
+                .map((v) -> NavIdent.of(v.getVeilederId()));
     }
 
     public TilordneVeilederResponse tilordneVeiledere(List<VeilederTilordning> tilordninger) {
@@ -101,12 +110,13 @@ public class VeilederTilordningService {
         return response;
     }
 
-    public void lestAktivitetsplan(String fnr) {
-        AktorId aktorId = authService.getAktorIdOrThrow(Fnr.of(fnr));
+    public void lestAktivitetsplan(Fnr fnr) {
+        AktorId aktorId = authService.getAktorIdOrThrow(fnr);
 
         authService.skalVereInternBruker();
         authService.sjekkLesetilgangMedAktorId(aktorId);
 
+        // TODO: Skriveoperasjonene burde gjøres i en transaksjon
         veilederTilordningerRepository.hentTilordnetVeileder(aktorId)
                 .filter(VeilederTilordningEntity::isNyForVeileder)
                 .filter(this::erVeilederFor)
