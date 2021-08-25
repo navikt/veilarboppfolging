@@ -229,110 +229,20 @@ public class OppfolgingService {
                 .orElse(new UnderOppfolgingDTO().setUnderOppfolging(false).setErManuell(false));
     }
 
-    public boolean underOppfolgingNiva3(Fnr fnr) {
+    public boolean erUnderOppfolgingNiva3(Fnr fnr) {
         AktorId aktorId = authService.getAktorIdOrThrow(fnr);
 
         authService.sjekkTilgangTilPersonMedNiva3(aktorId);
 
-        return oppfolgingsStatusRepository.hentOppfolging(aktorId)
-                .map(OppfolgingEntity::isUnderOppfolging)
-                .orElse(false);
+        return erUnderOppfolging(aktorId);
     }
 
-    private Optional<OppfolgingEntity> getOppfolgingStatus(Fnr fnr) {
+    public boolean erUnderOppfolging(Fnr fnr) {
         AktorId aktorId = authService.getAktorIdOrThrow(fnr);
+
         authService.sjekkLesetilgangMedAktorId(aktorId);
-        return oppfolgingsStatusRepository.hentOppfolging(aktorId);
-    }
 
-    private OppfolgingStatusData getOppfolgingStatusData(Fnr fnr) {
-        AktorId aktorId = authService.getAktorIdOrThrow(fnr);
-
-        Oppfolging oppfolging = hentOppfolging(aktorId)
-                .orElse(new Oppfolging().setAktorId(aktorId.get()).setUnderOppfolging(false));
-
-        boolean erManuell = manuellStatusService.erManuell(aktorId);
-
-        DkifKontaktinfo dkifKontaktinfo = manuellStatusService.hentDkifKontaktinfo(fnr);
-
-        // TODO: Burde kanskje heller feile istedenfor å bruke Optional
-        Optional<ArenaOppfolgingTilstand> maybeArenaOppfolging = arenaOppfolgingService.hentOppfolgingTilstand(fnr);
-
-        boolean kanSettesUnderOppfolging = !oppfolging.isUnderOppfolging() && maybeArenaOppfolging
-                .map(s -> kanSettesUnderOppfolging(s.getFormidlingsgruppe(), s.getServicegruppe()))
-                .orElse(false);
-
-        long kvpId = kvpRepository.gjeldendeKvp(aktorId);
-        boolean harSkrivetilgangTilBruker = !kvpService.erUnderKvp(kvpId)
-                || authService.harTilgangTilEnhet(
-                        kvpRepository.hentKvpPeriode(kvpId)
-                                .orElseThrow()
-                                .getEnhet()
-        );
-
-        Boolean erInaktivIArena = maybeArenaOppfolging.map(ao -> erIserv(ao.getFormidlingsgruppe())).orElse(null);
-
-        Optional<Boolean> maybeKanEnkeltReaktiveres = maybeArenaOppfolging.map(ArenaOppfolgingTilstand::getKanEnkeltReaktiveres);
-
-        Boolean kanReaktiveres = maybeKanEnkeltReaktiveres
-                .map(kr -> oppfolging.isUnderOppfolging() && kr)
-                .orElse(null);
-
-        Boolean erSykmeldtMedArbeidsgiver = maybeArenaOppfolging
-                .map(ao -> ArenaUtils.erIARBSUtenOppfolging(ao.getFormidlingsgruppe(), ao.getServicegruppe()))
-                .orElse(null);
-
-        LocalDate inaktiveringsDato = maybeArenaOppfolging
-                .map(ArenaOppfolgingTilstand::getInaktiveringsdato)
-                .orElse(null);
-
-        return new OppfolgingStatusData()
-                .setFnr(fnr.get())
-                .setAktorId(oppfolging.getAktorId())
-                .setVeilederId(oppfolging.getVeilederId())
-                .setUnderOppfolging(oppfolging.isUnderOppfolging())
-                .setUnderKvp(oppfolging.getGjeldendeKvp() != null)
-                .setReservasjonKRR(dkifKontaktinfo.isReservert())
-                .setManuell(erManuell || dkifKontaktinfo.isReservert())
-                .setKanStarteOppfolging(kanSettesUnderOppfolging)
-                .setGjeldendeEskaleringsvarsel(oppfolging.getGjeldendeEskaleringsvarsel())
-                .setOppfolgingsperioder(oppfolging.getOppfolgingsperioder())
-                .setHarSkriveTilgang(harSkrivetilgangTilBruker)
-                .setInaktivIArena(erInaktivIArena)
-                .setKanReaktiveres(kanReaktiveres)
-                .setErSykmeldtMedArbeidsgiver(erSykmeldtMedArbeidsgiver)
-                .setErIkkeArbeidssokerUtenOppfolging(erSykmeldtMedArbeidsgiver)
-                .setInaktiveringsdato(inaktiveringsDato)
-                .setServicegruppe(maybeArenaOppfolging.map(ArenaOppfolgingTilstand::getServicegruppe).orElse(null))
-                .setFormidlingsgruppe(maybeArenaOppfolging.map(ArenaOppfolgingTilstand::getFormidlingsgruppe).orElse(null))
-                .setRettighetsgruppe(maybeArenaOppfolging.map(ArenaOppfolgingTilstand::getRettighetsgruppe).orElse(null))
-                .setKanVarsles(!erManuell && dkifKontaktinfo.isKanVarsles());
-    }
-
-    private AvslutningStatusData getAvslutningStatus(Fnr fnr) {
-        AktorId aktorId = authService.getAktorIdOrThrow(fnr);
-
-        Optional<ArenaOppfolgingTilstand> maybeArenaOppfolging = arenaOppfolgingService.hentOppfolgingTilstand(fnr);
-
-        boolean erIserv = maybeArenaOppfolging.map(ao -> erIserv(ao.getFormidlingsgruppe())).orElse(false);
-
-        boolean kanAvslutte = kanAvslutteOppfolging(aktorId, erUnderOppfolging(aktorId), erIserv);
-
-        boolean erUnderOppfolgingIArena = maybeArenaOppfolging
-                .map(status -> ArenaUtils.erUnderOppfolging(status.getFormidlingsgruppe(), status.getServicegruppe()))
-                .orElse(false);
-
-        LocalDate inaktiveringsDato = maybeArenaOppfolging
-                .map(ArenaOppfolgingTilstand::getInaktiveringsdato)
-                .orElse(null);
-
-        return AvslutningStatusData.builder()
-                .kanAvslutte(kanAvslutte)
-                .underOppfolging(erUnderOppfolgingIArena)
-                .harYtelser(ytelserOgAktiviteterService.harPagaendeYtelse(fnr))
-                .underKvp(kvpService.erUnderKvp(aktorId))
-                .inaktiveringsDato(inaktiveringsDato)
-                .build();
+        return erUnderOppfolging(aktorId);
     }
 
     public Optional<OppfolgingsperiodeEntity> hentOppfolgingsperiode(String uuid) {
@@ -451,12 +361,6 @@ public class OppfolgingService {
         });
     }
 
-    public boolean erUnderOppfolging(AktorId aktorId) {
-        return oppfolgingsStatusRepository.hentOppfolging(aktorId)
-                .map(OppfolgingEntity::isUnderOppfolging)
-                .orElse(false);
-    }
-
     public boolean kanAvslutteOppfolging(AktorId aktorId, boolean erUnderOppfolging, boolean erIservIArena) {
         boolean ikkeUnderKvp = !kvpService.erUnderKvp(aktorId);
 
@@ -482,6 +386,108 @@ public class OppfolgingService {
             kafkaProducerService.publiserSisteOppfolgingsperiode(DtoMappers.tilSisteOppfolgingsperiodeV1(sistePeriode));
             kafkaProducerService.publiserOppfolgingAvsluttet(aktorId);
         });
+    }
+
+    protected boolean erUnderOppfolging(AktorId aktorId) {
+        return oppfolgingsStatusRepository.hentOppfolging(aktorId)
+                .map(OppfolgingEntity::isUnderOppfolging)
+                .orElse(false);
+    }
+
+    private Optional<OppfolgingEntity> getOppfolgingStatus(Fnr fnr) {
+        AktorId aktorId = authService.getAktorIdOrThrow(fnr);
+        authService.sjekkLesetilgangMedAktorId(aktorId);
+        return oppfolgingsStatusRepository.hentOppfolging(aktorId);
+    }
+
+    private OppfolgingStatusData getOppfolgingStatusData(Fnr fnr) {
+        AktorId aktorId = authService.getAktorIdOrThrow(fnr);
+
+        Oppfolging oppfolging = hentOppfolging(aktorId)
+                .orElse(new Oppfolging().setAktorId(aktorId.get()).setUnderOppfolging(false));
+
+        boolean erManuell = manuellStatusService.erManuell(aktorId);
+
+        DkifKontaktinfo dkifKontaktinfo = manuellStatusService.hentDkifKontaktinfo(fnr);
+
+        // TODO: Burde kanskje heller feile istedenfor å bruke Optional
+        Optional<ArenaOppfolgingTilstand> maybeArenaOppfolging = arenaOppfolgingService.hentOppfolgingTilstand(fnr);
+
+        boolean kanSettesUnderOppfolging = !oppfolging.isUnderOppfolging() && maybeArenaOppfolging
+                .map(s -> kanSettesUnderOppfolging(s.getFormidlingsgruppe(), s.getServicegruppe()))
+                .orElse(false);
+
+        long kvpId = kvpRepository.gjeldendeKvp(aktorId);
+        boolean harSkrivetilgangTilBruker = !kvpService.erUnderKvp(kvpId)
+                || authService.harTilgangTilEnhet(
+                        kvpRepository.hentKvpPeriode(kvpId)
+                                .orElseThrow()
+                                .getEnhet()
+        );
+
+        Boolean erInaktivIArena = maybeArenaOppfolging.map(ao -> erIserv(ao.getFormidlingsgruppe())).orElse(null);
+
+        Optional<Boolean> maybeKanEnkeltReaktiveres = maybeArenaOppfolging.map(ArenaOppfolgingTilstand::getKanEnkeltReaktiveres);
+
+        Boolean kanReaktiveres = maybeKanEnkeltReaktiveres
+                .map(kr -> oppfolging.isUnderOppfolging() && kr)
+                .orElse(null);
+
+        Boolean erSykmeldtMedArbeidsgiver = maybeArenaOppfolging
+                .map(ao -> ArenaUtils.erIARBSUtenOppfolging(ao.getFormidlingsgruppe(), ao.getServicegruppe()))
+                .orElse(null);
+
+        LocalDate inaktiveringsDato = maybeArenaOppfolging
+                .map(ArenaOppfolgingTilstand::getInaktiveringsdato)
+                .orElse(null);
+
+        return new OppfolgingStatusData()
+                .setFnr(fnr.get())
+                .setAktorId(oppfolging.getAktorId())
+                .setVeilederId(oppfolging.getVeilederId())
+                .setUnderOppfolging(oppfolging.isUnderOppfolging())
+                .setUnderKvp(oppfolging.getGjeldendeKvp() != null)
+                .setReservasjonKRR(dkifKontaktinfo.isReservert())
+                .setManuell(erManuell || dkifKontaktinfo.isReservert())
+                .setKanStarteOppfolging(kanSettesUnderOppfolging)
+                .setGjeldendeEskaleringsvarsel(oppfolging.getGjeldendeEskaleringsvarsel())
+                .setOppfolgingsperioder(oppfolging.getOppfolgingsperioder())
+                .setHarSkriveTilgang(harSkrivetilgangTilBruker)
+                .setInaktivIArena(erInaktivIArena)
+                .setKanReaktiveres(kanReaktiveres)
+                .setErSykmeldtMedArbeidsgiver(erSykmeldtMedArbeidsgiver)
+                .setErIkkeArbeidssokerUtenOppfolging(erSykmeldtMedArbeidsgiver)
+                .setInaktiveringsdato(inaktiveringsDato)
+                .setServicegruppe(maybeArenaOppfolging.map(ArenaOppfolgingTilstand::getServicegruppe).orElse(null))
+                .setFormidlingsgruppe(maybeArenaOppfolging.map(ArenaOppfolgingTilstand::getFormidlingsgruppe).orElse(null))
+                .setRettighetsgruppe(maybeArenaOppfolging.map(ArenaOppfolgingTilstand::getRettighetsgruppe).orElse(null))
+                .setKanVarsles(!erManuell && dkifKontaktinfo.isKanVarsles());
+    }
+
+    private AvslutningStatusData getAvslutningStatus(Fnr fnr) {
+        AktorId aktorId = authService.getAktorIdOrThrow(fnr);
+
+        Optional<ArenaOppfolgingTilstand> maybeArenaOppfolging = arenaOppfolgingService.hentOppfolgingTilstand(fnr);
+
+        boolean erIserv = maybeArenaOppfolging.map(ao -> erIserv(ao.getFormidlingsgruppe())).orElse(false);
+
+        boolean kanAvslutte = kanAvslutteOppfolging(aktorId, erUnderOppfolging(aktorId), erIserv);
+
+        boolean erUnderOppfolgingIArena = maybeArenaOppfolging
+                .map(status -> ArenaUtils.erUnderOppfolging(status.getFormidlingsgruppe(), status.getServicegruppe()))
+                .orElse(false);
+
+        LocalDate inaktiveringsDato = maybeArenaOppfolging
+                .map(ArenaOppfolgingTilstand::getInaktiveringsdato)
+                .orElse(null);
+
+        return AvslutningStatusData.builder()
+                .kanAvslutte(kanAvslutte)
+                .underOppfolging(erUnderOppfolgingIArena)
+                .harYtelser(ytelserOgAktiviteterService.harPagaendeYtelse(fnr))
+                .underKvp(kvpService.erUnderKvp(aktorId))
+                .inaktiveringsDato(inaktiveringsDato)
+                .build();
     }
 
     private List<OppfolgingsperiodeEntity> populerKvpPerioder(List<OppfolgingsperiodeEntity> oppfolgingsPerioder, List<KvpPeriodeEntity> kvpPerioder) {

@@ -24,7 +24,7 @@ import static java.util.Optional.empty;
 import static java.util.stream.Collectors.toList;
 
 @Service
-public class MalService {
+public class MaalService {
 
     private final KafkaProducerService kafkaProducerService;
 
@@ -41,7 +41,7 @@ public class MalService {
     private final TransactionTemplate transactor;
 
     @Autowired
-    public MalService(
+    public MaalService(
             KafkaProducerService kafkaProducerService,
             MetricsService metricsService,
             OppfolgingsStatusRepository oppfolgingsStatusRepository,
@@ -88,7 +88,7 @@ public class MalService {
         return gjeldendeMaal;
     }
 
-    public List<MaalEntity> hentMalList(Fnr fnr) {
+    public List<MaalEntity> hentMaalList(Fnr fnr) {
         AktorId aktorId = authService.getAktorIdOrThrow(fnr);
         authService.sjekkLesetilgangMedAktorId(aktorId);
 
@@ -98,7 +98,7 @@ public class MalService {
         return malList.stream().filter(mal -> KvpUtils.sjekkTilgangGittKvp(authService, kvpList, mal::getDato)).collect(toList());
     }
 
-    public MaalEntity oppdaterMal(String mal, Fnr fnr, String endretAvVeileder) {
+    public MaalEntity oppdaterMaal(String mal, Fnr fnr, String endretAvVeileder) {
         AktorId aktorId = authService.getAktorIdOrThrow(fnr);
         authService.sjekkSkrivetilgangMedAktorId(aktorId);
 

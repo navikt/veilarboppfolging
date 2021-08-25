@@ -123,6 +123,10 @@ public class KvpService {
         stopKvpUtenEnhetSjekk(veilederId, aktorId, begrunnelse, NAV);
     }
 
+    public Optional<KvpPeriodeEntity> hentGjeldendeKvpPeriode(AktorId aktorId) {
+        return kvpRepository.hentGjeldendeKvpPeriode(aktorId);
+    }
+
     public boolean erUnderKvp(AktorId aktorId) {
         return erUnderKvp(kvpRepository.gjeldendeKvp(aktorId));
     }
@@ -167,7 +171,7 @@ public class KvpService {
     public void avsluttKvpVedEnhetBytte(EndringPaaOppfoelgingsBrukerV2 endretBruker) {
         AktorId aktorId = authService.getAktorIdOrThrow(Fnr.of(endretBruker.getFodselsnummer()));
 
-        Optional<KvpPeriodeEntity> maybeGjeldendeKvpPeriode = gjeldendeKvp(aktorId);
+        Optional<KvpPeriodeEntity> maybeGjeldendeKvpPeriode = hentGjeldendeKvpPeriode(aktorId);
 
         if (maybeGjeldendeKvpPeriode.isEmpty()) {
             return;
@@ -179,10 +183,6 @@ public class KvpService {
             stopKvpUtenEnhetSjekk(SYSTEM_USER_NAME, aktorId, "KVP avsluttet automatisk pga. endret Nav-enhet", SYSTEM);
             metricsService.stopKvpDueToChangedUnit();
         }
-    }
-
-    Optional<KvpPeriodeEntity> gjeldendeKvp(AktorId aktorId) {
-        return kvpRepository.hentKvpPeriode(kvpRepository.gjeldendeKvp(aktorId));
     }
 
 }

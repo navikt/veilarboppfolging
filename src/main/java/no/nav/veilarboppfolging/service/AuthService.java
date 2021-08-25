@@ -11,6 +11,7 @@ import no.nav.common.abac.domain.Attribute;
 import no.nav.common.abac.domain.request.*;
 import no.nav.common.abac.domain.response.XacmlResponse;
 import no.nav.common.auth.context.AuthContextHolder;
+import no.nav.common.auth.context.UserRole;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.client.aktorregister.AktorregisterClient;
 import no.nav.common.types.identer.AktorId;
@@ -25,6 +26,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
+import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
 import static no.nav.common.abac.XacmlRequestBuilder.lagEnvironment;
 import static no.nav.common.abac.XacmlRequestBuilder.personIdAttribute;
@@ -52,15 +54,29 @@ public class AuthService {
         this.serviceUserCredentials = serviceUserCredentials;
     }
 
+    public void skalVereEnAv(List<UserRole> roller) {
+        UserRole loggedInUserRole = authContextHolder.requireRole();
+
+        if (roller.stream().noneMatch(rolle -> rolle.equals(loggedInUserRole))) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, format("Bruker med rolle %s har ikke tilgang", loggedInUserRole));
+        }
+    }
+
     public void skalVereInternBruker() {
         if (!authContextHolder.erInternBruker()){
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Ugyldig bruker type");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bruker er ikke en intern bruker");
+        }
+    }
+
+    public void skalVereEksternBruker() {
+        if (!authContextHolder.erEksternBruker()){
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bruker er ikke en ekstern bruker");
         }
     }
 
     public void skalVereSystemBruker() {
         if (!authContextHolder.erSystemBruker()){
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Ugyldig bruker type");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bruker er ikke en systembruker");
         }
     }
 
@@ -146,17 +162,28 @@ public class AuthService {
     }
 
     // TODO: Det er hårete å måtte skille på ekstern og intern
-    //  Lag istedenfor en egen controller for interne operasjoner og en annen for eksterne
+    //  En alternativ løsning er å ha egne endepunkter for de forskjellige rollene
     public Fnr hentIdentForEksternEllerIntern(Fnr queryParamFnr) {
+        if (erSystemBruker()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        }
+
+        return hentIdentFraQueryParamEllerToken(queryParamFnr);
+    }
+
+    public Fnr hentIdentFraQueryParamEllerToken(Fnr queryParamFnr) {
         Fnr fnr;
 
-        if (erInternBruker()) {
-            fnr = queryParamFnr;
-        } else if (erEksternBruker()) {
-            fnr = Fnr.of(getInnloggetBrukerIdent());
-        } else {
-            // Systembruker har ikke tilgang
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        switch (authContextHolder.requireRole()) {
+            case EKSTERN:
+                fnr = Fnr.of(getInnloggetBrukerIdent());
+                break;
+            case INTERN:
+            case SYSTEM:
+                fnr = queryParamFnr;
+                break;
+            default:
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
 
         if (fnr == null) {

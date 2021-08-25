@@ -1,6 +1,7 @@
 package no.nav.veilarboppfolging.controller;
 
 import lombok.RequiredArgsConstructor;
+import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.controller.request.VeilederTilordning;
 import no.nav.veilarboppfolging.controller.response.TilordneVeilederResponse;
 import no.nav.veilarboppfolging.service.VeilederTilordningService;
@@ -22,7 +23,7 @@ public class VeilederTilordningController {
     }
 
     @PostMapping("{fnr}/lestaktivitetsplan")
-    public ResponseEntity lestAktivitetsplan(@PathVariable("fnr") String fnr) {
+    public ResponseEntity<?> lestAktivitetsplan(@PathVariable("fnr") Fnr fnr) {
         veilederTilordningService.lestAktivitetsplan(fnr);
         return ResponseEntity.status(204).build();
     }

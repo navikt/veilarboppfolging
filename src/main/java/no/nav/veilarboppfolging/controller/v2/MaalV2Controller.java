@@ -1,11 +1,11 @@
-package no.nav.veilarboppfolging.controller;
+package no.nav.veilarboppfolging.controller.v2;
 
 import lombok.RequiredArgsConstructor;
 import no.nav.common.types.identer.Fnr;
-import no.nav.veilarboppfolging.controller.response.Mal;
+import no.nav.veilarboppfolging.controller.response.Maal;
 import no.nav.veilarboppfolging.repository.entity.MaalEntity;
 import no.nav.veilarboppfolging.service.AuthService;
-import no.nav.veilarboppfolging.service.MalService;
+import no.nav.veilarboppfolging.service.MaalService;
 import no.nav.veilarboppfolging.utils.DtoMappers;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,36 +15,36 @@ import static java.util.stream.Collectors.toList;
 import static no.nav.veilarboppfolging.utils.DtoMappers.tilDto;
 
 @RestController
+@RequestMapping("/api/v2/maal")
 @RequiredArgsConstructor
-@RequestMapping("/api/oppfolging")
-public class MalController {
+public class MaalV2Controller {
 
-    private final MalService malService;
+    private final MaalService maalService;
 
     private final AuthService authService;
 
-    @GetMapping("/mal")
-    public Mal hentMal(@RequestParam(required = false) Fnr fnr) {
+    @GetMapping
+    public Maal hentMaal(@RequestParam(required = false) Fnr fnr) {
         Fnr fodselsnummer = authService.hentIdentForEksternEllerIntern(fnr);
-        return tilDto(malService.hentMal(fodselsnummer));
+        return tilDto(maalService.hentMal(fodselsnummer));
     }
 
-    @GetMapping("/malListe")
-    public List<Mal> hentMalListe(@RequestParam(required = false) Fnr fnr) {
+    @GetMapping("/alle")
+    public List<Maal> hentMaalListe(@RequestParam(value = "fnr", required = false) Fnr fnr) {
         Fnr fodselsnummer = authService.hentIdentForEksternEllerIntern(fnr);
-        List<MaalEntity> malDataList = malService.hentMalList(fodselsnummer);
+        List<MaalEntity> malDataList = maalService.hentMaalList(fodselsnummer);
 
         return malDataList.stream()
                 .map(DtoMappers::tilDto)
                 .collect(toList());
     }
 
-    @PostMapping("/mal")
-    public Mal oppdaterMal(@RequestBody Mal mal, @RequestParam(required = false) Fnr fnr) {
+    @PostMapping
+    public Maal oppdaterMaal(@RequestBody Maal maal, @RequestParam(value = "fnr", required = false) Fnr fnr) {
         Fnr fodselsnummer = authService.hentIdentForEksternEllerIntern(fnr);
         String endretAvVeileder = authService.erEksternBruker() ? null : authService.getInnloggetBrukerIdent();
 
-        return tilDto(malService.oppdaterMal(mal.getMal(), fodselsnummer, endretAvVeileder));
+        return tilDto(maalService.oppdaterMaal(maal.getMal(), fodselsnummer, endretAvVeileder));
     }
 
 }

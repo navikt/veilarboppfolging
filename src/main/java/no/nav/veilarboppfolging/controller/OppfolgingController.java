@@ -110,7 +110,7 @@ public class OppfolgingController {
     }
 
     @GetMapping("/innstillingsHistorikk")
-    public List<InnstillingsHistorikk> hentInnstillingsHistorikk(@RequestParam("fnr") Fnr fnr) {
+    public List<HistorikkHendelse> hentInnstillingsHistorikk(@RequestParam("fnr") Fnr fnr) {
         authService.skalVereInternBruker();
         return historikkService.hentInstillingsHistorikk(fnr);
     }

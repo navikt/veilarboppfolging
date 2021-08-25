@@ -14,6 +14,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.ZonedDateTime;
+import java.util.Optional;
 
 @Service
 public class EskaleringService {
@@ -96,6 +97,15 @@ public class EskaleringService {
         if (gjeldendeEskaleringsvarselId != 0) {
             eskaleringsvarselRepository.finish(aktorId, gjeldendeEskaleringsvarselId, veilederId, begrunnelse, ZonedDateTime.now());
         }
+    }
+
+    public Optional<EskaleringsvarselEntity> hentGjeldendeEskaleringsvarsel(Fnr fnr) {
+        AktorId aktorId = authService.getAktorIdOrThrow(fnr);
+        return hentGjeldendeEskaleringsvarsel(aktorId);
+    }
+
+    private Optional<EskaleringsvarselEntity> hentGjeldendeEskaleringsvarsel(AktorId aktorId) {
+        return eskaleringsvarselRepository.hentGjeldendeEskaleringsvarsel(aktorId);
     }
 
     private long hentGjeldendeEskaleringsvarselId(AktorId aktorId) {
