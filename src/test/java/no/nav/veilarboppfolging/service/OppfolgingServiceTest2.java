@@ -92,6 +92,7 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
                 manuellStatusRepository,
                 null,
                 oppfolgingServiceMock,
+                oppfolgingsStatusRepository,
                 dkifClient,
                 null,
                 transactor
