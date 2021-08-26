@@ -174,10 +174,16 @@ public class AuthService {
     public Fnr hentIdentFraQueryParamEllerToken(Fnr queryParamFnr) {
         Fnr fnr;
 
-        if (erEksternBruker()) {
-            fnr = Fnr.of(getInnloggetBrukerIdent());
-        } else {
-            fnr = queryParamFnr;
+        switch (authContextHolder.requireRole()) {
+            case EKSTERN:
+                fnr = Fnr.of(getInnloggetBrukerIdent());
+                break;
+            case INTERN:
+            case SYSTEM:
+                fnr = queryParamFnr;
+                break;
+            default:
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
 
         if (fnr == null) {
