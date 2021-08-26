@@ -15,7 +15,7 @@ public class OppfolgingEntity {
     private String aktorId;
     private String veilederId;
     private boolean underOppfolging;
-    private long gjeldendeManuellStatusId;
+    private Long gjeldendeManuellStatusId;
     private long gjeldendeEskaleringsvarselId;
     private long gjeldendeMaalId;
     private long gjeldendeKvpId;
