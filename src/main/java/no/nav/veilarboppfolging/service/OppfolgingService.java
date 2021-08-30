@@ -525,7 +525,11 @@ public class OppfolgingService {
             boolean erUnderOppfolgingIArena = ArenaUtils.erUnderOppfolging(oppfolgingTilstand.getFormidlingsgruppe(), oppfolgingTilstand.getServicegruppe());
 
             if (!erBrukerUnderOppfolging && erUnderOppfolgingIArena) {
-                log.warn("Starter oppfølgingsperiode for bruker pga. sideeffekt for aktorid: {}", aktorId);
+                if (unleashService.skalIkkeOppdatereMedSideeffekt()) {
+                    log.info("Oppdatering av oppfølging med sideffekt er skrudd av. Stopper sideeffekt for start av oppfølging for aktorId={}", aktorId);
+                    return;
+                }
+
                 startOppfolgingHvisIkkeAlleredeStartet(aktorId);
             } else {
                 boolean erSykmeldtMedArbeidsgiver = erSykmeldtMedArbeidsgiver(oppfolgingTilstand);
@@ -589,8 +593,14 @@ public class OppfolgingService {
     }
 
     private void inaktiverBruker(AktorId aktorId, boolean kanAvslutteOppfolging) {
+        log.info("Avslutter oppfølgingsperiode for bruker");
+
         if (kanAvslutteOppfolging) {
-            log.warn("Avslutter oppfølgingsperiode for bruker pga. sideeffekt for aktorid {}", aktorId);
+            if (unleashService.skalIkkeOppdatereMedSideeffekt()) {
+                log.info("Oppdatering av oppfølging med sideffekt er skrudd av. Stopper sideeffekt for avslutting av oppfølging for aktorId={}", aktorId);
+                return;
+            }
+
             avsluttOppfolgingForBruker(aktorId, null, "Oppfølging avsluttet automatisk pga. inaktiv bruker som ikke kan reaktiveres");
         } else {
             log.info("Avslutting av oppfølging ikke tillatt for aktorid {}", aktorId);
