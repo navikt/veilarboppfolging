@@ -105,6 +105,8 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         when(arenaOppfolgingService.hentOppfolgingTilstand(FNR)).thenReturn(Optional.of(arenaOppfolgingTilstand));
         when(ytelseskontraktClient.hentYtelseskontraktListe(any())).thenReturn(mock(YtelseskontraktResponse.class));
         when(manuellStatusService.hentDkifKontaktinfo(FNR)).thenReturn(new DkifKontaktinfo());
+
+        when(unleashService.skalIkkeOppdatereMedSideeffekt()).thenReturn(false);
     }
 
     @Test
