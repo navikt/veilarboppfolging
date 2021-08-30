@@ -6,6 +6,7 @@ import no.nav.veilarboppfolging.client.dkif.DkifClient;
 import no.nav.veilarboppfolging.client.dkif.DkifKontaktinfo;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 import no.nav.veilarboppfolging.repository.ManuellStatusRepository;
+import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
 import no.nav.veilarboppfolging.repository.entity.ManuellStatusEntity;
 import no.nav.veilarboppfolging.test.DbTestUtils;
@@ -45,6 +46,8 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
 
     private ManuellStatusRepository manuellStatusRepository;
 
+    private OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
+
     private ManuellStatusService manuellStatusService;
 
     private OppfolgingService oppfolgingService = mock(OppfolgingService.class);
@@ -58,14 +61,16 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
         doCallRealMethod().when(authService).sjekkTilgangTilEnhet(any());
         when(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID);
 
-        oppfolgingsStatusRepository = new OppfolgingsStatusRepository(db);
         manuellStatusRepository = new ManuellStatusRepository(db, transactor);
+        oppfolgingsStatusRepository = new OppfolgingsStatusRepository(db);
+        oppfolgingsPeriodeRepository = new OppfolgingsPeriodeRepository(db, transactor);
 
         manuellStatusService = new ManuellStatusService(
                 authService,
                 manuellStatusRepository,
                 arenaOppfolgingService,
                 oppfolgingService,
+                oppfolgingsStatusRepository,
                 dkifClient,
                 kafkaProducerService,
                 transactor
@@ -170,12 +175,33 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
     }
 
     @Test
+    public void oppdateringer_av_manuell_status_reflekteres_i_om_bruker_er_manuell() {
+        when(authService.harTilgangTilEnhet(any())).thenReturn(true);
+        gittAktivOppfolging(AKTOR_ID);
+
+        assertFalse(manuellStatusService.erManuell(AKTOR_ID));
+
+        manuellStatusService.settBrukerTilManuellGrunnetReservasjonIKRR(AKTOR_ID);
+        assertTrue(manuellStatusService.erManuell(AKTOR_ID));
+
+        manuellStatusService.settDigitalBruker(FNR);
+        assertFalse(manuellStatusService.erManuell(AKTOR_ID));
+
+        manuellStatusService.settBrukerTilManuellGrunnetReservasjonIKRR(AKTOR_ID);
+        assertTrue(manuellStatusService.erManuell(AKTOR_ID));
+
+
+        oppfolgingsPeriodeRepository.avslutt(AKTOR_ID, "", "");
+        assertFalse(manuellStatusService.erManuell(AKTOR_ID));
+    }
+
+    @Test
     public void settBrukerTilManuellGrunnetReservasjonIKRR__skal_lage_manuell_status() {
         gittAktivOppfolging(AKTOR_ID);
 
         manuellStatusService.settBrukerTilManuellGrunnetReservasjonIKRR(AKTOR_ID);
 
-        ManuellStatusEntity manuellStatus = manuellStatusRepository.hentSisteManuellStatus(AKTOR_ID).orElseThrow();
+        ManuellStatusEntity manuellStatus = manuellStatusService.hentManuellStatus(AKTOR_ID).orElseThrow();
 
         assertTrue(manuellStatus.getId() > 0);
         assertEquals("Brukeren er reservert i Kontakt- og reservasjonsregisteret", manuellStatus.getBegrunnelse());
@@ -232,5 +258,6 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
     private void gittAktivOppfolging(AktorId aktorId) {
         oppfolgingsStatusRepository.opprettOppfolging(aktorId);
         db.update("UPDATE OPPFOLGINGSTATUS SET UNDER_OPPFOLGING = ? WHERE AKTOR_ID = ?", true, aktorId.get());
+        when(oppfolgingService.erUnderOppfolging(AKTOR_ID)).thenReturn(true);
     }
 }

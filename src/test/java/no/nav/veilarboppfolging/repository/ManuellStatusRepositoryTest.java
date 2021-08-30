@@ -9,7 +9,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.time.ZonedDateTime;
-import java.util.Optional;
 
 import static java.time.temporal.ChronoUnit.MILLIS;
 import static no.nav.veilarboppfolging.test.TestData.TEST_AKTOR_ID;
@@ -74,52 +73,6 @@ public class ManuellStatusRepositoryTest extends IsolatedDatabaseTest {
 
         var statuser = manuellStatusRepository.history(TEST_AKTOR_ID);
         assertEquals(2, statuser.size());
-    }
-
-    @Test
-    public void hentSisteManuellStatus__should_return_empty_if_no_status() {
-        assertTrue(manuellStatusRepository.hentSisteManuellStatus(TEST_AKTOR_ID).isEmpty());
-    }
-
-    @Test
-    public void hentSisteManuellStatus__should_return_status() {
-        ManuellStatusEntity manuellStatus = createManuellStatus(TEST_AKTOR_ID);
-
-        oppfolgingsStatusRepository.opprettOppfolging(TEST_AKTOR_ID);
-
-        manuellStatusRepository.create(manuellStatus);
-
-        Optional<ManuellStatusEntity> maybeManuellStatus = manuellStatusRepository.hentSisteManuellStatus(TEST_AKTOR_ID);
-
-        assertTrue(maybeManuellStatus.isPresent());
-        manuellStatus.setDato(manuellStatus.getDato().truncatedTo(MILLIS));
-        ManuellStatusEntity gotten = maybeManuellStatus.get();
-        gotten.setDato(gotten.getDato().truncatedTo(MILLIS));
-        assertEquals(manuellStatus, maybeManuellStatus.get());
-    }
-
-    @Test
-    public void hentSisteManuellStatus__should_return_last_status() {
-        ManuellStatusEntity manuellStatus1 = createManuellStatus(TEST_AKTOR_ID)
-                .setManuell(false)
-                .setDato(ZonedDateTime.now().minusSeconds(10));
-
-        ManuellStatusEntity manuellStatus2 = createManuellStatus(TEST_AKTOR_ID)
-                .setManuell(true)
-                .setDato(ZonedDateTime.now());
-
-        oppfolgingsStatusRepository.opprettOppfolging(TEST_AKTOR_ID);
-
-        manuellStatusRepository.create(manuellStatus1);
-        manuellStatusRepository.create(manuellStatus2);
-
-        Optional<ManuellStatusEntity> maybeManuellStatus = manuellStatusRepository.hentSisteManuellStatus(TEST_AKTOR_ID);
-
-        assertTrue(maybeManuellStatus.isPresent());
-        manuellStatus2.setDato(manuellStatus2.getDato().truncatedTo(MILLIS));
-        ManuellStatusEntity gotten = maybeManuellStatus.get();
-        gotten.setDato(gotten.getDato().truncatedTo(MILLIS));
-        assertEquals(manuellStatus2, gotten);
     }
 
     private ManuellStatusEntity createManuellStatus(AktorId aktorId) {

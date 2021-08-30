@@ -301,10 +301,8 @@ public class OppfolgingService {
             );
         }
 
-        if (oppfolgingEntity.getGjeldendeManuellStatusId() != 0) {
-            Optional<ManuellStatusEntity> manuellStatus = manuellStatusService.hentManuellStatus(oppfolgingEntity.getGjeldendeManuellStatusId());
-            manuellStatus.ifPresent(oppfolging::setGjeldendeManuellStatus);
-        }
+        Optional<ManuellStatusEntity> manuellStatus = manuellStatusService.hentManuellStatus(aktorId);
+        manuellStatus.ifPresent(oppfolging::setGjeldendeManuellStatus);
 
         List<KvpPeriodeEntity> kvpPerioder = kvpRepository.hentKvpHistorikk(aktorId);
         oppfolging.setOppfolgingsperioder(populerKvpPerioder(oppfolgingsPeriodeRepository.hentOppfolgingsperioder(AktorId.of(oppfolgingEntity.getAktorId())), kvpPerioder));
