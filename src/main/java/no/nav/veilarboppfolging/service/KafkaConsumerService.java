@@ -7,6 +7,8 @@ import no.nav.common.auth.context.AuthContext;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.UserRole;
 import no.nav.common.sts.SystemUserTokenProvider;
+import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.Fnr;
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +31,8 @@ public class KafkaConsumerService {
 
     private final OppfolgingEndringService oppfolgingEndringService;
 
+    private final AuthService authService;
+
     @Autowired
     public KafkaConsumerService(
             AuthContextHolder authContextHolder,
@@ -36,7 +40,8 @@ public class KafkaConsumerService {
             @Lazy KvpService kvpService,
             @Lazy IservService iservService,
             OppfolgingsenhetEndringService oppfolgingsenhetEndringService,
-            @Lazy OppfolgingEndringService oppfolgingEndringService
+            @Lazy OppfolgingEndringService oppfolgingEndringService,
+            AuthService authService
     ) {
         this.authContextHolder = authContextHolder;
         this.systemUserTokenProvider = systemUserTokenProvider;
@@ -44,6 +49,7 @@ public class KafkaConsumerService {
         this.iservService = iservService;
         this.oppfolgingsenhetEndringService = oppfolgingsenhetEndringService;
         this.oppfolgingEndringService = oppfolgingEndringService;
+        this.authService = authService;
     }
 
     @SneakyThrows
@@ -56,6 +62,9 @@ public class KafkaConsumerService {
         );
 
         authContextHolder.withContext(context, () -> {
+            AktorId aktorId = authService.getAktorIdOrThrow(Fnr.of(endringPaBruker.getFodselsnummer()));
+            log.info("Behandler endring på oppfølgingsbruker med aktør-id {}", aktorId);
+
             kvpService.avsluttKvpVedEnhetBytte(endringPaBruker);
             iservService.behandleEndretBruker(endringPaBruker);
             oppfolgingsenhetEndringService.behandleBrukerEndring(endringPaBruker);
