@@ -301,10 +301,8 @@ public class OppfolgingService {
             );
         }
 
-        if (oppfolgingEntity.getGjeldendeManuellStatusId() != 0) {
-            Optional<ManuellStatusEntity> manuellStatus = manuellStatusService.hentManuellStatus(oppfolgingEntity.getGjeldendeManuellStatusId());
-            manuellStatus.ifPresent(oppfolging::setGjeldendeManuellStatus);
-        }
+        Optional<ManuellStatusEntity> manuellStatus = manuellStatusService.hentManuellStatus(aktorId);
+        manuellStatus.ifPresent(oppfolging::setGjeldendeManuellStatus);
 
         List<KvpPeriodeEntity> kvpPerioder = kvpRepository.hentKvpHistorikk(aktorId);
         oppfolging.setOppfolgingsperioder(populerKvpPerioder(oppfolgingsPeriodeRepository.hentOppfolgingsperioder(AktorId.of(oppfolgingEntity.getAktorId())), kvpPerioder));
@@ -525,8 +523,11 @@ public class OppfolgingService {
             boolean erUnderOppfolgingIArena = ArenaUtils.erUnderOppfolging(oppfolgingTilstand.getFormidlingsgruppe(), oppfolgingTilstand.getServicegruppe());
 
             if (!erBrukerUnderOppfolging && erUnderOppfolgingIArena) {
-                if (unleashService.skalIkkeOppdatereMedSideeffekt()) {
-                    log.info("Oppdatering av oppfølging med sideffekt er skrudd av. Stopper sideeffekt for start av oppfølging for aktorId={}", aktorId);
+                boolean skalOppdatereMedSideeffekt = !unleashService.skalIkkeOppdatereMedSideeffekt();
+
+                log.warn("Oppdatering med sideeffekt. Start av oppfølgingsperiode for aktorid: {}. Sideeffekt på?: {}", aktorId, skalOppdatereMedSideeffekt);
+
+                if (!skalOppdatereMedSideeffekt) {
                     return;
                 }
 
@@ -596,8 +597,11 @@ public class OppfolgingService {
         log.info("Avslutter oppfølgingsperiode for bruker");
 
         if (kanAvslutteOppfolging) {
-            if (unleashService.skalIkkeOppdatereMedSideeffekt()) {
-                log.info("Oppdatering av oppfølging med sideffekt er skrudd av. Stopper sideeffekt for avslutting av oppfølging for aktorId={}", aktorId);
+            boolean skalOppdatereMedSideeffekt = !unleashService.skalIkkeOppdatereMedSideeffekt();
+
+            log.warn("Oppdatering med sideeffekt. Avslutting av oppfølgingsperiode for aktorid: {}. Sideeffekt på?: {}", aktorId, skalOppdatereMedSideeffekt);
+
+            if (!skalOppdatereMedSideeffekt) {
                 return;
             }
 
