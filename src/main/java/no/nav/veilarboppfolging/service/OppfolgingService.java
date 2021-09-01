@@ -609,4 +609,9 @@ public class OppfolgingService {
         metricsService.rapporterAutomatiskAvslutningAvOppfolging(!kanAvslutteOppfolging);
     }
 
+    public Optional<OppfolgingsperiodeEntity> hentGjeldendeOppfolgingsperiode(Fnr fnr) {
+        authService.sjekkLesetilgangMedFnr(fnr);
+        AktorId aktorId = authService.getAktorIdOrThrow(fnr);
+        return oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId);
+    }
 }

@@ -72,6 +72,16 @@ public class OppfolgingV2Controller {
         return tilOppfolgingPeriodeMinimalDTO(periode);
     }
 
+    @GetMapping("/periode/gjeldende")
+    public ResponseEntity<OppfolgingPeriodeDTO> hentGjeldendePeriode(@RequestParam("fnr") Fnr fnr) {
+        authService.skalVereSystemBruker();
+
+        return oppfolgingService.hentGjeldendeOppfolgingsperiode(fnr)
+                .map(op -> tilOppfolgingPeriodeDTO(op, true))
+                .map(op -> new ResponseEntity<>(op, HttpStatus.OK))
+                .orElse(new ResponseEntity<>(HttpStatus.NO_CONTENT));
+    }
+
     @GetMapping("/perioder")
     public List<OppfolgingPeriodeDTO> hentOppfolgingsperioder(@RequestParam("fnr") Fnr fnr) {
         authService.skalVereSystemBruker();
@@ -81,5 +91,4 @@ public class OppfolgingV2Controller {
                 .map(op -> tilOppfolgingPeriodeDTO(op, true))
                 .collect(Collectors.toList());
     }
-
 }

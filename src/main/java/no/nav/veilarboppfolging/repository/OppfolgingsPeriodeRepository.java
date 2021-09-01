@@ -87,6 +87,16 @@ public class OppfolgingsPeriodeRepository {
         );
     }
 
+    public Optional<OppfolgingsperiodeEntity> hentGjeldendeOppfolgingsperiode(AktorId aktorId) {
+        return queryForNullableObject(
+                () -> db.queryForObject(
+                        hentOppfolingsperioderSQL + "WHERE aktor_id = ? AND sluttdato is null",
+                        OppfolgingsPeriodeRepository::mapTilOppfolgingsperiode,
+                        aktorId.get()
+                )
+        );
+    }
+
     private void insert(AktorId aktorId) {
         db.update("" +
                         "INSERT INTO OPPFOLGINGSPERIODE(uuid, aktor_id, startDato, oppdatert) " +
