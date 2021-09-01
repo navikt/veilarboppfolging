@@ -10,6 +10,7 @@ import no.nav.veilarboppfolging.controller.v2.request.AvsluttOppfolgingV2Request
 import no.nav.veilarboppfolging.controller.v2.response.UnderOppfolgingV2Response;
 import no.nav.veilarboppfolging.service.AuthService;
 import no.nav.veilarboppfolging.service.OppfolgingService;
+import no.nav.veilarboppfolging.utils.DtoMappers;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -73,11 +74,11 @@ public class OppfolgingV2Controller {
     }
 
     @GetMapping("/periode/gjeldende")
-    public ResponseEntity<OppfolgingPeriodeDTO> hentGjeldendePeriode(@RequestParam("fnr") Fnr fnr) {
+    public ResponseEntity<OppfolgingPeriodeMinimalDTO> hentGjeldendePeriode(@RequestParam("fnr") Fnr fnr) {
         authService.skalVereSystemBruker();
 
         return oppfolgingService.hentGjeldendeOppfolgingsperiode(fnr)
-                .map(op -> tilOppfolgingPeriodeDTO(op, true))
+                .map(DtoMappers::tilOppfolgingPeriodeMinimalDTO)
                 .map(op -> new ResponseEntity<>(op, HttpStatus.OK))
                 .orElse(new ResponseEntity<>(HttpStatus.NO_CONTENT));
     }
