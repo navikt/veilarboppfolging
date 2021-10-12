@@ -5,6 +5,7 @@ import lombok.SneakyThrows;
 import lombok.val;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.pto_schema.kafka.json.topic.SisteOppfolgingsperiodeV1;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt.WSYtelseskontrakt;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeRequest;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeResponse;
@@ -138,8 +139,14 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
         arenaOppfolgingTilstand.setFormidlingsgruppe("ISERV");
 
+        reset(kafkaProducerService);
         oppfolgingService.avsluttOppfolging(FNR, VEILEDER, "");
-        verify(kafkaProducerService, times(1)).publiserOppfolgingAvsluttet(AKTOR_ID);
+
+        verify(kafkaProducerService).publiserOppfolgingAvsluttet(AKTOR_ID);
+        verify(kafkaProducerService).publiserSisteOppfolgingsperiode(any(SisteOppfolgingsperiodeV1.class));
+        verify(kafkaProducerService).publiserVeilederTilordnet(AKTOR_ID, null);
+        verify(kafkaProducerService).publiserEndringPaNyForVeileder(AKTOR_ID, false);
+        verify(kafkaProducerService).publiserEndringPaManuellStatus(AKTOR_ID, false);
     }
 
     @Test(expected = ResponseStatusException.class)

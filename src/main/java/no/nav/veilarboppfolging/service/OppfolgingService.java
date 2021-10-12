@@ -383,6 +383,11 @@ public class OppfolgingService {
 
             kafkaProducerService.publiserSisteOppfolgingsperiode(DtoMappers.tilSisteOppfolgingsperiodeV1(sistePeriode));
             kafkaProducerService.publiserOppfolgingAvsluttet(aktorId);
+
+            // Publiserer også endringer som resettes i oppfolgingsstatus-tabellen ved avslutting av oppfølging
+            kafkaProducerService.publiserVeilederTilordnet(aktorId, null);
+            kafkaProducerService.publiserEndringPaNyForVeileder(aktorId, false);
+            kafkaProducerService.publiserEndringPaManuellStatus(aktorId, false);
         });
     }
 
@@ -613,4 +618,9 @@ public class OppfolgingService {
         metricsService.rapporterAutomatiskAvslutningAvOppfolging(!kanAvslutteOppfolging);
     }
 
+    public Optional<OppfolgingsperiodeEntity> hentGjeldendeOppfolgingsperiode(Fnr fnr) {
+        authService.sjekkLesetilgangMedFnr(fnr);
+        AktorId aktorId = authService.getAktorIdOrThrow(fnr);
+        return oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId);
+    }
 }
