@@ -78,6 +78,7 @@ public class AktiverBrukerServiceKafkaTest {
 
     @BeforeEach
     public void setup() {
+        jdbcTemplate.update("DELETE FROM KAFKA_PRODUCER_RECORD");
         konsumerteOppfolgingStartetMeldinger.set(new HashMap<>());
         konsumerteSisteOppfolgingsperiodeMeldinger.set(new HashMap<>());
         aktiverArbeidssokerData = new AktiverArbeidssokerData();
