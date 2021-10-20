@@ -1,7 +1,6 @@
 package no.nav.veilarboppfolging.repository;
 
 import no.nav.common.types.identer.AktorId;
-import no.nav.veilarboppfolging.repository.entity.AvsluttetOppfolgingFeedEntity;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -10,7 +9,6 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -49,17 +47,6 @@ public class OppfolgingsPeriodeRepository {
             endPeriode(aktorId, veileder, begrunnelse);
             avsluttOppfolging(aktorId);
         });
-    }
-
-    public List<AvsluttetOppfolgingFeedEntity> fetchAvsluttetEtterDato(Timestamp timestamp, int pageSize) {
-        return db
-                .query("SELECT * FROM (SELECT aktor_id, sluttdato, oppdatert " +
-                                "FROM OPPFOLGINGSPERIODE " +
-                                "WHERE oppdatert >= ? and sluttdato is not null order by oppdatert) " +
-                                "WHERE rownum <= ?",
-                        this::mapRadTilAvsluttetOppfolging,
-                        timestamp,
-                        pageSize);
     }
 
     public Optional<OppfolgingsperiodeEntity> hentOppfolgingsperiode(String uuid) {
@@ -108,8 +95,7 @@ public class OppfolgingsPeriodeRepository {
         db.update("UPDATE " +
                         OppfolgingsStatusRepository.TABLE_NAME +
                         " SET " + UNDER_OPPFOLGING + "= 1, " +
-                        "oppdatert = CURRENT_TIMESTAMP, " +
-                        "FEED_ID = null " +
+                        "oppdatert = CURRENT_TIMESTAMP " +
                         "WHERE " + AKTOR_ID + " = ?",
                 aktorId.get());
     }
@@ -136,8 +122,7 @@ public class OppfolgingsPeriodeRepository {
                         + "ny_for_veileder = 0, "
                         + "gjeldende_manuell_status = null, "
                         + "gjeldende_mal = null, "
-                        + "oppdatert = CURRENT_TIMESTAMP, "
-                        + "FEED_ID = null "
+                        + "oppdatert = CURRENT_TIMESTAMP "
                         + "WHERE aktor_id = ?",
                 aktorId.get()
         );
@@ -151,14 +136,6 @@ public class OppfolgingsPeriodeRepository {
                 .startDato(hentZonedDateTime(result, "startdato"))
                 .sluttDato(hentZonedDateTime(result, "sluttdato"))
                 .begrunnelse(result.getString("avslutt_begrunnelse"))
-                .build();
-    }
-
-    private AvsluttetOppfolgingFeedEntity mapRadTilAvsluttetOppfolging(ResultSet rs, int row) throws SQLException {
-        return AvsluttetOppfolgingFeedEntity.builder()
-                .aktoerid(rs.getString("aktor_id"))
-                .sluttdato(hentZonedDateTime(rs, "sluttdato"))
-                .oppdatert(hentZonedDateTime(rs, "oppdatert"))
                 .build();
     }
 

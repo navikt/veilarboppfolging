@@ -26,7 +26,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -188,10 +187,6 @@ public class OppfolgingService {
 
         avsluttOppfolgingForBruker(aktorId, SYSTEM_USER_NAME, "Oppfølging avsluttet automatisk grunnet iserv i 28 dager");
         return true;
-    }
-
-    public List<AvsluttetOppfolgingFeedEntity> hentAvsluttetOppfolgingEtterDato(Timestamp timestamp, int pageSize) {
-        return oppfolgingsPeriodeRepository.fetchAvsluttetEtterDato(timestamp, pageSize);
     }
 
     @SneakyThrows

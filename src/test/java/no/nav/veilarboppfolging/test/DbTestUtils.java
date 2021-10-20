@@ -21,8 +21,7 @@ public class DbTestUtils {
             "ESKALERINGSVARSEL",
             "KVP",
             "UTMELDING",
-            "OPPFOLGINGSENHET_ENDRET",
-            "NYE_BRUKERE_FEED"
+            "OPPFOLGINGSENHET_ENDRET"
     );
 
     public static void setupDatabaseFunctions(DataSource dataSource) {
