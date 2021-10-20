@@ -10,8 +10,6 @@ import org.springframework.context.annotation.Import;
         KvpRepository.class,
         MaalRepository.class,
         ManuellStatusRepository.class,
-        NyeBrukereFeedRepository.class,
-        OppfolgingFeedRepository.class,
         OppfolgingsenhetHistorikkRepository.class,
         OppfolgingsPeriodeRepository.class,
         OppfolgingsStatusRepository.class,

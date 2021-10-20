@@ -8,8 +8,6 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.controller.request.VeilederTilordning;
 import no.nav.veilarboppfolging.controller.response.TilordneVeilederResponse;
-import no.nav.veilarboppfolging.feed.cjm.producer.FeedProducer;
-import no.nav.veilarboppfolging.feed.domain.OppfolgingFeedDTO;
 import no.nav.veilarboppfolging.repository.VeilederHistorikkRepository;
 import no.nav.veilarboppfolging.repository.VeilederTilordningerRepository;
 import no.nav.veilarboppfolging.test.DbTestUtils;
@@ -57,9 +55,6 @@ public class VeilederTilordningServiceTest {
     private OppfolgingService oppfolgingService;
 
     @Mock
-    private FeedProducer<OppfolgingFeedDTO> feed;
-
-    @Mock
     private AuthService authService;
 
     @Mock
@@ -80,7 +75,6 @@ public class VeilederTilordningServiceTest {
                     metricsService,
                     veilederTilordningerRepository,
                     authService,
-                    feed,
                     oppfolgingService,
                     veilederHistorikkRepository,
                     DbTestUtils.createTransactor(LocalH2Database.getDb()),
@@ -325,23 +319,6 @@ public class VeilederTilordningServiceTest {
     private Callable<TilordneVeilederResponse> portefoljeRessursCallable(VeilederTilordningService veilederTilordningService, List<VeilederTilordning> tilordninger) {
         AuthContext authContext = AuthTestUtils.createAuthContext(UserRole.INTERN, "veileder");
         return () -> AuthContextHolderThreadLocal.instance().withContext(authContext, () -> veilederTilordningService.tilordneVeiledere(tilordninger));
-    }
-
-    @Test
-    public void feilIWebhookSkalIgnoreres() {
-        List<VeilederTilordning> tilordninger = new ArrayList<>();
-
-        VeilederTilordning tilordningOK1 = new VeilederTilordning().setBrukerFnr("FNR1").setFraVeilederId("FRAVEILEDER1").setTilVeilederId("TILVEILEDER1");
-
-        tilordninger.add(tilordningOK1);
-
-        when(authService.getAktorIdOrThrow(fnr1)).thenReturn(aktorId1);
-        doThrow(new RuntimeException("Test")).when(feed).activateWebhook();
-
-        TilordneVeilederResponse response = veilederTilordningService.tilordneVeiledere(tilordninger);
-        List<VeilederTilordning> feilendeTilordninger = response.getFeilendeTilordninger();
-
-        assertThat(feilendeTilordninger).isEmpty();
     }
 
     @Test

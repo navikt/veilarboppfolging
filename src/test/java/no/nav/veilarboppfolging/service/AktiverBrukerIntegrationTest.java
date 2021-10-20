@@ -63,7 +63,7 @@ public class AktiverBrukerIntegrationTest {
                 oppfolgingsStatusRepository, oppfolgingsPeriodeRepository,
                 manuellStatusService,
                 null, new EskaleringsvarselRepository(db, transactor),
-                new KvpRepository(db, transactor), new NyeBrukereFeedRepository(db),
+                new KvpRepository(db, transactor),
                 new MaalRepository(db, transactor),
                 mock(BrukerOppslagFlereOppfolgingAktorRepository.class),
                 null,
@@ -73,7 +73,6 @@ public class AktiverBrukerIntegrationTest {
         aktiverBrukerService = new AktiverBrukerService(
                 authService, oppfolgingService,
                 behandleArbeidssokerClient,
-                new NyeBrukereFeedRepository(db),
                 DbTestUtils.createTransactor(db)
         );
 

@@ -104,7 +104,7 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
                 oppfolgingsStatusRepository, oppfolgingsPeriodeRepository,
                 manuellStatusService,
                 null, new EskaleringsvarselRepository(db, transactor),
-                new KvpRepository(db, transactor), new NyeBrukereFeedRepository(db), maalRepository,
+                new KvpRepository(db, transactor), maalRepository,
                 new BrukerOppslagFlereOppfolgingAktorRepository(db), null, transactor);
 
         when(authService.getFnrOrThrow(AKTOR_ID)).thenReturn(FNR);

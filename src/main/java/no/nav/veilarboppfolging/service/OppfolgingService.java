@@ -55,7 +55,6 @@ public class OppfolgingService {
     private final EskaleringService eskaleringService;
     private final EskaleringsvarselRepository eskaleringsvarselRepository;
     private final KvpRepository kvpRepository;
-    private final NyeBrukereFeedRepository nyeBrukereFeedRepository;
     private final MaalRepository maalRepository;
     private final BrukerOppslagFlereOppfolgingAktorRepository brukerOppslagFlereOppfolgingAktorRepository;
     private final UnleashService unleashService;
@@ -76,7 +75,6 @@ public class OppfolgingService {
             EskaleringService eskaleringService,
             EskaleringsvarselRepository eskaleringsvarselRepository,
             KvpRepository kvpRepository,
-            NyeBrukereFeedRepository nyeBrukereFeedRepository,
             MaalRepository maalRepository,
             BrukerOppslagFlereOppfolgingAktorRepository brukerOppslagFlereOppfolgingAktorRepository,
             UnleashService unleashService,
@@ -94,7 +92,6 @@ public class OppfolgingService {
         this.eskaleringService = eskaleringService;
         this.eskaleringsvarselRepository = eskaleringsvarselRepository;
         this.kvpRepository = kvpRepository;
-        this.nyeBrukereFeedRepository = nyeBrukereFeedRepository;
         this.maalRepository = maalRepository;
         this.brukerOppslagFlereOppfolgingAktorRepository = brukerOppslagFlereOppfolgingAktorRepository;
         this.unleashService = unleashService;
@@ -345,7 +342,6 @@ public class OppfolgingService {
             }
 
             oppfolgingsPeriodeRepository.start(aktorId);
-            nyeBrukereFeedRepository.leggTil(oppfolgingsbruker);
 
             if (kontaktinfo.isReservert()) {
                 manuellStatusService.settBrukerTilManuellGrunnetReservasjonIKRR(aktorId);
