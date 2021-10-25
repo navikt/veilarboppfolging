@@ -22,7 +22,7 @@ public class VeilederController {
 
     @GetMapping("/{fnr}/veileder")
     public Veileder getVeileder(@PathVariable("fnr") Fnr fnr) {
-        authService.skalVereInternBruker();
+        authService.skalVereInternEllerSystemBruker();
         authService.sjekkLesetilgangMedFnr(fnr);
 
         var veilederIdent = veilederTilordningService.hentTilordnetVeilederIdent(fnr)

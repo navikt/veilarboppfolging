@@ -68,6 +68,12 @@ public class AuthService {
         }
     }
 
+    public void skalVereInternEllerSystemBruker() {
+        if (!authContextHolder.erInternBruker() && !authContextHolder.erSystemBruker()){
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bruker er verken system eller intern bruker");
+        }
+    }
+
     public void skalVereEksternBruker() {
         if (!authContextHolder.erEksternBruker()){
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bruker er ikke en ekstern bruker");
