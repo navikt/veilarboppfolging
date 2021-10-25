@@ -7,7 +7,6 @@ import no.nav.veilarboppfolging.client.behandle_arbeidssoker.BehandleArbeidssoke
 import no.nav.veilarboppfolging.controller.request.Innsatsgruppe;
 import no.nav.veilarboppfolging.controller.request.SykmeldtBrukerType;
 import no.nav.veilarboppfolging.domain.Oppfolgingsbruker;
-import no.nav.veilarboppfolging.repository.NyeBrukereFeedRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -22,8 +21,6 @@ public class AktiverBrukerService {
 
     private final OppfolgingService oppfolgingService;
 
-    private final NyeBrukereFeedRepository nyeBrukereFeedRepository;
-
     private final TransactionTemplate transactor;
 
     @Autowired
@@ -31,13 +28,11 @@ public class AktiverBrukerService {
             AuthService authService,
             OppfolgingService oppfolgingService,
             BehandleArbeidssokerClient behandleArbeidssokerClient,
-            NyeBrukereFeedRepository nyeBrukereFeedRepository,
             TransactionTemplate transactor
     ) {
         this.authService = authService;
         this.oppfolgingService = oppfolgingService;
         this.behandleArbeidssokerClient = behandleArbeidssokerClient;
-        this.nyeBrukereFeedRepository = nyeBrukereFeedRepository;
         this.transactor = transactor;
     }
 
@@ -72,8 +67,6 @@ public class AktiverBrukerService {
                         .build());
 
         behandleArbeidssokerClient.opprettBrukerIArena(fnr, innsatsgruppe);
-
-        nyeBrukereFeedRepository.tryLeggTilFeedIdPaAlleElementerUtenFeedId();
     }
 
     //  TODO: SykmeldtBrukerType brukes kun av veilarbdirigent som nå henter ting fra Kafka, kan snart fjernes

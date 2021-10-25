@@ -104,7 +104,7 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
                 oppfolgingsStatusRepository, oppfolgingsPeriodeRepository,
                 manuellStatusService,
                 null, new EskaleringsvarselRepository(db, transactor),
-                new KvpRepository(db, transactor), new NyeBrukereFeedRepository(db), maalRepository,
+                new KvpRepository(db, transactor), maalRepository,
                 new BrukerOppslagFlereOppfolgingAktorRepository(db), null, transactor);
 
         when(authService.getFnrOrThrow(AKTOR_ID)).thenReturn(FNR);
@@ -313,7 +313,7 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
 
 
     //Setter veileder direkte vha. sql, siden det ikke finnes funksjonalitet for tildeling av veileder i
-    //OppfolgingRepository. Dette finnes kun i OppfolgingFeedRepository (og tilbys i PortefoljeRessurs) p.t.
+    //OppfolgingRepository.
     //Men siden hentOppfolging henter opp veilder er det likevel aktuelt å teste her at veileder returneres
     //dersom det er satt i databasen. 
     private void settVeileder(String veilederId, AktorId aktorId) {

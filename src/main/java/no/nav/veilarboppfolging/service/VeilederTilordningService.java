@@ -6,12 +6,9 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.NavIdent;
 import no.nav.veilarboppfolging.controller.request.VeilederTilordning;
 import no.nav.veilarboppfolging.controller.response.TilordneVeilederResponse;
-import no.nav.veilarboppfolging.feed.cjm.producer.FeedProducer;
-import no.nav.veilarboppfolging.feed.domain.OppfolgingFeedDTO;
 import no.nav.veilarboppfolging.repository.VeilederHistorikkRepository;
 import no.nav.veilarboppfolging.repository.VeilederTilordningerRepository;
 import no.nav.veilarboppfolging.repository.entity.VeilederTilordningEntity;
-import no.nav.veilarboppfolging.schedule.IdPaOppfolgingFeedSchedule;
 import no.nav.veilarboppfolging.utils.DtoMappers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,7 +18,6 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 
 import static java.lang.String.format;
 
@@ -32,7 +28,6 @@ public class VeilederTilordningService {
     private final MetricsService metricsService;
     private final VeilederTilordningerRepository veilederTilordningerRepository;
     private final AuthService authService;
-    private final FeedProducer<OppfolgingFeedDTO> oppfolgingFeed;
     private final OppfolgingService oppfolgingService;
     private final VeilederHistorikkRepository veilederHistorikkRepository;
     private final TransactionTemplate transactor;
@@ -44,7 +39,6 @@ public class VeilederTilordningService {
             MetricsService metricsService,
             VeilederTilordningerRepository veilederTilordningerRepository,
             AuthService authService,
-            FeedProducer<OppfolgingFeedDTO> oppfolgingFeed,
             OppfolgingService oppfolgingService,
             VeilederHistorikkRepository veilederHistorikkRepository,
             TransactionTemplate transactor,
@@ -54,7 +48,6 @@ public class VeilederTilordningService {
         this.metricsService = metricsService;
         this.veilederTilordningerRepository = veilederTilordningerRepository;
         this.authService = authService;
-        this.oppfolgingFeed = oppfolgingFeed;
         this.oppfolgingService = oppfolgingService;
         this.veilederHistorikkRepository = veilederHistorikkRepository;
         this.transactor = transactor;
@@ -102,11 +95,6 @@ public class VeilederTilordningService {
             response.setResultat("WARNING: Noen brukere kunne ikke tilordnes en veileder");
         }
 
-        if (tilordninger.size() > feilendeTilordninger.size()) {
-            //Kaller denne asynkront siden resultatet ikke er interessant og operasjonen tar litt tid.
-            CompletableFuture.runAsync(this::kallWebhook);
-        }
-
         return response;
     }
 
@@ -124,10 +112,7 @@ public class VeilederTilordningService {
                 .map(VeilederTilordningEntity::getAktorId)
                 .map(AktorId::of)
                 .map(veilederTilordningerRepository::markerSomLestAvVeileder)
-                .ifPresent(i -> {
-                    kallWebhook();
-                    kafkaProducerService.publiserEndringPaNyForVeileder(aktorId, false);
-                });
+                .ifPresent(i -> kafkaProducerService.publiserEndringPaNyForVeileder(aktorId, false));
     }
 
     private List<VeilederTilordning> tildelVeileder(List<VeilederTilordning> feilendeTilordninger, VeilederTilordning tilordning, AktorId aktorId, String eksisterendeVeileder) {
@@ -166,19 +151,6 @@ public class VeilederTilordningService {
 
     private boolean erVeilederFor(VeilederTilordningEntity tilordning) {
         return authService.getInnloggetVeilederIdent().equals(tilordning.getVeilederId());
-    }
-
-    private void kallWebhook() {
-        try {
-            //Venter for å gi tid til å populere ID-er i feeden
-            Thread.sleep(IdPaOppfolgingFeedSchedule.INSERT_ID_INTERVAL);
-
-            oppfolgingFeed.activateWebhook();
-        } catch (Exception e) {
-            // Logger feilen, men bryr oss ikke om det. At webhooken feiler påvirker ikke funksjonaliteten
-            // men gjør at endringen kommer senere inn i portefølje
-            log.warn("Webhook feilet", e);
-        }
     }
 
     private void skrivTilDatabase(AktorId aktorId, String veilederId) {

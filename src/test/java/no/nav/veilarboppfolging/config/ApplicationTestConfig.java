@@ -14,7 +14,6 @@ import no.nav.common.job.leader_election.LeaderElectionClient;
 import no.nav.common.sts.OpenAmSystemUserTokenProvider;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.utils.Credentials;
-import no.nav.veilarboppfolging.feed.FeedConfig;
 import no.nav.veilarboppfolging.mock.PepMock;
 import no.nav.veilarboppfolging.test.DbTestUtils;
 import no.nav.veilarboppfolging.test.LocalH2Database;
@@ -41,7 +40,6 @@ import static org.mockito.Mockito.when;
         ServiceTestConfig.class,
         FilterTestConfig.class,
         KafkaTestConfig.class,
-        FeedConfig.class,
         HelsesjekkConfig.class
 })
 public class ApplicationTestConfig {
