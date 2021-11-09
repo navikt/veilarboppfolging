@@ -10,7 +10,6 @@ import no.nav.veilarboppfolging.service.VeilederTilordningService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @RestController
@@ -24,8 +23,11 @@ public class VeilederV2Controller {
 
     @GetMapping
     public ResponseEntity<HentVeilederV2Response> hentVeileder(@RequestParam("fnr") Fnr fnr) {
-        authService.skalVereInternBruker();
-        authService.sjekkLesetilgangMedFnr(fnr);
+        authService.skalVereInternEllerSystemBruker();
+
+        if (authService.erInternBruker()) {
+            authService.sjekkLesetilgangMedFnr(fnr);
+        }
 
         var maybeVeilederIdent = veilederTilordningService.hentTilordnetVeilederIdent(fnr);
 
