@@ -38,6 +38,15 @@ spec:
     - configmap: loginservice-idporten
   kafka:
     pool: nav-dev
+  azure:
+    application:
+      enabled: true
+  accessPolicy:
+    inbound:
+      rules:
+        - application: poao-gcp-proxy
+          namespace: pto
+          cluster: dev-fss
   vault:
     enabled: true
     paths:
