@@ -18,7 +18,6 @@ import no.nav.veilarboppfolging.controller.response.VeilederTilgang;
 import no.nav.veilarboppfolging.domain.AvslutningStatusData;
 import no.nav.veilarboppfolging.domain.OppfolgingStatusData;
 import no.nav.veilarboppfolging.repository.KvpRepository;
-import no.nav.veilarboppfolging.repository.NyeBrukereFeedRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
@@ -61,7 +60,6 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     private YtelseskontraktClient ytelseskontraktClient = mock(YtelseskontraktClient.class);
     private ArenaOppfolgingService arenaOppfolgingService = mock(ArenaOppfolgingService.class);
     private EskaleringService eskaleringService = mock(EskaleringService.class);
-    private NyeBrukereFeedRepository nyeBrukereFeedRepository = mock(NyeBrukereFeedRepository.class);
     private KvpService kvpService = mock(KvpService.class);
     private KvpRepository kvpRepository = mock(KvpRepository.class);
     private MetricsService metricsService = mock(MetricsService.class);
@@ -92,7 +90,6 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
                 eskaleringService,
                 null,
                 kvpRepository,
-                nyeBrukereFeedRepository,
                 null,
                 null,
                 unleashService, transactor);

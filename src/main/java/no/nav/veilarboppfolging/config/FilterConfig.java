@@ -1,6 +1,7 @@
 package no.nav.veilarboppfolging.config;
 
 import no.nav.common.auth.context.UserRole;
+import no.nav.common.auth.oidc.filter.AzureAdUserRoleResolver;
 import no.nav.common.auth.oidc.filter.OidcAuthenticationFilter;
 import no.nav.common.auth.oidc.filter.OidcAuthenticatorConfig;
 import no.nav.common.auth.utils.UserTokenFinder;
@@ -74,6 +75,13 @@ public class FilterConfig {
                 .withUserRole(UserRole.EKSTERN);
     }
 
+    private OidcAuthenticatorConfig naisAzureAdConfig(EnvironmentProperties properties) {
+        return new OidcAuthenticatorConfig()
+                .withDiscoveryUrl(properties.getNaisAadDiscoveryUrl())
+                .withClientId(properties.getNaisAadClientId())
+                .withUserRoleResolver(new AzureAdUserRoleResolver());
+    }
+
     @Bean
     public FilterRegistrationBean<PingFilter> pingFilter() {
         // Veilarbproxy trenger dette endepunktet for å sjekke at tjenesten lever
@@ -95,7 +103,8 @@ public class FilterConfig {
                         azureAdAuthConfig(properties),
                         loginserviceIdportenConfig(properties),
                         openAmStsAuthConfig(properties),
-                        naisStsAuthConfig(properties)
+                        naisStsAuthConfig(properties),
+                        naisAzureAdConfig(properties)
                 )
         );
 

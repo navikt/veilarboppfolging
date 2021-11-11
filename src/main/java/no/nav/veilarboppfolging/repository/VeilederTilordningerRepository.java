@@ -38,15 +38,15 @@ public class VeilederTilordningerRepository {
     }
 
     public void upsertVeilederTilordning(AktorId aktorId, String veilederId) {
-        String insertSql = "INSERT INTO OPPFOLGINGSTATUS(aktor_id, veileder, under_oppfolging, ny_for_veileder, sist_tilordnet, oppdatert, FEED_ID) " +
-                "SELECT ?, ?, 0, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, null FROM DUAL " +
+        String insertSql = "INSERT INTO OPPFOLGINGSTATUS(aktor_id, veileder, under_oppfolging, ny_for_veileder, sist_tilordnet, oppdatert) " +
+                "SELECT ?, ?, 0, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP FROM DUAL " +
                 "WHERE NOT EXISTS(SELECT * FROM OPPFOLGINGSTATUS WHERE aktor_id = ?)";
 
         int rowsUpdated = db.update(insertSql, aktorId.get(), veilederId, aktorId.get());
 
         if (rowsUpdated == 0) {
             String updateSql = "UPDATE OPPFOLGINGSTATUS SET veileder = ?, ny_for_veileder = 1, " +
-                    "sist_tilordnet = CURRENT_TIMESTAMP, oppdatert = CURRENT_TIMESTAMP, FEED_ID = null WHERE aktor_id = ?";
+                    "sist_tilordnet = CURRENT_TIMESTAMP, oppdatert = CURRENT_TIMESTAMP WHERE aktor_id = ?";
 
             db.update(updateSql, veilederId, aktorId.get());
         }
@@ -54,7 +54,7 @@ public class VeilederTilordningerRepository {
     }
 
     public int markerSomLestAvVeileder(AktorId aktorId) {
-        String sql = "UPDATE OPPFOLGINGSTATUS SET ny_for_veileder = ?, oppdatert = CURRENT_TIMESTAMP, FEED_ID = null WHERE aktor_id = ?";
+        String sql = "UPDATE OPPFOLGINGSTATUS SET ny_for_veileder = ?, oppdatert = CURRENT_TIMESTAMP WHERE aktor_id = ?";
         return db.update(sql, 0, aktorId.get());
     }
 

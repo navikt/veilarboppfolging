@@ -4,7 +4,6 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.client.behandle_arbeidssoker.BehandleArbeidssokerClient;
 import no.nav.veilarboppfolging.controller.request.Innsatsgruppe;
-import no.nav.veilarboppfolging.repository.NyeBrukereFeedRepository;
 import no.nav.veilarboppfolging.test.DbTestUtils;
 import no.nav.veilarboppfolging.test.LocalH2Database;
 import org.junit.Before;
@@ -38,7 +37,6 @@ public class AktiverBrukerServiceTest {
                 authService,
                 oppfolgingService,
                 behandleArbeidssokerClient,
-                new NyeBrukereFeedRepository(LocalH2Database.getDb()),
                 DbTestUtils.createTransactor(LocalH2Database.getDb())
         );
     }

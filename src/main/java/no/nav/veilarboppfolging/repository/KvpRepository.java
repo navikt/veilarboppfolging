@@ -61,8 +61,7 @@ public class KvpRepository {
 
             db.update("UPDATE OPPFOLGINGSTATUS " +
                             "SET gjeldende_kvp = ?, " +
-                            "oppdatert = ?, " +
-                            "FEED_ID = null " +
+                            "oppdatert = ? " +
                             "WHERE aktor_id = ?",
                     id,
                     startDato,
@@ -93,8 +92,7 @@ public class KvpRepository {
 
             db.update("UPDATE OPPFOLGINGSTATUS " +
                             "SET gjeldende_kvp = NULL, " +
-                            "oppdatert = ?, " +
-                            "FEED_ID = null " +
+                            "oppdatert = ? " +
                             "WHERE aktor_id = ?",
                     sluttDato,
                     aktorId.get()

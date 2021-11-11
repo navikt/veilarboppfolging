@@ -58,8 +58,7 @@ public class MaalRepository {
     private void setActive(MaalEntity maal) {
         db.update("UPDATE OPPFOLGINGSTATUS " +
                         " SET " + GJELDENDE_MAL + " = ?," +
-                        " oppdatert = CURRENT_TIMESTAMP, " +
-                        " FEED_ID = null " +
+                        " oppdatert = CURRENT_TIMESTAMP " +
                         "WHERE " + AKTOR_ID + " = ?",
                 maal.getId(),
                 maal.getAktorId()
