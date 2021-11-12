@@ -47,6 +47,9 @@ spec:
         - application: poao-gcp-proxy
           namespace: pto
           cluster: dev-fss
+        - application: veilarbregistrering
+          namespace: paw
+          cluster: dev-fss
   vault:
     enabled: true
     paths:
