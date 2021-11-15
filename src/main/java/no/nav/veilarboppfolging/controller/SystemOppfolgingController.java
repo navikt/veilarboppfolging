@@ -37,8 +37,6 @@ public class SystemOppfolgingController {
 
         Fnr fnr = Fnr.of(requestFnr.getFnr());
 
-        authService.sjekkLesetilgangMedFnr(fnr);
-
         try {
             aktiverBrukerService.aktiverBruker(fnr, aktiverArbeidssokerData.getInnsatsgruppe());
         } catch (ArenaFeilException exception) {
@@ -54,7 +52,6 @@ public class SystemOppfolgingController {
     @PostMapping("/reaktiverbruker")
     public ResponseEntity reaktiverBruker(@RequestBody ReaktiverBrukerRequest request) {
         authService.skalVereSystemBruker();
-        authService.sjekkLesetilgangMedFnr(request.getFnr());
 
         try {
             aktiverBrukerService.reaktiverBruker(request.getFnr());
@@ -71,7 +68,7 @@ public class SystemOppfolgingController {
     @PostMapping("/aktiverSykmeldt")
     public ResponseEntity aktiverSykmeldt(@RequestBody SykmeldtBrukerType sykmeldtBrukerType, @RequestParam Fnr fnr) {
         authService.skalVereSystemBruker();
-        authService.sjekkLesetilgangMedFnr(fnr);
+
         aktiverBrukerService.aktiverSykmeldt(fnr, sykmeldtBrukerType);
         return ResponseEntity.status(204).build();
     }
