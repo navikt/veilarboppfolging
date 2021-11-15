@@ -5,6 +5,7 @@ import no.nav.common.auth.context.UserRole;
 import no.nav.common.test.auth.AuthTestUtils;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.veilarboppfolging.config.EnvironmentProperties;
 import no.nav.veilarboppfolging.controller.request.AktiverArbeidssokerData;
 import no.nav.veilarboppfolging.controller.request.ReaktiverBrukerRequest;
 import no.nav.veilarboppfolging.controller.request.SykmeldtBrukerType;
@@ -24,7 +25,13 @@ public class SystemOppfolgingControllerTest {
 
     private AktiverBrukerService aktiverBrukerService = mock(AktiverBrukerService.class);
 
-    private SystemOppfolgingController systemOppfolgingController = new SystemOppfolgingController(authService, aktiverBrukerService);
+    private EnvironmentProperties environmentProperties = mock(EnvironmentProperties.class);
+
+    private SystemOppfolgingController systemOppfolgingController = new SystemOppfolgingController(
+            authService,
+            aktiverBrukerService,
+            environmentProperties
+    );
 
     @Test
     public void aktiverBruker() {

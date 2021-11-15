@@ -1,5 +1,6 @@
 package no.nav.veilarboppfolging.service;
 
+import com.nimbusds.jwt.JWTClaimsSet;
 import no.nav.common.abac.Pep;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.UserRole;
@@ -54,6 +55,28 @@ public class AuthServiceTest {
         when(authContextHolder.getRole()).thenReturn(Optional.empty());
         when(authContextHolder.requireRole()).thenCallRealMethod();
         assertThrows(IllegalStateException.class, () -> authService.skalVereEnAv(List.of(UserRole.INTERN)));
+    }
+
+    @Test
+    public void sjekkAtSystembrukerErWhitelistet__skal_ikke_kaste_exception_hvis_whitelistet() {
+        JWTClaimsSet claims = new JWTClaimsSet.Builder()
+                .claim("azp", "test")
+                .build();
+
+        when(authContextHolder.requireIdTokenClaims()).thenReturn(claims);
+
+        assertDoesNotThrow(() -> authService.sjekkAtSystembrukerErWhitelistet("test"));
+    }
+
+    @Test
+    public void sjekkAtSystembrukerErWhitelistet__skal_kaste_exception_hvis_ikke_whitelistet() {
+        JWTClaimsSet claims = new JWTClaimsSet.Builder()
+                .claim("azp", "test")
+                .build();
+
+        when(authContextHolder.requireIdTokenClaims()).thenReturn(claims);
+
+        assertThrows(ResponseStatusException.class, () -> authService.sjekkAtSystembrukerErWhitelistet("some-id"));
     }
 
 }

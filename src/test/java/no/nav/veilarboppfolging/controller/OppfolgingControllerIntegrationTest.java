@@ -1,5 +1,6 @@
 package no.nav.veilarboppfolging.controller;
 
+import com.nimbusds.jwt.JWTClaimsSet;
 import no.nav.common.abac.Pep;
 import no.nav.common.abac.domain.request.ActionId;
 import no.nav.common.auth.context.AuthContextHolder;
@@ -8,6 +9,7 @@ import no.nav.common.client.aktorregister.AktorregisterClient;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.config.ApplicationTestConfig;
+import no.nav.veilarboppfolging.config.EnvironmentProperties;
 import no.nav.veilarboppfolging.controller.request.AktiverArbeidssokerData;
 import no.nav.veilarboppfolging.controller.request.Innsatsgruppe;
 import no.nav.veilarboppfolging.controller.response.OppfolgingPeriodeDTO;
@@ -44,6 +46,9 @@ class OppfolgingControllerIntegrationTest {
     @MockBean
     AuthContextHolder authContextHolder;
 
+    @MockBean
+    EnvironmentProperties environmentProperties;
+
     @Autowired
     AktorOppslagClient aktorOppslagClient;
 
@@ -64,7 +69,7 @@ class OppfolgingControllerIntegrationTest {
 
     @Test
     void hentOppfolgingsPeriode_brukerHarEnAktivOppfolgingsPeriode() throws EmptyResultDataAccessException {
-        mockHappyPathVeileder();
+        mockAuthOk();
 
         var perioder = startOppfolging();
 
@@ -81,7 +86,7 @@ class OppfolgingControllerIntegrationTest {
 
     @Test
     void hentOppfolgingsPeriode_veilederManglerTilgang() {
-        mockHappyPathVeileder();
+        mockAuthOk();
         var perioder = startOppfolging();
 
         Assertions.assertEquals(1, perioder.size());
@@ -103,11 +108,14 @@ class OppfolgingControllerIntegrationTest {
         return oppfolgingController.hentOppfolgingsperioder(FNR);
     }
 
-    private void mockHappyPathVeileder() {
-        mockAuthOK();
-    }
+    private void mockAuthOk() {
+        JWTClaimsSet claims = new JWTClaimsSet.Builder()
+                .claim("azp", "test")
+                .build();
 
-    private void mockAuthOK() {
+        when(authContextHolder.requireIdTokenClaims()).thenReturn(claims);
+        when(environmentProperties.getVeilarbregistreringClientId()).thenReturn("test");
+
         String token = "token";
         when(veilarbPep.harTilgangTilPerson(token, ActionId.READ, AKTOR_ID)).thenReturn(true);
         when(authContextHolder.getIdTokenString()).thenReturn(Optional.of(token));
@@ -115,6 +123,6 @@ class OppfolgingControllerIntegrationTest {
         when(authContextHolder.erSystemBruker()).thenReturn(true);
         when(aktorOppslagClient.hentAktorId(FNR)).thenReturn(AKTOR_ID);
         when(aktorOppslagClient.hentFnr(AKTOR_ID)).thenReturn(FNR);
-
     }
+
 }

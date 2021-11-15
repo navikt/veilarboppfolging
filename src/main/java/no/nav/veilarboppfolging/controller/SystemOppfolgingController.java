@@ -3,6 +3,7 @@ package no.nav.veilarboppfolging.controller;
 import lombok.RequiredArgsConstructor;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.client.behandle_arbeidssoker.ArenaFeilException;
+import no.nav.veilarboppfolging.config.EnvironmentProperties;
 import no.nav.veilarboppfolging.controller.request.AktiverArbeidssokerData;
 import no.nav.veilarboppfolging.controller.request.ReaktiverBrukerRequest;
 import no.nav.veilarboppfolging.controller.request.SykmeldtBrukerType;
@@ -26,11 +27,14 @@ public class SystemOppfolgingController {
 
     private final AktiverBrukerService aktiverBrukerService;
 
+    private final EnvironmentProperties environmentProperties;
+
     // Veilarbregistrering forventer 204, som forsåvidt er riktig status for disse endepunktene
 
     @PostMapping("/aktiverbruker")
     public ResponseEntity aktiverBruker(@RequestBody AktiverArbeidssokerData aktiverArbeidssokerData) {
         authService.skalVereSystemBruker();
+        authService.sjekkAtSystembrukerErWhitelistet(environmentProperties.getVeilarbregistreringClientId());
 
         AktiverArbeidssokerData.Fnr requestFnr = ofNullable(aktiverArbeidssokerData.getFnr())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "FNR mangler"));
@@ -52,6 +56,7 @@ public class SystemOppfolgingController {
     @PostMapping("/reaktiverbruker")
     public ResponseEntity reaktiverBruker(@RequestBody ReaktiverBrukerRequest request) {
         authService.skalVereSystemBruker();
+        authService.sjekkAtSystembrukerErWhitelistet(environmentProperties.getVeilarbregistreringClientId());
 
         try {
             aktiverBrukerService.reaktiverBruker(request.getFnr());
@@ -68,6 +73,7 @@ public class SystemOppfolgingController {
     @PostMapping("/aktiverSykmeldt")
     public ResponseEntity aktiverSykmeldt(@RequestBody SykmeldtBrukerType sykmeldtBrukerType, @RequestParam Fnr fnr) {
         authService.skalVereSystemBruker();
+        authService.sjekkAtSystembrukerErWhitelistet(environmentProperties.getVeilarbregistreringClientId());
 
         aktiverBrukerService.aktiverSykmeldt(fnr, sykmeldtBrukerType);
         return ResponseEntity.status(204).build();
