@@ -1,5 +1,6 @@
 package no.nav.veilarboppfolging.service;
 
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.abac.AbacUtils;
 import no.nav.common.abac.Pep;
@@ -24,6 +25,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static java.lang.String.format;
@@ -225,5 +227,16 @@ public class AuthService {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         }
         return getInnloggetBrukerIdent();
+    }
+
+    @SneakyThrows
+    public void sjekkAtSystembrukerErWhitelistet(String... clientIdWhitelist) {
+        String requestingAppClientId = authContextHolder.requireIdTokenClaims().getStringClaim("azp");
+        boolean isWhitelisted = Arrays.asList(clientIdWhitelist).contains(requestingAppClientId);
+
+        if (!isWhitelisted) {
+            log.error("Systembruker {} er ikke whitelistet", requestingAppClientId);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        }
     }
 }
