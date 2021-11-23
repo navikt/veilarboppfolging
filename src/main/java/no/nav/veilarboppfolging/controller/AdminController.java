@@ -36,7 +36,9 @@ public class AdminController {
     private final KafkaRepubliseringService kafkaRepubliseringService;
 
     private final VeilederTilordningerRepository veilederTilordningerRepository;
+
     private final ManuellStatusService manuellStatusService;
+
     private final OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
 
     @PostMapping("/republiser/oppfolgingsperioder")
