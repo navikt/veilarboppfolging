@@ -4,13 +4,13 @@ import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.UserRole;
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
 import no.nav.veilarboppfolging.repository.VeilederTilordningerRepository;
+import no.nav.veilarboppfolging.service.AuthService;
 import no.nav.veilarboppfolging.service.KafkaRepubliseringService;
 import no.nav.veilarboppfolging.service.ManuellStatusService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Optional;
@@ -31,6 +31,9 @@ public class AdminControllerTest {
 
     @MockBean
     private AuthContextHolder authContextHolder;
+
+    @MockBean
+    private AuthService authService;
 
     @MockBean
     private KafkaRepubliseringService kafkaRepubliseringService;
