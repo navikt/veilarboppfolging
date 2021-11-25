@@ -12,6 +12,7 @@ import no.nav.veilarboppfolging.repository.VeilederTilordningerRepository;
 import no.nav.veilarboppfolging.repository.entity.ManuellStatusEntity;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
 import no.nav.veilarboppfolging.repository.entity.VeilederTilordningEntity;
+import no.nav.veilarboppfolging.service.AuthService;
 import no.nav.veilarboppfolging.service.KafkaRepubliseringService;
 import no.nav.veilarboppfolging.service.ManuellStatusService;
 import org.springframework.http.HttpStatus;
@@ -33,6 +34,8 @@ public class AdminController {
     public final static String PTO_ADMIN_SERVICE_USER = "srvpto-admin";
 
     private final AuthContextHolder authContextHolder;
+
+    private final AuthService authService;
 
     private final KafkaRepubliseringService kafkaRepubliseringService;
 
@@ -56,7 +59,7 @@ public class AdminController {
 
     @GetMapping("/hentVeilarbinfo/bruker")
     public Veilarbportefoljeinfo hentVeilarbportefoljeinfo(@RequestParam AktorId aktorId) {
-        sjekkTilgangTilAdmin();
+        authService.skalVereSystemBruker();
         Optional<VeilederTilordningEntity> tilordningEntity = veilederTilordningerRepository.hentTilordnetVeileder(aktorId);
         boolean erManuell = manuellStatusService.hentManuellStatus(aktorId).map(ManuellStatusEntity::isManuell).orElse(false);
         ZonedDateTime startDato = oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId).map(OppfolgingsperiodeEntity::getStartDato).orElse(null);
