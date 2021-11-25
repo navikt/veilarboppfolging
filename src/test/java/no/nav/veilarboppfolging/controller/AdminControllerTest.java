@@ -2,7 +2,11 @@ package no.nav.veilarboppfolging.controller;
 
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.UserRole;
+import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
+import no.nav.veilarboppfolging.repository.VeilederTilordningerRepository;
+import no.nav.veilarboppfolging.service.AuthService;
 import no.nav.veilarboppfolging.service.KafkaRepubliseringService;
+import no.nav.veilarboppfolging.service.ManuellStatusService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -29,7 +33,19 @@ public class AdminControllerTest {
     private AuthContextHolder authContextHolder;
 
     @MockBean
+    private AuthService authService;
+
+    @MockBean
     private KafkaRepubliseringService kafkaRepubliseringService;
+
+    @MockBean
+    private VeilederTilordningerRepository veilederTilordningerRepository;
+
+    @MockBean
+    private OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
+
+    @MockBean
+    private ManuellStatusService manuellStatusService;
 
     @Test
     public void republiserOppfolgingsperioder__should_return_401_if_user_missing() throws Exception {
