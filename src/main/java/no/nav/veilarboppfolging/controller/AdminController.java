@@ -64,7 +64,7 @@ public class AdminController {
         boolean erManuell = manuellStatusService.hentManuellStatus(aktorId).map(ManuellStatusEntity::isManuell).orElse(false);
         ZonedDateTime startDato = oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId).map(OppfolgingsperiodeEntity::getStartDato).orElse(null);
 
-        return new Veilarbportefoljeinfo().setVeilederId(tilordningEntity.map(x -> NavIdent.of(x.getVeilederId())).orElse(null))
+        return new Veilarbportefoljeinfo().setVeilederId(tilordningEntity.map(VeilederTilordningEntity::getVeilederId).map(NavIdent::of).orElse(null))
                 .setErUnderOppfolging(tilordningEntity.map(VeilederTilordningEntity::isOppfolging).orElse(false))
                 .setNyForVeileder(tilordningEntity.map(VeilederTilordningEntity::isNyForVeileder).orElse(false))
                 .setErManuell(erManuell)
