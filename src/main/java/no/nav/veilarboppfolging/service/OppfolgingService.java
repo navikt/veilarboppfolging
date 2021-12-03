@@ -338,15 +338,15 @@ public class OppfolgingService {
 
             oppfolgingsPeriodeRepository.start(aktorId);
 
-            if (kontaktinfo.isReservert()) {
-                manuellStatusService.settBrukerTilManuellGrunnetReservasjonIKRR(aktorId);
-            }
-
             List<OppfolgingsperiodeEntity> perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId);
             OppfolgingsperiodeEntity sistePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(perioder);
 
-            kafkaProducerService.publiserSisteOppfolgingsperiode(DtoMappers.tilSisteOppfolgingsperiodeV1(sistePeriode));
             kafkaProducerService.publiserOppfolgingStartet(aktorId, sistePeriode.getStartDato());
+            kafkaProducerService.publiserSisteOppfolgingsperiode(DtoMappers.tilSisteOppfolgingsperiodeV1(sistePeriode));
+
+            if (kontaktinfo.isReservert()) {
+                manuellStatusService.settBrukerTilManuellGrunnetReservasjonIKRR(aktorId);
+            }
         });
     }
 
