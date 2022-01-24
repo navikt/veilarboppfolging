@@ -67,6 +67,15 @@ public class FilterConfig {
                 .withUserRole(UserRole.INTERN);
     }
 
+    private OidcAuthenticatorConfig createAadOboConfig(EnvironmentProperties properties) {
+        String discoveryUrl = properties.getNaisAadDiscoveryUrl();
+        String clientId = properties.getNaisAadClientId();
+        return new OidcAuthenticatorConfig()
+                .withDiscoveryUrl(discoveryUrl)
+                .withClientId(clientId)
+                .withUserRole(UserRole.INTERN);
+    }
+
     private OidcAuthenticatorConfig loginserviceIdportenConfig(EnvironmentProperties properties) {
         return new OidcAuthenticatorConfig()
                 .withDiscoveryUrl(properties.getLoginserviceIdportenDiscoveryUrl())
@@ -104,7 +113,8 @@ public class FilterConfig {
                         loginserviceIdportenConfig(properties),
                         openAmStsAuthConfig(properties),
                         naisStsAuthConfig(properties),
-                        naisAzureAdConfig(properties)
+                        naisAzureAdConfig(properties),
+                        createAadOboConfig(properties)
                 )
         );
 
