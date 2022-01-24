@@ -17,6 +17,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 import org.springframework.cache.annotation.Cacheable;
 
+import java.time.Duration;
 import java.util.Optional;
 
 import static java.util.Optional.empty;
@@ -38,7 +39,10 @@ public class DkifClientImpl implements DkifClient {
     public DkifClientImpl(String dkifUrl, SystemUserTokenProvider systemUserTokenProvider) {
         this.dkifUrl = dkifUrl;
         this.systemUserTokenProvider = systemUserTokenProvider;
-        this.client = RestClient.baseClient();
+        this.client = RestClient
+                .baseClientBuilder()
+                .callTimeout(Duration.ofSeconds(3))
+                .build();
     }
 
     @Cacheable(CacheConfig.DKIF_KONTAKTINFO_CACHE_NAME)
