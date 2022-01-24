@@ -10,6 +10,7 @@ import no.nav.veilarboppfolging.controller.request.SykmeldtBrukerType;
 import no.nav.veilarboppfolging.controller.response.ArenaFeilDTO;
 import no.nav.veilarboppfolging.service.AktiverBrukerService;
 import no.nav.veilarboppfolging.service.AuthService;
+import no.nav.veilarboppfolging.service.OppfolgingService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,6 +29,8 @@ public class SystemOppfolgingController {
     private final AktiverBrukerService aktiverBrukerService;
 
     private final EnvironmentProperties environmentProperties;
+
+    private final OppfolgingService oppfolgingService;
 
     // Veilarbregistrering forventer 204, som forsåvidt er riktig status for disse endepunktene
 
@@ -77,6 +80,12 @@ public class SystemOppfolgingController {
 
         aktiverBrukerService.aktiverSykmeldt(fnr, sykmeldtBrukerType);
         return ResponseEntity.status(204).build();
+    }
+
+    @GetMapping("/underOppfolgingSystem/")
+    public boolean erBrukerUnderOppfolging(@RequestParam(value = "fnr") Fnr fnr) {
+        authService.skalVereSystemBruker();
+        return oppfolgingService.erUnderOppfolging(fnr);
     }
 
 }

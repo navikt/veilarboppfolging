@@ -11,6 +11,7 @@ import no.nav.veilarboppfolging.controller.request.ReaktiverBrukerRequest;
 import no.nav.veilarboppfolging.controller.request.SykmeldtBrukerType;
 import no.nav.veilarboppfolging.service.AktiverBrukerService;
 import no.nav.veilarboppfolging.service.AuthService;
+import no.nav.veilarboppfolging.service.OppfolgingService;
 import org.junit.Test;
 
 import static org.mockito.Mockito.*;
@@ -27,10 +28,13 @@ public class SystemOppfolgingControllerTest {
 
     private EnvironmentProperties environmentProperties = mock(EnvironmentProperties.class);
 
+    private OppfolgingService oppfolgingService = mock(OppfolgingService.class);
+
     private SystemOppfolgingController systemOppfolgingController = new SystemOppfolgingController(
             authService,
             aktiverBrukerService,
-            environmentProperties
+            environmentProperties,
+            oppfolgingService
     );
 
     @Test
