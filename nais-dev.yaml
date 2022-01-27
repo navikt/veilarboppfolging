@@ -48,6 +48,9 @@ spec:
         - application: poao-gcp-proxy
           namespace: pto
           cluster: dev-fss
+        - application: amt-tiltak
+          namespace: amt
+          cluster: dev-gcp
         - application: veilarbregistrering
           namespace: paw
           cluster: dev-fss
