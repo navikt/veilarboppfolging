@@ -137,7 +137,9 @@ public class AuthService {
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN);
             }
         } else {
-            veilarbPep.harVeilederTilgangTilPerson(navident, actionId, aktorId);
+            if(!veilarbPep.harVeilederTilgangTilPerson(navident, actionId, aktorId)) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+            }
         }
     }
 
