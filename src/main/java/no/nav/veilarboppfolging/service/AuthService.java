@@ -65,25 +65,25 @@ public class AuthService {
     }
 
     public void skalVereInternBruker() {
-        if (!authContextHolder.erInternBruker()){
+        if (!authContextHolder.erInternBruker()) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bruker er ikke en intern bruker");
         }
     }
 
     public void skalVereInternEllerSystemBruker() {
-        if (!authContextHolder.erInternBruker() && !authContextHolder.erSystemBruker()){
+        if (!authContextHolder.erInternBruker() && !authContextHolder.erSystemBruker()) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bruker er verken en intern eller system bruker");
         }
     }
 
     public void skalVereEksternBruker() {
-        if (!authContextHolder.erEksternBruker()){
+        if (!authContextHolder.erEksternBruker()) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bruker er ikke en ekstern bruker");
         }
     }
 
     public void skalVereSystemBruker() {
-        if (!authContextHolder.erSystemBruker()){
+        if (!authContextHolder.erSystemBruker()) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bruker er ikke en systembruker");
         }
     }
@@ -121,16 +121,26 @@ public class AuthService {
     }
 
     public void sjekkLesetilgangMedAktorId(AktorId aktorId) {
-        if (!veilarbPep.harTilgangTilPerson(getInnloggetBrukerToken(), ActionId.READ, aktorId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
-        }
+        sjekkTilgang(ActionId.READ, aktorId);
+
     }
 
     public void sjekkSkrivetilgangMedAktorId(AktorId aktorId) {
-        if (!veilarbPep.harTilgangTilPerson(getInnloggetBrukerToken(), ActionId.WRITE, aktorId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        sjekkTilgang(ActionId.WRITE, aktorId);
+    }
+
+    private void sjekkTilgang(ActionId actionId, AktorId aktorId) {
+        NavIdent navident = authContextHolder.getNavIdent().orElse(null);
+
+        if (navident == null) {
+            if (!veilarbPep.harTilgangTilPerson(getInnloggetBrukerToken(), actionId, aktorId)) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+            }
+        } else {
+            veilarbPep.harVeilederTilgangTilPerson(navident, actionId, aktorId);
         }
     }
+
 
     public void sjekkTilgangTilEnhet(String enhetId) {
         if (!harTilgangTilEnhet(enhetId)) {
