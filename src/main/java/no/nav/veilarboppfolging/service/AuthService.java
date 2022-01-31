@@ -13,6 +13,7 @@ import no.nav.common.abac.domain.request.*;
 import no.nav.common.abac.domain.response.XacmlResponse;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.UserRole;
+import no.nav.common.auth.utils.IdentUtils;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.client.aktorregister.AktorregisterClient;
 import no.nav.common.types.identer.AktorId;
@@ -27,11 +28,14 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import static java.lang.String.format;
+import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 import static no.nav.common.abac.XacmlRequestBuilder.lagEnvironment;
 import static no.nav.common.abac.XacmlRequestBuilder.personIdAttribute;
+import static no.nav.common.auth.Constants.AAD_NAV_IDENT_CLAIM;
 
 @Slf4j
 @Service
@@ -65,25 +69,25 @@ public class AuthService {
     }
 
     public void skalVereInternBruker() {
-        if (!authContextHolder.erInternBruker()){
+        if (!authContextHolder.erInternBruker()) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bruker er ikke en intern bruker");
         }
     }
 
     public void skalVereInternEllerSystemBruker() {
-        if (!authContextHolder.erInternBruker() && !authContextHolder.erSystemBruker()){
+        if (!authContextHolder.erInternBruker() && !authContextHolder.erSystemBruker()) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bruker er verken en intern eller system bruker");
         }
     }
 
     public void skalVereEksternBruker() {
-        if (!authContextHolder.erEksternBruker()){
+        if (!authContextHolder.erEksternBruker()) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bruker er ikke en ekstern bruker");
         }
     }
 
     public void skalVereSystemBruker() {
-        if (!authContextHolder.erSystemBruker()){
+        if (!authContextHolder.erSystemBruker()) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bruker er ikke en systembruker");
         }
     }
@@ -121,16 +125,28 @@ public class AuthService {
     }
 
     public void sjekkLesetilgangMedAktorId(AktorId aktorId) {
-        if (!veilarbPep.harTilgangTilPerson(getInnloggetBrukerToken(), ActionId.READ, aktorId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
-        }
+        sjekkTilgang(ActionId.READ, aktorId);
+
     }
 
     public void sjekkSkrivetilgangMedAktorId(AktorId aktorId) {
-        if (!veilarbPep.harTilgangTilPerson(getInnloggetBrukerToken(), ActionId.WRITE, aktorId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        sjekkTilgang(ActionId.WRITE, aktorId);
+    }
+
+    private void sjekkTilgang(ActionId actionId, AktorId aktorId) {
+        Optional<NavIdent> navident = getNavIdentClaimHvisTilgjengelig();
+
+        if (navident.isEmpty()) {
+            if (!veilarbPep.harTilgangTilPerson(getInnloggetBrukerToken(), actionId, aktorId)) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+            }
+        } else {
+            if(!veilarbPep.harVeilederTilgangTilPerson(navident.orElseThrow(), actionId, aktorId)) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+            }
         }
     }
+
 
     public void sjekkTilgangTilEnhet(String enhetId) {
         if (!harTilgangTilEnhet(enhetId)) {
@@ -227,6 +243,16 @@ public class AuthService {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         }
         return getInnloggetBrukerIdent();
+    }
+
+    @SneakyThrows
+    private Optional<NavIdent> getNavIdentClaimHvisTilgjengelig() {
+        if (erInternBruker()) {
+            return Optional.ofNullable(authContextHolder.requireIdTokenClaims().getStringClaim(AAD_NAV_IDENT_CLAIM))
+                    .filter(IdentUtils::erGydligNavIdent)
+                    .map(NavIdent::of);
+        }
+        return empty();
     }
 
     @SneakyThrows
