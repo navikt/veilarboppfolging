@@ -235,7 +235,11 @@ public class AuthService {
 
     // NAV ident, fnr eller annen ID
     public String getInnloggetBrukerIdent() {
-        return authContextHolder.getSubject().orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "NAV ident is missing"));
+        return authContextHolder.getIdTokenClaims()
+                .flatMap(claimsSet -> ofNullable((String) claimsSet.getClaim("pid")))
+                .filter(ignored -> authContextHolder.erEksternBruker())
+                .or(authContextHolder::getSubject)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "ident is missing"));
     }
 
     public String getInnloggetVeilederIdent() {
