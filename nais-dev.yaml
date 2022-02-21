@@ -11,6 +11,7 @@ spec:
     - https://veilarboppfolging-q1.nais.preprod.local
     - https://app-q1.adeo.no/veilarboppfolging
     - https://app-q1.dev.adeo.no/veilarboppfolging
+    - https://app.dev.adeo.no/veilarboppfolging
   webproxy: true
   port: 8080
   prometheus:
@@ -41,12 +42,15 @@ spec:
   azure:
     application:
       enabled: true
+      claims:
+        extra:
+          - "NAVident"
   accessPolicy:
     inbound:
       rules:
-        - application: poao-gcp-proxy
-          namespace: pto
-          cluster: dev-fss
+        - application: amt-tiltak
+          namespace: amt
+          cluster: dev-gcp
         - application: veilarbregistrering
           namespace: paw
           cluster: dev-fss
