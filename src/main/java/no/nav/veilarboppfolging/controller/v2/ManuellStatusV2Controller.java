@@ -69,7 +69,7 @@ public class ManuellStatusV2Controller {
 
         manuellStatusService.oppdaterManuellStatus(
                 fnr, true, dto.begrunnelse,
-                KodeverkBruker.NAV, authService.getInnloggetBrukerIdent()
+                KodeverkBruker.NAV, authService.getInnloggetVeilederIdent()
         );
     }
 

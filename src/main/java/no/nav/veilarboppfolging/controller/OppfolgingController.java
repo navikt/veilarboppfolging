@@ -78,7 +78,7 @@ public class OppfolgingController {
 
         manuellStatusService.oppdaterManuellStatus(
                 fnr, true, dto.begrunnelse,
-                KodeverkBruker.NAV, authService.getInnloggetBrukerIdent()
+                KodeverkBruker.NAV, authService.getInnloggetVeilederIdent()
         );
 
         return tilDto(oppfolgingService.hentOppfolgingsStatus(fnr),  authService.erInternBruker());
