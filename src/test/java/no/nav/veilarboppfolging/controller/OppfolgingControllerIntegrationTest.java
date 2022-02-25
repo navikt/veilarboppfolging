@@ -15,7 +15,6 @@ import no.nav.veilarboppfolging.controller.request.Innsatsgruppe;
 import no.nav.veilarboppfolging.controller.response.OppfolgingPeriodeDTO;
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
 import no.nav.veilarboppfolging.service.AuthService;
-import no.nav.veilarboppfolging.service.MetricsService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +28,6 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest(classes = {ApplicationTestConfig.class})
@@ -56,9 +54,6 @@ class OppfolgingControllerIntegrationTest {
 
     @MockBean
     AktorregisterClient aktorregisterClient;
-
-    @MockBean
-    MetricsService metricsService;
 
     @Autowired
     AuthService authService;

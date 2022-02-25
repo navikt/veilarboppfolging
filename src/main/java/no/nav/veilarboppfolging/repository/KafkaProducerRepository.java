@@ -13,8 +13,8 @@ public class KafkaProducerRepository {
         this.db = db;
     }
 
-    public Integer getOldestMessage() {
-        return db.queryForObject("SELECT MAX(ROUND(((SYSDATE+0)-(OPPDATERT+0)) * 24 * 60)) as minutes_processed_ago FROM KAFKA_PRODUCER_RECORD",
+    public Integer getNumberOfUnprocessedMessages() {
+        return db.queryForObject("SELECT COUNT(*) FROM KAFKA_PRODUCER_RECORD WHERE CREATED_AT < SYSDATE - INTERVAL '30' MINUTE",
                 Integer.class
         );
     }

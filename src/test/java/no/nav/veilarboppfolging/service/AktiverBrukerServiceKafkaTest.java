@@ -49,9 +49,6 @@ public class AktiverBrukerServiceKafkaTest {
     @MockBean
     AktorregisterClient aktorregisterClient;
 
-    @MockBean
-    MetricsService metricsService;
-
     @Autowired
     KafkaContainer kafkaContainer;
 
