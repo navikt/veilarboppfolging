@@ -95,15 +95,4 @@ public class MetricsService {
 
         metricsClient.report(event);
     }
-
-    public Integer getOldestUnprocessedKafkaProducerMessage() {
-        log.info("Report oldest unprocessed message");
-        Integer numOfMinutesSinceUnprocessed = kafkaProducerRepository.getOldestMessage();
-
-        if (numOfMinutesSinceUnprocessed == null){
-            numOfMinutesSinceUnprocessed = 0;
-        }
-
-        return numOfMinutesSinceUnprocessed;
-    }
 }
