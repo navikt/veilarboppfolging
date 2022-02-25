@@ -22,12 +22,10 @@ public class MetricsService implements MeterBinder {
 
     private final MetricsClient metricsClient;
     private final KafkaProducerRepository kafkaProducerRepository;
-    private final MeterRegistry meterRegistry;
 
-    private MetricsService(MetricsClient metricsClient, KafkaProducerRepository kafkaProducerRepository, MeterRegistry meterRegistry) {
+    private MetricsService(MetricsClient metricsClient, KafkaProducerRepository kafkaProducerRepository) {
         this.metricsClient = metricsClient;
         this.kafkaProducerRepository = kafkaProducerRepository;
-        this.meterRegistry = meterRegistry;
     }
 
     @Override
