@@ -4,6 +4,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+
 @Repository
 public class KafkaProducerRepository {
     private final JdbcTemplate db;
@@ -13,9 +17,12 @@ public class KafkaProducerRepository {
         this.db = db;
     }
 
-    public Integer getOldestMessage() {
-        return db.queryForObject("SELECT MAX(ROUND(((SYSDATE+0)-(OPPDATERT+0)) * 24 * 60)) as minutes_processed_ago FROM KAFKA_PRODUCER_RECORD",
-                Integer.class
-        );
+    public Long getOldestMessage() {
+        Timestamp oldestMessage = db.queryForObject("SELECT MIN(OPPDATERT) FROM KAFKA_PRODUCER_RECORD", Timestamp.class);
+
+        if (oldestMessage != null){
+            return ChronoUnit.MINUTES.between(oldestMessage.toLocalDateTime(), LocalDate.now());
+        }
+        return 0l;
     }
 }

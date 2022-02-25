@@ -2,26 +2,23 @@ package no.nav.veilarboppfolging.service;
 
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.binder.MeterBinder;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.metrics.Event;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.veilarboppfolging.repository.KafkaProducerRepository;
 import no.nav.veilarboppfolging.repository.entity.MaalEntity;
 import no.nav.veilarboppfolging.repository.entity.VeilederTilordningEntity;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
 import java.time.ZonedDateTime;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static no.nav.veilarboppfolging.utils.StringUtils.of;
 
 @Service
 @Slf4j
-public class MetricsService {
+public class MetricsService implements MeterBinder {
 
     private final MetricsClient metricsClient;
     private final KafkaProducerRepository kafkaProducerRepository;
@@ -33,8 +30,8 @@ public class MetricsService {
         this.meterRegistry = meterRegistry;
     }
 
-    @PostConstruct
-    private void init() {
+    @Override
+    public void bindTo(MeterRegistry meterRegistry) {
         Gauge.builder("veilarboppfolging.kafka_producer.eldste_ubehandlet", kafkaProducerRepository, KafkaProducerRepository::getOldestMessage)
                 .register(meterRegistry);
     }
