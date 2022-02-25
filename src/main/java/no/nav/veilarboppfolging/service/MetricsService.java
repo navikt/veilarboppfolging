@@ -1,5 +1,7 @@
 package no.nav.veilarboppfolging.service;
 
+import io.micrometer.core.instrument.Gauge;
+import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.metrics.Event;
 import no.nav.common.metrics.MetricsClient;
@@ -9,8 +11,11 @@ import no.nav.veilarboppfolging.repository.entity.VeilederTilordningEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import java.time.ZonedDateTime;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static no.nav.veilarboppfolging.utils.StringUtils.of;
 
@@ -20,10 +25,18 @@ public class MetricsService {
 
     private final MetricsClient metricsClient;
     private final KafkaProducerRepository kafkaProducerRepository;
+    private final MeterRegistry meterRegistry;
 
-    private MetricsService(MetricsClient metricsClient, KafkaProducerRepository kafkaProducerRepository) {
+    private MetricsService(MetricsClient metricsClient, KafkaProducerRepository kafkaProducerRepository, MeterRegistry meterRegistry) {
         this.metricsClient = metricsClient;
         this.kafkaProducerRepository = kafkaProducerRepository;
+        this.meterRegistry = meterRegistry;
+    }
+
+    @PostConstruct
+    private void init() {
+        Gauge.builder("veilarboppfolging.kafka_producer.eldste_ubehandlet", kafkaProducerRepository, KafkaProducerRepository::getOldestMessage)
+                .register(meterRegistry);
     }
 
     public VeilederTilordningEntity lestAvVeileder(VeilederTilordningEntity tilordning) {
@@ -83,14 +96,14 @@ public class MetricsService {
         metricsClient.report(event);
     }
 
-    @Scheduled(cron = "*/10 * * * *")
-    public void reportOldUnprocessedKafkaMessages() {
-        log.info("Report number of unprocessed kafka messages");
-        Integer oldMessages = kafkaProducerRepository.getNumberOfUnprocessedMessages();
-        Event event = new Event("veilarboppfolging.kafka_producer.ubehandlet")
-                .addFieldToReport("meldinger_num", oldMessages);
+    public Integer getOldestUnprocessedKafkaProducerMessage() {
+        log.info("Report oldest unprocessed message");
+        Integer numOfMinutesSinceUnprocessed = kafkaProducerRepository.getOldestMessage();
 
-        metricsClient.report(event);
+        if (numOfMinutesSinceUnprocessed == null){
+            numOfMinutesSinceUnprocessed = 0;
+        }
+
+        return numOfMinutesSinceUnprocessed;
     }
-
 }
