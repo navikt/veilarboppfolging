@@ -33,7 +33,6 @@ import static org.mockito.Mockito.when;
 @Configuration
 @EnableConfigurationProperties({EnvironmentProperties.class})
 @Import({
-        SwaggerConfig.class,
         ClientTestConfig.class,
         ControllerTestConfig.class,
         RepositoryTestConfig.class,
