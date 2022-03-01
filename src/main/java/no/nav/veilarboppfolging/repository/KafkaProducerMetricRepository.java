@@ -11,11 +11,11 @@ import java.time.temporal.ChronoUnit;
 
 @Repository
 @Slf4j
-public class KafkaProducerRepository {
+public class KafkaProducerMetricRepository {
     private final JdbcTemplate db;
 
     @Autowired
-    public KafkaProducerRepository(JdbcTemplate db) {
+    public KafkaProducerMetricRepository(JdbcTemplate db) {
         this.db = db;
     }
 

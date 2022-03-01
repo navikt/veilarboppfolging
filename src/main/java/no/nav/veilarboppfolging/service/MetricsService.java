@@ -6,7 +6,7 @@ import io.micrometer.core.instrument.binder.MeterBinder;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.metrics.Event;
 import no.nav.common.metrics.MetricsClient;
-import no.nav.veilarboppfolging.repository.KafkaProducerRepository;
+import no.nav.veilarboppfolging.repository.KafkaProducerMetricRepository;
 import no.nav.veilarboppfolging.repository.entity.MaalEntity;
 import no.nav.veilarboppfolging.repository.entity.VeilederTilordningEntity;
 import org.springframework.stereotype.Service;
@@ -21,16 +21,16 @@ import static no.nav.veilarboppfolging.utils.StringUtils.of;
 public class MetricsService implements MeterBinder {
 
     private final MetricsClient metricsClient;
-    private final KafkaProducerRepository kafkaProducerRepository;
+    private final KafkaProducerMetricRepository kafkaProducerRepository;
 
-    private MetricsService(MetricsClient metricsClient, KafkaProducerRepository kafkaProducerRepository) {
+    private MetricsService(MetricsClient metricsClient, KafkaProducerMetricRepository kafkaProducerRepository) {
         this.metricsClient = metricsClient;
         this.kafkaProducerRepository = kafkaProducerRepository;
     }
 
     @Override
     public void bindTo(MeterRegistry meterRegistry) {
-        Gauge.builder("veilarboppfolging.kafka_producer.eldste_ubehandlet", kafkaProducerRepository, KafkaProducerRepository::getOldestMessage)
+        Gauge.builder("veilarboppfolging.kafka_producer.eldste_ubehandlet", kafkaProducerRepository, KafkaProducerMetricRepository::getOldestMessage)
                 .register(meterRegistry);
     }
 
