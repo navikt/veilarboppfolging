@@ -49,6 +49,9 @@ spec:
         - application: veilarbregistrering
           namespace: paw
           cluster: prod-fss
+        - application: veilarbapi
+          namespace: pto
+          cluster: prod-gcp
   vault:
     enabled: true
     paths:

@@ -83,7 +83,7 @@ public class OppfolgingV2Controller {
                 .orElse(new ResponseEntity<>(HttpStatus.NO_CONTENT));
     }
 
-    @GetMapping("/perioder")
+    @GetMapping(value = "/perioder", params = "fnr")
     public List<OppfolgingPeriodeDTO> hentOppfolgingsperioder(@RequestParam("fnr") Fnr fnr) {
         authService.skalVereSystemBruker();
 
@@ -92,4 +92,16 @@ public class OppfolgingV2Controller {
                 .map(op -> tilOppfolgingPeriodeDTO(op, true))
                 .collect(Collectors.toList());
     }
+
+    @GetMapping(value = "/perioder", params = "aktorId")
+    public List<OppfolgingPeriodeDTO> hentOppfolgingsperioder(@RequestParam("aktorId") AktorId aktorId) {
+        authService.skalVereInternBruker();
+
+        return oppfolgingService.hentOppfolgingsperioder(aktorId)
+                .stream()
+                .map(op -> tilOppfolgingPeriodeDTO(op, true))
+                .collect(Collectors.toList());
+    }
+
+
 }

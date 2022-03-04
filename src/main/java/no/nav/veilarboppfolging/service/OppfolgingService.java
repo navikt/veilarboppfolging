@@ -199,8 +199,12 @@ public class OppfolgingService {
     }
 
     public List<OppfolgingsperiodeEntity> hentOppfolgingsperioder(Fnr fnr) {
-        authService.sjekkLesetilgangMedFnr(fnr);
         AktorId aktorId = authService.getAktorIdOrThrow(fnr);
+        return hentOppfolgingsperioder(aktorId);
+    }
+
+    public List<OppfolgingsperiodeEntity> hentOppfolgingsperioder(AktorId aktorId) {
+        authService.sjekkLesetilgangMedAktorId(aktorId);
         return oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId);
     }
 
