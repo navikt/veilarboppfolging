@@ -95,7 +95,7 @@ public class OppfolgingV2Controller {
 
     @GetMapping(value = "/perioder", params = "aktorId")
     public List<OppfolgingPeriodeDTO> hentOppfolgingsperioder(@RequestParam("aktorId") AktorId aktorId) {
-        authService.skalVereInternBruker();
+        authService.skalVereSystemBruker();
 
         return oppfolgingService.hentOppfolgingsperioder(aktorId)
                 .stream()
