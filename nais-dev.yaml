@@ -54,6 +54,9 @@ spec:
         - application: veilarbregistrering
           namespace: paw
           cluster: dev-fss
+        - application: veilarbapi
+          namespace: pto
+          cluster: dev-gcp
   vault:
     enabled: true
     paths:
