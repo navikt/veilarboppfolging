@@ -93,7 +93,7 @@ public class OppfolgingV2Controller {
                 .collect(Collectors.toList());
     }
 
-    @GetMapping(value = "/perioderForAktor", params = "aktorId")
+    @GetMapping(value = "/perioder", params = "aktorId")
     public List<OppfolgingPeriodeDTO> hentOppfolgingsperioder(@RequestParam("aktorId") AktorId aktorId) {
         authService.skalVereInternBruker();
 
