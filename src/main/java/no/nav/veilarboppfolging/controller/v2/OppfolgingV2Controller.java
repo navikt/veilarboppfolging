@@ -92,4 +92,16 @@ public class OppfolgingV2Controller {
                 .map(op -> tilOppfolgingPeriodeDTO(op, true))
                 .collect(Collectors.toList());
     }
+
+    @GetMapping("/perioder")
+    public List<OppfolgingPeriodeDTO> hentOppfolgingsperioder(@RequestParam("aktorId") AktorId aktorId) {
+        authService.skalVereInternBruker();
+
+        return oppfolgingService.hentOppfolgingsperioder(aktorId)
+                .stream()
+                .map(op -> tilOppfolgingPeriodeDTO(op, true))
+                .collect(Collectors.toList());
+    }
+
+
 }
