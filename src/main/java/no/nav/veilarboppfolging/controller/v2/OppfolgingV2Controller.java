@@ -8,6 +8,8 @@ import no.nav.veilarboppfolging.controller.response.OppfolgingPeriodeDTO;
 import no.nav.veilarboppfolging.controller.response.OppfolgingPeriodeMinimalDTO;
 import no.nav.veilarboppfolging.controller.v2.request.AvsluttOppfolgingV2Request;
 import no.nav.veilarboppfolging.controller.v2.response.UnderOppfolgingV2Response;
+import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity;
+import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
 import no.nav.veilarboppfolging.service.AuthService;
 import no.nav.veilarboppfolging.service.OppfolgingService;
 import no.nav.veilarboppfolging.utils.DtoMappers;
@@ -59,7 +61,7 @@ public class OppfolgingV2Controller {
     }
 
     @GetMapping("/periode/{uuid}")
-    public OppfolgingPeriodeMinimalDTO hentOppfolgingsPeriode(@PathVariable("uuid") String uuid){
+    public OppfolgingPeriodeMinimalDTO hentOppfolgingsPeriode(@PathVariable("uuid") String uuid) {
         var maybePeriode = oppfolgingService.hentOppfolgingsperiode(uuid);
 
         if (maybePeriode.isEmpty()) {
@@ -85,22 +87,35 @@ public class OppfolgingV2Controller {
 
     @GetMapping(value = "/perioder", params = "fnr")
     public List<OppfolgingPeriodeDTO> hentOppfolgingsperioder(@RequestParam("fnr") Fnr fnr) {
-        authService.skalVereSystemBruker();
-
-        return oppfolgingService.hentOppfolgingsperioder(fnr)
-                .stream()
-                .map(op -> tilOppfolgingPeriodeDTO(op, true))
-                .collect(Collectors.toList());
+        AktorId aktorId = authService.getAktorIdOrThrow(fnr);
+        return hentOppfolgingsperioder(aktorId);
     }
 
     @GetMapping(value = "/perioder", params = "aktorId")
     public List<OppfolgingPeriodeDTO> hentOppfolgingsperioder(@RequestParam("aktorId") AktorId aktorId) {
-        authService.skalVereSystemBruker();
-
         return oppfolgingService.hentOppfolgingsperioder(aktorId)
                 .stream()
-                .map(op -> tilOppfolgingPeriodeDTO(op, true))
+                .map(this::filtrerKvpPerioder)
+                .map(this::mapTilDto)
                 .collect(Collectors.toList());
+    }
+
+    private OppfolgingPeriodeDTO mapTilDto(OppfolgingsperiodeEntity oppfolgingsperiode) {
+        return tilOppfolgingPeriodeDTO(oppfolgingsperiode, !authService.erEksternBruker());
+    }
+
+    private OppfolgingsperiodeEntity filtrerKvpPerioder(OppfolgingsperiodeEntity periode) {
+        if(!authService.erInternBruker()) {
+            return  periode;
+        }
+
+        List<KvpPeriodeEntity> kvpPeriodeEntities = periode
+                .getKvpPerioder()
+                .stream()
+                .filter(it -> authService.harTilgangTilEnhet(it.getEnhet()))
+                .collect(Collectors.toList());
+
+        return periode.toBuilder().kvpPerioder(kvpPeriodeEntities).build();
     }
 
 
