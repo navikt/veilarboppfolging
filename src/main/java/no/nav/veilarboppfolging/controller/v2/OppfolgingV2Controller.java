@@ -105,7 +105,7 @@ public class OppfolgingV2Controller {
     }
 
     private OppfolgingsperiodeEntity filtrerKvpPerioder(OppfolgingsperiodeEntity periode) {
-        if(!authService.erInternBruker()) {
+        if(!authService.erInternBruker() || periode.getKvpPerioder() == null || periode.getKvpPerioder().isEmpty()) {
             return  periode;
         }
 
