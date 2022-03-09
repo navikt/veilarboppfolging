@@ -72,6 +72,14 @@ class OppfolgingV2ControllerTest {
                 .andExpect(status().is(HttpStatus.NO_CONTENT_204));
     }
 
+    @Test
+    void hentUnderOppfolgingMedFnr() throws Exception{
+        Fnr fnr = Fnr.of("1234");
+        when(oppfolgingService.erUnderOppfolging(fnr)).thenReturn(true);
+        mockMvc.perform(get("/api/v2/oppfolging").queryParam("fnr", fnr.get()))
+                .andExpect(status().is(HttpStatus.OK_200));
+    }
+
 
 
 }

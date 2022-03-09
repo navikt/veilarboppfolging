@@ -32,10 +32,25 @@ public class OppfolgingV2Controller {
 
     private final AuthService authService;
 
+    @GetMapping(params = "fnr")
+    public UnderOppfolgingV2Response underOppfolging(@RequestParam(value = "fnr") Fnr fnr) {
+        return new UnderOppfolgingV2Response(oppfolgingService.erUnderOppfolging(fnr));
+    }
+
+    @GetMapping(params = "aktorId")
+    public UnderOppfolgingV2Response underOppfolging(@RequestParam(value = "aktorId") AktorId aktorId) {
+        Fnr fnr = authService.getFnrOrThrow(aktorId);
+        return underOppfolging(fnr);
+    }
+
     @GetMapping
-    public UnderOppfolgingV2Response underOppfolging(@RequestParam(value = "fnr", required = false) Fnr fnr) {
-        Fnr fodselsnummer = authService.hentIdentFraQueryParamEllerToken(fnr);
-        return new UnderOppfolgingV2Response(oppfolgingService.erUnderOppfolging(fodselsnummer));
+    public UnderOppfolgingV2Response underOppfolging() {
+        boolean erEksternBruker = authService.erEksternBruker();
+        if (!erEksternBruker) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Som internbruker/systembruker er aktorId eller fnr påkrevd");
+        }
+        Fnr fnr = Fnr.of(authService.getInnloggetBrukerIdent());
+        return underOppfolging(fnr);
     }
 
     @PostMapping("/start")
