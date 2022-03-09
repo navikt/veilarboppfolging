@@ -57,6 +57,8 @@ spec:
         - application: veilarbapi
           namespace: pto
           cluster: dev-gcp
+        - application: paw-proxy
+          namespace: paw
   vault:
     enabled: true
     paths:
