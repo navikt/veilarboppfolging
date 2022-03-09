@@ -57,7 +57,9 @@ spec:
         - application: veilarbapi
           namespace: pto
           cluster: dev-gcp
-  vault:
+        - application: paw-proxy
+          namespace: paw
+
     enabled: true
     paths:
       - kvPath: /oracle/data/dev/creds/veilarboppfolging_q1-user
