@@ -80,6 +80,14 @@ class OppfolgingV2ControllerTest {
                 .andExpect(status().is(HttpStatus.OK_200));
     }
 
+    @Test
+    void hentUnderOppfolgingUtenParams() throws Exception {
+        when(authService.erEksternBruker()).thenReturn(true);
+        when(authService.getInnloggetBrukerIdent()).thenReturn("1234");
+        mockMvc.perform(get("/api/v2/oppfolging"))
+                .andExpect(status().is(HttpStatus.OK_200));
+    }
+
 
 
 }
