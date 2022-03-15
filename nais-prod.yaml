@@ -83,7 +83,7 @@ spec:
     - name: ENDRING_PA_MANUELL_STATUS_TOPIC
       value: aapen-arbeidsrettetOppfolging-endringPaManuellStatus-v1-p
     - name: VEILEDER_TILORDNET_TOPIC
-      value: aapen-arbeidsrettetOppfolging-veilederTilordnet-v1-p
+      value: pto.veileder-tilordnet-v1
     - name: ENDRING_PA_NY_FOR_VEILEDER_TOPIC
       value: aapen-arbeidsrettetOppfolging-endringPaNyForVeileder-v1-p
     - name: ENDRING_PA_MAL_TOPIC
