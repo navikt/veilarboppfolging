@@ -87,8 +87,6 @@ spec:
       value: aapen-arbeidsrettetOppfolging-kvpAvsluttet-v1-q1
     - name: ENDRING_PA_MANUELL_STATUS_TOPIC
       value: aapen-arbeidsrettetOppfolging-endringPaManuellStatus-v1-q1
-    - name: VEILEDER_TILORDNET_TOPIC
-      value: pto.veileder-tilordnet-v1
     - name: ENDRING_PA_NY_FOR_VEILEDER_TOPIC
       value: aapen-arbeidsrettetOppfolging-endringPaNyForVeileder-v1-q1
     - name: ENDRING_PA_MAL_TOPIC
