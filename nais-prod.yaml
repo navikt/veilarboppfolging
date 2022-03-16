@@ -84,5 +84,3 @@ spec:
       value: aapen-arbeidsrettetOppfolging-kvpAvsluttet-v1-p
     - name: ENDRING_PA_MAL_TOPIC
       value: aapen-arbeidsrettetOppfolging-endringPaMal-v1-p
-    - name: VEILEDER_TILORDNET_TOPIC
-      value: aapen-arbeidsrettetOppfolging-veilederTilordnet-v1-p
