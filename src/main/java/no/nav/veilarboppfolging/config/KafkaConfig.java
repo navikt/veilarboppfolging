@@ -121,9 +121,6 @@ public class KafkaConfig {
                 onPremProducerClient,
                 leaderElectionClient,
                 List.of(
-                        kafkaProperties.getEndringPaManuellStatusTopic(),
-                        kafkaProperties.getEndringPaNyForVeilederTopic(),
-                        kafkaProperties.getVeilederTilordnetTopic(),
                         kafkaProperties.getOppfolgingStartetTopic(),
                         kafkaProperties.getOppfolgingAvsluttetTopic(),
                         kafkaProperties.getEndringPaaAvsluttOppfolgingTopic(),
@@ -144,7 +141,10 @@ public class KafkaConfig {
                 leaderElectionClient,
                 List.of(
                         kafkaProperties.getSisteOppfolgingsperiodeTopic(),
-                        kafkaProperties.getSisteTilordnetVeilederTopic()
+                        kafkaProperties.getSisteTilordnetVeilederTopic(),
+                        kafkaProperties.getVeilederTilordnetTopic(),
+                        kafkaProperties.getEndringPaManuellStatusTopic(),
+                        kafkaProperties.getEndringPaNyForVeilederTopic()
                 )
         );
     }

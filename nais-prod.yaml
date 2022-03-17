@@ -52,6 +52,8 @@ spec:
         - application: veilarbapi
           namespace: pto
           cluster: prod-gcp
+        - application: paw-proxy
+          namespace: paw
   vault:
     enabled: true
     paths:
@@ -80,11 +82,5 @@ spec:
       value: aapen-arbeidsrettetOppfolging-kvpStartet-v1-p
     - name: KVP_AVSLUTTET_TOPIC
       value: aapen-arbeidsrettetOppfolging-kvpAvsluttet-v1-p
-    - name: ENDRING_PA_MANUELL_STATUS_TOPIC
-      value: aapen-arbeidsrettetOppfolging-endringPaManuellStatus-v1-p
-    - name: VEILEDER_TILORDNET_TOPIC
-      value: aapen-arbeidsrettetOppfolging-veilederTilordnet-v1-p
-    - name: ENDRING_PA_NY_FOR_VEILEDER_TOPIC
-      value: aapen-arbeidsrettetOppfolging-endringPaNyForVeileder-v1-p
     - name: ENDRING_PA_MAL_TOPIC
       value: aapen-arbeidsrettetOppfolging-endringPaMal-v1-p
