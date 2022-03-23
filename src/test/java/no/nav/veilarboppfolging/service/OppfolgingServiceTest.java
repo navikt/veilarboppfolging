@@ -140,7 +140,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         oppfolgingService.avsluttOppfolging(FNR, VEILEDER, "");
 
         verify(kafkaProducerService).publiserOppfolgingAvsluttet(AKTOR_ID);
-        verify(kafkaProducerService).publiserSisteOppfolgingsperiode(any(SisteOppfolgingsperiodeV1.class));
+        verify(kafkaProducerService).publiserOppfolgingsperiode(any(SisteOppfolgingsperiodeV1.class));
         verify(kafkaProducerService).publiserVeilederTilordnet(AKTOR_ID, null);
         verify(kafkaProducerService).publiserEndringPaNyForVeileder(AKTOR_ID, false);
         verify(kafkaProducerService).publiserEndringPaManuellStatus(AKTOR_ID, false);
