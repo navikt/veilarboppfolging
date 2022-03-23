@@ -47,23 +47,15 @@ public class KafkaProducerService {
     }
 
     private void sisteOppfolgingsPeriode(SisteOppfolgingsperiodeV1 sisteOppfolgingsperiodeV1) {
-        var record = new ProducerRecord<>(
-                kafkaProperties.getSisteOppfolgingsperiodeTopic(),
+        store(kafkaProperties.getSisteOppfolgingsperiodeTopic(),
                 sisteOppfolgingsperiodeV1.getAktorId(),
-                sisteOppfolgingsperiodeV1
-        );
-
-        producerRecordStorage.store(serializeRecord(record, STRING_SERIALIZER, sisteOppfolgingsperiodeV1Serializer));
+                sisteOppfolgingsperiodeV1);
     }
 
     private void oppfolingsperiode(SisteOppfolgingsperiodeV1 sisteOppfolgingsperiodeV1) {
-        var record = new ProducerRecord<>(
-                kafkaProperties.getOppfolgingsperiodeTopic(),
+        store(kafkaProperties.getOppfolgingsperiodeTopic(),
                 sisteOppfolgingsperiodeV1.getAktorId(),
-                sisteOppfolgingsperiodeV1
-        );
-
-        producerRecordStorage.store(serializeRecord(record, STRING_SERIALIZER, sisteOppfolgingsperiodeV1Serializer));
+                sisteOppfolgingsperiodeV1);
     }
 
     public void publiserSisteTilordnetVeileder(SisteTilordnetVeilederV1 recordValue) {
