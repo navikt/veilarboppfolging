@@ -78,7 +78,7 @@ public class KafkaRepubliseringService {
 
         SisteOppfolgingsperiodeV1 sisteOppfolgingsperiodeV1 = DtoMappers.tilSisteOppfolgingsperiodeV1(sistePeriode);
 
-        kafkaProducerService.publiserSisteOppfolgingsperiode(sisteOppfolgingsperiodeV1);
+        kafkaProducerService.publiserOppfolgingsperiode(sisteOppfolgingsperiodeV1);
     }
 
     private void republiserSisteTilordnetVeilederForBruker(AktorId aktorId) {
