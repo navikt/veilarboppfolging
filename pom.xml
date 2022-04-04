@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.6.4</version>
+        <version>2.6.6</version>
         <relativePath/>
     </parent>
 
@@ -19,8 +19,7 @@
 
     <properties>
         <java.version>11</java.version>
-        <common.version>2.2022.02.18_14.38-8d8bb494bd41</common.version>
-        <springfox.version>2.9.2</springfox.version>
+        <common.version>2.2022.04.01_08.27-cbfeb0be0ee0</common.version>
         <tjenestespesifikasjoner.version>1.2019.04.03-23.09-56488320520a</tjenestespesifikasjoner.version>
         <testcontainers.version>1.16.3</testcontainers.version>
     </properties>
