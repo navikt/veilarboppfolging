@@ -57,6 +57,11 @@ spec:
           cluster: prod-gcp
         - application: paw-proxy
           namespace: paw
+    outbound:
+      rules:
+        - application: veilarbarena
+          namespace: pto
+          cluster: prod-fss
   vault:
     enabled: true
     paths:
