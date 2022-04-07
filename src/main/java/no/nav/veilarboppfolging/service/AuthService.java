@@ -24,6 +24,8 @@ import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.NavIdent;
 import no.nav.common.utils.Credentials;
+import no.nav.common.utils.EnvironmentUtils;
+import no.nav.veilarboppfolging.config.EnvironmentProperties;
 import no.nav.veilarboppfolging.utils.DownstreamApi;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -57,14 +59,17 @@ public class AuthService {
 
     private final Credentials serviceUserCredentials;
 
+    private final EnvironmentProperties environmentProperties;
+
     @Autowired
-    public AuthService(AuthContextHolder authContextHolder, Pep veilarbPep, AktorOppslagClient aktorOppslagClient, AktorregisterClient aktorregisterClient, Credentials serviceUserCredentials, AzureAdOnBehalfOfTokenClient aadOboTokenClient) {
+    public AuthService(AuthContextHolder authContextHolder, Pep veilarbPep, AktorOppslagClient aktorOppslagClient, AktorregisterClient aktorregisterClient, Credentials serviceUserCredentials, AzureAdOnBehalfOfTokenClient aadOboTokenClient, EnvironmentProperties environmentProperties) {
         this.authContextHolder = authContextHolder;
         this.veilarbPep = veilarbPep;
         this.aktorOppslagClient = aktorOppslagClient;
         this.aktorregisterClient = aktorregisterClient;
         this.serviceUserCredentials = serviceUserCredentials;
         this.aadOboTokenClient = aadOboTokenClient;
+        this.environmentProperties = environmentProperties;
     }
 
     public void skalVereEnAv(List<UserRole> roller) {
@@ -251,7 +256,7 @@ public class AuthService {
     private boolean erAadOboToken() {
         Optional<String> navIdentClaim = authContextHolder.getIdTokenClaims()
                 .flatMap((claims) -> authContextHolder.getStringClaim(claims, "NAVident"));
-        return authContextHolder.getIdTokenClaims().map(JWTClaimsSet::getIssuer).filter("login.microsoftonline.com"::equals).isPresent()
+        return authContextHolder.getIdTokenClaims().map(JWTClaimsSet::getIssuer).filter(environmentProperties.getNaisAadIssuer()::equals).isPresent()
                 && navIdentClaim.isPresent();
     }
 
