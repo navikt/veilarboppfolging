@@ -6,6 +6,7 @@ import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.UserRole;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.client.aktorregister.AktorregisterClient;
+import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
 import no.nav.common.utils.Credentials;
 import org.junit.Test;
 import org.springframework.web.server.ResponseStatusException;
@@ -30,12 +31,15 @@ public class AuthServiceTest {
 
     private final Credentials serviceUserCredentials = mock(Credentials.class);
 
+    private final AzureAdOnBehalfOfTokenClient azureAdOnBehalfOfTokenClient = mock(AzureAdOnBehalfOfTokenClient.class);
+
     private AuthService authService = new AuthService(
             authContextHolder,
             veilarbPep,
             aktorOppslagClient,
             aktorregisterClient,
-            serviceUserCredentials
+            serviceUserCredentials,
+            azureAdOnBehalfOfTokenClient
     );
 
     @Test

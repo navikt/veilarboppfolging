@@ -1,5 +1,6 @@
 package no.nav.veilarboppfolging.service;
 
+import com.nimbusds.jwt.JWTClaimsSet;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.abac.AbacUtils;
@@ -16,11 +17,14 @@ import no.nav.common.auth.context.UserRole;
 import no.nav.common.auth.utils.IdentUtils;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.client.aktorregister.AktorregisterClient;
+import no.nav.common.token_client.builder.AzureAdTokenClientBuilder;
+import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.NavIdent;
 import no.nav.common.utils.Credentials;
+import no.nav.veilarboppfolging.utils.DownstreamApi;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -45,6 +49,8 @@ public class AuthService {
 
     private final Pep veilarbPep;
 
+    private final AzureAdOnBehalfOfTokenClient aadOboTokenClient;
+
     private final AktorOppslagClient aktorOppslagClient;
 
     private final AktorregisterClient aktorregisterClient;
@@ -52,12 +58,13 @@ public class AuthService {
     private final Credentials serviceUserCredentials;
 
     @Autowired
-    public AuthService(AuthContextHolder authContextHolder, Pep veilarbPep, AktorOppslagClient aktorOppslagClient, AktorregisterClient aktorregisterClient, Credentials serviceUserCredentials) {
+    public AuthService(AuthContextHolder authContextHolder, Pep veilarbPep, AktorOppslagClient aktorOppslagClient, AktorregisterClient aktorregisterClient, Credentials serviceUserCredentials, AzureAdOnBehalfOfTokenClient aadOboTokenClient) {
         this.authContextHolder = authContextHolder;
         this.veilarbPep = veilarbPep;
         this.aktorOppslagClient = aktorOppslagClient;
         this.aktorregisterClient = aktorregisterClient;
         this.serviceUserCredentials = serviceUserCredentials;
+        this.aadOboTokenClient = aadOboTokenClient;
     }
 
     public void skalVereEnAv(List<UserRole> roller) {
@@ -231,6 +238,21 @@ public class AuthService {
 
     public String getInnloggetBrukerToken() {
         return authContextHolder.getIdTokenString().orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Fant ikke token for innlogget bruker"));
+    }
+
+    public Optional<String> getAadOboTokenForTjeneste(DownstreamApi api) {
+        if (erAadOboToken()) {
+            String scope = "api://" + api.cluster + "." + api.namespace + "." + api.serviceName + "/.default";
+            return Optional.of(aadOboTokenClient.exchangeOnBehalfOfToken(scope, getInnloggetBrukerToken()));
+        }
+        return Optional.empty();
+    }
+
+    private boolean erAadOboToken() {
+        Optional<String> navIdentClaim = authContextHolder.getIdTokenClaims()
+                .flatMap((claims) -> authContextHolder.getStringClaim(claims, "NAVident"));
+        return authContextHolder.getIdTokenClaims().map(JWTClaimsSet::getIssuer).filter("login.microsoftonline.com"::equals).isPresent()
+                && navIdentClaim.isPresent();
     }
 
     // NAV ident, fnr eller annen ID
