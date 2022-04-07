@@ -13,6 +13,7 @@ import no.nav.common.health.HealthCheckResult;
 import no.nav.common.job.leader_election.LeaderElectionClient;
 import no.nav.common.sts.OpenAmSystemUserTokenProvider;
 import no.nav.common.sts.SystemUserTokenProvider;
+import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
 import no.nav.common.utils.Credentials;
 import no.nav.veilarboppfolging.mock.PepMock;
 import no.nav.veilarboppfolging.test.DbTestUtils;
@@ -53,6 +54,11 @@ public class ApplicationTestConfig {
     @Bean
     public AuthContextHolder authContextHolder() {
         return AuthContextHolderThreadLocal.instance();
+    }
+
+    @Bean
+    public AzureAdOnBehalfOfTokenClient azureAdOnBehalfOfTokenClient() {
+        return mock(AzureAdOnBehalfOfTokenClient.class);
     }
 
     @Bean
