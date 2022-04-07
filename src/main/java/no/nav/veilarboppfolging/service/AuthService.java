@@ -257,6 +257,7 @@ public class AuthService {
         Optional<String> navIdentClaim = authContextHolder.getIdTokenClaims()
                 .flatMap((claims) -> authContextHolder.getStringClaim(claims, "NAVident"));
         return authContextHolder.getIdTokenClaims().map(JWTClaimsSet::getIssuer).filter(environmentProperties.getNaisAadIssuer()::equals).isPresent()
+                && authContextHolder.getIdTokenClaims().map(x -> x.getClaim("oid")).isPresent()
                 && navIdentClaim.isPresent();
     }
 
