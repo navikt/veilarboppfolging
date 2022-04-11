@@ -59,11 +59,6 @@ spec:
           cluster: dev-gcp
         - application: paw-proxy
           namespace: paw
-    outbound:
-      rules:
-        - application: veilarbarena
-          namespace: pto
-          cluster: dev-fss
   vault:
     enabled: true
     paths:
