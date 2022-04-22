@@ -143,6 +143,7 @@ public class KafkaConfig {
                         kafkaProperties.getSisteOppfolgingsperiodeTopic(),
                         kafkaProperties.getSisteTilordnetVeilederTopic(),
                         kafkaProperties.getVeilederTilordnetTopic(),
+                        kafkaProperties.getOppfolgingsperiodeTopic(),
                         kafkaProperties.getEndringPaManuellStatusTopic(),
                         kafkaProperties.getEndringPaNyForVeilederTopic()
                 )
