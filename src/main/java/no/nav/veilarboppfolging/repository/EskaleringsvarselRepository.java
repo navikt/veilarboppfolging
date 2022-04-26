@@ -32,15 +32,6 @@ public class EskaleringsvarselRepository {
         this.transactor = transactor;
     }
 
-    public void create(EskaleringsvarselEntity e) {
-        transactor.executeWithoutResult((ignored) -> {
-            long id = DbUtils.nesteFraSekvens(db, "ESKALERINGSVARSEL_SEQ");
-            EskaleringsvarselEntity varsel = e.withVarselId(id);
-            insert(varsel);
-            setActive(varsel);
-        });
-    }
-
     public Optional<EskaleringsvarselEntity> hentEskaleringsvarsel(Long id) {
         String sql = "SELECT * FROM ESKALERINGSVARSEL WHERE varsel_id = ?";
         return queryForNullableObject(() -> db.queryForObject(sql, EskaleringsvarselRepository::map, id));
@@ -79,24 +70,6 @@ public class EskaleringsvarselRepository {
                 .build();
     }
 
-    private void insert(EskaleringsvarselEntity e) {
-        String sql = "INSERT INTO ESKALERINGSVARSEL" +
-                "(varsel_id, aktor_id, opprettet_av, opprettet_dato, opprettet_begrunnelse, tilhorende_dialog_id)" +
-                " VALUES(?, ?, ?, CURRENT_TIMESTAMP, ?, ?)";
-
-        db.update(sql, e.getVarselId(), e.getAktorId(), e.getOpprettetAv(), e.getOpprettetBegrunnelse(), e.getTilhorendeDialogId());
-    }
-
-    private void setActive(EskaleringsvarselEntity e) {
-        db.update("" +
-                        "UPDATE " + OppfolgingsStatusRepository.TABLE_NAME +
-                        " SET " + GJELDENE_ESKALERINGSVARSEL + " = ?, " +
-                        "oppdatert = CURRENT_TIMESTAMP " +
-                        "WHERE " + AKTOR_ID + " = ?",
-                e.getVarselId(),
-                e.getAktorId()
-        );
-    }
 
     void avsluttEskaleringsVarsel(String avsluttetBegrunnelse, String avsluttetAv, long varselId, ZonedDateTime sluttDato) {
         db.update("" +

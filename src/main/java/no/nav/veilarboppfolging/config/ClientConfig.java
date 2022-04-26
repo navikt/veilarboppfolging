@@ -17,8 +17,6 @@ import no.nav.veilarboppfolging.client.behandle_arbeidssoker.BehandleArbeidssoke
 import no.nav.veilarboppfolging.client.behandle_arbeidssoker.BehandleArbeidssokerClientImpl;
 import no.nav.veilarboppfolging.client.dkif.DkifClient;
 import no.nav.veilarboppfolging.client.dkif.DkifClientImpl;
-import no.nav.veilarboppfolging.client.varseloppgave.VarseloppgaveClient;
-import no.nav.veilarboppfolging.client.varseloppgave.VarseloppgaveClientImpl;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClientImpl;
 import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktClient;
@@ -62,12 +60,6 @@ public class ClientConfig {
         String url = UrlUtils.createServiceUrl("dkif", "default", false);
         return new DkifClientImpl(url, systemUserTokenProvider);
     }
-
-    @Bean
-    public VarseloppgaveClient varseloppgaveClient(EnvironmentProperties properties, StsConfig stsConfig) {
-        return new VarseloppgaveClientImpl(properties.getArbeidsrettetDialogUrl(), properties.getVarselOppgaveV1Endpoint(), stsConfig);
-    }
-
 
     @Bean
     public VeilarbarenaClient veilarbarenaClient(AuthService authService) {
