@@ -16,6 +16,7 @@ import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.UserRole;
 import no.nav.common.auth.utils.IdentUtils;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
+import no.nav.common.client.aktoroppslag.BrukerIdenter;
 import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
@@ -29,6 +30,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -147,7 +149,7 @@ public class AuthService {
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN);
             }
         } else {
-            if(!veilarbPep.harVeilederTilgangTilPerson(navident.orElseThrow(), actionId, aktorId)) {
+            if (!veilarbPep.harVeilederTilgangTilPerson(navident.orElseThrow(), actionId, aktorId)) {
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN);
             }
         }
@@ -232,7 +234,11 @@ public class AuthService {
     }
 
     public List<AktorId> getAlleAktorIderOrThrow(Fnr fnr) {
-        return List.of(aktorOppslagClient.hentAktorId(fnr));
+        BrukerIdenter brukerIdenter = aktorOppslagClient.hentIdenter(fnr);
+        List<AktorId> alleAktorIder = new ArrayList<>();
+        alleAktorIder.addAll(brukerIdenter.getHistoriskeAktorId());
+        alleAktorIder.add(brukerIdenter.getAktorId());
+        return alleAktorIder;
     }
 
     public String getInnloggetBrukerToken() {
