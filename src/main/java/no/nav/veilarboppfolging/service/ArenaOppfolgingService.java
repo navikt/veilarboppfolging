@@ -1,7 +1,7 @@
 package no.nav.veilarboppfolging.service;
 
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.client.aktorregister.AktorregisterClient;
+import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.client.norg2.Norg2Client;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
@@ -25,7 +25,7 @@ import java.util.Optional;
 public class ArenaOppfolgingService {
 
     // Bruker AktorregisterClient istedenfor authService for å unngå sirkulær avhengighet
-    private final AktorregisterClient aktorregisterClient;
+    private final AktorOppslagClient aktorOppslagClient;
 
     private final VeilarbarenaClient veilarbarenaClient;
 
@@ -39,14 +39,14 @@ public class ArenaOppfolgingService {
 
     @Autowired
     public ArenaOppfolgingService(
-            AktorregisterClient aktorregisterClient,
+            AktorOppslagClient aktorOppslagClient,
             VeilarbarenaClient veilarbarenaClient,
             OppfolgingsStatusRepository oppfolgingsStatusRepository,
             AuthService authService,
             Norg2Client norg2Client,
             VeilederTilordningerRepository veilederTilordningerRepository
     ) {
-        this.aktorregisterClient = aktorregisterClient;
+        this.aktorOppslagClient = aktorOppslagClient;
         this.veilarbarenaClient = veilarbarenaClient;
         this.oppfolgingsStatusRepository = oppfolgingsStatusRepository;
         this.authService = authService;
@@ -65,7 +65,7 @@ public class ArenaOppfolgingService {
     }
 
     public Optional<ArenaOppfolgingTilstand> hentOppfolgingTilstand(Fnr fnr) {
-        AktorId aktorId = aktorregisterClient.hentAktorId(fnr);
+        AktorId aktorId = aktorOppslagClient.hentAktorId(fnr);
 
         Optional<ArenaOppfolgingTilstand> maybeArenaOppfolging = veilarbarenaClient.hentOppfolgingsbruker(fnr)
                 .map(ArenaOppfolgingTilstand::fraArenaBruker);
