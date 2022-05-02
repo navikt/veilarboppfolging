@@ -1,7 +1,7 @@
 package no.nav.veilarboppfolging.service;
 
 import lombok.SneakyThrows;
-import no.nav.common.client.aktorregister.AktorregisterClient;
+import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.kafka.consumer.ConsumeStatus;
 import no.nav.common.kafka.consumer.KafkaConsumerClient;
 import no.nav.common.kafka.consumer.util.KafkaConsumerClientBuilder;
@@ -47,7 +47,7 @@ import static org.mockito.Mockito.when;
 public class AktiverBrukerServiceKafkaTest {
 
     @MockBean
-    AktorregisterClient aktorregisterClient;
+    AktorOppslagClient aktorOppslagClient;
 
     @MockBean
     MetricsService metricsService;
@@ -88,8 +88,8 @@ public class AktiverBrukerServiceKafkaTest {
         aktiverArbeidssokerData.setFnr(new AktiverArbeidssokerData.Fnr(fnr.get()));
         aktiverArbeidssokerData.setInnsatsgruppe(innsatsgruppe);
 
-        when(aktorregisterClient.hentAktorId(fnr)).thenReturn(aktorId);
-        when(aktorregisterClient.hentFnr(aktorId)).thenReturn(fnr);
+        when(aktorOppslagClient.hentAktorId(fnr)).thenReturn(aktorId);
+        when(aktorOppslagClient.hentFnr(aktorId)).thenReturn(fnr);
 
         consumerClient = KafkaConsumerClientBuilder.builder()
                 .withProperties(kafkaTestConsumerProperties(kafkaContainer.getBootstrapServers()))

@@ -5,7 +5,6 @@ import no.nav.common.abac.Pep;
 import no.nav.common.abac.domain.request.ActionId;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
-import no.nav.common.client.aktorregister.AktorregisterClient;
 import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
@@ -56,9 +55,6 @@ class OppfolgingControllerIntegrationTest {
 
     @Autowired
     AktorOppslagClient aktorOppslagClient;
-
-    @MockBean
-    AktorregisterClient aktorregisterClient;
 
     @MockBean
     MetricsService metricsService;

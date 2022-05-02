@@ -16,15 +16,13 @@ import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.UserRole;
 import no.nav.common.auth.utils.IdentUtils;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
-import no.nav.common.client.aktorregister.AktorregisterClient;
-import no.nav.common.token_client.builder.AzureAdTokenClientBuilder;
+import no.nav.common.client.aktoroppslag.BrukerIdenter;
 import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.NavIdent;
 import no.nav.common.utils.Credentials;
-import no.nav.common.utils.EnvironmentUtils;
 import no.nav.veilarboppfolging.config.EnvironmentProperties;
 import no.nav.veilarboppfolging.utils.DownstreamApi;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +30,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -55,18 +54,15 @@ public class AuthService {
 
     private final AktorOppslagClient aktorOppslagClient;
 
-    private final AktorregisterClient aktorregisterClient;
-
     private final Credentials serviceUserCredentials;
 
     private final EnvironmentProperties environmentProperties;
 
     @Autowired
-    public AuthService(AuthContextHolder authContextHolder, Pep veilarbPep, AktorOppslagClient aktorOppslagClient, AktorregisterClient aktorregisterClient, Credentials serviceUserCredentials, AzureAdOnBehalfOfTokenClient aadOboTokenClient, EnvironmentProperties environmentProperties) {
+    public AuthService(AuthContextHolder authContextHolder, Pep veilarbPep, AktorOppslagClient aktorOppslagClient, Credentials serviceUserCredentials, AzureAdOnBehalfOfTokenClient aadOboTokenClient, EnvironmentProperties environmentProperties) {
         this.authContextHolder = authContextHolder;
         this.veilarbPep = veilarbPep;
         this.aktorOppslagClient = aktorOppslagClient;
-        this.aktorregisterClient = aktorregisterClient;
         this.serviceUserCredentials = serviceUserCredentials;
         this.aadOboTokenClient = aadOboTokenClient;
         this.environmentProperties = environmentProperties;
@@ -153,7 +149,7 @@ public class AuthService {
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN);
             }
         } else {
-            if(!veilarbPep.harVeilederTilgangTilPerson(navident.orElseThrow(), actionId, aktorId)) {
+            if (!veilarbPep.harVeilederTilgangTilPerson(navident.orElseThrow(), actionId, aktorId)) {
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN);
             }
         }
@@ -238,7 +234,11 @@ public class AuthService {
     }
 
     public List<AktorId> getAlleAktorIderOrThrow(Fnr fnr) {
-        return aktorregisterClient.hentAktorIder(fnr);
+        BrukerIdenter brukerIdenter = aktorOppslagClient.hentIdenter(fnr);
+        List<AktorId> alleAktorIder = new ArrayList<>();
+        alleAktorIder.addAll(brukerIdenter.getHistoriskeAktorId());
+        alleAktorIder.add(brukerIdenter.getAktorId());
+        return alleAktorIder;
     }
 
     public String getInnloggetBrukerToken() {
