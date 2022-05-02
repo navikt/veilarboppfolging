@@ -1,12 +1,12 @@
 package no.nav.veilarboppfolging.config;
 
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
-import no.nav.common.client.aktoroppslag.AktorregisterHttpClient;
 import no.nav.common.client.aktoroppslag.CachedAktorOppslagClient;
-import no.nav.common.client.aktorregister.AktorregisterClient;
+import no.nav.common.client.aktoroppslag.PdlAktorOppslagClient;
 import no.nav.common.client.norg2.CachedNorg2Client;
 import no.nav.common.client.norg2.Norg2Client;
 import no.nav.common.client.norg2.NorgHttp2Client;
+import no.nav.common.client.pdl.PdlClientImpl;
 import no.nav.common.cxf.StsConfig;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.token_client.builder.AzureAdTokenClientBuilder;
@@ -27,23 +27,24 @@ import no.nav.veilarboppfolging.service.AuthService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import static no.nav.common.utils.UrlUtils.createNaisAdeoIngressUrl;
-import static no.nav.common.utils.UrlUtils.createNaisPreprodIngressUrl;
-import static no.nav.veilarboppfolging.config.ApplicationConfig.APPLICATION_NAME;
+import static no.nav.common.utils.UrlUtils.*;
 
 @Configuration
 public class ClientConfig {
 
-    @Bean
-    public AktorregisterClient aktorregisterClient(EnvironmentProperties properties, SystemUserTokenProvider systemUserTokenProvider) {
-        return new AktorregisterHttpClient(
-                properties.getAktorregisterUrl(), APPLICATION_NAME, systemUserTokenProvider::getSystemUserToken
-        );
-    }
 
     @Bean
-    public AktorOppslagClient aktorOppslagClient(AktorregisterClient aktorregisterClient) {
-        return new CachedAktorOppslagClient(aktorregisterClient);
+    public AktorOppslagClient aktorOppslagClient(SystemUserTokenProvider systemUserTokenProvider) {
+        String pdlUrl = isProduction()
+                ? createProdInternalIngressUrl("pdl-api")
+                : createDevInternalIngressUrl("pdl-api-q1");
+
+        PdlClientImpl pdlClient = new PdlClientImpl(
+                pdlUrl,
+                systemUserTokenProvider::getSystemUserToken,
+                systemUserTokenProvider::getSystemUserToken);
+
+        return new CachedAktorOppslagClient(new PdlAktorOppslagClient(pdlClient));
     }
 
     @Bean
@@ -90,6 +91,10 @@ public class ClientConfig {
         return EnvironmentUtils.isProduction().orElse(false)
                 ? createNaisAdeoIngressUrl(appName, withAppContextPath)
                 : createNaisPreprodIngressUrl(appName, "q1", withAppContextPath);
+    }
+
+    private static boolean isProduction() {
+        return EnvironmentUtils.isProduction().orElseThrow();
     }
 
 }
