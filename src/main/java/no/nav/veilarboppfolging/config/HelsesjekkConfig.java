@@ -27,14 +27,12 @@ public class HelsesjekkConfig {
                                          YtelseskontraktClient ytelseskontraktClient,
                                          JdbcTemplate jdbcTemplate,
                                          Pep pep,
-                                         VarseloppgaveClient varseloppgaveClient,
                                          AktorOppslagClient aktorOppslagClient) {
         List<SelfTestCheck> selfTestChecks = Arrays.asList(
                 new SelfTestCheck("Ping av BehandleArbeidssoker_V1. Registrerer arbeidssoker i Arena.", true, behandleArbeidssokerClient),
                 new SelfTestCheck("Ping av ytelseskontrakt_V3. Henter informasjon om ytelser fra Arena.", false, ytelseskontraktClient),
                 new SelfTestCheck("Enkel spørring mot Databasen til veilarboppfolging.", true, checkDbHealth(jdbcTemplate)),
                 new SelfTestCheck("ABAC tilgangskontroll - ping", true, pep.getAbacClient()),
-                new SelfTestCheck("Brukes for å sende eskaleringsvarsel", false, varseloppgaveClient),
                 new SelfTestCheck("Ping av aktor oppslag client (konvertere mellom aktorId og Fnr).", true, aktorOppslagClient)
         );
 
