@@ -23,9 +23,9 @@ import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.testcontainers.containers.KafkaContainer;
-import org.testcontainers.utility.DockerImageName;
+import org.springframework.kafka.test.EmbeddedKafkaBroker;
 
 import javax.annotation.PostConstruct;
 import java.util.List;
@@ -36,12 +36,9 @@ import static no.nav.veilarboppfolging.config.KafkaConfig.CONSUMER_GROUP_ID;
 import static no.nav.veilarboppfolging.config.KafkaConfig.PRODUCER_CLIENT_ID;
 
 @Configuration
+@Import({EmbeddedKafkaConfig.class})
 @EnableConfigurationProperties({KafkaProperties.class})
 public class KafkaTestConfig {
-
-    public static final String KAFKA_IMAGE = "confluentinc/cp-kafka:5.4.3";
-
-    private final KafkaContainer kafkaContainer;
 
     private final KafkaConsumerClient consumerClient;
 
@@ -56,13 +53,12 @@ public class KafkaTestConfig {
             JdbcTemplate jdbcTemplate,
             LockProvider lockProvider,
             KafkaConsumerService kafkaConsumerService,
-            KafkaProperties kafkaProperties
+            KafkaProperties kafkaProperties,
+            EmbeddedKafkaBroker kafkaContainer
     ) {
-        kafkaContainer = new KafkaContainer(DockerImageName.parse(KAFKA_IMAGE));
-        kafkaContainer.start();
-
         KafkaConsumerRepository consumerRepository = new OracleJdbcTemplateConsumerRepository(jdbcTemplate);
         KafkaProducerRepository producerRepository = new OracleJdbcTemplateProducerRepository(jdbcTemplate);
+
 
         List<KafkaConsumerClientBuilder.TopicConfig<?, ?>> topicConfigs = List.of(
                 new KafkaConsumerClientBuilder.TopicConfig<String, EndringPaaOppfoelgingsBrukerV2>()
@@ -79,7 +75,7 @@ public class KafkaTestConfig {
         Properties properties = KafkaPropertiesBuilder.consumerBuilder()
                 .withBaseProperties(1000)
                 .withConsumerGroupId(CONSUMER_GROUP_ID)
-                .withBrokerUrl(kafkaContainer.getBootstrapServers())
+                .withBrokerUrl(kafkaContainer.getBrokersAsString())
                 .withDeserializers(ByteArrayDeserializer.class, ByteArrayDeserializer.class)
                 .build();
 
@@ -105,20 +101,15 @@ public class KafkaTestConfig {
     }
 
     @Bean
-    public KafkaContainer kafkaContainer() {
-        return kafkaContainer;
-    }
-
-    @Bean
     public KafkaProducerRecordStorage producerRecordStorage() {
         return producerRecordStorage;
     }
 
-    private Properties producerProperties(KafkaContainer kafkaContainer) {
+    private Properties producerProperties(EmbeddedKafkaBroker kafkaContainer) {
         return KafkaPropertiesBuilder.producerBuilder()
                 .withBaseProperties()
                 .withProducerId(PRODUCER_CLIENT_ID)
-                .withBrokerUrl(kafkaContainer.getBootstrapServers())
+                .withBrokerUrl(kafkaContainer.getBrokersAsString())
                 .withSerializers(ByteArraySerializer.class, ByteArraySerializer.class)
                 .build();
     }
