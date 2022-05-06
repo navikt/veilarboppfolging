@@ -24,6 +24,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.kafka.test.EmbeddedKafkaBroker;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.sql.DataSource;
@@ -122,5 +123,6 @@ public class ApplicationTestConfig {
     public LeaderElectionClient leaderElectionClient() {
         return () -> true;
     }
+
 
 }

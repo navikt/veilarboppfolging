@@ -12,7 +12,6 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.client.behandle_arbeidssoker.BehandleArbeidssokerClient;
 import no.nav.veilarboppfolging.client.dkif.DkifClient;
 import no.nav.veilarboppfolging.client.dkif.DkifKontaktinfo;
-import no.nav.veilarboppfolging.client.varseloppgave.VarseloppgaveClient;
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolging;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
@@ -102,21 +101,6 @@ public class ClientTestConfig {
             @Override
             public Optional<DkifKontaktinfo> hentKontaktInfo(Fnr fnr) {
                 return Optional.empty();
-            }
-
-            @Override
-            public HealthCheckResult checkHealth() {
-                return HealthCheckResult.healthy();
-            }
-        };
-    }
-
-    @Bean
-    public VarseloppgaveClient varseloppgaveClient() {
-        return new VarseloppgaveClient() {
-            @Override
-            public void sendEskaleringsvarsel(AktorId aktorId, long dialogId) {
-
             }
 
             @Override

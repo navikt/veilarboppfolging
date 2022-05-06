@@ -6,8 +6,9 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class UnleashService {
+public class
 
+UnleashService {
     private final static String OPPDATER_OPPFOLGING_KAFKA = "veilarboppfolging.oppdater_oppfolging_kafka";
 
     private final static String IKKE_OPPDATER_OPPFOLGING_MED_SIDEEFFEKT = "veilarboppfolging.ikke_oppdater_oppfolging_med_sideeffekt";
@@ -27,5 +28,9 @@ public class UnleashService {
 
     public boolean skalIkkeAutomatiskStarteOppfolgingVedTilordningAvVeileder() {
         return unleashClient.isEnabled(IKKE_START_OPPFOLGING_VED_TILORDNING_AV_VEILEDER);
+    }
+
+    public boolean skrudAvStoppEskalering() {
+        return unleashClient.isEnabled("veilarboppfolging.skruAvStoppEskalering");
     }
 }

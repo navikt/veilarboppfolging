@@ -115,19 +115,6 @@ public class OppfolgingController {
         return historikkService.hentInstillingsHistorikk(fnr);
     }
 
-    @PostMapping("/startEskalering")
-    public ResponseEntity startEskalering(@RequestBody StartEskaleringDTO startEskalering, @RequestParam("fnr") Fnr fnr) {
-        authService.skalVereInternBruker();
-        eskaleringService.startEskalering(
-                fnr,
-                authService.getInnloggetVeilederIdent(),
-                startEskalering.getBegrunnelse(),
-                startEskalering.getDialogId()
-        );
-
-        return ResponseEntity.status(204).build();
-    }
-
     @PostMapping("/stoppEskalering")
     public ResponseEntity stoppEskalering(@RequestBody StoppEskaleringDTO stoppEskalering, @RequestParam("fnr") Fnr fnr) {
         authService.skalVereInternBruker();
