@@ -21,8 +21,6 @@ public class HistorikkHendelse {
         SATT_TIL_MANUELL,
         SATT_TIL_DIGITAL,
         AVSLUTTET_OPPFOLGINGSPERIODE,
-        ESKALERING_STARTET,
-        ESKALERING_STOPPET,
         KVP_STARTET,
         KVP_STOPPET,
         VEILEDER_TILORDNET,

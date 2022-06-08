@@ -3,7 +3,6 @@ package no.nav.veilarboppfolging.utils;
 import no.nav.pto_schema.kafka.json.topic.SisteOppfolgingsperiodeV1;
 import no.nav.pto_schema.kafka.json.topic.SisteTilordnetVeilederV1;
 import no.nav.veilarboppfolging.controller.response.*;
-import no.nav.veilarboppfolging.controller.v2.response.EskaleringsvarselV2Response;
 import no.nav.veilarboppfolging.domain.AvslutningStatusData;
 import no.nav.veilarboppfolging.domain.OppfolgingStatusData;
 import no.nav.veilarboppfolging.repository.entity.*;
@@ -15,18 +14,6 @@ import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 
 public class DtoMappers {
-
-    public static EskaleringsvarselV2Response mapToResponse(EskaleringsvarselEntity eskaleringsvarsel) {
-        return new EskaleringsvarselV2Response()
-                .setVarselId(eskaleringsvarsel.getVarselId())
-                .setOpprettetAv(eskaleringsvarsel.getOpprettetAv())
-                .setOpprettetDato(eskaleringsvarsel.getOpprettetDato())
-                .setOpprettetBegrunnelse(eskaleringsvarsel.getOpprettetBegrunnelse())
-                .setAvsluttetAv(eskaleringsvarsel.getAvsluttetAv())
-                .setAvsluttetDato(eskaleringsvarsel.getAvsluttetDato())
-                .setAvsluttetBegrunnelse(eskaleringsvarsel.getAvsluttetBegrunnelse())
-                .setTilhorendeDialogId(eskaleringsvarsel.getTilhorendeDialogId());
-    }
 
     public static Maal tilDto(MaalEntity malData) {
         return new Maal()
@@ -73,7 +60,6 @@ public class DtoMappers {
                 .setKanReaktiveres(oppfolgingStatusData.kanReaktiveres)
                 .setOppfolgingsPerioder(oppfolgingStatusData.oppfolgingsperioder.stream().map(o -> tilOppfolgingPeriodeDTO(o, erInternBruker)).collect(toList()))
                 .setInaktiveringsdato(oppfolgingStatusData.inaktiveringsdato)
-                .setGjeldendeEskaleringsvarsel(tilDto(oppfolgingStatusData.getGjeldendeEskaleringsvarsel(), erInternBruker))
                 .setErIkkeArbeidssokerUtenOppfolging(oppfolgingStatusData.getErSykmeldtMedArbeidsgiver())
                 .setErSykmeldtMedArbeidsgiver(oppfolgingStatusData.getErSykmeldtMedArbeidsgiver())
                 .setHarSkriveTilgang(true)
@@ -140,19 +126,6 @@ public class DtoMappers {
 
     public static KvpPeriodeDTO tilDTO(KvpPeriodeEntity kvp) {
         return new KvpPeriodeDTO(kvp.getOpprettetDato(), kvp.getAvsluttetDato());
-    }
-
-    public static Eskaleringsvarsel tilDto(EskaleringsvarselEntity eskaleringsvarselEntity, boolean erInternBruker) {
-        return Optional.ofNullable(eskaleringsvarselEntity)
-                .map(eskalering -> Eskaleringsvarsel.builder()
-                        .varselId(eskalering.getVarselId())
-                        .aktorId(eskalering.getAktorId())
-                        .opprettetAv(erInternBruker ? eskalering.getOpprettetAv() : null)
-                        .opprettetDato(eskalering.getOpprettetDato())
-                        .avsluttetDato(eskalering.getAvsluttetDato())
-                        .tilhorendeDialogId(eskalering.getTilhorendeDialogId())
-                        .build()
-                ).orElse(null);
     }
 
 }

@@ -51,8 +51,7 @@ public class OppfolgingService {
     private final OppfolgingsStatusRepository oppfolgingsStatusRepository;
     private final OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
     private final ManuellStatusService manuellStatusService;
-    private final EskaleringService eskaleringService;
-    private final EskaleringsvarselRepository eskaleringsvarselRepository;
+
     private final KvpRepository kvpRepository;
     private final MaalRepository maalRepository;
     private final BrukerOppslagFlereOppfolgingAktorRepository brukerOppslagFlereOppfolgingAktorRepository;
@@ -71,8 +70,6 @@ public class OppfolgingService {
             OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository,
             // TODO: Når vi får splittet servicenen bedre så skal det ikke være behov for å bruke @Lazy
             @Lazy ManuellStatusService manuellStatusService,
-            EskaleringService eskaleringService,
-            EskaleringsvarselRepository eskaleringsvarselRepository,
             KvpRepository kvpRepository,
             MaalRepository maalRepository,
             BrukerOppslagFlereOppfolgingAktorRepository brukerOppslagFlereOppfolgingAktorRepository,
@@ -88,8 +85,6 @@ public class OppfolgingService {
         this.oppfolgingsStatusRepository = oppfolgingsStatusRepository;
         this.oppfolgingsPeriodeRepository = oppfolgingsPeriodeRepository;
         this.manuellStatusService = manuellStatusService;
-        this.eskaleringService = eskaleringService;
-        this.eskaleringsvarselRepository = eskaleringsvarselRepository;
         this.kvpRepository = kvpRepository;
         this.maalRepository = maalRepository;
         this.brukerOppslagFlereOppfolgingAktorRepository = brukerOppslagFlereOppfolgingAktorRepository;
@@ -272,22 +267,6 @@ public class OppfolgingService {
             }, () -> log.error("Fant ikke KVP periode for id " + oppfolgingEntity.getGjeldendeKvpId()));
         }
 
-        // Gjeldende eskaleringsvarsel inkluderes i resultatet kun hvis den innloggede veilederen har tilgang til brukers enhet.
-        if (oppfolgingEntity.getGjeldendeEskaleringsvarselId() != 0) {
-            Optional<EskaleringsvarselEntity> maybeEskaleringsvarsel =
-                    eskaleringsvarselRepository.hentEskaleringsvarsel(oppfolgingEntity.getGjeldendeEskaleringsvarselId());
-
-            if (maybeEskaleringsvarsel.isPresent()) {
-                EskaleringsvarselEntity eskaleringsvarsel = maybeEskaleringsvarsel.get();
-
-                if (sjekkTilgangGittKvp(authService, maybeKvpPeriode.orElse(null), eskaleringsvarsel::getOpprettetDato)) {
-                    oppfolging.setGjeldendeEskaleringsvarsel(eskaleringsvarsel);
-                }
-            } else {
-                log.error("Fant ikke eskaleringsvarsel for id " + oppfolgingEntity.getGjeldendeEskaleringsvarselId());
-            }
-        }
-
         if (oppfolgingEntity.getGjeldendeMaalId() != 0) {
             Optional<MaalEntity> maybeMaal = maalRepository.hentMaal(oppfolgingEntity.getGjeldendeMaalId());
 
@@ -369,7 +348,6 @@ public class OppfolgingService {
         String brukerIdent = authService.getInnloggetBrukerIdent();
 
         transactor.executeWithoutResult((ignored) -> {
-            eskaleringService.stoppEskaleringForAvsluttOppfolging(aktorId, brukerIdent, begrunnelse);
 
             oppfolgingsPeriodeRepository.avslutt(aktorId, veilederId, begrunnelse);
 
@@ -448,7 +426,6 @@ public class OppfolgingService {
                 .setReservasjonKRR(dkifKontaktinfo.isReservert())
                 .setManuell(erManuell || dkifKontaktinfo.isReservert())
                 .setKanStarteOppfolging(kanSettesUnderOppfolging)
-                .setGjeldendeEskaleringsvarsel(oppfolging.getGjeldendeEskaleringsvarsel())
                 .setOppfolgingsperioder(oppfolging.getOppfolgingsperioder())
                 .setHarSkriveTilgang(harSkrivetilgangTilBruker)
                 .setInaktivIArena(erInaktivIArena)

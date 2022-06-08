@@ -29,8 +29,4 @@ UnleashService {
     public boolean skalIkkeAutomatiskStarteOppfolgingVedTilordningAvVeileder() {
         return unleashClient.isEnabled(IKKE_START_OPPFOLGING_VED_TILORDNING_AV_VEILEDER);
     }
-
-    public boolean skrudAvStoppEskalering() {
-        return unleashClient.isEnabled("veilarboppfolging.skruAvStoppEskalering");
-    }
 }

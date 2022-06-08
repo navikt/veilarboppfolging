@@ -1,5 +1,6 @@
 package no.nav.veilarboppfolging.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
@@ -7,7 +8,6 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
-import no.nav.veilarboppfolging.repository.EskaleringsvarselRepository;
 import no.nav.veilarboppfolging.repository.KvpRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
 import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity;
@@ -28,9 +28,8 @@ import static no.nav.veilarboppfolging.repository.enums.KodeverkBruker.SYSTEM;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class KvpService {
-
-    static final String ESKALERING_AVSLUTTET_FORDI_KVP_BLE_AVSLUTTET = "Eskalering avsluttet fordi KVP ble avsluttet";
 
     private final KafkaProducerService kafkaProducerService;
 
@@ -42,31 +41,9 @@ public class KvpService {
 
     private final OppfolgingsStatusRepository oppfolgingsStatusRepository;
 
-    private final EskaleringsvarselRepository eskaleringsvarselRepository;
-
     private final AuthService authService;
 
     private final TransactionTemplate transactor;
-
-    public KvpService(
-            KafkaProducerService kafkaProducerService,
-            MetricsService metricsService,
-            KvpRepository kvpRepository,
-            VeilarbarenaClient veilarbarenaClient,
-            OppfolgingsStatusRepository oppfolgingsStatusRepository,
-            EskaleringsvarselRepository eskaleringsvarselRepository,
-            AuthService authService,
-            TransactionTemplate transactor
-    ) {
-        this.kafkaProducerService = kafkaProducerService;
-        this.metricsService = metricsService;
-        this.kvpRepository = kvpRepository;
-        this.veilarbarenaClient = veilarbarenaClient;
-        this.oppfolgingsStatusRepository = oppfolgingsStatusRepository;
-        this.eskaleringsvarselRepository = eskaleringsvarselRepository;
-        this.authService = authService;
-        this.transactor = transactor;
-    }
 
     @SneakyThrows
     public void startKvp(Fnr fnr, String begrunnelse) {
@@ -140,7 +117,6 @@ public class KvpService {
         Optional<OppfolgingEntity> maybeOppfolging = oppfolgingsStatusRepository.hentOppfolging(aktorId);
 
         long gjeldendeKvpId = maybeOppfolging.map(OppfolgingEntity::getGjeldendeKvpId).orElse(0L);
-        long gjeldendeEskaleringsvarselId = maybeOppfolging.map(OppfolgingEntity::getGjeldendeEskaleringsvarselId).orElse(0L);
 
         if (gjeldendeKvpId == 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
@@ -148,16 +124,6 @@ public class KvpService {
 
         transactor.executeWithoutResult((ignored) -> {
             ZonedDateTime sluttDato = ZonedDateTime.now();
-
-            if (gjeldendeEskaleringsvarselId != 0) {
-                eskaleringsvarselRepository.finish(
-                        aktorId,
-                        gjeldendeEskaleringsvarselId,
-                        avsluttetAv,
-                        ESKALERING_AVSLUTTET_FORDI_KVP_BLE_AVSLUTTET,
-                        sluttDato
-                );
-            }
 
             kvpRepository.stopKvp(gjeldendeKvpId, aktorId, avsluttetAv, begrunnelse, kodeverkBruker, sluttDato);
             kafkaProducerService.publiserKvpAvsluttet(aktorId, avsluttetAv, begrunnelse, sluttDato);

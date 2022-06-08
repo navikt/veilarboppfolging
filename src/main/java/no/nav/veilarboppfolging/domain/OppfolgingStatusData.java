@@ -2,7 +2,6 @@ package no.nav.veilarboppfolging.domain;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
-import no.nav.veilarboppfolging.repository.entity.EskaleringsvarselEntity;
 import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
 
@@ -26,7 +25,6 @@ public class OppfolgingStatusData {
     public boolean underKvp;
     public boolean kanStarteOppfolging;
     public boolean kanVarsles;
-    private EskaleringsvarselEntity gjeldendeEskaleringsvarsel;
     public List<OppfolgingsperiodeEntity> oppfolgingsperioder = Collections.emptyList();
     public List<KvpPeriodeEntity> kvpPerioder;
     public boolean harSkriveTilgang;
