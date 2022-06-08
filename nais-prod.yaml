@@ -57,6 +57,9 @@ spec:
           cluster: prod-gcp
         - application: paw-proxy
           namespace: paw
+        - application: veilarbpersonflate
+          namespace: poao
+          cluster: prod-gcp
   vault:
     enabled: true
     paths:
