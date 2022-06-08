@@ -8,6 +8,7 @@ metadata:
 spec:
   image: docker.pkg.github.com/navikt/veilarboppfolging/veilarboppfolging:{{version}}
   ingresses:
+    - https://veilarboppfolging.prod-fss-pub.nais.io
     - https://veilarboppfolging.nais.adeo.no
     - https://app.adeo.no/veilarboppfolging
   webproxy: true
