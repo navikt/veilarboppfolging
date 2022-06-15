@@ -6,7 +6,6 @@ import org.springframework.context.annotation.Import;
 
 @Configuration
 @Import({
-        EskaleringsvarselRepository.class,
         KvpRepository.class,
         MaalRepository.class,
         ManuellStatusRepository.class,
