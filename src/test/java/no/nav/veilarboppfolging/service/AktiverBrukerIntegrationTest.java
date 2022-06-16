@@ -62,7 +62,7 @@ public class AktiverBrukerIntegrationTest {
                 null, authService,
                 oppfolgingsStatusRepository, oppfolgingsPeriodeRepository,
                 manuellStatusService,
-                null, new EskaleringsvarselRepository(db, transactor),
+
                 new KvpRepository(db, transactor),
                 new MaalRepository(db, transactor),
                 mock(BrukerOppslagFlereOppfolgingAktorRepository.class),

@@ -18,7 +18,6 @@ public class DbTestUtils {
     private final static List<String> ALL_TABLES = Arrays.asList(
             "OPPFOLGINGSPERIODE",
             "OPPFOLGINGSTATUS",
-            "ESKALERINGSVARSEL",
             "KVP",
             "UTMELDING",
             "OPPFOLGINGSENHET_ENDRET"

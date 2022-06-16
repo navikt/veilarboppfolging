@@ -20,7 +20,6 @@ public class OppfolgingStatus {
     public boolean underKvp;
 
     public ZonedDateTime oppfolgingUtgang;
-    public Eskaleringsvarsel gjeldendeEskaleringsvarsel;
     private boolean kanStarteOppfolging;
     @Deprecated
     private AvslutningStatus avslutningStatus;

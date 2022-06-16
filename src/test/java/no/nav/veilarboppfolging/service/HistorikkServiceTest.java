@@ -4,7 +4,6 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.controller.response.HistorikkHendelse;
 import no.nav.veilarboppfolging.repository.*;
-import no.nav.veilarboppfolging.repository.entity.EskaleringsvarselEntity;
 import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity;
 import no.nav.veilarboppfolging.repository.entity.ManuellStatusEntity;
 import org.junit.Before;
@@ -47,8 +46,6 @@ public class HistorikkServiceTest {
     @Mock
     private ManuellStatusService manuellStatusService;
 
-    @Mock
-    private EskaleringsvarselRepository eskaleringsvarselRepository;
 
     @Mock
     private OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
@@ -72,7 +69,6 @@ public class HistorikkServiceTest {
     public void setup() {
         when(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID);
         gitt_kvp();
-        gitt_eskaleringsvarsel_historikk();
         gitt_manuell_hitsorikk();
     }
 
@@ -99,36 +95,7 @@ public class HistorikkServiceTest {
         assertThat(begrunnelser).contains("IN_KVP", "OUTSIDE_KVP");
     }
 
-    private void gitt_eskaleringsvarsel_historikk() {
-        List<EskaleringsvarselEntity> eskaleringsvarsel = asList(
-                EskaleringsvarselEntity.builder()
-                        .aktorId(AKTOR_ID.get())
-                        .varselId(1L)
-                        .opprettetDato(BEFORE_KVP)
-                        .opprettetBegrunnelse("OUTSIDE_KVP")
-                        .avsluttetDato(ALSO_BEFORE_KVP)
-                        .avsluttetBegrunnelse("OUTSIDE_KVP")
-                        .build(),
-                EskaleringsvarselEntity.builder()
-                        .aktorId(AKTOR_ID.get())
-                        .varselId(2L)
-                        .opprettetDato(BEFORE_KVP)
-                        .opprettetBegrunnelse("OUTSIDE_KVP")
-                        .avsluttetDato(IN_KVP)
-                        .avsluttetBegrunnelse("IN_KVP")
-                        .build(),
-                EskaleringsvarselEntity.builder()
-                        .aktorId(AKTOR_ID.get())
-                        .varselId(3L)
-                        .opprettetDato(IN_KVP)
-                        .opprettetBegrunnelse("IN_KVP")
-                        .avsluttetDato(AFTER_KVP)
-                        .avsluttetBegrunnelse("OUTSIDE_KVP")
-                        .build()
-        );
 
-        when(eskaleringsvarselRepository.history(AKTOR_ID)).thenReturn(eskaleringsvarsel);
-    }
 
     private void gitt_manuell_hitsorikk() {
         List<ManuellStatusEntity> manuellStatus = asList(

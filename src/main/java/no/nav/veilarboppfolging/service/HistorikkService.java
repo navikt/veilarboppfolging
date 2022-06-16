@@ -1,5 +1,6 @@
 package no.nav.veilarboppfolging.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.val;
 import no.nav.common.types.identer.AktorId;
@@ -23,6 +24,7 @@ import static no.nav.veilarboppfolging.repository.enums.KodeverkBruker.NAV;
 import static no.nav.veilarboppfolging.repository.enums.KodeverkBruker.SYSTEM;
 
 @Service
+@RequiredArgsConstructor
 public class HistorikkService {
 
     private final AuthService authService;
@@ -33,30 +35,9 @@ public class HistorikkService {
 
     private final OppfolgingsenhetHistorikkRepository oppfolgingsenhetHistorikkRepository;
 
-    private final EskaleringsvarselRepository eskaleringsvarselRepository;
-
     private final OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
 
     private final ManuellStatusService manuellStatusService;
-
-    @Autowired
-    public HistorikkService(
-            AuthService authService,
-            KvpRepository kvpRepository,
-            VeilederHistorikkRepository veilederHistorikkRepository,
-            OppfolgingsenhetHistorikkRepository oppfolgingsenhetHistorikkRepository,
-            EskaleringsvarselRepository eskaleringsvarselRepository,
-            OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository,
-            ManuellStatusService manuellStatusService
-    ) {
-        this.authService = authService;
-        this.kvpRepository = kvpRepository;
-        this.veilederHistorikkRepository = veilederHistorikkRepository;
-        this.oppfolgingsenhetHistorikkRepository = oppfolgingsenhetHistorikkRepository;
-        this.eskaleringsvarselRepository = eskaleringsvarselRepository;
-        this.oppfolgingsPeriodeRepository = oppfolgingsPeriodeRepository;
-        this.manuellStatusService = manuellStatusService;
-    }
 
     public List<HistorikkHendelse> hentInstillingsHistorikk(Fnr fnr) {
         AktorId aktorId = authService.getAktorIdOrThrow(fnr);
@@ -109,35 +90,6 @@ public class HistorikkService {
                 .build();
     }
 
-    private List<HistorikkHendelse> tilDTO(EskaleringsvarselEntity data) {
-        val harAvsluttetEskalering = data.getAvsluttetDato() != null;
-
-        val startetEskalering = HistorikkHendelse
-                .builder()
-                .type(ESKALERING_STARTET)
-                .dato(data.getOpprettetDato())
-                .begrunnelse(data.getOpprettetBegrunnelse())
-                .opprettetAv(NAV)
-                .opprettetAvBrukerId(data.getOpprettetAv())
-                .dialogId(data.getTilhorendeDialogId())
-                .build();
-
-        if (harAvsluttetEskalering) {
-            val stoppetEskalering = HistorikkHendelse
-                    .builder()
-                    .type(ESKALERING_STOPPET)
-                    .dato(data.getAvsluttetDato())
-                    .begrunnelse(data.getAvsluttetBegrunnelse())
-                    .opprettetAv(NAV)
-                    .opprettetAvBrukerId(data.getAvsluttetAv())
-                    .dialogId(data.getTilhorendeDialogId())
-                    .build();
-            return Arrays.asList(startetEskalering, stoppetEskalering);
-        } else {
-            return singletonList(startetEskalering);
-        }
-    }
-
     private List<HistorikkHendelse> tilDTO(KvpPeriodeEntity kvp) {
         HistorikkHendelse kvpStart = HistorikkHendelse.builder()
                 .type(KVP_STARTET)
@@ -183,11 +135,6 @@ public class HistorikkService {
                 .map(this::tilDTO)
                 .filter((historikk) -> KvpUtils.sjekkTilgangGittKvp(authService, kvpHistorikk, historikk::getDato));
 
-        Stream <HistorikkHendelse> eskaleringInnstillingHistorikk = eskaleringsvarselRepository.history(aktorId).stream()
-                .map(this::tilDTO)
-                .flatMap(List::stream)
-                .filter((historikk) -> KvpUtils.sjekkTilgangGittKvp(authService, kvpHistorikk, historikk::getDato));
-
         Stream <HistorikkHendelse> enhetEndringHistorikk = oppfolgingsenhetHistorikkRepository.hentOppfolgingsenhetEndringerForAktorId(aktorId)
                 .stream()
                 .map(this::tilDTO)
@@ -198,7 +145,6 @@ public class HistorikkService {
                 kvpInnstillingHistorikk,
                 avluttetOppfolgingInnstillingHistorikk,
                 manuellInnstillingHistorikk,
-                eskaleringInnstillingHistorikk,
                 veilederTilordningerInnstillingHistorikk,
                 enhetEndringHistorikk
         );

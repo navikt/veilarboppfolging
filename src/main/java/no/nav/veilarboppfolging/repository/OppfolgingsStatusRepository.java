@@ -18,8 +18,6 @@ import static no.nav.veilarboppfolging.utils.DbUtils.queryForNullableObject;
 
 @Repository
 public class OppfolgingsStatusRepository {
-
-    static final String GJELDENE_ESKALERINGSVARSEL = "gjeldende_eskaleringsvarsel";
     static final String GJELDENDE_MAL = "gjeldende_mal";
     static final String GJELDENDE_MANUELL_STATUS = "gjeldende_manuell_status";
     static final String AKTOR_ID = "aktor_id";
@@ -73,7 +71,6 @@ public class OppfolgingsStatusRepository {
                 .setAktorId(rs.getString(AKTOR_ID))
                 .setGjeldendeManuellStatusId(rs.getLong(GJELDENDE_MANUELL_STATUS))
                 .setGjeldendeMaalId(rs.getLong(GJELDENDE_MAL))
-                .setGjeldendeEskaleringsvarselId(rs.getLong(GJELDENE_ESKALERINGSVARSEL))
                 .setGjeldendeKvpId(rs.getLong("gjeldende_kvp"))
                 .setVeilederId(rs.getString(VEILEDER))
                 .setUnderOppfolging(rs.getBoolean(UNDER_OPPFOLGING));
