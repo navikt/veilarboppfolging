@@ -60,6 +60,9 @@ spec:
           cluster: dev-gcp
         - application: paw-proxy
           namespace: paw
+        - application: veilarbperson
+          namespace: pto
+          cluster: dev-fss
         - application: veilarbpersonflate
           namespace: poao
           cluster: dev-gcp
