@@ -60,11 +60,17 @@ spec:
           cluster: dev-gcp
         - application: paw-proxy
           namespace: paw
+        - application: veilarbperson
+          namespace: pto
+          cluster: dev-fss
         - application: veilarbpersonflate
           namespace: poao
           cluster: dev-gcp
         - application: veilarbportefoljeflatefs
           namespace: obo
+          cluster: dev-gcp
+        - application: mulighetsrommet-api
+          namespace: team-mulighetsrommet
           cluster: dev-gcp
   vault:
     enabled: true
