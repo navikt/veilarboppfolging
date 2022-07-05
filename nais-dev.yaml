@@ -69,6 +69,9 @@ spec:
         - application: veilarbportefoljeflatefs
           namespace: obo
           cluster: dev-gcp
+        - application: mulighetsrommet-api
+          namespace: team-mulighetsrommet
+          cluster: dev-gcp
   vault:
     enabled: true
     paths:
