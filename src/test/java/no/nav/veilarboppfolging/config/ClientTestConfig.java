@@ -45,7 +45,7 @@ public class ClientTestConfig {
             }
 
             @Override
-            public Enhet hentTilhorendeEnhet(String geografiskOmrade) {
+            public Enhet hentTilhorendeEnhet(String geografiskOmrade, Diskresjonskode diskresjonskode, boolean b) {
                 return null;
             }
 
