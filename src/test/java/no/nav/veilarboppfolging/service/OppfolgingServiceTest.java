@@ -1,6 +1,5 @@
 package no.nav.veilarboppfolging.service;
 
-import io.vavr.collection.Stream;
 import lombok.SneakyThrows;
 import lombok.val;
 import no.nav.common.types.identer.AktorId;
@@ -36,6 +35,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.Matchers.equalTo;

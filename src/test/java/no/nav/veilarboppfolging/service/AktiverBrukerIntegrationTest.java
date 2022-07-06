@@ -1,6 +1,5 @@
 package no.nav.veilarboppfolging.service;
 
-import io.vavr.control.Try;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.client.behandle_arbeidssoker.BehandleArbeidssokerClient;
@@ -18,6 +17,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import java.util.Optional;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -85,8 +85,10 @@ public class AktiverBrukerIntegrationTest {
     public void skalRulleTilbakeDatabaseDersomKallTilArenaFeiler() {
         doThrow(new RuntimeException()).when(behandleArbeidssokerClient).opprettBrukerIArena(any(), any());
 
-        Try<Void> run = Try.run(() -> aktiverBrukerService.aktiverBruker(FNR, Innsatsgruppe.STANDARD_INNSATS));
-        assertThat(run.isFailure()).isTrue();
+        assertThrows(
+                RuntimeException.class,
+                () -> aktiverBrukerService.aktiverBruker(FNR, Innsatsgruppe.STANDARD_INNSATS)
+        );
 
         Optional<Oppfolging> oppfolging = oppfolgingService.hentOppfolging(AKTOR_ID);
 
