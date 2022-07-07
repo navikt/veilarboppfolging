@@ -30,8 +30,6 @@ public class OppfolgingController {
     
     private final AuthService authService;
 
-    private final EskaleringService eskaleringService;
-
     private final ManuellStatusService manuellStatusService;
 
     @GetMapping("/me")
@@ -78,7 +76,7 @@ public class OppfolgingController {
 
         manuellStatusService.oppdaterManuellStatus(
                 fnr, true, dto.begrunnelse,
-                KodeverkBruker.NAV, authService.getInnloggetBrukerIdent()
+                KodeverkBruker.NAV, authService.getInnloggetVeilederIdent()
         );
 
         return tilDto(oppfolgingService.hentOppfolgingsStatus(fnr),  authService.erInternBruker());
@@ -113,26 +111,6 @@ public class OppfolgingController {
     public List<HistorikkHendelse> hentInnstillingsHistorikk(@RequestParam("fnr") Fnr fnr) {
         authService.skalVereInternBruker();
         return historikkService.hentInstillingsHistorikk(fnr);
-    }
-
-    @PostMapping("/startEskalering")
-    public ResponseEntity startEskalering(@RequestBody StartEskaleringDTO startEskalering, @RequestParam("fnr") Fnr fnr) {
-        authService.skalVereInternBruker();
-        eskaleringService.startEskalering(
-                fnr,
-                authService.getInnloggetVeilederIdent(),
-                startEskalering.getBegrunnelse(),
-                startEskalering.getDialogId()
-        );
-
-        return ResponseEntity.status(204).build();
-    }
-
-    @PostMapping("/stoppEskalering")
-    public ResponseEntity stoppEskalering(@RequestBody StoppEskaleringDTO stoppEskalering, @RequestParam("fnr") Fnr fnr) {
-        authService.skalVereInternBruker();
-        eskaleringService.stoppEskalering(fnr, authService.getInnloggetVeilederIdent(), stoppEskalering.getBegrunnelse());
-        return ResponseEntity.status(204).build();
     }
 
     @PostMapping("/startKvp")

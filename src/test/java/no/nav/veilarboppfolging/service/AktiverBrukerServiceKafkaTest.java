@@ -1,7 +1,7 @@
 package no.nav.veilarboppfolging.service;
 
 import lombok.SneakyThrows;
-import no.nav.common.client.aktorregister.AktorregisterClient;
+import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.kafka.consumer.ConsumeStatus;
 import no.nav.common.kafka.consumer.KafkaConsumerClient;
 import no.nav.common.kafka.consumer.util.KafkaConsumerClientBuilder;
@@ -24,9 +24,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.kafka.test.EmbeddedKafkaBroker;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
-import org.testcontainers.containers.KafkaContainer;
 
 import javax.sql.DataSource;
 import java.util.HashMap;
@@ -47,10 +47,13 @@ import static org.mockito.Mockito.when;
 public class AktiverBrukerServiceKafkaTest {
 
     @MockBean
-    AktorregisterClient aktorregisterClient;
+    AktorOppslagClient aktorOppslagClient;
+
+    @MockBean
+    MetricsService metricsService;
 
     @Autowired
-    KafkaContainer kafkaContainer;
+    EmbeddedKafkaBroker kafkaContainer;
 
     @Autowired
     DataSource dataSource;
@@ -85,11 +88,11 @@ public class AktiverBrukerServiceKafkaTest {
         aktiverArbeidssokerData.setFnr(new AktiverArbeidssokerData.Fnr(fnr.get()));
         aktiverArbeidssokerData.setInnsatsgruppe(innsatsgruppe);
 
-        when(aktorregisterClient.hentAktorId(fnr)).thenReturn(aktorId);
-        when(aktorregisterClient.hentFnr(aktorId)).thenReturn(fnr);
+        when(aktorOppslagClient.hentAktorId(fnr)).thenReturn(aktorId);
+        when(aktorOppslagClient.hentFnr(aktorId)).thenReturn(fnr);
 
         consumerClient = KafkaConsumerClientBuilder.builder()
-                .withProperties(kafkaTestConsumerProperties(kafkaContainer.getBootstrapServers()))
+                .withProperties(kafkaTestConsumerProperties(kafkaContainer.getBrokersAsString()))
                 .withTopicConfig(
                         new KafkaConsumerClientBuilder.TopicConfig<String, OppfolgingStartetV1>()
                                 .withConsumerConfig(

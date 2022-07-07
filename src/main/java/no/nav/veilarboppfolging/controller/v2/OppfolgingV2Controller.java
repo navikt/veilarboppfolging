@@ -8,6 +8,8 @@ import no.nav.veilarboppfolging.controller.response.OppfolgingPeriodeDTO;
 import no.nav.veilarboppfolging.controller.response.OppfolgingPeriodeMinimalDTO;
 import no.nav.veilarboppfolging.controller.v2.request.AvsluttOppfolgingV2Request;
 import no.nav.veilarboppfolging.controller.v2.response.UnderOppfolgingV2Response;
+import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity;
+import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
 import no.nav.veilarboppfolging.service.AuthService;
 import no.nav.veilarboppfolging.service.OppfolgingService;
 import no.nav.veilarboppfolging.utils.DtoMappers;
@@ -30,10 +32,25 @@ public class OppfolgingV2Controller {
 
     private final AuthService authService;
 
+    @GetMapping(params = "fnr")
+    public UnderOppfolgingV2Response underOppfolging(@RequestParam(value = "fnr") Fnr fnr) {
+        return new UnderOppfolgingV2Response(oppfolgingService.erUnderOppfolging(fnr));
+    }
+
+    @GetMapping(params = "aktorId")
+    public UnderOppfolgingV2Response underOppfolging(@RequestParam(value = "aktorId") AktorId aktorId) {
+        Fnr fnr = authService.getFnrOrThrow(aktorId);
+        return underOppfolging(fnr);
+    }
+
     @GetMapping
-    public UnderOppfolgingV2Response underOppfolging(@RequestParam(value = "fnr", required = false) Fnr fnr) {
-        Fnr fodselsnummer = authService.hentIdentFraQueryParamEllerToken(fnr);
-        return new UnderOppfolgingV2Response(oppfolgingService.erUnderOppfolging(fodselsnummer));
+    public UnderOppfolgingV2Response underOppfolging() {
+        boolean erEksternBruker = authService.erEksternBruker();
+        if (!erEksternBruker) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Som internbruker/systembruker er aktorId eller fnr påkrevd");
+        }
+        Fnr fnr = Fnr.of(authService.getInnloggetBrukerIdent());
+        return underOppfolging(fnr);
     }
 
     @PostMapping("/start")
@@ -59,7 +76,7 @@ public class OppfolgingV2Controller {
     }
 
     @GetMapping("/periode/{uuid}")
-    public OppfolgingPeriodeMinimalDTO hentOppfolgingsPeriode(@PathVariable("uuid") String uuid){
+    public OppfolgingPeriodeMinimalDTO hentOppfolgingsPeriode(@PathVariable("uuid") String uuid) {
         var maybePeriode = oppfolgingService.hentOppfolgingsperiode(uuid);
 
         if (maybePeriode.isEmpty()) {
@@ -83,13 +100,38 @@ public class OppfolgingV2Controller {
                 .orElse(new ResponseEntity<>(HttpStatus.NO_CONTENT));
     }
 
-    @GetMapping("/perioder")
+    @GetMapping(value = "/perioder", params = "fnr")
     public List<OppfolgingPeriodeDTO> hentOppfolgingsperioder(@RequestParam("fnr") Fnr fnr) {
-        authService.skalVereSystemBruker();
+        AktorId aktorId = authService.getAktorIdOrThrow(fnr);
+        return hentOppfolgingsperioder(aktorId);
+    }
 
-        return oppfolgingService.hentOppfolgingsperioder(fnr)
+    @GetMapping(value = "/perioder", params = "aktorId")
+    public List<OppfolgingPeriodeDTO> hentOppfolgingsperioder(@RequestParam("aktorId") AktorId aktorId) {
+        return oppfolgingService.hentOppfolgingsperioder(aktorId)
                 .stream()
-                .map(op -> tilOppfolgingPeriodeDTO(op, true))
+                .map(this::filtrerKvpPerioder)
+                .map(this::mapTilDto)
                 .collect(Collectors.toList());
     }
+
+    private OppfolgingPeriodeDTO mapTilDto(OppfolgingsperiodeEntity oppfolgingsperiode) {
+        return tilOppfolgingPeriodeDTO(oppfolgingsperiode, !authService.erEksternBruker());
+    }
+
+    private OppfolgingsperiodeEntity filtrerKvpPerioder(OppfolgingsperiodeEntity periode) {
+        if(!authService.erInternBruker() || periode.getKvpPerioder() == null || periode.getKvpPerioder().isEmpty()) {
+            return  periode;
+        }
+
+        List<KvpPeriodeEntity> kvpPeriodeEntities = periode
+                .getKvpPerioder()
+                .stream()
+                .filter(it -> authService.harTilgangTilEnhet(it.getEnhet()))
+                .collect(Collectors.toList());
+
+        return periode.toBuilder().kvpPerioder(kvpPeriodeEntities).build();
+    }
+
+
 }

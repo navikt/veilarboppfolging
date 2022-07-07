@@ -1,6 +1,7 @@
 package no.nav.veilarboppfolging.controller.v2;
 
 import lombok.RequiredArgsConstructor;
+import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.controller.request.VeilederTilordning;
 import no.nav.veilarboppfolging.controller.response.TilordneVeilederResponse;
@@ -21,7 +22,7 @@ public class VeilederV2Controller {
 
     private final AuthService authService;
 
-    @GetMapping
+    @GetMapping(params = "fnr")
     public ResponseEntity<HentVeilederV2Response> hentVeileder(@RequestParam("fnr") Fnr fnr) {
         authService.skalVereInternEllerSystemBruker();
 
@@ -36,6 +37,12 @@ public class VeilederV2Controller {
         }
 
         return ResponseEntity.ok(new HentVeilederV2Response(maybeVeilederIdent.get()));
+    }
+
+    @GetMapping(params = "aktorId")
+    public ResponseEntity<HentVeilederV2Response> hentVeileder(@RequestParam("aktorId") AktorId aktorId) {
+        Fnr fnr = authService.getFnrOrThrow(aktorId);
+        return hentVeileder(fnr);
     }
 
     @PostMapping("/tilordne")

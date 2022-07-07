@@ -13,6 +13,7 @@ import no.nav.common.health.HealthCheckResult;
 import no.nav.common.job.leader_election.LeaderElectionClient;
 import no.nav.common.sts.OpenAmSystemUserTokenProvider;
 import no.nav.common.sts.SystemUserTokenProvider;
+import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
 import no.nav.common.utils.Credentials;
 import no.nav.veilarboppfolging.mock.PepMock;
 import no.nav.veilarboppfolging.test.DbTestUtils;
@@ -23,6 +24,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.kafka.test.EmbeddedKafkaBroker;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.sql.DataSource;
@@ -33,7 +35,6 @@ import static org.mockito.Mockito.when;
 @Configuration
 @EnableConfigurationProperties({EnvironmentProperties.class})
 @Import({
-        SwaggerConfig.class,
         ClientTestConfig.class,
         ControllerTestConfig.class,
         RepositoryTestConfig.class,
@@ -54,6 +55,11 @@ public class ApplicationTestConfig {
     @Bean
     public AuthContextHolder authContextHolder() {
         return AuthContextHolderThreadLocal.instance();
+    }
+
+    @Bean
+    public AzureAdOnBehalfOfTokenClient azureAdOnBehalfOfTokenClient() {
+        return mock(AzureAdOnBehalfOfTokenClient.class);
     }
 
     @Bean
@@ -117,5 +123,6 @@ public class ApplicationTestConfig {
     public LeaderElectionClient leaderElectionClient() {
         return () -> true;
     }
+
 
 }

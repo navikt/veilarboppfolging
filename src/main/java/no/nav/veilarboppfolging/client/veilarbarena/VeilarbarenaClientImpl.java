@@ -7,11 +7,14 @@ import no.nav.common.health.HealthCheckUtils;
 import no.nav.common.rest.client.RestClient;
 import no.nav.common.rest.client.RestUtils;
 import no.nav.common.types.identer.Fnr;
+import no.nav.common.utils.EnvironmentUtils;
+import no.nav.veilarboppfolging.utils.DownstreamApi;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static no.nav.common.utils.UrlUtils.joinPaths;
@@ -22,16 +25,21 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @Slf4j
 public class VeilarbarenaClientImpl implements VeilarbarenaClient {
 
+    private static final DownstreamApi veilarbArenaApi = new DownstreamApi(EnvironmentUtils.requireClusterName(), "pto", "veilarbarena");
+
     private final String veilarbarenaUrl;
 
     private final Supplier<String> userTokenProvider;
 
+    private final Function<DownstreamApi, Optional<String>> aadOboTokenProvider;
+
     private final OkHttpClient client;
 
-    public VeilarbarenaClientImpl(String veilarbarenaUrl, Supplier<String> userTokenProvider) {
+    public VeilarbarenaClientImpl(String veilarbarenaUrl, Supplier<String> userTokenProvider, Function<DownstreamApi, Optional<String>> aadOboTokenProvider) {
         this.veilarbarenaUrl = veilarbarenaUrl;
         this.userTokenProvider = userTokenProvider;
         this.client = RestClient.baseClient();
+        this.aadOboTokenProvider = aadOboTokenProvider;
     }
 
     @Override
@@ -39,7 +47,7 @@ public class VeilarbarenaClientImpl implements VeilarbarenaClient {
         Request request = new Request.Builder()
                 .url(joinPaths(veilarbarenaUrl, "/api/oppfolgingsbruker/" + fnr.get()))
                 .header(ACCEPT, APPLICATION_JSON_VALUE)
-                .header(AUTHORIZATION, "Bearer " + userTokenProvider.get())
+                .header(AUTHORIZATION, "Bearer " + aadOboTokenProvider.apply(veilarbArenaApi).orElseGet(userTokenProvider))
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
@@ -60,7 +68,7 @@ public class VeilarbarenaClientImpl implements VeilarbarenaClient {
         Request request = new Request.Builder()
                 .url(joinPaths(veilarbarenaUrl, "/api/oppfolgingsstatus/" + fnr.get()))
                 .header(ACCEPT, APPLICATION_JSON_VALUE)
-                .header(AUTHORIZATION, "Bearer " + userTokenProvider.get())
+                .header(AUTHORIZATION, "Bearer " + aadOboTokenProvider.apply(veilarbArenaApi).orElseGet(userTokenProvider))
                 .build();
 
         try (Response response = client.newCall(request).execute()) {

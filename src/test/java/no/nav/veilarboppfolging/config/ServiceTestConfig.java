@@ -12,7 +12,6 @@ import org.springframework.context.annotation.Import;
         HistorikkService.class,
         IservService.class,
         KvpService.class,
-        EskaleringService.class,
         MaalService.class,
         ManuellStatusService.class,
         MetricsService.class,

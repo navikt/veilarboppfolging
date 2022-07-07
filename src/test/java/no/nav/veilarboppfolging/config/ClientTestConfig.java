@@ -1,26 +1,24 @@
 package no.nav.veilarboppfolging.config;
 
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.client.aktoroppslag.BrukerIdenter;
-import no.nav.common.client.aktorregister.AktorregisterClient;
+import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.client.norg2.Enhet;
 import no.nav.common.client.norg2.Norg2Client;
 import no.nav.common.health.HealthCheckResult;
 import no.nav.common.metrics.Event;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.types.identer.AktorId;
-import no.nav.common.types.identer.EksternBrukerId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.client.behandle_arbeidssoker.BehandleArbeidssokerClient;
 import no.nav.veilarboppfolging.client.dkif.DkifClient;
 import no.nav.veilarboppfolging.client.dkif.DkifKontaktinfo;
-import no.nav.veilarboppfolging.client.varseloppgave.VarseloppgaveClient;
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolging;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
 import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktClient;
 import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktResponse;
 import no.nav.veilarboppfolging.controller.request.Innsatsgruppe;
+import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -47,7 +45,7 @@ public class ClientTestConfig {
             }
 
             @Override
-            public Enhet hentTilhorendeEnhet(String geografiskOmrade) {
+            public Enhet hentTilhorendeEnhet(String geografiskOmrade, Diskresjonskode diskresjonskode, boolean b) {
                 return null;
             }
 
@@ -59,50 +57,16 @@ public class ClientTestConfig {
     }
 
     @Bean
-    public AktorregisterClient aktorregisterClient() {
-        return new AktorregisterClient() {
-            @Override
-            public Fnr hentFnr(AktorId aktorId) {
-                return Fnr.of("fnr-" + aktorId.get());
-            }
-
-            @Override
-            public AktorId hentAktorId(Fnr fnr) {
-                return new AktorId("aktorId-" + fnr.get());
-            }
-
-            @Override
-            public Map<AktorId, Fnr> hentFnrBolk(List<AktorId> list) {
-                return null;
-            }
-
-            @Override
-            public Map<Fnr, AktorId> hentAktorIdBolk(List<Fnr> list) {
-                return null;
-            }
-
-            @Override
-            public BrukerIdenter hentIdenter(EksternBrukerId brukerId) {
-                return null;
-            }
-
-            @Override
-            public List<AktorId> hentAktorIder(Fnr fnr) {
-                return List.of(new AktorId(fnr.get()), new AktorId("1000010101001"));
-            }
-
-            @Override
-            public HealthCheckResult checkHealth() {
-                return HealthCheckResult.healthy();
-            }
-        };
+    public AktorOppslagClient aktorOppslagClient() {
+        return Mockito.mock(AktorOppslagClient.class);
     }
 
     @Bean
     public MetricsClient metricsClient() {
         return new MetricsClient() {
             @Override
-            public void report(Event event) {}
+            public void report(Event event) {
+            }
 
             @Override
             public void report(String name, Map<String, Object> fields, Map<String, String> tags, long l) {
@@ -137,21 +101,6 @@ public class ClientTestConfig {
             @Override
             public Optional<DkifKontaktinfo> hentKontaktInfo(Fnr fnr) {
                 return Optional.empty();
-            }
-
-            @Override
-            public HealthCheckResult checkHealth() {
-                return HealthCheckResult.healthy();
-            }
-        };
-    }
-
-    @Bean
-    public VarseloppgaveClient varseloppgaveClient() {
-        return new VarseloppgaveClient() {
-            @Override
-            public void sendEskaleringsvarsel(AktorId aktorId, long dialogId) {
-
             }
 
             @Override

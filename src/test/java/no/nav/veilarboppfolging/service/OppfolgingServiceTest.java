@@ -1,6 +1,5 @@
 package no.nav.veilarboppfolging.service;
 
-import io.vavr.collection.Stream;
 import lombok.SneakyThrows;
 import lombok.val;
 import no.nav.common.types.identer.AktorId;
@@ -36,6 +35,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.Matchers.equalTo;
@@ -59,7 +59,6 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     private KafkaProducerService kafkaProducerService = mock(KafkaProducerService.class);
     private YtelseskontraktClient ytelseskontraktClient = mock(YtelseskontraktClient.class);
     private ArenaOppfolgingService arenaOppfolgingService = mock(ArenaOppfolgingService.class);
-    private EskaleringService eskaleringService = mock(EskaleringService.class);
     private KvpService kvpService = mock(KvpService.class);
     private KvpRepository kvpRepository = mock(KvpRepository.class);
     private MetricsService metricsService = mock(MetricsService.class);
@@ -87,8 +86,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
                 oppfolgingsStatusRepository,
                 oppfolgingsPeriodeRepository,
                 manuellStatusService,
-                eskaleringService,
-                null,
+
                 kvpRepository,
                 null,
                 null,
@@ -140,7 +138,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         oppfolgingService.avsluttOppfolging(FNR, VEILEDER, "");
 
         verify(kafkaProducerService).publiserOppfolgingAvsluttet(AKTOR_ID);
-        verify(kafkaProducerService).publiserSisteOppfolgingsperiode(any(SisteOppfolgingsperiodeV1.class));
+        verify(kafkaProducerService).publiserOppfolgingsperiode(any(SisteOppfolgingsperiodeV1.class));
         verify(kafkaProducerService).publiserVeilederTilordnet(AKTOR_ID, null);
         verify(kafkaProducerService).publiserEndringPaNyForVeileder(AKTOR_ID, false);
         verify(kafkaProducerService).publiserEndringPaManuellStatus(AKTOR_ID, false);

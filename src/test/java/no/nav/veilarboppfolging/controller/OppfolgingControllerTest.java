@@ -41,9 +41,6 @@ public class OppfolgingControllerTest {
     private HistorikkService historikkService;
 
     @MockBean
-    private EskaleringService eskaleringService;
-
-    @MockBean
     private ManuellStatusService manuellStatusService;
 
     @Test

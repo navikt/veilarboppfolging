@@ -5,7 +5,7 @@ import no.nav.common.abac.Pep;
 import no.nav.common.abac.domain.request.ActionId;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
-import no.nav.common.client.aktorregister.AktorregisterClient;
+import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.config.ApplicationTestConfig;
@@ -15,6 +15,7 @@ import no.nav.veilarboppfolging.controller.request.Innsatsgruppe;
 import no.nav.veilarboppfolging.controller.response.OppfolgingPeriodeDTO;
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
 import no.nav.veilarboppfolging.service.AuthService;
+import no.nav.veilarboppfolging.service.MetricsService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,13 +48,16 @@ class OppfolgingControllerIntegrationTest {
     AuthContextHolder authContextHolder;
 
     @MockBean
+    AzureAdOnBehalfOfTokenClient azureAdOnBehalfOfTokenClient;
+
+    @MockBean
     EnvironmentProperties environmentProperties;
 
     @Autowired
     AktorOppslagClient aktorOppslagClient;
 
     @MockBean
-    AktorregisterClient aktorregisterClient;
+    MetricsService metricsService;
 
     @Autowired
     AuthService authService;

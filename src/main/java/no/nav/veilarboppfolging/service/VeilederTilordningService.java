@@ -59,9 +59,10 @@ public class VeilederTilordningService {
         AktorId aktorId = authService.getAktorIdOrThrow(fnr);
 
         return veilederTilordningerRepository.hentTilordnetVeileder(aktorId)
-                .map((v) -> NavIdent.of(v.getVeilederId()));
+                .flatMap(v -> Optional.ofNullable(v.getVeilederId()))
+                .map(NavIdent::of);
     }
-
+    
     public TilordneVeilederResponse tilordneVeiledere(List<VeilederTilordning> tilordninger) {
         authService.skalVereInternBruker();
         String innloggetVeilederId = authService.getInnloggetVeilederIdent();

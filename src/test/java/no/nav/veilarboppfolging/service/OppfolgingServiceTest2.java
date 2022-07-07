@@ -103,7 +103,7 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
                 null, null, null, authService,
                 oppfolgingsStatusRepository, oppfolgingsPeriodeRepository,
                 manuellStatusService,
-                null, new EskaleringsvarselRepository(db, transactor),
+
                 new KvpRepository(db, transactor), maalRepository,
                 new BrukerOppslagFlereOppfolgingAktorRepository(db), null, transactor);
 
