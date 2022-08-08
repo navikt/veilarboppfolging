@@ -30,12 +30,12 @@ import static no.nav.common.utils.UrlUtils.*;
 @Configuration
 public class ClientConfig {
 
-
     @Bean
     public AktorOppslagClient aktorOppslagClient(SystemUserTokenProvider systemUserTokenProvider) {
+        final String PDL_URL = "pdl-api";
         String pdlUrl = isProduction()
-                ? createProdInternalIngressUrl("pdl-api")
-                : createDevInternalIngressUrl("pdl-api-q1");
+                ? createProdInternalIngressUrl(PDL_URL)
+                : createDevInternalIngressUrl(PDL_URL);
 
         PdlClientImpl pdlClient = new PdlClientImpl(
                 pdlUrl,
