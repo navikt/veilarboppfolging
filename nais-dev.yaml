@@ -72,6 +72,9 @@ spec:
         - application: mulighetsrommet-api
           namespace: team-mulighetsrommet
           cluster: dev-gcp
+        - application: modia-robot-api
+          namespace: personoversikt
+          cluster: dev-fss
   vault:
     enabled: true
     paths:
