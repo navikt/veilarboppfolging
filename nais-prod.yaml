@@ -6,7 +6,7 @@ metadata:
   labels:
     team: pto
 spec:
-  image: docker.pkg.github.com/navikt/veilarboppfolging/veilarboppfolging:{{version}}
+  image: ghcr.io/navikt/veilarboppfolging/veilarboppfolging:{{version}}
   ingresses:
     - https://veilarboppfolging.prod-fss-pub.nais.io
     - https://veilarboppfolging.nais.adeo.no
