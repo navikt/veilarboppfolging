@@ -67,6 +67,9 @@ spec:
         - application: veilarbportefoljeflatefs
           namespace: obo
           cluster: prod-gcp
+        - application: modia-robot-api
+          namespace: personoversikt
+          cluster: prod-fss
   vault:
     enabled: true
     paths:
