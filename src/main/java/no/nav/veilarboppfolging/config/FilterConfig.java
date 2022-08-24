@@ -44,6 +44,13 @@ public class FilterConfig {
                 .withUserRole(UserRole.SYSTEM);
     }
 
+    private OidcAuthenticatorConfig tokenxAuthConfig(EnvironmentProperties properties) {
+        return new OidcAuthenticatorConfig()
+                .withDiscoveryUrl(properties.getTokenxDiscoveryUrl())
+                .withClientId(properties.getTokenxClientId())
+                .withUserRole(UserRole.EKSTERN);
+    }
+
     private OidcAuthenticatorConfig openAmAuthConfig(EnvironmentProperties properties) {
         List<String> clientIds = List.of(
                 properties.getVeilarbloginOpenAmClientId(),
@@ -104,7 +111,8 @@ public class FilterConfig {
                         loginserviceIdportenConfig(properties),
                         openAmStsAuthConfig(properties),
                         naisStsAuthConfig(properties),
-                        naisAzureAdConfig(properties)
+                        naisAzureAdConfig(properties),
+                        tokenxAuthConfig(properties)
                 )
         );
 

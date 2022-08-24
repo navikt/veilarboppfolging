@@ -38,6 +38,11 @@ public class EnvironmentProperties {
     private String naisAadIssuer;
 
 
+    private String tokenxClientId;
+
+    private String tokenxDiscoveryUrl;
+
+
     private String loginserviceIdportenAudience;
 
     private String loginserviceIdportenDiscoveryUrl;

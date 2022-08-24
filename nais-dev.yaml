@@ -46,6 +46,8 @@ spec:
       claims:
         extra:
           - "NAVident"
+  tokenx:
+    enabled: true
   accessPolicy:
     inbound:
       rules:
