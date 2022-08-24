@@ -66,14 +66,6 @@ public class FilterConfig {
                 .withUserRole(UserRole.INTERN);
     }
 
-    private OidcAuthenticatorConfig azureAdAuthConfig(EnvironmentProperties properties) {
-        return new OidcAuthenticatorConfig()
-                .withDiscoveryUrl(properties.getAadDiscoveryUrl())
-                .withClientId(properties.getVeilarbloginAadClientId())
-                .withIdTokenCookieName(AZURE_AD_ID_TOKEN_COOKIE_NAME)
-                .withUserRole(UserRole.INTERN);
-    }
-
     private OidcAuthenticatorConfig loginserviceIdportenConfig(EnvironmentProperties properties) {
         return new OidcAuthenticatorConfig()
                 .withDiscoveryUrl(properties.getLoginserviceIdportenDiscoveryUrl())
@@ -107,7 +99,6 @@ public class FilterConfig {
         OidcAuthenticationFilter authenticationFilter = new OidcAuthenticationFilter(
                 fromConfigs(
                         openAmAuthConfig(properties),
-                        azureAdAuthConfig(properties),
                         loginserviceIdportenConfig(properties),
                         openAmStsAuthConfig(properties),
                         naisStsAuthConfig(properties),
