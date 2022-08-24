@@ -81,7 +81,7 @@ public class VeilederTilordningService {
                 tilordning.setAktoerId(aktorId.get());
                 String eksisterendeVeileder = veilederTilordningerRepository.hentTilordningForAktoer(aktorId);
 
-                feilendeTilordninger = tildelVeileder(feilendeTilordninger, tilordning, aktorId, eksisterendeVeileder);
+                feilendeTilordninger = tildelVeileder(feilendeTilordninger, tilordning, aktorId, eksisterendeVeileder, innloggetVeilederId);
             } catch (Exception e) {
                 feilendeTilordninger.add(tilordning);
                 loggFeilOppfolging(e, tilordning);
@@ -116,10 +116,10 @@ public class VeilederTilordningService {
                 .ifPresent(i -> kafkaProducerService.publiserEndringPaNyForVeileder(aktorId, false));
     }
 
-    private List<VeilederTilordning> tildelVeileder(List<VeilederTilordning> feilendeTilordninger, VeilederTilordning tilordning, AktorId aktorId, String eksisterendeVeileder) {
+    private List<VeilederTilordning> tildelVeileder(List<VeilederTilordning> feilendeTilordninger, VeilederTilordning tilordning, AktorId aktorId, String eksisterendeVeileder, String innloggetVeilederId) {
         if (kanTilordneVeileder(eksisterendeVeileder, tilordning)) {
             if (nyVeilederHarTilgang(tilordning)) {
-                skrivTilDatabase(aktorId, tilordning.getTilVeilederId());
+                skrivTilDatabase(aktorId, tilordning.getTilVeilederId(), innloggetVeilederId);
             } else {
                 log.info("Aktoerid {} kunne ikke tildeles. Ny veileder {} har ikke tilgang.", aktorId, tilordning.getTilVeilederId());
                 feilendeTilordninger.add(tilordning);
@@ -154,10 +154,10 @@ public class VeilederTilordningService {
         return authService.getInnloggetVeilederIdent().equals(tilordning.getVeilederId());
     }
 
-    private void skrivTilDatabase(AktorId aktorId, String veilederId) {
+    private void skrivTilDatabase(AktorId aktorId, String veilederId, String tilordnetAvVeileder) {
         transactor.executeWithoutResult((status) -> {
             veilederTilordningerRepository.upsertVeilederTilordning(aktorId, veilederId);
-            veilederHistorikkRepository.insertTilordnetVeilederForAktorId(aktorId, veilederId);
+            veilederHistorikkRepository.insertTilordnetVeilederForAktorId(aktorId, veilederId, tilordnetAvVeileder);
 
             boolean skalAutomatiskStarteOppfolging =
                     !unleashService.skalIkkeAutomatiskStarteOppfolgingVedTilordningAvVeileder();
