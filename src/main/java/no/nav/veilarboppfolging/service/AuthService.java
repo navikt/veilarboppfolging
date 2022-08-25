@@ -30,14 +30,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
 import static java.lang.String.format;
-import static java.util.Collections.emptyList;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 import static no.nav.common.abac.XacmlRequestBuilder.lagEnvironment;
@@ -146,21 +144,7 @@ public class AuthService {
     private void sjekkTilgang(ActionId actionId, AktorId aktorId) {
         Optional<NavIdent> navident = getNavIdentClaimHvisTilgjengelig();
 
-        if (erSystemBruker()) {
-            boolean erApplikasjon = authContextHolder.getIdTokenClaims().map(x -> {
-                        try {
-                            return x.getStringArrayClaim("roles");
-                        } catch (ParseException e) {
-                            return emptyList();
-                        }
-                    })
-                    .map(Arrays::asList)
-                    .map(x -> x.contains("access_as_application"))
-                    .orElse(false);
-            if (!erApplikasjon) {
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN);
-            }
-        } else if (navident.isEmpty()) {
+        if (navident.isEmpty()) {
             if (!veilarbPep.harTilgangTilPerson(getInnloggetBrukerToken(), actionId, aktorId)) {
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN);
             }
