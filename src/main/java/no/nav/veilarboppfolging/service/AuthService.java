@@ -112,16 +112,15 @@ public class AuthService {
 
     public boolean harAADRolleForSystemTilSystemTilgang() {
         return authContextHolder.getIdTokenClaims()
-                .map(claims -> {
+                .flatMap(claims -> {
                     try {
-                        return claims.getStringArrayClaim("roles");
+                        return Optional.ofNullable(claims.getStringListClaim("roles"));
                     } catch (ParseException e) {
-                        return emptyList();
+                        return Optional.empty();
                     }
                 })
-                .map(Arrays::asList)
-                .map(roles -> roles.contains("access_as_application"))
-                .orElse(false);
+                .orElse(emptyList())
+                .contains("access_as_application");
     }
 
     public boolean erEksternBruker() {
