@@ -34,7 +34,7 @@ public class OppfolgingV2Controller {
 
     @GetMapping(params = "fnr")
     public UnderOppfolgingV2Response underOppfolging(@RequestParam(value = "fnr") Fnr fnr) {
-        if (!authService.erSystemBrukerAzureAd()) {
+        if (!authService.erSystemBruker() && !authService.harAADRolleForSystemTilSystemTilgang()) {
             authService.sjekkLesetilgangMedFnr(fnr);
         }
         return new UnderOppfolgingV2Response(oppfolgingService.erUnderOppfolging(fnr));
@@ -43,7 +43,7 @@ public class OppfolgingV2Controller {
     @GetMapping(params = "aktorId")
     public UnderOppfolgingV2Response underOppfolging(@RequestParam(value = "aktorId") AktorId aktorId) {
         Fnr fnr = authService.getFnrOrThrow(aktorId);
-        if (!authService.erSystemBrukerAzureAd()) {
+        if (!authService.erSystemBruker() && !authService.harAADRolleForSystemTilSystemTilgang()) {
             authService.sjekkLesetilgangMedAktorId(aktorId);
         }
         return new UnderOppfolgingV2Response(oppfolgingService.erUnderOppfolging(fnr));

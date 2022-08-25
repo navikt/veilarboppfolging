@@ -85,7 +85,7 @@ public class AuthService {
     }
 
     public void skalVereInternEllerSystemBruker() {
-        if (!authContextHolder.erInternBruker() && !authContextHolder.erSystemBruker() && !erSystemBrukerAzureAd()) {
+        if (!authContextHolder.erInternBruker() && !authContextHolder.erSystemBruker()) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bruker er verken en intern eller system bruker");
         }
     }
@@ -110,7 +110,7 @@ public class AuthService {
         return authContextHolder.erSystemBruker();
     }
 
-    public boolean erSystemBrukerAzureAd() {
+    public boolean harAADRolleForSystemTilSystemTilgang() {
         return authContextHolder.getIdTokenClaims()
                 .map(claims -> {
                     try {
