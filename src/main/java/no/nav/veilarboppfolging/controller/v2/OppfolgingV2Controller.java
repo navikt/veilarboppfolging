@@ -49,12 +49,13 @@ public class OppfolgingV2Controller {
 
     @GetMapping
     public UnderOppfolgingV2Response underOppfolging() {
-        boolean erEksternBruker = authService.erEksternBruker();
-        if (!erEksternBruker) {
+        if (!authService.erEksternBruker()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Som internbruker/systembruker er aktorId eller fnr påkrevd");
         }
+
         Fnr fnr = Fnr.of(authService.getInnloggetBrukerIdent());
-        return underOppfolging(fnr);
+
+        return new UnderOppfolgingV2Response(oppfolgingService.erUnderOppfolging(fnr));
     }
 
     @PostMapping("/start")
