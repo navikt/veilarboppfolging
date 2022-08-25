@@ -34,7 +34,7 @@ public class OppfolgingV2Controller {
 
     @GetMapping(params = "fnr")
     public UnderOppfolgingV2Response underOppfolging(@RequestParam(value = "fnr") Fnr fnr) {
-        boolean harTilgangSomAADSystembruker = authService.erSystemBruker() && !authService.harAADRolleForSystemTilSystemTilgang();
+        boolean harTilgangSomAADSystembruker = authService.erSystemBruker() && authService.harAADRolleForSystemTilSystemTilgang();
         if (!harTilgangSomAADSystembruker) {
             authService.sjekkLesetilgangMedFnr(fnr);
         }
