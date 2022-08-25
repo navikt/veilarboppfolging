@@ -112,15 +112,15 @@ public class AuthService {
 
     public boolean erSystemBrukerAzureAd() {
         return authContextHolder.getIdTokenClaims()
-                .map(x -> {
+                .map(claims -> {
                     try {
-                        return x.getStringArrayClaim("roles");
+                        return claims.getStringArrayClaim("roles");
                     } catch (ParseException e) {
                         return emptyList();
                     }
                 })
                 .map(Arrays::asList)
-                .map(x -> x.contains("access_as_application"))
+                .map(roles -> roles.contains("access_as_application"))
                 .orElse(false);
     }
 
