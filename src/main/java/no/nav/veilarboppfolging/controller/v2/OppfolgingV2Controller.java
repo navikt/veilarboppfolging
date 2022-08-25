@@ -34,13 +34,19 @@ public class OppfolgingV2Controller {
 
     @GetMapping(params = "fnr")
     public UnderOppfolgingV2Response underOppfolging(@RequestParam(value = "fnr") Fnr fnr) {
+        if (!authService.erSystemBrukerAzureAd()) {
+            authService.sjekkLesetilgangMedFnr(fnr);
+        }
         return new UnderOppfolgingV2Response(oppfolgingService.erUnderOppfolging(fnr));
     }
 
     @GetMapping(params = "aktorId")
     public UnderOppfolgingV2Response underOppfolging(@RequestParam(value = "aktorId") AktorId aktorId) {
         Fnr fnr = authService.getFnrOrThrow(aktorId);
-        return underOppfolging(fnr);
+        if (!authService.erSystemBrukerAzureAd()) {
+            authService.sjekkLesetilgangMedAktorId(aktorId);
+        }
+        return new UnderOppfolgingV2Response(oppfolgingService.erUnderOppfolging(fnr));
     }
 
     @GetMapping
@@ -120,8 +126,8 @@ public class OppfolgingV2Controller {
     }
 
     private OppfolgingsperiodeEntity filtrerKvpPerioder(OppfolgingsperiodeEntity periode) {
-        if(!authService.erInternBruker() || periode.getKvpPerioder() == null || periode.getKvpPerioder().isEmpty()) {
-            return  periode;
+        if (!authService.erInternBruker() || periode.getKvpPerioder() == null || periode.getKvpPerioder().isEmpty()) {
+            return periode;
         }
 
         List<KvpPeriodeEntity> kvpPeriodeEntities = periode

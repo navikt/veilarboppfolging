@@ -30,12 +30,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
 import static java.lang.String.format;
+import static java.util.Collections.emptyList;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 import static no.nav.common.abac.XacmlRequestBuilder.lagEnvironment;
@@ -83,7 +85,7 @@ public class AuthService {
     }
 
     public void skalVereInternEllerSystemBruker() {
-        if (!authContextHolder.erInternBruker() && !authContextHolder.erSystemBruker()) {
+        if (!authContextHolder.erInternBruker() && !authContextHolder.erSystemBruker() && !erSystemBrukerAzureAd()) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bruker er verken en intern eller system bruker");
         }
     }
@@ -106,6 +108,20 @@ public class AuthService {
 
     public boolean erSystemBruker() {
         return authContextHolder.erSystemBruker();
+    }
+
+    public boolean erSystemBrukerAzureAd() {
+        return authContextHolder.getIdTokenClaims()
+                .map(x -> {
+                    try {
+                        return x.getStringArrayClaim("roles");
+                    } catch (ParseException e) {
+                        return emptyList();
+                    }
+                })
+                .map(Arrays::asList)
+                .map(x -> x.contains("access_as_application"))
+                .orElse(false);
     }
 
     public boolean erEksternBruker() {
