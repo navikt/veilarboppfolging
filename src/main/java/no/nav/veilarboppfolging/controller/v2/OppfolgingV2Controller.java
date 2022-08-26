@@ -34,6 +34,10 @@ public class OppfolgingV2Controller {
 
     @GetMapping(params = "fnr")
     public UnderOppfolgingV2Response underOppfolging(@RequestParam(value = "fnr") Fnr fnr) {
+        boolean harTilgangSomAADSystembruker = authService.erSystemBruker() && authService.harAADRolleForSystemTilSystemTilgang();
+        if (!harTilgangSomAADSystembruker) {
+            authService.sjekkLesetilgangMedFnr(fnr);
+        }
         return new UnderOppfolgingV2Response(oppfolgingService.erUnderOppfolging(fnr));
     }
 
@@ -45,12 +49,13 @@ public class OppfolgingV2Controller {
 
     @GetMapping
     public UnderOppfolgingV2Response underOppfolging() {
-        boolean erEksternBruker = authService.erEksternBruker();
-        if (!erEksternBruker) {
+        if (!authService.erEksternBruker()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Som internbruker/systembruker er aktorId eller fnr påkrevd");
         }
+
         Fnr fnr = Fnr.of(authService.getInnloggetBrukerIdent());
-        return underOppfolging(fnr);
+
+        return new UnderOppfolgingV2Response(oppfolgingService.erUnderOppfolging(fnr));
     }
 
     @PostMapping("/start")
@@ -120,8 +125,8 @@ public class OppfolgingV2Controller {
     }
 
     private OppfolgingsperiodeEntity filtrerKvpPerioder(OppfolgingsperiodeEntity periode) {
-        if(!authService.erInternBruker() || periode.getKvpPerioder() == null || periode.getKvpPerioder().isEmpty()) {
-            return  periode;
+        if (!authService.erInternBruker() || periode.getKvpPerioder() == null || periode.getKvpPerioder().isEmpty()) {
+            return periode;
         }
 
         List<KvpPeriodeEntity> kvpPeriodeEntities = periode

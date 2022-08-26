@@ -46,6 +46,8 @@ spec:
       claims:
         extra:
           - "NAVident"
+  tokenx:
+    enabled: true
   accessPolicy:
     inbound:
       rules:
@@ -75,6 +77,9 @@ spec:
         - application: modia-robot-api
           namespace: personoversikt
           cluster: dev-fss
+        - application: ditt-sykefravaer
+          namespace: flex
+          cluster: dev-gcp
   vault:
     enabled: true
     paths:

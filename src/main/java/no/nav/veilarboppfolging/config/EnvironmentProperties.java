@@ -25,17 +25,16 @@ public class EnvironmentProperties {
 
     private String openAmIssoRpPassword;
 
-
-    private String aadDiscoveryUrl;
-
-    private String veilarbloginAadClientId;
-
-
     private String naisAadDiscoveryUrl;
 
     private String naisAadClientId;
 
     private String naisAadIssuer;
+
+
+    private String tokenxClientId;
+
+    private String tokenxDiscoveryUrl;
 
 
     private String loginserviceIdportenAudience;

@@ -44,6 +44,13 @@ public class FilterConfig {
                 .withUserRole(UserRole.SYSTEM);
     }
 
+    private OidcAuthenticatorConfig tokenxAuthConfig(EnvironmentProperties properties) {
+        return new OidcAuthenticatorConfig()
+                .withDiscoveryUrl(properties.getTokenxDiscoveryUrl())
+                .withClientId(properties.getTokenxClientId())
+                .withUserRole(UserRole.EKSTERN);
+    }
+
     private OidcAuthenticatorConfig openAmAuthConfig(EnvironmentProperties properties) {
         List<String> clientIds = List.of(
                 properties.getVeilarbloginOpenAmClientId(),
@@ -56,14 +63,6 @@ public class FilterConfig {
                 .withRefreshTokenCookieName(REFRESH_TOKEN_COOKIE_NAME)
                 .withIdTokenFinder(new UserTokenFinder())
                 .withRefreshUrl(properties.getOpenAmRefreshUrl())
-                .withUserRole(UserRole.INTERN);
-    }
-
-    private OidcAuthenticatorConfig azureAdAuthConfig(EnvironmentProperties properties) {
-        return new OidcAuthenticatorConfig()
-                .withDiscoveryUrl(properties.getAadDiscoveryUrl())
-                .withClientId(properties.getVeilarbloginAadClientId())
-                .withIdTokenCookieName(AZURE_AD_ID_TOKEN_COOKIE_NAME)
                 .withUserRole(UserRole.INTERN);
     }
 
@@ -100,11 +99,11 @@ public class FilterConfig {
         OidcAuthenticationFilter authenticationFilter = new OidcAuthenticationFilter(
                 fromConfigs(
                         openAmAuthConfig(properties),
-                        azureAdAuthConfig(properties),
                         loginserviceIdportenConfig(properties),
                         openAmStsAuthConfig(properties),
                         naisStsAuthConfig(properties),
-                        naisAzureAdConfig(properties)
+                        naisAzureAdConfig(properties),
+                        tokenxAuthConfig(properties)
                 )
         );
 

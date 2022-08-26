@@ -230,9 +230,6 @@ public class OppfolgingService {
 
     public boolean erUnderOppfolging(Fnr fnr) {
         AktorId aktorId = authService.getAktorIdOrThrow(fnr);
-
-        authService.sjekkLesetilgangMedAktorId(aktorId);
-
         return erUnderOppfolging(aktorId);
     }
 

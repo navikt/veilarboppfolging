@@ -44,6 +44,8 @@ spec:
       claims:
         extra:
           - "NAVident"
+  tokenx:
+    enabled: true
   accessPolicy:
     inbound:
       rules:
@@ -72,6 +74,9 @@ spec:
           cluster: prod-fss
         - application: mulighetsrommet-api
           namespace: team-mulighetsrommet
+          cluster: prod-gcp
+        - application: ditt-sykefravaer
+          namespace: flex
           cluster: prod-gcp
   vault:
     enabled: true
