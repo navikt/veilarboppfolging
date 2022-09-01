@@ -63,6 +63,9 @@ spec:
         - application: veilarbperson
           namespace: pto
           cluster: prod-fss
+        - application: veilarbvedtaksstotte
+          namespace: pto
+          cluster: prod-fss
         - application: veilarbpersonflate
           namespace: poao
           cluster: prod-gcp
