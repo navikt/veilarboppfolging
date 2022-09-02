@@ -11,6 +11,7 @@ spec:
     - https://veilarboppfolging.prod-fss-pub.nais.io
     - https://veilarboppfolging.nais.adeo.no
     - https://app.adeo.no/veilarboppfolging
+    - https://veilarboppfolging.intern.nav.no
   webproxy: true
   port: 8080
   prometheus:
