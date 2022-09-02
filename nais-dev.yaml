@@ -9,6 +9,7 @@ spec:
   image: ghcr.io/navikt/veilarboppfolging/veilarboppfolging:{{version}}
   ingresses:
     - https://veilarboppfolging.dev-fss-pub.nais.io
+    - https://veilarboppfolging.dev.intern.nav.no
     - https://veilarboppfolging-q1.nais.preprod.local
     - https://app-q1.adeo.no/veilarboppfolging
     - https://app-q1.dev.adeo.no/veilarboppfolging
