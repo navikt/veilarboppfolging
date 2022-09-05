@@ -26,7 +26,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 
 @WebMvcTest(controllers = OppfolgingController.class)
-public class OppfolgingControllerTest {
+class OppfolgingControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -47,19 +47,19 @@ public class OppfolgingControllerTest {
     private ManuellStatusService manuellStatusService;
 
     @Test
-    public void oppfolgingsperioder_skal_sjekke_at_bruker_er_systembruker() throws Exception {
+    void oppfolgingsperioder_skal_sjekke_at_bruker_er_systembruker() throws Exception {
         Fnr fnr = Fnr.of("1234");
 
-        when(oppfolgingService.hentOppfolgingsperioder(eq(fnr))).thenReturn(Collections.emptyList());
+        when(oppfolgingService.hentOppfolgingsperioder(fnr)).thenReturn(Collections.emptyList());
 
         mockMvc.perform(get("/api/oppfolging/oppfolgingsperioder").queryParam("fnr", fnr.get()));
 
         verify(authService, times(1)).skalVereSystemBruker();
-        verify(oppfolgingService, times(1)).hentOppfolgingsperioder(eq(fnr));
+        verify(oppfolgingService, times(1)).hentOppfolgingsperioder(fnr);
     }
 
     @Test
-    public void oppfolgingsperioder_skal_returnere_oppfolgingsperioder() throws Exception {
+    void oppfolgingsperioder_skal_returnere_oppfolgingsperioder() throws Exception {
         Fnr fnr = Fnr.of("1234");
 
         List<OppfolgingsperiodeEntity> perioder = new ArrayList<>();
@@ -80,14 +80,14 @@ public class OppfolgingControllerTest {
                         .collect(Collectors.toList())
         );
 
-        when(oppfolgingService.hentOppfolgingsperioder(eq(fnr))).thenReturn(perioder);
+        when(oppfolgingService.hentOppfolgingsperioder(fnr)).thenReturn(perioder);
 
         mockMvc.perform(get("/api/oppfolging/oppfolgingsperioder").queryParam("fnr", fnr.get()))
                 .andExpect(content().json(expectedJson));
     }
 
     @Test
-    public void innstillingshistorikk_skal_returnere_innstillingshistorikk() throws Exception {
+    void innstillingshistorikk_skal_returnere_innstillingshistorikk() throws Exception {
         Fnr fnr = Fnr.of("1234");
         String veileder = "Veileder1";
         String tilordnetAvVeileder = "Veileder2";
@@ -105,7 +105,7 @@ public class OppfolgingControllerTest {
 
         String expectedJson = "[{\"type\":\"VEILEDER_TILORDNET\",\"dato\":\"2022-09-05T12:27:29.301343+02:00\",\"begrunnelse\":\"Brukeren er tildelt veileder Veileder1\",\"opprettetAv\":\"NAV\",\"opprettetAvBrukerId\":\"Veileder2\",\"dialogId\":null,\"enhet\":null}]";
 
-        when(historikkService.hentInstillingsHistorikk(eq(fnr))).thenReturn(historikker);
+        when(historikkService.hentInstillingsHistorikk(fnr)).thenReturn(historikker);
 
         mockMvc.perform(get("/api/oppfolging/innstillingsHistorikk").queryParam("fnr", fnr.get()))
                 .andExpect(content().json(expectedJson));
