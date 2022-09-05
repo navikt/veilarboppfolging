@@ -55,6 +55,7 @@ public class HistorikkService {
                 .begrunnelse("Brukeren er tildelt veileder " +  veilederTilordningHistorikk.getVeileder())
                 .dato(veilederTilordningHistorikk.getSistTilordnet())
                 .opprettetAv(NAV)
+                .opprettetAvBrukerId(veilederTilordningHistorikk.getTilordnetAvVeileder())
                 .build();
     }
 

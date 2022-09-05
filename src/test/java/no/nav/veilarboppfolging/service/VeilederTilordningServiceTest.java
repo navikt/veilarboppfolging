@@ -69,7 +69,7 @@ public class VeilederTilordningServiceTest {
     public void setup() {
         when(authService.harVeilederSkriveTilgangTilFnr(anyString(), any())).thenReturn(true);
 
-        when(unleashService.skalIkkeAutomatiskStarteOppfolgingVedTilordningAvVeileder()).thenReturn(false);
+        when(oppfolgingService.erUnderOppfolging(any(AktorId.class))).thenReturn(true);
         AuthContextHolderThreadLocal.instance().withContext(AuthTestUtils.createAuthContext(UserRole.INTERN, "uid"), () -> {
             veilederTilordningService = new VeilederTilordningService(
                     metricsService,
@@ -339,8 +339,6 @@ public class VeilederTilordningServiceTest {
     public void skalIkkeTilordneVeilederTilBrukerSomIkkeErUnderOppfolging() {
         List<VeilederTilordning> tilordninger = new ArrayList<>();
 
-        when(unleashService.skalIkkeAutomatiskStarteOppfolgingVedTilordningAvVeileder()).thenReturn(true);
-
         VeilederTilordning tilordning1 = new VeilederTilordning().setBrukerFnr(fnr1.get()).setFraVeilederId("FRAVEILEDER1").setTilVeilederId("TILVEILEDER1");
         VeilederTilordning tilordning2 = new VeilederTilordning().setBrukerFnr(fnr2.get()).setFraVeilederId("FRAVEILEDER3").setTilVeilederId("TILVEILEDER3");
 
@@ -349,7 +347,6 @@ public class VeilederTilordningServiceTest {
 
         when(authService.getAktorIdOrThrow(fnr1)).thenReturn(aktorId1);
         when(authService.getAktorIdOrThrow(fnr2)).thenReturn(aktorId2);
-        when(oppfolgingService.erUnderOppfolging(aktorId1)).thenReturn(true);
         when(oppfolgingService.erUnderOppfolging(aktorId2)).thenReturn(false);
 
         TilordneVeilederResponse response = veilederTilordningService.tilordneVeiledere(tilordninger);
