@@ -62,7 +62,7 @@ public class VeilederTilordningService {
                 .flatMap(v -> Optional.ofNullable(v.getVeilederId()))
                 .map(NavIdent::of);
     }
-    
+
     public TilordneVeilederResponse tilordneVeiledere(List<VeilederTilordning> tilordninger) {
         authService.skalVereInternBruker();
         String innloggetVeilederId = authService.getInnloggetVeilederIdent();
@@ -159,21 +159,12 @@ public class VeilederTilordningService {
             veilederTilordningerRepository.upsertVeilederTilordning(aktorId, veilederId);
             veilederHistorikkRepository.insertTilordnetVeilederForAktorId(aktorId, veilederId, tilordnetAvVeileder);
 
-            boolean skalAutomatiskStarteOppfolging =
-                    !unleashService.skalIkkeAutomatiskStarteOppfolgingVedTilordningAvVeileder();
             boolean erUnderOppfolging = oppfolgingService.erUnderOppfolging(aktorId);
 
-            if (skalAutomatiskStarteOppfolging) {
-                if (!erUnderOppfolging) {
-                    log.warn("Bruker med aktør-id {} som ikke er under oppfølging får oppfølging startet pga tilordning av veileder", aktorId);
-                }
-                oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(aktorId);
-            } else {
-                if (!erUnderOppfolging) {
-                    throw new IllegalStateException(
-                            format("Bruker med aktør-id %s som ikke er under oppfølging kan ikke få tilordnet veileder", aktorId)
-                    );
-                }
+            if (!erUnderOppfolging) {
+                throw new IllegalStateException(
+                        format("Bruker med aktør-id %s som ikke er under oppfølging kan ikke få tilordnet veileder", aktorId)
+                );
             }
 
             log.debug(format("Veileder %s tilordnet aktoer %s", veilederId, aktorId));
