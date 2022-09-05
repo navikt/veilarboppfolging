@@ -97,13 +97,13 @@ public class OppfolgingControllerTest {
                 HistorikkHendelse.builder()
                         .type(VEILEDER_TILORDNET)
                         .begrunnelse("Brukeren er tildelt veileder " + veileder)
-                        .dato(ZonedDateTime.now())
+                        .dato(ZonedDateTime.parse("2022-09-05T12:27:29.301343+02:00"))
                         .opprettetAv(NAV)
                         .opprettetAvBrukerId(tilordnetAvVeileder)
                         .build()
         );
 
-        String expectedJson = JsonUtils.toJson(historikker);
+        String expectedJson = "[{\"type\":\"VEILEDER_TILORDNET\",\"dato\":\"2022-09-05T12:27:29.301343+02:00\",\"begrunnelse\":\"Brukeren er tildelt veileder Veileder1\",\"opprettetAv\":\"NAV\",\"opprettetAvBrukerId\":\"Veileder2\",\"dialogId\":null,\"enhet\":null}]";
 
         when(historikkService.hentInstillingsHistorikk(eq(fnr))).thenReturn(historikker);
 

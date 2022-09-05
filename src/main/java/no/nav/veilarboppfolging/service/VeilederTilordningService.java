@@ -119,7 +119,13 @@ public class VeilederTilordningService {
     private List<VeilederTilordning> tildelVeileder(List<VeilederTilordning> feilendeTilordninger, VeilederTilordning tilordning, AktorId aktorId, String eksisterendeVeileder, String innloggetVeilederId) {
         if (kanTilordneVeileder(eksisterendeVeileder, tilordning)) {
             if (nyVeilederHarTilgang(tilordning)) {
-                skrivTilDatabase(aktorId, tilordning.getTilVeilederId(), innloggetVeilederId);
+                boolean skalLagreHvilkenVeilederSomHarUtfortTilordning = unleashService.skalLagreHvilkenVeilederSomHarUtfortTilordning();
+
+                if (skalLagreHvilkenVeilederSomHarUtfortTilordning) {
+                    lagreVeilederTilordning(aktorId, tilordning.getTilVeilederId(), innloggetVeilederId);
+                } else {
+                    lagreVeilederTilordning(aktorId, tilordning.getTilVeilederId(), null);
+                }
             } else {
                 log.info("Aktoerid {} kunne ikke tildeles. Ny veileder {} har ikke tilgang.", aktorId, tilordning.getTilVeilederId());
                 feilendeTilordninger.add(tilordning);
@@ -154,7 +160,7 @@ public class VeilederTilordningService {
         return authService.getInnloggetVeilederIdent().equals(tilordning.getVeilederId());
     }
 
-    private void skrivTilDatabase(AktorId aktorId, String veilederId, String tilordnetAvVeileder) {
+    private void lagreVeilederTilordning(AktorId aktorId, String veilederId, String tilordnetAvVeileder) {
         transactor.executeWithoutResult((status) -> {
             veilederTilordningerRepository.upsertVeilederTilordning(aktorId, veilederId);
             veilederHistorikkRepository.insertTilordnetVeilederForAktorId(aktorId, veilederId, tilordnetAvVeileder);
