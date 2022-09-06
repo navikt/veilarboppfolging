@@ -21,11 +21,11 @@ public class VeilederHistorikkRepository {
         this.db = db;
     }
 
-    public void insertTilordnetVeilederForAktorId(AktorId aktorId, String veileder) {
-        String sql = "INSERT INTO VEILEDER_TILORDNINGER (veileder, aktor_id, sist_tilordnet, tilordning_seq) " +
-                "VALUES(?,?, CURRENT_TIMESTAMP, VEILEDER_TILORDNING_SEQ.NEXTVAL)";
+    public void insertTilordnetVeilederForAktorId(AktorId aktorId, String veileder, String tilordnetAvVeileder) {
+        String sql = "INSERT INTO VEILEDER_TILORDNINGER (veileder, aktor_id, sist_tilordnet, tilordning_seq, tilordnet_av_veileder) " +
+                "VALUES(?,?, CURRENT_TIMESTAMP, VEILEDER_TILORDNING_SEQ.NEXTVAL, ?)";
 
-        db.update(sql, veileder, aktorId.get());
+        db.update(sql, veileder, aktorId.get(), tilordnetAvVeileder);
     }
 
     public List<VeilederTilordningHistorikkEntity> hentTilordnedeVeiledereForAktorId(AktorId aktorId) {
@@ -37,6 +37,7 @@ public class VeilederHistorikkRepository {
         return VeilederTilordningHistorikkEntity.builder()
                 .veileder(resultSet.getString("veileder"))
                 .sistTilordnet(hentZonedDateTime(resultSet, "sist_tilordnet"))
+                .tilordnetAvVeileder(resultSet.getString("tilordnet_av_veileder"))
                 .build();
     }
 }
