@@ -27,7 +27,7 @@ import static no.nav.veilarboppfolging.utils.DtoMappers.*;
 @RequestMapping("/api/v2/oppfolging")
 @RequiredArgsConstructor
 public class OppfolgingV2Controller {
-
+    private final static List<String> ALLOWLIST = List.of("veilarbvedtaksstotte");
     private final OppfolgingService oppfolgingService;
 
     private final AuthService authService;
@@ -115,6 +115,8 @@ public class OppfolgingV2Controller {
     public List<OppfolgingPeriodeDTO> hentOppfolgingsperioder(@RequestParam("aktorId") AktorId aktorId) {
         if (!authService.erSystemBrukerFraAzureAd()) {
             authService.sjekkLesetilgangMedAktorId(aktorId);
+        } else if (!ALLOWLIST.contains(authService.hentApplikasjonFraContex())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
         return oppfolgingService.hentOppfolgingsperioder(aktorId)
                 .stream()

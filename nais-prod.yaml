@@ -44,7 +44,8 @@ spec:
       enabled: true
       claims:
         extra:
-          - "NAVident"
+          - NAVident
+          - azp_name
   tokenx:
     enabled: true
   accessPolicy:

@@ -313,4 +313,20 @@ public class AuthService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
     }
+    public String hentApplikasjonFraContex() {
+        return authContextHolder.getIdTokenClaims()
+                .flatMap(claims -> getStringClaimOrEmpty(claims, "azp_name")) //  "cluster:team:app"
+                .map(claim -> claim.split(":"))
+                .filter(claims -> claims.length == 3)
+                .map(claims -> claims[2])
+                .orElse(null);
+    }
+
+    private static Optional<String> getStringClaimOrEmpty(JWTClaimsSet claims, String claimName) {
+        try {
+            return ofNullable(claims.getStringClaim(claimName));
+        } catch (Exception e) {
+            return empty();
+        }
+    }
 }
