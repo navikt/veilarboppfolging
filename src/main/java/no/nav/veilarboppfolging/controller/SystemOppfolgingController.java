@@ -33,7 +33,7 @@ public class SystemOppfolgingController {
 
     @PostMapping("/aktiverbruker")
     public ResponseEntity aktiverBruker(@RequestBody AktiverArbeidssokerData aktiverArbeidssokerData) {
-        authService.skalVereSystemBruker();
+        authService.skalVereSystemBrukerFraAzureAd();
         authService.sjekkAtApplikasjonErIAllowList(ALLOWLIST);
 
         AktiverArbeidssokerData.Fnr requestFnr = ofNullable(aktiverArbeidssokerData.getFnr())
@@ -55,8 +55,7 @@ public class SystemOppfolgingController {
 
     @PostMapping("/reaktiverbruker")
     public ResponseEntity reaktiverBruker(@RequestBody ReaktiverBrukerRequest request) {
-        authService.skalVereSystemBruker();
-        authService.erSystemBrukerFraAzureAd();
+        authService.skalVereSystemBrukerFraAzureAd();
         authService.sjekkAtApplikasjonErIAllowList(ALLOWLIST);
 
         try {
@@ -73,7 +72,7 @@ public class SystemOppfolgingController {
 
     @PostMapping("/aktiverSykmeldt")
     public ResponseEntity aktiverSykmeldt(@RequestBody SykmeldtBrukerType sykmeldtBrukerType, @RequestParam Fnr fnr) {
-        authService.skalVereSystemBruker();
+        authService.skalVereSystemBrukerFraAzureAd();
         authService.sjekkAtApplikasjonErIAllowList(ALLOWLIST);
 
         aktiverBrukerService.aktiverSykmeldt(fnr, sykmeldtBrukerType);

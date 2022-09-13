@@ -89,6 +89,12 @@ public class AuthService {
         }
     }
 
+    public void skalVereSystemBrukerFraAzureAd() {
+        if (!authContextHolder.erInternBruker() && !erSystemBrukerFraAzureAd()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bruker er verken en intern eller system bruker fra azureAd");
+        }
+    }
+
     public void skalVereEksternBruker() {
         if (!authContextHolder.erEksternBruker()) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bruker er ikke en ekstern bruker");
