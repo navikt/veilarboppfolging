@@ -100,8 +100,6 @@ spec:
   env:
     - name: MODIABLOGIN_OPENAM_CLIENT_ID
       value: "modialogin-p"
-    - name: VEILARBREGISTRERING_CLIENT_ID
-      value: b898d7c6-0160-4dca-867e-873a4bd85d25
 
     # producer topics
     - name: ENDRING_PAA_AVSLUTT_OPPFOLGING_TOPIC

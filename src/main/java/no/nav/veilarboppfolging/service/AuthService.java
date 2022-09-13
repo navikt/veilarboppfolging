@@ -32,7 +32,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -304,22 +303,22 @@ public class AuthService {
     }
 
     @SneakyThrows
-    public void sjekkAtSystembrukerErWhitelistet(String... clientIdWhitelist) {
-        String requestingAppClientId = authContextHolder.requireIdTokenClaims().getStringClaim("azp");
-        boolean isWhitelisted = Arrays.asList(clientIdWhitelist).contains(requestingAppClientId);
-
-        if (!isWhitelisted) {
-            log.error("Systembruker {} er ikke whitelistet", requestingAppClientId);
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+    public void sjekkAtApplikasjonErIAllowList(List<String> allowlist) {
+        String appname = hentApplikasjonFraContex();
+        if (allowlist.contains(appname)) {
+            return;
         }
+        log.error("Applikasjon {} er ikke allowlist", appname);
+        throw new ResponseStatusException(HttpStatus.FORBIDDEN);
     }
-    public String hentApplikasjonFraContex() {
+
+    private String hentApplikasjonFraContex() {
         return authContextHolder.getIdTokenClaims()
                 .flatMap(claims -> getStringClaimOrEmpty(claims, "azp_name")) //  "cluster:team:app"
                 .map(claim -> claim.split(":"))
                 .filter(claims -> claims.length == 3)
                 .map(claims -> claims[2])
-                .orElse(null);
+                .orElse("");
     }
 
     private static Optional<String> getStringClaimOrEmpty(JWTClaimsSet claims, String claimName) {

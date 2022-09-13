@@ -153,10 +153,10 @@ public class OppfolgingController {
     @GetMapping("/oppfolgingsperioder")
     public List<OppfolgingPeriodeDTO> hentOppfolgingsperioder(@RequestParam("fnr") Fnr fnr) {
         authService.skalVereSystemBruker();
-        if (!authService.erSystemBrukerFraAzureAd()) {
+        if (authService.erSystemBrukerFraAzureAd()) {
+            authService.sjekkAtApplikasjonErIAllowList(ALLOWLIST_V1);
+        } else {
             authService.sjekkLesetilgangMedFnr(fnr);
-        } else if (!ALLOWLIST_V1.contains(authService.hentApplikasjonFraContex())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
         return oppfolgingService.hentOppfolgingsperioder(fnr)
                 .stream()

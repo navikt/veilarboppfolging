@@ -114,11 +114,10 @@ class OppfolgingControllerIntegrationTest {
 
     private void mockAuthOk() {
         JWTClaimsSet claims = new JWTClaimsSet.Builder()
-                .claim("azp", "test")
+                .claim("azp_name", "cluster:team:veilarbregistrering")
                 .build();
 
-        when(authContextHolder.requireIdTokenClaims()).thenReturn(claims);
-        when(environmentProperties.getVeilarbregistreringClientId()).thenReturn("test");
+        when(authContextHolder.getIdTokenClaims()).thenReturn(Optional.of(claims));
 
         String token = "token";
         when(veilarbPep.harTilgangTilPerson(token, ActionId.READ, AKTOR_ID)).thenReturn(true);

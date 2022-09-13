@@ -113,10 +113,10 @@ public class OppfolgingV2Controller {
 
     @GetMapping(value = "/perioder", params = "aktorId")
     public List<OppfolgingPeriodeDTO> hentOppfolgingsperioder(@RequestParam("aktorId") AktorId aktorId) {
-        if (!authService.erSystemBrukerFraAzureAd()) {
+        if (authService.erSystemBrukerFraAzureAd()) {
+            authService.sjekkAtApplikasjonErIAllowList(ALLOWLIST);
+        } else {
             authService.sjekkLesetilgangMedAktorId(aktorId);
-        } else if (!ALLOWLIST.contains(authService.hentApplikasjonFraContex())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
         return oppfolgingService.hentOppfolgingsperioder(aktorId)
                 .stream()
