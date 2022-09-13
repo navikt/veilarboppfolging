@@ -110,7 +110,11 @@ public class AuthService {
         return authContextHolder.erSystemBruker();
     }
 
-    public boolean harAADRolleForSystemTilSystemTilgang() {
+    public boolean erSystemBrukerFraAzureAd() {
+        return erSystemBruker() && harAADRolleForSystemTilSystemTilgang();
+    }
+
+    private boolean harAADRolleForSystemTilSystemTilgang() {
         return authContextHolder.getIdTokenClaims()
                 .flatMap(claims -> {
                     try {

@@ -152,7 +152,9 @@ public class OppfolgingController {
     @GetMapping("/oppfolgingsperioder")
     public List<OppfolgingPeriodeDTO> hentOppfolgingsperioder(@RequestParam("fnr") Fnr fnr) {
         authService.skalVereSystemBruker();
-
+        if (!authService.erSystemBrukerFraAzureAd()) {
+            authService.sjekkLesetilgangMedFnr(fnr);
+        }
         return oppfolgingService.hentOppfolgingsperioder(fnr)
                 .stream()
                 .map(op -> tilOppfolgingPeriodeDTO(op, true))
