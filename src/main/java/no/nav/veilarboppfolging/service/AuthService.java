@@ -32,7 +32,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -102,6 +101,12 @@ public class AuthService {
         }
     }
 
+    public void skalVereSystemBrukerFraAzureAd() {
+        if (!erSystemBrukerFraAzureAd()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bruker er ikke en systembruker fra azureAd");
+        }
+    }
+
     public boolean erInternBruker() {
         return authContextHolder.erInternBruker();
     }
@@ -110,7 +115,11 @@ public class AuthService {
         return authContextHolder.erSystemBruker();
     }
 
-    public boolean harAADRolleForSystemTilSystemTilgang() {
+    public boolean erSystemBrukerFraAzureAd() {
+        return erSystemBruker() && harAADRolleForSystemTilSystemTilgang();
+    }
+
+    private boolean harAADRolleForSystemTilSystemTilgang() {
         return authContextHolder.getIdTokenClaims()
                 .flatMap(claims -> {
                     try {
@@ -300,13 +309,29 @@ public class AuthService {
     }
 
     @SneakyThrows
-    public void sjekkAtSystembrukerErWhitelistet(String... clientIdWhitelist) {
-        String requestingAppClientId = authContextHolder.requireIdTokenClaims().getStringClaim("azp");
-        boolean isWhitelisted = Arrays.asList(clientIdWhitelist).contains(requestingAppClientId);
+    public void sjekkAtApplikasjonErIAllowList(List<String> allowlist) {
+        String appname = hentApplikasjonFraContex();
+        if (allowlist.contains(appname)) {
+            return;
+        }
+        log.error("Applikasjon {} er ikke allowlist", appname);
+        throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+    }
 
-        if (!isWhitelisted) {
-            log.error("Systembruker {} er ikke whitelistet", requestingAppClientId);
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+    private String hentApplikasjonFraContex() {
+        return authContextHolder.getIdTokenClaims()
+                .flatMap(claims -> getStringClaimOrEmpty(claims, "azp_name")) //  "cluster:team:app"
+                .map(claim -> claim.split(":"))
+                .filter(claims -> claims.length == 3)
+                .map(claims -> claims[2])
+                .orElse("");
+    }
+
+    private static Optional<String> getStringClaimOrEmpty(JWTClaimsSet claims, String claimName) {
+        try {
+            return ofNullable(claims.getStringClaim(claimName));
+        } catch (Exception e) {
+            return empty();
         }
     }
 }

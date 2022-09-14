@@ -9,8 +9,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "app.env")
 public class EnvironmentProperties {
 
-    private String veilarbregistreringClientId;
-
     private String openAmDiscoveryUrl;
 
     private String veilarbloginOpenAmClientId;
