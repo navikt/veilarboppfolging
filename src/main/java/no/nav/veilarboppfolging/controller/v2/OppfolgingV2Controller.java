@@ -27,14 +27,14 @@ import static no.nav.veilarboppfolging.utils.DtoMappers.*;
 @RequestMapping("/api/v2/oppfolging")
 @RequiredArgsConstructor
 public class OppfolgingV2Controller {
-
+    private final static List<String> ALLOWLIST = List.of("veilarbvedtaksstotte");
     private final OppfolgingService oppfolgingService;
 
     private final AuthService authService;
 
     @GetMapping(params = "fnr")
     public UnderOppfolgingV2Response underOppfolging(@RequestParam(value = "fnr") Fnr fnr) {
-        boolean harTilgangSomAADSystembruker = authService.erSystemBruker() && authService.harAADRolleForSystemTilSystemTilgang();
+        boolean harTilgangSomAADSystembruker = authService.erSystemBrukerFraAzureAd();
         if (!harTilgangSomAADSystembruker) {
             authService.sjekkLesetilgangMedFnr(fnr);
         }
@@ -113,6 +113,11 @@ public class OppfolgingV2Controller {
 
     @GetMapping(value = "/perioder", params = "aktorId")
     public List<OppfolgingPeriodeDTO> hentOppfolgingsperioder(@RequestParam("aktorId") AktorId aktorId) {
+        if (authService.erSystemBrukerFraAzureAd()) {
+            authService.sjekkAtApplikasjonErIAllowList(ALLOWLIST);
+        } else {
+            authService.sjekkLesetilgangMedAktorId(aktorId);
+        }
         return oppfolgingService.hentOppfolgingsperioder(aktorId)
                 .stream()
                 .map(this::filtrerKvpPerioder)
