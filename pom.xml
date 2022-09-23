@@ -20,7 +20,7 @@
     <properties>
         <java.version>11</java.version>
         <common.version>2.2022.09.15_07.46-e4fa96eb6813</common.version>
-        <tjenestespesifikasjoner.version>1.2019.04.03-23.09-56488320520a</tjenestespesifikasjoner.version>
+        <tjenestespesifikasjoner.version>1.2019.09.25-00.21-49b69f0625e0</tjenestespesifikasjoner.version>
         <testcontainers.version>1.16.3</testcontainers.version>
     </properties>
 
