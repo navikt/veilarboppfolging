@@ -25,6 +25,7 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -114,11 +115,11 @@ class OppfolgingControllerIntegrationTest {
 
     private void mockAuthOk() {
         JWTClaimsSet claims = new JWTClaimsSet.Builder()
-                .claim("azp", "test")
+                .claim("azp_name", "cluster:team:veilarbregistrering")
+                .claim("roles", Collections.singletonList("access_as_application"))
                 .build();
 
-        when(authContextHolder.requireIdTokenClaims()).thenReturn(claims);
-        when(environmentProperties.getVeilarbregistreringClientId()).thenReturn("test");
+        when(authContextHolder.getIdTokenClaims()).thenReturn(Optional.of(claims));
 
         String token = "token";
         when(veilarbPep.harTilgangTilPerson(token, ActionId.READ, AKTOR_ID)).thenReturn(true);

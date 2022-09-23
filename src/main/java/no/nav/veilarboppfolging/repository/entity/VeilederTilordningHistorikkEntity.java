@@ -10,4 +10,5 @@ import java.time.ZonedDateTime;
 public class VeilederTilordningHistorikkEntity {
     String veileder;
     ZonedDateTime sistTilordnet;
+    String tilordnetAvVeileder;
 }

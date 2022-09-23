@@ -30,12 +30,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
 import static java.lang.String.format;
+import static java.util.Collections.emptyList;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 import static no.nav.common.abac.XacmlRequestBuilder.lagEnvironment;
@@ -100,12 +101,35 @@ public class AuthService {
         }
     }
 
+    public void skalVereSystemBrukerFraAzureAd() {
+        if (!erSystemBrukerFraAzureAd()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bruker er ikke en systembruker fra azureAd");
+        }
+    }
+
     public boolean erInternBruker() {
         return authContextHolder.erInternBruker();
     }
 
     public boolean erSystemBruker() {
         return authContextHolder.erSystemBruker();
+    }
+
+    public boolean erSystemBrukerFraAzureAd() {
+        return erSystemBruker() && harAADRolleForSystemTilSystemTilgang();
+    }
+
+    private boolean harAADRolleForSystemTilSystemTilgang() {
+        return authContextHolder.getIdTokenClaims()
+                .flatMap(claims -> {
+                    try {
+                        return Optional.ofNullable(claims.getStringListClaim("roles"));
+                    } catch (ParseException e) {
+                        return Optional.empty();
+                    }
+                })
+                .orElse(emptyList())
+                .contains("access_as_application");
     }
 
     public boolean erEksternBruker() {
@@ -285,13 +309,29 @@ public class AuthService {
     }
 
     @SneakyThrows
-    public void sjekkAtSystembrukerErWhitelistet(String... clientIdWhitelist) {
-        String requestingAppClientId = authContextHolder.requireIdTokenClaims().getStringClaim("azp");
-        boolean isWhitelisted = Arrays.asList(clientIdWhitelist).contains(requestingAppClientId);
+    public void sjekkAtApplikasjonErIAllowList(List<String> allowlist) {
+        String appname = hentApplikasjonFraContex();
+        if (allowlist.contains(appname)) {
+            return;
+        }
+        log.error("Applikasjon {} er ikke allowlist", appname);
+        throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+    }
 
-        if (!isWhitelisted) {
-            log.error("Systembruker {} er ikke whitelistet", requestingAppClientId);
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+    private String hentApplikasjonFraContex() {
+        return authContextHolder.getIdTokenClaims()
+                .flatMap(claims -> getStringClaimOrEmpty(claims, "azp_name")) //  "cluster:team:app"
+                .map(claim -> claim.split(":"))
+                .filter(claims -> claims.length == 3)
+                .map(claims -> claims[2])
+                .orElse("");
+    }
+
+    private static Optional<String> getStringClaimOrEmpty(JWTClaimsSet claims, String claimName) {
+        try {
+            return ofNullable(claims.getStringClaim(claimName));
+        } catch (Exception e) {
+            return empty();
         }
     }
 }
