@@ -12,9 +12,7 @@ UnleashService {
     private final static String OPPDATER_OPPFOLGING_KAFKA = "veilarboppfolging.oppdater_oppfolging_kafka";
 
     private final static String IKKE_OPPDATER_OPPFOLGING_MED_SIDEEFFEKT = "veilarboppfolging.ikke_oppdater_oppfolging_med_sideeffekt";
-
-    private final static String IKKE_START_OPPFOLGING_VED_TILORDNING_AV_VEILEDER = "veilarboppfolging.ikke_start_oppfolging_automatisk_ved_tilordning_av_veileder";
-
+    private static final String LAGRE_VEILEDER_SOM_HAR_UTFORT_TILORDNING = "veilarboppfolging.lagre_veileder_som_har_utfort_tilordning";
 
     private final UnleashClient unleashClient;
 
@@ -26,7 +24,7 @@ UnleashService {
         return unleashClient.isEnabled(IKKE_OPPDATER_OPPFOLGING_MED_SIDEEFFEKT);
     }
 
-    public boolean skalIkkeAutomatiskStarteOppfolgingVedTilordningAvVeileder() {
-        return unleashClient.isEnabled(IKKE_START_OPPFOLGING_VED_TILORDNING_AV_VEILEDER);
+    public boolean skalLagreHvilkenVeilederSomHarUtfortTilordning() {
+        return unleashClient.isEnabled(LAGRE_VEILEDER_SOM_HAR_UTFORT_TILORDNING);
     }
 }

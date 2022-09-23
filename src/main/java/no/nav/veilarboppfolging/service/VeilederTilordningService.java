@@ -62,7 +62,7 @@ public class VeilederTilordningService {
                 .flatMap(v -> Optional.ofNullable(v.getVeilederId()))
                 .map(NavIdent::of);
     }
-    
+
     public TilordneVeilederResponse tilordneVeiledere(List<VeilederTilordning> tilordninger) {
         authService.skalVereInternBruker();
         String innloggetVeilederId = authService.getInnloggetVeilederIdent();
@@ -81,7 +81,7 @@ public class VeilederTilordningService {
                 tilordning.setAktoerId(aktorId.get());
                 String eksisterendeVeileder = veilederTilordningerRepository.hentTilordningForAktoer(aktorId);
 
-                feilendeTilordninger = tildelVeileder(feilendeTilordninger, tilordning, aktorId, eksisterendeVeileder);
+                feilendeTilordninger = tildelVeileder(feilendeTilordninger, tilordning, aktorId, eksisterendeVeileder, innloggetVeilederId);
             } catch (Exception e) {
                 feilendeTilordninger.add(tilordning);
                 loggFeilOppfolging(e, tilordning);
@@ -116,10 +116,16 @@ public class VeilederTilordningService {
                 .ifPresent(i -> kafkaProducerService.publiserEndringPaNyForVeileder(aktorId, false));
     }
 
-    private List<VeilederTilordning> tildelVeileder(List<VeilederTilordning> feilendeTilordninger, VeilederTilordning tilordning, AktorId aktorId, String eksisterendeVeileder) {
+    private List<VeilederTilordning> tildelVeileder(List<VeilederTilordning> feilendeTilordninger, VeilederTilordning tilordning, AktorId aktorId, String eksisterendeVeileder, String innloggetVeilederId) {
         if (kanTilordneVeileder(eksisterendeVeileder, tilordning)) {
             if (nyVeilederHarTilgang(tilordning)) {
-                skrivTilDatabase(aktorId, tilordning.getTilVeilederId());
+                boolean skalLagreHvilkenVeilederSomHarUtfortTilordning = unleashService.skalLagreHvilkenVeilederSomHarUtfortTilordning();
+
+                if (skalLagreHvilkenVeilederSomHarUtfortTilordning) {
+                    lagreVeilederTilordning(aktorId, tilordning.getTilVeilederId(), innloggetVeilederId);
+                } else {
+                    lagreVeilederTilordning(aktorId, tilordning.getTilVeilederId(), null);
+                }
             } else {
                 log.info("Aktoerid {} kunne ikke tildeles. Ny veileder {} har ikke tilgang.", aktorId, tilordning.getTilVeilederId());
                 feilendeTilordninger.add(tilordning);
@@ -154,26 +160,17 @@ public class VeilederTilordningService {
         return authService.getInnloggetVeilederIdent().equals(tilordning.getVeilederId());
     }
 
-    private void skrivTilDatabase(AktorId aktorId, String veilederId) {
+    private void lagreVeilederTilordning(AktorId aktorId, String veilederId, String tilordnetAvVeileder) {
         transactor.executeWithoutResult((status) -> {
             veilederTilordningerRepository.upsertVeilederTilordning(aktorId, veilederId);
-            veilederHistorikkRepository.insertTilordnetVeilederForAktorId(aktorId, veilederId);
+            veilederHistorikkRepository.insertTilordnetVeilederForAktorId(aktorId, veilederId, tilordnetAvVeileder);
 
-            boolean skalAutomatiskStarteOppfolging =
-                    !unleashService.skalIkkeAutomatiskStarteOppfolgingVedTilordningAvVeileder();
             boolean erUnderOppfolging = oppfolgingService.erUnderOppfolging(aktorId);
 
-            if (skalAutomatiskStarteOppfolging) {
-                if (!erUnderOppfolging) {
-                    log.warn("Bruker med aktør-id {} som ikke er under oppfølging får oppfølging startet pga tilordning av veileder", aktorId);
-                }
-                oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(aktorId);
-            } else {
-                if (!erUnderOppfolging) {
-                    throw new IllegalStateException(
-                            format("Bruker med aktør-id %s som ikke er under oppfølging kan ikke få tilordnet veileder", aktorId)
-                    );
-                }
+            if (!erUnderOppfolging) {
+                throw new IllegalStateException(
+                        format("Bruker med aktør-id %s som ikke er under oppfølging kan ikke få tilordnet veileder", aktorId)
+                );
             }
 
             log.debug(format("Veileder %s tilordnet aktoer %s", veilederId, aktorId));

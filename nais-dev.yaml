@@ -6,9 +6,10 @@ metadata:
   labels:
     team: pto
 spec:
-  image: docker.pkg.github.com/navikt/veilarboppfolging/veilarboppfolging:{{version}}
+  image: ghcr.io/navikt/veilarboppfolging/veilarboppfolging:{{version}}
   ingresses:
     - https://veilarboppfolging.dev-fss-pub.nais.io
+    - https://veilarboppfolging.dev.intern.nav.no
     - https://veilarboppfolging-q1.nais.preprod.local
     - https://app-q1.adeo.no/veilarboppfolging
     - https://app-q1.dev.adeo.no/veilarboppfolging
@@ -45,7 +46,10 @@ spec:
       enabled: true
       claims:
         extra:
-          - "NAVident"
+          - NAVident
+          - azp_name
+  tokenx:
+    enabled: true
   accessPolicy:
     inbound:
       rules:
@@ -63,14 +67,26 @@ spec:
         - application: veilarbperson
           namespace: pto
           cluster: dev-fss
+        - application: veilarbvedtaksstotte
+          namespace: pto
+          cluster: dev-fss
         - application: veilarbpersonflate
           namespace: poao
           cluster: dev-gcp
         - application: veilarbportefoljeflatefs
           namespace: obo
           cluster: dev-gcp
+        - application: veilarbportefolje
+          namespace: pto
+          cluster: dev-fss
         - application: mulighetsrommet-api
           namespace: team-mulighetsrommet
+          cluster: dev-gcp
+        - application: modia-robot-api
+          namespace: personoversikt
+          cluster: dev-fss
+        - application: ditt-sykefravaer
+          namespace: flex
           cluster: dev-gcp
   vault:
     enabled: true
@@ -86,8 +102,6 @@ spec:
   env:
     - name: MODIABLOGIN_OPENAM_CLIENT_ID
       value: "modialogin-q1"
-    - name: VEILARBREGISTRERING_CLIENT_ID
-      value: 687bb3b0-a83c-47b7-9562-c6f9fedcc898
 
     # producer topics
     - name: ENDRING_PAA_AVSLUTT_OPPFOLGING_TOPIC

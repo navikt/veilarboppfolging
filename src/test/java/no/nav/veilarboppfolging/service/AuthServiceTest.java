@@ -62,25 +62,25 @@ public class AuthServiceTest {
     }
 
     @Test
-    public void sjekkAtSystembrukerErWhitelistet__skal_ikke_kaste_exception_hvis_whitelistet() {
+    public void sjekkAtSystembrukerErIAllowedList__skal_ikke_kaste_exception_hvis_allowed() {
         JWTClaimsSet claims = new JWTClaimsSet.Builder()
-                .claim("azp", "test")
+                .claim("azp_name", "cluster:team:test_app")
                 .build();
 
-        when(authContextHolder.requireIdTokenClaims()).thenReturn(claims);
+        when(authContextHolder.getIdTokenClaims()).thenReturn(Optional.of(claims));
 
-        assertDoesNotThrow(() -> authService.sjekkAtSystembrukerErWhitelistet("test"));
+        assertDoesNotThrow(() -> authService.sjekkAtApplikasjonErIAllowList(List.of("test_app")));
     }
 
     @Test
-    public void sjekkAtSystembrukerErWhitelistet__skal_kaste_exception_hvis_ikke_whitelistet() {
+    public void sjekkAtSystembrukerErIAllowedList__skal_kaste_exception_hvis_ikke_allowed() {
         JWTClaimsSet claims = new JWTClaimsSet.Builder()
-                .claim("azp", "test")
+                .claim("azp_name", "cluster:team:test_app")
                 .build();
 
-        when(authContextHolder.requireIdTokenClaims()).thenReturn(claims);
+        when(authContextHolder.getIdTokenClaims()).thenReturn(Optional.of(claims));
 
-        assertThrows(ResponseStatusException.class, () -> authService.sjekkAtSystembrukerErWhitelistet("some-id"));
+        assertThrows(ResponseStatusException.class, () -> authService.sjekkAtApplikasjonErIAllowList(List.of("some-id")));
     }
 
 }

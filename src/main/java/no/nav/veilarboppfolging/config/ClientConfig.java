@@ -6,11 +6,11 @@ import no.nav.common.client.aktoroppslag.PdlAktorOppslagClient;
 import no.nav.common.client.norg2.CachedNorg2Client;
 import no.nav.common.client.norg2.Norg2Client;
 import no.nav.common.client.norg2.NorgHttp2Client;
-import no.nav.common.client.pdl.PdlClientImpl;
 import no.nav.common.cxf.StsConfig;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.token_client.builder.AzureAdTokenClientBuilder;
 import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
+import no.nav.common.token_client.client.MachineToMachineTokenClient;
 import no.nav.common.utils.EnvironmentUtils;
 import no.nav.common.utils.UrlUtils;
 import no.nav.veilarboppfolging.client.behandle_arbeidssoker.BehandleArbeidssokerClient;
@@ -30,19 +30,17 @@ import static no.nav.common.utils.UrlUtils.*;
 @Configuration
 public class ClientConfig {
 
-
     @Bean
-    public AktorOppslagClient aktorOppslagClient(SystemUserTokenProvider systemUserTokenProvider) {
-        String pdlUrl = isProduction()
-                ? createProdInternalIngressUrl("pdl-api")
-                : createDevInternalIngressUrl("pdl-api-q1");
+    public AktorOppslagClient aktorOppslagClient(MachineToMachineTokenClient tokenClient) {
+        String tokenScop = String.format("api://%s-fss.pdl.pdl-api/.default",
+                isProduction() ? "prod" : "dev"
+        );
 
-        PdlClientImpl pdlClient = new PdlClientImpl(
-                pdlUrl,
-                systemUserTokenProvider::getSystemUserToken,
-                systemUserTokenProvider::getSystemUserToken);
+        PdlAktorOppslagClient pdlClient = new PdlAktorOppslagClient(
+                createServiceUrl("pdl-api", "pdl", false),
+                () -> tokenClient.createMachineToMachineToken(tokenScop));
 
-        return new CachedAktorOppslagClient(new PdlAktorOppslagClient(pdlClient));
+        return new CachedAktorOppslagClient(pdlClient);
     }
 
     @Bean

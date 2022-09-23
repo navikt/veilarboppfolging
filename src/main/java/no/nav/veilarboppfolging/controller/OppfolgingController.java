@@ -21,13 +21,14 @@ import static no.nav.veilarboppfolging.utils.DtoMappers.*;
 @RequiredArgsConstructor
 @RequestMapping("/api/oppfolging")
 public class OppfolgingController {
-    
+    private final static List<String> ALLOWLIST_V1 = List.of("veilarbvedtaksstotte", "veilarbregistrering");
+
     private final OppfolgingService oppfolgingService;
-    
+
     private final KvpService kvpService;
-    
+
     private final HistorikkService historikkService;
-    
+
     private final AuthService authService;
 
     private final ManuellStatusService manuellStatusService;
@@ -79,7 +80,7 @@ public class OppfolgingController {
                 KodeverkBruker.NAV, authService.getInnloggetVeilederIdent()
         );
 
-        return tilDto(oppfolgingService.hentOppfolgingsStatus(fnr),  authService.erInternBruker());
+        return tilDto(oppfolgingService.hentOppfolgingsStatus(fnr), authService.erInternBruker());
     }
 
     // TODO: Ikke returner OppfolgingStatus
@@ -134,7 +135,7 @@ public class OppfolgingController {
     }
 
     @GetMapping("/oppfolgingsperiode/{uuid}")
-    public OppfolgingPeriodeMinimalDTO hentOppfolgingsPeriode(@PathVariable String uuid){
+    public OppfolgingPeriodeMinimalDTO hentOppfolgingsPeriode(@PathVariable String uuid) {
         var maybePeriode = oppfolgingService.hentOppfolgingsperiode(uuid);
 
         if (maybePeriode.isEmpty()) {
@@ -152,7 +153,11 @@ public class OppfolgingController {
     @GetMapping("/oppfolgingsperioder")
     public List<OppfolgingPeriodeDTO> hentOppfolgingsperioder(@RequestParam("fnr") Fnr fnr) {
         authService.skalVereSystemBruker();
-
+        if (authService.erSystemBrukerFraAzureAd()) {
+            authService.sjekkAtApplikasjonErIAllowList(ALLOWLIST_V1);
+        } else {
+            authService.sjekkLesetilgangMedFnr(fnr);
+        }
         return oppfolgingService.hentOppfolgingsperioder(fnr)
                 .stream()
                 .map(op -> tilOppfolgingPeriodeDTO(op, true))
