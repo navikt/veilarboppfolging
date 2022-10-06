@@ -5,10 +5,12 @@ import no.nav.pto_schema.kafka.json.topic.SisteTilordnetVeilederV1;
 import no.nav.veilarboppfolging.controller.response.*;
 import no.nav.veilarboppfolging.domain.AvslutningStatusData;
 import no.nav.veilarboppfolging.domain.OppfolgingStatusData;
-import no.nav.veilarboppfolging.repository.entity.*;
+import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity;
+import no.nav.veilarboppfolging.repository.entity.MaalEntity;
+import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
+import no.nav.veilarboppfolging.repository.entity.VeilederTilordningEntity;
 
 import java.util.Collections;
-import java.util.Optional;
 
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
@@ -45,7 +47,8 @@ public class DtoMappers {
                 avslutningStatusData.underOppfolging,
                 avslutningStatusData.harYtelser,
                 avslutningStatusData.underKvp,
-                avslutningStatusData.inaktiveringsDato
+                avslutningStatusData.inaktiveringsDato,
+                avslutningStatusData.erSykmeldtMedArbeidsgiver
         );
     }
 
