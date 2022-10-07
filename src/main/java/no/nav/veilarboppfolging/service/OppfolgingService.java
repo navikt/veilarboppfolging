@@ -447,10 +447,6 @@ public class OppfolgingService {
                 .map(status -> ArenaUtils.erUnderOppfolging(status.getFormidlingsgruppe(), status.getServicegruppe()))
                 .orElse(false);
 
-        boolean erSykmeldtMedArbeidsgiver = maybeArenaOppfolging
-                .map(status -> erSykmeldtMedArbeidsgiver(status))
-                .orElse(false);
-
         LocalDate inaktiveringsDato = maybeArenaOppfolging
                 .map(ArenaOppfolgingTilstand::getInaktiveringsdato)
                 .orElse(null);
@@ -461,7 +457,7 @@ public class OppfolgingService {
                 .harYtelser(ytelserOgAktiviteterService.harPagaendeYtelse(fnr))
                 .underKvp(kvpService.erUnderKvp(aktorId))
                 .inaktiveringsDato(inaktiveringsDato)
-                .erSykmeldtMedArbeidsgiver(erSykmeldtMedArbeidsgiver)
+                .erIserv(erIserv)
                 .build();
     }
 
