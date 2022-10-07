@@ -13,4 +13,5 @@ public class AvslutningStatusData {
     public final boolean harYtelser;
     public final boolean underKvp;
     public final LocalDate inaktiveringsDato;
+    public final boolean erIserv;
 }
