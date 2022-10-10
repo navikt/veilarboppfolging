@@ -80,6 +80,9 @@ spec:
         - application: modia-robot-api
           namespace: personoversikt
           cluster: prod-fss
+        - application: modiapersonoversikt-api
+          namespace: personoversikt
+          cluster: prod-fss
         - application: mulighetsrommet-api
           namespace: team-mulighetsrommet
           cluster: prod-gcp
