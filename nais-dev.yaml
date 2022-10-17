@@ -59,6 +59,9 @@ spec:
         - application: veilarbregistrering
           namespace: paw
           cluster: dev-fss
+        - application: veilarbregistrering
+          namespace: paw
+          cluster: dev-gcp
         - application: veilarbapi
           namespace: pto
           cluster: dev-gcp

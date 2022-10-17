@@ -57,6 +57,9 @@ spec:
         - application: veilarbregistrering
           namespace: paw
           cluster: prod-fss
+        - application: veilarbregistrering
+          namespace: paw
+          cluster: prod-gcp
         - application: veilarbapi
           namespace: pto
           cluster: prod-gcp
