@@ -105,15 +105,17 @@ public class MaalService {
         Optional<KvpPeriodeEntity> maybeKvpPeriode = kvpRepository.hentKvpPeriode(kvpRepository.gjeldendeKvp(aktorId));
         maybeKvpPeriode.ifPresent(this::sjekkKvpEnhetTilgang);
 
+        ZonedDateTime endretDato = ZonedDateTime.now();
+
         MaalEntity malData = new MaalEntity()
                 .setAktorId(aktorId.get())
                 .setMal(mal)
                 .setEndretAv(StringUtils.of(endretAvVeileder).orElse(aktorId.get()))
-                .setDato(ZonedDateTime.now());
+                .setDato(endretDato);
 
         transactor.executeWithoutResult((ignored) -> {
             maalRepository.opprett(malData);
-            kafkaProducerService.publiserEndretMal(aktorId, endretAvVeileder);
+            kafkaProducerService.publiserEndretMal(aktorId, endretAvVeileder, endretDato);
         });
 
         metricsService.oppdatertMittMal(malData, maalRepository.aktorMal(aktorId).size());

@@ -114,10 +114,10 @@ public class KafkaProducerService {
         store(kafkaProperties.getKvpAvlsuttetTopic(), aktorId.get(), recordValue);
     }
 
-    public void publiserEndretMal(AktorId aktorId, String veilederIdent) {
+    public void publiserEndretMal(AktorId aktorId, String veilederIdent, ZonedDateTime endretDato) {
         EndringPaMalV1 recordValue = EndringPaMalV1.builder()
                 .aktorId(aktorId.get())
-                .endretTidspunk(ZonedDateTime.now())
+                .endretTidspunk(endretDato)
                 .veilederIdent(veilederIdent)
                 .lagtInnAv(
                         authContextHolder.erEksternBruker()
@@ -127,6 +127,7 @@ public class KafkaProducerService {
                 .build();
 
         store(kafkaProperties.getEndringPaMalTopic(), aktorId.get(), recordValue);
+        store(kafkaProperties.getEndringPaMalAiven(), aktorId.get(), recordValue);
     }
 
     private void store(String topic, String key, Object value) {
