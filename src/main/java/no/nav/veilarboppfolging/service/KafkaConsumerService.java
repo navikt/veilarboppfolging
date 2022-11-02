@@ -16,6 +16,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
+import java.time.ZonedDateTime;
+import java.util.Optional;
+
 import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
 
 @Slf4j
@@ -36,6 +39,8 @@ public class KafkaConsumerService {
 
     private final AktorOppslagClient aktorOppslagClient;
 
+    private final SisteEndringPaaOppfolgingBrukerService sisteEndringPaaOppfolgingBrukerService;
+
     @Autowired
     public KafkaConsumerService(
             AuthContextHolder authContextHolder,
@@ -44,7 +49,8 @@ public class KafkaConsumerService {
             @Lazy IservService iservService,
             OppfolgingsenhetEndringService oppfolgingsenhetEndringService,
             @Lazy OppfolgingEndringService oppfolgingEndringService,
-            AktorOppslagClient aktorOppslagClient) {
+            AktorOppslagClient aktorOppslagClient,
+            SisteEndringPaaOppfolgingBrukerService sisteEndringPaaOppfolgingBrukerService) {
         this.authContextHolder = authContextHolder;
         this.systemUserTokenProvider = systemUserTokenProvider;
         this.kvpService = kvpService;
@@ -52,14 +58,24 @@ public class KafkaConsumerService {
         this.oppfolgingsenhetEndringService = oppfolgingsenhetEndringService;
         this.oppfolgingEndringService = oppfolgingEndringService;
         this.aktorOppslagClient = aktorOppslagClient;
+        this.sisteEndringPaaOppfolgingBrukerService = sisteEndringPaaOppfolgingBrukerService;
     }
 
     @SneakyThrows
     public void consumeEndringPaOppfolgingBruker(ConsumerRecord<String, EndringPaaOppfoelgingsBrukerV2> kafkaMelding) {
         EndringPaaOppfoelgingsBrukerV2 endringPaBruker = kafkaMelding.value();
 
-        if(skalIgnorereIkkeEksisterendeBrukereIDev(Fnr.of(endringPaBruker.getFodselsnummer()))){
+        Fnr brukerFnr = Fnr.of(endringPaBruker.getFodselsnummer());
+
+        if(skalIgnorereIkkeEksisterendeBrukereIDev(brukerFnr)){
             log.info("Velger å ikke behnadle ugyldig bruker i dev miljøet.");
+            return;
+        }
+
+        Optional<ZonedDateTime> sisteEndringPaaOppfolgingBruker = sisteEndringPaaOppfolgingBrukerService.hentSisteEndringDato(brukerFnr);
+
+        if (sisteEndringPaaOppfolgingBruker.isPresent() && sisteEndringPaaOppfolgingBruker.get().isAfter(endringPaBruker.getSistEndretDato())){
+            log.info("Velger å ikke behnadle gamle kafka meldinger for bruker");
             return;
         }
 
@@ -73,6 +89,7 @@ public class KafkaConsumerService {
             iservService.behandleEndretBruker(endringPaBruker);
             oppfolgingsenhetEndringService.behandleBrukerEndring(endringPaBruker);
             oppfolgingEndringService.oppdaterOppfolgingMedStatusFraArena(endringPaBruker);
+            sisteEndringPaaOppfolgingBrukerService.lagreSisteEndring(brukerFnr, endringPaBruker.getSistEndretDato());
         });
     }
 
