@@ -41,6 +41,8 @@ public class KafkaConsumerService {
 
     private final SisteEndringPaaOppfolgingBrukerService sisteEndringPaaOppfolgingBrukerService;
 
+    private final UnleashService unleashService;
+
     @Autowired
     public KafkaConsumerService(
             AuthContextHolder authContextHolder,
@@ -50,7 +52,8 @@ public class KafkaConsumerService {
             OppfolgingsenhetEndringService oppfolgingsenhetEndringService,
             @Lazy OppfolgingEndringService oppfolgingEndringService,
             AktorOppslagClient aktorOppslagClient,
-            SisteEndringPaaOppfolgingBrukerService sisteEndringPaaOppfolgingBrukerService) {
+            SisteEndringPaaOppfolgingBrukerService sisteEndringPaaOppfolgingBrukerService,
+            UnleashService unleashService) {
         this.authContextHolder = authContextHolder;
         this.systemUserTokenProvider = systemUserTokenProvider;
         this.kvpService = kvpService;
@@ -59,6 +62,7 @@ public class KafkaConsumerService {
         this.oppfolgingEndringService = oppfolgingEndringService;
         this.aktorOppslagClient = aktorOppslagClient;
         this.sisteEndringPaaOppfolgingBrukerService = sisteEndringPaaOppfolgingBrukerService;
+        this.unleashService = unleashService;
     }
 
     @SneakyThrows
@@ -72,11 +76,13 @@ public class KafkaConsumerService {
             return;
         }
 
-        Optional<ZonedDateTime> sisteEndringPaaOppfolgingBruker = sisteEndringPaaOppfolgingBrukerService.hentSisteEndringDato(brukerFnr);
+        if (unleashService.skalBrukeSisteEndringDatoIEndringPaaOppfoelgingsBrukerV2()){
+            Optional<ZonedDateTime> sisteEndringPaaOppfolgingBruker = sisteEndringPaaOppfolgingBrukerService.hentSisteEndringDato(brukerFnr);
 
-        if (sisteEndringPaaOppfolgingBruker.isPresent() && sisteEndringPaaOppfolgingBruker.get().isAfter(endringPaBruker.getSistEndretDato())){
-            log.info("Velger å ikke behnadle gamle kafka meldinger for bruker");
-            return;
+            if (sisteEndringPaaOppfolgingBruker.isPresent() && sisteEndringPaaOppfolgingBruker.get().isAfter(endringPaBruker.getSistEndretDato())){
+                log.info("Velger å ikke behnadle gamle kafka meldinger for bruker");
+                return;
+            }
         }
 
         var context = new AuthContext(
