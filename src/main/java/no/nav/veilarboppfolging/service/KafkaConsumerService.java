@@ -71,15 +71,15 @@ public class KafkaConsumerService {
 
         Fnr brukerFnr = Fnr.of(endringPaBruker.getFodselsnummer());
 
-        if(skalIgnorereIkkeEksisterendeBrukereIDev(brukerFnr)){
+        if (skalIgnorereIkkeEksisterendeBrukereIDev(brukerFnr)) {
             log.info("Velger å ikke behandle ugyldig bruker i dev miljøet.");
             return;
         }
 
-        if (erEndringGammel(brukerFnr, endringPaBruker.getSistEndretDato())){
-                log.info("Endring på oppfølgingsbruker fra Arena er eldre enn sist lagret endring. " +
-                        "Dersom vi ikke utførte en rewind på topicen betyr dette at Arena har en uventet oppførsel. " +
-                        "Denne loggmeldingen er kun til informasjon slik at vi eventuelt kan fange opp dette scenariet til ettertid.");
+        if (erEndringGammel(brukerFnr, endringPaBruker.getSistEndretDato())) {
+            log.info("Endring på oppfølgingsbruker fra Arena er eldre enn sist lagret endring. " +
+                    "Dersom vi ikke utførte en rewind på topicen betyr dette at Arena har en uventet oppførsel. " +
+                    "Denne loggmeldingen er kun til informasjon slik at vi eventuelt kan fange opp dette scenariet til ettertid.");
         }
 
         var context = new AuthContext(
@@ -96,22 +96,19 @@ public class KafkaConsumerService {
         });
     }
 
-    private boolean erEndringGammel(Fnr fnr, ZonedDateTime nyEndringTidspunkt){
+    private boolean erEndringGammel(Fnr fnr, ZonedDateTime nyEndringTidspunkt) {
         Optional<ZonedDateTime> sisteRegistrerteEndringTidspunkt = sisteEndringPaaOppfolgingBrukerService.hentSisteEndringDato(fnr);
-
-        //ZonedDateTime startpunktForAaIgnorereTidligereEndringer = ZonedDateTime.of(2022, 11, 2, 11, 11, 00, 00, ZoneId.systemDefault());
-        //return nyEndringTidspunkt.isBefore(startpunktForAaIgnorereTidligereEndringer) || erEndringGammel;
 
         return sisteRegistrerteEndringTidspunkt
                 .map(sisteRegistrerteEndring -> sisteRegistrerteEndring.isAfter(nyEndringTidspunkt))
                 .orElse(false);
     }
 
-    private boolean skalIgnorereIkkeEksisterendeBrukereIDev(Fnr fnr){
-        if(isDevelopment().orElse(false)){
+    private boolean skalIgnorereIkkeEksisterendeBrukereIDev(Fnr fnr) {
+        if (isDevelopment().orElse(false)) {
             try {
                 aktorOppslagClient.hentAktorId(fnr);
-            } catch (IngenGjeldendeIdentException e){
+            } catch (IngenGjeldendeIdentException e) {
                 return true;
             }
         }

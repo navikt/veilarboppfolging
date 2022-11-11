@@ -28,8 +28,4 @@ UnleashService {
     public boolean skalLagreHvilkenVeilederSomHarUtfortTilordning() {
         return unleashClient.isEnabled(LAGRE_VEILEDER_SOM_HAR_UTFORT_TILORDNING);
     }
-
-    public boolean skalBrukeSisteEndringDatoIEndringPaaOppfoelgingsBrukerV2() {
-        return unleashClient.isEnabled(BRUK_SISTE_ENDRING_DATO_I_ENDRING_PAA_OPPFOLGING_BRUKER);
-    }
 }
