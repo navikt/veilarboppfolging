@@ -53,4 +53,27 @@ public class SisteEndringPaaOppfolgingBrukerServiceTest extends IsolatedDatabase
         sisteEndringDato = sisteEndringPaaOppfolgingBrukerService.hentSisteEndringDato(Fnr.of("4"));
         Assert.assertFalse(sisteEndringDato.isPresent());
     }
+
+    @Test
+    public void testOppdatereSisteEndring() {
+        Fnr fnrBruker1 = Fnr.of("10");
+        ZonedDateTime endring1 = ZonedDateTime.of(2022, 11, 10, 11, 0, 0, 0, ZoneId.systemDefault());
+
+        sisteEndringPaaOppfolgingBrukerService.lagreSisteEndring(fnrBruker1, endring1);
+
+        Optional<ZonedDateTime> sisteEndringDato = sisteEndringPaaOppfolgingBrukerService.hentSisteEndringDato(fnrBruker1);
+        Assert.assertTrue(sisteEndringDato.isPresent());
+        Assert.assertTrue(sisteEndringDato.get().equals(endring1));
+
+        /* ny endring for brukeren */
+
+        ZonedDateTime endring2 = ZonedDateTime.of(2022, 11, 15, 11, 0, 0, 0, ZoneId.systemDefault());
+        sisteEndringPaaOppfolgingBrukerService.lagreSisteEndring(fnrBruker1, endring2);
+
+        sisteEndringDato = sisteEndringPaaOppfolgingBrukerService.hentSisteEndringDato(fnrBruker1);
+        Assert.assertTrue(sisteEndringDato.isPresent());
+        Assert.assertTrue(sisteEndringDato.get().equals(endring2));
+    }
+    
+
 }
