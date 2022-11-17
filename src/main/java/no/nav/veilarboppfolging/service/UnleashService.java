@@ -13,6 +13,7 @@ UnleashService {
 
     private final static String IKKE_OPPDATER_OPPFOLGING_MED_SIDEEFFEKT = "veilarboppfolging.ikke_oppdater_oppfolging_med_sideeffekt";
     private static final String LAGRE_VEILEDER_SOM_HAR_UTFORT_TILORDNING = "veilarboppfolging.lagre_veileder_som_har_utfort_tilordning";
+    private static final String BRUK_SISTE_ENDRING_DATO_I_ENDRING_PAA_OPPFOLGING_BRUKER = "veilarboppfolging.bruk_siste_endring_dato_i_endring_paa_oppfolging_bruker";
 
     private final UnleashClient unleashClient;
 
