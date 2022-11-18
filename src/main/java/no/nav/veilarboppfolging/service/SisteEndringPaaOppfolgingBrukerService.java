@@ -22,13 +22,20 @@ public class SisteEndringPaaOppfolgingBrukerService {
 
     @Transactional
     public int lagreSisteEndring(Fnr fnr, ZonedDateTime endringDato) {
-        boolean harVerdi = sisteEndringPaaOppfolgingBrukerRepository.hentSisteEndringForFnr(fnr).isPresent();
+        Optional<ZonedDateTime> sisteEndringForFnrOptional = sisteEndringPaaOppfolgingBrukerRepository.hentSisteEndringForFnr(fnr);
 
-        if (harVerdi) {
-            return sisteEndringPaaOppfolgingBrukerRepository.oppdatereSisteEndringForFnr(fnr, endringDato);
+        if (sisteEndringForFnrOptional.isPresent()) {
+            return oppdatereSisteEndring(fnr, endringDato, sisteEndringForFnrOptional.get());
         }
 
         return sisteEndringPaaOppfolgingBrukerRepository.insertSisteEndringForFnr(fnr, endringDato);
+    }
+
+    private int oppdatereSisteEndring(Fnr fnr, ZonedDateTime endringDato, ZonedDateTime sisteLagretEndring) {
+        if (sisteLagretEndring.isBefore(endringDato)) {
+            return sisteEndringPaaOppfolgingBrukerRepository.oppdatereSisteEndringForFnr(fnr, endringDato);
+        }
+        return 0;
     }
 
 }
