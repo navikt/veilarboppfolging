@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.ZonedDateTime;
 
-import static no.nav.common.kafka.producer.util.ProducerUtils.*;
+import static no.nav.common.kafka.producer.util.ProducerUtils.serializeJsonRecord;
 import static no.nav.pto_schema.kafka.json.JsonSchemaLocator.getKafkaSchema;
 
 @Service
@@ -114,15 +114,15 @@ public class KafkaProducerService {
         store(kafkaProperties.getKvpAvlsuttetTopic(), aktorId.get(), recordValue);
     }
 
-    public void publiserEndretMal(AktorId aktorId, String veilederIdent, ZonedDateTime endretDato) {
+    public void publiserEndretMal(AktorId aktorId, String veilederIdent) {
         EndringPaMalV1 recordValue = EndringPaMalV1.builder()
                 .aktorId(aktorId.get())
-                .endretTidspunk(endretDato)
+                .endretTidspunk(ZonedDateTime.now())
                 .veilederIdent(veilederIdent)
                 .lagtInnAv(
                         authContextHolder.erEksternBruker()
-                            ? EndringPaMalV1.InnsenderData.BRUKER
-                            : EndringPaMalV1.InnsenderData.NAV
+                                ? EndringPaMalV1.InnsenderData.BRUKER
+                                : EndringPaMalV1.InnsenderData.NAV
                 )
                 .build();
 
