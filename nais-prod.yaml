@@ -57,6 +57,9 @@ spec:
         - application: veilarbregistrering
           namespace: paw
           cluster: prod-fss
+        - application: veilarbregistrering
+          namespace: paw
+          cluster: prod-gcp
         - application: veilarbapi
           namespace: pto
           cluster: prod-gcp
@@ -78,6 +81,9 @@ spec:
           namespace: pto
           cluster: prod-fss
         - application: modia-robot-api
+          namespace: personoversikt
+          cluster: prod-fss
+        - application: modiapersonoversikt-api
           namespace: personoversikt
           cluster: prod-fss
         - application: mulighetsrommet-api

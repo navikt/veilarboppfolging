@@ -55,7 +55,7 @@ public class ClientConfig {
 
     @Bean
     public DkifClient dkifClient(SystemUserTokenProvider systemUserTokenProvider) {
-        String url = UrlUtils.createServiceUrl("dkif", "default", false);
+        String url = UrlUtils.createServiceUrl("dkif", "team-rocket", false);
         return new DkifClientImpl(url, systemUserTokenProvider);
     }
 
