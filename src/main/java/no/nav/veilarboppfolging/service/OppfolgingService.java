@@ -36,7 +36,6 @@ import static java.util.Optional.of;
 import static java.util.stream.Collectors.toList;
 import static no.nav.veilarboppfolging.config.ApplicationConfig.SYSTEM_USER_NAME;
 import static no.nav.veilarboppfolging.utils.ArenaUtils.*;
-import static no.nav.veilarboppfolging.utils.KvpUtils.sjekkTilgangGittKvp;
 
 @Slf4j
 @Service
@@ -392,9 +391,9 @@ public class OppfolgingService {
         long kvpId = kvpRepository.gjeldendeKvp(aktorId);
         boolean harSkrivetilgangTilBruker = !kvpService.erUnderKvp(kvpId)
                 || authService.harTilgangTilEnhet(
-                        kvpRepository.hentKvpPeriode(kvpId)
-                                .orElseThrow()
-                                .getEnhet()
+                kvpRepository.hentKvpPeriode(kvpId)
+                        .orElseThrow()
+                        .getEnhet()
         );
 
         Boolean erInaktivIArena = maybeArenaOppfolging.map(ao -> erIserv(ao.getFormidlingsgruppe())).orElse(null);
@@ -458,6 +457,7 @@ public class OppfolgingService {
                 .harYtelser(ytelserOgAktiviteterService.harPagaendeYtelse(fnr))
                 .underKvp(kvpService.erUnderKvp(aktorId))
                 .inaktiveringsDato(inaktiveringsDato)
+                .erIserv(erIserv)
                 .build();
     }
 
