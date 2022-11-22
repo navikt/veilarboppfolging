@@ -80,6 +80,9 @@ public class KafkaConsumerService {
             log.info("Endring på oppfølgingsbruker fra Arena er eldre enn sist lagret endring. " +
                     "Dersom vi ikke utførte en rewind på topicen betyr dette at Arena har en uventet oppførsel. " +
                     "Denne loggmeldingen er kun til informasjon slik at vi eventuelt kan fange opp dette scenariet til ettertid.");
+            if (unleashService.skalIgnorereGamleEndringerFraVeilarbarena()) {
+                return;
+            }
         }
 
         var context = new AuthContext(
@@ -100,7 +103,7 @@ public class KafkaConsumerService {
         Optional<ZonedDateTime> sisteRegistrerteEndringTidspunkt = sisteEndringPaaOppfolgingBrukerService.hentSisteEndringDato(fnr);
 
         return sisteRegistrerteEndringTidspunkt
-                .map(sisteRegistrerteEndring -> sisteRegistrerteEndring.isAfter(nyEndringTidspunkt))
+                .map(sisteRegistrerteEndring -> sisteRegistrerteEndring.isAfter(nyEndringTidspunkt) || sisteRegistrerteEndring.equals(nyEndringTidspunkt))
                 .orElse(false);
     }
 

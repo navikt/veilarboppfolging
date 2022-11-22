@@ -30,5 +30,4 @@ public class SisteEndringPaaOppfolgingBrukerService {
 
         return sisteEndringPaaOppfolgingBrukerRepository.insertSisteEndringForFnr(fnr, endringDato);
     }
-
 }
