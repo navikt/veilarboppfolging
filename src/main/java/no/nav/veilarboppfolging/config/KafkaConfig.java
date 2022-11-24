@@ -145,7 +145,8 @@ public class KafkaConfig {
                         kafkaProperties.getVeilederTilordnetTopic(),
                         kafkaProperties.getOppfolgingsperiodeTopic(),
                         kafkaProperties.getEndringPaManuellStatusTopic(),
-                        kafkaProperties.getEndringPaNyForVeilederTopic()
+                        kafkaProperties.getEndringPaNyForVeilederTopic(),
+                        kafkaProperties.getEndringPaMalAiven()
                 )
         );
     }
