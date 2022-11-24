@@ -8,6 +8,7 @@ import no.nav.common.auth.utils.UserTokenFinder;
 import no.nav.common.log.LogFilter;
 import no.nav.common.rest.filter.ConsumerIdComplianceFilter;
 import no.nav.common.rest.filter.SetStandardHttpHeadersFilter;
+import no.nav.veilarboppfolging.controller.filter.LogOpenAmUsageFilter;
 import no.nav.veilarboppfolging.utils.PingFilter;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
@@ -137,6 +138,15 @@ public class FilterConfig {
         registration.setFilter(new SetStandardHttpHeadersFilter());
         registration.setOrder(5);
         registration.addUrlPatterns("/*");
+        return registration;
+    }
+
+    @Bean
+    public FilterRegistrationBean<LogOpenAmUsageFilter> logOpenAMCallsBean() {
+        FilterRegistrationBean<LogOpenAmUsageFilter> registration = new FilterRegistrationBean<>();
+        registration.setFilter(new LogOpenAmUsageFilter());
+        registration.setOrder(6);
+        registration.addUrlPatterns("/api/*");
         return registration;
     }
 
