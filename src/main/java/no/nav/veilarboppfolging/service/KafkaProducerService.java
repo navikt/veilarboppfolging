@@ -125,8 +125,7 @@ public class KafkaProducerService {
                                 : EndringPaMalV1.InnsenderData.NAV
                 )
                 .build();
-
-        store(kafkaProperties.getEndringPaMalTopic(), aktorId.get(), recordValue);
+        
         store(kafkaProperties.getEndringPaMalAiven(), aktorId.get(), recordValue);
     }
 
