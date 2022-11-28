@@ -32,7 +32,8 @@ import java.util.List;
 import java.util.Properties;
 
 import static no.nav.common.kafka.consumer.util.ConsumerUtils.findConsumerConfigsWithStoreOnFailure;
-import static no.nav.common.kafka.util.KafkaPropertiesPreset.*;
+import static no.nav.common.kafka.util.KafkaPropertiesPreset.aivenByteProducerProperties;
+import static no.nav.common.kafka.util.KafkaPropertiesPreset.onPremByteProducerProperties;
 
 
 @Configuration
@@ -125,8 +126,7 @@ public class KafkaConfig {
                         kafkaProperties.getOppfolgingAvsluttetTopic(),
                         kafkaProperties.getEndringPaaAvsluttOppfolgingTopic(),
                         kafkaProperties.getKvpStartetTopic(),
-                        kafkaProperties.getKvpAvlsuttetTopic(),
-                        kafkaProperties.getEndringPaMalTopic()
+                        kafkaProperties.getKvpAvlsuttetTopic()
                 )
         );
 
