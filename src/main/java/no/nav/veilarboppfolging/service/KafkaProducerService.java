@@ -111,7 +111,6 @@ public class KafkaProducerService {
                 .avsluttetDato(sluttDato)
                 .build();
 
-        store(kafkaProperties.getKvpAvsluttetTopic(), aktorId.get(), recordValue);
         store(kafkaProperties.getKvpAvsluttetTopicAiven(), aktorId.get(), recordValue);
     }
 

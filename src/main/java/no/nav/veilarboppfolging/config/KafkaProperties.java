@@ -14,7 +14,6 @@ public class KafkaProperties {
     String oppfolgingStartetTopic;
     String oppfolgingAvsluttetTopic;
     String kvpStartetTopic;
-    String kvpAvsluttetTopic;
     String endringPaManuellStatusTopic;
     String veilederTilordnetTopic;
     String endringPaNyForVeilederTopic;
