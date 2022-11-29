@@ -125,8 +125,7 @@ public class KafkaConfig {
                         kafkaProperties.getOppfolgingAvsluttetTopic(),
                         kafkaProperties.getEndringPaaAvsluttOppfolgingTopic(),
                         kafkaProperties.getKvpStartetTopic(),
-                        kafkaProperties.getKvpAvsluttetTopic(),
-                        kafkaProperties.getEndringPaMalTopic()
+                        kafkaProperties.getKvpAvsluttetTopic()
                 )
         );
 
