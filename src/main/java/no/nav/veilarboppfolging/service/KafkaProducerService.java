@@ -111,7 +111,8 @@ public class KafkaProducerService {
                 .avsluttetDato(sluttDato)
                 .build();
 
-        store(kafkaProperties.getKvpAvlsuttetTopic(), aktorId.get(), recordValue);
+        store(kafkaProperties.getKvpAvsluttetTopic(), aktorId.get(), recordValue);
+        store(kafkaProperties.getKvpAvsluttetTopicAiven(), aktorId.get(), recordValue);
     }
 
     public void publiserEndretMal(AktorId aktorId, String veilederIdent) {

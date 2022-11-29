@@ -14,7 +14,7 @@ public class KafkaProperties {
     String oppfolgingStartetTopic;
     String oppfolgingAvsluttetTopic;
     String kvpStartetTopic;
-    String kvpAvlsuttetTopic;
+    String kvpAvsluttetTopic;
     String endringPaManuellStatusTopic;
     String veilederTilordnetTopic;
     String endringPaNyForVeilederTopic;
@@ -23,4 +23,5 @@ public class KafkaProperties {
     String oppfolgingsperiodeTopic;
     String sisteTilordnetVeilederTopic;
     String endringPaMalAiven;
+    String kvpAvsluttetTopicAiven;
 }
