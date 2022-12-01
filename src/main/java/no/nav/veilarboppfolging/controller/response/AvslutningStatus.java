@@ -18,5 +18,6 @@ public class AvslutningStatus {
     public boolean harYtelser;
     public boolean underKvp;
     public LocalDate inaktiveringsDato;
+    public boolean erIserv;
 
 }
