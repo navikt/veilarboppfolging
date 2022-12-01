@@ -1,5 +1,6 @@
 package no.nav.veilarboppfolging.config;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import no.nav.common.auth.context.UserRole;
 import no.nav.common.auth.oidc.filter.AzureAdUserRoleResolver;
 import no.nav.common.auth.oidc.filter.OidcAuthenticationFilter;
@@ -140,4 +141,12 @@ public class FilterConfig {
         return registration;
     }
 
+    @Bean
+    public FilterRegistrationBean<AuthInfoFilter> authInfoFilterRegistrationBean(MeterRegistry meterRegistry) {
+        FilterRegistrationBean<AuthInfoFilter> registration = new FilterRegistrationBean<>();
+        registration.setFilter(new AuthInfoFilter(meterRegistry));
+        registration.setOrder(6);
+        registration.addUrlPatterns("/api/*");
+        return registration;
+    }
 }
