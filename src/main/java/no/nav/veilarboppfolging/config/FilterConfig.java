@@ -6,8 +6,8 @@ import no.nav.common.auth.oidc.filter.AzureAdUserRoleResolver;
 import no.nav.common.auth.oidc.filter.OidcAuthenticationFilter;
 import no.nav.common.auth.oidc.filter.OidcAuthenticatorConfig;
 import no.nav.common.auth.utils.UserTokenFinder;
-import no.nav.common.log.LogFilter;
 import no.nav.common.rest.filter.ConsumerIdComplianceFilter;
+import no.nav.common.rest.filter.LogRequestFilter;
 import no.nav.common.rest.filter.SetStandardHttpHeadersFilter;
 import no.nav.veilarboppfolging.utils.PingFilter;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
@@ -115,9 +115,9 @@ public class FilterConfig {
     }
 
     @Bean
-    public FilterRegistrationBean<LogFilter> logFilterRegistrationBean() {
-        FilterRegistrationBean<LogFilter> registration = new FilterRegistrationBean<>();
-        registration.setFilter(new LogFilter(requireApplicationName(), isDevelopment().orElse(false)));
+    public FilterRegistrationBean<LogRequestFilter> logFilterRegistrationBean() {
+        FilterRegistrationBean<LogRequestFilter> registration = new FilterRegistrationBean<>();
+        registration.setFilter(new LogRequestFilter(requireApplicationName(), isDevelopment().orElse(false)));
         registration.setOrder(3);
         registration.addUrlPatterns("/*");
         return registration;

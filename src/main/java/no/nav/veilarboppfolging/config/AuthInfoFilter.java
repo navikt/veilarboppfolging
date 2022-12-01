@@ -13,7 +13,8 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.List;
 
-import static no.nav.common.log.LogFilter.CONSUMER_ID_HEADER_NAME;
+import static no.nav.common.rest.filter.LogRequestFilter.NAV_CONSUMER_ID_HEADER_NAME;
+
 
 @RequiredArgsConstructor
 public class AuthInfoFilter implements Filter {
@@ -25,7 +26,7 @@ public class AuthInfoFilter implements Filter {
         HttpServletRequest request = (HttpServletRequest) servletRequest;
         AuthContextHolder authContextHolder = AuthContextHolderThreadLocal.instance();
 
-        String consumerId = request.getHeader(CONSUMER_ID_HEADER_NAME);
+        String consumerId = request.getHeader(NAV_CONSUMER_ID_HEADER_NAME);
         if (consumerId == null) {
             consumerId = "UKJENT";
         }
