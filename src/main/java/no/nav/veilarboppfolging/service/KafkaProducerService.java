@@ -111,7 +111,7 @@ public class KafkaProducerService {
                 .avsluttetDato(sluttDato)
                 .build();
 
-        store(kafkaProperties.getKvpAvlsuttetTopic(), aktorId.get(), recordValue);
+        store(kafkaProperties.getKvpAvsluttetTopicAiven(), aktorId.get(), recordValue);
     }
 
     public void publiserEndretMal(AktorId aktorId, String veilederIdent) {
@@ -125,8 +125,7 @@ public class KafkaProducerService {
                                 : EndringPaMalV1.InnsenderData.NAV
                 )
                 .build();
-
-        store(kafkaProperties.getEndringPaMalTopic(), aktorId.get(), recordValue);
+        
         store(kafkaProperties.getEndringPaMalAiven(), aktorId.get(), recordValue);
     }
 

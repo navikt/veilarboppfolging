@@ -124,9 +124,7 @@ public class KafkaConfig {
                         kafkaProperties.getOppfolgingStartetTopic(),
                         kafkaProperties.getOppfolgingAvsluttetTopic(),
                         kafkaProperties.getEndringPaaAvsluttOppfolgingTopic(),
-                        kafkaProperties.getKvpStartetTopic(),
-                        kafkaProperties.getKvpAvlsuttetTopic(),
-                        kafkaProperties.getEndringPaMalTopic()
+                        kafkaProperties.getKvpStartetTopic()
                 )
         );
 
@@ -146,7 +144,8 @@ public class KafkaConfig {
                         kafkaProperties.getOppfolgingsperiodeTopic(),
                         kafkaProperties.getEndringPaManuellStatusTopic(),
                         kafkaProperties.getEndringPaNyForVeilederTopic(),
-                        kafkaProperties.getEndringPaMalAiven()
+                        kafkaProperties.getEndringPaMalAiven(),
+                        kafkaProperties.getKvpAvsluttetTopicAiven()
                 )
         );
     }
