@@ -32,8 +32,7 @@ import java.util.List;
 import java.util.Properties;
 
 import static no.nav.common.kafka.consumer.util.ConsumerUtils.findConsumerConfigsWithStoreOnFailure;
-import static no.nav.common.kafka.util.KafkaPropertiesPreset.aivenByteProducerProperties;
-import static no.nav.common.kafka.util.KafkaPropertiesPreset.onPremByteProducerProperties;
+import static no.nav.common.kafka.util.KafkaPropertiesPreset.*;
 
 
 @Configuration
@@ -125,8 +124,7 @@ public class KafkaConfig {
                         kafkaProperties.getOppfolgingStartetTopic(),
                         kafkaProperties.getOppfolgingAvsluttetTopic(),
                         kafkaProperties.getEndringPaaAvsluttOppfolgingTopic(),
-                        kafkaProperties.getKvpStartetTopic(),
-                        kafkaProperties.getKvpAvlsuttetTopic()
+                        kafkaProperties.getKvpStartetTopic()
                 )
         );
 
@@ -146,7 +144,8 @@ public class KafkaConfig {
                         kafkaProperties.getOppfolgingsperiodeTopic(),
                         kafkaProperties.getEndringPaManuellStatusTopic(),
                         kafkaProperties.getEndringPaNyForVeilederTopic(),
-                        kafkaProperties.getEndringPaMalAiven()
+                        kafkaProperties.getEndringPaMalAiven(),
+                        kafkaProperties.getKvpAvsluttetTopicAiven()
                 )
         );
     }
