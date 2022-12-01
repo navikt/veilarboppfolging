@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.ZonedDateTime;
 
-import static no.nav.common.kafka.producer.util.ProducerUtils.*;
+import static no.nav.common.kafka.producer.util.ProducerUtils.serializeJsonRecord;
 import static no.nav.pto_schema.kafka.json.JsonSchemaLocator.getKafkaSchema;
 
 @Service
@@ -111,7 +111,7 @@ public class KafkaProducerService {
                 .avsluttetDato(sluttDato)
                 .build();
 
-        store(kafkaProperties.getKvpAvlsuttetTopic(), aktorId.get(), recordValue);
+        store(kafkaProperties.getKvpAvsluttetTopicAiven(), aktorId.get(), recordValue);
     }
 
     public void publiserEndretMal(AktorId aktorId, String veilederIdent) {
@@ -121,12 +121,12 @@ public class KafkaProducerService {
                 .veilederIdent(veilederIdent)
                 .lagtInnAv(
                         authContextHolder.erEksternBruker()
-                            ? EndringPaMalV1.InnsenderData.BRUKER
-                            : EndringPaMalV1.InnsenderData.NAV
+                                ? EndringPaMalV1.InnsenderData.BRUKER
+                                : EndringPaMalV1.InnsenderData.NAV
                 )
                 .build();
-
-        store(kafkaProperties.getEndringPaMalTopic(), aktorId.get(), recordValue);
+        
+        store(kafkaProperties.getEndringPaMalAiven(), aktorId.get(), recordValue);
     }
 
     private void store(String topic, String key, Object value) {
