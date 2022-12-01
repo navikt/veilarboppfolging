@@ -14,12 +14,12 @@ public class KafkaProperties {
     String oppfolgingStartetTopic;
     String oppfolgingAvsluttetTopic;
     String kvpStartetTopic;
-    String kvpAvlsuttetTopic;
     String endringPaManuellStatusTopic;
     String veilederTilordnetTopic;
     String endringPaNyForVeilederTopic;
-    String endringPaMalTopic;
     String sisteOppfolgingsperiodeTopic;
     String oppfolgingsperiodeTopic;
     String sisteTilordnetVeilederTopic;
+    String endringPaMalAiven;
+    String kvpAvsluttetTopicAiven;
 }

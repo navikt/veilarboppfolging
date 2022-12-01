@@ -59,6 +59,9 @@ spec:
         - application: veilarbregistrering
           namespace: paw
           cluster: dev-fss
+        - application: veilarbregistrering
+          namespace: paw
+          cluster: dev-gcp
         - application: veilarbapi
           namespace: pto
           cluster: dev-gcp
@@ -83,6 +86,9 @@ spec:
           namespace: team-mulighetsrommet
           cluster: dev-gcp
         - application: modia-robot-api
+          namespace: personoversikt
+          cluster: dev-fss
+        - application: modiapersonoversikt-api-q1
           namespace: personoversikt
           cluster: dev-fss
         - application: ditt-sykefravaer
@@ -112,7 +118,5 @@ spec:
       value: aapen-arbeidsrettetOppfolging-oppfolgingAvsluttet-v1-q1
     - name: KVP_STARTET_TOPIC
       value: aapen-arbeidsrettetOppfolging-kvpStartet-v1-q1
-    - name: KVP_AVSLUTTET_TOPIC
-      value: aapen-arbeidsrettetOppfolging-kvpAvsluttet-v1-q1
     - name: ENDRING_PA_MAL_TOPIC
       value: aapen-arbeidsrettetOppfolging-endringPaMal-v1-q1
