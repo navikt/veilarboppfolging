@@ -56,7 +56,7 @@ public class AuthInfoFilter implements Filter {
                         Tag.of("consumer_id", consumerId),
                         Tag.of("user_role", userRole)
                 )
-        );
+        ).increment();
 
         chain.doFilter(servletRequest, response);
     }
