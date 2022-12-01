@@ -8,12 +8,9 @@ import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.common.auth.context.UserRole;
 
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
+import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
-
+import java.io.IOException;
 import java.util.List;
 
 import static no.nav.common.log.LogFilter.CONSUMER_ID_HEADER_NAME;
@@ -24,7 +21,7 @@ public class AuthInfoFilter implements Filter {
     private final MeterRegistry meterRegistry;
 
     @Override
-    public void doFilter(ServletRequest servletRequest, ServletResponse response, FilterChain chain) {
+    public void doFilter(ServletRequest servletRequest, ServletResponse response, FilterChain chain) throws ServletException, IOException {
         HttpServletRequest request = (HttpServletRequest) servletRequest;
         AuthContextHolder authContextHolder = AuthContextHolderThreadLocal.instance();
 
@@ -48,7 +45,7 @@ public class AuthInfoFilter implements Filter {
             tokenType = "OPENAM";
         } else if (tokenIssuer.contains("security-token-service")) {
             tokenType = "STS";
-        }  else {
+        } else {
             tokenType = "UKJENT";
         }
 
@@ -60,5 +57,7 @@ public class AuthInfoFilter implements Filter {
                         Tag.of("user_role", userRole)
                 )
         );
+
+        chain.doFilter(servletRequest, response);
     }
 }
