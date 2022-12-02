@@ -23,7 +23,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static no.nav.common.abac.constants.NavAttributter.RESOURCE_VEILARB_ENHET_EIENDEL;
-import static no.nav.common.log.LogFilter.CONSUMER_ID_HEADER_NAME;
+import static no.nav.common.rest.filter.LogRequestFilter.NAV_CONSUMER_ID_HEADER_NAME;
 import static no.nav.common.utils.EnvironmentUtils.NAIS_APP_NAME_PROPERTY_NAME;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -66,7 +66,7 @@ public class PepAuditLogFilterTest {
 
     private void mockRequestContextHolder() {
         HttpServletRequest httpServletRequest = mock(HttpServletRequest.class);
-        when(httpServletRequest.getHeader(CONSUMER_ID_HEADER_NAME)).thenReturn("123");
+        when(httpServletRequest.getHeader(NAV_CONSUMER_ID_HEADER_NAME)).thenReturn("123");
         when(httpServletRequest.getMethod()).thenReturn("GET");
         when(httpServletRequest.getRequestURI()).thenReturn("/");
         RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(httpServletRequest));
