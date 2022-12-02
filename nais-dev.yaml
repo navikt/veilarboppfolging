@@ -116,7 +116,4 @@ spec:
       value: aapen-arbeidsrettetOppfolging-oppfolgingStartet-v1-q1
     - name: OPPFOLGING_AVSLUTTET_TOPIC
       value: aapen-arbeidsrettetOppfolging-oppfolgingAvsluttet-v1-q1
-    - name: KVP_STARTET_TOPIC
-      value: aapen-arbeidsrettetOppfolging-kvpStartet-v1-q1
-    - name: ENDRING_PA_MAL_TOPIC
-      value: aapen-arbeidsrettetOppfolging-endringPaMal-v1-q1
+

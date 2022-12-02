@@ -100,7 +100,7 @@ public class KafkaProducerService {
                 .opprettetDato(startDato)
                 .build();
 
-        store(kafkaProperties.getKvpStartetTopic(), aktorId.get(), recordValue);
+        store(kafkaProperties.getKvpStartetTopicAiven(), aktorId.get(), recordValue);
     }
 
     public void publiserKvpAvsluttet(AktorId aktorId, String avsluttetAv, String begrunnelse, ZonedDateTime sluttDato) {
