@@ -13,7 +13,6 @@ public class KafkaProperties {
     String endringPaaAvsluttOppfolgingTopic; // Deprecated, erstattes av 'oppfolgingAvsluttet'
     String oppfolgingStartetTopic;
     String oppfolgingAvsluttetTopic;
-    String kvpStartetTopic;
     String endringPaManuellStatusTopic;
     String veilederTilordnetTopic;
     String endringPaNyForVeilederTopic;
@@ -22,4 +21,5 @@ public class KafkaProperties {
     String sisteTilordnetVeilederTopic;
     String endringPaMalAiven;
     String kvpAvsluttetTopicAiven;
+    String kvpStartetTopicAiven;
 }
