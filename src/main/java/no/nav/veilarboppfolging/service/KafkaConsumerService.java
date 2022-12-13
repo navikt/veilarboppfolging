@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
@@ -100,6 +101,14 @@ public class KafkaConsumerService {
     }
 
     private boolean erEndringGammel(Fnr fnr, ZonedDateTime nyEndringTidspunkt) {
+
+        //everything before this date was ok, no need to re-read old messages
+        ZonedDateTime thresholdDato = ZonedDateTime.of(2022, 12, 12, 12, 0, 0, 0, ZoneId.systemDefault());
+
+        if (nyEndringTidspunkt.isBefore(thresholdDato)) {
+            return true;
+        }
+
         Optional<ZonedDateTime> sisteRegistrerteEndringTidspunkt = sisteEndringPaaOppfolgingBrukerService.hentSisteEndringDato(fnr);
 
         return sisteRegistrerteEndringTidspunkt
