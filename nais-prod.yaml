@@ -92,6 +92,15 @@ spec:
         - application: ditt-sykefravaer
           namespace: flex
           cluster: prod-gcp
+        - application: veilarbdirigent
+          namespace: pto
+          cluster: prod-fss
+        - application: veilarbdialog
+          namespace: pto
+          cluster: prod-fss
+        - application: veilarbaktivitet
+          namespace: pto
+          cluster: prod-fss
   vault:
     enabled: true
     paths:
