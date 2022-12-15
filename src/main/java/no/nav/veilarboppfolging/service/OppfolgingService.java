@@ -587,7 +587,6 @@ public class OppfolgingService {
     }
 
     public Optional<OppfolgingsperiodeEntity> hentGjeldendeOppfolgingsperiode(Fnr fnr) {
-        authService.sjekkLesetilgangMedFnr(fnr);
         AktorId aktorId = authService.getAktorIdOrThrow(fnr);
         return oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId);
     }
