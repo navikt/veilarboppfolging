@@ -98,6 +98,11 @@ public class OppfolgingV2Controller {
     @GetMapping("/periode/gjeldende")
     public ResponseEntity<OppfolgingPeriodeMinimalDTO> hentGjeldendePeriode(@RequestParam("fnr") Fnr fnr) {
         authService.skalVereSystemBruker();
+        if (authService.erSystemBrukerFraAzureAd()) {
+            authService.sjekkAtApplikasjonErIAllowList(ALLOWLIST);
+        } else {
+            authService.sjekkLesetilgangMedFnr(fnr);
+        }
 
         return oppfolgingService.hentGjeldendeOppfolgingsperiode(fnr)
                 .map(DtoMappers::tilOppfolgingPeriodeMinimalDTO)
