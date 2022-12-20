@@ -23,7 +23,7 @@ import static org.springframework.http.HttpStatus.FORBIDDEN;
 @RequiredArgsConstructor
 @RequestMapping("/api/oppfolging")
 public class SystemOppfolgingController {
-    private final static List<String> ALLOWLIST = List.of("veilarbregistrering", "veilarbdirigent");
+    private final static List<String> ALLOWLIST = List.of("veilarbregistrering");
 
     private final AuthService authService;
 
