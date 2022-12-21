@@ -19,7 +19,6 @@ import no.nav.common.metrics.InfluxClient;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.metrics.SensuConfig;
 import no.nav.common.sts.NaisSystemUserTokenProvider;
-import no.nav.common.sts.OpenAmSystemUserTokenProvider;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.token_client.builder.AzureAdTokenClientBuilder;
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
@@ -67,14 +66,6 @@ public class ApplicationConfig {
     @Bean
     public AuthContextHolder authContextHolder() {
         return AuthContextHolderThreadLocal.instance();
-    }
-
-    @Bean
-    public OpenAmSystemUserTokenProvider openAmSystemUserTokenProvider(EnvironmentProperties properties, Credentials serviceUserCredentials) {
-        return new OpenAmSystemUserTokenProvider(
-                properties.getOpenAmDiscoveryUrl(), properties.getOpenAmRedirectUrl(),
-                new Credentials(properties.getOpenAmIssoRpUsername(), properties.getOpenAmIssoRpPassword()), serviceUserCredentials
-        );
     }
 
     @Bean
