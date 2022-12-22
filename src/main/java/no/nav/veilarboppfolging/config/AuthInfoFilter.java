@@ -42,8 +42,6 @@ public class AuthInfoFilter implements Filter {
             tokenType = "IDPORTEN";
         } else if (tokenIssuer.contains("tokendings")) {
             tokenType = "TOKENX";
-        } else if (tokenIssuer.contains("isso")) {
-            tokenType = "OPENAM";
         } else if (tokenIssuer.contains("security-token-service")) {
             tokenType = "STS";
         } else {

@@ -30,13 +30,6 @@ public class FilterConfig {
             "srvpam-cv-api", "srvveilarbvedtakss", PTO_ADMIN_SERVICE_USER
     );
 
-    private OidcAuthenticatorConfig openAmStsAuthConfig(EnvironmentProperties properties) {
-        return new OidcAuthenticatorConfig()
-                .withDiscoveryUrl(properties.getOpenAmDiscoveryUrl())
-                .withClientId(properties.getVeilarbloginOpenAmClientId())
-                .withUserRole(UserRole.SYSTEM);
-    }
-
     private OidcAuthenticatorConfig naisStsAuthConfig(EnvironmentProperties properties) {
         return new OidcAuthenticatorConfig()
                 .withDiscoveryUrl(properties.getNaisStsDiscoveryUrl())
@@ -84,7 +77,6 @@ public class FilterConfig {
         OidcAuthenticationFilter authenticationFilter = new OidcAuthenticationFilter(
                 fromConfigs(
                         loginserviceIdportenConfig(properties),
-                        openAmStsAuthConfig(properties),
                         naisStsAuthConfig(properties),
                         naisAzureAdConfig(properties),
                         tokenxAuthConfig(properties)

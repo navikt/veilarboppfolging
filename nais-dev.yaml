@@ -115,9 +115,6 @@ spec:
       - kvPath: /oracle/data/dev/config/veilarboppfolging_q1
         mountPath: /var/run/secrets/nais.io/oracle_config
   env:
-    - name: MODIABLOGIN_OPENAM_CLIENT_ID
-      value: "modialogin-q1"
-
     # producer topics
     - name: ENDRING_PAA_AVSLUTT_OPPFOLGING_TOPIC
       value: aapen-fo-endringPaaAvsluttOppfolging-v1-q1
