@@ -1,5 +1,6 @@
 package no.nav.veilarboppfolging.controller.v2;
 
+import com.nimbusds.jwt.JWTClaimsSet;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +18,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.text.ParseException;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
@@ -25,6 +29,7 @@ import java.util.List;
 public class KvpV2Controller {
 
     private final List<String> allowedUsers = List.of("srvveilarbdialog", "srvveilarbaktivitet");
+    private final List<String> allowedApps = List.of("veilarbdialog", "veilarbaktivitet");
 
     private final KvpService kvpService;
 
@@ -42,7 +47,7 @@ public class KvpV2Controller {
         // KVP information is only available to certain system users. We trust these users here,
         // so that we can avoid doing an ABAC query on each request.
         if (!isRequestAuthorized()) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
 
         return kvpService.hentGjeldendeKvpPeriode(aktorId)
@@ -52,7 +57,14 @@ public class KvpV2Controller {
 
     private boolean isRequestAuthorized() {
         String username = authContextHolder.getSubject().orElse("").toLowerCase();
-        return authService.erSystemBruker() && allowedUsers.contains(username);
+        String appName = authService.hentApplikasjonFraContex();
+        if (authService.erSystemBruker()) {
+            return allowedUsers.contains(username);
+        } else if (authService.erInternBruker()) {
+            return allowedApps.contains(appName);
+        } else {
+            return false;
+        }
     }
 
 }

@@ -318,7 +318,7 @@ public class AuthService {
         throw new ResponseStatusException(HttpStatus.FORBIDDEN);
     }
 
-    private String hentApplikasjonFraContex() {
+    public String hentApplikasjonFraContex() {
         return authContextHolder.getIdTokenClaims()
                 .flatMap(claims -> getStringClaimOrEmpty(claims, "azp_name")) //  "cluster:team:app"
                 .map(claim -> claim.split(":"))
