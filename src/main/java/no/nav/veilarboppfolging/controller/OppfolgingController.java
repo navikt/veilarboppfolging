@@ -21,7 +21,7 @@ import static no.nav.veilarboppfolging.utils.DtoMappers.*;
 @RequiredArgsConstructor
 @RequestMapping("/api/oppfolging")
 public class OppfolgingController {
-    private final static List<String> ALLOWLIST_V1 = List.of("veilarbvedtaksstotte", "veilarbregistrering");
+    private final static List<String> ALLOWLIST_V1 = List.of("veilarbvedtaksstotte", "veilarbregistrering", "veilarbdirigent");
 
     private final OppfolgingService oppfolgingService;
 
