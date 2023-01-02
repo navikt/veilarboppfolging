@@ -77,20 +77,6 @@ public class KafkaProducerService {
         store(kafkaProperties.getVeilederTilordnetTopic(), aktorId.get(), recordValue);
     }
 
-    public void publiserOppfolgingStartet(AktorId aktorId, ZonedDateTime oppfolgingStartet) {
-        OppfolgingStartetV1 recordValue = new OppfolgingStartetV1(aktorId.get(), oppfolgingStartet);
-        store(kafkaProperties.getOppfolgingStartetTopic(), aktorId.get(), recordValue);
-    }
-
-    public void publiserOppfolgingAvsluttet(AktorId aktorId) {
-        OppfolgingAvsluttetV1 recordValue = new OppfolgingAvsluttetV1(aktorId.get(), ZonedDateTime.now());
-
-        store(kafkaProperties.getOppfolgingAvsluttetTopic(), aktorId.get(), recordValue);
-
-        // Deprecated
-        store(kafkaProperties.getEndringPaaAvsluttOppfolgingTopic(), aktorId.get(), recordValue);
-    }
-
     public void publiserKvpStartet(AktorId aktorId, String enhetId, String opprettetAvVeilederId, String begrunnelse, ZonedDateTime startDato) {
         KvpStartetV1 recordValue = KvpStartetV1.builder()
                 .aktorId(aktorId.get())
@@ -125,7 +111,7 @@ public class KafkaProducerService {
                                 : EndringPaMalV1.InnsenderData.NAV
                 )
                 .build();
-        
+
         store(kafkaProperties.getEndringPaMalAiven(), aktorId.get(), recordValue);
     }
 

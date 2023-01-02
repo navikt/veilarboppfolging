@@ -32,7 +32,7 @@ import java.util.List;
 import java.util.Properties;
 
 import static no.nav.common.kafka.consumer.util.ConsumerUtils.findConsumerConfigsWithStoreOnFailure;
-import static no.nav.common.kafka.util.KafkaPropertiesPreset.*;
+import static no.nav.common.kafka.util.KafkaPropertiesPreset.aivenByteProducerProperties;
 
 
 @Configuration
@@ -45,8 +45,6 @@ public class KafkaConfig {
     private final KafkaConsumerClient aivenConsumerClient;
 
     private final KafkaConsumerRecordProcessor consumerRecordProcessor;
-
-    private final KafkaProducerRecordProcessor onPremProducerRecordProcessor;
 
     private final KafkaProducerRecordProcessor aivenProducerRecordProcessor;
 
@@ -111,22 +109,6 @@ public class KafkaConfig {
 
         producerRecordStorage = new KafkaProducerRecordStorage(producerRepository);
 
-        KafkaProducerClient<byte[], byte[]> onPremProducerClient = KafkaProducerClientBuilder.<byte[], byte[]>builder()
-                .withProperties(onPremByteProducerProperties(PRODUCER_CLIENT_ID, kafkaProperties.getBrokersUrl(), credentials))
-                .withMetrics(meterRegistry)
-                .build();
-
-        onPremProducerRecordProcessor = new KafkaProducerRecordProcessor(
-                producerRepository,
-                onPremProducerClient,
-                leaderElectionClient,
-                List.of(
-                        kafkaProperties.getOppfolgingStartetTopic(),
-                        kafkaProperties.getOppfolgingAvsluttetTopic(),
-                        kafkaProperties.getEndringPaaAvsluttOppfolgingTopic()
-                )
-        );
-
         KafkaProducerClient<byte[], byte[]> aivenProducerClient = KafkaProducerClientBuilder.<byte[], byte[]>builder()
                 .withProperties(aivenByteProducerProperties(PRODUCER_CLIENT_ID))
                 .withMetrics(meterRegistry)
@@ -159,7 +141,6 @@ public class KafkaConfig {
     public void start() {
         aivenConsumerClient.start();
         consumerRecordProcessor.start();
-        onPremProducerRecordProcessor.start();
         aivenProducerRecordProcessor.start();
     }
 }

@@ -121,7 +121,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         List<OppfolgingsperiodeEntity> oppfolgingsperioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(AKTOR_ID);
         assertEquals(1, oppfolgingsperioder.size());
 
-        verify(kafkaProducerService, times(1)).publiserOppfolgingStartet(AKTOR_ID, oppfolgingsperioder.get(0).getStartDato());
+        verify(kafkaProducerService, times(1)).publiserOppfolgingsperiode(any(SisteOppfolgingsperiodeV1.class));
     }
 
     @Test
@@ -137,7 +137,6 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         reset(kafkaProducerService);
         oppfolgingService.avsluttOppfolging(FNR, VEILEDER, "");
 
-        verify(kafkaProducerService).publiserOppfolgingAvsluttet(AKTOR_ID);
         verify(kafkaProducerService).publiserOppfolgingsperiode(any(SisteOppfolgingsperiodeV1.class));
         verify(kafkaProducerService).publiserVeilederTilordnet(AKTOR_ID, null);
         verify(kafkaProducerService).publiserEndringPaNyForVeileder(AKTOR_ID, false);
