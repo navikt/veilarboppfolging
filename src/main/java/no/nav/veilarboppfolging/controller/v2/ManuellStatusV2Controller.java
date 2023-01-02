@@ -29,7 +29,6 @@ public class ManuellStatusV2Controller {
 
     @GetMapping
     public ManuellV2Response hentErUnderManuellOppfolging(@RequestParam("fnr") Fnr fnr) {
-        authService.skalVereInternBruker();
         authService.sjekkLesetilgangMedFnr(fnr);
 
         boolean erManuell = manuellStatusService.erManuell(fnr);
@@ -39,7 +38,6 @@ public class ManuellStatusV2Controller {
 
     @GetMapping("/status")
     public ManuellStatusV2Response hentManuellStatus(@RequestParam("fnr") Fnr fnr) {
-        authService.skalVereEnAv(INTERN_OR_SYSTEM);
         authService.sjekkLesetilgangMedFnr(fnr);
 
         DkifKontaktinfo kontaktinfo = manuellStatusService.hentDkifKontaktinfo(fnr);
