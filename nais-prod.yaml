@@ -112,12 +112,4 @@ spec:
         mountPath: /var/run/secrets/nais.io/vault
       - kvPath: /oracle/data/prod/config/veilarboppfolging
         mountPath: /var/run/secrets/nais.io/oracle_config
-  env:
-    # producer topics
-    - name: ENDRING_PAA_AVSLUTT_OPPFOLGING_TOPIC
-      value: aapen-fo-endringPaaAvsluttOppfolging-v1-p
-    - name: OPPFOLGING_STARTET_TOPIC
-      value: aapen-arbeidsrettetOppfolging-oppfolgingStartet-v1-p
-    - name: OPPFOLGING_AVSLUTTET_TOPIC
-      value: aapen-arbeidsrettetOppfolging-oppfolgingAvsluttet-v1-p
 

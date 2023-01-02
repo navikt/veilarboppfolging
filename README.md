@@ -2,36 +2,26 @@
 Tjeneste som lagrer informasjon om status for arbeidsrettet oppfølging for en bruker.
 
 ## Kafka
-### Topic for endring på oppfølgingstatus
-Ved endring på oppfølgingstatus for en bruker publiseres det en melding på følgende topic: 
+### Aiven topics det publiseres til
+pto.siste-oppfolgingsperiode-v1
+pto.oppfolgingsperiode-v1
+pto.siste-tilordnet-veileder-v1
+pto.veileder-tilordnet-v1
+pto.endring-paa-manuell-status-v1
+pto.endring-paa-ny-for-veileder-v1
+pto.endring-paa-maal-v1
+pto.kvp-avsluttet-v1
+pto.kvp-startet-v1
 
-prod-fss:
-- `aapen-fo-endringPaaOppfolgingStatus-v1-p`
+### Aiven topics som konsumeres
+pto.endring-paa-oppfolgingsbruker-v2
 
-dev-fss:
-- `aapen-fo-endringPaaOppfolgingStatus-v1-q0`
-- `aapen-fo-endringPaaOppfolgingStatus-v1-q1`
+Eksempel på melding: Se repo pto-schema
 
-Denne topicen er konfigurert med log compaction på aktørID, og inneholder historikk for alle brukere under arbeidsrettet oppfølging.
-
-Eksempel på melding:
-
-```json
-{
-  "aktoerid": "00000000000",
-  "veileder": "Z000000",
-  "oppfolging": true,
-  "nyForVeileder": false,
-  "manuell": false,
-  "endretTimestamp": "2020-05-01T14:54:02.13+02:00",
-  "startDato": "2020-01-01T14:54:02.13+01:00"
-}
-```
-
-Meldingen inkluderer også en header `Nav-Call-Id` som kan benyttes som korrelasjonsID.
+Meldingen inkluderer en header `Nav-Call-Id` som kan benyttes som korrelasjonsID.
 
 ### Hvordan oppdatere en topic
-Se beskrivelse av hvordan man kan oppdaterer topics i https://github.com/navikt/pto-config (privat repo)
+Se beskrivelse av hvordan man kan oppdatere topics i https://github.com/navikt/pto-config (privat repo)
 
 ## Interne endepunkter
 

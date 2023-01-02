@@ -9,7 +9,6 @@ import no.nav.common.kafka.consumer.util.deserializer.Deserializers;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto_schema.kafka.json.topic.SisteOppfolgingsperiodeV1;
-import no.nav.pto_schema.kafka.json.topic.onprem.OppfolgingStartetV1;
 import no.nav.veilarboppfolging.client.behandle_arbeidssoker.BehandleArbeidssokerClient;
 import no.nav.veilarboppfolging.config.ApplicationTestConfig;
 import no.nav.veilarboppfolging.controller.request.AktiverArbeidssokerData;
@@ -76,13 +75,11 @@ public class AktiverBrukerServiceKafkaTest {
     private AktiverArbeidssokerData aktiverArbeidssokerData;
 
     private KafkaConsumerClient consumerClient;
-    private AtomicReference<Map<AktorId, OppfolgingStartetV1>> konsumerteOppfolgingStartetMeldinger = new AtomicReference<>(new HashMap<>());
     private AtomicReference<Map<AktorId, SisteOppfolgingsperiodeV1>> konsumerteSisteOppfolgingsperiodeMeldinger = new AtomicReference<>(new HashMap<>());
 
     @BeforeEach
     public void setup() {
         jdbcTemplate.update("DELETE FROM KAFKA_PRODUCER_RECORD");
-        konsumerteOppfolgingStartetMeldinger.set(new HashMap<>());
         konsumerteSisteOppfolgingsperiodeMeldinger.set(new HashMap<>());
         aktiverArbeidssokerData = new AktiverArbeidssokerData();
         aktiverArbeidssokerData.setFnr(new AktiverArbeidssokerData.Fnr(fnr.get()));
@@ -93,17 +90,6 @@ public class AktiverBrukerServiceKafkaTest {
 
         consumerClient = KafkaConsumerClientBuilder.builder()
                 .withProperties(kafkaTestConsumerProperties(kafkaContainer.getBrokersAsString()))
-                .withTopicConfig(
-                        new KafkaConsumerClientBuilder.TopicConfig<String, OppfolgingStartetV1>()
-                                .withConsumerConfig(
-                                        "oppfolgingStartet-topic",
-                                        Deserializers.stringDeserializer(),
-                                        Deserializers.jsonDeserializer(OppfolgingStartetV1.class),
-                                        record -> {
-                                            konsumerteOppfolgingStartetMeldinger.get().put(AktorId.of(record.key()), record.value());
-                                            return ConsumeStatus.OK;
-                                        }
-                                ))
                 .withTopicConfig(
                         new KafkaConsumerClientBuilder.TopicConfig<String, SisteOppfolgingsperiodeV1>()
                                 .withConsumerConfig(
@@ -127,9 +113,6 @@ public class AktiverBrukerServiceKafkaTest {
         aktiverBrukerService.aktiverBruker(Fnr.of(aktiverArbeidssokerData.getFnr().getFnr()), aktiverArbeidssokerData.getInnsatsgruppe());
 
         verifiserAsynkront(8, TimeUnit.SECONDS, () -> {
-            assertEquals(1,
-                    konsumerteOppfolgingStartetMeldinger.get().values().size(),
-                    "Skal ikke ha konsumert kafka-melding for oppfølging startet fra transaksjon som rulles tilbake");
             assertEquals(1,
                     konsumerteSisteOppfolgingsperiodeMeldinger.get().values().size(),
                     "Skal ikke ha konsumert kafka-melding for siste oppfølgingsperiode fra transaksjon som rulles tilbake");
@@ -163,9 +146,6 @@ public class AktiverBrukerServiceKafkaTest {
 
         verifiserAsynkront(8, TimeUnit.SECONDS, () -> {
             assertEquals(0, kafkaProducerRecordCount());
-            assertTrue(
-                    konsumerteOppfolgingStartetMeldinger.get().values().isEmpty(),
-                    "Skal ikke ha konsumert kafka-melding for oppfølging startet fra transaksjon som rulles tilbake");
             assertTrue(
                     konsumerteSisteOppfolgingsperiodeMeldinger.get().values().isEmpty(),
                     "Skal ikke ha konsumert kafka-melding for siste oppfølgingsperiode fra transaksjon som rulles tilbake");
