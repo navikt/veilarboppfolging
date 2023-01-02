@@ -319,7 +319,6 @@ public class OppfolgingService {
             List<OppfolgingsperiodeEntity> perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId);
             OppfolgingsperiodeEntity sistePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(perioder);
 
-            kafkaProducerService.publiserOppfolgingStartet(aktorId, sistePeriode.getStartDato());
             kafkaProducerService.publiserOppfolgingsperiode(DtoMappers.tilSisteOppfolgingsperiodeV1(sistePeriode));
 
             if (kontaktinfo.isReservert()) {
@@ -340,8 +339,6 @@ public class OppfolgingService {
     }
 
     public void avsluttOppfolgingForBruker(AktorId aktorId, String veilederId, String begrunnelse) {
-        String brukerIdent = authService.getInnloggetBrukerIdent();
-
         transactor.executeWithoutResult((ignored) -> {
 
             oppfolgingsPeriodeRepository.avslutt(aktorId, veilederId, begrunnelse);
@@ -350,7 +347,6 @@ public class OppfolgingService {
             OppfolgingsperiodeEntity sistePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(perioder);
 
             kafkaProducerService.publiserOppfolgingsperiode(DtoMappers.tilSisteOppfolgingsperiodeV1(sistePeriode));
-            kafkaProducerService.publiserOppfolgingAvsluttet(aktorId);
 
             // Publiserer også endringer som resettes i oppfolgingsstatus-tabellen ved avslutting av oppfølging
             kafkaProducerService.publiserVeilederTilordnet(aktorId, null);

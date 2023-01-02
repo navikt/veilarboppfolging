@@ -10,9 +10,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class KafkaProperties {
     String brokersUrl;
     String endringPaaOppfolgingBrukerTopic;
-    String endringPaaAvsluttOppfolgingTopic; // Deprecated, erstattes av 'oppfolgingAvsluttet'
-    String oppfolgingStartetTopic;
-    String oppfolgingAvsluttetTopic;
     String endringPaManuellStatusTopic;
     String veilederTilordnetTopic;
     String endringPaNyForVeilederTopic;
