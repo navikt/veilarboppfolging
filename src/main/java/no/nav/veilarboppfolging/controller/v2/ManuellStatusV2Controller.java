@@ -39,8 +39,9 @@ public class ManuellStatusV2Controller {
 
     @GetMapping("/status")
     public ManuellStatusV2Response hentManuellStatus(@RequestParam("fnr") Fnr fnr) {
-        if (authService.erSystemBrukerFraAzureAd()) {
+        if (authService.erEksternBruker()) {
             authService.sjekkAtApplikasjonErIAllowList(ALLOWLIST);
+            authService.harEksternBrukerTilgang(fnr);
         } else {
             authService.sjekkLesetilgangMedFnr(fnr);
         }
