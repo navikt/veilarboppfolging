@@ -44,7 +44,6 @@ public class ManuellStatusV2Controller {
         } else {
             authService.sjekkLesetilgangMedFnr(fnr);
         }
-        authService.sjekkLesetilgangMedFnr(fnr);
 
         DkifKontaktinfo kontaktinfo = manuellStatusService.hentDkifKontaktinfo(fnr);
         boolean erManuell = manuellStatusService.erManuell(fnr);
