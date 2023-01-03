@@ -17,16 +17,13 @@ import no.nav.common.kafka.producer.util.KafkaProducerClientBuilder;
 import no.nav.common.kafka.spring.OracleJdbcTemplateConsumerRepository;
 import no.nav.common.kafka.spring.OracleJdbcTemplateProducerRepository;
 import no.nav.common.kafka.util.KafkaPropertiesBuilder;
-import no.nav.common.utils.Credentials;
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
 import no.nav.veilarboppfolging.service.KafkaConsumerService;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
-
 import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.Properties;
@@ -57,7 +54,6 @@ public class KafkaConfig {
             LockProvider lockProvider,
             KafkaConsumerService kafkaConsumerService,
             KafkaProperties kafkaProperties,
-            Credentials credentials,
             MeterRegistry meterRegistry
     ) {
         KafkaConsumerRepository consumerRepository = new OracleJdbcTemplateConsumerRepository(jdbcTemplate);
@@ -92,7 +88,6 @@ public class KafkaConfig {
                 .withAivenBrokerUrl()
                 .withAivenAuth()
                 .withDeserializers(ByteArrayDeserializer.class, ByteArrayDeserializer.class)
-                .withProp(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "none")
                 .build();
 
         aivenConsumerClient = KafkaConsumerClientBuilder.builder()
