@@ -41,7 +41,9 @@ public class ManuellStatusV2Controller {
         if (authService.erEksternBruker()) {
             authService.sjekkAtApplikasjonErIAllowList(ALLOWLIST);
             authService.harEksternBrukerTilgang(fnr);
-        } else {
+        } else if (authService.erSystemBrukerFraAzureAd()) {
+            authService.sjekkAtApplikasjonErIAllowList(ALLOWLIST);
+        } else  {
             authService.sjekkLesetilgangMedFnr(fnr);
         }
 
