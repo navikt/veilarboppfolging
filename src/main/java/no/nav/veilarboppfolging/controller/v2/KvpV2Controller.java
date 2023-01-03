@@ -42,7 +42,7 @@ public class KvpV2Controller {
     public ResponseEntity<KvpDTO> getKvpStatus(@RequestParam("aktorId") AktorId aktorId) {
         // KVP information is only available to certain system users. We trust these users here,
         // so that we can avoid doing an ABAC query on each request.
-        if (!isRequestAuthorized()) {
+        if (!isRequestAuthorized(aktorId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
 
@@ -51,13 +51,17 @@ public class KvpV2Controller {
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NO_CONTENT).build());
     }
 
-    private boolean isRequestAuthorized() {
+    private boolean isRequestAuthorized(AktorId aktorId) {
         String username = authContextHolder.getSubject().orElse("").toLowerCase();
         String appName = authService.hentApplikasjonFraContext();
         if (authService.erSystemBruker()) {
             return allowedUsers.contains(username);
         } else if (authService.erInternBruker()) {
             return allowedApps.contains(appName);
+        } else if (authService.erEksternBruker()) {
+            allowedApps.contains(appName);
+            var fnr = authService.getFnrOrThrow(aktorId);
+            return authService.harEksternBrukerTilgang(fnr);
         } else {
             return false;
         }
