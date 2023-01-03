@@ -54,7 +54,9 @@ public class KvpV2Controller {
     private boolean isRequestAuthorized(AktorId aktorId) {
         String username = authContextHolder.getSubject().orElse("").toLowerCase();
         String appName = authService.hentApplikasjonFraContext();
-        if (authService.erSystemBruker()) {
+        if (authService.erSystemBrukerFraAzureAd()) {
+            return allowedUsers.contains(appName);
+        } else if (authService.erSystemBruker()) {
             return allowedUsers.contains(username);
         } else if (authService.erInternBruker()) {
             return allowedApps.contains(appName);
