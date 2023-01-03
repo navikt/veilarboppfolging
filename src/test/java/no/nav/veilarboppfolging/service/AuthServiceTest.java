@@ -64,6 +64,7 @@ public class AuthServiceTest {
     @Test
     public void sjekkAtSystembrukerErIAllowedList__skal_ikke_kaste_exception_hvis_allowed() {
         JWTClaimsSet claims = new JWTClaimsSet.Builder()
+                .issuer("microsoftonline.com")
                 .claim("azp_name", "cluster:team:test_app")
                 .build();
 
@@ -75,6 +76,7 @@ public class AuthServiceTest {
     @Test
     public void sjekkAtSystembrukerErIAllowedList__skal_kaste_exception_hvis_ikke_allowed() {
         JWTClaimsSet claims = new JWTClaimsSet.Builder()
+                .issuer("microsoftonline.com")
                 .claim("azp_name", "cluster:team:test_app")
                 .build();
 

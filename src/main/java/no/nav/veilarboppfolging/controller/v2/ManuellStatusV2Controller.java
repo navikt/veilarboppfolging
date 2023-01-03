@@ -21,7 +21,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ManuellStatusV2Controller {
 
-    private final static List<UserRole> INTERN_OR_SYSTEM = List.of(UserRole.INTERN, UserRole.SYSTEM);
     private final static List<String> ALLOWLIST = List.of("veilarbdialog");
 
     private final AuthService authService;

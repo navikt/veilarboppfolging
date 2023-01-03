@@ -115,6 +115,7 @@ class OppfolgingControllerIntegrationTest {
 
     private void mockAuthOk() {
         JWTClaimsSet claims = new JWTClaimsSet.Builder()
+                .issuer("microsoftonline.com")
                 .claim("azp_name", "cluster:team:veilarbregistrering")
                 .claim("roles", Collections.singletonList("access_as_application"))
                 .build();
