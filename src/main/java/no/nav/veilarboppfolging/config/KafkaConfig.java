@@ -72,16 +72,6 @@ public class KafkaConfig {
                         )
         );
 
-        /*
-         * Setter AUTO_OFFSET_RESET_CONFIG (auto.offset.reset) til "none". Dette fordi konsument for topic
-         * pto.endring-paa-oppfolgingsbruker-v2 ikke sjekker om en melding er lest fra før.
-         *
-         * F.eks. for en gitt bruker:
-         *  - melding 1 = "start oppfølging"
-         *  - melding 2 = "avslutt oppfølging"
-         *  - melding 3 = "start oppfølging"
-         * Dersom melding 2 og 3 leses på nytt, så vil oppfølgingsperiode avsluttes, og en ny startes.
-         */
         Properties aivenConsumerProperties = KafkaPropertiesBuilder.consumerBuilder()
                 .withBaseProperties()
                 .withConsumerGroupId(CONSUMER_GROUP_ID)
