@@ -59,9 +59,8 @@ public class KvpV2Controller {
         } else if (authService.erInternBruker()) {
             return allowedApps.contains(appName);
         } else if (authService.erEksternBruker()) {
-            allowedApps.contains(appName);
-            var fnr = authService.getFnrOrThrow(aktorId);
-            return authService.harEksternBrukerTilgang(fnr);
+            return allowedApps.contains(appName)
+                && authService.harEksternBrukerTilgang(authService.getFnrOrThrow(aktorId));
         } else {
             return false;
         }
