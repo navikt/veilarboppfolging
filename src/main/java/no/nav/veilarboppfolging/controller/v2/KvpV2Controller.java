@@ -1,6 +1,5 @@
 package no.nav.veilarboppfolging.controller.v2;
 
-import com.nimbusds.jwt.JWTClaimsSet;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import lombok.RequiredArgsConstructor;
@@ -18,10 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.text.ParseException;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
@@ -57,7 +53,7 @@ public class KvpV2Controller {
 
     private boolean isRequestAuthorized() {
         String username = authContextHolder.getSubject().orElse("").toLowerCase();
-        String appName = authService.hentApplikasjonFraContex();
+        String appName = authService.hentApplikasjonFraContext();
         if (authService.erSystemBruker()) {
             return allowedUsers.contains(username);
         } else if (authService.erInternBruker()) {

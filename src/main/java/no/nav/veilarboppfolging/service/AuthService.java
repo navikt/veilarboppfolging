@@ -310,7 +310,7 @@ public class AuthService {
 
     @SneakyThrows
     public void sjekkAtApplikasjonErIAllowList(List<String> allowlist) {
-        String appname = hentApplikasjonFraContex();
+        String appname = hentApplikasjonFraContext();
         if (allowlist.contains(appname)) {
             return;
         }
@@ -318,7 +318,7 @@ public class AuthService {
         throw new ResponseStatusException(HttpStatus.FORBIDDEN);
     }
 
-    public String hentApplikasjonFraContex() {
+    public String hentApplikasjonFraContext() {
         return authContextHolder.getIdTokenClaims()
                 .flatMap(claims -> getStringClaimOrEmpty(claims, "azp_name")) //  "cluster:team:app"
                 .map(claim -> claim.split(":"))
