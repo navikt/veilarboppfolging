@@ -89,10 +89,8 @@ public class AuthService {
         }
     }
 
-    public void skalVereEksternBruker() {
-        if (!authContextHolder.erEksternBruker()) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bruker er ikke en ekstern bruker");
-        }
+    public boolean harEksternBrukerTilgang(Fnr fnr) {
+        return getInnloggetBrukerIdent().equals(fnr.get());
     }
 
     public void skalVereSystemBruker() {
@@ -318,9 +316,31 @@ public class AuthService {
         throw new ResponseStatusException(HttpStatus.FORBIDDEN);
     }
 
+    public static boolean isAzure(Optional<JWTClaimsSet> maybeClaims) {
+        return maybeClaims.map(claims -> hasIssuer(claims, "microsoftonline.com")).orElse(false);
+    }
+
+    public static boolean isTokenX(Optional<JWTClaimsSet> maybeClaims) {
+        return maybeClaims.map(claims -> hasIssuer(claims, "tokendings")).orElse(false);
+    }
+    private static boolean hasIssuer(JWTClaimsSet claims, String issuerSubString) {
+        var fullIssuerString = claims.getIssuer();
+        return fullIssuerString.contains(issuerSubString);
+    }
+
+    private Optional<String> getFullAppName() { //  "cluster:team:app"
+        var maybeClaims = authContextHolder.getIdTokenClaims();
+        if (isAzure(maybeClaims)) {
+            return maybeClaims.flatMap(claims -> getStringClaimOrEmpty(claims, "azp_name"));
+        } else if (isTokenX(maybeClaims)) {
+            return maybeClaims.flatMap(claims -> getStringClaimOrEmpty(claims, "client_id"));
+        } else {
+            return Optional.empty();
+        }
+    }
+
     public String hentApplikasjonFraContext() {
-        return authContextHolder.getIdTokenClaims()
-                .flatMap(claims -> getStringClaimOrEmpty(claims, "azp_name")) //  "cluster:team:app"
+        return getFullAppName()
                 .map(claim -> claim.split(":"))
                 .filter(claims -> claims.length == 3)
                 .map(claims -> claims[2])

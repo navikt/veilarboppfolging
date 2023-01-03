@@ -7,6 +7,8 @@ import lombok.RequiredArgsConstructor;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.common.auth.context.UserRole;
+import no.nav.veilarboppfolging.service.AuthService;
+import org.checkerframework.checker.units.qual.A;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
@@ -32,15 +34,15 @@ public class AuthInfoFilter implements Filter {
         }
 
         String userRole = authContextHolder.getRole().map(UserRole::name).orElse("UKJENT");
-
-        String tokenIssuer = authContextHolder.getIdTokenClaims().map(JWTClaimsSet::getIssuer).orElse("");
+        var claims = authContextHolder.getIdTokenClaims();
+        String tokenIssuer = claims.map(JWTClaimsSet::getIssuer).orElse("");
 
         String tokenType;
-        if (tokenIssuer.contains("microsoftonline.com")) {
+        if (AuthService.isAzure(claims)) {
             tokenType = "AAD";
         } else if (tokenIssuer.contains("difi.no")) {
             tokenType = "IDPORTEN";
-        } else if (tokenIssuer.contains("tokendings")) {
+        } else if (AuthService.isTokenX(claims)) {
             tokenType = "TOKENX";
         } else if (tokenIssuer.contains("security-token-service")) {
             tokenType = "STS";
