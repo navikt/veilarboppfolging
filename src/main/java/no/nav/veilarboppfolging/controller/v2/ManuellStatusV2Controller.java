@@ -22,6 +22,7 @@ import java.util.List;
 public class ManuellStatusV2Controller {
 
     private final static List<UserRole> INTERN_OR_SYSTEM = List.of(UserRole.INTERN, UserRole.SYSTEM);
+    private final static List<String> ALLOWLIST = List.of("veilarbdialog");
 
     private final AuthService authService;
 
@@ -29,7 +30,11 @@ public class ManuellStatusV2Controller {
 
     @GetMapping
     public ManuellV2Response hentErUnderManuellOppfolging(@RequestParam("fnr") Fnr fnr) {
-        authService.sjekkLesetilgangMedFnr(fnr);
+        if (authService.erSystemBrukerFraAzureAd()) {
+            authService.sjekkAtApplikasjonErIAllowList(ALLOWLIST);
+        } else {
+            authService.sjekkLesetilgangMedFnr(fnr);
+        }
 
         boolean erManuell = manuellStatusService.erManuell(fnr);
 
