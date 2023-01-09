@@ -21,7 +21,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ManuellStatusV2Controller {
 
-    private final static List<String> ALLOWLIST = List.of("veilarbdialog");
+    private final static List<String> ALLOWLIST = List.of("veilarbdialog", "veilarbaktivitet");
 
     private final AuthService authService;
 
