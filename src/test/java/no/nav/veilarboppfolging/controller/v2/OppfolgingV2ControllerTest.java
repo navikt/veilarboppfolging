@@ -1,5 +1,6 @@
 package no.nav.veilarboppfolging.controller.v2;
 
+import no.nav.common.auth.oidc.filter.OidcAuthenticationFilter;
 import no.nav.common.json.JsonUtils;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.controller.response.OppfolgingPeriodeMinimalDTO;
@@ -8,11 +9,15 @@ import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
 import no.nav.veilarboppfolging.service.AuthService;
 import no.nav.veilarboppfolging.service.OppfolgingService;
 
+import no.nav.veilarboppfolging.utils.auth.AuthorizationInterceptor;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
+import org.springframework.stereotype.Component;
 import org.springframework.test.web.servlet.MockMvc;
 import wiremock.org.eclipse.jetty.http.HttpStatus;
 
@@ -29,7 +34,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(controllers = OppfolgingV2Controller.class)
+@WebMvcTest(controllers = OppfolgingV2Controller.class, includeFilters = @ComponentScan.Filter(type = FilterType.ANNOTATION))
 class OppfolgingV2ControllerTest {
 
     @Autowired
@@ -39,10 +44,14 @@ class OppfolgingV2ControllerTest {
     private AuthService authService;
 
     @MockBean
+    AuthorizationInterceptor authorizationInterceptor;
+
+    @MockBean
     private OppfolgingService oppfolgingService;
 
     @Test
     void hentGjeldendeOppfolginsperiode_should_return_gjeldende() throws Exception {
+        when(authorizationInterceptor.preHandle(any(), any(), any())).thenReturn(true);
         ZonedDateTime startDato = ZonedDateTime.of(2021, 8, 27, 13, 44, 26, 356299000, ZoneId.of("Europe/Paris"));
         UUID uuid = UUID.fromString("e3e7f94b-d08d-464b-bdf5-e219207e915f");
         OppfolgingsperiodeEntity gjeldendePeriode = OppfolgingsperiodeEntity.builder()
@@ -66,6 +75,7 @@ class OppfolgingV2ControllerTest {
 
     @Test
     void hentGJeldendeOppfolgingsPeriode_should_return_204_on_empty_result() throws Exception {
+        when(authorizationInterceptor.preHandle(any(), any(), any())).thenReturn(true);
         Fnr fnr = Fnr.of("1234");
         when(oppfolgingService.hentGjeldendeOppfolgingsperiode(fnr)).thenReturn(Optional.empty());
         mockMvc.perform(get("/api/v2/oppfolging/periode/gjeldende").queryParam("fnr", fnr.get()))

@@ -151,7 +151,13 @@ public class AuthService {
     }
 
     public void sjekkLesetilgangMedFnr(Fnr fnr) {
-        sjekkLesetilgangMedAktorId(getAktorIdOrThrow(fnr));
+        if (authContextHolder.erEksternBruker()) {
+            if (!harEksternBrukerTilgang(fnr)) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Ekstern bruker har ikke tilgang på andre brukere enn seg selv");
+            }
+        } else {
+            sjekkLesetilgangMedAktorId(getAktorIdOrThrow(fnr));
+        }
     }
 
     public void sjekkLesetilgangMedAktorId(AktorId aktorId) {
@@ -306,6 +312,10 @@ public class AuthService {
         return empty();
     }
 
+
+    public void sjekkAtApplikasjonErIAllowList(String[] allowlist) {
+        sjekkAtApplikasjonErIAllowList(List.of(allowlist));
+    }
     @SneakyThrows
     public void sjekkAtApplikasjonErIAllowList(List<String> allowlist) {
         String appname = hentApplikasjonFraContext();

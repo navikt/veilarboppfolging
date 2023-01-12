@@ -13,6 +13,8 @@ import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
 import no.nav.veilarboppfolging.service.AuthService;
 import no.nav.veilarboppfolging.service.OppfolgingService;
 import no.nav.veilarboppfolging.utils.DtoMappers;
+import no.nav.veilarboppfolging.utils.auth.AuthorizeAktorId;
+import no.nav.veilarboppfolging.utils.auth.AuthorizeFnr;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,17 +29,13 @@ import static no.nav.veilarboppfolging.utils.DtoMappers.*;
 @RequestMapping("/api/v2/oppfolging")
 @RequiredArgsConstructor
 public class OppfolgingV2Controller {
-    private final static List<String> ALLOWLIST = List.of("veilarbvedtaksstotte", "veilarbdialog", "veilarbaktivitet");
     private final OppfolgingService oppfolgingService;
 
     private final AuthService authService;
 
+    @AuthorizeFnr(allowlist = {"veilarbvedtaksstotte", "veilarbdialog", "veilarbaktivitet"})
     @GetMapping(params = "fnr")
     public UnderOppfolgingV2Response underOppfolging(@RequestParam(value = "fnr") Fnr fnr) {
-        boolean harTilgangSomAADSystembruker = authService.erSystemBrukerFraAzureAd();
-        if (!harTilgangSomAADSystembruker) {
-            authService.sjekkLesetilgangMedFnr(fnr);
-        }
         return new UnderOppfolgingV2Response(oppfolgingService.erUnderOppfolging(fnr));
     }
 
@@ -52,9 +50,7 @@ public class OppfolgingV2Controller {
         if (!authService.erEksternBruker()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Som internbruker/systembruker er aktorId eller fnr påkrevd");
         }
-
         Fnr fnr = Fnr.of(authService.getInnloggetBrukerIdent());
-
         return new UnderOppfolgingV2Response(oppfolgingService.erUnderOppfolging(fnr));
     }
 
@@ -62,7 +58,6 @@ public class OppfolgingV2Controller {
     public ResponseEntity<?> startOppfolging(@RequestParam("fnr") Fnr fnr) {
         authService.skalVereInternBruker();
         oppfolgingService.startOppfolging(fnr);
-
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
@@ -70,7 +65,6 @@ public class OppfolgingV2Controller {
     public ResponseEntity<?> avsluttOppfolging(@RequestBody AvsluttOppfolgingV2Request request) {
         authService.skalVereInternBruker();
         oppfolgingService.avsluttOppfolging(request.getFnr(), request.getVeilederId().get(), request.getBegrunnelse());
-
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
@@ -95,14 +89,9 @@ public class OppfolgingV2Controller {
         return tilOppfolgingPeriodeMinimalDTO(periode);
     }
 
+    @AuthorizeFnr(allowlist = {"veilarbvedtaksstotte", "veilarbdialog", "veilarbaktivitet"})
     @GetMapping("/periode/gjeldende")
     public ResponseEntity<OppfolgingPeriodeMinimalDTO> hentGjeldendePeriode(@RequestParam("fnr") Fnr fnr) {
-        if (authService.erSystemBrukerFraAzureAd()) {
-            authService.sjekkAtApplikasjonErIAllowList(ALLOWLIST);
-        } else {
-            authService.sjekkLesetilgangMedFnr(fnr);
-        }
-
         return oppfolgingService.hentGjeldendeOppfolgingsperiode(fnr)
                 .map(DtoMappers::tilOppfolgingPeriodeMinimalDTO)
                 .map(op -> new ResponseEntity<>(op, HttpStatus.OK))
@@ -115,13 +104,9 @@ public class OppfolgingV2Controller {
         return hentOppfolgingsperioder(aktorId);
     }
 
+    @AuthorizeAktorId(allowlist = {"veilarbvedtaksstotte", "veilarbdialog", "veilarbaktivitet"})
     @GetMapping(value = "/perioder", params = "aktorId")
     public List<OppfolgingPeriodeDTO> hentOppfolgingsperioder(@RequestParam("aktorId") AktorId aktorId) {
-        if (authService.erSystemBrukerFraAzureAd()) {
-            authService.sjekkAtApplikasjonErIAllowList(ALLOWLIST);
-        } else {
-            authService.sjekkLesetilgangMedAktorId(aktorId);
-        }
         return oppfolgingService.hentOppfolgingsperioder(aktorId)
                 .stream()
                 .map(this::filtrerKvpPerioder)
