@@ -345,7 +345,7 @@ public class AuthService {
         } else if (isTokenX(maybeClaims)) {
             return maybeClaims.flatMap(claims -> getStringClaimOrEmpty(claims, "client_id"));
         } else {
-            return Optional.empty();
+            return authContextHolder.getSubject();
         }
     }
 
