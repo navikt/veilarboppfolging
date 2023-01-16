@@ -151,7 +151,7 @@ public class AuthService {
     }
 
     public void sjekkLesetilgangMedFnr(Fnr fnr) {
-        if (authContextHolder.erEksternBruker()) {
+        if (erEksternBruker()) {
             if (!harEksternBrukerTilgang(fnr)) {
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Ekstern bruker har ikke tilgang på andre brukere enn seg selv");
             }
