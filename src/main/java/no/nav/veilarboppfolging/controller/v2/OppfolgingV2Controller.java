@@ -33,7 +33,7 @@ public class OppfolgingV2Controller {
 
     private final AuthService authService;
 
-    @AuthorizeFnr(allowlist = {"veilarbvedtaksstotte", "veilarbdialog", "veilarbaktivitet"})
+    @AuthorizeFnr(allowlist = {"veilarbvedtaksstotte", "veilarbdialog", "veilarbaktivitet", "veilarbregistrering"})
     @GetMapping(params = "fnr")
     public UnderOppfolgingV2Response underOppfolging(@RequestParam(value = "fnr") Fnr fnr) {
         return new UnderOppfolgingV2Response(oppfolgingService.erUnderOppfolging(fnr));

@@ -26,6 +26,10 @@ public class AuthorizationInterceptor implements HandlerInterceptor {
             try {
                 annotationHandler.doAuthorizationCheckIfTagged(((HandlerMethod) handler).getMethod(), request);
             } catch (Exception e) {
+                // Catch all exception except status-exceptions
+                if (e instanceof ResponseStatusException) {
+                    return true;
+                }
                 log.error("Failed to process annotation", e);
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
             }
