@@ -2,6 +2,7 @@ package no.nav.veilarboppfolging.service;
 
 import lombok.SneakyThrows;
 import lombok.val;
+import no.nav.common.client.aktorregister.IngenGjeldendeIdentException;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto_schema.kafka.json.topic.SisteOppfolgingsperiodeV1;
@@ -181,10 +182,11 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     }
 
     @Test
-    public void ukjentAktor() {
+    public void skal_krasje_nar_aktorId_er_ukjent() {
         doCallRealMethod().when(authService).sjekkLesetilgangMedFnr(any());
-        doThrow(new IllegalArgumentException()).when(authService).getAktorIdOrThrow(FNR);
-        assertThrows(IllegalArgumentException.class, this::hentOppfolgingStatus);
+        when(authService.erEksternBruker()).thenReturn(false);
+        doThrow(new IngenGjeldendeIdentException()).when(authService).getAktorIdOrThrow(FNR);
+        assertThrows(IngenGjeldendeIdentException.class, this::hentOppfolgingStatus);
     }
 
     @Test
