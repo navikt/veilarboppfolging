@@ -1,7 +1,9 @@
 package no.nav.veilarboppfolging.controller.v2;
 
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.types.identer.AktorId;
@@ -34,10 +36,10 @@ public class KvpV2Controller {
     private final AuthContextHolder authContextHolder;
 
     @GetMapping
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "Actor is currently in a KVP period.", response = KvpDTO.class),
-            @ApiResponse(code = 204, message = "Actor is currently not in a KVP period."),
-            @ApiResponse(code = 403, message = "The API endpoint is requested by a user which is not in the allowed users list.")
+    @Operation(responses = {
+            @ApiResponse(responseCode = "200", description = "Actor is currently in a KVP period.", content = @Content(schema = @Schema(implementation = KvpDTO.class))),
+            @ApiResponse(responseCode = "204", description = "Actor is currently not in a KVP period."),
+            @ApiResponse(responseCode = "403", description = "The API endpoint is requested by a user which is not in the allowed users list.")
     })
     public ResponseEntity<KvpDTO> getKvpStatus(@RequestParam("aktorId") AktorId aktorId) {
         // KVP information is only available to certain system users. We trust these users here,

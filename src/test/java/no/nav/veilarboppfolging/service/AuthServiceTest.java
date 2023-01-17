@@ -2,6 +2,8 @@ package no.nav.veilarboppfolging.service;
 
 import com.nimbusds.jwt.JWTClaimsSet;
 import no.nav.common.abac.Pep;
+import no.nav.common.audit_log.log.AuditLogger;
+import no.nav.common.audit_log.log.AuditLoggerImpl;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.UserRole;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
@@ -33,13 +35,16 @@ public class AuthServiceTest {
 
     private final EnvironmentProperties environmentProperties = mock(EnvironmentProperties.class);
 
+    private final AuditLogger auditLogger = mock(AuditLoggerImpl.class);
+
     private AuthService authService = new AuthService(
             authContextHolder,
             veilarbPep,
             aktorOppslagClient,
             serviceUserCredentials,
             azureAdOnBehalfOfTokenClient,
-            environmentProperties
+            environmentProperties,
+            auditLogger
     );
 
     @Test

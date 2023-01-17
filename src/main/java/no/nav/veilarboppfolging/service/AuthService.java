@@ -12,6 +12,11 @@ import no.nav.common.abac.constants.StandardAttributter;
 import no.nav.common.abac.domain.Attribute;
 import no.nav.common.abac.domain.request.*;
 import no.nav.common.abac.domain.response.XacmlResponse;
+import no.nav.common.audit_log.cef.CefMessage;
+import no.nav.common.audit_log.cef.CefMessageEvent;
+import no.nav.common.audit_log.cef.CefMessageSeverity;
+import no.nav.common.audit_log.log.AuditLogger;
+import no.nav.common.audit_log.log.AuditLoggerImpl;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.UserRole;
 import no.nav.common.auth.utils.IdentUtils;
@@ -48,6 +53,7 @@ import static no.nav.common.auth.Constants.AAD_NAV_IDENT_CLAIM;
 public class AuthService {
 
     private final AuthContextHolder authContextHolder;
+    private final AuditLogger auditLogger;
 
     private final Pep veilarbPep;
 
@@ -60,13 +66,14 @@ public class AuthService {
     private final EnvironmentProperties environmentProperties;
 
     @Autowired
-    public AuthService(AuthContextHolder authContextHolder, Pep veilarbPep, AktorOppslagClient aktorOppslagClient, Credentials serviceUserCredentials, AzureAdOnBehalfOfTokenClient aadOboTokenClient, EnvironmentProperties environmentProperties) {
+    public AuthService(AuthContextHolder authContextHolder, Pep veilarbPep, AktorOppslagClient aktorOppslagClient, Credentials serviceUserCredentials, AzureAdOnBehalfOfTokenClient aadOboTokenClient, EnvironmentProperties environmentProperties, AuditLogger auditLogger) {
         this.authContextHolder = authContextHolder;
         this.veilarbPep = veilarbPep;
         this.aktorOppslagClient = aktorOppslagClient;
         this.serviceUserCredentials = serviceUserCredentials;
         this.aadOboTokenClient = aadOboTokenClient;
         this.environmentProperties = environmentProperties;
+        this.auditLogger = auditLogger;
     }
 
     public void skalVereEnAv(List<UserRole> roller) {
@@ -90,7 +97,20 @@ public class AuthService {
     }
 
     public boolean harEksternBrukerTilgang(Fnr fnr) {
-        return getInnloggetBrukerIdent().equals(fnr.get());
+        // Når man ikke bruker Pep så må man gjøre auditlogging selv
+        var subjectUser = getInnloggetBrukerIdent();
+        var isAllowed = subjectUser.equals(fnr.get());
+        auditLogger.log(CefMessage.builder()
+            .timeEnded(System.currentTimeMillis())
+            .applicationName("veilarboppfolging")
+            .sourceUserId(subjectUser)
+            .event(CefMessageEvent.ACCESS)
+            .severity(CefMessageSeverity.INFO)
+            .name("veilarboppfolging-audit-log")
+            .destinationUserId(fnr.get())
+            .extension("msg", isAllowed ? "Ekstern bruker har gjort oppslag på seg selv" : "Ekstern bruker ble nektet innsyn")
+            .build());
+        return isAllowed;
     }
 
     public void skalVereSystemBruker() {
@@ -151,7 +171,13 @@ public class AuthService {
     }
 
     public void sjekkLesetilgangMedFnr(Fnr fnr) {
-        sjekkLesetilgangMedAktorId(getAktorIdOrThrow(fnr));
+        if (erEksternBruker()) {
+            if (!harEksternBrukerTilgang(fnr)) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Ekstern bruker har ikke tilgang på andre brukere enn seg selv");
+            }
+        } else {
+            sjekkLesetilgangMedAktorId(getAktorIdOrThrow(fnr));
+        }
     }
 
     public void sjekkLesetilgangMedAktorId(AktorId aktorId) {
@@ -306,6 +332,10 @@ public class AuthService {
         return empty();
     }
 
+
+    public void sjekkAtApplikasjonErIAllowList(String[] allowlist) {
+        sjekkAtApplikasjonErIAllowList(List.of(allowlist));
+    }
     @SneakyThrows
     public void sjekkAtApplikasjonErIAllowList(List<String> allowlist) {
         String appname = hentApplikasjonFraContext();
@@ -335,7 +365,7 @@ public class AuthService {
         } else if (isTokenX(maybeClaims)) {
             return maybeClaims.flatMap(claims -> getStringClaimOrEmpty(claims, "client_id"));
         } else {
-            return Optional.empty();
+            return authContextHolder.getSubject();
         }
     }
 

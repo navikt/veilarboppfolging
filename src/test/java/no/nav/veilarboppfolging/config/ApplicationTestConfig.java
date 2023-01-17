@@ -6,6 +6,8 @@ import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
 import no.finn.unleash.UnleashContext;
 import no.nav.common.abac.Pep;
+import no.nav.common.audit_log.cef.CefMessage;
+import no.nav.common.audit_log.log.AuditLogger;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.common.featuretoggle.UnleashClient;
@@ -112,6 +114,21 @@ public class ApplicationTestConfig {
     @Bean
     public LeaderElectionClient leaderElectionClient() {
         return () -> true;
+    }
+
+    @Bean
+    public AuditLogger auditLogger() {
+        return new AuditLogger() {
+            @Override
+            public void log(CefMessage message) {
+                return;
+            }
+
+            @Override
+            public void log(String message) {
+                return;
+            }
+        };
     }
 
 
