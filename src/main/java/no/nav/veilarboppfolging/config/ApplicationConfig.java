@@ -8,6 +8,8 @@ import no.nav.common.abac.VeilarbPepFactory;
 import no.nav.common.abac.audit.AuditLogFilterUtils;
 import no.nav.common.abac.audit.SpringAuditRequestInfoSupplier;
 import no.nav.common.abac.constants.NavAttributter;
+import no.nav.common.audit_log.log.AuditLogger;
+import no.nav.common.audit_log.log.AuditLoggerImpl;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.common.cxf.StsConfig;
@@ -105,6 +107,11 @@ public class ApplicationConfig {
                 serviceUserCredentials.password, new SpringAuditRequestInfoSupplier(),
                 AuditLogFilterUtils.not(anyResourceAttributeFilter(NavAttributter.RESOURCE_VEILARB_ENHET_EIENDEL::equals))
         );
+    }
+
+    @Bean
+    AuditLogger auditLogger() {
+        return new AuditLoggerImpl();
     }
 
 }

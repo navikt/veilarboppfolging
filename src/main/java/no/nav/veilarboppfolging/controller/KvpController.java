@@ -1,8 +1,9 @@
 package no.nav.veilarboppfolging.controller;
 
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.types.identer.AktorId;
@@ -37,16 +38,15 @@ public class KvpController {
 
 
     @GetMapping("/{aktorId}/currentStatus")
-    @ApiOperation(
-            value = "Extract KVP status for an actor",
-            notes = "This API endpoint is only available for system users"
+    @Operation(
+            summary = "Extract KVP status for an actor. This API endpoint is only available for system users",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Actor is currently in a KVP period.", content = @Content(schema = @Schema(implementation = KvpDTO.class))),
+                    @ApiResponse(responseCode = "204", description = "Actor is currently not in a KVP period."),
+                    @ApiResponse(responseCode = "403", description = "The API endpoint is requested by a user which is not in the allowed users list."),
+                    @ApiResponse(responseCode = "500", description = "There is a server-side bug which should be fixed.")
+            }
     )
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "Actor is currently in a KVP period.", response = KvpDTO.class),
-            @ApiResponse(code = 204, message = "Actor is currently not in a KVP period."),
-            @ApiResponse(code = 403, message = "The API endpoint is requested by a user which is not in the allowed users list."),
-            @ApiResponse(code = 500, message = "There is a server-side bug which should be fixed.")
-    })
     public ResponseEntity<KvpDTO> getKvpStatus(@PathVariable("aktorId") AktorId aktorId) {
         // KVP information is only available to certain system users. We trust these users here,
         // so that we can avoid doing an ABAC query on each request.
