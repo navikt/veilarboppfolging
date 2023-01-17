@@ -32,31 +32,29 @@ public class AuthorizationAnnotationHandler {
         if (annotation instanceof AuthorizeFnr) {
             var fnr = Fnr.of(getFnr(request));
             var allowlist = ((AuthorizeFnr) annotation).allowlist();
-            handleAuthorizeFnr(fnr, allowlist);
+            authorizeFnr(fnr, allowlist);
         } else if (annotation instanceof AuthorizeAktorId) {
             var allowlist = ((AuthorizeAktorId) annotation).allowlist();
             var aktorId = AktorId.of(getAktorId(request));
-            handleAuthorizeAktorId(aktorId, allowlist);
+            authorizeAktorId(aktorId, allowlist);
         }
     }
 
-    private void handleAuthorizeFnr(Fnr fnr, String[] allowlist) {
-        if (authService.erEksternBruker()) {
-            authService.harEksternBrukerTilgang(fnr);
-        } else if (authService.erSystemBrukerFraAzureAd()) {
+    private void authorizeFnr(Fnr fnr, String[] allowlist) {
+        if (authService.erSystemBrukerFraAzureAd()) {
             authService.sjekkAtApplikasjonErIAllowList(allowlist);
-        } else if (authService.erInternBruker()) {
+        } else {
             authService.sjekkLesetilgangMedFnr(fnr);
         }
     }
 
-    private void handleAuthorizeAktorId(AktorId aktorId, String[] allowlist) {
+    private void authorizeAktorId(AktorId aktorId, String[] allowlist) {
         if (authService.erInternBruker()) {
             authService.sjekkLesetilgangMedAktorId(aktorId);
         } else if (authService.erSystemBrukerFraAzureAd()) {
             authService.sjekkAtApplikasjonErIAllowList(allowlist);
         } else if (authService.erEksternBruker()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Eksternbruker ikke tillatt");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Eksternbruker ikke tillatt");
         }
     }
 
