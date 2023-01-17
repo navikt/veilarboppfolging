@@ -108,7 +108,7 @@ public class AuthService {
             .severity(CefMessageSeverity.INFO)
             .name("veilarboppfolging-audit-log")
             .destinationUserId(fnr.get())
-            .extension("msg", "Ekstern bruker har gjort oppslag på bruker")
+            .extension("msg", isAllowed ? "Ekstern bruker har gjort oppslag på seg selv" : "Ekstern bruker ble nektet innsyn")
             .build());
         return isAllowed;
     }
