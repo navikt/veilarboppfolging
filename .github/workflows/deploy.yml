@@ -6,7 +6,7 @@ on:
 
 env:
   IMAGE_TAG: ${{ github.sha }}
-  IMAGE: ghcr.io/${{ github.repository }}/veilarbdialog
+  IMAGE: ghcr.io/${{ github.repository }}/veilarboppfolging
   PRINT_PAYLOAD: true
 
 concurrency:
