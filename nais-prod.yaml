@@ -101,6 +101,9 @@ spec:
         - application: veilarbaktivitet
           namespace: pto
           cluster: prod-fss
+        - application: aktivitetsplan
+          namespace: pto
+          cluster: prod-gcp
   vault:
     enabled: true
     paths:
