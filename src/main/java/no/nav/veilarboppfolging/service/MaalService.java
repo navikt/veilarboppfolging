@@ -61,7 +61,7 @@ public class MaalService {
 
     public MaalEntity hentMal(Fnr fnr) {
         AktorId aktorId = authService.getAktorIdOrThrow(fnr);
-        authService.sjekkLesetilgangMedAktorId(aktorId);
+        authService.sjekkLesetilgangMedFnr(fnr);
 
         Optional<OppfolgingEntity> maybeOppfolging = oppfolgingsStatusRepository.hentOppfolging(aktorId);
 
