@@ -106,6 +106,9 @@ spec:
         - application: aktivitetsplan
           namespace: pto
           cluster: dev-gcp
+        - application: arbeidsrettet-dialog
+          namespace: pto
+          cluster: dev-gcp
         - application: aktivitet-arena-acl
           namespace: dab
           cluster: dev-gcp
