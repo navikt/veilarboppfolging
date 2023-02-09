@@ -180,6 +180,7 @@ public class AuthService {
         }
     }
 
+    // TODO fungerer ikke for eksternbrukere fordi abac ikke støtter tokenx tokens
     public void sjekkLesetilgangMedAktorId(AktorId aktorId) {
         sjekkTilgang(ActionId.READ, aktorId);
 
