@@ -90,7 +90,7 @@ public class MaalService {
 
     public List<MaalEntity> hentMaalList(Fnr fnr) {
         AktorId aktorId = authService.getAktorIdOrThrow(fnr);
-        authService.sjekkLesetilgangMedAktorId(aktorId);
+        authService.sjekkLesetilgangMedFnr(fnr);
 
         List<MaalEntity> malList = maalRepository.aktorMal(aktorId);
 
