@@ -110,6 +110,9 @@ spec:
         - application: aktivitet-arena-acl
           namespace: dab
           cluster: prod-gcp
+        - application: start-samtale
+          namespace: dab
+          cluster: prod-gcp
   vault:
     enabled: true
     paths:
