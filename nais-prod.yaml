@@ -111,7 +111,7 @@ spec:
           namespace: dab
           cluster: prod-gcp
         - application: start-samtale
-          namespace: dab
+          namespace: pto
           cluster: prod-gcp
   vault:
     enabled: true

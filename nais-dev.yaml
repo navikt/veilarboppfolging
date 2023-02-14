@@ -113,8 +113,8 @@ spec:
           namespace: dab
           cluster: dev-gcp
         - application: start-samtale
-          namespace: dab
-          cluster: prod-gcp
+          namespace: pto
+          cluster: dev-gcp
   vault:
     enabled: true
     paths:
