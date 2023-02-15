@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static java.lang.String.format;
+import static no.nav.veilarboppfolging.utils.SecureLog.secureLog;
 
 @Slf4j
 @Service
@@ -67,7 +68,7 @@ public class VeilederTilordningService {
         authService.skalVereInternBruker();
         String innloggetVeilederId = authService.getInnloggetVeilederIdent();
 
-        log.info("{} Prøver å tildele veileder", innloggetVeilederId);
+        secureLog.info("{} Prøver å tildele veileder", innloggetVeilederId);
 
         List<VeilederTilordning> feilendeTilordninger = new ArrayList<>();
 
@@ -127,11 +128,11 @@ public class VeilederTilordningService {
                     lagreVeilederTilordning(aktorId, tilordning.getTilVeilederId(), null);
                 }
             } else {
-                log.info("Aktoerid {} kunne ikke tildeles. Ny veileder {} har ikke tilgang.", aktorId, tilordning.getTilVeilederId());
+                secureLog.info("Aktoerid {} kunne ikke tildeles. Ny veileder {} har ikke tilgang.", aktorId, tilordning.getTilVeilederId());
                 feilendeTilordninger.add(tilordning);
             }
         } else {
-            log.info("Aktoerid {} kunne ikke tildeles. Oppgitt fraVeileder {} er feil eller tilVeileder {} er feil. Faktisk veileder: {}",
+            secureLog.info("Aktoerid {} kunne ikke tildeles. Oppgitt fraVeileder {} er feil eller tilVeileder {} er feil. Faktisk veileder: {}",
                     aktorId, tilordning.getFraVeilederId(), tilordning.getTilVeilederId(), eksisterendeVeileder);
             feilendeTilordninger.add(tilordning);
         }
@@ -147,11 +148,11 @@ public class VeilederTilordningService {
         String aktoerId = tilordning.getAktoerId();
 
         if (e instanceof ResponseStatusException) {
-            log.warn("Feil ved tildeling av veileder: innlogget veileder: {}, fraVeileder: {} tilVeileder: {} bruker(aktørId): {} årsak: request is not authorized", innloggetVeilederId, fraVeilederId, tilVeilederId, aktoerId, e);
+            secureLog.warn("Feil ved tildeling av veileder: innlogget veileder: {}, fraVeileder: {} tilVeileder: {} bruker(aktørId): {} årsak: request is not authorized", innloggetVeilederId, fraVeilederId, tilVeilederId, aktoerId, e);
         } else if (e instanceof IllegalArgumentException) {
-            log.error("Feil ved tildeling av veileder: innlogget veileder: {}, fraVeileder: {} tilVeileder: {} årsak: Fant ikke aktørId for bruker", innloggetVeilederId, tilordning.getFraVeilederId(), tilordning.getTilVeilederId(), e);
+            secureLog.error("Feil ved tildeling av veileder: innlogget veileder: {}, fraVeileder: {} tilVeileder: {} årsak: Fant ikke aktørId for bruker", innloggetVeilederId, tilordning.getFraVeilederId(), tilordning.getTilVeilederId(), e);
         } else {
-            log.error("Feil ved tildeling av veileder: innlogget veileder: {}, fraVeileder: {} tilVeileder: {} bruker(aktørId): {} årsak: ukjent årsak", innloggetVeilederId, fraVeilederId, tilVeilederId, aktoerId, e);
+            secureLog.error("Feil ved tildeling av veileder: innlogget veileder: {}, fraVeileder: {} tilVeileder: {} bruker(aktørId): {} årsak: ukjent årsak", innloggetVeilederId, fraVeilederId, tilVeilederId, aktoerId, e);
         }
     }
 
@@ -173,14 +174,14 @@ public class VeilederTilordningService {
                 );
             }
 
-            log.debug(format("Veileder %s tilordnet aktoer %s", veilederId, aktorId));
+            secureLog.debug(format("Veileder %s tilordnet aktoer %s", veilederId, aktorId));
 
             Optional<VeilederTilordningEntity> maybeTilordning = veilederTilordningerRepository.hentTilordnetVeileder(aktorId);
 
             maybeTilordning.ifPresentOrElse(tilordning -> {
                 var dto = DtoMappers.tilSisteTilordnetVeilederKafkaDTO(tilordning);
                 kafkaProducerService.publiserSisteTilordnetVeileder(dto);
-            }, () -> log.error("Fant ikke tilordning til nylig tilordnet veileder. AktorId={} VeilederId={}", aktorId, veilederId));
+            }, () -> secureLog.error("Fant ikke tilordning til nylig tilordnet veileder. AktorId={} VeilederId={}", aktorId, veilederId));
 
             kafkaProducerService.publiserEndringPaNyForVeileder(aktorId, true);
             kafkaProducerService.publiserVeilederTilordnet(aktorId, veilederId);

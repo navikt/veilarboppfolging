@@ -25,6 +25,7 @@ import static java.lang.String.format;
 import static no.nav.veilarboppfolging.config.ApplicationConfig.SYSTEM_USER_NAME;
 import static no.nav.veilarboppfolging.repository.enums.KodeverkBruker.NAV;
 import static no.nav.veilarboppfolging.repository.enums.KodeverkBruker.SYSTEM;
+import static no.nav.veilarboppfolging.utils.SecureLog.secureLog;
 
 @Slf4j
 @Service
@@ -66,7 +67,7 @@ public class KvpService {
         }
 
         if (maybeOppfolging.get().getGjeldendeKvpId() != 0) {
-            log.warn(format("Aktøren er allerede under en KVP-periode. AktorId: %s", aktorId));
+            secureLog.warn(format("Aktøren er allerede under en KVP-periode. AktorId: %s", aktorId));
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
 
@@ -78,7 +79,7 @@ public class KvpService {
             kvpRepository.startKvp(aktorId, enhet, veilederId, begrunnelse, startDato);
             kafkaProducerService.publiserKvpStartet(aktorId, enhet, veilederId, begrunnelse, startDato);
 
-            log.info("KVP startet for bruker med aktorId {} på enhet {} av veileder {}", aktorId, enhet, veilederId);
+            secureLog.info("KVP startet for bruker med aktorId {} på enhet {} av veileder {}", aktorId, enhet, veilederId);
         });
 
         metricsService.kvpStartet();
@@ -128,7 +129,7 @@ public class KvpService {
             kvpRepository.stopKvp(gjeldendeKvpId, aktorId, avsluttetAv, begrunnelse, kodeverkBruker, sluttDato);
             kafkaProducerService.publiserKvpAvsluttet(aktorId, avsluttetAv, begrunnelse, sluttDato);
 
-            log.info("KVP avsluttet for bruker med aktorId {} av {}", aktorId, avsluttetAv);
+            secureLog.info("KVP avsluttet for bruker med aktorId {} av {}", aktorId, avsluttetAv);
         });
 
         metricsService.kvpStoppet();

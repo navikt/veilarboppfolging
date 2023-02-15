@@ -23,6 +23,7 @@ import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 import static no.nav.veilarboppfolging.service.IservService.AvslutteOppfolgingResultat.*;
 import static no.nav.veilarboppfolging.utils.ArenaUtils.erIserv;
+import static no.nav.veilarboppfolging.utils.SecureLog.secureLog;
 
 @Slf4j
 @Service
@@ -79,10 +80,10 @@ public class IservService {
         String formidlingsgruppe = ofNullable(brukerV2.getFormidlingsgruppe()).map(Formidlingsgruppe::toString).orElse(null);
 
         if (erIserv(formidlingsgruppe)) {
-            log.info("Oppdaterer eller insert i utmelding tabell. aktorId={}", aktorId);
+            secureLog.info("Oppdaterer eller insert i utmelding tabell. aktorId={}", aktorId);
             oppdaterUtmeldingTabell(brukerV2);
         } else {
-            log.info("Sletter fra utmelding tabell. aktorId={}", aktorId);
+            secureLog.info("Sletter fra utmelding tabell. aktorId={}", aktorId);
             utmeldingRepository.slettBrukerFraUtmeldingTabell(aktorId);
         }
     }
@@ -108,7 +109,7 @@ public class IservService {
             );
 
         } catch (Exception e) {
-            log.error("Feil ved automatisk avslutning av brukere", e);
+            secureLog.error("Feil ved automatisk avslutning av brukere", e);
         }
 
         return resultater;
@@ -119,7 +120,7 @@ public class IservService {
         LocalDate iservFraDato = oppfolgingEndret.getIservFraDato();
 
         if (iservFraDato == null) {
-            log.error("Kan ikke oppdatere utmeldingstabell med bruker siden iservFraDato mangler. aktorId={}", aktorId);
+            secureLog.error("Kan ikke oppdatere utmeldingstabell med bruker siden iservFraDato mangler. aktorId={}", aktorId);
             throw new IllegalArgumentException("iservFraDato mangler på EndringPaaOppfoelgingsBrukerV2");
         }
 
@@ -139,7 +140,7 @@ public class IservService {
 
         try {
             if (!oppfolgingService.erUnderOppfolging(aktorId)) {
-                log.info("Bruker med aktørid {} har ikke oppfølgingsflagg. Sletter fra utmelding-tabell", aktorId);
+                secureLog.info("Bruker med aktørid {} har ikke oppfølgingsflagg. Sletter fra utmelding-tabell", aktorId);
                 utmeldingRepository.slettBrukerFraUtmeldingTabell(aktorId);
                 resultat = IKKE_LENGER_UNDER_OPPFØLGING;
             } else {
@@ -155,7 +156,7 @@ public class IservService {
                 }
             }
         } catch (Exception e) {
-            log.error("Automatisk avsluttOppfolging feilet for aktoerid {} ", aktorId, e);
+            secureLog.error("Automatisk avsluttOppfolging feilet for aktoerid {} ", aktorId, e);
             resultat = AVSLUTTET_FEILET;
         }
 

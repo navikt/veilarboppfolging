@@ -15,6 +15,7 @@ import java.util.List;
 
 import static java.util.Optional.ofNullable;
 import static no.nav.veilarboppfolging.utils.ArenaUtils.erUnderOppfolging;
+import static no.nav.veilarboppfolging.utils.SecureLog.secureLog;
 
 @Slf4j
 @Service
@@ -40,14 +41,12 @@ public class OppfolgingsenhetEndringService {
         String kvalifiseringsgruppe = ofNullable(brukerV2.getKvalifiseringsgruppe()).map(Kvalifiseringsgruppe::toString).orElse(null);
 
         if (arenaNavKontor == null || !erUnderOppfolging(formidlingsgruppe, kvalifiseringsgruppe)) {
-            log.info(String.format("Legger ikke til historikkinnslag for på aktørid: %s fordi enhet mangler og/eller bruker er ikke under oppfølging", aktorId));
-        }
-        else if (eksisterendeHistorikk.isEmpty()) {
-            log.info(String.format("Legger til første historikkinnslag for endret oppfolgingsenhet på aktørid: %s", aktorId));
+            secureLog.info(String.format("Legger ikke til historikkinnslag for på aktørid: %s fordi enhet mangler og/eller bruker er ikke under oppfølging", aktorId));
+        } else if (eksisterendeHistorikk.isEmpty()) {
+            secureLog.info(String.format("Legger til første historikkinnslag for endret oppfolgingsenhet på aktørid: %s", aktorId));
             enhetHistorikkRepository.insertOppfolgingsenhetEndringForAktorId(aktorId, arenaNavKontor);
-        }
-        else if (!arenaNavKontor.equals(eksisterendeHistorikk.get(0).getEnhet())) {
-            log.info(String.format("Legger til historikkinnslag for endret oppfolgingsenhet på aktørid: %s", aktorId));
+        } else if (!arenaNavKontor.equals(eksisterendeHistorikk.get(0).getEnhet())) {
+            secureLog.info(String.format("Legger til historikkinnslag for endret oppfolgingsenhet på aktørid: %s", aktorId));
             enhetHistorikkRepository.insertOppfolgingsenhetEndringForAktorId(aktorId, arenaNavKontor);
         }
     }

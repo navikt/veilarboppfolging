@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static no.nav.veilarboppfolging.repository.enums.KodeverkBruker.SYSTEM;
+import static no.nav.veilarboppfolging.utils.SecureLog.secureLog;
 
 @Slf4j
 @Service
@@ -73,6 +74,7 @@ public class ManuellStatusService {
      * Gjør en sjekk i DKIF om bruker er reservert.
      * Hvis bruker er reservert så sett manuell status på bruker hvis det ikke allerede er gjort.
      * Bruker må være under oppfølging for å oppdatere manuell status.
+     *
      * @param fnr fnr/dnr til bruker som det skal sjekkes på
      */
     public void synkroniserManuellStatusMedDkif(Fnr fnr) {
@@ -105,7 +107,7 @@ public class ManuellStatusService {
                 .setBegrunnelse("Brukeren er reservert i Kontakt- og reservasjonsregisteret")
                 .setOpprettetAv(SYSTEM);
 
-        log.info("Bruker er reservert i KRR, setter bruker aktorId={} til manuell", aktorId);
+        secureLog.info("Bruker er reservert i KRR, setter bruker aktorId={} til manuell", aktorId);
         oppdaterManuellStatus(aktorId, manuellStatus);
     }
 
@@ -143,12 +145,12 @@ public class ManuellStatusService {
         }
     }
 
-    public DkifKontaktinfo hentDkifKontaktinfo(Fnr fnr){
+    public DkifKontaktinfo hentDkifKontaktinfo(Fnr fnr) {
         return dkifClient.hentKontaktInfo(fnr)
                 .orElseGet(() -> new DkifKontaktinfo()
-                .setPersonident(fnr.get())
-                .setKanVarsles(true)
-                .setReservert(false));
+                        .setPersonident(fnr.get())
+                        .setKanVarsles(true)
+                        .setReservert(false));
     }
 
     private void oppdaterManuellStatus(AktorId aktorId, ManuellStatusEntity manuellStatus) {

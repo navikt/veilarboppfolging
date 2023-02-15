@@ -20,6 +20,8 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
 
+import static no.nav.veilarboppfolging.utils.SecureLog.secureLog;
+
 @Slf4j
 @Service
 public class ArenaOppfolgingService {
@@ -75,7 +77,7 @@ public class ArenaOppfolgingService {
         boolean erUnderOppfolging = oppfolging.map(OppfolgingEntity::isUnderOppfolging).orElse(false);
 
         boolean erUnderOppfolgingIVeilarbarena = maybeArenaOppfolging
-                .map(o ->  ArenaUtils.erUnderOppfolging(o.getFormidlingsgruppe(), o.getServicegruppe()))
+                .map(o -> ArenaUtils.erUnderOppfolging(o.getFormidlingsgruppe(), o.getServicegruppe()))
                 .orElse(false);
 
         if (erUnderOppfolgingIVeilarbarena != erUnderOppfolging) {
@@ -84,8 +86,8 @@ public class ArenaOppfolgingService {
             maybeArenaOppfolging.ifPresent(arenaOppfolging -> {
                 log.info(
                         "Differanse mellom oppfolging fra veilarbarena og direkte fra Arena."
-                        + " veilarbarena.formidlingsgruppe={} veilarbarena.servicegruppe={}"
-                        + " arena.formidlingsgruppe={} arena.servicegruppe={}",
+                                + " veilarbarena.formidlingsgruppe={} veilarbarena.servicegruppe={}"
+                                + " arena.formidlingsgruppe={} arena.servicegruppe={}",
                         arenaOppfolging.getFormidlingsgruppe(),
                         arenaOppfolging.getServicegruppe(),
                         oppfolgingTilstand.map(ArenaOppfolgingTilstand::getFormidlingsgruppe).orElse(null),
@@ -112,7 +114,7 @@ public class ArenaOppfolgingService {
 
         if (authService.erInternBruker()) {
             AktorId brukersAktoerId = authService.getAktorIdOrThrow(fnr);
-            log.info("Henter tilordning for bruker med aktørId {}", brukersAktoerId);
+            secureLog.info("Henter tilordning for bruker med aktørId {}", brukersAktoerId);
             String veilederIdent = veilederTilordningerRepository.hentTilordningForAktoer(brukersAktoerId);
             oppfolgingEnhetMedVeileder.setVeilederId(veilederIdent);
         }

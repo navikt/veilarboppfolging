@@ -36,6 +36,7 @@ import static java.util.Optional.of;
 import static java.util.stream.Collectors.toList;
 import static no.nav.veilarboppfolging.config.ApplicationConfig.SYSTEM_USER_NAME;
 import static no.nav.veilarboppfolging.utils.ArenaUtils.*;
+import static no.nav.veilarboppfolging.utils.SecureLog.secureLog;
 
 @Slf4j
 @Service
@@ -158,7 +159,7 @@ public class OppfolgingService {
         boolean erIserv = erIserv(arenaOppfolgingTilstand.getFormidlingsgruppe());
 
         if (kanAvslutteOppfolging(aktorId, erUnderOppfolging(aktorId), erIserv)) {
-            log.info("Avslutting av oppfølging, tilstand i Arena for aktorid {}: {}", aktorId, arenaOppfolgingTilstand);
+            secureLog.info("Avslutting av oppfølging, tilstand i Arena for aktorid {}: {}", aktorId, arenaOppfolgingTilstand);
             avsluttOppfolgingForBruker(aktorId, veilederId, begrunnelse);
         }
 
@@ -171,7 +172,7 @@ public class OppfolgingService {
         ArenaOppfolgingTilstand arenaOppfolgingTilstand = arenaOppfolgingService.hentOppfolgingTilstand(fnr)
                 .orElseThrow();
 
-        log.info("Avslutting av oppfølging, tilstand i Arena for aktorid {}: {}", aktorId, arenaOppfolgingTilstand);
+        secureLog.info("Avslutting av oppfølging, tilstand i Arena for aktorid {}: {}", aktorId, arenaOppfolgingTilstand);
 
         boolean erIserv = erIserv(arenaOppfolgingTilstand.getFormidlingsgruppe());
 
@@ -309,7 +310,7 @@ public class OppfolgingService {
                 try {
                     oppfolgingsStatusRepository.opprettOppfolging(aktorId);
                 } catch (DuplicateKeyException e) {
-                    log.warn("Race condition oppstod under oppretting av ny oppfølging for bruker: " + aktorId);
+                    secureLog.warn("Race condition oppstod under oppretting av ny oppfølging for bruker: " + aktorId);
                     return;
                 }
             }
@@ -330,7 +331,7 @@ public class OppfolgingService {
     public boolean kanAvslutteOppfolging(AktorId aktorId, boolean erUnderOppfolging, boolean erIservIArena) {
         boolean ikkeUnderKvp = !kvpService.erUnderKvp(aktorId);
 
-        log.info("Kan oppfolging avsluttes for aktorid {}?, oppfolging.isUnderOppfolging(): {}, erIservIArena(): {}, !erUnderKvp(): {}",
+        secureLog.info("Kan oppfolging avsluttes for aktorid {}?, oppfolging.isUnderOppfolging(): {}, erIservIArena(): {}, !erUnderKvp(): {}",
                 aktorId, erUnderOppfolging, erIservIArena, ikkeUnderKvp);
 
         return erUnderOppfolging
@@ -494,7 +495,7 @@ public class OppfolgingService {
             if (!erBrukerUnderOppfolging && erUnderOppfolgingIArena) {
                 boolean skalOppdatereMedSideeffekt = !unleashService.skalIkkeOppdatereMedSideeffekt();
 
-                log.warn("Oppdatering med sideeffekt. Start av oppfølgingsperiode for aktorid: {}. Sideeffekt på?: {}", aktorId, skalOppdatereMedSideeffekt);
+                secureLog.warn("Oppdatering med sideeffekt. Start av oppfølgingsperiode for aktorid: {}. Sideeffekt på?: {}", aktorId, skalOppdatereMedSideeffekt);
 
                 if (!skalOppdatereMedSideeffekt) {
                     return;
@@ -506,7 +507,7 @@ public class OppfolgingService {
                 boolean erInaktivIArena = erInaktivIArena(oppfolgingTilstand);
                 boolean sjekkIArenaOmBrukerSkalAvsluttes = erBrukerUnderOppfolging && erInaktivIArena;
 
-                log.info("Statuser for reaktivering og inaktivering basert på {}: "
+                secureLog.info("Statuser for reaktivering og inaktivering basert på {}: "
                                 + "Aktiv Oppfølgingsperiode={} "
                                 + "erSykmeldtMedArbeidsgiver={} "
                                 + "inaktivIArena={} "
@@ -568,7 +569,7 @@ public class OppfolgingService {
         if (kanAvslutteOppfolging) {
             boolean skalOppdatereMedSideeffekt = !unleashService.skalIkkeOppdatereMedSideeffekt();
 
-            log.warn("Oppdatering med sideeffekt. Avslutting av oppfølgingsperiode for aktorid: {}. Sideeffekt på?: {}", aktorId, skalOppdatereMedSideeffekt);
+            secureLog.warn("Oppdatering med sideeffekt. Avslutting av oppfølgingsperiode for aktorid: {}. Sideeffekt på?: {}", aktorId, skalOppdatereMedSideeffekt);
 
             if (!skalOppdatereMedSideeffekt) {
                 return;
@@ -576,7 +577,7 @@ public class OppfolgingService {
 
             avsluttOppfolgingForBruker(aktorId, null, "Oppfølging avsluttet automatisk pga. inaktiv bruker som ikke kan reaktiveres");
         } else {
-            log.info("Avslutting av oppfølging ikke tillatt for aktorid {}", aktorId);
+            secureLog.info("Avslutting av oppfølging ikke tillatt for aktorid {}", aktorId);
         }
 
         metricsService.rapporterAutomatiskAvslutningAvOppfolging(!kanAvslutteOppfolging);
