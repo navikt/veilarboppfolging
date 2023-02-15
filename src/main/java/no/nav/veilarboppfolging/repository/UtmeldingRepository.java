@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static no.nav.veilarboppfolging.utils.DbUtils.queryForNullableObject;
+import static no.nav.veilarboppfolging.utils.SecureLog.secureLog;
 
 @Slf4j
 @Repository
@@ -42,7 +43,7 @@ public class UtmeldingRepository {
 
         db.update(sql, nyIservFraDato, aktorId.get());
 
-        log.info("ISERV bruker med aktorid {} har blitt oppdatert inn i UTMELDING tabell", aktorId);
+        secureLog.info("ISERV bruker med aktorid {} har blitt oppdatert inn i UTMELDING tabell", aktorId);
     }
 
     public void insertUtmeldingTabell(AktorId aktorId, ZonedDateTime iservFraDato) {
@@ -52,7 +53,7 @@ public class UtmeldingRepository {
 
         db.update(sql, aktorId.get(), iservFraTimestamp);
 
-        log.info(
+        secureLog.info(
                 "ISERV bruker med aktorid {} og iserv_fra_dato {} har blitt insertert inn i UTMELDING tabell",
                 aktorId,
                 iservFraTimestamp
@@ -61,11 +62,11 @@ public class UtmeldingRepository {
 
     public void slettBrukerFraUtmeldingTabell(AktorId aktorId) {
         String sql = "DELETE FROM UTMELDING WHERE aktor_id = ?";
-        
+
         int rowsDeleted = db.update(sql, aktorId.get());
-        
+
         if (rowsDeleted > 0) {
-            log.info("Aktorid {} har blitt slettet fra UTMELDING tabell", aktorId);
+            secureLog.info("Aktorid {} har blitt slettet fra UTMELDING tabell", aktorId);
         }
     }
 

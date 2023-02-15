@@ -18,6 +18,7 @@ import static java.lang.Boolean.TRUE;
 import static java.util.Optional.ofNullable;
 import static no.nav.veilarboppfolging.utils.ArenaUtils.erIserv;
 import static no.nav.veilarboppfolging.utils.ArenaUtils.erUnderOppfolging;
+import static no.nav.veilarboppfolging.utils.SecureLog.secureLog;
 
 @Slf4j
 @Service
@@ -51,7 +52,7 @@ public class OppfolgingEndringService {
         boolean erUnderOppfolgingIArena = erUnderOppfolging(formidlingsgruppe, kvalifiseringsgruppe);
         boolean erInaktivIArena = erIserv(formidlingsgruppe);
 
-        log.info(
+        secureLog.info(
                 "Status for automatisk oppdatering av oppfølging."
                         + " aktorId={} erUnderOppfølgingIVeilarboppfolging={}"
                         + " erUnderOppfølgingIArena={} erInaktivIArena={}"
@@ -62,10 +63,10 @@ public class OppfolgingEndringService {
         );
 
         if (!erBrukerUnderOppfolging && erUnderOppfolgingIArena) {
-            log.info("Starter oppfølging på bruker som er under oppfølging i Arena, men ikke i veilarboppfolging. aktorId={}", aktorId);
+            secureLog.info("Starter oppfølging på bruker som er under oppfølging i Arena, men ikke i veilarboppfolging. aktorId={}", aktorId);
 
             if (!unleashService.skalOppdaterOppfolgingMedKafka()) {
-                log.info("Oppdatering av oppfølging med kafka er ikke skrudd på. Stopper start av oppfølging for aktorId={}", aktorId);
+                secureLog.info("Oppdatering av oppfølging med kafka er ikke skrudd på. Stopper start av oppfølging for aktorId={}", aktorId);
                 return;
             }
 
@@ -79,16 +80,16 @@ public class OppfolgingEndringService {
                 boolean erUnderKvp = kvpService.erUnderKvp(aktorId);
                 boolean skalAvsluttes = !kanEnkeltReaktiveres && !erUnderKvp;
 
-                log.info(
+                secureLog.info(
                         "Status for automatisk avslutting av oppfølging. aktorId={} kanEnkeltReaktiveres={} erUnderKvp={} skalAvsluttes={}",
                         aktorId, kanEnkeltReaktiveres, erUnderKvp, skalAvsluttes
                 );
 
                 if (skalAvsluttes) {
-                    log.info("Automatisk avslutting av oppfølging på bruker. aktorId={}", aktorId);
+                    secureLog.info("Automatisk avslutting av oppfølging på bruker. aktorId={}", aktorId);
 
                     if (!unleashService.skalOppdaterOppfolgingMedKafka()) {
-                        log.info("Oppdatering av oppfølging med kafka er ikke skrudd på. Stopper avslutting av oppfølging for aktorId={}", aktorId);
+                        secureLog.info("Oppdatering av oppfølging med kafka er ikke skrudd på. Stopper avslutting av oppfølging for aktorId={}", aktorId);
                         return;
                     }
 
@@ -96,7 +97,7 @@ public class OppfolgingEndringService {
                     metricsService.rapporterAutomatiskAvslutningAvOppfolging(true);
                 }
             } else {
-                log.warn("Bruker har ikke oppfølgingtilstand i Arena. aktorId={}", aktorId);
+                secureLog.warn("Bruker har ikke oppfølgingtilstand i Arena. aktorId={}", aktorId);
             }
         }
     }

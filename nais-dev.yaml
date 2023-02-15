@@ -39,6 +39,8 @@ spec:
   envFrom:
     - configmap: pto-config
     - configmap: loginservice-idporten
+  secureLogs:
+    enabled: true
   kafka:
     pool: nav-dev
   azure:

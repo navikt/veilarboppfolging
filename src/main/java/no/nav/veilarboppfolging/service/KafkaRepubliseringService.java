@@ -16,6 +16,8 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 
+import static no.nav.veilarboppfolging.utils.SecureLog.secureLog;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -72,7 +74,7 @@ public class KafkaRepubliseringService {
         OppfolgingsperiodeEntity sistePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(perioder);
 
         if (sistePeriode == null) {
-            log.error("Bruker med aktorId={} ligger i OPPFOLGINGSTATUS men har ingen oppfølgingsperioder", aktorId);
+            secureLog.error("Bruker med aktorId={} ligger i OPPFOLGINGSTATUS men har ingen oppfølgingsperioder", aktorId);
             return;
         }
 
