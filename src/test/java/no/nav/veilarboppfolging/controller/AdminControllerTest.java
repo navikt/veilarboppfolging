@@ -2,6 +2,7 @@ package no.nav.veilarboppfolging.controller;
 
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.UserRole;
+import no.nav.common.types.identer.AktorId;
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
 import no.nav.veilarboppfolging.repository.VeilederTilordningerRepository;
 import no.nav.veilarboppfolging.service.AuthService;
@@ -17,6 +18,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
+import static no.nav.veilarboppfolging.test.TestData.TEST_AKTOR_ID;
 import static no.nav.veilarboppfolging.test.TestUtils.verifiserAsynkront;
 import static org.hamcrest.Matchers.matchesPattern;
 import static org.mockito.Mockito.*;
@@ -98,7 +100,19 @@ public class AdminControllerTest {
         });
     }
 
+    @Test
+    public void republiserOppfolgingsperiodeForBruker__should_return_job_id_and_republish() throws Exception {
+        when(authContextHolder.getSubject()).thenReturn(Optional.of("srvpto-admin"));
+        when(authContextHolder.getRole()).thenReturn(Optional.of(UserRole.SYSTEM));
 
+        mockMvc.perform(post("/api/admin/republiser/oppfolgingsperioder").param("aktorId", TEST_AKTOR_ID.get()))
+                .andExpect(status().is(200))
+                .andExpect(content().string(matchesPattern("^([a-f0-9]+)$")));
+
+        verifiserAsynkront(3, TimeUnit.SECONDS, () -> {
+            verify(kafkaRepubliseringService, times(1)).republiserOppfolgingsperiodeForBruker(TEST_AKTOR_ID);
+        });
+    }
 
     @Test
     public void republiserTilordnetVeileder__should_return_401_if_user_missing() throws Exception {

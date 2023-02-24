@@ -46,8 +46,13 @@ public class AdminController {
     private final OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
 
     @PostMapping("/republiser/oppfolgingsperioder")
-    public String republiserOppfolgingsperioder() {
+    public String republiserOppfolgingsperioder(@RequestParam(required = false) AktorId aktorId) {
         sjekkTilgangTilAdmin();
+
+        if (aktorId != null) {
+            return JobRunner.runAsync("republiser-oppfolgingsperioder-for-bruker", () -> kafkaRepubliseringService.republiserOppfolgingsperiodeForBruker(aktorId));
+        }
+
         return JobRunner.runAsync("republiser-oppfolgingsperioder", kafkaRepubliseringService::republiserOppfolgingsperioder);
     }
 
