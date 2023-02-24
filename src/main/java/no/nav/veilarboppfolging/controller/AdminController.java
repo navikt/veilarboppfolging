@@ -7,6 +7,7 @@ import no.nav.common.job.JobRunner;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.NavIdent;
 import no.nav.veilarboppfolging.controller.response.Veilarbportefoljeinfo;
+import no.nav.veilarboppfolging.domain.RepubliserOppfolgingsperioderRequest;
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
 import no.nav.veilarboppfolging.repository.VeilederTilordningerRepository;
 import no.nav.veilarboppfolging.repository.entity.ManuellStatusEntity;
@@ -16,11 +17,7 @@ import no.nav.veilarboppfolging.service.AuthService;
 import no.nav.veilarboppfolging.service.KafkaRepubliseringService;
 import no.nav.veilarboppfolging.service.ManuellStatusService;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.ZonedDateTime;
@@ -46,11 +43,11 @@ public class AdminController {
     private final OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
 
     @PostMapping("/republiser/oppfolgingsperioder")
-    public String republiserOppfolgingsperioder(@RequestParam(required = false) AktorId aktorId) {
+    public String republiserOppfolgingsperioder(@RequestBody(required = false) RepubliserOppfolgingsperioderRequest request) {
         sjekkTilgangTilAdmin();
 
-        if (aktorId != null) {
-            return JobRunner.runAsync("republiser-oppfolgingsperioder-for-bruker", () -> kafkaRepubliseringService.republiserOppfolgingsperiodeForBruker(aktorId));
+        if (request != null && request.aktorId != null) {
+            return JobRunner.runAsync("republiser-oppfolgingsperioder-for-bruker", () -> kafkaRepubliseringService.republiserOppfolgingsperiodeForBruker(request.aktorId));
         }
 
         return JobRunner.runAsync("republiser-oppfolgingsperioder", kafkaRepubliseringService::republiserOppfolgingsperioder);
