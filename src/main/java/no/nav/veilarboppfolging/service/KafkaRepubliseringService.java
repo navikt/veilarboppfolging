@@ -69,7 +69,7 @@ public class KafkaRepubliseringService {
         }
     }
 
-    private void republiserOppfolgingsperiodeForBruker(AktorId aktorId) {
+    public void republiserOppfolgingsperiodeForBruker(AktorId aktorId) {
         List<OppfolgingsperiodeEntity> perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId);
         OppfolgingsperiodeEntity sistePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(perioder);
 
