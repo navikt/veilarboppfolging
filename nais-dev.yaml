@@ -118,6 +118,9 @@ spec:
         - application: start-samtale
           namespace: pto
           cluster: dev-gcp
+        - application: esyfo-info-frontend
+          namespace: team-esyfo
+          cluster: dev-gcp
   vault:
     enabled: true
     paths:
