@@ -116,6 +116,9 @@ spec:
         - application: start-samtale
           namespace: pto
           cluster: prod-gcp
+        - application: esyfo-info-frontend
+          namespace: team-esyfo
+          cluster: prod-gcp
   vault:
     enabled: true
     paths:
