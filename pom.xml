@@ -18,7 +18,7 @@
     <description>Backend applikasjon for domenet arbeidsrettet oppfølging</description>
 
     <properties>
-        <java.version>11</java.version>
+        <java.version>17</java.version>
         <common.version>2.2023.01.10_13.49-81ddc732df3a</common.version>
         <tjenestespesifikasjoner.version>1.2019.09.25-00.21-49b69f0625e0</tjenestespesifikasjoner.version>
         <testcontainers.version>1.16.3</testcontainers.version>
