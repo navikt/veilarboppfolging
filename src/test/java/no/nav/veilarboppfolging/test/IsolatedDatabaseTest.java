@@ -29,7 +29,7 @@ public abstract class IsolatedDatabaseTest {
     public void setupIsolatedDatabase() {
         TestDriver.init();
 
-        String dbUrl = format("jdbc:h2:mem:veilarboppfolging-local-%d;DB_CLOSE_DELAY=-1;MODE=Oracle;", databaseCounter.incrementAndGet());
+        String dbUrl = format("jdbc:h2:mem:veilarboppfolging-local-%d;DB_CLOSE_DELAY=-1;MODE=Oracle;NON_KEYWORDS=KEY,VALUE,PARTITION;", databaseCounter.incrementAndGet());
         DataSource testDataSource = DbTestUtils.createTestDataSource(dbUrl);
 
         initDb(testDataSource);

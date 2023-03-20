@@ -7,7 +7,7 @@ import no.nav.veilarboppfolging.service.AuthService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -29,12 +29,12 @@ public class AuthorizationAnnotationHandler {
         if (idToken == null || idToken.isEmpty()) {
             throw new UnauthorizedException("Missing token");
         }
-        if (annotation instanceof AuthorizeFnr) {
+        if (annotation instanceof AuthorizeFnr fnrAutorize) {
             var fnr = Fnr.of(getFnr(request));
-            var allowlist = ((AuthorizeFnr) annotation).allowlist();
+            var allowlist = fnrAutorize.allowlist();
             authorizeFnr(fnr, allowlist);
-        } else if (annotation instanceof AuthorizeAktorId) {
-            var allowlist = ((AuthorizeAktorId) annotation).allowlist();
+        } else if (annotation instanceof AuthorizeAktorId aktoridAutorize) {
+            var allowlist = aktoridAutorize.allowlist();
             var aktorId = AktorId.of(getAktorId(request));
             authorizeAktorId(aktorId, allowlist);
         }

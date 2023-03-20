@@ -24,7 +24,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import java.util.List;
 import java.util.Properties;
 
@@ -36,8 +36,8 @@ import static no.nav.common.kafka.util.KafkaPropertiesPreset.aivenByteProducerPr
 @EnableConfigurationProperties({KafkaProperties.class})
 public class KafkaConfig {
 
-    public final static String CONSUMER_GROUP_ID = "veilarboppfolging-consumer";
-    public final static String PRODUCER_CLIENT_ID = "veilarboppfolging-producer";
+    public static final String CONSUMER_GROUP_ID = "veilarboppfolging-consumer";
+    public static final String PRODUCER_CLIENT_ID = "veilarboppfolging-producer";
 
     private final KafkaConsumerClient aivenConsumerClient;
 

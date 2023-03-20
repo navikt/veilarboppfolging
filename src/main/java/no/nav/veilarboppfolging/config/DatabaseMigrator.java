@@ -5,7 +5,7 @@ import org.flywaydb.core.Flyway;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import javax.sql.DataSource;
 
 @Slf4j
@@ -22,8 +22,10 @@ public class DatabaseMigrator {
     @PostConstruct
     public void migrateDb() {
         log.info("Starting database migration...");
-        Flyway flyway = new Flyway();
-        flyway.setDataSource(dataSource);
+        var flyway = new Flyway(Flyway.configure()
+                .dataSource(dataSource)
+                .table("schema_version")
+                .validateMigrationNaming(true));
         flyway.migrate();
     }
 

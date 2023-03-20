@@ -87,7 +87,7 @@ public class KvpServiceTest {
         try {
             kvpService.startKvp(FNR, START_BEGRUNNELSE);
         } catch (ResponseStatusException e) {
-            assertEquals(HttpStatus.BAD_REQUEST, e.getStatus());
+            assertEquals(HttpStatus.BAD_REQUEST, e.getStatusCode());
         }
     }
 
@@ -98,7 +98,7 @@ public class KvpServiceTest {
         try {
             kvpService.startKvp(FNR, START_BEGRUNNELSE);
         } catch (ResponseStatusException e) {
-            assertEquals(HttpStatus.BAD_REQUEST, e.getStatus());
+            assertEquals(HttpStatus.BAD_REQUEST, e.getStatusCode());
         }
     }
 
@@ -139,7 +139,7 @@ public class KvpServiceTest {
         try {
             kvpService.stopKvp(FNR, STOP_BEGRUNNELSE);
         } catch(ResponseStatusException e){
-            assertEquals(HttpStatus.BAD_REQUEST, e.getStatus());
+            assertEquals(HttpStatus.BAD_REQUEST, e.getStatusCode());
         }
     }
 
@@ -150,7 +150,7 @@ public class KvpServiceTest {
         try {
             kvpService.startKvp(FNR, START_BEGRUNNELSE);
         } catch(ResponseStatusException e){
-            assertEquals(HttpStatus.UNAUTHORIZED, e.getStatus());
+            assertEquals(HttpStatus.UNAUTHORIZED, e.getStatusCode());
         }
     }
 
@@ -161,7 +161,7 @@ public class KvpServiceTest {
         try {
             kvpService.stopKvp(FNR, STOP_BEGRUNNELSE);
         } catch(ResponseStatusException e){
-            assertEquals(HttpStatus.UNAUTHORIZED, e.getStatus());
+            assertEquals(HttpStatus.UNAUTHORIZED, e.getStatusCode());
         }
     }
 

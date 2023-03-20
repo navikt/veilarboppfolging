@@ -38,7 +38,8 @@ public class ViewTest {
         long count = (long) LocalH2Database.getDb().queryForList("" +
                 "SELECT " +
                 "COUNT(*) AS VIEW_COUNT " +
-                "FROM INFORMATION_SCHEMA.VIEWS;"
+                "FROM INFORMATION_SCHEMA.VIEWS " +
+                "WHERE TABLE_SCHEMA='PUBLIC';"
         ).get(0).get("VIEW_COUNT");
 
         assertThat(count).isEqualTo(antallViews);
@@ -67,7 +68,7 @@ public class ViewTest {
         return LocalH2Database.getDb().queryForList(
                 "SELECT " +
                         "COLUMN_NAME, " +
-                        "TYPE_NAME, " +
+                        "DATA_TYPE, " +
                         "CHARACTER_MAXIMUM_LENGTH " +
                         "FROM INFORMATION_SCHEMA.COLUMNS " +
                         "WHERE TABLE_NAME = '" + view + "';"
