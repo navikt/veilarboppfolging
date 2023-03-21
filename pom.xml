@@ -25,7 +25,7 @@
         <wiremock.version>3.0.0-beta-4</wiremock.version>
         <schedlock.version>4.44.0</schedlock.version>
         <pto-schema.version>1.2021.07.01_08.22-f7c78425a00a</pto-schema.version>
-        <sonar.projectKey>navikt_veilarboppfolging</sonar.projectKey>
+        <sonar.projectKey>Jegnavikt_veilarboppfolging</sonar.projectKey>
         <sonar.organization>navikt</sonar.organization>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     </properties>
@@ -46,6 +46,11 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.8</version>
             </plugin>
         </plugins>
         <finalName>veilarboppfolging</finalName>
