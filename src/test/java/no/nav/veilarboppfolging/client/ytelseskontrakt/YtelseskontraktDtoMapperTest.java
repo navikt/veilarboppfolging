@@ -12,7 +12,7 @@ import static no.nav.veilarboppfolging.client.ytelseskontrakt.ActualYtelseskontr
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-public class YtelseskontraktMapperTest {
+public class YtelseskontraktDtoMapperTest {
 
     private static final int ANTALL_YTELSER = 2;
     private static final int ANTALL_VEDTAK = 3;
@@ -35,7 +35,7 @@ public class YtelseskontraktMapperTest {
     public void responseInneholderRiktigeYtelser() throws HentYtelseskontraktListeSikkerhetsbegrensning {
         YtelseskontraktResponse response = getKomplettResponse();
 
-        List<Ytelseskontrakt> expectedYtelser = ExpectedYtelseskontrakt.getExpectedYtelseskontrakter();
+        List<YtelseskontraktDto> expectedYtelser = ExpectedYtelseskontrakt.getExpectedYtelseskontrakter();
 
         assertThat(response.getYtelser(), is(expectedYtelser));
     }
@@ -44,7 +44,7 @@ public class YtelseskontraktMapperTest {
     public void ytelserIResponseHarStatus() throws HentYtelseskontraktListeSikkerhetsbegrensning {
         final YtelseskontraktResponse komplettResponse = getKomplettResponse();
 
-        final List<String> statusListe = komplettResponse.getYtelser().stream().map(Ytelseskontrakt::getStatus).collect(toList());
+        final List<String> statusListe = komplettResponse.getYtelser().stream().map(YtelseskontraktDto::getStatus).collect(toList());
         final List<String> expectedStatusListe = new ArrayList<>(asList("Aktiv", "Lukket"));
 
         assertThat(statusListe, is(expectedStatusListe));
@@ -54,18 +54,18 @@ public class YtelseskontraktMapperTest {
     public void responseInneholderRiktigeVedtak() throws HentYtelseskontraktListeSikkerhetsbegrensning {
         YtelseskontraktResponse response = getKomplettResponse();
 
-        List<Vedtak> expectedVedtak = ExpectedYtelseskontrakt.getExpectedVedtak();
+        List<VedtakDto> expectedVedtakDto = ExpectedYtelseskontrakt.getExpectedVedtak();
 
-        assertThat(response.getVedtaksliste(), is((expectedVedtak)));
+        assertThat(response.getVedtaksliste(), is((expectedVedtakDto)));
     }
 
     @Test
     public void handtererManglendeVedtakstype() throws HentYtelseskontraktListeSikkerhetsbegrensning {
         YtelseskontraktResponse response = ActualYtelseskontraktResponse.getResponseUtenVedtakstype();
 
-        List<Vedtak> expectedVedtak = ExpectedYtelseskontrakt.getExpectedVedtakUtenVedtaksgruppe();
+        List<VedtakDto> expectedVedtakDto = ExpectedYtelseskontrakt.getExpectedVedtakUtenVedtaksgruppe();
 
-        assertThat(response.getVedtaksliste(), is((expectedVedtak)));
+        assertThat(response.getVedtaksliste(), is((expectedVedtakDto)));
 
     }
 
@@ -73,18 +73,18 @@ public class YtelseskontraktMapperTest {
     public void handtererManglendeAktivitetsfase() throws HentYtelseskontraktListeSikkerhetsbegrensning {
         YtelseskontraktResponse response = ActualYtelseskontraktResponse.getResponseUtenAktivitetsfase();
 
-        List<Vedtak> expectedVedtak = ExpectedYtelseskontrakt.getExpectedVedtakUtenAktivitetsfase();
+        List<VedtakDto> expectedVedtakDto = ExpectedYtelseskontrakt.getExpectedVedtakUtenAktivitetsfase();
 
-        assertThat(response.getVedtaksliste(), is((expectedVedtak)));
+        assertThat(response.getVedtaksliste(), is((expectedVedtakDto)));
     }
 
     @Test
     public void handtererManglendeRettighetsgruppe() throws HentYtelseskontraktListeSikkerhetsbegrensning {
         YtelseskontraktResponse response = ActualYtelseskontraktResponse.getResponseUtenRettighetsgruppe();
 
-        List<Vedtak> expectedVedtak = ExpectedYtelseskontrakt.getExpectedVedtakUtenRettighetsgruppe();
+        List<VedtakDto> expectedVedtakDto = ExpectedYtelseskontrakt.getExpectedVedtakUtenRettighetsgruppe();
 
-        assertThat(response.getVedtaksliste(), is((expectedVedtak)));
+        assertThat(response.getVedtaksliste(), is((expectedVedtakDto)));
     }
 
 }

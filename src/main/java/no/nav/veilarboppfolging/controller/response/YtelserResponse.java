@@ -1,30 +1,30 @@
 package no.nav.veilarboppfolging.controller.response;
 
 
-import no.nav.veilarboppfolging.client.ytelseskontrakt.Vedtak;
-import no.nav.veilarboppfolging.client.ytelseskontrakt.Ytelseskontrakt;
+import no.nav.veilarboppfolging.client.ytelseskontrakt.VedtakDto;
+import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktDto;
 
 import java.util.List;
 
 public class YtelserResponse {
-    private List<Vedtak> vedtaksliste;
-    private List<Ytelseskontrakt> ytelser;
+    private List<VedtakDto> vedtaksliste;
+    private List<YtelseskontraktDto> ytelser;
 
-    public YtelserResponse withVedtaksliste(List<Vedtak> vedtaksliste) {
+    public YtelserResponse withVedtaksliste(List<VedtakDto> vedtaksliste) {
         this.vedtaksliste = vedtaksliste;
         return this;
     }
 
-    public YtelserResponse withYtelser(List<Ytelseskontrakt> ytelser) {
+    public YtelserResponse withYtelser(List<YtelseskontraktDto> ytelser) {
         this.ytelser = ytelser;
         return this;
     }
 
-    public List<Vedtak> getVedtaksliste() {
+    public List<VedtakDto> getVedtaksliste() {
         return vedtaksliste;
     }
 
-    public List<Ytelseskontrakt> getYtelser() {
+    public List<YtelseskontraktDto> getYtelser() {
         return ytelser;
     }
 }

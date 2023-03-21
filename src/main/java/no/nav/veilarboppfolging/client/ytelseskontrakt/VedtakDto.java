@@ -5,7 +5,7 @@ import lombok.experimental.Accessors;
 
 @Data
 @Accessors(chain = true)
-public class Vedtak {
+public class VedtakDto {
     String vedtakstype;
     String status;
     String aktivitetsfase;
