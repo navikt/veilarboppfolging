@@ -333,7 +333,7 @@
                                         </artifactItem>
                                         <artifactItem>
                                             <groupId>no.nav.tjenestespesifikasjoner</groupId>
-                                            <artifactId>nav-behandlearbeidssoeker-v1-tjenestespesifikasjon</artifactId>
+                                            <artifactId>nav-behandleArbeidssoeker-v1-tjenestespesifikasjon</artifactId>
                                             <version>${tjenestespesifikasjoner.version}</version>
                                             <type>jar</type>
                                             <overWrite>true</overWrite>
@@ -386,5 +386,6 @@
             </build>
         </profile>
     </profiles>
+
 
 </project>
