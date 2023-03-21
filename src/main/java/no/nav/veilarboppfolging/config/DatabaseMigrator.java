@@ -24,8 +24,7 @@ public class DatabaseMigrator {
         log.info("Starting database migration...");
         var flyway = new Flyway(Flyway.configure()
                 .dataSource(dataSource)
-                .table("schema_version")
-                .validateMigrationNaming(true));
+                .table("schema_version"));
         flyway.migrate();
     }
 
