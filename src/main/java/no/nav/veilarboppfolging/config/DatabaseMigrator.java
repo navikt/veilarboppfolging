@@ -21,10 +21,10 @@ public class DatabaseMigrator {
 
     @PostConstruct
     public void migrateDb() {
-        log.info("Starting database migration...");
-        Flyway flyway = new Flyway();
-        flyway.setDataSource(dataSource);
-        flyway.migrate();
+        log.info("Skipping database migration...");
+//        Flyway flyway = new Flyway();
+//        flyway.setDataSource(dataSource);
+//        flyway.migrate();
     }
 
 }
