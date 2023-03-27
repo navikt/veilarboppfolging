@@ -74,6 +74,8 @@ public class MetricsService implements MeterBinder {
         String bleOpprettet = antallMal == 1 ? "opprettet" : "endret";
 
         Event event = new Event("mittmal.oppdatering")
+                .addTagToReport("endretAv", endretAv)
+                .addTagToReport("bleOpprettet", bleOpprettet)
                 .addFieldToReport("endretAv", endretAv + " " +  bleOpprettet);
 
         metricsClient.report(event);
