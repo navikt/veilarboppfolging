@@ -9,6 +9,7 @@ import no.nav.common.auth.context.UserRole;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
 import no.nav.common.utils.Credentials;
+import no.nav.poao_tilgang.client.PoaoTilgangClient;
 import no.nav.veilarboppfolging.config.EnvironmentProperties;
 import org.junit.Test;
 import org.springframework.web.server.ResponseStatusException;
@@ -37,6 +38,10 @@ public class AuthServiceTest {
 
     private final AuditLogger auditLogger = mock(AuditLoggerImpl.class);
 
+    private final UnleashService unleashService = mock(UnleashService.class);
+
+    private final PoaoTilgangClient poaoTilgangClient = mock(PoaoTilgangClient.class);
+
     private AuthService authService = new AuthService(
             authContextHolder,
             veilarbPep,
@@ -44,7 +49,9 @@ public class AuthServiceTest {
             serviceUserCredentials,
             azureAdOnBehalfOfTokenClient,
             environmentProperties,
-            auditLogger
+            auditLogger,
+            poaoTilgangClient,
+            unleashService
     );
 
     @Test
