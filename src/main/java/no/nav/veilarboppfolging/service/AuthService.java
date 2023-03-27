@@ -31,6 +31,7 @@ import no.nav.common.utils.Credentials;
 import no.nav.poao_tilgang.client.Decision;
 import no.nav.poao_tilgang.client.EksternBrukerTilgangTilEksternBrukerPolicyInput;
 import no.nav.poao_tilgang.client.NavAnsattTilgangTilEksternBrukerPolicyInput;
+import no.nav.poao_tilgang.client.NavAnsattTilgangTilNavEnhetMedSperrePolicyInput;
 import no.nav.poao_tilgang.client.PoaoTilgangClient;
 import no.nav.poao_tilgang.client.TilgangType;
 import no.nav.veilarboppfolging.config.EnvironmentProperties;
@@ -176,7 +177,13 @@ public class AuthService {
         return veilarbPep.harTilgangTilEnhet(getInnloggetBrukerToken(), ofNullable(enhetId).map(EnhetId::of).orElse(EnhetId.of("")));
     }
 
-    public boolean harTilgangTilEnhetMedSperre(String enhetId) { //TODO
+    public boolean harTilgangTilEnhetMedSperre(String enhetId) { //TODO Ferdig
+    	if (unleashService.skalBrukePoaoTilgang()) {
+			Decision decision = poaoTilgangClient.evaluatePolicy(new NavAnsattTilgangTilNavEnhetMedSperrePolicyInput(
+				hentInnloggetVeilederUUID(), enhetId
+			)).getOrThrow();
+			return decision.isPermit();
+		}
         return veilarbPep.harTilgangTilEnhetMedSperre(getInnloggetBrukerToken(), EnhetId.of(enhetId));
     }
 
