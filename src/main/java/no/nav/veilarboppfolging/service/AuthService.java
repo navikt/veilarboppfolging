@@ -28,7 +28,11 @@ import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.NavIdent;
 import no.nav.common.utils.Credentials;
+import no.nav.poao_tilgang.client.Decision;
+import no.nav.poao_tilgang.client.EksternBrukerTilgangTilEksternBrukerPolicyInput;
+import no.nav.poao_tilgang.client.NavAnsattTilgangTilEksternBrukerPolicyInput;
 import no.nav.poao_tilgang.client.PoaoTilgangClient;
+import no.nav.poao_tilgang.client.TilgangType;
 import no.nav.veilarboppfolging.config.EnvironmentProperties;
 import no.nav.veilarboppfolging.utils.DownstreamApi;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -200,18 +204,42 @@ public class AuthService {
         sjekkTilgang(ActionId.WRITE, aktorId);
     }
 
-    private void sjekkTilgang(ActionId actionId, AktorId aktorId) { //TODO
-        Optional<NavIdent> navident = getNavIdentClaimHvisTilgjengelig();
+    private void sjekkTilgang(ActionId actionId, AktorId aktorId) { //TODO Ferdig
+    	if (unleashService.skalBrukePoaoTilgang()) {
+			if (erInternBruker()) {
+				Decision decision = poaoTilgangClient.evaluatePolicy(new NavAnsattTilgangTilEksternBrukerPolicyInput(
+					hentInnloggetVeilederUUID(), mapActionTypeToTilgangsType(actionId), getFnrOrThrow(aktorId).get()
+				)).getOrThrow();
+				if(decision.isDeny()) {
+					throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+				}
+			}
+			if (erEksternBruker()) {
+				Decision decision = poaoTilgangClient.evaluatePolicy(new EksternBrukerTilgangTilEksternBrukerPolicyInput(
+						hentInnloggetPersonIdent(), getFnrOrThrow(aktorId).get()
+				)).getOrThrow();
+				if(decision.isDeny()) {
+					throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+				}
+			}
+			if(erSystemBruker()) {
+				if (!veilarbPep.harTilgangTilPerson(getInnloggetBrukerToken(), actionId, aktorId)) {
+					throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+				}
+			}
+		} else {
+			Optional<NavIdent> navident = getNavIdentClaimHvisTilgjengelig();
 
-        if (navident.isEmpty()) {
-            if (!veilarbPep.harTilgangTilPerson(getInnloggetBrukerToken(), actionId, aktorId)) {
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN);
-            }
-        } else {
-            if (!veilarbPep.harVeilederTilgangTilPerson(navident.orElseThrow(), actionId, aktorId)) {
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN);
-            }
-        }
+			if (navident.isEmpty()) {
+				if (!veilarbPep.harTilgangTilPerson(getInnloggetBrukerToken(), actionId, aktorId)) {
+					throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+				}
+			} else {
+				if (!veilarbPep.harVeilederTilgangTilPerson(navident.orElseThrow(), actionId, aktorId)) {
+					throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+				}
+			}
+		}
     }
 
 
@@ -420,5 +448,14 @@ public class AuthService {
 	private Optional<String> hentSikkerhetsnivaa() {
 		return authContextHolder.getIdTokenClaims()
 				.flatMap(claims -> getStringClaimOrEmpty(claims, "acr"));
+	}
+
+	private TilgangType mapActionTypeToTilgangsType(ActionId actionId) {
+		if (actionId == ActionId.READ) {
+			return TilgangType.LESE;
+		} else if (actionId == ActionId.WRITE){
+			return TilgangType.SKRIVE;
+		}
+		throw new RuntimeException("Uventet actionId");
 	}
 }
