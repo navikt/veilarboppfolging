@@ -36,10 +36,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.swing.text.html.Option;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Spliterator;
+import java.util.UUID;
 
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
@@ -218,14 +221,23 @@ public class AuthService {
         }
     }
 
-    public void sjekkTilgangTilPersonMedNiva3(AktorId aktorId) { //TODO
-        XacmlRequest tilgangTilNiva3Request = lagSjekkTilgangTilNiva3Request(serviceUserCredentials.username, getInnloggetBrukerToken(), aktorId);
+    public void sjekkTilgangTilPersonMedNiva3(AktorId aktorId) { //TODO Ferdig
+    	if(unleashService.skalBrukePoaoTilgang()) {
+			Optional<String> sikkerhetsnivaa = hentSikkerhetsnivaa();
+			if (sikkerhetsnivaa.isPresent() && (sikkerhetsnivaa.get().equals("Level4") || sikkerhetsnivaa.get().equals("Level3"))) {
+				if(!getFnrOrThrow(aktorId).get().equals(hentInnloggetPersonIdent())) {
+					throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+				}
+			}
+    	} else {
+			XacmlRequest tilgangTilNiva3Request = lagSjekkTilgangTilNiva3Request(serviceUserCredentials.username, getInnloggetBrukerToken(), aktorId);
 
-        XacmlResponse response = veilarbPep.getAbacClient().sendRequest(tilgangTilNiva3Request);
+			XacmlResponse response = veilarbPep.getAbacClient().sendRequest(tilgangTilNiva3Request);
 
-        if (!XacmlResponseParser.harTilgang(response)) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
-        }
+			if (!XacmlResponseParser.harTilgang(response)) {
+				throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+			}
+		}
     }
 
     private XacmlRequest lagSjekkTilgangTilNiva3Request(String serviceUserName, String userOidcToken, AktorId aktorId) {
@@ -392,4 +404,21 @@ public class AuthService {
             return empty();
         }
     }
+
+	private UUID hentInnloggetVeilederUUID() {
+		return authContextHolder.getIdTokenClaims()
+				.flatMap(claims -> getStringClaimOrEmpty(claims, "oid"))
+				.map(UUID::fromString)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Fant ikke oid for innlogget veileder"));
+	}
+
+	public String hentInnloggetPersonIdent() {
+		return authContextHolder.getIdTokenClaims()
+				.flatMap(claims -> getStringClaimOrEmpty(claims, "pid"))
+				.orElse(null);
+	}
+	private Optional<String> hentSikkerhetsnivaa() {
+		return authContextHolder.getIdTokenClaims()
+				.flatMap(claims -> getStringClaimOrEmpty(claims, "acr"));
+	}
 }

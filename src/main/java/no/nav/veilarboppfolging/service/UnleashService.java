@@ -12,6 +12,7 @@ public class UnleashService {
     private final static String IKKE_OPPDATER_OPPFOLGING_MED_SIDEEFFEKT = "veilarboppfolging.ikke_oppdater_oppfolging_med_sideeffekt";
     private static final String LAGRE_VEILEDER_SOM_HAR_UTFORT_TILORDNING = "veilarboppfolging.lagre_veileder_som_har_utfort_tilordning";
     private static final String SKAL_IGNORERE_GAMLE_ENDRINGER_FRA_VEILARBARENA = "veilarboppfolging.skal_ignorere_gamle_endringer_fra_veilarbarena";
+	private static final String POAO_TILGANG_ENABLED = "veilarboppfolging.poao-tilgang-enabled";
 
     private final UnleashClient unleashClient;
 
@@ -30,4 +31,8 @@ public class UnleashService {
     public boolean skalIgnorereGamleEndringerFraVeilarbarena() {
         return unleashClient.isEnabled(SKAL_IGNORERE_GAMLE_ENDRINGER_FRA_VEILARBARENA);
     }
+
+	public boolean skalBrukePoaoTilgang() {
+		return unleashClient.isEnabled(POAO_TILGANG_ENABLED);
+	}
 }
