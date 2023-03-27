@@ -28,6 +28,7 @@ import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.NavIdent;
 import no.nav.common.utils.Credentials;
+import no.nav.poao_tilgang.client.PoaoTilgangClient;
 import no.nav.veilarboppfolging.config.EnvironmentProperties;
 import no.nav.veilarboppfolging.utils.DownstreamApi;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,8 +66,12 @@ public class AuthService {
 
     private final EnvironmentProperties environmentProperties;
 
+    private final PoaoTilgangClient poaoTilgangClient;
+
+    private final UnleashService unleashService;
+
     @Autowired
-    public AuthService(AuthContextHolder authContextHolder, Pep veilarbPep, AktorOppslagClient aktorOppslagClient, Credentials serviceUserCredentials, AzureAdOnBehalfOfTokenClient aadOboTokenClient, EnvironmentProperties environmentProperties, AuditLogger auditLogger) {
+    public AuthService(AuthContextHolder authContextHolder, Pep veilarbPep, AktorOppslagClient aktorOppslagClient, Credentials serviceUserCredentials, AzureAdOnBehalfOfTokenClient aadOboTokenClient, EnvironmentProperties environmentProperties, AuditLogger auditLogger, PoaoTilgangClient poaoTilgangClient, UnleashService unleashService) {
         this.authContextHolder = authContextHolder;
         this.veilarbPep = veilarbPep;
         this.aktorOppslagClient = aktorOppslagClient;
@@ -74,6 +79,8 @@ public class AuthService {
         this.aadOboTokenClient = aadOboTokenClient;
         this.environmentProperties = environmentProperties;
         this.auditLogger = auditLogger;
+        this.poaoTilgangClient = poaoTilgangClient;
+        this.unleashService = unleashService;
     }
 
     public void skalVereEnAv(List<UserRole> roller) {
@@ -154,7 +161,7 @@ public class AuthService {
         return authContextHolder.erEksternBruker();
     }
 
-    public boolean harTilgangTilEnhet(String enhetId) {
+    public boolean harTilgangTilEnhet(String enhetId) { //TODO
         //  ABAC feiler hvis man spør om tilgang til udefinerte enheter (null) men tillater å spørre om tilgang
         //  til enheter som ikke finnes (f.eks. tom streng)
         //  Ved å konvertere null til tom streng muliggjør vi å spørre om tilgang til enhet for brukere som
@@ -162,11 +169,11 @@ public class AuthService {
         return veilarbPep.harTilgangTilEnhet(getInnloggetBrukerToken(), ofNullable(enhetId).map(EnhetId::of).orElse(EnhetId.of("")));
     }
 
-    public boolean harTilgangTilEnhetMedSperre(String enhetId) {
+    public boolean harTilgangTilEnhetMedSperre(String enhetId) { //TODO
         return veilarbPep.harTilgangTilEnhetMedSperre(getInnloggetBrukerToken(), EnhetId.of(enhetId));
     }
 
-    public boolean harVeilederSkriveTilgangTilFnr(String veilederId, Fnr fnr) {
+    public boolean harVeilederSkriveTilgangTilFnr(String veilederId, Fnr fnr) { //TODO
         return veilarbPep.harVeilederTilgangTilPerson(NavIdent.of(veilederId), ActionId.WRITE, getAktorIdOrThrow(fnr));
     }
 
@@ -190,7 +197,7 @@ public class AuthService {
         sjekkTilgang(ActionId.WRITE, aktorId);
     }
 
-    private void sjekkTilgang(ActionId actionId, AktorId aktorId) {
+    private void sjekkTilgang(ActionId actionId, AktorId aktorId) { //TODO
         Optional<NavIdent> navident = getNavIdentClaimHvisTilgjengelig();
 
         if (navident.isEmpty()) {
@@ -211,7 +218,7 @@ public class AuthService {
         }
     }
 
-    public void sjekkTilgangTilPersonMedNiva3(AktorId aktorId) {
+    public void sjekkTilgangTilPersonMedNiva3(AktorId aktorId) { //TODO
         XacmlRequest tilgangTilNiva3Request = lagSjekkTilgangTilNiva3Request(serviceUserCredentials.username, getInnloggetBrukerToken(), aktorId);
 
         XacmlResponse response = veilarbPep.getAbacClient().sendRequest(tilgangTilNiva3Request);
