@@ -7,9 +7,9 @@ import no.nav.common.health.HealthCheckResult;
 import no.nav.common.types.identer.Fnr;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.HentYtelseskontraktListeSikkerhetsbegrensning;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3;
-import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt.WSPeriode;
-import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeRequest;
-import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeResponse;
+import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt.Periode;
+import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.HentYtelseskontraktListeRequest;
+import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.HentYtelseskontraktListeResponse;
 import org.apache.cxf.interceptor.LoggingOutInterceptor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
@@ -26,7 +26,6 @@ public class YtelseskontraktClientImpl implements YtelseskontraktClient {
 
     public YtelseskontraktClientImpl(String ytelseskontraktV3Endpoint, StsConfig stsConfig) {
         ytelseskontrakt = new CXFClient<>(YtelseskontraktV3.class)
-                .withOutInterceptor(new LoggingOutInterceptor())
                 .configureStsForSystemUser(stsConfig)
                 .address(ytelseskontraktV3Endpoint)
                 .build();
@@ -34,27 +33,27 @@ public class YtelseskontraktClientImpl implements YtelseskontraktClient {
 
     @Override
     public YtelseskontraktResponse hentYtelseskontraktListe(XMLGregorianCalendar periodeFom, XMLGregorianCalendar periodeTom, Fnr personId) {
-        final WSPeriode periode = new WSPeriode();
+        final Periode periode = new Periode();
         periode.setFom(periodeFom);
         periode.setTom(periodeTom);
-        WSHentYtelseskontraktListeRequest request = new WSHentYtelseskontraktListeRequest()
-                .withPeriode(periode)
-                .withPersonidentifikator(personId.get());
+        HentYtelseskontraktListeRequest request = new HentYtelseskontraktListeRequest();
+        request.setPeriode(periode);
+        request.setPersonidentifikator(personId.get());
 
         return hentYtelseskontraktListe(request);
     }
 
     @Override
     public YtelseskontraktResponse hentYtelseskontraktListe(Fnr personId) {
-        WSHentYtelseskontraktListeRequest request = new WSHentYtelseskontraktListeRequest()
-                .withPersonidentifikator(personId.get());
+        HentYtelseskontraktListeRequest request = new HentYtelseskontraktListeRequest();
+        request.setPersonidentifikator(personId.get());
 
         return hentYtelseskontraktListe(request);
     }
 
-    private YtelseskontraktResponse hentYtelseskontraktListe(WSHentYtelseskontraktListeRequest request) {
+    private YtelseskontraktResponse hentYtelseskontraktListe(HentYtelseskontraktListeRequest request) {
         try {
-            WSHentYtelseskontraktListeResponse response = ytelseskontrakt.hentYtelseskontraktListe(request);
+            HentYtelseskontraktListeResponse response = ytelseskontrakt.hentYtelseskontraktListe(request);
             return YtelseskontraktMapper.tilYtelseskontrakt(response);
         } catch (HentYtelseskontraktListeSikkerhetsbegrensning hentYtelseskontraktListeSikkerhetsbegrensning) {
             log.error("Systembruker har ikke tilgang til å søke opp bruker", hentYtelseskontraktListeSikkerhetsbegrensning);

@@ -34,13 +34,13 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
     private static final String VEILEDER = "veileder";
     private static final String BEGRUNNELSE = "begrunnelse";
 
-    private AuthService authService = mock(AuthService.class);
+    private final AuthService authService = mock(AuthService.class);
 
-    private ArenaOppfolgingService arenaOppfolgingService = mock(ArenaOppfolgingService.class);
+    private final ArenaOppfolgingService arenaOppfolgingService = mock(ArenaOppfolgingService.class);
 
-    private DkifClient dkifClient = mock(DkifClient.class);
+    private final DkifClient dkifClient = mock(DkifClient.class);
 
-    private KafkaProducerService kafkaProducerService = mock(KafkaProducerService.class);
+    private final KafkaProducerService kafkaProducerService = mock(KafkaProducerService.class);
 
     private OppfolgingsStatusRepository oppfolgingsStatusRepository;
 
@@ -50,7 +50,7 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
 
     private ManuellStatusService manuellStatusService;
 
-    private OppfolgingService oppfolgingService = mock(OppfolgingService.class);
+    private final OppfolgingService oppfolgingService = mock(OppfolgingService.class);
 
     @Before
     public void setup() {
@@ -217,6 +217,7 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
         ManuellStatusEntity manuellStatus = new ManuellStatusEntity()
                 .setManuell(true)
                 .setAktorId(AKTOR_ID.get())
+                .setOpprettetAv(SYSTEM)
                 .setBegrunnelse("test");
 
         manuellStatusRepository.create(manuellStatus);

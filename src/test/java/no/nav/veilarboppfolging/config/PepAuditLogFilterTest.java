@@ -16,12 +16,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
-import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+import static jakarta.ws.rs.core.HttpHeaders.CONTENT_TYPE;
+import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 import static no.nav.common.abac.constants.NavAttributter.RESOURCE_VEILARB_ENHET_EIENDEL;
 import static no.nav.common.rest.filter.LogRequestFilter.NAV_CONSUMER_ID_HEADER_NAME;
 import static no.nav.common.utils.EnvironmentUtils.NAIS_APP_NAME_PROPERTY_NAME;
@@ -77,11 +77,12 @@ public class PepAuditLogFilterTest {
                 .willReturn(aResponse()
                         .withStatus(200)
                         .withHeader(CONTENT_TYPE, APPLICATION_JSON)
-                        .withBody("{\n" +
-                                "  \"Response\": {\n" +
-                                "    \"Decision\": \"Permit\"\n" +
-                                "  }\n" +
-                                "}")));
+                        .withBody("""
+                                {
+                                  "Response": {
+                                    "Decision": "Permit"
+                                  }
+                                }""")));
     }
 
     private List<ILoggingEvent> logEventsForLogger(String loggerName) {

@@ -19,9 +19,9 @@ public class LocalH2Database {
 
     public static JdbcTemplate getDb() {
         if (useInnMemory.get()) {
-            return getDb("jdbc:h2:mem:veilarboppfolging-local;DB_CLOSE_DELAY=-1;MODE=Oracle;BUILTIN_ALIAS_OVERRIDE=1;");
+            return getDb("jdbc:h2:mem:veilarboppfolging-local;DB_CLOSE_DELAY=-1;MODE=Oracle;BUILTIN_ALIAS_OVERRIDE=1;NON_KEYWORDS=KEY,VALUE,PARTITION;");
         }
-        return getDb("jdbc:h2:file:~/database/veilarboppfolging;DB_CLOSE_DELAY=-1;MODE=Oracle;AUTO_SERVER=TRUE;BUILTIN_ALIAS_OVERRIDE=1;");
+        return getDb("jdbc:h2:file:~/database/veilarboppfolging;DB_CLOSE_DELAY=-1;MODE=Oracle;AUTO_SERVER=TRUE;BUILTIN_ALIAS_OVERRIDE=1;NON_KEYWORDS=KEY,VALUE,PARTITION;");
     }
 
     public static synchronized JdbcTemplate getDb(String dbUrl) {

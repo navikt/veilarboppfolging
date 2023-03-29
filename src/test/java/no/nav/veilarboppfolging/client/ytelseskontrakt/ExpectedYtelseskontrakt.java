@@ -11,45 +11,45 @@ import static no.nav.veilarboppfolging.mock.YtelseskontraktV3Mock.*;
 
 public class ExpectedYtelseskontrakt {
 
-    public static List<Vedtak> getExpectedVedtakUtenRettighetsgruppe() {
-        final List<Vedtak> expectedVedtak = getExpectedVedtak();
-        return expectedVedtak.stream().map(vedtak -> vedtak.setRettighetsgruppe(null)).collect(Collectors.toList());
+    public static List<VedtakDto> getExpectedVedtakUtenRettighetsgruppe() {
+        final List<VedtakDto> expectedVedtakDto = getExpectedVedtak();
+        return expectedVedtakDto.stream().map(vedtak -> vedtak.setRettighetsgruppe(null)).collect(Collectors.toList());
     }
 
-    public static List<Vedtak> getExpectedVedtakUtenVedtaksgruppe() {
-        final List<Vedtak> expectedVedtak = getExpectedVedtak();
-        return expectedVedtak.stream().map(vedtak -> vedtak.setVedtakstype(null)).collect(Collectors.toList());
+    public static List<VedtakDto> getExpectedVedtakUtenVedtaksgruppe() {
+        final List<VedtakDto> expectedVedtakDto = getExpectedVedtak();
+        return expectedVedtakDto.stream().map(vedtak -> vedtak.setVedtakstype(null)).collect(Collectors.toList());
     }
 
-    public static List<Vedtak> getExpectedVedtakUtenAktivitetsfase() {
-        final List<Vedtak> expectedVedtak = getExpectedVedtak();
-        return expectedVedtak.stream().map(vedtak -> vedtak.setAktivitetsfase(null)).collect(Collectors.toList());
+    public static List<VedtakDto> getExpectedVedtakUtenAktivitetsfase() {
+        final List<VedtakDto> expectedVedtakDto = getExpectedVedtak();
+        return expectedVedtakDto.stream().map(vedtak -> vedtak.setAktivitetsfase(null)).collect(Collectors.toList());
     }
 
-    static List<Vedtak> getExpectedVedtak() {
+    static List<VedtakDto> getExpectedVedtak() {
 
-        Vedtak vedtak1 = new Vedtak()
+        VedtakDto vedtakDto1 = new VedtakDto()
                 .setAktivitetsfase(AKTIVITETSFASE_1)
                 .setStatus(VED_STATUS_1)
                 .setVedtakstype(VEDTAKSTYPE_1)
                 .setRettighetsgruppe(RETTIGHETSGRUPPE)
                 .setFradato(tilDato(YT_FOM_GYLDIGHETSPERIODE_1));
 
-        Vedtak vedtak2 = new Vedtak()
+        VedtakDto vedtakDto2 = new VedtakDto()
                 .setAktivitetsfase(AKTIVITETSFASE_2)
                 .setStatus(VED_STATUS_2)
                 .setVedtakstype(VEDTAKSTYPE_2)
                 .setRettighetsgruppe(RETTIGHETSGRUPPE)
                 .setFradato(tilDato(YT_FOM_GYLDIGHETSPERIODE_2));
 
-        Vedtak vedtak3 = new Vedtak()
+        VedtakDto vedtakDto3 = new VedtakDto()
                 .setAktivitetsfase(AKTIVITETSFASE_3)
                 .setStatus(VED_STATUS_3)
                 .setVedtakstype(VEDTAKSTYPE_3)
                 .setRettighetsgruppe(RETTIGHETSGRUPPE)
                 .setFradato(tilDato(YT_FOM_GYLDIGHETSPERIODE_2));
 
-        return asList(vedtak1, vedtak2, vedtak3);
+        return asList(vedtakDto1, vedtakDto2, vedtakDto3);
     }
 
     private static Dato tilDato(XMLGregorianCalendar dato) {
@@ -57,20 +57,20 @@ public class ExpectedYtelseskontrakt {
     }
 
 
-    static List<Ytelseskontrakt> getExpectedYtelseskontrakter() {
-        Ytelseskontrakt ytelseskontrakt1 = new Ytelseskontrakt()
+    static List<YtelseskontraktDto> getExpectedYtelseskontrakter() {
+        YtelseskontraktDto ytelseskontraktDto1 = new YtelseskontraktDto()
                 .withDatoMottatt(YT_DATO_KRAV_MOTTATT_1)
                 .withStatus(YT_STATUS_1)
                 .withYtelsestype(YTELSESTYPE_1)
                 .withDatoFra(YT_FOM_GYLDIGHETSPERIODE_1);
 
-        Ytelseskontrakt ytelseskontrakt2 = new Ytelseskontrakt()
+        YtelseskontraktDto ytelseskontraktDto2 = new YtelseskontraktDto()
                 .withDatoMottatt(YT_DATO_KRAV_MOTTATT_2)
                 .withStatus(YT_STATUS_2)
                 .withYtelsestype(YTELSESTYPE_2)
                 .withDatoFra(YT_FOM_GYLDIGHETSPERIODE_2)
                 .withDatoTil(YT_TOM_GYLDIGHETSPERIODE_2);
 
-        return new ArrayList<>(asList(ytelseskontrakt1, ytelseskontrakt2));
+        return new ArrayList<>(asList(ytelseskontraktDto1, ytelseskontraktDto2));
     }
 }

@@ -3,8 +3,8 @@ package no.nav.veilarboppfolging.mock;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.HentYtelseskontraktListeSikkerhetsbegrensning;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt.*;
-import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeRequest;
-import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeResponse;
+import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.HentYtelseskontraktListeRequest;
+import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.HentYtelseskontraktListeResponse;
 import no.nav.veilarboppfolging.utils.DateUtils;
 
 import javax.xml.datatype.XMLGregorianCalendar;
@@ -43,16 +43,16 @@ public class YtelseskontraktV3Mock implements YtelseskontraktV3 {
     }
 
     @Override
-    public WSHentYtelseskontraktListeResponse hentYtelseskontraktListe(WSHentYtelseskontraktListeRequest request) throws HentYtelseskontraktListeSikkerhetsbegrensning {
-        WSHentYtelseskontraktListeResponse response = new WSHentYtelseskontraktListeResponse();
-        final WSBruker bruker = new WSBruker();
-        final WSRettighetsgruppe rettighetsgruppe = new WSRettighetsgruppe();
+    public HentYtelseskontraktListeResponse hentYtelseskontraktListe(HentYtelseskontraktListeRequest request) {
+        HentYtelseskontraktListeResponse response = new HentYtelseskontraktListeResponse();
+        final Bruker bruker = new Bruker();
+        final Rettighetsgruppe rettighetsgruppe = new Rettighetsgruppe();
         rettighetsgruppe.setRettighetsGruppe(RETTIGHETSGRUPPE);
         bruker.setRettighetsgruppe(rettighetsgruppe);
         response.setBruker(bruker);
 
-        final List<WSYtelseskontrakt> ytelseskontraktListe = response.getYtelseskontraktListe();
-        final WSYtelseskontrakt ytelseskontrakt1 = new WSYtelseskontrakt();
+        final List<Ytelseskontrakt> ytelseskontraktListe = response.getYtelseskontraktListe();
+        final Ytelseskontrakt ytelseskontrakt1 = new Ytelseskontrakt();
         ytelseskontrakt1.setFomGyldighetsperiode(YT_FOM_GYLDIGHETSPERIODE_1);
         ytelseskontrakt1.setDatoKravMottatt(YT_DATO_KRAV_MOTTATT_1);
         ytelseskontrakt1.setFagsystemSakId(FAGSYSTEM_SAK_ID_1);
@@ -61,7 +61,7 @@ public class YtelseskontraktV3Mock implements YtelseskontraktV3 {
         leggTilVedtak1(ytelseskontrakt1);
         ytelseskontraktListe.add(ytelseskontrakt1);
 
-        final WSYtelseskontrakt ytelseskontrakt2 = new WSYtelseskontrakt();
+        final Ytelseskontrakt ytelseskontrakt2 = new Ytelseskontrakt();
         ytelseskontrakt2.setFomGyldighetsperiode(YT_FOM_GYLDIGHETSPERIODE_2);
         ytelseskontrakt2.setTomGyldighetsperiode(YT_TOM_GYLDIGHETSPERIODE_2);
         ytelseskontrakt2.setDatoKravMottatt(YT_DATO_KRAV_MOTTATT_2);
@@ -76,13 +76,13 @@ public class YtelseskontraktV3Mock implements YtelseskontraktV3 {
         return response;
     }
 
-    private void leggTilVedtak1(WSYtelseskontrakt ytelseskontrakt) {
-        final List<WSVedtak> vedtak = ytelseskontrakt.getIhtVedtak();
-        final WSVedtak wsVedtak = new WSVedtak();
+    private void leggTilVedtak1(Ytelseskontrakt ytelseskontrakt) {
+        final List<Vedtak> vedtak = ytelseskontrakt.getIhtVedtak();
+        final Vedtak wsVedtak = new Vedtak();
         wsVedtak.setPeriodetypeForYtelse("Ny rettighet");
         wsVedtak.setUttaksgrad(100);
 
-        final WSPeriode wsPeriode = new WSPeriode();
+        final Periode wsPeriode = new Periode();
         wsPeriode.setFom(DateUtils.convertDateToXMLGregorianCalendar(LocalDate.of(2016, 10, 18)));
         wsVedtak.setVedtaksperiode(wsPeriode);
 
@@ -92,14 +92,14 @@ public class YtelseskontraktV3Mock implements YtelseskontraktV3 {
         vedtak.add(wsVedtak);
     }
 
-    private void leggTilVedtak2(WSYtelseskontrakt ytelseskontrakt) {
-        final List<WSVedtak> vedtak = ytelseskontrakt.getIhtVedtak();
-        final WSVedtak wsVedtak = new WSVedtak();
+    private void leggTilVedtak2(Ytelseskontrakt ytelseskontrakt) {
+        final List<Vedtak> vedtak = ytelseskontrakt.getIhtVedtak();
+        final Vedtak wsVedtak = new Vedtak();
         wsVedtak.setBeslutningsdato(DateUtils.convertDateToXMLGregorianCalendar(LocalDate.of(2016, 4, 2)));
         wsVedtak.setPeriodetypeForYtelse("Stans");
         wsVedtak.setUttaksgrad(100);
 
-        final WSPeriode wsPeriode = new WSPeriode();
+        final Periode wsPeriode = new Periode();
         wsVedtak.setVedtaksperiode(wsPeriode);
         wsPeriode.setFom(DateUtils.convertDateToXMLGregorianCalendar(LocalDate.of(2016, 4, 1)));
 
@@ -109,16 +109,16 @@ public class YtelseskontraktV3Mock implements YtelseskontraktV3 {
         vedtak.add(wsVedtak);
     }
 
-    private void leggTilVedtak3(WSYtelseskontrakt ytelseskontrakt) {
-        final List<WSVedtak> vedtak = ytelseskontrakt.getIhtVedtak();
-        final WSVedtak wsVedtak = new WSVedtak();
+    private void leggTilVedtak3(Ytelseskontrakt ytelseskontrakt) {
+        final List<Vedtak> vedtak = ytelseskontrakt.getIhtVedtak();
+        final Vedtak wsVedtak = new Vedtak();
         wsVedtak.setBeslutningsdato(DateUtils.convertDateToXMLGregorianCalendar(LocalDate.of(2016, 4, 2)));
         wsVedtak.setPeriodetypeForYtelse("Stans");
         wsVedtak.setUttaksgrad(100);
         wsVedtak.setVedtakBruttoBeloep(500000);
         wsVedtak.setVedtakNettoBeloep(500000);
 
-        final WSPeriode wsPeriode = new WSPeriode();
+        final Periode wsPeriode = new Periode();
         wsPeriode.setFom(DateUtils.convertDateToXMLGregorianCalendar(LocalDate.of(2016, 4, 1)));
         wsVedtak.setVedtaksperiode(wsPeriode);
 

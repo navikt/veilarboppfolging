@@ -5,12 +5,11 @@ import no.nav.common.cxf.CXFClient;
 import no.nav.common.cxf.StsConfig;
 import no.nav.common.health.HealthCheckResult;
 import no.nav.common.types.identer.Fnr;
-import no.nav.tjeneste.virksomhet.behandlearbeidssoeker.v1.binding.*;
+import no.nav.tjeneste.virksomhet.behandlearbeidssoeker.v1.*;
 import no.nav.tjeneste.virksomhet.behandlearbeidssoeker.v1.informasjon.Brukerident;
 import no.nav.tjeneste.virksomhet.behandlearbeidssoeker.v1.meldinger.AktiverBrukerRequest;
 import no.nav.tjeneste.virksomhet.behandlearbeidssoeker.v1.meldinger.ReaktiverBrukerForenkletRequest;
 import no.nav.veilarboppfolging.controller.request.Innsatsgruppe;
-import org.apache.cxf.interceptor.LoggingOutInterceptor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -31,7 +30,6 @@ public class BehandleArbeidssokerClientImpl implements BehandleArbeidssokerClien
 
     public BehandleArbeidssokerClientImpl(String behandleArbeidssoekerV1Endpoint, StsConfig stsConfig) {
         behandleArbeidssoeker = new CXFClient<>(BehandleArbeidssoekerV1.class)
-                .withOutInterceptor(new LoggingOutInterceptor())
                 .configureStsForSystemUser(stsConfig)
                 .timeout(CONNECTION_TIMEOUT, RECEIVE_TIMEOUT)
                 .address(behandleArbeidssoekerV1Endpoint)

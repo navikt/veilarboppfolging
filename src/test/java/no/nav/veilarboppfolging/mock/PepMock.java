@@ -34,6 +34,11 @@ public class PepMock implements Pep {
     }
 
     @Override
+    public boolean harTilgangTilEnhetMedSperre(NavIdent navIdent, EnhetId enhetId) {
+        return true;
+    }
+
+    @Override
     public boolean harVeilederTilgangTilPerson(NavIdent navIdent, ActionId actionId, EksternBrukerId eksternBrukerId) {
         return false;
     }
@@ -73,7 +78,7 @@ public class PepMock implements Pep {
         return abacClient;
     }
 
-    class AbacClientMock implements AbacClient {
+    static class AbacClientMock implements AbacClient {
         @Override
         public String sendRawRequest(String s) {
             return null;
