@@ -28,12 +28,7 @@ import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.NavIdent;
 import no.nav.common.utils.Credentials;
-import no.nav.poao_tilgang.client.Decision;
-import no.nav.poao_tilgang.client.EksternBrukerTilgangTilEksternBrukerPolicyInput;
-import no.nav.poao_tilgang.client.NavAnsattTilgangTilEksternBrukerPolicyInput;
-import no.nav.poao_tilgang.client.NavAnsattTilgangTilNavEnhetMedSperrePolicyInput;
-import no.nav.poao_tilgang.client.PoaoTilgangClient;
-import no.nav.poao_tilgang.client.TilgangType;
+import no.nav.poao_tilgang.client.*;
 import no.nav.veilarboppfolging.config.EnvironmentProperties;
 import no.nav.veilarboppfolging.utils.DownstreamApi;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -169,12 +164,17 @@ public class AuthService {
         return authContextHolder.erEksternBruker();
     }
 
-    public boolean harTilgangTilEnhet(String enhetId) { //TODO
+    public boolean harTilgangTilEnhet(String enhetId) { //TODO Ferdig, men ta stilling til kommentaren under
         //  ABAC feiler hvis man spør om tilgang til udefinerte enheter (null) men tillater å spørre om tilgang
         //  til enheter som ikke finnes (f.eks. tom streng)
         //  Ved å konvertere null til tom streng muliggjør vi å spørre om tilgang til enhet for brukere som
         //  ikke har enhet. Sluttbrukere da få permit mens veiledere vil få deny.
-        return veilarbPep.harTilgangTilEnhet(getInnloggetBrukerToken(), ofNullable(enhetId).map(EnhetId::of).orElse(EnhetId.of("")));
+        if (unleashService.skalBrukePoaoTilgang()){
+            Decision decision = poaoTilgangClient.evaluatePolicy(new NavAnsattTilgangTilNavEnhetPolicyInput(hentInnloggetVeilederUUID(), enhetId)).getOrThrow();
+            return decision.isPermit();
+        }else{
+            return veilarbPep.harTilgangTilEnhet(getInnloggetBrukerToken(), ofNullable(enhetId).map(EnhetId::of).orElse(EnhetId.of("")));
+        }
     }
 
     public boolean harTilgangTilEnhetMedSperre(String enhetId) { //TODO Ferdig
@@ -187,8 +187,15 @@ public class AuthService {
         return veilarbPep.harTilgangTilEnhetMedSperre(getInnloggetBrukerToken(), EnhetId.of(enhetId));
     }
 
-    public boolean harVeilederSkriveTilgangTilFnr(String veilederId, Fnr fnr) { //TODO
-        return veilarbPep.harVeilederTilgangTilPerson(NavIdent.of(veilederId), ActionId.WRITE, getAktorIdOrThrow(fnr));
+    public boolean harVeilederSkriveTilgangTilFnr(String veilederId, Fnr fnr) { //TODO Ferdig
+        if (unleashService.skalBrukePoaoTilgang()){
+            Decision decision = poaoTilgangClient.evaluatePolicy(new NavAnsattNavIdentSkrivetilgangTilEksternBrukerPolicyInput(
+                    veilederId, fnr.toString()
+            )).getOrThrow();
+            return decision.isPermit();
+        }else {
+            return veilarbPep.harVeilederTilgangTilPerson(NavIdent.of(veilederId), ActionId.WRITE, getAktorIdOrThrow(fnr));
+        }
     }
 
     public void sjekkLesetilgangMedFnr(Fnr fnr) {
