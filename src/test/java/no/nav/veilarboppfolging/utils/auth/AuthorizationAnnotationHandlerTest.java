@@ -57,8 +57,10 @@ class AuthorizationAnnotationHandlerTest {
 
     private AuthorizationAnnotationHandler annotationHandler;
 
+    @Mock
     private PoaoTilgangClient poaoTilgangClient;
 
+    @Mock
     private UnleashService unleashService;
 
 
@@ -112,6 +114,7 @@ class AuthorizationAnnotationHandlerTest {
         setupInternalUserAuthOk();
 
         when(aktorOppslagClient.hentAktorId(FNR)).thenReturn(AKTOR_ID);
+        //when(unleashService.skalBrukePoaoTilgang()).thenReturn(false);
 
         Method method = OppfolgingV2Controller.class.getMethod("hentGjeldendePeriode", Fnr.class);
         MockHttpServletRequest request = new MockHttpServletRequest();
