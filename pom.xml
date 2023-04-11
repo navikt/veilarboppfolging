@@ -33,16 +33,16 @@
 
     <repositories>
         <repository>
+            <id>central</id>
+            <url>https://repo.maven.org/maven2</url>
+        </repository>
+        <repository>
             <id>jitpack</id>
             <url>https://jitpack.io</url>
         </repository>
         <repository>
             <id>confluent</id>
             <url>https://packages.confluent.io/maven/</url>
-        </repository>
-        <repository>
-            <id>central</id>
-            <url>https://repo1.maven.org/maven2</url>
         </repository>
     </repositories>
 
