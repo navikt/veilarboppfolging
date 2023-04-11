@@ -4,19 +4,19 @@ package no.nav.veilarboppfolging.client.ytelseskontrakt;
 import java.util.List;
 
 public class YtelseskontraktResponse {
-    private final List<Vedtak> vedtaksliste;
-    private final List<Ytelseskontrakt> ytelser;
+    private final List<VedtakDto> vedtaksliste;
+    private final List<YtelseskontraktDto> ytelser;
 
-    public YtelseskontraktResponse(List<Vedtak> vedtaksliste, List<Ytelseskontrakt> ytelser) {
+    public YtelseskontraktResponse(List<VedtakDto> vedtaksliste, List<YtelseskontraktDto> ytelser) {
         this.vedtaksliste = vedtaksliste;
         this.ytelser = ytelser;
     }
 
-    public List<Vedtak> getVedtaksliste() {
+    public List<VedtakDto> getVedtaksliste() {
         return vedtaksliste;
     }
 
-    public List<Ytelseskontrakt> getYtelser() {
+    public List<YtelseskontraktDto> getYtelser() {
         return ytelser;
     }
 }

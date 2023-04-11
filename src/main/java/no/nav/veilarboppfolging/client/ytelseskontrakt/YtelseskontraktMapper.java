@@ -1,86 +1,89 @@
 package no.nav.veilarboppfolging.client.ytelseskontrakt;
 
-import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt.WSBruker;
-import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt.WSRettighetsgruppe;
-import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt.WSVedtak;
-import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt.WSYtelseskontrakt;
-import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeResponse;
+import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt.Bruker;
+import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt.Rettighetsgruppe;
+import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt.Vedtak;
+import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt.Ytelseskontrakt;
+import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.HentYtelseskontraktListeResponse;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 public class YtelseskontraktMapper {
 
-    public static YtelseskontraktResponse tilYtelseskontrakt(WSHentYtelseskontraktListeResponse response) {
-        final List<Vedtak> vedtakList = mapVedtak(response);
-        final List<Ytelseskontrakt> ytelser = mapYtelser(response);
-        return new YtelseskontraktResponse(vedtakList, ytelser);
+    private YtelseskontraktMapper() {
+
     }
 
-    private static List<Ytelseskontrakt> mapYtelser(WSHentYtelseskontraktListeResponse response) {
+    public static YtelseskontraktResponse tilYtelseskontrakt(HentYtelseskontraktListeResponse response) {
+        final List<VedtakDto> vedtakDtoList = mapVedtak(response);
+        final List<YtelseskontraktDto> ytelser = mapYtelser(response);
+        return new YtelseskontraktResponse(vedtakDtoList, ytelser);
+    }
+
+    private static List<YtelseskontraktDto> mapYtelser(HentYtelseskontraktListeResponse response) {
         return response.getYtelseskontraktListe().stream()
-                .map(wsYtelseskontraktToYtelseskontrakt)
-                .collect(Collectors.toList());
+                .map(YtelseskontraktToYtelseskontrakt)
+                .toList();
     }
 
-    private static List<Vedtak> mapVedtak(WSHentYtelseskontraktListeResponse response) {
-        final List<WSVedtak> wsVedtakList = response.getYtelseskontraktListe().stream()
-                .map(WSYtelseskontrakt::getIhtVedtak)
+    private static List<VedtakDto> mapVedtak(HentYtelseskontraktListeResponse response) {
+        final List<Vedtak> vedtakList = response.getYtelseskontraktListe().stream()
+                .map(Ytelseskontrakt::getIhtVedtak)
                 .flatMap(Collection::stream)
-                .collect(Collectors.toList());
+                .toList();
 
-        final List<Vedtak> vedtakList = wsVedtakList.stream()
-                .map(wsVedtakToVedtak)
-                .collect(Collectors.toList());
+        final List<VedtakDto> vedtakDtoList = vedtakList.stream()
+                .map(VedtakToVedtak)
+                .toList();
 
-        setRettighetsgruppePaVedtak(response, vedtakList);
-        return vedtakList;
+        setRettighetsgruppePaVedtak(response, vedtakDtoList);
+        return vedtakDtoList;
     }
 
-    private static void setRettighetsgruppePaVedtak(WSHentYtelseskontraktListeResponse response, List<Vedtak> vedtakList) {
+    private static void setRettighetsgruppePaVedtak(HentYtelseskontraktListeResponse response, List<VedtakDto> vedtakDtoList) {
         final String rettighetsgruppe = getRettighetsgruppe(response);
 
-        vedtakList.forEach(vedtak -> vedtak.setRettighetsgruppe(rettighetsgruppe));
+        vedtakDtoList.forEach(vedtak -> vedtak.setRettighetsgruppe(rettighetsgruppe));
     }
 
-    private static String getRettighetsgruppe(WSHentYtelseskontraktListeResponse response) {
+    private static String getRettighetsgruppe(HentYtelseskontraktListeResponse response) {
         return Optional.of(response)
-                .map(WSHentYtelseskontraktListeResponse::getBruker)
-                .map(WSBruker::getRettighetsgruppe)
-                .map(WSRettighetsgruppe::getRettighetsGruppe).orElse("");
+                .map(HentYtelseskontraktListeResponse::getBruker)
+                .map(Bruker::getRettighetsgruppe)
+                .map(Rettighetsgruppe::getRettighetsGruppe).orElse("");
     }
 
-    private static final Function<WSVedtak, Vedtak> wsVedtakToVedtak = wsVedtak -> {
-        final Optional<XMLGregorianCalendar> fomdato = Optional.ofNullable(wsVedtak.getVedtaksperiode().getFom());
-        final Optional<XMLGregorianCalendar> tomdato = Optional.ofNullable(wsVedtak.getVedtaksperiode().getTom());
+    private static final Function<Vedtak, VedtakDto> VedtakToVedtak = vedtak -> {
+        final Optional<XMLGregorianCalendar> fomdato = Optional.ofNullable(vedtak.getVedtaksperiode().getFom());
+        final Optional<XMLGregorianCalendar> tomdato = Optional.ofNullable(vedtak.getVedtaksperiode().getTom());
 
-        final Vedtak ytelse = new Vedtak()
-                .setVedtakstype(wsVedtak.getVedtakstype())
-                .setStatus(wsVedtak.getStatus())
-                .setAktivitetsfase(wsVedtak.getAktivitetsfase());
+        final VedtakDto ytelse = new VedtakDto()
+                .setVedtakstype(vedtak.getVedtakstype())
+                .setStatus(vedtak.getStatus())
+                .setAktivitetsfase(vedtak.getAktivitetsfase());
 
-        fomdato.ifPresent((fd) -> ytelse.setFradato(new Dato(fd.getYear(), fd.getMonth(), fd.getDay())));
-        tomdato.ifPresent((td) -> ytelse.setTildato(new Dato(td.getYear(), td.getMonth(), td.getDay())));
+        fomdato.ifPresent(fd -> ytelse.setFradato(new Dato(fd.getYear(), fd.getMonth(), fd.getDay())));
+        tomdato.ifPresent(td -> ytelse.setTildato(new Dato(td.getYear(), td.getMonth(), td.getDay())));
 
         return ytelse;
     };
 
-    private static final Function<WSYtelseskontrakt, Ytelseskontrakt> wsYtelseskontraktToYtelseskontrakt = wsYtelseskontrakt -> {
-        final Optional<XMLGregorianCalendar> fomGyldighetsperiode = Optional.ofNullable(wsYtelseskontrakt.getFomGyldighetsperiode());
-        final Optional<XMLGregorianCalendar> tomGyldighetsperiode = Optional.ofNullable(wsYtelseskontrakt.getTomGyldighetsperiode());
+    private static final Function<Ytelseskontrakt, YtelseskontraktDto> YtelseskontraktToYtelseskontrakt = ytelseskontrakt -> {
+        final Optional<XMLGregorianCalendar> fomGyldighetsperiode = Optional.ofNullable(ytelseskontrakt.getFomGyldighetsperiode());
+        final Optional<XMLGregorianCalendar> tomGyldighetsperiode = Optional.ofNullable(ytelseskontrakt.getTomGyldighetsperiode());
 
-        final Ytelseskontrakt ytelseskontrakt = new Ytelseskontrakt()
-                .withYtelsestype(wsYtelseskontrakt.getYtelsestype())
-                .withStatus(wsYtelseskontrakt.getStatus())
-                .withDatoMottatt(wsYtelseskontrakt.getDatoKravMottatt());
+        final YtelseskontraktDto ytelseskontraktDto = new YtelseskontraktDto()
+                .withYtelsestype(ytelseskontrakt.getYtelsestype())
+                .withStatus(ytelseskontrakt.getStatus())
+                .withDatoMottatt(ytelseskontrakt.getDatoKravMottatt());
 
-        fomGyldighetsperiode.ifPresent(ytelseskontrakt::setDatoFra);
-        tomGyldighetsperiode.ifPresent(ytelseskontrakt::setDatoTil);
+        fomGyldighetsperiode.ifPresent(ytelseskontraktDto::setDatoFra);
+        tomGyldighetsperiode.ifPresent(ytelseskontraktDto::setDatoTil);
 
-        return ytelseskontrakt;
+        return ytelseskontraktDto;
     };
 }

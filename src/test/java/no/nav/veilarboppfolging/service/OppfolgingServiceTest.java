@@ -6,9 +6,9 @@ import no.nav.common.client.aktorregister.IngenGjeldendeIdentException;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto_schema.kafka.json.topic.SisteOppfolgingsperiodeV1;
-import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt.WSYtelseskontrakt;
-import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeRequest;
-import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeResponse;
+import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt.Ytelseskontrakt;
+import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.HentYtelseskontraktListeRequest;
+import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.HentYtelseskontraktListeResponse;
 import no.nav.veilarboppfolging.client.dkif.DkifKontaktinfo;
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolgingTilstand;
 import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktClient;
@@ -436,13 +436,13 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     }
 
     private void gittYtelserMedStatus(String... statuser) {
-        WSHentYtelseskontraktListeRequest request = new WSHentYtelseskontraktListeRequest();
+        HentYtelseskontraktListeRequest request = new HentYtelseskontraktListeRequest();
         request.setPersonidentifikator(FNR.get());
-        WSHentYtelseskontraktListeResponse response = new WSHentYtelseskontraktListeResponse();
+        HentYtelseskontraktListeResponse response = new HentYtelseskontraktListeResponse();
 
-        List<WSYtelseskontrakt> ytelser = Stream.of(statuser)
+        List<Ytelseskontrakt> ytelser = Stream.of(statuser)
                 .map((status) -> {
-                    WSYtelseskontrakt ytelse = new WSYtelseskontrakt();
+                    Ytelseskontrakt ytelse = new Ytelseskontrakt();
                     ytelse.setStatus(status);
                     ytelse.setDatoKravMottatt(DateUtils.convertDateToXMLGregorianCalendar(LocalDate.now()));
                     return ytelse;
