@@ -31,6 +31,7 @@ import no.nav.common.utils.Credentials;
 import no.nav.poao_tilgang.client.*;
 import no.nav.veilarboppfolging.config.EnvironmentProperties;
 import no.nav.veilarboppfolging.utils.DownstreamApi;
+import no.nav.veilarboppfolging.utils.SecureLog;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -51,6 +52,7 @@ import static java.util.Optional.ofNullable;
 import static no.nav.common.abac.XacmlRequestBuilder.lagEnvironment;
 import static no.nav.common.abac.XacmlRequestBuilder.personIdAttribute;
 import static no.nav.common.auth.Constants.AAD_NAV_IDENT_CLAIM;
+import static no.nav.veilarboppfolging.utils.SecureLog.secureLog;
 
 @Slf4j
 @Service
@@ -164,20 +166,30 @@ public class AuthService {
         return authContextHolder.erEksternBruker();
     }
 
-    public boolean harTilgangTilEnhet(String enhetId) { //TODO Ferdig, men ta stilling til kommentaren under
+    public boolean harTilgangTilEnhet(String enhetId) { //TODO ta stilling til kommentaren under
         //  ABAC feiler hvis man spør om tilgang til udefinerte enheter (null) men tillater å spørre om tilgang
         //  til enheter som ikke finnes (f.eks. tom streng)
         //  Ved å konvertere null til tom streng muliggjør vi å spørre om tilgang til enhet for brukere som
         //  ikke har enhet. Sluttbrukere da få permit mens veiledere vil få deny.
-        if (unleashService.skalBrukePoaoTilgang()){
-            Decision decision = poaoTilgangClient.evaluatePolicy(new NavAnsattTilgangTilNavEnhetPolicyInput(hentInnloggetVeilederUUID(), enhetId)).getOrThrow();
-            return decision.isPermit();
+        Boolean abacDecision = veilarbPep.harTilgangTilEnhet(getInnloggetBrukerToken(), ofNullable(enhetId).map(EnhetId::of).orElse(EnhetId.of("")));
+        if (erInternBruker()) {
+            if (unleashService.skalBrukePoaoTilgang()) {
+                Decision decision = poaoTilgangClient.evaluatePolicy(new NavAnsattTilgangTilNavEnhetPolicyInput(hentInnloggetVeilederUUID(), enhetId)).getOrThrow();
+                if (abacDecision != decision.isPermit()){
+                    secureLog.info("Diff mellom abac og poao-tilgang i veilarboppfolging, harTilgangTilEnhet, abac = {}, poao-tilgang = {}, enhetId = {}", abacDecision, decision, enhetId);
+                }else{
+                    secureLog.info("Samsvar mellom abac og poao-tilgang i veilarboppfolging, harTilgangTilEnhet, abac = {}, poao-tilgang = {}, enhetId = {}", abacDecision, decision, enhetId);
+                }
+            }
+        }else if(erEksternBruker()){
+            secureLog.info("Eksternbruker kom inn i harTilgangTilEnhet, decision fra abac = {}, enhetId = {}", abacDecision, enhetId);
         }else{
-            return veilarbPep.harTilgangTilEnhet(getInnloggetBrukerToken(), ofNullable(enhetId).map(EnhetId::of).orElse(EnhetId.of("")));
+            secureLog.info("Systembruker eller ukjent rolle, abacDecision = {}, userRole = {}, subject = {}", abacDecision, authContextHolder.getRole(), authContextHolder.getSubject());
         }
+        return abacDecision;
     }
 
-    public boolean harTilgangTilEnhetMedSperre(String enhetId) { //TODO Ferdig
+    public boolean harTilgangTilEnhetMedSperre(String enhetId) {
     	if (unleashService.skalBrukePoaoTilgang()) {
 			Decision decision = poaoTilgangClient.evaluatePolicy(new NavAnsattTilgangTilNavEnhetMedSperrePolicyInput(
 				hentInnloggetVeilederUUID(), enhetId
@@ -187,7 +199,7 @@ public class AuthService {
         return veilarbPep.harTilgangTilEnhetMedSperre(getInnloggetBrukerToken(), EnhetId.of(enhetId));
     }
 
-    public boolean harVeilederSkriveTilgangTilFnr(String veilederId, Fnr fnr) { //TODO Ferdig
+    public boolean harVeilederSkriveTilgangTilFnr(String veilederId, Fnr fnr) {
         if (unleashService.skalBrukePoaoTilgang()){
             Decision decision = poaoTilgangClient.evaluatePolicy(new NavAnsattNavIdentSkrivetilgangTilEksternBrukerPolicyInput(
                     veilederId, fnr.toString()
@@ -218,7 +230,7 @@ public class AuthService {
         sjekkTilgang(ActionId.WRITE, aktorId);
     }
 
-    private void sjekkTilgang(ActionId actionId, AktorId aktorId) { //TODO Ferdig
+    private void sjekkTilgang(ActionId actionId, AktorId aktorId) {
     	if (unleashService.skalBrukePoaoTilgang()) {
 			if (erInternBruker()) {
 				Decision decision = poaoTilgangClient.evaluatePolicy(new NavAnsattTilgangTilEksternBrukerPolicyInput(
@@ -263,7 +275,7 @@ public class AuthService {
         }
     }
 
-    public void sjekkTilgangTilPersonMedNiva3(AktorId aktorId) { //TODO Ferdig
+    public void sjekkTilgangTilPersonMedNiva3(AktorId aktorId) {
     	if(unleashService.skalBrukePoaoTilgang()) {
 			Optional<String> sikkerhetsnivaa = hentSikkerhetsnivaa();
 			if (sikkerhetsnivaa.isPresent() && (sikkerhetsnivaa.get().equals("Level4") || sikkerhetsnivaa.get().equals("Level3"))) {
