@@ -180,7 +180,7 @@ public class AuthService {
                 auditLogWithMessageAndDestinationUserId(
                         "Veileder har gjort oppslag på enhet",
                         enhetId,
-                        getNavIdentClaimHvisTilgjengelig().orElseThrow().get(),
+                        hentInnloggetVeilederUUID().toString(),
                         decision.isPermit() ? AuthorizationDecision.PERMIT : AuthorizationDecision.DENY
                 );
             }
@@ -200,7 +200,7 @@ public class AuthService {
             auditLogWithMessageAndDestinationUserId(
                     "Veileder har gjort oppslag på enhet med sperre",
                     enhetId,
-                    getNavIdentClaimHvisTilgjengelig().orElseThrow().get(),
+                    hentInnloggetVeilederUUID().toString(),
                     decision.isPermit() ? AuthorizationDecision.PERMIT : AuthorizationDecision.DENY
             );
 			return decision.isPermit();
@@ -216,7 +216,7 @@ public class AuthService {
             auditLogWithMessageAndDestinationUserId(
                     "Veileder har gjort oppslag på fnr",
                     fnr.get(),
-                    getNavIdentClaimHvisTilgjengelig().orElseThrow().get(),
+                    veilederId,
                     decision.isPermit() ? AuthorizationDecision.PERMIT : AuthorizationDecision.DENY
             );
             return decision.isPermit();
@@ -251,29 +251,37 @@ public class AuthService {
 				Decision decision = poaoTilgangClient.evaluatePolicy(new NavAnsattTilgangTilEksternBrukerPolicyInput(
 					hentInnloggetVeilederUUID(), mapActionTypeToTilgangsType(actionId), getFnrOrThrow(aktorId).get()
 				)).getOrThrow();
-				if(decision.isDeny()) {
-					throw new ResponseStatusException(HttpStatus.FORBIDDEN);
-				}
-			}
-			if (erEksternBruker()) {
-				Decision decision = poaoTilgangClient.evaluatePolicy(new EksternBrukerTilgangTilEksternBrukerPolicyInput(
-						hentInnloggetPersonIdent(), getFnrOrThrow(aktorId).get()
-				)).getOrThrow();
                 auditLogWithMessageAndDestinationUserId(
-                        "Ekstern bruker har gjort oppslag på aktorid",
+                        "Veileder har gjort oppslag på aktorid",
                         aktorId.get(),
-                        getNavIdentClaimHvisTilgjengelig().orElseThrow().get(),
+                        hentInnloggetVeilederUUID().toString(),
                         decision.isPermit() ? AuthorizationDecision.PERMIT : AuthorizationDecision.DENY
                 );
 				if(decision.isDeny()) {
 					throw new ResponseStatusException(HttpStatus.FORBIDDEN);
 				}
 			}
-			if(erSystemBruker()) {
-				if (!veilarbPep.harTilgangTilPerson(getInnloggetBrukerToken(), actionId, aktorId)) {
+			else if (erEksternBruker()) {
+				Decision decision = poaoTilgangClient.evaluatePolicy(new EksternBrukerTilgangTilEksternBrukerPolicyInput(
+						hentInnloggetPersonIdent(), getFnrOrThrow(aktorId).get()
+				)).getOrThrow();
+                auditLogWithMessageAndDestinationUserId(
+                        "Ekstern bruker har gjort oppslag på aktorid",
+                        aktorId.get(),
+                        hentInnloggetPersonIdent(),
+                        decision.isPermit() ? AuthorizationDecision.PERMIT : AuthorizationDecision.DENY
+                );
+				if(decision.isDeny()) {
 					throw new ResponseStatusException(HttpStatus.FORBIDDEN);
 				}
 			}
+			else if(erSystemBruker()) {
+				if (!veilarbPep.harTilgangTilPerson(getInnloggetBrukerToken(), actionId, aktorId)) {
+					throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+				}
+			} else{
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+            }
 		} else {
 			Optional<NavIdent> navident = getNavIdentClaimHvisTilgjengelig();
 
