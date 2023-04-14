@@ -119,6 +119,9 @@ spec:
         - application: esyfo-info-frontend
           namespace: team-esyfo
           cluster: prod-gcp
+        - application: amt-person-service
+          namespace: amt
+          cluster: prod-gcp
   vault:
     enabled: true
     paths:
