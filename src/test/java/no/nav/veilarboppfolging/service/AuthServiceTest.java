@@ -12,10 +12,7 @@ import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.utils.Credentials;
-import no.nav.poao_tilgang.client.Decision;
-import no.nav.poao_tilgang.client.NavAnsattTilgangTilEksternBrukerPolicyInput;
-import no.nav.poao_tilgang.client.PoaoTilgangClient;
-import no.nav.poao_tilgang.client.TilgangType;
+import no.nav.poao_tilgang.client.*;
 import no.nav.poao_tilgang.client.api.ApiResult;
 import no.nav.veilarboppfolging.config.EnvironmentProperties;
 import org.junit.Test;
@@ -205,5 +202,86 @@ public class AuthServiceTest {
         assertThrows(ResponseStatusException.class, () -> authService.sjekkSkrivetilgangMedAktorId(aktorId));
     }
 
+
+    @Test
+    public void EksternBrukerHarTilgangPaAktorId_sjekktilgang() {
+        Fnr fnr = Fnr.of("23456789101");
+        JWTClaimsSet claims = new JWTClaimsSet.Builder()
+                .issuer("microsoftonline.com")
+                .claim("azp_name", "cluster:team:test_app")
+                .claim("pid", fnr.get())
+                .claim("acr", "Level4")
+                .build();
+
+        AktorId aktorId = AktorId.of("123");
+        when(unleashService.skalBrukePoaoTilgang()).thenReturn(true);
+        when(authContextHolder.getIdTokenClaims()).thenReturn(Optional.of(claims));
+        when(authService.getFnrOrThrow(aktorId)).thenReturn(fnr);
+        when(authService.erEksternBruker()).thenReturn(true);
+        when(poaoTilgangClient.evaluatePolicy(new EksternBrukerTilgangTilEksternBrukerPolicyInput(
+                fnr.get(), fnr.get()))).thenReturn(new ApiResult<>(null, Decision.Permit.INSTANCE));
+        when(poaoTilgangClient.evaluatePolicy(new EksternBrukerTilgangTilEksternBrukerPolicyInput(
+                fnr.get(), fnr.get()))).thenReturn(new ApiResult<>(null, Decision.Permit.INSTANCE));
+
+        assertDoesNotThrow(() -> authService.sjekkLesetilgangMedAktorId(aktorId));
+        assertDoesNotThrow(() -> authService.sjekkSkrivetilgangMedAktorId(aktorId));
+    }
+
+    @Test
+    public void eksternBrukerHarIkkeTilgangPaAktorId_sjekktilgang() {
+        Fnr fnrInnloggetBruker = Fnr.of("23456789101");
+        Fnr fnrDestination = Fnr.of("12345678910");
+        JWTClaimsSet claims = new JWTClaimsSet.Builder()
+                .issuer("microsoftonline.com")
+                .claim("azp_name", "cluster:team:test_app")
+                .claim("acr", "Level4")
+                .claim("pid", fnrInnloggetBruker)
+                .build();
+
+        AktorId aktorId = AktorId.of("123");
+        when(unleashService.skalBrukePoaoTilgang()).thenReturn(true);
+        when(authContextHolder.getIdTokenClaims()).thenReturn(Optional.of(claims));
+        when(authService.getFnrOrThrow(aktorId)).thenReturn(fnrDestination);
+        when(authService.erInternBruker()).thenReturn(true);
+        when(poaoTilgangClient.evaluatePolicy(new EksternBrukerTilgangTilEksternBrukerPolicyInput(
+                fnrInnloggetBruker.get(), fnrDestination.get()))).thenReturn(new ApiResult<>(null, new Decision.Deny("", "")));
+        when(poaoTilgangClient.evaluatePolicy(new EksternBrukerTilgangTilEksternBrukerPolicyInput(
+                fnrInnloggetBruker.get(), fnrDestination.get()))).thenReturn(new ApiResult<>(null, new Decision.Deny("", "")));
+
+        assertThrows(ResponseStatusException.class, () -> authService.sjekkLesetilgangMedAktorId(aktorId));
+        assertThrows(ResponseStatusException.class, () -> authService.sjekkSkrivetilgangMedAktorId(aktorId));
+    }
+
+    @Test
+    public void eksternBrukerMedLevel3HarIkkeTilgangPaAktorId_sjekktilgang_() {
+        Fnr fnrInnloggetBruker = Fnr.of("23456789101");
+        JWTClaimsSet claims = new JWTClaimsSet.Builder()
+                .issuer("microsoftonline.com")
+                .claim("azp_name", "cluster:team:test_app")
+                .claim("acr", "Level3")
+                .claim("pid", fnrInnloggetBruker)
+                .build();
+
+        AktorId aktorId = AktorId.of("123");
+        when(unleashService.skalBrukePoaoTilgang()).thenReturn(true);
+        when(authContextHolder.getIdTokenClaims()).thenReturn(Optional.of(claims));
+        when(authService.getFnrOrThrow(aktorId)).thenReturn(fnrInnloggetBruker);
+        when(authService.erInternBruker()).thenReturn(true);
+        when(poaoTilgangClient.evaluatePolicy(new EksternBrukerTilgangTilEksternBrukerPolicyInput(
+                fnrInnloggetBruker.get(), fnrInnloggetBruker.get()))).thenReturn(new ApiResult<>(null, Decision.Permit.INSTANCE));
+        when(poaoTilgangClient.evaluatePolicy(new EksternBrukerTilgangTilEksternBrukerPolicyInput(
+                fnrInnloggetBruker.get(), fnrInnloggetBruker.get()))).thenReturn(new ApiResult<>(null, Decision.Permit.INSTANCE));
+
+        assertThrows(ResponseStatusException.class, () -> authService.sjekkLesetilgangMedAktorId(aktorId));
+        assertThrows(ResponseStatusException.class, () -> authService.sjekkSkrivetilgangMedAktorId(aktorId));
+    }
+
+    @Test
+    public void harIkkeRolleSkalFaPermissionDenied_sjekkTilgang() {
+        AktorId aktorId = AktorId.of("123");
+        when(unleashService.skalBrukePoaoTilgang()).thenReturn(true);
+        assertThrows(ResponseStatusException.class, () -> authService.sjekkLesetilgangMedAktorId(aktorId));
+        assertThrows(ResponseStatusException.class, () -> authService.sjekkSkrivetilgangMedAktorId(aktorId));
+    }
 
 }
