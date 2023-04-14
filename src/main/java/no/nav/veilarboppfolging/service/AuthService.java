@@ -12,11 +12,11 @@ import no.nav.common.abac.constants.StandardAttributter;
 import no.nav.common.abac.domain.Attribute;
 import no.nav.common.abac.domain.request.*;
 import no.nav.common.abac.domain.response.XacmlResponse;
+import no.nav.common.audit_log.cef.AuthorizationDecision;
 import no.nav.common.audit_log.cef.CefMessage;
 import no.nav.common.audit_log.cef.CefMessageEvent;
 import no.nav.common.audit_log.cef.CefMessageSeverity;
 import no.nav.common.audit_log.log.AuditLogger;
-import no.nav.common.audit_log.log.AuditLoggerImpl;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.UserRole;
 import no.nav.common.auth.utils.IdentUtils;
@@ -31,18 +31,15 @@ import no.nav.common.utils.Credentials;
 import no.nav.poao_tilgang.client.*;
 import no.nav.veilarboppfolging.config.EnvironmentProperties;
 import no.nav.veilarboppfolging.utils.DownstreamApi;
-import no.nav.veilarboppfolging.utils.SecureLog;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import javax.swing.text.html.Option;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Spliterator;
 import java.util.UUID;
 
 import static java.lang.String.format;
@@ -180,6 +177,12 @@ public class AuthService {
                 }else{
                     secureLog.info("Samsvar mellom abac og poao-tilgang i veilarboppfolging, harTilgangTilEnhet, abac = {}, poao-tilgang = {}, enhetId = {}", abacDecision, decision, enhetId);
                 }
+                auditLogWithMessageAndDestinationUserId(
+                        "Veileder har gjort oppslag på enhet",
+                        enhetId,
+                        getNavIdentClaimHvisTilgjengelig().orElseThrow().get(),
+                        decision.isPermit() ? AuthorizationDecision.PERMIT : AuthorizationDecision.DENY
+                );
             }
         }else if(erEksternBruker()){
             secureLog.info("Eksternbruker kom inn i harTilgangTilEnhet, decision fra abac = {}, enhetId = {}", abacDecision, enhetId);
@@ -194,6 +197,12 @@ public class AuthService {
 			Decision decision = poaoTilgangClient.evaluatePolicy(new NavAnsattTilgangTilNavEnhetMedSperrePolicyInput(
 				hentInnloggetVeilederUUID(), enhetId
 			)).getOrThrow();
+            auditLogWithMessageAndDestinationUserId(
+                    "Veileder har gjort oppslag på enhet med sperre",
+                    enhetId,
+                    getNavIdentClaimHvisTilgjengelig().orElseThrow().get(),
+                    decision.isPermit() ? AuthorizationDecision.PERMIT : AuthorizationDecision.DENY
+            );
 			return decision.isPermit();
 		}
         return veilarbPep.harTilgangTilEnhetMedSperre(getInnloggetBrukerToken(), EnhetId.of(enhetId));
@@ -204,6 +213,12 @@ public class AuthService {
             Decision decision = poaoTilgangClient.evaluatePolicy(new NavAnsattNavIdentSkrivetilgangTilEksternBrukerPolicyInput(
                     veilederId, fnr.toString()
             )).getOrThrow();
+            auditLogWithMessageAndDestinationUserId(
+                    "Veileder har gjort oppslag på fnr",
+                    fnr.get(),
+                    getNavIdentClaimHvisTilgjengelig().orElseThrow().get(),
+                    decision.isPermit() ? AuthorizationDecision.PERMIT : AuthorizationDecision.DENY
+            );
             return decision.isPermit();
         }else {
             return veilarbPep.harVeilederTilgangTilPerson(NavIdent.of(veilederId), ActionId.WRITE, getAktorIdOrThrow(fnr));
@@ -244,6 +259,12 @@ public class AuthService {
 				Decision decision = poaoTilgangClient.evaluatePolicy(new EksternBrukerTilgangTilEksternBrukerPolicyInput(
 						hentInnloggetPersonIdent(), getFnrOrThrow(aktorId).get()
 				)).getOrThrow();
+                auditLogWithMessageAndDestinationUserId(
+                        "Ekstern bruker har gjort oppslag på aktorid",
+                        aktorId.get(),
+                        getNavIdentClaimHvisTilgjengelig().orElseThrow().get(),
+                        decision.isPermit() ? AuthorizationDecision.PERMIT : AuthorizationDecision.DENY
+                );
 				if(decision.isDeny()) {
 					throw new ResponseStatusException(HttpStatus.FORBIDDEN);
 				}
@@ -484,4 +505,18 @@ public class AuthService {
 		}
 		throw new RuntimeException("Uventet actionId");
 	}
+
+    private void auditLogWithMessageAndDestinationUserId(String logMessage, String destinationUserId, String sourceUserID, AuthorizationDecision authorizationDecision) {
+        auditLogger.log(CefMessage.builder()
+                .timeEnded(System.currentTimeMillis())
+                .applicationName("veilarboppfolging")
+                .sourceUserId(sourceUserID)
+                .authorizationDecision(authorizationDecision)
+                .event(CefMessageEvent.ACCESS)
+                .severity(CefMessageSeverity.INFO)
+                .name("veilarboppfolging-audit-log")
+                .destinationUserId(destinationUserId)
+                .extension("msg", logMessage)
+                .build());
+    }
 }
