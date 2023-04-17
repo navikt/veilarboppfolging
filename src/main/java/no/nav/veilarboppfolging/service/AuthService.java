@@ -179,10 +179,15 @@ public class AuthService {
                 );
                 return decision.isPermit();
             } else if (erEksternBruker()) {
-                //Eksternbruker kan komme inn i funksjonen men skal alltid få Deny
-                return false;
+                Boolean abacDecision = veilarbPep.harTilgangTilEnhet(getInnloggetBrukerToken(), ofNullable(enhetId).map(EnhetId::of).orElse(EnhetId.of("")));
+                //Eksternbruker kan komme inn i funksjonen men (vi tror) hen alltid skal få Deny
+                if (abacDecision == true){
+                    secureLog.warn("Ekstern bruker kom inn i harTilgangTilEnhet og fikk permit fra abac. Må håndteres i poao-tilgang");
+                }else {
+                    return false;
+                }
             } else {
-                secureLog.info("Systembruker eller ukjent rolle kom inn i harTilgangTilEnhet, hvis dette skjer må man legge til håndtering");
+                secureLog.warn("Systembruker eller ukjent rolle kom inn i harTilgangTilEnhet, hvis dette skjer må man legge til håndtering");
                 return false;
             }
         }
