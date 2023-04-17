@@ -43,7 +43,7 @@ spec:
     - name: POAO_TILGANG_URL
       value: https://poao-tilgang.dev.intern.nav.no
     - name: POAO_TILGANG_SCOPE
-      value: api://dev-fss.poao.poao-tilgang/.default
+      value: api://dev-gcp.poao.poao-tilgang/.default
   secureLogs:
     enabled: true
   kafka:
