@@ -9,6 +9,7 @@ import no.nav.common.auth.context.UserRole;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
 import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.utils.Credentials;
 import no.nav.poao_tilgang.client.*;
@@ -21,8 +22,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static java.util.Optional.ofNullable;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -279,6 +280,42 @@ public class AuthServiceTest {
         when(unleashService.skalBrukePoaoTilgang()).thenReturn(true);
         assertThrows(ResponseStatusException.class, () -> authService.sjekkLesetilgangMedAktorId(aktorId));
         assertThrows(ResponseStatusException.class, () -> authService.sjekkSkrivetilgangMedAktorId(aktorId));
+    }
+
+    @Test
+    public void eksternBrukerSkalFaDeny_harTilgangTilEnhet() {
+        EnhetId enhetId = EnhetId.of("1201");
+        when(unleashService.skalBrukePoaoTilgang()).thenReturn(true);
+        when(authService.erEksternBruker()).thenReturn(true);
+
+        assertFalse(authService.harTilgangTilEnhet(enhetId.get()));
+    }
+
+    @Test
+    public void brukerMedSystemRolleEllerUkjentRolleSkalFaDeny_harTilgangTilEnhet() {
+        EnhetId enhetId = EnhetId.of("1201");
+        when(unleashService.skalBrukePoaoTilgang()).thenReturn(true);
+        when(authService.erSystemBruker()).thenReturn(true);
+
+        assertFalse(authService.harTilgangTilEnhet(enhetId.get()));
+    }
+
+
+    @Test
+    public void internBruker_harTilgangTilEnhet() {
+        UUID uuid = UUID.randomUUID();
+        EnhetId enhetId = EnhetId.of("1201");
+        JWTClaimsSet claims = new JWTClaimsSet.Builder()
+                .issuer("microsoftonline.com")
+                .claim("azp_name", "cluster:team:test_app")
+                .claim("oid", uuid.toString())
+                .build();
+
+        when(unleashService.skalBrukePoaoTilgang()).thenReturn(true);
+        when(authContextHolder.getIdTokenClaims()).thenReturn(Optional.of(claims));
+        when(authService.erInternBruker()).thenReturn(true);
+        when(poaoTilgangClient.evaluatePolicy(new NavAnsattTilgangTilNavEnhetPolicyInput(uuid,  ofNullable(enhetId.get()).orElse("")))).thenReturn(new ApiResult<>(null, Decision.Permit.INSTANCE));
+        assertDoesNotThrow(() -> authService.harTilgangTilEnhet(enhetId.get()));
     }
 
 }
