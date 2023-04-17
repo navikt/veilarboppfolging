@@ -168,28 +168,30 @@ public class AuthService {
         //  til enheter som ikke finnes (f.eks. tom streng)
         //  Ved å konvertere null til tom streng muliggjør vi å spørre om tilgang til enhet for brukere som
         //  ikke har enhet. Sluttbrukere da få permit mens veiledere vil få deny.
-        Boolean abacDecision = veilarbPep.harTilgangTilEnhet(getInnloggetBrukerToken(), ofNullable(enhetId).map(EnhetId::of).orElse(EnhetId.of("")));
-        if (erInternBruker()) {
-            if (unleashService.skalBrukePoaoTilgang()) {
+        if (unleashService.skalBrukePoaoTilgang()) {
+            if (erInternBruker()) {
                 Decision decision = poaoTilgangClient.evaluatePolicy(new NavAnsattTilgangTilNavEnhetPolicyInput(hentInnloggetVeilederUUID(), ofNullable(enhetId).orElse(""))).getOrThrow();
-                if (abacDecision != decision.isPermit()) {
-                    secureLog.info("Diff mellom abac og poao-tilgang i veilarboppfolging, harTilgangTilEnhet, abac = {}, poao-tilgang = {}, enhetId = {}", abacDecision, decision, enhetId);
-                } else {
-                    secureLog.info("Samsvar mellom abac og poao-tilgang i veilarboppfolging, harTilgangTilEnhet, abac = {}, poao-tilgang = {}, enhetId = {}", abacDecision, decision, enhetId);
-                }
                 auditLogWithMessageAndDestinationUserId(
                         "Veileder har gjort oppslag på enhet",
                         enhetId,
                         hentInnloggetVeilederUUID().toString(),
                         decision.isPermit() ? AuthorizationDecision.PERMIT : AuthorizationDecision.DENY
                 );
+                return decision.isPermit();
+            } else {
+                Boolean abacDecision = veilarbPep.harTilgangTilEnhet(getInnloggetBrukerToken(), ofNullable(enhetId).map(EnhetId::of).orElse(EnhetId.of("")));
+                if (erEksternBruker() && abacDecision == true) {
+                    secureLog.warn("Ekstern bruker kom inn i harTilgangTilEnhet og fikk permit fra abac. Må håndteres i poao-tilgang");
+                    return true;
+                } else if (erEksternBruker() && abacDecision == false) {
+                    return false;
+                } else {
+                    secureLog.warn("Systembruker eller ukjent rolle kom inn i harTilgangTilEnhet, hvis dette skjer må man legge til håndtering, abacDecision = {}", abacDecision);
+                    return abacDecision;
+                }
             }
-        } else if (erEksternBruker()) {
-            secureLog.info("Eksternbruker kom inn i harTilgangTilEnhet, decision fra abac = {}, enhetId = {}", abacDecision, enhetId);
-        } else {
-            secureLog.info("Systembruker eller ukjent rolle, abacDecision = {}, userRole = {}, subject = {}", abacDecision, authContextHolder.getRole(), authContextHolder.getSubject());
         }
-        return abacDecision;
+        return veilarbPep.harTilgangTilEnhet(getInnloggetBrukerToken(), ofNullable(enhetId).map(EnhetId::of).orElse(EnhetId.of("")));
     }
 
     public boolean harTilgangTilEnhetMedSperre(String enhetId) {
