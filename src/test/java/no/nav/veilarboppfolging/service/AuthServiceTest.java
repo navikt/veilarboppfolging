@@ -24,6 +24,7 @@ import java.util.UUID;
 
 import static java.util.Optional.ofNullable;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -287,6 +288,8 @@ public class AuthServiceTest {
         EnhetId enhetId = EnhetId.of("1201");
         when(unleashService.skalBrukePoaoTilgang()).thenReturn(true);
         when(authService.erEksternBruker()).thenReturn(true);
+        when(veilarbPep.harTilgangTilEnhet("", ofNullable(enhetId.get()).map(EnhetId::of).orElse(EnhetId.of("")))).thenReturn(false);
+        when(authContextHolder.getIdTokenString()).thenReturn(Optional.of(""));
 
         assertFalse(authService.harTilgangTilEnhet(enhetId.get()));
     }
@@ -296,6 +299,8 @@ public class AuthServiceTest {
         EnhetId enhetId = EnhetId.of("1201");
         when(unleashService.skalBrukePoaoTilgang()).thenReturn(true);
         when(authService.erSystemBruker()).thenReturn(true);
+        when(veilarbPep.harTilgangTilEnhet("", ofNullable(enhetId.get()).map(EnhetId::of).orElse(EnhetId.of("")))).thenReturn(false);
+        when(authContextHolder.getIdTokenString()).thenReturn(Optional.of(""));
 
         assertFalse(authService.harTilgangTilEnhet(enhetId.get()));
     }

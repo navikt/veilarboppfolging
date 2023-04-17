@@ -178,17 +178,16 @@ public class AuthService {
                         decision.isPermit() ? AuthorizationDecision.PERMIT : AuthorizationDecision.DENY
                 );
                 return decision.isPermit();
-            } else if (erEksternBruker()) {
-                Boolean abacDecision = veilarbPep.harTilgangTilEnhet(getInnloggetBrukerToken(), ofNullable(enhetId).map(EnhetId::of).orElse(EnhetId.of("")));
-                //Eksternbruker kan komme inn i funksjonen men (vi tror) hen alltid skal få Deny
-                if (abacDecision == true){
-                    secureLog.warn("Ekstern bruker kom inn i harTilgangTilEnhet og fikk permit fra abac. Må håndteres i poao-tilgang");
-                }else {
-                    return false;
-                }
             } else {
-                secureLog.warn("Systembruker eller ukjent rolle kom inn i harTilgangTilEnhet, hvis dette skjer må man legge til håndtering");
-                return false;
+                Boolean abacDecision = veilarbPep.harTilgangTilEnhet(getInnloggetBrukerToken(), ofNullable(enhetId).map(EnhetId::of).orElse(EnhetId.of("")));
+                if (erEksternBruker() && abacDecision == true) {
+                    secureLog.warn("Ekstern bruker kom inn i harTilgangTilEnhet og fikk permit fra abac. Må håndteres i poao-tilgang");
+                } else if (erEksternBruker() && abacDecision == false) {
+                    return false;
+                } else {
+                    secureLog.warn("Systembruker eller ukjent rolle kom inn i harTilgangTilEnhet, hvis dette skjer må man legge til håndtering, abacDecision = {}", abacDecision);
+                    return abacDecision;
+                }
             }
         }
         return veilarbPep.harTilgangTilEnhet(getInnloggetBrukerToken(), ofNullable(enhetId).map(EnhetId::of).orElse(EnhetId.of("")));
