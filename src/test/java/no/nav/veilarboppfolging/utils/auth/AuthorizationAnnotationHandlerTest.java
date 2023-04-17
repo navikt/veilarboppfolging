@@ -14,8 +14,10 @@ import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.NavIdent;
+import no.nav.poao_tilgang.client.PoaoTilgangClient;
 import no.nav.veilarboppfolging.controller.v2.OppfolgingV2Controller;
 import no.nav.veilarboppfolging.service.AuthService;
+import no.nav.veilarboppfolging.service.UnleashService;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -54,6 +56,12 @@ class AuthorizationAnnotationHandlerTest {
     private AuthContextHolder authContextHolder;
 
     private AuthorizationAnnotationHandler annotationHandler;
+
+    @Mock
+    private PoaoTilgangClient poaoTilgangClient;
+
+    @Mock
+    private UnleashService unleashService;
 
 
     @SneakyThrows
@@ -104,7 +112,6 @@ class AuthorizationAnnotationHandlerTest {
     @Test
     void should_allow_internal_user_if_access_ok() {
         setupInternalUserAuthOk();
-
         when(aktorOppslagClient.hentAktorId(FNR)).thenReturn(AKTOR_ID);
 
         Method method = OppfolgingV2Controller.class.getMethod("hentGjeldendePeriode", Fnr.class);
@@ -136,7 +143,7 @@ class AuthorizationAnnotationHandlerTest {
     }
 
     private void setupServices() {
-        AuthService authService = new AuthService(authContextHolder, veilarbPep, aktorOppslagClient, null, null, null, auditLogger);
+        AuthService authService = new AuthService(authContextHolder, veilarbPep, aktorOppslagClient, null, null, null, auditLogger, poaoTilgangClient, unleashService);
         annotationHandler = new AuthorizationAnnotationHandler(authService);
     }
 

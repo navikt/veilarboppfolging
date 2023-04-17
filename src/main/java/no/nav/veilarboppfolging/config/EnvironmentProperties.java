@@ -52,4 +52,8 @@ public class EnvironmentProperties {
 
     private String behandleArbeidssoekerV1Endpoint;
 
+	private String poaoTilgangUrl;
+
+	private String poaoTilgangScope;
+
 }

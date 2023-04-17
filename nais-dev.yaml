@@ -39,6 +39,11 @@ spec:
   envFrom:
     - configmap: pto-config
     - configmap: loginservice-idporten
+  env:
+    - name: POAO_TILGANG_URL
+      value: https://poao-tilgang.dev.intern.nav.no
+    - name: POAO_TILGANG_SCOPE
+      value: api://dev-fss.poao.poao-tilgang/.default
   secureLogs:
     enabled: true
   kafka:
