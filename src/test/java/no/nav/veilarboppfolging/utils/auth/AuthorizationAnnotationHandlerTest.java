@@ -112,9 +112,7 @@ class AuthorizationAnnotationHandlerTest {
     @Test
     void should_allow_internal_user_if_access_ok() {
         setupInternalUserAuthOk();
-
         when(aktorOppslagClient.hentAktorId(FNR)).thenReturn(AKTOR_ID);
-        //when(unleashService.skalBrukePoaoTilgang()).thenReturn(false);
 
         Method method = OppfolgingV2Controller.class.getMethod("hentGjeldendePeriode", Fnr.class);
         MockHttpServletRequest request = new MockHttpServletRequest();
