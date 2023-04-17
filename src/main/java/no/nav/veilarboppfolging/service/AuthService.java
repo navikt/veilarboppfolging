@@ -182,6 +182,7 @@ public class AuthService {
                 Boolean abacDecision = veilarbPep.harTilgangTilEnhet(getInnloggetBrukerToken(), ofNullable(enhetId).map(EnhetId::of).orElse(EnhetId.of("")));
                 if (erEksternBruker() && abacDecision == true) {
                     secureLog.warn("Ekstern bruker kom inn i harTilgangTilEnhet og fikk permit fra abac. Må håndteres i poao-tilgang");
+                    return true;
                 } else if (erEksternBruker() && abacDecision == false) {
                     return false;
                 } else {
