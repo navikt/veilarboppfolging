@@ -288,7 +288,7 @@ public class AuthService {
             Optional<NavIdent> navident = getNavIdentClaimHvisTilgjengelig();
 
             if (navident.isEmpty()) {
-                if (!veilarbPep.harTilgangTilPerson(getInnloggetBrukerToken(), actionId, aktorId)) {
+                if (!veilarbPep.harTilgangTilPerson(getInnloggetBrukerIdent(), actionId, aktorId)) {
                     throw new ResponseStatusException(HttpStatus.FORBIDDEN);
                 }
             } else {
