@@ -114,7 +114,7 @@ spec:
           cluster: prod-gcp
         - application: arbeidsrettet-dialog
           namespace: pto
-          cluster: dev-gcp
+          cluster: prod-gcp
         - application: aktivitet-arena-acl
           namespace: dab
           cluster: prod-gcp
