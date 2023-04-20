@@ -127,6 +127,9 @@ spec:
         - application: amt-person-service
           namespace: amt
           cluster: prod-gcp
+        - application: tms-min-side-proxy
+          namespace: min-side
+          cluster: prod-gcp
   vault:
     enabled: true
     paths:
