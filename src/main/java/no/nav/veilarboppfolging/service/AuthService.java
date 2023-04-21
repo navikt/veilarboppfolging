@@ -310,43 +310,12 @@ public class AuthService {
     }
 
     public void sjekkTilgangTilPersonMedNiva3(AktorId aktorId) {
-        if (unleashService.skalBrukePoaoTilgang()) {
-            Optional<String> sikkerhetsnivaa = hentSikkerhetsnivaa();
-            if (sikkerhetsnivaa.isPresent() && (sikkerhetsnivaa.get().equals("Level4") || sikkerhetsnivaa.get().equals("Level3"))) {
-                if (!getFnrOrThrow(aktorId).get().equals(hentInnloggetPersonIdent())) {
-                    throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
-                }
-            }
-        } else {
-            XacmlRequest tilgangTilNiva3Request = lagSjekkTilgangTilNiva3Request(serviceUserCredentials.username, getInnloggetBrukerToken(), aktorId);
-
-            XacmlResponse response = veilarbPep.getAbacClient().sendRequest(tilgangTilNiva3Request);
-
-            if (!XacmlResponseParser.harTilgang(response)) {
-                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+        Optional<String> sikkerhetsnivaa = hentSikkerhetsnivaa();
+        if (sikkerhetsnivaa.isPresent() && (sikkerhetsnivaa.get().equals("Level4") || sikkerhetsnivaa.get().equals("Level3"))) {
+            if (!getFnrOrThrow(aktorId).get().equals(hentInnloggetPersonIdent())) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN);
             }
         }
-    }
-
-    private XacmlRequest lagSjekkTilgangTilNiva3Request(String serviceUserName, String userOidcToken, AktorId aktorId) {
-        String oidcTokenBody = AbacUtils.extractOidcTokenBody(userOidcToken);
-        Environment environment = lagEnvironment(serviceUserName);
-        environment.getAttribute().add(new Attribute(NavAttributter.ENVIRONMENT_FELLES_OIDC_TOKEN_BODY, oidcTokenBody));
-
-        Action action = new Action();
-        action.addAttribute(new Attribute(StandardAttributter.ACTION_ID, ActionId.READ.name()));
-
-        Resource resource = new Resource();
-        resource.getAttribute().add(new Attribute(NavAttributter.RESOURCE_FELLES_RESOURCE_TYPE, NavAttributter.RESOURCE_VEILARB_UNDER_OPPFOLGING));
-        resource.getAttribute().add(new Attribute(NavAttributter.RESOURCE_FELLES_DOMENE, AbacDomain.VEILARB_DOMAIN));
-        resource.getAttribute().add(personIdAttribute(aktorId));
-
-        Request request = new Request()
-                .withEnvironment(environment)
-                .withAction(action)
-                .withResource(resource);
-
-        return new XacmlRequest().withRequest(request);
     }
 
     // TODO: Det er hårete å måtte skille på ekstern og intern
@@ -523,7 +492,7 @@ public class AuthService {
     }
 
     private void auditLogWithMessageAndDestinationUserId(String logMessage, String destinationUserId, String sourceUserID, AuthorizationDecision authorizationDecision) {
-        if(AuthorizationDecision.PERMIT.equals(authorizationDecision)) {
+        if (AuthorizationDecision.PERMIT.equals(authorizationDecision)) {
             log.debug("tilgang til {}, erEksternBruker {}", logMessage, erEksternBruker());
         } else {
             log.info("ikke tilgang til {}, erEksternbruker {}", logMessage, erEksternBruker());
