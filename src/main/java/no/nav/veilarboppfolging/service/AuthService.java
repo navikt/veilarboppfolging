@@ -163,81 +163,85 @@ public class AuthService {
         return authContextHolder.erEksternBruker();
     }
 
+
     public boolean harTilgangTilEnhet(String enhetId) { //TODO ta stilling til kommentaren under
         //  ABAC feiler hvis man spør om tilgang til udefinerte enheter (null) men tillater å spørre om tilgang
         //  til enheter som ikke finnes (f.eks. tom streng)
         //  Ved å konvertere null til tom streng muliggjør vi å spørre om tilgang til enhet for brukere som
         //  ikke har enhet. Sluttbrukere da få permit mens veiledere vil få deny.
-        if (unleashService.skalBrukePoaoTilgang()) {
+        if (unleashService.skalBrukePoaoTilgang()) { //denne har samme logik hvis man ikke er intern.
             if (erInternBruker()) {
-                Decision decision = poaoTilgangClient.evaluatePolicy(new NavAnsattTilgangTilNavEnhetPolicyInput(hentInnloggetVeilederUUID(), ofNullable(enhetId).orElse(""))).getOrThrow();
-                auditLogWithMessageAndDestinationUserId(
-                        "Veileder har gjort oppslag på enhet",
-                        enhetId,
-                        hentInnloggetVeilederUUID().toString(),
-                        decision.isPermit() ? AuthorizationDecision.PERMIT : AuthorizationDecision.DENY
-                );
-                return decision.isPermit();
-            } else {
-                Boolean abacDecision = veilarbPep.harTilgangTilEnhet(getInnloggetBrukerToken(), ofNullable(enhetId).map(EnhetId::of).orElse(EnhetId.of("")));
-                if (erEksternBruker() && abacDecision == true) {
-                    secureLog.warn("Ekstern bruker kom inn i harTilgangTilEnhet og fikk permit fra abac. Må håndteres i poao-tilgang");
-                    return true;
-                } else if (erEksternBruker() && abacDecision == false) {
-                    return false;
-                } else {
-                    secureLog.warn("Systembruker eller ukjent rolle kom inn i harTilgangTilEnhet, hvis dette skjer må man legge til håndtering, abacDecision = {}", abacDecision);
-                    return abacDecision;
-                }
-            }
-        }
-        return veilarbPep.harTilgangTilEnhet(getInnloggetBrukerToken(), ofNullable(enhetId).map(EnhetId::of).orElse(EnhetId.of("")));
-    }
-
-    public boolean harTilgangTilEnhetMedSperre(String enhetId) {
-        if (unleashService.skalBrukePoaoTilgang()) {
-            Decision decision = poaoTilgangClient.evaluatePolicy(new NavAnsattTilgangTilNavEnhetMedSperrePolicyInput(
-                    hentInnloggetVeilederUUID(), enhetId
-            )).getOrThrow();
+            Decision decision = poaoTilgangClient.evaluatePolicy(new NavAnsattTilgangTilNavEnhetPolicyInput(hentInnloggetVeilederUUID(), ofNullable(enhetId).orElse(""))).getOrThrow();
             auditLogWithMessageAndDestinationUserId(
-                    "Veileder har gjort oppslag på enhet med sperre",
+                    "Veileder har gjort oppslag på enhet",
                     enhetId,
                     hentInnloggetVeilederUUID().toString(),
                     decision.isPermit() ? AuthorizationDecision.PERMIT : AuthorizationDecision.DENY
             );
             return decision.isPermit();
-        }
-        return veilarbPep.harTilgangTilEnhetMedSperre(getInnloggetBrukerToken(), EnhetId.of(enhetId));
-    }
-
-    public boolean harVeilederSkriveTilgangTilFnr(String veilederId, Fnr fnr) {
-        if (unleashService.skalBrukePoaoTilgang()) {
-            Decision decision = poaoTilgangClient.evaluatePolicy(new NavAnsattNavIdentSkrivetilgangTilEksternBrukerPolicyInput(
-                    veilederId, fnr.toString()
-            )).getOrThrow();
-            auditLogWithMessageAndDestinationUserId(
-                    "Veileder har gjort oppslag på fnr",
-                    fnr.get(),
-                    veilederId,
-                    decision.isPermit() ? AuthorizationDecision.PERMIT : AuthorizationDecision.DENY
-            );
-            return decision.isPermit();
         } else {
-            return veilarbPep.harVeilederTilgangTilPerson(NavIdent.of(veilederId), ActionId.WRITE, getAktorIdOrThrow(fnr));
-        }
-    }
-
-    public void sjekkLesetilgangMedFnr(Fnr fnr) {
-        if (erEksternBruker()) {
-            if (!harEksternBrukerTilgang(fnr)) {
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Ekstern bruker har ikke tilgang på andre brukere enn seg selv");
+            boolean abacDecision = veilarbPep.harTilgangTilEnhet(getInnloggetBrukerToken(), ofNullable(enhetId).map(EnhetId::of).orElse(EnhetId.of("")));
+            if (erEksternBruker() && abacDecision == true) {
+                secureLog.warn("Ekstern bruker kom inn i harTilgangTilEnhet og fikk permit fra abac. Må håndteres i poao-tilgang");
+                return true;
+            } else if (erEksternBruker() && abacDecision == false) {
+                return false;
+            } else {
+                secureLog.warn("Systembruker eller ukjent rolle kom inn i harTilgangTilEnhet, hvis dette skjer må man legge til håndtering, abacDecision = {}", abacDecision);
+                return abacDecision;
             }
-        } else {
-            sjekkLesetilgangMedAktorId(getAktorIdOrThrow(fnr));
         }
     }
+    return veilarbPep.harTilgangTilEnhet(getInnloggetBrukerToken(), ofNullable(enhetId).map(EnhetId::of).orElse(EnhetId.of("")));
+}
 
-    // TODO fungerer ikke for eksternbrukere fordi abac ikke støtter tokenx tokens
+public boolean harTilgangTilEnhetMedSperre(String enhetId) {
+    if (unleashService.skalBrukePoaoTilgang()) {
+        if(erInternBruker()) {
+            return true; // sluttbruker har altid tilgang til egne data
+        }
+        Decision decision = poaoTilgangClient.evaluatePolicy(new NavAnsattTilgangTilNavEnhetMedSperrePolicyInput(
+                hentInnloggetVeilederUUID(), enhetId
+        )).getOrThrow();
+        auditLogWithMessageAndDestinationUserId(
+                "Veileder har gjort oppslag på enhet med sperre",
+                enhetId,
+                hentInnloggetVeilederUUID().toString(),
+                decision.isPermit() ? AuthorizationDecision.PERMIT : AuthorizationDecision.DENY
+        );
+        return decision.isPermit();
+    }
+    return veilarbPep.harTilgangTilEnhetMedSperre(getInnloggetBrukerToken(), EnhetId.of(enhetId));
+}
+
+public boolean harVeilederSkriveTilgangTilFnr(String veilederId, Fnr fnr) {
+    if (unleashService.skalBrukePoaoTilgang()) { //denen skal aldri ha virket for sluttbruker
+        Decision decision = poaoTilgangClient.evaluatePolicy(new NavAnsattNavIdentSkrivetilgangTilEksternBrukerPolicyInput(
+                veilederId, fnr.toString()
+        )).getOrThrow();
+        auditLogWithMessageAndDestinationUserId(
+                "Veileder har gjort oppslag på fnr",
+                fnr.get(),
+                veilederId,
+                decision.isPermit() ? AuthorizationDecision.PERMIT : AuthorizationDecision.DENY
+        );
+        return decision.isPermit();
+    } else {
+        return veilarbPep.harVeilederTilgangTilPerson(NavIdent.of(veilederId), ActionId.WRITE, getAktorIdOrThrow(fnr));
+    }
+}
+
+public void sjekkLesetilgangMedFnr(Fnr fnr) {
+    if (erEksternBruker()) {
+        if (!harEksternBrukerTilgang(fnr)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Ekstern bruker har ikke tilgang på andre brukere enn seg selv");
+        }
+    } else {
+        sjekkLesetilgangMedAktorId(getAktorIdOrThrow(fnr));
+    }
+}
+
+// TODO fungerer ikke for eksternbrukere fordi abac ikke støtter tokenx tokens
     public void sjekkLesetilgangMedAktorId(AktorId aktorId) {
         sjekkTilgang(ActionId.READ, aktorId);
 
@@ -248,7 +252,7 @@ public class AuthService {
     }
 
     private void sjekkTilgang(ActionId actionId, AktorId aktorId) {
-        if (unleashService.skalBrukePoaoTilgang()) {
+        if (unleashService.skalBrukePoaoTilgang()) { //denne virker ikke for sluttbrukere med togel av (tokenx?)
             Optional<String> sikkerhetsnivaa = hentSikkerhetsnivaa();
             if (erInternBruker()) {
                 Decision decision = poaoTilgangClient.evaluatePolicy(new NavAnsattTilgangTilEksternBrukerPolicyInput(
@@ -307,7 +311,7 @@ public class AuthService {
     }
 
     public void sjekkTilgangTilPersonMedNiva3(AktorId aktorId) {
-        if (unleashService.skalBrukePoaoTilgang()) {
+        if (unleashService.skalBrukePoaoTilgang()) { //brukes bare for nivå 3 ikke aktuelt her
             Optional<String> sikkerhetsnivaa = hentSikkerhetsnivaa();
             if (sikkerhetsnivaa.isPresent() && (sikkerhetsnivaa.get().equals("Level4") || sikkerhetsnivaa.get().equals("Level3"))) {
                 if (!getFnrOrThrow(aktorId).get().equals(hentInnloggetPersonIdent())) {
@@ -520,6 +524,12 @@ public class AuthService {
     }
 
     private void auditLogWithMessageAndDestinationUserId(String logMessage, String destinationUserId, String sourceUserID, AuthorizationDecision authorizationDecision) {
+        if(authorizationDecision.equals(AuthorizationDecision.DENY)) {
+            boolean erEksternBruker = authContextHolder.erEksternBruker();
+
+            log.info("autFeil");
+        }
+
         auditLogger.log(CefMessage.builder()
                 .timeEnded(System.currentTimeMillis())
                 .applicationName("veilarboppfolging")
