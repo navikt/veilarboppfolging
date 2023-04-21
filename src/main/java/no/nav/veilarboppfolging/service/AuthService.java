@@ -196,6 +196,9 @@ public class AuthService {
 
     public boolean harTilgangTilEnhetMedSperre(String enhetId) {
         if (unleashService.skalBrukePoaoTilgang()) {
+            if (erEksternBruker()) {
+                return true; // sluttbruker har altid tilgang til egne data
+            }
             Decision decision = poaoTilgangClient.evaluatePolicy(new NavAnsattTilgangTilNavEnhetMedSperrePolicyInput(
                     hentInnloggetVeilederUUID(), enhetId
             )).getOrThrow();
@@ -520,6 +523,12 @@ public class AuthService {
     }
 
     private void auditLogWithMessageAndDestinationUserId(String logMessage, String destinationUserId, String sourceUserID, AuthorizationDecision authorizationDecision) {
+        if(AuthorizationDecision.PERMIT.equals(authorizationDecision)) {
+            log.debug("tilgang til {}, erEksternBruker {}", logMessage, erEksternBruker());
+        } else {
+            log.info("ikke tilgang til {}, erEksternbruker {}", logMessage, erEksternBruker());
+        }
+
         auditLogger.log(CefMessage.builder()
                 .timeEnded(System.currentTimeMillis())
                 .applicationName("veilarboppfolging")
