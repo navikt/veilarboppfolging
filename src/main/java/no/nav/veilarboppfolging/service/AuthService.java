@@ -196,6 +196,9 @@ public class AuthService {
 
     public boolean harTilgangTilEnhetMedSperre(String enhetId) {
         if (unleashService.skalBrukePoaoTilgang()) {
+        if(erInternBruker()) {
+            return true; // sluttbruker har altid tilgang til egne data
+        }
             Decision decision = poaoTilgangClient.evaluatePolicy(new NavAnsattTilgangTilNavEnhetMedSperrePolicyInput(
                     hentInnloggetVeilederUUID(), enhetId
             )).getOrThrow();
