@@ -301,11 +301,14 @@ public class AuthService {
     }
 
     public void sjekkTilgangTilPersonMedNiva3(AktorId aktorId) {
-        Optional<String> sikkerhetsnivaa = hentSikkerhetsnivaa();
-        if (sikkerhetsnivaa.isPresent() && (sikkerhetsnivaa.get().equals("Level4") || sikkerhetsnivaa.get().equals("Level3"))) {
-            if (!getFnrOrThrow(aktorId).get().equals(hentInnloggetPersonIdent())) {
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN);
-            }
+        String sikkerhetsnivaa = hentSikkerhetsnivaa().orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN));
+        if (!getFnrOrThrow(aktorId).get().equals(hentInnloggetPersonIdent())) {
+            log.warn("AktorId fnr mismatch  ");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "AktorId fnr mismatch");
+        }
+        if (!(sikkerhetsnivaa.equals("Level4") || sikkerhetsnivaa.equals("Level3"))) {
+            log.warn("Bruker må ha nivå 3 eller 4");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bruker må ha nivå 3 eller 4");
         }
     }
 
