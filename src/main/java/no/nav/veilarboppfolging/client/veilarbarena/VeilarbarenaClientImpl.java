@@ -15,7 +15,6 @@ import okhttp3.Response;
 
 import java.util.Optional;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 import static no.nav.common.utils.UrlUtils.joinPaths;
 import static org.springframework.http.HttpHeaders.ACCEPT;
@@ -29,15 +28,15 @@ public class VeilarbarenaClientImpl implements VeilarbarenaClient {
 
     private final String veilarbarenaUrl;
 
-    private final Supplier<String> userTokenProvider;
 
     private final Function<DownstreamApi, Optional<String>> aadOboTokenProvider;
+    private final Function<DownstreamApi, Optional<String>> machineTokenProvider;
 
     private final OkHttpClient client;
 
-    public VeilarbarenaClientImpl(String veilarbarenaUrl, Supplier<String> userTokenProvider, Function<DownstreamApi, Optional<String>> aadOboTokenProvider) {
+    public VeilarbarenaClientImpl(String veilarbarenaUrl, Function<DownstreamApi, Optional<String>> machineTokenProvider, Function<DownstreamApi, Optional<String>> aadOboTokenProvider) {
         this.veilarbarenaUrl = veilarbarenaUrl;
-        this.userTokenProvider = userTokenProvider;
+        this.machineTokenProvider = machineTokenProvider;
         this.client = RestClient.baseClient();
         this.aadOboTokenProvider = aadOboTokenProvider;
     }
@@ -47,7 +46,7 @@ public class VeilarbarenaClientImpl implements VeilarbarenaClient {
         Request request = new Request.Builder()
                 .url(joinPaths(veilarbarenaUrl, "/api/oppfolgingsbruker/" + fnr.get()))
                 .header(ACCEPT, APPLICATION_JSON_VALUE)
-                .header(AUTHORIZATION, "Bearer " + aadOboTokenProvider.apply(veilarbArenaApi).orElseGet(userTokenProvider))
+                .header(AUTHORIZATION, "Bearer " + aadOboTokenProvider.apply(veilarbArenaApi).or(() -> machineTokenProvider.apply(veilarbArenaApi)))
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
@@ -68,7 +67,7 @@ public class VeilarbarenaClientImpl implements VeilarbarenaClient {
         Request request = new Request.Builder()
                 .url(joinPaths(veilarbarenaUrl, "/api/oppfolgingsstatus/" + fnr.get()))
                 .header(ACCEPT, APPLICATION_JSON_VALUE)
-                .header(AUTHORIZATION, "Bearer " + aadOboTokenProvider.apply(veilarbArenaApi).orElseGet(userTokenProvider))
+                .header(AUTHORIZATION, "Bearer " + aadOboTokenProvider.apply(veilarbArenaApi).or(() -> machineTokenProvider.apply(veilarbArenaApi)))
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
