@@ -6,6 +6,7 @@ import no.nav.common.abac.domain.request.ActionId;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
+import no.nav.common.token_client.client.MachineToMachineTokenClient;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.config.ApplicationTestConfig;
@@ -50,6 +51,8 @@ class OppfolgingControllerIntegrationTest {
 
     @MockBean
     AzureAdOnBehalfOfTokenClient azureAdOnBehalfOfTokenClient;
+    @MockBean
+    MachineToMachineTokenClient machineToMachineTokenClient;
 
     @MockBean
     EnvironmentProperties environmentProperties;

@@ -6,6 +6,7 @@ import no.nav.common.kafka.consumer.ConsumeStatus;
 import no.nav.common.kafka.consumer.KafkaConsumerClient;
 import no.nav.common.kafka.consumer.util.KafkaConsumerClientBuilder;
 import no.nav.common.kafka.consumer.util.deserializer.Deserializers;
+import no.nav.common.token_client.client.MachineToMachineTokenClient;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto_schema.kafka.json.topic.SisteOppfolgingsperiodeV1;
@@ -50,6 +51,9 @@ public class AktiverBrukerServiceKafkaTest {
 
     @MockBean
     MetricsService metricsService;
+
+    @MockBean
+    MachineToMachineTokenClient machineToMachineTokenClient;
 
     @Autowired
     EmbeddedKafkaBroker kafkaContainer;
