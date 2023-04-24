@@ -38,7 +38,7 @@ public class VeilarbarenaClientImplTest {
     @Test
     public void skalMappeTilOppfolgingsstatusV2() {
         String apiUrl = "http://localhost:" + wireMockRule.port();
-        VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl(apiUrl, () -> "TOKEN", (DownstreamApi v) -> Optional.of("TOKEN"));
+        VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl(apiUrl, (DownstreamApi v) -> Optional.of("TOKEN"), (DownstreamApi v) -> Optional.of("TOKEN"));
 
         givenThat(get(urlEqualTo("/api/oppfolgingsstatus/" + MOCK_FNR))
                 .willReturn(aResponse()
@@ -59,7 +59,7 @@ public class VeilarbarenaClientImplTest {
     @Test
     public void skal_returnere_empty_om_person_ikke_funnet() {
         String apiUrl = "http://localhost:" + wireMockRule.port();
-        VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl(apiUrl, () -> "TOKEN", (DownstreamApi v) -> Optional.of("TOKEN"));
+        VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl(apiUrl, (DownstreamApi v) -> Optional.of("TOKEN"), (DownstreamApi v) -> Optional.of("TOKEN"));
 
         givenThat(get(urlEqualTo("/api/oppfolgingsstatus/" + MOCK_FNR))
                 .willReturn(aResponse().withStatus(404)));
@@ -70,7 +70,7 @@ public class VeilarbarenaClientImplTest {
     @Test
     public void skal_returnere_empty_om_man_ikke_har_tilgang() {
         String apiUrl = "http://localhost:" + wireMockRule.port();
-        VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl(apiUrl, () -> "TOKEN", (DownstreamApi v) -> Optional.of("TOKEN"));
+        VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl(apiUrl, (DownstreamApi v) -> Optional.of("TOKEN"), (DownstreamApi v) -> Optional.of("TOKEN"));
 
         givenThat(get(urlEqualTo("/api/oppfolgingsstatus/" + MOCK_FNR))
                 .willReturn(aResponse().withStatus(403)));
@@ -81,7 +81,7 @@ public class VeilarbarenaClientImplTest {
     @Test
     public void skal_returnere_empty_om_ugyldig_identifikator() {
         String apiUrl = "http://localhost:" + wireMockRule.port();
-        VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl(apiUrl, () -> "TOKEN", (DownstreamApi v) -> Optional.of("TOKEN"));
+        VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl(apiUrl, (DownstreamApi v) -> Optional.of("TOKEN"), (DownstreamApi v) -> Optional.of("TOKEN"));
 
         givenThat(get(urlEqualTo("/api/oppfolgingsstatus/" + MOCK_FNR))
                 .willReturn(aResponse().withStatus(400)));

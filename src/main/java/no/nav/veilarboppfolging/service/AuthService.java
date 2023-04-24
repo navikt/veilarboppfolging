@@ -3,15 +3,8 @@ package no.nav.veilarboppfolging.service;
 import com.nimbusds.jwt.JWTClaimsSet;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.abac.AbacUtils;
 import no.nav.common.abac.Pep;
-import no.nav.common.abac.XacmlResponseParser;
-import no.nav.common.abac.constants.AbacDomain;
-import no.nav.common.abac.constants.NavAttributter;
-import no.nav.common.abac.constants.StandardAttributter;
-import no.nav.common.abac.domain.Attribute;
 import no.nav.common.abac.domain.request.*;
-import no.nav.common.abac.domain.response.XacmlResponse;
 import no.nav.common.audit_log.cef.AuthorizationDecision;
 import no.nav.common.audit_log.cef.CefMessage;
 import no.nav.common.audit_log.cef.CefMessageEvent;
@@ -23,6 +16,7 @@ import no.nav.common.auth.utils.IdentUtils;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.client.aktoroppslag.BrukerIdenter;
 import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
+import no.nav.common.token_client.client.MachineToMachineTokenClient;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
@@ -46,8 +40,6 @@ import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
-import static no.nav.common.abac.XacmlRequestBuilder.lagEnvironment;
-import static no.nav.common.abac.XacmlRequestBuilder.personIdAttribute;
 import static no.nav.common.auth.Constants.AAD_NAV_IDENT_CLAIM;
 import static no.nav.veilarboppfolging.utils.SecureLog.secureLog;
 
@@ -62,9 +54,9 @@ public class AuthService {
 
     private final AzureAdOnBehalfOfTokenClient aadOboTokenClient;
 
-    private final AktorOppslagClient aktorOppslagClient;
+    private final MachineToMachineTokenClient machineToMachineTokenClient;
 
-    private final Credentials serviceUserCredentials;
+    private final AktorOppslagClient aktorOppslagClient;
 
     private final EnvironmentProperties environmentProperties;
 
@@ -73,12 +65,12 @@ public class AuthService {
     private final UnleashService unleashService;
 
     @Autowired
-    public AuthService(AuthContextHolder authContextHolder, Pep veilarbPep, AktorOppslagClient aktorOppslagClient, Credentials serviceUserCredentials, AzureAdOnBehalfOfTokenClient aadOboTokenClient, EnvironmentProperties environmentProperties, AuditLogger auditLogger, PoaoTilgangClient poaoTilgangClient, UnleashService unleashService) {
+    public AuthService(AuthContextHolder authContextHolder, Pep veilarbPep, AktorOppslagClient aktorOppslagClient, AzureAdOnBehalfOfTokenClient aadOboTokenClient, MachineToMachineTokenClient machineToMachineTokenClient, EnvironmentProperties environmentProperties, AuditLogger auditLogger, PoaoTilgangClient poaoTilgangClient, UnleashService unleashService) {
         this.authContextHolder = authContextHolder;
         this.veilarbPep = veilarbPep;
         this.aktorOppslagClient = aktorOppslagClient;
-        this.serviceUserCredentials = serviceUserCredentials;
         this.aadOboTokenClient = aadOboTokenClient;
+        this.machineToMachineTokenClient = machineToMachineTokenClient;
         this.environmentProperties = environmentProperties;
         this.auditLogger = auditLogger;
         this.poaoTilgangClient = poaoTilgangClient;
@@ -376,6 +368,12 @@ public class AuthService {
             return Optional.of(aadOboTokenClient.exchangeOnBehalfOfToken(scope, getInnloggetBrukerToken()));
         }
         return Optional.empty();
+    }
+
+    public Optional<String> getMachineTokenForTjeneste(DownstreamApi api) {
+        String scope = "api://" + api.cluster + "." + api.namespace + "." + api.serviceName + "/.default";
+        return Optional.ofNullable(machineToMachineTokenClient.createMachineToMachineToken(scope));
+
     }
 
     private boolean erAadOboToken() {
