@@ -362,18 +362,15 @@ public class AuthService {
         return authContextHolder.getIdTokenString().orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Fant ikke token for innlogget bruker"));
     }
 
-    public Optional<String> getAadOboTokenForTjeneste(DownstreamApi api) {
-        if (erAadOboToken()) {
-            String scope = "api://" + api.cluster + "." + api.namespace + "." + api.serviceName + "/.default";
-            return Optional.of(aadOboTokenClient.exchangeOnBehalfOfToken(scope, getInnloggetBrukerToken()));
-        }
-        return Optional.empty();
+    public String getAadOboTokenForTjeneste(DownstreamApi api) {
+        if (!erAadOboToken()) throw new IllegalStateException("Kan ikke hente AAD-OBO token når innlogget bruker ikke er intern");
+        String scope = "api://" + api.cluster + "." + api.namespace + "." + api.serviceName + "/.default";
+        return aadOboTokenClient.exchangeOnBehalfOfToken(scope, getInnloggetBrukerToken());
     }
 
-    public Optional<String> getMachineTokenForTjeneste(DownstreamApi api) {
+    public String getMachineTokenForTjeneste(DownstreamApi api) {
         String scope = "api://" + api.cluster + "." + api.namespace + "." + api.serviceName + "/.default";
-        return Optional.ofNullable(machineToMachineTokenClient.createMachineToMachineToken(scope));
-
+        return machineToMachineTokenClient.createMachineToMachineToken(scope);
     }
 
     private boolean erAadOboToken() {
