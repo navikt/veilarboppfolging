@@ -11,6 +11,8 @@ import no.nav.veilarboppfolging.service.AuthService;
 
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.MDC;
+
 import java.io.IOException;
 import java.util.List;
 
@@ -58,6 +60,15 @@ public class AuthInfoFilter implements Filter {
                 )
         ).increment();
 
-        chain.doFilter(servletRequest, response);
+        try {
+            MDC.put("user_role", userRole);
+            MDC.put("token_type", tokenType);
+
+            chain.doFilter(servletRequest, response);
+        } finally {
+            MDC.remove("user_role");
+            MDC.remove("token_type");
+        }
+
     }
 }
