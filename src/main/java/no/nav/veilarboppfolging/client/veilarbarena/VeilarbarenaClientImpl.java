@@ -46,7 +46,7 @@ public class VeilarbarenaClientImpl implements VeilarbarenaClient {
         Request request = new Request.Builder()
                 .url(joinPaths(veilarbarenaUrl, "/api/oppfolgingsbruker/" + fnr.get()))
                 .header(ACCEPT, APPLICATION_JSON_VALUE)
-                .header(AUTHORIZATION, "Bearer " + aadOboTokenProvider.apply(veilarbArenaApi).or(() -> machineTokenProvider.apply(veilarbArenaApi)))
+                .header(AUTHORIZATION, "Bearer " + aadOboTokenProvider.apply(veilarbArenaApi).or(() -> machineTokenProvider.apply(veilarbArenaApi)).orElseThrow(() -> new IllegalStateException("Mangler token")))
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
