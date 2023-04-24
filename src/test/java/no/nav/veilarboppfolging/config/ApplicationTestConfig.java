@@ -15,7 +15,6 @@ import no.nav.common.health.HealthCheckResult;
 import no.nav.common.job.leader_election.LeaderElectionClient;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
-import no.nav.common.token_client.client.MachineToMachineTokenClient;
 import no.nav.common.utils.Credentials;
 import no.nav.poao_tilgang.client.PoaoTilgangClient;
 import no.nav.veilarboppfolging.mock.PepMock;
@@ -32,6 +31,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import javax.sql.DataSource;
 
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @Configuration
 @EnableConfigurationProperties({EnvironmentProperties.class})
@@ -53,11 +53,6 @@ public class ApplicationTestConfig {
     @Bean
     public AzureAdOnBehalfOfTokenClient azureAdOnBehalfOfTokenClient() {
         return mock(AzureAdOnBehalfOfTokenClient.class);
-    }
-
-    @Bean
-    MachineToMachineTokenClient machineToMachineTokenClient() {
-        return mock(MachineToMachineTokenClient.class);
     }
 
     @Bean
