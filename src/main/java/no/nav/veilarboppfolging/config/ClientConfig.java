@@ -62,7 +62,7 @@ public class ClientConfig {
     @Bean
     public VeilarbarenaClient veilarbarenaClient(AuthService authService) {
         String url = naisPreprodOrNaisAdeoIngress("veilarbarena", true);
-        return new VeilarbarenaClientImpl(url, authService::getMachineTokenForTjeneste, authService::getAadOboTokenForTjeneste);
+        return new VeilarbarenaClientImpl(url, authService::getInnloggetBrukerToken, authService::getAadOboTokenForTjeneste);
     }
 
     @Bean
