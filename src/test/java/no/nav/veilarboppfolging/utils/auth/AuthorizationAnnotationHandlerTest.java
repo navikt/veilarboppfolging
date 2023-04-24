@@ -143,7 +143,7 @@ class AuthorizationAnnotationHandlerTest {
     }
 
     private void setupServices() {
-        AuthService authService = new AuthService(authContextHolder, veilarbPep, aktorOppslagClient, null, null,  null, auditLogger, poaoTilgangClient, unleashService);
+        AuthService authService = new AuthService(authContextHolder, veilarbPep, aktorOppslagClient, null, null, null, auditLogger, poaoTilgangClient, unleashService);
         annotationHandler = new AuthorizationAnnotationHandler(authService);
     }
 
