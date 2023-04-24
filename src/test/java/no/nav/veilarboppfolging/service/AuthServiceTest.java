@@ -8,6 +8,7 @@ import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.UserRole;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
+import no.nav.common.token_client.client.MachineToMachineTokenClient;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
@@ -24,7 +25,6 @@ import java.util.UUID;
 
 import static java.util.Optional.ofNullable;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -39,6 +39,7 @@ public class AuthServiceTest {
     private final Credentials serviceUserCredentials = mock(Credentials.class);
 
     private final AzureAdOnBehalfOfTokenClient azureAdOnBehalfOfTokenClient = mock(AzureAdOnBehalfOfTokenClient.class);
+    private final MachineToMachineTokenClient machineToMachineTokenClient = mock(MachineToMachineTokenClient.class);
 
     private final EnvironmentProperties environmentProperties = mock(EnvironmentProperties.class);
 
@@ -52,8 +53,8 @@ public class AuthServiceTest {
             authContextHolder,
             veilarbPep,
             aktorOppslagClient,
-            serviceUserCredentials,
             azureAdOnBehalfOfTokenClient,
+            machineToMachineTokenClient,
             environmentProperties,
             auditLogger,
             poaoTilgangClient,

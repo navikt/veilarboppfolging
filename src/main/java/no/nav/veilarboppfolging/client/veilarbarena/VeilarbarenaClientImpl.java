@@ -2,12 +2,14 @@ package no.nav.veilarboppfolging.client.veilarbarena;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.health.HealthCheckResult;
 import no.nav.common.health.HealthCheckUtils;
 import no.nav.common.rest.client.RestClient;
 import no.nav.common.rest.client.RestUtils;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.utils.EnvironmentUtils;
+import no.nav.veilarboppfolging.service.AuthService;
 import no.nav.veilarboppfolging.utils.DownstreamApi;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -15,7 +17,6 @@ import okhttp3.Response;
 
 import java.util.Optional;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 import static no.nav.common.utils.UrlUtils.joinPaths;
 import static org.springframework.http.HttpHeaders.ACCEPT;
@@ -29,17 +30,27 @@ public class VeilarbarenaClientImpl implements VeilarbarenaClient {
 
     private final String veilarbarenaUrl;
 
-    private final Supplier<String> userTokenProvider;
 
-    private final Function<DownstreamApi, Optional<String>> aadOboTokenProvider;
+    private final Function<DownstreamApi, String> aadOboTokenProvider;
+    private final Function<DownstreamApi, String> machineTokenProvider;
+    private final AuthService authService;
 
     private final OkHttpClient client;
 
-    public VeilarbarenaClientImpl(String veilarbarenaUrl, Supplier<String> userTokenProvider, Function<DownstreamApi, Optional<String>> aadOboTokenProvider) {
+    public VeilarbarenaClientImpl(String veilarbarenaUrl, Function<DownstreamApi, String> machineTokenProvider, Function<DownstreamApi, String> aadOboTokenProvider, AuthService authService) {
         this.veilarbarenaUrl = veilarbarenaUrl;
-        this.userTokenProvider = userTokenProvider;
+        this.machineTokenProvider = machineTokenProvider;
         this.client = RestClient.baseClient();
         this.aadOboTokenProvider = aadOboTokenProvider;
+        this.authService = authService;
+    }
+
+    private String getToken() {
+        if (authService.erInternBruker()) {
+            return aadOboTokenProvider.apply(veilarbArenaApi);
+        } else {
+            return machineTokenProvider.apply(veilarbArenaApi);
+        }
     }
 
     @Override
@@ -47,7 +58,7 @@ public class VeilarbarenaClientImpl implements VeilarbarenaClient {
         Request request = new Request.Builder()
                 .url(joinPaths(veilarbarenaUrl, "/api/oppfolgingsbruker/" + fnr.get()))
                 .header(ACCEPT, APPLICATION_JSON_VALUE)
-                .header(AUTHORIZATION, "Bearer " + aadOboTokenProvider.apply(veilarbArenaApi).orElseGet(userTokenProvider))
+                .header(AUTHORIZATION, "Bearer " + getToken())
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
@@ -68,7 +79,7 @@ public class VeilarbarenaClientImpl implements VeilarbarenaClient {
         Request request = new Request.Builder()
                 .url(joinPaths(veilarbarenaUrl, "/api/oppfolgingsstatus/" + fnr.get()))
                 .header(ACCEPT, APPLICATION_JSON_VALUE)
-                .header(AUTHORIZATION, "Bearer " + aadOboTokenProvider.apply(veilarbArenaApi).orElseGet(userTokenProvider))
+                .header(AUTHORIZATION, "Bearer " + getToken())
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
