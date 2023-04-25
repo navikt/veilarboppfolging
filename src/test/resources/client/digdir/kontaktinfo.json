@@ -1,0 +1,18 @@
+{
+  "kontaktinfo": {
+    "12345678900": {
+      "personident": "12345678900",
+      "aktiv": true,
+      "kanVarsles": true,
+      "reservert": false,
+      "spraak": "string",
+      "spraakOppdatert": "2023-04-25T14:22:19.245Z",
+      "epostadresse": "noreply@nav.no",
+      "epostadresseOppdatert": "2023-04-25T14:22:19.245Z",
+      "epostadresseVerifisert": "2023-04-25T14:22:19.245Z",
+      "mobiltelefonnummer": "11111111",
+      "mobiltelefonnummerOppdatert": "2023-04-25T14:22:19.245Z",
+      "mobiltelefonnummerVerifisert": "2023-04-25T14:22:19.245Z"
+    }
+  }
+}

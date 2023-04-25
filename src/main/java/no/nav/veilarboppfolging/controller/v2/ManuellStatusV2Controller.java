@@ -3,7 +3,6 @@ package no.nav.veilarboppfolging.controller.v2;
 import lombok.RequiredArgsConstructor;
 //import no.nav.common.auth.context.UserRole;
 import no.nav.common.types.identer.Fnr;
-//import no.nav.veilarboppfolging.client.dkif.DkifKontaktinfo;
 import no.nav.veilarboppfolging.controller.request.VeilederBegrunnelseDTO;
 import no.nav.veilarboppfolging.controller.v2.response.ManuellStatusV2Response;
 import no.nav.veilarboppfolging.controller.v2.response.ManuellV2Response;
@@ -60,7 +59,7 @@ public class ManuellStatusV2Controller {
     }
 
     /**
-     * Brukes av veilarbpersonflatefs for å manuelt trigge synkronisering av manuell status med reservasjon fra DKIF(KRR).
+     * Brukes av veilarbpersonflatefs for å manuelt trigge synkronisering av manuell status med reservasjon fra Digdir(KRR).
      * @param fnr fnr/dnr til bruker som synkroniseringen skal gjøres på.
      */
 

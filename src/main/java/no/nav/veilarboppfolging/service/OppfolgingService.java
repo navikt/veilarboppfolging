@@ -375,7 +375,7 @@ public class OppfolgingService {
 
         boolean erManuell = manuellStatusService.erManuell(aktorId);
 
-        DigdirKontaktinfo dkifKontaktinfo = manuellStatusService.hentDigdirKontaktinfo(fnr);
+        DigdirKontaktinfo digdirKontaktinfo = manuellStatusService.hentDigdirKontaktinfo(fnr);
 
         // TODO: Burde kanskje heller feile istedenfor å bruke Optional
         Optional<ArenaOppfolgingTilstand> maybeArenaOppfolging = arenaOppfolgingService.hentOppfolgingTilstand(fnr);
@@ -414,8 +414,8 @@ public class OppfolgingService {
                 .setVeilederId(oppfolging.getVeilederId())
                 .setUnderOppfolging(oppfolging.isUnderOppfolging())
                 .setUnderKvp(oppfolging.getGjeldendeKvp() != null)
-                .setReservasjonKRR(dkifKontaktinfo.isReservert())
-                .setManuell(erManuell || dkifKontaktinfo.isReservert())
+                .setReservasjonKRR(digdirKontaktinfo.isReservert())
+                .setManuell(erManuell || digdirKontaktinfo.isReservert())
                 .setKanStarteOppfolging(kanSettesUnderOppfolging)
                 .setOppfolgingsperioder(oppfolging.getOppfolgingsperioder())
                 .setHarSkriveTilgang(harSkrivetilgangTilBruker)
@@ -427,7 +427,7 @@ public class OppfolgingService {
                 .setServicegruppe(maybeArenaOppfolging.map(ArenaOppfolgingTilstand::getServicegruppe).orElse(null))
                 .setFormidlingsgruppe(maybeArenaOppfolging.map(ArenaOppfolgingTilstand::getFormidlingsgruppe).orElse(null))
                 .setRettighetsgruppe(maybeArenaOppfolging.map(ArenaOppfolgingTilstand::getRettighetsgruppe).orElse(null))
-                .setKanVarsles(!erManuell && dkifKontaktinfo.isKanVarsles());
+                .setKanVarsles(!erManuell && digdirKontaktinfo.isKanVarsles());
     }
 
     private AvslutningStatusData getAvslutningStatus(Fnr fnr) {

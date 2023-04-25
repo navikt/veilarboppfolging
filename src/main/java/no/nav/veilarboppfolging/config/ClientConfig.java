@@ -60,12 +60,6 @@ public class ClientConfig {
     }
 
     @Bean
-    public DkifClient dkifClient(SystemUserTokenProvider systemUserTokenProvider) {
-        String url = UrlUtils.createServiceUrl("dkif", "team-rocket", false);
-        return new DkifClientImpl(url, systemUserTokenProvider);
-    }
-
-    @Bean
     public VeilarbarenaClient veilarbarenaClient(AuthService authService) {
         String url = naisPreprodOrNaisAdeoIngress("veilarbarena", true);
         return new VeilarbarenaClientImpl(url, authService::getMachineTokenForTjeneste, authService::getAadOboTokenForTjeneste, authService);
