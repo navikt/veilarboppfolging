@@ -15,12 +15,12 @@ import no.nav.common.utils.EnvironmentUtils;
 import no.nav.common.utils.UrlUtils;
 import no.nav.veilarboppfolging.client.behandle_arbeidssoker.BehandleArbeidssokerClient;
 import no.nav.veilarboppfolging.client.behandle_arbeidssoker.BehandleArbeidssokerClientImpl;
-import no.nav.veilarboppfolging.client.dkif.DkifClient;
-import no.nav.veilarboppfolging.client.dkif.DkifClientImpl;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClientImpl;
 import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktClient;
 import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktClientImpl;
+import no.nav.veilarboppfolging.client.digdir_krr.DigdirClient;
+import no.nav.veilarboppfolging.client.digdir_krr.DigdirClientImpl;
 import no.nav.veilarboppfolging.service.AuthService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -51,6 +51,12 @@ public class ClientConfig {
     @Bean
     public BehandleArbeidssokerClient behandleArbeidssokerClient(EnvironmentProperties properties, StsConfig stsConfig) {
         return new BehandleArbeidssokerClientImpl(properties.getBehandleArbeidssoekerV1Endpoint(), stsConfig);
+    }
+
+    @Bean
+    public DigdirClient digdirClient(SystemUserTokenProvider systemUserTokenProvider) {
+        String url = UrlUtils.createServiceUrl("digdir", "team-rocket", false);
+        return new DigdirClientImpl(url, systemUserTokenProvider);
     }
 
     @Bean

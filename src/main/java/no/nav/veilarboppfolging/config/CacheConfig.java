@@ -19,6 +19,8 @@ public class CacheConfig {
 
     public static final String DKIF_KONTAKTINFO_CACHE_NAME = "dkif_kontaktinfo_cache";
 
+    public static final String DIGDIR_KONTAKTINFO_CACHE_NAME = "digdir_kontaktinfo_cache";
+
     @Bean
     public Cache hentEnhetCache() {
         return new CaffeineCache(HENT_ENHET_CACHE_NAME, Caffeine.newBuilder()
@@ -38,6 +40,14 @@ public class CacheConfig {
     @Bean
     public Cache dkifKontaktinfoCache() {
         return new CaffeineCache(DKIF_KONTAKTINFO_CACHE_NAME, Caffeine.newBuilder()
+                .expireAfterWrite(1, TimeUnit.MINUTES)
+                .maximumSize(10_000)
+                .build());
+    }
+
+    @Bean
+    public Cache digdirKontaktinfoCache() {
+        return new CaffeineCache(DIGDIR_KONTAKTINFO_CACHE_NAME, Caffeine.newBuilder()
                 .expireAfterWrite(1, TimeUnit.MINUTES)
                 .maximumSize(10_000)
                 .build());

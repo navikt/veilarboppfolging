@@ -4,11 +4,11 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.veilarboppfolging.client.dkif.DkifKontaktinfo;
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolgingTilstand;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 import no.nav.veilarboppfolging.controller.response.UnderOppfolgingDTO;
 import no.nav.veilarboppfolging.controller.response.VeilederTilgang;
+import no.nav.veilarboppfolging.client.digdir_krr.DigdirKontaktinfo;
 import no.nav.veilarboppfolging.domain.AvslutningStatusData;
 import no.nav.veilarboppfolging.domain.Oppfolging;
 import no.nav.veilarboppfolging.domain.OppfolgingStatusData;
@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Optional;
 
 import static java.lang.Boolean.TRUE;
-import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.stream.Collectors.toList;
 import static no.nav.veilarboppfolging.config.ApplicationConfig.SYSTEM_USER_NAME;
@@ -251,7 +250,7 @@ public class OppfolgingService {
                 .setVeilederId(oppfolgingEntity.getVeilederId())
                 .setUnderOppfolging(oppfolgingEntity.isUnderOppfolging());
 
-        Optional<KvpPeriodeEntity> maybeKvpPeriode = empty();
+        Optional<KvpPeriodeEntity> maybeKvpPeriode;
 
         if (oppfolgingEntity.getGjeldendeKvpId() != 0) {
             maybeKvpPeriode = kvpRepository.hentKvpPeriode(oppfolgingEntity.getGjeldendeKvpId());
@@ -292,7 +291,7 @@ public class OppfolgingService {
     public void startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker oppfolgingsbruker) {
         AktorId aktorId = AktorId.of(oppfolgingsbruker.getAktoerId());
         Fnr fnr = authService.getFnrOrThrow(aktorId);
-        DkifKontaktinfo kontaktinfo = manuellStatusService.hentDkifKontaktinfo(fnr);
+        DigdirKontaktinfo kontaktinfo = manuellStatusService.hentDigdirKontaktinfo(fnr);
 
         transactor.executeWithoutResult((ignored) -> {
             Optional<OppfolgingEntity> maybeOppfolging = oppfolgingsStatusRepository.hentOppfolging(aktorId);
@@ -376,7 +375,7 @@ public class OppfolgingService {
 
         boolean erManuell = manuellStatusService.erManuell(aktorId);
 
-        DkifKontaktinfo dkifKontaktinfo = manuellStatusService.hentDkifKontaktinfo(fnr);
+        DigdirKontaktinfo dkifKontaktinfo = manuellStatusService.hentDigdirKontaktinfo(fnr);
 
         // TODO: Burde kanskje heller feile istedenfor å bruke Optional
         Optional<ArenaOppfolgingTilstand> maybeArenaOppfolging = arenaOppfolgingService.hentOppfolgingTilstand(fnr);

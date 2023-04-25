@@ -1,4 +1,4 @@
-package no.nav.veilarboppfolging.client.dkif;
+package no.nav.veilarboppfolging.client.digdir_krr;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -20,24 +20,22 @@ import org.springframework.cache.annotation.Cacheable;
 import java.time.Duration;
 import java.util.Optional;
 
+import static com.google.common.net.HttpHeaders.AUTHORIZATION;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 import static no.nav.common.utils.UrlUtils.joinPaths;
-import static org.springframework.http.HttpHeaders.ACCEPT;
-import static org.springframework.http.HttpHeaders.AUTHORIZATION;
-import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @Slf4j
-public class DkifClientImpl implements DkifClient {
+public class DigdirClientImpl implements DigdirClient {
 
-    private final String dkifUrl;
+    private final String digdirUrl;
 
     private final SystemUserTokenProvider systemUserTokenProvider;
 
     private final OkHttpClient client;
 
-    public DkifClientImpl(String dkifUrl, SystemUserTokenProvider systemUserTokenProvider) {
-        this.dkifUrl = dkifUrl;
+    public DigdirClientImpl(String digdirUrl, SystemUserTokenProvider systemUserTokenProvider) {
+        this.digdirUrl = digdirUrl;
         this.systemUserTokenProvider = systemUserTokenProvider;
         this.client = RestClient
                 .baseClientBuilder()
@@ -45,21 +43,20 @@ public class DkifClientImpl implements DkifClient {
                 .build();
     }
 
-    @Cacheable(CacheConfig.DKIF_KONTAKTINFO_CACHE_NAME)
+    @Cacheable(CacheConfig.DIGDIR_KONTAKTINFO_CACHE_NAME)
     @SneakyThrows
     @Override
-    public Optional<DkifKontaktinfo> hentKontaktInfo(Fnr fnr) {
+    public Optional<DigdirKontaktinfo> hentKontaktInfo(Fnr fnr) {
         Request request = new Request.Builder()
-                .url(joinPaths(dkifUrl, "/api/v1/personer/kontaktinformasjon?inkluderSikkerDigitalPost=false"))
-                .header(ACCEPT, APPLICATION_JSON_VALUE)
+                .url(joinPaths(digdirUrl, "/api/v1/person?inkluderSikkerDigitalPost=false"))
                 .header(AUTHORIZATION, "Bearer " + systemUserTokenProvider.getSystemUserToken())
-                .header("Nav-Personidenter", fnr.get())
+                .header("Nav-personident", fnr.get())
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
             RestUtils.throwIfNotSuccessful(response);
             String json = RestUtils.getBodyStr(response)
-                    .orElseThrow(() -> new IllegalStateException("Response body from DKIF did is missing"));
+                    .orElseThrow(() -> new IllegalStateException("Response body from Digdir_KRR is missing"));
 
             ObjectMapper mapper = JsonUtils.getMapper();
 
@@ -72,16 +69,16 @@ public class DkifClientImpl implements DkifClient {
                 return empty();
             }
 
-            return Optional.of(mapper.treeToValue(kontaktinfoNode, DkifKontaktinfo.class));
+            return Optional.of(mapper.treeToValue(kontaktinfoNode, DigdirKontaktinfo.class));
         } catch (Exception e) {
-            log.error("Feil under henting av data fra DKIF", e);
+            log.error("Feil under henting av data fra Digdir_KRR", e);
             return empty();
         }
     }
 
     @Override
     public HealthCheckResult checkHealth() {
-        return HealthCheckUtils.pingUrl(joinPaths(dkifUrl, "/api/ping"), client);
+        return HealthCheckUtils.pingUrl(joinPaths(digdirUrl, "/api/ping"), client);
     }
 
 }

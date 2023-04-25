@@ -1,9 +1,6 @@
 package no.nav.veilarboppfolging.client;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import no.nav.veilarboppfolging.client.dkif.DkifClient;
-import no.nav.veilarboppfolging.client.dkif.DkifClientImpl;
-import no.nav.veilarboppfolging.client.dkif.DkifKontaktinfo;
 import no.nav.veilarboppfolging.test.TestUtils;
 import org.junit.Rule;
 import org.junit.Test;
