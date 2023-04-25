@@ -2,9 +2,9 @@ package no.nav.veilarboppfolging.service;
 
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.veilarboppfolging.client.dkif.DkifClient;
-import no.nav.veilarboppfolging.client.dkif.DkifKontaktinfo;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
+import no.nav.veilarboppfolging.client.digdir_krr.DigdirClient;
+import no.nav.veilarboppfolging.client.digdir_krr.DigdirKontaktinfo;
 import no.nav.veilarboppfolging.repository.ManuellStatusRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
@@ -38,7 +38,9 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
 
     private final ArenaOppfolgingService arenaOppfolgingService = mock(ArenaOppfolgingService.class);
 
-    private final DkifClient dkifClient = mock(DkifClient.class);
+   // private final DkifClient dkifClient = mock(DkifClient.class);
+
+    private final DigdirClient digdirClient = mock(DigdirClient.class);
 
     private final KafkaProducerService kafkaProducerService = mock(KafkaProducerService.class);
 
@@ -71,7 +73,7 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
                 arenaOppfolgingService,
                 oppfolgingService,
                 oppfolgingsStatusRepository,
-                dkifClient,
+                digdirClient,
                 kafkaProducerService,
                 transactor
         );
@@ -81,8 +83,8 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
     public void oppdaterManuellStatus_oppretter_manuell_status_og_publiserer_paa_kafka_ved_oppdatering_av_manuell_status() {
         when(oppfolgingService.erUnderOppfolging(AKTOR_ID)).thenReturn(true);
         when(authService.harTilgangTilEnhet(any())).thenReturn(true);
-        when(dkifClient.hentKontaktInfo(FNR)).thenReturn(Optional.of(new DkifKontaktinfo()));
-        gittAktivOppfolging(AKTOR_ID);
+        when(digdirClient.hentKontaktInfo(FNR)).thenReturn(Optional.of(new DigdirKontaktinfo()));
+        gittAktivOppfolging();
 
         String begrunnelse = "test begrunnelse";
         String opprettetAvBruker = "test opprettet av";
@@ -121,7 +123,7 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
 
     @Test
     public void synkroniserManuellStatusMedDkif__skal_lage_manuell_status_hvis_reservert() {
-        DkifKontaktinfo kontaktinfo = new DkifKontaktinfo()
+        DigdirKontaktinfo kontaktinfo = new DigdirKontaktinfo()
                 .setPersonident(FNR.get())
                 .setKanVarsles(true)
                 .setReservert(true)
@@ -130,11 +132,11 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
 
         when(oppfolgingService.erUnderOppfolging(AKTOR_ID)).thenReturn(true);
 
-        when(dkifClient.hentKontaktInfo(FNR)).thenReturn(Optional.of(kontaktinfo));
+        when(digdirClient.hentKontaktInfo(FNR)).thenReturn(Optional.of(kontaktinfo));
 
-        gittAktivOppfolging(AKTOR_ID);
+        gittAktivOppfolging();
 
-        manuellStatusService.synkroniserManuellStatusMedDkif(FNR);
+        manuellStatusService.synkroniserManuellStatusMedDigdir(FNR);
 
         List<ManuellStatusEntity> history = manuellStatusRepository.history(AKTOR_ID);
 
@@ -145,9 +147,9 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
     public void synkroniserManuellStatusMedDkif__skal_ikke_lage_manuell_status_hvis_ikke_under_oppfolging() {
         when(oppfolgingService.erUnderOppfolging(AKTOR_ID)).thenReturn(false);
 
-        manuellStatusService.synkroniserManuellStatusMedDkif(FNR);
+        manuellStatusService.synkroniserManuellStatusMedDigdir(FNR);
 
-        verifyNoInteractions(dkifClient);
+        verifyNoInteractions(digdirClient);
 
         List<ManuellStatusEntity> history = manuellStatusRepository.history(AKTOR_ID);
 
@@ -156,7 +158,7 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
 
     @Test
     public void synkroniserManuellStatusMedDkif__skal_ikke_lage_manuell_status_hvis_ikke_reservert() {
-        DkifKontaktinfo kontaktinfo = new DkifKontaktinfo()
+        DigdirKontaktinfo kontaktinfo = new DigdirKontaktinfo()
                 .setPersonident(FNR.get())
                 .setKanVarsles(true)
                 .setReservert(false)
@@ -165,9 +167,9 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
 
         when(oppfolgingService.erUnderOppfolging(AKTOR_ID)).thenReturn(true);
 
-        when(dkifClient.hentKontaktInfo(FNR)).thenReturn(Optional.of(kontaktinfo));
+        when(digdirClient.hentKontaktInfo(FNR)).thenReturn(Optional.of(kontaktinfo));
 
-        manuellStatusService.synkroniserManuellStatusMedDkif(FNR);
+        manuellStatusService.synkroniserManuellStatusMedDigdir(FNR);
 
         List<ManuellStatusEntity> history = manuellStatusRepository.history(AKTOR_ID);
 
@@ -177,7 +179,7 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
     @Test
     public void oppdateringer_av_manuell_status_reflekteres_i_om_bruker_er_manuell() {
         when(authService.harTilgangTilEnhet(any())).thenReturn(true);
-        gittAktivOppfolging(AKTOR_ID);
+        gittAktivOppfolging();
 
         assertFalse(manuellStatusService.erManuell(AKTOR_ID));
 
@@ -197,7 +199,7 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
 
     @Test
     public void settBrukerTilManuellGrunnetReservasjonIKRR__skal_lage_manuell_status() {
-        gittAktivOppfolging(AKTOR_ID);
+        gittAktivOppfolging();
 
         manuellStatusService.settBrukerTilManuellGrunnetReservasjonIKRR(AKTOR_ID);
 
@@ -212,7 +214,7 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
 
     @Test
     public void settBrukerTilManuellGrunnetReservasjonIKRR__skal_ikke_lage_manuell_status_hvis_allerede_manuell() {
-        gittAktivOppfolging(AKTOR_ID);
+        gittAktivOppfolging();
 
         ManuellStatusEntity manuellStatus = new ManuellStatusEntity()
                 .setManuell(true)
@@ -231,34 +233,34 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
 
     @Test
     public void hentDkifKontaktinfo__skal_returnere_kontaktinfo_fra_dkif() {
-        DkifKontaktinfo kontaktinfo = new DkifKontaktinfo()
+        DigdirKontaktinfo kontaktinfo = new DigdirKontaktinfo()
                 .setPersonident(FNR.get())
                 .setKanVarsles(true)
                 .setReservert(true)
                 .setEpostadresse("email")
                 .setMobiltelefonnummer("12345");
 
-        when(dkifClient.hentKontaktInfo(FNR)).thenReturn(Optional.of(kontaktinfo));
+        when(digdirClient.hentKontaktInfo(FNR)).thenReturn(Optional.of(kontaktinfo));
 
-        assertEquals(kontaktinfo, manuellStatusService.hentDkifKontaktinfo(FNR));
+        assertEquals(kontaktinfo, manuellStatusService.hentDigdirKontaktinfo(FNR));
     }
 
     @Test
-    public void hentDkifKontaktinfo__skal_returnere_fallback_hvis_dkif_mangler_kontaktinfo() {
-        when(dkifClient.hentKontaktInfo(FNR)).thenReturn(Optional.empty());
+    public void hentDigdirKontaktinfo__skal_returnere_fallback_hvis_digdir_mangler_kontaktinfo() {
+        when(digdirClient.hentKontaktInfo(FNR)).thenReturn(Optional.empty());
 
-        DkifKontaktinfo fallbackKontaktInfo = new DkifKontaktinfo()
+        DigdirKontaktinfo fallbackKontaktInfo = new DigdirKontaktinfo()
                 .setPersonident(FNR.get())
                 .setKanVarsles(true)
                 .setReservert(false);
 
-        assertEquals(fallbackKontaktInfo, manuellStatusService.hentDkifKontaktinfo(FNR));
+        assertEquals(fallbackKontaktInfo, manuellStatusService.hentDigdirKontaktinfo(FNR));
     }
 
 
-    private void gittAktivOppfolging(AktorId aktorId) {
-        oppfolgingsStatusRepository.opprettOppfolging(aktorId);
-        db.update("UPDATE OPPFOLGINGSTATUS SET UNDER_OPPFOLGING = ? WHERE AKTOR_ID = ?", true, aktorId.get());
+    private void gittAktivOppfolging() {
+        oppfolgingsStatusRepository.opprettOppfolging(ManuellStatusServiceTest.AKTOR_ID);
+        db.update("UPDATE OPPFOLGINGSTATUS SET UNDER_OPPFOLGING = ? WHERE AKTOR_ID = ?", true, ManuellStatusServiceTest.AKTOR_ID.get());
         when(oppfolgingService.erUnderOppfolging(AKTOR_ID)).thenReturn(true);
     }
 }

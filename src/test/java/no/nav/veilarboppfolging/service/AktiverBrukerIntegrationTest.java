@@ -3,7 +3,7 @@ package no.nav.veilarboppfolging.service;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.client.behandle_arbeidssoker.BehandleArbeidssokerClient;
-import no.nav.veilarboppfolging.client.dkif.DkifKontaktinfo;
+import no.nav.veilarboppfolging.client.digdir_krr.DigdirKontaktinfo;
 import no.nav.veilarboppfolging.controller.request.Innsatsgruppe;
 import no.nav.veilarboppfolging.domain.Oppfolging;
 import no.nav.veilarboppfolging.repository.*;
@@ -78,7 +78,7 @@ public class AktiverBrukerIntegrationTest {
 
         DbTestUtils.cleanupTestDb();
         when(authService.getAktorIdOrThrow(any(Fnr.class))).thenReturn(AKTOR_ID);
-        when(manuellStatusService.hentDkifKontaktinfo(any())).thenReturn(new DkifKontaktinfo());
+        when(manuellStatusService.hentDigdirKontaktinfo(any())).thenReturn(new DigdirKontaktinfo());
     }
 
     @Test

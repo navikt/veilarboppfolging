@@ -1,12 +1,13 @@
 package no.nav.veilarboppfolging.controller.v2;
 
 import lombok.RequiredArgsConstructor;
-import no.nav.common.auth.context.UserRole;
+//import no.nav.common.auth.context.UserRole;
 import no.nav.common.types.identer.Fnr;
-import no.nav.veilarboppfolging.client.dkif.DkifKontaktinfo;
+//import no.nav.veilarboppfolging.client.dkif.DkifKontaktinfo;
 import no.nav.veilarboppfolging.controller.request.VeilederBegrunnelseDTO;
 import no.nav.veilarboppfolging.controller.v2.response.ManuellStatusV2Response;
 import no.nav.veilarboppfolging.controller.v2.response.ManuellV2Response;
+import no.nav.veilarboppfolging.client.digdir_krr.DigdirKontaktinfo;
 import no.nav.veilarboppfolging.repository.enums.KodeverkBruker;
 import no.nav.veilarboppfolging.service.AuthService;
 import no.nav.veilarboppfolging.service.ManuellStatusService;
@@ -47,7 +48,7 @@ public class ManuellStatusV2Controller {
             authService.sjekkLesetilgangMedFnr(fnr);
         }
 
-        DkifKontaktinfo kontaktinfo = manuellStatusService.hentDkifKontaktinfo(fnr);
+        DigdirKontaktinfo kontaktinfo = manuellStatusService.hentDigdirKontaktinfo(fnr);
         boolean erManuell = manuellStatusService.erManuell(fnr);
 
         return new ManuellStatusV2Response(
@@ -62,10 +63,11 @@ public class ManuellStatusV2Controller {
      * Brukes av veilarbpersonflatefs for å manuelt trigge synkronisering av manuell status med reservasjon fra DKIF(KRR).
      * @param fnr fnr/dnr til bruker som synkroniseringen skal gjøres på.
      */
-    @PostMapping("/synkroniser-med-dkif")
-    public void synkroniserManuellStatusMedDkif(@RequestParam("fnr") Fnr fnr) {
+
+    @PostMapping("/synkroniser-med-digdir")
+    public void synkroniserManuellStatusMedDigdir(@RequestParam("fnr") Fnr fnr) {
         authService.skalVereInternBruker();
-        manuellStatusService.synkroniserManuellStatusMedDkif(fnr);
+        manuellStatusService.synkroniserManuellStatusMedDigdir(fnr);
     }
 
     @PostMapping("/sett-manuell")
