@@ -7,11 +7,10 @@ import no.nav.common.client.norg2.Norg2Client;
 import no.nav.common.health.HealthCheckResult;
 import no.nav.common.metrics.Event;
 import no.nav.common.metrics.MetricsClient;
-import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.client.behandle_arbeidssoker.BehandleArbeidssokerClient;
-import no.nav.veilarboppfolging.client.dkif.DkifClient;
-import no.nav.veilarboppfolging.client.dkif.DkifKontaktinfo;
+import no.nav.veilarboppfolging.client.digdir_krr.DigdirClient;
+import no.nav.veilarboppfolging.client.digdir_krr.DigdirKontaktinfo;
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolging;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
@@ -101,11 +100,11 @@ public class ClientTestConfig {
         };
     }
 
-    @Bean
-    public DkifClient dkifClient() {
-        return new DkifClient() {
+	@Bean
+    public DigdirClient digdirClient() {
+        return new DigdirClient() {
             @Override
-            public Optional<DkifKontaktinfo> hentKontaktInfo(Fnr fnr) {
+            public Optional<DigdirKontaktinfo> hentKontaktInfo(Fnr fnr) {
                 return Optional.empty();
             }
 

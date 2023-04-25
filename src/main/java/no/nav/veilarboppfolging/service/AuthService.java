@@ -376,6 +376,10 @@ public class AuthService {
         return aadOboTokenClient.exchangeOnBehalfOfToken(scope, getInnloggetBrukerToken());
     }
 
+	public String getAadOboTokenForTjeneste(String tokenScope) {
+		return aadOboTokenClient.exchangeOnBehalfOfToken(tokenScope, authContextHolder.requireIdTokenString());
+	}
+
     public String getMachineTokenForTjeneste(DownstreamApi api) {
         String scope = "api://" + api.cluster + "." + api.namespace + "." + api.serviceName + "/.default";
         return machineToMachineTokenClient.createMachineToMachineToken(scope);
