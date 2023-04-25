@@ -76,10 +76,10 @@ public class FilterConfig {
         FilterRegistrationBean<OidcAuthenticationFilter> registration = new FilterRegistrationBean<>();
         OidcAuthenticationFilter authenticationFilter = new OidcAuthenticationFilter(
                 fromConfigs(
-                        loginserviceIdportenConfig(properties),
-                        naisStsAuthConfig(properties),
                         naisAzureAdConfig(properties),
-                        tokenxAuthConfig(properties)
+                        tokenxAuthConfig(properties),
+                        naisStsAuthConfig(properties),
+                        loginserviceIdportenConfig(properties)
                 )
         );
 
