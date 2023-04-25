@@ -9,6 +9,7 @@ import no.nav.pto_schema.kafka.json.topic.SisteOppfolgingsperiodeV1;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt.Ytelseskontrakt;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.HentYtelseskontraktListeRequest;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.HentYtelseskontraktListeResponse;
+import no.nav.veilarboppfolging.client.digdir_krr.DigdirKontaktinfo;
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolgingTilstand;
 import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktClient;
 import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktMapper;
@@ -100,7 +101,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
         when(arenaOppfolgingService.hentOppfolgingTilstand(FNR)).thenReturn(Optional.of(arenaOppfolgingTilstand));
         when(ytelseskontraktClient.hentYtelseskontraktListe(any())).thenReturn(mock(YtelseskontraktResponse.class));
-        when(manuellStatusService.hentDkifKontaktinfo(FNR)).thenReturn(new DkifKontaktinfo());
+        when(manuellStatusService.hentDigdirKontaktinfo(FNR)).thenReturn(new DigdirKontaktinfo());
 
         when(unleashService.skalIkkeOppdatereMedSideeffekt()).thenReturn(false);
     }
@@ -426,12 +427,12 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     }
 
     private void gittReservasjonIKrr(boolean reservert) {
-        DkifKontaktinfo kontaktinfo = new DkifKontaktinfo();
+        DigdirKontaktinfo kontaktinfo = new DigdirKontaktinfo();
         kontaktinfo.setPersonident("fnr");
         kontaktinfo.setKanVarsles(false);
         kontaktinfo.setReservert(reservert);
 
-        when(manuellStatusService.hentDkifKontaktinfo(FNR)).thenReturn(kontaktinfo);
+        when(manuellStatusService.hentDigdirKontaktinfo(FNR)).thenReturn(kontaktinfo);
     }
 
     private void gittYtelserMedStatus(String... statuser) {

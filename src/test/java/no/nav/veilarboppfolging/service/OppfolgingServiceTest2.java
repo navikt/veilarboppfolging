@@ -3,6 +3,8 @@ package no.nav.veilarboppfolging.service;
 import no.nav.common.health.HealthCheckResult;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.veilarboppfolging.client.digdir_krr.DigdirClient;
+import no.nav.veilarboppfolging.client.digdir_krr.DigdirKontaktinfo;
 import no.nav.veilarboppfolging.domain.Oppfolging;
 import no.nav.veilarboppfolging.repository.*;
 import no.nav.veilarboppfolging.repository.entity.MaalEntity;
@@ -73,9 +75,9 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
 
         manuellStatusRepository = new ManuellStatusRepository(db, transactor);
 
-        DkifClient dkifClient = new DkifClient() {
+        DigdirClient digdirClient = new DigdirClient() {
             @Override
-            public Optional<DkifKontaktinfo> hentKontaktInfo(Fnr fnr) {
+            public Optional<DigdirKontaktinfo> hentKontaktInfo(Fnr fnr) {
                 return Optional.empty();
             }
 
@@ -91,7 +93,7 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
                 null,
                 oppfolgingServiceMock,
                 oppfolgingsStatusRepository,
-                dkifClient,
+                digdirClient,
                 null,
                 transactor
         );

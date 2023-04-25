@@ -38,8 +38,6 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
 
     private final ArenaOppfolgingService arenaOppfolgingService = mock(ArenaOppfolgingService.class);
 
-   // private final DkifClient dkifClient = mock(DkifClient.class);
-
     private final DigdirClient digdirClient = mock(DigdirClient.class);
 
     private final KafkaProducerService kafkaProducerService = mock(KafkaProducerService.class);
@@ -122,7 +120,7 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
     }
 
     @Test
-    public void synkroniserManuellStatusMedDkif__skal_lage_manuell_status_hvis_reservert() {
+    public void synkroniserManuellStatusMedDigdir__skal_lage_manuell_status_hvis_reservert() {
         DigdirKontaktinfo kontaktinfo = new DigdirKontaktinfo()
                 .setPersonident(FNR.get())
                 .setKanVarsles(true)
@@ -144,7 +142,7 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
     }
 
     @Test
-    public void synkroniserManuellStatusMedDkif__skal_ikke_lage_manuell_status_hvis_ikke_under_oppfolging() {
+    public void synkroniserManuellStatusMedDigdir__skal_ikke_lage_manuell_status_hvis_ikke_under_oppfolging() {
         when(oppfolgingService.erUnderOppfolging(AKTOR_ID)).thenReturn(false);
 
         manuellStatusService.synkroniserManuellStatusMedDigdir(FNR);
@@ -157,7 +155,7 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
     }
 
     @Test
-    public void synkroniserManuellStatusMedDkif__skal_ikke_lage_manuell_status_hvis_ikke_reservert() {
+    public void synkroniserManuellStatusMedDigdir__skal_ikke_lage_manuell_status_hvis_ikke_reservert() {
         DigdirKontaktinfo kontaktinfo = new DigdirKontaktinfo()
                 .setPersonident(FNR.get())
                 .setKanVarsles(true)
@@ -232,7 +230,7 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
     }
 
     @Test
-    public void hentDkifKontaktinfo__skal_returnere_kontaktinfo_fra_dkif() {
+    public void hentDigdirKontaktinfo__skal_returnere_kontaktinfo_fra_digdir() {
         DigdirKontaktinfo kontaktinfo = new DigdirKontaktinfo()
                 .setPersonident(FNR.get())
                 .setKanVarsles(true)

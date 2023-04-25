@@ -26,8 +26,8 @@ public class ManuellStatusControllerTest {
     private ManuellStatusService manuellStatusService;
 
     @Test
-    public void synkroniserManuellStatusMedDkif__should_only_be_used_by_internal_users() throws Exception {
-        mockMvc.perform(post("/api/v2/manuell/synkroniser-med-dkif")
+    public void synkroniserManuellStatusMedDigdir__should_only_be_used_by_internal_users() throws Exception {
+        mockMvc.perform(post("/api/v2/manuell/synkroniser-med-digdir")
                 .queryParam("fnr", TEST_FNR.get()));
 
         verify(authService, times(1)).skalVereInternBruker();
@@ -35,7 +35,7 @@ public class ManuellStatusControllerTest {
 
     @Test
     public void synkroniserManuellStatusMedDigdir__should_synchronize() throws Exception {
-        mockMvc.perform(post("/api/v2/manuell/synkroniser-med-dkif")
+        mockMvc.perform(post("/api/v2/manuell/synkroniser-med-digdir")
                 .queryParam("fnr", TEST_FNR.get()));
 
         verify(manuellStatusService, times(1)).synkroniserManuellStatusMedDigdir(TEST_FNR);
