@@ -63,7 +63,7 @@ public class ManuellStatusV2Controller {
      * @param fnr fnr/dnr til bruker som synkroniseringen skal gjøres på.
      */
 
-    @PostMapping("/synkroniser-med-digdir")
+    @PostMapping("/synkroniser-med-dkif")
     public void synkroniserManuellStatusMedDigdir(@RequestParam("fnr") Fnr fnr) {
         authService.skalVereInternBruker();
         manuellStatusService.synkroniserManuellStatusMedDigdir(fnr);
