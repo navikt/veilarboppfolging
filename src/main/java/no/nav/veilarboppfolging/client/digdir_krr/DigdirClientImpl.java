@@ -50,7 +50,7 @@ public class DigdirClientImpl implements DigdirClient {
                 .header(ACCEPT, APPLICATION_JSON_VALUE)
                 .header("Nav-personident", fnr.get())
                 .build();
-
+        log.debug(request.toString());
         try (Response response = client.newCall(request).execute()) {
             RestUtils.throwIfNotSuccessful(response);
             String json = RestUtils.getBodyStr(response)
