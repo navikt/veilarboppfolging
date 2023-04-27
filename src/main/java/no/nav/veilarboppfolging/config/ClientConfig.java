@@ -55,7 +55,7 @@ public class ClientConfig {
 
     @Bean
     public DigdirClient digdirClient(SystemUserTokenProvider systemUserTokenProvider) {
-        String url = UrlUtils.createServiceUrl("digdir", "team-rocket", false);
+        String url = UrlUtils.createServiceUrl("digdir-krr-proxy", "team-rocket", false);
         return new DigdirClientImpl(url, systemUserTokenProvider);
     }
 
