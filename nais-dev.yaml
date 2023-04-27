@@ -132,6 +132,9 @@ spec:
         - application: tms-min-side-proxy
           namespace: min-side
           cluster: dev-gcp
+        - application: aia-backend
+          namespace: paw
+          cluster: dev-gcp
   vault:
     enabled: true
     paths:
