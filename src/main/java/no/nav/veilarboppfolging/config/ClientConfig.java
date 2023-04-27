@@ -12,7 +12,6 @@ import no.nav.common.token_client.builder.AzureAdTokenClientBuilder;
 import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
 import no.nav.common.token_client.client.MachineToMachineTokenClient;
 import no.nav.common.utils.EnvironmentUtils;
-import no.nav.common.utils.UrlUtils;
 import no.nav.veilarboppfolging.client.behandle_arbeidssoker.BehandleArbeidssokerClient;
 import no.nav.veilarboppfolging.client.behandle_arbeidssoker.BehandleArbeidssokerClientImpl;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
@@ -54,9 +53,8 @@ public class ClientConfig {
     }
 
     @Bean
-    public DigdirClient digdirClient(SystemUserTokenProvider systemUserTokenProvider) {
-        String url = UrlUtils.createServiceUrl("digdir-krr-proxy", "team-rocket", false);
-        return new DigdirClientImpl(url, systemUserTokenProvider);
+    public DigdirClient digdirClient(EnvironmentProperties properties, SystemUserTokenProvider systemUserTokenProvider) {
+        return new DigdirClientImpl(properties.getDigdirKrrProxyUrl(), systemUserTokenProvider);
     }
 
     @Bean
