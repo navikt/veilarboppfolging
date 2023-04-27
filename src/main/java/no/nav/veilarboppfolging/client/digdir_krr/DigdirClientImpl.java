@@ -15,18 +15,29 @@ import no.nav.veilarboppfolging.config.CacheConfig;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import org.slf4j.MDC;
 import org.springframework.cache.annotation.Cacheable;
 
 import java.time.Duration;
 import java.util.Optional;
+import java.util.UUID;
 
-import static com.google.common.net.HttpHeaders.AUTHORIZATION;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 import static no.nav.common.utils.UrlUtils.joinPaths;
+import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.springframework.http.HttpHeaders.ACCEPT;
+import static org.springframework.http.HttpHeaders.AUTHORIZATION;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @Slf4j
 public class DigdirClientImpl implements DigdirClient {
+
+    public static final String CALL_ID = "callId";
+    public static final String NAV_CALL_ID = "Nav-Call-Id";
+    private String getCallId() {
+        return isBlank(MDC.get(CALL_ID)) ? UUID.randomUUID().toString() : MDC.get(CALL_ID);
+    }
 
     private final String digdirUrl;
 
@@ -49,7 +60,9 @@ public class DigdirClientImpl implements DigdirClient {
     public Optional<DigdirKontaktinfo> hentKontaktInfo(Fnr fnr) {
         Request request = new Request.Builder()
                 .url(joinPaths(digdirUrl, "/api/v1/person?inkluderSikkerDigitalPost=false"))
+                .header(ACCEPT, APPLICATION_JSON_VALUE)
                 .header(AUTHORIZATION, "Bearer " + systemUserTokenProvider.getSystemUserToken())
+                .header(NAV_CALL_ID, getCallId())
                 .header("Nav-personident", fnr.get())
                 .build();
 
@@ -80,5 +93,4 @@ public class DigdirClientImpl implements DigdirClient {
     public HealthCheckResult checkHealth() {
         return HealthCheckUtils.pingUrl(joinPaths(digdirUrl, "/api/ping"), client);
     }
-
 }

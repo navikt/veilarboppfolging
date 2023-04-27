@@ -4,6 +4,7 @@ import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import no.nav.veilarboppfolging.client.digdir_krr.DigdirClient;
 import no.nav.veilarboppfolging.client.digdir_krr.DigdirClientImpl;
 import no.nav.veilarboppfolging.client.digdir_krr.DigdirKontaktinfo;
+import no.nav.veilarboppfolging.test.TestData;
 import no.nav.veilarboppfolging.test.TestUtils;
 import org.junit.Rule;
 import org.junit.Test;
@@ -26,6 +27,7 @@ public class DigdirClientImplTest {
         givenThat(get(anyUrl())
                 .withHeader("Nav-Personident", equalTo(TEST_FNR.get()))
                 .withHeader("Authorization", equalTo("Bearer TOKEN"))
+                .withHeader("Nav-call-id", equalTo(TestData.uuid.toString()))
                 .willReturn(aResponse()
                         .withStatus(200)
                         .withBody(kodeverkJson))
@@ -47,7 +49,7 @@ public class DigdirClientImplTest {
 
         givenThat(get(anyUrl())
                 .withHeader("Nav-Personident", equalTo(TEST_FNR.get()))
-                .withHeader("Authorization", equalTo("Bearer TOKEN"))
+                .withHeader("Nav-call-id", equalTo("Bearer TOKEN"))
                 .willReturn(aResponse()
                         .withStatus(200)
                         .withBody(kodeverkJson))
