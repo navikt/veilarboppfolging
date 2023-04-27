@@ -9,7 +9,6 @@ import no.nav.common.health.HealthCheckUtils;
 import no.nav.common.json.JsonUtils;
 import no.nav.common.rest.client.RestClient;
 import no.nav.common.rest.client.RestUtils;
-import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.config.CacheConfig;
 import okhttp3.OkHttpClient;
@@ -20,7 +19,9 @@ import org.springframework.cache.annotation.Cacheable;
 import java.time.Duration;
 import java.util.Optional;
 
-import static com.google.common.net.HttpHeaders.AUTHORIZATION;
+import static org.springframework.http.HttpHeaders.ACCEPT;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 import static no.nav.common.utils.UrlUtils.joinPaths;
@@ -30,13 +31,10 @@ public class DigdirClientImpl implements DigdirClient {
 
     private final String digdirUrl;
 
-    private final SystemUserTokenProvider systemUserTokenProvider;
-
     private final OkHttpClient client;
 
-    public DigdirClientImpl(String digdirUrl, SystemUserTokenProvider systemUserTokenProvider) {
+    public DigdirClientImpl(String digdirUrl) {
         this.digdirUrl = digdirUrl;
-        this.systemUserTokenProvider = systemUserTokenProvider;
         this.client = RestClient
                 .baseClientBuilder()
                 .callTimeout(Duration.ofSeconds(3))
@@ -49,7 +47,7 @@ public class DigdirClientImpl implements DigdirClient {
     public Optional<DigdirKontaktinfo> hentKontaktInfo(Fnr fnr) {
         Request request = new Request.Builder()
                 .url(joinPaths(digdirUrl, "/api/v1/person?inkluderSikkerDigitalPost=false"))
-                .header(AUTHORIZATION, "Bearer " + systemUserTokenProvider.getSystemUserToken())
+                .header(ACCEPT, APPLICATION_JSON_VALUE)
                 .header("Nav-personident", fnr.get())
                 .build();
 

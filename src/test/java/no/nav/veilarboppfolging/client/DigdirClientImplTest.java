@@ -21,11 +21,10 @@ public class DigdirClientImplTest {
     public void hentKontaktInfo__skal_hente_kontaktinfo() {
         String kodeverkJson = TestUtils.readTestResourceFile("client/digdir/kontaktinfo.json");
         String apiUrl = "http://localhost:" + wireMockRule.port();
-        DigdirClient digdirClient = new DigdirClientImpl(apiUrl, () -> "TOKEN");
+        DigdirClient digdirClient = new DigdirClientImpl(apiUrl);
 
         givenThat(get(anyUrl())
                 .withHeader("Nav-Personident", equalTo(TEST_FNR.get()))
-                .withHeader("Authorization", equalTo("Bearer TOKEN"))
                 .willReturn(aResponse()
                         .withStatus(200)
                         .withBody(kodeverkJson))
@@ -43,11 +42,10 @@ public class DigdirClientImplTest {
     public void hentKontaktInfo__skal_returnere_empty_hvis_ingen_kontaktinfo() {
         String kodeverkJson = TestUtils.readTestResourceFile("client/digdir/no-kontaktinfo.json");
         String apiUrl = "http://localhost:" + wireMockRule.port();
-        DigdirClient digdirClient = new DigdirClientImpl(apiUrl, () -> "TOKEN");
+        DigdirClient digdirClient = new DigdirClientImpl(apiUrl);
 
         givenThat(get(anyUrl())
                 .withHeader("Nav-Personident", equalTo(TEST_FNR.get()))
-                .withHeader("Authorization", equalTo("Bearer TOKEN"))
                 .willReturn(aResponse()
                         .withStatus(200)
                         .withBody(kodeverkJson))

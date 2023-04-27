@@ -7,7 +7,6 @@ import no.nav.common.client.norg2.CachedNorg2Client;
 import no.nav.common.client.norg2.Norg2Client;
 import no.nav.common.client.norg2.NorgHttp2Client;
 import no.nav.common.cxf.StsConfig;
-import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.token_client.builder.AzureAdTokenClientBuilder;
 import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
 import no.nav.common.token_client.client.MachineToMachineTokenClient;
@@ -53,8 +52,8 @@ public class ClientConfig {
     }
 
     @Bean
-    public DigdirClient digdirClient(EnvironmentProperties properties, SystemUserTokenProvider systemUserTokenProvider) {
-        return new DigdirClientImpl(properties.getDigdirKrrProxyUrl(), systemUserTokenProvider);
+    public DigdirClient digdirClient(EnvironmentProperties properties) {
+        return new DigdirClientImpl(properties.getDigdirKrrProxyUrl());
     }
 
     @Bean
