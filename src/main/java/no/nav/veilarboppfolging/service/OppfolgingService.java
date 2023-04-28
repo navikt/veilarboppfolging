@@ -187,10 +187,12 @@ public class OppfolgingService {
     @SneakyThrows
     public VeilederTilgang hentVeilederTilgang(Fnr fnr) {
         authService.sjekkLesetilgangMedFnr(fnr);
-        Optional<VeilarbArenaOppfolging> arenaBruker = arenaOppfolgingService.hentOppfolgingFraVeilarbarena(fnr);
-        return arenaBruker.map(VeilarbArenaOppfolging::getNav_kontor)
+        return arenaOppfolgingService
+                .hentOppfolgingFraVeilarbarena(fnr)
+                .map(VeilarbArenaOppfolging::getNav_kontor)
                 .map(authService::harTilgangTilEnhet)
-                .map(VeilederTilgang::new).orElse(new VeilederTilgang(false));
+                .map(VeilederTilgang::new)
+                .orElse(new VeilederTilgang(false));
     }
 
     public List<OppfolgingsperiodeEntity> hentOppfolgingsperioder(Fnr fnr) {
