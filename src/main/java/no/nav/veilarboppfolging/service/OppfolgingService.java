@@ -188,9 +188,9 @@ public class OppfolgingService {
     public VeilederTilgang hentVeilederTilgang(Fnr fnr) {
         authService.sjekkLesetilgangMedFnr(fnr);
         Optional<VeilarbArenaOppfolging> arenaBruker = arenaOppfolgingService.hentOppfolgingFraVeilarbarena(fnr);
-        String oppfolgingsenhet = arenaBruker.map(VeilarbArenaOppfolging::getNav_kontor).orElse(null);
-        boolean tilgangTilEnhet = authService.harTilgangTilEnhet(oppfolgingsenhet);
-        return new VeilederTilgang().setTilgangTilBrukersKontor(tilgangTilEnhet);
+        return arenaBruker.map(VeilarbArenaOppfolging::getNav_kontor)
+                .map(authService::harTilgangTilEnhet)
+                .map(VeilederTilgang::new).orElse(new VeilederTilgang(false));
     }
 
     public List<OppfolgingsperiodeEntity> hentOppfolgingsperioder(Fnr fnr) {
