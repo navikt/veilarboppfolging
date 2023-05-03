@@ -45,7 +45,7 @@ spec:
     - name: POAO_TILGANG_SCOPE
       value: api://dev-fss.poao.poao-tilgang/.default
     - name: DIGDIR_KRR_PROXY_URL
-      value: https://digdir-krr-proxy.dev.intern.nav.no
+      value: https://digdir-krr-proxy.intern.dev.nav.no
   secureLogs:
     enabled: true
   kafka:
