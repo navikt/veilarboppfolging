@@ -63,6 +63,7 @@ public class DigdirClientImpl implements DigdirClient {
     @Override
     public Optional<DigdirKontaktinfo> hentKontaktInfo(Fnr fnr) {
         String authorization = authContextHolder.getIdTokenString().isPresent() ? authContextHolder.getIdTokenString().get() : "";
+        String issuer = authContextHolder.getIdTokenClaims().map(JWTClaimsSet::getIssuer).orElse("");
         Request request = new Request.Builder()
                 .url(joinPaths(digdirUrl, "/api/v1/person?inkluderSikkerDigitalPost=false"))
                 .header(ACCEPT, APPLICATION_JSON_VALUE)
@@ -73,7 +74,7 @@ public class DigdirClientImpl implements DigdirClient {
 
         try (Response response = client.newCall(request).execute()) {
 
-            log.info("svar fra digdir: message = {}, challanges = {}, TokenProvider = {}, callId = {}", response.message(), response.challenges(), systemUserTokenProvider.getSystemUserToken(), getCallId());
+            log.info("svar fra digdir: message = {}, challanges = {}, AuthContextHolder = {}, callId = {}, issuer = {}", response.message(), response.challenges(), authContextHolder.getIdTokenString().get(), getCallId(), issuer);
             RestUtils.throwIfNotSuccessful(response);
             String json = RestUtils.getBodyStr(response)
                     .orElseThrow(() -> new IllegalStateException("Response body from Digdir_KRR is missing"));
