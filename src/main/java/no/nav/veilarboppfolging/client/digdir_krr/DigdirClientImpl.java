@@ -43,6 +43,7 @@ public class DigdirClientImpl implements DigdirClient {
 
     private final SystemUserTokenProvider systemUserTokenProvider;
 
+
     private final OkHttpClient client;
 
     public DigdirClientImpl(String digdirUrl, SystemUserTokenProvider systemUserTokenProvider) {
@@ -67,6 +68,8 @@ public class DigdirClientImpl implements DigdirClient {
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
+
+            log.debug("svar fra digdir: message = {}, challanges = {}, TokenProvider = {}, callId = {}", response.message(), response.challenges(), systemUserTokenProvider.getSystemUserToken(), getCallId());
             RestUtils.throwIfNotSuccessful(response);
             String json = RestUtils.getBodyStr(response)
                     .orElseThrow(() -> new IllegalStateException("Response body from Digdir_KRR is missing"));
