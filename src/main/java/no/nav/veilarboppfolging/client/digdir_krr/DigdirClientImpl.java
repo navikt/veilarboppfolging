@@ -2,6 +2,7 @@ package no.nav.veilarboppfolging.client.digdir_krr;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nimbusds.jwt.JWTClaimsSet;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.auth.context.AuthContextHolder;
@@ -45,6 +46,7 @@ public class DigdirClientImpl implements DigdirClient {
     private final SystemUserTokenProvider systemUserTokenProvider;
 
     private final AuthContextHolder authContextHolder;
+
 
     private final OkHttpClient client;
 
