@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.health.HealthCheckResult;
 import no.nav.common.health.HealthCheckUtils;
 import no.nav.common.json.JsonUtils;
@@ -43,12 +44,14 @@ public class DigdirClientImpl implements DigdirClient {
 
     private final SystemUserTokenProvider systemUserTokenProvider;
 
+    private final AuthContextHolder authContextHolder;
 
     private final OkHttpClient client;
 
-    public DigdirClientImpl(String digdirUrl, SystemUserTokenProvider systemUserTokenProvider) {
+    public DigdirClientImpl(String digdirUrl, SystemUserTokenProvider systemUserTokenProvider, AuthContextHolder authContextHolder) {
         this.digdirUrl = digdirUrl;
         this.systemUserTokenProvider = systemUserTokenProvider;
+        this.authContextHolder = authContextHolder;
         this.client = RestClient
                 .baseClientBuilder()
                 .callTimeout(Duration.ofSeconds(3))
@@ -62,7 +65,7 @@ public class DigdirClientImpl implements DigdirClient {
         Request request = new Request.Builder()
                 .url(joinPaths(digdirUrl, "/api/v1/person?inkluderSikkerDigitalPost=false"))
                 .header(ACCEPT, APPLICATION_JSON_VALUE)
-                .header(AUTHORIZATION, "Bearer " + systemUserTokenProvider.getSystemUserToken())
+                .header(AUTHORIZATION, "Bearer " + authContextHolder.getIdTokenString())
                 .header(NAV_CALL_ID, getCallId())
                 .header("Nav-personident", fnr.get())
                 .build();
