@@ -186,10 +186,12 @@ public class OppfolgingService {
     @SneakyThrows
     public VeilederTilgang hentVeilederTilgang(Fnr fnr) {
         authService.sjekkLesetilgangMedFnr(fnr);
-        Optional<VeilarbArenaOppfolging> arenaBruker = arenaOppfolgingService.hentOppfolgingFraVeilarbarena(fnr);
-        String oppfolgingsenhet = arenaBruker.map(VeilarbArenaOppfolging::getNav_kontor).orElse(null);
-        boolean tilgangTilEnhet = authService.harTilgangTilEnhet(oppfolgingsenhet);
-        return new VeilederTilgang().setTilgangTilBrukersKontor(tilgangTilEnhet);
+        return arenaOppfolgingService
+                .hentOppfolgingFraVeilarbarena(fnr)
+                .map(VeilarbArenaOppfolging::getNav_kontor)
+                .map(authService::harTilgangTilEnhet)
+                .map(VeilederTilgang::new)
+                .orElse(new VeilederTilgang(false));
     }
 
     public List<OppfolgingsperiodeEntity> hentOppfolgingsperioder(Fnr fnr) {
