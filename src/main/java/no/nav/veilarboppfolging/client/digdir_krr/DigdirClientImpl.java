@@ -62,10 +62,11 @@ public class DigdirClientImpl implements DigdirClient {
     @SneakyThrows
     @Override
     public Optional<DigdirKontaktinfo> hentKontaktInfo(Fnr fnr) {
+        String authorization = authContextHolder.getIdTokenString().isPresent() ? authContextHolder.getIdTokenString().get() : "";
         Request request = new Request.Builder()
                 .url(joinPaths(digdirUrl, "/api/v1/person?inkluderSikkerDigitalPost=false"))
                 .header(ACCEPT, APPLICATION_JSON_VALUE)
-                .header(AUTHORIZATION, "Bearer " + authContextHolder.getIdTokenString())
+                .header(AUTHORIZATION, "Bearer " + authorization)
                 .header(NAV_CALL_ID, getCallId())
                 .header("Nav-personident", fnr.get())
                 .build();

@@ -1,5 +1,6 @@
 package no.nav.veilarboppfolging.config;
 
+import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.client.aktoroppslag.CachedAktorOppslagClient;
 import no.nav.common.client.aktoroppslag.PdlAktorOppslagClient;
@@ -53,8 +54,8 @@ public class ClientConfig {
     }
 
     @Bean
-    public DigdirClient digdirClient(EnvironmentProperties properties, SystemUserTokenProvider systemUserTokenProvider) {
-        return new DigdirClientImpl(properties.getDigdirKrrProxyUrl(), systemUserTokenProvider);
+    public DigdirClient digdirClient(EnvironmentProperties properties, SystemUserTokenProvider systemUserTokenProvider, AuthContextHolder authContextHolder) {
+        return new DigdirClientImpl(properties.getDigdirKrrProxyUrl(), systemUserTokenProvider, authContextHolder);
     }
 
     @Bean
