@@ -21,6 +21,8 @@ import org.slf4j.MDC;
 import org.springframework.cache.annotation.Cacheable;
 
 import java.time.Duration;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -66,6 +68,7 @@ public class DigdirClientImpl implements DigdirClient {
     public Optional<DigdirKontaktinfo> hentKontaktInfo(Fnr fnr) {
         String authorization = authContextHolder.getIdTokenString().isPresent() ? authContextHolder.getIdTokenString().get() : "";
         String issuer = authContextHolder.getIdTokenClaims().map(JWTClaimsSet::getIssuer).orElse("");
+        List<String> aud = authContextHolder.getIdTokenClaims().map(JWTClaimsSet::getAudience).orElse(Collections.emptyList());
         Request request = new Request.Builder()
                 .url(joinPaths(digdirUrl, "/api/v1/person?inkluderSikkerDigitalPost=false"))
                 .header(ACCEPT, APPLICATION_JSON_VALUE)
@@ -76,7 +79,7 @@ public class DigdirClientImpl implements DigdirClient {
 
         try (Response response = client.newCall(request).execute()) {
 
-            log.info("svar fra digdir: message = {}, challanges = {}, AuthContextHolder = {}, callId = {}, issuer = {}", response.message(), response.challenges(), authContextHolder.getIdTokenString().get(), getCallId(), issuer);
+            log.info("svar fra digdir: message = {}, challanges = {}, AuthContextHolder = {}, callId = {}, issuer = {}, aud = {}", response.message(), response.challenges(), authContextHolder.getIdTokenString().get(), getCallId(), issuer, aud);
             RestUtils.throwIfNotSuccessful(response);
             String json = RestUtils.getBodyStr(response)
                     .orElseThrow(() -> new IllegalStateException("Response body from Digdir_KRR is missing"));
