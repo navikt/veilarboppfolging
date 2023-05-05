@@ -58,4 +58,6 @@ public class EnvironmentProperties {
 
     private String digdirKrrProxyUrl;
 
+    private String digdirKrrProxyScope;
+
 }

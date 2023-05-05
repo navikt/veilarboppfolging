@@ -9,11 +9,12 @@ import no.nav.common.health.HealthCheckUtils;
 import no.nav.common.json.JsonUtils;
 import no.nav.common.rest.client.RestClient;
 import no.nav.common.rest.client.RestUtils;
+import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
 import no.nav.common.types.identer.Fnr;
-import no.nav.common.utils.EnvironmentUtils;
+
 import no.nav.veilarboppfolging.config.CacheConfig;
-import no.nav.veilarboppfolging.service.AuthService;
-import no.nav.veilarboppfolging.utils.DownstreamApi;
+
+
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -23,7 +24,7 @@ import org.springframework.cache.annotation.Cacheable;
 import java.time.Duration;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Function;
+
 
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
@@ -36,13 +37,6 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @Slf4j
 public class DigdirClientImpl implements DigdirClient {
 
-    private static final DownstreamApi digdirKrrApi = new DownstreamApi(EnvironmentUtils.requireClusterName(), "team-rocket", "digdir-krr-proxy");
-
-    private final Function<DownstreamApi, String> aadOboTokenProvider;
-
-    private final Function<DownstreamApi, String> machineTokenProvider;
-
-    private final AuthService authService;
 
     public static final String CALL_ID = "callId";
     public static final String NAV_CALL_ID = "Nav-Call-Id";
@@ -52,14 +46,16 @@ public class DigdirClientImpl implements DigdirClient {
 
     private final String digdirUrl;
 
+    private final String scope;
+
+    private final AzureAdMachineToMachineTokenClient tokenClient;
 
     private final OkHttpClient client;
 
-    public DigdirClientImpl(String digdirUrl, Function<DownstreamApi, String> machineTokenProvider, Function<DownstreamApi, String> aadOboTokenProvider, AuthService authService) {
+    public DigdirClientImpl(String digdirUrl, String scope, AzureAdMachineToMachineTokenClient tokenClient) {
         this.digdirUrl = digdirUrl;
-        this.machineTokenProvider = machineTokenProvider;
-        this.authService = authService;
-        this.aadOboTokenProvider = aadOboTokenProvider;
+        this.scope = scope;
+        this.tokenClient = tokenClient;
         this.client = RestClient
                 .baseClientBuilder()
                 .callTimeout(Duration.ofSeconds(3))
@@ -67,11 +63,8 @@ public class DigdirClientImpl implements DigdirClient {
     }
 
     private String getToken() {
-        if (authService.erInternBruker()) {
-            return aadOboTokenProvider.apply(digdirKrrApi);
-        } else {
-            return machineTokenProvider.apply(digdirKrrApi);
-        }
+
+        return tokenClient.createMachineToMachineToken(scope);
     }
 
     @Cacheable(CacheConfig.DIGDIR_KONTAKTINFO_CACHE_NAME)
@@ -89,7 +82,7 @@ public class DigdirClientImpl implements DigdirClient {
 
         try (Response response = client.newCall(request).execute()) {
 
-            log.info("svar fra digdir: message = {}, challenges = {}", response.message(), response.challenges());
+            log.info("svar fra digdir: challenges = {}", response.challenges());
             RestUtils.throwIfNotSuccessful(response);
             String json = RestUtils.getBodyStr(response)
                     .orElseThrow(() -> new IllegalStateException("Response body from Digdir_KRR is missing"));

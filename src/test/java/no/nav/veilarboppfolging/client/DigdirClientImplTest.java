@@ -1,11 +1,12 @@
 package no.nav.veilarboppfolging.client;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
 import no.nav.veilarboppfolging.client.digdir_krr.DigdirClientImpl;
 import no.nav.veilarboppfolging.client.digdir_krr.DigdirKontaktinfo;
-import no.nav.veilarboppfolging.service.AuthService;
+
 import no.nav.veilarboppfolging.test.TestUtils;
-import no.nav.veilarboppfolging.utils.DownstreamApi;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -14,13 +15,14 @@ import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static no.nav.veilarboppfolging.test.TestData.TEST_FNR;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class DigdirClientImplTest {
 
     @Rule
     public WireMockRule wireMockRule = new WireMockRule(0);
 
-	private final AuthService authServiceMock = mock(AuthService.class);
+	private final AzureAdMachineToMachineTokenClient tokenClientMock = mock(AzureAdMachineToMachineTokenClient.class);
     @Before
     public void setup() {
         System.setProperty("NAIS_CLUSTER_NAME", "dev-fss");
@@ -30,8 +32,8 @@ public class DigdirClientImplTest {
     public void hentKontaktInfo__skal_hente_kontaktinfo() {
         String kodeverkJson = TestUtils.readTestResourceFile("client/digdir/kontaktinfo.json");
         String apiUrl = "http://localhost:" + wireMockRule.port();
-
-        DigdirClientImpl digdirClient = new DigdirClientImpl(apiUrl, (DownstreamApi v) -> "TOKEN", (DownstreamApi v) -> "TOKEN", authServiceMock);
+        when(tokenClientMock.createMachineToMachineToken("test")).thenReturn("TOKEN");
+        DigdirClientImpl digdirClient = new DigdirClientImpl(apiUrl,   "test", tokenClientMock);
 
         givenThat(get(anyUrl())
 				.withHeader("Nav-personident", equalTo(TEST_FNR.get()))
@@ -53,7 +55,8 @@ public class DigdirClientImplTest {
     public void hentKontaktInfo__skal_returnere_empty_hvis_ingen_kontaktinfo() {
         String kodeverkJson = TestUtils.readTestResourceFile("client/digdir/no-kontaktinfo.json");
         String apiUrl = "http://localhost:" + wireMockRule.port();
-        DigdirClientImpl digdirClient = new DigdirClientImpl(apiUrl, (DownstreamApi v) -> "TOKEN", (DownstreamApi v) -> "TOKEN", authServiceMock);
+        when(tokenClientMock.createMachineToMachineToken("test")).thenReturn("TOKEN");
+        DigdirClientImpl digdirClient = new DigdirClientImpl(apiUrl, "test", tokenClientMock);
 
         givenThat(get(anyUrl())
                 .withHeader("Nav-Personident", equalTo(TEST_FNR.get()))
