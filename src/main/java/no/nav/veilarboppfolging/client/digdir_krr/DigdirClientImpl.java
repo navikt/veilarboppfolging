@@ -2,18 +2,18 @@ package no.nav.veilarboppfolging.client.digdir_krr;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.nimbusds.jwt.JWTClaimsSet;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.health.HealthCheckResult;
 import no.nav.common.health.HealthCheckUtils;
 import no.nav.common.json.JsonUtils;
 import no.nav.common.rest.client.RestClient;
 import no.nav.common.rest.client.RestUtils;
-import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.types.identer.Fnr;
+import no.nav.common.utils.EnvironmentUtils;
 import no.nav.veilarboppfolging.config.CacheConfig;
+import no.nav.veilarboppfolging.service.AuthService;
+import no.nav.veilarboppfolging.utils.DownstreamApi;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -21,10 +21,9 @@ import org.slf4j.MDC;
 import org.springframework.cache.annotation.Cacheable;
 
 import java.time.Duration;
-import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
 
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
@@ -37,6 +36,14 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @Slf4j
 public class DigdirClientImpl implements DigdirClient {
 
+    private static final DownstreamApi digdirKrrApi = new DownstreamApi(EnvironmentUtils.requireClusterName(), "team-rocket", "digdir-krr-proxy");
+
+    private final Function<DownstreamApi, String> aadOboTokenProvider;
+
+    private final Function<DownstreamApi, String> machineTokenProvider;
+
+    private final AuthService authService;
+
     public static final String CALL_ID = "callId";
     public static final String NAV_CALL_ID = "Nav-Call-Id";
     private String getCallId() {
@@ -45,41 +52,44 @@ public class DigdirClientImpl implements DigdirClient {
 
     private final String digdirUrl;
 
-    private final SystemUserTokenProvider systemUserTokenProvider;
-
-    private final AuthContextHolder authContextHolder;
-
 
     private final OkHttpClient client;
 
-    public DigdirClientImpl(String digdirUrl, SystemUserTokenProvider systemUserTokenProvider, AuthContextHolder authContextHolder) {
+    public DigdirClientImpl(String digdirUrl, Function<DownstreamApi, String> machineTokenProvider, Function<DownstreamApi, String> aadOboTokenProvider, AuthService authService) {
         this.digdirUrl = digdirUrl;
-        this.systemUserTokenProvider = systemUserTokenProvider;
-        this.authContextHolder = authContextHolder;
+        this.machineTokenProvider = machineTokenProvider;
+        this.authService = authService;
+        this.aadOboTokenProvider = aadOboTokenProvider;
         this.client = RestClient
                 .baseClientBuilder()
                 .callTimeout(Duration.ofSeconds(3))
                 .build();
     }
 
+    private String getToken() {
+        if (authService.erInternBruker()) {
+            return aadOboTokenProvider.apply(digdirKrrApi);
+        } else {
+            return machineTokenProvider.apply(digdirKrrApi);
+        }
+    }
+
     @Cacheable(CacheConfig.DIGDIR_KONTAKTINFO_CACHE_NAME)
     @SneakyThrows
     @Override
     public Optional<DigdirKontaktinfo> hentKontaktInfo(Fnr fnr) {
-        String authorization = authContextHolder.getIdTokenString().isPresent() ? authContextHolder.getIdTokenString().get() : "";
-        String issuer = authContextHolder.getIdTokenClaims().map(JWTClaimsSet::getIssuer).orElse("");
-        List<String> aud = authContextHolder.getIdTokenClaims().map(JWTClaimsSet::getAudience).orElse(Collections.emptyList());
+
         Request request = new Request.Builder()
                 .url(joinPaths(digdirUrl, "/api/v1/person?inkluderSikkerDigitalPost=false"))
                 .header(ACCEPT, APPLICATION_JSON_VALUE)
-                .header(AUTHORIZATION, "Bearer " + authorization)
+                .header(AUTHORIZATION, "Bearer " + getToken())
                 .header(NAV_CALL_ID, getCallId())
                 .header("Nav-personident", fnr.get())
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
 
-            log.info("svar fra digdir: message = {}, challanges = {}, AuthContextHolder = {}, callId = {}, issuer = {}, aud = {}", response.message(), response.challenges(), authContextHolder.getIdTokenString().get(), getCallId(), issuer, aud);
+            log.info("svar fra digdir: message = {}, challenges = {}", response.message(), response.challenges());
             RestUtils.throwIfNotSuccessful(response);
             String json = RestUtils.getBodyStr(response)
                     .orElseThrow(() -> new IllegalStateException("Response body from Digdir_KRR is missing"));

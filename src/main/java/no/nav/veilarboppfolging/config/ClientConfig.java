@@ -1,6 +1,5 @@
 package no.nav.veilarboppfolging.config;
 
-import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.client.aktoroppslag.CachedAktorOppslagClient;
 import no.nav.common.client.aktoroppslag.PdlAktorOppslagClient;
@@ -8,7 +7,6 @@ import no.nav.common.client.norg2.CachedNorg2Client;
 import no.nav.common.client.norg2.Norg2Client;
 import no.nav.common.client.norg2.NorgHttp2Client;
 import no.nav.common.cxf.StsConfig;
-import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.token_client.builder.AzureAdTokenClientBuilder;
 import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
 import no.nav.common.token_client.client.MachineToMachineTokenClient;
@@ -54,8 +52,8 @@ public class ClientConfig {
     }
 
     @Bean
-    public DigdirClient digdirClient(EnvironmentProperties properties, SystemUserTokenProvider systemUserTokenProvider, AuthContextHolder authContextHolder) {
-        return new DigdirClientImpl(properties.getDigdirKrrProxyUrl(), systemUserTokenProvider, authContextHolder);
+    public DigdirClient digdirClient(EnvironmentProperties properties, AuthService authService) {
+        return new DigdirClientImpl(properties.getDigdirKrrProxyUrl(), authService::getMachineTokenForTjeneste, authService::getAadOboTokenForTjeneste, authService);
     }
 
     @Bean
