@@ -11,6 +11,7 @@ import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.HentYtelseskontra
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.HentYtelseskontraktListeResponse;
 import no.nav.veilarboppfolging.client.digdir_krr.DigdirKontaktinfo;
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolgingTilstand;
+import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktClient;
 import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktMapper;
 import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktResponse;
@@ -162,23 +163,36 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     }
 
     @Test
-    public void medEnhetTilgang() {
+    public void hentVeilederTilgang__medEnhetTilgang() {
         when(authService.harTilgangTilEnhet(any())).thenReturn(true);
+        when(arenaOppfolgingService.hentOppfolgingFraVeilarbarena(any()))
+                .thenReturn(Optional.of(new VeilarbArenaOppfolging().setNav_kontor(ENHET)));
 
         arenaOppfolgingTilstand.setOppfolgingsenhet(ENHET);
 
         VeilederTilgang veilederTilgang = oppfolgingService.hentVeilederTilgang(FNR);
-        assertTrue(veilederTilgang.isTilgangTilBrukersKontor());
     }
 
     @Test
-    public void utenEnhetTilgang() {
-        when(authService.harTilgangTilEnhet(any())).thenReturn(false);
+    public void hentVeilederTilgang__utenEnhetTilgang() {
+        when(arenaOppfolgingService.hentOppfolgingFraVeilarbarena(any()))
+                .thenReturn(Optional.of(new VeilarbArenaOppfolging().setNav_kontor(ENHET)));
 
         arenaOppfolgingTilstand.setOppfolgingsenhet(ENHET);
 
-        VeilederTilgang veilederTilgang = oppfolgingService.hentVeilederTilgang(FNR);
-        assertThat(veilederTilgang.isTilgangTilBrukersKontor(), equalTo(false));
+        VeilederTilgang veilederIkkeTilgang = oppfolgingService.hentVeilederTilgang(FNR);
+        assertFalse(veilederIkkeTilgang.isTilgangTilBrukersKontor());
+    }
+
+    @Test
+    public void hentVeilederTilgang__skal_ikke_ha_tilgang_nar_bruker_ikke_har_enhet() {
+        when(arenaOppfolgingService.hentOppfolgingFraVeilarbarena(any()))
+                .thenReturn(Optional.of(new VeilarbArenaOppfolging().setNav_kontor(null)));
+
+        arenaOppfolgingTilstand.setOppfolgingsenhet(ENHET);
+
+        VeilederTilgang veilederIkkeTilgang = oppfolgingService.hentVeilederTilgang(FNR);
+        assertFalse(veilederIkkeTilgang.isTilgangTilBrukersKontor());
     }
 
     @Test

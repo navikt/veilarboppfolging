@@ -99,7 +99,13 @@ public class AuthService {
     public boolean harEksternBrukerTilgang(Fnr fnr) {
         // Når man ikke bruker Pep så må man gjøre auditlogging selv
         var subjectUser = getInnloggetBrukerIdent();
-        var isAllowed = subjectUser.equals(fnr.get());
+        boolean sammeFnr = subjectUser.equals(fnr.get());
+        boolean erNivaa4 = hentSikkerhetsnivaa()
+                .filter("Level4"::equals)
+                .isPresent();
+
+        boolean isAllowed = erNivaa4 && sammeFnr;
+
         auditLogger.log(CefMessage.builder()
                 .timeEnded(System.currentTimeMillis())
                 .applicationName("veilarboppfolging")
