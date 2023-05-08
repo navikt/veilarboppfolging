@@ -95,7 +95,7 @@ public class DigdirClientImpl implements DigdirClient {
 
         try (Response response = client.newCall(request).execute()) {
 
-            log.info("svar fra digdir: challenges = {}", response.challenges());
+            log.info("svar fra digdir: challenges = {}, WWW-Authenticate = {}", response.challenges(), response.headers().get("WWW-Authenticate"));
             RestUtils.throwIfNotSuccessful(response);
             String json = RestUtils.getBodyStr(response)
                     .orElseThrow(() -> new IllegalStateException("Response body from Digdir_KRR is missing"));
