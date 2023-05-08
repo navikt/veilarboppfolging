@@ -47,7 +47,7 @@ spec:
     - name: DIGDIR_KRR_PROXY_URL
       value: https://digdir-krr-proxy.intern.dev.nav.no
     - name: DIGDIR_KRR_PROXY_SCOPE
-      value: api://dev-gcp.team-rocket.digdir-krr-proxy/.default
+      value: "api://dev-gcp.team-rocket.digdir-krr-proxy/.default"
   secureLogs:
     enabled: true
   kafka:
@@ -143,7 +143,6 @@ spec:
       rules:
         - application: digdir-krr-proxy
           namespace: team-rocket
-          cluster: dev-gcp
   vault:
     enabled: true
     paths:
