@@ -5,11 +5,6 @@ metadata:
   namespace: pto
   labels:
     team: pto
-  annotations:
-    nginx.ingress.kubernetes.io/proxy-read-timeout: '300'
-    nginx.ingress.kubernetes.io/proxy-send-timeout: '300'
-    nginx.ingress.kubernetes.io/proxy-connect-timeout: '300'
-    nginx.ingress.kubernetes.io/proxy-body-size: '128m'
 spec:
   image: ghcr.io/navikt/veilarboppfolging/veilarboppfolging:{{version}}
   ingresses:
