@@ -9,75 +9,50 @@ import no.nav.common.health.HealthCheckUtils;
 import no.nav.common.json.JsonUtils;
 import no.nav.common.rest.client.RestClient;
 import no.nav.common.rest.client.RestUtils;
-import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
 import no.nav.common.types.identer.Fnr;
-
-import no.nav.common.utils.EnvironmentUtils;
 import no.nav.veilarboppfolging.config.CacheConfig;
-
-
-import no.nav.veilarboppfolging.service.AuthService;
-import no.nav.veilarboppfolging.utils.DownstreamApi;
-import okhttp3.FormBody;
-import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
-import okhttp3.RequestBody;
 import okhttp3.Response;
-import org.slf4j.MDC;
 import org.springframework.cache.annotation.Cacheable;
 
-import java.time.Duration;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
-import java.util.function.Function;
 import java.util.function.Supplier;
-
 
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
-import static no.nav.common.rest.client.RestUtils.MEDIA_TYPE_JSON;
 import static no.nav.common.utils.UrlUtils.joinPaths;
-import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.springframework.http.HttpHeaders.ACCEPT;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
-import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @Slf4j
 public class DigdirClientImpl implements DigdirClient {
-    public static final String CALL_ID = "callId";
-    public static final String NAV_CALL_ID = "Nav-Call-Id";
-	private static final DownstreamApi digDirApi = new DownstreamApi("dev-gcp", "team-rocket", "digdir-krr-proxy");
-    private String getCallId() {
-        return isBlank(MDC.get(CALL_ID)) ? UUID.randomUUID().toString() : MDC.get(CALL_ID);
-    }
 
     private final String digdirUrl;
 
-	private final Supplier<String> systemUserTokenProvider;
+    private final Supplier<String> systemUserTokenProvider;
 
     private final OkHttpClient client;
 
     public DigdirClientImpl(String digdirUrl, Supplier<String> systemUserTokenProvider) {
-		this.digdirUrl = digdirUrl;
-		this.systemUserTokenProvider = systemUserTokenProvider;
-		this.client = RestClient.baseClient();
-	}
+        this.digdirUrl = digdirUrl;
+        this.systemUserTokenProvider = systemUserTokenProvider;
+        this.client = RestClient.baseClient();
+    }
 
     @Cacheable(CacheConfig.DIGDIR_KONTAKTINFO_CACHE_NAME)
     @SneakyThrows
     @Override
     public Optional<DigdirKontaktinfo> hentKontaktInfo(Fnr fnr) {
-		PersonIdenter personIdenter = new PersonIdenter().setPersonidenter(List.of(fnr.get()));
-		Request request = new Request.Builder()
-				.url(joinPaths(digdirUrl, "/rest/v1/person?inkluderSikkerDigitalPost=false"))
-				.header(ACCEPT, APPLICATION_JSON_VALUE)
-				.header(AUTHORIZATION, "Bearer " + systemUserTokenProvider.get())
-				.post(RestUtils.toJsonRequestBody(personIdenter))
-				.build();
+        PersonIdenter personIdenter = new PersonIdenter().setPersonidenter(List.of(fnr.get()));
+        Request request = new Request.Builder()
+                .url(joinPaths(digdirUrl, "/rest/v1/person?inkluderSikkerDigitalPost=false"))
+                .header(ACCEPT, APPLICATION_JSON_VALUE)
+                .header(AUTHORIZATION, "Bearer " + systemUserTokenProvider.get())
+                .post(RestUtils.toJsonRequestBody(personIdenter))
+                .build();
 
         try (Response response = client.newCall(request).execute()) {
 
