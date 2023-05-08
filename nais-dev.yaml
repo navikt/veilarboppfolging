@@ -139,6 +139,8 @@ spec:
         - application: aia-backend
           namespace: paw
           cluster: dev-gcp
+    external:
+      - host: digdir-krr-proxy.intern.dev.nav.no
   vault:
     enabled: true
     paths:
