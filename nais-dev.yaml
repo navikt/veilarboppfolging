@@ -149,7 +149,7 @@ spec:
         - application: digdir-krr-proxy
           namespace: team-rocket
       external:
-        - host: digdir-krr-proxy.intern.nav.no
+        - host: digdir-krr-proxy.intern.dev.nav.no
   vault:
     enabled: true
     paths:
