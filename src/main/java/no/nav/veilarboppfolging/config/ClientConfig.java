@@ -53,8 +53,9 @@ public class ClientConfig {
     }
 
     @Bean
-    public DigdirClient digdirClient(EnvironmentProperties properties, AuthService authService) {
-        return new DigdirClientImpl(properties.getDigdirKrrProxyUrl(), authService::getAadOboTokenForTjeneste);
+    public DigdirClient digdirClient(EnvironmentProperties properties, MachineToMachineTokenClient tokenClient) {
+		return new DigdirClientImpl(properties.getDigdirKrrProxyUrl(),
+				() -> tokenClient.createMachineToMachineToken(properties.getDigdirKrrProxyScope()));
     }
 
     @Bean

@@ -57,26 +57,14 @@ public class DigdirClientImpl implements DigdirClient {
 
     private final String digdirUrl;
 
-	private final Function<DownstreamApi, String> aadOboTokenProvider;
+	private final Supplier<String> systemUserTokenProvider;
 
     private final OkHttpClient client;
 
-    public DigdirClientImpl(String digdirUrl, Function<DownstreamApi, String> aadOboTokenProvider) {
-        this.digdirUrl = digdirUrl;
-        this.aadOboTokenProvider = aadOboTokenProvider;
-        this.client = RestClient
-                .baseClientBuilder()
-                .callTimeout(Duration.ofSeconds(3))
-                .build();
-    }
-
-	private String getToken() {
-		try {
-			return aadOboTokenProvider.apply(digDirApi);
-		} catch (Exception e) {
-			log.info("gikk ikke å hente token. message = {}, error ={}", e.getMessage(), e.getStackTrace());
-			return "";
-		}
+    public DigdirClientImpl(String digdirUrl, Supplier<String> systemUserTokenProvider) {
+		this.digdirUrl = digdirUrl;
+		this.systemUserTokenProvider = systemUserTokenProvider;
+		this.client = RestClient.baseClient();
 	}
 
     @Cacheable(CacheConfig.DIGDIR_KONTAKTINFO_CACHE_NAME)
@@ -84,14 +72,12 @@ public class DigdirClientImpl implements DigdirClient {
     @Override
     public Optional<DigdirKontaktinfo> hentKontaktInfo(Fnr fnr) {
 		PersonIdenter personIdenter = new PersonIdenter().setPersonidenter(List.of(fnr.get()));
-
-        Request request = new Request.Builder()
-                .url(joinPaths(digdirUrl, "/api/v1/person?inkluderSikkerDigitalPost=false"))
-                .header(ACCEPT, MEDIA_TYPE_JSON.toString())
-                .header(AUTHORIZATION, "Bearer " + getToken())
-                .header(NAV_CALL_ID, getCallId())
+		Request request = new Request.Builder()
+				.url(joinPaths(digdirUrl, "/rest/v1/person?inkluderSikkerDigitalPost=false"))
+				.header(ACCEPT, APPLICATION_JSON_VALUE)
+				.header(AUTHORIZATION, "Bearer " + systemUserTokenProvider.get())
 				.post(RestUtils.toJsonRequestBody(personIdenter))
-                .build();
+				.build();
 
         try (Response response = client.newCall(request).execute()) {
 
