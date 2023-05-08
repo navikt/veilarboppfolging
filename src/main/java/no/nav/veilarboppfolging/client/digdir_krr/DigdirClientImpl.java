@@ -16,16 +16,23 @@ import no.nav.common.utils.EnvironmentUtils;
 import no.nav.veilarboppfolging.config.CacheConfig;
 
 
+import no.nav.veilarboppfolging.service.AuthService;
 import no.nav.veilarboppfolging.utils.DownstreamApi;
+import okhttp3.FormBody;
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 import org.slf4j.MDC;
 import org.springframework.cache.annotation.Cacheable;
 
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 
@@ -36,42 +43,54 @@ import static no.nav.common.utils.UrlUtils.joinPaths;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.springframework.http.HttpHeaders.ACCEPT;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
+import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @Slf4j
 public class DigdirClientImpl implements DigdirClient {
     public static final String CALL_ID = "callId";
     public static final String NAV_CALL_ID = "Nav-Call-Id";
+	private static final DownstreamApi digDirApi = new DownstreamApi("dev-gcp", "team-rocket", "digdir-krr-proxy");
     private String getCallId() {
         return isBlank(MDC.get(CALL_ID)) ? UUID.randomUUID().toString() : MDC.get(CALL_ID);
     }
 
     private final String digdirUrl;
 
-	private final Supplier<String> userTokenSupplier;
+	private final Function<DownstreamApi, String> aadOboTokenProvider;
 
     private final OkHttpClient client;
 
-    public DigdirClientImpl(String digdirUrl, Supplier<String> azureAdTokenSupplier) {
+    public DigdirClientImpl(String digdirUrl, Function<DownstreamApi, String> aadOboTokenProvider) {
         this.digdirUrl = digdirUrl;
-        this.userTokenSupplier = azureAdTokenSupplier;
+        this.aadOboTokenProvider = aadOboTokenProvider;
         this.client = RestClient
                 .baseClientBuilder()
                 .callTimeout(Duration.ofSeconds(3))
                 .build();
     }
 
+	private String getToken() {
+		try {
+			return aadOboTokenProvider.apply(digDirApi);
+		} catch (Exception e) {
+			log.info("gikk ikke å hente token. message = {}, error ={}", e.getMessage(), e.getStackTrace());
+			return "";
+		}
+	}
+
     @Cacheable(CacheConfig.DIGDIR_KONTAKTINFO_CACHE_NAME)
     @SneakyThrows
     @Override
     public Optional<DigdirKontaktinfo> hentKontaktInfo(Fnr fnr) {
+		PersonIdenter personIdenter = new PersonIdenter().setPersonidenter(List.of(fnr.get()));
 
         Request request = new Request.Builder()
                 .url(joinPaths(digdirUrl, "/api/v1/person?inkluderSikkerDigitalPost=false"))
                 .header(ACCEPT, MEDIA_TYPE_JSON.toString())
-                .header(AUTHORIZATION, "Bearer " + userTokenSupplier.get())
+                .header(AUTHORIZATION, "Bearer " + getToken())
                 .header(NAV_CALL_ID, getCallId())
-                .header("Nav-personident", fnr.get())
+				.post(RestUtils.toJsonRequestBody(personIdenter))
                 .build();
 
         try (Response response = client.newCall(request).execute()) {

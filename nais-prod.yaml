@@ -44,6 +44,8 @@ spec:
       value: api://prod-fss.poao.poao-tilgang/.default
     - name: DIGDIR_KRR_PROXY_URL
       value: https://digdir-krr-proxy.intern.nav.no
+    - name: DIGDIR_KRR_PROXY_SCOPE
+      value: api://prod-gcp.team-rocket.digdir-krr-proxy/.default
   secureLogs:
     enabled: true
   kafka:
