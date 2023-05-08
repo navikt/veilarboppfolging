@@ -12,9 +12,11 @@ import no.nav.common.rest.client.RestUtils;
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
 import no.nav.common.types.identer.Fnr;
 
+import no.nav.common.utils.EnvironmentUtils;
 import no.nav.veilarboppfolging.config.CacheConfig;
 
 
+import no.nav.veilarboppfolging.utils.DownstreamApi;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -24,10 +26,12 @@ import org.springframework.cache.annotation.Cacheable;
 import java.time.Duration;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
+import static no.nav.common.rest.client.RestUtils.MEDIA_TYPE_JSON;
 import static no.nav.common.utils.UrlUtils.joinPaths;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.springframework.http.HttpHeaders.ACCEPT;
@@ -36,8 +40,6 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @Slf4j
 public class DigdirClientImpl implements DigdirClient {
-
-
     public static final String CALL_ID = "callId";
     public static final String NAV_CALL_ID = "Nav-Call-Id";
     private String getCallId() {
@@ -46,25 +48,17 @@ public class DigdirClientImpl implements DigdirClient {
 
     private final String digdirUrl;
 
-    private final String scope;
-
-    private final AzureAdMachineToMachineTokenClient tokenClient;
+	private final Supplier<String> userTokenSupplier;
 
     private final OkHttpClient client;
 
-    public DigdirClientImpl(String digdirUrl, String scope, AzureAdMachineToMachineTokenClient tokenClient) {
+    public DigdirClientImpl(String digdirUrl, Supplier<String> azureAdTokenSupplier) {
         this.digdirUrl = digdirUrl;
-        this.scope = scope;
-        this.tokenClient = tokenClient;
+        this.userTokenSupplier = azureAdTokenSupplier;
         this.client = RestClient
                 .baseClientBuilder()
                 .callTimeout(Duration.ofSeconds(3))
                 .build();
-    }
-
-    private String getToken() {
-
-        return tokenClient.createMachineToMachineToken(scope);
     }
 
     @Cacheable(CacheConfig.DIGDIR_KONTAKTINFO_CACHE_NAME)
@@ -74,8 +68,8 @@ public class DigdirClientImpl implements DigdirClient {
 
         Request request = new Request.Builder()
                 .url(joinPaths(digdirUrl, "/api/v1/person?inkluderSikkerDigitalPost=false"))
-                .header(ACCEPT, APPLICATION_JSON_VALUE)
-                .header(AUTHORIZATION, "Bearer " + getToken())
+                .header(ACCEPT, MEDIA_TYPE_JSON.toString())
+                .header(AUTHORIZATION, "Bearer " + userTokenSupplier.get())
                 .header(NAV_CALL_ID, getCallId())
                 .header("Nav-personident", fnr.get())
                 .build();

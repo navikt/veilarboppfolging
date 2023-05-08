@@ -53,8 +53,8 @@ public class ClientConfig {
     }
 
     @Bean
-    public DigdirClient digdirClient(EnvironmentProperties properties, AzureAdMachineToMachineTokenClient tokenClient) {
-        return new DigdirClientImpl(properties.getDigdirKrrProxyUrl(), properties.getDigdirKrrProxyScope(), tokenClient);
+    public DigdirClient digdirClient(EnvironmentProperties properties, MachineToMachineTokenClient tokenClient) {
+        return new DigdirClientImpl(properties.getDigdirKrrProxyUrl(),  () -> tokenClient.createMachineToMachineToken(properties.getDigdirKrrProxyScope()));
     }
 
     @Bean
