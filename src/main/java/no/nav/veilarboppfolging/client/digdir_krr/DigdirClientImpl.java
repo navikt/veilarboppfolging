@@ -19,6 +19,8 @@ import org.springframework.cache.annotation.Cacheable;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
+import java.util.UUID;
 import java.util.function.Supplier;
 
 import static java.util.Optional.empty;
@@ -53,6 +55,7 @@ public class DigdirClientImpl implements DigdirClient {
 				.header(ACCEPT, APPLICATION_JSON_VALUE)
 				.header(AUTHORIZATION, "Bearer " + serviceTokenSupplier.get())
 				.header("Nav-Personident", fnr.get())
+				.header("Nav-Call-Id", UUID.randomUUID().toString())
 				.build();
 
         try (Response response = client.newCall(request).execute()) {
