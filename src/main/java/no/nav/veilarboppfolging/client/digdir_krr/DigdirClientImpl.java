@@ -13,6 +13,7 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.config.CacheConfig;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 import org.springframework.cache.annotation.Cacheable;
 
@@ -22,6 +23,7 @@ import java.util.function.Supplier;
 
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
+import static no.nav.common.rest.client.RestUtils.MEDIA_TYPE_JSON;
 import static no.nav.common.utils.UrlUtils.joinPaths;
 import static org.springframework.http.HttpHeaders.ACCEPT;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
@@ -32,13 +34,13 @@ public class DigdirClientImpl implements DigdirClient {
 
     private final String digdirUrl;
 
-    private final Supplier<String> systemUserTokenProvider;
+    private final Supplier<String> serviceTokenSupplier;
 
     private final OkHttpClient client;
 
-    public DigdirClientImpl(String digdirUrl, Supplier<String> systemUserTokenProvider) {
+    public DigdirClientImpl(String digdirUrl, Supplier<String> serviceTokenSupplier) {
         this.digdirUrl = digdirUrl;
-        this.systemUserTokenProvider = systemUserTokenProvider;
+        this.serviceTokenSupplier = serviceTokenSupplier;
         this.client = RestClient.baseClient();
     }
 
@@ -48,12 +50,14 @@ public class DigdirClientImpl implements DigdirClient {
     public Optional<DigdirKontaktinfo> hentKontaktInfo(Fnr fnr) {
         PersonIdenter personIdenter = new PersonIdenter().setPersonidenter(List.of(fnr.get()));
         Request request = new Request.Builder()
+				.post(RequestBody.create(
+						JsonUtils.toJson(personIdenter),
+						MEDIA_TYPE_JSON
+				))
                 .url(joinPaths(digdirUrl, "/rest/v1/person?inkluderSikkerDigitalPost=false"))
                 .header(ACCEPT, APPLICATION_JSON_VALUE)
-                .header(AUTHORIZATION, "Bearer " + systemUserTokenProvider.get())
-				//.header(NAV_CALL_ID, getCallId())
+                .header(AUTHORIZATION, "Bearer " + serviceTokenSupplier.get())
 				.header("Nav-personident", fnr.get())
-             //   .post(RestUtils.toJsonRequestBody(personIdenter))
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
