@@ -48,17 +48,12 @@ public class DigdirClientImpl implements DigdirClient {
     @SneakyThrows
     @Override
     public Optional<DigdirKontaktinfo> hentKontaktInfo(Fnr fnr) {
-        PersonIdenter personIdenter = new PersonIdenter().setPersonidenter(List.of(fnr.get()));
-        Request request = new Request.Builder()
-				.post(RequestBody.create(
-						JsonUtils.toJson(personIdenter),
-						MEDIA_TYPE_JSON
-				))
-                .url(joinPaths(digdirUrl, "/rest/v1/person?inkluderSikkerDigitalPost=false"))
-                .header(ACCEPT, APPLICATION_JSON_VALUE)
-                .header(AUTHORIZATION, "Bearer " + serviceTokenSupplier.get())
-				.header("Nav-personident", fnr.get())
-                .build();
+		Request request = new Request.Builder()
+				.url(joinPaths(digdirUrl, "/rest/v1/person?inkluderSikkerDigitalPost=false"))
+				.header(ACCEPT, APPLICATION_JSON_VALUE)
+				.header(AUTHORIZATION, "Bearer " + serviceTokenSupplier.get())
+				.header("Nav-Personident", fnr.get())
+				.build();
 
         try (Response response = client.newCall(request).execute()) {
 
