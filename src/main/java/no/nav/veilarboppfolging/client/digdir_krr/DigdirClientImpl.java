@@ -67,6 +67,8 @@ public class DigdirClientImpl implements DigdirClient {
 
             ObjectMapper mapper = JsonUtils.getMapper();
 
+            log.info("Svar fra digdir: {} ", json);
+
             JsonNode node = mapper.readTree(json);
             JsonNode kontaktinfoNode = ofNullable(node.get("kontaktinfo"))
                     .map(n -> n.get(fnr.get()))
