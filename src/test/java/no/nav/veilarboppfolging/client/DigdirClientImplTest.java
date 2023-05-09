@@ -36,7 +36,7 @@ public class DigdirClientImplTest {
         String apiUrl = "http://localhost:" + wireMockRule.port();
         DigdirClientImpl digdirClient = new DigdirClientImpl(apiUrl, () -> "TOKEN");
 
-        givenThat(post(anyUrl())
+        givenThat(get(anyUrl())
 				.withHeader("Authorization", equalTo("Bearer TOKEN"))
                 .willReturn(aResponse()
                         .withStatus(200)
@@ -57,7 +57,7 @@ public class DigdirClientImplTest {
         String apiUrl = "http://localhost:" + wireMockRule.port();
         DigdirClientImpl digdirClient = new DigdirClientImpl(apiUrl, () -> "TOKEN");
 
-        givenThat(post(anyUrl())
+        givenThat(get(anyUrl())
 				.withHeader("Authorization", equalTo("Bearer TOKEN"))
                 .willReturn(aResponse()
                         .withStatus(200)

@@ -139,12 +139,6 @@ spec:
         - application: aia-backend
           namespace: paw
           cluster: dev-gcp
-    outbound:
-      rules:
-        - application: digdir-krr-proxy
-          namespace: team-rocket
-      external:
-        - host: digdir-krr-proxy.intern.dev.nav.no
   vault:
     enabled: true
     paths:
