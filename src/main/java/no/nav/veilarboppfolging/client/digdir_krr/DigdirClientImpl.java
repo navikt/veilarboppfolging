@@ -55,30 +55,11 @@ public class DigdirClientImpl implements DigdirClient {
 				.header(ACCEPT, APPLICATION_JSON_VALUE)
 				.header(AUTHORIZATION, "Bearer " + serviceTokenSupplier.get())
 				.header("Nav-Personident", fnr.get())
-				.header("Nav-Call-Id", UUID.randomUUID().toString())
 				.build();
 
         try (Response response = client.newCall(request).execute()) {
-
-            log.info("svar fra digdir: challenges = {}, WWW-Authenticate = {}", response.challenges(), response.headers().get("WWW-Authenticate"));
             RestUtils.throwIfNotSuccessful(response);
-            String json = RestUtils.getBodyStr(response)
-                    .orElseThrow(() -> new IllegalStateException("Response body from Digdir_KRR is missing"));
-
-            ObjectMapper mapper = JsonUtils.getMapper();
-
-            log.info("Svar fra digdir: {} ", json);
-
-            JsonNode node = mapper.readTree(json);
-            JsonNode kontaktinfoNode = ofNullable(node.get("kontaktinfo"))
-                    .map(n -> n.get(fnr.get()))
-                    .orElse(null);
-
-            if (kontaktinfoNode == null) {
-                return empty();
-            }
-
-            return Optional.of(mapper.treeToValue(kontaktinfoNode, DigdirKontaktinfo.class));
+			return RestUtils.parseJsonResponse(response, DigdirKontaktinfo.class);
         } catch (Exception e) {
             log.error("Feil under henting av data fra Digdir_KRR", e);
             return empty();
