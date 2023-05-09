@@ -1,28 +1,20 @@
 package no.nav.veilarboppfolging.client;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import no.nav.common.rest.client.RestUtils;
 import no.nav.veilarboppfolging.client.digdir_krr.DigdirClientImpl;
 import no.nav.veilarboppfolging.client.digdir_krr.DigdirKontaktinfo;
 
-import no.nav.veilarboppfolging.client.digdir_krr.PersonIdenter;
 import no.nav.veilarboppfolging.test.TestUtils;
 
-import no.nav.veilarboppfolging.utils.DownstreamApi;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.springframework.http.MediaType;
-
-import java.util.List;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static no.nav.veilarboppfolging.test.TestData.TEST_FNR;
 import static org.junit.Assert.*;
 import static org.springframework.http.HttpHeaders.ACCEPT;
-import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.HttpHeaders.readOnlyHttpHeaders;
-import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 public class DigdirClientImplTest {
 
