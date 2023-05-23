@@ -4,11 +4,11 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.veilarboppfolging.client.dkif.DkifKontaktinfo;
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolgingTilstand;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 import no.nav.veilarboppfolging.controller.response.UnderOppfolgingDTO;
 import no.nav.veilarboppfolging.controller.response.VeilederTilgang;
+import no.nav.veilarboppfolging.client.digdir_krr.DigdirKontaktinfo;
 import no.nav.veilarboppfolging.domain.AvslutningStatusData;
 import no.nav.veilarboppfolging.domain.Oppfolging;
 import no.nav.veilarboppfolging.domain.OppfolgingStatusData;
@@ -243,7 +243,7 @@ public class OppfolgingService {
         Optional<OppfolgingEntity> maybeOppfolging = oppfolgingsStatusRepository.hentOppfolging(aktorId);
 
         if (maybeOppfolging.isEmpty()) {
-            return Optional.empty();
+            return empty();
         }
 
         OppfolgingEntity oppfolgingEntity = maybeOppfolging.get();
@@ -253,7 +253,7 @@ public class OppfolgingService {
                 .setVeilederId(oppfolgingEntity.getVeilederId())
                 .setUnderOppfolging(oppfolgingEntity.isUnderOppfolging());
 
-        Optional<KvpPeriodeEntity> maybeKvpPeriode = empty();
+        Optional<KvpPeriodeEntity> maybeKvpPeriode= empty();
 
         if (oppfolgingEntity.getGjeldendeKvpId() != 0) {
             maybeKvpPeriode = kvpRepository.hentKvpPeriode(oppfolgingEntity.getGjeldendeKvpId());
@@ -294,7 +294,7 @@ public class OppfolgingService {
     public void startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker oppfolgingsbruker) {
         AktorId aktorId = AktorId.of(oppfolgingsbruker.getAktoerId());
         Fnr fnr = authService.getFnrOrThrow(aktorId);
-        DkifKontaktinfo kontaktinfo = manuellStatusService.hentDkifKontaktinfo(fnr);
+        DigdirKontaktinfo kontaktinfo = manuellStatusService.hentDigdirKontaktinfo(fnr);
 
         transactor.executeWithoutResult((ignored) -> {
             Optional<OppfolgingEntity> maybeOppfolging = oppfolgingsStatusRepository.hentOppfolging(aktorId);
@@ -378,7 +378,7 @@ public class OppfolgingService {
 
         boolean erManuell = manuellStatusService.erManuell(aktorId);
 
-        DkifKontaktinfo dkifKontaktinfo = manuellStatusService.hentDkifKontaktinfo(fnr);
+        DigdirKontaktinfo digdirKontaktinfo = manuellStatusService.hentDigdirKontaktinfo(fnr);
 
         // TODO: Burde kanskje heller feile istedenfor å bruke Optional
         Optional<ArenaOppfolgingTilstand> maybeArenaOppfolging = arenaOppfolgingService.hentOppfolgingTilstand(fnr);
@@ -417,8 +417,8 @@ public class OppfolgingService {
                 .setVeilederId(oppfolging.getVeilederId())
                 .setUnderOppfolging(oppfolging.isUnderOppfolging())
                 .setUnderKvp(oppfolging.getGjeldendeKvp() != null)
-                .setReservasjonKRR(dkifKontaktinfo.isReservert())
-                .setManuell(erManuell || dkifKontaktinfo.isReservert())
+                .setReservasjonKRR(digdirKontaktinfo.isReservert())
+                .setManuell(erManuell || digdirKontaktinfo.isReservert())
                 .setKanStarteOppfolging(kanSettesUnderOppfolging)
                 .setOppfolgingsperioder(oppfolging.getOppfolgingsperioder())
                 .setHarSkriveTilgang(harSkrivetilgangTilBruker)
@@ -430,7 +430,7 @@ public class OppfolgingService {
                 .setServicegruppe(maybeArenaOppfolging.map(ArenaOppfolgingTilstand::getServicegruppe).orElse(null))
                 .setFormidlingsgruppe(maybeArenaOppfolging.map(ArenaOppfolgingTilstand::getFormidlingsgruppe).orElse(null))
                 .setRettighetsgruppe(maybeArenaOppfolging.map(ArenaOppfolgingTilstand::getRettighetsgruppe).orElse(null))
-                .setKanVarsles(!erManuell && dkifKontaktinfo.isKanVarsles());
+                .setKanVarsles(!erManuell && digdirKontaktinfo.isKanVarsles());
     }
 
     private AvslutningStatusData getAvslutningStatus(Fnr fnr) {

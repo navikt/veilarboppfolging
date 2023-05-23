@@ -17,7 +17,7 @@ public class CacheConfig {
 
     public static final String HENT_ARBEIDSFORHOLD_CACHE_NAME = "hent_arbeidsforhold_cache";
 
-    public static final String DKIF_KONTAKTINFO_CACHE_NAME = "dkif_kontaktinfo_cache";
+    public static final String DIGDIR_KONTAKTINFO_CACHE_NAME = "digdir_kontaktinfo_cache";
 
     @Bean
     public Cache hentEnhetCache() {
@@ -36,8 +36,8 @@ public class CacheConfig {
     }
 
     @Bean
-    public Cache dkifKontaktinfoCache() {
-        return new CaffeineCache(DKIF_KONTAKTINFO_CACHE_NAME, Caffeine.newBuilder()
+    public Cache digdirKontaktinfoCache() {
+        return new CaffeineCache(DIGDIR_KONTAKTINFO_CACHE_NAME, Caffeine.newBuilder()
                 .expireAfterWrite(1, TimeUnit.MINUTES)
                 .maximumSize(10_000)
                 .build());

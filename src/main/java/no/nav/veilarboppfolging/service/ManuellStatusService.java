@@ -5,9 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.veilarboppfolging.client.dkif.DkifClient;
-import no.nav.veilarboppfolging.client.dkif.DkifKontaktinfo;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
+import no.nav.veilarboppfolging.client.digdir_krr.DigdirClient;
+import no.nav.veilarboppfolging.client.digdir_krr.DigdirKontaktinfo;
 import no.nav.veilarboppfolging.repository.ManuellStatusRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
 import no.nav.veilarboppfolging.repository.entity.ManuellStatusEntity;
@@ -38,7 +38,7 @@ public class ManuellStatusService {
 
     private final OppfolgingsStatusRepository oppfolgingsStatusRepository;
 
-    private final DkifClient dkifClient;
+    private final DigdirClient digdirClient;
 
     private final KafkaProducerService kafkaProducerService;
 
@@ -71,13 +71,14 @@ public class ManuellStatusService {
     }
 
     /**
-     * Gjør en sjekk i DKIF om bruker er reservert.
+     * Gjør en sjekk i DIGDIR om bruker er reservert.
      * Hvis bruker er reservert så sett manuell status på bruker hvis det ikke allerede er gjort.
      * Bruker må være under oppfølging for å oppdatere manuell status.
      *
      * @param fnr fnr/dnr til bruker som det skal sjekkes på
      */
-    public void synkroniserManuellStatusMedDkif(Fnr fnr) {
+
+    public void synkroniserManuellStatusMedDigdir(Fnr fnr) {
         AktorId aktorId = authService.getAktorIdOrThrow(fnr);
 
         boolean erUnderOppfolging = oppfolgingService.erUnderOppfolging(aktorId);
@@ -86,9 +87,9 @@ public class ManuellStatusService {
             return;
         }
 
-        DkifKontaktinfo dkifKontaktinfo = hentDkifKontaktinfo(fnr);
+        DigdirKontaktinfo digdirKontaktinfo = hentDigdirKontaktinfo(fnr);
 
-        if (dkifKontaktinfo.isReservert()) {
+        if (digdirKontaktinfo.isReservert()) {
             settBrukerTilManuellGrunnetReservasjonIKRR(aktorId);
         }
     }
@@ -126,7 +127,7 @@ public class ManuellStatusService {
             authService.sjekkTilgangTilEnhet(arenaOppfolging.getNav_kontor());
         }
 
-        DkifKontaktinfo kontaktinfo = hentDkifKontaktinfo(fnr);
+        DigdirKontaktinfo kontaktinfo = hentDigdirKontaktinfo(fnr);
 
         boolean erUnderOppfolging = oppfolgingService.erUnderOppfolging(aktorId);
         boolean gjeldendeErManuell = erManuell(aktorId);
@@ -145,14 +146,13 @@ public class ManuellStatusService {
         }
     }
 
-    public DkifKontaktinfo hentDkifKontaktinfo(Fnr fnr) {
-        return dkifClient.hentKontaktInfo(fnr)
-                .orElseGet(() -> new DkifKontaktinfo()
+    public DigdirKontaktinfo hentDigdirKontaktinfo(Fnr fnr) {
+        return digdirClient.hentKontaktInfo(fnr)
+                .orElseGet(() -> new DigdirKontaktinfo()
                         .setPersonident(fnr.get())
                         .setKanVarsles(true)
                         .setReservert(false));
     }
-
     private void oppdaterManuellStatus(AktorId aktorId, ManuellStatusEntity manuellStatus) {
         transactor.executeWithoutResult((ignored) -> {
             manuellStatusRepository.create(manuellStatus);

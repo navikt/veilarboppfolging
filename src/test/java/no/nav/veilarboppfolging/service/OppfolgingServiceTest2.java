@@ -3,8 +3,8 @@ package no.nav.veilarboppfolging.service;
 import no.nav.common.health.HealthCheckResult;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.veilarboppfolging.client.dkif.DkifClient;
-import no.nav.veilarboppfolging.client.dkif.DkifKontaktinfo;
+import no.nav.veilarboppfolging.client.digdir_krr.DigdirClient;
+import no.nav.veilarboppfolging.client.digdir_krr.DigdirKontaktinfo;
 import no.nav.veilarboppfolging.domain.Oppfolging;
 import no.nav.veilarboppfolging.repository.*;
 import no.nav.veilarboppfolging.repository.entity.MaalEntity;
@@ -46,7 +46,7 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
     private static final Fnr FNR = Fnr.of("21432432423");
 
     private AuthService authService = mock(AuthService.class);
-    
+
     private OppfolgingsStatusRepository oppfolgingsStatusRepository;
 
     private KvpRepository kvpRepository;
@@ -75,9 +75,9 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
 
         manuellStatusRepository = new ManuellStatusRepository(db, transactor);
 
-        DkifClient dkifClient = new DkifClient() {
+        DigdirClient digdirClient = new DigdirClient() {
             @Override
-            public Optional<DkifKontaktinfo> hentKontaktInfo(Fnr fnr) {
+            public Optional<DigdirKontaktinfo> hentKontaktInfo(Fnr fnr) {
                 return Optional.empty();
             }
 
@@ -93,7 +93,7 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
                 null,
                 oppfolgingServiceMock,
                 oppfolgingsStatusRepository,
-                dkifClient,
+                digdirClient,
                 null,
                 transactor
         );
@@ -248,7 +248,7 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
                         .setDato(ZonedDateTime.now())
                         .setBegrunnelse("Test")
                         .setOpprettetAv(KodeverkBruker.SYSTEM));
-        
+
         maalRepository.opprett(new MaalEntity().setAktorId(AKTOR_ID.get()).setMal(maal).setEndretAv("bruker").setDato(ZonedDateTime.now()));
         Oppfolging oppfolging = hentOppfolging(AKTOR_ID).get();
         assertThat(oppfolging.isUnderOppfolging(), is(true));
@@ -315,7 +315,7 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
     //Setter veileder direkte vha. sql, siden det ikke finnes funksjonalitet for tildeling av veileder i
     //OppfolgingRepository.
     //Men siden hentOppfolging henter opp veilder er det likevel aktuelt å teste her at veileder returneres
-    //dersom det er satt i databasen. 
+    //dersom det er satt i databasen.
     private void settVeileder(String veilederId, AktorId aktorId) {
         db.update("UPDATE OPPFOLGINGSTATUS SET VEILEDER = ? where aktor_id = ?", veilederId, aktorId.get());
     }
