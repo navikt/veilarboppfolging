@@ -46,6 +46,7 @@ import static no.nav.veilarboppfolging.utils.SecureLog.secureLog;
 @Service
 public class AuthService {
 
+    public static final String UKJENT_NAV_IDENT = "UKJENT";
     private final AuthContextHolder authContextHolder;
     private final AuditLogger auditLogger;
 
@@ -171,7 +172,7 @@ public class AuthService {
                 auditLogWithMessageAndDestinationUserId(
                         "Veileder har gjort oppslag på enhet",
                         enhetId,
-                        authContextHolder.getNavIdent().orElse(NavIdent.of("UKJENT")).toString(),
+                        authContextHolder.getNavIdent().orElse(NavIdent.of(UKJENT_NAV_IDENT)).get(),
                         decision.isPermit() ? AuthorizationDecision.PERMIT : AuthorizationDecision.DENY
                 );
                 return decision.isPermit();
@@ -202,7 +203,7 @@ public class AuthService {
             auditLogWithMessageAndDestinationUserId(
                     "Veileder har gjort oppslag på enhet med sperre",
                     enhetId,
-                    authContextHolder.getNavIdent().orElse(NavIdent.of("UKJENT")).toString(),
+                    authContextHolder.getNavIdent().orElse(NavIdent.of(UKJENT_NAV_IDENT)).get(),
                     decision.isPermit() ? AuthorizationDecision.PERMIT : AuthorizationDecision.DENY
             );
             return decision.isPermit();
@@ -257,7 +258,7 @@ public class AuthService {
                 auditLogWithMessageAndDestinationUserId(
                         "Veileder har gjort oppslag på aktorid",
                         aktorId.get(),
-                        authContextHolder.getNavIdent().orElse(NavIdent.of("UKJENT")).toString(),
+                        authContextHolder.getNavIdent().orElse(NavIdent.of(UKJENT_NAV_IDENT)).get(),
                         decision.isPermit() ? AuthorizationDecision.PERMIT : AuthorizationDecision.DENY
                 );
                 if (decision.isDeny()) {
