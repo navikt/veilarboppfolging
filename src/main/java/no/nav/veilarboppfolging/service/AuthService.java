@@ -171,7 +171,7 @@ public class AuthService {
                 auditLogWithMessageAndDestinationUserId(
                         "Veileder har gjort oppslag på enhet",
                         enhetId,
-                        hentInnloggetVeilederUUID().toString(),
+                        authContextHolder.getNavIdent().orElse(NavIdent.of("UKJENT")).toString(),
                         decision.isPermit() ? AuthorizationDecision.PERMIT : AuthorizationDecision.DENY
                 );
                 return decision.isPermit();
@@ -202,7 +202,7 @@ public class AuthService {
             auditLogWithMessageAndDestinationUserId(
                     "Veileder har gjort oppslag på enhet med sperre",
                     enhetId,
-                    hentInnloggetVeilederUUID().toString(),
+                    authContextHolder.getNavIdent().orElse(NavIdent.of("UKJENT")).toString(),
                     decision.isPermit() ? AuthorizationDecision.PERMIT : AuthorizationDecision.DENY
             );
             return decision.isPermit();
@@ -257,7 +257,7 @@ public class AuthService {
                 auditLogWithMessageAndDestinationUserId(
                         "Veileder har gjort oppslag på aktorid",
                         aktorId.get(),
-                        hentInnloggetVeilederUUID().toString(),
+                        authContextHolder.getNavIdent().orElse(NavIdent.of("UKJENT")).toString(),
                         decision.isPermit() ? AuthorizationDecision.PERMIT : AuthorizationDecision.DENY
                 );
                 if (decision.isDeny()) {
