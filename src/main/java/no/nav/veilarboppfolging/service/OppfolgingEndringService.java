@@ -64,12 +64,6 @@ public class OppfolgingEndringService {
 
         if (!erBrukerUnderOppfolging && erUnderOppfolgingIArena) {
             secureLog.info("Starter oppfølging på bruker som er under oppfølging i Arena, men ikke i veilarboppfolging. aktorId={}", aktorId);
-
-            if (!unleashService.skalOppdaterOppfolgingMedKafka()) {
-                secureLog.info("Oppdatering av oppfølging med kafka er ikke skrudd på. Stopper start av oppfølging for aktorId={}", aktorId);
-                return;
-            }
-
             oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(aktorId);
         } else if (erBrukerUnderOppfolging && !erUnderOppfolgingIArena && erInaktivIArena) {
             Optional<ArenaOppfolgingTilstand> maybeArenaTilstand = arenaOppfolgingService.hentOppfolgingTilstandDirekteFraArena(fnr);
@@ -87,12 +81,6 @@ public class OppfolgingEndringService {
 
                 if (skalAvsluttes) {
                     secureLog.info("Automatisk avslutting av oppfølging på bruker. aktorId={}", aktorId);
-
-                    if (!unleashService.skalOppdaterOppfolgingMedKafka()) {
-                        secureLog.info("Oppdatering av oppfølging med kafka er ikke skrudd på. Stopper avslutting av oppfølging for aktorId={}", aktorId);
-                        return;
-                    }
-
                     oppfolgingService.avsluttOppfolgingForBruker(aktorId, null, "Oppfølging avsluttet automatisk pga. inaktiv bruker som ikke kan reaktiveres");
                     metricsService.rapporterAutomatiskAvslutningAvOppfolging(true);
                 }
