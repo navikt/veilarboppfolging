@@ -33,7 +33,6 @@ public class VeilederTilordningService {
     private final VeilederHistorikkRepository veilederHistorikkRepository;
     private final TransactionTemplate transactor;
     private final KafkaProducerService kafkaProducerService;
-    private final UnleashService unleashService;
 
     @Autowired
     public VeilederTilordningService(
@@ -43,9 +42,8 @@ public class VeilederTilordningService {
             OppfolgingService oppfolgingService,
             VeilederHistorikkRepository veilederHistorikkRepository,
             TransactionTemplate transactor,
-            KafkaProducerService kafkaProducerService,
-            UnleashService unleashService) {
-
+            KafkaProducerService kafkaProducerService
+    ) {
         this.metricsService = metricsService;
         this.veilederTilordningerRepository = veilederTilordningerRepository;
         this.authService = authService;
@@ -53,7 +51,6 @@ public class VeilederTilordningService {
         this.veilederHistorikkRepository = veilederHistorikkRepository;
         this.transactor = transactor;
         this.kafkaProducerService = kafkaProducerService;
-        this.unleashService = unleashService;
     }
 
     public Optional<NavIdent> hentTilordnetVeilederIdent(Fnr fnr) {
@@ -120,13 +117,7 @@ public class VeilederTilordningService {
     private List<VeilederTilordning> tildelVeileder(List<VeilederTilordning> feilendeTilordninger, VeilederTilordning tilordning, AktorId aktorId, String eksisterendeVeileder, String innloggetVeilederId) {
         if (kanTilordneVeileder(eksisterendeVeileder, tilordning)) {
             if (nyVeilederHarTilgang(tilordning)) {
-                boolean skalLagreHvilkenVeilederSomHarUtfortTilordning = unleashService.skalLagreHvilkenVeilederSomHarUtfortTilordning();
-
-                if (skalLagreHvilkenVeilederSomHarUtfortTilordning) {
-                    lagreVeilederTilordning(aktorId, tilordning.getTilVeilederId(), innloggetVeilederId);
-                } else {
-                    lagreVeilederTilordning(aktorId, tilordning.getTilVeilederId(), null);
-                }
+                lagreVeilederTilordning(aktorId, tilordning.getTilVeilederId(), innloggetVeilederId);
             } else {
                 secureLog.info("Aktoerid {} kunne ikke tildeles. Ny veileder {} har ikke tilgang.", aktorId, tilordning.getTilVeilederId());
                 feilendeTilordninger.add(tilordning);
