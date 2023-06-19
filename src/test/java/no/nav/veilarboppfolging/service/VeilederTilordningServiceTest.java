@@ -60,9 +60,6 @@ public class VeilederTilordningServiceTest {
     @Mock
     private MetricsService metricsService;
 
-    @Mock
-    private UnleashService unleashService;
-    
     private VeilederTilordningService veilederTilordningService;
     
     @Before
@@ -78,8 +75,7 @@ public class VeilederTilordningServiceTest {
                     oppfolgingService,
                     veilederHistorikkRepository,
                     DbTestUtils.createTransactor(LocalH2Database.getDb()),
-                    mock(KafkaProducerService.class),
-                    unleashService
+                    mock(KafkaProducerService.class)
             );
         });
     }

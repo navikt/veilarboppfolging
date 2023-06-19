@@ -57,7 +57,6 @@ public class OppfolgingEndringServiceTest {
     public void oppdaterOppfolgingMedStatusFraArena__skal_starte_oppfolging_pa_bruker_som_ikke_er_under_oppfolging_i_veilarboppfolging_men_under_oppfolging_i_arena() {
         when(authService.getAktorIdOrThrow(TEST_FNR)).thenReturn(TEST_AKTOR_ID);
         when(oppfolgingsStatusRepository.hentOppfolging(TEST_AKTOR_ID)).thenReturn(Optional.of(new OppfolgingEntity().setUnderOppfolging(false)));
-        when(unleashService.skalOppdaterOppfolgingMedKafka()).thenReturn(true);
 
         EndringPaaOppfoelgingsBrukerV2 brukverV2 = EndringPaaOppfoelgingsBrukerV2.builder()
                 .fodselsnummer(TEST_FNR.get())
@@ -72,24 +71,6 @@ public class OppfolgingEndringServiceTest {
     }
 
     @Test
-    public void oppdaterOppfolgingMedStatusFraArena__skal_ikke_starte_oppfolging_pa_bruker_hvis_toggel_er_av() {
-        when(authService.getAktorIdOrThrow(TEST_FNR)).thenReturn(TEST_AKTOR_ID);
-        when(oppfolgingsStatusRepository.hentOppfolging(TEST_AKTOR_ID)).thenReturn(Optional.of(new OppfolgingEntity().setUnderOppfolging(false)));
-        when(unleashService.skalOppdaterOppfolgingMedKafka()).thenReturn(false);
-
-        EndringPaaOppfoelgingsBrukerV2 brukverV2 = EndringPaaOppfoelgingsBrukerV2.builder()
-                .fodselsnummer(TEST_FNR.get())
-                .formidlingsgruppe(Formidlingsgruppe.ARBS)
-                .kvalifiseringsgruppe(Kvalifiseringsgruppe.VURDI)
-                .build();
-
-        oppfolgingEndringService.oppdaterOppfolgingMedStatusFraArena(brukverV2);
-
-        verify(oppfolgingService, never()).startOppfolgingHvisIkkeAlleredeStartet(any(AktorId.class));
-        verify(oppfolgingService, never()).avsluttOppfolgingForBruker(any(), any(), any());
-    }
-
-    @Test
     public void oppdaterOppfolgingMedStatusFraArena__skal_avslutte_oppfolging_pa_bruker_som_er_under_oppfolging_i_veilarboppfolging_men_ikke_under_oppfolging_i_arena() {
         var arenaTilstand = new ArenaOppfolgingTilstand();
         arenaTilstand.setKanEnkeltReaktiveres(false);
@@ -98,8 +79,6 @@ public class OppfolgingEndringServiceTest {
         when(oppfolgingsStatusRepository.hentOppfolging(TEST_AKTOR_ID)).thenReturn(Optional.of(new OppfolgingEntity().setUnderOppfolging(true)));
         when(arenaOppfolgingService.hentOppfolgingTilstandDirekteFraArena(TEST_FNR)).thenReturn(Optional.of(arenaTilstand));
         when(kvpService.erUnderKvp(TEST_AKTOR_ID)).thenReturn(false);
-        when(unleashService.skalOppdaterOppfolgingMedKafka()).thenReturn(true);
-
 
         EndringPaaOppfoelgingsBrukerV2 brukverV2 = EndringPaaOppfoelgingsBrukerV2.builder()
                 .fodselsnummer(TEST_FNR.get())
@@ -117,32 +96,6 @@ public class OppfolgingEndringServiceTest {
                 );
 
         verify(metricsService, times(1)).rapporterAutomatiskAvslutningAvOppfolging(true);
-    }
-
-    @Test
-    public void oppdaterOppfolgingMedStatusFraArena__skal_ikke_avslutte_oppfolging_pa_bruker_hvis_toggel_er_av() {
-        var arenaTilstand = new ArenaOppfolgingTilstand();
-        arenaTilstand.setKanEnkeltReaktiveres(false);
-
-        when(authService.getAktorIdOrThrow(TEST_FNR)).thenReturn(TEST_AKTOR_ID);
-        when(oppfolgingsStatusRepository.hentOppfolging(TEST_AKTOR_ID)).thenReturn(Optional.of(new OppfolgingEntity().setUnderOppfolging(true)));
-        when(arenaOppfolgingService.hentOppfolgingTilstandDirekteFraArena(TEST_FNR)).thenReturn(Optional.of(arenaTilstand));
-        when(kvpService.erUnderKvp(TEST_AKTOR_ID)).thenReturn(false);
-        when(unleashService.skalOppdaterOppfolgingMedKafka()).thenReturn(false);
-
-
-        EndringPaaOppfoelgingsBrukerV2 brukverV2 = EndringPaaOppfoelgingsBrukerV2.builder()
-                .fodselsnummer(TEST_FNR.get())
-                .formidlingsgruppe(Formidlingsgruppe.ISERV)
-                .kvalifiseringsgruppe(Kvalifiseringsgruppe.VURDI)
-                .build();
-
-        oppfolgingEndringService.oppdaterOppfolgingMedStatusFraArena(brukverV2);
-
-
-        verify(oppfolgingService, never()).startOppfolgingHvisIkkeAlleredeStartet(any(AktorId.class));
-        verify(oppfolgingService, never()).avsluttOppfolgingForBruker(any(), any(), any());
-        verify(metricsService, never()).rapporterAutomatiskAvslutningAvOppfolging(true);
     }
 
     @Test
