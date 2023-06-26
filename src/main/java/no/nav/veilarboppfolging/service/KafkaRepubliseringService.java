@@ -4,9 +4,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto_schema.kafka.json.topic.SisteOppfolgingsperiodeV1;
+import no.nav.veilarboppfolging.repository.KvpRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
 import no.nav.veilarboppfolging.repository.VeilederTilordningerRepository;
+import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
 import no.nav.veilarboppfolging.repository.entity.VeilederTilordningEntity;
 import no.nav.veilarboppfolging.utils.DtoMappers;
@@ -24,12 +26,15 @@ import static no.nav.veilarboppfolging.utils.SecureLog.secureLog;
 public class KafkaRepubliseringService {
 
     private final static int OPPFOLGINGSPERIODE_PAGE_SIZE = 1000;
+    private final static int KVPPERIODE_PAGE_SIZE = 1000;
 
     private final OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
 
     private final OppfolgingsStatusRepository oppfolgingsStatusRepository;
 
     private final VeilederTilordningerRepository veilederTilordningerRepository;
+
+    private final KvpRepository kvpRepository;
 
     private final KafkaProducerService kafkaProducerService;
 
@@ -67,6 +72,44 @@ public class KafkaRepubliseringService {
 
             unikeAktorIder.forEach(this::republiserSisteTilordnetVeilederForBruker);
         }
+    }
+
+    public void republiserKvpPerioder() {
+        int currentOffset = 0;
+
+        while (true) {
+            List<KvpPeriodeEntity> kvpPerioder = kvpRepository.hentKvpPerioderPage(currentOffset, KVPPERIODE_PAGE_SIZE);
+
+            if (kvpPerioder.isEmpty()) {
+                break;
+            }
+
+            currentOffset += kvpPerioder.size();
+
+            log.info("Republiserer kvp perioder. CurrentOffset={} BatchSize={}", currentOffset, kvpPerioder.size());
+
+            kvpPerioder.forEach(this::republiserKvpStartet);
+            kvpPerioder.stream().filter(it -> it.getAvsluttetDato() != null).forEach(this::republiserKvpSluttet);
+        }
+    }
+
+    private void republiserKvpStartet(KvpPeriodeEntity kvpPeriodeEntity) {
+        kafkaProducerService.publiserKvpStartet(
+                AktorId.of(kvpPeriodeEntity.getAktorId()),
+                kvpPeriodeEntity.getEnhet(),
+                kvpPeriodeEntity.getOpprettetAv(),
+                kvpPeriodeEntity.getOpprettetBegrunnelse(),
+                kvpPeriodeEntity.getOpprettetDato()
+        );
+    }
+
+    private void republiserKvpSluttet(KvpPeriodeEntity kvpPeriodeEntity) {
+        kafkaProducerService.publiserKvpAvsluttet(
+                AktorId.of(kvpPeriodeEntity.getAktorId()),
+                kvpPeriodeEntity.getAvsluttetAv(),
+                kvpPeriodeEntity.getAvsluttetBegrunnelse(),
+                kvpPeriodeEntity.getAvsluttetDato()
+        );
     }
 
     public void republiserOppfolgingsperiodeForBruker(AktorId aktorId) {

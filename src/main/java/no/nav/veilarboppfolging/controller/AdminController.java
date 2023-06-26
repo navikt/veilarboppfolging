@@ -59,6 +59,12 @@ public class AdminController {
         return JobRunner.runAsync("republiser-tilordnet-veileder", kafkaRepubliseringService::republiserTilordnetVeileder);
     }
 
+    @PostMapping("/republiser/kvp-perioder")
+    public String republiserKvpPerioder() {
+        sjekkTilgangTilAdmin();
+        return JobRunner.runAsync("republiser-kvp-perioder", kafkaRepubliseringService::republiserKvpPerioder);
+    }
+
     @GetMapping("/hentVeilarbinfo/bruker")
     public Veilarbportefoljeinfo hentVeilarbportefoljeinfo(@RequestParam AktorId aktorId) {
         authService.skalVereSystemBruker();
