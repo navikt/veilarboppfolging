@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto_schema.kafka.json.topic.SisteOppfolgingsperiodeV1;
+import no.nav.veilarboppfolging.kafka.KvpPeriode;
 import no.nav.veilarboppfolging.repository.KvpRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
@@ -88,28 +89,28 @@ public class KafkaRepubliseringService {
 
             log.info("Republiserer kvp perioder. CurrentOffset={} BatchSize={}", currentOffset, kvpPerioder.size());
 
-            kvpPerioder.forEach(this::republiserKvpStartet);
-            kvpPerioder.stream().filter(it -> it.getAvsluttetDato() != null).forEach(this::republiserKvpSluttet);
+            kvpPerioder.forEach(this::republiserKvpPeriode);
         }
     }
 
-    private void republiserKvpStartet(KvpPeriodeEntity kvpPeriodeEntity) {
-        kafkaProducerService.publiserKvpStartet(
+    private void republiserKvpPeriode(KvpPeriodeEntity kvpPeriodeEntity) {
+        KvpPeriode startetKvpPeriode = KvpPeriode.start(
                 AktorId.of(kvpPeriodeEntity.getAktorId()),
                 kvpPeriodeEntity.getEnhet(),
                 kvpPeriodeEntity.getOpprettetAv(),
-                kvpPeriodeEntity.getOpprettetBegrunnelse(),
-                kvpPeriodeEntity.getOpprettetDato()
+                kvpPeriodeEntity.getOpprettetDato(),
+                kvpPeriodeEntity.getOpprettetBegrunnelse()
         );
-    }
+        kafkaProducerService.publiserKvpPeriode(startetKvpPeriode);
 
-    private void republiserKvpSluttet(KvpPeriodeEntity kvpPeriodeEntity) {
-        kafkaProducerService.publiserKvpAvsluttet(
-                AktorId.of(kvpPeriodeEntity.getAktorId()),
-                kvpPeriodeEntity.getAvsluttetAv(),
-                kvpPeriodeEntity.getAvsluttetBegrunnelse(),
-                kvpPeriodeEntity.getAvsluttetDato()
-        );
+        if (startetKvpPeriode.getAvsluttet() != null) {
+            KvpPeriode avsluttetKvpPeriode = startetKvpPeriode.avslutt(
+                    kvpPeriodeEntity.getAvsluttetAv(),
+                    kvpPeriodeEntity.getAvsluttetDato(),
+                    kvpPeriodeEntity.getAvsluttetBegrunnelse()
+            );
+            kafkaProducerService.publiserKvpPeriode(avsluttetKvpPeriode);
+        }
     }
 
     public void republiserOppfolgingsperiodeForBruker(AktorId aktorId) {
