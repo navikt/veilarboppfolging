@@ -5,6 +5,7 @@ import no.nav.veilarboppfolging.test.testdriver.TestDriver;
 import org.junit.After;
 import org.junit.Before;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.sql.DataSource;
@@ -22,6 +23,7 @@ public abstract class IsolatedDatabaseTest {
     private static final AtomicInteger databaseCounter = new AtomicInteger();
 
     protected JdbcTemplate db;
+    protected NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
     protected TransactionTemplate transactor;
 
@@ -35,6 +37,7 @@ public abstract class IsolatedDatabaseTest {
         initDb(testDataSource);
 
         db = new JdbcTemplate(testDataSource);
+        namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(db);
         transactor = DbTestUtils.createTransactor(db);
     }
 

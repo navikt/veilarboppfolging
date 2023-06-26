@@ -6,6 +6,7 @@ import no.nav.veilarboppfolging.test.DbTestUtils;
 import no.nav.veilarboppfolging.test.IsolatedDatabaseTest;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.ZonedDateTime;
@@ -29,7 +30,7 @@ public class KvpRepositoryTest extends IsolatedDatabaseTest {
     public void setup() {
         TransactionTemplate transactor = DbTestUtils.createTransactor(db);
         oppfolgingsStatusRepository = new OppfolgingsStatusRepository(db);
-        kvpRepository = new KvpRepository(db, transactor);
+        kvpRepository = new KvpRepository(db, namedParameterJdbcTemplate, transactor);
     }
 
     @Test

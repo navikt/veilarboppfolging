@@ -81,6 +81,8 @@ public class DigdirClientImpl implements DigdirClient {
 	private String getToken() {
 		if (authService.erInternBruker()) {
 			return userTokenProvider.get();
+		} else if (authService.erEksternBruker()) {
+			// TODO:
 		}
 		return systemUserTokenProvider.get();
 	}

@@ -121,9 +121,8 @@ public class ManuellStatusService {
         AktorId aktorId = authService.getAktorIdOrThrow(fnr);
         authService.sjekkLesetilgangMedAktorId(aktorId);
 
-        VeilarbArenaOppfolging arenaOppfolging = arenaOppfolgingService.hentOppfolgingFraVeilarbarena(fnr).orElseThrow();
-
         if (!authService.erEksternBruker()) {
+            VeilarbArenaOppfolging arenaOppfolging = arenaOppfolgingService.hentOppfolgingFraVeilarbarena(fnr).orElseThrow();
             authService.sjekkTilgangTilEnhet(arenaOppfolging.getNav_kontor());
         }
 
