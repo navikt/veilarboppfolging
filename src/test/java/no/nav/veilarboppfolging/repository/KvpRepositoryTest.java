@@ -30,7 +30,7 @@ public class KvpRepositoryTest extends IsolatedDatabaseTest {
     public void setup() {
         TransactionTemplate transactor = DbTestUtils.createTransactor(db);
         oppfolgingsStatusRepository = new OppfolgingsStatusRepository(db);
-        kvpRepository = new KvpRepository(db, namedParameterJdbcTemplate, transactor);
+        kvpRepository = new KvpRepository(db, transactor);
     }
 
     @Test
