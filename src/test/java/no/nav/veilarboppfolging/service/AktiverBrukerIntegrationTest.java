@@ -12,6 +12,7 @@ import no.nav.veilarboppfolging.test.LocalH2Database;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.Optional;
@@ -44,6 +45,7 @@ public class AktiverBrukerIntegrationTest {
     @Before
     public void setup() {
         JdbcTemplate db = LocalH2Database.getDb();
+        NamedParameterJdbcTemplate namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(db);
         TransactionTemplate transactor = DbTestUtils.createTransactor(db);
 
         oppfolgingsStatusRepository = new OppfolgingsStatusRepository(db);
@@ -63,7 +65,7 @@ public class AktiverBrukerIntegrationTest {
                 oppfolgingsStatusRepository, oppfolgingsPeriodeRepository,
                 manuellStatusService,
 
-                new KvpRepository(db, transactor),
+                new KvpRepository(db, namedParameterJdbcTemplate, transactor),
                 new MaalRepository(db, transactor),
                 mock(BrukerOppslagFlereOppfolgingAktorRepository.class),
                 null,

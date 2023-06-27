@@ -8,6 +8,7 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
+import no.nav.veilarboppfolging.kafka.KvpPeriode;
 import no.nav.veilarboppfolging.repository.KvpRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
 import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity;
@@ -79,6 +80,9 @@ public class KvpService {
             kvpRepository.startKvp(aktorId, enhet, veilederId, begrunnelse, startDato);
             kafkaProducerService.publiserKvpStartet(aktorId, enhet, veilederId, begrunnelse, startDato);
 
+            KvpPeriode kvpPeriode = KvpPeriode.start(aktorId, enhet, veilederId, startDato, begrunnelse);
+            kafkaProducerService.publiserKvpPeriode(kvpPeriode);
+
             secureLog.info("KVP startet for bruker med aktorId {} på enhet {} av veileder {}", aktorId, enhet, veilederId);
         });
 
@@ -128,6 +132,12 @@ public class KvpService {
 
             kvpRepository.stopKvp(gjeldendeKvpId, aktorId, avsluttetAv, begrunnelse, kodeverkBruker, sluttDato);
             kafkaProducerService.publiserKvpAvsluttet(aktorId, avsluttetAv, begrunnelse, sluttDato);
+
+            var kvpPeriodeEntity = kvpRepository.hentKvpPeriode(gjeldendeKvpId).get();
+            var kvpPeriode = KvpPeriode
+                    .start(aktorId, kvpPeriodeEntity.getEnhet(), kvpPeriodeEntity.getOpprettetAv(), kvpPeriodeEntity.getOpprettetDato(), kvpPeriodeEntity.getOpprettetBegrunnelse())
+                    .avslutt(avsluttetAv, sluttDato, begrunnelse);
+            kafkaProducerService.publiserKvpPeriode(kvpPeriode);
 
             secureLog.info("KVP avsluttet for bruker med aktorId {} av {}", aktorId, avsluttetAv);
         });

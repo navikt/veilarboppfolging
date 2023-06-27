@@ -1,12 +1,9 @@
 package no.nav.veilarboppfolging.client.digdir_krr;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.health.HealthCheckResult;
 import no.nav.common.health.HealthCheckUtils;
-import no.nav.common.json.JsonUtils;
 import no.nav.common.rest.client.RestClient;
 import no.nav.common.rest.client.RestUtils;
 import no.nav.common.types.identer.Fnr;
@@ -14,19 +11,13 @@ import no.nav.veilarboppfolging.config.CacheConfig;
 import no.nav.veilarboppfolging.service.AuthService;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
-import okhttp3.RequestBody;
 import okhttp3.Response;
 import org.springframework.cache.annotation.Cacheable;
 
-import java.util.List;
 import java.util.Optional;
-import java.util.Random;
-import java.util.UUID;
 import java.util.function.Supplier;
 
 import static java.util.Optional.empty;
-import static java.util.Optional.ofNullable;
-import static no.nav.common.rest.client.RestUtils.MEDIA_TYPE_JSON;
 import static no.nav.common.utils.UrlUtils.joinPaths;
 import static org.springframework.http.HttpHeaders.ACCEPT;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;

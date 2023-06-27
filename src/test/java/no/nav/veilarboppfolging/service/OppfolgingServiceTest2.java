@@ -67,7 +67,7 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
 
         oppfolgingsStatusRepository = new OppfolgingsStatusRepository(db);
 
-        kvpRepository = new KvpRepository(db, transactor);
+        kvpRepository = new KvpRepository(db, namedParameterJdbcTemplate, transactor);
 
         maalRepository = new MaalRepository(db, transactor);
 
@@ -104,7 +104,7 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
                 oppfolgingsStatusRepository, oppfolgingsPeriodeRepository,
                 manuellStatusService,
 
-                new KvpRepository(db, transactor), maalRepository,
+                new KvpRepository(db, namedParameterJdbcTemplate, transactor), maalRepository,
                 new BrukerOppslagFlereOppfolgingAktorRepository(db), null, transactor);
 
         when(authService.getFnrOrThrow(AKTOR_ID)).thenReturn(FNR);

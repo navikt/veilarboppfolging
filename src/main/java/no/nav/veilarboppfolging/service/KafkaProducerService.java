@@ -8,6 +8,7 @@ import no.nav.pto_schema.kafka.json.topic.SisteOppfolgingsperiodeV1;
 import no.nav.pto_schema.kafka.json.topic.SisteTilordnetVeilederV1;
 import no.nav.pto_schema.kafka.json.topic.onprem.*;
 import no.nav.veilarboppfolging.config.KafkaProperties;
+import no.nav.veilarboppfolging.kafka.KvpPeriode;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.Serializer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -98,6 +99,10 @@ public class KafkaProducerService {
                 .build();
 
         store(kafkaProperties.getKvpAvsluttetTopicAiven(), aktorId.get(), recordValue);
+    }
+
+    public void publiserKvpPeriode(KvpPeriode kvpPeriode) {
+        store(kafkaProperties.getKvpPerioderTopicAiven(), kvpPeriode.getAktorId(), kvpPeriode);
     }
 
     public void publiserEndretMal(AktorId aktorId, String veilederIdent) {

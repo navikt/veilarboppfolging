@@ -19,4 +19,5 @@ public class KafkaProperties {
     String endringPaMalAiven;
     String kvpAvsluttetTopicAiven;
     String kvpStartetTopicAiven;
+    String kvpPerioderTopicAiven;
 }
