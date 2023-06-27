@@ -112,7 +112,8 @@ public class KafkaConfig {
                         kafkaProperties.getEndringPaNyForVeilederTopic(),
                         kafkaProperties.getEndringPaMalAiven(),
                         kafkaProperties.getKvpAvsluttetTopicAiven(),
-                        kafkaProperties.getKvpStartetTopicAiven()
+                        kafkaProperties.getKvpStartetTopicAiven(),
+                        kafkaProperties.getKvpPerioderTopicAiven()
                 )
         );
     }
