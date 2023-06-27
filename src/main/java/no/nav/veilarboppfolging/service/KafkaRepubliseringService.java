@@ -75,44 +75,6 @@ public class KafkaRepubliseringService {
         }
     }
 
-    public void republiserKvpPerioder() {
-        int currentOffset = 0;
-
-        while (true) {
-            List<KvpPeriodeEntity> kvpPerioder = kvpRepository.hentKvpPerioderPage(currentOffset, KVPPERIODE_PAGE_SIZE);
-
-            if (kvpPerioder.isEmpty()) {
-                break;
-            }
-
-            currentOffset += kvpPerioder.size();
-
-            log.info("Republiserer kvp perioder. CurrentOffset={} BatchSize={}", currentOffset, kvpPerioder.size());
-
-            kvpPerioder.forEach(this::republiserKvpPeriode);
-        }
-    }
-
-    private void republiserKvpPeriode(KvpPeriodeEntity kvpPeriodeEntity) {
-        KvpPeriode startetKvpPeriode = KvpPeriode.start(
-                AktorId.of(kvpPeriodeEntity.getAktorId()),
-                kvpPeriodeEntity.getEnhet(),
-                kvpPeriodeEntity.getOpprettetAv(),
-                kvpPeriodeEntity.getOpprettetDato(),
-                kvpPeriodeEntity.getOpprettetBegrunnelse()
-        );
-        kafkaProducerService.publiserKvpPeriode(startetKvpPeriode);
-
-        if (kvpPeriodeEntity.getAvsluttetDato() != null) {
-            KvpPeriode avsluttetKvpPeriode = startetKvpPeriode.avslutt(
-                    kvpPeriodeEntity.getAvsluttetAv(),
-                    kvpPeriodeEntity.getAvsluttetDato(),
-                    kvpPeriodeEntity.getAvsluttetBegrunnelse()
-            );
-            kafkaProducerService.publiserKvpPeriode(avsluttetKvpPeriode);
-        }
-    }
-
     public void republiserOppfolgingsperiodeForBruker(AktorId aktorId) {
         List<OppfolgingsperiodeEntity> perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId);
         OppfolgingsperiodeEntity sistePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(perioder);
