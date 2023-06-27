@@ -103,7 +103,7 @@ public class KafkaRepubliseringService {
         );
         kafkaProducerService.publiserKvpPeriode(startetKvpPeriode);
 
-        if (startetKvpPeriode.getAvsluttet() != null) {
+        if (kvpPeriodeEntity.getAvsluttetDato() != null) {
             KvpPeriode avsluttetKvpPeriode = startetKvpPeriode.avslutt(
                     kvpPeriodeEntity.getAvsluttetAv(),
                     kvpPeriodeEntity.getAvsluttetDato(),
