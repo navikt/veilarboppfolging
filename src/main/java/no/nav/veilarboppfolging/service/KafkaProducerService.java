@@ -102,7 +102,7 @@ public class KafkaProducerService {
     }
 
     public void publiserKvpPeriode(KvpPeriode kvpPeriode) {
-        store(kafkaProperties.getKvpAvsluttetTopicAiven(), kvpPeriode.getAktorId(), kvpPeriode);
+        store(kafkaProperties.getKvpPerioderTopicAiven(), kvpPeriode.getAktorId(), kvpPeriode);
     }
 
     public void publiserEndretMal(AktorId aktorId, String veilederIdent) {
