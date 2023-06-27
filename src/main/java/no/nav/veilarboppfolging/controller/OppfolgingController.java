@@ -114,14 +114,14 @@ public class OppfolgingController {
         return historikkService.hentInstillingsHistorikk(fnr);
     }
 
-//    @PostMapping("/startKvp")
+    @PostMapping("/startKvp")
     public ResponseEntity startKvp(@RequestBody StartKvpDTO startKvp, @RequestParam("fnr") Fnr fnr) {
         authService.skalVereInternBruker();
         kvpService.startKvp(fnr, startKvp.getBegrunnelse());
         return ResponseEntity.status(204).build();
     }
 
-//    @PostMapping("/stoppKvp")
+    @PostMapping("/stoppKvp")
     public ResponseEntity stoppKvp(@RequestBody StoppKvpDTO stoppKvp, @RequestParam("fnr") Fnr fnr) {
         authService.skalVereInternBruker();
         kvpService.stopKvp(fnr, stoppKvp.getBegrunnelse());
