@@ -155,7 +155,7 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
     }
 
     @Test
-    public void synkroniserManuellStatusMedDigDir__skal_ikke_lage_manuell_status_hvis_ikke_reservert() {
+    public void synkroniserManuellStatusMedDigDir__skal_ikke_lage_manuell_status_hvis_ikke_reservert_nar_vi_ikke_har_status_pa_bruker_fra_for() {
         DigdirKontaktinfo kontaktinfo = new DigdirKontaktinfo()
                 .setPersonident(FNR.get())
                 .setKanVarsles(true)
@@ -164,7 +164,7 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
                 .setMobiltelefonnummer("12345");
 
         when(oppfolgingService.erUnderOppfolging(AKTOR_ID)).thenReturn(true);
-
+        when(authService.harTilgangTilEnhet(any())).thenReturn(true);
         when(digdirClient.hentKontaktInfo(FNR)).thenReturn(Optional.of(kontaktinfo));
 
         manuellStatusService.synkroniserManuellStatusMedDigdir(FNR);
@@ -172,6 +172,28 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
         List<ManuellStatusEntity> history = manuellStatusRepository.history(AKTOR_ID);
 
         assertTrue(history.isEmpty());
+    }
+
+    @Test
+    public void synkroniserManuellStatusMedDigDir__skal_lage_manuell_status_hvis_ikke_reservert_nar_vi_har_status_pa_bruker_fra_for() {
+        DigdirKontaktinfo kontaktinfo = new DigdirKontaktinfo()
+                .setPersonident(FNR.get())
+                .setKanVarsles(true)
+                .setReservert(false)
+                .setEpostadresse("email")
+                .setMobiltelefonnummer("12345");
+        String begrunnelse = "test begrunnelse";
+        String opprettetAvBruker = "test opprettet av";
+        gittAktivOppfolging();
+        when(authService.harTilgangTilEnhet(any())).thenReturn(true);
+        when(digdirClient.hentKontaktInfo(FNR)).thenReturn(Optional.of(kontaktinfo));
+        manuellStatusService.oppdaterManuellStatus(FNR, true, begrunnelse, SYSTEM, opprettetAvBruker);
+
+        manuellStatusService.synkroniserManuellStatusMedDigdir(FNR);
+
+        List<ManuellStatusEntity> history = manuellStatusRepository.history(AKTOR_ID);
+
+        assertFalse(history.isEmpty());
     }
 
     @Test
