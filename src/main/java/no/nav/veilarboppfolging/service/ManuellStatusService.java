@@ -91,6 +91,8 @@ public class ManuellStatusService {
 
         if (digdirKontaktinfo.isReservert()) {
             settBrukerTilManuellGrunnetReservasjonIKRR(aktorId);
+        } else {
+            settDigitalBruker(fnr);
         }
     }
 
