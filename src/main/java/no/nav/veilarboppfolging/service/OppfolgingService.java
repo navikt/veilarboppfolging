@@ -325,7 +325,7 @@ public class OppfolgingService {
             kafkaProducerService.publiserOppfolgingsperiode(DtoMappers.tilSisteOppfolgingsperiodeV1(sistePeriode));
 
             if (kontaktinfo.isReservert()) {
-                manuellStatusService.settBrukerTilManuellGrunnetReservasjonIKRR(aktorId);
+                manuellStatusService.settBrukerTilManuellGrunnetReservertIKRR(aktorId);
             }
         });
     }

@@ -203,13 +203,13 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
 
         assertFalse(manuellStatusService.erManuell(AKTOR_ID));
 
-        manuellStatusService.settBrukerTilManuellGrunnetReservasjonIKRR(AKTOR_ID);
+        manuellStatusService.settBrukerTilManuellGrunnetReservertIKRR(AKTOR_ID);
         assertTrue(manuellStatusService.erManuell(AKTOR_ID));
 
         manuellStatusService.settDigitalBruker(FNR);
         assertFalse(manuellStatusService.erManuell(AKTOR_ID));
 
-        manuellStatusService.settBrukerTilManuellGrunnetReservasjonIKRR(AKTOR_ID);
+        manuellStatusService.settBrukerTilManuellGrunnetReservertIKRR(AKTOR_ID);
         assertTrue(manuellStatusService.erManuell(AKTOR_ID));
 
 
@@ -221,7 +221,7 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
     public void settBrukerTilManuellGrunnetReservasjonIKRR__skal_lage_manuell_status() {
         gittAktivOppfolging();
 
-        manuellStatusService.settBrukerTilManuellGrunnetReservasjonIKRR(AKTOR_ID);
+        manuellStatusService.settBrukerTilManuellGrunnetReservertIKRR(AKTOR_ID);
 
         ManuellStatusEntity manuellStatus = manuellStatusService.hentManuellStatus(AKTOR_ID).orElseThrow();
 
@@ -244,7 +244,7 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
 
         manuellStatusRepository.create(manuellStatus);
 
-        manuellStatusService.settBrukerTilManuellGrunnetReservasjonIKRR(AKTOR_ID);
+        manuellStatusService.settBrukerTilManuellGrunnetReservertIKRR(AKTOR_ID);
 
         List<ManuellStatusEntity> history = manuellStatusRepository.history(AKTOR_ID);
 

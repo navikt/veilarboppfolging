@@ -40,7 +40,6 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
-import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.*;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -389,7 +388,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
         oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
 
-        verify(manuellStatusService, never()).settBrukerTilManuellGrunnetReservasjonIKRR(any());
+        verify(manuellStatusService, never()).settBrukerTilManuellGrunnetReservertIKRR(any());
     }
 
     @Test
@@ -398,7 +397,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
         oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
 
-        verify(manuellStatusService, times(1)).settBrukerTilManuellGrunnetReservasjonIKRR(AKTOR_ID);
+        verify(manuellStatusService, times(1)).settBrukerTilManuellGrunnetReservertIKRR(AKTOR_ID);
     }
 
     private void assertUnderOppfolgingLagret(AktorId aktorId) {

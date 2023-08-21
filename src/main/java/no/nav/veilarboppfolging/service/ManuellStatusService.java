@@ -90,16 +90,16 @@ public class ManuellStatusService {
         DigdirKontaktinfo digdirKontaktinfo = hentDigdirKontaktinfo(fnr);
 
         if (digdirKontaktinfo.isReservert()) {
-            settBrukerTilManuellGrunnetReservasjonIKRR(aktorId);
+            settBrukerTilManuellGrunnetReservertIKRR(aktorId);
         } else {
-            settDigitalBruker(fnr);
+            settBrukerTilDigitalGrunnetIkkeReservertIKRR(aktorId);
         }
     }
 
-    public void settBrukerTilManuellGrunnetReservasjonIKRR(AktorId aktorId) {
+    public void settBrukerTilManuellGrunnetReservertIKRR(AktorId aktorId) {
         // Hvis bruker allerede er manuell så trenger vi ikke å sette status på nytt
         if (erManuell(aktorId)) {
-            log.info("Bruker er allerede manuell og trenger ikke å oppdateres med reservasjon fra KRR");
+            log.info("Bruker er allerede manuell og trenger ikke synkroniseres med KRR");
             return;
         }
 
@@ -111,6 +111,24 @@ public class ManuellStatusService {
                 .setOpprettetAv(SYSTEM);
 
         secureLog.info("Bruker er reservert i KRR, setter bruker aktorId={} til manuell", aktorId);
+        oppdaterManuellStatus(aktorId, manuellStatus);
+    }
+
+    public void settBrukerTilDigitalGrunnetIkkeReservertIKRR(AktorId aktorId) {
+        // Hvis bruker allerede er digital så trenger vi ikke å sette status på nytt
+        if (!erManuell(aktorId)) {
+            log.info("Bruker er allerede digital og trenger ikke synkroniseres med KRR");
+            return;
+        }
+
+        var manuellStatus = new ManuellStatusEntity()
+                .setAktorId(aktorId.get())
+                .setManuell(false)
+                .setDato(ZonedDateTime.now())
+                .setBegrunnelse("Brukeren er ikke lenger reservert i Kontakt- og reservasjonsregisteret")
+                .setOpprettetAv(SYSTEM);
+
+        secureLog.info("Bruker er ikke lenger reservert i KRR, setter bruker aktorId={} til digital", aktorId);
         oppdaterManuellStatus(aktorId, manuellStatus);
     }
 
