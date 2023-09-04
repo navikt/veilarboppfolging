@@ -8,6 +8,9 @@ env:
   IMAGE: ghcr.io/${{ github.repository }}/veilarboppfolging
   PRINT_PAYLOAD: true
 
+permissions:
+  packages: write
+
 concurrency:
   group: deploy_feature_branch
   cancel-in-progress: true
