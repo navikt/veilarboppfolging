@@ -65,9 +65,6 @@ spec:
   accessPolicy:
     inbound:
       rules:
-        - application: amt-tiltak
-          namespace: amt
-          cluster: dev-gcp
         - application: veilarbregistrering
           namespace: paw
           cluster: dev-fss
