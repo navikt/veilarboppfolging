@@ -437,7 +437,7 @@ public class AuthService {
     }
 
     public static boolean isTokenX(Optional<JWTClaimsSet> maybeClaims) {
-        return maybeClaims.map(claims -> hasIssuer(claims, "tokendings")).orElse(false);
+        return maybeClaims.map(claims -> hasIssuer(claims, "tokenx")).orElse(false);
     }
 
     private static boolean hasIssuer(JWTClaimsSet claims, String issuerSubString) {
