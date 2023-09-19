@@ -6,6 +6,7 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.controller.response.AvslutningStatus;
 import no.nav.veilarboppfolging.controller.response.OppfolgingPeriodeDTO;
 import no.nav.veilarboppfolging.controller.response.OppfolgingPeriodeMinimalDTO;
+import no.nav.veilarboppfolging.controller.response.OppfolgingStatus;
 import no.nav.veilarboppfolging.controller.v2.request.AvsluttOppfolgingV2Request;
 import no.nav.veilarboppfolging.controller.v2.response.UnderOppfolgingV2Response;
 import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity;
@@ -131,6 +132,10 @@ public class OppfolgingV2Controller {
 
         return periode.toBuilder().kvpPerioder(kvpPeriodeEntities).build();
     }
-
+    @PostMapping("/v3")
+    public OppfolgingStatus hentOppfolgingData(@RequestBody Fnr personbrukerFnr) {
+        Fnr fodselsnummer = authService.hentIdentForEksternEllerIntern(personbrukerFnr);
+        return tilDto(oppfolgingService.hentOppfolgingsStatus(fodselsnummer), authService.erInternBruker());
+    }
 
 }
