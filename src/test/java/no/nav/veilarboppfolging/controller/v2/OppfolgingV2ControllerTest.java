@@ -23,7 +23,6 @@ import java.util.UUID;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -94,8 +93,8 @@ class OppfolgingV2ControllerTest {
     void hentUnderOppfolgingV3() throws Exception {
         when(authService.erEksternBruker()).thenReturn(true);
         when(authService.getInnloggetBrukerIdent()).thenReturn("1234");
-        mockMvc.perform(post("/api/v2/oppfolging/v3")
-                        .content("1234"))
+        mockMvc.perform(get("/api/v2/oppfolging/v3")
+                        .header("Nav-Personident","1234"))
                 .andExpect(status().is(HttpStatus.OK_200));
     }
 
