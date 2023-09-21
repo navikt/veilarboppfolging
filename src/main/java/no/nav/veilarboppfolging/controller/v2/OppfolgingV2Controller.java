@@ -1,5 +1,6 @@
 package no.nav.veilarboppfolging.controller.v2;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
@@ -132,9 +133,9 @@ public class OppfolgingV2Controller {
 
         return periode.toBuilder().kvpPerioder(kvpPeriodeEntities).build();
     }
-    @PostMapping("/v3")
-    public OppfolgingStatus hentOppfolgingData(@RequestBody Fnr personbrukerFnr) {
-        Fnr fodselsnummer = authService.hentIdentForEksternEllerIntern(personbrukerFnr);
+    @GetMapping("/v3")
+    public OppfolgingStatus hentOppfolgingData(@NotNull @RequestHeader(name = "Nav-Personident") String ident) {
+        Fnr fodselsnummer = authService.hentIdentForEksternEllerIntern(Fnr.of(ident));
         return tilDto(oppfolgingService.hentOppfolgingsStatus(fodselsnummer), authService.erInternBruker());
     }
 
