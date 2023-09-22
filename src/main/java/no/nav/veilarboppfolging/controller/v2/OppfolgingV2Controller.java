@@ -134,9 +134,9 @@ public class OppfolgingV2Controller {
         return periode.toBuilder().kvpPerioder(kvpPeriodeEntities).build();
     }
     @PostMapping ("/v3")
-    public OppfolgingStatus hentOppfolgingData(@RequestBody  Fnr ident) {
-        secureLog.info("v3 postmapping innsendt ident: {}", ident.get());
-        Fnr fodselsnummer = authService.hentIdentForEksternEllerIntern(ident);
+    public OppfolgingStatus hentOppfolgingData(@RequestBody  Fnr fnr) {
+        secureLog.info("v3 postmapping innsendt ident: {}", fnr.get());
+        Fnr fodselsnummer = authService.hentIdentForEksternEllerIntern(fnr);
         return tilDto(oppfolgingService.hentOppfolgingsStatus(fodselsnummer), authService.erInternBruker());
     }
 }
