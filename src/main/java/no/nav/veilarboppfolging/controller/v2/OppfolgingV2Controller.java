@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static no.nav.veilarboppfolging.utils.DtoMappers.*;
+import static no.nav.veilarboppfolging.utils.SecureLog.secureLog;
 
 @RestController
 @RequestMapping("/api/v2/oppfolging")
@@ -134,6 +135,7 @@ public class OppfolgingV2Controller {
     }
     @PostMapping ("/v3")
     public OppfolgingStatus hentOppfolgingData(@RequestBody  String ident) {
+        secureLog.info("v3 postmapping innsendt ident: {}", ident);
         Fnr fodselsnummer = authService.hentIdentForEksternEllerIntern(Fnr.of(ident));
         return tilDto(oppfolgingService.hentOppfolgingsStatus(fodselsnummer), authService.erInternBruker());
     }
