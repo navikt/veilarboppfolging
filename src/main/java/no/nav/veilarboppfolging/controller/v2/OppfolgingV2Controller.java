@@ -16,6 +16,7 @@ import no.nav.veilarboppfolging.service.OppfolgingService;
 import no.nav.veilarboppfolging.utils.DtoMappers;
 import no.nav.veilarboppfolging.utils.auth.AuthorizeAktorId;
 import no.nav.veilarboppfolging.utils.auth.AuthorizeFnr;
+import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -136,7 +137,8 @@ public class OppfolgingV2Controller {
     @PostMapping ("/v3")
     public OppfolgingStatus hentOppfolgingData(@RequestBody  String fnr) {
         secureLog.info("v3 postmapping innsendt ident: {}", fnr);
-        Fnr fodselsnummer = authService.hentIdentForEksternEllerIntern(Fnr.of(fnr));
+        JSONObject jsonObject = new JSONObject(fnr);
+        Fnr fodselsnummer = authService.hentIdentForEksternEllerIntern(Fnr.of(jsonObject.getString("fnr")));
         return tilDto(oppfolgingService.hentOppfolgingsStatus(fodselsnummer), authService.erInternBruker());
     }
 }
