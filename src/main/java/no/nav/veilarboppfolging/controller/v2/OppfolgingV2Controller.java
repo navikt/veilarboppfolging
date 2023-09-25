@@ -6,7 +6,6 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.controller.response.AvslutningStatus;
 import no.nav.veilarboppfolging.controller.response.OppfolgingPeriodeDTO;
 import no.nav.veilarboppfolging.controller.response.OppfolgingPeriodeMinimalDTO;
-import no.nav.veilarboppfolging.controller.response.OppfolgingStatus;
 import no.nav.veilarboppfolging.controller.v2.request.AvsluttOppfolgingV2Request;
 import no.nav.veilarboppfolging.controller.v2.response.UnderOppfolgingV2Response;
 import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity;
@@ -16,7 +15,6 @@ import no.nav.veilarboppfolging.service.OppfolgingService;
 import no.nav.veilarboppfolging.utils.DtoMappers;
 import no.nav.veilarboppfolging.utils.auth.AuthorizeAktorId;
 import no.nav.veilarboppfolging.utils.auth.AuthorizeFnr;
-import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,7 +24,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static no.nav.veilarboppfolging.utils.DtoMappers.*;
-import static no.nav.veilarboppfolging.utils.SecureLog.secureLog;
 
 @RestController
 @RequestMapping("/api/v2/oppfolging")
@@ -134,11 +131,6 @@ public class OppfolgingV2Controller {
 
         return periode.toBuilder().kvpPerioder(kvpPeriodeEntities).build();
     }
-    @PostMapping ("/v3")
-    public OppfolgingStatus hentOppfolgingData(@RequestBody  String fnr) {
-        secureLog.info("v3 postmapping innsendt ident: {}", fnr);
-        JSONObject jsonObject = new JSONObject(fnr);
-        Fnr fodselsnummer = authService.hentIdentForEksternEllerIntern(Fnr.of(jsonObject.getString("fnr")));
-        return tilDto(oppfolgingService.hentOppfolgingsStatus(fodselsnummer), authService.erInternBruker());
-    }
+
+
 }
