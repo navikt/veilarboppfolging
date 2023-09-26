@@ -22,10 +22,10 @@ public class ArenaOppfolgingController {
     /*
      API used by veilarbmaofs. Contains only the necessary information
      */
-    @GetMapping("/{fnr}/oppfolgingsstatus")
-    public OppfolgingEnhetMedVeilederResponse getOppfolginsstatus(@PathVariable("fnr") Fnr fnr) {
-        authService.sjekkLesetilgangMedFnr(fnr);
-        return arenaOppfolgingService.getOppfolginsstatus(fnr);
+    @PostMapping("/oppfolgingsstatus")
+    public OppfolgingEnhetMedVeilederResponse getOppfolginsstatus(@RequestBody String fnr) {
+        authService.sjekkLesetilgangMedFnr(Fnr.of(fnr));
+        return arenaOppfolgingService.getOppfolginsstatus(Fnr.of(fnr));
     }
 
     @GetMapping("/oppfolgingsenhet")

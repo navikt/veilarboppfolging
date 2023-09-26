@@ -11,9 +11,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static java.lang.String.format;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -33,7 +32,8 @@ public class ArenaOppfolgingControllerTest {
     public void getOppfolginsstatus__should_check_authorization() throws Exception {
         Fnr fnr = Fnr.of("123456");
 
-        mockMvc.perform(get(format("/api/person/%s/oppfolgingsstatus", fnr)));
+        mockMvc.perform(post("/api/person/oppfolgingsstatus")
+                .content("123456"));
 
         verify(authService, times(1)).sjekkLesetilgangMedFnr(fnr);
     }
@@ -53,7 +53,8 @@ public class ArenaOppfolgingControllerTest {
 
         when(arenaOppfolgingService.getOppfolginsstatus(fnr)).thenReturn(response);
 
-        mockMvc.perform(get(format("/api/person/%s/oppfolgingsstatus", fnr)))
+        mockMvc.perform(post("/api/person/oppfolgingsstatus")
+                        .content("123456"))
                 .andExpect(status().is(200))
                 .andExpect(content().json(json, true));
     }
