@@ -118,7 +118,7 @@ public class ArenaOppfolgingService {
             String veilederIdent = veilederTilordningerRepository.hentTilordningForAktoer(brukersAktoerId);
             oppfolgingEnhetMedVeileder.setVeilederId(veilederIdent);
         }
-        secureLog.debug("Veilarbarena uten fnr i url fnr={}", fnr);
+
         return oppfolgingEnhetMedVeileder;
     }
 

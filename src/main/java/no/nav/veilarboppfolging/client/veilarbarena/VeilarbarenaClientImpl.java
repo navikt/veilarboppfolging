@@ -2,6 +2,7 @@ package no.nav.veilarboppfolging.client.veilarbarena;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.health.HealthCheckResult;
 import no.nav.common.health.HealthCheckUtils;
 import no.nav.common.rest.client.RestClient;
@@ -10,13 +11,14 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.common.utils.EnvironmentUtils;
 import no.nav.veilarboppfolging.service.AuthService;
 import no.nav.veilarboppfolging.utils.DownstreamApi;
-import okhttp3.*;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 import java.util.Optional;
 import java.util.function.Function;
 
 import static no.nav.common.utils.UrlUtils.joinPaths;
-import static no.nav.veilarboppfolging.utils.SecureLog.secureLog;
 import static org.springframework.http.HttpHeaders.ACCEPT;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -74,16 +76,12 @@ public class VeilarbarenaClientImpl implements VeilarbarenaClient {
     @SneakyThrows
     @Override
     public Optional<ArenaOppfolging> getArenaOppfolgingsstatus(Fnr fnr) {
-        RequestBody fnrBody = new FormBody.Builder()
-                .add("fnr", fnr.get())
-                .build();
         Request request = new Request.Builder()
-                .url(joinPaths(veilarbarenaUrl, "/api/oppfolgingsstatus/"))
+                .url(joinPaths(veilarbarenaUrl, "/api/oppfolgingsstatus/" + fnr.get()))
                 .header(ACCEPT, APPLICATION_JSON_VALUE)
                 .header(AUTHORIZATION, "Bearer " + getToken())
-                .post(fnrBody)
                 .build();
-        secureLog.info("veilarbarena getArenaOppfolgingsstatus: {}", fnrBody);
+
         try (Response response = client.newCall(request).execute()) {
             if (response.code() == 404) {
                 return Optional.empty();

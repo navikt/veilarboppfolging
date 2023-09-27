@@ -1,6 +1,9 @@
 package no.nav.veilarboppfolging.controller.v2;
 
+import no.nav.common.auth.oidc.filter.OidcAuthenticationFilter;
+import no.nav.common.json.JsonUtils;
 import no.nav.common.types.identer.Fnr;
+import no.nav.veilarboppfolging.controller.response.OppfolgingPeriodeMinimalDTO;
 import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
 import no.nav.veilarboppfolging.service.AuthService;
@@ -8,9 +11,13 @@ import no.nav.veilarboppfolging.service.OppfolgingService;
 
 import no.nav.veilarboppfolging.utils.auth.AuthorizationInterceptor;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
+import org.springframework.stereotype.Component;
 import org.springframework.test.web.servlet.MockMvc;
 import wiremock.org.eclipse.jetty.http.HttpStatus;
 
@@ -20,10 +27,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -90,13 +97,7 @@ class OppfolgingV2ControllerTest {
         mockMvc.perform(get("/api/v2/oppfolging"))
                 .andExpect(status().is(HttpStatus.OK_200));
     }
-    @Test
-    void hentUnderOppfolgingV3() throws Exception {
-        when(authService.erEksternBruker()).thenReturn(true);
-        when(authService.getInnloggetBrukerIdent()).thenReturn("1234");
-        mockMvc.perform(post("/api/v2/oppfolging/v3"))
-                .andExpect(status().is(HttpStatus.OK_200));
-    }
+
 
 
 }
