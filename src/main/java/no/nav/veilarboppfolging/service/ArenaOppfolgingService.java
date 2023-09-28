@@ -8,6 +8,7 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolgingTilstand;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
+import no.nav.veilarboppfolging.client.veilarbarena.v3.VeilarbarenaClientV3;
 import no.nav.veilarboppfolging.controller.response.OppfolgingEnhetMedVeilederResponse;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
 import no.nav.veilarboppfolging.repository.VeilederTilordningerRepository;
@@ -30,7 +31,7 @@ public class ArenaOppfolgingService {
     private final AktorOppslagClient aktorOppslagClient;
 
     private final VeilarbarenaClient veilarbarenaClient;
-
+    private final VeilarbarenaClientV3 veilarbarenaClientV3;
     private final OppfolgingsStatusRepository oppfolgingsStatusRepository;
 
     private final AuthService authService;
@@ -43,6 +44,7 @@ public class ArenaOppfolgingService {
     public ArenaOppfolgingService(
             AktorOppslagClient aktorOppslagClient,
             VeilarbarenaClient veilarbarenaClient,
+            VeilarbarenaClientV3 veilarbarenaClientV3,
             OppfolgingsStatusRepository oppfolgingsStatusRepository,
             AuthService authService,
             Norg2Client norg2Client,
@@ -50,6 +52,7 @@ public class ArenaOppfolgingService {
     ) {
         this.aktorOppslagClient = aktorOppslagClient;
         this.veilarbarenaClient = veilarbarenaClient;
+        this.veilarbarenaClientV3 = veilarbarenaClientV3;
         this.oppfolgingsStatusRepository = oppfolgingsStatusRepository;
         this.authService = authService;
         this.norg2Client = norg2Client;
@@ -64,6 +67,14 @@ public class ArenaOppfolgingService {
     // Bruker endepunktet i veilarbarena som henter direkte fra Arena
     public Optional<ArenaOppfolgingTilstand> hentOppfolgingTilstandDirekteFraArena(Fnr fnr) {
         return veilarbarenaClient.getArenaOppfolgingsstatus(fnr).map(ArenaOppfolgingTilstand::fraArenaOppfolging);
+    }
+    public Optional<VeilarbArenaOppfolging> hentOppfolgingFraVeilarbarenaV3(Fnr fnr) {
+        return veilarbarenaClientV3.hentOppfolgingsbrukerV3(fnr);
+    }
+
+    // Bruker endepunktet i veilarbarena som henter direkte fra Arena
+    public Optional<ArenaOppfolgingTilstand> hentOppfolgingTilstandDirekteFraArenaV3(Fnr fnr) {
+        return veilarbarenaClientV3.getArenaOppfolgingsstatusV3(fnr).map(ArenaOppfolgingTilstand::fraArenaOppfolging);
     }
 
     public Optional<ArenaOppfolgingTilstand> hentOppfolgingTilstand(Fnr fnr) {
@@ -133,6 +144,25 @@ public class ArenaOppfolgingService {
 
         return new OppfolgingEnhetMedVeilederResponse.Oppfolgingsenhet(enhetNavn, enhetId);
     }
+    public OppfolgingEnhetMedVeilederResponse getOppfolginsstatusV3(Fnr fnr) {
 
+        VeilarbArenaOppfolging veilarbArenaOppfolging = veilarbarenaClientV3.hentOppfolgingsbrukerV3(fnr)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Bruker ikke funnet"));
+
+        OppfolgingEnhetMedVeilederResponse oppfolgingEnhetMedVeileder = new OppfolgingEnhetMedVeilederResponse()
+                .setServicegruppe(veilarbArenaOppfolging.getKvalifiseringsgruppekode())
+                .setFormidlingsgruppe(veilarbArenaOppfolging.getFormidlingsgruppekode())
+                .setOppfolgingsenhet(hentEnhet(veilarbArenaOppfolging.getNav_kontor()))
+                .setHovedmaalkode(veilarbArenaOppfolging.getHovedmaalkode());
+
+        if (authService.erInternBruker()) {
+            AktorId brukersAktoerId = authService.getAktorIdOrThrow(fnr);
+            secureLog.info("Henter tilordning for bruker med aktørId {}", brukersAktoerId);
+            String veilederIdent = veilederTilordningerRepository.hentTilordningForAktoer(brukersAktoerId);
+            oppfolgingEnhetMedVeileder.setVeilederId(veilederIdent);
+        }
+
+        return oppfolgingEnhetMedVeileder;
+    }
 
 }

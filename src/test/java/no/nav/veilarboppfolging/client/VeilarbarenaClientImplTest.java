@@ -11,7 +11,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
-import java.util.Optional;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static jakarta.ws.rs.core.HttpHeaders.CONTENT_TYPE;
@@ -29,7 +28,7 @@ public class VeilarbarenaClientImplTest {
     private static final boolean MOCK_KAN_ENKELT_REAKTIVERES = true;
     private static final String MOCK_RETTIGHETSGRUPPE = "rettighetsgruppe";
 
-    private AuthService authServiceMock = mock(AuthService.class);
+    private final AuthService authServiceMock = mock(AuthService.class);
 
     @Rule
     public WireMockRule wireMockRule = new WireMockRule(0);

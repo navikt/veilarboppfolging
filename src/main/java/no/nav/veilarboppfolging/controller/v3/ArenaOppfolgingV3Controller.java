@@ -26,19 +26,19 @@ public class ArenaOppfolgingV3Controller {
      API used by veilarbmaofs. Contains only the necessary information
      */
     @PostMapping("/oppfolgingsstatus")
-    public OppfolgingEnhetMedVeilederResponse getOppfolginsstatus(@RequestBody String fnr)
+    public OppfolgingEnhetMedVeilederResponse getOppfolginsstatusV3(@RequestBody String fnr)
     {
         secureLog.info("v3 Arena postmapping innsendt ident: {}", fnr);
         JSONObject request = new JSONObject(fnr);
         Fnr fodselsnummer = authService.hentIdentForEksternEllerIntern(Fnr.of(request.getString("fnr")));
         authService.sjekkLesetilgangMedFnr(fodselsnummer);
-        return arenaOppfolgingService.getOppfolginsstatus(fodselsnummer);
+        return arenaOppfolgingService.getOppfolginsstatusV3(fodselsnummer);
     }
 
     @GetMapping("/oppfolgingsenhet")
     public OppfolgingEnhetMedVeilederResponse.Oppfolgingsenhet getOppfolgingsenhet(@RequestParam("aktorId") AktorId aktorId) {
         authService.sjekkLesetilgangMedAktorId(aktorId);
         Fnr fnr = authService.getFnrOrThrow(aktorId);
-        return arenaOppfolgingService.getOppfolginsstatus(fnr).getOppfolgingsenhet();
+        return arenaOppfolgingService.getOppfolginsstatusV3(fnr).getOppfolgingsenhet();
     }
 }
