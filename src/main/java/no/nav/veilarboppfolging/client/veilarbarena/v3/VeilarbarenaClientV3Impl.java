@@ -22,6 +22,7 @@ import java.util.function.Function;
 
 import static no.nav.common.rest.client.RestUtils.MEDIA_TYPE_JSON;
 import static no.nav.common.utils.UrlUtils.joinPaths;
+import static no.nav.veilarboppfolging.utils.SecureLog.secureLog;
 import static org.springframework.http.HttpHeaders.ACCEPT;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -58,6 +59,7 @@ public class VeilarbarenaClientV3Impl implements VeilarbarenaClientV3 {
 
     @Override
     public Optional<VeilarbArenaOppfolging> hentOppfolgingsbrukerV3(Fnr fnr) {
+        secureLog.info("v3 Arena hentOppfolgingsbruker postmapping innsendt ident: {}", fnr);
         Request request = new Request.Builder()
                 .url(joinPaths(veilarbarenaUrl, "/api/v3/oppfolgingsbruker/"))
                 .header(ACCEPT, APPLICATION_JSON_VALUE)
