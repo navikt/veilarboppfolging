@@ -89,7 +89,7 @@ public class OppfolgingService {
         this.transactor = transactor;
     }
 
-    public OppfolgingStatusData hentOppfolgingsStatus(Fnr fnr) {
+    public OppfolgingStatusData hentOppfolgingsStatus(Fnr fnr) { // TODO: trenger denne en transactor?
         return transactor.execute((ignored) -> {
             authService.sjekkLesetilgangMedFnr(fnr);
             return getOppfolgingStatusData(fnr);

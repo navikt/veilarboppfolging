@@ -14,7 +14,9 @@ import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.NavIdent;
+import no.nav.poao_tilgang.client.Decision;
 import no.nav.poao_tilgang.client.PoaoTilgangClient;
+import no.nav.poao_tilgang.client.api.ApiResult;
 import no.nav.veilarboppfolging.controller.v2.OppfolgingV2Controller;
 import no.nav.veilarboppfolging.service.AuthService;
 import org.assertj.core.api.Assertions;
@@ -28,12 +30,14 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.lang.reflect.Method;
 import java.util.Collections;
+import java.util.UUID;
 
 import static no.nav.common.auth.Constants.AAD_NAV_IDENT_CLAIM;
 import static no.nav.common.test.auth.AuthTestUtils.TEST_AUDIENCE;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
+
 @ExtendWith(MockitoExtension.class)
 class AuthorizationAnnotationHandlerTest {
 
@@ -198,11 +202,13 @@ class AuthorizationAnnotationHandlerTest {
     }
 
     private void setupInternalUserAuthOk() {
+        UUID uuid = UUID.randomUUID();
 
         JWTClaimsSet claims = new JWTClaimsSet.Builder()
                 .subject(VEILEDER.get())
                 .issuer(AZURE_ISSUER)
                 .audience(TEST_AUDIENCE)
+                .claim("oid", uuid.toString())
                 .claim(AAD_NAV_IDENT_CLAIM, VEILEDER.get())
                 .claim("azp_name", "test_client_id")
                 .build();
@@ -217,6 +223,9 @@ class AuthorizationAnnotationHandlerTest {
 
         setupServices();
 
-        when(veilarbPep.harVeilederTilgangTilPerson(VEILEDER, ActionId.READ, AKTOR_ID)).thenReturn(true);
+        when(aktorOppslagClient.hentFnr(AKTOR_ID)).thenReturn(FNR);
+
+        Decision decision = mock(Decision.class);
+        doReturn(new ApiResult<Decision>(null, decision)).when(poaoTilgangClient).evaluatePolicy(argThat(new PolicyInputMatcher(uuid, FNR.get())));
     }
 }

@@ -273,16 +273,6 @@ public class AuthServiceTest {
     }
 
     @Test
-    public void eksternBrukerSkalFaPermitHvisAbacGirPermit_harTilgangTilEnhet() {
-        EnhetId enhetId = EnhetId.of("1201");
-        when(authService.erEksternBruker()).thenReturn(true);
-        when(veilarbPep.harTilgangTilEnhet("", ofNullable(enhetId.get()).map(EnhetId::of).orElse(EnhetId.of("")))).thenReturn(true);
-        when(authContextHolder.getIdTokenString()).thenReturn(Optional.of(""));
-
-        assertTrue(authService.harTilgangTilEnhet(enhetId.get()));
-    }
-
-    @Test
     public void eksternBrukerSkalFaDeny_harTilgangTilEnhet() {
         EnhetId enhetId = EnhetId.of("1201");
         when(authService.erEksternBruker()).thenReturn(true);
