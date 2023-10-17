@@ -17,7 +17,6 @@ import no.nav.common.types.identer.NavIdent;
 import no.nav.poao_tilgang.client.PoaoTilgangClient;
 import no.nav.veilarboppfolging.controller.v2.OppfolgingV2Controller;
 import no.nav.veilarboppfolging.service.AuthService;
-import no.nav.veilarboppfolging.service.UnleashService;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -59,10 +58,6 @@ class AuthorizationAnnotationHandlerTest {
 
     @Mock
     private PoaoTilgangClient poaoTilgangClient;
-
-    @Mock
-    private UnleashService unleashService;
-
 
     @SneakyThrows
     @Test
@@ -143,7 +138,7 @@ class AuthorizationAnnotationHandlerTest {
     }
 
     private void setupServices() {
-        AuthService authService = new AuthService(authContextHolder, veilarbPep, aktorOppslagClient, null, null, null, auditLogger, poaoTilgangClient, unleashService);
+        AuthService authService = new AuthService(authContextHolder, veilarbPep, aktorOppslagClient, null, null, null, auditLogger, poaoTilgangClient);
         annotationHandler = new AuthorizationAnnotationHandler(authService);
     }
 

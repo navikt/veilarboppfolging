@@ -4,14 +4,11 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.PlainJWT;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
-import no.finn.unleash.UnleashContext;
 import no.nav.common.abac.Pep;
 import no.nav.common.audit_log.cef.CefMessage;
 import no.nav.common.audit_log.log.AuditLogger;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.AuthContextHolderThreadLocal;
-import no.nav.common.featuretoggle.UnleashClient;
-import no.nav.common.health.HealthCheckResult;
 import no.nav.common.job.leader_election.LeaderElectionClient;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
@@ -76,26 +73,6 @@ public class ApplicationTestConfig {
         DataSource dataSource = LocalH2Database.getDb().getDataSource();
         DbTestUtils.setupDatabaseFunctions(dataSource);
         return dataSource;
-    }
-
-    @Bean
-    public UnleashClient unleashClient() {
-        return new UnleashClient() {
-            @Override
-            public boolean isEnabled(String s) {
-                return true;
-            }
-
-            @Override
-            public boolean isEnabled(String s, UnleashContext unleashContext) {
-                return true;
-            }
-
-            @Override
-            public HealthCheckResult checkHealth() {
-                return HealthCheckResult.healthy();
-            }
-        };
     }
 
     @Bean

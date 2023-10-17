@@ -64,8 +64,6 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     private KvpRepository kvpRepository = mock(KvpRepository.class);
     private MetricsService metricsService = mock(MetricsService.class);
     private ManuellStatusService manuellStatusService = mock(ManuellStatusService.class);
-    private UnleashService unleashService = mock(UnleashService.class);
-
     private OppfolgingsStatusRepository oppfolgingsStatusRepository;
     private OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
     private OppfolgingService oppfolgingService;
@@ -91,7 +89,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
                 kvpRepository,
                 null,
                 null,
-                unleashService, transactor);
+                 transactor);
 
 
         gittArenaOppfolgingStatus("", "");
@@ -102,8 +100,6 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         when(arenaOppfolgingService.hentOppfolgingTilstand(FNR)).thenReturn(Optional.of(arenaOppfolgingTilstand));
         when(ytelseskontraktClient.hentYtelseskontraktListe(any())).thenReturn(mock(YtelseskontraktResponse.class));
         when(manuellStatusService.hentDigdirKontaktinfo(FNR)).thenReturn(new DigdirKontaktinfo());
-
-        when(unleashService.skalIkkeOppdatereMedSideeffekt()).thenReturn(false);
     }
 
     @Test

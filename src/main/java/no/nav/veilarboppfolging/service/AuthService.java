@@ -62,10 +62,8 @@ public class AuthService {
 
     private final PoaoTilgangClient poaoTilgangClient;
 
-    private final UnleashService unleashService;
-
     @Autowired
-    public AuthService(AuthContextHolder authContextHolder, Pep veilarbPep, AktorOppslagClient aktorOppslagClient, AzureAdOnBehalfOfTokenClient aadOboTokenClient, MachineToMachineTokenClient machineToMachineTokenClient, EnvironmentProperties environmentProperties, AuditLogger auditLogger, PoaoTilgangClient poaoTilgangClient, UnleashService unleashService) {
+    public AuthService(AuthContextHolder authContextHolder, Pep veilarbPep, AktorOppslagClient aktorOppslagClient, AzureAdOnBehalfOfTokenClient aadOboTokenClient, MachineToMachineTokenClient machineToMachineTokenClient, EnvironmentProperties environmentProperties, AuditLogger auditLogger, PoaoTilgangClient poaoTilgangClient) {
         this.authContextHolder = authContextHolder;
         this.veilarbPep = veilarbPep;
         this.aktorOppslagClient = aktorOppslagClient;
@@ -74,7 +72,6 @@ public class AuthService {
         this.environmentProperties = environmentProperties;
         this.auditLogger = auditLogger;
         this.poaoTilgangClient = poaoTilgangClient;
-        this.unleashService = unleashService;
     }
 
     public void skalVereEnAv(List<UserRole> roller) {
@@ -161,71 +158,52 @@ public class AuthService {
         return authContextHolder.erEksternBruker();
     }
 
-    public boolean harTilgangTilEnhet(String enhetId) { //TODO ta stilling til kommentaren under
-        //  ABAC feiler hvis man spør om tilgang til udefinerte enheter (null) men tillater å spørre om tilgang
-        //  til enheter som ikke finnes (f.eks. tom streng)
-        //  Ved å konvertere null til tom streng muliggjør vi å spørre om tilgang til enhet for brukere som
-        //  ikke har enhet. Sluttbrukere da få permit mens veiledere vil få deny.
-        if (unleashService.skalBrukePoaoTilgang()) {
-            if (erInternBruker()) {
-                Decision decision = poaoTilgangClient.evaluatePolicy(new NavAnsattTilgangTilNavEnhetPolicyInput(hentInnloggetVeilederUUID(), ofNullable(enhetId).orElse(""))).getOrThrow();
-                auditLogWithMessageAndDestinationUserId(
-                        "Veileder har gjort oppslag på enhet",
-                        enhetId,
-                        authContextHolder.getNavIdent().orElse(NavIdent.of(UKJENT_NAV_IDENT)).get(),
-                        decision.isPermit() ? AuthorizationDecision.PERMIT : AuthorizationDecision.DENY
-                );
-                return decision.isPermit();
-            } else {
-                Boolean abacDecision = veilarbPep.harTilgangTilEnhet(getInnloggetBrukerToken(), ofNullable(enhetId).map(EnhetId::of).orElse(EnhetId.of("")));
-                if (erEksternBruker() && abacDecision == true) {
-                    secureLog.warn("Ekstern bruker kom inn i harTilgangTilEnhet og fikk permit fra abac. Må håndteres i poao-tilgang");
-                    return true;
-                } else if (erEksternBruker() && abacDecision == false) {
-                    return false;
-                } else {
-                    secureLog.warn("Systembruker eller ukjent rolle kom inn i harTilgangTilEnhet, hvis dette skjer må man legge til håndtering, abacDecision = {}", abacDecision);
-                    return abacDecision;
-                }
-            }
-        }
-        return veilarbPep.harTilgangTilEnhet(getInnloggetBrukerToken(), ofNullable(enhetId).map(EnhetId::of).orElse(EnhetId.of("")));
-    }
-
-    public boolean harTilgangTilEnhetMedSperre(String enhetId) {
-        if (unleashService.skalBrukePoaoTilgang()) {
-            if (erEksternBruker()) {
-                return true; // sluttbruker har altid tilgang til egne data
-            }
-            Decision decision = poaoTilgangClient.evaluatePolicy(new NavAnsattTilgangTilNavEnhetMedSperrePolicyInput(
-                    hentInnloggetVeilederUUID(), enhetId
-            )).getOrThrow();
+    public boolean harTilgangTilEnhet(String enhetId) {
+        if (erInternBruker()) {
+            Decision decision = poaoTilgangClient.evaluatePolicy(new NavAnsattTilgangTilNavEnhetPolicyInput(hentInnloggetVeilederUUID(), ofNullable(enhetId).orElse(""))).getOrThrow();
             auditLogWithMessageAndDestinationUserId(
-                    "Veileder har gjort oppslag på enhet med sperre",
+                    "Veileder har gjort oppslag på enhet",
                     enhetId,
                     authContextHolder.getNavIdent().orElse(NavIdent.of(UKJENT_NAV_IDENT)).get(),
                     decision.isPermit() ? AuthorizationDecision.PERMIT : AuthorizationDecision.DENY
             );
             return decision.isPermit();
+        } else {
+            if (!erEksternBruker()) {
+                secureLog.warn("Systembruker eller ukjent rolle kom inn i harTilgangTilEnhet, hvis dette skjer må man legge til håndtering");
+            }
+            return false;
         }
-        return veilarbPep.harTilgangTilEnhetMedSperre(getInnloggetBrukerToken(), EnhetId.of(enhetId));
+    }
+
+    public boolean harTilgangTilEnhetMedSperre(String enhetId) {
+        if (erEksternBruker()) {
+            return true; // sluttbruker har altid tilgang til egne data
+        }
+        Decision decision = poaoTilgangClient.evaluatePolicy(new NavAnsattTilgangTilNavEnhetMedSperrePolicyInput(
+                hentInnloggetVeilederUUID(), enhetId
+        )).getOrThrow();
+        auditLogWithMessageAndDestinationUserId(
+                "Veileder har gjort oppslag på enhet med sperre",
+                enhetId,
+                authContextHolder.getNavIdent().orElse(NavIdent.of(UKJENT_NAV_IDENT)).get(),
+                decision.isPermit() ? AuthorizationDecision.PERMIT : AuthorizationDecision.DENY
+        );
+        return decision.isPermit();
+
     }
 
     public boolean harVeilederSkriveTilgangTilFnr(String veilederId, Fnr fnr) {
-        if (unleashService.skalBrukePoaoTilgang()) {
-            Decision decision = poaoTilgangClient.evaluatePolicy(new NavAnsattNavIdentSkrivetilgangTilEksternBrukerPolicyInput(
-                    veilederId, fnr.toString()
-            )).getOrThrow();
-            auditLogWithMessageAndDestinationUserId(
-                    "Veileder har gjort oppslag på fnr",
-                    fnr.get(),
-                    veilederId,
-                    decision.isPermit() ? AuthorizationDecision.PERMIT : AuthorizationDecision.DENY
-            );
-            return decision.isPermit();
-        } else {
-            return veilarbPep.harVeilederTilgangTilPerson(NavIdent.of(veilederId), ActionId.WRITE, getAktorIdOrThrow(fnr));
-        }
+        Decision decision = poaoTilgangClient.evaluatePolicy(new NavAnsattNavIdentSkrivetilgangTilEksternBrukerPolicyInput(
+                veilederId, fnr.toString()
+        )).getOrThrow();
+        auditLogWithMessageAndDestinationUserId(
+                "Veileder har gjort oppslag på fnr",
+                fnr.get(),
+                veilederId,
+                decision.isPermit() ? AuthorizationDecision.PERMIT : AuthorizationDecision.DENY
+        );
+        return decision.isPermit();
     }
 
     public void sjekkLesetilgangMedFnr(Fnr fnr) {
@@ -249,54 +227,40 @@ public class AuthService {
     }
 
     private void sjekkTilgang(ActionId actionId, AktorId aktorId) {
-        if (unleashService.skalBrukePoaoTilgang()) {
-            Optional<String> sikkerhetsnivaa = hentSikkerhetsnivaa();
-            if (erInternBruker()) {
-                Decision decision = poaoTilgangClient.evaluatePolicy(new NavAnsattTilgangTilEksternBrukerPolicyInput(
-                        hentInnloggetVeilederUUID(), mapActionTypeToTilgangsType(actionId), getFnrOrThrow(aktorId).get()
-                )).getOrThrow();
-                auditLogWithMessageAndDestinationUserId(
-                        "Veileder har gjort oppslag på aktorid",
-                        aktorId.get(),
-                        authContextHolder.getNavIdent().orElse(NavIdent.of(UKJENT_NAV_IDENT)).get(),
-                        decision.isPermit() ? AuthorizationDecision.PERMIT : AuthorizationDecision.DENY
-                );
-                if (decision.isDeny()) {
-                    throw new ResponseStatusException(HttpStatus.FORBIDDEN);
-                }
-            } else if (erEksternBruker() && sikkerhetsnivaa.isPresent() && sikkerhetsnivaa.get().equals("Level4")) {
-                Decision decision = poaoTilgangClient.evaluatePolicy(new EksternBrukerTilgangTilEksternBrukerPolicyInput(
-                        hentInnloggetPersonIdent(), getFnrOrThrow(aktorId).get()
-                )).getOrThrow();
-                auditLogWithMessageAndDestinationUserId(
-                        "Ekstern bruker har gjort oppslag på aktorid",
-                        aktorId.get(),
-                        hentInnloggetPersonIdent(),
-                        decision.isPermit() ? AuthorizationDecision.PERMIT : AuthorizationDecision.DENY
-                );
-                if (decision.isDeny()) {
-                    throw new ResponseStatusException(HttpStatus.FORBIDDEN);
-                }
+        Optional<String> sikkerhetsnivaa = hentSikkerhetsnivaa();
+        if (erInternBruker()) {
+            Decision decision = poaoTilgangClient.evaluatePolicy(new NavAnsattTilgangTilEksternBrukerPolicyInput(
+                    hentInnloggetVeilederUUID(), mapActionTypeToTilgangsType(actionId), getFnrOrThrow(aktorId).get()
+            )).getOrThrow();
+            auditLogWithMessageAndDestinationUserId(
+                    "Veileder har gjort oppslag på aktorid",
+                    aktorId.get(),
+                    authContextHolder.getNavIdent().orElse(NavIdent.of(UKJENT_NAV_IDENT)).get(),
+                    decision.isPermit() ? AuthorizationDecision.PERMIT : AuthorizationDecision.DENY
+            );
+            if (decision.isDeny()) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+            }
+        } else if (erEksternBruker() && sikkerhetsnivaa.isPresent() && sikkerhetsnivaa.get().equals("Level4")) {
+            Decision decision = poaoTilgangClient.evaluatePolicy(new EksternBrukerTilgangTilEksternBrukerPolicyInput(
+                    hentInnloggetPersonIdent(), getFnrOrThrow(aktorId).get()
+            )).getOrThrow();
+            auditLogWithMessageAndDestinationUserId(
+                    "Ekstern bruker har gjort oppslag på aktorid",
+                    aktorId.get(),
+                    hentInnloggetPersonIdent(),
+                    decision.isPermit() ? AuthorizationDecision.PERMIT : AuthorizationDecision.DENY
+            );
+            if (decision.isDeny()) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+            }
 
-            } else if (erSystemBruker()) {
-                if (!veilarbPep.harTilgangTilPerson(getInnloggetBrukerToken(), actionId, aktorId)) {
-                    throw new ResponseStatusException(HttpStatus.FORBIDDEN);
-                }
-            } else {
+        } else if (erSystemBruker()) {
+            if (!veilarbPep.harTilgangTilPerson(getInnloggetBrukerToken(), actionId, aktorId)) {
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN);
             }
         } else {
-            Optional<NavIdent> navident = getNavIdentClaimHvisTilgjengelig();
-
-            if (navident.isEmpty()) {
-                if (!veilarbPep.harTilgangTilPerson(getInnloggetBrukerToken(), actionId, aktorId)) {
-                    throw new ResponseStatusException(HttpStatus.FORBIDDEN);
-                }
-            } else {
-                if (!veilarbPep.harVeilederTilgangTilPerson(navident.orElseThrow(), actionId, aktorId)) {
-                    throw new ResponseStatusException(HttpStatus.FORBIDDEN);
-                }
-            }
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
     }
 
@@ -372,14 +336,15 @@ public class AuthService {
     }
 
     public String getAadOboTokenForTjeneste(DownstreamApi api) {
-        if (!erAadOboToken()) throw new IllegalStateException("Kan ikke hente AAD-OBO token når innlogget bruker ikke er intern");
+        if (!erAadOboToken())
+            throw new IllegalStateException("Kan ikke hente AAD-OBO token når innlogget bruker ikke er intern");
         String scope = "api://" + api.cluster + "." + api.namespace + "." + api.serviceName + "/.default";
         return aadOboTokenClient.exchangeOnBehalfOfToken(scope, getInnloggetBrukerToken());
     }
 
-	public String getAadOboTokenForTjeneste(String tokenScope) {
-		return aadOboTokenClient.exchangeOnBehalfOfToken(tokenScope, authContextHolder.requireIdTokenString());
-	}
+    public String getAadOboTokenForTjeneste(String tokenScope) {
+        return aadOboTokenClient.exchangeOnBehalfOfToken(tokenScope, authContextHolder.requireIdTokenString());
+    }
 
     public String getMachineTokenForTjeneste(DownstreamApi api) {
         String scope = "api://" + api.cluster + "." + api.namespace + "." + api.serviceName + "/.default";
