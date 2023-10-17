@@ -65,7 +65,7 @@ public class AktiverBrukerIntegrationTest {
                 oppfolgingsStatusRepository, oppfolgingsPeriodeRepository,
                 manuellStatusService,
 
-                new KvpRepository(db, namedParameterJdbcTemplate, transactor),
+                new KvpRepository(db, transactor),
                 new MaalRepository(db, transactor),
                 mock(BrukerOppslagFlereOppfolgingAktorRepository.class),
                 null,

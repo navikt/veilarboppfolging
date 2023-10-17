@@ -28,14 +28,12 @@ public class KvpRepository {
 
     private final JdbcTemplate db;
 
-    private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
     private final TransactionTemplate transactor;
 
     @Autowired
-    public KvpRepository(JdbcTemplate db, NamedParameterJdbcTemplate namedParameterJdbcTemplate, TransactionTemplate transactor) {
+    public KvpRepository(JdbcTemplate db, TransactionTemplate transactor) {
         this.db = db;
-        this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
         this.transactor = transactor;
     }
 
@@ -112,18 +110,6 @@ public class KvpRepository {
                 KvpRepository::mapTilKvp,
                 aktorId.get()
         );
-    }
-
-    public List<KvpPeriodeEntity> hentKvpPerioderPage(int offset, int pageSize) {
-        MapSqlParameterSource params = new MapSqlParameterSource()
-                .addValue("offset", offset)
-                .addValue("pageSize", pageSize);
-        return namedParameterJdbcTemplate.query("""
-                SELECT * 
-                FROM kvp 
-                ORDER BY kvp_id 
-                OFFSET :offset ROWS FETCH NEXT :pageSize ROWS ONLY
-                """, params, KvpRepository::mapTilKvp);
     }
 
     /**
