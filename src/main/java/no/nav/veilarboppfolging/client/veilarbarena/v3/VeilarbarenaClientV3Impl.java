@@ -61,10 +61,10 @@ public class VeilarbarenaClientV3Impl implements VeilarbarenaClientV3 {
     public Optional<VeilarbArenaOppfolging> hentOppfolgingsbrukerV3(Fnr fnr) {
         secureLog.info("v3 Arena hentOppfolgingsbruker postmapping innsendt ident: {}", fnr);
         Request request = new Request.Builder()
-                .url(joinPaths(veilarbarenaUrl, "/api/v3/oppfolgingsbruker/"))
+                .url(joinPaths(veilarbarenaUrl, "/api/v2/oppfolgingsbruker/"))
                 .header(ACCEPT, APPLICATION_JSON_VALUE)
                 .header(AUTHORIZATION, "Bearer " + getToken())
-                .post(RequestBody.create(MEDIA_TYPE_JSON, fnr.get()))
+                .post(RequestBody.create(fnr.get(), MEDIA_TYPE_JSON))
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
@@ -83,10 +83,10 @@ public class VeilarbarenaClientV3Impl implements VeilarbarenaClientV3 {
     @Override
     public Optional<ArenaOppfolging> getArenaOppfolgingsstatusV3(Fnr fnr) {
         Request request = new Request.Builder()
-                .url(joinPaths(veilarbarenaUrl, "/api/v3/oppfolgingsstatus/"))
+                .url(joinPaths(veilarbarenaUrl, "/api/v2/oppfolgingsstatus/"))
                 .header(ACCEPT, APPLICATION_JSON_VALUE)
                 .header(AUTHORIZATION, "Bearer " + getToken())
-                .post(RequestBody.create(MEDIA_TYPE_JSON, fnr.get()))
+                .post(RequestBody.create(fnr.get(), MEDIA_TYPE_JSON))
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
