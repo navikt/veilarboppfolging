@@ -58,7 +58,7 @@ public class VeilarbarenaClientImpl implements VeilarbarenaClient {
 
     @Override
     public Optional<VeilarbArenaOppfolging> hentOppfolgingsbruker(PersonRequest personRequest) {
-        secureLog.info("v3 Arena hentOppfolgingsbruker postmapping innsendt ident: {}", personRequest.getFnr());
+        secureLog.info("v3 Arena hentOppfolgingsbruker postmapping innsendt ident: {}", JsonUtils.toJson(personRequest));
         Request request = new Request.Builder()
                 .url(joinPaths(veilarbarenaUrl, "/api/v2/oppfolgingsbruker/"))
                 .header(ACCEPT, APPLICATION_JSON_VALUE)
