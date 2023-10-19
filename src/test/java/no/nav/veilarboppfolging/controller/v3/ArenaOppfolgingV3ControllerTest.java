@@ -1,7 +1,6 @@
 package no.nav.veilarboppfolging.controller.v3;
 
 import no.nav.common.types.identer.Fnr;
-import no.nav.veilarboppfolging.controller.ArenaOppfolgingController;
 import no.nav.veilarboppfolging.controller.response.OppfolgingEnhetMedVeilederResponse;
 import no.nav.veilarboppfolging.domain.PersonRequest;
 import no.nav.veilarboppfolging.service.ArenaOppfolgingService;
@@ -20,7 +19,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(controllers = ArenaOppfolgingController.class)
+@WebMvcTest(controllers = ArenaOppfolgingV3Controller.class)
 public class ArenaOppfolgingV3ControllerTest {
 
     @Autowired
