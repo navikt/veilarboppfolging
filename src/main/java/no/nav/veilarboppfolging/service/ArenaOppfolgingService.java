@@ -58,18 +58,18 @@ public class ArenaOppfolgingService {
 
     // Bruker endepunktet i veilarbarena som henter fra database som er synket med Arena (har et delay på et par min)
     public Optional<VeilarbArenaOppfolging> hentOppfolgingFraVeilarbarena(PersonRequest personRequest) {
-        return veilarbarenaClient.hentOppfolgingsbruker(personRequest.getFnr());
+        return veilarbarenaClient.hentOppfolgingsbruker(personRequest);
     }
 
     // Bruker endepunktet i veilarbarena som henter direkte fra Arena
     public Optional<ArenaOppfolgingTilstand> hentOppfolgingTilstandDirekteFraArena(PersonRequest personRequest) {
-        return veilarbarenaClient.getArenaOppfolgingsstatus(personRequest.getFnr()).map(ArenaOppfolgingTilstand::fraArenaOppfolging);
+        return veilarbarenaClient.getArenaOppfolgingsstatus(personRequest).map(ArenaOppfolgingTilstand::fraArenaOppfolging);
     }
 
     public Optional<ArenaOppfolgingTilstand> hentOppfolgingTilstand(PersonRequest personRequest) {
         AktorId aktorId = aktorOppslagClient.hentAktorId(personRequest.getFnr());
 
-        Optional<ArenaOppfolgingTilstand> maybeArenaOppfolging = veilarbarenaClient.hentOppfolgingsbruker(personRequest.getFnr())
+        Optional<ArenaOppfolgingTilstand> maybeArenaOppfolging = veilarbarenaClient.hentOppfolgingsbruker(personRequest)
                 .map(ArenaOppfolgingTilstand::fraArenaBruker);
 
         // TODO: Kan hente erUnderOppfolging gjennom OppfolgingService
@@ -103,7 +103,7 @@ public class ArenaOppfolgingService {
 
     public OppfolgingEnhetMedVeilederResponse getOppfolginsstatus(PersonRequest personRequest) {
 
-        VeilarbArenaOppfolging veilarbArenaOppfolging = veilarbarenaClient.hentOppfolgingsbruker(personRequest.getFnr())
+        VeilarbArenaOppfolging veilarbArenaOppfolging = veilarbarenaClient.hentOppfolgingsbruker(personRequest)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Bruker ikke funnet"));
 
         OppfolgingEnhetMedVeilederResponse oppfolgingEnhetMedVeileder = new OppfolgingEnhetMedVeilederResponse()

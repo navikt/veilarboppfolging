@@ -8,6 +8,7 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
+import no.nav.veilarboppfolging.domain.PersonRequest;
 import no.nav.veilarboppfolging.kafka.KvpPeriode;
 import no.nav.veilarboppfolging.repository.KvpRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
@@ -50,7 +51,8 @@ public class KvpService {
     @SneakyThrows
     public void startKvp(Fnr fnr, String begrunnelse) {
         AktorId aktorId = authService.getAktorIdOrThrow(fnr);
-
+        PersonRequest personRequest = new PersonRequest();
+        personRequest.setFnr(fnr);
         authService.sjekkLesetilgangMedAktorId(aktorId);
 
         Optional<OppfolgingEntity> maybeOppfolging = oppfolgingsStatusRepository.hentOppfolging(aktorId);
@@ -59,7 +61,7 @@ public class KvpService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
 
-        String enhet = veilarbarenaClient.hentOppfolgingsbruker(fnr)
+        String enhet = veilarbarenaClient.hentOppfolgingsbruker(personRequest)
                 .map(VeilarbArenaOppfolging::getNav_kontor).orElse(null);
 
         if (!authService.harTilgangTilEnhet(enhet)) {
@@ -92,9 +94,10 @@ public class KvpService {
     @SneakyThrows
     public void stopKvp(Fnr fnr, String begrunnelse) {
         AktorId aktorId = authService.getAktorIdOrThrow(fnr);
-
+        PersonRequest personRequest = new PersonRequest();
+        personRequest.setFnr(fnr);
         authService.sjekkLesetilgangMedAktorId(aktorId);
-        String enhet = veilarbarenaClient.hentOppfolgingsbruker(fnr)
+        String enhet = veilarbarenaClient.hentOppfolgingsbruker(personRequest)
                 .map(VeilarbArenaOppfolging::getNav_kontor).orElse(null);
 
         if (!authService.harTilgangTilEnhet(enhet)) {

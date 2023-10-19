@@ -14,7 +14,6 @@ import no.nav.veilarboppfolging.client.digdir_krr.DigdirKontaktinfo;
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolging;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
-import no.nav.veilarboppfolging.client.veilarbarena.v3.VeilarbarenaClientV3;
 import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktClient;
 import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktResponse;
 import no.nav.veilarboppfolging.controller.request.Innsatsgruppe;
@@ -117,33 +116,12 @@ public class ClientTestConfig {
         };
     }
 
+
     @Bean
     public VeilarbarenaClient veilarbarenaClient() {
         return new VeilarbarenaClient() {
             @Override
-            public Optional<VeilarbArenaOppfolging> hentOppfolgingsbruker(Fnr fnr) {
-                return Optional.of(
-                        new VeilarbArenaOppfolging()
-                                .setFodselsnr(fnr.get())
-                );
-            }
-
-            @Override
-            public Optional<ArenaOppfolging> getArenaOppfolgingsstatus(Fnr fnr) {
-                return Optional.empty();
-            }
-
-            @Override
-            public HealthCheckResult checkHealth() {
-                return HealthCheckResult.healthy();
-            }
-        };
-    }
-    @Bean
-    public VeilarbarenaClientV3 veilarbarenaClientV3() {
-        return new VeilarbarenaClientV3() {
-            @Override
-            public Optional<VeilarbArenaOppfolging> hentOppfolgingsbrukerV3(PersonRequest personRequest) {
+            public Optional<VeilarbArenaOppfolging> hentOppfolgingsbruker(PersonRequest personRequest) {
                 return Optional.of(
                         new VeilarbArenaOppfolging()
                                 .setFodselsnr(personRequest.getFnr().toString())
@@ -151,7 +129,7 @@ public class ClientTestConfig {
             }
 
             @Override
-            public Optional<ArenaOppfolging> getArenaOppfolgingsstatusV3(PersonRequest personRequest) {
+            public Optional<ArenaOppfolging> getArenaOppfolgingsstatus(PersonRequest personRequest) {
                 return Optional.empty();
             }
 

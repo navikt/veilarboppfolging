@@ -16,8 +16,6 @@ import no.nav.veilarboppfolging.client.behandle_arbeidssoker.BehandleArbeidssoke
 import no.nav.veilarboppfolging.client.behandle_arbeidssoker.BehandleArbeidssokerClientImpl;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClientImpl;
-import no.nav.veilarboppfolging.client.veilarbarena.v3.VeilarbarenaClientV3;
-import no.nav.veilarboppfolging.client.veilarbarena.v3.VeilarbarenaClientV3Impl;
 import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktClient;
 import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktClientImpl;
 import no.nav.veilarboppfolging.client.digdir_krr.DigdirClient;
@@ -68,11 +66,7 @@ public class ClientConfig {
         String url = naisPreprodOrNaisAdeoIngress("veilarbarena", true);
         return new VeilarbarenaClientImpl(url, authService::getMachineTokenForTjeneste, authService::getAadOboTokenForTjeneste, authService);
     }
-    @Bean
-    public VeilarbarenaClientV3 veilarbarenaClientV3(AuthService authService) {
-        String url = naisPreprodOrNaisAdeoIngress("veilarbarena", true);
-        return new VeilarbarenaClientV3Impl(url, authService::getMachineTokenForTjeneste, authService::getAadOboTokenForTjeneste, authService);
-    }
+
     @Bean
     public YtelseskontraktClient ytelseskontraktClient(EnvironmentProperties properties, StsConfig stsConfig) {
         return new YtelseskontraktClientImpl(properties.getYtelseskontraktV3Endpoint(), stsConfig);

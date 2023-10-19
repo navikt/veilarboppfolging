@@ -9,16 +9,20 @@ import no.nav.common.rest.client.RestClient;
 import no.nav.common.rest.client.RestUtils;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.utils.EnvironmentUtils;
+import no.nav.veilarboppfolging.domain.PersonRequest;
 import no.nav.veilarboppfolging.service.AuthService;
 import no.nav.veilarboppfolging.utils.DownstreamApi;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 
 import java.util.Optional;
 import java.util.function.Function;
 
+import static no.nav.common.rest.client.RestUtils.MEDIA_TYPE_JSON;
 import static no.nav.common.utils.UrlUtils.joinPaths;
+import static no.nav.veilarboppfolging.utils.SecureLog.secureLog;
 import static org.springframework.http.HttpHeaders.ACCEPT;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -54,11 +58,13 @@ public class VeilarbarenaClientImpl implements VeilarbarenaClient {
     }
 
     @Override
-    public Optional<VeilarbArenaOppfolging> hentOppfolgingsbruker(Fnr fnr) {
+    public Optional<VeilarbArenaOppfolging> hentOppfolgingsbruker(PersonRequest personRequest) {
+        secureLog.info("v3 Arena hentOppfolgingsbruker postmapping innsendt ident: {}", personRequest.getFnr());
         Request request = new Request.Builder()
-                .url(joinPaths(veilarbarenaUrl, "/api/oppfolgingsbruker/" + fnr.get()))
+                .url(joinPaths(veilarbarenaUrl, "/api/v2/oppfolgingsbruker/"))
                 .header(ACCEPT, APPLICATION_JSON_VALUE)
                 .header(AUTHORIZATION, "Bearer " + getToken())
+                .post(RequestBody.create(personRequest.getFnr().toString(), MEDIA_TYPE_JSON))
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
@@ -75,11 +81,12 @@ public class VeilarbarenaClientImpl implements VeilarbarenaClient {
 
     @SneakyThrows
     @Override
-    public Optional<ArenaOppfolging> getArenaOppfolgingsstatus(Fnr fnr) {
+    public Optional<ArenaOppfolging> getArenaOppfolgingsstatus(PersonRequest personRequest) {
         Request request = new Request.Builder()
-                .url(joinPaths(veilarbarenaUrl, "/api/oppfolgingsstatus/" + fnr.get()))
+                .url(joinPaths(veilarbarenaUrl, "/api/v2/oppfolgingsstatus/"))
                 .header(ACCEPT, APPLICATION_JSON_VALUE)
                 .header(AUTHORIZATION, "Bearer " + getToken())
+                .post(RequestBody.create(personRequest.getFnr().toString(), MEDIA_TYPE_JSON))
                 .build();
 
         try (Response response = client.newCall(request).execute()) {

@@ -4,6 +4,7 @@ import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolging;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClientImpl;
+import no.nav.veilarboppfolging.domain.PersonRequest;
 import no.nav.veilarboppfolging.service.AuthService;
 import no.nav.veilarboppfolging.utils.DownstreamApi;
 import org.assertj.core.api.Assertions;
@@ -43,14 +44,15 @@ public class VeilarbarenaClientImplTest {
         String apiUrl = "http://localhost:" + wireMockRule.port();
         VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl(apiUrl, (DownstreamApi v) -> "TOKEN", (DownstreamApi v) -> "TOKEN", authServiceMock);
 
-        givenThat(get(urlEqualTo("/api/oppfolgingsstatus/" + MOCK_FNR))
+        givenThat(post(urlEqualTo("/api/v2/oppfolgingsstatus/"))
                 .willReturn(aResponse()
                         .withStatus(200)
                         .withHeader(CONTENT_TYPE, APPLICATION_JSON)
                         .withBody(toJson(arenaOppfolgingResponse())))
         );
-
-        ArenaOppfolging arenaOppfolging = veilarbarenaClient.getArenaOppfolgingsstatus(MOCK_FNR).orElseThrow();
+        PersonRequest personRequest = new PersonRequest();
+        personRequest.setFnr(MOCK_FNR);
+        ArenaOppfolging arenaOppfolging = veilarbarenaClient.getArenaOppfolgingsstatus(personRequest).orElseThrow();
 
         Assertions.assertThat(arenaOppfolging.getFormidlingsgruppe()).isEqualTo(MOCK_FORMIDLINGSGRUPPE);
         Assertions.assertThat(arenaOppfolging.getOppfolgingsenhet()).isEqualTo(MOCK_ENHET_ID);
@@ -63,33 +65,36 @@ public class VeilarbarenaClientImplTest {
     public void skal_returnere_empty_om_person_ikke_funnet() {
         String apiUrl = "http://localhost:" + wireMockRule.port();
         VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl(apiUrl, (DownstreamApi v) ->"TOKEN", (DownstreamApi v) -> "TOKEN",authServiceMock);
-
-        givenThat(get(urlEqualTo("/api/oppfolgingsstatus/" + MOCK_FNR))
+        PersonRequest personRequest = new PersonRequest();
+        personRequest.setFnr(MOCK_FNR);
+        givenThat(post(urlEqualTo("/api/v2/oppfolgingsstatus/"))
                 .willReturn(aResponse().withStatus(404)));
 
-        assertTrue(veilarbarenaClient.getArenaOppfolgingsstatus(MOCK_FNR).isEmpty());
+        assertTrue(veilarbarenaClient.getArenaOppfolgingsstatus(personRequest).isEmpty());
     }
 
     @Test
     public void skal_returnere_empty_om_man_ikke_har_tilgang() {
         String apiUrl = "http://localhost:" + wireMockRule.port();
         VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl(apiUrl, (DownstreamApi v) -> "TOKEN", (DownstreamApi v) -> "TOKEN", authServiceMock);
-
-        givenThat(get(urlEqualTo("/api/oppfolgingsstatus/" + MOCK_FNR))
+        PersonRequest personRequest = new PersonRequest();
+        personRequest.setFnr(MOCK_FNR);
+        givenThat(post(urlEqualTo("/api/v2/oppfolgingsstatus/"))
                 .willReturn(aResponse().withStatus(403)));
 
-        assertTrue(veilarbarenaClient.getArenaOppfolgingsstatus(MOCK_FNR).isEmpty());
+        assertTrue(veilarbarenaClient.getArenaOppfolgingsstatus(personRequest).isEmpty());
     }
 
     @Test
     public void skal_returnere_empty_om_ugyldig_identifikator() {
         String apiUrl = "http://localhost:" + wireMockRule.port();
         VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl(apiUrl, (DownstreamApi v) -> "TOKEN", (DownstreamApi v) -> "TOKEN", authServiceMock);
-
-        givenThat(get(urlEqualTo("/api/oppfolgingsstatus/" + MOCK_FNR))
+        PersonRequest personRequest = new PersonRequest();
+        personRequest.setFnr(MOCK_FNR);
+        givenThat(post(urlEqualTo("/api/v2/oppfolgingsstatus/"))
                 .willReturn(aResponse().withStatus(400)));
 
-        assertTrue(veilarbarenaClient.getArenaOppfolgingsstatus(MOCK_FNR).isEmpty());
+        assertTrue(veilarbarenaClient.getArenaOppfolgingsstatus(personRequest).isEmpty());
     }
 
     private ArenaOppfolging arenaOppfolgingResponse() {

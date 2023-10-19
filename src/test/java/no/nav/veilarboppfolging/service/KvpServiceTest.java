@@ -7,6 +7,7 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
+import no.nav.veilarboppfolging.domain.PersonRequest;
 import no.nav.veilarboppfolging.kafka.KvpPeriode;
 import no.nav.veilarboppfolging.repository.KvpRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
@@ -68,10 +69,11 @@ public class KvpServiceTest {
     @Before
     public void initialize() {
         when(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID)).thenReturn(Optional.of(new OppfolgingEntity().setUnderOppfolging(true)));
-
+        PersonRequest personRequest = new PersonRequest();
+        personRequest.setFnr(FNR);
         VeilarbArenaOppfolging veilarbArenaOppfolging = new VeilarbArenaOppfolging();
         veilarbArenaOppfolging.setNav_kontor(ENHET);
-        when(veilarbarenaClient.hentOppfolgingsbruker(FNR)).thenReturn(Optional.of(veilarbArenaOppfolging));
+        when(veilarbarenaClient.hentOppfolgingsbruker(personRequest)).thenReturn(Optional.of(veilarbArenaOppfolging));
 
         when(authService.harTilgangTilEnhet(anyString())).thenReturn(true);
         when(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID);
