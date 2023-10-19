@@ -6,10 +6,10 @@ import no.nav.common.health.HealthCheckResult;
 import no.nav.common.health.HealthCheckUtils;
 import no.nav.common.rest.client.RestClient;
 import no.nav.common.rest.client.RestUtils;
-import no.nav.common.types.identer.Fnr;
 import no.nav.common.utils.EnvironmentUtils;
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolging;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
+import no.nav.veilarboppfolging.domain.PersonRequest;
 import no.nav.veilarboppfolging.service.AuthService;
 import no.nav.veilarboppfolging.utils.DownstreamApi;
 import okhttp3.OkHttpClient;
@@ -58,13 +58,13 @@ public class VeilarbarenaClientV3Impl implements VeilarbarenaClientV3 {
     }
 
     @Override
-    public Optional<VeilarbArenaOppfolging> hentOppfolgingsbrukerV3(Fnr fnr) {
-        secureLog.info("v3 Arena hentOppfolgingsbruker postmapping innsendt ident: {}", fnr);
+    public Optional<VeilarbArenaOppfolging> hentOppfolgingsbrukerV3(PersonRequest personRequest) {
+        secureLog.info("v3 Arena hentOppfolgingsbruker postmapping innsendt ident: {}", personRequest.getFnr());
         Request request = new Request.Builder()
                 .url(joinPaths(veilarbarenaUrl, "/api/v2/oppfolgingsbruker/"))
                 .header(ACCEPT, APPLICATION_JSON_VALUE)
                 .header(AUTHORIZATION, "Bearer " + getToken())
-                .post(RequestBody.create(fnr.get(), MEDIA_TYPE_JSON))
+                .post(RequestBody.create(personRequest.getFnr().toString(), MEDIA_TYPE_JSON))
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
@@ -81,12 +81,12 @@ public class VeilarbarenaClientV3Impl implements VeilarbarenaClientV3 {
 
     @SneakyThrows
     @Override
-    public Optional<ArenaOppfolging> getArenaOppfolgingsstatusV3(Fnr fnr) {
+    public Optional<ArenaOppfolging> getArenaOppfolgingsstatusV3(PersonRequest personRequest) {
         Request request = new Request.Builder()
                 .url(joinPaths(veilarbarenaUrl, "/api/v2/oppfolgingsstatus/"))
                 .header(ACCEPT, APPLICATION_JSON_VALUE)
                 .header(AUTHORIZATION, "Bearer " + getToken())
-                .post(RequestBody.create(fnr.get(), MEDIA_TYPE_JSON))
+                .post(RequestBody.create(personRequest.getFnr().toString(), MEDIA_TYPE_JSON))
                 .build();
 
         try (Response response = client.newCall(request).execute()) {

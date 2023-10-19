@@ -8,6 +8,7 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 import no.nav.veilarboppfolging.client.digdir_krr.DigdirClient;
 import no.nav.veilarboppfolging.client.digdir_krr.DigdirKontaktinfo;
+import no.nav.veilarboppfolging.domain.PersonRequest;
 import no.nav.veilarboppfolging.repository.ManuellStatusRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
 import no.nav.veilarboppfolging.repository.entity.ManuellStatusEntity;
@@ -138,13 +139,15 @@ public class ManuellStatusService {
     public void oppdaterManuellStatus(Fnr fnr, boolean manuell, String begrunnelse, KodeverkBruker opprettetAv, String opprettetAvBrukerId) {
         AktorId aktorId = authService.getAktorIdOrThrow(fnr);
         authService.sjekkLesetilgangMedAktorId(aktorId);
+        PersonRequest personRequest = new PersonRequest();
+        personRequest.setFnr(fnr);
 
         if (!authService.erEksternBruker()) {
-            VeilarbArenaOppfolging arenaOppfolging = arenaOppfolgingService.hentOppfolgingFraVeilarbarena(fnr).orElseThrow();
+            VeilarbArenaOppfolging arenaOppfolging = arenaOppfolgingService.hentOppfolgingFraVeilarbarena(personRequest).orElseThrow();
             authService.sjekkTilgangTilEnhet(arenaOppfolging.getNav_kontor());
         }
 
-        DigdirKontaktinfo kontaktinfo = hentDigdirKontaktinfo(fnr);
+        DigdirKontaktinfo kontaktinfo = hentDigdirKontaktinfo(personRequest.getFnr());
 
         boolean erUnderOppfolging = oppfolgingService.erUnderOppfolging(aktorId);
         boolean gjeldendeErManuell = erManuell(aktorId);

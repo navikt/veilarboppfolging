@@ -5,6 +5,7 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.controller.request.*;
 import no.nav.veilarboppfolging.controller.response.*;
+import no.nav.veilarboppfolging.domain.PersonRequest;
 import no.nav.veilarboppfolging.repository.enums.KodeverkBruker;
 import no.nav.veilarboppfolging.service.*;
 import org.springframework.http.HttpStatus;
@@ -44,7 +45,9 @@ public class OppfolgingController {
     @GetMapping
     public OppfolgingStatus hentOppfolgingsStatus(@RequestParam(value = "fnr", required = false) Fnr fnr) {
         Fnr fodselsnummer = authService.hentIdentForEksternEllerIntern(fnr);
-        return tilDto(oppfolgingService.hentOppfolgingsStatus(fodselsnummer), authService.erInternBruker());
+        PersonRequest personRequest = new PersonRequest();
+        personRequest.setFnr(fodselsnummer);
+        return tilDto(oppfolgingService.hentOppfolgingsStatus(personRequest), authService.erInternBruker());
     }
 
     @PostMapping("/startOppfolging")
@@ -79,8 +82,10 @@ public class OppfolgingController {
                 fnr, true, dto.begrunnelse,
                 KodeverkBruker.NAV, authService.getInnloggetVeilederIdent()
         );
+        PersonRequest personRequest = new PersonRequest();
+        personRequest.setFnr(fnr);
 
-        return tilDto(oppfolgingService.hentOppfolgingsStatus(fnr), authService.erInternBruker());
+        return tilDto(oppfolgingService.hentOppfolgingsStatus(personRequest), authService.erInternBruker());
     }
 
     // TODO: Ikke returner OppfolgingStatus
@@ -89,10 +94,11 @@ public class OppfolgingController {
             @RequestBody(required = false) VeilederBegrunnelseDTO dto,
             @RequestParam(value = "fnr", required = false) Fnr fnr) {
         Fnr fodselsnummer = authService.hentIdentForEksternEllerIntern(fnr);
-
+        PersonRequest personRequest = new PersonRequest();
+        personRequest.setFnr(fodselsnummer);
         if (authService.erEksternBruker()) {
             manuellStatusService.settDigitalBruker(fodselsnummer);
-            return tilDto(oppfolgingService.hentOppfolgingsStatus(fodselsnummer), authService.erInternBruker());
+            return tilDto(oppfolgingService.hentOppfolgingsStatus(personRequest), authService.erInternBruker());
         }
 
         // Påkrevd for intern bruker
@@ -105,7 +111,7 @@ public class OppfolgingController {
                 KodeverkBruker.NAV, hentBrukerInfo().getId()
         );
 
-        return tilDto(oppfolgingService.hentOppfolgingsStatus(fodselsnummer), authService.erInternBruker());
+        return tilDto(oppfolgingService.hentOppfolgingsStatus(personRequest), authService.erInternBruker());
     }
 
     @GetMapping("/innstillingsHistorikk")

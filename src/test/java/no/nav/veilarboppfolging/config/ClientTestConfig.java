@@ -18,6 +18,7 @@ import no.nav.veilarboppfolging.client.veilarbarena.v3.VeilarbarenaClientV3;
 import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktClient;
 import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktResponse;
 import no.nav.veilarboppfolging.controller.request.Innsatsgruppe;
+import no.nav.veilarboppfolging.domain.PersonRequest;
 import no.nav.veilarboppfolging.service.SisteEndringPaaOppfolgingBrukerService;
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
@@ -142,15 +143,15 @@ public class ClientTestConfig {
     public VeilarbarenaClientV3 veilarbarenaClientV3() {
         return new VeilarbarenaClientV3() {
             @Override
-            public Optional<VeilarbArenaOppfolging> hentOppfolgingsbrukerV3(Fnr fnr) {
+            public Optional<VeilarbArenaOppfolging> hentOppfolgingsbrukerV3(PersonRequest personRequest) {
                 return Optional.of(
                         new VeilarbArenaOppfolging()
-                                .setFodselsnr(fnr.get())
+                                .setFodselsnr(personRequest.getFnr().toString())
                 );
             }
 
             @Override
-            public Optional<ArenaOppfolging> getArenaOppfolgingsstatusV3(Fnr fnr) {
+            public Optional<ArenaOppfolging> getArenaOppfolgingsstatusV3(PersonRequest personRequest) {
                 return Optional.empty();
             }
 

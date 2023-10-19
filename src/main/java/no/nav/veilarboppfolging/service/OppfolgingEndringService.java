@@ -8,6 +8,7 @@ import no.nav.pto_schema.enums.arena.Formidlingsgruppe;
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe;
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolgingTilstand;
+import no.nav.veilarboppfolging.domain.PersonRequest;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingEntity;
 import org.springframework.stereotype.Service;
@@ -42,6 +43,8 @@ public class OppfolgingEndringService {
     public void oppdaterOppfolgingMedStatusFraArena(EndringPaaOppfoelgingsBrukerV2 brukerV2) {
         Fnr fnr = Fnr.of(brukerV2.getFodselsnummer());
         AktorId aktorId = authService.getAktorIdOrThrow(fnr);
+        PersonRequest personRequest = new PersonRequest();
+        personRequest.setFnr(fnr);
 
         String formidlingsgruppe = ofNullable(brukerV2.getFormidlingsgruppe()).map(Formidlingsgruppe::toString).orElse(null);
         String kvalifiseringsgruppe = ofNullable(brukerV2.getKvalifiseringsgruppe()).map(Kvalifiseringsgruppe::toString).orElse(null);
@@ -66,7 +69,7 @@ public class OppfolgingEndringService {
             secureLog.info("Starter oppfølging på bruker som er under oppfølging i Arena, men ikke i veilarboppfolging. aktorId={}", aktorId);
             oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(aktorId);
         } else if (erBrukerUnderOppfolging && !erUnderOppfolgingIArena && erInaktivIArena) {
-            Optional<ArenaOppfolgingTilstand> maybeArenaTilstand = arenaOppfolgingService.hentOppfolgingTilstandDirekteFraArena(fnr);
+            Optional<ArenaOppfolgingTilstand> maybeArenaTilstand = arenaOppfolgingService.hentOppfolgingTilstandDirekteFraArena(personRequest);
 
             if (maybeArenaTilstand.isPresent()) {
                 ArenaOppfolgingTilstand tilstand = maybeArenaTilstand.get();

@@ -9,10 +9,7 @@ import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 import no.nav.veilarboppfolging.controller.response.UnderOppfolgingDTO;
 import no.nav.veilarboppfolging.controller.response.VeilederTilgang;
 import no.nav.veilarboppfolging.client.digdir_krr.DigdirKontaktinfo;
-import no.nav.veilarboppfolging.domain.AvslutningStatusData;
-import no.nav.veilarboppfolging.domain.Oppfolging;
-import no.nav.veilarboppfolging.domain.OppfolgingStatusData;
-import no.nav.veilarboppfolging.domain.Oppfolgingsbruker;
+import no.nav.veilarboppfolging.domain.*;
 import no.nav.veilarboppfolging.repository.*;
 import no.nav.veilarboppfolging.repository.entity.*;
 import no.nav.veilarboppfolging.utils.ArenaUtils;
@@ -92,13 +89,13 @@ public class OppfolgingService {
         this.transactor = transactor;
     }
 
-    public OppfolgingStatusData hentOppfolgingsStatus(Fnr fnr) {
+    public OppfolgingStatusData hentOppfolgingsStatus(PersonRequest personRequest) {
         return transactor.execute((ignored) -> {
-            authService.sjekkLesetilgangMedFnr(fnr);
+            authService.sjekkLesetilgangMedFnr(personRequest.getFnr());
 
-            sjekkStatusIArenaOgOppdaterOppfolging(fnr);
+            sjekkStatusIArenaOgOppdaterOppfolging(personRequest.getFnr());
 
-            return getOppfolgingStatusData(fnr);
+            return getOppfolgingStatusData(personRequest.getFnr());
         });
     }
 
@@ -130,10 +127,11 @@ public class OppfolgingService {
     @SneakyThrows
     public OppfolgingStatusData startOppfolging(Fnr fnr) {
         AktorId aktorId = authService.getAktorIdOrThrow(fnr);
-
+        PersonRequest personRequest = new PersonRequest();
+        personRequest.setFnr(fnr);
         authService.sjekkLesetilgangMedFnr(fnr);
 
-        ArenaOppfolgingTilstand arenaOppfolgingTilstand = arenaOppfolgingService.hentOppfolgingTilstand(fnr)
+        ArenaOppfolgingTilstand arenaOppfolgingTilstand = arenaOppfolgingService.hentOppfolgingTilstand(personRequest)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR));
 
         authService.sjekkTilgangTilEnhet(arenaOppfolgingTilstand.getOppfolgingsenhet());
@@ -148,10 +146,11 @@ public class OppfolgingService {
     @SneakyThrows
     public AvslutningStatusData avsluttOppfolging(Fnr fnr, String veilederId, String begrunnelse) {
         AktorId aktorId = authService.getAktorIdOrThrow(fnr);
-
+        PersonRequest personRequest = new PersonRequest();
+        personRequest.setFnr(fnr);
         authService.sjekkLesetilgangMedFnr(fnr);
 
-        ArenaOppfolgingTilstand arenaOppfolgingTilstand = arenaOppfolgingService.hentOppfolgingTilstand(fnr)
+        ArenaOppfolgingTilstand arenaOppfolgingTilstand = arenaOppfolgingService.hentOppfolgingTilstand(personRequest)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR));
 
         authService.sjekkTilgangTilEnhet(arenaOppfolgingTilstand.getOppfolgingsenhet());
@@ -168,8 +167,9 @@ public class OppfolgingService {
 
     public boolean avsluttOppfolgingForSystemBruker(Fnr fnr) {
         AktorId aktorId = authService.getAktorIdOrThrow(fnr);
-
-        ArenaOppfolgingTilstand arenaOppfolgingTilstand = arenaOppfolgingService.hentOppfolgingTilstand(fnr)
+        PersonRequest personRequest = new PersonRequest();
+        personRequest.setFnr(fnr);
+        ArenaOppfolgingTilstand arenaOppfolgingTilstand = arenaOppfolgingService.hentOppfolgingTilstand(personRequest)
                 .orElseThrow();
 
         secureLog.info("Avslutting av oppfølging, tilstand i Arena for aktorid {}: {}", aktorId, arenaOppfolgingTilstand);
@@ -187,8 +187,10 @@ public class OppfolgingService {
     @SneakyThrows
     public VeilederTilgang hentVeilederTilgang(Fnr fnr) {
         authService.sjekkLesetilgangMedFnr(fnr);
+        PersonRequest personRequest = new PersonRequest();
+        personRequest.setFnr(fnr);
         return arenaOppfolgingService
-                .hentOppfolgingFraVeilarbarena(fnr)
+                .hentOppfolgingFraVeilarbarena(personRequest)
                 .map(VeilarbArenaOppfolging::getNav_kontor)
                 .map(authService::harTilgangTilEnhet)
                 .map(VeilederTilgang::new)
@@ -372,7 +374,8 @@ public class OppfolgingService {
 
     private OppfolgingStatusData getOppfolgingStatusData(Fnr fnr) {
         AktorId aktorId = authService.getAktorIdOrThrow(fnr);
-
+        PersonRequest personRequest = new PersonRequest();
+        personRequest.setFnr(fnr);
         Oppfolging oppfolging = hentOppfolging(aktorId)
                 .orElse(new Oppfolging().setAktorId(aktorId.get()).setUnderOppfolging(false));
 
@@ -381,7 +384,7 @@ public class OppfolgingService {
         DigdirKontaktinfo digdirKontaktinfo = manuellStatusService.hentDigdirKontaktinfo(fnr);
 
         // TODO: Burde kanskje heller feile istedenfor å bruke Optional
-        Optional<ArenaOppfolgingTilstand> maybeArenaOppfolging = arenaOppfolgingService.hentOppfolgingTilstand(fnr);
+        Optional<ArenaOppfolgingTilstand> maybeArenaOppfolging = arenaOppfolgingService.hentOppfolgingTilstand(personRequest);
 
         boolean kanSettesUnderOppfolging = !oppfolging.isUnderOppfolging() && maybeArenaOppfolging
                 .map(s -> kanSettesUnderOppfolging(s.getFormidlingsgruppe(), s.getServicegruppe()))
@@ -435,8 +438,9 @@ public class OppfolgingService {
 
     private AvslutningStatusData getAvslutningStatus(Fnr fnr) {
         AktorId aktorId = authService.getAktorIdOrThrow(fnr);
-
-        Optional<ArenaOppfolgingTilstand> maybeArenaOppfolging = arenaOppfolgingService.hentOppfolgingTilstand(fnr);
+        PersonRequest personRequest = new PersonRequest();
+        personRequest.setFnr(fnr);
+        Optional<ArenaOppfolgingTilstand> maybeArenaOppfolging = arenaOppfolgingService.hentOppfolgingTilstand(personRequest);
 
         boolean erIserv = maybeArenaOppfolging.map(ao -> erIserv(ao.getFormidlingsgruppe())).orElse(false);
 
@@ -486,7 +490,9 @@ public class OppfolgingService {
 
     private void sjekkStatusIArenaOgOppdaterOppfolging(Fnr fnr) {
         AktorId aktorId = authService.getAktorIdOrThrow(fnr);
-        Optional<ArenaOppfolgingTilstand> arenaOppfolgingTilstand = arenaOppfolgingService.hentOppfolgingTilstand(fnr);
+        PersonRequest personRequest = new PersonRequest();
+        personRequest.setFnr(fnr);
+        Optional<ArenaOppfolgingTilstand> arenaOppfolgingTilstand = arenaOppfolgingService.hentOppfolgingTilstand(personRequest);
 
         arenaOppfolgingTilstand.ifPresent(oppfolgingTilstand -> {
             Optional<OppfolgingEntity> maybeOppfolging = oppfolgingsStatusRepository.hentOppfolging(aktorId);
@@ -534,9 +540,11 @@ public class OppfolgingService {
             ArenaOppfolgingTilstand arenaOppfolgingTilstand,
             OppfolgingEntity oppfolging
     ) {
+        PersonRequest personRequest = new PersonRequest();
+        personRequest.setFnr(fnr);
         Optional<ArenaOppfolgingTilstand> maybeTilstandDirekteFraArena = arenaOppfolgingTilstand.isDirekteFraArena()
                 ? of(arenaOppfolgingTilstand)
-                : arenaOppfolgingService.hentOppfolgingTilstandDirekteFraArena(fnr);
+                : arenaOppfolgingService.hentOppfolgingTilstandDirekteFraArena(personRequest);
 
         maybeTilstandDirekteFraArena.ifPresent(tilstandDirekteFraArena -> {
             boolean erInaktivIArena = erInaktivIArena(tilstandDirekteFraArena);

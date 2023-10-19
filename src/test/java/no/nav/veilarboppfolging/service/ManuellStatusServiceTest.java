@@ -5,6 +5,7 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 import no.nav.veilarboppfolging.client.digdir_krr.DigdirClient;
 import no.nav.veilarboppfolging.client.digdir_krr.DigdirKontaktinfo;
+import no.nav.veilarboppfolging.domain.PersonRequest;
 import no.nav.veilarboppfolging.repository.ManuellStatusRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
@@ -22,6 +23,7 @@ import java.util.Optional;
 
 import static no.nav.veilarboppfolging.repository.enums.KodeverkBruker.NAV;
 import static no.nav.veilarboppfolging.repository.enums.KodeverkBruker.SYSTEM;
+import static no.nav.veilarboppfolging.test.TestData.TEST_FNR;
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -55,8 +57,9 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
     @Before
     public void setup() {
         TransactionTemplate transactor = DbTestUtils.createTransactor(db);
-
-        when(arenaOppfolgingService.hentOppfolgingFraVeilarbarena(FNR))
+        PersonRequest personRequest = new PersonRequest();
+        personRequest.setFnr(FNR);
+        when(arenaOppfolgingService.hentOppfolgingFraVeilarbarena(personRequest))
                 .thenReturn(Optional.of(new VeilarbArenaOppfolging().setNav_kontor(ENHET)));
         doCallRealMethod().when(authService).sjekkTilgangTilEnhet(any());
         when(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID);

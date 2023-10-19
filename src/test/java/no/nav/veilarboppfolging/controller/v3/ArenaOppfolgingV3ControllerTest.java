@@ -1,6 +1,7 @@
-package no.nav.veilarboppfolging.controller;
+package no.nav.veilarboppfolging.controller.v3;
 
 import no.nav.common.types.identer.Fnr;
+import no.nav.veilarboppfolging.controller.ArenaOppfolgingController;
 import no.nav.veilarboppfolging.controller.response.OppfolgingEnhetMedVeilederResponse;
 import no.nav.veilarboppfolging.domain.PersonRequest;
 import no.nav.veilarboppfolging.service.ArenaOppfolgingService;
@@ -10,17 +11,17 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import wiremock.org.eclipse.jetty.http.HttpStatus;
 
-import static java.lang.String.format;
-import static no.nav.veilarboppfolging.test.TestData.TEST_FNR;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = ArenaOppfolgingController.class)
-public class ArenaOppfolgingControllerTest {
+public class ArenaOppfolgingV3ControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -32,10 +33,13 @@ public class ArenaOppfolgingControllerTest {
     private AuthService authService;
 
     @Test
-    public void getOppfolginsstatus__should_check_authorization() throws Exception {
+    public void getOppfolgingsstatus__should_check_authorization() throws Exception {
         Fnr fnr = Fnr.of("123456");
 
-        mockMvc.perform(get(format("/api/person/%s/oppfolgingsstatus", fnr)));
+        mockMvc.perform(post("/api/person/v3/oppfolgingsstatus")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"fnr\":\""+fnr.get()+"\"}")
+        ).andExpect(status().is(HttpStatus.OK_200));
 
         verify(authService, times(1)).sjekkLesetilgangMedFnr(fnr);
     }
@@ -45,6 +49,7 @@ public class ArenaOppfolgingControllerTest {
         Fnr fnr = Fnr.of("123456");
         PersonRequest personRequest = new PersonRequest();
         personRequest.setFnr(fnr);
+
         OppfolgingEnhetMedVeilederResponse response = new OppfolgingEnhetMedVeilederResponse()
                 .setVeilederId("Z12345")
                 .setFormidlingsgruppe("ARBS")
@@ -56,7 +61,9 @@ public class ArenaOppfolgingControllerTest {
 
         when(arenaOppfolgingService.getOppfolginsstatus(personRequest)).thenReturn(response);
 
-        mockMvc.perform(get(format("/api/person/%s/oppfolgingsstatus", fnr)))
+        mockMvc.perform(post("/api/person/v3/oppfolgingsstatus")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"fnr\":\""+fnr.get()+"\"}"))
                 .andExpect(status().is(200))
                 .andExpect(content().json(json, true));
     }

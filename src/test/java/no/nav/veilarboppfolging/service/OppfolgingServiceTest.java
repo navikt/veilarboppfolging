@@ -18,6 +18,7 @@ import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktResponse;
 import no.nav.veilarboppfolging.controller.response.VeilederTilgang;
 import no.nav.veilarboppfolging.domain.AvslutningStatusData;
 import no.nav.veilarboppfolging.domain.OppfolgingStatusData;
+import no.nav.veilarboppfolging.domain.PersonRequest;
 import no.nav.veilarboppfolging.repository.KvpRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
@@ -73,7 +74,8 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     @Before
     public void setup() {
         TransactionTemplate transactor = DbTestUtils.createTransactor(db);
-
+        PersonRequest personRequest = new PersonRequest();
+        personRequest.setFnr(FNR);
         arenaOppfolgingTilstand = new ArenaOppfolgingTilstand();
         oppfolgingsStatusRepository = new OppfolgingsStatusRepository(db);
         oppfolgingsPeriodeRepository = new OppfolgingsPeriodeRepository(db, transactor);
@@ -99,7 +101,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         when(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID);
         when(authService.getFnrOrThrow(AKTOR_ID)).thenReturn(FNR);
 
-        when(arenaOppfolgingService.hentOppfolgingTilstand(FNR)).thenReturn(Optional.of(arenaOppfolgingTilstand));
+        when(arenaOppfolgingService.hentOppfolgingTilstand(personRequest)).thenReturn(Optional.of(arenaOppfolgingTilstand));
         when(ytelseskontraktClient.hentYtelseskontraktListe(any())).thenReturn(mock(YtelseskontraktResponse.class));
         when(manuellStatusService.hentDigdirKontaktinfo(FNR)).thenReturn(new DigdirKontaktinfo());
 
@@ -241,9 +243,10 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     public void hentOppfolgingStatus_brukerSomErUnderOppfolgingOgISERVMeldesUtDersomArenaSierReaktiveringIkkeErMulig() {
         oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
         assertUnderOppfolgingLagret(AKTOR_ID);
-
+        PersonRequest personRequest = new PersonRequest();
+        personRequest.setFnr(FNR);
         gittInaktivOppfolgingStatus(false);
-        when(arenaOppfolgingService.hentOppfolgingTilstandDirekteFraArena(FNR)).thenReturn(Optional.of(arenaOppfolgingTilstand));
+        when(arenaOppfolgingService.hentOppfolgingTilstandDirekteFraArena(personRequest)).thenReturn(Optional.of(arenaOppfolgingTilstand));
 
         hentOppfolgingStatus();
 
@@ -436,7 +439,9 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     }
 
     private OppfolgingStatusData hentOppfolgingStatus() {
-        return oppfolgingService.hentOppfolgingsStatus(FNR);
+        PersonRequest personRequest = new PersonRequest();
+        personRequest.setFnr(FNR);
+        return oppfolgingService.hentOppfolgingsStatus(personRequest);
     }
 
     private void gittReservasjonIKrr(boolean reservert) {

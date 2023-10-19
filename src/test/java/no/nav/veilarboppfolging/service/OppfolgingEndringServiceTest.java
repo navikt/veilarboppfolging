@@ -5,6 +5,7 @@ import no.nav.pto_schema.enums.arena.Formidlingsgruppe;
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe;
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolgingTilstand;
+import no.nav.veilarboppfolging.domain.PersonRequest;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingEntity;
 import org.junit.jupiter.api.Test;
@@ -74,10 +75,11 @@ public class OppfolgingEndringServiceTest {
     public void oppdaterOppfolgingMedStatusFraArena__skal_avslutte_oppfolging_pa_bruker_som_er_under_oppfolging_i_veilarboppfolging_men_ikke_under_oppfolging_i_arena() {
         var arenaTilstand = new ArenaOppfolgingTilstand();
         arenaTilstand.setKanEnkeltReaktiveres(false);
-
+        PersonRequest personRequest = new PersonRequest();
+        personRequest.setFnr(TEST_FNR);
         when(authService.getAktorIdOrThrow(TEST_FNR)).thenReturn(TEST_AKTOR_ID);
         when(oppfolgingsStatusRepository.hentOppfolging(TEST_AKTOR_ID)).thenReturn(Optional.of(new OppfolgingEntity().setUnderOppfolging(true)));
-        when(arenaOppfolgingService.hentOppfolgingTilstandDirekteFraArena(TEST_FNR)).thenReturn(Optional.of(arenaTilstand));
+        when(arenaOppfolgingService.hentOppfolgingTilstandDirekteFraArena(personRequest)).thenReturn(Optional.of(arenaTilstand));
         when(kvpService.erUnderKvp(TEST_AKTOR_ID)).thenReturn(false);
 
         EndringPaaOppfoelgingsBrukerV2 brukverV2 = EndringPaaOppfoelgingsBrukerV2.builder()
@@ -102,10 +104,11 @@ public class OppfolgingEndringServiceTest {
     public void oppdaterOppfolgingMedStatusFraArena__skal_ikke_avslutte_oppfolging_pa_bruker_som_kan_enkelt_reaktiveres() {
         var arenaTilstand = new ArenaOppfolgingTilstand();
         arenaTilstand.setKanEnkeltReaktiveres(true);
-
+        PersonRequest personRequest = new PersonRequest();
+        personRequest.setFnr(TEST_FNR);
         when(authService.getAktorIdOrThrow(TEST_FNR)).thenReturn(TEST_AKTOR_ID);
         when(oppfolgingsStatusRepository.hentOppfolging(TEST_AKTOR_ID)).thenReturn(Optional.of(new OppfolgingEntity().setUnderOppfolging(true)));
-        when(arenaOppfolgingService.hentOppfolgingTilstandDirekteFraArena(TEST_FNR)).thenReturn(Optional.of(arenaTilstand));
+        when(arenaOppfolgingService.hentOppfolgingTilstandDirekteFraArena(personRequest)).thenReturn(Optional.of(arenaTilstand));
         when(kvpService.erUnderKvp(TEST_AKTOR_ID)).thenReturn(false);
 
         EndringPaaOppfoelgingsBrukerV2 brukverV2 = EndringPaaOppfoelgingsBrukerV2.builder()
@@ -125,10 +128,11 @@ public class OppfolgingEndringServiceTest {
     public void oppdaterOppfolgingMedStatusFraArena__skal_ikke_avslutte_oppfolging_pa_bruker_som_er_under_kvp() {
         var arenaTilstand = new ArenaOppfolgingTilstand();
         arenaTilstand.setKanEnkeltReaktiveres(false);
-
+        PersonRequest personRequest = new PersonRequest();
+        personRequest.setFnr(TEST_FNR);
         when(authService.getAktorIdOrThrow(TEST_FNR)).thenReturn(TEST_AKTOR_ID);
         when(oppfolgingsStatusRepository.hentOppfolging(TEST_AKTOR_ID)).thenReturn(Optional.of(new OppfolgingEntity().setUnderOppfolging(true)));
-        when(arenaOppfolgingService.hentOppfolgingTilstandDirekteFraArena(TEST_FNR)).thenReturn(Optional.of(arenaTilstand));
+        when(arenaOppfolgingService.hentOppfolgingTilstandDirekteFraArena(personRequest)).thenReturn(Optional.of(arenaTilstand));
         when(kvpService.erUnderKvp(TEST_AKTOR_ID)).thenReturn(true);
 
         EndringPaaOppfoelgingsBrukerV2 brukverV2 = EndringPaaOppfoelgingsBrukerV2.builder()
