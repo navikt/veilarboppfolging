@@ -2,12 +2,11 @@ package no.nav.veilarboppfolging.client.veilarbarena;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.health.HealthCheckResult;
 import no.nav.common.health.HealthCheckUtils;
+import no.nav.common.json.JsonUtils;
 import no.nav.common.rest.client.RestClient;
 import no.nav.common.rest.client.RestUtils;
-import no.nav.common.types.identer.Fnr;
 import no.nav.common.utils.EnvironmentUtils;
 import no.nav.veilarboppfolging.domain.PersonRequest;
 import no.nav.veilarboppfolging.service.AuthService;
@@ -64,7 +63,7 @@ public class VeilarbarenaClientImpl implements VeilarbarenaClient {
                 .url(joinPaths(veilarbarenaUrl, "/api/v2/oppfolgingsbruker/"))
                 .header(ACCEPT, APPLICATION_JSON_VALUE)
                 .header(AUTHORIZATION, "Bearer " + getToken())
-                .post(RequestBody.create(personRequest.getFnr().toString(), MEDIA_TYPE_JSON))
+                .post(RequestBody.create(JsonUtils.toJson(personRequest), MEDIA_TYPE_JSON))
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
@@ -86,7 +85,7 @@ public class VeilarbarenaClientImpl implements VeilarbarenaClient {
                 .url(joinPaths(veilarbarenaUrl, "/api/v2/oppfolgingsstatus/"))
                 .header(ACCEPT, APPLICATION_JSON_VALUE)
                 .header(AUTHORIZATION, "Bearer " + getToken())
-                .post(RequestBody.create(personRequest.getFnr().toString(), MEDIA_TYPE_JSON))
+                .post(RequestBody.create(JsonUtils.toJson(personRequest), MEDIA_TYPE_JSON))
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
