@@ -23,6 +23,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -89,11 +90,10 @@ public class OppfolgingService {
         this.transactor = transactor;
     }
 
-    public OppfolgingStatusData hentOppfolgingsStatus(Fnr fnr) { // TODO: trenger denne en transactor?
-        return transactor.execute((ignored) -> {
-            authService.sjekkLesetilgangMedFnr(fnr);
-            return getOppfolgingStatusData(fnr);
-        });
+    @Transactional // TODO: kan denne være read only?
+    public OppfolgingStatusData hentOppfolgingsStatus(Fnr fnr) {
+        authService.sjekkLesetilgangMedFnr(fnr);
+        return getOppfolgingStatusData(fnr);
     }
 
     private List<AktorId> hentAktorIderMedOppfolging(Fnr fnr) {
