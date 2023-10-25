@@ -11,14 +11,15 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
-import java.util.Optional;
+
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
-import static jakarta.ws.rs.core.HttpHeaders.CONTENT_TYPE;
-import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
+
 import static no.nav.common.json.JsonUtils.toJson;
+import static no.nav.common.rest.client.RestUtils.MEDIA_TYPE_JSON;
 import static no.nav.common.utils.AssertUtils.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 
 public class VeilarbarenaClientImplTest {
 
@@ -44,10 +45,10 @@ public class VeilarbarenaClientImplTest {
         String apiUrl = "http://localhost:" + wireMockRule.port();
         VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl(apiUrl, (DownstreamApi v) -> "TOKEN", (DownstreamApi v) -> "TOKEN", authServiceMock);
 
-        givenThat(get(urlEqualTo("/api/oppfolgingsstatus/" + MOCK_FNR))
+        givenThat(post(urlEqualTo("/api/v2/oppfolgingsstatus/")).withRequestBody(equalToJson("{\"fnr\":\""+MOCK_FNR+"\"}"))
                 .willReturn(aResponse()
                         .withStatus(200)
-                        .withHeader(CONTENT_TYPE, APPLICATION_JSON)
+                        .withHeader(CONTENT_TYPE, MEDIA_TYPE_JSON.toString())
                         .withBody(toJson(arenaOppfolgingResponse())))
         );
 
