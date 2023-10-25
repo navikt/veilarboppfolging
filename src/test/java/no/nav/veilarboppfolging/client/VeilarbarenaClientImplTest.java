@@ -45,7 +45,7 @@ public class VeilarbarenaClientImplTest {
         String apiUrl = "http://localhost:" + wireMockRule.port();
         VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl(apiUrl, (DownstreamApi v) -> "TOKEN", (DownstreamApi v) -> "TOKEN", authServiceMock);
 
-        givenThat(post(urlEqualTo("/api/v2/oppfolgingsstatus/")).withRequestBody(equalToJson("{\"fnr\":\""+MOCK_FNR+"\"}"))
+        givenThat(post(urlEqualTo("/api/v2/oppfolgingsstatus")).withRequestBody(equalToJson("{\"fnr\":\""+MOCK_FNR+"\"}"))
                 .willReturn(aResponse()
                         .withStatus(200)
                         .withHeader(CONTENT_TYPE, MEDIA_TYPE_JSON.toString())
@@ -66,7 +66,7 @@ public class VeilarbarenaClientImplTest {
         String apiUrl = "http://localhost:" + wireMockRule.port();
         VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl(apiUrl, (DownstreamApi v) ->"TOKEN", (DownstreamApi v) -> "TOKEN",authServiceMock);
 
-        givenThat(post(urlEqualTo("/api/v2/oppfolgingsstatus/")).withRequestBody(equalToJson("{\"fnr\":\""+MOCK_FNR+"\"}"))
+        givenThat(post(urlEqualTo("/api/v2/oppfolgingsstatus")).withRequestBody(equalToJson("{\"fnr\":\""+MOCK_FNR+"\"}"))
                 .willReturn(aResponse().withStatus(404)));
 
         assertTrue(veilarbarenaClient.getArenaOppfolgingsstatus(MOCK_FNR).isEmpty());
@@ -77,7 +77,7 @@ public class VeilarbarenaClientImplTest {
         String apiUrl = "http://localhost:" + wireMockRule.port();
         VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl(apiUrl, (DownstreamApi v) -> "TOKEN", (DownstreamApi v) -> "TOKEN", authServiceMock);
 
-        givenThat(post(urlEqualTo("/api/v2/oppfolgingsstatus/")).withRequestBody(equalToJson("{\"fnr\":\""+MOCK_FNR+"\"}"))
+        givenThat(post(urlEqualTo("/api/v2/oppfolgingsstatus")).withRequestBody(equalToJson("{\"fnr\":\""+MOCK_FNR+"\"}"))
                 .willReturn(aResponse().withStatus(403)));
 
         assertTrue(veilarbarenaClient.getArenaOppfolgingsstatus(MOCK_FNR).isEmpty());
@@ -88,7 +88,7 @@ public class VeilarbarenaClientImplTest {
         String apiUrl = "http://localhost:" + wireMockRule.port();
         VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl(apiUrl, (DownstreamApi v) -> "TOKEN", (DownstreamApi v) -> "TOKEN", authServiceMock);
 
-        givenThat(post(urlEqualTo("/api/v2/oppfolgingsstatus/")).withRequestBody(equalToJson("{\"fnr\":\""+MOCK_FNR+"\"}"))
+        givenThat(post(urlEqualTo("/api/v2/oppfolgingsstatus")).withRequestBody(equalToJson("{\"fnr\":\""+MOCK_FNR+"\"}"))
                 .willReturn(aResponse().withStatus(400)));
 
         assertTrue(veilarbarenaClient.getArenaOppfolgingsstatus(MOCK_FNR).isEmpty());
