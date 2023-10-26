@@ -37,8 +37,6 @@ public class OppfolgingEndringService {
 
     private final OppfolgingsStatusRepository oppfolgingsStatusRepository;
 
-    private final UnleashService unleashService;
-
     public void oppdaterOppfolgingMedStatusFraArena(EndringPaaOppfoelgingsBrukerV2 brukerV2) {
         Fnr fnr = Fnr.of(brukerV2.getFodselsnummer());
         AktorId aktorId = authService.getAktorIdOrThrow(fnr);

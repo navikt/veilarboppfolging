@@ -105,7 +105,7 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
                 manuellStatusService,
 
                 new KvpRepository(db, namedParameterJdbcTemplate, transactor), maalRepository,
-                new BrukerOppslagFlereOppfolgingAktorRepository(db), null, transactor);
+                new BrukerOppslagFlereOppfolgingAktorRepository(db), transactor);
 
         when(authService.getFnrOrThrow(AKTOR_ID)).thenReturn(FNR);
     }

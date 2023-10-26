@@ -42,8 +42,6 @@ public class KafkaConsumerService {
 
     private final SisteEndringPaaOppfolgingBrukerService sisteEndringPaaOppfolgingBrukerService;
 
-    private final UnleashService unleashService;
-
     @Autowired
     public KafkaConsumerService(
             AuthContextHolder authContextHolder,
@@ -53,8 +51,7 @@ public class KafkaConsumerService {
             OppfolgingsenhetEndringService oppfolgingsenhetEndringService,
             @Lazy OppfolgingEndringService oppfolgingEndringService,
             AktorOppslagClient aktorOppslagClient,
-            SisteEndringPaaOppfolgingBrukerService sisteEndringPaaOppfolgingBrukerService,
-            UnleashService unleashService) {
+            SisteEndringPaaOppfolgingBrukerService sisteEndringPaaOppfolgingBrukerService) {
         this.authContextHolder = authContextHolder;
         this.systemUserTokenProvider = systemUserTokenProvider;
         this.kvpService = kvpService;
@@ -63,7 +60,6 @@ public class KafkaConsumerService {
         this.oppfolgingEndringService = oppfolgingEndringService;
         this.aktorOppslagClient = aktorOppslagClient;
         this.sisteEndringPaaOppfolgingBrukerService = sisteEndringPaaOppfolgingBrukerService;
-        this.unleashService = unleashService;
     }
 
     @SneakyThrows
