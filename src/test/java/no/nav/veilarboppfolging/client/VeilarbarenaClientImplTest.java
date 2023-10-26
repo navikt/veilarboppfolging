@@ -3,6 +3,7 @@ package no.nav.veilarboppfolging.client;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolging;
+import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClientImpl;
 import no.nav.veilarboppfolging.service.AuthService;
 import no.nav.veilarboppfolging.utils.DownstreamApi;
@@ -10,8 +11,6 @@ import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-
-
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 
@@ -29,6 +28,9 @@ public class VeilarbarenaClientImplTest {
     private static final String MOCK_SERVICEGRUPPE = "servicegruppe";
     private static final boolean MOCK_KAN_ENKELT_REAKTIVERES = true;
     private static final String MOCK_RETTIGHETSGRUPPE = "rettighetsgruppe";
+    private static final String MOCK_KVALIFISERINGSGRUPPE = "kvalifiseringsgruppe";
+
+    private static final String MOCK_HOVEDMAAL = "beholde arbeid";
 
     private AuthService authServiceMock = mock(AuthService.class);
 
@@ -45,7 +47,7 @@ public class VeilarbarenaClientImplTest {
         String apiUrl = "http://localhost:" + wireMockRule.port();
         VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl(apiUrl, (DownstreamApi v) -> "TOKEN", (DownstreamApi v) -> "TOKEN", authServiceMock);
 
-        givenThat(post(urlEqualTo("/api/v2/oppfolgingsstatus")).withRequestBody(equalToJson("{\"fnr\":\""+MOCK_FNR+"\"}"))
+        givenThat(post(urlEqualTo("/api/v2/oppfolgingsstatus/hent")).withRequestBody(equalToJson("{\"fnr\":\""+MOCK_FNR+"\"}"))
                 .willReturn(aResponse()
                         .withStatus(200)
                         .withHeader(CONTENT_TYPE, MEDIA_TYPE_JSON.toString())
@@ -66,7 +68,7 @@ public class VeilarbarenaClientImplTest {
         String apiUrl = "http://localhost:" + wireMockRule.port();
         VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl(apiUrl, (DownstreamApi v) ->"TOKEN", (DownstreamApi v) -> "TOKEN",authServiceMock);
 
-        givenThat(post(urlEqualTo("/api/v2/oppfolgingsstatus")).withRequestBody(equalToJson("{\"fnr\":\""+MOCK_FNR+"\"}"))
+        givenThat(post(urlEqualTo("/api/v2/oppfolgingsstatus/hent")).withRequestBody(equalToJson("{\"fnr\":\""+MOCK_FNR+"\"}"))
                 .willReturn(aResponse().withStatus(404)));
 
         assertTrue(veilarbarenaClient.getArenaOppfolgingsstatus(MOCK_FNR).isEmpty());
@@ -77,7 +79,7 @@ public class VeilarbarenaClientImplTest {
         String apiUrl = "http://localhost:" + wireMockRule.port();
         VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl(apiUrl, (DownstreamApi v) -> "TOKEN", (DownstreamApi v) -> "TOKEN", authServiceMock);
 
-        givenThat(post(urlEqualTo("/api/v2/oppfolgingsstatus")).withRequestBody(equalToJson("{\"fnr\":\""+MOCK_FNR+"\"}"))
+        givenThat(post(urlEqualTo("/api/v2/oppfolgingsstatus/hent")).withRequestBody(equalToJson("{\"fnr\":\""+MOCK_FNR+"\"}"))
                 .willReturn(aResponse().withStatus(403)));
 
         assertTrue(veilarbarenaClient.getArenaOppfolgingsstatus(MOCK_FNR).isEmpty());
@@ -88,7 +90,7 @@ public class VeilarbarenaClientImplTest {
         String apiUrl = "http://localhost:" + wireMockRule.port();
         VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl(apiUrl, (DownstreamApi v) -> "TOKEN", (DownstreamApi v) -> "TOKEN", authServiceMock);
 
-        givenThat(post(urlEqualTo("/api/v2/oppfolgingsstatus")).withRequestBody(equalToJson("{\"fnr\":\""+MOCK_FNR+"\"}"))
+        givenThat(post(urlEqualTo("/api/v2/oppfolgingsstatus/hent")).withRequestBody(equalToJson("{\"fnr\":\""+MOCK_FNR+"\"}"))
                 .willReturn(aResponse().withStatus(400)));
 
         assertTrue(veilarbarenaClient.getArenaOppfolgingsstatus(MOCK_FNR).isEmpty());
@@ -102,4 +104,68 @@ public class VeilarbarenaClientImplTest {
                 .setKanEnkeltReaktiveres(MOCK_KAN_ENKELT_REAKTIVERES)
                 .setRettighetsgruppe(MOCK_RETTIGHETSGRUPPE);
     }
+    @Test
+    public void skalMappeTilOppfolgingsbrukerV2() {
+        String apiUrl = "http://localhost:" + wireMockRule.port();
+        VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl(apiUrl, (DownstreamApi v) -> "TOKEN", (DownstreamApi v) -> "TOKEN", authServiceMock);
+
+        givenThat(post(urlEqualTo("/api/v2/oppfolgingsbruker/hent")).withRequestBody(equalToJson("{\"fnr\":\""+MOCK_FNR+"\"}"))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withHeader(CONTENT_TYPE, MEDIA_TYPE_JSON.toString())
+                        .withBody(toJson(arenaOppfolgingsBrukerResponse())))
+        );
+
+        VeilarbArenaOppfolging arenaOppfolgingsbruker = veilarbarenaClient.hentOppfolgingsbruker(MOCK_FNR).orElseThrow();
+
+        Assertions.assertThat(arenaOppfolgingsbruker.getFodselsnr()).isEqualTo("1234");
+        Assertions.assertThat(arenaOppfolgingsbruker.getFormidlingsgruppekode()).isEqualTo(MOCK_FORMIDLINGSGRUPPE);
+        Assertions.assertThat(arenaOppfolgingsbruker.getRettighetsgruppekode()).isEqualTo(MOCK_RETTIGHETSGRUPPE);
+        Assertions.assertThat(arenaOppfolgingsbruker.getNav_kontor()).isEqualTo(MOCK_ENHET_ID);
+        Assertions.assertThat(arenaOppfolgingsbruker.getHovedmaalkode()).isEqualTo(MOCK_HOVEDMAAL);
+    }
+
+    @Test
+    public void skal_returnere_empty_om_person_ikke_funnet_oppfolgingsbruker() {
+        String apiUrl = "http://localhost:" + wireMockRule.port();
+        VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl(apiUrl, (DownstreamApi v) ->"TOKEN", (DownstreamApi v) -> "TOKEN",authServiceMock);
+
+        givenThat(post(urlEqualTo("/api/v2/oppfolgingsbruker/hent")).withRequestBody(equalToJson("{\"fnr\":\""+MOCK_FNR+"\"}"))
+                .willReturn(aResponse().withStatus(404)));
+
+        assertTrue(veilarbarenaClient.hentOppfolgingsbruker(MOCK_FNR).isEmpty());
+    }
+
+    @Test
+    public void skal_returnere_empty_om_man_ikke_har_tilgang_oppfolgingsbruker() {
+        String apiUrl = "http://localhost:" + wireMockRule.port();
+        VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl(apiUrl, (DownstreamApi v) -> "TOKEN", (DownstreamApi v) -> "TOKEN", authServiceMock);
+
+        givenThat(post(urlEqualTo("/api/v2/oppfolgingsbruker/hent")).withRequestBody(equalToJson("{\"fnr\":\""+MOCK_FNR+"\"}"))
+                .willReturn(aResponse().withStatus(403)));
+
+        assertTrue(veilarbarenaClient.hentOppfolgingsbruker(MOCK_FNR).isEmpty());
+    }
+
+    @Test
+    public void skal_returnere_empty_om_ugyldig_identifikator_oppfolgingsbruker() {
+        String apiUrl = "http://localhost:" + wireMockRule.port();
+        VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl(apiUrl, (DownstreamApi v) -> "TOKEN", (DownstreamApi v) -> "TOKEN", authServiceMock);
+
+        givenThat(post(urlEqualTo("/api/v2/oppfolgingsbruker/hent")).withRequestBody(equalToJson("{\"fnr\":\""+MOCK_FNR+"\"}"))
+                .willReturn(aResponse().withStatus(400)));
+
+        assertTrue(veilarbarenaClient.hentOppfolgingsbruker(MOCK_FNR).isEmpty());
+    }
+
+    private VeilarbArenaOppfolging arenaOppfolgingsBrukerResponse() {
+        return new VeilarbArenaOppfolging()
+                .setFodselsnr("1234")
+                .setFormidlingsgruppekode(MOCK_FORMIDLINGSGRUPPE)
+                .setKvalifiseringsgruppekode(MOCK_KVALIFISERINGSGRUPPE)
+                .setRettighetsgruppekode(MOCK_RETTIGHETSGRUPPE)
+                .setNav_kontor(MOCK_ENHET_ID)
+                .setHovedmaalkode(MOCK_HOVEDMAAL);
+    }
 }
+
