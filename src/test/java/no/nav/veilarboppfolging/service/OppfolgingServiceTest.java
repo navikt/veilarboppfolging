@@ -64,8 +64,6 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     private KvpRepository kvpRepository = mock(KvpRepository.class);
     private MetricsService metricsService = mock(MetricsService.class);
     private ManuellStatusService manuellStatusService = mock(ManuellStatusService.class);
-    private UnleashService unleashService = mock(UnleashService.class);
-
     private OppfolgingsStatusRepository oppfolgingsStatusRepository;
     private OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
     private OppfolgingService oppfolgingService;
@@ -91,7 +89,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
                 kvpRepository,
                 null,
                 null,
-                unleashService, transactor);
+                 transactor);
 
 
         gittArenaOppfolgingStatus("", "");
@@ -102,8 +100,6 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         when(arenaOppfolgingService.hentOppfolgingTilstand(FNR)).thenReturn(Optional.of(arenaOppfolgingTilstand));
         when(ytelseskontraktClient.hentYtelseskontraktListe(any())).thenReturn(mock(YtelseskontraktResponse.class));
         when(manuellStatusService.hentDigdirKontaktinfo(FNR)).thenReturn(new DigdirKontaktinfo());
-
-        when(unleashService.skalIkkeOppdatereMedSideeffekt()).thenReturn(false);
     }
 
     @Test
@@ -225,37 +221,6 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     }
 
     @Test
-    public void hentOppfolgingStatus_brukerSomIkkeErUnderOppfolgingSettesUnderOppfolgingDersomArenaHarRiktigStatus() {
-        oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
-
-        assertFalse(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID).orElseThrow().isUnderOppfolging());
-
-        gittArenaOppfolgingStatus("ARBS", "");
-        OppfolgingStatusData oppfolgingStatusData = hentOppfolgingStatus();
-
-        assertUnderOppfolgingLagret(AKTOR_ID);
-        assertTrue(oppfolgingStatusData.underOppfolging);
-    }
-
-    @Test
-    public void hentOppfolgingStatus_brukerSomErUnderOppfolgingOgISERVMeldesUtDersomArenaSierReaktiveringIkkeErMulig() {
-        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
-        assertUnderOppfolgingLagret(AKTOR_ID);
-
-        gittInaktivOppfolgingStatus(false);
-        when(arenaOppfolgingService.hentOppfolgingTilstandDirekteFraArena(FNR)).thenReturn(Optional.of(arenaOppfolgingTilstand));
-
-        hentOppfolgingStatus();
-
-        assertEquals(
-                oppfolgingsPeriodeRepository.hentAvsluttetOppfolgingsperioder(AKTOR_ID).size(),
-                oppfolgingsPeriodeRepository.hentOppfolgingsperioder(AKTOR_ID).size()
-        );
-        assertHarIkkeGjeldendeOppfolgingsperiode(AKTOR_ID);
-        assertFalse(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID).orElseThrow().isUnderOppfolging());
-    }
-
-    @Test
     public void hentOppfolgingStatus_brukerSomErUnderOppfolgingOgISERVSkalReaktiveresDersomArenaSierReaktiveringErMulig() {
         oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
         assertUnderOppfolgingLagret(AKTOR_ID);
@@ -283,36 +248,6 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         gittReservasjonIKrr(false);
         OppfolgingStatusData oppfolgingStatusData = hentOppfolgingStatus();
         assertFalse(oppfolgingStatusData.reservasjonKRR);
-    }
-
-    @Test
-    public void medReservasjonOgUnderOppfolging() {
-        gittReservasjonIKrr(true);
-        gittArenaOppfolgingStatus("ARBS", "");
-
-        OppfolgingStatusData oppfolgingStatusData = hentOppfolgingStatus();
-
-        assertUnderOppfolgingLagret(AKTOR_ID);
-        assertTrue(oppfolgingStatusData.reservasjonKRR);
-    }
-
-    @Test
-    public void underOppfolging() {
-        gittArenaOppfolgingStatus("ARBS", "");
-
-        OppfolgingStatusData oppfolgingStatusData = hentOppfolgingStatus();
-
-        assertUnderOppfolgingLagret(AKTOR_ID);
-        assertTrue(oppfolgingStatusData.underOppfolging);
-    }
-
-    @Test
-    public void ikkeArbeidssokerUnderOppfolging() {
-        gittArenaOppfolgingStatus("IARBS", "BATT");
-
-        val oppfolgingOgVilkarStatus = hentOppfolgingStatus();
-
-        assertTrue(oppfolgingOgVilkarStatus.underOppfolging);
     }
 
     @Test

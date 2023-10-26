@@ -45,8 +45,6 @@ public class AuthServiceTest {
 
     private final AuditLogger auditLogger = mock(AuditLoggerImpl.class);
 
-    private final UnleashService unleashService = mock(UnleashService.class);
-
     private final PoaoTilgangClient poaoTilgangClient = mock(PoaoTilgangClient.class);
 
     private AuthService authService = new AuthService(
@@ -57,8 +55,7 @@ public class AuthServiceTest {
             machineToMachineTokenClient,
             environmentProperties,
             auditLogger,
-            poaoTilgangClient,
-            unleashService
+            poaoTilgangClient
     );
 
     @Test
@@ -114,7 +111,6 @@ public class AuthServiceTest {
                 .build();
 
         AktorId aktorId = AktorId.of("123");
-        when(unleashService.skalBrukePoaoTilgang()).thenReturn(true);
         when(authContextHolder.getIdTokenClaims()).thenReturn(Optional.of(claims));
         when(authService.getFnrOrThrow(aktorId)).thenReturn(Fnr.of("12345678910"));
 
@@ -131,7 +127,6 @@ public class AuthServiceTest {
                 .build();
 
         AktorId aktorId = AktorId.of("123");
-        when(unleashService.skalBrukePoaoTilgang()).thenReturn(true);
         when(authContextHolder.getIdTokenClaims()).thenReturn(Optional.of(claims));
         when(authService.getFnrOrThrow(aktorId)).thenReturn(Fnr.of("12345678910"));
 
@@ -148,7 +143,6 @@ public class AuthServiceTest {
                 .build();
 
         AktorId aktorId = AktorId.of("123");
-        when(unleashService.skalBrukePoaoTilgang()).thenReturn(true);
         when(authContextHolder.getIdTokenClaims()).thenReturn(Optional.of(claims));
         when(authService.getFnrOrThrow(aktorId)).thenReturn(Fnr.of("23456789101"));
 
@@ -165,7 +159,6 @@ public class AuthServiceTest {
                 .build();
 
         AktorId aktorId = AktorId.of("123");
-        when(unleashService.skalBrukePoaoTilgang()).thenReturn(true);
         when(authContextHolder.getIdTokenClaims()).thenReturn(Optional.of(claims));
         when(authService.getFnrOrThrow(aktorId)).thenReturn(Fnr.of("23456789101"));
         when(authService.erInternBruker()).thenReturn(true);
@@ -189,7 +182,6 @@ public class AuthServiceTest {
                 .build();
 
         AktorId aktorId = AktorId.of("123");
-        when(unleashService.skalBrukePoaoTilgang()).thenReturn(true);
         when(authContextHolder.getIdTokenClaims()).thenReturn(Optional.of(claims));
         when(authService.getFnrOrThrow(aktorId)).thenReturn(fnr);
         when(authService.erInternBruker()).thenReturn(true);
@@ -214,7 +206,6 @@ public class AuthServiceTest {
                 .build();
 
         AktorId aktorId = AktorId.of("123");
-        when(unleashService.skalBrukePoaoTilgang()).thenReturn(true);
         when(authContextHolder.getIdTokenClaims()).thenReturn(Optional.of(claims));
         when(authService.getFnrOrThrow(aktorId)).thenReturn(fnr);
         when(authService.erEksternBruker()).thenReturn(true);
@@ -239,7 +230,6 @@ public class AuthServiceTest {
                 .build();
 
         AktorId aktorId = AktorId.of("123");
-        when(unleashService.skalBrukePoaoTilgang()).thenReturn(true);
         when(authContextHolder.getIdTokenClaims()).thenReturn(Optional.of(claims));
         when(authService.getFnrOrThrow(aktorId)).thenReturn(fnrDestination);
         when(authService.erInternBruker()).thenReturn(true);
@@ -263,7 +253,6 @@ public class AuthServiceTest {
                 .build();
 
         AktorId aktorId = AktorId.of("123");
-        when(unleashService.skalBrukePoaoTilgang()).thenReturn(true);
         when(authContextHolder.getIdTokenClaims()).thenReturn(Optional.of(claims));
         when(authService.getFnrOrThrow(aktorId)).thenReturn(fnrInnloggetBruker);
         when(authService.erInternBruker()).thenReturn(true);
@@ -279,26 +268,13 @@ public class AuthServiceTest {
     @Test
     public void harIkkeRolleSkalFaPermissionDenied_sjekkTilgang() {
         AktorId aktorId = AktorId.of("123");
-        when(unleashService.skalBrukePoaoTilgang()).thenReturn(true);
         assertThrows(ResponseStatusException.class, () -> authService.sjekkLesetilgangMedAktorId(aktorId));
         assertThrows(ResponseStatusException.class, () -> authService.sjekkSkrivetilgangMedAktorId(aktorId));
     }
 
     @Test
-    public void eksternBrukerSkalFaPermitHvisAbacGirPermit_harTilgangTilEnhet() {
-        EnhetId enhetId = EnhetId.of("1201");
-        when(unleashService.skalBrukePoaoTilgang()).thenReturn(true);
-        when(authService.erEksternBruker()).thenReturn(true);
-        when(veilarbPep.harTilgangTilEnhet("", ofNullable(enhetId.get()).map(EnhetId::of).orElse(EnhetId.of("")))).thenReturn(true);
-        when(authContextHolder.getIdTokenString()).thenReturn(Optional.of(""));
-
-        assertTrue(authService.harTilgangTilEnhet(enhetId.get()));
-    }
-
-    @Test
     public void eksternBrukerSkalFaDeny_harTilgangTilEnhet() {
         EnhetId enhetId = EnhetId.of("1201");
-        when(unleashService.skalBrukePoaoTilgang()).thenReturn(true);
         when(authService.erEksternBruker()).thenReturn(true);
         when(veilarbPep.harTilgangTilEnhet("", ofNullable(enhetId.get()).map(EnhetId::of).orElse(EnhetId.of("")))).thenReturn(false);
         when(authContextHolder.getIdTokenString()).thenReturn(Optional.of(""));
@@ -309,7 +285,6 @@ public class AuthServiceTest {
     @Test
     public void brukerMedSystemRolleEllerUkjentRolleSkalFaDeny_harTilgangTilEnhet() {
         EnhetId enhetId = EnhetId.of("1201");
-        when(unleashService.skalBrukePoaoTilgang()).thenReturn(true);
         when(authService.erSystemBruker()).thenReturn(true);
         when(veilarbPep.harTilgangTilEnhet("", ofNullable(enhetId.get()).map(EnhetId::of).orElse(EnhetId.of("")))).thenReturn(false);
         when(authContextHolder.getIdTokenString()).thenReturn(Optional.of(""));
@@ -328,10 +303,9 @@ public class AuthServiceTest {
                 .claim("oid", uuid.toString())
                 .build();
 
-        when(unleashService.skalBrukePoaoTilgang()).thenReturn(true);
         when(authContextHolder.getIdTokenClaims()).thenReturn(Optional.of(claims));
         when(authService.erInternBruker()).thenReturn(true);
-        when(poaoTilgangClient.evaluatePolicy(new NavAnsattTilgangTilNavEnhetPolicyInput(uuid,  ofNullable(enhetId.get()).orElse("")))).thenReturn(new ApiResult<>(null, Decision.Permit.INSTANCE));
+        when(poaoTilgangClient.evaluatePolicy(new NavAnsattTilgangTilNavEnhetPolicyInput(uuid, ofNullable(enhetId.get()).orElse("")))).thenReturn(new ApiResult<>(null, Decision.Permit.INSTANCE));
         assertDoesNotThrow(() -> authService.harTilgangTilEnhet(enhetId.get()));
     }
 

@@ -29,11 +29,9 @@ public class OppfolgingEndringServiceTest {
 
     private final OppfolgingsStatusRepository oppfolgingsStatusRepository = mock(OppfolgingsStatusRepository.class);
 
-    private final UnleashService unleashService = mock(UnleashService.class);
-
     private final OppfolgingEndringService oppfolgingEndringService = new OppfolgingEndringService(
             authService, oppfolgingService, arenaOppfolgingService,
-            kvpService, metricsService, oppfolgingsStatusRepository, unleashService
+            kvpService, metricsService, oppfolgingsStatusRepository
     );
 
     @Test
