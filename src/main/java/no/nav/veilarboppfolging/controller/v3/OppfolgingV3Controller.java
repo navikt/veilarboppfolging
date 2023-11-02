@@ -3,16 +3,17 @@ package no.nav.veilarboppfolging.controller.v3;
 import lombok.RequiredArgsConstructor;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.veilarboppfolging.controller.response.AvslutningStatus;
-import no.nav.veilarboppfolging.controller.response.OppfolgingPeriodeDTO;
-import no.nav.veilarboppfolging.controller.response.OppfolgingPeriodeMinimalDTO;
+
+import no.nav.veilarboppfolging.controller.request.SykmeldtBrukerType;
+import no.nav.veilarboppfolging.controller.request.VeilederBegrunnelseDTO;
+import no.nav.veilarboppfolging.controller.response.*;
 import no.nav.veilarboppfolging.controller.v2.request.AvsluttOppfolgingV2Request;
 import no.nav.veilarboppfolging.controller.v2.response.UnderOppfolgingV2Response;
-import no.nav.veilarboppfolging.controller.v3.request.OppfolgingRequest;
+import no.nav.veilarboppfolging.controller.v3.request.*;
 import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
-import no.nav.veilarboppfolging.service.AuthService;
-import no.nav.veilarboppfolging.service.OppfolgingService;
+import no.nav.veilarboppfolging.repository.enums.KodeverkBruker;
+import no.nav.veilarboppfolging.service.*;
 import no.nav.veilarboppfolging.utils.DtoMappers;
 import no.nav.veilarboppfolging.utils.auth.AuthorizeAktorId;
 import no.nav.veilarboppfolging.utils.auth.AuthorizeFnr;
@@ -33,13 +34,28 @@ public class OppfolgingV3Controller {
 	private final OppfolgingService oppfolgingService;
 
 	private final AuthService authService;
+	private final ManuellStatusService manuellStatusService;
+	private final KvpService kvpService;
+	private final static List<String> ALLOWLIST = List.of("veilarbregistrering");
+	private final AktiverBrukerService aktiverBrukerService;
 
 	@AuthorizeFnr(allowlist = {"veilarbvedtaksstotte", "veilarbdialog", "veilarbaktivitet", "veilarbregistrering", "veilarbportefolje"})
 	@PostMapping("/hent-oppfolging")
 	public UnderOppfolgingV2Response underOppfolging(@RequestBody OppfolgingRequest oppfolgingRequest) {
 		return new UnderOppfolgingV2Response(oppfolgingService.erUnderOppfolging(oppfolgingRequest.fnr()));
 	}
-
+	@GetMapping("/oppfolging/me")
+	public Bruker hentBrukerInfo() {
+		return new Bruker()
+				.setId(authService.getInnloggetBrukerIdent())
+				.setErVeileder(authService.erInternBruker())
+				.setErBruker(authService.erEksternBruker());
+	}
+	@PostMapping("/oppfolging/hent-status")
+	public OppfolgingStatus hentOppfolgingsStatus(@RequestBody(required = false) OppfolgingRequest oppfolgingRequest) {
+		Fnr fodselsnummer = authService.hentIdentForEksternEllerIntern(oppfolgingRequest.fnr());
+		return tilDto(oppfolgingService.hentOppfolgingsStatus(fodselsnummer), authService.erInternBruker());
+	}
 	@PostMapping("/oppfolging/start")
 	public ResponseEntity<?> startOppfolging(@RequestBody OppfolgingRequest oppfolgingRequest) {
 		authService.skalVereInternBruker();
@@ -68,6 +84,71 @@ public class OppfolgingV3Controller {
 		return hentOppfolgingsperioder(aktorId);
 	}
 
+	@PostMapping("/oppfolging/settManuell")
+	public ResponseEntity settTilManuell(@RequestBody VeilederBegrunnelseRequest veilederBegrunnelseRequest) {
+		authService.skalVereInternBruker();
+
+		manuellStatusService.oppdaterManuellStatus(
+				veilederBegrunnelseRequest.fnr(), true, veilederBegrunnelseRequest.begrunnelse(),
+				KodeverkBruker.NAV, authService.getInnloggetVeilederIdent()
+		);
+
+		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+	}
+	// TODO: Ikke returner OppfolgingStatus
+	@PostMapping("/oppfolging/settDigital")
+	public ResponseEntity settTilDigital(@RequestBody VeilederBegrunnelseRequest veilederBegrunnelseRequest) {
+		Fnr fodselsnummer = authService.hentIdentForEksternEllerIntern(veilederBegrunnelseRequest.fnr()	);
+
+		if (authService.erEksternBruker()) {
+			manuellStatusService.settDigitalBruker(fodselsnummer);
+			return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+		}
+
+		// Påkrevd for intern bruker
+		if (veilederBegrunnelseRequest == null) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+		}
+
+		manuellStatusService.oppdaterManuellStatus(
+				fodselsnummer, false, veilederBegrunnelseRequest.begrunnelse(),
+				KodeverkBruker.NAV, hentBrukerInfo().getId()
+		);
+
+		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+	}
+	@PostMapping("/oppfolging/startKvp")
+	public ResponseEntity startKvp(@RequestBody KvpRequest startKvp) {
+		authService.skalVereInternBruker();
+		kvpService.startKvp(startKvp.fnr(), startKvp.begrunnelse());
+		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+	}
+
+	@PostMapping("/oppfolging/stoppKvp")
+	public ResponseEntity stoppKvp(@RequestBody KvpRequest stoppKvp) {
+		authService.skalVereInternBruker();
+		kvpService.stopKvp(stoppKvp.fnr(), stoppKvp.begrunnelse());
+		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+	}
+
+	@PostMapping("/oppfolging/hent-veilederTilgang")
+	public VeilederTilgang hentVeilederTilgang(@RequestBody VeilederRequest veilederRequest) {
+		authService.skalVereInternBruker();
+		return oppfolgingService.hentVeilederTilgang(veilederRequest.fnr());
+	}
+	@PostMapping("/oppfolging/harFlereAktorIderMedOppfolging")
+	public boolean harFlereAktorIderMedOppfolging(@RequestBody OppfolgingRequest oppfolgingRequest) {
+		Fnr fodselsnummer = authService.hentIdentForEksternEllerIntern(oppfolgingRequest.fnr());
+		return oppfolgingService.hentHarFlereAktorIderMedOppfolging(fodselsnummer);
+	}
+	@PostMapping("/oppfolging/aktiverSykmeldt")
+	public ResponseEntity aktiverSykmeldt(@RequestBody SykmeldtBrukerRequest sykmeldtBrukerRequest) {
+		authService.skalVereSystemBrukerFraAzureAd();
+		authService.sjekkAtApplikasjonErIAllowList(ALLOWLIST);
+
+		aktiverBrukerService.aktiverSykmeldt(sykmeldtBrukerRequest.fnr(), sykmeldtBrukerRequest.sykmeldtBrukerType());
+		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+	}
 	private List<OppfolgingPeriodeDTO> hentOppfolgingsperioder(AktorId aktorId) {
 		return oppfolgingService.hentOppfolgingsperioder(aktorId)
 				.stream()
