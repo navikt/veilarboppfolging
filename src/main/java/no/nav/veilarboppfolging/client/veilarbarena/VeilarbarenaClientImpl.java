@@ -59,7 +59,7 @@ public class VeilarbarenaClientImpl implements VeilarbarenaClient {
     public Optional<VeilarbArenaOppfolging> hentOppfolgingsbruker(Fnr fnr) {
     	PersonRequest personRequest = new PersonRequest(fnr);
         Request request = new Request.Builder()
-                .url(joinPaths(veilarbarenaUrl, "/api/v2/oppfolgingsbruker/hent"))
+                .url(joinPaths(veilarbarenaUrl, "/api/v2/hent-oppfolgingsbruker"))
                 .header(ACCEPT, APPLICATION_JSON_VALUE)
                 .header(AUTHORIZATION, "Bearer " + getToken())
 				.post(RequestBody.create(JsonUtils.toJson(personRequest), MEDIA_TYPE_JSON))
@@ -82,7 +82,7 @@ public class VeilarbarenaClientImpl implements VeilarbarenaClient {
     public Optional<ArenaOppfolging> getArenaOppfolgingsstatus(Fnr fnr) {
 		PersonRequest personRequest = new PersonRequest(fnr);
         Request request = new Request.Builder()
-                .url(joinPaths(veilarbarenaUrl, "/api/v2/oppfolgingsstatus/hent"))
+                .url(joinPaths(veilarbarenaUrl, "/api/v2/hent-oppfolgingsstatus"))
                 .header(ACCEPT, APPLICATION_JSON_VALUE)
                 .header(AUTHORIZATION, "Bearer " + getToken())
 				.post(RequestBody.create(JsonUtils.toJson(personRequest), MEDIA_TYPE_JSON))
