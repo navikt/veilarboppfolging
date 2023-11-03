@@ -2,6 +2,7 @@ package no.nav.veilarboppfolging.config;
 
 import no.nav.veilarboppfolging.controller.*;
 import no.nav.veilarboppfolging.controller.v2.ArenaOppfolgingV2Controller;
+import no.nav.veilarboppfolging.controller.v3.VeilederV3Controller;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
@@ -17,6 +18,7 @@ import org.springframework.context.annotation.Import;
         SystemOppfolgingController.class,
         UnderOppfolgingController.class,
         VeilederController.class,
+        VeilederV3Controller.class,
         VeilederTilordningController.class,
         YtelseController.class
 })
