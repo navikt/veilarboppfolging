@@ -1,7 +1,6 @@
 package no.nav.veilarboppfolging.controller.v2;
 
 import no.nav.common.types.identer.Fnr;
-import no.nav.veilarboppfolging.controller.ArenaOppfolgingController;
 import no.nav.veilarboppfolging.controller.response.OppfolgingEnhetMedVeilederResponse;
 import no.nav.veilarboppfolging.service.ArenaOppfolgingService;
 import no.nav.veilarboppfolging.service.AuthService;
@@ -42,7 +41,7 @@ public class ArenaOppfolgingV2ControllerTest {
     }
 
     @Test
-    public void getOppfolgingsstatus__should_return_correct_data_and_status_code() throws Exception {
+    public void getOppfolgingsstatus_should_return_correct_data_and_status_code() throws Exception {
         Fnr fnr = Fnr.of("123456");
 
         OppfolgingEnhetMedVeilederResponse response = new OppfolgingEnhetMedVeilederResponse()
