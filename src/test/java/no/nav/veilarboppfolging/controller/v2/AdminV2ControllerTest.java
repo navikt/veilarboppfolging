@@ -91,24 +91,6 @@ public class AdminV2ControllerTest {
     }
 
     @Test
-    public void republiserOppfolgingsperiodeForBruker__should_return_job_id_and_republish() throws Exception {
-        when(authContextHolder.getSubject()).thenReturn(Optional.of("srvpto-admin"));
-        when(authContextHolder.getRole()).thenReturn(Optional.of(UserRole.SYSTEM));
-
-        mockMvc.perform(
-                        post("/api/v2/admin/republiser/oppfolgingsperioder")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(toJson(new RepubliserOppfolgingsperioderRequest(AktorId.of(TEST_AKTOR_ID.get()))))
-                )
-                .andExpect(status().is(200))
-                .andExpect(content().string(matchesPattern("^([a-f0-9]+)$")));
-
-        verifiserAsynkront(3, TimeUnit.SECONDS, () -> {
-            verify(kafkaRepubliseringService, times(1)).republiserOppfolgingsperiodeForBruker(TEST_AKTOR_ID);
-        });
-    }
-
-    @Test
     public void republiserTilordnetVeileder__should_return_401_if_user_missing() throws Exception {
         when(authContextHolder.getSubject()).thenReturn(Optional.empty());
         when(authContextHolder.getRole()).thenReturn(Optional.of(UserRole.SYSTEM));

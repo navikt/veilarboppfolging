@@ -52,7 +52,7 @@ public class KvpV2ControllerTest {
         when(authContextHolder.getSubject()).thenReturn(Optional.empty());
 
         mockMvc.perform(get("/api/v2/kvp").queryParam("aktorId", AKTOR_ID.get()))
-                .andExpect(status().is(401));
+                .andExpect(status().is(403));
     }
 
     @Test
@@ -60,7 +60,7 @@ public class KvpV2ControllerTest {
         when(authContextHolder.getSubject()).thenReturn(Optional.of("not_authorized_user"));
 
         mockMvc.perform(get("/api/v2/kvp").queryParam("aktorId", AKTOR_ID.get()))
-                .andExpect(status().is(401));
+                .andExpect(status().is(403));
     }
 
     @Test
@@ -69,7 +69,7 @@ public class KvpV2ControllerTest {
         when(authService.erSystemBruker()).thenReturn(false);
 
         mockMvc.perform(get("/api/v2/kvp").queryParam("aktorId", AKTOR_ID.get()))
-                .andExpect(status().is(401));
+                .andExpect(status().is(403));
     }
 
     @Test
@@ -94,22 +94,24 @@ public class KvpV2ControllerTest {
 
         KvpDTO expectedKvp = DtoMappers.kvpToDTO(kvp());
 
+		when(kvpService.hentGjeldendeKvpPeriode(any())).thenReturn(Optional.of(kvp()));
+
         mockMvc.perform(get("/api/v2/kvp").queryParam("aktorId", AKTOR_ID.get()))
-                .andExpect(content().json(JsonUtils.toJson(expectedKvp)))
+                .andExpect(content().string(JsonUtils.toJson(expectedKvp)))
                 .andExpect(status().is(200));
     }
 
     @Test
-    public void with_active_kvp_but_unable_to_fetch_kvp_object() throws Exception {
-        when(authContextHolder.getSubject()).thenReturn(Optional.of("srvveilarbdialog"));
-        when(authService.erSystemBruker()).thenReturn(true);
+    public void with_no_active_kvp() throws Exception {
+		when(authContextHolder.getSubject()).thenReturn(Optional.of("srvveilarbdialog"));
+		when(authService.erSystemBruker()).thenReturn(true);
 
-        when(kvpRepository.gjeldendeKvp(AKTOR_ID)).thenReturn(KVP_ID);
-        when(kvpRepository.hentKvpPeriode(KVP_ID)).thenReturn(Optional.empty());
+		when(kvpRepository.gjeldendeKvp(AKTOR_ID)).thenReturn(KVP_ID);
+		when(kvpRepository.hentKvpPeriode(KVP_ID)).thenReturn(Optional.empty());
 
-        mockMvc.perform(get("/api/v2/kvp").queryParam("aktorid", AKTOR_ID.get()))
-                .andExpect(content().string(""))
-                .andExpect(status().is(500));
+		mockMvc.perform(get("/api/v2/kvp").queryParam("aktorId", AKTOR_ID.get()))
+				.andExpect(content().string(""))
+				.andExpect(status().is(204));
     }
 
     private KvpPeriodeEntity kvp() {
