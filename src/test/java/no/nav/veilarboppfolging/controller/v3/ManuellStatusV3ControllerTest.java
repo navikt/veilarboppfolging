@@ -33,7 +33,6 @@ public class ManuellStatusV3ControllerTest {
     @MockBean
     private ManuellStatusService manuellStatusService;
 
-
     ManuellStatusRequest manuellStatusRequest = new ManuellStatusRequest(TEST_FNR);
 
     @Test
@@ -56,7 +55,6 @@ public class ManuellStatusV3ControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(JsonUtils.toJson(manuellStatusRequest))).andExpect(content().json(expJson));
     }
-
 
     @Test
     public void sett_digital_ekstern() throws Exception {
@@ -87,7 +85,7 @@ public class ManuellStatusV3ControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(JsonUtils.toJson(manuellStatusRequest))
         );
-        assert(result.andReturn().getResponse().getStatus() == 200);
+        assert (result.andReturn().getResponse().getStatus() == 200);
     }
 
     @Test
@@ -109,6 +107,5 @@ public class ManuellStatusV3ControllerTest {
 
         verify(manuellStatusService, times(1)).synkroniserManuellStatusMedDigdir(TEST_FNR);
     }
-
 
 }
