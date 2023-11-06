@@ -7,12 +7,14 @@ import no.nav.common.types.identer.NavIdent;
 import no.nav.veilarboppfolging.controller.v3.request.VeilederRequest;
 import no.nav.veilarboppfolging.service.AuthService;
 import no.nav.veilarboppfolging.service.VeilederTilordningService;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.ResultActions;
 
 import java.util.Optional;
 
@@ -28,7 +30,7 @@ public class VeilederV3ControllerTest {
     private MockMvc mockMvc;
 
     @MockBean
-    private VeilederTilordningService veilederTilordningService;
+    public VeilederTilordningService veilederTilordningService;
 
     @MockBean
     private AuthService authService;
@@ -39,9 +41,11 @@ public class VeilederV3ControllerTest {
         NavIdent navIdent = NavIdent.of("1234");
         VeilederRequest veilederRequest = new VeilederRequest(Fnr.of("5678"));
         when(veilederTilordningService.hentTilordnetVeilederIdent(any())).thenReturn(Optional.of(navIdent));
-        mockMvc.perform(post("api/v3/hent-veileder/")
+        String expJson = "{\"veilederIdent\":\"1234\"}";
+        mockMvc.perform(post("/api/v3/hent-veileder")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(JsonUtils.toJson(veilederRequest))).andExpect(content().json("{\"veilederIdent\":\"1234\"}"));
+                .content(JsonUtils.toJson(veilederRequest))).andExpect(content().json(expJson));
+
 
     }
 
