@@ -1,7 +1,6 @@
 package no.nav.veilarboppfolging.controller.v2;
 
 import no.nav.common.types.identer.Fnr;
-import no.nav.veilarboppfolging.controller.ArenaOppfolgingController;
 import no.nav.veilarboppfolging.controller.response.OppfolgingEnhetMedVeilederResponse;
 import no.nav.veilarboppfolging.service.ArenaOppfolgingService;
 import no.nav.veilarboppfolging.service.AuthService;
