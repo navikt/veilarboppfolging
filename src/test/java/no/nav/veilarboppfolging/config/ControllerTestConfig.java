@@ -4,6 +4,7 @@ import no.nav.veilarboppfolging.controller.*;
 import no.nav.veilarboppfolging.controller.v2.ArenaOppfolgingV2Controller;
 import no.nav.veilarboppfolging.controller.v2.KvpV2Controller;
 import no.nav.veilarboppfolging.controller.v2.UnderOppfolgingV2Controller;
+import no.nav.veilarboppfolging.controller.v3.VeilederV3Controller;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 

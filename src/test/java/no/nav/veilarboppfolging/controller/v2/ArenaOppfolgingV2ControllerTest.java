@@ -41,7 +41,7 @@ public class ArenaOppfolgingV2ControllerTest {
     }
 
     @Test
-    public void getOppfolgingsstatus_should_return_correct_data_and_status_code() throws Exception {
+    public void getOppfolgingsstatus__should_return_correct_data_and_status_code() throws Exception {
         Fnr fnr = Fnr.of("123456");
 
         OppfolgingEnhetMedVeilederResponse response = new OppfolgingEnhetMedVeilederResponse()

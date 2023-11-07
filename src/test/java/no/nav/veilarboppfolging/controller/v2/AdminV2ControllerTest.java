@@ -2,22 +2,16 @@ package no.nav.veilarboppfolging.controller.v2;
 
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.UserRole;
-import no.nav.common.types.identer.AktorId;
-import no.nav.veilarboppfolging.domain.RepubliserOppfolgingsperioderRequest;
-import no.nav.veilarboppfolging.service.AuthService;
 import no.nav.veilarboppfolging.service.KafkaRepubliseringService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
-import static no.nav.common.json.JsonUtils.toJson;
-import static no.nav.veilarboppfolging.test.TestData.TEST_AKTOR_ID;
 import static no.nav.veilarboppfolging.test.TestUtils.verifiserAsynkront;
 import static org.hamcrest.Matchers.matchesPattern;
 import static org.mockito.Mockito.*;
@@ -33,9 +27,6 @@ public class AdminV2ControllerTest {
 
     @MockBean
     private AuthContextHolder authContextHolder;
-
-    @MockBean
-    private AuthService authService;
 
     @MockBean
     private KafkaRepubliseringService kafkaRepubliseringService;
