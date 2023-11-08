@@ -83,7 +83,8 @@ public class ManuellStatusV3Controller { //TODO GÅ OVER Å SJEKK PÅ NULLPOINTE
 	public void settTilDigital(
 			@RequestBody(required = false) VeilederBegrunnelseRequest veilederBegrunnelseRequest
 	) {
-		Fnr fodselsnummer = authService.hentIdentForEksternEllerIntern(veilederBegrunnelseRequest.fnr());
+		Fnr maybeFodselsnummer = veilederBegrunnelseRequest == null ? null : veilederBegrunnelseRequest.fnr();
+		Fnr fodselsnummer = authService.hentIdentForEksternEllerIntern(maybeFodselsnummer);
 
 		if (authService.erEksternBruker()) {
 			manuellStatusService.settDigitalBruker(fodselsnummer);
