@@ -1,7 +1,9 @@
 package no.nav.veilarboppfolging.controller.v2;
 
+import no.nav.common.json.JsonUtils;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.controller.response.OppfolgingEnhetMedVeilederResponse;
+import no.nav.veilarboppfolging.controller.v2.request.ArenaOppfolgingRequest;
 import no.nav.veilarboppfolging.service.ArenaOppfolgingService;
 import no.nav.veilarboppfolging.service.AuthService;
 import no.nav.veilarboppfolging.test.TestUtils;
@@ -32,10 +34,10 @@ public class ArenaOppfolgingV2ControllerTest {
     @Test
     public void getOppfolgingsstatus__should_check_authorization() throws Exception {
         Fnr fnr = Fnr.of("123456");
-
+        ArenaOppfolgingRequest arenaOppfolgingRequest = new ArenaOppfolgingRequest(fnr);
         mockMvc.perform(post("/api/v2/person/hent-oppfolgingsstatus")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"fnr\":\""+fnr.get()+"\"}"));
+                .content(JsonUtils.toJson(arenaOppfolgingRequest)));
 
         verify(authService, times(1)).sjekkLesetilgangMedFnr(fnr);
     }
@@ -43,7 +45,7 @@ public class ArenaOppfolgingV2ControllerTest {
     @Test
     public void getOppfolgingsstatus__should_return_correct_data_and_status_code() throws Exception {
         Fnr fnr = Fnr.of("123456");
-
+        ArenaOppfolgingRequest arenaOppfolgingRequest = new ArenaOppfolgingRequest(fnr);
         OppfolgingEnhetMedVeilederResponse response = new OppfolgingEnhetMedVeilederResponse()
                 .setVeilederId("Z12345")
                 .setFormidlingsgruppe("ARBS")
@@ -57,7 +59,7 @@ public class ArenaOppfolgingV2ControllerTest {
 
         mockMvc.perform(post("/api/v2/person/hent-oppfolgingsstatus")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"fnr\":\""+fnr.get()+"\"}"))
+                        .content(JsonUtils.toJson(arenaOppfolgingRequest)))
                 .andExpect(status().is(200))
                 .andExpect(content().json(json, true));
     }
