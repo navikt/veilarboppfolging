@@ -33,7 +33,8 @@ public class MaalV3Controller {
 
 	@PostMapping("/maal/hent-alle")
 	public List<Maal> hentMaalListe(@RequestBody(required = false) MaalForPersonRequest maalForPersonRequest) {
-		Fnr fodselsnummer = authService.hentIdentForEksternEllerIntern(maalForPersonRequest.fnr());
+		Fnr maybeFodselsnummer = maalForPersonRequest == null ? null : maalForPersonRequest.fnr();
+		Fnr fodselsnummer = authService.hentIdentForEksternEllerIntern(maybeFodselsnummer);
 		List<MaalEntity> malDataList = maalService.hentMaalList(fodselsnummer);
 
 		return malDataList.stream()

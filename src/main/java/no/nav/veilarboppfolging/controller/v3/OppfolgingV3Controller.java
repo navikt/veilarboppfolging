@@ -51,7 +51,8 @@ public class OppfolgingV3Controller {
 
     @PostMapping("/oppfolging/hent-status")
     public OppfolgingStatus hentOppfolgingsStatus(@RequestBody(required = false) OppfolgingRequest oppfolgingRequest) {
-        Fnr fodselsnummer = authService.hentIdentForEksternEllerIntern(oppfolgingRequest.fnr());
+        Fnr maybeFodselsnummer = oppfolgingRequest == null ? null : oppfolgingRequest.fnr();
+        Fnr fodselsnummer = authService.hentIdentForEksternEllerIntern(maybeFodselsnummer);
         return tilDto(oppfolgingService.hentOppfolgingsStatus(fodselsnummer), authService.erInternBruker());
     }
 
