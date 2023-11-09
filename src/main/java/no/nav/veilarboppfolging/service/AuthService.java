@@ -1,6 +1,7 @@
 package no.nav.veilarboppfolging.service;
 
 import com.nimbusds.jwt.JWTClaimsSet;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.abac.Pep;
@@ -17,18 +18,19 @@ import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.client.aktoroppslag.BrukerIdenter;
 import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
 import no.nav.common.token_client.client.MachineToMachineTokenClient;
-import no.nav.common.types.identer.AktorId;
-import no.nav.common.types.identer.EnhetId;
-import no.nav.common.types.identer.Fnr;
-import no.nav.common.types.identer.NavIdent;
+import no.nav.common.types.identer.*;
 import no.nav.poao_tilgang.client.*;
 import no.nav.veilarboppfolging.config.EnvironmentProperties;
 import no.nav.veilarboppfolging.utils.DownstreamApi;
+import no.nav.veilarboppfolging.utils.auth.AuthorizeAktorId;
+import no.nav.veilarboppfolging.utils.auth.AuthorizeFnr;
+import no.nav.veilarboppfolging.utils.auth.UnauthorizedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.lang.annotation.Annotation;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
@@ -348,6 +350,22 @@ public class AuthService {
                 .orElse(null);
     }
 
+    public void authorizeRequest(EksternBrukerId ident, String[] allowList) {
+        var idToken = getInnloggetBrukerToken();
+
+        if (idToken == null || idToken.isEmpty()) {
+            throw new UnauthorizedException("Missing token");
+        }
+
+        if (ident instanceof Fnr fnr) {
+            authorizeFnr(fnr, allowList);
+        }
+
+        if (ident instanceof AktorId aktorId) {
+            authorizeAktorId(aktorId, allowList);
+        }
+    }
+
     private boolean harAADRolleForSystemTilSystemTilgang() {
         return authContextHolder.getIdTokenClaims()
                 .flatMap(claims -> {
@@ -481,5 +499,23 @@ public class AuthService {
                 .destinationUserId(destinationUserId)
                 .extension("msg", logMessage)
                 .build());
+    }
+
+    private void authorizeFnr(Fnr fnr, String[] allowlist) {
+        if (erSystemBrukerFraAzureAd()) {
+            sjekkAtApplikasjonErIAllowList(allowlist);
+        } else {
+            sjekkLesetilgangMedFnr(fnr);
+        }
+    }
+
+    private void authorizeAktorId(AktorId aktorId, String[] allowlist) {
+        if (erInternBruker()) {
+            sjekkLesetilgangMedAktorId(aktorId);
+        } else if (erSystemBrukerFraAzureAd()) {
+            sjekkAtApplikasjonErIAllowList(allowlist);
+        } else if (erEksternBruker()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Eksternbruker ikke tillatt");
+        }
     }
 }

@@ -35,9 +35,10 @@ public class OppfolgingV3Controller {
     private final static List<String> ALLOWLIST = List.of("veilarbregistrering");
     private final AktiverBrukerService aktiverBrukerService;
 
-    @AuthorizeFnr(allowlist = {"veilarbvedtaksstotte", "veilarbdialog", "veilarbaktivitet", "veilarbregistrering", "veilarbportefolje"})
     @PostMapping("/hent-oppfolging")
     public UnderOppfolgingV2Response underOppfolging(@RequestBody OppfolgingRequest oppfolgingRequest) {
+        String[] allowlist = {"veilarbvedtaksstotte", "veilarbdialog", "veilarbaktivitet", "veilarbregistrering", "veilarbportefolje"};
+        authService.authorizeRequest(oppfolgingRequest.fnr(), allowlist);
         return new UnderOppfolgingV2Response(oppfolgingService.erUnderOppfolging(oppfolgingRequest.fnr()));
     }
 
@@ -69,9 +70,10 @@ public class OppfolgingV3Controller {
         return tilDto(oppfolgingService.hentAvslutningStatus(oppfolgingRequest.fnr()));
     }
 
-    @AuthorizeFnr(allowlist = {"veilarbvedtaksstotte", "veilarbdialog", "veilarbaktivitet"})
     @PostMapping("/oppfolging/hent-gjeldende-periode")
     public ResponseEntity<OppfolgingPeriodeMinimalDTO> hentGjeldendePeriode(@RequestBody OppfolgingRequest oppfolgingRequest) {
+        String[] allowlist = {"veilarbvedtaksstotte", "veilarbdialog", "veilarbaktivitet"};
+        authService.authorizeRequest(oppfolgingRequest.fnr(), allowlist);
         return oppfolgingService.hentGjeldendeOppfolgingsperiode(oppfolgingRequest.fnr())
                 .map(DtoMappers::tilOppfolgingPeriodeMinimalDTO)
                 .map(op -> new ResponseEntity<>(op, HttpStatus.OK))
