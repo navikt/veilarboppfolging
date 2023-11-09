@@ -141,19 +141,6 @@ public class AuthService {
         return erSystemBruker() && harAADRolleForSystemTilSystemTilgang();
     }
 
-    private boolean harAADRolleForSystemTilSystemTilgang() {
-        return authContextHolder.getIdTokenClaims()
-                .flatMap(claims -> {
-                    try {
-                        return Optional.ofNullable(claims.getStringListClaim("roles"));
-                    } catch (ParseException e) {
-                        return Optional.empty();
-                    }
-                })
-                .orElse(emptyList())
-                .contains("access_as_application");
-    }
-
     public boolean erEksternBruker() {
         return authContextHolder.erEksternBruker();
     }
@@ -225,46 +212,6 @@ public class AuthService {
     public void sjekkSkrivetilgangMedAktorId(AktorId aktorId) {
         sjekkTilgang(ActionId.WRITE, aktorId);
     }
-
-    private void sjekkTilgang(ActionId actionId, AktorId aktorId) {
-        Optional<String> sikkerhetsnivaa = hentSikkerhetsnivaa();
-        if (erInternBruker()) {
-            Decision decision = poaoTilgangClient.evaluatePolicy(new NavAnsattTilgangTilEksternBrukerPolicyInput(
-                    hentInnloggetVeilederUUID(), mapActionTypeToTilgangsType(actionId), getFnrOrThrow(aktorId).get()
-            )).getOrThrow();
-            auditLogWithMessageAndDestinationUserId(
-                    "Veileder har gjort oppslag på aktorid",
-                    aktorId.get(),
-                    authContextHolder.getNavIdent().orElse(NavIdent.of(UKJENT_NAV_IDENT)).get(),
-                    decision.isPermit() ? AuthorizationDecision.PERMIT : AuthorizationDecision.DENY
-            );
-            if (decision.isDeny()) {
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN);
-            }
-        } else if (erEksternBruker() && sikkerhetsnivaa.isPresent() && sikkerhetsnivaa.get().equals("Level4")) {
-            Decision decision = poaoTilgangClient.evaluatePolicy(new EksternBrukerTilgangTilEksternBrukerPolicyInput(
-                    hentInnloggetPersonIdent(), getFnrOrThrow(aktorId).get()
-            )).getOrThrow();
-            auditLogWithMessageAndDestinationUserId(
-                    "Ekstern bruker har gjort oppslag på aktorid",
-                    aktorId.get(),
-                    hentInnloggetPersonIdent(),
-                    decision.isPermit() ? AuthorizationDecision.PERMIT : AuthorizationDecision.DENY
-            );
-            if (decision.isDeny()) {
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN);
-            }
-
-        } else if (erSystemBruker()) {
-            if (!veilarbPep.harTilgangTilPerson(getInnloggetBrukerToken(), actionId, aktorId)) {
-                // TODO: skriv oss bort fra abac for systembruker
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN);
-            }
-        } else {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
-        }
-    }
-
 
     public void sjekkTilgangTilEnhet(String enhetId) {
         if (!harTilgangTilEnhet(enhetId)) {
@@ -352,14 +299,6 @@ public class AuthService {
         return machineToMachineTokenClient.createMachineToMachineToken(scope);
     }
 
-    private boolean erAadOboToken() {
-        Optional<String> navIdentClaim = authContextHolder.getIdTokenClaims()
-                .flatMap((claims) -> authContextHolder.getStringClaim(claims, "NAVident"));
-        return authContextHolder.getIdTokenClaims().map(JWTClaimsSet::getIssuer).filter(environmentProperties.getNaisAadIssuer()::equals).isPresent()
-                && authContextHolder.getIdTokenClaims().map(x -> x.getClaim("oid")).isPresent()
-                && navIdentClaim.isPresent();
-    }
-
     // NAV ident, fnr eller annen ID
     public String getInnloggetBrukerIdent() {
         return authContextHolder.getUid()
@@ -372,17 +311,6 @@ public class AuthService {
         }
         return getInnloggetBrukerIdent();
     }
-
-    @SneakyThrows
-    private Optional<NavIdent> getNavIdentClaimHvisTilgjengelig() {
-        if (erInternBruker()) {
-            return Optional.ofNullable(authContextHolder.requireIdTokenClaims().getStringClaim(AAD_NAV_IDENT_CLAIM))
-                    .filter(IdentUtils::erGydligNavIdent)
-                    .map(NavIdent::of);
-        }
-        return empty();
-    }
-
 
     public void sjekkAtApplikasjonErIAllowList(String[] allowlist) {
         sjekkAtApplikasjonErIAllowList(List.of(allowlist));
@@ -406,6 +334,90 @@ public class AuthService {
         return maybeClaims.map(claims -> hasIssuer(claims, "tokenx")).orElse(false);
     }
 
+    public String hentApplikasjonFraContext() {
+        return getFullAppName()
+                .map(claim -> claim.split(":"))
+                .filter(claims -> claims.length == 3)
+                .map(claims -> claims[2])
+                .orElse("");
+    }
+
+    public String hentInnloggetPersonIdent() {
+        return authContextHolder.getIdTokenClaims()
+                .flatMap(claims -> getStringClaimOrEmpty(claims, "pid"))
+                .orElse(null);
+    }
+
+    private boolean harAADRolleForSystemTilSystemTilgang() {
+        return authContextHolder.getIdTokenClaims()
+                .flatMap(claims -> {
+                    try {
+                        return Optional.ofNullable(claims.getStringListClaim("roles"));
+                    } catch (ParseException e) {
+                        return Optional.empty();
+                    }
+                })
+                .orElse(emptyList())
+                .contains("access_as_application");
+    }
+
+    private void sjekkTilgang(ActionId actionId, AktorId aktorId) {
+        Optional<String> sikkerhetsnivaa = hentSikkerhetsnivaa();
+        if (erInternBruker()) {
+            Decision decision = poaoTilgangClient.evaluatePolicy(new NavAnsattTilgangTilEksternBrukerPolicyInput(
+                    hentInnloggetVeilederUUID(), mapActionTypeToTilgangsType(actionId), getFnrOrThrow(aktorId).get()
+            )).getOrThrow();
+            auditLogWithMessageAndDestinationUserId(
+                    "Veileder har gjort oppslag på aktorid",
+                    aktorId.get(),
+                    authContextHolder.getNavIdent().orElse(NavIdent.of(UKJENT_NAV_IDENT)).get(),
+                    decision.isPermit() ? AuthorizationDecision.PERMIT : AuthorizationDecision.DENY
+            );
+            if (decision.isDeny()) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+            }
+        } else if (erEksternBruker() && sikkerhetsnivaa.isPresent() && sikkerhetsnivaa.get().equals("Level4")) {
+            Decision decision = poaoTilgangClient.evaluatePolicy(new EksternBrukerTilgangTilEksternBrukerPolicyInput(
+                    hentInnloggetPersonIdent(), getFnrOrThrow(aktorId).get()
+            )).getOrThrow();
+            auditLogWithMessageAndDestinationUserId(
+                    "Ekstern bruker har gjort oppslag på aktorid",
+                    aktorId.get(),
+                    hentInnloggetPersonIdent(),
+                    decision.isPermit() ? AuthorizationDecision.PERMIT : AuthorizationDecision.DENY
+            );
+            if (decision.isDeny()) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+            }
+
+        } else if (erSystemBruker()) {
+            if (!veilarbPep.harTilgangTilPerson(getInnloggetBrukerToken(), actionId, aktorId)) {
+                // TODO: skriv oss bort fra abac for systembruker
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+            }
+        } else {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        }
+    }
+
+    private boolean erAadOboToken() {
+        Optional<String> navIdentClaim = authContextHolder.getIdTokenClaims()
+                .flatMap((claims) -> authContextHolder.getStringClaim(claims, "NAVident"));
+        return authContextHolder.getIdTokenClaims().map(JWTClaimsSet::getIssuer).filter(environmentProperties.getNaisAadIssuer()::equals).isPresent()
+                && authContextHolder.getIdTokenClaims().map(x -> x.getClaim("oid")).isPresent()
+                && navIdentClaim.isPresent();
+    }
+
+    @SneakyThrows
+    private Optional<NavIdent> getNavIdentClaimHvisTilgjengelig() {
+        if (erInternBruker()) {
+            return Optional.ofNullable(authContextHolder.requireIdTokenClaims().getStringClaim(AAD_NAV_IDENT_CLAIM))
+                    .filter(IdentUtils::erGydligNavIdent)
+                    .map(NavIdent::of);
+        }
+        return empty();
+    }
+
     private static boolean hasIssuer(JWTClaimsSet claims, String issuerSubString) {
         var fullIssuerString = claims.getIssuer();
         return fullIssuerString.contains(issuerSubString);
@@ -422,14 +434,6 @@ public class AuthService {
         }
     }
 
-    public String hentApplikasjonFraContext() {
-        return getFullAppName()
-                .map(claim -> claim.split(":"))
-                .filter(claims -> claims.length == 3)
-                .map(claims -> claims[2])
-                .orElse("");
-    }
-
     private static Optional<String> getStringClaimOrEmpty(JWTClaimsSet claims, String claimName) {
         try {
             return ofNullable(claims.getStringClaim(claimName));
@@ -443,12 +447,6 @@ public class AuthService {
                 .flatMap(claims -> getStringClaimOrEmpty(claims, "oid"))
                 .map(UUID::fromString)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Fant ikke oid for innlogget veileder"));
-    }
-
-    public String hentInnloggetPersonIdent() {
-        return authContextHolder.getIdTokenClaims()
-                .flatMap(claims -> getStringClaimOrEmpty(claims, "pid"))
-                .orElse(null);
     }
 
     private Optional<String> hentSikkerhetsnivaa() {
