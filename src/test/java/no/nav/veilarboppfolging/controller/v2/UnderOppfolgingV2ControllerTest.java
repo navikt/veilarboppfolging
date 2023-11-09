@@ -15,6 +15,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 import wiremock.org.eclipse.jetty.http.HttpStatus;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -50,17 +51,10 @@ class UnderOppfolgingV2ControllerTest {
 
     @Test
     void hentUnderOppfolgingUtenParams() throws Exception {
-        Fnr fnr = Fnr.of("1234");
-        UnderOppfolgingRequest underOppfolgingRequest = new UnderOppfolgingRequest(fnr);
         when(authService.erEksternBruker()).thenReturn(true);
         when(authService.getInnloggetBrukerIdent()).thenReturn("1234");
-        mockMvc.perform(post("/api/v2/hent-underOppfolging")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(JsonUtils.toJson(underOppfolgingRequest))
-                )
+        when(authorizationInterceptor.preHandle(any(), any(), any())).thenReturn(true);
+        mockMvc.perform(post("/api/v2/hent-underOppfolging"))
                 .andExpect(status().is(HttpStatus.OK_200));
     }
-
-
-
 }

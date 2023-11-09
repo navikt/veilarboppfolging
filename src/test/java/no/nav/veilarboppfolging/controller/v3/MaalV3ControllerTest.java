@@ -1,8 +1,5 @@
 package no.nav.veilarboppfolging.controller.v3;
 
-import no.nav.common.json.JsonUtils;
-import no.nav.veilarboppfolging.controller.v3.request.MaalForPersonRequest;
-import no.nav.veilarboppfolging.controller.v3.request.MaalRequest;
 import no.nav.veilarboppfolging.repository.entity.MaalEntity;
 import no.nav.veilarboppfolging.service.AuthService;
 import no.nav.veilarboppfolging.service.MaalService;
@@ -49,7 +46,7 @@ public class MaalV3ControllerTest {
         mockMvc.perform(
                 post("/api/v3/hent-maal")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(JsonUtils.toJson(new MaalForPersonRequest(TEST_FNR)))
+                        .content("{\"fnr\":\"12345678900\"}")
         ).andExpect(content().json(expectedJson));
     }
 
@@ -75,7 +72,7 @@ public class MaalV3ControllerTest {
         mockMvc.perform(
                 post("/api/v3/maal/hent-alle")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(JsonUtils.toJson(new MaalForPersonRequest(TEST_FNR)))
+                        .content("{\"fnr\":\"12345678900\"}")
         ).andExpect(content().json(expectedJson));
     }
 
@@ -95,14 +92,7 @@ public class MaalV3ControllerTest {
         mockMvc.perform(
                 post("/api/v3/maal")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(JsonUtils.toJson(
-                                new MaalRequest(
-                                        TEST_FNR,
-                                        "Oppdatert mål",
-                                        TEST_AKTOR_ID.get(),
-                                        ZonedDateTime.parse("2023-09-12T08:00:00+01:00")
-                                )
-                        ))
+                        .content("{\"fnr\":\"12345678900\",\"maalInnhold\":{\"maal\":\"Oppdatert mål\",\"endretAv\":\"11122233334445\",\"dato\":\"2023-09-12T08:00:00+01:00\"}}")
         ).andExpect(content().json(expectedJson));
     }
 }

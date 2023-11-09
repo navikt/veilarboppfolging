@@ -1,13 +1,13 @@
 package no.nav.veilarboppfolging.controller.v3.request;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import no.nav.common.types.identer.Fnr;
 
 import java.time.ZonedDateTime;
 
 public record MaalRequest(
-		Fnr fnr,
-		String mal,
-		String endretAv,
-		ZonedDateTime dato
+		@JsonProperty Fnr fnr,
+
+		@JsonProperty(required = true) MaalInnhold maalInnhold
 ) {
 }

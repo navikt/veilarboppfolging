@@ -23,7 +23,6 @@ public class HistorikkV3Controller {
 
 	@PostMapping("/hent-instillingshistorikk")
 	public List<HistorikkHendelse> hentInnstillingsHistorikk(@RequestBody HistorikkRequest historikkRequest) {
-		// TODO: Vurder å refaktorer DTOen, brukes kun av veilarbvisittkortfs
 		authService.skalVereInternBruker();
 		return historikkService.hentInstillingsHistorikk(historikkRequest.fnr());
 	}

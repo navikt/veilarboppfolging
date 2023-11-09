@@ -19,7 +19,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v3")
 @RequiredArgsConstructor
-public class ManuellStatusV3Controller { //TODO GÅ OVER Å SJEKK PÅ NULLPOINTERE!!
+public class ManuellStatusV3Controller {
 
 	private final static List<String> ALLOWLIST = List.of("veilarbdialog", "veilarbaktivitet");
 

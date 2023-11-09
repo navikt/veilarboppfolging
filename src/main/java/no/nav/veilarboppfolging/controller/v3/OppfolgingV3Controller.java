@@ -96,9 +96,8 @@ public class OppfolgingV3Controller {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
-    // TODO: Ikke returner OppfolgingStatus
     @PostMapping("/oppfolging/settDigital")
-    public ResponseEntity settTilDigital(@RequestBody VeilederBegrunnelseRequest veilederBegrunnelseRequest) {
+    public ResponseEntity settTilDigital(@RequestBody(required = false) VeilederBegrunnelseRequest veilederBegrunnelseRequest) {
         Fnr maybeFodselsnummer = veilederBegrunnelseRequest == null ? null : veilederBegrunnelseRequest.fnr();
         Fnr fodselsnummer = authService.hentIdentForEksternEllerIntern(maybeFodselsnummer);
 
@@ -141,8 +140,9 @@ public class OppfolgingV3Controller {
     }
 
     @PostMapping("/oppfolging/harFlereAktorIderMedOppfolging")
-    public boolean harFlereAktorIderMedOppfolging(@RequestBody OppfolgingRequest oppfolgingRequest) {
-        Fnr fodselsnummer = authService.hentIdentForEksternEllerIntern(oppfolgingRequest.fnr());
+    public boolean harFlereAktorIderMedOppfolging(@RequestBody(required = false) OppfolgingRequest oppfolgingRequest) {
+        Fnr maybeFodselsnummer = oppfolgingRequest == null ? null : oppfolgingRequest.fnr();
+        Fnr fodselsnummer = authService.hentIdentForEksternEllerIntern(maybeFodselsnummer);
         return oppfolgingService.hentHarFlereAktorIderMedOppfolging(fodselsnummer);
     }
 

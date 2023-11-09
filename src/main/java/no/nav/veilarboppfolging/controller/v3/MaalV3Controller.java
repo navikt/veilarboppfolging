@@ -26,8 +26,9 @@ public class MaalV3Controller {
 	private final AuthService authService;
 
 	@PostMapping("/hent-maal")
-	public Maal hentMaal(@RequestBody MaalForPersonRequest maalForPersonRequest) {
-		Fnr fodselsnummer = authService.hentIdentForEksternEllerIntern(maalForPersonRequest.fnr());
+	public Maal hentMaal(@RequestBody(required = false) MaalForPersonRequest maalForPersonRequest) {
+		Fnr maybeFodselsnummer = maalForPersonRequest == null ? null : maalForPersonRequest.fnr();
+		Fnr fodselsnummer = authService.hentIdentForEksternEllerIntern(maybeFodselsnummer);
 		return tilDto(maalService.hentMal(fodselsnummer));
 	}
 
@@ -46,8 +47,9 @@ public class MaalV3Controller {
 	public Maal oppdaterMaal(@RequestBody MaalRequest maalRequest) {
 		Fnr fodselsnummer = authService.hentIdentForEksternEllerIntern(maalRequest.fnr());
 		String endretAvVeileder = authService.erEksternBruker() ? null : authService.getInnloggetBrukerIdent();
+		String maal = maalRequest.maalInnhold().maal();
 
-		return tilDto(maalService.oppdaterMaal(maalRequest.mal(), fodselsnummer, endretAvVeileder));
+		return tilDto(maalService.oppdaterMaal(maal , fodselsnummer, endretAvVeileder));
 	}
 
 }

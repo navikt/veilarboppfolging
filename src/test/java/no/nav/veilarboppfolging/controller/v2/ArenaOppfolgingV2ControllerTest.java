@@ -45,7 +45,6 @@ public class ArenaOppfolgingV2ControllerTest {
     @Test
     public void getOppfolgingsstatus__should_return_correct_data_and_status_code() throws Exception {
         Fnr fnr = Fnr.of("123456");
-        ArenaOppfolgingRequest arenaOppfolgingRequest = new ArenaOppfolgingRequest(fnr);
         OppfolgingEnhetMedVeilederResponse response = new OppfolgingEnhetMedVeilederResponse()
                 .setVeilederId("Z12345")
                 .setFormidlingsgruppe("ARBS")
@@ -59,7 +58,7 @@ public class ArenaOppfolgingV2ControllerTest {
 
         mockMvc.perform(post("/api/v2/person/hent-oppfolgingsstatus")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(JsonUtils.toJson(arenaOppfolgingRequest)))
+                        .content("{\"fnr\":\"123456\"}"))
                 .andExpect(status().is(200))
                 .andExpect(content().json(json, true));
     }

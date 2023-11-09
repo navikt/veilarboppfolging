@@ -22,10 +22,9 @@ public class UnderOppfolgingV2Controller {
     private final AuthService authService;
 
     @PostMapping("/hent-underOppfolging")
-    public UnderOppfolgingDTO underOppfolging(@RequestBody UnderOppfolgingRequest underOppfolgingRequest) {
-        // TODO: Hvis dette endepunktet kun blir brukt av interne brukere så kan vi gjøre fnr query param required
-        Fnr fodselsnummer = authService.hentIdentForEksternEllerIntern(underOppfolgingRequest.fnr());
+    public UnderOppfolgingDTO underOppfolging(@RequestBody(required = false) UnderOppfolgingRequest underOppfolgingRequest) {
+        Fnr maybeFodselsnummer = underOppfolgingRequest == null ? null : underOppfolgingRequest.fnr();
+        Fnr fodselsnummer = authService.hentIdentForEksternEllerIntern(maybeFodselsnummer);
         return oppfolgingService.oppfolgingData(fodselsnummer);
     }
-
 }
