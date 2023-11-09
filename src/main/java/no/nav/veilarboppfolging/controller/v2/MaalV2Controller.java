@@ -24,12 +24,14 @@ public class MaalV2Controller {
     private final AuthService authService;
 
     @GetMapping
+    @Deprecated(forRemoval = true)
     public Maal hentMaal(@RequestParam(required = false) Fnr fnr) {
         Fnr fodselsnummer = authService.hentIdentForEksternEllerIntern(fnr);
         return tilDto(maalService.hentMal(fodselsnummer));
     }
 
     @GetMapping("/alle")
+	@Deprecated(forRemoval = true)
     public List<Maal> hentMaalListe(@RequestParam(value = "fnr", required = false) Fnr fnr) {
         Fnr fodselsnummer = authService.hentIdentForEksternEllerIntern(fnr);
         List<MaalEntity> malDataList = maalService.hentMaalList(fodselsnummer);
@@ -40,6 +42,7 @@ public class MaalV2Controller {
     }
 
     @PostMapping
+	@Deprecated(forRemoval = true)
     public Maal oppdaterMaal(@RequestBody Maal maal, @RequestParam(value = "fnr", required = false) Fnr fnr) {
         Fnr fodselsnummer = authService.hentIdentForEksternEllerIntern(fnr);
         String endretAvVeileder = authService.erEksternBruker() ? null : authService.getInnloggetBrukerIdent();

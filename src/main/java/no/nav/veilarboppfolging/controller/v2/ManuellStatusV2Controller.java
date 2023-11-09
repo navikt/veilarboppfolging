@@ -27,6 +27,7 @@ public class ManuellStatusV2Controller {
     private final ManuellStatusService manuellStatusService;
 
     @GetMapping
+    @Deprecated(forRemoval = true)
     public ManuellV2Response hentErUnderManuellOppfolging(@RequestParam("fnr") Fnr fnr) {
         authService.sjekkLesetilgangMedFnr(fnr);
 
@@ -36,6 +37,7 @@ public class ManuellStatusV2Controller {
     }
 
     @GetMapping("/status")
+	@Deprecated(forRemoval = true)
     public ManuellStatusV2Response hentManuellStatus(@RequestParam("fnr") Fnr fnr) {
         if (authService.erEksternBruker()) {
             authService.sjekkAtApplikasjonErIAllowList(ALLOWLIST);
@@ -63,12 +65,14 @@ public class ManuellStatusV2Controller {
      */
 
     @PostMapping("/synkroniser-med-dkif")
+	@Deprecated(forRemoval = true)
     public void synkroniserManuellStatusMedDigdir(@RequestParam("fnr") Fnr fnr) {
         authService.skalVereInternBruker();
         manuellStatusService.synkroniserManuellStatusMedDigdir(fnr);
     }
 
     @PostMapping("/sett-manuell")
+	@Deprecated(forRemoval = true)
     public void settTilManuell(@RequestBody VeilederBegrunnelseDTO dto, @RequestParam("fnr") Fnr fnr) {
         authService.skalVereInternBruker();
 
@@ -79,6 +83,7 @@ public class ManuellStatusV2Controller {
     }
 
     @PostMapping("/sett-digital")
+	@Deprecated(forRemoval = true)
     public void settTilDigital(
             @RequestBody(required = false) VeilederBegrunnelseDTO dto,
             @RequestParam(value = "fnr", required = false) Fnr fnr

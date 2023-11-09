@@ -22,6 +22,7 @@ public class HistorikkV2Controller {
     private final AuthService authService;
 
     @GetMapping
+    @Deprecated(forRemoval = true)
     public List<HistorikkHendelse> hentInnstillingsHistorikk(@RequestParam("fnr") Fnr fnr) {
         // TODO: Rename InstillingsHistorikk
         // TODO: Vurder å refaktorer DTOen, brukes kun av veilarbvisittkortfs
