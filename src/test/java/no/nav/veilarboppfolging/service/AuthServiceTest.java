@@ -3,7 +3,6 @@ package no.nav.veilarboppfolging.service;
 import com.nimbusds.jwt.JWTClaimsSet;
 import no.nav.common.abac.Pep;
 import no.nav.common.audit_log.log.AuditLogger;
-import no.nav.common.audit_log.log.AuditLoggerImpl;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.UserRole;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
@@ -16,7 +15,12 @@ import no.nav.common.utils.Credentials;
 import no.nav.poao_tilgang.client.*;
 import no.nav.poao_tilgang.client.api.ApiResult;
 import no.nav.veilarboppfolging.config.EnvironmentProperties;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
@@ -25,53 +29,50 @@ import java.util.UUID;
 
 import static java.util.Optional.ofNullable;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.WARN)
 public class AuthServiceTest {
 
-    private final AuthContextHolder authContextHolder = mock(AuthContextHolder.class);
+    @Mock
+    private AuthContextHolder authContextHolder;
+    @Mock
+    private Pep veilarbPep;
+    @Mock
+    private AktorOppslagClient aktorOppslagClient;
+    @Mock
+    private Credentials serviceUserCredentials;
+    @Mock
+    private AzureAdOnBehalfOfTokenClient azureAdOnBehalfOfTokenClient;
+    @Mock
+    private MachineToMachineTokenClient machineToMachineTokenClient;
+    @Mock
+    private EnvironmentProperties environmentProperties;
+    @Mock
+    private AuditLogger auditLogger;
+    @Mock
+    private PoaoTilgangClient poaoTilgangClient;
 
-    private final Pep veilarbPep = mock(Pep.class);
-
-    private final AktorOppslagClient aktorOppslagClient = mock(AktorOppslagClient.class);
-
-    private final Credentials serviceUserCredentials = mock(Credentials.class);
-
-    private final AzureAdOnBehalfOfTokenClient azureAdOnBehalfOfTokenClient = mock(AzureAdOnBehalfOfTokenClient.class);
-    private final MachineToMachineTokenClient machineToMachineTokenClient = mock(MachineToMachineTokenClient.class);
-
-    private final EnvironmentProperties environmentProperties = mock(EnvironmentProperties.class);
-
-    private final AuditLogger auditLogger = mock(AuditLoggerImpl.class);
-
-    private final PoaoTilgangClient poaoTilgangClient = mock(PoaoTilgangClient.class);
-
-    private AuthService authService = new AuthService(
-            authContextHolder,
-            veilarbPep,
-            aktorOppslagClient,
-            azureAdOnBehalfOfTokenClient,
-            machineToMachineTokenClient,
-            environmentProperties,
-            auditLogger,
-            poaoTilgangClient
-    );
+    private AuthService authService;
 
     @Test
     public void skalVereEnAv__skal_sjekke_at_rolle_stemmer() {
+        setup();
         when(authContextHolder.requireRole()).thenReturn(UserRole.SYSTEM);
         assertDoesNotThrow(() -> authService.skalVereEnAv(List.of(UserRole.INTERN, UserRole.SYSTEM)));
     }
 
     @Test
     public void skalVereEnAv__skal_feile_hvis_rolle_ikke_() {
+        setup();
         when(authContextHolder.requireRole()).thenReturn(UserRole.SYSTEM);
         assertThrows(ResponseStatusException.class, () -> authService.skalVereEnAv(List.of(UserRole.INTERN)));
     }
 
     @Test
     public void skalVereEnAv__skal_feile_hvis_rolle_mangler() {
+        setup();
         when(authContextHolder.getRole()).thenReturn(Optional.empty());
         when(authContextHolder.requireRole()).thenCallRealMethod();
         assertThrows(IllegalStateException.class, () -> authService.skalVereEnAv(List.of(UserRole.INTERN)));
@@ -79,6 +80,7 @@ public class AuthServiceTest {
 
     @Test
     public void sjekkAtSystembrukerErIAllowedList__skal_ikke_kaste_exception_hvis_allowed() {
+        setup();
         JWTClaimsSet claims = new JWTClaimsSet.Builder()
                 .issuer("microsoftonline.com")
                 .claim("azp_name", "cluster:team:test_app")
@@ -91,6 +93,7 @@ public class AuthServiceTest {
 
     @Test
     public void sjekkAtSystembrukerErIAllowedList__skal_kaste_exception_hvis_ikke_allowed() {
+        setup();
         JWTClaimsSet claims = new JWTClaimsSet.Builder()
                 .issuer("microsoftonline.com")
                 .claim("azp_name", "cluster:team:test_app")
@@ -103,6 +106,7 @@ public class AuthServiceTest {
 
     @Test
     public void brukerInnloggetMedLevel3SkalFaTilgangTilSegSelv_sjekkTilgangTilPersonMedNiva3() {
+        setup();
         JWTClaimsSet claims = new JWTClaimsSet.Builder()
                 .issuer("microsoftonline.com")
                 .claim("azp_name", "cluster:team:test_app")
@@ -119,6 +123,7 @@ public class AuthServiceTest {
 
     @Test
     public void brukerInnloggetMedLevel4SkalFaTilgangTilSegSelv_sjekkTilgangTilPersonMedNiva3() {
+        setup();
         JWTClaimsSet claims = new JWTClaimsSet.Builder()
                 .issuer("microsoftonline.com")
                 .claim("azp_name", "cluster:team:test_app")
@@ -135,6 +140,7 @@ public class AuthServiceTest {
 
     @Test
     public void brukerInnloggetMedLevel4SkalIkkeFaTilgangTilAndre_sjekkTilgangTilPersonMedNiva3() {
+        setup();
         JWTClaimsSet claims = new JWTClaimsSet.Builder()
                 .issuer("microsoftonline.com")
                 .claim("azp_name", "cluster:team:test_app")
@@ -151,6 +157,7 @@ public class AuthServiceTest {
 
     @Test
     public void veilederHarLeseEllerSkrivetilgangPaAktorId_sjekktilgang() {
+        setup();
         UUID uuid = UUID.randomUUID();
         JWTClaimsSet claims = new JWTClaimsSet.Builder()
                 .issuer("microsoftonline.com")
@@ -173,6 +180,7 @@ public class AuthServiceTest {
 
     @Test
     public void veilederHarIkkeLeseEllerSkrivetilgangPaAktorId_sjekktilgang() {
+        setup();
         UUID uuid = UUID.randomUUID();
         Fnr fnr = Fnr.of("23456789101");
         JWTClaimsSet claims = new JWTClaimsSet.Builder()
@@ -197,6 +205,7 @@ public class AuthServiceTest {
 
     @Test
     public void EksternBrukerHarTilgangPaAktorId_sjekktilgang() {
+        setup();
         Fnr fnr = Fnr.of("23456789101");
         JWTClaimsSet claims = new JWTClaimsSet.Builder()
                 .issuer("microsoftonline.com")
@@ -220,6 +229,7 @@ public class AuthServiceTest {
 
     @Test
     public void eksternBrukerHarIkkeTilgangPaAktorId_sjekktilgang() {
+        setup();
         Fnr fnrInnloggetBruker = Fnr.of("23456789101");
         Fnr fnrDestination = Fnr.of("12345678910");
         JWTClaimsSet claims = new JWTClaimsSet.Builder()
@@ -244,6 +254,7 @@ public class AuthServiceTest {
 
     @Test
     public void eksternBrukerMedLevel3HarIkkeTilgangPaAktorId_sjekktilgang_() {
+        setup();
         Fnr fnrInnloggetBruker = Fnr.of("23456789101");
         JWTClaimsSet claims = new JWTClaimsSet.Builder()
                 .issuer("microsoftonline.com")
@@ -267,6 +278,7 @@ public class AuthServiceTest {
 
     @Test
     public void harIkkeRolleSkalFaPermissionDenied_sjekkTilgang() {
+        setup();
         AktorId aktorId = AktorId.of("123");
         assertThrows(ResponseStatusException.class, () -> authService.sjekkLesetilgangMedAktorId(aktorId));
         assertThrows(ResponseStatusException.class, () -> authService.sjekkSkrivetilgangMedAktorId(aktorId));
@@ -274,6 +286,7 @@ public class AuthServiceTest {
 
     @Test
     public void eksternBrukerSkalFaDeny_harTilgangTilEnhet() {
+        setup();
         EnhetId enhetId = EnhetId.of("1201");
         when(authService.erEksternBruker()).thenReturn(true);
         when(veilarbPep.harTilgangTilEnhet("", ofNullable(enhetId.get()).map(EnhetId::of).orElse(EnhetId.of("")))).thenReturn(false);
@@ -284,6 +297,7 @@ public class AuthServiceTest {
 
     @Test
     public void brukerMedSystemRolleEllerUkjentRolleSkalFaDeny_harTilgangTilEnhet() {
+        setup();
         EnhetId enhetId = EnhetId.of("1201");
         when(authService.erSystemBruker()).thenReturn(true);
         when(veilarbPep.harTilgangTilEnhet("", ofNullable(enhetId.get()).map(EnhetId::of).orElse(EnhetId.of("")))).thenReturn(false);
@@ -295,6 +309,7 @@ public class AuthServiceTest {
 
     @Test
     public void internBruker_harTilgangTilEnhet() {
+        setup();
         UUID uuid = UUID.randomUUID();
         EnhetId enhetId = EnhetId.of("1201");
         JWTClaimsSet claims = new JWTClaimsSet.Builder()
@@ -309,4 +324,16 @@ public class AuthServiceTest {
         assertDoesNotThrow(() -> authService.harTilgangTilEnhet(enhetId.get()));
     }
 
+    private void setup() {
+        this.authService = new AuthService(
+                authContextHolder,
+                veilarbPep,
+                aktorOppslagClient,
+                azureAdOnBehalfOfTokenClient,
+                machineToMachineTokenClient,
+                environmentProperties,
+                auditLogger,
+                poaoTilgangClient
+        );
+    }
 }
