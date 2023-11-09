@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 
 import static no.nav.veilarboppfolging.utils.DtoMappers.tilDto;
 import static no.nav.veilarboppfolging.utils.DtoMappers.tilOppfolgingPeriodeDTO;
+import static no.nav.veilarboppfolging.utils.auth.AllowListApplicationName.*;
 
 @RestController
 @RequestMapping("/api/v3")
@@ -32,12 +33,12 @@ public class OppfolgingV3Controller {
     private final AuthService authService;
     private final ManuellStatusService manuellStatusService;
     private final KvpService kvpService;
-    private final static List<String> ALLOWLIST = List.of("veilarbregistrering");
+    private final static List<String> ALLOWLIST = List.of(VEILARBREGISTRERING);
     private final AktiverBrukerService aktiverBrukerService;
 
     @PostMapping("/hent-oppfolging")
     public UnderOppfolgingV2Response underOppfolging(@RequestBody OppfolgingRequest oppfolgingRequest) {
-        String[] allowlist = {"veilarbvedtaksstotte", "veilarbdialog", "veilarbaktivitet", "veilarbregistrering", "veilarbportefolje"};
+        List<String> allowlist = List.of(VEILARBVEDTAKSSTOTTE, VEILARBDIALOG, VEILARBAKTIVITET, VEILARBREGISTRERING, VEILARBPORTEFOLJE);
         authService.authorizeRequest(oppfolgingRequest.fnr(), allowlist);
         return new UnderOppfolgingV2Response(oppfolgingService.erUnderOppfolging(oppfolgingRequest.fnr()));
     }
@@ -72,7 +73,7 @@ public class OppfolgingV3Controller {
 
     @PostMapping("/oppfolging/hent-gjeldende-periode")
     public ResponseEntity<OppfolgingPeriodeMinimalDTO> hentGjeldendePeriode(@RequestBody OppfolgingRequest oppfolgingRequest) {
-        String[] allowlist = {"veilarbvedtaksstotte", "veilarbdialog", "veilarbaktivitet"};
+        List<String> allowlist = List.of(VEILARBVEDTAKSSTOTTE, VEILARBDIALOG, VEILARBAKTIVITET);
         authService.authorizeRequest(oppfolgingRequest.fnr(), allowlist);
         return oppfolgingService.hentGjeldendeOppfolgingsperiode(oppfolgingRequest.fnr())
                 .map(DtoMappers::tilOppfolgingPeriodeMinimalDTO)

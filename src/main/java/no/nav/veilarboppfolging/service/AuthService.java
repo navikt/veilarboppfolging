@@ -350,7 +350,7 @@ public class AuthService {
                 .orElse(null);
     }
 
-    public void authorizeRequest(EksternBrukerId ident, String[] allowList) {
+    public void authorizeRequest(EksternBrukerId ident, List<String> allowList) {
         var idToken = getInnloggetBrukerToken();
 
         if (idToken == null || idToken.isEmpty()) {
@@ -501,7 +501,7 @@ public class AuthService {
                 .build());
     }
 
-    private void authorizeFnr(Fnr fnr, String[] allowlist) {
+    private void authorizeFnr(Fnr fnr, List<String> allowlist) {
         if (erSystemBrukerFraAzureAd()) {
             sjekkAtApplikasjonErIAllowList(allowlist);
         } else {
@@ -509,7 +509,7 @@ public class AuthService {
         }
     }
 
-    private void authorizeAktorId(AktorId aktorId, String[] allowlist) {
+    private void authorizeAktorId(AktorId aktorId, List<String> allowlist) {
         if (erInternBruker()) {
             sjekkLesetilgangMedAktorId(aktorId);
         } else if (erSystemBrukerFraAzureAd()) {
