@@ -43,15 +43,13 @@ import static org.mockito.Mockito.*;
 import static org.springframework.beans.factory.support.ManagedList.of;
 
 @ExtendWith(MockitoExtension.class)
-class AuthorizationAnnotationHandlerTest {
+public class AuthorizationAnnotationHandlerTest {
 
-    private final static Fnr FNR = Fnr.of("12345678901");
-    private final static NavIdent VEILEDER = NavIdent.of("Z123456");
-
-    private final static AktorId AKTOR_ID = AktorId.of("3409823");
-
-    private final static String TOKENDINGS_ISSUER = "https://tokendings";
-    private final static String AZURE_ISSUER = "microsoftonline.com";
+    public final static Fnr FNR = Fnr.of("12345678901");
+    public final static NavIdent VEILEDER = NavIdent.of("Z123456");
+    public final static AktorId AKTOR_ID = AktorId.of("3409823");
+    public final static String TOKENDINGS_ISSUER = "https://tokendings";
+    public final static String AZURE_ISSUER = "microsoftonline.com";
 
     @Mock
     private Pep veilarbPep;
@@ -81,29 +79,12 @@ class AuthorizationAnnotationHandlerTest {
 
     @SneakyThrows
     @Test
-    void should_allow_system_user_if_in_allowlist_auth_service() {
-        setupSystemUserAuthOk();
-        List<String> allowList = List.of(VEILARBAKTIVITET);
-        assertDoesNotThrow(() -> authService.authorizeRequest(FNR, allowList));
-    }
-
-    @SneakyThrows
-    @Test
     void should_not_allow_system_user_if_not_in_allowlist() {
         setupSystemUserNotInAllowList();
         Method method = OppfolgingV2Controller.class.getMethod("hentGjeldendePeriode", Fnr.class);
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setParameter("fnr", FNR.get());
         ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> annotationHandler.doAuthorizationCheckIfTagged(method, request));
-        Assertions.assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
-    }
-
-    @SneakyThrows
-    @Test
-    void should_not_allow_system_user_if_not_in_allowlist_auth_service() {
-        setupSystemUserNotInAllowList();
-        List<String> allowList = List.of(VEILARBAKTIVITET);
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> authService.authorizeRequest(FNR, allowList));
         Assertions.assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
     }
 
@@ -119,13 +100,6 @@ class AuthorizationAnnotationHandlerTest {
 
     @SneakyThrows
     @Test
-    void should_allow_external_user_if_access_self_auth_service() {
-        setUpExternalUserAuthOk();
-        assertDoesNotThrow(() -> authService.authorizeRequest(FNR, emptyList()));
-    }
-
-    @SneakyThrows
-    @Test
     void should_not_allow_external_user_if_access_other() {
         setUpExternalUserAuthOk();
         Method method = OppfolgingV2Controller.class.getMethod("hentGjeldendePeriode", Fnr.class);
@@ -133,14 +107,6 @@ class AuthorizationAnnotationHandlerTest {
         String otherFnr = "11120231920";
         request.setParameter("fnr", otherFnr);
         ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> annotationHandler.doAuthorizationCheckIfTagged(method, request));
-        Assertions.assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
-    }
-
-    @SneakyThrows
-    @Test
-    void should_not_allow_external_user_if_access_other_auth_service() {
-        setUpExternalUserAuthOk();
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> authService.authorizeRequest(Fnr.of("11120231920"), emptyList()));
         Assertions.assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
     }
 
@@ -158,28 +124,12 @@ class AuthorizationAnnotationHandlerTest {
 
     @SneakyThrows
     @Test
-    void should_allow_internal_user_if_access_ok_auth_service() {
-        setupInternalUserAuthOk();
-        when(aktorOppslagClient.hentAktorId(FNR)).thenReturn(AKTOR_ID);
-        assertDoesNotThrow(() -> authService.authorizeRequest(FNR, emptyList()));
-    }
-
-    @SneakyThrows
-    @Test
     void external_user_can_not_query_using_aktorid() {
         setUpExternalUserAuthOk();
         Method method = OppfolgingV2Controller.class.getMethod("hentOppfolgingsperioder", AktorId.class);
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setParameter("aktorId", AKTOR_ID.get());
         ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> annotationHandler.doAuthorizationCheckIfTagged(method, request));
-        Assertions.assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
-    }
-
-    @SneakyThrows
-    @Test
-    void external_user_can_not_query_using_aktorid_auth_service() {
-        setUpExternalUserAuthOk();
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> authService.authorizeRequest(AKTOR_ID, emptyList()));
         Assertions.assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
     }
 
@@ -192,13 +142,6 @@ class AuthorizationAnnotationHandlerTest {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setParameter("aktorId", AKTOR_ID.get());
         assertDoesNotThrow(() -> annotationHandler.doAuthorizationCheckIfTagged(method, request));
-    }
-
-    @SneakyThrows
-    @Test
-    void internal_user_can_query_using_aktorid_auth_service() {
-        setupInternalUserAuthOk();
-        assertDoesNotThrow(() -> authService.authorizeRequest(AKTOR_ID, emptyList()));
     }
 
     private void setupServices() {
