@@ -4,9 +4,9 @@ public class AllowListApplicationName {
 
     private AllowListApplicationName() {}
 
-    public static String VEILARBVEDTAKSSTOTTE = "veilarbvedtaksstotte";
-    public static String VEILARBDIALOG = "veilarbdialog";
-    public static String VEILARBAKTIVITET = "veilarbaktivitet";
-    public static String VEILARBREGISTRERING = "veilarbregistrering";
-    public static String VEILARBPORTEFOLJE = "veilarbportefolje";
+    public static final String VEILARBVEDTAKSSTOTTE = "veilarbvedtaksstotte";
+    public static final String VEILARBDIALOG = "veilarbdialog";
+    public static final String VEILARBAKTIVITET = "veilarbaktivitet";
+    public static final String VEILARBREGISTRERING = "veilarbregistrering";
+    public static final String VEILARBPORTEFOLJE = "veilarbportefolje";
 }
