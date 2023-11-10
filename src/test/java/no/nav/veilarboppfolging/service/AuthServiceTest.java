@@ -39,8 +39,8 @@ import static java.util.Collections.emptyList;
 import static java.util.Optional.ofNullable;
 import static no.nav.common.auth.Constants.AAD_NAV_IDENT_CLAIM;
 import static no.nav.common.test.auth.AuthTestUtils.TEST_AUDIENCE;
+import static no.nav.veilarboppfolging.test.TestData.*;
 import static no.nav.veilarboppfolging.utils.auth.AllowListApplicationName.VEILARBAKTIVITET;
-import static no.nav.veilarboppfolging.utils.auth.AuthorizationAnnotationHandlerTest.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -344,7 +344,7 @@ public class AuthServiceTest {
         setupAuthService();
 
         List<String> allowList = List.of(VEILARBAKTIVITET);
-        assertDoesNotThrow(() -> authService.authorizeRequest(FNR, allowList));
+        assertDoesNotThrow(() -> authService.authorizeRequest(TEST_FNR_2, allowList));
     }
 
     @SneakyThrows
@@ -354,7 +354,7 @@ public class AuthServiceTest {
         setupAuthService();
 
         List<String> allowList = List.of(VEILARBAKTIVITET);
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> authService.authorizeRequest(FNR, allowList));
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> authService.authorizeRequest(TEST_FNR_2, allowList));
         Assertions.assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
     }
 
@@ -364,7 +364,7 @@ public class AuthServiceTest {
         setUpExternalUserAuthOk();
         setupAuthService();
 
-        assertDoesNotThrow(() -> authService.authorizeRequest(FNR, emptyList()));
+        assertDoesNotThrow(() -> authService.authorizeRequest(TEST_FNR_2, emptyList()));
     }
 
     @SneakyThrows
@@ -383,8 +383,8 @@ public class AuthServiceTest {
         setupInternalUserAuthOk();
         setupAuthService();
 
-        when(aktorOppslagClient.hentAktorId(FNR)).thenReturn(AKTOR_ID);
-        assertDoesNotThrow(() -> authService.authorizeRequest(FNR, emptyList()));
+        when(aktorOppslagClient.hentAktorId(TEST_FNR_2)).thenReturn(TEST_AKTOR_ID_3);
+        assertDoesNotThrow(() -> authService.authorizeRequest(TEST_FNR_2, emptyList()));
     }
 
     @SneakyThrows
@@ -393,7 +393,7 @@ public class AuthServiceTest {
         setUpExternalUserAuthOk();
         setupAuthService();
 
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> authService.authorizeRequest(AKTOR_ID, emptyList()));
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> authService.authorizeRequest(TEST_AKTOR_ID_3, emptyList()));
         Assertions.assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
     }
 
@@ -403,7 +403,7 @@ public class AuthServiceTest {
         setupInternalUserAuthOk();
         setupAuthService();
 
-        assertDoesNotThrow(() -> authService.authorizeRequest(AKTOR_ID, emptyList()));
+        assertDoesNotThrow(() -> authService.authorizeRequest(TEST_AKTOR_ID_3, emptyList()));
     }
 
     private void setupAuthService() {
@@ -421,7 +421,7 @@ public class AuthServiceTest {
 
     private void setupSystemUserAuthOk() {
         JWTClaimsSet claims = new JWTClaimsSet.Builder()
-                .issuer(AZURE_ISSUER)
+                .issuer(TEST_AZURE_ISSUER)
                 .claim("azp_name", "cluster:team:veilarbaktivitet")
                 .claim("roles", Collections.singletonList("access_as_application"))
                 .build();
@@ -437,7 +437,7 @@ public class AuthServiceTest {
 
     private void setupSystemUserNotInAllowList() {
         JWTClaimsSet claims = new JWTClaimsSet.Builder()
-                .issuer(AZURE_ISSUER)
+                .issuer(TEST_AZURE_ISSUER)
                 .claim("azp_name", "cluster:team:veilarbhacker")
                 .claim("roles", Collections.singletonList("access_as_application"))
                 .build();
@@ -453,12 +453,12 @@ public class AuthServiceTest {
 
     private void setUpExternalUserAuthOk() {
         JWTClaimsSet claims = new JWTClaimsSet.Builder()
-                .subject(FNR.get())
-                .claim("pid", FNR.get())
+                .subject(TEST_FNR_2.get())
+                .claim("pid", TEST_FNR_2.get())
                 .claim("acr", "Level4")
                 .claim("client_id", "test_client_id")
                 .audience(TEST_AUDIENCE)
-                .issuer(TOKENDINGS_ISSUER)
+                .issuer(TEST_TOKENDINGS_ISSUER)
                 .build();
 
         AuthContext authContext = new AuthContext(
@@ -474,11 +474,11 @@ public class AuthServiceTest {
         UUID uuid = UUID.randomUUID();
 
         JWTClaimsSet claims = new JWTClaimsSet.Builder()
-                .subject(VEILEDER.get())
-                .issuer(AZURE_ISSUER)
+                .subject(TEST_NAV_IDENT_2.get())
+                .issuer(TEST_AZURE_ISSUER)
                 .audience(TEST_AUDIENCE)
                 .claim("oid", uuid.toString())
-                .claim(AAD_NAV_IDENT_CLAIM, VEILEDER.get())
+                .claim(AAD_NAV_IDENT_CLAIM, TEST_NAV_IDENT_2.get())
                 .claim("azp_name", "test_client_id")
                 .build();
 
@@ -490,9 +490,9 @@ public class AuthServiceTest {
         this.authContextHolder = AuthContextHolderThreadLocal.instance();
         this.authContextHolder.setContext(authContext);
 
-        when(aktorOppslagClient.hentFnr(AKTOR_ID)).thenReturn(FNR);
+        when(aktorOppslagClient.hentFnr(TEST_AKTOR_ID_3)).thenReturn(TEST_FNR_2);
 
         Decision decision = mock(Decision.class);
-        doReturn(new ApiResult<>(null, decision)).when(poaoTilgangClient).evaluatePolicy(argThat(new PolicyInputMatcher(uuid, FNR.get())));
+        doReturn(new ApiResult<>(null, decision)).when(poaoTilgangClient).evaluatePolicy(argThat(new PolicyInputMatcher(uuid, TEST_FNR_2.get())));
     }
 }

@@ -4,7 +4,6 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.PlainJWT;
 import lombok.SneakyThrows;
 import no.nav.common.abac.Pep;
-import no.nav.common.abac.domain.request.ActionId;
 import no.nav.common.audit_log.log.AuditLogger;
 import no.nav.common.auth.context.AuthContext;
 import no.nav.common.auth.context.AuthContextHolder;
@@ -13,7 +12,6 @@ import no.nav.common.auth.context.UserRole;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.common.types.identer.NavIdent;
 import no.nav.poao_tilgang.client.Decision;
 import no.nav.poao_tilgang.client.PoaoTilgangClient;
 import no.nav.poao_tilgang.client.api.ApiResult;
@@ -30,26 +28,17 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.lang.reflect.Method;
 import java.util.Collections;
-import java.util.List;
 import java.util.UUID;
 
-import static java.util.Collections.emptyList;
 import static no.nav.common.auth.Constants.AAD_NAV_IDENT_CLAIM;
 import static no.nav.common.test.auth.AuthTestUtils.TEST_AUDIENCE;
-import static no.nav.veilarboppfolging.utils.auth.AllowListApplicationName.*;
+import static no.nav.veilarboppfolging.test.TestData.*;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
-import static org.springframework.beans.factory.support.ManagedList.of;
 
 @ExtendWith(MockitoExtension.class)
 public class AuthorizationAnnotationHandlerTest {
-
-    public final static Fnr FNR = Fnr.of("12345678901");
-    public final static NavIdent VEILEDER = NavIdent.of("Z123456");
-    public final static AktorId AKTOR_ID = AktorId.of("3409823");
-    public final static String TOKENDINGS_ISSUER = "https://tokendings";
-    public final static String AZURE_ISSUER = "microsoftonline.com";
 
     @Mock
     private Pep veilarbPep;
@@ -73,7 +62,7 @@ public class AuthorizationAnnotationHandlerTest {
         setupSystemUserAuthOk();
         Method method = OppfolgingV2Controller.class.getMethod("hentGjeldendePeriode", Fnr.class);
         MockHttpServletRequest request = new MockHttpServletRequest();
-        request.setParameter("fnr", FNR.get());
+        request.setParameter("fnr", TEST_FNR_2.get());
         assertDoesNotThrow(() -> annotationHandler.doAuthorizationCheckIfTagged(method, request));
     }
 
@@ -83,7 +72,7 @@ public class AuthorizationAnnotationHandlerTest {
         setupSystemUserNotInAllowList();
         Method method = OppfolgingV2Controller.class.getMethod("hentGjeldendePeriode", Fnr.class);
         MockHttpServletRequest request = new MockHttpServletRequest();
-        request.setParameter("fnr", FNR.get());
+        request.setParameter("fnr", TEST_FNR_2.get());
         ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> annotationHandler.doAuthorizationCheckIfTagged(method, request));
         Assertions.assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
     }
@@ -94,7 +83,7 @@ public class AuthorizationAnnotationHandlerTest {
         setUpExternalUserAuthOk();
         Method method = OppfolgingV2Controller.class.getMethod("hentGjeldendePeriode", Fnr.class);
         MockHttpServletRequest request = new MockHttpServletRequest();
-        request.setParameter("fnr", FNR.get());
+        request.setParameter("fnr", TEST_FNR_2.get());
         assertDoesNotThrow(() -> annotationHandler.doAuthorizationCheckIfTagged(method, request));
     }
 
@@ -114,11 +103,11 @@ public class AuthorizationAnnotationHandlerTest {
     @Test
     void should_allow_internal_user_if_access_ok() {
         setupInternalUserAuthOk();
-        when(aktorOppslagClient.hentAktorId(FNR)).thenReturn(AKTOR_ID);
+        when(aktorOppslagClient.hentAktorId(TEST_FNR_2)).thenReturn(TEST_AKTOR_ID_3);
 
         Method method = OppfolgingV2Controller.class.getMethod("hentGjeldendePeriode", Fnr.class);
         MockHttpServletRequest request = new MockHttpServletRequest();
-        request.setParameter("fnr", FNR.get());
+        request.setParameter("fnr", TEST_FNR_2.get());
         assertDoesNotThrow(() -> annotationHandler.doAuthorizationCheckIfTagged(method, request));
     }
 
@@ -128,7 +117,7 @@ public class AuthorizationAnnotationHandlerTest {
         setUpExternalUserAuthOk();
         Method method = OppfolgingV2Controller.class.getMethod("hentOppfolgingsperioder", AktorId.class);
         MockHttpServletRequest request = new MockHttpServletRequest();
-        request.setParameter("aktorId", AKTOR_ID.get());
+        request.setParameter("aktorId", TEST_AKTOR_ID_3.get());
         ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> annotationHandler.doAuthorizationCheckIfTagged(method, request));
         Assertions.assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
     }
@@ -140,7 +129,7 @@ public class AuthorizationAnnotationHandlerTest {
 
         Method method = OppfolgingV2Controller.class.getMethod("hentOppfolgingsperioder", AktorId.class);
         MockHttpServletRequest request = new MockHttpServletRequest();
-        request.setParameter("aktorId", AKTOR_ID.get());
+        request.setParameter("aktorId", TEST_AKTOR_ID_3.get());
         assertDoesNotThrow(() -> annotationHandler.doAuthorizationCheckIfTagged(method, request));
     }
 
@@ -152,7 +141,7 @@ public class AuthorizationAnnotationHandlerTest {
 
     private void setupSystemUserAuthOk() {
         JWTClaimsSet claims = new JWTClaimsSet.Builder()
-                .issuer(AZURE_ISSUER)
+                .issuer(TEST_AZURE_ISSUER)
                 .claim("azp_name", "cluster:team:veilarbaktivitet")
                 .claim("roles", Collections.singletonList("access_as_application"))
                 .build();
@@ -169,7 +158,7 @@ public class AuthorizationAnnotationHandlerTest {
 
     private void setupSystemUserNotInAllowList() {
         JWTClaimsSet claims = new JWTClaimsSet.Builder()
-                .issuer(AZURE_ISSUER)
+                .issuer(TEST_AZURE_ISSUER)
                 .claim("azp_name", "cluster:team:veilarbhacker")
                 .claim("roles", Collections.singletonList("access_as_application"))
                 .build();
@@ -186,12 +175,12 @@ public class AuthorizationAnnotationHandlerTest {
 
     private void setUpExternalUserAuthOk() {
         JWTClaimsSet claims = new JWTClaimsSet.Builder()
-                .subject(FNR.get())
-                .claim("pid", FNR.get())
+                .subject(TEST_FNR_2.get())
+                .claim("pid", TEST_FNR_2.get())
                 .claim("acr", "Level4")
                 .claim("client_id", "test_client_id")
                 .audience(TEST_AUDIENCE)
-                .issuer(TOKENDINGS_ISSUER)
+                .issuer(TEST_TOKENDINGS_ISSUER)
                 .build();
 
         AuthContext authContext = new AuthContext(
@@ -209,11 +198,11 @@ public class AuthorizationAnnotationHandlerTest {
         UUID uuid = UUID.randomUUID();
 
         JWTClaimsSet claims = new JWTClaimsSet.Builder()
-                .subject(VEILEDER.get())
-                .issuer(AZURE_ISSUER)
+                .subject(TEST_NAV_IDENT_2.get())
+                .issuer(TEST_AZURE_ISSUER)
                 .audience(TEST_AUDIENCE)
                 .claim("oid", uuid.toString())
-                .claim(AAD_NAV_IDENT_CLAIM, VEILEDER.get())
+                .claim(AAD_NAV_IDENT_CLAIM, TEST_NAV_IDENT_2.get())
                 .claim("azp_name", "test_client_id")
                 .build();
 
@@ -227,9 +216,9 @@ public class AuthorizationAnnotationHandlerTest {
 
         setupServices();
 
-        when(aktorOppslagClient.hentFnr(AKTOR_ID)).thenReturn(FNR);
+        when(aktorOppslagClient.hentFnr(TEST_AKTOR_ID_3)).thenReturn(TEST_FNR_2);
 
         Decision decision = mock(Decision.class);
-        doReturn(new ApiResult<Decision>(null, decision)).when(poaoTilgangClient).evaluatePolicy(argThat(new PolicyInputMatcher(uuid, FNR.get())));
+        doReturn(new ApiResult<Decision>(null, decision)).when(poaoTilgangClient).evaluatePolicy(argThat(new PolicyInputMatcher(uuid, TEST_FNR_2.get())));
     }
 }
