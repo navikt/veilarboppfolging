@@ -71,6 +71,9 @@ spec:
         - application: veilarbregistrering
           namespace: paw
           cluster: dev-gcp
+        - application: arbeidssokerregistrering-for-veileder
+          namespace: paw
+          cluster: dev-gcp
         - application: veilarbapi
           namespace: pto
           cluster: dev-gcp
