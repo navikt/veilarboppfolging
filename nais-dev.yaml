@@ -67,9 +67,6 @@ spec:
       rules:
         - application: veilarbregistrering
           namespace: paw
-          cluster: dev-fss
-        - application: veilarbregistrering
-          namespace: paw
           cluster: dev-gcp
         - application: arbeidssokerregistrering-for-veileder
           namespace: paw
