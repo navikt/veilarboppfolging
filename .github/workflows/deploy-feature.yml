@@ -4,8 +4,6 @@ on:
   workflow_dispatch:
 
 env:
-  IMAGE_TAG: ${{ github.sha }}
-  IMAGE: ghcr.io/${{ github.repository }}/veilarboppfolging
   PRINT_PAYLOAD: true
 
 permissions:
@@ -19,27 +17,31 @@ jobs:
   test-build-and-push:
     name: Test, build and push
     runs-on: ubuntu-latest
+    outputs:
+      image: ${{ steps.docker-build-push.outputs.image }}
+    permissions:
+      id-token: write
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+
       - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
           java-version: 17
           distribution: 'temurin'
           cache: 'maven'
+
       - name: Build (skipping tests)
         run: mvn -B package -DskipTests
-      - uses: docker/login-action@v2
+
+      - name: Build and push Docker image
+        uses: nais/docker-build-push@v0
+        id: docker-build-push
         with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - uses: docker/build-push-action@v3
-        with:
-          context: .
-          push: true
-          tags: ${{ env.IMAGE }}:${{ env.IMAGE_TAG }}
+          team: pto
+          identity_provider: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }}
+          project_id: ${{ vars.NAIS_MANAGEMENT_PROJECT_ID }}
 
   deploy-dev:
     name: Deploy application to dev
@@ -48,10 +50,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+
       - name: Deploy application
         uses: nais/deploy/actions/deploy@v1
         env:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: dev-fss
           RESOURCE: nais-dev.yaml
-          VAR: version=${{ env.IMAGE_TAG }},namespace=q1
+          VAR: image=${{ needs.test-build-and-push.outputs.image }}
