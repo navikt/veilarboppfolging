@@ -82,7 +82,7 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
     public void oppdaterManuellStatus_oppretter_manuell_status_og_publiserer_paa_kafka_ved_oppdatering_av_manuell_status() {
         when(oppfolgingService.erUnderOppfolging(AKTOR_ID)).thenReturn(true);
         when(authService.harTilgangTilEnhet(any())).thenReturn(true);
-        when(digdirClient.hentKontaktInfo(FNR)).thenReturn(Optional.of(new KRRData()));
+        when(digdirClient.hentKontaktInfoV2(FNR)).thenReturn(Optional.of(new KRRData()));
         gittAktivOppfolging();
 
         String begrunnelse = "test begrunnelse";
@@ -131,7 +131,7 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
 
         when(oppfolgingService.erUnderOppfolging(AKTOR_ID)).thenReturn(true);
 
-        when(digdirClient.hentKontaktInfo(FNR)).thenReturn(Optional.of(kontaktinfo));
+        when(digdirClient.hentKontaktInfoV2(FNR)).thenReturn(Optional.of(kontaktinfo));
 
         gittAktivOppfolging();
 
@@ -166,7 +166,7 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
 
         when(oppfolgingService.erUnderOppfolging(AKTOR_ID)).thenReturn(true);
         when(authService.harTilgangTilEnhet(any())).thenReturn(true);
-        when(digdirClient.hentKontaktInfo(FNR)).thenReturn(Optional.of(kontaktinfo));
+        when(digdirClient.hentKontaktInfoV2(FNR)).thenReturn(Optional.of(kontaktinfo));
 
         manuellStatusService.synkroniserManuellStatusMedDigdir(FNR);
 
@@ -187,7 +187,7 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
         String opprettetAvBruker = "test opprettet av";
         gittAktivOppfolging();
         when(authService.harTilgangTilEnhet(any())).thenReturn(true);
-        when(digdirClient.hentKontaktInfo(FNR)).thenReturn(Optional.of(kontaktinfo));
+        when(digdirClient.hentKontaktInfoV2(FNR)).thenReturn(Optional.of(kontaktinfo));
         manuellStatusService.oppdaterManuellStatus(FNR, true, begrunnelse, SYSTEM, opprettetAvBruker);
 
         manuellStatusService.synkroniserManuellStatusMedDigdir(FNR);
@@ -261,14 +261,14 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
                 .withEpostadresse("email")
                 .withMobiltelefonnummer("12345");
 
-        when(digdirClient.hentKontaktInfo(FNR)).thenReturn(Optional.of(kontaktinfo));
+        when(digdirClient.hentKontaktInfoV2(FNR)).thenReturn(Optional.of(kontaktinfo));
 
         assertEquals(kontaktinfo, manuellStatusService.hentDigdirKontaktinfo(FNR));
     }
 
     @Test
     public void hentDigdirKontaktinfo__skal_returnere_fallback_hvis_digdir_mangler_kontaktinfo() {
-        when(digdirClient.hentKontaktInfo(FNR)).thenReturn(Optional.empty());
+        when(digdirClient.hentKontaktInfoV2(FNR)).thenReturn(Optional.empty());
 
         KRRData fallbackKontaktInfo = new KRRData()
                 .withPersonident(FNR.get())

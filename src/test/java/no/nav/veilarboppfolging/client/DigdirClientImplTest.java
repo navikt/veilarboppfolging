@@ -42,7 +42,7 @@ public class DigdirClientImplTest {
 						.withBody(digdirJson))
 		);
 
-		KRRData kontaktinfo = digdirClient.hentKontaktInfo(TEST_FNR).orElseThrow();
+		KRRData kontaktinfo = digdirClient.hentKontaktInfoV2(TEST_FNR).orElseThrow();
 		assertEquals(kontaktinfo.getPersonident(), TEST_FNR.get());
 		assertFalse(kontaktinfo.isKanVarsles());
 		assertTrue(kontaktinfo.isReservert());
@@ -66,7 +66,7 @@ public class DigdirClientImplTest {
 						.withBody(kodeverkJson))
 		);
 
-		assertTrue(digdirClient.hentKontaktInfo(TEST_FNR).isEmpty());
+		assertTrue(digdirClient.hentKontaktInfoV2(TEST_FNR).isEmpty());
 	}
 
 
