@@ -2,6 +2,7 @@ package no.nav.veilarboppfolging.service;
 
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.veilarboppfolging.client.digdir_krr.KRRData;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 import no.nav.veilarboppfolging.client.digdir_krr.DigdirClient;
 import no.nav.veilarboppfolging.client.digdir_krr.DigdirKontaktinfo;
@@ -81,7 +82,7 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
     public void oppdaterManuellStatus_oppretter_manuell_status_og_publiserer_paa_kafka_ved_oppdatering_av_manuell_status() {
         when(oppfolgingService.erUnderOppfolging(AKTOR_ID)).thenReturn(true);
         when(authService.harTilgangTilEnhet(any())).thenReturn(true);
-        when(digdirClient.hentKontaktInfo(FNR)).thenReturn(Optional.of(new DigdirKontaktinfo()));
+        when(digdirClient.hentKontaktInfo(FNR)).thenReturn(Optional.of(new KRRData()));
         gittAktivOppfolging();
 
         String begrunnelse = "test begrunnelse";
@@ -121,12 +122,12 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
 
     @Test
     public void synkroniserManuellStatusMedDigDir__skal_lage_manuell_status_hvis_reservert() {
-        DigdirKontaktinfo kontaktinfo = new DigdirKontaktinfo()
-                .setPersonident(FNR.get())
-                .setKanVarsles(true)
-                .setReservert(true)
-                .setEpostadresse("email")
-                .setMobiltelefonnummer("12345");
+        KRRData kontaktinfo = new KRRData()
+                .withPersonident(FNR.get())
+                .withKanVarsles(true)
+                .withReservert(true)
+                .withEpostadresse("email")
+                .withMobiltelefonnummer("12345");
 
         when(oppfolgingService.erUnderOppfolging(AKTOR_ID)).thenReturn(true);
 
@@ -156,12 +157,12 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
 
     @Test
     public void synkroniserManuellStatusMedDigDir__skal_ikke_lage_manuell_status_hvis_ikke_reservert_nar_vi_ikke_har_status_pa_bruker_fra_for() {
-        DigdirKontaktinfo kontaktinfo = new DigdirKontaktinfo()
-                .setPersonident(FNR.get())
-                .setKanVarsles(true)
-                .setReservert(false)
-                .setEpostadresse("email")
-                .setMobiltelefonnummer("12345");
+        KRRData kontaktinfo = new KRRData()
+                .withPersonident(FNR.get())
+                .withKanVarsles(true)
+                .withReservert(false)
+                .withEpostadresse("email")
+                .withMobiltelefonnummer("12345");
 
         when(oppfolgingService.erUnderOppfolging(AKTOR_ID)).thenReturn(true);
         when(authService.harTilgangTilEnhet(any())).thenReturn(true);
@@ -176,12 +177,12 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
 
     @Test
     public void synkroniserManuellStatusMedDigDir__skal_lage_manuell_status_hvis_ikke_reservert_nar_vi_har_status_pa_bruker_fra_for() {
-        DigdirKontaktinfo kontaktinfo = new DigdirKontaktinfo()
-                .setPersonident(FNR.get())
-                .setKanVarsles(true)
-                .setReservert(false)
-                .setEpostadresse("email")
-                .setMobiltelefonnummer("12345");
+        KRRData kontaktinfo = new KRRData()
+                .withPersonident(FNR.get())
+                .withKanVarsles(true)
+                .withReservert(false)
+                .withEpostadresse("email")
+                .withMobiltelefonnummer("12345");
         String begrunnelse = "test begrunnelse";
         String opprettetAvBruker = "test opprettet av";
         gittAktivOppfolging();
@@ -253,12 +254,12 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
 
     @Test
     public void hentDigDirKontaktinfo__skal_returnere_kontaktinfo_fra_digDir() {
-        DigdirKontaktinfo kontaktinfo = new DigdirKontaktinfo()
-                .setPersonident(FNR.get())
-                .setKanVarsles(true)
-                .setReservert(true)
-                .setEpostadresse("email")
-                .setMobiltelefonnummer("12345");
+        KRRData kontaktinfo = new KRRData()
+                .withPersonident(FNR.get())
+                .withKanVarsles(true)
+                .withReservert(true)
+                .withEpostadresse("email")
+                .withMobiltelefonnummer("12345");
 
         when(digdirClient.hentKontaktInfo(FNR)).thenReturn(Optional.of(kontaktinfo));
 
@@ -269,10 +270,10 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
     public void hentDigdirKontaktinfo__skal_returnere_fallback_hvis_digdir_mangler_kontaktinfo() {
         when(digdirClient.hentKontaktInfo(FNR)).thenReturn(Optional.empty());
 
-        DigdirKontaktinfo fallbackKontaktInfo = new DigdirKontaktinfo()
-                .setPersonident(FNR.get())
-                .setKanVarsles(true)
-                .setReservert(false);
+        KRRData fallbackKontaktInfo = new KRRData()
+                .withPersonident(FNR.get())
+                .withKanVarsles(true)
+                .withReservert(false);
 
         assertEquals(fallbackKontaktInfo, manuellStatusService.hentDigdirKontaktinfo(FNR));
     }

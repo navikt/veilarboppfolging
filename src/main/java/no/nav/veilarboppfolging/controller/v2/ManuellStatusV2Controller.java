@@ -2,6 +2,7 @@ package no.nav.veilarboppfolging.controller.v2;
 
 import lombok.RequiredArgsConstructor;
 import no.nav.common.types.identer.Fnr;
+import no.nav.veilarboppfolging.client.digdir_krr.KRRData;
 import no.nav.veilarboppfolging.controller.request.VeilederBegrunnelseDTO;
 import no.nav.veilarboppfolging.controller.v2.response.ManuellStatusV2Response;
 import no.nav.veilarboppfolging.controller.v2.response.ManuellV2Response;
@@ -48,7 +49,7 @@ public class ManuellStatusV2Controller {
             authService.sjekkLesetilgangMedFnr(fnr);
         }
 
-        DigdirKontaktinfo kontaktinfo = manuellStatusService.hentDigdirKontaktinfo(fnr);
+        KRRData kontaktinfo = manuellStatusService.hentDigdirKontaktinfo(fnr);
         boolean erManuell = manuellStatusService.erManuell(fnr);
 
         return new ManuellStatusV2Response(

@@ -11,6 +11,8 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.client.behandle_arbeidssoker.BehandleArbeidssokerClient;
 import no.nav.veilarboppfolging.client.digdir_krr.DigdirClient;
 import no.nav.veilarboppfolging.client.digdir_krr.DigdirKontaktinfo;
+import no.nav.veilarboppfolging.client.digdir_krr.KRRData;
+import no.nav.veilarboppfolging.client.digdir_krr.KRRKontaktInfoV3;
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolging;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
@@ -104,7 +106,7 @@ public class ClientTestConfig {
     public DigdirClient digdirClient() {
         return new DigdirClient() {
             @Override
-            public Optional<DigdirKontaktinfo> hentKontaktInfo(Fnr fnr) {
+            public Optional<KRRData> hentKontaktInfo(Fnr fnr) {
                 return Optional.empty();
             }
 
