@@ -217,7 +217,7 @@ public class AuthService {
 
     public void sjekkTilgangTilEnhet(String enhetId) {
         if (!harTilgangTilEnhet(enhetId)) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
     }
 

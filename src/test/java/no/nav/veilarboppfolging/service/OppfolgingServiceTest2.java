@@ -5,6 +5,8 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.client.digdir_krr.DigdirClient;
 import no.nav.veilarboppfolging.client.digdir_krr.DigdirKontaktinfo;
+import no.nav.veilarboppfolging.client.digdir_krr.KRRData;
+import no.nav.veilarboppfolging.client.digdir_krr.KRRKontaktInfoV3;
 import no.nav.veilarboppfolging.domain.Oppfolging;
 import no.nav.veilarboppfolging.repository.*;
 import no.nav.veilarboppfolging.repository.entity.MaalEntity;
@@ -77,7 +79,12 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
 
         DigdirClient digdirClient = new DigdirClient() {
             @Override
-            public Optional<DigdirKontaktinfo> hentKontaktInfo(Fnr fnr) {
+            public Optional<KRRData> hentKontaktInfo(Fnr fnr) {
+                return Optional.empty();
+            }
+
+            @Override
+            public Optional<KRRData> hentKontaktInfoV2(Fnr fnr) {
                 return Optional.empty();
             }
 

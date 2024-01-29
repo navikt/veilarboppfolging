@@ -4,6 +4,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.veilarboppfolging.client.digdir_krr.KRRData;
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolgingTilstand;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 import no.nav.veilarboppfolging.controller.response.UnderOppfolgingDTO;
@@ -288,7 +289,7 @@ public class OppfolgingService {
     public void startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker oppfolgingsbruker) {
         AktorId aktorId = AktorId.of(oppfolgingsbruker.getAktoerId());
         Fnr fnr = authService.getFnrOrThrow(aktorId);
-        DigdirKontaktinfo kontaktinfo = manuellStatusService.hentDigdirKontaktinfo(fnr);
+        KRRData kontaktinfo = manuellStatusService.hentDigdirKontaktinfo(fnr);
 
         transactor.executeWithoutResult((ignored) -> {
             Optional<OppfolgingEntity> maybeOppfolging = oppfolgingsStatusRepository.hentOppfolging(aktorId);
@@ -372,7 +373,7 @@ public class OppfolgingService {
 
         boolean erManuell = manuellStatusService.erManuell(aktorId);
 
-        DigdirKontaktinfo digdirKontaktinfo = manuellStatusService.hentDigdirKontaktinfo(fnr);
+        KRRData digdirKontaktinfo = manuellStatusService.hentDigdirKontaktinfo(fnr);
 
         // TODO: Burde kanskje heller feile istedenfor å bruke Optional
         Optional<ArenaOppfolgingTilstand> maybeArenaOppfolging = arenaOppfolgingService.hentOppfolgingTilstand(fnr);

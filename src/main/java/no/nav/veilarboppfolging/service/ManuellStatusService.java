@@ -5,9 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.veilarboppfolging.client.digdir_krr.KRRData;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 import no.nav.veilarboppfolging.client.digdir_krr.DigdirClient;
-import no.nav.veilarboppfolging.client.digdir_krr.DigdirKontaktinfo;
 import no.nav.veilarboppfolging.repository.ManuellStatusRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
 import no.nav.veilarboppfolging.repository.entity.ManuellStatusEntity;
@@ -87,7 +87,7 @@ public class ManuellStatusService {
             return;
         }
 
-        DigdirKontaktinfo digdirKontaktinfo = hentDigdirKontaktinfo(fnr);
+        KRRData digdirKontaktinfo = hentDigdirKontaktinfo(fnr);
 
         if (digdirKontaktinfo.isReservert()) {
             settBrukerTilManuellGrunnetReservertIKRR(aktorId);
@@ -144,7 +144,7 @@ public class ManuellStatusService {
             authService.sjekkTilgangTilEnhet(arenaOppfolging.getNav_kontor());
         }
 
-        DigdirKontaktinfo kontaktinfo = hentDigdirKontaktinfo(fnr);
+        KRRData kontaktinfo = hentDigdirKontaktinfo(fnr);
 
         boolean erUnderOppfolging = oppfolgingService.erUnderOppfolging(aktorId);
         boolean gjeldendeErManuell = erManuell(aktorId);
@@ -163,12 +163,12 @@ public class ManuellStatusService {
         }
     }
 
-    public DigdirKontaktinfo hentDigdirKontaktinfo(Fnr fnr) {
-        return digdirClient.hentKontaktInfo(fnr)
-                .orElseGet(() -> new DigdirKontaktinfo()
-                        .setPersonident(fnr.get())
-                        .setKanVarsles(true)
-                        .setReservert(false));
+    public KRRData hentDigdirKontaktinfo(Fnr fnr) {
+        return digdirClient.hentKontaktInfoV2(fnr)
+                .orElseGet(() -> new KRRData()
+                        .withPersonident(fnr.get())
+                        .withKanVarsles(true)
+                        .withReservert(false));
     }
     private void oppdaterManuellStatus(AktorId aktorId, ManuellStatusEntity manuellStatus) {
         transactor.executeWithoutResult((ignored) -> {
