@@ -1,14 +1,18 @@
 {
-  "personident": "12345678900",
+  "personidentifikator": "12345678900",
   "aktiv": true,
-  "kanVarsles": false,
-  "reservert": true,
+  "reservasjon": "JA",
+  "reservasjonstidspunkt": null,
+  "status": "AKTIV",
+  "varslingsstatus": "KAN_IKKE_VARSLES",
+  "kontaktinformasjon": {
+    "epostadresse": "noreply@nav.no",
+    "mobiltelefonnummer": "11111111",
+    "mobiltelefonnummerOppdatert": "2023-03-30T22:00:00Z",
+    "mobiltelefonnummerVerifisert": "2023-03-30T22:00:00Z",
+    "epostadresseOppdatert": "2023-03-30T22:00:00Z",
+    "epostadresseVerifisert": "2023-03-30T22:00:00Z"
+  },
   "spraak": "nb",
-  "spraakOppdatert": "2023-03-30T22:00:00Z",
-  "epostadresse": "noreply@nav.no",
-  "epostadresseOppdatert": "2023-03-30T22:00:00Z",
-  "epostadresseVerifisert": "2023-03-30T22:00:00Z",
-  "mobiltelefonnummer": "11111111",
-  "mobiltelefonnummerOppdatert": "2023-03-30T22:00:00Z",
-  "mobiltelefonnummerVerifisert": "2023-03-30T22:00:00Z"
+  "spraakOppdatert": "2023-03-30T22:00:00Z"
 }
