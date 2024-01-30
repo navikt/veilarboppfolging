@@ -20,6 +20,7 @@ public class OppfolgingStatusData {
     public String aktorId;
     public String veilederId;
     public boolean reservasjonKRR;
+    public boolean registrertKRR;
     public boolean manuell;
     public boolean underOppfolging;
     public boolean underKvp;

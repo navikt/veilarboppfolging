@@ -5,6 +5,7 @@ import no.nav.veilarboppfolging.client.digdir_krr.DigdirClient;
 import no.nav.veilarboppfolging.client.digdir_krr.DigdirClientImpl;
 import no.nav.veilarboppfolging.client.digdir_krr.DigdirKontaktinfo;
 
+import no.nav.veilarboppfolging.client.digdir_krr.KRRData;
 import no.nav.veilarboppfolging.service.AuthService;
 import no.nav.veilarboppfolging.test.TestUtils;
 
@@ -41,12 +42,10 @@ public class DigdirClientImplTest {
 						.withBody(digdirJson))
 		);
 
-		DigdirKontaktinfo kontaktinfo = digdirClient.hentKontaktInfo(TEST_FNR).orElseThrow();
+		KRRData kontaktinfo = digdirClient.hentKontaktInfo(TEST_FNR).orElseThrow();
 		assertEquals(kontaktinfo.getPersonident(), TEST_FNR.get());
 		assertFalse(kontaktinfo.isKanVarsles());
 		assertTrue(kontaktinfo.isReservert());
-		assertEquals("noreply@nav.no", kontaktinfo.getEpostadresse());
-		assertEquals("11111111", kontaktinfo.getMobiltelefonnummer());
 	}
 
 	@Test

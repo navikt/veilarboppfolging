@@ -10,6 +10,7 @@ import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.HentYtelseskontraktListeRequest;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.HentYtelseskontraktListeResponse;
 import no.nav.veilarboppfolging.client.digdir_krr.DigdirKontaktinfo;
+import no.nav.veilarboppfolging.client.digdir_krr.KRRData;
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolgingTilstand;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktClient;
@@ -99,7 +100,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
         when(arenaOppfolgingService.hentOppfolgingTilstand(FNR)).thenReturn(Optional.of(arenaOppfolgingTilstand));
         when(ytelseskontraktClient.hentYtelseskontraktListe(any())).thenReturn(mock(YtelseskontraktResponse.class));
-        when(manuellStatusService.hentDigdirKontaktinfo(FNR)).thenReturn(new DigdirKontaktinfo());
+        when(manuellStatusService.hentDigdirKontaktinfo(FNR)).thenReturn(new KRRData());
     }
 
     @Test
@@ -375,10 +376,10 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     }
 
     private void gittReservasjonIKrr(boolean reservert) {
-        DigdirKontaktinfo kontaktinfo = new DigdirKontaktinfo();
-        kontaktinfo.setPersonident("fnr");
-        kontaktinfo.setKanVarsles(false);
-        kontaktinfo.setReservert(reservert);
+        KRRData kontaktinfo = new KRRData()
+            .withPersonident("fnr")
+            .withKanVarsles(false)
+            .withReservert(reservert);
 
         when(manuellStatusService.hentDigdirKontaktinfo(FNR)).thenReturn(kontaktinfo);
     }
