@@ -19,7 +19,7 @@
 
     <properties>
         <java.version>17</java.version>
-        <common.version>3.2023.03.31_13.47-5e737d8b3217</common.version>
+        <common.version>3.2023.10.23_12.41-bafec3836d28</common.version>
         <tjenestespesifikasjoner.version>1.2019.09.25-00.21-49b69f0625e0</tjenestespesifikasjoner.version>
         <javax-xml-bind.version>2.3.2</javax-xml-bind.version>
         <wiremock.version>3.0.0-beta-4</wiremock.version>
