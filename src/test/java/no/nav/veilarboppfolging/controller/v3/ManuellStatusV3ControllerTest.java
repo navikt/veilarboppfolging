@@ -3,6 +3,7 @@ package no.nav.veilarboppfolging.controller.v3;
 import no.nav.common.json.JsonUtils;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.client.digdir_krr.DigdirKontaktinfo;
+import no.nav.veilarboppfolging.client.digdir_krr.KRRData;
 import no.nav.veilarboppfolging.controller.v3.request.ManuellStatusRequest;
 import no.nav.veilarboppfolging.service.AuthService;
 import no.nav.veilarboppfolging.service.ManuellStatusService;
@@ -49,7 +50,7 @@ public class ManuellStatusV3ControllerTest {
     public void manuell_hent_status_skal_returnere_riktig() throws Exception {
         when(manuellStatusService.erManuell((Fnr) any())).thenReturn(true);
         String expJson = "{\"erUnderManuellOppfolging\":true}, \"krrStatus\":{\"kanVarsles\":true, \"erReservert\":false}";
-        when(manuellStatusService.hentDigdirKontaktinfo(manuellStatusRequest.fnr())).thenReturn(new DigdirKontaktinfo().setReservert(false).setKanVarsles(true));
+        when(manuellStatusService.hentDigdirKontaktinfo(manuellStatusRequest.fnr())).thenReturn(new KRRData().withReservert(false).withKanVarsles(true));
 
         mockMvc.perform(post("/api/v3/manuell/hent-status")
                 .contentType(MediaType.APPLICATION_JSON)

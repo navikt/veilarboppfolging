@@ -47,7 +47,7 @@ public class DigdirClientImpl implements DigdirClient {
 	@Cacheable(CacheConfig.DIGDIR_KONTAKTINFO_CACHE_NAME)
 	@SneakyThrows
 	@Override
-	public Optional<DigdirKontaktinfo> hentKontaktInfo(Fnr fnr) {
+	public Optional<KRRData> hentKontaktInfo(Fnr fnr) {
 		Request request = new Request.Builder()
 				.url(joinPaths(digdirUrl, "/rest/v1/person?inkluderSikkerDigitalPost=false"))
 				.header(ACCEPT, APPLICATION_JSON_VALUE)
@@ -57,7 +57,8 @@ public class DigdirClientImpl implements DigdirClient {
 
 		try (Response response = client.newCall(request).execute()) {
 			RestUtils.throwIfNotSuccessful(response);
-			return RestUtils.parseJsonResponse(response, DigdirKontaktinfo.class);
+			return RestUtils.parseJsonResponse(response, DigdirKontaktinfo.class)
+					.map(DigdirKontaktinfo::toKrrData);
 		} catch (Exception e) {
 			log.error("Feil under henting av data fra Digdir_KRR", e);
 			return empty();
