@@ -59,6 +59,7 @@ public class DtoMappers {
                 .setUnderOppfolging(oppfolgingStatusData.underOppfolging)
                 .setManuell(oppfolgingStatusData.manuell)
                 .setReservasjonKRR(oppfolgingStatusData.reservasjonKRR)
+                .setRegistrertKRR(oppfolgingStatusData.registrertKRR)
                 .setOppfolgingUtgang(oppfolgingStatusData.getOppfolgingUtgang())
                 .setKanReaktiveres(oppfolgingStatusData.kanReaktiveres)
                 .setOppfolgingsPerioder(oppfolgingStatusData.oppfolgingsperioder.stream().map(o -> tilOppfolgingPeriodeDTO(o, erInternBruker)).collect(toList()))

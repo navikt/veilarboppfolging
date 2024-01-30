@@ -6,6 +6,5 @@ import no.nav.common.types.identer.Fnr;
 import java.util.Optional;
 
 public interface DigdirClient extends HealthCheck {
-
-    Optional<DigdirKontaktinfo> hentKontaktInfo(Fnr fnr);
+    Optional<KRRData> hentKontaktInfo(Fnr fnr);
 }
