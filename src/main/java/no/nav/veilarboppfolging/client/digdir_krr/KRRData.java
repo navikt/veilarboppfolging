@@ -6,7 +6,7 @@ import lombok.*;
 @With
 @NoArgsConstructor
 @Getter
-@EqualsAndHashCode
+@Data
 public class KRRData {
     boolean aktiv;
     String personident;
