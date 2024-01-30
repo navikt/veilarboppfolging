@@ -46,8 +46,6 @@ public class DigdirClientImplTest {
 		assertEquals(kontaktinfo.getPersonident(), TEST_FNR.get());
 		assertFalse(kontaktinfo.isKanVarsles());
 		assertTrue(kontaktinfo.isReservert());
-		assertEquals("noreply@nav.no", kontaktinfo.getEpostadresse());
-		assertEquals("11111111", kontaktinfo.getMobiltelefonnummer());
 	}
 
 	@Test

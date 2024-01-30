@@ -26,9 +26,7 @@ public class DigdirKontaktinfo {
            aktiv,
            personident,
            kanVarsles,
-           reservert,
-           epostadresse,
-           mobiltelefonnummer
+           reservert
       );
    }
 }

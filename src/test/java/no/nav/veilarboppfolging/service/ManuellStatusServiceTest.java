@@ -125,9 +125,7 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
         KRRData kontaktinfo = new KRRData()
                 .withPersonident(FNR.get())
                 .withKanVarsles(true)
-                .withReservert(true)
-                .withEpostadresse("email")
-                .withMobiltelefonnummer("12345");
+                .withReservert(true);
 
         when(oppfolgingService.erUnderOppfolging(AKTOR_ID)).thenReturn(true);
 
@@ -160,9 +158,7 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
         KRRData kontaktinfo = new KRRData()
                 .withPersonident(FNR.get())
                 .withKanVarsles(true)
-                .withReservert(false)
-                .withEpostadresse("email")
-                .withMobiltelefonnummer("12345");
+                .withReservert(false);
 
         when(oppfolgingService.erUnderOppfolging(AKTOR_ID)).thenReturn(true);
         when(authService.harTilgangTilEnhet(any())).thenReturn(true);
@@ -180,9 +176,7 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
         KRRData kontaktinfo = new KRRData()
                 .withPersonident(FNR.get())
                 .withKanVarsles(true)
-                .withReservert(false)
-                .withEpostadresse("email")
-                .withMobiltelefonnummer("12345");
+                .withReservert(false);
         String begrunnelse = "test begrunnelse";
         String opprettetAvBruker = "test opprettet av";
         gittAktivOppfolging();
@@ -257,9 +251,7 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
         KRRData kontaktinfo = new KRRData()
                 .withPersonident(FNR.get())
                 .withKanVarsles(true)
-                .withReservert(true)
-                .withEpostadresse("email")
-                .withMobiltelefonnummer("12345");
+                .withReservert(true);
 
         when(digdirClient.hentKontaktInfo(FNR)).thenReturn(Optional.of(kontaktinfo));
 

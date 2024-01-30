@@ -12,6 +12,4 @@ public class KRRData {
     String personident;
     boolean kanVarsles;
     boolean reservert;
-    String epostadresse;
-    String mobiltelefonnummer;
 }
