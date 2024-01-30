@@ -8,7 +8,7 @@ import lombok.*;
 @Getter
 @EqualsAndHashCode
 public class KRRData {
-    Boolean aktiv;
+    boolean aktiv;
     String personident;
     boolean kanVarsles;
     boolean reservert;

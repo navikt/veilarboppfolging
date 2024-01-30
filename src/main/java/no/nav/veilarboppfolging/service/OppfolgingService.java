@@ -413,6 +413,7 @@ public class OppfolgingService {
                 .setUnderOppfolging(oppfolging.isUnderOppfolging())
                 .setUnderKvp(oppfolging.getGjeldendeKvp() != null)
                 .setReservasjonKRR(digdirKontaktinfo.isReservert())
+                .setRegistrertKRR(digdirKontaktinfo.isAktiv())
                 .setManuell(erManuell || digdirKontaktinfo.isReservert())
                 .setKanStarteOppfolging(kanSettesUnderOppfolging)
                 .setOppfolgingsperioder(oppfolging.getOppfolgingsperioder())
