@@ -264,7 +264,7 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
 
         KRRData fallbackKontaktInfo = new KRRData()
                 .withPersonident(FNR.get())
-                .withKanVarsles(true)
+                .withKanVarsles(false)
                 .withReservert(false);
 
         assertEquals(fallbackKontaktInfo, manuellStatusService.hentDigdirKontaktinfo(FNR));
