@@ -23,11 +23,12 @@ import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
 
 import jakarta.annotation.PostConstruct;
+import org.springframework.kafka.test.context.EmbeddedKafka;
+
 import java.util.List;
 import java.util.Properties;
 
@@ -36,7 +37,9 @@ import static no.nav.veilarboppfolging.config.KafkaConfig.CONSUMER_GROUP_ID;
 import static no.nav.veilarboppfolging.config.KafkaConfig.PRODUCER_CLIENT_ID;
 
 @Configuration
-@Import({EmbeddedKafkaConfig.class})
+@EmbeddedKafka(
+        partitions = 1
+)
 @EnableConfigurationProperties({KafkaProperties.class})
 public class KafkaTestConfig {
 
