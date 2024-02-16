@@ -218,7 +218,7 @@ public class AuthorizationAnnotationHandlerTest {
 
         when(aktorOppslagClient.hentFnr(TEST_AKTOR_ID_3)).thenReturn(TEST_FNR_2);
 
-        Decision decision = mock(Decision.class);
+        Decision decision = Decision.Permit.INSTANCE;
         doReturn(new ApiResult<Decision>(null, decision)).when(poaoTilgangClient).evaluatePolicy(argThat(new PolicyInputMatcher(uuid, TEST_FNR_2.get())));
     }
 }

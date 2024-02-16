@@ -492,7 +492,7 @@ public class AuthServiceTest {
 
         when(aktorOppslagClient.hentFnr(TEST_AKTOR_ID_3)).thenReturn(TEST_FNR_2);
 
-        Decision decision = mock(Decision.class);
+        Decision decision = Decision.Permit.INSTANCE;
         doReturn(new ApiResult<>(null, decision)).when(poaoTilgangClient).evaluatePolicy(argThat(new PolicyInputMatcher(uuid, TEST_FNR_2.get())));
     }
 }
