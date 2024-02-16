@@ -23,7 +23,7 @@
         <tjenestespesifikasjoner.version>1.2019.09.25-00.21-49b69f0625e0</tjenestespesifikasjoner.version>
         <javax-xml-bind.version>2.3.2</javax-xml-bind.version>
         <wiremock.version>3.0.0-beta-10</wiremock.version>
-        <schedlock.version>5.10.2</schedlock.version>
+        <schedlock.version>5.11.0</schedlock.version>
         <pto-schema.version>1.2021.07.01_08.22-f7c78425a00a</pto-schema.version>
         <cxf-codegen.version>4.0.0</cxf-codegen.version>
         <sonar.projectKey>navikt_veilarboppfolging</sonar.projectKey>
