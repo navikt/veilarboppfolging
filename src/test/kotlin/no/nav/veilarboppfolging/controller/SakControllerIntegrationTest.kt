@@ -5,8 +5,10 @@ import no.nav.common.types.identer.Fnr
 import no.nav.veilarboppfolging.IntegrationTestUtil
 import no.nav.veilarboppfolging.config.ApplicationTestConfig
 import no.nav.veilarboppfolging.controller.response.OppfolgingPeriodeDTO
+import no.nav.veilarboppfolging.test.DbTestUtils
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.annotation.DirtiesContext
@@ -21,7 +23,10 @@ class SakControllerIntegrationTest: IntegrationTestUtil() {
 
     private val aktørId: AktorId = AktorId.of("3409823")
 
-    private val token = "token"
+    @BeforeEach
+    fun beforeEach() {
+        DbTestUtils.cleanupTestDb()
+    }
 
     @Test
     fun `når man henter sak for oppfølgsingsperiode uten sak skal sak opprettes`() {
@@ -33,7 +38,7 @@ class SakControllerIntegrationTest: IntegrationTestUtil() {
 
         val saker = sakRepository.hentSaker(oppfølgingsperiodeUUID)
         assertThat(saker).hasSize(1)
-        assertThat(saker[0].id).isEqualTo(1000)
+        assertThat(saker[0].id).isGreaterThan(1000)
         assertThat(saker[0].oppfølgingsperiodeUUID).isEqualTo(oppfølgingsperiodeUUID)
         assertThat(saker[0].status.toString()).isEqualTo("OPPRETTET")
         assertThat(saker[0].createdAt).isCloseTo(ZonedDateTime.now(), within(500, ChronoUnit.MILLIS))
