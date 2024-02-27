@@ -20,6 +20,17 @@ class SakRepository(private val db: JdbcTemplate, private val transactor: Transa
             )
     }
 
+    fun opprettSak(oppfølgingsperiodeUUID: UUID) {
+         db.update(
+            """
+                INSERT INTO SAK (oppfolgingsperiode_uuid, created_at, status)
+                VALUES(?, CURRENT_TIMESTAMP, ?)
+            """.trimIndent(),
+            oppfølgingsperiodeUUID,
+            SakStatus.OPPRETTET
+        )
+    }
+
 }
 
 data class SakEntity(
@@ -31,7 +42,7 @@ data class SakEntity(
     companion object {
         fun fromResultSet(resultSet: ResultSet, row: Int): SakEntity = SakEntity(
             id = resultSet.getLong("id"),
-            oppfølgingsperiodeUUID = UUID.fromString(resultSet.getString("uuid")),
+            oppfølgingsperiodeUUID = UUID.fromString(resultSet.getString("oppfolgingsperiode_uuid")),
             createdAt = hentZonedDateTime(resultSet, "created_at"),
             status = SakStatus.valueOf(resultSet.getString("status"))
         )
@@ -39,5 +50,6 @@ data class SakEntity(
 }
 
 enum class SakStatus {
-    OPPRETTET
+    OPPRETTET,
+    AVSLUTTET
 }
