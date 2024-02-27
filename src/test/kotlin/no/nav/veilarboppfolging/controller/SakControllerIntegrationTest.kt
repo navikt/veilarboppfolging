@@ -7,14 +7,11 @@ import no.nav.veilarboppfolging.config.ApplicationTestConfig
 import no.nav.veilarboppfolging.controller.response.OppfolgingPeriodeDTO
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within
-import org.assertj.core.data.TemporalOffset
-import org.assertj.core.data.TemporalUnitOffset
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.annotation.DirtiesContext
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
-import java.time.temporal.Temporal
 
 @SpringBootTest(classes = [ApplicationTestConfig::class])
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
@@ -27,23 +24,65 @@ class SakControllerIntegrationTest: IntegrationTestUtil() {
     private val token = "token"
 
     @Test
-    fun `når man henter sak-id for oppfølgsingsperiode uten sak skal sak-id opprettes`() {
+    fun `når man henter sak for oppfølgsingsperiode uten sak skal sak opprettes`() {
         mockAuthOk(aktørId, fnr)
         val perioder: List<OppfolgingPeriodeDTO> = startOppfolging(fnr)
-        val forstePeriode = perioder[0]
+        val oppfølgingsperiodeUUID = perioder[0].uuid
 
-        val sak = sakController.hentSak(forstePeriode.uuid)
+        val sak = sakController.hentSak(oppfølgingsperiodeUUID)
 
-        val saker = sakRepository.hentSaker(forstePeriode.uuid)
+        val saker = sakRepository.hentSaker(oppfølgingsperiodeUUID)
         assertThat(saker).hasSize(1)
         assertThat(saker[0].id).isEqualTo(1000)
-        assertThat(saker[0].oppfølgingsperiodeUUID).isEqualTo(forstePeriode.uuid)
+        assertThat(saker[0].oppfølgingsperiodeUUID).isEqualTo(oppfølgingsperiodeUUID)
         assertThat(saker[0].status.toString()).isEqualTo("OPPRETTET")
         assertThat(saker[0].createdAt).isCloseTo(ZonedDateTime.now(), within(500, ChronoUnit.MILLIS))
 
         assertThat(sak.sakId).isEqualTo(saker[0].id)
         assertThat(sak.oppfolgingsperiodeId).isEqualTo(saker[0].oppfølgingsperiodeUUID)
-
     }
 
+    @Test
+    fun `når man henter sak for oppfølgingsperiode med åpen sak skal ikke ny sak opprettes`() {
+        mockAuthOk(aktørId, fnr)
+        val perioder: List<OppfolgingPeriodeDTO> = startOppfolging(fnr)
+        val oppfølgingsperiodeUUID = perioder[0].uuid
+        sakRepository.opprettSak(oppfølgingsperiodeUUID)
+        assertThat(sakRepository.hentSaker(oppfølgingsperiodeUUID)).hasSize(1)
+
+        val sak = sakController.hentSak(oppfølgingsperiodeUUID)
+
+        val sakerIDatabasen = sakRepository.hentSaker(oppfølgingsperiodeUUID)
+        assertThat(sakerIDatabasen).hasSize(1)
+
+        assertThat(sak.sakId).isEqualTo(sakerIDatabasen[0].id)
+        assertThat(sak.oppfolgingsperiodeId).isEqualTo(sakerIDatabasen[0].oppfølgingsperiodeUUID)
+    }
+
+    @Test
+    fun `når man henter sak for oppfølgsingsperiode uten sak skal sak opprettes selv om andre saker for andre perioder finnes`() {
+        // Given
+        mockAuthOk(aktørId, fnr)
+        val oppfølgingsperiodeUuidMedSak = startOppfolging(fnr)[0].uuid
+        sakRepository.opprettSak(oppfølgingsperiodeUuidMedSak)
+        assertThat(sakRepository.hentSaker(oppfølgingsperiodeUuidMedSak)).hasSize(1)
+
+        val annetFnr = Fnr.of(fnr.toString() + "annen")
+        val annenAktørId = AktorId.of(aktørId.toString() + "annen")
+        mockAuthOk(annenAktørId, annetFnr)
+        val oppfølgingsperiodeUuidUtenSak = startOppfolging(annetFnr)[0].uuid
+        assertThat(oppfølgingsperiodeUuidMedSak).isNotEqualTo(oppfølgingsperiodeUuidUtenSak)
+
+        // When
+        sakController.hentSak(oppfølgingsperiodeUuidUtenSak)
+
+        // Then
+        assertThat(sakRepository.hentSaker(oppfølgingsperiodeUuidUtenSak)).hasSize(1)
+        assertThat(sakRepository.hentSaker(oppfølgingsperiodeUuidMedSak)).hasSize(1)
+    }
+
+    @Test
+    fun `når man  henter sak for oppfølgingsperiode som ikke eksisterer skal man få 400`() {
+
+    }
 }
