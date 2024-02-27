@@ -16,6 +16,7 @@ import no.nav.veilarboppfolging.controller.request.AktiverArbeidssokerData
 import no.nav.veilarboppfolging.controller.request.Innsatsgruppe
 import no.nav.veilarboppfolging.controller.response.OppfolgingPeriodeDTO
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
+import no.nav.veilarboppfolging.repository.SakRepository
 import no.nav.veilarboppfolging.service.AuthService
 import org.mockito.Mock
 import org.mockito.Mockito
@@ -53,6 +54,9 @@ open class IntegrationTestUtil {
 
     @MockBean
     lateinit var machineToMachineTokenClient: MachineToMachineTokenClient
+
+    @Autowired
+    lateinit var sakRepository: SakRepository
 
     fun startOppfolging(fnr: Fnr): List<OppfolgingPeriodeDTO> {
         val aktiverArbeidssokerData = AktiverArbeidssokerData(

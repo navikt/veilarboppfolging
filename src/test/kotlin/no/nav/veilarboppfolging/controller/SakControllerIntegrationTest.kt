@@ -5,13 +5,16 @@ import no.nav.common.types.identer.Fnr
 import no.nav.veilarboppfolging.IntegrationTestUtil
 import no.nav.veilarboppfolging.config.ApplicationTestConfig
 import no.nav.veilarboppfolging.controller.response.OppfolgingPeriodeDTO
-import no.nav.veilarboppfolging.controller.response.OppfolgingPeriodeMinimalDTO
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Assertions
+import org.assertj.core.api.Assertions.within
+import org.assertj.core.data.TemporalOffset
+import org.assertj.core.data.TemporalUnitOffset
 import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.annotation.DirtiesContext
+import java.time.ZonedDateTime
+import java.time.temporal.ChronoUnit
+import java.time.temporal.Temporal
 
 @SpringBootTest(classes = [ApplicationTestConfig::class])
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
@@ -29,11 +32,13 @@ class SakControllerIntegrationTest: IntegrationTestUtil() {
         val perioder: List<OppfolgingPeriodeDTO> = startOppfolging(fnr)
         val forstePeriode = perioder[0]
 
-        val sakId = sakController.hentSakId(forstePeriode.uuid)
+        sakController.hentSakId(forstePeriode.uuid)
+        val saker = sakRepository.hentSaker(forstePeriode.uuid)
 
-        assertThat(sakId).isGreaterThan(0)
-        // TODO: sjekk at lagret i databasen
-
+        assertThat(saker).hasSize(1)
+        assertThat(saker[0].id).isEqualTo(1)
+        assertThat(saker[0].status).isEqualTo("OPPRETTET")
+        assertThat(saker[0].createdAt).isCloseTo(ZonedDateTime.now(), within(500, ChronoUnit.MILLIS))
     }
 
 }
