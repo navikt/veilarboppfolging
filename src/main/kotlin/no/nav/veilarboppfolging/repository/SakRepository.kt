@@ -9,7 +9,7 @@ import java.time.ZonedDateTime
 import java.util.UUID
 
 @Repository
-class SakRepository(private val db: JdbcTemplate, private val transactor: TransactionTemplate) {
+open class SakRepository(private val db: JdbcTemplate, private val transactor: TransactionTemplate) {
 
     fun hentSaker(oppfølgingsperiodeUUID: UUID): List<SakEntity> {
         return db.query("""
