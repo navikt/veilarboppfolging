@@ -1,5 +1,7 @@
 package no.nav.veilarboppfolging.controller
 
+import no.nav.common.types.identer.Id
+import no.nav.veilarboppfolging.service.SakService
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
@@ -8,10 +10,15 @@ import java.util.UUID
 
 @RestController
 @RequestMapping("/api/oppfolging")
-class SakController {
+class SakController(private val sakService: SakService) {
 
     @GetMapping("/sakid/{oppfolgingsperiodeId}")
-    fun hentSakId(@PathVariable oppfolgingsperiodeId: UUID ): Long {
-        return -1
+    fun hentSak(@PathVariable oppfolgingsperiodeId: UUID ): SakDTO {
+        return sakService.hentÅpenSak(oppfolgingsperiodeId).let { SakDTO(it.oppfølgingsperiodeUUID, it.id) }
     }
+
+    data class SakDTO(
+        val oppfolgingsperiodeId: UUID,
+        val sakId: Long
+    )
 }

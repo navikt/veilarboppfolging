@@ -27,7 +27,7 @@ class SakRepository(private val db: JdbcTemplate, private val transactor: Transa
                 VALUES(?, CURRENT_TIMESTAMP, ?)
             """.trimIndent(),
             oppfølgingsperiodeUUID,
-            SakStatus.OPPRETTET
+            SakStatus.OPPRETTET.name
         )
     }
 
@@ -44,12 +44,12 @@ data class SakEntity(
             id = resultSet.getLong("id"),
             oppfølgingsperiodeUUID = UUID.fromString(resultSet.getString("oppfolgingsperiode_uuid")),
             createdAt = hentZonedDateTime(resultSet, "created_at"),
-            status = SakStatus.valueOf(resultSet.getString("status"))
+            status = SakStatus.valueOf(resultSet.getString("status").trim())
         )
     }
 }
 
 enum class SakStatus {
     OPPRETTET,
-    AVSLUTTET
+    AVSLUTTET;
 }

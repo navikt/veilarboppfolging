@@ -32,13 +32,18 @@ class SakControllerIntegrationTest: IntegrationTestUtil() {
         val perioder: List<OppfolgingPeriodeDTO> = startOppfolging(fnr)
         val forstePeriode = perioder[0]
 
-        sakController.hentSakId(forstePeriode.uuid)
-        val saker = sakRepository.hentSaker(forstePeriode.uuid)
+        val sak = sakController.hentSak(forstePeriode.uuid)
 
+        val saker = sakRepository.hentSaker(forstePeriode.uuid)
         assertThat(saker).hasSize(1)
-        assertThat(saker[0].id).isEqualTo(1)
-        assertThat(saker[0].status).isEqualTo("OPPRETTET")
+        assertThat(saker[0].id).isEqualTo(1000)
+        assertThat(saker[0].oppfølgingsperiodeUUID).isEqualTo(forstePeriode.uuid)
+        assertThat(saker[0].status.toString()).isEqualTo("OPPRETTET")
         assertThat(saker[0].createdAt).isCloseTo(ZonedDateTime.now(), within(500, ChronoUnit.MILLIS))
+
+        assertThat(sak.sakId).isEqualTo(saker[0].id)
+        assertThat(sak.oppfolgingsperiodeId).isEqualTo(saker[0].oppfølgingsperiodeUUID)
+
     }
 
 }
