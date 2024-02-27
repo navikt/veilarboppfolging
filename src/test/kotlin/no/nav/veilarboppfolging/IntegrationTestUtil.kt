@@ -5,7 +5,6 @@ import no.nav.common.abac.Pep
 import no.nav.common.abac.domain.request.ActionId
 import no.nav.common.auth.context.AuthContextHolder
 import no.nav.common.client.aktoroppslag.AktorOppslagClient
-import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient
 import no.nav.common.token_client.client.MachineToMachineTokenClient
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
@@ -18,14 +17,15 @@ import no.nav.veilarboppfolging.controller.response.OppfolgingPeriodeDTO
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.repository.SakRepository
 import no.nav.veilarboppfolging.service.AuthService
-import org.mockito.Mock
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.kafka.test.context.EmbeddedKafka
 import org.springframework.stereotype.Component
 import java.util.*
 
 @Component
+@EmbeddedKafka(partitions = 1)
 open class IntegrationTestUtil {
 
     @MockBean
@@ -65,6 +65,10 @@ open class IntegrationTestUtil {
         )
         systemOppfolgingController.aktiverBruker(aktiverArbeidssokerData)
         return oppfolgingController.hentOppfolgingsperioder(fnr)
+    }
+
+    fun avsluttOppfolging(aktorId: AktorId, veileder: String = "veileder", begrunnelse: String = "Begrunnelse") {
+        oppfolgingsPeriodeRepository.avslutt(aktorId, veileder, begrunnelse )
     }
 
     fun mockAuthOk(aktørId: AktorId, fnr: Fnr) {

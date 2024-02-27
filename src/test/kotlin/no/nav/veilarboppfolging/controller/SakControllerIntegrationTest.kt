@@ -102,7 +102,18 @@ class SakControllerIntegrationTest: IntegrationTestUtil() {
 
     @Test
     fun `Skal kunne hente sak for oppfølgingsperiode som er avsluttet`() {
+        mockAuthOk(aktørId, fnr)
+        val perioder: List<OppfolgingPeriodeDTO> = startOppfolging(fnr)
+        val oppfølgingsperiodeUUID = perioder[0].uuid
+        avsluttOppfolging(aktørId)
 
+        val sak = sakController.hentSak(oppfølgingsperiodeUUID)
+
+        val sakerIDatabasen = sakRepository.hentSaker(oppfølgingsperiodeUUID)
+        assertThat(sakerIDatabasen).hasSize(1)
+        assertThat(sakerIDatabasen[0].status.name).isEqualTo("OPPRETTET")
+        assertThat(sak.sakId).isEqualTo(sakerIDatabasen[0].id)
+        assertThat(sak.oppfolgingsperiodeId).isEqualTo(sakerIDatabasen[0].oppfølgingsperiodeUUID)
     }
 
     @Test
