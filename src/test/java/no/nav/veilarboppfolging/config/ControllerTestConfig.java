@@ -24,6 +24,7 @@ import org.springframework.context.annotation.Import;
         VeilederController.class,
         VeilederV2Controller.class,
         VeilederTilordningController.class,
-        YtelseController.class
+        YtelseController.class,
+        SakController.class
 })
 public class ControllerTestConfig {}

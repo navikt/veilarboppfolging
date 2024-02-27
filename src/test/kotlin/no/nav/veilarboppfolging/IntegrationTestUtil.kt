@@ -5,6 +5,8 @@ import no.nav.common.abac.Pep
 import no.nav.common.abac.domain.request.ActionId
 import no.nav.common.auth.context.AuthContextHolder
 import no.nav.common.client.aktoroppslag.AktorOppslagClient
+import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient
+import no.nav.common.token_client.client.MachineToMachineTokenClient
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.veilarboppfolging.controller.OppfolgingController
@@ -15,6 +17,7 @@ import no.nav.veilarboppfolging.controller.request.Innsatsgruppe
 import no.nav.veilarboppfolging.controller.response.OppfolgingPeriodeDTO
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.service.AuthService
+import org.mockito.Mock
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.mock.mockito.MockBean
@@ -47,6 +50,9 @@ open class IntegrationTestUtil {
 
     @Autowired
     lateinit var systemOppfolgingController: SystemOppfolgingController
+
+    @MockBean
+    lateinit var machineToMachineTokenClient: MachineToMachineTokenClient
 
     fun startOppfolging(fnr: Fnr): List<OppfolgingPeriodeDTO> {
         val aktiverArbeidssokerData = AktiverArbeidssokerData(
