@@ -6,14 +6,17 @@ import no.nav.veilarboppfolging.IntegrationTestUtil
 import no.nav.veilarboppfolging.config.ApplicationTestConfig
 import no.nav.veilarboppfolging.controller.response.OppfolgingPeriodeDTO
 import no.nav.veilarboppfolging.test.DbTestUtils
-import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.Assertions.within
+import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.http.HttpStatus
 import org.springframework.test.annotation.DirtiesContext
+import org.springframework.web.client.HttpClientErrorException.BadRequest
+import org.springframework.web.server.ResponseStatusException
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
+import java.util.UUID
 
 @SpringBootTest(classes = [ApplicationTestConfig::class])
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
@@ -87,7 +90,23 @@ class SakControllerIntegrationTest: IntegrationTestUtil() {
     }
 
     @Test
-    fun `når man  henter sak for oppfølgingsperiode som ikke eksisterer skal man få 400`() {
+    fun `når man  henter sak for oppfølgingsperiode som ikke eksisterer skal man få BadRequestException`() {
+        val oppfølgingsUuuidSomIkkeEksisterer = UUID.randomUUID()
+
+        assertThatExceptionOfType(ResponseStatusException::class.java).isThrownBy {
+            sakController.hentSak(oppfølgingsUuuidSomIkkeEksisterer)
+        }.hasFieldOrPropertyWithValue("status", HttpStatus.BAD_REQUEST)
+
+        assertThat(sakRepository.hentSaker(oppfølgingsUuuidSomIkkeEksisterer)).isEmpty()
+    }
+
+    @Test
+    fun `Skal kunne hente sak for oppfølgingsperiode som er avsluttet`() {
+
+    }
+
+    @Test
+    fun `Dersom kun avsluttet sak finnes skal ny sak opprettes`() {
 
     }
 }

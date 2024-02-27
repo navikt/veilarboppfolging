@@ -11,10 +11,6 @@ class SakService(private val sakRepository: SakRepository) {
 
     // TODO: Trenger vi å sjekke mot brukers fnr?
     fun hentÅpenSak(oppfølgingsperiodeUUID: UUID): SakEntity {
-        // Valider oppfølgingsperiode - er det nok at den bare eksisterer?
-        // Hente sak, men hvis ikke finnes, så opprett ny
-            // Ikke returnere saker med status lukket - hva gjør vi?
-
         val saker = sakRepository.hentSaker(oppfølgingsperiodeUUID)
 
         return if (saker.isEmpty()) {
