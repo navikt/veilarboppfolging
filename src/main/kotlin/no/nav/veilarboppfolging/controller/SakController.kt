@@ -1,6 +1,5 @@
 package no.nav.veilarboppfolging.controller
 
-import no.nav.common.types.identer.Id
 import no.nav.veilarboppfolging.service.OppfolgingService
 import no.nav.veilarboppfolging.service.SakService
 import org.springframework.http.HttpStatus
@@ -20,7 +19,7 @@ class SakController(private val sakService: SakService, private val oppfolgingSe
         val erGyldigOppfølgingsperiodeUUID = oppfolgingService.hentOppfolgingsperiode(oppfolgingsperiodeId.toString()).isPresent
         if (!erGyldigOppfølgingsperiodeUUID) throw ResponseStatusException(HttpStatus.BAD_REQUEST);
 
-        return sakService.hentÅpenSak(oppfolgingsperiodeId).let { SakDTO(it.oppfølgingsperiodeUUID, it.id) }
+        return sakService.hentSak(oppfolgingsperiodeId).let { SakDTO(it.oppfølgingsperiodeUUID, it.id) }
     }
 
     data class SakDTO(

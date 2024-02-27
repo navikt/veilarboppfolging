@@ -43,7 +43,6 @@ class SakControllerIntegrationTest: IntegrationTestUtil() {
         assertThat(saker).hasSize(1)
         assertThat(saker[0].id).isGreaterThan(1000)
         assertThat(saker[0].oppfølgingsperiodeUUID).isEqualTo(oppfølgingsperiodeUUID)
-        assertThat(saker[0].status.toString()).isEqualTo("OPPRETTET")
         assertThat(saker[0].createdAt).isCloseTo(ZonedDateTime.now(), within(500, ChronoUnit.MILLIS))
 
         assertThat(sak.sakId).isEqualTo(saker[0].id)
@@ -51,7 +50,7 @@ class SakControllerIntegrationTest: IntegrationTestUtil() {
     }
 
     @Test
-    fun `når man henter sak for oppfølgingsperiode med åpen sak skal ikke ny sak opprettes`() {
+    fun `når man henter sak for oppfølgingsperiode med eksisterende sak skal ikke ny sak opprettes`() {
         mockAuthOk(aktørId, fnr)
         val perioder: List<OppfolgingPeriodeDTO> = startOppfolging(fnr)
         val oppfølgingsperiodeUUID = perioder[0].uuid
@@ -111,13 +110,7 @@ class SakControllerIntegrationTest: IntegrationTestUtil() {
 
         val sakerIDatabasen = sakRepository.hentSaker(oppfølgingsperiodeUUID)
         assertThat(sakerIDatabasen).hasSize(1)
-        assertThat(sakerIDatabasen[0].status.name).isEqualTo("OPPRETTET")
         assertThat(sak.sakId).isEqualTo(sakerIDatabasen[0].id)
         assertThat(sak.oppfolgingsperiodeId).isEqualTo(sakerIDatabasen[0].oppfølgingsperiodeUUID)
-    }
-
-    @Test
-    fun `Dersom kun avsluttet sak finnes skal ny sak opprettes`() {
-
     }
 }
