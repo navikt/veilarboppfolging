@@ -14,7 +14,7 @@ import java.util.UUID
 @RequestMapping("/api/oppfolging")
 class SakController(private val sakService: SakService, private val oppfolgingService: OppfolgingService) {
 
-    @GetMapping("/sakid/{oppfolgingsperiodeId}")
+    @GetMapping("/sak/{oppfolgingsperiodeId}")
     fun hentSak(@PathVariable oppfolgingsperiodeId: UUID ): SakDTO {
         val erGyldigOppfølgingsperiodeUUID = oppfolgingService.hentOppfolgingsperiode(oppfolgingsperiodeId.toString()).isPresent
         if (!erGyldigOppfølgingsperiodeUUID) throw ResponseStatusException(HttpStatus.BAD_REQUEST);
