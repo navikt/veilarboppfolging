@@ -12,6 +12,7 @@ import no.nav.veilarboppfolging.service.AuthService;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
 import org.springframework.cache.annotation.Cacheable;
 
 import java.util.Optional;
@@ -55,11 +56,14 @@ public class DigdirClientImpl implements DigdirClient {
 				.header("Nav-Personident", fnr.get())
 				.build();
 
-		try (Response response = client.newCall(request).execute()) {
+		try (Response response = client.newCall(request).execute(); ResponseBody responseBody = response.body()) {
 			RestUtils.throwIfNotSuccessful(response);
 			Optional<KRRData> krrData = RestUtils.parseJsonResponse(response, DigdirKontaktinfo.class)
 					.map(DigdirKontaktinfo::toKrrData);
-			response.close();
+
+			if (responseBody != null){
+				responseBody.close();
+			}
 			return krrData;
 		} catch (Exception e) {
 			log.error("Feil under henting av data fra Digdir_KRR", e);
