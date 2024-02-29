@@ -2,23 +2,17 @@ package no.nav.veilarboppfolging.controller
 
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
-import no.nav.veilarboppfolging.IntegrationTestUtil
-import no.nav.veilarboppfolging.config.ApplicationTestConfig
+import no.nav.veilarboppfolging.IntegrationTest
 import no.nav.veilarboppfolging.controller.response.OppfolgingPeriodeDTO
-import no.nav.veilarboppfolging.test.DbTestUtils
 import org.assertj.core.api.Assertions.*
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.HttpStatus
-import org.springframework.test.annotation.DirtiesContext
-import org.springframework.web.client.HttpClientErrorException.BadRequest
 import org.springframework.web.server.ResponseStatusException
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 import java.util.UUID
 
-class SakControllerIntegrationTest: IntegrationTestUtil() {
+class SakControllerIntegrationTest: IntegrationTest() {
 
     private val fnr: Fnr = Fnr.of("123")
 

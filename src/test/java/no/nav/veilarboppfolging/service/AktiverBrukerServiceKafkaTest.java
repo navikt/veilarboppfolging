@@ -8,8 +8,7 @@ import no.nav.common.kafka.consumer.util.deserializer.Deserializers;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto_schema.kafka.json.topic.SisteOppfolgingsperiodeV1;
-import no.nav.veilarboppfolging.IntegrationTestUtil;
-import no.nav.veilarboppfolging.client.behandle_arbeidssoker.BehandleArbeidssokerClient;
+import no.nav.veilarboppfolging.IntegrationTest;
 import no.nav.veilarboppfolging.controller.request.AktiverArbeidssokerData;
 import no.nav.veilarboppfolging.controller.request.Innsatsgruppe;
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
@@ -19,7 +18,6 @@ import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
 import org.springframework.test.context.ActiveProfiles;
@@ -38,7 +36,7 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
 
 @ActiveProfiles("local")
-public class AktiverBrukerServiceKafkaTest extends IntegrationTestUtil {
+public class AktiverBrukerServiceKafkaTest extends IntegrationTest {
 
     @Autowired
     EmbeddedKafkaBroker kafkaContainer;

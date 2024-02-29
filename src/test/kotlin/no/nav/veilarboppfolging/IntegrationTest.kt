@@ -35,7 +35,7 @@ import java.util.*
 @EmbeddedKafka(partitions = 1)
 @SpringBootTest(classes = [ApplicationTestConfig::class])
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
-open class IntegrationTestUtil {
+open class IntegrationTest {
 
     @MockBean
     lateinit var veilarbPep: Pep

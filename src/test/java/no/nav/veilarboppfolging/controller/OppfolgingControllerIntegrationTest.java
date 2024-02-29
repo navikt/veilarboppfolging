@@ -5,7 +5,7 @@ import no.nav.common.abac.domain.request.ActionId;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.veilarboppfolging.IntegrationTestUtil;
+import no.nav.veilarboppfolging.IntegrationTest;
 import no.nav.veilarboppfolging.controller.request.AktiverArbeidssokerData;
 import no.nav.veilarboppfolging.controller.request.Innsatsgruppe;
 import no.nav.veilarboppfolging.controller.response.OppfolgingPeriodeDTO;
@@ -25,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
 
-class OppfolgingControllerIntegrationTest extends IntegrationTestUtil {
+class OppfolgingControllerIntegrationTest extends IntegrationTest {
 
     private final static Fnr FNR = Fnr.of("123");
 
