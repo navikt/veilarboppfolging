@@ -1,15 +1,19 @@
 package no.nav.veilarboppfolging.repository
 
 import no.nav.veilarboppfolging.utils.DbUtils.hentZonedDateTime
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
+import org.springframework.jdbc.support.GeneratedKeyHolder
+import org.springframework.jdbc.support.KeyHolder
 import org.springframework.stereotype.Repository
 import java.sql.ResultSet
-import java.sql.Types
 import java.time.ZonedDateTime
-import java.util.UUID
+import java.util.*
+
 
 @Repository
 open class SakRepository(val db: NamedParameterJdbcTemplate) {
+
 
     open fun hentSaker(oppfølgingsperiodeUUID: UUID): List<SakEntity> {
         return db.query("""
@@ -17,18 +21,23 @@ open class SakRepository(val db: NamedParameterJdbcTemplate) {
         """.trimIndent(),
             mapOf("oppfølgingsperiodeUUID" to oppfølgingsperiodeUUID.toString()),
             SakEntity::fromResultSet
-
             )
     }
 
-    open fun opprettSak(oppfølgingsperiodeUUID: UUID) {
+    open fun opprettSak(oppfølgingsperiodeUUID: UUID): SakEntity {
+        val keyHolder: KeyHolder = GeneratedKeyHolder()
+        val now = ZonedDateTime.now()
          db.update(
             """
                 INSERT INTO SAK (oppfolgingsperiode_uuid, created_at)
-                VALUES(:oppfølgingsperiodeUUID, CURRENT_TIMESTAMP)
+                VALUES(:oppfølgingsperiodeUUID, :now)
             """.trimIndent(),
-             mapOf("oppfølgingsperiodeUUID" to oppfølgingsperiodeUUID.toString()),
+             MapSqlParameterSource()
+                 .addValue("oppfølgingsperiodeUUID", oppfølgingsperiodeUUID.toString())
+                 .addValue("now", now),
+             keyHolder
         )
+       return SakEntity(id = keyHolder.key.toLong(), oppfølgingsperiodeUUID = oppfølgingsperiodeUUID, createdAt = now)
     }
 
 }

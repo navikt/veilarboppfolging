@@ -8,17 +8,13 @@ import java.util.*
 @Service
 class SakService(private val sakRepository: SakRepository) {
 
-    // TODO: Trenger vi å sjekke mot brukers fnr?
     fun hentSak(oppfølgingsperiodeUUID: UUID): SakEntity {
         val saker = sakRepository.hentSaker(oppfølgingsperiodeUUID)
 
-        return if (saker.isEmpty()) {
-            sakRepository.opprettSak(oppfølgingsperiodeUUID)
-            sakRepository.hentSaker(oppfølgingsperiodeUUID).first()
-        } else {
-            saker
-                .sortedBy { it.createdAt } // TODO: Test sortering
-                .first()
+        return when {
+            saker.isEmpty() -> sakRepository.opprettSak(oppfølgingsperiodeUUID)
+            saker.size == 1 -> saker.first()
+            else -> throw IllegalStateException("Det finnes flere saker på samme oppfølgingsperiode. Dette skulle ikke ha skjedd.")
         }
     }
 }
