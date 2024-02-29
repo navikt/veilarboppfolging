@@ -14,7 +14,7 @@ import java.util.UUID
 @Repository
 open class SakRepository(val db: NamedParameterJdbcTemplate) {
 
-    fun hentSaker(oppfølgingsperiodeUUID: UUID): List<SakEntity> {
+    open fun hentSaker(oppfølgingsperiodeUUID: UUID): List<SakEntity> {
         return db.query("""
             SELECT * FROM SAK WHERE OPPFOLGINGSPERIODE_UUID = :oppfølgingsperiodeUUID
         """.trimIndent(),
@@ -24,7 +24,7 @@ open class SakRepository(val db: NamedParameterJdbcTemplate) {
             )
     }
 
-    fun opprettSak(oppfølgingsperiodeUUID: UUID) {
+    open fun opprettSak(oppfølgingsperiodeUUID: UUID) {
          db.update(
             """
                 INSERT INTO SAK (oppfolgingsperiode_uuid, created_at)
