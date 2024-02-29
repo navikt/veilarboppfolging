@@ -1,15 +1,15 @@
 package no.nav.veilarboppfolging.repository
 
 import no.nav.veilarboppfolging.utils.DbUtils.hentZonedDateTime
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Repository
-import org.springframework.transaction.support.TransactionTemplate
 import java.sql.ResultSet
 import java.time.ZonedDateTime
 import java.util.UUID
 
 @Repository
-open class SakRepository(private val db: JdbcTemplate, private val transactor: TransactionTemplate) {
+open class SakRepository @Autowired constructor(private val db: JdbcTemplate) {
 
     fun hentSaker(oppfølgingsperiodeUUID: UUID): List<SakEntity> {
         return db.query("""
