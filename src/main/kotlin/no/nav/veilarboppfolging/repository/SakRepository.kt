@@ -24,20 +24,14 @@ open class SakRepository(val db: NamedParameterJdbcTemplate) {
             )
     }
 
-    open fun opprettSak(oppfølgingsperiodeUUID: UUID): SakEntity {
-        val keyHolder: KeyHolder = GeneratedKeyHolder()
-        val now = ZonedDateTime.now()
-         db.update(
+    open fun opprettSak(oppfølgingsperiodeUUID: UUID) {
+        db.update(
             """
                 INSERT INTO SAK (oppfolgingsperiode_uuid, created_at)
-                VALUES(:oppfølgingsperiodeUUID, :now)
+                VALUES(:oppfølgingsperiodeUUID, CURRENT_TIMESTAMP)
             """.trimIndent(),
-             MapSqlParameterSource()
-                 .addValue("oppfølgingsperiodeUUID", oppfølgingsperiodeUUID.toString())
-                 .addValue("now", now),
-             keyHolder
+            mapOf("oppfølgingsperiodeUUID" to oppfølgingsperiodeUUID.toString()),
         )
-       return SakEntity(id = keyHolder.key.toLong(), oppfølgingsperiodeUUID = oppfølgingsperiodeUUID, createdAt = now)
     }
 
 }

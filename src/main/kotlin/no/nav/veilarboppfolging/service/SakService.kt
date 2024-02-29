@@ -12,7 +12,11 @@ class SakService(private val sakRepository: SakRepository) {
         val saker = sakRepository.hentSaker(oppfølgingsperiodeUUID)
 
         return when {
-            saker.isEmpty() -> sakRepository.opprettSak(oppfølgingsperiodeUUID)
+            saker.isEmpty() -> {
+                // OracleDB gjør det ikke lett å hente ut genererte ID-er, så gjør lagring og uthenting i to steg
+                sakRepository.opprettSak(oppfølgingsperiodeUUID)
+                sakRepository.hentSaker(oppfølgingsperiodeUUID).first()
+            }
             saker.size == 1 -> saker.first()
             else -> throw IllegalStateException("Det finnes flere saker på samme oppfølgingsperiode. Dette skulle ikke ha skjedd.")
         }
