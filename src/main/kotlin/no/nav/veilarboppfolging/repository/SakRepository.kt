@@ -11,7 +11,7 @@ import java.util.UUID
 @Repository
 open class SakRepository() {
 
-    @Autowired
+    @field:Autowired
     lateinit var db: JdbcTemplate
 
     fun hentSaker(oppfølgingsperiodeUUID: UUID): List<SakEntity> {
