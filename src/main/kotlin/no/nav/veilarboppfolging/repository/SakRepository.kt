@@ -3,23 +3,24 @@ package no.nav.veilarboppfolging.repository
 import no.nav.veilarboppfolging.utils.DbUtils.hentZonedDateTime
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.jdbc.core.JdbcTemplate
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Repository
 import java.sql.ResultSet
+import java.sql.Types
 import java.time.ZonedDateTime
 import java.util.UUID
 
 @Repository
-open class SakRepository() {
-
-    @field:Autowired
-    lateinit var db: JdbcTemplate
+open class SakRepository(val db: NamedParameterJdbcTemplate) {
 
     fun hentSaker(oppfølgingsperiodeUUID: UUID): List<SakEntity> {
         return db.query("""
-            SELECT * FROM SAK WHERE OPPFOLGINGSPERIODE_UUID = ?
+            SELECT * FROM SAK WHERE OPPFOLGINGSPERIODE_UUID = :oppfølgingsperiodeUUID
         """.trimIndent(),
-            SakEntity::fromResultSet,
-            oppfølgingsperiodeUUID
+            mapOf("oppfølgingsperiodeUUID" to oppfølgingsperiodeUUID),
+            SakEntity::fromResultSet
+
             )
     }
 
@@ -27,9 +28,9 @@ open class SakRepository() {
          db.update(
             """
                 INSERT INTO SAK (oppfolgingsperiode_uuid, created_at)
-                VALUES(?, CURRENT_TIMESTAMP)
+                VALUES(:oppfølgingsperiodeUUID, CURRENT_TIMESTAMP)
             """.trimIndent(),
-            oppfølgingsperiodeUUID,
+             mapOf("oppfølgingsperiodeUUID" to oppfølgingsperiodeUUID),
         )
     }
 
