@@ -18,18 +18,11 @@ import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 import java.util.UUID
 
-@SpringBootTest(classes = [ApplicationTestConfig::class])
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 class SakControllerIntegrationTest: IntegrationTestUtil() {
 
     private val fnr: Fnr = Fnr.of("123")
 
     private val aktørId: AktorId = AktorId.of("3409823")
-
-    @BeforeEach
-    fun beforeEach() {
-        DbTestUtils.cleanupTestDb()
-    }
 
     @Test
     fun `når man henter sak for oppfølgsingsperiode uten sak skal sak opprettes`() {

@@ -1,17 +1,15 @@
 package no.nav.veilarboppfolging.service;
 
 import lombok.SneakyThrows;
-import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.kafka.consumer.ConsumeStatus;
 import no.nav.common.kafka.consumer.KafkaConsumerClient;
 import no.nav.common.kafka.consumer.util.KafkaConsumerClientBuilder;
 import no.nav.common.kafka.consumer.util.deserializer.Deserializers;
-import no.nav.common.token_client.client.MachineToMachineTokenClient;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto_schema.kafka.json.topic.SisteOppfolgingsperiodeV1;
+import no.nav.veilarboppfolging.IntegrationTestUtil;
 import no.nav.veilarboppfolging.client.behandle_arbeidssoker.BehandleArbeidssokerClient;
-import no.nav.veilarboppfolging.config.ApplicationTestConfig;
 import no.nav.veilarboppfolging.controller.request.AktiverArbeidssokerData;
 import no.nav.veilarboppfolging.controller.request.Innsatsgruppe;
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
@@ -21,12 +19,9 @@ import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
-import org.springframework.kafka.test.context.EmbeddedKafka;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
 import javax.sql.DataSource;
@@ -42,22 +37,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
 
-@SpringBootTest(classes = {ApplicationTestConfig.class})
 @ActiveProfiles("local")
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
-@EmbeddedKafka(
-        partitions = 1
-)
-public class AktiverBrukerServiceKafkaTest {
-
-    @MockBean
-    AktorOppslagClient aktorOppslagClient;
-
-    @MockBean
-    MetricsService metricsService;
-
-    @MockBean
-    MachineToMachineTokenClient machineToMachineTokenClient;
+public class AktiverBrukerServiceKafkaTest extends IntegrationTestUtil {
 
     @Autowired
     EmbeddedKafkaBroker kafkaContainer;
@@ -73,9 +54,6 @@ public class AktiverBrukerServiceKafkaTest {
 
     @Autowired
     JdbcTemplate jdbcTemplate;
-
-    @MockBean
-    BehandleArbeidssokerClient behandleArbeidssokerClient;
 
     private final Fnr fnr = Fnr.of("123");
     private final AktorId aktorId = AktorId.of("987654321");
