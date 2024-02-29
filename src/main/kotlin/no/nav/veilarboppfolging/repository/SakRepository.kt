@@ -1,9 +1,6 @@
 package no.nav.veilarboppfolging.repository
 
 import no.nav.veilarboppfolging.utils.DbUtils.hentZonedDateTime
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.jdbc.core.JdbcTemplate
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Repository
 import java.sql.ResultSet
@@ -18,7 +15,7 @@ open class SakRepository(val db: NamedParameterJdbcTemplate) {
         return db.query("""
             SELECT * FROM SAK WHERE OPPFOLGINGSPERIODE_UUID = :oppfølgingsperiodeUUID
         """.trimIndent(),
-            mapOf("oppfølgingsperiodeUUID" to oppfølgingsperiodeUUID),
+            mapOf("oppfølgingsperiodeUUID" to oppfølgingsperiodeUUID.toString()),
             SakEntity::fromResultSet
 
             )
@@ -30,7 +27,7 @@ open class SakRepository(val db: NamedParameterJdbcTemplate) {
                 INSERT INTO SAK (oppfolgingsperiode_uuid, created_at)
                 VALUES(:oppfølgingsperiodeUUID, CURRENT_TIMESTAMP)
             """.trimIndent(),
-             mapOf("oppfølgingsperiodeUUID" to oppfølgingsperiodeUUID),
+             mapOf("oppfølgingsperiodeUUID" to oppfølgingsperiodeUUID.toString()),
         )
     }
 
