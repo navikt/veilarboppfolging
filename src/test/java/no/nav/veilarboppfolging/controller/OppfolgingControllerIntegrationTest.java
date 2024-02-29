@@ -17,7 +17,9 @@ import no.nav.veilarboppfolging.controller.response.OppfolgingPeriodeDTO;
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
 import no.nav.veilarboppfolging.service.AuthService;
 import no.nav.veilarboppfolging.service.MetricsService;
+import no.nav.veilarboppfolging.test.DbTestUtils;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -78,6 +80,11 @@ class OppfolgingControllerIntegrationTest {
 
     @Autowired
     SystemOppfolgingController systemOppfolgingController;
+
+    @BeforeEach
+    void beforeEach() {
+        DbTestUtils.cleanupTestDb();
+    }
 
     @Test
     void hentOppfolgingsPeriode_brukerHarEnAktivOppfolgingsPeriode() throws EmptyResultDataAccessException {
