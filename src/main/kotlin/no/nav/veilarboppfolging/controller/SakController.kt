@@ -14,13 +14,13 @@ import java.util.UUID
 import kotlin.jvm.optionals.getOrElse
 
 @RestController
-@RequestMapping("/api/oppfolging")
+@RequestMapping("/api/v3/sak")
 class SakController(
     private val sakService: SakService,
     private val oppfolgingService: OppfolgingService,
     private val authService: AuthService) {
 
-    @PostMapping("/sak/{oppfolgingsperiodeId}")
+    @PostMapping("/{oppfolgingsperiodeId}")
     fun opprettEllerHentSak(@PathVariable oppfolgingsperiodeId: UUID ): SakDTO {
         val oppfølgingsperiode = oppfolgingService.hentOppfolgingsperiode(oppfolgingsperiodeId.toString())
             .getOrElse { throw ResponseStatusException(HttpStatus.BAD_REQUEST) }
