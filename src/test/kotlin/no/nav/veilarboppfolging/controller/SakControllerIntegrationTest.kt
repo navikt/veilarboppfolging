@@ -24,11 +24,11 @@ class SakControllerIntegrationTest: IntegrationTest() {
         val perioder: List<OppfolgingPeriodeDTO> = startOppfolging(fnr)
         val oppfølgingsperiodeUUID = perioder[0].uuid
 
-        val sak = sakController.hentSak(oppfølgingsperiodeUUID)
+        val sak = sakController.opprettEllerHentSak(oppfølgingsperiodeUUID)
 
         val saker = sakRepository.hentSaker(oppfølgingsperiodeUUID)
         assertThat(saker).hasSize(1)
-        assertThat(saker[0].id).isGreaterThan(1000)
+        assertThat(saker[0].id).isGreaterThanOrEqualTo(1000)
         assertThat(saker[0].oppfølgingsperiodeUUID).isEqualTo(oppfølgingsperiodeUUID)
         assertThat(saker[0].createdAt).isCloseTo(ZonedDateTime.now(), within(500, ChronoUnit.MILLIS))
 
@@ -44,7 +44,7 @@ class SakControllerIntegrationTest: IntegrationTest() {
         sakRepository.opprettSak(oppfølgingsperiodeUUID)
         assertThat(sakRepository.hentSaker(oppfølgingsperiodeUUID)).hasSize(1)
 
-        val sak = sakController.hentSak(oppfølgingsperiodeUUID)
+        val sak = sakController.opprettEllerHentSak(oppfølgingsperiodeUUID)
 
         val sakerIDatabasen = sakRepository.hentSaker(oppfølgingsperiodeUUID)
         assertThat(sakerIDatabasen).hasSize(1)
@@ -68,7 +68,7 @@ class SakControllerIntegrationTest: IntegrationTest() {
         assertThat(oppfølgingsperiodeUuidMedSak).isNotEqualTo(oppfølgingsperiodeUuidUtenSak)
 
         // When
-        sakController.hentSak(oppfølgingsperiodeUuidUtenSak)
+        sakController.opprettEllerHentSak(oppfølgingsperiodeUuidUtenSak)
 
         // Then
         assertThat(sakRepository.hentSaker(oppfølgingsperiodeUuidUtenSak)).hasSize(1)
@@ -80,7 +80,7 @@ class SakControllerIntegrationTest: IntegrationTest() {
         val oppfølgingsUuuidSomIkkeEksisterer = UUID.randomUUID()
 
         assertThatExceptionOfType(ResponseStatusException::class.java).isThrownBy {
-            sakController.hentSak(oppfølgingsUuuidSomIkkeEksisterer)
+            sakController.opprettEllerHentSak(oppfølgingsUuuidSomIkkeEksisterer)
         }.hasFieldOrPropertyWithValue("status", HttpStatus.BAD_REQUEST)
 
         assertThat(sakRepository.hentSaker(oppfølgingsUuuidSomIkkeEksisterer)).isEmpty()
@@ -93,7 +93,7 @@ class SakControllerIntegrationTest: IntegrationTest() {
         val oppfølgingsperiodeUUID = perioder[0].uuid
         avsluttOppfolging(aktørId)
 
-        val sak = sakController.hentSak(oppfølgingsperiodeUUID)
+        val sak = sakController.opprettEllerHentSak(oppfølgingsperiodeUUID)
 
         val sakerIDatabasen = sakRepository.hentSaker(oppfølgingsperiodeUUID)
         assertThat(sakerIDatabasen).hasSize(1)

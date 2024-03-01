@@ -5,8 +5,8 @@ import no.nav.veilarboppfolging.service.AuthService
 import no.nav.veilarboppfolging.service.OppfolgingService
 import no.nav.veilarboppfolging.service.SakService
 import org.springframework.http.HttpStatus
-import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.server.ResponseStatusException
@@ -20,8 +20,8 @@ class SakController(
     private val oppfolgingService: OppfolgingService,
     private val authService: AuthService) {
 
-    @GetMapping("/sak/{oppfolgingsperiodeId}")
-    fun hentSak(@PathVariable oppfolgingsperiodeId: UUID ): SakDTO {
+    @PostMapping("/sak/{oppfolgingsperiodeId}")
+    fun opprettEllerHentSak(@PathVariable oppfolgingsperiodeId: UUID ): SakDTO {
         val oppfølgingsperiode = oppfolgingService.hentOppfolgingsperiode(oppfolgingsperiodeId.toString())
             .getOrElse { throw ResponseStatusException(HttpStatus.BAD_REQUEST) }
         authService.sjekkLesetilgangMedAktorId(AktorId.of(oppfølgingsperiode.aktorId))
