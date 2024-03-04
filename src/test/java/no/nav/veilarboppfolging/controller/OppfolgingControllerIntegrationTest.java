@@ -1,20 +1,30 @@
 package no.nav.veilarboppfolging.controller;
 
 import com.nimbusds.jwt.JWTClaimsSet;
+import no.nav.common.abac.Pep;
 import no.nav.common.abac.domain.request.ActionId;
+import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
+import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
+import no.nav.common.token_client.client.MachineToMachineTokenClient;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.veilarboppfolging.IntegrationTest;
+import no.nav.veilarboppfolging.config.ApplicationTestConfig;
+import no.nav.veilarboppfolging.config.EnvironmentProperties;
 import no.nav.veilarboppfolging.controller.request.AktiverArbeidssokerData;
 import no.nav.veilarboppfolging.controller.request.Innsatsgruppe;
 import no.nav.veilarboppfolging.controller.response.OppfolgingPeriodeDTO;
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
 import no.nav.veilarboppfolging.service.AuthService;
+import no.nav.veilarboppfolging.service.MetricsService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.kafka.test.context.EmbeddedKafka;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Collections;
@@ -24,8 +34,12 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
-
-class OppfolgingControllerIntegrationTest extends IntegrationTest {
+@SpringBootTest(classes = {ApplicationTestConfig.class})
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
+@EmbeddedKafka(
+        partitions = 1
+)
+class OppfolgingControllerIntegrationTest {
 
     private final static Fnr FNR = Fnr.of("123");
 
@@ -33,8 +47,25 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
 
     private final static String TOKEN = "token";
 
+    @MockBean
+    Pep veilarbPep;
+
+    @MockBean
+    AuthContextHolder authContextHolder;
+
+    @MockBean
+    AzureAdOnBehalfOfTokenClient azureAdOnBehalfOfTokenClient;
+    @MockBean
+    MachineToMachineTokenClient machineToMachineTokenClient;
+
+    @MockBean
+    EnvironmentProperties environmentProperties;
+
     @Autowired
     AktorOppslagClient aktorOppslagClient;
+
+    @MockBean
+    MetricsService metricsService;
 
     @Autowired
     AuthService authService;
