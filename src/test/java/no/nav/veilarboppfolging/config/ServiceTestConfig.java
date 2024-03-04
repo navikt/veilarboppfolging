@@ -22,6 +22,5 @@ import org.springframework.context.annotation.Import;
         YtelserOgAktiviteterService.class,
         KafkaConsumerService.class,
         OppfolgingEndringService.class,
-        SakService.class
 })
 public class ServiceTestConfig {}
