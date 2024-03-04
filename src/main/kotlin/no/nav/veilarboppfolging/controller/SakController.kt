@@ -32,7 +32,6 @@ class SakController(
     data class SakDTO(
         val oppfolgingsperiodeId: UUID,
         val sakId: Long,
-    ) {
-        val fagsaksystem = "ARBEIDSOPPFOLGING"
-    }
+        var fagsaksystem: String = "ARBEIDSOPPFOLGING"
+    )
 }
