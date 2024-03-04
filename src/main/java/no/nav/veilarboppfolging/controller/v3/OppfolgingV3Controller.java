@@ -73,7 +73,7 @@ public class OppfolgingV3Controller {
 
     @PostMapping("/oppfolging/hent-gjeldende-periode")
     public ResponseEntity<OppfolgingPeriodeMinimalDTO> hentGjeldendePeriode(@RequestBody OppfolgingRequest oppfolgingRequest) {
-        List<String> allowlist = List.of(VEILARBVEDTAKSSTOTTE, VEILARBDIALOG, VEILARBAKTIVITET);
+        List<String> allowlist = List.of(VEILARBVEDTAKSSTOTTE, VEILARBDIALOG, VEILARBAKTIVITET, MULIGHETSROMMET);
         authService.authorizeRequest(oppfolgingRequest.fnr(), allowlist);
         return oppfolgingService.hentGjeldendeOppfolgingsperiode(oppfolgingRequest.fnr())
                 .map(DtoMappers::tilOppfolgingPeriodeMinimalDTO)
