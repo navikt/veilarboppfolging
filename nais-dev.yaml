@@ -139,6 +139,9 @@ spec:
         - application: aia-backend
           namespace: paw
           cluster: dev-gcp
+        - application: azure-token-generator
+          namespace: aura
+          cluster: dev-gcp
   vault:
     enabled: true
     paths:
