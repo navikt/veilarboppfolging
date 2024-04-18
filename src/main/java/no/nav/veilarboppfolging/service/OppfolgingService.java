@@ -317,6 +317,7 @@ public class OppfolgingService {
             List<OppfolgingsperiodeEntity> perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId);
             OppfolgingsperiodeEntity sistePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(perioder);
 
+            log.info("Oppfølgingsperiode startet for bruker - publiserer endringer på oppfølgingsperiode-topics.");
             kafkaProducerService.publiserOppfolgingsperiode(DtoMappers.tilSisteOppfolgingsperiodeV1(sistePeriode));
 
             if (kontaktinfo.isReservert()) {
@@ -344,6 +345,7 @@ public class OppfolgingService {
             List<OppfolgingsperiodeEntity> perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId);
             OppfolgingsperiodeEntity sistePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(perioder);
 
+            log.info("Oppfølgingsperiode avsluttet for bruker - publiserer endringer på oppfølgingsperiode-topics.");
             kafkaProducerService.publiserOppfolgingsperiode(DtoMappers.tilSisteOppfolgingsperiodeV1(sistePeriode));
 
             // Publiserer også endringer som resettes i oppfolgingsstatus-tabellen ved avslutting av oppfølging
