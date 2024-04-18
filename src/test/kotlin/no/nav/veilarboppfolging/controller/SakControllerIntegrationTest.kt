@@ -35,6 +35,7 @@ class SakControllerIntegrationTest: IntegrationTest() {
         assertThat(sak.sakId).isEqualTo(saker[0].id)
         assertThat(sak.oppfolgingsperiodeId).isEqualTo(saker[0].oppfølgingsperiodeUUID)
         assertThat(sak.fagsaksystem).isEqualTo("ARBEIDSOPPFOLGING")
+        assertThat(sak.tema).isEqualTo("OPP")
     }
 
     @Test
