@@ -22,4 +22,4 @@ jobs:
 
       - name: generate documentaion (denne tar litt tid)
         working-directory: src/main/resources/schemas
-        run: asyncapi validate Oppfolgingsperioder.asyncapi.yml
+        run: asyncapi validate veilarboppfolging.asyncapi.yml

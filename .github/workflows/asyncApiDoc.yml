@@ -30,11 +30,11 @@ jobs:
 
       - name: generate documentaion (denne tar litt tid)
         working-directory: src/main/resources/schemas
-        run: ag Oppfolgingsperioder.asyncapi.yml @asyncapi/html-template -o ./oppfolgingsperioder-doc
+        run: ag veilarboppfolging.asyncapi.yml @asyncapi/html-template -o ./veilarboppfolging-doc
 
       - name: Deploy 🚀
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          folder: src/main/resources/schemas/oppfolgingsperioder-doc
-          target-folder: oppfolgingsperioderV1
+          folder: src/main/resources/schemas/veilarboppfolging-doc
+          target-folder: veilarboppfolgingV1
