@@ -112,7 +112,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
         assertTrue(oppfolgingsPeriodeRepository.hentOppfolgingsperioder(AKTOR_ID).isEmpty());
 
-        oppfolgingService.startOppfolging(FNR);
+        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
 
         assertUnderOppfolgingLagret(AKTOR_ID);
 
@@ -126,7 +126,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     public void skal_publisere_paa_kafka_ved_avsluttet_oppfolging() {
         arenaOppfolgingTilstand.setFormidlingsgruppe("IARBS");
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
-        oppfolgingService.startOppfolging(FNR);
+        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
 
         assertUnderOppfolgingLagret(AKTOR_ID);
 
@@ -147,7 +147,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         when(authService.harTilgangTilEnhet(any())).thenReturn(false);
         doCallRealMethod().when(authService).sjekkTilgangTilEnhet(any());
 
-        oppfolgingService.startOppfolging(FNR);
+        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
     }
 
     @Test(expected = ResponseStatusException.class)

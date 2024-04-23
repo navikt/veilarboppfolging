@@ -57,13 +57,6 @@ public class OppfolgingV3Controller {
         return tilDto(oppfolgingService.hentOppfolgingsStatus(fodselsnummer), authService.erInternBruker());
     }
 
-    @PostMapping("/oppfolging/start")
-    public ResponseEntity<?> startOppfolging(@RequestBody OppfolgingRequest oppfolgingRequest) {
-        authService.skalVereInternBruker();
-        oppfolgingService.startOppfolging(oppfolgingRequest.fnr());
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-    }
-
     @PostMapping("/oppfolging/hent-avslutning-status")
     public AvslutningStatus hentAvslutningStatus(@RequestBody OppfolgingRequest oppfolgingRequest) {
         authService.skalVereInternBruker();
