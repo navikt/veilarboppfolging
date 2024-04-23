@@ -80,7 +80,7 @@ public class OppfolgingV3Controller {
                 .orElse(new ResponseEntity<>(HttpStatus.NO_CONTENT));
     }
 
-    @PostMapping(value = "/oppfolging/hent-perioder") // allowedlist veilarbvedtaksstotte, amt-person-service
+    @PostMapping(value = "/oppfolging/hent-perioder")
     public List<OppfolgingPeriodeDTO> hentOppfolgingsperioder(@RequestBody OppfolgingRequest oppfolgingRequest) {
         List<String> allowlist = List.of(VEILARBVEDTAKSSTOTTE, AMT_PERSON_SERVICE);
         authService.authorizeRequest(oppfolgingRequest.fnr(), allowlist);
