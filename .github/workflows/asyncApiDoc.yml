@@ -12,7 +12,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: AktivitetskortV1.asyncapi.doc
+  group: veilarboppfolging.asyncapi.doc
   cancel-in-progress: true
 
 jobs:
