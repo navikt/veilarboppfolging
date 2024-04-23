@@ -1,0 +1,61 @@
+"$schema": https://json-schema.org/draft-07/schema
+"$id": "https://navikt.github.io/veilarboppfolging/schemas/oppfolgingsbruker.v1.scheam.yml"
+required:
+  - uuid
+  - aktorId
+  - startDato
+  - sluttDato
+type: object
+additionalProperties: false
+properties:
+  fodselsnummer:
+    type: string
+  formidlingsgruppe:
+    type: string
+    enum:
+      - ARBS
+      - IARBS
+      - ISERV
+  iservFraDato:
+    type: string
+    format: LocalDate
+  fornavn:
+    type: string
+  etternavn:
+    type: string
+  oppfolgingsenhet:
+    type: string
+  kvalifiseringsgruppe:
+    type: string
+    enum:
+      - adas
+  rettighetsgruppe:
+    type: string
+    enum:
+     - Rettighetsgruppe
+  hovedmaal:
+    type: string
+    enum:
+      - BEHOLDEA
+      - OKEDELT
+      - SKAFFEA
+  sikkerhetstiltakType:
+    type: string
+    enum:
+      - FTUS
+      - FYUS
+      - TOAN
+      - TFUS
+  diskresjonskode:
+    type: string
+  harOppfolgingssak:
+    type: boolean
+  sperretAnsatt:
+    type: boolean
+  erDoed:
+     type: boolean
+  doedFraDato:
+    type: string
+  sistEndretDato:
+     type: string
+     format: ZonedDateTime
