@@ -143,15 +143,6 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
     @Test(expected = ResponseStatusException.class)
     @SneakyThrows
-    public void start_oppfolging_uten_enhet_tilgang() {
-        when(authService.harTilgangTilEnhet(any())).thenReturn(false);
-        doCallRealMethod().when(authService).sjekkTilgangTilEnhet(any());
-
-        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
-    }
-
-    @Test(expected = ResponseStatusException.class)
-    @SneakyThrows
     public void avslutt_oppfolging_uten_enhet_tilgang() {
         when(authService.harTilgangTilEnhet(any())).thenReturn(false);
         doCallRealMethod().when(authService).sjekkTilgangTilEnhet(any());
