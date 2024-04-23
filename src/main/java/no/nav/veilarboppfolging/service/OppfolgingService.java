@@ -312,7 +312,7 @@ public class OppfolgingService {
                 }
             }
 
-            oppfolgingsPeriodeRepository.start(aktorId);
+            oppfolgingsPeriodeRepository.start(aktorId, oppfolgingsbruker.getOppfolgingStartAarsak());
 
             List<OppfolgingsperiodeEntity> perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId);
             OppfolgingsperiodeEntity sistePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(perioder);
