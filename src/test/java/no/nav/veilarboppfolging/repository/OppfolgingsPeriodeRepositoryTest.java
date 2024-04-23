@@ -30,8 +30,8 @@ class OppfolgingsPeriodeRepositoryTest {
 
     @Test
     void skal_hente_gjeldende_oppfolgingsperiode() {
-        var oppfolgingsbruker = Oppfolgingsbruker.builder().innsatsgruppe(Innsatsgruppe.STANDARD_INNSATS).build();
         AktorId aktorId = AktorId.of("4321");
+        var oppfolgingsbruker = Oppfolgingsbruker.arbeidssokerOppfolgingsBruker(aktorId, Innsatsgruppe.STANDARD_INNSATS);
         oppfolgingsStatusRepository.opprettOppfolging(aktorId);
 
         oppfolgingsPeriodeRepository.start(aktorId, oppfolgingsbruker.getOppfolgingStartBegrunnelse());
@@ -47,8 +47,8 @@ class OppfolgingsPeriodeRepositoryTest {
 
     @Test
     void skal_returnere_empty_hvis_ingen_oppfolging() {
-        var oppfolgingsbruker = Oppfolgingsbruker.builder().innsatsgruppe(Innsatsgruppe.STANDARD_INNSATS).build();
         AktorId aktorId = AktorId.of("4321");
+        var oppfolgingsbruker = Oppfolgingsbruker.arbeidssokerOppfolgingsBruker(aktorId, Innsatsgruppe.STANDARD_INNSATS);
         Optional<OppfolgingsperiodeEntity> maybeOppfolgingsperiodeEntity1 = oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId);
         assertTrue(maybeOppfolgingsperiodeEntity1.isEmpty());
         oppfolgingsStatusRepository.opprettOppfolging(aktorId);

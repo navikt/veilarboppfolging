@@ -7,6 +7,7 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.client.digdir_krr.KRRData;
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolgingTilstand;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
+import no.nav.veilarboppfolging.controller.request.SykmeldtBrukerType;
 import no.nav.veilarboppfolging.controller.response.UnderOppfolgingDTO;
 import no.nav.veilarboppfolging.controller.response.VeilederTilgang;
 import no.nav.veilarboppfolging.domain.AvslutningStatusData;
@@ -131,7 +132,7 @@ public class OppfolgingService {
         authService.sjekkTilgangTilEnhet(arenaOppfolgingTilstand.getOppfolgingsenhet());
 
         if (ArenaUtils.kanSettesUnderOppfolging(arenaOppfolgingTilstand, erUnderOppfolging(aktorId))) {
-            startOppfolgingHvisIkkeAlleredeStartet(aktorId);
+            startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker.manueltStartetBruker(aktorId));
         }
 
         return getOppfolgingStatusData(fnr);
@@ -273,14 +274,6 @@ public class OppfolgingService {
         oppfolging.setOppfolgingsperioder(populerKvpPerioder(oppfolgingsPeriodeRepository.hentOppfolgingsperioder(AktorId.of(oppfolgingEntity.getAktorId())), kvpPerioder));
 
         return Optional.of(oppfolging);
-    }
-
-    public void startOppfolgingHvisIkkeAlleredeStartet(AktorId aktorId) {
-        startOppfolgingHvisIkkeAlleredeStartet(
-                Oppfolgingsbruker.builder()
-                        .aktoerId(aktorId.get())
-                        .build()
-        );
     }
 
     public void startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker oppfolgingsbruker) {

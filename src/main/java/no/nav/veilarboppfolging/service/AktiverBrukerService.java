@@ -50,9 +50,7 @@ public class AktiverBrukerService {
 
     private void startReaktiveringAvBrukerOgOppfolging(Fnr fnr, AktorId aktorId) {
         oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(
-                Oppfolgingsbruker.builder()
-                        .aktoerId(aktorId.get())
-                        .build()
+                Oppfolgingsbruker.manueltStartetBruker(aktorId)
         );
 
         behandleArbeidssokerClient.reaktiverBrukerIArena(fnr);
@@ -61,22 +59,15 @@ public class AktiverBrukerService {
     //  TODO: Innsatsgruppe brukes kun av veilarbdirigent som nå henter ting fra Kafka, kan snart fjernes
     private void aktiverBrukerOgOppfolging(Fnr fnr, AktorId aktorId, Innsatsgruppe innsatsgruppe) {
         oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(
-                Oppfolgingsbruker.builder()
-                        .aktoerId(aktorId.get())
-                        .innsatsgruppe(innsatsgruppe)
-                        .build());
-
+                Oppfolgingsbruker.arbeidssokerOppfolgingsBruker(aktorId, innsatsgruppe));
         behandleArbeidssokerClient.opprettBrukerIArena(fnr, innsatsgruppe);
     }
 
     //  TODO: SykmeldtBrukerType brukes kun av veilarbdirigent som nå henter ting fra Kafka, kan snart fjernes
     public void aktiverSykmeldt(Fnr fnr, SykmeldtBrukerType sykmeldtBrukerType) {
         transactor.executeWithoutResult((status) -> {
-            Oppfolgingsbruker oppfolgingsbruker = Oppfolgingsbruker.builder()
-                    .sykmeldtBrukerType(sykmeldtBrukerType)
-                    .aktoerId(authService.getAktorIdOrThrow(fnr).get())
-                    .build();
-
+            var aktorId = authService.getAktorIdOrThrow(fnr);
+            var oppfolgingsbruker = Oppfolgingsbruker.sykmeldtMerOppfolgingsBruker(aktorId, sykmeldtBrukerType);
             oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(oppfolgingsbruker);
         });
     }
