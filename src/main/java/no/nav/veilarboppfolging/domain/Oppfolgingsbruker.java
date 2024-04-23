@@ -4,7 +4,7 @@ import lombok.Builder;
 import lombok.Value;
 import no.nav.veilarboppfolging.controller.request.Innsatsgruppe;
 import no.nav.veilarboppfolging.controller.request.SykmeldtBrukerType;
-import no.nav.veilarboppfolging.repository.entity.OppfolgingStartAarsak;
+import no.nav.veilarboppfolging.repository.entity.OppfolgingStartBegrunnelse;
 
 @Value
 @Builder
@@ -13,8 +13,8 @@ public class Oppfolgingsbruker {
     Innsatsgruppe innsatsgruppe;
     SykmeldtBrukerType sykmeldtBrukerType;
 
-    public OppfolgingStartAarsak getOppfolgingStartAarsak() {
-        if (sykmeldtBrukerType == null) return OppfolgingStartAarsak.SYKMELDT_MER_OPPFOLGING;
-        return OppfolgingStartAarsak.ARBEIDSSOKER;
+    public OppfolgingStartBegrunnelse getOppfolgingStartAarsak() {
+        if (sykmeldtBrukerType == null) return OppfolgingStartBegrunnelse.SYKMELDT_MER_OPPFOLGING;
+        return OppfolgingStartBegrunnelse.ARBEIDSSOKER;
     }
 }

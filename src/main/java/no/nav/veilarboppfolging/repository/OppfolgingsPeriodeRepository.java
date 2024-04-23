@@ -1,7 +1,7 @@
 package no.nav.veilarboppfolging.repository;
 
 import no.nav.common.types.identer.AktorId;
-import no.nav.veilarboppfolging.repository.entity.OppfolgingStartAarsak;
+import no.nav.veilarboppfolging.repository.entity.OppfolgingStartBegrunnelse;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -36,9 +36,9 @@ public class OppfolgingsPeriodeRepository {
         this.transactor = transactor;
     }
 
-    public void start(AktorId aktorId, OppfolgingStartAarsak oppfolgingStartAarsak) {
+    public void start(AktorId aktorId, OppfolgingStartBegrunnelse oppfolgingStartBegrunnelse) {
         transactor.executeWithoutResult((ignored) -> {
-            insert(aktorId, oppfolgingStartAarsak);
+            insert(aktorId, oppfolgingStartBegrunnelse);
             setActive(aktorId);
         });
     }
@@ -85,11 +85,11 @@ public class OppfolgingsPeriodeRepository {
         );
     }
 
-    private void insert(AktorId aktorId, OppfolgingStartAarsak getOppfolgingStartAarsak) {
+    private void insert(AktorId aktorId, OppfolgingStartBegrunnelse getOppfolgingStartBegrunnelse) {
         db.update("" +
-                        "INSERT INTO OPPFOLGINGSPERIODE(uuid, aktor_id, startDato, oppdatert, start_aarsak) " +
+                        "INSERT INTO OPPFOLGINGSPERIODE(uuid, aktor_id, startDato, oppdatert, start_begrunnelse) " +
                         "VALUES (?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?)",
-                UUID.randomUUID().toString(), aktorId.get(), getOppfolgingStartAarsak.name());
+                UUID.randomUUID().toString(), aktorId.get(), getOppfolgingStartBegrunnelse.name());
     }
 
     private void setActive(AktorId aktorId) {

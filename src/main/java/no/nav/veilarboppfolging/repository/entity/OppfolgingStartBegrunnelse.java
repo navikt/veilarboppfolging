@@ -1,6 +1,6 @@
 package no.nav.veilarboppfolging.repository.entity;
 
-public enum OppfolgingStartAarsak {
+public enum OppfolgingStartBegrunnelse {
     ARBEIDSSOKER(),
     SYKMELDT_MER_OPPFOLGING()
 }
