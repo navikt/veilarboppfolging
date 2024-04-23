@@ -112,7 +112,7 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
     public void hentHarFlereAktorIderMedOppfolging_harEnAktorIdMedOppfolging_returnererFalse(){
         var oppfolgingsbruker = Oppfolgingsbruker.builder().sykmeldtBrukerType(SykmeldtBrukerType.SKAL_TIL_NY_ARBEIDSGIVER).build();
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
-        oppfolgingsPeriodeRepository.start(AKTOR_ID, oppfolgingsbruker.getOppfolgingStartAarsak());
+        oppfolgingsPeriodeRepository.start(AKTOR_ID, oppfolgingsbruker.getOppfolgingStartBegrunnelse());
 
         when(authService.getAlleAktorIderOrThrow(FNR)).thenReturn(List.of(AKTOR_ID));
         assertFalse(oppfolgingService.hentHarFlereAktorIderMedOppfolging(FNR));
@@ -122,7 +122,7 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
     public void hentHarFlereAktorIderMedOppfolging_harFlereAktorIdUtenOppfolging_returnererFalse(){
         var oppfolgingsbruker = Oppfolgingsbruker.builder().sykmeldtBrukerType(SykmeldtBrukerType.SKAL_TIL_NY_ARBEIDSGIVER).build();
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
-        oppfolgingsPeriodeRepository.start(AKTOR_ID, oppfolgingsbruker.getOppfolgingStartAarsak());
+        oppfolgingsPeriodeRepository.start(AKTOR_ID, oppfolgingsbruker.getOppfolgingStartBegrunnelse());
 
         when(authService.getAlleAktorIderOrThrow(FNR)).thenReturn(List.of(AKTOR_ID, AKTOR_ID2));
 
@@ -132,10 +132,10 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
     @Test
     public void hentHarFlereAktorIderMedOppfolging_harFlereAktorIdMedOppf_returnererTrue(){
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
-        oppfolgingsPeriodeRepository.start(AKTOR_ID, oppfolgingsbruker.getOppfolgingStartAarsak());
+        oppfolgingsPeriodeRepository.start(AKTOR_ID, oppfolgingsbruker.getOppfolgingStartBegrunnelse());
 
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID2);
-        oppfolgingsPeriodeRepository.start(AKTOR_ID2, oppfolgingsbruker.getOppfolgingStartAarsak());
+        oppfolgingsPeriodeRepository.start(AKTOR_ID2, oppfolgingsbruker.getOppfolgingStartBegrunnelse());
 
         when(authService.getAlleAktorIderOrThrow(FNR)).thenReturn(List.of(AKTOR_ID, AKTOR_ID2));
 
@@ -145,10 +145,10 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
     @Test
     public void skalIkkeKasteExceptionVedFlereKall(){
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
-        oppfolgingsPeriodeRepository.start(AKTOR_ID, oppfolgingsbruker.getOppfolgingStartAarsak());
+        oppfolgingsPeriodeRepository.start(AKTOR_ID, oppfolgingsbruker.getOppfolgingStartBegrunnelse());
 
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID2);
-        oppfolgingsPeriodeRepository.start(AKTOR_ID2, oppfolgingsbruker.getOppfolgingStartAarsak());
+        oppfolgingsPeriodeRepository.start(AKTOR_ID2, oppfolgingsbruker.getOppfolgingStartBegrunnelse());
 
         when(authService.getAlleAktorIderOrThrow(FNR)).thenReturn(List.of(AKTOR_ID, AKTOR_ID2));
 

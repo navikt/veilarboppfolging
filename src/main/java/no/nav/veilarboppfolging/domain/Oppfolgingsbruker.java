@@ -13,7 +13,7 @@ public class Oppfolgingsbruker {
     Innsatsgruppe innsatsgruppe;
     SykmeldtBrukerType sykmeldtBrukerType;
 
-    public OppfolgingStartBegrunnelse getOppfolgingStartAarsak() {
+    public OppfolgingStartBegrunnelse getOppfolgingStartBegrunnelse() {
         if (sykmeldtBrukerType == null) return OppfolgingStartBegrunnelse.SYKMELDT_MER_OPPFOLGING;
         return OppfolgingStartBegrunnelse.ARBEIDSSOKER;
     }

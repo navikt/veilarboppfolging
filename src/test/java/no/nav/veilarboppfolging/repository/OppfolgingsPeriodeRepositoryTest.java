@@ -34,9 +34,9 @@ class OppfolgingsPeriodeRepositoryTest {
         AktorId aktorId = AktorId.of("4321");
         oppfolgingsStatusRepository.opprettOppfolging(aktorId);
 
-        oppfolgingsPeriodeRepository.start(aktorId, oppfolgingsbruker.getOppfolgingStartAarsak());
+        oppfolgingsPeriodeRepository.start(aktorId, oppfolgingsbruker.getOppfolgingStartBegrunnelse());
         oppfolgingsPeriodeRepository.avslutt(aktorId, "veileder", "derfor");
-        oppfolgingsPeriodeRepository.start(aktorId, oppfolgingsbruker.getOppfolgingStartAarsak());
+        oppfolgingsPeriodeRepository.start(aktorId, oppfolgingsbruker.getOppfolgingStartBegrunnelse());
         Optional<OppfolgingsperiodeEntity> maybeOppfolgingsperiodeEntity = oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId);
         assertFalse(maybeOppfolgingsperiodeEntity.isEmpty());
         OppfolgingsperiodeEntity oppfolgingsperiodeEntity = maybeOppfolgingsperiodeEntity.get();
@@ -53,7 +53,7 @@ class OppfolgingsPeriodeRepositoryTest {
         assertTrue(maybeOppfolgingsperiodeEntity1.isEmpty());
         oppfolgingsStatusRepository.opprettOppfolging(aktorId);
 
-        oppfolgingsPeriodeRepository.start(aktorId, oppfolgingsbruker.getOppfolgingStartAarsak());
+        oppfolgingsPeriodeRepository.start(aktorId, oppfolgingsbruker.getOppfolgingStartBegrunnelse());
         oppfolgingsPeriodeRepository.avslutt(aktorId, "veileder", "derfor");
 
         Optional<OppfolgingsperiodeEntity> maybeOppfolgingsperiodeEntity2 = oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId);
