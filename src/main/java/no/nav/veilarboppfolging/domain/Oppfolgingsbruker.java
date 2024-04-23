@@ -14,7 +14,7 @@ public class Oppfolgingsbruker {
     SykmeldtBrukerType sykmeldtBrukerType;
 
     public OppfolgingStartBegrunnelse getOppfolgingStartBegrunnelse() {
-        if (sykmeldtBrukerType == null) return OppfolgingStartBegrunnelse.SYKMELDT_MER_OPPFOLGING;
+        if (sykmeldtBrukerType != null) return OppfolgingStartBegrunnelse.SYKMELDT_MER_OPPFOLGING;
         return OppfolgingStartBegrunnelse.ARBEIDSSOKER;
     }
 }
