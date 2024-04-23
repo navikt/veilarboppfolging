@@ -23,7 +23,7 @@ channels:
 
 operations:
   pto.oppfolgingsperiode-v1.subscribe:
-    action: send
+    action: receive
     channel:
       $ref: '#/channels/pto.oppfolgingsperiode-v1'
     messages:
@@ -33,6 +33,6 @@ components:
     oppfolgingsperiode:
       name: oppfolgingsperiode
       title: Oppfølgingsperiode
-      summary: Oppdatert oppfølgingsperiode etter enten start eller slutt
+      summary: Oppdatert oppfølgingsperiode etter enten start eller slutt. sluttDato null betyr at oppfølgingsperioden er åpen (bruker er fortsatt under oppfølging)
       payload:
         $ref: oppfolgingsperiode.v1.schema.yml
