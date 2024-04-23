@@ -1,0 +1,27 @@
+"$schema": https://json-schema.org/draft-07/schema
+"$id": "https://navikt.github.io/veilarboppfolging/schemas/kvpperiode.v1.schema.yml"
+required:
+  - uuid
+  - aktorId
+  - startDato
+  - sluttDato
+type: object
+additionalProperties: false
+properties:
+  event:
+    type: string
+    format: uuid
+    enum:
+      - STARTET
+      - AVSLUTTET
+  enhetId:
+    type: string
+    format: EnhetId
+  startet:
+    type: string
+    format: date-time
+  avsluttet:
+    type: string
+    format: date-time
+  aktorId:
+    type: string
