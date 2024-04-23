@@ -107,18 +107,13 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     public void skal_publisere_paa_kafka_ved_start_paa_oppfolging() {
         arenaOppfolgingTilstand.setFormidlingsgruppe("IARBS");
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
-
-        when(kvpService.erUnderKvp(anyLong())).thenReturn(false);
-
         assertTrue(oppfolgingsPeriodeRepository.hentOppfolgingsperioder(AKTOR_ID).isEmpty());
 
         oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
-
         assertUnderOppfolgingLagret(AKTOR_ID);
 
         List<OppfolgingsperiodeEntity> oppfolgingsperioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(AKTOR_ID);
         assertEquals(1, oppfolgingsperioder.size());
-
         verify(kafkaProducerService, times(1)).publiserOppfolgingsperiode(any(SisteOppfolgingsperiodeV1.class));
     }
 
