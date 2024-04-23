@@ -5,6 +5,11 @@ import no.nav.common.abac.domain.request.ActionId;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.poao_tilgang.client.Decision;
+import no.nav.poao_tilgang.client.NavAnsattTilgangTilEksternBrukerPolicyInput;
+import no.nav.poao_tilgang.client.PoaoTilgangClient;
+import no.nav.poao_tilgang.client.TilgangType;
+import no.nav.poao_tilgang.client.api.ApiResult;
 import no.nav.veilarboppfolging.IntegrationTest;
 import no.nav.veilarboppfolging.controller.request.AktiverArbeidssokerData;
 import no.nav.veilarboppfolging.controller.request.Innsatsgruppe;
@@ -20,18 +25,18 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 
 class OppfolgingControllerIntegrationTest extends IntegrationTest {
 
     private final static Fnr FNR = Fnr.of("123");
-
     private final static AktorId AKTOR_ID = AktorId.of("3409823");
-
-    private final static String TOKEN = "token";
+    private final static UUID veilederUUID = UUID.randomUUID();
+    private final static UUID sub = UUID.randomUUID();
 
     @Autowired
     AktorOppslagClient aktorOppslagClient;
@@ -48,6 +53,9 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
     @Autowired
     SystemOppfolgingController systemOppfolgingController;
 
+    @Autowired
+    PoaoTilgangClient poaoTilgangClient;
+
     @Test
     void hentOppfolgingsPeriode_brukerHarEnAktivOppfolgingsPeriode() throws EmptyResultDataAccessException {
         mockAuthOk();
@@ -55,6 +63,10 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
         var perioder = startOppfolging();
 
         Assertions.assertEquals(1, perioder.size());
+
+        var policyInput = new NavAnsattTilgangTilEksternBrukerPolicyInput(veilederUUID, TilgangType.LESE, FNR.get());
+        ApiResult<Decision> permit = ApiResult.Companion.success(Decision.Permit.INSTANCE);
+        doReturn(permit).when(poaoTilgangClient).evaluatePolicy(policyInput);
 
         var forstePeriode = perioder.get(0);
         var uuid = forstePeriode.uuid;
@@ -74,35 +86,57 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
 
         var forstePeriode = perioder.get(0);
         var uuid = forstePeriode.uuid.toString();
-        when(veilarbPep.harTilgangTilPerson(TOKEN, ActionId.READ, AKTOR_ID)).thenReturn(false);
+
+        var policyInput = new NavAnsattTilgangTilEksternBrukerPolicyInput(veilederUUID, TilgangType.LESE, FNR.get());
+        ApiResult<Decision> deny = ApiResult.Companion.success(new Decision.Deny("Nei", "Fordi"));
+        doReturn(deny).when(poaoTilgangClient).evaluatePolicy(policyInput);
 
         assertThrows(ResponseStatusException.class, () -> oppfolgingController.hentOppfolgingsPeriode(uuid));
 
     }
 
     private List<OppfolgingPeriodeDTO> startOppfolging() {
+        mockSystemBruker();
         var aktiverArbeidssokerData = new AktiverArbeidssokerData(
                 new AktiverArbeidssokerData.Fnr(FNR.get()),
                 Innsatsgruppe.STANDARD_INNSATS
         );
         systemOppfolgingController.aktiverBruker(aktiverArbeidssokerData);
-        return oppfolgingController.hentOppfolgingsperioder(FNR);
+        var perioder = oppfolgingController.hentOppfolgingsperioder(FNR);
+        mockAuthOk();
+        return perioder;
+    }
+
+    private void mockSystemBruker() {
+        JWTClaimsSet claims = new JWTClaimsSet.Builder()
+                .issuer("microsoftonline.com")
+                .claim("azp_name", "cluster:team:veilarbregistrering")
+                .claim("roles", Collections.singletonList("access_as_application"))
+                .claim("sub", sub.toString())
+                .claim("oid", sub.toString())
+                .build();
+        when(authContextHolder.getIdTokenClaims()).thenReturn(Optional.of(claims));
+        when(authContextHolder.erSystemBruker()).thenReturn(true);
+        when(authContextHolder.erInternBruker()).thenReturn(false);
+        when(authContextHolder.erEksternBruker()).thenReturn(false);
     }
 
     private void mockAuthOk() {
         JWTClaimsSet claims = new JWTClaimsSet.Builder()
                 .issuer("microsoftonline.com")
                 .claim("azp_name", "cluster:team:veilarbregistrering")
-                .claim("roles", Collections.singletonList("access_as_application"))
+                .claim("sub", sub.toString())
+                .claim("oid", veilederUUID.toString())
                 .build();
-
         when(authContextHolder.getIdTokenClaims()).thenReturn(Optional.of(claims));
 
         String token = "token";
         when(veilarbPep.harTilgangTilPerson(token, ActionId.READ, AKTOR_ID)).thenReturn(true);
         when(authContextHolder.getIdTokenString()).thenReturn(Optional.of(token));
 
-        when(authContextHolder.erSystemBruker()).thenReturn(true);
+        when(authContextHolder.erSystemBruker()).thenReturn(false);
+        when(authContextHolder.erInternBruker()).thenReturn(true);
+        when(authContextHolder.erEksternBruker()).thenReturn(false);
         when(aktorOppslagClient.hentAktorId(FNR)).thenReturn(AKTOR_ID);
         when(aktorOppslagClient.hentFnr(AKTOR_ID)).thenReturn(FNR);
     }
