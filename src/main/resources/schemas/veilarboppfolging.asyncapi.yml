@@ -12,22 +12,22 @@ channels:
   pto.oppfolgingsperiode-v1:
     address: pto.oppfolgingsperiode-v1
     messages:
-      subscribe.message:
+      oppfolgingsperideStartEllerSlutt:
         $ref: '#/components/messages/oppfolgingsperiode'
+        bindings:
+          kafka:
+            key: string
+            format: aktorId
+            description: Aktør-id
     description: Start eller slutt på oppfølgingsperioder
-    bindings:
-      kafka:
-        key:
-          type: string
-          format: aktorID
-          description: Aktør-id
+
 operations:
   pto.oppfolgingsperiode-v1.subscribe:
     action: send
     channel:
       $ref: '#/channels/pto.oppfolgingsperiode-v1'
     messages:
-      - $ref: '#/channels/pto.oppfolgingsperiode-v1/messages/subscribe.message'
+      - $ref: '#/channels/pto.oppfolgingsperiode-v1/messages/oppfolgingsperideStartEllerSlutt'
 components:
   messages:
     oppfolgingsperiode:
