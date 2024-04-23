@@ -11,7 +11,6 @@ import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
 import no.nav.veilarboppfolging.repository.enums.KodeverkBruker;
 import no.nav.veilarboppfolging.service.*;
 import no.nav.veilarboppfolging.utils.DtoMappers;
-import no.nav.veilarboppfolging.utils.auth.AuthorizeFnr;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -83,6 +82,8 @@ public class OppfolgingV3Controller {
 
     @PostMapping(value = "/oppfolging/hent-perioder")
     public List<OppfolgingPeriodeDTO> hentOppfolgingsperioder(@RequestBody OppfolgingRequest oppfolgingRequest) {
+        List<String> allowlist = List.of(VEILARBVEDTAKSSTOTTE, AMT_PERSON_SERVICE);
+        authService.authorizeRequest(oppfolgingRequest.fnr(), allowlist);
         AktorId aktorId = authService.getAktorIdOrThrow(oppfolgingRequest.fnr());
         return hentOppfolgingsperioder(aktorId);
     }
