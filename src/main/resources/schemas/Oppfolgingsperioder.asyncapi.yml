@@ -1,0 +1,33 @@
+asyncapi: 2.5.0
+info:
+  title: Veilarboppfolging - Oppfølgingperioder
+  description: |
+    Endringer i oppfølgingsperioder (start eller slutt)
+  version: '0.0.1'
+  contact:
+    name: Team Dab
+    url: https://nav-it.slack.com/archives/C04HS60F283
+
+defaultContentType: application/json
+
+channels:
+  pto.oppfolgingsperiode-v1:
+    description: Start eller slutt på oppfølgingsperioder
+    bindings:
+      kafka:
+        key:
+          type: string
+          format: aktorID
+          description: Aktør-id
+    subscribe:
+      message:
+        $ref: '#/components/messages/oppfolgingsperiode'
+
+components:
+  messages:
+    oppfolgingsperiode:
+      name: oppfolgingsperiode
+      title: Oppfølgingsperiode
+      summary: Oppdatert oppfølgingsperiode etter enten start eller slutt
+      payload:
+        $ref: "oppfolgingsperiode.v1.schema.yml"
