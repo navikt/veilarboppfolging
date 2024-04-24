@@ -50,7 +50,7 @@ public class AktiverBrukerService {
 
     private void startReaktiveringAvBrukerOgOppfolging(Fnr fnr, AktorId aktorId) {
         oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(
-                Oppfolgingsbruker.manueltStartetBruker(aktorId)
+                Oppfolgingsbruker.reaktivertBruker(aktorId)
         );
 
         behandleArbeidssokerClient.reaktiverBrukerIArena(fnr);

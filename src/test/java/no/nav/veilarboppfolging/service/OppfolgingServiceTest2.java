@@ -226,7 +226,7 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
     @Test
     public void kanHenteForventetOppfolging() {
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
-        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker.manueltStartetBruker(AKTOR_ID));
+        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker.reaktivertBruker(AKTOR_ID));
         Oppfolging uthentetOppfolging = hentOppfolging(AKTOR_ID).get();
         assertThat(uthentetOppfolging.getAktorId(), equalTo(AKTOR_ID.get()));
         assertThat(uthentetOppfolging.isUnderOppfolging(), is(true));
@@ -236,7 +236,7 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
     @Test
     public void avsluttOppfolgingResetterVeileder_Manuellstatus_Mal_Og_Vilkar() {
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
-        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker.manueltStartetBruker(AKTOR_ID));
+        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker.reaktivertBruker(AKTOR_ID));
         String veilederId = "veilederId";
         String maal = "Mål";
         settVeileder(veilederId, AKTOR_ID);
@@ -277,7 +277,7 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
     @Test
     public void kanHenteOppfolgingMedOppfolgingsperioder() {
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
-        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker.manueltStartetBruker(AKTOR_ID));
+        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker.reaktivertBruker(AKTOR_ID));
         List<OppfolgingsperiodeEntity> oppfolgingsperioder = oppfolgingService.hentOppfolging(AKTOR_ID).get().getOppfolgingsperioder();
         assertThat(oppfolgingsperioder, hasSize(1));
         assertThat(oppfolgingsperioder.get(0).getStartDato(), not(nullValue()));
@@ -288,7 +288,7 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
         assertThat(oppfolgingsperioder, hasSize(1));
         assertThat(oppfolgingsperioder.get(0).getSluttDato(), not(nullValue()));
 
-        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker.manueltStartetBruker(AKTOR_ID));
+        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker.reaktivertBruker(AKTOR_ID));
         oppfolgingsperioder = oppfolgingService.hentOppfolging(AKTOR_ID).get().getOppfolgingsperioder();
         assertThat(oppfolgingsperioder, hasSize(2));
     }
@@ -323,7 +323,7 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
         Oppfolging oppfolging = oppfolgingService.hentOppfolging(aktorId)
                 .orElseGet(() -> oppfolgingsStatusRepository.opprettOppfolging(aktorId));
 
-        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker.manueltStartetBruker(aktorId));
+        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker.reaktivertBruker(aktorId));
         oppfolging.setUnderOppfolging(true);
         return oppfolging;
     }

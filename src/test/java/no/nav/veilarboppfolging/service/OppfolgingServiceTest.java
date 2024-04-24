@@ -19,6 +19,7 @@ import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktResponse;
 import no.nav.veilarboppfolging.controller.response.VeilederTilgang;
 import no.nav.veilarboppfolging.domain.AvslutningStatusData;
 import no.nav.veilarboppfolging.domain.OppfolgingStatusData;
+import no.nav.veilarboppfolging.domain.Oppfolgingsbruker;
 import no.nav.veilarboppfolging.repository.KvpRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
@@ -109,7 +110,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
         assertTrue(oppfolgingsPeriodeRepository.hentOppfolgingsperioder(AKTOR_ID).isEmpty());
 
-        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
+        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker.reaktivertBruker(AKTOR_ID));
         assertUnderOppfolgingLagret(AKTOR_ID);
 
         List<OppfolgingsperiodeEntity> oppfolgingsperioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(AKTOR_ID);
@@ -121,7 +122,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     public void skal_publisere_paa_kafka_ved_avsluttet_oppfolging() {
         arenaOppfolgingTilstand.setFormidlingsgruppe("IARBS");
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
-        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
+        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker.reaktivertBruker(AKTOR_ID));
 
         assertUnderOppfolgingLagret(AKTOR_ID);
 
@@ -209,7 +210,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
     @Test
     public void hentOppfolgingStatus_brukerSomErUnderOppfolgingOgISERVSkalReaktiveresDersomArenaSierReaktiveringErMulig() {
-        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
+        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker.reaktivertBruker(AKTOR_ID));
         assertUnderOppfolgingLagret(AKTOR_ID);
 
         gittInaktivOppfolgingStatus(true);
@@ -258,7 +259,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
     @Test
     public void kanIkkeAvslutteNarManIkkeErUnderOppfolgingIArena() {
-        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
+        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker.reaktivertBruker(AKTOR_ID));
         assertUnderOppfolgingLagret(AKTOR_ID);
 
         gittArenaOppfolgingStatus("ARBS", null);
@@ -271,7 +272,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
     @Test
     public void kanAvslutteMedVarselOmAktiveYtelser() {
-        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
+        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker.reaktivertBruker(AKTOR_ID));
         assertUnderOppfolgingLagret(AKTOR_ID);
 
         gittArenaOppfolgingStatus("ISERV", "");
@@ -298,7 +299,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
     @Test
     public void underOppfolgingNiva3_skalReturnereTrueHvisBrukerHarOppfolgingsflagg() {
-        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
+        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker.reaktivertBruker(AKTOR_ID));
         assertUnderOppfolgingLagret(AKTOR_ID);
 
         assertTrue(oppfolgingService.erUnderOppfolgingNiva3(FNR));
@@ -308,7 +309,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     public void startOppfolgingHvisIkkeAlleredeStartet__skal_opprette_ikke_opprette_manuell_status_hvis_ikke_reservert_i_krr() {
         gittReservasjonIKrr(false);
 
-        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
+        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker.reaktivertBruker(AKTOR_ID));
 
         verify(manuellStatusService, never()).settBrukerTilManuellGrunnetReservertIKRR(any());
     }
@@ -317,7 +318,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     public void startOppfolgingHvisIkkeAlleredeStartet__skal_opprette_manuell_status_hvis_reservert_i_krr() {
         gittReservasjonIKrr(true);
 
-        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
+        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker.reaktivertBruker(AKTOR_ID));
 
         verify(manuellStatusService, times(1)).settBrukerTilManuellGrunnetReservertIKRR(AKTOR_ID);
     }
@@ -337,10 +338,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     private void assertHarGjeldendeOppfolgingsperiode(AktorId aktorId) {
         assertTrue(harGjeldendeOppfolgingsperiode(aktorId));
     }
-
-    private void assertHarIkkeGjeldendeOppfolgingsperiode(AktorId aktorId) {
-        assertFalse(harGjeldendeOppfolgingsperiode(aktorId));
-    }
+    
     private boolean harGjeldendeOppfolgingsperiode(AktorId aktorId) {
         List<OppfolgingsperiodeEntity> oppfolgingsperioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId);
         OppfolgingsperiodeEntity sisteOppfolgingsperiode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(oppfolgingsperioder);

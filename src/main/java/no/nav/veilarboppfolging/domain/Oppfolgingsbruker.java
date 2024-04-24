@@ -21,8 +21,8 @@ public class Oppfolgingsbruker {
         return oppfolgingStartBegrunnelse;
     }
 
-    public static Oppfolgingsbruker manueltStartetBruker(AktorId aktorId) {
-        return new Oppfolgingsbruker(aktorId.get(), OppfolgingStartBegrunnelse.MANUELL);
+    public static Oppfolgingsbruker reaktivertBruker(AktorId aktorId) {
+        return new Oppfolgingsbruker(aktorId.get(), OppfolgingStartBegrunnelse.REAKTIVERT);
     }
 
     public static Oppfolgingsbruker sykmeldtMerOppfolgingsBruker(AktorId aktorId, SykmeldtBrukerType sykmeldtBrukerType) {
