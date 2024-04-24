@@ -53,6 +53,10 @@ class Arbeissoker extends Oppfolgingsbruker {
         super(aktorId.get(), begrunnelse);
         this.innsatsgruppe = innsatsgruppe;
     }
+    @Override
+    public boolean equals(Object obj) {
+        return super.equals(obj);
+    }
 }
 
 class SykmeldtBruker extends Oppfolgingsbruker {
@@ -60,5 +64,9 @@ class SykmeldtBruker extends Oppfolgingsbruker {
     SykmeldtBruker(AktorId aktorId, OppfolgingStartBegrunnelse begrunnelse, SykmeldtBrukerType sykmeldtBrukerType) {
         super(aktorId.get(), begrunnelse);
         this.sykmeldtBrukerType = sykmeldtBrukerType;
+    }
+    @Override
+    public boolean equals(Object obj) {
+        return super.equals(obj);
     }
 }

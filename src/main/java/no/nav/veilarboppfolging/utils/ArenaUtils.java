@@ -2,7 +2,6 @@ package no.nav.veilarboppfolging.utils;
 
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe;
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe;
-import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolging;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -16,7 +15,7 @@ public class ArenaUtils {
     private static final Formidlingsgruppe IKKE_ARBEIDSSOKER = Formidlingsgruppe.IARBS;
 
     // kvalifiseringsgruppe = servicegruppe + innsatsgruppe
-    public static final Set<Kvalifiseringsgruppe> OPPFOLGING_KVALIFISERINGSGRUPPEKODER = new HashSet<>(asList(Kvalifiseringsgruppe.BATT, Kvalifiseringsgruppe.BFORM, Kvalifiseringsgruppe.IKVAL, Kvalifiseringsgruppe.VURDU, Kvalifiseringsgruppe.OPPFI, Kvalifiseringsgruppe.VARIG));
+    protected static final Set<Kvalifiseringsgruppe> OPPFOLGING_KVALIFISERINGSGRUPPEKODER = new HashSet<>(asList(Kvalifiseringsgruppe.BATT, Kvalifiseringsgruppe.BFORM, Kvalifiseringsgruppe.IKVAL, Kvalifiseringsgruppe.VURDU, Kvalifiseringsgruppe.OPPFI, Kvalifiseringsgruppe.VARIG));
 
     // Logikken som utleder om en bruker er under oppfolging kjøres også ved indeksering av brukere i VeilArbPortefølje.
     // Endringer i logikken må implementeres begge steder
