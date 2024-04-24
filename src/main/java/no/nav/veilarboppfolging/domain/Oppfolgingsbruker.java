@@ -1,14 +1,14 @@
 package no.nav.veilarboppfolging.domain;
 
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import no.nav.common.types.identer.AktorId;
 import no.nav.veilarboppfolging.controller.request.Innsatsgruppe;
 import no.nav.veilarboppfolging.controller.request.SykmeldtBrukerType;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingStartBegrunnelse;
 
-import java.util.Objects;
-
 @AllArgsConstructor
+@EqualsAndHashCode
 public class Oppfolgingsbruker {
     String aktoerId;
     OppfolgingStartBegrunnelse oppfolgingStartBegrunnelse;
@@ -37,36 +37,22 @@ public class Oppfolgingsbruker {
         return new Oppfolgingsbruker(aktorId.get(), OppfolgingStartBegrunnelse.ARENA_SYNC);
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        if (obj instanceof Oppfolgingsbruker oppfolgingsbruker) {
-            return Objects.equals(oppfolgingsbruker.aktoerId, this.aktoerId)
-                && oppfolgingsbruker.oppfolgingStartBegrunnelse == this.oppfolgingStartBegrunnelse;
-        }
-        return false;
-    }
 }
 
+@EqualsAndHashCode(callSuper = true)
 class Arbeissoker extends Oppfolgingsbruker {
     Innsatsgruppe innsatsgruppe;
     Arbeissoker(AktorId aktorId, OppfolgingStartBegrunnelse begrunnelse, Innsatsgruppe innsatsgruppe) {
         super(aktorId.get(), begrunnelse);
         this.innsatsgruppe = innsatsgruppe;
     }
-    @Override
-    public boolean equals(Object obj) {
-        return super.equals(obj);
-    }
 }
 
+@EqualsAndHashCode(callSuper = true)
 class SykmeldtBruker extends Oppfolgingsbruker {
     SykmeldtBrukerType sykmeldtBrukerType;
     SykmeldtBruker(AktorId aktorId, OppfolgingStartBegrunnelse begrunnelse, SykmeldtBrukerType sykmeldtBrukerType) {
         super(aktorId.get(), begrunnelse);
         this.sykmeldtBrukerType = sykmeldtBrukerType;
-    }
-    @Override
-    public boolean equals(Object obj) {
-        return super.equals(obj);
     }
 }
