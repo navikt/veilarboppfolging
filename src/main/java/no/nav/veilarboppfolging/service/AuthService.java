@@ -409,10 +409,7 @@ public class AuthService {
             }
 
         } else if (erSystemBruker()) {
-            if (!veilarbPep.harTilgangTilPerson(getInnloggetBrukerToken(), actionId, aktorId)) {
-                // TODO: skriv oss bort fra abac for systembruker
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN);
-            }
+            return;
         } else {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }

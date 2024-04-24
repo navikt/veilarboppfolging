@@ -133,8 +133,14 @@ spec:
         - application: tms-min-side-proxy
           namespace: min-side
           cluster: dev-gcp
+        - application: tms-mikrofrontend-selector
+          namespace: min-side
+          cluster: dev-gcp
         - application: aia-backend
           namespace: paw
+          cluster: dev-gcp
+        - application: azure-token-generator
+          namespace: aura
           cluster: dev-gcp
   vault:
     enabled: true

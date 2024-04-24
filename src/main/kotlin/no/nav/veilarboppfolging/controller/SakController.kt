@@ -34,5 +34,6 @@ class SakController(
         val sakId: Long,
     ) {
         val fagsaksystem: String = "ARBEIDSOPPFOLGING"
+        val tema: String = "OPP"
     }
 }

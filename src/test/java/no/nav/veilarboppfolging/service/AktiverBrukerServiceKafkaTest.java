@@ -91,17 +91,13 @@ public class AktiverBrukerServiceKafkaTest extends IntegrationTest {
 
     @Test
     public void skalPubliserePaaKafkaVedAktivering() {
-
         consumerClient.start();
-
         aktiverBrukerService.aktiverBruker(Fnr.of(aktiverArbeidssokerData.getFnr().getFnr()), aktiverArbeidssokerData.getInnsatsgruppe());
-
         verifiserAsynkront(8, TimeUnit.SECONDS, () -> {
             assertEquals(1,
                     konsumerteSisteOppfolgingsperiodeMeldinger.get().values().size(),
                     "Skal ikke ha konsumert kafka-melding for siste oppfølgingsperiode fra transaksjon som rulles tilbake");
         });
-
         consumerClient.stop();
     }
 
