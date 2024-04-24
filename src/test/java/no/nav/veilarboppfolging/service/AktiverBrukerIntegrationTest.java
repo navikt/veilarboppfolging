@@ -6,6 +6,7 @@ import no.nav.veilarboppfolging.client.behandle_arbeidssoker.BehandleArbeidssoke
 import no.nav.veilarboppfolging.client.digdir_krr.DigdirKontaktinfo;
 import no.nav.veilarboppfolging.client.digdir_krr.KRRData;
 import no.nav.veilarboppfolging.controller.request.Innsatsgruppe;
+import no.nav.veilarboppfolging.controller.request.SykmeldtBrukerType;
 import no.nav.veilarboppfolging.domain.Oppfolging;
 import no.nav.veilarboppfolging.repository.*;
 import no.nav.veilarboppfolging.test.DbTestUtils;
@@ -26,21 +27,13 @@ import static org.mockito.Mockito.*;
 public class AktiverBrukerIntegrationTest {
 
     private OppfolgingsStatusRepository oppfolgingsStatusRepository;
-
     private OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
-
     private AuthService authService;
-
     private BehandleArbeidssokerClient behandleArbeidssokerClient;
-
     private OppfolgingService oppfolgingService;
-
     private AktiverBrukerService aktiverBrukerService;
-
     private ManuellStatusService manuellStatusService;
-
     private final Fnr FNR = Fnr.of("1111");
-
     private final AktorId AKTOR_ID = AktorId.of("1234523423");
 
     @Before
@@ -86,23 +79,18 @@ public class AktiverBrukerIntegrationTest {
     @Test
     public void skalRulleTilbakeDatabaseDersomKallTilArenaFeiler() {
         doThrow(new RuntimeException()).when(behandleArbeidssokerClient).opprettBrukerIArena(any(), any());
-
         assertThrows(
                 RuntimeException.class,
                 () -> aktiverBrukerService.aktiverBruker(FNR, Innsatsgruppe.STANDARD_INNSATS)
         );
-
         Optional<Oppfolging> oppfolging = oppfolgingService.hentOppfolging(AKTOR_ID);
-
         assertThat(oppfolging.isPresent()).isFalse();
     }
 
     @Test
     public void skalLagreIDatabaseDersomKallTilArenaErOK() {
         aktiverBrukerService.aktiverBruker(FNR, Innsatsgruppe.STANDARD_INNSATS);
-
         Optional<Oppfolging> oppfolging = oppfolgingService.hentOppfolging(AKTOR_ID);
-
         assertThat(oppfolging.isPresent()).isTrue();
     }
 
@@ -110,11 +98,17 @@ public class AktiverBrukerIntegrationTest {
     public void skalHaandtereAtOppfolgingstatusAlleredeFinnes() {
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
         oppfolgingsPeriodeRepository.avslutt(AKTOR_ID, "veilederid", "begrunnelse");
-
         aktiverBrukerService.aktiverBruker(FNR, Innsatsgruppe.STANDARD_INNSATS);
-
         Optional<Oppfolging> oppfolging = oppfolgingService.hentOppfolging(AKTOR_ID);
+        assertThat(oppfolging.get().isUnderOppfolging()).isTrue();
+    }
 
+    @Test
+    public void aktiver_sykmeldt_skal_starte_oppfolging() {
+        var oppfolgingFør = oppfolgingService.hentOppfolging(AKTOR_ID);
+        assertThat(oppfolgingFør.isEmpty()).isTrue();
+        aktiverBrukerService.aktiverSykmeldt(FNR, SykmeldtBrukerType.SKAL_TIL_SAMME_ARBEIDSGIVER);
+        var oppfolging = oppfolgingService.hentOppfolging(AKTOR_ID);
         assertThat(oppfolging.get().isUnderOppfolging()).isTrue();
     }
 
