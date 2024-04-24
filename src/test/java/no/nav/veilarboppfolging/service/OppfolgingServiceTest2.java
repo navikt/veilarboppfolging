@@ -5,6 +5,7 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.client.digdir_krr.DigdirClient;
 import no.nav.veilarboppfolging.client.digdir_krr.KRRData;
+import no.nav.veilarboppfolging.controller.request.Innsatsgruppe;
 import no.nav.veilarboppfolging.controller.request.SykmeldtBrukerType;
 import no.nav.veilarboppfolging.domain.Oppfolging;
 import no.nav.veilarboppfolging.domain.Oppfolgingsbruker;
@@ -226,7 +227,7 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
     @Test
     public void kanHenteForventetOppfolging() {
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
-        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker.reaktivertBruker(AKTOR_ID));
+        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker.arbeidssokerOppfolgingsBruker(AKTOR_ID, Innsatsgruppe.STANDARD_INNSATS));
         Oppfolging uthentetOppfolging = hentOppfolging(AKTOR_ID).get();
         assertThat(uthentetOppfolging.getAktorId(), equalTo(AKTOR_ID.get()));
         assertThat(uthentetOppfolging.isUnderOppfolging(), is(true));
@@ -236,7 +237,7 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
     @Test
     public void avsluttOppfolgingResetterVeileder_Manuellstatus_Mal_Og_Vilkar() {
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
-        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker.reaktivertBruker(AKTOR_ID));
+        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker.sykmeldtMerOppfolgingsBruker(AKTOR_ID, SykmeldtBrukerType.SKAL_TIL_SAMME_ARBEIDSGIVER));
         String veilederId = "veilederId";
         String maal = "Mål";
         settVeileder(veilederId, AKTOR_ID);
