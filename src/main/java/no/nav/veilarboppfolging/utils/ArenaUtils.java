@@ -3,9 +3,7 @@ package no.nav.veilarboppfolging.utils;
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe;
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe;
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolging;
-import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolgingTilstand;
 
-import java.text.Normalizer;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -40,10 +38,6 @@ public class ArenaUtils {
 
     private static boolean erArbeidssoker(Formidlingsgruppe formidlingsgruppeKode) {
         return ARBS.equals(formidlingsgruppeKode);
-    }
-
-    public static boolean erIserv(ArenaOppfolging arenaOppfolging) {
-        return erIserv(EnumUtils.valueOf(Formidlingsgruppe.class, arenaOppfolging.getFormidlingsgruppe()));
     }
 
     public static boolean erIserv(Formidlingsgruppe formidlingsgruppe) {
