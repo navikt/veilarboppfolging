@@ -1,8 +1,11 @@
 package no.nav.veilarboppfolging.utils;
 
+import no.nav.pto_schema.enums.arena.Formidlingsgruppe;
+import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe;
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolging;
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolgingTilstand;
 
+import java.text.Normalizer;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -10,47 +13,44 @@ import static java.util.Arrays.asList;
 
 public class ArenaUtils {
 
-    private static final String ARBS = "ARBS";
-    private static final String ISERV = "ISERV";
-    private static final String IKKE_ARBEIDSSOKER = "IARBS";
+    private static final Formidlingsgruppe ARBS =  Formidlingsgruppe.ARBS;
+    private static final Formidlingsgruppe ISERV = Formidlingsgruppe.ISERV;
+    private static final Formidlingsgruppe IKKE_ARBEIDSSOKER = Formidlingsgruppe.IARBS;
 
     // kvalifiseringsgruppe = servicegruppe + innsatsgruppe
-    public static final Set<String> OPPFOLGING_KVALIFISERINGSGRUPPEKODER = new HashSet<>(asList("BATT", "BFORM", "IKVAL", "VURDU", "OPPFI", "VARIG"));
+    public static final Set<Kvalifiseringsgruppe> OPPFOLGING_KVALIFISERINGSGRUPPEKODER = new HashSet<>(asList(Kvalifiseringsgruppe.BATT, Kvalifiseringsgruppe.BFORM, Kvalifiseringsgruppe.IKVAL, Kvalifiseringsgruppe.VURDU, Kvalifiseringsgruppe.OPPFI, Kvalifiseringsgruppe.VARIG));
 
     // Logikken som utleder om en bruker er under oppfolging kjøres også ved indeksering av brukere i VeilArbPortefølje.
     // Endringer i logikken må implementeres begge steder
-    public static boolean erUnderOppfolging(String formidlingsgruppeKode, String kvalifiseringsgruppeKode) {
+    public static boolean erUnderOppfolging(Formidlingsgruppe formidlingsgruppeKode, Kvalifiseringsgruppe kvalifiseringsgruppeKode) {
         return erArbeidssoker(formidlingsgruppeKode) || erIARBSMedOppfolging(formidlingsgruppeKode, kvalifiseringsgruppeKode);
     }
 
-    public static boolean kanSettesUnderOppfolging(String formidlingsgruppeKode, String kvalifiseringsgruppeKode) {
+    public static boolean kanSettesUnderOppfolging(Formidlingsgruppe formidlingsgruppeKode, Kvalifiseringsgruppe kvalifiseringsgruppeKode) {
         return erIARBSUtenOppfolging(formidlingsgruppeKode, kvalifiseringsgruppeKode);
     }
 
-    public static boolean kanSettesUnderOppfolging(ArenaOppfolgingTilstand arenaOppfolging, boolean erUnderOppfolging) {
-        return !erUnderOppfolging && kanSettesUnderOppfolging(arenaOppfolging.getFormidlingsgruppe(), arenaOppfolging.getServicegruppe());
-    }
-
-    private static boolean erIARBSMedOppfolging(String formidlingsgruppeKode, String kvalifiseringsgruppeKode) {
+    private static boolean erIARBSMedOppfolging(Formidlingsgruppe formidlingsgruppeKode, Kvalifiseringsgruppe kvalifiseringsgruppeKode) {
         return IKKE_ARBEIDSSOKER.equals(formidlingsgruppeKode) && OPPFOLGING_KVALIFISERINGSGRUPPEKODER.contains(kvalifiseringsgruppeKode);
     }
 
-    public static boolean erIARBSUtenOppfolging(String formidlingsgruppeKode, String kvalifiseringsgruppeKode) {
+    public static boolean erIARBSUtenOppfolging(Formidlingsgruppe formidlingsgruppeKode, Kvalifiseringsgruppe kvalifiseringsgruppeKode) {
         return IKKE_ARBEIDSSOKER.equals(formidlingsgruppeKode) && !OPPFOLGING_KVALIFISERINGSGRUPPEKODER.contains(kvalifiseringsgruppeKode);
     }
 
-    private static boolean erArbeidssoker(String formidlingsgruppeKode) {
+    private static boolean erArbeidssoker(Formidlingsgruppe formidlingsgruppeKode) {
         return ARBS.equals(formidlingsgruppeKode);
     }
 
     public static boolean erIserv(ArenaOppfolging arenaOppfolging) {
-        return erIserv(arenaOppfolging.getFormidlingsgruppe());
+        return erIserv(EnumUtils.valueOf(Formidlingsgruppe.class, arenaOppfolging.getFormidlingsgruppe()));
     }
 
-    public static boolean erIserv(String formidlingsgruppe) {
+    public static boolean erIserv(Formidlingsgruppe formidlingsgruppe) {
         return ISERV.equals(formidlingsgruppe);
     }
 
+    /*
     public static boolean erSykmeldtMedArbeidsgiver(ArenaOppfolgingTilstand arenaOppfolgingTilstand) {
         return ArenaUtils.erIARBSUtenOppfolging(
                 arenaOppfolgingTilstand.getFormidlingsgruppe(),
@@ -61,5 +61,6 @@ public class ArenaUtils {
     public static boolean erInaktivIArena(ArenaOppfolgingTilstand arenaOppfolgingTilstand) {
         return erIserv(arenaOppfolgingTilstand.getFormidlingsgruppe());
     }
+    */
 
 }

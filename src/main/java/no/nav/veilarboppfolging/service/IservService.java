@@ -77,7 +77,7 @@ public class IservService {
     public void behandleEndretBruker(EndringPaaOppfoelgingsBrukerV2 brukerV2) {
         AktorId aktorId = authService.getAktorIdOrThrow(Fnr.of(brukerV2.getFodselsnummer()));
 
-        String formidlingsgruppe = ofNullable(brukerV2.getFormidlingsgruppe()).map(Formidlingsgruppe::toString).orElse(null);
+        var formidlingsgruppe = ofNullable(brukerV2.getFormidlingsgruppe()).orElse(null);
 
         if (erIserv(formidlingsgruppe)) {
             secureLog.info("Oppdaterer eller insert i utmelding tabell. aktorId={}", aktorId);

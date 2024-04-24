@@ -3,6 +3,8 @@ package no.nav.veilarboppfolging.domain;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import no.nav.common.types.identer.AktorId;
+import no.nav.pto_schema.enums.arena.Formidlingsgruppe;
+import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe;
 import no.nav.veilarboppfolging.controller.request.Innsatsgruppe;
 import no.nav.veilarboppfolging.controller.request.SykmeldtBrukerType;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingStartBegrunnelse;
