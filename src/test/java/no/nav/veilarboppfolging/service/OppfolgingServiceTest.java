@@ -107,18 +107,13 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     public void skal_publisere_paa_kafka_ved_start_paa_oppfolging() {
         arenaOppfolgingTilstand.setFormidlingsgruppe("IARBS");
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
-
-        when(kvpService.erUnderKvp(anyLong())).thenReturn(false);
-
         assertTrue(oppfolgingsPeriodeRepository.hentOppfolgingsperioder(AKTOR_ID).isEmpty());
 
-        oppfolgingService.startOppfolging(FNR);
-
+        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
         assertUnderOppfolgingLagret(AKTOR_ID);
 
         List<OppfolgingsperiodeEntity> oppfolgingsperioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(AKTOR_ID);
         assertEquals(1, oppfolgingsperioder.size());
-
         verify(kafkaProducerService, times(1)).publiserOppfolgingsperiode(any(SisteOppfolgingsperiodeV1.class));
     }
 
@@ -126,7 +121,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     public void skal_publisere_paa_kafka_ved_avsluttet_oppfolging() {
         arenaOppfolgingTilstand.setFormidlingsgruppe("IARBS");
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
-        oppfolgingService.startOppfolging(FNR);
+        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(AKTOR_ID);
 
         assertUnderOppfolgingLagret(AKTOR_ID);
 
@@ -139,15 +134,6 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         verify(kafkaProducerService).publiserVeilederTilordnet(AKTOR_ID, null);
         verify(kafkaProducerService).publiserEndringPaNyForVeileder(AKTOR_ID, false);
         verify(kafkaProducerService).publiserEndringPaManuellStatus(AKTOR_ID, false);
-    }
-
-    @Test(expected = ResponseStatusException.class)
-    @SneakyThrows
-    public void start_oppfolging_uten_enhet_tilgang() {
-        when(authService.harTilgangTilEnhet(any())).thenReturn(false);
-        doCallRealMethod().when(authService).sjekkTilgangTilEnhet(any());
-
-        oppfolgingService.startOppfolging(FNR);
     }
 
     @Test(expected = ResponseStatusException.class)

@@ -47,12 +47,6 @@ public class OppfolgingController {
         return tilDto(oppfolgingService.hentOppfolgingsStatus(fodselsnummer), authService.erInternBruker());
     }
 
-    @PostMapping("/startOppfolging")
-    public OppfolgingStatus startOppfolging(@RequestParam("fnr") Fnr fnr) {
-        authService.skalVereInternBruker();
-        return tilDto(oppfolgingService.startOppfolging(fnr), authService.erInternBruker());
-    }
-
     @GetMapping("/avslutningStatus")
     public AvslutningStatus hentAvslutningStatus(@RequestParam("fnr") Fnr fnr) {
         authService.skalVereInternBruker();

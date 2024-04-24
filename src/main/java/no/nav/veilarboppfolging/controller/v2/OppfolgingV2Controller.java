@@ -54,13 +54,6 @@ public class OppfolgingV2Controller {
         return new UnderOppfolgingV2Response(oppfolgingService.erUnderOppfolging(fnr));
     }
 
-    @PostMapping("/start")
-    public ResponseEntity<?> startOppfolging(@RequestParam("fnr") Fnr fnr) {
-        authService.skalVereInternBruker();
-        oppfolgingService.startOppfolging(fnr);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-    }
-
     @PostMapping("/avslutt")
     public ResponseEntity<?> avsluttOppfolging(@RequestBody AvsluttOppfolgingV2Request request) {
         authService.skalVereInternBruker();

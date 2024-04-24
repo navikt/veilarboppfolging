@@ -123,24 +123,6 @@ public class OppfolgingService {
     }
 
     @SneakyThrows
-    public OppfolgingStatusData startOppfolging(Fnr fnr) {
-        AktorId aktorId = authService.getAktorIdOrThrow(fnr);
-
-        authService.sjekkLesetilgangMedFnr(fnr);
-
-        ArenaOppfolgingTilstand arenaOppfolgingTilstand = arenaOppfolgingService.hentOppfolgingTilstand(fnr)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR));
-
-        authService.sjekkTilgangTilEnhet(arenaOppfolgingTilstand.getOppfolgingsenhet());
-
-        if (ArenaUtils.kanSettesUnderOppfolging(arenaOppfolgingTilstand, erUnderOppfolging(aktorId))) {
-            startOppfolgingHvisIkkeAlleredeStartet(aktorId);
-        }
-
-        return getOppfolgingStatusData(fnr);
-    }
-
-    @SneakyThrows
     public AvslutningStatusData avsluttOppfolging(Fnr fnr, String veilederId, String begrunnelse) {
         AktorId aktorId = authService.getAktorIdOrThrow(fnr);
 

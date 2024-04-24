@@ -126,14 +126,6 @@ class OppfolgingV3ControllerTest {
     }
 
     @Test
-    void startOppfolging_skal_returnere_tom_respons() throws Exception {
-        mockMvc.perform(post("/api/v3/oppfolging/start")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"fnr\":\"12345678900\"}")
-        ).andExpect(status().is(204));
-    }
-
-    @Test
     void hentAvslutningStatus_skal_returnere_avslutningstatus() throws Exception {
         when(oppfolgingService.hentAvslutningStatus(TEST_FNR)).thenReturn(
                 AvslutningStatusData.builder()
