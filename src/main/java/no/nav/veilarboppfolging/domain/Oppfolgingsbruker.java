@@ -7,6 +7,8 @@ import no.nav.veilarboppfolging.controller.request.Innsatsgruppe;
 import no.nav.veilarboppfolging.controller.request.SykmeldtBrukerType;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingStartBegrunnelse;
 
+import java.util.Objects;
+
 @NoArgsConstructor
 @AllArgsConstructor
 public class Oppfolgingsbruker {
@@ -35,6 +37,15 @@ public class Oppfolgingsbruker {
 
     public static Oppfolgingsbruker arenaSyncOppfolgingBruker(AktorId aktorId) {
         return new Oppfolgingsbruker(aktorId.get(), OppfolgingStartBegrunnelse.ARENA_SYNC);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Oppfolgingsbruker oppfolgingsbruker) {
+            return Objects.equals(oppfolgingsbruker.aktoerId, this.aktoerId)
+                && oppfolgingsbruker.oppfolgingStartBegrunnelse == this.oppfolgingStartBegrunnelse;
+        }
+        return false;
     }
 }
 

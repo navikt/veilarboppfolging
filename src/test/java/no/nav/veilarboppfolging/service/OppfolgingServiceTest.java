@@ -338,7 +338,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     private void assertHarGjeldendeOppfolgingsperiode(AktorId aktorId) {
         assertTrue(harGjeldendeOppfolgingsperiode(aktorId));
     }
-    
+
     private boolean harGjeldendeOppfolgingsperiode(AktorId aktorId) {
         List<OppfolgingsperiodeEntity> oppfolgingsperioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId);
         OppfolgingsperiodeEntity sisteOppfolgingsperiode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(oppfolgingsperioder);
