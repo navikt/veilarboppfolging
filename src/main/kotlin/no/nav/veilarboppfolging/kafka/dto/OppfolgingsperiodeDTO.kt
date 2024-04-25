@@ -9,7 +9,7 @@ data class OppfolgingsperiodeDTO(
     val startDato: ZonedDateTime,
     val sluttDato: ZonedDateTime?,
     val aktorId: String,
-    val startetBegrunnelse: StartetBegrunnelseDTO
+    val startetBegrunnelse: StartetBegrunnelseDTO?
 ) {
     fun toSisteOppfolgingsperiodeDTO(): SisteOppfolgingsperiodeV1 {
         return SisteOppfolgingsperiodeV1(
