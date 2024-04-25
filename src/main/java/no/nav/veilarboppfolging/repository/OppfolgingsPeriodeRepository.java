@@ -3,6 +3,7 @@ package no.nav.veilarboppfolging.repository;
 import no.nav.common.types.identer.AktorId;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingStartBegrunnelse;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
+import no.nav.veilarboppfolging.utils.EnumUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -27,7 +28,7 @@ public class OppfolgingsPeriodeRepository {
     private final TransactionTemplate transactor;
 
     private final static String hentOppfolingsperioderSQL =
-            "SELECT uuid, aktor_id, avslutt_veileder, startdato, sluttdato, avslutt_begrunnelse " +
+            "SELECT uuid, aktor_id, avslutt_veileder, startdato, sluttdato, avslutt_begrunnelse, start_begrunnelse " +
                     "FROM OPPFOLGINGSPERIODE ";
 
     @Autowired
@@ -137,6 +138,7 @@ public class OppfolgingsPeriodeRepository {
                 .startDato(hentZonedDateTime(result, "startdato"))
                 .sluttDato(hentZonedDateTime(result, "sluttdato"))
                 .begrunnelse(result.getString("avslutt_begrunnelse"))
+                .startetBegrunnelse(EnumUtils.valueOf(OppfolgingStartBegrunnelse.class, result.getString("start_begrunnelse")))
                 .build();
     }
 

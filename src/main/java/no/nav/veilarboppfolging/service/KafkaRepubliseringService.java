@@ -3,8 +3,8 @@ package no.nav.veilarboppfolging.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
-import no.nav.pto_schema.kafka.json.topic.SisteOppfolgingsperiodeV1;
 import no.nav.veilarboppfolging.kafka.KvpPeriode;
+import no.nav.veilarboppfolging.kafka.dto.OppfolgingsperiodeDTO;
 import no.nav.veilarboppfolging.repository.KvpRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
@@ -122,9 +122,9 @@ public class KafkaRepubliseringService {
             return;
         }
 
-        SisteOppfolgingsperiodeV1 sisteOppfolgingsperiodeV1 = DtoMappers.tilSisteOppfolgingsperiodeV1(sistePeriode);
+        OppfolgingsperiodeDTO periodeDTO = DtoMappers.tilOppfolgingsperiodeDTO(sistePeriode);
 
-        kafkaProducerService.publiserOppfolgingsperiode(sisteOppfolgingsperiodeV1);
+        kafkaProducerService.publiserOppfolgingsperiode(periodeDTO);
     }
 
     private void republiserSisteTilordnetVeilederForBruker(AktorId aktorId) {
