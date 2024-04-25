@@ -6,6 +6,7 @@ public enum OppfolgingStartBegrunnelse {
     ARBEIDSSOKER_REGISTRERING,
     REAKTIVERT,
     SYKMELDT_MER_OPPFOLGING,
+    ARENA_SYNC, // TODO: Fjerne etter opprydding i databasen
     ARENA_SYNC_ARBS,
     ARENA_SYNC_IARBS;
 
