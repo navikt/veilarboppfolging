@@ -50,7 +50,7 @@ operations:
       $ref: "#/channels/kvp-perioder-v1"
     messages:
       - $ref: "#/channels/kvp-perioder-v1/messages/kvpperiode"
-  oppfolgingsperiodeCompacted:
+  siste-oppfolgingsperiode-v1:
     description: Oppfølgingsperiode compacted på aktørId (bare siste periode)
     action: send
     channel:
@@ -84,4 +84,4 @@ components:
       title: Oppfølgingsbruker fra veilarbarena
       summary: Oppfølgings-status på en bruker fra Arena
       payload:
-        $ref: oppfolgingsbruker.v1.scheam.yml
+        $ref: oppfolgingsbruker.v1.schema.yml

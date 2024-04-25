@@ -2,22 +2,20 @@ package no.nav.veilarboppfolging.service;
 
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.kafka.producer.feilhandtering.KafkaProducerRecordStorage;
-import no.nav.common.kafka.producer.serializer.JsonValidationSerializer;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto_schema.kafka.json.topic.SisteOppfolgingsperiodeV1;
 import no.nav.pto_schema.kafka.json.topic.SisteTilordnetVeilederV1;
 import no.nav.pto_schema.kafka.json.topic.onprem.*;
 import no.nav.veilarboppfolging.config.KafkaProperties;
 import no.nav.veilarboppfolging.kafka.KvpPeriode;
+import no.nav.veilarboppfolging.kafka.dto.OppfolgingsperiodeDTO;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.common.serialization.Serializer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.ZonedDateTime;
 
 import static no.nav.common.kafka.producer.util.ProducerUtils.serializeJsonRecord;
-import static no.nav.pto_schema.kafka.json.JsonSchemaLocator.getKafkaSchema;
 
 @Service
 public class KafkaProducerService {
@@ -27,9 +25,6 @@ public class KafkaProducerService {
     private final KafkaProducerRecordStorage producerRecordStorage;
 
     private final KafkaProperties kafkaProperties;
-
-    private final Serializer<SisteOppfolgingsperiodeV1> sisteOppfolgingsperiodeV1Serializer
-            = new JsonValidationSerializer<>(getKafkaSchema(SisteOppfolgingsperiodeV1.class));
 
     @Autowired
     public KafkaProducerService(
@@ -42,9 +37,9 @@ public class KafkaProducerService {
         this.kafkaProperties = kafkaProperties;
     }
 
-    public void publiserOppfolgingsperiode(SisteOppfolgingsperiodeV1 sisteOppfolgingsperiodeV1) {
-        sisteOppfolgingsPeriode(sisteOppfolgingsperiodeV1);
-        oppfolingsperiode(sisteOppfolgingsperiodeV1);
+    public void publiserOppfolgingsperiode(OppfolgingsperiodeDTO oppfolgingsperiode) {
+        sisteOppfolgingsPeriode(oppfolgingsperiode.toSisteOppfolgingsperiodeDTO());
+        oppfolingsperiode(oppfolgingsperiode);
     }
 
     private void sisteOppfolgingsPeriode(SisteOppfolgingsperiodeV1 sisteOppfolgingsperiodeV1) {
@@ -53,7 +48,7 @@ public class KafkaProducerService {
                 sisteOppfolgingsperiodeV1);
     }
 
-    private void oppfolingsperiode(SisteOppfolgingsperiodeV1 sisteOppfolgingsperiodeV1) {
+    private void oppfolingsperiode(OppfolgingsperiodeDTO sisteOppfolgingsperiodeV1) {
         store(kafkaProperties.getOppfolgingsperiodeTopic(),
                 sisteOppfolgingsperiodeV1.getAktorId(),
                 sisteOppfolgingsperiodeV1);

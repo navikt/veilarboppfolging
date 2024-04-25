@@ -19,3 +19,8 @@ properties:
     format: date-time
   aktorId:
     type: string
+  startet_begrunnelse:
+    type: string
+    enum:
+      - ARBEIDSSOKER
+      - SYKEMELDT_MER_OPPFOLGING

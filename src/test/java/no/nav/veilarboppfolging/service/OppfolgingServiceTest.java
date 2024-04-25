@@ -20,6 +20,7 @@ import no.nav.veilarboppfolging.controller.response.VeilederTilgang;
 import no.nav.veilarboppfolging.domain.AvslutningStatusData;
 import no.nav.veilarboppfolging.domain.OppfolgingStatusData;
 import no.nav.veilarboppfolging.domain.Oppfolgingsbruker;
+import no.nav.veilarboppfolging.kafka.dto.OppfolgingsperiodeDTO;
 import no.nav.veilarboppfolging.repository.KvpRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
@@ -115,7 +116,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
         List<OppfolgingsperiodeEntity> oppfolgingsperioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(AKTOR_ID);
         assertEquals(1, oppfolgingsperioder.size());
-        verify(kafkaProducerService, times(1)).publiserOppfolgingsperiode(any(SisteOppfolgingsperiodeV1.class));
+        verify(kafkaProducerService, times(1)).publiserOppfolgingsperiode(any(OppfolgingsperiodeDTO.class));
     }
 
     @Test
@@ -131,7 +132,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         reset(kafkaProducerService);
         oppfolgingService.avsluttOppfolging(FNR, VEILEDER, "");
 
-        verify(kafkaProducerService).publiserOppfolgingsperiode(any(SisteOppfolgingsperiodeV1.class));
+        verify(kafkaProducerService).publiserOppfolgingsperiode(any(OppfolgingsperiodeDTO.class));
         verify(kafkaProducerService).publiserVeilederTilordnet(AKTOR_ID, null);
         verify(kafkaProducerService).publiserEndringPaNyForVeileder(AKTOR_ID, false);
         verify(kafkaProducerService).publiserEndringPaManuellStatus(AKTOR_ID, false);

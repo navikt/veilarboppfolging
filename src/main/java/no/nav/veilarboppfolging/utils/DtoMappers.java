@@ -5,6 +5,7 @@ import no.nav.pto_schema.kafka.json.topic.SisteTilordnetVeilederV1;
 import no.nav.veilarboppfolging.controller.response.*;
 import no.nav.veilarboppfolging.domain.AvslutningStatusData;
 import no.nav.veilarboppfolging.domain.OppfolgingStatusData;
+import no.nav.veilarboppfolging.kafka.dto.OppfolgingsperiodeDTO;
 import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity;
 import no.nav.veilarboppfolging.repository.entity.MaalEntity;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
@@ -118,6 +119,16 @@ public class DtoMappers {
                 oppfolgingsperiode.getAktorId(),
                 oppfolgingsperiode.getStartDato(),
                 oppfolgingsperiode.getSluttDato()
+        );
+    }
+
+    public static OppfolgingsperiodeDTO tilOppfolgingsperiodeDTO(OppfolgingsperiodeEntity oppfolgingsperiode) {
+        return new OppfolgingsperiodeDTO(
+                oppfolgingsperiode.getUuid().toString(),
+                oppfolgingsperiode.getStartDato(),
+                oppfolgingsperiode.getSluttDato(),
+                oppfolgingsperiode.getAktorId(),
+                oppfolgingsperiode.getStartetBegrunnelse().toStartetBegrunnelseDTO()
         );
     }
 

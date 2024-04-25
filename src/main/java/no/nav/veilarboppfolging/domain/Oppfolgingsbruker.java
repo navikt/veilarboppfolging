@@ -3,6 +3,7 @@ package no.nav.veilarboppfolging.domain;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import no.nav.common.types.identer.AktorId;
+import no.nav.pto_schema.enums.arena.Formidlingsgruppe;
 import no.nav.veilarboppfolging.controller.request.Innsatsgruppe;
 import no.nav.veilarboppfolging.controller.request.SykmeldtBrukerType;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingStartBegrunnelse;
@@ -33,8 +34,9 @@ public class Oppfolgingsbruker {
         return new Arbeissoker(aktorId, OppfolgingStartBegrunnelse.ARBEIDSSOKER_REGISTRERING, innsatsgruppe);
     }
 
-    public static Oppfolgingsbruker arenaSyncOppfolgingBruker(AktorId aktorId) {
-        return new Oppfolgingsbruker(aktorId.get(), OppfolgingStartBegrunnelse.ARENA_SYNC);
+    public static Oppfolgingsbruker arenaSyncOppfolgingBruker(AktorId aktorId, Formidlingsgruppe formidlingsgruppe) {
+        if (formidlingsgruppe == Formidlingsgruppe.ISERV) throw new IllegalStateException("ISERV skal ikke starte oppfølging");
+        return new Oppfolgingsbruker(aktorId.get(), formidlingsgruppe == Formidlingsgruppe.IARBS ? OppfolgingStartBegrunnelse.ARENA_SYNC_IARBS : OppfolgingStartBegrunnelse.ARENA_SYNC_ARBS);
     }
 
 }
