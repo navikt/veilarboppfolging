@@ -12,6 +12,7 @@ import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
 import no.nav.veilarboppfolging.repository.entity.VeilederTilordningEntity;
 
 import java.util.Collections;
+import java.util.Optional;
 
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
@@ -128,7 +129,7 @@ public class DtoMappers {
                 oppfolgingsperiode.getStartDato(),
                 oppfolgingsperiode.getSluttDato(),
                 oppfolgingsperiode.getAktorId(),
-                oppfolgingsperiode.getStartetBegrunnelse().toStartetBegrunnelseDTO()
+                Optional.ofNullable(oppfolgingsperiode.getStartetBegrunnelse()).map(b -> b.toStartetBegrunnelseDTO()).orElse(null)
         );
     }
 
