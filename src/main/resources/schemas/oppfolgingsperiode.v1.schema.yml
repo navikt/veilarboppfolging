@@ -1,0 +1,26 @@
+"$schema": https://json-schema.org/draft-07/schema
+"$id": "https://navikt.github.io/veilarboppfolging/schemas/oppfolgingsperiode.v1.schema.yml"
+required:
+  - uuid
+  - aktorId
+  - startDato
+  - sluttDato
+type: object
+additionalProperties: false
+properties:
+  uuid:
+    type: string
+    format: uuid
+  startDato:
+    type: string
+    format: date-time
+  sluttDato:
+    type: string
+    format: date-time
+  aktorId:
+    type: string
+  startet_begrunnelse:
+    type: string
+    enum:
+      - ARBEIDSSOKER
+      - SYKEMELDT_MER_OPPFOLGING

@@ -1,0 +1,30 @@
+name: AsyncAPI schemas gh pages
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/asyncApiSchemas.yml'
+      - 'src/main/resources/schemas/**'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: veilarboppfolging.asyncapi.schema
+  cancel-in-progress: true
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Deploy 🚀
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: src/main/resources/schemas
+          target-folder: schemas

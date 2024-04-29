@@ -137,6 +137,9 @@ spec:
         - application: aia-backend
           namespace: paw
           cluster: prod-gcp
+        - application: amt-distribusjon
+          namespace: poao
+          cluster: prod-gcp
   vault:
     enabled: true
     paths:

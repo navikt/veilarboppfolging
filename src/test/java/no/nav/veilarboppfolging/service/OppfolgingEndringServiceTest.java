@@ -5,6 +5,7 @@ import no.nav.pto_schema.enums.arena.Formidlingsgruppe;
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe;
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolgingTilstand;
+import no.nav.veilarboppfolging.domain.Oppfolgingsbruker;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingEntity;
 import org.junit.jupiter.api.Test;
@@ -47,7 +48,7 @@ public class OppfolgingEndringServiceTest {
 
         oppfolgingEndringService.oppdaterOppfolgingMedStatusFraArena(brukverV2);
 
-        verify(oppfolgingService, never()).startOppfolgingHvisIkkeAlleredeStartet(any(AktorId.class));
+        verify(oppfolgingService, never()).startOppfolgingHvisIkkeAlleredeStartet(any(Oppfolgingsbruker.class));
         verify(oppfolgingService, never()).avsluttOppfolgingForBruker(any(), any(), any());
     }
 
@@ -64,7 +65,7 @@ public class OppfolgingEndringServiceTest {
 
         oppfolgingEndringService.oppdaterOppfolgingMedStatusFraArena(brukverV2);
 
-        verify(oppfolgingService, times(1)).startOppfolgingHvisIkkeAlleredeStartet(TEST_AKTOR_ID);
+        verify(oppfolgingService, times(1)).startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker.arenaSyncOppfolgingBruker(TEST_AKTOR_ID, Formidlingsgruppe.ARBS));
         verify(oppfolgingService, never()).avsluttOppfolgingForBruker(any(), any(), any());
     }
 
@@ -87,7 +88,7 @@ public class OppfolgingEndringServiceTest {
         oppfolgingEndringService.oppdaterOppfolgingMedStatusFraArena(brukverV2);
 
 
-        verify(oppfolgingService, never()).startOppfolgingHvisIkkeAlleredeStartet(any(AktorId.class));
+        verify(oppfolgingService, never()).startOppfolgingHvisIkkeAlleredeStartet(any(Oppfolgingsbruker.class));
         verify(oppfolgingService, times(1))
                 .avsluttOppfolgingForBruker(
                     TEST_AKTOR_ID, null, "Oppfølging avsluttet automatisk pga. inaktiv bruker som ikke kan reaktiveres"
@@ -115,7 +116,7 @@ public class OppfolgingEndringServiceTest {
         oppfolgingEndringService.oppdaterOppfolgingMedStatusFraArena(brukverV2);
 
 
-        verify(oppfolgingService, never()).startOppfolgingHvisIkkeAlleredeStartet(any(AktorId.class));
+        verify(oppfolgingService, never()).startOppfolgingHvisIkkeAlleredeStartet(any(Oppfolgingsbruker.class));
         verify(oppfolgingService, never()).avsluttOppfolgingForBruker(any(), any(), any());
     }
 
@@ -138,7 +139,7 @@ public class OppfolgingEndringServiceTest {
         oppfolgingEndringService.oppdaterOppfolgingMedStatusFraArena(brukverV2);
 
 
-        verify(oppfolgingService, never()).startOppfolgingHvisIkkeAlleredeStartet(any(AktorId.class));
+        verify(oppfolgingService, never()).startOppfolgingHvisIkkeAlleredeStartet(any(Oppfolgingsbruker.class));
         verify(oppfolgingService, never()).avsluttOppfolgingForBruker(any(), any(), any());
     }
 
