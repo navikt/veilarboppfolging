@@ -142,6 +142,9 @@ spec:
         - application: azure-token-generator
           namespace: aura
           cluster: dev-gcp
+        - application: amt-distribusjon
+          namespace: poao
+          cluster: dev-gcp
   vault:
     enabled: true
     paths:
