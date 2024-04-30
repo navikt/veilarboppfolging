@@ -143,7 +143,7 @@ spec:
           namespace: aura
           cluster: dev-gcp
         - application: amt-distribusjon
-          namespace: poao
+          namespace: amt
           cluster: dev-gcp
   vault:
     enabled: true
