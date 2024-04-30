@@ -138,7 +138,7 @@ spec:
           namespace: paw
           cluster: prod-gcp
         - application: amt-distribusjon
-          namespace: poao
+          namespace: amt
           cluster: prod-gcp
   vault:
     enabled: true
