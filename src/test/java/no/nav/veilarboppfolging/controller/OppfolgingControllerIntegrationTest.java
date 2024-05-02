@@ -1,7 +1,6 @@
 package no.nav.veilarboppfolging.controller;
 
 import com.nimbusds.jwt.JWTClaimsSet;
-import no.nav.common.abac.domain.request.ActionId;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
@@ -131,7 +130,6 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
         when(authContextHolder.getIdTokenClaims()).thenReturn(Optional.of(claims));
 
         String token = "token";
-        when(veilarbPep.harTilgangTilPerson(token, ActionId.READ, AKTOR_ID)).thenReturn(true);
         when(authContextHolder.getIdTokenString()).thenReturn(Optional.of(token));
 
         when(authContextHolder.erSystemBruker()).thenReturn(false);

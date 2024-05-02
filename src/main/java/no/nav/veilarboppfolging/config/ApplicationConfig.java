@@ -5,11 +5,6 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import lombok.extern.slf4j.Slf4j;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
-import no.nav.common.abac.Pep;
-import no.nav.common.abac.VeilarbPepFactory;
-import no.nav.common.abac.audit.AuditLogFilterUtils;
-import no.nav.common.abac.audit.SpringAuditRequestInfoSupplier;
-import no.nav.common.abac.constants.NavAttributter;
 import no.nav.common.audit_log.log.AuditLogger;
 import no.nav.common.audit_log.log.AuditLoggerImpl;
 import no.nav.common.auth.context.AuthContextHolder;
@@ -26,7 +21,6 @@ import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.token_client.builder.AzureAdTokenClientBuilder;
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
 import no.nav.common.utils.Credentials;
-import no.nav.common.utils.NaisUtils;
 import no.nav.poao_tilgang.client.AdGruppe;
 import no.nav.poao_tilgang.client.Decision;
 import no.nav.poao_tilgang.client.PoaoTilgangCachedClient;
@@ -43,7 +37,6 @@ import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
 
-import static no.nav.common.abac.audit.AuditLogFilterUtils.anyResourceAttributeFilter;
 import static no.nav.common.utils.NaisUtils.getCredentials;
 
 @Slf4j
@@ -91,6 +84,7 @@ public class ApplicationConfig {
         return AuthContextHolderThreadLocal.instance();
     }
 
+    // TODO brukes STS av noen lenger?
     @Bean
     public SystemUserTokenProvider systemUserTokenProvider(EnvironmentProperties properties, Credentials serviceUserCredentials) {
         return new NaisSystemUserTokenProvider(properties.getNaisStsDiscoveryUrl(), serviceUserCredentials.username, serviceUserCredentials.password);
@@ -109,20 +103,6 @@ public class ApplicationConfig {
                 .username(serviceUserCredentials.username)
                 .password(serviceUserCredentials.password)
                 .build();
-    }
-
-    @Bean
-    public Pep veilarbPep(EnvironmentProperties properties) {
-        Credentials serviceUserCredentials = NaisUtils.getCredentials("service_user");
-        return veilarbPep(properties, serviceUserCredentials);
-    }
-
-    protected Pep veilarbPep(EnvironmentProperties properties, Credentials serviceUserCredentials) {
-        return VeilarbPepFactory.get(
-                properties.getAbacUrl(), serviceUserCredentials.username,
-                serviceUserCredentials.password, new SpringAuditRequestInfoSupplier(),
-                AuditLogFilterUtils.not(anyResourceAttributeFilter(NavAttributter.RESOURCE_VEILARB_ENHET_EIENDEL::equals))
-        );
     }
 
     @Bean

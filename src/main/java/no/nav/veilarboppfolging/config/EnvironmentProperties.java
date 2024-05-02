@@ -29,9 +29,6 @@ public class EnvironmentProperties {
 
     private String naisStsClientId;
 
-
-    private String abacUrl;
-
     private String norg2Url;
 
     private String aktorregisterUrl;

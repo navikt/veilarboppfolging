@@ -4,8 +4,6 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.abac.Pep;
-import no.nav.common.abac.domain.request.*;
 import no.nav.common.audit_log.cef.AuthorizationDecision;
 import no.nav.common.audit_log.cef.CefMessage;
 import no.nav.common.audit_log.cef.CefMessageEvent;
@@ -22,15 +20,12 @@ import no.nav.common.types.identer.*;
 import no.nav.poao_tilgang.client.*;
 import no.nav.veilarboppfolging.config.EnvironmentProperties;
 import no.nav.veilarboppfolging.utils.DownstreamApi;
-import no.nav.veilarboppfolging.utils.auth.AuthorizeAktorId;
-import no.nav.veilarboppfolging.utils.auth.AuthorizeFnr;
 import no.nav.veilarboppfolging.utils.auth.UnauthorizedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.lang.annotation.Annotation;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
@@ -52,8 +47,6 @@ public class AuthService {
     private final AuthContextHolder authContextHolder;
     private final AuditLogger auditLogger;
 
-    private final Pep veilarbPep;
-
     private final AzureAdOnBehalfOfTokenClient aadOboTokenClient;
 
     private final MachineToMachineTokenClient machineToMachineTokenClient;
@@ -65,9 +58,8 @@ public class AuthService {
     private final PoaoTilgangClient poaoTilgangClient;
 
     @Autowired
-    public AuthService(AuthContextHolder authContextHolder, Pep veilarbPep, AktorOppslagClient aktorOppslagClient, AzureAdOnBehalfOfTokenClient aadOboTokenClient, MachineToMachineTokenClient machineToMachineTokenClient, EnvironmentProperties environmentProperties, AuditLogger auditLogger, PoaoTilgangClient poaoTilgangClient) {
+    public AuthService(AuthContextHolder authContextHolder, AktorOppslagClient aktorOppslagClient, AzureAdOnBehalfOfTokenClient aadOboTokenClient, MachineToMachineTokenClient machineToMachineTokenClient, EnvironmentProperties environmentProperties, AuditLogger auditLogger, PoaoTilgangClient poaoTilgangClient) {
         this.authContextHolder = authContextHolder;
-        this.veilarbPep = veilarbPep;
         this.aktorOppslagClient = aktorOppslagClient;
         this.aadOboTokenClient = aadOboTokenClient;
         this.machineToMachineTokenClient = machineToMachineTokenClient;
@@ -205,14 +197,13 @@ public class AuthService {
         }
     }
 
-    // TODO fungerer ikke for eksternbrukere fordi abac ikke støtter tokenx tokens
     public void sjekkLesetilgangMedAktorId(AktorId aktorId) {
-        sjekkTilgang(ActionId.READ, aktorId);
+        sjekkTilgang(TilgangType.LESE, aktorId);
 
     }
 
     public void sjekkSkrivetilgangMedAktorId(AktorId aktorId) {
-        sjekkTilgang(ActionId.WRITE, aktorId);
+        sjekkTilgang(TilgangType.SKRIVE, aktorId);
     }
 
     public void sjekkTilgangTilEnhet(String enhetId) {
@@ -250,8 +241,7 @@ public class AuthService {
             case EKSTERN:
                 fnr = Fnr.of(getInnloggetBrukerIdent());
                 break;
-            case INTERN:
-            case SYSTEM:
+            case INTERN, SYSTEM:
                 fnr = queryParamFnr;
                 break;
             default:
@@ -379,11 +369,11 @@ public class AuthService {
                 .contains("access_as_application");
     }
 
-    private void sjekkTilgang(ActionId actionId, AktorId aktorId) {
+    private void sjekkTilgang(TilgangType tilgangType, AktorId aktorId) {
         Optional<String> sikkerhetsnivaa = hentSikkerhetsnivaa();
         if (erInternBruker()) {
             Decision decision = poaoTilgangClient.evaluatePolicy(new NavAnsattTilgangTilEksternBrukerPolicyInput(
-                    hentInnloggetVeilederUUID(), mapActionTypeToTilgangsType(actionId), getFnrOrThrow(aktorId).get()
+                    hentInnloggetVeilederUUID(), tilgangType, getFnrOrThrow(aktorId).get()
             )).getOrThrow();
             auditLogWithMessageAndDestinationUserId(
                     "Veileder har gjort oppslag på aktorid",
@@ -417,7 +407,7 @@ public class AuthService {
 
     private boolean erAadOboToken() {
         Optional<String> navIdentClaim = authContextHolder.getIdTokenClaims()
-                .flatMap((claims) -> authContextHolder.getStringClaim(claims, "NAVident"));
+                .flatMap(claims -> authContextHolder.getStringClaim(claims, "NAVident"));
         return authContextHolder.getIdTokenClaims().map(JWTClaimsSet::getIssuer).filter(environmentProperties.getNaisAadIssuer()::equals).isPresent()
                 && authContextHolder.getIdTokenClaims().map(x -> x.getClaim("oid")).isPresent()
                 && navIdentClaim.isPresent();
@@ -467,15 +457,6 @@ public class AuthService {
     private Optional<String> hentSikkerhetsnivaa() {
         return authContextHolder.getIdTokenClaims()
                 .flatMap(claims -> getStringClaimOrEmpty(claims, "acr"));
-    }
-
-    private TilgangType mapActionTypeToTilgangsType(ActionId actionId) {
-        if (actionId == ActionId.READ) {
-            return TilgangType.LESE;
-        } else if (actionId == ActionId.WRITE) {
-            return TilgangType.SKRIVE;
-        }
-        throw new RuntimeException("Uventet actionId");
     }
 
     private void auditLogWithMessageAndDestinationUserId(String logMessage, String destinationUserId, String sourceUserID, AuthorizationDecision authorizationDecision) {

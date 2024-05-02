@@ -4,7 +4,6 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.PlainJWT;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
-import no.nav.common.abac.Pep;
 import no.nav.common.audit_log.cef.CefMessage;
 import no.nav.common.audit_log.log.AuditLogger;
 import no.nav.common.auth.context.AuthContextHolder;
@@ -14,7 +13,6 @@ import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
 import no.nav.common.utils.Credentials;
 import no.nav.poao_tilgang.client.PoaoTilgangClient;
-import no.nav.veilarboppfolging.mock.PepMock;
 import no.nav.veilarboppfolging.test.DbTestUtils;
 import no.nav.veilarboppfolging.test.LocalH2Database;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -29,7 +27,6 @@ import org.springframework.transaction.support.TransactionTemplate;
 import javax.sql.DataSource;
 
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 @Configuration
 @EnableConfigurationProperties({EnvironmentProperties.class})
@@ -61,11 +58,6 @@ public class ApplicationTestConfig {
     @Bean
     public Credentials serviceUserCredentials() {
         return new Credentials("username", "password");
-    }
-
-    @Bean
-    public Pep veilarbPep() {
-        return new PepMock();
     }
 
     @Bean

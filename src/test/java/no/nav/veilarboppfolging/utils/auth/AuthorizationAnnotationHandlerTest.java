@@ -3,7 +3,6 @@ package no.nav.veilarboppfolging.utils.auth;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.PlainJWT;
 import lombok.SneakyThrows;
-import no.nav.common.abac.Pep;
 import no.nav.common.audit_log.log.AuditLogger;
 import no.nav.common.auth.context.AuthContext;
 import no.nav.common.auth.context.AuthContextHolder;
@@ -38,10 +37,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class AuthorizationAnnotationHandlerTest {
+class AuthorizationAnnotationHandlerTest {
 
-    @Mock
-    private Pep veilarbPep;
     @Mock
     private AktorOppslagClient aktorOppslagClient;
     @Mock
@@ -134,7 +131,7 @@ public class AuthorizationAnnotationHandlerTest {
     }
 
     private void setupServices() {
-        AuthService authService = new AuthService(authContextHolder, veilarbPep, aktorOppslagClient, null, null, null, auditLogger, poaoTilgangClient);
+        AuthService authService = new AuthService(authContextHolder, aktorOppslagClient, null, null, null, auditLogger, poaoTilgangClient);
         this.authService = authService;
         annotationHandler = new AuthorizationAnnotationHandler(authService);
     }

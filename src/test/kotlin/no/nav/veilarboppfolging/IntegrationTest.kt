@@ -1,8 +1,7 @@
 package no.nav.veilarboppfolging
 
 import com.nimbusds.jwt.JWTClaimsSet
-import no.nav.common.abac.Pep
-import no.nav.common.abac.domain.request.ActionId
+
 import no.nav.common.auth.context.AuthContextHolder
 import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient
@@ -36,9 +35,6 @@ import java.util.*
 @SpringBootTest(classes = [ApplicationTestConfig::class])
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 open class IntegrationTest {
-
-    @MockBean
-    lateinit var veilarbPep: Pep
 
     @MockBean
     lateinit var authContextHolder: AuthContextHolder
@@ -107,13 +103,7 @@ open class IntegrationTest {
         Mockito.`when`(authContextHolder.idTokenClaims).thenReturn(Optional.of(claims))
 
         val token = "token"
-        Mockito.`when`(
-            veilarbPep.harTilgangTilPerson(
-                token,
-                ActionId.READ,
-                aktørId
-            )
-        ).thenReturn(true)
+
         Mockito.`when`(authContextHolder.idTokenString).thenReturn(Optional.of(token))
 
         Mockito.`when`(authContextHolder.erSystemBruker()).thenReturn(true)
