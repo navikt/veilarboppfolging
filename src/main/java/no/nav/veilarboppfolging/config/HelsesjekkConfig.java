@@ -1,7 +1,6 @@
 package no.nav.veilarboppfolging.config;
 
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.abac.Pep;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.health.HealthCheck;
 import no.nav.common.health.HealthCheckResult;
@@ -25,13 +24,12 @@ public class HelsesjekkConfig {
     public SelfTestChecks selfTestChecks(BehandleArbeidssokerClient behandleArbeidssokerClient,
                                          YtelseskontraktClient ytelseskontraktClient,
                                          JdbcTemplate jdbcTemplate,
-                                         Pep pep,
                                          AktorOppslagClient aktorOppslagClient) {
         List<SelfTestCheck> selfTestChecks = Arrays.asList(
                 new SelfTestCheck("Ping av BehandleArbeidssoker_V1. Registrerer arbeidssoker i Arena.", true, behandleArbeidssokerClient),
                 new SelfTestCheck("Ping av ytelseskontrakt_V3. Henter informasjon om ytelser fra Arena.", false, ytelseskontraktClient),
                 new SelfTestCheck("Enkel spørring mot Databasen til veilarboppfolging.", true, checkDbHealth(jdbcTemplate)),
-                new SelfTestCheck("ABAC tilgangskontroll - ping", true, pep.getAbacClient()),
+                // TODO selftest poao-tilgang
                 new SelfTestCheck("Ping av aktor oppslag client (konvertere mellom aktorId og Fnr).", true, aktorOppslagClient)
         );
 
