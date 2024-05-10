@@ -38,7 +38,7 @@ public class VeilederV3Controller {
     @PostMapping("/veileder/lest-aktivitetsplan")
     public ResponseEntity<?> lestAktivitetsplan(@RequestBody VeilederRequest veilederRequest) {
         veilederTilordningService.lestAktivitetsplan(veilederRequest.fnr());
-        return ResponseEntity.status(HttpStatus.OK).build();
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
 }
