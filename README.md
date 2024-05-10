@@ -30,4 +30,6 @@ Se beskrivelse av hvordan man kan oppdatere topics i https://github.com/navikt/p
 | `/internal/publiser_oppfolging_status_historikk`           | Legg ut *alle* brukere på topic for endring av oppfølgingstatus  |
 | `/internal/publiser_oppfolging_status?aktoerId=<aktoerId>` | Publiser oppfølgingstatus på nytt for gjeldende bruker           |
 
+## Kode generert av GitHub Copilot
 
+Dette repoet bruker GitHub Copilot til å generere kode.
