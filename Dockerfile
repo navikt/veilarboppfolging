@@ -1,4 +1,4 @@
-FROM ghcr.io/navikt/poao-baseimages/java:17
+FROM ghcr.io/navikt/baseimages/temurin:21
 
 COPY init.sh /init-scripts/init.sh
 COPY /target/veilarboppfolging.jar app.jar
