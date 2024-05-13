@@ -140,6 +140,9 @@ spec:
         - application: amt-distribusjon
           namespace: amt
           cluster: prod-gcp
+        - application: dokumentfordeling
+          namespace: arbeidsgiver
+          cluster: prod-fss
   vault:
     enabled: true
     paths:

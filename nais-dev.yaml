@@ -145,6 +145,9 @@ spec:
         - application: amt-distribusjon
           namespace: amt
           cluster: dev-gcp
+        - application: dokumentfordeling
+          namespace: arbeidsgiver
+          cluster: dev-fss
   vault:
     enabled: true
     paths:
