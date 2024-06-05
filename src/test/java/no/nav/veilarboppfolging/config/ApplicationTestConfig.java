@@ -13,6 +13,7 @@ import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
 import no.nav.common.utils.Credentials;
 import no.nav.poao_tilgang.client.PoaoTilgangClient;
+import no.nav.veilarboppfolging.client.amttiltak.AmtTiltakClient;
 import no.nav.veilarboppfolging.test.DbTestUtils;
 import no.nav.veilarboppfolging.test.LocalH2Database;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -109,4 +110,9 @@ public class ApplicationTestConfig {
 
 	@Bean
 	public PoaoTilgangClient poaoTilgangClient() { return mock(PoaoTilgangClient.class); }
+
+    @Bean
+    public AmtTiltakClient amtTiltakClient() {
+        return mock(AmtTiltakClient.class);
+    }
 }

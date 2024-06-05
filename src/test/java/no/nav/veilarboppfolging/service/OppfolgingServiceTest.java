@@ -5,11 +5,10 @@ import lombok.val;
 import no.nav.common.client.aktorregister.IngenGjeldendeIdentException;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.pto_schema.kafka.json.topic.SisteOppfolgingsperiodeV1;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt.Ytelseskontrakt;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.HentYtelseskontraktListeRequest;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.HentYtelseskontraktListeResponse;
-import no.nav.veilarboppfolging.client.digdir_krr.DigdirKontaktinfo;
+import no.nav.veilarboppfolging.client.amttiltak.AmtTiltakClient;
 import no.nav.veilarboppfolging.client.digdir_krr.KRRData;
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolgingTilstand;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
@@ -67,6 +66,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     private KvpRepository kvpRepository = mock(KvpRepository.class);
     private MetricsService metricsService = mock(MetricsService.class);
     private ManuellStatusService manuellStatusService = mock(ManuellStatusService.class);
+    private AmtTiltakClient amtTiltakClient = mock(AmtTiltakClient.class);
     private OppfolgingsStatusRepository oppfolgingsStatusRepository;
     private OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
     private OppfolgingService oppfolgingService;
@@ -88,7 +88,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
                 oppfolgingsStatusRepository,
                 oppfolgingsPeriodeRepository,
                 manuellStatusService,
-
+                amtTiltakClient,
                 kvpRepository,
                 null,
                 null,
@@ -103,6 +103,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         when(arenaOppfolgingService.hentOppfolgingTilstand(FNR)).thenReturn(Optional.of(arenaOppfolgingTilstand));
         when(ytelseskontraktClient.hentYtelseskontraktListe(any())).thenReturn(mock(YtelseskontraktResponse.class));
         when(manuellStatusService.hentDigdirKontaktinfo(FNR)).thenReturn(new KRRData());
+        when(amtTiltakClient.harAktiveTiltaksdeltakelser(FNR.get())).thenReturn(false);
     }
 
     @Test
@@ -144,6 +145,24 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         when(authService.harTilgangTilEnhet(any())).thenReturn(false);
         doCallRealMethod().when(authService).sjekkTilgangTilEnhet(any());
         oppfolgingService.avsluttOppfolging(FNR, VEILEDER, BEGRUNNELSE);
+    }
+
+    @Test
+    public void skal_ikke_avslutte_oppfolging_hvis_aktive_tiltaksdeltakelser() {
+        when(amtTiltakClient.harAktiveTiltaksdeltakelser(FNR.get())).thenReturn(true);
+        arenaOppfolgingTilstand.setFormidlingsgruppe("IARBS");
+        oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
+        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker.reaktivertBruker(AKTOR_ID));
+
+        assertUnderOppfolgingLagret(AKTOR_ID);
+
+        arenaOppfolgingTilstand.setFormidlingsgruppe("ISERV");
+
+        reset(kafkaProducerService);
+        oppfolgingService.avsluttOppfolging(FNR, VEILEDER, "");
+
+        verify(kafkaProducerService, never()).publiserOppfolgingsperiode(any(OppfolgingsperiodeDTO.class));
+        assertHarGjeldendeOppfolgingsperiode(AKTOR_ID);
     }
 
     @Test

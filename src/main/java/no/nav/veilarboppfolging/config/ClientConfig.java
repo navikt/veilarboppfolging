@@ -1,6 +1,5 @@
 package no.nav.veilarboppfolging.config;
 
-import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.client.aktoroppslag.CachedAktorOppslagClient;
 import no.nav.common.client.aktoroppslag.PdlAktorOppslagClient;
@@ -8,24 +7,28 @@ import no.nav.common.client.norg2.CachedNorg2Client;
 import no.nav.common.client.norg2.Norg2Client;
 import no.nav.common.client.norg2.NorgHttp2Client;
 import no.nav.common.cxf.StsConfig;
+import no.nav.common.rest.client.RestClient;
 import no.nav.common.token_client.builder.AzureAdTokenClientBuilder;
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
 import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
 import no.nav.common.token_client.client.MachineToMachineTokenClient;
 import no.nav.common.utils.EnvironmentUtils;
+import no.nav.veilarboppfolging.client.amttiltak.AmtTiltakClient;
 import no.nav.veilarboppfolging.client.behandle_arbeidssoker.BehandleArbeidssokerClient;
 import no.nav.veilarboppfolging.client.behandle_arbeidssoker.BehandleArbeidssokerClientImpl;
+import no.nav.veilarboppfolging.client.digdir_krr.DigdirClient;
+import no.nav.veilarboppfolging.client.digdir_krr.DigdirClientImpl;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClientImpl;
 import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktClient;
 import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktClientImpl;
-import no.nav.veilarboppfolging.client.digdir_krr.DigdirClient;
-import no.nav.veilarboppfolging.client.digdir_krr.DigdirClientImpl;
 import no.nav.veilarboppfolging.service.AuthService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import static no.nav.common.utils.UrlUtils.*;
+import static no.nav.common.utils.UrlUtils.createNaisAdeoIngressUrl;
+import static no.nav.common.utils.UrlUtils.createNaisPreprodIngressUrl;
+import static no.nav.common.utils.UrlUtils.createServiceUrl;
 
 @Configuration
 public class ClientConfig {
@@ -60,6 +63,14 @@ public class ClientConfig {
 				() -> authService.getAadOboTokenForTjeneste(properties.getDigdirKrrProxyScope()),
 				authService
 		);
+    }
+
+    @Bean
+    public AmtTiltakClient amtTiltakClient(EnvironmentProperties properties, AzureAdMachineToMachineTokenClient tokenClient) {
+        return new AmtTiltakClient(properties.getAmtTiltakUrl(),
+                () -> tokenClient.createMachineToMachineToken(properties.getAmtTiltakScope()),
+                RestClient.baseClient()
+        );
     }
 
     @Bean

@@ -71,11 +71,12 @@ public class OppfolgingEndringService {
                 ArenaOppfolgingTilstand tilstand = maybeArenaTilstand.get();
                 boolean kanEnkeltReaktiveres = TRUE.equals(tilstand.getKanEnkeltReaktiveres());
                 boolean erUnderKvp = kvpService.erUnderKvp(aktorId);
-                boolean skalAvsluttes = !kanEnkeltReaktiveres && !erUnderKvp;
+                boolean harAktiveTiltaksdeltakelser = oppfolgingService.harAktiveTiltaksdeltakelser(fnr);
+                boolean skalAvsluttes = !kanEnkeltReaktiveres && !erUnderKvp && !harAktiveTiltaksdeltakelser;
 
                 secureLog.info(
-                        "Status for automatisk avslutting av oppfølging. aktorId={} kanEnkeltReaktiveres={} erUnderKvp={} skalAvsluttes={}",
-                        aktorId, kanEnkeltReaktiveres, erUnderKvp, skalAvsluttes
+                        "Status for automatisk avslutting av oppfølging. aktorId={} kanEnkeltReaktiveres={} erUnderKvp={} harAktiveTiltaksdeltakelser={} skalAvsluttes={}",
+                        aktorId, kanEnkeltReaktiveres, erUnderKvp, harAktiveTiltaksdeltakelser, skalAvsluttes
                 );
 
                 if (skalAvsluttes) {
