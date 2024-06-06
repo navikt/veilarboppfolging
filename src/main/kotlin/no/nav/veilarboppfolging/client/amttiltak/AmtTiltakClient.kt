@@ -28,7 +28,7 @@ class AmtTiltakClient(
 
     fun harAktiveTiltaksdeltakelser(personident: String): Boolean {
         val request = Request.Builder()
-            .url("$baseUrl/api/external/deltakelser")
+            .url("$baseUrl/api/external/aktiv-deltaker")
             .addHeader("Authorization", "Bearer ${tokenProvider.get()}")
             .post(objectMapper.writeValueAsString(HentDeltakelserRequest(personident)).toRequestBody(mediaTypeJson))
             .build()
@@ -40,16 +40,7 @@ class AmtTiltakClient(
 
             val body = response.body?.string() ?: throw RuntimeException("Body mangler i respons fra amt-tiltak")
 
-            val deltakelser = objectMapper.readValue<List<DeltakerDto>>(body)
-
-            return harAktiveDeltakelser(deltakelser)
+            return objectMapper.readValue<HarAktiveDeltakelserResponse>(body).harAktiveDeltakelser
         }
-    }
-
-    private fun harAktiveDeltakelser(deltakelser: List<DeltakerDto>): Boolean {
-        if (deltakelser.isEmpty()) {
-            return false
-        }
-        return deltakelser.find { it.erAktiv() } != null
     }
 }

@@ -291,6 +291,20 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     }
 
     @Test
+    public void kanIkkeAvslutteHvisManHarAktiveTiltaksdeltakelser() {
+        when(amtTiltakClient.harAktiveTiltaksdeltakelser(FNR.get())).thenReturn(true);
+        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker.reaktivertBruker(AKTOR_ID));
+        assertUnderOppfolgingLagret(AKTOR_ID);
+
+        gittArenaOppfolgingStatus("ISERV", "");
+
+        AvslutningStatusData avslutningStatusData = oppfolgingService.hentAvslutningStatus(FNR);
+
+        assertFalse(avslutningStatusData.kanAvslutte);
+        assertTrue(avslutningStatusData.harAktiveTiltaksdeltakelser);
+    }
+
+    @Test
     public void kanAvslutteMedVarselOmAktiveYtelser() {
         oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker.reaktivertBruker(AKTOR_ID));
         assertUnderOppfolgingLagret(AKTOR_ID);

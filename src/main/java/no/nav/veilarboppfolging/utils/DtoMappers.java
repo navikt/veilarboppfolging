@@ -50,7 +50,8 @@ public class DtoMappers {
                 avslutningStatusData.harYtelser,
                 avslutningStatusData.underKvp,
                 avslutningStatusData.inaktiveringsDato,
-                avslutningStatusData.erIserv
+                avslutningStatusData.erIserv,
+                avslutningStatusData.harAktiveTiltaksdeltakelser
         );
     }
 

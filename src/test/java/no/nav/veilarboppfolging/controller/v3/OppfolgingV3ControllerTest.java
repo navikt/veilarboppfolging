@@ -135,10 +135,11 @@ class OppfolgingV3ControllerTest {
                         .underKvp(false)
                         .inaktiveringsDato(LocalDate.parse("2023-01-01"))
                         .erIserv(false)
+                        .harAktiveTiltaksdeltakelser(false)
                         .build()
         );
 
-        String expectedJson = "{\"kanAvslutte\":true,\"underOppfolging\":true,\"harYtelser\":false,\"underKvp\":false,\"inaktiveringsDato\":\"2023-01-01\",\"erIserv\":false}";
+        String expectedJson = "{\"kanAvslutte\":true,\"underOppfolging\":true,\"harYtelser\":false,\"underKvp\":false,\"inaktiveringsDato\":\"2023-01-01\",\"erIserv\":false,\"harAktiveTiltaksdeltakelser\":false}";
         mockMvc.perform(post("/api/v3/oppfolging/hent-avslutning-status")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"fnr\":\"12345678900\"}")

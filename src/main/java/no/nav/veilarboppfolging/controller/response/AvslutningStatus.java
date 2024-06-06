@@ -19,5 +19,6 @@ public class AvslutningStatus {
     public boolean underKvp;
     public LocalDate inaktiveringsDato;
     public boolean erIserv;
+    public boolean harAktiveTiltaksdeltakelser;
 
 }
