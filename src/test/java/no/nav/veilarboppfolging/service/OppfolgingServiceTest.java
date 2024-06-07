@@ -142,7 +142,6 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     @Test(expected = ResponseStatusException.class)
     @SneakyThrows
     public void avslutt_oppfolging_uten_skrivetilgang_til_bruker() {
-        when(authService.harVeilederSkriveTilgangTilFnr(VEILEDER, FNR)).thenReturn(false);
         doCallRealMethod().when(authService).sjekkTilgangTilEnhet(any());
         oppfolgingService.avsluttOppfolging(FNR, VEILEDER, BEGRUNNELSE);
     }
