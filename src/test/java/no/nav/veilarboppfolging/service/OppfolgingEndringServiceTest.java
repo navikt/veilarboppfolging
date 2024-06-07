@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
 
+import static no.nav.veilarboppfolging.config.ApplicationConfig.SYSTEM_USER_NAME;
 import static no.nav.veilarboppfolging.test.TestData.TEST_AKTOR_ID;
 import static no.nav.veilarboppfolging.test.TestData.TEST_FNR;
 import static org.mockito.Mockito.*;
@@ -48,7 +49,7 @@ public class OppfolgingEndringServiceTest {
         oppfolgingEndringService.oppdaterOppfolgingMedStatusFraArena(brukverV2);
 
         verify(oppfolgingService, never()).startOppfolgingHvisIkkeAlleredeStartet(any(Oppfolgingsbruker.class));
-        verify(oppfolgingService, never()).avsluttOppfolgingForBruker(any(), any(), any());
+        verify(oppfolgingService, never()).avsluttOppfolging(any(), any(), any());
     }
 
     @Test
@@ -65,7 +66,7 @@ public class OppfolgingEndringServiceTest {
         oppfolgingEndringService.oppdaterOppfolgingMedStatusFraArena(brukverV2);
 
         verify(oppfolgingService, times(1)).startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker.arenaSyncOppfolgingBruker(TEST_AKTOR_ID, Formidlingsgruppe.ARBS));
-        verify(oppfolgingService, never()).avsluttOppfolgingForBruker(any(), any(), any());
+        verify(oppfolgingService, never()).avsluttOppfolging(any(), any(), any());
     }
 
     @Test
@@ -90,8 +91,8 @@ public class OppfolgingEndringServiceTest {
 
         verify(oppfolgingService, never()).startOppfolgingHvisIkkeAlleredeStartet(any(Oppfolgingsbruker.class));
         verify(oppfolgingService, times(1))
-                .avsluttOppfolgingForBruker(
-                    TEST_AKTOR_ID, null, "Oppfølging avsluttet automatisk pga. inaktiv bruker som ikke kan reaktiveres"
+                .avsluttOppfolging(
+                    TEST_FNR, SYSTEM_USER_NAME, "Oppfølging avsluttet automatisk pga. inaktiv bruker som ikke kan reaktiveres"
                 );
 
         verify(metricsService, times(1)).rapporterAutomatiskAvslutningAvOppfolging(true);
@@ -118,7 +119,7 @@ public class OppfolgingEndringServiceTest {
 
 
         verify(oppfolgingService, never()).startOppfolgingHvisIkkeAlleredeStartet(any(Oppfolgingsbruker.class));
-        verify(oppfolgingService, never()).avsluttOppfolgingForBruker(any(), any(), any());
+        verify(oppfolgingService, never()).avsluttOppfolging(any(), any(), any());
     }
 
     @Test
@@ -142,7 +143,7 @@ public class OppfolgingEndringServiceTest {
 
 
         verify(oppfolgingService, never()).startOppfolgingHvisIkkeAlleredeStartet(any(Oppfolgingsbruker.class));
-        verify(oppfolgingService, never()).avsluttOppfolgingForBruker(any(), any(), any());
+        verify(oppfolgingService, never()).avsluttOppfolging(any(), any(), any());
     }
 
     @Test
@@ -166,6 +167,6 @@ public class OppfolgingEndringServiceTest {
 
 
         verify(oppfolgingService, never()).startOppfolgingHvisIkkeAlleredeStartet(any(Oppfolgingsbruker.class));
-        verify(oppfolgingService, never()).avsluttOppfolgingForBruker(any(), any(), any());
+        verify(oppfolgingService, never()).avsluttOppfolging(any(), any(), any());
     }
 }

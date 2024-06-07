@@ -84,7 +84,14 @@ public class ApplicationConfig {
         return AuthContextHolderThreadLocal.instance();
     }
 
-    // TODO brukes STS av noen lenger?
+    /*
+     TODO brukes STS av noen lenger?
+      - bruker i batch/kafka consumer for å sette authcontext
+      @see no.nav.veilarboppfolging.service.IservService.finnBrukereOgAvslutt
+      @see no.nav.veilarboppfolging.service.KafkaConsumerService.consumeEndringPaOppfolgingBruker
+
+      Kan vi bruker en azureMachineTokenProvider som en drop-in erstatning? Må vi i så fall legge til veilarboppfolging i inbound access policy?
+     */
     @Bean
     public SystemUserTokenProvider systemUserTokenProvider(EnvironmentProperties properties, Credentials serviceUserCredentials) {
         return new NaisSystemUserTokenProvider(properties.getNaisStsDiscoveryUrl(), serviceUserCredentials.username, serviceUserCredentials.password);

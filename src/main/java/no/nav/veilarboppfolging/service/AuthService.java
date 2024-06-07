@@ -88,6 +88,7 @@ public class AuthService {
         }
     }
 
+    // TODO bruk poao-tilgang - der vil vi også implementere representasjon etter hvert.
     public boolean harEksternBrukerTilgang(Fnr fnr) {
         // Når man ikke bruker Pep så må man gjøre auditlogging selv
         var subjectUser = getInnloggetBrukerIdent();
@@ -200,6 +201,16 @@ public class AuthService {
     public void sjekkLesetilgangMedAktorId(AktorId aktorId) {
         sjekkTilgang(TilgangType.LESE, aktorId);
 
+    }
+
+    public void sjekkSkriveTilgangMedFnr(Fnr fnr) {
+        if (erEksternBruker()) {
+            if (!harEksternBrukerTilgang(fnr)) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Ekstern bruker har ikke tilgang på andre brukere enn seg selv");
+            }
+        } else {
+            sjekkSkrivetilgangMedAktorId(getAktorIdOrThrow(fnr));
+        }
     }
 
     public void sjekkSkrivetilgangMedAktorId(AktorId aktorId) {

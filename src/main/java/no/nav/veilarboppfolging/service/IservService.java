@@ -8,8 +8,8 @@ import no.nav.common.auth.context.UserRole;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.pto_schema.enums.arena.Formidlingsgruppe;
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
+import no.nav.veilarboppfolging.domain.AvslutningStatusData;
 import no.nav.veilarboppfolging.repository.UtmeldingRepository;
 import no.nav.veilarboppfolging.repository.entity.UtmeldingEntity;
 import org.springframework.stereotype.Service;
@@ -21,6 +21,7 @@ import java.util.List;
 
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
+import static no.nav.veilarboppfolging.config.ApplicationConfig.SYSTEM_USER_NAME;
 import static no.nav.veilarboppfolging.service.IservService.AvslutteOppfolgingResultat.*;
 import static no.nav.veilarboppfolging.utils.ArenaUtils.erIserv;
 import static no.nav.veilarboppfolging.utils.SecureLog.secureLog;
@@ -74,7 +75,7 @@ public class IservService {
                 resultater.size());
     }
 
-    public void behandleEndretBruker(EndringPaaOppfoelgingsBrukerV2 brukerV2) {
+    public void oppdaterUtmeldingsStatus(EndringPaaOppfoelgingsBrukerV2 brukerV2) {
         AktorId aktorId = authService.getAktorIdOrThrow(Fnr.of(brukerV2.getFodselsnummer()));
 
         var formidlingsgruppe = ofNullable(brukerV2.getFormidlingsgruppe()).orElse(null);
@@ -146,7 +147,9 @@ public class IservService {
             } else {
                 Fnr fnr = authService.getFnrOrThrow(aktorId);
 
-                boolean oppfolgingAvsluttet = oppfolgingService.avsluttOppfolgingForSystemBruker(fnr);
+                AvslutningStatusData avslutningStatus = oppfolgingService.avsluttOppfolging(fnr, SYSTEM_USER_NAME, "Oppfølging avsluttet automatisk grunnet iserv i 28 dager");
+                // TODO litt i tvil om denne her. Attributtet sier om du per def er under oppfølging i arena, ikke om du er under oppfølging hos oss.
+                boolean oppfolgingAvsluttet = !avslutningStatus.underOppfolging;
 
                 resultat = oppfolgingAvsluttet ? AVSLUTTET_OK : IKKE_AVSLUTTET;
 

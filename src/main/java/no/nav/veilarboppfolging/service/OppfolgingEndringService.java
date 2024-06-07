@@ -17,6 +17,7 @@ import java.util.Optional;
 
 import static java.lang.Boolean.TRUE;
 import static java.util.Optional.ofNullable;
+import static no.nav.veilarboppfolging.config.ApplicationConfig.SYSTEM_USER_NAME;
 import static no.nav.veilarboppfolging.utils.ArenaUtils.erIserv;
 import static no.nav.veilarboppfolging.utils.ArenaUtils.erUnderOppfolging;
 import static no.nav.veilarboppfolging.utils.SecureLog.secureLog;
@@ -81,7 +82,7 @@ public class OppfolgingEndringService {
 
                 if (skalAvsluttes) {
                     secureLog.info("Automatisk avslutting av oppfølging på bruker. aktorId={}", aktorId);
-                    oppfolgingService.avsluttOppfolgingForBruker(aktorId, null, "Oppfølging avsluttet automatisk pga. inaktiv bruker som ikke kan reaktiveres");
+                    oppfolgingService.avsluttOppfolging(fnr, SYSTEM_USER_NAME, "Oppfølging avsluttet automatisk pga. inaktiv bruker som ikke kan reaktiveres");
                     metricsService.rapporterAutomatiskAvslutningAvOppfolging(true);
                 }
             } else {

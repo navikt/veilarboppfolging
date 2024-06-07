@@ -127,47 +127,33 @@ public class OppfolgingService {
         return getAvslutningStatus(fnr);
     }
 
+
+
     @SneakyThrows
     public AvslutningStatusData avsluttOppfolging(Fnr fnr, String veilederId, String begrunnelse) {
         AktorId aktorId = authService.getAktorIdOrThrow(fnr);
-
-        authService.sjekkLesetilgangMedFnr(fnr);
-
         ArenaOppfolgingTilstand arenaOppfolgingTilstand = arenaOppfolgingService.hentOppfolgingTilstand(fnr)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR));
+                .orElseThrow(() -> new RuntimeException("Feilet under henting av oppfølgingstilstand"));
 
-        authService.sjekkTilgangTilEnhet(arenaOppfolgingTilstand.getOppfolgingsenhet());
+        if (authService.erSystemBruker()) {
+            secureLog.info("Forsøker å avslutte oppfølging for fnr: {} som systembruker", fnr.get());
+        } else {
+            authService.sjekkSkriveTilgangMedFnr(fnr);
+            authService.sjekkTilgangTilEnhet(arenaOppfolgingTilstand.getOppfolgingsenhet());
+            secureLog.info("Veileder: {} forsøker å avslutte oppfølging for fnr: {}", authService.getInnloggetBrukerIdent(), fnr.get());
+        }
+
 
         boolean erIserv = erIserv(EnumUtils.valueOf(Formidlingsgruppe.class, arenaOppfolgingTilstand.getFormidlingsgruppe()));
 
         boolean harAktiveTiltaksdeltakelser = harAktiveTiltaksdeltakelser(fnr);
 
         if (kanAvslutteOppfolging(aktorId, erUnderOppfolging(aktorId), erIserv, harAktiveTiltaksdeltakelser)) {
-            secureLog.info("Avslutting av oppfølging, tilstand i Arena for aktorid {}: {}", aktorId, arenaOppfolgingTilstand);
+            secureLog.info("Avslutting av oppfølging utført av: {}, begrunnelse: {}, tilstand i Arena for aktorid {}: {}", veilederId, begrunnelse, aktorId, arenaOppfolgingTilstand);
             avsluttOppfolgingForBruker(aktorId, veilederId, begrunnelse);
         }
 
         return getAvslutningStatus(fnr);
-    }
-
-    public boolean avsluttOppfolgingForSystemBruker(Fnr fnr) {
-        AktorId aktorId = authService.getAktorIdOrThrow(fnr);
-
-        ArenaOppfolgingTilstand arenaOppfolgingTilstand = arenaOppfolgingService.hentOppfolgingTilstand(fnr)
-                .orElseThrow();
-
-        secureLog.info("Avslutting av oppfølging, tilstand i Arena for aktorid {}: {}", aktorId, arenaOppfolgingTilstand);
-
-        boolean erIserv = erIserv(EnumUtils.valueOf(Formidlingsgruppe.class, arenaOppfolgingTilstand.getFormidlingsgruppe()));
-
-        boolean harAktiveTiltaksdeltakelser = harAktiveTiltaksdeltakelser(fnr);
-
-        if (!kanAvslutteOppfolging(aktorId, erUnderOppfolging(aktorId), erIserv, harAktiveTiltaksdeltakelser)) {
-            return false;
-        }
-
-        avsluttOppfolgingForBruker(aktorId, SYSTEM_USER_NAME, "Oppfølging avsluttet automatisk grunnet iserv i 28 dager");
-        return true;
     }
 
     @SneakyThrows
@@ -309,7 +295,7 @@ public class OppfolgingService {
         });
     }
 
-    public boolean kanAvslutteOppfolging(AktorId aktorId, boolean erUnderOppfolging, boolean erIservIArena, boolean harAktiveTiltaksdeltakelser) {
+    private boolean kanAvslutteOppfolging(AktorId aktorId, boolean erUnderOppfolging, boolean erIservIArena, boolean harAktiveTiltaksdeltakelser) {
         boolean ikkeUnderKvp = !kvpService.erUnderKvp(aktorId);
 
         secureLog.info("Kan oppfolging avsluttes for aktorid {}?, oppfolging.isUnderOppfolging(): {}, erIservIArena(): {}, !erUnderKvp(): {}, harAktiveTiltaksdeltakelser(): {}",
@@ -321,7 +307,7 @@ public class OppfolgingService {
                 && !harAktiveTiltaksdeltakelser;
     }
 
-    public void avsluttOppfolgingForBruker(AktorId aktorId, String veilederId, String begrunnelse) {
+    private void avsluttOppfolgingForBruker(AktorId aktorId, String veilederId, String begrunnelse) {
         transactor.executeWithoutResult((ignored) -> {
 
             oppfolgingsPeriodeRepository.avslutt(aktorId, veilederId, begrunnelse);
