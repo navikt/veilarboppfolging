@@ -148,6 +148,9 @@ spec:
         - application: dokumentfordeling
           namespace: arbeidsgiver
           cluster: dev-fss
+        - application: modiapersonoversikt-api
+          namespace: personoversikt
+          cluster: dev-gcp
   vault:
     enabled: true
     paths:
