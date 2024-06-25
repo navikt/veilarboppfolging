@@ -21,6 +21,7 @@
         <java.version>21</java.version>
         <common.version>3.2023.10.23_12.41-bafec3836d28</common.version>
         <tjenestespesifikasjoner.version>1.2019.09.25-00.21-49b69f0625e0</tjenestespesifikasjoner.version>
+        <arbeidssokerregister.version>1.9348086045.48-1</arbeidssokerregister.version>
         <javax-xml-bind.version>2.3.2</javax-xml-bind.version>
         <wiremock.version>3.0.0-beta-10</wiremock.version>
         <schedlock.version>5.10.2</schedlock.version>
@@ -44,6 +45,10 @@
         <repository>
             <id>confluent</id>
             <url>https://packages.confluent.io/maven/</url>
+        </repository>
+        <repository>
+            <id>github-nav</id>
+            <url>https://github-package-registry-mirror.gc.nav.no/cached/maven-release</url>
         </repository>
     </repositories>
 
@@ -443,6 +448,29 @@
                                     <outputDirectory>${project.build.outputDirectory}/classes</outputDirectory>
                                 </configuration>
                             </execution>
+                            <execution>
+                                <id>resource-dependencies-avro</id>
+                                <phase>generate-sources</phase>
+                                <goals>
+                                    <goal>unpack</goal>
+                                </goals>
+                                <configuration>
+                                    <artifactItems>
+                                        <artifactItem>
+                                            <groupId>no.nav.paw.arbeidssokerregisteret.api</groupId>
+                                            <artifactId>main-avro-schema</artifactId>
+                                            <version>${arbeidssokerregister.version}</version>
+                                            <type>jar</type>
+                                            <overWrite>true</overWrite>
+                                            <outputDirectory>${project.build.directory}/classes/avro</outputDirectory>
+                                        </artifactItem>
+                                    </artifactItems>
+                                    <includes>
+                                        **
+                                    </includes>
+                                    <outputDirectory>${project.build.outputDirectory}/classes/avro</outputDirectory>
+                                </configuration>
+                            </execution>
                         </executions>
                     </plugin>
                     <plugin>
@@ -475,6 +503,24 @@
                                             <wsdl>${project.build.outputDirectory}/wsdl/no/nav/tjeneste/virksomhet/behandleArbeidssoeker/v1/Binding.wsdl</wsdl>
                                         </wsdlOption>
                                     </wsdlOptions>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.avro</groupId>
+                        <artifactId>avro-maven-plugin</artifactId>
+                        <version>1.11.3</version>
+                        <executions>
+                            <execution>
+                                <id>avro-plugin</id>
+                                <phase>generate-sources</phase>
+                                <goals>
+                                    <goal>idl-protocol</goal>
+                                </goals>
+                                <configuration>
+                                    <sourceDirectory>${project.build.outputDirectory}/avro</sourceDirectory>
+                                    <includes>**/*.avdl</includes>
                                 </configuration>
                             </execution>
                         </executions>
