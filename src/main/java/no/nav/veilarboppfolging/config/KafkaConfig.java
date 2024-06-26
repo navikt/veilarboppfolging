@@ -1,5 +1,6 @@
 package no.nav.veilarboppfolging.config;
 
+import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig;
 import io.micrometer.core.instrument.MeterRegistry;
 import net.javacrumbs.shedlock.core.LockProvider;
 import no.nav.common.job.leader_election.LeaderElectionClient;
@@ -17,16 +18,24 @@ import no.nav.common.kafka.producer.util.KafkaProducerClientBuilder;
 import no.nav.common.kafka.spring.OracleJdbcTemplateConsumerRepository;
 import no.nav.common.kafka.spring.OracleJdbcTemplateProducerRepository;
 import no.nav.common.kafka.util.KafkaPropertiesBuilder;
+import no.nav.common.utils.EnvironmentUtils;
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
+import no.nav.veilarboppfolging.kafka.ArbeidssøkerperiodeConsumer;
 import no.nav.veilarboppfolging.service.KafkaConsumerService;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
+import org.apache.kafka.common.serialization.Deserializer;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
 import jakarta.annotation.PostConstruct;
+
+import java.io.Closeable;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+import no.nav.paw.arbeidssokerregisteret.api.v1.Periode;
 
 import static no.nav.common.kafka.consumer.util.ConsumerUtils.findConsumerConfigsWithStoreOnFailure;
 import static no.nav.common.kafka.util.KafkaPropertiesPreset.aivenByteProducerProperties;
@@ -47,14 +56,14 @@ public class KafkaConfig {
 
     private final KafkaProducerRecordStorage producerRecordStorage;
 
-
     public KafkaConfig(
             LeaderElectionClient leaderElectionClient,
             JdbcTemplate jdbcTemplate,
             LockProvider lockProvider,
             KafkaConsumerService kafkaConsumerService,
             KafkaProperties kafkaProperties,
-            MeterRegistry meterRegistry
+            MeterRegistry meterRegistry,
+            ArbeidssøkerperiodeConsumer arbeidssøkerperiodeConsumer
     ) {
         KafkaConsumerRepository consumerRepository = new OracleJdbcTemplateConsumerRepository(jdbcTemplate);
         KafkaProducerRepository producerRepository = new OracleJdbcTemplateProducerRepository(jdbcTemplate);
@@ -69,6 +78,16 @@ public class KafkaConfig {
                                 Deserializers.stringDeserializer(),
                                 Deserializers.jsonDeserializer(EndringPaaOppfoelgingsBrukerV2.class),
                                 kafkaConsumerService::consumeEndringPaOppfolgingBruker
+                        ),
+                new KafkaConsumerClientBuilder.TopicConfig<String, Periode>()
+                        .withLogging()
+                        .withMetrics(meterRegistry)
+                        .withStoreOnFailure(consumerRepository)
+                        .withConsumerConfig(
+                                kafkaProperties.getArbeidssokerperioderTopicAiven(),
+                                Deserializers.stringDeserializer(),
+                                Deserializers.aivenAvroDeserializer(),
+                                arbeidssøkerperiodeConsumer::consumeArbeidssøkerperiode
                         )
         );
 

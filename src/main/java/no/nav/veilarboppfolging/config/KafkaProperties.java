@@ -20,4 +20,5 @@ public class KafkaProperties {
     String kvpAvsluttetTopicAiven;
     String kvpStartetTopicAiven;
     String kvpPerioderTopicAiven;
+    String arbeidssokerperioderTopicAiven;
 }
