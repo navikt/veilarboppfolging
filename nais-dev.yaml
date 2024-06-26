@@ -48,6 +48,10 @@ spec:
       value: https://digdir-krr-proxy.intern.dev.nav.no
     - name: DIGDIR_KRR_PROXY_SCOPE
       value: api://dev-gcp.team-rocket.digdir-krr-proxy/.default
+    - name: AMTTILTAK_URL
+      value: https://amt-tiltak.intern.dev.nav.no
+    - name: AMTTILTAK_SCOPE
+      value: api://dev-gcp.amt.amt-tiltak/.default
   secureLogs:
     enabled: true
   kafka:

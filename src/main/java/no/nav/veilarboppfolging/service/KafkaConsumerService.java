@@ -86,7 +86,7 @@ public class KafkaConsumerService {
 
         authContextHolder.withContext(context, () -> {
             kvpService.avsluttKvpVedEnhetBytte(endringPaBruker);
-            iservService.behandleEndretBruker(endringPaBruker);
+            iservService.oppdaterUtmeldingsStatus(endringPaBruker);
             oppfolgingsenhetEndringService.behandleBrukerEndring(endringPaBruker);
             oppfolgingEndringService.oppdaterOppfolgingMedStatusFraArena(endringPaBruker);
             sisteEndringPaaOppfolgingBrukerService.lagreSisteEndring(brukerFnr, endringPaBruker.getSistEndretDato());

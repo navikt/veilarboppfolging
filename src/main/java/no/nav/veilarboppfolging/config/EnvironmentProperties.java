@@ -55,4 +55,8 @@ public class EnvironmentProperties {
 
 	private String digdirKrrProxyScope;
 
+    private String amtTiltakUrl;
+
+    private String amtTiltakScope;
+
 }

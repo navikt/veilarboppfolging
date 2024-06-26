@@ -3,6 +3,7 @@ package no.nav.veilarboppfolging.service;
 import no.nav.common.health.HealthCheckResult;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.veilarboppfolging.client.amttiltak.AmtTiltakClient;
 import no.nav.veilarboppfolging.client.digdir_krr.DigdirClient;
 import no.nav.veilarboppfolging.client.digdir_krr.KRRData;
 import no.nav.veilarboppfolging.controller.request.Innsatsgruppe;
@@ -101,7 +102,7 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
                 null, null, null, authService,
                 oppfolgingsStatusRepository, oppfolgingsPeriodeRepository,
                 manuellStatusService,
-
+                mock(AmtTiltakClient.class),
                 new KvpRepository(db, namedParameterJdbcTemplate, transactor), maalRepository,
                 new BrukerOppslagFlereOppfolgingAktorRepository(db), transactor);
 

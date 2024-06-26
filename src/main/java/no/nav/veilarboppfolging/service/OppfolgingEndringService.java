@@ -17,6 +17,7 @@ import java.util.Optional;
 
 import static java.lang.Boolean.TRUE;
 import static java.util.Optional.ofNullable;
+import static no.nav.veilarboppfolging.config.ApplicationConfig.SYSTEM_USER_NAME;
 import static no.nav.veilarboppfolging.utils.ArenaUtils.erIserv;
 import static no.nav.veilarboppfolging.utils.ArenaUtils.erUnderOppfolging;
 import static no.nav.veilarboppfolging.utils.SecureLog.secureLog;
@@ -71,16 +72,17 @@ public class OppfolgingEndringService {
                 ArenaOppfolgingTilstand tilstand = maybeArenaTilstand.get();
                 boolean kanEnkeltReaktiveres = TRUE.equals(tilstand.getKanEnkeltReaktiveres());
                 boolean erUnderKvp = kvpService.erUnderKvp(aktorId);
-                boolean skalAvsluttes = !kanEnkeltReaktiveres && !erUnderKvp;
+                boolean harAktiveTiltaksdeltakelser = oppfolgingService.harAktiveTiltaksdeltakelser(fnr);
+                boolean skalAvsluttes = !kanEnkeltReaktiveres && !erUnderKvp && !harAktiveTiltaksdeltakelser;
 
                 secureLog.info(
-                        "Status for automatisk avslutting av oppfølging. aktorId={} kanEnkeltReaktiveres={} erUnderKvp={} skalAvsluttes={}",
-                        aktorId, kanEnkeltReaktiveres, erUnderKvp, skalAvsluttes
+                        "Status for automatisk avslutting av oppfølging. aktorId={} kanEnkeltReaktiveres={} erUnderKvp={} harAktiveTiltaksdeltakelser={} skalAvsluttes={}",
+                        aktorId, kanEnkeltReaktiveres, erUnderKvp, harAktiveTiltaksdeltakelser, skalAvsluttes
                 );
 
                 if (skalAvsluttes) {
                     secureLog.info("Automatisk avslutting av oppfølging på bruker. aktorId={}", aktorId);
-                    oppfolgingService.avsluttOppfolgingForBruker(aktorId, null, "Oppfølging avsluttet automatisk pga. inaktiv bruker som ikke kan reaktiveres");
+                    oppfolgingService.avsluttOppfolging(fnr, SYSTEM_USER_NAME, "Oppfølging avsluttet automatisk pga. inaktiv bruker som ikke kan reaktiveres");
                     metricsService.rapporterAutomatiskAvslutningAvOppfolging(true);
                 }
             } else {

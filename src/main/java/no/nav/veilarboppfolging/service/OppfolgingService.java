@@ -6,10 +6,10 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe;
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe;
+import no.nav.veilarboppfolging.client.amttiltak.AmtTiltakClient;
 import no.nav.veilarboppfolging.client.digdir_krr.KRRData;
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolgingTilstand;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
-import no.nav.veilarboppfolging.controller.request.SykmeldtBrukerType;
 import no.nav.veilarboppfolging.controller.response.UnderOppfolgingDTO;
 import no.nav.veilarboppfolging.controller.response.VeilederTilgang;
 import no.nav.veilarboppfolging.domain.AvslutningStatusData;
@@ -55,6 +55,8 @@ public class OppfolgingService {
     private final OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
     private final ManuellStatusService manuellStatusService;
 
+    private final AmtTiltakClient amtTiltakClient;
+
     private final KvpRepository kvpRepository;
     private final MaalRepository maalRepository;
     private final BrukerOppslagFlereOppfolgingAktorRepository brukerOppslagFlereOppfolgingAktorRepository;
@@ -72,6 +74,7 @@ public class OppfolgingService {
             OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository,
             // TODO: Når vi får splittet servicenen bedre så skal det ikke være behov for å bruke @Lazy
             @Lazy ManuellStatusService manuellStatusService,
+            AmtTiltakClient amtTiltakClient,
             KvpRepository kvpRepository,
             MaalRepository maalRepository,
             BrukerOppslagFlereOppfolgingAktorRepository brukerOppslagFlereOppfolgingAktorRepository,
@@ -86,6 +89,7 @@ public class OppfolgingService {
         this.oppfolgingsStatusRepository = oppfolgingsStatusRepository;
         this.oppfolgingsPeriodeRepository = oppfolgingsPeriodeRepository;
         this.manuellStatusService = manuellStatusService;
+        this.amtTiltakClient = amtTiltakClient;
         this.kvpRepository = kvpRepository;
         this.maalRepository = maalRepository;
         this.brukerOppslagFlereOppfolgingAktorRepository = brukerOppslagFlereOppfolgingAktorRepository;
@@ -123,43 +127,33 @@ public class OppfolgingService {
         return getAvslutningStatus(fnr);
     }
 
+
+
     @SneakyThrows
     public AvslutningStatusData avsluttOppfolging(Fnr fnr, String veilederId, String begrunnelse) {
         AktorId aktorId = authService.getAktorIdOrThrow(fnr);
-
-        authService.sjekkLesetilgangMedFnr(fnr);
-
         ArenaOppfolgingTilstand arenaOppfolgingTilstand = arenaOppfolgingService.hentOppfolgingTilstand(fnr)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR));
+                .orElseThrow(() -> new RuntimeException("Feilet under henting av oppfølgingstilstand"));
 
-        authService.sjekkTilgangTilEnhet(arenaOppfolgingTilstand.getOppfolgingsenhet());
+        if (authService.erSystemBruker()) {
+            secureLog.info("Forsøker å avslutte oppfølging for fnr: {} som systembruker", fnr.get());
+        } else {
+            authService.sjekkSkriveTilgangMedFnr(fnr);
+            authService.sjekkTilgangTilEnhet(arenaOppfolgingTilstand.getOppfolgingsenhet());
+            secureLog.info("Veileder: {} forsøker å avslutte oppfølging for fnr: {}", authService.getInnloggetBrukerIdent(), fnr.get());
+        }
+
 
         boolean erIserv = erIserv(EnumUtils.valueOf(Formidlingsgruppe.class, arenaOppfolgingTilstand.getFormidlingsgruppe()));
 
-        if (kanAvslutteOppfolging(aktorId, erUnderOppfolging(aktorId), erIserv)) {
-            secureLog.info("Avslutting av oppfølging, tilstand i Arena for aktorid {}: {}", aktorId, arenaOppfolgingTilstand);
+        boolean harAktiveTiltaksdeltakelser = harAktiveTiltaksdeltakelser(fnr);
+
+        if (kanAvslutteOppfolging(aktorId, erUnderOppfolging(aktorId), erIserv, harAktiveTiltaksdeltakelser)) {
+            secureLog.info("Avslutting av oppfølging utført av: {}, begrunnelse: {}, tilstand i Arena for aktorid {}: {}", veilederId, begrunnelse, aktorId, arenaOppfolgingTilstand);
             avsluttOppfolgingForBruker(aktorId, veilederId, begrunnelse);
         }
 
         return getAvslutningStatus(fnr);
-    }
-
-    public boolean avsluttOppfolgingForSystemBruker(Fnr fnr) {
-        AktorId aktorId = authService.getAktorIdOrThrow(fnr);
-
-        ArenaOppfolgingTilstand arenaOppfolgingTilstand = arenaOppfolgingService.hentOppfolgingTilstand(fnr)
-                .orElseThrow();
-
-        secureLog.info("Avslutting av oppfølging, tilstand i Arena for aktorid {}: {}", aktorId, arenaOppfolgingTilstand);
-
-        boolean erIserv = erIserv(EnumUtils.valueOf(Formidlingsgruppe.class, arenaOppfolgingTilstand.getFormidlingsgruppe()));
-
-        if (!kanAvslutteOppfolging(aktorId, erUnderOppfolging(aktorId), erIserv)) {
-            return false;
-        }
-
-        avsluttOppfolgingForBruker(aktorId, SYSTEM_USER_NAME, "Oppfølging avsluttet automatisk grunnet iserv i 28 dager");
-        return true;
     }
 
     @SneakyThrows
@@ -301,18 +295,19 @@ public class OppfolgingService {
         });
     }
 
-    public boolean kanAvslutteOppfolging(AktorId aktorId, boolean erUnderOppfolging, boolean erIservIArena) {
+    private boolean kanAvslutteOppfolging(AktorId aktorId, boolean erUnderOppfolging, boolean erIservIArena, boolean harAktiveTiltaksdeltakelser) {
         boolean ikkeUnderKvp = !kvpService.erUnderKvp(aktorId);
 
-        secureLog.info("Kan oppfolging avsluttes for aktorid {}?, oppfolging.isUnderOppfolging(): {}, erIservIArena(): {}, !erUnderKvp(): {}",
-                aktorId, erUnderOppfolging, erIservIArena, ikkeUnderKvp);
+        secureLog.info("Kan oppfolging avsluttes for aktorid {}?, oppfolging.isUnderOppfolging(): {}, erIservIArena(): {}, !erUnderKvp(): {}, harAktiveTiltaksdeltakelser(): {}",
+                aktorId, erUnderOppfolging, erIservIArena, ikkeUnderKvp, harAktiveTiltaksdeltakelser);
 
         return erUnderOppfolging
                 && erIservIArena
-                && ikkeUnderKvp;
+                && ikkeUnderKvp
+                && !harAktiveTiltaksdeltakelser;
     }
 
-    public void avsluttOppfolgingForBruker(AktorId aktorId, String veilederId, String begrunnelse) {
+    private void avsluttOppfolgingForBruker(AktorId aktorId, String veilederId, String begrunnelse) {
         transactor.executeWithoutResult((ignored) -> {
 
             oppfolgingsPeriodeRepository.avslutt(aktorId, veilederId, begrunnelse);
@@ -334,6 +329,10 @@ public class OppfolgingService {
         return oppfolgingsStatusRepository.hentOppfolging(aktorId)
                 .map(OppfolgingEntity::isUnderOppfolging)
                 .orElse(false);
+    }
+
+    protected boolean harAktiveTiltaksdeltakelser(Fnr fnr) {
+        return amtTiltakClient.harAktiveTiltaksdeltakelser(fnr.get());
     }
 
     private Optional<OppfolgingEntity> getOppfolgingStatus(Fnr fnr) {
@@ -413,7 +412,9 @@ public class OppfolgingService {
 
         boolean erIserv = maybeArenaOppfolging.map(ao -> erIserv(EnumUtils.valueOf(Formidlingsgruppe.class, ao.getFormidlingsgruppe()))).orElse(false);
 
-        boolean kanAvslutte = kanAvslutteOppfolging(aktorId, erUnderOppfolging(aktorId), erIserv);
+        boolean harAktiveTiltaksdeltakelser = harAktiveTiltaksdeltakelser(fnr);
+
+        boolean kanAvslutte = kanAvslutteOppfolging(aktorId, erUnderOppfolging(aktorId), erIserv, harAktiveTiltaksdeltakelser);
 
         boolean erUnderOppfolgingIArena = maybeArenaOppfolging
                 .map(status -> ArenaUtils.erUnderOppfolging(EnumUtils.valueOf(Formidlingsgruppe.class, status.getFormidlingsgruppe()) , EnumUtils.valueOf(Kvalifiseringsgruppe.class, status.getServicegruppe()) ))
@@ -430,6 +431,7 @@ public class OppfolgingService {
                 .underKvp(kvpService.erUnderKvp(aktorId))
                 .inaktiveringsDato(inaktiveringsDato)
                 .erIserv(erIserv)
+                .harAktiveTiltaksdeltakelser(harAktiveTiltaksdeltakelser)
                 .build();
     }
 

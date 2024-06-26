@@ -10,14 +10,23 @@ import no.nav.poao_tilgang.client.PoaoTilgangClient;
 import no.nav.poao_tilgang.client.TilgangType;
 import no.nav.poao_tilgang.client.api.ApiResult;
 import no.nav.veilarboppfolging.IntegrationTest;
+import no.nav.veilarboppfolging.client.amttiltak.AmtTiltakClient;
+import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolging;
+import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
+import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
 import no.nav.veilarboppfolging.controller.request.AktiverArbeidssokerData;
 import no.nav.veilarboppfolging.controller.request.Innsatsgruppe;
+import no.nav.veilarboppfolging.controller.request.VeilederBegrunnelseDTO;
+import no.nav.veilarboppfolging.controller.response.AvslutningStatus;
 import no.nav.veilarboppfolging.controller.response.OppfolgingPeriodeDTO;
+import no.nav.veilarboppfolging.controller.response.OppfolgingPeriodeMinimalDTO;
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
 import no.nav.veilarboppfolging.service.AuthService;
+import no.nav.veilarboppfolging.service.YtelserOgAktiviteterService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -26,7 +35,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 
@@ -35,6 +44,7 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
     private final static Fnr FNR = Fnr.of("123");
     private final static AktorId AKTOR_ID = AktorId.of("3409823");
     private final static UUID veilederUUID = UUID.randomUUID();
+    private final static String veilederIdent = "Z999999";
     private final static UUID sub = UUID.randomUUID();
 
     @Autowired
@@ -42,6 +52,11 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
 
     @Autowired
     AuthService authService;
+
+    @MockBean
+    VeilarbarenaClient veilarbarenaClient;
+    @MockBean
+    YtelserOgAktiviteterService ytelserOgAktiviteterService;
 
     @Autowired
     OppfolgingController oppfolgingController;
@@ -54,6 +69,9 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
 
     @Autowired
     PoaoTilgangClient poaoTilgangClient;
+
+    @Autowired
+    AmtTiltakClient amtTiltakClient;
 
     @Test
     void hentOppfolgingsPeriode_brukerHarEnAktivOppfolgingsPeriode() throws EmptyResultDataAccessException {
@@ -94,6 +112,45 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
 
     }
 
+    @Test
+    void avsluttOppfolgingHvisIserv() {
+        mockAuthOk();
+        var startPeriode = startOppfolging();
+        ApiResult<Decision> permit = ApiResult.Companion.success(Decision.Permit.INSTANCE);
+        // Tester ikke tilgang
+        doReturn(permit).when(poaoTilgangClient).evaluatePolicy(any());
+        // ISERV i arena, ingen ytelser i arena, ingen aktive tiltak hos komet.
+        when(veilarbarenaClient.getArenaOppfolgingsstatus(FNR)).thenReturn(Optional.of(new ArenaOppfolging().setFormidlingsgruppe("ISERV")));
+        when(veilarbarenaClient.hentOppfolgingsbruker(FNR)).thenReturn(Optional.of(new VeilarbArenaOppfolging().setFormidlingsgruppekode("ISERV")));
+        when(ytelserOgAktiviteterService.harPagaendeYtelse(FNR)).thenReturn(false);
+        when(amtTiltakClient.harAktiveTiltaksdeltakelser(FNR.get())).thenReturn(false);
+
+        AvslutningStatus avslutningStatus = oppfolgingController.hentAvslutningStatus(FNR);
+        assertTrue(avslutningStatus.kanAvslutte);
+        oppfolgingController.avsluttOppfolging(new VeilederBegrunnelseDTO(), FNR);
+        OppfolgingPeriodeMinimalDTO periode = oppfolgingController.hentOppfolgingsPeriode(startPeriode.get(0).uuid.toString());
+        assertNotNull(periode.getSluttDato());
+    }
+
+    @Test
+    void ikkeAvsluttOppfolgingHvisIservOgAktivtTiltak() {
+        mockAuthOk();
+        var startPeriode = startOppfolging();
+        ApiResult<Decision> permit = ApiResult.Companion.success(Decision.Permit.INSTANCE);
+        // Tester ikke tilgang
+        doReturn(permit).when(poaoTilgangClient).evaluatePolicy(any());
+        // ISERV i arena, ingen ytelser i arena, men aktive tiltak hos komet.
+        when(veilarbarenaClient.getArenaOppfolgingsstatus(FNR)).thenReturn(Optional.of(new ArenaOppfolging().setFormidlingsgruppe("ISERV")));
+        when(ytelserOgAktiviteterService.harPagaendeYtelse(FNR)).thenReturn(false);
+        when(amtTiltakClient.harAktiveTiltaksdeltakelser(FNR.get())).thenReturn(true);
+
+        AvslutningStatus avslutningStatus = oppfolgingController.avsluttOppfolging(new VeilederBegrunnelseDTO(), FNR);
+        assertFalse(avslutningStatus.kanAvslutte);
+        assertTrue(avslutningStatus.harAktiveTiltaksdeltakelser);
+        OppfolgingPeriodeMinimalDTO periode = oppfolgingController.hentOppfolgingsPeriode(startPeriode.get(0).uuid.toString());
+        assertNull(periode.getSluttDato());
+    }
+
     private List<OppfolgingPeriodeDTO> startOppfolging() {
         mockSystemBruker();
         var aktiverArbeidssokerData = new AktiverArbeidssokerData(
@@ -126,12 +183,13 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
                 .claim("azp_name", "cluster:team:veilarbregistrering")
                 .claim("sub", sub.toString())
                 .claim("oid", veilederUUID.toString())
+                .claim("NAVident", veilederIdent)
                 .build();
         when(authContextHolder.getIdTokenClaims()).thenReturn(Optional.of(claims));
 
         String token = "token";
         when(authContextHolder.getIdTokenString()).thenReturn(Optional.of(token));
-
+        when(authContextHolder.getUid()).thenReturn(Optional.of(veilederUUID.toString()));
         when(authContextHolder.erSystemBruker()).thenReturn(false);
         when(authContextHolder.erInternBruker()).thenReturn(true);
         when(authContextHolder.erEksternBruker()).thenReturn(false);
