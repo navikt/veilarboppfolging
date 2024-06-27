@@ -24,13 +24,19 @@ class ArbeidssøkerperiodeConsumer(
         val arbeidssøkerperiode = kafkaMelding.value()
         val fnr = Fnr.of(arbeidssøkerperiode.identitetsnummer.toString())
         val aktørId = authService.getAktorIdOrThrow(fnr)
-        val innsatsgruppe = STANDARD_INNSATS // TODO: Hent faktisk innsatsgruppe eller profilertTil
 
-        // TODO: Hvilken metode skal vi egentlig bruke, kanskje en metode i aktiverBrukerService?
-        val arbeidssøker = Oppfolgingsbruker.arbeidssokerOppfolgingsBruker(aktørId, innsatsgruppe)
+        val nyPeriode = arbeidssøkerperiode.avsluttet == null
 
-        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(arbeidssøker, fnr)
-        logger.info("Startet oppfølgingsperiode basert på ny arbeidssøkerperiode")
+        if (nyPeriode) {
+            val innsatsgruppe = null // TODO: Hent faktisk innsatsgruppe eller profilertTil? Må løse dette
+            val arbeidssøker = Oppfolgingsbruker.arbeidssokerOppfolgingsBruker(aktørId, innsatsgruppe)
+            // TODO: Hvilken metode skal vi egentlig bruke, kanskje en metode i aktiverBrukerService?
+            oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(arbeidssøker, fnr)
+            logger.info("Startet oppfølgingsperiode basert på ny arbeidssøkerperiode")
+        } else {
+            val slutt = arbeidssøkerperiode.avsluttet
+            oppfolgingService.avsluttOppfolgingGrunnetAvsluttetArbeidssøkerperiode(aktørId, slutt.aarsak.toString())
+        }
     }
 
     private fun ProfilertTil.tilInnsatsgruppe(): Innsatsgruppe? =

@@ -324,6 +324,24 @@ public class OppfolgingService {
         });
     }
 
+    public void avsluttOppfolgingGrunnetAvsluttetArbeidssøkerperiode(AktorId aktorId, String årsak) {
+        // TODO: Hva må vi validere? Kan veilederId være null?
+        transactor.executeWithoutResult((ignored) -> {
+            oppfolgingsPeriodeRepository.avslutt(aktorId, null, årsak);
+            List<OppfolgingsperiodeEntity> perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId);
+            OppfolgingsperiodeEntity sistePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(perioder);
+
+            // TODO: Riktig at vi skal publisere?
+            log.info("Oppfølgingsperiode avsluttet for bruker - publiserer endringer på oppfølgingsperiode-topics.");
+            kafkaProducerService.publiserOppfolgingsperiode(DtoMappers.tilOppfolgingsperiodeDTO(sistePeriode));
+
+            // Publiserer også endringer som resettes i oppfolgingsstatus-tabellen ved avslutting av oppfølging
+            kafkaProducerService.publiserVeilederTilordnet(aktorId, null);
+            kafkaProducerService.publiserEndringPaNyForVeileder(aktorId, false);
+            kafkaProducerService.publiserEndringPaManuellStatus(aktorId, false);
+        });
+    }
+
     protected boolean erUnderOppfolging(AktorId aktorId) {
         return oppfolgingsStatusRepository.hentOppfolging(aktorId)
                 .map(OppfolgingEntity::isUnderOppfolging)
