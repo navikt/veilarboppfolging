@@ -29,7 +29,7 @@ class ArbeidssøkerperiodeConsumer(
 
         if (nyPeriode) {
             val innsatsgruppe = null // TODO: Hent faktisk innsatsgruppe eller profilertTil? Må løse dette
-            val arbeidssøker = Oppfolgingsbruker.arbeidssokerOppfolgingsBruker(aktørId, innsatsgruppe)
+            val arbeidssøker = Oppfolgingsbruker.nyttArbeidssøkerregisterBruker(aktørId)
             // TODO: Hvilken metode skal vi egentlig bruke, kanskje en metode i aktiverBrukerService?
             oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(arbeidssøker, fnr)
             logger.info("Startet oppfølgingsperiode basert på ny arbeidssøkerperiode")
