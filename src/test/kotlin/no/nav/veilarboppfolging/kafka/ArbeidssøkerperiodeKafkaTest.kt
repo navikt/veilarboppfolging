@@ -64,6 +64,9 @@ class ArbeidssøkerperiodeKafkaTest: IntegrationTest() {
     fun `Dersom arbeidsrettet oppfølgingsperiode startes for arbeidssøker som er sykmeldt skal ???`() {}
 
 
+    @Test
+    fun `Ikke send melding til Arena om brukere som har fått arbeidssøkerperioder`() {}
+
     private fun periode(fødselsnummer: String, periodeAvsluttet: Boolean = false): Periode {
         val slutt = if (periodeAvsluttet) {
             MetaData().apply {
