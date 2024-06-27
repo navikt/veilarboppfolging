@@ -64,7 +64,10 @@ public class OppfolgingEndringService {
 
         if (!erBrukerUnderOppfolging && erUnderOppfolgingIArena) {
             secureLog.info("Starter oppfølging på bruker som er under oppfølging i Arena, men ikke i veilarboppfolging. aktorId={}", aktorId);
-            oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker.arenaSyncOppfolgingBruker(aktorId, formidlingsgruppe));
+            oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(
+                    Oppfolgingsbruker.arenaSyncOppfolgingBruker(aktorId, formidlingsgruppe),
+                    Fnr.of(brukerV2.getFodselsnummer())
+            );
         } else if (erBrukerUnderOppfolging && !erUnderOppfolgingIArena && erInaktivIArena) {
             Optional<ArenaOppfolgingTilstand> maybeArenaTilstand = arenaOppfolgingService.hentOppfolgingTilstandDirekteFraArena(fnr);
 

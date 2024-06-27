@@ -31,7 +31,7 @@ public class Oppfolgingsbruker {
     }
 
     public static Oppfolgingsbruker arbeidssokerOppfolgingsBruker(AktorId aktorId, Innsatsgruppe innsatsgruppe) {
-        return new Arbeissoker(aktorId, OppfolgingStartBegrunnelse.ARBEIDSSOKER_REGISTRERING, innsatsgruppe);
+        return new Arbeidssoker(aktorId, OppfolgingStartBegrunnelse.ARBEIDSSOKER_REGISTRERING, innsatsgruppe);
     }
 
     public static Oppfolgingsbruker arenaSyncOppfolgingBruker(AktorId aktorId, Formidlingsgruppe formidlingsgruppe) {
@@ -42,9 +42,9 @@ public class Oppfolgingsbruker {
 }
 
 @EqualsAndHashCode(callSuper = true)
-class Arbeissoker extends Oppfolgingsbruker {
+class Arbeidssoker extends Oppfolgingsbruker {
     Innsatsgruppe innsatsgruppe;
-    Arbeissoker(AktorId aktorId, OppfolgingStartBegrunnelse begrunnelse, Innsatsgruppe innsatsgruppe) {
+    Arbeidssoker(AktorId aktorId, OppfolgingStartBegrunnelse begrunnelse, Innsatsgruppe innsatsgruppe) {
         super(aktorId.get(), begrunnelse);
         this.innsatsgruppe = innsatsgruppe;
     }
