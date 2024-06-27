@@ -12,5 +12,6 @@ class ArbeidssøkerperiodeConsumer {
 
     fun consumeArbeidssøkerperiode(kafkaMelding: ConsumerRecord<String, Periode>) {
         logger.info("Hopper over melding fra nytt arbeidssøkerregister")
+        TODO("Not implemented")
     }
 }

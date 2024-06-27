@@ -1,126 +1,58 @@
 package no.nav.veilarboppfolging.kafka
 
-import io.confluent.kafka.serializers.AbstractKafkaSchemaSerDeConfig
-import io.confluent.kafka.serializers.KafkaAvroSerializer
-import no.nav.common.kafka.producer.KafkaProducerClientImpl
-import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
-import no.nav.paw.arbeidssokerregisteret.api.v1.Bruker
-import no.nav.paw.arbeidssokerregisteret.api.v1.BrukerType
-import no.nav.paw.arbeidssokerregisteret.api.v1.TidspunktFraKilde
-import no.nav.paw.arbeidssokerregisteret.api.v1.AvviksType
-import no.nav.paw.arbeidssokerregisteret.api.v1.Metadata as MetaData
+import no.nav.paw.arbeidssokerregisteret.api.v1.*
 import no.nav.veilarboppfolging.IntegrationTest
-import org.apache.kafka.clients.CommonClientConfigs
-import org.apache.kafka.clients.producer.ProducerConfig
-import org.apache.kafka.clients.producer.ProducerRecord
-import org.apache.kafka.common.serialization.StringSerializer
-import org.junit.jupiter.api.BeforeAll
+import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.kafka.test.EmbeddedKafkaBroker
 import org.springframework.test.context.ActiveProfiles
 import java.time.Instant
 import java.util.*
+import no.nav.paw.arbeidssokerregisteret.api.v1.Metadata as MetaData
 
 
 @ActiveProfiles("local")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ArbeidssøkerperiodeKafkaTest: IntegrationTest() {
 
-//    @Autowired
-//    private lateinit var kafkaContainer: EmbeddedKafkaBroker
-//
-//    private lateinit var producer: KafkaProducerClientImpl<String, Periode>
-//
-//    private val topic = "arbeidssokerperioder-v1-topic"
-//
-//    @BeforeAll
-//    fun beforeAll() {
-//        producer = KafkaProducerClientImpl<String, Periode>(kafkaTestProducerProperties())
-//    }
-//
-//    @Test
-//    fun skalKunneKonsumereMelding() {
-//        producer.send(ProducerRecord(topic, "dummyAktørId", periode()))
-//    }
-//
-//    private fun periode() = Periode(
-//        UUID.randomUUID(),
-//        "dummyIdentitetsnummer",
-//        MetaData(
-//            Instant.now(),
-//            Bruker(
-//                BrukerType.VEILEDER,
-//                "dummyId"
-//            ),
-//            "dummyKilde",
-//            "dummyÅrsak",
-//            TidspunktFraKilde(
-//                Instant.now(),
-//                AvviksType.FORSINKELSE
-//            )
-//    ),
-//        null
-//    )
-//
-//    private fun kafkaTestProducerProperties() = Properties().apply {
-//            put(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, kafkaContainer.brokersAsString)
-//            put(ProducerConfig.ACKS_CONFIG, "1")
-//            put(ProducerConfig.CLIENT_ID_CONFIG, UUID.randomUUID().toString())
-//            put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer::class.java)
-//            put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, KafkaAvroSerializer::class.java)
-//            put(AbstractKafkaSchemaSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG, "mock://testUrl")
-//            put(ProducerConfig.MAX_BLOCK_MS_CONFIG, 2000)
-//            put(ProducerConfig.LINGER_MS_CONFIG, 100)
-//        }
+    @Autowired
+    private lateinit var arbeidssøkerperiodeConsumer: ArbeidssøkerperiodeConsumer
 
-//    private fun getSerializer(): KafkaAvroSerializer {
-//        val mockSchemaRegistryClient = MockSchemaRegistryClient()
-//        val map: MutableMap<String, Any> = HashMap()
-//        map[KafkaAvroDeserializerConfig.AUTO_REGISTER_SCHEMAS] = true
-//        map[KafkaAvroDeserializerConfig.SCHEMA_REGISTRY_URL_CONFIG] = "localhost:8888"
-//        val serializer = KafkaAvroSerializer(mockSchemaRegistryClient)
-//        serializer.configure(map, false)
-//        return serializer
-//    }
+    @Test
+    fun `Melding om ny arbeidssøkerperiode skal starte ny arbeidsrettet oppfølgingsperiode`() {
+        val melding = ConsumerRecord("topic", 0, 0, "dummyKey", periode());
+        arbeidssøkerperiodeConsumer.consumeArbeidssøkerperiode(melding)
+    }
 
-//    class PeriodeKafkaAvroSerializer : KafkaAvroSerializer(
-//        MockSchemaRegistry.getClientForScope("arbeidssøkerperiode-scope").apply {
-//            register("subject", AvroSchema(Schema.SCHEMA_EXAMPLE))
-//        }
-//    ) {
-//        init {
-//
-//            super.schemaRegistry = MockSchemaRegistryClient()
-//            val map: MutableMap<String, Any> = HashMap()
-//
-//            map["schema.registry.url"] = "localhost:8888"
-//            map.put("KAFKA_SCHEMA_REGISTRY", "http://localhost:8081");
-//            map.put("KAFKA_SCHEMA_REGISTRY", "http://localhost:8081");
-//            map[KafkaAvroDeserializerConfig.AUTO_REGISTER_SCHEMAS] = true
-//            map[KafkaAvroDeserializerConfig.SCHEMA_REGISTRY_URL_CONFIG] = "localhost:8888"
-//            super.configure(KafkaAvroSerializerConfig(map))
-//            super.configure(map, false)
-//            super.serializerConfig(map)
-//            super.serializ
-//        }
-//    }
+    @Test
+    fun `Melding om avsluttet arbeidssøkerperiode skal avslutte arbeidsrettet oppfølgingsperiode`() {
 
-//    class PeriodeKafkaAvroSerializer : KafkaAvroSerializer(MockSchemaRegistryClient()) {
-//        init {
-//            super.schemaRegistry = MockSchemaRegistryClient()
-//            val map: MutableMap<String, Any> = HashMap()
-//
-//            map["schema.registry.url"] = "localhost:8888"
-//            map.put("KAFKA_SCHEMA_REGISTRY", "http://localhost:8081");
-//            map.put("KAFKA_SCHEMA_REGISTRY", "http://localhost:8081");
-//            map[KafkaAvroDeserializerConfig.AUTO_REGISTER_SCHEMAS] = true
-//            map[KafkaAvroDeserializerConfig.SCHEMA_REGISTRY_URL_CONFIG] = "localhost:8888"
-//            super.configure(KafkaAvroSerializerConfig(map))
-//            super.configure(map, false)
-//            super.serializerConfig(map)
-//            super.serializ
-//        }
-//    }
+    }
+
+    @Test
+    fun `Dersom arbeidsrettet oppfølgingsperiode eksisterer skal melding om ny arbeidssøkerperiode ???`() {}
+
+    @Test
+    fun `Dersom arbeidsrettet oppfølgingsperiode eksisterer skal melding om ny arbeidssøkerperiode ???`() {}
+
+
+    private fun periode() = Periode(
+        UUID.randomUUID(),
+        "dummyIdentitetsnummer",
+        MetaData(
+            Instant.now(),
+            Bruker(
+                BrukerType.VEILEDER,
+                "dummyId"
+            ),
+            "dummyKilde",
+            "dummyÅrsak",
+            TidspunktFraKilde(
+                Instant.now(),
+                AvviksType.FORSINKELSE
+            )
+    ),
+        null
+    )
 }
