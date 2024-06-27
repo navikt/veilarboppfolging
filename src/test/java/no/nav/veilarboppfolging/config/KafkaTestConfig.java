@@ -53,7 +53,6 @@ import static no.nav.veilarboppfolging.config.KafkaConfig.PRODUCER_CLIENT_ID;
 public class KafkaTestConfig {
 
     private final KafkaConsumerClient consumerClient;
-    private final KafkaProducerClient producerClient;
 
     private final KafkaConsumerRecordProcessor consumerRecordProcessor;
 
@@ -115,20 +114,6 @@ public class KafkaTestConfig {
                 .withLockProvider(lockProvider)
                 .withKafkaConsumerRepository(consumerRepository)
                 .withConsumerConfigs(findConsumerConfigsWithStoreOnFailure(topicConfigs))
-                .build();
-
-        Properties producerClientProperties = new Properties();
-        producerClientProperties.put(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, kafkaContainer.getBrokersAsString());
-        producerClientProperties.put(ProducerConfig.ACKS_CONFIG, "1");
-        producerClientProperties.put(ProducerConfig.CLIENT_ID_CONFIG, UUID.randomUUID().toString());
-        producerClientProperties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        producerClientProperties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, KafkaAvroSerializer.class);
-        producerClientProperties.put(AbstractKafkaSchemaSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG, "mock://testUrl");
-        producerClientProperties.put(ProducerConfig.MAX_BLOCK_MS_CONFIG, 2000);
-        producerClientProperties.put(ProducerConfig.LINGER_MS_CONFIG, 100);
-
-        producerClient = KafkaProducerClientBuilder.builder()
-                .withProperties(producerClientProperties)
                 .build();
 
         producerRecordStorage = new KafkaProducerRecordStorage(producerRepository);
