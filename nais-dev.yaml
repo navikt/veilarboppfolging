@@ -101,6 +101,9 @@ spec:
         - application: modia-robot-api
           namespace: personoversikt
           cluster: dev-fss
+        - application: modia-robot-api
+          namespace: personoversikt
+          cluster: dev-gcp
         - application: modiapersonoversikt-api-q1
           namespace: personoversikt
           cluster: dev-fss
