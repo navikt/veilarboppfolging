@@ -1,5 +1,7 @@
 package no.nav.veilarboppfolging.config;
 
+import io.confluent.kafka.serializers.AbstractKafkaSchemaSerDeConfig;
+import io.confluent.kafka.serializers.KafkaAvroSerializer;
 import net.javacrumbs.shedlock.core.LockProvider;
 import no.nav.common.job.leader_election.LeaderElectionClient;
 import no.nav.common.kafka.consumer.KafkaConsumerClient;
@@ -21,8 +23,11 @@ import no.nav.paw.arbeidssokerregisteret.api.v1.Periode;
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
 import no.nav.veilarboppfolging.kafka.ArbeidssøkerperiodeConsumer;
 import no.nav.veilarboppfolging.service.KafkaConsumerService;
+import org.apache.kafka.clients.CommonClientConfigs;
+import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
+import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -34,6 +39,7 @@ import org.springframework.kafka.test.context.EmbeddedKafka;
 
 import java.util.List;
 import java.util.Properties;
+import java.util.UUID;
 
 import static no.nav.common.kafka.consumer.util.ConsumerUtils.findConsumerConfigsWithStoreOnFailure;
 import static no.nav.veilarboppfolging.config.KafkaConfig.CONSUMER_GROUP_ID;
@@ -47,6 +53,7 @@ import static no.nav.veilarboppfolging.config.KafkaConfig.PRODUCER_CLIENT_ID;
 public class KafkaTestConfig {
 
     private final KafkaConsumerClient consumerClient;
+    private final KafkaProducerClient producerClient;
 
     private final KafkaConsumerRecordProcessor consumerRecordProcessor;
 
@@ -91,7 +98,7 @@ public class KafkaTestConfig {
                         )
         );
 
-        Properties properties = KafkaPropertiesBuilder.consumerBuilder()
+        Properties consumerClientProperties = KafkaPropertiesBuilder.consumerBuilder()
                 .withBaseProperties(1000)
                 .withConsumerGroupId(CONSUMER_GROUP_ID)
                 .withBrokerUrl(kafkaContainer.getBrokersAsString())
@@ -99,7 +106,7 @@ public class KafkaTestConfig {
                 .build();
 
         consumerClient = KafkaConsumerClientBuilder.builder()
-                .withProperties(properties)
+                .withProperties(consumerClientProperties)
                 .withTopicConfigs(topicConfigs)
                 .build();
 
@@ -108,6 +115,20 @@ public class KafkaTestConfig {
                 .withLockProvider(lockProvider)
                 .withKafkaConsumerRepository(consumerRepository)
                 .withConsumerConfigs(findConsumerConfigsWithStoreOnFailure(topicConfigs))
+                .build();
+
+        Properties producerClientProperties = new Properties();
+        producerClientProperties.put(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, kafkaContainer.getBrokersAsString());
+        producerClientProperties.put(ProducerConfig.ACKS_CONFIG, "1");
+        producerClientProperties.put(ProducerConfig.CLIENT_ID_CONFIG, UUID.randomUUID().toString());
+        producerClientProperties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        producerClientProperties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, KafkaAvroSerializer.class);
+        producerClientProperties.put(AbstractKafkaSchemaSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG, "mock://testUrl");
+        producerClientProperties.put(ProducerConfig.MAX_BLOCK_MS_CONFIG, 2000);
+        producerClientProperties.put(ProducerConfig.LINGER_MS_CONFIG, 100);
+
+        producerClient = KafkaProducerClientBuilder.builder()
+                .withProperties(producerClientProperties)
                 .build();
 
         producerRecordStorage = new KafkaProducerRecordStorage(producerRepository);
