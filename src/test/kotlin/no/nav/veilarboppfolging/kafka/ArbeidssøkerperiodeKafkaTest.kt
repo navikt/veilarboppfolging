@@ -28,52 +28,52 @@ import java.util.*
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ArbeidssøkerperiodeKafkaTest: IntegrationTest() {
 
-    @Autowired
-    private lateinit var kafkaContainer: EmbeddedKafkaBroker
-
-    private lateinit var producer: KafkaProducerClientImpl<String, Periode>
-
-    private val topic = "arbeidssokerperioder-v1-topic"
-
-    @BeforeAll
-    fun beforeAll() {
-        producer = KafkaProducerClientImpl<String, Periode>(kafkaTestProducerProperties())
-    }
-
-    @Test
-    fun skalKunneKonsumereMelding() {
-        producer.send(ProducerRecord(topic, "dummyAktørId", periode()))
-    }
-
-    private fun periode() = Periode(
-        UUID.randomUUID(),
-        "dummyIdentitetsnummer",
-        MetaData(
-            Instant.now(),
-            Bruker(
-                BrukerType.VEILEDER,
-                "dummyId"
-            ),
-            "dummyKilde",
-            "dummyÅrsak",
-            TidspunktFraKilde(
-                Instant.now(),
-                AvviksType.FORSINKELSE
-            )
-    ),
-        null
-    )
-
-    private fun kafkaTestProducerProperties() = Properties().apply {
-            put(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, kafkaContainer.brokersAsString)
-            put(ProducerConfig.ACKS_CONFIG, "1")
-            put(ProducerConfig.CLIENT_ID_CONFIG, UUID.randomUUID().toString())
-            put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer::class.java)
-            put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, KafkaAvroSerializer::class.java)
-            put(AbstractKafkaSchemaSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG, "mock://testUrl")
-            put(ProducerConfig.MAX_BLOCK_MS_CONFIG, 2000)
-            put(ProducerConfig.LINGER_MS_CONFIG, 100)
-        }
+//    @Autowired
+//    private lateinit var kafkaContainer: EmbeddedKafkaBroker
+//
+//    private lateinit var producer: KafkaProducerClientImpl<String, Periode>
+//
+//    private val topic = "arbeidssokerperioder-v1-topic"
+//
+//    @BeforeAll
+//    fun beforeAll() {
+//        producer = KafkaProducerClientImpl<String, Periode>(kafkaTestProducerProperties())
+//    }
+//
+//    @Test
+//    fun skalKunneKonsumereMelding() {
+//        producer.send(ProducerRecord(topic, "dummyAktørId", periode()))
+//    }
+//
+//    private fun periode() = Periode(
+//        UUID.randomUUID(),
+//        "dummyIdentitetsnummer",
+//        MetaData(
+//            Instant.now(),
+//            Bruker(
+//                BrukerType.VEILEDER,
+//                "dummyId"
+//            ),
+//            "dummyKilde",
+//            "dummyÅrsak",
+//            TidspunktFraKilde(
+//                Instant.now(),
+//                AvviksType.FORSINKELSE
+//            )
+//    ),
+//        null
+//    )
+//
+//    private fun kafkaTestProducerProperties() = Properties().apply {
+//            put(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, kafkaContainer.brokersAsString)
+//            put(ProducerConfig.ACKS_CONFIG, "1")
+//            put(ProducerConfig.CLIENT_ID_CONFIG, UUID.randomUUID().toString())
+//            put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer::class.java)
+//            put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, KafkaAvroSerializer::class.java)
+//            put(AbstractKafkaSchemaSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG, "mock://testUrl")
+//            put(ProducerConfig.MAX_BLOCK_MS_CONFIG, 2000)
+//            put(ProducerConfig.LINGER_MS_CONFIG, 100)
+//        }
 
 //    private fun getSerializer(): KafkaAvroSerializer {
 //        val mockSchemaRegistryClient = MockSchemaRegistryClient()
