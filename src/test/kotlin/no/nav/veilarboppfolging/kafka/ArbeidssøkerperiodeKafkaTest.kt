@@ -3,11 +3,13 @@ package no.nav.veilarboppfolging.kafka
 import io.confluent.kafka.serializers.AbstractKafkaSchemaSerDeConfig
 import io.confluent.kafka.serializers.KafkaAvroSerializer
 import no.nav.common.kafka.producer.KafkaProducerClientImpl
-import no.nav.common.utils.EnvironmentUtils
-import no.nav.paw.arbeidssokerregisteret.api.v1.*
+import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
+import no.nav.paw.arbeidssokerregisteret.api.v1.Bruker
+import no.nav.paw.arbeidssokerregisteret.api.v1.BrukerType
+import no.nav.paw.arbeidssokerregisteret.api.v1.TidspunktFraKilde
+import no.nav.paw.arbeidssokerregisteret.api.v1.AvviksType
 import no.nav.paw.arbeidssokerregisteret.api.v1.Metadata as MetaData
 import no.nav.veilarboppfolging.IntegrationTest
-import no.nav.veilarboppfolging.config.KafkaTestConfig
 import org.apache.kafka.clients.CommonClientConfigs
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.clients.producer.ProducerRecord
