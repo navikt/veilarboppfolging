@@ -45,23 +45,24 @@ class ArbeidssøkerperiodeKafkaTest: IntegrationTest() {
         producer.send(ProducerRecord(topic, "dummyAktørId", periode()))
     }
 
-    private fun periode() = Periode().apply {
-        id = UUID.randomUUID()
-        identitetsnummer = "dummy"
-        startet = MetaData().apply {
-            tidspunkt = Instant.now()
-            aarsak = "dummy"
-            utfoertAv = Bruker(
+    private fun periode() = Periode(
+        UUID.randomUUID(),
+        "dummyIdentitetsnummer",
+        MetaData(
+            Instant.now(),
+            Bruker(
                 BrukerType.VEILEDER,
                 "dummyId"
-            )
-            kilde = "dummy"
-            tidspunktFraKilde = TidspunktFraKilde(
+            ),
+            "dummyKilde",
+            "dummyÅrsak",
+            TidspunktFraKilde(
                 Instant.now(),
                 AvviksType.FORSINKELSE
             )
-        }
-    }
+    ),
+        null
+    )
 
     private fun kafkaTestProducerProperties() = Properties().apply {
             put(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, kafkaContainer.brokersAsString)
