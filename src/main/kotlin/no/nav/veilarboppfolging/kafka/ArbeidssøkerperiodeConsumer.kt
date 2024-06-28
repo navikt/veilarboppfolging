@@ -16,7 +16,7 @@ class ArbeidssøkerperiodeConsumer(
 ) {
     private val logger = LoggerFactory.getLogger(this::class.java)
 
-    fun consumeArbeidssøkerperiode(kafkaMelding: ConsumerRecord<String, no.nav.paw.arbeidssokerregisteret.api.v1.Periode>) {
+    fun consumeArbeidssøkerperiode(kafkaMelding: ConsumerRecord<String, Periode>) {
         val arbeidssøkerperiode = kafkaMelding.value()
         val fnr = Fnr.of(arbeidssøkerperiode.identitetsnummer.toString())
         val aktørId = authService.getAktorIdOrThrow(fnr)
