@@ -63,8 +63,8 @@ class SykmeldtBruker extends Oppfolgingsbruker {
     }
 }
 
+@EqualsAndHashCode(callSuper = true)
 class NyttArbeidssokerRegisterBruker extends Oppfolgingsbruker {
-    // TODO: Berik med mer data
     NyttArbeidssokerRegisterBruker(AktorId aktorId, OppfolgingStartBegrunnelse begrunnelse) {
         super(aktorId.get(), begrunnelse);
     }
