@@ -520,6 +520,7 @@
                                 </goals>
                                 <configuration>
                                     <sourceDirectory>${project.build.outputDirectory}/avro</sourceDirectory>
+                                    <outputDirectory>${project.build.defaultGoal}</outputDirectory>
                                     <includes>**/*.avdl</includes>
                                 </configuration>
                             </execution>
