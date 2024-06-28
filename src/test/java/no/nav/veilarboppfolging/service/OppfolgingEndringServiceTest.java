@@ -1,6 +1,5 @@
 package no.nav.veilarboppfolging.service;
 
-import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe;
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe;
@@ -51,7 +50,7 @@ public class OppfolgingEndringServiceTest {
         oppfolgingEndringService.oppdaterOppfolgingMedStatusFraArena(brukverV2);
 
         verify(oppfolgingService, never()).startOppfolgingHvisIkkeAlleredeStartet(any(Oppfolgingsbruker.class), any(Fnr.class));
-        verify(oppfolgingService, never()).avsluttOppfolgingForBruker(any(), any(), any());
+        verify(oppfolgingService, never()).avsluttOppfolging(any(), any(), any());
     }
 
     @Test
@@ -68,7 +67,7 @@ public class OppfolgingEndringServiceTest {
         oppfolgingEndringService.oppdaterOppfolgingMedStatusFraArena(brukverV2);
 
         verify(oppfolgingService, times(1)).startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker.arenaSyncOppfolgingBruker(TEST_AKTOR_ID, Formidlingsgruppe.ARBS), TEST_FNR);
-        verify(oppfolgingService, never()).avsluttOppfolgingForBruker(any(), any(), any());
+        verify(oppfolgingService, never()).avsluttOppfolging(any(), any(), any());
     }
 
     @Test
@@ -120,7 +119,7 @@ public class OppfolgingEndringServiceTest {
 
 
         verify(oppfolgingService, never()).startOppfolgingHvisIkkeAlleredeStartet(any(Oppfolgingsbruker.class), any(Fnr.class));
-        verify(oppfolgingService, never()).avsluttOppfolgingForBruker(any(), any(), any());
+        verify(oppfolgingService, never()).avsluttOppfolging(any(), any(), any());
     }
 
     @Test
@@ -143,7 +142,7 @@ public class OppfolgingEndringServiceTest {
         oppfolgingEndringService.oppdaterOppfolgingMedStatusFraArena(brukverV2);
 
 
-        verify(oppfolgingService, never()).startOppfolgingHvisIkkeAlleredeStartet(any(Oppfolgingsbruker.class));
+        verify(oppfolgingService, never()).startOppfolgingHvisIkkeAlleredeStartet(any(Oppfolgingsbruker.class), any(Fnr.class));
         verify(oppfolgingService, never()).avsluttOppfolging(any(), any(), any());
     }
 
@@ -167,7 +166,7 @@ public class OppfolgingEndringServiceTest {
         oppfolgingEndringService.oppdaterOppfolgingMedStatusFraArena(brukverV2);
 
 
-        verify(oppfolgingService, never()).startOppfolgingHvisIkkeAlleredeStartet(any(Oppfolgingsbruker.class));
+        verify(oppfolgingService, never()).startOppfolgingHvisIkkeAlleredeStartet(any(Oppfolgingsbruker.class), any(Fnr.class));
         verify(oppfolgingService, never()).avsluttOppfolging(any(), any(), any());
     }
 }
