@@ -2,10 +2,6 @@ package no.nav.veilarboppfolging.kafka
 
 import no.nav.common.types.identer.Fnr
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
-import no.nav.paw.arbeidssokerregisteret.api.v1.ProfilertTil
-import no.nav.paw.arbeidssokerregisteret.api.v1.ProfilertTil.*
-import no.nav.veilarboppfolging.controller.request.Innsatsgruppe
-import no.nav.veilarboppfolging.controller.request.Innsatsgruppe.*
 import no.nav.veilarboppfolging.domain.Oppfolgingsbruker
 import no.nav.veilarboppfolging.service.AuthService
 import no.nav.veilarboppfolging.service.OppfolgingService
@@ -28,22 +24,9 @@ class ArbeidssøkerperiodeConsumer(
         val nyPeriode = arbeidssøkerperiode.avsluttet == null
 
         if (nyPeriode) {
-            val innsatsgruppe = null // TODO: Hent faktisk innsatsgruppe eller profilertTil? Må løse dette
             val arbeidssøker = Oppfolgingsbruker.nyttArbeidssøkerregisterBruker(aktørId)
-            // TODO: Hvilken metode skal vi egentlig bruke, kanskje en metode i aktiverBrukerService?
             oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(arbeidssøker, fnr)
             logger.info("Startet oppfølgingsperiode basert på ny arbeidssøkerperiode")
-        } else {
-            val slutt = arbeidssøkerperiode.avsluttet
-            oppfolgingService.avsluttOppfolgingGrunnetAvsluttetArbeidssøkerperiode(aktørId, slutt.aarsak.toString())
         }
     }
-
-    private fun ProfilertTil.tilInnsatsgruppe(): Innsatsgruppe? =
-        when (this) {
-            UKJENT_VERDI, UDEFINERT -> null
-            ANTATT_GODE_MULIGHETER -> STANDARD_INNSATS
-            ANTATT_BEHOV_FOR_VEILEDNING -> SITUASJONSBESTEMT_INNSATS
-            OPPGITT_HINDRINGER -> BEHOV_FOR_ARBEIDSEVNEVURDERING
-        }
 }
