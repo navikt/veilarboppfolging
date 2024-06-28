@@ -18,10 +18,10 @@ class ArbeidssøkerperiodeConsumer(
 
     fun consumeArbeidssøkerperiode(kafkaMelding: ConsumerRecord<String, Periode>) {
         val arbeidssøkerperiode = kafkaMelding.value()
-        val fnr = Fnr.of(arbeidssøkerperiode.identitetsnummer.toString())
+        val fnr = Fnr.of(arbeidssøkerperiode.getIdentitetsnummer().toString())
         val aktørId = authService.getAktorIdOrThrow(fnr)
 
-        val nyPeriode = arbeidssøkerperiode.avsluttet == null
+        val nyPeriode = arbeidssøkerperiode.getAvsluttet() == null
 
         if (nyPeriode) {
             val arbeidssøker = Oppfolgingsbruker.nyttArbeidssøkerregisterBruker(aktørId)
