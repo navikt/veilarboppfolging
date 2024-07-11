@@ -158,6 +158,9 @@ spec:
         - application: modiapersonoversikt-api
           namespace: personoversikt
           cluster: dev-gcp
+        - application: syfomodiaperson
+          namespace: teamsykefravr
+          cluster: dev-gcp
   vault:
     enabled: true
     paths:
