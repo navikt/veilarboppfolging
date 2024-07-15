@@ -114,6 +114,9 @@ spec:
         - application: veilarbaktivitet
           namespace: pto
           cluster: prod-fss
+        - application: veilarbaktivitet
+          namespace: dab
+          cluster: prod-gcp
         - application: aktivitetsplan
           namespace: pto
           cluster: prod-gcp

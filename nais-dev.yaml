@@ -119,6 +119,9 @@ spec:
         - application: veilarbaktivitet
           namespace: pto
           cluster: dev-fss
+        - application: veilarbaktivitet
+          namespace: dab
+          cluster: dev-gcp
         - application: aktivitetsplan
           namespace: pto
           cluster: dev-gcp
