@@ -7,6 +7,7 @@ import no.nav.veilarboppfolging.IntegrationTest
 import no.nav.veilarboppfolging.controller.request.Innsatsgruppe
 import no.nav.veilarboppfolging.controller.request.SykmeldtBrukerType
 import no.nav.veilarboppfolging.domain.Oppfolgingsbruker
+import no.nav.veilarboppfolging.repository.entity.OppfolgingStartBegrunnelse
 import no.nav.veilarboppfolging.service.AktiverBrukerService
 import no.nav.veilarboppfolging.service.OppfolgingService
 import no.nav.veilarboppfolging.test.DbTestUtils
@@ -19,6 +20,8 @@ import org.mockito.Mockito.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.ActiveProfiles
 import java.time.Instant
+import java.time.ZonedDateTime
+import java.time.temporal.ChronoUnit
 import java.util.*
 import no.nav.paw.arbeidssokerregisteret.api.v1.Metadata as MetaData
 
@@ -46,13 +49,32 @@ class ArbeidssøkerperiodeConsumerTest: IntegrationTest() {
         val aktørId = AktorId.of("123456789012")
         val fødselsnummer = "01010198765"
         `when`(aktorOppslagClient.hentAktorId(Fnr.of(fødselsnummer))).thenReturn(aktørId)
-        val melding = ConsumerRecord("topic", 0, 0, "dummyKey", periode(fødselsnummer))
+        val nyPeriode = arbeidssøkerperiode(fødselsnummer)
+        val melding = ConsumerRecord("topic", 0, 0, "dummyKey", nyPeriode)
 
         arbeidssøkerperiodeConsumer.consumeArbeidssøkerperiode(melding)
 
         val oppfølgingsperioder = oppfølgingService.hentOppfolgingsperioder(Fnr.of(fødselsnummer))
         assertThat(oppfølgingsperioder).hasSize(1)
-        // TODO: Assert innhold
+        val oppfølgingsperiode = oppfølgingsperioder.first()
+        assertThat(oppfølgingsperiode.startDato).isEqualToIgnoringNanos(ZonedDateTime.now())
+        assertThat(oppfølgingsperiode.sluttDato).isNull()
+        assertThat(oppfølgingsperiode.startetBegrunnelse).isEqualTo(OppfolgingStartBegrunnelse.NYTT_ARBEIDSSØKERREGISTER)
+    }
+
+    @Test
+    fun `Ny oppfølgingsperiode starter når vi konsumerer meldinga`() {
+        val aktørId = AktorId.of("123456789012")
+        val fødselsnummer = "01010198765"
+        `when`(aktorOppslagClient.hentAktorId(Fnr.of(fødselsnummer))).thenReturn(aktørId)
+        val oppfølgingsperiodeStartet = Instant.now().minus(10, ChronoUnit.DAYS)
+        val nyPeriode = arbeidssøkerperiode(fødselsnummer, periodeStartet = oppfølgingsperiodeStartet)
+        val melding = ConsumerRecord("topic", 0, 0, "dummyKey", nyPeriode)
+
+        arbeidssøkerperiodeConsumer.consumeArbeidssøkerperiode(melding)
+
+        val oppfølgingsperioder = oppfølgingService.hentOppfolgingsperioder(Fnr.of(fødselsnummer))
+        assertThat(oppfølgingsperioder.first().startDato).isEqualToIgnoringNanos(ZonedDateTime.now())
     }
 
     @Test
@@ -60,9 +82,9 @@ class ArbeidssøkerperiodeConsumerTest: IntegrationTest() {
         val aktørId = AktorId.of("123456789012")
         val fødselsnummer = "01010198765"
         `when`(aktorOppslagClient.hentAktorId(Fnr.of(fødselsnummer))).thenReturn(aktørId)
-        val startMelding = ConsumerRecord("topic", 0, 0, "dummyKey", periode(fødselsnummer))
+        val startMelding = ConsumerRecord("topic", 0, 0, "dummyKey", arbeidssøkerperiode(fødselsnummer))
         arbeidssøkerperiodeConsumer.consumeArbeidssøkerperiode(startMelding)
-        val sluttMelding = ConsumerRecord("topic", 0, 0, "dummyKey", periode(fødselsnummer, periodeAvsluttet = true))
+        val sluttMelding = ConsumerRecord("topic", 0, 0, "dummyKey", arbeidssøkerperiode(fødselsnummer, periodeAvsluttet = true))
 
         arbeidssøkerperiodeConsumer.consumeArbeidssøkerperiode(sluttMelding)
 
@@ -79,7 +101,7 @@ class ArbeidssøkerperiodeConsumerTest: IntegrationTest() {
         val oppfølgingsbruker = Oppfolgingsbruker.arbeidssokerOppfolgingsBruker(aktørId, Innsatsgruppe.STANDARD_INNSATS)
         oppfølgingService.startOppfolgingHvisIkkeAlleredeStartet(oppfølgingsbruker, Fnr.of(fødselsnummer))
         val oppfølgingsdataFørMelding = oppfølgingService.hentOppfolgingsperioder(aktørId).first()
-        val melding = ConsumerRecord("topic", 0, 0, "dummyKey", periode(fødselsnummer))
+        val melding = ConsumerRecord("topic", 0, 0, "dummyKey", arbeidssøkerperiode(fødselsnummer))
 
         arbeidssøkerperiodeConsumer.consumeArbeidssøkerperiode(melding)
 
@@ -95,7 +117,7 @@ class ArbeidssøkerperiodeConsumerTest: IntegrationTest() {
         val oppfølgingsbruker = Oppfolgingsbruker.sykmeldtMerOppfolgingsBruker(aktørId, SykmeldtBrukerType.SKAL_TIL_NY_ARBEIDSGIVER)
         oppfølgingService.startOppfolgingHvisIkkeAlleredeStartet(oppfølgingsbruker, Fnr.of(fødselsnummer))
         val oppfølgingsdataFørMelding = oppfølgingService.hentOppfolgingsperioder(aktørId).first()
-        val melding = ConsumerRecord("topic", 0, 0, "dummyKey", periode(fødselsnummer))
+        val melding = ConsumerRecord("topic", 0, 0, "dummyKey", arbeidssøkerperiode(fødselsnummer))
 
         arbeidssøkerperiodeConsumer.consumeArbeidssøkerperiode(melding)
 
@@ -108,7 +130,7 @@ class ArbeidssøkerperiodeConsumerTest: IntegrationTest() {
         val aktørId = AktorId.of("123456789012")
         val fødselsnummer = "01010198765"
         `when`(aktorOppslagClient.hentAktorId(Fnr.of(fødselsnummer))).thenReturn(aktørId)
-        val melding = ConsumerRecord("topic", 0, 0, "dummyKey", periode(fødselsnummer))
+        val melding = ConsumerRecord("topic", 0, 0, "dummyKey", arbeidssøkerperiode(fødselsnummer))
         arbeidssøkerperiodeConsumer.consumeArbeidssøkerperiode(melding)
         val oppfølgingsdataFørSykmeldtRegistrering = oppfølgingService.hentOppfolgingsperioder(aktørId).first()
 
@@ -123,7 +145,7 @@ class ArbeidssøkerperiodeConsumerTest: IntegrationTest() {
         val aktørId = AktorId.of("123456789012")
         val fødselsnummer = "01010198765"
         `when`(aktorOppslagClient.hentAktorId(Fnr.of(fødselsnummer))).thenReturn(aktørId)
-        val melding = ConsumerRecord("topic", 0, 0, "dummyKey", periode(fødselsnummer))
+        val melding = ConsumerRecord("topic", 0, 0, "dummyKey", arbeidssøkerperiode(fødselsnummer))
 
         arbeidssøkerperiodeConsumer.consumeArbeidssøkerperiode(melding)
 
@@ -131,7 +153,7 @@ class ArbeidssøkerperiodeConsumerTest: IntegrationTest() {
         verify(behandleArbeidssokerClient, never()).opprettBrukerIArena(any(), any())
     }
 
-    private fun periode(fødselsnummer: String, periodeAvsluttet: Boolean = false): Periode {
+    private fun arbeidssøkerperiode(fødselsnummer: String, periodeAvsluttet: Boolean = false, periodeStartet: Instant = Instant.now().minusSeconds(1)): Periode {
         val slutt = if (periodeAvsluttet) {
             MetaData().apply {
                 tidspunkt = Instant.now()
@@ -152,7 +174,7 @@ class ArbeidssøkerperiodeConsumerTest: IntegrationTest() {
             id = UUID.randomUUID()
             identitetsnummer = fødselsnummer
             startet = MetaData().apply {
-                tidspunkt = Instant.now().minusSeconds(1)
+                tidspunkt = periodeStartet
                 utfoertAv = Bruker(
                     BrukerType.VEILEDER,
                     "dummyId"
@@ -160,7 +182,7 @@ class ArbeidssøkerperiodeConsumerTest: IntegrationTest() {
                 kilde = "dummyKilde"
                 aarsak = "dummyAarsak"
                 tidspunktFraKilde = TidspunktFraKilde(
-                    Instant.now(),
+                    periodeStartet,
                     AvviksType.FORSINKELSE
                 )
             }
