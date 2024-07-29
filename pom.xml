@@ -364,7 +364,6 @@
                                     <sourceDirs>
                                         <sourceDir>${project.basedir}/src/main/kotlin</sourceDir>
                                         <sourceDir>${project.basedir}/src/main/java</sourceDir>
-                                        <sourceDir>${project.build.outputDirectory}/avro</sourceDir>
                                     </sourceDirs>
                                 </configuration>
                             </execution>
@@ -509,7 +508,7 @@
                             </execution>
                         </executions>
                     </plugin>
-                    <plugin>
+ <!--                   <plugin>
                         <groupId>org.apache.avro</groupId>
                         <artifactId>avro-maven-plugin</artifactId>
                         <version>1.11.3</version>
@@ -522,12 +521,12 @@
                                 </goals>
                                 <configuration>
                                     <sourceDirectory>${project.build.outputDirectory}/avro</sourceDirectory>
-                                    <outputDirectory>${project.build.defaultGoal}</outputDirectory>
+                                    <outputDirectory>${project.basedir}/src/main/java</outputDirectory>
                                     <includes>**/*.avdl</includes>
                                 </configuration>
                             </execution>
                         </executions>
-                    </plugin>
+                    </plugin>-->
                 </plugins>
             </build>
         </profile>
