@@ -449,29 +449,6 @@
                                     <outputDirectory>${project.build.outputDirectory}/classes</outputDirectory>
                                 </configuration>
                             </execution>
-                            <execution>
-                                <id>resource-dependencies-avro</id>
-                                <phase>initialize</phase>
-                                <goals>
-                                    <goal>unpack</goal>
-                                </goals>
-                                <configuration>
-                                    <artifactItems>
-                                        <artifactItem>
-                                            <groupId>no.nav.paw.arbeidssokerregisteret.api</groupId>
-                                            <artifactId>main-avro-schema</artifactId>
-                                            <version>${arbeidssokerregister.version}</version>
-                                            <type>jar</type>
-                                            <overWrite>true</overWrite>
-                                            <outputDirectory>${project.build.directory}/classes/avro</outputDirectory>
-                                        </artifactItem>
-                                    </artifactItems>
-                                    <includes>
-                                        **
-                                    </includes>
-                                    <outputDirectory>${project.build.outputDirectory}/classes/avro</outputDirectory>
-                                </configuration>
-                            </execution>
                         </executions>
                     </plugin>
                     <plugin>
@@ -508,25 +485,6 @@
                             </execution>
                         </executions>
                     </plugin>
- <!--                   <plugin>
-                        <groupId>org.apache.avro</groupId>
-                        <artifactId>avro-maven-plugin</artifactId>
-                        <version>1.11.3</version>
-                        <executions>
-                            <execution>
-                                <id>avro-plugin</id>
-                                <phase>generate-sources</phase>
-                                <goals>
-                                    <goal>idl-protocol</goal>
-                                </goals>
-                                <configuration>
-                                    <sourceDirectory>${project.build.outputDirectory}/avro</sourceDirectory>
-                                    <outputDirectory>${project.basedir}/src/main/java</outputDirectory>
-                                    <includes>**/*.avdl</includes>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>-->
                 </plugins>
             </build>
         </profile>
