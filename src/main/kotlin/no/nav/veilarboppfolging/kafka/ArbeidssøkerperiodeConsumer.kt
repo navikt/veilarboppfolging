@@ -10,14 +10,14 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 
 @Service
-class ArbeidssøkerperiodeConsumer(
+open class ArbeidssøkerperiodeConsumer(
     private val oppfolgingService: OppfolgingService,
     private val authService: AuthService
 ) {
     private val logger = LoggerFactory.getLogger(this::class.java)
 
-    fun consumeArbeidssøkerperiode(kafkaMelding: ConsumerRecord<String, Periode>) {
-        val arbeidssøkerperiode = kafkaMelding.value()
+    open fun consumeArbeidssøkerperiode(kafkaMelding: ConsumerRecord<String, Periode>) {
+        val arbeidssøkerperiode: Periode = kafkaMelding.value()
         val fnr = Fnr.of(arbeidssøkerperiode.identitetsnummer.toString())
         val aktørId = authService.getAktorIdOrThrow(fnr)
 
