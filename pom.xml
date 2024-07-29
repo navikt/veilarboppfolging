@@ -16,6 +16,7 @@
     <version>1</version>
     <name>veilarboppfolging</name>
     <description>Backend applikasjon for domenet arbeidsrettet oppfølging</description>
+    <packaging>jar</packaging>
 
     <properties>
         <java.version>21</java.version>
@@ -419,7 +420,7 @@
                         <executions>
                             <execution>
                                 <id>resource-dependencies</id>
-                                <phase>generate-resources</phase>
+                                <phase>initialize</phase>
                                 <goals>
                                     <goal>unpack</goal>
                                 </goals>
@@ -450,7 +451,7 @@
                             </execution>
                             <execution>
                                 <id>resource-dependencies-avro</id>
-                                <phase>generate-resources</phase>
+                                <phase>initialize</phase>
                                 <goals>
                                     <goal>unpack</goal>
                                 </goals>
