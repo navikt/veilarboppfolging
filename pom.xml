@@ -419,7 +419,7 @@
                         <executions>
                             <execution>
                                 <id>resource-dependencies</id>
-                                <phase>generate-sources</phase>
+                                <phase>generate-resources</phase>
                                 <goals>
                                     <goal>unpack</goal>
                                 </goals>
@@ -450,7 +450,7 @@
                             </execution>
                             <execution>
                                 <id>resource-dependencies-avro</id>
-                                <phase>generate-sources</phase>
+                                <phase>generate-resources</phase>
                                 <goals>
                                     <goal>unpack</goal>
                                 </goals>
