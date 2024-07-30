@@ -8,11 +8,10 @@ public enum OppfolgingStartBegrunnelse {
     SYKMELDT_MER_OPPFOLGING,
     ARENA_SYNC, // TODO: Fjerne etter opprydding i databasen
     ARENA_SYNC_ARBS,
-    ARENA_SYNC_IARBS,
-    NYTT_ARBEIDSSØKERREGISTER;
+    ARENA_SYNC_IARBS;
 
     public StartetBegrunnelseDTO toStartetBegrunnelseDTO() {
-        if (this == ARBEIDSSOKER_REGISTRERING || this == ARENA_SYNC_ARBS || this == NYTT_ARBEIDSSØKERREGISTER) {
+        if (this == ARBEIDSSOKER_REGISTRERING || this == ARENA_SYNC_ARBS) {
             return StartetBegrunnelseDTO.ARBEIDSSOKER;
         } else { // Reativer er sykmeldt fordi arbeidsøkere automatisk er under oppfølging
             return StartetBegrunnelseDTO.SYKEMELDT_MER_OPPFOLGING;

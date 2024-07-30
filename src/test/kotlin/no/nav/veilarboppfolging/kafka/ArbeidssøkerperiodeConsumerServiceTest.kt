@@ -59,7 +59,7 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
         val oppfølgingsperiode = oppfølgingsperioder.first()
         assertThat(oppfølgingsperiode.startDato).isEqualToIgnoringNanos(ZonedDateTime.now())
         assertThat(oppfølgingsperiode.sluttDato).isNull()
-        assertThat(oppfølgingsperiode.startetBegrunnelse).isEqualTo(OppfolgingStartBegrunnelse.NYTT_ARBEIDSSØKERREGISTER)
+        assertThat(oppfølgingsperiode.startetBegrunnelse).isEqualTo(OppfolgingStartBegrunnelse.ARBEIDSSOKER_REGISTRERING)
     }
 
     @Test

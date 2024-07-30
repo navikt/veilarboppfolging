@@ -34,10 +34,6 @@ public class Oppfolgingsbruker {
         return new Arbeidssoker(aktorId, OppfolgingStartBegrunnelse.ARBEIDSSOKER_REGISTRERING, innsatsgruppe);
     }
 
-    public static Oppfolgingsbruker nyttArbeidssøkerregisterBruker(AktorId aktorId) {
-        return new NyttArbeidssokerRegisterBruker(aktorId, OppfolgingStartBegrunnelse.NYTT_ARBEIDSSØKERREGISTER);
-    }
-
     public static Oppfolgingsbruker arenaSyncOppfolgingBruker(AktorId aktorId, Formidlingsgruppe formidlingsgruppe) {
         if (formidlingsgruppe == Formidlingsgruppe.ISERV) throw new IllegalStateException("ISERV skal ikke starte oppfølging");
         return new Oppfolgingsbruker(aktorId.get(), formidlingsgruppe == Formidlingsgruppe.IARBS ? OppfolgingStartBegrunnelse.ARENA_SYNC_IARBS : OppfolgingStartBegrunnelse.ARENA_SYNC_ARBS);
@@ -60,12 +56,5 @@ class SykmeldtBruker extends Oppfolgingsbruker {
     SykmeldtBruker(AktorId aktorId, OppfolgingStartBegrunnelse begrunnelse, SykmeldtBrukerType sykmeldtBrukerType) {
         super(aktorId.get(), begrunnelse);
         this.sykmeldtBrukerType = sykmeldtBrukerType;
-    }
-}
-
-@EqualsAndHashCode(callSuper = true)
-class NyttArbeidssokerRegisterBruker extends Oppfolgingsbruker {
-    NyttArbeidssokerRegisterBruker(AktorId aktorId, OppfolgingStartBegrunnelse begrunnelse) {
-        super(aktorId.get(), begrunnelse);
     }
 }
