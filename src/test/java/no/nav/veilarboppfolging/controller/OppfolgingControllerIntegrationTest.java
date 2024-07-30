@@ -20,8 +20,11 @@ import no.nav.veilarboppfolging.controller.request.VeilederBegrunnelseDTO;
 import no.nav.veilarboppfolging.controller.response.AvslutningStatus;
 import no.nav.veilarboppfolging.controller.response.OppfolgingPeriodeDTO;
 import no.nav.veilarboppfolging.controller.response.OppfolgingPeriodeMinimalDTO;
+import no.nav.veilarboppfolging.domain.Oppfolgingsbruker;
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
 import no.nav.veilarboppfolging.service.AuthService;
+import no.nav.veilarboppfolging.service.OppfolgingEndringService;
+import no.nav.veilarboppfolging.service.OppfolgingService;
 import no.nav.veilarboppfolging.service.YtelserOgAktiviteterService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -72,6 +75,9 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
 
     @Autowired
     AmtTiltakClient amtTiltakClient;
+
+    @Autowired
+    OppfolgingService oppfolgingService;
 
     @Test
     void hentOppfolgingsPeriode_brukerHarEnAktivOppfolgingsPeriode() throws EmptyResultDataAccessException {
@@ -153,11 +159,10 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
 
     private List<OppfolgingPeriodeDTO> startOppfolging() {
         mockSystemBruker();
-        var aktiverArbeidssokerData = new AktiverArbeidssokerData(
-                new AktiverArbeidssokerData.Fnr(FNR.get()),
-                Innsatsgruppe.STANDARD_INNSATS
+        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(
+                Oppfolgingsbruker.arbeidssokerOppfolgingsBruker(AKTOR_ID, Innsatsgruppe.STANDARD_INNSATS),
+                FNR
         );
-        systemOppfolgingController.aktiverBruker(aktiverArbeidssokerData);
         var perioder = oppfolgingController.hentOppfolgingsperioder(FNR);
         mockAuthOk();
         return perioder;

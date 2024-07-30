@@ -7,7 +7,6 @@ import no.nav.common.health.HealthCheckResult;
 import no.nav.common.health.selftest.SelfTestCheck;
 import no.nav.common.health.selftest.SelfTestChecks;
 import no.nav.common.health.selftest.SelfTestMeterBinder;
-import no.nav.veilarboppfolging.client.behandle_arbeidssoker.BehandleArbeidssokerClient;
 import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,12 +20,10 @@ import java.util.List;
 public class HelsesjekkConfig {
 
     @Bean
-    public SelfTestChecks selfTestChecks(BehandleArbeidssokerClient behandleArbeidssokerClient,
-                                         YtelseskontraktClient ytelseskontraktClient,
+    public SelfTestChecks selfTestChecks(YtelseskontraktClient ytelseskontraktClient,
                                          JdbcTemplate jdbcTemplate,
                                          AktorOppslagClient aktorOppslagClient) {
         List<SelfTestCheck> selfTestChecks = Arrays.asList(
-                new SelfTestCheck("Ping av BehandleArbeidssoker_V1. Registrerer arbeidssoker i Arena.", true, behandleArbeidssokerClient),
                 new SelfTestCheck("Ping av ytelseskontrakt_V3. Henter informasjon om ytelser fra Arena.", false, ytelseskontraktClient),
                 new SelfTestCheck("Enkel spørring mot Databasen til veilarboppfolging.", true, checkDbHealth(jdbcTemplate)),
                 // TODO selftest poao-tilgang

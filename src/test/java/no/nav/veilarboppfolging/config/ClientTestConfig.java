@@ -8,7 +8,6 @@ import no.nav.common.health.HealthCheckResult;
 import no.nav.common.metrics.Event;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.types.identer.Fnr;
-import no.nav.veilarboppfolging.client.behandle_arbeidssoker.BehandleArbeidssokerClient;
 import no.nav.veilarboppfolging.client.digdir_krr.DigdirClient;
 import no.nav.veilarboppfolging.client.digdir_krr.KRRData;
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolging;
@@ -76,26 +75,6 @@ public class ClientTestConfig {
             @Override
             public void report(String name, Map<String, Object> fields, Map<String, String> tags, long l) {
                 log.info(String.format("sender event %s Fields: %s Tags: %s", name, fields.toString(), tags.toString()));
-            }
-        };
-    }
-
-    @Bean
-    public BehandleArbeidssokerClient behandleArbeidssokerClient() {
-        return new BehandleArbeidssokerClient() {
-            @Override
-            public void opprettBrukerIArena(Fnr fnr, Innsatsgruppe innsatsgruppe) {
-
-            }
-
-            @Override
-            public void reaktiverBrukerIArena(Fnr fnr) {
-
-            }
-
-            @Override
-            public HealthCheckResult checkHealth() {
-                return HealthCheckResult.healthy();
             }
         };
     }

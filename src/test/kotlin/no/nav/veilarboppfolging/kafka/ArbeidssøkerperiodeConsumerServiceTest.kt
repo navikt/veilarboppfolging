@@ -140,19 +140,6 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
         assertThat(oppfølgingsdataFørSykmeldtRegistrering).isEqualTo(oppfølgingsdataEtterSykmeldtRegistrering)
     }
 
-    @Test
-    fun `Ikke send melding til Arena om brukere som har fått arbeidssøkerperioder`() {
-        val aktørId = AktorId.of("123456789012")
-        val fødselsnummer = "01010198765"
-        `when`(aktorOppslagClient.hentAktorId(Fnr.of(fødselsnummer))).thenReturn(aktørId)
-        val melding = ConsumerRecord("topic", 0, 0, "dummyKey", arbeidssøkerperiode(fødselsnummer))
-
-        arbeidssøkerperiodeConsumerService.consumeArbeidssøkerperiode(melding)
-
-        verify(behandleArbeidssokerClient, never()).reaktiverBrukerIArena(any())
-        verify(behandleArbeidssokerClient, never()).opprettBrukerIArena(any(), any())
-    }
-
     private fun arbeidssøkerperiode(fødselsnummer: String, periodeAvsluttet: Boolean = false, periodeStartet: Instant = Instant.now().minusSeconds(1)): Periode {
         val slutt = if (periodeAvsluttet) {
             MetaData().apply {
