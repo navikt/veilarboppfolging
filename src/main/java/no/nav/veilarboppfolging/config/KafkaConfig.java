@@ -67,9 +67,6 @@ public class KafkaConfig {
         KafkaConsumerRepository consumerRepository = new OracleJdbcTemplateConsumerRepository(jdbcTemplate);
         KafkaProducerRepository producerRepository = new OracleJdbcTemplateProducerRepository(jdbcTemplate);
 
-        Deserializer<Periode> periodeAvroValueDeserializer = Deserializers.aivenAvroDeserializer();
-        periodeAvroValueDeserializer.configure(Map.of(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, true), false);
-
         List<KafkaConsumerClientBuilder.TopicConfig<?, ?>> topicConfigs = List.of(
                 new KafkaConsumerClientBuilder.TopicConfig<String, EndringPaaOppfoelgingsBrukerV2>()
                         .withLogging()
