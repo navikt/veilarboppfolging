@@ -7,10 +7,12 @@ import no.nav.veilarboppfolging.service.AuthService
 import no.nav.veilarboppfolging.service.OppfolgingService
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.LoggerFactory
+import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Service
 
 @Service
 open class ArbeidssøkerperiodeConsumerService(
+    @Lazy
     private val oppfolgingService: OppfolgingService,
     private val authService: AuthService
 ) {
