@@ -1,5 +1,6 @@
 package no.nav.veilarboppfolging.config;
 
+import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig;
 import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.annotation.PostConstruct;
 import net.javacrumbs.shedlock.core.LockProvider;
@@ -23,12 +24,14 @@ import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
 import no.nav.veilarboppfolging.kafka.ArbeidssøkerperiodeConsumerService;
 import no.nav.veilarboppfolging.service.KafkaConsumerService;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
+import org.apache.kafka.common.serialization.Deserializer;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import static no.nav.common.kafka.consumer.util.ConsumerUtils.findConsumerConfigsWithStoreOnFailure;
@@ -62,6 +65,9 @@ public class KafkaConfig {
         KafkaConsumerRepository consumerRepository = new OracleJdbcTemplateConsumerRepository(jdbcTemplate);
         KafkaProducerRepository producerRepository = new OracleJdbcTemplateProducerRepository(jdbcTemplate);
 
+        Deserializer<Periode> periodeAvroValueDeserializer = Deserializers.aivenAvroDeserializer();
+        periodeAvroValueDeserializer.configure(Map.of(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, true), false);
+
         List<KafkaConsumerClientBuilder.TopicConfig<?, ?>> topicConfigs = List.of(
                 new KafkaConsumerClientBuilder.TopicConfig<String, EndringPaaOppfoelgingsBrukerV2>()
                         .withLogging()
@@ -80,7 +86,7 @@ public class KafkaConfig {
                         .withConsumerConfig(
                                 kafkaProperties.getArbeidssokerperioderTopicAiven(),
                                 Deserializers.stringDeserializer(),
-                                Deserializers.aivenAvroDeserializer(),
+                                periodeAvroValueDeserializer,
                                 arbeidssøkerperiodeConsumerService::consumeArbeidssøkerperiode
                         )
         );
