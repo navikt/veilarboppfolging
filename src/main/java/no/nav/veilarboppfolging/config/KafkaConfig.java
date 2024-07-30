@@ -19,6 +19,7 @@ import no.nav.common.kafka.producer.util.KafkaProducerClientBuilder;
 import no.nav.common.kafka.spring.OracleJdbcTemplateConsumerRepository;
 import no.nav.common.kafka.spring.OracleJdbcTemplateProducerRepository;
 import no.nav.common.kafka.util.KafkaPropertiesBuilder;
+import no.nav.common.utils.EnvironmentUtils;
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode;
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
 import no.nav.veilarboppfolging.kafka.ArbeidssøkerperiodeConsumerService;
@@ -52,6 +53,7 @@ public class KafkaConfig {
     private final KafkaProducerRecordProcessor aivenProducerRecordProcessor;
 
     private final KafkaProducerRecordStorage producerRecordStorage;
+    private final KafkaProperties kafkaProperties;
 
     public KafkaConfig(
             LeaderElectionClient leaderElectionClient,
@@ -86,7 +88,7 @@ public class KafkaConfig {
                         .withConsumerConfig(
                                 kafkaProperties.getArbeidssokerperioderTopicAiven(),
                                 Deserializers.stringDeserializer(),
-                                periodeAvroValueDeserializer,
+                                getPeriodeAvroDeserializer(),
                                 arbeidssøkerperiodeConsumerService::consumeArbeidssøkerperiode
                         )
         );
@@ -135,6 +137,18 @@ public class KafkaConfig {
                         kafkaProperties.getKvpPerioderTopicAiven()
                 )
         );
+        this.kafkaProperties = kafkaProperties;
+    }
+
+    private Deserializer<Periode> getPeriodeAvroDeserializer() {
+        String schemaUrl = EnvironmentUtils.getRequiredProperty("KAFKA_SCHEMAS_URL");
+        Deserializer<Periode> avroDeserializer = Deserializers.aivenAvroDeserializer();
+        avroDeserializer.configure(
+                Map.of(
+                        KafkaAvroDeserializerConfig.SCHEMA_REGISTRY_URL_CONFIG, schemaUrl,
+                        KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, true)
+                , false);
+        return avroDeserializer;
     }
 
     @Bean
