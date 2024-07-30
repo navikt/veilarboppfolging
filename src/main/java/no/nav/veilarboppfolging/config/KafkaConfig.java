@@ -19,12 +19,12 @@ import no.nav.common.kafka.producer.util.KafkaProducerClientBuilder;
 import no.nav.common.kafka.spring.OracleJdbcTemplateConsumerRepository;
 import no.nav.common.kafka.spring.OracleJdbcTemplateProducerRepository;
 import no.nav.common.kafka.util.KafkaPropertiesBuilder;
+import no.nav.common.utils.EnvironmentUtils;
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode;
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
 import no.nav.veilarboppfolging.kafka.ArbeidssøkerperiodeConsumerService;
 import no.nav.veilarboppfolging.service.KafkaConsumerService;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
-import org.apache.kafka.common.serialization.Deserializer;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -65,9 +65,6 @@ public class KafkaConfig {
         KafkaConsumerRepository consumerRepository = new OracleJdbcTemplateConsumerRepository(jdbcTemplate);
         KafkaProducerRepository producerRepository = new OracleJdbcTemplateProducerRepository(jdbcTemplate);
 
-        Deserializer<Periode> aivenAvroValueDeserializer = Deserializers.aivenAvroDeserializer();
-        aivenAvroValueDeserializer.configure(Map.of(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, true), false);
-
         List<KafkaConsumerClientBuilder.TopicConfig<?, ?>> topicConfigs = List.of(
                 new KafkaConsumerClientBuilder.TopicConfig<String, EndringPaaOppfoelgingsBrukerV2>()
                         .withLogging()
@@ -86,7 +83,7 @@ public class KafkaConfig {
                         .withConsumerConfig(
                                 kafkaProperties.getArbeidssokerperioderTopicAiven(),
                                 Deserializers.stringDeserializer(),
-                                aivenAvroValueDeserializer,
+                                getArbeidssøkerperiodeDeserializer(),
                                 arbeidssøkerperiodeConsumerService::consumeArbeidssøkerperiode
                         )
         );
@@ -135,6 +132,17 @@ public class KafkaConfig {
                         kafkaProperties.getKvpPerioderTopicAiven()
                 )
         );
+    }
+
+    private Deserializer<Periode> getArbeidssøkerperiodeDeserializer() {
+        String kafkaSchemasUrl = EnvironmentUtils.getRequiredProperty("KAFKA_SCHEMAS_URL");
+        Deserializer<Periode> avroDeserializer = Deserializers.aivenAvroDeserializer();
+        avroDeserializer.configure(
+            Map.of(
+                KafkaAvroDeserializerConfig.SCHEMA_REGISTRY_URL_CONFIG, kafkaSchemasUrl,
+                KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, true),
+            false);
+        return avroDeserializer;
     }
 
     @Bean
