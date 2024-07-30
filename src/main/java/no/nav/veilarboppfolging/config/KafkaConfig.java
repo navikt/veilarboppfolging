@@ -53,7 +53,6 @@ public class KafkaConfig {
     private final KafkaProducerRecordProcessor aivenProducerRecordProcessor;
 
     private final KafkaProducerRecordStorage producerRecordStorage;
-    private final KafkaProperties kafkaProperties;
 
     public KafkaConfig(
             LeaderElectionClient leaderElectionClient,
@@ -134,7 +133,6 @@ public class KafkaConfig {
                         kafkaProperties.getKvpPerioderTopicAiven()
                 )
         );
-        this.kafkaProperties = kafkaProperties;
     }
 
     private Deserializer<Periode> getPeriodeAvroDeserializer() {
