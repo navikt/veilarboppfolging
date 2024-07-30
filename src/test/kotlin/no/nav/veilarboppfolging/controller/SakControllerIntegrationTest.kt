@@ -4,6 +4,7 @@ import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.veilarboppfolging.IntegrationTest
 import no.nav.veilarboppfolging.controller.response.OppfolgingPeriodeDTO
+import no.nav.veilarboppfolging.domain.Oppfolgingsbruker.arbeidssokerOppfolgingsBruker
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.springframework.http.HttpStatus
@@ -102,4 +103,11 @@ class SakControllerIntegrationTest: IntegrationTest() {
         assertThat(sak.sakId).isEqualTo(sakerIDatabasen[0].id)
         assertThat(sak.oppfolgingsperiodeId).isEqualTo(sakerIDatabasen[0].oppfølgingsperiodeUUID)
     }
+
+    fun startOppfolging(fnr: Fnr): List<OppfolgingPeriodeDTO> {
+        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(arbeidssokerOppfolgingsBruker(aktørId), fnr)
+
+        return oppfolgingController.hentOppfolgingsperioder(fnr)
+    }
+
 }

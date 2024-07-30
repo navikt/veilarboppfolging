@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe;
-import no.nav.veilarboppfolging.controller.request.Innsatsgruppe;
 import no.nav.veilarboppfolging.controller.request.SykmeldtBrukerType;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingStartBegrunnelse;
 
@@ -30,8 +29,8 @@ public class Oppfolgingsbruker {
         return new SykmeldtBruker(aktorId, OppfolgingStartBegrunnelse.SYKMELDT_MER_OPPFOLGING, sykmeldtBrukerType);
     }
 
-    public static Oppfolgingsbruker arbeidssokerOppfolgingsBruker(AktorId aktorId, Innsatsgruppe innsatsgruppe) {
-        return new Arbeidssoker(aktorId, OppfolgingStartBegrunnelse.ARBEIDSSOKER_REGISTRERING, innsatsgruppe);
+    public static Oppfolgingsbruker arbeidssokerOppfolgingsBruker(AktorId aktorId) {
+        return new Arbeidssoker(aktorId, OppfolgingStartBegrunnelse.ARBEIDSSOKER_REGISTRERING);
     }
 
     public static Oppfolgingsbruker arenaSyncOppfolgingBruker(AktorId aktorId, Formidlingsgruppe formidlingsgruppe) {
@@ -43,10 +42,8 @@ public class Oppfolgingsbruker {
 
 @EqualsAndHashCode(callSuper = true)
 class Arbeidssoker extends Oppfolgingsbruker {
-    Innsatsgruppe innsatsgruppe;
-    Arbeidssoker(AktorId aktorId, OppfolgingStartBegrunnelse begrunnelse, Innsatsgruppe innsatsgruppe) {
+    Arbeidssoker(AktorId aktorId, OppfolgingStartBegrunnelse begrunnelse) {
         super(aktorId.get(), begrunnelse);
-        this.innsatsgruppe = innsatsgruppe;
     }
 }
 

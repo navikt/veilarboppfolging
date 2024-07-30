@@ -4,7 +4,6 @@ import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.paw.arbeidssokerregisteret.api.v1.*
 import no.nav.veilarboppfolging.IntegrationTest
-import no.nav.veilarboppfolging.controller.request.Innsatsgruppe
 import no.nav.veilarboppfolging.controller.request.SykmeldtBrukerType
 import no.nav.veilarboppfolging.domain.Oppfolgingsbruker
 import no.nav.veilarboppfolging.repository.entity.OppfolgingStartBegrunnelse
@@ -98,7 +97,7 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
         val aktørId = AktorId.of("123456789012")
         val fødselsnummer = "01010198765"
         `when`(aktorOppslagClient.hentAktorId(Fnr.of(fødselsnummer))).thenReturn(aktørId)
-        val oppfølgingsbruker = Oppfolgingsbruker.arbeidssokerOppfolgingsBruker(aktørId, Innsatsgruppe.STANDARD_INNSATS)
+        val oppfølgingsbruker = Oppfolgingsbruker.arbeidssokerOppfolgingsBruker(aktørId)
         oppfølgingService.startOppfolgingHvisIkkeAlleredeStartet(oppfølgingsbruker, Fnr.of(fødselsnummer))
         val oppfølgingsdataFørMelding = oppfølgingService.hentOppfolgingsperioder(aktørId).first()
         val melding = ConsumerRecord("topic", 0, 0, "dummyKey", arbeidssøkerperiode(fødselsnummer))

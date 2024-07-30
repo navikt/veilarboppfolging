@@ -13,13 +13,13 @@ import no.nav.veilarboppfolging.config.EnvironmentProperties
 import no.nav.veilarboppfolging.controller.OppfolgingController
 import no.nav.veilarboppfolging.controller.SakController
 import no.nav.veilarboppfolging.controller.SystemOppfolgingController
-import no.nav.veilarboppfolging.controller.request.AktiverArbeidssokerData
-import no.nav.veilarboppfolging.controller.request.Innsatsgruppe
 import no.nav.veilarboppfolging.controller.response.OppfolgingPeriodeDTO
+import no.nav.veilarboppfolging.domain.Oppfolgingsbruker.arbeidssokerOppfolgingsBruker
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.repository.SakRepository
 import no.nav.veilarboppfolging.service.AuthService
 import no.nav.veilarboppfolging.service.MetricsService
+import no.nav.veilarboppfolging.service.OppfolgingService
 import no.nav.veilarboppfolging.test.DbTestUtils
 import org.junit.jupiter.api.BeforeEach
 import org.mockito.Mockito
@@ -57,16 +57,13 @@ open class IntegrationTest {
     lateinit var oppfolgingController: OppfolgingController
 
     @Autowired
+    lateinit var oppfolgingService: OppfolgingService
+
+    @Autowired
     lateinit var oppfolgingsPeriodeRepository: OppfolgingsPeriodeRepository
 
     @Autowired
     lateinit var sakController: SakController
-
-    @Autowired
-    lateinit var systemOppfolgingController: SystemOppfolgingController
-
-    @MockBean
-    lateinit var machineToMachineTokenClient: MachineToMachineTokenClient
 
     @Autowired
     lateinit var sakRepository: SakRepository
@@ -74,14 +71,6 @@ open class IntegrationTest {
     @BeforeEach
     fun beforeEach() {
         DbTestUtils.cleanupTestDb()
-    }
-
-    fun startOppfolging(fnr: Fnr): List<OppfolgingPeriodeDTO> {
-        val aktiverArbeidssokerData = AktiverArbeidssokerData(
-            AktiverArbeidssokerData.Fnr(fnr.get()),
-            Innsatsgruppe.STANDARD_INNSATS
-        )
-        return oppfolgingController.hentOppfolgingsperioder(fnr)
     }
 
     fun avsluttOppfolging(aktorId: AktorId, veileder: String = "veileder", begrunnelse: String = "Begrunnelse") {

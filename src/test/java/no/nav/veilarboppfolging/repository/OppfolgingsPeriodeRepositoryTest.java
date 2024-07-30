@@ -1,7 +1,6 @@
 package no.nav.veilarboppfolging.repository;
 
 import no.nav.common.types.identer.AktorId;
-import no.nav.veilarboppfolging.controller.request.Innsatsgruppe;
 import no.nav.veilarboppfolging.domain.Oppfolgingsbruker;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
 import no.nav.veilarboppfolging.test.DbTestUtils;
@@ -31,7 +30,7 @@ class OppfolgingsPeriodeRepositoryTest {
     @Test
     void skal_hente_gjeldende_oppfolgingsperiode() {
         AktorId aktorId = AktorId.of("4321");
-        var oppfolgingsbruker = Oppfolgingsbruker.arbeidssokerOppfolgingsBruker(aktorId, Innsatsgruppe.STANDARD_INNSATS);
+        var oppfolgingsbruker = Oppfolgingsbruker.arbeidssokerOppfolgingsBruker(aktorId);
         oppfolgingsStatusRepository.opprettOppfolging(aktorId);
 
         oppfolgingsPeriodeRepository.start(aktorId, oppfolgingsbruker.getOppfolgingStartBegrunnelse());
@@ -48,7 +47,7 @@ class OppfolgingsPeriodeRepositoryTest {
     @Test
     void skal_returnere_empty_hvis_ingen_oppfolging() {
         AktorId aktorId = AktorId.of("4321");
-        var oppfolgingsbruker = Oppfolgingsbruker.arbeidssokerOppfolgingsBruker(aktorId, Innsatsgruppe.STANDARD_INNSATS);
+        var oppfolgingsbruker = Oppfolgingsbruker.arbeidssokerOppfolgingsBruker(aktorId);
         Optional<OppfolgingsperiodeEntity> maybeOppfolgingsperiodeEntity1 = oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId);
         assertTrue(maybeOppfolgingsperiodeEntity1.isEmpty());
         oppfolgingsStatusRepository.opprettOppfolging(aktorId);

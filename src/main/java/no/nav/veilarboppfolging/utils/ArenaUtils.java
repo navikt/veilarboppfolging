@@ -42,18 +42,4 @@ public class ArenaUtils {
     public static boolean erIserv(Formidlingsgruppe formidlingsgruppe) {
         return ISERV.equals(formidlingsgruppe);
     }
-
-    /*
-    public static boolean erSykmeldtMedArbeidsgiver(ArenaOppfolgingTilstand arenaOppfolgingTilstand) {
-        return ArenaUtils.erIARBSUtenOppfolging(
-                arenaOppfolgingTilstand.getFormidlingsgruppe(),
-                arenaOppfolgingTilstand.getServicegruppe()
-        );
-    }
-
-    public static boolean erInaktivIArena(ArenaOppfolgingTilstand arenaOppfolgingTilstand) {
-        return erIserv(arenaOppfolgingTilstand.getFormidlingsgruppe());
-    }
-    */
-
 }

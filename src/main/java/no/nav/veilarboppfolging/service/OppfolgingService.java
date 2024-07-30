@@ -127,8 +127,6 @@ public class OppfolgingService {
         return getAvslutningStatus(fnr);
     }
 
-
-
     @SneakyThrows
     public AvslutningStatusData avsluttOppfolging(Fnr fnr, String veilederId, String begrunnelse) {
         AktorId aktorId = authService.getAktorIdOrThrow(fnr);

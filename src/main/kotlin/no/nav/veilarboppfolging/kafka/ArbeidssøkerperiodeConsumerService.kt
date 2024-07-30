@@ -26,7 +26,7 @@ open class ArbeidssøkerperiodeConsumerService(
         val nyPeriode = arbeidssøkerperiode.avsluttet == null
 
         if (nyPeriode) {
-            val arbeidssøker = Oppfolgingsbruker.arbeidssokerOppfolgingsBruker(aktørId, null)
+            val arbeidssøker = Oppfolgingsbruker.arbeidssokerOppfolgingsBruker(aktørId)
             logger.info("Fått melding om ny arbeidssøkerperiode, starter oppfølging hvis ikke allerede startet")
             oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(arbeidssøker, fnr)
         } else {
