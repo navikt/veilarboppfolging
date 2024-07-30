@@ -20,7 +20,7 @@ import no.nav.common.kafka.spring.OracleJdbcTemplateProducerRepository;
 import no.nav.common.kafka.util.KafkaPropertiesBuilder;
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode;
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
-import no.nav.veilarboppfolging.kafka.ArbeidssøkerperiodeConsumer;
+import no.nav.veilarboppfolging.kafka.ArbeidssøkerperiodeConsumerService;
 import no.nav.veilarboppfolging.service.KafkaConsumerService;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -57,7 +57,7 @@ public class KafkaConfig {
             KafkaConsumerService kafkaConsumerService,
             KafkaProperties kafkaProperties,
             MeterRegistry meterRegistry,
-            ArbeidssøkerperiodeConsumer arbeidssøkerperiodeConsumer
+            ArbeidssøkerperiodeConsumerService arbeidssøkerperiodeConsumerService
     ) {
         KafkaConsumerRepository consumerRepository = new OracleJdbcTemplateConsumerRepository(jdbcTemplate);
         KafkaProducerRepository producerRepository = new OracleJdbcTemplateProducerRepository(jdbcTemplate);
@@ -81,7 +81,7 @@ public class KafkaConfig {
                                 kafkaProperties.getArbeidssokerperioderTopicAiven(),
                                 Deserializers.stringDeserializer(),
                                 Deserializers.aivenAvroDeserializer(),
-                                arbeidssøkerperiodeConsumer::consumeArbeidssøkerperiode
+                                arbeidssøkerperiodeConsumerService::consumeArbeidssøkerperiode
                         )
         );
 

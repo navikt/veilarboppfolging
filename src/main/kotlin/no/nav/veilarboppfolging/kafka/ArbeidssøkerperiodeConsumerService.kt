@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 
 @Service
-open class ArbeidssøkerperiodeConsumer(
+open class ArbeidssøkerperiodeConsumerService(
     private val oppfolgingService: OppfolgingService,
     private val authService: AuthService
 ) {
