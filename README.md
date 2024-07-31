@@ -30,6 +30,9 @@ Se beskrivelse av hvordan man kan oppdatere topics i https://github.com/navikt/p
 | `/internal/publiser_oppfolging_status_historikk`           | Legg ut *alle* brukere på topic for endring av oppfølgingstatus  |
 | `/internal/publiser_oppfolging_status?aktoerId=<aktoerId>` | Publiser oppfølgingstatus på nytt for gjeldende bruker           |
 
+## Avro-genererte klasser
+Avro-genererte klasser er lagt inn manuelt og er ikke en del av pipelinen. Hvis skjemaversjonen skal oppdateres må det genereres nye klasser. 
+
 ## Kode generert av GitHub Copilot
 
 Dette repoet bruker GitHub Copilot til å generere kode.

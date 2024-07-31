@@ -12,7 +12,6 @@ import no.nav.veilarboppfolging.service.AuthService;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.MDC;
-
 import java.io.IOException;
 import java.util.List;
 

@@ -1,5 +1,6 @@
 package no.nav.veilarboppfolging.config;
 
+import jakarta.annotation.PostConstruct;
 import net.javacrumbs.shedlock.core.LockProvider;
 import no.nav.common.job.leader_election.LeaderElectionClient;
 import no.nav.common.kafka.consumer.KafkaConsumerClient;
@@ -25,8 +26,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
-
-import jakarta.annotation.PostConstruct;
 import org.springframework.kafka.test.context.EmbeddedKafka;
 
 import java.util.List;
@@ -62,7 +61,6 @@ public class KafkaTestConfig {
         KafkaConsumerRepository consumerRepository = new OracleJdbcTemplateConsumerRepository(jdbcTemplate);
         KafkaProducerRepository producerRepository = new OracleJdbcTemplateProducerRepository(jdbcTemplate);
 
-
         List<KafkaConsumerClientBuilder.TopicConfig<?, ?>> topicConfigs = List.of(
                 new KafkaConsumerClientBuilder.TopicConfig<String, EndringPaaOppfoelgingsBrukerV2>()
                         .withLogging()
@@ -75,7 +73,7 @@ public class KafkaTestConfig {
                         )
         );
 
-        Properties properties = KafkaPropertiesBuilder.consumerBuilder()
+        Properties consumerClientProperties = KafkaPropertiesBuilder.consumerBuilder()
                 .withBaseProperties(1000)
                 .withConsumerGroupId(CONSUMER_GROUP_ID)
                 .withBrokerUrl(kafkaContainer.getBrokersAsString())
@@ -83,7 +81,7 @@ public class KafkaTestConfig {
                 .build();
 
         consumerClient = KafkaConsumerClientBuilder.builder()
-                .withProperties(properties)
+                .withProperties(consumerClientProperties)
                 .withTopicConfigs(topicConfigs)
                 .build();
 
