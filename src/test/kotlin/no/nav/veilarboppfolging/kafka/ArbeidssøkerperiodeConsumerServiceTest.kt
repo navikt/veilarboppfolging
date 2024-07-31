@@ -39,22 +39,24 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
     @Autowired
     private lateinit var aktiverBrukerService: AktiverBrukerService
 
+    private val fnr = "01010198765"
+    private val aktørId = AktorId.of("123456789012")
+
     @BeforeEach
     fun setUp() {
         DbTestUtils.cleanupTestDb()
+        `when`(aktorOppslagClient.hentAktorId(Fnr.of(fnr))).thenReturn(aktørId)
+        `when`(aktorOppslagClient.hentFnr(aktørId)).thenReturn(Fnr.of(fnr))
     }
 
     @Test
     fun `Melding om ny arbeidssøkerperiode skal starte ny arbeidsrettet oppfølgingsperiode`() {
-        val aktørId = AktorId.of("123456789012")
-        val fødselsnummer = "01010198765"
-        `when`(aktorOppslagClient.hentAktorId(Fnr.of(fødselsnummer))).thenReturn(aktørId)
-        val nyPeriode = arbeidssøkerperiode(fødselsnummer)
+        val nyPeriode = arbeidssøkerperiode(fnr)
         val melding = ConsumerRecord("topic", 0, 0, "dummyKey", nyPeriode)
 
         arbeidssøkerperiodeConsumerService.consumeArbeidssøkerperiode(melding)
 
-        val oppfølgingsperioder = oppfølgingService.hentOppfolgingsperioder(Fnr.of(fødselsnummer))
+        val oppfølgingsperioder = oppfølgingService.hentOppfolgingsperioder(Fnr.of(fnr))
         assertThat(oppfølgingsperioder).hasSize(1)
         val oppfølgingsperiode = oppfølgingsperioder.first()
         assertThat(oppfølgingsperiode.startDato).isEqualToIgnoringNanos(ZonedDateTime.now())
@@ -64,44 +66,35 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
 
     @Test
     fun `Ny oppfølgingsperiode starter når vi konsumerer meldinga`() {
-        val aktørId = AktorId.of("123456789012")
-        val fødselsnummer = "01010198765"
-        `when`(aktorOppslagClient.hentAktorId(Fnr.of(fødselsnummer))).thenReturn(aktørId)
         val oppfølgingsperiodeStartet = Instant.now().minus(10, ChronoUnit.DAYS)
-        val nyPeriode = arbeidssøkerperiode(fødselsnummer, periodeStartet = oppfølgingsperiodeStartet)
+        val nyPeriode = arbeidssøkerperiode(fnr, periodeStartet = oppfølgingsperiodeStartet)
         val melding = ConsumerRecord("topic", 0, 0, "dummyKey", nyPeriode)
 
         arbeidssøkerperiodeConsumerService.consumeArbeidssøkerperiode(melding)
 
-        val oppfølgingsperioder = oppfølgingService.hentOppfolgingsperioder(Fnr.of(fødselsnummer))
+        val oppfølgingsperioder = oppfølgingService.hentOppfolgingsperioder(Fnr.of(fnr))
         assertThat(oppfølgingsperioder.first().startDato).isEqualToIgnoringNanos(ZonedDateTime.now())
     }
 
     @Test
     fun `Melding om avsluttet arbeidssøkerperiode skal ignoreres`() {
-        val aktørId = AktorId.of("123456789012")
-        val fødselsnummer = "01010198765"
-        `when`(aktorOppslagClient.hentAktorId(Fnr.of(fødselsnummer))).thenReturn(aktørId)
-        val startMelding = ConsumerRecord("topic", 0, 0, "dummyKey", arbeidssøkerperiode(fødselsnummer))
+        val startMelding = ConsumerRecord("topic", 0, 0, "dummyKey", arbeidssøkerperiode(fnr))
         arbeidssøkerperiodeConsumerService.consumeArbeidssøkerperiode(startMelding)
-        val sluttMelding = ConsumerRecord("topic", 0, 0, "dummyKey", arbeidssøkerperiode(fødselsnummer, periodeAvsluttet = true))
+        val sluttMelding = ConsumerRecord("topic", 0, 0, "dummyKey", arbeidssøkerperiode(fnr, periodeAvsluttet = true))
 
         arbeidssøkerperiodeConsumerService.consumeArbeidssøkerperiode(sluttMelding)
 
-        val oppfølgingsperioder = oppfølgingService.hentOppfolgingsperioder(Fnr.of(fødselsnummer))
+        val oppfølgingsperioder = oppfølgingService.hentOppfolgingsperioder(Fnr.of(fnr))
         assertThat(oppfølgingsperioder).hasSize(1)
-        assertThat(oppfølgingService.erUnderOppfolging(Fnr.of(fødselsnummer))).isTrue
+        assertThat(oppfølgingService.erUnderOppfolging(Fnr.of(fnr))).isTrue
     }
 
     @Test
     fun `Dersom arbeidsrettet oppfølgingsperiode allerede eksisterer skal melding om ny arbeidssøkerperiode ikke endre noe`() {
-        val aktørId = AktorId.of("123456789012")
-        val fødselsnummer = "01010198765"
-        `when`(aktorOppslagClient.hentAktorId(Fnr.of(fødselsnummer))).thenReturn(aktørId)
         val oppfølgingsbruker = Oppfolgingsbruker.arbeidssokerOppfolgingsBruker(aktørId, Innsatsgruppe.STANDARD_INNSATS)
-        oppfølgingService.startOppfolgingHvisIkkeAlleredeStartet(oppfølgingsbruker, Fnr.of(fødselsnummer))
+        oppfølgingService.startOppfolgingHvisIkkeAlleredeStartet(oppfølgingsbruker)
         val oppfølgingsdataFørMelding = oppfølgingService.hentOppfolgingsperioder(aktørId).first()
-        val melding = ConsumerRecord("topic", 0, 0, "dummyKey", arbeidssøkerperiode(fødselsnummer))
+        val melding = ConsumerRecord("topic", 0, 0, "dummyKey", arbeidssøkerperiode(fnr))
 
         arbeidssøkerperiodeConsumerService.consumeArbeidssøkerperiode(melding)
 
@@ -111,13 +104,10 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
 
     @Test
     fun `Dersom arbeidsrettet oppfølgingsperiode allerede eksisterer for sykmeldt bruker skal melding om arbeidssøkerperiode ikke endre noe`() {
-        val aktørId = AktorId.of("123456789012")
-        val fødselsnummer = "01010198765"
-        `when`(aktorOppslagClient.hentAktorId(Fnr.of(fødselsnummer))).thenReturn(aktørId)
         val oppfølgingsbruker = Oppfolgingsbruker.sykmeldtMerOppfolgingsBruker(aktørId, SykmeldtBrukerType.SKAL_TIL_NY_ARBEIDSGIVER)
-        oppfølgingService.startOppfolgingHvisIkkeAlleredeStartet(oppfølgingsbruker, Fnr.of(fødselsnummer))
+        oppfølgingService.startOppfolgingHvisIkkeAlleredeStartet(oppfølgingsbruker)
         val oppfølgingsdataFørMelding = oppfølgingService.hentOppfolgingsperioder(aktørId).first()
-        val melding = ConsumerRecord("topic", 0, 0, "dummyKey", arbeidssøkerperiode(fødselsnummer))
+        val melding = ConsumerRecord("topic", 0, 0, "dummyKey", arbeidssøkerperiode(fnr))
 
         arbeidssøkerperiodeConsumerService.consumeArbeidssøkerperiode(melding)
 
@@ -127,14 +117,11 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
 
     @Test
     fun `Dersom en bruker er under oppfølging pga melding om arbeidssøkerperiode skal senere registrering som sykmeldt ikke få effekt`() {
-        val aktørId = AktorId.of("123456789012")
-        val fødselsnummer = "01010198765"
-        `when`(aktorOppslagClient.hentAktorId(Fnr.of(fødselsnummer))).thenReturn(aktørId)
-        val melding = ConsumerRecord("topic", 0, 0, "dummyKey", arbeidssøkerperiode(fødselsnummer))
+        val melding = ConsumerRecord("topic", 0, 0, "dummyKey", arbeidssøkerperiode(fnr))
         arbeidssøkerperiodeConsumerService.consumeArbeidssøkerperiode(melding)
         val oppfølgingsdataFørSykmeldtRegistrering = oppfølgingService.hentOppfolgingsperioder(aktørId).first()
 
-        aktiverBrukerService.aktiverSykmeldt(Fnr.of(fødselsnummer), SykmeldtBrukerType.SKAL_TIL_NY_ARBEIDSGIVER)
+        aktiverBrukerService.aktiverSykmeldt(Fnr.of(fnr), SykmeldtBrukerType.SKAL_TIL_NY_ARBEIDSGIVER)
 
         val oppfølgingsdataEtterSykmeldtRegistrering = oppfølgingService.hentOppfolgingsperioder(aktørId).first()
         assertThat(oppfølgingsdataFørSykmeldtRegistrering).isEqualTo(oppfølgingsdataEtterSykmeldtRegistrering)
@@ -142,10 +129,7 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
 
     @Test
     fun `Ikke send melding til Arena om brukere som har fått arbeidssøkerperioder`() {
-        val aktørId = AktorId.of("123456789012")
-        val fødselsnummer = "01010198765"
-        `when`(aktorOppslagClient.hentAktorId(Fnr.of(fødselsnummer))).thenReturn(aktørId)
-        val melding = ConsumerRecord("topic", 0, 0, "dummyKey", arbeidssøkerperiode(fødselsnummer))
+        val melding = ConsumerRecord("topic", 0, 0, "dummyKey", arbeidssøkerperiode(fnr))
 
         arbeidssøkerperiodeConsumerService.consumeArbeidssøkerperiode(melding)
 
