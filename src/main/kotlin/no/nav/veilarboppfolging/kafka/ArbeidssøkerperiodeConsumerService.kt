@@ -19,18 +19,22 @@ open class ArbeidssøkerperiodeConsumerService(
     private val logger = LoggerFactory.getLogger(this::class.java)
 
     open fun consumeArbeidssøkerperiode(kafkaMelding: ConsumerRecord<String, Periode>) {
-//        val arbeidssøkerperiode: Periode = kafkaMelding.value()
-//        val fnr = Fnr.of(arbeidssøkerperiode.identitetsnummer.toString())
-//        val aktørId = authService.getAktorIdOrThrow(fnr)
-//
-//        val nyPeriode = arbeidssøkerperiode.avsluttet == null
-//
-//        if (nyPeriode) {
-//            val arbeidssøker = Oppfolgingsbruker.arbeidssokerOppfolgingsBruker(aktørId, null)
+        val arbeidssøkerperiode: Periode = kafkaMelding.value()
+        val fnr = Fnr.of(arbeidssøkerperiode.identitetsnummer.toString())
+        val aktørId = authService.getAktorIdOrThrow(fnr)
+
+        val nyPeriode = arbeidssøkerperiode.avsluttet == null
+
+        if (nyPeriode) {
+            val arbeidssøker = Oppfolgingsbruker.arbeidssokerOppfolgingsBruker(aktørId, null)
+            val tidspunktFraKilde = arbeidssøkerperiode.startet.tidspunktFraKilde.tidspunkt
+            val tidspunkt = arbeidssøkerperiode.startet.tidspunkt
+            logger.info("Startet: Tidspunkt fra kilde: $tidspunktFraKilde. Tidspunkt: $tidspunkt")
 //            logger.info("Fått melding om ny arbeidssøkerperiode, starter oppfølging hvis ikke allerede startet")
 //            oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(arbeidssøker)
-//        } else {
-//            logger.info("Melding om avsluttet oppfølgingsperiode, gjør ingenting")
-//        }
+
+        } else {
+            logger.info("Melding om avsluttet oppfølgingsperiode, gjør ingenting")
+        }
     }
 }

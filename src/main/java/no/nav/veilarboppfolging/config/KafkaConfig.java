@@ -46,7 +46,9 @@ public class KafkaConfig {
     public static final String CONSUMER_GROUP_ID = "veilarboppfolging-consumer";
     public static final String PRODUCER_CLIENT_ID = "veilarboppfolging-producer";
 
-    private final KafkaConsumerClient aivenConsumerClient;
+    private final KafkaConsumerClient endringPaaOppfoelgingsBrukerConsumerClient;
+
+    private final KafkaConsumerClient arbeidssøkerperiodeConsumerClient;
 
     private final KafkaConsumerRecordProcessor consumerRecordProcessor;
 
@@ -66,28 +68,27 @@ public class KafkaConfig {
         KafkaConsumerRepository consumerRepository = new OracleJdbcTemplateConsumerRepository(jdbcTemplate);
         KafkaProducerRepository producerRepository = new OracleJdbcTemplateProducerRepository(jdbcTemplate);
 
-        List<KafkaConsumerClientBuilder.TopicConfig<?, ?>> topicConfigs = List.of(
-                new KafkaConsumerClientBuilder.TopicConfig<String, EndringPaaOppfoelgingsBrukerV2>()
-                        .withLogging()
-                        .withMetrics(meterRegistry)
-                        .withStoreOnFailure(consumerRepository)
-                        .withConsumerConfig(
-                                kafkaProperties.getEndringPaaOppfolgingBrukerTopic(),
-                                Deserializers.stringDeserializer(),
-                                Deserializers.jsonDeserializer(EndringPaaOppfoelgingsBrukerV2.class),
-                                kafkaConsumerService::consumeEndringPaOppfolgingBruker
-                        ),
-                new KafkaConsumerClientBuilder.TopicConfig<String, Periode>()
-                        .withLogging()
-                        .withMetrics(meterRegistry)
-                        .withStoreOnFailure(consumerRepository)
-                        .withConsumerConfig(
-                                kafkaProperties.getArbeidssokerperioderTopicAiven(),
-                                Deserializers.stringDeserializer(),
-                                getPeriodeAvroDeserializer(),
-                                arbeidssøkerperiodeConsumerService::consumeArbeidssøkerperiode
-                        )
-        );
+        KafkaConsumerClientBuilder.TopicConfig<?, ?> endringPaaOppfoelgingsBrukerTopicConfig = new KafkaConsumerClientBuilder.TopicConfig<String, EndringPaaOppfoelgingsBrukerV2>()
+                .withLogging()
+                .withMetrics(meterRegistry)
+                .withStoreOnFailure(consumerRepository)
+                .withConsumerConfig(
+                        kafkaProperties.getEndringPaaOppfolgingBrukerTopic(),
+                        Deserializers.stringDeserializer(),
+                        Deserializers.jsonDeserializer(EndringPaaOppfoelgingsBrukerV2.class),
+                        kafkaConsumerService::consumeEndringPaOppfolgingBruker
+                );
+
+        KafkaConsumerClientBuilder.TopicConfig<?, ?> arbeidssøkerperioderTopicConfig = new KafkaConsumerClientBuilder.TopicConfig<String, Periode>()
+                .withLogging()
+                .withMetrics(meterRegistry)
+                .withStoreOnFailure(consumerRepository)
+                .withConsumerConfig(
+                        kafkaProperties.getArbeidssokerperioderTopicAiven(),
+                        Deserializers.stringDeserializer(),
+                        getPeriodeAvroDeserializer(),
+                        arbeidssøkerperiodeConsumerService::consumeArbeidssøkerperiode
+                );
 
         Properties aivenConsumerProperties = KafkaPropertiesBuilder.consumerBuilder()
                 .withBaseProperties()
@@ -97,16 +98,29 @@ public class KafkaConfig {
                 .withDeserializers(ByteArrayDeserializer.class, ByteArrayDeserializer.class)
                 .build();
 
-        aivenConsumerClient = KafkaConsumerClientBuilder.builder()
+        Properties arbeidssøkerperiodeConsumerProperties = KafkaPropertiesBuilder.consumerBuilder()
+                .withBaseProperties()
+                .withConsumerGroupId("veilarboppfolging-arbeidssøkerperiode-consumer")
+                .withAivenBrokerUrl()
+                .withAivenAuth()
+                .withDeserializers(ByteArrayDeserializer.class, ByteArrayDeserializer.class)
+                .build();
+
+        endringPaaOppfoelgingsBrukerConsumerClient = KafkaConsumerClientBuilder.builder()
                 .withProperties(aivenConsumerProperties)
-                .withTopicConfigs(topicConfigs)
+                .withTopicConfigs(List.of(endringPaaOppfoelgingsBrukerTopicConfig))
+                .build();
+
+        arbeidssøkerperiodeConsumerClient = KafkaConsumerClientBuilder.builder()
+                .withProperties(arbeidssøkerperiodeConsumerProperties)
+                .withTopicConfigs(List.of(arbeidssøkerperioderTopicConfig))
                 .build();
 
         consumerRecordProcessor = KafkaConsumerRecordProcessorBuilder
                 .builder()
                 .withLockProvider(lockProvider)
                 .withKafkaConsumerRepository(consumerRepository)
-                .withConsumerConfigs(findConsumerConfigsWithStoreOnFailure(topicConfigs))
+                .withConsumerConfigs(findConsumerConfigsWithStoreOnFailure(List.of(endringPaaOppfoelgingsBrukerTopicConfig, arbeidssøkerperioderTopicConfig)))
                 .build();
 
         producerRecordStorage = new KafkaProducerRecordStorage(producerRepository);
@@ -153,7 +167,8 @@ public class KafkaConfig {
 
     @PostConstruct
     public void start() {
-        aivenConsumerClient.start();
+        endringPaaOppfoelgingsBrukerConsumerClient.start();
+        arbeidssøkerperiodeConsumerClient.start();
         consumerRecordProcessor.start();
         aivenProducerRecordProcessor.start();
     }
