@@ -29,7 +29,8 @@ open class ArbeidssøkerperiodeConsumerService(
             val arbeidssøker = Oppfolgingsbruker.arbeidssokerOppfolgingsBruker(aktørId, null)
             val tidspunktFraKilde = arbeidssøkerperiode.startet.tidspunktFraKilde?.tidspunkt
             val tidspunkt = arbeidssøkerperiode.startet.tidspunkt
-            logger.info("Startet: Tidspunkt fra kilde: $tidspunktFraKilde. Tidspunkt: $tidspunkt")
+            val kilde = arbeidssøkerperiode.startet.kilde
+            logger.info("Startet: Tidspunkt fra kilde: $tidspunktFraKilde. Tidspunkt: $tidspunkt. Kilde: $kilde")
 //            logger.info("Fått melding om ny arbeidssøkerperiode, starter oppfølging hvis ikke allerede startet")
 //            oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(arbeidssøker)
 
