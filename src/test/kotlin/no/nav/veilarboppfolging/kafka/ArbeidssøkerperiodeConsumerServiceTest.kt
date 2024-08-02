@@ -7,6 +7,7 @@ import no.nav.veilarboppfolging.IntegrationTest
 import no.nav.veilarboppfolging.controller.request.Innsatsgruppe
 import no.nav.veilarboppfolging.controller.request.SykmeldtBrukerType
 import no.nav.veilarboppfolging.domain.Oppfolgingsbruker
+import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
 import no.nav.veilarboppfolging.repository.entity.OppfolgingStartBegrunnelse
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity
 import no.nav.veilarboppfolging.service.AktiverBrukerService
@@ -14,6 +15,7 @@ import no.nav.veilarboppfolging.service.OppfolgingService
 import no.nav.veilarboppfolging.test.DbTestUtils
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -39,8 +41,12 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
     @Autowired
     private lateinit var aktiverBrukerService: AktiverBrukerService
 
+    @Autowired
+    private lateinit var oppfolgingsStatusRepository: OppfolgingsStatusRepository
+
     private val fnr = "01010198765"
     private val aktørId = AktorId.of("123456789012")
+
 
     @BeforeEach
     fun setUp() {
@@ -91,16 +97,19 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
 
     @Test
     fun `Skal ikke starte ny oppfølgingsperiode hvis vi har lagret periode med startdato etter arbeidssøkerregistrering`() {
-        val startAlleredeRegistrertOppfølgingsperiode = ZonedDateTime.now().minusHours(1)
+        val startAlleredeRegistrertOppfølgingsperiode = ZonedDateTime.now().minusMinutes(30)
+        // Denne blir alltid laget via startOppfolgingHvisIkkeAlleredeStartet men ikke i testene siden det opprettes manuelt
+        oppfolgingsStatusRepository.opprettOppfolging(aktørId)
         DbTestUtils.lagreOppfølgingsperiode(oppfølgingsperiode(startAlleredeRegistrertOppfølgingsperiode))
-        val arbeidssøkerperiodeStartet = startAlleredeRegistrertOppfølgingsperiode.minusMinutes(30)
+        val arbeidssøkerperiodeStartet = startAlleredeRegistrertOppfølgingsperiode.minusMinutes(1)
         val nyPeriode = arbeidssøkerperiode(fnr, periodeStartet = arbeidssøkerperiodeStartet.toInstant())
         val melding = ConsumerRecord("topic", 0, 0, "dummyKey", nyPeriode)
 
         arbeidssøkerperiodeConsumerService.consumeArbeidssøkerperiode(melding)
 
         val oppfølgingsperioder = oppfølgingService.hentOppfolgingsperioder(Fnr.of(fnr))
-        assertThat(oppfølgingsperioder).isEmpty()
+        assertThat(oppfølgingsperioder).hasSize(1)
+        assertThat(oppfølgingsperioder.first().startDato).isEqualTo(startAlleredeRegistrertOppfølgingsperiode)
     }
 
     @Test

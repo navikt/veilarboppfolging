@@ -73,8 +73,8 @@ public class DbTestUtils {
         LocalH2Database.getDb().update(
                 "" +
                         "INSERT INTO OPPFOLGINGSPERIODE(uuid, aktor_id, startDato, oppdatert, start_begrunnelse) " +
-                        "VALUES (?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?)",
-                periode.getUuid().toString(), periode.getAktorId(), periode.getStartetBegrunnelse().name()
+                        "VALUES (?, ?, ?, CURRENT_TIMESTAMP, ?)",
+                periode.getUuid().toString(), periode.getAktorId(), periode.getStartDato(), periode.getStartetBegrunnelse().name()
         );
     }
 }
