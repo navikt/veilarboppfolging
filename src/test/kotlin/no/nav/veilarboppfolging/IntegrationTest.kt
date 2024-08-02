@@ -1,7 +1,6 @@
 package no.nav.veilarboppfolging
 
 import com.nimbusds.jwt.JWTClaimsSet
-
 import no.nav.common.auth.context.AuthContextHolder
 import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient
@@ -27,6 +26,7 @@ import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.kafka.test.context.EmbeddedKafka
 import org.springframework.test.annotation.DirtiesContext
 import java.util.*

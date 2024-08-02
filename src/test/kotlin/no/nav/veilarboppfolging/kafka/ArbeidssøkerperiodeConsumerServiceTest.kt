@@ -8,6 +8,7 @@ import no.nav.veilarboppfolging.controller.request.Innsatsgruppe
 import no.nav.veilarboppfolging.controller.request.SykmeldtBrukerType
 import no.nav.veilarboppfolging.domain.Oppfolgingsbruker
 import no.nav.veilarboppfolging.repository.entity.OppfolgingStartBegrunnelse
+import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity
 import no.nav.veilarboppfolging.service.AktiverBrukerService
 import no.nav.veilarboppfolging.service.OppfolgingService
 import no.nav.veilarboppfolging.test.DbTestUtils
@@ -89,6 +90,20 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
     }
 
     @Test
+    fun `Skal ikke starte ny oppfølgingsperiode hvis vi har lagret periode med startdato etter arbeidssøkerregistrering`() {
+        val startAlleredeRegistrertOppfølgingsperiode = ZonedDateTime.now().minusHours(1)
+        DbTestUtils.lagreOppfølgingsperiode(oppfølgingsperiode(startAlleredeRegistrertOppfølgingsperiode))
+        val arbeidssøkerperiodeStartet = startAlleredeRegistrertOppfølgingsperiode.minusMinutes(30)
+        val nyPeriode = arbeidssøkerperiode(fnr, periodeStartet = arbeidssøkerperiodeStartet.toInstant())
+        val melding = ConsumerRecord("topic", 0, 0, "dummyKey", nyPeriode)
+
+        arbeidssøkerperiodeConsumerService.consumeArbeidssøkerperiode(melding)
+
+        val oppfølgingsperioder = oppfølgingService.hentOppfolgingsperioder(Fnr.of(fnr))
+        assertThat(oppfølgingsperioder).isEmpty()
+    }
+
+    @Test
     fun `Melding om avsluttet arbeidssøkerperiode skal ignoreres`() {
         val startMelding = ConsumerRecord("topic", 0, 0, "dummyKey", arbeidssøkerperiode(fnr))
         arbeidssøkerperiodeConsumerService.consumeArbeidssøkerperiode(startMelding)
@@ -148,6 +163,18 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
         verify(behandleArbeidssokerClient, never()).reaktiverBrukerIArena(any())
         verify(behandleArbeidssokerClient, never()).opprettBrukerIArena(any(), any())
     }
+
+    private fun oppfølgingsperiode(startet: ZonedDateTime = ZonedDateTime.now()) =
+        OppfolgingsperiodeEntity(
+            UUID.randomUUID(),
+            aktørId.toString(),
+            "veileder",
+            startet,
+            null,
+            "begrunnelse",
+            emptyList(),
+            OppfolgingStartBegrunnelse.ARBEIDSSOKER_REGISTRERING
+        )
 
     private fun arbeidssøkerperiode(fødselsnummer: String, periodeAvsluttet: Boolean = false, periodeStartet: Instant = Instant.now().minusSeconds(1)): Periode {
         val slutt = if (periodeAvsluttet) {

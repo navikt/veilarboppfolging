@@ -9,8 +9,10 @@ import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Service
+import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
+import java.time.ZonedDateTime
 
 val DA_VI_STARTET_KONSUMERING = LocalDateTime.of(2024, 8, 1, 10, 0)
     .atZone(ZoneId.systemDefault())
@@ -21,8 +23,6 @@ open class ArbeidssøkerperiodeConsumerService(
     private val oppfolgingService: OppfolgingService,
     private val authService: AuthService
 ) {
-
-
     private val logger = LoggerFactory.getLogger(this::class.java)
 
     open fun consumeArbeidssøkerperiode(kafkaMelding: ConsumerRecord<String, Periode>) {
@@ -39,9 +39,12 @@ open class ArbeidssøkerperiodeConsumerService(
         val nyPeriode = arbeidssøkerperiode.avsluttet == null
 
         val nyestePeriodeStartDato = oppfolgingService.hentOppfolgingsperioder(aktørId)
-            .maxByOrNull { it.startDato }
+            .maxByOrNull { it.startDato }?.startDato
 
-
+        if (nyestePeriodeStartDato?.isAfter(arbeidssøkerperiodeStartet) == true) {
+            logger.info("Har allerede registrert oppfølgingsperiode etter startdato for arbeidssøkerperiode")
+            return
+        }
 
         if (nyPeriode) {
             val arbeidssøker = Oppfolgingsbruker.arbeidssokerOppfolgingsBruker(aktørId, null)
