@@ -264,7 +264,6 @@ public class OppfolgingService {
             Optional<OppfolgingEntity> maybeOppfolging = oppfolgingsStatusRepository.hentOppfolging(aktorId);
 
             boolean erUnderOppfolging = maybeOppfolging.map(OppfolgingEntity::isUnderOppfolging).orElse(false);
-            // TODO: Endre her?
 
             if (erUnderOppfolging) {
                 return;
