@@ -12,6 +12,8 @@ import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
 import no.nav.veilarboppfolging.domain.AvslutningStatusData;
 import no.nav.veilarboppfolging.repository.UtmeldingRepository;
 import no.nav.veilarboppfolging.repository.entity.UtmeldingEntity;
+import no.nav.veilarboppfolging.service.utmelding.KanskjeIservBruker;
+import no.nav.veilarboppfolging.service.utmelding.UtmeldingsBruker;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -75,14 +77,14 @@ public class IservService {
                 resultater.size());
     }
 
-    public void oppdaterUtmeldingsStatus(EndringPaaOppfoelgingsBrukerV2 brukerV2) {
-        AktorId aktorId = authService.getAktorIdOrThrow(Fnr.of(brukerV2.getFodselsnummer()));
+    public void oppdaterUtmeldingsStatus(KanskjeIservBruker kanskjeIservBruker) {
+        AktorId aktorId = authService.getAktorIdOrThrow(Fnr.of(kanskjeIservBruker.getFnr()));
 
-        var formidlingsgruppe = ofNullable(brukerV2.getFormidlingsgruppe()).orElse(null);
+        var formidlingsgruppe = ofNullable(kanskjeIservBruker.getFormidlingsgruppe()).orElse(null);
 
         if (erIserv(formidlingsgruppe)) {
             secureLog.info("Oppdaterer eller insert i utmelding tabell. aktorId={}", aktorId);
-            oppdaterUtmeldingTabell(brukerV2);
+            oppdaterUtmeldingTabell(kanskjeIservBruker.utmeldingsBruker());
         } else {
             secureLog.info("Sletter fra utmelding tabell. aktorId={}", aktorId);
             utmeldingRepository.slettBrukerFraUtmeldingTabell(aktorId);
@@ -116,8 +118,8 @@ public class IservService {
         return resultater;
     }
 
-    private void oppdaterUtmeldingTabell(EndringPaaOppfoelgingsBrukerV2 oppfolgingEndret) {
-        AktorId aktorId = authService.getAktorIdOrThrow(Fnr.of(oppfolgingEndret.getFodselsnummer()));
+    private void oppdaterUtmeldingTabell(UtmeldingsBruker oppfolgingEndret) {
+        AktorId aktorId = authService.getAktorIdOrThrow(Fnr.of(oppfolgingEndret.getFnr()));
         LocalDate iservFraDato = oppfolgingEndret.getIservFraDato();
 
         if (iservFraDato == null) {

@@ -11,12 +11,14 @@ import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
 import no.nav.veilarboppfolging.domain.AvslutningStatusData;
 import no.nav.veilarboppfolging.repository.UtmeldingRepository;
 import no.nav.veilarboppfolging.repository.entity.UtmeldingEntity;
+import no.nav.veilarboppfolging.service.utmelding.KanskjeIservBruker;
 import no.nav.veilarboppfolging.test.DbTestUtils;
 import no.nav.veilarboppfolging.test.LocalH2Database;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
@@ -66,19 +68,12 @@ public class IservServiceIntegrationTest {
     @Test
     public void oppdaterUtmeldingsStatus_skalLagreNyIservBruker() {
         when(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID);
-
-        EndringPaaOppfoelgingsBrukerV2 brukerV2 = getArenaBrukerBuilder().build();
-
+        var brukerV2 = kanskjeIservBruker();
         assertTrue(utmeldingRepository.eksisterendeIservBruker(AKTOR_ID).isEmpty());
-
         iservService.oppdaterUtmeldingsStatus(brukerV2);
-
         Optional<UtmeldingEntity> kanskjeUtmelding = utmeldingRepository.eksisterendeIservBruker(AKTOR_ID);
-
         assertTrue(kanskjeUtmelding.isPresent());
-
         UtmeldingEntity utmelding = kanskjeUtmelding.get();
-
         assertEquals(AKTOR_ID.get(), utmelding.getAktor_Id());
         assertEquals(iservFraDato.toLocalDate(), utmelding.getIservSiden().toLocalDate());
     }
@@ -86,22 +81,13 @@ public class IservServiceIntegrationTest {
     @Test
     public void oppdaterUtmeldingsStatus_skalOppdatereEksisterendeIservBruker() {
         when(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID);
-
-        EndringPaaOppfoelgingsBrukerV2 brukerV2 = getArenaBrukerBuilder()
-                .iservFraDato(iservFraDato.plusDays(2).toLocalDate())
-                .build();
-
+        var brukerV2 = kanskjeIservBruker(iservFraDato.plusDays(2), Formidlingsgruppe.ISERV);
         utmeldingRepository.insertUtmeldingTabell(AKTOR_ID, iservFraDato);
         assertTrue(utmeldingRepository.eksisterendeIservBruker(AKTOR_ID).isPresent());
-
         iservService.oppdaterUtmeldingsStatus(brukerV2);
-
         Optional<UtmeldingEntity> kanskjeUtmelding = utmeldingRepository.eksisterendeIservBruker(AKTOR_ID);
-
         assertTrue(kanskjeUtmelding.isPresent());
-
         UtmeldingEntity utmelding = kanskjeUtmelding.get();
-
         assertEquals(AKTOR_ID.get(), utmelding.getAktor_Id());
         assertEquals(brukerV2.getIservFraDato(), utmelding.getIservSiden().toLocalDate());
     }
@@ -110,9 +96,7 @@ public class IservServiceIntegrationTest {
     public void oppdaterUtmeldingsStatus_skalSletteBrukerSomIkkeLengerErIserv() {
         when(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID);
 
-        EndringPaaOppfoelgingsBrukerV2 brukerV2 = getArenaBrukerBuilder()
-                .formidlingsgruppe(Formidlingsgruppe.ARBS)
-                .build();
+        var brukerV2 = kanskjeIservBruker(iservFraDato, Formidlingsgruppe.ARBS);
 
         utmeldingRepository.insertUtmeldingTabell(AKTOR_ID, iservFraDato);
         assertTrue(utmeldingRepository.eksisterendeIservBruker(AKTOR_ID).isPresent());
@@ -125,10 +109,7 @@ public class IservServiceIntegrationTest {
     public void oppdaterUtmeldingsStatus_skalIkkeStarteBrukerSomIkkeHarOppfolgingsstatus() {
         when(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID);
 
-        EndringPaaOppfoelgingsBrukerV2 brukerV2 = getArenaBrukerBuilder()
-                .formidlingsgruppe(Formidlingsgruppe.IARBS)
-                .kvalifiseringsgruppe(Kvalifiseringsgruppe.VURDU)
-                .build();
+        var brukerV2 = kanskjeIservBruker(iservFraDato, Formidlingsgruppe.IARBS);
 
         when(oppfolgingService.erUnderOppfolging(AKTOR_ID)).thenReturn(false);
 
@@ -206,6 +187,14 @@ public class IservServiceIntegrationTest {
                 .fodselsnummer(FNR.get())
                 .formidlingsgruppe(Formidlingsgruppe.ISERV)
                 .iservFraDato(iservFraDato.toLocalDate());
+    }
+
+    private KanskjeIservBruker kanskjeIservBruker() {
+        return kanskjeIservBruker(iservFraDato, Formidlingsgruppe.ISERV);
+    }
+
+    private KanskjeIservBruker kanskjeIservBruker(ZonedDateTime iservFraDato, Formidlingsgruppe formidlingsgruppe) {
+        return new KanskjeIservBruker(iservFraDato.toLocalDate(), FNR.get(), formidlingsgruppe);
     }
 
     private EndringPaaOppfoelgingsBrukerV2 insertIservBruker(AktorId aktorId, ZonedDateTime iservFraDato) {

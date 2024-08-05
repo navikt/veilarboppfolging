@@ -3,28 +3,35 @@ package no.nav.veilarboppfolging.kafka
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.paw.arbeidssokerregisteret.api.v1.*
+import no.nav.pto_schema.enums.arena.*
+import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2
 import no.nav.veilarboppfolging.IntegrationTest
+import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging
+import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient
 import no.nav.veilarboppfolging.controller.request.Innsatsgruppe
 import no.nav.veilarboppfolging.controller.request.SykmeldtBrukerType
 import no.nav.veilarboppfolging.domain.Oppfolgingsbruker
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
+import no.nav.veilarboppfolging.repository.UtmeldingRepository
 import no.nav.veilarboppfolging.repository.entity.OppfolgingStartBegrunnelse
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity
 import no.nav.veilarboppfolging.service.AktiverBrukerService
+import no.nav.veilarboppfolging.service.KafkaConsumerService
 import no.nav.veilarboppfolging.service.OppfolgingService
 import no.nav.veilarboppfolging.test.DbTestUtils
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.mockito.Mockito.*
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.test.context.ActiveProfiles
 import java.time.*
 import java.time.temporal.ChronoUnit
 import java.util.*
+import kotlin.jvm.optionals.getOrNull
 import no.nav.paw.arbeidssokerregisteret.api.v1.Metadata as MetaData
 
 
@@ -34,6 +41,9 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
 
     @Autowired
     private lateinit var arbeidssøkerperiodeConsumerService: ArbeidssøkerperiodeConsumerService
+
+    @Autowired
+    private lateinit var kafkaConsumerService: KafkaConsumerService
 
     @Autowired
     private lateinit var oppfølgingService: OppfolgingService
@@ -46,6 +56,12 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
 
     private val fnr = "01010198765"
     private val aktørId = AktorId.of("123456789012")
+
+    @Autowired
+    private lateinit var utmeldingRepository: UtmeldingRepository
+
+    @MockBean
+    lateinit var veilarbarenaClient: VeilarbarenaClient
 
 
     @BeforeEach
@@ -72,7 +88,7 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
 
     @Test
     fun `Ny oppfølgingsperiode starter når vi konsumerer meldinga`() {
-        val oppfølgingsperiodeStartet = Instant.now().minus(1, ChronoUnit.DAYS)
+        val oppfølgingsperiodeStartet = Instant.now().minus(1, ChronoUnit.HOURS)
         val nyPeriode = arbeidssøkerperiode(fnr, periodeStartet = oppfølgingsperiodeStartet)
         val melding = ConsumerRecord("topic", 0, 0, "dummyKey", nyPeriode)
 
@@ -83,8 +99,8 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
     }
 
     @Test
-    fun `Skal ikke starte oppfølgingsperiode på arbeidsøkerregistreringer før 1 aug 2024`() {
-        val oppfølgingsperiodeStartet = LocalDateTime.of(2024, 7, 31, 0, 0)
+    fun `Skal ikke starte oppfølgingsperiode på arbeidsøkerregistreringer før 5 aug 2024 kl 10`() {
+        val oppfølgingsperiodeStartet = LocalDateTime.of(2024, 8, 5, 7, 59)
             .toInstant(ZoneOffset.UTC)
         val nyPeriode = arbeidssøkerperiode(fnr, periodeStartet = oppfølgingsperiodeStartet)
         val melding = ConsumerRecord("topic", 0, 0, "dummyKey", nyPeriode)
@@ -173,6 +189,31 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
         verify(behandleArbeidssokerClient, never()).opprettBrukerIArena(any(), any())
     }
 
+    @Test
+    fun `Skal putte person i utmelding tabell hvis ISERV i Arena og ISERV_FRA_DATO er etter arbeidssøkerregistreringen`() {
+        val arbeidsøkerPeriodeStartet = LocalDateTime.of(2024, 10,1,1,1)
+        val ISERV_FRA_DATO = arbeidsøkerPeriodeStartet.plusSeconds(1)
+        `when`(veilarbarenaClient.hentOppfolgingsbruker(Fnr.of(fnr))).thenReturn(Optional.of(VeilarbArenaOppfolging()
+            .setFodselsnr(fnr)
+            .setFormidlingsgruppekode("ISERV")
+            .setIserv_fra_dato(ISERV_FRA_DATO.atZone(ZoneId.systemDefault())))
+        )
+        val nyPeriode = arbeidssøkerperiode(fnr, periodeStartet = arbeidsøkerPeriodeStartet.atZone(ZoneId.systemDefault()).toInstant())
+        val oppfolginsBrukerEndretTilISERV = ConsumerRecord("topic", 0, 0, "key", oppfølgingsBrukerEndret(ISERV_FRA_DATO.toLocalDate()))
+        val melding = ConsumerRecord("topic", 0, 0, "dummyKey", nyPeriode)
+
+        kafkaConsumerService.consumeEndringPaOppfolgingBruker(oppfolginsBrukerEndretTilISERV)
+        arbeidssøkerperiodeConsumerService.consumeArbeidssøkerperiode(melding)
+
+        val oppfølgingsperioder = oppfølgingService.hentOppfolgingsperioder(Fnr.of(fnr))
+        assertThat(oppfølgingsperioder).hasSize(1)
+        val oppfølgingsperiode = oppfølgingsperioder.first()
+        assertThat(oppfølgingsperiode.startDato).isEqualToIgnoringSeconds(ZonedDateTime.now())
+        assertThat(oppfølgingsperiode.sluttDato).isNull()
+        assertThat(oppfølgingsperiode.startetBegrunnelse).isEqualTo(OppfolgingStartBegrunnelse.ARBEIDSSOKER_REGISTRERING)
+        assertThat(utmeldingRepository.eksisterendeIservBruker(aktørId).getOrNull()).isNotNull()
+    }
+
     private fun oppfølgingsperiode(startet: ZonedDateTime = ZonedDateTime.now()) =
         OppfolgingsperiodeEntity(
             UUID.randomUUID(),
@@ -220,5 +261,26 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
             }
             avsluttet = slutt
         }
+    }
+
+    private fun oppfølgingsBrukerEndret(iservFraDato: LocalDate): EndringPaaOppfoelgingsBrukerV2 {
+        return EndringPaaOppfoelgingsBrukerV2(
+            fnr,
+            Formidlingsgruppe.ARBS,
+            iservFraDato,
+            "Sig",
+            ":)",
+            "enhet",
+            Kvalifiseringsgruppe.IVURD,
+            Rettighetsgruppe.INDS,
+            Hovedmaal.BEHOLDEA,
+            SikkerhetstiltakType.TFUS,
+            null,
+            true,
+            false,
+            false,
+            null,
+            ZonedDateTime.now()
+        )
     }
 }

@@ -8,6 +8,7 @@ import no.nav.common.token_client.client.MachineToMachineTokenClient
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.veilarboppfolging.client.behandle_arbeidssoker.BehandleArbeidssokerClient
+import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient
 import no.nav.veilarboppfolging.config.ApplicationTestConfig
 import no.nav.veilarboppfolging.config.EnvironmentProperties
 import no.nav.veilarboppfolging.controller.OppfolgingController
