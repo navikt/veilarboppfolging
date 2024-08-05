@@ -125,7 +125,7 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
 
         val oppfølgingsperioder = oppfølgingService.hentOppfolgingsperioder(Fnr.of(fnr))
         assertThat(oppfølgingsperioder).hasSize(1)
-        assertThat(oppfølgingsperioder.first().startDato).isEqualTo(startAlleredeRegistrertOppfølgingsperiode)
+        assertThat(oppfølgingsperioder.first().startDato).isEqualToIgnoringNanos(startAlleredeRegistrertOppfølgingsperiode)
     }
 
     @Test

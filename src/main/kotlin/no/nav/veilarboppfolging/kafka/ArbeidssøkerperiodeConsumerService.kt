@@ -13,6 +13,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.lang.IllegalStateException
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -32,6 +33,7 @@ open class ArbeidssøkerperiodeConsumerService(
 ) {
     private val logger = LoggerFactory.getLogger(this::class.java)
 
+    @Transactional
     open fun consumeArbeidssøkerperiode(kafkaMelding: ConsumerRecord<String, Periode>) {
         val arbeidssøkerperiode: Periode = kafkaMelding.value()
 
@@ -52,6 +54,7 @@ open class ArbeidssøkerperiodeConsumerService(
 
         val nyPeriode = arbeidssøkerperiode.avsluttet == null
         if (nyPeriode) {
+            // TODO: Når vi fjerner /aktiverbruker endepunkt bør vi også fjerne innsatsgruppe-feltet på Oppfolgingsbruker
             val arbeidssøker = Oppfolgingsbruker.arbeidssokerOppfolgingsBruker(aktørId, null)
             logger.info("Fått melding om ny arbeidssøkerperiode, starter oppfølging hvis ikke allerede startet")
             oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(arbeidssøker)
