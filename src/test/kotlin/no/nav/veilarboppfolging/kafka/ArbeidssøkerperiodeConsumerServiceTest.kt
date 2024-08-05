@@ -214,6 +214,31 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
         assertThat(utmeldingRepository.eksisterendeIservBruker(aktørId).getOrNull()).isNotNull()
     }
 
+    @Test
+    fun `Skal ikke putte person i utmelding tabell hvis ISERV i Arena og ISERV_FRA_DATO er før arbeidssøkerregistreringen`() {
+        val arbeidsøkerPeriodeStartet = LocalDateTime.of(2024, 10,1,1,1)
+        val ISERV_FRA_DATO = arbeidsøkerPeriodeStartet // Samme tidspunkt
+        `when`(veilarbarenaClient.hentOppfolgingsbruker(Fnr.of(fnr))).thenReturn(Optional.of(VeilarbArenaOppfolging()
+            .setFodselsnr(fnr)
+            .setFormidlingsgruppekode("ISERV")
+            .setIserv_fra_dato(ISERV_FRA_DATO.atZone(ZoneId.systemDefault())))
+        )
+        val nyPeriode = arbeidssøkerperiode(fnr, periodeStartet = arbeidsøkerPeriodeStartet.atZone(ZoneId.systemDefault()).toInstant())
+        val oppfolginsBrukerEndretTilISERV = ConsumerRecord("topic", 0, 0, "key", oppfølgingsBrukerEndret(ISERV_FRA_DATO.toLocalDate()))
+        val melding = ConsumerRecord("topic", 0, 0, "dummyKey", nyPeriode)
+
+        kafkaConsumerService.consumeEndringPaOppfolgingBruker(oppfolginsBrukerEndretTilISERV)
+        arbeidssøkerperiodeConsumerService.consumeArbeidssøkerperiode(melding)
+
+        val oppfølgingsperioder = oppfølgingService.hentOppfolgingsperioder(Fnr.of(fnr))
+        assertThat(oppfølgingsperioder).hasSize(1)
+        val oppfølgingsperiode = oppfølgingsperioder.first()
+        assertThat(oppfølgingsperiode.startDato).isEqualToIgnoringSeconds(ZonedDateTime.now())
+        assertThat(oppfølgingsperiode.sluttDato).isNull()
+        assertThat(oppfølgingsperiode.startetBegrunnelse).isEqualTo(OppfolgingStartBegrunnelse.ARBEIDSSOKER_REGISTRERING)
+        assertThat(utmeldingRepository.eksisterendeIservBruker(aktørId).getOrNull()).isNull()
+    }
+
     private fun oppfølgingsperiode(startet: ZonedDateTime = ZonedDateTime.now()) =
         OppfolgingsperiodeEntity(
             UUID.randomUUID(),

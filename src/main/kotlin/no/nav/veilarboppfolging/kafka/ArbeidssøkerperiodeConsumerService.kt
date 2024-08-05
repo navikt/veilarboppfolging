@@ -18,7 +18,7 @@ import java.lang.IllegalStateException
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
-import kotlin.jvm.optionals.getOrNull
+import kotlin.jvm.optionals.getOrElse
 
 val DA_VI_STARTET_KONSUMERING = LocalDateTime.of(2024, 8, 5, 10, 0)
     .atZone(ZoneId.systemDefault())
@@ -66,19 +66,24 @@ open class ArbeidssøkerperiodeConsumerService(
 
     fun utmeldHvisAlleredeIserv(fnr: Fnr, arbeidssøkerperiodeStartet: ZonedDateTime) {
         runCatching {
-            veilarbarenaClient.hentOppfolgingsbruker(fnr).getOrNull()
-                ?.let { it.iserv_fra_dato to it.formidlingsgruppekode }
-                ?.also {
-                    requireNotNull(it.first) { "iserv_fra_dato kan ikke være null" }
-                    requireNotNull(it.second) { "formidlingsgruppekode kan ikke være null" }
-                } ?: throw IllegalStateException("Fant ikke bruker")
-        }.onSuccess { (iservFraDato, formidlingsgruppe) ->
-            if (iservFraDato.isAfter(arbeidssøkerperiodeStartet)) {
-                logger.info("Bruker ble $formidlingsgruppe etter arbeidssøkerregistrering, sjekker om bruker bør utmeldes")
-                iservService.oppdaterUtmeldingsStatus(
-                    KanskjeIservBruker(iservFraDato.toLocalDate(), fnr.get(), Formidlingsgruppe.valueOf(formidlingsgruppe))
-                )
+            val oppfolgingsbruker = veilarbarenaClient.hentOppfolgingsbruker(fnr)
+                .getOrElse { throw IllegalStateException("Fant ikke bruker") }
+            if (oppfolgingsbruker.iserv_fra_dato == null || oppfolgingsbruker.formidlingsgruppekode == null) return@runCatching null
+            KanskjeIservBrukerMedPresisIserbDato(oppfolgingsbruker.iserv_fra_dato, fnr.get(), Formidlingsgruppe.valueOf(oppfolgingsbruker.formidlingsgruppekode))
+        }.onSuccess { kanskjeIservBruker ->
+            if (kanskjeIservBruker == null) return
+            if (kanskjeIservBruker.iservFraDato.isAfter(arbeidssøkerperiodeStartet)) {
+                logger.info("Bruker ble ${kanskjeIservBruker.formidlingsgruppe} etter arbeidssøkerregistrering, sjekker om bruker bør utmeldes")
+                iservService.oppdaterUtmeldingsStatus(kanskjeIservBruker.toKanskjeIservBruker())
             }
         }.onFailure { logger.error("Kunne ikke hente oppfolgingsstatus for bruker", it) }
     }
+}
+
+data class KanskjeIservBrukerMedPresisIserbDato(
+    val iservFraDato: ZonedDateTime,
+    val fnr: String,
+    val formidlingsgruppe: Formidlingsgruppe
+) {
+    fun toKanskjeIservBruker(): KanskjeIservBruker = KanskjeIservBruker(this.iservFraDato.toLocalDate(), this.fnr, this.formidlingsgruppe)
 }
