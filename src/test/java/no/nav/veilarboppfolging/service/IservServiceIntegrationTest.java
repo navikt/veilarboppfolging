@@ -6,7 +6,6 @@ import no.nav.common.test.auth.AuthTestUtils;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe;
-import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe;
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
 import no.nav.veilarboppfolging.domain.AvslutningStatusData;
 import no.nav.veilarboppfolging.repository.UtmeldingRepository;
@@ -18,7 +17,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
