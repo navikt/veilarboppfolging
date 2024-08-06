@@ -20,7 +20,7 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 import kotlin.jvm.optionals.getOrElse
 
-val DA_VI_STARTET_KONSUMERING = LocalDateTime.of(2024, 8, 6, 6, 0)
+val DA_VI_STARTET_KONSUMERING = LocalDateTime.of(2024, 8, 6, 0, 0)
     .atZone(ZoneId.systemDefault())
 
         @Service
