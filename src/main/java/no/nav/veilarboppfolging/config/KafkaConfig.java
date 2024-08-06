@@ -47,12 +47,13 @@ public class KafkaConfig {
     public static final String PRODUCER_CLIENT_ID = "veilarboppfolging-producer";
 
     private final KafkaConsumerClient aivenConsumerClient;
-
     private final KafkaConsumerRecordProcessor consumerRecordProcessor;
-
     private final KafkaProducerRecordProcessor aivenProducerRecordProcessor;
 
-    private final KafkaProducerRecordStorage producerRecordStorage;
+    @Bean
+    public KafkaProducerRepository producerRepository(JdbcTemplate jdbcTemplate) {
+        return new OracleJdbcTemplateProducerRepository(jdbcTemplate);
+    }
 
     public KafkaConfig(
             LeaderElectionClient leaderElectionClient,
@@ -61,10 +62,10 @@ public class KafkaConfig {
             KafkaConsumerService kafkaConsumerService,
             KafkaProperties kafkaProperties,
             MeterRegistry meterRegistry,
-            ArbeidssøkerperiodeConsumerService arbeidssøkerperiodeConsumerService
+            ArbeidssøkerperiodeConsumerService arbeidssøkerperiodeConsumerService,
+            KafkaProducerRepository producerRepository
     ) {
         KafkaConsumerRepository consumerRepository = new OracleJdbcTemplateConsumerRepository(jdbcTemplate);
-        KafkaProducerRepository producerRepository = new OracleJdbcTemplateProducerRepository(jdbcTemplate);
 
         List<KafkaConsumerClientBuilder.TopicConfig<?, ?>> topicConfigs = List.of(
                 new KafkaConsumerClientBuilder.TopicConfig<String, EndringPaaOppfoelgingsBrukerV2>()
@@ -109,8 +110,6 @@ public class KafkaConfig {
                 .withConsumerConfigs(findConsumerConfigsWithStoreOnFailure(topicConfigs))
                 .build();
 
-        producerRecordStorage = new KafkaProducerRecordStorage(producerRepository);
-
         KafkaProducerClient<byte[], byte[]> aivenProducerClient = KafkaProducerClientBuilder.<byte[], byte[]>builder()
                 .withProperties(aivenByteProducerProperties(PRODUCER_CLIENT_ID))
                 .withMetrics(meterRegistry)
@@ -147,8 +146,8 @@ public class KafkaConfig {
     }
 
     @Bean
-    public KafkaProducerRecordStorage producerRecordProcessor() {
-        return producerRecordStorage;
+    public KafkaProducerRecordStorage producerRecordProcessor(KafkaProducerRepository producerRepository) {
+        return new KafkaProducerRecordStorage(producerRepository);
     }
 
     @PostConstruct
