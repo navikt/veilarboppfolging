@@ -32,8 +32,6 @@ import java.util.List;
 import java.util.Properties;
 
 import static no.nav.common.kafka.consumer.util.ConsumerUtils.findConsumerConfigsWithStoreOnFailure;
-import static no.nav.veilarboppfolging.config.KafkaConfig.CONSUMER_GROUP_ID;
-import static no.nav.veilarboppfolging.config.KafkaConfig.PRODUCER_CLIENT_ID;
 
 @Configuration
 @EmbeddedKafka(
@@ -75,7 +73,7 @@ public class KafkaTestConfig {
 
         Properties consumerClientProperties = KafkaPropertiesBuilder.consumerBuilder()
                 .withBaseProperties(1000)
-                .withConsumerGroupId(CONSUMER_GROUP_ID)
+                .withConsumerGroupId("veilarboppfolging-consumer")
                 .withBrokerUrl(kafkaContainer.getBrokersAsString())
                 .withDeserializers(ByteArrayDeserializer.class, ByteArrayDeserializer.class)
                 .build();
@@ -109,7 +107,7 @@ public class KafkaTestConfig {
     private Properties producerProperties(EmbeddedKafkaBroker kafkaContainer) {
         return KafkaPropertiesBuilder.producerBuilder()
                 .withBaseProperties()
-                .withProducerId(PRODUCER_CLIENT_ID)
+                .withProducerId("veilarboppfolging-producer")
                 .withBrokerUrl(kafkaContainer.getBrokersAsString())
                 .withSerializers(ByteArraySerializer.class, ByteArraySerializer.class)
                 .build();
