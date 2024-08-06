@@ -48,7 +48,6 @@ public class OppfolgingService {
     private final KafkaProducerService kafkaProducerService;
     private final YtelserOgAktiviteterService ytelserOgAktiviteterService;
     private final KvpService kvpService;
-    private final MetricsService metricsService;
     private final ArenaOppfolgingService arenaOppfolgingService;
     private final AuthService authService;
     private final OppfolgingsStatusRepository oppfolgingsStatusRepository;
@@ -67,7 +66,6 @@ public class OppfolgingService {
             KafkaProducerService kafkaProducerService,
             YtelserOgAktiviteterService ytelserOgAktiviteterService,
             KvpService kvpService,
-            MetricsService metricsService,
             ArenaOppfolgingService arenaOppfolgingService,
             AuthService authService,
             OppfolgingsStatusRepository oppfolgingsStatusRepository,
@@ -83,7 +81,6 @@ public class OppfolgingService {
         this.kafkaProducerService = kafkaProducerService;
         this.ytelserOgAktiviteterService = ytelserOgAktiviteterService;
         this.kvpService = kvpService;
-        this.metricsService = metricsService;
         this.arenaOppfolgingService = arenaOppfolgingService;
         this.authService = authService;
         this.oppfolgingsStatusRepository = oppfolgingsStatusRepository;

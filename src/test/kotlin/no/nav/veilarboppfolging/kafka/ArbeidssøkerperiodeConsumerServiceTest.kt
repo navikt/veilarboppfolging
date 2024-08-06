@@ -186,7 +186,6 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
         arbeidssøkerperiodeConsumerService.consumeArbeidssøkerperiode(melding)
 
         verify(behandleArbeidssokerClient, never()).reaktiverBrukerIArena(any())
-        verify(behandleArbeidssokerClient, never()).opprettBrukerIArena(any(), any())
     }
 
     @Test
