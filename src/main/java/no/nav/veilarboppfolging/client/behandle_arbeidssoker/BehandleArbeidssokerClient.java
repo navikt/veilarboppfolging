@@ -5,9 +5,5 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.controller.request.Innsatsgruppe;
 
 public interface BehandleArbeidssokerClient extends HealthCheck {
-
-    void opprettBrukerIArena(Fnr fnr, Innsatsgruppe innsatsgruppe);
-
     void reaktiverBrukerIArena(Fnr fnr);
-
 }

@@ -31,28 +31,6 @@ public class SystemOppfolgingController {
 
     // Veilarbregistrering forventer 204, som forsåvidt er riktig status for disse endepunktene
 
-    @PostMapping("/aktiverbruker")
-    public ResponseEntity aktiverBruker(@RequestBody AktiverArbeidssokerData aktiverArbeidssokerData) {
-        authService.skalVereSystemBrukerFraAzureAd();
-        authService.sjekkAtApplikasjonErIAllowList(ALLOWLIST);
-
-        AktiverArbeidssokerData.Fnr requestFnr = ofNullable(aktiverArbeidssokerData.getFnr())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "FNR mangler"));
-
-        Fnr fnr = Fnr.of(requestFnr.getFnr());
-
-        try {
-            aktiverBrukerService.aktiverBruker(fnr, aktiverArbeidssokerData.getInnsatsgruppe());
-        } catch (ArenaFeilException exception) {
-            // veilarbregistrering må ha body i response som inneholder årsak til feil fra Arena
-            return ResponseEntity
-                    .status(FORBIDDEN)
-                    .body(new ArenaFeilDTO().setType(exception.type));
-        }
-
-        return ResponseEntity.status(204).build();
-    }
-
     @PostMapping("/reaktiverbruker")
     public ResponseEntity reaktiverBruker(@RequestBody ReaktiverBrukerRequest request) {
         authService.skalVereSystemBrukerFraAzureAd();
