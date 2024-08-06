@@ -1,5 +1,6 @@
 package no.nav.veilarboppfolging.repository.entity;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Value;
 
@@ -9,6 +10,7 @@ import java.util.UUID;
 
 @Value
 @Builder(toBuilder = true)
+@AllArgsConstructor
 public class OppfolgingsperiodeEntity {
     UUID uuid;
     String aktorId;

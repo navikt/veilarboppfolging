@@ -104,7 +104,6 @@ public class AktiverBrukerServiceKafkaTest extends IntegrationTest {
     @Test
     @SneakyThrows
     public void skalIkkePubliserePaaKafkaDersomTransaksjonRullesTilbakeVedAktivering() {
-
         doAnswer(invocationOnMock -> {
             throw new RuntimeException("Feiler fra Arena");
         }).when(behandleArbeidssokerClient).opprettBrukerIArena(fnr, innsatsgruppe);
@@ -121,7 +120,6 @@ public class AktiverBrukerServiceKafkaTest extends IntegrationTest {
                 feilet = true;
             }
         }
-        Thread.sleep(1000);
         assertTrue(feilet, "Skulle ha feilet");
 
         verifiserAsynkront(8, TimeUnit.SECONDS, () -> {
@@ -142,7 +140,7 @@ public class AktiverBrukerServiceKafkaTest extends IntegrationTest {
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
         props.put(ConsumerConfig.GROUP_ID_CONFIG, "test-consumer");
         props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 5 * 60 * 1000);
-        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
         return props;
     }
 

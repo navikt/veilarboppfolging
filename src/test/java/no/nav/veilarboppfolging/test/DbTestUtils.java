@@ -1,6 +1,7 @@
 package no.nav.veilarboppfolging.test;
 
 import lombok.SneakyThrows;
+import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
 import no.nav.veilarboppfolging.test.testdriver.TestDriver;
 import org.flywaydb.core.Flyway;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -61,9 +62,18 @@ public class DbTestUtils {
 
     @SneakyThrows
     public static void runScript(DataSource dataSource, String resourceFile) {
-        try(Statement statement = dataSource.getConnection().createStatement()) {
+        try (Statement statement = dataSource.getConnection().createStatement()) {
             String sql = TestUtils.readTestResourceFile(resourceFile);
             statement.execute(sql);
         }
+    }
+
+    public static void lagreOppfølgingsperiode(OppfolgingsperiodeEntity periode) {
+        LocalH2Database.getDb().update(
+                "" +
+                        "INSERT INTO OPPFOLGINGSPERIODE(uuid, aktor_id, startDato, oppdatert, start_begrunnelse) " +
+                        "VALUES (?, ?, ?, CURRENT_TIMESTAMP, ?)",
+                periode.getUuid().toString(), periode.getAktorId(), periode.getStartDato(), periode.getStartetBegrunnelse().name()
+        );
     }
 }
