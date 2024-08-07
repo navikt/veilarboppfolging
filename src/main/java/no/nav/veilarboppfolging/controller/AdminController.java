@@ -99,8 +99,8 @@ public class AdminController {
                 .map(aktorId -> {
                     var fnr = aktorOppslagClient.hentFnr(AktorId.of(aktorId));
                     try {
-                        oppfolgingService.avsluttOppfolging(fnr, innloggetBruker, brukereSomSkalAvsluttes.getBegrunnelse());
-                        return true;
+                        var avsluttetStatus = oppfolgingService.avsluttOppfolging(fnr, innloggetBruker, brukereSomSkalAvsluttes.getBegrunnelse());
+                        return avsluttetStatus.kanAvslutte;
                     } catch (Exception e) {
                         log.warn("Kunne ikke avslutte oppfølging", e);
                         return false;
