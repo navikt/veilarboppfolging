@@ -1,6 +1,7 @@
 package no.nav.veilarboppfolging.controller;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.UserRole;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
@@ -8,6 +9,7 @@ import no.nav.common.job.JobRunner;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.NavIdent;
 import no.nav.veilarboppfolging.controller.response.Veilarbportefoljeinfo;
+import no.nav.veilarboppfolging.domain.AvsluttResultat;
 import no.nav.veilarboppfolging.domain.RepubliserOppfolgingsperioderRequest;
 import no.nav.veilarboppfolging.domain.AvsluttPayload;
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
@@ -26,6 +28,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/admin")
 @RequiredArgsConstructor
@@ -87,13 +90,30 @@ public class AdminController {
     }
 
     @GetMapping("/avsluttBrukere")
-    public void batchAvsluttBrukere(AvsluttPayload brukereSomSkalAvsluttes) {
+    public AvsluttResultat batchAvsluttBrukere(AvsluttPayload brukereSomSkalAvsluttes) {
         var innloggetBruker = authService.hentInnloggetPersonIdent();
-        brukereSomSkalAvsluttes.getAktorIds()
-            .forEach(aktorId -> {
-                var fnr = aktorOppslagClient.hentFnr(AktorId.of(aktorId));
-                oppfolgingService.avsluttOppfolging(fnr, innloggetBruker, brukereSomSkalAvsluttes.getBegrunnelse());
-            });
+        log.info("Skal avslutte oppfølging for {} brukere", brukereSomSkalAvsluttes.aktorIds.size());
+
+        var resultat = brukereSomSkalAvsluttes.getAktorIds()
+                .stream()
+                .map(aktorId -> {
+                    var fnr = aktorOppslagClient.hentFnr(AktorId.of(aktorId));
+                    try {
+                        oppfolgingService.avsluttOppfolging(fnr, innloggetBruker, brukereSomSkalAvsluttes.getBegrunnelse());
+                        return true;
+                    } catch (Exception e) {
+                        log.warn("Kunne ikke avslutte oppfølging", e);
+                        return false;
+                    }
+                }).toList();
+
+        var avsluttedeBrukere = resultat.stream().filter(it -> it).toList().size();
+        var ikkeAvsluttedeBrukere = resultat.stream().filter(it -> !it).toList().size();
+
+        log.info("Avsluttet oppfølging for {} brukere", avsluttedeBrukere);
+        log.info("Kunne ikke avslutte oppfølging for {} brukere", ikkeAvsluttedeBrukere);
+
+        return new AvsluttResultat(avsluttedeBrukere, ikkeAvsluttedeBrukere);
     }
 
     private void sjekkTilgangTilAdmin() {
