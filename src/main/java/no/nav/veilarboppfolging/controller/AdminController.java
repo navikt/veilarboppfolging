@@ -91,16 +91,16 @@ public class AdminController {
 
     @PostMapping("/avsluttBrukere")
     public AvsluttResultat batchAvsluttBrukere(@RequestBody AvsluttPayload brukereSomSkalAvsluttes) {
+        sjekkTilgangTilAdmin();
         var innloggetBruker = authService.hentInnloggetPersonIdent();
         log.info("Skal avslutte oppfølging for {} brukere", brukereSomSkalAvsluttes.aktorIds.size());
 
         var resultat = brukereSomSkalAvsluttes.getAktorIds()
                 .stream()
                 .map(aktorId -> {
-                    var fnr = aktorOppslagClient.hentFnr(AktorId.of(aktorId));
                     try {
-                        var avsluttetStatus = oppfolgingService.avsluttOppfolging(fnr, innloggetBruker, brukereSomSkalAvsluttes.getBegrunnelse());
-                        return avsluttetStatus.kanAvslutte;
+                        oppfolgingService.adminForceAvsluttOppfolgingForBruker(AktorId.of(aktorId), innloggetBruker, brukereSomSkalAvsluttes.getBegrunnelse());
+                        return true;
                     } catch (Exception e) {
                         log.warn("Kunne ikke avslutte oppfølging", e);
                         return false;

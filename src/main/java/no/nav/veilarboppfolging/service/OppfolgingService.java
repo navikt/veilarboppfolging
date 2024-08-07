@@ -127,8 +127,6 @@ public class OppfolgingService {
         return getAvslutningStatus(fnr);
     }
 
-
-
     @SneakyThrows
     public AvslutningStatusData avsluttOppfolging(Fnr fnr, String veilederId, String begrunnelse) {
         AktorId aktorId = authService.getAktorIdOrThrow(fnr);
@@ -142,7 +140,6 @@ public class OppfolgingService {
             authService.sjekkTilgangTilEnhet(arenaOppfolgingTilstand.getOppfolgingsenhet());
             secureLog.info("Veileder: {} forsøker å avslutte oppfølging for fnr: {}", authService.getInnloggetBrukerIdent(), fnr.get());
         }
-
 
         boolean erIserv = erIserv(EnumUtils.valueOf(Formidlingsgruppe.class, arenaOppfolgingTilstand.getFormidlingsgruppe()));
 
@@ -305,6 +302,10 @@ public class OppfolgingService {
                 && erIservIArena
                 && ikkeUnderKvp
                 && !harAktiveTiltaksdeltakelser;
+    }
+
+    public void adminForceAvsluttOppfolgingForBruker(AktorId aktorId, String veilederId, String begrunnelse) {
+        avsluttOppfolgingForBruker(aktorId, veilederId, begrunnelse);
     }
 
     private void avsluttOppfolgingForBruker(AktorId aktorId, String veilederId, String begrunnelse) {
