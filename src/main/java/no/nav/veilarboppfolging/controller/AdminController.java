@@ -3,11 +3,13 @@ package no.nav.veilarboppfolging.controller;
 import lombok.RequiredArgsConstructor;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.UserRole;
+import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.job.JobRunner;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.NavIdent;
 import no.nav.veilarboppfolging.controller.response.Veilarbportefoljeinfo;
 import no.nav.veilarboppfolging.domain.RepubliserOppfolgingsperioderRequest;
+import no.nav.veilarboppfolging.domain.AvsluttPayload;
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
 import no.nav.veilarboppfolging.repository.VeilederTilordningerRepository;
 import no.nav.veilarboppfolging.repository.entity.ManuellStatusEntity;
@@ -16,6 +18,7 @@ import no.nav.veilarboppfolging.repository.entity.VeilederTilordningEntity;
 import no.nav.veilarboppfolging.service.AuthService;
 import no.nav.veilarboppfolging.service.KafkaRepubliseringService;
 import no.nav.veilarboppfolging.service.ManuellStatusService;
+import no.nav.veilarboppfolging.service.OppfolgingService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -41,6 +44,10 @@ public class AdminController {
     private final ManuellStatusService manuellStatusService;
 
     private final OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
+
+    private final OppfolgingService oppfolgingService;
+
+    private final AktorOppslagClient aktorOppslagClient;
 
     @PostMapping("/republiser/oppfolgingsperioder")
     public String republiserOppfolgingsperioder(@RequestBody(required = false) RepubliserOppfolgingsperioderRequest request) {
@@ -77,6 +84,16 @@ public class AdminController {
                 .setNyForVeileder(tilordningEntity.map(VeilederTilordningEntity::isNyForVeileder).orElse(false))
                 .setErManuell(erManuell)
                 .setStartDato(startDato);
+    }
+
+    @GetMapping("/avsluttBrukere")
+    public void batchAvsluttBrukere(AvsluttPayload brukereSomSkalAvsluttes) {
+        var innloggetBruker = authService.hentInnloggetPersonIdent();
+        brukereSomSkalAvsluttes.getAktorIds()
+            .forEach(aktorId -> {
+                var fnr = aktorOppslagClient.hentFnr(AktorId.of(aktorId));
+                oppfolgingService.avsluttOppfolging(fnr, innloggetBruker, brukereSomSkalAvsluttes.getBegrunnelse());
+            });
     }
 
     private void sjekkTilgangTilAdmin() {
