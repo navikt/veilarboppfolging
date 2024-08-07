@@ -89,7 +89,7 @@ public class AdminController {
                 .setStartDato(startDato);
     }
 
-    @GetMapping("/avsluttBrukere")
+    @PostMapping("/avsluttBrukere")
     public AvsluttResultat batchAvsluttBrukere(AvsluttPayload brukereSomSkalAvsluttes) {
         var innloggetBruker = authService.hentInnloggetPersonIdent();
         log.info("Skal avslutte oppfølging for {} brukere", brukereSomSkalAvsluttes.aktorIds.size());
