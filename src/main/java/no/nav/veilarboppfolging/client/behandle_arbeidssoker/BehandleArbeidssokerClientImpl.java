@@ -37,34 +37,6 @@ public class BehandleArbeidssokerClientImpl implements BehandleArbeidssokerClien
     }
 
     @Override
-    public void opprettBrukerIArena(Fnr fnr, Innsatsgruppe innsatsgruppe) {
-        Brukerident brukerident = new Brukerident();
-        brukerident.setBrukerident(fnr.get());
-        AktiverBrukerRequest request = new AktiverBrukerRequest();
-        request.setIdent(brukerident);
-        request.setKvalifiseringsgruppekode(innsatsgruppe.getKode());
-
-        try {
-            behandleArbeidssoeker.aktiverBruker(request);
-        } catch (Exception e) {
-            log.warn("Klarte ikke å aktivere bruker i Arena: {}", e.getClass().getSimpleName(), e);
-
-            ArenaFeilException.Type arenaFeilType = mapExceptionTilArenaFeilType(e);
-            if (arenaFeilType != null) {
-                throw new ArenaFeilException(arenaFeilType);
-            }
-
-            if (e instanceof AktiverBrukerSikkerhetsbegrensning) {
-                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
-            } else if (e instanceof AktiverBrukerUgyldigInput) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
-            }
-
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    @Override
     public void reaktiverBrukerIArena(Fnr fnr) {
         Brukerident brukerident = new Brukerident();
         brukerident.setBrukerident(fnr.get());

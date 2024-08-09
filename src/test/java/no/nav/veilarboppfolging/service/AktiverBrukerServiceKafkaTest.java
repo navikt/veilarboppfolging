@@ -31,8 +31,6 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static no.nav.veilarboppfolging.test.TestUtils.verifiserAsynkront;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
 
 @ActiveProfiles("local")
@@ -92,43 +90,13 @@ public class AktiverBrukerServiceKafkaTest extends IntegrationTest {
     @Test
     public void skalPubliserePaaKafkaVedAktivering() {
         consumerClient.start();
-        aktiverBrukerService.aktiverBruker(Fnr.of(aktiverArbeidssokerData.getFnr().getFnr()), aktiverArbeidssokerData.getInnsatsgruppe());
+
+        startOppfolging(aktorId, Fnr.of(aktiverArbeidssokerData.getFnr().getFnr()));
         verifiserAsynkront(8, TimeUnit.SECONDS, () -> {
             assertEquals(1,
                     konsumerteSisteOppfolgingsperiodeMeldinger.get().values().size(),
                     "Skal ikke ha konsumert kafka-melding for siste oppfølgingsperiode fra transaksjon som rulles tilbake");
         });
-        consumerClient.stop();
-    }
-
-    @Test
-    @SneakyThrows
-    public void skalIkkePubliserePaaKafkaDersomTransaksjonRullesTilbakeVedAktivering() {
-        doAnswer(invocationOnMock -> {
-            throw new RuntimeException("Feiler fra Arena");
-        }).when(behandleArbeidssokerClient).opprettBrukerIArena(fnr, innsatsgruppe);
-
-        consumerClient.start();
-
-        boolean feilet = false;
-        try {
-            aktiverBrukerService.aktiverBruker(Fnr.of(aktiverArbeidssokerData.getFnr().getFnr()), aktiverArbeidssokerData.getInnsatsgruppe());
-        } catch (RuntimeException e) {
-            if (!e.getMessage().equals("Feiler fra Arena")) {
-                throw e;
-            } else {
-                feilet = true;
-            }
-        }
-        assertTrue(feilet, "Skulle ha feilet");
-
-        verifiserAsynkront(8, TimeUnit.SECONDS, () -> {
-            assertEquals(0, kafkaProducerRecordCount());
-            assertTrue(
-                    konsumerteSisteOppfolgingsperiodeMeldinger.get().values().isEmpty(),
-                    "Skal ikke ha konsumert kafka-melding for siste oppfølgingsperiode fra transaksjon som rulles tilbake");
-        });
-
         consumerClient.stop();
     }
 

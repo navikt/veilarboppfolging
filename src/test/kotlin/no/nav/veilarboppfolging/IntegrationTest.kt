@@ -8,7 +8,6 @@ import no.nav.common.token_client.client.MachineToMachineTokenClient
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.veilarboppfolging.client.behandle_arbeidssoker.BehandleArbeidssokerClient
-import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient
 import no.nav.veilarboppfolging.config.ApplicationTestConfig
 import no.nav.veilarboppfolging.config.EnvironmentProperties
 import no.nav.veilarboppfolging.controller.OppfolgingController
@@ -17,17 +16,18 @@ import no.nav.veilarboppfolging.controller.SystemOppfolgingController
 import no.nav.veilarboppfolging.controller.request.AktiverArbeidssokerData
 import no.nav.veilarboppfolging.controller.request.Innsatsgruppe
 import no.nav.veilarboppfolging.controller.response.OppfolgingPeriodeDTO
+import no.nav.veilarboppfolging.domain.Oppfolgingsbruker
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.repository.SakRepository
 import no.nav.veilarboppfolging.service.AuthService
 import no.nav.veilarboppfolging.service.MetricsService
+import no.nav.veilarboppfolging.service.OppfolgingService
 import no.nav.veilarboppfolging.test.DbTestUtils
 import org.junit.jupiter.api.BeforeEach
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
-import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.kafka.test.context.EmbeddedKafka
 import org.springframework.test.annotation.DirtiesContext
 import java.util.*
@@ -62,6 +62,9 @@ open class IntegrationTest {
     lateinit var oppfolgingController: OppfolgingController
 
     @Autowired
+    lateinit var oppfolgingService: OppfolgingService
+
+    @Autowired
     lateinit var oppfolgingsPeriodeRepository: OppfolgingsPeriodeRepository
 
     @Autowired
@@ -81,14 +84,12 @@ open class IntegrationTest {
         DbTestUtils.cleanupTestDb()
     }
 
-    fun startOppfolging(fnr: Fnr): List<OppfolgingPeriodeDTO> {
-        val aktiverArbeidssokerData = AktiverArbeidssokerData(
-            AktiverArbeidssokerData.Fnr(fnr.get()),
-            Innsatsgruppe.STANDARD_INNSATS
-        )
-        systemOppfolgingController.aktiverBruker(aktiverArbeidssokerData)
-        return oppfolgingController.hentOppfolgingsperioder(fnr)
+    fun startOppfolging(aktørId: AktorId, fnr: Fnr) {
+        val bruker = Oppfolgingsbruker.arbeidssokerOppfolgingsBruker(aktørId, Innsatsgruppe.STANDARD_INNSATS)
+        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(bruker)
     }
+
+    fun hentOppfolgingsperioder(fnr: Fnr) = oppfolgingController.hentOppfolgingsperioder(fnr)
 
     fun avsluttOppfolging(aktorId: AktorId, veileder: String = "veileder", begrunnelse: String = "Begrunnelse") {
         oppfolgingsPeriodeRepository.avslutt(aktorId, veileder, begrunnelse )

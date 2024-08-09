@@ -16,11 +16,8 @@ import org.springframework.transaction.support.TransactionTemplate;
 public class AktiverBrukerService {
 
     private final AuthService authService;
-
     private final BehandleArbeidssokerClient behandleArbeidssokerClient;
-
     private final OppfolgingService oppfolgingService;
-
     private final TransactionTemplate transactor;
 
     @Autowired
@@ -36,28 +33,14 @@ public class AktiverBrukerService {
         this.transactor = transactor;
     }
 
-    public void aktiverBruker(Fnr fnr, Innsatsgruppe innsatsgruppe) {
-        AktorId aktorId = authService.getAktorIdOrThrow(fnr);
-
-        transactor.executeWithoutResult((status) -> aktiverBrukerOgOppfolging(fnr, aktorId, innsatsgruppe));
-    }
-
     public void reaktiverBruker(Fnr fnr) {
         AktorId aktorId = authService.getAktorIdOrThrow(fnr);
-
         transactor.executeWithoutResult((status) -> startReaktiveringAvBrukerOgOppfolging(fnr, aktorId));
     }
 
     private void startReaktiveringAvBrukerOgOppfolging(Fnr fnr, AktorId aktorId) {
         oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker.reaktivertBruker(aktorId));
         behandleArbeidssokerClient.reaktiverBrukerIArena(fnr);
-    }
-
-    //  TODO: Innsatsgruppe brukes kun av veilarbdirigent som nå henter ting fra Kafka, kan snart fjernes
-    private void aktiverBrukerOgOppfolging(Fnr fnr, AktorId aktorId, Innsatsgruppe innsatsgruppe) {
-        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(
-                Oppfolgingsbruker.arbeidssokerOppfolgingsBruker(aktorId, innsatsgruppe));
-        behandleArbeidssokerClient.opprettBrukerIArena(fnr, innsatsgruppe);
     }
 
     //  TODO: SykmeldtBrukerType brukes kun av veilarbdirigent som nå henter ting fra Kafka, kan snart fjernes

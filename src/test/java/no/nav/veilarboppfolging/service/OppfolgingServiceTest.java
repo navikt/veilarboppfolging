@@ -82,7 +82,6 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         oppfolgingService = new OppfolgingService(kafkaProducerService,
                 new YtelserOgAktiviteterService(ytelseskontraktClient),
                 kvpService,
-                metricsService,
                 arenaOppfolgingService,
                 authService,
                 oppfolgingsStatusRepository,

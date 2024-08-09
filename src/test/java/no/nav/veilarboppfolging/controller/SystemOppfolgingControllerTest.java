@@ -30,15 +30,6 @@ public class SystemOppfolgingControllerTest {
     );
 
     @Test
-    public void aktiverBruker() {
-        AktiverArbeidssokerData data = new AktiverArbeidssokerData();
-        data.setFnr(new AktiverArbeidssokerData.Fnr(FNR.get()));
-        when(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID);
-        systemOppfolgingController.aktiverBruker(data);
-        verify(authService,  times(1)).skalVereSystemBrukerFraAzureAd();
-    }
-
-    @Test
     public void reaktiverBruker() {
         when(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID);
         systemOppfolgingController.reaktiverBruker(new ReaktiverBrukerRequest(FNR));
