@@ -17,24 +17,14 @@ import static org.mockito.Mockito.*;
 public class SystemOppfolgingControllerTest {
 
     private final static Fnr FNR = Fnr.of("123");
-
     private final static AktorId AKTOR_ID = AktorId.of("3409823");
 
     private AuthService authService = mock(AuthService.class);
-
     private AktiverBrukerService aktiverBrukerService = mock(AktiverBrukerService.class);
-
     private SystemOppfolgingController systemOppfolgingController = new SystemOppfolgingController(
             authService,
             aktiverBrukerService
     );
-
-    @Test
-    public void reaktiverBruker() {
-        when(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID);
-        systemOppfolgingController.reaktiverBruker(new ReaktiverBrukerRequest(FNR));
-        verify(authService,  times(1)).skalVereSystemBrukerFraAzureAd();
-    }
 
     @Test
     public void aktiverSykmeldt() {

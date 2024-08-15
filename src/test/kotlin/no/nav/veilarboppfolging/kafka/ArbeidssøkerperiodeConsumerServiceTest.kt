@@ -180,15 +180,6 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
     }
 
     @Test
-    fun `Ikke send melding til Arena om brukere som har fått arbeidssøkerperioder`() {
-        val melding = ConsumerRecord("topic", 0, 0, "dummyKey", arbeidssøkerperiode(fnr))
-
-        arbeidssøkerperiodeConsumerService.consumeArbeidssøkerperiode(melding)
-
-        verify(behandleArbeidssokerClient, never()).reaktiverBrukerIArena(any())
-    }
-
-    @Test
     fun `Skal putte person i utmelding tabell hvis ISERV i Arena og ISERV_FRA_DATO er etter arbeidssøkerregistreringen`() {
         val arbeidsøkerPeriodeStartet = LocalDateTime.of(2024, 10,1,1,1)
         val ISERV_FRA_DATO = arbeidsøkerPeriodeStartet.plusSeconds(1)

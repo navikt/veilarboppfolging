@@ -4,9 +4,7 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.IntegrationTest;
 import no.nav.veilarboppfolging.client.amttiltak.AmtTiltakClient;
-import no.nav.veilarboppfolging.client.behandle_arbeidssoker.BehandleArbeidssokerClient;
 import no.nav.veilarboppfolging.client.digdir_krr.KRRData;
-import no.nav.veilarboppfolging.controller.request.Innsatsgruppe;
 import no.nav.veilarboppfolging.controller.request.SykmeldtBrukerType;
 import no.nav.veilarboppfolging.domain.Oppfolging;
 import no.nav.veilarboppfolging.repository.*;
@@ -21,7 +19,6 @@ import org.springframework.transaction.support.TransactionTemplate;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -43,7 +40,6 @@ public class AktiverBrukerIntegrationTest extends IntegrationTest {
         oppfolgingsPeriodeRepository = new OppfolgingsPeriodeRepository(db, transactor);
 
         authService = mock(AuthService.class);
-        behandleArbeidssokerClient = mock(BehandleArbeidssokerClient.class);
 
         manuellStatusService = mock(ManuellStatusService.class);
 
@@ -63,7 +59,6 @@ public class AktiverBrukerIntegrationTest extends IntegrationTest {
 
         aktiverBrukerService = new AktiverBrukerService(
                 authService, oppfolgingService,
-                behandleArbeidssokerClient,
                 DbTestUtils.createTransactor(db)
         );
 

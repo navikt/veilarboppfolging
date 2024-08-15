@@ -7,15 +7,12 @@ import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient
 import no.nav.common.token_client.client.MachineToMachineTokenClient
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
-import no.nav.veilarboppfolging.client.behandle_arbeidssoker.BehandleArbeidssokerClient
 import no.nav.veilarboppfolging.config.ApplicationTestConfig
 import no.nav.veilarboppfolging.config.EnvironmentProperties
 import no.nav.veilarboppfolging.controller.OppfolgingController
 import no.nav.veilarboppfolging.controller.SakController
 import no.nav.veilarboppfolging.controller.SystemOppfolgingController
-import no.nav.veilarboppfolging.controller.request.AktiverArbeidssokerData
 import no.nav.veilarboppfolging.controller.request.Innsatsgruppe
-import no.nav.veilarboppfolging.controller.response.OppfolgingPeriodeDTO
 import no.nav.veilarboppfolging.domain.Oppfolgingsbruker
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.repository.SakRepository
@@ -48,9 +45,6 @@ open class IntegrationTest {
 
     @MockBean
     lateinit var metricsService: MetricsService
-
-    @MockBean
-    lateinit var behandleArbeidssokerClient: BehandleArbeidssokerClient
 
     @Autowired
     lateinit var aktorOppslagClient: AktorOppslagClient
