@@ -42,13 +42,6 @@ public class AktiverBrukerServiceTest {
     }
 
     @Test
-    public void skalRegistrereIArena() {
-        when(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID);
-        aktiverBrukerService.aktiverBruker(FNR, Innsatsgruppe.STANDARD_INNSATS);
-        verify(behandleArbeidssokerClient, times(1)).opprettBrukerIArena(any(), any());
-    }
-
-    @Test
     public void brukerSomHarInaktivStatusSkalKunneReaktivereSeg() {
         when(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID);
         aktiverBrukerService.reaktiverBruker(FNR);

@@ -84,13 +84,7 @@ public class ClientTestConfig {
     public BehandleArbeidssokerClient behandleArbeidssokerClient() {
         return new BehandleArbeidssokerClient() {
             @Override
-            public void opprettBrukerIArena(Fnr fnr, Innsatsgruppe innsatsgruppe) {
-
-            }
-
-            @Override
             public void reaktiverBrukerIArena(Fnr fnr) {
-
             }
 
             @Override

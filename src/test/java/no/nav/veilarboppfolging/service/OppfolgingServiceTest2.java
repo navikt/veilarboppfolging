@@ -99,7 +99,7 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
 
         oppfolgingService = new OppfolgingService(
                 mock(KafkaProducerService.class), null,
-                null, null, null, authService,
+                null,  null, authService,
                 oppfolgingsStatusRepository, oppfolgingsPeriodeRepository,
                 manuellStatusService,
                 mock(AmtTiltakClient.class),
