@@ -167,7 +167,8 @@ public class ManuellStatusService {
         return digdirClient.hentKontaktInfo(fnr)
                 .orElseGet(() -> new KRRData()
                         .withPersonident(fnr.get())
-                        .withKanVarsles(true)
+                        .withAktiv(false)
+                        .withKanVarsles(false)
                         .withReservert(false));
     }
     private void oppdaterManuellStatus(AktorId aktorId, ManuellStatusEntity manuellStatus) {
