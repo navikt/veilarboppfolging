@@ -14,8 +14,6 @@ import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
 import no.nav.common.token_client.client.MachineToMachineTokenClient;
 import no.nav.common.utils.EnvironmentUtils;
 import no.nav.veilarboppfolging.client.amttiltak.AmtTiltakClient;
-import no.nav.veilarboppfolging.client.behandle_arbeidssoker.BehandleArbeidssokerClient;
-import no.nav.veilarboppfolging.client.behandle_arbeidssoker.BehandleArbeidssokerClientImpl;
 import no.nav.veilarboppfolging.client.digdir_krr.DigdirClient;
 import no.nav.veilarboppfolging.client.digdir_krr.DigdirClientImpl;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
@@ -49,11 +47,6 @@ public class ClientConfig {
     @Bean
     public Norg2Client norg2Client(EnvironmentProperties properties) {
         return new CachedNorg2Client(new NorgHttp2Client(properties.getNorg2Url()));
-    }
-
-    @Bean
-    public BehandleArbeidssokerClient behandleArbeidssokerClient(EnvironmentProperties properties, StsConfig stsConfig) {
-        return new BehandleArbeidssokerClientImpl(properties.getBehandleArbeidssoekerV1Endpoint(), stsConfig);
     }
 
     @Bean
