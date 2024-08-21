@@ -116,9 +116,9 @@ spec:
         - application: veilarbdialog
           namespace: pto
           cluster: dev-fss
-        - application: veilarbaktivitet
-          namespace: pto
-          cluster: dev-fss
+        - application: veilarbdialog
+          namespace: dab
+          cluster: dev-gcp
         - application: veilarbaktivitet
           namespace: dab
           cluster: dev-gcp
