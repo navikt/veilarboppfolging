@@ -93,6 +93,9 @@ spec:
         - application: veilarbportefolje
           namespace: pto
           cluster: prod-fss
+        - application: veilarbportefolje
+          namespace: obo
+          cluster: prod-gcp
         - application: modia-robot-api
           namespace: personoversikt
           cluster: prod-fss
