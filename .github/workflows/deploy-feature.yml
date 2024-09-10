@@ -2,6 +2,9 @@ name: Deploy branch to dev
 run-name: Deploy feature branch ${{ github.ref_name }} by @${{ github.actor }}
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - gcp
 
 env:
   PRINT_PAYLOAD: true
