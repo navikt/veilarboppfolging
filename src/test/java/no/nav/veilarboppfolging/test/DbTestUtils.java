@@ -28,10 +28,6 @@ public class DbTestUtils {
             "OPPFOLGINGSENHET_ENDRET"
     );
 
-    public static void setupDatabaseFunctions(DataSource dataSource) {
-        runScript(dataSource, "oracle-mock.sql");
-    }
-
     public static void cleanupTestDb() {
         cleanupTestDb(LocalDatabaseSingleton.INSTANCE.getJdbcTemplate());
     }

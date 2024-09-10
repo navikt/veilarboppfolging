@@ -32,12 +32,11 @@ public class AktiverBrukerIntegrationTest extends IntegrationTest {
 
     @Before
     public void setup() {
-        JdbcTemplate db = LocalDatabaseSingleton.INSTANCE.getJdbcTemplate();
-        NamedParameterJdbcTemplate namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(db);
-        TransactionTemplate transactor = DbTestUtils.createTransactor(db);
+        NamedParameterJdbcTemplate namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(jdbcTemplate);
+        TransactionTemplate transactor = DbTestUtils.createTransactor(jdbcTemplate);
 
-        oppfolgingsStatusRepository = new OppfolgingsStatusRepository(db);
-        oppfolgingsPeriodeRepository = new OppfolgingsPeriodeRepository(db, transactor);
+        oppfolgingsStatusRepository = new OppfolgingsStatusRepository(jdbcTemplate);
+        oppfolgingsPeriodeRepository = new OppfolgingsPeriodeRepository(jdbcTemplate, transactor);
 
         authService = mock(AuthService.class);
 
@@ -51,15 +50,15 @@ public class AktiverBrukerIntegrationTest extends IntegrationTest {
                 oppfolgingsStatusRepository, oppfolgingsPeriodeRepository,
                 manuellStatusService,
                 mock(AmtTiltakClient.class),
-                new KvpRepository(db, namedParameterJdbcTemplate, transactor),
-                new MaalRepository(db, transactor),
+                new KvpRepository(jdbcTemplate, namedParameterJdbcTemplate, transactor),
+                new MaalRepository(jdbcTemplate, transactor),
                 mock(BrukerOppslagFlereOppfolgingAktorRepository.class),
                 transactor
         );
 
         aktiverBrukerService = new AktiverBrukerService(
                 authService, oppfolgingService,
-                DbTestUtils.createTransactor(db)
+                DbTestUtils.createTransactor(jdbcTemplate)
         );
 
         DbTestUtils.cleanupTestDb();
