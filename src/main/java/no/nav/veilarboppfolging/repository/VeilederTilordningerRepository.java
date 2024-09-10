@@ -39,7 +39,7 @@ public class VeilederTilordningerRepository {
 
     public void upsertVeilederTilordning(AktorId aktorId, String veilederId) {
         String insertSql = "INSERT INTO OPPFOLGINGSTATUS(aktor_id, veileder, under_oppfolging, ny_for_veileder, sist_tilordnet, oppdatert) " +
-                "SELECT ?, ?, 0, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP FROM DUAL " +
+                "SELECT ?, ?, 0, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP " +
                 "WHERE NOT EXISTS(SELECT * FROM OPPFOLGINGSTATUS WHERE aktor_id = ?)";
 
         int rowsUpdated = db.update(insertSql, aktorId.get(), veilederId, aktorId.get());

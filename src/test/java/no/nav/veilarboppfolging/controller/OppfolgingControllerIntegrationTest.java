@@ -107,7 +107,6 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
         doReturn(deny).when(poaoTilgangClient).evaluatePolicy(policyInput);
 
         assertThrows(ResponseStatusException.class, () -> oppfolgingController.hentOppfolgingsPeriode(uuid));
-
     }
 
     @Test

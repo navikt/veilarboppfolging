@@ -13,6 +13,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.sql.ResultSet;
+import java.sql.Timestamp;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -59,7 +60,7 @@ public class KvpRepository {
                     aktorId.get(),
                     enhet,
                     opprettetAv,
-                    startDato,
+                    Timestamp.from(startDato.toInstant()),
                     opprettetBegrunnelse,
                     getName(NAV)
             );
@@ -69,7 +70,7 @@ public class KvpRepository {
                             "oppdatert = ? " +
                             "WHERE aktor_id = ?",
                     id,
-                    startDato,
+                    Timestamp.from(startDato.toInstant()),
                     aktorId.get()
             );
         });
@@ -88,7 +89,7 @@ public class KvpRepository {
                             "WHERE kvp_id = ?",
                     nextSerial,
                     avsluttetAv,
-                    sluttDato,
+                    Timestamp.from(sluttDato.toInstant()),
                     avsluttetBegrunnelse,
                     getName(kodeverkBruker),
                     kvpId
@@ -99,7 +100,7 @@ public class KvpRepository {
                             "SET gjeldende_kvp = NULL, " +
                             "oppdatert = ? " +
                             "WHERE aktor_id = ?",
-                    sluttDato,
+                    Timestamp.from(sluttDato.toInstant()),
                     aktorId.get()
             );
         });

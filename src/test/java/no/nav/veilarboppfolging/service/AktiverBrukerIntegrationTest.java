@@ -32,9 +32,9 @@ public class AktiverBrukerIntegrationTest extends IntegrationTest {
 
     @Before
     public void setup() {
+        JdbcTemplate jdbcTemplate = LocalDatabaseSingleton.INSTANCE.getJdbcTemplate();
         NamedParameterJdbcTemplate namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(jdbcTemplate);
         TransactionTemplate transactor = DbTestUtils.createTransactor(jdbcTemplate);
-
         oppfolgingsStatusRepository = new OppfolgingsStatusRepository(jdbcTemplate);
         oppfolgingsPeriodeRepository = new OppfolgingsPeriodeRepository(jdbcTemplate, transactor);
 

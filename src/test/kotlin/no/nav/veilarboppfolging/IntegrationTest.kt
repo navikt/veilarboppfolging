@@ -15,6 +15,7 @@ import no.nav.veilarboppfolging.controller.SystemOppfolgingController
 import no.nav.veilarboppfolging.controller.request.Innsatsgruppe
 import no.nav.veilarboppfolging.domain.Oppfolgingsbruker
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
+import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
 import no.nav.veilarboppfolging.repository.SakRepository
 import no.nav.veilarboppfolging.service.AuthService
 import no.nav.veilarboppfolging.service.MetricsService
@@ -26,6 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.jdbc.core.JdbcTemplate
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.kafka.test.context.EmbeddedKafka
 import org.springframework.test.annotation.DirtiesContext
 import java.util.*
@@ -68,6 +70,9 @@ open class IntegrationTest {
     @Autowired
     lateinit var systemOppfolgingController: SystemOppfolgingController
 
+    @Autowired
+    lateinit var oppfolgingsStatusRepository: OppfolgingsStatusRepository
+
     @MockBean
     lateinit var machineToMachineTokenClient: MachineToMachineTokenClient
 
@@ -77,9 +82,12 @@ open class IntegrationTest {
     @Autowired
     lateinit var jdbcTemplate: JdbcTemplate
 
+    @Autowired
+    lateinit var namedParameterJdbcTemplate: NamedParameterJdbcTemplate
+
     @BeforeEach
     fun beforeEach() {
-        DbTestUtils.cleanupTestDb()
+        DbTestUtils.cleanupTestDb(jdbcTemplate)
     }
 
     fun startOppfolging(aktørId: AktorId, fnr: Fnr) {

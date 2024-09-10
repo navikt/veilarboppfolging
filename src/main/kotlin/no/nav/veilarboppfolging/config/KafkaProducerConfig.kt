@@ -5,7 +5,7 @@ import no.nav.common.job.leader_election.LeaderElectionClient
 import no.nav.common.kafka.producer.feilhandtering.KafkaProducerRecordProcessor
 import no.nav.common.kafka.producer.feilhandtering.KafkaProducerRecordStorage
 import no.nav.common.kafka.producer.util.KafkaProducerClientBuilder
-import no.nav.common.kafka.spring.OracleJdbcTemplateProducerRepository
+import no.nav.common.kafka.spring.PostgresJdbcTemplateProducerRepository
 import no.nav.common.kafka.util.KafkaPropertiesPreset
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
@@ -22,7 +22,7 @@ open class KafkaProducerConfig(
     jdbcTemplate: JdbcTemplate
     ) {
 
-    private val producerRepository = OracleJdbcTemplateProducerRepository(jdbcTemplate);
+    private val producerRepository = PostgresJdbcTemplateProducerRepository(jdbcTemplate);
     val PRODUCER_CLIENT_ID: String = "veilarboppfolging-producer"
 
     private val aivenProducerRecordProcessor: KafkaProducerRecordProcessor

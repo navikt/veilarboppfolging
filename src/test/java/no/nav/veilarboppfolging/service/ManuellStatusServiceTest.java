@@ -21,6 +21,7 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import static no.nav.veilarboppfolging.dbutil.DbutilsKt.toInt;
 import static no.nav.veilarboppfolging.repository.enums.KodeverkBruker.NAV;
 import static no.nav.veilarboppfolging.repository.enums.KodeverkBruker.SYSTEM;
 import static org.junit.Assert.*;
@@ -274,7 +275,7 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
 
     private void gittAktivOppfolging() {
         oppfolgingsStatusRepository.opprettOppfolging(ManuellStatusServiceTest.AKTOR_ID);
-        db.update("UPDATE OPPFOLGINGSTATUS SET UNDER_OPPFOLGING = ? WHERE AKTOR_ID = ?", true, ManuellStatusServiceTest.AKTOR_ID.get());
+        db.update("UPDATE OPPFOLGINGSTATUS SET UNDER_OPPFOLGING = ? WHERE AKTOR_ID = ?", toInt(true), ManuellStatusServiceTest.AKTOR_ID.get());
         when(oppfolgingService.erUnderOppfolging(AKTOR_ID)).thenReturn(true);
     }
 }

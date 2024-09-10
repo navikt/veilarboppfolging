@@ -10,7 +10,7 @@ import no.nav.common.kafka.consumer.feilhandtering.util.KafkaConsumerRecordProce
 import no.nav.common.kafka.consumer.util.ConsumerUtils
 import no.nav.common.kafka.consumer.util.KafkaConsumerClientBuilder
 import no.nav.common.kafka.consumer.util.deserializer.Deserializers
-import no.nav.common.kafka.spring.OracleJdbcTemplateConsumerRepository
+import no.nav.common.kafka.spring.PostgresJdbcTemplateConsumerRepository
 import no.nav.common.kafka.util.KafkaPropertiesBuilder
 import no.nav.common.utils.EnvironmentUtils
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
@@ -46,7 +46,7 @@ open class KafkaConsumerConfig(
     private var consumerRecordProcessor: KafkaConsumerRecordProcessor? = null
 
     init {
-        val consumerRepository: KafkaConsumerRepository = OracleJdbcTemplateConsumerRepository(jdbcTemplate)
+        val consumerRepository: KafkaConsumerRepository = PostgresJdbcTemplateConsumerRepository(jdbcTemplate)
         if (kafkaEnabled) {
             val topicConfigs = listOf<KafkaConsumerClientBuilder.TopicConfig<*, *>>(
                 KafkaConsumerClientBuilder.TopicConfig<String, EndringPaaOppfoelgingsBrukerV2>()

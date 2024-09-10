@@ -10,7 +10,7 @@ import java.util.Map;
 class DatabaseSyntaxMapper {
 
     private static final Map<String, String> syntaxMap = new HashMap<>();
-    private static final String NOOP = "SELECT 1 FROM DUAL";
+    private static final String NOOP = "SELECT 1";
 
     static {
         map(
