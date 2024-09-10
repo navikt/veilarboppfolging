@@ -20,10 +20,10 @@ import no.nav.veilarboppfolging.service.KafkaConsumerService
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.common.serialization.ByteArrayDeserializer
 import org.apache.kafka.common.serialization.Deserializer
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Configuration
 import org.springframework.jdbc.core.JdbcTemplate
-import java.util.List
 import java.util.Map
 import java.util.function.Consumer
 
@@ -36,75 +36,76 @@ open class KafkaConsumerConfig(
     private val kafkaConsumerService: KafkaConsumerService,
     private val arbeidssøkerperiodeConsumerService: ArbeidssøkerperiodeConsumerService,
     lockProvider: LockProvider,
-
+    @Value("\${app.kafka.enabled}") val kafkaEnabled: Boolean
 ) {
 
     val CONSUMER_GROUP_ID: String = "veilarboppfolging-consumer"
 
-    private val aivenConsumerClient: KafkaConsumerClient
-    private val consumerRecordProcessor: KafkaConsumerRecordProcessor
+    private var aivenConsumerClient: KafkaConsumerClient? = null
+    private var consumerRecordProcessor: KafkaConsumerRecordProcessor? = null
 
     init {
         val consumerRepository: KafkaConsumerRepository = OracleJdbcTemplateConsumerRepository(jdbcTemplate)
-
-        val topicConfigs = List.of<KafkaConsumerClientBuilder.TopicConfig<*, *>>(
-            KafkaConsumerClientBuilder.TopicConfig<String, EndringPaaOppfoelgingsBrukerV2>()
-                .withLogging()
-                .withMetrics(meterRegistry)
-                .withStoreOnFailure(consumerRepository)
-                .withConsumerConfig(
-                    kafkaProperties.getEndringPaaOppfolgingBrukerTopic(),
-                    Deserializers.stringDeserializer(),
-                    Deserializers.jsonDeserializer(
-                        EndringPaaOppfoelgingsBrukerV2::class.java
+        if (kafkaEnabled) {
+            val topicConfigs = listOf<KafkaConsumerClientBuilder.TopicConfig<*, *>>(
+                KafkaConsumerClientBuilder.TopicConfig<String, EndringPaaOppfoelgingsBrukerV2>()
+                    .withLogging()
+                    .withMetrics(meterRegistry)
+                    .withStoreOnFailure(consumerRepository)
+                    .withConsumerConfig(
+                        kafkaProperties.getEndringPaaOppfolgingBrukerTopic(),
+                        Deserializers.stringDeserializer(),
+                        Deserializers.jsonDeserializer(
+                            EndringPaaOppfoelgingsBrukerV2::class.java
+                        ),
+                        Consumer<ConsumerRecord<String, EndringPaaOppfoelgingsBrukerV2>> { kafkaMelding: ConsumerRecord<String, EndringPaaOppfoelgingsBrukerV2>? ->
+                            kafkaConsumerService.consumeEndringPaOppfolgingBruker(
+                                kafkaMelding
+                            )
+                        }
                     ),
-                    Consumer<ConsumerRecord<String, EndringPaaOppfoelgingsBrukerV2>> { kafkaMelding: ConsumerRecord<String, EndringPaaOppfoelgingsBrukerV2>? ->
-                        kafkaConsumerService.consumeEndringPaOppfolgingBruker(
-                            kafkaMelding
-                        )
-                    }
-                ),
-            KafkaConsumerClientBuilder.TopicConfig<String, Periode>()
-                .withLogging()
-                .withMetrics(meterRegistry)
-                .withStoreOnFailure(consumerRepository)
-                .withConsumerConfig(
-                    kafkaProperties.getArbeidssokerperioderTopicAiven(),
-                    Deserializers.stringDeserializer(),
-                    getPeriodeAvroDeserializer(),
-                    Consumer<ConsumerRecord<String, Periode>> { kafkaMelding: ConsumerRecord<String, Periode> ->
-                        arbeidssøkerperiodeConsumerService.consumeArbeidssøkerperiode(
-                            kafkaMelding
-                        )
-                    }
-                )
-        )
-
-        val aivenConsumerProperties = KafkaPropertiesBuilder.consumerBuilder()
-            .withBaseProperties()
-            .withConsumerGroupId(CONSUMER_GROUP_ID)
-            .withAivenBrokerUrl()
-            .withAivenAuth()
-            .withDeserializers(
-                ByteArrayDeserializer::class.java,
-                ByteArrayDeserializer::class.java
+                KafkaConsumerClientBuilder.TopicConfig<String, Periode>()
+                    .withLogging()
+                    .withMetrics(meterRegistry)
+                    .withStoreOnFailure(consumerRepository)
+                    .withConsumerConfig(
+                        kafkaProperties.getArbeidssokerperioderTopicAiven(),
+                        Deserializers.stringDeserializer(),
+                        getPeriodeAvroDeserializer(),
+                        Consumer<ConsumerRecord<String, Periode>> { kafkaMelding: ConsumerRecord<String, Periode> ->
+                            arbeidssøkerperiodeConsumerService.consumeArbeidssøkerperiode(
+                                kafkaMelding
+                            )
+                        }
+                    )
             )
-            .build()
 
-        aivenConsumerClient = KafkaConsumerClientBuilder.builder()
-            .withProperties(aivenConsumerProperties)
-            .withTopicConfigs(topicConfigs)
-            .build()
+            val aivenConsumerProperties = KafkaPropertiesBuilder.consumerBuilder()
+                .withBaseProperties()
+                .withConsumerGroupId(CONSUMER_GROUP_ID)
+                .withAivenBrokerUrl()
+                .withAivenAuth()
+                .withDeserializers(
+                    ByteArrayDeserializer::class.java,
+                    ByteArrayDeserializer::class.java
+                )
+                .build()
 
-        consumerRecordProcessor = KafkaConsumerRecordProcessorBuilder
-            .builder()
-            .withLockProvider(lockProvider)
-            .withKafkaConsumerRepository(consumerRepository)
-            .withConsumerConfigs(ConsumerUtils.findConsumerConfigsWithStoreOnFailure(topicConfigs))
-            .build()
+            aivenConsumerClient = KafkaConsumerClientBuilder.builder()
+                .withProperties(aivenConsumerProperties)
+                .withTopicConfigs(topicConfigs)
+                .build()
 
-        aivenConsumerClient.start()
-        consumerRecordProcessor.start()
+            consumerRecordProcessor = KafkaConsumerRecordProcessorBuilder
+                .builder()
+                .withLockProvider(lockProvider)
+                .withKafkaConsumerRepository(consumerRepository)
+                .withConsumerConfigs(ConsumerUtils.findConsumerConfigsWithStoreOnFailure(topicConfigs))
+                .build()
+
+            aivenConsumerClient?.start()
+            consumerRecordProcessor?.start()
+        }
     }
 
     private fun getPeriodeAvroDeserializer(): Deserializer<Periode> {
