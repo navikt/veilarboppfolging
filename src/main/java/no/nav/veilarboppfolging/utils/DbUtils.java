@@ -14,7 +14,7 @@ import java.util.function.Supplier;
 public class DbUtils {
 
     public static long nesteFraSekvens(JdbcTemplate db, String sekvensNavn) {
-        return db.queryForObject("select " + sekvensNavn + ".nextval from dual", Long.class);
+        return db.queryForObject("select nextval('"+ sekvensNavn +"')", Long.class);
     }
 
     public static ZonedDateTime hentZonedDateTime(ResultSet rs, String kolonneNavn) throws SQLException {

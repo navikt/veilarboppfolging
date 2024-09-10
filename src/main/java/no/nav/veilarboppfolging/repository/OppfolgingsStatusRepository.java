@@ -14,6 +14,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
+import static no.nav.veilarboppfolging.dbutil.DbutilsKt.toInt;
 import static no.nav.veilarboppfolging.utils.DbUtils.queryForNullableObject;
 
 @Repository
@@ -52,7 +53,7 @@ public class OppfolgingsStatusRepository {
                         "oppdatert) " +
                         "VALUES(?, ?, CURRENT_TIMESTAMP)",
                 aktorId.get(),
-                false);
+                toInt(false)); // TODO: Hvorfor false her?
 
         // FIXME: return the actual database object.
         return new Oppfolging().setAktorId(aktorId.get()).setUnderOppfolging(false);

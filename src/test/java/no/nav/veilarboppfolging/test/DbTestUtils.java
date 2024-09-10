@@ -13,6 +13,7 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
@@ -66,7 +67,7 @@ public class DbTestUtils {
     }
 
     private static void deleteAllFromTable(JdbcTemplate db, String tableName) {
-        db.execute("DELETE FROM " + tableName);
+        db.execute("TRUNCATE TABLE " + tableName + " CASCADE");
     }
 
     @SneakyThrows
@@ -75,14 +76,5 @@ public class DbTestUtils {
             String sql = TestUtils.readTestResourceFile(resourceFile);
             statement.execute(sql);
         }
-    }
-
-    public static void lagreOppfølgingsperiode(OppfolgingsperiodeEntity periode) {
-        LocalDatabaseSingleton.INSTANCE.getJdbcTemplate().update(
-                "" +
-                        "INSERT INTO OPPFOLGINGSPERIODE(uuid, aktor_id, startDato, oppdatert, start_begrunnelse) " +
-                        "VALUES (?, ?, ?, CURRENT_TIMESTAMP, ?)",
-                periode.getUuid().toString(), periode.getAktorId(), periode.getStartDato(), periode.getStartetBegrunnelse().name()
-        );
     }
 }

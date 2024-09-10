@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.sql.ResultSet;
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 
@@ -52,7 +53,7 @@ public class MaalRepository {
 
     private void insert(MaalEntity maal) {
         String sql = "INSERT INTO MAL(id, aktor_id, mal, endret_av, dato) VALUES(?, ?, ?, ?, ?)";
-        db.update(sql, maal.getId(), maal.getAktorId(), maal.getMal(), maal.getEndretAv(), maal.getDato());
+        db.update(sql, maal.getId(), maal.getAktorId(), maal.getMal(), maal.getEndretAv(), Timestamp.from(maal.getDato().toInstant()));
     }
 
     private void setActive(MaalEntity maal) {

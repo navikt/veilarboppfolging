@@ -14,8 +14,8 @@ import no.nav.common.kafka.producer.feilhandtering.KafkaProducerRecordProcessor;
 import no.nav.common.kafka.producer.feilhandtering.KafkaProducerRecordStorage;
 import no.nav.common.kafka.producer.feilhandtering.KafkaProducerRepository;
 import no.nav.common.kafka.producer.util.KafkaProducerClientBuilder;
-import no.nav.common.kafka.spring.OracleJdbcTemplateConsumerRepository;
-import no.nav.common.kafka.spring.OracleJdbcTemplateProducerRepository;
+import no.nav.common.kafka.spring.PostgresJdbcTemplateConsumerRepository;
+import no.nav.common.kafka.spring.PostgresJdbcTemplateProducerRepository;
 import no.nav.common.kafka.util.KafkaPropertiesBuilder;
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
 import no.nav.veilarboppfolging.service.KafkaConsumerService;
@@ -56,8 +56,8 @@ public class KafkaTestConfig {
             KafkaProperties kafkaProperties,
             EmbeddedKafkaBroker kafkaContainer
     ) {
-        KafkaConsumerRepository consumerRepository = new OracleJdbcTemplateConsumerRepository(jdbcTemplate);
-        KafkaProducerRepository producerRepository = new OracleJdbcTemplateProducerRepository(jdbcTemplate);
+        KafkaConsumerRepository consumerRepository = new PostgresJdbcTemplateConsumerRepository(jdbcTemplate);
+        KafkaProducerRepository producerRepository = new PostgresJdbcTemplateProducerRepository(jdbcTemplate);
 
         List<KafkaConsumerClientBuilder.TopicConfig<?, ?>> topicConfigs = List.of(
                 new KafkaConsumerClientBuilder.TopicConfig<String, EndringPaaOppfoelgingsBrukerV2>()

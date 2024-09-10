@@ -36,7 +36,7 @@ public class HelsesjekkConfig {
     private HealthCheck checkDbHealth(JdbcTemplate jdbcTemplate) {
         return () -> {
             try {
-                jdbcTemplate.queryForObject("SELECT 1 FROM DUAL", Long.class);
+                jdbcTemplate.queryForObject("SELECT 1", Long.class);
                 return HealthCheckResult.healthy();
             } catch (Exception e) {
                 log.error("Helsesjekk mot database feilet", e);

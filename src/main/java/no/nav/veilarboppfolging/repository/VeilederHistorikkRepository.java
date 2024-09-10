@@ -23,7 +23,7 @@ public class VeilederHistorikkRepository {
 
     public void insertTilordnetVeilederForAktorId(AktorId aktorId, String veileder, String tilordnetAvVeileder) {
         String sql = "INSERT INTO VEILEDER_TILORDNINGER (veileder, aktor_id, sist_tilordnet, tilordning_seq, tilordnet_av_veileder) " +
-                "VALUES(?,?, CURRENT_TIMESTAMP, VEILEDER_TILORDNING_SEQ.NEXTVAL, ?)";
+                "VALUES(?,?, CURRENT_TIMESTAMP, NEXTVAL('VEILEDER_TILORDNING_SEQ'), ?)";
 
         db.update(sql, veileder, aktorId.get(), tilordnetAvVeileder);
     }

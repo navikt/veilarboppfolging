@@ -1,8 +1,6 @@
 package no.nav.veilarboppfolging.test;
 
-import lombok.SneakyThrows;
 import no.nav.veilarboppfolging.LocalDatabaseSingleton;
-import org.junit.After;
 import org.junit.Before;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -17,26 +15,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 public abstract class IsolatedDatabaseTest {
 
     private static final AtomicInteger databaseCounter = new AtomicInteger();
-
-    protected JdbcTemplate db;
-    protected NamedParameterJdbcTemplate namedParameterJdbcTemplate;
-
-    protected TransactionTemplate transactor;
+    private final DataSource dataSource = LocalDatabaseSingleton.INSTANCE.getPostgres();
+    protected JdbcTemplate db = new JdbcTemplate(dataSource);
+    protected NamedParameterJdbcTemplate namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
+    protected TransactionTemplate transactor = DbTestUtils.createTransactor(db);
 
     @Before
-    public void setupIsolatedDatabase() {
-        final DataSource dataSource = LocalDatabaseSingleton.INSTANCE.getPostgres();
-        db = new JdbcTemplate(dataSource);
-        namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(db);
-        transactor = DbTestUtils.createTransactor(db);
+    public void cleanUp() {
+        DbTestUtils.cleanupTestDb();
     }
-
-    @After
-    @SneakyThrows
-    public void shutdownIsolatedDatabase() {
-//        Connection connection = db.getDataSource().getConnection();
-//        connection.createStatement().execute("SHUTDOWN");
-//        connection.close();
-    }
-
 }
