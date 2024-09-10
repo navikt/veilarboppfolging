@@ -55,6 +55,6 @@ jobs:
       - name: Deploy application
         uses: nais/deploy/actions/deploy@v2
         env:
-          CLUSTER: dev-fss
-          RESOURCE: nais-dev.yaml
+          CLUSTER: dev-gcp
+          RESOURCE: nais-dev-gcp.yaml
           VAR: image=${{ needs.test-build-and-push.outputs.image }}

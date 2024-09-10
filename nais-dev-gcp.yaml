@@ -2,20 +2,30 @@ kind: Application
 apiVersion: nais.io/v1alpha1
 metadata:
   name: veilarboppfolging
-  namespace: pto
+  namespace: poao
   labels:
-    team: pto
+    team: poao
 spec:
   image: {{image}}
   ingresses:
-    - https://veilarboppfolging.dev-fss-pub.nais.io
-    - https://veilarboppfolging.dev.intern.nav.no
-    - https://veilarboppfolging-q1.nais.preprod.local
-    - https://app-q1.adeo.no/veilarboppfolging
-    - https://app-q1.dev.adeo.no/veilarboppfolging
-    - https://app.dev.adeo.no/veilarboppfolging
-  webproxy: true
+    - https://veilarboppfolging.intern.dev.nav.no
   port: 8080
+  gcp:
+    sqlInstances:
+      - name: veilarboppfolging
+        type: POSTGRES_14
+        tier: db-custom-1-3840
+        diskType: SSD
+        diskAutoresize: true
+        flags: # Nødvendig for datastreams
+          - name: cloudsql.logical_decoding
+            value: "on"
+        databases:
+          - name: veilarboppfolging
+            envVarPrefix: DB
+            users:
+              - name: datastream
+              - name: veilarboppfolging_midlertidig # Bruker uten write-rettigheter
   prometheus:
     enabled: true
     path: veilarboppfolging/internal/prometheus
@@ -36,20 +46,20 @@ spec:
     requests:
       cpu: 500m
       memory: 2Gi
-  envFrom:
+  envFrom: # TODO: Gå igjennom variabler
     - configmap: pto-config
     - configmap: loginservice-idporten
   env:
     - name: POAO_TILGANG_URL
-      value: http://poao-tilgang.poao.svc.nais.local
+      value: http://poao-tilgang.poao
     - name: POAO_TILGANG_SCOPE
-      value: api://dev-fss.poao.poao-tilgang/.default
+      value: api://dev-gcp.poao.poao-tilgang/.default
     - name: DIGDIR_KRR_PROXY_URL
-      value: https://digdir-krr-proxy.intern.dev.nav.no
+      value: http://digdir-krr-proxy.team-rocket
     - name: DIGDIR_KRR_PROXY_SCOPE
       value: api://dev-gcp.team-rocket.digdir-krr-proxy/.default
     - name: AMTTILTAK_URL
-      value: https://amt-tiltak.intern.dev.nav.no
+      value: http://amt-tiltak.amt
     - name: AMTTILTAK_SCOPE
       value: api://dev-gcp.amt.amt-tiltak/.default
   secureLogs:
@@ -167,14 +177,3 @@ spec:
         - application: syfomodiaperson
           namespace: teamsykefravr
           cluster: dev-gcp
-  vault:
-    enabled: true
-    paths:
-      - kvPath: /oracle/data/dev/creds/veilarboppfolging_q1-user
-        mountPath: /var/run/secrets/nais.io/oracle_creds
-      - kvPath: /serviceuser/data/dev/srvveilarboppfolging
-        mountPath: /var/run/secrets/nais.io/service_user
-      - kvPath: /kv/preprod/fss/veilarboppfolging/q1
-        mountPath: /var/run/secrets/nais.io/vault
-      - kvPath: /oracle/data/dev/config/veilarboppfolging_q1
-        mountPath: /var/run/secrets/nais.io/oracle_config
