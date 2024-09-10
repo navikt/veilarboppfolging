@@ -23,7 +23,8 @@ public class Iserv28Schedule {
         this.iservService = iservService;
     }
 
-    @Scheduled(cron="0 0 * * * *")
+    // TODO uncomment when ready to gcp
+    //@Scheduled(cron="0 0 * * * *")
     public void scheduledAvslutteOppfolging() {
         if (leaderElectionClient.isLeader()) {
             JobRunner.run("iserv28_avslutt_oppfolging", iservService::automatiskAvslutteOppfolging);
