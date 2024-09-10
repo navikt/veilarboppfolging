@@ -1,13 +1,14 @@
 package no.nav.veilarboppfolging.repository;
 
 import no.nav.common.json.JsonUtils;
-import no.nav.veilarboppfolging.test.LocalH2Database;
+import no.nav.veilarboppfolging.LocalDatabaseSingleton;
 import org.json.JSONArray;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -33,9 +34,11 @@ public class ViewTest {
 
     private static final int antallViews = views().length;
 
+    private static final JdbcTemplate jdbcTemplate = LocalDatabaseSingleton.INSTANCE.getJdbcTemplate();
+
     @Test
     public void database_skal_ha_riktig_antall_views() {
-        long count = (long) LocalH2Database.getDb().queryForList("" +
+        long count = (long) jdbcTemplate.queryForList("" +
                 "SELECT " +
                 "COUNT(*) AS VIEW_COUNT " +
                 "FROM INFORMATION_SCHEMA.VIEWS " +
@@ -47,7 +50,7 @@ public class ViewTest {
 
     @Test
     public void view_eksisterer() {
-        List<Map<String, Object>> viewData = LocalH2Database.getDb().queryForList("SELECT * FROM " + viewName + ";");
+        List<Map<String, Object>> viewData = jdbcTemplate.queryForList("SELECT * FROM " + viewName + ";");
 
         assertThat(viewData).isNotNull();
     }
@@ -65,7 +68,7 @@ public class ViewTest {
     }
 
     private List<Map<String, Object>> hentKolonneDataForView(String view) {
-        return LocalH2Database.getDb().queryForList(
+        return jdbcTemplate.queryForList(
                 "SELECT " +
                         "COLUMN_NAME, " +
                         "DATA_TYPE, " +

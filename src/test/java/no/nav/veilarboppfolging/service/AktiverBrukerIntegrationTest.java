@@ -3,13 +3,13 @@ package no.nav.veilarboppfolging.service;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.IntegrationTest;
+import no.nav.veilarboppfolging.LocalDatabaseSingleton;
 import no.nav.veilarboppfolging.client.amttiltak.AmtTiltakClient;
 import no.nav.veilarboppfolging.client.digdir_krr.KRRData;
 import no.nav.veilarboppfolging.controller.request.SykmeldtBrukerType;
 import no.nav.veilarboppfolging.domain.Oppfolging;
 import no.nav.veilarboppfolging.repository.*;
 import no.nav.veilarboppfolging.test.DbTestUtils;
-import no.nav.veilarboppfolging.test.LocalH2Database;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -32,7 +32,7 @@ public class AktiverBrukerIntegrationTest extends IntegrationTest {
 
     @Before
     public void setup() {
-        JdbcTemplate db = LocalH2Database.getDb();
+        JdbcTemplate db = LocalDatabaseSingleton.INSTANCE.getJdbcTemplate();
         NamedParameterJdbcTemplate namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(db);
         TransactionTemplate transactor = DbTestUtils.createTransactor(db);
 

@@ -1,9 +1,9 @@
 package no.nav.veilarboppfolging.repository;
 
 import no.nav.common.types.identer.AktorId;
+import no.nav.veilarboppfolging.LocalDatabaseSingleton;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsenhetEndringEntity;
 import no.nav.veilarboppfolging.test.DbTestUtils;
-import no.nav.veilarboppfolging.test.LocalH2Database;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -16,7 +16,7 @@ public class OppfolgingsenhetHistorikkRepositoryTest {
 
     private static final AktorId AKTOR_ID = AktorId.of(randomNumeric(10));
 
-    private static OppfolgingsenhetHistorikkRepository oppfolgingsenhetHistorikkRepository = new OppfolgingsenhetHistorikkRepository(LocalH2Database.getDb());
+    private static OppfolgingsenhetHistorikkRepository oppfolgingsenhetHistorikkRepository = new OppfolgingsenhetHistorikkRepository(LocalDatabaseSingleton.INSTANCE.getJdbcTemplate());
 
     @Before
     public void cleanup() {

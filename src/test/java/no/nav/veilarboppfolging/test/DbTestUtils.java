@@ -1,18 +1,21 @@
 package no.nav.veilarboppfolging.test;
 
 import lombok.SneakyThrows;
+import no.nav.veilarboppfolging.LocalDatabaseSingleton;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
-import no.nav.veilarboppfolging.test.testdriver.TestDriver;
 import org.flywaydb.core.Flyway;
+import org.flywaydb.core.api.configuration.FluentConfiguration;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Properties;
 
 public class DbTestUtils {
 
@@ -30,7 +33,7 @@ public class DbTestUtils {
     }
 
     public static void cleanupTestDb() {
-        cleanupTestDb(LocalH2Database.getDb());
+        cleanupTestDb(LocalDatabaseSingleton.INSTANCE.getJdbcTemplate());
     }
 
     public static void cleanupTestDb(JdbcTemplate db) {
@@ -41,18 +44,28 @@ public class DbTestUtils {
         return new TransactionTemplate(new DataSourceTransactionManager(db.getDataSource()));
     }
 
-    public static DataSource createTestDataSource(String dbUrl) {
-        DriverManagerDataSource dataSource = new DriverManagerDataSource();
-        dataSource.setDriverClassName(TestDriver.class.getName());
-        dataSource.setUrl(dbUrl);
-        return dataSource;
-    }
-
     public static void initDb(DataSource dataSource) {
-        var flyway = new Flyway(Flyway.configure()
+        try(Connection connection = dataSource.getConnection()) {
+            connection.prepareStatement("""
+              CREATE USER veilarboppfolging NOLOGIN;
+              GRANT CONNECT on DATABASE postgres to veilarboppfolging;
+              GRANT USAGE ON SCHEMA public to veilarboppfolging;
+            """.trim()).executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        Properties properties = new Properties();
+        properties.put("flyway.cleanDisabled", false);
+        FluentConfiguration config = Flyway
+                .configure()
                 .dataSource(dataSource)
                 .table("schema_version")
-                .validateMigrationNaming(true));
+                .configuration(properties)
+                .cleanOnValidationError(true)
+                .validateMigrationNaming(true);
+        Flyway flyway = new Flyway(config);
+        flyway.clean();
         flyway.migrate();
     }
 
@@ -69,7 +82,7 @@ public class DbTestUtils {
     }
 
     public static void lagreOppfølgingsperiode(OppfolgingsperiodeEntity periode) {
-        LocalH2Database.getDb().update(
+        LocalDatabaseSingleton.INSTANCE.getJdbcTemplate().update(
                 "" +
                         "INSERT INTO OPPFOLGINGSPERIODE(uuid, aktor_id, startDato, oppdatert, start_begrunnelse) " +
                         "VALUES (?, ?, ?, CURRENT_TIMESTAMP, ?)",
