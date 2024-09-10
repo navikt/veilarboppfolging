@@ -1,11 +1,11 @@
 package no.nav.veilarboppfolging.repository;
 
 import no.nav.common.types.identer.AktorId;
+import no.nav.veilarboppfolging.LocalDatabaseSingleton;
 import no.nav.veilarboppfolging.controller.request.Innsatsgruppe;
 import no.nav.veilarboppfolging.domain.Oppfolgingsbruker;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
 import no.nav.veilarboppfolging.test.DbTestUtils;
-import no.nav.veilarboppfolging.test.LocalH2Database;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class OppfolgingsPeriodeRepositoryTest {
 
-    private final JdbcTemplate jdbcTemplate = LocalH2Database.getDb();
+    private final JdbcTemplate jdbcTemplate = LocalDatabaseSingleton.INSTANCE.getJdbcTemplate();
     private final TransactionTemplate transactor = DbTestUtils.createTransactor(jdbcTemplate);
 
     OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository = new OppfolgingsPeriodeRepository(jdbcTemplate, transactor);

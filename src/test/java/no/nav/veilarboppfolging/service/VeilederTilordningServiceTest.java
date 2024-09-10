@@ -6,12 +6,12 @@ import no.nav.common.auth.context.UserRole;
 import no.nav.common.test.auth.AuthTestUtils;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.veilarboppfolging.LocalDatabaseSingleton;
 import no.nav.veilarboppfolging.controller.request.VeilederTilordning;
 import no.nav.veilarboppfolging.controller.response.TilordneVeilederResponse;
 import no.nav.veilarboppfolging.repository.VeilederHistorikkRepository;
 import no.nav.veilarboppfolging.repository.VeilederTilordningerRepository;
 import no.nav.veilarboppfolging.test.DbTestUtils;
-import no.nav.veilarboppfolging.test.LocalH2Database;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -74,7 +74,7 @@ public class VeilederTilordningServiceTest {
                     authService,
                     oppfolgingService,
                     veilederHistorikkRepository,
-                    DbTestUtils.createTransactor(LocalH2Database.getDb()),
+                    DbTestUtils.createTransactor(LocalDatabaseSingleton.INSTANCE.getJdbcTemplate()),
                     mock(KafkaProducerService.class)
             );
         });

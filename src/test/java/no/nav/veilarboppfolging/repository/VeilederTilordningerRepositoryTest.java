@@ -1,9 +1,9 @@
 package no.nav.veilarboppfolging.repository;
 
 import no.nav.common.types.identer.AktorId;
+import no.nav.veilarboppfolging.LocalDatabaseSingleton;
 import no.nav.veilarboppfolging.repository.entity.VeilederTilordningEntity;
 import no.nav.veilarboppfolging.test.DbTestUtils;
-import no.nav.veilarboppfolging.test.LocalH2Database;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -19,7 +19,7 @@ public class VeilederTilordningerRepositoryTest {
     private static final String VEILEDER = "4321";
     private static final String OTHER_VEILEDER = "5432";
 
-    private VeilederTilordningerRepository veilederTilordningerRepository = new VeilederTilordningerRepository(LocalH2Database.getDb());
+    private VeilederTilordningerRepository veilederTilordningerRepository = new VeilederTilordningerRepository(LocalDatabaseSingleton.INSTANCE.getJdbcTemplate());
 
     @Before
     public void cleanup() {

@@ -4,10 +4,10 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe;
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
+import no.nav.veilarboppfolging.LocalDatabaseSingleton;
 import no.nav.veilarboppfolging.repository.OppfolgingsenhetHistorikkRepository;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsenhetEndringEntity;
 import no.nav.veilarboppfolging.test.DbTestUtils;
-import no.nav.veilarboppfolging.test.LocalH2Database;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -28,7 +28,7 @@ public class OppfolgingsenhetEndringServiceTest {
 
     private AuthService authService = mock(AuthService.class);
 
-    private OppfolgingsenhetHistorikkRepository repo = new OppfolgingsenhetHistorikkRepository(LocalH2Database.getDb());
+    private OppfolgingsenhetHistorikkRepository repo = new OppfolgingsenhetHistorikkRepository(LocalDatabaseSingleton.INSTANCE.getJdbcTemplate());
     private OppfolgingsenhetEndringService service = new OppfolgingsenhetEndringService(repo, authService);
 
     @Before

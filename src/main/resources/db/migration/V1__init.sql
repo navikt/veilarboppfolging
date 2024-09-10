@@ -222,7 +222,7 @@ create table oppfolgingsenhet_endret
     enhet       varchar(20)                                                                                  not null,
     endret_dato timestamp(6),
     enhet_seq   numeric,
-    rowid       numeric(33) default nextval('veilarboppfolging.oppfolgingsenhet_endret_rowid_seq'::regclass) not null
+    rowid       numeric(33) default nextval('oppfolgingsenhet_endret_rowid_seq'::regclass) not null
         constraint veilarboppfolging_oppfolgingsenhet_endret_pk_rowid
             primary key
 );
@@ -363,7 +363,7 @@ create table veileder_tilordninger
     sist_tilordnet        timestamp(6),
     tilordning_seq        numeric,
     tilordnet_av_veileder varchar(20),
-    rowid                 numeric(33) default nextval('veilarboppfolging.veileder_tilordninger_rowid_seq'::regclass) not null
+    rowid                 numeric(33) default nextval('veileder_tilordninger_rowid_seq'::regclass) not null
         constraint veilarboppfolging_veileder_tilordninger_pk_rowid
             primary key
 );
@@ -375,7 +375,7 @@ alter sequence veileder_tilordninger_rowid_seq owned by veileder_tilordninger.ro
 
 create table sak
 (
-    id                      numeric default nextval('veilarboppfolging."iseq$$_134636"'::regclass) not null
+    id                      numeric default nextval('"iseq$$_134636"'::regclass) not null
         constraint sys_c0027842
             primary key,
     oppfolgingsperiode_uuid char(36)

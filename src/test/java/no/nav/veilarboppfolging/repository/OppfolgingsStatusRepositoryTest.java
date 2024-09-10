@@ -1,8 +1,8 @@
 package no.nav.veilarboppfolging.repository;
 
 import no.nav.common.types.identer.AktorId;
+import no.nav.veilarboppfolging.LocalDatabaseSingleton;
 import no.nav.veilarboppfolging.test.DbTestUtils;
-import no.nav.veilarboppfolging.test.LocalH2Database;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -13,7 +13,7 @@ import static org.junit.Assert.assertEquals;
 
 public class OppfolgingsStatusRepositoryTest {
 
-    private final JdbcTemplate jdbcTemplate = LocalH2Database.getDb();
+    private final JdbcTemplate jdbcTemplate = LocalDatabaseSingleton.INSTANCE.getJdbcTemplate();
 
     private final OppfolgingsStatusRepository oppfolgingsStatusRepository = new OppfolgingsStatusRepository(jdbcTemplate);
 
