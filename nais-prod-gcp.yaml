@@ -2,20 +2,33 @@ kind: Application
 apiVersion: nais.io/v1alpha1
 metadata:
   name: veilarboppfolging
-  namespace: pto
+  namespace: poao
   labels:
-    team: pto
+    team: poao
 spec:
   image: {{image}}
   ingresses:
-    - https://veilarboppfolging.dev-fss-pub.nais.io
-    - https://veilarboppfolging.dev.intern.nav.no
-    - https://veilarboppfolging-q1.nais.preprod.local
-    - https://app-q1.adeo.no/veilarboppfolging
-    - https://app-q1.dev.adeo.no/veilarboppfolging
-    - https://app.dev.adeo.no/veilarboppfolging
+    - https://veilarboppfolging.intern.nav.no
   webproxy: true
   port: 8080
+  gcp:
+    sqlInstances:
+      - name: veilarboppfolging
+        type: POSTGRES_14
+        tier: db-custom-8-53248 #TODO reduser etter migrering?
+        diskType: SSD
+        diskAutoresize: true
+        highAvailability: true
+        pointInTimeRecovery: true
+        flags: # Nødvendig for datastreams
+          - name: cloudsql.logical_decoding
+            value: "on"
+        databases:
+          - name: veilarboppfolging
+            envVarPrefix: DB
+            users:
+              - name: datastream
+              - name: veilarboppfolging_midlertidig # Bruker uten write-rettigheter
   prometheus:
     enabled: true
     path: veilarboppfolging/internal/prometheus
@@ -26,36 +39,36 @@ spec:
     path: veilarboppfolging/internal/health/readiness
     initialDelay: 30
   replicas:
-    min: 1
-    max: 2
+    min: 2
+    max: 4
     cpuThresholdPercentage: 75
   resources:
     limits:
       cpu: "2"
-      memory: 4Gi
+      memory: 3072Mi
     requests:
-      cpu: 500m
-      memory: 2Gi
-  envFrom:
+      cpu: 200m
+      memory: 2048Mi
+  envFrom: # TODO: Gå over disse og bruk env variabler istedet
     - configmap: pto-config
     - configmap: loginservice-idporten
   env:
     - name: POAO_TILGANG_URL
-      value: http://poao-tilgang.poao.svc.nais.local
+      value: http://poao-tilgang.poao
     - name: POAO_TILGANG_SCOPE
-      value: api://dev-fss.poao.poao-tilgang/.default
+      value: api://prod-gcp.poao.poao-tilgang/.default
     - name: DIGDIR_KRR_PROXY_URL
-      value: https://digdir-krr-proxy.intern.dev.nav.no
+      value: http://digdir-krr-proxy.team-rocket
     - name: DIGDIR_KRR_PROXY_SCOPE
-      value: api://dev-gcp.team-rocket.digdir-krr-proxy/.default
+      value: api://prod-gcp.team-rocket.digdir-krr-proxy/.default
     - name: AMTTILTAK_URL
-      value: https://amt-tiltak.intern.dev.nav.no
+      value: http://amt-tiltak.amt
     - name: AMTTILTAK_SCOPE
-      value: api://dev-gcp.amt.amt-tiltak/.default
+      value: api://prod-gcp.amt.amt-tiltak/.default
   secureLogs:
     enabled: true
   kafka:
-    pool: nav-dev
+    pool: nav-prod
   azure:
     application:
       enabled: true
@@ -71,116 +84,99 @@ spec:
       rules:
         - application: veilarboppfolging
           namespace: poao
-          cluster: dev-gcp
+          cluster: prod-gcp
         - application: veilarbregistrering
           namespace: paw
-          cluster: dev-gcp
+          cluster: prod-gcp
         - application: arbeidssokerregistrering-for-veileder
           namespace: paw
-          cluster: dev-gcp
+          cluster: prod-gcp
         - application: veilarbapi
           namespace: pto
-          cluster: dev-gcp
+          cluster: prod-gcp
         - application: paw-proxy
           namespace: paw
         - application: veilarbperson
           namespace: pto
-          cluster: dev-fss
+          cluster: prod-fss
         - application: veilarbperson
           namespace: obo
-          cluster: dev-gcp
+          cluster: prod-gcp
         - application: veilarbvedtaksstotte
           namespace: pto
-          cluster: dev-fss
+          cluster: prod-fss
         - application: veilarbpersonflate
           namespace: poao
-          cluster: dev-gcp
+          cluster: prod-gcp
         - application: veilarbportefoljeflatefs
           namespace: obo
-          cluster: dev-gcp
+          cluster: prod-gcp
         - application: veilarbportefolje
           namespace: pto
-          cluster: dev-fss
+          cluster: prod-fss
         - application: veilarbportefolje
           namespace: obo
-          cluster: dev-gcp
-        - application: mulighetsrommet-api
-          namespace: team-mulighetsrommet
-          cluster: dev-gcp
+          cluster: prod-gcp
         - application: modia-robot-api
           namespace: personoversikt
-          cluster: dev-fss
-        - application: modia-robot-api
-          namespace: personoversikt
-          cluster: dev-gcp
-        - application: modiapersonoversikt-api-q1
-          namespace: personoversikt
-          cluster: dev-fss
-        - application: ditt-sykefravaer
-          namespace: flex
-          cluster: dev-gcp
-        - application: veilarbdirigent
-          namespace: pto
-          cluster: dev-fss
-        - application: veilarbdialog
-          namespace: pto
-          cluster: dev-fss
-        - application: veilarbdialog
-          namespace: dab
-          cluster: dev-gcp
-        - application: veilarbaktivitet
-          namespace: dab
-          cluster: dev-gcp
-        - application: aktivitetsplan
-          namespace: pto
-          cluster: dev-gcp
-        - application: arbeidsrettet-dialog
-          namespace: pto
-          cluster: dev-gcp
-        - application: aktivitet-arena-acl
-          namespace: dab
-          cluster: dev-gcp
-        - application: start-samtale
-          namespace: pto
-          cluster: dev-gcp
-        - application: esyfo-info-frontend
-          namespace: team-esyfo
-          cluster: dev-gcp
-        - application: amt-person-service
-          namespace: amt
-          cluster: dev-gcp
-        - application: tms-min-side-proxy
-          namespace: min-side
-          cluster: dev-gcp
-        - application: tms-mikrofrontend-selector
-          namespace: min-side
-          cluster: dev-gcp
-        - application: aia-backend
-          namespace: paw
-          cluster: dev-gcp
-        - application: azure-token-generator
-          namespace: aura
-          cluster: dev-gcp
-        - application: amt-distribusjon
-          namespace: amt
-          cluster: dev-gcp
-        - application: dokumentfordeling
-          namespace: arbeidsgiver
-          cluster: dev-fss
+          cluster: prod-fss
         - application: modiapersonoversikt-api
           namespace: personoversikt
-          cluster: dev-gcp
+          cluster: prod-fss
+        - application: mulighetsrommet-api
+          namespace: team-mulighetsrommet
+          cluster: prod-gcp
+        - application: ditt-sykefravaer
+          namespace: flex
+          cluster: prod-gcp
+        - application: veilarbdirigent
+          namespace: pto
+          cluster: prod-fss
+        - application: veilarbdialog
+          namespace: pto
+          cluster: prod-fss
+        - application: veilarbdialog
+          namespace: dab
+          cluster: prod-gcp
+        - application: veilarbaktivitet
+          namespace: dab
+          cluster: prod-gcp
+        - application: aktivitetsplan
+          namespace: pto
+          cluster: prod-gcp
+        - application: arbeidsrettet-dialog
+          namespace: pto
+          cluster: prod-gcp
+        - application: aktivitet-arena-acl
+          namespace: dab
+          cluster: prod-gcp
+        - application: start-samtale
+          namespace: pto
+          cluster: prod-gcp
+        - application: esyfo-info-frontend
+          namespace: team-esyfo
+          cluster: prod-gcp
+        - application: amt-person-service
+          namespace: amt
+          cluster: prod-gcp
+        - application: tms-min-side-proxy
+          namespace: min-side
+          cluster: prod-gcp
+        - application: tms-mikrofrontend-selector
+          namespace: min-side
+          cluster: prod-gcp
+        - application: aia-backend
+          namespace: paw
+          cluster: prod-gcp
+        - application: amt-distribusjon
+          namespace: amt
+          cluster: prod-gcp
+        - application: dokumentfordeling
+          namespace: arbeidsgiver
+          cluster: prod-fss
+        - application: modiapersonoversikt-api
+          namespace: personoversikt
+          cluster: prod-gcp
         - application: syfomodiaperson
           namespace: teamsykefravr
-          cluster: dev-gcp
-  vault:
-    enabled: true
-    paths:
-      - kvPath: /oracle/data/dev/creds/veilarboppfolging_q1-user
-        mountPath: /var/run/secrets/nais.io/oracle_creds
-      - kvPath: /serviceuser/data/dev/srvveilarboppfolging
-        mountPath: /var/run/secrets/nais.io/service_user
-      - kvPath: /kv/preprod/fss/veilarboppfolging/q1
-        mountPath: /var/run/secrets/nais.io/vault
-      - kvPath: /oracle/data/dev/config/veilarboppfolging_q1
-        mountPath: /var/run/secrets/nais.io/oracle_config
+          cluster: prod-gcp
