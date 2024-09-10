@@ -62,6 +62,8 @@ spec:
       value: http://amt-tiltak.amt
     - name: AMTTILTAK_SCOPE
       value: api://dev-gcp.amt.amt-tiltak/.default
+    - name: KAFKA_ENABLED
+      value: "false"
   secureLogs:
     enabled: true
   kafka:
