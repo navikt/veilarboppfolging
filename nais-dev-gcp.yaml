@@ -47,7 +47,6 @@ spec:
       cpu: 500m
       memory: 2Gi
   envFrom: # TODO: Gå igjennom variabler
-    - configmap: pto-config
     - configmap: loginservice-idporten
   env:
     - name: POAO_TILGANG_URL
