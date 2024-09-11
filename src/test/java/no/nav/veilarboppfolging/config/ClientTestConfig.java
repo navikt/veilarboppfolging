@@ -13,6 +13,7 @@ import no.nav.veilarboppfolging.client.digdir_krr.KRRData;
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolging;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
+import no.nav.veilarboppfolging.client.veilarbarena.YtelserDTO;
 import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktClient;
 import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktResponse;
 import no.nav.veilarboppfolging.service.SisteEndringPaaOppfolgingBrukerService;
@@ -106,6 +107,11 @@ public class ClientTestConfig {
 
             @Override
             public Optional<ArenaOppfolging> getArenaOppfolgingsstatus(Fnr fnr) {
+                return Optional.empty();
+            }
+
+            @Override
+            public Optional<YtelserDTO> getArenaYtelser(Fnr fnr) {
                 return Optional.empty();
             }
 

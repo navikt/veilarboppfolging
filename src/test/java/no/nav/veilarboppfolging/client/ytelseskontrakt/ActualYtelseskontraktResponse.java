@@ -5,6 +5,7 @@ import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt.Periode;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.HentYtelseskontraktListeRequest;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.HentYtelseskontraktListeResponse;
+import no.nav.veilarboppfolging.controller.response.YtelserResponse;
 import no.nav.veilarboppfolging.mock.YtelseskontraktV3Mock;
 
 import javax.xml.datatype.XMLGregorianCalendar;
@@ -43,7 +44,6 @@ public class ActualYtelseskontraktResponse {
 
         final HentYtelseskontraktListeResponse rawResponse = ytelseskontraktMock.hentYtelseskontraktListe(request);
         return YtelseskontraktMapper.tilYtelseskontrakt(rawResponse);
-
     }
 
     private static HentYtelseskontraktListeRequest getWSHentYtelseskontraktListeRequest() {
