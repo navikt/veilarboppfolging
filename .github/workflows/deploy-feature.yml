@@ -36,8 +36,8 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      - name: Build (skipping tests)
-        run: mvn -B package -DskipTests
+      - name: Build
+        run: mvn -B package
 
       - name: Build and push Docker image
         uses: nais/docker-build-push@v0
