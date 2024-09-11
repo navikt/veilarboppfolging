@@ -46,8 +46,6 @@ spec:
     requests:
       cpu: 500m
       memory: 2Gi
-  envFrom: # TODO: Gå igjennom variabler
-    - configmap: loginservice-idporten
   env:
     - name: POAO_TILGANG_URL
       value: http://poao-tilgang.poao
