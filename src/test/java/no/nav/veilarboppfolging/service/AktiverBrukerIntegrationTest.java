@@ -46,14 +46,16 @@ public class AktiverBrukerIntegrationTest extends IntegrationTest {
                 mock(KafkaProducerService.class),
                 null,
                 null,
-                null, authService,
-                oppfolgingsStatusRepository, oppfolgingsPeriodeRepository,
+                authService,
+                oppfolgingsStatusRepository,
+                oppfolgingsPeriodeRepository,
                 manuellStatusService,
                 mock(AmtTiltakClient.class),
                 new KvpRepository(jdbcTemplate, namedParameterJdbcTemplate, transactor),
                 new MaalRepository(jdbcTemplate, transactor),
                 mock(BrukerOppslagFlereOppfolgingAktorRepository.class),
-                transactor
+                transactor,
+                mock(ArenaYtelserService.class)
         );
 
         aktiverBrukerService = new AktiverBrukerService(

@@ -66,6 +66,8 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
 
     private OppfolgingService oppfolgingServiceMock = mock(OppfolgingService.class);
 
+    private ArenaYtelserService arenaYtelserService = mock(ArenaYtelserService.class);
+
     @Before
     public void setup() {
         TransactionTemplate transactor = DbTestUtils.createTransactor(db);
@@ -99,12 +101,12 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
 
         oppfolgingService = new OppfolgingService(
                 mock(KafkaProducerService.class), null,
-                null,  null, authService,
+                null, authService,
                 oppfolgingsStatusRepository, oppfolgingsPeriodeRepository,
                 manuellStatusService,
                 mock(AmtTiltakClient.class),
                 new KvpRepository(db, namedParameterJdbcTemplate, transactor), maalRepository,
-                new BrukerOppslagFlereOppfolgingAktorRepository(db), transactor);
+                new BrukerOppslagFlereOppfolgingAktorRepository(db), transactor, arenaYtelserService);
 
         when(authService.getFnrOrThrow(AKTOR_ID)).thenReturn(FNR);
     }

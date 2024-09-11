@@ -62,6 +62,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     private KafkaProducerService kafkaProducerService = mock(KafkaProducerService.class);
     private YtelseskontraktClient ytelseskontraktClient = mock(YtelseskontraktClient.class);
     private ArenaOppfolgingService arenaOppfolgingService = mock(ArenaOppfolgingService.class);
+    private ArenaYtelserService arenaYtelserService = mock(ArenaYtelserService.class);
     private KvpService kvpService = mock(KvpService.class);
     private KvpRepository kvpRepository = mock(KvpRepository.class);
     private MetricsService metricsService = mock(MetricsService.class);
@@ -80,7 +81,6 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         oppfolgingsPeriodeRepository = new OppfolgingsPeriodeRepository(db, transactor);
 
         oppfolgingService = new OppfolgingService(kafkaProducerService,
-                new YtelserOgAktiviteterService(ytelseskontraktClient),
                 kvpService,
                 arenaOppfolgingService,
                 authService,
@@ -91,7 +91,9 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
                 kvpRepository,
                 null,
                 null,
-                 transactor);
+                 transactor,
+                arenaYtelserService
+                );
 
 
         gittArenaOppfolgingStatus("", "");

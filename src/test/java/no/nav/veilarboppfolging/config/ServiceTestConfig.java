@@ -20,7 +20,6 @@ import org.springframework.context.annotation.Import;
         OppfolgingService.class,
         VeilederTilordningService.class,
         KafkaProducerService.class,
-        YtelserOgAktiviteterService.class,
         KafkaConsumerService.class,
         ArbeidssøkerperiodeConsumerService.class,
         OppfolgingEndringService.class,
