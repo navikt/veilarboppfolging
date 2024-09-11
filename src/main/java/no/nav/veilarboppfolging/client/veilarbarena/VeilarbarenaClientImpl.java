@@ -101,6 +101,28 @@ public class VeilarbarenaClientImpl implements VeilarbarenaClient {
     }
 
     @Override
+    public Optional<YtelserDTO> getArenaYtelser(Fnr fnr) {
+        PersonRequest personRequest = new PersonRequest(fnr);
+        Request request = new Request.Builder()
+                .url(joinPaths(veilarbarenaUrl, "/api/v2/hent-ytelser"))
+                .header(ACCEPT, APPLICATION_JSON_VALUE)
+                .header(AUTHORIZATION, "Bearer " + getToken())
+                .post(RequestBody.create(JsonUtils.toJson(personRequest), MEDIA_TYPE_JSON))
+                .build();
+
+        try (Response response = client.newCall(request).execute()) {
+            if (response.code() == 404) {
+                return Optional.empty();
+            }
+
+            RestUtils.throwIfNotSuccessful(response);
+            return Optional.of(RestUtils.parseJsonResponseOrThrow(response, YtelserDTO.class));
+        } catch (Exception e) {
+            return Optional.empty();
+        }
+    }
+
+    @Override
     public HealthCheckResult checkHealth() {
         return HealthCheckUtils.pingUrl(joinPaths(veilarbarenaUrl, "/internal/isAlive"), client);
     }
