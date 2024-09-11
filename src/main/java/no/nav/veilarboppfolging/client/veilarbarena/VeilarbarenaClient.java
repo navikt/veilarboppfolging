@@ -11,4 +11,5 @@ public interface VeilarbarenaClient extends HealthCheck {
 
     Optional<ArenaOppfolging> getArenaOppfolgingsstatus(Fnr fnr);
 
+    Optional<YtelserDTO> getArenaYtelser(Fnr fnr);
 }
