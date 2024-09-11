@@ -1,3 +1,5 @@
+create schema if not exists veilarboppfolging;
+
 create sequence oppfolgingsenhet_endret_rowid_seq
     increment by -1;
 
