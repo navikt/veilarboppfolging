@@ -44,14 +44,6 @@ public class FilterConfig {
                 .withUserRole(UserRole.EKSTERN);
     }
 
-    private OidcAuthenticatorConfig loginserviceIdportenConfig(EnvironmentProperties properties) {
-        return new OidcAuthenticatorConfig()
-                .withDiscoveryUrl(properties.getLoginserviceIdportenDiscoveryUrl())
-                .withClientId(properties.getLoginserviceIdportenAudience())
-                .withIdTokenCookieName(AZURE_AD_B2C_ID_TOKEN_COOKIE_NAME)
-                .withUserRole(UserRole.EKSTERN);
-    }
-
     private OidcAuthenticatorConfig naisAzureAdConfig(EnvironmentProperties properties) {
         return new OidcAuthenticatorConfig()
                 .withDiscoveryUrl(properties.getNaisAadDiscoveryUrl())
@@ -78,8 +70,7 @@ public class FilterConfig {
                 fromConfigs(
                         naisAzureAdConfig(properties),
                         tokenxAuthConfig(properties),
-                        naisStsAuthConfig(properties),
-                        loginserviceIdportenConfig(properties)
+                        naisStsAuthConfig(properties)
                 )
         );
 
