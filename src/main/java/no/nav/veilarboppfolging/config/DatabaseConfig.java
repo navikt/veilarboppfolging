@@ -15,20 +15,32 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import javax.sql.DataSource;
 
 @Configuration
-@EnableConfigurationProperties(DatabaseConfig.DatasourceProperties.class)
+@EnableConfigurationProperties({DatabaseConfig.DatasourceProperties.class, DatabaseConfig.DatasourceFlywayProperties.class})
 @RequiredArgsConstructor
 public class DatabaseConfig {
 
     private final DatasourceProperties datasourceProperties;
+    private final DatasourceFlywayProperties datasourceFlywayProperties;
 
     @Bean
     public DataSource dataSource() {
         var config = new HikariConfig();
+        config.setSchema("veilarboppfolging");
         config.setJdbcUrl(datasourceProperties.url);
         config.setUsername(datasourceProperties.username);
         config.setPassword(datasourceProperties.password);
         config.setMaximumPoolSize(5);
+        return new HikariDataSource(config);
+    }
 
+    @Bean
+    public DataSource flywayDataSource() {
+        var config = new HikariConfig();
+        config.setSchema("veilarboppfolging");
+        config.setJdbcUrl(datasourceFlywayProperties.url);
+        config.setUsername(datasourceFlywayProperties.username);
+        config.setPassword(datasourceFlywayProperties.password);
+        config.setMaximumPoolSize(5);
         return new HikariDataSource(config);
     }
 
@@ -46,6 +58,15 @@ public class DatabaseConfig {
     @Setter
     @ConfigurationProperties(prefix = "app.datasource")
     public static class DatasourceProperties {
+        String url;
+        String username;
+        String password;
+    }
+
+    @Getter
+    @Setter
+    @ConfigurationProperties(prefix = "app.datasource.flyway")
+    public static class DatasourceFlywayProperties {
         String url;
         String username;
         String password;
