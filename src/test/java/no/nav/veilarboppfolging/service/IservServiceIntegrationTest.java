@@ -1,8 +1,5 @@
 package no.nav.veilarboppfolging.service;
 
-import no.nav.common.auth.context.AuthContextHolderThreadLocal;
-import no.nav.common.auth.context.UserRole;
-import no.nav.common.test.auth.AuthTestUtils;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe;
@@ -55,12 +52,7 @@ public class IservServiceIntegrationTest {
 
         utmeldingRepository = new UtmeldingRepository(db);
 
-        iservService = new IservService(
-                AuthContextHolderThreadLocal.instance(),
-                () -> AuthTestUtils.createAuthContext(UserRole.SYSTEM, "srvtest").getIdToken().serialize(),
-                mock(MetricsService.class),
-                utmeldingRepository, oppfolgingService, authService
-        );
+        iservService = new IservService(mock(MetricsService.class), utmeldingRepository, oppfolgingService, authService);
     }
 
     @Test

@@ -9,15 +9,12 @@ import no.nav.common.audit_log.log.AuditLogger;
 import no.nav.common.audit_log.log.AuditLoggerImpl;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.AuthContextHolderThreadLocal;
-import no.nav.common.cxf.StsConfig;
 import no.nav.common.job.leader_election.LeaderElectionClient;
 import no.nav.common.job.leader_election.ShedLockLeaderElectionClient;
 import no.nav.common.metrics.InfluxClient;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.metrics.SensuConfig;
 import no.nav.common.rest.client.RestClient;
-import no.nav.common.sts.NaisSystemUserTokenProvider;
-import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.token_client.builder.AzureAdTokenClientBuilder;
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
 import no.nav.common.utils.Credentials;
@@ -84,32 +81,11 @@ public class ApplicationConfig {
         return AuthContextHolderThreadLocal.instance();
     }
 
-    /*
-     TODO brukes STS av noen lenger?
-      - bruker i batch/kafka consumer for å sette authcontext
-      @see no.nav.veilarboppfolging.service.IservService.finnBrukereOgAvslutt
-      @see no.nav.veilarboppfolging.service.KafkaConsumerService.consumeEndringPaOppfolgingBruker
-
-      Kan vi bruker en azureMachineTokenProvider som en drop-in erstatning? Må vi i så fall legge til veilarboppfolging i inbound access policy?
-     */
-    @Bean
-    public SystemUserTokenProvider systemUserTokenProvider(EnvironmentProperties properties, Credentials serviceUserCredentials) {
-        return new NaisSystemUserTokenProvider(properties.getNaisStsDiscoveryUrl(), serviceUserCredentials.username, serviceUserCredentials.password);
-    }
-
     @Bean
     public AzureAdMachineToMachineTokenClient azureAdMachineToMachineTokenClient() {
         return AzureAdTokenClientBuilder.builder()
                 .withNaisDefaults()
                 .buildMachineToMachineTokenClient();
-    }
-    @Bean
-    public static StsConfig stsConfig(EnvironmentProperties properties, Credentials serviceUserCredentials) {
-        return StsConfig.builder()
-                .url(properties.getSoapStsUrl())
-                .username(serviceUserCredentials.username)
-                .password(serviceUserCredentials.password)
-                .build();
     }
 
     @Bean

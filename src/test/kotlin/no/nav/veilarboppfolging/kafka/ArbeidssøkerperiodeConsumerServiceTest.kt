@@ -186,7 +186,8 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
             .setIserv_fra_dato(ISERV_FRA_DATO.atZone(ZoneId.systemDefault())))
         )
         val nyPeriode = arbeidssøkerperiode(fnr, periodeStartet = arbeidsøkerPeriodeStartet.atZone(ZoneId.systemDefault()).toInstant())
-        val oppfolginsBrukerEndretTilISERV = ConsumerRecord("topic", 0, 0, "key", oppfølgingsBrukerEndret(ISERV_FRA_DATO.toLocalDate()))
+        val oppfolginsBrukerEndretTilISERV = ConsumerRecord("topic", 0, 0, "key", oppfølgingsBrukerEndret(
+            ISERV_FRA_DATO.toLocalDate(), formidlingsgruppe = Formidlingsgruppe.ISERV))
         val melding = ConsumerRecord("topic", 0, 0, "dummyKey", nyPeriode)
 
         kafkaConsumerService.consumeEndringPaOppfolgingBruker(oppfolginsBrukerEndretTilISERV)
@@ -211,7 +212,8 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
             .setIserv_fra_dato(ISERV_FRA_DATO.atZone(ZoneId.systemDefault())))
         )
         val nyPeriode = arbeidssøkerperiode(fnr, periodeStartet = arbeidsøkerPeriodeStartet.atZone(ZoneId.systemDefault()).toInstant())
-        val oppfolginsBrukerEndretTilISERV = ConsumerRecord("topic", 0, 0, "key", oppfølgingsBrukerEndret(ISERV_FRA_DATO.toLocalDate()))
+        val oppfolginsBrukerEndretTilISERV = ConsumerRecord("topic", 0, 0, "key", oppfølgingsBrukerEndret(
+            ISERV_FRA_DATO.toLocalDate(), formidlingsgruppe = Formidlingsgruppe.ISERV))
         val melding = ConsumerRecord("topic", 0, 0, "dummyKey", nyPeriode)
 
         kafkaConsumerService.consumeEndringPaOppfolgingBruker(oppfolginsBrukerEndretTilISERV)
@@ -275,10 +277,10 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
         }
     }
 
-    private fun oppfølgingsBrukerEndret(iservFraDato: LocalDate): EndringPaaOppfoelgingsBrukerV2 {
+    private fun oppfølgingsBrukerEndret(iservFraDato: LocalDate, formidlingsgruppe: Formidlingsgruppe = Formidlingsgruppe.ARBS): EndringPaaOppfoelgingsBrukerV2 {
         return EndringPaaOppfoelgingsBrukerV2(
             fnr,
-            Formidlingsgruppe.ARBS,
+            formidlingsgruppe,
             iservFraDato,
             "Sig",
             ":)",
