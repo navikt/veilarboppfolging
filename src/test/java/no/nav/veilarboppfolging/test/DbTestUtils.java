@@ -2,9 +2,6 @@ package no.nav.veilarboppfolging.test;
 
 import lombok.SneakyThrows;
 import no.nav.veilarboppfolging.LocalDatabaseSingleton;
-import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
-import org.flywaydb.core.Flyway;
-import org.flywaydb.core.api.configuration.FluentConfiguration;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -13,10 +10,11 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
+
+import static no.nav.veilarboppfolging.dbutil.DatabaseMigratorKt.migrateDb;
 
 public class DbTestUtils {
 
@@ -54,16 +52,17 @@ public class DbTestUtils {
 
         Properties properties = new Properties();
         properties.put("flyway.cleanDisabled", false);
-        FluentConfiguration config = Flyway
-                .configure()
-                .dataSource(dataSource)
-                .table("schema_version")
-                .configuration(properties)
-                .cleanOnValidationError(true)
-                .validateMigrationNaming(true);
-        Flyway flyway = new Flyway(config);
-        flyway.clean();
-        flyway.migrate();
+        migrateDb(dataSource);
+//        FluentConfiguration config = Flyway
+//                .configure()
+//                .dataSource(dataSource)
+//                .table("schema_version")
+//                .configuration(properties)
+//                .cleanOnValidationError(true)
+//                .validateMigrationNaming(true);
+//        Flyway flyway = new Flyway(config);
+//        flyway.clean();
+//        flyway.migrate();
     }
 
     private static void deleteAllFromTable(JdbcTemplate db, String tableName) {
