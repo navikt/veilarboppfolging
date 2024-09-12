@@ -53,11 +53,6 @@ public class ApplicationTestConfig {
     }
 
     @Bean
-    public Credentials serviceUserCredentials() {
-        return new Credentials("username", "password");
-    }
-
-    @Bean
     public DataSource dataSource() throws IOException {
         var db = EmbeddedPostgres.start().getPostgresDatabase();
         DbTestUtils.initDb(db);
