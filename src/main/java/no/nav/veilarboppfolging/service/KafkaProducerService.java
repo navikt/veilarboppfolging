@@ -10,7 +10,6 @@ import no.nav.veilarboppfolging.config.KafkaProperties;
 import no.nav.veilarboppfolging.kafka.KvpPeriode;
 import no.nav.veilarboppfolging.kafka.dto.OppfolgingsperiodeDTO;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.common.protocol.types.Field;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -35,7 +34,7 @@ public class KafkaProducerService {
             AuthContextHolder authContextHolder,
             KafkaProducerRecordStorage producerRecordStorage,
             KafkaProperties kafkaProperties,
-            @Value("app.kafka.enabled") Boolean kafkaEnabled
+            @Value("${app.kafka.enabled}") Boolean kafkaEnabled
     ) {
         this.authContextHolder = authContextHolder;
         this.producerRecordStorage = producerRecordStorage;
