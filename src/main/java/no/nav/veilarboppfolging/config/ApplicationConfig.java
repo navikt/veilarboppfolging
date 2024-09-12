@@ -34,8 +34,6 @@ import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
 
-import static no.nav.common.utils.NaisUtils.getCredentials;
-
 @Slf4j
 @Configuration
 @EnableScheduling
@@ -55,11 +53,6 @@ public class ApplicationConfig {
 	private final Cache<String, Boolean> norskIdentToErSkjermetCache = Caffeine.newBuilder()
 			.expireAfterWrite(Duration.ofMinutes(30))
 			.build();
-
-    @Bean
-    public Credentials serviceUserCredentials() {
-        return getCredentials("service_user");
-    }
 
     @Bean
     public MetricsClient metricsClient() {

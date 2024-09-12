@@ -52,8 +52,6 @@ class AuthServiceTest {
     @Mock
     private AktorOppslagClient aktorOppslagClient;
     @Mock
-    private Credentials serviceUserCredentials;
-    @Mock
     private AzureAdOnBehalfOfTokenClient azureAdOnBehalfOfTokenClient;
     @Mock
     private MachineToMachineTokenClient machineToMachineTokenClient;
