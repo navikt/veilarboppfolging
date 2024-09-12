@@ -22,7 +22,7 @@ public class HelsesjekkConfig {
     public SelfTestChecks selfTestChecks(JdbcTemplate jdbcTemplate,
                                          AktorOppslagClient aktorOppslagClient) {
         List<SelfTestCheck> selfTestChecks = Arrays.asList(
-                new SelfTestCheck("Enkel spørring mot Databasen til veilarboppfolging.", true, checkDbHealth(jdbcTemplate)),
+                new SelfTestCheck("Enkel spørring mot Databasen til veilarboppfolging.", true, checkDbHealth(jdbcTemplate))
                 // TODO selftest poao-tilgang
 //                new SelfTestCheck("Ping av aktor oppslag client (konvertere mellom aktorId og Fnr).", true, aktorOppslagClient)
         );
