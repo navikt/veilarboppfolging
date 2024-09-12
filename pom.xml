@@ -48,24 +48,6 @@
     </repositories>
 
     <build>
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>org.apache.cxf</groupId>
-                    <artifactId>cxf-codegen-plugin</artifactId>
-                    <version>${cxf-codegen.version}</version>
-                    <executions>
-                        <execution>
-                            <id>wsdl-to-java</id>
-                            <phase>generate-sources</phase>
-                            <goals>
-                                <goal>wsdl2java</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin>
-            </plugins>
-        </pluginManagement>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
@@ -412,77 +394,6 @@
                                 <goals>
                                     <goal>testCompile</goal>
                                 </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-dependency-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>resource-dependencies</id>
-                                <phase>generate-sources</phase>
-                                <goals>
-                                    <goal>unpack</goal>
-                                </goals>
-                                <configuration>
-                                    <artifactItems>
-                                        <artifactItem>
-                                            <groupId>no.nav.tjenestespesifikasjoner</groupId>
-                                            <artifactId>ytelseskontrakt-v3-tjenestespesifikasjon</artifactId>
-                                            <version>${tjenestespesifikasjoner.version}</version>
-                                            <type>jar</type>
-                                            <overWrite>true</overWrite>
-                                            <outputDirectory>${project.build.directory}/classes</outputDirectory>
-                                        </artifactItem>
-                                        <artifactItem>
-                                            <groupId>no.nav.tjenestespesifikasjoner</groupId>
-                                            <artifactId>nav-behandleArbeidssoeker-v1-tjenestespesifikasjon</artifactId>
-                                            <version>${tjenestespesifikasjoner.version}</version>
-                                            <type>jar</type>
-                                            <overWrite>true</overWrite>
-                                            <outputDirectory>${project.build.directory}/classes</outputDirectory>
-                                        </artifactItem>
-                                    </artifactItems>
-                                    <includes>
-                                        wsdl/**
-                                    </includes>
-                                    <outputDirectory>${project.build.outputDirectory}/classes</outputDirectory>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-codegen-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>wsdl-to-java-ytelseskontrakt</id>
-                                <phase>generate-sources</phase>
-                                <goals>
-                                    <goal>wsdl2java</goal>
-                                </goals>
-                                <configuration>
-                                    <wsdlOptions>
-                                        <wsdlOption>
-                                            <wsdl>${project.build.outputDirectory}/wsdl/tjenestespesifikasjon/no/nav/tjeneste/virksomhet/ytelseskontrakt/v3/Binding.wsdl</wsdl>
-                                        </wsdlOption>
-                                    </wsdlOptions>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>wsdl-to-java-behandlearbeidssoker</id>
-                                <phase>generate-sources</phase>
-                                <goals>
-                                    <goal>wsdl2java</goal>
-                                </goals>
-                                <configuration>
-                                    <wsdlOptions>
-                                        <wsdlOption>
-                                            <wsdl>${project.build.outputDirectory}/wsdl/no/nav/tjeneste/virksomhet/behandleArbeidssoeker/v1/Binding.wsdl</wsdl>
-                                        </wsdlOption>
-                                    </wsdlOptions>
-                                </configuration>
                             </execution>
                         </executions>
                     </plugin>
