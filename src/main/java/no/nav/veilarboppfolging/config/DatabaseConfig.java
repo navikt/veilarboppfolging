@@ -2,6 +2,7 @@ package no.nav.veilarboppfolging.config;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -14,6 +15,8 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import javax.sql.DataSource;
 
+import static no.nav.veilarboppfolging.dbutil.DatabaseMigratorKt.migrateDb;
+
 @Configuration
 @EnableConfigurationProperties({DatabaseConfig.DatasourceProperties.class, DatabaseConfig.DatasourceFlywayProperties.class})
 @RequiredArgsConstructor
@@ -24,6 +27,7 @@ public class DatabaseConfig {
 
     @Bean
     public DataSource dataSource() {
+        runFlywayMigration();
         var config = new HikariConfig();
         config.setSchema("veilarboppfolging");
         config.setJdbcUrl(datasourceProperties.url);
@@ -33,15 +37,15 @@ public class DatabaseConfig {
         return new HikariDataSource(config);
     }
 
-    @Bean
-    public DataSource flywayDataSource() {
+    private void runFlywayMigration() {
         var config = new HikariConfig();
         config.setSchema("veilarboppfolging");
         config.setJdbcUrl(datasourceFlywayProperties.url);
         config.setUsername(datasourceFlywayProperties.username);
         config.setPassword(datasourceFlywayProperties.password);
         config.setMaximumPoolSize(5);
-        return new HikariDataSource(config);
+        var db = new HikariDataSource(config);
+        migrateDb(db);
     }
 
     @Bean
