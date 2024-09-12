@@ -309,7 +309,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         assertUnderOppfolgingLagret(AKTOR_ID);
 
         gittArenaOppfolgingStatus("ISERV", "");
-        gittYtelserMedStatus("Inaktiv", "Aktiv");
+        when(arenaYtelserService.harPagaendeYtelse(FNR)).thenReturn(true);
 
         AvslutningStatusData avslutningStatusData = oppfolgingService.hentAvslutningStatus(FNR);
 
