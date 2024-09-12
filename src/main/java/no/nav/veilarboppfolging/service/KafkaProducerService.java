@@ -10,7 +10,9 @@ import no.nav.veilarboppfolging.config.KafkaProperties;
 import no.nav.veilarboppfolging.kafka.KvpPeriode;
 import no.nav.veilarboppfolging.kafka.dto.OppfolgingsperiodeDTO;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.protocol.types.Field;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.ZonedDateTime;
@@ -26,15 +28,19 @@ public class KafkaProducerService {
 
     private final KafkaProperties kafkaProperties;
 
+    private final Boolean kafkaEnabled;
+
     @Autowired
     public KafkaProducerService(
             AuthContextHolder authContextHolder,
             KafkaProducerRecordStorage producerRecordStorage,
-            KafkaProperties kafkaProperties
+            KafkaProperties kafkaProperties,
+            @Value("app.kafka.enabled") Boolean kafkaEnabled
     ) {
         this.authContextHolder = authContextHolder;
         this.producerRecordStorage = producerRecordStorage;
         this.kafkaProperties = kafkaProperties;
+        this.kafkaEnabled = kafkaEnabled;
     }
 
     public void publiserOppfolgingsperiode(OppfolgingsperiodeDTO oppfolgingsperiode) {
@@ -116,8 +122,12 @@ public class KafkaProducerService {
     }
 
     private void store(String topic, String key, Object value) {
-        ProducerRecord<byte[], byte[]> record = serializeJsonRecord(new ProducerRecord<>(topic, key, value));
-        producerRecordStorage.store(record);
+        if (kafkaEnabled) {
+            ProducerRecord<byte[], byte[]> record = serializeJsonRecord(new ProducerRecord<>(topic, key, value));
+            producerRecordStorage.store(record);
+        } else {
+            throw new RuntimeException("Kafka er disabled, men noe gjør at man forsøker å publisere meldinger");
+        }
     }
 
 }
