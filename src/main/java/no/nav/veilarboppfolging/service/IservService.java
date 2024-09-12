@@ -1,14 +1,8 @@
 package no.nav.veilarboppfolging.service;
 
-import com.nimbusds.jwt.JWTParser;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.auth.context.AuthContext;
-import no.nav.common.auth.context.AuthContextHolder;
-import no.nav.common.auth.context.UserRole;
-import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
 import no.nav.veilarboppfolging.domain.AvslutningStatusData;
 import no.nav.veilarboppfolging.repository.UtmeldingRepository;
 import no.nav.veilarboppfolging.repository.entity.UtmeldingEntity;
@@ -22,7 +16,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static java.util.Optional.ofNullable;
-import static java.util.stream.Collectors.toList;
 import static no.nav.veilarboppfolging.config.ApplicationConfig.SYSTEM_USER_NAME;
 import static no.nav.veilarboppfolging.service.IservService.AvslutteOppfolgingResultat.*;
 import static no.nav.veilarboppfolging.utils.ArenaUtils.erIserv;
@@ -39,23 +32,17 @@ public class IservService {
         AVSLUTTET_FEILET
     }
 
-    private final AuthContextHolder authContextHolder;
-    private final SystemUserTokenProvider systemUserTokenProvider;
     private final MetricsService metricsService;
     private final UtmeldingRepository utmeldingRepository;
     private final OppfolgingService oppfolgingService;
     private final AuthService authService;
 
     public IservService(
-            AuthContextHolder authContextHolder,
-            SystemUserTokenProvider systemUserTokenProvider,
             MetricsService metricsService,
             UtmeldingRepository utmeldingRepository,
             OppfolgingService oppfolgingService,
             AuthService authService
     ) {
-        this.authContextHolder = authContextHolder;
-        this.systemUserTokenProvider = systemUserTokenProvider;
         this.metricsService = metricsService;
         this.utmeldingRepository = utmeldingRepository;
         this.oppfolgingService = oppfolgingService;
@@ -99,17 +86,9 @@ public class IservService {
             List<UtmeldingEntity> iservert28DagerBrukere = utmeldingRepository.finnBrukereMedIservI28Dager();
             log.info("Fant {} brukere som har vært ISERV mer enn 28 dager", iservert28DagerBrukere.size());
 
-
-            var context = new AuthContext(
-                    UserRole.SYSTEM,
-                    JWTParser.parse(systemUserTokenProvider.getSystemUserToken())
-            );
-
-            authContextHolder.withContext(context, () ->
-                    resultater.addAll(iservert28DagerBrukere.stream()
-                            .map(utmeldingEntity -> avslutteOppfolging(AktorId.of(utmeldingEntity.aktor_Id)))
-                            .collect(toList()))
-            );
+            resultater.addAll(iservert28DagerBrukere.stream()
+                    .map(utmeldingEntity -> avslutteOppfolging(AktorId.of(utmeldingEntity.aktor_Id)))
+                    .toList());
 
         } catch (Exception e) {
             secureLog.error("Feil ved automatisk avslutning av brukere", e);
