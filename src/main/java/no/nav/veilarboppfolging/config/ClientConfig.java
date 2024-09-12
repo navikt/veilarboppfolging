@@ -8,9 +8,11 @@ import no.nav.common.client.norg2.Norg2Client;
 import no.nav.common.client.norg2.NorgHttp2Client;
 import no.nav.common.rest.client.RestClient;
 import no.nav.common.token_client.builder.AzureAdTokenClientBuilder;
+import no.nav.common.token_client.builder.TokenXTokenClientBuilder;
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
 import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
 import no.nav.common.token_client.client.MachineToMachineTokenClient;
+import no.nav.common.token_client.client.TokenXOnBehalfOfTokenClient;
 import no.nav.common.utils.EnvironmentUtils;
 import no.nav.veilarboppfolging.client.amttiltak.AmtTiltakClient;
 import no.nav.veilarboppfolging.client.digdir_krr.DigdirClient;
@@ -72,6 +74,13 @@ public class ClientConfig {
     @Bean
     public AzureAdOnBehalfOfTokenClient azureAdOnBehalfOfTokenClient() {
         return AzureAdTokenClientBuilder.builder()
+                .withNaisDefaults()
+                .buildOnBehalfOfTokenClient();
+    }
+
+    @Bean
+    public TokenXOnBehalfOfTokenClient tokenXOnBehalfOfTokenClient() {
+        return TokenXTokenClientBuilder.builder()
                 .withNaisDefaults()
                 .buildOnBehalfOfTokenClient();
     }
