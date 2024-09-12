@@ -64,6 +64,8 @@ spec:
       value: api://prod-gcp.amt.amt-tiltak/.default
     - name: KAFKA_ENABLED
       value: "false"
+    - name: VEILARBOPPFOLGING_FSS_URL
+      value: "https://veilarbdialog.prod-fss-pub.nais.io"
   secureLogs:
     enabled: true
   kafka:
