@@ -14,14 +14,11 @@ import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolging;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
 import no.nav.veilarboppfolging.client.veilarbarena.YtelserDTO;
-import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktClient;
-import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktResponse;
 import no.nav.veilarboppfolging.service.SisteEndringPaaOppfolgingBrukerService;
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import javax.xml.datatype.XMLGregorianCalendar;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -113,26 +110,6 @@ public class ClientTestConfig {
             @Override
             public Optional<YtelserDTO> getArenaYtelser(Fnr fnr) {
                 return Optional.empty();
-            }
-
-            @Override
-            public HealthCheckResult checkHealth() {
-                return HealthCheckResult.healthy();
-            }
-        };
-    }
-
-    @Bean
-    public YtelseskontraktClient ytelseskontraktClient() {
-        return new YtelseskontraktClient() {
-            @Override
-            public YtelseskontraktResponse hentYtelseskontraktListe(XMLGregorianCalendar periodeFom, XMLGregorianCalendar periodeTom, Fnr personId) {
-                return null;
-            }
-
-            @Override
-            public YtelseskontraktResponse hentYtelseskontraktListe(Fnr personId) {
-                return null;
             }
 
             @Override

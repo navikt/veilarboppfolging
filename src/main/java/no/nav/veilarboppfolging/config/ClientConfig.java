@@ -18,8 +18,6 @@ import no.nav.veilarboppfolging.client.digdir_krr.DigdirClient;
 import no.nav.veilarboppfolging.client.digdir_krr.DigdirClientImpl;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClientImpl;
-import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktClient;
-import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktClientImpl;
 import no.nav.veilarboppfolging.service.AuthService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -70,11 +68,6 @@ public class ClientConfig {
     public VeilarbarenaClient veilarbarenaClient(AuthService authService) {
         String url = naisPreprodOrNaisAdeoIngress("veilarbarena", true);
         return new VeilarbarenaClientImpl(url, authService::getMachineTokenForTjeneste, authService::getAadOboTokenForTjeneste, authService);
-    }
-
-    @Bean
-    public YtelseskontraktClient ytelseskontraktClient(EnvironmentProperties properties, StsConfig stsConfig) {
-        return new YtelseskontraktClientImpl(properties.getYtelseskontraktV3Endpoint(), stsConfig);
     }
 
     @Bean

@@ -1,27 +1,15 @@
 package no.nav.veilarboppfolging.controller.v2;
 
-import jakarta.ws.rs.core.MediaType;
-import no.nav.common.json.JsonUtils;
-import no.nav.common.types.identer.Fnr;
-import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktResponse;
-import no.nav.veilarboppfolging.controller.v2.request.YtelserRequest;
-import no.nav.veilarboppfolging.controller.v2.response.YtelserV2Response;
 import no.nav.veilarboppfolging.service.ArenaYtelserService;
 import no.nav.veilarboppfolging.service.AuthService;
 import no.nav.veilarboppfolging.utils.auth.AuthorizationInterceptor;
-import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
-import wiremock.org.eclipse.jetty.http.HttpStatus;
 
-import static no.nav.veilarboppfolging.client.ytelseskontrakt.ActualYtelseskontraktResponse.getKomplettResponse;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 
 @WebMvcTest(controllers = YtelseV2Controller.class)
 class YtelseV2ControllerTest {
