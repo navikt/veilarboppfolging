@@ -1,9 +1,9 @@
 name: Build and deploy prod
 on:
-  workflow_dispatch:
   push:
     branches:
       - main
+      - gcp-release
 
 env:
   PRINT_PAYLOAD: true
