@@ -62,7 +62,7 @@ spec:
     - name: KAFKA_ENABLED
       value: "false"
     - name: VEILARBOPPFOLGING_FSS_URL
-      value: "https://veilarbdialog.dev-fss-pub.nais.io"
+      value: "https://veilarboppfolging.dev-fss-pub.nais.io"
     - name: FSS_PROXY_ENABLED
       value: "true"
   secureLogs:
