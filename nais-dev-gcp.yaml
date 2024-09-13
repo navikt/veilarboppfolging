@@ -80,6 +80,9 @@ spec:
   tokenx:
     enabled: true
   accessPolicy:
+    outbound:
+      external:
+        - host: veilarboppfolging.dev-fss-pub.nais.io
     inbound:
       rules:
         - application: veilarbregistrering
