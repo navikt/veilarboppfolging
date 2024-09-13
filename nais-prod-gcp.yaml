@@ -92,6 +92,9 @@ spec:
         - host: veilarboppfolging.prod-fss-pub.nais.io
     inbound:
       rules:
+        - application: veilarboppfolging
+          namespace: poao
+          cluster: prod-gcp
         - application: veilarbregistrering
           namespace: paw
           cluster: prod-gcp
@@ -106,6 +109,9 @@ spec:
         - application: veilarbperson
           namespace: pto
           cluster: prod-fss
+        - application: veilarbperson
+          namespace: obo
+          cluster: prod-gcp
         - application: veilarbvedtaksstotte
           namespace: pto
           cluster: prod-fss
