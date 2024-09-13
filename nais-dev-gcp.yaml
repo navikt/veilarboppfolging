@@ -46,6 +46,10 @@ spec:
     requests:
       cpu: 500m
       memory: 2Gi
+  observability:
+    autoInstrumentation:
+      enabled: true
+      runtime: java
   env:
     - name: POAO_TILGANG_URL
       value: http://poao-tilgang.poao
