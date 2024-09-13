@@ -69,6 +69,9 @@ spec:
   accessPolicy:
     inbound:
       rules:
+        - application: veilarboppfolging
+          namespace: poao
+          cluster: dev-gcp
         - application: veilarbregistrering
           namespace: paw
           cluster: dev-gcp
