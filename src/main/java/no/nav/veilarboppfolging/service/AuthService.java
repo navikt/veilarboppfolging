@@ -322,7 +322,7 @@ public class AuthService {
     @SneakyThrows
     public void sjekkAtApplikasjonErIAllowList(List<String> allowlist) {
         String appname = hentApplikasjonFraContext();
-        if (allowlist.contains(appname)) {
+        if (allowlist.contains(appname) || appname.equals("veilarboppfolging")) {
             return;
         }
         log.error("Applikasjon {} er ikke allowlist", appname);
