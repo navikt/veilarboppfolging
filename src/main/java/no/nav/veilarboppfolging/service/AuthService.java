@@ -1,7 +1,6 @@
 package no.nav.veilarboppfolging.service;
 
 import com.nimbusds.jwt.JWTClaimsSet;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.audit_log.cef.AuthorizationDecision;
@@ -20,7 +19,6 @@ import no.nav.common.types.identer.*;
 import no.nav.poao_tilgang.client.*;
 import no.nav.veilarboppfolging.config.EnvironmentProperties;
 import no.nav.veilarboppfolging.utils.DownstreamApi;
-import no.nav.veilarboppfolging.utils.auth.UnauthorizedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
