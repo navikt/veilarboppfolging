@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.UserRole;
 import no.nav.common.job.JobRunner;
+import no.nav.veilarboppfolging.ForbiddenException;
+import no.nav.veilarboppfolging.UnauthorizedException;
 import no.nav.veilarboppfolging.service.KafkaRepubliseringService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -36,13 +38,13 @@ public class AdminV2Controller {
 
     private void sjekkTilgangTilAdmin() {
         String subject = authContextHolder.getSubject()
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
+                .orElseThrow(() -> new UnauthorizedException("Fant ikke subject"));
 
         UserRole role = authContextHolder.getRole()
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
+                .orElseThrow(() -> new UnauthorizedException("Fant ikke rolle"));
 
         if (!PTO_ADMIN_SERVICE_USER.equals(subject) || !role.equals(UserRole.SYSTEM)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+            throw new ForbiddenException("Bare Pto-admin har adminrettigheter");
         }
     }
 

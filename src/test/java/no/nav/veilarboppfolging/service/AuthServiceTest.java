@@ -17,6 +17,7 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.common.utils.Credentials;
 import no.nav.poao_tilgang.client.*;
 import no.nav.poao_tilgang.client.api.ApiResult;
+import no.nav.veilarboppfolging.ForbiddenException;
 import no.nav.veilarboppfolging.config.EnvironmentProperties;
 import no.nav.veilarboppfolging.utils.auth.PolicyInputMatcher;
 import org.assertj.core.api.Assertions;
@@ -65,28 +66,6 @@ class AuthServiceTest {
     private AuthService authService;
 
     @Test
-    void skalVereEnAv__skal_sjekke_at_rolle_stemmer() {
-        setupAuthService();
-        when(authContextHolder.requireRole()).thenReturn(UserRole.SYSTEM);
-        assertDoesNotThrow(() -> authService.skalVereEnAv(List.of(UserRole.INTERN, UserRole.SYSTEM)));
-    }
-
-    @Test
-    void skalVereEnAv__skal_feile_hvis_rolle_ikke_() {
-        setupAuthService();
-        when(authContextHolder.requireRole()).thenReturn(UserRole.SYSTEM);
-        assertThrows(ResponseStatusException.class, () -> authService.skalVereEnAv(List.of(UserRole.INTERN)));
-    }
-
-    @Test
-    void skalVereEnAv__skal_feile_hvis_rolle_mangler() {
-        setupAuthService();
-        when(authContextHolder.getRole()).thenReturn(Optional.empty());
-        when(authContextHolder.requireRole()).thenCallRealMethod();
-        assertThrows(IllegalStateException.class, () -> authService.skalVereEnAv(List.of(UserRole.INTERN)));
-    }
-
-    @Test
     void sjekkAtSystembrukerErIAllowedList__skal_ikke_kaste_exception_hvis_allowed() {
         setupAuthService();
         JWTClaimsSet claims = new JWTClaimsSet.Builder()
@@ -109,7 +88,7 @@ class AuthServiceTest {
 
         when(authContextHolder.getIdTokenClaims()).thenReturn(Optional.of(claims));
 
-        assertThrows(ResponseStatusException.class, () -> authService.sjekkAtApplikasjonErIAllowList(List.of("some-id")));
+        assertThrows(ForbiddenException.class, () -> authService.sjekkAtApplikasjonErIAllowList(List.of("some-id")));
     }
 
     @Test
@@ -347,8 +326,7 @@ class AuthServiceTest {
         setupAuthService();
 
         List<String> allowList = List.of(VEILARBAKTIVITET);
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> authService.authorizeRequest(TEST_FNR_2, allowList));
-        Assertions.assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+        assertThrows(ForbiddenException.class, () -> authService.authorizeRequest(TEST_FNR_2, allowList));
     }
 
     @SneakyThrows

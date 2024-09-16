@@ -5,6 +5,7 @@ import lombok.val;
 import no.nav.common.client.aktorregister.IngenGjeldendeIdentException;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.veilarboppfolging.ForbiddenException;
 import no.nav.veilarboppfolging.client.amttiltak.AmtTiltakClient;
 import no.nav.veilarboppfolging.client.digdir_krr.KRRData;
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolgingTilstand;
@@ -305,7 +306,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
     @Test(expected = ResponseStatusException.class)
     public void underOppfolgingNiva3_skalFeileHvisIkkeTilgang() {
-        doThrow(new ResponseStatusException(HttpStatus.UNAUTHORIZED))
+        doThrow(new ForbiddenException("Hei"))
                 .when(authService).sjekkTilgangTilPersonMedNiva3(AKTOR_ID);
 
         oppfolgingService.erUnderOppfolgingNiva3(FNR);

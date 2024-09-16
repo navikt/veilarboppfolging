@@ -6,8 +6,9 @@ import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.server.ResponseStatusException
+import java.lang.RuntimeException
 
-sealed class VeilarboppfolgingException(message: String) : Exception(message)
+sealed class VeilarboppfolgingException(message: String) : RuntimeException(message)
 
 class UnauthorizedException(message: String) : VeilarboppfolgingException(message)
 class ForbiddenException(message: String) : VeilarboppfolgingException(message)
