@@ -6,8 +6,6 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.ForbiddenException;
 import no.nav.veilarboppfolging.UnauthorizedException;
 import no.nav.veilarboppfolging.service.AuthService;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
 
 import jakarta.servlet.http.HttpServletRequest;
 import java.lang.annotation.Annotation;

@@ -6,15 +6,12 @@ import no.nav.veilarboppfolging.BadRequestException;
 import no.nav.veilarboppfolging.client.digdir_krr.KRRData;
 import no.nav.veilarboppfolging.controller.v2.response.ManuellStatusV2Response;
 import no.nav.veilarboppfolging.controller.v2.response.ManuellV2Response;
-import no.nav.veilarboppfolging.client.digdir_krr.DigdirKontaktinfo;
 import no.nav.veilarboppfolging.controller.v3.request.ManuellStatusRequest;
 import no.nav.veilarboppfolging.controller.v3.request.VeilederBegrunnelseRequest;
 import no.nav.veilarboppfolging.repository.enums.KodeverkBruker;
 import no.nav.veilarboppfolging.service.AuthService;
 import no.nav.veilarboppfolging.service.ManuellStatusService;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
