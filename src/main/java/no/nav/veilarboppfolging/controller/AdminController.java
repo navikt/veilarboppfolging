@@ -8,6 +8,8 @@ import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.job.JobRunner;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.NavIdent;
+import no.nav.veilarboppfolging.ForbiddenException;
+import no.nav.veilarboppfolging.UnauthorizedException;
 import no.nav.veilarboppfolging.controller.response.Veilarbportefoljeinfo;
 import no.nav.veilarboppfolging.domain.AvsluttResultat;
 import no.nav.veilarboppfolging.domain.RepubliserOppfolgingsperioderRequest;
@@ -118,13 +120,13 @@ public class AdminController {
 
     private void sjekkTilgangTilAdmin() {
         String subject = authContextHolder.getSubject()
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
+                .orElseThrow(() -> new UnauthorizedException("Fant ingen subject i auth-context"));
 
         UserRole role = authContextHolder.getRole()
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
+                .orElseThrow(() -> new UnauthorizedException("Fant ingen rolle i auth-context"));
 
         if (!PTO_ADMIN_SERVICE_USER.equals(subject) || !role.equals(UserRole.SYSTEM)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+            throw new ForbiddenException("Bare PTO-ADMIN app har tilgang til admin");
         }
     }
 

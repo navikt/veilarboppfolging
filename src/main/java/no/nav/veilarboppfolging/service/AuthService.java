@@ -17,6 +17,9 @@ import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
 import no.nav.common.token_client.client.MachineToMachineTokenClient;
 import no.nav.common.types.identer.*;
 import no.nav.poao_tilgang.client.*;
+import no.nav.veilarboppfolging.BadRequestException;
+import no.nav.veilarboppfolging.ForbiddenException;
+import no.nav.veilarboppfolging.UnauthorizedException;
 import no.nav.veilarboppfolging.config.EnvironmentProperties;
 import no.nav.veilarboppfolging.utils.DownstreamApi;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,23 +69,15 @@ public class AuthService {
         this.poaoTilgangClient = poaoTilgangClient;
     }
 
-    public void skalVereEnAv(List<UserRole> roller) {
-        UserRole loggedInUserRole = authContextHolder.requireRole();
-
-        if (roller.stream().noneMatch(rolle -> rolle.equals(loggedInUserRole))) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, format("Bruker med rolle %s har ikke tilgang", loggedInUserRole));
-        }
-    }
-
     public void skalVereInternBruker() {
         if (!authContextHolder.erInternBruker()) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bruker er ikke en intern bruker");
+            throw new ForbiddenException("Bruker er ikke en intern bruker");
         }
     }
 
     public void skalVereInternEllerSystemBruker() {
         if (!authContextHolder.erInternBruker() && !authContextHolder.erSystemBruker()) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bruker er verken en intern eller system bruker");
+            throw new ForbiddenException("Bruker er verken en intern eller system bruker");
         }
     }
 
@@ -112,13 +107,13 @@ public class AuthService {
 
     public void skalVereSystemBruker() {
         if (!authContextHolder.erSystemBruker()) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bruker er ikke en systembruker");
+            throw new ForbiddenException("Bruker er ikke en systembruker");
         }
     }
 
     public void skalVereSystemBrukerFraAzureAd() {
         if (!erSystemBrukerFraAzureAd()) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bruker er ikke en systembruker fra azureAd");
+            throw new ForbiddenException("Bruker er ikke en systembruker fra azureAd");
         }
     }
 
@@ -189,7 +184,7 @@ public class AuthService {
     public void sjekkLesetilgangMedFnr(Fnr fnr) {
         if (erEksternBruker()) {
             if (!harEksternBrukerTilgang(fnr)) {
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Ekstern bruker har ikke tilgang på andre brukere enn seg selv");
+                throw new ForbiddenException("Ekstern bruker har ikke tilgang på andre brukere enn seg selv");
             }
         } else {
             sjekkLesetilgangMedAktorId(getAktorIdOrThrow(fnr));
@@ -204,7 +199,7 @@ public class AuthService {
     public void sjekkSkriveTilgangMedFnr(Fnr fnr) {
         if (erEksternBruker()) {
             if (!harEksternBrukerTilgang(fnr)) {
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Ekstern bruker har ikke tilgang på andre brukere enn seg selv");
+                throw new ForbiddenException("Ekstern bruker har ikke tilgang på andre brukere enn seg selv");
             }
         } else {
             sjekkSkrivetilgangMedAktorId(getAktorIdOrThrow(fnr));
@@ -217,19 +212,19 @@ public class AuthService {
 
     public void sjekkTilgangTilEnhet(String enhetId) {
         if (!harTilgangTilEnhet(enhetId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+            throw new ForbiddenException("Har ikke tilgang til enhet");
         }
     }
 
     public void sjekkTilgangTilPersonMedNiva3(AktorId aktorId) {
-        String sikkerhetsnivaa = hentSikkerhetsnivaa().orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN));
+        String sikkerhetsnivaa = hentSikkerhetsnivaa().orElseThrow(() -> new UnauthorizedException("Fant ikke sikkerhetsnivå i token"));
         if (!getFnrOrThrow(aktorId).get().equals(hentInnloggetPersonIdent())) {
             log.warn("AktorId fnr mismatch  ");
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "AktorId fnr mismatch");
+            throw new ForbiddenException("AktorId fnr mismatch");
         }
         if (!(sikkerhetsnivaa.equals("Level4") || sikkerhetsnivaa.equals("Level3"))) {
             log.warn("Bruker må ha nivå 3 eller 4");
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bruker må ha nivå 3 eller 4");
+            throw new ForbiddenException("Bruker må ha nivå 3 eller 4");
         }
     }
 
@@ -237,7 +232,7 @@ public class AuthService {
     //  En alternativ løsning er å ha egne endepunkter for de forskjellige rollene
     public Fnr hentIdentForEksternEllerIntern(Fnr queryParamFnr) {
         if (erSystemBruker()) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+            throw new ForbiddenException("Må være enten ekstern eller intern bruker (ikke system)");
         }
 
         return hentIdentFraQueryParamEllerToken(queryParamFnr);
@@ -254,11 +249,11 @@ public class AuthService {
                 fnr = queryParamFnr;
                 break;
             default:
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+                throw new ForbiddenException("Må være intern eller ekstern eller system");
         }
 
         if (fnr == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mangler fnr");
+            throw new BadRequestException("Fnr må enten være i queryparam eller i token");
         }
 
         return fnr;
@@ -281,7 +276,7 @@ public class AuthService {
     }
 
     public String getInnloggetBrukerToken() {
-        return authContextHolder.getIdTokenString().orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Fant ikke token for innlogget bruker"));
+        return authContextHolder.getIdTokenString().orElseThrow(() -> new UnauthorizedException("Fant ikke token for innlogget bruker"));
     }
 
     public String getAadOboTokenForTjeneste(DownstreamApi api) {
@@ -303,12 +298,12 @@ public class AuthService {
     // NAV ident, fnr eller annen ID
     public String getInnloggetBrukerIdent() {
         return authContextHolder.getUid()
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User ident is missing"));
+                .orElseThrow(() -> new UnauthorizedException("User ident is missing"));
     }
 
     public String getInnloggetVeilederIdent() {
         if (!erInternBruker()) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+            throw new UnauthorizedException("Må være intern bruker");
         }
         return getInnloggetBrukerIdent();
     }
@@ -324,7 +319,7 @@ public class AuthService {
             return;
         }
         log.error("Applikasjon {} er ikke allowlist", appname);
-        throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        throw new ForbiddenException("Applikasjon " + appname + " er ikke allowlist");
     }
 
     public static boolean isAzure(Optional<JWTClaimsSet> maybeClaims) {
@@ -353,7 +348,7 @@ public class AuthService {
         var idToken = getInnloggetBrukerToken();
 
         if (idToken == null || idToken.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+            throw new UnauthorizedException("idToken is missing");
         }
 
         if (ident instanceof Fnr fnr) {
@@ -391,7 +386,7 @@ public class AuthService {
                     decision.isPermit() ? AuthorizationDecision.PERMIT : AuthorizationDecision.DENY
             );
             if (decision.isDeny()) {
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+                throw new ForbiddenException("NavAnsattTilgangTilEksternBrukerPolicyInput fikk deny");
             }
         } else if (erEksternBruker() && sikkerhetsnivaa.isPresent() && sikkerhetsnivaa.get().equals("Level4")) {
             Decision decision = poaoTilgangClient.evaluatePolicy(new EksternBrukerTilgangTilEksternBrukerPolicyInput(
@@ -404,13 +399,13 @@ public class AuthService {
                     decision.isPermit() ? AuthorizationDecision.PERMIT : AuthorizationDecision.DENY
             );
             if (decision.isDeny()) {
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+                throw new ForbiddenException("EksternBrukerTilgangTilEksternBrukerPolicyInput fikk deny");
             }
 
         } else if (erSystemBruker()) {
             return;
         } else {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+            throw new ForbiddenException("Må være systembruker, internbruker eller eksternbruker med sikkerhetsnivå 4");
         }
     }
 
@@ -460,7 +455,7 @@ public class AuthService {
         return authContextHolder.getIdTokenClaims()
                 .flatMap(claims -> getStringClaimOrEmpty(claims, "oid"))
                 .map(UUID::fromString)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Fant ikke oid for innlogget veileder"));
+                .orElseThrow(() -> new ForbiddenException("Fant ikke oid for innlogget veileder"));
     }
 
     private Optional<String> hentSikkerhetsnivaa() {
@@ -502,7 +497,7 @@ public class AuthService {
         } else if (erSystemBrukerFraAzureAd()) {
             sjekkAtApplikasjonErIAllowList(allowlist);
         } else if (erEksternBruker()) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Eksternbruker ikke tillatt");
+            throw new ForbiddenException("Eksternbruker ikke tillatt");
         }
     }
 }
