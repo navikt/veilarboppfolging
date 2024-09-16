@@ -2,6 +2,7 @@ package no.nav.veilarboppfolging.controller.v2;
 
 import lombok.RequiredArgsConstructor;
 import no.nav.common.types.identer.Fnr;
+import no.nav.veilarboppfolging.BadRequestException;
 import no.nav.veilarboppfolging.client.digdir_krr.KRRData;
 import no.nav.veilarboppfolging.controller.request.VeilederBegrunnelseDTO;
 import no.nav.veilarboppfolging.controller.v2.response.ManuellStatusV2Response;
@@ -98,7 +99,7 @@ public class ManuellStatusV2Controller {
 
         // Påkrevd for intern bruker
         if (dto == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+            throw new BadRequestException("VeilederBegrunnelseDTO er påkrevd når man skal sette bruker til digital");
         }
 
         manuellStatusService.oppdaterManuellStatus(

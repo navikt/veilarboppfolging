@@ -3,6 +3,7 @@ package no.nav.veilarboppfolging.controller.v3;
 import lombok.RequiredArgsConstructor;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.veilarboppfolging.BadRequestException;
 import no.nav.veilarboppfolging.controller.response.*;
 import no.nav.veilarboppfolging.controller.v2.response.UnderOppfolgingV2Response;
 import no.nav.veilarboppfolging.controller.v3.request.*;
@@ -105,7 +106,7 @@ public class OppfolgingV3Controller {
 
         // Påkrevd for intern bruker
         if (veilederBegrunnelseRequest == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+            throw new BadRequestException("veilederBegrunnelseRequest er påkrevd for interne brukere");
         }
 
         manuellStatusService.oppdaterManuellStatus(

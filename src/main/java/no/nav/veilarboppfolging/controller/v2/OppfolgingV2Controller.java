@@ -3,6 +3,8 @@ package no.nav.veilarboppfolging.controller.v2;
 import lombok.RequiredArgsConstructor;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.veilarboppfolging.BadRequestException;
+import no.nav.veilarboppfolging.NotFoundException;
 import no.nav.veilarboppfolging.controller.response.AvslutningStatus;
 import no.nav.veilarboppfolging.controller.response.OppfolgingPeriodeDTO;
 import no.nav.veilarboppfolging.controller.response.OppfolgingPeriodeMinimalDTO;
@@ -48,7 +50,7 @@ public class OppfolgingV2Controller {
     @GetMapping
     public UnderOppfolgingV2Response underOppfolging() {
         if (!authService.erEksternBruker()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Som internbruker/systembruker er aktorId eller fnr påkrevd");
+            throw new BadRequestException("Som internbruker/systembruker er aktorId eller fnr påkrevd");
         }
         Fnr fnr = Fnr.of(authService.getInnloggetBrukerIdent());
         return new UnderOppfolgingV2Response(oppfolgingService.erUnderOppfolging(fnr));
@@ -72,7 +74,7 @@ public class OppfolgingV2Controller {
         var maybePeriode = oppfolgingService.hentOppfolgingsperiode(uuid);
 
         if (maybePeriode.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+            throw new NotFoundException("Fant ikke oppfolgingsperiode");
         }
 
         var periode = maybePeriode.get();
