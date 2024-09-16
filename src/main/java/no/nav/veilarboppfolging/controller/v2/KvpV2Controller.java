@@ -25,15 +25,9 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/api/v2/kvp")
 public class KvpV2Controller {
-
-    private final List<String> allowedUsers = List.of("srvveilarbdialog", "srvveilarbaktivitet");
     private final List<String> allowedApps = List.of("veilarbdialog", "veilarbaktivitet");
-
     private final KvpService kvpService;
-
     private final AuthService authService;
-
-    private final AuthContextHolder authContextHolder;
 
     @GetMapping
     @Operation(responses = {
@@ -44,30 +38,10 @@ public class KvpV2Controller {
     public ResponseEntity<KvpDTO> getKvpStatus(@RequestParam("aktorId") AktorId aktorId) {
         // KVP information is only available to certain system users. We trust these users here,
         // so that we can avoid doing an ABAC query on each request.
-        if (!isRequestAuthorized(aktorId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
-        }
+        authService.authorizeRequest(aktorId, allowedApps);
 
         return kvpService.hentGjeldendeKvpPeriode(aktorId)
                 .map(periode -> ResponseEntity.ok(DtoMappers.kvpToDTO(periode)))
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NO_CONTENT).build());
     }
-
-    private boolean isRequestAuthorized(AktorId aktorId) {
-        String username = authContextHolder.getSubject().orElse("").toLowerCase();
-        String appName = authService.hentApplikasjonFraContext();
-        if (authService.erSystemBrukerFraAzureAd()) {
-            return allowedApps.contains(appName);
-        } else if (authService.erSystemBruker()) {
-            return allowedUsers.contains(username);
-        } else if (authService.erInternBruker()) {
-            return allowedApps.contains(appName);
-        } else if (authService.erEksternBruker()) {
-            return allowedApps.contains(appName)
-                && authService.harEksternBrukerTilgang(authService.getFnrOrThrow(aktorId));
-        } else {
-            return false;
-        }
-    }
-
 }
