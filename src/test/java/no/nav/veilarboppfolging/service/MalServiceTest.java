@@ -2,6 +2,7 @@ package no.nav.veilarboppfolging.service;
 
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.veilarboppfolging.ForbiddenException;
 import no.nav.veilarboppfolging.repository.KvpRepository;
 import no.nav.veilarboppfolging.repository.MaalRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
@@ -15,7 +16,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.transaction.support.TransactionTemplate;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -84,7 +84,7 @@ public class MalServiceTest {
         }).when(transactor).executeWithoutResult(any(Consumer.class));
     }
 
-    @Test(expected = ResponseStatusException.class)
+    @Test(expected = ForbiddenException.class)
     public void oppdaterMal_veilederUtenTilgang_KvpBruker_kasterException() {
         when(kvpRepositoryMock.gjeldendeKvp(any())).thenReturn(KVP_ID);
         when(kvpRepositoryMock.hentKvpPeriode(anyLong())).thenReturn(Optional.of(aktivKvp()));
