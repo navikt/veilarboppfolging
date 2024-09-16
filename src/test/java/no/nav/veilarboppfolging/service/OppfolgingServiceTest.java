@@ -127,7 +127,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         verify(kafkaProducerService).publiserEndringPaManuellStatus(AKTOR_ID, false);
     }
 
-    @Test(expected = ResponseStatusException.class)
+    @Test(expected = ForbiddenException.class)
     @SneakyThrows
     public void avslutt_oppfolging_uten_skrivetilgang_til_bruker() {
         doCallRealMethod().when(authService).sjekkTilgangTilEnhet(any());
@@ -303,7 +303,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         assertTrue(avslutningStatusData.harYtelser);
     }
 
-    @Test(expected = ResponseStatusException.class)
+    @Test(expected = ForbiddenException.class)
     public void underOppfolgingNiva3_skalFeileHvisIkkeTilgang() {
         doThrow(new ForbiddenException("Hei"))
                 .when(authService).sjekkTilgangTilPersonMedNiva3(AKTOR_ID);
