@@ -13,18 +13,22 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpStatus;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+// TODO: Må ha som mål å skrive om testkoden i appen til å faktisk gjøre HTTP-kall og så endre disse testcasene
 @WebMvcTest(controllers = KvpV2Controller.class)
 public class KvpV2ControllerTest {
 
@@ -49,27 +53,18 @@ public class KvpV2ControllerTest {
 
     @Test
     public void user_missing() throws Exception {
-        when(authContextHolder.getSubject()).thenReturn(Optional.empty());
+        doThrow(new ResponseStatusException(HttpStatus.UNAUTHORIZED)).when(authService).authorizeRequest(any(), any());
 
         mockMvc.perform(get("/api/v2/kvp").queryParam("aktorId", AKTOR_ID.get()))
-                .andExpect(status().is(403));
+                .andExpect(status().is(401));
     }
 
     @Test
     public void unauthorized_user_() throws Exception {
-        when(authContextHolder.getSubject()).thenReturn(Optional.of("not_authorized_user"));
+        doThrow(new ResponseStatusException(HttpStatus.UNAUTHORIZED)).when(authService).authorizeRequest(any(), any());
 
         mockMvc.perform(get("/api/v2/kvp").queryParam("aktorId", AKTOR_ID.get()))
-                .andExpect(status().is(403));
-    }
-
-    @Test
-    public void not_system_user() throws Exception {
-        when(authContextHolder.getSubject()).thenReturn(Optional.of("srvveilarbdialog"));
-        when(authService.erSystemBruker()).thenReturn(false);
-
-        mockMvc.perform(get("/api/v2/kvp").queryParam("aktorId", AKTOR_ID.get()))
-                .andExpect(status().is(403));
+                .andExpect(status().is(401));
     }
 
     @Test
