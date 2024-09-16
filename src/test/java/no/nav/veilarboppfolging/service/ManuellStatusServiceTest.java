@@ -2,6 +2,8 @@ package no.nav.veilarboppfolging.service;
 
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.veilarboppfolging.ForbiddenException;
+import no.nav.veilarboppfolging.UnauthorizedException;
 import no.nav.veilarboppfolging.client.digdir_krr.KRRData;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 import no.nav.veilarboppfolging.client.digdir_krr.DigdirClient;
@@ -108,14 +110,14 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
         verify(kafkaProducerService, times(1)).publiserEndringPaManuellStatus(AKTOR_ID, true);
     }
 
-    @Test(expected = ResponseStatusException.class)
+    @Test(expected = ForbiddenException.class)
     public void oppdaterManuellStatus_kaster_exception_dersom_ikke_tilgang_til_enhet() {
         when(authService.harTilgangTilEnhet(ENHET)).thenReturn(false);
         manuellStatusService.oppdaterManuellStatus(FNR, true, BEGRUNNELSE, NAV, VEILEDER);
     }
 
 
-    @Test(expected = ResponseStatusException.class)
+    @Test(expected = ForbiddenException.class)
     public void settDigitalBruker_kaster_exception_dersom_ikke_tilgang_til_enhet() {
         when(authService.harTilgangTilEnhet(any())).thenReturn(false);
         manuellStatusService.settDigitalBruker(FNR);
