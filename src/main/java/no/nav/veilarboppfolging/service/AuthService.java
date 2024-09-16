@@ -355,7 +355,7 @@ public class AuthService {
         var idToken = getInnloggetBrukerToken();
 
         if (idToken == null || idToken.isEmpty()) {
-            throw new UnauthorizedException("Missing token");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         }
 
         if (ident instanceof Fnr fnr) {
