@@ -3,6 +3,7 @@ package no.nav.veilarboppfolging.controller.v2;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.json.JsonUtils;
 import no.nav.common.types.identer.AktorId;
+import no.nav.veilarboppfolging.UnauthorizedException;
 import no.nav.veilarboppfolging.controller.response.KvpDTO;
 import no.nav.veilarboppfolging.repository.KvpRepository;
 import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity;
@@ -53,7 +54,7 @@ public class KvpV2ControllerTest {
 
     @Test
     public void user_missing() throws Exception {
-        doThrow(new ResponseStatusException(HttpStatus.UNAUTHORIZED)).when(authService).authorizeRequest(any(), any());
+        doThrow(new UnauthorizedException("User missing")).when(authService).authorizeRequest(any(), any());
 
         mockMvc.perform(get("/api/v2/kvp").queryParam("aktorId", AKTOR_ID.get()))
                 .andExpect(status().is(401));
@@ -61,7 +62,7 @@ public class KvpV2ControllerTest {
 
     @Test
     public void unauthorized_user_() throws Exception {
-        doThrow(new ResponseStatusException(HttpStatus.UNAUTHORIZED)).when(authService).authorizeRequest(any(), any());
+        doThrow(new UnauthorizedException("LOL")).when(authService).authorizeRequest(any(), any());
 
         mockMvc.perform(get("/api/v2/kvp").queryParam("aktorId", AKTOR_ID.get()))
                 .andExpect(status().is(401));

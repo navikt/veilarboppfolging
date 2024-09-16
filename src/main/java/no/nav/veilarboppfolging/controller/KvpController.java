@@ -7,6 +7,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.types.identer.AktorId;
+import no.nav.veilarboppfolging.InternalServerError;
+import no.nav.veilarboppfolging.UnauthorizedException;
 import no.nav.veilarboppfolging.controller.response.KvpDTO;
 import no.nav.veilarboppfolging.repository.KvpRepository;
 import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity;
@@ -28,12 +30,9 @@ import java.util.Optional;
 @RequestMapping("/api/kvp")
 public class KvpController {
 
-    private final List<String> allowedUsers = List.of("srvveilarbdialog", "srvveilarbaktivitet");
-
+    private final List<String> allowedApps = List.of("veilarbdialog", "veilarbaktivitet");
     private final KvpRepository repository;
-
     private final AuthService authService;
-
     private final AuthContextHolder authContextHolder;
 
 
@@ -50,9 +49,8 @@ public class KvpController {
     public ResponseEntity<KvpDTO> getKvpStatus(@PathVariable("aktorId") AktorId aktorId) {
         // KVP information is only available to certain system users. We trust these users here,
         // so that we can avoid doing an ABAC query on each request.
-        if (!isRequestAuthorized()) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
-        }
+        authService.skalVereSystemBruker();
+        authService.sjekkAtApplikasjonErIAllowList(allowedApps);
 
         // TODO: Do this inside a service
 
@@ -66,14 +64,9 @@ public class KvpController {
         Optional<KvpPeriodeEntity> maybeKvpPeriode = repository.hentKvpPeriode(kvpId);
 
         if (maybeKvpPeriode.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new InternalServerError("Fant ikke kvp periode (burde ikke skje)");
         }
 
         return ResponseEntity.ok(DtoMappers.kvpToDTO(maybeKvpPeriode.get()));
-    }
-
-    private boolean isRequestAuthorized() {
-        String username = authContextHolder.getSubject().orElse("").toLowerCase();
-        return authService.erSystemBruker() && allowedUsers.contains(username);
     }
 }

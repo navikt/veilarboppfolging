@@ -2,6 +2,7 @@ package no.nav.veilarboppfolging.controller.v3;
 
 import lombok.RequiredArgsConstructor;
 import no.nav.common.types.identer.Fnr;
+import no.nav.veilarboppfolging.BadRequestException;
 import no.nav.veilarboppfolging.client.digdir_krr.KRRData;
 import no.nav.veilarboppfolging.controller.v2.response.ManuellStatusV2Response;
 import no.nav.veilarboppfolging.controller.v2.response.ManuellV2Response;
@@ -94,7 +95,7 @@ public class ManuellStatusV3Controller {
 
 		// Påkrevd for intern bruker
 		if (veilederBegrunnelseRequest == null) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+			throw new BadRequestException("veilederBegrunnelseRequest kan ikke være null");
 		}
 
 		manuellStatusService.oppdaterManuellStatus(

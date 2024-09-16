@@ -1,6 +1,7 @@
 package no.nav.veilarboppfolging.utils.auth;
 
 import lombok.extern.slf4j.Slf4j;
+import no.nav.veilarboppfolging.InternalServerError;
 import no.nav.veilarboppfolging.service.AuthService;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -31,7 +32,7 @@ public class AuthorizationInterceptor implements HandlerInterceptor {
                     return true;
                 }
                 log.error("Failed to process annotation", e);
-                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
+                throw new InternalServerError("Failed to process annotation");
             }
         }
         return true;
