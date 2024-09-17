@@ -14,6 +14,7 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.poao_tilgang.client.Decision;
 import no.nav.poao_tilgang.client.PoaoTilgangClient;
 import no.nav.poao_tilgang.client.api.ApiResult;
+import no.nav.veilarboppfolging.ForbiddenException;
 import no.nav.veilarboppfolging.controller.v2.OppfolgingV2Controller;
 import no.nav.veilarboppfolging.service.AuthService;
 import org.assertj.core.api.Assertions;
@@ -70,8 +71,7 @@ class AuthorizationAnnotationHandlerTest {
         Method method = OppfolgingV2Controller.class.getMethod("hentGjeldendePeriode", Fnr.class);
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setParameter("fnr", TEST_FNR_2.get());
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> annotationHandler.doAuthorizationCheckIfTagged(method, request));
-        Assertions.assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+        assertThrows(ForbiddenException.class, () -> annotationHandler.doAuthorizationCheckIfTagged(method, request));
     }
 
     @SneakyThrows
@@ -92,8 +92,7 @@ class AuthorizationAnnotationHandlerTest {
         MockHttpServletRequest request = new MockHttpServletRequest();
         String otherFnr = "11120231920";
         request.setParameter("fnr", otherFnr);
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> annotationHandler.doAuthorizationCheckIfTagged(method, request));
-        Assertions.assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+        assertThrows(ForbiddenException.class, () -> annotationHandler.doAuthorizationCheckIfTagged(method, request));
     }
 
     @SneakyThrows
@@ -115,8 +114,7 @@ class AuthorizationAnnotationHandlerTest {
         Method method = OppfolgingV2Controller.class.getMethod("hentOppfolgingsperioder", AktorId.class);
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setParameter("aktorId", TEST_AKTOR_ID_3.get());
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> annotationHandler.doAuthorizationCheckIfTagged(method, request));
-        Assertions.assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+        assertThrows(ForbiddenException.class, () -> annotationHandler.doAuthorizationCheckIfTagged(method, request));
     }
 
     @SneakyThrows
