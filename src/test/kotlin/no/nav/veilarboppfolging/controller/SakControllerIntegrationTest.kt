@@ -2,6 +2,7 @@ package no.nav.veilarboppfolging.controller
 
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
+import no.nav.veilarboppfolging.BadRequestException
 import no.nav.veilarboppfolging.IntegrationTest
 import no.nav.veilarboppfolging.controller.response.OppfolgingPeriodeDTO
 import org.assertj.core.api.Assertions.*
@@ -85,9 +86,9 @@ class SakControllerIntegrationTest: IntegrationTest() {
     fun `når man  henter sak for oppfølgingsperiode som ikke eksisterer skal man få BadRequestException`() {
         val oppfølgingsUuuidSomIkkeEksisterer = UUID.randomUUID()
 
-        assertThatExceptionOfType(ResponseStatusException::class.java).isThrownBy {
+        assertThatExceptionOfType(BadRequestException::class.java).isThrownBy {
             sakController.opprettEllerHentSak(oppfølgingsUuuidSomIkkeEksisterer)
-        }.hasFieldOrPropertyWithValue("status", HttpStatus.BAD_REQUEST)
+        }
 
         assertThat(sakRepository.hentSaker(oppfølgingsUuuidSomIkkeEksisterer)).isEmpty()
     }
