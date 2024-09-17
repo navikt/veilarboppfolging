@@ -6,7 +6,6 @@ import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.server.ResponseStatusException
-import java.lang.RuntimeException
 
 sealed class VeilarboppfolgingException(message: String) : RuntimeException(message)
 
@@ -31,7 +30,7 @@ class DefaultExceptionHandler {
 
     @ExceptionHandler(value = [VeilarboppfolgingException::class])
     fun onUnauthorized(ex: VeilarboppfolgingException, response: HttpServletResponse) {
-        logger.error("Error", ex)
+        logger.error("Error: ${ex.message}", ex)
         when(ex) {
             is BadRequestException -> response.sendError(HttpStatus.BAD_REQUEST.value(), ex.message)
             is ForbiddenException -> response.sendError(HttpStatus.FORBIDDEN.value(), ex.message)
