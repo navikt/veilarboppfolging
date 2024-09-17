@@ -2,6 +2,7 @@ package no.nav.veilarboppfolging.service;
 
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.veilarboppfolging.ForbiddenException;
 import no.nav.veilarboppfolging.repository.KvpRepository;
 import no.nav.veilarboppfolging.repository.MaalRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
@@ -11,10 +12,8 @@ import no.nav.veilarboppfolging.repository.entity.OppfolgingEntity;
 import no.nav.veilarboppfolging.utils.KvpUtils;
 import no.nav.veilarboppfolging.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -123,7 +122,7 @@ public class MaalService {
 
     private void sjekkKvpEnhetTilgang(KvpPeriodeEntity kvp) {
         if (!authService.harTilgangTilEnhetMedSperre(kvp.getEnhet())) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+            throw new ForbiddenException("Har ikke skrivetilgang til enhet med sperre");
         }
     }
 

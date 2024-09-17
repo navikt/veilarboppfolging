@@ -3,9 +3,9 @@ package no.nav.veilarboppfolging.utils.auth;
 import lombok.RequiredArgsConstructor;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.veilarboppfolging.ForbiddenException;
+import no.nav.veilarboppfolging.UnauthorizedException;
 import no.nav.veilarboppfolging.service.AuthService;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
 
 import jakarta.servlet.http.HttpServletRequest;
 import java.lang.annotation.Annotation;
@@ -54,7 +54,7 @@ public class AuthorizationAnnotationHandler {
         } else if (authService.erSystemBrukerFraAzureAd()) {
             authService.sjekkAtApplikasjonErIAllowList(allowlist);
         } else if (authService.erEksternBruker()) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Eksternbruker ikke tillatt");
+            throw new ForbiddenException("Eksternbruker ikke tillatt");
         }
     }
 

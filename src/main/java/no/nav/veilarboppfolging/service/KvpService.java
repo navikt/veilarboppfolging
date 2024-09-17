@@ -6,6 +6,8 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
+import no.nav.veilarboppfolging.BadRequestException;
+import no.nav.veilarboppfolging.ForbiddenException;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
 import no.nav.veilarboppfolging.kafka.KvpPeriode;
@@ -14,10 +16,8 @@ import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
 import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingEntity;
 import no.nav.veilarboppfolging.repository.enums.KodeverkBruker;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.time.ZonedDateTime;
 import java.util.Optional;
@@ -56,7 +56,7 @@ public class KvpService {
         Optional<OppfolgingEntity> maybeOppfolging = oppfolgingsStatusRepository.hentOppfolging(aktorId);
 
         if (maybeOppfolging.isEmpty() || !maybeOppfolging.get().isUnderOppfolging()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+            throw new BadRequestException("Bruker må være under oppfølging for å starte KVP");
         }
 
         String enhet = veilarbarenaClient.hentOppfolgingsbruker(fnr)
@@ -64,12 +64,12 @@ public class KvpService {
 
         if (!authService.harTilgangTilEnhet(enhet)) {
             log.warn(format("Ingen tilgang til enhet '%s'", enhet));
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+            throw new ForbiddenException("Har ikke tilgang til enhet");
         }
 
         if (maybeOppfolging.get().getGjeldendeKvpId() != 0) {
             secureLog.warn(format("Aktøren er allerede under en KVP-periode. AktorId: %s", aktorId));
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+            throw new BadRequestException("Aktøren er allerede under en KVP-periode");
         }
 
         String veilederId = authService.getInnloggetVeilederIdent();
@@ -98,7 +98,7 @@ public class KvpService {
                 .map(VeilarbArenaOppfolging::getNav_kontor).orElse(null);
 
         if (!authService.harTilgangTilEnhet(enhet)) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+            throw new ForbiddenException("Har ikke tilgang på enhet");
         }
 
         String veilederId = authService.getInnloggetVeilederIdent();
@@ -124,7 +124,7 @@ public class KvpService {
         long gjeldendeKvpId = maybeOppfolging.map(OppfolgingEntity::getGjeldendeKvpId).orElse(0L);
 
         if (gjeldendeKvpId == 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+            throw new BadRequestException("Har ikke aktiv kvp og kan derfor ikke stoppes");
         }
 
         transactor.executeWithoutResult((ignored) -> {

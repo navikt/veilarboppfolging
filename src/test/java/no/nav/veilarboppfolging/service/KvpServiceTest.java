@@ -5,6 +5,8 @@ import no.nav.common.auth.context.UserRole;
 import no.nav.common.test.auth.AuthTestUtils;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.veilarboppfolging.BadRequestException;
+import no.nav.veilarboppfolging.ForbiddenException;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
 import no.nav.veilarboppfolging.kafka.KvpPeriode;
@@ -28,6 +30,7 @@ import java.util.function.Consumer;
 
 import static no.nav.veilarboppfolging.repository.enums.KodeverkBruker.NAV;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -89,8 +92,8 @@ public class KvpServiceTest {
 
         try {
             kvpService.startKvp(FNR, START_BEGRUNNELSE);
-        } catch (ResponseStatusException e) {
-            assertEquals(HttpStatus.BAD_REQUEST, e.getStatusCode());
+        } catch (Exception e) {
+            assertTrue(e instanceof BadRequestException);
         }
     }
 
@@ -100,8 +103,8 @@ public class KvpServiceTest {
 
         try {
             kvpService.startKvp(FNR, START_BEGRUNNELSE);
-        } catch (ResponseStatusException e) {
-            assertEquals(HttpStatus.BAD_REQUEST, e.getStatusCode());
+        } catch (Exception e) {
+            assertTrue(e instanceof BadRequestException);
         }
     }
 
@@ -111,7 +114,7 @@ public class KvpServiceTest {
         verify(kvpRepositoryMock, times(1)).startKvp(eq(AKTOR_ID), eq(ENHET), eq(VEILEDER), eq(START_BEGRUNNELSE), any());
     }
 
-    @Test(expected = ResponseStatusException.class)
+    @Test(expected = BadRequestException.class)
     public void startKvp_feiler_dersom_bruker_allerede_er_under_kvp() {
 
         when(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID)).thenReturn(Optional.of(new OppfolgingEntity().setUnderOppfolging(true).setGjeldendeKvpId(2)));
@@ -151,8 +154,8 @@ public class KvpServiceTest {
     public void stopKvp_UtenAktivPeriode_feiler() {
         try {
             kvpService.stopKvp(FNR, STOP_BEGRUNNELSE);
-        } catch(ResponseStatusException e){
-            assertEquals(HttpStatus.BAD_REQUEST, e.getStatusCode());
+        } catch(Exception e){
+            assertTrue(e instanceof BadRequestException);
         }
     }
 
@@ -162,8 +165,8 @@ public class KvpServiceTest {
 
         try {
             kvpService.startKvp(FNR, START_BEGRUNNELSE);
-        } catch(ResponseStatusException e){
-            assertEquals(HttpStatus.UNAUTHORIZED, e.getStatusCode());
+        } catch(Exception e){
+            assertTrue(e instanceof ForbiddenException);
         }
     }
 
@@ -173,8 +176,8 @@ public class KvpServiceTest {
 
         try {
             kvpService.stopKvp(FNR, STOP_BEGRUNNELSE);
-        } catch(ResponseStatusException e){
-            assertEquals(HttpStatus.UNAUTHORIZED, e.getStatusCode());
+        } catch(Exception e){
+            assertTrue(e instanceof ForbiddenException);
         }
     }
 

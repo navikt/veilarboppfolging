@@ -2,17 +2,15 @@ package no.nav.veilarboppfolging.controller.v2;
 
 import lombok.RequiredArgsConstructor;
 import no.nav.common.types.identer.Fnr;
+import no.nav.veilarboppfolging.BadRequestException;
 import no.nav.veilarboppfolging.client.digdir_krr.KRRData;
 import no.nav.veilarboppfolging.controller.request.VeilederBegrunnelseDTO;
 import no.nav.veilarboppfolging.controller.v2.response.ManuellStatusV2Response;
 import no.nav.veilarboppfolging.controller.v2.response.ManuellV2Response;
-import no.nav.veilarboppfolging.client.digdir_krr.DigdirKontaktinfo;
 import no.nav.veilarboppfolging.repository.enums.KodeverkBruker;
 import no.nav.veilarboppfolging.service.AuthService;
 import no.nav.veilarboppfolging.service.ManuellStatusService;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -98,7 +96,7 @@ public class ManuellStatusV2Controller {
 
         // Påkrevd for intern bruker
         if (dto == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+            throw new BadRequestException("VeilederBegrunnelseDTO er påkrevd når man skal sette bruker til digital");
         }
 
         manuellStatusService.oppdaterManuellStatus(

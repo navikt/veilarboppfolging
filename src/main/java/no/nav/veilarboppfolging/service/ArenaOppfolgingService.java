@@ -7,6 +7,7 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe;
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe;
+import no.nav.veilarboppfolging.NotFoundException;
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolgingTilstand;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
@@ -17,9 +18,7 @@ import no.nav.veilarboppfolging.repository.entity.OppfolgingEntity;
 import no.nav.veilarboppfolging.utils.ArenaUtils;
 import no.nav.veilarboppfolging.utils.EnumUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
 
@@ -107,7 +106,7 @@ public class ArenaOppfolgingService {
     public OppfolgingEnhetMedVeilederResponse getOppfolginsstatus(Fnr fnr) {
 
         VeilarbArenaOppfolging veilarbArenaOppfolging = veilarbarenaClient.hentOppfolgingsbruker(fnr)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Bruker ikke funnet"));
+                .orElseThrow(() -> new NotFoundException("Bruker ikke funnet"));
 
         OppfolgingEnhetMedVeilederResponse oppfolgingEnhetMedVeileder = new OppfolgingEnhetMedVeilederResponse()
                 .setServicegruppe(veilarbArenaOppfolging.getKvalifiseringsgruppekode())

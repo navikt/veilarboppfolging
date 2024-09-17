@@ -8,6 +8,7 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt.Ytelseskontrakt;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.HentYtelseskontraktListeRequest;
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.HentYtelseskontraktListeResponse;
+import no.nav.veilarboppfolging.ForbiddenException;
 import no.nav.veilarboppfolging.client.amttiltak.AmtTiltakClient;
 import no.nav.veilarboppfolging.client.digdir_krr.KRRData;
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolgingTilstand;
@@ -32,9 +33,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.springframework.http.HttpStatus;
 import org.springframework.transaction.support.TransactionTemplate;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -60,8 +59,8 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
     private AuthService authService = mock(AuthService.class);
     private KafkaProducerService kafkaProducerService = mock(KafkaProducerService.class);
-    private YtelseskontraktClient ytelseskontraktClient = mock(YtelseskontraktClient.class);
     private ArenaOppfolgingService arenaOppfolgingService = mock(ArenaOppfolgingService.class);
+    private YtelseskontraktClient ytelseskontraktClient = mock(YtelseskontraktClient.class);
     private KvpService kvpService = mock(KvpService.class);
     private KvpRepository kvpRepository = mock(KvpRepository.class);
     private MetricsService metricsService = mock(MetricsService.class);
@@ -91,7 +90,8 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
                 kvpRepository,
                 null,
                 null,
-                 transactor);
+                 transactor
+                );
 
 
         gittArenaOppfolgingStatus("", "");
@@ -137,7 +137,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         verify(kafkaProducerService).publiserEndringPaManuellStatus(AKTOR_ID, false);
     }
 
-    @Test(expected = ResponseStatusException.class)
+    @Test(expected = ForbiddenException.class)
     @SneakyThrows
     public void avslutt_oppfolging_uten_skrivetilgang_til_bruker() {
         doCallRealMethod().when(authService).sjekkTilgangTilEnhet(any());
@@ -267,7 +267,6 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     @Test
     public void kanIkkeAvslutteNarManIkkeErUnderOppfolging() {
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
-        gittYtelserMedStatus();
 
         AvslutningStatusData avslutningStatusData = oppfolgingService.hentAvslutningStatus(FNR);
 
@@ -280,7 +279,6 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         assertUnderOppfolgingLagret(AKTOR_ID);
 
         gittArenaOppfolgingStatus("ARBS", null);
-        gittYtelserMedStatus();
 
         AvslutningStatusData avslutningStatusData = oppfolgingService.hentAvslutningStatus(FNR);
 
@@ -315,10 +313,12 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         assertTrue(avslutningStatusData.harYtelser);
     }
 
-    @Test(expected = ResponseStatusException.class)
+    @Test(expected = ForbiddenException.class)
     public void underOppfolgingNiva3_skalFeileHvisIkkeTilgang() {
-        doThrow(new ResponseStatusException(HttpStatus.UNAUTHORIZED))
+        doThrow(new ForbiddenException("Hei"))
                 .when(authService).sjekkTilgangTilPersonMedNiva3(AKTOR_ID);
+
+        gittYtelserMedStatus();
 
         oppfolgingService.erUnderOppfolgingNiva3(FNR);
     }
@@ -398,6 +398,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
         when(manuellStatusService.hentDigdirKontaktinfo(FNR)).thenReturn(kontaktinfo);
     }
+
 
     private void gittYtelserMedStatus(String... statuser) {
         HentYtelseskontraktListeRequest request = new HentYtelseskontraktListeRequest();

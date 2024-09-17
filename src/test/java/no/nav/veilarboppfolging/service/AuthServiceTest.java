@@ -17,6 +17,7 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.common.utils.Credentials;
 import no.nav.poao_tilgang.client.*;
 import no.nav.poao_tilgang.client.api.ApiResult;
+import no.nav.veilarboppfolging.ForbiddenException;
 import no.nav.veilarboppfolging.config.EnvironmentProperties;
 import no.nav.veilarboppfolging.utils.auth.PolicyInputMatcher;
 import org.assertj.core.api.Assertions;
@@ -67,28 +68,6 @@ class AuthServiceTest {
     private AuthService authService;
 
     @Test
-    void skalVereEnAv__skal_sjekke_at_rolle_stemmer() {
-        setupAuthService();
-        when(authContextHolder.requireRole()).thenReturn(UserRole.SYSTEM);
-        assertDoesNotThrow(() -> authService.skalVereEnAv(List.of(UserRole.INTERN, UserRole.SYSTEM)));
-    }
-
-    @Test
-    void skalVereEnAv__skal_feile_hvis_rolle_ikke_() {
-        setupAuthService();
-        when(authContextHolder.requireRole()).thenReturn(UserRole.SYSTEM);
-        assertThrows(ResponseStatusException.class, () -> authService.skalVereEnAv(List.of(UserRole.INTERN)));
-    }
-
-    @Test
-    void skalVereEnAv__skal_feile_hvis_rolle_mangler() {
-        setupAuthService();
-        when(authContextHolder.getRole()).thenReturn(Optional.empty());
-        when(authContextHolder.requireRole()).thenCallRealMethod();
-        assertThrows(IllegalStateException.class, () -> authService.skalVereEnAv(List.of(UserRole.INTERN)));
-    }
-
-    @Test
     void sjekkAtSystembrukerErIAllowedList__skal_ikke_kaste_exception_hvis_allowed() {
         setupAuthService();
         JWTClaimsSet claims = new JWTClaimsSet.Builder()
@@ -111,7 +90,7 @@ class AuthServiceTest {
 
         when(authContextHolder.getIdTokenClaims()).thenReturn(Optional.of(claims));
 
-        assertThrows(ResponseStatusException.class, () -> authService.sjekkAtApplikasjonErIAllowList(List.of("some-id")));
+        assertThrows(ForbiddenException.class, () -> authService.sjekkAtApplikasjonErIAllowList(List.of("some-id")));
     }
 
     @Test
@@ -162,7 +141,7 @@ class AuthServiceTest {
         when(authContextHolder.getIdTokenClaims()).thenReturn(Optional.of(claims));
         when(authService.getFnrOrThrow(aktorId)).thenReturn(Fnr.of("23456789101"));
 
-        assertThrows(ResponseStatusException.class, () -> authService.sjekkTilgangTilPersonMedNiva3(aktorId));
+        assertThrows(ForbiddenException.class, () -> authService.sjekkTilgangTilPersonMedNiva3(aktorId));
     }
 
     @Test
@@ -208,8 +187,8 @@ class AuthServiceTest {
         when(poaoTilgangClient.evaluatePolicy(new NavAnsattTilgangTilEksternBrukerPolicyInput(
                 uuid, TilgangType.SKRIVE, fnr.get()))).thenReturn(new ApiResult<>(null, new Decision.Deny("", "")));
 
-        assertThrows(ResponseStatusException.class, () -> authService.sjekkLesetilgangMedAktorId(aktorId));
-        assertThrows(ResponseStatusException.class, () -> authService.sjekkSkrivetilgangMedAktorId(aktorId));
+        assertThrows(ForbiddenException.class, () -> authService.sjekkLesetilgangMedAktorId(aktorId));
+        assertThrows(ForbiddenException.class, () -> authService.sjekkSkrivetilgangMedAktorId(aktorId));
     }
 
 
@@ -258,8 +237,8 @@ class AuthServiceTest {
         when(poaoTilgangClient.evaluatePolicy(new EksternBrukerTilgangTilEksternBrukerPolicyInput(
                 fnrInnloggetBruker.get(), fnrDestination.get()))).thenReturn(new ApiResult<>(null, new Decision.Deny("", "")));
 
-        assertThrows(ResponseStatusException.class, () -> authService.sjekkLesetilgangMedAktorId(aktorId));
-        assertThrows(ResponseStatusException.class, () -> authService.sjekkSkrivetilgangMedAktorId(aktorId));
+        assertThrows(ForbiddenException.class, () -> authService.sjekkLesetilgangMedAktorId(aktorId));
+        assertThrows(ForbiddenException.class, () -> authService.sjekkSkrivetilgangMedAktorId(aktorId));
     }
 
     @Test
@@ -282,16 +261,16 @@ class AuthServiceTest {
         when(poaoTilgangClient.evaluatePolicy(new EksternBrukerTilgangTilEksternBrukerPolicyInput(
                 fnrInnloggetBruker.get(), fnrInnloggetBruker.get()))).thenReturn(new ApiResult<>(null, Decision.Permit.INSTANCE));
 
-        assertThrows(ResponseStatusException.class, () -> authService.sjekkLesetilgangMedAktorId(aktorId));
-        assertThrows(ResponseStatusException.class, () -> authService.sjekkSkrivetilgangMedAktorId(aktorId));
+        assertThrows(ForbiddenException.class, () -> authService.sjekkLesetilgangMedAktorId(aktorId));
+        assertThrows(ForbiddenException.class, () -> authService.sjekkSkrivetilgangMedAktorId(aktorId));
     }
 
     @Test
     void harIkkeRolleSkalFaPermissionDenied_sjekkTilgang() {
         setupAuthService();
         AktorId aktorId = AktorId.of("123");
-        assertThrows(ResponseStatusException.class, () -> authService.sjekkLesetilgangMedAktorId(aktorId));
-        assertThrows(ResponseStatusException.class, () -> authService.sjekkSkrivetilgangMedAktorId(aktorId));
+        assertThrows(ForbiddenException.class, () -> authService.sjekkLesetilgangMedAktorId(aktorId));
+        assertThrows(ForbiddenException.class, () -> authService.sjekkSkrivetilgangMedAktorId(aktorId));
     }
 
     @Test
@@ -349,8 +328,7 @@ class AuthServiceTest {
         setupAuthService();
 
         List<String> allowList = List.of(VEILARBAKTIVITET);
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> authService.authorizeRequest(TEST_FNR_2, allowList));
-        Assertions.assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+        assertThrows(ForbiddenException.class, () -> authService.authorizeRequest(TEST_FNR_2, allowList));
     }
 
     @SneakyThrows
@@ -368,8 +346,7 @@ class AuthServiceTest {
         setUpExternalUserAuthOk();
         setupAuthService();
 
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> authService.authorizeRequest(Fnr.of("11120231920"), emptyList()));
-        Assertions.assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+        assertThrows(ForbiddenException.class, () -> authService.authorizeRequest(Fnr.of("11120231920"), emptyList()));
     }
 
     @SneakyThrows
@@ -388,8 +365,7 @@ class AuthServiceTest {
         setUpExternalUserAuthOk();
         setupAuthService();
 
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> authService.authorizeRequest(TEST_AKTOR_ID_3, emptyList()));
-        Assertions.assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+        assertThrows(ForbiddenException.class, () -> authService.authorizeRequest(TEST_AKTOR_ID_3, emptyList()));
     }
 
     @SneakyThrows

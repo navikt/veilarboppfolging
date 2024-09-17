@@ -9,13 +9,12 @@ import no.nav.poao_tilgang.client.NavAnsattTilgangTilEksternBrukerPolicyInput;
 import no.nav.poao_tilgang.client.PoaoTilgangClient;
 import no.nav.poao_tilgang.client.TilgangType;
 import no.nav.poao_tilgang.client.api.ApiResult;
+import no.nav.veilarboppfolging.ForbiddenException;
 import no.nav.veilarboppfolging.IntegrationTest;
 import no.nav.veilarboppfolging.client.amttiltak.AmtTiltakClient;
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolging;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
-import no.nav.veilarboppfolging.controller.request.AktiverArbeidssokerData;
-import no.nav.veilarboppfolging.controller.request.Innsatsgruppe;
 import no.nav.veilarboppfolging.controller.request.VeilederBegrunnelseDTO;
 import no.nav.veilarboppfolging.controller.response.AvslutningStatus;
 import no.nav.veilarboppfolging.controller.response.OppfolgingPeriodeDTO;
@@ -28,7 +27,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Collections;
 import java.util.List;
@@ -55,6 +53,7 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
 
     @MockBean
     VeilarbarenaClient veilarbarenaClient;
+
     @MockBean
     YtelserOgAktiviteterService ytelserOgAktiviteterService;
 
@@ -108,8 +107,7 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
         ApiResult<Decision> deny = ApiResult.Companion.success(new Decision.Deny("Nei", "Fordi"));
         doReturn(deny).when(poaoTilgangClient).evaluatePolicy(policyInput);
 
-        assertThrows(ResponseStatusException.class, () -> oppfolgingController.hentOppfolgingsPeriode(uuid));
-
+        assertThrows(ForbiddenException.class, () -> oppfolgingController.hentOppfolgingsPeriode(uuid));
     }
 
     @Test

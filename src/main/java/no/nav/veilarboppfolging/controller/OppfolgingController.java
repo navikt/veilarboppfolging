@@ -3,14 +3,14 @@ package no.nav.veilarboppfolging.controller;
 import lombok.RequiredArgsConstructor;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.veilarboppfolging.BadRequestException;
+import no.nav.veilarboppfolging.NotFoundException;
 import no.nav.veilarboppfolging.controller.request.*;
 import no.nav.veilarboppfolging.controller.response.*;
 import no.nav.veilarboppfolging.repository.enums.KodeverkBruker;
 import no.nav.veilarboppfolging.service.*;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -91,7 +91,7 @@ public class OppfolgingController {
 
         // Påkrevd for intern bruker
         if (dto == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+            throw new BadRequestException("VeilederBegrunnelseDTO er påkrevd");
         }
 
         manuellStatusService.oppdaterManuellStatus(
@@ -133,7 +133,7 @@ public class OppfolgingController {
         var maybePeriode = oppfolgingService.hentOppfolgingsperiode(uuid);
 
         if (maybePeriode.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+            throw new NotFoundException("Kunne ikke finne oppfolgingsperiode");
         }
 
         var periode = maybePeriode.get();
