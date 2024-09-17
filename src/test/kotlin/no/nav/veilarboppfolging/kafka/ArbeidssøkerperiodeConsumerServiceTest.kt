@@ -21,6 +21,7 @@ import no.nav.veilarboppfolging.service.OppfolgingService
 import no.nav.veilarboppfolging.test.DbTestUtils
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.within
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -95,7 +96,7 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
         arbeidssøkerperiodeConsumerService.consumeArbeidssøkerperiode(melding)
 
         val oppfølgingsperioder = oppfølgingService.hentOppfolgingsperioder(Fnr.of(fnr))
-        assertThat(oppfølgingsperioder.first().startDato).isEqualToIgnoringNanos(ZonedDateTime.now())
+        assertThat(oppfølgingsperioder.first().startDato).isCloseTo(ZonedDateTime.now(), within(1, ChronoUnit.SECONDS))
     }
 
     @Test
