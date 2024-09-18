@@ -8,7 +8,7 @@ metadata:
 spec:
   image: {{image}}
   ingresses:
-    - https://veilarboppfolging.intern.nav.no
+    - https://veilarboppfolging-gcp.intern.nav.no
   webproxy: true
   port: 8080
   gcp:
