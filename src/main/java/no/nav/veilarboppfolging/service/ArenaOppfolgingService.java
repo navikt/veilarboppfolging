@@ -7,6 +7,7 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe;
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe;
+import no.nav.veilarboppfolging.FantIkkeBrukerIArenaException;
 import no.nav.veilarboppfolging.NotFoundException;
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolgingTilstand;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
@@ -106,7 +107,7 @@ public class ArenaOppfolgingService {
     public OppfolgingEnhetMedVeilederResponse getOppfolginsstatus(Fnr fnr) {
 
         VeilarbArenaOppfolging veilarbArenaOppfolging = veilarbarenaClient.hentOppfolgingsbruker(fnr)
-                .orElseThrow(() -> new NotFoundException("Bruker ikke funnet"));
+                .orElseThrow(FantIkkeBrukerIArenaException::new);
 
         OppfolgingEnhetMedVeilederResponse oppfolgingEnhetMedVeileder = new OppfolgingEnhetMedVeilederResponse()
                 .setServicegruppe(veilarbArenaOppfolging.getKvalifiseringsgruppekode())
