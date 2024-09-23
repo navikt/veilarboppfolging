@@ -85,6 +85,10 @@ spec:
     enabled: true
   accessPolicy:
     outbound:
+      rules:
+        - application: veilarbarena
+          namespace: pto
+          cluster: dev-fss
       external:
         - host: veilarboppfolging.dev-fss-pub.nais.io
     inbound:
