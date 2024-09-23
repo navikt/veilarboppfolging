@@ -93,6 +93,9 @@ spec:
         - application: veilarbarena
           namespace: pto
           cluster: dev-fss
+        - application: digdir-krr-proxy
+          namespace: team-rocket
+          cluster: dev-gcp
       external:
         - host: veilarboppfolging.dev-fss-pub.nais.io
         - host: veilarbarena.dev-fss-pub.nais.io
