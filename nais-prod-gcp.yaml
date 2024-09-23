@@ -77,7 +77,11 @@ spec:
     - name: FSS_PROXY_ENABLED
       value: "true"
     - name: NORG2_URL
-      value: "https://norg2.prod-fss-pub.nais.io/norg2"
+      value: "http://norg2.org/norg2"
+    - name: PDL_URL
+      value: "https://pdl-api.prod-fss-pub.nais.io"
+    - name: PDL_SCOPE
+      value: "api://prod-fss.pdl.pdl-api/.default"
   secureLogs:
     enabled: true
   kafka:
