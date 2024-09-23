@@ -76,6 +76,8 @@ spec:
       value: "api://prod-fss.pto.veilarbarena/.default"
     - name: FSS_PROXY_ENABLED
       value: "true"
+    - name: NORG2_URL
+      value: "https://norg2.prod-fss-pub.nais.io/norg2"
   secureLogs:
     enabled: true
   kafka:
@@ -102,6 +104,7 @@ spec:
       external:
         - host: veilarboppfolging.prod-fss-pub.nais.io
         - host: veilarbarena.prod-fss-pub.nais.io
+        - host: norg2.prod-fss-pub.nais.io
     inbound:
       rules:
         - application: veilarboppfolging
