@@ -98,6 +98,7 @@ spec:
           cluster: prod-fss
       external:
         - host: veilarboppfolging.prod-fss-pub.nais.io
+        - host: veilarbarena.prod-fss-pub.nais.io
     inbound:
       rules:
         - application: veilarboppfolging

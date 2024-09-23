@@ -95,6 +95,7 @@ spec:
           cluster: dev-fss
       external:
         - host: veilarboppfolging.dev-fss-pub.nais.io
+        - host: veilarbarena.dev-fss-pub.nais.io
     inbound:
       rules:
         - application: veilarboppfolging
