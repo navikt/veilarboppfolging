@@ -29,6 +29,7 @@ public class VeilarbarenaClientImplTest {
     private static final boolean MOCK_KAN_ENKELT_REAKTIVERES = true;
     private static final String MOCK_RETTIGHETSGRUPPE = "rettighetsgruppe";
     private static final String MOCK_KVALIFISERINGSGRUPPE = "kvalifiseringsgruppe";
+    String apiScope = "api://local.pto.veilarbarena/.default";
 
     private static final String MOCK_HOVEDMAAL = "beholde arbeid";
 
@@ -45,7 +46,8 @@ public class VeilarbarenaClientImplTest {
     @Test
     public void skalMappeTilOppfolgingsstatusV2() {
         String apiUrl = "http://localhost:" + wireMockRule.port();
-        VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl(apiUrl, (DownstreamApi v) -> "TOKEN", (DownstreamApi v) -> "TOKEN", authServiceMock);
+        String apiScope = "api://local.pto.veilarbarena/.default";
+        VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl(apiUrl, apiScope, authServiceMock);
 
         givenThat(post(urlEqualTo("/api/v2/hent-oppfolgingsstatus")).withRequestBody(equalToJson("{\"fnr\":\""+MOCK_FNR+"\"}"))
                 .willReturn(aResponse()
@@ -66,7 +68,7 @@ public class VeilarbarenaClientImplTest {
     @Test
     public void skal_returnere_empty_om_person_ikke_funnet() {
         String apiUrl = "http://localhost:" + wireMockRule.port();
-        VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl(apiUrl, (DownstreamApi v) ->"TOKEN", (DownstreamApi v) -> "TOKEN",authServiceMock);
+        VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl(apiUrl, apiScope,authServiceMock);
 
         givenThat(post(urlEqualTo("/api/v2/hent-oppfolgingsstatus")).withRequestBody(equalToJson("{\"fnr\":\""+MOCK_FNR+"\"}"))
                 .willReturn(aResponse().withStatus(404)));
@@ -77,7 +79,7 @@ public class VeilarbarenaClientImplTest {
     @Test
     public void skal_returnere_empty_om_man_ikke_har_tilgang() {
         String apiUrl = "http://localhost:" + wireMockRule.port();
-        VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl(apiUrl, (DownstreamApi v) -> "TOKEN", (DownstreamApi v) -> "TOKEN", authServiceMock);
+        VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl(apiUrl, apiScope, authServiceMock);
 
         givenThat(post(urlEqualTo("/api/v2/hent-oppfolgingsstatus")).withRequestBody(equalToJson("{\"fnr\":\""+MOCK_FNR+"\"}"))
                 .willReturn(aResponse().withStatus(403)));
@@ -88,7 +90,7 @@ public class VeilarbarenaClientImplTest {
     @Test
     public void skal_returnere_empty_om_ugyldig_identifikator() {
         String apiUrl = "http://localhost:" + wireMockRule.port();
-        VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl(apiUrl, (DownstreamApi v) -> "TOKEN", (DownstreamApi v) -> "TOKEN", authServiceMock);
+        VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl(apiUrl, apiScope, authServiceMock);
 
         givenThat(post(urlEqualTo("/api/v2/hent-oppfolgingsstatus")).withRequestBody(equalToJson("{\"fnr\":\""+MOCK_FNR+"\"}"))
                 .willReturn(aResponse().withStatus(400)));
@@ -107,7 +109,7 @@ public class VeilarbarenaClientImplTest {
     @Test
     public void skalMappeTilOppfolgingsbrukerV2() {
         String apiUrl = "http://localhost:" + wireMockRule.port();
-        VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl(apiUrl, (DownstreamApi v) -> "TOKEN", (DownstreamApi v) -> "TOKEN", authServiceMock);
+        VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl(apiUrl, apiScope, authServiceMock);
 
         givenThat(post(urlEqualTo("/api/v2/hent-oppfolgingsbruker")).withRequestBody(equalToJson("{\"fnr\":\""+MOCK_FNR+"\"}"))
                 .willReturn(aResponse()
@@ -128,7 +130,7 @@ public class VeilarbarenaClientImplTest {
     @Test
     public void skal_returnere_empty_om_person_ikke_funnet_oppfolgingsbruker() {
         String apiUrl = "http://localhost:" + wireMockRule.port();
-        VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl(apiUrl, (DownstreamApi v) ->"TOKEN", (DownstreamApi v) -> "TOKEN",authServiceMock);
+        VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl(apiUrl, apiScope,authServiceMock);
 
         givenThat(post(urlEqualTo("/api/v2/hent-oppfolgingsbruker")).withRequestBody(equalToJson("{\"fnr\":\""+MOCK_FNR+"\"}"))
                 .willReturn(aResponse().withStatus(404)));
@@ -139,7 +141,7 @@ public class VeilarbarenaClientImplTest {
     @Test
     public void skal_returnere_empty_om_man_ikke_har_tilgang_oppfolgingsbruker() {
         String apiUrl = "http://localhost:" + wireMockRule.port();
-        VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl(apiUrl, (DownstreamApi v) -> "TOKEN", (DownstreamApi v) -> "TOKEN", authServiceMock);
+        VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl(apiUrl, apiScope, authServiceMock);
 
         givenThat(post(urlEqualTo("/api/v2/hent-oppfolgingsbruker")).withRequestBody(equalToJson("{\"fnr\":\""+MOCK_FNR+"\"}"))
                 .willReturn(aResponse().withStatus(403)));
@@ -150,7 +152,7 @@ public class VeilarbarenaClientImplTest {
     @Test
     public void skal_returnere_empty_om_ugyldig_identifikator_oppfolgingsbruker() {
         String apiUrl = "http://localhost:" + wireMockRule.port();
-        VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl(apiUrl, (DownstreamApi v) -> "TOKEN", (DownstreamApi v) -> "TOKEN", authServiceMock);
+        VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl(apiUrl, apiScope, authServiceMock);
 
         givenThat(post(urlEqualTo("/api/v2/hent-oppfolgingsbruker")).withRequestBody(equalToJson("{\"fnr\":\""+MOCK_FNR+"\"}"))
                 .willReturn(aResponse().withStatus(400)));

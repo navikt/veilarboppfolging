@@ -70,6 +70,10 @@ spec:
       value: "false"
     - name: VEILARBOPPFOLGING_FSS_URL
       value: "https://veilarboppfolging.prod-fss-pub.nais.io"
+    - name: VEILARBARENA_URL
+      value: "https://veilarbarena.prod-fss-pub.nais.io"
+    - name: VEILARBARENA_AZURE_SCOPE
+      value: "api://prod-fss.pto.veilarbarena/.default"
     - name: FSS_PROXY_ENABLED
       value: "true"
   secureLogs:

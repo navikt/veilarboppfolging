@@ -20,6 +20,8 @@ import no.nav.veilarboppfolging.client.digdir_krr.DigdirClientImpl;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClientImpl;
 import no.nav.veilarboppfolging.service.AuthService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -29,6 +31,11 @@ import static no.nav.common.utils.UrlUtils.createServiceUrl;
 
 @Configuration
 public class ClientConfig {
+
+    @Value("${app.env.veilarbarenaUrl}")
+    private String veilarbarenaUrl;
+    @Value("${app.env.veilarbarenaAzureScope}")
+    private String veilarbarenaAzureScope;
 
     @Bean
     public AktorOppslagClient aktorOppslagClient(MachineToMachineTokenClient tokenClient) {
@@ -67,8 +74,7 @@ public class ClientConfig {
 
     @Bean
     public VeilarbarenaClient veilarbarenaClient(AuthService authService) {
-        String url = naisPreprodOrNaisAdeoIngress("veilarbarena", true);
-        return new VeilarbarenaClientImpl(url, authService::getMachineTokenForTjeneste, authService::getAadOboTokenForTjeneste, authService);
+        return new VeilarbarenaClientImpl(veilarbarenaUrl, veilarbarenaAzureScope, authService);
     }
 
     @Bean

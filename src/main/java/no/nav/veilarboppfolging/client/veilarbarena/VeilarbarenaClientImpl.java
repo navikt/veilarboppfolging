@@ -28,30 +28,23 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @Slf4j
 public class VeilarbarenaClientImpl implements VeilarbarenaClient {
 
-    private static final DownstreamApi veilarbArenaApi = new DownstreamApi(EnvironmentUtils.requireClusterName(), "pto", "veilarbarena");
-
     private final String veilarbarenaUrl;
-
-
-    private final Function<DownstreamApi, String> aadOboTokenProvider;
-    private final Function<DownstreamApi, String> machineTokenProvider;
+    private final String veilarbarenaAadTokenScope;
     private final AuthService authService;
-
     private final OkHttpClient client;
 
-    public VeilarbarenaClientImpl(String veilarbarenaUrl, Function<DownstreamApi, String> machineTokenProvider, Function<DownstreamApi, String> aadOboTokenProvider, AuthService authService) {
+    public VeilarbarenaClientImpl(String veilarbarenaUrl, String veilarbarenaAadTokenScope,  AuthService authService) {
         this.veilarbarenaUrl = veilarbarenaUrl;
-        this.machineTokenProvider = machineTokenProvider;
+        this.veilarbarenaAadTokenScope = veilarbarenaAadTokenScope;
         this.client = RestClient.baseClient();
-        this.aadOboTokenProvider = aadOboTokenProvider;
         this.authService = authService;
     }
 
     private String getToken() {
         if (authService.erInternBruker()) {
-            return aadOboTokenProvider.apply(veilarbArenaApi);
+            return authService.getAadOboTokenForTjeneste(veilarbarenaAadTokenScope);
         } else {
-            return machineTokenProvider.apply(veilarbArenaApi);
+            return authService.getMachineTokenForTjeneste(veilarbarenaAadTokenScope);
         }
     }
 
