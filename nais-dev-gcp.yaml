@@ -129,8 +129,8 @@ spec:
           namespace: obo
           cluster: dev-gcp
         - application: veilarbvedtaksstotte
-          namespace: pto
-          cluster: dev-fss
+          namespace: obo
+          cluster: dev-gcp
         - application: veilarbpersonflate
           namespace: poao
           cluster: dev-gcp
