@@ -5,7 +5,6 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import lombok.RequiredArgsConstructor;
-import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.types.identer.AktorId;
 import no.nav.veilarboppfolging.controller.response.KvpDTO;
 import no.nav.veilarboppfolging.service.AuthService;
@@ -37,7 +36,11 @@ public class KvpV2Controller {
     public ResponseEntity<KvpDTO> getKvpStatus(@RequestParam("aktorId") AktorId aktorId) {
         // KVP information is only available to certain system users. We trust these users here,
         // so that we can avoid doing an ABAC query on each request.
-        authService.authorizeRequest(aktorId, allowedApps);
+        if(authService.erEksternBruker()) {
+            authService.harEksternBrukerTilgang(authService.getFnrOrThrow(aktorId));
+        } else {
+            authService.authorizeRequest(aktorId, allowedApps);
+        }
 
         return kvpService.hentGjeldendeKvpPeriode(aktorId)
                 .map(periode -> ResponseEntity.ok(DtoMappers.kvpToDTO(periode)))
