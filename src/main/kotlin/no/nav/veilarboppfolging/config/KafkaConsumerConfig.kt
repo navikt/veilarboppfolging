@@ -110,7 +110,7 @@ open class KafkaConsumerConfig(
     }
 
     private fun getPeriodeAvroDeserializer(): Deserializer<Periode> {
-        val schemaUrl = EnvironmentUtils.getRequiredProperty("KAFKA_SCHEMAS_URL")
+        val schemaUrl = EnvironmentUtils.getRequiredProperty("KAFKA_SCHEMA_REGISTRY")
         val avroDeserializer = Deserializers.aivenAvroDeserializer<Periode>()
         avroDeserializer.configure(
             Map.of(
