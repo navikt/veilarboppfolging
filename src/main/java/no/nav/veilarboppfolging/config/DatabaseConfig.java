@@ -2,7 +2,6 @@ package no.nav.veilarboppfolging.config;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -18,32 +17,25 @@ import javax.sql.DataSource;
 import static no.nav.veilarboppfolging.dbutil.DatabaseMigratorKt.migrateDb;
 
 @Configuration
-@EnableConfigurationProperties({DatabaseConfig.DatasourceProperties.class, DatabaseConfig.DatasourceFlywayProperties.class})
+@EnableConfigurationProperties({DatabaseConfig.DatasourceProperties.class})
 @RequiredArgsConstructor
 public class DatabaseConfig {
 
     private final DatasourceProperties datasourceProperties;
-    private final DatasourceFlywayProperties datasourceFlywayProperties;
 
     @Bean
     public DataSource dataSource() {
-        runFlywayMigration();
         var config = new HikariConfig();
         config.setSchema("veilarboppfolging");
         config.setJdbcUrl(datasourceProperties.url);
         config.setUsername(datasourceProperties.username);
         config.setPassword(datasourceProperties.password);
         config.setMaximumPoolSize(5);
+        runFlywayMigration(config);
         return new HikariDataSource(config);
     }
 
-    private void runFlywayMigration() {
-        var config = new HikariConfig();
-        config.setSchema("veilarboppfolging");
-        config.setJdbcUrl(datasourceFlywayProperties.url);
-        config.setUsername(datasourceFlywayProperties.username);
-        config.setPassword(datasourceFlywayProperties.password);
-        config.setMaximumPoolSize(5);
+    private void runFlywayMigration(HikariConfig config) {
         var db = new HikariDataSource(config);
         migrateDb(db);
     }
@@ -62,15 +54,6 @@ public class DatabaseConfig {
     @Setter
     @ConfigurationProperties(prefix = "app.datasource")
     public static class DatasourceProperties {
-        String url;
-        String username;
-        String password;
-    }
-
-    @Getter
-    @Setter
-    @ConfigurationProperties(prefix = "app.datasource.flyway")
-    public static class DatasourceFlywayProperties {
         String url;
         String username;
         String password;

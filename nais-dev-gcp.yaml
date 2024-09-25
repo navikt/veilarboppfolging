@@ -64,7 +64,7 @@ spec:
     - name: AMTTILTAK_SCOPE
       value: api://dev-gcp.amt.amt-tiltak/.default
     - name: KAFKA_ENABLED
-      value: "false"
+      value: "true"
     - name: VEILARBOPPFOLGING_FSS_URL
       value: "https://veilarboppfolging.dev-fss-pub.nais.io"
     - name: VEILARBARENA_URL
@@ -72,7 +72,7 @@ spec:
     - name: VEILARBARENA_AZURE_SCOPE
       value: "api://dev-fss.pto.veilarbarena/.default"
     - name: FSS_PROXY_ENABLED
-      value: "true"
+      value: "false"
     - name: NORG2_URL
       value: "http://norg2.org/norg2"
     - name: PDL_URL
