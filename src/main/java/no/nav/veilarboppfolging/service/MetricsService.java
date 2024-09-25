@@ -9,6 +9,7 @@ import no.nav.common.metrics.MetricsClient;
 import no.nav.veilarboppfolging.repository.KafkaProducerMetricRepository;
 import no.nav.veilarboppfolging.repository.entity.MaalEntity;
 import no.nav.veilarboppfolging.repository.entity.VeilederTilordningEntity;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.ZonedDateTime;
@@ -20,6 +21,7 @@ import static no.nav.veilarboppfolging.utils.StringUtils.of;
 @Slf4j
 public class MetricsService implements MeterBinder {
 
+    @Value("${app.kafka.enabled}") Boolean kafkaEnabled;
     private final MetricsClient metricsClient;
     private final KafkaProducerMetricRepository kafkaProducerRepository;
 
@@ -30,6 +32,7 @@ public class MetricsService implements MeterBinder {
 
     @Override
     public void bindTo(MeterRegistry meterRegistry) {
+        if (!kafkaEnabled) return;
         Gauge.builder("veilarboppfolging.kafka_producer.eldste_ubehandlet", kafkaProducerRepository, KafkaProducerMetricRepository::getOldestMessage)
                 .register(meterRegistry);
     }
