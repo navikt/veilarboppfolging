@@ -141,11 +141,11 @@ public class AuthService {
                     decision.isPermit() ? AuthorizationDecision.PERMIT : AuthorizationDecision.DENY
             );
             return decision.isPermit();
-        } else {
-            if (!erEksternBruker()) {
-                secureLog.warn("Systembruker eller ukjent rolle kom inn i harTilgangTilEnhet, hvis dette skjer må man legge til håndtering");
-            }
+        } else if (erEksternBruker()) {
             return false;
+        } else {
+            // Systembruker
+            return true;
         }
     }
 
@@ -209,6 +209,7 @@ public class AuthService {
     }
 
     public void sjekkTilgangTilEnhet(String enhetId) {
+
         if (!harTilgangTilEnhet(enhetId)) {
             throw new ForbiddenException("Har ikke tilgang til enhet");
         }

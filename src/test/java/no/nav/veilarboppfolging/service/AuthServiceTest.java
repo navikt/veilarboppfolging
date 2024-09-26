@@ -282,13 +282,12 @@ class AuthServiceTest {
     }
 
     @Test
-    void brukerMedSystemRolleEllerUkjentRolleSkalFaDeny_harTilgangTilEnhet() {
+    void brukerUtenRolleErInternProssess_harTilgangTilEnhet() {
         setupAuthService();
         EnhetId enhetId = EnhetId.of("1201");
-        when(authService.erSystemBruker()).thenReturn(true);
         when(authContextHolder.getIdTokenString()).thenReturn(Optional.of(""));
 
-        assertFalse(authService.harTilgangTilEnhet(enhetId.get()));
+        assertTrue(authService.harTilgangTilEnhet(enhetId.get()));
     }
 
 
