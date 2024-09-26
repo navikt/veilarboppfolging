@@ -110,7 +110,7 @@ spec:
         - host: veilarboppfolging.prod-fss-pub.nais.io
         - host: veilarbarena.prod-fss-pub.nais.io
         - host: norg2.prod-fss-pub.nais.io
-        - host: https://pdl-api.prod-fss-pub.nais.io
+        - host: pdl-api.prod-fss-pub.nais.io
     inbound:
       rules:
         - application: veilarboppfolging
