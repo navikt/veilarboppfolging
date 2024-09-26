@@ -398,11 +398,6 @@ public class AuthService {
             if (decision.isDeny()) {
                 throw new ForbiddenException("EksternBrukerTilgangTilEksternBrukerPolicyInput fikk deny");
             }
-
-        } else if (erSystemBruker()) {
-            return;
-        } else {
-            throw new ForbiddenException("Må være systembruker, internbruker eller eksternbruker med sikkerhetsnivå 4");
         }
     }
 
