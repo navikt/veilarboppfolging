@@ -21,7 +21,7 @@ public class KafkaProducerMetricRepository {
 
     public Long getOldestMessage() {
         try {
-            Timestamp oldestMessage = db.queryForObject("SELECT MIN(OPPDATERT) FROM KAFKA_PRODUCER_RECORD", Timestamp.class);
+            Timestamp oldestMessage = db.queryForObject("SELECT MIN(CREATED_AT) FROM KAFKA_PRODUCER_RECORD", Timestamp.class);
 
             if (oldestMessage != null){
                 return ChronoUnit.MINUTES.between(oldestMessage.toLocalDateTime(), LocalDate.now());
