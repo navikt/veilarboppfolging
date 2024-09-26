@@ -128,12 +128,12 @@ public class OppfolgingService {
         ArenaOppfolgingTilstand arenaOppfolgingTilstand = arenaOppfolgingService.hentOppfolgingTilstand(fnr)
                 .orElseThrow(() -> new RuntimeException("Feilet under henting av oppfølgingstilstand"));
 
-        if (authService.erSystemBruker()) {
-            secureLog.info("Forsøker å avslutte oppfølging for fnr: {} som systembruker", fnr.get());
-        } else {
+        if (authService.erInternBruker()) {
             authService.sjekkSkriveTilgangMedFnr(fnr);
             authService.sjekkTilgangTilEnhet(arenaOppfolgingTilstand.getOppfolgingsenhet());
             secureLog.info("Veileder: {} forsøker å avslutte oppfølging for fnr: {}", authService.getInnloggetBrukerIdent(), fnr.get());
+        } else {
+            secureLog.info("Forsøker å avslutte oppfølging for fnr: {} som systembruker", fnr.get());
         }
 
         boolean erIserv = erIserv(EnumUtils.valueOf(Formidlingsgruppe.class, arenaOppfolgingTilstand.getFormidlingsgruppe()));
