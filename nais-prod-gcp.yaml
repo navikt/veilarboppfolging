@@ -108,7 +108,8 @@ spec:
         - application: poao-tilgang
         - application: amt-tiltak
           namespace: amt
-          cluster: prod-gcp
+        - application: norg2
+          namespace: org
       external:
         - host: veilarboppfolging.prod-fss-pub.nais.io
         - host: veilarbarena.prod-fss-pub.nais.io

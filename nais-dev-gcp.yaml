@@ -101,11 +101,11 @@ spec:
           cluster: dev-fss
         - application: digdir-krr-proxy
           namespace: team-rocket
-          cluster: dev-gcp
         - application: poao-tilgang
         - application: amt-tiltak
           namespace: amt
-          cluster: dev-gcp
+        - application: norg2
+          namespace: org
       external:
         - host: veilarboppfolging.dev-fss-pub.nais.io
         - host: veilarbarena.dev-fss-pub.nais.io
