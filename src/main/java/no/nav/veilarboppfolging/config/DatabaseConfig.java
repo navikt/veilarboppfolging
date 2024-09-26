@@ -14,8 +14,10 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import javax.sql.DataSource;
 
+import static no.nav.veilarboppfolging.dbutil.DatabaseMigratorKt.migrateDb;
+
 @Configuration
-@EnableConfigurationProperties(DatabaseConfig.DatasourceProperties.class)
+@EnableConfigurationProperties({DatabaseConfig.DatasourceProperties.class})
 @RequiredArgsConstructor
 public class DatabaseConfig {
 
@@ -24,12 +26,18 @@ public class DatabaseConfig {
     @Bean
     public DataSource dataSource() {
         var config = new HikariConfig();
+        config.setSchema("veilarboppfolging");
         config.setJdbcUrl(datasourceProperties.url);
         config.setUsername(datasourceProperties.username);
         config.setPassword(datasourceProperties.password);
         config.setMaximumPoolSize(5);
-
+        runFlywayMigration(config);
         return new HikariDataSource(config);
+    }
+
+    private void runFlywayMigration(HikariConfig config) {
+        var db = new HikariDataSource(config);
+        migrateDb(db);
     }
 
     @Bean

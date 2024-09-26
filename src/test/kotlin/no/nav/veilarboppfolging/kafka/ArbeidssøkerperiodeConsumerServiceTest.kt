@@ -6,12 +6,12 @@ import no.nav.paw.arbeidssokerregisteret.api.v1.*
 import no.nav.pto_schema.enums.arena.*
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2
 import no.nav.veilarboppfolging.IntegrationTest
+import no.nav.veilarboppfolging.LocalDatabaseSingleton
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient
 import no.nav.veilarboppfolging.controller.request.Innsatsgruppe
 import no.nav.veilarboppfolging.controller.request.SykmeldtBrukerType
 import no.nav.veilarboppfolging.domain.Oppfolgingsbruker
-import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
 import no.nav.veilarboppfolging.repository.UtmeldingRepository
 import no.nav.veilarboppfolging.repository.entity.OppfolgingStartBegrunnelse
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity
@@ -29,6 +29,7 @@ import org.mockito.Mockito.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.test.context.ActiveProfiles
+import java.sql.Timestamp
 import java.time.*
 import java.time.temporal.ChronoUnit
 import java.util.*
@@ -52,9 +53,6 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
     @Autowired
     private lateinit var aktiverBrukerService: AktiverBrukerService
 
-    @Autowired
-    private lateinit var oppfolgingsStatusRepository: OppfolgingsStatusRepository
-
     private val fnr = "01010198765"
     private val aktørId = AktorId.of("123456789012")
 
@@ -67,7 +65,6 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
 
     @BeforeEach
     fun setUp() {
-        DbTestUtils.cleanupTestDb()
         `when`(aktorOppslagClient.hentAktorId(Fnr.of(fnr))).thenReturn(aktørId)
         `when`(aktorOppslagClient.hentFnr(aktørId)).thenReturn(Fnr.of(fnr))
     }
@@ -117,7 +114,7 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
         val startAlleredeRegistrertOppfølgingsperiode = ZonedDateTime.now().minusMinutes(30)
         // Denne blir alltid laget via startOppfolgingHvisIkkeAlleredeStartet men ikke i testene siden det opprettes manuelt
         oppfolgingsStatusRepository.opprettOppfolging(aktørId)
-        DbTestUtils.lagreOppfølgingsperiode(oppfølgingsperiode(startAlleredeRegistrertOppfølgingsperiode))
+        lagreOppfølgingsperiode(oppfølgingsperiode(startAlleredeRegistrertOppfølgingsperiode))
         val arbeidssøkerperiodeStartet = startAlleredeRegistrertOppfølgingsperiode.minusMinutes(1)
         val nyPeriode = arbeidssøkerperiode(fnr, periodeStartet = arbeidssøkerperiodeStartet.toInstant())
         val melding = ConsumerRecord("topic", 0, 0, "dummyKey", nyPeriode)
@@ -190,7 +187,8 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
             .setIserv_fra_dato(ISERV_FRA_DATO.atZone(ZoneId.systemDefault())))
         )
         val nyPeriode = arbeidssøkerperiode(fnr, periodeStartet = arbeidsøkerPeriodeStartet.atZone(ZoneId.systemDefault()).toInstant())
-        val oppfolginsBrukerEndretTilISERV = ConsumerRecord("topic", 0, 0, "key", oppfølgingsBrukerEndret(ISERV_FRA_DATO.toLocalDate()))
+        val oppfolginsBrukerEndretTilISERV = ConsumerRecord("topic", 0, 0, "key", oppfølgingsBrukerEndret(
+            ISERV_FRA_DATO.toLocalDate(), formidlingsgruppe = Formidlingsgruppe.ISERV))
         val melding = ConsumerRecord("topic", 0, 0, "dummyKey", nyPeriode)
 
         kafkaConsumerService.consumeEndringPaOppfolgingBruker(oppfolginsBrukerEndretTilISERV)
@@ -215,7 +213,8 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
             .setIserv_fra_dato(ISERV_FRA_DATO.atZone(ZoneId.systemDefault())))
         )
         val nyPeriode = arbeidssøkerperiode(fnr, periodeStartet = arbeidsøkerPeriodeStartet.atZone(ZoneId.systemDefault()).toInstant())
-        val oppfolginsBrukerEndretTilISERV = ConsumerRecord("topic", 0, 0, "key", oppfølgingsBrukerEndret(ISERV_FRA_DATO.toLocalDate()))
+        val oppfolginsBrukerEndretTilISERV = ConsumerRecord("topic", 0, 0, "key", oppfølgingsBrukerEndret(
+            ISERV_FRA_DATO.toLocalDate(), formidlingsgruppe = Formidlingsgruppe.ISERV))
         val melding = ConsumerRecord("topic", 0, 0, "dummyKey", nyPeriode)
 
         kafkaConsumerService.consumeEndringPaOppfolgingBruker(oppfolginsBrukerEndretTilISERV)
@@ -279,10 +278,10 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
         }
     }
 
-    private fun oppfølgingsBrukerEndret(iservFraDato: LocalDate): EndringPaaOppfoelgingsBrukerV2 {
+    private fun oppfølgingsBrukerEndret(iservFraDato: LocalDate, formidlingsgruppe: Formidlingsgruppe = Formidlingsgruppe.ARBS): EndringPaaOppfoelgingsBrukerV2 {
         return EndringPaaOppfoelgingsBrukerV2(
             fnr,
-            Formidlingsgruppe.ARBS,
+            formidlingsgruppe,
             iservFraDato,
             "Sig",
             ":)",
@@ -297,6 +296,18 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
             false,
             null,
             ZonedDateTime.now()
+        )
+    }
+
+    fun lagreOppfølgingsperiode(periode: OppfolgingsperiodeEntity) {
+        jdbcTemplate.update(
+            "" +
+                    "INSERT INTO OPPFOLGINGSPERIODE(uuid, aktor_id, startDato, oppdatert, start_begrunnelse) " +
+                    "VALUES (?, ?, ?, CURRENT_TIMESTAMP, ?)",
+            periode.uuid.toString(),
+            periode.aktorId,
+            Timestamp.from(periode.startDato.toInstant()),
+            periode.startetBegrunnelse.name
         )
     }
 }

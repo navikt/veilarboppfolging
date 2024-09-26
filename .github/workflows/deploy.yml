@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - main
+      - gcp-release
 
 env:
   PRINT_PAYLOAD: true
@@ -44,9 +45,10 @@ jobs:
           team: poao # This is not app namespace but team which is admin in github
           identity_provider: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }}
           project_id: ${{ vars.NAIS_MANAGEMENT_PROJECT_ID }}
-  deploy-prod:
-    name: Deploy application to prod
-    needs: [test-build-and-push]
+
+  deploy-dev:
+    name: Deploy application to dev
+    needs: test-build-and-push
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -55,6 +57,21 @@ jobs:
       - name: Deploy application
         uses: nais/deploy/actions/deploy@v2
         env:
-          CLUSTER: prod-fss
-          RESOURCE: nais-prod.yaml
+          CLUSTER: dev-gcp
+          RESOURCE: nais-dev-gcp.yaml
+          VAR: image=${{ needs.test-build-and-push.outputs.image }}
+
+  deploy-prod:
+    name: Deploy application to prod
+    needs: [test-build-and-push, deploy-dev]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy application
+        uses: nais/deploy/actions/deploy@v2
+        env:
+          CLUSTER: prod-gcp
+          RESOURCE: nais-prod-gcp.yaml
           VAR: image=${{ needs.test-build-and-push.outputs.image }}

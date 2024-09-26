@@ -14,26 +14,17 @@ public class EnvironmentProperties {
 
     private String naisAadIssuer;
 
-
     private String tokenxClientId;
 
     private String tokenxDiscoveryUrl;
-
 
     private String loginserviceIdportenAudience;
 
     private String loginserviceIdportenDiscoveryUrl;
 
-
-    private String naisStsDiscoveryUrl;
-
-    private String naisStsClientId;
-
     private String norg2Url;
 
     private String aktorregisterUrl;
-
-    private String soapStsUrl;
 
     private String arbeidsrettetDialogUrl;
 

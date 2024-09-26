@@ -20,8 +20,8 @@ import no.nav.veilarboppfolging.controller.response.AvslutningStatus;
 import no.nav.veilarboppfolging.controller.response.OppfolgingPeriodeDTO;
 import no.nav.veilarboppfolging.controller.response.OppfolgingPeriodeMinimalDTO;
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
+import no.nav.veilarboppfolging.service.ArenaYtelserService;
 import no.nav.veilarboppfolging.service.AuthService;
-import no.nav.veilarboppfolging.service.YtelserOgAktiviteterService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,10 +52,10 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
     AuthService authService;
 
     @MockBean
-    VeilarbarenaClient veilarbarenaClient;
+    ArenaYtelserService arenaYtelserService;
 
     @MockBean
-    YtelserOgAktiviteterService ytelserOgAktiviteterService;
+    VeilarbarenaClient veilarbarenaClient;
 
     @Autowired
     OppfolgingController oppfolgingController;
@@ -120,7 +120,7 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
         // ISERV i arena, ingen ytelser i arena, ingen aktive tiltak hos komet.
         when(veilarbarenaClient.getArenaOppfolgingsstatus(FNR)).thenReturn(Optional.of(new ArenaOppfolging().setFormidlingsgruppe("ISERV")));
         when(veilarbarenaClient.hentOppfolgingsbruker(FNR)).thenReturn(Optional.of(new VeilarbArenaOppfolging().setFormidlingsgruppekode("ISERV")));
-        when(ytelserOgAktiviteterService.harPagaendeYtelse(FNR)).thenReturn(false);
+        when(arenaYtelserService.harPagaendeYtelse(FNR)).thenReturn(false);
         when(amtTiltakClient.harAktiveTiltaksdeltakelser(FNR.get())).thenReturn(false);
 
         AvslutningStatus avslutningStatus = oppfolgingController.hentAvslutningStatus(FNR);
@@ -139,7 +139,7 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
         doReturn(permit).when(poaoTilgangClient).evaluatePolicy(any());
         // ISERV i arena, ingen ytelser i arena, men aktive tiltak hos komet.
         when(veilarbarenaClient.getArenaOppfolgingsstatus(FNR)).thenReturn(Optional.of(new ArenaOppfolging().setFormidlingsgruppe("ISERV")));
-        when(ytelserOgAktiviteterService.harPagaendeYtelse(FNR)).thenReturn(false);
+        when(arenaYtelserService.harPagaendeYtelse(FNR)).thenReturn(false);
         when(amtTiltakClient.harAktiveTiltaksdeltakelser(FNR.get())).thenReturn(true);
 
         AvslutningStatus avslutningStatus = oppfolgingController.avsluttOppfolging(new VeilederBegrunnelseDTO(), FNR);

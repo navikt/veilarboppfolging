@@ -9,18 +9,13 @@ import no.nav.common.audit_log.log.AuditLogger;
 import no.nav.common.audit_log.log.AuditLoggerImpl;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.AuthContextHolderThreadLocal;
-import no.nav.common.cxf.StsConfig;
 import no.nav.common.job.leader_election.LeaderElectionClient;
 import no.nav.common.job.leader_election.ShedLockLeaderElectionClient;
-import no.nav.common.metrics.InfluxClient;
+import no.nav.common.metrics.Event;
 import no.nav.common.metrics.MetricsClient;
-import no.nav.common.metrics.SensuConfig;
 import no.nav.common.rest.client.RestClient;
-import no.nav.common.sts.NaisSystemUserTokenProvider;
-import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.token_client.builder.AzureAdTokenClientBuilder;
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
-import no.nav.common.utils.Credentials;
 import no.nav.poao_tilgang.client.AdGruppe;
 import no.nav.poao_tilgang.client.Decision;
 import no.nav.poao_tilgang.client.PoaoTilgangCachedClient;
@@ -35,9 +30,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
-
-import static no.nav.common.utils.NaisUtils.getCredentials;
 
 @Slf4j
 @Configuration
@@ -60,13 +54,18 @@ public class ApplicationConfig {
 			.build();
 
     @Bean
-    public Credentials serviceUserCredentials() {
-        return getCredentials("service_user");
-    }
-
-    @Bean
     public MetricsClient metricsClient() {
-        return new InfluxClient(SensuConfig.defaultConfig());
+        return new MetricsClient() {
+            @Override
+            public void report(Event event) {
+                //TODO: Fiks
+            }
+
+            @Override
+            public void report(String eventName, Map<String, Object> fields, Map<String, String> tags, long timestampInMilliseconds) {
+                //TODO: Fiks
+            }
+        };
     }
 
     @Bean
@@ -84,32 +83,11 @@ public class ApplicationConfig {
         return AuthContextHolderThreadLocal.instance();
     }
 
-    /*
-     TODO brukes STS av noen lenger?
-      - bruker i batch/kafka consumer for å sette authcontext
-      @see no.nav.veilarboppfolging.service.IservService.finnBrukereOgAvslutt
-      @see no.nav.veilarboppfolging.service.KafkaConsumerService.consumeEndringPaOppfolgingBruker
-
-      Kan vi bruker en azureMachineTokenProvider som en drop-in erstatning? Må vi i så fall legge til veilarboppfolging i inbound access policy?
-     */
-    @Bean
-    public SystemUserTokenProvider systemUserTokenProvider(EnvironmentProperties properties, Credentials serviceUserCredentials) {
-        return new NaisSystemUserTokenProvider(properties.getNaisStsDiscoveryUrl(), serviceUserCredentials.username, serviceUserCredentials.password);
-    }
-
     @Bean
     public AzureAdMachineToMachineTokenClient azureAdMachineToMachineTokenClient() {
         return AzureAdTokenClientBuilder.builder()
                 .withNaisDefaults()
                 .buildMachineToMachineTokenClient();
-    }
-    @Bean
-    public static StsConfig stsConfig(EnvironmentProperties properties, Credentials serviceUserCredentials) {
-        return StsConfig.builder()
-                .url(properties.getSoapStsUrl())
-                .username(serviceUserCredentials.username)
-                .password(serviceUserCredentials.password)
-                .build();
     }
 
     @Bean

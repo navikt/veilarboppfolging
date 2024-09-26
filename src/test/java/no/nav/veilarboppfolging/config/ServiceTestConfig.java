@@ -20,10 +20,10 @@ import org.springframework.context.annotation.Import;
         OppfolgingService.class,
         VeilederTilordningService.class,
         KafkaProducerService.class,
-        YtelserOgAktiviteterService.class,
         KafkaConsumerService.class,
         ArbeidssøkerperiodeConsumerService.class,
         OppfolgingEndringService.class,
-        SakService.class
+        SakService.class,
+        ArenaYtelserService.class
 })
 public class ServiceTestConfig {}

@@ -15,7 +15,6 @@ import org.springframework.context.annotation.Configuration;
 
 import java.util.List;
 
-import static no.nav.common.auth.Constants.AZURE_AD_B2C_ID_TOKEN_COOKIE_NAME;
 import static no.nav.common.auth.oidc.filter.OidcAuthenticator.fromConfigs;
 import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
 import static no.nav.common.utils.EnvironmentUtils.requireApplicationName;
@@ -30,25 +29,10 @@ public class FilterConfig {
             "srvpam-cv-api", "srvveilarbvedtakss", PTO_ADMIN_SERVICE_USER
     );
 
-    private OidcAuthenticatorConfig naisStsAuthConfig(EnvironmentProperties properties) {
-        return new OidcAuthenticatorConfig()
-                .withDiscoveryUrl(properties.getNaisStsDiscoveryUrl())
-                .withClientIds(ALLOWED_SERVICE_USERS)
-                .withUserRole(UserRole.SYSTEM);
-    }
-
     private OidcAuthenticatorConfig tokenxAuthConfig(EnvironmentProperties properties) {
         return new OidcAuthenticatorConfig()
                 .withDiscoveryUrl(properties.getTokenxDiscoveryUrl())
                 .withClientId(properties.getTokenxClientId())
-                .withUserRole(UserRole.EKSTERN);
-    }
-
-    private OidcAuthenticatorConfig loginserviceIdportenConfig(EnvironmentProperties properties) {
-        return new OidcAuthenticatorConfig()
-                .withDiscoveryUrl(properties.getLoginserviceIdportenDiscoveryUrl())
-                .withClientId(properties.getLoginserviceIdportenAudience())
-                .withIdTokenCookieName(AZURE_AD_B2C_ID_TOKEN_COOKIE_NAME)
                 .withUserRole(UserRole.EKSTERN);
     }
 
@@ -77,9 +61,7 @@ public class FilterConfig {
         OidcAuthenticationFilter authenticationFilter = new OidcAuthenticationFilter(
                 fromConfigs(
                         naisAzureAdConfig(properties),
-                        tokenxAuthConfig(properties),
-                        naisStsAuthConfig(properties),
-                        loginserviceIdportenConfig(properties)
+                        tokenxAuthConfig(properties)
                 )
         );
 

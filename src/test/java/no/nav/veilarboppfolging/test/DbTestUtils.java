@@ -1,18 +1,20 @@
 package no.nav.veilarboppfolging.test;
 
 import lombok.SneakyThrows;
-import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
-import no.nav.veilarboppfolging.test.testdriver.TestDriver;
-import org.flywaydb.core.Flyway;
+import no.nav.veilarboppfolging.LocalDatabaseSingleton;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Properties;
+
+import static no.nav.veilarboppfolging.dbutil.DatabaseMigratorKt.migrateDb;
 
 public class DbTestUtils {
 
@@ -25,12 +27,8 @@ public class DbTestUtils {
             "OPPFOLGINGSENHET_ENDRET"
     );
 
-    public static void setupDatabaseFunctions(DataSource dataSource) {
-        runScript(dataSource, "oracle-mock.sql");
-    }
-
     public static void cleanupTestDb() {
-        cleanupTestDb(LocalH2Database.getDb());
+        cleanupTestDb(LocalDatabaseSingleton.INSTANCE.getJdbcTemplate());
     }
 
     public static void cleanupTestDb(JdbcTemplate db) {
@@ -41,23 +39,34 @@ public class DbTestUtils {
         return new TransactionTemplate(new DataSourceTransactionManager(db.getDataSource()));
     }
 
-    public static DataSource createTestDataSource(String dbUrl) {
-        DriverManagerDataSource dataSource = new DriverManagerDataSource();
-        dataSource.setDriverClassName(TestDriver.class.getName());
-        dataSource.setUrl(dbUrl);
-        return dataSource;
-    }
-
     public static void initDb(DataSource dataSource) {
-        var flyway = new Flyway(Flyway.configure()
-                .dataSource(dataSource)
-                .table("schema_version")
-                .validateMigrationNaming(true));
-        flyway.migrate();
+        try(Connection connection = dataSource.getConnection()) {
+            connection.prepareStatement("""
+              CREATE USER veilarboppfolging NOLOGIN;
+              GRANT CONNECT on DATABASE postgres to veilarboppfolging;
+              GRANT USAGE ON SCHEMA public to veilarboppfolging;
+            """.trim()).executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        Properties properties = new Properties();
+        properties.put("flyway.cleanDisabled", false);
+        migrateDb(dataSource);
+//        FluentConfiguration config = Flyway
+//                .configure()
+//                .dataSource(dataSource)
+//                .table("schema_version")
+//                .configuration(properties)
+//                .cleanOnValidationError(true)
+//                .validateMigrationNaming(true);
+//        Flyway flyway = new Flyway(config);
+//        flyway.clean();
+//        flyway.migrate();
     }
 
     private static void deleteAllFromTable(JdbcTemplate db, String tableName) {
-        db.execute("DELETE FROM " + tableName);
+        db.execute("TRUNCATE TABLE " + tableName + " CASCADE");
     }
 
     @SneakyThrows
@@ -66,14 +75,5 @@ public class DbTestUtils {
             String sql = TestUtils.readTestResourceFile(resourceFile);
             statement.execute(sql);
         }
-    }
-
-    public static void lagreOppfølgingsperiode(OppfolgingsperiodeEntity periode) {
-        LocalH2Database.getDb().update(
-                "" +
-                        "INSERT INTO OPPFOLGINGSPERIODE(uuid, aktor_id, startDato, oppdatert, start_begrunnelse) " +
-                        "VALUES (?, ?, ?, CURRENT_TIMESTAMP, ?)",
-                periode.getUuid().toString(), periode.getAktorId(), periode.getStartDato(), periode.getStartetBegrunnelse().name()
-        );
     }
 }

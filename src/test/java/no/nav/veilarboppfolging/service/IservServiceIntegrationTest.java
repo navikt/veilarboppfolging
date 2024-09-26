@@ -1,18 +1,15 @@
 package no.nav.veilarboppfolging.service;
 
-import no.nav.common.auth.context.AuthContextHolderThreadLocal;
-import no.nav.common.auth.context.UserRole;
-import no.nav.common.test.auth.AuthTestUtils;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe;
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
+import no.nav.veilarboppfolging.LocalDatabaseSingleton;
 import no.nav.veilarboppfolging.domain.AvslutningStatusData;
 import no.nav.veilarboppfolging.repository.UtmeldingRepository;
 import no.nav.veilarboppfolging.repository.entity.UtmeldingEntity;
 import no.nav.veilarboppfolging.service.utmelding.KanskjeIservBruker;
 import no.nav.veilarboppfolging.test.DbTestUtils;
-import no.nav.veilarboppfolging.test.LocalH2Database;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -45,7 +42,7 @@ public class IservServiceIntegrationTest {
 
     @Before
     public void setup() {
-        JdbcTemplate db = LocalH2Database.getDb();
+        JdbcTemplate db = LocalDatabaseSingleton.INSTANCE.getJdbcTemplate();
 
         DbTestUtils.cleanupTestDb();
 
@@ -55,12 +52,7 @@ public class IservServiceIntegrationTest {
 
         utmeldingRepository = new UtmeldingRepository(db);
 
-        iservService = new IservService(
-                AuthContextHolderThreadLocal.instance(),
-                () -> AuthTestUtils.createAuthContext(UserRole.SYSTEM, "srvtest").getIdToken().serialize(),
-                mock(MetricsService.class),
-                utmeldingRepository, oppfolgingService, authService
-        );
+        iservService = new IservService(mock(MetricsService.class), utmeldingRepository, oppfolgingService, authService);
     }
 
     @Test

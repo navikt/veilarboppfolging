@@ -7,7 +7,6 @@ import no.nav.common.health.HealthCheckResult;
 import no.nav.common.health.selftest.SelfTestCheck;
 import no.nav.common.health.selftest.SelfTestChecks;
 import no.nav.common.health.selftest.SelfTestMeterBinder;
-import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -20,11 +19,9 @@ import java.util.List;
 public class HelsesjekkConfig {
 
     @Bean
-    public SelfTestChecks selfTestChecks(YtelseskontraktClient ytelseskontraktClient,
-                                         JdbcTemplate jdbcTemplate,
+    public SelfTestChecks selfTestChecks(JdbcTemplate jdbcTemplate,
                                          AktorOppslagClient aktorOppslagClient) {
         List<SelfTestCheck> selfTestChecks = Arrays.asList(
-                new SelfTestCheck("Ping av ytelseskontrakt_V3. Henter informasjon om ytelser fra Arena.", false, ytelseskontraktClient),
                 new SelfTestCheck("Enkel spørring mot Databasen til veilarboppfolging.", true, checkDbHealth(jdbcTemplate)),
                 // TODO selftest poao-tilgang
                 new SelfTestCheck("Ping av aktor oppslag client (konvertere mellom aktorId og Fnr).", true, aktorOppslagClient)
@@ -36,7 +33,7 @@ public class HelsesjekkConfig {
     private HealthCheck checkDbHealth(JdbcTemplate jdbcTemplate) {
         return () -> {
             try {
-                jdbcTemplate.queryForObject("SELECT 1 FROM DUAL", Long.class);
+                jdbcTemplate.queryForObject("SELECT 1", Long.class);
                 return HealthCheckResult.healthy();
             } catch (Exception e) {
                 log.error("Helsesjekk mot database feilet", e);

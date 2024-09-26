@@ -2,6 +2,9 @@ name: Deploy branch to dev
 run-name: Deploy feature branch ${{ github.ref_name }} by @${{ github.actor }}
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - gcp
 
 env:
   PRINT_PAYLOAD: true
@@ -33,8 +36,8 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      - name: Build (skipping tests)
-        run: mvn -B package -DskipTests
+      - name: Build
+        run: mvn -B package
 
       - name: Build and push Docker image
         uses: nais/docker-build-push@v0
@@ -55,6 +58,6 @@ jobs:
       - name: Deploy application
         uses: nais/deploy/actions/deploy@v2
         env:
-          CLUSTER: dev-fss
-          RESOURCE: nais-dev.yaml
+          CLUSTER: dev-gcp
+          RESOURCE: nais-dev-gcp.yaml
           VAR: image=${{ needs.test-build-and-push.outputs.image }}

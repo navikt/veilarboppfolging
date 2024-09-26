@@ -11,9 +11,11 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.sql.ResultSet;
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 
+import static no.nav.veilarboppfolging.dbutil.DbutilsKt.toInt;
 import static no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository.AKTOR_ID;
 import static no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository.GJELDENDE_MANUELL_STATUS;
 import static no.nav.veilarboppfolging.utils.DbUtils.hentZonedDateTime;
@@ -80,8 +82,8 @@ public class ManuellStatusRepository {
                         "VALUES(?, ?, ?, ?, ?, ?, ?)",
                 manuellStatus.getId(),
                 manuellStatus.getAktorId(),
-                manuellStatus.isManuell(),
-                manuellStatus.getDato(),
+                toInt(manuellStatus.isManuell()),
+                manuellStatus.getDato() != null ? Timestamp.from(manuellStatus.getDato().toInstant()) : null, // TODO: En test viser at det kan være null, er det virkelig ønskelig?
                 manuellStatus.getBegrunnelse(),
                 getName(manuellStatus.getOpprettetAv()),
                 manuellStatus.getOpprettetAvBrukerId()

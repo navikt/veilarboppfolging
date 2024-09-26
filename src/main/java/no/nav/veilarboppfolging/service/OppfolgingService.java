@@ -44,7 +44,6 @@ import static no.nav.veilarboppfolging.utils.SecureLog.secureLog;
 public class OppfolgingService {
 
     private final KafkaProducerService kafkaProducerService;
-    private final YtelserOgAktiviteterService ytelserOgAktiviteterService;
     private final KvpService kvpService;
     private final ArenaOppfolgingService arenaOppfolgingService;
     private final AuthService authService;
@@ -58,11 +57,11 @@ public class OppfolgingService {
     private final MaalRepository maalRepository;
     private final BrukerOppslagFlereOppfolgingAktorRepository brukerOppslagFlereOppfolgingAktorRepository;
     private final TransactionTemplate transactor;
+    private final ArenaYtelserService arenaYtelserService;
 
     @Autowired
     public OppfolgingService(
             KafkaProducerService kafkaProducerService,
-            YtelserOgAktiviteterService ytelserOgAktiviteterService,
             KvpService kvpService,
             ArenaOppfolgingService arenaOppfolgingService,
             AuthService authService,
@@ -74,10 +73,10 @@ public class OppfolgingService {
             KvpRepository kvpRepository,
             MaalRepository maalRepository,
             BrukerOppslagFlereOppfolgingAktorRepository brukerOppslagFlereOppfolgingAktorRepository,
-            TransactionTemplate transactor
+            TransactionTemplate transactor,
+            ArenaYtelserService arenaYtelserService
     ) {
         this.kafkaProducerService = kafkaProducerService;
-        this.ytelserOgAktiviteterService = ytelserOgAktiviteterService;
         this.kvpService = kvpService;
         this.arenaOppfolgingService = arenaOppfolgingService;
         this.authService = authService;
@@ -89,6 +88,7 @@ public class OppfolgingService {
         this.maalRepository = maalRepository;
         this.brukerOppslagFlereOppfolgingAktorRepository = brukerOppslagFlereOppfolgingAktorRepository;
         this.transactor = transactor;
+        this.arenaYtelserService = arenaYtelserService;
     }
 
     @Transactional // TODO: kan denne være read only?
@@ -423,7 +423,7 @@ public class OppfolgingService {
         return AvslutningStatusData.builder()
                 .kanAvslutte(kanAvslutte)
                 .underOppfolging(erUnderOppfolgingIArena)
-                .harYtelser(ytelserOgAktiviteterService.harPagaendeYtelse(fnr))
+                .harYtelser(arenaYtelserService.harPagaendeYtelse(fnr))
                 .underKvp(kvpService.erUnderKvp(aktorId))
                 .inaktiveringsDato(inaktiveringsDato)
                 .erIserv(erIserv)

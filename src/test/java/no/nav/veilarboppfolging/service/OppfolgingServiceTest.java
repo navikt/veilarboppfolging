@@ -5,17 +5,11 @@ import lombok.val;
 import no.nav.common.client.aktorregister.IngenGjeldendeIdentException;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt.Ytelseskontrakt;
-import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.HentYtelseskontraktListeRequest;
-import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.HentYtelseskontraktListeResponse;
 import no.nav.veilarboppfolging.ForbiddenException;
 import no.nav.veilarboppfolging.client.amttiltak.AmtTiltakClient;
 import no.nav.veilarboppfolging.client.digdir_krr.KRRData;
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolgingTilstand;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
-import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktClient;
-import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktMapper;
-import no.nav.veilarboppfolging.client.ytelseskontrakt.YtelseskontraktResponse;
 import no.nav.veilarboppfolging.controller.response.VeilederTilgang;
 import no.nav.veilarboppfolging.domain.AvslutningStatusData;
 import no.nav.veilarboppfolging.domain.OppfolgingStatusData;
@@ -27,7 +21,6 @@ import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
 import no.nav.veilarboppfolging.test.DbTestUtils;
 import no.nav.veilarboppfolging.test.IsolatedDatabaseTest;
-import no.nav.veilarboppfolging.utils.DateUtils;
 import no.nav.veilarboppfolging.utils.OppfolgingsperiodeUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,12 +28,9 @@ import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Stream;
 
-import static java.util.stream.Collectors.toList;
 import static org.junit.Assert.*;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -60,7 +50,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     private AuthService authService = mock(AuthService.class);
     private KafkaProducerService kafkaProducerService = mock(KafkaProducerService.class);
     private ArenaOppfolgingService arenaOppfolgingService = mock(ArenaOppfolgingService.class);
-    private YtelseskontraktClient ytelseskontraktClient = mock(YtelseskontraktClient.class);
+    private ArenaYtelserService arenaYtelserService = mock(ArenaYtelserService.class);
     private KvpService kvpService = mock(KvpService.class);
     private KvpRepository kvpRepository = mock(KvpRepository.class);
     private MetricsService metricsService = mock(MetricsService.class);
@@ -79,7 +69,6 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         oppfolgingsPeriodeRepository = new OppfolgingsPeriodeRepository(db, transactor);
 
         oppfolgingService = new OppfolgingService(kafkaProducerService,
-                new YtelserOgAktiviteterService(ytelseskontraktClient),
                 kvpService,
                 arenaOppfolgingService,
                 authService,
@@ -90,7 +79,8 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
                 kvpRepository,
                 null,
                 null,
-                 transactor
+                 transactor,
+                arenaYtelserService
                 );
 
 
@@ -99,7 +89,6 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         when(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID);
         when(authService.getFnrOrThrow(AKTOR_ID)).thenReturn(FNR);
         when(arenaOppfolgingService.hentOppfolgingTilstand(FNR)).thenReturn(Optional.of(arenaOppfolgingTilstand));
-        when(ytelseskontraktClient.hentYtelseskontraktListe(any())).thenReturn(mock(YtelseskontraktResponse.class));
         when(manuellStatusService.hentDigdirKontaktinfo(FNR)).thenReturn(new KRRData());
         when(amtTiltakClient.harAktiveTiltaksdeltakelser(FNR.get())).thenReturn(false);
     }
@@ -305,7 +294,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         assertUnderOppfolgingLagret(AKTOR_ID);
 
         gittArenaOppfolgingStatus("ISERV", "");
-        gittYtelserMedStatus("Inaktiv", "Aktiv");
+        when(arenaYtelserService.harPagaendeYtelse(FNR)).thenReturn(true);
 
         AvslutningStatusData avslutningStatusData = oppfolgingService.hentAvslutningStatus(FNR);
 
@@ -317,8 +306,6 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     public void underOppfolgingNiva3_skalFeileHvisIkkeTilgang() {
         doThrow(new ForbiddenException("Hei"))
                 .when(authService).sjekkTilgangTilPersonMedNiva3(AKTOR_ID);
-
-        gittYtelserMedStatus();
 
         oppfolgingService.erUnderOppfolgingNiva3(FNR);
     }
@@ -397,26 +384,5 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
             .withReservert(reservert);
 
         when(manuellStatusService.hentDigdirKontaktinfo(FNR)).thenReturn(kontaktinfo);
-    }
-
-
-    private void gittYtelserMedStatus(String... statuser) {
-        HentYtelseskontraktListeRequest request = new HentYtelseskontraktListeRequest();
-        request.setPersonidentifikator(FNR.get());
-        HentYtelseskontraktListeResponse response = new HentYtelseskontraktListeResponse();
-
-        List<Ytelseskontrakt> ytelser = Stream.of(statuser)
-                .map((status) -> {
-                    Ytelseskontrakt ytelse = new Ytelseskontrakt();
-                    ytelse.setStatus(status);
-                    ytelse.setDatoKravMottatt(DateUtils.convertDateToXMLGregorianCalendar(LocalDate.now()));
-                    return ytelse;
-                })
-                .collect(toList());
-
-        response.getYtelseskontraktListe().addAll(ytelser);
-
-        when(ytelseskontraktClient.hentYtelseskontraktListe(FNR))
-                .thenReturn(YtelseskontraktMapper.tilYtelseskontrakt(response));
     }
 }

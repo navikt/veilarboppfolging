@@ -8,9 +8,7 @@ import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.UserRole;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.client.aktorregister.IngenGjeldendeIdentException;
-import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.types.identer.Fnr;
-import no.nav.paw.arbeidssokerregisteret.api.v1.Periode;
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
 import no.nav.veilarboppfolging.service.utmelding.KanskjeIservBruker;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -30,8 +28,6 @@ public class KafkaConsumerService {
 
     private final AuthContextHolder authContextHolder;
 
-    private final SystemUserTokenProvider systemUserTokenProvider;
-
     private final KvpService kvpService;
 
     private final IservService iservService;
@@ -47,7 +43,6 @@ public class KafkaConsumerService {
     @Autowired
     public KafkaConsumerService(
             AuthContextHolder authContextHolder,
-            SystemUserTokenProvider systemUserTokenProvider,
             @Lazy KvpService kvpService,
             @Lazy IservService iservService,
             OppfolgingsenhetEndringService oppfolgingsenhetEndringService,
@@ -55,7 +50,6 @@ public class KafkaConsumerService {
             AktorOppslagClient aktorOppslagClient,
             SisteEndringPaaOppfolgingBrukerService sisteEndringPaaOppfolgingBrukerService) {
         this.authContextHolder = authContextHolder;
-        this.systemUserTokenProvider = systemUserTokenProvider;
         this.kvpService = kvpService;
         this.iservService = iservService;
         this.oppfolgingsenhetEndringService = oppfolgingsenhetEndringService;
@@ -81,18 +75,11 @@ public class KafkaConsumerService {
                     "Denne loggmeldingen er kun til informasjon slik at vi eventuelt kan fange opp dette scenariet til ettertid.");
         }
 
-        var context = new AuthContext(
-                UserRole.SYSTEM,
-                JWTParser.parse(systemUserTokenProvider.getSystemUserToken())
-        );
-
-        authContextHolder.withContext(context, () -> {
-            kvpService.avsluttKvpVedEnhetBytte(endringPaBruker);
-            iservService.oppdaterUtmeldingsStatus(KanskjeIservBruker.Companion.of(endringPaBruker));
-            oppfolgingsenhetEndringService.behandleBrukerEndring(endringPaBruker);
-            oppfolgingEndringService.oppdaterOppfolgingMedStatusFraArena(endringPaBruker);
-            sisteEndringPaaOppfolgingBrukerService.lagreSisteEndring(brukerFnr, endringPaBruker.getSistEndretDato());
-        });
+        kvpService.avsluttKvpVedEnhetBytte(endringPaBruker);
+        iservService.oppdaterUtmeldingsStatus(KanskjeIservBruker.Companion.of(endringPaBruker));
+        oppfolgingsenhetEndringService.behandleBrukerEndring(endringPaBruker);
+        oppfolgingEndringService.oppdaterOppfolgingMedStatusFraArena(endringPaBruker);
+        sisteEndringPaaOppfolgingBrukerService.lagreSisteEndring(brukerFnr, endringPaBruker.getSistEndretDato());
     }
 
     private boolean erEndringGammel(Fnr fnr, ZonedDateTime nyEndringTidspunkt) {

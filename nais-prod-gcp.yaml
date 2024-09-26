@@ -2,18 +2,33 @@ kind: Application
 apiVersion: nais.io/v1alpha1
 metadata:
   name: veilarboppfolging
-  namespace: pto
+  namespace: poao
   labels:
-    team: pto
+    team: poao
 spec:
   image: {{image}}
   ingresses:
-    - https://veilarboppfolging.prod-fss-pub.nais.io
-    - https://veilarboppfolging.nais.adeo.no
-    - https://app.adeo.no/veilarboppfolging
-    - https://veilarboppfolging.intern.nav.no
+    - https://veilarboppfolging-gcp.intern.nav.no
   webproxy: true
   port: 8080
+  gcp:
+    sqlInstances:
+      - name: veilarboppfolging
+        type: POSTGRES_14
+        tier: db-custom-8-53248 #TODO reduser etter migrering?
+        diskType: SSD
+        diskAutoresize: true
+        highAvailability: true
+        pointInTimeRecovery: true
+        flags: # Nødvendig for datastreams
+          - name: cloudsql.logical_decoding
+            value: "on"
+        databases:
+          - name: veilarboppfolging
+            envVarPrefix: DB
+            users:
+              - name: datastream
+              - name: veilarboppfolging_midlertidig # Bruker uten write-rettigheter
   prometheus:
     enabled: true
     path: veilarboppfolging/internal/prometheus
@@ -34,22 +49,39 @@ spec:
     requests:
       cpu: 200m
       memory: 2048Mi
-  envFrom:
-    - configmap: pto-config
-    - configmap: loginservice-idporten
+  observability:
+    autoInstrumentation:
+      enabled: true
+      runtime: java
   env:
     - name: POAO_TILGANG_URL
-      value: http://poao-tilgang.poao.svc.nais.local
+      value: http://poao-tilgang.poao
     - name: POAO_TILGANG_SCOPE
-      value: api://prod-fss.poao.poao-tilgang/.default
+      value: api://prod-gcp.poao.poao-tilgang/.default
     - name: DIGDIR_KRR_PROXY_URL
-      value: https://digdir-krr-proxy.intern.nav.no
+      value: http://digdir-krr-proxy.team-rocket
     - name: DIGDIR_KRR_PROXY_SCOPE
       value: api://prod-gcp.team-rocket.digdir-krr-proxy/.default
     - name: AMTTILTAK_URL
-      value: https://amt-tiltak.intern.nav.no
+      value: http://amt-tiltak.amt
     - name: AMTTILTAK_SCOPE
       value: api://prod-gcp.amt.amt-tiltak/.default
+    - name: KAFKA_ENABLED
+      value: "true"
+    - name: VEILARBOPPFOLGING_FSS_URL
+      value: "https://veilarboppfolging.prod-fss-pub.nais.io"
+    - name: VEILARBARENA_URL
+      value: "https://veilarbarena.prod-fss-pub.nais.io"
+    - name: VEILARBARENA_AZURE_SCOPE
+      value: "api://prod-fss.pto.veilarbarena/.default"
+    - name: FSS_PROXY_ENABLED
+      value: "false"
+    - name: NORG2_URL
+      value: "http://norg2.org/norg2"
+    - name: PDL_URL
+      value: "https://pdl-api.prod-fss-pub.nais.io"
+    - name: PDL_SCOPE
+      value: "api://prod-fss.pdl.pdl-api/.default"
   secureLogs:
     enabled: true
   kafka:
@@ -65,6 +97,23 @@ spec:
   tokenx:
     enabled: true
   accessPolicy:
+    outbound:
+      rules:
+        - application: veilarbarena
+          namespace: pto
+          cluster: prod-fss
+        - application: digdir-krr-proxy
+          namespace: team-rocket
+          cluster: prod-gcp
+        - application: poao-tilgang
+        - application: amt-tiltak
+          namespace: amt
+          cluster: prod-gcp
+      external:
+        - host: veilarboppfolging.prod-fss-pub.nais.io
+        - host: veilarbarena.prod-fss-pub.nais.io
+        - host: norg2.prod-fss-pub.nais.io
+        - host: pdl-api.prod-fss-pub.nais.io
     inbound:
       rules:
         - application: veilarboppfolging
@@ -165,15 +214,3 @@ spec:
         - application: syfomodiaperson
           namespace: teamsykefravr
           cluster: prod-gcp
-  vault:
-    enabled: true
-    paths:
-      - kvPath: /oracle/data/prod/creds/veilarboppfolging-user
-        mountPath: /var/run/secrets/nais.io/oracle_creds
-      - kvPath: /serviceuser/data/prod/srvveilarboppfolging
-        mountPath: /var/run/secrets/nais.io/service_user
-      - kvPath: /kv/prod/fss/veilarboppfolging/default
-        mountPath: /var/run/secrets/nais.io/vault
-      - kvPath: /oracle/data/prod/config/veilarboppfolging
-        mountPath: /var/run/secrets/nais.io/oracle_config
-
