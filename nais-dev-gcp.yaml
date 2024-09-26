@@ -103,6 +103,9 @@ spec:
           namespace: team-rocket
           cluster: dev-gcp
         - application: poao-tilgang
+        - application: amt-tiltak
+          namespace: amt
+          cluster: dev-gcp
       external:
         - host: veilarboppfolging.dev-fss-pub.nais.io
         - host: veilarbarena.dev-fss-pub.nais.io
