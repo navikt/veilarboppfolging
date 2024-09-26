@@ -105,6 +105,7 @@ spec:
         - application: digdir-krr-proxy
           namespace: team-rocket
           cluster: prod-gcp
+        - application: poao-tilgang
       external:
         - host: veilarboppfolging.prod-fss-pub.nais.io
         - host: veilarbarena.prod-fss-pub.nais.io
