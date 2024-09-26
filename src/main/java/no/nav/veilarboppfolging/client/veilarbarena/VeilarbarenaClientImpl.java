@@ -52,7 +52,7 @@ public class VeilarbarenaClientImpl implements VeilarbarenaClient {
     public Optional<VeilarbArenaOppfolging> hentOppfolgingsbruker(Fnr fnr) {
     	PersonRequest personRequest = new PersonRequest(fnr);
         Request request = new Request.Builder()
-                .url(joinPaths(veilarbarenaUrl, "/api/v2/hent-oppfolgingsbruker"))
+                .url(joinPaths(veilarbarenaUrl, "/veilarbarena/api/v2/hent-oppfolgingsbruker"))
                 .header(ACCEPT, APPLICATION_JSON_VALUE)
                 .header(AUTHORIZATION, "Bearer " + getToken())
 				.post(RequestBody.create(JsonUtils.toJson(personRequest), MEDIA_TYPE_JSON))
@@ -75,7 +75,7 @@ public class VeilarbarenaClientImpl implements VeilarbarenaClient {
     public Optional<ArenaOppfolging> getArenaOppfolgingsstatus(Fnr fnr) {
 		PersonRequest personRequest = new PersonRequest(fnr);
         Request request = new Request.Builder()
-                .url(joinPaths(veilarbarenaUrl, "/api/v2/hent-oppfolgingsstatus"))
+                .url(joinPaths(veilarbarenaUrl, "/veilarbarena/api/v2/hent-oppfolgingsstatus"))
                 .header(ACCEPT, APPLICATION_JSON_VALUE)
                 .header(AUTHORIZATION, "Bearer " + getToken())
 				.post(RequestBody.create(JsonUtils.toJson(personRequest), MEDIA_TYPE_JSON))
@@ -97,7 +97,7 @@ public class VeilarbarenaClientImpl implements VeilarbarenaClient {
     public Optional<YtelserDTO> getArenaYtelser(Fnr fnr) {
         PersonRequest personRequest = new PersonRequest(fnr);
         Request request = new Request.Builder()
-                .url(joinPaths(veilarbarenaUrl, "/api/v2/hent-ytelser"))
+                .url(joinPaths(veilarbarenaUrl, "/veilarbarena/api/v2/hent-ytelser"))
                 .header(ACCEPT, APPLICATION_JSON_VALUE)
                 .header(AUTHORIZATION, "Bearer " + getToken())
                 .post(RequestBody.create(JsonUtils.toJson(personRequest), MEDIA_TYPE_JSON))
@@ -117,7 +117,7 @@ public class VeilarbarenaClientImpl implements VeilarbarenaClient {
 
     @Override
     public HealthCheckResult checkHealth() {
-        return HealthCheckUtils.pingUrl(joinPaths(veilarbarenaUrl, "/internal/isAlive"), client);
+        return HealthCheckUtils.pingUrl(joinPaths(veilarbarenaUrl, "/veilarbarena/internal/isAlive"), client);
     }
 
 }

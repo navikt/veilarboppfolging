@@ -50,8 +50,6 @@ public class AdminController {
 
     private final OppfolgingService oppfolgingService;
 
-    private final AktorOppslagClient aktorOppslagClient;
-
     @PostMapping("/republiser/oppfolgingsperioder")
     public String republiserOppfolgingsperioder(@RequestBody(required = false) RepubliserOppfolgingsperioderRequest request) {
         sjekkTilgangTilAdmin();
