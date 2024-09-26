@@ -264,11 +264,11 @@ class AuthServiceTest {
     }
 
     @Test
-    void harIkkeRolleSkalFaPermissionDenied_sjekkTilgang() {
+    void internProssessHarIkkeRolle_sjekkTilgang() {
         setupAuthService();
         AktorId aktorId = AktorId.of("123");
-        assertThrows(ForbiddenException.class, () -> authService.sjekkLesetilgangMedAktorId(aktorId));
-        assertThrows(ForbiddenException.class, () -> authService.sjekkSkrivetilgangMedAktorId(aktorId));
+        assertDoesNotThrow(() -> authService.sjekkLesetilgangMedAktorId(aktorId));
+        assertDoesNotThrow(() -> authService.sjekkSkrivetilgangMedAktorId(aktorId));
     }
 
     @Test
