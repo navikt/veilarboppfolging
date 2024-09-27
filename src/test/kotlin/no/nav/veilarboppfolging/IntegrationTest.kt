@@ -21,6 +21,7 @@ import no.nav.veilarboppfolging.service.AuthService
 import no.nav.veilarboppfolging.service.MetricsService
 import no.nav.veilarboppfolging.service.OppfolgingService
 import no.nav.veilarboppfolging.test.DbTestUtils
+import no.nav.veilarboppfolging.tokenClient.ErrorMappedAzureAdMachineToMachineTokenClient
 import org.junit.jupiter.api.BeforeEach
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
@@ -75,7 +76,7 @@ open class IntegrationTest {
     lateinit var oppfolgingsStatusRepository: OppfolgingsStatusRepository
 
     @MockBean
-    lateinit var machineToMachineTokenClient: MachineToMachineTokenClient
+    lateinit var azureMachineToMachineTokenClient: ErrorMappedAzureAdMachineToMachineTokenClient
 
     @Autowired
     lateinit var sakRepository: SakRepository
