@@ -9,18 +9,17 @@ import no.nav.common.audit_log.cef.CefMessageEvent;
 import no.nav.common.audit_log.cef.CefMessageSeverity;
 import no.nav.common.audit_log.log.AuditLogger;
 import no.nav.common.auth.context.AuthContextHolder;
-import no.nav.common.auth.context.UserRole;
 import no.nav.common.auth.utils.IdentUtils;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.client.aktoroppslag.BrukerIdenter;
 import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
-import no.nav.common.token_client.client.MachineToMachineTokenClient;
 import no.nav.common.types.identer.*;
 import no.nav.poao_tilgang.client.*;
 import no.nav.veilarboppfolging.BadRequestException;
 import no.nav.veilarboppfolging.ForbiddenException;
 import no.nav.veilarboppfolging.UnauthorizedException;
 import no.nav.veilarboppfolging.config.EnvironmentProperties;
+import no.nav.veilarboppfolging.tokenClient.ErrorMappedAzureAdMachineToMachineTokenClient;
 import no.nav.veilarboppfolging.utils.DownstreamApi;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -48,7 +47,7 @@ public class AuthService {
 
     private final AzureAdOnBehalfOfTokenClient aadOboTokenClient;
 
-    private final MachineToMachineTokenClient machineToMachineTokenClient;
+    private final ErrorMappedAzureAdMachineToMachineTokenClient machineToMachineTokenClient;
 
     private final AktorOppslagClient aktorOppslagClient;
 
@@ -57,7 +56,7 @@ public class AuthService {
     private final PoaoTilgangClient poaoTilgangClient;
 
     @Autowired
-    public AuthService(AuthContextHolder authContextHolder, AktorOppslagClient aktorOppslagClient, AzureAdOnBehalfOfTokenClient aadOboTokenClient, MachineToMachineTokenClient machineToMachineTokenClient, EnvironmentProperties environmentProperties, AuditLogger auditLogger, PoaoTilgangClient poaoTilgangClient) {
+    public AuthService(AuthContextHolder authContextHolder, AktorOppslagClient aktorOppslagClient, AzureAdOnBehalfOfTokenClient aadOboTokenClient, ErrorMappedAzureAdMachineToMachineTokenClient machineToMachineTokenClient, EnvironmentProperties environmentProperties, AuditLogger auditLogger, PoaoTilgangClient poaoTilgangClient) {
         this.authContextHolder = authContextHolder;
         this.aktorOppslagClient = aktorOppslagClient;
         this.aadOboTokenClient = aadOboTokenClient;

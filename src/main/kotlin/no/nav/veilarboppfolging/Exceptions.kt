@@ -20,6 +20,7 @@ class ForbiddenException(message: String) : VeilarboppfolgingException(message)
 class NotFoundException(message: String) : VeilarboppfolgingException(message)
 class InternalServerError(message: String) : VeilarboppfolgingException(message)
 class BadRequestException(message: String) : VeilarboppfolgingException(message)
+class NetworkException(message: String) : VeilarboppfolgingException(message)
 class FantIkkeBrukerIArenaException() : VeilarboppfolgingException("Fant ikke bruker i arena") {
     override fun log() {
         logger.warn("Fant ikke oppfolgingsbruker i arena")
@@ -49,6 +50,7 @@ class DefaultExceptionHandler {
             is NotFoundException -> response.sendError(HttpStatus.NOT_FOUND.value(), ex.message)
             is FantIkkeBrukerIArenaException -> response.sendError(HttpStatus.NOT_FOUND.value(), ex.message)
             is UnauthorizedException -> response.sendError(HttpStatus.UNAUTHORIZED.value(), ex.message)
+            is NetworkException -> response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), ex.message)
         }
     }
 
