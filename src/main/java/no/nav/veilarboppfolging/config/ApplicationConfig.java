@@ -16,12 +16,14 @@ import no.nav.common.metrics.MetricsClient;
 import no.nav.common.rest.client.RestClient;
 import no.nav.common.token_client.builder.AzureAdTokenClientBuilder;
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
+import no.nav.common.token_client.client.MachineToMachineTokenClient;
 import no.nav.poao_tilgang.client.AdGruppe;
 import no.nav.poao_tilgang.client.Decision;
 import no.nav.poao_tilgang.client.PoaoTilgangCachedClient;
 import no.nav.poao_tilgang.client.PoaoTilgangClient;
 import no.nav.poao_tilgang.client.PoaoTilgangHttpClient;
 import no.nav.poao_tilgang.client.PolicyInput;
+import no.nav.veilarboppfolging.tokenClient.ErrorMappedAzureAdMachineToMachineTokenClient;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -91,12 +93,17 @@ public class ApplicationConfig {
     }
 
     @Bean
+    public ErrorMappedAzureAdMachineToMachineTokenClient errorMappedAzureAdMachineToMachineTokenClient() {
+        return new ErrorMappedAzureAdMachineToMachineTokenClient();
+    }
+
+    @Bean
     AuditLogger auditLogger() {
         return new AuditLoggerImpl();
     }
 
 	@Bean
-	public PoaoTilgangClient poaoTilgangClient(EnvironmentProperties properties, AzureAdMachineToMachineTokenClient tokenClient) {
+	public PoaoTilgangClient poaoTilgangClient(EnvironmentProperties properties, ErrorMappedAzureAdMachineToMachineTokenClient tokenClient) {
 		return new PoaoTilgangCachedClient(
 				new PoaoTilgangHttpClient(
 						properties.getPoaoTilgangUrl(),
