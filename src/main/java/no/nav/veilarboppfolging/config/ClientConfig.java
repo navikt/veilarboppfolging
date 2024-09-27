@@ -20,6 +20,7 @@ import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClientImpl;
 import no.nav.veilarboppfolging.service.AuthService;
 import no.nav.veilarboppfolging.tokenClient.ErrorMappedAzureAdMachineToMachineTokenClient;
+import no.nav.veilarboppfolging.tokenClient.ErrorMappedAzureAdOnBehalfOfTokenClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -76,6 +77,11 @@ public class ClientConfig {
         return AzureAdTokenClientBuilder.builder()
                 .withNaisDefaults()
                 .buildOnBehalfOfTokenClient();
+    }
+
+    @Bean
+    public ErrorMappedAzureAdOnBehalfOfTokenClient errorMappedAzureAdOnBehalfOfTokenClient() {
+        return new ErrorMappedAzureAdOnBehalfOfTokenClient();
     }
 
     @Bean

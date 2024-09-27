@@ -9,7 +9,6 @@ import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.common.auth.context.UserRole;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
-import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
@@ -18,6 +17,7 @@ import no.nav.poao_tilgang.client.api.ApiResult;
 import no.nav.veilarboppfolging.ForbiddenException;
 import no.nav.veilarboppfolging.config.EnvironmentProperties;
 import no.nav.veilarboppfolging.tokenClient.ErrorMappedAzureAdMachineToMachineTokenClient;
+import no.nav.veilarboppfolging.tokenClient.ErrorMappedAzureAdOnBehalfOfTokenClient;
 import no.nav.veilarboppfolging.utils.auth.PolicyInputMatcher;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -49,7 +49,7 @@ class AuthServiceTest {
     @Mock
     private AktorOppslagClient aktorOppslagClient;
     @Mock
-    private AzureAdOnBehalfOfTokenClient azureAdOnBehalfOfTokenClient;
+    private ErrorMappedAzureAdOnBehalfOfTokenClient azureAdOnBehalfOfTokenClient;
     @Mock
     private ErrorMappedAzureAdMachineToMachineTokenClient machineToMachineTokenClient;
     @Mock

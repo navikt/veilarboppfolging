@@ -20,6 +20,7 @@ import no.nav.veilarboppfolging.ForbiddenException;
 import no.nav.veilarboppfolging.UnauthorizedException;
 import no.nav.veilarboppfolging.config.EnvironmentProperties;
 import no.nav.veilarboppfolging.tokenClient.ErrorMappedAzureAdMachineToMachineTokenClient;
+import no.nav.veilarboppfolging.tokenClient.ErrorMappedAzureAdOnBehalfOfTokenClient;
 import no.nav.veilarboppfolging.utils.DownstreamApi;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -45,7 +46,7 @@ public class AuthService {
     private final AuthContextHolder authContextHolder;
     private final AuditLogger auditLogger;
 
-    private final AzureAdOnBehalfOfTokenClient aadOboTokenClient;
+    private final ErrorMappedAzureAdOnBehalfOfTokenClient aadOboTokenClient;
 
     private final ErrorMappedAzureAdMachineToMachineTokenClient machineToMachineTokenClient;
 
@@ -56,7 +57,7 @@ public class AuthService {
     private final PoaoTilgangClient poaoTilgangClient;
 
     @Autowired
-    public AuthService(AuthContextHolder authContextHolder, AktorOppslagClient aktorOppslagClient, AzureAdOnBehalfOfTokenClient aadOboTokenClient, ErrorMappedAzureAdMachineToMachineTokenClient machineToMachineTokenClient, EnvironmentProperties environmentProperties, AuditLogger auditLogger, PoaoTilgangClient poaoTilgangClient) {
+    public AuthService(AuthContextHolder authContextHolder, AktorOppslagClient aktorOppslagClient, ErrorMappedAzureAdOnBehalfOfTokenClient aadOboTokenClient, ErrorMappedAzureAdMachineToMachineTokenClient machineToMachineTokenClient, EnvironmentProperties environmentProperties, AuditLogger auditLogger, PoaoTilgangClient poaoTilgangClient) {
         this.authContextHolder = authContextHolder;
         this.aktorOppslagClient = aktorOppslagClient;
         this.aadOboTokenClient = aadOboTokenClient;
