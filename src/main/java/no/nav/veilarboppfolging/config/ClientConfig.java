@@ -19,6 +19,7 @@ import no.nav.veilarboppfolging.client.digdir_krr.DigdirClientImpl;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClientImpl;
 import no.nav.veilarboppfolging.service.AuthService;
+import no.nav.veilarboppfolging.tokenClient.ErrorMappedAzureAdMachineToMachineTokenClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -36,7 +37,7 @@ public class ClientConfig {
     private String pdlScope;
 
     @Bean
-    public AktorOppslagClient aktorOppslagClient(MachineToMachineTokenClient tokenClient) {
+    public AktorOppslagClient aktorOppslagClient(ErrorMappedAzureAdMachineToMachineTokenClient tokenClient) {
         PdlAktorOppslagClient pdlClient = new PdlAktorOppslagClient(
                 pdlUrl,
                 () -> tokenClient.createMachineToMachineToken(pdlScope));
@@ -49,7 +50,7 @@ public class ClientConfig {
     }
 
     @Bean
-    public DigdirClient digdirClient(EnvironmentProperties properties, AzureAdMachineToMachineTokenClient tokenClient, AuthService authService) {
+    public DigdirClient digdirClient(EnvironmentProperties properties, ErrorMappedAzureAdMachineToMachineTokenClient tokenClient, AuthService authService) {
 		return new DigdirClientImpl(properties.getDigdirKrrProxyUrl(),
 				() -> tokenClient.createMachineToMachineToken(properties.getDigdirKrrProxyScope()),
 				() -> authService.getAadOboTokenForTjeneste(properties.getDigdirKrrProxyScope()),
@@ -58,7 +59,7 @@ public class ClientConfig {
     }
 
     @Bean
-    public AmtTiltakClient amtTiltakClient(EnvironmentProperties properties, AzureAdMachineToMachineTokenClient tokenClient) {
+    public AmtTiltakClient amtTiltakClient(EnvironmentProperties properties, ErrorMappedAzureAdMachineToMachineTokenClient tokenClient) {
         return new AmtTiltakClient(properties.getAmtTiltakUrl(),
                 () -> tokenClient.createMachineToMachineToken(properties.getAmtTiltakScope()),
                 RestClient.baseClient()

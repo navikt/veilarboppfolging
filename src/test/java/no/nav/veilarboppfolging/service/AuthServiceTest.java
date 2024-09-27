@@ -10,25 +10,21 @@ import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.common.auth.context.UserRole;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
-import no.nav.common.token_client.client.MachineToMachineTokenClient;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.common.utils.Credentials;
 import no.nav.poao_tilgang.client.*;
 import no.nav.poao_tilgang.client.api.ApiResult;
 import no.nav.veilarboppfolging.ForbiddenException;
 import no.nav.veilarboppfolging.config.EnvironmentProperties;
+import no.nav.veilarboppfolging.tokenClient.ErrorMappedAzureAdMachineToMachineTokenClient;
 import no.nav.veilarboppfolging.utils.auth.PolicyInputMatcher;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Collections;
 import java.util.List;
@@ -55,7 +51,7 @@ class AuthServiceTest {
     @Mock
     private AzureAdOnBehalfOfTokenClient azureAdOnBehalfOfTokenClient;
     @Mock
-    private MachineToMachineTokenClient machineToMachineTokenClient;
+    private ErrorMappedAzureAdMachineToMachineTokenClient machineToMachineTokenClient;
     @Mock
     private EnvironmentProperties environmentProperties;
     @Mock
