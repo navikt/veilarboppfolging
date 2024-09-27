@@ -75,11 +75,15 @@ public class KafkaConsumerService {
                     "Denne loggmeldingen er kun til informasjon slik at vi eventuelt kan fange opp dette scenariet til ettertid.");
         }
 
-        kvpService.avsluttKvpVedEnhetBytte(endringPaBruker);
-        iservService.oppdaterUtmeldingsStatus(KanskjeIservBruker.Companion.of(endringPaBruker));
-        oppfolgingsenhetEndringService.behandleBrukerEndring(endringPaBruker);
-        oppfolgingEndringService.oppdaterOppfolgingMedStatusFraArena(endringPaBruker);
-        sisteEndringPaaOppfolgingBrukerService.lagreSisteEndring(brukerFnr, endringPaBruker.getSistEndretDato());
+        try {
+            kvpService.avsluttKvpVedEnhetBytte(endringPaBruker);
+            iservService.oppdaterUtmeldingsStatus(KanskjeIservBruker.Companion.of(endringPaBruker));
+            oppfolgingsenhetEndringService.behandleBrukerEndring(endringPaBruker);
+            oppfolgingEndringService.oppdaterOppfolgingMedStatusFraArena(endringPaBruker);
+            sisteEndringPaaOppfolgingBrukerService.lagreSisteEndring(brukerFnr, endringPaBruker.getSistEndretDato());
+        } catch (IngenGjeldendeIdentException e) {
+            log.warn("Fant ikke gjeldende ident ved behandling av endringPaOppfolgingBruker melding");
+        }
     }
 
     private boolean erEndringGammel(Fnr fnr, ZonedDateTime nyEndringTidspunkt) {
