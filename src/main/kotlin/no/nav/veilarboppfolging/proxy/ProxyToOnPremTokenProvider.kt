@@ -1,16 +1,16 @@
 package no.nav.veilarboppfolging.proxy
 
-import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient
 import no.nav.common.token_client.client.TokenXOnBehalfOfTokenClient
 import no.nav.common.utils.EnvironmentUtils
 import no.nav.veilarboppfolging.service.AuthService
 import no.nav.veilarboppfolging.tokenClient.ErrorMappedAzureAdMachineToMachineTokenClient
+import no.nav.veilarboppfolging.tokenClient.ErrorMappedAzureAdOnBehalfOfTokenClient
 import org.springframework.stereotype.Component
 
 @Component
 class ProxyToOnPremTokenProvider(
     val authService: AuthService,
-    val azureAdOnBehalfOfTokenClient: AzureAdOnBehalfOfTokenClient,
+    val azureAdOnBehalfOfTokenClient: ErrorMappedAzureAdOnBehalfOfTokenClient,
     val machineToMachineTokenClient: ErrorMappedAzureAdMachineToMachineTokenClient,
     val tokenXOnBehalfOfTokenClient: TokenXOnBehalfOfTokenClient
 ) {
