@@ -76,7 +76,7 @@ open class ArbeidssøkerperiodeConsumerService(
                 logger.info("Bruker ble ${kanskjeIservBruker.formidlingsgruppe} etter arbeidssøkerregistrering, sjekker om bruker bør utmeldes")
                 iservService.oppdaterUtmeldingsStatus(kanskjeIservBruker.toKanskjeIservBruker())
             }
-        }.onFailure { logger.error("Kunne ikke hente oppfolgingsstatus for bruker", it) }
+        }.onFailure { logger.warn("Kunne ikke hente oppfolgingsstatus (arena) for bruker under prosessering av arbeidssøkerregistrering, sjekker ikke om bruker skal i utmelding", it) }
     }
 }
 
