@@ -3,8 +3,6 @@ package no.nav.veilarboppfolging
 import com.nimbusds.jwt.JWTClaimsSet
 import no.nav.common.auth.context.AuthContextHolder
 import no.nav.common.client.aktoroppslag.AktorOppslagClient
-import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient
-import no.nav.common.token_client.client.MachineToMachineTokenClient
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.veilarboppfolging.config.ApplicationTestConfig
@@ -22,12 +20,12 @@ import no.nav.veilarboppfolging.service.MetricsService
 import no.nav.veilarboppfolging.service.OppfolgingService
 import no.nav.veilarboppfolging.test.DbTestUtils
 import no.nav.veilarboppfolging.tokenClient.ErrorMappedAzureAdMachineToMachineTokenClient
+import no.nav.veilarboppfolging.tokenClient.ErrorMappedAzureAdOnBehalfOfTokenClient
 import org.junit.jupiter.api.BeforeEach
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
-import org.springframework.context.annotation.Profile
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.kafka.test.context.EmbeddedKafka
@@ -43,7 +41,7 @@ open class IntegrationTest {
     lateinit var authContextHolder: AuthContextHolder
 
     @MockBean
-    lateinit var azureAdOnBehalfOfTokenClient: AzureAdOnBehalfOfTokenClient
+    lateinit var azureAdOnBehalfOfTokenClient: ErrorMappedAzureAdOnBehalfOfTokenClient
 
     @MockBean
     lateinit var environmentProperties: EnvironmentProperties
