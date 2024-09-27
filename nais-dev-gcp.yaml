@@ -69,8 +69,6 @@ spec:
       value: "https://veilarbarena.dev-fss-pub.nais.io"
     - name: VEILARBARENA_AZURE_SCOPE
       value: "api://dev-fss.pto.veilarbarena/.default"
-    - name: FSS_PROXY_ENABLED
-      value: "false"
     - name: NORG2_URL
       value: "http://norg2.org/norg2"
     - name: PDL_URL
@@ -180,9 +178,6 @@ spec:
           cluster: dev-gcp
         - application: start-samtale
           namespace: pto
-          cluster: dev-gcp
-        - application: esyfo-info-frontend
-          namespace: team-esyfo
           cluster: dev-gcp
         - application: amt-person-service
           namespace: amt
