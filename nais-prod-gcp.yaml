@@ -68,8 +68,6 @@ spec:
       value: api://prod-gcp.amt.amt-tiltak/.default
     - name: KAFKA_ENABLED
       value: "true"
-    - name: VEILARBOPPFOLGING_FSS_URL
-      value: "https://veilarboppfolging.prod-fss-pub.nais.io"
     - name: VEILARBARENA_URL
       value: "https://veilarbarena.prod-fss-pub.nais.io"
     - name: VEILARBARENA_AZURE_SCOPE
@@ -111,7 +109,6 @@ spec:
         - application: norg2
           namespace: org
       external:
-        - host: veilarboppfolging.prod-fss-pub.nais.io
         - host: veilarbarena.prod-fss-pub.nais.io
         - host: norg2.prod-fss-pub.nais.io
         - host: pdl-api.prod-fss-pub.nais.io
@@ -165,9 +162,6 @@ spec:
           namespace: flex
           cluster: prod-gcp
         - application: veilarbdirigent
-          namespace: pto
-          cluster: prod-fss
-        - application: veilarbdialog
           namespace: pto
           cluster: prod-fss
         - application: veilarbdialog
