@@ -91,6 +91,17 @@ public class VeilarbarenaClientImplTest {
     }
 
     @Test
+    public void skal_returnere_empty_om_token_utveksling_feiler() {
+        String apiUrl = "http://localhost:" + wireMockRule.port();
+        VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl(apiUrl, apiScope, authServiceMock);
+        when(authServiceMock.getMachineTokenForTjeneste(anyString())).thenThrow(new IllegalArgumentException("Lol"));
+
+        var oppfolgingsstatus = veilarbarenaClient.getArenaOppfolgingsstatus(MOCK_FNR);
+
+        assertTrue(oppfolgingsstatus.isEmpty());
+    }
+
+    @Test
     public void skal_returnere_empty_om_ugyldig_identifikator() {
         String apiUrl = "http://localhost:" + wireMockRule.port();
         VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl(apiUrl, apiScope, authServiceMock);
