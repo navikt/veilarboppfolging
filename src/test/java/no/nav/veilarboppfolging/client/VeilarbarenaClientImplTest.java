@@ -17,7 +17,9 @@ import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static no.nav.common.json.JsonUtils.toJson;
 import static no.nav.common.rest.client.RestUtils.MEDIA_TYPE_JSON;
 import static no.nav.common.utils.AssertUtils.assertTrue;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 
 public class VeilarbarenaClientImplTest {
@@ -40,6 +42,7 @@ public class VeilarbarenaClientImplTest {
 
     @Before
     public void setup() {
+        when(authServiceMock.getMachineTokenForTjeneste(anyString())).thenReturn("token here");
         System.setProperty("NAIS_CLUSTER_NAME", "dev-fss");
     }
 
