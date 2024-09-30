@@ -15,7 +15,7 @@ spec:
     sqlInstances:
       - name: veilarboppfolging
         type: POSTGRES_14
-        tier: db-custom-2-7680
+        tier: db-custom-2-13312
         diskType: SSD
         diskAutoresize: true
         highAvailability: true
@@ -28,7 +28,6 @@ spec:
             envVarPrefix: DB
             users:
               - name: datastream
-              - name: veilarboppfolging_midlertidig # Bruker uten write-rettigheter
   prometheus:
     enabled: true
     path: veilarboppfolging/internal/prometheus
@@ -108,7 +107,6 @@ spec:
           namespace: org
       external:
         - host: veilarbarena.prod-fss-pub.nais.io
-        - host: norg2.prod-fss-pub.nais.io
         - host: pdl-api.prod-fss-pub.nais.io
     inbound:
       rules:
