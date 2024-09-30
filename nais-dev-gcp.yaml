@@ -108,9 +108,6 @@ spec:
         - host: pdl-api.dev-fss-pub.nais.io
     inbound:
       rules:
-        - application: veilarboppfolging
-          namespace: poao
-          cluster: dev-gcp
         - application: veilarbregistrering
           namespace: paw
           cluster: dev-gcp
