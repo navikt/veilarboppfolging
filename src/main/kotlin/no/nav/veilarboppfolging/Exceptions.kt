@@ -16,7 +16,11 @@ sealed class VeilarboppfolgingException(message: String) : RuntimeException(mess
 }
 
 class UnauthorizedException(message: String) : VeilarboppfolgingException(message)
-class ForbiddenException(message: String) : VeilarboppfolgingException(message)
+class ForbiddenException(message: String) : VeilarboppfolgingException(message) {
+    override fun log() {
+        logger.warn(message)
+    }
+}
 class NotFoundException(message: String) : VeilarboppfolgingException(message)
 class InternalServerError(message: String) : VeilarboppfolgingException(message)
 class BadRequestException(message: String) : VeilarboppfolgingException(message)

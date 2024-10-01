@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.2.2</version>
+        <version>3.3.4</version>
         <relativePath/>
     </parent>
 
@@ -19,14 +19,14 @@
 
     <properties>
         <java.version>21</java.version>
-        <common.version>3.2023.10.23_12.41-bafec3836d28</common.version>
+        <common.version>3.2024.09.16_11.09-578823a87a2f</common.version>
         <tjenestespesifikasjoner.version>1.2019.09.25-00.21-49b69f0625e0</tjenestespesifikasjoner.version>
         <javax-xml-bind.version>2.3.2</javax-xml-bind.version>
         <wiremock.version>3.0.0-beta-10</wiremock.version>
         <schedlock.version>5.10.2</schedlock.version>
-        <pto-schema.version>1.2021.07.01_08.22-f7c78425a00a</pto-schema.version>
+        <pto-schema.version>1.2023.10.20_06.13-e6b4845c2a39</pto-schema.version>
         <cxf-codegen.version>4.0.0</cxf-codegen.version>
-        <kotlin.version>1.9.24</kotlin.version>
+        <kotlin.version>2.0.20</kotlin.version>
         <sonar.projectKey>navikt_veilarboppfolging</sonar.projectKey>
         <sonar.organization>navikt</sonar.organization>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
@@ -34,12 +34,12 @@
 
     <repositories>
         <repository>
-            <id>central</id>
-            <url>https://repo1.maven.org/maven2</url>
+            <id>navgithubproxy</id>
+            <url>https://github-package-registry-mirror.gc.nav.no/cached/maven-release</url>
         </repository>
         <repository>
-            <id>jitpack</id>
-            <url>https://jitpack.io</url>
+            <id>central</id>
+            <url>https://repo1.maven.org/maven2</url>
         </repository>
         <repository>
             <id>confluent</id>
@@ -98,7 +98,7 @@
         </dependency>
         <dependency>
             <groupId>io.micrometer</groupId>
-            <artifactId>micrometer-registry-prometheus</artifactId>
+            <artifactId>micrometer-registry-prometheus-simpleclient</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springdoc</groupId>
@@ -124,15 +124,9 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>com.github.navikt.poao-tilgang</groupId>
+            <groupId>no.nav.poao-tilgang</groupId>
             <artifactId>client</artifactId>
-            <version>2024.01.31_14.27-e34438605052</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.github.navikt.common-java-modules</groupId>
-                    <artifactId>rest</artifactId>
-                </exclusion>
-            </exclusions>
+            <version>2024.09.26_13.02-767203f889ef</version>
         </dependency>
 
         <!-- Database -->
@@ -161,76 +155,76 @@
         </dependency>
 
         <dependency>
-            <groupId>com.github.navikt</groupId>
+            <groupId>no.nav</groupId>
             <artifactId>pto-schema</artifactId>
             <version>${pto-schema.version}</version>
         </dependency>
 
         <!-- Common Dependencies -->
         <dependency>
-            <groupId>com.github.navikt.common-java-modules</groupId>
+            <groupId>no.nav.common</groupId>
             <artifactId>cxf</artifactId>
             <version>${common.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.github.navikt.common-java-modules</groupId>
+            <groupId>no.nav.common</groupId>
             <artifactId>job</artifactId>
             <version>${common.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.github.navikt.common-java-modules</groupId>
+            <groupId>no.nav.common</groupId>
             <artifactId>util</artifactId>
             <version>${common.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.github.navikt.common-java-modules</groupId>
+            <groupId>no.nav.common</groupId>
             <artifactId>types</artifactId>
             <version>${common.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.github.navikt.common-java-modules</groupId>
+            <groupId>no.nav.common</groupId>
             <artifactId>client</artifactId>
             <version>${common.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.github.navikt.common-java-modules</groupId>
+            <groupId>no.nav.common</groupId>
             <artifactId>auth</artifactId>
             <version>${common.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.github.navikt.common-java-modules</groupId>
+            <groupId>no.nav.common</groupId>
             <artifactId>audit-log</artifactId>
             <version>${common.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.github.navikt.common-java-modules</groupId>
+            <groupId>no.nav.common</groupId>
             <artifactId>token-client</artifactId>
             <version>${common.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.github.navikt.common-java-modules</groupId>
+            <groupId>no.nav.common</groupId>
             <artifactId>log</artifactId>
             <version>${common.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.github.navikt.common-java-modules</groupId>
+            <groupId>no.nav.common</groupId>
             <artifactId>health</artifactId>
             <version>${common.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.github.navikt.common-java-modules</groupId>
+            <groupId>no.nav.common</groupId>
             <artifactId>metrics</artifactId>
             <version>${common.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.github.navikt.common-java-modules</groupId>
+            <groupId>no.nav.common</groupId>
             <artifactId>kafka</artifactId>
             <version>${common.version}</version>
         </dependency>
 
         <!-- test -->
         <dependency>
-            <groupId>com.github.navikt.common-java-modules</groupId>
+            <groupId>no.nav.common</groupId>
             <artifactId>test</artifactId>
             <version>${common.version}</version>
             <scope>test</scope>
