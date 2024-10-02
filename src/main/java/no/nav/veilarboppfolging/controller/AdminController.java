@@ -115,13 +115,9 @@ public class AdminController {
     }
 
     private void sjekkTilgangTilAdmin() {
-        String subject = authContextHolder.getSubject()
-                .orElseThrow(() -> new UnauthorizedException("Fant ingen subject i auth-context"));
+        String appName = authService.hentApplikasjonFraContext();
 
-        UserRole role = authContextHolder.getRole()
-                .orElseThrow(() -> new UnauthorizedException("Fant ingen rolle i auth-context"));
-
-        if (!PTO_ADMIN_SERVICE_USER.equals(subject) || !role.equals(UserRole.SYSTEM)) {
+        if (!"pto-admin".equals(appName) || !authService.erSystemBrukerFraAzureAd()) {
             throw new ForbiddenException("Bare PTO-ADMIN app har tilgang til admin");
         }
     }

@@ -61,27 +61,27 @@ public class AdminControllerTest {
     private AktorOppslagClient aktorOppslagClient;
 
     @Test
-    public void republiserOppfolgingsperioder__should_return_401_if_user_missing() throws Exception {
-        when(authContextHolder.getSubject()).thenReturn(Optional.empty());
-        when(authContextHolder.getRole()).thenReturn(Optional.of(UserRole.SYSTEM));
+    public void republiserOppfolgingsperioder__should_return_403_if_user_missing() throws Exception {
+        when(authService.hentApplikasjonFraContext()).thenReturn("");
+        when(authService.erSystemBrukerFraAzureAd()).thenReturn(true);
 
         mockMvc.perform(post("/api/admin/republiser/oppfolgingsperioder"))
-                .andExpect(status().is(401));
+                .andExpect(status().is(403));
     }
 
     @Test
-    public void republiserOppfolgingsperioder__should_return_401_if_role_missing() throws Exception {
-        when(authContextHolder.getSubject()).thenReturn(Optional.of("srvpto-admin"));
-        when(authContextHolder.getRole()).thenReturn(Optional.empty());
+    public void republiserOppfolgingsperioder__should_return_403_if_role_missing() throws Exception {
+        when(authService.hentApplikasjonFraContext()).thenReturn("pto-admin");
+        when(authService.erSystemBrukerFraAzureAd()).thenReturn(false);
 
         mockMvc.perform(post("/api/admin/republiser/oppfolgingsperioder"))
-                .andExpect(status().is(401));
+                .andExpect(status().is(403));
     }
 
     @Test
     public void republiserOppfolgingsperioder__should_return_403_if_not_pto_admin() throws Exception {
-        when(authContextHolder.getSubject()).thenReturn(Optional.of("srvmyapp"));
-        when(authContextHolder.getRole()).thenReturn(Optional.of(UserRole.SYSTEM));
+        when(authService.hentApplikasjonFraContext()).thenReturn("en-annen-app");
+        when(authService.erSystemBrukerFraAzureAd()).thenReturn(true);
 
         mockMvc.perform(post("/api/admin/republiser/oppfolgingsperioder"))
                 .andExpect(status().is(403));
@@ -89,7 +89,7 @@ public class AdminControllerTest {
 
     @Test
     public void republiserOppfolgingsperioder__should_return_403_if_not_system_user() throws Exception {
-        when(authContextHolder.getSubject()).thenReturn(Optional.of("srvpto-admin"));
+        when(authService.hentApplikasjonFraContext()).thenReturn("");
         when(authContextHolder.getRole()).thenReturn(Optional.of(UserRole.EKSTERN));
 
         mockMvc.perform(post("/api/admin/republiser/oppfolgingsperioder"))
@@ -98,8 +98,8 @@ public class AdminControllerTest {
 
     @Test
     public void republiserOppfolgingsperioder__should_return_job_id_and_republish() throws Exception {
-        when(authContextHolder.getSubject()).thenReturn(Optional.of("srvpto-admin"));
-        when(authContextHolder.getRole()).thenReturn(Optional.of(UserRole.SYSTEM));
+        when(authService.hentApplikasjonFraContext()).thenReturn("pto-admin");
+        when(authService.erSystemBrukerFraAzureAd()).thenReturn(true);
 
         mockMvc.perform(post("/api/admin/republiser/oppfolgingsperioder"))
                 .andExpect(status().is(200))
@@ -112,8 +112,8 @@ public class AdminControllerTest {
 
     @Test
     public void republiserOppfolgingsperiodeForBruker__should_return_job_id_and_republish() throws Exception {
-        when(authContextHolder.getSubject()).thenReturn(Optional.of("srvpto-admin"));
-        when(authContextHolder.getRole()).thenReturn(Optional.of(UserRole.SYSTEM));
+        when(authService.hentApplikasjonFraContext()).thenReturn("pto-admin");
+        when(authService.erSystemBrukerFraAzureAd()).thenReturn(true);
 
         mockMvc.perform(
                         post("/api/admin/republiser/oppfolgingsperioder")
@@ -129,27 +129,27 @@ public class AdminControllerTest {
     }
 
     @Test
-    public void republiserTilordnetVeileder__should_return_401_if_user_missing() throws Exception {
-        when(authContextHolder.getSubject()).thenReturn(Optional.empty());
-        when(authContextHolder.getRole()).thenReturn(Optional.of(UserRole.SYSTEM));
+    public void republiserTilordnetVeileder__should_return_403_if_user_missing() throws Exception {
+        when(authService.hentApplikasjonFraContext()).thenReturn("");
+        when(authService.erSystemBrukerFraAzureAd()).thenReturn(true);
 
         mockMvc.perform(post("/api/admin/republiser/tilordnet-veileder"))
-                .andExpect(status().is(401));
+                .andExpect(status().is(403));
     }
 
     @Test
-    public void republiserTilordnetVeileder__should_return_401_if_role_missing() throws Exception {
-        when(authContextHolder.getSubject()).thenReturn(Optional.of("srvpto-admin"));
-        when(authContextHolder.getRole()).thenReturn(Optional.empty());
+    public void republiserTilordnetVeileder__should_return_403_if_role_missing() throws Exception {
+        when(authService.hentApplikasjonFraContext()).thenReturn("pto-admin");
+        when(authService.erSystemBrukerFraAzureAd()).thenReturn(false);
 
         mockMvc.perform(post("/api/admin/republiser/tilordnet-veileder"))
-                .andExpect(status().is(401));
+                .andExpect(status().is(403));
     }
 
     @Test
     public void republiserTilordnetVeileder__should_return_403_if_not_pto_admin() throws Exception {
-        when(authContextHolder.getSubject()).thenReturn(Optional.of("srvmyapp"));
-        when(authContextHolder.getRole()).thenReturn(Optional.of(UserRole.SYSTEM));
+        when(authService.hentApplikasjonFraContext()).thenReturn("annen-app");
+        when(authService.erSystemBrukerFraAzureAd()).thenReturn(true);
 
         mockMvc.perform(post("/api/admin/republiser/tilordnet-veileder"))
                 .andExpect(status().is(403));
@@ -157,7 +157,7 @@ public class AdminControllerTest {
 
     @Test
     public void republiserTilordnetVeileder__should_return_403_if_not_system_user() throws Exception {
-        when(authContextHolder.getSubject()).thenReturn(Optional.of("srvpto-admin"));
+        when(authService.hentApplikasjonFraContext()).thenReturn("pto-admin");
         when(authContextHolder.getRole()).thenReturn(Optional.of(UserRole.EKSTERN));
 
         mockMvc.perform(post("/api/admin/republiser/tilordnet-veileder"))
@@ -166,8 +166,8 @@ public class AdminControllerTest {
 
     @Test
     public void republiserTilordnetVeileder__should_return_job_id_and_republish() throws Exception {
-        when(authContextHolder.getSubject()).thenReturn(Optional.of("srvpto-admin"));
-        when(authContextHolder.getRole()).thenReturn(Optional.of(UserRole.SYSTEM));
+        when(authService.hentApplikasjonFraContext()).thenReturn("pto-admin");
+        when(authService.erSystemBrukerFraAzureAd()).thenReturn(true);
 
         mockMvc.perform(post("/api/admin/republiser/tilordnet-veileder"))
                 .andExpect(status().is(200))
