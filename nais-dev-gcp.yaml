@@ -120,9 +120,6 @@ spec:
         - application: paw-proxy
           namespace: paw
         - application: veilarbperson
-          namespace: pto
-          cluster: dev-fss
-        - application: veilarbperson
           namespace: obo
           cluster: dev-gcp
         - application: veilarbvedtaksstotte
