@@ -127,6 +127,9 @@ spec:
         - application: veilarbvedtaksstotte
           namespace: pto
           cluster: prod-fss
+        - application: veilarbvedtaksstotte
+          namespace: obo
+          cluster: prod-gcp
         - application: veilarbpersonflate
           namespace: poao
           cluster: prod-gcp
