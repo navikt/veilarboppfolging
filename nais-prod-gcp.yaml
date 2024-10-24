@@ -199,3 +199,6 @@ spec:
         - application: syfomodiaperson
           namespace: teamsykefravr
           cluster: prod-gcp
+        - application: tiltaksgjennomforing-api
+          namespace: arbeidsgiver
+          cluster: prod-fss

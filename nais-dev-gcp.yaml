@@ -200,3 +200,6 @@ spec:
         - application: syfomodiaperson
           namespace: teamsykefravr
           cluster: dev-gcp
+        - application: tiltaksgjennomforing-api
+          namespace: arbeidsgiver
+          cluster: dev-fss
