@@ -35,8 +35,8 @@ import java.util.Optional;
 
 import static java.util.Optional.empty;
 import static java.util.stream.Collectors.toList;
-import static no.nav.veilarboppfolging.config.ApplicationConfig.SYSTEM_USER_NAME;
-import static no.nav.veilarboppfolging.utils.ArenaUtils.*;
+import static no.nav.veilarboppfolging.utils.ArenaUtils.erIserv;
+import static no.nav.veilarboppfolging.utils.ArenaUtils.kanSettesUnderOppfolging;
 import static no.nav.veilarboppfolging.utils.SecureLog.secureLog;
 
 @Slf4j
@@ -280,6 +280,7 @@ public class OppfolgingService {
 
             log.info("Oppfølgingsperiode startet for bruker - publiserer endringer på oppfølgingsperiode-topics.");
             kafkaProducerService.publiserOppfolgingsperiode(DtoMappers.tilOppfolgingsperiodeDTO(sistePeriode));
+
 
             if (kontaktinfo.isReservert()) {
                 manuellStatusService.settBrukerTilManuellGrunnetReservertIKRR(aktorId);
