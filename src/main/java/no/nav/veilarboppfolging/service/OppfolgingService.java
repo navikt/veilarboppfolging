@@ -16,6 +16,8 @@ import no.nav.veilarboppfolging.domain.AvslutningStatusData;
 import no.nav.veilarboppfolging.domain.Oppfolging;
 import no.nav.veilarboppfolging.domain.OppfolgingStatusData;
 import no.nav.veilarboppfolging.domain.Oppfolgingsbruker;
+import no.nav.veilarboppfolging.eventsLogger.BigQueryClient;
+import no.nav.veilarboppfolging.eventsLogger.BigQueryEventType;
 import no.nav.veilarboppfolging.repository.*;
 import no.nav.veilarboppfolging.repository.entity.*;
 import no.nav.veilarboppfolging.utils.ArenaUtils;
@@ -31,10 +33,12 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import static java.util.Optional.empty;
 import static java.util.stream.Collectors.toList;
+import static no.nav.veilarboppfolging.config.ApplicationConfig.SYSTEM_USER_NAME;
 import static no.nav.veilarboppfolging.utils.ArenaUtils.erIserv;
 import static no.nav.veilarboppfolging.utils.ArenaUtils.kanSettesUnderOppfolging;
 import static no.nav.veilarboppfolging.utils.SecureLog.secureLog;
@@ -58,6 +62,7 @@ public class OppfolgingService {
     private final BrukerOppslagFlereOppfolgingAktorRepository brukerOppslagFlereOppfolgingAktorRepository;
     private final TransactionTemplate transactor;
     private final ArenaYtelserService arenaYtelserService;
+    private final BigQueryClient bigQueryClient;
 
     @Autowired
     public OppfolgingService(
@@ -74,8 +79,8 @@ public class OppfolgingService {
             MaalRepository maalRepository,
             BrukerOppslagFlereOppfolgingAktorRepository brukerOppslagFlereOppfolgingAktorRepository,
             TransactionTemplate transactor,
-            ArenaYtelserService arenaYtelserService
-    ) {
+            ArenaYtelserService arenaYtelserService,
+            BigQueryClient bigQueryClient) {
         this.kafkaProducerService = kafkaProducerService;
         this.kvpService = kvpService;
         this.arenaOppfolgingService = arenaOppfolgingService;
@@ -89,6 +94,7 @@ public class OppfolgingService {
         this.brukerOppslagFlereOppfolgingAktorRepository = brukerOppslagFlereOppfolgingAktorRepository;
         this.transactor = transactor;
         this.arenaYtelserService = arenaYtelserService;
+        this.bigQueryClient = bigQueryClient;
     }
 
     @Transactional // TODO: kan denne være read only?
@@ -281,6 +287,7 @@ public class OppfolgingService {
             log.info("Oppfølgingsperiode startet for bruker - publiserer endringer på oppfølgingsperiode-topics.");
             kafkaProducerService.publiserOppfolgingsperiode(DtoMappers.tilOppfolgingsperiodeDTO(sistePeriode));
 
+            bigQueryClient.logEvent(oppfolgingsbruker.getOppfolgingStartBegrunnelse(), sistePeriode.getUuid(), BigQueryEventType.OPFOLGINGSPERIODE_START);
 
             if (kontaktinfo.isReservert()) {
                 manuellStatusService.settBrukerTilManuellGrunnetReservertIKRR(aktorId);
@@ -319,6 +326,9 @@ public class OppfolgingService {
             kafkaProducerService.publiserVeilederTilordnet(aktorId, null);
             kafkaProducerService.publiserEndringPaNyForVeileder(aktorId, false);
             kafkaProducerService.publiserEndringPaManuellStatus(aktorId, false);
+
+            var erAutomatiskAvsluttet = Objects.equals(veilederId, SYSTEM_USER_NAME) || veilederId == null;
+            bigQueryClient.loggAvsluttOppfolgingsperiode(sistePeriode.getUuid(), erAutomatiskAvsluttet);
         });
     }
 

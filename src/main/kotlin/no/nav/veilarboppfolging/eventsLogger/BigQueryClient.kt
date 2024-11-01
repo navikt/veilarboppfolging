@@ -3,57 +3,68 @@ package no.nav.veilarboppfolging.eventsLogger
 import com.google.cloud.bigquery.BigQueryOptions
 import com.google.cloud.bigquery.InsertAllRequest
 import com.google.cloud.bigquery.TableId
-import no.nav.veilarboppfolging.domain.Oppfolging
+import no.nav.veilarboppfolging.repository.entity.OppfolgingStartBegrunnelse
 import org.slf4j.LoggerFactory
 import java.time.ZonedDateTime
+import java.util.*
 
-enum class EventType {
+enum class BigQueryEventType {
     OPFOLGINGSPERIODE_START,
     OPPFOLGINGSPERIODE_SLUTT,
 }
 
 interface BigQueryClient {
-    fun logEvent(oppfolging: Oppfolging, eventType: EventType)
+    fun loggStartOppfolgingsperiode(oppfolging: OppfolgingStartBegrunnelse, oppfolgingPeriodeId: UUID)
+    fun loggAvsluttOppfolgingsperiode(oppfolgingPeriodeId: UUID, erAutomstiskAvsluttet: Boolean)
 }
 
 class BigQueryClientImplementation(projectId: String): BigQueryClient {
-    val OPPFOLGING_EVENTS = "OPPFOLGING_EVENTS"
+    val OPPFOLGING_EVENTS = "OPPFOLGINGSPERIODE_EVENTS"
     val DATASET_NAME = "oppfolging_metrikker"
     val forhaandsvarselEventsTable = TableId.of(DATASET_NAME, OPPFOLGING_EVENTS)
 
-    fun TableId.insertRequest(row: Map<String, Any>): InsertAllRequest {
+    private fun TableId.insertRequest(row: Map<String, Any>): InsertAllRequest {
         return InsertAllRequest.newBuilder(this).addRow(row).build()
     }
 
     val bigQuery = BigQueryOptions.newBuilder().setProjectId(projectId).build().service
     val log = LoggerFactory.getLogger(this.javaClass)
 
-    override fun logEvent(eventType: EventType) {
-        runCatching {
-            val forhaandsvarselRow = mapOf(
-                "id" to eskaleringsvarselEntity.varselId,
-                "opprettet" to eskaleringsvarselEntity.opprettetDato,
+    override fun loggAvsluttOppfolgingsperiode(oppfolgingPeriodeId: UUID, erAutomatiskAvsluttet: Boolean) {
+        insertIntoOppfolgingEvents {
+            mapOf(
+                "id" to oppfolgingPeriodeId,
+                "automatiskAvsluttet" to erAutomatiskAvsluttet,
                 "timestamp" to ZonedDateTime.now().toOffsetDateTime().toString(),
-                "event" to eventType.name
+                "event" to BigQueryEventType.OPPFOLGINGSPERIODE_SLUTT
             )
-            val insertRequest =forhaandsvarselEventsTable.insertRequest(forhaandsvarselRow)
+        }
+    }
+
+    override fun loggStartOppfolgingsperiode(startBegrunnelse: OppfolgingStartBegrunnelse, oppfolgingPeriodeId: UUID) {
+        insertIntoOppfolgingEvents {
+            mapOf(
+                "id" to oppfolgingPeriodeId,
+                "startBegrunnelse" to startBegrunnelse.name,
+                "timestamp" to ZonedDateTime.now().toOffsetDateTime().toString(),
+                "event" to BigQueryEventType.OPFOLGINGSPERIODE_START
+            )
+        }
+    }
+
+    private fun insertIntoOppfolgingEvents(getRow: () -> Map<String, Any>) {
+        runCatching {
+            val insertRequest =forhaandsvarselEventsTable.insertRequest(getRow())
             insertWhileToleratingErrors(insertRequest)
         }
-            .onFailure {
-                log.warn("Kunne ikke lage event i bigquery", it)
-            }
-
+            .onFailure { log.warn("Kunne ikke lage start event i bigquery", it) }
     }
 
     private fun insertWhileToleratingErrors(insertRequest: InsertAllRequest) {
-        runCatching {
-            val response = bigQuery.insertAll(insertRequest)
-            val errors = response.insertErrors
-            if (errors.isNotEmpty()) {
-                log.error("Error inserting bigquery rows", errors)
-            }
-        }.onFailure {
-            log.error("BigQuery error", it)
+        val response = bigQuery.insertAll(insertRequest)
+        val errors = response.insertErrors
+        if (errors.isNotEmpty()) {
+            log.error("Error inserting bigquery rows", errors)
         }
     }
 }
