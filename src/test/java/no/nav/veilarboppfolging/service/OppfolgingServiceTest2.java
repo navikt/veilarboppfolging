@@ -10,6 +10,7 @@ import no.nav.veilarboppfolging.controller.request.Innsatsgruppe;
 import no.nav.veilarboppfolging.controller.request.SykmeldtBrukerType;
 import no.nav.veilarboppfolging.domain.Oppfolging;
 import no.nav.veilarboppfolging.domain.Oppfolgingsbruker;
+import no.nav.veilarboppfolging.eventsLogger.BigQueryClient;
 import no.nav.veilarboppfolging.repository.*;
 import no.nav.veilarboppfolging.repository.entity.MaalEntity;
 import no.nav.veilarboppfolging.repository.entity.ManuellStatusEntity;
@@ -51,22 +52,15 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
     private static final Oppfolgingsbruker oppfolgingsbruker = Oppfolgingsbruker.sykmeldtMerOppfolgingsBruker(AktorId.of("123123"), SykmeldtBrukerType.SKAL_TIL_NY_ARBEIDSGIVER);
 
     private AuthService authService = mock(AuthService.class);
-
     private OppfolgingsStatusRepository oppfolgingsStatusRepository;
-
     private KvpRepository kvpRepository;
-
     private MaalRepository maalRepository;
-
     private OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
-
     private ManuellStatusRepository manuellStatusRepository;
-
     private OppfolgingService oppfolgingService;
-
     private OppfolgingService oppfolgingServiceMock = mock(OppfolgingService.class);
-
     private ArenaYtelserService arenaYtelserService = mock(ArenaYtelserService.class);
+    private BigQueryClient bigQueryClient = mock(BigQueryClient.class);
 
     @Before
     public void setup() {
@@ -106,7 +100,7 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
                 manuellStatusService,
                 mock(AmtTiltakClient.class),
                 new KvpRepository(db, namedParameterJdbcTemplate, transactor), maalRepository,
-                new BrukerOppslagFlereOppfolgingAktorRepository(db), transactor, arenaYtelserService);
+                new BrukerOppslagFlereOppfolgingAktorRepository(db), transactor, arenaYtelserService, bigQueryClient);
 
         when(authService.getFnrOrThrow(AKTOR_ID)).thenReturn(FNR);
     }

@@ -8,6 +8,7 @@ import no.nav.veilarboppfolging.client.amttiltak.AmtTiltakClient;
 import no.nav.veilarboppfolging.client.digdir_krr.KRRData;
 import no.nav.veilarboppfolging.controller.request.SykmeldtBrukerType;
 import no.nav.veilarboppfolging.domain.Oppfolging;
+import no.nav.veilarboppfolging.eventsLogger.BigQueryClient;
 import no.nav.veilarboppfolging.repository.*;
 import no.nav.veilarboppfolging.test.DbTestUtils;
 import org.junit.Before;
@@ -55,7 +56,8 @@ public class AktiverBrukerIntegrationTest extends IntegrationTest {
                 new MaalRepository(jdbcTemplate, transactor),
                 mock(BrukerOppslagFlereOppfolgingAktorRepository.class),
                 transactor,
-                mock(ArenaYtelserService.class)
+                mock(ArenaYtelserService.class),
+                mock(BigQueryClient.class)
         );
 
         aktiverBrukerService = new AktiverBrukerService(
