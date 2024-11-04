@@ -33,7 +33,7 @@ class BigQueryClientImplementation(projectId: String): BigQueryClient {
     override fun loggAvsluttOppfolgingsperiode(oppfolgingPeriodeId: UUID, erAutomatiskAvsluttet: Boolean) {
         insertIntoOppfolgingEvents {
             mapOf(
-                "id" to oppfolgingPeriodeId,
+                "id" to oppfolgingPeriodeId.toString(),
                 "automatiskAvsluttet" to erAutomatiskAvsluttet,
                 "timestamp" to ZonedDateTime.now().toOffsetDateTime().toString(),
                 "event" to BigQueryEventType.OPPFOLGINGSPERIODE_SLUTT.name
@@ -44,7 +44,7 @@ class BigQueryClientImplementation(projectId: String): BigQueryClient {
     override fun loggStartOppfolgingsperiode(startBegrunnelse: OppfolgingStartBegrunnelse, oppfolgingPeriodeId: UUID) {
         insertIntoOppfolgingEvents {
             mapOf(
-                "id" to oppfolgingPeriodeId,
+                "id" to oppfolgingPeriodeId.toString(),
                 "startBegrunnelse" to startBegrunnelse.name,
                 "timestamp" to ZonedDateTime.now().toOffsetDateTime().toString(),
                 "event" to BigQueryEventType.OPFOLGINGSPERIODE_START.name
