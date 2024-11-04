@@ -12,6 +12,10 @@ spec:
   webproxy: true
   port: 8080
   gcp:
+    bigQueryDatasets:
+      - description: Metrikker for veilarboppfolging
+        name: oppfolging_metrikker
+        permission: READWRITE
     sqlInstances:
       - name: veilarboppfolging
         type: POSTGRES_14

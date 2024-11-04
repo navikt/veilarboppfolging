@@ -1,5 +1,6 @@
 package no.nav.veilarboppfolging.service;
 
+import com.google.api.services.bigquery.Bigquery;
 import lombok.SneakyThrows;
 import lombok.val;
 import no.nav.common.client.aktorregister.IngenGjeldendeIdentException;
@@ -14,6 +15,7 @@ import no.nav.veilarboppfolging.controller.response.VeilederTilgang;
 import no.nav.veilarboppfolging.domain.AvslutningStatusData;
 import no.nav.veilarboppfolging.domain.OppfolgingStatusData;
 import no.nav.veilarboppfolging.domain.Oppfolgingsbruker;
+import no.nav.veilarboppfolging.eventsLogger.BigQueryClient;
 import no.nav.veilarboppfolging.kafka.dto.OppfolgingsperiodeDTO;
 import no.nav.veilarboppfolging.repository.KvpRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
@@ -59,6 +61,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     private OppfolgingsStatusRepository oppfolgingsStatusRepository;
     private OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
     private OppfolgingService oppfolgingService;
+    private BigQueryClient bigQueryClient = mock(BigQueryClient.class);
 
     @Before
     public void setup() {
@@ -80,7 +83,8 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
                 null,
                 null,
                  transactor,
-                arenaYtelserService
+                arenaYtelserService,
+                bigQueryClient
                 );
 
 

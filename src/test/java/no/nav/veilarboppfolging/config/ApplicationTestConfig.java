@@ -11,6 +11,7 @@ import no.nav.common.job.leader_election.LeaderElectionClient;
 import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
 import no.nav.poao_tilgang.client.PoaoTilgangClient;
 import no.nav.veilarboppfolging.client.amttiltak.AmtTiltakClient;
+import no.nav.veilarboppfolging.eventsLogger.BigQueryClient;
 import no.nav.veilarboppfolging.test.DbTestUtils;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -47,6 +48,11 @@ public class ApplicationTestConfig {
     @Bean
     public AzureAdOnBehalfOfTokenClient azureAdOnBehalfOfTokenClient() {
         return mock(AzureAdOnBehalfOfTokenClient.class);
+    }
+
+    @Bean
+    public BigQueryClient bigQueryClient() {
+        return mock(BigQueryClient.class);
     }
 
     @Bean
