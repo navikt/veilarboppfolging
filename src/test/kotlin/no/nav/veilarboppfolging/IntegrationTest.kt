@@ -12,6 +12,7 @@ import no.nav.veilarboppfolging.controller.SakController
 import no.nav.veilarboppfolging.controller.SystemOppfolgingController
 import no.nav.veilarboppfolging.controller.request.Innsatsgruppe
 import no.nav.veilarboppfolging.domain.Oppfolgingsbruker
+import no.nav.veilarboppfolging.domain.StartetAvType
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
 import no.nav.veilarboppfolging.repository.SakRepository
@@ -90,8 +91,8 @@ open class IntegrationTest {
         DbTestUtils.cleanupTestDb(jdbcTemplate)
     }
 
-    fun startOppfolging(aktørId: AktorId, fnr: Fnr) {
-        val bruker = Oppfolgingsbruker.arbeidssokerOppfolgingsBruker(aktørId, Innsatsgruppe.STANDARD_INNSATS)
+    fun startOppfolging(aktørId: AktorId) {
+        val bruker = Oppfolgingsbruker.arbeidssokerOppfolgingsBruker(aktørId, Innsatsgruppe.STANDARD_INNSATS, StartetAvType.Bruker)
         oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(bruker)
     }
 

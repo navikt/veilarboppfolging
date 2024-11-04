@@ -1,10 +1,12 @@
 package no.nav.veilarboppfolging.kafka
 
 import no.nav.common.types.identer.Fnr
+import no.nav.paw.arbeidssokerregisteret.api.v1.BrukerType
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient
 import no.nav.veilarboppfolging.domain.Oppfolgingsbruker
+import no.nav.veilarboppfolging.domain.StartetAvType
 import no.nav.veilarboppfolging.service.AuthService
 import no.nav.veilarboppfolging.service.IservService
 import no.nav.veilarboppfolging.service.OppfolgingService
@@ -54,13 +56,24 @@ open class ArbeidssøkerperiodeConsumerService(
 
         val nyPeriode = arbeidssøkerperiode.avsluttet == null
         if (nyPeriode) {
+            val startetAvType = arbeidssøkerperiode.startet.utfoertAv.type // VEILEDER, SYSTEM, SLUTTBRUKER
             // TODO: Når vi fjerner /aktiverbruker endepunkt bør vi også fjerne innsatsgruppe-feltet på Oppfolgingsbruker
-            val arbeidssøker = Oppfolgingsbruker.arbeidssokerOppfolgingsBruker(aktørId, null)
+            val arbeidssøker = Oppfolgingsbruker.arbeidssokerOppfolgingsBruker(aktørId, null, startetAvType.toStartetAvType())
             logger.info("Fått melding om ny arbeidssøkerperiode, starter oppfølging hvis ikke allerede startet")
             oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(arbeidssøker)
             utmeldHvisAlleredeIserv(fnr, arbeidssøkerperiodeStartet)
         } else {
             logger.info("Melding om avsluttet oppfølgingsperiode, gjør ingenting")
+        }
+    }
+
+    private fun BrukerType.toStartetAvType(): StartetAvType {
+        return when (this) {
+            BrukerType.UKJENT_VERDI -> StartetAvType.System
+            BrukerType.UDEFINERT -> StartetAvType.System
+            BrukerType.VEILEDER -> StartetAvType.Veileder
+            BrukerType.SYSTEM -> StartetAvType.System
+            BrukerType.SLUTTBRUKER -> StartetAvType.Bruker
         }
     }
 
