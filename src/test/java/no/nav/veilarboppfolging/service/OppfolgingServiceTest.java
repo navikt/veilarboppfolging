@@ -61,7 +61,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     private OppfolgingsStatusRepository oppfolgingsStatusRepository;
     private OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
     private OppfolgingService oppfolgingService;
-    private BigQueryClient bigQueryClient;
+    private BigQueryClient bigQueryClient = mock(BigQueryClient.class);
 
     @Before
     public void setup() {
