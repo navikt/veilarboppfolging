@@ -64,7 +64,7 @@ class BigQueryClientImplementation(projectId: String): BigQueryClient {
         val response = bigQuery.insertAll(insertRequest)
         val errors = response.insertErrors
         if (errors.isNotEmpty()) {
-            log.error("Error inserting bigquery rows", errors.toString())
+            log.error("Error inserting bigquery rows: $errors")
         }
     }
 }
