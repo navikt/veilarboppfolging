@@ -36,7 +36,7 @@ class BigQueryClientImplementation(projectId: String): BigQueryClient {
                 "id" to oppfolgingPeriodeId,
                 "automatiskAvsluttet" to erAutomatiskAvsluttet,
                 "timestamp" to ZonedDateTime.now().toOffsetDateTime().toString(),
-                "event" to BigQueryEventType.OPPFOLGINGSPERIODE_SLUTT
+                "event" to BigQueryEventType.OPPFOLGINGSPERIODE_SLUTT.name
             )
         }
     }
@@ -47,7 +47,7 @@ class BigQueryClientImplementation(projectId: String): BigQueryClient {
                 "id" to oppfolgingPeriodeId,
                 "startBegrunnelse" to startBegrunnelse.name,
                 "timestamp" to ZonedDateTime.now().toOffsetDateTime().toString(),
-                "event" to BigQueryEventType.OPFOLGINGSPERIODE_START
+                "event" to BigQueryEventType.OPFOLGINGSPERIODE_START.name
             )
         }
     }
