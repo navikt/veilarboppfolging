@@ -3,6 +3,7 @@ package no.nav.veilarboppfolging.eventsLogger
 import com.google.cloud.bigquery.BigQueryOptions
 import com.google.cloud.bigquery.InsertAllRequest
 import com.google.cloud.bigquery.TableId
+import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe
 import no.nav.veilarboppfolging.domain.StartetAvType
 import no.nav.veilarboppfolging.repository.entity.OppfolgingStartBegrunnelse
 import org.slf4j.LoggerFactory
@@ -15,7 +16,7 @@ enum class BigQueryEventType {
 }
 
 interface BigQueryClient {
-    fun loggStartOppfolgingsperiode(oppfolging: OppfolgingStartBegrunnelse, oppfolgingPeriodeId: UUID, startedAvType: StartetAvType)
+    fun loggStartOppfolgingsperiode(oppfolging: OppfolgingStartBegrunnelse, oppfolgingPeriodeId: UUID, startedAvType: StartetAvType, kvalifiseringsgruppe: Optional<Kvalifiseringsgruppe>)
     fun loggAvsluttOppfolgingsperiode(oppfolgingPeriodeId: UUID, erAutomstiskAvsluttet: Boolean)
 }
 
@@ -42,14 +43,19 @@ class BigQueryClientImplementation(projectId: String): BigQueryClient {
         }
     }
 
-    override fun loggStartOppfolgingsperiode(startBegrunnelse: OppfolgingStartBegrunnelse, oppfolgingPeriodeId: UUID, startedAvType: StartetAvType) {
+    override fun loggStartOppfolgingsperiode(
+            startBegrunnelse: OppfolgingStartBegrunnelse,
+            oppfolgingPeriodeId: UUID,
+            startedAvType: StartetAvType,
+            kvalifiseringsgruppe: Optional<Kvalifiseringsgruppe>) {
         insertIntoOppfolgingEvents {
             mapOf(
                 "id" to oppfolgingPeriodeId.toString(),
                 "startBegrunnelse" to startBegrunnelse.name,
                 "startedAvType" to startedAvType.name,
                 "timestamp" to ZonedDateTime.now().toOffsetDateTime().toString(),
-                "event" to BigQueryEventType.OPFOLGINGSPERIODE_START.name
+                "event" to BigQueryEventType.OPFOLGINGSPERIODE_START.name,
+                "kvalifiseringsgruppe" to kvalifiseringsgruppe.map { it.name }.orElse(null)
             )
         }
     }

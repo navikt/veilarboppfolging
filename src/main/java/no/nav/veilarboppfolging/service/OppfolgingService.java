@@ -284,17 +284,21 @@ public class OppfolgingService {
             log.info("Oppfølgingsperiode startet for bruker - publiserer endringer på oppfølgingsperiode-topics.");
             kafkaProducerService.publiserOppfolgingsperiode(DtoMappers.tilOppfolgingsperiodeDTO(sistePeriode));
 
-            Kvalifiseringsgruppe kvalifiseringsgruppe = null;
-            if(oppfolgingsbruker instanceof ArenaSyncOppfolgingsBruker) {
-                kvalifiseringsgruppe = ((ArenaSyncOppfolgingsBruker) oppfolgingsbruker)
-            }
-
-            bigQueryClient.loggStartOppfolgingsperiode(oppfolgingsbruker.getOppfolgingStartBegrunnelse(), sistePeriode.getUuid(), oppfolgingsbruker.getStartetAvType());
+            Optional<Kvalifiseringsgruppe> kvalifiseringsgruppe = getKvalifiseringsGruppe(oppfolgingsbruker);
+            bigQueryClient.loggStartOppfolgingsperiode(oppfolgingsbruker.getOppfolgingStartBegrunnelse(), sistePeriode.getUuid(), oppfolgingsbruker.getStartetAvType(), kvalifiseringsgruppe);
 
             if (kontaktinfo.isReservert()) {
                 manuellStatusService.settBrukerTilManuellGrunnetReservertIKRR(aktorId);
             }
         });
+    }
+
+    private Optional<Kvalifiseringsgruppe> getKvalifiseringsGruppe(Oppfolgingsbruker oppfolgingsbruker) {
+        if(oppfolgingsbruker instanceof ArenaSyncOppfolgingsBruker) {
+            return Optional.ofNullable(((ArenaSyncOppfolgingsBruker) oppfolgingsbruker).getKvalifiseringsgruppe());
+        } else {
+            return Optional.empty();
+        }
     }
 
     private boolean kanAvslutteOppfolging(AktorId aktorId, boolean erUnderOppfolging, boolean erIservIArena, boolean harAktiveTiltaksdeltakelser) {
