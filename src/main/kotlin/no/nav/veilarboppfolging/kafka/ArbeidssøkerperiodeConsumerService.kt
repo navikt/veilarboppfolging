@@ -69,11 +69,11 @@ open class ArbeidssøkerperiodeConsumerService(
 
     private fun BrukerType.toStartetAvType(): StartetAvType {
         return when (this) {
-            BrukerType.UKJENT_VERDI -> StartetAvType.System
-            BrukerType.UDEFINERT -> StartetAvType.System
-            BrukerType.VEILEDER -> StartetAvType.Veileder
-            BrukerType.SYSTEM -> StartetAvType.System
-            BrukerType.SLUTTBRUKER -> StartetAvType.Bruker
+            BrukerType.UKJENT_VERDI -> StartetAvType.SYSTEM
+            BrukerType.UDEFINERT -> StartetAvType.SYSTEM
+            BrukerType.VEILEDER -> StartetAvType.VEILEDER
+            BrukerType.SYSTEM -> StartetAvType.SYSTEM
+            BrukerType.SLUTTBRUKER -> StartetAvType.BRUKER
         }
     }
 

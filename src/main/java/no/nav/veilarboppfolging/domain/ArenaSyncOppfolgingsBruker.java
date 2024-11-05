@@ -14,7 +14,7 @@ public class ArenaSyncOppfolgingsBruker extends Oppfolgingsbruker {
     Formidlingsgruppe formidlingsgruppe;
 
     ArenaSyncOppfolgingsBruker(AktorId aktorId, Formidlingsgruppe formidlingsgruppe, Kvalifiseringsgruppe kvalifiseringsgruppe) {
-        super(aktorId.get(), formidlingsgruppe == Formidlingsgruppe.IARBS ? OppfolgingStartBegrunnelse.ARENA_SYNC_IARBS : OppfolgingStartBegrunnelse.ARENA_SYNC_ARBS, StartetAvType.System);
+        super(aktorId.get(), formidlingsgruppe == Formidlingsgruppe.IARBS ? OppfolgingStartBegrunnelse.ARENA_SYNC_IARBS : OppfolgingStartBegrunnelse.ARENA_SYNC_ARBS, StartetAvType.SYSTEM);
         this.kvalifiseringsgruppe = kvalifiseringsgruppe;
     }
 }

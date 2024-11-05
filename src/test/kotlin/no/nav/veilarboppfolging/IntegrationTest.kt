@@ -92,7 +92,7 @@ open class IntegrationTest {
     }
 
     fun startOppfolging(aktørId: AktorId) {
-        val bruker = Oppfolgingsbruker.arbeidssokerOppfolgingsBruker(aktørId, Innsatsgruppe.STANDARD_INNSATS, StartetAvType.Bruker)
+        val bruker = Oppfolgingsbruker.arbeidssokerOppfolgingsBruker(aktørId, Innsatsgruppe.STANDARD_INNSATS, StartetAvType.BRUKER)
         oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(bruker)
     }
 

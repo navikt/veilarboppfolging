@@ -294,8 +294,8 @@ public class OppfolgingService {
     }
 
     private Optional<Kvalifiseringsgruppe> getKvalifiseringsGruppe(Oppfolgingsbruker oppfolgingsbruker) {
-        if(oppfolgingsbruker instanceof ArenaSyncOppfolgingsBruker) {
-            return Optional.ofNullable(((ArenaSyncOppfolgingsBruker) oppfolgingsbruker).getKvalifiseringsgruppe());
+        if(oppfolgingsbruker instanceof ArenaSyncOppfolgingsBruker arenasyncoppfolgingsbruker) {
+            return Optional.ofNullable(arenasyncoppfolgingsbruker.getKvalifiseringsgruppe());
         } else {
             return Optional.empty();
         }
