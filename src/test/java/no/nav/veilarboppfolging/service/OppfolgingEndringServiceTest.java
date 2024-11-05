@@ -65,7 +65,7 @@ public class OppfolgingEndringServiceTest {
 
         oppfolgingEndringService.oppdaterOppfolgingMedStatusFraArena(brukverV2);
 
-        verify(oppfolgingService, times(1)).startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker.arenaSyncOppfolgingBruker(TEST_AKTOR_ID, Formidlingsgruppe.ARBS));
+        verify(oppfolgingService, times(1)).startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker.arenaSyncOppfolgingBruker(TEST_AKTOR_ID, Formidlingsgruppe.ARBS, brukverV2.getKvalifiseringsgruppe()));
         verify(oppfolgingService, never()).avsluttOppfolging(any(), any(), any());
     }
 

@@ -35,22 +35,11 @@ public class Oppfolgingsbruker {
         return new Arbeidssoker(aktorId, OppfolgingStartBegrunnelse.ARBEIDSSOKER_REGISTRERING, innsatsgruppe, startetAvType);
     }
 
-    public static Oppfolgingsbruker arenaSyncOppfolgingBruker(AktorId aktorId, Formidlingsgruppe formidlingsgruppe) {
+    public static Oppfolgingsbruker arenaSyncOppfolgingBruker(AktorId aktorId, Formidlingsgruppe formidlingsgruppe, Kvalifiseringsgruppe kvalifiseringsgruppe) {
         if (formidlingsgruppe == Formidlingsgruppe.ISERV) throw new IllegalStateException("ISERV skal ikke starte oppfølging");
-        var startBegrunnelse = formidlingsgruppe == Formidlingsgruppe.IARBS ? OppfolgingStartBegrunnelse.ARENA_SYNC_IARBS : OppfolgingStartBegrunnelse.ARENA_SYNC_ARBS;
-        return new ArenaSyncOppfolgingsBruker(aktorId.get(), startBegrunnelse, StartetAvType.System);
+        return new ArenaSyncOppfolgingsBruker(aktorId, formidlingsgruppe, kvalifiseringsgruppe);
     }
 
-}
-
-@EqualsAndHashCode(callSuper = true)
-class ArenaSyncOppfolgingsBruker extends Oppfolgingsbruker {
-    Kvalifiseringsgruppe kvalifiseringsgruppe;
-    Formidlingsgruppe formidlingsgruppe;
-    ArenaSyncOppfolgingsBruker(AktorId aktorId, Formidlingsgruppe formidlingsgruppe, Kvalifiseringsgruppe kvalifiseringsgruppe) {
-        super(aktorId.get(), );
-        this.kvalifiseringsgruppe = kvalifiseringsgruppe;
-    }
 }
 
 @EqualsAndHashCode(callSuper = true)
