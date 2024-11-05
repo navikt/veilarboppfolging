@@ -91,7 +91,7 @@ public class AktiverBrukerServiceKafkaTest extends IntegrationTest {
     public void skalPubliserePaaKafkaVedAktivering() {
         consumerClient.start();
 
-        startOppfolging(aktorId, Fnr.of(aktiverArbeidssokerData.getFnr().getFnr()));
+        startOppfolging(aktorId);
         verifiserAsynkront(8, TimeUnit.SECONDS, () -> {
             assertEquals(1,
                     konsumerteSisteOppfolgingsperiodeMeldinger.get().values().size(),

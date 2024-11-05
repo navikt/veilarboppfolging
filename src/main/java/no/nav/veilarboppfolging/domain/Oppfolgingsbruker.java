@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import no.nav.common.types.identer.AktorId;
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe;
+import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe;
 import no.nav.veilarboppfolging.controller.request.Innsatsgruppe;
 import no.nav.veilarboppfolging.controller.request.SykmeldtBrukerType;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingStartBegrunnelse;
@@ -13,6 +14,7 @@ import no.nav.veilarboppfolging.repository.entity.OppfolgingStartBegrunnelse;
 public class Oppfolgingsbruker {
     String aktoerId;
     OppfolgingStartBegrunnelse oppfolgingStartBegrunnelse;
+    StartetAvType startetAvType;
 
     public String getAktoerId() {
         return aktoerId;
@@ -21,22 +23,21 @@ public class Oppfolgingsbruker {
     public OppfolgingStartBegrunnelse getOppfolgingStartBegrunnelse() {
         return oppfolgingStartBegrunnelse;
     }
-
-    public static Oppfolgingsbruker reaktivertBruker(AktorId aktorId) {
-        return new Oppfolgingsbruker(aktorId.get(), OppfolgingStartBegrunnelse.REAKTIVERT);
+    public StartetAvType getStartetAvType() {
+        return startetAvType;
     }
 
     public static Oppfolgingsbruker sykmeldtMerOppfolgingsBruker(AktorId aktorId, SykmeldtBrukerType sykmeldtBrukerType) {
-        return new SykmeldtBruker(aktorId, OppfolgingStartBegrunnelse.SYKMELDT_MER_OPPFOLGING, sykmeldtBrukerType);
+        return new SykmeldtBruker(aktorId, OppfolgingStartBegrunnelse.SYKMELDT_MER_OPPFOLGING, sykmeldtBrukerType, StartetAvType.BRUKER);
     }
 
-    public static Oppfolgingsbruker arbeidssokerOppfolgingsBruker(AktorId aktorId, Innsatsgruppe innsatsgruppe) {
-        return new Arbeidssoker(aktorId, OppfolgingStartBegrunnelse.ARBEIDSSOKER_REGISTRERING, innsatsgruppe);
+    public static Oppfolgingsbruker arbeidssokerOppfolgingsBruker(AktorId aktorId, Innsatsgruppe innsatsgruppe, StartetAvType startetAvType) {
+        return new Arbeidssoker(aktorId, OppfolgingStartBegrunnelse.ARBEIDSSOKER_REGISTRERING, innsatsgruppe, startetAvType);
     }
 
-    public static Oppfolgingsbruker arenaSyncOppfolgingBruker(AktorId aktorId, Formidlingsgruppe formidlingsgruppe) {
+    public static Oppfolgingsbruker arenaSyncOppfolgingBruker(AktorId aktorId, Formidlingsgruppe formidlingsgruppe, Kvalifiseringsgruppe kvalifiseringsgruppe) {
         if (formidlingsgruppe == Formidlingsgruppe.ISERV) throw new IllegalStateException("ISERV skal ikke starte oppfølging");
-        return new Oppfolgingsbruker(aktorId.get(), formidlingsgruppe == Formidlingsgruppe.IARBS ? OppfolgingStartBegrunnelse.ARENA_SYNC_IARBS : OppfolgingStartBegrunnelse.ARENA_SYNC_ARBS);
+        return new ArenaSyncOppfolgingsBruker(aktorId, formidlingsgruppe, kvalifiseringsgruppe);
     }
 
 }
@@ -44,8 +45,8 @@ public class Oppfolgingsbruker {
 @EqualsAndHashCode(callSuper = true)
 class Arbeidssoker extends Oppfolgingsbruker {
     Innsatsgruppe innsatsgruppe;
-    Arbeidssoker(AktorId aktorId, OppfolgingStartBegrunnelse begrunnelse, Innsatsgruppe innsatsgruppe) {
-        super(aktorId.get(), begrunnelse);
+    Arbeidssoker(AktorId aktorId, OppfolgingStartBegrunnelse begrunnelse, Innsatsgruppe innsatsgruppe, StartetAvType startetAvType) {
+        super(aktorId.get(), begrunnelse, startetAvType);
         this.innsatsgruppe = innsatsgruppe;
     }
 }
@@ -53,8 +54,8 @@ class Arbeidssoker extends Oppfolgingsbruker {
 @EqualsAndHashCode(callSuper = true)
 class SykmeldtBruker extends Oppfolgingsbruker {
     SykmeldtBrukerType sykmeldtBrukerType;
-    SykmeldtBruker(AktorId aktorId, OppfolgingStartBegrunnelse begrunnelse, SykmeldtBrukerType sykmeldtBrukerType) {
-        super(aktorId.get(), begrunnelse);
+    SykmeldtBruker(AktorId aktorId, OppfolgingStartBegrunnelse begrunnelse, SykmeldtBrukerType sykmeldtBrukerType, StartetAvType startetAvType) {
+        super(aktorId.get(), begrunnelse, startetAvType);
         this.sykmeldtBrukerType = sykmeldtBrukerType;
     }
 }

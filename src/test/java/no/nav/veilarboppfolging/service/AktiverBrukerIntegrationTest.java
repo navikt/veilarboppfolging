@@ -72,7 +72,7 @@ public class AktiverBrukerIntegrationTest extends IntegrationTest {
 
     @Test
     public void skalLagreIDatabaseDersomKallTilArenaErOK() {
-        startOppfolging(AKTOR_ID, FNR);
+        startOppfolging(AKTOR_ID);
         Optional<Oppfolging> oppfolging = oppfolgingService.hentOppfolging(AKTOR_ID);
         assertThat(oppfolging.isPresent()).isTrue();
     }
@@ -81,7 +81,7 @@ public class AktiverBrukerIntegrationTest extends IntegrationTest {
     public void skalHaandtereAtOppfolgingstatusAlleredeFinnes() {
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
         oppfolgingsPeriodeRepository.avslutt(AKTOR_ID, "veilederid", "begrunnelse");
-        startOppfolging(AKTOR_ID, FNR);
+        startOppfolging(AKTOR_ID);
         Optional<Oppfolging> oppfolging = oppfolgingService.hentOppfolging(AKTOR_ID);
         assertThat(oppfolging.get().isUnderOppfolging()).isTrue();
     }

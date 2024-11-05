@@ -12,10 +12,7 @@ import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolgingTilstand;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 import no.nav.veilarboppfolging.controller.response.UnderOppfolgingDTO;
 import no.nav.veilarboppfolging.controller.response.VeilederTilgang;
-import no.nav.veilarboppfolging.domain.AvslutningStatusData;
-import no.nav.veilarboppfolging.domain.Oppfolging;
-import no.nav.veilarboppfolging.domain.OppfolgingStatusData;
-import no.nav.veilarboppfolging.domain.Oppfolgingsbruker;
+import no.nav.veilarboppfolging.domain.*;
 import no.nav.veilarboppfolging.eventsLogger.BigQueryClient;
 import no.nav.veilarboppfolging.eventsLogger.BigQueryEventType;
 import no.nav.veilarboppfolging.repository.*;
@@ -287,12 +284,21 @@ public class OppfolgingService {
             log.info("Oppfølgingsperiode startet for bruker - publiserer endringer på oppfølgingsperiode-topics.");
             kafkaProducerService.publiserOppfolgingsperiode(DtoMappers.tilOppfolgingsperiodeDTO(sistePeriode));
 
-            bigQueryClient.loggStartOppfolgingsperiode(oppfolgingsbruker.getOppfolgingStartBegrunnelse(), sistePeriode.getUuid());
+            Optional<Kvalifiseringsgruppe> kvalifiseringsgruppe = getKvalifiseringsGruppe(oppfolgingsbruker);
+            bigQueryClient.loggStartOppfolgingsperiode(oppfolgingsbruker.getOppfolgingStartBegrunnelse(), sistePeriode.getUuid(), oppfolgingsbruker.getStartetAvType(), kvalifiseringsgruppe);
 
             if (kontaktinfo.isReservert()) {
                 manuellStatusService.settBrukerTilManuellGrunnetReservertIKRR(aktorId);
             }
         });
+    }
+
+    private Optional<Kvalifiseringsgruppe> getKvalifiseringsGruppe(Oppfolgingsbruker oppfolgingsbruker) {
+        if(oppfolgingsbruker instanceof ArenaSyncOppfolgingsBruker arenasyncoppfolgingsbruker) {
+            return Optional.ofNullable(arenasyncoppfolgingsbruker.getKvalifiseringsgruppe());
+        } else {
+            return Optional.empty();
+        }
     }
 
     private boolean kanAvslutteOppfolging(AktorId aktorId, boolean erUnderOppfolging, boolean erIservIArena, boolean harAktiveTiltaksdeltakelser) {
