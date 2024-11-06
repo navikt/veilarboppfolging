@@ -148,7 +148,7 @@ spec:
           cluster: prod-gcp
         - application: modia-robot-api
           namespace: personoversikt
-          cluster: prod-fss
+          cluster: prod-gcp
         - application: modiapersonoversikt-api
           namespace: personoversikt
           cluster: prod-fss
