@@ -15,7 +15,6 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.OppfolgingStartBegrunnelse
 import no.nav.veilarboppfolging.oppfolgingsbruker.Oppfolgingsbruker
 import no.nav.veilarboppfolging.repository.UtmeldingRepository
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity
-import no.nav.veilarboppfolging.service.AuthService
 import no.nav.veilarboppfolging.service.KafkaConsumerService
 import no.nav.veilarboppfolging.service.OppfolgingService
 import org.apache.kafka.clients.consumer.ConsumerRecord
@@ -170,7 +169,8 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
         arbeidssøkerperiodeConsumerService.consumeArbeidssøkerperiode(melding)
         val oppfølgingsdataFørSykmeldtRegistrering = oppfølgingService.hentOppfolgingsperioder(aktørId).first()
 
-        `when`(authService.innloggetVeilederIdent).thenReturn("G123123")
+        `when`(authContextHolder.erInternBruker()).thenReturn(true)
+        `when`(authContextHolder.getUid()).thenReturn(Optional.of("G123123"))
         aktiverBrukerService.aktiverBrukerManuelt(Fnr.of(fnr))
 
         val oppfølgingsdataEtterSykmeldtRegistrering = oppfølgingService.hentOppfolgingsperioder(aktørId).first()

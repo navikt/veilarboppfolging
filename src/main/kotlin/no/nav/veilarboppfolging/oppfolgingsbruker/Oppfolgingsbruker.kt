@@ -49,7 +49,7 @@ open class Oppfolgingsbruker(
 data class BrukerManueltRegistrertAvVeileder(
     val registrertAv: NavIdent,
     override val aktorId: AktorId,
-): Oppfolgingsbruker(aktorId, OppfolgingStartBegrunnelse.MANUELL_REGISTRERING, StartetAvType.VEILEDER)
+): Oppfolgingsbruker(aktorId, OppfolgingStartBegrunnelse.MANUELL_REGISTRERING_VEILEDER, StartetAvType.VEILEDER)
 
 data class Arbeidssoker(
     override val aktorId: AktorId,

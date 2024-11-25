@@ -4,18 +4,16 @@ import no.nav.veilarboppfolging.kafka.dto.StartetBegrunnelseDTO
 
 enum class OppfolgingStartBegrunnelse {
     ARBEIDSSOKER_REGISTRERING,
-    REAKTIVERT,
-    SYKMELDT_MER_OPPFOLGING,
     ARENA_SYNC,  // TODO: Fjerne etter opprydding i databasen
     ARENA_SYNC_ARBS,
     ARENA_SYNC_IARBS,
-    MANUELL_REGISTRERING;
+    MANUELL_REGISTRERING_VEILEDER;
 
     fun toStartetBegrunnelseDTO(): StartetBegrunnelseDTO {
-        if (this == OppfolgingStartBegrunnelse.ARBEIDSSOKER_REGISTRERING || this == OppfolgingStartBegrunnelse.ARENA_SYNC_ARBS) {
+        if (this == ARBEIDSSOKER_REGISTRERING || this == ARENA_SYNC_ARBS) {
             return StartetBegrunnelseDTO.ARBEIDSSOKER
         } else { // Reativer er sykmeldt fordi arbeidsøkere automatisk er under oppfølging
-            return StartetBegrunnelseDTO.SYKEMELDT_MER_OPPFOLGING
+            return StartetBegrunnelseDTO.MANUELL_REGISTRERING_VEILEDER
         }
     }
 }

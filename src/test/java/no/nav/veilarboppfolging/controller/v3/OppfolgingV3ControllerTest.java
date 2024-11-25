@@ -292,9 +292,9 @@ class OppfolgingV3ControllerTest {
 
     @Test
     void aktiverSykmeldt_skal_returnere_tom_respons() throws Exception {
-        mockMvc.perform(post("/api/v3/oppfolging/aktiverBruker")
+        mockMvc.perform(post("/api/v3/oppfolging/startOppfolgingsperiode")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"fnr\":\"12345678900\",\"sykmeldtBrukerType\":\"SKAL_TIL_SAMME_ARBEIDSGIVER\"}")
+                .content("{\"fnr\":\"12345678900\",\"henviserSystem\":\"AAP\"}")
         )
                 .andExpect(status().is(204));
     }
