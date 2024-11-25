@@ -5,8 +5,8 @@ import no.nav.paw.arbeidssokerregisteret.api.v1.BrukerType
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient
-import no.nav.veilarboppfolging.domain.Oppfolgingsbruker
 import no.nav.veilarboppfolging.domain.StartetAvType
+import no.nav.veilarboppfolging.oppfolgingsbruker.Oppfolgingsbruker
 import no.nav.veilarboppfolging.service.AuthService
 import no.nav.veilarboppfolging.service.IservService
 import no.nav.veilarboppfolging.service.OppfolgingService
@@ -58,7 +58,7 @@ open class ArbeidssøkerperiodeConsumerService(
         if (nyPeriode) {
             val startetAvType = arbeidssøkerperiode.startet.utfoertAv.type // VEILEDER, SYSTEM, SLUTTBRUKER
             // TODO: Når vi fjerner /aktiverbruker endepunkt bør vi også fjerne innsatsgruppe-feltet på Oppfolgingsbruker
-            val arbeidssøker = Oppfolgingsbruker.arbeidssokerOppfolgingsBruker(aktørId, null, startetAvType.toStartetAvType())
+            val arbeidssøker = Oppfolgingsbruker.arbeidssokerOppfolgingsBruker(aktørId, startetAvType.toStartetAvType())
             logger.info("Fått melding om ny arbeidssøkerperiode, starter oppfølging hvis ikke allerede startet")
             oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(arbeidssøker)
             utmeldHvisAlleredeIserv(fnr, arbeidssøkerperiodeStartet)

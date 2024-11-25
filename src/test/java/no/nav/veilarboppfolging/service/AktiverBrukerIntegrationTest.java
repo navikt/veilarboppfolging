@@ -2,6 +2,7 @@ package no.nav.veilarboppfolging.service;
 
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.common.types.identer.NavIdent;
 import no.nav.veilarboppfolging.IntegrationTest;
 import no.nav.veilarboppfolging.LocalDatabaseSingleton;
 import no.nav.veilarboppfolging.client.amttiltak.AmtTiltakClient;
@@ -9,6 +10,7 @@ import no.nav.veilarboppfolging.client.digdir_krr.KRRData;
 import no.nav.veilarboppfolging.controller.request.SykmeldtBrukerType;
 import no.nav.veilarboppfolging.domain.Oppfolging;
 import no.nav.veilarboppfolging.eventsLogger.BigQueryClient;
+import no.nav.veilarboppfolging.oppfolgingsbruker.AktiverBrukerService;
 import no.nav.veilarboppfolging.repository.*;
 import no.nav.veilarboppfolging.test.DbTestUtils;
 import org.junit.Before;
@@ -67,6 +69,7 @@ public class AktiverBrukerIntegrationTest extends IntegrationTest {
 
         DbTestUtils.cleanupTestDb();
         when(authService.getAktorIdOrThrow(any(Fnr.class))).thenReturn(AKTOR_ID);
+        when(authService.getInnloggetVeilederIdent()).thenReturn("G321321");
         when(manuellStatusService.hentDigdirKontaktinfo(any())).thenReturn(new KRRData());
     }
 
@@ -90,7 +93,7 @@ public class AktiverBrukerIntegrationTest extends IntegrationTest {
     public void aktiver_sykmeldt_skal_starte_oppfolging() {
         var oppfolgingFør = oppfolgingService.hentOppfolging(AKTOR_ID);
         assertThat(oppfolgingFør.isEmpty()).isTrue();
-        aktiverBrukerService.aktiverSykmeldt(FNR, SykmeldtBrukerType.SKAL_TIL_SAMME_ARBEIDSGIVER);
+        aktiverBrukerService.aktiverBrukerManuelt(FNR);
         var oppfolging = oppfolgingService.hentOppfolging(AKTOR_ID);
         assertThat(oppfolging.get().isUnderOppfolging()).isTrue();
     }

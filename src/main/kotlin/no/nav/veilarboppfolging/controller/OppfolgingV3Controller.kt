@@ -6,6 +6,7 @@ import no.nav.veilarboppfolging.BadRequestException
 import no.nav.veilarboppfolging.controller.response.*
 import no.nav.veilarboppfolging.controller.v2.response.UnderOppfolgingV2Response
 import no.nav.veilarboppfolging.controller.v3.request.*
+import no.nav.veilarboppfolging.oppfolgingsbruker.AktiverBrukerService
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity
 import no.nav.veilarboppfolging.repository.enums.KodeverkBruker
 import no.nav.veilarboppfolging.service.*
@@ -151,12 +152,12 @@ class OppfolgingV3Controller(
         return oppfolgingService.hentHarFlereAktorIderMedOppfolging(fodselsnummer)
     }
 
-    @PostMapping("/oppfolging/aktiverSykmeldt")
-    fun aktiverSykmeldt(@RequestBody sykmeldtBrukerRequest: SykmeldtBrukerRequest): ResponseEntity<*> {
+    @PostMapping("/oppfolging/aktiverBruker")
+    fun aktiverBruker(@RequestBody sykmeldtBrukerRequest: SykmeldtBrukerRequest): ResponseEntity<*> {
         authService.skalVereSystemBrukerFraAzureAd()
         authService.sjekkAtApplikasjonErIAllowList(ALLOWLIST)
 
-        aktiverBrukerService.aktiverSykmeldt(sykmeldtBrukerRequest.fnr, sykmeldtBrukerRequest.sykmeldtBrukerType)
+        aktiverBrukerService.aktiverBrukerManuelt(sykmeldtBrukerRequest.fnr)
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build<Unit>()
     }
 
