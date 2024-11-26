@@ -9,8 +9,6 @@ import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe;
 import no.nav.veilarboppfolging.client.amttiltak.AmtTiltakClient;
 import no.nav.veilarboppfolging.client.digdir_krr.DigdirClient;
 import no.nav.veilarboppfolging.client.digdir_krr.KRRData;
-import no.nav.veilarboppfolging.controller.request.Innsatsgruppe;
-import no.nav.veilarboppfolging.controller.request.SykmeldtBrukerType;
 import no.nav.veilarboppfolging.domain.Oppfolging;
 import no.nav.veilarboppfolging.domain.StartetAvType;
 import no.nav.veilarboppfolging.eventsLogger.BigQueryClient;
@@ -54,7 +52,7 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
     private static final String BEGRUNNELSE = "begrunnelse";
     private static final String OTHER_ENHET = "otherEnhet";
     private static final Fnr FNR = Fnr.of("21432432423");
-    private static final Oppfolgingsbruker oppfolgingsbruker = Oppfolgingsbruker.arenaSyncOppfolgingBruker(
+    private static final Oppfolgingsbruker arenaSyncOppfolgingBruker = Oppfolgingsbruker.arenaSyncOppfolgingBruker(
             AktorId.of("123123"),
             Formidlingsgruppe.IARBS,
             Kvalifiseringsgruppe.VURDI
@@ -145,10 +143,10 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
     @Test
     public void hentHarFlereAktorIderMedOppfolging_harFlereAktorIdMedOppf_returnererTrue(){
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
-        oppfolgingsPeriodeRepository.start(AKTOR_ID, oppfolgingsbruker.getOppfolgingStartBegrunnelse());
+        oppfolgingsPeriodeRepository.start(AKTOR_ID, arenaSyncOppfolgingBruker.getOppfolgingStartBegrunnelse());
 
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID2);
-        oppfolgingsPeriodeRepository.start(AKTOR_ID2, oppfolgingsbruker.getOppfolgingStartBegrunnelse());
+        oppfolgingsPeriodeRepository.start(AKTOR_ID2, arenaSyncOppfolgingBruker.getOppfolgingStartBegrunnelse());
 
         when(authService.getAlleAktorIderOrThrow(FNR)).thenReturn(List.of(AKTOR_ID, AKTOR_ID2));
 
@@ -158,10 +156,10 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
     @Test
     public void skalIkkeKasteExceptionVedFlereKall(){
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
-        oppfolgingsPeriodeRepository.start(AKTOR_ID, oppfolgingsbruker.getOppfolgingStartBegrunnelse());
+        oppfolgingsPeriodeRepository.start(AKTOR_ID, arenaSyncOppfolgingBruker.getOppfolgingStartBegrunnelse());
 
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID2);
-        oppfolgingsPeriodeRepository.start(AKTOR_ID2, oppfolgingsbruker.getOppfolgingStartBegrunnelse());
+        oppfolgingsPeriodeRepository.start(AKTOR_ID2, arenaSyncOppfolgingBruker.getOppfolgingStartBegrunnelse());
 
         when(authService.getAlleAktorIderOrThrow(FNR)).thenReturn(List.of(AKTOR_ID, AKTOR_ID2));
 
