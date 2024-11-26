@@ -10,6 +10,7 @@ public class AllowListApplicationName {
     public static final String VEILARBREGISTRERING = "veilarbregistrering";
     public static final String VEILARBPORTEFOLJE = "veilarbportefolje";
     public static final String AMT_PERSON_SERVICE = "amt-person-service";
+    public static final String VEILARBPERSONFLATE = "veilarbpersonflate";
 
     public static final String MULIGHETSROMMET = "mulighetsrommet-api";
 }

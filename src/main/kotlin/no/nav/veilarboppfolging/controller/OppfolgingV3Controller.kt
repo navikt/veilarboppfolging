@@ -183,6 +183,6 @@ class OppfolgingV3Controller(
     }
 
     companion object {
-        private val ALLOWLIST = listOf(AllowListApplicationName.VEILARBREGISTRERING)
+        private val ALLOWLIST = listOf(AllowListApplicationName.VEILARBPERSONFLATE)
     }
 }
