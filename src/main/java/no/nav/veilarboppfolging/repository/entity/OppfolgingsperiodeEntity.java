@@ -3,6 +3,7 @@ package no.nav.veilarboppfolging.repository.entity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Value;
+import no.nav.veilarboppfolging.oppfolgingsbruker.OppfolgingStartBegrunnelse;
 
 import java.time.ZonedDateTime;
 import java.util.List;

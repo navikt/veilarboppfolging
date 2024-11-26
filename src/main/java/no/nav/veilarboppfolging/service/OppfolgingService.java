@@ -14,7 +14,8 @@ import no.nav.veilarboppfolging.controller.response.UnderOppfolgingDTO;
 import no.nav.veilarboppfolging.controller.response.VeilederTilgang;
 import no.nav.veilarboppfolging.domain.*;
 import no.nav.veilarboppfolging.eventsLogger.BigQueryClient;
-import no.nav.veilarboppfolging.eventsLogger.BigQueryEventType;
+import no.nav.veilarboppfolging.oppfolgingsbruker.ArenaSyncOppfolgingsBruker;
+import no.nav.veilarboppfolging.oppfolgingsbruker.Oppfolgingsbruker;
 import no.nav.veilarboppfolging.repository.*;
 import no.nav.veilarboppfolging.repository.entity.*;
 import no.nav.veilarboppfolging.utils.ArenaUtils;
@@ -251,7 +252,7 @@ public class OppfolgingService {
     }
 
     public void startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker oppfolgingsbruker) {
-        AktorId aktorId = AktorId.of(oppfolgingsbruker.getAktoerId());
+        AktorId aktorId = oppfolgingsbruker.getAktorId();
         Fnr fnr = authService.getFnrOrThrow(aktorId);
         KRRData kontaktinfo = manuellStatusService.hentDigdirKontaktinfo(fnr);
 
