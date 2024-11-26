@@ -155,7 +155,7 @@ class OppfolgingV3Controller(
 
     @PostMapping("/oppfolging/startOppfolgingsperiode")
     fun aktiverBruker(@RequestBody startOppfolging: StartOppfolgingDto): ResponseEntity<*> {
-        authService.skalVereSystemBrukerFraAzureAd()
+        authService.skalVereInternBruker()
         authService.sjekkAtApplikasjonErIAllowList(ALLOWLIST)
 
         aktiverBrukerService.aktiverBrukerManuelt(startOppfolging.fnr)
