@@ -13,7 +13,7 @@ enum class OppfolgingStartBegrunnelse {
         if (this == ARBEIDSSOKER_REGISTRERING || this == ARENA_SYNC_ARBS) {
             return StartetBegrunnelseDTO.ARBEIDSSOKER
         } else { // Reativer er sykmeldt fordi arbeidsøkere automatisk er under oppfølging
-            return StartetBegrunnelseDTO.MANUELL_REGISTRERING_VEILEDER
+            return StartetBegrunnelseDTO.SYKEMELDT_MER_OPPFOLGING
         }
     }
 }
