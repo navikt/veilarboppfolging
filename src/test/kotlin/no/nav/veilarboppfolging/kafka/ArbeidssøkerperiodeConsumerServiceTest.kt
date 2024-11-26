@@ -2,25 +2,25 @@ package no.nav.veilarboppfolging.kafka
 
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
+import no.nav.common.types.identer.NavIdent
 import no.nav.paw.arbeidssokerregisteret.api.v1.*
 import no.nav.pto_schema.enums.arena.*
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2
 import no.nav.veilarboppfolging.IntegrationTest
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient
-import no.nav.veilarboppfolging.controller.request.Innsatsgruppe
-import no.nav.veilarboppfolging.controller.request.SykmeldtBrukerType
-import no.nav.veilarboppfolging.domain.Oppfolgingsbruker
 import no.nav.veilarboppfolging.domain.StartetAvType
+import no.nav.veilarboppfolging.oppfolgingsbruker.AktiverBrukerService
+import no.nav.veilarboppfolging.oppfolgingsbruker.OppfolgingStartBegrunnelse
+import no.nav.veilarboppfolging.oppfolgingsbruker.Oppfolgingsbruker
 import no.nav.veilarboppfolging.repository.UtmeldingRepository
-import no.nav.veilarboppfolging.repository.entity.OppfolgingStartBegrunnelse
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity
-import no.nav.veilarboppfolging.service.AktiverBrukerService
 import no.nav.veilarboppfolging.service.KafkaConsumerService
 import no.nav.veilarboppfolging.service.OppfolgingService
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within
+import org.assertj.core.data.TemporalOffset
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -78,7 +78,7 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
         val oppfølgingsperioder = oppfølgingService.hentOppfolgingsperioder(Fnr.of(fnr))
         assertThat(oppfølgingsperioder).hasSize(1)
         val oppfølgingsperiode = oppfølgingsperioder.first()
-        assertThat(oppfølgingsperiode.startDato).isEqualToIgnoringNanos(ZonedDateTime.now())
+        assertThat(oppfølgingsperiode.startDato).isCloseTo(ZonedDateTime.now(), within(1, ChronoUnit.SECONDS))
         assertThat(oppfølgingsperiode.sluttDato).isNull()
         assertThat(oppfølgingsperiode.startetBegrunnelse).isEqualTo(OppfolgingStartBegrunnelse.ARBEIDSSOKER_REGISTRERING)
     }
@@ -122,7 +122,7 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
 
         val oppfølgingsperioder = oppfølgingService.hentOppfolgingsperioder(Fnr.of(fnr))
         assertThat(oppfølgingsperioder).hasSize(1)
-        assertThat(oppfølgingsperioder.first().startDato).isEqualToIgnoringNanos(startAlleredeRegistrertOppfølgingsperiode)
+        assertThat(oppfølgingsperioder.first().startDato).isCloseTo(startAlleredeRegistrertOppfølgingsperiode, within(1, ChronoUnit.SECONDS))
     }
 
     @Test
@@ -140,7 +140,7 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
 
     @Test
     fun `Dersom arbeidsrettet oppfølgingsperiode allerede eksisterer skal melding om ny arbeidssøkerperiode ikke endre noe`() {
-        val oppfølgingsbruker = Oppfolgingsbruker.arbeidssokerOppfolgingsBruker(aktørId, Innsatsgruppe.STANDARD_INNSATS, StartetAvType.BRUKER)
+        val oppfølgingsbruker = Oppfolgingsbruker.arbeidssokerOppfolgingsBruker(aktørId, StartetAvType.BRUKER)
         oppfølgingService.startOppfolgingHvisIkkeAlleredeStartet(oppfølgingsbruker)
         val oppfølgingsdataFørMelding = oppfølgingService.hentOppfolgingsperioder(aktørId).first()
         val melding = ConsumerRecord("topic", 0, 0, "dummyKey", arbeidssøkerperiode(fnr))
@@ -153,7 +153,7 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
 
     @Test
     fun `Dersom arbeidsrettet oppfølgingsperiode allerede eksisterer for sykmeldt bruker skal melding om arbeidssøkerperiode ikke endre noe`() {
-        val oppfølgingsbruker = Oppfolgingsbruker.sykmeldtMerOppfolgingsBruker(aktørId, SykmeldtBrukerType.SKAL_TIL_NY_ARBEIDSGIVER)
+        val oppfølgingsbruker = Oppfolgingsbruker.manuelRegistrertBruker(aktørId, NavIdent.of("G123123"))
         oppfølgingService.startOppfolgingHvisIkkeAlleredeStartet(oppfølgingsbruker)
         val oppfølgingsdataFørMelding = oppfølgingService.hentOppfolgingsperioder(aktørId).first()
         val melding = ConsumerRecord("topic", 0, 0, "dummyKey", arbeidssøkerperiode(fnr))
@@ -170,7 +170,9 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
         arbeidssøkerperiodeConsumerService.consumeArbeidssøkerperiode(melding)
         val oppfølgingsdataFørSykmeldtRegistrering = oppfølgingService.hentOppfolgingsperioder(aktørId).first()
 
-        aktiverBrukerService.aktiverSykmeldt(Fnr.of(fnr), SykmeldtBrukerType.SKAL_TIL_NY_ARBEIDSGIVER)
+        `when`(authContextHolder.erInternBruker()).thenReturn(true)
+        `when`(authContextHolder.getUid()).thenReturn(Optional.of("G123123"))
+        aktiverBrukerService.aktiverBrukerManuelt(Fnr.of(fnr))
 
         val oppfølgingsdataEtterSykmeldtRegistrering = oppfølgingService.hentOppfolgingsperioder(aktørId).first()
         assertThat(oppfølgingsdataFørSykmeldtRegistrering).isEqualTo(oppfølgingsdataEtterSykmeldtRegistrering)
@@ -196,7 +198,7 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
         val oppfølgingsperioder = oppfølgingService.hentOppfolgingsperioder(Fnr.of(fnr))
         assertThat(oppfølgingsperioder).hasSize(1)
         val oppfølgingsperiode = oppfølgingsperioder.first()
-        assertThat(oppfølgingsperiode.startDato).isEqualToIgnoringSeconds(ZonedDateTime.now())
+        assertThat(oppfølgingsperiode.startDato).isCloseTo(ZonedDateTime.now(), within(1, ChronoUnit.SECONDS))
         assertThat(oppfølgingsperiode.sluttDato).isNull()
         assertThat(oppfølgingsperiode.startetBegrunnelse).isEqualTo(OppfolgingStartBegrunnelse.ARBEIDSSOKER_REGISTRERING)
         assertThat(utmeldingRepository.eksisterendeIservBruker(aktørId).getOrNull()).isNotNull()
@@ -222,7 +224,7 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
         val oppfølgingsperioder = oppfølgingService.hentOppfolgingsperioder(Fnr.of(fnr))
         assertThat(oppfølgingsperioder).hasSize(1)
         val oppfølgingsperiode = oppfølgingsperioder.first()
-        assertThat(oppfølgingsperiode.startDato).isEqualToIgnoringSeconds(ZonedDateTime.now())
+        assertThat(oppfølgingsperiode.startDato).isCloseTo(ZonedDateTime.now(), within(1, ChronoUnit.SECONDS))
         assertThat(oppfølgingsperiode.sluttDato).isNull()
         assertThat(oppfølgingsperiode.startetBegrunnelse).isEqualTo(OppfolgingStartBegrunnelse.ARBEIDSSOKER_REGISTRERING)
         assertThat(utmeldingRepository.eksisterendeIservBruker(aktørId).getOrNull()).isNull()

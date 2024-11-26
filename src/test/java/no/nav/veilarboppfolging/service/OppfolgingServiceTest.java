@@ -15,10 +15,10 @@ import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 import no.nav.veilarboppfolging.controller.response.VeilederTilgang;
 import no.nav.veilarboppfolging.domain.AvslutningStatusData;
 import no.nav.veilarboppfolging.domain.OppfolgingStatusData;
-import no.nav.veilarboppfolging.domain.Oppfolgingsbruker;
 import no.nav.veilarboppfolging.domain.StartetAvType;
 import no.nav.veilarboppfolging.eventsLogger.BigQueryClient;
 import no.nav.veilarboppfolging.kafka.dto.OppfolgingsperiodeDTO;
+import no.nav.veilarboppfolging.oppfolgingsbruker.Oppfolgingsbruker;
 import no.nav.veilarboppfolging.repository.KvpRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
@@ -145,7 +145,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         when(amtTiltakClient.harAktiveTiltaksdeltakelser(FNR.get())).thenReturn(true);
         arenaOppfolgingTilstand.setFormidlingsgruppe("IARBS");
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
-        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker.arbeidssokerOppfolgingsBruker(AKTOR_ID, null, StartetAvType.BRUKER));
+        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker.arbeidssokerOppfolgingsBruker(AKTOR_ID, StartetAvType.BRUKER));
 
         assertUnderOppfolgingLagret(AKTOR_ID);
 
@@ -223,7 +223,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
     @Test
     public void hentOppfolgingStatus_brukerSomErUnderOppfolgingOgISERVSkalReaktiveresDersomArenaSierReaktiveringErMulig() {
-        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker.arbeidssokerOppfolgingsBruker(AKTOR_ID, null, StartetAvType.VEILEDER));
+        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker.arbeidssokerOppfolgingsBruker(AKTOR_ID, StartetAvType.VEILEDER));
         assertUnderOppfolgingLagret(AKTOR_ID);
 
         gittInaktivOppfolgingStatus(true);
@@ -271,7 +271,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
     @Test
     public void kanIkkeAvslutteNarManIkkeErUnderOppfolgingIArena() {
-        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker.arbeidssokerOppfolgingsBruker(AKTOR_ID, null, StartetAvType.VEILEDER));
+        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker.arbeidssokerOppfolgingsBruker(AKTOR_ID, StartetAvType.VEILEDER));
         assertUnderOppfolgingLagret(AKTOR_ID);
 
         gittArenaOppfolgingStatus("ARBS", null);
@@ -284,7 +284,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     @Test
     public void kanIkkeAvslutteHvisManHarAktiveTiltaksdeltakelser() {
         when(amtTiltakClient.harAktiveTiltaksdeltakelser(FNR.get())).thenReturn(true);
-        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker.arbeidssokerOppfolgingsBruker(AKTOR_ID, null, StartetAvType.VEILEDER));
+        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker.arbeidssokerOppfolgingsBruker(AKTOR_ID, StartetAvType.VEILEDER));
         assertUnderOppfolgingLagret(AKTOR_ID);
 
         gittArenaOppfolgingStatus("ISERV", "");

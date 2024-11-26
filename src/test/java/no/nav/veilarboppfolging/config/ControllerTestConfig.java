@@ -17,7 +17,6 @@ import org.springframework.context.annotation.Import;
         MaalController.class,
         OppfolgingController.class,
         OppfolgingNiva3Controller.class,
-        SystemOppfolgingController.class,
         UnderOppfolgingController.class,
         UnderOppfolgingV2Controller.class,
         VeilederController.class,

@@ -64,9 +64,6 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
     OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
 
     @Autowired
-    SystemOppfolgingController systemOppfolgingController;
-
-    @Autowired
     PoaoTilgangClient poaoTilgangClient;
 
     @Autowired

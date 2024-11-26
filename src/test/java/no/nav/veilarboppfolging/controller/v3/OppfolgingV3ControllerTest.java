@@ -7,6 +7,7 @@ import no.nav.veilarboppfolging.controller.response.VeilederTilgang;
 import no.nav.veilarboppfolging.controller.v3.request.OppfolgingRequest;
 import no.nav.veilarboppfolging.domain.AvslutningStatusData;
 import no.nav.veilarboppfolging.domain.OppfolgingStatusData;
+import no.nav.veilarboppfolging.oppfolgingsbruker.AktiverBrukerService;
 import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
 import no.nav.veilarboppfolging.service.*;
@@ -291,9 +292,9 @@ class OppfolgingV3ControllerTest {
 
     @Test
     void aktiverSykmeldt_skal_returnere_tom_respons() throws Exception {
-        mockMvc.perform(post("/api/v3/oppfolging/aktiverSykmeldt")
+        mockMvc.perform(post("/api/v3/oppfolging/startOppfolgingsperiode")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"fnr\":\"12345678900\",\"sykmeldtBrukerType\":\"SKAL_TIL_SAMME_ARBEIDSGIVER\"}")
+                .content("{\"fnr\":\"12345678900\",\"henviserSystem\":\"AAP\"}")
         )
                 .andExpect(status().is(204));
     }
