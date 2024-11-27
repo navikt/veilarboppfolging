@@ -20,11 +20,10 @@ import no.nav.veilarboppfolging.utils.SecureLog.secureLog
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.util.*
-import java.util.function.Supplier
 
 @Slf4j
 @Service
-class ArenaOppfolgingService (
+open class ArenaOppfolgingService (
     // Bruker AktorregisterClient istedenfor authService for å unngå sirkulær avhengighet
     private val aktorOppslagClient: AktorOppslagClient,
     private val veilarbarenaClient: VeilarbarenaClient,
@@ -95,7 +94,7 @@ class ArenaOppfolgingService (
         return veilederTilordningerRepository.hentTilordningForAktoer(aktorId)
     }
 
-    fun getOppfolginsstatus(fnr: Fnr): GetOppfolginsstatusResult {
+    open fun getOppfolginsstatus(fnr: Fnr): GetOppfolginsstatusResult {
         val veilarbArenaOppfolging = veilarbarenaClient.hentOppfolgingsbruker(fnr)
             .let {
                 if (it.isEmpty) { return GetOppfolginsstatusFailure(FantIkkeBrukerIArenaException()) }
