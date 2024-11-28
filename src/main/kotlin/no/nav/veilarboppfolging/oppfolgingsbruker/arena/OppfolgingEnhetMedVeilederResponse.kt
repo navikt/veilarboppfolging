@@ -11,11 +11,11 @@ class GetOppfolginsstatusFailure(
 
 
 data class OppfolgingEnhetMedVeilederResponse(
-     val oppfolgingsenhet: Oppfolgingsenhet,
+     val oppfolgingsenhet: Oppfolgingsenhet?,
      val veilederId: String?,
-     val formidlingsgruppe: String,
-     val servicegruppe: String,
-     val hovedmaalkode: String,
+     val formidlingsgruppe: String?,
+     val servicegruppe: String?,
+     val hovedmaalkode: String?,
 ) {
     data class Oppfolgingsenhet(
         val navn: String,
