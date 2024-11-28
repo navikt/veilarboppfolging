@@ -5,6 +5,7 @@ import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe;
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolgingTilstand;
 import no.nav.veilarboppfolging.oppfolgingsbruker.Oppfolgingsbruker;
+import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingEntity;
 import org.junit.jupiter.api.Test;

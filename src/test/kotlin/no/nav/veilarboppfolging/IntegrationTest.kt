@@ -7,11 +7,12 @@ import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.veilarboppfolging.config.ApplicationTestConfig
 import no.nav.veilarboppfolging.config.EnvironmentProperties
+import no.nav.veilarboppfolging.controller.ArenaOppfolgingController
 import no.nav.veilarboppfolging.controller.OppfolgingController
 import no.nav.veilarboppfolging.controller.SakController
-import no.nav.veilarboppfolging.controller.request.Innsatsgruppe
 import no.nav.veilarboppfolging.domain.StartetAvType
 import no.nav.veilarboppfolging.oppfolgingsbruker.Oppfolgingsbruker
+import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
 import no.nav.veilarboppfolging.repository.SakRepository
@@ -68,6 +69,9 @@ open class IntegrationTest {
     lateinit var sakController: SakController
 
     @Autowired
+    lateinit var arenaOppfolgingService: ArenaOppfolgingService
+
+    @Autowired
     lateinit var oppfolgingsStatusRepository: OppfolgingsStatusRepository
 
     @MockBean
@@ -112,6 +116,25 @@ open class IntegrationTest {
         Mockito.`when`(authContextHolder.idTokenString).thenReturn(Optional.of(token))
 
         Mockito.`when`(authContextHolder.erSystemBruker()).thenReturn(true)
+        Mockito.`when`(aktorOppslagClient.hentAktorId(fnr))
+            .thenReturn(aktørId)
+        Mockito.`when`(aktorOppslagClient.hentFnr(aktørId))
+            .thenReturn(fnr)
+    }
+
+    fun mockInternBrukerAuthOk(aktørId: AktorId, fnr: Fnr) {
+        val claims = JWTClaimsSet.Builder()
+            .issuer("microsoftonline.com")
+            .claim("azp_name", "cluster:team:veilarbregistrering")
+            .build()
+
+        Mockito.`when`(authContextHolder.idTokenClaims).thenReturn(Optional.of(claims))
+
+        val token = "token"
+
+        Mockito.`when`(authContextHolder.idTokenString).thenReturn(Optional.of(token))
+
+        Mockito.`when`(authContextHolder.erInternBruker()).thenReturn(true)
         Mockito.`when`(aktorOppslagClient.hentAktorId(fnr))
             .thenReturn(aktørId)
         Mockito.`when`(aktorOppslagClient.hentFnr(aktørId))
