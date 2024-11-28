@@ -3,7 +3,6 @@ package no.nav.veilarboppfolging.controller;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService;
-import no.nav.veilarboppfolging.oppfolgingsbruker.arena.GetOppfolginsstatusSuccess;
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.OppfolgingEnhetMedVeilederResponse;
 import no.nav.veilarboppfolging.service.AuthService;
 import org.junit.jupiter.api.Test;
