@@ -18,12 +18,13 @@ import no.nav.veilarboppfolging.utils.ArenaUtils
 import no.nav.veilarboppfolging.utils.EnumUtils
 import no.nav.veilarboppfolging.utils.SecureLog.secureLog
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import java.util.*
 
 @Slf4j
 @Service
-open class ArenaOppfolgingService (
+open class ArenaOppfolgingService @Autowired constructor (
     // Bruker AktorregisterClient istedenfor authService for å unngå sirkulær avhengighet
     val aktorOppslagClient: AktorOppslagClient,
     val veilarbarenaClient: VeilarbarenaClient,
