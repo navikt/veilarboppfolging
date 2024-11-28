@@ -1,10 +1,11 @@
 package no.nav.veilarboppfolging.controller;
 
+import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
-import no.nav.veilarboppfolging.controller.response.OppfolgingEnhetMedVeilederResponse;
-import no.nav.veilarboppfolging.service.ArenaOppfolgingService;
+import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService;
+import no.nav.veilarboppfolging.oppfolgingsbruker.arena.GetOppfolginsstatusSuccess;
+import no.nav.veilarboppfolging.oppfolgingsbruker.arena.OppfolgingEnhetMedVeilederResponse;
 import no.nav.veilarboppfolging.service.AuthService;
-import no.nav.veilarboppfolging.test.TestUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -30,30 +31,27 @@ public class ArenaOppfolgingControllerTest {
     private AuthService authService;
 
     @Test
-    public void getOppfolginsstatus__should_check_authorization() throws Exception {
-        Fnr fnr = Fnr.of("123456");
-
-        mockMvc.perform(get(format("/api/person/%s/oppfolgingsstatus", fnr)));
-
-        verify(authService, times(1)).sjekkLesetilgangMedFnr(fnr);
-    }
-
-    @Test
     public void getOppfolginsstatus__should_return_correct_data_and_status_code() throws Exception {
         Fnr fnr = Fnr.of("123456");
+        AktorId aktorId = AktorId.of("123456");
 
-        OppfolgingEnhetMedVeilederResponse response = new OppfolgingEnhetMedVeilederResponse()
-                .setVeilederId("Z12345")
-                .setFormidlingsgruppe("ARBS")
-                .setServicegruppe("BKART")
-                .setHovedmaalkode("BEHOLDEA")
-                .setOppfolgingsenhet(new OppfolgingEnhetMedVeilederResponse.Oppfolgingsenhet("NAV Testheim", "1234"));
+        var response = new OppfolgingEnhetMedVeilederResponse(
+                new OppfolgingEnhetMedVeilederResponse.Oppfolgingsenhet("NAV Testheim", "1234"),
+                "Z12345",
+                "ARBS",
+                "BKART",
+                "BEHOLDEA"
+        );
 
-        String json = TestUtils.readTestResourceFile("controller/arena-oppfolging/get-oppfolgingsstatus-response.json");
 
-        when(arenaOppfolgingService.getOppfolginsstatus(fnr)).thenReturn(response);
+        String json = """
+          { "navn": "NAV Testheim", "enhetId":  "1234"}
+        """;
 
-        mockMvc.perform(get(format("/api/person/%s/oppfolgingsstatus", fnr)))
+        when(authService.getFnrOrThrow(aktorId)).thenReturn(fnr);
+        when(arenaOppfolgingService.getOppfolginsstatus(fnr)).thenReturn(new GetOppfolginsstatusSuccess(response));
+
+        mockMvc.perform(get(format("/api/person/oppfolgingsenhet?aktorId=%s", aktorId)))
                 .andExpect(status().is(200))
                 .andExpect(content().json(json, true));
     }
