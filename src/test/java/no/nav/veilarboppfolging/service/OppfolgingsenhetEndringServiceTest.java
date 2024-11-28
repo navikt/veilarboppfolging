@@ -10,6 +10,7 @@ import no.nav.veilarboppfolging.repository.entity.OppfolgingsenhetEndringEntity;
 import no.nav.veilarboppfolging.test.DbTestUtils;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import java.util.List;
 
@@ -28,7 +29,7 @@ public class OppfolgingsenhetEndringServiceTest {
 
     private AuthService authService = mock(AuthService.class);
 
-    private OppfolgingsenhetHistorikkRepository repo = new OppfolgingsenhetHistorikkRepository(LocalDatabaseSingleton.INSTANCE.getJdbcTemplate());
+    private OppfolgingsenhetHistorikkRepository repo = new OppfolgingsenhetHistorikkRepository(new NamedParameterJdbcTemplate(LocalDatabaseSingleton.INSTANCE.getJdbcTemplate()));
     private OppfolgingsenhetEndringService service = new OppfolgingsenhetEndringService(repo, authService);
 
     @Before

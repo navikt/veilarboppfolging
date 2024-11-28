@@ -3,6 +3,8 @@ package no.nav.veilarboppfolging
 import com.nimbusds.jwt.JWTClaimsSet
 import no.nav.common.auth.context.AuthContextHolder
 import no.nav.common.client.aktoroppslag.AktorOppslagClient
+import no.nav.common.client.norg2.CachedNorg2Client
+import no.nav.common.client.norg2.Norg2Client
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.veilarboppfolging.config.ApplicationTestConfig
@@ -43,6 +45,9 @@ open class IntegrationTest {
 
     @MockBean
     lateinit var azureAdOnBehalfOfTokenClient: ErrorMappedAzureAdOnBehalfOfTokenClient
+
+    @MockBean
+    lateinit var norg2Client: Norg2Client
 
     @MockBean
     lateinit var environmentProperties: EnvironmentProperties

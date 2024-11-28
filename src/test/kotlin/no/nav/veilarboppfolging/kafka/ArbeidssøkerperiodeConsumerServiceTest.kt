@@ -280,24 +280,7 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
     }
 
     private fun oppfølgingsBrukerEndret(iservFraDato: LocalDate, formidlingsgruppe: Formidlingsgruppe = Formidlingsgruppe.ARBS): EndringPaaOppfoelgingsBrukerV2 {
-        return EndringPaaOppfoelgingsBrukerV2(
-            fnr,
-            formidlingsgruppe,
-            iservFraDato,
-            "Sig",
-            ":)",
-            "enhet",
-            Kvalifiseringsgruppe.IVURD,
-            Rettighetsgruppe.INDS,
-            Hovedmaal.BEHOLDEA,
-            SikkerhetstiltakType.TFUS,
-            null,
-            true,
-            false,
-            false,
-            null,
-            ZonedDateTime.now()
-        )
+        return TestUtils.oppfølgingsBrukerEndret(fnr, iservFraDato, formidlingsgruppe)
     }
 
     fun lagreOppfølgingsperiode(periode: OppfolgingsperiodeEntity) {

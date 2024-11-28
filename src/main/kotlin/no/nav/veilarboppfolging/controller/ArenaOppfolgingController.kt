@@ -28,10 +28,6 @@ class ArenaOppfolgingController(
     fun getOppfolgingsenhet(@RequestParam("aktorId") aktorId: AktorId?): OppfolgingEnhetMedVeilederResponse.Oppfolgingsenhet? {
         authService.sjekkLesetilgangMedAktorId(aktorId)
         val fnr = authService.getFnrOrThrow(aktorId)
-        val arenaOppfolgingBrukerResult = arenaOppfolgingService.getOppfolginsstatus(fnr)
-        when (arenaOppfolgingBrukerResult) {
-            is GetOppfolginsstatusFailure -> throw arenaOppfolgingBrukerResult.error
-            is GetOppfolginsstatusSuccess -> return arenaOppfolgingBrukerResult.result.oppfolgingsenhet
-        }
+        return arenaOppfolgingService.getArenaOppfolgingsEnhet(fnr)
     }
 }

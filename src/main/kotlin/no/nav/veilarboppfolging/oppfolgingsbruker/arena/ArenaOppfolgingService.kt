@@ -7,11 +7,13 @@ import no.nav.common.types.identer.Fnr
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe
 import no.nav.veilarboppfolging.FantIkkeBrukerIArenaException
+import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolging
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolgingTilstand
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.OppfolgingEnhetMedVeilederResponse.Oppfolgingsenhet
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
+import no.nav.veilarboppfolging.repository.OppfolgingsenhetHistorikkRepository
 import no.nav.veilarboppfolging.repository.VeilederTilordningerRepository
 import no.nav.veilarboppfolging.service.AuthService
 import no.nav.veilarboppfolging.utils.ArenaUtils
@@ -31,7 +33,8 @@ open class ArenaOppfolgingService @Autowired constructor (
     val oppfolgingsStatusRepository: OppfolgingsStatusRepository,
     val authService: AuthService,
     val norg2Client: Norg2Client,
-    val veilederTilordningerRepository: VeilederTilordningerRepository
+    val veilederTilordningerRepository: VeilederTilordningerRepository,
+    val historikkRepository: OppfolgingsenhetHistorikkRepository
 ) {
     private val log = LoggerFactory.getLogger(ArenaOppfolgingService::class.java)
 
@@ -95,7 +98,13 @@ open class ArenaOppfolgingService @Autowired constructor (
         return veilederTilordningerRepository.hentTilordningForAktoer(aktorId)
     }
 
-    open fun getOppfolginsstatus(fnr: Fnr): GetOppfolginsstatusResult {
+    fun getArenaOppfolgingsEnhet(fnr: Fnr): Oppfolgingsenhet? {
+        val aktorId = authService.getAktorIdOrThrow(fnr)
+        return historikkRepository.hentArenaOppfolgingsenhetForAktorId(aktorId)
+            ?.let { hentEnhet(it.enhet) }
+    }
+
+    fun getOppfolginsstatus(fnr: Fnr): GetOppfolginsstatusResult {
         val veilarbArenaOppfolging = veilarbarenaClient.hentOppfolgingsbruker(fnr)
             .let {
                 if (it.isEmpty) { return GetOppfolginsstatusFailure(FantIkkeBrukerIArenaException()) }
@@ -118,7 +127,7 @@ open class ArenaOppfolgingService @Autowired constructor (
     private fun hentEnhet(enhetId: String): Oppfolgingsenhet {
         try {
             val enhetNavn = norg2Client.hentEnhet(enhetId).getNavn()
-            return Oppfolgingsenhet(enhetNavn, enhetId)
+            return Oppfolgingsenhet(navn = enhetNavn, enhetId = enhetId)
         } catch (e: Exception) {
             log.warn("Fant ikke navn på enhet", e)
             return Oppfolgingsenhet("", enhetId)
