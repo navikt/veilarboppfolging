@@ -16,7 +16,6 @@ import no.nav.veilarboppfolging.domain.*;
 import no.nav.veilarboppfolging.eventsLogger.BigQueryClient;
 import no.nav.veilarboppfolging.oppfolgingsbruker.ArenaSyncOppfolgingsBruker;
 import no.nav.veilarboppfolging.oppfolgingsbruker.Oppfolgingsbruker;
-import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService;
 import no.nav.veilarboppfolging.repository.*;
 import no.nav.veilarboppfolging.repository.entity.*;
 import no.nav.veilarboppfolging.utils.ArenaUtils;
