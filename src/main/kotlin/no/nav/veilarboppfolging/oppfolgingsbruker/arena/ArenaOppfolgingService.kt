@@ -89,7 +89,7 @@ open class ArenaOppfolgingService @Autowired constructor (
         return maybeArenaOppfolging
     }
 
-    private fun hentTilordnetVeileder(fnr: Fnr): String {
+    private fun hentTilordnetVeileder(fnr: Fnr): String? {
         val aktorId = authService.getAktorIdOrThrow(fnr)
         secureLog.info("Henter tilordning for bruker med aktørId {}", aktorId)
         return veilederTilordningerRepository.hentTilordningForAktoer(aktorId)
@@ -102,7 +102,7 @@ open class ArenaOppfolgingService @Autowired constructor (
                 return@let it.get()
             }
 
-        val veilederIdent = if (authService.erInternBruker()) hentTilordnetVeileder(fnr) else ""
+        val veilederIdent = if (authService.erInternBruker()) hentTilordnetVeileder(fnr) else null
 
         return GetOppfolginsstatusSuccess(
             OppfolgingEnhetMedVeilederResponse(
