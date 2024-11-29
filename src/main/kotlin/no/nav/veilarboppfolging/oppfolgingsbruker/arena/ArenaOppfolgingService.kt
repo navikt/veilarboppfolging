@@ -7,7 +7,6 @@ import no.nav.common.types.identer.Fnr
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe
 import no.nav.veilarboppfolging.FantIkkeBrukerIArenaException
-import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolging
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolgingTilstand
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient
@@ -15,6 +14,7 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.arena.OppfolgingEnhetMedVeiled
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsenhetHistorikkRepository
 import no.nav.veilarboppfolging.repository.VeilederTilordningerRepository
+import no.nav.veilarboppfolging.repository.entity.OppfolgingsenhetEndringEntity
 import no.nav.veilarboppfolging.service.AuthService
 import no.nav.veilarboppfolging.utils.ArenaUtils
 import no.nav.veilarboppfolging.utils.EnumUtils
@@ -22,6 +22,7 @@ import no.nav.veilarboppfolging.utils.SecureLog.secureLog
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
+import java.time.ZonedDateTime
 import java.util.*
 
 @Slf4j
@@ -98,10 +99,28 @@ open class ArenaOppfolgingService @Autowired constructor (
         return veilederTilordningerRepository.hentTilordningForAktoer(aktorId)
     }
 
-    fun getArenaOppfolgingsEnhet(fnr: Fnr): Oppfolgingsenhet? {
+    fun getArenaOppfolgingsEnhetId(fnr: Fnr): OppfolgingsenhetEndringEntity? {
         val aktorId = authService.getAktorIdOrThrow(fnr)
         return historikkRepository.hentArenaOppfolgingsenhetForAktorId(aktorId)
+    }
+
+    fun getArenaOppfolgingsEnhet(fnr: Fnr): Oppfolgingsenhet? {
+        return getArenaOppfolgingsEnhetId(fnr)
             ?.let { hentEnhet(it.enhet) }
+    }
+
+    data class IservDatoOgFormidlingsGruppe(
+        val iservDato: ZonedDateTime?,
+        val formidlingsGruppe: Formidlingsgruppe?
+    )
+    fun getIservDatoOgFormidlingsGruppe(fnr: Fnr): IservDatoOgFormidlingsGruppe? {
+        return veilarbarenaClient.hentOppfolgingsbruker(fnr)
+            .map { oppfolgingsbruker ->
+                IservDatoOgFormidlingsGruppe(
+                    oppfolgingsbruker.iserv_fra_dato,
+                    oppfolgingsbruker.formidlingsgruppekode?.let { Formidlingsgruppe.valueOf(it) }
+                )
+            }.orElse(null)
     }
 
     fun getOppfolginsstatus(fnr: Fnr): GetOppfolginsstatusResult {

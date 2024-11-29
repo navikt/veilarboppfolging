@@ -4,9 +4,9 @@ import no.nav.common.types.identer.Fnr
 import no.nav.paw.arbeidssokerregisteret.api.v1.BrukerType
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
-import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient
 import no.nav.veilarboppfolging.domain.StartetAvType
 import no.nav.veilarboppfolging.oppfolgingsbruker.Oppfolgingsbruker
+import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.service.AuthService
 import no.nav.veilarboppfolging.service.IservService
 import no.nav.veilarboppfolging.service.OppfolgingService
@@ -30,7 +30,7 @@ open class ArbeidssøkerperiodeConsumerService(
             @Lazy
     private val oppfolgingService: OppfolgingService,
             private val authService: AuthService,
-            private val veilarbarenaClient: VeilarbarenaClient,
+            private val arenaOppfolgingService: ArenaOppfolgingService,
             private val iservService: IservService,
 ) {
     private val logger = LoggerFactory.getLogger(this::class.java)
@@ -79,10 +79,9 @@ open class ArbeidssøkerperiodeConsumerService(
 
     fun utmeldHvisAlleredeIserv(fnr: Fnr, arbeidssøkerperiodeStartet: ZonedDateTime) {
         runCatching {
-            val oppfolgingsbruker = veilarbarenaClient.hentOppfolgingsbruker(fnr)
-                .getOrElse { throw IllegalStateException("Fant ikke bruker") }
-            if (oppfolgingsbruker.iserv_fra_dato == null || oppfolgingsbruker.formidlingsgruppekode == null) return@runCatching null
-            KanskjeIservBrukerMedPresisIserbDato(oppfolgingsbruker.iserv_fra_dato, fnr.get(), Formidlingsgruppe.valueOf(oppfolgingsbruker.formidlingsgruppekode))
+            val oppfolgingsbruker = arenaOppfolgingService.getIservDatoOgFormidlingsGruppe(fnr) ?: throw IllegalStateException("Fant ikke bruker")
+            if (oppfolgingsbruker.iservDato == null || oppfolgingsbruker.formidlingsGruppe == null) return@runCatching null
+            KanskjeIservBrukerMedPresisIserbDato(oppfolgingsbruker.iservDato, fnr.get(), oppfolgingsbruker.formidlingsGruppe)
         }.onSuccess { kanskjeIservBruker ->
             if (kanskjeIservBruker == null) return
             if (kanskjeIservBruker.iservFraDato.isAfter(arbeidssøkerperiodeStartet)) {
