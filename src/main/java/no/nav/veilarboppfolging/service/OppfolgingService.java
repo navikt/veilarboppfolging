@@ -3,9 +3,11 @@ package no.nav.veilarboppfolging.service;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.Id;
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe;
+import no.nav.pto_schema.enums.arena.Hovedmaal;
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe;
 import no.nav.veilarboppfolging.client.amttiltak.AmtTiltakClient;
 import no.nav.veilarboppfolging.client.digdir_krr.KRRData;
@@ -477,5 +479,15 @@ public class OppfolgingService {
     public Optional<OppfolgingsperiodeEntity> hentGjeldendeOppfolgingsperiode(Fnr fnr) {
         AktorId aktorId = authService.getAktorIdOrThrow(fnr);
         return oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId);
+    }
+
+    public void oppdaterArenaOppfolgingStatus(AktorId aktorId, Formidlingsgruppe formidlingsgruppe, Kvalifiseringsgruppe kvalifiseringsgruppe, Optional<Hovedmaal> hovedmaal, Optional<EnhetId> oppfolgingsEnhet) {
+        oppfolgingsStatusRepository.oppdaterArenaOppfolgingStatus(
+                aktorId,
+                formidlingsgruppe,
+                kvalifiseringsgruppe,
+                hovedmaal,
+                oppfolgingsEnhet
+        );
     }
 }

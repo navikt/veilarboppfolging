@@ -3,13 +3,11 @@ package no.nav.veilarboppfolging
 import com.nimbusds.jwt.JWTClaimsSet
 import no.nav.common.auth.context.AuthContextHolder
 import no.nav.common.client.aktoroppslag.AktorOppslagClient
-import no.nav.common.client.norg2.CachedNorg2Client
 import no.nav.common.client.norg2.Norg2Client
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.veilarboppfolging.config.ApplicationTestConfig
 import no.nav.veilarboppfolging.config.EnvironmentProperties
-import no.nav.veilarboppfolging.controller.ArenaOppfolgingController
 import no.nav.veilarboppfolging.controller.OppfolgingController
 import no.nav.veilarboppfolging.controller.SakController
 import no.nav.veilarboppfolging.domain.StartetAvType
@@ -96,7 +94,7 @@ open class IntegrationTest {
         DbTestUtils.cleanupTestDb(jdbcTemplate)
     }
 
-    fun startOppfolging(aktørId: AktorId) {
+    fun startOppfolgingSomArbeidsoker(aktørId: AktorId) {
         val bruker = Oppfolgingsbruker.arbeidssokerOppfolgingsBruker(aktørId, StartetAvType.BRUKER)
         oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(bruker)
     }

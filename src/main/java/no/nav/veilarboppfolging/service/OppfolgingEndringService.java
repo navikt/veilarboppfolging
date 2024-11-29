@@ -3,6 +3,7 @@ package no.nav.veilarboppfolging.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe;
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe;
@@ -88,6 +89,13 @@ public class OppfolgingEndringService {
                 secureLog.warn("Bruker har ikke oppfølgingtilstand i Arena. aktorId={}", aktorId);
             }
         }
+        oppfolgingService.oppdaterArenaOppfolgingStatus(
+                aktorId,
+                formidlingsgruppe,
+                kvalifiseringsgruppe,
+                Optional.ofNullable(brukerV2.getHovedmaal()),
+                Optional.ofNullable(brukerV2.getOppfolgingsenhet()).map(EnhetId::new)
+        );
     }
 
 }

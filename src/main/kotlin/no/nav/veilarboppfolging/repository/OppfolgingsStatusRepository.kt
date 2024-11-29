@@ -1,6 +1,7 @@
 package no.nav.veilarboppfolging.repository
 
 import no.nav.common.types.identer.AktorId
+import no.nav.common.types.identer.EnhetId
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.pto_schema.enums.arena.Hovedmaal
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe
@@ -8,38 +9,54 @@ import no.nav.veilarboppfolging.dbutil.toInt
 import no.nav.veilarboppfolging.domain.Oppfolging
 import no.nav.veilarboppfolging.repository.entity.OppfolgingEntity
 import no.nav.veilarboppfolging.utils.DbUtils
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.jdbc.core.JdbcTemplate
-import org.springframework.jdbc.core.RowMapper
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Repository
 import java.sql.ResultSet
 import java.sql.SQLException
 import java.util.Optional
 import java.util.function.Supplier
-import java.util.stream.Collectors
 
 @Repository
-class OppfolgingsStatusRepository(private val db: JdbcTemplate) {
+class OppfolgingsStatusRepository(private val jdbcTemplate: JdbcTemplate) {
+    val db = NamedParameterJdbcTemplate(jdbcTemplate)
+
     fun hentOppfolging(aktorId: AktorId): Optional<OppfolgingEntity> {
         return DbUtils.queryForNullableObject<OppfolgingEntity?>(Supplier {
             db.queryForObject<OppfolgingEntity>(
-                "SELECT * FROM OPPFOLGINGSTATUS WHERE aktor_id = ?",
+                "SELECT * FROM OPPFOLGINGSTATUS WHERE aktor_id = :aktorId",
+                mapOf("aktorId" to aktorId.get()),
                 { rs, row -> map(rs) },
-                aktorId.get()
             )
         })
     }
 
+    fun oppdaterArenaOppfolgingStatus(aktorId: AktorId, formidlingsgruppe: Formidlingsgruppe, kvalifiseringsgruppe: Kvalifiseringsgruppe, hovedmaal: Optional<Hovedmaal>, oppfolgingsenhet: Optional<EnhetId>) {
+        val params = mapOf(
+            "aktorId" to aktorId.get(),
+            "formidlingsgruppe" to formidlingsgruppe.name,
+            "hovedmaal" to hovedmaal.map { it.name }.orElse(null),
+            "kvalifiseringsgruppe" to kvalifiseringsgruppe.name,
+            "oppfolgingsenhet" to oppfolgingsenhet.map { it.get() }.orElse(null),
+        )
+        val sql = """
+            UPDATE OPPFOLGINGSTATUS
+            SET formidlingsgruppe = :formidlingsgruppe, kvalifiseringsgruppe = :kvalifiseringsgruppe, hovedmaal = :hovedmaal
+            WHERE aktor_id = :aktorId
+        """.trimIndent()
+        db.update(sql, params)
+    }
+
     fun opprettOppfolging(aktorId: AktorId): Oppfolging {
+        val params = mapOf(
+            "aktorId" to aktorId.get(),
+            "underOppfolging" to toInt(false)
+        )
         db.update(
-            "INSERT INTO OPPFOLGINGSTATUS(" +
-                    "aktor_id, " +
-                    "under_oppfolging, " +
-                    "oppdatert) " +
-                    "VALUES(?, ?, CURRENT_TIMESTAMP)",
-            aktorId.get(),
-            toInt(false)
-        ) // TODO: Hvorfor false her?
+            """INSERT INTO OPPFOLGINGSTATUS(aktor_id, under_oppfolging, oppdatert) 
+                VALUES(:aktorId, :underOppfolging, CURRENT_TIMESTAMP)""".trimMargin(),
+            params,
+        )
 
         // FIXME: return the actual database object.
         return Oppfolging().setAktorId(aktorId.get()).setUnderOppfolging(false)

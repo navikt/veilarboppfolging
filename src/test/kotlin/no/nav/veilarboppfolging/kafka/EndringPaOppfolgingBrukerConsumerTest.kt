@@ -11,7 +11,6 @@ import no.nav.veilarboppfolging.kafka.TestUtils.oppfølgingsBrukerEndret
 import no.nav.veilarboppfolging.service.KafkaConsumerService
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.`when`
@@ -34,7 +33,6 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
         mockInternBrukerAuthOk(aktorId, fnr)
     }
 
-    @Disabled
     @Test
     fun `getArenaOppfolgingsEnhet skal svare med svar siste enhet man har fått på oppfølginsbruker topic`() {
         val enhetIdVest = "0123"
@@ -50,7 +48,8 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
 
         meldingFraVeilarbArenaPåBrukerMedEnhet(fnr, enhetIdVest)
 
-        val skalVæreEnhetVest = arenaOppfolgingService.hentArenaOppfolgingsEnhet(fnr)
+//        val skalVæreEnhetVest = arenaOppfolgingService.hentArenaOppfolgingsEnhet(fnr)
+        val skalVæreEnhetVest = oppfolgingsStatusRepository.hentArenaOppfolgingsEnhet(fnr)
         assertEquals(enhetNavnVest, skalVæreEnhetVest?.navn)
         assertEquals(enhetIdVest, skalVæreEnhetVest?.enhetId)
 
@@ -61,10 +60,8 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
         assertEquals(enhetIdØst, skalVæreEnhetØst?.enhetId)
     }
 
-    @Disabled
     @Test
     fun `skal lagre hovedmaal, kvalifiseringsgruppe og formidlingsgruppe ved endring på oppfolgingsbruker`() {
-        mockInternBrukerAuthOk(aktorId, fnr)
         val hovedmaal = Hovedmaal.BEHOLDEA
         val formidlingsgruppe = Formidlingsgruppe.IARBS
         val kvalifiseringsgruppe = Kvalifiseringsgruppe.VURDU
@@ -86,9 +83,40 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
     }
 
     @Test
+    fun `skal håndtere at hovedmaal er null`() {
+        mockEnhetINorg("8989", "Nav enhet")
+
+        meldingFraVeilarbArenaPåBrukerMedStatus(
+            fnr = fnr,
+            enhetId = "8989",
+            hovedmaal = null,
+            formidlingsgruppe = Formidlingsgruppe.IARBS,
+            kvalifiseringsgruppe = Kvalifiseringsgruppe.VURDU
+        )
+
+        val statusEtterEndring = oppfolgingsStatusRepository.hentOppfolging(aktorId)
+        assert(statusEtterEndring.isPresent) { "Oppfolgingsstatus fra arena var null" }
+        assertEquals(null, statusEtterEndring.get().hovedmaal)
+        assertEquals(Formidlingsgruppe.IARBS, statusEtterEndring.get().formidlingsgruppe)
+        assertEquals(Kvalifiseringsgruppe.VURDU, statusEtterEndring.get().kvalifiseringsgruppe)
+    }
+
+    @Test
     fun `skal håndtere brukere som mangler oppfølgingsstatus`() {
         val statusEtterEndring = oppfolgingsStatusRepository.hentOppfolging(aktorId)
         assert(statusEtterEndring.isEmpty)
+    }
+
+    @Test
+    fun `skal håndtere brukere som har oppfølging men bare ikke fått status fra arena`() {
+        startOppfolgingSomArbeidsoker(aktorId)
+        val statusEtterEndring = oppfolgingsStatusRepository.hentOppfolging(aktorId)
+        assertEquals(true, statusEtterEndring.get().isUnderOppfolging)
+        assertEquals(null, statusEtterEndring.get().hovedmaal)
+        assertEquals(null, statusEtterEndring.get().formidlingsgruppe)
+        assertEquals(null, statusEtterEndring.get().kvalifiseringsgruppe)
+        assertEquals(null, statusEtterEndring.get().veilederId)
+        assertEquals(0, statusEtterEndring.get().gjeldendeKvpId)
     }
 
     fun mockEnhetINorg(id: String, navn: String) {
@@ -101,7 +129,7 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
         kafkaConsumerService.consumeEndringPaOppfolgingBruker(record)
     }
 
-    fun meldingFraVeilarbArenaPåBrukerMedStatus(fnr: Fnr, formidlingsgruppe: Formidlingsgruppe, kvalifiseringsgruppe: Kvalifiseringsgruppe, hovedmaal: Hovedmaal, enhetId: String) {
+    fun meldingFraVeilarbArenaPåBrukerMedStatus(fnr: Fnr, formidlingsgruppe: Formidlingsgruppe, kvalifiseringsgruppe: Kvalifiseringsgruppe?, hovedmaal: Hovedmaal?, enhetId: String) {
         val record = ConsumerRecord("topic", 0, 0, "key", oppfølgingsBrukerEndret(fnr.get(), enhetId = enhetId, hovedmaal = hovedmaal, kvalifiseringsgruppe = kvalifiseringsgruppe, formidlingsgruppe = formidlingsgruppe))
         kafkaConsumerService.consumeEndringPaOppfolgingBruker(record)
     }

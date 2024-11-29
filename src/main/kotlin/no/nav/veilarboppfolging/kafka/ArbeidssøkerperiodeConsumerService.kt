@@ -37,6 +37,8 @@ open class ArbeidssøkerperiodeConsumerService(
     open fun consumeArbeidssøkerperiode(kafkaMelding: ConsumerRecord<String, Periode>) {
         val arbeidssøkerperiode: Periode = kafkaMelding.value()
 
+
+
         val arbeidssøkerperiodeStartet = arbeidssøkerperiode.startet.tidspunkt.atZone(ZoneId.systemDefault())
         if (arbeidssøkerperiodeStartet.isBefore(DA_VI_STARTET_KONSUMERING)) {
             return
