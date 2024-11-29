@@ -2,6 +2,9 @@ package no.nav.veilarboppfolging.repository.entity;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
+import no.nav.pto_schema.enums.arena.Formidlingsgruppe;
+import no.nav.pto_schema.enums.arena.Hovedmaal;
+import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe;
 
 /**
  * The OppfolgingTable class is used as a transient data carrier from the
@@ -18,4 +21,7 @@ public class OppfolgingEntity {
     private Long gjeldendeManuellStatusId;
     private long gjeldendeMaalId;
     private long gjeldendeKvpId;
+    private Hovedmaal hovedmaal;
+    private Kvalifiseringsgruppe kvalifiseringsgruppe;
+    private Formidlingsgruppe formidlingsgruppe;
 }

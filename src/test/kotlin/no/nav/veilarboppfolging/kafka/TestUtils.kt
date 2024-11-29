@@ -15,7 +15,10 @@ object TestUtils {
         fnr: String,
         iservFraDato: LocalDate = LocalDate.now(),
         formidlingsgruppe: Formidlingsgruppe = Formidlingsgruppe.ARBS,
-        enhetId: String = "enhet"): EndringPaaOppfoelgingsBrukerV2 {
+        enhetId: String = "enhet",
+        hovedmaal: Hovedmaal = Hovedmaal.BEHOLDEA,
+        kvalifiseringsgruppe: Kvalifiseringsgruppe = Kvalifiseringsgruppe.IVURD
+    ): EndringPaaOppfoelgingsBrukerV2 {
         return EndringPaaOppfoelgingsBrukerV2(
             fnr,
             formidlingsgruppe,
@@ -23,9 +26,9 @@ object TestUtils {
             "Sig",
             ":)",
             enhetId,
-            Kvalifiseringsgruppe.IVURD,
+            kvalifiseringsgruppe,
             Rettighetsgruppe.INDS,
-            Hovedmaal.BEHOLDEA,
+            hovedmaal,
             SikkerhetstiltakType.TFUS,
             null,
             true,
