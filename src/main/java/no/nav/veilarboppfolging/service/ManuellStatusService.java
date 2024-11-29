@@ -141,8 +141,8 @@ public class ManuellStatusService {
         authService.sjekkLesetilgangMedAktorId(aktorId);
 
         if (!authService.erEksternBruker()) {
-            VeilarbArenaOppfolging arenaOppfolging = arenaOppfolgingService.hentOppfolgingFraVeilarbarena(fnr).orElseThrow();
-            authService.sjekkTilgangTilEnhet(arenaOppfolging.getNav_kontor());
+            var enhet = Optional.ofNullable(arenaOppfolgingService.hentArenaOppfolgingsEnhetId(fnr)).orElseThrow();
+            authService.sjekkTilgangTilEnhet(enhet.get());
         }
 
         KRRData kontaktinfo = hentDigdirKontaktinfo(fnr);

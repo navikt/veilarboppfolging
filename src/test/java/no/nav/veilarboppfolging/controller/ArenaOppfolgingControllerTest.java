@@ -41,7 +41,7 @@ public class ArenaOppfolgingControllerTest {
         """;
 
         when(authService.getFnrOrThrow(aktorId)).thenReturn(fnr);
-        when(arenaOppfolgingService.getArenaOppfolgingsEnhet(fnr)).thenReturn(response);
+        when(arenaOppfolgingService.hentArenaOppfolgingsEnhet(fnr)).thenReturn(response);
 
         mockMvc.perform(get(format("/api/person/oppfolgingsenhet?aktorId=%s", aktorId)))
                 .andExpect(status().is(200))

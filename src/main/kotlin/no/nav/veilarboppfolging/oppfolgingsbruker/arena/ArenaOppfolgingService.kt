@@ -3,6 +3,7 @@ package no.nav.veilarboppfolging.oppfolgingsbruker.arena
 import lombok.extern.slf4j.Slf4j
 import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.client.norg2.Norg2Client
+import no.nav.common.types.identer.EnhetId
 import no.nav.common.types.identer.Fnr
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe
@@ -14,7 +15,6 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.arena.OppfolgingEnhetMedVeiled
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsenhetHistorikkRepository
 import no.nav.veilarboppfolging.repository.VeilederTilordningerRepository
-import no.nav.veilarboppfolging.repository.entity.OppfolgingsenhetEndringEntity
 import no.nav.veilarboppfolging.service.AuthService
 import no.nav.veilarboppfolging.utils.ArenaUtils
 import no.nav.veilarboppfolging.utils.EnumUtils
@@ -99,21 +99,24 @@ open class ArenaOppfolgingService @Autowired constructor (
         return veilederTilordningerRepository.hentTilordningForAktoer(aktorId)
     }
 
-    fun getArenaOppfolgingsEnhetId(fnr: Fnr): OppfolgingsenhetEndringEntity? {
-        val aktorId = authService.getAktorIdOrThrow(fnr)
-        return historikkRepository.hentArenaOppfolgingsenhetForAktorId(aktorId)
+    fun hentArenaOppfolgingsEnhetId(fnr: Fnr): EnhetId? {
+        return veilarbarenaClient.hentOppfolgingsbruker(fnr)
+            .map { it.nav_kontor }
+            .map { EnhetId(it) }.orElse(null)
+//        val aktorId = authService.getAktorIdOrThrow(fnr)
+//        return historikkRepository.hentArenaOppfolgingsenhetForAktorId(aktorId)
     }
 
-    fun getArenaOppfolgingsEnhet(fnr: Fnr): Oppfolgingsenhet? {
-        return getArenaOppfolgingsEnhetId(fnr)
-            ?.let { hentEnhet(it.enhet) }
+    fun hentArenaOppfolgingsEnhet(fnr: Fnr): Oppfolgingsenhet? {
+        return hentArenaOppfolgingsEnhetId(fnr)
+            ?.let { hentEnhet(it.get()) }
     }
 
     data class IservDatoOgFormidlingsGruppe(
         val iservDato: ZonedDateTime?,
         val formidlingsGruppe: Formidlingsgruppe?
     )
-    fun getIservDatoOgFormidlingsGruppe(fnr: Fnr): IservDatoOgFormidlingsGruppe? {
+    fun hentIservDatoOgFormidlingsGruppe(fnr: Fnr): IservDatoOgFormidlingsGruppe? {
         return veilarbarenaClient.hentOppfolgingsbruker(fnr)
             .map { oppfolgingsbruker ->
                 IservDatoOgFormidlingsGruppe(

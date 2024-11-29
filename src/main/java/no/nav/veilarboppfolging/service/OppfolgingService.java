@@ -4,6 +4,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.common.types.identer.Id;
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe;
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe;
 import no.nav.veilarboppfolging.client.amttiltak.AmtTiltakClient;
@@ -156,9 +157,8 @@ public class OppfolgingService {
     @SneakyThrows
     public VeilederTilgang hentVeilederTilgang(Fnr fnr) {
         authService.sjekkLesetilgangMedFnr(fnr);
-        return arenaOppfolgingService
-                .hentOppfolgingFraVeilarbarena(fnr)
-                .map(VeilarbArenaOppfolging::getNav_kontor)
+        return Optional.ofNullable(arenaOppfolgingService.hentArenaOppfolgingsEnhetId(fnr))
+                .map(Id::get)
                 .map(authService::harTilgangTilEnhet)
                 .map(VeilederTilgang::new)
                 .orElse(new VeilederTilgang(false));

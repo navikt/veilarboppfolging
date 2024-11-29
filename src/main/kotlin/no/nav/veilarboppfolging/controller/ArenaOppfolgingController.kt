@@ -24,6 +24,6 @@ class ArenaOppfolgingController(
     fun getOppfolgingsenhet(@RequestParam("aktorId") aktorId: AktorId?): OppfolgingEnhetMedVeilederResponse.Oppfolgingsenhet? {
         authService.sjekkLesetilgangMedAktorId(aktorId)
         val fnr = authService.getFnrOrThrow(aktorId)
-        return arenaOppfolgingService.getArenaOppfolgingsEnhet(fnr)
+        return arenaOppfolgingService.hentArenaOppfolgingsEnhet(fnr)
     }
 }
