@@ -9,7 +9,6 @@ import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe
 import no.nav.veilarboppfolging.FantIkkeBrukerIArenaException
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolgingTilstand
-import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.OppfolgingEnhetMedVeilederResponse.Oppfolgingsenhet
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
@@ -39,13 +38,14 @@ open class ArenaOppfolgingService @Autowired constructor (
 ) {
     private val log = LoggerFactory.getLogger(ArenaOppfolgingService::class.java)
 
-    // Bruker endepunktet i veilarbarena som henter fra database som er synket med Arena (har et delay på et par min)
-    fun hentOppfolgingFraVeilarbarena(fnr: Fnr): Optional<VeilarbArenaOppfolging>? {
-        return veilarbarenaClient.hentOppfolgingsbruker(fnr)
+    fun kanEnkeltReaktiveres(fnr: Fnr): Optional<Boolean> {
+        return veilarbarenaClient.getArenaOppfolgingsstatus(fnr)
+            .map { arenaOppfolging -> ArenaOppfolgingTilstand.fraArenaOppfolging(arenaOppfolging) }
+            .map { it.kanEnkeltReaktiveres }
     }
 
     // Bruker endepunktet i veilarbarena som henter direkte fra Arena
-    fun hentOppfolgingTilstandDirekteFraArena(fnr: Fnr): Optional<ArenaOppfolgingTilstand> {
+    private fun hentOppfolgingTilstandDirekteFraArena(fnr: Fnr): Optional<ArenaOppfolgingTilstand> {
         return veilarbarenaClient.getArenaOppfolgingsstatus(fnr)
             .map { arenaOppfolging -> ArenaOppfolgingTilstand.fraArenaOppfolging(arenaOppfolging) }
     }
@@ -73,7 +73,7 @@ open class ArenaOppfolgingService @Autowired constructor (
             }.orElse(false)
 
         if (erUnderOppfolgingIVeilarbarena != erUnderOppfolging) {
-            val oppfolgingTilstand = hentOppfolgingTilstandDirekteFraArena(fnr)
+            val oppfolgingTilstand: Optional<ArenaOppfolgingTilstand> = hentOppfolgingTilstandDirekteFraArena(fnr)
 
             maybeArenaOppfolging.ifPresent { arenaOppfolging ->
                 log.info(

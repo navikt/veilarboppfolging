@@ -7,7 +7,6 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe;
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe;
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
-import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolgingTilstand;
 import no.nav.veilarboppfolging.oppfolgingsbruker.Oppfolgingsbruker;
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
-import static java.lang.Boolean.TRUE;
 import static java.util.Optional.ofNullable;
 import static no.nav.veilarboppfolging.config.ApplicationConfig.SYSTEM_USER_NAME;
 import static no.nav.veilarboppfolging.utils.ArenaUtils.erIserv;
@@ -68,11 +66,10 @@ public class OppfolgingEndringService {
             oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(
                     Oppfolgingsbruker.arenaSyncOppfolgingBruker(aktorId, formidlingsgruppe, kvalifiseringsgruppe));
         } else if (erBrukerUnderOppfolging && !erUnderOppfolgingIArena && erInaktivIArena) {
-            Optional<ArenaOppfolgingTilstand> maybeArenaTilstand = arenaOppfolgingService.hentOppfolgingTilstandDirekteFraArena(fnr);
+            Optional<Boolean> maybeKanEnkeltReaktiveres = arenaOppfolgingService.kanEnkeltReaktiveres(fnr);
 
-            if (maybeArenaTilstand.isPresent()) {
-                ArenaOppfolgingTilstand tilstand = maybeArenaTilstand.get();
-                boolean kanEnkeltReaktiveres = TRUE.equals(tilstand.getKanEnkeltReaktiveres());
+            if (maybeKanEnkeltReaktiveres.isPresent()) {
+                boolean kanEnkeltReaktiveres = maybeKanEnkeltReaktiveres.get();
                 boolean erUnderKvp = kvpService.erUnderKvp(aktorId);
                 boolean harAktiveTiltaksdeltakelser = oppfolgingService.harAktiveTiltaksdeltakelser(fnr);
                 boolean skalAvsluttes = !kanEnkeltReaktiveres && !erUnderKvp && !harAktiveTiltaksdeltakelser;
