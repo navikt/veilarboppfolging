@@ -33,7 +33,7 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
 
     private static final Fnr FNR = Fnr.of("fnr");
     private static final AktorId AKTOR_ID = AktorId.of("aktorId");
-    private static final String ENHET = "enhet";
+    private static final String ENHET = "7676";
     private static final String VEILEDER = "veileder";
     private static final String BEGRUNNELSE = "begrunnelse";
 

@@ -15,7 +15,7 @@ object TestUtils {
         fnr: String,
         iservFraDato: LocalDate = LocalDate.now(),
         formidlingsgruppe: Formidlingsgruppe = Formidlingsgruppe.ARBS,
-        enhetId: String = "enhet",
+        enhetId: String = "8686",
         hovedmaal: Hovedmaal? = Hovedmaal.BEHOLDEA,
         kvalifiseringsgruppe: Kvalifiseringsgruppe? = Kvalifiseringsgruppe.IVURD
     ): EndringPaaOppfoelgingsBrukerV2 {
