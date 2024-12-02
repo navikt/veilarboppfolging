@@ -2,6 +2,7 @@ package no.nav.veilarboppfolging.repository.entity;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
+import no.nav.common.types.identer.EnhetId;
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe;
 import no.nav.pto_schema.enums.arena.Hovedmaal;
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe;
@@ -24,4 +25,5 @@ public class OppfolgingEntity {
     private Hovedmaal hovedmaal;
     private Kvalifiseringsgruppe kvalifiseringsgruppe;
     private Formidlingsgruppe formidlingsgruppe;
+    private EnhetId enhetId;
 }

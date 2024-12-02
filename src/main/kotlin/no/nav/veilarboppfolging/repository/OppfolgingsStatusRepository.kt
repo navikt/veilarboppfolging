@@ -41,7 +41,10 @@ class OppfolgingsStatusRepository(private val jdbcTemplate: JdbcTemplate) {
         )
         val sql = """
             UPDATE OPPFOLGINGSTATUS
-            SET formidlingsgruppe = :formidlingsgruppe, kvalifiseringsgruppe = :kvalifiseringsgruppe, hovedmaal = :hovedmaal
+            SET formidlingsgruppe = :formidlingsgruppe, 
+            kvalifiseringsgruppe = :kvalifiseringsgruppe, 
+            hovedmaal = :hovedmaal, 
+            oppfolgingsenhet = :oppfolgingsenhet 
             WHERE aktor_id = :aktorId
         """.trimIndent()
         db.update(sql, params)
@@ -96,6 +99,7 @@ class OppfolgingsStatusRepository(private val jdbcTemplate: JdbcTemplate) {
                 .setKvalifiseringsgruppe(rs.getStringOrNull("kvalifiseringsgruppe")?.let(Kvalifiseringsgruppe::valueOf))
                 .setHovedmaal(rs.getStringOrNull("hovedmaal")?.let(Hovedmaal::valueOf))
                 .setUnderOppfolging(rs.getBoolean(UNDER_OPPFOLGING))
+                .setEnhetId(rs.getString("oppfolgingsenhet")?.let { EnhetId(it) })
         }
     }
 }

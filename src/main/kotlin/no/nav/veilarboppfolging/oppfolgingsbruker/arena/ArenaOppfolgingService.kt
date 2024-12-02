@@ -99,12 +99,19 @@ open class ArenaOppfolgingService @Autowired constructor (
         return veilederTilordningerRepository.hentTilordningForAktoer(aktorId)
     }
 
-    fun hentArenaOppfolgingsEnhetId(fnr: Fnr): EnhetId? {
+
+    private fun hentEnhetSynkrontFraVeilarbarena(fnr: Fnr): EnhetId? {
         return veilarbarenaClient.hentOppfolgingsbruker(fnr)
             .map { it.nav_kontor }
             .map { EnhetId(it) }.orElse(null)
-//        val aktorId = authService.getAktorIdOrThrow(fnr)
-//        return historikkRepository.hentArenaOppfolgingsenhetForAktorId(aktorId)
+    }
+
+    /* Det finnes Noen få brukere som ikke har enhet */
+    fun hentArenaOppfolgingsEnhetId(fnr: Fnr): EnhetId? {
+        val aktorId = authService.getAktorIdOrThrow(fnr)
+        return oppfolgingsStatusRepository.hentOppfolging(aktorId)
+            .map { it.enhetId }
+            .orElseGet { hentEnhetSynkrontFraVeilarbarena(fnr) }
     }
 
     fun hentArenaOppfolgingsEnhet(fnr: Fnr): Oppfolgingsenhet? {

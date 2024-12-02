@@ -7,6 +7,8 @@ import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.pto_schema.enums.arena.Hovedmaal
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe
 import no.nav.veilarboppfolging.IntegrationTest
+import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging
+import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient
 import no.nav.veilarboppfolging.kafka.TestUtils.oppfølgingsBrukerEndret
 import no.nav.veilarboppfolging.service.KafkaConsumerService
 import org.apache.kafka.clients.consumer.ConsumerRecord
@@ -15,7 +17,9 @@ import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.test.context.ActiveProfiles
+import java.util.Optional
 import kotlin.test.assertEquals
 
 @ActiveProfiles("local")
@@ -24,6 +28,9 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
 
     @Autowired
     private lateinit var kafkaConsumerService: KafkaConsumerService
+
+    @MockBean
+    lateinit var veilarbarenaClient: VeilarbarenaClient
 
     val fnr = Fnr.of("123")
     val aktorId = AktorId.of("123")
@@ -48,8 +55,8 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
 
         meldingFraVeilarbArenaPåBrukerMedEnhet(fnr, enhetIdVest)
 
-//        val skalVæreEnhetVest = arenaOppfolgingService.hentArenaOppfolgingsEnhet(fnr)
-        val skalVæreEnhetVest = oppfolgingsStatusRepository.hentArenaOppfolgingsEnhet(fnr)
+        val skalVæreEnhetVest = arenaOppfolgingService.hentArenaOppfolgingsEnhet(fnr)
+//        val skalVæreEnhetVest = oppfolgingsStatusRepository.hentArenaOppfolgingsEnhet(fnr)
         assertEquals(enhetNavnVest, skalVæreEnhetVest?.navn)
         assertEquals(enhetIdVest, skalVæreEnhetVest?.enhetId)
 
@@ -103,8 +110,18 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
 
     @Test
     fun `skal håndtere brukere som mangler oppfølgingsstatus`() {
-        val statusEtterEndring = oppfolgingsStatusRepository.hentOppfolging(aktorId)
-        assert(statusEtterEndring.isEmpty)
+        val oppfolgingsStatus = arenaOppfolgingService.hentOppfolgingTilstand(fnr)
+        assert(oppfolgingsStatus.isEmpty)
+    }
+
+    @Test
+    fun `skal bruke veilarbarena som fallback til oppfølgingsenhet`() {
+        val arenaEnhet = "6112"
+        val arenaOppfolging = VeilarbArenaOppfolging()
+            .setNav_kontor(arenaEnhet)
+        `when`(veilarbarenaClient.hentOppfolgingsbruker(fnr)).thenReturn(Optional.of(arenaOppfolging))
+        val enhet = arenaOppfolgingService.hentArenaOppfolgingsEnhetId(fnr)
+        assertEquals(arenaEnhet, enhet?.get())
     }
 
     @Test
