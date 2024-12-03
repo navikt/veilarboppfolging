@@ -179,8 +179,8 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
 
     @Test
     fun `Skal putte person i utmelding tabell hvis ISERV i Arena og ISERV_FRA_DATO er etter arbeidssøkerregistreringen`() {
-        val arbeidsøkerPeriodeStartet = LocalDateTime.of(2024, 10,1,1,1)
-        val ISERV_FRA_DATO = LocalDate.of(2024, 10, 1)
+        val arbeidsøkerPeriodeStartet = LocalDateTime.of(2024, 10,1,23,59)
+        val ISERV_FRA_DATO = LocalDate.of(2024, 10, 2)
         `when`(veilarbarenaClient.hentOppfolgingsbruker(Fnr.of(fnr))).thenReturn(Optional.of(
             VeilarbArenaOppfolgingsBruker()
             .setFodselsnr(fnr)

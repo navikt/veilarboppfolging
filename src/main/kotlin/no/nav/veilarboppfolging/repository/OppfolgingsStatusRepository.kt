@@ -49,7 +49,8 @@ class OppfolgingsStatusRepository(private val jdbcTemplate: JdbcTemplate) {
             SET formidlingsgruppe = :formidlingsgruppe, 
             kvalifiseringsgruppe = :kvalifiseringsgruppe, 
             hovedmaal = :hovedmaal, 
-            oppfolgingsenhet = :oppfolgingsenhet 
+            oppfolgingsenhet = :oppfolgingsenhet,
+            iserv_fra_dato = :iserv_fra_dato
             WHERE aktor_id = :aktorId
         """.trimIndent()
         db.update(sql, params)
@@ -100,7 +101,7 @@ class OppfolgingsStatusRepository(private val jdbcTemplate: JdbcTemplate) {
                 kvalifiseringsgruppe = kvalifiseringsgruppe,
                 formidlingsgruppe = formidlingsgruppe,
                 hovedmaal = rs.getStringOrNull("hovedmaal")?.let(Hovedmaal::valueOf),
-                oppfolgingsenhet =  rs.getString("oppfolgingsenhet")?.let { EnhetId(it) },
+                oppfolgingsenhet =  rs.getStringOrNull("oppfolgingsenhet")?.let { EnhetId(it) },
                 // Dårlig konvertering av ZonedDataTime til LocalDateTime men trenger bare datoen
                 iservFraDato = DbUtils.hentZonedDateTime(rs, "iserv_fra_dato")?.toLocalDate()
             ) else null

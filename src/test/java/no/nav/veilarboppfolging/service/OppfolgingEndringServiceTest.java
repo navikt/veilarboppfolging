@@ -3,7 +3,6 @@ package no.nav.veilarboppfolging.service;
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe;
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe;
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
-import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolgingTilstand;
 import no.nav.veilarboppfolging.oppfolgingsbruker.Oppfolgingsbruker;
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
@@ -73,7 +72,9 @@ public class OppfolgingEndringServiceTest {
     @Test
     public void oppdaterOppfolgingMedStatusFraArena__skal_avslutte_oppfolging_pa_bruker_som_er_under_oppfolging_i_veilarboppfolging_men_ikke_under_oppfolging_i_arena() {
         when(authService.getAktorIdOrThrow(TEST_FNR)).thenReturn(TEST_AKTOR_ID);
-        when(oppfolgingsStatusRepository.hentOppfolging(TEST_AKTOR_ID)).thenReturn(Optional.of(new OppfolgingEntity().setUnderOppfolging(true)));
+        when(oppfolgingsStatusRepository.hentOppfolging(TEST_AKTOR_ID)).thenReturn(Optional.of(new OppfolgingEntity()
+                        .setLocalArenaOppfolging(Optional.empty())
+                .setUnderOppfolging(true)));
         when(arenaOppfolgingService.kanEnkeltReaktiveres(TEST_FNR)).thenReturn(Optional.of(false));
         when(kvpService.erUnderKvp(TEST_AKTOR_ID)).thenReturn(false);
 
@@ -98,7 +99,9 @@ public class OppfolgingEndringServiceTest {
     @Test
     public void oppdaterOppfolgingMedStatusFraArena__skal_ikke_avslutte_oppfolging_pa_bruker_som_kan_enkelt_reaktiveres() {
         when(authService.getAktorIdOrThrow(TEST_FNR)).thenReturn(TEST_AKTOR_ID);
-        when(oppfolgingsStatusRepository.hentOppfolging(TEST_AKTOR_ID)).thenReturn(Optional.of(new OppfolgingEntity().setUnderOppfolging(true)));
+        when(oppfolgingsStatusRepository.hentOppfolging(TEST_AKTOR_ID)).thenReturn(Optional.of(new OppfolgingEntity()
+                        .setLocalArenaOppfolging(Optional.empty())
+                .setUnderOppfolging(true)));
         when(arenaOppfolgingService.kanEnkeltReaktiveres(TEST_FNR)).thenReturn(Optional.of(true));
         when(kvpService.erUnderKvp(TEST_AKTOR_ID)).thenReturn(false);
         when(oppfolgingService.harAktiveTiltaksdeltakelser(TEST_FNR)).thenReturn(false);
@@ -118,7 +121,9 @@ public class OppfolgingEndringServiceTest {
     @Test
     public void oppdaterOppfolgingMedStatusFraArena__skal_ikke_avslutte_oppfolging_pa_bruker_som_er_under_kvp() {
         when(authService.getAktorIdOrThrow(TEST_FNR)).thenReturn(TEST_AKTOR_ID);
-        when(oppfolgingsStatusRepository.hentOppfolging(TEST_AKTOR_ID)).thenReturn(Optional.of(new OppfolgingEntity().setUnderOppfolging(true)));
+        when(oppfolgingsStatusRepository.hentOppfolging(TEST_AKTOR_ID)).thenReturn(Optional.of(new OppfolgingEntity()
+                        .setLocalArenaOppfolging(Optional.empty())
+                .setUnderOppfolging(true)));
         when(arenaOppfolgingService.kanEnkeltReaktiveres(TEST_FNR)).thenReturn(Optional.of(false));
         when(kvpService.erUnderKvp(TEST_AKTOR_ID)).thenReturn(true);
         when(oppfolgingService.harAktiveTiltaksdeltakelser(TEST_FNR)).thenReturn(false);
@@ -139,7 +144,9 @@ public class OppfolgingEndringServiceTest {
     @Test
     public void oppdaterOppfolgingMedStatusFraArena__skal_ikke_avslutte_oppfolging_pa_bruker_som_har_aktive_tiltaksdeltakelser() {
         when(authService.getAktorIdOrThrow(TEST_FNR)).thenReturn(TEST_AKTOR_ID);
-        when(oppfolgingsStatusRepository.hentOppfolging(TEST_AKTOR_ID)).thenReturn(Optional.of(new OppfolgingEntity().setUnderOppfolging(true)));
+        when(oppfolgingsStatusRepository.hentOppfolging(TEST_AKTOR_ID)).thenReturn(Optional.of(new OppfolgingEntity()
+                        .setLocalArenaOppfolging(Optional.empty())
+                .setUnderOppfolging(true)));
         when(arenaOppfolgingService.kanEnkeltReaktiveres(TEST_FNR)).thenReturn(Optional.of(false));
         when(kvpService.erUnderKvp(TEST_AKTOR_ID)).thenReturn(false);
         when(oppfolgingService.harAktiveTiltaksdeltakelser(TEST_FNR)).thenReturn(true);
