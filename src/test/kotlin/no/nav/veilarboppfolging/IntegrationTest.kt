@@ -125,10 +125,11 @@ open class IntegrationTest {
             .thenReturn(fnr)
     }
 
-    fun mockInternBrukerAuthOk(aktørId: AktorId, fnr: Fnr) {
+    fun mockInternBrukerAuthOk(veilederIOD: UUID,aktørId: AktorId, fnr: Fnr) {
         val claims = JWTClaimsSet.Builder()
             .issuer("microsoftonline.com")
             .claim("azp_name", "cluster:team:veilarbregistrering")
+            .claim("oid", veilederIOD.toString())
             .build()
 
         Mockito.`when`(authContextHolder.idTokenClaims).thenReturn(Optional.of(claims))

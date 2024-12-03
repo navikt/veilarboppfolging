@@ -8,7 +8,7 @@ import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.`when`
 import org.springframework.boot.test.mock.mockito.MockBean
-import java.util.Optional
+import java.util.*
 
 class VeilarbArenaOppfolgingsStatusServiceIntegrationTest: IntegrationTest() {
 
@@ -21,7 +21,7 @@ class VeilarbArenaOppfolgingsStatusServiceIntegrationTest: IntegrationTest() {
 
     @Test
     fun `getOppfolginsstatus skal retunerer success når bruker finnes i arena`() {
-        mockInternBrukerAuthOk(aktorId, fnr)
+        mockInternBrukerAuthOk(UUID.randomUUID(), aktorId, fnr)
         `when`(veilarbarenaClient.hentOppfolgingsbruker(fnr)).thenReturn(Optional.of(
             VeilarbArenaOppfolgingsBruker()
             .setFodselsnr(fnr.get())
@@ -35,7 +35,7 @@ class VeilarbArenaOppfolgingsStatusServiceIntegrationTest: IntegrationTest() {
 
     @Test
     fun `getOppfolginsstatus skal ikke kaste exception hvis bruker ikke finnes i arena`() {
-        mockInternBrukerAuthOk(aktorId, fnr)
+        mockInternBrukerAuthOk(UUID.randomUUID(), aktorId, fnr)
         `when`(veilarbarenaClient.hentOppfolgingsbruker(fnr)).thenReturn(Optional.empty())
         assert(arenaOppfolgingService.hentArenaOppfolginsstatusMedHovedmaal(fnr) is GetOppfolginsstatusFailure)
     }

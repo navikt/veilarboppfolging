@@ -3,26 +3,36 @@ package no.nav.veilarboppfolging.kafka
 import no.nav.common.client.norg2.Enhet
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
+import no.nav.poao_tilgang.client.Decision
+import no.nav.poao_tilgang.client.Decision.Permit
+import no.nav.poao_tilgang.client.NavAnsattTilgangTilEksternBrukerPolicyInput
+import no.nav.poao_tilgang.client.PoaoTilgangClient
+import no.nav.poao_tilgang.client.TilgangType
+import no.nav.poao_tilgang.client.api.ApiResult.Companion.success
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.pto_schema.enums.arena.Hovedmaal
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe
 import no.nav.veilarboppfolging.IntegrationTest
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsBruker
+import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsStatus
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient
 import no.nav.veilarboppfolging.kafka.TestUtils.oppfølgingsBrukerEndret
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.GetOppfolginsstatusFailure
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.GetOppfolginsstatusSuccess
 import no.nav.veilarboppfolging.service.KafkaConsumerService
 import org.apache.kafka.clients.consumer.ConsumerRecord
+import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
+import org.mockito.Mockito
+import org.mockito.Mockito.any
 import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.test.context.ActiveProfiles
 import java.time.LocalDate
-import java.util.Optional
+import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -34,15 +44,19 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
     @Autowired
     private lateinit var kafkaConsumerService: KafkaConsumerService
 
+    @Autowired
+    private lateinit var poaoTilgangClient: PoaoTilgangClient
+
     @MockBean
     lateinit var veilarbarenaClient: VeilarbarenaClient
 
     val fnr = Fnr.of("123")
     val aktorId = AktorId.of("123")
+    val veilederOid = UUID.randomUUID()
 
     @BeforeAll
     fun beforeAll() {
-        mockInternBrukerAuthOk(aktorId, fnr)
+        mockInternBrukerAuthOk(veilederOid, aktorId, fnr)
     }
 
     @Test
@@ -176,6 +190,48 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
 
         val oppfolgingsStatus = arenaOppfolgingService.hentArenaOppfolginsstatusMedHovedmaal(fnr)
         assert(oppfolgingsStatus is GetOppfolginsstatusFailure)
+    }
+
+    @Test
+    fun `skal ikke utmeldes hvis arena kanReaktiveres selv om kanIkkeReaktiveres lokalt skulle tilsi det`() {
+        mockEnhetINorg("8989", "Nav enhet")
+        val policyInput = NavAnsattTilgangTilEksternBrukerPolicyInput(
+            veilederOid,
+            TilgangType.SKRIVE,
+            fnr.get()
+        )
+        val permit = success<Decision>(Permit)
+        Mockito.doReturn(permit).`when`<PoaoTilgangClient>(poaoTilgangClient).evaluatePolicy(policyInput)
+
+        meldingFraVeilarbArenaPåBrukerMedStatus(
+            fnr = fnr,
+            enhetId = "8989",
+            hovedmaal = null,
+            formidlingsgruppe = Formidlingsgruppe.ARBS,
+            kvalifiseringsgruppe = Kvalifiseringsgruppe.VURDU,
+        )
+
+        val arenaOppfolging = VeilarbArenaOppfolgingsStatus()
+            .setServicegruppe("VURDU")
+            .setKanEnkeltReaktiveres(true)
+            .setOppfolgingsenhet("8989")
+        `when`(veilarbarenaClient.getArenaOppfolgingsstatus(fnr)).thenReturn(Optional.of(arenaOppfolging))
+
+
+        meldingFraVeilarbArenaPåBrukerMedStatus(
+            fnr = fnr,
+            enhetId = "8989",
+            hovedmaal = null,
+            formidlingsgruppe = Formidlingsgruppe.ISERV,
+            kvalifiseringsgruppe = Kvalifiseringsgruppe.VURDU,
+            iservFraDato = LocalDate.now().minusDays(1)
+        )
+
+        val statusEtterEndring = oppfolgingsStatusRepository.hentOppfolging(aktorId)
+        assert(statusEtterEndring.isPresent)
+        Assertions.assertThat(statusEtterEndring.get().isUnderOppfolging).isTrue()
+
+
     }
 
     fun mockEnhetINorg(id: String, navn: String) {
