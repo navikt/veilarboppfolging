@@ -78,7 +78,9 @@ open class ArenaOppfolgingService @Autowired constructor (
         return veilarbarenaClient.getArenaOppfolgingsstatus(fnr)
     }
 
-    /* Bare den delen av oppfølgingstilstand hvor arena er kilden */
+    /**
+     *  Bare den delen av oppfølgingstilstand hvor arena er kilden
+     *  */
     fun hentArenaOppfolgingTilstand(fnr: Fnr): Optional<ArenaOppfolgingTilstand> {
         val aktorId = aktorOppslagClient.hentAktorId(fnr)
         val oppfolging = oppfolgingsStatusRepository.hentOppfolging(aktorId)

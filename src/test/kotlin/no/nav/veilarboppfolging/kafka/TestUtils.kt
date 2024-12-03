@@ -13,7 +13,7 @@ object TestUtils {
 
     fun oppfølgingsBrukerEndret(
         fnr: String,
-        iservFraDato: LocalDate = LocalDate.now(),
+        iservFraDato: LocalDate? = null,
         formidlingsgruppe: Formidlingsgruppe = Formidlingsgruppe.ARBS,
         enhetId: String = "8686",
         hovedmaal: Hovedmaal? = Hovedmaal.BEHOLDEA,
