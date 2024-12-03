@@ -12,7 +12,7 @@ import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe;
 import no.nav.veilarboppfolging.client.amttiltak.AmtTiltakClient;
 import no.nav.veilarboppfolging.client.digdir_krr.KRRData;
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolgingTilstand;
-import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
+import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsStatus;
 import no.nav.veilarboppfolging.controller.response.UnderOppfolgingDTO;
 import no.nav.veilarboppfolging.controller.response.VeilederTilgang;
 import no.nav.veilarboppfolging.domain.*;
@@ -20,6 +20,7 @@ import no.nav.veilarboppfolging.eventsLogger.BigQueryClient;
 import no.nav.veilarboppfolging.oppfolgingsbruker.ArenaSyncOppfolgingsBruker;
 import no.nav.veilarboppfolging.oppfolgingsbruker.Oppfolgingsbruker;
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService;
+import no.nav.veilarboppfolging.oppfolgingsbruker.arena.LocalArenaOppfolging;
 import no.nav.veilarboppfolging.repository.*;
 import no.nav.veilarboppfolging.repository.entity.*;
 import no.nav.veilarboppfolging.utils.ArenaUtils;
@@ -133,7 +134,7 @@ public class OppfolgingService {
     @SneakyThrows
     public AvslutningStatusData avsluttOppfolging(Fnr fnr, String veilederId, String begrunnelse) {
         AktorId aktorId = authService.getAktorIdOrThrow(fnr);
-        ArenaOppfolgingTilstand arenaOppfolgingTilstand = arenaOppfolgingService.hentOppfolgingTilstand(fnr)
+        ArenaOppfolgingTilstand arenaOppfolgingTilstand = arenaOppfolgingService.hentArenaOppfolgingTilstand(fnr)
                 .orElseThrow(() -> new RuntimeException("Feilet under henting av oppfølgingstilstand"));
 
         if (authService.erInternBruker()) {
@@ -369,7 +370,7 @@ public class OppfolgingService {
         KRRData digdirKontaktinfo = manuellStatusService.hentDigdirKontaktinfo(fnr);
 
         // TODO: Burde kanskje heller feile istedenfor å bruke Optional
-        Optional<ArenaOppfolgingTilstand> maybeArenaOppfolging = arenaOppfolgingService.hentOppfolgingTilstand(fnr);
+        Optional<VeilarbArenaOppfolgingsStatus> maybeArenaOppfolging = arenaOppfolgingService.hentArenaOppfolgingsStatus(fnr);
 
         boolean kanSettesUnderOppfolging = !oppfolging.isUnderOppfolging() && maybeArenaOppfolging
                 .map(s -> kanSettesUnderOppfolging(EnumUtils.valueOf(Formidlingsgruppe.class, s.getFormidlingsgruppe()), EnumUtils.valueOf(Kvalifiseringsgruppe.class, s.getServicegruppe()) ))
@@ -385,7 +386,7 @@ public class OppfolgingService {
 
         Boolean erInaktivIArena = maybeArenaOppfolging.map(ao -> erIserv(EnumUtils.valueOf(Formidlingsgruppe.class, ao.getFormidlingsgruppe()))).orElse(null);
 
-        Optional<Boolean> maybeKanEnkeltReaktiveres = maybeArenaOppfolging.map(ArenaOppfolgingTilstand::getKanEnkeltReaktiveres);
+        Optional<Boolean> maybeKanEnkeltReaktiveres = maybeArenaOppfolging.map(VeilarbArenaOppfolgingsStatus::getKanEnkeltReaktiveres);
 
         Boolean kanReaktiveres = maybeKanEnkeltReaktiveres
                 .map(kr -> oppfolging.isUnderOppfolging() && kr)
@@ -396,7 +397,7 @@ public class OppfolgingService {
                 .orElse(null);
 
         LocalDate inaktiveringsDato = maybeArenaOppfolging
-                .map(ArenaOppfolgingTilstand::getInaktiveringsdato)
+                .map(VeilarbArenaOppfolgingsStatus::getInaktiveringsdato)
                 .orElse(null);
 
         return new OppfolgingStatusData()
@@ -416,16 +417,16 @@ public class OppfolgingService {
                 .setErSykmeldtMedArbeidsgiver(erSykmeldtMedArbeidsgiver)
                 .setErIkkeArbeidssokerUtenOppfolging(erSykmeldtMedArbeidsgiver)
                 .setInaktiveringsdato(inaktiveringsDato)
-                .setServicegruppe(maybeArenaOppfolging.map(ArenaOppfolgingTilstand::getServicegruppe).orElse(null))
-                .setFormidlingsgruppe(maybeArenaOppfolging.map(ArenaOppfolgingTilstand::getFormidlingsgruppe).orElse(null))
-                .setRettighetsgruppe(maybeArenaOppfolging.map(ArenaOppfolgingTilstand::getRettighetsgruppe).orElse(null))
+                .setServicegruppe(maybeArenaOppfolging.map(VeilarbArenaOppfolgingsStatus::getServicegruppe).orElse(null))
+                .setFormidlingsgruppe(maybeArenaOppfolging.map(VeilarbArenaOppfolgingsStatus::getFormidlingsgruppe).orElse(null))
+                .setRettighetsgruppe(maybeArenaOppfolging.map(VeilarbArenaOppfolgingsStatus::getRettighetsgruppe).orElse(null))
                 .setKanVarsles(!erManuell && digdirKontaktinfo.isKanVarsles());
     }
 
     private AvslutningStatusData getAvslutningStatus(Fnr fnr) {
         AktorId aktorId = authService.getAktorIdOrThrow(fnr);
 
-        Optional<ArenaOppfolgingTilstand> maybeArenaOppfolging = arenaOppfolgingService.hentOppfolgingTilstand(fnr);
+        Optional<ArenaOppfolgingTilstand> maybeArenaOppfolging = arenaOppfolgingService.hentArenaOppfolgingTilstand(fnr);
 
         boolean erIserv = maybeArenaOppfolging.map(ao -> erIserv(EnumUtils.valueOf(Formidlingsgruppe.class, ao.getFormidlingsgruppe()))).orElse(false);
 
@@ -481,13 +482,11 @@ public class OppfolgingService {
         return oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId);
     }
 
-    public void oppdaterArenaOppfolgingStatus(AktorId aktorId, Formidlingsgruppe formidlingsgruppe, Kvalifiseringsgruppe kvalifiseringsgruppe, Optional<Hovedmaal> hovedmaal, Optional<EnhetId> oppfolgingsEnhet) {
+    public void oppdaterArenaOppfolgingStatus(AktorId aktorId, Boolean skalOppretteOppfolgingForst, LocalArenaOppfolging arenaOppfolging) {
         oppfolgingsStatusRepository.oppdaterArenaOppfolgingStatus(
                 aktorId,
-                formidlingsgruppe,
-                kvalifiseringsgruppe,
-                hovedmaal,
-                oppfolgingsEnhet
+                skalOppretteOppfolgingForst,
+                arenaOppfolging
         );
     }
 }

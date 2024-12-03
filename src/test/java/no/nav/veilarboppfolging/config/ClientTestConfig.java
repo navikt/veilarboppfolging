@@ -10,8 +10,8 @@ import no.nav.common.metrics.MetricsClient;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.client.digdir_krr.DigdirClient;
 import no.nav.veilarboppfolging.client.digdir_krr.KRRData;
-import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolging;
-import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
+import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsStatus;
+import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsBruker;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
 import no.nav.veilarboppfolging.client.veilarbarena.YtelserDTO;
 import no.nav.veilarboppfolging.service.SisteEndringPaaOppfolgingBrukerService;
@@ -95,15 +95,15 @@ public class ClientTestConfig {
     public VeilarbarenaClient veilarbarenaClient() {
         return new VeilarbarenaClient() {
             @Override
-            public Optional<VeilarbArenaOppfolging> hentOppfolgingsbruker(Fnr fnr) {
+            public Optional<VeilarbArenaOppfolgingsBruker> hentOppfolgingsbruker(Fnr fnr) {
                 return Optional.of(
-                        new VeilarbArenaOppfolging()
+                        new VeilarbArenaOppfolgingsBruker()
                                 .setFodselsnr(fnr.get())
                 );
             }
 
             @Override
-            public Optional<ArenaOppfolging> getArenaOppfolgingsstatus(Fnr fnr) {
+            public Optional<VeilarbArenaOppfolgingsStatus> getArenaOppfolgingsstatus(Fnr fnr) {
                 return Optional.empty();
             }
 

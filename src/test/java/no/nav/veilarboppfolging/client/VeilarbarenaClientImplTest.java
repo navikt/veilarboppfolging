@@ -2,11 +2,10 @@ package no.nav.veilarboppfolging.client;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import no.nav.common.types.identer.Fnr;
-import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolging;
-import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
+import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsStatus;
+import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsBruker;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClientImpl;
 import no.nav.veilarboppfolging.service.AuthService;
-import no.nav.veilarboppfolging.utils.DownstreamApi;
 import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Rule;
@@ -59,13 +58,13 @@ public class VeilarbarenaClientImplTest {
                         .withBody(toJson(arenaOppfolgingResponse())))
         );
 
-        ArenaOppfolging arenaOppfolging = veilarbarenaClient.getArenaOppfolgingsstatus(MOCK_FNR).orElseThrow();
+        VeilarbArenaOppfolgingsStatus veilarbArenaOppfolgingsStatus = veilarbarenaClient.getArenaOppfolgingsstatus(MOCK_FNR).orElseThrow();
 
-        Assertions.assertThat(arenaOppfolging.getFormidlingsgruppe()).isEqualTo(MOCK_FORMIDLINGSGRUPPE);
-        Assertions.assertThat(arenaOppfolging.getOppfolgingsenhet()).isEqualTo(MOCK_ENHET_ID);
-        Assertions.assertThat(arenaOppfolging.getRettighetsgruppe()).isEqualTo(MOCK_RETTIGHETSGRUPPE);
-        Assertions.assertThat(arenaOppfolging.getServicegruppe()).isEqualTo(MOCK_SERVICEGRUPPE);
-        Assertions.assertThat(arenaOppfolging.getKanEnkeltReaktiveres()).isEqualTo(MOCK_KAN_ENKELT_REAKTIVERES);
+        Assertions.assertThat(veilarbArenaOppfolgingsStatus.getFormidlingsgruppe()).isEqualTo(MOCK_FORMIDLINGSGRUPPE);
+        Assertions.assertThat(veilarbArenaOppfolgingsStatus.getOppfolgingsenhet()).isEqualTo(MOCK_ENHET_ID);
+        Assertions.assertThat(veilarbArenaOppfolgingsStatus.getRettighetsgruppe()).isEqualTo(MOCK_RETTIGHETSGRUPPE);
+        Assertions.assertThat(veilarbArenaOppfolgingsStatus.getServicegruppe()).isEqualTo(MOCK_SERVICEGRUPPE);
+        Assertions.assertThat(veilarbArenaOppfolgingsStatus.getKanEnkeltReaktiveres()).isEqualTo(MOCK_KAN_ENKELT_REAKTIVERES);
     }
 
     @Test
@@ -112,8 +111,8 @@ public class VeilarbarenaClientImplTest {
         assertTrue(veilarbarenaClient.getArenaOppfolgingsstatus(MOCK_FNR).isEmpty());
     }
 
-    private ArenaOppfolging arenaOppfolgingResponse() {
-        return new ArenaOppfolging()
+    private VeilarbArenaOppfolgingsStatus arenaOppfolgingResponse() {
+        return new VeilarbArenaOppfolgingsStatus()
                 .setFormidlingsgruppe(MOCK_FORMIDLINGSGRUPPE)
                 .setServicegruppe(MOCK_SERVICEGRUPPE)
                 .setOppfolgingsenhet(MOCK_ENHET_ID)
@@ -132,7 +131,7 @@ public class VeilarbarenaClientImplTest {
                         .withBody(toJson(arenaOppfolgingsBrukerResponse())))
         );
 
-        VeilarbArenaOppfolging arenaOppfolgingsbruker = veilarbarenaClient.hentOppfolgingsbruker(MOCK_FNR).orElseThrow();
+        VeilarbArenaOppfolgingsBruker arenaOppfolgingsbruker = veilarbarenaClient.hentOppfolgingsbruker(MOCK_FNR).orElseThrow();
 
         Assertions.assertThat(arenaOppfolgingsbruker.getFodselsnr()).isEqualTo("1234");
         Assertions.assertThat(arenaOppfolgingsbruker.getFormidlingsgruppekode()).isEqualTo(MOCK_FORMIDLINGSGRUPPE);
@@ -174,8 +173,8 @@ public class VeilarbarenaClientImplTest {
         assertTrue(veilarbarenaClient.hentOppfolgingsbruker(MOCK_FNR).isEmpty());
     }
 
-    private VeilarbArenaOppfolging arenaOppfolgingsBrukerResponse() {
-        return new VeilarbArenaOppfolging()
+    private VeilarbArenaOppfolgingsBruker arenaOppfolgingsBrukerResponse() {
+        return new VeilarbArenaOppfolgingsBruker()
                 .setFodselsnr("1234")
                 .setFormidlingsgruppekode(MOCK_FORMIDLINGSGRUPPE)
                 .setKvalifiseringsgruppekode(MOCK_KVALIFISERINGSGRUPPE)

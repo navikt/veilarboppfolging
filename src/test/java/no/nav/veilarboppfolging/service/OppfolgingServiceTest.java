@@ -12,6 +12,7 @@ import no.nav.veilarboppfolging.ForbiddenException;
 import no.nav.veilarboppfolging.client.amttiltak.AmtTiltakClient;
 import no.nav.veilarboppfolging.client.digdir_krr.KRRData;
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolgingTilstand;
+import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsStatus;
 import no.nav.veilarboppfolging.controller.response.VeilederTilgang;
 import no.nav.veilarboppfolging.domain.AvslutningStatusData;
 import no.nav.veilarboppfolging.domain.OppfolgingStatusData;
@@ -51,6 +52,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     private static final String BEGRUNNELSE = "begrunnelse";
 
     private ArenaOppfolgingTilstand arenaOppfolgingTilstand;
+    private VeilarbArenaOppfolgingsStatus arenaOppfolgingStatus;
 
     private AuthService authService = mock(AuthService.class);
     private KafkaProducerService kafkaProducerService = mock(KafkaProducerService.class);
@@ -71,6 +73,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         TransactionTemplate transactor = DbTestUtils.createTransactor(db);
 
         arenaOppfolgingTilstand = new ArenaOppfolgingTilstand();
+        arenaOppfolgingStatus = new VeilarbArenaOppfolgingsStatus();
         oppfolgingsStatusRepository = new OppfolgingsStatusRepository(db);
         oppfolgingsPeriodeRepository = new OppfolgingsPeriodeRepository(db, transactor);
 
@@ -95,7 +98,8 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
         when(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID);
         when(authService.getFnrOrThrow(AKTOR_ID)).thenReturn(FNR);
-        when(arenaOppfolgingService.hentOppfolgingTilstand(FNR)).thenReturn(Optional.of(arenaOppfolgingTilstand));
+        when(arenaOppfolgingService.hentArenaOppfolgingTilstand(FNR)).thenReturn(Optional.of(arenaOppfolgingTilstand));
+        when(arenaOppfolgingService.hentArenaOppfolgingsStatus(FNR)).thenReturn(Optional.of(arenaOppfolgingStatus));
         when(arenaOppfolgingService.hentArenaOppfolgingsEnhetId(FNR)).thenReturn(EnhetId.of(ENHET));
         when(manuellStatusService.hentDigdirKontaktinfo(FNR)).thenReturn(new KRRData());
         when(amtTiltakClient.harAktiveTiltaksdeltakelser(FNR.get())).thenReturn(false);
@@ -204,6 +208,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     public void riktigServicegruppe() {
         String servicegruppe = "BATT";
         arenaOppfolgingTilstand.setServicegruppe(servicegruppe);
+        arenaOppfolgingStatus.setServicegruppe(servicegruppe);
 
         OppfolgingStatusData oppfolgingStatusData = hentOppfolgingStatus();
         assertEquals(servicegruppe, oppfolgingStatusData.servicegruppe);
@@ -367,7 +372,9 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
     private void gittInaktivOppfolgingStatus(Boolean kanEnkeltReaktiveres) {
         arenaOppfolgingTilstand.setFormidlingsgruppe("ISERV");
-        arenaOppfolgingTilstand.setKanEnkeltReaktiveres(kanEnkeltReaktiveres);
+        arenaOppfolgingStatus.setKanEnkeltReaktiveres(kanEnkeltReaktiveres);
+        arenaOppfolgingStatus.setFormidlingsgruppe("ISERV");
+//        arenaOppfolgingTilstand.setKanEnkeltReaktiveres(kanEnkeltReaktiveres);
     }
 
     private void gittArenaOppfolgingStatus(String formidlingskode, String kvalifiseringsgruppekode) {

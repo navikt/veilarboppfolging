@@ -5,9 +5,13 @@ import lombok.experimental.Accessors;
 
 import java.time.ZonedDateTime;
 
+/**
+ * Har ikke feltet kanReaktiveres som oppfølgingsStatus {@link no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsStatus}  har
+ * @see no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsStatus
+ */
 @Data
 @Accessors(chain = true)
-public class VeilarbArenaOppfolging {
+public class VeilarbArenaOppfolgingsBruker {
     public String fodselsnr;
     public String formidlingsgruppekode;
     public String kvalifiseringsgruppekode;

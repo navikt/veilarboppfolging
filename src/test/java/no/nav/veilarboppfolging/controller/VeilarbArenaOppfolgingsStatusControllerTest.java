@@ -18,7 +18,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = ArenaOppfolgingController.class)
-public class ArenaOppfolgingControllerTest {
+public class VeilarbArenaOppfolgingsStatusControllerTest {
 
     @Autowired
     private MockMvc mockMvc;

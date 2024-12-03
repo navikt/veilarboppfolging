@@ -4,4 +4,5 @@ ALTER TABLE oppfolgingstatus
  ADD COLUMN servicegruppe VARCHAR(5), -- VURDU, VURDI, OPPFI, IVURD, BKART
  ADD COLUMN kvalifiseringsgruppe VARCHAR(5), -- innsatsgruppe | servicegruppe
  ADD COLUMN formidlingsgruppe VARCHAR(5), -- ARBS, IARBS, ISERV
- ADD COLUMN oppfolgingsenhet VARCHAR(4);
+ ADD COLUMN oppfolgingsenhet VARCHAR(4),
+ ADD COLUMN iserv_fra_dato TIMESTAMP;

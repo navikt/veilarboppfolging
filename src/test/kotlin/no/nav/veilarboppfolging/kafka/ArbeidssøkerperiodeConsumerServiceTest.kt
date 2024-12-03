@@ -7,7 +7,7 @@ import no.nav.paw.arbeidssokerregisteret.api.v1.*
 import no.nav.pto_schema.enums.arena.*
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2
 import no.nav.veilarboppfolging.IntegrationTest
-import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging
+import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsBruker
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient
 import no.nav.veilarboppfolging.domain.StartetAvType
 import no.nav.veilarboppfolging.oppfolgingsbruker.AktiverBrukerService
@@ -181,7 +181,8 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
     fun `Skal putte person i utmelding tabell hvis ISERV i Arena og ISERV_FRA_DATO er etter arbeidssøkerregistreringen`() {
         val arbeidsøkerPeriodeStartet = LocalDateTime.of(2024, 10,1,1,1)
         val ISERV_FRA_DATO = arbeidsøkerPeriodeStartet.plusSeconds(1)
-        `when`(veilarbarenaClient.hentOppfolgingsbruker(Fnr.of(fnr))).thenReturn(Optional.of(VeilarbArenaOppfolging()
+        `when`(veilarbarenaClient.hentOppfolgingsbruker(Fnr.of(fnr))).thenReturn(Optional.of(
+            VeilarbArenaOppfolgingsBruker()
             .setFodselsnr(fnr)
             .setFormidlingsgruppekode("ISERV")
             .setIserv_fra_dato(ISERV_FRA_DATO.atZone(ZoneId.systemDefault())))
@@ -207,7 +208,8 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
     fun `Skal ikke putte person i utmelding tabell hvis ISERV i Arena og ISERV_FRA_DATO er før arbeidssøkerregistreringen`() {
         val arbeidsøkerPeriodeStartet = LocalDateTime.of(2024, 10,1,1,1)
         val ISERV_FRA_DATO = arbeidsøkerPeriodeStartet // Samme tidspunkt
-        `when`(veilarbarenaClient.hentOppfolgingsbruker(Fnr.of(fnr))).thenReturn(Optional.of(VeilarbArenaOppfolging()
+        `when`(veilarbarenaClient.hentOppfolgingsbruker(Fnr.of(fnr))).thenReturn(Optional.of(
+            VeilarbArenaOppfolgingsBruker()
             .setFodselsnr(fnr)
             .setFormidlingsgruppekode("ISERV")
             .setIserv_fra_dato(ISERV_FRA_DATO.atZone(ZoneId.systemDefault())))

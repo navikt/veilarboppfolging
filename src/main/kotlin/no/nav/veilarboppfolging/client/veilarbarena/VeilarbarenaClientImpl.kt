@@ -81,10 +81,10 @@ class VeilarbarenaClientImpl(
 
     }
 
-    override fun hentOppfolgingsbruker(fnr: Fnr): Optional<VeilarbArenaOppfolging> {
+    override fun hentOppfolgingsbruker(fnr: Fnr): Optional<VeilarbArenaOppfolgingsBruker> {
         val personRequest = PersonRequest(fnr)
         try {
-            val response = httpPost(UrlUtils.joinPaths(veilarbarenaUrl, "/veilarbarena/api/v2/hent-oppfolgingsbruker"), personRequest, VeilarbArenaOppfolging::class.java)
+            val response = httpPost(UrlUtils.joinPaths(veilarbarenaUrl, "/veilarbarena/api/v2/hent-oppfolgingsbruker"), personRequest, VeilarbArenaOppfolgingsBruker::class.java)
             return when (response) {
                 is RequestResult.Success -> response.body
                 is RequestResult.Fail -> Optional.empty()
@@ -96,10 +96,10 @@ class VeilarbarenaClientImpl(
     }
 
     @SneakyThrows
-    override fun getArenaOppfolgingsstatus(fnr: Fnr): Optional<ArenaOppfolging> {
+    override fun getArenaOppfolgingsstatus(fnr: Fnr): Optional<VeilarbArenaOppfolgingsStatus> {
         val personRequest = PersonRequest(fnr)
         try {
-            val response = httpPost(UrlUtils.joinPaths(veilarbarenaUrl, "/veilarbarena/api/v2/hent-oppfolgingsstatus"), personRequest, ArenaOppfolging::class.java)
+            val response = httpPost(UrlUtils.joinPaths(veilarbarenaUrl, "/veilarbarena/api/v2/hent-oppfolgingsstatus"), personRequest, VeilarbArenaOppfolgingsStatus::class.java)
             return when (response) {
                 is RequestResult.Success -> response.body
                 is RequestResult.Fail -> Optional.empty()

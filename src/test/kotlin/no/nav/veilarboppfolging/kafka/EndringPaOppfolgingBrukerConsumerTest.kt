@@ -7,9 +7,10 @@ import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.pto_schema.enums.arena.Hovedmaal
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe
 import no.nav.veilarboppfolging.IntegrationTest
-import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging
+import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsBruker
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient
 import no.nav.veilarboppfolging.kafka.TestUtils.oppfølgingsBrukerEndret
+import no.nav.veilarboppfolging.oppfolgingsbruker.arena.GetOppfolginsstatusSuccess
 import no.nav.veilarboppfolging.service.KafkaConsumerService
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.junit.jupiter.api.BeforeAll
@@ -20,7 +21,10 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.test.context.ActiveProfiles
 import java.util.Optional
+import kotlin.jvm.optionals.getOrNull
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 @ActiveProfiles("local")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -82,11 +86,36 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
             kvalifiseringsgruppe = kvalifiseringsgruppe
         )
 
-        val statusEtterEndring = oppfolgingsStatusRepository.hentOppfolging(aktorId)
-        assert(statusEtterEndring.isPresent)
-        assertEquals(hovedmaal, statusEtterEndring.get().hovedmaal)
-        assertEquals(formidlingsgruppe, statusEtterEndring.get().formidlingsgruppe)
-        assertEquals(kvalifiseringsgruppe, statusEtterEndring.get().kvalifiseringsgruppe)
+        val statusEtterEndring = arenaOppfolgingService.hentArenaOppfolginsstatus(fnr)
+        assert(statusEtterEndring is GetOppfolginsstatusSuccess)
+        assertEquals(hovedmaal.name, (statusEtterEndring as GetOppfolginsstatusSuccess).result.hovedmaalkode)
+        assertEquals(formidlingsgruppe.name, (statusEtterEndring as GetOppfolginsstatusSuccess).result.formidlingsgruppe)
+        assertEquals(kvalifiseringsgruppe.name, (statusEtterEndring as GetOppfolginsstatusSuccess).result.servicegruppe)
+    }
+
+    @Test
+    fun `skal lagre arena-oppfølgingsdata på bruker selvom man ikke er under oppfølging ifølge arena-data`() {
+        val hovedmaal = Hovedmaal.BEHOLDEA
+        val formidlingsgruppe = Formidlingsgruppe.ISERV
+        val kvalifiseringsgruppe = Kvalifiseringsgruppe.VURDU
+        mockEnhetINorg("8989", "Nav enhet")
+
+        val oppfolgingFørEndring = arenaOppfolgingService.hentArenaOppfolgingTilstand(fnr)
+        assert(oppfolgingFørEndring.isEmpty) { "Ny bruker skal IKKE ha oppfølgingsstatus" }
+
+        meldingFraVeilarbArenaPåBrukerMedStatus(
+            fnr = fnr,
+            enhetId = "8989",
+            hovedmaal = hovedmaal,
+            formidlingsgruppe = formidlingsgruppe,
+            kvalifiseringsgruppe = kvalifiseringsgruppe
+        )
+
+        val statusEtterEndring = arenaOppfolgingService.hentArenaOppfolginsstatus(fnr)
+        assert(statusEtterEndring is GetOppfolginsstatusSuccess) { "skal ha oppfølgingststatus når dem er kommet inn via topic" }
+        assertEquals(hovedmaal.name, (statusEtterEndring as GetOppfolginsstatusSuccess).result.hovedmaalkode)
+        assertEquals(formidlingsgruppe.name, (statusEtterEndring as GetOppfolginsstatusSuccess).result.formidlingsgruppe)
+        assertEquals(kvalifiseringsgruppe.name, (statusEtterEndring as GetOppfolginsstatusSuccess).result.servicegruppe)
     }
 
     @Test
@@ -103,21 +132,21 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
 
         val statusEtterEndring = oppfolgingsStatusRepository.hentOppfolging(aktorId)
         assert(statusEtterEndring.isPresent) { "Oppfolgingsstatus fra arena var null" }
-        assertEquals(null, statusEtterEndring.get().hovedmaal)
-        assertEquals(Formidlingsgruppe.IARBS, statusEtterEndring.get().formidlingsgruppe)
-        assertEquals(Kvalifiseringsgruppe.VURDU, statusEtterEndring.get().kvalifiseringsgruppe)
+        assertEquals(null, statusEtterEndring.get().localArenaOppfolging.get().hovedmaal)
+        assertEquals(Formidlingsgruppe.IARBS, statusEtterEndring.get().localArenaOppfolging.get().formidlingsgruppe)
+        assertEquals(Kvalifiseringsgruppe.VURDU, statusEtterEndring.get().localArenaOppfolging.get().kvalifiseringsgruppe)
     }
 
     @Test
     fun `skal håndtere brukere som mangler oppfølgingsstatus`() {
-        val oppfolgingsStatus = arenaOppfolgingService.hentOppfolgingTilstand(fnr)
+        val oppfolgingsStatus = arenaOppfolgingService.hentArenaOppfolgingTilstand(fnr)
         assert(oppfolgingsStatus.isEmpty)
     }
 
     @Test
     fun `skal bruke veilarbarena som fallback til oppfølgingsenhet`() {
         val arenaEnhet = "6112"
-        val arenaOppfolging = VeilarbArenaOppfolging()
+        val arenaOppfolging = VeilarbArenaOppfolgingsBruker()
             .setNav_kontor(arenaEnhet)
         `when`(veilarbarenaClient.hentOppfolgingsbruker(fnr)).thenReturn(Optional.of(arenaOppfolging))
         val enhet = arenaOppfolgingService.hentArenaOppfolgingsEnhetId(fnr)
@@ -129,9 +158,7 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
         startOppfolgingSomArbeidsoker(aktorId)
         val statusEtterEndring = oppfolgingsStatusRepository.hentOppfolging(aktorId)
         assertEquals(true, statusEtterEndring.get().isUnderOppfolging)
-        assertEquals(null, statusEtterEndring.get().hovedmaal)
-        assertEquals(null, statusEtterEndring.get().formidlingsgruppe)
-        assertEquals(null, statusEtterEndring.get().kvalifiseringsgruppe)
+        assertTrue(statusEtterEndring.get().localArenaOppfolging.isEmpty)
         assertEquals(null, statusEtterEndring.get().veilederId)
         assertEquals(0, statusEtterEndring.get().gjeldendeKvpId)
     }

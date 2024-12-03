@@ -12,8 +12,8 @@ import no.nav.poao_tilgang.client.api.ApiResult;
 import no.nav.veilarboppfolging.ForbiddenException;
 import no.nav.veilarboppfolging.IntegrationTest;
 import no.nav.veilarboppfolging.client.amttiltak.AmtTiltakClient;
-import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolging;
-import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
+import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsStatus;
+import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsBruker;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
 import no.nav.veilarboppfolging.controller.request.VeilederBegrunnelseDTO;
 import no.nav.veilarboppfolging.controller.response.AvslutningStatus;
@@ -115,8 +115,8 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
         // Tester ikke tilgang
         doReturn(permit).when(poaoTilgangClient).evaluatePolicy(any());
         // ISERV i arena, ingen ytelser i arena, ingen aktive tiltak hos komet.
-        when(veilarbarenaClient.getArenaOppfolgingsstatus(FNR)).thenReturn(Optional.of(new ArenaOppfolging().setFormidlingsgruppe("ISERV")));
-        when(veilarbarenaClient.hentOppfolgingsbruker(FNR)).thenReturn(Optional.of(new VeilarbArenaOppfolging().setFormidlingsgruppekode("ISERV")));
+        when(veilarbarenaClient.getArenaOppfolgingsstatus(FNR)).thenReturn(Optional.of(new VeilarbArenaOppfolgingsStatus().setFormidlingsgruppe("ISERV")));
+        when(veilarbarenaClient.hentOppfolgingsbruker(FNR)).thenReturn(Optional.of(new VeilarbArenaOppfolgingsBruker().setFormidlingsgruppekode("ISERV")));
         when(arenaYtelserService.harPagaendeYtelse(FNR)).thenReturn(false);
         when(amtTiltakClient.harAktiveTiltaksdeltakelser(FNR.get())).thenReturn(false);
 
@@ -135,7 +135,7 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
         // Tester ikke tilgang
         doReturn(permit).when(poaoTilgangClient).evaluatePolicy(any());
         // ISERV i arena, ingen ytelser i arena, men aktive tiltak hos komet.
-        when(veilarbarenaClient.getArenaOppfolgingsstatus(FNR)).thenReturn(Optional.of(new ArenaOppfolging().setFormidlingsgruppe("ISERV")));
+        when(veilarbarenaClient.hentOppfolgingsbruker(FNR)).thenReturn(Optional.of(new VeilarbArenaOppfolgingsBruker().setFormidlingsgruppekode("ISERV")));
         when(arenaYtelserService.harPagaendeYtelse(FNR)).thenReturn(false);
         when(amtTiltakClient.harAktiveTiltaksdeltakelser(FNR.get())).thenReturn(true);
 

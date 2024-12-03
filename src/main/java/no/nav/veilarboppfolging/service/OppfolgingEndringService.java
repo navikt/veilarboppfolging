@@ -10,6 +10,7 @@ import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe;
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
 import no.nav.veilarboppfolging.oppfolgingsbruker.Oppfolgingsbruker;
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService;
+import no.nav.veilarboppfolging.oppfolgingsbruker.arena.LocalArenaOppfolging;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingEntity;
 import org.springframework.stereotype.Service;
@@ -28,15 +29,10 @@ import static no.nav.veilarboppfolging.utils.SecureLog.secureLog;
 public class OppfolgingEndringService {
 
     private final AuthService authService;
-
     private final OppfolgingService oppfolgingService;
-
     private final ArenaOppfolgingService arenaOppfolgingService;
-
     private final KvpService kvpService;
-
     private final MetricsService metricsService;
-
     private final OppfolgingsStatusRepository oppfolgingsStatusRepository;
 
     public void oppdaterOppfolgingMedStatusFraArena(EndringPaaOppfoelgingsBrukerV2 brukerV2) {
@@ -51,6 +47,7 @@ public class OppfolgingEndringService {
         boolean erBrukerUnderOppfolging = maybeOppfolging.map(OppfolgingEntity::isUnderOppfolging).orElse(false);
         boolean erUnderOppfolgingIArena = erUnderOppfolging(formidlingsgruppe, kvalifiseringsgruppe);
         boolean erInaktivIArena = erIserv(formidlingsgruppe);
+        boolean skalOppfolges = !erBrukerUnderOppfolging && erUnderOppfolgingIArena;
 
         secureLog.info(
                 "Status for automatisk oppdatering av oppfølging."
@@ -62,7 +59,7 @@ public class OppfolgingEndringService {
                 formidlingsgruppe, kvalifiseringsgruppe
         );
 
-        if (!erBrukerUnderOppfolging && erUnderOppfolgingIArena) {
+        if (skalOppfolges) {
             secureLog.info("Starter oppfølging på bruker som er under oppfølging i Arena, men ikke i veilarboppfolging. aktorId={}", aktorId);
             oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(
                     Oppfolgingsbruker.arenaSyncOppfolgingBruker(aktorId, formidlingsgruppe, kvalifiseringsgruppe));
@@ -89,12 +86,18 @@ public class OppfolgingEndringService {
                 secureLog.warn("Bruker har ikke oppfølgingtilstand i Arena. aktorId={}", aktorId);
             }
         }
+
+        var harIngenOppfolgingLagret = maybeOppfolging.isEmpty() && !skalOppfolges;
         oppfolgingService.oppdaterArenaOppfolgingStatus(
                 aktorId,
-                formidlingsgruppe,
-                kvalifiseringsgruppe,
-                Optional.ofNullable(brukerV2.getHovedmaal()),
-                Optional.ofNullable(brukerV2.getOppfolgingsenhet()).map(EnhetId::new)
+                harIngenOppfolgingLagret,
+                new LocalArenaOppfolging(
+                        brukerV2.getHovedmaal(),
+                        kvalifiseringsgruppe,
+                        formidlingsgruppe,
+                        Optional.ofNullable(brukerV2.getOppfolgingsenhet()).map(EnhetId::new).orElse(null),
+                        brukerV2.getIservFraDato()
+                )
         );
     }
 
