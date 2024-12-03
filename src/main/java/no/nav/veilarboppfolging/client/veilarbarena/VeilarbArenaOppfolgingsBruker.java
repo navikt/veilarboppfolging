@@ -6,7 +6,7 @@ import lombok.experimental.Accessors;
 import java.time.ZonedDateTime;
 
 /**
- * Har ikke feltet kanReaktiveres som oppfølgingsStatus {@link no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsStatus}  har
+ * Har IKKE feltet kanReaktiveres eller iservFraDato som oppfølgingsStatus {@link no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsStatus} har, men har hovedmaalkode
  * @see no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsStatus
  */
 @Data

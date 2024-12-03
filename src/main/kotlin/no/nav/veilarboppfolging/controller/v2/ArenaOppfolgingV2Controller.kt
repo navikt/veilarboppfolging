@@ -28,7 +28,7 @@ class ArenaOppfolgingV2Controller(
     @PostMapping("/hent-oppfolgingsstatus")
     fun getOppfolgingsstatus(@RequestBody arenaOppfolgingRequest: ArenaOppfolgingRequest): OppfolgingEnhetMedVeilederResponse {
         authService.sjekkLesetilgangMedFnr(arenaOppfolgingRequest.fnr)
-        val result = arenaOppfolgingService.hentArenaOppfolginsstatus(arenaOppfolgingRequest.fnr)
+        val result = arenaOppfolgingService.hentArenaOppfolginsstatusMedHovedmaal(arenaOppfolgingRequest.fnr)
         return when (result) {
             is GetOppfolginsstatusFailure -> throw result.error
             is GetOppfolginsstatusSuccess -> result.result

@@ -6,7 +6,7 @@ import lombok.experimental.Accessors;
 import java.time.LocalDate;
 
 /**
- * Har ikke feltene "hovedmaal" og "kvalifiseringsgruppe" som {@link no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsBruker} har
+ * Har ikke feltene "hovedmaal" og "kvalifiseringsgruppe" (men servicegruppe er egentlig kvalifiseringsgruppe) som {@link no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsBruker} har
  * @see no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsBruker
  */
 @Data

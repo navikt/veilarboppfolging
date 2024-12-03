@@ -15,29 +15,23 @@ import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsStatu
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.OppfolgingEnhetMedVeilederResponse.Oppfolgingsenhet
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
-import no.nav.veilarboppfolging.repository.OppfolgingsenhetHistorikkRepository
-import no.nav.veilarboppfolging.repository.VeilederTilordningerRepository
 import no.nav.veilarboppfolging.service.AuthService
-import no.nav.veilarboppfolging.utils.ArenaUtils
-import no.nav.veilarboppfolging.utils.EnumUtils
-import no.nav.veilarboppfolging.utils.SecureLog.secureLog
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
+import java.time.LocalDate
 import java.time.ZonedDateTime
 import java.util.*
 
 @Slf4j
 @Service
-open class ArenaOppfolgingService @Autowired constructor (
+class ArenaOppfolgingService @Autowired constructor (
     // Bruker AktorregisterClient istedenfor authService for å unngå sirkulær avhengighet
     val aktorOppslagClient: AktorOppslagClient,
     val veilarbarenaClient: VeilarbarenaClient,
     val oppfolgingsStatusRepository: OppfolgingsStatusRepository,
     val authService: AuthService,
     val norg2Client: Norg2Client,
-    val veilederTilordningerRepository: VeilederTilordningerRepository,
-    val historikkRepository: OppfolgingsenhetHistorikkRepository
 ) {
     private val log = LoggerFactory.getLogger(ArenaOppfolgingService::class.java)
 
@@ -46,32 +40,8 @@ open class ArenaOppfolgingService @Autowired constructor (
             .map { it.kanEnkeltReaktiveres }
     }
 
-    // Bruker endepunktet i veilarbarena som henter direkte fra Arena
-    private fun hentOppfolgingTilstandDirekteFraArena(fnr: Fnr): Optional<ArenaOppfolgingTilstand> {
-        return veilarbarenaClient.getArenaOppfolgingsstatus(fnr)
-            .map { arenaOppfolging -> ArenaOppfolgingTilstand.fraArenaOppfolging(arenaOppfolging) }
-    }
-
-    private fun erUnderOppfolgingIVeilarbarena(maybeArenaOppfolging: Optional<ArenaOppfolgingTilstand>): Boolean {
-        return maybeArenaOppfolging
-            .map { oppfolging ->
-                ArenaUtils.erUnderOppfolging(
-                    EnumUtils.valueOf<Formidlingsgruppe>(
-                        Formidlingsgruppe::class.java,
-                        oppfolging.getFormidlingsgruppe()),
-                    EnumUtils.valueOf<Kvalifiseringsgruppe>(
-                        Kvalifiseringsgruppe::class.java,
-                        oppfolging.getServicegruppe())
-                )
-            }.orElse(false)
-    }
-
-    fun hentArenaOppfolgingsbruker(fnr: Fnr): Optional<VeilarbArenaOppfolgingsBruker> {
-        return veilarbarenaClient.hentOppfolgingsbruker(fnr)
-    }
-
     /**
-     *  Brukes kun hvis man trenger [VeilarbArenaOppfolgingsStatus.kanEnkeltReaktiveres]
+     *  Brukes kun hvis man trenger [VeilarbArenaOppfolgingsStatus.kanEnkeltReaktiveres] , dette feltet kommer ikke på topic og kan derfor ikke caches i lokalt
      *  @see no.nav.veilarboppfolging.client.veilarbarenaVeilarbArenaOppfolgingsStatus#kanEnkeltReaktiveres
      *  */
     fun hentArenaOppfolgingsStatus(fnr: Fnr): Optional<VeilarbArenaOppfolgingsStatus> {
@@ -79,7 +49,10 @@ open class ArenaOppfolgingService @Autowired constructor (
     }
 
     /**
-     *  Bare den delen av oppfølgingstilstand hvor arena er kilden
+     *  Henter arena-oppfolgingstilstand lokalt med fallback til arena /oppfolgingsbruker.
+     *  Eksponerer bare felter som er felles for /oppfolgingsbruker og /oppfolgingsstatus:
+     *  - ikke [VeilarbArenaOppfolgingsStatus.kanEnkeltReaktiveres]
+     *  - ikke [VeilarbArenaOppfolgingsBruker.hovedmaalkode]
      *  */
     fun hentArenaOppfolgingTilstand(fnr: Fnr): Optional<ArenaOppfolgingTilstand> {
         val aktorId = aktorOppslagClient.hentAktorId(fnr)
@@ -92,21 +65,16 @@ open class ArenaOppfolgingService @Autowired constructor (
             }
     }
 
-
-    private fun hentTilordnetVeileder(fnr: Fnr): String? {
-        val aktorId = authService.getAktorIdOrThrow(fnr)
-        secureLog.info("Henter tilordning for bruker med aktørId {}", aktorId)
-        return veilederTilordningerRepository.hentTilordningForAktoer(aktorId)
+    /*
+    * Oppfolgingsenhet i arena inkl navn, det finnes Noen få brukere som ikke har enhet.
+    * Det gjøres oppslag i norg2 for å finne navn
+    * */
+    fun hentArenaOppfolgingsEnhet(fnr: Fnr): Oppfolgingsenhet? {
+        return hentArenaOppfolgingsEnhetId(fnr)
+            ?.let { hentEnhet(it) }
     }
 
-
-    private fun hentEnhetSynkrontFraVeilarbarena(fnr: Fnr): EnhetId? {
-        return veilarbarenaClient.hentOppfolgingsbruker(fnr)
-            .map { it.nav_kontor }
-            .map { EnhetId(it) }.orElse(null)
-    }
-
-    /* Det finnes Noen få brukere som ikke har enhet */
+    /* Bare enhetsId, den blir cached lokalt så man trenger ikke alltid hente den synkront */
     fun hentArenaOppfolgingsEnhetId(fnr: Fnr): EnhetId? {
         val aktorId = authService.getAktorIdOrThrow(fnr)
         return oppfolgingsStatusRepository.hentOppfolging(aktorId)
@@ -114,27 +82,23 @@ open class ArenaOppfolgingService @Autowired constructor (
             .orElseGet { hentEnhetSynkrontFraVeilarbarena(fnr) }
     }
 
-    fun hentArenaOppfolgingsEnhet(fnr: Fnr): Oppfolgingsenhet? {
-        return hentArenaOppfolgingsEnhetId(fnr)
-            ?.let { hentEnhet(it) }
+    private fun hentEnhetSynkrontFraVeilarbarena(fnr: Fnr): EnhetId? {
+        return veilarbarenaClient.hentOppfolgingsbruker(fnr)
+            .map { it.nav_kontor }
+            .map { EnhetId(it) }.orElse(null)
     }
 
-    data class IservDatoOgFormidlingsGruppe(
-        val iservDato: ZonedDateTime?,
-        val formidlingsGruppe: Formidlingsgruppe?
-    )
     fun hentIservDatoOgFormidlingsGruppe(fnr: Fnr): IservDatoOgFormidlingsGruppe? {
-        return veilarbarenaClient.hentOppfolgingsbruker(fnr)
+        return hentArenaOppfolgingTilstand(fnr)
             .map { oppfolgingsbruker ->
-                IservDatoOgFormidlingsGruppe(
-                    oppfolgingsbruker.iserv_fra_dato,
-                    oppfolgingsbruker.formidlingsgruppekode?.let { Formidlingsgruppe.valueOf(it) }
-                )
+                val iservDato = oppfolgingsbruker.inaktiveringsdato
+                val formidlingsgruppe = oppfolgingsbruker.formidlingsgruppe?.let { Formidlingsgruppe.valueOf(it) }
+                IservDatoOgFormidlingsGruppe(iservDato, formidlingsgruppe)
             }.orElse(null)
     }
 
     /* Egentlig ikke oppfolgingsstatus men oppfølgingsbruker men endepunktet heter /oppfolgingsstatus */
-    fun hentArenaOppfolginsstatus(fnr: Fnr): GetOppfolginsstatusResult {
+    fun hentArenaOppfolginsstatusMedHovedmaal(fnr: Fnr): GetOppfolginsstatusResult {
         val aktorId = authService.getAktorIdOrThrow(fnr)
 
         val lokaltLagretOppfolging = oppfolgingsStatusRepository.hentOppfolging(aktorId)
@@ -191,5 +155,10 @@ data class OppfolgingsData(
     val enhetId: EnhetId?,
     var kvalifiseringsgruppe: Kvalifiseringsgruppe,
     var formidlingsgruppe: Formidlingsgruppe,
-    var hovedmaal: Hovedmaal?,
+    var hovedmaal: Hovedmaal?
+)
+
+data class IservDatoOgFormidlingsGruppe(
+    val iservDato: LocalDate?,
+    val formidlingsGruppe: Formidlingsgruppe?
 )

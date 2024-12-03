@@ -86,7 +86,7 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
             kvalifiseringsgruppe = kvalifiseringsgruppe
         )
 
-        val statusEtterEndring = arenaOppfolgingService.hentArenaOppfolginsstatus(fnr) as GetOppfolginsstatusSuccess
+        val statusEtterEndring = arenaOppfolgingService.hentArenaOppfolginsstatusMedHovedmaal(fnr) as GetOppfolginsstatusSuccess
         assertEquals(hovedmaal.name, statusEtterEndring.result.hovedmaalkode)
         assertEquals(formidlingsgruppe.name, statusEtterEndring.result.formidlingsgruppe)
         assertEquals(kvalifiseringsgruppe.name, statusEtterEndring.result.servicegruppe)
@@ -117,7 +117,7 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
             iservFraDato = LocalDate.of(2024,12,1)
         )
 
-        val statusEtterEndring = arenaOppfolgingService.hentArenaOppfolginsstatus(fnr)
+        val statusEtterEndring = arenaOppfolgingService.hentArenaOppfolginsstatusMedHovedmaal(fnr)
         assert(statusEtterEndring is GetOppfolginsstatusSuccess) { "skal ha oppfølgingststatus når dem er kommet inn via topic" }
         assertEquals(hovedmaal.name, (statusEtterEndring as GetOppfolginsstatusSuccess).result.hovedmaalkode)
         assertEquals(formidlingsgruppe.name, (statusEtterEndring as GetOppfolginsstatusSuccess).result.formidlingsgruppe)
@@ -147,7 +147,7 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
     fun `skal håndtere brukere som mangler oppfølgingsstatus`() {
         val oppfolgingsStatus = arenaOppfolgingService.hentArenaOppfolgingTilstand(fnr)
         assert(oppfolgingsStatus.isEmpty)
-        val arenaOppfolginsStatus = arenaOppfolgingService.hentArenaOppfolginsstatus(fnr)
+        val arenaOppfolginsStatus = arenaOppfolgingService.hentArenaOppfolginsstatusMedHovedmaal(fnr)
         assert(arenaOppfolginsStatus is GetOppfolginsstatusFailure)
     }
 
@@ -174,7 +174,7 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
         val oppfolgingsTilstand = arenaOppfolgingService.hentArenaOppfolgingTilstand(fnr)
         assert(oppfolgingsTilstand.isEmpty)
 
-        val oppfolgingsStatus = arenaOppfolgingService.hentArenaOppfolginsstatus(fnr)
+        val oppfolgingsStatus = arenaOppfolgingService.hentArenaOppfolginsstatusMedHovedmaal(fnr)
         assert(oppfolgingsStatus is GetOppfolginsstatusFailure)
     }
 

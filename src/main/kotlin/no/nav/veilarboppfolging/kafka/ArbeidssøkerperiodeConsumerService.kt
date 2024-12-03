@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -84,7 +85,7 @@ open class ArbeidssøkerperiodeConsumerService(
             KanskjeIservBrukerMedPresisIserbDato(oppfolgingsbruker.iservDato, fnr.get(), oppfolgingsbruker.formidlingsGruppe)
         }.onSuccess { kanskjeIservBruker ->
             if (kanskjeIservBruker == null) return
-            if (kanskjeIservBruker.iservFraDato.isAfter(arbeidssøkerperiodeStartet)) {
+            if (kanskjeIservBruker.iservFraDato.atStartOfDay(ZoneId.systemDefault()).isAfter(arbeidssøkerperiodeStartet)) {
                 logger.info("Bruker ble ${kanskjeIservBruker.formidlingsgruppe} etter arbeidssøkerregistrering, sjekker om bruker bør utmeldes")
                 iservService.oppdaterUtmeldingsStatus(kanskjeIservBruker.toKanskjeIservBruker())
             }
@@ -93,9 +94,9 @@ open class ArbeidssøkerperiodeConsumerService(
 }
 
 data class KanskjeIservBrukerMedPresisIserbDato(
-    val iservFraDato: ZonedDateTime,
+    val iservFraDato: LocalDate,
     val fnr: String,
     val formidlingsgruppe: Formidlingsgruppe
 ) {
-    fun toKanskjeIservBruker(): KanskjeIservBruker = KanskjeIservBruker(this.iservFraDato.toLocalDate(), this.fnr, this.formidlingsgruppe)
+    fun toKanskjeIservBruker(): KanskjeIservBruker = KanskjeIservBruker(this.iservFraDato, this.fnr, this.formidlingsgruppe)
 }

@@ -2,7 +2,6 @@ package no.nav.veilarboppfolging.oppfolgingsbruker.arena
 
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
-import no.nav.pto_schema.enums.arena.Hovedmaal
 import no.nav.veilarboppfolging.IntegrationTest
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsBruker
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient
@@ -31,14 +30,14 @@ class VeilarbArenaOppfolgingsStatusServiceIntegrationTest: IntegrationTest() {
             .setKvalifiseringsgruppekode("VURDU")
             .setHovedmaalkode("SKAFFEA")
         ))
-        assert(arenaOppfolgingService.hentArenaOppfolginsstatus(fnr) is GetOppfolginsstatusSuccess)
+        assert(arenaOppfolgingService.hentArenaOppfolginsstatusMedHovedmaal(fnr) is GetOppfolginsstatusSuccess)
     }
 
     @Test
     fun `getOppfolginsstatus skal ikke kaste exception hvis bruker ikke finnes i arena`() {
         mockInternBrukerAuthOk(aktorId, fnr)
         `when`(veilarbarenaClient.hentOppfolgingsbruker(fnr)).thenReturn(Optional.empty())
-        assert(arenaOppfolgingService.hentArenaOppfolginsstatus(fnr) is GetOppfolginsstatusFailure)
+        assert(arenaOppfolgingService.hentArenaOppfolginsstatusMedHovedmaal(fnr) is GetOppfolginsstatusFailure)
     }
 
 }
