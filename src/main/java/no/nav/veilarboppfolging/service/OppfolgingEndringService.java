@@ -88,17 +88,20 @@ public class OppfolgingEndringService {
         }
 
         var harIngenOppfolgingLagret = maybeOppfolging.isEmpty() && !skalOppfolges;
-        oppfolgingService.oppdaterArenaOppfolgingStatus(
-                aktorId,
-                harIngenOppfolgingLagret,
-                new LocalArenaOppfolging(
-                        brukerV2.getHovedmaal(),
-                        kvalifiseringsgruppe,
-                        formidlingsgruppe,
-                        Optional.ofNullable(brukerV2.getOppfolgingsenhet()).map(EnhetId::new).orElse(null),
-                        brukerV2.getIservFraDato()
-                )
-        );
+        // TOOD: Finn ut om disse faktisk kan være null
+        if (kvalifiseringsgruppe != null && formidlingsgruppe != null) {
+            oppfolgingService.oppdaterArenaOppfolgingStatus(
+                    aktorId,
+                    harIngenOppfolgingLagret,
+                    new LocalArenaOppfolging(
+                            brukerV2.getHovedmaal(),
+                            kvalifiseringsgruppe,
+                            formidlingsgruppe,
+                            Optional.ofNullable(brukerV2.getOppfolgingsenhet()).map(EnhetId::new).orElse(null),
+                            brukerV2.getIservFraDato()
+                    )
+            );
+        }
     }
 
 }
