@@ -22,15 +22,6 @@ public class ArenaOppfolgingTilstand {
     String oppfolgingsenhet;
     LocalDate inaktiveringsdato;
 
-    public static ArenaOppfolgingTilstand fraArenaOppfolging(VeilarbArenaOppfolgingsStatus veilarbArenaOppfolgingsStatus) {
-        return new ArenaOppfolgingTilstand(
-                veilarbArenaOppfolgingsStatus.getFormidlingsgruppe(),
-                veilarbArenaOppfolgingsStatus.getServicegruppe(),
-                veilarbArenaOppfolgingsStatus.getOppfolgingsenhet(),
-                veilarbArenaOppfolgingsStatus.getInaktiveringsdato()
-        );
-    }
-
     public static ArenaOppfolgingTilstand fraArenaBruker(VeilarbArenaOppfolgingsBruker veilarbArenaOppfolgingsBruker) {
         return new ArenaOppfolgingTilstand(
                 veilarbArenaOppfolgingsBruker.getFormidlingsgruppekode(),

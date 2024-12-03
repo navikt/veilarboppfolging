@@ -13,8 +13,10 @@ import no.nav.veilarboppfolging.client.amttiltak.AmtTiltakClient;
 import no.nav.veilarboppfolging.client.digdir_krr.KRRData;
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolgingTilstand;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsStatus;
+import no.nav.veilarboppfolging.controller.response.UnderOppfolgingDTO;
 import no.nav.veilarboppfolging.controller.response.VeilederTilgang;
 import no.nav.veilarboppfolging.domain.AvslutningStatusData;
+import no.nav.veilarboppfolging.domain.Oppfolging;
 import no.nav.veilarboppfolging.domain.OppfolgingStatusData;
 import no.nav.veilarboppfolging.domain.StartetAvType;
 import no.nav.veilarboppfolging.eventsLogger.BigQueryClient;
@@ -28,6 +30,8 @@ import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
 import no.nav.veilarboppfolging.test.DbTestUtils;
 import no.nav.veilarboppfolging.test.IsolatedDatabaseTest;
 import no.nav.veilarboppfolging.utils.OppfolgingsperiodeUtils;
+import org.assertj.core.api.Assertions;
+import org.assertj.core.api.Condition;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -124,6 +128,11 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         arenaOppfolgingTilstand.setFormidlingsgruppe("IARBS");
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
         oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker.arenaSyncOppfolgingBruker(AKTOR_ID, Formidlingsgruppe.IARBS, Kvalifiseringsgruppe.BATT));
+
+        UnderOppfolgingDTO underOppfolgingDTO = oppfolgingService.oppfolgingData(FNR);
+        Assertions.assertThat(underOppfolgingDTO.isUnderOppfolging()).isTrue();
+        Assertions.assertThat(underOppfolgingDTO.isErManuell()).isFalse();
+
 
         assertUnderOppfolgingLagret(AKTOR_ID);
 
