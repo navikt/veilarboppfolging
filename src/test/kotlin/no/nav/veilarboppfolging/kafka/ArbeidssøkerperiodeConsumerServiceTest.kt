@@ -180,16 +180,16 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
     @Test
     fun `Skal putte person i utmelding tabell hvis ISERV i Arena og ISERV_FRA_DATO er etter arbeidssøkerregistreringen`() {
         val arbeidsøkerPeriodeStartet = LocalDateTime.of(2024, 10,1,1,1)
-        val ISERV_FRA_DATO = arbeidsøkerPeriodeStartet.plusSeconds(1)
+        val ISERV_FRA_DATO = LocalDate.of(2024, 10, 1)
         `when`(veilarbarenaClient.hentOppfolgingsbruker(Fnr.of(fnr))).thenReturn(Optional.of(
             VeilarbArenaOppfolgingsBruker()
             .setFodselsnr(fnr)
             .setFormidlingsgruppekode("ISERV")
-            .setIserv_fra_dato(ISERV_FRA_DATO.atZone(ZoneId.systemDefault())))
+            .setIserv_fra_dato(ISERV_FRA_DATO.atStartOfDay(ZoneId.systemDefault())))
         )
         val nyPeriode = arbeidssøkerperiode(fnr, periodeStartet = arbeidsøkerPeriodeStartet.atZone(ZoneId.systemDefault()).toInstant())
         val oppfolginsBrukerEndretTilISERV = ConsumerRecord("topic", 0, 0, "key", oppfølgingsBrukerEndret(
-            ISERV_FRA_DATO.toLocalDate(), formidlingsgruppe = Formidlingsgruppe.ISERV))
+            ISERV_FRA_DATO, formidlingsgruppe = Formidlingsgruppe.ISERV))
         val melding = ConsumerRecord("topic", 0, 0, "dummyKey", nyPeriode)
 
         kafkaConsumerService.consumeEndringPaOppfolgingBruker(oppfolginsBrukerEndretTilISERV)

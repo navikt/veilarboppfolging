@@ -386,7 +386,8 @@ public class OppfolgingService {
 
         Boolean erInaktivIArena = maybeArenaOppfolging.map(ao -> erIserv(EnumUtils.valueOf(Formidlingsgruppe.class, ao.getFormidlingsgruppe()))).orElse(null);
 
-        Optional<Boolean> maybeKanEnkeltReaktiveres = maybeArenaOppfolging.map(VeilarbArenaOppfolgingsStatus::getKanEnkeltReaktiveres);
+        Optional<Boolean> maybeKanEnkeltReaktiveres = maybeArenaOppfolging
+                .flatMap( (it) -> Optional.ofNullable(it.getKanEnkeltReaktiveres()) );
 
         Boolean kanReaktiveres = maybeKanEnkeltReaktiveres
                 .map(kr -> oppfolging.isUnderOppfolging() && kr)

@@ -37,7 +37,7 @@ class ArenaOppfolgingService @Autowired constructor (
 
     fun kanEnkeltReaktiveres(fnr: Fnr): Optional<Boolean> {
         return veilarbarenaClient.getArenaOppfolgingsstatus(fnr)
-            .map { it.kanEnkeltReaktiveres }
+            .flatMap { Optional.ofNullable(it.kanEnkeltReaktiveres) }
     }
 
     /**

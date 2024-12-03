@@ -15,6 +15,8 @@ import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingEntity;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 import static java.util.Optional.ofNullable;
@@ -63,8 +65,23 @@ public class OppfolgingEndringService {
             secureLog.info("Starter oppfølging på bruker som er under oppfølging i Arena, men ikke i veilarboppfolging. aktorId={}", aktorId);
             oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(
                     Oppfolgingsbruker.arenaSyncOppfolgingBruker(aktorId, formidlingsgruppe, kvalifiseringsgruppe));
-        } else if (erBrukerUnderOppfolging && !erUnderOppfolgingIArena && erInaktivIArena) {
-            Optional<Boolean> maybeKanEnkeltReaktiveres = arenaOppfolgingService.kanEnkeltReaktiveres(fnr);
+        } else if (erBrukerUnderOppfolging && erInaktivIArena) {
+            Optional<Boolean> kanEnkeltReaktiveresLokalt = kanEnkeltReaktiveresLokalt(maybeOppfolging, brukerV2);
+            var maybeKanEnkeltReaktiveres = arenaOppfolgingService.kanEnkeltReaktiveres(fnr);
+
+            if (kanEnkeltReaktiveresLokalt.isPresent() && maybeKanEnkeltReaktiveres.isPresent()) {
+                if (kanEnkeltReaktiveresLokalt.get() != maybeKanEnkeltReaktiveres.get()) {
+                    log.warn("kunne ikke si om bruker kunne reaktiveres lokalt " +
+                                    "\n kanReaktiveres lokalt {} kanReaktiveres remote {}" +
+                                    "\n iservDato: {}, kvalifiseringsGruppe: {}, forrige lagrede formidlingsgruppe: {}",
+                            kanEnkeltReaktiveresLokalt.get(),
+                            maybeKanEnkeltReaktiveres.get(),
+                            brukerV2.getIservFraDato(),
+                            brukerV2.getKvalifiseringsgruppe(),
+                            maybeOppfolging.get().getLocalArenaOppfolging().map(LocalArenaOppfolging::getFormidlingsgruppe).orElse(null)
+                        );
+                }
+            }
 
             if (maybeKanEnkeltReaktiveres.isPresent()) {
                 boolean kanEnkeltReaktiveres = maybeKanEnkeltReaktiveres.get();
@@ -104,4 +121,14 @@ public class OppfolgingEndringService {
         }
     }
 
+    private  Optional<Boolean> kanEnkeltReaktiveresLokalt(Optional<OppfolgingEntity> maybeOppfolging, EndringPaaOppfoelgingsBrukerV2 brukerV2) {
+        return maybeOppfolging
+                .flatMap(OppfolgingEntity::getLocalArenaOppfolging)
+                .map(forrigeArenaOppfolging ->
+                        brukerV2.getFormidlingsgruppe() == Formidlingsgruppe.ISERV &&
+                        brukerV2.getIservFraDato().isAfter(LocalDate.now().minusDays(28)) &&
+                        forrigeArenaOppfolging.getFormidlingsgruppe() == Formidlingsgruppe.ARBS &&
+                        !List.of(Kvalifiseringsgruppe.BKART, Kvalifiseringsgruppe.IVURD).contains(brukerV2.getKvalifiseringsgruppe())
+                );
+    }
 }
