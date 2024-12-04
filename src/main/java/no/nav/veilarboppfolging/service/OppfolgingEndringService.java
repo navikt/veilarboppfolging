@@ -70,7 +70,7 @@ public class OppfolgingEndringService {
             var maybeKanEnkeltReaktiveres = arenaOppfolgingService.kanEnkeltReaktiveres(fnr);
 
             if (kanEnkeltReaktiveresLokalt.isPresent() && maybeKanEnkeltReaktiveres.isPresent()) {
-                if (kanEnkeltReaktiveresLokalt.get() != maybeKanEnkeltReaktiveres.get()) {
+                if (kanEnkeltReaktiveresLokalt.get().equals(maybeKanEnkeltReaktiveres.get())) {
                     log.warn("kunne ikke si om bruker kunne reaktiveres lokalt " +
                                     "\n kanReaktiveres lokalt {} kanReaktiveres remote {}" +
                                     "\n iservDato: {}, kvalifiseringsGruppe: {}, forrige lagrede formidlingsgruppe: {}",
