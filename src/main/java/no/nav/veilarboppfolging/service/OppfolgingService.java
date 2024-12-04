@@ -152,6 +152,8 @@ public class OppfolgingService {
         if (kanAvslutteOppfolging(aktorId, erUnderOppfolging(aktorId), erIserv, harAktiveTiltaksdeltakelser)) {
             secureLog.info("Avslutting av oppfølging utført av: {}, begrunnelse: {}, tilstand i Arena for aktorid {}: {}", veilederId, begrunnelse, aktorId, arenaOppfolgingTilstand);
             avsluttOppfolgingForBruker(aktorId, veilederId, begrunnelse);
+        } else {
+            log.warn("Oppfølging ble ikke avsluttet likevel");
         }
 
         return getAvslutningStatus(fnr);

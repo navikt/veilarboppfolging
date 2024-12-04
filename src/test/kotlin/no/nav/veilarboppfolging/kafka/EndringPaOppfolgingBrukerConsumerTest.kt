@@ -22,6 +22,7 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.arena.GetOppfolginsstatusSucce
 import no.nav.veilarboppfolging.service.KafkaConsumerService
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -43,9 +44,6 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
 
     @Autowired
     private lateinit var kafkaConsumerService: KafkaConsumerService
-
-    @Autowired
-    private lateinit var poaoTilgangClient: PoaoTilgangClient
 
     @MockBean
     lateinit var veilarbarenaClient: VeilarbarenaClient
@@ -192,16 +190,27 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
         assert(oppfolgingsStatus is GetOppfolginsstatusFailure)
     }
 
+    private fun arena_sier_KAN_reaktiveres() {
+        val arenaOppfolging = VeilarbArenaOppfolgingsStatus()
+            .setServicegruppe("VURDU")
+            .setFormidlingsgruppe("ISERV")
+            .setKanEnkeltReaktiveres(true)
+            .setOppfolgingsenhet("8989")
+        `when`(veilarbarenaClient.getArenaOppfolgingsstatus(fnr)).thenReturn(Optional.of(arenaOppfolging))
+    }
+
+    private fun arena_sier_kan_IKKE_reaktiveres() {
+        val arenaOppfolging = VeilarbArenaOppfolgingsStatus()
+            .setServicegruppe("VURDU")
+            .setFormidlingsgruppe("ISERV")
+            .setKanEnkeltReaktiveres(false)
+            .setOppfolgingsenhet("8989")
+        `when`(veilarbarenaClient.getArenaOppfolgingsstatus(fnr)).thenReturn(Optional.of(arenaOppfolging))
+    }
+
     @Test
-    fun `skal ikke utmeldes hvis arena kanReaktiveres selv om kanIkkeReaktiveres lokalt skulle tilsi det`() {
+    fun `skal ikke utmeldes hvis arena sier kanReaktiveres selv om kanIkkeReaktiveres lokalt skulle tilsi det`() {
         mockEnhetINorg("8989", "Nav enhet")
-        val policyInput = NavAnsattTilgangTilEksternBrukerPolicyInput(
-            veilederOid,
-            TilgangType.SKRIVE,
-            fnr.get()
-        )
-        val permit = success<Decision>(Permit)
-        Mockito.doReturn(permit).`when`<PoaoTilgangClient>(poaoTilgangClient).evaluatePolicy(policyInput)
 
         meldingFraVeilarbArenaPåBrukerMedStatus(
             fnr = fnr,
@@ -211,13 +220,9 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
             kvalifiseringsgruppe = Kvalifiseringsgruppe.VURDU,
         )
 
-        val arenaOppfolging = VeilarbArenaOppfolgingsStatus()
-            .setServicegruppe("VURDU")
-            .setKanEnkeltReaktiveres(true)
-            .setOppfolgingsenhet("8989")
-        `when`(veilarbarenaClient.getArenaOppfolgingsstatus(fnr)).thenReturn(Optional.of(arenaOppfolging))
+        arena_sier_KAN_reaktiveres()
 
-
+        erSystemBruker()
         meldingFraVeilarbArenaPåBrukerMedStatus(
             fnr = fnr,
             enhetId = "8989",
@@ -229,9 +234,41 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
 
         val statusEtterEndring = oppfolgingsStatusRepository.hentOppfolging(aktorId)
         assert(statusEtterEndring.isPresent)
-        Assertions.assertThat(statusEtterEndring.get().isUnderOppfolging).isTrue()
+        assertThat(statusEtterEndring.get().isUnderOppfolging).isTrue()
+    }
 
+    @Test
+    fun `skal utmeldes hvis arena sier ikke kanReaktiveres + ISERV selv om kanIkkeReaktiveres lokalt skulle tilsi det motsatte`() {
+        mockEnhetINorg("8989", "Nav enhet")
 
+        meldingFraVeilarbArenaPåBrukerMedStatus(
+            fnr = fnr,
+            enhetId = "8989",
+            hovedmaal = null,
+            formidlingsgruppe = Formidlingsgruppe.ARBS,
+            kvalifiseringsgruppe = Kvalifiseringsgruppe.VURDU,
+        )
+
+        arena_sier_kan_IKKE_reaktiveres()
+
+        erSystemBruker()
+        meldingFraVeilarbArenaPåBrukerMedStatus(
+            fnr = fnr,
+            enhetId = "8989",
+            hovedmaal = null,
+            formidlingsgruppe = Formidlingsgruppe.ISERV,
+            kvalifiseringsgruppe = Kvalifiseringsgruppe.VURDU,
+            iservFraDato = LocalDate.now().minusDays(1)
+        )
+
+        val statusEtterEndring = oppfolgingsStatusRepository.hentOppfolging(aktorId)
+        assert(statusEtterEndring.isPresent)
+        assertThat(statusEtterEndring.get().isUnderOppfolging).isFalse()
+    }
+
+    private fun erSystemBruker() {
+        `when`(authContextHolder.erInternBruker()).thenReturn(false)
+        `when`(authContextHolder.erEksternBruker()).thenReturn(false)
     }
 
     fun mockEnhetINorg(id: String, navn: String) {

@@ -44,9 +44,9 @@ public class OppfolgingEndringService {
         Formidlingsgruppe formidlingsgruppe = ofNullable(brukerV2.getFormidlingsgruppe()).orElse(null);
         Kvalifiseringsgruppe kvalifiseringsgruppe = ofNullable(brukerV2.getKvalifiseringsgruppe()).orElse(null);
 
-        Optional<OppfolgingEntity> maybeOppfolging = oppfolgingsStatusRepository.hentOppfolging(aktorId);
+        Optional<OppfolgingEntity> currentLocalOppfolging = oppfolgingsStatusRepository.hentOppfolging(aktorId);
 
-        boolean erBrukerUnderOppfolging = maybeOppfolging.map(OppfolgingEntity::isUnderOppfolging).orElse(false);
+        boolean erBrukerUnderOppfolging = currentLocalOppfolging.map(OppfolgingEntity::isUnderOppfolging).orElse(false);
         boolean erUnderOppfolgingIArena = erUnderOppfolging(formidlingsgruppe, kvalifiseringsgruppe);
         boolean erInaktivIArena = erIserv(formidlingsgruppe);
         boolean skalOppfolges = !erBrukerUnderOppfolging && erUnderOppfolgingIArena;
@@ -61,12 +61,25 @@ public class OppfolgingEndringService {
                 formidlingsgruppe, kvalifiseringsgruppe
         );
 
+        var harIngenOppfolgingLagret = currentLocalOppfolging.isEmpty();
+        oppfolgingService.oppdaterArenaOppfolgingStatus(
+                aktorId,
+                harIngenOppfolgingLagret,
+                new LocalArenaOppfolging(
+                        brukerV2.getHovedmaal(),
+                        kvalifiseringsgruppe,
+                        formidlingsgruppe,
+                        Optional.ofNullable(brukerV2.getOppfolgingsenhet()).map(EnhetId::new).orElse(null),
+                        brukerV2.getIservFraDato()
+                )
+        );
+
         if (skalOppfolges) {
             secureLog.info("Starter oppfølging på bruker som er under oppfølging i Arena, men ikke i veilarboppfolging. aktorId={}", aktorId);
             oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(
                     Oppfolgingsbruker.arenaSyncOppfolgingBruker(aktorId, formidlingsgruppe, kvalifiseringsgruppe));
         } else if (erBrukerUnderOppfolging && erInaktivIArena) {
-            Optional<Boolean> kanEnkeltReaktiveresLokalt = kanEnkeltReaktiveresLokalt(maybeOppfolging, brukerV2);
+            Optional<Boolean> kanEnkeltReaktiveresLokalt = kanEnkeltReaktiveresLokalt(currentLocalOppfolging, brukerV2);
             var maybeKanEnkeltReaktiveres = arenaOppfolgingService.kanEnkeltReaktiveres(fnr);
 
             if (kanEnkeltReaktiveresLokalt.isPresent() && maybeKanEnkeltReaktiveres.isPresent()) {
@@ -78,7 +91,7 @@ public class OppfolgingEndringService {
                             maybeKanEnkeltReaktiveres.get(),
                             brukerV2.getIservFraDato(),
                             brukerV2.getKvalifiseringsgruppe(),
-                            maybeOppfolging.get().getLocalArenaOppfolging().map(LocalArenaOppfolging::getFormidlingsgruppe).orElse(null)
+                            currentLocalOppfolging.get().getLocalArenaOppfolging().map(LocalArenaOppfolging::getFormidlingsgruppe).orElse(null)
                         );
                 }
             }
@@ -102,22 +115,6 @@ public class OppfolgingEndringService {
             } else {
                 secureLog.warn("Bruker har ikke oppfølgingtilstand i Arena. aktorId={}", aktorId);
             }
-        }
-
-        var harIngenOppfolgingLagret = maybeOppfolging.isEmpty() && !skalOppfolges;
-        // TOOD: Finn ut om disse faktisk kan være null
-        if (kvalifiseringsgruppe != null && formidlingsgruppe != null) {
-            oppfolgingService.oppdaterArenaOppfolgingStatus(
-                    aktorId,
-                    harIngenOppfolgingLagret,
-                    new LocalArenaOppfolging(
-                            brukerV2.getHovedmaal(),
-                            kvalifiseringsgruppe,
-                            formidlingsgruppe,
-                            Optional.ofNullable(brukerV2.getOppfolgingsenhet()).map(EnhetId::new).orElse(null),
-                            brukerV2.getIservFraDato()
-                    )
-            );
         }
     }
 

@@ -10,6 +10,7 @@ import no.nav.veilarboppfolging.domain.Oppfolging
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.LocalArenaOppfolging
 import no.nav.veilarboppfolging.repository.entity.OppfolgingEntity
 import no.nav.veilarboppfolging.utils.DbUtils
+import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Repository
@@ -21,6 +22,7 @@ import java.util.function.Supplier
 @Repository
 class OppfolgingsStatusRepository(private val jdbcTemplate: JdbcTemplate) {
     val db = NamedParameterJdbcTemplate(jdbcTemplate)
+    private val logger = LoggerFactory.getLogger(OppfolgingsStatusRepository::class.java)
 
     fun hentOppfolging(aktorId: AktorId): Optional<OppfolgingEntity> {
         return DbUtils.queryForNullableObject<OppfolgingEntity?>(Supplier {
@@ -53,7 +55,8 @@ class OppfolgingsStatusRepository(private val jdbcTemplate: JdbcTemplate) {
             iserv_fra_dato = :iserv_fra_dato
             WHERE aktor_id = :aktorId
         """.trimIndent()
-        db.update(sql, params)
+        val rows = db.update(sql, params)
+        logger.info(rows.toString())
     }
 
     fun opprettOppfolging(aktorId: AktorId): Oppfolging {
