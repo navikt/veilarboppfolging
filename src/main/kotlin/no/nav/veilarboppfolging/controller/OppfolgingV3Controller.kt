@@ -82,7 +82,8 @@ class OppfolgingV3Controller(
 
     @PostMapping(value = ["/oppfolging/hent-perioder"])
     fun hentOppfolgingsperioder(@RequestBody oppfolgingRequest: OppfolgingRequest): List<OppfolgingPeriodeDTO> {
-        val allowlist = listOf(AllowListApplicationName.VEILARBVEDTAKSSTOTTE, AllowListApplicationName.AMT_PERSON_SERVICE)
+        val allowlist = listOf(AllowListApplicationName.VEILARBVEDTAKSSTOTTE, AllowListApplicationName.AMT_PERSON_SERVICE,
+            AllowListApplicationName.VEILARBDIRIGENT)
         authService.authorizeRequest(oppfolgingRequest.fnr, allowlist)
         val aktorId = authService.getAktorIdOrThrow(oppfolgingRequest.fnr)
         return hentOppfolgingsperioder(aktorId)
