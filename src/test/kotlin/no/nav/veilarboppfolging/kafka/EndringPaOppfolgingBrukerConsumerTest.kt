@@ -35,6 +35,7 @@ import org.springframework.test.context.ActiveProfiles
 import java.time.LocalDate
 import java.util.*
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -206,6 +207,36 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
             .setKanEnkeltReaktiveres(false)
             .setOppfolgingsenhet("8989")
         `when`(veilarbarenaClient.getArenaOppfolgingsstatus(fnr)).thenReturn(Optional.of(arenaOppfolging))
+    }
+
+    @Test
+    fun `skal starte oppfølging på syfo-bruker når 14a i arena`() {
+        mockEnhetINorg("8989", "Nav enhet")
+
+        val localStatus0 = oppfolgingsStatusRepository.hentOppfolging(aktorId)
+        assert(localStatus0.isEmpty)
+
+        meldingFraVeilarbArenaPåBrukerMedStatus(
+            fnr = fnr,
+            enhetId = "8989",
+            hovedmaal = null,
+            formidlingsgruppe = Formidlingsgruppe.IARBS,
+            kvalifiseringsgruppe = Kvalifiseringsgruppe.VURDI // Sykemeldt oppfølging på arbeidsplassen
+        )
+
+        val localStatus1 = oppfolgingsStatusRepository.hentOppfolging(aktorId)
+        assert(localStatus1.isPresent) { "Oppfolgingsstatus fra arena var null" }
+        assertFalse(localStatus1.get().isUnderOppfolging, "Skulle ikke vært under oppfølging")
+        meldingFraVeilarbArenaPåBrukerMedStatus(
+            fnr = fnr,
+            enhetId = "8989",
+            hovedmaal = Hovedmaal.BEHOLDEA,
+            formidlingsgruppe = Formidlingsgruppe.IARBS,
+            kvalifiseringsgruppe = Kvalifiseringsgruppe.BATT
+        )
+        val localStatus2 = oppfolgingsStatusRepository.hentOppfolging(aktorId)
+        assert(localStatus2.isPresent) { "Oppfolgingsstatus fra arena var null" }
+        assertTrue(localStatus2.get().isUnderOppfolging, "Skulle vært under oppfølging")
     }
 
     @Test
