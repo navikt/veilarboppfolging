@@ -53,17 +53,6 @@ public class OppfolgingController {
         return tilDto(oppfolgingService.hentAvslutningStatus(fnr));
     }
 
-    @PostMapping("/avsluttOppfolging")
-    public AvslutningStatus avsluttOppfolging(@RequestBody VeilederBegrunnelseDTO dto, @RequestParam("fnr") Fnr fnr) {
-        authService.skalVereInternBruker();
-
-        return tilDto(oppfolgingService.avsluttOppfolging(
-                fnr,
-                dto.veilederId,
-                dto.begrunnelse
-        ));
-    }
-
     // TODO: Ikke returner OppfolgingStatus
     @PostMapping("/settManuell")
     public OppfolgingStatus settTilManuell(@RequestBody VeilederBegrunnelseDTO dto, @RequestParam("fnr") Fnr fnr) {
