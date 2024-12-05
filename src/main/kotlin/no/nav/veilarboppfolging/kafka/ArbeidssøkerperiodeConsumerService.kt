@@ -82,7 +82,7 @@ open class ArbeidssøkerperiodeConsumerService(
         runCatching {
             val oppfolgingsbruker = arenaOppfolgingService.hentIservDatoOgFormidlingsGruppe(fnr) ?: throw IllegalStateException("Fant ikke bruker")
             if (oppfolgingsbruker.iservDato == null || oppfolgingsbruker.formidlingsGruppe == null) return@runCatching null
-            KanskjeIservBrukerMedPresisIserbDato(oppfolgingsbruker.iservDato, fnr.get(), oppfolgingsbruker.formidlingsGruppe)
+            KanskjeIservBrukerMedPresisIservDato(oppfolgingsbruker.iservDato, fnr.get(), oppfolgingsbruker.formidlingsGruppe)
         }.onSuccess { kanskjeIservBruker ->
             if (kanskjeIservBruker == null) return
             if (kanskjeIservBruker.iservFraDato.atStartOfDay(ZoneId.systemDefault()).isAfter(arbeidssøkerperiodeStartet)) {
@@ -93,7 +93,7 @@ open class ArbeidssøkerperiodeConsumerService(
     }
 }
 
-data class KanskjeIservBrukerMedPresisIserbDato(
+data class KanskjeIservBrukerMedPresisIservDato(
     val iservFraDato: LocalDate,
     val fnr: String,
     val formidlingsgruppe: Formidlingsgruppe

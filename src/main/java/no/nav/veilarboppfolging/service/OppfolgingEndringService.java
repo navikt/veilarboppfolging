@@ -46,17 +46,17 @@ public class OppfolgingEndringService {
 
         Optional<OppfolgingEntity> currentLocalOppfolging = oppfolgingsStatusRepository.hentOppfolging(aktorId);
 
-        boolean erBrukerUnderOppfolging = currentLocalOppfolging.map(OppfolgingEntity::isUnderOppfolging).orElse(false);
+        boolean erBrukerUnderOppfolgingLokalt = currentLocalOppfolging.map(OppfolgingEntity::isUnderOppfolging).orElse(false);
         boolean erUnderOppfolgingIArena = erUnderOppfolging(formidlingsgruppe, kvalifiseringsgruppe);
         boolean erInaktivIArena = erIserv(formidlingsgruppe);
-        boolean skalOppfolges = !erBrukerUnderOppfolging && erUnderOppfolgingIArena;
+        boolean skalOppfolges = !erBrukerUnderOppfolgingLokalt && erUnderOppfolgingIArena;
 
         secureLog.info(
                 "Status for automatisk oppdatering av oppfølging."
                         + " aktorId={} erUnderOppfølgingIVeilarboppfolging={}"
                         + " erUnderOppfølgingIArena={} erInaktivIArena={}"
                         + " formidlingsgruppe={} kvalifiseringsgruppe={}",
-                aktorId, erBrukerUnderOppfolging,
+                aktorId, erBrukerUnderOppfolgingLokalt,
                 erUnderOppfolgingIArena, erInaktivIArena,
                 formidlingsgruppe, kvalifiseringsgruppe
         );
@@ -78,7 +78,7 @@ public class OppfolgingEndringService {
             secureLog.info("Starter oppfølging på bruker som er under oppfølging i Arena, men ikke i veilarboppfolging. aktorId={}", aktorId);
             oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(
                     Oppfolgingsbruker.arenaSyncOppfolgingBruker(aktorId, formidlingsgruppe, kvalifiseringsgruppe));
-        } else if (erBrukerUnderOppfolging && erInaktivIArena) {
+        } else if (erBrukerUnderOppfolgingLokalt && erInaktivIArena) {
             Optional<Boolean> kanEnkeltReaktiveresLokalt = kanEnkeltReaktiveresLokalt(currentLocalOppfolging, brukerV2);
             var maybeKanEnkeltReaktiveres = arenaOppfolgingService.kanEnkeltReaktiveres(fnr);
 
@@ -109,6 +109,7 @@ public class OppfolgingEndringService {
 
                 if (skalAvsluttes) {
                     secureLog.info("Automatisk avslutting av oppfølging på bruker. aktorId={}", aktorId);
+                    log.info("Utgang: Oppfølging avsluttet automatisk pga. inaktiv bruker som ikke kan reaktiveres");
                     oppfolgingService.avsluttOppfolging(fnr, SYSTEM_USER_NAME, "Oppfølging avsluttet automatisk pga. inaktiv bruker som ikke kan reaktiveres");
                     metricsService.rapporterAutomatiskAvslutningAvOppfolging(true);
                 }
