@@ -40,7 +40,7 @@ public class MalServiceTest {
     private static final AktorId AKTOR_ID = AktorId.of("aktorId");
     private static final long MAL_ID = 1L;
     private static final long KVP_ID = 1L;
-    private static final String ENHET = "enhet";
+    private static final String ENHET = "6767";
     private static final ZonedDateTime START_KVP = ZonedDateTime.now();
     private static final ZonedDateTime BEFORE_KVP = START_KVP.minus(1, DAYS);
     private static final ZonedDateTime IN_KVP = START_KVP.plus(1, DAYS);

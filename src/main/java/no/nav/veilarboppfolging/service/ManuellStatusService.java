@@ -6,7 +6,6 @@ import lombok.val;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.client.digdir_krr.KRRData;
-import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 import no.nav.veilarboppfolging.client.digdir_krr.DigdirClient;
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService;
 import no.nav.veilarboppfolging.repository.ManuellStatusRepository;
@@ -141,8 +140,8 @@ public class ManuellStatusService {
         authService.sjekkLesetilgangMedAktorId(aktorId);
 
         if (!authService.erEksternBruker()) {
-            VeilarbArenaOppfolging arenaOppfolging = arenaOppfolgingService.hentOppfolgingFraVeilarbarena(fnr).orElseThrow();
-            authService.sjekkTilgangTilEnhet(arenaOppfolging.getNav_kontor());
+            var enhet = Optional.ofNullable(arenaOppfolgingService.hentArenaOppfolgingsEnhetId(fnr)).orElseThrow();
+            authService.sjekkTilgangTilEnhet(enhet.get());
         }
 
         KRRData kontaktinfo = hentDigdirKontaktinfo(fnr);

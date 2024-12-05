@@ -3,7 +3,6 @@ package no.nav.veilarboppfolging.service;
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe;
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe;
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
-import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolgingTilstand;
 import no.nav.veilarboppfolging.oppfolgingsbruker.Oppfolgingsbruker;
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
@@ -72,12 +71,11 @@ public class OppfolgingEndringServiceTest {
 
     @Test
     public void oppdaterOppfolgingMedStatusFraArena__skal_avslutte_oppfolging_pa_bruker_som_er_under_oppfolging_i_veilarboppfolging_men_ikke_under_oppfolging_i_arena() {
-        var arenaTilstand = new ArenaOppfolgingTilstand();
-        arenaTilstand.setKanEnkeltReaktiveres(false);
-
         when(authService.getAktorIdOrThrow(TEST_FNR)).thenReturn(TEST_AKTOR_ID);
-        when(oppfolgingsStatusRepository.hentOppfolging(TEST_AKTOR_ID)).thenReturn(Optional.of(new OppfolgingEntity().setUnderOppfolging(true)));
-        when(arenaOppfolgingService.hentOppfolgingTilstandDirekteFraArena(TEST_FNR)).thenReturn(Optional.of(arenaTilstand));
+        when(oppfolgingsStatusRepository.hentOppfolging(TEST_AKTOR_ID)).thenReturn(Optional.of(new OppfolgingEntity()
+                        .setLocalArenaOppfolging(Optional.empty())
+                .setUnderOppfolging(true)));
+        when(arenaOppfolgingService.kanEnkeltReaktiveres(TEST_FNR)).thenReturn(Optional.of(false));
         when(kvpService.erUnderKvp(TEST_AKTOR_ID)).thenReturn(false);
 
         EndringPaaOppfoelgingsBrukerV2 brukverV2 = EndringPaaOppfoelgingsBrukerV2.builder()
@@ -100,12 +98,11 @@ public class OppfolgingEndringServiceTest {
 
     @Test
     public void oppdaterOppfolgingMedStatusFraArena__skal_ikke_avslutte_oppfolging_pa_bruker_som_kan_enkelt_reaktiveres() {
-        var arenaTilstand = new ArenaOppfolgingTilstand();
-        arenaTilstand.setKanEnkeltReaktiveres(true);
-
         when(authService.getAktorIdOrThrow(TEST_FNR)).thenReturn(TEST_AKTOR_ID);
-        when(oppfolgingsStatusRepository.hentOppfolging(TEST_AKTOR_ID)).thenReturn(Optional.of(new OppfolgingEntity().setUnderOppfolging(true)));
-        when(arenaOppfolgingService.hentOppfolgingTilstandDirekteFraArena(TEST_FNR)).thenReturn(Optional.of(arenaTilstand));
+        when(oppfolgingsStatusRepository.hentOppfolging(TEST_AKTOR_ID)).thenReturn(Optional.of(new OppfolgingEntity()
+                        .setLocalArenaOppfolging(Optional.empty())
+                .setUnderOppfolging(true)));
+        when(arenaOppfolgingService.kanEnkeltReaktiveres(TEST_FNR)).thenReturn(Optional.of(true));
         when(kvpService.erUnderKvp(TEST_AKTOR_ID)).thenReturn(false);
         when(oppfolgingService.harAktiveTiltaksdeltakelser(TEST_FNR)).thenReturn(false);
 
@@ -117,19 +114,17 @@ public class OppfolgingEndringServiceTest {
 
         oppfolgingEndringService.oppdaterOppfolgingMedStatusFraArena(brukverV2);
 
-
         verify(oppfolgingService, never()).startOppfolgingHvisIkkeAlleredeStartet(any(Oppfolgingsbruker.class));
         verify(oppfolgingService, never()).avsluttOppfolging(any(), any(), any());
     }
 
     @Test
     public void oppdaterOppfolgingMedStatusFraArena__skal_ikke_avslutte_oppfolging_pa_bruker_som_er_under_kvp() {
-        var arenaTilstand = new ArenaOppfolgingTilstand();
-        arenaTilstand.setKanEnkeltReaktiveres(false);
-
         when(authService.getAktorIdOrThrow(TEST_FNR)).thenReturn(TEST_AKTOR_ID);
-        when(oppfolgingsStatusRepository.hentOppfolging(TEST_AKTOR_ID)).thenReturn(Optional.of(new OppfolgingEntity().setUnderOppfolging(true)));
-        when(arenaOppfolgingService.hentOppfolgingTilstandDirekteFraArena(TEST_FNR)).thenReturn(Optional.of(arenaTilstand));
+        when(oppfolgingsStatusRepository.hentOppfolging(TEST_AKTOR_ID)).thenReturn(Optional.of(new OppfolgingEntity()
+                        .setLocalArenaOppfolging(Optional.empty())
+                .setUnderOppfolging(true)));
+        when(arenaOppfolgingService.kanEnkeltReaktiveres(TEST_FNR)).thenReturn(Optional.of(false));
         when(kvpService.erUnderKvp(TEST_AKTOR_ID)).thenReturn(true);
         when(oppfolgingService.harAktiveTiltaksdeltakelser(TEST_FNR)).thenReturn(false);
 
@@ -148,12 +143,11 @@ public class OppfolgingEndringServiceTest {
 
     @Test
     public void oppdaterOppfolgingMedStatusFraArena__skal_ikke_avslutte_oppfolging_pa_bruker_som_har_aktive_tiltaksdeltakelser() {
-        var arenaTilstand = new ArenaOppfolgingTilstand();
-        arenaTilstand.setKanEnkeltReaktiveres(false);
-
         when(authService.getAktorIdOrThrow(TEST_FNR)).thenReturn(TEST_AKTOR_ID);
-        when(oppfolgingsStatusRepository.hentOppfolging(TEST_AKTOR_ID)).thenReturn(Optional.of(new OppfolgingEntity().setUnderOppfolging(true)));
-        when(arenaOppfolgingService.hentOppfolgingTilstandDirekteFraArena(TEST_FNR)).thenReturn(Optional.of(arenaTilstand));
+        when(oppfolgingsStatusRepository.hentOppfolging(TEST_AKTOR_ID)).thenReturn(Optional.of(new OppfolgingEntity()
+                        .setLocalArenaOppfolging(Optional.empty())
+                .setUnderOppfolging(true)));
+        when(arenaOppfolgingService.kanEnkeltReaktiveres(TEST_FNR)).thenReturn(Optional.of(false));
         when(kvpService.erUnderKvp(TEST_AKTOR_ID)).thenReturn(false);
         when(oppfolgingService.harAktiveTiltaksdeltakelser(TEST_FNR)).thenReturn(true);
 

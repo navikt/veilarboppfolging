@@ -1,13 +1,11 @@
 package no.nav.veilarboppfolging.service;
 
 import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.ForbiddenException;
-import no.nav.veilarboppfolging.UnauthorizedException;
 import no.nav.veilarboppfolging.client.digdir_krr.KRRData;
-import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
 import no.nav.veilarboppfolging.client.digdir_krr.DigdirClient;
-import no.nav.veilarboppfolging.client.digdir_krr.DigdirKontaktinfo;
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService;
 import no.nav.veilarboppfolging.repository.ManuellStatusRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
@@ -18,7 +16,6 @@ import no.nav.veilarboppfolging.test.IsolatedDatabaseTest;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.transaction.support.TransactionTemplate;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -35,7 +32,7 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
 
     private static final Fnr FNR = Fnr.of("fnr");
     private static final AktorId AKTOR_ID = AktorId.of("aktorId");
-    private static final String ENHET = "enhet";
+    private static final String ENHET = "7676";
     private static final String VEILEDER = "veileder";
     private static final String BEGRUNNELSE = "begrunnelse";
 
@@ -61,8 +58,7 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
     public void setup() {
         TransactionTemplate transactor = DbTestUtils.createTransactor(db);
 
-        when(arenaOppfolgingService.hentOppfolgingFraVeilarbarena(FNR))
-                .thenReturn(Optional.of(new VeilarbArenaOppfolging().setNav_kontor(ENHET)));
+        when(arenaOppfolgingService.hentArenaOppfolgingsEnhetId(FNR)).thenReturn(EnhetId.of(ENHET));
         doCallRealMethod().when(authService).sjekkTilgangTilEnhet(any());
         when(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID);
 

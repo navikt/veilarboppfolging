@@ -1,6 +1,5 @@
 package no.nav.veilarboppfolging.service;
 
-import lombok.SneakyThrows;
 import no.nav.common.kafka.consumer.ConsumeStatus;
 import no.nav.common.kafka.consumer.KafkaConsumerClient;
 import no.nav.common.kafka.consumer.util.KafkaConsumerClientBuilder;
@@ -92,7 +91,7 @@ public class AktiverBrukerServiceKafkaTest extends IntegrationTest {
     public void skalPubliserePaaKafkaVedAktivering() {
         consumerClient.start();
 
-        startOppfolging(aktorId);
+        startOppfolgingSomArbeidsoker(aktorId);
         verifiserAsynkront(8, TimeUnit.SECONDS, () -> {
             assertEquals(1,
                     konsumerteSisteOppfolgingsperiodeMeldinger.get().values().size(),

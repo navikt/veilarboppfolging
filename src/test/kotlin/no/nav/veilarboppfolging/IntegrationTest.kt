@@ -3,11 +3,11 @@ package no.nav.veilarboppfolging
 import com.nimbusds.jwt.JWTClaimsSet
 import no.nav.common.auth.context.AuthContextHolder
 import no.nav.common.client.aktoroppslag.AktorOppslagClient
+import no.nav.common.client.norg2.Norg2Client
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.veilarboppfolging.config.ApplicationTestConfig
 import no.nav.veilarboppfolging.config.EnvironmentProperties
-import no.nav.veilarboppfolging.controller.ArenaOppfolgingController
 import no.nav.veilarboppfolging.controller.OppfolgingController
 import no.nav.veilarboppfolging.controller.SakController
 import no.nav.veilarboppfolging.domain.StartetAvType
@@ -43,6 +43,9 @@ open class IntegrationTest {
 
     @MockBean
     lateinit var azureAdOnBehalfOfTokenClient: ErrorMappedAzureAdOnBehalfOfTokenClient
+
+    @MockBean
+    lateinit var norg2Client: Norg2Client
 
     @MockBean
     lateinit var environmentProperties: EnvironmentProperties
@@ -91,7 +94,7 @@ open class IntegrationTest {
         DbTestUtils.cleanupTestDb(jdbcTemplate)
     }
 
-    fun startOppfolging(aktørId: AktorId) {
+    fun startOppfolgingSomArbeidsoker(aktørId: AktorId) {
         val bruker = Oppfolgingsbruker.arbeidssokerOppfolgingsBruker(aktørId, StartetAvType.BRUKER)
         oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(bruker)
     }
@@ -122,10 +125,11 @@ open class IntegrationTest {
             .thenReturn(fnr)
     }
 
-    fun mockInternBrukerAuthOk(aktørId: AktorId, fnr: Fnr) {
+    fun mockInternBrukerAuthOk(veilederIOD: UUID,aktørId: AktorId, fnr: Fnr) {
         val claims = JWTClaimsSet.Builder()
             .issuer("microsoftonline.com")
             .claim("azp_name", "cluster:team:veilarbregistrering")
+            .claim("oid", veilederIOD.toString())
             .build()
 
         Mockito.`when`(authContextHolder.idTokenClaims).thenReturn(Optional.of(claims))

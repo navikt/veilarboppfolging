@@ -7,9 +7,9 @@ import java.util.Optional;
 
 public interface VeilarbarenaClient extends HealthCheck {
 
-    Optional<VeilarbArenaOppfolging> hentOppfolgingsbruker(Fnr fnr);
+    Optional<VeilarbArenaOppfolgingsBruker> hentOppfolgingsbruker(Fnr fnr);
 
-    Optional<ArenaOppfolging> getArenaOppfolgingsstatus(Fnr fnr);
+    Optional<VeilarbArenaOppfolgingsStatus> getArenaOppfolgingsstatus(Fnr fnr);
 
     Optional<YtelserDTO> getArenaYtelser(Fnr fnr);
 }

@@ -3,14 +3,14 @@ package no.nav.veilarboppfolging.oppfolgingsbruker.arena
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.veilarboppfolging.IntegrationTest
-import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging
+import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsBruker
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.`when`
 import org.springframework.boot.test.mock.mockito.MockBean
-import java.util.Optional
+import java.util.*
 
-class ArenaOppfolgingServiceIntegrationTest: IntegrationTest() {
+class VeilarbArenaOppfolgingsStatusServiceIntegrationTest: IntegrationTest() {
 
     @MockBean
     lateinit var veilarbarenaClient: VeilarbarenaClient
@@ -21,22 +21,23 @@ class ArenaOppfolgingServiceIntegrationTest: IntegrationTest() {
 
     @Test
     fun `getOppfolginsstatus skal retunerer success når bruker finnes i arena`() {
-        mockInternBrukerAuthOk(aktorId, fnr)
-        `when`(veilarbarenaClient.hentOppfolgingsbruker(fnr)).thenReturn(Optional.of(VeilarbArenaOppfolging()
+        mockInternBrukerAuthOk(UUID.randomUUID(), aktorId, fnr)
+        `when`(veilarbarenaClient.hentOppfolgingsbruker(fnr)).thenReturn(Optional.of(
+            VeilarbArenaOppfolgingsBruker()
             .setFodselsnr(fnr.get())
             .setNav_kontor("1010")
             .setFormidlingsgruppekode("ARBS")
             .setKvalifiseringsgruppekode("VURDU")
-            .setHovedmaalkode("SKAFFE")
+            .setHovedmaalkode("SKAFFEA")
         ))
-        assert(arenaOppfolgingService.getOppfolginsstatus(fnr) is GetOppfolginsstatusSuccess)
+        assert(arenaOppfolgingService.hentArenaOppfolginsstatusMedHovedmaal(fnr) is GetOppfolginsstatusSuccess)
     }
 
     @Test
     fun `getOppfolginsstatus skal ikke kaste exception hvis bruker ikke finnes i arena`() {
-        mockInternBrukerAuthOk(aktorId, fnr)
+        mockInternBrukerAuthOk(UUID.randomUUID(), aktorId, fnr)
         `when`(veilarbarenaClient.hentOppfolgingsbruker(fnr)).thenReturn(Optional.empty())
-        assert(arenaOppfolgingService.getOppfolginsstatus(fnr) is GetOppfolginsstatusFailure)
+        assert(arenaOppfolgingService.hentArenaOppfolginsstatusMedHovedmaal(fnr) is GetOppfolginsstatusFailure)
     }
 
 }

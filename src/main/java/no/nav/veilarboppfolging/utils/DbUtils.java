@@ -3,6 +3,7 @@ package no.nav.veilarboppfolging.utils;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -15,6 +16,10 @@ public class DbUtils {
 
     public static long nesteFraSekvens(JdbcTemplate db, String sekvensNavn) {
         return db.queryForObject("select nextval('"+ sekvensNavn +"')", Long.class);
+    }
+
+    public static long nesteFraSekvens(NamedParameterJdbcTemplate db, String sekvensNavn) {
+        return nesteFraSekvens(db.getJdbcTemplate(), sekvensNavn);
     }
 
     public static ZonedDateTime hentZonedDateTime(ResultSet rs, String kolonneNavn) throws SQLException {

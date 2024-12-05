@@ -128,6 +128,7 @@ public class IservService {
             } else {
                 Fnr fnr = authService.getFnrOrThrow(aktorId);
 
+                log.info("Utgang: Oppfølging avsluttet automatisk grunnet iserv i 28 dager");
                 AvslutningStatusData avslutningStatus = oppfolgingService.avsluttOppfolging(fnr, SYSTEM_USER_NAME, "Oppfølging avsluttet automatisk grunnet iserv i 28 dager");
                 // TODO litt i tvil om denne her. Attributtet sier om du per def er under oppfølging i arena, ikke om du er under oppfølging hos oss.
                 boolean oppfolgingAvsluttet = !avslutningStatus.underOppfolging;

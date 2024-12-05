@@ -2,7 +2,6 @@ package no.nav.veilarboppfolging.repository;
 
 import no.nav.common.types.identer.AktorId;
 import no.nav.veilarboppfolging.LocalDatabaseSingleton;
-import no.nav.veilarboppfolging.controller.request.Innsatsgruppe;
 import no.nav.veilarboppfolging.domain.StartetAvType;
 import no.nav.veilarboppfolging.oppfolgingsbruker.Oppfolgingsbruker;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;

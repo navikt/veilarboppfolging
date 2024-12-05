@@ -21,7 +21,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = ArenaOppfolgingV2Controller.class)
-public class ArenaOppfolgingV2ControllerTest {
+public class VeilarbArenaOppfolgingsStatusV2ControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -37,7 +37,7 @@ public class ArenaOppfolgingV2ControllerTest {
         Fnr fnr = Fnr.of("123456");
         ArenaOppfolgingRequest arenaOppfolgingRequest = new ArenaOppfolgingRequest(fnr);
 
-        when(arenaOppfolgingService.getOppfolginsstatus(any())).thenReturn(new GetOppfolginsstatusSuccess(new OppfolgingEnhetMedVeilederResponse(
+        when(arenaOppfolgingService.hentArenaOppfolginsstatusMedHovedmaal(any())).thenReturn(new GetOppfolginsstatusSuccess(new OppfolgingEnhetMedVeilederResponse(
                 new OppfolgingEnhetMedVeilederResponse.Oppfolgingsenhet("asdas", "asdsa"),
                 "asdas",
                 "asdas",
@@ -65,7 +65,7 @@ public class ArenaOppfolgingV2ControllerTest {
 
         String json = TestUtils.readTestResourceFile("controller/arena-oppfolging/get-oppfolgingsstatus-response.json");
 
-        when(arenaOppfolgingService.getOppfolginsstatus(fnr)).thenReturn(new GetOppfolginsstatusSuccess(response));
+        when(arenaOppfolgingService.hentArenaOppfolginsstatusMedHovedmaal(fnr)).thenReturn(new GetOppfolginsstatusSuccess(response));
 
         mockMvc.perform(post("/api/v2/person/hent-oppfolgingsstatus")
                         .contentType(MediaType.APPLICATION_JSON)

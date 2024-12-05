@@ -3,7 +3,6 @@ package no.nav.veilarboppfolging.controller;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService;
-import no.nav.veilarboppfolging.oppfolgingsbruker.arena.GetOppfolginsstatusSuccess;
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.OppfolgingEnhetMedVeilederResponse;
 import no.nav.veilarboppfolging.service.AuthService;
 import org.junit.jupiter.api.Test;
@@ -19,7 +18,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = ArenaOppfolgingController.class)
-public class ArenaOppfolgingControllerTest {
+public class VeilarbArenaOppfolgingsStatusControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -35,21 +34,14 @@ public class ArenaOppfolgingControllerTest {
         Fnr fnr = Fnr.of("123456");
         AktorId aktorId = AktorId.of("123456");
 
-        var response = new OppfolgingEnhetMedVeilederResponse(
-                new OppfolgingEnhetMedVeilederResponse.Oppfolgingsenhet("NAV Testheim", "1234"),
-                "Z12345",
-                "ARBS",
-                "BKART",
-                "BEHOLDEA"
-        );
-
+        var response = new OppfolgingEnhetMedVeilederResponse.Oppfolgingsenhet("NAV Testheim", "1234");
 
         String json = """
           { "navn": "NAV Testheim", "enhetId":  "1234"}
         """;
 
         when(authService.getFnrOrThrow(aktorId)).thenReturn(fnr);
-        when(arenaOppfolgingService.getOppfolginsstatus(fnr)).thenReturn(new GetOppfolginsstatusSuccess(response));
+        when(arenaOppfolgingService.hentArenaOppfolgingsEnhet(fnr)).thenReturn(response);
 
         mockMvc.perform(get(format("/api/person/oppfolgingsenhet?aktorId=%s", aktorId)))
                 .andExpect(status().is(200))

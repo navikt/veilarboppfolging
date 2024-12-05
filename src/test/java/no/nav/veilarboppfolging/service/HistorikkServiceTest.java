@@ -55,7 +55,7 @@ public class HistorikkServiceTest {
 
     private static final Fnr FNR = Fnr.of("fnr");
     private static final AktorId AKTOR_ID = AktorId.of("aktorId");
-    private static final String ENHET = "enhet";
+    private static final String ENHET = "6767";
 
     private static final ZonedDateTime BEFORE_KVP = ZonedDateTime.now();
     private static final ZonedDateTime ALSO_BEFORE_KVP = BEFORE_KVP.plus(1, HOURS);
