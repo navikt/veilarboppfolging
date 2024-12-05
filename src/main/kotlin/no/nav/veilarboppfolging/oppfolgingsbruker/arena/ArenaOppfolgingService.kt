@@ -122,7 +122,7 @@ class ArenaOppfolgingService @Autowired constructor (
                     veilarbArenaOppfolging.nav_kontor?.let { EnhetId.of(it) },
                     Kvalifiseringsgruppe.valueOf(veilarbArenaOppfolging.kvalifiseringsgruppekode),
                     Formidlingsgruppe.valueOf(veilarbArenaOppfolging.formidlingsgruppekode),
-                    Hovedmaal.valueOf(veilarbArenaOppfolging.hovedmaalkode)
+                    veilarbArenaOppfolging.hovedmaalkode?.let { Hovedmaal.valueOf(it) }
                 )
             }
         }
