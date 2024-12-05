@@ -203,3 +203,6 @@ spec:
         - application: tiltaksgjennomforing-api
           namespace: arbeidsgiver
           cluster: dev-fss
+        - application: inngar
+          namespace: dab
+
