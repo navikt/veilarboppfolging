@@ -1,10 +1,7 @@
 package no.nav.veilarboppfolging.config;
 
 import no.nav.veilarboppfolging.controller.*;
-import no.nav.veilarboppfolging.controller.v2.ArenaOppfolgingV2Controller;
-import no.nav.veilarboppfolging.controller.v2.KvpV2Controller;
-import no.nav.veilarboppfolging.controller.v2.UnderOppfolgingV2Controller;
-import no.nav.veilarboppfolging.controller.v2.VeilederV2Controller;
+import no.nav.veilarboppfolging.controller.v2.*;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
@@ -16,6 +13,7 @@ import org.springframework.context.annotation.Import;
         KvpV2Controller.class,
         MaalController.class,
         OppfolgingController.class,
+        OppfolgingV2Controller.class,
         OppfolgingNiva3Controller.class,
         UnderOppfolgingController.class,
         UnderOppfolgingV2Controller.class,

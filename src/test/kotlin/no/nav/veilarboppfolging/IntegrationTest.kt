@@ -10,6 +10,7 @@ import no.nav.veilarboppfolging.config.ApplicationTestConfig
 import no.nav.veilarboppfolging.config.EnvironmentProperties
 import no.nav.veilarboppfolging.controller.OppfolgingController
 import no.nav.veilarboppfolging.controller.SakController
+import no.nav.veilarboppfolging.controller.v2.OppfolgingV2Controller
 import no.nav.veilarboppfolging.domain.StartetAvType
 import no.nav.veilarboppfolging.oppfolgingsbruker.Oppfolgingsbruker
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
@@ -61,6 +62,9 @@ open class IntegrationTest {
 
     @Autowired
     lateinit var oppfolgingController: OppfolgingController
+
+    @Autowired
+    lateinit var oppfolgingV2Controller: OppfolgingV2Controller
 
     @Autowired
     lateinit var oppfolgingService: OppfolgingService
