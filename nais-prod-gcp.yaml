@@ -5,6 +5,8 @@ metadata:
   namespace: poao
   labels:
     team: poao
+  annotations:
+    config.linkerd.io/proxy-cpu-limit: "1"
 spec:
   image: {{image}}
   ingresses:
@@ -43,7 +45,7 @@ spec:
     initialDelay: 30
   replicas:
     min: 2
-    max: 4
+    max: 8
     cpuThresholdPercentage: 75
   resources:
     limits:
