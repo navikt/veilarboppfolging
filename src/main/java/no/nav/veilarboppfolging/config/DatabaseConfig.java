@@ -30,7 +30,7 @@ public class DatabaseConfig {
         config.setJdbcUrl(datasourceProperties.url);
         config.setUsername(datasourceProperties.username);
         config.setPassword(datasourceProperties.password);
-        config.setMaximumPoolSize(5);
+        config.setMaximumPoolSize(40);
         runFlywayMigration(config);
         return new HikariDataSource(config);
     }
