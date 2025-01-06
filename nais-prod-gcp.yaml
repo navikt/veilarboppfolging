@@ -209,3 +209,5 @@ spec:
           cluster: prod-fss
         - application: inngar
           namespace: dab
+        - application: statuspoll
+          namespace: navdig
