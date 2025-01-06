@@ -65,17 +65,6 @@ public class HistorikkService {
                 .build();
     }
 
-//    private HistorikkHendelse tilDTO(OppfolgingsperiodeEntity oppfolgingsperiode) {
-//        String veilderId = oppfolgingsperiode.getVeileder();
-//        return HistorikkHendelse.builder()
-//                .type(AVSLUTTET_OPPFOLGINGSPERIODE)
-//                .begrunnelse(oppfolgingsperiode.getBegrunnelse())
-//                .dato(oppfolgingsperiode.getSluttDato())
-//                .opprettetAv(veilderId != null ? NAV : SYSTEM)
-//                .opprettetAvBrukerId(veilderId)
-//                .build();
-//    }
-
     private HistorikkHendelse tilDTO(ManuellStatusEntity historikkData) {
         return HistorikkHendelse.builder()
                 .type(historikkData.isManuell() ? SATT_TIL_MANUELL : SATT_TIL_DIGITAL)
