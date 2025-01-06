@@ -89,11 +89,6 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
             public Optional<KRRData> hentKontaktInfo(Fnr fnr) {
                 return Optional.empty();
             }
-
-            @Override
-            public HealthCheckResult checkHealth() {
-                return null;
-            }
         };
 
         ManuellStatusService manuellStatusService = new ManuellStatusService(
