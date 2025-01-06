@@ -83,11 +83,6 @@ public class ClientTestConfig {
             public Optional<KRRData> hentKontaktInfo(Fnr fnr) {
                 return Optional.empty();
             }
-
-            @Override
-            public HealthCheckResult checkHealth() {
-                return HealthCheckResult.healthy();
-            }
         };
     }
 

@@ -73,11 +73,6 @@ public class DigdirClientImpl implements DigdirClient {
 		}
 	}
 
-	@Override
-	public HealthCheckResult checkHealth() {
-		return HealthCheckUtils.pingUrl(joinPaths(digdirUrl, "/api/ping"), client);
-	}
-
 	private String getToken() {
 		if (authService.erInternBruker()) {
 			return userTokenProvider.get();
