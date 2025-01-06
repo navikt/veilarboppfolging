@@ -20,6 +20,7 @@ public class HistorikkHendelse {
     public enum Type {
         SATT_TIL_MANUELL,
         SATT_TIL_DIGITAL,
+        STARTET_OPPFOLGINGSPERIODE,
         AVSLUTTET_OPPFOLGINGSPERIODE,
         KVP_STARTET,
         KVP_STOPPET,
