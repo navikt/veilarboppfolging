@@ -101,7 +101,7 @@ public class HistorikkService {
         if (begrunnelse == OppfolgingStartBegrunnelse.ARBEIDSSOKER_REGISTRERING) return "Registrert som arbeidssøker";
         if (begrunnelse == OppfolgingStartBegrunnelse.ARENA_SYNC_ARBS) return "Registrert som arbeidssøker i arena";
         if (begrunnelse == OppfolgingStartBegrunnelse.ARENA_SYNC_IARBS) return "Registrert 14a vedtak i arena eller sykmeldt uten arbeidsgiver (VURDU)";
-        if (begrunnelse == OppfolgingStartBegrunnelse.MANUELL_REGISTRERING_VEILEDER) return "Startet arbeidsoppfølging på bruker";
+        if (begrunnelse == OppfolgingStartBegrunnelse.MANUELL_REGISTRERING_VEILEDER) return "Veileder startet arbeidsoppfølging på bruker";
         return "Startet arbeidsoppfølging på bruker";
     }
 
