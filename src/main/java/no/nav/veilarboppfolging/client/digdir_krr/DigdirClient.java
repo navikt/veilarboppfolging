@@ -5,6 +5,6 @@ import no.nav.common.types.identer.Fnr;
 
 import java.util.Optional;
 
-public interface DigdirClient extends HealthCheck {
+public interface DigdirClient {
     Optional<KRRData> hentKontaktInfo(Fnr fnr);
 }
