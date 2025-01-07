@@ -108,7 +108,17 @@ public class HistorikkServiceTest {
         List<HistorikkHendelse.Type> typer = historikk.stream()
                 .map(HistorikkHendelse::getType).collect(toList());
 
-        assertThat(typer).contains(HistorikkHendelse.Type.STARTET_OPPFOLGINGSPERIODE, HistorikkHendelse.Type.AVSLUTTET_OPPFOLGINGSPERIODE);
+        assertThat(typer).isEqualTo(List.of(
+                HistorikkHendelse.Type.KVP_STARTET,
+                HistorikkHendelse.Type.KVP_STOPPET,
+                HistorikkHendelse.Type.STARTET_OPPFOLGINGSPERIODE,
+                HistorikkHendelse.Type.AVSLUTTET_OPPFOLGINGSPERIODE,
+                HistorikkHendelse.Type.STARTET_OPPFOLGINGSPERIODE,
+                HistorikkHendelse.Type.SATT_TIL_MANUELL,
+                HistorikkHendelse.Type.SATT_TIL_DIGITAL,
+                HistorikkHendelse.Type.SATT_TIL_MANUELL,
+                HistorikkHendelse.Type.SATT_TIL_DIGITAL
+            ));
     }
 
     private void gitt_oppfolging_start_stopp() {
@@ -120,8 +130,16 @@ public class HistorikkServiceTest {
                         .aktorId(AKTOR_ID.get())
                         .startetBegrunnelse(OppfolgingStartBegrunnelse.MANUELL_REGISTRERING_VEILEDER)
                         .begrunnelse("Avsluttet manuelt")
+                        .build(),
+                OppfolgingsperiodeEntity.builder()
+                        .uuid(UUID.randomUUID())
+                        .startDato(OPPFOLGING_START)
+                        .sluttDato(null)
+                        .aktorId(AKTOR_ID.get())
+                        .startetBegrunnelse(OppfolgingStartBegrunnelse.MANUELL_REGISTRERING_VEILEDER)
+                        .begrunnelse(null)
                         .build()
-        );
+                );
         when(oppfolgingsPeriodeRepository.hentOppfolgingsperioder(AKTOR_ID)).thenReturn(oppfolgingsperiodeEntities);
     }
 
