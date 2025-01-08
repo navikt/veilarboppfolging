@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*
 class NavStatusController(
     ) {
 
-    @GetMapping("/")
+    @GetMapping
     fun okStatus(): NavStatusDto {
 
         return NavStatusDto(
