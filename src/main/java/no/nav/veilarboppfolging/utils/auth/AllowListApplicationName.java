@@ -14,4 +14,5 @@ public class AllowListApplicationName {
     public static final String VEILARBDIRIGENT = "veilarbdirigent";
 
     public static final String MULIGHETSROMMET = "mulighetsrommet-api";
+    public static final String TILTAKSPENGER_SAKSBEHANDLING_API = "tiltakspenger-saksbehandling-api";
 }
