@@ -211,3 +211,5 @@ spec:
           namespace: dab
         - application: statuspoll
           namespace: navdig
+        - application: tiltakspenger-saksbehandling-api
+          namespace: tpts
