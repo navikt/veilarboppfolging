@@ -1,12 +1,17 @@
 type Query {
-    oppfolgingsEnhet(fnr: String!): OppfolgingsEnheter
+    oppfolgingsEnhet(fnr: String!): OppfolgingsEnhetsInfo
 }
 
-type OppfolgingsEnheter {
-    arenaOppfolgingsEnhet: ArenaOppfolgingsEnhetDto
+type OppfolgingsEnhetsInfo {
+    enhet: EnhetDto,
+    kilde: Kilde
 }
 
-type ArenaOppfolgingsEnhetDto {
+type EnhetDto {
     id: String!
     navn: String!
+}
+
+enum Kilde {
+    ARENA
 }

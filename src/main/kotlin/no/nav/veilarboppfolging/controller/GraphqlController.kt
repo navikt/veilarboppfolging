@@ -12,15 +12,20 @@ import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Controller
 import org.springframework.web.server.ResponseStatusException
 
-data class OppfolgingsEnhetDto(
-    val arenaOppfolgingsEnhet: ArenaOppfolgingsEnhetDto?, // Nullable because graphql
+data class OppfolgingsEnhetQueryDto(
+    val enhet: EnhetDto?, // Nullable because graphql
+    val kilde: KildeDto,
     val fnr: String // Only used to pass fnr to "sub-queries"
 )
 
-data class ArenaOppfolgingsEnhetDto(
+data class EnhetDto(
     val id: String,
     val navn: String
 )
+
+enum class KildeDto {
+    ARENA
+}
 
 @Controller
 class GraphqlController(
@@ -31,20 +36,20 @@ class GraphqlController(
 ) {
 
     @QueryMapping
-    fun oppfolgingsEnhet(@Argument fnr: String?): OppfolgingsEnhetDto {
+    fun oppfolgingsEnhet(@Argument fnr: String?): OppfolgingsEnhetQueryDto {
         if (fnr == null || fnr.isEmpty()) throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Fnr er påkrevd")
         if (authService.erEksternBruker()) throw ResponseStatusException(HttpStatus.FORBIDDEN)
 
-        return OppfolgingsEnhetDto(fnr = fnr, arenaOppfolgingsEnhet = null)
+        return OppfolgingsEnhetQueryDto(fnr = fnr, enhet = null, kilde = KildeDto.ARENA)
     }
 
-    @SchemaMapping(typeName="OppfolgingsEnheter", field="arenaOppfolgingsEnhet")
-    fun arenaOppfolgingsEnhet(oppfolgingsEnhet: OppfolgingsEnhetDto): ArenaOppfolgingsEnhetDto? {
+    @SchemaMapping(typeName="OppfolgingsEnhetsInfo", field="enhet")
+    fun arenaOppfolgingsEnhet(oppfolgingsEnhet: OppfolgingsEnhetQueryDto): EnhetDto? {
         val aktorId = aktorOppslagClient.hentAktorId(Fnr.of(oppfolgingsEnhet.fnr))
         return oppfolgingsEnhetService.getOppfolgingsEnhet(aktorId)
             ?.let { oppfolgingsenhet ->
                 val enhet = norg2Client.hentEnhet(oppfolgingsenhet.enhet)
-                ArenaOppfolgingsEnhetDto(
+                EnhetDto(
                     id = oppfolgingsenhet.enhet,
                     navn = enhet.navn
                 )
