@@ -13,7 +13,7 @@ import org.springframework.stereotype.Controller
 import org.springframework.web.server.ResponseStatusException
 
 data class OppfolgingsEnhetDto(
-    val arenaOppfolgingsEnhet: ArenaOppfolgingsEnhetDto? // Nullable because graphql
+    val arenaOppfolgingsEnhet: ArenaOppfolgingsEnhetDto?, // Nullable because graphql
     val fnr: String // Only used to pass fnr to "sub-queries"
 )
 
