@@ -24,7 +24,7 @@
         <javax-xml-bind.version>2.3.2</javax-xml-bind.version>
         <wiremock.version>3.0.0-beta-10</wiremock.version>
         <schedlock.version>5.10.2</schedlock.version>
-        <pto-schema.version>1.2023.10.20_06.13-e6b4845c2a39</pto-schema.version>
+        <pto-schema.version>1.2025.01.13_12.58-3e81bd940198</pto-schema.version>
         <cxf-codegen.version>4.0.0</cxf-codegen.version>
         <kotlin.version>2.0.20</kotlin.version>
         <sonar.projectKey>navikt_veilarboppfolging</sonar.projectKey>
