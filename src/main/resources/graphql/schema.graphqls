@@ -1,0 +1,12 @@
+type Query {
+    oppfolgingsEnhet(fnr: String!): OppfolgingsEnheter
+}
+
+type OppfolgingsEnheter {
+    arenaOppfolgingsEnhet: ArenaOppfolgingsEnhetDto
+}
+
+type ArenaOppfolgingsEnhetDto {
+    id: String!
+    navn: String!
+}
