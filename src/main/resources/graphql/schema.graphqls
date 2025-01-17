@@ -1,5 +1,9 @@
 type Query {
-    arenaOppfolgingsEnhet(fnr: String!): ArenaOppfolgingsEnhetDto
+    oppfolgingsEnhet(fnr: String!): OppfolgingsEnheter
+}
+
+type OppfolgingsEnheter {
+    arenaOppfolgingsEnhet: ArenaOppfolgingsEnhetDto
 }
 
 type ArenaOppfolgingsEnhetDto {

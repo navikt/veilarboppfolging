@@ -7,9 +7,14 @@ import no.nav.veilarboppfolging.service.AuthService
 import no.nav.veilarboppfolging.service.OppfolgingsEnhetService
 import org.springframework.graphql.data.method.annotation.Argument
 import org.springframework.graphql.data.method.annotation.QueryMapping
+import org.springframework.graphql.data.method.annotation.SchemaMapping
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Controller
 import org.springframework.web.server.ResponseStatusException
+
+data class OppfolgingsEnhetDto(
+    val arenaOppfolgingsEnhet: ArenaOppfolgingsEnhetDto? // Nullable because graphql
+)
 
 data class ArenaOppfolgingsEnhetDto(
     val id: String,
@@ -25,12 +30,17 @@ class GraphqlController(
 ) {
 
     @QueryMapping
-    fun arenaOppfolgingsEnhet(@Argument fnr: String?): ArenaOppfolgingsEnhetDto? {
+    fun oppfolgingsEnhet(@Argument fnr: String?): OppfolgingsEnhetDto {
         if (fnr == null || fnr.isEmpty()) throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Fnr er påkrevd")
         if (authService.erEksternBruker()) throw ResponseStatusException(HttpStatus.FORBIDDEN)
 
+        return OppfolgingsEnhetDto(null)
+    }
+
+    @SchemaMapping(typeName="OppfolgingsEnheter", field="arenaOppfolgingsEnhet")
+    fun arenaOppfolgingsEnhet(@Argument fnr: String?): ArenaOppfolgingsEnhetDto? {
+        if (fnr == null || fnr.isEmpty()) throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Fnr er påkrevd")
         val fnr = Fnr.of(fnr)
-        authService.sjekkLesetilgangMedFnr(fnr)
 
         val aktorId = aktorOppslagClient.hentAktorId(fnr)
         return oppfolgingsEnhetService.getOppfolgingsEnhet(aktorId)
