@@ -1,0 +1,17 @@
+type Query {
+    oppfolgingsEnhet(fnr: String!): OppfolgingsEnhetsInfo
+}
+
+type OppfolgingsEnhetsInfo {
+    enhet: EnhetDto,
+    kilde: Kilde
+}
+
+type EnhetDto {
+    id: String!
+    navn: String!
+}
+
+enum Kilde {
+    ARENA
+}
