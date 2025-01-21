@@ -37,7 +37,7 @@ public class OppfolgingsenhetEndringService {
     public void behandleBrukerEndring(EndringPaaOppfoelgingsBrukerV2 brukerV2) {
         AktorId aktorId = authService.getAktorIdOrThrow(Fnr.of(brukerV2.getFodselsnummer()));
         String enhetString = brukerV2.getOppfolgingsenhet();
-        if (enhetString == null) {
+        if (enhetString == null || enhetString.isBlank()) {
             return;
         }
         EnhetId arenaNavKontor = EnhetId.of(enhetString);
