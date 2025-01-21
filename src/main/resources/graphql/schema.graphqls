@@ -1,5 +1,6 @@
 type Query {
     oppfolgingsEnhet(fnr: String!): OppfolgingsEnhetsInfo
+    oppfolging(fnr: String!): OppfolgingDto
 }
 
 type OppfolgingsEnhetsInfo {
@@ -14,4 +15,8 @@ type EnhetDto {
 
 enum Kilde {
     ARENA
+}
+
+type OppfolgingDto {
+    erUnderOppfolging: Boolean!
 }
