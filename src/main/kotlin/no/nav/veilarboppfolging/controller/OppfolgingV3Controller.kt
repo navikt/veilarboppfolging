@@ -186,7 +186,7 @@ class OppfolgingV3Controller(
     }
 
     companion object {
-        private val ALLOWLIST = listOf(AllowListApplicationName.VEILARBPERSONFLATE)
+        private val ALLOWLIST = listOf(AllowListApplicationName.INNGAR)
     }
 }
 
