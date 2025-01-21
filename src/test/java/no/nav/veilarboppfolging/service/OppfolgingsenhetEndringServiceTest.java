@@ -28,7 +28,7 @@ public class OppfolgingsenhetEndringServiceTest {
 
     private final static Fnr FNR = Fnr.of("12356");
     private final static AktorId AKTOR_ID = AktorId.of("123");
-    private final static String NYTT_NAV_KONTOR = "1111";
+    private final static EnhetId NYTT_NAV_KONTOR = EnhetId.of("1111");
 
     private AuthService authService = mock(AuthService.class);
 
@@ -51,7 +51,7 @@ public class OppfolgingsenhetEndringServiceTest {
 
         EnhetId enhet = enhetRepository.hentEnhet(AKTOR_ID);
 
-        assertThat(enhet, equalTo(EnhetId.of(NYTT_NAV_KONTOR)));
+        assertThat(enhet, equalTo(NYTT_NAV_KONTOR));
     }
 
     @Test
@@ -64,7 +64,7 @@ public class OppfolgingsenhetEndringServiceTest {
 
         EnhetId enhet = enhetRepository.hentEnhet(AKTOR_ID);
 
-        assertThat(enhet, equalTo(EnhetId.of(NYTT_NAV_KONTOR)));
+        assertThat(enhet, equalTo(NYTT_NAV_KONTOR));
     }
 
     @Test
@@ -72,7 +72,7 @@ public class OppfolgingsenhetEndringServiceTest {
         when(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID);
 
         gitt_eksisterende_historikk(NYTT_NAV_KONTOR);
-        behandle_ny_enhets_endring("2222");
+        behandle_ny_enhets_endring(EnhetId.of("2222"));
 
         List<OppfolgingsenhetEndringEntity> historikk = repo.hentOppfolgingsenhetEndringerForAktorId(AKTOR_ID);
 
@@ -89,7 +89,7 @@ public class OppfolgingsenhetEndringServiceTest {
         List<OppfolgingsenhetEndringEntity> historikk = repo.hentOppfolgingsenhetEndringerForAktorId(AKTOR_ID);
 
         assertThat(historikk.size(), is(1));
-        assertThat(historikk.get(0).getEnhet(), equalTo(NYTT_NAV_KONTOR));
+        assertThat(historikk.get(0).getEnhet(), equalTo(NYTT_NAV_KONTOR.get()));
     }
 
     @Test
@@ -102,37 +102,37 @@ public class OppfolgingsenhetEndringServiceTest {
         List<OppfolgingsenhetEndringEntity> historikk = repo.hentOppfolgingsenhetEndringerForAktorId(AKTOR_ID);
 
         assertThat(historikk.size(), is(1));
-        assertThat(historikk.get(0).getEnhet(), equalTo(NYTT_NAV_KONTOR));
+        assertThat(historikk.get(0).getEnhet(), equalTo(NYTT_NAV_KONTOR.get()));
     }
 
     @Test
     public void skal_legge_til_ny_enhet_med_samme_enhet_midt_i_historikken() {
         when(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID);
 
-        gitt_eksisterende_historikk("1234");
+        gitt_eksisterende_historikk(EnhetId.of("1234"));
         gitt_eksisterende_historikk(NYTT_NAV_KONTOR);
-        gitt_eksisterende_historikk("4321");
+        gitt_eksisterende_historikk(EnhetId.of("4321"));
 
         behandle_ny_enhets_endring(NYTT_NAV_KONTOR);
 
         List<OppfolgingsenhetEndringEntity> historikk = repo.hentOppfolgingsenhetEndringerForAktorId(AKTOR_ID);
 
         assertThat(historikk.size(), is(4));
-        assertThat(historikk.get(0).getEnhet(), equalTo(NYTT_NAV_KONTOR));
+        assertThat(historikk.get(0).getEnhet(), equalTo(NYTT_NAV_KONTOR.get()));
     }
 
 
-    private void behandle_ny_enhets_endring(String navKontor) {
+    private void behandle_ny_enhets_endring(EnhetId navKontor) {
         EndringPaaOppfoelgingsBrukerV2 arenaEndring = EndringPaaOppfoelgingsBrukerV2.builder()
                 .fodselsnummer(FNR.get())
-                .oppfolgingsenhet(navKontor)
+                .oppfolgingsenhet(navKontor.get())
                 .formidlingsgruppe(Formidlingsgruppe.ARBS)
                 .build();
 
         service.behandleBrukerEndring(arenaEndring);
     }
 
-    private void gitt_eksisterende_historikk(String navKontor) {
+    private void gitt_eksisterende_historikk(EnhetId navKontor) {
         repo.insertOppfolgingsenhetEndringForAktorId(AKTOR_ID, navKontor);
     }
 

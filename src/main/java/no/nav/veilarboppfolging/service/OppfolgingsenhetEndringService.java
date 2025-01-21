@@ -36,12 +36,12 @@ public class OppfolgingsenhetEndringService {
 
     public void behandleBrukerEndring(EndringPaaOppfoelgingsBrukerV2 brukerV2) {
         AktorId aktorId = authService.getAktorIdOrThrow(Fnr.of(brukerV2.getFodselsnummer()));
-        String arenaNavKontor = brukerV2.getOppfolgingsenhet();
+        EnhetId arenaNavKontor = EnhetId.of(brukerV2.getOppfolgingsenhet());
 
         EnhetId eksisterendeEnhet = enhetRepository.hentEnhet(aktorId);
 
         if(!arenaNavKontor.equals(eksisterendeEnhet)) {
-            enhetRepository.setEnhet(aktorId, EnhetId.of(arenaNavKontor));
+            enhetRepository.setEnhet(aktorId, arenaNavKontor);
         }
 
         List<OppfolgingsenhetEndringEntity> eksisterendeHistorikk = enhetHistorikkRepository.hentOppfolgingsenhetEndringerForAktorId(aktorId);
@@ -49,12 +49,12 @@ public class OppfolgingsenhetEndringService {
         var formidlingsgruppe = ofNullable(brukerV2.getFormidlingsgruppe()).orElse(null);
         var kvalifiseringsgruppe = ofNullable(brukerV2.getKvalifiseringsgruppe()).orElse(null);
 
-        if (arenaNavKontor == null || !erUnderOppfolging(formidlingsgruppe, kvalifiseringsgruppe)) {
+        if (arenaNavKontor.get() == null || !erUnderOppfolging(formidlingsgruppe, kvalifiseringsgruppe)) {
             secureLog.info(String.format("Legger ikke til historikkinnslag for på aktørid: %s fordi enhet mangler og/eller bruker er ikke under oppfølging", aktorId));
         } else if (eksisterendeHistorikk.isEmpty()) {
             secureLog.info(String.format("Legger til første historikkinnslag for endret oppfolgingsenhet på aktørid: %s", aktorId));
             enhetHistorikkRepository.insertOppfolgingsenhetEndringForAktorId(aktorId, arenaNavKontor);
-        } else if (!arenaNavKontor.equals(eksisterendeHistorikk.get(0).getEnhet())) {
+        } else if (!arenaNavKontor.get().equals(eksisterendeHistorikk.get(0).getEnhet())) {
             secureLog.info(String.format("Legger til historikkinnslag for endret oppfolgingsenhet på aktørid: %s", aktorId));
             enhetHistorikkRepository.insertOppfolgingsenhetEndringForAktorId(aktorId, arenaNavKontor);
         }
