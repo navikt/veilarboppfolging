@@ -2,8 +2,10 @@ package no.nav.veilarboppfolging.service;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
+import no.nav.veilarboppfolging.repository.EnhetRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsenhetHistorikkRepository;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsenhetEndringEntity;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,17 +23,26 @@ public class OppfolgingsenhetEndringService {
 
     private final OppfolgingsenhetHistorikkRepository enhetHistorikkRepository;
 
+    private final EnhetRepository enhetRepository;
+
     private final AuthService authService;
 
     @Autowired
-    public OppfolgingsenhetEndringService(OppfolgingsenhetHistorikkRepository enhetHistorikkRepository, AuthService authService) {
+    public OppfolgingsenhetEndringService(OppfolgingsenhetHistorikkRepository enhetHistorikkRepository, AuthService authService, EnhetRepository enhetRepository) {
         this.enhetHistorikkRepository = enhetHistorikkRepository;
         this.authService = authService;
+        this.enhetRepository = enhetRepository;
     }
 
     public void behandleBrukerEndring(EndringPaaOppfoelgingsBrukerV2 brukerV2) {
         AktorId aktorId = authService.getAktorIdOrThrow(Fnr.of(brukerV2.getFodselsnummer()));
         String arenaNavKontor = brukerV2.getOppfolgingsenhet();
+
+        EnhetId eksisterendeEnhet = enhetRepository.hentEnhet(aktorId);
+
+        if(!arenaNavKontor.equals(eksisterendeEnhet)) {
+            enhetRepository.setEnhet(aktorId, EnhetId.of(arenaNavKontor));
+        }
 
         List<OppfolgingsenhetEndringEntity> eksisterendeHistorikk = enhetHistorikkRepository.hentOppfolgingsenhetEndringerForAktorId(aktorId);
 

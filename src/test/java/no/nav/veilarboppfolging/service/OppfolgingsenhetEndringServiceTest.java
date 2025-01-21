@@ -1,10 +1,13 @@
 package no.nav.veilarboppfolging.service;
 
 import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe;
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
 import no.nav.veilarboppfolging.LocalDatabaseSingleton;
+import no.nav.veilarboppfolging.repository.EnhetRepository;
+import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsenhetHistorikkRepository;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsenhetEndringEntity;
 import no.nav.veilarboppfolging.test.DbTestUtils;
@@ -30,11 +33,38 @@ public class OppfolgingsenhetEndringServiceTest {
     private AuthService authService = mock(AuthService.class);
 
     private OppfolgingsenhetHistorikkRepository repo = new OppfolgingsenhetHistorikkRepository(new NamedParameterJdbcTemplate(LocalDatabaseSingleton.INSTANCE.getJdbcTemplate()));
-    private OppfolgingsenhetEndringService service = new OppfolgingsenhetEndringService(repo, authService);
+    private EnhetRepository enhetRepository = new EnhetRepository(new NamedParameterJdbcTemplate(LocalDatabaseSingleton.INSTANCE.getJdbcTemplate()));
+    private OppfolgingsStatusRepository oppfolgingsStatusRepository = new OppfolgingsStatusRepository(LocalDatabaseSingleton.INSTANCE.getJdbcTemplate());
+    private OppfolgingsenhetEndringService service = new OppfolgingsenhetEndringService(repo, authService, enhetRepository);
 
     @Before
     public void cleanup() {
         DbTestUtils.cleanupTestDb();
+    }
+
+    @Test
+    public void skal_oppdatere_enhet_hvis_eksisterende_enhet_er_null() {
+        when(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID);
+
+        gitt_eksisterende_oppfolgingstatus();
+        behandle_ny_enhets_endring(NYTT_NAV_KONTOR);
+
+        EnhetId enhet = enhetRepository.hentEnhet(AKTOR_ID);
+
+        assertThat(enhet, equalTo(EnhetId.of(NYTT_NAV_KONTOR)));
+    }
+
+    @Test
+    public void skal_oppdatere_enhet_hvis_eksisterende_enhet_er_forskjellig() {
+        when(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID);
+
+        gitt_eksisterende_oppfolgingstatus();
+        enhetRepository.setEnhet(AKTOR_ID, EnhetId.of("2222"));
+        behandle_ny_enhets_endring(NYTT_NAV_KONTOR);
+
+        EnhetId enhet = enhetRepository.hentEnhet(AKTOR_ID);
+
+        assertThat(enhet, equalTo(EnhetId.of(NYTT_NAV_KONTOR)));
     }
 
     @Test
@@ -104,5 +134,9 @@ public class OppfolgingsenhetEndringServiceTest {
 
     private void gitt_eksisterende_historikk(String navKontor) {
         repo.insertOppfolgingsenhetEndringForAktorId(AKTOR_ID, navKontor);
+    }
+
+    private void gitt_eksisterende_oppfolgingstatus() {
+        oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
     }
 }
