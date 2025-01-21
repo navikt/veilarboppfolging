@@ -1,6 +1,7 @@
 package no.nav.veilarboppfolging.service;
 
 import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe;
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
@@ -48,9 +49,9 @@ public class OppfolgingsenhetEndringServiceTest {
         gitt_eksisterende_oppfolgingstatus();
         behandle_ny_enhets_endring(NYTT_NAV_KONTOR);
 
-        String enhet = enhetRepository.hentEnhet(AKTOR_ID);
+        EnhetId enhet = enhetRepository.hentEnhet(AKTOR_ID);
 
-        assertThat(enhet, equalTo(NYTT_NAV_KONTOR));
+        assertThat(enhet, equalTo(EnhetId.of(NYTT_NAV_KONTOR)));
     }
 
     @Test
@@ -58,12 +59,12 @@ public class OppfolgingsenhetEndringServiceTest {
         when(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID);
 
         gitt_eksisterende_oppfolgingstatus();
-        enhetRepository.setEnhet(AKTOR_ID, "2222");
+        enhetRepository.setEnhet(AKTOR_ID, EnhetId.of("2222"));
         behandle_ny_enhets_endring(NYTT_NAV_KONTOR);
 
-        String enhet = enhetRepository.hentEnhet(AKTOR_ID);
+        EnhetId enhet = enhetRepository.hentEnhet(AKTOR_ID);
 
-        assertThat(enhet, equalTo(NYTT_NAV_KONTOR));
+        assertThat(enhet, equalTo(EnhetId.of(NYTT_NAV_KONTOR)));
     }
 
     @Test
