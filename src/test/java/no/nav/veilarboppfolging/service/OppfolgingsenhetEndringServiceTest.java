@@ -26,9 +26,9 @@ import static org.mockito.Mockito.when;
 
 public class OppfolgingsenhetEndringServiceTest {
 
-    private final static Fnr FNR = Fnr.of("12356");
-    private final static AktorId AKTOR_ID = AktorId.of("123");
-    private final static EnhetId NYTT_NAV_KONTOR = EnhetId.of("1111");
+    private static final Fnr FNR = Fnr.of("12356");
+    private static final AktorId AKTOR_ID = AktorId.of("123");
+    private static final EnhetId NYTT_NAV_KONTOR = EnhetId.of("1111");
 
     private AuthService authService = mock(AuthService.class);
 
