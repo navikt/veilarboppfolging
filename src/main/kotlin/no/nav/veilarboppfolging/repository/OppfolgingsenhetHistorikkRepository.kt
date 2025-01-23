@@ -1,6 +1,7 @@
 package no.nav.veilarboppfolging.repository
 
 import no.nav.common.types.identer.AktorId
+import no.nav.common.types.identer.EnhetId
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsenhetEndringEntity
 import no.nav.veilarboppfolging.utils.DbUtils
 import org.springframework.beans.factory.annotation.Autowired
@@ -14,10 +15,10 @@ import java.sql.SQLException
 @Repository
 class OppfolgingsenhetHistorikkRepository (val db: NamedParameterJdbcTemplate) {
 
-    fun insertOppfolgingsenhetEndringForAktorId(aktorId: AktorId, enhet: String) {
+    fun insertOppfolgingsenhetEndringForAktorId(aktorId: AktorId, enhet: EnhetId) {
         val params = mapOf(
             "aktorId" to aktorId.get(),
-            "enhet" to enhet,
+            "enhet" to enhet.get(),
             "ENHET_SEQ" to DbUtils.nesteFraSekvens(db, "ENHET_SEQ")
         )
         val sql =

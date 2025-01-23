@@ -17,6 +17,7 @@ import org.springframework.context.annotation.Import;
         VeilederTilordningerRepository.class,
         BrukerOppslagFlereOppfolgingAktorRepository.class,
         KafkaProducerMetricRepository.class,
-        SakRepository.class
+        SakRepository.class,
+        EnhetRepository.class
 })
 public class RepositoryTestConfig {}
