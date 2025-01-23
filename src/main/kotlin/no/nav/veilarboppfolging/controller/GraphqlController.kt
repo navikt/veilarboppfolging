@@ -3,6 +3,7 @@ package no.nav.veilarboppfolging.controller
 import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.client.norg2.Norg2Client
 import no.nav.common.types.identer.Fnr
+import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
 import no.nav.veilarboppfolging.service.AuthService
 import no.nav.veilarboppfolging.service.OppfolgingsEnhetService
 import org.springframework.graphql.data.method.annotation.Argument
@@ -27,9 +28,14 @@ enum class KildeDto {
     ARENA
 }
 
+data class OppfolgingDto(
+    val erUnderOppfolging: Boolean,
+)
+
 @Controller
 class GraphqlController(
     private val oppfolgingsEnhetService: OppfolgingsEnhetService,
+    private val oppfolgingsStatusRepository: OppfolgingsStatusRepository,
     private val norg2Client: Norg2Client,
     private val aktorOppslagClient: AktorOppslagClient,
     private val authService: AuthService
@@ -41,6 +47,16 @@ class GraphqlController(
         if (authService.erEksternBruker()) throw ResponseStatusException(HttpStatus.FORBIDDEN)
 
         return OppfolgingsEnhetQueryDto(fnr = fnr, enhet = null, kilde = KildeDto.ARENA)
+    }
+
+    @QueryMapping
+    fun oppfolging(@Argument fnr: String?): OppfolgingDto {
+        if (fnr == null || fnr.isEmpty()) throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Fnr er påkrevd")
+        if (authService.erEksternBruker()) throw ResponseStatusException(HttpStatus.FORBIDDEN)
+
+        val aktorId = aktorOppslagClient.hentAktorId(Fnr.of(fnr))
+        val maybeOppfolgingsStatus = oppfolgingsStatusRepository.hentOppfolging(aktorId)
+        return OppfolgingDto(erUnderOppfolging = maybeOppfolgingsStatus.map { it.isUnderOppfolging }.orElse(false))
     }
 
     @SchemaMapping(typeName="OppfolgingsEnhetsInfo", field="enhet")
