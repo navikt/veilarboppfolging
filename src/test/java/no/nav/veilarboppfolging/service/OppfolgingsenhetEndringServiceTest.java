@@ -68,6 +68,19 @@ public class OppfolgingsenhetEndringServiceTest {
     }
 
     @Test
+    public void skal_hoppe_over_tom_enhet() {
+        when(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID);
+
+        gitt_eksisterende_oppfolgingstatus();
+        enhetRepository.setEnhet(AKTOR_ID, EnhetId.of("2222"));
+        behandle_ny_enhets_endring(EnhetId.of(""));
+
+        EnhetId enhet = enhetRepository.hentEnhet(AKTOR_ID);
+
+        assertThat(enhet, equalTo(EnhetId.of("2222")));
+    }
+
+    @Test
     public void skal_legge_til_ny_enhet_i_historikk_gitt_eksisterende_historikk() {
         when(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID);
 
