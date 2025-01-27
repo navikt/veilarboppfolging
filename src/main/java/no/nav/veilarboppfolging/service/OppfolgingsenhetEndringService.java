@@ -41,11 +41,6 @@ public class OppfolgingsenhetEndringService {
             return;
         }
         EnhetId arenaNavKontor = EnhetId.of(enhetString);
-        EnhetId eksisterendeEnhet = enhetRepository.hentEnhet(aktorId);
-
-        if(!arenaNavKontor.equals(eksisterendeEnhet)) {
-            enhetRepository.setEnhet(aktorId, arenaNavKontor);
-        }
 
         List<OppfolgingsenhetEndringEntity> eksisterendeHistorikk = enhetHistorikkRepository.hentOppfolgingsenhetEndringerForAktorId(aktorId);
 

@@ -3,9 +3,9 @@ package no.nav.veilarboppfolging.controller
 import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.client.norg2.Norg2Client
 import no.nav.common.types.identer.Fnr
+import no.nav.veilarboppfolging.repository.EnhetRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
 import no.nav.veilarboppfolging.service.AuthService
-import no.nav.veilarboppfolging.service.OppfolgingsEnhetService
 import org.springframework.graphql.data.method.annotation.Argument
 import org.springframework.graphql.data.method.annotation.QueryMapping
 import org.springframework.graphql.data.method.annotation.SchemaMapping
@@ -34,7 +34,7 @@ data class OppfolgingDto(
 
 @Controller
 class GraphqlController(
-    private val oppfolgingsEnhetService: OppfolgingsEnhetService,
+    private val enhetRepository: EnhetRepository,
     private val oppfolgingsStatusRepository: OppfolgingsStatusRepository,
     private val norg2Client: Norg2Client,
     private val aktorOppslagClient: AktorOppslagClient,
@@ -62,11 +62,11 @@ class GraphqlController(
     @SchemaMapping(typeName="OppfolgingsEnhetsInfo", field="enhet")
     fun arenaOppfolgingsEnhet(oppfolgingsEnhet: OppfolgingsEnhetQueryDto): EnhetDto? {
         val aktorId = aktorOppslagClient.hentAktorId(Fnr.of(oppfolgingsEnhet.fnr))
-        return oppfolgingsEnhetService.getOppfolgingsEnhet(aktorId)
+        return enhetRepository.hentEnhet(aktorId)
             ?.let { oppfolgingsenhet ->
-                val enhet = norg2Client.hentEnhet(oppfolgingsenhet.enhet)
+                val enhet = norg2Client.hentEnhet(oppfolgingsenhet.get())
                 EnhetDto(
-                    id = oppfolgingsenhet.enhet,
+                    id = oppfolgingsenhet.get(),
                     navn = enhet.navn
                 )
             }
