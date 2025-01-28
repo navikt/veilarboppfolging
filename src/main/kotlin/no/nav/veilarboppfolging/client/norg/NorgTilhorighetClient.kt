@@ -33,7 +33,7 @@ open class NorgTilhorighetClient(
 
 			if (!response.isSuccessful) {
 				throw RuntimeException(
-					"Klarte ikke å hente NAV-enhet basert på geografisk tilknytning = $geografiskTilknytning fra Norg. Status: ${response.code}"
+					"Klarte ikke å hente NAV-enhet basert på geografisk tilknytning = ${norgTilhorighetRequest.geografiskTilknytning.nr} fra Norg. Status: ${response.code}"
 				)
 			}
 
