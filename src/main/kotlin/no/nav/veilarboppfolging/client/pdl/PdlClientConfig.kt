@@ -10,8 +10,8 @@ import org.springframework.context.annotation.Configuration
 
 @Configuration
 class PdlClientConfig(
-    @Value("\${PDL_URL}") val pdlUrl: String,
-    @Value("\${PDL_SCOPE}") val pdlScope: String,
+    @Value("\${app.env.pdlUrl}") val pdlUrl: String,
+    @Value("\${app.env.pdlScope}") val pdlScope: String,
     private val authService: AuthService
 ) {
 
