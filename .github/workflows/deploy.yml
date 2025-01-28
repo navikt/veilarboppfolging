@@ -42,8 +42,6 @@ jobs:
         id: docker-build-push
         with:
           team: poao # This is not app namespace but team which is admin in github
-          identity_provider: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }}
-          project_id: ${{ vars.NAIS_MANAGEMENT_PROJECT_ID }}
 
   deploy-dev:
     name: Deploy application to dev
