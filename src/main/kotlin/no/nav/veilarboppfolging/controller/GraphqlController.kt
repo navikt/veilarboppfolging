@@ -46,7 +46,6 @@ class GraphqlController(
     private val norg2Client: Norg2Client,
     private val aktorOppslagClient: AktorOppslagClient,
     private val authService: AuthService,
-    private val pdlClient: PdlClient,
     private val geografiskTilknytningClient: GeografiskTilknytningClient,
     private val INorgTilhorighetClient: INorgTilhorighetClient
 ) {
