@@ -2,7 +2,10 @@ package no.nav.veilarboppfolging.controller
 
 import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.client.norg2.Norg2Client
+import no.nav.common.client.pdl.PdlClient
 import no.nav.common.types.identer.Fnr
+import no.nav.veilarboppfolging.client.norg.NorgClient
+import no.nav.veilarboppfolging.client.pdl.GeografiskTilknytningClient
 import no.nav.veilarboppfolging.repository.EnhetRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
 import no.nav.veilarboppfolging.service.AuthService
@@ -15,17 +18,18 @@ import org.springframework.web.server.ResponseStatusException
 
 data class OppfolgingsEnhetQueryDto(
     val enhet: EnhetDto?, // Nullable because graphql
-    val kilde: KildeDto,
     val fnr: String // Only used to pass fnr to "sub-queries"
 )
 
 data class EnhetDto(
     val id: String,
-    val navn: String
+    val navn: String,
+    val kilde: KildeDto
 )
 
 enum class KildeDto {
-    ARENA
+    ARENA,
+    NORG
 }
 
 data class OppfolgingDto(
@@ -38,7 +42,10 @@ class GraphqlController(
     private val oppfolgingsStatusRepository: OppfolgingsStatusRepository,
     private val norg2Client: Norg2Client,
     private val aktorOppslagClient: AktorOppslagClient,
-    private val authService: AuthService
+    private val authService: AuthService,
+    private val pdlClient: PdlClient,
+    private val geografiskTilknytningClient: GeografiskTilknytningClient,
+    private val norgClient: NorgClient
 ) {
 
     @QueryMapping
@@ -46,7 +53,7 @@ class GraphqlController(
         if (fnr == null || fnr.isEmpty()) throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Fnr er påkrevd")
         if (authService.erEksternBruker()) throw ResponseStatusException(HttpStatus.FORBIDDEN)
 
-        return OppfolgingsEnhetQueryDto(fnr = fnr, enhet = null, kilde = KildeDto.ARENA)
+        return OppfolgingsEnhetQueryDto(fnr = fnr, enhet = null)
     }
 
     @QueryMapping
@@ -62,6 +69,18 @@ class GraphqlController(
     @SchemaMapping(typeName="OppfolgingsEnhetsInfo", field="enhet")
     fun arenaOppfolgingsEnhet(oppfolgingsEnhet: OppfolgingsEnhetQueryDto): EnhetDto? {
         val aktorId = aktorOppslagClient.hentAktorId(Fnr.of(oppfolgingsEnhet.fnr))
+        val arenaEnhet = enhetRepository.hentEnhet(aktorId)
+            ?.let { oppfolgingsenhet ->
+                val enhet = norg2Client.hentEnhet(oppfolgingsenhet.get())
+                EnhetDto(
+                    id = oppfolgingsenhet.get(),
+                    navn = enhet.navn,
+                    kilde = KildeDto.ARENA
+                )
+            }
+        when {
+            arenaEnhet == null ->
+        }
         return enhetRepository.hentEnhet(aktorId)
             ?.let { oppfolgingsenhet ->
                 val enhet = norg2Client.hentEnhet(oppfolgingsenhet.get())
@@ -70,5 +89,16 @@ class GraphqlController(
                     navn = enhet.navn
                 )
             }
+    }
+
+    fun hentDefaultEnhetFraNorg(fnr: Fnr): EnhetDto {
+        val geografiskTilknytning = pdlClient
+        val enhet = geografiskTilknytningClient.hentGeografiskTilknytning(fnr)
+        ?.let { norgClient.hentTilhorendeEnhet(it) }
+        return EnhetDto(
+            id = enhet.enhetNr,
+            navn = enhet.navn,
+            kilde = KildeDto.NORG
+        )
     }
 }

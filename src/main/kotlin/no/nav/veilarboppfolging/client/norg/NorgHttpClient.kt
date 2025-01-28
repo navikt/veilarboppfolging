@@ -19,6 +19,8 @@ open class NorgHttpClient(
 
 	override fun hentTilhorendeEnhet(
 		geografiskTilknytning: GeografiskTilknytningNr,
+		skjermet: Boolean,
+		strengtFortroligAdresse: Boolean
 	): EnhetId? {
 
 		val requestBuilder = Request.Builder()

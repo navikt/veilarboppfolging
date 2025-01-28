@@ -8,7 +8,7 @@ import no.nav.common.types.identer.Fnr
 import org.springframework.stereotype.Service
 
 @Service
-class GeografsiskTilknytningClient(val pdlClient: PdlClient) {
+class GeografiskTilknytningClient(val pdlClient: PdlClient) {
 
     fun hentGeografiskTilknytning(fnr: Fnr): GeografiskTilknytningNr? {
         val graphqlRequest = GraphqlRequestBuilder<QueryVariables>("graphql/pdl/hentGeografiskTilknytning.graphql")
