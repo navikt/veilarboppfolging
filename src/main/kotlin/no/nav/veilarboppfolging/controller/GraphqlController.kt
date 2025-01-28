@@ -78,25 +78,22 @@ class GraphqlController(
                     kilde = KildeDto.ARENA
                 )
             }
-        when {
-            arenaEnhet == null ->
+        return when {
+            arenaEnhet == null -> hentDefaultEnhetFraNorg(Fnr.of(oppfolgingsEnhet.fnr))
+            else -> arenaEnhet
         }
-        return enhetRepository.hentEnhet(aktorId)
-            ?.let { oppfolgingsenhet ->
-                val enhet = norg2Client.hentEnhet(oppfolgingsenhet.get())
-                EnhetDto(
-                    id = oppfolgingsenhet.get(),
-                    navn = enhet.navn
-                )
-            }
+
     }
 
     fun hentDefaultEnhetFraNorg(fnr: Fnr): EnhetDto {
         val geografiskTilknytning = pdlClient
         val enhet = geografiskTilknytningClient.hentGeografiskTilknytning(fnr)
-        ?.let { norgClient.hentTilhorendeEnhet(it) }
+        ?.let { norgClient.hentTilhorendeEnhet(it) }.let { enhetId ->
+            if (enhetId == null) throw ResponseStatusException(HttpStatus.NOT_FOUND, "Fant ikke NAV-enhet basert på geografisk tilknytning")
+            enhetId
+        }
         return EnhetDto(
-            id = enhet.enhetNr,
+            id = ,
             navn = enhet.navn,
             kilde = KildeDto.NORG
         )
