@@ -1,6 +1,6 @@
 package no.nav.veilarboppfolging.client.norg
 
-interface NorgClient {
+interface INorgTilhorighetClient {
     /**
      * Henter enheten som tilhører et geografisk område
      * @param geografiskTilknytning Geografisk identifikator, kommune eller bydel, for NAV kontoret (f.eks NAV Frogner tilhører 030105)
@@ -8,5 +8,5 @@ interface NorgClient {
      * @param fortroligAdresse Personen har fortrolig adresse
      * @return NAV enhet som tilhører det geografiske området
      */
-    fun hentTilhorendeEnhet(norgRequest: NorgRequest): Enhet?
+    fun hentTilhorendeEnhet(norgTilhorighetRequest: NorgTilhorighetRequest): Enhet?
 }

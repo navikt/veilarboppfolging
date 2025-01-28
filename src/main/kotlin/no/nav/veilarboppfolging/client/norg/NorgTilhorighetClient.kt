@@ -9,18 +9,18 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.slf4j.LoggerFactory
 
-open class NorgHttpClient(
+open class NorgTilhorighetClient(
 	private val baseUrl: String,
 	private val httpClient: OkHttpClient = RestClient.baseClient(),
-) : NorgClient {
+) : INorgTilhorighetClient {
 
 	private val logger = LoggerFactory.getLogger(VeilarboppfolgingException::class.java)
 
-	override fun hentTilhorendeEnhet(geografiskTilknytning: NorgRequest, skjermet: Boolean, fortroligAdresse: Boolean): Enhet? {
+	override fun hentTilhorendeEnhet(norgTilhorighetRequest: NorgTilhorighetRequest): Enhet? {
 
-		val httpUrl = joinPaths(baseUrl, "/norg2/api/v1/enhet/navkontor/", geografiskTilknytning.nr).toHttpUrl().newBuilder()
-			.addQueryParameter("skjermet", skjermet.toString())
-			.addQueryParameter("fortroligAdresse", fortroligAdresse.toString())
+		val httpUrl = joinPaths(baseUrl, "/norg2/api/v1/enhet/navkontor/", norgTilhorighetRequest.geografiskTilknytning.nr).toHttpUrl().newBuilder()
+			.addQueryParameter("skjermet", norgTilhorighetRequest.skjermet.toString())
+			.addQueryParameter("fortroligAdresse", if (norgTilhorighetRequest.fortroligAdresse) "SPSF" else "")
 			.build()
 		val request = Request.Builder().url(httpUrl).get().build()
 

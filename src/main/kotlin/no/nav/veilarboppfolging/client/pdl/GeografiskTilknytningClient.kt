@@ -5,7 +5,6 @@ import no.nav.common.client.utils.graphql.GraphqlRequestBuilder
 import no.nav.common.client.utils.graphql.GraphqlResponse
 import no.nav.common.client.utils.graphql.GraphqlUtils
 import no.nav.common.types.identer.Fnr
-import no.nav.veilarboppfolging.client.norg.NorgRequest
 import org.springframework.stereotype.Service
 
 @Service
@@ -16,13 +15,13 @@ class GeografiskTilknytningClient(val pdlClient: PdlClient) {
         val strengtFortroligAdresse: Boolean
     )
 
-    fun hentGeografiskTilknytning(fnr: Fnr): GeografiskTilknytningOgAdressebeskyttelse? {
+    fun hentGeografiskTilknytning(fnr: Fnr): GeografiskTilknytningOgAdressebeskyttelse {
         val graphqlRequest = GraphqlRequestBuilder<QueryVariables>("graphql/pdl/hentGeografiskTilknytningOgAdressebeskyttelse.graphql")
             .buildRequest(QueryVariables(ident = fnr.get()))
-        val gtResult = pdlClient.request(graphqlRequest, GeografiskTilknytningOgAdresseBeskyttelseResponse::class.java)
+        val result = pdlClient.request(graphqlRequest, GeografiskTilknytningOgAdresseBeskyttelseResponse::class.java)
             .also { GraphqlUtils.logWarningIfError(it) }
-        if(gtResult.errors?.isNotEmpty() == true) { throw RuntimeException("Feil ved kall til pdl") }
-        val strengtFortroligAdresse = gtResult.data
+        if(result.errors?.isNotEmpty() == true) { throw RuntimeException("Feil ved kall til pdl ${result?.errors.toString()}") }
+        val strengtFortroligAdresse = result.data
             .let {
                 when(it.adressebeskyttelse?.gradering) {
                     Gradering.STRENGT_FORTROLIG -> true
@@ -32,11 +31,12 @@ class GeografiskTilknytningClient(val pdlClient: PdlClient) {
                     else -> false
                 }
             }
-        val geografiskTilknytning = gtResult.data
+        val geografiskTilknytning = result.data
             .let {
                 when (it.geografiskTilknytning.gtType) {
                     GTType.BYDEL -> it.geografiskTilknytning.gtBydel?.let { gtBydel -> GeografiskTilknytningNr(GTType.BYDEL, gtBydel) }
                     GTType.KOMMUNE -> it.geografiskTilknytning.gtKommune?.let { gtKommune -> GeografiskTilknytningNr(GTType.KOMMUNE, gtKommune) }
+                    GTType.UTLAND -> it.geografiskTilknytning.gtLand?.let { gtLand -> GeografiskTilknytningNr(GTType.UTLAND, gtLand) }
                     else -> null
                 }
             }

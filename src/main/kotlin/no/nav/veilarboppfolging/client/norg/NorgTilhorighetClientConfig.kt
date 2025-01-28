@@ -5,12 +5,12 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
 @Configuration
-class NorgConfig(
-	@Value("\${norg.url}") val norgUrl: String
+class NorgTilhorighetClientConfig(
+	@Value("\${app.env.norg2Url}") val norgUrl: String
 ) {
 
 	@Bean
-    fun norgClient(): NorgClient {
-		return NorgCachedClient(NorgHttpClient(norgUrl))
+    fun norgClient(): INorgTilhorighetClient {
+		return NorgTilhorighetCachedClient(NorgTilhorighetClient(norgUrl))
 	}
 }

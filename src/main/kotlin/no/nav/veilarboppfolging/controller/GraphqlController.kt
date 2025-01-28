@@ -4,8 +4,11 @@ import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.client.norg2.Norg2Client
 import no.nav.common.client.pdl.PdlClient
 import no.nav.common.types.identer.Fnr
-import no.nav.veilarboppfolging.client.norg.NorgClient
+import no.nav.veilarboppfolging.client.norg.Enhet
+import no.nav.veilarboppfolging.client.norg.INorgTilhorighetClient
+import no.nav.veilarboppfolging.client.norg.NorgTilhorighetRequest
 import no.nav.veilarboppfolging.client.pdl.GeografiskTilknytningClient
+import no.nav.veilarboppfolging.client.pdl.GeografiskTilknytningNr
 import no.nav.veilarboppfolging.repository.EnhetRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
 import no.nav.veilarboppfolging.service.AuthService
@@ -45,7 +48,7 @@ class GraphqlController(
     private val authService: AuthService,
     private val pdlClient: PdlClient,
     private val geografiskTilknytningClient: GeografiskTilknytningClient,
-    private val norgClient: NorgClient
+    private val INorgTilhorighetClient: INorgTilhorighetClient
 ) {
 
     @QueryMapping
@@ -82,20 +85,27 @@ class GraphqlController(
             arenaEnhet == null -> hentDefaultEnhetFraNorg(Fnr.of(oppfolgingsEnhet.fnr))
             else -> arenaEnhet
         }
-
     }
 
-    fun hentDefaultEnhetFraNorg(fnr: Fnr): EnhetDto {
-        val geografiskTilknytning = pdlClient
-        val enhet = geografiskTilknytningClient.hentGeografiskTilknytning(fnr)
-        ?.let { norgClient.hentTilhorendeEnhet(it) }.let { enhetId ->
-            if (enhetId == null) throw ResponseStatusException(HttpStatus.NOT_FOUND, "Fant ikke NAV-enhet basert på geografisk tilknytning")
-            enhetId
-        }
-        return EnhetDto(
-            id = ,
-            navn = enhet.navn,
-            kilde = KildeDto.NORG
-        )
+    fun hentDefaultEnhetFraNorg(fnr: Fnr): EnhetDto? {
+        return geografiskTilknytningClient.hentGeografiskTilknytning(fnr)
+            .let {
+                when (it.geografiskTilknytning) {
+                    null  -> null
+                    else -> INorgTilhorighetClient.hentTilhorendeEnhet(
+                        NorgTilhorighetRequest(
+                            GeografiskTilknytningNr(it.geografiskTilknytning.gtType, it.geografiskTilknytning.nr),
+                            false,
+                            false
+                        ))
+                }
+            }
+            ?.let { enhet: Enhet ->
+                EnhetDto(
+                    id = enhet.enhetNr,
+                    navn = enhet.enhetNavn,
+                    kilde = KildeDto.NORG
+                )
+            }
     }
 }
