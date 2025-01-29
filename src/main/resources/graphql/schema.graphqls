@@ -15,6 +15,7 @@ type EnhetDto {
 
 enum Kilde {
     ARENA
+    NORG
 }
 
 type OppfolgingDto {
