@@ -9,6 +9,7 @@ import no.nav.common.json.JsonUtils
 import no.nav.common.types.identer.Fnr
 import org.springframework.stereotype.Service
 
+
 @Service
 class GeografiskTilknytningClient(val pdlClient: PdlClient) {
 
@@ -29,7 +30,7 @@ class GeografiskTilknytningClient(val pdlClient: PdlClient) {
         if(result.errors?.isNotEmpty() == true) { throw RuntimeException("Feil ved kall til pdl ${result?.errors.toString()}") }
         val strengtFortroligAdresse = result.data
             .let {
-                when(it.adressebeskyttelse?.gradering) {
+                when(it.hentPerson.adressebeskyttelse?.gradering) {
                     Gradering.STRENGT_FORTROLIG -> true
                     Gradering.FORTROLIG -> false
                     Gradering.STRENGT_FORTROLIG_UTLAND -> true
@@ -39,10 +40,10 @@ class GeografiskTilknytningClient(val pdlClient: PdlClient) {
             }
         val geografiskTilknytning = result.data
             .let {
-                when (it.geografiskTilknytning.gtType) {
-                    GTType.BYDEL -> it.geografiskTilknytning.gtBydel?.let { gtBydel -> GeografiskTilknytningNr(GTType.BYDEL, gtBydel) }
-                    GTType.KOMMUNE -> it.geografiskTilknytning.gtKommune?.let { gtKommune -> GeografiskTilknytningNr(GTType.KOMMUNE, gtKommune) }
-                    GTType.UTLAND -> it.geografiskTilknytning.gtLand?.let { gtLand -> GeografiskTilknytningNr(GTType.UTLAND, gtLand) }
+                when (it.hentGeografiskTilknytning?.gtType) {
+                    GTType.BYDEL -> it.hentGeografiskTilknytning.gtBydel?.let { gtBydel -> GeografiskTilknytningNr(GTType.BYDEL, gtBydel) }
+                    GTType.KOMMUNE -> it.hentGeografiskTilknytning.gtKommune?.let { gtKommune -> GeografiskTilknytningNr(GTType.KOMMUNE, gtKommune) }
+                    GTType.UTLAND -> it.hentGeografiskTilknytning.gtLand?.let { gtLand -> GeografiskTilknytningNr(GTType.UTLAND, gtLand) }
                     else -> null
                 }
             }
@@ -65,11 +66,6 @@ enum class GTType {
     BYDEL, KOMMUNE, UDEFINERT, UTLAND
 }
 
-data class GeografiskTilknytningOgAdressebeskyttelse(
-    val geografiskTilknytning: GeografiskTilknytning,
-    val adressebeskyttelse: Adressebeskyttelse?
-)
-
 data class GeografiskTilknytning(
     val gtType: GTType,
     val gtKommune: String?,
@@ -88,4 +84,13 @@ data class Adressebeskyttelse(
     val gradering: Gradering
 )
 
-class GeografiskTilknytningOgAdresseBeskyttelseResponse: GraphqlResponse<GeografiskTilknytningOgAdressebeskyttelse>()
+data class HentPerson(
+    val adressebeskyttelse: Adressebeskyttelse
+)
+
+data class PdlResponse(
+    val hentGeografiskTilknytning: GeografiskTilknytning,
+    val hentPerson: HentPerson
+)
+
+class GeografiskTilknytningOgAdresseBeskyttelseResponse: GraphqlResponse<PdlResponse>()
