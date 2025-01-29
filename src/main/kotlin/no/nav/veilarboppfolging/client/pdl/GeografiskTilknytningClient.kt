@@ -30,7 +30,7 @@ class GeografiskTilknytningClient(val pdlClient: PdlClient) {
         if(result.errors?.isNotEmpty() == true) { throw RuntimeException("Feil ved kall til pdl ${result?.errors.toString()}") }
         val strengtFortroligAdresse = result.data
             .let {
-                when(it.hentPerson.adressebeskyttelse?.gradering) {
+                when(it.hentPerson.adressebeskyttelse.firstOrNull()?.gradering) {
                     Gradering.STRENGT_FORTROLIG -> true
                     Gradering.FORTROLIG -> false
                     Gradering.STRENGT_FORTROLIG_UTLAND -> true
@@ -85,7 +85,7 @@ data class Adressebeskyttelse(
 )
 
 data class HentPerson(
-    val adressebeskyttelse: Adressebeskyttelse
+    val adressebeskyttelse: List<Adressebeskyttelse>
 )
 
 data class PdlResponse(
