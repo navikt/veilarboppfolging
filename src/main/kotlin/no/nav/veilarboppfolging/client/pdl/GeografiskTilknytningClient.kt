@@ -1,14 +1,20 @@
 package no.nav.veilarboppfolging.client.pdl
 
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import no.nav.common.client.pdl.PdlClient
 import no.nav.common.client.utils.graphql.GraphqlRequestBuilder
 import no.nav.common.client.utils.graphql.GraphqlResponse
 import no.nav.common.client.utils.graphql.GraphqlUtils
+import no.nav.common.json.JsonUtils
 import no.nav.common.types.identer.Fnr
 import org.springframework.stereotype.Service
 
 @Service
 class GeografiskTilknytningClient(val pdlClient: PdlClient) {
+
+    init {
+        JsonUtils.getMapper().registerKotlinModule()
+    }
 
     data class GeografiskTilknytningOgAdressebeskyttelse(
         val geografiskTilknytning: GeografiskTilknytningNr?,
