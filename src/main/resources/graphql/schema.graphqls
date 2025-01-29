@@ -5,12 +5,12 @@ type Query {
 
 type OppfolgingsEnhetsInfo {
     enhet: EnhetDto,
-    kilde: Kilde
 }
 
 type EnhetDto {
     id: String!
     navn: String!
+    kilde: Kilde!
 }
 
 enum Kilde {
