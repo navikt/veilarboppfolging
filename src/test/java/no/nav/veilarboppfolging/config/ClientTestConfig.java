@@ -10,10 +10,7 @@ import no.nav.common.metrics.MetricsClient;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.client.digdir_krr.DigdirClient;
 import no.nav.veilarboppfolging.client.digdir_krr.KRRData;
-import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsStatus;
-import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsBruker;
-import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
-import no.nav.veilarboppfolging.client.veilarbarena.YtelserDTO;
+import no.nav.veilarboppfolging.client.veilarbarena.*;
 import no.nav.veilarboppfolging.service.SisteEndringPaaOppfolgingBrukerService;
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
@@ -104,6 +101,11 @@ public class ClientTestConfig {
 
             @Override
             public Optional<YtelserDTO> getArenaYtelser(Fnr fnr) {
+                return Optional.empty();
+            }
+
+            @Override
+            public Optional<RegistrerIkkeArbeidsokerRespons> registrerIkkeArbeidsoker(Fnr fnr) {
                 return Optional.empty();
             }
 

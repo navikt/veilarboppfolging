@@ -124,6 +124,29 @@ class VeilarbarenaClientImpl(
         }
     }
 
+    override fun registrerIkkeArbeidsoker(fnr: Fnr): Optional<RegistrerIkkeArbeidsokerRespons> {
+        val personRequest = PersonRequest(fnr)
+
+        try {
+            val response = httpPost(UrlUtils.joinPaths(veilarbarenaUrl, "/veilarbarena/api/v2/arena/registrer-ikke-arbeidssoker"), personRequest, RegistrerIkkeArbeidsokerRespons::class.java)
+            return when (response) {
+                is RequestResult.Success -> response.body
+                is RequestResult.Fail -> Optional.empty()
+            }
+        } catch (e: Exception) {
+            // TODO: vi bør utvide feilhåndteringen spesielt for kode 422
+            /*
+            422-status-response fra REST-tjeneste:
+{ "resultat":"Fødselsnummer 22*******38 finnes ikke i Folkeregisteret" }
+{ "resultat":"Eksisterende bruker er ikke oppdatert da bruker kan reaktiveres forenklet som arbeidssøker" }
+{ "resultat":"Eksisterende bruker er ikke oppdatert da bruker er registrert med formidlingsgruppe ARBS" }
+{ "resultat":"Eksisterende bruker er ikke oppdatert da bruker er registrert med formidlingsgruppe IARBS" }
+             */
+            logger.error("Uventet feil ved henting av ytelser fra veilarbarena", e)
+            return Optional.empty()
+        }
+    }
+
     override fun checkHealth(): HealthCheckResult {
         return HealthCheckUtils.pingUrl(UrlUtils.joinPaths(veilarbarenaUrl, "/veilarbarena/internal/isAlive"), client)
     }

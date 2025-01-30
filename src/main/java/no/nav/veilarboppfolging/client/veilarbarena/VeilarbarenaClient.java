@@ -12,4 +12,6 @@ public interface VeilarbarenaClient extends HealthCheck {
     Optional<VeilarbArenaOppfolgingsStatus> getArenaOppfolgingsstatus(Fnr fnr);
 
     Optional<YtelserDTO> getArenaYtelser(Fnr fnr);
+
+    Optional<RegistrerIkkeArbeidsokerRespons> registrerIkkeArbeidsoker(Fnr fnr);
 }
