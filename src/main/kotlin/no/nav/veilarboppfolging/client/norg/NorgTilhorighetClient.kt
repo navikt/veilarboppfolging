@@ -18,7 +18,7 @@ open class NorgTilhorighetClient(
 
 	override fun hentTilhorendeEnhet(norgTilhorighetRequest: NorgTilhorighetRequest): Enhet? {
 
-		val httpUrl = joinPaths(baseUrl, "/norg2/api/v1/enhet/navkontor/", norgTilhorighetRequest.geografiskTilknytning.nr).toHttpUrl().newBuilder()
+		val httpUrl = joinPaths(baseUrl, "/api/v1/enhet/navkontor/", norgTilhorighetRequest.geografiskTilknytning.nr).toHttpUrl().newBuilder()
 			.addQueryParameter("skjermet", norgTilhorighetRequest.skjermet.toString())
 			.addQueryParameter("fortroligAdresse", if (norgTilhorighetRequest.fortroligAdresse) "SPSF" else "")
 			.build()
