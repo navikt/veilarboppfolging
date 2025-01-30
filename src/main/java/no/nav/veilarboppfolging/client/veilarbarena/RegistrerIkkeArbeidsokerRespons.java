@@ -1,5 +1,10 @@
 package no.nav.veilarboppfolging.client.veilarbarena;
 
-public class RegistrerIkkeArbeidsokerRespons {
+import lombok.Data;
+import lombok.RequiredArgsConstructor;
 
+@RequiredArgsConstructor
+@Data
+public class RegistrerIkkeArbeidsokerRespons {
+    private final String resultat;
 }

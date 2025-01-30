@@ -2,20 +2,25 @@ package no.nav.veilarboppfolging.client;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import no.nav.common.types.identer.Fnr;
+import no.nav.veilarboppfolging.client.veilarbarena.RegistrerIkkeArbeidsokerRespons;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsStatus;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsBruker;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClientImpl;
 import no.nav.veilarboppfolging.service.AuthService;
-import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.util.Optional;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 
 import static no.nav.common.json.JsonUtils.toJson;
 import static no.nav.common.rest.client.RestUtils.MEDIA_TYPE_JSON;
 import static no.nav.common.utils.AssertUtils.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -60,11 +65,11 @@ public class VeilarbarenaClientImplTest {
 
         VeilarbArenaOppfolgingsStatus veilarbArenaOppfolgingsStatus = veilarbarenaClient.getArenaOppfolgingsstatus(MOCK_FNR).orElseThrow();
 
-        Assertions.assertThat(veilarbArenaOppfolgingsStatus.getFormidlingsgruppe()).isEqualTo(MOCK_FORMIDLINGSGRUPPE);
-        Assertions.assertThat(veilarbArenaOppfolgingsStatus.getOppfolgingsenhet()).isEqualTo(MOCK_ENHET_ID);
-        Assertions.assertThat(veilarbArenaOppfolgingsStatus.getRettighetsgruppe()).isEqualTo(MOCK_RETTIGHETSGRUPPE);
-        Assertions.assertThat(veilarbArenaOppfolgingsStatus.getServicegruppe()).isEqualTo(MOCK_SERVICEGRUPPE);
-        Assertions.assertThat(veilarbArenaOppfolgingsStatus.getKanEnkeltReaktiveres()).isEqualTo(MOCK_KAN_ENKELT_REAKTIVERES);
+        assertThat(veilarbArenaOppfolgingsStatus.getFormidlingsgruppe()).isEqualTo(MOCK_FORMIDLINGSGRUPPE);
+        assertThat(veilarbArenaOppfolgingsStatus.getOppfolgingsenhet()).isEqualTo(MOCK_ENHET_ID);
+        assertThat(veilarbArenaOppfolgingsStatus.getRettighetsgruppe()).isEqualTo(MOCK_RETTIGHETSGRUPPE);
+        assertThat(veilarbArenaOppfolgingsStatus.getServicegruppe()).isEqualTo(MOCK_SERVICEGRUPPE);
+        assertThat(veilarbArenaOppfolgingsStatus.getKanEnkeltReaktiveres()).isEqualTo(MOCK_KAN_ENKELT_REAKTIVERES);
     }
 
     @Test
@@ -133,11 +138,11 @@ public class VeilarbarenaClientImplTest {
 
         VeilarbArenaOppfolgingsBruker arenaOppfolgingsbruker = veilarbarenaClient.hentOppfolgingsbruker(MOCK_FNR).orElseThrow();
 
-        Assertions.assertThat(arenaOppfolgingsbruker.getFodselsnr()).isEqualTo("1234");
-        Assertions.assertThat(arenaOppfolgingsbruker.getFormidlingsgruppekode()).isEqualTo(MOCK_FORMIDLINGSGRUPPE);
-        Assertions.assertThat(arenaOppfolgingsbruker.getRettighetsgruppekode()).isEqualTo(MOCK_RETTIGHETSGRUPPE);
-        Assertions.assertThat(arenaOppfolgingsbruker.getNav_kontor()).isEqualTo(MOCK_ENHET_ID);
-        Assertions.assertThat(arenaOppfolgingsbruker.getHovedmaalkode()).isEqualTo(MOCK_HOVEDMAAL);
+        assertThat(arenaOppfolgingsbruker.getFodselsnr()).isEqualTo("1234");
+        assertThat(arenaOppfolgingsbruker.getFormidlingsgruppekode()).isEqualTo(MOCK_FORMIDLINGSGRUPPE);
+        assertThat(arenaOppfolgingsbruker.getRettighetsgruppekode()).isEqualTo(MOCK_RETTIGHETSGRUPPE);
+        assertThat(arenaOppfolgingsbruker.getNav_kontor()).isEqualTo(MOCK_ENHET_ID);
+        assertThat(arenaOppfolgingsbruker.getHovedmaalkode()).isEqualTo(MOCK_HOVEDMAAL);
     }
 
     @Test
@@ -171,6 +176,33 @@ public class VeilarbarenaClientImplTest {
                 .willReturn(aResponse().withStatus(400)));
 
         assertTrue(veilarbarenaClient.hentOppfolgingsbruker(MOCK_FNR).isEmpty());
+    }
+
+    @Test
+    public void registrer_ikke_arbeidssoker__skal_returnere_ok_om_alt_gaar_bra() {
+        String apiUrl = "http://localhost:" + wireMockRule.port();
+        VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl(apiUrl, apiScope, authServiceMock);
+
+        RegistrerIkkeArbeidsokerRespons registrerIkkeArbeidsokerRespons = new RegistrerIkkeArbeidsokerRespons("Ny bruker ble registrert ok som IARBS");
+        givenThat(post(urlEqualTo("/veilarbarena/api/v2/arena/registrer-ikke-arbeidssoker")).withRequestBody(equalToJson("{\"fnr\":\""+MOCK_FNR+"\"}"))
+                .willReturn(aResponse().withStatus(200).withBody(toJson(registrerIkkeArbeidsokerRespons))));
+
+        Optional<RegistrerIkkeArbeidsokerRespons> optionalRegistrerIkkeArbeidsokerRespons = veilarbarenaClient.registrerIkkeArbeidsoker(MOCK_FNR);
+        assertThat(optionalRegistrerIkkeArbeidsokerRespons).isPresent().get().isEqualTo(registrerIkkeArbeidsokerRespons);
+    }
+
+    @Test
+    public void registrer_ikke_arbeidssoker__skal_returnere_422_dersom_person_ikke_aktivert() {
+        String apiUrl = "http://localhost:" + wireMockRule.port();
+        VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl(apiUrl, apiScope, authServiceMock);
+
+        RegistrerIkkeArbeidsokerRespons registrerIkkeArbeidsokerRespons = new RegistrerIkkeArbeidsokerRespons("Eksisterende bruker er ikke oppdatert da bruker kan reaktiveres forenklet som arbeidssøker");
+        givenThat(post(urlEqualTo("/veilarbarena/api/v2/arena/registrer-ikke-arbeidssoker")).withRequestBody(equalToJson("{\"fnr\":\""+MOCK_FNR+"\"}"))
+                .willReturn(aResponse().withStatus(422).withStatusMessage("Fodselsnummer 22*******38 finnes ikke i Folkeregisteret")));
+
+        ResponseStatusException responseStatusException = assertThrows(ResponseStatusException.class, () -> veilarbarenaClient.registrerIkkeArbeidsoker(MOCK_FNR));
+        assertThat(responseStatusException.getStatusCode().value()).isEqualTo(422);
+        assertThat(responseStatusException.getReason()).isEqualTo("Fodselsnummer 22*******38 finnes ikke i Folkeregisteret");
     }
 
     private VeilarbArenaOppfolgingsBruker arenaOppfolgingsBrukerResponse() {

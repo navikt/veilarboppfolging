@@ -15,7 +15,9 @@ import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpHeaders
+import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
+import org.springframework.web.server.ResponseStatusException
 import java.util.*
 
 
@@ -25,7 +27,7 @@ sealed class TokenResult {
 }
 sealed class RequestResult<T> {
     class Success<T>(val body: Optional<T>): RequestResult<T>()
-    class Fail<T>(val message: String, reason: Throwable): RequestResult<T>()
+    class Fail<T>(val message: String, val reason: Throwable): RequestResult<T>()
 }
 
 @Slf4j
@@ -67,6 +69,9 @@ class VeilarbarenaClientImpl(
                 client.newCall(request).execute().use { response ->
                     if (response.code == 404) {
                         return RequestResult.Success(Optional.empty())
+                    }
+                    if (response.code == 422) {
+                        return RequestResult.Fail("422-status-response fra REST-tjeneste: ${response.body?.string()}", ResponseStatusException(HttpStatus.valueOf(response.code), response.message))
                     }
                     RestUtils.throwIfNotSuccessful(response)
                     return Optional.of(
@@ -131,7 +136,7 @@ class VeilarbarenaClientImpl(
             val response = httpPost(UrlUtils.joinPaths(veilarbarenaUrl, "/veilarbarena/api/v2/arena/registrer-ikke-arbeidssoker"), personRequest, RegistrerIkkeArbeidsokerRespons::class.java)
             return when (response) {
                 is RequestResult.Success -> response.body
-                is RequestResult.Fail -> Optional.empty()
+                is RequestResult.Fail -> throw response.reason
             }
         } catch (e: Exception) {
             // TODO: vi bør utvide feilhåndteringen spesielt for kode 422
@@ -143,7 +148,7 @@ class VeilarbarenaClientImpl(
 { "resultat":"Eksisterende bruker er ikke oppdatert da bruker er registrert med formidlingsgruppe IARBS" }
              */
             logger.error("Uventet feil ved henting av ytelser fra veilarbarena", e)
-            return Optional.empty()
+            throw e
         }
     }
 
