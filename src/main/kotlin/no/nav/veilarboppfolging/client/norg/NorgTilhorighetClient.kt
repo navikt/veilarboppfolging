@@ -9,6 +9,9 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.slf4j.LoggerFactory
 
+/*
+* https://norg2.intern.dev.nav.no/norg2/swagger-ui/index.html#/enhet/getEnhetByGeografiskOmraade
+* */
 open class NorgTilhorighetClient(
 	private val baseUrl: String,
 	private val httpClient: OkHttpClient = RestClient.baseClient(),
@@ -39,9 +42,9 @@ open class NorgTilhorighetClient(
 
 			val body = response.body?.string() ?: throw RuntimeException("Body is missing")
 			val enhetResponse = JsonUtils.fromJson(body, EnhetResponse::class.java)
-			return Enhet(enhetResponse.enhetNr, enhetResponse.enhetNavn)
+			return Enhet(enhetResponse.enhetNr, enhetResponse.navn)
 		}
 	}
 
-	private data class EnhetResponse(val enhetNr: String, val enhetNavn: String)
+	private data class EnhetResponse(val enhetNr: String, val navn: String)
 }
