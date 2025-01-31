@@ -10,6 +10,8 @@ import no.nav.pto_schema.enums.arena.Hovedmaal
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe
 import no.nav.veilarboppfolging.FantIkkeBrukerIArenaException
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolgingTilstand
+import no.nav.veilarboppfolging.client.veilarbarena.RegistrerIArenaResult
+import no.nav.veilarboppfolging.client.veilarbarena.RegistrerIkkeArbeidsokerRespons
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsBruker
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsStatus
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient
@@ -139,8 +141,8 @@ class ArenaOppfolgingService @Autowired constructor (
         )
     }
 
-    fun registrerIkkeArbeidssoker(fnr: Fnr) {
-        veilarbarenaClient.registrerIkkeArbeidsoker(fnr)
+    fun registrerIkkeArbeidssoker(fnr: Fnr): RegistrerIArenaResult {
+        return veilarbarenaClient.registrerIkkeArbeidsoker(fnr)
     }
 
     private fun hentEnhet(enhetId: EnhetId?): Oppfolgingsenhet? {

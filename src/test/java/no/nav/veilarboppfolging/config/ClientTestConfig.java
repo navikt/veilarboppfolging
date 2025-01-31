@@ -105,8 +105,8 @@ public class ClientTestConfig {
             }
 
             @Override
-            public Optional<RegistrerIkkeArbeidsokerRespons> registrerIkkeArbeidsoker(Fnr fnr) {
-                return Optional.empty();
+            public RegistrerIArenaResult registrerIkkeArbeidsoker(Fnr fnr) {
+                return new RegistrerIArenaSuccess(new RegistrerIkkeArbeidssokerDto("lol", ARENA_REGISTRERING_RESULTAT.OK_REGISTRERT_I_ARENA));
             }
 
             @Override

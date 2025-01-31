@@ -1,5 +1,6 @@
 package no.nav.veilarboppfolging.client.veilarbarena
 
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import lombok.SneakyThrows
 import lombok.extern.slf4j.Slf4j
 import no.nav.common.health.HealthCheckResult
@@ -15,9 +16,7 @@ import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpHeaders
-import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
-import org.springframework.web.server.ResponseStatusException
 import java.util.*
 
 
@@ -39,6 +38,9 @@ class VeilarbarenaClientImpl(
     private val client: OkHttpClient = RestClient.baseClient()
     private val logger = LoggerFactory.getLogger(this::class.java)
 
+    init {
+        JsonUtils.getMapper().registerKotlinModule()
+    }
 
     private fun getToken(): TokenResult {
         return runCatching {
@@ -70,8 +72,14 @@ class VeilarbarenaClientImpl(
                     if (response.code == 404) {
                         return RequestResult.Success(Optional.empty())
                     }
+                    /* Kun forventet å få 422 på registrer endepunkt, da ser body lik ut som i 200 respons */
                     if (response.code == 422) {
-                        return RequestResult.Fail("422-status-response fra REST-tjeneste: ${response.body?.string()}", ResponseStatusException(HttpStatus.valueOf(response.code), response.message))
+                        return Optional.of(
+                            RestUtils.parseJsonResponseOrThrow(
+                                response,
+                                clazz
+                            )
+                        ).let { RequestResult.Success(it) }
                     }
                     RestUtils.throwIfNotSuccessful(response)
                     return Optional.of(
@@ -129,24 +137,19 @@ class VeilarbarenaClientImpl(
         }
     }
 
-    override fun registrerIkkeArbeidsoker(fnr: Fnr): Optional<RegistrerIkkeArbeidsokerRespons> {
+    override fun registrerIkkeArbeidsoker(fnr: Fnr): RegistrerIArenaResult {
         val personRequest = PersonRequest(fnr)
 
         try {
-            val response = httpPost(UrlUtils.joinPaths(veilarbarenaUrl, "/veilarbarena/api/v2/arena/registrer-ikke-arbeidssoker"), personRequest, RegistrerIkkeArbeidsokerRespons::class.java)
+            val response = httpPost(UrlUtils.joinPaths(veilarbarenaUrl,
+                "/veilarbarena/api/v2/arena/registrer-i-arena"),
+                personRequest,
+                RegistrerIkkeArbeidssokerDto::class.java)
             return when (response) {
-                is RequestResult.Success -> response.body
-                is RequestResult.Fail -> throw response.reason
+                is RequestResult.Success -> RegistrerIArenaSuccess(response.body.get())
+                is RequestResult.Fail ->  RegistrerIArenaError("Noe gikk galt ved registrering av bruker i Arena", response.reason)
             }
         } catch (e: Exception) {
-            // TODO: vi bør utvide feilhåndteringen spesielt for kode 422
-            /*
-            422-status-response fra REST-tjeneste:
-{ "resultat":"Fødselsnummer 22*******38 finnes ikke i Folkeregisteret" }
-{ "resultat":"Eksisterende bruker er ikke oppdatert da bruker kan reaktiveres forenklet som arbeidssøker" }
-{ "resultat":"Eksisterende bruker er ikke oppdatert da bruker er registrert med formidlingsgruppe ARBS" }
-{ "resultat":"Eksisterende bruker er ikke oppdatert da bruker er registrert med formidlingsgruppe IARBS" }
-             */
             logger.error("Uventet feil ved henting av ytelser fra veilarbarena", e)
             throw e
         }
