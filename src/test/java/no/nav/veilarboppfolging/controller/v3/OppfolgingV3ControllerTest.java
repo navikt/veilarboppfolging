@@ -2,12 +2,16 @@ package no.nav.veilarboppfolging.controller.v3;
 
 import no.nav.common.json.JsonUtils;
 import no.nav.common.types.identer.Fnr;
+import no.nav.veilarboppfolging.client.veilarbarena.ARENA_REGISTRERING_RESULTAT;
+import no.nav.veilarboppfolging.client.veilarbarena.RegistrerIArenaSuccess;
+import no.nav.veilarboppfolging.client.veilarbarena.RegistrerIkkeArbeidssokerDto;
 import no.nav.veilarboppfolging.controller.OppfolgingV3Controller;
 import no.nav.veilarboppfolging.controller.response.VeilederTilgang;
 import no.nav.veilarboppfolging.controller.v3.request.OppfolgingRequest;
 import no.nav.veilarboppfolging.domain.AvslutningStatusData;
 import no.nav.veilarboppfolging.domain.OppfolgingStatusData;
 import no.nav.veilarboppfolging.oppfolgingsbruker.AktiverBrukerService;
+import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService;
 import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
 import no.nav.veilarboppfolging.service.*;
@@ -39,27 +43,22 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(controllers = OppfolgingV3Controller.class)
 class OppfolgingV3ControllerTest {
-
     @Autowired
     private MockMvc mockMvc;
-
     @MockBean
     private AuthService authService;
-
     @MockBean
     AuthorizationInterceptor authorizationInterceptor;
-
     @MockBean
     private OppfolgingService oppfolgingService;
-
     @MockBean
     private ManuellStatusService manuellStatusService;
-
     @MockBean
     private KvpService kvpService;
-
     @MockBean
     private AktiverBrukerService aktiverBrukerService;
+    @MockBean
+    private ArenaOppfolgingService arenaOppfolgingService;
 
     @BeforeEach
     void setup() throws Exception {
@@ -291,11 +290,25 @@ class OppfolgingV3ControllerTest {
     }
 
     @Test
-    void aktiverSykmeldt_skal_returnere_tom_respons() throws Exception {
+    void startOppfolgingsperiode_skal_ikke_returnere_tom_respons() throws Exception {
+        when(arenaOppfolgingService.registrerIkkeArbeidssoker(TEST_FNR))
+                .thenReturn(new RegistrerIArenaSuccess(new RegistrerIkkeArbeidssokerDto("Ny bruker ble registrert ok som IARBS", ARENA_REGISTRERING_RESULTAT.BRUKER_ALLEREDE_ARBS)));
         mockMvc.perform(post("/api/v3/oppfolging/startOppfolgingsperiode")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"fnr\":\"12345678900\",\"henviserSystem\":\"AAP\"}")
         )
-                .andExpect(status().is(204));
+                .andExpect(content().string("{\"resultat\":\"Ny bruker ble registrert ok som IARBS\",\"kode\":\"BRUKER_ALLEREDE_ARBS\"}"))
+                .andExpect(status().is(200));
+    }
+
+    @Test
+    void startOppfolgingsperiode_skal_returnere_400_ved_manglende_fnr() throws Exception {
+        when(arenaOppfolgingService.registrerIkkeArbeidssoker(TEST_FNR))
+                .thenReturn(new RegistrerIArenaSuccess(new RegistrerIkkeArbeidssokerDto("Ny bruker ble registrert ok som IARBS", ARENA_REGISTRERING_RESULTAT.BRUKER_ALLEREDE_ARBS)));
+        mockMvc.perform(post("/api/v3/oppfolging/startOppfolgingsperiode")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"henviserSystem\":\"AAP\"}")
+                )
+                .andExpect(status().is(400));
     }
 }
