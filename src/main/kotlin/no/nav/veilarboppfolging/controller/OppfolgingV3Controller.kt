@@ -4,18 +4,25 @@ import lombok.RequiredArgsConstructor
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.veilarboppfolging.BadRequestException
+import no.nav.veilarboppfolging.client.veilarbarena.ARENA_REGISTRERING_RESULTAT
+import no.nav.veilarboppfolging.client.veilarbarena.RegistrerIArenaSuccess
+import no.nav.veilarboppfolging.client.veilarbarena.RegistrerIArenaError
+import no.nav.veilarboppfolging.client.veilarbarena.RegistrerIkkeArbeidssokerDto
 import no.nav.veilarboppfolging.controller.response.*
 import no.nav.veilarboppfolging.controller.v2.response.UnderOppfolgingV2Response
 import no.nav.veilarboppfolging.controller.v3.request.*
 import no.nav.veilarboppfolging.oppfolgingsbruker.AktiverBrukerService
+import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity
 import no.nav.veilarboppfolging.repository.enums.KodeverkBruker
 import no.nav.veilarboppfolging.service.*
 import no.nav.veilarboppfolging.utils.DtoMappers
 import no.nav.veilarboppfolging.utils.auth.AllowListApplicationName
+import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import org.springframework.web.server.ResponseStatusException
 
 @RestController
 @RequestMapping("/api/v3")
@@ -26,7 +33,9 @@ class OppfolgingV3Controller(
     val manuellStatusService: ManuellStatusService,
     val kvpService: KvpService,
     val aktiverBrukerService: AktiverBrukerService,
+    val arenaOppfolgingService: ArenaOppfolgingService,
 ) {
+    private val logger = LoggerFactory.getLogger(this::class.java)
 
     @PostMapping("/hent-oppfolging")
     fun underOppfolging(@RequestBody oppfolgingRequest: OppfolgingRequest): UnderOppfolgingV2Response {
@@ -155,12 +164,28 @@ class OppfolgingV3Controller(
     }
 
     @PostMapping("/oppfolging/startOppfolgingsperiode")
-    fun aktiverBruker(@RequestBody startOppfolging: StartOppfolgingDto): ResponseEntity<*> {
+    fun aktiverBruker(@RequestBody startOppfolging: StartOppfolgingDto): ResponseEntity<RegistrerIkkeArbeidssokerDto> {
         authService.skalVereInternBruker()
         authService.sjekkAtApplikasjonErIAllowList(ALLOWLIST)
 
-        aktiverBrukerService.aktiverBrukerManuelt(startOppfolging.fnr)
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build<Unit>()
+        val arenaResponse = arenaOppfolgingService.registrerIkkeArbeidssoker(startOppfolging.fnr)
+        when (arenaResponse) {
+            is RegistrerIArenaSuccess -> {
+                when (arenaResponse.arenaResultat.kode) {
+                    ARENA_REGISTRERING_RESULTAT.UKJENT_FEIL, ARENA_REGISTRERING_RESULTAT.FNR_FINNES_IKKE -> {
+                        return ResponseEntity(arenaResponse.arenaResultat, HttpStatus.CONFLICT)
+                    }
+                    else -> {
+                        aktiverBrukerService.aktiverBrukerManuelt(startOppfolging.fnr)
+                        return ResponseEntity(arenaResponse.arenaResultat, HttpStatus.OK)
+                    }
+                }
+            }
+            is RegistrerIArenaError -> {
+                logger.error("Feil ved registrering av bruker i Arena", arenaResponse.throwable)
+                throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, arenaResponse.message)
+            }
+        }
     }
 
     private fun hentOppfolgingsperioder(aktorId: AktorId): List<OppfolgingPeriodeDTO> {
