@@ -7,7 +7,6 @@ import no.nav.veilarboppfolging.service.AuthService;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.springframework.web.server.ResponseStatusException;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 
@@ -15,7 +14,6 @@ import static no.nav.common.json.JsonUtils.toJson;
 import static no.nav.common.rest.client.RestUtils.MEDIA_TYPE_JSON;
 import static no.nav.common.utils.AssertUtils.assertTrue;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -191,17 +189,20 @@ public class VeilarbarenaClientImplTest {
     }
 
     @Test
-    public void registrer_ikke_arbeidssoker__skal_returnere_422_dersom_person_ikke_aktivert() {
+    public void registrer_ikke_arbeidssoker_skal_returnere_dto__dersom_person_ikke_aktivert() {
         String apiUrl = "http://localhost:" + wireMockRule.port();
         VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl(apiUrl, apiScope, authServiceMock);
 
-        RegistrerIkkeArbeidsokerRespons registrerIkkeArbeidsokerRespons = new RegistrerIkkeArbeidsokerRespons("Eksisterende bruker er ikke oppdatert da bruker kan reaktiveres forenklet som arbeidssøker");
-        givenThat(post(urlEqualTo("/veilarbarena/api/v2/arena/registrer-i-arena")).withRequestBody(equalToJson("{\"fnr\":\""+MOCK_FNR+"\"}"))
-                .willReturn(aResponse().withStatus(422).withStatusMessage("Fodselsnummer 22*******38 finnes ikke i Folkeregisteret")));
+        var registrerIkkeArbeidsokerRespons = new RegistrerIkkeArbeidssokerDto(
+                "Eksisterende bruker er ikke oppdatert da bruker kan reaktiveres forenklet som arbeidssøker", ARENA_REGISTRERING_RESULTAT.KAN_REAKTIVERES_FORENKLET);
+        givenThat(post(urlEqualTo("/veilarbarena/api/v2/arena/registrer-i-arena"))
+                .withRequestBody(equalToJson("{\"fnr\":\""+MOCK_FNR+"\"}"))
+                .willReturn(aResponse().withStatus(422).withBody(toJson(registrerIkkeArbeidsokerRespons)))
+        );
 
-        ResponseStatusException responseStatusException = assertThrows(ResponseStatusException.class, () -> veilarbarenaClient.registrerIkkeArbeidsoker(MOCK_FNR));
-        assertThat(responseStatusException.getStatusCode().value()).isEqualTo(422);
-        assertThat(responseStatusException.getReason()).isEqualTo("Fodselsnummer 22*******38 finnes ikke i Folkeregisteret");
+        var response = veilarbarenaClient.registrerIkkeArbeidsoker(MOCK_FNR);
+        assertThat(response).isInstanceOf(RegistrerIArenaSuccess.class);
+        assertThat( ((RegistrerIArenaSuccess) response).getArenaResultat()).isEqualTo(registrerIkkeArbeidsokerRespons);
     }
 
     private VeilarbArenaOppfolgingsBruker arenaOppfolgingsBrukerResponse() {
