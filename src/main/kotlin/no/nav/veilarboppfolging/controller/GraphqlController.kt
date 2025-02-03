@@ -2,8 +2,8 @@ package no.nav.veilarboppfolging.controller
 
 import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.client.norg2.Norg2Client
-import no.nav.common.client.pdl.PdlClient
 import no.nav.common.types.identer.Fnr
+import no.nav.poao_tilgang.client.PoaoTilgangClient
 import no.nav.veilarboppfolging.client.norg.Enhet
 import no.nav.veilarboppfolging.client.norg.INorgTilhorighetClient
 import no.nav.veilarboppfolging.client.norg.NorgTilhorighetRequest
@@ -47,7 +47,8 @@ class GraphqlController(
     private val aktorOppslagClient: AktorOppslagClient,
     private val authService: AuthService,
     private val geografiskTilknytningClient: GeografiskTilknytningClient,
-    private val INorgTilhorighetClient: INorgTilhorighetClient
+    private val INorgTilhorighetClient: INorgTilhorighetClient,
+    private val poaoTilgangClient: PoaoTilgangClient
 ) {
 
     @QueryMapping
@@ -87,6 +88,7 @@ class GraphqlController(
     }
 
     fun hentDefaultEnhetFraNorg(fnr: Fnr): EnhetDto? {
+        val erSkjermetPerson = poaoTilgangClient.erSkjermetPerson(fnr.get()).getOrDefault(defaultValue = false)
         return geografiskTilknytningClient.hentGeografiskTilknytning(fnr)
             .let {
                 when (it.geografiskTilknytning) {
@@ -94,8 +96,8 @@ class GraphqlController(
                     else -> INorgTilhorighetClient.hentTilhorendeEnhet(
                         NorgTilhorighetRequest(
                             GeografiskTilknytningNr(it.geografiskTilknytning.gtType, it.geografiskTilknytning.nr),
-                            false,
-                            false
+                            erSkjermetPerson,
+                            it.strengtFortroligAdresse
                         ))
                 }
             }
