@@ -23,7 +23,7 @@ open class NorgTilhorighetClient(
 
 		val httpUrl = joinPaths(baseUrl, "/api/v1/enhet/navkontor/", norgTilhorighetRequest.geografiskTilknytning.nr).toHttpUrl().newBuilder()
 			.addQueryParameter("skjermet", norgTilhorighetRequest.skjermet.toString())
-			.addQueryParameter("fortroligAdresse", if (norgTilhorighetRequest.fortroligAdresse) "SPSF" else "")
+			.addQueryParameter("disk", if (norgTilhorighetRequest.fortroligAdresse) "SPSF" else "")
 			.build()
 		val request = Request.Builder().url(httpUrl).get().build()
 
