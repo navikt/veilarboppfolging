@@ -1,0 +1,13 @@
+query($ident: ID!, $historikk: Boolean!) {
+    hentGeografiskTilknytning(ident: $ident) {
+        gtType
+        gtKommune
+        gtBydel
+        gtLand
+    }
+    hentPerson(ident: $ident) {
+        adressebeskyttelse(historikk: $historikk) {
+            gradering
+        }
+    }
+}
