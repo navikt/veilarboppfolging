@@ -41,6 +41,12 @@ public class OppfolgingsenhetEndringServiceTest {
     }
 
     @Test
+    public void skal_lik() {
+        assertThat(EnhetId.of("1234").equals(EnhetId.of("1234")), equalTo(true));
+        assertThat(EnhetId.of("1234").equals(EnhetId.of("1233")), equalTo(false));
+    }
+
+    @Test
     public void skal_legge_til_ny_enhet_i_historikk_gitt_eksisterende_historikk() {
         when(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID);
 

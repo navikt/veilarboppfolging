@@ -3,6 +3,12 @@ package no.nav.veilarboppfolging.controller
 import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.client.norg2.Norg2Client
 import no.nav.common.types.identer.Fnr
+import no.nav.poao_tilgang.client.PoaoTilgangClient
+import no.nav.veilarboppfolging.client.norg.Enhet
+import no.nav.veilarboppfolging.client.norg.INorgTilhorighetClient
+import no.nav.veilarboppfolging.client.norg.NorgTilhorighetRequest
+import no.nav.veilarboppfolging.client.pdl.GeografiskTilknytningClient
+import no.nav.veilarboppfolging.client.pdl.GeografiskTilknytningNr
 import no.nav.veilarboppfolging.repository.EnhetRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
 import no.nav.veilarboppfolging.service.AuthService
@@ -15,17 +21,18 @@ import org.springframework.web.server.ResponseStatusException
 
 data class OppfolgingsEnhetQueryDto(
     val enhet: EnhetDto?, // Nullable because graphql
-    val kilde: KildeDto,
     val fnr: String // Only used to pass fnr to "sub-queries"
 )
 
 data class EnhetDto(
     val id: String,
-    val navn: String
+    val navn: String,
+    val kilde: KildeDto
 )
 
 enum class KildeDto {
-    ARENA
+    ARENA,
+    NORG
 }
 
 data class OppfolgingDto(
@@ -38,7 +45,10 @@ class GraphqlController(
     private val oppfolgingsStatusRepository: OppfolgingsStatusRepository,
     private val norg2Client: Norg2Client,
     private val aktorOppslagClient: AktorOppslagClient,
-    private val authService: AuthService
+    private val authService: AuthService,
+    private val geografiskTilknytningClient: GeografiskTilknytningClient,
+    private val INorgTilhorighetClient: INorgTilhorighetClient,
+    private val poaoTilgangClient: PoaoTilgangClient
 ) {
 
     @QueryMapping
@@ -46,7 +56,7 @@ class GraphqlController(
         if (fnr == null || fnr.isEmpty()) throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Fnr er påkrevd")
         if (authService.erEksternBruker()) throw ResponseStatusException(HttpStatus.FORBIDDEN)
 
-        return OppfolgingsEnhetQueryDto(fnr = fnr, enhet = null, kilde = KildeDto.ARENA)
+        return OppfolgingsEnhetQueryDto(fnr = fnr, enhet = null)
     }
 
     @QueryMapping
@@ -62,12 +72,40 @@ class GraphqlController(
     @SchemaMapping(typeName="OppfolgingsEnhetsInfo", field="enhet")
     fun arenaOppfolgingsEnhet(oppfolgingsEnhet: OppfolgingsEnhetQueryDto): EnhetDto? {
         val aktorId = aktorOppslagClient.hentAktorId(Fnr.of(oppfolgingsEnhet.fnr))
-        return enhetRepository.hentEnhet(aktorId)
+        val arenaEnhet = enhetRepository.hentEnhet(aktorId)
             ?.let { oppfolgingsenhet ->
                 val enhet = norg2Client.hentEnhet(oppfolgingsenhet.get())
                 EnhetDto(
                     id = oppfolgingsenhet.get(),
-                    navn = enhet.navn
+                    navn = enhet.navn,
+                    kilde = KildeDto.ARENA
+                )
+            }
+        return when {
+            arenaEnhet == null -> hentDefaultEnhetFraNorg(Fnr.of(oppfolgingsEnhet.fnr))
+            else -> arenaEnhet
+        }
+    }
+
+    fun hentDefaultEnhetFraNorg(fnr: Fnr): EnhetDto? {
+        val erSkjermetPerson = poaoTilgangClient.erSkjermetPerson(fnr.get()).getOrDefault(defaultValue = false)
+        return geografiskTilknytningClient.hentGeografiskTilknytning(fnr)
+            .let {
+                when (it.geografiskTilknytning) {
+                    null  -> null
+                    else -> INorgTilhorighetClient.hentTilhorendeEnhet(
+                        NorgTilhorighetRequest(
+                            GeografiskTilknytningNr(it.geografiskTilknytning.gtType, it.geografiskTilknytning.nr),
+                            erSkjermetPerson,
+                            it.strengtFortroligAdresse
+                        ))
+                }
+            }
+            ?.let { enhet: Enhet ->
+                EnhetDto(
+                    id = enhet.enhetNr,
+                    navn = enhet.enhetNavn,
+                    kilde = KildeDto.NORG
                 )
             }
     }
