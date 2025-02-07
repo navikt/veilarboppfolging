@@ -109,6 +109,7 @@ spec:
         - host: veilarbarena.dev-fss-pub.nais.io
         - host: norg2.dev-fss-pub.nais.io
         - host: pdl-api.dev-fss-pub.nais.io
+        - host: pto-admin.dev-fss-pub.nais.io
     inbound:
       rules:
         - application: veilarbregistrering
