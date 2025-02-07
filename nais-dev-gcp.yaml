@@ -105,9 +105,6 @@ spec:
           namespace: amt
         - application: norg2
           namespace: org
-        - application: pto-admin
-          namespace: pto
-          cluster: dev-fss
       external:
         - host: veilarbarena.dev-fss-pub.nais.io
         - host: norg2.dev-fss-pub.nais.io
@@ -212,3 +209,6 @@ spec:
           namespace: navdig
         - application: tiltakspenger-saksbehandling-api
           namespace: tpts
+        - application: pto-admin
+          namespace: pto
+          cluster: dev-fss

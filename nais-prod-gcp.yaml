@@ -213,3 +213,6 @@ spec:
           namespace: navdig
         - application: tiltakspenger-saksbehandling-api
           namespace: tpts
+        - application: pto-admin
+          namespace: pto
+          cluster: prod-fss
