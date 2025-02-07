@@ -213,3 +213,5 @@ spec:
         - application: pto-admin
           namespace: pto
           cluster: dev-fss
+      external:
+        - host: pto-admin.dev-fss-pub.nais.io
