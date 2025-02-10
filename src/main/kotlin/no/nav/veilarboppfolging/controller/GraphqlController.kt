@@ -1,5 +1,7 @@
 package no.nav.veilarboppfolging.controller
 
+import lombok.NoArgsConstructor
+import lombok.RequiredArgsConstructor
 import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.client.norg2.Norg2Client
 import no.nav.common.types.identer.Fnr
@@ -12,6 +14,7 @@ import no.nav.veilarboppfolging.client.pdl.GeografiskTilknytningNr
 import no.nav.veilarboppfolging.repository.EnhetRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
 import no.nav.veilarboppfolging.service.AuthService
+import org.slf4j.LoggerFactory
 import org.springframework.graphql.data.method.annotation.Argument
 import org.springframework.graphql.data.method.annotation.QueryMapping
 import org.springframework.graphql.data.method.annotation.SchemaMapping
@@ -50,6 +53,11 @@ class GraphqlController(
     private val INorgTilhorighetClient: INorgTilhorighetClient,
     private val poaoTilgangClient: PoaoTilgangClient
 ) {
+    private val logger = LoggerFactory.getLogger(GraphqlController::class.java)
+
+    init {
+        logger.info("Started GraphqlController")
+    }
 
     @QueryMapping
     fun oppfolgingsEnhet(@Argument fnr: String?): OppfolgingsEnhetQueryDto {
@@ -88,6 +96,10 @@ class GraphqlController(
     }
 
     fun hentDefaultEnhetFraNorg(fnr: Fnr): EnhetDto? {
+        val tilgangsattributterResponse = poaoTilgangClient.hentTilgangsAttributter(fnr.get())
+        if (tilgangsattributterResponse.isFailure) {
+            throw PoaoTilgangError("Feil ved henting av tilgangsattributter for bruker")
+        }
         val erSkjermetPerson = poaoTilgangClient.erSkjermetPerson(fnr.get()).getOrDefault(defaultValue = false)
         return geografiskTilknytningClient.hentGeografiskTilknytning(fnr)
             .let {

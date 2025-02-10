@@ -14,6 +14,7 @@ import no.nav.common.job.leader_election.ShedLockLeaderElectionClient;
 import no.nav.common.metrics.Event;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.rest.client.RestClient;
+import no.nav.poao_tilgang.api.dto.response.TilgangsattributterResponse;
 import no.nav.poao_tilgang.client.AdGruppe;
 import no.nav.poao_tilgang.client.Decision;
 import no.nav.poao_tilgang.client.PoaoTilgangCachedClient;
@@ -51,6 +52,9 @@ public class ApplicationConfig {
 	private final Cache<String, Boolean> norskIdentToErSkjermetCache = Caffeine.newBuilder()
 			.expireAfterWrite(Duration.ofMinutes(30))
 			.build();
+    private final Cache<String, TilgangsattributterResponse> tilgangsAttributterCache = Caffeine.newBuilder()
+            .expireAfterWrite(Duration.ofMinutes(30))
+            .build();
 
     @Bean
     public MetricsClient metricsClient() {
@@ -102,7 +106,8 @@ public class ApplicationConfig {
 				),
 				policyInputToDecisionCache,
 				navAnsattIdToAzureAdGrupperCache,
-				norskIdentToErSkjermetCache
+				norskIdentToErSkjermetCache,
+                tilgangsAttributterCache
 		);
 	}
 

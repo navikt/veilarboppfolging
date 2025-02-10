@@ -6,8 +6,12 @@ import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.client.norg2.Norg2Client
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
+import no.nav.veilarboppfolging.client.pdl.GTType
+import no.nav.veilarboppfolging.client.pdl.GeografiskTilknytningClient
+import no.nav.veilarboppfolging.client.pdl.GeografiskTilknytningNr
 import no.nav.veilarboppfolging.config.ApplicationTestConfig
 import no.nav.veilarboppfolging.config.EnvironmentProperties
+import no.nav.veilarboppfolging.controller.GraphqlController
 import no.nav.veilarboppfolging.controller.OppfolgingController
 import no.nav.veilarboppfolging.controller.SakController
 import no.nav.veilarboppfolging.domain.StartetAvType
@@ -26,8 +30,11 @@ import no.nav.veilarboppfolging.tokenClient.ErrorMappedAzureAdOnBehalfOfTokenCli
 import org.junit.jupiter.api.BeforeEach
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration
+import org.springframework.boot.autoconfigure.graphql.GraphQlAutoConfiguration
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.boot.test.web.server.LocalServerPort
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.kafka.test.context.EmbeddedKafka
@@ -47,6 +54,9 @@ open class IntegrationTest {
 
     @MockBean
     lateinit var norg2Client: Norg2Client
+
+    @MockBean
+    lateinit var geografiskTilknytningClient: GeografiskTilknytningClient
 
     @MockBean
     lateinit var environmentProperties: EnvironmentProperties
@@ -92,6 +102,9 @@ open class IntegrationTest {
 
     @Autowired
     lateinit var enhetRepository: EnhetRepository
+
+//    @Autowired
+//    private lateinit var graphqlController: GraphqlController
 
     @BeforeEach
     fun beforeEach() {
@@ -147,5 +160,13 @@ open class IntegrationTest {
             .thenReturn(aktørId)
         Mockito.`when`(aktorOppslagClient.hentFnr(aktørId))
             .thenReturn(fnr)
+    }
+
+    fun mockGeografiskTilknytning(fnr: Fnr, gtType: GTType, enhetsNr: String) {
+        Mockito.`when`(geografiskTilknytningClient.hentGeografiskTilknytning(fnr))
+            .thenReturn(GeografiskTilknytningClient.GeografiskTilknytningOgAdressebeskyttelse(
+                GeografiskTilknytningNr(gtType, enhetsNr),
+                false)
+            )
     }
 }

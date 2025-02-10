@@ -1,5 +1,6 @@
 package no.nav.veilarboppfolging.config;
 
+import graphql.schema.idl.RuntimeWiring;
 import io.zonky.test.db.postgres.embedded.EmbeddedPostgres;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
@@ -11,16 +12,21 @@ import no.nav.common.job.leader_election.LeaderElectionClient;
 import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
 import no.nav.poao_tilgang.client.PoaoTilgangClient;
 import no.nav.veilarboppfolging.client.amttiltak.AmtTiltakClient;
+import no.nav.veilarboppfolging.client.norg.Enhet;
+import no.nav.veilarboppfolging.client.norg.INorgTilhorighetClient;
 import no.nav.veilarboppfolging.eventsLogger.BigQueryClient;
 import no.nav.veilarboppfolging.test.DbTestUtils;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.graphql.execution.GraphQlSource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
+import no.nav.veilarboppfolging.controller.GraphqlExceptionHandler;
 
 import javax.sql.DataSource;
 
@@ -37,7 +43,8 @@ import static org.mockito.Mockito.mock;
         ServiceTestConfig.class,
         FilterTestConfig.class,
         KafkaTestConfig.class,
-        HelsesjekkConfig.class
+        HelsesjekkConfig.class,
+        GraphqlExceptionHandler.class
 })
 public class ApplicationTestConfig {
     @Bean
@@ -108,5 +115,17 @@ public class ApplicationTestConfig {
     @Bean
     public AmtTiltakClient amtTiltakClient() {
         return mock(AmtTiltakClient.class);
+    }
+
+    @Bean
+    public GraphQlSource graphQlSource()  {
+        return GraphQlSource.schemaResourceBuilder()
+                .schemaResources(new ClassPathResource("graphql/schema.graphqls"))
+                .build();
+    }
+
+    @Bean
+    public INorgTilhorighetClient inorgTilhorighetClient() {
+        return norgTilhorighetRequest -> new Enhet("1234", "NAV Test");
     }
 }
