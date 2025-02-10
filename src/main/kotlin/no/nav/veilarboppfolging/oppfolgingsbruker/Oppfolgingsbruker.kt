@@ -25,7 +25,8 @@ open class Oppfolgingsbruker(
         @JvmStatic
         fun arbeidssokerOppfolgingsBruker(
             aktorId: AktorId,
-            startetAvType: StartetAvType
+            startetAvType: StartetAvType,
+            navIdent: NavIdent
         ): Oppfolgingsbruker {
             return Arbeidssoker(
                 aktorId,
@@ -44,6 +45,14 @@ open class Oppfolgingsbruker(
             return ArenaSyncOppfolgingsBruker(aktorId, formidlingsgruppe, kvalifiseringsgruppe)
         }
     }
+
+    fun getRegistrertAv(): NavIdent? {
+        return when (this) {
+            is BrukerManueltRegistrertAvVeileder -> registrertAv
+            is Arbeidssoker ->
+            else -> null
+        }
+    }
 }
 
 data class BrukerManueltRegistrertAvVeileder(
@@ -54,6 +63,6 @@ data class BrukerManueltRegistrertAvVeileder(
 data class Arbeidssoker(
     override val aktorId: AktorId,
     override val oppfolgingStartBegrunnelse: OppfolgingStartBegrunnelse,
-    override val startetAvType: StartetAvType
+    override val startetAvType: StartetAvType,
 ) : Oppfolgingsbruker(aktorId, oppfolgingStartBegrunnelse, startetAvType)
 

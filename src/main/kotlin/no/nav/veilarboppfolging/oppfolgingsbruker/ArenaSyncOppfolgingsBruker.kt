@@ -13,6 +13,7 @@ data class ArenaSyncOppfolgingsBruker(
     val kvalifiseringsgruppe: Kvalifiseringsgruppe,
 ) : Oppfolgingsbruker(
     aktorId,
-    if (formidlingsgruppe == Formidlingsgruppe.IARBS) OppfolgingStartBegrunnelse.ARENA_SYNC_IARBS else OppfolgingStartBegrunnelse.ARENA_SYNC_ARBS,
+    if (formidlingsgruppe == Formidlingsgruppe.IARBS) OppfolgingStartBegrunnelse.ARENA_SYNC_IARBS
+    else OppfolgingStartBegrunnelse.ARENA_SYNC_ARBS,
     StartetAvType.SYSTEM
 )

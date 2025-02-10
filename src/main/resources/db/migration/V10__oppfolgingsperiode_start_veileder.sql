@@ -1,2 +1,3 @@
 ALTER TABLE oppfolgingsperiode
-ADD start_veileder VARCHAR(20);
+ADD startet_av VARCHAR(20),
+ADD startet_av_type VARCHAR(20);
