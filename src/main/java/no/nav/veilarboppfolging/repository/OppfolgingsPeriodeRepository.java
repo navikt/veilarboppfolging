@@ -37,9 +37,9 @@ public class OppfolgingsPeriodeRepository {
         this.transactor = transactor;
     }
 
-    public void start(AktorId aktorId, OppfolgingStartBegrunnelse oppfolgingStartBegrunnelse) {
+    public void start(AktorId aktorId, OppfolgingStartBegrunnelse oppfolgingStartBegrunnelse, String veileder) {
         transactor.executeWithoutResult((ignored) -> {
-            insert(aktorId, oppfolgingStartBegrunnelse);
+            insert(aktorId, oppfolgingStartBegrunnelse, veileder);
             setActive(aktorId);
         });
     }
@@ -86,11 +86,11 @@ public class OppfolgingsPeriodeRepository {
         );
     }
 
-    private void insert(AktorId aktorId, OppfolgingStartBegrunnelse getOppfolgingStartBegrunnelse) {
+    private void insert(AktorId aktorId, OppfolgingStartBegrunnelse getOppfolgingStartBegrunnelse, String veileder) {
         db.update("" +
-                        "INSERT INTO OPPFOLGINGSPERIODE(uuid, aktor_id, startDato, oppdatert, start_begrunnelse) " +
+                        "INSERT INTO OPPFOLGINGSPERIODE(uuid, aktor_id, startDato, oppdatert, start_begrunnelse, start_veileder) " +
                         "VALUES (?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?)",
-                UUID.randomUUID().toString(), aktorId.get(), getOppfolgingStartBegrunnelse.name());
+                UUID.randomUUID().toString(), aktorId.get(), getOppfolgingStartBegrunnelse.name(), veileder);
     }
 
     private void setActive(AktorId aktorId) {

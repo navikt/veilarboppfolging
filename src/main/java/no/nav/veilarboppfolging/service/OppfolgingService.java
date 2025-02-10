@@ -257,7 +257,7 @@ public class OppfolgingService {
         return Optional.of(oppfolging);
     }
 
-    public void startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker oppfolgingsbruker) {
+    public void startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker oppfolgingsbruker, String veilederId) {
         AktorId aktorId = oppfolgingsbruker.getAktorId();
         Fnr fnr = authService.getFnrOrThrow(aktorId);
         KRRData kontaktinfo = manuellStatusService.hentDigdirKontaktinfo(fnr);
@@ -283,7 +283,7 @@ public class OppfolgingService {
                 }
             }
 
-            oppfolgingsPeriodeRepository.start(aktorId, oppfolgingsbruker.getOppfolgingStartBegrunnelse());
+            oppfolgingsPeriodeRepository.start(aktorId, oppfolgingsbruker.getOppfolgingStartBegrunnelse(), veilederId);
 
             List<OppfolgingsperiodeEntity> perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId);
             OppfolgingsperiodeEntity sistePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(perioder);
