@@ -15,6 +15,7 @@ import no.nav.veilarboppfolging.service.SisteEndringPaaOppfolgingBrukerService;
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.util.List;
 import java.util.Map;
