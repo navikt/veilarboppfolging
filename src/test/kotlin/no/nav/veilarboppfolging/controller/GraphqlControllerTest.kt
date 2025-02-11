@@ -10,8 +10,6 @@ import org.springframework.graphql.execution.DefaultExecutionGraphQlService
 import org.springframework.graphql.execution.GraphQlSource
 import org.springframework.graphql.test.tester.ExecutionGraphQlServiceTester
 import org.springframework.test.context.ActiveProfiles
-import java.lang.IllegalArgumentException
-import kotlin.test.assertEquals
 
 @ActiveProfiles("test")
 class GraphqlControllerTest: IntegrationTest() {

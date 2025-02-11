@@ -6,11 +6,6 @@ import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.EnhetId
 import no.nav.common.types.identer.Fnr
 import no.nav.poao_tilgang.client.PoaoTilgangClient
-import no.nav.veilarboppfolging.client.norg.Enhet
-import no.nav.veilarboppfolging.client.norg.INorgTilhorighetClient
-import no.nav.veilarboppfolging.client.norg.NorgTilhorighetRequest
-import no.nav.veilarboppfolging.client.pdl.GeografiskTilknytningClient
-import no.nav.veilarboppfolging.client.pdl.GeografiskTilknytningNr
 import no.nav.veilarboppfolging.repository.EnhetRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
 import no.nav.veilarboppfolging.service.AuthService
