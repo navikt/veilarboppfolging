@@ -1,5 +1,6 @@
 package no.nav.veilarboppfolging.controller
 
+import graphql.ErrorType
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.veilarboppfolging.IntegrationTest
@@ -9,6 +10,8 @@ import org.springframework.graphql.execution.DefaultExecutionGraphQlService
 import org.springframework.graphql.execution.GraphQlSource
 import org.springframework.graphql.test.tester.ExecutionGraphQlServiceTester
 import org.springframework.test.context.ActiveProfiles
+import java.lang.IllegalArgumentException
+import kotlin.test.assertEquals
 
 @ActiveProfiles("test")
 class GraphqlControllerTest: IntegrationTest() {
@@ -38,7 +41,7 @@ class GraphqlControllerTest: IntegrationTest() {
         val skjermet = false
         mockPdlGeografiskTilknytning(fnr, kontor)
         mockPoaoTilgangTilgangsAttributter(kontor, skjermet)
-        mockNorgFinnNavKontor(kontor, kontorNavn, skjermet, false)
+        mockNorgEnhetsNavn(kontor, kontorNavn)
 
         /* Query is hidden in test/resources/graphl-test :) */
         val result = tester.documentName("getEnhetQuery").variable("fnr", fnr.get()).execute()
@@ -46,6 +49,20 @@ class GraphqlControllerTest: IntegrationTest() {
         result.path("oppfolgingsEnhet.enhet").matchesJson("""
             { "id": "${kontor}", "kilde": "NORG", "navn": "${kontorNavn}" }
         """.trimIndent())
+    }
+
+    @Test
+    fun `skal returnere error på oppfolgingsEnhet når noe skjer`() {
+        val (fnr, _) = defaultBruker()
+        mockPoaoTilgangTilgangsAttributterFeiler()
+        val expectedError = PoaoTilgangError(IllegalArgumentException("LOL"))
+
+        /* Query is hidden in test/resources/graphl-test :) */
+        val result = tester.documentName("getEnhetQuery").variable("fnr", fnr.get()).execute()
+        result.errors()
+            .expect { it.message.equals(expectedError.toString()) }
+            .expect { it.errorType.equals(expectedError.errorType) }
+            .verify()
     }
 
     @Test

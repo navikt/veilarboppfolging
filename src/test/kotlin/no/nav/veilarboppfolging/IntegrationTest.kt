@@ -3,14 +3,16 @@ package no.nav.veilarboppfolging
 import com.nimbusds.jwt.JWTClaimsSet
 import no.nav.common.auth.context.AuthContextHolder
 import no.nav.common.client.aktoroppslag.AktorOppslagClient
+import no.nav.common.client.norg2.Enhet
 import no.nav.common.client.norg2.Norg2Client
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.poao_tilgang.api.dto.response.Diskresjonskode
 import no.nav.poao_tilgang.api.dto.response.TilgangsattributterResponse
 import no.nav.poao_tilgang.client.PoaoTilgangClient
+import no.nav.poao_tilgang.client.api.ApiException
 import no.nav.poao_tilgang.client.api.ApiResult
-import no.nav.veilarboppfolging.client.norg.Enhet
+import no.nav.poao_tilgang.client.api.NetworkApiException
 import no.nav.veilarboppfolging.client.norg.INorgTilhorighetClient
 import no.nav.veilarboppfolging.client.norg.NorgTilhorighetRequest
 import no.nav.veilarboppfolging.client.pdl.GTType
@@ -151,16 +153,16 @@ open class IntegrationTest {
             .claim("roles", listOf("access_as_application"))
             .build()
 
-        Mockito.`when`(authContextHolder.idTokenClaims).thenReturn(Optional.of(claims))
+        `when`(authContextHolder.idTokenClaims).thenReturn(Optional.of(claims))
 
         val token = "token"
 
-        Mockito.`when`(authContextHolder.idTokenString).thenReturn(Optional.of(token))
+        `when`(authContextHolder.idTokenString).thenReturn(Optional.of(token))
 
-        Mockito.`when`(authContextHolder.erSystemBruker()).thenReturn(true)
-        Mockito.`when`(aktorOppslagClient.hentAktorId(fnr))
+        `when`(authContextHolder.erSystemBruker()).thenReturn(true)
+        `when`(aktorOppslagClient.hentAktorId(fnr))
             .thenReturn(aktørId)
-        Mockito.`when`(aktorOppslagClient.hentFnr(aktørId))
+        `when`(aktorOppslagClient.hentFnr(aktørId))
             .thenReturn(fnr)
     }
 
@@ -171,21 +173,21 @@ open class IntegrationTest {
             .claim("oid", veilederIOD.toString())
             .build()
 
-        Mockito.`when`(authContextHolder.idTokenClaims).thenReturn(Optional.of(claims))
+        `when`(authContextHolder.idTokenClaims).thenReturn(Optional.of(claims))
 
         val token = "token"
 
-        Mockito.`when`(authContextHolder.idTokenString).thenReturn(Optional.of(token))
+        `when`(authContextHolder.idTokenString).thenReturn(Optional.of(token))
 
-        Mockito.`when`(authContextHolder.erInternBruker()).thenReturn(true)
-        Mockito.`when`(aktorOppslagClient.hentAktorId(fnr))
+        `when`(authContextHolder.erInternBruker()).thenReturn(true)
+        `when`(aktorOppslagClient.hentAktorId(fnr))
             .thenReturn(aktørId)
-        Mockito.`when`(aktorOppslagClient.hentFnr(aktørId))
+        `when`(aktorOppslagClient.hentFnr(aktørId))
             .thenReturn(fnr)
     }
 
     fun mockPdlGeografiskTilknytning(fnr: Fnr, enhetsNr: String, gtType: GTType = GTType.BYDEL) {
-        Mockito.`when`(geografiskTilknytningClient.hentGeografiskTilknytning(fnr))
+        `when`(geografiskTilknytningClient.hentGeografiskTilknytning(fnr))
             .thenReturn(GeografiskTilknytningClient.GeografiskTilknytningOgAdressebeskyttelse(
                 GeografiskTilknytningNr(gtType, enhetsNr),
                 false)
@@ -201,14 +203,13 @@ open class IntegrationTest {
         doReturn(apiResult).`when`(poaoTilgangClient).hentTilgangsAttributter(anyString())
     }
 
-    /* Brukt når man skal mappe fra GT til et spesifikt NAV-kontor (bruker egentlig skjermet og diskresjonskode også) */
-    fun mockNorgFinnNavKontor(kontor: String, navn: String = "NAV Test", skjermet: Boolean, fortroligAdresse: Boolean) {
-        val norgTilhorighetsRequest = NorgTilhorighetRequest(
-            geografiskTilknytning = GeografiskTilknytningNr(GTType.BYDEL, kontor),
-            skjermet = skjermet,
-            fortroligAdresse = fortroligAdresse
-        )
-        val enhet = Enhet(enhetNr = kontor, enhetNavn = navn)
-        `when`(inorg.hentTilhorendeEnhet(norgTilhorighetsRequest)).thenReturn(enhet)
+    fun mockPoaoTilgangTilgangsAttributterFeiler() {
+        val apiResult = ApiResult.failure<NetworkApiException>(NetworkApiException(IllegalArgumentException(")")))
+        doReturn(apiResult).`when`(poaoTilgangClient).hentTilgangsAttributter(anyString())
+    }
+
+    fun mockNorgEnhetsNavn(enhetsNr: String, enhetsNavn: String) {
+        val enhet = Enhet().also { it.navn = enhetsNavn }
+        `when`(norg2Client.hentEnhet(enhetsNr)).thenReturn(enhet)
     }
 }

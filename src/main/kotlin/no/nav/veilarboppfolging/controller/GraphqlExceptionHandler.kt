@@ -1,40 +1,49 @@
 package no.nav.veilarboppfolging.controller
 
+import graphql.ErrorClassification
 import graphql.ErrorType
 import graphql.GraphQLError
 import graphql.GraphqlErrorBuilder
 import graphql.schema.DataFetchingEnvironment
+import org.slf4j.LoggerFactory
 import org.springframework.graphql.execution.DataFetcherExceptionResolver
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Mono
 
-class PoaoTilgangError: RuntimeException {
-    constructor(message: String): super(message)
+abstract class GraphqlError: RuntimeException, ErrorClassification {
+    abstract val errorType: ErrorType
+    constructor(): super("Graphql error")
+    abstract override fun toString(): String
 }
 
-class FantIkkeAktorIdForFnrError: RuntimeException {
-    constructor(message: String): super(message)
+class PoaoTilgangError(val ex: Throwable) : GraphqlError() {
+    override val errorType: ErrorType = ErrorType.DataFetchingException
+    override fun toString() = "Kunne ikke hente tilgangs-informasjon om bruker"
+}
+
+class FantIkkeAktorIdForFnrError: GraphqlError() {
+    override val errorType: ErrorType = ErrorType.DataFetchingException
+    override fun toString() = "Fant ikke bruker i Persondataløsningen"
 }
 
 @Component
 class GraphqlExceptionHandler: DataFetcherExceptionResolver {
+    private val logger = LoggerFactory.getLogger(GraphqlExceptionHandler::class.java)
+
     override fun resolveException(ex: Throwable, env: DataFetchingEnvironment): Mono<List<GraphQLError>> {
-        return Mono.just(listOf(
-            GraphqlErrorBuilder.newError(env)
+        logger.error("Error in graphql", ex)
+        return when (ex) {
+            is GraphqlError -> GraphqlErrorBuilder.newError(env)
+                .message(ex.toString())
+                .errorType(ex.errorType)
+                .build()
+            else -> GraphqlErrorBuilder.newError(env)
                 .message(ex.message)
                 .errorType(ErrorType.DataFetchingException)
                 .build()
-        ))
-//        return when (ex) {
-//            is PoaoTilgangError -> GraphqlErrorBuilder.newError(env)
-//                .message(ex.message)
-//                .errorType(ErrorType.DataFetchingException)
-//                .build()
-//            is ResponseStatusException -> GraphqlErrorBuilder.newError(env)
-//                .message(ex.reason)
-//                .errorType(ErrorType.valueOf(ex.statusCode.value().toString()))
-//                .build()
-//            else -> null
-//        }
+        }.let {
+            if (it != null) Mono.just(listOf(it))
+            else Mono.empty()
+        }
     }
 }

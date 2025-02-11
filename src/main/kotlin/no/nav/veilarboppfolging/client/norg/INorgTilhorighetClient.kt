@@ -1,5 +1,8 @@
 package no.nav.veilarboppfolging.client.norg
 
+/**
+ * Kan ikke bruke NorgClient fra common-lib fordi den har ikke støtte for å finne nav-kontor gitt en GT
+ */
 interface INorgTilhorighetClient {
     /**
      * Henter enheten som tilhører et geografisk område
