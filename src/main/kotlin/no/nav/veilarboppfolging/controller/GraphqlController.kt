@@ -1,7 +1,5 @@
 package no.nav.veilarboppfolging.controller
 
-import lombok.NoArgsConstructor
-import lombok.RequiredArgsConstructor
 import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.client.norg2.Norg2Client
 import no.nav.common.types.identer.Fnr
@@ -100,7 +98,7 @@ class GraphqlController(
         if (tilgangsattributterResponse.isFailure) {
             throw PoaoTilgangError("Feil ved henting av tilgangsattributter for bruker")
         }
-        val erSkjermetPerson = poaoTilgangClient.erSkjermetPerson(fnr.get()).getOrDefault(defaultValue = false)
+        val tilgangsAttributter = tilgangsattributterResponse.getOrThrow()
         return geografiskTilknytningClient.hentGeografiskTilknytning(fnr)
             .let {
                 when (it.geografiskTilknytning) {
@@ -108,7 +106,7 @@ class GraphqlController(
                     else -> INorgTilhorighetClient.hentTilhorendeEnhet(
                         NorgTilhorighetRequest(
                             GeografiskTilknytningNr(it.geografiskTilknytning.gtType, it.geografiskTilknytning.nr),
-                            erSkjermetPerson,
+                            tilgangsAttributter.skjermet,
                             it.strengtFortroligAdresse
                         ))
                 }
@@ -120,5 +118,8 @@ class GraphqlController(
                     kilde = KildeDto.NORG
                 )
             }
+
+//        val erSkjermetPerson = poaoTilgangClient.erSkjermetPerson(fnr.get()).getOrDefault(defaultValue = false)
+
     }
 }

@@ -105,14 +105,7 @@ public class ApplicationTestConfig {
     }
 
     @Bean
-    public GraphQlSource graphQlSource()  {
-        return GraphQlSource.schemaResourceBuilder()
-                .schemaResources(new ClassPathResource("graphql/schema.graphqls"))
-                .build();
-    }
-
-    @Bean
     public INorgTilhorighetClient inorgTilhorighetClient() {
-        return norgTilhorighetRequest -> new Enhet("1234", "NAV Test");
+        return mock(INorgTilhorighetClient.class);
     }
 }
