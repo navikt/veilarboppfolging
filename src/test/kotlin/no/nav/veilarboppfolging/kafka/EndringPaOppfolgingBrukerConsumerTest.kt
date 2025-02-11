@@ -39,7 +39,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-@ActiveProfiles("local")
+@ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
 

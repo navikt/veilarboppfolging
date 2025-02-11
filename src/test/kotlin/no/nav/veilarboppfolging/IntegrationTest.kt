@@ -42,7 +42,7 @@ import org.springframework.test.annotation.DirtiesContext
 import java.util.*
 
 @EmbeddedKafka(partitions = 1)
-@SpringBootTest(classes = [ApplicationTestConfig::class])
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 open class IntegrationTest {
 

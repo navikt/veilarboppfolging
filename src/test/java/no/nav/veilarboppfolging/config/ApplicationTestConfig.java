@@ -1,6 +1,5 @@
 package no.nav.veilarboppfolging.config;
 
-import graphql.schema.idl.RuntimeWiring;
 import io.zonky.test.db.postgres.embedded.EmbeddedPostgres;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
@@ -19,14 +18,12 @@ import no.nav.veilarboppfolging.test.DbTestUtils;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.graphql.execution.GraphQlSource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
-import no.nav.veilarboppfolging.controller.GraphqlExceptionHandler;
 
 import javax.sql.DataSource;
 
@@ -36,16 +33,6 @@ import static org.mockito.Mockito.mock;
 
 @Configuration
 @EnableConfigurationProperties({EnvironmentProperties.class})
-@Import({
-        ClientTestConfig.class,
-        ControllerTestConfig.class,
-        RepositoryTestConfig.class,
-        ServiceTestConfig.class,
-        FilterTestConfig.class,
-        KafkaTestConfig.class,
-        HelsesjekkConfig.class,
-        GraphqlExceptionHandler.class
-})
 public class ApplicationTestConfig {
     @Bean
     public AuthContextHolder authContextHolder() {

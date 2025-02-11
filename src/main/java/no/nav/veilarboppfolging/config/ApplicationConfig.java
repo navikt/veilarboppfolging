@@ -25,6 +25,7 @@ import no.nav.veilarboppfolging.tokenClient.ErrorMappedAzureAdMachineToMachineTo
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
@@ -37,6 +38,7 @@ import java.util.UUID;
 @Configuration
 @EnableScheduling
 @EnableConfigurationProperties({EnvironmentProperties.class})
+@Profile("!test")
 public class ApplicationConfig {
 
     public static final String APPLICATION_NAME = "veilarboppfolging";

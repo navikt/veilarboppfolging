@@ -33,7 +33,7 @@ import static no.nav.veilarboppfolging.test.TestUtils.verifiserAsynkront;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 
-@ActiveProfiles("local")
+@ActiveProfiles("test")
 public class AktiverBrukerServiceKafkaTest extends IntegrationTest {
 
     @Autowired
