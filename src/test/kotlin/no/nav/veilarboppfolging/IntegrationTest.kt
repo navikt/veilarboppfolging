@@ -20,6 +20,7 @@ import no.nav.veilarboppfolging.config.EnvironmentProperties
 import no.nav.veilarboppfolging.controller.OppfolgingController
 import no.nav.veilarboppfolging.controller.SakController
 import no.nav.veilarboppfolging.domain.StartetAvType
+import no.nav.veilarboppfolging.oppfolgingsbruker.OppfolgingStartBegrunnelse
 import no.nav.veilarboppfolging.oppfolgingsbruker.Oppfolgingsbruker
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.repository.EnhetRepository
@@ -130,6 +131,11 @@ open class IntegrationTest {
     fun startOppfolgingSomArbeidsoker(aktørId: AktorId) {
         val bruker = Oppfolgingsbruker.arbeidssokerOppfolgingsBruker(aktørId, StartetAvType.BRUKER)
         oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(bruker)
+    }
+
+    fun setBrukerUnderOppfolging(aktorId: AktorId) {
+        oppfolgingsStatusRepository.opprettOppfolging(aktorId)
+        oppfolgingsPeriodeRepository.start(aktorId, OppfolgingStartBegrunnelse.ARBEIDSSOKER_REGISTRERING)
     }
 
     fun hentOppfolgingsperioder(fnr: Fnr) = oppfolgingController.hentOppfolgingsperioder(fnr)

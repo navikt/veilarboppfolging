@@ -16,25 +16,60 @@ class GraphqlControllerTest: IntegrationTest() {
     @Autowired
     private lateinit var graphQlSource: GraphQlSource
 
-    @Test
-    fun `skal returnere oppfolgingsEnhet`() {
+    private val service: DefaultExecutionGraphQlService by lazy {
+        DefaultExecutionGraphQlService(graphQlSource)
+    }
+    private val tester: ExecutionGraphQlServiceTester by lazy {
+        ExecutionGraphQlServiceTester.create(service)
+    }
+
+    fun defaultBruker(): Pair<Fnr, AktorId> {
         val fnr = Fnr("12345678910")
         val aktorId = AktorId("22345678910")
+        mockAuthOk(aktorId, fnr)
+        return fnr to aktorId
+    }
+
+    @Test
+    fun `skal returnere oppfolgingsEnhet`() {
+        val (fnr, _) = defaultBruker()
         val kontor = "7414"
         val kontorNavn = "Nav Graphql Kontor"
         val skjermet = false
-        mockAuthOk(aktorId, fnr)
         mockPdlGeografiskTilknytning(fnr, kontor)
         mockPoaoTilgangTilgangsAttributter(kontor, skjermet)
         mockNorgFinnNavKontor(kontor, kontorNavn, skjermet, false)
-        val service = DefaultExecutionGraphQlService(graphQlSource)
-        val tester = ExecutionGraphQlServiceTester.create(service)
 
         /* Query is hidden in test/resources/graphl-test :) */
         val result = tester.documentName("getEnhetQuery").variable("fnr", fnr.get()).execute()
         result.errors().verify()
         result.path("oppfolgingsEnhet.enhet").matchesJson("""
             { "id": "${kontor}", "kilde": "NORG", "navn": "${kontorNavn}" }
+        """.trimIndent())
+    }
+
+    @Test
+    fun `skal returnere erUnderOppfolging - true når bruker ER under oppfølging`() {
+        val (fnr, aktorId) = defaultBruker()
+        setBrukerUnderOppfolging(aktorId)
+
+        /* Query is hidden in test/resources/graphl-test :) */
+        val result = tester.documentName("getUnderOppfolging").variable("fnr", fnr.get()).execute()
+        result.errors().verify()
+        result.path("oppfolging").matchesJson("""
+            { "erUnderOppfolging": true }
+        """.trimIndent())
+    }
+
+    @Test
+    fun `skal returnere erUnderOppfolging - false når bruker ikke under oppfølging`() {
+        val (fnr, _) = defaultBruker()
+
+        /* Query is hidden in test/resources/graphl-test :) */
+        val result = tester.documentName("getUnderOppfolging").variable("fnr", fnr.get()).execute()
+        result.errors().verify()
+        result.path("oppfolging").matchesJson("""
+            { "erUnderOppfolging": false }
         """.trimIndent())
     }
 }

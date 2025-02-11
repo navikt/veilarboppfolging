@@ -12,6 +12,10 @@ class PoaoTilgangError: RuntimeException {
     constructor(message: String): super(message)
 }
 
+class FantIkkeAktorIdForFnrError: RuntimeException {
+    constructor(message: String): super(message)
+}
+
 @Component
 class GraphqlExceptionHandler: DataFetcherExceptionResolver {
     override fun resolveException(ex: Throwable, env: DataFetchingEnvironment): Mono<List<GraphQLError>> {

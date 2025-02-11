@@ -2,6 +2,7 @@ package no.nav.veilarboppfolging.controller
 
 import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.client.norg2.Norg2Client
+import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.poao_tilgang.client.PoaoTilgangClient
 import no.nav.veilarboppfolging.client.norg.Enhet
@@ -70,7 +71,8 @@ class GraphqlController(
         if (fnr == null || fnr.isEmpty()) throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Fnr er påkrevd")
         if (authService.erEksternBruker()) throw ResponseStatusException(HttpStatus.FORBIDDEN)
 
-        val aktorId = aktorOppslagClient.hentAktorId(Fnr.of(fnr))
+        val aktorId = aktorOppslagClient.hentAktorId(Fnr.of(fnr)) as AktorId?
+        if (aktorId == null) throw FantIkkeAktorIdForFnrError("Fant ikke aktørId for bruker")
         val maybeOppfolgingsStatus = oppfolgingsStatusRepository.hentOppfolging(aktorId)
         return OppfolgingDto(erUnderOppfolging = maybeOppfolgingsStatus.map { it.isUnderOppfolging }.orElse(false))
     }
