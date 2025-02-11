@@ -14,13 +14,13 @@ open class Oppfolgingsbruker(
     open val aktorId: AktorId,
     open val oppfolgingStartBegrunnelse: OppfolgingStartBegrunnelse,
     open val startetAvType: StartetAvType,
-    open val registrertAv: String? = null
+    open val registrertAv: NavIdent? = null
 ) {
 
     companion object {
         @JvmStatic
         fun manueltRegistrertBruker(aktorId: AktorId, navIdent: NavIdent): Oppfolgingsbruker {
-            return BrukerManueltRegistrertAvVeileder(aktorId, navIdent.get())
+            return BrukerManueltRegistrertAvVeileder(aktorId, navIdent)
         }
 
         @JvmStatic
@@ -33,7 +33,7 @@ open class Oppfolgingsbruker(
                 aktorId,
                 OppfolgingStartBegrunnelse.ARBEIDSSOKER_REGISTRERING,
                 startetAvType,
-                navIdent?.get()
+                navIdent
             )
         }
 
@@ -51,14 +51,14 @@ open class Oppfolgingsbruker(
 
 data class BrukerManueltRegistrertAvVeileder(
     override val aktorId: AktorId,
-    override val registrertAv: String
+    override val registrertAv: NavIdent
 ): Oppfolgingsbruker(aktorId, OppfolgingStartBegrunnelse.MANUELL_REGISTRERING_VEILEDER, StartetAvType.VEILEDER, registrertAv)
 
 data class Arbeidssoker(
     override val aktorId: AktorId,
     override val oppfolgingStartBegrunnelse: OppfolgingStartBegrunnelse,
     override val startetAvType: StartetAvType,
-    override val registrertAv: String? = null
+    override val registrertAv: NavIdent? = null
 ) : Oppfolgingsbruker(
     aktorId,
     oppfolgingStartBegrunnelse,
