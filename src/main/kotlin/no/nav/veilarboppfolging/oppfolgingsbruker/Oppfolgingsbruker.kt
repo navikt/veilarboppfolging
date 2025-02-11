@@ -14,24 +14,26 @@ open class Oppfolgingsbruker(
     open val aktorId: AktorId,
     open val oppfolgingStartBegrunnelse: OppfolgingStartBegrunnelse,
     open val startetAvType: StartetAvType,
+    open val registrertAv: NavIdent? = null
 ) {
 
     companion object {
         @JvmStatic
-        fun manuelRegistrertBruker(aktorId: AktorId, navIdent: NavIdent): Oppfolgingsbruker {
-            return BrukerManueltRegistrertAvVeileder(navIdent, aktorId)
+        fun manueltRegistrertBruker(aktorId: AktorId, navIdent: NavIdent): Oppfolgingsbruker {
+            return BrukerManueltRegistrertAvVeileder(aktorId, navIdent)
         }
 
         @JvmStatic
         fun arbeidssokerOppfolgingsBruker(
             aktorId: AktorId,
             startetAvType: StartetAvType,
-            navIdent: NavIdent
+            navIdent: NavIdent? = null
         ): Oppfolgingsbruker {
             return Arbeidssoker(
                 aktorId,
                 OppfolgingStartBegrunnelse.ARBEIDSSOKER_REGISTRERING,
-                startetAvType
+                startetAvType,
+                navIdent
             )
         }
 
@@ -46,23 +48,17 @@ open class Oppfolgingsbruker(
         }
     }
 
-    fun getRegistrertAv(): NavIdent? {
-        return when (this) {
-            is BrukerManueltRegistrertAvVeileder -> registrertAv
-            is Arbeidssoker ->
-            else -> null
-        }
-    }
 }
 
 data class BrukerManueltRegistrertAvVeileder(
-    val registrertAv: NavIdent,
     override val aktorId: AktorId,
-): Oppfolgingsbruker(aktorId, OppfolgingStartBegrunnelse.MANUELL_REGISTRERING_VEILEDER, StartetAvType.VEILEDER)
+    override val registrertAv: NavIdent
+): Oppfolgingsbruker(aktorId, OppfolgingStartBegrunnelse.MANUELL_REGISTRERING_VEILEDER, StartetAvType.VEILEDER, registrertAv)
 
 data class Arbeidssoker(
     override val aktorId: AktorId,
     override val oppfolgingStartBegrunnelse: OppfolgingStartBegrunnelse,
     override val startetAvType: StartetAvType,
-) : Oppfolgingsbruker(aktorId, oppfolgingStartBegrunnelse, startetAvType)
+    override val registrertAv: NavIdent? = null
+) : Oppfolgingsbruker(aktorId, oppfolgingStartBegrunnelse, startetAvType, StartetAvType.VEILEDER.let { registrertAv })
 

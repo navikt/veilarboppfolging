@@ -31,12 +31,12 @@ class OppfolgingsPeriodeRepositoryTest {
     @Test
     void skal_hente_gjeldende_oppfolgingsperiode() {
         AktorId aktorId = AktorId.of("4321");
-        var oppfolgingsbruker = Oppfolgingsbruker.arbeidssokerOppfolgingsBruker(aktorId, StartetAvType.BRUKER);
+        var oppfolgingsbruker = Oppfolgingsbruker.arbeidssokerOppfolgingsBruker(aktorId, StartetAvType.BRUKER, null);
         oppfolgingsStatusRepository.opprettOppfolging(aktorId);
 
-        oppfolgingsPeriodeRepository.start(aktorId, oppfolgingsbruker.getOppfolgingStartBegrunnelse());
+        oppfolgingsPeriodeRepository.start(oppfolgingsbruker);
         oppfolgingsPeriodeRepository.avslutt(aktorId, "veileder", "derfor");
-        oppfolgingsPeriodeRepository.start(aktorId, oppfolgingsbruker.getOppfolgingStartBegrunnelse());
+        oppfolgingsPeriodeRepository.start(oppfolgingsbruker);
         Optional<OppfolgingsperiodeEntity> maybeOppfolgingsperiodeEntity = oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId);
         assertFalse(maybeOppfolgingsperiodeEntity.isEmpty());
         OppfolgingsperiodeEntity oppfolgingsperiodeEntity = maybeOppfolgingsperiodeEntity.get();
@@ -48,12 +48,12 @@ class OppfolgingsPeriodeRepositoryTest {
     @Test
     void skal_returnere_empty_hvis_ingen_oppfolging() {
         AktorId aktorId = AktorId.of("4321");
-        var oppfolgingsbruker = Oppfolgingsbruker.arbeidssokerOppfolgingsBruker(aktorId, StartetAvType.BRUKER);
+        var oppfolgingsbruker = Oppfolgingsbruker.arbeidssokerOppfolgingsBruker(aktorId, StartetAvType.BRUKER, null);
         Optional<OppfolgingsperiodeEntity> maybeOppfolgingsperiodeEntity1 = oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId);
         assertTrue(maybeOppfolgingsperiodeEntity1.isEmpty());
         oppfolgingsStatusRepository.opprettOppfolging(aktorId);
 
-        oppfolgingsPeriodeRepository.start(aktorId, oppfolgingsbruker.getOppfolgingStartBegrunnelse());
+        oppfolgingsPeriodeRepository.start(oppfolgingsbruker);
         oppfolgingsPeriodeRepository.avslutt(aktorId, "veileder", "derfor");
 
         Optional<OppfolgingsperiodeEntity> maybeOppfolgingsperiodeEntity2 = oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId);

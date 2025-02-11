@@ -2,6 +2,7 @@ package no.nav.veilarboppfolging.repository;
 
 import no.nav.common.types.identer.AktorId;
 import no.nav.veilarboppfolging.oppfolgingsbruker.OppfolgingStartBegrunnelse;
+import no.nav.veilarboppfolging.oppfolgingsbruker.Oppfolgingsbruker;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
 import no.nav.veilarboppfolging.utils.EnumUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,10 +38,10 @@ public class OppfolgingsPeriodeRepository {
         this.transactor = transactor;
     }
 
-    public void start(AktorId aktorId, OppfolgingStartBegrunnelse oppfolgingStartBegrunnelse, String veileder) {
+    public void start(Oppfolgingsbruker oppfolgingsbruker) {
         transactor.executeWithoutResult((ignored) -> {
-            insert(aktorId, oppfolgingStartBegrunnelse, veileder);
-            setActive(aktorId);
+            insert(oppfolgingsbruker.getAktorId(), oppfolgingsbruker.getOppfolgingStartBegrunnelse(), String.valueOf(oppfolgingsbruker.getRegistrertAv()), String.valueOf(oppfolgingsbruker.getStartetAvType()));
+            setActive(oppfolgingsbruker.getAktorId());
         });
     }
 
@@ -86,11 +87,11 @@ public class OppfolgingsPeriodeRepository {
         );
     }
 
-    private void insert(AktorId aktorId, OppfolgingStartBegrunnelse getOppfolgingStartBegrunnelse, String veileder) {
+    private void insert(AktorId aktorId, OppfolgingStartBegrunnelse getOppfolgingStartBegrunnelse, String veileder, String startetAvType) {
         db.update("" +
-                        "INSERT INTO OPPFOLGINGSPERIODE(uuid, aktor_id, startDato, oppdatert, start_begrunnelse, start_veileder) " +
-                        "VALUES (?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?)",
-                UUID.randomUUID().toString(), aktorId.get(), getOppfolgingStartBegrunnelse.name(), veileder);
+                        "INSERT INTO OPPFOLGINGSPERIODE(uuid, aktor_id, startDato, oppdatert, start_begrunnelse, startet_av, startet_av_type) " +
+                        "VALUES (?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?, ?, ?)",
+                UUID.randomUUID().toString(), aktorId.get(), getOppfolgingStartBegrunnelse.name(), veileder, startetAvType);
     }
 
     private void setActive(AktorId aktorId) {

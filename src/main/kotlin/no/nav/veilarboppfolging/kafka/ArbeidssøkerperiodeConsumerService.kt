@@ -1,6 +1,7 @@
 package no.nav.veilarboppfolging.kafka
 
 import no.nav.common.types.identer.Fnr
+import no.nav.common.types.identer.NavIdent
 import no.nav.paw.arbeidssokerregisteret.api.v1.BrukerType
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
@@ -59,7 +60,10 @@ open class ArbeidssøkerperiodeConsumerService(
         if (nyPeriode) {
             val startetAvType = arbeidssøkerperiode.startet.utfoertAv.type // VEILEDER, SYSTEM, SLUTTBRUKER
             // TODO: Når vi fjerner /aktiverbruker endepunkt bør vi også fjerne innsatsgruppe-feltet på Oppfolgingsbruker
-            val arbeidssøker = Oppfolgingsbruker.arbeidssokerOppfolgingsBruker(aktørId, startetAvType.toStartetAvType())
+            val startetAv = if(startetAvType.toStartetAvType() == StartetAvType.VEILEDER) NavIdent.of(
+                arbeidssøkerperiode.startet.utfoertAv.id.toString()
+            ) else null
+            val arbeidssøker = Oppfolgingsbruker.arbeidssokerOppfolgingsBruker(aktørId, startetAvType.toStartetAvType(), startetAv)
             logger.info("Fått melding om ny arbeidssøkerperiode, starter oppfølging hvis ikke allerede startet")
             oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(arbeidssøker)
             utmeldHvisAlleredeIserv(fnr, arbeidssøkerperiodeStartet)
