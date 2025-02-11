@@ -212,5 +212,3 @@ spec:
         - application: pto-admin
           namespace: pto
           cluster: dev-fss
-      external:
-        - host: https://pto-admin.dev.intern.nav.no
