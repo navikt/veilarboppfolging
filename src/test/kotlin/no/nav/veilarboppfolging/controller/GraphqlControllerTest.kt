@@ -2,9 +2,7 @@ package no.nav.veilarboppfolging.controller
 
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
-import no.nav.poao_tilgang.api.dto.response.Diskresjonskode
 import no.nav.veilarboppfolging.IntegrationTest
-import no.nav.veilarboppfolging.client.pdl.GTType
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.graphql.execution.DefaultExecutionGraphQlService
@@ -22,13 +20,13 @@ class GraphqlControllerTest: IntegrationTest() {
     fun `skal returnere oppfolgingsEnhet`() {
         val fnr = Fnr("12345678910")
         val aktorId = AktorId("22345678910")
-        val kontor = "1234"
+        val kontor = "7414"
         val kontorNavn = "Nav Graphql Kontor"
         val skjermet = false
         mockAuthOk(aktorId, fnr)
-        mockGeografiskTilknytning(fnr, "1234")
-        mockTilgangsAttributter(kontor, skjermet)
-        mockFinnNavKontor(kontor, kontorNavn, skjermet, false)
+        mockPdlGeografiskTilknytning(fnr, kontor)
+        mockPoaoTilgangTilgangsAttributter(kontor, skjermet)
+        mockNorgFinnNavKontor(kontor, kontorNavn, skjermet, false)
         val service = DefaultExecutionGraphQlService(graphQlSource)
         val tester = ExecutionGraphQlServiceTester.create(service)
 

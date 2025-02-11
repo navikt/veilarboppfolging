@@ -16,9 +16,7 @@ import no.nav.veilarboppfolging.client.norg.NorgTilhorighetRequest
 import no.nav.veilarboppfolging.client.pdl.GTType
 import no.nav.veilarboppfolging.client.pdl.GeografiskTilknytningClient
 import no.nav.veilarboppfolging.client.pdl.GeografiskTilknytningNr
-import no.nav.veilarboppfolging.config.ApplicationTestConfig
 import no.nav.veilarboppfolging.config.EnvironmentProperties
-import no.nav.veilarboppfolging.controller.GraphqlController
 import no.nav.veilarboppfolging.controller.OppfolgingController
 import no.nav.veilarboppfolging.controller.SakController
 import no.nav.veilarboppfolging.domain.StartetAvType
@@ -35,14 +33,11 @@ import no.nav.veilarboppfolging.test.DbTestUtils
 import no.nav.veilarboppfolging.tokenClient.ErrorMappedAzureAdMachineToMachineTokenClient
 import no.nav.veilarboppfolging.tokenClient.ErrorMappedAzureAdOnBehalfOfTokenClient
 import org.junit.jupiter.api.BeforeEach
-import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mockito
 import org.mockito.Mockito.doReturn
 import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration
-import org.springframework.boot.autoconfigure.graphql.GraphQlAutoConfiguration
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.boot.test.web.server.LocalServerPort
@@ -183,7 +178,7 @@ open class IntegrationTest {
             .thenReturn(fnr)
     }
 
-    fun mockGeografiskTilknytning(fnr: Fnr, enhetsNr: String, gtType: GTType = GTType.BYDEL) {
+    fun mockPdlGeografiskTilknytning(fnr: Fnr, enhetsNr: String, gtType: GTType = GTType.BYDEL) {
         Mockito.`when`(geografiskTilknytningClient.hentGeografiskTilknytning(fnr))
             .thenReturn(GeografiskTilknytningClient.GeografiskTilknytningOgAdressebeskyttelse(
                 GeografiskTilknytningNr(gtType, enhetsNr),
@@ -191,7 +186,7 @@ open class IntegrationTest {
             )
     }
 
-    fun mockTilgangsAttributter(kontor: String, skjermet: Boolean, diskresjonskode: Diskresjonskode? = null) {
+    fun mockPoaoTilgangTilgangsAttributter(kontor: String, skjermet: Boolean, diskresjonskode: Diskresjonskode? = null) {
         val apiResult = ApiResult.success(TilgangsattributterResponse(
             kontor = kontor,
             skjermet = skjermet,
@@ -201,7 +196,7 @@ open class IntegrationTest {
     }
 
     /* Brukt når man skal mappe fra GT til et spesifikt NAV-kontor (bruker egentlig skjermet og diskresjonskode også) */
-    fun mockFinnNavKontor(kontor: String, navn: String = "NAV Test", skjermet: Boolean, fortroligAdresse: Boolean) {
+    fun mockNorgFinnNavKontor(kontor: String, navn: String = "NAV Test", skjermet: Boolean, fortroligAdresse: Boolean) {
         val norgTilhorighetsRequest = NorgTilhorighetRequest(
             geografiskTilknytning = GeografiskTilknytningNr(GTType.BYDEL, kontor),
             skjermet = skjermet,
