@@ -3,14 +3,26 @@ package no.nav.veilarboppfolging
 import com.nimbusds.jwt.JWTClaimsSet
 import no.nav.common.auth.context.AuthContextHolder
 import no.nav.common.client.aktoroppslag.AktorOppslagClient
+import no.nav.common.client.norg2.Enhet
 import no.nav.common.client.norg2.Norg2Client
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
-import no.nav.veilarboppfolging.config.ApplicationTestConfig
+import no.nav.poao_tilgang.api.dto.response.Diskresjonskode
+import no.nav.poao_tilgang.api.dto.response.TilgangsattributterResponse
+import no.nav.poao_tilgang.client.PoaoTilgangClient
+import no.nav.poao_tilgang.client.api.ApiException
+import no.nav.poao_tilgang.client.api.ApiResult
+import no.nav.poao_tilgang.client.api.NetworkApiException
+import no.nav.veilarboppfolging.client.norg.INorgTilhorighetClient
+import no.nav.veilarboppfolging.client.norg.NorgTilhorighetRequest
+import no.nav.veilarboppfolging.client.pdl.GTType
+import no.nav.veilarboppfolging.client.pdl.GeografiskTilknytningClient
+import no.nav.veilarboppfolging.client.pdl.GeografiskTilknytningNr
 import no.nav.veilarboppfolging.config.EnvironmentProperties
 import no.nav.veilarboppfolging.controller.OppfolgingController
 import no.nav.veilarboppfolging.controller.SakController
 import no.nav.veilarboppfolging.domain.StartetAvType
+import no.nav.veilarboppfolging.oppfolgingsbruker.OppfolgingStartBegrunnelse
 import no.nav.veilarboppfolging.oppfolgingsbruker.Oppfolgingsbruker
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.repository.EnhetRepository
@@ -24,20 +36,31 @@ import no.nav.veilarboppfolging.test.DbTestUtils
 import no.nav.veilarboppfolging.tokenClient.ErrorMappedAzureAdMachineToMachineTokenClient
 import no.nav.veilarboppfolging.tokenClient.ErrorMappedAzureAdOnBehalfOfTokenClient
 import org.junit.jupiter.api.BeforeEach
+import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mockito
+import org.mockito.Mockito.doReturn
+import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.boot.test.web.server.LocalServerPort
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.kafka.test.context.EmbeddedKafka
 import org.springframework.test.annotation.DirtiesContext
+import org.springframework.web.context.WebApplicationContext
 import java.util.*
 
 @EmbeddedKafka(partitions = 1)
-@SpringBootTest(classes = [ApplicationTestConfig::class])
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 open class IntegrationTest {
+
+    @LocalServerPort
+    var port: Int = 0
+
+    @Autowired
+    lateinit var webApplicationContext: WebApplicationContext
 
     @MockBean
     lateinit var authContextHolder: AuthContextHolder
@@ -47,6 +70,9 @@ open class IntegrationTest {
 
     @MockBean
     lateinit var norg2Client: Norg2Client
+
+    @MockBean
+    lateinit var geografiskTilknytningClient: GeografiskTilknytningClient
 
     @MockBean
     lateinit var environmentProperties: EnvironmentProperties
@@ -93,6 +119,12 @@ open class IntegrationTest {
     @Autowired
     lateinit var enhetRepository: EnhetRepository
 
+    @Autowired
+    lateinit var poaoTilgangClient: PoaoTilgangClient
+
+    @Autowired
+    lateinit var inorg: INorgTilhorighetClient
+
     @BeforeEach
     fun beforeEach() {
         DbTestUtils.cleanupTestDb(jdbcTemplate)
@@ -101,6 +133,11 @@ open class IntegrationTest {
     fun startOppfolgingSomArbeidsoker(aktørId: AktorId) {
         val bruker = Oppfolgingsbruker.arbeidssokerOppfolgingsBruker(aktørId, StartetAvType.BRUKER)
         oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(bruker)
+    }
+
+    fun setBrukerUnderOppfolging(aktorId: AktorId) {
+        oppfolgingsStatusRepository.opprettOppfolging(aktorId)
+        oppfolgingsPeriodeRepository.start(aktorId, OppfolgingStartBegrunnelse.ARBEIDSSOKER_REGISTRERING)
     }
 
     fun hentOppfolgingsperioder(fnr: Fnr) = oppfolgingController.hentOppfolgingsperioder(fnr)
@@ -116,16 +153,16 @@ open class IntegrationTest {
             .claim("roles", listOf("access_as_application"))
             .build()
 
-        Mockito.`when`(authContextHolder.idTokenClaims).thenReturn(Optional.of(claims))
+        `when`(authContextHolder.idTokenClaims).thenReturn(Optional.of(claims))
 
         val token = "token"
 
-        Mockito.`when`(authContextHolder.idTokenString).thenReturn(Optional.of(token))
+        `when`(authContextHolder.idTokenString).thenReturn(Optional.of(token))
 
-        Mockito.`when`(authContextHolder.erSystemBruker()).thenReturn(true)
-        Mockito.`when`(aktorOppslagClient.hentAktorId(fnr))
+        `when`(authContextHolder.erSystemBruker()).thenReturn(true)
+        `when`(aktorOppslagClient.hentAktorId(fnr))
             .thenReturn(aktørId)
-        Mockito.`when`(aktorOppslagClient.hentFnr(aktørId))
+        `when`(aktorOppslagClient.hentFnr(aktørId))
             .thenReturn(fnr)
     }
 
@@ -136,16 +173,43 @@ open class IntegrationTest {
             .claim("oid", veilederIOD.toString())
             .build()
 
-        Mockito.`when`(authContextHolder.idTokenClaims).thenReturn(Optional.of(claims))
+        `when`(authContextHolder.idTokenClaims).thenReturn(Optional.of(claims))
 
         val token = "token"
 
-        Mockito.`when`(authContextHolder.idTokenString).thenReturn(Optional.of(token))
+        `when`(authContextHolder.idTokenString).thenReturn(Optional.of(token))
 
-        Mockito.`when`(authContextHolder.erInternBruker()).thenReturn(true)
-        Mockito.`when`(aktorOppslagClient.hentAktorId(fnr))
+        `when`(authContextHolder.erInternBruker()).thenReturn(true)
+        `when`(aktorOppslagClient.hentAktorId(fnr))
             .thenReturn(aktørId)
-        Mockito.`when`(aktorOppslagClient.hentFnr(aktørId))
+        `when`(aktorOppslagClient.hentFnr(aktørId))
             .thenReturn(fnr)
+    }
+
+    fun mockPdlGeografiskTilknytning(fnr: Fnr, enhetsNr: String, gtType: GTType = GTType.BYDEL) {
+        `when`(geografiskTilknytningClient.hentGeografiskTilknytning(fnr))
+            .thenReturn(GeografiskTilknytningClient.GeografiskTilknytningOgAdressebeskyttelse(
+                GeografiskTilknytningNr(gtType, enhetsNr),
+                false)
+            )
+    }
+
+    fun mockPoaoTilgangTilgangsAttributter(kontor: String, skjermet: Boolean, diskresjonskode: Diskresjonskode? = null) {
+        val apiResult = ApiResult.success(TilgangsattributterResponse(
+            kontor = kontor,
+            skjermet = skjermet,
+            diskresjonskode = diskresjonskode
+        ))
+        doReturn(apiResult).`when`(poaoTilgangClient).hentTilgangsAttributter(anyString())
+    }
+
+    fun mockPoaoTilgangTilgangsAttributterFeiler() {
+        val apiResult = ApiResult.failure<NetworkApiException>(NetworkApiException(IllegalArgumentException(")")))
+        doReturn(apiResult).`when`(poaoTilgangClient).hentTilgangsAttributter(anyString())
+    }
+
+    fun mockNorgEnhetsNavn(enhetsNr: String, enhetsNavn: String) {
+        val enhet = Enhet().also { it.navn = enhetsNavn }
+        `when`(norg2Client.hentEnhet(enhetsNr)).thenReturn(enhet)
     }
 }
