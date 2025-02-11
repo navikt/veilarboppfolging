@@ -40,7 +40,7 @@ public class OppfolgingsPeriodeRepository {
 
     public void start(Oppfolgingsbruker oppfolgingsbruker) {
         transactor.executeWithoutResult((ignored) -> {
-            insert(oppfolgingsbruker.getAktorId(), oppfolgingsbruker.getOppfolgingStartBegrunnelse(), String.valueOf(oppfolgingsbruker.getRegistrertAv()), String.valueOf(oppfolgingsbruker.getStartetAvType()));
+            insert(oppfolgingsbruker.getAktorId(), oppfolgingsbruker.getOppfolgingStartBegrunnelse(), oppfolgingsbruker.getRegistrertAv(), String.valueOf(oppfolgingsbruker.getStartetAvType()));
             setActive(oppfolgingsbruker.getAktorId());
         });
     }
