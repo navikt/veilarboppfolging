@@ -60,12 +60,13 @@ open class ArbeidssøkerperiodeConsumerService(
         if (nyPeriode) {
             val startetAvType = arbeidssøkerperiode.startet.utfoertAv.type // VEILEDER, SYSTEM, SLUTTBRUKER
             // TODO: Når vi fjerner /aktiverbruker endepunkt bør vi også fjerne innsatsgruppe-feltet på Oppfolgingsbruker
-            val startetAv = if(startetAvType.toStartetAvType() == StartetAvType.VEILEDER) NavIdent.of(
-                arbeidssøkerperiode.startet.utfoertAv.id.toString()
-            ) else null
-            val arbeidssøker = Oppfolgingsbruker.arbeidssokerOppfolgingsBruker(aktørId, startetAvType.toStartetAvType(), startetAv)
             logger.info("Fått melding om ny arbeidssøkerperiode, starter oppfølging hvis ikke allerede startet")
-            oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(arbeidssøker)
+            if(startetAvType.toStartetAvType() == StartetAvType.VEILEDER) {
+                oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker.arbeidssokerStartetAvVeileder(aktørId, startetAvType.toStartetAvType(), NavIdent.of(
+                    arbeidssøkerperiode.startet.utfoertAv.id.toString())))
+            } else {
+                oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker.arbeidssokerStartetAvBruker(aktørId, startetAvType.toStartetAvType()))
+            }
             utmeldHvisAlleredeIserv(fnr, arbeidssøkerperiodeStartet)
         } else {
             logger.info("Melding om avsluttet oppfølgingsperiode, gjør ingenting")

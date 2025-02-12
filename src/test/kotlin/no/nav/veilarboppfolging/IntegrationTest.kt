@@ -127,12 +127,12 @@ open class IntegrationTest {
     }
 
     fun startOppfolgingSomArbeidsoker(aktørId: AktorId) {
-        val bruker = Oppfolgingsbruker.arbeidssokerOppfolgingsBruker(aktørId, StartetAvType.BRUKER)
+        val bruker = Oppfolgingsbruker.arbeidssokerStartetAvBruker(aktørId, StartetAvType.BRUKER)
         oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(bruker)
     }
 
     fun setBrukerUnderOppfolging(aktorId: AktorId) {
-        val bruker = Oppfolgingsbruker.arbeidssokerOppfolgingsBruker(aktorId, StartetAvType.BRUKER)
+        val bruker = Oppfolgingsbruker.arbeidssokerStartetAvBruker(aktorId, StartetAvType.BRUKER)
         oppfolgingsStatusRepository.opprettOppfolging(aktorId)
         oppfolgingsPeriodeRepository.start(bruker)
     }

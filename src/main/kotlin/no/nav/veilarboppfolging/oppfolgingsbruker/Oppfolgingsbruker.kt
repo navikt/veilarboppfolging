@@ -24,7 +24,7 @@ open class Oppfolgingsbruker(
         }
 
         @JvmStatic
-        fun arbeidssokerOppfolgingsBruker(
+        fun arbeidssokerStartetAvVeileder(
             aktorId: AktorId,
             startetAvType: StartetAvType,
             navIdent: NavIdent? = null
@@ -34,6 +34,18 @@ open class Oppfolgingsbruker(
                 OppfolgingStartBegrunnelse.ARBEIDSSOKER_REGISTRERING,
                 startetAvType,
                 navIdent
+            )
+        }
+
+        @JvmStatic
+        fun arbeidssokerStartetAvBruker(
+            aktorId: AktorId,
+            startetAvType: StartetAvType
+        ): Oppfolgingsbruker {
+            return Arbeidssoker(
+                aktorId,
+                OppfolgingStartBegrunnelse.ARBEIDSSOKER_REGISTRERING,
+                startetAvType
             )
         }
 
