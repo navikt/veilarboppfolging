@@ -10,11 +10,9 @@ import no.nav.common.types.identer.Fnr
 import no.nav.poao_tilgang.api.dto.response.Diskresjonskode
 import no.nav.poao_tilgang.api.dto.response.TilgangsattributterResponse
 import no.nav.poao_tilgang.client.PoaoTilgangClient
-import no.nav.poao_tilgang.client.api.ApiException
 import no.nav.poao_tilgang.client.api.ApiResult
 import no.nav.poao_tilgang.client.api.NetworkApiException
 import no.nav.veilarboppfolging.client.norg.INorgTilhorighetClient
-import no.nav.veilarboppfolging.client.norg.NorgTilhorighetRequest
 import no.nav.veilarboppfolging.client.pdl.GTType
 import no.nav.veilarboppfolging.client.pdl.GeografiskTilknytningClient
 import no.nav.veilarboppfolging.client.pdl.GeografiskTilknytningNr
@@ -22,7 +20,6 @@ import no.nav.veilarboppfolging.config.EnvironmentProperties
 import no.nav.veilarboppfolging.controller.OppfolgingController
 import no.nav.veilarboppfolging.controller.SakController
 import no.nav.veilarboppfolging.domain.StartetAvType
-import no.nav.veilarboppfolging.oppfolgingsbruker.OppfolgingStartBegrunnelse
 import no.nav.veilarboppfolging.oppfolgingsbruker.Oppfolgingsbruker
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.repository.EnhetRepository
@@ -37,7 +34,6 @@ import no.nav.veilarboppfolging.tokenClient.ErrorMappedAzureAdMachineToMachineTo
 import no.nav.veilarboppfolging.tokenClient.ErrorMappedAzureAdOnBehalfOfTokenClient
 import org.junit.jupiter.api.BeforeEach
 import org.mockito.ArgumentMatchers.anyString
-import org.mockito.Mockito
 import org.mockito.Mockito.doReturn
 import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
@@ -136,8 +132,9 @@ open class IntegrationTest {
     }
 
     fun setBrukerUnderOppfolging(aktorId: AktorId) {
+        val bruker = Oppfolgingsbruker.arbeidssokerOppfolgingsBruker(aktorId, StartetAvType.BRUKER)
         oppfolgingsStatusRepository.opprettOppfolging(aktorId)
-        oppfolgingsPeriodeRepository.start(aktorId, OppfolgingStartBegrunnelse.ARBEIDSSOKER_REGISTRERING)
+        oppfolgingsPeriodeRepository.start(bruker)
     }
 
     fun hentOppfolgingsperioder(fnr: Fnr) = oppfolgingController.hentOppfolgingsperioder(fnr)
