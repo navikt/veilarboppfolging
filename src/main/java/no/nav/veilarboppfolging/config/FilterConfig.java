@@ -12,6 +12,7 @@ import no.nav.veilarboppfolging.utils.PingFilter;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 
 import java.util.List;
 
@@ -20,6 +21,7 @@ import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
 import static no.nav.common.utils.EnvironmentUtils.requireApplicationName;
 import static no.nav.veilarboppfolging.controller.AdminController.PTO_ADMIN_SERVICE_USER;
 
+@Profile("!test")
 @Configuration
 public class FilterConfig {
 

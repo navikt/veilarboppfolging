@@ -35,7 +35,7 @@ import kotlin.jvm.optionals.getOrNull
 import no.nav.paw.arbeidssokerregisteret.api.v1.Metadata as MetaData
 
 
-@ActiveProfiles("local")
+@ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
 
