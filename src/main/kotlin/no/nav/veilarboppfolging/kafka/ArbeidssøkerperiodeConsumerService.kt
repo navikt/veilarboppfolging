@@ -65,7 +65,7 @@ open class ArbeidssøkerperiodeConsumerService(
                 oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker.arbeidssokerStartetAvVeileder(aktørId, startetAvType.toStartetAvType(), NavIdent.of(
                     arbeidssøkerperiode.startet.utfoertAv.id.toString())))
             } else {
-                oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker.arbeidssokerStartetAvBruker(aktørId, startetAvType.toStartetAvType()))
+                oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker.arbeidssokerStartetAvBrukerEllerSystem(aktørId, startetAvType.toStartetAvType()))
             }
             utmeldHvisAlleredeIserv(fnr, arbeidssøkerperiodeStartet)
         } else {

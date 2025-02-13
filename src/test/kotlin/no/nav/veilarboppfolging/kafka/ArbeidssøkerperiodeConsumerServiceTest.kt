@@ -139,7 +139,7 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
 
     @Test
     fun `Dersom arbeidsrettet oppfølgingsperiode allerede eksisterer skal melding om ny arbeidssøkerperiode ikke endre noe`() {
-        val oppfølgingsbruker = Oppfolgingsbruker.arbeidssokerStartetAvBruker(aktørId, StartetAvType.BRUKER)
+        val oppfølgingsbruker = Oppfolgingsbruker.arbeidssokerStartetAvBrukerEllerSystem(aktørId, StartetAvType.BRUKER)
         oppfølgingService.startOppfolgingHvisIkkeAlleredeStartet(oppfølgingsbruker)
         val oppfølgingsdataFørMelding = oppfølgingService.hentOppfolgingsperioder(aktørId).first()
         val melding = ConsumerRecord("topic", 0, 0, "dummyKey", arbeidssøkerperiode(fnr))

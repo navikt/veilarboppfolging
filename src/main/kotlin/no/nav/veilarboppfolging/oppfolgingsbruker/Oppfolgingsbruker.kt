@@ -38,7 +38,7 @@ open class Oppfolgingsbruker(
         }
 
         @JvmStatic
-        fun arbeidssokerStartetAvBruker(
+        fun arbeidssokerStartetAvBrukerEllerSystem(
             aktorId: AktorId,
             startetAvType: StartetAvType
         ): Oppfolgingsbruker {
