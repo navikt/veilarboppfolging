@@ -18,6 +18,16 @@ enum Kilde {
     NORG
 }
 
+enum KanStartOppfolging {
+    JA
+    NEI_ALLEREDE_UNDER_OPPFOLGING
+    NEI_IKKE_TILGANG_KODE_7
+    NEI_IKKE_TILGANG_KODE_6
+    NEI_IKKE_TILGANG_SKJERMING
+    NEI_IKKE_TILGANG_ENHET
+}
+
 type OppfolgingDto {
     erUnderOppfolging: Boolean!
+    kanStarteOppfolging: KanStartOppfolging!
 }

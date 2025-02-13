@@ -1,0 +1,5 @@
+query kanStarteOppfolgingTestQuery($fnr: String!) {
+    oppfolging(fnr: $fnr) {
+        kanStarteOppfolging
+    }
+}

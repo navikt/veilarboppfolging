@@ -10,11 +10,9 @@ import no.nav.common.types.identer.Fnr
 import no.nav.poao_tilgang.api.dto.response.Diskresjonskode
 import no.nav.poao_tilgang.api.dto.response.TilgangsattributterResponse
 import no.nav.poao_tilgang.client.PoaoTilgangClient
-import no.nav.poao_tilgang.client.api.ApiException
 import no.nav.poao_tilgang.client.api.ApiResult
 import no.nav.poao_tilgang.client.api.NetworkApiException
 import no.nav.veilarboppfolging.client.norg.INorgTilhorighetClient
-import no.nav.veilarboppfolging.client.norg.NorgTilhorighetRequest
 import no.nav.veilarboppfolging.client.pdl.GTType
 import no.nav.veilarboppfolging.client.pdl.GeografiskTilknytningClient
 import no.nav.veilarboppfolging.client.pdl.GeografiskTilknytningNr

@@ -1,6 +1,5 @@
 package no.nav.veilarboppfolging.controller
 
-import graphql.ErrorType
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.veilarboppfolging.IntegrationTest
@@ -82,6 +81,17 @@ class GraphqlControllerTest: IntegrationTest() {
 
         /* Query is hidden in test/resources/graphl-test :) */
         val result = tester.documentName("getUnderOppfolging").variable("fnr", fnr.get()).execute()
+        result.errors().verify()
+        result.path("oppfolging").matchesJson("""
+            { "erUnderOppfolging": false }
+        """.trimIndent())
+    }
+
+    @Test
+    fun `skal returnere kanStarteOppfolging - JA når veileder har tilgang`() {
+        val fnr = Fnr.of("12444678910")
+        /* Query is hidden in test/resources/graphl-test :) */
+        val result = tester.documentName("kanStarteOppfolging").variable("fnr", fnr.get()).execute()
         result.errors().verify()
         result.path("oppfolging").matchesJson("""
             { "erUnderOppfolging": false }

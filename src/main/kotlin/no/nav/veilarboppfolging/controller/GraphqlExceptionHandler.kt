@@ -26,6 +26,11 @@ class FantIkkeAktorIdForFnrError: GraphqlError() {
     override fun toString() = "Fant ikke bruker i Persondataløsningen"
 }
 
+class InternFeil(val errorMessage: String): GraphqlError() {
+    override val errorType: ErrorType = ErrorType.ValidationError
+    override fun toString() = errorMessage
+}
+
 @Component
 class GraphqlExceptionHandler: DataFetcherExceptionResolver {
     private val logger = LoggerFactory.getLogger(GraphqlExceptionHandler::class.java)
