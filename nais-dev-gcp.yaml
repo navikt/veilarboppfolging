@@ -212,3 +212,6 @@ spec:
         - application: pto-admin
           namespace: pto
           cluster: dev-fss
+        - application: oppgave
+          namespace: aap
+          cluster: dev-gcp
