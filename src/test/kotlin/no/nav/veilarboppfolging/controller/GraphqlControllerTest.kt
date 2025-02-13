@@ -136,7 +136,7 @@ class GraphqlControllerTest: IntegrationTest() {
         ).forEach { (adGruppe, kanStarteOppfolgingResult) ->
             mockPoaoTilgangHarTilgangTilBruker(veilederUuid, fnr, Decision.Deny(
                 message = "mangler tilgang til gruppe med navn ${adGruppe}",
-                reason = "MANGLER_TILGANG_TIL_AD_GRUPPE"
+                reason = if (adGruppe != null) "MANGLER_TILGANG_TIL_AD_GRUPPE" else "IKKE_TILGANG_TIL_NAV_ENHET"
             ))
             /* Query is hidden in test/resources/graphl-test :) */
             val result = tester.documentName("kanStarteOppfolging").variable("fnr", fnr.get()).execute()
