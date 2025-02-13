@@ -50,8 +50,10 @@ public class OppfolgingsenhetEndringService {
         var erUnderOppfolgingLokalt = oppfolgingsStatusRepository.hentOppfolging(aktorId)
                 .map(OppfolgingEntity::isUnderOppfolging)
                 .orElse(false);
+        var erUnderOppfolgingIArena = erUnderOppfolging(formidlingsgruppe, kvalifiseringsgruppe);
+        var erUnderOppfolging = erUnderOppfolgingIArena || erUnderOppfolgingLokalt;
 
-        if (arenaNavKontor.get() == null || !erUnderOppfolging(formidlingsgruppe, kvalifiseringsgruppe) || !erUnderOppfolgingLokalt) {
+        if (arenaNavKontor.get() == null || !erUnderOppfolging) {
             secureLog.info(String.format("Legger ikke til historikkinnslag for på aktørid: %s fordi enhet mangler og/eller bruker er ikke under oppfølging", aktorId));
         } else if (eksisterendeHistorikk.isEmpty()) {
             secureLog.info(String.format("Legger til første historikkinnslag for endret oppfolgingsenhet på aktørid: %s", aktorId));
