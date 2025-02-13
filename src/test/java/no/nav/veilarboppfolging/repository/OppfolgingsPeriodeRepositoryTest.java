@@ -9,6 +9,7 @@ import no.nav.veilarboppfolging.test.DbTestUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.Optional;
@@ -21,7 +22,7 @@ class OppfolgingsPeriodeRepositoryTest {
     private final TransactionTemplate transactor = DbTestUtils.createTransactor(jdbcTemplate);
 
     OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository = new OppfolgingsPeriodeRepository(jdbcTemplate, transactor);
-    private final OppfolgingsStatusRepository oppfolgingsStatusRepository = new OppfolgingsStatusRepository(jdbcTemplate);
+    private final OppfolgingsStatusRepository oppfolgingsStatusRepository = new OppfolgingsStatusRepository(new NamedParameterJdbcTemplate(jdbcTemplate));
 
     @BeforeEach
     void setUp() {

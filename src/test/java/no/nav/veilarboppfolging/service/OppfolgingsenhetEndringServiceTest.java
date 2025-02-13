@@ -7,6 +7,7 @@ import no.nav.pto_schema.enums.arena.Formidlingsgruppe;
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
 import no.nav.veilarboppfolging.LocalDatabaseSingleton;
 import no.nav.veilarboppfolging.repository.EnhetRepository;
+import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsenhetHistorikkRepository;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsenhetEndringEntity;
 import no.nav.veilarboppfolging.test.DbTestUtils;
@@ -32,8 +33,8 @@ public class OppfolgingsenhetEndringServiceTest {
     private AuthService authService = mock(AuthService.class);
 
     private OppfolgingsenhetHistorikkRepository repo = new OppfolgingsenhetHistorikkRepository(new NamedParameterJdbcTemplate(LocalDatabaseSingleton.INSTANCE.getJdbcTemplate()));
-    private EnhetRepository enhetRepository = new EnhetRepository(new NamedParameterJdbcTemplate(LocalDatabaseSingleton.INSTANCE.getJdbcTemplate()));
-    private OppfolgingsenhetEndringService oppfolgingsenhetEndringService = new OppfolgingsenhetEndringService(repo, authService, enhetRepository);
+    private OppfolgingsStatusRepository oppfolgingsStatusRepository = new OppfolgingsStatusRepository(new NamedParameterJdbcTemplate(LocalDatabaseSingleton.INSTANCE.getJdbcTemplate()));
+    private OppfolgingsenhetEndringService oppfolgingsenhetEndringService = new OppfolgingsenhetEndringService(repo, authService, oppfolgingsStatusRepository);
 
     @Before
     public void cleanup() {

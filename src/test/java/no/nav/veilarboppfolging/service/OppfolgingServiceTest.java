@@ -35,6 +35,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.List;
@@ -78,7 +79,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
         arenaOppfolgingTilstand = new ArenaOppfolgingTilstand();
         arenaOppfolgingStatus = new VeilarbArenaOppfolgingsStatus();
-        oppfolgingsStatusRepository = new OppfolgingsStatusRepository(db);
+        oppfolgingsStatusRepository = new OppfolgingsStatusRepository(new NamedParameterJdbcTemplate(db));
         oppfolgingsPeriodeRepository = new OppfolgingsPeriodeRepository(db, transactor);
 
         oppfolgingService = new OppfolgingService(kafkaProducerService,

@@ -21,6 +21,7 @@ import no.nav.veilarboppfolging.test.DbTestUtils;
 import no.nav.veilarboppfolging.test.IsolatedDatabaseTest;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.ZonedDateTime;
@@ -78,7 +79,7 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
     @Before
     public void setup() {
         TransactionTemplate transactor = DbTestUtils.createTransactor(db);
-        oppfolgingsStatusRepository = new OppfolgingsStatusRepository(db);
+        oppfolgingsStatusRepository = new OppfolgingsStatusRepository(new NamedParameterJdbcTemplate(db));
         kvpRepository = new KvpRepository(db, namedParameterJdbcTemplate, transactor);
         maalRepository = new MaalRepository(db, transactor);
         oppfolgingsPeriodeRepository = new OppfolgingsPeriodeRepository(db, transactor);

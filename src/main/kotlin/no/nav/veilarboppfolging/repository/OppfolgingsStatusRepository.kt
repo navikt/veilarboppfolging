@@ -20,8 +20,7 @@ import java.util.Optional
 import java.util.function.Supplier
 
 @Repository
-class OppfolgingsStatusRepository(private val jdbcTemplate: JdbcTemplate) {
-    val db = NamedParameterJdbcTemplate(jdbcTemplate)
+class OppfolgingsStatusRepository(private val db: NamedParameterJdbcTemplate) {
     private val logger = LoggerFactory.getLogger(OppfolgingsStatusRepository::class.java)
 
     fun hentOppfolging(aktorId: AktorId): Optional<OppfolgingEntity> {
