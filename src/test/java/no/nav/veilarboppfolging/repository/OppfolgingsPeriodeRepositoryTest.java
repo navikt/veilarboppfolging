@@ -9,6 +9,7 @@ import no.nav.veilarboppfolging.test.DbTestUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.Optional;
@@ -21,7 +22,7 @@ class OppfolgingsPeriodeRepositoryTest {
     private final TransactionTemplate transactor = DbTestUtils.createTransactor(jdbcTemplate);
 
     OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository = new OppfolgingsPeriodeRepository(jdbcTemplate, transactor);
-    private final OppfolgingsStatusRepository oppfolgingsStatusRepository = new OppfolgingsStatusRepository(jdbcTemplate);
+    private final OppfolgingsStatusRepository oppfolgingsStatusRepository = new OppfolgingsStatusRepository(new NamedParameterJdbcTemplate(jdbcTemplate));
 
     @BeforeEach
     void setUp() {
@@ -31,12 +32,12 @@ class OppfolgingsPeriodeRepositoryTest {
     @Test
     void skal_hente_gjeldende_oppfolgingsperiode() {
         AktorId aktorId = AktorId.of("4321");
-        var oppfolgingsbruker = Oppfolgingsbruker.arbeidssokerOppfolgingsBruker(aktorId, StartetAvType.BRUKER);
+        var oppfolgingsbruker = Oppfolgingsbruker.arbeidssokerStartetAvBrukerEllerSystem(aktorId, StartetAvType.BRUKER);
         oppfolgingsStatusRepository.opprettOppfolging(aktorId);
 
-        oppfolgingsPeriodeRepository.start(aktorId, oppfolgingsbruker.getOppfolgingStartBegrunnelse());
+        oppfolgingsPeriodeRepository.start(oppfolgingsbruker);
         oppfolgingsPeriodeRepository.avslutt(aktorId, "veileder", "derfor");
-        oppfolgingsPeriodeRepository.start(aktorId, oppfolgingsbruker.getOppfolgingStartBegrunnelse());
+        oppfolgingsPeriodeRepository.start(oppfolgingsbruker);
         Optional<OppfolgingsperiodeEntity> maybeOppfolgingsperiodeEntity = oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId);
         assertFalse(maybeOppfolgingsperiodeEntity.isEmpty());
         OppfolgingsperiodeEntity oppfolgingsperiodeEntity = maybeOppfolgingsperiodeEntity.get();
@@ -48,12 +49,12 @@ class OppfolgingsPeriodeRepositoryTest {
     @Test
     void skal_returnere_empty_hvis_ingen_oppfolging() {
         AktorId aktorId = AktorId.of("4321");
-        var oppfolgingsbruker = Oppfolgingsbruker.arbeidssokerOppfolgingsBruker(aktorId, StartetAvType.BRUKER);
+        var oppfolgingsbruker = Oppfolgingsbruker.arbeidssokerStartetAvBrukerEllerSystem(aktorId, StartetAvType.BRUKER);
         Optional<OppfolgingsperiodeEntity> maybeOppfolgingsperiodeEntity1 = oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId);
         assertTrue(maybeOppfolgingsperiodeEntity1.isEmpty());
         oppfolgingsStatusRepository.opprettOppfolging(aktorId);
 
-        oppfolgingsPeriodeRepository.start(aktorId, oppfolgingsbruker.getOppfolgingStartBegrunnelse());
+        oppfolgingsPeriodeRepository.start(oppfolgingsbruker);
         oppfolgingsPeriodeRepository.avslutt(aktorId, "veileder", "derfor");
 
         Optional<OppfolgingsperiodeEntity> maybeOppfolgingsperiodeEntity2 = oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId);

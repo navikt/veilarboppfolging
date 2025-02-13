@@ -7,6 +7,7 @@ import no.nav.veilarboppfolging.repository.enums.KodeverkBruker;
 import no.nav.veilarboppfolging.test.IsolatedDatabaseTest;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import java.time.ZonedDateTime;
 
@@ -24,7 +25,7 @@ public class ManuellStatusRepositoryTest extends IsolatedDatabaseTest {
 
     @Before
     public void setup() {
-        oppfolgingsStatusRepository = new OppfolgingsStatusRepository(db);
+        oppfolgingsStatusRepository = new OppfolgingsStatusRepository(new NamedParameterJdbcTemplate(db));
         manuellStatusRepository = new ManuellStatusRepository(db, transactor);
     }
 
