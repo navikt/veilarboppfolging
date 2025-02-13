@@ -2,6 +2,7 @@ package no.nav.veilarboppfolging.controller
 
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
+import no.nav.poao_tilgang.client.Decision
 import no.nav.veilarboppfolging.IntegrationTest
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -9,6 +10,7 @@ import org.springframework.graphql.execution.DefaultExecutionGraphQlService
 import org.springframework.graphql.execution.GraphQlSource
 import org.springframework.graphql.test.tester.ExecutionGraphQlServiceTester
 import org.springframework.test.context.ActiveProfiles
+import java.util.UUID
 
 @ActiveProfiles("test")
 class GraphqlControllerTest: IntegrationTest() {
@@ -89,12 +91,60 @@ class GraphqlControllerTest: IntegrationTest() {
 
     @Test
     fun `skal returnere kanStarteOppfolging - JA når veileder har tilgang`() {
+        val veilederUuid = UUID.randomUUID()
         val fnr = Fnr.of("12444678910")
+        val aktorId = AktorId.of("12444678919")
+        mockInternBrukerAuthOk(veilederUuid, aktorId, fnr)
+        mockPoaoTilgangHarTilgangTilBruker(veilederUuid, fnr, Decision.Permit)
         /* Query is hidden in test/resources/graphl-test :) */
         val result = tester.documentName("kanStarteOppfolging").variable("fnr", fnr.get()).execute()
         result.errors().verify()
         result.path("oppfolging").matchesJson("""
-            { "erUnderOppfolging": false }
+            { "kanStarteOppfolging": "JA" }
         """.trimIndent())
+    }
+
+    @Test
+    fun `skal returnere kanStarteOppfolging - ALLEREDE_UNDER_OPPFOLGING når bruker allerede under oppfølging`() {
+        val veilederUuid = UUID.randomUUID()
+        val fnr = Fnr.of("12444678910")
+        val aktorId = AktorId.of("12444678919")
+        setBrukerUnderOppfolging(aktorId)
+        mockInternBrukerAuthOk(veilederUuid, aktorId, fnr)
+        /* Query is hidden in test/resources/graphl-test :) */
+        val result = tester.documentName("kanStarteOppfolging").variable("fnr", fnr.get()).execute()
+        result.errors().verify()
+        result.path("oppfolging").matchesJson("""
+            { "kanStarteOppfolging": "ALLEREDE_UNDER_OPPFOLGING" }
+        """.trimIndent())
+
+    }
+
+    @Test
+    fun `skal returnere kanStarteOppfolging - skal returnere hvorfor veileder ikke har tilgang`() {
+        val veilederUuid = UUID.randomUUID()
+        val fnr = Fnr.of("12444678910")
+        val aktorId = AktorId.of("12444678919")
+        mockInternBrukerAuthOk(veilederUuid, aktorId, fnr)
+
+        listOf(
+            AdGruppeNavn.FORTROLIG_ADRESSE to KanStarteOppfolging.IKKE_TILGANG_FORTROLIG_ADRESSE,
+            AdGruppeNavn.MODIA_OPPFOLGING to KanStarteOppfolging.IKKE_TILGANG_MODIA,
+            AdGruppeNavn.EGNE_ANSATTE to KanStarteOppfolging.IKKE_TILGANG_EGNE_ANSATTE,
+            AdGruppeNavn.STRENGT_FORTROLIG_ADRESSE to KanStarteOppfolging.IKKE_TILGANG_STRENGT_FORTROLIG_ADRESSE,
+            null to KanStarteOppfolging.IKKE_TILGANG_ENHET
+        ).forEach { (adGruppe, kanStarteOppfolgingResult) ->
+            mockPoaoTilgangHarTilgangTilBruker(veilederUuid, fnr, Decision.Deny(
+                message = "mangler tilgang til gruppe med navn ${adGruppe}",
+                reason = "MANGLER_TILGANG_TIL_AD_GRUPPE"
+            ))
+            /* Query is hidden in test/resources/graphl-test :) */
+            val result = tester.documentName("kanStarteOppfolging").variable("fnr", fnr.get()).execute()
+            result.errors().verify()
+            result.path("oppfolging").matchesJson("""
+            { "kanStarteOppfolging": "$kanStarteOppfolgingResult" }
+        """.trimIndent())
+        }
+
     }
 }

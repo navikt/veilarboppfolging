@@ -37,14 +37,28 @@ enum class KildeDto {
     NORG
 }
 
+data class VeilederTilgangDto(
+    val harTilgang: Boolean?,
+    val tilgang: TilgangResultat?
+)
+
+enum class TilgangResultat {
+    HAR_TILGANG,
+    IKKE_TILGANG_FORTROLIG_ADRESSE,
+    IKKE_TILGANG_STRENGT_FORTROLIG_ADRESSE,
+    IKKE_TILGANG_EGNE_ANSATTE,
+    IKKE_TILGANG_ENHET,
+    IKKE_TILGANG_MODIA
+}
+
 enum class KanStarteOppfolging {
     JA,
-    NEI_ALLEREDE_UNDER_OPPFOLGING,
-    NEI_IKKE_TILGANG_KODE_7,
-    NEI_IKKE_TILGANG_KODE_6,
-    NEI_IKKE_TILGANG_SKJERMING,
-    NEI_IKKE_TILGANG_ENHET,
-    NEI_IKKE_TILGANG_MODIA
+    ALLEREDE_UNDER_OPPFOLGING,
+    IKKE_TILGANG_FORTROLIG_ADRESSE,
+    IKKE_TILGANG_STRENGT_FORTROLIG_ADRESSE,
+    IKKE_TILGANG_EGNE_ANSATTE,
+    IKKE_TILGANG_ENHET,
+    IKKE_TILGANG_MODIA
 }
 
 data class OppfolgingDto(
@@ -88,6 +102,26 @@ class GraphqlController(
         return OppfolgingDto(erUnderOppfolging, null, fnr)
     }
 
+    @QueryMapping
+    fun veilederLeseTilgangModia(@Argument fnr: String?) {
+        if (fnr == null || fnr.isEmpty()) throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Fnr er påkrevd")
+        if (authService.erEksternBruker()) throw ResponseStatusException(HttpStatus.FORBIDDEN)
+
+        return evaluerTilgang(fnr)
+            .let { VeilederTilgangDto(
+                harTilgang = it == TilgangResultat.HAR_TILGANG,
+                tilgang =  it)
+            }
+    }
+
+    private fun evaluerTilgang(fnr: String): TilgangResultat {
+        val decision = authService.evaluerNavAnsattTilagngTilBruker(Fnr.of(fnr), TilgangType.LESE)
+        return when (decision) {
+            is Decision.Deny -> decision.tryToFindDenyReason()
+            Decision.Permit -> TilgangResultat.HAR_TILGANG
+        }
+    }
+
     @SchemaMapping(typeName="OppfolgingsEnhetsInfo", field="enhet")
     fun arenaOppfolgingsEnhet(oppfolgingsEnhet: OppfolgingsEnhetQueryDto): EnhetDto? {
         val aktorId = aktorOppslagClient.hentAktorId(Fnr.of(oppfolgingsEnhet.fnr))
@@ -105,20 +139,12 @@ class GraphqlController(
         }
     }
 
-    @SchemaMapping(typeName="OppfolgingsEnhetsInfo", field="enhet")
+    @SchemaMapping(typeName="OppfolgingDto", field="kanStarteOppfolging")
     fun kanStarteOppfolging(oppfolgingDto: OppfolgingDto): KanStarteOppfolging? {
         if (oppfolgingDto.norskIdent == null) throw InternFeil("Fant ikke fnr å sjekke tilgang mot i kanStarteOppfolging")
-        if (oppfolgingDto.erUnderOppfolging) return KanStarteOppfolging.NEI_ALLEREDE_UNDER_OPPFOLGING
-        try {
-            val decision = authService.evaluerNavAnsattTilagngTilBruker(Fnr.of(oppfolgingDto.norskIdent), TilgangType.LESE)
-            return when (decision) {
-                is Decision.Deny -> decision.tryToFindDenyReason()
-                Decision.Permit -> KanStarteOppfolging.JA
-            }
-        } catch (e: ForbiddenException) {
-            logger.error("Sjekking av tilgang for nav-ansatt feilet", e)
-            throw InternFeil("Sjekking av tilgang for nav-ansatt feilet")
-        }
+        if (oppfolgingDto.erUnderOppfolging) return KanStarteOppfolging.ALLEREDE_UNDER_OPPFOLGING
+
+        return evaluerTilgang(oppfolgingDto.norskIdent).toKanStarteOppfolging()
     }
 
     fun hentDefaultEnhetFraNorg(fnr: Fnr): Pair<EnhetId, KildeDto>? {
@@ -129,15 +155,26 @@ class GraphqlController(
     }
 }
 
-fun Decision.Deny.tryToFindDenyReason(): KanStarteOppfolging {
-    if (this.reason != "MANGLER_TILGANG_TIL_AD_GRUPPE") return KanStarteOppfolging.NEI_IKKE_TILGANG_ENHET
+fun Decision.Deny.tryToFindDenyReason(): TilgangResultat {
+    if (this.reason != "MANGLER_TILGANG_TIL_AD_GRUPPE") return TilgangResultat.IKKE_TILGANG_ENHET
     return when {
-        this.message.contains(AdGruppeNavn.STRENGT_FORTROLIG_ADRESSE) -> return KanStarteOppfolging.NEI_IKKE_TILGANG_KODE_6
-        this.message.contains(AdGruppeNavn.FORTROLIG_ADRESSE) -> return KanStarteOppfolging.NEI_IKKE_TILGANG_KODE_7
-        this.message.contains(AdGruppeNavn.EGNE_ANSATTE) -> return KanStarteOppfolging.NEI_IKKE_TILGANG_SKJERMING
-        this.message.contains(AdGruppeNavn.MODIA_GENERELL) -> return KanStarteOppfolging.NEI_IKKE_TILGANG_MODIA
-        this.message.contains(AdGruppeNavn.MODIA_OPPFOLGING) -> return KanStarteOppfolging.NEI_IKKE_TILGANG_MODIA
-        else -> KanStarteOppfolging.NEI_IKKE_TILGANG_ENHET
+        this.message.contains(AdGruppeNavn.STRENGT_FORTROLIG_ADRESSE) -> return TilgangResultat.IKKE_TILGANG_STRENGT_FORTROLIG_ADRESSE
+        this.message.contains(AdGruppeNavn.FORTROLIG_ADRESSE) -> return TilgangResultat.IKKE_TILGANG_FORTROLIG_ADRESSE
+        this.message.contains(AdGruppeNavn.EGNE_ANSATTE) -> return TilgangResultat.IKKE_TILGANG_EGNE_ANSATTE
+        this.message.contains(AdGruppeNavn.MODIA_GENERELL) -> return TilgangResultat.IKKE_TILGANG_MODIA
+        this.message.contains(AdGruppeNavn.MODIA_OPPFOLGING) -> return TilgangResultat.IKKE_TILGANG_MODIA
+        else -> TilgangResultat.IKKE_TILGANG_ENHET
+    }
+}
+
+fun TilgangResultat.toKanStarteOppfolging(): KanStarteOppfolging {
+    return when (this) {
+        TilgangResultat.HAR_TILGANG -> KanStarteOppfolging.JA
+        TilgangResultat.IKKE_TILGANG_FORTROLIG_ADRESSE -> KanStarteOppfolging.IKKE_TILGANG_FORTROLIG_ADRESSE
+        TilgangResultat.IKKE_TILGANG_STRENGT_FORTROLIG_ADRESSE -> KanStarteOppfolging.IKKE_TILGANG_STRENGT_FORTROLIG_ADRESSE
+        TilgangResultat.IKKE_TILGANG_EGNE_ANSATTE -> KanStarteOppfolging.IKKE_TILGANG_EGNE_ANSATTE
+        TilgangResultat.IKKE_TILGANG_ENHET -> KanStarteOppfolging.IKKE_TILGANG_ENHET
+        TilgangResultat.IKKE_TILGANG_MODIA -> KanStarteOppfolging.IKKE_TILGANG_MODIA
     }
 }
 
