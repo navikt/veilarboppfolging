@@ -15,6 +15,7 @@ import no.nav.veilarboppfolging.test.DbTestUtils;
 import no.nav.veilarboppfolging.test.IsolatedDatabaseTest;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.ZonedDateTime;
@@ -63,7 +64,7 @@ public class ManuellStatusServiceTest extends IsolatedDatabaseTest {
         when(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID);
 
         manuellStatusRepository = new ManuellStatusRepository(db, transactor);
-        oppfolgingsStatusRepository = new OppfolgingsStatusRepository(db);
+        oppfolgingsStatusRepository = new OppfolgingsStatusRepository(new NamedParameterJdbcTemplate(db));
         oppfolgingsPeriodeRepository = new OppfolgingsPeriodeRepository(db, transactor);
 
         manuellStatusService = new ManuellStatusService(

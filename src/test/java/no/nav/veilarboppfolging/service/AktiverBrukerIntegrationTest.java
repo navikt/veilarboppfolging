@@ -36,7 +36,7 @@ public class AktiverBrukerIntegrationTest extends IntegrationTest {
         JdbcTemplate jdbcTemplate = LocalDatabaseSingleton.INSTANCE.getJdbcTemplate();
         NamedParameterJdbcTemplate namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(jdbcTemplate);
         TransactionTemplate transactor = DbTestUtils.createTransactor(jdbcTemplate);
-        oppfolgingsStatusRepository = new OppfolgingsStatusRepository(jdbcTemplate);
+        oppfolgingsStatusRepository = new OppfolgingsStatusRepository(new NamedParameterJdbcTemplate(jdbcTemplate));
         oppfolgingsPeriodeRepository = new OppfolgingsPeriodeRepository(jdbcTemplate, transactor);
 
         authService = mock(AuthService.class);
