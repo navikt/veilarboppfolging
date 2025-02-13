@@ -4,7 +4,7 @@ import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.common.types.identer.NavIdent
 import no.nav.paw.arbeidssokerregisteret.api.v1.*
-import no.nav.pto_schema.enums.arena.*
+import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2
 import no.nav.veilarboppfolging.IntegrationTest
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsBruker
@@ -23,7 +23,7 @@ import org.assertj.core.api.Assertions.within
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import org.mockito.Mockito.*
+import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.test.context.ActiveProfiles
@@ -139,7 +139,7 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
 
     @Test
     fun `Dersom arbeidsrettet oppfølgingsperiode allerede eksisterer skal melding om ny arbeidssøkerperiode ikke endre noe`() {
-        val oppfølgingsbruker = Oppfolgingsbruker.arbeidssokerOppfolgingsBruker(aktørId, StartetAvType.BRUKER)
+        val oppfølgingsbruker = Oppfolgingsbruker.arbeidssokerStartetAvBrukerEllerSystem(aktørId, StartetAvType.BRUKER)
         oppfølgingService.startOppfolgingHvisIkkeAlleredeStartet(oppfølgingsbruker)
         val oppfølgingsdataFørMelding = oppfølgingService.hentOppfolgingsperioder(aktørId).first()
         val melding = ConsumerRecord("topic", 0, 0, "dummyKey", arbeidssøkerperiode(fnr))
@@ -152,7 +152,7 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
 
     @Test
     fun `Dersom arbeidsrettet oppfølgingsperiode allerede eksisterer for sykmeldt bruker skal melding om arbeidssøkerperiode ikke endre noe`() {
-        val oppfølgingsbruker = Oppfolgingsbruker.manuelRegistrertBruker(aktørId, NavIdent.of("G123123"))
+        val oppfølgingsbruker = Oppfolgingsbruker.manueltRegistrertBruker(aktørId, NavIdent.of("G123123"))
         oppfølgingService.startOppfolgingHvisIkkeAlleredeStartet(oppfølgingsbruker)
         val oppfølgingsdataFørMelding = oppfølgingService.hentOppfolgingsperioder(aktørId).first()
         val melding = ConsumerRecord("topic", 0, 0, "dummyKey", arbeidssøkerperiode(fnr))
@@ -287,12 +287,13 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
     fun lagreOppfølgingsperiode(periode: OppfolgingsperiodeEntity) {
         jdbcTemplate.update(
             "" +
-                    "INSERT INTO OPPFOLGINGSPERIODE(uuid, aktor_id, startDato, oppdatert, start_begrunnelse) " +
-                    "VALUES (?, ?, ?, CURRENT_TIMESTAMP, ?)",
+                    "INSERT INTO OPPFOLGINGSPERIODE(uuid, aktor_id, startDato, oppdatert, start_begrunnelse, startet_av) " +
+                    "VALUES (?, ?, ?, CURRENT_TIMESTAMP, ?, ?)",
             periode.uuid.toString(),
             periode.aktorId,
             Timestamp.from(periode.startDato.toInstant()),
-            periode.startetBegrunnelse.name
+            periode.startetBegrunnelse.name,
+            periode.veileder
         )
     }
 }

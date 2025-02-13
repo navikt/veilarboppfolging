@@ -20,7 +20,7 @@ class AktiverBrukerService(
         transactor.executeWithoutResult {
             val aktorId = authService.getAktorIdOrThrow(fnr)
             val navIdent = NavIdent.of(authService.innloggetVeilederIdent)
-            val oppfolgingsbruker = Oppfolgingsbruker.manuelRegistrertBruker(aktorId, navIdent)
+            val oppfolgingsbruker = Oppfolgingsbruker.manueltRegistrertBruker(aktorId, navIdent)
             oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(oppfolgingsbruker)
         }
     }
