@@ -12,7 +12,6 @@ import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.utils.IdentUtils;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.client.aktoroppslag.BrukerIdenter;
-import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
 import no.nav.common.types.identer.*;
 import no.nav.poao_tilgang.client.*;
 import no.nav.veilarboppfolging.BadRequestException;
@@ -36,7 +35,6 @@ import static java.util.Collections.emptyList;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 import static no.nav.common.auth.Constants.AAD_NAV_IDENT_CLAIM;
-import static no.nav.veilarboppfolging.utils.SecureLog.secureLog;
 
 @Slf4j
 @Service
@@ -369,6 +367,16 @@ public class AuthService {
                 })
                 .orElse(emptyList())
                 .contains("access_as_application");
+    }
+
+    /* Brukes når man trenger å vite hvorfor veileder fikk Deny */
+    public Decision evaluerNavAnsattTilagngTilBruker(Fnr fnr, TilgangType tilgangType) {
+        if(!erInternBruker()) {
+            throw new ForbiddenException("Må være intern bruker");
+        }
+        return poaoTilgangClient.evaluatePolicy(new NavAnsattTilgangTilEksternBrukerPolicyInput(
+                hentInnloggetVeilederUUID(), tilgangType, fnr.get()
+        )).getOrThrow();
     }
 
     private void sjekkTilgang(TilgangType tilgangType, AktorId aktorId) {

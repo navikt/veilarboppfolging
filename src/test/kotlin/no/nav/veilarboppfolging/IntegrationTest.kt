@@ -9,7 +9,10 @@ import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.poao_tilgang.api.dto.response.Diskresjonskode
 import no.nav.poao_tilgang.api.dto.response.TilgangsattributterResponse
+import no.nav.poao_tilgang.client.Decision
+import no.nav.poao_tilgang.client.NavAnsattTilgangTilEksternBrukerPolicyInput
 import no.nav.poao_tilgang.client.PoaoTilgangClient
+import no.nav.poao_tilgang.client.TilgangType
 import no.nav.poao_tilgang.client.api.ApiResult
 import no.nav.poao_tilgang.client.api.NetworkApiException
 import no.nav.veilarboppfolging.client.norg.INorgTilhorighetClient
@@ -33,6 +36,7 @@ import no.nav.veilarboppfolging.test.DbTestUtils
 import no.nav.veilarboppfolging.tokenClient.ErrorMappedAzureAdMachineToMachineTokenClient
 import no.nav.veilarboppfolging.tokenClient.ErrorMappedAzureAdOnBehalfOfTokenClient
 import org.junit.jupiter.api.BeforeEach
+import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mockito.doReturn
 import org.mockito.Mockito.`when`
@@ -203,6 +207,16 @@ open class IntegrationTest {
     fun mockPoaoTilgangTilgangsAttributterFeiler() {
         val apiResult = ApiResult.failure<NetworkApiException>(NetworkApiException(IllegalArgumentException(")")))
         doReturn(apiResult).`when`(poaoTilgangClient).hentTilgangsAttributter(anyString())
+    }
+
+    fun mockPoaoTilgangHarTilgangTilBruker(veilederUuid: UUID, fnr: Fnr, decision: Decision) {
+        val policyInput = NavAnsattTilgangTilEksternBrukerPolicyInput(
+            navAnsattAzureId = veilederUuid,
+            tilgangType = TilgangType.LESE,
+            norskIdent = fnr.get()
+        )
+        val apiResult = ApiResult.success(decision)
+        doReturn(apiResult).`when`(poaoTilgangClient).evaluatePolicy(policyInput)
     }
 
     fun mockNorgEnhetsNavn(enhetsNr: String, enhetsNavn: String) {

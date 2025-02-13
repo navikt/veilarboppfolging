@@ -1,6 +1,21 @@
 type Query {
     oppfolgingsEnhet(fnr: String!): OppfolgingsEnhetsInfo
     oppfolging(fnr: String!): OppfolgingDto
+    veilederLeseTilgangModia(fnr: String!): VeilederTilgang
+}
+
+type VeilederTilgang {
+    harTilgang: Boolean!
+    tilgang: TilgangResultat
+}
+
+enum TilgangResultat {
+    JA,
+    IKKE_TILGANG_FORTROLIG_ADRESSE,
+    IKKE_TILGANG_STRENGT_FORTROLIG_ADRESSE,
+    IKKE_TILGANG_EGNE_ANSATTE,
+    IKKE_TILGANG_ENHET,
+    IKKE_TILGANG_MODIA
 }
 
 type OppfolgingsEnhetsInfo {
@@ -18,6 +33,17 @@ enum Kilde {
     NORG
 }
 
+enum KanStartOppfolging {
+    JA
+    ALLEREDE_UNDER_OPPFOLGING
+    IKKE_TILGANG_FORTROLIG_ADRESSE,
+    IKKE_TILGANG_STRENGT_FORTROLIG_ADRESSE,
+    IKKE_TILGANG_EGNE_ANSATTE
+    IKKE_TILGANG_ENHET
+    IKKE_TILGANG_MODIA
+}
+
 type OppfolgingDto {
     erUnderOppfolging: Boolean!
+    kanStarteOppfolging: KanStartOppfolging
 }

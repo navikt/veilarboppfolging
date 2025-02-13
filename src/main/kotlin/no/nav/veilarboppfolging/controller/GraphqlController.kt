@@ -5,7 +5,10 @@ import no.nav.common.client.norg2.Norg2Client
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.EnhetId
 import no.nav.common.types.identer.Fnr
+import no.nav.poao_tilgang.client.Decision
+import no.nav.poao_tilgang.client.NorskIdent
 import no.nav.poao_tilgang.client.PoaoTilgangClient
+import no.nav.poao_tilgang.client.TilgangType
 import no.nav.veilarboppfolging.repository.EnhetRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
 import no.nav.veilarboppfolging.service.AuthService
@@ -33,8 +36,34 @@ enum class KildeDto {
     NORG
 }
 
+data class VeilederTilgangDto(
+    val harTilgang: Boolean?,
+    val tilgang: TilgangResultat?
+)
+
+enum class TilgangResultat {
+    HAR_TILGANG,
+    IKKE_TILGANG_FORTROLIG_ADRESSE,
+    IKKE_TILGANG_STRENGT_FORTROLIG_ADRESSE,
+    IKKE_TILGANG_EGNE_ANSATTE,
+    IKKE_TILGANG_ENHET,
+    IKKE_TILGANG_MODIA
+}
+
+enum class KanStarteOppfolging {
+    JA,
+    ALLEREDE_UNDER_OPPFOLGING,
+    IKKE_TILGANG_FORTROLIG_ADRESSE,
+    IKKE_TILGANG_STRENGT_FORTROLIG_ADRESSE,
+    IKKE_TILGANG_EGNE_ANSATTE,
+    IKKE_TILGANG_ENHET,
+    IKKE_TILGANG_MODIA
+}
+
 data class OppfolgingDto(
     val erUnderOppfolging: Boolean,
+    val kanStarteOppfolging: KanStarteOppfolging?,
+    val norskIdent: NorskIdent? = null
 )
 
 @Controller
@@ -67,8 +96,29 @@ class GraphqlController(
 
         val aktorId = aktorOppslagClient.hentAktorId(Fnr.of(fnr)) as AktorId?
         if (aktorId == null) throw FantIkkeAktorIdForFnrError()
-        val maybeOppfolgingsStatus = oppfolgingsStatusRepository.hentOppfolging(aktorId)
-        return OppfolgingDto(erUnderOppfolging = maybeOppfolgingsStatus.map { it.isUnderOppfolging }.orElse(false))
+        val erUnderOppfolging = oppfolgingsStatusRepository.hentOppfolging(aktorId)
+            .map { it.isUnderOppfolging }.orElse(false)
+        return OppfolgingDto(erUnderOppfolging, null, fnr)
+    }
+
+    @QueryMapping
+    fun veilederLeseTilgangModia(@Argument fnr: String?) {
+        if (fnr == null || fnr.isEmpty()) throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Fnr er påkrevd")
+        if (authService.erEksternBruker()) throw ResponseStatusException(HttpStatus.FORBIDDEN)
+
+        return evaluerTilgang(fnr)
+            .let { VeilederTilgangDto(
+                harTilgang = it == TilgangResultat.HAR_TILGANG,
+                tilgang =  it)
+            }
+    }
+
+    private fun evaluerTilgang(fnr: String): TilgangResultat {
+        val decision = authService.evaluerNavAnsattTilagngTilBruker(Fnr.of(fnr), TilgangType.LESE)
+        return when (decision) {
+            is Decision.Deny -> decision.tryToFindDenyReason()
+            Decision.Permit -> TilgangResultat.HAR_TILGANG
+        }
     }
 
     @SchemaMapping(typeName="OppfolgingsEnhetsInfo", field="enhet")
@@ -88,10 +138,50 @@ class GraphqlController(
         }
     }
 
+    @SchemaMapping(typeName="OppfolgingDto", field="kanStarteOppfolging")
+    fun kanStarteOppfolging(oppfolgingDto: OppfolgingDto): KanStarteOppfolging? {
+        if (oppfolgingDto.norskIdent == null) throw InternFeil("Fant ikke fnr å sjekke tilgang mot i kanStarteOppfolging")
+        if (oppfolgingDto.erUnderOppfolging) return KanStarteOppfolging.ALLEREDE_UNDER_OPPFOLGING
+
+        return evaluerTilgang(oppfolgingDto.norskIdent).toKanStarteOppfolging()
+    }
+
     fun hentDefaultEnhetFraNorg(fnr: Fnr): Pair<EnhetId, KildeDto>? {
         val tilgangsattributterResponse = poaoTilgangClient.hentTilgangsAttributter(fnr.get())
         if (tilgangsattributterResponse.isFailure) throw PoaoTilgangError(tilgangsattributterResponse.exception!!)
         val tilgangsAttributter = tilgangsattributterResponse.getOrThrow()
         return tilgangsAttributter.kontor?.let { EnhetId.of(it) to KildeDto.NORG }
     }
+}
+
+fun Decision.Deny.tryToFindDenyReason(): TilgangResultat {
+    if (this.reason != "MANGLER_TILGANG_TIL_AD_GRUPPE") return TilgangResultat.IKKE_TILGANG_ENHET
+    return when {
+        this.message.contains(AdGruppeNavn.STRENGT_FORTROLIG_ADRESSE) -> return TilgangResultat.IKKE_TILGANG_STRENGT_FORTROLIG_ADRESSE
+        this.message.contains(AdGruppeNavn.FORTROLIG_ADRESSE) -> return TilgangResultat.IKKE_TILGANG_FORTROLIG_ADRESSE
+        this.message.contains(AdGruppeNavn.EGNE_ANSATTE) -> return TilgangResultat.IKKE_TILGANG_EGNE_ANSATTE
+        this.message.contains(AdGruppeNavn.MODIA_GENERELL) -> return TilgangResultat.IKKE_TILGANG_MODIA
+        this.message.contains(AdGruppeNavn.MODIA_OPPFOLGING) -> return TilgangResultat.IKKE_TILGANG_MODIA
+        else -> TilgangResultat.IKKE_TILGANG_ENHET
+    }
+}
+
+fun TilgangResultat.toKanStarteOppfolging(): KanStarteOppfolging {
+    return when (this) {
+        TilgangResultat.HAR_TILGANG -> KanStarteOppfolging.JA
+        TilgangResultat.IKKE_TILGANG_FORTROLIG_ADRESSE -> KanStarteOppfolging.IKKE_TILGANG_FORTROLIG_ADRESSE
+        TilgangResultat.IKKE_TILGANG_STRENGT_FORTROLIG_ADRESSE -> KanStarteOppfolging.IKKE_TILGANG_STRENGT_FORTROLIG_ADRESSE
+        TilgangResultat.IKKE_TILGANG_EGNE_ANSATTE -> KanStarteOppfolging.IKKE_TILGANG_EGNE_ANSATTE
+        TilgangResultat.IKKE_TILGANG_ENHET -> KanStarteOppfolging.IKKE_TILGANG_ENHET
+        TilgangResultat.IKKE_TILGANG_MODIA -> KanStarteOppfolging.IKKE_TILGANG_MODIA
+    }
+}
+
+object AdGruppeNavn {
+    const val STRENGT_FORTROLIG_ADRESSE     = "0000-GA-Strengt_Fortrolig_Adresse"
+    const val FORTROLIG_ADRESSE     		= "0000-GA-Fortrolig_Adresse"
+    const val EGNE_ANSATTE               	= "0000-GA-Egne_ansatte"
+    /* AKA modia generell tilgang, en av disse trengs for lese-tilgang */
+    const val MODIA_OPPFOLGING              = "0000-GA-Modia-Oppfolging"
+    const val MODIA_GENERELL                = "0000-GA-BD06_ModiaGenerellTilgang"
 }
