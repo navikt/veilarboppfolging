@@ -10,7 +10,7 @@ type VeilederTilgang {
 }
 
 enum TilgangResultat {
-    JA,
+    HAR_TILGANG,
     IKKE_TILGANG_FORTROLIG_ADRESSE,
     IKKE_TILGANG_STRENGT_FORTROLIG_ADRESSE,
     IKKE_TILGANG_EGNE_ANSATTE,
