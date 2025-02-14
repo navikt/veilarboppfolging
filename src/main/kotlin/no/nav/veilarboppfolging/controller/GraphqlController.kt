@@ -102,7 +102,7 @@ class GraphqlController(
     }
 
     @QueryMapping
-    fun veilederLeseTilgangModia(@Argument fnr: String?) {
+    fun veilederLeseTilgangModia(@Argument fnr: String?): VeilederTilgangDto {
         if (fnr == null || fnr.isEmpty()) throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Fnr er påkrevd")
         if (authService.erEksternBruker()) throw ResponseStatusException(HttpStatus.FORBIDDEN)
 
