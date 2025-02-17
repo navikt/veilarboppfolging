@@ -33,11 +33,12 @@ enum Kilde {
     NORG
 }
 
-enum KanStartOppfolging {
+enum KanStarteOppfolging {
     JA
     ALLEREDE_UNDER_OPPFOLGING
-    IKKE_TILGANG_FORTROLIG_ADRESSE,
-    IKKE_TILGANG_STRENGT_FORTROLIG_ADRESSE,
+    IKKE_LOVLIG_OPPHOLD
+    IKKE_TILGANG_FORTROLIG_ADRESSE
+    IKKE_TILGANG_STRENGT_FORTROLIG_ADRESSE
     IKKE_TILGANG_EGNE_ANSATTE
     IKKE_TILGANG_ENHET
     IKKE_TILGANG_MODIA
@@ -45,5 +46,5 @@ enum KanStartOppfolging {
 
 type OppfolgingDto {
     erUnderOppfolging: Boolean!
-    kanStarteOppfolging: KanStartOppfolging
+    kanStarteOppfolging: KanStarteOppfolging
 }

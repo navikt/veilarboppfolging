@@ -1,2 +1,4 @@
-schema:  '**/*.graphqls'
+schema:
+  - '**/*.graphqls'
+  - '/graphql/pdl/schema.graphqls'
 documents: '**/*.graphql'
