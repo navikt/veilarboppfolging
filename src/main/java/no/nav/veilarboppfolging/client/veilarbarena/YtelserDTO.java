@@ -9,27 +9,27 @@ import java.util.List;
 
 @Value
 public class YtelserDTO {
-    List<Vedtak> vedtak;
-    List<Ytelseskontrakt> ytelser;
+    public List<Vedtak> vedtak;
+    public List<Ytelseskontrakt> ytelser;
 
     @Data
     @Accessors(chain = true)
     public static class Vedtak {
-        String type;
-        String status;
-        String aktivitetsfase;
-        String rettighetsgruppe;
-        LocalDate fraDato;
-        LocalDate tilDato;
+        public String type;
+        public String status;
+        public String aktivitetsfase;
+        public String rettighetsgruppe;
+        public LocalDate fraDato;
+        public LocalDate tilDato;
     }
 
     @Data
     @Accessors(chain = true)
     public static class Ytelseskontrakt {
-        String type;
-        String status;
-        LocalDate motattDato;
-        LocalDate fraDato;
-        LocalDate tilDato;
+        public String type;
+        public String status;
+        public LocalDate motattDato;
+        public LocalDate fraDato;
+        public LocalDate tilDato;
     }
 }

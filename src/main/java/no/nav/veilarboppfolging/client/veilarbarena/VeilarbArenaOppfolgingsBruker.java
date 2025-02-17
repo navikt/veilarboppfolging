@@ -12,11 +12,11 @@ import java.time.ZonedDateTime;
 @Data
 @Accessors(chain = true)
 public class VeilarbArenaOppfolgingsBruker {
-    private String fodselsnr;
-    private String formidlingsgruppekode;
-    private String kvalifiseringsgruppekode;
-    private String rettighetsgruppekode;
-    private ZonedDateTime iserv_fra_dato;
-    private String hovedmaalkode;
-    private String nav_kontor;
+    public String fodselsnr;
+    public String formidlingsgruppekode;
+    public String kvalifiseringsgruppekode;
+    public String rettighetsgruppekode;
+    public ZonedDateTime iserv_fra_dato;
+    public String hovedmaalkode;
+    public String nav_kontor;
 }

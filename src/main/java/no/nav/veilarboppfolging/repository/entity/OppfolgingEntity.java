@@ -15,11 +15,11 @@ import java.util.Optional;
 @Data
 @Accessors(chain = true)
 public class OppfolgingEntity {
-    private String aktorId;
-    private String veilederId;
-    private boolean underOppfolging;
-    private Long gjeldendeManuellStatusId;
-    private long gjeldendeMaalId;
-    private long gjeldendeKvpId;
-    private Optional<LocalArenaOppfolging> localArenaOppfolging;
+    public String aktorId;
+    public String veilederId;
+    public boolean underOppfolging;
+    public Long gjeldendeManuellStatusId;
+    public long gjeldendeMaalId;
+    public long gjeldendeKvpId;
+    public Optional<LocalArenaOppfolging> localArenaOppfolging;
 }

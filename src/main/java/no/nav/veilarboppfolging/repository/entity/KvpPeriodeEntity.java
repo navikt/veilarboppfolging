@@ -14,7 +14,7 @@ public class KvpPeriodeEntity {
     long kvpId;
     long serial;
     String aktorId;
-    String enhet;
+    public String enhet;
     String opprettetAv;
     ZonedDateTime opprettetDato;
     String opprettetBegrunnelse;

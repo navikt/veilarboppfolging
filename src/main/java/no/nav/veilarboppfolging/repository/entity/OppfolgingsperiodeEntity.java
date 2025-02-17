@@ -13,12 +13,12 @@ import java.util.UUID;
 @Builder(toBuilder = true)
 @AllArgsConstructor
 public class OppfolgingsperiodeEntity {
-    UUID uuid;
-    String aktorId;
-    String veileder;
-    ZonedDateTime startDato;
-    ZonedDateTime sluttDato;
-    String begrunnelse;
-    List<KvpPeriodeEntity> kvpPerioder;
-    OppfolgingStartBegrunnelse startetBegrunnelse;
+    public UUID uuid;
+    public String aktorId;
+    public String veileder;
+    public ZonedDateTime startDato;
+    public ZonedDateTime sluttDato;
+    public String begrunnelse;
+    public List<KvpPeriodeEntity> kvpPerioder;
+    public OppfolgingStartBegrunnelse startetBegrunnelse;
 }

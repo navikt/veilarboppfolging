@@ -17,10 +17,10 @@ import java.util.Optional;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ArenaOppfolgingTilstand {
-    String formidlingsgruppe;
-    String servicegruppe;
-    String oppfolgingsenhet;
-    LocalDate inaktiveringsdato;
+    public String formidlingsgruppe;
+    public String servicegruppe;
+    public String oppfolgingsenhet;
+    public LocalDate inaktiveringsdato;
 
     public static ArenaOppfolgingTilstand fraArenaBruker(VeilarbArenaOppfolgingsBruker veilarbArenaOppfolgingsBruker) {
         return new ArenaOppfolgingTilstand(
