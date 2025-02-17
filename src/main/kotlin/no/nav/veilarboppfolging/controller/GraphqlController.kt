@@ -67,8 +67,10 @@ data class OppfolgingDto(
     val erUnderOppfolging: Boolean,
     val kanStarteOppfolging: KanStarteOppfolging?,
     val norskIdent: NorskIdent? = null,
-    val startDato: ZonedDateTime? = null,
-//    val startetAv: String? = null
+)
+
+data class GjeldendeOppfolgingsperiodeDto(
+    val startDato: String,
 )
 
 @Controller
@@ -104,11 +106,7 @@ class GraphqlController(
         if (aktorId == null) throw FantIkkeAktorIdForFnrError()
         val erUnderOppfolging = oppfolgingsStatusRepository.hentOppfolging(aktorId)
             .map { it.isUnderOppfolging }.orElse(false)
-
-        val startDato = oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId)
-            .map { it.startDato }.orElse(null)
-
-        return OppfolgingDto(erUnderOppfolging, null, fnr, startDato)
+        return OppfolgingDto(erUnderOppfolging, null, fnr)
     }
 
     @QueryMapping
@@ -161,6 +159,14 @@ class GraphqlController(
         if (tilgangsattributterResponse.isFailure) throw PoaoTilgangError(tilgangsattributterResponse.exception!!)
         val tilgangsAttributter = tilgangsattributterResponse.getOrThrow()
         return tilgangsAttributter.kontor?.let { EnhetId.of(it) to KildeDto.NORG }
+    }
+
+    @QueryMapping
+    fun hentGjeldendeOppfolgingsPeriode(@Argument fnr: String?): GjeldendeOppfolgingsperiodeDto {
+        val aktorId = aktorOppslagClient.hentAktorId(Fnr.of(fnr))
+        val oppfolgingsperiode = oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId)
+        val startDato = oppfolgingsperiode.map { it.startDato }
+        return GjeldendeOppfolgingsperiodeDto(startDato.toString())
     }
 }
 

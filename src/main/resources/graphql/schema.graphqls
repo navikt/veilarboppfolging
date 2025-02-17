@@ -45,5 +45,10 @@ enum KanStartOppfolging {
 
 type OppfolgingDto {
     erUnderOppfolging: Boolean!
-    kanStarteOppfolging: KanStartOppfolging
+    kanStarteOppfolging: KanStartOppfolging,
+
+}
+
+type GjeldendeOppfolgingsperiodeDto {
+    startDato: String
 }
