@@ -56,7 +56,8 @@ open class KafkaProducerConfig(
                 kafkaProperties.getEndringPaMalAiven(),
                 kafkaProperties.getKvpAvsluttetTopicAiven(),
                 kafkaProperties.getKvpStartetTopicAiven(),
-                kafkaProperties.getKvpPerioderTopicAiven()
+                kafkaProperties.getKvpPerioderTopicAiven(),
+                kafkaProperties.getMinSideAapenMicrofrontendV1()
             )
         )
 

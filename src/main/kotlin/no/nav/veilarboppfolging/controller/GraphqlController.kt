@@ -163,9 +163,15 @@ class GraphqlController(
 
     @QueryMapping
     fun hentGjeldendeOppfolgingsPeriode(@Argument fnr: String?): GjeldendeOppfolgingsperiodeDto {
-        val aktorId = aktorOppslagClient.hentAktorId(Fnr.of(fnr))
+        if(!authService.erEksternBruker()) {
+            throw ResponseStatusException(HttpStatus.FORBIDDEN)
+        }
+
+        val innloggetBrukerFnr = authService.innloggetBrukerIdent
+        val aktorId = aktorOppslagClient.hentAktorId(Fnr.of(innloggetBrukerFnr))
         val oppfolgingsperiode = oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId)
         val startDato = oppfolgingsperiode.map { it.startDato }
+
         return GjeldendeOppfolgingsperiodeDto(startDato.toString())
     }
 }
