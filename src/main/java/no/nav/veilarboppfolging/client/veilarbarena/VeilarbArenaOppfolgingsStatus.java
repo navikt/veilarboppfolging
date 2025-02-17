@@ -12,10 +12,10 @@ import java.time.LocalDate;
 @Data
 @Accessors(chain = true)
 public class VeilarbArenaOppfolgingsStatus {
-    public String rettighetsgruppe;
-    public String formidlingsgruppe;
-    public String servicegruppe;
-    public String oppfolgingsenhet;
-    public LocalDate inaktiveringsdato;
-    public Boolean kanEnkeltReaktiveres;
+    String rettighetsgruppe;
+    String formidlingsgruppe;
+    String servicegruppe;
+    String oppfolgingsenhet;
+    LocalDate inaktiveringsdato;
+    Boolean kanEnkeltReaktiveres;
 }

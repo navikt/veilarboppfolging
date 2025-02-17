@@ -97,7 +97,7 @@ class GraphqlController(
         val aktorId = aktorOppslagClient.hentAktorId(Fnr.of(fnr)) as AktorId?
         if (aktorId == null) throw FantIkkeAktorIdForFnrError()
         val erUnderOppfolging: Boolean = oppfolgingsStatusRepository.hentOppfolging(aktorId)
-            .map<Boolean> { it.underOppfolging }.orElse(false)
+            .map<Boolean> { it.isUnderOppfolging }.orElse(false)
         return OppfolgingDto(erUnderOppfolging, null, fnr)
     }
 
