@@ -10,6 +10,7 @@ import no.nav.poao_tilgang.client.NorskIdent
 import no.nav.poao_tilgang.client.PoaoTilgangClient
 import no.nav.poao_tilgang.client.TilgangType
 import no.nav.veilarboppfolging.repository.EnhetRepository
+import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
 import no.nav.veilarboppfolging.service.AuthService
 import org.slf4j.LoggerFactory
@@ -19,6 +20,8 @@ import org.springframework.graphql.data.method.annotation.SchemaMapping
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Controller
 import org.springframework.web.server.ResponseStatusException
+import java.time.LocalDate
+import java.time.ZonedDateTime
 
 data class OppfolgingsEnhetQueryDto(
     val enhet: EnhetDto?, // Nullable because graphql
@@ -63,7 +66,9 @@ enum class KanStarteOppfolging {
 data class OppfolgingDto(
     val erUnderOppfolging: Boolean,
     val kanStarteOppfolging: KanStarteOppfolging?,
-    val norskIdent: NorskIdent? = null
+    val norskIdent: NorskIdent? = null,
+    val startDato: ZonedDateTime? = null,
+//    val startetAv: String? = null
 )
 
 @Controller
@@ -73,7 +78,8 @@ class GraphqlController(
     private val norg2Client: Norg2Client,
     private val aktorOppslagClient: AktorOppslagClient,
     private val authService: AuthService,
-    private val poaoTilgangClient: PoaoTilgangClient
+    private val poaoTilgangClient: PoaoTilgangClient,
+    private val oppfolgingsPeriodeRepository: OppfolgingsPeriodeRepository
 ) {
     private val logger = LoggerFactory.getLogger(GraphqlController::class.java)
 
@@ -98,7 +104,11 @@ class GraphqlController(
         if (aktorId == null) throw FantIkkeAktorIdForFnrError()
         val erUnderOppfolging = oppfolgingsStatusRepository.hentOppfolging(aktorId)
             .map { it.isUnderOppfolging }.orElse(false)
-        return OppfolgingDto(erUnderOppfolging, null, fnr)
+
+        val startDato = oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId)
+            .map { it.startDato }.orElse(null)
+
+        return OppfolgingDto(erUnderOppfolging, null, fnr, startDato)
     }
 
     @QueryMapping
