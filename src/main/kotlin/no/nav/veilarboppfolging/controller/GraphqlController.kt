@@ -65,8 +65,9 @@ enum class KanStarteOppfolging {
     IKKE_TILGANG_ENHET,
     IKKE_TILGANG_MODIA;
 
-    infix fun and(kanStarteOppfolging: KanStarteOppfolging): KanStarteOppfolging {
-        return this.takeIf { it == JA } ?: kanStarteOppfolging
+    infix fun and(kanStarteOppfolging: Lazy<KanStarteOppfolging>): KanStarteOppfolging {
+        if (this != JA) return this
+        return kanStarteOppfolging.value
     }
 }
 
@@ -156,10 +157,10 @@ class GraphqlController(
     @SchemaMapping(typeName="OppfolgingDto", field="kanStarteOppfolging")
     fun kanStarteOppfolging(oppfolgingDto: OppfolgingDto): KanStarteOppfolging? {
         if (oppfolgingDto.norskIdent == null) throw InternFeil("Fant ikke fnr å sjekke tilgang mot i kanStarteOppfolging")
-        if (oppfolgingDto.erUnderOppfolging) return KanStarteOppfolging.ALLEREDE_UNDER_OPPFOLGING
-        val gyldigTilgang = evaluerTilgang(oppfolgingDto.norskIdent).toKanStarteOppfolging()
-        val gyldigFregStatus by lazy { kanStarteOppfolgingMtpFregStatus(Fnr.of(oppfolgingDto.norskIdent)) }
-        return gyldigTilgang and gyldigFregStatus
+        val gyldigOppfolging = if (oppfolgingDto.erUnderOppfolging) KanStarteOppfolging.ALLEREDE_UNDER_OPPFOLGING else KanStarteOppfolging.JA
+        val gyldigTilgang = lazy { evaluerTilgang(oppfolgingDto.norskIdent).toKanStarteOppfolging() }
+        val gyldigFregStatus = lazy { kanStarteOppfolgingMtpFregStatus(Fnr.of(oppfolgingDto.norskIdent)) }
+        return gyldigOppfolging and gyldigTilgang and gyldigFregStatus
     }
 
     fun hentDefaultEnhetFraNorg(fnr: Fnr): Pair<EnhetId, KildeDto>? {

@@ -1,4 +1,4 @@
 schema:
-  - '**/*.graphqls'
-  - '/graphql/pdl/schema.graphqls'
+  - '/graphql/schema.veilarboppfolging.graphqls'
+#  - '/graphql/pdl/schema.graphqls'
 documents: '**/*.graphql'

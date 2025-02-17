@@ -33,7 +33,7 @@ class PdlFolkeregisterStatusClient(val pdlClient: PdlClient) {
     val logger = LoggerFactory.getLogger(PdlFolkeregisterStatusClient::class.java)
 
     fun hentFolkeregisterStatus(fnr: Fnr): ForenkletFolkeregisterStatus {
-        val graphqlRequest = GraphqlRequestBuilder<QueryVariables>("graphql/pdl/hentFolkeregisterStatus.graphql.graphql")
+        val graphqlRequest = GraphqlRequestBuilder<QueryVariables>("graphql/pdl/hentFolkeregisterStatus.graphql")
             .buildRequest(QueryVariables(ident = fnr.get(), historikk = false))
         val result = pdlClient.request(graphqlRequest, HentFolkeregisterPersonStatusGraphqlWrapper::class.java)
             .also { GraphqlUtils.logWarningIfError(it) }

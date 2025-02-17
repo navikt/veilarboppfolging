@@ -4,6 +4,8 @@ import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.poao_tilgang.client.Decision
 import no.nav.veilarboppfolging.IntegrationTest
+import no.nav.veilarboppfolging.client.pdl.Folkeregisterpersonstatus
+import no.nav.veilarboppfolging.client.pdl.ForenkletFolkeregisterStatus
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.graphql.execution.DefaultExecutionGraphQlService
@@ -29,6 +31,7 @@ class GraphqlControllerTest: IntegrationTest() {
         val fnr = Fnr("12345678910")
         val aktorId = AktorId("22345678910")
         mockAuthOk(aktorId, fnr)
+        mockPdlFolkeregisterStatus(fnr, ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven)
         return fnr to aktorId
     }
 
@@ -96,6 +99,7 @@ class GraphqlControllerTest: IntegrationTest() {
         val aktorId = AktorId.of("12444678919")
         mockInternBrukerAuthOk(veilederUuid, aktorId, fnr)
         mockPoaoTilgangHarTilgangTilBruker(veilederUuid, fnr, Decision.Permit)
+        mockPdlFolkeregisterStatus(fnr, ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven)
         /* Query is hidden in test/resources/graphl-test :) */
         val result = tester.documentName("kanStarteOppfolging").variable("fnr", fnr.get()).execute()
         result.errors().verify()
@@ -145,6 +149,32 @@ class GraphqlControllerTest: IntegrationTest() {
             { "kanStarteOppfolging": "$kanStarteOppfolgingResult" }
         """.trimIndent())
         }
+    }
 
+    @Test
+    fun `skal returnere kanStarteOppfolging - skal returnere hvorfor veileder starte oppfølging på brukere som har feil status i freg`() {
+        val veilederUuid = UUID.randomUUID()
+        val fnr = Fnr.of("12444678910")
+        val aktorId = AktorId.of("12444678919")
+        mockInternBrukerAuthOk(veilederUuid, aktorId, fnr)
+        mockPoaoTilgangHarTilgangTilBruker(veilederUuid, fnr, Decision.Permit)
+
+        listOf(
+            ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven to KanStarteOppfolging.JA,
+            ForenkletFolkeregisterStatus.dNummer to KanStarteOppfolging.JA,
+            ForenkletFolkeregisterStatus.doedIFolkeregisteret to KanStarteOppfolging.DOD,
+            ForenkletFolkeregisterStatus.forsvunnet to KanStarteOppfolging.IKKE_LOVLIG_OPPHOLD,
+            ForenkletFolkeregisterStatus.ikkeBosatt to KanStarteOppfolging.IKKE_LOVLIG_OPPHOLD,
+            ForenkletFolkeregisterStatus.opphoert to KanStarteOppfolging.IKKE_LOVLIG_OPPHOLD,
+            ForenkletFolkeregisterStatus.ukjent to KanStarteOppfolging.UKJENT_STATUS_FOLKEREGISTERET,
+        ).forEach { (status, kanStarteOppfolgingResult) ->
+            mockPdlFolkeregisterStatus(fnr, status)
+            /* Query is hidden in test/resources/graphl-test :) */
+            val result = tester.documentName("kanStarteOppfolging").variable("fnr", fnr.get()).execute()
+            result.errors().verify()
+            result.path("oppfolging").matchesJson("""
+            { "kanStarteOppfolging": "$kanStarteOppfolgingResult" }
+        """.trimIndent())
+        }
     }
 }
