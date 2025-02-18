@@ -15,7 +15,7 @@ data class AoMinSideMicrofrontendMessage @JvmOverloads constructor(
     val sensitivitet: String ?= null, // Kun for "enable"
 
     @field:NotBlank
-    val microfrontendId: String = "ao-min-side-microfrontend",
+    val microfrontend_id: String = "ao-min-side-microfrontend",
 
     @JsonProperty("@initiated_by")
     @field:NotBlank
