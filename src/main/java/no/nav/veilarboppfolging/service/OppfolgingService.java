@@ -291,6 +291,9 @@ public class OppfolgingService {
             log.info("Oppfølgingsperiode startet for bruker - publiserer endringer på oppfølgingsperiode-topics.");
             kafkaProducerService.publiserOppfolgingsperiode(DtoMappers.tilOppfolgingsperiodeDTO(sistePeriode));
 
+            log.info("Oppfølging startet for bruker - publiserer enable-melding på min-side-microfrontend-topic.");
+            kafkaProducerService.publiserVisAoMinSideMicrofrontend(aktorId);
+
             Optional<Kvalifiseringsgruppe> kvalifiseringsgruppe = getKvalifiseringsGruppe(oppfolgingsbruker);
             bigQueryClient.loggStartOppfolgingsperiode(oppfolgingsbruker.getOppfolgingStartBegrunnelse(), sistePeriode.getUuid(), oppfolgingsbruker.getStartetAvType(), kvalifiseringsgruppe);
 
@@ -339,6 +342,9 @@ public class OppfolgingService {
             kafkaProducerService.publiserVeilederTilordnet(aktorId, null);
             kafkaProducerService.publiserEndringPaNyForVeileder(aktorId, false);
             kafkaProducerService.publiserEndringPaManuellStatus(aktorId, false);
+
+            log.info("Oppfølging avsluttet for bruker - publiserer disable-melding på min-side-microfrontend-topic.");
+            kafkaProducerService.publiserSkjulAoMinSideMicrofrontend(aktorId);
 
             var erAutomatiskAvsluttet = Objects.equals(veilederId, SYSTEM_USER_NAME) || veilederId == null;
             bigQueryClient.loggAvsluttOppfolgingsperiode(sistePeriode.getUuid(), erAutomatiskAvsluttet);

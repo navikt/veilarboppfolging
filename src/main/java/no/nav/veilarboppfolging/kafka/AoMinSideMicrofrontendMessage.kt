@@ -1,0 +1,32 @@
+package no.nav.veilarboppfolging.kafka;
+
+import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.annotation.JsonValue
+import jakarta.validation.constraints.NotBlank
+import java.time.Instant
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
+data class AoMinSideMicrofrontendMessage @JvmOverloads constructor(
+    @JsonProperty("@action")
+    val action: Action,
+
+    @field:NotBlank
+    val ident: String,
+
+    @field:NotBlank
+    val microfrontendId: String = "ao-min-side-microfrontend",
+
+    val sensitivitet: String ?= null, // Kun for "enable"
+
+    @JsonProperty("@initiated_by")
+    @field:NotBlank
+    val initiatedBy: String = "dab",
+
+    val timestamp: Instant = Instant.now()
+) {
+    enum class Action(@JsonValue val verdi: String) {
+        ENABLE("enable"),
+        DISABLE("disable")
+    }
+}
