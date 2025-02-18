@@ -8,6 +8,7 @@ import no.nav.common.client.pdl.PdlClientImpl
 import no.nav.common.types.identer.Fnr
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Test
+import kotlin.test.assertEquals
 
 @WireMockTest
 class PdlFolkeregisterStatusClientTest {
@@ -22,7 +23,7 @@ class PdlFolkeregisterStatusClientTest {
                 "hentPerson": {
                   "folkeregisterpersonstatus": [
                     {
-                      "forenkletStatus": "dNummer"
+                      "forenkletStatus": "doedIFolkeregisteret"
                     }
                   ]
                 }
@@ -39,7 +40,8 @@ class PdlFolkeregisterStatusClientTest {
         )
 
         val pdlClient = PdlClientImpl(apiUrl, { "token" }, "B1234")
-        PdlFolkeregisterStatusClient(pdlClient).hentFolkeregisterStatus(Fnr("12345678910"))
+        val result = PdlFolkeregisterStatusClient(pdlClient).hentFolkeregisterStatus(Fnr("12345678910"))
+        assertEquals(result, ForenkletFolkeregisterStatus.doedIFolkeregisteret)
     }
 
 }

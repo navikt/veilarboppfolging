@@ -12,6 +12,11 @@ import no.nav.poao_tilgang.client.TilgangType
 import no.nav.veilarboppfolging.client.pdl.Folkeregisterpersonstatus
 import no.nav.veilarboppfolging.client.pdl.ForenkletFolkeregisterStatus
 import no.nav.veilarboppfolging.client.pdl.PdlFolkeregisterStatusClient
+import no.nav.veilarboppfolging.oppfolgingsbruker.kanStarteOppfolging.ALLEREDE_UNDER_OPPFOLGING
+import no.nav.veilarboppfolging.oppfolgingsbruker.kanStarteOppfolging.BrukerHarRiktigFregStatus
+import no.nav.veilarboppfolging.oppfolgingsbruker.kanStarteOppfolging.KanStarteOppfolging
+import no.nav.veilarboppfolging.oppfolgingsbruker.kanStarteOppfolging.OPPFOLGING_OK
+import no.nav.veilarboppfolging.oppfolgingsbruker.kanStarteOppfolging.toKanStarteOppfolging
 import no.nav.veilarboppfolging.repository.EnhetRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
 import no.nav.veilarboppfolging.service.AuthService
@@ -53,23 +58,6 @@ enum class TilgangResultat {
     IKKE_TILGANG_MODIA
 }
 
-enum class KanStarteOppfolging {
-    JA,
-    ALLEREDE_UNDER_OPPFOLGING,
-    DOD,
-    IKKE_LOVLIG_OPPHOLD,
-    UKJENT_STATUS_FOLKEREGISTERET,
-    IKKE_TILGANG_FORTROLIG_ADRESSE,
-    IKKE_TILGANG_STRENGT_FORTROLIG_ADRESSE,
-    IKKE_TILGANG_EGNE_ANSATTE,
-    IKKE_TILGANG_ENHET,
-    IKKE_TILGANG_MODIA;
-
-    infix fun and(kanStarteOppfolging: Lazy<KanStarteOppfolging>): KanStarteOppfolging {
-        if (this != JA) return this
-        return kanStarteOppfolging.value
-    }
-}
 
 data class OppfolgingDto(
     val erUnderOppfolging: Boolean,
@@ -133,7 +121,7 @@ class GraphqlController(
         }
     }
 
-    private fun kanStarteOppfolgingMtpFregStatus(fnr: Fnr): KanStarteOppfolging {
+    private fun kanStarteOppfolgingMtpFregStatus(fnr: Fnr): BrukerHarRiktigFregStatus {
         return pdlFolkeregisterStatusClient.hentFolkeregisterStatus(fnr).toKanStarteOppfolging()
     }
 
@@ -157,7 +145,7 @@ class GraphqlController(
     @SchemaMapping(typeName="OppfolgingDto", field="kanStarteOppfolging")
     fun kanStarteOppfolging(oppfolgingDto: OppfolgingDto): KanStarteOppfolging? {
         if (oppfolgingDto.norskIdent == null) throw InternFeil("Fant ikke fnr å sjekke tilgang mot i kanStarteOppfolging")
-        val gyldigOppfolging = if (oppfolgingDto.erUnderOppfolging) KanStarteOppfolging.ALLEREDE_UNDER_OPPFOLGING else KanStarteOppfolging.JA
+        val gyldigOppfolging = if (oppfolgingDto.erUnderOppfolging) ALLEREDE_UNDER_OPPFOLGING else OPPFOLGING_OK
         val gyldigTilgang = lazy { evaluerTilgang(oppfolgingDto.norskIdent).toKanStarteOppfolging() }
         val gyldigFregStatus = lazy { kanStarteOppfolgingMtpFregStatus(Fnr.of(oppfolgingDto.norskIdent)) }
         return gyldigOppfolging and gyldigTilgang and gyldigFregStatus
@@ -180,29 +168,6 @@ fun Decision.Deny.tryToFindDenyReason(): TilgangResultat {
         this.message.contains(AdGruppeNavn.MODIA_GENERELL) -> return TilgangResultat.IKKE_TILGANG_MODIA
         this.message.contains(AdGruppeNavn.MODIA_OPPFOLGING) -> return TilgangResultat.IKKE_TILGANG_MODIA
         else -> TilgangResultat.IKKE_TILGANG_ENHET
-    }
-}
-
-fun TilgangResultat.toKanStarteOppfolging(): KanStarteOppfolging {
-    return when (this) {
-        TilgangResultat.HAR_TILGANG -> KanStarteOppfolging.JA
-        TilgangResultat.IKKE_TILGANG_FORTROLIG_ADRESSE -> KanStarteOppfolging.IKKE_TILGANG_FORTROLIG_ADRESSE
-        TilgangResultat.IKKE_TILGANG_STRENGT_FORTROLIG_ADRESSE -> KanStarteOppfolging.IKKE_TILGANG_STRENGT_FORTROLIG_ADRESSE
-        TilgangResultat.IKKE_TILGANG_EGNE_ANSATTE -> KanStarteOppfolging.IKKE_TILGANG_EGNE_ANSATTE
-        TilgangResultat.IKKE_TILGANG_ENHET -> KanStarteOppfolging.IKKE_TILGANG_ENHET
-        TilgangResultat.IKKE_TILGANG_MODIA -> KanStarteOppfolging.IKKE_TILGANG_MODIA
-    }
-}
-
-fun ForenkletFolkeregisterStatus.toKanStarteOppfolging(): KanStarteOppfolging {
-    return when (this) {
-        ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven,
-        ForenkletFolkeregisterStatus.dNummer -> KanStarteOppfolging.JA
-        ForenkletFolkeregisterStatus.opphoert,
-        ForenkletFolkeregisterStatus.ikkeBosatt,
-        ForenkletFolkeregisterStatus.forsvunnet-> KanStarteOppfolging.IKKE_LOVLIG_OPPHOLD
-        ForenkletFolkeregisterStatus.doedIFolkeregisteret -> KanStarteOppfolging.DOD
-        ForenkletFolkeregisterStatus.ukjent -> KanStarteOppfolging.UKJENT_STATUS_FOLKEREGISTERET
     }
 }
 
