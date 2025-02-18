@@ -2,13 +2,12 @@ package no.nav.veilarboppfolging.kafka;
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.fasterxml.jackson.annotation.JsonValue
 import jakarta.validation.constraints.NotBlank
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class AoMinSideMicrofrontendMessage @JvmOverloads constructor(
     @JsonProperty("@action")
-    val action: Action,
+    val action: String,
 
     @field:NotBlank
     val ident: String,
@@ -22,9 +21,4 @@ data class AoMinSideMicrofrontendMessage @JvmOverloads constructor(
     @field:NotBlank
     val initiatedBy: String = "dab",
 
-) {
-    enum class Action(@JsonValue val verdi: String) {
-        ENABLE("enable"),
-        DISABLE("disable")
-    }
-}
+)

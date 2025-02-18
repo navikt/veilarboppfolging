@@ -130,7 +130,7 @@ public class KafkaProducerService {
     public void publiserVisAoMinSideMicrofrontend(AktorId aktorId) {
         Fnr fnr = authService.getFnrOrThrow(aktorId);
 
-        AoMinSideMicrofrontendMessage message = new AoMinSideMicrofrontendMessage(AoMinSideMicrofrontendMessage.Action.ENABLE, fnr.get(), "idporten-loa-high");
+        AoMinSideMicrofrontendMessage message = new AoMinSideMicrofrontendMessage("enable", fnr.get(), "idporten-loa-high");
 
         log.info("Oppfølging startet for bruker - publiserer enable-melding på min-side-microfrontend-topic. Melding: {}", message);
         store(kafkaProperties.getMinSideAapenMicrofrontendV1(), aktorId.get(), message);
@@ -139,7 +139,7 @@ public class KafkaProducerService {
     public void publiserSkjulAoMinSideMicrofrontend(AktorId aktorId) {
         Fnr fnr = authService.getFnrOrThrow(aktorId);
 
-        AoMinSideMicrofrontendMessage message = new AoMinSideMicrofrontendMessage(AoMinSideMicrofrontendMessage.Action.DISABLE, fnr.get());
+        AoMinSideMicrofrontendMessage message = new AoMinSideMicrofrontendMessage("disable", fnr.get());
 
         log.info("Oppfølging startet for bruker - publiserer disable-melding på min-side-microfrontend-topic. Melding: {}", message);
         store(kafkaProperties.getMinSideAapenMicrofrontendV1(), aktorId.get(), message);
