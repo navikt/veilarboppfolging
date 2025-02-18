@@ -1,5 +1,6 @@
 package no.nav.veilarboppfolging.service;
 
+import lombok.extern.slf4j.Slf4j;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.kafka.producer.feilhandtering.KafkaProducerRecordStorage;
 import no.nav.common.types.identer.AktorId;
@@ -20,6 +21,7 @@ import java.time.ZonedDateTime;
 
 import static no.nav.common.kafka.producer.util.ProducerUtils.serializeJsonRecord;
 
+@Slf4j
 @Service
 public class KafkaProducerService {
 
@@ -130,6 +132,7 @@ public class KafkaProducerService {
 
         AoMinSideMicrofrontendMessage message = new AoMinSideMicrofrontendMessage(AoMinSideMicrofrontendMessage.Action.ENABLE, fnr.get(), "idporten-loa-high");
 
+        log.info("Oppfølging startet for bruker - publiserer enable-melding på min-side-microfrontend-topic. Melding: {}", message);
         store(kafkaProperties.getMinSideAapenMicrofrontendV1(), aktorId.get(), message);
     }
 
@@ -138,6 +141,7 @@ public class KafkaProducerService {
 
         AoMinSideMicrofrontendMessage message = new AoMinSideMicrofrontendMessage(AoMinSideMicrofrontendMessage.Action.DISABLE, fnr.get());
 
+        log.info("Oppfølging startet for bruker - publiserer disable-melding på min-side-microfrontend-topic. Melding: {}", message);
         store(kafkaProperties.getMinSideAapenMicrofrontendV1(), aktorId.get(), message);
     }
 
