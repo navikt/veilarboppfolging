@@ -9,6 +9,9 @@ import no.nav.poao_tilgang.client.Decision
 import no.nav.poao_tilgang.client.NorskIdent
 import no.nav.poao_tilgang.client.PoaoTilgangClient
 import no.nav.poao_tilgang.client.TilgangType
+import no.nav.veilarboppfolging.client.pdl.Folkeregisterpersonstatus
+import no.nav.veilarboppfolging.client.pdl.ForenkletFolkeregisterStatus
+import no.nav.veilarboppfolging.client.pdl.PdlFolkeregisterStatusClient
 import no.nav.veilarboppfolging.repository.EnhetRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
@@ -56,11 +59,19 @@ enum class TilgangResultat {
 enum class KanStarteOppfolging {
     JA,
     ALLEREDE_UNDER_OPPFOLGING,
+    DOD,
+    IKKE_LOVLIG_OPPHOLD,
+    UKJENT_STATUS_FOLKEREGISTERET,
     IKKE_TILGANG_FORTROLIG_ADRESSE,
     IKKE_TILGANG_STRENGT_FORTROLIG_ADRESSE,
     IKKE_TILGANG_EGNE_ANSATTE,
     IKKE_TILGANG_ENHET,
-    IKKE_TILGANG_MODIA
+    IKKE_TILGANG_MODIA;
+
+    infix fun and(kanStarteOppfolging: Lazy<KanStarteOppfolging>): KanStarteOppfolging {
+        if (this != JA) return this
+        return kanStarteOppfolging.value
+    }
 }
 
 data class OppfolgingDto(
@@ -81,7 +92,9 @@ class GraphqlController(
     private val aktorOppslagClient: AktorOppslagClient,
     private val authService: AuthService,
     private val poaoTilgangClient: PoaoTilgangClient,
-    private val oppfolgingsPeriodeRepository: OppfolgingsPeriodeRepository
+    private val oppfolgingsPeriodeRepository: OppfolgingsPeriodeRepository,
+    private val poaoTilgangClient: PoaoTilgangClient,
+    private val pdlFolkeregisterStatusClient: PdlFolkeregisterStatusClient
 ) {
     private val logger = LoggerFactory.getLogger(GraphqlController::class.java)
 
@@ -129,6 +142,10 @@ class GraphqlController(
         }
     }
 
+    private fun kanStarteOppfolgingMtpFregStatus(fnr: Fnr): KanStarteOppfolging {
+        return pdlFolkeregisterStatusClient.hentFolkeregisterStatus(fnr).toKanStarteOppfolging()
+    }
+
     @SchemaMapping(typeName="OppfolgingsEnhetsInfo", field="enhet")
     fun arenaOppfolgingsEnhet(oppfolgingsEnhet: OppfolgingsEnhetQueryDto): EnhetDto? {
         val aktorId = aktorOppslagClient.hentAktorId(Fnr.of(oppfolgingsEnhet.fnr))
@@ -149,9 +166,10 @@ class GraphqlController(
     @SchemaMapping(typeName="OppfolgingDto", field="kanStarteOppfolging")
     fun kanStarteOppfolging(oppfolgingDto: OppfolgingDto): KanStarteOppfolging? {
         if (oppfolgingDto.norskIdent == null) throw InternFeil("Fant ikke fnr å sjekke tilgang mot i kanStarteOppfolging")
-        if (oppfolgingDto.erUnderOppfolging) return KanStarteOppfolging.ALLEREDE_UNDER_OPPFOLGING
-
-        return evaluerTilgang(oppfolgingDto.norskIdent).toKanStarteOppfolging()
+        val gyldigOppfolging = if (oppfolgingDto.erUnderOppfolging) KanStarteOppfolging.ALLEREDE_UNDER_OPPFOLGING else KanStarteOppfolging.JA
+        val gyldigTilgang = lazy { evaluerTilgang(oppfolgingDto.norskIdent).toKanStarteOppfolging() }
+        val gyldigFregStatus = lazy { kanStarteOppfolgingMtpFregStatus(Fnr.of(oppfolgingDto.norskIdent)) }
+        return gyldigOppfolging and gyldigTilgang and gyldigFregStatus
     }
 
     fun hentDefaultEnhetFraNorg(fnr: Fnr): Pair<EnhetId, KildeDto>? {
@@ -196,6 +214,18 @@ fun TilgangResultat.toKanStarteOppfolging(): KanStarteOppfolging {
         TilgangResultat.IKKE_TILGANG_EGNE_ANSATTE -> KanStarteOppfolging.IKKE_TILGANG_EGNE_ANSATTE
         TilgangResultat.IKKE_TILGANG_ENHET -> KanStarteOppfolging.IKKE_TILGANG_ENHET
         TilgangResultat.IKKE_TILGANG_MODIA -> KanStarteOppfolging.IKKE_TILGANG_MODIA
+    }
+}
+
+fun ForenkletFolkeregisterStatus.toKanStarteOppfolging(): KanStarteOppfolging {
+    return when (this) {
+        ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven,
+        ForenkletFolkeregisterStatus.dNummer -> KanStarteOppfolging.JA
+        ForenkletFolkeregisterStatus.opphoert,
+        ForenkletFolkeregisterStatus.ikkeBosatt,
+        ForenkletFolkeregisterStatus.forsvunnet-> KanStarteOppfolging.IKKE_LOVLIG_OPPHOLD
+        ForenkletFolkeregisterStatus.doedIFolkeregisteret -> KanStarteOppfolging.DOD
+        ForenkletFolkeregisterStatus.ukjent -> KanStarteOppfolging.UKJENT_STATUS_FOLKEREGISTERET
     }
 }
 
