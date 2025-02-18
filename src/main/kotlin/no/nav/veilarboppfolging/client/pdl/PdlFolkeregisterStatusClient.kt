@@ -53,11 +53,11 @@ class PdlFolkeregisterStatusClient(val pdlClient: PdlClient) {
         val forenkletStatusString = result.data.hentPerson.folkeregisterpersonstatus.firstOrNull()?.forenkletStatus
         return when {
             (forenkletStatusString == ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven.name) -> ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven
-            (forenkletStatusString == ForenkletFolkeregisterStatus.dNummer.name) -> ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven
-            (forenkletStatusString == ForenkletFolkeregisterStatus.doedIFolkeregisteret.name) -> ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven
-            (forenkletStatusString == ForenkletFolkeregisterStatus.ikkeBosatt.name) -> ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven
-            (forenkletStatusString == ForenkletFolkeregisterStatus.forsvunnet.name) -> ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven
-            (forenkletStatusString == ForenkletFolkeregisterStatus.opphoert.name) -> ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven
+            (forenkletStatusString == ForenkletFolkeregisterStatus.dNummer.name) -> ForenkletFolkeregisterStatus.dNummer
+            (forenkletStatusString == ForenkletFolkeregisterStatus.doedIFolkeregisteret.name) -> ForenkletFolkeregisterStatus.doedIFolkeregisteret
+            (forenkletStatusString == ForenkletFolkeregisterStatus.ikkeBosatt.name) -> ForenkletFolkeregisterStatus.ikkeBosatt
+            (forenkletStatusString == ForenkletFolkeregisterStatus.forsvunnet.name) -> ForenkletFolkeregisterStatus.forsvunnet
+            (forenkletStatusString == ForenkletFolkeregisterStatus.opphoert.name) -> ForenkletFolkeregisterStatus.opphoert
             else -> {
                 logger.warn("Ukjent forenkletFolkeregisterStatus", forenkletStatusString)
                 ForenkletFolkeregisterStatus.ukjent
