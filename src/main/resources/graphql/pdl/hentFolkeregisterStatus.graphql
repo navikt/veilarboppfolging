@@ -1,6 +1,6 @@
 query hentFolkeregisterStatus($ident: ID! $historikk: Boolean!) {
     hentPerson(ident: $ident) {
-        folkeregisterpersonstatus {
+        folkeregisterpersonstatus(historikk: $historikk) {
             forenkletStatus
         }
     }

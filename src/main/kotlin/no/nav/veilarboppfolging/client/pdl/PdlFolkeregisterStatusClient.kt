@@ -23,7 +23,7 @@ data class Folkeregisterpersonstatus(
 )
 
 data class HentFolkeregisterPersonStatus(
-    val folkeregisterpersonstatus: Folkeregisterpersonstatus
+    val folkeregisterpersonstatus: List<Folkeregisterpersonstatus>
 )
 
 class HentFolkeregisterPersonStatusGraphqlWrapper: GraphqlResponse<HentFolkeregisterPersonStatus>()
@@ -40,7 +40,7 @@ class PdlFolkeregisterStatusClient(val pdlClient: PdlClient) {
 
         if(result.errors?.isNotEmpty() == true) { throw RuntimeException("Feil ved kall til pdl ${result?.errors.toString()}") }
 
-        val forenkletStatusString = result.data.folkeregisterpersonstatus.forenkletStatus
+        val forenkletStatusString = result.data.folkeregisterpersonstatus.firstOrNull()?.forenkletStatus
         return when {
             (forenkletStatusString == ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven.name) -> ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven
             (forenkletStatusString == ForenkletFolkeregisterStatus.dNummer.name) -> ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven
