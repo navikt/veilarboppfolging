@@ -16,9 +16,11 @@ import no.nav.poao_tilgang.client.TilgangType
 import no.nav.poao_tilgang.client.api.ApiResult
 import no.nav.poao_tilgang.client.api.NetworkApiException
 import no.nav.veilarboppfolging.client.norg.INorgTilhorighetClient
+import no.nav.veilarboppfolging.client.pdl.ForenkletFolkeregisterStatus
 import no.nav.veilarboppfolging.client.pdl.GTType
 import no.nav.veilarboppfolging.client.pdl.GeografiskTilknytningClient
 import no.nav.veilarboppfolging.client.pdl.GeografiskTilknytningNr
+import no.nav.veilarboppfolging.client.pdl.PdlFolkeregisterStatusClient
 import no.nav.veilarboppfolging.config.EnvironmentProperties
 import no.nav.veilarboppfolging.controller.OppfolgingController
 import no.nav.veilarboppfolging.controller.SakController
@@ -73,6 +75,9 @@ open class IntegrationTest {
 
     @MockBean
     lateinit var geografiskTilknytningClient: GeografiskTilknytningClient
+
+    @MockBean
+    lateinit var pdlFolkeregisterStatusClient: PdlFolkeregisterStatusClient
 
     @MockBean
     lateinit var environmentProperties: EnvironmentProperties
@@ -193,6 +198,10 @@ open class IntegrationTest {
                 GeografiskTilknytningNr(gtType, enhetsNr),
                 false)
             )
+    }
+
+    fun mockPdlFolkeregisterStatus(fnr: Fnr, status: ForenkletFolkeregisterStatus) {
+        `when`(pdlFolkeregisterStatusClient.hentFolkeregisterStatus(fnr)).thenReturn(status)
     }
 
     fun mockPoaoTilgangTilgangsAttributter(kontor: String, skjermet: Boolean, diskresjonskode: Diskresjonskode? = null) {

@@ -12,6 +12,7 @@ import org.springframework.context.annotation.Configuration
 class PdlClientConfig(
     @Value("\${app.env.pdlUrl}") val pdlUrl: String,
     @Value("\${app.env.pdlScope}") val pdlScope: String,
+    @Value("\${app.env.pdlBehandlingsNummer}") val behandlingsnummer: String,
     private val authService: AuthService
 ) {
 
@@ -20,7 +21,7 @@ class PdlClientConfig(
         return PdlClientImpl(
             pdlUrl,
             { tokenClient.exchangeOnBehalfOfToken(pdlScope, authService.innloggetBrukerToken) },
-            "B884"
+            behandlingsnummer
         )
     }
 
