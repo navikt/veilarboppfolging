@@ -93,7 +93,6 @@ class GraphqlController(
     private val authService: AuthService,
     private val poaoTilgangClient: PoaoTilgangClient,
     private val oppfolgingsPeriodeRepository: OppfolgingsPeriodeRepository,
-    private val poaoTilgangClient: PoaoTilgangClient,
     private val pdlFolkeregisterStatusClient: PdlFolkeregisterStatusClient
 ) {
     private val logger = LoggerFactory.getLogger(GraphqlController::class.java)
