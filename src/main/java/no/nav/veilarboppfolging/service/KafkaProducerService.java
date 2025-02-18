@@ -133,6 +133,7 @@ public class KafkaProducerService {
         AoMinSideMicrofrontendMessage message = new AoMinSideMicrofrontendMessage("enable", fnr.get(), "idporten-loa-high");
 
         log.info("Oppfølging startet for bruker - publiserer enable-melding på min-side-microfrontend-topic. Melding: {}", message);
+        log.info("Serialisert json record {}", serializeJsonRecord(new ProducerRecord<>(kafkaProperties.getMinSideAapenMicrofrontendV1(), aktorId.get(), message)));
         store(kafkaProperties.getMinSideAapenMicrofrontendV1(), aktorId.get(), message);
     }
 
