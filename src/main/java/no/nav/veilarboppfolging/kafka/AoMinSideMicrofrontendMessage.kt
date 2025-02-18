@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonValue
 import jakarta.validation.constraints.NotBlank
-import java.time.Instant
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class AoMinSideMicrofrontendMessage @JvmOverloads constructor(
@@ -23,7 +22,6 @@ data class AoMinSideMicrofrontendMessage @JvmOverloads constructor(
     @field:NotBlank
     val initiatedBy: String = "dab",
 
-    val timestamp: Instant = Instant.now()
 ) {
     enum class Action(@JsonValue val verdi: String) {
         ENABLE("enable"),
