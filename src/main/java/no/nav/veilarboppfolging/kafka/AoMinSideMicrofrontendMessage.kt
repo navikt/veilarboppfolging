@@ -13,10 +13,10 @@ data class AoMinSideMicrofrontendMessage @JvmOverloads constructor(
     @field:NotBlank
     val ident: String,
 
+    val sensitivitet: String ?= null, // Kun for "enable"
+
     @field:NotBlank
     val microfrontendId: String = "ao-min-side-microfrontend",
-
-    val sensitivitet: String ?= null, // Kun for "enable"
 
     @JsonProperty("@initiated_by")
     @field:NotBlank
