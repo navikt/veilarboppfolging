@@ -4,7 +4,6 @@ import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.poao_tilgang.client.Decision
 import no.nav.veilarboppfolging.IntegrationTest
-import no.nav.veilarboppfolging.client.pdl.Folkeregisterpersonstatus
 import no.nav.veilarboppfolging.client.pdl.ForenkletFolkeregisterStatus
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
