@@ -167,7 +167,7 @@ class GraphqlController(
     }
 
     @QueryMapping
-    fun hentGjeldendeOppfolgingsPeriode(@Argument fnr: String?): GjeldendeOppfolgingsperiodeDto {
+    fun hentGjeldendeOppfolgingsPeriode(): GjeldendeOppfolgingsperiodeDto {
         if(!authService.erEksternBruker()) {
             throw ResponseStatusException(HttpStatus.FORBIDDEN)
         }
