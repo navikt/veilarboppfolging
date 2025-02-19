@@ -32,10 +32,10 @@ jobs:
         with:
           java-version: 21
           distribution: 'temurin'
-          cache: 'maven'
+          cache: 'gradle'
 
       - name: Build and test
-        run: mvn -B package
+        run: ./gradlew build
 
       - name: Build and push Docker image
         uses: nais/docker-build-push@v0

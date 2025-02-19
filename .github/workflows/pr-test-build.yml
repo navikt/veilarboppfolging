@@ -19,7 +19,7 @@ jobs:
           cache: 'maven'
 
       - name: Build and test
-        run: mvn -B package
+        run: ./gradlew build
 
       - name: Cache SonarCloud packages
         uses: actions/cache@v4
@@ -32,4 +32,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
+        run: ./gradlew sonarqube
