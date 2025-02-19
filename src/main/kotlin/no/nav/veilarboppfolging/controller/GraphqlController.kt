@@ -9,8 +9,6 @@ import no.nav.poao_tilgang.client.Decision
 import no.nav.poao_tilgang.client.NorskIdent
 import no.nav.poao_tilgang.client.PoaoTilgangClient
 import no.nav.poao_tilgang.client.TilgangType
-import no.nav.veilarboppfolging.client.pdl.Folkeregisterpersonstatus
-import no.nav.veilarboppfolging.client.pdl.ForenkletFolkeregisterStatus
 import no.nav.veilarboppfolging.client.pdl.PdlFolkeregisterStatusClient
 import no.nav.veilarboppfolging.oppfolgingsbruker.kanStarteOppfolging.ALLEREDE_UNDER_OPPFOLGING
 import no.nav.veilarboppfolging.oppfolgingsbruker.kanStarteOppfolging.BrukerHarRiktigFregStatus

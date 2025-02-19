@@ -32,7 +32,7 @@ object FREG_STATUS_OK: BrukerHarRiktigFregStatus()
 object DOD: BrukerHarRiktigFregStatus()
 object IKKE_LOVLIG_OPPHOLD: BrukerHarRiktigFregStatus()
 object UKJENT_STATUS_FOLKEREGISTERET: BrukerHarRiktigFregStatus()
-
+object INGEN_STATUS_FOLKEREGISTERET: BrukerHarRiktigFregStatus()
 
 enum class KanStarteOppfolging {
     JA,
@@ -40,6 +40,7 @@ enum class KanStarteOppfolging {
     DOD,
     IKKE_LOVLIG_OPPHOLD,
     UKJENT_STATUS_FOLKEREGISTERET,
+    INGEN_STATUS_FOLKEREGISTERET,
     IKKE_TILGANG_FORTROLIG_ADRESSE,
     IKKE_TILGANG_STRENGT_FORTROLIG_ADRESSE,
     IKKE_TILGANG_EGNE_ANSATTE,
@@ -66,6 +67,7 @@ enum class KanStarteOppfolging {
                 is IKKE_TILGANG_MODIA -> IKKE_TILGANG_MODIA
                 is IKKE_TILGANG_FORTROLIG_ADRESSE -> IKKE_TILGANG_FORTROLIG_ADRESSE
                 is IKKE_TILGANG_STRENGT_FORTROLIG_ADRESSE -> IKKE_TILGANG_STRENGT_FORTROLIG_ADRESSE
+                is INGEN_STATUS_FOLKEREGISTERET -> INGEN_STATUS_FOLKEREGISTERET
             }
         }
     }
@@ -91,5 +93,6 @@ fun ForenkletFolkeregisterStatus.toKanStarteOppfolging(): BrukerHarRiktigFregSta
         ForenkletFolkeregisterStatus.forsvunnet-> IKKE_LOVLIG_OPPHOLD
         ForenkletFolkeregisterStatus.doedIFolkeregisteret -> DOD
         ForenkletFolkeregisterStatus.ukjent -> UKJENT_STATUS_FOLKEREGISTERET
+        ForenkletFolkeregisterStatus.ingen_status -> INGEN_STATUS_FOLKEREGISTERET
     }
 }
