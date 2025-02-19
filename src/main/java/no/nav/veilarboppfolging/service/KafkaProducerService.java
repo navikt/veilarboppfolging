@@ -130,7 +130,7 @@ public class KafkaProducerService {
     public void publiserVisAoMinSideMicrofrontend(AktorId aktorId) {
         Fnr fnr = authService.getFnrOrThrow(aktorId);
 
-        AoMinSideMicrofrontendMessage message = new AoMinSideMicrofrontendMessage("enable", fnr.get(), "idporten-loa-high");
+        AoMinSideMicrofrontendMessage message = new AoMinSideMicrofrontendMessage("enable", fnr.get(), "idporten-loa-substantial");
 
         log.info("Oppfølging startet for bruker - publiserer enable-melding på min-side-microfrontend-topic. Melding: {}", message);
         store(kafkaProperties.getMinSideAapenMicrofrontendV1(), aktorId.get(), message);
