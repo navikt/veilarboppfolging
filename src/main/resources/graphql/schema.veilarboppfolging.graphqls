@@ -53,5 +53,5 @@ type OppfolgingDto {
 }
 
 type GjeldendeOppfolgingsperiode {
-    startDato: String
+    startTidspunkt: String
 }

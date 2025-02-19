@@ -69,7 +69,7 @@ data class OppfolgingDto(
 )
 
 data class GjeldendeOppfolgingsperiodeDto(
-    val startDato: String,
+    val startTidspunkt: String,
 )
 
 @Controller
@@ -167,7 +167,7 @@ class GraphqlController(
     }
 
     @QueryMapping
-    fun hentGjeldendeOppfolgingsPeriode(): GjeldendeOppfolgingsperiodeDto {
+    fun gjeldendeOppfolgingsperiode(): GjeldendeOppfolgingsperiodeDto {
         if(!authService.erEksternBruker()) {
             throw ResponseStatusException(HttpStatus.FORBIDDEN)
         }
