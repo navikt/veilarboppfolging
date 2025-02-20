@@ -14,6 +14,7 @@ import static no.nav.common.json.JsonUtils.toJson;
 import static no.nav.common.rest.client.RestUtils.MEDIA_TYPE_JSON;
 import static no.nav.common.utils.AssertUtils.assertTrue;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -32,7 +33,7 @@ public class VeilarbarenaClientImplTest {
 
     private static final String MOCK_HOVEDMAAL = "beholde arbeid";
 
-    private AuthService authServiceMock = mock(AuthService.class);
+    private final AuthService authServiceMock = mock(AuthService.class);
 
     @Rule
     public WireMockRule wireMockRule = new WireMockRule(0);
@@ -203,6 +204,20 @@ public class VeilarbarenaClientImplTest {
         var response = veilarbarenaClient.registrerIkkeArbeidsoker(MOCK_FNR);
         assertThat(response).isInstanceOf(RegistrerIArenaSuccess.class);
         assertThat( ((RegistrerIArenaSuccess) response).getArenaResultat()).isEqualTo(registrerIkkeArbeidsokerRespons);
+    }
+
+    @Test
+    public void registrer_ikke_arbeidssoker_skal_feile_dersom_vi_kaller_feil_url() {
+        String apiUrl = "http://localhost:" + wireMockRule.port();
+        VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl(apiUrl, apiScope, authServiceMock);
+
+        givenThat(post(urlEqualTo("/veilarbarena/api/v2/arena/registrer-i-arena"))
+                .withRequestBody(equalToJson("{\"fnr\":\""+MOCK_FNR+"\"}"))
+                .willReturn(aResponse().withStatus(404))
+        );
+
+        assertThrows(RuntimeException.class, () ->veilarbarenaClient.registrerIkkeArbeidsoker(MOCK_FNR));
+
     }
 
     private VeilarbArenaOppfolgingsBruker arenaOppfolgingsBrukerResponse() {
