@@ -44,6 +44,7 @@ enum KanStarteOppfolging {
     DOD
     IKKE_LOVLIG_OPPHOLD
     UKJENT_STATUS_FOLKEREGISTERET
+    INGEN_STATUS_FOLKEREGISTERET
 }
 
 type OppfolgingDto {

@@ -189,6 +189,7 @@ class GraphqlControllerTest: IntegrationTest() {
             ForenkletFolkeregisterStatus.ikkeBosatt to KanStarteOppfolging.IKKE_LOVLIG_OPPHOLD,
             ForenkletFolkeregisterStatus.opphoert to KanStarteOppfolging.IKKE_LOVLIG_OPPHOLD,
             ForenkletFolkeregisterStatus.ukjent to KanStarteOppfolging.UKJENT_STATUS_FOLKEREGISTERET,
+            ForenkletFolkeregisterStatus.ingen_status to KanStarteOppfolging.INGEN_STATUS_FOLKEREGISTERET,
         ).forEach { (status, kanStarteOppfolgingResult) ->
             mockPdlFolkeregisterStatus(fnr, status)
             /* Query is hidden in test/resources/graphl-test :) */

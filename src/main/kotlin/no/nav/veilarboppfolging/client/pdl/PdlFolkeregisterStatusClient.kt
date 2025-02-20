@@ -17,6 +17,7 @@ enum class ForenkletFolkeregisterStatus {
     doedIFolkeregisteret,
     opphoert,
     dNummer,
+    ingen_status,
     ukjent
 }
 
@@ -58,6 +59,7 @@ class PdlFolkeregisterStatusClient(val pdlClient: PdlClient) {
             (forenkletStatusString == ForenkletFolkeregisterStatus.ikkeBosatt.name) -> ForenkletFolkeregisterStatus.ikkeBosatt
             (forenkletStatusString == ForenkletFolkeregisterStatus.forsvunnet.name) -> ForenkletFolkeregisterStatus.forsvunnet
             (forenkletStatusString == ForenkletFolkeregisterStatus.opphoert.name) -> ForenkletFolkeregisterStatus.opphoert
+            result.data.hentPerson.folkeregisterpersonstatus.isEmpty() -> ForenkletFolkeregisterStatus.ingen_status
             else -> {
                 logger.warn("Ukjent forenkletFolkeregisterStatus", forenkletStatusString)
                 ForenkletFolkeregisterStatus.ukjent
