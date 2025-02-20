@@ -221,3 +221,6 @@ spec:
         - application: oppgave
           namespace: aap
           cluster: prod-gcp
+        - application: ao-min-side-microfrontend
+          namespace: dab
+          cluster: prod-gcp

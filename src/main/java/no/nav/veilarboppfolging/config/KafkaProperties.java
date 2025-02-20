@@ -21,4 +21,5 @@ public class KafkaProperties {
     String kvpStartetTopicAiven;
     String kvpPerioderTopicAiven;
     String arbeidssokerperioderTopicAiven;
+    String minSideAapenMicrofrontendV1;
 }
