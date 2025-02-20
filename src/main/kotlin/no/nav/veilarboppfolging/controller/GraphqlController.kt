@@ -175,7 +175,7 @@ class GraphqlController(
         val innloggetBrukerFnr = authService.innloggetBrukerIdent
         val aktorId = aktorOppslagClient.hentAktorId(Fnr.of(innloggetBrukerFnr))
         val oppfolgingsperiode = oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId)
-        val startDato = oppfolgingsperiode.map { it.startDato }
+        val startDato = oppfolgingsperiode.get().startDato
 
         return GjeldendeOppfolgingsperiodeDto(startDato.toString())
     }
