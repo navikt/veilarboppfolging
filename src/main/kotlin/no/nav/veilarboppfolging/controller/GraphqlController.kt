@@ -28,6 +28,7 @@ import org.springframework.stereotype.Controller
 import org.springframework.web.server.ResponseStatusException
 import java.time.LocalDate
 import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 
 data class OppfolgingsEnhetQueryDto(
     val enhet: EnhetDto?, // Nullable because graphql
@@ -173,7 +174,7 @@ class GraphqlController(
         val innloggetBrukerFnr = authService.innloggetBrukerIdent
         val aktorId = aktorOppslagClient.hentAktorId(Fnr.of(innloggetBrukerFnr))
         val oppfolgingsperiode = oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId)
-        val startDato = oppfolgingsperiode.get().startDato
+        val startDato = oppfolgingsperiode.get().startDato.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
 
         return GjeldendeOppfolgingsperiodeDto(startDato.toString())
     }
