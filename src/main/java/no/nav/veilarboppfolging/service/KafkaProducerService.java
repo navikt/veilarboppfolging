@@ -132,7 +132,6 @@ public class KafkaProducerService {
 
         AoMinSideMicrofrontendMessage message = new AoMinSideMicrofrontendMessage("enable", fnr.get(), "idporten-loa-substantial");
 
-        log.info("Oppfølging startet for bruker - publiserer enable-melding på min-side-microfrontend-topic. Melding: {}", message);
         store(kafkaProperties.getMinSideAapenMicrofrontendV1(), aktorId.get(), message);
     }
 
@@ -141,7 +140,6 @@ public class KafkaProducerService {
 
         AoMinSideMicrofrontendMessage message = new AoMinSideMicrofrontendMessage("disable", fnr.get());
 
-        log.info("Oppfølging startet for bruker - publiserer disable-melding på min-side-microfrontend-topic. Melding: {}", message);
         store(kafkaProperties.getMinSideAapenMicrofrontendV1(), aktorId.get(), message);
     }
 
