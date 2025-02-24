@@ -130,7 +130,7 @@ public class KafkaProducerService {
     public void publiserVisAoMinSideMicrofrontend(AktorId aktorId) {
         Fnr fnr = authService.getFnrOrThrow(aktorId);
 
-        AoMinSideMicrofrontendMessage message = new AoMinSideMicrofrontendMessage("enable", fnr.get(), "idporten-loa-substantial");
+        AoMinSideMicrofrontendMessage message = new AoMinSideMicrofrontendMessage("enable", fnr.get(), "substantial");
 
         store(kafkaProperties.getMinSideAapenMicrofrontendV1(), aktorId.get(), message);
     }
