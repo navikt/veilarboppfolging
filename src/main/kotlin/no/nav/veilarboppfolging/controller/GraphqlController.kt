@@ -16,6 +16,7 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.kanStarteOppfolging.KanStarteO
 import no.nav.veilarboppfolging.oppfolgingsbruker.kanStarteOppfolging.OPPFOLGING_OK
 import no.nav.veilarboppfolging.oppfolgingsbruker.kanStarteOppfolging.toKanStarteOppfolging
 import no.nav.veilarboppfolging.repository.EnhetRepository
+import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
 import no.nav.veilarboppfolging.service.AuthService
 import org.slf4j.LoggerFactory
@@ -25,6 +26,9 @@ import org.springframework.graphql.data.method.annotation.SchemaMapping
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Controller
 import org.springframework.web.server.ResponseStatusException
+import java.time.LocalDate
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 
 data class OppfolgingsEnhetQueryDto(
     val enhet: EnhetDto?, // Nullable because graphql
@@ -60,7 +64,11 @@ enum class TilgangResultat {
 data class OppfolgingDto(
     val erUnderOppfolging: Boolean,
     val kanStarteOppfolging: KanStarteOppfolging?,
-    val norskIdent: NorskIdent? = null
+    val norskIdent: NorskIdent? = null,
+)
+
+data class GjeldendeOppfolgingsperiodeDto(
+    val startTidspunkt: String,
 )
 
 @Controller
@@ -71,6 +79,7 @@ class GraphqlController(
     private val aktorOppslagClient: AktorOppslagClient,
     private val authService: AuthService,
     private val poaoTilgangClient: PoaoTilgangClient,
+    private val oppfolgingsPeriodeRepository: OppfolgingsPeriodeRepository,
     private val pdlFolkeregisterStatusClient: PdlFolkeregisterStatusClient
 ) {
     private val logger = LoggerFactory.getLogger(GraphqlController::class.java)
@@ -154,6 +163,20 @@ class GraphqlController(
         if (tilgangsattributterResponse.isFailure) throw PoaoTilgangError(tilgangsattributterResponse.exception!!)
         val tilgangsAttributter = tilgangsattributterResponse.getOrThrow()
         return tilgangsAttributter.kontor?.let { EnhetId.of(it) to KildeDto.NORG }
+    }
+
+    @QueryMapping
+    fun gjeldendeOppfolgingsperiode(): GjeldendeOppfolgingsperiodeDto {
+        if(!authService.erEksternBruker()) {
+            throw ResponseStatusException(HttpStatus.FORBIDDEN)
+        }
+
+        val innloggetBrukerFnr = authService.innloggetBrukerIdent
+        val aktorId = aktorOppslagClient.hentAktorId(Fnr.of(innloggetBrukerFnr))
+        val oppfolgingsperiode = oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId)
+        val startDato = oppfolgingsperiode.get().startDato.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+
+        return GjeldendeOppfolgingsperiodeDto(startDato.toString())
     }
 }
 
