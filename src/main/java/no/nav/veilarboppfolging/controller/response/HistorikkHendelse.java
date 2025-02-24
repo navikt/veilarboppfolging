@@ -2,7 +2,7 @@ package no.nav.veilarboppfolging.controller.response;
 
 import lombok.Builder;
 import lombok.Value;
-import no.nav.veilarboppfolging.repository.enums.KodeverkBruker;
+import no.nav.veilarboppfolging.domain.StartetAvType;
 
 import java.time.ZonedDateTime;
 
@@ -12,7 +12,7 @@ public class HistorikkHendelse {
     Type type;
     ZonedDateTime dato;
     String begrunnelse;
-    KodeverkBruker opprettetAv;
+    StartetAvType opprettetAv;
     String opprettetAvBrukerId;
     Long dialogId;
     String enhet;

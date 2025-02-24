@@ -5,10 +5,13 @@ import lombok.SneakyThrows;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.controller.response.HistorikkHendelse;
+import no.nav.veilarboppfolging.domain.StartetAvType;
 import no.nav.veilarboppfolging.oppfolgingsbruker.OppfolgingStartBegrunnelse;
-import no.nav.veilarboppfolging.repository.*;
+import no.nav.veilarboppfolging.repository.KvpRepository;
+import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
+import no.nav.veilarboppfolging.repository.OppfolgingsenhetHistorikkRepository;
+import no.nav.veilarboppfolging.repository.VeilederHistorikkRepository;
 import no.nav.veilarboppfolging.repository.entity.*;
-import no.nav.veilarboppfolging.repository.enums.KodeverkBruker;
 import no.nav.veilarboppfolging.utils.KvpUtils;
 import org.springframework.stereotype.Service;
 
@@ -20,8 +23,6 @@ import java.util.stream.Stream;
 
 import static java.util.Collections.singletonList;
 import static no.nav.veilarboppfolging.controller.response.HistorikkHendelse.Type.*;
-import static no.nav.veilarboppfolging.repository.enums.KodeverkBruker.NAV;
-import static no.nav.veilarboppfolging.repository.enums.KodeverkBruker.SYSTEM;
 
 @Service
 @RequiredArgsConstructor
@@ -49,7 +50,7 @@ public class HistorikkService {
                 .type(VEILEDER_TILORDNET)
                 .begrunnelse("Brukeren er tildelt veileder " +  veilederTilordningHistorikk.getVeileder())
                 .dato(veilederTilordningHistorikk.getSistTilordnet())
-                .opprettetAv(NAV)
+                .opprettetAv(StartetAvType.VEILEDER)
                 .opprettetAvBrukerId(veilederTilordningHistorikk.getTilordnetAvVeileder())
                 .build();
     }
@@ -61,7 +62,7 @@ public class HistorikkService {
                 .enhet(enhet)
                 .begrunnelse("Ny oppfølgingsenhet " + enhet)
                 .dato(oppfolgingsenhetEndringData.getEndretDato())
-                .opprettetAv(SYSTEM)
+                .opprettetAv(StartetAvType.SYSTEM)
                 .build();
     }
 
@@ -110,8 +111,8 @@ public class HistorikkService {
                 .type(STARTET_OPPFOLGINGSPERIODE)
                 .begrunnelse(getStartetBegrunnelseTekst(periode.getStartetBegrunnelse()))
                 .dato(periode.getStartDato())
-                .opprettetAv(SYSTEM)
-                .opprettetAvBrukerId("Ukjent")
+                .opprettetAv(periode.getStartetAvType())
+                .opprettetAvBrukerId(periode.getStartetAv())
                 .build();
 
         if (periode.getSluttDato() != null) {
@@ -119,8 +120,8 @@ public class HistorikkService {
                     .type(AVSLUTTET_OPPFOLGINGSPERIODE)
                     .begrunnelse(periode.getBegrunnelse())
                     .dato(periode.getSluttDato())
-                    .opprettetAv(periode.getVeileder() != null ? NAV : SYSTEM)
-                    .opprettetAvBrukerId(periode.getAktorId())
+                    .opprettetAv(periode.getStartetAvType())
+                    .opprettetAvBrukerId(periode.getStartetAv())
                     .build();
             return Arrays.asList(periodeStart, periodeStopp);
         }
