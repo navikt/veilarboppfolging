@@ -3,12 +3,6 @@ package no.nav.veilarboppfolging.kafka
 import no.nav.common.client.norg2.Enhet
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
-import no.nav.poao_tilgang.client.Decision
-import no.nav.poao_tilgang.client.Decision.Permit
-import no.nav.poao_tilgang.client.NavAnsattTilgangTilEksternBrukerPolicyInput
-import no.nav.poao_tilgang.client.PoaoTilgangClient
-import no.nav.poao_tilgang.client.TilgangType
-import no.nav.poao_tilgang.client.api.ApiResult.Companion.success
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.pto_schema.enums.arena.Hovedmaal
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe
@@ -21,13 +15,10 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.arena.GetOppfolginsstatusFailu
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.GetOppfolginsstatusSuccess
 import no.nav.veilarboppfolging.service.KafkaConsumerService
 import org.apache.kafka.clients.consumer.ConsumerRecord
-import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import org.mockito.Mockito
-import org.mockito.Mockito.any
 import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.mock.mockito.MockBean
@@ -49,7 +40,7 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
     @MockBean
     lateinit var veilarbarenaClient: VeilarbarenaClient
 
-    val fnr = Fnr.of("123")
+    val fnr = Fnr.of("12345678910")
     val aktorId = AktorId.of("123")
     val veilederOid = UUID.randomUUID()
 

@@ -9,11 +9,11 @@ import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Test
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
-import java.util.UUID
+import java.util.*
 
 class SakControllerIntegrationTest: IntegrationTest() {
 
-    private val fnr: Fnr = Fnr.of("123")
+    private val fnr: Fnr = Fnr.of("12345678910")
 
     private val aktørId: AktorId = AktorId.of("3409823")
 
@@ -65,8 +65,8 @@ class SakControllerIntegrationTest: IntegrationTest() {
         sakRepository.opprettSak(oppfølgingsperiodeUuidMedSak)
         assertThat(sakRepository.hentSaker(oppfølgingsperiodeUuidMedSak)).hasSize(1)
 
-        val annetFnr = Fnr.of(fnr.toString() + "annen")
-        val annenAktørId = AktorId.of(aktørId.toString() + "annen")
+        val annetFnr = Fnr.of("10987654321")
+        val annenAktørId = AktorId.of("3289032")
         mockAuthOk(annenAktørId, annetFnr)
         startOppfolgingSomArbeidsoker(annenAktørId)
         val oppfølgingsperiodeUuidUtenSak = hentOppfolgingsperioder(annetFnr)[0].uuid

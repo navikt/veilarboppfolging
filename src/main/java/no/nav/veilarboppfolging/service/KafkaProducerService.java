@@ -136,7 +136,7 @@ public class KafkaProducerService {
                "ao-min-side-microfrontend",
                 "dab",
                 Sensitivitet.SUBSTANTIAL
-        );
+        ).text();
 
         store(kafkaProperties.getMinSideAapenMicrofrontendV1(), aktorId.get(), startMelding);
     }
@@ -148,7 +148,7 @@ public class KafkaProducerService {
                 fnr.get(),
                 "ao-min-side-microfrontend",
                 "dab"
-        );
+        ).text();
         store(kafkaProperties.getMinSideAapenMicrofrontendV1(), aktorId.get(), stoppMelding);
     }
 
