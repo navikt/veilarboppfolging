@@ -24,13 +24,8 @@ public class OppfolgingController {
     private final static List<String> ALLOWLIST_V1 = List.of("veilarbvedtaksstotte", "veilarbregistrering", "veilarbdirigent");
 
     private final OppfolgingService oppfolgingService;
-
     private final KvpService kvpService;
-
-    private final HistorikkService historikkService;
-
     private final AuthService authService;
-
     private final ManuellStatusService manuellStatusService;
 
     @GetMapping("/me")
@@ -100,12 +95,6 @@ public class OppfolgingController {
         );
 
         return tilDto(oppfolgingService.hentOppfolgingsStatus(fodselsnummer), authService.erInternBruker());
-    }
-
-    @GetMapping("/innstillingsHistorikk")
-    public List<HistorikkHendelse> hentInnstillingsHistorikk(@RequestParam("fnr") Fnr fnr) {
-        authService.skalVereInternBruker();
-        return historikkService.hentInstillingsHistorikk(fnr);
     }
 
     @PostMapping("/startKvp")

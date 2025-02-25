@@ -41,9 +41,6 @@ class OppfolgingControllerTest {
     private KvpService kvpService;
 
     @MockBean
-    private HistorikkService historikkService;
-
-    @MockBean
     private ManuellStatusService manuellStatusService;
 
     @Test
@@ -83,31 +80,6 @@ class OppfolgingControllerTest {
         when(oppfolgingService.hentOppfolgingsperioder(fnr)).thenReturn(perioder);
 
         mockMvc.perform(get("/api/oppfolging/oppfolgingsperioder").queryParam("fnr", fnr.get()))
-                .andExpect(content().json(expectedJson));
-    }
-
-    @Test
-    void innstillingshistorikk_skal_returnere_innstillingshistorikk() throws Exception {
-        Fnr fnr = Fnr.of("1234");
-        String veileder = "Veileder1";
-        String tilordnetAvVeileder = "Veileder2";
-
-        List<HistorikkHendelse> historikker = new ArrayList<>();
-        historikker.add(
-                HistorikkHendelse.builder()
-                        .type(VEILEDER_TILORDNET)
-                        .begrunnelse("Brukeren er tildelt veileder " + veileder)
-                        .dato(ZonedDateTime.parse("2022-09-05T12:27:29.301343+02:00"))
-                        .opprettetAv(NAV)
-                        .opprettetAvBrukerId(tilordnetAvVeileder)
-                        .build()
-        );
-
-        String expectedJson = "[{\"type\":\"VEILEDER_TILORDNET\",\"dato\":\"2022-09-05T12:27:29.301343+02:00\",\"begrunnelse\":\"Brukeren er tildelt veileder Veileder1\",\"opprettetAv\":\"NAV\",\"opprettetAvBrukerId\":\"Veileder2\",\"dialogId\":null,\"enhet\":null}]";
-
-        when(historikkService.hentInstillingsHistorikk(fnr)).thenReturn(historikker);
-
-        mockMvc.perform(get("/api/oppfolging/innstillingsHistorikk").queryParam("fnr", fnr.get()))
                 .andExpect(content().json(expectedJson));
     }
 }
