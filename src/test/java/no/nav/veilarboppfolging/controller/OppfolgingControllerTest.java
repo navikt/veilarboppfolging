@@ -41,9 +41,6 @@ class OppfolgingControllerTest {
     private KvpService kvpService;
 
     @MockBean
-    private HistorikkService historikkService;
-
-    @MockBean
     private ManuellStatusService manuellStatusService;
 
     @Test
