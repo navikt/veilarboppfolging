@@ -4,6 +4,7 @@ import no.nav.common.json.JsonUtils;
 import no.nav.veilarboppfolging.controller.response.HistorikkHendelse;
 import no.nav.veilarboppfolging.controller.v3.request.HistorikkRequest;
 import no.nav.veilarboppfolging.domain.StartetAvType;
+import no.nav.veilarboppfolging.repository.enums.KodeverkBruker;
 import no.nav.veilarboppfolging.service.AuthService;
 import no.nav.veilarboppfolging.service.HistorikkService;
 import org.junit.jupiter.api.Test;
@@ -43,7 +44,7 @@ public class HistorikkV3ControllerTest {
                         .type(VEILEDER_TILORDNET)
                         .begrunnelse("Brukeren er tildelt veileder " + TEST_NAV_IDENT.get())
                         .dato(ZonedDateTime.parse("2022-11-03T10:00:00+01:00"))
-                        .opprettetAv(StartetAvType.VEILEDER)
+                        .opprettetAv(KodeverkBruker.NAV)
                         .opprettetAvBrukerId(TEST_NAV_IDENT.get())
                         .build(),
                 HistorikkHendelse.builder()
@@ -51,7 +52,7 @@ public class HistorikkV3ControllerTest {
                         .enhet(TEST_ENHET_ID.get())
                         .begrunnelse("Ny oppfølgingsenhet " + TEST_ENHET_ID.get())
                         .dato(ZonedDateTime.parse("2022-07-01T13:00:00+01:00"))
-                        .opprettetAv(StartetAvType.SYSTEM)
+                        .opprettetAv(KodeverkBruker.SYSTEM)
                         .build()
         ));
 
