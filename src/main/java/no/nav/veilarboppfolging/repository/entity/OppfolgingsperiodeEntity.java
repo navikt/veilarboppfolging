@@ -3,8 +3,10 @@ package no.nav.veilarboppfolging.repository.entity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Value;
+import no.nav.veilarboppfolging.domain.StartetAvType;
 import no.nav.veilarboppfolging.oppfolgingsbruker.OppfolgingStartBegrunnelse;
 
+import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -21,4 +23,8 @@ public class OppfolgingsperiodeEntity {
     String begrunnelse;
     List<KvpPeriodeEntity> kvpPerioder;
     OppfolgingStartBegrunnelse startetBegrunnelse;
+    @Nullable
+    String startetAv;
+    @Nullable
+    StartetAvType startetAvType;
 }
