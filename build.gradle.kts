@@ -23,7 +23,6 @@ plugins {
 }
 
 group = "no.nav"
-version = "1.0.0"
 java.sourceCompatibility = JavaVersion.VERSION_21
 
 java {
@@ -128,4 +127,8 @@ sonarqube {
         property("sonar.organization", "navikt")
         property("sonar.host.url", "https://sonarcloud.io")
     }
+}
+
+tasks.withType<Test>().configureEach {
+    maxParallelForks = (Runtime.getRuntime().availableProcessors() / 2).coerceAtLeast(1)
 }
