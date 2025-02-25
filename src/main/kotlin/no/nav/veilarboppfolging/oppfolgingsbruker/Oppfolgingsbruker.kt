@@ -27,7 +27,7 @@ open class Oppfolgingsbruker(
         fun arbeidssokerStartetAvVeileder(
             aktorId: AktorId,
             startetAvType: StartetAvType,
-            navIdent: NavIdent? = null
+            navIdent: NavIdent
         ): Oppfolgingsbruker {
             return Arbeidssoker(
                 aktorId,

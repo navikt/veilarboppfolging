@@ -1,5 +1,6 @@
 package no.nav.veilarboppfolging.controller.response;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Value;
 import no.nav.veilarboppfolging.repository.enums.KodeverkBruker;
@@ -8,6 +9,7 @@ import java.time.ZonedDateTime;
 
 @Value
 @Builder
+@AllArgsConstructor
 public class HistorikkHendelse {
     Type type;
     ZonedDateTime dato;

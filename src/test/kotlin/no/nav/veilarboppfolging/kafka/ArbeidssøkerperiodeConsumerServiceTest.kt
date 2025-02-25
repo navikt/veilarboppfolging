@@ -240,7 +240,10 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
             null,
             "begrunnelse",
             emptyList(),
-            OppfolgingStartBegrunnelse.ARBEIDSSOKER_REGISTRERING
+            OppfolgingStartBegrunnelse.ARBEIDSSOKER_REGISTRERING,
+            "Z123456",
+            StartetAvType.VEILEDER
+
         )
 
     private fun arbeidssøkerperiode(fødselsnummer: String, periodeAvsluttet: Boolean = false, periodeStartet: Instant = Instant.now().minusSeconds(1)): Periode {
@@ -287,13 +290,14 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
     fun lagreOppfølgingsperiode(periode: OppfolgingsperiodeEntity) {
         jdbcTemplate.update(
             "" +
-                    "INSERT INTO OPPFOLGINGSPERIODE(uuid, aktor_id, startDato, oppdatert, start_begrunnelse, startet_av) " +
-                    "VALUES (?, ?, ?, CURRENT_TIMESTAMP, ?, ?)",
+                    "INSERT INTO OPPFOLGINGSPERIODE(uuid, aktor_id, startDato, oppdatert, start_begrunnelse, startet_av, startet_av_type) " +
+                    "VALUES (?, ?, ?, CURRENT_TIMESTAMP, ?, ?, ?)",
             periode.uuid.toString(),
             periode.aktorId,
             Timestamp.from(periode.startDato.toInstant()),
             periode.startetBegrunnelse.name,
-            periode.veileder
+            periode.startetAv,
+            periode.startetAvType?.name
         )
     }
 }
