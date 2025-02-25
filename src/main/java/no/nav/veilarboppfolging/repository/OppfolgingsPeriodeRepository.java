@@ -138,6 +138,8 @@ public class OppfolgingsPeriodeRepository {
     }
 
     private static OppfolgingsperiodeEntity mapTilOppfolgingsperiode(ResultSet result, int row) throws SQLException {
+        var startetAvTypeString = result.getString("startet_av_type");
+        var startetAvType = startetAvTypeString != null ? EnumUtils.valueOf(StartetAvType.class, startetAvTypeString) : null;
         return OppfolgingsperiodeEntity.builder()
                 .uuid(UUID.fromString(result.getString("uuid")))
                 .aktorId(result.getString("aktor_id"))
@@ -145,6 +147,8 @@ public class OppfolgingsPeriodeRepository {
                 .startDato(hentZonedDateTime(result, "startdato"))
                 .sluttDato(hentZonedDateTime(result, "sluttdato"))
                 .begrunnelse(result.getString("avslutt_begrunnelse"))
+                .startetAvType(startetAvType)
+                .startetAv(startetAvType == StartetAvType.VEILEDER ? result.getString("startet_av") : null)
                 .startetBegrunnelse(EnumUtils.valueOf(OppfolgingStartBegrunnelse.class, result.getString("start_begrunnelse")))
                 .build();
     }

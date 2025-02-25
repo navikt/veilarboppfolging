@@ -254,6 +254,45 @@ class HistorikkServiceTest {
         ))
     }
 
+    @Test
+    fun `oppfolgingsperiodeHistorikk - Mangler startet av data - skal vise veileder ident på start og stopp av oppfølgingsperioder i historikken`() {
+        Mockito.`when`(authService.harTilgangTilEnhet(ENHET)).thenReturn(true)
+        val avsluttetBegrunnelse = "Bruker trenger ikke lenger oppfolging"
+
+        val oppfolgingsPeriode = mockOppfolgingsPeriode(
+            startBegrunnelse = null,
+            startetAv = null,
+            startetAvType = null,
+            avsluttetBegrunnelse = avsluttetBegrunnelse,
+            avsluttetAv = null, // Avsluttet av
+        )
+        gitt_oppfolgingsperioder(listOf(oppfolgingsPeriode))
+
+        val oppfolgingssEventer = listOf(HistorikkHendelse.Type.AVSLUTTET_OPPFOLGINGSPERIODE, HistorikkHendelse.Type.STARTET_OPPFOLGINGSPERIODE)
+        val historikk = historikkService.hentInstillingsHistorikk(FNR)
+            .filter { oppfolgingssEventer.contains(it.type) }
+
+        Assertions.assertThat(historikk.size).isEqualTo(2)
+        val periodeStartetEvent = historikk[0]
+        val periodeAvsluttetEvent = historikk[1]
+
+        Assertions.assertThat(periodeStartetEvent).isEqualTo(historikkHendelse(
+            type = HistorikkHendelse.Type.STARTET_OPPFOLGINGSPERIODE,
+            tidspunkt = OPPFOLGING_START,
+            begrunnelse = "Startet arbeidsoppfølging på bruker",
+            opprettetAvType = null,
+            opprettetAv = null,
+        ))
+
+        Assertions.assertThat(periodeAvsluttetEvent).isEqualTo(historikkHendelse(
+            type = HistorikkHendelse.Type.AVSLUTTET_OPPFOLGINGSPERIODE,
+            tidspunkt = OPPFOLGING_END,
+            begrunnelse = avsluttetBegrunnelse,
+            opprettetAvType = KodeverkBruker.SYSTEM,
+            opprettetAv = null,
+        ))
+    }
+
     private fun gitt_oppfolgingsperioder(oppfolgingsPerioder: List<OppfolgingsperiodeEntity>) {
         Mockito.`when`(
             oppfolgingsPeriodeRepository.hentOppfolgingsperioder(AKTOR_ID)
@@ -344,9 +383,9 @@ class HistorikkServiceTest {
     }
 
     private fun mockOppfolgingsPeriode(
-        startBegrunnelse: OppfolgingStartBegrunnelse,
+        startBegrunnelse: OppfolgingStartBegrunnelse?,
         startetAv: String?,
-        startetAvType: StartetAvType,
+        startetAvType: StartetAvType?,
         avsluttetBegrunnelse: String? = null,
         avsluttetAv: String? = null,
     ): OppfolgingsperiodeEntity {
@@ -368,7 +407,7 @@ class HistorikkServiceTest {
         type: HistorikkHendelse.Type,
         tidspunkt: ZonedDateTime,
         begrunnelse: String,
-        opprettetAvType: KodeverkBruker,
+        opprettetAvType: KodeverkBruker?,
         opprettetAv: String?
     ): HistorikkHendelse {
         return HistorikkHendelse(
