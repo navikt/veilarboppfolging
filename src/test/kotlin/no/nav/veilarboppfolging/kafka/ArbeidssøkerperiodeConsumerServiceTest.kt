@@ -297,7 +297,7 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
             Timestamp.from(periode.startDato.toInstant()),
             periode.startetBegrunnelse.name,
             periode.startetAv,
-            periode.startetAvType
+            periode.startetAvType?.name
         )
     }
 }
