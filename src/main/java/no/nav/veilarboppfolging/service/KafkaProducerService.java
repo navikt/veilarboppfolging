@@ -1,12 +1,15 @@
 package no.nav.veilarboppfolging.service;
 
+import lombok.extern.slf4j.Slf4j;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.kafka.producer.feilhandtering.KafkaProducerRecordStorage;
 import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.Fnr;
 import no.nav.pto_schema.kafka.json.topic.SisteOppfolgingsperiodeV1;
 import no.nav.pto_schema.kafka.json.topic.SisteTilordnetVeilederV1;
 import no.nav.pto_schema.kafka.json.topic.onprem.*;
 import no.nav.veilarboppfolging.config.KafkaProperties;
+import no.nav.veilarboppfolging.kafka.AoMinSideMicrofrontendMessage;
 import no.nav.veilarboppfolging.kafka.KvpPeriode;
 import no.nav.veilarboppfolging.kafka.dto.OppfolgingsperiodeDTO;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -18,6 +21,7 @@ import java.time.ZonedDateTime;
 
 import static no.nav.common.kafka.producer.util.ProducerUtils.serializeJsonRecord;
 
+@Slf4j
 @Service
 public class KafkaProducerService {
 
@@ -29,17 +33,20 @@ public class KafkaProducerService {
 
     private final Boolean kafkaEnabled;
 
+    private final AuthService authService;
+
     @Autowired
     public KafkaProducerService(
             AuthContextHolder authContextHolder,
             KafkaProducerRecordStorage producerRecordStorage,
             KafkaProperties kafkaProperties,
-            @Value("${app.kafka.enabled}") Boolean kafkaEnabled
+            @Value("${app.kafka.enabled}") Boolean kafkaEnabled, AuthService authService
     ) {
         this.authContextHolder = authContextHolder;
         this.producerRecordStorage = producerRecordStorage;
         this.kafkaProperties = kafkaProperties;
         this.kafkaEnabled = kafkaEnabled;
+        this.authService = authService;
     }
 
     public void publiserOppfolgingsperiode(OppfolgingsperiodeDTO oppfolgingsperiode) {
@@ -118,6 +125,22 @@ public class KafkaProducerService {
                 .build();
 
         store(kafkaProperties.getEndringPaMalAiven(), aktorId.get(), recordValue);
+    }
+
+    public void publiserVisAoMinSideMicrofrontend(AktorId aktorId) {
+        Fnr fnr = authService.getFnrOrThrow(aktorId);
+
+        AoMinSideMicrofrontendMessage message = new AoMinSideMicrofrontendMessage("enable", fnr.get(), "substantial");
+
+        store(kafkaProperties.getMinSideAapenMicrofrontendV1(), aktorId.get(), message);
+    }
+
+    public void publiserSkjulAoMinSideMicrofrontend(AktorId aktorId) {
+        Fnr fnr = authService.getFnrOrThrow(aktorId);
+
+        AoMinSideMicrofrontendMessage message = new AoMinSideMicrofrontendMessage("disable", fnr.get());
+
+        store(kafkaProperties.getMinSideAapenMicrofrontendV1(), aktorId.get(), message);
     }
 
     private void store(String topic, String key, Object value) {

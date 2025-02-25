@@ -82,6 +82,8 @@ spec:
       value: "https://pdl-api.prod-fss-pub.nais.io"
     - name: PDL_SCOPE
       value: "api://prod-fss.pdl.pdl-api/.default"
+    - name: PDL_BEHANDLINGSNUMMER
+      value: "B884"
   secureLogs:
     enabled: true
   kafka:
@@ -218,4 +220,7 @@ spec:
           cluster: prod-fss
         - application: oppgave
           namespace: aap
+          cluster: prod-gcp
+        - application: ao-min-side-microfrontend
+          namespace: dab
           cluster: prod-gcp

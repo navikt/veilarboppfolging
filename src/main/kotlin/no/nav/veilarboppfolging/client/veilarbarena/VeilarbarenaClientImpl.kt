@@ -145,13 +145,20 @@ class VeilarbarenaClientImpl(
                 "/veilarbarena/api/v2/arena/registrer-i-arena"),
                 personRequest,
                 RegistrerIkkeArbeidssokerDto::class.java)
+            emptySuccessMeansFailure(response)
             return when (response) {
                 is RequestResult.Success -> RegistrerIArenaSuccess(response.body.get())
                 is RequestResult.Fail ->  RegistrerIArenaError("Noe gikk galt ved registrering av bruker i Arena", response.reason)
             }
         } catch (e: Exception) {
-            logger.error("Uventet feil ved henting av ytelser fra veilarbarena", e)
+            logger.error("Uventet feil ved registrer bruker via veilarbarena", e)
             throw e
+        }
+    }
+
+    private fun emptySuccessMeansFailure(response: RequestResult<RegistrerIkkeArbeidssokerDto>) {
+        if (response is RequestResult.Success && response.body.isEmpty) {
+            throw RuntimeException("Ugyldig url for registrering av bruker i Arena")
         }
     }
 

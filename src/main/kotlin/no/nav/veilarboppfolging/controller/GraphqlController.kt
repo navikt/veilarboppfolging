@@ -9,7 +9,14 @@ import no.nav.poao_tilgang.client.Decision
 import no.nav.poao_tilgang.client.NorskIdent
 import no.nav.poao_tilgang.client.PoaoTilgangClient
 import no.nav.poao_tilgang.client.TilgangType
+import no.nav.veilarboppfolging.client.pdl.PdlFolkeregisterStatusClient
+import no.nav.veilarboppfolging.oppfolgingsbruker.kanStarteOppfolging.ALLEREDE_UNDER_OPPFOLGING
+import no.nav.veilarboppfolging.oppfolgingsbruker.kanStarteOppfolging.BrukerHarRiktigFregStatus
+import no.nav.veilarboppfolging.oppfolgingsbruker.kanStarteOppfolging.KanStarteOppfolging
+import no.nav.veilarboppfolging.oppfolgingsbruker.kanStarteOppfolging.OPPFOLGING_OK
+import no.nav.veilarboppfolging.oppfolgingsbruker.kanStarteOppfolging.toKanStarteOppfolging
 import no.nav.veilarboppfolging.repository.EnhetRepository
+import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
 import no.nav.veilarboppfolging.service.AuthService
 import org.slf4j.LoggerFactory
@@ -19,6 +26,9 @@ import org.springframework.graphql.data.method.annotation.SchemaMapping
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Controller
 import org.springframework.web.server.ResponseStatusException
+import java.time.LocalDate
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 
 data class OppfolgingsEnhetQueryDto(
     val enhet: EnhetDto?, // Nullable because graphql
@@ -50,20 +60,15 @@ enum class TilgangResultat {
     IKKE_TILGANG_MODIA
 }
 
-enum class KanStarteOppfolging {
-    JA,
-    ALLEREDE_UNDER_OPPFOLGING,
-    IKKE_TILGANG_FORTROLIG_ADRESSE,
-    IKKE_TILGANG_STRENGT_FORTROLIG_ADRESSE,
-    IKKE_TILGANG_EGNE_ANSATTE,
-    IKKE_TILGANG_ENHET,
-    IKKE_TILGANG_MODIA
-}
 
 data class OppfolgingDto(
     val erUnderOppfolging: Boolean,
     val kanStarteOppfolging: KanStarteOppfolging?,
-    val norskIdent: NorskIdent? = null
+    val norskIdent: NorskIdent? = null,
+)
+
+data class GjeldendeOppfolgingsperiodeDto(
+    val startTidspunkt: String,
 )
 
 @Controller
@@ -73,7 +78,9 @@ class GraphqlController(
     private val norg2Client: Norg2Client,
     private val aktorOppslagClient: AktorOppslagClient,
     private val authService: AuthService,
-    private val poaoTilgangClient: PoaoTilgangClient
+    private val poaoTilgangClient: PoaoTilgangClient,
+    private val oppfolgingsPeriodeRepository: OppfolgingsPeriodeRepository,
+    private val pdlFolkeregisterStatusClient: PdlFolkeregisterStatusClient
 ) {
     private val logger = LoggerFactory.getLogger(GraphqlController::class.java)
 
@@ -121,6 +128,10 @@ class GraphqlController(
         }
     }
 
+    private fun kanStarteOppfolgingMtpFregStatus(fnr: Fnr): BrukerHarRiktigFregStatus {
+        return pdlFolkeregisterStatusClient.hentFolkeregisterStatus(fnr).toKanStarteOppfolging()
+    }
+
     @SchemaMapping(typeName="OppfolgingsEnhetsInfo", field="enhet")
     fun arenaOppfolgingsEnhet(oppfolgingsEnhet: OppfolgingsEnhetQueryDto): EnhetDto? {
         val aktorId = aktorOppslagClient.hentAktorId(Fnr.of(oppfolgingsEnhet.fnr))
@@ -141,9 +152,10 @@ class GraphqlController(
     @SchemaMapping(typeName="OppfolgingDto", field="kanStarteOppfolging")
     fun kanStarteOppfolging(oppfolgingDto: OppfolgingDto): KanStarteOppfolging? {
         if (oppfolgingDto.norskIdent == null) throw InternFeil("Fant ikke fnr å sjekke tilgang mot i kanStarteOppfolging")
-        if (oppfolgingDto.erUnderOppfolging) return KanStarteOppfolging.ALLEREDE_UNDER_OPPFOLGING
-
-        return evaluerTilgang(oppfolgingDto.norskIdent).toKanStarteOppfolging()
+        val gyldigOppfolging = if (oppfolgingDto.erUnderOppfolging) ALLEREDE_UNDER_OPPFOLGING else OPPFOLGING_OK
+        val gyldigTilgang = lazy { evaluerTilgang(oppfolgingDto.norskIdent).toKanStarteOppfolging() }
+        val gyldigFregStatus = lazy { kanStarteOppfolgingMtpFregStatus(Fnr.of(oppfolgingDto.norskIdent)) }
+        return gyldigOppfolging and gyldigTilgang and gyldigFregStatus
     }
 
     fun hentDefaultEnhetFraNorg(fnr: Fnr): Pair<EnhetId, KildeDto>? {
@@ -151,6 +163,20 @@ class GraphqlController(
         if (tilgangsattributterResponse.isFailure) throw PoaoTilgangError(tilgangsattributterResponse.exception!!)
         val tilgangsAttributter = tilgangsattributterResponse.getOrThrow()
         return tilgangsAttributter.kontor?.let { EnhetId.of(it) to KildeDto.NORG }
+    }
+
+    @QueryMapping
+    fun gjeldendeOppfolgingsperiode(): GjeldendeOppfolgingsperiodeDto {
+        if(!authService.erEksternBruker()) {
+            throw ResponseStatusException(HttpStatus.FORBIDDEN)
+        }
+
+        val innloggetBrukerFnr = authService.innloggetBrukerIdent
+        val aktorId = aktorOppslagClient.hentAktorId(Fnr.of(innloggetBrukerFnr))
+        val oppfolgingsperiode = oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId)
+        val startDato = oppfolgingsperiode.get().startDato.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+
+        return GjeldendeOppfolgingsperiodeDto(startDato.toString())
     }
 }
 
@@ -163,17 +189,6 @@ fun Decision.Deny.tryToFindDenyReason(): TilgangResultat {
         this.message.contains(AdGruppeNavn.MODIA_GENERELL) -> return TilgangResultat.IKKE_TILGANG_MODIA
         this.message.contains(AdGruppeNavn.MODIA_OPPFOLGING) -> return TilgangResultat.IKKE_TILGANG_MODIA
         else -> TilgangResultat.IKKE_TILGANG_ENHET
-    }
-}
-
-fun TilgangResultat.toKanStarteOppfolging(): KanStarteOppfolging {
-    return when (this) {
-        TilgangResultat.HAR_TILGANG -> KanStarteOppfolging.JA
-        TilgangResultat.IKKE_TILGANG_FORTROLIG_ADRESSE -> KanStarteOppfolging.IKKE_TILGANG_FORTROLIG_ADRESSE
-        TilgangResultat.IKKE_TILGANG_STRENGT_FORTROLIG_ADRESSE -> KanStarteOppfolging.IKKE_TILGANG_STRENGT_FORTROLIG_ADRESSE
-        TilgangResultat.IKKE_TILGANG_EGNE_ANSATTE -> KanStarteOppfolging.IKKE_TILGANG_EGNE_ANSATTE
-        TilgangResultat.IKKE_TILGANG_ENHET -> KanStarteOppfolging.IKKE_TILGANG_ENHET
-        TilgangResultat.IKKE_TILGANG_MODIA -> KanStarteOppfolging.IKKE_TILGANG_MODIA
     }
 }
 

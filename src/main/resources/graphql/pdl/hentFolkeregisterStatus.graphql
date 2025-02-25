@@ -1,0 +1,7 @@
+query hentFolkeregisterStatus($ident: ID! $historikk: Boolean!) {
+    hentPerson(ident: $ident) {
+        folkeregisterpersonstatus(historikk: $historikk) {
+            forenkletStatus
+        }
+    }
+}
