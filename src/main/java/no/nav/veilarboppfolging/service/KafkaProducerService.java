@@ -8,8 +8,9 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.pto_schema.kafka.json.topic.SisteOppfolgingsperiodeV1;
 import no.nav.pto_schema.kafka.json.topic.SisteTilordnetVeilederV1;
 import no.nav.pto_schema.kafka.json.topic.onprem.*;
+import no.nav.tms.microfrontend.MicrofrontendMessageBuilder;
+import no.nav.tms.microfrontend.Sensitivitet;
 import no.nav.veilarboppfolging.config.KafkaProperties;
-import no.nav.veilarboppfolging.kafka.AoMinSideMicrofrontendMessage;
 import no.nav.veilarboppfolging.kafka.KvpPeriode;
 import no.nav.veilarboppfolging.kafka.dto.OppfolgingsperiodeDTO;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -130,17 +131,25 @@ public class KafkaProducerService {
     public void publiserVisAoMinSideMicrofrontend(AktorId aktorId) {
         Fnr fnr = authService.getFnrOrThrow(aktorId);
 
-        AoMinSideMicrofrontendMessage message = new AoMinSideMicrofrontendMessage("enable", fnr.get(), "substantial");
+        var startMelding = MicrofrontendMessageBuilder.INSTANCE.enable(
+              fnr.get(),
+               "ao-min-side-microfrontend",
+                "dab",
+                Sensitivitet.SUBSTANTIAL
+        );
 
-        store(kafkaProperties.getMinSideAapenMicrofrontendV1(), aktorId.get(), message);
+        store(kafkaProperties.getMinSideAapenMicrofrontendV1(), aktorId.get(), startMelding);
     }
 
     public void publiserSkjulAoMinSideMicrofrontend(AktorId aktorId) {
         Fnr fnr = authService.getFnrOrThrow(aktorId);
 
-        AoMinSideMicrofrontendMessage message = new AoMinSideMicrofrontendMessage("disable", fnr.get());
-
-        store(kafkaProperties.getMinSideAapenMicrofrontendV1(), aktorId.get(), message);
+        var stoppMelding = MicrofrontendMessageBuilder.INSTANCE.disable(
+                fnr.get(),
+                "ao-min-side-microfrontend",
+                "dab"
+        );
+        store(kafkaProperties.getMinSideAapenMicrofrontendV1(), aktorId.get(), stoppMelding);
     }
 
     private void store(String topic, String key, Object value) {
