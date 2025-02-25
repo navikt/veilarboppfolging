@@ -3,7 +3,6 @@ package no.nav.veilarboppfolging.controller.response;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Value;
-import no.nav.veilarboppfolging.domain.StartetAvType;
 import no.nav.veilarboppfolging.repository.enums.KodeverkBruker;
 
 import java.time.ZonedDateTime;

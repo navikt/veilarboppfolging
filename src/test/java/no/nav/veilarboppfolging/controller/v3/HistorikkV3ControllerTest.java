@@ -3,7 +3,6 @@ package no.nav.veilarboppfolging.controller.v3;
 import no.nav.common.json.JsonUtils;
 import no.nav.veilarboppfolging.controller.response.HistorikkHendelse;
 import no.nav.veilarboppfolging.controller.v3.request.HistorikkRequest;
-import no.nav.veilarboppfolging.domain.StartetAvType;
 import no.nav.veilarboppfolging.repository.enums.KodeverkBruker;
 import no.nav.veilarboppfolging.service.AuthService;
 import no.nav.veilarboppfolging.service.HistorikkService;
