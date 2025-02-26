@@ -63,7 +63,7 @@ class GraphqlControllerTest: IntegrationTest() {
         /* Query is hidden in test/resources/graphl-test :) */
         val result = tester.documentName("getEnhetQuery").variable("fnr", fnr.get()).execute()
         result.errors()
-            .expect { it.message.equals(expectedError.toString()) }
+            .expect { it.message.equals(expectedError) }
             .expect { it.errorType.equals(expectedError.errorType) }
             .verify()
     }
