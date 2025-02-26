@@ -125,6 +125,7 @@ sonarqube {
         property("sonar.projectKey", "navikt_veilarboppfolging")
         property("sonar.organization", "navikt")
         property("sonar.host.url", "https://sonarcloud.io")
+        property("sonar.java.binaries", "${project.layout.buildDirectory}/classes/java/main")
     }
 }
 
