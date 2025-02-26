@@ -24,6 +24,7 @@ jobs:
         with:
           gradle-version: "8.13"
           cache-read-only: ${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/gradle' }}
+          cache-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
 
       - name: Cache SonarCloud packages
         uses: actions/cache@v4
@@ -36,4 +37,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: ./gradlew build --build-cache --scan sonar
+        run: ./gradlew build --configuration-cache --build-cache --scan sonar
