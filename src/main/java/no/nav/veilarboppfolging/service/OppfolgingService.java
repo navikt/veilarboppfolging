@@ -348,6 +348,7 @@ public class OppfolgingService {
             kafkaProducerService.publiserEndringPaManuellStatus(aktorId, false);
 
             kafkaProducerService.publiserSkjulMinSideMicrofrontend(aktorId, "ao-min-side-microfrontend");
+            kafkaProducerService.publiserSkjulMinSideMicrofrontend(aktorId, "start-samtale-microfrontend");
 
             var erAutomatiskAvsluttet = Objects.equals(veilederId, SYSTEM_USER_NAME) || veilederId == null;
             bigQueryClient.loggAvsluttOppfolgingsperiode(sistePeriode.getUuid(), erAutomatiskAvsluttet);
