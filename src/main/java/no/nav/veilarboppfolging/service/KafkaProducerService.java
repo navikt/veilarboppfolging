@@ -9,8 +9,8 @@ import no.nav.pto_schema.kafka.json.topic.SisteOppfolgingsperiodeV1;
 import no.nav.pto_schema.kafka.json.topic.SisteTilordnetVeilederV1;
 import no.nav.pto_schema.kafka.json.topic.onprem.*;
 import no.nav.veilarboppfolging.config.KafkaProperties;
-import no.nav.veilarboppfolging.kafka.AoMinSideMicrofrontendMessage;
 import no.nav.veilarboppfolging.kafka.KvpPeriode;
+import no.nav.veilarboppfolging.kafka.MinSideMicrofrontendMessage;
 import no.nav.veilarboppfolging.kafka.dto.OppfolgingsperiodeDTO;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -130,17 +130,17 @@ public class KafkaProducerService {
     public void publiserVisAoMinSideMicrofrontend(AktorId aktorId) {
         Fnr fnr = authService.getFnrOrThrow(aktorId);
 
-        AoMinSideMicrofrontendMessage message = new AoMinSideMicrofrontendMessage("enable", fnr.get(), "substantial");
+        MinSideMicrofrontendMessage visAoMinSideMicrofrontendStartMelding = new MinSideMicrofrontendMessage("enable", fnr.get(), "substantial", "ao-min-side-microfrontend");
 
-        store(kafkaProperties.getMinSideAapenMicrofrontendV1(), aktorId.get(), message);
+        store(kafkaProperties.getMinSideAapenMicrofrontendV1(), aktorId.get(), visAoMinSideMicrofrontendStartMelding);
     }
 
     public void publiserSkjulAoMinSideMicrofrontend(AktorId aktorId) {
         Fnr fnr = authService.getFnrOrThrow(aktorId);
 
-        AoMinSideMicrofrontendMessage message = new AoMinSideMicrofrontendMessage("disable", fnr.get());
+        MinSideMicrofrontendMessage skjulAoMinSideMicrofrontendStartMelding = new MinSideMicrofrontendMessage("disable", fnr.get(), "substantial", "ao-min-side-microfrontend");
 
-        store(kafkaProperties.getMinSideAapenMicrofrontendV1(), aktorId.get(), message);
+        store(kafkaProperties.getMinSideAapenMicrofrontendV1(), aktorId.get(), skjulAoMinSideMicrofrontendStartMelding);
     }
 
     private void store(String topic, String key, Object value) {

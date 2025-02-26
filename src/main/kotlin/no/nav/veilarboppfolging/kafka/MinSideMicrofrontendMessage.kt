@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import jakarta.validation.constraints.NotBlank
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-data class AoMinSideMicrofrontendMessage @JvmOverloads constructor(
+data class MinSideMicrofrontendMessage @JvmOverloads constructor(
     @JsonProperty("@action")
     val action: String,
 
@@ -16,7 +16,7 @@ data class AoMinSideMicrofrontendMessage @JvmOverloads constructor(
 
     @JsonProperty("microfrontend_id")
     @field:NotBlank
-    val microfrontendId: String = "ao-min-side-microfrontend",
+    val microfrontendId: String,
 
     @JsonProperty("@initiated_by")
     @field:NotBlank
