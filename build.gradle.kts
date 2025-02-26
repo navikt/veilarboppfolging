@@ -2,7 +2,6 @@ val kotlinVersion = "2.0.20"
 val springBootVersion = "3.3.4"
 val dependencyManagementVersion = "1.1.3"
 val jacocoVersion = "0.8.12"
-val sonarqubeVersion = "4.3.0.3225"
 val flywayVersion = "10.15.2"
 val commonVersion = "3.2025.01.14_14.19-79b3041cae56"
 val ptoSchemaVersion = "1.2025.01.13_12.58-3e81bd940198"
@@ -18,7 +17,7 @@ plugins {
     id("org.springframework.boot") version "3.3.4"
     id("io.spring.dependency-management") version "1.1.3"
     id("jacoco")
-    id("org.sonarqube") version "4.3.0.3225"
+    id("org.sonarqube") version "6.0.1.5171"
     kotlin("plugin.lombok") version "2.1.0"
 }
 
