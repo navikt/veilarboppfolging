@@ -18,6 +18,7 @@ import no.nav.veilarboppfolging.domain.Oppfolging;
 import no.nav.veilarboppfolging.domain.OppfolgingStatusData;
 import no.nav.veilarboppfolging.eventsLogger.BigQueryClient;
 import no.nav.veilarboppfolging.oppfolgingsbruker.ArenaSyncOppfolgingsBruker;
+import no.nav.veilarboppfolging.oppfolgingsbruker.OppfolgingStartBegrunnelse;
 import no.nav.veilarboppfolging.oppfolgingsbruker.Oppfolgingsbruker;
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService;
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.LocalArenaOppfolging;
@@ -291,7 +292,11 @@ public class OppfolgingService {
             log.info("Oppfølgingsperiode startet for bruker - publiserer endringer på oppfølgingsperiode-topics.");
             kafkaProducerService.publiserOppfolgingsperiode(DtoMappers.tilOppfolgingsperiodeDTO(sistePeriode));
 
-            kafkaProducerService.publiserVisAoMinSideMicrofrontend(aktorId);
+            kafkaProducerService.publiserVisMinSideMicrofrontend(aktorId, "ao-min-side-microfrontend");
+
+            if(oppfolgingsbruker.getOppfolgingStartBegrunnelse() == OppfolgingStartBegrunnelse.MANUELL_REGISTRERING_VEILEDER) {
+                kafkaProducerService.publiserVisMinSideMicrofrontend(aktorId, "start-samtale-microfrontend");
+            }
 
             Optional<Kvalifiseringsgruppe> kvalifiseringsgruppe = getKvalifiseringsGruppe(oppfolgingsbruker);
             bigQueryClient.loggStartOppfolgingsperiode(oppfolgingsbruker.getOppfolgingStartBegrunnelse(), sistePeriode.getUuid(), oppfolgingsbruker.getStartetAvType(), kvalifiseringsgruppe);
@@ -342,7 +347,7 @@ public class OppfolgingService {
             kafkaProducerService.publiserEndringPaNyForVeileder(aktorId, false);
             kafkaProducerService.publiserEndringPaManuellStatus(aktorId, false);
 
-            kafkaProducerService.publiserSkjulAoMinSideMicrofrontend(aktorId);
+            kafkaProducerService.publiserSkjulMinSideMicrofrontend(aktorId, "ao-min-side-microfrontend");
 
             var erAutomatiskAvsluttet = Objects.equals(veilederId, SYSTEM_USER_NAME) || veilederId == null;
             bigQueryClient.loggAvsluttOppfolgingsperiode(sistePeriode.getUuid(), erAutomatiskAvsluttet);

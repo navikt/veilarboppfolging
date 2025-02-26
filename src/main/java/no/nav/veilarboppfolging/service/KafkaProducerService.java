@@ -127,18 +127,18 @@ public class KafkaProducerService {
         store(kafkaProperties.getEndringPaMalAiven(), aktorId.get(), recordValue);
     }
 
-    public void publiserVisAoMinSideMicrofrontend(AktorId aktorId) {
+    public void publiserVisMinSideMicrofrontend(AktorId aktorId, String microfrontend) {
         Fnr fnr = authService.getFnrOrThrow(aktorId);
 
-        MinSideMicrofrontendMessage visAoMinSideMicrofrontendStartMelding = new MinSideMicrofrontendMessage("enable", fnr.get(), "substantial", "ao-min-side-microfrontend");
+        MinSideMicrofrontendMessage visAoMinSideMicrofrontendStartMelding = new MinSideMicrofrontendMessage("enable", fnr.get(), "substantial", microfrontend);
 
         store(kafkaProperties.getMinSideAapenMicrofrontendV1(), aktorId.get(), visAoMinSideMicrofrontendStartMelding);
     }
 
-    public void publiserSkjulAoMinSideMicrofrontend(AktorId aktorId) {
+    public void publiserSkjulMinSideMicrofrontend(AktorId aktorId, String microfrontend) {
         Fnr fnr = authService.getFnrOrThrow(aktorId);
 
-        MinSideMicrofrontendMessage skjulAoMinSideMicrofrontendStartMelding = new MinSideMicrofrontendMessage("disable", fnr.get(), "substantial", "ao-min-side-microfrontend");
+        MinSideMicrofrontendMessage skjulAoMinSideMicrofrontendStartMelding = new MinSideMicrofrontendMessage("disable", fnr.get(), "substantial", microfrontend);
 
         store(kafkaProperties.getMinSideAapenMicrofrontendV1(), aktorId.get(), skjulAoMinSideMicrofrontendStartMelding);
     }
