@@ -1,7 +1,6 @@
 package no.nav.veilarboppfolging.controller.v3;
 
 import no.nav.common.json.JsonUtils;
-import no.nav.common.types.identer.EnhetId;
 import no.nav.veilarboppfolging.controller.response.HistorikkHendelse;
 import no.nav.veilarboppfolging.controller.v3.request.HistorikkRequest;
 import no.nav.veilarboppfolging.repository.enums.KodeverkBruker;
@@ -19,8 +18,6 @@ import java.util.List;
 
 import static no.nav.veilarboppfolging.controller.response.HistorikkHendelse.Type.OPPFOLGINGSENHET_ENDRET;
 import static no.nav.veilarboppfolging.controller.response.HistorikkHendelse.Type.VEILEDER_TILORDNET;
-import static no.nav.veilarboppfolging.repository.enums.KodeverkBruker.NAV;
-import static no.nav.veilarboppfolging.repository.enums.KodeverkBruker.SYSTEM;
 import static no.nav.veilarboppfolging.test.TestData.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -46,7 +43,7 @@ public class HistorikkV3ControllerTest {
                         .type(VEILEDER_TILORDNET)
                         .begrunnelse("Brukeren er tildelt veileder " + TEST_NAV_IDENT.get())
                         .dato(ZonedDateTime.parse("2022-11-03T10:00:00+01:00"))
-                        .opprettetAv(NAV)
+                        .opprettetAv(KodeverkBruker.NAV)
                         .opprettetAvBrukerId(TEST_NAV_IDENT.get())
                         .build(),
                 HistorikkHendelse.builder()
@@ -54,7 +51,7 @@ public class HistorikkV3ControllerTest {
                         .enhet(TEST_ENHET_ID.get())
                         .begrunnelse("Ny oppfølgingsenhet " + TEST_ENHET_ID.get())
                         .dato(ZonedDateTime.parse("2022-07-01T13:00:00+01:00"))
-                        .opprettetAv(SYSTEM)
+                        .opprettetAv(KodeverkBruker.SYSTEM)
                         .build()
         ));
 

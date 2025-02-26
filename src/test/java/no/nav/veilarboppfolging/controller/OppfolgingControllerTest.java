@@ -2,7 +2,6 @@ package no.nav.veilarboppfolging.controller;
 
 import no.nav.common.json.JsonUtils;
 import no.nav.common.types.identer.Fnr;
-import no.nav.veilarboppfolging.controller.response.HistorikkHendelse;
 import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
 import no.nav.veilarboppfolging.service.*;
@@ -18,8 +17,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static no.nav.veilarboppfolging.controller.response.HistorikkHendelse.Type.VEILEDER_TILORDNET;
-import static no.nav.veilarboppfolging.repository.enums.KodeverkBruker.NAV;
 import static no.nav.veilarboppfolging.utils.DtoMappers.tilOppfolgingPeriodeDTO;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -39,9 +36,6 @@ class OppfolgingControllerTest {
 
     @MockBean
     private KvpService kvpService;
-
-    @MockBean
-    private HistorikkService historikkService;
 
     @MockBean
     private ManuellStatusService manuellStatusService;
@@ -83,31 +77,6 @@ class OppfolgingControllerTest {
         when(oppfolgingService.hentOppfolgingsperioder(fnr)).thenReturn(perioder);
 
         mockMvc.perform(get("/api/oppfolging/oppfolgingsperioder").queryParam("fnr", fnr.get()))
-                .andExpect(content().json(expectedJson));
-    }
-
-    @Test
-    void innstillingshistorikk_skal_returnere_innstillingshistorikk() throws Exception {
-        Fnr fnr = Fnr.of("1234");
-        String veileder = "Veileder1";
-        String tilordnetAvVeileder = "Veileder2";
-
-        List<HistorikkHendelse> historikker = new ArrayList<>();
-        historikker.add(
-                HistorikkHendelse.builder()
-                        .type(VEILEDER_TILORDNET)
-                        .begrunnelse("Brukeren er tildelt veileder " + veileder)
-                        .dato(ZonedDateTime.parse("2022-09-05T12:27:29.301343+02:00"))
-                        .opprettetAv(NAV)
-                        .opprettetAvBrukerId(tilordnetAvVeileder)
-                        .build()
-        );
-
-        String expectedJson = "[{\"type\":\"VEILEDER_TILORDNET\",\"dato\":\"2022-09-05T12:27:29.301343+02:00\",\"begrunnelse\":\"Brukeren er tildelt veileder Veileder1\",\"opprettetAv\":\"NAV\",\"opprettetAvBrukerId\":\"Veileder2\",\"dialogId\":null,\"enhet\":null}]";
-
-        when(historikkService.hentInstillingsHistorikk(fnr)).thenReturn(historikker);
-
-        mockMvc.perform(get("/api/oppfolging/innstillingsHistorikk").queryParam("fnr", fnr.get()))
                 .andExpect(content().json(expectedJson));
     }
 }

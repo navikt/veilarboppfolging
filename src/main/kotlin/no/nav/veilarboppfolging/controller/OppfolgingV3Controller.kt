@@ -173,7 +173,8 @@ class OppfolgingV3Controller(
             is RegistrerIArenaSuccess -> {
                 when (arenaResponse.arenaResultat.kode) {
                    ARENA_REGISTRERING_RESULTAT.FNR_FINNES_IKKE, ARENA_REGISTRERING_RESULTAT.KAN_REAKTIVERES_FORENKLET,  ARENA_REGISTRERING_RESULTAT.UKJENT_FEIL -> {
-                        return ResponseEntity(arenaResponse.arenaResultat, HttpStatus.CONFLICT)
+                       logger.error("Feil ved registrering av bruker i Arena", arenaResponse.arenaResultat.resultat)
+                       return ResponseEntity(arenaResponse.arenaResultat, HttpStatus.CONFLICT)
                     }
                     else -> {
                         aktiverBrukerService.aktiverBrukerManuelt(startOppfolging.fnr)

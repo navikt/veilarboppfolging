@@ -32,7 +32,9 @@ public class DatabaseConfig {
         config.setJdbcUrl(datasourceProperties.url);
         config.setUsername(datasourceProperties.username);
         config.setPassword(datasourceProperties.password);
-        config.setMaximumPoolSize(40);
+        // Number of connections in prod is currently 400, number of pods in prod is 4
+        // should have room for twice number of pods because of blue/green deployment
+        config.setMaximumPoolSize(20);
         runFlywayMigration(config);
         return new HikariDataSource(config);
     }
