@@ -26,12 +26,20 @@ jobs:
           cache-read-only: ${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/gradle' }}
           cache-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
 
+#      - name: Cache SonarCloud packages
+#        uses: actions/cache@v4
+#        with:
+#          path: ~/.sonar/cache
+#          key: ${{ runner.os }}-sonar
+#          restore-keys: ${{ runner.os }}-sonar
+
       - name: Cache SonarCloud packages
         uses: actions/cache@v4
         with:
-          path: ~/.sonar/cache
-          key: ${{ runner.os }}-sonar
-          restore-keys: ${{ runner.os }}-sonar
+          path: ~/.sonar
+          key: sonar-${{ runner.os }}-${{ hashFiles('**/*.gradle*') }}
+          restore-keys: |
+            sonar-${{ runner.os }}-
 
       - name: Build and analyze
         env:
