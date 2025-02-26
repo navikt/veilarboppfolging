@@ -19,9 +19,8 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
-
-      - name: Build and test
-        run: ./gradlew build
+        with:
+          gradle-version: "8.13"
 
       - name: Cache SonarCloud packages
         uses: actions/cache@v4
@@ -30,8 +29,11 @@ jobs:
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
 
+      - name: Build and test
+        run: ./gradlew build sonar
+
       - name: Build and analyze
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: ./gradlew sonarqube
+        run: ./gradlew sonar
