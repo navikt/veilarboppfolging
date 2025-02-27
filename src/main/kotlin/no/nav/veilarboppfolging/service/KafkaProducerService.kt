@@ -12,7 +12,6 @@ import no.nav.tms.microfrontend.MicrofrontendMessageBuilder.disable
 import no.nav.tms.microfrontend.MicrofrontendMessageBuilder.enable
 import no.nav.tms.microfrontend.Sensitivitet
 import no.nav.veilarboppfolging.config.KafkaProperties
-import no.nav.veilarboppfolging.dbutil.log
 import no.nav.veilarboppfolging.kafka.KvpPeriode
 import no.nav.veilarboppfolging.kafka.dto.OppfolgingsperiodeDTO
 import org.apache.kafka.clients.producer.ProducerRecord
@@ -128,9 +127,7 @@ class KafkaProducerService @Autowired constructor(
             Sensitivitet.SUBSTANTIAL
         ).text()
 
-        log.info("Sender enable message: {}", startMelding)
-
-        storeString(kafkaProperties.minSideAapenMicrofrontendV1, aktorId.get(), startMelding)
+        store(kafkaProperties.minSideAapenMicrofrontendV1, aktorId.get(), startMelding)
     }
 
     fun publiserSkjulAoMinSideMicrofrontend(aktorId: AktorId) {
@@ -140,7 +137,8 @@ class KafkaProducerService @Autowired constructor(
             fnr.get(),
             "ao-min-side-microfrontend",
             "dab"
-        )
+        ).text()
+
         store(kafkaProperties.minSideAapenMicrofrontendV1, aktorId.get(), stoppMelding)
     }
 
@@ -153,7 +151,7 @@ class KafkaProducerService @Autowired constructor(
         }
     }
 
-    private fun storeString(topic: String, key: String, value: String) {
+    private fun store(topic: String, key: String, value: String) {
         if (kafkaEnabled) {
             val record = ProducerUtils.serializeStringRecord(ProducerRecord(topic, key, value))
             producerRecordStorage.store(record)
