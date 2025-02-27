@@ -130,7 +130,7 @@ class KafkaProducerService @Autowired constructor(
 
         log.info("Sender enable message: {}", startMelding)
 
-        store(kafkaProperties.minSideAapenMicrofrontendV1, aktorId.get(), startMelding)
+        storeString(kafkaProperties.minSideAapenMicrofrontendV1, aktorId.get(), startMelding)
     }
 
     fun publiserSkjulAoMinSideMicrofrontend(aktorId: AktorId) {
@@ -147,6 +147,15 @@ class KafkaProducerService @Autowired constructor(
     private fun store(topic: String, key: String, value: Any) {
         if (kafkaEnabled) {
             val record = ProducerUtils.serializeJsonRecord(ProducerRecord(topic, key, value))
+            producerRecordStorage.store(record)
+        } else {
+            throw RuntimeException("Kafka er disabled, men noe gjør at man forsøker å publisere meldinger")
+        }
+    }
+
+    private fun storeString(topic: String, key: String, value: String) {
+        if (kafkaEnabled) {
+            val record = ProducerUtils.serializeStringRecord(ProducerRecord(topic, key, value))
             producerRecordStorage.store(record)
         } else {
             throw RuntimeException("Kafka er disabled, men noe gjør at man forsøker å publisere meldinger")
