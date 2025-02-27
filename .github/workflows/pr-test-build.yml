@@ -42,17 +42,8 @@ jobs:
           restore-keys: |
             sonar-${{ runner.os }}-
 
-      - name: Show GRADLE_USER_HOME
-        run: echo $GRADLE_USER_HOME
-
-      - name: List Gradle Cache Files
-        run: ls -lah $GRADLE_USER_HOME/caches
-
-      - name: Inspect Gradle Cache After Build
-        run: du -sh $GRADLE_USER_HOME/caches
-
       - name: Build and analyze
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: ./gradlew --info --configuration-cache --build-cache --scan --configuration-cache-problems=warn build sonar
+        run: ./gradlew --configuration-cache --build-cache --scan --configuration-cache-problems=warn build sonar
