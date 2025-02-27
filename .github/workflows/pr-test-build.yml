@@ -23,7 +23,8 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: "8.13"
-          cache-read-only: ${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/gradle' }}
+          # cache-read-only: ${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/gradle' }}
+          cache-read-only: false
           cache-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
 
 #      - name: Cache SonarCloud packages
@@ -40,6 +41,12 @@ jobs:
           key: sonar-${{ runner.os }}-${{ hashFiles('**/*.gradle*') }}
           restore-keys: |
             sonar-${{ runner.os }}-
+
+      - name: Check Restored Cache
+        run: ls -lah ~/.gradle/caches
+
+      - name: Inspect Gradle Cache After Build
+        run: du -sh ~/.gradle/caches
 
       - name: Build and analyze
         env:
