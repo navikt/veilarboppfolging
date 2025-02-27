@@ -39,8 +39,8 @@ import static org.mockito.Mockito.*;
 
 class OppfolgingControllerIntegrationTest extends IntegrationTest {
 
-    private final static Fnr FNR = Fnr.of("123");
-    private final static AktorId AKTOR_ID = AktorId.of("3409823");
+    private final static Fnr FNR = Fnr.of("12345678901");
+    private final static AktorId AKTOR_ID = AktorId.of("09876543210987");
     private final static UUID veilederUUID = UUID.randomUUID();
     private final static String veilederIdent = "Z999999";
     private final static UUID sub = UUID.randomUUID();

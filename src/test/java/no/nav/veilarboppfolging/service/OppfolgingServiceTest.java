@@ -95,7 +95,8 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
                 null,
                  transactor,
                 arenaYtelserService,
-                bigQueryClient
+                bigQueryClient,
+                "https://test.nav.no"
                 );
 
 

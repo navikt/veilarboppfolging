@@ -21,6 +21,7 @@
         <java.version>21</java.version>
         <common.version>3.2024.10.25_13.44-9db48a0dbe67</common.version>
         <tjenestespesifikasjoner.version>1.2019.09.25-00.21-49b69f0625e0</tjenestespesifikasjoner.version>
+        <min-side-varsel-api.version>2.1.1</min-side-varsel-api.version>
         <javax-xml-bind.version>2.3.2</javax-xml-bind.version>
         <wiremock.version>3.0.0-beta-10</wiremock.version>
         <schedlock.version>5.10.2</schedlock.version>
@@ -168,6 +169,12 @@
             <groupId>no.nav</groupId>
             <artifactId>pto-schema</artifactId>
             <version>${pto-schema.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>no.nav.tms.varsel</groupId>
+            <artifactId>kotlin-builder</artifactId>
+            <version>${min-side-varsel-api.version}</version>
         </dependency>
 
         <!-- Common Dependencies -->

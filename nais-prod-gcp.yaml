@@ -84,6 +84,8 @@ spec:
       value: "api://prod-fss.pdl.pdl-api/.default"
     - name: PDL_BEHANDLINGSNUMMER
       value: "B884"
+    - name: NAV_NO_URL
+      value: "https://www.nav.no"
   secureLogs:
     enabled: true
   kafka:

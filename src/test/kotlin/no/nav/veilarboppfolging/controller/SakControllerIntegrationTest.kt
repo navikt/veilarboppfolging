@@ -13,9 +13,9 @@ import java.util.UUID
 
 class SakControllerIntegrationTest: IntegrationTest() {
 
-    private val fnr: Fnr = Fnr.of("123")
+    private val fnr: Fnr = Fnr.of("12345678901")
 
-    private val aktørId: AktorId = AktorId.of("3409823")
+    private val aktørId: AktorId = AktorId.of("09876543210987")
 
     @Test
     fun `når man henter sak for oppfølgsingsperiode uten sak skal sak opprettes`() {
@@ -65,8 +65,8 @@ class SakControllerIntegrationTest: IntegrationTest() {
         sakRepository.opprettSak(oppfølgingsperiodeUuidMedSak)
         assertThat(sakRepository.hentSaker(oppfølgingsperiodeUuidMedSak)).hasSize(1)
 
-        val annetFnr = Fnr.of(fnr.toString() + "annen")
-        val annenAktørId = AktorId.of(aktørId.toString() + "annen")
+        val annetFnr = Fnr.of("09876543210"    )
+        val annenAktørId = AktorId.of("12345678901234")
         mockAuthOk(annenAktørId, annetFnr)
         startOppfolgingSomArbeidsoker(annenAktørId)
         val oppfølgingsperiodeUuidUtenSak = hentOppfolgingsperioder(annetFnr)[0].uuid

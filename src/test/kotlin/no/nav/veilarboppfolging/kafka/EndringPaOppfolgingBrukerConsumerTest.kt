@@ -49,8 +49,8 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
     @MockBean
     lateinit var veilarbarenaClient: VeilarbarenaClient
 
-    val fnr = Fnr.of("123")
-    val aktorId = AktorId.of("123")
+    val fnr = Fnr.of("12345678901")
+    val aktorId = AktorId.of("098765432109876")
     val veilederOid = UUID.randomUUID()
 
     @BeforeAll
