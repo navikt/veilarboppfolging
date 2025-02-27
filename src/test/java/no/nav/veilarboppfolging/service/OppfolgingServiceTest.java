@@ -123,6 +123,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         List<OppfolgingsperiodeEntity> oppfolgingsperioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(AKTOR_ID);
         assertEquals(1, oppfolgingsperioder.size());
         verify(kafkaProducerService, times(1)).publiserOppfolgingsperiode(any(OppfolgingsperiodeDTO.class));
+        verify(kafkaProducerService, times(1)).publiserMinSideBeskjed(any(Fnr.class), anyString(), anyString());
     }
 
     @Test
