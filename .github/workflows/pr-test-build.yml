@@ -42,11 +42,14 @@ jobs:
           restore-keys: |
             sonar-${{ runner.os }}-
 
-      - name: Check Restored Cache
-        run: ls -lah ~/.gradle/caches
+      - name: Show GRADLE_USER_HOME
+        run: echo $GRADLE_USER_HOME
+
+      - name: List Gradle Cache Files
+        run: ls -lah $GRADLE_USER_HOME/caches
 
       - name: Inspect Gradle Cache After Build
-        run: du -sh ~/.gradle/caches
+        run: du -sh $GRADLE_USER_HOME/caches
 
       - name: Build and analyze
         env:
