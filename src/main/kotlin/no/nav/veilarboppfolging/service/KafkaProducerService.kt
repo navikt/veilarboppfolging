@@ -171,4 +171,13 @@ class KafkaProducerService @Autowired constructor(
             throw RuntimeException("Kafka er disabled, men noe gjør at man forsøker å publisere meldinger")
         }
     }
+
+    private fun store(topic: String, key: String, value: String) {
+        if (kafkaEnabled) {
+            val record = ProducerUtils.serializeStringRecord(ProducerRecord(topic, key, value))
+            producerRecordStorage.store(record)
+        } else {
+            throw RuntimeException("Kafka er disabled, men noe gjør at man forsøker å publisere meldinger")
+        }
+    }
 }
