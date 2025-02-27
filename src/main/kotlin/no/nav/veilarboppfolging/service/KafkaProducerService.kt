@@ -126,9 +126,9 @@ class KafkaProducerService @Autowired constructor(
             "ao-min-side-microfrontend",
             "dab",
             Sensitivitet.SUBSTANTIAL
-        )
+        ).text()
 
-        log.info("Sender enable message: {}", startMelding.text())
+        log.info("Sender enable message: {}", startMelding)
 
         store(kafkaProperties.minSideAapenMicrofrontendV1, aktorId.get(), startMelding)
     }
