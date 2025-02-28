@@ -68,8 +68,8 @@ public class OppfolgingService {
     private final ArenaYtelserService arenaYtelserService;
     private final BigQueryClient bigQueryClient;
 
-    private final String startSamtaleMicrofrontend = "start-samtale-microfrontend";
-    private final String aoMinSideMicrofrontend = "ao-min-side-microfrontend";
+    private final static String startSamtaleMicrofrontend = "start-samtale-microfrontend";
+    private final static String aoMinSideMicrofrontend = "ao-min-side-microfrontend";
 
     @Autowired
     public OppfolgingService(
