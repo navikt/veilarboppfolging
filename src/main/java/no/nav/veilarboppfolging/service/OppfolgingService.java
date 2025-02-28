@@ -269,6 +269,9 @@ public class OppfolgingService {
             boolean erUnderOppfolging = maybeOppfolging.map(OppfolgingEntity::isUnderOppfolging).orElse(false);
 
             if (erUnderOppfolging) {
+                if(oppfolgingsbruker.getOppfolgingStartBegrunnelse() == OppfolgingStartBegrunnelse.ARBEIDSSOKER_REGISTRERING) {
+                    kafkaProducerService.publiserSkjulMinSideMicrofrontend(aktorId, "start-samtale-microfrontend");
+                }
                 return;
             }
 
