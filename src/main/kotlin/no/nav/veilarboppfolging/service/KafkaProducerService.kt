@@ -8,9 +8,11 @@ import no.nav.common.types.identer.AktorId
 import no.nav.pto_schema.kafka.json.topic.SisteOppfolgingsperiodeV1
 import no.nav.pto_schema.kafka.json.topic.SisteTilordnetVeilederV1
 import no.nav.pto_schema.kafka.json.topic.onprem.*
+import no.nav.tms.microfrontend.MicrofrontendMessageBuilder.disable
+import no.nav.tms.microfrontend.MicrofrontendMessageBuilder.enable
+import no.nav.tms.microfrontend.Sensitivitet
 import no.nav.veilarboppfolging.config.KafkaProperties
 import no.nav.veilarboppfolging.kafka.KvpPeriode
-import no.nav.veilarboppfolging.kafka.MinSideMicrofrontendMessage
 import no.nav.veilarboppfolging.kafka.dto.OppfolgingsperiodeDTO
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.springframework.beans.factory.annotation.Autowired
@@ -118,24 +120,31 @@ class KafkaProducerService @Autowired constructor(
     fun publiserVisMinSideMicrofrontend(aktorId: AktorId, microfrontend: String) {
         val fnr = authService.getFnrOrThrow(aktorId)
 
-        val visAoMinSideMicrofrontendStartMelding =
-            MinSideMicrofrontendMessage("enable", fnr.get(), "substantial", microfrontend)
+        val startMelding = enable(fnr.get(), microfrontend, "substantial", Sensitivitet.SUBSTANTIAL).text()
 
-        store(kafkaProperties.minSideAapenMicrofrontendV1, aktorId.get(), visAoMinSideMicrofrontendStartMelding)
+        store(kafkaProperties.minSideAapenMicrofrontendV1, aktorId.get(), startMelding)
     }
 
     fun publiserSkjulMinSideMicrofrontend(aktorId: AktorId, microfrontend: String) {
         val fnr = authService.getFnrOrThrow(aktorId)
 
-        val skjulAoMinSideMicrofrontendStartMelding =
-            MinSideMicrofrontendMessage("disable", fnr.get(), "substantial", microfrontend)
+        val stoppMelding = disable(fnr.get(), microfrontend, "dab").text()
 
-        store(kafkaProperties.minSideAapenMicrofrontendV1, aktorId.get(), skjulAoMinSideMicrofrontendStartMelding)
+        store(kafkaProperties.minSideAapenMicrofrontendV1, aktorId.get(), stoppMelding)
     }
 
     private fun store(topic: String, key: String, value: Any) {
         if (kafkaEnabled) {
             val record = ProducerUtils.serializeJsonRecord(ProducerRecord(topic, key, value))
+            producerRecordStorage.store(record)
+        } else {
+            throw RuntimeException("Kafka er disabled, men noe gjør at man forsøker å publisere meldinger")
+        }
+    }
+
+    private fun store(topic: String, key: String, value: String) {
+        if (kafkaEnabled) {
+            val record = ProducerUtils.serializeStringRecord(ProducerRecord(topic, key, value))
             producerRecordStorage.store(record)
         } else {
             throw RuntimeException("Kafka er disabled, men noe gjør at man forsøker å publisere meldinger")
