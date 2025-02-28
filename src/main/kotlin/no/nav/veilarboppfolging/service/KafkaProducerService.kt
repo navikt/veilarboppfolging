@@ -120,7 +120,7 @@ class KafkaProducerService @Autowired constructor(
     fun publiserVisMinSideMicrofrontend(aktorId: AktorId, microfrontend: String) {
         val fnr = authService.getFnrOrThrow(aktorId)
 
-        val startMelding = enable(fnr.get(), microfrontend, "substantial", Sensitivitet.SUBSTANTIAL).text()
+        val startMelding = enable(fnr.get(), microfrontend, "dab", Sensitivitet.SUBSTANTIAL).text()
 
         store(kafkaProperties.minSideAapenMicrofrontendV1, aktorId.get(), startMelding)
     }
