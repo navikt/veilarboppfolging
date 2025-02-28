@@ -116,12 +116,19 @@ public class AdminController {
 
     private void sjekkTilgangTilAdmin() {
         String subject = authContextHolder.getSubject()
-                .orElseThrow(() -> new UnauthorizedException("Fant ingen subject i auth-context"));
+                .orElseThrow(() -> {
+                    log.warn("Denied admin access, no subject in auth-context");
+                    return new UnauthorizedException("Fant ingen subject i auth-context");
+                });
 
         UserRole role = authContextHolder.getRole()
-                .orElseThrow(() -> new UnauthorizedException("Fant ingen rolle i auth-context"));
+                .orElseThrow(() -> {
+                    log.warn("Denied admin access, no role in auth-context");
+                    return new UnauthorizedException("Fant ingen rolle i auth-context");
+                });
 
         if (!PTO_ADMIN_SERVICE_USER.equals(subject) || !role.equals(UserRole.SYSTEM)) {
+            log.warn("Denied admin access, subject: {}, role: {}", subject, role);
             throw new ForbiddenException("Bare PTO-ADMIN app har tilgang til admin");
         }
     }
