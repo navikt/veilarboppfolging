@@ -188,7 +188,8 @@ fun Decision.Deny.tryToFindDenyReason(): TilgangResultat {
         this.message.contains(AdGruppeNavn.EGNE_ANSATTE) -> return TilgangResultat.IKKE_TILGANG_EGNE_ANSATTE
         this.message.contains(AdGruppeNavn.MODIA_GENERELL) -> return TilgangResultat.IKKE_TILGANG_MODIA
         this.message.contains(AdGruppeNavn.MODIA_OPPFOLGING) -> return TilgangResultat.IKKE_TILGANG_MODIA
-        else -> TilgangResultat.IKKE_TILGANG_ENHET
+        // TODO: !!
+        else -> TilgangResultat.IKKE_TILGANG_MODIA
     }
 }
 
