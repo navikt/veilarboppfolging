@@ -12,8 +12,8 @@ import no.nav.poao_tilgang.client.api.ApiResult;
 import no.nav.veilarboppfolging.ForbiddenException;
 import no.nav.veilarboppfolging.IntegrationTest;
 import no.nav.veilarboppfolging.client.amttiltak.AmtTiltakClient;
-import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsStatus;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsBruker;
+import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsStatus;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
 import no.nav.veilarboppfolging.controller.request.VeilederBegrunnelseDTO;
 import no.nav.veilarboppfolging.controller.response.AvslutningStatus;
@@ -39,7 +39,7 @@ import static org.mockito.Mockito.*;
 
 class OppfolgingControllerIntegrationTest extends IntegrationTest {
 
-    private final static Fnr FNR = Fnr.of("123");
+    private final static Fnr FNR = Fnr.of("12345678910");
     private final static AktorId AKTOR_ID = AktorId.of("3409823");
     private final static UUID veilederUUID = UUID.randomUUID();
     private final static String veilederIdent = "Z999999";
