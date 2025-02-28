@@ -19,6 +19,7 @@ import no.nav.veilarboppfolging.config.KafkaProperties
 import no.nav.veilarboppfolging.kafka.KvpPeriode
 import no.nav.veilarboppfolging.kafka.dto.OppfolgingsperiodeDTO
 import org.apache.kafka.clients.producer.ProducerRecord
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
@@ -34,6 +35,8 @@ class KafkaProducerService @Autowired constructor(
     @param:Value("\${app.kafka.enabled}") private val kafkaEnabled: Boolean,
     private val authService: AuthService,
 ) {
+    private val logger = LoggerFactory.getLogger(this::class.java)
+
     fun publiserOppfolgingsperiode(oppfolgingsperiode: OppfolgingsperiodeDTO) {
         sisteOppfolgingsPeriode(oppfolgingsperiode.toSisteOppfolgingsperiodeDTO())
         oppfolingsperiode(oppfolgingsperiode)
@@ -165,6 +168,7 @@ class KafkaProducerService @Autowired constructor(
                 preferertKanal = EksternKanal.SMS
             }
         }
+        logger.debug("Publiserer min side beskjed til kafka med varselid ${generertVarselId}")
 
         store(topic=kafkaProperties.minSideBrukerVarsel,
             key = generertVarselId,
