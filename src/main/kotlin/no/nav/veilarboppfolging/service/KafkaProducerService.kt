@@ -142,7 +142,7 @@ class KafkaProducerService @Autowired constructor(
     fun publiserMinSideBeskjed(fnr: Fnr, beskjed: String, lenke: String) {
         val generertVarselId = UUID.randomUUID().toString()
         val kafkaValueJson = VarselActionBuilder.opprett {
-            type = Varseltype.Oppgave
+            type = Varseltype.Beskjed
             varselId = generertVarselId
             sensitivitet = Sensitivitet.High
             ident = fnr.get()

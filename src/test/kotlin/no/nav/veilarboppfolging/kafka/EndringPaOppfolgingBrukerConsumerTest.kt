@@ -1,17 +1,20 @@
 package no.nav.veilarboppfolging.kafka
 
+import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import no.nav.common.client.norg2.Enhet
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
-import no.nav.poao_tilgang.client.Decision
-import no.nav.poao_tilgang.client.Decision.Permit
-import no.nav.poao_tilgang.client.NavAnsattTilgangTilEksternBrukerPolicyInput
-import no.nav.poao_tilgang.client.PoaoTilgangClient
-import no.nav.poao_tilgang.client.TilgangType
-import no.nav.poao_tilgang.client.api.ApiResult.Companion.success
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.pto_schema.enums.arena.Hovedmaal
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe
+import no.nav.tms.varsel.action.OpprettVarsel
+import no.nav.tms.varsel.action.Varseltype
 import no.nav.veilarboppfolging.IntegrationTest
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsBruker
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsStatus
@@ -21,16 +24,18 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.arena.GetOppfolginsstatusFailu
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.GetOppfolginsstatusSuccess
 import no.nav.veilarboppfolging.service.KafkaConsumerService
 import org.apache.kafka.clients.consumer.ConsumerRecord
-import org.assertj.core.api.Assertions
+import org.apache.kafka.clients.consumer.KafkaConsumer
+import org.apache.kafka.common.serialization.IntegerDeserializer
+import org.apache.kafka.common.serialization.StringDeserializer
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import org.mockito.Mockito
-import org.mockito.Mockito.any
 import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.kafka.test.EmbeddedKafkaBroker
+import org.springframework.kafka.test.utils.KafkaTestUtils
 import org.springframework.test.context.ActiveProfiles
 import java.time.LocalDate
 import java.util.*
@@ -45,6 +50,8 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
 
     @Autowired
     private lateinit var kafkaConsumerService: KafkaConsumerService
+    @Autowired
+    private lateinit var embeddedKafkaBroker: EmbeddedKafkaBroker
 
     @MockBean
     lateinit var veilarbarenaClient: VeilarbarenaClient
@@ -237,6 +244,47 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
         val localStatus2 = oppfolgingsStatusRepository.hentOppfolging(aktorId)
         assert(localStatus2.isPresent) { "Oppfolgingsstatus fra arena var null" }
         assertTrue(localStatus2.get().isUnderOppfolging, "Skulle vært under oppfølging")
+    }
+
+    @Test
+    fun `skal sende beskjed på kafka til min side når oppfølging starter`() {
+        mockEnhetINorg("8989", "Nav enhet")
+
+        val localStatus0 = oppfolgingsStatusRepository.hentOppfolging(aktorId)
+        assert(localStatus0.isEmpty)
+
+
+        meldingFraVeilarbArenaPåBrukerMedStatus(
+            fnr = fnr,
+            enhetId = "8989",
+            hovedmaal = Hovedmaal.BEHOLDEA,
+            formidlingsgruppe = Formidlingsgruppe.IARBS,
+            kvalifiseringsgruppe = Kvalifiseringsgruppe.BATT
+        )
+        val localStatus2 = oppfolgingsStatusRepository.hentOppfolging(aktorId)
+        assert(localStatus2.isPresent) { "Oppfolgingsstatus fra arena var null" }
+        assertTrue(localStatus2.get().isUnderOppfolging, "Skulle vært under oppfølging")
+
+        val opprettVarsel: OpprettVarsel = readOneJsonStringMessageFromTopic("min-side.aapen-brukervarsel-v1")
+        assertThat(opprettVarsel.ident).isEqualTo(fnr.get())
+        assertThat(opprettVarsel.type).isEqualTo(Varseltype.Beskjed)
+        assertThat(opprettVarsel.link).isEqualTo("https://www.nav.no/minside")
+        assertThat(opprettVarsel.tekster.first().tekst).contains("Du er nå under arbeidsrettet oppfølging hos Nav")
+    }
+
+    private inline fun <reified T> readOneJsonStringMessageFromTopic(topic: String): T {
+        val consumerProps = KafkaTestUtils.consumerProps("test", "true", embeddedKafkaBroker)
+        consumerProps.put("key.deserializer", StringDeserializer::class.java)
+        consumerProps.put("value.deserializer", StringDeserializer::class.java)
+        val kafkaConsumer = KafkaConsumer<String, String>(consumerProps)
+        kafkaConsumer.subscribe(listOf(topic))
+        val record = KafkaTestUtils.getSingleRecord(kafkaConsumer, topic)
+        val objectMapper: ObjectMapper = jacksonObjectMapper()
+            .registerKotlinModule()
+            .registerModule(JavaTimeModule())
+            .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+        return objectMapper.readValue(record.value(), T::class.java)
     }
 
     @Test
