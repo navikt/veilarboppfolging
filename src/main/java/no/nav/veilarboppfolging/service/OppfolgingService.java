@@ -68,6 +68,9 @@ public class OppfolgingService {
     private final ArenaYtelserService arenaYtelserService;
     private final BigQueryClient bigQueryClient;
 
+    private final String startSamtaleMicrofrontend = "start-samtale-microfrontend";
+    private final String aoMinSideMicrofrontend = "ao-min-side-microfrontend";
+
     @Autowired
     public OppfolgingService(
             KafkaProducerService kafkaProducerService,
@@ -270,7 +273,7 @@ public class OppfolgingService {
 
             if (erUnderOppfolging) {
                 if(oppfolgingsbruker.getOppfolgingStartBegrunnelse() == OppfolgingStartBegrunnelse.ARBEIDSSOKER_REGISTRERING) {
-                    kafkaProducerService.publiserSkjulMinSideMicrofrontend(aktorId, "start-samtale-microfrontend");
+                    kafkaProducerService.publiserSkjulMinSideMicrofrontend(aktorId, startSamtaleMicrofrontend);
                 }
                 return;
             }
@@ -295,10 +298,10 @@ public class OppfolgingService {
             log.info("Oppfølgingsperiode startet for bruker - publiserer endringer på oppfølgingsperiode-topics.");
             kafkaProducerService.publiserOppfolgingsperiode(DtoMappers.tilOppfolgingsperiodeDTO(sistePeriode));
 
-            kafkaProducerService.publiserVisMinSideMicrofrontend(aktorId, "ao-min-side-microfrontend");
+            kafkaProducerService.publiserVisMinSideMicrofrontend(aktorId, aoMinSideMicrofrontend);
 
             if(oppfolgingsbruker.getOppfolgingStartBegrunnelse() == OppfolgingStartBegrunnelse.MANUELL_REGISTRERING_VEILEDER) {
-                kafkaProducerService.publiserVisMinSideMicrofrontend(aktorId, "start-samtale-microfrontend");
+                kafkaProducerService.publiserVisMinSideMicrofrontend(aktorId, startSamtaleMicrofrontend);
             }
 
             Optional<Kvalifiseringsgruppe> kvalifiseringsgruppe = getKvalifiseringsGruppe(oppfolgingsbruker);
@@ -350,8 +353,8 @@ public class OppfolgingService {
             kafkaProducerService.publiserEndringPaNyForVeileder(aktorId, false);
             kafkaProducerService.publiserEndringPaManuellStatus(aktorId, false);
 
-            kafkaProducerService.publiserSkjulMinSideMicrofrontend(aktorId, "ao-min-side-microfrontend");
-            kafkaProducerService.publiserSkjulMinSideMicrofrontend(aktorId, "start-samtale-microfrontend");
+            kafkaProducerService.publiserSkjulMinSideMicrofrontend(aktorId, aoMinSideMicrofrontend);
+            kafkaProducerService.publiserSkjulMinSideMicrofrontend(aktorId, startSamtaleMicrofrontend);
 
             var erAutomatiskAvsluttet = Objects.equals(veilederId, SYSTEM_USER_NAME) || veilederId == null;
             bigQueryClient.loggAvsluttOppfolgingsperiode(sistePeriode.getUuid(), erAutomatiskAvsluttet);
