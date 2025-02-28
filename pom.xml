@@ -139,6 +139,11 @@
             <artifactId>client</artifactId>
             <version>2025.02.06_13.37-958e35e7373d</version>
         </dependency>
+        <dependency>
+            <groupId>no.nav.tms.mikrofrontend.selector</groupId>
+            <artifactId>builder</artifactId>
+            <version>3.0.0</version>
+        </dependency>
 
         <!-- Database -->
         <dependency>

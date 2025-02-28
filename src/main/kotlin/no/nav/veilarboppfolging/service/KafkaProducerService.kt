@@ -13,8 +13,10 @@ import no.nav.tms.varsel.action.Sensitivitet
 import no.nav.tms.varsel.action.Tekst
 import no.nav.tms.varsel.action.Varseltype
 import no.nav.tms.varsel.builder.VarselActionBuilder
+import no.nav.tms.microfrontend.MicrofrontendMessageBuilder.disable
+import no.nav.tms.microfrontend.MicrofrontendMessageBuilder.enable
+import no.nav.tms.microfrontend.Sensitivitet
 import no.nav.veilarboppfolging.config.KafkaProperties
-import no.nav.veilarboppfolging.kafka.AoMinSideMicrofrontendMessage
 import no.nav.veilarboppfolging.kafka.KvpPeriode
 import no.nav.veilarboppfolging.kafka.dto.OppfolgingsperiodeDTO
 import org.apache.kafka.clients.producer.ProducerRecord
@@ -126,19 +128,27 @@ class KafkaProducerService @Autowired constructor(
     fun publiserVisAoMinSideMicrofrontend(aktorId: AktorId) {
         val fnr = authService.getFnrOrThrow(aktorId)
 
-        val message = AoMinSideMicrofrontendMessage("enable", fnr.get(), "substantial")
+        val startMelding = enable(
+            fnr.get(),
+            "ao-min-side-microfrontend",
+            "dab",
+            Sensitivitet.SUBSTANTIAL
+        ).text()
 
-        store(kafkaProperties.minSideAapenMicrofrontendV1, aktorId.get(), message)
+        store(kafkaProperties.minSideAapenMicrofrontendV1, aktorId.get(), startMelding)
     }
 
     fun publiserSkjulAoMinSideMicrofrontend(aktorId: AktorId) {
         val fnr = authService.getFnrOrThrow(aktorId)
 
-        val message = AoMinSideMicrofrontendMessage("disable", fnr.get())
+        val stoppMelding = disable(
+            fnr.get(),
+            "ao-min-side-microfrontend",
+            "dab"
+        ).text()
 
-        store(kafkaProperties.minSideAapenMicrofrontendV1, aktorId.get(), message)
+        store(kafkaProperties.minSideAapenMicrofrontendV1, aktorId.get(), stoppMelding)
     }
-
     fun publiserMinSideBeskjed(fnr: Fnr, beskjed: String, lenke: String) {
         val generertVarselId = UUID.randomUUID().toString()
         val kafkaValueJson = VarselActionBuilder.opprett {
