@@ -38,4 +38,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: ./gradlew --configuration-cache --build-cache --scan --configuration-cache-problems=warn build sonar
+        run: ./gradlew --configuration-cache --build-cache --scan --configuration-cache-problems=warn sonar
