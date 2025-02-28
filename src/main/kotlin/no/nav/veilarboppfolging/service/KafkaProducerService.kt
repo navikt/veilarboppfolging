@@ -9,7 +9,6 @@ import no.nav.pto_schema.kafka.json.topic.SisteOppfolgingsperiodeV1
 import no.nav.pto_schema.kafka.json.topic.SisteTilordnetVeilederV1
 import no.nav.pto_schema.kafka.json.topic.onprem.*
 import no.nav.tms.varsel.action.EksternKanal
-import no.nav.tms.varsel.action.Sensitivitet
 import no.nav.tms.varsel.action.Tekst
 import no.nav.tms.varsel.action.Varseltype
 import no.nav.tms.varsel.builder.VarselActionBuilder
@@ -34,7 +33,6 @@ class KafkaProducerService @Autowired constructor(
     private val kafkaProperties: KafkaProperties,
     @param:Value("\${app.kafka.enabled}") private val kafkaEnabled: Boolean,
     private val authService: AuthService,
-    @param:Value("\${app.env.nav-no-url}") private val navNoUrl: String,
 ) {
     fun publiserOppfolgingsperiode(oppfolgingsperiode: OppfolgingsperiodeDTO) {
         sisteOppfolgingsPeriode(oppfolgingsperiode.toSisteOppfolgingsperiodeDTO())
@@ -154,7 +152,7 @@ class KafkaProducerService @Autowired constructor(
         val kafkaValueJson = VarselActionBuilder.opprett {
             type = Varseltype.Beskjed
             varselId = generertVarselId
-            sensitivitet = Sensitivitet.High
+            sensitivitet = no.nav.tms.varsel.action.Sensitivitet.High
             ident = fnr.get()
             tekster += Tekst(
                 spraakkode = "nb",

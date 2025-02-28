@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import no.nav.common.client.norg2.Enhet
 import no.nav.common.types.identer.AktorId
@@ -25,7 +24,7 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.arena.GetOppfolginsstatusSucce
 import no.nav.veilarboppfolging.service.KafkaConsumerService
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.consumer.KafkaConsumer
-import org.apache.kafka.common.serialization.IntegerDeserializer
+import org.apache.kafka.common.TopicPartition
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeAll
@@ -37,8 +36,11 @@ import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.kafka.test.EmbeddedKafkaBroker
 import org.springframework.kafka.test.utils.KafkaTestUtils
 import org.springframework.test.context.ActiveProfiles
+import java.time.Duration
 import java.time.LocalDate
 import java.util.*
+import java.util.List
+import kotlin.collections.first
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
@@ -254,6 +256,8 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
         assert(localStatus0.isEmpty)
 
 
+        /* Make a new consumer to read the message from the end of the topic */
+        val kafkaConsumer = subscribeToTopic("min-side.aapen-brukervarsel-v1")
         meldingFraVeilarbArenaPåBrukerMedStatus(
             fnr = fnr,
             enhetId = "8989",
@@ -265,19 +269,30 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
         assert(localStatus2.isPresent) { "Oppfolgingsstatus fra arena var null" }
         assertTrue(localStatus2.get().isUnderOppfolging, "Skulle vært under oppfølging")
 
-        val opprettVarsel: OpprettVarsel = readOneJsonStringMessageFromTopic("min-side.aapen-brukervarsel-v1")
+        val opprettVarsel: OpprettVarsel = readOneJsonStringMessageFromTopic("min-side.aapen-brukervarsel-v1", kafkaConsumer)
         assertThat(opprettVarsel.ident).isEqualTo(fnr.get())
         assertThat(opprettVarsel.type).isEqualTo(Varseltype.Beskjed)
         assertThat(opprettVarsel.link).isEqualTo("https://www.nav.no/minside")
         assertThat(opprettVarsel.tekster.first().tekst).contains("Du er nå under arbeidsrettet oppfølging hos Nav")
     }
 
-    private inline fun <reified T> readOneJsonStringMessageFromTopic(topic: String): T {
-        val consumerProps = KafkaTestUtils.consumerProps("test", "true", embeddedKafkaBroker)
+    private fun subscribeToTopic(topic: String): KafkaConsumer<String, String> {
+        val consumerProps = KafkaTestUtils.consumerProps(UUID.randomUUID().toString(), "true", embeddedKafkaBroker)
         consumerProps.put("key.deserializer", StringDeserializer::class.java)
         consumerProps.put("value.deserializer", StringDeserializer::class.java)
+        consumerProps.put("auto.offset.reset", "latest")
+        consumerProps.put("enable.auto.commit", "true")
+        consumerProps.put("auto.commit.interval.ms", "1")
+        consumerProps.put("max.poll.records", "1")
         val kafkaConsumer = KafkaConsumer<String, String>(consumerProps)
         kafkaConsumer.subscribe(listOf(topic))
+        kafkaConsumer.poll(Duration.ofMillis(100))
+        kafkaConsumer.seekToEnd(kafkaConsumer.assignment())
+        kafkaConsumer.commitSync(Duration.ofSeconds(1))
+        return kafkaConsumer
+    }
+
+    private inline fun <reified T> readOneJsonStringMessageFromTopic(topic: String, kafkaConsumer: KafkaConsumer<String, String>): T {
         val record = KafkaTestUtils.getSingleRecord(kafkaConsumer, topic)
         val objectMapper: ObjectMapper = jacksonObjectMapper()
             .registerKotlinModule()
