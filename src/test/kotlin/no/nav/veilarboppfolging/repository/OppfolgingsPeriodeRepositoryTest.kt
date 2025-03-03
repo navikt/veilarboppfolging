@@ -1,21 +1,17 @@
 package no.nav.veilarboppfolging.repository
 
-import junit.framework.TestCase.assertTrue
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.NavIdent
 import no.nav.veilarboppfolging.LocalDatabaseSingleton
 import no.nav.veilarboppfolging.domain.StartetAvType
-import no.nav.veilarboppfolging.kafka.dto.StartetBegrunnelseDTO
 import no.nav.veilarboppfolging.oppfolgingsbruker.OppfolgingStartBegrunnelse
 import no.nav.veilarboppfolging.oppfolgingsbruker.Oppfolgingsbruker
-import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity
 import no.nav.veilarboppfolging.test.DbTestUtils
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.transaction.support.TransactionTemplate
-import scala.reflect.internal.transform.Erasure
 import java.util.UUID
 import kotlin.test.assertEquals
 
