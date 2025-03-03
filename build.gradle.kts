@@ -10,6 +10,7 @@ val wiremockVersion = "3.0.0-beta-10"
 val schedlockVersion = "5.10.2"
 val googleCloudBigQueryVersion = "2.43.2"
 val googleCloudLibrariesBomVersion = "26.49.0"
+val tmsMicrofrontendBuilder = "3.0.0"
 
 plugins {
     kotlin("jvm") version "2.0.20"
@@ -97,6 +98,7 @@ dependencies {
     implementation("no.nav.common:health:$commonVersion")
     implementation("no.nav.common:metrics:$commonVersion")
     implementation("no.nav.common:kafka:$commonVersion")
+    implementation("no.nav.tms.mikrofrontend.selector:builder:$tmsMicrofrontendBuilder")
     implementation("com.google.cloud:google-cloud-bigquery:$googleCloudBigQueryVersion")
     implementation(platform("com.google.cloud:libraries-bom:$googleCloudLibrariesBomVersion"))
 
