@@ -10,12 +10,13 @@ val wiremockVersion = "3.0.0-beta-10"
 val schedlockVersion = "5.10.2"
 val googleCloudBigQueryVersion = "2.43.2"
 val googleCloudLibrariesBomVersion = "26.49.0"
+val springDoc = "2.8.5"
 val tmsMicrofrontendBuilder = "3.0.0"
 
 plugins {
     kotlin("jvm") version "2.0.20"
     kotlin("plugin.spring") version "2.1.0"
-    id("org.springframework.boot") version "3.3.4"
+    id("org.springframework.boot") version "3.4.3"
     id("io.spring.dependency-management") version "1.1.3"
     id("jacoco")
     id("org.sonarqube") version "6.0.1.5171"
@@ -76,7 +77,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jdbc")
     implementation("com.squareup.okhttp3:okhttp")
     implementation("io.micrometer:micrometer-registry-prometheus-simpleclient")
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:$springDoc")
     implementation("org.springframework.boot:spring-boot-devtools")
     implementation("org.projectlombok:lombok:1.18.32")
     implementation("org.springframework.boot:spring-boot-configuration-processor")
