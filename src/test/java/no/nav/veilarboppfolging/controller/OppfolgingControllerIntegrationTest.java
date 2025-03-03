@@ -27,6 +27,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.util.Collections;
 import java.util.List;
@@ -51,10 +52,10 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
     @Autowired
     AuthService authService;
 
-    @MockBean
+    @MockitoBean
     ArenaYtelserService arenaYtelserService;
 
-    @MockBean
+    @MockitoBean
     VeilarbarenaClient veilarbarenaClient;
 
     @Autowired
