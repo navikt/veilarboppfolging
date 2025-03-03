@@ -21,6 +21,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
+import static no.nav.veilarboppfolging.controller.AdminController.PTO_ADMIN;
 import static no.nav.veilarboppfolging.test.TestData.TEST_AKTOR_ID;
 import static no.nav.veilarboppfolging.test.TestUtils.verifiserAsynkront;
 import static org.hamcrest.Matchers.matchesPattern;
@@ -71,7 +72,7 @@ public class AdminControllerTest {
 
     @Test
     public void republiserOppfolgingsperioder__should_return_401_if_role_missing() throws Exception {
-        when(authContextHolder.getSubject()).thenReturn(Optional.of("srvpto-admin"));
+        when(authContextHolder.getSubject()).thenReturn(Optional.of(PTO_ADMIN));
         when(authContextHolder.getRole()).thenReturn(Optional.empty());
 
         mockMvc.perform(post("/api/admin/republiser/oppfolgingsperioder"))
@@ -89,7 +90,7 @@ public class AdminControllerTest {
 
     @Test
     public void republiserOppfolgingsperioder__should_return_403_if_not_system_user() throws Exception {
-        when(authContextHolder.getSubject()).thenReturn(Optional.of("srvpto-admin"));
+        when(authContextHolder.getSubject()).thenReturn(Optional.of(PTO_ADMIN));
         when(authContextHolder.getRole()).thenReturn(Optional.of(UserRole.EKSTERN));
 
         mockMvc.perform(post("/api/admin/republiser/oppfolgingsperioder"))
@@ -98,7 +99,7 @@ public class AdminControllerTest {
 
     @Test
     public void republiserOppfolgingsperioder__should_return_job_id_and_republish() throws Exception {
-        when(authContextHolder.getSubject()).thenReturn(Optional.of("srvpto-admin"));
+        when(authContextHolder.getSubject()).thenReturn(Optional.of(PTO_ADMIN));
         when(authContextHolder.getRole()).thenReturn(Optional.of(UserRole.SYSTEM));
 
         mockMvc.perform(post("/api/admin/republiser/oppfolgingsperioder"))
@@ -112,7 +113,7 @@ public class AdminControllerTest {
 
     @Test
     public void republiserOppfolgingsperiodeForBruker__should_return_job_id_and_republish() throws Exception {
-        when(authContextHolder.getSubject()).thenReturn(Optional.of("srvpto-admin"));
+        when(authContextHolder.getSubject()).thenReturn(Optional.of(PTO_ADMIN));
         when(authContextHolder.getRole()).thenReturn(Optional.of(UserRole.SYSTEM));
 
         mockMvc.perform(
@@ -139,7 +140,7 @@ public class AdminControllerTest {
 
     @Test
     public void republiserTilordnetVeileder__should_return_401_if_role_missing() throws Exception {
-        when(authContextHolder.getSubject()).thenReturn(Optional.of("srvpto-admin"));
+        when(authContextHolder.getSubject()).thenReturn(Optional.of(PTO_ADMIN));
         when(authContextHolder.getRole()).thenReturn(Optional.empty());
 
         mockMvc.perform(post("/api/admin/republiser/tilordnet-veileder"))
@@ -157,7 +158,7 @@ public class AdminControllerTest {
 
     @Test
     public void republiserTilordnetVeileder__should_return_403_if_not_system_user() throws Exception {
-        when(authContextHolder.getSubject()).thenReturn(Optional.of("srvpto-admin"));
+        when(authContextHolder.getSubject()).thenReturn(Optional.of(PTO_ADMIN));
         when(authContextHolder.getRole()).thenReturn(Optional.of(UserRole.EKSTERN));
 
         mockMvc.perform(post("/api/admin/republiser/tilordnet-veileder"))
@@ -166,7 +167,7 @@ public class AdminControllerTest {
 
     @Test
     public void republiserTilordnetVeileder__should_return_job_id_and_republish() throws Exception {
-        when(authContextHolder.getSubject()).thenReturn(Optional.of("srvpto-admin"));
+        when(authContextHolder.getSubject()).thenReturn(Optional.of(PTO_ADMIN));
         when(authContextHolder.getRole()).thenReturn(Optional.of(UserRole.SYSTEM));
 
         mockMvc.perform(post("/api/admin/republiser/tilordnet-veileder"))
