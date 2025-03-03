@@ -37,6 +37,7 @@ public class AdminController {
 
     public final static String PTO_ADMIN = "pto-admin";
     private final AuthService authService;
+    private final AuthContextHolder authContextHolder;
     private final KafkaRepubliseringService kafkaRepubliseringService;
     private final VeilederTilordningerRepository veilederTilordningerRepository;
     private final ManuellStatusService manuellStatusService;
@@ -108,7 +109,13 @@ public class AdminController {
     }
 
     private void sjekkTilgangTilAdmin() {
-        authService.erSystemBruker();
+        String subject = authContextHolder.getSubject()
+                .orElseThrow(() -> new UnauthorizedException("Fant ingen subject i auth-context"));
+
+        UserRole role = authContextHolder.getRole()
+                .orElseThrow(() -> new UnauthorizedException("Fant ingen rolle i auth-context"));
+
+        if (!authService.erSystemBruker()) throw new ForbiddenException("Må være systembruker");
         authService.sjekkAtApplikasjonErIAllowList(List.of(PTO_ADMIN));
     }
 
