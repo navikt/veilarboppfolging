@@ -14,22 +14,13 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
-import java.util.List;
-
 import static no.nav.common.auth.oidc.filter.OidcAuthenticator.fromConfigs;
 import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
 import static no.nav.common.utils.EnvironmentUtils.requireApplicationName;
-import static no.nav.veilarboppfolging.controller.AdminController.PTO_ADMIN_SERVICE_USER;
 
 @Profile("!test")
 @Configuration
 public class FilterConfig {
-
-    private final List<String> ALLOWED_SERVICE_USERS = List.of(
-            "srvveilarbportefolje", "srvveilarbdialog", "srvveilarbaktivitet",
-            "srvveilarbjobbsoke", "srvveilarbdirigent", "srvveilarbregistre",
-            "srvpam-cv-api", "srvveilarbvedtakss", PTO_ADMIN_SERVICE_USER
-    );
 
     private OidcAuthenticatorConfig tokenxAuthConfig(EnvironmentProperties properties) {
         return new OidcAuthenticatorConfig()
