@@ -72,6 +72,7 @@ public class AdminControllerTest {
 
     @Test
     public void republiserOppfolgingsperioder__should_return_401_if_role_missing() throws Exception {
+        when(authContextHolder.getSubject()).thenReturn(Optional.of("sub"));
         when(authService.hentApplikasjonFraContext()).thenReturn(PTO_ADMIN);
         when(authContextHolder.getRole()).thenReturn(Optional.empty());
 
@@ -90,6 +91,7 @@ public class AdminControllerTest {
 
     @Test
     public void republiserOppfolgingsperioder__should_return_403_if_not_system_user() throws Exception {
+        when(authContextHolder.getSubject()).thenReturn(Optional.of("sub"));
         when(authService.hentApplikasjonFraContext()).thenReturn(PTO_ADMIN);
         when(authContextHolder.getRole()).thenReturn(Optional.of(UserRole.EKSTERN));
 
@@ -99,6 +101,7 @@ public class AdminControllerTest {
 
     @Test
     public void republiserOppfolgingsperioder__should_return_job_id_and_republish() throws Exception {
+        when(authContextHolder.getSubject()).thenReturn(Optional.of("sub"));
         when(authService.hentApplikasjonFraContext()).thenReturn(PTO_ADMIN);
         when(authContextHolder.getRole()).thenReturn(Optional.of(UserRole.SYSTEM));
 
@@ -113,6 +116,7 @@ public class AdminControllerTest {
 
     @Test
     public void republiserOppfolgingsperiodeForBruker__should_return_job_id_and_republish() throws Exception {
+        when(authContextHolder.getSubject()).thenReturn(Optional.of("sub"));
         when(authService.hentApplikasjonFraContext()).thenReturn(PTO_ADMIN);
         when(authContextHolder.getRole()).thenReturn(Optional.of(UserRole.SYSTEM));
 
@@ -140,6 +144,7 @@ public class AdminControllerTest {
 
     @Test
     public void republiserTilordnetVeileder__should_return_401_if_role_missing() throws Exception {
+        when(authContextHolder.getSubject()).thenReturn(Optional.of("sub"));
         when(authService.hentApplikasjonFraContext()).thenReturn(PTO_ADMIN);
         when(authContextHolder.getRole()).thenReturn(Optional.empty());
 
@@ -158,6 +163,7 @@ public class AdminControllerTest {
 
     @Test
     public void republiserTilordnetVeileder__should_return_403_if_not_system_user() throws Exception {
+        when(authContextHolder.getSubject()).thenReturn(Optional.of("sub"));
         when(authService.hentApplikasjonFraContext()).thenReturn(PTO_ADMIN);
         when(authContextHolder.getRole()).thenReturn(Optional.of(UserRole.EKSTERN));
 
@@ -167,6 +173,7 @@ public class AdminControllerTest {
 
     @Test
     public void republiserTilordnetVeileder__should_return_job_id_and_republish() throws Exception {
+        when(authContextHolder.getSubject()).thenReturn(Optional.of("sub"));
         when(authService.hentApplikasjonFraContext()).thenReturn(PTO_ADMIN);
         when(authContextHolder.getRole()).thenReturn(Optional.of(UserRole.SYSTEM));
 
