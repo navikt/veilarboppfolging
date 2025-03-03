@@ -26,6 +26,7 @@ import no.nav.veilarboppfolging.service.OppfolgingService;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -34,20 +35,12 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class AdminController {
 
-    public final static String PTO_ADMIN_SERVICE_USER = "srvpto-admin";
-
-    private final AuthContextHolder authContextHolder;
-
+    public final static String PTO_ADMIN = "pto-admin";
     private final AuthService authService;
-
     private final KafkaRepubliseringService kafkaRepubliseringService;
-
     private final VeilederTilordningerRepository veilederTilordningerRepository;
-
     private final ManuellStatusService manuellStatusService;
-
     private final OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
-
     private final OppfolgingService oppfolgingService;
 
     @PostMapping("/republiser/oppfolgingsperioder")
@@ -115,15 +108,8 @@ public class AdminController {
     }
 
     private void sjekkTilgangTilAdmin() {
-        String subject = authContextHolder.getSubject()
-                .orElseThrow(() -> new UnauthorizedException("Fant ingen subject i auth-context"));
-
-        UserRole role = authContextHolder.getRole()
-                .orElseThrow(() -> new UnauthorizedException("Fant ingen rolle i auth-context"));
-
-        if (!PTO_ADMIN_SERVICE_USER.equals(subject) || !role.equals(UserRole.SYSTEM)) {
-            throw new ForbiddenException("Bare PTO-ADMIN app har tilgang til admin");
-        }
+        authService.erSystemBruker();
+        authService.sjekkAtApplikasjonErIAllowList(List.of(PTO_ADMIN));
     }
 
 }
