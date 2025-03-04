@@ -81,7 +81,7 @@ spec:
     - name: PDL_BEHANDLINGSNUMMER
       value: "B884"
     - name: NAV_NO_URL
-      value: "https://ansatt.dev.nav.no"
+      value: "https://www.ansatt.dev.nav.no"
   secureLogs:
     enabled: true
   kafka:
