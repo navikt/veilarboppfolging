@@ -12,6 +12,7 @@ val googleCloudBigQueryVersion = "2.43.2"
 val googleCloudLibrariesBomVersion = "26.49.0"
 val springDoc = "2.8.5"
 val tmsMicrofrontendBuilder = "3.0.0"
+val tmsVarselBuilder = "2.1.1"
 
 plugins {
     kotlin("jvm") version "2.0.20"
@@ -102,6 +103,7 @@ dependencies {
         exclude(group = "io.swagger.core.v3")
     }
     implementation("no.nav.tms.mikrofrontend.selector:builder:$tmsMicrofrontendBuilder")
+    implementation("no.nav.tms.varsel:kotlin-builder:$tmsVarselBuilder")
     implementation("com.google.cloud:google-cloud-bigquery:$googleCloudBigQueryVersion")
     implementation(platform("com.google.cloud:libraries-bom:$googleCloudLibrariesBomVersion"))
 
