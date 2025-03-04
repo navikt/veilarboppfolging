@@ -14,7 +14,6 @@ import no.nav.veilarboppfolging.service.OppfolgingService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -75,7 +74,7 @@ public class AdminControllerTest {
     public void republiserOppfolgingsperioder__should_return_401_if_role_missing() throws Exception {
         when(authContextHolder.getSubject()).thenReturn(Optional.of("sub"));
         when(authService.hentApplikasjonFraContext()).thenReturn(PTO_ADMIN);
-        when(authContextHolder.getRole()).thenReturn(Optional.empty());
+        when(authService.erSystemBruker()).thenReturn(false);
 
         mockMvc.perform(post("/api/admin/republiser/oppfolgingsperioder"))
                 .andExpect(status().is(401));
@@ -94,6 +93,7 @@ public class AdminControllerTest {
     public void republiserOppfolgingsperioder__should_return_403_if_not_system_user() throws Exception {
         when(authContextHolder.getSubject()).thenReturn(Optional.of("sub"));
         when(authService.hentApplikasjonFraContext()).thenReturn(PTO_ADMIN);
+        when(authService.erSystemBruker()).thenReturn(false);
         when(authContextHolder.getRole()).thenReturn(Optional.of(UserRole.EKSTERN));
 
         mockMvc.perform(post("/api/admin/republiser/oppfolgingsperioder"))
@@ -105,6 +105,7 @@ public class AdminControllerTest {
         when(authContextHolder.getSubject()).thenReturn(Optional.of("sub"));
         when(authService.hentApplikasjonFraContext()).thenReturn(PTO_ADMIN);
         when(authContextHolder.getRole()).thenReturn(Optional.of(UserRole.SYSTEM));
+        when(authService.erSystemBruker()).thenReturn(true);
 
         mockMvc.perform(post("/api/admin/republiser/oppfolgingsperioder"))
                 .andExpect(status().is(200))
@@ -120,6 +121,7 @@ public class AdminControllerTest {
         when(authContextHolder.getSubject()).thenReturn(Optional.of("sub"));
         when(authService.hentApplikasjonFraContext()).thenReturn(PTO_ADMIN);
         when(authContextHolder.getRole()).thenReturn(Optional.of(UserRole.SYSTEM));
+        when(authService.erSystemBruker()).thenReturn(true);
 
         mockMvc.perform(
                         post("/api/admin/republiser/oppfolgingsperioder")
@@ -177,6 +179,7 @@ public class AdminControllerTest {
         when(authContextHolder.getSubject()).thenReturn(Optional.of("sub"));
         when(authService.hentApplikasjonFraContext()).thenReturn(PTO_ADMIN);
         when(authContextHolder.getRole()).thenReturn(Optional.of(UserRole.SYSTEM));
+        when(authService.erSystemBruker()).thenReturn(true);
 
         mockMvc.perform(post("/api/admin/republiser/tilordnet-veileder"))
                 .andExpect(status().is(200))
