@@ -51,8 +51,8 @@ public class AktiverBrukerServiceKafkaTest extends IntegrationTest {
     @Autowired
     JdbcTemplate jdbcTemplate;
 
-    private final Fnr fnr = Fnr.of("12345678910");
-    private final AktorId aktorId = AktorId.of("987654321");
+    private final Fnr fnr = Fnr.of("12345678901");
+    private final AktorId aktorId = AktorId.of("09876543210987");
     private final Innsatsgruppe innsatsgruppe = Innsatsgruppe.SITUASJONSBESTEMT_INNSATS;
     private AktiverArbeidssokerData aktiverArbeidssokerData;
 

@@ -15,6 +15,7 @@ import no.nav.poao_tilgang.client.PoaoTilgangClient
 import no.nav.poao_tilgang.client.TilgangType
 import no.nav.poao_tilgang.client.api.ApiResult
 import no.nav.poao_tilgang.client.api.NetworkApiException
+import no.nav.tms.varsel.builder.BuilderEnvironment
 import no.nav.veilarboppfolging.client.norg.INorgTilhorighetClient
 import no.nav.veilarboppfolging.client.pdl.ForenkletFolkeregisterStatus
 import no.nav.veilarboppfolging.client.pdl.GTType
@@ -37,6 +38,8 @@ import no.nav.veilarboppfolging.service.OppfolgingService
 import no.nav.veilarboppfolging.test.DbTestUtils
 import no.nav.veilarboppfolging.tokenClient.ErrorMappedAzureAdMachineToMachineTokenClient
 import no.nav.veilarboppfolging.tokenClient.ErrorMappedAzureAdOnBehalfOfTokenClient
+import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchers.anyString
@@ -58,6 +61,18 @@ import java.util.*
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 open class IntegrationTest {
+
+    companion object {
+        @BeforeAll
+        @JvmStatic
+        fun beforeClass() {
+            BuilderEnvironment.extend(mapOf(
+                "NAIS_APP_NAME" to "some-value",
+                "NAIS_NAMESPACE" to "some-value",
+                "NAIS_CLUSTER_NAME" to "some-value"
+            ))
+        }
+    }
 
     @LocalServerPort
     var port: Int = 0
@@ -130,6 +145,7 @@ open class IntegrationTest {
 
     @Autowired
     lateinit var inorg: INorgTilhorighetClient
+
 
     @BeforeEach
     fun beforeEach() {

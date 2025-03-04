@@ -109,7 +109,7 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
                 manuellStatusService,
                 mock(AmtTiltakClient.class),
                 new KvpRepository(db, namedParameterJdbcTemplate, transactor), maalRepository,
-                new BrukerOppslagFlereOppfolgingAktorRepository(db), transactor, arenaYtelserService, mock(BigQueryClient.class));
+                new BrukerOppslagFlereOppfolgingAktorRepository(db), transactor, arenaYtelserService, mock(BigQueryClient.class), "https://test.nav.no");
 
         when(authService.getFnrOrThrow(AKTOR_ID)).thenReturn(FNR);
     }

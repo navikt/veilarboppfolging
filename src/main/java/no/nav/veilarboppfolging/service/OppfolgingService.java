@@ -28,6 +28,7 @@ import no.nav.veilarboppfolging.utils.DtoMappers;
 import no.nav.veilarboppfolging.utils.EnumUtils;
 import no.nav.veilarboppfolging.utils.OppfolgingsperiodeUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
@@ -66,6 +67,7 @@ public class OppfolgingService {
     private final TransactionTemplate transactor;
     private final ArenaYtelserService arenaYtelserService;
     private final BigQueryClient bigQueryClient;
+    private final String navNoUrl;
 
     @Autowired
     public OppfolgingService(
@@ -83,7 +85,8 @@ public class OppfolgingService {
             BrukerOppslagFlereOppfolgingAktorRepository brukerOppslagFlereOppfolgingAktorRepository,
             TransactionTemplate transactor,
             ArenaYtelserService arenaYtelserService,
-            BigQueryClient bigQueryClient) {
+            BigQueryClient bigQueryClient,
+            @Value("${app.env.nav-no-url}") String navNoUrl) {
         this.kafkaProducerService = kafkaProducerService;
         this.kvpService = kvpService;
         this.arenaOppfolgingService = arenaOppfolgingService;
@@ -98,6 +101,7 @@ public class OppfolgingService {
         this.transactor = transactor;
         this.arenaYtelserService = arenaYtelserService;
         this.bigQueryClient = bigQueryClient;
+        this.navNoUrl = navNoUrl;
     }
 
     @Transactional // TODO: kan denne være read only?
@@ -298,6 +302,8 @@ public class OppfolgingService {
 
             if (kontaktinfo.isReservert()) {
                 manuellStatusService.settBrukerTilManuellGrunnetReservertIKRR(aktorId);
+            } else {
+                kafkaProducerService.publiserMinSideBeskjed(fnr, "Du er nå under arbeidsrettet oppfølging hos Nav. Se detaljer på MinSide.", String.format("%s/minside", navNoUrl));
             }
         });
     }

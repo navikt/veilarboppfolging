@@ -80,6 +80,8 @@ spec:
       value: "api://dev-fss.pdl.pdl-api/.default"
     - name: PDL_BEHANDLINGSNUMMER
       value: "B884"
+    - name: NAV_NO_URL
+      value: "https://www.ansatt.dev.nav.no"
   secureLogs:
     enabled: true
   kafka:

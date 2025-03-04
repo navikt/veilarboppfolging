@@ -57,7 +57,8 @@ public class AktiverBrukerIntegrationTest extends IntegrationTest {
                 mock(BrukerOppslagFlereOppfolgingAktorRepository.class),
                 transactor,
                 mock(ArenaYtelserService.class),
-                mock(BigQueryClient.class)
+                mock(BigQueryClient.class),
+                "https://test.nav.no"
         );
 
         aktiverBrukerService = new AktiverBrukerService(
