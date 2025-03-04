@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -36,16 +37,16 @@ public class KvpV2ControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private KvpRepository kvpRepository;
 
-    @MockBean
+    @MockitoBean
     private KvpService kvpService;
 
-    @MockBean
+    @MockitoBean
     private AuthService authService;
 
-    @MockBean
+    @MockitoBean
     private AuthContextHolder authContextHolder;
 
     private static final AktorId AKTOR_ID = AktorId.of("1234");

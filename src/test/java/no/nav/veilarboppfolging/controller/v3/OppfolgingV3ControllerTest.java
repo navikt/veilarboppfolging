@@ -20,8 +20,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import wiremock.org.eclipse.jetty.http.HttpStatus;
 
@@ -45,19 +45,19 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class OppfolgingV3ControllerTest {
     @Autowired
     private MockMvc mockMvc;
-    @MockBean
+    @MockitoBean
     private AuthService authService;
-    @MockBean
+    @MockitoBean
     AuthorizationInterceptor authorizationInterceptor;
-    @MockBean
+    @MockitoBean
     private OppfolgingService oppfolgingService;
-    @MockBean
+    @MockitoBean
     private ManuellStatusService manuellStatusService;
-    @MockBean
+    @MockitoBean
     private KvpService kvpService;
-    @MockBean
+    @MockitoBean
     private AktiverBrukerService aktiverBrukerService;
-    @MockBean
+    @MockitoBean
     private ArenaOppfolgingService arenaOppfolgingService;
 
     @BeforeEach
