@@ -1,10 +1,9 @@
 package no.nav.veilarboppfolging.repository;
 
 import no.nav.common.types.identer.AktorId;
-import no.nav.common.types.identer.NavIdent;
 import no.nav.veilarboppfolging.domain.StartetAvType;
 import no.nav.veilarboppfolging.oppfolgingsbruker.OppfolgingStartBegrunnelse;
-import no.nav.veilarboppfolging.oppfolgingsbruker.Oppfolgingsbruker;
+import no.nav.veilarboppfolging.oppfolgingsbruker.OppfolgingsRegistrering;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
 import no.nav.veilarboppfolging.utils.EnumUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +11,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
@@ -40,9 +40,13 @@ public class OppfolgingsPeriodeRepository {
         this.transactor = transactor;
     }
 
-    public void start(Oppfolgingsbruker oppfolgingsbruker) {
+    public void start(OppfolgingsRegistrering oppfolgingsbruker) {
         transactor.executeWithoutResult((ignored) -> {
-            insert(oppfolgingsbruker.getAktorId(), oppfolgingsbruker.getOppfolgingStartBegrunnelse(), oppfolgingsbruker.getRegistrertAv(), oppfolgingsbruker.getStartetAvType());
+            insert(
+                oppfolgingsbruker.getAktorId(),
+                oppfolgingsbruker.getOppfolgingStartBegrunnelse(),
+                oppfolgingsbruker.getRegistrant().getRegistrertAv(),
+                oppfolgingsbruker.getRegistrant().getRegistrertAvType());
             setActive(oppfolgingsbruker.getAktorId());
         });
     }
@@ -89,14 +93,14 @@ public class OppfolgingsPeriodeRepository {
         );
     }
 
-    private void insert(AktorId aktorId, OppfolgingStartBegrunnelse getOppfolgingStartBegrunnelse, NavIdent veileder, StartetAvType startetAvType) {
+    private void insert(AktorId aktorId, OppfolgingStartBegrunnelse getOppfolgingStartBegrunnelse, @Nullable String veileder, StartetAvType startetAvType) {
         db.update("" +
                         "INSERT INTO OPPFOLGINGSPERIODE(uuid, aktor_id, startDato, oppdatert, start_begrunnelse, startet_av, startet_av_type) " +
                         "VALUES (?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?, ?, ?)",
                 UUID.randomUUID().toString(),
                 aktorId.get(),
                 getOppfolgingStartBegrunnelse.name(),
-                veileder != null ? veileder.get() : null,
+                veileder,
                 startetAvType.name());
     }
 
