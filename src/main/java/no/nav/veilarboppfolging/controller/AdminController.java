@@ -35,7 +35,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class AdminController {
 
-    public final static String PTO_ADMIN = "pto-admin";
+    public static final String PTO_ADMIN = "pto-admin";
     private final AuthService authService;
     private final AuthContextHolder authContextHolder;
     private final KafkaRepubliseringService kafkaRepubliseringService;
