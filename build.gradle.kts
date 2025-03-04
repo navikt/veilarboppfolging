@@ -98,7 +98,9 @@ dependencies {
     implementation("no.nav.common:log:$commonVersion")
     implementation("no.nav.common:health:$commonVersion")
     implementation("no.nav.common:metrics:$commonVersion")
-    implementation("no.nav.common:kafka:$commonVersion")
+    implementation("no.nav.common:kafka:$commonVersion") {
+        exclude(group = "io.swagger.core.v3")
+    }
     implementation("no.nav.tms.mikrofrontend.selector:builder:$tmsMicrofrontendBuilder")
     implementation("com.google.cloud:google-cloud-bigquery:$googleCloudBigQueryVersion")
     implementation(platform("com.google.cloud:libraries-bom:$googleCloudLibrariesBomVersion"))

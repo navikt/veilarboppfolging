@@ -188,7 +188,7 @@ spec:
           namespace: paw
           cluster: dev-gcp
         - application: azure-token-generator
-          namespace: aura
+          namespace: nais
           cluster: dev-gcp
         - application: amt-distribusjon
           namespace: amt

@@ -23,6 +23,7 @@ import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.test.context.ActiveProfiles
+import org.springframework.test.context.bean.override.mockito.MockitoBean
 import java.time.LocalDate
 import java.util.*
 import kotlin.test.assertEquals
@@ -37,7 +38,7 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
     @Autowired
     private lateinit var kafkaConsumerService: KafkaConsumerService
 
-    @MockBean
+    @MockitoBean
     lateinit var veilarbarenaClient: VeilarbarenaClient
 
     val fnr = Fnr.of("12345678910")
