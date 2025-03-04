@@ -53,6 +53,7 @@ import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.kafka.test.context.EmbeddedKafka
 import org.springframework.test.annotation.DirtiesContext
+import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.web.context.WebApplicationContext
 import java.util.*
 
@@ -79,25 +80,25 @@ open class IntegrationTest {
     @Autowired
     lateinit var webApplicationContext: WebApplicationContext
 
-    @MockBean
+    @MockitoBean
     lateinit var authContextHolder: AuthContextHolder
 
-    @MockBean
+    @MockitoBean
     lateinit var azureAdOnBehalfOfTokenClient: ErrorMappedAzureAdOnBehalfOfTokenClient
 
-    @MockBean
+    @MockitoBean
     lateinit var norg2Client: Norg2Client
 
-    @MockBean
+    @MockitoBean
     lateinit var geografiskTilknytningClient: GeografiskTilknytningClient
 
-    @MockBean
+    @MockitoBean
     lateinit var pdlFolkeregisterStatusClient: PdlFolkeregisterStatusClient
 
-    @MockBean
+    @MockitoBean
     lateinit var environmentProperties: EnvironmentProperties
 
-    @MockBean
+    @MockitoBean
     lateinit var metricsService: MetricsService
 
     @Autowired
@@ -124,7 +125,7 @@ open class IntegrationTest {
     @Autowired
     lateinit var oppfolgingsStatusRepository: OppfolgingsStatusRepository
 
-    @MockBean
+    @MockitoBean
     lateinit var azureMachineToMachineTokenClient: ErrorMappedAzureAdMachineToMachineTokenClient
 
     @Autowired

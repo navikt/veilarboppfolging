@@ -18,6 +18,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.stereotype.Component;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import wiremock.org.eclipse.jetty.http.HttpStatus;
 
@@ -40,13 +41,13 @@ class OppfolgingV2ControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private AuthService authService;
 
-    @MockBean
+    @MockitoBean
     AuthorizationInterceptor authorizationInterceptor;
 
-    @MockBean
+    @MockitoBean
     private OppfolgingService oppfolgingService;
 
     @Test

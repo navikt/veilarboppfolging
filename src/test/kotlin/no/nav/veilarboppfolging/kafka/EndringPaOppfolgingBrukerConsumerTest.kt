@@ -24,7 +24,6 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.arena.GetOppfolginsstatusSucce
 import no.nav.veilarboppfolging.service.KafkaConsumerService
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.consumer.KafkaConsumer
-import org.apache.kafka.common.TopicPartition
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeAll
@@ -32,14 +31,13 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.kafka.test.EmbeddedKafkaBroker
 import org.springframework.kafka.test.utils.KafkaTestUtils
 import org.springframework.test.context.ActiveProfiles
+import org.springframework.test.context.bean.override.mockito.MockitoBean
 import java.time.Duration
 import java.time.LocalDate
 import java.util.*
-import java.util.List
 import kotlin.collections.first
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -55,7 +53,7 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
     @Autowired
     private lateinit var embeddedKafkaBroker: EmbeddedKafkaBroker
 
-    @MockBean
+    @MockitoBean
     lateinit var veilarbarenaClient: VeilarbarenaClient
 
     val fnr = Fnr.of("12345678901")
