@@ -26,7 +26,8 @@ import no.nav.veilarboppfolging.config.EnvironmentProperties
 import no.nav.veilarboppfolging.controller.OppfolgingController
 import no.nav.veilarboppfolging.controller.SakController
 import no.nav.veilarboppfolging.domain.StartetAvType
-import no.nav.veilarboppfolging.oppfolgingsbruker.Oppfolgingsbruker
+import no.nav.veilarboppfolging.oppfolgingsbruker.BrukerRegistrant
+import no.nav.veilarboppfolging.oppfolgingsbruker.OppfolgingsRegistrering
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.repository.EnhetRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
@@ -38,16 +39,13 @@ import no.nav.veilarboppfolging.service.OppfolgingService
 import no.nav.veilarboppfolging.test.DbTestUtils
 import no.nav.veilarboppfolging.tokenClient.ErrorMappedAzureAdMachineToMachineTokenClient
 import no.nav.veilarboppfolging.tokenClient.ErrorMappedAzureAdOnBehalfOfTokenClient
-import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
-import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mockito.doReturn
 import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.boot.test.web.server.LocalServerPort
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
@@ -153,12 +151,12 @@ open class IntegrationTest {
     }
 
     fun startOppfolgingSomArbeidsoker(aktørId: AktorId) {
-        val bruker = Oppfolgingsbruker.arbeidssokerStartetAvBrukerEllerSystem(aktørId, StartetAvType.BRUKER)
+        val bruker = OppfolgingsRegistrering.arbeidssokerRegistrering(aktørId, BrukerRegistrant)
         oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(bruker)
     }
 
     fun setBrukerUnderOppfolging(aktorId: AktorId) {
-        val bruker = Oppfolgingsbruker.arbeidssokerStartetAvBrukerEllerSystem(aktorId, StartetAvType.BRUKER)
+        val bruker = OppfolgingsRegistrering.arbeidssokerRegistrering(aktorId, BrukerRegistrant)
         oppfolgingsStatusRepository.opprettOppfolging(aktorId)
         oppfolgingsPeriodeRepository.start(bruker)
     }

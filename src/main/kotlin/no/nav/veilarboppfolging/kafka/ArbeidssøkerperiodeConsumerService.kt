@@ -6,7 +6,11 @@ import no.nav.paw.arbeidssokerregisteret.api.v1.BrukerType
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.veilarboppfolging.domain.StartetAvType
-import no.nav.veilarboppfolging.oppfolgingsbruker.Oppfolgingsbruker
+import no.nav.veilarboppfolging.oppfolgingsbruker.OppfolgingsRegistrering
+import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant
+import no.nav.veilarboppfolging.oppfolgingsbruker.BrukerRegistrant
+import no.nav.veilarboppfolging.oppfolgingsbruker.Registrant
+import no.nav.veilarboppfolging.oppfolgingsbruker.SystemRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.service.AuthService
 import no.nav.veilarboppfolging.service.IservService
@@ -61,15 +65,22 @@ open class ArbeidssøkerperiodeConsumerService(
             val startetAvType = arbeidssøkerperiode.startet.utfoertAv.type // VEILEDER, SYSTEM, SLUTTBRUKER
             // TODO: Når vi fjerner /aktiverbruker endepunkt bør vi også fjerne innsatsgruppe-feltet på Oppfolgingsbruker
             logger.info("Fått melding om ny arbeidssøkerperiode, starter oppfølging hvis ikke allerede startet")
-            if(startetAvType.toStartetAvType() == StartetAvType.VEILEDER) {
-                oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker.arbeidssokerStartetAvVeileder(aktørId, startetAvType.toStartetAvType(), NavIdent.of(
-                    arbeidssøkerperiode.startet.utfoertAv.id.toString())))
-            } else {
-                oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker.arbeidssokerStartetAvBrukerEllerSystem(aktørId, startetAvType.toStartetAvType()))
-            }
+
+            val navIdent = NavIdent.of(arbeidssøkerperiode.startet.utfoertAv.id.toString())
+            val registrant =  startetAvType.toStartetAvType().toRegistrant(navIdent)
+
+            oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.arbeidssokerRegistrering(aktørId, registrant))
             utmeldHvisAlleredeIserv(fnr, arbeidssøkerperiodeStartet)
         } else {
             logger.info("Melding om avsluttet oppfølgingsperiode, gjør ingenting")
+        }
+    }
+
+    private fun StartetAvType.toRegistrant(navIdent: NavIdent): Registrant {
+        return when (this) {
+            StartetAvType.SYSTEM -> SystemRegistrant
+            StartetAvType.BRUKER -> BrukerRegistrant
+            StartetAvType.VEILEDER -> VeilederRegistrant(navIdent)
         }
     }
 

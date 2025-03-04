@@ -8,7 +8,7 @@ import no.nav.common.types.identer.Fnr;
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe;
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe;
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
-import no.nav.veilarboppfolging.oppfolgingsbruker.Oppfolgingsbruker;
+import no.nav.veilarboppfolging.oppfolgingsbruker.OppfolgingsRegistrering;
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService;
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.LocalArenaOppfolging;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
@@ -77,7 +77,7 @@ public class OppfolgingEndringService {
         if (skalOppfolges) {
             secureLog.info("Starter oppfølging på bruker som er under oppfølging i Arena, men ikke i veilarboppfolging. aktorId={}", aktorId);
             oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(
-                    Oppfolgingsbruker.arenaSyncOppfolgingBruker(aktorId, formidlingsgruppe, kvalifiseringsgruppe));
+                    OppfolgingsRegistrering.Companion.arenaSyncOppfolgingBruker(aktorId, formidlingsgruppe, kvalifiseringsgruppe));
         } else if (erBrukerUnderOppfolgingLokalt && erInaktivIArena) {
             Optional<Boolean> kanEnkeltReaktiveresLokalt = kanEnkeltReaktiveresLokalt(currentLocalOppfolging, brukerV2);
             var maybeKanEnkeltReaktiveres = arenaOppfolgingService.kanEnkeltReaktiveres(fnr);

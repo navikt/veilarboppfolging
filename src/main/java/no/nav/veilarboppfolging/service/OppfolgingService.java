@@ -17,8 +17,8 @@ import no.nav.veilarboppfolging.domain.AvslutningStatusData;
 import no.nav.veilarboppfolging.domain.Oppfolging;
 import no.nav.veilarboppfolging.domain.OppfolgingStatusData;
 import no.nav.veilarboppfolging.eventsLogger.BigQueryClient;
-import no.nav.veilarboppfolging.oppfolgingsbruker.ArenaSyncOppfolgingsBruker;
-import no.nav.veilarboppfolging.oppfolgingsbruker.Oppfolgingsbruker;
+import no.nav.veilarboppfolging.oppfolgingsbruker.ArenaSyncRegistrering;
+import no.nav.veilarboppfolging.oppfolgingsbruker.OppfolgingsRegistrering;
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService;
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.LocalArenaOppfolging;
 import no.nav.veilarboppfolging.repository.*;
@@ -261,7 +261,7 @@ public class OppfolgingService {
         return Optional.of(oppfolging);
     }
 
-    public void startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker oppfolgingsbruker) {
+    public void startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering oppfolgingsbruker) {
         AktorId aktorId = oppfolgingsbruker.getAktorId();
         Fnr fnr = authService.getFnrOrThrow(aktorId);
         KRRData kontaktinfo = manuellStatusService.hentDigdirKontaktinfo(fnr);
@@ -298,7 +298,7 @@ public class OppfolgingService {
             kafkaProducerService.publiserVisAoMinSideMicrofrontend(aktorId);
 
             Optional<Kvalifiseringsgruppe> kvalifiseringsgruppe = getKvalifiseringsGruppe(oppfolgingsbruker);
-            bigQueryClient.loggStartOppfolgingsperiode(oppfolgingsbruker.getOppfolgingStartBegrunnelse(), sistePeriode.getUuid(), oppfolgingsbruker.getStartetAvType(), kvalifiseringsgruppe);
+            bigQueryClient.loggStartOppfolgingsperiode(oppfolgingsbruker.getOppfolgingStartBegrunnelse(), sistePeriode.getUuid(), oppfolgingsbruker.getRegistrant().getRegistrertAvType(), kvalifiseringsgruppe);
 
             if (kontaktinfo.isReservert()) {
                 manuellStatusService.settBrukerTilManuellGrunnetReservertIKRR(aktorId);
@@ -308,8 +308,8 @@ public class OppfolgingService {
         });
     }
 
-    private Optional<Kvalifiseringsgruppe> getKvalifiseringsGruppe(Oppfolgingsbruker oppfolgingsbruker) {
-        if(oppfolgingsbruker instanceof ArenaSyncOppfolgingsBruker arenasyncoppfolgingsbruker) {
+    private Optional<Kvalifiseringsgruppe> getKvalifiseringsGruppe(OppfolgingsRegistrering oppfolgingsbruker) {
+        if(oppfolgingsbruker instanceof ArenaSyncRegistrering arenasyncoppfolgingsbruker) {
             return Optional.ofNullable(arenasyncoppfolgingsbruker.getKvalifiseringsgruppe());
         } else {
             return Optional.empty();

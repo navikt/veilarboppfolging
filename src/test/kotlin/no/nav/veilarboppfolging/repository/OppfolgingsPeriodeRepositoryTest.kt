@@ -4,8 +4,11 @@ import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.NavIdent
 import no.nav.veilarboppfolging.LocalDatabaseSingleton
 import no.nav.veilarboppfolging.domain.StartetAvType
+import no.nav.veilarboppfolging.oppfolgingsbruker.BrukerRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.OppfolgingStartBegrunnelse
+import no.nav.veilarboppfolging.oppfolgingsbruker.OppfolgingsRegistrering
 import no.nav.veilarboppfolging.oppfolgingsbruker.Oppfolgingsbruker
+import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant
 import no.nav.veilarboppfolging.test.DbTestUtils
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
@@ -32,7 +35,7 @@ class OppfolgingsPeriodeRepositoryTest {
     fun skal_hente_gjeldende_oppfolgingsperiode() {
         val aktorId = AktorId.of("4321")
         val oppfolgingsbruker =
-            Oppfolgingsbruker.Companion.arbeidssokerStartetAvBrukerEllerSystem(aktorId, StartetAvType.BRUKER)
+            OppfolgingsRegistrering.Companion.arbeidssokerRegistrering(aktorId, BrukerRegistrant)
         oppfolgingsStatusRepository.opprettOppfolging(aktorId)
 
         oppfolgingsPeriodeRepository.start(oppfolgingsbruker)
@@ -50,7 +53,7 @@ class OppfolgingsPeriodeRepositoryTest {
     fun skal_returnere_empty_hvis_ingen_oppfolging() {
         val aktorId = AktorId.of("4321")
         val oppfolgingsbruker =
-            Oppfolgingsbruker.Companion.arbeidssokerStartetAvBrukerEllerSystem(aktorId, StartetAvType.BRUKER)
+            OppfolgingsRegistrering.Companion.arbeidssokerRegistrering(aktorId, BrukerRegistrant)
         val maybeOppfolgingsperiodeEntity1 = oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId)
         Assertions.assertTrue(maybeOppfolgingsperiodeEntity1.isEmpty())
         oppfolgingsStatusRepository.opprettOppfolging(aktorId)
@@ -65,7 +68,7 @@ class OppfolgingsPeriodeRepositoryTest {
     @Test
     fun `skal returnere startetAv og startetAvType`() {
         val aktorId = AktorId.of("4321")
-        val oppfolgingsbruker = Oppfolgingsbruker.arbeidssokerStartetAvBrukerEllerSystem(aktorId, StartetAvType.BRUKER)
+        val oppfolgingsbruker = OppfolgingsRegistrering.arbeidssokerRegistrering(aktorId, BrukerRegistrant)
         oppfolgingsStatusRepository.opprettOppfolging(aktorId)
         oppfolgingsPeriodeRepository.start(oppfolgingsbruker)
 
@@ -110,8 +113,8 @@ class OppfolgingsPeriodeRepositoryTest {
     fun `skal returnere riktige felt på en avsluttet periode`() {
         val aktorId = AktorId.of("4321")
         val veilederIdent = NavIdent("Z999999")
-        val oppfolgingsbruker = Oppfolgingsbruker.arbeidssokerStartetAvVeileder(aktorId, StartetAvType.VEILEDER,
-            NavIdent("Z999999"))
+        val oppfolgingsbruker = OppfolgingsRegistrering.arbeidssokerRegistrering(aktorId, VeilederRegistrant(
+            NavIdent("Z999999")))
         val avsluttetBegrunnelse = "derfor"
         oppfolgingsStatusRepository.opprettOppfolging(aktorId)
         oppfolgingsPeriodeRepository.start(oppfolgingsbruker)
