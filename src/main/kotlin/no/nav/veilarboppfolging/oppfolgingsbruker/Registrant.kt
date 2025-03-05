@@ -5,6 +5,11 @@ import no.nav.veilarboppfolging.config.ApplicationConfig.SYSTEM_USER_NAME
 import no.nav.veilarboppfolging.domain.StartetAvType
 
 interface RegistrantFelter {
+    /**
+     * - Gir null hvis registrert av bruker
+     * - Gir en stringen "System" hvis registrert av system
+     * - Gir velederIdent hvis registrert av veileder
+     */
     fun getRegistrertAv(): String?
     fun getRegistrertAvType(): StartetAvType
 }
@@ -18,8 +23,10 @@ object BrukerRegistrant : Registrant() {
 }
 
 object SystemRegistrant : Registrant() {
-    override fun getRegistrertAv(): String? = SYSTEM_USER_NAME
+    override fun getRegistrertAv(): String? = SYSTEM_REGISTRANT_NAME
     override fun getRegistrertAvType() = StartetAvType.SYSTEM
+
+    const val SYSTEM_REGISTRANT_NAME = SYSTEM_USER_NAME
 }
 
 class VeilederRegistrant(
