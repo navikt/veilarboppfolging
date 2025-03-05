@@ -51,19 +51,6 @@ public class OppfolgingController {
         return tilDto(oppfolgingService.hentAvslutningStatus(fnr));
     }
 
-    @PostMapping("/avsluttOppfolging")
-    public AvslutningStatus avsluttOppfolging(@RequestBody VeilederBegrunnelseDTO dto, @RequestParam("fnr") Fnr fnr) {
-        authService.skalVereInternBruker();
-        var aktorId = authService.getAktorIdOrThrow(fnr);
-
-        var avregistrering = new ManuellAvregistrering(
-                aktorId,
-                new VeilederRegistrant(new NavIdent(dto.veilederId)),
-                dto.begrunnelse
-        );
-        return tilDto(oppfolgingService.avsluttOppfolging(avregistrering));
-    }
-
     // TODO: Ikke returner OppfolgingStatus
     @PostMapping("/settManuell")
     public OppfolgingStatus settTilManuell(@RequestBody VeilederBegrunnelseDTO dto, @RequestParam("fnr") Fnr fnr) {
