@@ -105,7 +105,7 @@ class OppfolgingsPeriodeRepositoryTest {
         assertEquals(aktorId.get(), periode.aktorId)
         assertEquals(OppfolgingStartBegrunnelse.ARENA_SYNC_IARBS, periode.startetBegrunnelse)
         assertEquals(null, periode.begrunnelse) // Avsluttet begrunnelse (fritekst)
-        assertEquals(null, periode.veileder) // Avsluttet veileder
+        assertEquals(null, periode.avsluttetAv) // Avsluttet veileder
     }
 
     @Test
@@ -128,6 +128,6 @@ class OppfolgingsPeriodeRepositoryTest {
         assertEquals(aktorId.get(), periode.aktorId)
         assertEquals(OppfolgingStartBegrunnelse.ARBEIDSSOKER_REGISTRERING, periode.startetBegrunnelse)
         assertEquals(avsluttetBegrunnelse, periode.begrunnelse) // Avsluttet begrunnelse (fritekst)
-        assertEquals(veilederIdent.get(), periode.veileder) // Avsluttet veileder
+        assertEquals(veilederIdent.get(), periode.avsluttetAv) // Avsluttet veileder
     }
 }

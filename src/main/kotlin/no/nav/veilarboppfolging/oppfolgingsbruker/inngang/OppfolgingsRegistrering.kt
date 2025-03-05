@@ -10,7 +10,7 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant
 sealed class OppfolgingsRegistrering(
     open val aktorId: AktorId,
     open val oppfolgingStartBegrunnelse: OppfolgingStartBegrunnelse,
-    open val registrant: Registrant,
+    open val registrertAv: Registrant,
 ) {
     companion object {
         fun arbeidssokerRegistrering(aktorId: AktorId, registrant: Registrant): ArbeidsokerRegistrering {
@@ -27,13 +27,13 @@ sealed class OppfolgingsRegistrering(
 
 data class ArbeidsokerRegistrering(
     override val aktorId: AktorId,
-    override val registrant: Registrant,
-) : OppfolgingsRegistrering(aktorId, OppfolgingStartBegrunnelse.ARBEIDSSOKER_REGISTRERING, registrant)
+    override val registrertAv: Registrant,
+) : OppfolgingsRegistrering(aktorId, OppfolgingStartBegrunnelse.ARBEIDSSOKER_REGISTRERING, registrertAv)
 
 data class ManuellRegistrering(
     override val aktorId: AktorId,
-    override val registrant: Registrant,
-) : OppfolgingsRegistrering(aktorId, OppfolgingStartBegrunnelse.MANUELL_REGISTRERING_VEILEDER, registrant)
+    override val registrertAv: Registrant,
+) : OppfolgingsRegistrering(aktorId, OppfolgingStartBegrunnelse.MANUELL_REGISTRERING_VEILEDER, registrertAv)
 
 data class ArenaSyncRegistrering(
     override val aktorId: AktorId,

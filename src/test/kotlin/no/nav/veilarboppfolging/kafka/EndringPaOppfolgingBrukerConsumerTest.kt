@@ -359,7 +359,7 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
         val periode = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId)
         assert(statusEtterEndring.isPresent)
         assertEquals(periode.size, 1)
-        assertEquals(periode.first().veileder, SystemRegistrant.SYSTEM_REGISTRANT_NAME)
+        assertEquals(periode.first().avsluttetAv, SystemRegistrant.SYSTEM_REGISTRANT_NAME)
         assertEquals(periode.first().begrunnelse, ArenaIservKanIkkeReaktiveres.BEGRUNNELSE)
         assertThat(statusEtterEndring.get().isUnderOppfolging).isFalse()
     }

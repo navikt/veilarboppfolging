@@ -50,7 +50,7 @@ class OppfolgingV2ControllerTest {
                 .aktorId("test1")
                 .startDato(startDato)
                 .sluttDato(null)
-                .veileder("test")
+                .avsluttetAv("test")
                 .uuid(uuid)
                 .kvpPerioder(List.of(KvpPeriodeEntity.builder().aktorId("test2").build()))
                 .build();

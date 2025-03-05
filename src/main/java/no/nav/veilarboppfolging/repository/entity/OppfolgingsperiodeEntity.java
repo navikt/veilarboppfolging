@@ -17,7 +17,10 @@ import java.util.UUID;
 public class OppfolgingsperiodeEntity {
     UUID uuid;
     String aktorId;
-    String veileder;
+    /**
+     * Enten veileder-ident eller stringen "System" hvis avsluttet automatisk
+     */
+    String avsluttetAv;
     ZonedDateTime startDato;
     ZonedDateTime sluttDato;
     String begrunnelse;

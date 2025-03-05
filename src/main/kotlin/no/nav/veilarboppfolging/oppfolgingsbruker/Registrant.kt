@@ -10,21 +10,21 @@ interface RegistrantFelter {
      * - Gir en stringen "System" hvis registrert av system
      * - Gir velederIdent hvis registrert av veileder
      */
-    fun getRegistrertAv(): String?
-    fun getRegistrertAvType(): StartetAvType
+    fun getIdent(): String?
+    fun getType(): StartetAvType
 }
 
 /* a person who registers something. */
 sealed class Registrant: RegistrantFelter
 
 object BrukerRegistrant : Registrant() {
-    override fun getRegistrertAv(): String? = null
-    override fun getRegistrertAvType() = StartetAvType.BRUKER
+    override fun getIdent(): String? = null
+    override fun getType() = StartetAvType.BRUKER
 }
 
 object SystemRegistrant : Registrant() {
-    override fun getRegistrertAv(): String? = SYSTEM_REGISTRANT_NAME
-    override fun getRegistrertAvType() = StartetAvType.SYSTEM
+    override fun getIdent(): String? = SYSTEM_REGISTRANT_NAME
+    override fun getType() = StartetAvType.SYSTEM
 
     const val SYSTEM_REGISTRANT_NAME = SYSTEM_USER_NAME
 }
@@ -32,8 +32,8 @@ object SystemRegistrant : Registrant() {
 class VeilederRegistrant(
     val navIdent: NavIdent,
 ) : Registrant() {
-    override fun getRegistrertAv(): String? = navIdent.get()
-    override fun getRegistrertAvType() = StartetAvType.VEILEDER
+    override fun getIdent(): String? = navIdent.get()
+    override fun getType() = StartetAvType.VEILEDER
 }
 
 fun StartetAvType.toRegistrant(navIdent: NavIdent): Registrant {

@@ -7,7 +7,6 @@ import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsBruke
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.`when`
-import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import java.util.*
 

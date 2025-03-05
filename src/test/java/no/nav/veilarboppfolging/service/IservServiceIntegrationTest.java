@@ -7,7 +7,7 @@ import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
 import no.nav.veilarboppfolging.LocalDatabaseSingleton;
 import no.nav.veilarboppfolging.domain.AvslutningStatusData;
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.Avregistrering;
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.UtmeldEtter28Dager;
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.UtmeldtEtter28Dager;
 import no.nav.veilarboppfolging.repository.UtmeldingRepository;
 import no.nav.veilarboppfolging.repository.entity.UtmeldingEntity;
 import no.nav.veilarboppfolging.service.utmelding.KanskjeIservBruker;
@@ -124,7 +124,7 @@ public class IservServiceIntegrationTest {
 
         iservService.avslutteOppfolging(AKTOR_ID);
 
-        verify(oppfolgingService).avsluttOppfolging(new UtmeldEtter28Dager(AKTOR_ID));
+        verify(oppfolgingService).avsluttOppfolging(new UtmeldtEtter28Dager(AKTOR_ID));
         assertTrue(utmeldingRepository.eksisterendeIservBruker(AKTOR_ID).isEmpty());
     }
 
@@ -160,7 +160,7 @@ public class IservServiceIntegrationTest {
 
         insertIservBruker(AKTOR_ID, iservFraDato.minusDays(30));
 
-        when(oppfolgingService.avsluttOppfolging(any(UtmeldEtter28Dager.class))).thenReturn(AvslutningStatusData.builder().underOppfolging(true).build());
+        when(oppfolgingService.avsluttOppfolging(any(UtmeldtEtter28Dager.class))).thenReturn(AvslutningStatusData.builder().underOppfolging(true).build());
 
         iservService.automatiskAvslutteOppfolging();
 

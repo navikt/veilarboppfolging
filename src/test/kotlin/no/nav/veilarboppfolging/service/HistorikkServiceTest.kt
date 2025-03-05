@@ -306,7 +306,7 @@ class HistorikkServiceTest {
                 .startDato(OPPFOLGING_START)
                 .sluttDato(OPPFOLGING_END)
                 .aktorId(AKTOR_ID.get())
-                .veileder(avsluttetAvVeileder)
+                .avsluttetAv(avsluttetAvVeileder)
                 .startetBegrunnelse(OppfolgingStartBegrunnelse.MANUELL_REGISTRERING_VEILEDER)
                 .startetAv(startetAvVeilder)
                 .begrunnelse("Avsluttet manuelt")

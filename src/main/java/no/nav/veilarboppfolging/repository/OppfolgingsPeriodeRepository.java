@@ -45,8 +45,8 @@ public class OppfolgingsPeriodeRepository {
             insert(
                 oppfolgingsbruker.getAktorId(),
                 oppfolgingsbruker.getOppfolgingStartBegrunnelse(),
-                oppfolgingsbruker.getRegistrant().getRegistrertAv(),
-                oppfolgingsbruker.getRegistrant().getRegistrertAvType());
+                oppfolgingsbruker.getRegistrertAv().getIdent(),
+                oppfolgingsbruker.getRegistrertAv().getType());
             setActive(oppfolgingsbruker.getAktorId());
         });
     }
@@ -147,7 +147,7 @@ public class OppfolgingsPeriodeRepository {
         return OppfolgingsperiodeEntity.builder()
                 .uuid(UUID.fromString(result.getString("uuid")))
                 .aktorId(result.getString("aktor_id"))
-                .veileder(result.getString("avslutt_veileder"))
+                .avsluttetAv(result.getString("avslutt_veileder"))
                 .startDato(hentZonedDateTime(result, "startdato"))
                 .sluttDato(hentZonedDateTime(result, "sluttdato"))
                 .begrunnelse(result.getString("avslutt_begrunnelse"))

@@ -6,6 +6,7 @@ import com.google.cloud.bigquery.TableId
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe
 import no.nav.veilarboppfolging.domain.StartetAvType
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelse
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AvregistreringsType
 import org.slf4j.LoggerFactory
 import java.time.ZonedDateTime
 import java.util.*
@@ -17,7 +18,7 @@ enum class BigQueryEventType {
 
 interface BigQueryClient {
     fun loggStartOppfolgingsperiode(oppfolging: OppfolgingStartBegrunnelse, oppfolgingPeriodeId: UUID, startedAvType: StartetAvType, kvalifiseringsgruppe: Optional<Kvalifiseringsgruppe>)
-    fun loggAvsluttOppfolgingsperiode(oppfolgingPeriodeId: UUID, erAutomstiskAvsluttet: Boolean)
+    fun loggAvsluttOppfolgingsperiode(oppfolgingPeriodeId: UUID, avregistreringsType: AvregistreringsType)
 }
 
 class BigQueryClientImplementation(projectId: String): BigQueryClient {
@@ -32,13 +33,15 @@ class BigQueryClientImplementation(projectId: String): BigQueryClient {
     val bigQuery = BigQueryOptions.newBuilder().setProjectId(projectId).build().service
     val log = LoggerFactory.getLogger(this.javaClass)
 
-    override fun loggAvsluttOppfolgingsperiode(oppfolgingPeriodeId: UUID, erAutomatiskAvsluttet: Boolean) {
+    override fun loggAvsluttOppfolgingsperiode(oppfolgingPeriodeId: UUID, avregistreringsType: AvregistreringsType) {
+        val erAutomatiskAvsluttet = avregistreringsType != AvregistreringsType.ManuellAvregistrering
         insertIntoOppfolgingEvents {
             mapOf(
                 "id" to oppfolgingPeriodeId.toString(),
                 "automatiskAvsluttet" to erAutomatiskAvsluttet,
                 "timestamp" to ZonedDateTime.now().toOffsetDateTime().toString(),
-                "event" to BigQueryEventType.OPPFOLGINGSPERIODE_SLUTT.name
+                "event" to BigQueryEventType.OPPFOLGINGSPERIODE_SLUTT.name,
+                "avregistreringsType" to avregistreringsType.name
             )
         }
     }

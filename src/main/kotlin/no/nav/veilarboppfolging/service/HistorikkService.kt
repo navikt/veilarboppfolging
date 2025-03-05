@@ -128,8 +128,8 @@ class HistorikkService(
                 .type(HistorikkHendelse.Type.AVSLUTTET_OPPFOLGINGSPERIODE)
                 .begrunnelse(periode.begrunnelse)
                 .dato(periode.sluttDato)
-                .opprettetAv(if (periode.veileder != null) KodeverkBruker.NAV else KodeverkBruker.SYSTEM)
-                .opprettetAvBrukerId(periode.veileder)
+                .opprettetAv(if (periode.avsluttetAv != null) KodeverkBruker.NAV else KodeverkBruker.SYSTEM)
+                .opprettetAvBrukerId(periode.avsluttetAv)
                 .build()
             return listOf(periodeStart, periodeStopp)
         }

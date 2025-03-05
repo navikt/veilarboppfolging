@@ -116,7 +116,7 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
     @Test
     void avsluttOppfolgingHvisIserv() {
         mockAuthOk();
-        var startPeriode = startOppfolging();
+        startOppfolging();
         ApiResult<Decision> permit = ApiResult.Companion.success(Decision.Permit.INSTANCE);
         // Tester ikke tilgang
         doReturn(permit).when(poaoTilgangClient).evaluatePolicy(any());
@@ -128,13 +128,17 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
 
         AvslutningStatus avslutningStatus = oppfolgingController.hentAvslutningStatus(FNR);
         assertTrue(avslutningStatus.kanAvslutte);
+        var navIdent = new NavIdent("Z151515");
+        var begrunnelse = "Har fått jobb";
         var dto = new AvsluttOppfolgingV2Request();
-        dto.setBegrunnelse("Begrunnelse");
-        dto.setVeilederId(new NavIdent("Z151515"));
+        dto.setBegrunnelse(begrunnelse);
+        dto.setVeilederId(navIdent);
         dto.setFnr(FNR);
         oppfolgingV2Controller.avsluttOppfolging(dto);
-        OppfolgingPeriodeMinimalDTO periode = oppfolgingController.hentOppfolgingsPeriode(startPeriode.get(0).uuid.toString());
-        assertNotNull(periode.getSluttDato());
+        var perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(AKTOR_ID);
+        assertEquals(1, perioder.size());
+        assertEquals(navIdent.get(), perioder.getFirst().getAvsluttetAv());
+        assertEquals(begrunnelse, perioder.getFirst().getBegrunnelse());
     }
 
     @Test
