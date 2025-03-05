@@ -17,8 +17,9 @@ import no.nav.veilarboppfolging.domain.AvslutningStatusData;
 import no.nav.veilarboppfolging.domain.Oppfolging;
 import no.nav.veilarboppfolging.domain.OppfolgingStatusData;
 import no.nav.veilarboppfolging.eventsLogger.BigQueryClient;
-import no.nav.veilarboppfolging.oppfolgingsbruker.ArenaSyncRegistrering;
-import no.nav.veilarboppfolging.oppfolgingsbruker.OppfolgingsRegistrering;
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ArenaSyncRegistrering;
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.Avregistrering;
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering;
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService;
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.LocalArenaOppfolging;
 import no.nav.veilarboppfolging.repository.*;
@@ -136,8 +137,9 @@ public class OppfolgingService {
     }
 
     @SneakyThrows
-    public AvslutningStatusData avsluttOppfolging(Fnr fnr, String veilederId, String begrunnelse) {
-        AktorId aktorId = authService.getAktorIdOrThrow(fnr);
+    public AvslutningStatusData avsluttOppfolging(Avregistrering avregistrering) {
+        AktorId aktorId = avregistrering.getAktorId();
+        Fnr fnr = authService.getFnrOrThrow(aktorId);
         ArenaOppfolgingTilstand arenaOppfolgingTilstand = arenaOppfolgingService.hentArenaOppfolgingTilstand(fnr)
                 .orElseThrow(() -> new RuntimeException("Feilet under henting av oppfølgingstilstand"));
 
@@ -154,6 +156,8 @@ public class OppfolgingService {
         boolean harAktiveTiltaksdeltakelser = harAktiveTiltaksdeltakelser(fnr);
 
         if (kanAvslutteOppfolging(aktorId, erUnderOppfolging(aktorId), erIserv, harAktiveTiltaksdeltakelser)) {
+            var veilederId = avregistrering.getAvsluttetAv().getRegistrertAv();
+            var begrunnelse = avregistrering.getBegrunnelse();
             secureLog.info("Avslutting av oppfølging utført av: {}, begrunnelse: {}, tilstand i Arena for aktorid {}: {}", veilederId, begrunnelse, aktorId, arenaOppfolgingTilstand);
             avsluttOppfolgingForBruker(aktorId, veilederId, begrunnelse);
         } else {

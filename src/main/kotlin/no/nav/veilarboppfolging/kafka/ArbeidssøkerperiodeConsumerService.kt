@@ -6,12 +6,9 @@ import no.nav.paw.arbeidssokerregisteret.api.v1.BrukerType
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.veilarboppfolging.domain.StartetAvType
-import no.nav.veilarboppfolging.oppfolgingsbruker.OppfolgingsRegistrering
-import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant
-import no.nav.veilarboppfolging.oppfolgingsbruker.BrukerRegistrant
-import no.nav.veilarboppfolging.oppfolgingsbruker.Registrant
-import no.nav.veilarboppfolging.oppfolgingsbruker.SystemRegistrant
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
+import no.nav.veilarboppfolging.oppfolgingsbruker.toRegistrant
 import no.nav.veilarboppfolging.service.AuthService
 import no.nav.veilarboppfolging.service.IservService
 import no.nav.veilarboppfolging.service.OppfolgingService
@@ -43,8 +40,6 @@ open class ArbeidssøkerperiodeConsumerService(
     open fun consumeArbeidssøkerperiode(kafkaMelding: ConsumerRecord<String, Periode>) {
         val arbeidssøkerperiode: Periode = kafkaMelding.value()
 
-
-
         val arbeidssøkerperiodeStartet = arbeidssøkerperiode.startet.tidspunkt.atZone(ZoneId.systemDefault())
         if (arbeidssøkerperiodeStartet.isBefore(DA_VI_STARTET_KONSUMERING)) {
             return
@@ -73,14 +68,6 @@ open class ArbeidssøkerperiodeConsumerService(
             utmeldHvisAlleredeIserv(fnr, arbeidssøkerperiodeStartet)
         } else {
             logger.info("Melding om avsluttet oppfølgingsperiode, gjør ingenting")
-        }
-    }
-
-    private fun StartetAvType.toRegistrant(navIdent: NavIdent): Registrant {
-        return when (this) {
-            StartetAvType.SYSTEM -> SystemRegistrant
-            StartetAvType.BRUKER -> BrukerRegistrant
-            StartetAvType.VEILEDER -> VeilederRegistrant(navIdent)
         }
     }
 

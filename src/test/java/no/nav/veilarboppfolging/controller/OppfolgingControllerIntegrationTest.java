@@ -123,7 +123,8 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
 
         AvslutningStatus avslutningStatus = oppfolgingController.hentAvslutningStatus(FNR);
         assertTrue(avslutningStatus.kanAvslutte);
-        oppfolgingController.avsluttOppfolging(new VeilederBegrunnelseDTO(), FNR);
+        var dto = new VeilederBegrunnelseDTO().setBegrunnelse("Begrunnelse").setVeilederId("Z151515");
+        oppfolgingController.avsluttOppfolging(dto, FNR);
         OppfolgingPeriodeMinimalDTO periode = oppfolgingController.hentOppfolgingsPeriode(startPeriode.get(0).uuid.toString());
         assertNotNull(periode.getSluttDato());
     }
@@ -140,7 +141,8 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
         when(arenaYtelserService.harPagaendeYtelse(FNR)).thenReturn(false);
         when(amtTiltakClient.harAktiveTiltaksdeltakelser(FNR.get())).thenReturn(true);
 
-        AvslutningStatus avslutningStatus = oppfolgingController.avsluttOppfolging(new VeilederBegrunnelseDTO(), FNR);
+        var dto = new VeilederBegrunnelseDTO().setBegrunnelse("Begrunnelse").setVeilederId("Z151515");
+        AvslutningStatus avslutningStatus = oppfolgingController.avsluttOppfolging(dto, FNR);
         assertFalse(avslutningStatus.kanAvslutte);
         assertTrue(avslutningStatus.harAktiveTiltaksdeltakelser);
         OppfolgingPeriodeMinimalDTO periode = oppfolgingController.hentOppfolgingsPeriode(startPeriode.get(0).uuid.toString());

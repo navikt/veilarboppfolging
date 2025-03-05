@@ -6,6 +6,7 @@ import no.nav.pto_schema.enums.arena.Formidlingsgruppe;
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
 import no.nav.veilarboppfolging.LocalDatabaseSingleton;
 import no.nav.veilarboppfolging.domain.AvslutningStatusData;
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.Avregistrering;
 import no.nav.veilarboppfolging.repository.UtmeldingRepository;
 import no.nav.veilarboppfolging.repository.entity.UtmeldingEntity;
 import no.nav.veilarboppfolging.service.utmelding.KanskjeIservBruker;
@@ -47,7 +48,7 @@ public class IservServiceIntegrationTest {
         DbTestUtils.cleanupTestDb();
 
         when(oppfolgingService.erUnderOppfolging(any(AktorId.class))).thenReturn(true);
-        when(oppfolgingService.avsluttOppfolging(any(Fnr.class), anyString(), anyString())).thenReturn(AvslutningStatusData.builder().underOppfolging(false).build());
+        when(oppfolgingService.avsluttOppfolging(any(Avregistrering.class))).thenReturn(AvslutningStatusData.builder().underOppfolging(false).build());
         when(authService.getFnrOrThrow(any())).thenReturn(FNR);
 
         utmeldingRepository = new UtmeldingRepository(db);
@@ -129,7 +130,7 @@ public class IservServiceIntegrationTest {
 
         iservService.avslutteOppfolging(AKTOR_ID);
 
-        verify(oppfolgingService).avsluttOppfolging(any(Fnr.class), anyString(), anyString());
+        verify(oppfolgingService).avsluttOppfolging(any(Avregistrering.class));
         assertTrue(utmeldingRepository.eksisterendeIservBruker(AKTOR_ID).isEmpty());
     }
 
@@ -154,7 +155,7 @@ public class IservServiceIntegrationTest {
 
         iservService.automatiskAvslutteOppfolging();
 
-        verify(oppfolgingService, never()).avsluttOppfolging(any(Fnr.class), anyString(), anyString());
+        verify(oppfolgingService, never()).avsluttOppfolging(any(Avregistrering.class));
 
         assertTrue(utmeldingRepository.eksisterendeIservBruker(AKTOR_ID).isEmpty());
     }
@@ -165,7 +166,7 @@ public class IservServiceIntegrationTest {
 
         insertIservBruker(AKTOR_ID, iservFraDato.minusDays(30));
 
-        when(oppfolgingService.avsluttOppfolging(any(Fnr.class), anyString(), anyString())).thenReturn(AvslutningStatusData.builder().underOppfolging(true).build());
+        when(oppfolgingService.avsluttOppfolging(any(Avregistrering.class))).thenReturn(AvslutningStatusData.builder().underOppfolging(true).build());
 
         iservService.automatiskAvslutteOppfolging();
 

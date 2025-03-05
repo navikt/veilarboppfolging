@@ -1,34 +1,12 @@
-package no.nav.veilarboppfolging.oppfolgingsbruker
+package no.nav.veilarboppfolging.oppfolgingsbruker.inngang
 
 import no.nav.common.types.identer.AktorId
-import no.nav.common.types.identer.NavIdent
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe
-import no.nav.veilarboppfolging.domain.StartetAvType
-
-interface RegistrantFelter {
-    fun getRegistrertAv(): String?
-    fun getRegistrertAvType(): StartetAvType
-}
-
-sealed class Registrant: RegistrantFelter
-
-object BrukerRegistrant : Registrant() {
-    override fun getRegistrertAv(): String? = null
-    override fun getRegistrertAvType() = StartetAvType.BRUKER
-}
-
-object SystemRegistrant : Registrant() {
-    override fun getRegistrertAv(): String? = null
-    override fun getRegistrertAvType() = StartetAvType.SYSTEM
-}
-
-class VeilederRegistrant(
-    val navIdent: NavIdent,
-) : Registrant() {
-    override fun getRegistrertAv(): String? = navIdent.get()
-    override fun getRegistrertAvType() = StartetAvType.VEILEDER
-}
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelse
+import no.nav.veilarboppfolging.oppfolgingsbruker.Registrant
+import no.nav.veilarboppfolging.oppfolgingsbruker.SystemRegistrant
+import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant
 
 sealed class OppfolgingsRegistrering(
     open val aktorId: AktorId,
@@ -66,4 +44,5 @@ data class ArenaSyncRegistrering(
     aktorId,
     if (formidlingsgruppe == Formidlingsgruppe.IARBS) OppfolgingStartBegrunnelse.ARENA_SYNC_IARBS
     else OppfolgingStartBegrunnelse.ARENA_SYNC_ARBS,
-    SystemRegistrant)
+    SystemRegistrant
+)

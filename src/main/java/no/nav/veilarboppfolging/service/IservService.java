@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.domain.AvslutningStatusData;
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.UtmeldEtter28Dager;
 import no.nav.veilarboppfolging.repository.UtmeldingRepository;
 import no.nav.veilarboppfolging.repository.entity.UtmeldingEntity;
 import no.nav.veilarboppfolging.service.utmelding.KanskjeIservBruker;
@@ -16,7 +17,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static java.util.Optional.ofNullable;
-import static no.nav.veilarboppfolging.config.ApplicationConfig.SYSTEM_USER_NAME;
 import static no.nav.veilarboppfolging.service.IservService.AvslutteOppfolgingResultat.*;
 import static no.nav.veilarboppfolging.utils.ArenaUtils.erIserv;
 import static no.nav.veilarboppfolging.utils.SecureLog.secureLog;
@@ -126,10 +126,9 @@ public class IservService {
                 utmeldingRepository.slettBrukerFraUtmeldingTabell(aktorId);
                 resultat = IKKE_LENGER_UNDER_OPPFØLGING;
             } else {
-                Fnr fnr = authService.getFnrOrThrow(aktorId);
-
                 log.info("Utgang: Oppfølging avsluttet automatisk grunnet iserv i 28 dager");
-                AvslutningStatusData avslutningStatus = oppfolgingService.avsluttOppfolging(fnr, SYSTEM_USER_NAME, "Oppfølging avsluttet automatisk grunnet iserv i 28 dager");
+                var avregistrering = new UtmeldEtter28Dager(aktorId);
+                AvslutningStatusData avslutningStatus = oppfolgingService.avsluttOppfolging(avregistrering);
                 // TODO litt i tvil om denne her. Attributtet sier om du per def er under oppfølging i arena, ikke om du er under oppfølging hos oss.
                 boolean oppfolgingAvsluttet = !avslutningStatus.underOppfolging;
 

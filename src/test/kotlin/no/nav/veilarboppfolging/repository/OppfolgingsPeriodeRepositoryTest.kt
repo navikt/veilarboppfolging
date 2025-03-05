@@ -5,9 +5,8 @@ import no.nav.common.types.identer.NavIdent
 import no.nav.veilarboppfolging.LocalDatabaseSingleton
 import no.nav.veilarboppfolging.domain.StartetAvType
 import no.nav.veilarboppfolging.oppfolgingsbruker.BrukerRegistrant
-import no.nav.veilarboppfolging.oppfolgingsbruker.OppfolgingStartBegrunnelse
-import no.nav.veilarboppfolging.oppfolgingsbruker.OppfolgingsRegistrering
-import no.nav.veilarboppfolging.oppfolgingsbruker.Oppfolgingsbruker
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelse
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant
 import no.nav.veilarboppfolging.test.DbTestUtils
 import org.junit.jupiter.api.Assertions

@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Value;
 import no.nav.veilarboppfolging.domain.StartetAvType;
-import no.nav.veilarboppfolging.oppfolgingsbruker.OppfolgingStartBegrunnelse;
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelse;
 
 import javax.annotation.Nullable;
 import java.time.ZonedDateTime;

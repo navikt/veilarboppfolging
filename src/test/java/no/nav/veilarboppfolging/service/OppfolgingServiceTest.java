@@ -18,14 +18,13 @@ import no.nav.veilarboppfolging.controller.response.UnderOppfolgingDTO;
 import no.nav.veilarboppfolging.controller.response.VeilederTilgang;
 import no.nav.veilarboppfolging.domain.AvslutningStatusData;
 import no.nav.veilarboppfolging.domain.OppfolgingStatusData;
-import no.nav.veilarboppfolging.domain.StartetAvType;
 import no.nav.veilarboppfolging.eventsLogger.BigQueryClient;
 import no.nav.veilarboppfolging.kafka.dto.OppfolgingsperiodeDTO;
 import no.nav.veilarboppfolging.oppfolgingsbruker.BrukerRegistrant;
-import no.nav.veilarboppfolging.oppfolgingsbruker.OppfolgingsRegistrering;
-import no.nav.veilarboppfolging.oppfolgingsbruker.Oppfolgingsbruker;
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering;
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant;
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService;
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ManuellAvregistrering;
 import no.nav.veilarboppfolging.repository.KvpRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
@@ -146,7 +145,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         arenaOppfolgingTilstand.setFormidlingsgruppe("ISERV");
 
         reset(kafkaProducerService);
-        oppfolgingService.avsluttOppfolging(FNR, VEILEDER, "");
+        oppfolgingService.avsluttOppfolging(new ManuellAvregistrering(AKTOR_ID, new VeilederRegistrant(new NavIdent(VEILEDER)), ""));
 
         verify(kafkaProducerService).publiserOppfolgingsperiode(any(OppfolgingsperiodeDTO.class));
         verify(kafkaProducerService).publiserVeilederTilordnet(AKTOR_ID, null);
@@ -160,7 +159,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     public void avslutt_oppfolging_uten_skrivetilgang_til_bruker() {
         when(authService.erInternBruker()).thenReturn(true);
         doCallRealMethod().when(authService).sjekkTilgangTilEnhet(any());
-        oppfolgingService.avsluttOppfolging(FNR, VEILEDER, BEGRUNNELSE);
+        oppfolgingService.avsluttOppfolging(new ManuellAvregistrering(AKTOR_ID, new VeilederRegistrant(new NavIdent(VEILEDER)), BEGRUNNELSE));
     }
 
     @Test
@@ -175,7 +174,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         arenaOppfolgingTilstand.setFormidlingsgruppe("ISERV");
 
         reset(kafkaProducerService);
-        oppfolgingService.avsluttOppfolging(FNR, VEILEDER, "");
+        oppfolgingService.avsluttOppfolging(new ManuellAvregistrering(AKTOR_ID, new VeilederRegistrant(new NavIdent(VEILEDER)), ""));
 
         verify(kafkaProducerService, never()).publiserOppfolgingsperiode(any(OppfolgingsperiodeDTO.class));
         assertHarGjeldendeOppfolgingsperiode(AKTOR_ID);

@@ -2,8 +2,8 @@ package no.nav.veilarboppfolging.repository;
 
 import no.nav.common.types.identer.AktorId;
 import no.nav.veilarboppfolging.domain.StartetAvType;
-import no.nav.veilarboppfolging.oppfolgingsbruker.OppfolgingStartBegrunnelse;
-import no.nav.veilarboppfolging.oppfolgingsbruker.OppfolgingsRegistrering;
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelse;
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
 import no.nav.veilarboppfolging.utils.EnumUtils;
 import org.springframework.beans.factory.annotation.Autowired;

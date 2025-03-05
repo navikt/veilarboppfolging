@@ -1,4 +1,4 @@
-package no.nav.veilarboppfolging.oppfolgingsbruker
+package no.nav.veilarboppfolging.oppfolgingsbruker.inngang
 
 import no.nav.veilarboppfolging.kafka.dto.StartetBegrunnelseDTO
 
