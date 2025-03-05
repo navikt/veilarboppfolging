@@ -3,7 +3,6 @@ package no.nav.veilarboppfolging.oppfolgingsbruker.inngang
 import no.nav.common.types.identer.AktorId
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe
-import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelse
 import no.nav.veilarboppfolging.oppfolgingsbruker.Registrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.SystemRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant

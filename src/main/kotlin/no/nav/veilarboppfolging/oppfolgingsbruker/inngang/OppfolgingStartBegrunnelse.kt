@@ -4,7 +4,6 @@ import no.nav.veilarboppfolging.kafka.dto.StartetBegrunnelseDTO
 
 enum class OppfolgingStartBegrunnelse {
     ARBEIDSSOKER_REGISTRERING,
-    ARENA_SYNC,  // TODO: Fjerne etter opprydding i databasen
     ARENA_SYNC_ARBS,
     ARENA_SYNC_IARBS,
     MANUELL_REGISTRERING_VEILEDER;

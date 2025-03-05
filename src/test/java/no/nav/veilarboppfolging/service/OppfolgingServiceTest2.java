@@ -53,28 +53,15 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
     private static final String BEGRUNNELSE = "begrunnelse";
     private static final String OTHER_ENHET = "otherEnhet";
     private static final Fnr FNR = Fnr.of("21432432423");
-    private static final OppfolgingsRegistrering arenaSyncOppfolgingBruker = OppfolgingsRegistrering.Companion.arenaSyncOppfolgingBruker(
-            AktorId.of("123123"),
-            Formidlingsgruppe.IARBS,
-            Kvalifiseringsgruppe.VURDI
-        );
 
     private AuthService authService = mock(AuthService.class);
-
     private OppfolgingsStatusRepository oppfolgingsStatusRepository;
-
     private KvpRepository kvpRepository;
-
     private MaalRepository maalRepository;
-
     private OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
-
     private ManuellStatusRepository manuellStatusRepository;
-
     private OppfolgingService oppfolgingService;
-
     private OppfolgingService oppfolgingServiceMock = mock(OppfolgingService.class);
-
     private ArenaYtelserService arenaYtelserService = mock(ArenaYtelserService.class);
 
     @Before
