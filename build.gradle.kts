@@ -13,6 +13,8 @@ val googleCloudLibrariesBomVersion = "26.49.0"
 val springDoc = "2.8.5"
 val tmsMicrofrontendBuilder = "3.0.0"
 val tmsVarselBuilder = "2.1.1"
+val avroVersion = "1.12.0"
+val confluentKafkaAvroVersion = "3.3.1"
 
 plugins {
     kotlin("jvm") version "2.0.20"
@@ -99,9 +101,9 @@ dependencies {
     implementation("no.nav.common:log:$commonVersion")
     implementation("no.nav.common:health:$commonVersion")
     implementation("no.nav.common:metrics:$commonVersion")
-    implementation("no.nav.common:kafka:$commonVersion") {
-        exclude(group = "io.swagger.core.v3")
-    }
+    implementation("no.nav.common:kafka:$commonVersion")
+    implementation("org.apache.avro:avro:$avroVersion")
+    implementation("io.confluent:kafka-avro-serializer:$confluentKafkaAvroVersion")
     implementation("no.nav.tms.mikrofrontend.selector:builder:$tmsMicrofrontendBuilder")
     implementation("no.nav.tms.varsel:kotlin-builder:$tmsVarselBuilder")
     implementation("com.google.cloud:google-cloud-bigquery:$googleCloudBigQueryVersion")
