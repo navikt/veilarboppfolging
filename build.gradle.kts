@@ -103,7 +103,9 @@ dependencies {
     implementation("no.nav.common:metrics:$commonVersion")
     implementation("no.nav.common:kafka:$commonVersion")
     implementation("org.apache.avro:avro:$avroVersion")
-    implementation("io.confluent:kafka-avro-serializer:$confluentKafkaAvroVersion")
+    implementation("io.confluent:kafka-avro-serializer:$confluentKafkaAvroVersion") {
+        exclude(group = "io.swagger.core.v3")
+    }
     implementation("no.nav.tms.mikrofrontend.selector:builder:$tmsMicrofrontendBuilder")
     implementation("no.nav.tms.varsel:kotlin-builder:$tmsVarselBuilder")
     implementation("com.google.cloud:google-cloud-bigquery:$googleCloudBigQueryVersion")
