@@ -10,7 +10,7 @@ import no.nav.veilarboppfolging.controller.response.VeilederTilgang;
 import no.nav.veilarboppfolging.controller.v3.request.OppfolgingRequest;
 import no.nav.veilarboppfolging.domain.AvslutningStatusData;
 import no.nav.veilarboppfolging.domain.OppfolgingStatusData;
-import no.nav.veilarboppfolging.oppfolgingsbruker.AktiverBrukerService;
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.AktiverBrukerService;
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService;
 import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
@@ -162,7 +162,7 @@ class OppfolgingV3ControllerTest {
                 .aktorId("test1")
                 .startDato(startDato)
                 .sluttDato(null)
-                .veileder("test")
+                .avsluttetAv("test")
                 .uuid(uuid)
                 .kvpPerioder(List.of(KvpPeriodeEntity.builder().aktorId("test2").build()))
                 .build();
@@ -198,7 +198,7 @@ class OppfolgingV3ControllerTest {
                 List.of(
                         OppfolgingsperiodeEntity.builder()
                                 .aktorId(TEST_AKTOR_ID.get())
-                                .veileder(TEST_NAV_IDENT.get())
+                                .avsluttetAv(TEST_NAV_IDENT.get())
                                 .begrunnelse("En begrunnelse")
                                 .uuid(UUID.fromString("375faf4d-20b0-4a9d-bb44-a582de54fb58"))
                                 .startDato(ZonedDateTime.parse("2023-04-06T16:00:00+01:00[Europe/Oslo]"))
@@ -207,7 +207,7 @@ class OppfolgingV3ControllerTest {
                                 .build(),
                         OppfolgingsperiodeEntity.builder()
                                 .aktorId(TEST_AKTOR_ID.get())
-                                .veileder(TEST_NAV_IDENT.get())
+                                .avsluttetAv(TEST_NAV_IDENT.get())
                                 .begrunnelse("En begrunnelse")
                                 .uuid(UUID.fromString("76c69158-f1e8-4c53-897c-656583638a8d"))
                                 .startDato(ZonedDateTime.parse("2022-01-06T16:00:00+01:00[Europe/Oslo]"))

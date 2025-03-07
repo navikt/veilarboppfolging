@@ -9,9 +9,10 @@ import no.nav.veilarboppfolging.client.amttiltak.AmtTiltakClient;
 import no.nav.veilarboppfolging.client.digdir_krr.DigdirClient;
 import no.nav.veilarboppfolging.client.digdir_krr.KRRData;
 import no.nav.veilarboppfolging.domain.Oppfolging;
-import no.nav.veilarboppfolging.domain.StartetAvType;
 import no.nav.veilarboppfolging.eventsLogger.BigQueryClient;
-import no.nav.veilarboppfolging.oppfolgingsbruker.Oppfolgingsbruker;
+import no.nav.veilarboppfolging.oppfolgingsbruker.BrukerRegistrant;
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering;
+import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant;
 import no.nav.veilarboppfolging.repository.*;
 import no.nav.veilarboppfolging.repository.entity.MaalEntity;
 import no.nav.veilarboppfolging.repository.entity.ManuellStatusEntity;
@@ -52,28 +53,15 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
     private static final String BEGRUNNELSE = "begrunnelse";
     private static final String OTHER_ENHET = "otherEnhet";
     private static final Fnr FNR = Fnr.of("21432432423");
-    private static final Oppfolgingsbruker arenaSyncOppfolgingBruker = Oppfolgingsbruker.arenaSyncOppfolgingBruker(
-            AktorId.of("123123"),
-            Formidlingsgruppe.IARBS,
-            Kvalifiseringsgruppe.VURDI
-        );
 
     private AuthService authService = mock(AuthService.class);
-
     private OppfolgingsStatusRepository oppfolgingsStatusRepository;
-
     private KvpRepository kvpRepository;
-
     private MaalRepository maalRepository;
-
     private OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
-
     private ManuellStatusRepository manuellStatusRepository;
-
     private OppfolgingService oppfolgingService;
-
     private OppfolgingService oppfolgingServiceMock = mock(OppfolgingService.class);
-
     private ArenaYtelserService arenaYtelserService = mock(ArenaYtelserService.class);
 
     @Before
@@ -116,7 +104,7 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
 
     @Test
     public void hentHarFlereAktorIderMedOppfolging_harEnAktorIdMedOppfolging_returnererFalse(){
-        var oppfolgingsbruker = Oppfolgingsbruker.manueltRegistrertBruker(AKTOR_ID, NavIdent.of("G123123"));
+        var oppfolgingsbruker = OppfolgingsRegistrering.Companion.manueltRegistrertBruker(AKTOR_ID, new VeilederRegistrant(NavIdent.of("G123123")));
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
         oppfolgingsPeriodeRepository.start(oppfolgingsbruker);
 
@@ -126,7 +114,7 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
 
     @Test
     public void hentHarFlereAktorIderMedOppfolging_harFlereAktorIdUtenOppfolging_returnererFalse(){
-        var oppfolgingsbruker = Oppfolgingsbruker.manueltRegistrertBruker(AKTOR_ID, NAV_IDENT);
+        var oppfolgingsbruker = OppfolgingsRegistrering.Companion.manueltRegistrertBruker(AKTOR_ID, new VeilederRegistrant(NAV_IDENT));
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
         oppfolgingsPeriodeRepository.start(oppfolgingsbruker);
 
@@ -137,11 +125,11 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
 
     @Test
     public void hentHarFlereAktorIderMedOppfolging_harFlereAktorIdMedOppf_returnererTrue(){
-        var oppfolgingsbruker = Oppfolgingsbruker.manueltRegistrertBruker(AKTOR_ID, NAV_IDENT);
+        var oppfolgingsbruker = OppfolgingsRegistrering.Companion.manueltRegistrertBruker(AKTOR_ID, new VeilederRegistrant(NAV_IDENT));
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
         oppfolgingsPeriodeRepository.start(oppfolgingsbruker);
 
-        var oppfolgingsbruker2 = Oppfolgingsbruker.manueltRegistrertBruker(AKTOR_ID2, NAV_IDENT);
+        var oppfolgingsbruker2 = OppfolgingsRegistrering.Companion.manueltRegistrertBruker(AKTOR_ID2, new VeilederRegistrant(NAV_IDENT));
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID2);
         oppfolgingsPeriodeRepository.start(oppfolgingsbruker2);
 
@@ -152,11 +140,11 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
 
     @Test
     public void skalIkkeKasteExceptionVedFlereKall(){
-        var oppfolgingsbruker = Oppfolgingsbruker.manueltRegistrertBruker(AKTOR_ID, NAV_IDENT);
+        var oppfolgingsbruker = OppfolgingsRegistrering.Companion.manueltRegistrertBruker(AKTOR_ID, new VeilederRegistrant(NAV_IDENT));
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
         oppfolgingsPeriodeRepository.start(oppfolgingsbruker);
 
-        var oppfolgingsbruker2 = Oppfolgingsbruker.manueltRegistrertBruker(AKTOR_ID2, NAV_IDENT);
+        var oppfolgingsbruker2 = OppfolgingsRegistrering.Companion.manueltRegistrertBruker(AKTOR_ID2, new VeilederRegistrant(NAV_IDENT));
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID2);
         oppfolgingsPeriodeRepository.start(oppfolgingsbruker2);
 
@@ -237,7 +225,7 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
     @Test
     public void kanHenteForventetOppfolging() {
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
-        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker.arbeidssokerStartetAvVeileder(AKTOR_ID, StartetAvType.BRUKER, NAV_IDENT));
+        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.Companion.arbeidssokerRegistrering(AKTOR_ID, new VeilederRegistrant(NAV_IDENT)));
         Oppfolging uthentetOppfolging = hentOppfolging(AKTOR_ID).get();
         assertThat(uthentetOppfolging.getAktorId(), equalTo(AKTOR_ID.get()));
         assertThat(uthentetOppfolging.isUnderOppfolging(), is(true));
@@ -247,7 +235,7 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
     @Test
     public void avsluttOppfolgingResetterVeileder_Manuellstatus_Mal_Og_Vilkar() {
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
-        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker.manueltRegistrertBruker(AKTOR_ID, NAV_IDENT));
+        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.Companion.manueltRegistrertBruker(AKTOR_ID, new VeilederRegistrant(NAV_IDENT)));
         String veilederId = "veilederId";
         String maal = "Mål";
         settVeileder(veilederId, AKTOR_ID);
@@ -288,7 +276,7 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
     @Test
     public void kanHenteOppfolgingMedOppfolgingsperioder() {
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
-        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker.arenaSyncOppfolgingBruker(AKTOR_ID, Formidlingsgruppe.IARBS, Kvalifiseringsgruppe.IKVAL));
+        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.Companion.arenaSyncOppfolgingBruker(AKTOR_ID, Formidlingsgruppe.IARBS, Kvalifiseringsgruppe.IKVAL));
         List<OppfolgingsperiodeEntity> oppfolgingsperioder = oppfolgingService.hentOppfolging(AKTOR_ID).get().getOppfolgingsperioder();
         assertThat(oppfolgingsperioder, hasSize(1));
         assertThat(oppfolgingsperioder.get(0).getStartDato(), not(nullValue()));
@@ -299,7 +287,7 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
         assertThat(oppfolgingsperioder, hasSize(1));
         assertThat(oppfolgingsperioder.get(0).getSluttDato(), not(nullValue()));
 
-        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker.arenaSyncOppfolgingBruker(AKTOR_ID, Formidlingsgruppe.IARBS, Kvalifiseringsgruppe.BATT));
+        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.Companion.arenaSyncOppfolgingBruker(AKTOR_ID, Formidlingsgruppe.IARBS, Kvalifiseringsgruppe.BATT));
         oppfolgingsperioder = oppfolgingService.hentOppfolging(AKTOR_ID).get().getOppfolgingsperioder();
         assertThat(oppfolgingsperioder, hasSize(2));
     }
@@ -334,7 +322,7 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
         Oppfolging oppfolging = oppfolgingService.hentOppfolging(aktorId)
                 .orElseGet(() -> oppfolgingsStatusRepository.opprettOppfolging(aktorId));
 
-        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker.arbeidssokerStartetAvBrukerEllerSystem(aktorId, StartetAvType.BRUKER));
+        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.Companion.arbeidssokerRegistrering(aktorId, BrukerRegistrant.INSTANCE));
         oppfolging.setUnderOppfolging(true);
         return oppfolging;
     }

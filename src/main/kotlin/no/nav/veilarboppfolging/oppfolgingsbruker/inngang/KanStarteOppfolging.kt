@@ -1,4 +1,4 @@
-package no.nav.veilarboppfolging.oppfolgingsbruker.kanStarteOppfolging
+package no.nav.veilarboppfolging.oppfolgingsbruker.inngang
 
 import no.nav.veilarboppfolging.client.pdl.ForenkletFolkeregisterStatus
 import no.nav.veilarboppfolging.controller.TilgangResultat

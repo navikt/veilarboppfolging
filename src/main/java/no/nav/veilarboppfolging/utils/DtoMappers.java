@@ -99,7 +99,7 @@ public class DtoMappers {
                 );
 
         if (erInternBruker) {
-            periode.setVeileder(oppfolgingsperiode.getVeileder())
+            periode.setVeileder(oppfolgingsperiode.getAvsluttetAv())
                     .setAktorId(oppfolgingsperiode.getAktorId())
                     .setBegrunnelse(oppfolgingsperiode.getBegrunnelse());
         }

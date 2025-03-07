@@ -19,8 +19,10 @@ import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsBruke
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsStatus
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient
 import no.nav.veilarboppfolging.kafka.TestUtils.oppfølgingsBrukerEndret
+import no.nav.veilarboppfolging.oppfolgingsbruker.SystemRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.GetOppfolginsstatusFailure
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.GetOppfolginsstatusSuccess
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ArenaIservKanIkkeReaktiveres
 import no.nav.veilarboppfolging.service.KafkaConsumerService
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.consumer.KafkaConsumer
@@ -354,7 +356,11 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
         )
 
         val statusEtterEndring = oppfolgingsStatusRepository.hentOppfolging(aktorId)
+        val periode = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId)
         assert(statusEtterEndring.isPresent)
+        assertEquals(periode.size, 1)
+        assertEquals(periode.first().avsluttetAv, SystemRegistrant.SYSTEM_REGISTRANT_NAME)
+        assertEquals(periode.first().begrunnelse, ArenaIservKanIkkeReaktiveres.BEGRUNNELSE)
         assertThat(statusEtterEndring.get().isUnderOppfolging).isFalse()
     }
 

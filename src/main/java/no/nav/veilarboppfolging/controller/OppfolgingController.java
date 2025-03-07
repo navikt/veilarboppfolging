@@ -3,10 +3,13 @@ package no.nav.veilarboppfolging.controller;
 import lombok.RequiredArgsConstructor;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.common.types.identer.NavIdent;
 import no.nav.veilarboppfolging.BadRequestException;
 import no.nav.veilarboppfolging.NotFoundException;
 import no.nav.veilarboppfolging.controller.request.*;
 import no.nav.veilarboppfolging.controller.response.*;
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ManuellAvregistrering;
+import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant;
 import no.nav.veilarboppfolging.repository.enums.KodeverkBruker;
 import no.nav.veilarboppfolging.service.*;
 import org.springframework.http.ResponseEntity;
@@ -46,17 +49,6 @@ public class OppfolgingController {
     public AvslutningStatus hentAvslutningStatus(@RequestParam("fnr") Fnr fnr) {
         authService.skalVereInternBruker();
         return tilDto(oppfolgingService.hentAvslutningStatus(fnr));
-    }
-
-    @PostMapping("/avsluttOppfolging")
-    public AvslutningStatus avsluttOppfolging(@RequestBody VeilederBegrunnelseDTO dto, @RequestParam("fnr") Fnr fnr) {
-        authService.skalVereInternBruker();
-
-        return tilDto(oppfolgingService.avsluttOppfolging(
-                fnr,
-                dto.veilederId,
-                dto.begrunnelse
-        ));
     }
 
     // TODO: Ikke returner OppfolgingStatus

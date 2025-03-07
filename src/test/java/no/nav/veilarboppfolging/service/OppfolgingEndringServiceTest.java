@@ -3,8 +3,9 @@ package no.nav.veilarboppfolging.service;
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe;
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe;
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
-import no.nav.veilarboppfolging.oppfolgingsbruker.Oppfolgingsbruker;
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering;
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService;
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ArenaIservKanIkkeReaktiveres;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingEntity;
 import org.junit.jupiter.api.Test;
@@ -48,8 +49,8 @@ public class OppfolgingEndringServiceTest {
 
         oppfolgingEndringService.oppdaterOppfolgingMedStatusFraArena(brukverV2);
 
-        verify(oppfolgingService, never()).startOppfolgingHvisIkkeAlleredeStartet(any(Oppfolgingsbruker.class));
-        verify(oppfolgingService, never()).avsluttOppfolging(any(), any(), any());
+        verify(oppfolgingService, never()).startOppfolgingHvisIkkeAlleredeStartet(any(OppfolgingsRegistrering.class));
+        verify(oppfolgingService, never()).avsluttOppfolging(any());
     }
 
     @Test
@@ -65,8 +66,8 @@ public class OppfolgingEndringServiceTest {
 
         oppfolgingEndringService.oppdaterOppfolgingMedStatusFraArena(brukverV2);
 
-        verify(oppfolgingService, times(1)).startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker.arenaSyncOppfolgingBruker(TEST_AKTOR_ID, Formidlingsgruppe.ARBS, brukverV2.getKvalifiseringsgruppe()));
-        verify(oppfolgingService, never()).avsluttOppfolging(any(), any(), any());
+        verify(oppfolgingService, times(1)).startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.Companion.arenaSyncOppfolgingBruker(TEST_AKTOR_ID, Formidlingsgruppe.ARBS, brukverV2.getKvalifiseringsgruppe()));
+        verify(oppfolgingService, never()).avsluttOppfolging(any());
     }
 
     @Test
@@ -87,11 +88,9 @@ public class OppfolgingEndringServiceTest {
         oppfolgingEndringService.oppdaterOppfolgingMedStatusFraArena(brukverV2);
 
 
-        verify(oppfolgingService, never()).startOppfolgingHvisIkkeAlleredeStartet(any(Oppfolgingsbruker.class));
+        verify(oppfolgingService, never()).startOppfolgingHvisIkkeAlleredeStartet(any(OppfolgingsRegistrering.class));
         verify(oppfolgingService, times(1))
-                .avsluttOppfolging(
-                    TEST_FNR, SYSTEM_USER_NAME, "Oppfølging avsluttet automatisk pga. inaktiv bruker som ikke kan reaktiveres"
-                );
+                .avsluttOppfolging(new ArenaIservKanIkkeReaktiveres(TEST_AKTOR_ID));
 
         verify(metricsService, times(1)).rapporterAutomatiskAvslutningAvOppfolging(true);
     }
@@ -114,8 +113,8 @@ public class OppfolgingEndringServiceTest {
 
         oppfolgingEndringService.oppdaterOppfolgingMedStatusFraArena(brukverV2);
 
-        verify(oppfolgingService, never()).startOppfolgingHvisIkkeAlleredeStartet(any(Oppfolgingsbruker.class));
-        verify(oppfolgingService, never()).avsluttOppfolging(any(), any(), any());
+        verify(oppfolgingService, never()).startOppfolgingHvisIkkeAlleredeStartet(any(OppfolgingsRegistrering.class));
+        verify(oppfolgingService, never()).avsluttOppfolging(any());
     }
 
     @Test
@@ -137,8 +136,8 @@ public class OppfolgingEndringServiceTest {
         oppfolgingEndringService.oppdaterOppfolgingMedStatusFraArena(brukverV2);
 
 
-        verify(oppfolgingService, never()).startOppfolgingHvisIkkeAlleredeStartet(any(Oppfolgingsbruker.class));
-        verify(oppfolgingService, never()).avsluttOppfolging(any(), any(), any());
+        verify(oppfolgingService, never()).startOppfolgingHvisIkkeAlleredeStartet(any(OppfolgingsRegistrering.class));
+        verify(oppfolgingService, never()).avsluttOppfolging(any());
     }
 
     @Test
@@ -160,7 +159,7 @@ public class OppfolgingEndringServiceTest {
         oppfolgingEndringService.oppdaterOppfolgingMedStatusFraArena(brukverV2);
 
 
-        verify(oppfolgingService, never()).startOppfolgingHvisIkkeAlleredeStartet(any(Oppfolgingsbruker.class));
-        verify(oppfolgingService, never()).avsluttOppfolging(any(), any(), any());
+        verify(oppfolgingService, never()).startOppfolgingHvisIkkeAlleredeStartet(any(OppfolgingsRegistrering.class));
+        verify(oppfolgingService, never()).avsluttOppfolging(any());
     }
 }

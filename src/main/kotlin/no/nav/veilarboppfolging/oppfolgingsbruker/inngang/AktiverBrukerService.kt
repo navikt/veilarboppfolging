@@ -1,8 +1,9 @@
-package no.nav.veilarboppfolging.oppfolgingsbruker
+package no.nav.veilarboppfolging.oppfolgingsbruker.inngang
 
 import lombok.extern.slf4j.Slf4j
 import no.nav.common.types.identer.Fnr
 import no.nav.common.types.identer.NavIdent
+import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant
 import no.nav.veilarboppfolging.service.AuthService
 import no.nav.veilarboppfolging.service.OppfolgingService
 import org.springframework.stereotype.Service
@@ -20,9 +21,10 @@ class AktiverBrukerService(
         transactor.executeWithoutResult {
             val aktorId = authService.getAktorIdOrThrow(fnr)
             val navIdent = NavIdent.of(authService.innloggetVeilederIdent)
-            val oppfolgingsbruker = Oppfolgingsbruker.manueltRegistrertBruker(aktorId, navIdent)
+            val oppfolgingsbruker = OppfolgingsRegistrering.manueltRegistrertBruker(aktorId,
+                VeilederRegistrant(navIdent)
+            )
             oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(oppfolgingsbruker)
         }
     }
 }
-

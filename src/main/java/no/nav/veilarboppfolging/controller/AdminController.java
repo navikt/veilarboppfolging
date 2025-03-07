@@ -84,7 +84,7 @@ public class AdminController {
     @PostMapping("/avsluttBrukere")
     public AvsluttResultat batchAvsluttBrukere(@RequestBody AvsluttPayload brukereSomSkalAvsluttes) {
         sjekkTilgangTilAdmin();
-        var innloggetBruker = authService.hentInnloggetPersonIdent();
+        var innloggetBruker = authService.getInnloggetVeilederIdent();
         log.info("Skal avslutte oppfølging for {} brukere", brukereSomSkalAvsluttes.aktorIds.size());
 
         var resultat = brukereSomSkalAvsluttes.getAktorIds()

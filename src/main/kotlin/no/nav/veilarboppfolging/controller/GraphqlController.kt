@@ -10,11 +10,11 @@ import no.nav.poao_tilgang.client.NorskIdent
 import no.nav.poao_tilgang.client.PoaoTilgangClient
 import no.nav.poao_tilgang.client.TilgangType
 import no.nav.veilarboppfolging.client.pdl.PdlFolkeregisterStatusClient
-import no.nav.veilarboppfolging.oppfolgingsbruker.kanStarteOppfolging.ALLEREDE_UNDER_OPPFOLGING
-import no.nav.veilarboppfolging.oppfolgingsbruker.kanStarteOppfolging.BrukerHarRiktigFregStatus
-import no.nav.veilarboppfolging.oppfolgingsbruker.kanStarteOppfolging.KanStarteOppfolging
-import no.nav.veilarboppfolging.oppfolgingsbruker.kanStarteOppfolging.OPPFOLGING_OK
-import no.nav.veilarboppfolging.oppfolgingsbruker.kanStarteOppfolging.toKanStarteOppfolging
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ALLEREDE_UNDER_OPPFOLGING
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.BrukerHarRiktigFregStatus
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.KanStarteOppfolging
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OPPFOLGING_OK
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.toKanStarteOppfolging
 import no.nav.veilarboppfolging.repository.EnhetRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
@@ -26,8 +26,6 @@ import org.springframework.graphql.data.method.annotation.SchemaMapping
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Controller
 import org.springframework.web.server.ResponseStatusException
-import java.time.LocalDate
-import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
 data class OppfolgingsEnhetQueryDto(
