@@ -1,9 +1,6 @@
 package no.nav.veilarboppfolging.controller.v2;
 
-import no.nav.common.auth.oidc.filter.OidcAuthenticationFilter;
-import no.nav.common.json.JsonUtils;
 import no.nav.common.types.identer.Fnr;
-import no.nav.veilarboppfolging.controller.response.OppfolgingPeriodeMinimalDTO;
 import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
 import no.nav.veilarboppfolging.service.AuthService;
@@ -11,13 +8,8 @@ import no.nav.veilarboppfolging.service.OppfolgingService;
 
 import no.nav.veilarboppfolging.utils.auth.AuthorizationInterceptor;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.FilterType;
-import org.springframework.stereotype.Component;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import wiremock.org.eclipse.jetty.http.HttpStatus;
@@ -28,7 +20,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -59,7 +50,7 @@ class OppfolgingV2ControllerTest {
                 .aktorId("test1")
                 .startDato(startDato)
                 .sluttDato(null)
-                .veileder("test")
+                .avsluttetAv("test")
                 .uuid(uuid)
                 .kvpPerioder(List.of(KvpPeriodeEntity.builder().aktorId("test2").build()))
                 .build();

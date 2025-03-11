@@ -8,7 +8,6 @@ import no.nav.veilarboppfolging.service.*;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -64,7 +63,7 @@ class OppfolgingControllerTest {
                         .begrunnelse("begrunnelse")
                         .startDato(ZonedDateTime.now())
                         .sluttDato(ZonedDateTime.now().plusDays(1))
-                        .veileder("test")
+                        .avsluttetAv("test")
                         .kvpPerioder(List.of(KvpPeriodeEntity.builder().aktorId("test2").build()))
                         .build()
         );

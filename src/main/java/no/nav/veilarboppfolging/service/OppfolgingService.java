@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.Id;
+import no.nav.common.types.identer.NavIdent;
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe;
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe;
 import no.nav.veilarboppfolging.client.amttiltak.AmtTiltakClient;
@@ -17,8 +18,11 @@ import no.nav.veilarboppfolging.domain.AvslutningStatusData;
 import no.nav.veilarboppfolging.domain.Oppfolging;
 import no.nav.veilarboppfolging.domain.OppfolgingStatusData;
 import no.nav.veilarboppfolging.eventsLogger.BigQueryClient;
-import no.nav.veilarboppfolging.oppfolgingsbruker.ArenaSyncOppfolgingsBruker;
-import no.nav.veilarboppfolging.oppfolgingsbruker.Oppfolgingsbruker;
+import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant;
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ArenaSyncRegistrering;
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AdminAvregistrering;
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.Avregistrering;
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering;
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService;
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.LocalArenaOppfolging;
 import no.nav.veilarboppfolging.repository.*;
@@ -136,8 +140,9 @@ public class OppfolgingService {
     }
 
     @SneakyThrows
-    public AvslutningStatusData avsluttOppfolging(Fnr fnr, String veilederId, String begrunnelse) {
-        AktorId aktorId = authService.getAktorIdOrThrow(fnr);
+    public AvslutningStatusData avsluttOppfolging(Avregistrering avregistrering) {
+        AktorId aktorId = avregistrering.getAktorId();
+        Fnr fnr = authService.getFnrOrThrow(aktorId);
         ArenaOppfolgingTilstand arenaOppfolgingTilstand = arenaOppfolgingService.hentArenaOppfolgingTilstand(fnr)
                 .orElseThrow(() -> new RuntimeException("Feilet under henting av oppfølgingstilstand"));
 
@@ -154,8 +159,10 @@ public class OppfolgingService {
         boolean harAktiveTiltaksdeltakelser = harAktiveTiltaksdeltakelser(fnr);
 
         if (kanAvslutteOppfolging(aktorId, erUnderOppfolging(aktorId), erIserv, harAktiveTiltaksdeltakelser)) {
+            var veilederId = avregistrering.getAvsluttetAv().getIdent();
+            var begrunnelse = avregistrering.getBegrunnelse();
             secureLog.info("Avslutting av oppfølging utført av: {}, begrunnelse: {}, tilstand i Arena for aktorid {}: {}", veilederId, begrunnelse, aktorId, arenaOppfolgingTilstand);
-            avsluttOppfolgingForBruker(aktorId, veilederId, begrunnelse);
+            avsluttOppfolgingForBruker(avregistrering);
         } else {
             log.warn("Oppfølging ble ikke avsluttet likevel");
         }
@@ -261,7 +268,7 @@ public class OppfolgingService {
         return Optional.of(oppfolging);
     }
 
-    public void startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker oppfolgingsbruker) {
+    public void startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering oppfolgingsbruker) {
         AktorId aktorId = oppfolgingsbruker.getAktorId();
         Fnr fnr = authService.getFnrOrThrow(aktorId);
         KRRData kontaktinfo = manuellStatusService.hentDigdirKontaktinfo(fnr);
@@ -298,7 +305,7 @@ public class OppfolgingService {
             kafkaProducerService.publiserVisAoMinSideMicrofrontend(aktorId);
 
             Optional<Kvalifiseringsgruppe> kvalifiseringsgruppe = getKvalifiseringsGruppe(oppfolgingsbruker);
-            bigQueryClient.loggStartOppfolgingsperiode(oppfolgingsbruker.getOppfolgingStartBegrunnelse(), sistePeriode.getUuid(), oppfolgingsbruker.getStartetAvType(), kvalifiseringsgruppe);
+            bigQueryClient.loggStartOppfolgingsperiode(oppfolgingsbruker.getOppfolgingStartBegrunnelse(), sistePeriode.getUuid(), oppfolgingsbruker.getRegistrertAv().getType(), kvalifiseringsgruppe);
 
             if (kontaktinfo.isReservert()) {
                 manuellStatusService.settBrukerTilManuellGrunnetReservertIKRR(aktorId);
@@ -308,8 +315,8 @@ public class OppfolgingService {
         });
     }
 
-    private Optional<Kvalifiseringsgruppe> getKvalifiseringsGruppe(Oppfolgingsbruker oppfolgingsbruker) {
-        if(oppfolgingsbruker instanceof ArenaSyncOppfolgingsBruker arenasyncoppfolgingsbruker) {
+    private Optional<Kvalifiseringsgruppe> getKvalifiseringsGruppe(OppfolgingsRegistrering oppfolgingsbruker) {
+        if(oppfolgingsbruker instanceof ArenaSyncRegistrering arenasyncoppfolgingsbruker) {
             return Optional.ofNullable(arenasyncoppfolgingsbruker.getKvalifiseringsgruppe());
         } else {
             return Optional.empty();
@@ -329,13 +336,14 @@ public class OppfolgingService {
     }
 
     public void adminForceAvsluttOppfolgingForBruker(AktorId aktorId, String veilederId, String begrunnelse) {
-        avsluttOppfolgingForBruker(aktorId, veilederId, begrunnelse);
+        avsluttOppfolgingForBruker(new AdminAvregistrering(aktorId, new VeilederRegistrant(new NavIdent(veilederId)), begrunnelse));
     }
 
-    private void avsluttOppfolgingForBruker(AktorId aktorId, String veilederId, String begrunnelse) {
+    private void avsluttOppfolgingForBruker(Avregistrering avregistrering) {
         transactor.executeWithoutResult((ignored) -> {
 
-            oppfolgingsPeriodeRepository.avslutt(aktorId, veilederId, begrunnelse);
+            var aktorId = avregistrering.getAktorId();
+            oppfolgingsPeriodeRepository.avslutt(aktorId, avregistrering.getAvsluttetAv().getIdent(), avregistrering.getBegrunnelse());
 
             List<OppfolgingsperiodeEntity> perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId);
             OppfolgingsperiodeEntity sistePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(perioder);
@@ -350,8 +358,7 @@ public class OppfolgingService {
 
             kafkaProducerService.publiserSkjulAoMinSideMicrofrontend(aktorId);
 
-            var erAutomatiskAvsluttet = Objects.equals(veilederId, SYSTEM_USER_NAME) || veilederId == null;
-            bigQueryClient.loggAvsluttOppfolgingsperiode(sistePeriode.getUuid(), erAutomatiskAvsluttet);
+            bigQueryClient.loggAvsluttOppfolgingsperiode(sistePeriode.getUuid(), avregistrering.getAvregistreringsType());
         });
     }
 

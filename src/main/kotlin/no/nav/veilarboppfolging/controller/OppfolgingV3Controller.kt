@@ -11,7 +11,7 @@ import no.nav.veilarboppfolging.client.veilarbarena.RegistrerIkkeArbeidssokerDto
 import no.nav.veilarboppfolging.controller.response.*
 import no.nav.veilarboppfolging.controller.v2.response.UnderOppfolgingV2Response
 import no.nav.veilarboppfolging.controller.v3.request.*
-import no.nav.veilarboppfolging.oppfolgingsbruker.AktiverBrukerService
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.AktiverBrukerService
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity
 import no.nav.veilarboppfolging.repository.enums.KodeverkBruker
