@@ -109,7 +109,7 @@ class HistorikkService(
             }
             OppfolgingStartBegrunnelse.ARENA_SYNC_ARBS -> "Registrert som arbeidssøker i arena"
             OppfolgingStartBegrunnelse.ARENA_SYNC_IARBS -> "Registrert 14a vedtak i arena eller sykmeldt uten arbeidsgiver (VURDU)"
-            OppfolgingStartBegrunnelse.MANUELL_REGISTRERING_VEILEDER -> "Veileder startet arbeidsoppfølging på bruker"
+            OppfolgingStartBegrunnelse.MANUELL_REGISTRERING_VEILEDER -> "Veileder startet arbeidsrettet oppfølging på bruker"
             else -> "Startet arbeidsoppfølging på bruker"
         }
     }
