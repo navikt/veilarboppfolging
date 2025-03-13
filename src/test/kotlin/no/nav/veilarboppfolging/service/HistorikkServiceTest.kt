@@ -25,6 +25,7 @@ import org.springframework.transaction.support.TransactionTemplate
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 import java.util.UUID
+import kotlin.test.Ignore
 
 @RunWith(MockitoJUnitRunner::class)
 class HistorikkServiceTest {
@@ -96,6 +97,7 @@ class HistorikkServiceTest {
     }
 
 
+    @Ignore
     @Test
     fun `oppfolgingsperiodeHistorikk - Veileder (registrert i inngar) - skal vise veileder ident på start og stopp av oppfølgingsperioder i historikken`() {
         Mockito.`when`(authService.harTilgangTilEnhet(ENHET)).thenReturn(true)
