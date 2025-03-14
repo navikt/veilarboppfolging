@@ -14,6 +14,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -118,19 +119,18 @@ public class OppfolgingsPeriodeRepository {
                             "VALUES (?, ?, ?)",
                     oppfolgingsperiodeEntity.getAktorId(),
                     false,
-                    oppfolgingsperiodeEntity.getStartDato());
+                    Timestamp.from(oppfolgingsperiodeEntity.getStartDato().toInstant()));
         });
     }
 
     // TEMP
     public void insertAlleIkkeAktiveOppfolgingsperioder(List<OppfolgingsperiodeEntity> oppfolgingsperioder) {
         oppfolgingsperioder.forEach(oppfolgingsperiodeEntity -> {
-            db.update("" +
-                            "INSERT INTO temp_deaktiver_microfrontend(aktor_id, erdeaktivert, sluttdato_oppfolging) " +
+            db.update("INSERT INTO temp_deaktiver_microfrontend(aktor_id, erdeaktivert, sluttdato_oppfolging) " +
                             "VALUES (?, ?, ?)",
                     oppfolgingsperiodeEntity.getAktorId(),
                     false,
-                    oppfolgingsperiodeEntity.getSluttDato());
+                    Timestamp.from(oppfolgingsperiodeEntity.getSluttDato().toInstant()));
         });
     }
 
