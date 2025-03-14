@@ -11,25 +11,26 @@ class KafkaMicrofrontendService (
     private val kafkaProducerService: KafkaProducerService
 ){
 
-    @Scheduled(cron = "0 28 12 * * *")
+    @Scheduled(cron = "0 24 13 * * *")
     fun aktiverMicrofrontendForBrukereUnderOppfolging() {
 
-        var oppfolgingsperioder = oppfolgingsPeriodeRepository.hentAlleAktiveOppfolgingsperioder()
-        oppfolgingsPeriodeRepository.insertAlleAktiveOppfolgingsperioder(oppfolgingsperioder);
+        var microfrontendEntities = oppfolgingsPeriodeRepository.hentAlleSomSkalAktiveres()
 
-        for(oppfolgingsperiode in oppfolgingsperioder) {
-            kafkaProducerService.publiserVisAoMinSideMicrofrontend(AktorId.of(oppfolgingsperiode.aktorId))
+        var utvalgteEntities = microfrontendEntities.take(10)
 
-            oppfolgingsPeriodeRepository.aktiverMicrofrontend(AktorId.of(oppfolgingsperiode.aktorId))
+        for(microfrontendEntity in utvalgteEntities) {
+            kafkaProducerService.publiserVisAoMinSideMicrofrontend(AktorId.of(microfrontendEntity.aktorId))
+
+            oppfolgingsPeriodeRepository.aktiverMicrofrontend(AktorId.of(microfrontendEntity.aktorId))
         }
     }
 
 //    @Scheduled(cron = "0 0 * * * *") // Hver time
-    fun deaktiverMicrofrontendForBrukereSomAvsluttetOppfolgingIDag() {
-
-        var oppfolgingsperioder = oppfolgingsPeriodeRepository.hentAlleAktiveOppfolgingsperioder()
-        oppfolgingsPeriodeRepository.insertAlleIkkeAktiveOppfolgingsperioder(oppfolgingsperioder);
-
-
-    }
+//    fun deaktiverMicrofrontendForBrukereSomAvsluttetOppfolgingIDag() {
+//
+//        var oppfolgingsperioder = oppfolgingsPeriodeRepository.hentAlleAktiveOppfolgingsperioder()
+//        oppfolgingsPeriodeRepository.insertAlleIkkeAktiveOppfolgingsperioder(oppfolgingsperioder);
+//
+//
+//    }
 }

@@ -5,6 +5,7 @@ import no.nav.common.types.identer.NavIdent;
 import no.nav.veilarboppfolging.domain.StartetAvType;
 import no.nav.veilarboppfolging.oppfolgingsbruker.OppfolgingStartBegrunnelse;
 import no.nav.veilarboppfolging.oppfolgingsbruker.Oppfolgingsbruker;
+import no.nav.veilarboppfolging.repository.entity.KafkaMicrofrontendEntity;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
 import no.nav.veilarboppfolging.utils.EnumUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -91,8 +92,13 @@ public class OppfolgingsPeriodeRepository {
     }
 
     // TEMP
-    public List<OppfolgingsperiodeEntity> hentAlleAktiveOppfolgingsperioder() {
-        return db.query(hentOppfolingsperioderSQL + "WHERE sluttdato is null", OppfolgingsPeriodeRepository::mapTilOppfolgingsperiode);
+    public List<KafkaMicrofrontendEntity> hentAlleSomSkalAktiveres() {
+        return db.query("SELECT * FROM temp_aktiver_microfrontend WHERE erAktivert = false", OppfolgingsPeriodeRepository::mapTilAktiverEntity);
+    }
+
+    // TEMP
+    public List<KafkaMicrofrontendEntity> hentAlleSomSkalDeaktiveres() {
+        return db.query("SELECT * FROM temp_deaktiver_microfrontend WHERE erAktivert = false", OppfolgingsPeriodeRepository::mapTilDeaktiverEntity);
     }
 
     // TEMP
@@ -103,35 +109,6 @@ public class OppfolgingsPeriodeRepository {
     // TEMP
     public void deaktiverMicrofrontend(AktorId aktorId) {
         db.update("UPDATE temp_deaktiver_microfrontend SET erDeaktivert = true WHERE aktor_id = ?", aktorId.get());
-    }
-
-    // TEMP
-    public List<OppfolgingsperiodeEntity> hentAlleIkkeAktiveOppfolgingsperioder() {
-        return db.query(hentOppfolingsperioderSQL + "WHERE sluttdato > '2025-03-14'", OppfolgingsPeriodeRepository::mapTilOppfolgingsperiode);
-    }
-
-
-
-    // TEMP
-    public void insertAlleAktiveOppfolgingsperioder(List<OppfolgingsperiodeEntity> oppfolgingsperioder) {
-        oppfolgingsperioder.forEach(oppfolgingsperiodeEntity -> {
-            db.update("INSERT INTO temp_aktiver_microfrontend(aktor_id, eraktivert, startdato_oppfolging) " +
-                            "VALUES (?, ?, ?)",
-                    oppfolgingsperiodeEntity.getAktorId(),
-                    false,
-                    Timestamp.from(oppfolgingsperiodeEntity.getStartDato().toInstant()));
-        });
-    }
-
-    // TEMP
-    public void insertAlleIkkeAktiveOppfolgingsperioder(List<OppfolgingsperiodeEntity> oppfolgingsperioder) {
-        oppfolgingsperioder.forEach(oppfolgingsperiodeEntity -> {
-            db.update("INSERT INTO temp_deaktiver_microfrontend(aktor_id, erdeaktivert, sluttdato_oppfolging) " +
-                            "VALUES (?, ?, ?)",
-                    oppfolgingsperiodeEntity.getAktorId(),
-                    false,
-                    Timestamp.from(oppfolgingsperiodeEntity.getSluttDato().toInstant()));
-        });
     }
 
     private void insert(AktorId aktorId, OppfolgingStartBegrunnelse getOppfolgingStartBegrunnelse, NavIdent veileder, StartetAvType startetAvType) {
@@ -180,6 +157,22 @@ public class OppfolgingsPeriodeRepository {
                         + "WHERE aktor_id = ?",
                 aktorId.get()
         );
+    }
+
+    private static KafkaMicrofrontendEntity mapTilAktiverEntity(ResultSet result, int row) throws SQLException {
+        return KafkaMicrofrontendEntity.builder()
+                .aktorId(result.getString("aktor_id"))
+                .erSendt(result.getBoolean("erAktivert"))
+                .dato(hentZonedDateTime(result, "startdato_oppfolging"))
+                .build();
+    }
+
+    private static KafkaMicrofrontendEntity mapTilDeaktiverEntity(ResultSet result, int row) throws SQLException {
+        return KafkaMicrofrontendEntity.builder()
+                .aktorId(result.getString("aktor_id"))
+                .erSendt(result.getBoolean("erDeaktivert"))
+                .dato(hentZonedDateTime(result, "sluttdato_oppfolging"))
+                .build();
     }
 
     private static OppfolgingsperiodeEntity mapTilOppfolgingsperiode(ResultSet result, int row) throws SQLException {
