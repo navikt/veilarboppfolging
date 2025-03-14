@@ -89,6 +89,52 @@ public class OppfolgingsPeriodeRepository {
         );
     }
 
+    // TEMP
+    public List<OppfolgingsperiodeEntity> hentAlleAktiveOppfolgingsperioder() {
+        return db.query(hentOppfolingsperioderSQL + "WHERE sluttdato is null", OppfolgingsPeriodeRepository::mapTilOppfolgingsperiode);
+    }
+
+    // TEMP
+    public void aktiverMicrofrontend(AktorId aktorId) {
+        db.update("UPDATE temp_aktiver_microfrontend SET erAktivert = true WHERE aktor_id = ?", aktorId.get());
+    }
+
+    // TEMP
+    public void deaktiverMicrofrontend(AktorId aktorId) {
+        db.update("UPDATE temp_deaktiver_microfrontend SET erDeaktivert = true WHERE aktor_id = ?", aktorId.get());
+    }
+
+    // TEMP
+    public List<OppfolgingsperiodeEntity> hentAlleIkkeAktiveOppfolgingsperioder() {
+        return db.query(hentOppfolingsperioderSQL + "WHERE sluttdato > '2025-03-14'", OppfolgingsPeriodeRepository::mapTilOppfolgingsperiode);
+    }
+
+
+
+    // TEMP
+    public void insertAlleAktiveOppfolgingsperioder(List<OppfolgingsperiodeEntity> oppfolgingsperioder) {
+        oppfolgingsperioder.forEach(oppfolgingsperiodeEntity -> {
+            db.update("" +
+                            "INSERT INTO temp_aktiver_microfrontend(aktor_id, erAktivert, startdato_oppfolging) " +
+                            "VALUES (?, ?, ?)",
+                    oppfolgingsperiodeEntity.getAktorId(),
+                    false,
+                    oppfolgingsperiodeEntity.getStartDato());
+        });
+    }
+
+    // TEMP
+    public void insertAlleIkkeAktiveOppfolgingsperioder(List<OppfolgingsperiodeEntity> oppfolgingsperioder) {
+        oppfolgingsperioder.forEach(oppfolgingsperiodeEntity -> {
+            db.update("" +
+                            "INSERT INTO temp_deaktiver_microfrontend(aktor_id, erAktivert, sluttdato_oppfolging) " +
+                            "VALUES (?, ?, ?)",
+                    oppfolgingsperiodeEntity.getAktorId(),
+                    false,
+                    oppfolgingsperiodeEntity.getSluttDato());
+        });
+    }
+
     private void insert(AktorId aktorId, OppfolgingStartBegrunnelse getOppfolgingStartBegrunnelse, NavIdent veileder, StartetAvType startetAvType) {
         db.update("" +
                         "INSERT INTO OPPFOLGINGSPERIODE(uuid, aktor_id, startDato, oppdatert, start_begrunnelse, startet_av, startet_av_type) " +
