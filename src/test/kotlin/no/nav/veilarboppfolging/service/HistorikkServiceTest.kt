@@ -97,7 +97,6 @@ class HistorikkServiceTest {
     }
 
 
-    @Ignore
     @Test
     fun `oppfolgingsperiodeHistorikk - Veileder (registrert i inngar) - skal vise veileder ident på start og stopp av oppfølgingsperioder i historikken`() {
         Mockito.`when`(authService.harTilgangTilEnhet(ENHET)).thenReturn(true)
@@ -124,7 +123,7 @@ class HistorikkServiceTest {
         Assertions.assertThat(periodeStartetEvent).isEqualTo(historikkHendelse(
             type = HistorikkHendelse.Type.STARTET_OPPFOLGINGSPERIODE,
             tidspunkt = OPPFOLGING_START,
-            begrunnelse = "Veileder startet arbeidsoppfølging på bruker",
+            begrunnelse = "Veileder startet arbeidsrettet oppfølging på bruker",
             opprettetAvType = KodeverkBruker.NAV,
             opprettetAv = startetAvVeilder,
         ))
