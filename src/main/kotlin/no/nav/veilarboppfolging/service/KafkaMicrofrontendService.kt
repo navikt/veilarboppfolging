@@ -11,7 +11,7 @@ class KafkaMicrofrontendService (
     private val kafkaProducerService: KafkaProducerService
 ){
 
-    @Scheduled(cron = "0 15 11 * * *")
+    @Scheduled(cron = "0 15 12 * * *")
     fun aktiverMicrofrontendForBrukereUnderOppfolging() {
 
         var oppfolgingsperioder = oppfolgingsPeriodeRepository.hentAlleAktiveOppfolgingsperioder()

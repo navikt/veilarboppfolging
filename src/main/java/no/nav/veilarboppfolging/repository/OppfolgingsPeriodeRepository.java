@@ -114,8 +114,7 @@ public class OppfolgingsPeriodeRepository {
     // TEMP
     public void insertAlleAktiveOppfolgingsperioder(List<OppfolgingsperiodeEntity> oppfolgingsperioder) {
         oppfolgingsperioder.forEach(oppfolgingsperiodeEntity -> {
-            db.update("" +
-                            "INSERT INTO temp_aktiver_microfrontend(aktor_id, erAktivert, startdato_oppfolging) " +
+            db.update("INSERT INTO temp_aktiver_microfrontend(aktor_id, eraktivert, startdato_oppfolging) " +
                             "VALUES (?, ?, ?)",
                     oppfolgingsperiodeEntity.getAktorId(),
                     false,
@@ -127,7 +126,7 @@ public class OppfolgingsPeriodeRepository {
     public void insertAlleIkkeAktiveOppfolgingsperioder(List<OppfolgingsperiodeEntity> oppfolgingsperioder) {
         oppfolgingsperioder.forEach(oppfolgingsperiodeEntity -> {
             db.update("" +
-                            "INSERT INTO temp_deaktiver_microfrontend(aktor_id, erAktivert, sluttdato_oppfolging) " +
+                            "INSERT INTO temp_deaktiver_microfrontend(aktor_id, erdeaktivert, sluttdato_oppfolging) " +
                             "VALUES (?, ?, ?)",
                     oppfolgingsperiodeEntity.getAktorId(),
                     false,
