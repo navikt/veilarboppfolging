@@ -1,17 +1,24 @@
 package no.nav.veilarboppfolging.service
 
+import lombok.extern.slf4j.Slf4j
 import no.nav.common.types.identer.AktorId
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
+import org.slf4j.LoggerFactory
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 
+
+
+@Slf4j
 @Service
 class KafkaMicrofrontendService (
     private val oppfolgingsPeriodeRepository: OppfolgingsPeriodeRepository,
-    private val kafkaProducerService: KafkaProducerService
+    private val kafkaProducerService: KafkaProducerService,
 ){
 
-    @Scheduled(cron = "0 24 13 * * *")
+    val logger = LoggerFactory.getLogger(this::class.java)
+
+    @Scheduled(cron = "0 43 13 * * *")
     fun aktiverMicrofrontendForBrukereUnderOppfolging() {
 
         var microfrontendEntities = oppfolgingsPeriodeRepository.hentAlleSomSkalAktiveres()
@@ -19,9 +26,13 @@ class KafkaMicrofrontendService (
         var utvalgteEntities = microfrontendEntities.take(10)
 
         for(microfrontendEntity in utvalgteEntities) {
-            kafkaProducerService.publiserVisAoMinSideMicrofrontend(AktorId.of(microfrontendEntity.aktorId))
+            try {
+                kafkaProducerService.publiserVisAoMinSideMicrofrontend(AktorId.of(microfrontendEntity.aktorId))
 
-            oppfolgingsPeriodeRepository.aktiverMicrofrontend(AktorId.of(microfrontendEntity.aktorId))
+                oppfolgingsPeriodeRepository.aktiverMicrofrontend(AktorId.of(microfrontendEntity.aktorId))
+            } catch (e: Exception) {
+                logger.warn("Dette gikk dårlig gitt: ${microfrontendEntity.aktorId}. Exception: ", e.message )
+            }
         }
     }
 
