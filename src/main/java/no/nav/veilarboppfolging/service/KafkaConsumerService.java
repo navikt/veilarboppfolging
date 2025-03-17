@@ -8,8 +8,11 @@ import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.UserRole;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.client.aktorregister.IngenGjeldendeIdentException;
+import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
+import no.nav.veilarboppfolging.oppfolgingsbruker.arena.EndringPaaOppfolgingsBruker;
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.UtmeldingsService;
 import no.nav.veilarboppfolging.service.utmelding.KanskjeIservBruker;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,32 +29,26 @@ import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
 @Service
 public class KafkaConsumerService {
 
-    private final AuthContextHolder authContextHolder;
-
+    private final AuthService authService;
     private final KvpService kvpService;
-
-    private final IservService iservService;
-
+    private final UtmeldingsService utmeldingsService;
     private final OppfolgingsenhetEndringService oppfolgingsenhetEndringService;
-
     private final OppfolgingEndringService oppfolgingEndringService;
-
     private final AktorOppslagClient aktorOppslagClient;
-
     private final SisteEndringPaaOppfolgingBrukerService sisteEndringPaaOppfolgingBrukerService;
 
     @Autowired
     public KafkaConsumerService(
-            AuthContextHolder authContextHolder,
+            AuthService authService,
             @Lazy KvpService kvpService,
-            @Lazy IservService iservService,
+            @Lazy UtmeldingsService utmeldingsService,
             OppfolgingsenhetEndringService oppfolgingsenhetEndringService,
             @Lazy OppfolgingEndringService oppfolgingEndringService,
             AktorOppslagClient aktorOppslagClient,
             SisteEndringPaaOppfolgingBrukerService sisteEndringPaaOppfolgingBrukerService) {
-        this.authContextHolder = authContextHolder;
+        this.authService = authService;
         this.kvpService = kvpService;
-        this.iservService = iservService;
+        this.utmeldingsService = utmeldingsService;
         this.oppfolgingsenhetEndringService = oppfolgingsenhetEndringService;
         this.oppfolgingEndringService = oppfolgingEndringService;
         this.aktorOppslagClient = aktorOppslagClient;
@@ -75,10 +72,12 @@ public class KafkaConsumerService {
                     "Denne loggmeldingen er kun til informasjon slik at vi eventuelt kan fange opp dette scenariet til ettertid.");
         }
 
-        kvpService.avsluttKvpVedEnhetBytte(endringPaBruker);
-        iservService.oppdaterUtmeldingsStatus(KanskjeIservBruker.Companion.of(endringPaBruker));
-        oppfolgingsenhetEndringService.behandleBrukerEndring(endringPaBruker);
-        oppfolgingEndringService.oppdaterOppfolgingMedStatusFraArena(endringPaBruker);
+        var aktorId = authService.getAktorIdOrThrow(brukerFnr);
+        var endring = EndringPaaOppfolgingsBruker.Companion.from(endringPaBruker, aktorId);
+        kvpService.avsluttKvpVedEnhetBytte(endring);
+        utmeldingsService.oppdaterUtmeldingsStatus(KanskjeIservBruker.Companion.of(endringPaBruker), aktorId);
+        oppfolgingsenhetEndringService.behandleBrukerEndring(endring);
+        oppfolgingEndringService.oppdaterOppfolgingMedStatusFraArena(endring);
         sisteEndringPaaOppfolgingBrukerService.lagreSisteEndring(brukerFnr, endringPaBruker.getSistEndretDato());
     }
 

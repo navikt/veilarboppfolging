@@ -13,6 +13,8 @@ class KanskjeIservBruker(
         return UtmeldingsBruker(iservFraDato, fnr)
     }
 
+    fun erIserv() = formidlingsgruppe == Formidlingsgruppe.ISERV
+
     companion object {
         fun of(bruker: EndringPaaOppfoelgingsBrukerV2): KanskjeIservBruker {
             return KanskjeIservBruker(bruker.iservFraDato, bruker.fodselsnummer, bruker.formidlingsgruppe)

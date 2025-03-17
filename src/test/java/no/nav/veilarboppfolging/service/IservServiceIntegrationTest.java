@@ -1,5 +1,6 @@
 package no.nav.veilarboppfolging.service;
 
+import no.nav.common.job.leader_election.LeaderElectionClient;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe;
@@ -7,6 +8,8 @@ import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
 import no.nav.veilarboppfolging.LocalDatabaseSingleton;
 import no.nav.veilarboppfolging.domain.AvslutningStatusData;
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.Avregistrering;
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.UtmeldEtter28Cron;
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.UtmeldingsService;
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.UtmeldtEtter28Dager;
 import no.nav.veilarboppfolging.repository.UtmeldingRepository;
 import no.nav.veilarboppfolging.repository.entity.UtmeldingEntity;
@@ -30,7 +33,8 @@ public class IservServiceIntegrationTest {
     private final static AktorId AKTOR_ID = AktorId.of("1234");
     private static int nesteFnr;
     private ZonedDateTime iservFraDato = now();
-    private IservService iservService;
+    private UtmeldingsService utmeldingsService;
+    private UtmeldEtter28Cron utmeldEtter28Cron;
     private UtmeldingRepository utmeldingRepository;
     private AuthService authService = mock(AuthService.class);
     private OppfolgingService oppfolgingService = mock(OppfolgingService.class);
@@ -46,8 +50,12 @@ public class IservServiceIntegrationTest {
         when(authService.getFnrOrThrow(any())).thenReturn(FNR);
 
         utmeldingRepository = new UtmeldingRepository(db);
-
-        iservService = new IservService(mock(MetricsService.class), utmeldingRepository, oppfolgingService, authService);
+        utmeldingsService = new UtmeldingsService(mock(MetricsService.class), utmeldingRepository, oppfolgingService);
+        utmeldEtter28Cron = new UtmeldEtter28Cron(
+                utmeldingsService,
+                utmeldingRepository,
+                mock(LeaderElectionClient.class)
+        );
     }
 
     @Test
@@ -55,7 +63,7 @@ public class IservServiceIntegrationTest {
         when(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID);
         var brukerV2 = kanskjeIservBruker();
         assertTrue(utmeldingRepository.eksisterendeIservBruker(AKTOR_ID).isEmpty());
-        iservService.oppdaterUtmeldingsStatus(brukerV2);
+        utmeldingsService.oppdaterUtmeldingsStatus(brukerV2, AKTOR_ID);
         Optional<UtmeldingEntity> kanskjeUtmelding = utmeldingRepository.eksisterendeIservBruker(AKTOR_ID);
         assertTrue(kanskjeUtmelding.isPresent());
         UtmeldingEntity utmelding = kanskjeUtmelding.get();
@@ -69,7 +77,7 @@ public class IservServiceIntegrationTest {
         var brukerV2 = kanskjeIservBruker(iservFraDato.plusDays(2), Formidlingsgruppe.ISERV);
         utmeldingRepository.insertUtmeldingTabell(AKTOR_ID, iservFraDato);
         assertTrue(utmeldingRepository.eksisterendeIservBruker(AKTOR_ID).isPresent());
-        iservService.oppdaterUtmeldingsStatus(brukerV2);
+        utmeldingsService.oppdaterUtmeldingsStatus(brukerV2, AKTOR_ID);
         Optional<UtmeldingEntity> kanskjeUtmelding = utmeldingRepository.eksisterendeIservBruker(AKTOR_ID);
         assertTrue(kanskjeUtmelding.isPresent());
         UtmeldingEntity utmelding = kanskjeUtmelding.get();
@@ -86,7 +94,7 @@ public class IservServiceIntegrationTest {
         utmeldingRepository.insertUtmeldingTabell(AKTOR_ID, iservFraDato);
         assertTrue(utmeldingRepository.eksisterendeIservBruker(AKTOR_ID).isPresent());
 
-        iservService.oppdaterUtmeldingsStatus(brukerV2);
+        utmeldingsService.oppdaterUtmeldingsStatus(brukerV2, AKTOR_ID);
         assertTrue(utmeldingRepository.eksisterendeIservBruker(AKTOR_ID).isEmpty());
     }
   
@@ -98,7 +106,7 @@ public class IservServiceIntegrationTest {
 
         when(oppfolgingService.erUnderOppfolging(AKTOR_ID)).thenReturn(false);
 
-        iservService.oppdaterUtmeldingsStatus(brukerV2);
+        utmeldingsService.oppdaterUtmeldingsStatus(brukerV2, AKTOR_ID);
         verifyNoInteractions(oppfolgingService);
     }
 
@@ -122,7 +130,7 @@ public class IservServiceIntegrationTest {
 
         assertTrue(utmeldingRepository.eksisterendeIservBruker(AKTOR_ID).isPresent());
 
-        iservService.avslutteOppfolging(AKTOR_ID);
+        utmeldingsService.avsluttOppfolgingOfFjernFraUtmeldingsTabell(AKTOR_ID);
 
         verify(oppfolgingService).avsluttOppfolging(new UtmeldtEtter28Dager(AKTOR_ID));
         assertTrue(utmeldingRepository.eksisterendeIservBruker(AKTOR_ID).isEmpty());
@@ -134,7 +142,7 @@ public class IservServiceIntegrationTest {
 
         insertIservBruker(AKTOR_ID, iservFraDato.minusDays(30));
 
-        iservService.automatiskAvslutteOppfolging();
+        utmeldEtter28Cron.automatiskAvslutteOppfolging();
 
         assertTrue(utmeldingRepository.eksisterendeIservBruker(AKTOR_ID).isEmpty());
     }
@@ -147,7 +155,7 @@ public class IservServiceIntegrationTest {
 
         when(oppfolgingService.erUnderOppfolging(AKTOR_ID)).thenReturn(false);
 
-        iservService.automatiskAvslutteOppfolging();
+        utmeldEtter28Cron.automatiskAvslutteOppfolging();
 
         verify(oppfolgingService, never()).avsluttOppfolging(any(Avregistrering.class));
 
@@ -162,7 +170,7 @@ public class IservServiceIntegrationTest {
 
         when(oppfolgingService.avsluttOppfolging(any(UtmeldtEtter28Dager.class))).thenReturn(AvslutningStatusData.builder().underOppfolging(true).build());
 
-        iservService.automatiskAvslutteOppfolging();
+        utmeldEtter28Cron.automatiskAvslutteOppfolging();
 
         assertTrue(utmeldingRepository.eksisterendeIservBruker(AKTOR_ID).isPresent());
     }
