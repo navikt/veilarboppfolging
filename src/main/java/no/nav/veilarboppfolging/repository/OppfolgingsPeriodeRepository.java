@@ -94,12 +94,12 @@ public class OppfolgingsPeriodeRepository {
 
     // TEMP
     public List<KafkaMicrofrontendEntity> hentAlleSomSkalAktiveres() {
-        return db.query("SELECT * FROM temp_aktiver_microfrontend WHERE erAktivert = false", OppfolgingsPeriodeRepository::mapTilAktiverEntity);
+        return db.query("SELECT * FROM temp_aktiver_microfrontend WHERE status = 'IKKE_PROSESSERT'", OppfolgingsPeriodeRepository::mapTilAktiverEntity);
     }
 
     // TEMP
     public List<KafkaMicrofrontendEntity> hentAlleSomSkalDeaktiveres() {
-        return db.query("SELECT * FROM temp_deaktiver_microfrontend WHERE erAktivert = false", OppfolgingsPeriodeRepository::mapTilDeaktiverEntity);
+        return db.query("SELECT * FROM temp_deaktiver_microfrontend WHERE status = 'IKKE_PROSESSERT'", OppfolgingsPeriodeRepository::mapTilDeaktiverEntity);
     }
 
     // TEMP
