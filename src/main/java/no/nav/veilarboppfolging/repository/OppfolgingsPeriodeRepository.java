@@ -6,6 +6,7 @@ import no.nav.veilarboppfolging.domain.StartetAvType;
 import no.nav.veilarboppfolging.oppfolgingsbruker.OppfolgingStartBegrunnelse;
 import no.nav.veilarboppfolging.oppfolgingsbruker.Oppfolgingsbruker;
 import no.nav.veilarboppfolging.repository.entity.KafkaMicrofrontendEntity;
+import no.nav.veilarboppfolging.repository.entity.KafkaMicrofrontendStatus;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
 import no.nav.veilarboppfolging.utils.EnumUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -102,13 +103,23 @@ public class OppfolgingsPeriodeRepository {
     }
 
     // TEMP
-    public void aktiverMicrofrontend(AktorId aktorId) {
-        db.update("UPDATE temp_aktiver_microfrontend SET erAktivert = true WHERE aktor_id = ?", aktorId.get());
+    public void aktiverMicrofrontendSuccess(AktorId aktorId) {
+        db.update("UPDATE temp_aktiver_microfrontend SET status = ? WHERE aktor_id = ?",KafkaMicrofrontendStatus.SENDT.name(), aktorId.get());
     }
 
     // TEMP
-    public void deaktiverMicrofrontend(AktorId aktorId) {
-        db.update("UPDATE temp_deaktiver_microfrontend SET erDeaktivert = true WHERE aktor_id = ?", aktorId.get());
+    public void aktiverMicrofrontendFailed(AktorId aktorId, String melding) {
+        db.update("UPDATE temp_aktiver_microfrontend SET status = ?, melding = ? WHERE aktor_id = ?",KafkaMicrofrontendStatus.FEILET.name(), melding, aktorId.get());
+    }
+
+    // TEMP
+    public void deaktiverMicrofrontendSuccess(AktorId aktorId) {
+        db.update("UPDATE temp_deaktiver_microfrontend SET status = ? WHERE aktor_id = ?",KafkaMicrofrontendStatus.SENDT.name(), aktorId.get());
+    }
+
+    // TEMP
+    public void deaktiverMicrofrontendFailed(AktorId aktorId, String melding) {
+        db.update("UPDATE temp_deaktiver_microfrontend SET status = ?, melding = ? WHERE aktor_id = ?",KafkaMicrofrontendStatus.FEILET.name(), melding, aktorId.get());
     }
 
     private void insert(AktorId aktorId, OppfolgingStartBegrunnelse getOppfolgingStartBegrunnelse, NavIdent veileder, StartetAvType startetAvType) {
@@ -160,18 +171,24 @@ public class OppfolgingsPeriodeRepository {
     }
 
     private static KafkaMicrofrontendEntity mapTilAktiverEntity(ResultSet result, int row) throws SQLException {
+        var statusString = result.getString("status");
+        var status = statusString != null ? EnumUtils.valueOf(KafkaMicrofrontendStatus.class, statusString) : null;
         return KafkaMicrofrontendEntity.builder()
                 .aktorId(result.getString("aktor_id"))
-                .erSendt(result.getBoolean("erAktivert"))
+                .status(status)
                 .dato(hentZonedDateTime(result, "startdato_oppfolging"))
+                .melding(result.getString("melding"))
                 .build();
     }
 
     private static KafkaMicrofrontendEntity mapTilDeaktiverEntity(ResultSet result, int row) throws SQLException {
+        var statusString = result.getString("status");
+        var status = statusString != null ? EnumUtils.valueOf(KafkaMicrofrontendStatus.class, statusString) : null;
         return KafkaMicrofrontendEntity.builder()
                 .aktorId(result.getString("aktor_id"))
-                .erSendt(result.getBoolean("erDeaktivert"))
-                .dato(hentZonedDateTime(result, "sluttdato_oppfolging"))
+                .status(status)
+                .dato(hentZonedDateTime(result, "slutttdato_oppfolging"))
+                .melding(result.getString("melding"))
                 .build();
     }
 

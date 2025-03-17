@@ -11,6 +11,8 @@ import java.time.ZonedDateTime;
 @AllArgsConstructor
 public class KafkaMicrofrontendEntity {
     String aktorId;
-    boolean erSendt;
+    KafkaMicrofrontendStatus status;
     ZonedDateTime dato;
+    String melding;
 }
+

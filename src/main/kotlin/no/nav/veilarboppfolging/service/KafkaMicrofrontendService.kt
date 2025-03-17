@@ -18,22 +18,33 @@ class KafkaMicrofrontendService (
 
     val logger = LoggerFactory.getLogger(this::class.java)
 
-    @Scheduled(cron = "0 55 14 * * *")
+    @Scheduled(cron = "0 40 12 * * *")
     fun aktiverMicrofrontendForBrukereUnderOppfolging() {
 
         var microfrontendEntities = oppfolgingsPeriodeRepository.hentAlleSomSkalAktiveres()
+        logger.info("Antall som skal aktiveres: ${microfrontendEntities.size}")
+
+        var vellykkede = 0;
+        var feilet = 0;
+        var totalt = 0;
 
         for(microfrontendEntity in microfrontendEntities) {
             try {
                 kafkaProducerService.publiserVisAoMinSideMicrofrontend(AktorId.of(microfrontendEntity.aktorId))
-//                logger.info("Har sendt aktiver-melding for ${microfrontendEntity.aktorId}")
 
-                oppfolgingsPeriodeRepository.aktiverMicrofrontend(AktorId.of(microfrontendEntity.aktorId))
-//                logger.info("Har lagret aktiver-status for ${microfrontendEntity.aktorId}")
+                oppfolgingsPeriodeRepository.aktiverMicrofrontendSuccess(AktorId.of(microfrontendEntity.aktorId))
+                vellykkede++
             } catch (e: Exception) {
-                logger.warn("Dette gikk dårlig gitt: ${microfrontendEntity.aktorId}. Exception: ${e.message}")
+                oppfolgingsPeriodeRepository.aktiverMicrofrontendFailed(AktorId.of(microfrontendEntity.aktorId), e.message)
+                feilet++
+            }
+            totalt++;
+
+            if(totalt % 5000 == 0) {
+                logger.info("Antall aktiveringer: $totalt. Vellykkede: $vellykkede. Feilet: $feilet")
             }
         }
+        logger.info("Ferdig. Antall aktiveringer: $totalt. Vellykkede: $vellykkede. Feilet: $feilet")
     }
 
 //    @Scheduled(cron = "0 0 * * * *") // Hver time
