@@ -18,7 +18,7 @@ class KafkaMicrofrontendService (
 
     val logger = LoggerFactory.getLogger(this::class.java)
 
-    @Scheduled(cron = "0 25 13 * * *")
+    @Scheduled(cron = "0 30 13 * * *")
     fun aktiverMicrofrontendForBrukereUnderOppfolging() {
 
         var microfrontendEntities = oppfolgingsPeriodeRepository.hentAlleSomSkalAktiveres()
