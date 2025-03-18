@@ -1,6 +1,7 @@
 package no.nav.veilarboppfolging.oppfolgingsbruker.utgang
 
 import no.nav.common.types.identer.AktorId
+import no.nav.veilarboppfolging.eventsLogger.BigQueryClient
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.UtmeldEtter28Cron.AvslutteOppfolgingResultat
 import no.nav.veilarboppfolging.repository.UtmeldingRepository
 import no.nav.veilarboppfolging.service.MetricsService
@@ -16,7 +17,8 @@ import java.time.ZoneId
 class UtmeldingsService(
     val metricsService: MetricsService,
     val utmeldingRepository: UtmeldingRepository,
-    val oppfolgingService: OppfolgingService
+    val oppfolgingService: OppfolgingService,
+    val bigQueryClient: BigQueryClient
 ) {
     private val log = LoggerFactory.getLogger(UtmeldingsService::class.java)
 
@@ -26,16 +28,16 @@ class UtmeldingsService(
             oppdaterUtmeldingTabell(kanskjeIservBruker.utmeldingsBruker(), aktorId)
         } else {
             secureLog.info("Sletter fra utmelding tabell. aktorId={}", aktorId)
-            slettFraUtmeldingTabell(IkkeLengerIservIArena(aktorId))
+            slettFraUtmeldingTabell(OppdateringFraArena_IkkeLengerIserv(aktorId))
         }
     }
 
     private fun slettFraUtmeldingTabell(utmeldingHendelse: SlettFraUtmelding) {
+        bigQueryClient.loggUtmeldingsHendelse(utmeldingHendelse)
         when (utmeldingHendelse) {
-            is IkkeLengerIservIArena -> utmeldingRepository.slettBrukerFraUtmeldingTabell(utmeldingHendelse.aktorId)
-            is ManueltAvsluttetAvVeielder -> utmeldingRepository.slettBrukerFraUtmeldingTabell(utmeldingHendelse.aktorId)
-            is UtAvOppfolgingPga28DagerIserv -> utmeldingRepository.slettBrukerFraUtmeldingTabell(utmeldingHendelse.aktorId)
-            is AlleredeUteAvOppfolging -> utmeldingRepository.slettBrukerFraUtmeldingTabell(utmeldingHendelse.aktorId)
+            is OppdateringFraArena_IkkeLengerIserv,
+            is ScheduledJob_UtAvOppfolgingPga28DagerIserv,
+            is ScheduledJob_AlleredeUteAvOppfolging -> utmeldingRepository.slettBrukerFraUtmeldingTabell(utmeldingHendelse.aktorId)
         }
     }
 
@@ -46,10 +48,14 @@ class UtmeldingsService(
             throw IllegalArgumentException("iservFraDato mangler på EndringPaaOppfoelgingsBrukerV2");
         }
 
-        if (finnesIUtmeldingTabell(aktorId)) {
-            utmeldingRepository.updateUtmeldingTabell(aktorId, iservFraDato.atStartOfDay(ZoneId.systemDefault()))
-        } else if (oppfolgingService.erUnderOppfolging(aktorId)) {
-            utmeldingRepository.insertUtmeldingTabell(aktorId, iservFraDato.atStartOfDay(ZoneId.systemDefault()))
+        val event = when (finnesIUtmeldingTabell(aktorId)) {
+            true -> OppdaterIservDatoHendelse(aktorId, iservFraDato.atStartOfDay(ZoneId.systemDefault()))
+            false -> InsertUtmeldingHendelse(aktorId, iservFraDato.atStartOfDay(ZoneId.systemDefault()))
+        }
+        bigQueryClient.loggUtmeldingsHendelse(event)
+        when (event) {
+            is OppdaterIservDatoHendelse -> utmeldingRepository.updateUtmeldingTabell(event)
+            is InsertUtmeldingHendelse -> utmeldingRepository.insertUtmeldingTabell(event)
         }
     }
 
@@ -64,7 +70,7 @@ class UtmeldingsService(
                     "Bruker med aktørid {} har ikke oppfølgingsflagg. Sletter fra utmelding-tabell",
                     aktorId
                 )
-                slettFraUtmeldingTabell(AlleredeUteAvOppfolging(aktorId))
+                slettFraUtmeldingTabell(ScheduledJob_AlleredeUteAvOppfolging(aktorId))
                 return AvslutteOppfolgingResultat.IKKE_LENGER_UNDER_OPPFØLGING
             } else {
                 log.info("Utgang: Oppfølging avsluttet automatisk grunnet iserv i 28 dager")
@@ -73,7 +79,7 @@ class UtmeldingsService(
                 // TODO litt i tvil om denne her. Attributtet sier om du per def er under oppfølging i arena, ikke om du er under oppfølging hos oss.
                 val oppfolgingAvsluttet = !avslutningStatus.underOppfolging
                 if (oppfolgingAvsluttet) {
-                    slettFraUtmeldingTabell(UtAvOppfolgingPga28DagerIserv(aktorId))
+                    slettFraUtmeldingTabell(ScheduledJob_UtAvOppfolgingPga28DagerIserv(aktorId))
                     metricsService.antallBrukereAvsluttetAutomatisk()
                 }
                 return when {

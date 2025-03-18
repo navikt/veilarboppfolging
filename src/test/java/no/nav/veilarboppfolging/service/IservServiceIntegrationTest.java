@@ -7,10 +7,7 @@ import no.nav.pto_schema.enums.arena.Formidlingsgruppe;
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
 import no.nav.veilarboppfolging.LocalDatabaseSingleton;
 import no.nav.veilarboppfolging.domain.AvslutningStatusData;
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.Avregistrering;
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.UtmeldEtter28Cron;
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.UtmeldingsService;
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.UtmeldtEtter28Dager;
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.*;
 import no.nav.veilarboppfolging.repository.UtmeldingRepository;
 import no.nav.veilarboppfolging.repository.entity.UtmeldingEntity;
 import no.nav.veilarboppfolging.service.utmelding.KanskjeIservBruker;
@@ -50,7 +47,7 @@ public class IservServiceIntegrationTest {
         when(authService.getFnrOrThrow(any())).thenReturn(FNR);
 
         utmeldingRepository = new UtmeldingRepository(db);
-        utmeldingsService = new UtmeldingsService(mock(MetricsService.class), utmeldingRepository, oppfolgingService);
+        utmeldingsService = new UtmeldingsService(mock(MetricsService.class), utmeldingRepository, oppfolgingService, mock());
         utmeldEtter28Cron = new UtmeldEtter28Cron(
                 utmeldingsService,
                 utmeldingRepository,
@@ -75,7 +72,7 @@ public class IservServiceIntegrationTest {
     public void oppdaterUtmeldingsStatus_skalOppdatereEksisterendeIservBruker() {
         when(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID);
         var brukerV2 = kanskjeIservBruker(iservFraDato.plusDays(2), Formidlingsgruppe.ISERV);
-        utmeldingRepository.insertUtmeldingTabell(AKTOR_ID, iservFraDato);
+        utmeldingRepository.insertUtmeldingTabell(new InsertUtmeldingHendelse(AKTOR_ID, iservFraDato));
         assertTrue(utmeldingRepository.eksisterendeIservBruker(AKTOR_ID).isPresent());
         utmeldingsService.oppdaterUtmeldingsStatus(brukerV2, AKTOR_ID);
         Optional<UtmeldingEntity> kanskjeUtmelding = utmeldingRepository.eksisterendeIservBruker(AKTOR_ID);
@@ -91,7 +88,7 @@ public class IservServiceIntegrationTest {
 
         var brukerV2 = kanskjeIservBruker(iservFraDato, Formidlingsgruppe.ARBS);
 
-        utmeldingRepository.insertUtmeldingTabell(AKTOR_ID, iservFraDato);
+        utmeldingRepository.insertUtmeldingTabell(new InsertUtmeldingHendelse(AKTOR_ID, iservFraDato));
         assertTrue(utmeldingRepository.eksisterendeIservBruker(AKTOR_ID).isPresent());
 
         utmeldingsService.oppdaterUtmeldingsStatus(brukerV2, AKTOR_ID);
@@ -197,7 +194,7 @@ public class IservServiceIntegrationTest {
                 .iservFraDato(iservFraDato.toLocalDate())
                 .build();
 
-        utmeldingRepository.insertUtmeldingTabell(aktorId, iservFraDato);
+        utmeldingRepository.insertUtmeldingTabell(new InsertUtmeldingHendelse(aktorId, iservFraDato));
 
         return brukerV2;
     }

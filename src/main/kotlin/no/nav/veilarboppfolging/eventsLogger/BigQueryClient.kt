@@ -7,6 +7,7 @@ import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe
 import no.nav.veilarboppfolging.domain.StartetAvType
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelse
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AvregistreringsType
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.UtmeldingsHendelse
 import org.slf4j.LoggerFactory
 import java.time.ZonedDateTime
 import java.util.*
@@ -19,6 +20,7 @@ enum class BigQueryEventType {
 interface BigQueryClient {
     fun loggStartOppfolgingsperiode(oppfolging: OppfolgingStartBegrunnelse, oppfolgingPeriodeId: UUID, startedAvType: StartetAvType, kvalifiseringsgruppe: Optional<Kvalifiseringsgruppe>)
     fun loggAvsluttOppfolgingsperiode(oppfolgingPeriodeId: UUID, avregistreringsType: AvregistreringsType)
+    fun loggUtmeldingsHendelse(utmelding: UtmeldingsHendelse)
 }
 
 class BigQueryClientImplementation(projectId: String): BigQueryClient {
@@ -61,6 +63,10 @@ class BigQueryClientImplementation(projectId: String): BigQueryClient {
                 "kvalifiseringsgruppe" to kvalifiseringsgruppe.map { it.name }.orElse(null)
             )
         }
+    }
+
+    override fun loggUtmeldingsHendelse(utmelding: UtmeldingsHendelse) {
+        TODO("Not yet implemented")
     }
 
     private fun insertIntoOppfolgingEvents(getRow: () -> Map<String, Any>) {
