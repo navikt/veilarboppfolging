@@ -187,7 +187,7 @@ public class OppfolgingsPeriodeRepository {
         return KafkaMicrofrontendEntity.builder()
                 .aktorId(result.getString("aktor_id"))
                 .status(status)
-                .dato(hentZonedDateTime(result, "slutttdato_oppfolging"))
+                .dato(hentZonedDateTime(result, "sluttdato_oppfolging"))
                 .melding(result.getString("melding"))
                 .build();
     }
