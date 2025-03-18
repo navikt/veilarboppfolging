@@ -22,7 +22,7 @@ class KafkaMicrofrontendService (
 
     val logger = LoggerFactory.getLogger(this::class.java)
 
-//    @EventListener(ApplicationReadyEvent::class)
+    @EventListener(ApplicationReadyEvent::class)
     fun aktiverMicrofrontendForBrukereUnderOppfolging() {
         if (!leaderElectionClient.isLeader()) {
             return;
