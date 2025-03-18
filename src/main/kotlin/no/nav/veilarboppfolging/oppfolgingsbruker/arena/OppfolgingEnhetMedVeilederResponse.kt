@@ -2,7 +2,7 @@ package no.nav.veilarboppfolging.oppfolgingsbruker.arena
 
 
 sealed class GetOppfolginsstatusResult
-class GetOppfolginsstatusSuccess(
+data class GetOppfolginsstatusSuccess(
     val result: OppfolgingEnhetMedVeilederResponse
 ): GetOppfolginsstatusResult()
 class GetOppfolginsstatusFailure(
