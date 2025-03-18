@@ -4,6 +4,8 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.veilarboppfolging.domain.StartetAvType;
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelse;
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering;
+import no.nav.veilarboppfolging.repository.entity.KafkaMicrofrontendEntity;
+import no.nav.veilarboppfolging.repository.entity.KafkaMicrofrontendStatus;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
 import no.nav.veilarboppfolging.utils.EnumUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +16,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -93,7 +96,37 @@ public class OppfolgingsPeriodeRepository {
         );
     }
 
-    private void insert(AktorId aktorId, OppfolgingStartBegrunnelse getOppfolgingStartBegrunnelse, @Nullable String veileder, StartetAvType startetAvType) {
+    // TEMP
+    public List<KafkaMicrofrontendEntity> hentAlleSomSkalAktiveres() {
+        return db.query("SELECT * FROM temp_aktiver_microfrontend WHERE status = 'IKKE_PROSESSERT' ORDER BY startdato_oppfolging DESC", OppfolgingsPeriodeRepository::mapTilAktiverEntity);
+    }
+
+    // TEMP
+    public List<KafkaMicrofrontendEntity> hentAlleSomSkalDeaktiveres() {
+        return db.query("SELECT * FROM temp_deaktiver_microfrontend WHERE status = 'IKKE_PROSESSERT'", OppfolgingsPeriodeRepository::mapTilDeaktiverEntity);
+    }
+
+    // TEMP
+    public void aktiverMicrofrontendSuccess(AktorId aktorId) {
+        db.update("UPDATE temp_aktiver_microfrontend SET status = ? WHERE aktor_id = ?",KafkaMicrofrontendStatus.SENDT.name(), aktorId.get());
+    }
+
+    // TEMP
+    public void aktiverMicrofrontendFailed(AktorId aktorId, String melding) {
+        db.update("UPDATE temp_aktiver_microfrontend SET status = ?, melding = ? WHERE aktor_id = ?",KafkaMicrofrontendStatus.FEILET.name(), melding, aktorId.get());
+    }
+
+    // TEMP
+    public void deaktiverMicrofrontendSuccess(AktorId aktorId) {
+        db.update("UPDATE temp_deaktiver_microfrontend SET status = ? WHERE aktor_id = ?",KafkaMicrofrontendStatus.SENDT.name(), aktorId.get());
+    }
+
+    // TEMP
+    public void deaktiverMicrofrontendFailed(AktorId aktorId, String melding) {
+        db.update("UPDATE temp_deaktiver_microfrontend SET status = ?, melding = ? WHERE aktor_id = ?",KafkaMicrofrontendStatus.FEILET.name(), melding, aktorId.get());
+    }
+
+        private void insert(AktorId aktorId, OppfolgingStartBegrunnelse getOppfolgingStartBegrunnelse, @Nullable String veileder, StartetAvType startetAvType) {
         db.update("" +
                         "INSERT INTO OPPFOLGINGSPERIODE(uuid, aktor_id, startDato, oppdatert, start_begrunnelse, startet_av, startet_av_type) " +
                         "VALUES (?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?, ?, ?)",
@@ -139,6 +172,28 @@ public class OppfolgingsPeriodeRepository {
                         + "WHERE aktor_id = ?",
                 aktorId.get()
         );
+    }
+
+    private static KafkaMicrofrontendEntity mapTilAktiverEntity(ResultSet result, int row) throws SQLException {
+        var statusString = result.getString("status");
+        var status = statusString != null ? EnumUtils.valueOf(KafkaMicrofrontendStatus.class, statusString) : null;
+        return KafkaMicrofrontendEntity.builder()
+                .aktorId(result.getString("aktor_id"))
+                .status(status)
+                .dato(hentZonedDateTime(result, "startdato_oppfolging"))
+                .melding(result.getString("melding"))
+                .build();
+    }
+
+    private static KafkaMicrofrontendEntity mapTilDeaktiverEntity(ResultSet result, int row) throws SQLException {
+        var statusString = result.getString("status");
+        var status = statusString != null ? EnumUtils.valueOf(KafkaMicrofrontendStatus.class, statusString) : null;
+        return KafkaMicrofrontendEntity.builder()
+                .aktorId(result.getString("aktor_id"))
+                .status(status)
+                .dato(hentZonedDateTime(result, "sluttdato_oppfolging"))
+                .melding(result.getString("melding"))
+                .build();
     }
 
     private static OppfolgingsperiodeEntity mapTilOppfolgingsperiode(ResultSet result, int row) throws SQLException {
