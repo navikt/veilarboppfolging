@@ -5,7 +5,7 @@ import no.nav.common.types.identer.Fnr
 import no.nav.poao_tilgang.client.Decision
 import no.nav.veilarboppfolging.IntegrationTest
 import no.nav.veilarboppfolging.client.pdl.ForenkletFolkeregisterStatus
-import no.nav.veilarboppfolging.oppfolgingsbruker.kanStarteOppfolging.KanStarteOppfolging
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.KanStarteOppfolging
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.verifyNoInteractions
 import org.springframework.beans.factory.annotation.Autowired

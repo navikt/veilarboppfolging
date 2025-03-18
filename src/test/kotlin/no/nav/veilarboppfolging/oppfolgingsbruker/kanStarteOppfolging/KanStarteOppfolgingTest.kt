@@ -1,5 +1,12 @@
 package no.nav.veilarboppfolging.oppfolgingsbruker.kanStarteOppfolging
 
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ALLEREDE_UNDER_OPPFOLGING
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.DOD
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.IKKE_LOVLIG_OPPHOLD
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.IKKE_TILGANG_FORTROLIG_ADRESSE
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.KanStarteOppfolging
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OPPFOLGING_OK
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.TILGANG_OK
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 

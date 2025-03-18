@@ -3,7 +3,7 @@ val springBootVersion = "3.3.4"
 val dependencyManagementVersion = "1.1.3"
 val jacocoVersion = "0.8.12"
 val flywayVersion = "10.15.2"
-val commonVersion = "3.2025.01.14_14.19-79b3041cae56"
+val commonVersion = "3.2025.03.06_11.40-cbc2a0783de9"
 val ptoSchemaVersion = "1.2025.01.13_12.58-3e81bd940198"
 val poaoTilgangVersion = "2025.02.06_13.37-958e35e7373d"
 val wiremockVersion = "3.0.0-beta-10"
@@ -13,6 +13,8 @@ val googleCloudLibrariesBomVersion = "26.49.0"
 val springDoc = "2.8.5"
 val tmsMicrofrontendBuilder = "3.0.0"
 val tmsVarselBuilder = "2.1.1"
+val avroVersion = "1.12.0"
+val confluentKafkaAvroVersion = "7.9.0"
 
 plugins {
     kotlin("jvm") version "2.0.20"
@@ -99,7 +101,9 @@ dependencies {
     implementation("no.nav.common:log:$commonVersion")
     implementation("no.nav.common:health:$commonVersion")
     implementation("no.nav.common:metrics:$commonVersion")
-    implementation("no.nav.common:kafka:$commonVersion") {
+    implementation("no.nav.common:kafka:$commonVersion")
+    implementation("org.apache.avro:avro:$avroVersion")
+    implementation("io.confluent:kafka-avro-serializer:$confluentKafkaAvroVersion") {
         exclude(group = "io.swagger.core.v3")
     }
     implementation("no.nav.tms.mikrofrontend.selector:builder:$tmsMicrofrontendBuilder")

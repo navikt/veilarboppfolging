@@ -220,6 +220,9 @@ spec:
         - application: pto-admin
           namespace: pto
           cluster: prod-fss
+        - application: poao-admin
+          namespace: poao
+          cluster: prod-gcp
         - application: oppgave
           namespace: aap
           cluster: prod-gcp

@@ -1,8 +1,9 @@
 package no.nav.veilarboppfolging.repository;
 
 import no.nav.common.types.identer.AktorId;
-import no.nav.common.types.identer.NavIdent;
 import no.nav.veilarboppfolging.domain.StartetAvType;
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelse;
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering;
 import no.nav.veilarboppfolging.oppfolgingsbruker.OppfolgingStartBegrunnelse;
 import no.nav.veilarboppfolging.oppfolgingsbruker.Oppfolgingsbruker;
 import no.nav.veilarboppfolging.repository.entity.KafkaMicrofrontendEntity;
@@ -14,6 +15,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -43,9 +45,13 @@ public class OppfolgingsPeriodeRepository {
         this.transactor = transactor;
     }
 
-    public void start(Oppfolgingsbruker oppfolgingsbruker) {
+    public void start(OppfolgingsRegistrering oppfolgingsbruker) {
         transactor.executeWithoutResult((ignored) -> {
-            insert(oppfolgingsbruker.getAktorId(), oppfolgingsbruker.getOppfolgingStartBegrunnelse(), oppfolgingsbruker.getRegistrertAv(), oppfolgingsbruker.getStartetAvType());
+            insert(
+                oppfolgingsbruker.getAktorId(),
+                oppfolgingsbruker.getOppfolgingStartBegrunnelse(),
+                oppfolgingsbruker.getRegistrertAv().getIdent(),
+                oppfolgingsbruker.getRegistrertAv().getType());
             setActive(oppfolgingsbruker.getAktorId());
         });
     }
@@ -122,14 +128,14 @@ public class OppfolgingsPeriodeRepository {
         db.update("UPDATE temp_deaktiver_microfrontend SET status = ?, melding = ? WHERE aktor_id = ?",KafkaMicrofrontendStatus.FEILET.name(), melding, aktorId.get());
     }
 
-    private void insert(AktorId aktorId, OppfolgingStartBegrunnelse getOppfolgingStartBegrunnelse, NavIdent veileder, StartetAvType startetAvType) {
+        private void insert(AktorId aktorId, OppfolgingStartBegrunnelse getOppfolgingStartBegrunnelse, @Nullable String veileder, StartetAvType startetAvType) {
         db.update("" +
                         "INSERT INTO OPPFOLGINGSPERIODE(uuid, aktor_id, startDato, oppdatert, start_begrunnelse, startet_av, startet_av_type) " +
                         "VALUES (?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?, ?, ?)",
                 UUID.randomUUID().toString(),
                 aktorId.get(),
                 getOppfolgingStartBegrunnelse.name(),
-                veileder != null ? veileder.get() : null,
+                veileder,
                 startetAvType.name());
     }
 
@@ -198,7 +204,7 @@ public class OppfolgingsPeriodeRepository {
         return OppfolgingsperiodeEntity.builder()
                 .uuid(UUID.fromString(result.getString("uuid")))
                 .aktorId(result.getString("aktor_id"))
-                .veileder(result.getString("avslutt_veileder"))
+                .avsluttetAv(result.getString("avslutt_veileder"))
                 .startDato(hentZonedDateTime(result, "startdato"))
                 .sluttDato(hentZonedDateTime(result, "sluttdato"))
                 .begrunnelse(result.getString("avslutt_begrunnelse"))

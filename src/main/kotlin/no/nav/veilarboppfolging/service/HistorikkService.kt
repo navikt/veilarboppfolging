@@ -6,7 +6,7 @@ import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.veilarboppfolging.controller.response.HistorikkHendelse
 import no.nav.veilarboppfolging.domain.StartetAvType
-import no.nav.veilarboppfolging.oppfolgingsbruker.OppfolgingStartBegrunnelse
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelse
 import no.nav.veilarboppfolging.repository.KvpRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsenhetHistorikkRepository
@@ -109,7 +109,7 @@ class HistorikkService(
             }
             OppfolgingStartBegrunnelse.ARENA_SYNC_ARBS -> "Registrert som arbeidssøker i arena"
             OppfolgingStartBegrunnelse.ARENA_SYNC_IARBS -> "Registrert 14a vedtak i arena eller sykmeldt uten arbeidsgiver (VURDU)"
-            OppfolgingStartBegrunnelse.MANUELL_REGISTRERING_VEILEDER -> "Veileder startet arbeidsoppfølging på bruker"
+            OppfolgingStartBegrunnelse.MANUELL_REGISTRERING_VEILEDER -> "Veileder startet arbeidsrettet oppfølging på bruker"
             else -> "Startet arbeidsoppfølging på bruker"
         }
     }
@@ -128,8 +128,8 @@ class HistorikkService(
                 .type(HistorikkHendelse.Type.AVSLUTTET_OPPFOLGINGSPERIODE)
                 .begrunnelse(periode.begrunnelse)
                 .dato(periode.sluttDato)
-                .opprettetAv(if (periode.veileder != null) KodeverkBruker.NAV else KodeverkBruker.SYSTEM)
-                .opprettetAvBrukerId(periode.veileder)
+                .opprettetAv(if (periode.avsluttetAv != null) KodeverkBruker.NAV else KodeverkBruker.SYSTEM)
+                .opprettetAvBrukerId(periode.avsluttetAv)
                 .build()
             return listOf(periodeStart, periodeStopp)
         }
