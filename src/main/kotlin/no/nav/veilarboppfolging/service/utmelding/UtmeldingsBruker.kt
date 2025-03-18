@@ -5,11 +5,6 @@ import java.time.LocalDate
 
 public class UtmeldingsBruker(
     val iservFraDato: LocalDate?,
-    val fnr: String
-) {
-    companion object {
-        fun of(bruker: EndringPaaOppfoelgingsBrukerV2): UtmeldingsBruker {
-            return UtmeldingsBruker(bruker.iservFraDato, bruker.fodselsnummer)
-        }
-    }
-}
+    val fnr: String,
+    val trigger: IservTrigger
+)

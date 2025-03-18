@@ -6,6 +6,7 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.UtmeldEtter28Cron.Avslu
 import no.nav.veilarboppfolging.repository.UtmeldingRepository
 import no.nav.veilarboppfolging.service.MetricsService
 import no.nav.veilarboppfolging.service.OppfolgingService
+import no.nav.veilarboppfolging.service.utmelding.IservTrigger
 import no.nav.veilarboppfolging.service.utmelding.KanskjeIservBruker
 import no.nav.veilarboppfolging.service.utmelding.UtmeldingsBruker
 import no.nav.veilarboppfolging.utils.SecureLog.secureLog
@@ -26,7 +27,7 @@ class UtmeldingsService(
         if (kanskjeIservBruker.erIserv()) {
             if (oppfolgingService.erUnderOppfolging(aktorId)) {
                 secureLog.info("Oppdaterer eller insert i utmelding tabell. aktorId={}", aktorId)
-                oppdaterUtmeldingTabell(kanskjeIservBruker.utmeldingsBruker(), aktorId)
+                upsertUtmeldingTabell(kanskjeIservBruker.utmeldingsBruker(), aktorId)
             } else {
                 // Er iserv, er ikke under oppfølging
                 return
@@ -46,7 +47,7 @@ class UtmeldingsService(
         }
     }
 
-    private fun oppdaterUtmeldingTabell(utmeldingsBruker: UtmeldingsBruker, aktorId: AktorId) {
+    private fun upsertUtmeldingTabell(utmeldingsBruker: UtmeldingsBruker, aktorId: AktorId) {
         val iservFraDato = utmeldingsBruker.iservFraDato
         if (iservFraDato == null) {
             secureLog.error("Kan ikke oppdatere utmeldingstabell med bruker siden iservFraDato mangler. aktorId={}", aktorId);
@@ -54,13 +55,23 @@ class UtmeldingsService(
         }
 
         val event = when (finnesIUtmeldingTabell(aktorId)) {
-            true -> OppdaterIservDatoHendelse(aktorId, iservFraDato.atStartOfDay(ZoneId.systemDefault()))
-            false -> InsertUtmeldingHendelse(aktorId, iservFraDato.atStartOfDay(ZoneId.systemDefault()))
+            true ->  {
+                when (utmeldingsBruker.trigger) {
+                    IservTrigger.ArbeidssøkerRegistreringSync -> ArbeidsøkerRegSync_OppdaterIservDato(aktorId, iservFraDato.atStartOfDay(ZoneId.systemDefault()))
+                    IservTrigger.OppdateringPaaOppfolgingsBruker -> OppdateringFraArena_OppdaterIservDato(aktorId, iservFraDato.atStartOfDay(ZoneId.systemDefault()))
+                }
+            }
+            else -> {
+                when (utmeldingsBruker.trigger) {
+                    IservTrigger.ArbeidssøkerRegistreringSync ->  ArbeidsøkerRegSync_BleIserv(aktorId, iservFraDato.atStartOfDay(ZoneId.systemDefault()))
+                    IservTrigger.OppdateringPaaOppfolgingsBruker ->  OppdateringFraArena_BleIserv(aktorId, iservFraDato.atStartOfDay(ZoneId.systemDefault()))
+                }
+            }
         }
         bigQueryClient.loggUtmeldingsHendelse(event)
         when (event) {
-            is OppdaterIservDatoHendelse -> utmeldingRepository.updateUtmeldingTabell(event)
-            is InsertUtmeldingHendelse -> utmeldingRepository.insertUtmeldingTabell(event)
+            is UpdateIservDatoUtmelding -> utmeldingRepository.updateUtmeldingTabell(event)
+            is InsertIUtmelding -> utmeldingRepository.insertUtmeldingTabell(event)
         }
     }
 

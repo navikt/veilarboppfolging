@@ -10,6 +10,7 @@ import no.nav.veilarboppfolging.domain.AvslutningStatusData;
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.*;
 import no.nav.veilarboppfolging.repository.UtmeldingRepository;
 import no.nav.veilarboppfolging.repository.entity.UtmeldingEntity;
+import no.nav.veilarboppfolging.service.utmelding.IservTrigger;
 import no.nav.veilarboppfolging.service.utmelding.KanskjeIservBruker;
 import no.nav.veilarboppfolging.test.DbTestUtils;
 import org.junit.Before;
@@ -72,7 +73,7 @@ public class IservServiceIntegrationTest {
     public void oppdaterUtmeldingsStatus_skalOppdatereEksisterendeIservBruker() {
         when(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID);
         var brukerV2 = kanskjeIservBruker(iservFraDato.plusDays(2), Formidlingsgruppe.ISERV);
-        utmeldingRepository.insertUtmeldingTabell(new InsertUtmeldingHendelse(AKTOR_ID, iservFraDato));
+        utmeldingRepository.insertUtmeldingTabell(new OppdateringFraArena_BleIserv(AKTOR_ID, iservFraDato));
         assertTrue(utmeldingRepository.eksisterendeIservBruker(AKTOR_ID).isPresent());
         utmeldingsService.oppdaterUtmeldingsStatus(brukerV2, AKTOR_ID);
         Optional<UtmeldingEntity> kanskjeUtmelding = utmeldingRepository.eksisterendeIservBruker(AKTOR_ID);
@@ -88,7 +89,7 @@ public class IservServiceIntegrationTest {
 
         var brukerV2 = kanskjeIservBruker(iservFraDato, Formidlingsgruppe.ARBS);
 
-        utmeldingRepository.insertUtmeldingTabell(new InsertUtmeldingHendelse(AKTOR_ID, iservFraDato));
+        utmeldingRepository.insertUtmeldingTabell(new OppdateringFraArena_BleIserv(AKTOR_ID, iservFraDato));
         assertTrue(utmeldingRepository.eksisterendeIservBruker(AKTOR_ID).isPresent());
 
         utmeldingsService.oppdaterUtmeldingsStatus(brukerV2, AKTOR_ID);
@@ -184,7 +185,7 @@ public class IservServiceIntegrationTest {
     }
 
     private KanskjeIservBruker kanskjeIservBruker(ZonedDateTime iservFraDato, Formidlingsgruppe formidlingsgruppe) {
-        return new KanskjeIservBruker(iservFraDato.toLocalDate(), FNR.get(), formidlingsgruppe);
+        return new KanskjeIservBruker(iservFraDato.toLocalDate(), FNR.get(), formidlingsgruppe, IservTrigger.OppdateringPaaOppfolgingsBruker);
     }
 
     private EndringPaaOppfoelgingsBrukerV2 insertIservBruker(AktorId aktorId, ZonedDateTime iservFraDato) {
@@ -194,7 +195,7 @@ public class IservServiceIntegrationTest {
                 .iservFraDato(iservFraDato.toLocalDate())
                 .build();
 
-        utmeldingRepository.insertUtmeldingTabell(new InsertUtmeldingHendelse(aktorId, iservFraDato));
+        utmeldingRepository.insertUtmeldingTabell(new OppdateringFraArena_BleIserv(aktorId, iservFraDato));
 
         return brukerV2;
     }
