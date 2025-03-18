@@ -3,6 +3,9 @@ package no.nav.veilarboppfolging.oppfolgingsbruker.utgang
 import no.nav.common.types.identer.AktorId
 import java.time.ZonedDateTime
 
+/*
+* Utmeldingshendelser skjer selvom brukeren tas ut av oppfølging av OppfolginsEndringService
+* */
 sealed class UtmeldingsHendelse(val aktorId: AktorId)
 
 sealed class UpsertIUtmelding(aktorId: AktorId, val iservFraDato: ZonedDateTime) : UtmeldingsHendelse(aktorId)
