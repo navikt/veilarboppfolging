@@ -1,19 +1,15 @@
 package no.nav.veilarboppfolging.service;
 
-import com.nimbusds.jwt.JWTParser;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.auth.context.AuthContext;
-import no.nav.common.auth.context.AuthContextHolder;
-import no.nav.common.auth.context.UserRole;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.client.aktorregister.IngenGjeldendeIdentException;
-import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.EndringPaaOppfolgingsBruker;
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.UtmeldingsService;
 import no.nav.veilarboppfolging.service.utmelding.KanskjeIservBruker;
+import no.nav.veilarboppfolging.utils.SecureLog;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -72,13 +68,18 @@ public class KafkaConsumerService {
                     "Denne loggmeldingen er kun til informasjon slik at vi eventuelt kan fange opp dette scenariet til ettertid.");
         }
 
-        var aktorId = authService.getAktorIdOrThrow(brukerFnr);
-        var endring = EndringPaaOppfolgingsBruker.Companion.from(endringPaBruker, aktorId);
-        kvpService.avsluttKvpVedEnhetBytte(endring);
-        utmeldingsService.oppdaterUtmeldingsStatus(KanskjeIservBruker.Companion.of(endringPaBruker), aktorId);
-        oppfolgingsenhetEndringService.behandleBrukerEndring(endring);
-        oppfolgingEndringService.oppdaterOppfolgingMedStatusFraArena(endring);
-        sisteEndringPaaOppfolgingBrukerService.lagreSisteEndring(brukerFnr, endringPaBruker.getSistEndretDato());
+        try {
+            var aktorId = authService.getAktorIdOrThrow(brukerFnr);
+            var endring = EndringPaaOppfolgingsBruker.Companion.from(endringPaBruker, aktorId);
+            kvpService.avsluttKvpVedEnhetBytte(endring);
+            utmeldingsService.oppdaterUtmeldingsStatus(KanskjeIservBruker.Companion.of(endringPaBruker), aktorId);
+            oppfolgingsenhetEndringService.behandleBrukerEndring(endring);
+            oppfolgingEndringService.oppdaterOppfolgingMedStatusFraArena(endring);
+            sisteEndringPaaOppfolgingBrukerService.lagreSisteEndring(brukerFnr, endringPaBruker.getSistEndretDato());
+        } catch (IngenGjeldendeIdentException e) {
+            log.warn("Fant ikke gjeldende ident ved behandling av endringPaOppfolgingBruker melding");
+            SecureLog.secureLog.warn("Fant ikke gjeldende ident for fnr: {} ved behandling av endringPaOppfolgingBruker melding", brukerFnr.get());
+        }
     }
 
     private boolean erEndringGammel(Fnr fnr, ZonedDateTime nyEndringTidspunkt) {
