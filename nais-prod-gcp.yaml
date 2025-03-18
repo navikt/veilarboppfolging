@@ -5,6 +5,8 @@ metadata:
   namespace: poao
   labels:
     team: poao
+  annotations:
+    config.linkerd.io/proxy-cpu-limit: "1"
 spec:
   image: {{image}}
   ingresses:
@@ -12,6 +14,10 @@ spec:
   webproxy: true
   port: 8080
   gcp:
+    bigQueryDatasets:
+      - description: Metrikker for veilarboppfolging
+        name: oppfolging_metrikker
+        permission: READWRITE
     sqlInstances:
       - name: veilarboppfolging
         type: POSTGRES_14
@@ -39,14 +45,13 @@ spec:
     initialDelay: 30
   replicas:
     min: 2
-    max: 4
+    max: 8
     cpuThresholdPercentage: 75
   resources:
     limits:
-      cpu: "2"
-      memory: 3072Mi
+      memory: 6Gi
     requests:
-      cpu: 200m
+      cpu: 500m
       memory: 2048Mi
   observability:
     autoInstrumentation:
@@ -77,6 +82,10 @@ spec:
       value: "https://pdl-api.prod-fss-pub.nais.io"
     - name: PDL_SCOPE
       value: "api://prod-fss.pdl.pdl-api/.default"
+    - name: PDL_BEHANDLINGSNUMMER
+      value: "B884"
+    - name: NAV_NO_URL
+      value: "https://www.nav.no"
   secureLogs:
     enabled: true
   kafka:
@@ -122,14 +131,14 @@ spec:
         - application: paw-proxy
           namespace: paw
         - application: veilarbperson
-          namespace: pto
-          cluster: prod-fss
-        - application: veilarbperson
           namespace: obo
           cluster: prod-gcp
         - application: veilarbvedtaksstotte
           namespace: pto
           cluster: prod-fss
+        - application: veilarbvedtaksstotte
+          namespace: obo
+          cluster: prod-gcp
         - application: veilarbpersonflate
           namespace: poao
           cluster: prod-gcp
@@ -144,7 +153,7 @@ spec:
           cluster: prod-gcp
         - application: modia-robot-api
           namespace: personoversikt
-          cluster: prod-fss
+          cluster: prod-gcp
         - application: modiapersonoversikt-api
           namespace: personoversikt
           cluster: prod-fss
@@ -198,4 +207,25 @@ spec:
           cluster: prod-gcp
         - application: syfomodiaperson
           namespace: teamsykefravr
+          cluster: prod-gcp
+        - application: tiltaksgjennomforing-api
+          namespace: arbeidsgiver
+          cluster: prod-fss
+        - application: inngar
+          namespace: dab
+        - application: statuspoll
+          namespace: navdig
+        - application: tiltakspenger-saksbehandling-api
+          namespace: tpts
+        - application: pto-admin
+          namespace: pto
+          cluster: prod-fss
+        - application: poao-admin
+          namespace: poao
+          cluster: prod-gcp
+        - application: oppgave
+          namespace: aap
+          cluster: prod-gcp
+        - application: ao-min-side-microfrontend
+          namespace: dab
           cluster: prod-gcp

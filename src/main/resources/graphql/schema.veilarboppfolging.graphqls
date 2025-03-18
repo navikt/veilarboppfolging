@@ -1,0 +1,58 @@
+type Query {
+    oppfolgingsEnhet(fnr: String!): OppfolgingsEnhetsInfo
+    oppfolging(fnr: String!): OppfolgingDto
+    veilederLeseTilgangModia(fnr: String!): VeilederTilgang
+    gjeldendeOppfolgingsperiode: GjeldendeOppfolgingsperiode
+}
+
+type VeilederTilgang {
+    harTilgang: Boolean!
+    tilgang: TilgangResultat
+}
+
+enum TilgangResultat {
+    HAR_TILGANG,
+    IKKE_TILGANG_FORTROLIG_ADRESSE,
+    IKKE_TILGANG_STRENGT_FORTROLIG_ADRESSE,
+    IKKE_TILGANG_EGNE_ANSATTE,
+    IKKE_TILGANG_ENHET,
+    IKKE_TILGANG_MODIA
+}
+
+type OppfolgingsEnhetsInfo {
+    enhet: EnhetDto,
+}
+
+type EnhetDto {
+    id: String!
+    navn: String!
+    kilde: Kilde!
+}
+
+enum Kilde {
+    ARENA
+    NORG
+}
+
+enum KanStarteOppfolging {
+    JA
+    ALLEREDE_UNDER_OPPFOLGING
+    IKKE_TILGANG_FORTROLIG_ADRESSE
+    IKKE_TILGANG_STRENGT_FORTROLIG_ADRESSE
+    IKKE_TILGANG_EGNE_ANSATTE
+    IKKE_TILGANG_ENHET
+    IKKE_TILGANG_MODIA
+    DOD
+    IKKE_LOVLIG_OPPHOLD
+    UKJENT_STATUS_FOLKEREGISTERET
+    INGEN_STATUS_FOLKEREGISTERET
+}
+
+type OppfolgingDto {
+    erUnderOppfolging: Boolean!
+    kanStarteOppfolging: KanStarteOppfolging
+}
+
+type GjeldendeOppfolgingsperiode {
+    startTidspunkt: String
+}

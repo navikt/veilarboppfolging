@@ -30,14 +30,6 @@ public class EnvironmentProperties {
 
     private String kafkaBrokersUrl;
 
-    // SOAP Endpoints
-
-    private String ytelseskontraktV3Endpoint;
-
-    private String varselOppgaveV1Endpoint;
-
-    private String behandleArbeidssoekerV1Endpoint;
-
 	private String poaoTilgangUrl;
 
 	private String poaoTilgangScope;

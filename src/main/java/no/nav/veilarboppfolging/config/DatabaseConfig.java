@@ -9,6 +9,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
@@ -16,6 +17,7 @@ import javax.sql.DataSource;
 
 import static no.nav.veilarboppfolging.dbutil.DatabaseMigratorKt.migrateDb;
 
+@Profile("!test")
 @Configuration
 @EnableConfigurationProperties({DatabaseConfig.DatasourceProperties.class})
 @RequiredArgsConstructor
@@ -30,7 +32,9 @@ public class DatabaseConfig {
         config.setJdbcUrl(datasourceProperties.url);
         config.setUsername(datasourceProperties.username);
         config.setPassword(datasourceProperties.password);
-        config.setMaximumPoolSize(5);
+        // Number of connections in prod is currently 400, number of pods in prod is 4
+        // should have room for twice number of pods because of blue/green deployment
+        config.setMaximumPoolSize(20);
         runFlywayMigration(config);
         return new HikariDataSource(config);
     }

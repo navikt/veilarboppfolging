@@ -2,14 +2,13 @@ package no.nav.veilarboppfolging.controller;
 
 import no.nav.common.json.JsonUtils;
 import no.nav.common.types.identer.Fnr;
-import no.nav.veilarboppfolging.controller.response.HistorikkHendelse;
 import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
 import no.nav.veilarboppfolging.service.*;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.ZonedDateTime;
@@ -18,8 +17,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static no.nav.veilarboppfolging.controller.response.HistorikkHendelse.Type.VEILEDER_TILORDNET;
-import static no.nav.veilarboppfolging.repository.enums.KodeverkBruker.NAV;
 import static no.nav.veilarboppfolging.utils.DtoMappers.tilOppfolgingPeriodeDTO;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -31,19 +28,16 @@ class OppfolgingControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private AuthService authService;
 
-    @MockBean
+    @MockitoBean
     private OppfolgingService oppfolgingService;
 
-    @MockBean
+    @MockitoBean
     private KvpService kvpService;
 
-    @MockBean
-    private HistorikkService historikkService;
-
-    @MockBean
+    @MockitoBean
     private ManuellStatusService manuellStatusService;
 
     @Test
@@ -69,7 +63,7 @@ class OppfolgingControllerTest {
                         .begrunnelse("begrunnelse")
                         .startDato(ZonedDateTime.now())
                         .sluttDato(ZonedDateTime.now().plusDays(1))
-                        .veileder("test")
+                        .avsluttetAv("test")
                         .kvpPerioder(List.of(KvpPeriodeEntity.builder().aktorId("test2").build()))
                         .build()
         );
@@ -83,31 +77,6 @@ class OppfolgingControllerTest {
         when(oppfolgingService.hentOppfolgingsperioder(fnr)).thenReturn(perioder);
 
         mockMvc.perform(get("/api/oppfolging/oppfolgingsperioder").queryParam("fnr", fnr.get()))
-                .andExpect(content().json(expectedJson));
-    }
-
-    @Test
-    void innstillingshistorikk_skal_returnere_innstillingshistorikk() throws Exception {
-        Fnr fnr = Fnr.of("1234");
-        String veileder = "Veileder1";
-        String tilordnetAvVeileder = "Veileder2";
-
-        List<HistorikkHendelse> historikker = new ArrayList<>();
-        historikker.add(
-                HistorikkHendelse.builder()
-                        .type(VEILEDER_TILORDNET)
-                        .begrunnelse("Brukeren er tildelt veileder " + veileder)
-                        .dato(ZonedDateTime.parse("2022-09-05T12:27:29.301343+02:00"))
-                        .opprettetAv(NAV)
-                        .opprettetAvBrukerId(tilordnetAvVeileder)
-                        .build()
-        );
-
-        String expectedJson = "[{\"type\":\"VEILEDER_TILORDNET\",\"dato\":\"2022-09-05T12:27:29.301343+02:00\",\"begrunnelse\":\"Brukeren er tildelt veileder Veileder1\",\"opprettetAv\":\"NAV\",\"opprettetAvBrukerId\":\"Veileder2\",\"dialogId\":null,\"enhet\":null}]";
-
-        when(historikkService.hentInstillingsHistorikk(fnr)).thenReturn(historikker);
-
-        mockMvc.perform(get("/api/oppfolging/innstillingsHistorikk").queryParam("fnr", fnr.get()))
                 .andExpect(content().json(expectedJson));
     }
 }

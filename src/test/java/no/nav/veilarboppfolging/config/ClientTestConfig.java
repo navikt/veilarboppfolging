@@ -10,14 +10,12 @@ import no.nav.common.metrics.MetricsClient;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.client.digdir_krr.DigdirClient;
 import no.nav.veilarboppfolging.client.digdir_krr.KRRData;
-import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolging;
-import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
-import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
-import no.nav.veilarboppfolging.client.veilarbarena.YtelserDTO;
+import no.nav.veilarboppfolging.client.veilarbarena.*;
 import no.nav.veilarboppfolging.service.SisteEndringPaaOppfolgingBrukerService;
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.util.List;
 import java.util.Map;
@@ -83,11 +81,6 @@ public class ClientTestConfig {
             public Optional<KRRData> hentKontaktInfo(Fnr fnr) {
                 return Optional.empty();
             }
-
-            @Override
-            public HealthCheckResult checkHealth() {
-                return HealthCheckResult.healthy();
-            }
         };
     }
 
@@ -95,21 +88,26 @@ public class ClientTestConfig {
     public VeilarbarenaClient veilarbarenaClient() {
         return new VeilarbarenaClient() {
             @Override
-            public Optional<VeilarbArenaOppfolging> hentOppfolgingsbruker(Fnr fnr) {
+            public Optional<VeilarbArenaOppfolgingsBruker> hentOppfolgingsbruker(Fnr fnr) {
                 return Optional.of(
-                        new VeilarbArenaOppfolging()
+                        new VeilarbArenaOppfolgingsBruker()
                                 .setFodselsnr(fnr.get())
                 );
             }
 
             @Override
-            public Optional<ArenaOppfolging> getArenaOppfolgingsstatus(Fnr fnr) {
+            public Optional<VeilarbArenaOppfolgingsStatus> getArenaOppfolgingsstatus(Fnr fnr) {
                 return Optional.empty();
             }
 
             @Override
             public Optional<YtelserDTO> getArenaYtelser(Fnr fnr) {
                 return Optional.empty();
+            }
+
+            @Override
+            public RegistrerIArenaResult registrerIkkeArbeidsoker(Fnr fnr) {
+                return new RegistrerIArenaSuccess(new RegistrerIkkeArbeidssokerDto("lol", ARENA_REGISTRERING_RESULTAT.OK_REGISTRERT_I_ARENA));
             }
 
             @Override

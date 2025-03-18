@@ -1,5 +1,6 @@
 package no.nav.veilarboppfolging.client.veilarbarena
 
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import lombok.SneakyThrows
 import lombok.extern.slf4j.Slf4j
 import no.nav.common.health.HealthCheckResult
@@ -25,7 +26,7 @@ sealed class TokenResult {
 }
 sealed class RequestResult<T> {
     class Success<T>(val body: Optional<T>): RequestResult<T>()
-    class Fail<T>(val message: String, reason: Throwable): RequestResult<T>()
+    class Fail<T>(val message: String, val reason: Throwable): RequestResult<T>()
 }
 
 @Slf4j
@@ -37,6 +38,9 @@ class VeilarbarenaClientImpl(
     private val client: OkHttpClient = RestClient.baseClient()
     private val logger = LoggerFactory.getLogger(this::class.java)
 
+    init {
+        JsonUtils.getMapper().registerKotlinModule()
+    }
 
     private fun getToken(): TokenResult {
         return runCatching {
@@ -68,6 +72,15 @@ class VeilarbarenaClientImpl(
                     if (response.code == 404) {
                         return RequestResult.Success(Optional.empty())
                     }
+                    /* Kun forventet å få 422 på registrer endepunkt, da ser body lik ut som i 200 respons */
+                    if (response.code == 422) {
+                        return Optional.of(
+                            RestUtils.parseJsonResponseOrThrow(
+                                response,
+                                clazz
+                            )
+                        ).let { RequestResult.Success(it) }
+                    }
                     RestUtils.throwIfNotSuccessful(response)
                     return Optional.of(
                         RestUtils.parseJsonResponseOrThrow(
@@ -81,10 +94,10 @@ class VeilarbarenaClientImpl(
 
     }
 
-    override fun hentOppfolgingsbruker(fnr: Fnr): Optional<VeilarbArenaOppfolging> {
+    override fun hentOppfolgingsbruker(fnr: Fnr): Optional<VeilarbArenaOppfolgingsBruker> {
         val personRequest = PersonRequest(fnr)
         try {
-            val response = httpPost(UrlUtils.joinPaths(veilarbarenaUrl, "/veilarbarena/api/v2/hent-oppfolgingsbruker"), personRequest, VeilarbArenaOppfolging::class.java)
+            val response = httpPost(UrlUtils.joinPaths(veilarbarenaUrl, "/veilarbarena/api/v2/hent-oppfolgingsbruker"), personRequest, VeilarbArenaOppfolgingsBruker::class.java)
             return when (response) {
                 is RequestResult.Success -> response.body
                 is RequestResult.Fail -> Optional.empty()
@@ -96,10 +109,10 @@ class VeilarbarenaClientImpl(
     }
 
     @SneakyThrows
-    override fun getArenaOppfolgingsstatus(fnr: Fnr): Optional<ArenaOppfolging> {
+    override fun getArenaOppfolgingsstatus(fnr: Fnr): Optional<VeilarbArenaOppfolgingsStatus> {
         val personRequest = PersonRequest(fnr)
         try {
-            val response = httpPost(UrlUtils.joinPaths(veilarbarenaUrl, "/veilarbarena/api/v2/hent-oppfolgingsstatus"), personRequest, ArenaOppfolging::class.java)
+            val response = httpPost(UrlUtils.joinPaths(veilarbarenaUrl, "/veilarbarena/api/v2/hent-oppfolgingsstatus"), personRequest, VeilarbArenaOppfolgingsStatus::class.java)
             return when (response) {
                 is RequestResult.Success -> response.body
                 is RequestResult.Fail -> Optional.empty()
@@ -121,6 +134,31 @@ class VeilarbarenaClientImpl(
         } catch (e: Exception) {
             logger.error("Uventet feil ved henting av ytelser fra veilarbarena", e)
             return Optional.empty()
+        }
+    }
+
+    override fun registrerIkkeArbeidsoker(fnr: Fnr): RegistrerIArenaResult {
+        val personRequest = PersonRequest(fnr)
+
+        try {
+            val response = httpPost(UrlUtils.joinPaths(veilarbarenaUrl,
+                "/veilarbarena/api/v2/arena/registrer-i-arena"),
+                personRequest,
+                RegistrerIkkeArbeidssokerDto::class.java)
+            emptySuccessMeansFailure(response)
+            return when (response) {
+                is RequestResult.Success -> RegistrerIArenaSuccess(response.body.get())
+                is RequestResult.Fail ->  RegistrerIArenaError("Noe gikk galt ved registrering av bruker i Arena", response.reason)
+            }
+        } catch (e: Exception) {
+            logger.error("Uventet feil ved registrer bruker via veilarbarena", e)
+            throw e
+        }
+    }
+
+    private fun emptySuccessMeansFailure(response: RequestResult<RegistrerIkkeArbeidssokerDto>) {
+        if (response is RequestResult.Success && response.body.isEmpty) {
+            throw RuntimeException("Ugyldig url for registrering av bruker i Arena")
         }
     }
 

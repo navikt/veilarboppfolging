@@ -32,18 +32,21 @@ jobs:
         with:
           java-version: 21
           distribution: 'temurin'
-          cache: 'maven'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.13"
+          cache-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
 
       - name: Build and test
-        run: mvn -B package
+        run: ./gradlew build
 
       - name: Build and push Docker image
         uses: nais/docker-build-push@v0
         id: docker-build-push
         with:
           team: poao # This is not app namespace but team which is admin in github
-          identity_provider: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }}
-          project_id: ${{ vars.NAIS_MANAGEMENT_PROJECT_ID }}
 
   deploy-dev:
     name: Deploy application to dev
@@ -74,3 +77,14 @@ jobs:
           CLUSTER: prod-gcp
           RESOURCE: nais-prod-gcp.yaml
           VAR: image=${{ needs.test-build-and-push.outputs.image }}
+
+      - name: Slack Notification (deploy failure)
+        if: failure()
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_COLOR: danger
+          SLACK_USERNAME: Github Actions
+          SLACK_ICON: https://github.com/github.png?size=48
+          SLACK_TITLE: 'Veilarbaktivitet: deploy til prod feilet'
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_MESSAGE: 'Commit-message til feilende deploy: ${{ github.event.head_commit.message }}'

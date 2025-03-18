@@ -5,12 +5,12 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.common.types.identer.Id;
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
 import no.nav.veilarboppfolging.BadRequestException;
 import no.nav.veilarboppfolging.ForbiddenException;
-import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
-import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
 import no.nav.veilarboppfolging.kafka.KvpPeriode;
+import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService;
 import no.nav.veilarboppfolging.repository.KvpRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
 import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity;
@@ -39,7 +39,7 @@ public class KvpService {
 
     private final KvpRepository kvpRepository;
 
-    private final VeilarbarenaClient veilarbarenaClient;
+    private final ArenaOppfolgingService arenaOppfolgingService;
 
     private final OppfolgingsStatusRepository oppfolgingsStatusRepository;
 
@@ -59,8 +59,9 @@ public class KvpService {
             throw new BadRequestException("Bruker må være under oppfølging for å starte KVP");
         }
 
-        String enhet = veilarbarenaClient.hentOppfolgingsbruker(fnr)
-                .map(VeilarbArenaOppfolging::getNav_kontor).orElse(null);
+        var enhet = Optional.ofNullable(arenaOppfolgingService.hentArenaOppfolgingsEnhetId(fnr))
+                .map(Id::get)
+                .orElse(null);
 
         if (!authService.harTilgangTilEnhet(enhet)) {
             log.warn(format("Ingen tilgang til enhet '%s'", enhet));
@@ -94,11 +95,11 @@ public class KvpService {
         AktorId aktorId = authService.getAktorIdOrThrow(fnr);
 
         authService.sjekkLesetilgangMedAktorId(aktorId);
-        String enhet = veilarbarenaClient.hentOppfolgingsbruker(fnr)
-                .map(VeilarbArenaOppfolging::getNav_kontor).orElse(null);
+        String enhet = Optional.ofNullable(arenaOppfolgingService.hentArenaOppfolgingsEnhetId(fnr))
+                .map(Id::get).orElse(null);
 
         if (!authService.harTilgangTilEnhet(enhet)) {
-            throw new ForbiddenException("Har ikke tilgang på enhet");
+            throw new ForbiddenException("Har ikkex tilgang på enhet");
         }
 
         String veilederId = authService.getInnloggetVeilederIdent();

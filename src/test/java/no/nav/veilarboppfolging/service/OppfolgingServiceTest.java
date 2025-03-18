@@ -4,17 +4,27 @@ import lombok.SneakyThrows;
 import lombok.val;
 import no.nav.common.client.aktorregister.IngenGjeldendeIdentException;
 import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.common.types.identer.NavIdent;
+import no.nav.pto_schema.enums.arena.Formidlingsgruppe;
+import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe;
 import no.nav.veilarboppfolging.ForbiddenException;
 import no.nav.veilarboppfolging.client.amttiltak.AmtTiltakClient;
 import no.nav.veilarboppfolging.client.digdir_krr.KRRData;
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolgingTilstand;
-import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
+import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsStatus;
+import no.nav.veilarboppfolging.controller.response.UnderOppfolgingDTO;
 import no.nav.veilarboppfolging.controller.response.VeilederTilgang;
 import no.nav.veilarboppfolging.domain.AvslutningStatusData;
 import no.nav.veilarboppfolging.domain.OppfolgingStatusData;
-import no.nav.veilarboppfolging.domain.Oppfolgingsbruker;
+import no.nav.veilarboppfolging.eventsLogger.BigQueryClient;
 import no.nav.veilarboppfolging.kafka.dto.OppfolgingsperiodeDTO;
+import no.nav.veilarboppfolging.oppfolgingsbruker.BrukerRegistrant;
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering;
+import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant;
+import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService;
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ManuellAvregistrering;
 import no.nav.veilarboppfolging.repository.KvpRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
@@ -22,10 +32,12 @@ import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
 import no.nav.veilarboppfolging.test.DbTestUtils;
 import no.nav.veilarboppfolging.test.IsolatedDatabaseTest;
 import no.nav.veilarboppfolging.utils.OppfolgingsperiodeUtils;
+import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.List;
@@ -41,11 +53,13 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
     private static final Fnr FNR = Fnr.of("fnr");
     private static final AktorId AKTOR_ID = AktorId.of("aktorId");
-    private static final String ENHET = "enhet";
+    private static final String ENHET = "5563";
     private static final String VEILEDER = "veileder";
     private static final String BEGRUNNELSE = "begrunnelse";
+    private static final NavIdent NAV_IDENT = NavIdent.of("Z1234");
 
     private ArenaOppfolgingTilstand arenaOppfolgingTilstand;
+    private VeilarbArenaOppfolgingsStatus arenaOppfolgingStatus;
 
     private AuthService authService = mock(AuthService.class);
     private KafkaProducerService kafkaProducerService = mock(KafkaProducerService.class);
@@ -59,13 +73,15 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     private OppfolgingsStatusRepository oppfolgingsStatusRepository;
     private OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
     private OppfolgingService oppfolgingService;
+    private BigQueryClient bigQueryClient = mock(BigQueryClient.class);
 
     @Before
     public void setup() {
         TransactionTemplate transactor = DbTestUtils.createTransactor(db);
 
         arenaOppfolgingTilstand = new ArenaOppfolgingTilstand();
-        oppfolgingsStatusRepository = new OppfolgingsStatusRepository(db);
+        arenaOppfolgingStatus = new VeilarbArenaOppfolgingsStatus();
+        oppfolgingsStatusRepository = new OppfolgingsStatusRepository(new NamedParameterJdbcTemplate(db));
         oppfolgingsPeriodeRepository = new OppfolgingsPeriodeRepository(db, transactor);
 
         oppfolgingService = new OppfolgingService(kafkaProducerService,
@@ -80,7 +96,9 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
                 null,
                 null,
                  transactor,
-                arenaYtelserService
+                arenaYtelserService,
+                bigQueryClient,
+                "https://test.nav.no"
                 );
 
 
@@ -88,7 +106,9 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
         when(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID);
         when(authService.getFnrOrThrow(AKTOR_ID)).thenReturn(FNR);
-        when(arenaOppfolgingService.hentOppfolgingTilstand(FNR)).thenReturn(Optional.of(arenaOppfolgingTilstand));
+        when(arenaOppfolgingService.hentArenaOppfolgingTilstand(FNR)).thenReturn(Optional.of(arenaOppfolgingTilstand));
+        when(arenaOppfolgingService.hentArenaOppfolgingsStatus(FNR)).thenReturn(Optional.of(arenaOppfolgingStatus));
+        when(arenaOppfolgingService.hentArenaOppfolgingsEnhetId(FNR)).thenReturn(EnhetId.of(ENHET));
         when(manuellStatusService.hentDigdirKontaktinfo(FNR)).thenReturn(new KRRData());
         when(amtTiltakClient.harAktiveTiltaksdeltakelser(FNR.get())).thenReturn(false);
     }
@@ -99,31 +119,39 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
         assertTrue(oppfolgingsPeriodeRepository.hentOppfolgingsperioder(AKTOR_ID).isEmpty());
 
-        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker.reaktivertBruker(AKTOR_ID));
+        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.Companion.arenaSyncOppfolgingBruker(AKTOR_ID, Formidlingsgruppe.IARBS, Kvalifiseringsgruppe.BATT));
         assertUnderOppfolgingLagret(AKTOR_ID);
 
         List<OppfolgingsperiodeEntity> oppfolgingsperioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(AKTOR_ID);
         assertEquals(1, oppfolgingsperioder.size());
         verify(kafkaProducerService, times(1)).publiserOppfolgingsperiode(any(OppfolgingsperiodeDTO.class));
+        verify(kafkaProducerService).publiserVisAoMinSideMicrofrontend(AKTOR_ID);
+        verify(kafkaProducerService, times(1)).publiserMinSideBeskjed(any(Fnr.class), anyString(), anyString());
     }
 
     @Test
     public void skal_publisere_paa_kafka_ved_avsluttet_oppfolging() {
         arenaOppfolgingTilstand.setFormidlingsgruppe("IARBS");
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
-        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker.reaktivertBruker(AKTOR_ID));
+        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.Companion.arenaSyncOppfolgingBruker(AKTOR_ID, Formidlingsgruppe.IARBS, Kvalifiseringsgruppe.BATT));
+
+        UnderOppfolgingDTO underOppfolgingDTO = oppfolgingService.oppfolgingData(FNR);
+        Assertions.assertThat(underOppfolgingDTO.isUnderOppfolging()).isTrue();
+        Assertions.assertThat(underOppfolgingDTO.isErManuell()).isFalse();
+
 
         assertUnderOppfolgingLagret(AKTOR_ID);
 
         arenaOppfolgingTilstand.setFormidlingsgruppe("ISERV");
 
         reset(kafkaProducerService);
-        oppfolgingService.avsluttOppfolging(FNR, VEILEDER, "");
+        oppfolgingService.avsluttOppfolging(new ManuellAvregistrering(AKTOR_ID, new VeilederRegistrant(new NavIdent(VEILEDER)), ""));
 
         verify(kafkaProducerService).publiserOppfolgingsperiode(any(OppfolgingsperiodeDTO.class));
         verify(kafkaProducerService).publiserVeilederTilordnet(AKTOR_ID, null);
         verify(kafkaProducerService).publiserEndringPaNyForVeileder(AKTOR_ID, false);
         verify(kafkaProducerService).publiserEndringPaManuellStatus(AKTOR_ID, false);
+        verify(kafkaProducerService).publiserSkjulAoMinSideMicrofrontend(AKTOR_ID);
     }
 
     @Test(expected = ForbiddenException.class)
@@ -131,7 +159,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     public void avslutt_oppfolging_uten_skrivetilgang_til_bruker() {
         when(authService.erInternBruker()).thenReturn(true);
         doCallRealMethod().when(authService).sjekkTilgangTilEnhet(any());
-        oppfolgingService.avsluttOppfolging(FNR, VEILEDER, BEGRUNNELSE);
+        oppfolgingService.avsluttOppfolging(new ManuellAvregistrering(AKTOR_ID, new VeilederRegistrant(new NavIdent(VEILEDER)), BEGRUNNELSE));
     }
 
     @Test
@@ -139,14 +167,14 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         when(amtTiltakClient.harAktiveTiltaksdeltakelser(FNR.get())).thenReturn(true);
         arenaOppfolgingTilstand.setFormidlingsgruppe("IARBS");
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
-        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker.reaktivertBruker(AKTOR_ID));
+        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.Companion.arbeidssokerRegistrering(AKTOR_ID, BrukerRegistrant.INSTANCE));
 
         assertUnderOppfolgingLagret(AKTOR_ID);
 
         arenaOppfolgingTilstand.setFormidlingsgruppe("ISERV");
 
         reset(kafkaProducerService);
-        oppfolgingService.avsluttOppfolging(FNR, VEILEDER, "");
+        oppfolgingService.avsluttOppfolging(new ManuellAvregistrering(AKTOR_ID, new VeilederRegistrant(new NavIdent(VEILEDER)), ""));
 
         verify(kafkaProducerService, never()).publiserOppfolgingsperiode(any(OppfolgingsperiodeDTO.class));
         assertHarGjeldendeOppfolgingsperiode(AKTOR_ID);
@@ -155,19 +183,15 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     @Test
     public void hentVeilederTilgang__medEnhetTilgang() {
         when(authService.harTilgangTilEnhet(any())).thenReturn(true);
-        when(arenaOppfolgingService.hentOppfolgingFraVeilarbarena(any()))
-                .thenReturn(Optional.of(new VeilarbArenaOppfolging().setNav_kontor(ENHET)));
-
         arenaOppfolgingTilstand.setOppfolgingsenhet(ENHET);
 
-        VeilederTilgang veilederTilgang = oppfolgingService.hentVeilederTilgang(FNR);
+        val tilgang = oppfolgingService.hentVeilederTilgang(FNR);
+        assertNotNull(tilgang);
+        assertTrue(tilgang.isTilgangTilBrukersKontor());
     }
 
     @Test
     public void hentVeilederTilgang__utenEnhetTilgang() {
-        when(arenaOppfolgingService.hentOppfolgingFraVeilarbarena(any()))
-                .thenReturn(Optional.of(new VeilarbArenaOppfolging().setNav_kontor(ENHET)));
-
         arenaOppfolgingTilstand.setOppfolgingsenhet(ENHET);
 
         VeilederTilgang veilederIkkeTilgang = oppfolgingService.hentVeilederTilgang(FNR);
@@ -176,9 +200,6 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
     @Test
     public void hentVeilederTilgang__skal_ikke_ha_tilgang_nar_bruker_ikke_har_enhet() {
-        when(arenaOppfolgingService.hentOppfolgingFraVeilarbarena(any()))
-                .thenReturn(Optional.of(new VeilarbArenaOppfolging().setNav_kontor(null)));
-
         arenaOppfolgingTilstand.setOppfolgingsenhet(ENHET);
 
         VeilederTilgang veilederIkkeTilgang = oppfolgingService.hentVeilederTilgang(FNR);
@@ -203,6 +224,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     public void riktigServicegruppe() {
         String servicegruppe = "BATT";
         arenaOppfolgingTilstand.setServicegruppe(servicegruppe);
+        arenaOppfolgingStatus.setServicegruppe(servicegruppe);
 
         OppfolgingStatusData oppfolgingStatusData = hentOppfolgingStatus();
         assertEquals(servicegruppe, oppfolgingStatusData.servicegruppe);
@@ -217,7 +239,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
     @Test
     public void hentOppfolgingStatus_brukerSomErUnderOppfolgingOgISERVSkalReaktiveresDersomArenaSierReaktiveringErMulig() {
-        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker.reaktivertBruker(AKTOR_ID));
+        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.Companion.arbeidssokerRegistrering(AKTOR_ID, new VeilederRegistrant(NAV_IDENT)));
         assertUnderOppfolgingLagret(AKTOR_ID);
 
         gittInaktivOppfolgingStatus(true);
@@ -265,7 +287,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
     @Test
     public void kanIkkeAvslutteNarManIkkeErUnderOppfolgingIArena() {
-        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker.reaktivertBruker(AKTOR_ID));
+        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.Companion.arbeidssokerRegistrering(AKTOR_ID, new VeilederRegistrant(NAV_IDENT)));
         assertUnderOppfolgingLagret(AKTOR_ID);
 
         gittArenaOppfolgingStatus("ARBS", null);
@@ -278,7 +300,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     @Test
     public void kanIkkeAvslutteHvisManHarAktiveTiltaksdeltakelser() {
         when(amtTiltakClient.harAktiveTiltaksdeltakelser(FNR.get())).thenReturn(true);
-        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker.reaktivertBruker(AKTOR_ID));
+        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.Companion.arbeidssokerRegistrering(AKTOR_ID, new VeilederRegistrant(NAV_IDENT)));
         assertUnderOppfolgingLagret(AKTOR_ID);
 
         gittArenaOppfolgingStatus("ISERV", "");
@@ -291,7 +313,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
     @Test
     public void kanAvslutteMedVarselOmAktiveYtelser() {
-        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker.reaktivertBruker(AKTOR_ID));
+        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.Companion.arenaSyncOppfolgingBruker(AKTOR_ID, Formidlingsgruppe.IARBS, Kvalifiseringsgruppe.BATT));
         assertUnderOppfolgingLagret(AKTOR_ID);
 
         gittArenaOppfolgingStatus("ISERV", "");
@@ -318,7 +340,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
     @Test
     public void underOppfolgingNiva3_skalReturnereTrueHvisBrukerHarOppfolgingsflagg() {
-        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker.reaktivertBruker(AKTOR_ID));
+        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.Companion.arenaSyncOppfolgingBruker(AKTOR_ID, Formidlingsgruppe.IARBS, Kvalifiseringsgruppe.BKART));
         assertUnderOppfolgingLagret(AKTOR_ID);
 
         assertTrue(oppfolgingService.erUnderOppfolgingNiva3(FNR));
@@ -328,7 +350,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     public void startOppfolgingHvisIkkeAlleredeStartet__skal_opprette_ikke_opprette_manuell_status_hvis_ikke_reservert_i_krr() {
         gittReservasjonIKrr(false);
 
-        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker.reaktivertBruker(AKTOR_ID));
+        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.Companion.arenaSyncOppfolgingBruker(AKTOR_ID, Formidlingsgruppe.IARBS, Kvalifiseringsgruppe.IKVAL));
 
         verify(manuellStatusService, never()).settBrukerTilManuellGrunnetReservertIKRR(any());
     }
@@ -337,7 +359,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     public void startOppfolgingHvisIkkeAlleredeStartet__skal_opprette_manuell_status_hvis_reservert_i_krr() {
         gittReservasjonIKrr(true);
 
-        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(Oppfolgingsbruker.reaktivertBruker(AKTOR_ID));
+        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.Companion.arenaSyncOppfolgingBruker(AKTOR_ID, Formidlingsgruppe.IARBS, Kvalifiseringsgruppe.IVURD));
 
         verify(manuellStatusService, times(1)).settBrukerTilManuellGrunnetReservertIKRR(AKTOR_ID);
     }
@@ -366,7 +388,9 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
     private void gittInaktivOppfolgingStatus(Boolean kanEnkeltReaktiveres) {
         arenaOppfolgingTilstand.setFormidlingsgruppe("ISERV");
-        arenaOppfolgingTilstand.setKanEnkeltReaktiveres(kanEnkeltReaktiveres);
+        arenaOppfolgingStatus.setKanEnkeltReaktiveres(kanEnkeltReaktiveres);
+        arenaOppfolgingStatus.setFormidlingsgruppe("ISERV");
+//        arenaOppfolgingTilstand.setKanEnkeltReaktiveres(kanEnkeltReaktiveres);
     }
 
     private void gittArenaOppfolgingStatus(String formidlingskode, String kvalifiseringsgruppekode) {

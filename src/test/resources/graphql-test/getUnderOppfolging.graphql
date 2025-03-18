@@ -1,0 +1,5 @@
+query testHentErUnderOppfolging($fnr: String!) {
+    oppfolging(fnr: $fnr) {
+        erUnderOppfolging
+    }
+}

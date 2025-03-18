@@ -2,33 +2,33 @@ package no.nav.veilarboppfolging.kafka
 
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
+import no.nav.common.types.identer.NavIdent
 import no.nav.paw.arbeidssokerregisteret.api.v1.*
-import no.nav.pto_schema.enums.arena.*
+import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2
 import no.nav.veilarboppfolging.IntegrationTest
-import no.nav.veilarboppfolging.LocalDatabaseSingleton
-import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging
+import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsBruker
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient
-import no.nav.veilarboppfolging.controller.request.Innsatsgruppe
-import no.nav.veilarboppfolging.controller.request.SykmeldtBrukerType
-import no.nav.veilarboppfolging.domain.Oppfolgingsbruker
+import no.nav.veilarboppfolging.domain.StartetAvType
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.AktiverBrukerService
+import no.nav.veilarboppfolging.oppfolgingsbruker.BrukerRegistrant
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelse
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering
+import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant
 import no.nav.veilarboppfolging.repository.UtmeldingRepository
-import no.nav.veilarboppfolging.repository.entity.OppfolgingStartBegrunnelse
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity
-import no.nav.veilarboppfolging.service.AktiverBrukerService
 import no.nav.veilarboppfolging.service.KafkaConsumerService
 import no.nav.veilarboppfolging.service.OppfolgingService
-import no.nav.veilarboppfolging.test.DbTestUtils
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import org.mockito.Mockito.*
+import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.test.context.ActiveProfiles
+import org.springframework.test.context.bean.override.mockito.MockitoBean
 import java.sql.Timestamp
 import java.time.*
 import java.time.temporal.ChronoUnit
@@ -37,7 +37,7 @@ import kotlin.jvm.optionals.getOrNull
 import no.nav.paw.arbeidssokerregisteret.api.v1.Metadata as MetaData
 
 
-@ActiveProfiles("local")
+@ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
 
@@ -59,7 +59,7 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
     @Autowired
     private lateinit var utmeldingRepository: UtmeldingRepository
 
-    @MockBean
+    @MockitoBean
     lateinit var veilarbarenaClient: VeilarbarenaClient
 
 
@@ -79,7 +79,7 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
         val oppfølgingsperioder = oppfølgingService.hentOppfolgingsperioder(Fnr.of(fnr))
         assertThat(oppfølgingsperioder).hasSize(1)
         val oppfølgingsperiode = oppfølgingsperioder.first()
-        assertThat(oppfølgingsperiode.startDato).isEqualToIgnoringNanos(ZonedDateTime.now())
+        assertThat(oppfølgingsperiode.startDato).isCloseTo(ZonedDateTime.now(), within(1, ChronoUnit.SECONDS))
         assertThat(oppfølgingsperiode.sluttDato).isNull()
         assertThat(oppfølgingsperiode.startetBegrunnelse).isEqualTo(OppfolgingStartBegrunnelse.ARBEIDSSOKER_REGISTRERING)
     }
@@ -123,7 +123,7 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
 
         val oppfølgingsperioder = oppfølgingService.hentOppfolgingsperioder(Fnr.of(fnr))
         assertThat(oppfølgingsperioder).hasSize(1)
-        assertThat(oppfølgingsperioder.first().startDato).isEqualToIgnoringNanos(startAlleredeRegistrertOppfølgingsperiode)
+        assertThat(oppfølgingsperioder.first().startDato).isCloseTo(startAlleredeRegistrertOppfølgingsperiode, within(1, ChronoUnit.SECONDS))
     }
 
     @Test
@@ -141,7 +141,7 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
 
     @Test
     fun `Dersom arbeidsrettet oppfølgingsperiode allerede eksisterer skal melding om ny arbeidssøkerperiode ikke endre noe`() {
-        val oppfølgingsbruker = Oppfolgingsbruker.arbeidssokerOppfolgingsBruker(aktørId, Innsatsgruppe.STANDARD_INNSATS)
+        val oppfølgingsbruker = OppfolgingsRegistrering.arbeidssokerRegistrering(aktørId, BrukerRegistrant)
         oppfølgingService.startOppfolgingHvisIkkeAlleredeStartet(oppfølgingsbruker)
         val oppfølgingsdataFørMelding = oppfølgingService.hentOppfolgingsperioder(aktørId).first()
         val melding = ConsumerRecord("topic", 0, 0, "dummyKey", arbeidssøkerperiode(fnr))
@@ -154,7 +154,7 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
 
     @Test
     fun `Dersom arbeidsrettet oppfølgingsperiode allerede eksisterer for sykmeldt bruker skal melding om arbeidssøkerperiode ikke endre noe`() {
-        val oppfølgingsbruker = Oppfolgingsbruker.sykmeldtMerOppfolgingsBruker(aktørId, SykmeldtBrukerType.SKAL_TIL_NY_ARBEIDSGIVER)
+        val oppfølgingsbruker = OppfolgingsRegistrering.manueltRegistrertBruker(aktørId, VeilederRegistrant(NavIdent.of("G123123")))
         oppfølgingService.startOppfolgingHvisIkkeAlleredeStartet(oppfølgingsbruker)
         val oppfølgingsdataFørMelding = oppfølgingService.hentOppfolgingsperioder(aktørId).first()
         val melding = ConsumerRecord("topic", 0, 0, "dummyKey", arbeidssøkerperiode(fnr))
@@ -171,7 +171,9 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
         arbeidssøkerperiodeConsumerService.consumeArbeidssøkerperiode(melding)
         val oppfølgingsdataFørSykmeldtRegistrering = oppfølgingService.hentOppfolgingsperioder(aktørId).first()
 
-        aktiverBrukerService.aktiverSykmeldt(Fnr.of(fnr), SykmeldtBrukerType.SKAL_TIL_NY_ARBEIDSGIVER)
+        `when`(authContextHolder.erInternBruker()).thenReturn(true)
+        `when`(authContextHolder.getUid()).thenReturn(Optional.of("G123123"))
+        aktiverBrukerService.aktiverBrukerManuelt(Fnr.of(fnr))
 
         val oppfølgingsdataEtterSykmeldtRegistrering = oppfølgingService.hentOppfolgingsperioder(aktørId).first()
         assertThat(oppfølgingsdataFørSykmeldtRegistrering).isEqualTo(oppfølgingsdataEtterSykmeldtRegistrering)
@@ -179,16 +181,17 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
 
     @Test
     fun `Skal putte person i utmelding tabell hvis ISERV i Arena og ISERV_FRA_DATO er etter arbeidssøkerregistreringen`() {
-        val arbeidsøkerPeriodeStartet = LocalDateTime.of(2024, 10,1,1,1)
-        val ISERV_FRA_DATO = arbeidsøkerPeriodeStartet.plusSeconds(1)
-        `when`(veilarbarenaClient.hentOppfolgingsbruker(Fnr.of(fnr))).thenReturn(Optional.of(VeilarbArenaOppfolging()
+        val arbeidsøkerPeriodeStartet = LocalDateTime.of(2024, 10,1,23,59)
+        val ISERV_FRA_DATO = LocalDate.of(2024, 10, 2)
+        `when`(veilarbarenaClient.hentOppfolgingsbruker(Fnr.of(fnr))).thenReturn(Optional.of(
+            VeilarbArenaOppfolgingsBruker()
             .setFodselsnr(fnr)
             .setFormidlingsgruppekode("ISERV")
-            .setIserv_fra_dato(ISERV_FRA_DATO.atZone(ZoneId.systemDefault())))
+            .setIserv_fra_dato(ISERV_FRA_DATO.atStartOfDay(ZoneId.systemDefault())))
         )
         val nyPeriode = arbeidssøkerperiode(fnr, periodeStartet = arbeidsøkerPeriodeStartet.atZone(ZoneId.systemDefault()).toInstant())
         val oppfolginsBrukerEndretTilISERV = ConsumerRecord("topic", 0, 0, "key", oppfølgingsBrukerEndret(
-            ISERV_FRA_DATO.toLocalDate(), formidlingsgruppe = Formidlingsgruppe.ISERV))
+            ISERV_FRA_DATO, formidlingsgruppe = Formidlingsgruppe.ISERV))
         val melding = ConsumerRecord("topic", 0, 0, "dummyKey", nyPeriode)
 
         kafkaConsumerService.consumeEndringPaOppfolgingBruker(oppfolginsBrukerEndretTilISERV)
@@ -197,7 +200,7 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
         val oppfølgingsperioder = oppfølgingService.hentOppfolgingsperioder(Fnr.of(fnr))
         assertThat(oppfølgingsperioder).hasSize(1)
         val oppfølgingsperiode = oppfølgingsperioder.first()
-        assertThat(oppfølgingsperiode.startDato).isEqualToIgnoringSeconds(ZonedDateTime.now())
+        assertThat(oppfølgingsperiode.startDato).isCloseTo(ZonedDateTime.now(), within(1, ChronoUnit.SECONDS))
         assertThat(oppfølgingsperiode.sluttDato).isNull()
         assertThat(oppfølgingsperiode.startetBegrunnelse).isEqualTo(OppfolgingStartBegrunnelse.ARBEIDSSOKER_REGISTRERING)
         assertThat(utmeldingRepository.eksisterendeIservBruker(aktørId).getOrNull()).isNotNull()
@@ -207,7 +210,8 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
     fun `Skal ikke putte person i utmelding tabell hvis ISERV i Arena og ISERV_FRA_DATO er før arbeidssøkerregistreringen`() {
         val arbeidsøkerPeriodeStartet = LocalDateTime.of(2024, 10,1,1,1)
         val ISERV_FRA_DATO = arbeidsøkerPeriodeStartet // Samme tidspunkt
-        `when`(veilarbarenaClient.hentOppfolgingsbruker(Fnr.of(fnr))).thenReturn(Optional.of(VeilarbArenaOppfolging()
+        `when`(veilarbarenaClient.hentOppfolgingsbruker(Fnr.of(fnr))).thenReturn(Optional.of(
+            VeilarbArenaOppfolgingsBruker()
             .setFodselsnr(fnr)
             .setFormidlingsgruppekode("ISERV")
             .setIserv_fra_dato(ISERV_FRA_DATO.atZone(ZoneId.systemDefault())))
@@ -223,7 +227,7 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
         val oppfølgingsperioder = oppfølgingService.hentOppfolgingsperioder(Fnr.of(fnr))
         assertThat(oppfølgingsperioder).hasSize(1)
         val oppfølgingsperiode = oppfølgingsperioder.first()
-        assertThat(oppfølgingsperiode.startDato).isEqualToIgnoringSeconds(ZonedDateTime.now())
+        assertThat(oppfølgingsperiode.startDato).isCloseTo(ZonedDateTime.now(), within(1, ChronoUnit.SECONDS))
         assertThat(oppfølgingsperiode.sluttDato).isNull()
         assertThat(oppfølgingsperiode.startetBegrunnelse).isEqualTo(OppfolgingStartBegrunnelse.ARBEIDSSOKER_REGISTRERING)
         assertThat(utmeldingRepository.eksisterendeIservBruker(aktørId).getOrNull()).isNull()
@@ -238,7 +242,10 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
             null,
             "begrunnelse",
             emptyList(),
-            OppfolgingStartBegrunnelse.ARBEIDSSOKER_REGISTRERING
+            OppfolgingStartBegrunnelse.ARBEIDSSOKER_REGISTRERING,
+            "Z123456",
+            StartetAvType.VEILEDER
+
         )
 
     private fun arbeidssøkerperiode(fødselsnummer: String, periodeAvsluttet: Boolean = false, periodeStartet: Instant = Instant.now().minusSeconds(1)): Periode {
@@ -279,35 +286,20 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
     }
 
     private fun oppfølgingsBrukerEndret(iservFraDato: LocalDate, formidlingsgruppe: Formidlingsgruppe = Formidlingsgruppe.ARBS): EndringPaaOppfoelgingsBrukerV2 {
-        return EndringPaaOppfoelgingsBrukerV2(
-            fnr,
-            formidlingsgruppe,
-            iservFraDato,
-            "Sig",
-            ":)",
-            "enhet",
-            Kvalifiseringsgruppe.IVURD,
-            Rettighetsgruppe.INDS,
-            Hovedmaal.BEHOLDEA,
-            SikkerhetstiltakType.TFUS,
-            null,
-            true,
-            false,
-            false,
-            null,
-            ZonedDateTime.now()
-        )
+        return TestUtils.oppfølgingsBrukerEndret(fnr, iservFraDato, formidlingsgruppe)
     }
 
     fun lagreOppfølgingsperiode(periode: OppfolgingsperiodeEntity) {
         jdbcTemplate.update(
             "" +
-                    "INSERT INTO OPPFOLGINGSPERIODE(uuid, aktor_id, startDato, oppdatert, start_begrunnelse) " +
-                    "VALUES (?, ?, ?, CURRENT_TIMESTAMP, ?)",
+                    "INSERT INTO OPPFOLGINGSPERIODE(uuid, aktor_id, startDato, oppdatert, start_begrunnelse, startet_av, startet_av_type) " +
+                    "VALUES (?, ?, ?, CURRENT_TIMESTAMP, ?, ?, ?)",
             periode.uuid.toString(),
             periode.aktorId,
             Timestamp.from(periode.startDato.toInstant()),
-            periode.startetBegrunnelse.name
+            periode.startetBegrunnelse.name,
+            periode.startetAv,
+            periode.startetAvType?.name
         )
     }
 }

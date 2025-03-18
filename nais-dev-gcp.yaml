@@ -11,6 +11,10 @@ spec:
     - https://veilarboppfolging.intern.dev.nav.no
   port: 8080
   gcp:
+    bigQueryDatasets:
+      - description: Metrikker for veilarboppfolging
+        name: oppfolging_metrikker
+        permission: READWRITE
     sqlInstances:
       - name: veilarboppfolging
         type: POSTGRES_14
@@ -41,11 +45,10 @@ spec:
     cpuThresholdPercentage: 75
   resources:
     limits:
-      cpu: "2"
-      memory: 4Gi
+      memory: 2048Mi
     requests:
       cpu: 500m
-      memory: 2Gi
+      memory: 1024Mi
   observability:
     autoInstrumentation:
       enabled: true
@@ -75,6 +78,10 @@ spec:
       value: "https://pdl-api.dev-fss-pub.nais.io"
     - name: PDL_SCOPE
       value: "api://dev-fss.pdl.pdl-api/.default"
+    - name: PDL_BEHANDLINGSNUMMER
+      value: "B884"
+    - name: NAV_NO_URL
+      value: "https://www.ansatt.dev.nav.no"
   secureLogs:
     enabled: true
   kafka:
@@ -120,9 +127,6 @@ spec:
         - application: paw-proxy
           namespace: paw
         - application: veilarbperson
-          namespace: pto
-          cluster: dev-fss
-        - application: veilarbperson
           namespace: obo
           cluster: dev-gcp
         - application: veilarbvedtaksstotte
@@ -143,9 +147,6 @@ spec:
         - application: mulighetsrommet-api
           namespace: team-mulighetsrommet
           cluster: dev-gcp
-        - application: modia-robot-api
-          namespace: personoversikt
-          cluster: dev-fss
         - application: modia-robot-api
           namespace: personoversikt
           cluster: dev-gcp
@@ -189,7 +190,7 @@ spec:
           namespace: paw
           cluster: dev-gcp
         - application: azure-token-generator
-          namespace: aura
+          namespace: nais
           cluster: dev-gcp
         - application: amt-distribusjon
           namespace: amt
@@ -202,4 +203,25 @@ spec:
           cluster: dev-gcp
         - application: syfomodiaperson
           namespace: teamsykefravr
+          cluster: dev-gcp
+        - application: tiltaksgjennomforing-api
+          namespace: arbeidsgiver
+          cluster: dev-fss
+        - application: inngar
+          namespace: dab
+        - application: statuspoll
+          namespace: navdig
+        - application: tiltakspenger-saksbehandling-api
+          namespace: tpts
+        - application: pto-admin
+          namespace: pto
+          cluster: dev-fss
+        - application: poao-admin
+          namespace: poao
+          cluster: dev-gcp
+        - application: oppgave
+          namespace: aap
+          cluster: dev-gcp
+        - application: ao-min-side-microfrontend
+          namespace: dab
           cluster: dev-gcp

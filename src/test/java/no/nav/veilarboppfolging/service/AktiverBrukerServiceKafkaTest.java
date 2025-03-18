@@ -1,6 +1,5 @@
 package no.nav.veilarboppfolging.service;
 
-import lombok.SneakyThrows;
 import no.nav.common.kafka.consumer.ConsumeStatus;
 import no.nav.common.kafka.consumer.KafkaConsumerClient;
 import no.nav.common.kafka.consumer.util.KafkaConsumerClientBuilder;
@@ -11,6 +10,7 @@ import no.nav.pto_schema.kafka.json.topic.SisteOppfolgingsperiodeV1;
 import no.nav.veilarboppfolging.IntegrationTest;
 import no.nav.veilarboppfolging.controller.request.AktiverArbeidssokerData;
 import no.nav.veilarboppfolging.controller.request.Innsatsgruppe;
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.AktiverBrukerService;
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -33,7 +33,7 @@ import static no.nav.veilarboppfolging.test.TestUtils.verifiserAsynkront;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 
-@ActiveProfiles("local")
+@ActiveProfiles("test")
 public class AktiverBrukerServiceKafkaTest extends IntegrationTest {
 
     @Autowired
@@ -51,8 +51,8 @@ public class AktiverBrukerServiceKafkaTest extends IntegrationTest {
     @Autowired
     JdbcTemplate jdbcTemplate;
 
-    private final Fnr fnr = Fnr.of("123");
-    private final AktorId aktorId = AktorId.of("987654321");
+    private final Fnr fnr = Fnr.of("12345678901");
+    private final AktorId aktorId = AktorId.of("09876543210987");
     private final Innsatsgruppe innsatsgruppe = Innsatsgruppe.SITUASJONSBESTEMT_INNSATS;
     private AktiverArbeidssokerData aktiverArbeidssokerData;
 
@@ -91,7 +91,7 @@ public class AktiverBrukerServiceKafkaTest extends IntegrationTest {
     public void skalPubliserePaaKafkaVedAktivering() {
         consumerClient.start();
 
-        startOppfolging(aktorId, Fnr.of(aktiverArbeidssokerData.getFnr().getFnr()));
+        startOppfolgingSomArbeidsoker(aktorId);
         verifiserAsynkront(8, TimeUnit.SECONDS, () -> {
             assertEquals(1,
                     konsumerteSisteOppfolgingsperiodeMeldinger.get().values().size(),

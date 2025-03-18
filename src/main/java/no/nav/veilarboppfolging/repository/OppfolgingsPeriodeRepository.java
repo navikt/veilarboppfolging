@@ -1,7 +1,9 @@
 package no.nav.veilarboppfolging.repository;
 
 import no.nav.common.types.identer.AktorId;
-import no.nav.veilarboppfolging.repository.entity.OppfolgingStartBegrunnelse;
+import no.nav.veilarboppfolging.domain.StartetAvType;
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelse;
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
 import no.nav.veilarboppfolging.utils.EnumUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +11,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
@@ -28,7 +31,7 @@ public class OppfolgingsPeriodeRepository {
     private final TransactionTemplate transactor;
 
     private final static String hentOppfolingsperioderSQL =
-            "SELECT uuid, aktor_id, avslutt_veileder, startdato, sluttdato, avslutt_begrunnelse, start_begrunnelse " +
+            "SELECT uuid, aktor_id, avslutt_veileder, startdato, sluttdato, avslutt_begrunnelse, start_begrunnelse, startet_av, startet_av_type " +
                     "FROM OPPFOLGINGSPERIODE ";
 
     @Autowired
@@ -37,10 +40,14 @@ public class OppfolgingsPeriodeRepository {
         this.transactor = transactor;
     }
 
-    public void start(AktorId aktorId, OppfolgingStartBegrunnelse oppfolgingStartBegrunnelse) {
+    public void start(OppfolgingsRegistrering oppfolgingsbruker) {
         transactor.executeWithoutResult((ignored) -> {
-            insert(aktorId, oppfolgingStartBegrunnelse);
-            setActive(aktorId);
+            insert(
+                oppfolgingsbruker.getAktorId(),
+                oppfolgingsbruker.getOppfolgingStartBegrunnelse(),
+                oppfolgingsbruker.getRegistrertAv().getIdent(),
+                oppfolgingsbruker.getRegistrertAv().getType());
+            setActive(oppfolgingsbruker.getAktorId());
         });
     }
 
@@ -86,11 +93,15 @@ public class OppfolgingsPeriodeRepository {
         );
     }
 
-    private void insert(AktorId aktorId, OppfolgingStartBegrunnelse getOppfolgingStartBegrunnelse) {
+    private void insert(AktorId aktorId, OppfolgingStartBegrunnelse getOppfolgingStartBegrunnelse, @Nullable String veileder, StartetAvType startetAvType) {
         db.update("" +
-                        "INSERT INTO OPPFOLGINGSPERIODE(uuid, aktor_id, startDato, oppdatert, start_begrunnelse) " +
-                        "VALUES (?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?)",
-                UUID.randomUUID().toString(), aktorId.get(), getOppfolgingStartBegrunnelse.name());
+                        "INSERT INTO OPPFOLGINGSPERIODE(uuid, aktor_id, startDato, oppdatert, start_begrunnelse, startet_av, startet_av_type) " +
+                        "VALUES (?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?, ?, ?)",
+                UUID.randomUUID().toString(),
+                aktorId.get(),
+                getOppfolgingStartBegrunnelse.name(),
+                veileder,
+                startetAvType.name());
     }
 
     private void setActive(AktorId aktorId) {
@@ -131,13 +142,17 @@ public class OppfolgingsPeriodeRepository {
     }
 
     private static OppfolgingsperiodeEntity mapTilOppfolgingsperiode(ResultSet result, int row) throws SQLException {
+        var startetAvTypeString = result.getString("startet_av_type");
+        var startetAvType = startetAvTypeString != null ? EnumUtils.valueOf(StartetAvType.class, startetAvTypeString) : null;
         return OppfolgingsperiodeEntity.builder()
                 .uuid(UUID.fromString(result.getString("uuid")))
                 .aktorId(result.getString("aktor_id"))
-                .veileder(result.getString("avslutt_veileder"))
+                .avsluttetAv(result.getString("avslutt_veileder"))
                 .startDato(hentZonedDateTime(result, "startdato"))
                 .sluttDato(hentZonedDateTime(result, "sluttdato"))
                 .begrunnelse(result.getString("avslutt_begrunnelse"))
+                .startetAvType(startetAvType)
+                .startetAv(startetAvType == StartetAvType.VEILEDER ? result.getString("startet_av") : null)
                 .startetBegrunnelse(EnumUtils.valueOf(OppfolgingStartBegrunnelse.class, result.getString("start_begrunnelse")))
                 .build();
     }

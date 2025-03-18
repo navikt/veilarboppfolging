@@ -4,6 +4,7 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.common.types.identer.NavIdent;
 import no.nav.poao_tilgang.client.Decision;
 import no.nav.poao_tilgang.client.NavAnsattTilgangTilEksternBrukerPolicyInput;
 import no.nav.poao_tilgang.client.PoaoTilgangClient;
@@ -12,21 +13,23 @@ import no.nav.poao_tilgang.client.api.ApiResult;
 import no.nav.veilarboppfolging.ForbiddenException;
 import no.nav.veilarboppfolging.IntegrationTest;
 import no.nav.veilarboppfolging.client.amttiltak.AmtTiltakClient;
-import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolging;
-import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolging;
+import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsStatus;
+import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsBruker;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
-import no.nav.veilarboppfolging.controller.request.VeilederBegrunnelseDTO;
 import no.nav.veilarboppfolging.controller.response.AvslutningStatus;
 import no.nav.veilarboppfolging.controller.response.OppfolgingPeriodeDTO;
 import no.nav.veilarboppfolging.controller.response.OppfolgingPeriodeMinimalDTO;
+import no.nav.veilarboppfolging.controller.v2.OppfolgingV2Controller;
+import no.nav.veilarboppfolging.controller.v2.request.AvsluttOppfolgingV2Request;
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
 import no.nav.veilarboppfolging.service.ArenaYtelserService;
 import no.nav.veilarboppfolging.service.AuthService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.util.Collections;
 import java.util.List;
@@ -39,8 +42,8 @@ import static org.mockito.Mockito.*;
 
 class OppfolgingControllerIntegrationTest extends IntegrationTest {
 
-    private final static Fnr FNR = Fnr.of("123");
-    private final static AktorId AKTOR_ID = AktorId.of("3409823");
+    private final static Fnr FNR = Fnr.of("12345678901");
+    private final static AktorId AKTOR_ID = AktorId.of("09876543210987");
     private final static UUID veilederUUID = UUID.randomUUID();
     private final static String veilederIdent = "Z999999";
     private final static UUID sub = UUID.randomUUID();
@@ -51,20 +54,20 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
     @Autowired
     AuthService authService;
 
-    @MockBean
+    @MockitoBean
     ArenaYtelserService arenaYtelserService;
 
-    @MockBean
+    @MockitoBean
     VeilarbarenaClient veilarbarenaClient;
 
     @Autowired
     OppfolgingController oppfolgingController;
 
     @Autowired
-    OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
+    OppfolgingV2Controller oppfolgingV2Controller;
 
     @Autowired
-    SystemOppfolgingController systemOppfolgingController;
+    OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
 
     @Autowired
     PoaoTilgangClient poaoTilgangClient;
@@ -113,21 +116,29 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
     @Test
     void avsluttOppfolgingHvisIserv() {
         mockAuthOk();
-        var startPeriode = startOppfolging();
+        startOppfolging();
         ApiResult<Decision> permit = ApiResult.Companion.success(Decision.Permit.INSTANCE);
         // Tester ikke tilgang
         doReturn(permit).when(poaoTilgangClient).evaluatePolicy(any());
         // ISERV i arena, ingen ytelser i arena, ingen aktive tiltak hos komet.
-        when(veilarbarenaClient.getArenaOppfolgingsstatus(FNR)).thenReturn(Optional.of(new ArenaOppfolging().setFormidlingsgruppe("ISERV")));
-        when(veilarbarenaClient.hentOppfolgingsbruker(FNR)).thenReturn(Optional.of(new VeilarbArenaOppfolging().setFormidlingsgruppekode("ISERV")));
+        when(veilarbarenaClient.getArenaOppfolgingsstatus(FNR)).thenReturn(Optional.of(new VeilarbArenaOppfolgingsStatus().setFormidlingsgruppe("ISERV")));
+        when(veilarbarenaClient.hentOppfolgingsbruker(FNR)).thenReturn(Optional.of(new VeilarbArenaOppfolgingsBruker().setFormidlingsgruppekode("ISERV")));
         when(arenaYtelserService.harPagaendeYtelse(FNR)).thenReturn(false);
         when(amtTiltakClient.harAktiveTiltaksdeltakelser(FNR.get())).thenReturn(false);
 
         AvslutningStatus avslutningStatus = oppfolgingController.hentAvslutningStatus(FNR);
         assertTrue(avslutningStatus.kanAvslutte);
-        oppfolgingController.avsluttOppfolging(new VeilederBegrunnelseDTO(), FNR);
-        OppfolgingPeriodeMinimalDTO periode = oppfolgingController.hentOppfolgingsPeriode(startPeriode.get(0).uuid.toString());
-        assertNotNull(periode.getSluttDato());
+        var navIdent = new NavIdent("Z151515");
+        var begrunnelse = "Har fått jobb";
+        var dto = new AvsluttOppfolgingV2Request();
+        dto.setBegrunnelse(begrunnelse);
+        dto.setVeilederId(navIdent);
+        dto.setFnr(FNR);
+        oppfolgingV2Controller.avsluttOppfolging(dto);
+        var perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(AKTOR_ID);
+        assertEquals(1, perioder.size());
+        assertEquals(navIdent.get(), perioder.getFirst().getAvsluttetAv());
+        assertEquals(begrunnelse, perioder.getFirst().getBegrunnelse());
     }
 
     @Test
@@ -138,20 +149,23 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
         // Tester ikke tilgang
         doReturn(permit).when(poaoTilgangClient).evaluatePolicy(any());
         // ISERV i arena, ingen ytelser i arena, men aktive tiltak hos komet.
-        when(veilarbarenaClient.getArenaOppfolgingsstatus(FNR)).thenReturn(Optional.of(new ArenaOppfolging().setFormidlingsgruppe("ISERV")));
+        when(veilarbarenaClient.hentOppfolgingsbruker(FNR)).thenReturn(Optional.of(new VeilarbArenaOppfolgingsBruker().setFormidlingsgruppekode("ISERV")));
         when(arenaYtelserService.harPagaendeYtelse(FNR)).thenReturn(false);
         when(amtTiltakClient.harAktiveTiltaksdeltakelser(FNR.get())).thenReturn(true);
 
-        AvslutningStatus avslutningStatus = oppfolgingController.avsluttOppfolging(new VeilederBegrunnelseDTO(), FNR);
-        assertFalse(avslutningStatus.kanAvslutte);
-        assertTrue(avslutningStatus.harAktiveTiltaksdeltakelser);
+        var dto = new AvsluttOppfolgingV2Request();
+        dto.setBegrunnelse("Begrunnelse");
+        dto.setVeilederId(new NavIdent("Z151515"));
+        dto.setFnr(FNR);
+        var avslutningStatus = oppfolgingV2Controller.avsluttOppfolging(dto);
+        assertEquals(avslutningStatus.getStatusCode(), HttpStatusCode.valueOf(204));
         OppfolgingPeriodeMinimalDTO periode = oppfolgingController.hentOppfolgingsPeriode(startPeriode.get(0).uuid.toString());
         assertNull(periode.getSluttDato());
     }
 
     private List<OppfolgingPeriodeDTO> startOppfolging() {
         mockSystemBruker();
-        startOppfolging(AKTOR_ID, FNR);
+        startOppfolgingSomArbeidsoker(AKTOR_ID);
         var perioder = oppfolgingController.hentOppfolgingsperioder(FNR);
         mockAuthOk();
         return perioder;

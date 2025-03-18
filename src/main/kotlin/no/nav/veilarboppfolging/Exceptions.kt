@@ -16,7 +16,11 @@ sealed class VeilarboppfolgingException(message: String) : RuntimeException(mess
 }
 
 class UnauthorizedException(message: String) : VeilarboppfolgingException(message)
-class ForbiddenException(message: String) : VeilarboppfolgingException(message)
+class ForbiddenException(message: String) : VeilarboppfolgingException(message) {
+    override fun log() {
+        logger.warn(message)
+    }
+}
 class NotFoundException(message: String) : VeilarboppfolgingException(message)
 class InternalServerError(message: String) : VeilarboppfolgingException(message)
 class BadRequestException(message: String) : VeilarboppfolgingException(message)
@@ -41,16 +45,22 @@ class DefaultExceptionHandler {
         response.sendError(ex.statusCode.value(), ex.message)
 
     @ExceptionHandler(value = [VeilarboppfolgingException::class])
-    fun onUnauthorized(ex: VeilarboppfolgingException, response: HttpServletResponse) {
+    fun mapException(ex: VeilarboppfolgingException, response: HttpServletResponse) {
         ex.log()
-        when(ex) {
-            is BadRequestException -> response.sendError(HttpStatus.BAD_REQUEST.value(), ex.message)
-            is ForbiddenException -> response.sendError(HttpStatus.FORBIDDEN.value(), ex.message)
-            is InternalServerError -> response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), ex.message)
-            is NotFoundException -> response.sendError(HttpStatus.NOT_FOUND.value(), ex.message)
-            is FantIkkeBrukerIArenaException -> response.sendError(HttpStatus.NOT_FOUND.value(), ex.message)
-            is UnauthorizedException -> response.sendError(HttpStatus.UNAUTHORIZED.value(), ex.message)
-            is NetworkException -> response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), ex.message)
+        mapVeilarbOppfolginExceptionToResponse(ex, response)
+    }
+
+    companion object {
+        fun mapVeilarbOppfolginExceptionToResponse(ex: VeilarboppfolgingException, response: HttpServletResponse) {
+            when(ex) {
+                is BadRequestException -> response.sendError(HttpStatus.BAD_REQUEST.value(), ex.message)
+                is ForbiddenException -> response.sendError(HttpStatus.FORBIDDEN.value(), ex.message)
+                is InternalServerError -> response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), ex.message)
+                is NotFoundException -> response.sendError(HttpStatus.NOT_FOUND.value(), ex.message)
+                is FantIkkeBrukerIArenaException -> response.sendError(HttpStatus.NOT_FOUND.value(), ex.message)
+                is UnauthorizedException -> response.sendError(HttpStatus.UNAUTHORIZED.value(), ex.message)
+                is NetworkException -> response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), ex.message)
+            }
         }
     }
 
