@@ -47,10 +47,10 @@ class KafkaMicrofrontendService (
         logger.info("Ferdig. Antall aktiveringer: $totalt. Vellykkede: $vellykkede. Feilet: $feilet")
     }
 
-//    @Scheduled(cron = "0 0 * * * *") // Hver time
+    @Scheduled(cron = "0 12 10 * * *") // Hver time
 fun deaktiverMicrofrontendForBrukereUnderOppfolging() {
 
-    var microfrontendEntities = oppfolgingsPeriodeRepository.hentAlleSomSkalAktiveres()
+    var microfrontendEntities = oppfolgingsPeriodeRepository.hentAlleSomSkalDeaktiveres()
     logger.info("Antall som skal deaktiveres: ${microfrontendEntities.size}")
 
     var vellykkede = 0;
