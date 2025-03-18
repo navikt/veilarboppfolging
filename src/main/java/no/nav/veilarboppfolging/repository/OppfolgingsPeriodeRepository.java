@@ -4,8 +4,6 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.veilarboppfolging.domain.StartetAvType;
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelse;
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering;
-import no.nav.veilarboppfolging.oppfolgingsbruker.OppfolgingStartBegrunnelse;
-import no.nav.veilarboppfolging.oppfolgingsbruker.Oppfolgingsbruker;
 import no.nav.veilarboppfolging.repository.entity.KafkaMicrofrontendEntity;
 import no.nav.veilarboppfolging.repository.entity.KafkaMicrofrontendStatus;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;

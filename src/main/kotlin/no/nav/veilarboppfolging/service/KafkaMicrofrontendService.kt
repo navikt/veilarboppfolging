@@ -1,9 +1,12 @@
 package no.nav.veilarboppfolging.service
 
 import lombok.extern.slf4j.Slf4j
+import no.nav.common.job.leader_election.LeaderElectionClient
 import no.nav.common.types.identer.AktorId
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import org.slf4j.LoggerFactory
+import org.springframework.boot.context.event.ApplicationReadyEvent
+import org.springframework.context.event.EventListener
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 
@@ -14,12 +17,16 @@ import org.springframework.stereotype.Service
 class KafkaMicrofrontendService (
     private val oppfolgingsPeriodeRepository: OppfolgingsPeriodeRepository,
     private val kafkaProducerService: KafkaProducerService,
+    private val leaderElectionClient: LeaderElectionClient
 ){
 
     val logger = LoggerFactory.getLogger(this::class.java)
 
-    @Scheduled(cron = "0 51 08 * * *")
+//    @EventListener(ApplicationReadyEvent::class)
     fun aktiverMicrofrontendForBrukereUnderOppfolging() {
+        if (!leaderElectionClient.isLeader()) {
+            return;
+        }
 
         var microfrontendEntities = oppfolgingsPeriodeRepository.hentAlleSomSkalAktiveres()
         logger.info("Antall som skal aktiveres: ${microfrontendEntities.size}")
@@ -47,7 +54,7 @@ class KafkaMicrofrontendService (
         logger.info("Ferdig. Antall aktiveringer: $totalt. Vellykkede: $vellykkede. Feilet: $feilet")
     }
 
-    @Scheduled(cron = "0 23 10 * * *") // Hver time
+//    @Scheduled(cron = "0 23 10 * * *") // Hver time
 fun deaktiverMicrofrontendForBrukereUnderOppfolging() {
 
     var microfrontendEntities = oppfolgingsPeriodeRepository.hentAlleSomSkalDeaktiveres()
