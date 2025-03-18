@@ -94,7 +94,7 @@ public class OppfolgingsPeriodeRepository {
 
     // TEMP
     public List<KafkaMicrofrontendEntity> hentAlleSomSkalAktiveres() {
-        return db.query("SELECT * FROM temp_aktiver_microfrontend WHERE status = 'IKKE_PROSESSERT'", OppfolgingsPeriodeRepository::mapTilAktiverEntity);
+        return db.query("SELECT * FROM temp_aktiver_microfrontend WHERE status = 'IKKE_PROSESSERT' ORDER BY startdato_oppfolging DESC", OppfolgingsPeriodeRepository::mapTilAktiverEntity);
     }
 
     // TEMP
