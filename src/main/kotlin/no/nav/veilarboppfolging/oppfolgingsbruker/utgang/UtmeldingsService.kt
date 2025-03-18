@@ -24,8 +24,13 @@ class UtmeldingsService(
 
     fun oppdaterUtmeldingsStatus(kanskjeIservBruker: KanskjeIservBruker, aktorId: AktorId) {
         if (kanskjeIservBruker.erIserv()) {
-            secureLog.info("Oppdaterer eller insert i utmelding tabell. aktorId={}", aktorId)
-            oppdaterUtmeldingTabell(kanskjeIservBruker.utmeldingsBruker(), aktorId)
+            if (oppfolgingService.erUnderOppfolging(aktorId)) {
+                secureLog.info("Oppdaterer eller insert i utmelding tabell. aktorId={}", aktorId)
+                oppdaterUtmeldingTabell(kanskjeIservBruker.utmeldingsBruker(), aktorId)
+            } else {
+                // Er iserv, er ikke under oppfølging
+                return
+            }
         } else {
             secureLog.info("Sletter fra utmelding tabell. aktorId={}", aktorId)
             slettFraUtmeldingTabell(OppdateringFraArena_IkkeLengerIserv(aktorId))
