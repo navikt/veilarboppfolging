@@ -61,7 +61,7 @@ public class IservServiceIntegrationTest {
         when(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID);
         var brukerV2 = kanskjeIservBruker();
         assertTrue(utmeldingRepository.eksisterendeIservBruker(AKTOR_ID).isEmpty());
-        utmeldingsService.oppdaterUtmeldingsStatus(brukerV2, AKTOR_ID);
+        utmeldingsService.oppdaterUtmeldingsStatus(brukerV2);
         Optional<UtmeldingEntity> kanskjeUtmelding = utmeldingRepository.eksisterendeIservBruker(AKTOR_ID);
         assertTrue(kanskjeUtmelding.isPresent());
         UtmeldingEntity utmelding = kanskjeUtmelding.get();
@@ -75,7 +75,7 @@ public class IservServiceIntegrationTest {
         var brukerV2 = kanskjeIservBruker(iservFraDato.plusDays(2), Formidlingsgruppe.ISERV);
         utmeldingRepository.insertUtmeldingTabell(new OppdateringFraArena_BleIserv(AKTOR_ID, iservFraDato));
         assertTrue(utmeldingRepository.eksisterendeIservBruker(AKTOR_ID).isPresent());
-        utmeldingsService.oppdaterUtmeldingsStatus(brukerV2, AKTOR_ID);
+        utmeldingsService.oppdaterUtmeldingsStatus(brukerV2);
         Optional<UtmeldingEntity> kanskjeUtmelding = utmeldingRepository.eksisterendeIservBruker(AKTOR_ID);
         assertTrue(kanskjeUtmelding.isPresent());
         UtmeldingEntity utmelding = kanskjeUtmelding.get();
@@ -92,7 +92,7 @@ public class IservServiceIntegrationTest {
         utmeldingRepository.insertUtmeldingTabell(new OppdateringFraArena_BleIserv(AKTOR_ID, iservFraDato));
         assertTrue(utmeldingRepository.eksisterendeIservBruker(AKTOR_ID).isPresent());
 
-        utmeldingsService.oppdaterUtmeldingsStatus(brukerV2, AKTOR_ID);
+        utmeldingsService.oppdaterUtmeldingsStatus(brukerV2);
         assertTrue(utmeldingRepository.eksisterendeIservBruker(AKTOR_ID).isEmpty());
     }
   
@@ -104,7 +104,7 @@ public class IservServiceIntegrationTest {
 
         when(oppfolgingService.erUnderOppfolging(AKTOR_ID)).thenReturn(false);
 
-        utmeldingsService.oppdaterUtmeldingsStatus(brukerV2, AKTOR_ID);
+        utmeldingsService.oppdaterUtmeldingsStatus(brukerV2);
         verifyNoInteractions(oppfolgingService);
     }
 
@@ -185,7 +185,7 @@ public class IservServiceIntegrationTest {
     }
 
     private KanskjeIservBruker kanskjeIservBruker(ZonedDateTime iservFraDato, Formidlingsgruppe formidlingsgruppe) {
-        return new KanskjeIservBruker(iservFraDato.toLocalDate(), FNR.get(), formidlingsgruppe, IservTrigger.OppdateringPaaOppfolgingsBruker);
+        return new KanskjeIservBruker(iservFraDato.toLocalDate(), AKTOR_ID, formidlingsgruppe, IservTrigger.OppdateringPaaOppfolgingsBruker);
     }
 
     private EndringPaaOppfoelgingsBrukerV2 insertIservBruker(AktorId aktorId, ZonedDateTime iservFraDato) {

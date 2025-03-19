@@ -8,11 +8,9 @@ import no.nav.veilarboppfolging.service.MetricsService
 import no.nav.veilarboppfolging.service.OppfolgingService
 import no.nav.veilarboppfolging.service.utmelding.IservTrigger
 import no.nav.veilarboppfolging.service.utmelding.KanskjeIservBruker
-import no.nav.veilarboppfolging.service.utmelding.UtmeldingsBruker
 import no.nav.veilarboppfolging.utils.SecureLog.secureLog
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
-import java.time.ZoneId
 
 @Service
 class UtmeldingsService(
@@ -23,51 +21,32 @@ class UtmeldingsService(
 ) {
     private val log = LoggerFactory.getLogger(UtmeldingsService::class.java)
 
-    fun oppdaterUtmeldingsStatus(kanskjeIservBruker: KanskjeIservBruker, aktorId: AktorId) {
-        if (kanskjeIservBruker.erIserv()) {
-            if (oppfolgingService.erUnderOppfolging(aktorId)) {
-                secureLog.info("Oppdaterer eller insert i utmelding tabell. aktorId={}", aktorId)
-                upsertUtmeldingTabell(kanskjeIservBruker.utmeldingsBruker(), aktorId)
-            } else {
-                // Er iserv, er ikke under oppfølging
-                return
+    fun oppdaterUtmeldingsStatus(bruker: KanskjeIservBruker) {
+        val hendelse = bruker.resolveUtmeldingsHendelse(
+            { oppfolgingService.erUnderOppfolging(bruker.aktorId) },
+            { finnesIUtmeldingTabell(bruker.aktorId) })
+
+        when (hendelse) {
+            is UpsertIUtmelding -> {
+                secureLog.info("Oppdaterer eller insert i utmelding tabell. aktorId={}", bruker.aktorId)
+                upsertUtmeldingTabell(hendelse)
             }
-        } else {
-            secureLog.info("Sletter fra utmelding tabell. aktorId={}", aktorId)
-            slettFraUtmeldingTabell(OppdateringFraArena_IkkeLengerIserv(aktorId))
+            is SlettFraUtmelding -> {
+                secureLog.info("Sletter fra utmelding tabell. aktorId={}", bruker.aktorId)
+                slettFraUtmeldingTabell(hendelse)
+            }
+            is NoOp -> {
+                secureLog.info("Ingen endring i utmelding tabell. aktorId={}", bruker.aktorId)
+            }
         }
     }
 
     private fun slettFraUtmeldingTabell(utmeldingHendelse: SlettFraUtmelding) {
         bigQueryClient.loggUtmeldingsHendelse(utmeldingHendelse)
-        when (utmeldingHendelse) {
-            is OppdateringFraArena_IkkeLengerIserv,
-            is ScheduledJob_UtAvOppfolgingPga28DagerIserv,
-            is ScheduledJob_AlleredeUteAvOppfolging -> utmeldingRepository.slettBrukerFraUtmeldingTabell(utmeldingHendelse.aktorId)
-        }
+        utmeldingRepository.slettBrukerFraUtmeldingTabell(utmeldingHendelse.aktorId)
     }
 
-    private fun upsertUtmeldingTabell(utmeldingsBruker: UtmeldingsBruker, aktorId: AktorId) {
-        val iservFraDato = utmeldingsBruker.iservFraDato
-        if (iservFraDato == null) {
-            secureLog.error("Kan ikke oppdatere utmeldingstabell med bruker siden iservFraDato mangler. aktorId={}", aktorId);
-            throw IllegalArgumentException("iservFraDato mangler på EndringPaaOppfoelgingsBrukerV2");
-        }
-
-        val event = when (finnesIUtmeldingTabell(aktorId)) {
-            true ->  {
-                when (utmeldingsBruker.trigger) {
-                    IservTrigger.ArbeidssøkerRegistreringSync -> ArbeidsøkerRegSync_OppdaterIservDato(aktorId, iservFraDato.atStartOfDay(ZoneId.systemDefault()))
-                    IservTrigger.OppdateringPaaOppfolgingsBruker -> OppdateringFraArena_OppdaterIservDato(aktorId, iservFraDato.atStartOfDay(ZoneId.systemDefault()))
-                }
-            }
-            else -> {
-                when (utmeldingsBruker.trigger) {
-                    IservTrigger.ArbeidssøkerRegistreringSync ->  ArbeidsøkerRegSync_BleIserv(aktorId, iservFraDato.atStartOfDay(ZoneId.systemDefault()))
-                    IservTrigger.OppdateringPaaOppfolgingsBruker ->  OppdateringFraArena_BleIserv(aktorId, iservFraDato.atStartOfDay(ZoneId.systemDefault()))
-                }
-            }
-        }
+    private fun upsertUtmeldingTabell(event: UpsertIUtmelding) {
         bigQueryClient.loggUtmeldingsHendelse(event)
         when (event) {
             is UpdateIservDatoUtmelding -> utmeldingRepository.updateUtmeldingTabell(event)

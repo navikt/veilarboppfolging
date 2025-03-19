@@ -72,7 +72,7 @@ public class KafkaConsumerService {
             var aktorId = authService.getAktorIdOrThrow(brukerFnr);
             var endring = EndringPaaOppfolgingsBruker.Companion.from(endringPaBruker, aktorId);
             kvpService.avsluttKvpVedEnhetBytte(endring);
-            utmeldingsService.oppdaterUtmeldingsStatus(KanskjeIservBruker.Companion.of(endringPaBruker), aktorId);
+            utmeldingsService.oppdaterUtmeldingsStatus(KanskjeIservBruker.Companion.of(endringPaBruker, aktorId));
             oppfolgingsenhetEndringService.behandleBrukerEndring(endring);
             oppfolgingEndringService.oppdaterOppfolgingMedStatusFraArena(endring);
             sisteEndringPaaOppfolgingBrukerService.lagreSisteEndring(brukerFnr, endringPaBruker.getSistEndretDato());

@@ -87,12 +87,12 @@ open class ArbeidssøkerperiodeConsumerService(
         runCatching {
             val oppfolgingsbruker = arenaOppfolgingService.hentIservDatoOgFormidlingsGruppe(fnr) ?: throw IllegalStateException("Fant ikke bruker")
             if (oppfolgingsbruker.iservDato == null || oppfolgingsbruker.formidlingsGruppe == null) return@runCatching null
-            KanskjeIservBrukerMedPresisIservDato(oppfolgingsbruker.iservDato, fnr.get(), oppfolgingsbruker.formidlingsGruppe)
+            KanskjeIservBrukerMedPresisIservDato(oppfolgingsbruker.iservDato, aktorId, oppfolgingsbruker.formidlingsGruppe)
         }.onSuccess { kanskjeIservBruker ->
             if (kanskjeIservBruker == null) return
             if (kanskjeIservBruker.iservFraDato.atStartOfDay(ZoneId.systemDefault()).isAfter(arbeidssøkerperiodeStartet)) {
                 logger.info("Bruker ble ${kanskjeIservBruker.formidlingsgruppe} etter arbeidssøkerregistrering, sjekker om bruker bør utmeldes")
-                utmeldingService.oppdaterUtmeldingsStatus(kanskjeIservBruker.toKanskjeIservBruker(), aktorId)
+                utmeldingService.oppdaterUtmeldingsStatus(kanskjeIservBruker.toKanskjeIservBruker())
             }
         }.onFailure { logger.warn("Kunne ikke hente oppfolgingsstatus (arena) for bruker under prosessering av arbeidssøkerregistrering, sjekker ikke om bruker skal i utmelding", it) }
     }
@@ -100,8 +100,8 @@ open class ArbeidssøkerperiodeConsumerService(
 
 data class KanskjeIservBrukerMedPresisIservDato(
     val iservFraDato: LocalDate,
-    val fnr: String,
+    val aktorId: AktorId,
     val formidlingsgruppe: Formidlingsgruppe
 ) {
-    fun toKanskjeIservBruker(): KanskjeIservBruker = KanskjeIservBruker(this.iservFraDato, this.fnr, this.formidlingsgruppe, IservTrigger.ArbeidssøkerRegistreringSync)
+    fun toKanskjeIservBruker(): KanskjeIservBruker = KanskjeIservBruker(this.iservFraDato, this.aktorId, this.formidlingsgruppe, IservTrigger.ArbeidssøkerRegistreringSync)
 }

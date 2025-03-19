@@ -6,11 +6,16 @@ import com.google.cloud.bigquery.TableId
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe
 import no.nav.veilarboppfolging.domain.StartetAvType
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelse
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ArbeidsøkerRegSync_AlleredeUteAvOppfolging
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ArbeidsøkerRegSync_BleIserv
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ArbeidsøkerRegSync_IkkeLengerIserv
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ArbeidsøkerRegSync_NoOp
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ArbeidsøkerRegSync_OppdaterIservDato
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AvregistreringsType
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.OppdateringFraArena_AlleredeUteAvOppfolging
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.OppdateringFraArena_BleIserv
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.OppdateringFraArena_IkkeLengerIserv
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.OppdateringFraArena_NoOp
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.OppdateringFraArena_OppdaterIservDato
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ScheduledJob_AlleredeUteAvOppfolging
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ScheduledJob_UtAvOppfolgingPga28DagerIserv
@@ -88,10 +93,15 @@ class BigQueryClientImplementation(projectId: String): BigQueryClient {
                 is OppdateringFraArena_IkkeLengerIserv -> mapOf("event" to "avbryt_graceperiode", "trigger" to "EndringPaaOppfolgingsbruker")
                 is OppdateringFraArena_BleIserv -> mapOf("event" to "start_graceperiode", "trigger" to "EndringPaaOppfolgingsbruker")
                 is OppdateringFraArena_OppdaterIservDato -> mapOf("event" to "oppdater_iserv_dato", "trigger" to "EndringPaaOppfolgingsbruker")
-                is ScheduledJob_AlleredeUteAvOppfolging -> mapOf("event" to "allerede_ute", "trigger" to "ScheduledJob")
+                is OppdateringFraArena_AlleredeUteAvOppfolging -> mapOf("event" to "slett_fra_utmelding", "trigger" to "EndringPaaOppfolgingsbruker")
+                is ScheduledJob_AlleredeUteAvOppfolging -> mapOf("event" to "slett_fra_utmelding", "trigger" to "ScheduledJob")
                 is ScheduledJob_UtAvOppfolgingPga28DagerIserv -> mapOf("event" to "avregistrert", "trigger" to "ScheduledJob")
                 is ArbeidsøkerRegSync_BleIserv -> mapOf("event" to "start_graceperiode", "trigger" to "ArbeidsøkerRegSync")
                 is ArbeidsøkerRegSync_OppdaterIservDato -> mapOf("event" to "oppdater_iserv_dato", "trigger" to "ArbeidsøkerRegSync")
+                is ArbeidsøkerRegSync_AlleredeUteAvOppfolging -> mapOf("event" to "slett_fra_utmelding", "trigger" to "ArbeidsøkerRegSync")
+                is ArbeidsøkerRegSync_IkkeLengerIserv -> mapOf("event" to "slett_fra_utmelding", "trigger" to "ArbeidsøkerRegSync")
+                is ArbeidsøkerRegSync_NoOp -> return@insertIntoOppfolgingEvents null
+                is OppdateringFraArena_NoOp -> return@insertIntoOppfolgingEvents null
             }
             eventType + mapOf(
                 "timestamp" to ZonedDateTime.now().toOffsetDateTime().toString()
@@ -109,9 +119,11 @@ class BigQueryClientImplementation(projectId: String): BigQueryClient {
         }
     }
 
-    private fun insertIntoOppfolgingEvents(table: TableId, getRow: () -> Map<String, Any>) {
+    private fun insertIntoOppfolgingEvents(table: TableId, getRow: () -> Map<String, Any>?) {
         runCatching {
-            val insertRequest = table.insertRequest(getRow())
+            val row = getRow()
+            if (row == null) return
+            val insertRequest = table.insertRequest(row)
             insertWhileToleratingErrors(insertRequest)
         }
             .onFailure { log.warn("Kunne ikke lage start event i bigquery", it) }
