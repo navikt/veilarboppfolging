@@ -8,8 +8,7 @@ val ptoSchemaVersion = "1.2025.01.13_12.58-3e81bd940198"
 val poaoTilgangVersion = "2025.02.06_13.37-958e35e7373d"
 val wiremockVersion = "3.0.0-beta-10"
 val schedlockVersion = "6.3.0"
-val googleCloudBigQueryVersion = "2.43.2"
-val googleCloudLibrariesBomVersion = "26.49.0"
+val googleCloudLibrariesBomVersion = "26.56.0"
 val springDoc = "2.8.5"
 val tmsMicrofrontendBuilder = "3.0.0"
 val tmsVarselBuilder = "2.1.1"
@@ -108,8 +107,9 @@ dependencies {
     }
     implementation("no.nav.tms.mikrofrontend.selector:builder:$tmsMicrofrontendBuilder")
     implementation("no.nav.tms.varsel:kotlin-builder:$tmsVarselBuilder")
-    implementation("com.google.cloud:google-cloud-bigquery:$googleCloudBigQueryVersion")
+
     implementation(platform("com.google.cloud:libraries-bom:$googleCloudLibrariesBomVersion"))
+    implementation("com.google.cloud:google-cloud-bigquery")
 
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
