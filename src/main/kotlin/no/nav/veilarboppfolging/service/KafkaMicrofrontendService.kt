@@ -22,7 +22,7 @@ class KafkaMicrofrontendService (
 
     val logger = LoggerFactory.getLogger(this::class.java)
 
-    @EventListener(ApplicationReadyEvent::class)
+//    @Scheduled(initialDelay = 60000, fixedDelay = 21600000)
     fun aktiverMicrofrontendForBrukereUnderOppfolging() {
         if (!leaderElectionClient.isLeader()) {
             return;
@@ -54,32 +54,35 @@ class KafkaMicrofrontendService (
         logger.info("Ferdig. Antall aktiveringer: $totalt. Vellykkede: $vellykkede. Feilet: $feilet")
     }
 
-//    @Scheduled(cron = "0 23 10 * * *") // Hver time
-fun deaktiverMicrofrontendForBrukereUnderOppfolging() {
-
-    var microfrontendEntities = oppfolgingsPeriodeRepository.hentAlleSomSkalDeaktiveres()
-    logger.info("Antall som skal deaktiveres: ${microfrontendEntities.size}")
-
-    var vellykkede = 0;
-    var feilet = 0;
-    var totalt = 0;
-
-    for(microfrontendEntity in microfrontendEntities) {
-        try {
-            kafkaProducerService.publiserSkjulAoMinSideMicrofrontend(AktorId.of(microfrontendEntity.aktorId))
-
-            oppfolgingsPeriodeRepository.deaktiverMicrofrontendSuccess(AktorId.of(microfrontendEntity.aktorId))
-            vellykkede++
-        } catch (e: Exception) {
-            oppfolgingsPeriodeRepository.deaktiverMicrofrontendFailed(AktorId.of(microfrontendEntity.aktorId), e.message)
-            feilet++
+    @Scheduled(initialDelay = 60000, fixedDelay = 21600000)
+    fun deaktiverMicrofrontendForBrukereUnderOppfolging() {
+        if (!leaderElectionClient.isLeader()) {
+            return;
         }
-        totalt++;
 
-        if(totalt % 5000 == 0) {
-            logger.info("Antall deaktiveringer: $totalt. Vellykkede: $vellykkede. Feilet: $feilet")
+        var microfrontendEntities = oppfolgingsPeriodeRepository.hentAlleSomSkalDeaktiveres()
+        logger.info("Antall som skal deaktiveres: ${microfrontendEntities.size}")
+
+        var vellykkede = 0;
+        var feilet = 0;
+        var totalt = 0;
+
+        for(microfrontendEntity in microfrontendEntities) {
+            try {
+                kafkaProducerService.publiserSkjulAoMinSideMicrofrontend(AktorId.of(microfrontendEntity.aktorId))
+
+                oppfolgingsPeriodeRepository.deaktiverMicrofrontendSuccess(AktorId.of(microfrontendEntity.aktorId))
+                vellykkede++
+            } catch (e: Exception) {
+                oppfolgingsPeriodeRepository.deaktiverMicrofrontendFailed(AktorId.of(microfrontendEntity.aktorId), e.message)
+                feilet++
+            }
+            totalt++;
+
+            if(totalt % 5000 == 0) {
+                logger.info("Antall deaktiveringer: $totalt. Vellykkede: $vellykkede. Feilet: $feilet")
+            }
         }
+        logger.info("Ferdig. Antall deaktiveringer: $totalt. Vellykkede: $vellykkede. Feilet: $feilet")
     }
-    logger.info("Ferdig. Antall deaktiveringer: $totalt. Vellykkede: $vellykkede. Feilet: $feilet")
-}
 }
