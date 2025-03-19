@@ -4,6 +4,7 @@ import no.nav.common.types.identer.AktorId
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ArbeidsøkerRegSync_AlleredeUteAvOppfolging
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ArbeidsøkerRegSync_BleIserv
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ArbeidsøkerRegSync_IkkeLengerIserv
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ArbeidsøkerRegSync_NoOp
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ArbeidsøkerRegSync_OppdaterIservDato
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.InsertIUtmelding
@@ -91,11 +92,16 @@ class KanskjeIservBrukerTest {
 
     @Test
     fun `Skal sette ArbeidsøkerRegSync som trigger`() {
-        val arbsTriggerBruker = brukerIServ.copy(trigger = IservTrigger.ArbeidssøkerRegistreringSync)
-        arbsTriggerBruker.resolveUtmeldingsHendelse({ false }, { false }).let { assertInstanceOf<ArbeidsøkerRegSync_NoOp>(it) }
-        arbsTriggerBruker.resolveUtmeldingsHendelse({ true }, { false }).let { assertInstanceOf<ArbeidsøkerRegSync_BleIserv>(it) }
-        arbsTriggerBruker.resolveUtmeldingsHendelse({ false }, { true }).let { assertInstanceOf<ArbeidsøkerRegSync_AlleredeUteAvOppfolging>(it) }
-        arbsTriggerBruker.resolveUtmeldingsHendelse({ true }, { true }).let { assertInstanceOf<ArbeidsøkerRegSync_OppdaterIservDato>(it) }
+        val iservBruker = brukerIServ.copy(trigger = IservTrigger.ArbeidssøkerRegistreringSync)
+        iservBruker.resolveUtmeldingsHendelse(erUnderOppfolging = { false }, erBrukerIUtmeldingsTabell = { false }).let { assertInstanceOf<ArbeidsøkerRegSync_NoOp>(it) }
+        iservBruker.resolveUtmeldingsHendelse(erUnderOppfolging = { true }, erBrukerIUtmeldingsTabell = { false }).let { assertInstanceOf<ArbeidsøkerRegSync_BleIserv>(it) }
+        iservBruker.resolveUtmeldingsHendelse(erUnderOppfolging = { false }, erBrukerIUtmeldingsTabell = { true }).let { assertInstanceOf<ArbeidsøkerRegSync_AlleredeUteAvOppfolging>(it) }
+        iservBruker.resolveUtmeldingsHendelse(erUnderOppfolging = { true }, erBrukerIUtmeldingsTabell = { true }).let { assertInstanceOf<ArbeidsøkerRegSync_OppdaterIservDato>(it) }
+        val arbsBruker = brukerIArbs.copy(trigger = IservTrigger.ArbeidssøkerRegistreringSync)
+        arbsBruker.resolveUtmeldingsHendelse(erUnderOppfolging = { true }, erBrukerIUtmeldingsTabell = { true }).let { assertInstanceOf<ArbeidsøkerRegSync_IkkeLengerIserv>(it)  }
+        arbsBruker.resolveUtmeldingsHendelse(erUnderOppfolging = { false }, erBrukerIUtmeldingsTabell = { true }).let { assertInstanceOf<ArbeidsøkerRegSync_IkkeLengerIserv>(it)  }
+        arbsBruker.resolveUtmeldingsHendelse(erUnderOppfolging = { true }, erBrukerIUtmeldingsTabell = { false }).let { assertInstanceOf<ArbeidsøkerRegSync_NoOp>(it)  }
+        arbsBruker.resolveUtmeldingsHendelse(erUnderOppfolging = { false }, erBrukerIUtmeldingsTabell = { false }).let { assertInstanceOf<ArbeidsøkerRegSync_NoOp>(it)  }
     }
 
 }
