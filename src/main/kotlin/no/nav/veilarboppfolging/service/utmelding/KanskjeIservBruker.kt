@@ -24,7 +24,7 @@ enum class IservTrigger {
     ArbeidssøkerRegistreringSync,
 }
 
-class KanskjeIservBruker(
+data class KanskjeIservBruker(
     val iservFraDato: LocalDate?,
     val aktorId: AktorId,
     val formidlingsgruppe: Formidlingsgruppe,

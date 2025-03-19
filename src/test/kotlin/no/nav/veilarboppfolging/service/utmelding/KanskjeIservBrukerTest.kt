@@ -8,6 +8,7 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.SlettFraUtmelding
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.UpdateIservDatoUtmelding
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertInstanceOf
+import org.junit.jupiter.api.assertThrows
 import java.time.LocalDate
 
 class KanskjeIservBrukerTest {
@@ -75,6 +76,13 @@ class KanskjeIservBrukerTest {
     fun `Brukere som ikke er ISERV, ikke er under oppfølging og ikke er i utmeldingstabell skal slettes fra utmelding`() {
         val utmeldingsHendelse = brukerIArbs.resolveUtmeldingsHendelse({ false }, { false })
         assertInstanceOf<NoOp>(utmeldingsHendelse)
+    }
+
+    @Test
+    fun `Skal kaste exception hvis bruker er Iserv og under oppfølging og iservFraDato mangler`() {
+        assertThrows<IllegalArgumentException> {
+            brukerIServ.copy(iservFraDato = null).resolveUtmeldingsHendelse({ true }, { false })
+        }
     }
 
 }

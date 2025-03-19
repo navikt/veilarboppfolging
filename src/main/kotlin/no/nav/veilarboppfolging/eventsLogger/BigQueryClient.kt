@@ -90,16 +90,22 @@ class BigQueryClientImplementation(projectId: String): BigQueryClient {
     override fun loggUtmeldingsHendelse(utmelding: UtmeldingsHendelse) {
         insertIntoOppfolgingEvents(utmeldingEventsTable) {
             val eventType = when (utmelding) {
-                is OppdateringFraArena_IkkeLengerIserv -> mapOf("event" to "avbryt_graceperiode", "trigger" to "EndringPaaOppfolgingsbruker")
+                // Starter grace periode
                 is OppdateringFraArena_BleIserv -> mapOf("event" to "start_graceperiode", "trigger" to "EndringPaaOppfolgingsbruker")
-                is OppdateringFraArena_OppdaterIservDato -> mapOf("event" to "oppdater_iserv_dato", "trigger" to "EndringPaaOppfolgingsbruker")
-                is OppdateringFraArena_AlleredeUteAvOppfolging -> mapOf("event" to "slett_fra_utmelding", "trigger" to "EndringPaaOppfolgingsbruker")
-                is ScheduledJob_AlleredeUteAvOppfolging -> mapOf("event" to "slett_fra_utmelding", "trigger" to "ScheduledJob")
-                is ScheduledJob_UtAvOppfolgingPga28DagerIserv -> mapOf("event" to "avregistrert", "trigger" to "ScheduledJob")
                 is ArbeidsøkerRegSync_BleIserv -> mapOf("event" to "start_graceperiode", "trigger" to "ArbeidsøkerRegSync")
-                is ArbeidsøkerRegSync_OppdaterIservDato -> mapOf("event" to "oppdater_iserv_dato", "trigger" to "ArbeidsøkerRegSync")
+
+                is OppdateringFraArena_IkkeLengerIserv -> mapOf("event" to "avbryt_graceperiode", "trigger" to "EndringPaaOppfolgingsbruker")
+                is ArbeidsøkerRegSync_IkkeLengerIserv -> mapOf("event" to "avbryt_graceperiode", "trigger" to "ArbeidsøkerRegSync")
+
+                // Disse er opprydding av tabell, bruker var allerede ute av oppfølging
+                is OppdateringFraArena_AlleredeUteAvOppfolging -> mapOf("event" to "slett_fra_utmelding", "trigger" to "EndringPaaOppfolgingsbruker")
                 is ArbeidsøkerRegSync_AlleredeUteAvOppfolging -> mapOf("event" to "slett_fra_utmelding", "trigger" to "ArbeidsøkerRegSync")
-                is ArbeidsøkerRegSync_IkkeLengerIserv -> mapOf("event" to "slett_fra_utmelding", "trigger" to "ArbeidsøkerRegSync")
+                is ScheduledJob_AlleredeUteAvOppfolging -> mapOf("event" to "slett_fra_utmelding", "trigger" to "ScheduledJob")
+
+                is ScheduledJob_UtAvOppfolgingPga28DagerIserv -> mapOf("event" to "avregistrert", "trigger" to "ScheduledJob")
+
+                is OppdateringFraArena_OppdaterIservDato -> return@insertIntoOppfolgingEvents null
+                is ArbeidsøkerRegSync_OppdaterIservDato -> return@insertIntoOppfolgingEvents null
                 is ArbeidsøkerRegSync_NoOp -> return@insertIntoOppfolgingEvents null
                 is OppdateringFraArena_NoOp -> return@insertIntoOppfolgingEvents null
             }
@@ -112,7 +118,7 @@ class BigQueryClientImplementation(projectId: String): BigQueryClient {
     override fun loggUtmeldingsCount(utmelding: UtmeldingsAntall) {
         insertIntoOppfolgingEvents(utmeldingCountsTable) {
             mapOf(
-                "personerIUtemelding" to utmelding.personerIUtemelding,
+                "personerIUtmelding" to utmelding.personerIUtemelding,
                 "personIUtmeldingSomErUnderOppfolging" to utmelding.personIUtmeldingSomErUnderOppfolging,
                 "timestamp" to ZonedDateTime.now().toOffsetDateTime().toString()
             )
