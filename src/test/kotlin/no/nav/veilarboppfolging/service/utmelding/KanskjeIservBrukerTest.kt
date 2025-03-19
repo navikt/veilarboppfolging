@@ -13,7 +13,6 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.UpdateIservDatoUtmeldin
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertInstanceOf
 import org.junit.jupiter.api.assertThrows
-import org.springframework.scheduling.Trigger
 import java.time.LocalDate
 
 class KanskjeIservBrukerTest {
