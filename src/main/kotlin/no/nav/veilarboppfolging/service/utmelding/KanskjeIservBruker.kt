@@ -84,7 +84,7 @@ class KanskjeIservBruker(
         }
     }
 
-    fun erIserv() = formidlingsgruppe == Formidlingsgruppe.ISERV
+    private fun erIserv() = formidlingsgruppe == Formidlingsgruppe.ISERV
 
     companion object {
         fun of(bruker: EndringPaaOppfoelgingsBrukerV2, aktorId: AktorId): KanskjeIservBruker {

@@ -71,4 +71,10 @@ class KanskjeIservBrukerTest {
         assertInstanceOf<SlettFraUtmelding>(utmeldingsHendelse)
     }
 
+    @Test
+    fun `Brukere som ikke er ISERV, ikke er under oppfølging og ikke er i utmeldingstabell skal slettes fra utmelding`() {
+        val utmeldingsHendelse = brukerIArbs.resolveUtmeldingsHendelse({ false }, { false })
+        assertInstanceOf<NoOp>(utmeldingsHendelse)
+    }
+
 }
