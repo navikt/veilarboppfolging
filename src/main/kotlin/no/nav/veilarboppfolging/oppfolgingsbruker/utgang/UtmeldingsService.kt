@@ -54,7 +54,7 @@ class UtmeldingsService(
     }
 
     private fun finnesIUtmeldingTabell(aktorId: AktorId): Boolean {
-        return utmeldingRepository.eksisterendeIservBruker(aktorId).isPresent
+        return utmeldingRepository.eksisterendeIservBruker(aktorId) != null
     }
 
     fun avsluttOppfolgingOfFjernFraUtmeldingsTabell(aktorId: AktorId): AvslutteOppfolgingResultat {
