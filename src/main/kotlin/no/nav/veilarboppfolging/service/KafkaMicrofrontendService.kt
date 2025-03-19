@@ -54,7 +54,7 @@ class KafkaMicrofrontendService (
         logger.info("Ferdig. Antall aktiveringer: $totalt. Vellykkede: $vellykkede. Feilet: $feilet")
     }
 
-    @Scheduled(initialDelay = 60000, fixedDelay = 21600000)
+//    @Scheduled(initialDelay = 60000, fixedDelay = 21600000)
     fun deaktiverMicrofrontendForBrukereUnderOppfolging() {
         if (!leaderElectionClient.isLeader()) {
             return;
