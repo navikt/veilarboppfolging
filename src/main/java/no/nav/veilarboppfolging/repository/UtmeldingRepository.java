@@ -3,6 +3,8 @@ package no.nav.veilarboppfolging.repository;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.InsertIUtmelding;
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.UpdateIservDatoUtmelding;
 import no.nav.veilarboppfolging.repository.entity.UtmeldingEntity;
 import no.nav.veilarboppfolging.utils.DbUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +15,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -37,25 +38,25 @@ public class UtmeldingRepository {
     }
 
     @SneakyThrows
-    public void updateUtmeldingTabell(AktorId aktorId, ZonedDateTime iservFraDato) {
+    public void updateUtmeldingTabell(UpdateIservDatoUtmelding oppdaterIservDatoHendelse) {
         String sql = "UPDATE UTMELDING SET iserv_fra_dato = ?, oppdatert_dato = CURRENT_TIMESTAMP WHERE aktor_id = ?";
-        Timestamp nyIservFraDato = Timestamp.from(iservFraDato.toInstant());
+        Timestamp nyIservFraDato = Timestamp.from(oppdaterIservDatoHendelse.getIservFraDato().toInstant());
 
-        db.update(sql, nyIservFraDato, aktorId.get());
+        db.update(sql, nyIservFraDato, oppdaterIservDatoHendelse.getAktorId().get());
 
-        secureLog.info("ISERV bruker med aktorid {} har blitt oppdatert inn i UTMELDING tabell", aktorId);
+        secureLog.info("ISERV bruker med aktorid {} har blitt oppdatert inn i UTMELDING tabell", oppdaterIservDatoHendelse.getAktorId());
     }
 
-    public void insertUtmeldingTabell(AktorId aktorId, ZonedDateTime iservFraDato) {
-        Timestamp iservFraTimestamp = Timestamp.from(iservFraDato.toInstant());
+    public void insertUtmeldingTabell(InsertIUtmelding bleIservEvent) {
+        Timestamp iservFraTimestamp = Timestamp.from(bleIservEvent.getIservFraDato().toInstant());
 
         String sql = "INSERT INTO UTMELDING (aktor_id, iserv_fra_dato, oppdatert_dato) VALUES (?, ?, CURRENT_TIMESTAMP)";
 
-        db.update(sql, aktorId.get(), iservFraTimestamp);
+        db.update(sql, bleIservEvent.getAktorId().get(), iservFraTimestamp);
 
         secureLog.info(
                 "ISERV bruker med aktorid {} og iserv_fra_dato {} har blitt insertert inn i UTMELDING tabell",
-                aktorId,
+                bleIservEvent.getAktorId(),
                 iservFraTimestamp
         );
     }

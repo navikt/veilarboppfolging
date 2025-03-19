@@ -362,7 +362,7 @@ public class OppfolgingService {
         });
     }
 
-    protected boolean erUnderOppfolging(AktorId aktorId) {
+    public boolean erUnderOppfolging(AktorId aktorId) {
         return oppfolgingsStatusRepository.hentOppfolging(aktorId)
                 .map(OppfolgingEntity::isUnderOppfolging)
                 .orElse(false);

@@ -1,5 +1,6 @@
 package no.nav.veilarboppfolging.kafka
 
+import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.common.types.identer.NavIdent
 import no.nav.paw.arbeidssokerregisteret.api.v1.BrukerType
@@ -9,9 +10,10 @@ import no.nav.veilarboppfolging.domain.StartetAvType
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.toRegistrant
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.UtmeldingsService
 import no.nav.veilarboppfolging.service.AuthService
-import no.nav.veilarboppfolging.service.IservService
 import no.nav.veilarboppfolging.service.OppfolgingService
+import no.nav.veilarboppfolging.service.utmelding.IservTrigger
 import no.nav.veilarboppfolging.service.utmelding.KanskjeIservBruker
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.LoggerFactory
@@ -32,7 +34,7 @@ open class ArbeidssøkerperiodeConsumerService(
     private val oppfolgingService: OppfolgingService,
             private val authService: AuthService,
             private val arenaOppfolgingService: ArenaOppfolgingService,
-            private val iservService: IservService,
+            private val utmeldingService: UtmeldingsService,
 ) {
     private val logger = LoggerFactory.getLogger(this::class.java)
 
@@ -65,9 +67,9 @@ open class ArbeidssøkerperiodeConsumerService(
             val registrant =  startetAvType.toStartetAvType().toRegistrant(navIdent)
 
             oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.arbeidssokerRegistrering(aktørId, registrant))
-            utmeldHvisAlleredeIserv(fnr, arbeidssøkerperiodeStartet)
+            utmeldHvisBrukerBleIservEtterArbeidssøkerRegistrering(fnr, arbeidssøkerperiodeStartet, aktørId)
         } else {
-            logger.info("Melding om avsluttet oppfølgingsperiode, gjør ingenting")
+            logger.info("Melding om avsluttet arbeidssøkerperiode, gjør ingenting")
         }
     }
 
@@ -81,16 +83,16 @@ open class ArbeidssøkerperiodeConsumerService(
         }
     }
 
-    fun utmeldHvisAlleredeIserv(fnr: Fnr, arbeidssøkerperiodeStartet: ZonedDateTime) {
+    fun utmeldHvisBrukerBleIservEtterArbeidssøkerRegistrering(fnr: Fnr, arbeidssøkerperiodeStartet: ZonedDateTime, aktorId: AktorId) {
         runCatching {
             val oppfolgingsbruker = arenaOppfolgingService.hentIservDatoOgFormidlingsGruppe(fnr) ?: throw IllegalStateException("Fant ikke bruker")
             if (oppfolgingsbruker.iservDato == null || oppfolgingsbruker.formidlingsGruppe == null) return@runCatching null
-            KanskjeIservBrukerMedPresisIservDato(oppfolgingsbruker.iservDato, fnr.get(), oppfolgingsbruker.formidlingsGruppe)
+            KanskjeIservBrukerMedPresisIservDato(oppfolgingsbruker.iservDato, aktorId, oppfolgingsbruker.formidlingsGruppe)
         }.onSuccess { kanskjeIservBruker ->
             if (kanskjeIservBruker == null) return
             if (kanskjeIservBruker.iservFraDato.atStartOfDay(ZoneId.systemDefault()).isAfter(arbeidssøkerperiodeStartet)) {
                 logger.info("Bruker ble ${kanskjeIservBruker.formidlingsgruppe} etter arbeidssøkerregistrering, sjekker om bruker bør utmeldes")
-                iservService.oppdaterUtmeldingsStatus(kanskjeIservBruker.toKanskjeIservBruker())
+                utmeldingService.oppdaterUtmeldingsStatus(kanskjeIservBruker.toKanskjeIservBruker())
             }
         }.onFailure { logger.warn("Kunne ikke hente oppfolgingsstatus (arena) for bruker under prosessering av arbeidssøkerregistrering, sjekker ikke om bruker skal i utmelding", it) }
     }
@@ -98,8 +100,8 @@ open class ArbeidssøkerperiodeConsumerService(
 
 data class KanskjeIservBrukerMedPresisIservDato(
     val iservFraDato: LocalDate,
-    val fnr: String,
+    val aktorId: AktorId,
     val formidlingsgruppe: Formidlingsgruppe
 ) {
-    fun toKanskjeIservBruker(): KanskjeIservBruker = KanskjeIservBruker(this.iservFraDato, this.fnr, this.formidlingsgruppe)
+    fun toKanskjeIservBruker(): KanskjeIservBruker = KanskjeIservBruker(this.iservFraDato, this.aktorId, this.formidlingsgruppe, IservTrigger.ArbeidssøkerRegistreringSync)
 }

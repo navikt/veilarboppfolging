@@ -1,11 +1,8 @@
 package no.nav.veilarboppfolging.service;
 
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
-import no.nav.common.types.identer.Fnr;
-import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
-import no.nav.veilarboppfolging.repository.EnhetRepository;
+import no.nav.veilarboppfolging.oppfolgingsbruker.arena.EndringPaaOppfolgingsBruker;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsenhetHistorikkRepository;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingEntity;
@@ -24,43 +21,40 @@ import static no.nav.veilarboppfolging.utils.SecureLog.secureLog;
 public class OppfolgingsenhetEndringService {
 
     private final OppfolgingsenhetHistorikkRepository enhetHistorikkRepository;
-    private final AuthService authService;
     private final OppfolgingsStatusRepository oppfolgingsStatusRepository;
 
     @Autowired
-    public OppfolgingsenhetEndringService(OppfolgingsenhetHistorikkRepository enhetHistorikkRepository, AuthService authService, OppfolgingsStatusRepository oppfolgingsStatusRepository) {
+    public OppfolgingsenhetEndringService(OppfolgingsenhetHistorikkRepository enhetHistorikkRepository, OppfolgingsStatusRepository oppfolgingsStatusRepository) {
         this.enhetHistorikkRepository = enhetHistorikkRepository;
-        this.authService = authService;
         this.oppfolgingsStatusRepository = oppfolgingsStatusRepository;
     }
 
-    public void behandleBrukerEndring(EndringPaaOppfoelgingsBrukerV2 brukerV2) {
-        AktorId aktorId = authService.getAktorIdOrThrow(Fnr.of(brukerV2.getFodselsnummer()));
+    public void behandleBrukerEndring(EndringPaaOppfolgingsBruker brukerV2) {
         String enhetString = brukerV2.getOppfolgingsenhet();
         if (enhetString == null || enhetString.isBlank()) {
             return;
         }
         EnhetId arenaNavKontor = EnhetId.of(enhetString);
 
-        List<OppfolgingsenhetEndringEntity> eksisterendeHistorikk = enhetHistorikkRepository.hentOppfolgingsenhetEndringerForAktorId(aktorId);
+        List<OppfolgingsenhetEndringEntity> eksisterendeHistorikk = enhetHistorikkRepository.hentOppfolgingsenhetEndringerForAktorId(brukerV2.getAktorId());
 
         var formidlingsgruppe = ofNullable(brukerV2.getFormidlingsgruppe()).orElse(null);
         var kvalifiseringsgruppe = ofNullable(brukerV2.getKvalifiseringsgruppe()).orElse(null);
 
-        var erUnderOppfolgingLokalt = oppfolgingsStatusRepository.hentOppfolging(aktorId)
+        var erUnderOppfolgingLokalt = oppfolgingsStatusRepository.hentOppfolging(brukerV2.getAktorId())
                 .map(OppfolgingEntity::isUnderOppfolging)
                 .orElse(false);
         var erUnderOppfolgingIArena = erUnderOppfolging(formidlingsgruppe, kvalifiseringsgruppe);
         var erUnderOppfolging = erUnderOppfolgingIArena || erUnderOppfolgingLokalt;
 
         if (arenaNavKontor.get() == null || !erUnderOppfolging) {
-            secureLog.info(String.format("Legger ikke til historikkinnslag for på aktørid: %s fordi enhet mangler og/eller bruker er ikke under oppfølging", aktorId));
+            secureLog.info(String.format("Legger ikke til historikkinnslag for på aktørid: %s fordi enhet mangler og/eller bruker er ikke under oppfølging", brukerV2.getAktorId()));
         } else if (eksisterendeHistorikk.isEmpty()) {
-            secureLog.info(String.format("Legger til første historikkinnslag for endret oppfolgingsenhet på aktørid: %s", aktorId));
-            enhetHistorikkRepository.insertOppfolgingsenhetEndringForAktorId(aktorId, arenaNavKontor);
+            secureLog.info(String.format("Legger til første historikkinnslag for endret oppfolgingsenhet på aktørid: %s", brukerV2.getAktorId()));
+            enhetHistorikkRepository.insertOppfolgingsenhetEndringForAktorId(brukerV2.getAktorId(), arenaNavKontor);
         } else if (!arenaNavKontor.get().equals(eksisterendeHistorikk.get(0).getEnhet())) {
-            secureLog.info(String.format("Legger til historikkinnslag for endret oppfolgingsenhet på aktørid: %s", aktorId));
-            enhetHistorikkRepository.insertOppfolgingsenhetEndringForAktorId(aktorId, arenaNavKontor);
+            secureLog.info(String.format("Legger til historikkinnslag for endret oppfolgingsenhet på aktørid: %s", brukerV2.getAktorId()));
+            enhetHistorikkRepository.insertOppfolgingsenhetEndringForAktorId(brukerV2.getAktorId(), arenaNavKontor);
         }
     }
 

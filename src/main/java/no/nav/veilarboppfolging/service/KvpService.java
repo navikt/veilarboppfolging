@@ -6,11 +6,11 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.Id;
-import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2;
 import no.nav.veilarboppfolging.BadRequestException;
 import no.nav.veilarboppfolging.ForbiddenException;
 import no.nav.veilarboppfolging.kafka.KvpPeriode;
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService;
+import no.nav.veilarboppfolging.oppfolgingsbruker.arena.EndringPaaOppfolgingsBruker;
 import no.nav.veilarboppfolging.repository.KvpRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository;
 import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity;
@@ -146,10 +146,8 @@ public class KvpService {
         metricsService.kvpStoppet();
     }
 
-    public void avsluttKvpVedEnhetBytte(EndringPaaOppfoelgingsBrukerV2 endretBruker) {
-        AktorId aktorId = authService.getAktorIdOrThrow(Fnr.of(endretBruker.getFodselsnummer()));
-
-        Optional<KvpPeriodeEntity> maybeGjeldendeKvpPeriode = hentGjeldendeKvpPeriode(aktorId);
+    public void avsluttKvpVedEnhetBytte(EndringPaaOppfolgingsBruker endretBruker) {
+        Optional<KvpPeriodeEntity> maybeGjeldendeKvpPeriode = hentGjeldendeKvpPeriode(endretBruker.getAktorId());
 
         if (maybeGjeldendeKvpPeriode.isEmpty()) {
             return;
@@ -158,7 +156,7 @@ public class KvpService {
         boolean harByttetKontor = !endretBruker.getOppfolgingsenhet().equals(maybeGjeldendeKvpPeriode.get().getEnhet());
 
         if (harByttetKontor) {
-            stopKvpUtenEnhetSjekk(SYSTEM_USER_NAME, aktorId, "KVP avsluttet automatisk pga. endret Nav-enhet", SYSTEM);
+            stopKvpUtenEnhetSjekk(SYSTEM_USER_NAME, endretBruker.getAktorId(), "KVP avsluttet automatisk pga. endret Nav-enhet", SYSTEM);
             metricsService.stopKvpDueToChangedUnit();
         }
     }
