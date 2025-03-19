@@ -85,8 +85,6 @@ public class IservServiceIntegrationTest {
 
     @Test
     public void oppdaterUtmeldingsStatus_skalSletteBrukerSomIkkeLengerErIserv() {
-        when(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID);
-
         var brukerV2 = kanskjeIservBruker(iservFraDato, Formidlingsgruppe.ARBS);
 
         utmeldingRepository.insertUtmeldingTabell(new OppdateringFraArena_BleIserv(AKTOR_ID, iservFraDato));
@@ -122,8 +120,6 @@ public class IservServiceIntegrationTest {
 
     @Test
     public void avsluttOppfolging(){
-        when(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID);
-
         insertIservBruker(AKTOR_ID, iservFraDato);
 
         assertTrue(utmeldingRepository.eksisterendeIservBruker(AKTOR_ID).isPresent());
@@ -136,8 +132,6 @@ public class IservServiceIntegrationTest {
 
     @Test
     public void automatiskAvslutteOppfolging_skalAvslutteBrukerSomErIserv28dagerOgUnderOppfolging(){
-        when(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID);
-
         insertIservBruker(AKTOR_ID, iservFraDato.minusDays(30));
 
         utmeldEtter28Cron.automatiskAvslutteOppfolging();
@@ -146,9 +140,20 @@ public class IservServiceIntegrationTest {
     }
 
     @Test
-    public void automatiskAvslutteOppfolging_skalFjerneBrukerSomErIserv28dagerOgIkkeUnderOppfolging(){
-        when(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID);
+    public void automatiskAvslutteOppfolging_skal_beholde_bruker_i_utmelding_hvis_behandling_feilet(){
+        insertIservBruker(AKTOR_ID, iservFraDato.minusDays(30));
+        var feiledneAKtorId = AktorId.of("404");
+        insertIservBruker(feiledneAKtorId, iservFraDato.minusDays(30));
+        when(oppfolgingService.erUnderOppfolging(feiledneAKtorId)).thenThrow(RuntimeException.class);
 
+        utmeldEtter28Cron.automatiskAvslutteOppfolging();
+
+        assertTrue(utmeldingRepository.eksisterendeIservBruker(AKTOR_ID).isEmpty());
+        assertTrue(utmeldingRepository.eksisterendeIservBruker(feiledneAKtorId).isPresent());
+    }
+
+    @Test
+    public void automatiskAvslutteOppfolging_skalFjerneBrukerSomErIserv28dagerOgIkkeUnderOppfolging(){
         insertIservBruker(AKTOR_ID, iservFraDato.minusDays(30));
 
         when(oppfolgingService.erUnderOppfolging(AKTOR_ID)).thenReturn(false);
@@ -162,8 +167,6 @@ public class IservServiceIntegrationTest {
     
     @Test
     public void automatiskAvslutteOppfolging_skalIkkeFjerneBrukerSomErIserv28dagerMenIkkeAvsluttet(){
-        when(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID);
-
         insertIservBruker(AKTOR_ID, iservFraDato.minusDays(30));
 
         when(oppfolgingService.avsluttOppfolging(any(UtmeldtEtter28Dager.class))).thenReturn(AvslutningStatusData.builder().underOppfolging(true).build());
