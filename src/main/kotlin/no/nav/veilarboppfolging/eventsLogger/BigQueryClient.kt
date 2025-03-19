@@ -8,6 +8,7 @@ import no.nav.veilarboppfolging.domain.StartetAvType
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelse
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AvregistreringsType
 import org.slf4j.LoggerFactory
+import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.util.*
 
@@ -19,12 +20,14 @@ enum class BigQueryEventType {
 interface BigQueryClient {
     fun loggStartOppfolgingsperiode(oppfolging: OppfolgingStartBegrunnelse, oppfolgingPeriodeId: UUID, startedAvType: StartetAvType, kvalifiseringsgruppe: Optional<Kvalifiseringsgruppe>)
     fun loggAvsluttOppfolgingsperiode(oppfolgingPeriodeId: UUID, avregistreringsType: AvregistreringsType)
+    fun loggAntallRegistrerteInngar(antall: Int)
 }
 
 class BigQueryClientImplementation(projectId: String): BigQueryClient {
     val OPPFOLGING_EVENTS = "OPPFOLGINGSPERIODE_EVENTS"
     val DATASET_NAME = "oppfolging_metrikker"
     val forhaandsvarselEventsTable = TableId.of(DATASET_NAME, OPPFOLGING_EVENTS)
+    val antallRegistrerteInngarTable = TableId.of(DATASET_NAME, OPPFOLGING_EVENTS)
 
     private fun TableId.insertRequest(row: Map<String, Any>): InsertAllRequest {
         return InsertAllRequest.newBuilder(this).addRow(row).build()
@@ -61,6 +64,15 @@ class BigQueryClientImplementation(projectId: String): BigQueryClient {
                 "kvalifiseringsgruppe" to kvalifiseringsgruppe.map { it.name }.orElse(null)
             )
         }
+    }
+
+    override fun loggAntallRegistrerteInngar(antall: Int) {
+        val antallRow = mapOf(
+            "antall" to antall,
+            "timestamp" to ZonedDateTime.now().withZoneSameInstant(ZoneOffset.UTC).toOffsetDateTime()
+        )
+        val antallInsertRequest = antallRegistrerteInngarTable.insertRequest(antallRow)
+        insertWhileToleratingErrors(antallInsertRequest)
     }
 
     private fun insertIntoOppfolgingEvents(getRow: () -> Map<String, Any>) {
