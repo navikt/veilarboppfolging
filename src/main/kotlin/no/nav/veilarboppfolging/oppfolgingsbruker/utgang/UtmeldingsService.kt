@@ -6,7 +6,6 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.UtmeldEtter28Cron.Avslu
 import no.nav.veilarboppfolging.repository.UtmeldingRepository
 import no.nav.veilarboppfolging.service.MetricsService
 import no.nav.veilarboppfolging.service.OppfolgingService
-import no.nav.veilarboppfolging.service.utmelding.IservTrigger
 import no.nav.veilarboppfolging.service.utmelding.KanskjeIservBruker
 import no.nav.veilarboppfolging.utils.SecureLog.secureLog
 import org.slf4j.LoggerFactory

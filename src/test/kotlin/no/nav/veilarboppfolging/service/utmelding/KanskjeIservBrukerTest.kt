@@ -2,6 +2,10 @@ package no.nav.veilarboppfolging.service.utmelding
 
 import no.nav.common.types.identer.AktorId
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ArbeidsøkerRegSync_AlleredeUteAvOppfolging
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ArbeidsøkerRegSync_BleIserv
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ArbeidsøkerRegSync_NoOp
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ArbeidsøkerRegSync_OppdaterIservDato
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.InsertIUtmelding
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.NoOp
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.SlettFraUtmelding
@@ -9,6 +13,7 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.UpdateIservDatoUtmeldin
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertInstanceOf
 import org.junit.jupiter.api.assertThrows
+import org.springframework.scheduling.Trigger
 import java.time.LocalDate
 
 class KanskjeIservBrukerTest {
@@ -83,6 +88,15 @@ class KanskjeIservBrukerTest {
         assertThrows<IllegalArgumentException> {
             brukerIServ.copy(iservFraDato = null).resolveUtmeldingsHendelse({ true }, { false })
         }
+    }
+
+    @Test
+    fun `Skal sette ArbeidsøkerRegSync som trigger`() {
+        val arbsTriggerBruker = brukerIServ.copy(trigger = IservTrigger.ArbeidssøkerRegistreringSync)
+        arbsTriggerBruker.resolveUtmeldingsHendelse({ false }, { false }).let { assertInstanceOf<ArbeidsøkerRegSync_NoOp>(it) }
+        arbsTriggerBruker.resolveUtmeldingsHendelse({ true }, { false }).let { assertInstanceOf<ArbeidsøkerRegSync_BleIserv>(it) }
+        arbsTriggerBruker.resolveUtmeldingsHendelse({ false }, { true }).let { assertInstanceOf<ArbeidsøkerRegSync_AlleredeUteAvOppfolging>(it) }
+        arbsTriggerBruker.resolveUtmeldingsHendelse({ true }, { true }).let { assertInstanceOf<ArbeidsøkerRegSync_OppdaterIservDato>(it) }
     }
 
 }
