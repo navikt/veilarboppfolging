@@ -98,9 +98,9 @@ class BigQueryClientImplementation(projectId: String): BigQueryClient {
                 is ArbeidsøkerRegSync_IkkeLengerIserv -> mapOf("event" to "avbryt_graceperiode", "trigger" to "ArbeidsøkerRegSync")
 
                 // Disse er opprydding av tabell, bruker var allerede ute av oppfølging
-                is OppdateringFraArena_AlleredeUteAvOppfolging -> mapOf("event" to "slett_fra_utmelding", "trigger" to "EndringPaaOppfolgingsbruker")
-                is ArbeidsøkerRegSync_AlleredeUteAvOppfolging -> mapOf("event" to "slett_fra_utmelding", "trigger" to "ArbeidsøkerRegSync")
-                is ScheduledJob_AlleredeUteAvOppfolging -> mapOf("event" to "slett_fra_utmelding", "trigger" to "ScheduledJob")
+                is OppdateringFraArena_AlleredeUteAvOppfolging -> mapOf("event" to "slett_fra_utmelding_allerede_ute", "trigger" to "EndringPaaOppfolgingsbruker")
+                is ArbeidsøkerRegSync_AlleredeUteAvOppfolging -> mapOf("event" to "slett_fra_utmelding_allerede_ute", "trigger" to "ArbeidsøkerRegSync")
+                is ScheduledJob_AlleredeUteAvOppfolging -> mapOf("event" to "slett_fra_utmelding_allerede_ute", "trigger" to "ScheduledJob")
 
                 is ScheduledJob_UtAvOppfolgingPga28DagerIserv -> mapOf("event" to "avregistrert", "trigger" to "ScheduledJob")
 
