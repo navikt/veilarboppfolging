@@ -1,0 +1,36 @@
+package no.nav.veilarboppfolging.client.pdl
+
+
+val eeaLand = setOf(
+    "BEL",
+    "BGR",
+    "DNK",
+    "EST",
+    "FIN",
+    "FRA",
+    "GRC",
+    "IRL",
+    "ISL",
+    "ITA",
+    "HRV",
+    "CYP",
+    "LVA",
+    "LIE",
+    "LTU",
+    "LUX",
+    "MLT",
+    "NLD",
+    "NOR",
+    "POL",
+    "PRT",
+    "ROU",
+    "SVK",
+    "SVN",
+    "ESP",
+    "SWE",
+    "CZE",
+    "DEU",
+    "HUN",
+    "AUT",
+    "CHE"
+).map { it.uppercase() }
