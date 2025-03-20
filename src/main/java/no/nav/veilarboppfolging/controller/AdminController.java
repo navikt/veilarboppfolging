@@ -35,7 +35,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class AdminController {
 
-    public static final String PTO_ADMIN = "pto-admin";
+    public static final String POAO_ADMIN = "poao-admin";
     private final AuthService authService;
     private final AuthContextHolder authContextHolder;
     private final KafkaRepubliseringService kafkaRepubliseringService;
@@ -109,14 +109,8 @@ public class AdminController {
     }
 
     private void sjekkTilgangTilAdmin() {
-        String subject = authContextHolder.getSubject()
-                .orElseThrow(() -> new UnauthorizedException("Fant ingen subject i auth-context"));
-
-        UserRole role = authContextHolder.getRole()
-                .orElseThrow(() -> new UnauthorizedException("Fant ingen rolle i auth-context"));
-
-        if (!authService.erSystemBruker()) throw new ForbiddenException("Må være systembruker");
-        authService.sjekkAtApplikasjonErIAllowList(List.of(PTO_ADMIN));
+        if (!authService.erInternBruker()) throw new ForbiddenException("Må være internbruker");
+        authService.sjekkAtApplikasjonErIAllowList(List.of(POAO_ADMIN));
     }
 
 }
