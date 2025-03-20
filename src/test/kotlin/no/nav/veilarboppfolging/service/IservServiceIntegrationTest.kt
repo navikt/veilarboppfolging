@@ -8,11 +8,14 @@ import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2
 import no.nav.veilarboppfolging.LocalDatabaseSingleton
 import no.nav.veilarboppfolging.domain.AvslutningStatusData
 import no.nav.veilarboppfolging.eventsLogger.BigQueryClient
+import no.nav.veilarboppfolging.eventsLogger.UtmeldingsAntall
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.Avregistrering
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.OppdateringFraArena_BleIserv
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.UtmeldEtter28Cron
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.UtmeldingMetrikkCron
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.UtmeldingsService
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.UtmeldtEtter28Dager
+import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
 import no.nav.veilarboppfolging.repository.UtmeldingRepository
 import no.nav.veilarboppfolging.repository.entity.UtmeldingEntity
 import no.nav.veilarboppfolging.service.utmelding.IservTrigger
@@ -27,19 +30,20 @@ import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.time.ZonedDateTime
-import java.util.Optional
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
-import kotlin.test.assertTrue
 
 class IservServiceIntegrationTest {
     private val iservFraDato: ZonedDateTime = ZonedDateTime.now()
     private var utmeldingsService: UtmeldingsService? = null
     private var utmeldEtter28Cron: UtmeldEtter28Cron? = null
+    private var utmeldingMetrikkCron: UtmeldingMetrikkCron? = null
     private var utmeldingRepository: UtmeldingRepository? = null
+    private var oppfolgingsStatusRepository: OppfolgingsStatusRepository? = null
     private val authService: AuthService = Mockito.mock<AuthService>(AuthService::class.java)
     private val oppfolgingService: OppfolgingService = Mockito.mock<OppfolgingService>(OppfolgingService::class.java)
+    private val bigQueryMock = Mockito.mock<BigQueryClient>()
 
     @Before
     fun setup() {
@@ -58,17 +62,22 @@ class IservServiceIntegrationTest {
         ).thenReturn(AvslutningStatusData.builder().underOppfolging(false).build())
         `when`<Fnr?>(authService.getFnrOrThrow(ArgumentMatchers.any<AktorId?>())).thenReturn(FNR)
 
+        oppfolgingsStatusRepository = OppfolgingsStatusRepository(NamedParameterJdbcTemplate(db))
         utmeldingRepository = UtmeldingRepository(NamedParameterJdbcTemplate(db))
         utmeldingsService = UtmeldingsService(
             Mockito.mock<MetricsService?>(MetricsService::class.java),
             utmeldingRepository!!,
             oppfolgingService,
-            Mockito.mock<BigQueryClient?>()
+            bigQueryMock
         )
         utmeldEtter28Cron = UtmeldEtter28Cron(
             utmeldingsService!!,
             utmeldingRepository!!,
             Mockito.mock<LeaderElectionClient?>(LeaderElectionClient::class.java)
+        )
+        utmeldingMetrikkCron = UtmeldingMetrikkCron(
+            utmeldingRepository!!,
+            bigQueryMock
         )
     }
 
@@ -194,6 +203,25 @@ class IservServiceIntegrationTest {
         utmeldEtter28Cron!!.automatiskAvslutteOppfolging()
 
         assertNotNull(utmeldingRepository!!.eksisterendeIservBruker(AKTOR_ID))
+    }
+
+    @Test
+    fun `skal telle riktig antall brukere på vei ut av oppfølging`() {
+        val brukerIkkeUnderOppfolging = AktorId.of("404")
+        val brukerUnderOppfolging = AktorId.of("200")
+        insertIservBruker(brukerIkkeUnderOppfolging, iservFraDato.minusDays(30))
+        insertIservBruker(brukerUnderOppfolging, iservFraDato.minusDays(30))
+        oppfolgingsStatusRepository!!.opprettOppfolging(brukerUnderOppfolging)
+        oppfolgingsStatusRepository!!.opprettOppfolging(brukerIkkeUnderOppfolging)
+        val db = NamedParameterJdbcTemplate(LocalDatabaseSingleton.jdbcTemplate)
+        db.update("UPDATE OPPFOLGINGSTATUS SET UNDER_OPPFOLGING = 0 WHERE AKTOR_ID = :aktorId", mapOf("aktorId" to brukerIkkeUnderOppfolging.get()))
+        db.update("UPDATE OPPFOLGINGSTATUS SET UNDER_OPPFOLGING = 1 WHERE AKTOR_ID = :aktorId", mapOf("aktorId" to brukerUnderOppfolging.get()))
+
+        utmeldingMetrikkCron!!.countAntallBrukerePaaVeiUtAvOppfolging()
+
+        verify(bigQueryMock).loggUtmeldingsCount(UtmeldingsAntall(
+            personIUtmeldingSomErUnderOppfolging = 1
+        ))
     }
 
     private val arenaBrukerBuilder: EndringPaaOppfoelgingsBrukerV2.EndringPaaOppfoelgingsBrukerV2Builder?
