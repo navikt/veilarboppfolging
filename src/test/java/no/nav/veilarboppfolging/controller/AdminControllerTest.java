@@ -21,7 +21,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
-import static no.nav.veilarboppfolging.controller.AdminController.PTO_ADMIN;
+import static no.nav.veilarboppfolging.controller.AdminController.POAO_ADMIN;
 import static no.nav.veilarboppfolging.test.TestData.TEST_AKTOR_ID;
 import static no.nav.veilarboppfolging.test.TestUtils.verifiserAsynkront;
 import static org.hamcrest.Matchers.matchesPattern;
@@ -62,22 +62,22 @@ public class AdminControllerTest {
     private AktorOppslagClient aktorOppslagClient;
 
     @Test
-    public void republiserOppfolgingsperioder__should_return_401_if_user_missing() throws Exception {
+    public void republiserOppfolgingsperioder__should_return_403_if_user_missing() throws Exception {
         when(authContextHolder.getSubject()).thenReturn(Optional.empty());
         when(authContextHolder.getRole()).thenReturn(Optional.of(UserRole.SYSTEM));
 
         mockMvc.perform(post("/api/admin/republiser/oppfolgingsperioder"))
-                .andExpect(status().is(401));
+                .andExpect(status().is(403));
     }
 
     @Test
-    public void republiserOppfolgingsperioder__should_return_401_if_role_missing() throws Exception {
+    public void republiserOppfolgingsperioder__should_return_403_if_role_missing() throws Exception {
         when(authContextHolder.getSubject()).thenReturn(Optional.of("sub"));
-        when(authService.hentApplikasjonFraContext()).thenReturn(PTO_ADMIN);
+        when(authService.hentApplikasjonFraContext()).thenReturn(POAO_ADMIN);
         when(authService.erSystemBruker()).thenReturn(false);
 
         mockMvc.perform(post("/api/admin/republiser/oppfolgingsperioder"))
-                .andExpect(status().is(401));
+                .andExpect(status().is(403));
     }
 
     @Test
@@ -92,7 +92,7 @@ public class AdminControllerTest {
     @Test
     public void republiserOppfolgingsperioder__should_return_403_if_not_system_user() throws Exception {
         when(authContextHolder.getSubject()).thenReturn(Optional.of("sub"));
-        when(authService.hentApplikasjonFraContext()).thenReturn(PTO_ADMIN);
+        when(authService.hentApplikasjonFraContext()).thenReturn(POAO_ADMIN);
         when(authService.erSystemBruker()).thenReturn(false);
         when(authContextHolder.getRole()).thenReturn(Optional.of(UserRole.EKSTERN));
 
@@ -103,9 +103,9 @@ public class AdminControllerTest {
     @Test
     public void republiserOppfolgingsperioder__should_return_job_id_and_republish() throws Exception {
         when(authContextHolder.getSubject()).thenReturn(Optional.of("sub"));
-        when(authService.hentApplikasjonFraContext()).thenReturn(PTO_ADMIN);
+        when(authService.hentApplikasjonFraContext()).thenReturn(POAO_ADMIN);
         when(authContextHolder.getRole()).thenReturn(Optional.of(UserRole.SYSTEM));
-        when(authService.erSystemBruker()).thenReturn(true);
+        when(authService.erInternBruker()).thenReturn(true);
 
         mockMvc.perform(post("/api/admin/republiser/oppfolgingsperioder"))
                 .andExpect(status().is(200))
@@ -119,9 +119,9 @@ public class AdminControllerTest {
     @Test
     public void republiserOppfolgingsperiodeForBruker__should_return_job_id_and_republish() throws Exception {
         when(authContextHolder.getSubject()).thenReturn(Optional.of("sub"));
-        when(authService.hentApplikasjonFraContext()).thenReturn(PTO_ADMIN);
+        when(authService.hentApplikasjonFraContext()).thenReturn(POAO_ADMIN);
         when(authContextHolder.getRole()).thenReturn(Optional.of(UserRole.SYSTEM));
-        when(authService.erSystemBruker()).thenReturn(true);
+        when(authService.erInternBruker()).thenReturn(true);
 
         mockMvc.perform(
                         post("/api/admin/republiser/oppfolgingsperioder")
@@ -137,22 +137,22 @@ public class AdminControllerTest {
     }
 
     @Test
-    public void republiserTilordnetVeileder__should_return_401_if_user_missing() throws Exception {
+    public void republiserTilordnetVeileder__should_return_403_if_user_missing() throws Exception {
         when(authContextHolder.getSubject()).thenReturn(Optional.empty());
         when(authContextHolder.getRole()).thenReturn(Optional.of(UserRole.SYSTEM));
 
         mockMvc.perform(post("/api/admin/republiser/tilordnet-veileder"))
-                .andExpect(status().is(401));
+                .andExpect(status().is(403));
     }
 
     @Test
-    public void republiserTilordnetVeileder__should_return_401_if_role_missing() throws Exception {
+    public void republiserTilordnetVeileder__should_return_403_if_role_missing() throws Exception {
         when(authContextHolder.getSubject()).thenReturn(Optional.of("sub"));
-        when(authService.hentApplikasjonFraContext()).thenReturn(PTO_ADMIN);
+        when(authService.hentApplikasjonFraContext()).thenReturn(POAO_ADMIN);
         when(authContextHolder.getRole()).thenReturn(Optional.empty());
 
         mockMvc.perform(post("/api/admin/republiser/tilordnet-veileder"))
-                .andExpect(status().is(401));
+                .andExpect(status().is(403));
     }
 
     @Test
@@ -167,7 +167,7 @@ public class AdminControllerTest {
     @Test
     public void republiserTilordnetVeileder__should_return_403_if_not_system_user() throws Exception {
         when(authContextHolder.getSubject()).thenReturn(Optional.of("sub"));
-        when(authService.hentApplikasjonFraContext()).thenReturn(PTO_ADMIN);
+        when(authService.hentApplikasjonFraContext()).thenReturn(POAO_ADMIN);
         when(authContextHolder.getRole()).thenReturn(Optional.of(UserRole.EKSTERN));
 
         mockMvc.perform(post("/api/admin/republiser/tilordnet-veileder"))
@@ -177,9 +177,9 @@ public class AdminControllerTest {
     @Test
     public void republiserTilordnetVeileder__should_return_job_id_and_republish() throws Exception {
         when(authContextHolder.getSubject()).thenReturn(Optional.of("sub"));
-        when(authService.hentApplikasjonFraContext()).thenReturn(PTO_ADMIN);
+        when(authService.hentApplikasjonFraContext()).thenReturn(POAO_ADMIN);
         when(authContextHolder.getRole()).thenReturn(Optional.of(UserRole.SYSTEM));
-        when(authService.erSystemBruker()).thenReturn(true);
+        when(authService.erInternBruker()).thenReturn(true);
 
         mockMvc.perform(post("/api/admin/republiser/tilordnet-veileder"))
                 .andExpect(status().is(200))
