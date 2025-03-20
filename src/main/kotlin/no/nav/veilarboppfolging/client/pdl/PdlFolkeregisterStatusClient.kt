@@ -22,7 +22,17 @@ enum class ForenkletFolkeregisterStatus {
 }
 
 data class Folkeregisterpersonstatus(
-    val forenkletStatus: String
+    val forenkletStatus: String,
+    val statsborgerskap: List<Statsborgerskap>
+)
+
+data class Statsborgerskap(
+    val land: String
+)
+val alpha3EuEeaCountries = setOf(
+    "AUT", "BEL", "BGR", "HRV", "CZE", "DNK", "EST", "FIN", "FRA",
+    "DEU", "GRC", "HUN", "IRL", "ITA", "LVA", "LTU", "LUX", "MLT",
+    "NLD", "POL", "PRT", "ROU", "SVK", "SVN", "ESP", "SWE"
 )
 
 data class HentFolkeregisterPersonStatus(
@@ -42,6 +52,7 @@ class PdlFolkeregisterStatusClient(val pdlClient: PdlClient) {
     }
 
     val logger = LoggerFactory.getLogger(PdlFolkeregisterStatusClient::class.java)
+
 
     fun hentFolkeregisterStatus(fnr: Fnr): ForenkletFolkeregisterStatus {
         val graphqlRequest = GraphqlRequestBuilder<QueryVariables>("graphql/pdl/hentFolkeregisterStatus.graphql")
