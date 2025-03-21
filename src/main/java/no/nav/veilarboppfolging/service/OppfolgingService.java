@@ -346,53 +346,13 @@ public class OppfolgingService {
 
     private void avsluttOppfolgingForBruker(Avregistrering avregistrering) {
         transactor.executeWithoutResult((ignored) -> {
-            var aktorId = avregistrering.getAktorId();
-            var avsluttetAv = avregistrering.getAvsluttetAv().getIdent();
-            var begrunnelse = avregistrering.getBegrunnelse();
-
-            List<OppfolgingsperiodeEntity> perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId);
+            List<OppfolgingsperiodeEntity> perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(avregistrering.getAktorId());
             var sistePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(perioder);
 
-            // Håndter eksplisitt valgt periode
-            var oppfolgingsperiodeUUID = avregistrering.getOppfolgingsperiodeUUID();
-            if (oppfolgingsperiodeUUID != null) {
-                var valgtPeriode = perioder.stream()
-                        .filter(p -> p.getUuid().equals(oppfolgingsperiodeUUID))
-                        .findFirst()
-                        .orElse(null);
-
-                if (valgtPeriode == null) {
-                    log.warn("Fant ikke oppfølgingsperiode med UUID: {}", oppfolgingsperiodeUUID);
-                    return;
-                }
-
-                if (valgtPeriode.getSluttDato() != null) {
-                    log.warn("Oppfølgingsperiode med UUID: {} er allerede avsluttet.", oppfolgingsperiodeUUID);
-                    return;
-                }
-
-                // Hvis valgt periode ikke er siste periode, avslutt uten ekstra publisering
-                if (!valgtPeriode.getUuid().equals(sistePeriode.getUuid())) {
-                    //TODO: Avslutt spesifikk periode
-                    oppfolgingsPeriodeRepository.avsluttOppfolgingsperiode(oppfolgingsperiodeUUID, avsluttetAv, begrunnelse);
-                    log.info("Oppfølgingsperiode med UUID: {} avsluttet for bruker - publiserer endringer på oppfølgingsperiode-topics.", oppfolgingsperiodeUUID);
-                    kafkaProducerService.publiserOppfolgingsperiode(DtoMappers.tilOppfolgingsperiodeDTO(sistePeriode));
-                    bigQueryClient.loggAvsluttOppfolgingsperiode(oppfolgingsperiodeUUID, avregistrering.getAvregistreringsType());
-                }
+            if (avregistrering.getOppfolgingsperiodeUUID() != null) {
+                avsluttValgtOppfolgingsperiode(avregistrering, perioder, sistePeriode);
             } else {
-                oppfolgingsPeriodeRepository.avslutt(aktorId, avsluttetAv, begrunnelse);
-
-                // Publiserer avslutning av siste oppfølgingsperiode
-                log.info("Oppfølgingsperiode avsluttet for bruker - publiserer endringer på oppfølgingsperiode-topics.");
-                kafkaProducerService.publiserOppfolgingsperiode(DtoMappers.tilOppfolgingsperiodeDTO(sistePeriode));
-
-                // Publiserer også endringer som resettes i oppfolgingsstatus-tabellen ved avslutting av oppfølging
-                kafkaProducerService.publiserVeilederTilordnet(aktorId, null);
-                kafkaProducerService.publiserEndringPaNyForVeileder(aktorId, false);
-                kafkaProducerService.publiserEndringPaManuellStatus(aktorId, false);
-
-                kafkaProducerService.publiserSkjulAoMinSideMicrofrontend(aktorId);
-                bigQueryClient.loggAvsluttOppfolgingsperiode(sistePeriode.getUuid(), avregistrering.getAvregistreringsType());
+                avsluttSisteOppfolgingsperiode(avregistrering, sistePeriode);
             }
         });
     }
@@ -405,6 +365,55 @@ public class OppfolgingService {
 
     protected boolean harAktiveTiltaksdeltakelser(Fnr fnr) {
         return amtTiltakClient.harAktiveTiltaksdeltakelser(fnr.get());
+    }
+
+    private void avsluttSisteOppfolgingsperiode(Avregistrering avregistrering, OppfolgingsperiodeEntity sistePeriode) {
+        var aktorId = avregistrering.getAktorId();
+        var avsluttetAv = avregistrering.getAvsluttetAv().getIdent();
+        var begrunnelse = avregistrering.getBegrunnelse();
+
+        oppfolgingsPeriodeRepository.avslutt(aktorId, avsluttetAv, begrunnelse);
+
+        // Publiserer avslutning av siste oppfølgingsperiode
+        log.info("Oppfølgingsperiode avsluttet for bruker - publiserer endringer på oppfølgingsperiode-topics.");
+        kafkaProducerService.publiserOppfolgingsperiode(DtoMappers.tilOppfolgingsperiodeDTO(sistePeriode));
+
+        // Publiserer også endringer som resettes i oppfolgingsstatus-tabellen ved avslutting av oppfølging
+        kafkaProducerService.publiserVeilederTilordnet(aktorId, null);
+        kafkaProducerService.publiserEndringPaNyForVeileder(aktorId, false);
+        kafkaProducerService.publiserEndringPaManuellStatus(aktorId, false);
+
+        kafkaProducerService.publiserSkjulAoMinSideMicrofrontend(aktorId);
+        bigQueryClient.loggAvsluttOppfolgingsperiode(sistePeriode.getUuid(), avregistrering.getAvregistreringsType());
+    }
+
+    private void avsluttValgtOppfolgingsperiode(Avregistrering avregistrering, List<OppfolgingsperiodeEntity> perioder, OppfolgingsperiodeEntity sistePeriode) {
+        var oppfolgingsperiodeUUID = avregistrering.getOppfolgingsperiodeUUID();
+
+        var valgtPeriode = perioder.stream()
+                .filter(p -> p.getUuid().equals(oppfolgingsperiodeUUID))
+                .findFirst()
+                .orElse(null);
+
+        if (valgtPeriode == null) {
+            log.warn("Fant ikke oppfølgingsperiode med UUID: {}", oppfolgingsperiodeUUID);
+            return;
+        }
+
+        if (valgtPeriode.getSluttDato() != null) {
+            log.warn("Oppfølgingsperiode med UUID: {} er allerede avsluttet.", oppfolgingsperiodeUUID);
+            return;
+        }
+
+        // Hvis valgt periode ikke er siste periode, avslutt uten ekstra publisering
+        if (!oppfolgingsperiodeUUID.equals(sistePeriode.getUuid())) {
+            oppfolgingsPeriodeRepository.avsluttOppfolgingsperiode(oppfolgingsperiodeUUID, avregistrering.getAvsluttetAv().getIdent(), avregistrering.getBegrunnelse());
+
+            log.info("Oppfølgingsperiode med UUID: {} avsluttet for bruker - publiserer endringer på oppfølgingsperiode-topics.", oppfolgingsperiodeUUID);
+            kafkaProducerService.publiserOppfolgingsperiode(DtoMappers.tilOppfolgingsperiodeDTO(sistePeriode));
+
+            bigQueryClient.loggAvsluttOppfolgingsperiode(oppfolgingsperiodeUUID, avregistrering.getAvregistreringsType());
+        }
     }
 
     private Optional<OppfolgingEntity> getOppfolgingStatus(Fnr fnr) {
