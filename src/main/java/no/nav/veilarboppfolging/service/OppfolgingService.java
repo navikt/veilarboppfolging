@@ -239,7 +239,7 @@ public class OppfolgingService {
                 .setVeilederId(oppfolgingEntity.getVeilederId())
                 .setUnderOppfolging(oppfolgingEntity.isUnderOppfolging());
 
-        Optional<KvpPeriodeEntity> maybeKvpPeriode= empty();
+        Optional<KvpPeriodeEntity> maybeKvpPeriode = empty();
 
         if (oppfolgingEntity.getGjeldendeKvpId() != 0) {
             maybeKvpPeriode = kvpRepository.hentKvpPeriode(oppfolgingEntity.getGjeldendeKvpId());
@@ -317,10 +317,10 @@ public class OppfolgingService {
     }
 
     private Optional<Kvalifiseringsgruppe> getKvalifiseringsGruppe(OppfolgingsRegistrering oppfolgingsbruker) {
-        if(oppfolgingsbruker instanceof ArenaSyncRegistrering arenasyncoppfolgingsbruker) {
+        if (oppfolgingsbruker instanceof ArenaSyncRegistrering arenasyncoppfolgingsbruker) {
             return Optional.ofNullable(arenasyncoppfolgingsbruker.getKvalifiseringsgruppe());
         } else {
-            return empty();
+            return Optional.empty();
         }
     }
 
@@ -346,7 +346,7 @@ public class OppfolgingService {
 
     private void avsluttOppfolgingForBruker(Avregistrering avregistrering) {
         transactor.executeWithoutResult((ignored) -> {
-            List<OppfolgingsperiodeEntity> perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(avregistrering.getAktorId());
+            var perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(avregistrering.getAktorId());
             var sistePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(perioder);
 
             if (avregistrering.getOppfolgingsperiodeUUID() != null) {
@@ -436,7 +436,7 @@ public class OppfolgingService {
         Optional<VeilarbArenaOppfolgingsStatus> maybeArenaOppfolging = arenaOppfolgingService.hentArenaOppfolgingsStatus(fnr);
 
         boolean kanSettesUnderOppfolging = !oppfolging.isUnderOppfolging() && maybeArenaOppfolging
-                .map(s -> kanSettesUnderOppfolging(EnumUtils.valueOf(Formidlingsgruppe.class, s.getFormidlingsgruppe()), EnumUtils.valueOf(Kvalifiseringsgruppe.class, s.getServicegruppe()) ))
+                .map(s -> kanSettesUnderOppfolging(EnumUtils.valueOf(Formidlingsgruppe.class, s.getFormidlingsgruppe()), EnumUtils.valueOf(Kvalifiseringsgruppe.class, s.getServicegruppe())))
                 .orElse(false);
 
         long kvpId = kvpRepository.gjeldendeKvp(aktorId);
@@ -450,14 +450,14 @@ public class OppfolgingService {
         Boolean erInaktivIArena = maybeArenaOppfolging.map(ao -> erIserv(EnumUtils.valueOf(Formidlingsgruppe.class, ao.getFormidlingsgruppe()))).orElse(null);
 
         Optional<Boolean> maybeKanEnkeltReaktiveres = maybeArenaOppfolging
-                .flatMap( (it) -> Optional.ofNullable(it.getKanEnkeltReaktiveres()) );
+                .flatMap((it) -> Optional.ofNullable(it.getKanEnkeltReaktiveres()));
 
         Boolean kanReaktiveres = maybeKanEnkeltReaktiveres
                 .map(kr -> oppfolging.isUnderOppfolging() && kr)
                 .orElse(null);
 
         Boolean erSykmeldtMedArbeidsgiver = maybeArenaOppfolging
-                .map(ao -> ArenaUtils.erIARBSUtenOppfolging(EnumUtils.valueOf(Formidlingsgruppe.class, ao.getFormidlingsgruppe()) ,EnumUtils.valueOf(Kvalifiseringsgruppe.class,  ao.getServicegruppe())))
+                .map(ao -> ArenaUtils.erIARBSUtenOppfolging(EnumUtils.valueOf(Formidlingsgruppe.class, ao.getFormidlingsgruppe()), EnumUtils.valueOf(Kvalifiseringsgruppe.class, ao.getServicegruppe())))
                 .orElse(null);
 
         LocalDate inaktiveringsDato = maybeArenaOppfolging
@@ -499,7 +499,7 @@ public class OppfolgingService {
         boolean kanAvslutte = kanAvslutteOppfolging(aktorId, erUnderOppfolging(aktorId), erIserv, harAktiveTiltaksdeltakelser);
 
         boolean erUnderOppfolgingIArena = maybeArenaOppfolging
-                .map(status -> ArenaUtils.erUnderOppfolging(EnumUtils.valueOf(Formidlingsgruppe.class, status.getFormidlingsgruppe()) , EnumUtils.valueOf(Kvalifiseringsgruppe.class, status.getServicegruppe()) ))
+                .map(status -> ArenaUtils.erUnderOppfolging(EnumUtils.valueOf(Formidlingsgruppe.class, status.getFormidlingsgruppe()), EnumUtils.valueOf(Kvalifiseringsgruppe.class, status.getServicegruppe())))
                 .orElse(false);
 
         LocalDate inaktiveringsDato = maybeArenaOppfolging
