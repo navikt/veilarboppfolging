@@ -3,5 +3,8 @@ query hentFolkeregisterStatus($ident: ID! $historikk: Boolean!) {
         folkeregisterpersonstatus(historikk: $historikk) {
             forenkletStatus
         }
+        statsborgerskap {
+            land
+        }
     }
 }

@@ -5,6 +5,7 @@ import no.nav.common.types.identer.Fnr
 import no.nav.poao_tilgang.client.Decision
 import no.nav.veilarboppfolging.IntegrationTest
 import no.nav.veilarboppfolging.client.pdl.ForenkletFolkeregisterStatus
+import no.nav.veilarboppfolging.client.pdl.FregStatusOgStatsborgerskap
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.KanStarteOppfolging
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.verifyNoInteractions
@@ -28,11 +29,13 @@ class GraphqlControllerTest: IntegrationTest() {
         ExecutionGraphQlServiceTester.create(service)
     }
 
+    val norskStatsborgerskap = listOf("NOR")
+
     fun defaultBruker(): Pair<Fnr, AktorId> {
         val fnr = Fnr("12345678910")
         val aktorId = AktorId("22345678910")
         mockAuthOk(aktorId, fnr)
-        mockPdlFolkeregisterStatus(fnr, ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven)
+        mockPdlFolkeregisterStatus(fnr, FregStatusOgStatsborgerskap(ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven, norskStatsborgerskap))
         return fnr to aktorId
     }
 
@@ -100,7 +103,7 @@ class GraphqlControllerTest: IntegrationTest() {
         val aktorId = AktorId.of("12444678919")
         mockInternBrukerAuthOk(veilederUuid, aktorId, fnr)
         mockPoaoTilgangHarTilgangTilBruker(veilederUuid, fnr, Decision.Permit)
-        mockPdlFolkeregisterStatus(fnr, ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven)
+        mockPdlFolkeregisterStatus(fnr, FregStatusOgStatsborgerskap(ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven, norskStatsborgerskap))
         /* Query is hidden in test/resources/graphl-test :) */
         val result = tester.documentName("kanStarteOppfolging").variable("fnr", fnr.get()).execute()
         result.errors().verify()
@@ -174,7 +177,7 @@ class GraphqlControllerTest: IntegrationTest() {
     }
 
     @Test
-    fun `skal returnere kanStarteOppfolging - skal returnere hvorfor veileder starte oppfølging på brukere som har feil status i freg`() {
+    fun `skal returnere kanStarteOppfolging - norsk statsborger - skal returnere hvorfor veileder starte oppfølging på brukere som har feil status i freg`() {
         val veilederUuid = UUID.randomUUID()
         val fnr = Fnr.of("12444678910")
         val aktorId = AktorId.of("12444678919")
@@ -186,18 +189,47 @@ class GraphqlControllerTest: IntegrationTest() {
             ForenkletFolkeregisterStatus.dNummer to KanStarteOppfolging.JA,
             ForenkletFolkeregisterStatus.doedIFolkeregisteret to KanStarteOppfolging.DOD,
             ForenkletFolkeregisterStatus.forsvunnet to KanStarteOppfolging.IKKE_LOVLIG_OPPHOLD,
-            ForenkletFolkeregisterStatus.ikkeBosatt to KanStarteOppfolging.IKKE_LOVLIG_OPPHOLD,
+            ForenkletFolkeregisterStatus.ikkeBosatt to KanStarteOppfolging.JA_MED_MANUELL_GODKJENNING,
             ForenkletFolkeregisterStatus.opphoert to KanStarteOppfolging.IKKE_LOVLIG_OPPHOLD,
             ForenkletFolkeregisterStatus.ukjent to KanStarteOppfolging.UKJENT_STATUS_FOLKEREGISTERET,
             ForenkletFolkeregisterStatus.ingen_status to KanStarteOppfolging.INGEN_STATUS_FOLKEREGISTERET,
         ).forEach { (status, kanStarteOppfolgingResult) ->
-            mockPdlFolkeregisterStatus(fnr, status)
+            mockPdlFolkeregisterStatus(fnr, FregStatusOgStatsborgerskap(status, norskStatsborgerskap))
             /* Query is hidden in test/resources/graphl-test :) */
             val result = tester.documentName("kanStarteOppfolging").variable("fnr", fnr.get()).execute()
             result.errors().verify()
             result.path("oppfolging").matchesJson("""
-            { "kanStarteOppfolging": "$kanStarteOppfolgingResult" }
-        """.trimIndent())
+                { "kanStarteOppfolging": "$kanStarteOppfolgingResult" }
+            """.trimIndent())
+        }
+    }
+
+    @Test
+    fun `skal returnere kanStarteOppfolging - tredjelandsborger - skal returnere hvorfor veileder starte oppfølging på brukere som har feil status i freg`() {
+        val veilederUuid = UUID.randomUUID()
+        val fnr = Fnr.of("12444678910")
+        val aktorId = AktorId.of("12444678919")
+        val tredjelandsStatsborgerskap = listOf("RUS")
+        mockInternBrukerAuthOk(veilederUuid, aktorId, fnr)
+        mockPoaoTilgangHarTilgangTilBruker(veilederUuid, fnr, Decision.Permit)
+
+        listOf(
+            ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven to KanStarteOppfolging.JA,
+            ForenkletFolkeregisterStatus.dNummer to KanStarteOppfolging.JA_MED_MANUELL_GODKJENNING,
+            ForenkletFolkeregisterStatus.doedIFolkeregisteret to KanStarteOppfolging.DOD,
+            ForenkletFolkeregisterStatus.forsvunnet to KanStarteOppfolging.IKKE_LOVLIG_OPPHOLD,
+            ForenkletFolkeregisterStatus.ikkeBosatt to KanStarteOppfolging.JA_MED_MANUELL_GODKJENNING,
+            ForenkletFolkeregisterStatus.opphoert to KanStarteOppfolging.IKKE_LOVLIG_OPPHOLD,
+            ForenkletFolkeregisterStatus.ukjent to KanStarteOppfolging.UKJENT_STATUS_FOLKEREGISTERET,
+            ForenkletFolkeregisterStatus.ingen_status to KanStarteOppfolging.INGEN_STATUS_FOLKEREGISTERET,
+        ).forEach { (status, kanStarteOppfolgingResult) ->
+            mockPdlFolkeregisterStatus(fnr, FregStatusOgStatsborgerskap(status, tredjelandsStatsborgerskap))
+            /* Query is hidden in test/resources/graphl-test :) */
+            val result = tester.documentName("kanStarteOppfolging").variable("fnr", fnr.get()).execute()
+            result.errors().verify()
+            result.path("oppfolging").matchesJson("""
+                { "kanStarteOppfolging": "$kanStarteOppfolgingResult" }
+            """.trimIndent())
         }
     }
 }

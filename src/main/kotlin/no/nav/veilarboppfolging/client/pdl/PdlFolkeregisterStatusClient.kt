@@ -22,15 +22,27 @@ enum class ForenkletFolkeregisterStatus {
 }
 
 data class Folkeregisterpersonstatus(
-    val forenkletStatus: String
+    val forenkletStatus: String,
+)
+
+data class Statsborgerskap(
+    val land: String
 )
 
 data class HentFolkeregisterPersonStatus(
-    val folkeregisterpersonstatus: List<Folkeregisterpersonstatus>
+    val folkeregisterpersonstatus: List<Folkeregisterpersonstatus>,
+    val statsborgerskap: List<Statsborgerskap>
 )
 
 data class HentFolkeregisterPersonStatusQuery(
     val hentPerson: HentFolkeregisterPersonStatus,
+)
+
+typealias StatsborgerskapLand = String
+
+data class FregStatusOgStatsborgerskap(
+    val fregStatus: ForenkletFolkeregisterStatus,
+    val statsborgerskap: List<StatsborgerskapLand>
 )
 
 class HentFolkeregisterPersonStatusGraphqlWrapper: GraphqlResponse<HentFolkeregisterPersonStatusQuery>()
@@ -43,7 +55,8 @@ class PdlFolkeregisterStatusClient(val pdlClient: PdlClient) {
 
     val logger = LoggerFactory.getLogger(PdlFolkeregisterStatusClient::class.java)
 
-    fun hentFolkeregisterStatus(fnr: Fnr): ForenkletFolkeregisterStatus {
+
+    fun hentFolkeregisterStatus(fnr: Fnr): FregStatusOgStatsborgerskap {
         val graphqlRequest = GraphqlRequestBuilder<QueryVariables>("graphql/pdl/hentFolkeregisterStatus.graphql")
             .buildRequest(QueryVariables(ident = fnr.get(), historikk = false))
         val result = pdlClient.request(graphqlRequest, HentFolkeregisterPersonStatusGraphqlWrapper::class.java)
@@ -51,6 +64,13 @@ class PdlFolkeregisterStatusClient(val pdlClient: PdlClient) {
 
         if(result.errors?.isNotEmpty() == true) { throw RuntimeException("Feil ved kall til pdl ${result?.errors.toString()}") }
 
+        return FregStatusOgStatsborgerskap(
+            getFregStatus(result),
+            result.data.hentPerson.statsborgerskap.map { it.land }
+        )
+    }
+
+    private fun getFregStatus(result: HentFolkeregisterPersonStatusGraphqlWrapper): ForenkletFolkeregisterStatus {
         val forenkletStatusString = result.data.hentPerson.folkeregisterpersonstatus.firstOrNull()?.forenkletStatus
         return when {
             (forenkletStatusString == ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven.name) -> ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven

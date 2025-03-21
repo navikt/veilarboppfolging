@@ -18,6 +18,7 @@ import no.nav.poao_tilgang.client.api.NetworkApiException
 import no.nav.tms.varsel.builder.BuilderEnvironment
 import no.nav.veilarboppfolging.client.norg.INorgTilhorighetClient
 import no.nav.veilarboppfolging.client.pdl.ForenkletFolkeregisterStatus
+import no.nav.veilarboppfolging.client.pdl.FregStatusOgStatsborgerskap
 import no.nav.veilarboppfolging.client.pdl.GTType
 import no.nav.veilarboppfolging.client.pdl.GeografiskTilknytningClient
 import no.nav.veilarboppfolging.client.pdl.GeografiskTilknytningNr
@@ -215,7 +216,7 @@ open class IntegrationTest {
             )
     }
 
-    fun mockPdlFolkeregisterStatus(fnr: Fnr, status: ForenkletFolkeregisterStatus) {
+    fun mockPdlFolkeregisterStatus(fnr: Fnr, status: FregStatusOgStatsborgerskap) {
         `when`(pdlFolkeregisterStatusClient.hentFolkeregisterStatus(fnr)).thenReturn(status)
     }
 

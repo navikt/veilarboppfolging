@@ -21,6 +21,9 @@ class PdlFolkeregisterStatusClientTest {
             {
               "data": {
                 "hentPerson": {
+                  "statsborgerskap": [{
+                    "land": "NOR"
+                  }],
                   "folkeregisterpersonstatus": [
                     {
                       "forenkletStatus": "doedIFolkeregisteret"
@@ -41,7 +44,10 @@ class PdlFolkeregisterStatusClientTest {
 
         val pdlClient = PdlClientImpl(apiUrl, { "token" }, "B1234")
         val result = PdlFolkeregisterStatusClient(pdlClient).hentFolkeregisterStatus(Fnr("12345678910"))
-        assertEquals(result, ForenkletFolkeregisterStatus.doedIFolkeregisteret)
+        assertEquals(result, FregStatusOgStatsborgerskap(
+            ForenkletFolkeregisterStatus.doedIFolkeregisteret,
+            listOf("NOR")
+        ))
     }
 
 }
