@@ -91,11 +91,15 @@ fun TilgangResultat.toKanStarteOppfolging(): VeilederHarTilgang {
 
 fun FregStatusOgStatsborgerskap.toKanStarteOppfolging(): FregStatusSjekkResultat {
     val euEllerEøsBorger = this.statsborgerskap.any { eeaLand.contains(it) }
+    val erGbrStatsborger = this.statsborgerskap.any { it === "GBR" }
 
     return when (this.fregStatus) {
         ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven -> FREG_STATUS_OK
         ForenkletFolkeregisterStatus.dNummer -> {
-            if (euEllerEøsBorger) FREG_STATUS_OK else FREG_STATUS_KREVER_MANUELL_GODKJENNING
+            if (euEllerEøsBorger || erGbrStatsborger)
+                FREG_STATUS_OK
+            else
+                FREG_STATUS_KREVER_MANUELL_GODKJENNING
         }
         ForenkletFolkeregisterStatus.forsvunnet,
         ForenkletFolkeregisterStatus.opphoert -> IKKE_LOVLIG_OPPHOLD
