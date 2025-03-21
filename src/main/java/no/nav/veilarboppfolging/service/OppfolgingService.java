@@ -350,8 +350,6 @@ public class OppfolgingService {
             var avsluttetAv = avregistrering.getAvsluttetAv().getIdent();
             var begrunnelse = avregistrering.getBegrunnelse();
 
-            oppfolgingsPeriodeRepository.avslutt(aktorId, avsluttetAv, begrunnelse);
-
             List<OppfolgingsperiodeEntity> perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId);
             var sistePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(perioder);
 
@@ -375,11 +373,15 @@ public class OppfolgingService {
 
                 // Hvis valgt periode ikke er siste periode, avslutt uten ekstra publisering
                 if (!valgtPeriode.getUuid().equals(sistePeriode.getUuid())) {
+                    //TODO: Avslutt spesifikk periode
+                    oppfolgingsPeriodeRepository.avsluttOppfolgingsperiode(oppfolgingsperiodeUUID, avsluttetAv, begrunnelse);
                     log.info("Oppfølgingsperiode med UUID: {} avsluttet for bruker - publiserer endringer på oppfølgingsperiode-topics.", oppfolgingsperiodeUUID);
                     kafkaProducerService.publiserOppfolgingsperiode(DtoMappers.tilOppfolgingsperiodeDTO(sistePeriode));
-                    return;
+                    bigQueryClient.loggAvsluttOppfolgingsperiode(oppfolgingsperiodeUUID, avregistrering.getAvregistreringsType());
                 }
             } else {
+                oppfolgingsPeriodeRepository.avslutt(aktorId, avsluttetAv, begrunnelse);
+
                 // Publiserer avslutning av siste oppfølgingsperiode
                 log.info("Oppfølgingsperiode avsluttet for bruker - publiserer endringer på oppfølgingsperiode-topics.");
                 kafkaProducerService.publiserOppfolgingsperiode(DtoMappers.tilOppfolgingsperiodeDTO(sistePeriode));
@@ -390,9 +392,8 @@ public class OppfolgingService {
                 kafkaProducerService.publiserEndringPaManuellStatus(aktorId, false);
 
                 kafkaProducerService.publiserSkjulAoMinSideMicrofrontend(aktorId);
+                bigQueryClient.loggAvsluttOppfolgingsperiode(sistePeriode.getUuid(), avregistrering.getAvregistreringsType());
             }
-
-            bigQueryClient.loggAvsluttOppfolgingsperiode(sistePeriode.getUuid(), avregistrering.getAvregistreringsType());
         });
     }
 

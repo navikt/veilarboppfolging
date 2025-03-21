@@ -58,6 +58,22 @@ public class OppfolgingsPeriodeRepository {
         });
     }
 
+    public void avsluttOppfolgingsperiode(UUID uuid, String veileder, String begrunnelse) {
+        transactor.executeWithoutResult((ignored) -> {
+            db.update("" +
+                            "UPDATE OPPFOLGINGSPERIODE " +
+                            "SET avslutt_veileder = ?, " +
+                            "avslutt_begrunnelse = ?, " +
+                            "sluttDato = CURRENT_TIMESTAMP, " +
+                            "oppdatert = CURRENT_TIMESTAMP " +
+                            "WHERE uuid = ? " +
+                            "AND sluttDato IS NULL",
+                    veileder,
+                    begrunnelse,
+                    uuid.toString());
+        });
+    }
+
     public Optional<OppfolgingsperiodeEntity> hentOppfolgingsperiode(String uuid) {
         return queryForNullableObject(
                 () -> db.queryForObject(
