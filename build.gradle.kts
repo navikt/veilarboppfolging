@@ -1,4 +1,4 @@
-val kotlinVersion = "2.0.20"
+val kotlinVersion = "2.1.20"
 val springBootVersion = "3.3.4"
 val dependencyManagementVersion = "1.1.3"
 val jacocoVersion = "0.8.12"
