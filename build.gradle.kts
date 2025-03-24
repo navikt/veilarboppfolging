@@ -23,7 +23,7 @@ plugins {
     id("io.spring.dependency-management") version "1.1.3"
     id("jacoco")
     id("org.sonarqube") version "6.0.1.5171"
-    kotlin("plugin.lombok") version "2.1.0"
+    kotlin("plugin.lombok") version "2.1.20"
 }
 
 group = "no.nav"
