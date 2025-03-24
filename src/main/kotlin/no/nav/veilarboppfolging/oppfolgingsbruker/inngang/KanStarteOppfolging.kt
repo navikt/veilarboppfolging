@@ -1,6 +1,8 @@
 package no.nav.veilarboppfolging.oppfolgingsbruker.inngang
 
 import no.nav.veilarboppfolging.client.pdl.ForenkletFolkeregisterStatus
+import no.nav.veilarboppfolging.client.pdl.FregStatusOgStatsborgerskap
+import no.nav.veilarboppfolging.client.pdl.eeaLand
 import no.nav.veilarboppfolging.controller.TilgangResultat
 
 sealed class KanStarteOppfolgingSjekk {
@@ -8,7 +10,7 @@ sealed class KanStarteOppfolgingSjekk {
         val isOk = when (this) {
             is BrukerHarRiktigOppfolgingStatus -> (this is OPPFOLGING_OK)
             is VeilederHarTilgang -> (this is TILGANG_OK)
-            is BrukerHarRiktigFregStatus -> (this is FREG_STATUS_OK)
+            is FregStatusSjekkResultat -> (this is FREG_STATUS_OK)
         }
         if (!isOk) return KanStarteOppfolging.kanStarteOppfolging(this)
         return KanStarteOppfolging.kanStarteOppfolging(kanStarteOppfolging.value)
@@ -27,15 +29,17 @@ object IKKE_TILGANG_EGNE_ANSATTE: VeilederHarTilgang()
 object IKKE_TILGANG_ENHET: VeilederHarTilgang()
 object IKKE_TILGANG_MODIA: VeilederHarTilgang()
 
-sealed class BrukerHarRiktigFregStatus: KanStarteOppfolgingSjekk()
-object FREG_STATUS_OK: BrukerHarRiktigFregStatus()
-object DOD: BrukerHarRiktigFregStatus()
-object IKKE_LOVLIG_OPPHOLD: BrukerHarRiktigFregStatus()
-object UKJENT_STATUS_FOLKEREGISTERET: BrukerHarRiktigFregStatus()
-object INGEN_STATUS_FOLKEREGISTERET: BrukerHarRiktigFregStatus()
+sealed class FregStatusSjekkResultat: KanStarteOppfolgingSjekk()
+object FREG_STATUS_OK: FregStatusSjekkResultat()
+object FREG_STATUS_KREVER_MANUELL_GODKJENNING: FregStatusSjekkResultat()
+object DOD: FregStatusSjekkResultat()
+object IKKE_LOVLIG_OPPHOLD: FregStatusSjekkResultat()
+object UKJENT_STATUS_FOLKEREGISTERET: FregStatusSjekkResultat()
+object INGEN_STATUS_FOLKEREGISTERET: FregStatusSjekkResultat()
 
 enum class KanStarteOppfolging {
     JA,
+    JA_MED_MANUELL_GODKJENNING,
     ALLEREDE_UNDER_OPPFOLGING,
     DOD,
     IKKE_LOVLIG_OPPHOLD,
@@ -57,6 +61,7 @@ enum class KanStarteOppfolging {
             return when (kanStarteOppfolgingSjekk) {
                 is DOD -> DOD
                 is FREG_STATUS_OK -> JA
+                is FREG_STATUS_KREVER_MANUELL_GODKJENNING -> JA_MED_MANUELL_GODKJENNING
                 is OPPFOLGING_OK -> JA
                 is TILGANG_OK -> JA
                 is IKKE_LOVLIG_OPPHOLD -> IKKE_LOVLIG_OPPHOLD
@@ -84,13 +89,21 @@ fun TilgangResultat.toKanStarteOppfolging(): VeilederHarTilgang {
     }
 }
 
-fun ForenkletFolkeregisterStatus.toKanStarteOppfolging(): BrukerHarRiktigFregStatus {
-    return when (this) {
-        ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven,
-        ForenkletFolkeregisterStatus.dNummer -> FREG_STATUS_OK
-        ForenkletFolkeregisterStatus.opphoert,
-        ForenkletFolkeregisterStatus.ikkeBosatt,
-        ForenkletFolkeregisterStatus.forsvunnet-> IKKE_LOVLIG_OPPHOLD
+fun FregStatusOgStatsborgerskap.toKanStarteOppfolging(): FregStatusSjekkResultat {
+    val euEllerEøsBorger = this.statsborgerskap.any { eeaLand.contains(it) }
+    val erGbrStatsborger = this.statsborgerskap.any { it === "GBR" }
+
+    return when (this.fregStatus) {
+        ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven -> FREG_STATUS_OK
+        ForenkletFolkeregisterStatus.dNummer -> {
+            if (euEllerEøsBorger || erGbrStatsborger)
+                FREG_STATUS_OK
+            else
+                FREG_STATUS_KREVER_MANUELL_GODKJENNING
+        }
+        ForenkletFolkeregisterStatus.forsvunnet,
+        ForenkletFolkeregisterStatus.opphoert -> IKKE_LOVLIG_OPPHOLD
+        ForenkletFolkeregisterStatus.ikkeBosatt -> FREG_STATUS_KREVER_MANUELL_GODKJENNING
         ForenkletFolkeregisterStatus.doedIFolkeregisteret -> DOD
         ForenkletFolkeregisterStatus.ukjent -> UKJENT_STATUS_FOLKEREGISTERET
         ForenkletFolkeregisterStatus.ingen_status -> INGEN_STATUS_FOLKEREGISTERET

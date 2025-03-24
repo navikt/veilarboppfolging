@@ -11,7 +11,7 @@ import no.nav.poao_tilgang.client.PoaoTilgangClient
 import no.nav.poao_tilgang.client.TilgangType
 import no.nav.veilarboppfolging.client.pdl.PdlFolkeregisterStatusClient
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ALLEREDE_UNDER_OPPFOLGING
-import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.BrukerHarRiktigFregStatus
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.FregStatusSjekkResultat
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.KanStarteOppfolging
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OPPFOLGING_OK
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.toKanStarteOppfolging
@@ -126,7 +126,7 @@ class GraphqlController(
         }
     }
 
-    private fun kanStarteOppfolgingMtpFregStatus(fnr: Fnr): BrukerHarRiktigFregStatus {
+    private fun kanStarteOppfolgingMtpFregStatus(fnr: Fnr): FregStatusSjekkResultat {
         return pdlFolkeregisterStatusClient.hentFolkeregisterStatus(fnr).toKanStarteOppfolging()
     }
 
