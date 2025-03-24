@@ -1,14 +1,14 @@
-val kotlinVersion = "2.0.20"
+val kotlinVersion = "2.1.20"
 val springBootVersion = "3.3.4"
 val dependencyManagementVersion = "1.1.3"
 val jacocoVersion = "0.8.12"
 val flywayVersion = "10.15.2"
-val commonVersion = "3.2025.03.06_11.40-cbc2a0783de9"
+val commonVersion = "3.2025.03.07_13.21-bb112c97720d"
 val ptoSchemaVersion = "1.2025.01.13_12.58-3e81bd940198"
 val poaoTilgangVersion = "2025.02.06_13.37-958e35e7373d"
 val wiremockVersion = "3.0.0-beta-10"
 val schedlockVersion = "6.3.0"
-val googleCloudBigQueryVersion = "2.43.2"
+val googleCloudBigQueryVersion = "2.49.0"
 val googleCloudLibrariesBomVersion = "26.49.0"
 val springDoc = "2.8.5"
 val tmsMicrofrontendBuilder = "3.0.0"
@@ -116,7 +116,7 @@ dependencies {
     testImplementation("no.nav.common:test:$commonVersion")
     testImplementation("org.springframework.graphql:spring-graphql-test:1.3.3")
     testImplementation("io.zonky.test:embedded-database-spring-test:2.5.1")
-    testImplementation("io.zonky.test:embedded-postgres:2.0.7")
+    testImplementation("io.zonky.test:embedded-postgres:2.1.0")
     testImplementation("junit:junit")
     testImplementation("org.junit.vintage:junit-vintage-engine")
     testImplementation("org.springframework.kafka:spring-kafka-test")
