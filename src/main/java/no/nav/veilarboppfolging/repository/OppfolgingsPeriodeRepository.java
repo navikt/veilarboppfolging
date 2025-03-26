@@ -14,6 +14,8 @@ import org.springframework.transaction.support.TransactionTemplate;
 import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -58,18 +60,22 @@ public class OppfolgingsPeriodeRepository {
         });
     }
 
-    public void avsluttOppfolgingsperiode(UUID uuid, String veileder, String begrunnelse) {
+    public void avsluttOppfolgingsperiode(UUID uuid, String veileder, String begrunnelse, ZonedDateTime sluttDato) {
         transactor.executeWithoutResult((ignored) -> {
+
+            Timestamp sluttTimestamp = Timestamp.from(sluttDato.toInstant());
+
             db.update("" +
                             "UPDATE OPPFOLGINGSPERIODE " +
                             "SET avslutt_veileder = ?, " +
                             "avslutt_begrunnelse = ?, " +
-                            "sluttDato = CURRENT_TIMESTAMP, " +
+                            "sluttDato = ?, " +
                             "oppdatert = CURRENT_TIMESTAMP " +
                             "WHERE uuid = ? " +
                             "AND sluttDato IS NULL",
                     veileder,
                     begrunnelse,
+                    sluttTimestamp,
                     uuid.toString());
         });
     }

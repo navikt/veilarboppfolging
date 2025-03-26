@@ -197,7 +197,8 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         var perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(AKTOR_ID).stream().sorted(Comparator.comparing(OppfolgingsperiodeEntity::getStartDato)).toList();
         Assertions.assertThat(perioder.size()).isEqualTo(2);
         var uuidSomSkalAvsluttes = perioder.getFirst().getUuid();
-        oppfolgingsPeriodeRepository.avsluttOppfolgingsperiode(uuidSomSkalAvsluttes, VEILEDER, "en begrunnelse");
+        var sistePeriode = perioder.getLast();
+        oppfolgingsPeriodeRepository.avsluttOppfolgingsperiode(uuidSomSkalAvsluttes, VEILEDER, "en begrunnelse", sistePeriode.getStartDato());
 
         oppfolgingService.adminAvsluttSpesifikkOppfolgingsperiode(AKTOR_ID, VEILEDER, "en begrunnelse", uuidSomSkalAvsluttes.toString());
 
