@@ -37,9 +37,13 @@ class KafkaProducerService @Autowired constructor(
 ) {
     private val logger = LoggerFactory.getLogger(this::class.java)
 
+    fun publiserSpesifikkOppfolgingsperiode(oppfolgingsperiode: OppfolgingsperiodeDTO) {
+        oppfolgingsperiode(oppfolgingsperiode)
+    }
+
     fun publiserOppfolgingsperiode(oppfolgingsperiode: OppfolgingsperiodeDTO) {
         sisteOppfolgingsPeriode(oppfolgingsperiode.toSisteOppfolgingsperiodeDTO())
-        oppfolingsperiode(oppfolgingsperiode)
+        oppfolgingsperiode(oppfolgingsperiode)
     }
 
     private fun sisteOppfolgingsPeriode(sisteOppfolgingsperiodeV1: SisteOppfolgingsperiodeV1) {
@@ -50,7 +54,7 @@ class KafkaProducerService @Autowired constructor(
         )
     }
 
-    private fun oppfolingsperiode(sisteOppfolgingsperiodeV1: OppfolgingsperiodeDTO) {
+    private fun oppfolgingsperiode(sisteOppfolgingsperiodeV1: OppfolgingsperiodeDTO) {
         store(
             kafkaProperties.oppfolgingsperiodeTopic,
             sisteOppfolgingsperiodeV1.aktorId,
