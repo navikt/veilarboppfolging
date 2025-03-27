@@ -80,7 +80,8 @@ class OppfolgingV3Controller(
             AllowListApplicationName.VEILARBVEDTAKSSTOTTE,
             AllowListApplicationName.VEILARBDIALOG,
             AllowListApplicationName.VEILARBAKTIVITET,
-            AllowListApplicationName.MULIGHETSROMMET
+            AllowListApplicationName.MULIGHETSROMMET,
+            AllowListApplicationName.AMT_AKTIVITETSKORT_PUBLISHER
         )
         authService.authorizeRequest(oppfolgingRequest.fnr, allowlist)
         return oppfolgingService.hentGjeldendeOppfolgingsperiode(oppfolgingRequest.fnr)
