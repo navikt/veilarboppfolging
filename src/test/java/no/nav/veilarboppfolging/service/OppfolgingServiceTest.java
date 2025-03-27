@@ -156,10 +156,15 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         oppfolgingsPeriodeRepository.start(oppfolgingsbruker);
         var perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(AKTOR_ID).stream().sorted(Comparator.comparing(OppfolgingsperiodeEntity::getStartDato)).toList();
         Assertions.assertThat(perioder.size()).isEqualTo(2);
-        var uuidSomSkalAvsluttes = perioder.getFirst().getUuid().toString();
+        var periodeSomSkalAvsluttes = perioder.getFirst();
+        var sistePeriode = perioder.getLast();
+        var uuidSomSkalAvsluttes = periodeSomSkalAvsluttes.getUuid().toString();
 
         oppfolgingService.adminAvsluttSpesifikkOppfolgingsperiode(AKTOR_ID, VEILEDER, "en begrunnelse", uuidSomSkalAvsluttes);
 
+
+        var periodeSomBleAvsluttet =oppfolgingsPeriodeRepository.hentOppfolgingsperioder(AKTOR_ID).stream().filter(p -> p.getUuid().equals(periodeSomSkalAvsluttes.getUuid())).findFirst().orElse(null);
+        Assertions.assertThat(periodeSomBleAvsluttet.getSluttDato()).isEqualTo(sistePeriode.getStartDato());
         UnderOppfolgingDTO underOppfolgingDTO2 = oppfolgingService.oppfolgingData(FNR);
         Assertions.assertThat(underOppfolgingDTO2.isUnderOppfolging()).isTrue();
         verify(kafkaProducerService).publiserSpesifikkOppfolgingsperiode(any(OppfolgingsperiodeDTO.class));

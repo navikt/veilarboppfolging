@@ -407,10 +407,11 @@ public class OppfolgingService {
 
         // Hvis valgt periode ikke er siste periode, avslutt uten ekstra publisering
         if (!oppfolgingsperiodeUUID.equals(sistePeriode.getUuid())) {
-            oppfolgingsPeriodeRepository.avsluttOppfolgingsperiode(oppfolgingsperiodeUUID, avregistrering.getAvsluttetAv().getIdent(), avregistrering.getBegrunnelse(), sistePeriode.getStartDato());
+            var valgtPeriodeMedSluttDato = valgtPeriode.withSluttDato(sistePeriode.getStartDato());
+            oppfolgingsPeriodeRepository.avsluttOppfolgingsperiode(oppfolgingsperiodeUUID, avregistrering.getAvsluttetAv().getIdent(), avregistrering.getBegrunnelse(), valgtPeriodeMedSluttDato.getSluttDato());
 
             log.info("Oppfølgingsperiode med UUID: {} avsluttet for bruker - publiserer endringer på oppfølgingsperiode-topics.", oppfolgingsperiodeUUID);
-            kafkaProducerService.publiserSpesifikkOppfolgingsperiode(DtoMappers.tilOppfolgingsperiodeDTO(valgtPeriode));
+            kafkaProducerService.publiserSpesifikkOppfolgingsperiode(DtoMappers.tilOppfolgingsperiodeDTO(valgtPeriodeMedSluttDato));
 
             bigQueryClient.loggAvsluttOppfolgingsperiode(oppfolgingsperiodeUUID, avregistrering.getAvregistreringsType());
         }
