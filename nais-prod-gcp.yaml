@@ -187,6 +187,9 @@ spec:
         - application: amt-person-service
           namespace: amt
           cluster: prod-gcp
+        - application: amt-aktivitetskort-publisher
+          namespace: amt
+          cluster: prod-gcp
         - application: tms-min-side-proxy
           namespace: min-side
           cluster: prod-gcp
