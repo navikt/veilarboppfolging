@@ -95,7 +95,7 @@ public class AdminController {
                         oppfolgingService.adminForceAvsluttOppfolgingForBruker(AktorId.of(aktorId), innloggetBruker, brukereSomSkalAvsluttes.getBegrunnelse());
                         return true;
                     } catch (Exception e) {
-                        log.warn("Kunne ikke avslutte oppfølging", e);
+                        log.warn("Kunne ikke avslutte oppfølging: {}", e.getMessage());
                         return false;
                     }
                 }).toList();
