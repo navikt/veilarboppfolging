@@ -10,7 +10,9 @@ import no.nav.poao_tilgang.client.NorskIdent
 import no.nav.poao_tilgang.client.PoaoTilgangClient
 import no.nav.poao_tilgang.client.TilgangType
 import no.nav.veilarboppfolging.client.pdl.PdlFolkeregisterStatusClient
+import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ALLEREDE_UNDER_OPPFOLGING
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.FregStatusSjekkResultat
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.KanStarteOppfolging
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OPPFOLGING_OK
@@ -78,7 +80,8 @@ class GraphqlController(
     private val authService: AuthService,
     private val poaoTilgangClient: PoaoTilgangClient,
     private val oppfolgingsPeriodeRepository: OppfolgingsPeriodeRepository,
-    private val pdlFolkeregisterStatusClient: PdlFolkeregisterStatusClient
+    private val pdlFolkeregisterStatusClient: PdlFolkeregisterStatusClient,
+    private val arenaService: ArenaOppfolgingService
 ) {
     private val logger = LoggerFactory.getLogger(GraphqlController::class.java)
 
@@ -150,7 +153,16 @@ class GraphqlController(
     @SchemaMapping(typeName="OppfolgingDto", field="kanStarteOppfolging")
     fun kanStarteOppfolging(oppfolgingDto: OppfolgingDto): KanStarteOppfolging? {
         if (oppfolgingDto.norskIdent == null) throw InternFeil("Fant ikke fnr å sjekke tilgang mot i kanStarteOppfolging")
-        val gyldigOppfolging = if (oppfolgingDto.erUnderOppfolging) ALLEREDE_UNDER_OPPFOLGING else OPPFOLGING_OK
+        val gyldigOppfolging = if (oppfolgingDto.erUnderOppfolging) {
+            val kanEnkeltReaktiveres = arenaService.kanEnkeltReaktiveresOgErIserv(Fnr.of(oppfolgingDto.norskIdent))
+            if (kanEnkeltReaktiveres) {
+                // Eneste måte man kan være under oppfølging og samtidig være inaktivert er at kanEnkeltReaktiveres.
+                // Alle andre går ut av oppfølging omgående.
+                ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT
+            } else ALLEREDE_UNDER_OPPFOLGING
+        } else {
+            OPPFOLGING_OK
+        }
         val gyldigTilgang = lazy { evaluerTilgang(oppfolgingDto.norskIdent).toKanStarteOppfolging() }
         val gyldigFregStatus = lazy { kanStarteOppfolgingMtpFregStatus(Fnr.of(oppfolgingDto.norskIdent)) }
         return gyldigOppfolging and gyldigTilgang and gyldigFregStatus

@@ -42,6 +42,12 @@ class ArenaOppfolgingService @Autowired constructor (
             .flatMap { Optional.ofNullable(it.kanEnkeltReaktiveres) }
     }
 
+    fun kanEnkeltReaktiveresOgErIserv(fnr: Fnr): Boolean {
+        return veilarbarenaClient.getArenaOppfolgingsstatus(fnr)
+            .map { (it.kanEnkeltReaktiveres == true) && it.formidlingsgruppe == Formidlingsgruppe.ISERV.name }
+            .orElse(false) // Nei hvis bruker ikke finnes i arena eller ikke får svar fra arena
+    }
+
     /**
      *  Brukes kun hvis man trenger [VeilarbArenaOppfolgingsStatus.kanEnkeltReaktiveres] , dette feltet kommer ikke på topic og kan derfor ikke caches i lokalt
      *  @see no.nav.veilarboppfolging.client.veilarbarenaVeilarbArenaOppfolgingsStatus#kanEnkeltReaktiveres

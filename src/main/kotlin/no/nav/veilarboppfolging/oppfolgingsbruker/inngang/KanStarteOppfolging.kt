@@ -20,6 +20,7 @@ sealed class KanStarteOppfolgingSjekk {
 sealed class BrukerHarRiktigOppfolgingStatus(): KanStarteOppfolgingSjekk()
 object OPPFOLGING_OK: BrukerHarRiktigOppfolgingStatus()
 object ALLEREDE_UNDER_OPPFOLGING: BrukerHarRiktigOppfolgingStatus()
+object ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT: BrukerHarRiktigOppfolgingStatus()
 
 sealed class VeilederHarTilgang: KanStarteOppfolgingSjekk()
 object TILGANG_OK: VeilederHarTilgang()
@@ -39,7 +40,8 @@ object INGEN_STATUS_FOLKEREGISTERET: FregStatusSjekkResultat()
 
 enum class KanStarteOppfolging {
     JA,
-    JA_MED_MANUELL_GODKJENNING,
+    JA_MED_MANUELL_GODKJENNING_IKKE_BOSATT,
+    JA_MED_MANUELL_GODKJENNING_DNUMMER_IKKE_EØS,
     ALLEREDE_UNDER_OPPFOLGING,
     DOD,
     IKKE_LOVLIG_OPPHOLD,
