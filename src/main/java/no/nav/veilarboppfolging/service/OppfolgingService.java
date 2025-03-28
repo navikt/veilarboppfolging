@@ -41,12 +41,11 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 
 import static java.util.Optional.empty;
 import static java.util.stream.Collectors.toList;
-import static no.nav.veilarboppfolging.config.ApplicationConfig.SYSTEM_USER_NAME;
 import static no.nav.veilarboppfolging.utils.ArenaUtils.erIserv;
 import static no.nav.veilarboppfolging.utils.ArenaUtils.kanSettesUnderOppfolging;
 import static no.nav.veilarboppfolging.utils.SecureLog.secureLog;
@@ -238,7 +237,7 @@ public class OppfolgingService {
                 .setVeilederId(oppfolgingEntity.getVeilederId())
                 .setUnderOppfolging(oppfolgingEntity.isUnderOppfolging());
 
-        Optional<KvpPeriodeEntity> maybeKvpPeriode= empty();
+        Optional<KvpPeriodeEntity> maybeKvpPeriode = empty();
 
         if (oppfolgingEntity.getGjeldendeKvpId() != 0) {
             maybeKvpPeriode = kvpRepository.hentKvpPeriode(oppfolgingEntity.getGjeldendeKvpId());
@@ -316,7 +315,7 @@ public class OppfolgingService {
     }
 
     private Optional<Kvalifiseringsgruppe> getKvalifiseringsGruppe(OppfolgingsRegistrering oppfolgingsbruker) {
-        if(oppfolgingsbruker instanceof ArenaSyncRegistrering arenasyncoppfolgingsbruker) {
+        if (oppfolgingsbruker instanceof ArenaSyncRegistrering arenasyncoppfolgingsbruker) {
             return Optional.ofNullable(arenasyncoppfolgingsbruker.getKvalifiseringsgruppe());
         } else {
             return Optional.empty();
@@ -336,30 +335,83 @@ public class OppfolgingService {
     }
 
     public void adminForceAvsluttOppfolgingForBruker(AktorId aktorId, String veilederId, String begrunnelse) {
-        avsluttOppfolgingForBruker(new AdminAvregistrering(aktorId, new VeilederRegistrant(new NavIdent(veilederId)), begrunnelse));
+        avsluttOppfolgingForBruker(new AdminAvregistrering(aktorId, new VeilederRegistrant(new NavIdent(veilederId)), begrunnelse, null));
+    }
+
+    public void adminAvsluttSpesifikkOppfolgingsperiode(AktorId aktorId, String veilederId, String begrunnelse, String uuid) {
+        avsluttOppfolgingForBruker(new AdminAvregistrering(aktorId, new VeilederRegistrant(new NavIdent(veilederId)), begrunnelse, UUID.fromString(uuid)));
     }
 
     private void avsluttOppfolgingForBruker(Avregistrering avregistrering) {
         transactor.executeWithoutResult((ignored) -> {
+            var perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(avregistrering.getAktorId());
+            var sistePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(perioder);
 
-            var aktorId = avregistrering.getAktorId();
-            oppfolgingsPeriodeRepository.avslutt(aktorId, avregistrering.getAvsluttetAv().getIdent(), avregistrering.getBegrunnelse());
-
-            List<OppfolgingsperiodeEntity> perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId);
-            OppfolgingsperiodeEntity sistePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(perioder);
-
-            log.info("Oppfølgingsperiode avsluttet for bruker - publiserer endringer på oppfølgingsperiode-topics.");
-            kafkaProducerService.publiserOppfolgingsperiode(DtoMappers.tilOppfolgingsperiodeDTO(sistePeriode));
-
-            // Publiserer også endringer som resettes i oppfolgingsstatus-tabellen ved avslutting av oppfølging
-            kafkaProducerService.publiserVeilederTilordnet(aktorId, null);
-            kafkaProducerService.publiserEndringPaNyForVeileder(aktorId, false);
-            kafkaProducerService.publiserEndringPaManuellStatus(aktorId, false);
-
-            kafkaProducerService.publiserSkjulAoMinSideMicrofrontend(aktorId);
-
-            bigQueryClient.loggAvsluttOppfolgingsperiode(sistePeriode.getUuid(), avregistrering.getAvregistreringsType());
+            if (avregistrering.getOppfolgingsperiodeUUID() != null) {
+                log.info("Skal avslutte spesifikk oppfølgingsperiode.");
+                avsluttValgtOppfolgingsperiode(avregistrering, perioder, sistePeriode);
+            } else {
+                log.info("Skal avslutte siste oppfølgingsperiode.");
+                avsluttSisteOppfolgingsperiode(avregistrering, sistePeriode);
+            }
         });
+    }
+
+    private void avsluttValgtOppfolgingsperiode(Avregistrering avregistrering, List<OppfolgingsperiodeEntity> perioder, OppfolgingsperiodeEntity sistePeriode) {
+        var oppfolgingsperiodeUUID = avregistrering.getOppfolgingsperiodeUUID();
+
+        var valgtPeriode = perioder.stream()
+                .filter(p -> p.getUuid().equals(oppfolgingsperiodeUUID))
+                .findFirst()
+                .orElse(null);
+
+        if (valgtPeriode == null) {
+            log.warn("Fant ikke oppfølgingsperiode med UUID: {}", oppfolgingsperiodeUUID);
+            return;
+        }
+
+        if (valgtPeriode.getSluttDato() != null) {
+            log.warn("Oppfølgingsperiode med UUID: {} er allerede avsluttet.", oppfolgingsperiodeUUID);
+            return;
+        }
+
+        if (valgtOppfolgingsperiodeErSiste(valgtPeriode, sistePeriode)) {
+            log.info("Valgt oppfølgingsperiode er siste. Avslutter oppfølging.");
+            avsluttSisteOppfolgingsperiode(avregistrering, sistePeriode);
+            return;
+        }
+
+        var valgtPeriodeMedSluttDato = valgtPeriode.withSluttDato(sistePeriode.getStartDato());
+        oppfolgingsPeriodeRepository.avsluttOppfolgingsperiode(oppfolgingsperiodeUUID, avregistrering.getAvsluttetAv().getIdent(), avregistrering.getBegrunnelse(), valgtPeriodeMedSluttDato.getSluttDato());
+
+        log.info("Oppfølgingsperiode med UUID: {} avsluttet for bruker - publiserer endringer på oppfølgingsperiode-topics.", oppfolgingsperiodeUUID);
+        kafkaProducerService.publiserValgtOppfolgingsperiode(DtoMappers.tilOppfolgingsperiodeDTO(valgtPeriodeMedSluttDato));
+
+        bigQueryClient.loggAvsluttOppfolgingsperiode(oppfolgingsperiodeUUID, avregistrering.getAvregistreringsType());
+    }
+
+    private static boolean valgtOppfolgingsperiodeErSiste(OppfolgingsperiodeEntity valgtPeriode, OppfolgingsperiodeEntity sistePeriode) {
+        return valgtPeriode.getUuid().equals(sistePeriode.getUuid());
+    }
+
+    private void avsluttSisteOppfolgingsperiode(Avregistrering avregistrering, OppfolgingsperiodeEntity sistePeriode) {
+        var aktorId = avregistrering.getAktorId();
+        var avsluttetAv = avregistrering.getAvsluttetAv().getIdent();
+        var begrunnelse = avregistrering.getBegrunnelse();
+
+        oppfolgingsPeriodeRepository.avslutt(aktorId, avsluttetAv, begrunnelse);
+
+        // Publiserer avslutning av siste oppfølgingsperiode
+        log.info("Oppfølgingsperiode avsluttet for bruker {} - publiserer endringer på oppfølgingsperiode-topics.", aktorId.get());
+        kafkaProducerService.publiserOppfolgingsperiode(DtoMappers.tilOppfolgingsperiodeDTO(sistePeriode));
+
+        // Publiserer også endringer som resettes i oppfolgingsstatus-tabellen ved avslutting av oppfølging
+        kafkaProducerService.publiserVeilederTilordnet(aktorId, null);
+        kafkaProducerService.publiserEndringPaNyForVeileder(aktorId, false);
+        kafkaProducerService.publiserEndringPaManuellStatus(aktorId, false);
+
+        kafkaProducerService.publiserSkjulAoMinSideMicrofrontend(aktorId);
+        bigQueryClient.loggAvsluttOppfolgingsperiode(sistePeriode.getUuid(), avregistrering.getAvregistreringsType());
     }
 
     public boolean erUnderOppfolging(AktorId aktorId) {
@@ -392,7 +444,7 @@ public class OppfolgingService {
         Optional<VeilarbArenaOppfolgingsStatus> maybeArenaOppfolging = arenaOppfolgingService.hentArenaOppfolgingsStatus(fnr);
 
         boolean kanSettesUnderOppfolging = !oppfolging.isUnderOppfolging() && maybeArenaOppfolging
-                .map(s -> kanSettesUnderOppfolging(EnumUtils.valueOf(Formidlingsgruppe.class, s.getFormidlingsgruppe()), EnumUtils.valueOf(Kvalifiseringsgruppe.class, s.getServicegruppe()) ))
+                .map(s -> kanSettesUnderOppfolging(EnumUtils.valueOf(Formidlingsgruppe.class, s.getFormidlingsgruppe()), EnumUtils.valueOf(Kvalifiseringsgruppe.class, s.getServicegruppe())))
                 .orElse(false);
 
         long kvpId = kvpRepository.gjeldendeKvp(aktorId);
@@ -406,14 +458,14 @@ public class OppfolgingService {
         Boolean erInaktivIArena = maybeArenaOppfolging.map(ao -> erIserv(EnumUtils.valueOf(Formidlingsgruppe.class, ao.getFormidlingsgruppe()))).orElse(null);
 
         Optional<Boolean> maybeKanEnkeltReaktiveres = maybeArenaOppfolging
-                .flatMap( (it) -> Optional.ofNullable(it.getKanEnkeltReaktiveres()) );
+                .flatMap((it) -> Optional.ofNullable(it.getKanEnkeltReaktiveres()));
 
         Boolean kanReaktiveres = maybeKanEnkeltReaktiveres
                 .map(kr -> oppfolging.isUnderOppfolging() && kr)
                 .orElse(null);
 
         Boolean erSykmeldtMedArbeidsgiver = maybeArenaOppfolging
-                .map(ao -> ArenaUtils.erIARBSUtenOppfolging(EnumUtils.valueOf(Formidlingsgruppe.class, ao.getFormidlingsgruppe()) ,EnumUtils.valueOf(Kvalifiseringsgruppe.class,  ao.getServicegruppe())))
+                .map(ao -> ArenaUtils.erIARBSUtenOppfolging(EnumUtils.valueOf(Formidlingsgruppe.class, ao.getFormidlingsgruppe()), EnumUtils.valueOf(Kvalifiseringsgruppe.class, ao.getServicegruppe())))
                 .orElse(null);
 
         LocalDate inaktiveringsDato = maybeArenaOppfolging
@@ -455,7 +507,7 @@ public class OppfolgingService {
         boolean kanAvslutte = kanAvslutteOppfolging(aktorId, erUnderOppfolging(aktorId), erIserv, harAktiveTiltaksdeltakelser);
 
         boolean erUnderOppfolgingIArena = maybeArenaOppfolging
-                .map(status -> ArenaUtils.erUnderOppfolging(EnumUtils.valueOf(Formidlingsgruppe.class, status.getFormidlingsgruppe()) , EnumUtils.valueOf(Kvalifiseringsgruppe.class, status.getServicegruppe()) ))
+                .map(status -> ArenaUtils.erUnderOppfolging(EnumUtils.valueOf(Formidlingsgruppe.class, status.getFormidlingsgruppe()), EnumUtils.valueOf(Kvalifiseringsgruppe.class, status.getServicegruppe())))
                 .orElse(false);
 
         LocalDate inaktiveringsDato = maybeArenaOppfolging

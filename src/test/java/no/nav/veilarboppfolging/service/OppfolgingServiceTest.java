@@ -40,6 +40,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -131,16 +132,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
     @Test
     public void skal_publisere_paa_kafka_ved_avsluttet_oppfolging() {
-        arenaOppfolgingTilstand.setFormidlingsgruppe("IARBS");
-        oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
-        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.Companion.arenaSyncOppfolgingBruker(AKTOR_ID, Formidlingsgruppe.IARBS, Kvalifiseringsgruppe.BATT));
-
-        UnderOppfolgingDTO underOppfolgingDTO = oppfolgingService.oppfolgingData(FNR);
-        Assertions.assertThat(underOppfolgingDTO.isUnderOppfolging()).isTrue();
-        Assertions.assertThat(underOppfolgingDTO.isErManuell()).isFalse();
-
-
-        assertUnderOppfolgingLagret(AKTOR_ID);
+        startOppfolgingForBruker();
 
         arenaOppfolgingTilstand.setFormidlingsgruppe("ISERV");
 
@@ -152,6 +144,72 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         verify(kafkaProducerService).publiserEndringPaNyForVeileder(AKTOR_ID, false);
         verify(kafkaProducerService).publiserEndringPaManuellStatus(AKTOR_ID, false);
         verify(kafkaProducerService).publiserSkjulAoMinSideMicrofrontend(AKTOR_ID);
+    }
+
+    @Test
+    public void adminAvsluttSpesifikkOppfolgingsperiode_OppfolgingsperiodeErAktivOgIkkeSiste_AvsluttPeriode() {
+        startOppfolgingForBruker();
+
+        reset(kafkaProducerService);
+
+        var oppfolgingsbruker = OppfolgingsRegistrering.Companion.arbeidssokerRegistrering(AKTOR_ID, new VeilederRegistrant(NAV_IDENT));
+        oppfolgingsPeriodeRepository.start(oppfolgingsbruker);
+        var perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(AKTOR_ID).stream().sorted(Comparator.comparing(OppfolgingsperiodeEntity::getStartDato)).toList();
+        Assertions.assertThat(perioder.size()).isEqualTo(2);
+        var periodeSomSkalAvsluttes = perioder.getFirst();
+        var sistePeriode = perioder.getLast();
+        var uuidSomSkalAvsluttes = periodeSomSkalAvsluttes.getUuid().toString();
+
+        oppfolgingService.adminAvsluttSpesifikkOppfolgingsperiode(AKTOR_ID, VEILEDER, "en begrunnelse", uuidSomSkalAvsluttes);
+
+
+        var periodeSomBleAvsluttet =oppfolgingsPeriodeRepository.hentOppfolgingsperioder(AKTOR_ID).stream().filter(p -> p.getUuid().equals(periodeSomSkalAvsluttes.getUuid())).findFirst().orElse(null);
+        Assertions.assertThat(periodeSomBleAvsluttet.getSluttDato()).isEqualTo(sistePeriode.getStartDato());
+        UnderOppfolgingDTO underOppfolgingDTO2 = oppfolgingService.oppfolgingData(FNR);
+        Assertions.assertThat(underOppfolgingDTO2.isUnderOppfolging()).isTrue();
+        verify(kafkaProducerService).publiserValgtOppfolgingsperiode(any(OppfolgingsperiodeDTO.class));
+        verify(kafkaProducerService, never()).publiserVeilederTilordnet(AKTOR_ID, null);
+        verify(kafkaProducerService, never()).publiserEndringPaNyForVeileder(AKTOR_ID, false);
+        verify(kafkaProducerService, never()).publiserEndringPaManuellStatus(AKTOR_ID, false);
+        verify(kafkaProducerService, never()).publiserSkjulAoMinSideMicrofrontend(AKTOR_ID);
+    }
+
+
+    @Test
+    public void adminAvsluttSpesifikkOppfolgingsperiode_SpesifisertPeriodeFinnesIkke_IkkeAvsluttOgLoggWarning() {
+        startOppfolgingForBruker();
+        reset(kafkaProducerService);
+
+        var oppfolgingsbruker = OppfolgingsRegistrering.Companion.arbeidssokerRegistrering(AKTOR_ID, new VeilederRegistrant(NAV_IDENT));
+        oppfolgingsPeriodeRepository.start(oppfolgingsbruker);
+        var uuidSomIkkeFinnes = "beb16ce1-b2a7-4682-87dc-6bd97f43b9b6";
+
+        oppfolgingService.adminAvsluttSpesifikkOppfolgingsperiode(AKTOR_ID, VEILEDER, "en begrunnelse", uuidSomIkkeFinnes);
+
+        UnderOppfolgingDTO underOppfolgingDTO2 = oppfolgingService.oppfolgingData(FNR);
+        Assertions.assertThat(underOppfolgingDTO2.isUnderOppfolging()).isTrue();
+        verify(kafkaProducerService, never()).publiserOppfolgingsperiode(any(OppfolgingsperiodeDTO.class));
+    }
+
+    @Test
+    public void adminAvsluttSpesifikkOppfolgingsperiode_SpesifisertPeriodeErAlleredeAvsluttet_IkkeAvsluttOgLoggWarning() {
+        startOppfolgingForBruker();
+
+        reset(kafkaProducerService);
+
+        var oppfolgingsbruker = OppfolgingsRegistrering.Companion.arbeidssokerRegistrering(AKTOR_ID, new VeilederRegistrant(NAV_IDENT));
+        oppfolgingsPeriodeRepository.start(oppfolgingsbruker);
+        var perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(AKTOR_ID).stream().sorted(Comparator.comparing(OppfolgingsperiodeEntity::getStartDato)).toList();
+        Assertions.assertThat(perioder.size()).isEqualTo(2);
+        var uuidSomSkalAvsluttes = perioder.getFirst().getUuid();
+        var sistePeriode = perioder.getLast();
+        oppfolgingsPeriodeRepository.avsluttOppfolgingsperiode(uuidSomSkalAvsluttes, VEILEDER, "en begrunnelse", sistePeriode.getStartDato());
+
+        oppfolgingService.adminAvsluttSpesifikkOppfolgingsperiode(AKTOR_ID, VEILEDER, "en begrunnelse", uuidSomSkalAvsluttes.toString());
+
+        UnderOppfolgingDTO underOppfolgingDTO2 = oppfolgingService.oppfolgingData(FNR);
+        Assertions.assertThat(underOppfolgingDTO2.isUnderOppfolging()).isTrue();
+        verify(kafkaProducerService, never()).publiserOppfolgingsperiode(any(OppfolgingsperiodeDTO.class));
     }
 
     @Test(expected = ForbiddenException.class)
@@ -409,5 +467,15 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
             .withReservert(reservert);
 
         when(manuellStatusService.hentDigdirKontaktinfo(FNR)).thenReturn(kontaktinfo);
+    }
+
+    private void startOppfolgingForBruker() {
+        arenaOppfolgingTilstand.setFormidlingsgruppe("IARBS");
+        oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
+        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.Companion.arenaSyncOppfolgingBruker(AKTOR_ID, Formidlingsgruppe.IARBS, Kvalifiseringsgruppe.BATT));
+        UnderOppfolgingDTO underOppfolgingDTO = oppfolgingService.oppfolgingData(FNR);
+        Assertions.assertThat(underOppfolgingDTO.isUnderOppfolging()).isTrue();
+        Assertions.assertThat(underOppfolgingDTO.isErManuell()).isFalse();
+        assertUnderOppfolgingLagret(AKTOR_ID);
     }
 }
