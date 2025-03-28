@@ -37,7 +37,7 @@ class KafkaProducerService @Autowired constructor(
 ) {
     private val logger = LoggerFactory.getLogger(this::class.java)
 
-    fun publiserSpesifikkOppfolgingsperiode(oppfolgingsperiode: OppfolgingsperiodeDTO) {
+    fun publiserValgtOppfolgingsperiode(oppfolgingsperiode: OppfolgingsperiodeDTO) {
         oppfolgingsperiode(oppfolgingsperiode)
     }
 

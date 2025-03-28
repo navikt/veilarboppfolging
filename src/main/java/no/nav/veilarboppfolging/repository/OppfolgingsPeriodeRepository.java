@@ -65,8 +65,7 @@ public class OppfolgingsPeriodeRepository {
 
             Timestamp sluttTimestamp = Timestamp.from(sluttDato.toInstant());
 
-            db.update("" +
-                            "UPDATE OPPFOLGINGSPERIODE " +
+            db.update(" UPDATE OPPFOLGINGSPERIODE " +
                             "SET avslutt_veileder = ?, " +
                             "avslutt_begrunnelse = ?, " +
                             "sluttDato = ?, " +

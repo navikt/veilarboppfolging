@@ -167,7 +167,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         Assertions.assertThat(periodeSomBleAvsluttet.getSluttDato()).isEqualTo(sistePeriode.getStartDato());
         UnderOppfolgingDTO underOppfolgingDTO2 = oppfolgingService.oppfolgingData(FNR);
         Assertions.assertThat(underOppfolgingDTO2.isUnderOppfolging()).isTrue();
-        verify(kafkaProducerService).publiserSpesifikkOppfolgingsperiode(any(OppfolgingsperiodeDTO.class));
+        verify(kafkaProducerService).publiserValgtOppfolgingsperiode(any(OppfolgingsperiodeDTO.class));
         verify(kafkaProducerService, never()).publiserVeilederTilordnet(AKTOR_ID, null);
         verify(kafkaProducerService, never()).publiserEndringPaNyForVeileder(AKTOR_ID, false);
         verify(kafkaProducerService, never()).publiserEndringPaManuellStatus(AKTOR_ID, false);
