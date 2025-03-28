@@ -402,7 +402,7 @@ public class OppfolgingService {
         oppfolgingsPeriodeRepository.avslutt(aktorId, avsluttetAv, begrunnelse);
 
         // Publiserer avslutning av siste oppfølgingsperiode
-        log.info("Oppfølgingsperiode avsluttet for bruker - publiserer endringer på oppfølgingsperiode-topics.");
+        log.info("Oppfølgingsperiode avsluttet for bruker {} - publiserer endringer på oppfølgingsperiode-topics.", aktorId.get());
         kafkaProducerService.publiserOppfolgingsperiode(DtoMappers.tilOppfolgingsperiodeDTO(sistePeriode));
 
         // Publiserer også endringer som resettes i oppfolgingsstatus-tabellen ved avslutting av oppfølging
