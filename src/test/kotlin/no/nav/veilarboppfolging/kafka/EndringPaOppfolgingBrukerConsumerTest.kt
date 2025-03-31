@@ -36,7 +36,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.kafka.test.EmbeddedKafkaBroker
 import org.springframework.kafka.test.utils.KafkaTestUtils
 import org.springframework.test.context.ActiveProfiles
-import org.springframework.test.context.bean.override.mockito.MockitoBean
 import java.time.Duration
 import java.time.LocalDate
 import java.util.*
@@ -55,7 +54,7 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
     @Autowired
     private lateinit var embeddedKafkaBroker: EmbeddedKafkaBroker
 
-    @MockitoBean
+    @Autowired
     lateinit var veilarbarenaClient: VeilarbarenaClient
 
     val fnr = Fnr.of("12345678901")

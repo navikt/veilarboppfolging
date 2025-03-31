@@ -3,6 +3,7 @@ package no.nav.veilarboppfolging.client.veilarbarena;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
+import javax.annotation.Nullable;
 import java.time.LocalDate;
 
 /**
@@ -17,5 +18,6 @@ public class VeilarbArenaOppfolgingsStatus {
     String servicegruppe;
     String oppfolgingsenhet;
     LocalDate inaktiveringsdato;
+    @Nullable
     Boolean kanEnkeltReaktiveres;
 }

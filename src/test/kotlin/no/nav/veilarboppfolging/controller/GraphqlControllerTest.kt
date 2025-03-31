@@ -3,10 +3,11 @@ package no.nav.veilarboppfolging.controller
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.poao_tilgang.client.Decision
+import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.veilarboppfolging.IntegrationTest
 import no.nav.veilarboppfolging.client.pdl.ForenkletFolkeregisterStatus
 import no.nav.veilarboppfolging.client.pdl.FregStatusOgStatsborgerskap
-import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.KanStarteOppfolging
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.KanStarteOppfolgingDto
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.verifyNoInteractions
 import org.springframework.beans.factory.annotation.Autowired
@@ -113,11 +114,32 @@ class GraphqlControllerTest: IntegrationTest() {
     }
 
     @Test
+    fun `skal returnere kanStarteOppfolging - ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT når bruker allerede under oppfølging men ISERV+kanReaktiveres i Arena`() {
+        val veilederUuid = UUID.randomUUID()
+        val fnr = Fnr.of("12444678910")
+        val aktorId = AktorId.of("12444678919")
+        setBrukerUnderOppfolging(aktorId)
+        mockPoaoTilgangHarTilgangTilBruker(veilederUuid, fnr, Decision.Permit)
+        mockPdlFolkeregisterStatus(fnr, FregStatusOgStatsborgerskap(ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven, norskStatsborgerskap))
+        mockInternBrukerAuthOk(veilederUuid, aktorId, fnr)
+        mockVeilarbArenaClient(fnr= fnr, formidlingsgruppe = Formidlingsgruppe.ISERV, kanEnkeltReaktiveres = true)
+        /* Query is hidden in test/resources/graphl-test :) */
+        val result = tester.documentName("kanStarteOppfolging").variable("fnr", fnr.get()).execute()
+        result.errors().verify()
+        result.path("oppfolging").matchesJson("""
+            { "kanStarteOppfolging": "ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT" }
+        """.trimIndent())
+
+    }
+
+    @Test
     fun `skal returnere kanStarteOppfolging - ALLEREDE_UNDER_OPPFOLGING når bruker allerede under oppfølging`() {
         val veilederUuid = UUID.randomUUID()
         val fnr = Fnr.of("12444678910")
         val aktorId = AktorId.of("12444678919")
         setBrukerUnderOppfolging(aktorId)
+        mockPoaoTilgangHarTilgangTilBruker(veilederUuid, fnr, Decision.Permit)
+        mockPdlFolkeregisterStatus(fnr, FregStatusOgStatsborgerskap(ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven, norskStatsborgerskap))
         mockInternBrukerAuthOk(veilederUuid, aktorId, fnr)
         /* Query is hidden in test/resources/graphl-test :) */
         val result = tester.documentName("kanStarteOppfolging").variable("fnr", fnr.get()).execute()
@@ -157,11 +179,11 @@ class GraphqlControllerTest: IntegrationTest() {
         mockInternBrukerAuthOk(veilederUuid, aktorId, fnr)
 
         listOf(
-            AdGruppeNavn.FORTROLIG_ADRESSE to KanStarteOppfolging.IKKE_TILGANG_FORTROLIG_ADRESSE,
-            AdGruppeNavn.MODIA_OPPFOLGING to KanStarteOppfolging.IKKE_TILGANG_MODIA,
-            AdGruppeNavn.EGNE_ANSATTE to KanStarteOppfolging.IKKE_TILGANG_EGNE_ANSATTE,
-            AdGruppeNavn.STRENGT_FORTROLIG_ADRESSE to KanStarteOppfolging.IKKE_TILGANG_STRENGT_FORTROLIG_ADRESSE,
-            null to KanStarteOppfolging.IKKE_TILGANG_ENHET
+            AdGruppeNavn.FORTROLIG_ADRESSE to KanStarteOppfolgingDto.IKKE_TILGANG_FORTROLIG_ADRESSE,
+            AdGruppeNavn.MODIA_OPPFOLGING to KanStarteOppfolgingDto.IKKE_TILGANG_MODIA,
+            AdGruppeNavn.EGNE_ANSATTE to KanStarteOppfolgingDto.IKKE_TILGANG_EGNE_ANSATTE,
+            AdGruppeNavn.STRENGT_FORTROLIG_ADRESSE to KanStarteOppfolgingDto.IKKE_TILGANG_STRENGT_FORTROLIG_ADRESSE,
+            null to KanStarteOppfolgingDto.IKKE_TILGANG_ENHET
         ).forEach { (adGruppe, kanStarteOppfolgingResult) ->
             mockPoaoTilgangHarTilgangTilBruker(veilederUuid, fnr, Decision.Deny(
                 message = "mangler tilgang til gruppe med navn ${adGruppe}",
@@ -185,14 +207,14 @@ class GraphqlControllerTest: IntegrationTest() {
         mockPoaoTilgangHarTilgangTilBruker(veilederUuid, fnr, Decision.Permit)
 
         listOf(
-            ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven to KanStarteOppfolging.JA,
-            ForenkletFolkeregisterStatus.dNummer to KanStarteOppfolging.JA,
-            ForenkletFolkeregisterStatus.doedIFolkeregisteret to KanStarteOppfolging.DOD,
-            ForenkletFolkeregisterStatus.forsvunnet to KanStarteOppfolging.IKKE_LOVLIG_OPPHOLD,
-            ForenkletFolkeregisterStatus.ikkeBosatt to KanStarteOppfolging.JA_MED_MANUELL_GODKJENNING,
-            ForenkletFolkeregisterStatus.opphoert to KanStarteOppfolging.IKKE_LOVLIG_OPPHOLD,
-            ForenkletFolkeregisterStatus.ukjent to KanStarteOppfolging.UKJENT_STATUS_FOLKEREGISTERET,
-            ForenkletFolkeregisterStatus.ingen_status to KanStarteOppfolging.INGEN_STATUS_FOLKEREGISTERET,
+            ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven to KanStarteOppfolgingDto.JA,
+            ForenkletFolkeregisterStatus.dNummer to KanStarteOppfolgingDto.JA,
+            ForenkletFolkeregisterStatus.doedIFolkeregisteret to KanStarteOppfolgingDto.DOD,
+            ForenkletFolkeregisterStatus.forsvunnet to KanStarteOppfolgingDto.IKKE_LOVLIG_OPPHOLD,
+            ForenkletFolkeregisterStatus.ikkeBosatt to KanStarteOppfolgingDto.JA_MED_MANUELL_GODKJENNING,
+            ForenkletFolkeregisterStatus.opphoert to KanStarteOppfolgingDto.IKKE_LOVLIG_OPPHOLD,
+            ForenkletFolkeregisterStatus.ukjent to KanStarteOppfolgingDto.UKJENT_STATUS_FOLKEREGISTERET,
+            ForenkletFolkeregisterStatus.ingen_status to KanStarteOppfolgingDto.INGEN_STATUS_FOLKEREGISTERET,
         ).forEach { (status, kanStarteOppfolgingResult) ->
             mockPdlFolkeregisterStatus(fnr, FregStatusOgStatsborgerskap(status, norskStatsborgerskap))
             /* Query is hidden in test/resources/graphl-test :) */
@@ -214,14 +236,14 @@ class GraphqlControllerTest: IntegrationTest() {
         mockPoaoTilgangHarTilgangTilBruker(veilederUuid, fnr, Decision.Permit)
 
         listOf(
-            ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven to KanStarteOppfolging.JA,
-            ForenkletFolkeregisterStatus.dNummer to KanStarteOppfolging.JA_MED_MANUELL_GODKJENNING,
-            ForenkletFolkeregisterStatus.doedIFolkeregisteret to KanStarteOppfolging.DOD,
-            ForenkletFolkeregisterStatus.forsvunnet to KanStarteOppfolging.IKKE_LOVLIG_OPPHOLD,
-            ForenkletFolkeregisterStatus.ikkeBosatt to KanStarteOppfolging.JA_MED_MANUELL_GODKJENNING,
-            ForenkletFolkeregisterStatus.opphoert to KanStarteOppfolging.IKKE_LOVLIG_OPPHOLD,
-            ForenkletFolkeregisterStatus.ukjent to KanStarteOppfolging.UKJENT_STATUS_FOLKEREGISTERET,
-            ForenkletFolkeregisterStatus.ingen_status to KanStarteOppfolging.INGEN_STATUS_FOLKEREGISTERET,
+            ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven to KanStarteOppfolgingDto.JA,
+            ForenkletFolkeregisterStatus.dNummer to KanStarteOppfolgingDto.JA_MED_MANUELL_GODKJENNING,
+            ForenkletFolkeregisterStatus.doedIFolkeregisteret to KanStarteOppfolgingDto.DOD,
+            ForenkletFolkeregisterStatus.forsvunnet to KanStarteOppfolgingDto.IKKE_LOVLIG_OPPHOLD,
+            ForenkletFolkeregisterStatus.ikkeBosatt to KanStarteOppfolgingDto.JA_MED_MANUELL_GODKJENNING,
+            ForenkletFolkeregisterStatus.opphoert to KanStarteOppfolgingDto.IKKE_LOVLIG_OPPHOLD,
+            ForenkletFolkeregisterStatus.ukjent to KanStarteOppfolgingDto.UKJENT_STATUS_FOLKEREGISTERET,
+            ForenkletFolkeregisterStatus.ingen_status to KanStarteOppfolgingDto.INGEN_STATUS_FOLKEREGISTERET,
         ).forEach { (status, kanStarteOppfolgingResult) ->
             mockPdlFolkeregisterStatus(fnr, FregStatusOgStatsborgerskap(status, tredjelandsStatsborgerskap))
             /* Query is hidden in test/resources/graphl-test :) */
