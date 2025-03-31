@@ -11,7 +11,6 @@ import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe
 import no.nav.veilarboppfolging.FantIkkeBrukerIArenaException
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolgingTilstand
 import no.nav.veilarboppfolging.client.veilarbarena.RegistrerIArenaResult
-import no.nav.veilarboppfolging.client.veilarbarena.RegistrerIkkeArbeidsokerRespons
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsBruker
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsStatus
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient
@@ -22,7 +21,6 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import java.time.LocalDate
-import java.time.ZonedDateTime
 import java.util.*
 
 @Slf4j
@@ -42,9 +40,9 @@ class ArenaOppfolgingService @Autowired constructor (
             .flatMap { Optional.ofNullable(it.kanEnkeltReaktiveres) }
     }
 
-    fun kanEnkeltReaktiveresOgErIserv(fnr: Fnr): Boolean {
+    fun brukerErIservIArena(fnr: Fnr): Boolean {
         return veilarbarenaClient.getArenaOppfolgingsstatus(fnr)
-            .map { (it.kanEnkeltReaktiveres == true) && it.formidlingsgruppe == Formidlingsgruppe.ISERV.name }
+            .map {  it.formidlingsgruppe == Formidlingsgruppe.ISERV.name }
             .orElse(false) // Nei hvis bruker ikke finnes i arena eller ikke får svar fra arena
     }
 

@@ -158,10 +158,8 @@ class GraphqlController(
         if (oppfolgingDto.norskIdent == null) throw InternFeil("Fant ikke fnr å sjekke tilgang mot i kanStarteOppfolging")
         val gyldigOppfolging = lazy {
             if (oppfolgingDto.erUnderOppfolging) {
-                val kanEnkeltReaktiveres = arenaService.kanEnkeltReaktiveresOgErIserv(Fnr.of(oppfolgingDto.norskIdent))
-                if (kanEnkeltReaktiveres) {
-                    // Eneste måte man kan være under oppfølging og samtidig være inaktivert er at kanEnkeltReaktiveres.
-                    // Alle andre går ut av oppfølging omgående.
+                val erIservIArena = arenaService.brukerErIservIArena(Fnr.of(oppfolgingDto.norskIdent))
+                if (erIservIArena) {
                     ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT
                 } else ALLEREDE_UNDER_OPPFOLGING
             } else {
