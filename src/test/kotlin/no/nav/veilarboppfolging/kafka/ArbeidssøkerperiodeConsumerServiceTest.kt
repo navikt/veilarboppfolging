@@ -28,7 +28,6 @@ import org.junit.jupiter.api.TestInstance
 import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.ActiveProfiles
-import org.springframework.test.context.bean.override.mockito.MockitoBean
 import java.sql.Timestamp
 import java.time.*
 import java.time.temporal.ChronoUnit
@@ -59,7 +58,7 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
     @Autowired
     private lateinit var utmeldingRepository: UtmeldingRepository
 
-    @MockitoBean
+    @Autowired
     lateinit var veilarbarenaClient: VeilarbarenaClient
 
 

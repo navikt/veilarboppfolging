@@ -3,6 +3,7 @@ package no.nav.veilarboppfolging.controller
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.poao_tilgang.client.Decision
+import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.veilarboppfolging.IntegrationTest
 import no.nav.veilarboppfolging.client.pdl.ForenkletFolkeregisterStatus
 import no.nav.veilarboppfolging.client.pdl.FregStatusOgStatsborgerskap
@@ -110,6 +111,23 @@ class GraphqlControllerTest: IntegrationTest() {
         result.path("oppfolging").matchesJson("""
             { "kanStarteOppfolging": "JA" }
         """.trimIndent())
+    }
+
+    @Test
+    fun `skal returnere kanStarteOppfolging - ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT når bruker allerede under oppfølging men ISERV+kanReaktiveres i Arena`() {
+        val veilederUuid = UUID.randomUUID()
+        val fnr = Fnr.of("12444678910")
+        val aktorId = AktorId.of("12444678919")
+        setBrukerUnderOppfolging(aktorId)
+        mockInternBrukerAuthOk(veilederUuid, aktorId, fnr)
+        mockVeilarbArenaClient(fnr= fnr, formidlingsgruppe = Formidlingsgruppe.ISERV, kanEnkeltReaktiveres = true)
+        /* Query is hidden in test/resources/graphl-test :) */
+        val result = tester.documentName("kanStarteOppfolging").variable("fnr", fnr.get()).execute()
+        result.errors().verify()
+        result.path("oppfolging").matchesJson("""
+            { "kanStarteOppfolging": "ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT" }
+        """.trimIndent())
+
     }
 
     @Test

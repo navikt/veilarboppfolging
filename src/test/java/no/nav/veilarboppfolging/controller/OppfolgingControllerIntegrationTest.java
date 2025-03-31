@@ -57,7 +57,7 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
     @MockitoBean
     ArenaYtelserService arenaYtelserService;
 
-    @MockitoBean
+    @Autowired
     VeilarbarenaClient veilarbarenaClient;
 
     @Autowired
