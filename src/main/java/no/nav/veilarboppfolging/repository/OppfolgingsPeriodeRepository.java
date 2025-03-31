@@ -53,10 +53,18 @@ public class OppfolgingsPeriodeRepository {
         });
     }
 
-    public void avslutt(AktorId aktorId, String veileder, String begrunnelse) {
-        transactor.executeWithoutResult((ignored) -> {
-            endPeriode(aktorId, veileder, begrunnelse);
+//    public void avslutt(AktorId aktorId, String veileder, String begrunnelse) {
+//        transactor.executeWithoutResult((ignored) -> {
+//            endPeriode(aktorId, veileder, begrunnelse);
+//            avsluttOppfolging(aktorId);
+//        });
+//    }
+
+    public OppfolgingsperiodeEntity avslutt(AktorId aktorId, String veileder, String begrunnelse) {
+        return transactor.execute((ignored) -> {
+            var avsluttetPeriode = endPeriode(aktorId, veileder, begrunnelse);
             avsluttOppfolging(aktorId);
+            return avsluttetPeriode;
         });
     }
 
@@ -134,15 +142,32 @@ public class OppfolgingsPeriodeRepository {
                 aktorId.get());
     }
 
-    private void endPeriode(AktorId aktorId, String veileder, String begrunnelse) {
-        db.update("" +
-                        "UPDATE OPPFOLGINGSPERIODE " +
-                        "SET avslutt_veileder = ?, " +
-                        "avslutt_begrunnelse = ?, " +
-                        "sluttDato = CURRENT_TIMESTAMP, " +
-                        "oppdatert = CURRENT_TIMESTAMP " +
-                        "WHERE aktor_id = ? " +
-                        "AND sluttDato IS NULL",
+//    private void endPeriode2(AktorId aktorId, String veileder, String begrunnelse) {
+//        db.update("" +
+//                        "UPDATE OPPFOLGINGSPERIODE " +
+//                        "SET avslutt_veileder = ?, " +
+//                        "avslutt_begrunnelse = ?, " +
+//                        "sluttDato = CURRENT_TIMESTAMP, " +
+//                        "oppdatert = CURRENT_TIMESTAMP " +
+//                        "WHERE aktor_id = ? " +
+//                        "AND sluttDato IS NULL",
+//                veileder,
+//                begrunnelse,
+//                aktorId.get());
+//    }
+
+    private OppfolgingsperiodeEntity endPeriode(AktorId aktorId, String veileder, String begrunnelse) {
+        return db.queryForObject("""
+                                UPDATE OPPFOLGINGSPERIODE
+                                SET avslutt_veileder = ?,
+                                    avslutt_begrunnelse = ?,
+                                    sluttDato = CURRENT_TIMESTAMP,
+                                    oppdatert = CURRENT_TIMESTAMP
+                                WHERE aktor_id = ?
+                                AND sluttDato IS NULL
+                                RETURNING *
+                            """,
+                OppfolgingsperiodeEntity.class,
                 veileder,
                 begrunnelse,
                 aktorId.get());
