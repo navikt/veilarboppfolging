@@ -370,14 +370,14 @@ public class OppfolgingService {
             return;
         }
 
-        if (valgtPeriode.getSluttDato() != null) {
-            log.warn("Oppfølgingsperiode med UUID: {} er allerede avsluttet.", oppfolgingsperiodeUUID);
-            return;
-        }
-
         if (valgtOppfolgingsperiodeErSiste(valgtPeriode, sistePeriode)) {
             log.info("Valgt oppfølgingsperiode er siste. Avslutter oppfølging.");
             avsluttSisteOppfolgingsperiode(avregistrering);
+            return;
+        }
+
+        if (valgtPeriode.getSluttDato() != null) {
+            log.warn("Oppfølgingsperiode med UUID: {} er allerede avsluttet.", oppfolgingsperiodeUUID);
             return;
         }
 

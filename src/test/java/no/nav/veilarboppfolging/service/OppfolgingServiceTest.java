@@ -194,7 +194,6 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     @Test
     public void adminAvsluttSpesifikkOppfolgingsperiode_SpesifisertPeriodeErAlleredeAvsluttet_IkkeAvsluttOgLoggWarning() {
         startOppfolgingForBruker();
-
         reset(kafkaProducerService);
 
         var oppfolgingsbruker = OppfolgingsRegistrering.Companion.arbeidssokerRegistrering(AKTOR_ID, new VeilederRegistrant(NAV_IDENT));
@@ -210,6 +209,30 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         UnderOppfolgingDTO underOppfolgingDTO2 = oppfolgingService.oppfolgingData(FNR);
         Assertions.assertThat(underOppfolgingDTO2.isUnderOppfolging()).isTrue();
         verify(kafkaProducerService, never()).publiserOppfolgingsperiode(any(OppfolgingsperiodeDTO.class));
+    }
+
+    @Test
+    public void adminAvsluttSpesifikkOppfolgingsperiode_SpesifisertPeriodeErSiste_AvsluttOppfolging() {
+        startOppfolgingForBruker();
+        reset(kafkaProducerService);
+
+        var oppfolgingsbruker = OppfolgingsRegistrering.Companion.arbeidssokerRegistrering(AKTOR_ID, new VeilederRegistrant(NAV_IDENT));
+        oppfolgingsPeriodeRepository.start(oppfolgingsbruker);
+        var perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(AKTOR_ID).stream().sorted(Comparator.comparing(OppfolgingsperiodeEntity::getStartDato)).toList();
+        Assertions.assertThat(perioder.size()).isEqualTo(2);
+        var sistePeriode = perioder.getLast();
+        var uuidSomSkalAvsluttes = sistePeriode.getUuid();
+        oppfolgingsPeriodeRepository.avsluttOppfolgingsperiode(uuidSomSkalAvsluttes, VEILEDER, "en begrunnelse", sistePeriode.getStartDato());
+
+        oppfolgingService.adminAvsluttSpesifikkOppfolgingsperiode(AKTOR_ID, VEILEDER, "en begrunnelse", uuidSomSkalAvsluttes.toString());
+
+        UnderOppfolgingDTO underOppfolgingDTO2 = oppfolgingService.oppfolgingData(FNR);
+        Assertions.assertThat(underOppfolgingDTO2.isUnderOppfolging()).isFalse();
+        verify(kafkaProducerService).publiserOppfolgingsperiode(any(OppfolgingsperiodeDTO.class));
+        verify(kafkaProducerService).publiserVeilederTilordnet(AKTOR_ID, null);
+        verify(kafkaProducerService).publiserEndringPaNyForVeileder(AKTOR_ID, false);
+        verify(kafkaProducerService).publiserEndringPaManuellStatus(AKTOR_ID, false);
+        verify(kafkaProducerService).publiserSkjulAoMinSideMicrofrontend(AKTOR_ID);
     }
 
     @Test(expected = ForbiddenException.class)
