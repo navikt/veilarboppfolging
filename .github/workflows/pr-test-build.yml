@@ -21,11 +21,6 @@ jobs:
             echo "is_member=false" >> $GITHUB_ENV
           fi
 
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
       - name: Checkout with fork and member check PR
         if: ${{ github.event_name == 'pull_request_target' &&  (env.is_member == 'true' || github.actor == 'dependabot[bot]') }}
         uses: actions/checkout@v4
