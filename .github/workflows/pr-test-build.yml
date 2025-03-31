@@ -39,6 +39,12 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Abort if PR is from fork and actor is not member
+        if: ${{ github.event_name == 'pull_request_target' && (env.is_member == 'false' || github.actor != 'dependabot[bot]') }}
+        run: |
+          echo "PR is from a fork and the actor is not a member of the organization. Aborting."
+          exit 1
+
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
