@@ -119,6 +119,8 @@ class GraphqlControllerTest: IntegrationTest() {
         val fnr = Fnr.of("12444678910")
         val aktorId = AktorId.of("12444678919")
         setBrukerUnderOppfolging(aktorId)
+        mockPoaoTilgangHarTilgangTilBruker(veilederUuid, fnr, Decision.Permit)
+        mockPdlFolkeregisterStatus(fnr, FregStatusOgStatsborgerskap(ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven, norskStatsborgerskap))
         mockInternBrukerAuthOk(veilederUuid, aktorId, fnr)
         mockVeilarbArenaClient(fnr= fnr, formidlingsgruppe = Formidlingsgruppe.ISERV, kanEnkeltReaktiveres = true)
         /* Query is hidden in test/resources/graphl-test :) */
@@ -136,6 +138,8 @@ class GraphqlControllerTest: IntegrationTest() {
         val fnr = Fnr.of("12444678910")
         val aktorId = AktorId.of("12444678919")
         setBrukerUnderOppfolging(aktorId)
+        mockPoaoTilgangHarTilgangTilBruker(veilederUuid, fnr, Decision.Permit)
+        mockPdlFolkeregisterStatus(fnr, FregStatusOgStatsborgerskap(ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven, norskStatsborgerskap))
         mockInternBrukerAuthOk(veilederUuid, aktorId, fnr)
         /* Query is hidden in test/resources/graphl-test :) */
         val result = tester.documentName("kanStarteOppfolging").variable("fnr", fnr.get()).execute()

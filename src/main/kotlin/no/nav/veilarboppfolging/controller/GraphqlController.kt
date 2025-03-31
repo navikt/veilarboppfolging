@@ -12,6 +12,7 @@ import no.nav.poao_tilgang.client.TilgangType
 import no.nav.veilarboppfolging.client.pdl.PdlFolkeregisterStatusClient
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ALLEREDE_UNDER_OPPFOLGING
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ALLEREDE_UNDER_OPPFOLGING.oppfolgingSjekk
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.FregStatusSjekkResultat
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.KanStarteOppfolgingDto
@@ -115,9 +116,11 @@ class GraphqlController(
         if (authService.erEksternBruker()) throw ResponseStatusException(HttpStatus.FORBIDDEN)
 
         return evaluerTilgang(fnr)
-            .let { VeilederTilgangDto(
-                harTilgang = it == TilgangResultat.HAR_TILGANG,
-                tilgang =  it)
+            .let {
+                VeilederTilgangDto(
+                    harTilgang = it == TilgangResultat.HAR_TILGANG,
+                    tilgang = it
+                )
             }
     }
 
@@ -133,7 +136,7 @@ class GraphqlController(
         return pdlFolkeregisterStatusClient.hentFolkeregisterStatus(fnr).toKanStarteOppfolging()
     }
 
-    @SchemaMapping(typeName="OppfolgingsEnhetsInfo", field="enhet")
+    @SchemaMapping(typeName = "OppfolgingsEnhetsInfo", field = "enhet")
     fun arenaOppfolgingsEnhet(oppfolgingsEnhet: OppfolgingsEnhetQueryDto): EnhetDto? {
         val aktorId = aktorOppslagClient.hentAktorId(Fnr.of(oppfolgingsEnhet.fnr))
         val arenaEnhet = enhetRepository.hentEnhet(aktorId)
@@ -150,22 +153,24 @@ class GraphqlController(
         }
     }
 
-    @SchemaMapping(typeName="OppfolgingDto", field="kanStarteOppfolging")
+    @SchemaMapping(typeName = "OppfolgingDto", field = "kanStarteOppfolging")
     fun kanStarteOppfolging(oppfolgingDto: OppfolgingDto): KanStarteOppfolgingDto? {
         if (oppfolgingDto.norskIdent == null) throw InternFeil("Fant ikke fnr å sjekke tilgang mot i kanStarteOppfolging")
-        val gyldigOppfolging = if (oppfolgingDto.erUnderOppfolging) {
-            val kanEnkeltReaktiveres = arenaService.kanEnkeltReaktiveresOgErIserv(Fnr.of(oppfolgingDto.norskIdent))
-            if (kanEnkeltReaktiveres) {
-                // Eneste måte man kan være under oppfølging og samtidig være inaktivert er at kanEnkeltReaktiveres.
-                // Alle andre går ut av oppfølging omgående.
-                ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT
-            } else ALLEREDE_UNDER_OPPFOLGING
-        } else {
-            OPPFOLGING_OK
+        val gyldigOppfolging = lazy {
+            if (oppfolgingDto.erUnderOppfolging) {
+                val kanEnkeltReaktiveres = arenaService.kanEnkeltReaktiveresOgErIserv(Fnr.of(oppfolgingDto.norskIdent))
+                if (kanEnkeltReaktiveres) {
+                    // Eneste måte man kan være under oppfølging og samtidig være inaktivert er at kanEnkeltReaktiveres.
+                    // Alle andre går ut av oppfølging omgående.
+                    ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT
+                } else ALLEREDE_UNDER_OPPFOLGING
+            } else {
+                OPPFOLGING_OK
+            }
         }
         val gyldigTilgang = lazy { evaluerTilgang(oppfolgingDto.norskIdent).toKanStarteOppfolging() }
         val gyldigFregStatus = lazy { kanStarteOppfolgingMtpFregStatus(Fnr.of(oppfolgingDto.norskIdent)) }
-        return gyldigOppfolging and gyldigTilgang and gyldigFregStatus
+        return oppfolgingSjekk(gyldigOppfolging, gyldigTilgang, gyldigFregStatus)
     }
 
     fun hentDefaultEnhetFraNorg(fnr: Fnr): Pair<EnhetId, KildeDto>? {
@@ -177,7 +182,7 @@ class GraphqlController(
 
     @QueryMapping
     fun gjeldendeOppfolgingsperiode(): GjeldendeOppfolgingsperiodeDto {
-        if(!authService.erEksternBruker()) {
+        if (!authService.erEksternBruker()) {
             throw ResponseStatusException(HttpStatus.FORBIDDEN)
         }
 
@@ -203,10 +208,11 @@ fun Decision.Deny.tryToFindDenyReason(): TilgangResultat {
 }
 
 object AdGruppeNavn {
-    const val STRENGT_FORTROLIG_ADRESSE     = "0000-GA-Strengt_Fortrolig_Adresse"
-    const val FORTROLIG_ADRESSE     		= "0000-GA-Fortrolig_Adresse"
-    const val EGNE_ANSATTE               	= "0000-GA-Egne_ansatte"
+    const val STRENGT_FORTROLIG_ADRESSE = "0000-GA-Strengt_Fortrolig_Adresse"
+    const val FORTROLIG_ADRESSE = "0000-GA-Fortrolig_Adresse"
+    const val EGNE_ANSATTE = "0000-GA-Egne_ansatte"
+
     /* AKA modia generell tilgang, en av disse trengs for lese-tilgang */
-    const val MODIA_OPPFOLGING              = "0000-GA-Modia-Oppfolging"
-    const val MODIA_GENERELL                = "0000-GA-BD06_ModiaGenerellTilgang"
+    const val MODIA_OPPFOLGING = "0000-GA-Modia-Oppfolging"
+    const val MODIA_GENERELL = "0000-GA-BD06_ModiaGenerellTilgang"
 }
