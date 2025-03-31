@@ -14,7 +14,7 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ALLEREDE_UNDER_OPPFOLGING
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.FregStatusSjekkResultat
-import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.KanStarteOppfolging
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.KanStarteOppfolgingDto
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OPPFOLGING_OK
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.toKanStarteOppfolging
 import no.nav.veilarboppfolging.repository.EnhetRepository
@@ -63,7 +63,7 @@ enum class TilgangResultat {
 
 data class OppfolgingDto(
     val erUnderOppfolging: Boolean,
-    val kanStarteOppfolging: KanStarteOppfolging?,
+    val kanStarteOppfolging: KanStarteOppfolgingDto?,
     val norskIdent: NorskIdent? = null,
 )
 
@@ -151,7 +151,7 @@ class GraphqlController(
     }
 
     @SchemaMapping(typeName="OppfolgingDto", field="kanStarteOppfolging")
-    fun kanStarteOppfolging(oppfolgingDto: OppfolgingDto): KanStarteOppfolging? {
+    fun kanStarteOppfolging(oppfolgingDto: OppfolgingDto): KanStarteOppfolgingDto? {
         if (oppfolgingDto.norskIdent == null) throw InternFeil("Fant ikke fnr å sjekke tilgang mot i kanStarteOppfolging")
         val gyldigOppfolging = if (oppfolgingDto.erUnderOppfolging) {
             val kanEnkeltReaktiveres = arenaService.kanEnkeltReaktiveresOgErIserv(Fnr.of(oppfolgingDto.norskIdent))

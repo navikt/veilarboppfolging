@@ -6,14 +6,26 @@ import no.nav.veilarboppfolging.client.pdl.eeaLand
 import no.nav.veilarboppfolging.controller.TilgangResultat
 
 sealed class KanStarteOppfolgingSjekk {
-    infix fun and(kanStarteOppfolging: Lazy<KanStarteOppfolgingSjekk>): KanStarteOppfolging {
+    infix fun and(kanStarteOppfolging: Lazy<KanStarteOppfolgingSjekk>): KanStarteOppfolgingDto {
         val isOk = when (this) {
-            is BrukerHarRiktigOppfolgingStatus -> (this is OPPFOLGING_OK)
+            is BrukerHarRiktigOppfolgingStatus -> (this is OPPFOLGING_OK || this is ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT)
             is VeilederHarTilgang -> (this is TILGANG_OK)
             is FregStatusSjekkResultat -> (this is FREG_STATUS_OK)
         }
-        if (!isOk) return KanStarteOppfolging.kanStarteOppfolging(this)
-        return KanStarteOppfolging.kanStarteOppfolging(kanStarteOppfolging.value)
+        if (this is ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT && kanStarteOppfolging.value is FregStatusSjekkResultat) {
+            val fregSjekk = kanStarteOppfolging.value
+            return when (fregSjekk) {
+                is FREG_STATUS_OK -> {
+                    return KanStarteOppfolgingDto.ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT
+                }
+                is FREG_STATUS_KREVER_MANUELL_GODKJENNING -> {
+                    return KanStarteOppfolgingDto.ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT_MEN_KREVER_MANUELL_GODKJENNING
+                }
+                else -> KanStarteOppfolgingDto.kanStarteOppfolging(fregSjekk)
+            }
+        }
+        if (!isOk) return KanStarteOppfolgingDto.kanStarteOppfolging(this)
+        return KanStarteOppfolgingDto.kanStarteOppfolging(kanStarteOppfolging.value)
     }
 }
 
@@ -38,11 +50,12 @@ object IKKE_LOVLIG_OPPHOLD: FregStatusSjekkResultat()
 object UKJENT_STATUS_FOLKEREGISTERET: FregStatusSjekkResultat()
 object INGEN_STATUS_FOLKEREGISTERET: FregStatusSjekkResultat()
 
-enum class KanStarteOppfolging {
+enum class KanStarteOppfolgingDto {
     JA,
     JA_MED_MANUELL_GODKJENNING,
     ALLEREDE_UNDER_OPPFOLGING,
     ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT,
+    ALLEREDE_UNDER_OPPFOLGING_MEN_INAKTIVERT_MEN_KREVER_MANUELL_GODKJENNING,
     DOD,
     IKKE_LOVLIG_OPPHOLD,
     UKJENT_STATUS_FOLKEREGISTERET,
@@ -53,13 +66,13 @@ enum class KanStarteOppfolging {
     IKKE_TILGANG_ENHET,
     IKKE_TILGANG_MODIA;
 
-    infix fun and(kanStarteOppfolging: Lazy<KanStarteOppfolgingSjekk>): KanStarteOppfolging {
-        if (this != KanStarteOppfolging.JA) return this
+    infix fun and(kanStarteOppfolging: Lazy<KanStarteOppfolgingSjekk>): KanStarteOppfolgingDto {
+        if (this != JA) return this
         return kanStarteOppfolging(kanStarteOppfolging.value)
     }
 
     companion object {
-        fun kanStarteOppfolging(kanStarteOppfolgingSjekk: KanStarteOppfolgingSjekk): KanStarteOppfolging {
+        fun kanStarteOppfolging(kanStarteOppfolgingSjekk: KanStarteOppfolgingSjekk): KanStarteOppfolgingDto {
             return when (kanStarteOppfolgingSjekk) {
                 is DOD -> DOD
                 is FREG_STATUS_OK -> JA
