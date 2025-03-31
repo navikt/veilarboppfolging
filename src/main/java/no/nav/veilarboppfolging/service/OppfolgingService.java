@@ -352,7 +352,7 @@ public class OppfolgingService {
                 avsluttValgtOppfolgingsperiode(avregistrering, perioder, sistePeriode);
             } else {
                 log.info("Skal avslutte siste oppfølgingsperiode.");
-                avsluttSisteOppfolgingsperiode(avregistrering, sistePeriode);
+                avsluttSisteOppfolgingsperiode(avregistrering);
             }
         });
     }
@@ -377,7 +377,7 @@ public class OppfolgingService {
 
         if (valgtOppfolgingsperiodeErSiste(valgtPeriode, sistePeriode)) {
             log.info("Valgt oppfølgingsperiode er siste. Avslutter oppfølging.");
-            avsluttSisteOppfolgingsperiode(avregistrering, sistePeriode);
+            avsluttSisteOppfolgingsperiode(avregistrering);
             return;
         }
 
@@ -394,12 +394,15 @@ public class OppfolgingService {
         return valgtPeriode.getUuid().equals(sistePeriode.getUuid());
     }
 
-    private void avsluttSisteOppfolgingsperiode(Avregistrering avregistrering, OppfolgingsperiodeEntity sistePeriode) {
+    private void avsluttSisteOppfolgingsperiode(Avregistrering avregistrering) {
         var aktorId = avregistrering.getAktorId();
         var avsluttetAv = avregistrering.getAvsluttetAv().getIdent();
         var begrunnelse = avregistrering.getBegrunnelse();
 
         oppfolgingsPeriodeRepository.avslutt(aktorId, avsluttetAv, begrunnelse);
+
+        var perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(avregistrering.getAktorId());
+        var sistePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(perioder);
 
         // Publiserer avslutning av siste oppfølgingsperiode
         log.info("Oppfølgingsperiode avsluttet for bruker {} - publiserer endringer på oppfølgingsperiode-topics.", aktorId.get());
