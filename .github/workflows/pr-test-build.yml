@@ -12,8 +12,16 @@ jobs:
       - name: Check if actor is member of organization
         id: check_membership
         run: |
+          # Funksjon for å URL-escape en streng
+          escape_string() {
+          echo -n "$1" | jq -sRr @uri
+          }
+
+          # Escape github.actor
+          escaped_actor=$(escape_string "${{ github.actor }}")
+          
           RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-            https://api.github.com/orgs/navikt/members/${{ github.actor }})
+            https://api.github.com/orgs/navikt/members/${{ escaped_actor }})
           
           if [ "$RESPONSE" -eq 204 ]; then
             echo "is_member=true" >> $GITHUB_ENV
