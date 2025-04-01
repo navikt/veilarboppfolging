@@ -178,6 +178,7 @@ class OppfolgingV3Controller(
                        return ResponseEntity(arenaResponse.arenaResultat, HttpStatus.CONFLICT)
                     }
                     else -> {
+                        logger.info("Bruker registrert i Arena med resultat: ${arenaResponse.arenaResultat.kode}")
                         aktiverBrukerService.aktiverBrukerManuelt(startOppfolging.fnr)
                         return ResponseEntity(arenaResponse.arenaResultat, HttpStatus.OK)
                     }

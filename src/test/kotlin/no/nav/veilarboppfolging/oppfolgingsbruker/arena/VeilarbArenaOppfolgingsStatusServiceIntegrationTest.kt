@@ -11,14 +11,13 @@ import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.OppfolgingEnhetMedVeilederResponse.Oppfolgingsenhet
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.`when`
-import org.springframework.test.context.bean.override.mockito.MockitoBean
-import scala.concurrent.Await.result
+import org.springframework.beans.factory.annotation.Autowired
 import java.util.*
 import kotlin.test.assertEquals
 
 class VeilarbArenaOppfolgingsStatusServiceIntegrationTest: IntegrationTest() {
 
-    @MockitoBean
+    @Autowired
     lateinit var veilarbarenaClient: VeilarbarenaClient
 
     val fnr = Fnr.of("123")

@@ -15,14 +15,16 @@ import no.nav.poao_tilgang.client.PoaoTilgangClient
 import no.nav.poao_tilgang.client.TilgangType
 import no.nav.poao_tilgang.client.api.ApiResult
 import no.nav.poao_tilgang.client.api.NetworkApiException
+import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.tms.varsel.builder.BuilderEnvironment
 import no.nav.veilarboppfolging.client.norg.INorgTilhorighetClient
-import no.nav.veilarboppfolging.client.pdl.ForenkletFolkeregisterStatus
 import no.nav.veilarboppfolging.client.pdl.FregStatusOgStatsborgerskap
 import no.nav.veilarboppfolging.client.pdl.GTType
 import no.nav.veilarboppfolging.client.pdl.GeografiskTilknytningClient
 import no.nav.veilarboppfolging.client.pdl.GeografiskTilknytningNr
 import no.nav.veilarboppfolging.client.pdl.PdlFolkeregisterStatusClient
+import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsStatus
+import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient
 import no.nav.veilarboppfolging.config.EnvironmentProperties
 import no.nav.veilarboppfolging.controller.OppfolgingController
 import no.nav.veilarboppfolging.controller.SakController
@@ -39,7 +41,6 @@ import no.nav.veilarboppfolging.service.OppfolgingService
 import no.nav.veilarboppfolging.test.DbTestUtils
 import no.nav.veilarboppfolging.tokenClient.ErrorMappedAzureAdMachineToMachineTokenClient
 import no.nav.veilarboppfolging.tokenClient.ErrorMappedAzureAdOnBehalfOfTokenClient
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.mockito.ArgumentMatchers.anyString
@@ -54,6 +55,7 @@ import org.springframework.kafka.test.context.EmbeddedKafka
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.web.context.WebApplicationContext
+import java.time.LocalDate
 import java.util.*
 
 @EmbeddedKafka(partitions = 1)
@@ -72,6 +74,9 @@ open class IntegrationTest {
             ))
         }
     }
+
+    @MockitoBean
+    private lateinit var veilarbarenaClient: VeilarbarenaClient
 
     @LocalServerPort
     var port: Int = 0
@@ -247,5 +252,19 @@ open class IntegrationTest {
     fun mockNorgEnhetsNavn(enhetsNr: String, enhetsNavn: String) {
         val enhet = Enhet().also { it.navn = enhetsNavn }
         `when`(norg2Client.hentEnhet(enhetsNr)).thenReturn(enhet)
+    }
+
+    fun mockVeilarbArenaClient(fnr: Fnr, formidlingsgruppe: Formidlingsgruppe? = Formidlingsgruppe.ARBS, kanEnkeltReaktiveres: Boolean? = false, serviceGruppe: String? = "IVURD", oppfolgingsEnhet: String? = "1234", inaktiveringsDato: LocalDate? = null) {
+        `when`(veilarbarenaClient.getArenaOppfolgingsstatus(fnr)).thenReturn(
+            Optional.of(
+                VeilarbArenaOppfolgingsStatus()
+                    .setRettighetsgruppe(null)
+                    .setFormidlingsgruppe(formidlingsgruppe?.name)
+                    .setServicegruppe(serviceGruppe)
+                    .setOppfolgingsenhet(oppfolgingsEnhet)
+                    .setInaktiveringsdato(inaktiveringsDato)
+                    .setKanEnkeltReaktiveres(kanEnkeltReaktiveres)
+                )
+            )
     }
 }
