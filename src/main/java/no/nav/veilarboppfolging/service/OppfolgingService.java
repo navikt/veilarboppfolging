@@ -364,16 +364,16 @@ public class OppfolgingService {
     }
 
     public void adminAvsluttSpesifikkOppfolgingsperiode(AktorId aktorId, String veilederId, String begrunnelse, String uuid) {
+        if (uuid == null) {
+            log.info("oppfolgingsperiodeUUID er null");
+            return;
+        }
+
         avsluttValgtOppfolgingsperiode(new AdminAvregistrering(aktorId, new VeilederRegistrant(new NavIdent(veilederId)), begrunnelse, UUID.fromString(uuid)));
     }
 
     private void avsluttValgtOppfolgingsperiode(Avregistrering avregistrering) {
         var oppfolgingsperiodeUUID = avregistrering.getOppfolgingsperiodeUUID();
-        if (oppfolgingsperiodeUUID == null) {
-            log.info("oppfolgingsperiodeUUID er null");
-            return;
-        }
-
         var perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(avregistrering.getAktorId());
         var sistePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(perioder);
         var valgtPeriode = perioder.stream().filter(p -> p.getUuid().equals(oppfolgingsperiodeUUID)).findFirst().orElse(null);
