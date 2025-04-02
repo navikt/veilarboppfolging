@@ -192,7 +192,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
 
     @Test
-    public void adminAvsluttSpesifikkOppfolgingsperiode_SpesifisertPeriodeFinnesIkke_LoggWarning() {
+    public void adminAvsluttSpesifikkOppfolgingsperiode_ValgtPeriodeFinnesIkke_LoggWarning() {
         startOppfolgingForBruker();
         reset(kafkaProducerService);
 
@@ -208,7 +208,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     }
 
     @Test
-    public void adminAvsluttSpesifikkOppfolgingsperiode_SpesifisertPeriodeErAlleredeAvsluttet_IkkeAvsluttOgLoggWarning() {
+    public void adminAvsluttSpesifikkOppfolgingsperiode_ValgtPeriodeErAlleredeAvsluttet_IkkeAvsluttOgLoggWarning() {
         startOppfolgingForBruker();
         reset(kafkaProducerService);
 
@@ -228,7 +228,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     }
 
     @Test
-    public void adminAvsluttSpesifikkOppfolgingsperiode_SpesifisertPeriodeErSisteMenIkkeEneste_AvsluttSistePeriode() {
+    public void adminAvsluttSpesifikkOppfolgingsperiode_ValgtPeriodeErSisteMenIkkeEneste_AvsluttSistePeriode() {
         startOppfolgingForBruker();
         reset(kafkaProducerService);
 
@@ -251,13 +251,36 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     }
 
     @Test
-    public void adminAvsluttSpesifikkOppfolgingsperiode_SpesifisertPeriodeErSisteOgEneste_AvsluttOppfolging() {
+    public void adminAvsluttSpesifikkOppfolgingsperiode_ValgtPeriodeErSisteOgEneste_AvsluttOppfolging() {
         startOppfolgingForBruker();
         reset(kafkaProducerService);
 
         var perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(AKTOR_ID).stream().sorted(Comparator.comparing(OppfolgingsperiodeEntity::getStartDato)).toList();
         Assertions.assertThat(perioder.size()).isEqualTo(1);
         var uuidSomSkalAvsluttes = perioder.getFirst().getUuid();
+
+        oppfolgingService.adminAvsluttSpesifikkOppfolgingsperiode(AKTOR_ID, VEILEDER, "en begrunnelse", uuidSomSkalAvsluttes.toString());
+
+        UnderOppfolgingDTO underOppfolgingDTO2 = oppfolgingService.oppfolgingData(FNR);
+        Assertions.assertThat(underOppfolgingDTO2.isUnderOppfolging()).isFalse();
+        verify(kafkaProducerService).publiserOppfolgingsperiode(any(OppfolgingsperiodeDTO.class));
+        verify(kafkaProducerService).publiserVeilederTilordnet(AKTOR_ID, null);
+        verify(kafkaProducerService).publiserEndringPaNyForVeileder(AKTOR_ID, false);
+        verify(kafkaProducerService).publiserEndringPaManuellStatus(AKTOR_ID, false);
+        verify(kafkaProducerService).publiserSkjulAoMinSideMicrofrontend(AKTOR_ID, FNR);
+    }
+
+    @Test
+    public void adminAvsluttSpesifikkOppfolgingsperiode_FlerePerioderMenKunEnErAktiv_AvsluttOppfolging() {
+        startOppfolgingForBruker();
+        reset(kafkaProducerService);
+
+        oppfolgingsPeriodeRepository.avslutt(AKTOR_ID, "veilederid", "begrunnelse");
+        var oppfolgingsbruker = OppfolgingsRegistrering.Companion.arbeidssokerRegistrering(AKTOR_ID, new VeilederRegistrant(NAV_IDENT));
+        oppfolgingsPeriodeRepository.start(oppfolgingsbruker);
+        var perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(AKTOR_ID).stream().sorted(Comparator.comparing(OppfolgingsperiodeEntity::getStartDato)).toList();
+        Assertions.assertThat(perioder.size()).isEqualTo(2);
+        var uuidSomSkalAvsluttes = perioder.getLast().getUuid();
 
         oppfolgingService.adminAvsluttSpesifikkOppfolgingsperiode(AKTOR_ID, VEILEDER, "en begrunnelse", uuidSomSkalAvsluttes.toString());
 

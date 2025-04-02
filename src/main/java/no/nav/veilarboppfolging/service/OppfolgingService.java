@@ -380,7 +380,8 @@ public class OppfolgingService {
 
     private void avsluttValgtOppfolgingsperiode(Avregistrering avregistrering) {
         var oppfolgingsperiodeUUID = avregistrering.getOppfolgingsperiodeUUID();
-        var perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(avregistrering.getAktorId());
+//        var perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(avregistrering.getAktorId());
+        var perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(avregistrering.getAktorId()).stream().filter(p -> p.getSluttDato() == null).toList();
         var sistePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(perioder);
         var valgtPeriode = perioder.stream().filter(p -> p.getUuid().equals(oppfolgingsperiodeUUID)).findFirst().orElse(null);
 
