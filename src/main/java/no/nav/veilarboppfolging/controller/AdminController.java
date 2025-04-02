@@ -3,13 +3,10 @@ package no.nav.veilarboppfolging.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.auth.context.AuthContextHolder;
-import no.nav.common.auth.context.UserRole;
-import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.job.JobRunner;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.NavIdent;
 import no.nav.veilarboppfolging.ForbiddenException;
-import no.nav.veilarboppfolging.UnauthorizedException;
 import no.nav.veilarboppfolging.controller.response.Veilarbportefoljeinfo;
 import no.nav.veilarboppfolging.domain.AvsluttOppfolgingsperiodePayload;
 import no.nav.veilarboppfolging.domain.AvsluttResultat;
@@ -110,10 +107,9 @@ public class AdminController {
     }
 
     @PostMapping("/avsluttOppfolgingsperiode")
-    public boolean batchAvsluttBrukere(@RequestBody AvsluttOppfolgingsperiodePayload oppfolgingsperiodeSomSkalAvsluttes) {
+    public boolean avsluttOppfolgingsperiode(@RequestBody AvsluttOppfolgingsperiodePayload oppfolgingsperiodeSomSkalAvsluttes) {
         sjekkTilgangTilAdmin();
         var innloggetBruker = authService.getInnloggetVeilederIdent();
-//        log.info("Skal avslutte oppfølgingsperiode for {} brukere", brukereSomSkalAvsluttes.aktorIds.size());
 
         try {
             oppfolgingService.adminAvsluttSpesifikkOppfolgingsperiode(
@@ -124,7 +120,7 @@ public class AdminController {
 
             return true;
         } catch (Exception e) {
-            log.warn("Kunne ikke avslutte oppfølgingsperiode", e);
+            log.warn("Kunne ikke avslutte oppfølgingsperiode: {}", e.getMessage());
             return false;
         }
     }

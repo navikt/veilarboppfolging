@@ -1,6 +1,7 @@
 package no.nav.veilarboppfolging.repository;
 
 import no.nav.common.types.identer.AktorId;
+import no.nav.veilarboppfolging.domain.Oppfolging;
 import no.nav.veilarboppfolging.domain.StartetAvType;
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelse;
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering;
@@ -45,10 +46,10 @@ public class OppfolgingsPeriodeRepository {
     public void start(OppfolgingsRegistrering oppfolgingsbruker) {
         transactor.executeWithoutResult((ignored) -> {
             insert(
-                oppfolgingsbruker.getAktorId(),
-                oppfolgingsbruker.getOppfolgingStartBegrunnelse(),
-                oppfolgingsbruker.getRegistrertAv().getIdent(),
-                oppfolgingsbruker.getRegistrertAv().getType());
+                    oppfolgingsbruker.getAktorId(),
+                    oppfolgingsbruker.getOppfolgingStartBegrunnelse(),
+                    oppfolgingsbruker.getRegistrertAv().getIdent(),
+                    oppfolgingsbruker.getRegistrertAv().getType());
             setActive(oppfolgingsbruker.getAktorId());
         });
     }
@@ -60,18 +61,20 @@ public class OppfolgingsPeriodeRepository {
         });
     }
 
-    public void avsluttOppfolgingsperiode(UUID uuid, String veileder, String begrunnelse, ZonedDateTime sluttDato) {
-        transactor.executeWithoutResult((ignored) -> {
-
+    public OppfolgingsperiodeEntity avsluttOppfolgingsperiode(UUID uuid, String veileder, String begrunnelse, ZonedDateTime sluttDato) {
+        return transactor.execute((ignored) -> {
             Timestamp sluttTimestamp = Timestamp.from(sluttDato.toInstant());
-
-            db.update(" UPDATE OPPFOLGINGSPERIODE " +
-                            "SET avslutt_veileder = ?, " +
-                            "avslutt_begrunnelse = ?, " +
-                            "sluttDato = ?, " +
-                            "oppdatert = CURRENT_TIMESTAMP " +
-                            "WHERE uuid = ? " +
-                            "AND sluttDato IS NULL",
+            return db.queryForObject(""" 
+                            UPDATE OPPFOLGINGSPERIODE
+                            SET avslutt_veileder = ?,
+                            avslutt_begrunnelse = ?,
+                            sluttDato = ?,
+                            oppdatert = CURRENT_TIMESTAMP
+                            WHERE uuid = ?
+                            AND sluttDato IS NULL
+                            RETURNING *
+                            """,
+                    OppfolgingsPeriodeRepository::mapTilOppfolgingsperiode,
                     veileder,
                     begrunnelse,
                     sluttTimestamp,
@@ -82,7 +85,7 @@ public class OppfolgingsPeriodeRepository {
     public Optional<OppfolgingsperiodeEntity> hentOppfolgingsperiode(String uuid) {
         return queryForNullableObject(
                 () -> db.queryForObject(
-                hentOppfolingsperioderSQL + "WHERE UUID = ?",
+                        hentOppfolingsperioderSQL + "WHERE UUID = ?",
                         OppfolgingsPeriodeRepository::mapTilOppfolgingsperiode, uuid
                 )
         );
@@ -135,15 +138,14 @@ public class OppfolgingsPeriodeRepository {
     }
 
     private void endPeriode(AktorId aktorId, String veileder, String begrunnelse) {
-        db.update("""
-                                UPDATE OPPFOLGINGSPERIODE
-                                SET avslutt_veileder = ?,
-                                    avslutt_begrunnelse = ?,
-                                    sluttDato = CURRENT_TIMESTAMP,
-                                    oppdatert = CURRENT_TIMESTAMP
-                                WHERE aktor_id = ?
-                                AND sluttDato IS NULL
-                            """,
+        db.update("" +
+                        "UPDATE OPPFOLGINGSPERIODE " +
+                        "SET avslutt_veileder = ?, " +
+                        "avslutt_begrunnelse = ?, " +
+                        "sluttDato = CURRENT_TIMESTAMP, " +
+                        "oppdatert = CURRENT_TIMESTAMP " +
+                        "WHERE aktor_id = ? " +
+                        "AND sluttDato IS NULL",
                 veileder,
                 begrunnelse,
                 aktorId.get());

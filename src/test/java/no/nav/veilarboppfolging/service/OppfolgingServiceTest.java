@@ -212,7 +212,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     }
 
     @Test
-    public void adminAvsluttSpesifikkOppfolgingsperiode_SpesifisertPeriodeErSiste_AvsluttOppfolging() {
+    public void adminAvsluttSpesifikkOppfolgingsperiode_SpesifisertPeriodeErSisteMenIkkeEneste_AvsluttSistePeriode() {
         startOppfolgingForBruker();
         reset(kafkaProducerService);
 
@@ -226,12 +226,12 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         oppfolgingService.adminAvsluttSpesifikkOppfolgingsperiode(AKTOR_ID, VEILEDER, "en begrunnelse", uuidSomSkalAvsluttes.toString());
 
         UnderOppfolgingDTO underOppfolgingDTO2 = oppfolgingService.oppfolgingData(FNR);
-        Assertions.assertThat(underOppfolgingDTO2.isUnderOppfolging()).isFalse();
-        verify(kafkaProducerService).publiserOppfolgingsperiode(any(OppfolgingsperiodeDTO.class));
-        verify(kafkaProducerService).publiserVeilederTilordnet(AKTOR_ID, null);
-        verify(kafkaProducerService).publiserEndringPaNyForVeileder(AKTOR_ID, false);
-        verify(kafkaProducerService).publiserEndringPaManuellStatus(AKTOR_ID, false);
-        verify(kafkaProducerService).publiserSkjulAoMinSideMicrofrontend(AKTOR_ID);
+        Assertions.assertThat(underOppfolgingDTO2.isUnderOppfolging()).isTrue();
+        verify(kafkaProducerService).publiserValgtOppfolgingsperiode(any(OppfolgingsperiodeDTO.class));
+        verify(kafkaProducerService, never()).publiserVeilederTilordnet(AKTOR_ID, null);
+        verify(kafkaProducerService, never()).publiserEndringPaNyForVeileder(AKTOR_ID, false);
+        verify(kafkaProducerService, never()).publiserEndringPaManuellStatus(AKTOR_ID, false);
+        verify(kafkaProducerService, never()).publiserSkjulAoMinSideMicrofrontend(AKTOR_ID);
     }
 
     @Test(expected = ForbiddenException.class)

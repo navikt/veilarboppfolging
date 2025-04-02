@@ -60,7 +60,10 @@ class UtmeldingsService(
     fun avsluttOppfolgingOfFjernFraUtmeldingsTabell(aktorId: AktorId): AvslutteOppfolgingResultat {
         try {
             if (!oppfolgingService.erUnderOppfolging(aktorId)) {
-                secureLog.info("Bruker med aktørid {} har ikke oppfølgingsflagg. Sletter fra utmelding-tabell", aktorId)
+                secureLog.info(
+                    "Bruker med aktørid {} har ikke oppfølgingsflagg. Sletter fra utmelding-tabell",
+                    aktorId
+                )
                 slettFraUtmeldingTabell(ScheduledJob_AlleredeUteAvOppfolging(aktorId))
                 return AvslutteOppfolgingResultat.IKKE_LENGER_UNDER_OPPFØLGING
             } else {
