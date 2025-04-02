@@ -399,11 +399,14 @@ public class OppfolgingService {
         var avsluttetAv = avregistrering.getAvsluttetAv().getIdent();
         var begrunnelse = avregistrering.getBegrunnelse();
 
-        var avsluttetPeriode = oppfolgingsPeriodeRepository.avslutt(aktorId, avsluttetAv, begrunnelse);
+        oppfolgingsPeriodeRepository.avslutt(aktorId, avsluttetAv, begrunnelse);
+
+        List<OppfolgingsperiodeEntity> perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId);
+        OppfolgingsperiodeEntity sistePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(perioder);
 
         // Publiserer avslutning av siste oppfølgingsperiode
         log.info("Oppfølgingsperiode avsluttet for bruker {} - publiserer endringer på oppfølgingsperiode-topics.", aktorId.get());
-        kafkaProducerService.publiserOppfolgingsperiode(DtoMappers.tilOppfolgingsperiodeDTO(avsluttetPeriode));
+        kafkaProducerService.publiserOppfolgingsperiode(DtoMappers.tilOppfolgingsperiodeDTO(sistePeriode));
 
         // Publiserer også endringer som resettes i oppfolgingsstatus-tabellen ved avslutting av oppfølging
         kafkaProducerService.publiserVeilederTilordnet(aktorId, null);
@@ -411,7 +414,7 @@ public class OppfolgingService {
         kafkaProducerService.publiserEndringPaManuellStatus(aktorId, false);
 
         kafkaProducerService.publiserSkjulAoMinSideMicrofrontend(aktorId);
-        bigQueryClient.loggAvsluttOppfolgingsperiode(avsluttetPeriode.getUuid(), avregistrering.getAvregistreringsType());
+        bigQueryClient.loggAvsluttOppfolgingsperiode(sistePeriode.getUuid(), avregistrering.getAvregistreringsType());
     }
 
     public boolean erUnderOppfolging(AktorId aktorId) {
