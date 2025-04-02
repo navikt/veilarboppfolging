@@ -130,9 +130,7 @@ class KafkaProducerService @Autowired constructor(
         store(kafkaProperties.endringPaMalAiven, aktorId.get(), recordValue)
     }
 
-    fun publiserVisAoMinSideMicrofrontend(aktorId: AktorId) {
-        val fnr = authService.getFnrOrThrow(aktorId)
-
+    fun publiserVisAoMinSideMicrofrontend(aktorId: AktorId, fnr: Fnr) {
         val startMelding = enable(
             fnr.get(),
             "ao-min-side-microfrontend",
@@ -143,9 +141,7 @@ class KafkaProducerService @Autowired constructor(
         store(kafkaProperties.minSideAapenMicrofrontendV1, aktorId.get(), startMelding)
     }
 
-    fun publiserSkjulAoMinSideMicrofrontend(aktorId: AktorId) {
-        val fnr = authService.getFnrOrThrow(aktorId)
-
+    fun publiserSkjulAoMinSideMicrofrontend(aktorId: AktorId, fnr: Fnr) {
         val stoppMelding = disable(
             fnr.get(),
             "ao-min-side-microfrontend",

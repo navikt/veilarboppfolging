@@ -2,6 +2,7 @@ package no.nav.veilarboppfolging.service;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.client.aktorregister.IngenGjeldendeIdentException;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.Id;
@@ -303,7 +304,7 @@ public class OppfolgingService {
             log.info("Oppfølgingsperiode startet for bruker - publiserer endringer på oppfølgingsperiode-topics.");
             kafkaProducerService.publiserOppfolgingsperiode(DtoMappers.tilOppfolgingsperiodeDTO(sistePeriode));
 
-            kafkaProducerService.publiserVisAoMinSideMicrofrontend(aktorId);
+            kafkaProducerService.publiserVisAoMinSideMicrofrontend(aktorId, fnr);
 
             Optional<Kvalifiseringsgruppe> kvalifiseringsgruppe = getKvalifiseringsGruppe(oppfolgingsbruker);
             bigQueryClient.loggStartOppfolgingsperiode(oppfolgingsbruker.getOppfolgingStartBegrunnelse(), sistePeriode.getUuid(), oppfolgingsbruker.getRegistrertAv().getType(), kvalifiseringsgruppe);
@@ -357,7 +358,12 @@ public class OppfolgingService {
             kafkaProducerService.publiserEndringPaNyForVeileder(aktorId, false);
             kafkaProducerService.publiserEndringPaManuellStatus(aktorId, false);
 
-            kafkaProducerService.publiserSkjulAoMinSideMicrofrontend(aktorId);
+            try{
+                Fnr fnr = authService.getFnrOrThrow(aktorId);
+                kafkaProducerService.publiserSkjulAoMinSideMicrofrontend(aktorId, fnr);
+            } catch(IngenGjeldendeIdentException e) {
+                log.error("Feil ved publiserSkjulAoMinSideMicrofrontend: {}", e.getMessage());
+            }
 
             bigQueryClient.loggAvsluttOppfolgingsperiode(sistePeriode.getUuid(), avregistrering.getAvregistreringsType());
         });

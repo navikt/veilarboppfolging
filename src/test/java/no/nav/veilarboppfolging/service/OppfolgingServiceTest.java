@@ -126,7 +126,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         List<OppfolgingsperiodeEntity> oppfolgingsperioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(AKTOR_ID);
         assertEquals(1, oppfolgingsperioder.size());
         verify(kafkaProducerService, times(1)).publiserOppfolgingsperiode(any(OppfolgingsperiodeDTO.class));
-        verify(kafkaProducerService).publiserVisAoMinSideMicrofrontend(AKTOR_ID);
+        verify(kafkaProducerService).publiserVisAoMinSideMicrofrontend(AKTOR_ID, FNR);
         verify(kafkaProducerService, times(1)).publiserMinSideBeskjed(any(Fnr.class), anyString(), anyString());
     }
 
@@ -143,7 +143,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         verify(kafkaProducerService).publiserVeilederTilordnet(AKTOR_ID, null);
         verify(kafkaProducerService).publiserEndringPaNyForVeileder(AKTOR_ID, false);
         verify(kafkaProducerService).publiserEndringPaManuellStatus(AKTOR_ID, false);
-        verify(kafkaProducerService).publiserSkjulAoMinSideMicrofrontend(AKTOR_ID);
+        verify(kafkaProducerService).publiserSkjulAoMinSideMicrofrontend(AKTOR_ID, FNR);
     }
 
     @Test
@@ -171,7 +171,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         verify(kafkaProducerService, never()).publiserVeilederTilordnet(AKTOR_ID, null);
         verify(kafkaProducerService, never()).publiserEndringPaNyForVeileder(AKTOR_ID, false);
         verify(kafkaProducerService, never()).publiserEndringPaManuellStatus(AKTOR_ID, false);
-        verify(kafkaProducerService, never()).publiserSkjulAoMinSideMicrofrontend(AKTOR_ID);
+        verify(kafkaProducerService, never()).publiserSkjulAoMinSideMicrofrontend(AKTOR_ID, FNR);
     }
 
 
@@ -247,7 +247,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         verify(kafkaProducerService, never()).publiserVeilederTilordnet(AKTOR_ID, null);
         verify(kafkaProducerService, never()).publiserEndringPaNyForVeileder(AKTOR_ID, false);
         verify(kafkaProducerService, never()).publiserEndringPaManuellStatus(AKTOR_ID, false);
-        verify(kafkaProducerService, never()).publiserSkjulAoMinSideMicrofrontend(AKTOR_ID);
+        verify(kafkaProducerService, never()).publiserSkjulAoMinSideMicrofrontend(AKTOR_ID, FNR);
     }
 
     @Test
@@ -267,7 +267,27 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         verify(kafkaProducerService).publiserVeilederTilordnet(AKTOR_ID, null);
         verify(kafkaProducerService).publiserEndringPaNyForVeileder(AKTOR_ID, false);
         verify(kafkaProducerService).publiserEndringPaManuellStatus(AKTOR_ID, false);
-        verify(kafkaProducerService).publiserSkjulAoMinSideMicrofrontend(AKTOR_ID);
+        verify(kafkaProducerService).publiserSkjulAoMinSideMicrofrontend(AKTOR_ID, FNR);
+    }
+
+    @Test
+    public void adminAvsluttSpesifikkOppfolgingsperiode_PeriodeErSisteOgEnesteOgBrukerManglerFnr_AvsluttOppfolging() {
+        startOppfolgingForBruker();
+        reset(kafkaProducerService);
+
+        var perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(AKTOR_ID).stream().sorted(Comparator.comparing(OppfolgingsperiodeEntity::getStartDato)).toList();
+        Assertions.assertThat(perioder.size()).isEqualTo(1);
+        var uuidSomSkalAvsluttes = perioder.getFirst().getUuid();
+
+        when(authService.getFnrOrThrow(AKTOR_ID)).thenThrow(new IngenGjeldendeIdentException());
+        oppfolgingService.adminAvsluttSpesifikkOppfolgingsperiode(AKTOR_ID, VEILEDER, "en begrunnelse", uuidSomSkalAvsluttes.toString());
+
+        UnderOppfolgingDTO underOppfolgingDTO2 = oppfolgingService.oppfolgingData(FNR);
+        Assertions.assertThat(underOppfolgingDTO2.isUnderOppfolging()).isFalse();
+        verify(kafkaProducerService).publiserOppfolgingsperiode(any(OppfolgingsperiodeDTO.class));
+        verify(kafkaProducerService).publiserVeilederTilordnet(AKTOR_ID, null);
+        verify(kafkaProducerService).publiserEndringPaNyForVeileder(AKTOR_ID, false);
+        verify(kafkaProducerService).publiserEndringPaManuellStatus(AKTOR_ID, false);
     }
 
     @Test(expected = ForbiddenException.class)
