@@ -380,31 +380,25 @@ public class OppfolgingService {
 
     private void avsluttValgtOppfolgingsperiode(Avregistrering avregistrering) {
         var oppfolgingsperiodeUUID = avregistrering.getOppfolgingsperiodeUUID();
-//        var perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(avregistrering.getAktorId());
-        var perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(avregistrering.getAktorId()).stream().filter(p -> p.getSluttDato() == null).toList();
-        var sistePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(perioder);
-        var valgtPeriode = perioder.stream().filter(p -> p.getUuid().equals(oppfolgingsperiodeUUID)).findFirst().orElse(null);
+        var gjeldendePerioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(avregistrering.getAktorId()).stream().filter(p -> p.getSluttDato() == null).toList();
+        var sisteGjeldendePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(gjeldendePerioder);
+        var valgtGjeldendePeriode = gjeldendePerioder.stream().filter(p -> p.getUuid().equals(oppfolgingsperiodeUUID)).findFirst().orElse(null);
 
-        if (valgtPeriode == null) {
-            log.warn("Fant ikke oppfølgingsperiode med UUID: {}", oppfolgingsperiodeUUID);
+        if (valgtGjeldendePeriode == null) {
+            log.warn("Fant ikke oppfølgingsperiode med UUID: {}. (eller den er allerede avsluttet)", oppfolgingsperiodeUUID);
             return;
         }
 
-        if (valgtPeriode.getSluttDato() != null) {
-            log.warn("Oppfølgingsperiode med UUID: {} er allerede avsluttet.", oppfolgingsperiodeUUID);
-            return;
-        }
+        boolean erSisteGjeldendePeriode = valgtGjeldendePeriode.getUuid().equals(sisteGjeldendePeriode.getUuid());
+        boolean erEnesteGjeldendePeriode = gjeldendePerioder.size() == 1;
 
-        boolean erSistePeriode = valgtPeriode.getUuid().equals(sistePeriode.getUuid());
-        boolean erEnestePeriode = perioder.size() == 1;
-
-        if (erSistePeriode && erEnestePeriode) {
+        if (erSisteGjeldendePeriode && erEnesteGjeldendePeriode) {
             log.info("Valgt oppfølgingsperiode er siste og eneste. Avslutter oppfølging.");
             avsluttOppfolgingForBruker(avregistrering);
             return;
         }
 
-        var sluttDato = erSistePeriode ? now() : sistePeriode.getStartDato();
+        var sluttDato = erSisteGjeldendePeriode ? now() : sisteGjeldendePeriode.getStartDato();
         var avsluttetOppfolgingsperiode = oppfolgingsPeriodeRepository.avsluttOppfolgingsperiode(oppfolgingsperiodeUUID, avregistrering.getAvsluttetAv().getIdent(), avregistrering.getBegrunnelse(), sluttDato);
 
         log.info("Oppfølgingsperiode med UUID: {} avsluttet for bruker - publiserer endringer på oppfølgingsperiode-topics.", oppfolgingsperiodeUUID);
