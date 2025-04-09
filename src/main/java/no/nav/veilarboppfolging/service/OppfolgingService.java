@@ -375,7 +375,12 @@ public class OppfolgingService {
             return;
         }
 
-        avsluttValgtOppfolgingsperiode(new AdminAvregistrering(aktorId, new VeilederRegistrant(new NavIdent(veilederId)), begrunnelse, UUID.fromString(uuid)));
+        try {
+            UUID oppfolgingsperiodeUUID = UUID.fromString(uuid);
+            avsluttValgtOppfolgingsperiode(new AdminAvregistrering(aktorId, new VeilederRegistrant(new NavIdent(veilederId)), begrunnelse, oppfolgingsperiodeUUID));
+        } catch (IllegalArgumentException e) {
+            log.warn("Invalid UUID format for oppfolgingsperiodeUUID: {}", uuid, e);
+        }
     }
 
     private void avsluttValgtOppfolgingsperiode(Avregistrering avregistrering) {
