@@ -202,7 +202,7 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
         assertThat(oppfølgingsperiode.startDato).isCloseTo(ZonedDateTime.now(), within(1, ChronoUnit.SECONDS))
         assertThat(oppfølgingsperiode.sluttDato).isNull()
         assertThat(oppfølgingsperiode.startetBegrunnelse).isEqualTo(OppfolgingStartBegrunnelse.ARBEIDSSOKER_REGISTRERING)
-        assertThat(utmeldingRepository.eksisterendeIservBruker(aktørId).getOrNull()).isNotNull()
+        assertThat(utmeldingRepository.eksisterendeIservBruker(aktørId)).isNotNull()
     }
 
     @Test
@@ -229,7 +229,7 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
         assertThat(oppfølgingsperiode.startDato).isCloseTo(ZonedDateTime.now(), within(1, ChronoUnit.SECONDS))
         assertThat(oppfølgingsperiode.sluttDato).isNull()
         assertThat(oppfølgingsperiode.startetBegrunnelse).isEqualTo(OppfolgingStartBegrunnelse.ARBEIDSSOKER_REGISTRERING)
-        assertThat(utmeldingRepository.eksisterendeIservBruker(aktørId).getOrNull()).isNull()
+        assertThat(utmeldingRepository.eksisterendeIservBruker(aktørId)).isNull()
     }
 
     private fun oppfølgingsperiode(startet: ZonedDateTime = ZonedDateTime.now()) =

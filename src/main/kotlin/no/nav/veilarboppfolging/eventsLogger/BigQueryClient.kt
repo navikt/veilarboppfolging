@@ -30,7 +30,6 @@ enum class BigQueryEventType {
 }
 
 data class UtmeldingsAntall(
-    val personerIUtemelding: Int,
     val personIUtmeldingSomErUnderOppfolging: Int,
 )
 
@@ -118,8 +117,7 @@ class BigQueryClientImplementation(projectId: String): BigQueryClient {
     override fun loggUtmeldingsCount(utmelding: UtmeldingsAntall) {
         insertIntoOppfolgingEvents(utmeldingCountsTable) {
             mapOf(
-                "personerIUtmelding" to utmelding.personerIUtemelding,
-                "personIUtmeldingSomErUnderOppfolging" to utmelding.personIUtmeldingSomErUnderOppfolging,
+                "antall" to utmelding.personIUtmeldingSomErUnderOppfolging,
                 "timestamp" to ZonedDateTime.now().toOffsetDateTime().toString()
             )
         }
