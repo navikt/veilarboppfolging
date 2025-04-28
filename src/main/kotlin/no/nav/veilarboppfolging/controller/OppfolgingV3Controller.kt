@@ -34,6 +34,7 @@ class OppfolgingV3Controller(
     val kvpService: KvpService,
     val aktiverBrukerService: AktiverBrukerService,
     val arenaOppfolgingService: ArenaOppfolgingService,
+    val reaktiveringService: ReaktiveringService,
 ) {
     private val logger = LoggerFactory.getLogger(this::class.java)
 
@@ -164,6 +165,16 @@ class OppfolgingV3Controller(
         return oppfolgingService.hentHarFlereAktorIderMedOppfolging(fodselsnummer)
     }
 
+
+
+    @PostMapping("/oppfolging/reaktiver")
+    fun reaktiverBrukerIArena(@RequestBody reaktiverOppfolgingDto: ReaktiverOppfolgingDto): ResponseEntity<RegistrerIkkeArbeidssokerDto> {
+        authService.skalVereInternBruker()
+        authService.sjekkAtApplikasjonErIAllowList(ALLOWLIST)
+
+        reaktiveringService.reaktiverBrukerIArena(reaktiverOppfolgingDto)
+    }
+
     @PostMapping("/oppfolging/startOppfolgingsperiode")
     fun aktiverBruker(@RequestBody startOppfolging: StartOppfolgingDto): ResponseEntity<RegistrerIkkeArbeidssokerDto> {
         authService.skalVereInternBruker()
@@ -222,6 +233,8 @@ class StartOppfolgingDto(
     val fnr: Fnr,
     val henviserSystem: HenviserSystem,
 )
+
+data class ReaktiverOppfolgingDto(val fnr: Fnr)
 
 enum class HenviserSystem {
     DEMO,
