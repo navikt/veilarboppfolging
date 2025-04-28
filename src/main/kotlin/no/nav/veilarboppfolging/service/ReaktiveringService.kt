@@ -40,16 +40,13 @@ class ReaktiveringService(
         val aktorId = authService.getAktorIdOrThrow(reaktiverOppfolgingDto.fnr);
 
         val maybeOppfolging: Optional<OppfolgingEntity> = oppfolgingsStatusRepository.hentOppfolging(aktorId)
-
-        val erUnderOppfolging =
-            maybeOppfolging.map<Boolean>(Function { obj: OppfolgingEntity? -> obj!!.isUnderOppfolging })
-                .orElse(false)
+        val erUnderOppfolging = maybeOppfolging.map { it.isUnderOppfolging }.orElse(false)
 
         if (!erUnderOppfolging) {
             return ResponseEntity(ReaktiveringResponse(false, "KAN_IKKE_REAKTIVERES"), HttpStatus.CONFLICT)
         }
 
-        val perioder: MutableList<OppfolgingsperiodeEntity?>? =
+        val perioder: List<OppfolgingsperiodeEntity> =
             oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId)
         val sistePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(perioder)
 
