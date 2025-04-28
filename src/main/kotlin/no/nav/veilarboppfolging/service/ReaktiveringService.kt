@@ -2,6 +2,7 @@ package no.nav.veilarboppfolging.service
 
 import no.nav.common.types.identer.NavIdent
 import no.nav.veilarboppfolging.client.veilarbarena.ARENA_REGISTRERING_RESULTAT
+import no.nav.veilarboppfolging.client.veilarbarena.ReaktiveringResponse
 import no.nav.veilarboppfolging.client.veilarbarena.RegistrerIArenaError
 import no.nav.veilarboppfolging.client.veilarbarena.RegistrerIArenaSuccess
 import no.nav.veilarboppfolging.controller.ReaktiverOppfolgingDto
@@ -33,7 +34,7 @@ class ReaktiveringService(
 ) {
     private val logger: Logger = LoggerFactory.getLogger(ReaktiveringService::class.java)
 
-    fun reaktiverBrukerIArena(reaktiverOppfolgingDto: ReaktiverOppfolgingDto) {
+    fun reaktiverBrukerIArena(reaktiverOppfolgingDto: ReaktiverOppfolgingDto): ResponseEntity<ReaktiveringResponse> {
 
         val navIdent = NavIdent.of(authService.innloggetVeilederIdent)
         val aktorId = authService.getAktorIdOrThrow(reaktiverOppfolgingDto.fnr);
@@ -41,26 +42,24 @@ class ReaktiveringService(
         val maybeOppfolging: Optional<OppfolgingEntity> = oppfolgingsStatusRepository.hentOppfolging(aktorId)
 
         val erUnderOppfolging =
-            maybeOppfolging.map<Boolean?>(Function { obj: OppfolgingEntity? -> obj!!.isUnderOppfolging() })
+            maybeOppfolging.map<Boolean>(Function { obj: OppfolgingEntity? -> obj!!.isUnderOppfolging })
                 .orElse(false)
 
         if (!erUnderOppfolging) {
-            return
+            return ResponseEntity(ReaktiveringResponse(false, "Bruker kan ikke reaktiveres"), HttpStatus.CONFLICT)
         }
 
         val perioder: MutableList<OppfolgingsperiodeEntity?>? =
             oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId)
         val sistePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(perioder)
 
-
-
-        transactor.executeWithoutResult {
+        val response = transactor.execute {
 
             val arenaResponse = arenaOppfolgingService.registrerIkkeArbeidssoker(reaktiverOppfolgingDto.fnr)
 
             val historikkForReaktiveringDto = HistorikkForReaktiveringDto(
                 aktorId = aktorId.toString(),
-                oppfolgingsperiode = sistePeriode!!.uuid.toString(),
+                oppfolgingsperiode = sistePeriode.uuid.toString(),
                 veilederIdent = navIdent.get(),
             )
 
@@ -72,13 +71,19 @@ class ReaktiveringService(
                                 "Feil ved registrering av bruker i Arena",
                                 arenaResponse.arenaResultat.resultat
                             )
-                            return ResponseEntity(arenaResponse.arenaResultat, HttpStatus.CONFLICT)
+                            ResponseEntity(
+                                ReaktiveringResponse(false, arenaResponse.arenaResultat.kode.name),
+                                HttpStatus.CONFLICT
+                            )
                         }
 
                         else -> {
                             logger.info("Bruker registrert i Arena med resultat: ${arenaResponse.arenaResultat.kode}")
                             reaktiveringRepository.insertReaktivering(historikkForReaktiveringDto)
-                            return ResponseEntity(arenaResponse.arenaResultat, HttpStatus.OK)
+                            ResponseEntity(
+                                ReaktiveringResponse(true, arenaResponse.arenaResultat.kode.name),
+                                HttpStatus.OK
+                            )
                         }
                     }
                 }
@@ -89,6 +94,8 @@ class ReaktiveringService(
                 }
             }
         }
+
+        return response
     }
 }
 

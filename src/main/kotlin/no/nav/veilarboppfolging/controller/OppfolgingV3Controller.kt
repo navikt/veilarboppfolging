@@ -172,7 +172,7 @@ class OppfolgingV3Controller(
         authService.skalVereInternBruker()
         authService.sjekkAtApplikasjonErIAllowList(ALLOWLIST)
 
-        reaktiveringService.reaktiverBrukerIArena(reaktiverOppfolgingDto)
+        val resultat = reaktiveringService.reaktiverBrukerIArena(reaktiverOppfolgingDto)
     }
 
     @PostMapping("/oppfolging/startOppfolgingsperiode")
