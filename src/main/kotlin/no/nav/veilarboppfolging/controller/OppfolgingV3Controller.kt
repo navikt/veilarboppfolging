@@ -4,15 +4,15 @@ import lombok.RequiredArgsConstructor
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.veilarboppfolging.BadRequestException
-import no.nav.veilarboppfolging.client.veilarbarena.ARENA_REGISTRERING_RESULTAT
-import no.nav.veilarboppfolging.client.veilarbarena.RegistrerIArenaSuccess
-import no.nav.veilarboppfolging.client.veilarbarena.RegistrerIArenaError
-import no.nav.veilarboppfolging.client.veilarbarena.RegistrerIkkeArbeidssokerDto
+import no.nav.veilarboppfolging.client.veilarbarena.*
 import no.nav.veilarboppfolging.controller.response.*
 import no.nav.veilarboppfolging.controller.v2.response.UnderOppfolgingV2Response
-import no.nav.veilarboppfolging.controller.v3.request.*
-import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.AktiverBrukerService
+import no.nav.veilarboppfolging.controller.v3.request.KvpRequest
+import no.nav.veilarboppfolging.controller.v3.request.OppfolgingRequest
+import no.nav.veilarboppfolging.controller.v3.request.VeilederBegrunnelseRequest
+import no.nav.veilarboppfolging.controller.v3.request.VeilederRequest
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.AktiverBrukerService
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity
 import no.nav.veilarboppfolging.repository.enums.KodeverkBruker
 import no.nav.veilarboppfolging.service.*
@@ -93,8 +93,10 @@ class OppfolgingV3Controller(
 
     @PostMapping(value = ["/oppfolging/hent-perioder"])
     fun hentOppfolgingsperioder(@RequestBody oppfolgingRequest: OppfolgingRequest): List<OppfolgingPeriodeDTO> {
-        val allowlist = listOf(AllowListApplicationName.VEILARBVEDTAKSSTOTTE, AllowListApplicationName.AMT_PERSON_SERVICE,
-            AllowListApplicationName.VEILARBDIRIGENT)
+        val allowlist = listOf(
+            AllowListApplicationName.VEILARBVEDTAKSSTOTTE, AllowListApplicationName.AMT_PERSON_SERVICE,
+            AllowListApplicationName.VEILARBDIRIGENT
+        )
         authService.authorizeRequest(oppfolgingRequest.fnr, allowlist)
         val aktorId = authService.getAktorIdOrThrow(oppfolgingRequest.fnr)
         return hentOppfolgingsperioder(aktorId)
@@ -166,13 +168,12 @@ class OppfolgingV3Controller(
     }
 
 
-
     @PostMapping("/oppfolging/reaktiver")
-    fun reaktiverBrukerIArena(@RequestBody reaktiverOppfolgingDto: ReaktiverOppfolgingDto): ResponseEntity<RegistrerIkkeArbeidssokerDto> {
+    fun reaktiverBrukerIArena(@RequestBody reaktiverOppfolgingDto: ReaktiverOppfolgingDto): ResponseEntity<ReaktiveringResponse> {
         authService.skalVereInternBruker()
         authService.sjekkAtApplikasjonErIAllowList(ALLOWLIST)
 
-        val resultat = reaktiveringService.reaktiverBrukerIArena(reaktiverOppfolgingDto)
+        return reaktiveringService.reaktiverBrukerIArena(reaktiverOppfolgingDto)
     }
 
     @PostMapping("/oppfolging/startOppfolgingsperiode")
@@ -184,10 +185,11 @@ class OppfolgingV3Controller(
         when (arenaResponse) {
             is RegistrerIArenaSuccess -> {
                 when (arenaResponse.arenaResultat.kode) {
-                   ARENA_REGISTRERING_RESULTAT.FNR_FINNES_IKKE, ARENA_REGISTRERING_RESULTAT.KAN_REAKTIVERES_FORENKLET,  ARENA_REGISTRERING_RESULTAT.UKJENT_FEIL -> {
-                       logger.error("Feil ved registrering av bruker i Arena", arenaResponse.arenaResultat.resultat)
-                       return ResponseEntity(arenaResponse.arenaResultat, HttpStatus.CONFLICT)
+                    ARENA_REGISTRERING_RESULTAT.FNR_FINNES_IKKE, ARENA_REGISTRERING_RESULTAT.KAN_REAKTIVERES_FORENKLET, ARENA_REGISTRERING_RESULTAT.UKJENT_FEIL -> {
+                        logger.error("Feil ved registrering av bruker i Arena", arenaResponse.arenaResultat.resultat)
+                        return ResponseEntity(arenaResponse.arenaResultat, HttpStatus.CONFLICT)
                     }
+
                     else -> {
                         logger.info("Bruker registrert i Arena med resultat: ${arenaResponse.arenaResultat.kode}")
                         aktiverBrukerService.aktiverBrukerManuelt(startOppfolging.fnr)
@@ -195,6 +197,7 @@ class OppfolgingV3Controller(
                     }
                 }
             }
+
             is RegistrerIArenaError -> {
                 logger.error("Feil ved registrering av bruker i Arena", arenaResponse.throwable)
                 throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, arenaResponse.message)
