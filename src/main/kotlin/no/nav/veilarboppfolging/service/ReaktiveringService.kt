@@ -46,7 +46,7 @@ class ReaktiveringService(
                 .orElse(false)
 
         if (!erUnderOppfolging) {
-            return ResponseEntity(ReaktiveringResponse(false, "Bruker kan ikke reaktiveres"), HttpStatus.CONFLICT)
+            return ResponseEntity(ReaktiveringResponse(false, "KAN_IKKE_REAKTIVERES"), HttpStatus.CONFLICT)
         }
 
         val perioder: MutableList<OppfolgingsperiodeEntity?>? =
