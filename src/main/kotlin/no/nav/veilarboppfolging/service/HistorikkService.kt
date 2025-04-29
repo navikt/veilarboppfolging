@@ -7,21 +7,12 @@ import no.nav.common.types.identer.Fnr
 import no.nav.veilarboppfolging.controller.response.HistorikkHendelse
 import no.nav.veilarboppfolging.domain.StartetAvType
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelse
-import no.nav.veilarboppfolging.repository.KvpRepository
-import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
-import no.nav.veilarboppfolging.repository.OppfolgingsenhetHistorikkRepository
-import no.nav.veilarboppfolging.repository.ReaktiverOppfolgingHendelseEntity
-import no.nav.veilarboppfolging.repository.ReaktiveringRepository
-import no.nav.veilarboppfolging.repository.VeilederHistorikkRepository
-import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity
-import no.nav.veilarboppfolging.repository.entity.ManuellStatusEntity
-import no.nav.veilarboppfolging.repository.entity.OppfolgingsenhetEndringEntity
-import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity
-import no.nav.veilarboppfolging.repository.entity.VeilederTilordningHistorikkEntity
+import no.nav.veilarboppfolging.repository.*
+import no.nav.veilarboppfolging.repository.entity.*
 import no.nav.veilarboppfolging.repository.enums.KodeverkBruker
 import no.nav.veilarboppfolging.utils.KvpUtils
 import org.springframework.stereotype.Service
-import java.util.Objects
+import java.util.*
 import java.util.function.Supplier
 
 @Service
@@ -123,8 +114,8 @@ class HistorikkService(
             OppfolgingStartBegrunnelse.ARENA_SYNC_ARBS -> "Registrert som arbeidssøker i arena"
             OppfolgingStartBegrunnelse.ARENA_SYNC_IARBS -> "Registrert 14a vedtak i arena eller sykmeldt uten arbeidsgiver (VURDU)"
             OppfolgingStartBegrunnelse.MANUELL_REGISTRERING_VEILEDER -> "Veileder startet arbeidsrettet oppfølging på bruker"
-            OppfolgingStartBegrunnelse.REAKTIVERT_OPPFØLGING -> "Arbeidsoppfølgingen ble reaktivert"
-            else -> "Startet arbeidsoppfølging på bruker"
+            OppfolgingStartBegrunnelse.REAKTIVERT_OPPFØLGING -> "Arbeidsrettet oppfølging ble reaktivert"
+            else -> "Startet arbeidsrettet oppfølging på bruker"
         }
     }
 
