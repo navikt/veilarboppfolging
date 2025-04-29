@@ -84,6 +84,7 @@ class HistorikkService(
             .type(HistorikkHendelse.Type.REAKTIVERT_OPPFOLGINGSPERIODE)
             .begrunnelse(getStartetBegrunnelseTekst(OppfolgingStartBegrunnelse.REAKTIVERT_OPPFØLGING, null))
             .dato(reaktiverOppfolgingHendelseEntity.reaktiveringTidspunkt)
+            .opprettetAv(KodeverkBruker.NAV)
             .opprettetAvBrukerId(reaktiverOppfolgingHendelseEntity.reaktivertAv)
             .build()
     }
