@@ -10,6 +10,8 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunn
 import no.nav.veilarboppfolging.repository.KvpRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsenhetHistorikkRepository
+import no.nav.veilarboppfolging.repository.ReaktiverOppfolgingHendelseEntity
+import no.nav.veilarboppfolging.repository.ReaktiveringRepository
 import no.nav.veilarboppfolging.repository.VeilederHistorikkRepository
 import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity
 import no.nav.veilarboppfolging.repository.entity.ManuellStatusEntity
@@ -30,7 +32,8 @@ class HistorikkService(
     private val veilederHistorikkRepository: VeilederHistorikkRepository,
     private val oppfolgingsenhetHistorikkRepository: OppfolgingsenhetHistorikkRepository,
     private val oppfolgingsPeriodeRepository: OppfolgingsPeriodeRepository,
-    private val manuellStatusService: ManuellStatusService
+    private val manuellStatusService: ManuellStatusService,
+    private val reaktiveringRepository: ReaktiveringRepository
 ) {
 
     fun hentInstillingsHistorikk(fnr: Fnr?): List<HistorikkHendelse> {
@@ -73,6 +76,14 @@ class HistorikkService(
             .dato(historikkData.dato)
             .opprettetAv(historikkData.opprettetAv)
             .opprettetAvBrukerId(historikkData.opprettetAvBrukerId)
+            .build()
+    }
+
+    private fun tilDTO(reaktiverOppfolgingHendelseEntity: ReaktiverOppfolgingHendelseEntity): HistorikkHendelse {
+        return HistorikkHendelse.builder()
+            .type(HistorikkHendelse.Type.REAKTIVERT_OPPFOLGINGSPERIODE)
+            .dato(reaktiverOppfolgingHendelseEntity.reaktiveringTidspunkt)
+            .opprettetAvBrukerId(reaktiverOppfolgingHendelseEntity.reaktivertAv)
             .build()
     }
 
@@ -169,12 +180,16 @@ class HistorikkService(
                 .mapNotNull { oppfolgingsenhetEndringData -> oppfolgingsenhetEndringData?.let(::tilDTO) }
                 .filter(::sjekkTilgangGittKvp)
 
+        val reaktiveringHistorikk = reaktiveringRepository.hentReaktiveringer(aktorId)
+            .map  { reaktiverOppfolgingHendelseEntity -> tilDTO(reaktiverOppfolgingHendelseEntity) }
+
         return listOf(
             kvpInnstillingHistorikk,
             oppfolgingsperiodeHistorikk,
             manuellInnstillingHistorikk,
             veilederTilordningerInnstillingHistorikk,
-            oppfolgingsEnhetEndringHistorikk
+            oppfolgingsEnhetEndringHistorikk,
+            reaktiveringHistorikk
         )
     }
 }

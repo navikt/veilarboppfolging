@@ -169,11 +169,11 @@ class OppfolgingV3Controller(
 
 
     @PostMapping("/oppfolging/reaktiver")
-    fun reaktiverBrukerIArena(@RequestBody reaktiverOppfolgingDto: ReaktiverOppfolgingDto): ResponseEntity<ReaktiveringResponse> {
+    fun reaktiverBrukerIArena(@RequestBody reaktiverRequestDto: ReaktiverRequestDto): ResponseEntity<ReaktiveringResponse> {
         authService.skalVereInternBruker()
         authService.sjekkAtApplikasjonErIAllowList(ALLOWLIST)
 
-        return reaktiveringService.reaktiverBrukerIArena(reaktiverOppfolgingDto)
+        return reaktiveringService.reaktiverBrukerIArena(reaktiverRequestDto)
     }
 
     @PostMapping("/oppfolging/startOppfolgingsperiode")
@@ -237,7 +237,7 @@ class StartOppfolgingDto(
     val henviserSystem: HenviserSystem,
 )
 
-data class ReaktiverOppfolgingDto(val fnr: Fnr)
+data class ReaktiverRequestDto(val fnr: Fnr)
 
 enum class HenviserSystem {
     DEMO,

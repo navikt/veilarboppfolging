@@ -2,7 +2,7 @@ package no.nav.veilarboppfolging.service
 
 import no.nav.common.types.identer.NavIdent
 import no.nav.veilarboppfolging.client.veilarbarena.*
-import no.nav.veilarboppfolging.controller.ReaktiverOppfolgingDto
+import no.nav.veilarboppfolging.controller.ReaktiverRequestDto
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
@@ -30,10 +30,10 @@ class ReaktiveringService(
 ) {
     private val logger: Logger = LoggerFactory.getLogger(ReaktiveringService::class.java)
 
-    fun reaktiverBrukerIArena(reaktiverOppfolgingDto: ReaktiverOppfolgingDto): ResponseEntity<ReaktiveringResponse> {
+    fun reaktiverBrukerIArena(reaktiverRequestDto: ReaktiverRequestDto): ResponseEntity<ReaktiveringResponse> {
 
         val navIdent = NavIdent.of(authService.innloggetVeilederIdent)
-        val aktorId = authService.getAktorIdOrThrow(reaktiverOppfolgingDto.fnr);
+        val aktorId = authService.getAktorIdOrThrow(reaktiverRequestDto.fnr);
 
         val maybeOppfolging: Optional<OppfolgingEntity> = oppfolgingsStatusRepository.hentOppfolging(aktorId)
         val erUnderOppfolging = maybeOppfolging.map { it.isUnderOppfolging }.orElse(false)
@@ -48,9 +48,9 @@ class ReaktiveringService(
 
         val response = transactor.execute {
 
-            val arenaResponse = arenaOppfolgingService.registrerIkkeArbeidssoker(reaktiverOppfolgingDto.fnr)
+            val arenaResponse = arenaOppfolgingService.registrerIkkeArbeidssoker(reaktiverRequestDto.fnr)
 
-            val historikkForReaktiveringDto = HistorikkForReaktiveringDto(
+            val reaktiverOppfolgingDto = ReaktiverOppfolgingDto(
                 aktorId = aktorId.toString(),
                 oppfolgingsperiode = sistePeriode.uuid.toString(),
                 veilederIdent = navIdent.get(),
@@ -72,7 +72,7 @@ class ReaktiveringService(
 
                         else -> {
                             logger.info("Bruker registrert i Arena med resultat: ${arenaResponse.arenaResultat.kode}")
-                            reaktiveringRepository.insertReaktivering(historikkForReaktiveringDto)
+                            reaktiveringRepository.insertReaktivering(reaktiverOppfolgingDto)
                             ResponseEntity(
                                 ReaktiveringResponse(true, REAKTIVERING_RESULTAT.valueOf(arenaResponse.arenaResultat.kode.name)),
                                 HttpStatus.OK
@@ -92,7 +92,7 @@ class ReaktiveringService(
     }
 }
 
-data class HistorikkForReaktiveringDto(
+data class ReaktiverOppfolgingDto(
     val aktorId: String,
     val oppfolgingsperiode: String,
     val veilederIdent: String,

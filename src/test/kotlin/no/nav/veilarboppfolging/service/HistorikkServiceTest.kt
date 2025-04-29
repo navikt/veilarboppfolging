@@ -8,6 +8,7 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunn
 import no.nav.veilarboppfolging.repository.KvpRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsenhetHistorikkRepository
+import no.nav.veilarboppfolging.repository.ReaktiveringRepository
 import no.nav.veilarboppfolging.repository.VeilederHistorikkRepository
 import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity
 import no.nav.veilarboppfolging.repository.entity.ManuellStatusEntity
@@ -45,6 +46,8 @@ class HistorikkServiceTest {
     private lateinit var oppfolgingsPeriodeRepository: OppfolgingsPeriodeRepository
     @InjectMocks
     private lateinit var historikkService: HistorikkService
+    @Mock
+    private lateinit var reaktiveringRepository: ReaktiveringRepository
 
     @Before
     fun setup() {
