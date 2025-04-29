@@ -44,7 +44,7 @@ data class ReaktiverOppfolgingHendelseEntity(
     companion object {
         fun fromResultSet(resultSet: ResultSet, row: Int): ReaktiverOppfolgingHendelseEntity =
             ReaktiverOppfolgingHendelseEntity(
-                aktorId = resultSet.getString("aktorId"),
+                aktorId = resultSet.getString("aktor_Id"),
                 reaktiveringTidspunkt = hentZonedDateTime(resultSet, "reaktivering_tidspunkt"),
                 reaktivertAv = resultSet.getString("reaktivert_av"),
             )
