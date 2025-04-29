@@ -1,10 +1,7 @@
 package no.nav.veilarboppfolging.service
 
 import no.nav.common.types.identer.NavIdent
-import no.nav.veilarboppfolging.client.veilarbarena.ARENA_REGISTRERING_RESULTAT
-import no.nav.veilarboppfolging.client.veilarbarena.ReaktiveringResponse
-import no.nav.veilarboppfolging.client.veilarbarena.RegistrerIArenaError
-import no.nav.veilarboppfolging.client.veilarbarena.RegistrerIArenaSuccess
+import no.nav.veilarboppfolging.client.veilarbarena.*
 import no.nav.veilarboppfolging.controller.ReaktiverOppfolgingDto
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
@@ -21,7 +18,6 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.support.TransactionTemplate
 import org.springframework.web.server.ResponseStatusException
 import java.util.*
-import java.util.function.Function
 
 @Service
 class ReaktiveringService(
@@ -43,7 +39,7 @@ class ReaktiveringService(
         val erUnderOppfolging = maybeOppfolging.map { it.isUnderOppfolging }.orElse(false)
 
         if (!erUnderOppfolging) {
-            return ResponseEntity(ReaktiveringResponse(false, "KAN_IKKE_REAKTIVERES"), HttpStatus.CONFLICT)
+            return ResponseEntity(ReaktiveringResponse(false, REAKTIVERING_RESULTAT.KAN_IKKE_REAKTIVERES), HttpStatus.CONFLICT)
         }
 
         val perioder: List<OppfolgingsperiodeEntity> =
@@ -69,7 +65,7 @@ class ReaktiveringService(
                                 arenaResponse.arenaResultat.resultat
                             )
                             ResponseEntity(
-                                ReaktiveringResponse(false, arenaResponse.arenaResultat.kode.name),
+                                ReaktiveringResponse(false, REAKTIVERING_RESULTAT.valueOf(arenaResponse.arenaResultat.kode.name)),
                                 HttpStatus.CONFLICT
                             )
                         }
@@ -78,7 +74,7 @@ class ReaktiveringService(
                             logger.info("Bruker registrert i Arena med resultat: ${arenaResponse.arenaResultat.kode}")
                             reaktiveringRepository.insertReaktivering(historikkForReaktiveringDto)
                             ResponseEntity(
-                                ReaktiveringResponse(true, arenaResponse.arenaResultat.kode.name),
+                                ReaktiveringResponse(true, REAKTIVERING_RESULTAT.valueOf(arenaResponse.arenaResultat.kode.name)),
                                 HttpStatus.OK
                             )
                         }
