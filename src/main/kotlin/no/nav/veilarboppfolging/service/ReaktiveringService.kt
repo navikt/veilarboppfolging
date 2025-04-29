@@ -13,7 +13,6 @@ import no.nav.veilarboppfolging.utils.OppfolgingsperiodeUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import org.springframework.transaction.support.TransactionTemplate
 import org.springframework.web.server.ResponseStatusException
@@ -30,7 +29,7 @@ class ReaktiveringService(
 ) {
     private val logger: Logger = LoggerFactory.getLogger(ReaktiveringService::class.java)
 
-    fun reaktiverBrukerIArena(reaktiverRequestDto: ReaktiverRequestDto): ResponseEntity<ReaktiveringResponse> {
+    fun reaktiverBrukerIArena(reaktiverRequestDto: ReaktiverRequestDto): ReaktiveringResponse {
 
         val navIdent = NavIdent.of(authService.innloggetVeilederIdent)
         val aktorId = authService.getAktorIdOrThrow(reaktiverRequestDto.fnr);
@@ -39,7 +38,7 @@ class ReaktiveringService(
         val erUnderOppfolging = maybeOppfolging.map { it.isUnderOppfolging }.orElse(false)
 
         if (!erUnderOppfolging) {
-            return ResponseEntity(ReaktiveringResponse(false, REAKTIVERING_RESULTAT.KAN_IKKE_REAKTIVERES), HttpStatus.CONFLICT)
+            return ReaktiveringResponse(false, REAKTIVERING_RESULTAT.KAN_IKKE_REAKTIVERES)
         }
 
         val perioder: List<OppfolgingsperiodeEntity> =
@@ -50,12 +49,6 @@ class ReaktiveringService(
 
             val arenaResponse = arenaOppfolgingService.registrerIkkeArbeidssoker(reaktiverRequestDto.fnr)
 
-            val reaktiverOppfolgingDto = ReaktiverOppfolgingDto(
-                aktorId = aktorId.toString(),
-                oppfolgingsperiode = sistePeriode.uuid.toString(),
-                veilederIdent = navIdent.get(),
-            )
-
             when (arenaResponse) {
                 is RegistrerIArenaSuccess -> {
                     when (arenaResponse.arenaResultat.kode) {
@@ -64,18 +57,30 @@ class ReaktiveringService(
                                 "Feil ved registrering av bruker i Arena",
                                 arenaResponse.arenaResultat.resultat
                             )
-                            ResponseEntity(
-                                ReaktiveringResponse(false, REAKTIVERING_RESULTAT.valueOf(arenaResponse.arenaResultat.kode.name)),
-                                HttpStatus.CONFLICT
+                            ReaktiveringSuccess(
+                                ReaktiveringResponse(
+                                    false,
+                                    REAKTIVERING_RESULTAT.valueOf(arenaResponse.arenaResultat.kode.name)
+                                )
                             )
                         }
 
                         else -> {
                             logger.info("Bruker registrert i Arena med resultat: ${arenaResponse.arenaResultat.kode}")
+
+                            val reaktiverOppfolgingDto = ReaktiverOppfolgingDto(
+                                aktorId = aktorId.toString(),
+                                oppfolgingsperiode = sistePeriode.uuid.toString(),
+                                veilederIdent = navIdent.get(),
+                            )
+
                             reaktiveringRepository.insertReaktivering(reaktiverOppfolgingDto)
-                            ResponseEntity(
-                                ReaktiveringResponse(true, REAKTIVERING_RESULTAT.valueOf(arenaResponse.arenaResultat.kode.name)),
-                                HttpStatus.OK
+
+                            ReaktiveringSuccess(
+                                ReaktiveringResponse(
+                                    true,
+                                    REAKTIVERING_RESULTAT.valueOf(arenaResponse.arenaResultat.kode.name)
+                                )
                             )
                         }
                     }
@@ -83,7 +88,11 @@ class ReaktiveringService(
 
                 is RegistrerIArenaError -> {
                     logger.error("Feil ved registrering av bruker i Arena", arenaResponse.throwable)
-                    throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, arenaResponse.message)
+                    throw ResponseStatusException(
+                        HttpStatus.INTERNAL_SERVER_ERROR,
+                        arenaResponse.message,
+                        arenaResponse.throwable
+                    )
                 }
             }
         }
