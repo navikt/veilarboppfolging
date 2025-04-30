@@ -8,6 +8,7 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunn
 import no.nav.veilarboppfolging.repository.KvpRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsenhetHistorikkRepository
+import no.nav.veilarboppfolging.repository.ReaktiverOppfolgingHendelseEntity
 import no.nav.veilarboppfolging.repository.ReaktiveringRepository
 import no.nav.veilarboppfolging.repository.VeilederHistorikkRepository
 import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity
@@ -297,10 +298,46 @@ class HistorikkServiceTest {
         ))
     }
 
+    @Test
+    fun `reaktivering av oppfølging vises i historikken`() {
+        gitt_oppfolgingsperioder(listOf(mockStartetOppfolgingsperiode()))
+        gitt_reaktiveringer(listOf(mockReaktivering()))
+
+        val oppfolgingssEventer = listOf(HistorikkHendelse.Type.REAKTIVERT_OPPFOLGINGSPERIODE, HistorikkHendelse.Type.STARTET_OPPFOLGINGSPERIODE)
+        val historikk = historikkService.hentInstillingsHistorikk(FNR)
+            .filter { oppfolgingssEventer.contains(it.type) }
+
+        Assertions.assertThat(historikk.size).isEqualTo(2)
+        val periodeStartetEvent = historikk[0]
+        val periodeReaktivertEvent = historikk[1]
+
+        Assertions.assertThat(periodeStartetEvent).isEqualTo(historikkHendelse(
+            type = HistorikkHendelse.Type.STARTET_OPPFOLGINGSPERIODE,
+            tidspunkt = OPPFOLGING_START,
+            begrunnelse = "Startet arbeidsrettet oppfølging på bruker",
+            opprettetAvType = KodeverkBruker.NAV,
+            opprettetAv = "defaultVeileder",
+        ))
+
+        Assertions.assertThat(periodeReaktivertEvent).isEqualTo(historikkHendelse(
+            type = HistorikkHendelse.Type.REAKTIVERT_OPPFOLGINGSPERIODE,
+            tidspunkt = OPPFOLGING_REAKTIVERT,
+            begrunnelse = "Arbeidsrettet oppfølging ble reaktivert",
+            opprettetAvType = KodeverkBruker.NAV,
+            opprettetAv = "veileder som reaktiverte",
+        ))
+    }
+
     private fun gitt_oppfolgingsperioder(oppfolgingsPerioder: List<OppfolgingsperiodeEntity>) {
         Mockito.`when`(
             oppfolgingsPeriodeRepository.hentOppfolgingsperioder(AKTOR_ID)
         ).thenReturn(oppfolgingsPerioder)
+    }
+
+    private fun gitt_reaktiveringer(reaktiveringer: List<ReaktiverOppfolgingHendelseEntity>) {
+        Mockito.`when`(
+            reaktiveringRepository.hentReaktiveringer(AKTOR_ID)
+        ).thenReturn(reaktiveringer)
     }
 
     private fun gitt_oppfolging_start_stopp(startetAvVeilder: String? = null, avsluttetAvVeileder: String? = null) {
@@ -407,6 +444,29 @@ class HistorikkServiceTest {
         )
     }
 
+    private fun mockStartetOppfolgingsperiode(): OppfolgingsperiodeEntity {
+        return OppfolgingsperiodeEntity(
+            UUID.randomUUID(),
+            AKTOR_ID.get(),
+            null,
+            OPPFOLGING_START,
+            null,
+            null,
+            emptyList(),
+            null,
+            "defaultVeileder",
+            StartetAvType.VEILEDER
+        )
+    }
+
+    private fun mockReaktivering(): ReaktiverOppfolgingHendelseEntity {
+        return ReaktiverOppfolgingHendelseEntity(
+            AKTOR_ID.get(),
+            OPPFOLGING_REAKTIVERT,
+            "veileder som reaktiverte"
+        )
+    }
+
     fun historikkHendelse(
         type: HistorikkHendelse.Type,
         tidspunkt: ZonedDateTime,
@@ -432,6 +492,7 @@ class HistorikkServiceTest {
 
         private val OPPFOLGING_START: ZonedDateTime = ZonedDateTime.now().minusDays(10)
         private val OPPFOLGING_END: ZonedDateTime = OPPFOLGING_START.plusDays(5)
+        private val OPPFOLGING_REAKTIVERT: ZonedDateTime = OPPFOLGING_START.plusDays(3)
         private val BEFORE_KVP: ZonedDateTime = ZonedDateTime.now()
         private val ALSO_BEFORE_KVP: ZonedDateTime = BEFORE_KVP.plus(1, ChronoUnit.HOURS)
         private val KVP_START: ZonedDateTime = BEFORE_KVP.plus(1, ChronoUnit.DAYS)
