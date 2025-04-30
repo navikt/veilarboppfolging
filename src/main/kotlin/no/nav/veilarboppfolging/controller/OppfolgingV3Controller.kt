@@ -173,16 +173,22 @@ class OppfolgingV3Controller(
         authService.skalVereInternBruker()
         authService.sjekkAtApplikasjonErIAllowList(ALLOWLIST)
 
-        val reaktiveringResponse = reaktiveringService.reaktiverBrukerIArena(reaktiverRequestDto)
-        return when (reaktiveringResponse) {
+        val reaktiveringResult = reaktiveringService.reaktiverBrukerIArena(reaktiverRequestDto.fnr)
+        when (reaktiveringResult) {
             is ReaktiveringSuccess -> {
-                if (reaktiveringResponse.ok) {
-                    ResponseEntity(reaktiveringResponse, HttpStatus.OK)
-                } else {
-                    ResponseEntity(reaktiveringResponse, HttpStatus.CONFLICT)
+                when (reaktiveringResult.reaktiveringResponse.ok) {
+                    true ->
+                        return ResponseEntity(reaktiveringResult.reaktiveringResponse, HttpStatus.OK)
+
+                    false ->
+                        return ResponseEntity(reaktiveringResult.reaktiveringResponse, HttpStatus.CONFLICT)
                 }
             }
-            is ReaktiveringError -> throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Uventet feil ved reaktivering")
+
+            is ReaktiveringError -> throw ResponseStatusException(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                "Uventet feil ved reaktivering"
+            )
         }
     }
 

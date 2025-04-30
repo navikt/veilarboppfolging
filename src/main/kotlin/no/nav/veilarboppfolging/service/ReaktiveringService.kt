@@ -1,13 +1,12 @@
 package no.nav.veilarboppfolging.service
 
+import no.nav.common.types.identer.Fnr
 import no.nav.common.types.identer.NavIdent
 import no.nav.veilarboppfolging.client.veilarbarena.*
-import no.nav.veilarboppfolging.controller.ReaktiverRequestDto
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
 import no.nav.veilarboppfolging.repository.ReaktiveringRepository
-import no.nav.veilarboppfolging.repository.entity.OppfolgingEntity
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity
 import no.nav.veilarboppfolging.utils.OppfolgingsperiodeUtils
 import org.slf4j.Logger
@@ -16,7 +15,6 @@ import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.transaction.support.TransactionTemplate
 import org.springframework.web.server.ResponseStatusException
-import java.util.*
 
 @Service
 class ReaktiveringService(
@@ -29,17 +27,15 @@ class ReaktiveringService(
 ) {
     private val logger: Logger = LoggerFactory.getLogger(ReaktiveringService::class.java)
 
-    fun reaktiverBrukerIArena(reaktiverRequestDto: ReaktiverRequestDto): ReaktiveringResponse {
+    fun reaktiverBrukerIArena(fnr: Fnr): ReaktiveringResult {
 
         val navIdent = NavIdent.of(authService.innloggetVeilederIdent)
-        val aktorId = authService.getAktorIdOrThrow(reaktiverRequestDto.fnr);
+        val aktorId = authService.getAktorIdOrThrow(fnr)
 
-        val maybeOppfolging: Optional<OppfolgingEntity> = oppfolgingsStatusRepository.hentOppfolging(aktorId)
-        val erUnderOppfolging = maybeOppfolging.map { it.isUnderOppfolging }.orElse(false)
+        val oppfolging = oppfolgingsStatusRepository.hentOppfolging(aktorId).orElse(null)
+        val erUnderOppfolging = oppfolging?.isUnderOppfolging ?: false
 
-        if (!erUnderOppfolging) {
-            return ReaktiveringResponse(false, REAKTIVERING_RESULTAT.KAN_IKKE_REAKTIVERES)
-        }
+        if (!erUnderOppfolging) return ReaktiveringSuccess(ReaktiveringResponse(false, REAKTIVERING_RESULTAT.KAN_IKKE_REAKTIVERES))
 
         val perioder: List<OppfolgingsperiodeEntity> =
             oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId)
@@ -47,55 +43,42 @@ class ReaktiveringService(
 
         val response = transactor.execute {
 
-            val arenaResponse = arenaOppfolgingService.registrerIkkeArbeidssoker(reaktiverRequestDto.fnr)
+            val arenaResponse = arenaOppfolgingService.registrerIkkeArbeidssoker(fnr)
 
             when (arenaResponse) {
                 is RegistrerIArenaSuccess -> {
-                    when (arenaResponse.arenaResultat.kode) {
-                        ARENA_REGISTRERING_RESULTAT.FNR_FINNES_IKKE, ARENA_REGISTRERING_RESULTAT.KAN_REAKTIVERES_FORENKLET, ARENA_REGISTRERING_RESULTAT.UKJENT_FEIL -> {
-                            logger.error(
-                                "Feil ved registrering av bruker i Arena",
-                                arenaResponse.arenaResultat.resultat
-                            )
-                            ReaktiveringSuccess(
-                                ReaktiveringResponse(
-                                    false,
-                                    REAKTIVERING_RESULTAT.valueOf(arenaResponse.arenaResultat.kode.name)
-                                )
-                            )
-                        }
+                    val arenaKode = arenaResponse.arenaResultat.kode
+                    val reaktiveringResultat = REAKTIVERING_RESULTAT.valueOf(arenaKode.name)
 
-                        else -> {
-                            logger.info("Bruker registrert i Arena med resultat: ${arenaResponse.arenaResultat.kode}")
+                    if (arenaKode in listOf(ARENA_REGISTRERING_RESULTAT.FNR_FINNES_IKKE, ARENA_REGISTRERING_RESULTAT.KAN_REAKTIVERES_FORENKLET, ARENA_REGISTRERING_RESULTAT.UKJENT_FEIL))
+                    {
+                        logger.error("Feil ved registrering av bruker i Arena", arenaResponse.arenaResultat.resultat)
 
-                            val reaktiverOppfolgingDto = ReaktiverOppfolgingDto(
-                                aktorId = aktorId.toString(),
-                                oppfolgingsperiode = sistePeriode.uuid.toString(),
-                                veilederIdent = navIdent.get(),
-                            )
-
-                            reaktiveringRepository.insertReaktivering(reaktiverOppfolgingDto)
-
-                            ReaktiveringSuccess(
-                                ReaktiveringResponse(
-                                    true,
-                                    REAKTIVERING_RESULTAT.valueOf(arenaResponse.arenaResultat.kode.name)
-                                )
-                            )
-                        }
+                        return@execute ReaktiveringSuccess(
+                            ReaktiveringResponse(false,reaktiveringResultat))
                     }
+
+                    logger.info("Bruker registrert i Arena med resultat: $arenaKode")
+
+                    reaktiveringRepository.insertReaktivering(
+                        ReaktiverOppfolgingDto(
+                            aktorId = aktorId.toString(),
+                            oppfolgingsperiode = sistePeriode.uuid.toString(),
+                            veilederIdent = navIdent.get(),
+                        )
+                    )
+
+                    return@execute ReaktiveringSuccess(ReaktiveringResponse(true, reaktiveringResultat))
                 }
 
                 is RegistrerIArenaError -> {
                     logger.error("Feil ved registrering av bruker i Arena", arenaResponse.throwable)
                     throw ResponseStatusException(
-                        HttpStatus.INTERNAL_SERVER_ERROR,
-                        arenaResponse.message,
-                        arenaResponse.throwable
+                        HttpStatus.INTERNAL_SERVER_ERROR, arenaResponse.message, arenaResponse.throwable
                     )
                 }
             }
-        }
+        } as ReaktiveringResult
 
         return response
     }

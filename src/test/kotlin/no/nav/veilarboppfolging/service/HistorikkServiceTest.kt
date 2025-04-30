@@ -283,7 +283,7 @@ class HistorikkServiceTest {
         Assertions.assertThat(periodeStartetEvent).isEqualTo(historikkHendelse(
             type = HistorikkHendelse.Type.STARTET_OPPFOLGINGSPERIODE,
             tidspunkt = OPPFOLGING_START,
-            begrunnelse = "Startet arbeidsoppfølging på bruker",
+            begrunnelse = "Startet arbeidsrettet oppfølging på bruker",
             opprettetAvType = null,
             opprettetAv = null,
         ))

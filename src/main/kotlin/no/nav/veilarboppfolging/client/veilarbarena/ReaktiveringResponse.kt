@@ -7,8 +7,8 @@ data class ReaktiveringResponse(
     val kode: REAKTIVERING_RESULTAT
 )
 
-class ReaktiveringError(val message: String, val throwable: Throwable): ReaktiveringResult()
 class ReaktiveringSuccess(val reaktiveringResponse: ReaktiveringResponse): ReaktiveringResult()
+class ReaktiveringError(val message: String, val throwable: Throwable): ReaktiveringResult()
 
 enum class REAKTIVERING_RESULTAT {
     OK_REGISTRERT_I_ARENA,
