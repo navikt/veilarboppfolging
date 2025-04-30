@@ -31,14 +31,12 @@ import java.util.*
 
 @RunWith(MockitoJUnitRunner::class)
 class ReaktiveringServiceTest {
-    private var authService: AuthService = mock(AuthService::class.java)
-    private val reaktiveringRepository =
-        ReaktiveringRepository(NamedParameterJdbcTemplate(LocalDatabaseSingleton.jdbcTemplate))
-    private var oppfolgingsStatusRepository: OppfolgingsStatusRepository = mock(OppfolgingsStatusRepository::class.java)
-    private var arenaOppfolgingService: ArenaOppfolgingService = mock(ArenaOppfolgingService::class.java)
-    private var oppfolgingsPeriodeRepository: OppfolgingsPeriodeRepository =
-        mock(OppfolgingsPeriodeRepository::class.java)
-    private var transactor: TransactionTemplate = mock(TransactionTemplate::class.java)
+    private var authService = mock(AuthService::class.java)
+    private val reaktiveringRepository = ReaktiveringRepository(NamedParameterJdbcTemplate(LocalDatabaseSingleton.jdbcTemplate))
+    private var oppfolgingsStatusRepository = mock(OppfolgingsStatusRepository::class.java)
+    private var arenaOppfolgingService = mock(ArenaOppfolgingService::class.java)
+    private var oppfolgingsPeriodeRepository = mock(OppfolgingsPeriodeRepository::class.java)
+    private var transactor = mock(TransactionTemplate::class.java)
     private val reaktiveringService = ReaktiveringService(
         authService,
         oppfolgingsStatusRepository,
@@ -51,7 +49,6 @@ class ReaktiveringServiceTest {
     @Before
     fun setup() {
         Mockito.`when`(authService.innloggetVeilederIdent).thenReturn(VEILEDER_IDENT)
-        Mockito.`when`(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID)
 
         doAnswer { invocation ->
             val callback = invocation.arguments[0] as TransactionCallback<*>
@@ -60,9 +57,11 @@ class ReaktiveringServiceTest {
         }.`when`(transactor).execute<Any>(any())
     }
 
-
     @Test
     fun `skal reaktivere bruker hvis den er inaktivert i Arena og under arbeidsrettet oppfølging`() {
+        val FNR = Fnr.of("123")
+        val AKTOR_ID = AktorId.of("123")
+        Mockito.`when`(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID)
         Mockito.`when`<Optional<OppfolgingEntity>?>(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID))
             .thenReturn(
                 Optional.of<OppfolgingEntity>(OppfolgingEntity().setUnderOppfolging(true))
@@ -93,6 +92,9 @@ class ReaktiveringServiceTest {
 
     @Test
     fun `skal gi feil hvis bruker ikke er under oppfølging`() {
+        val FNR = Fnr.of("321")
+        val AKTOR_ID = AktorId.of("321")
+        Mockito.`when`(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID)
         Mockito.`when`<Optional<OppfolgingEntity>?>(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID))
             .thenReturn(
                 Optional.of<OppfolgingEntity>(OppfolgingEntity().setUnderOppfolging(false))
@@ -110,6 +112,9 @@ class ReaktiveringServiceTest {
 
     @Test
     fun `skal gi error hvis arena kall feiler`() {
+        val FNR = Fnr.of("111")
+        val AKTOR_ID = AktorId.of("111")
+        Mockito.`when`(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID)
         Mockito.`when`<Optional<OppfolgingEntity>?>(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID))
             .thenReturn(
                 Optional.of<OppfolgingEntity>(OppfolgingEntity().setUnderOppfolging(true))
