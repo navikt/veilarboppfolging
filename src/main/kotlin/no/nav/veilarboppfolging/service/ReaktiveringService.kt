@@ -42,7 +42,6 @@ class ReaktiveringService(
         val sistePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(perioder)
 
         val response = transactor.execute {
-
             val arenaResponse = arenaOppfolgingService.registrerIkkeArbeidssoker(fnr)
 
             when (arenaResponse) {
