@@ -2,9 +2,7 @@ package no.nav.veilarboppfolging.controller.v3;
 
 import no.nav.common.json.JsonUtils;
 import no.nav.common.types.identer.Fnr;
-import no.nav.veilarboppfolging.client.veilarbarena.ARENA_REGISTRERING_RESULTAT;
-import no.nav.veilarboppfolging.client.veilarbarena.RegistrerIArenaSuccess;
-import no.nav.veilarboppfolging.client.veilarbarena.RegistrerIkkeArbeidssokerDto;
+import no.nav.veilarboppfolging.client.veilarbarena.*;
 import no.nav.veilarboppfolging.controller.OppfolgingV3Controller;
 import no.nav.veilarboppfolging.controller.response.VeilederTilgang;
 import no.nav.veilarboppfolging.controller.v3.request.OppfolgingRequest;
@@ -313,4 +311,17 @@ class OppfolgingV3ControllerTest {
                 )
                 .andExpect(status().is(400));
     }
+
+    @Test
+    void reaktiver_skal_returnere_ok() throws Exception {
+        when(reaktiveringService.reaktiverBrukerIArena(TEST_FNR))
+                .thenReturn(new ReaktiveringSuccess(new ReaktiveringResponse( true, REAKTIVERING_RESULTAT.OK_REGISTRERT_I_ARENA)));
+        mockMvc.perform(post("/api/v3/oppfolging/reaktiver")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"fnr\":\"12345678900\"}")
+                )
+                .andExpect(content().string("{\"ok\":true,\"kode\":\"OK_REGISTRERT_I_ARENA\"}"))
+                .andExpect(status().is(200));
+    }
+
 }
