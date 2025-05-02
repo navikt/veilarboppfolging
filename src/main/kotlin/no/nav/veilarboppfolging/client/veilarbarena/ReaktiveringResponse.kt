@@ -4,13 +4,13 @@ sealed class ReaktiveringResult
 
 data class ReaktiveringResponse(
     val ok: Boolean,
-    val kode: REAKTIVERING_RESULTAT
+    val kode: ReaktiveringResultat
 )
 
 class ReaktiveringSuccess(val reaktiveringResponse: ReaktiveringResponse): ReaktiveringResult()
 class ReaktiveringError(val message: String, val throwable: Throwable): ReaktiveringResult()
 
-enum class REAKTIVERING_RESULTAT {
+enum class ReaktiveringResultat {
     OK_REGISTRERT_I_ARENA,
     FNR_FINNES_IKKE,
     KAN_REAKTIVERES_FORENKLET,

@@ -292,7 +292,7 @@ class OppfolgingV3ControllerTest {
     @Test
     void startOppfolgingsperiode_skal_ikke_returnere_tom_respons() throws Exception {
         when(arenaOppfolgingService.registrerIkkeArbeidssoker(TEST_FNR))
-                .thenReturn(new RegistrerIArenaSuccess(new RegistrerIkkeArbeidssokerDto("Ny bruker ble registrert ok som IARBS", ARENA_REGISTRERING_RESULTAT.BRUKER_ALLEREDE_ARBS)));
+                .thenReturn(new RegistrerIArenaSuccess(new RegistrerIkkeArbeidssokerDto("Ny bruker ble registrert ok som IARBS", ArenaRegistreringResultat.BRUKER_ALLEREDE_ARBS)));
         mockMvc.perform(post("/api/v3/oppfolging/startOppfolgingsperiode")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"fnr\":\"12345678900\",\"henviserSystem\":\"AAP\"}")
@@ -304,7 +304,7 @@ class OppfolgingV3ControllerTest {
     @Test
     void startOppfolgingsperiode_skal_returnere_400_ved_manglende_fnr() throws Exception {
         when(arenaOppfolgingService.registrerIkkeArbeidssoker(TEST_FNR))
-                .thenReturn(new RegistrerIArenaSuccess(new RegistrerIkkeArbeidssokerDto("Ny bruker ble registrert ok som IARBS", ARENA_REGISTRERING_RESULTAT.BRUKER_ALLEREDE_ARBS)));
+                .thenReturn(new RegistrerIArenaSuccess(new RegistrerIkkeArbeidssokerDto("Ny bruker ble registrert ok som IARBS", ArenaRegistreringResultat.BRUKER_ALLEREDE_ARBS)));
         mockMvc.perform(post("/api/v3/oppfolging/startOppfolgingsperiode")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"henviserSystem\":\"AAP\"}")
@@ -315,7 +315,7 @@ class OppfolgingV3ControllerTest {
     @Test
     void reaktiver_skal_returnere_ok() throws Exception {
         when(reaktiveringService.reaktiverBrukerIArena(TEST_FNR))
-                .thenReturn(new ReaktiveringSuccess(new ReaktiveringResponse( true, REAKTIVERING_RESULTAT.OK_REGISTRERT_I_ARENA)));
+                .thenReturn(new ReaktiveringSuccess(new ReaktiveringResponse( true, ReaktiveringResultat.OK_REGISTRERT_I_ARENA)));
         mockMvc.perform(post("/api/v3/oppfolging/reaktiver")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"fnr\":\"12345678900\"}")

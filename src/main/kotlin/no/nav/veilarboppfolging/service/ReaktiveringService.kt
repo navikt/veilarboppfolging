@@ -35,7 +35,7 @@ class ReaktiveringService(
         val oppfolging = oppfolgingsStatusRepository.hentOppfolging(aktorId).orElse(null)
         val erUnderOppfolging = oppfolging?.isUnderOppfolging ?: false
 
-        if (!erUnderOppfolging) return ReaktiveringSuccess(ReaktiveringResponse(false, REAKTIVERING_RESULTAT.KAN_IKKE_REAKTIVERES))
+        if (!erUnderOppfolging) return ReaktiveringSuccess(ReaktiveringResponse(false, ReaktiveringResultat.KAN_IKKE_REAKTIVERES))
 
         val perioder: List<OppfolgingsperiodeEntity> =
             oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId)
@@ -47,9 +47,9 @@ class ReaktiveringService(
             when (arenaResponse) {
                 is RegistrerIArenaSuccess -> {
                     val arenaKode = arenaResponse.arenaResultat.kode
-                    val reaktiveringResultat = REAKTIVERING_RESULTAT.valueOf(arenaKode.name)
+                    val reaktiveringResultat = ReaktiveringResultat.valueOf(arenaKode.name)
 
-                    if (arenaKode in listOf(ARENA_REGISTRERING_RESULTAT.FNR_FINNES_IKKE, ARENA_REGISTRERING_RESULTAT.KAN_REAKTIVERES_FORENKLET, ARENA_REGISTRERING_RESULTAT.UKJENT_FEIL))
+                    if (arenaKode in listOf(ArenaRegistreringResultat.FNR_FINNES_IKKE, ArenaRegistreringResultat.KAN_REAKTIVERES_FORENKLET, ArenaRegistreringResultat.UKJENT_FEIL))
                     {
                         logger.error("Feil ved registrering av bruker i Arena", arenaResponse.arenaResultat.resultat)
 

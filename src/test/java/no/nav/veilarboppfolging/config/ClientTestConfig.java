@@ -15,7 +15,6 @@ import no.nav.veilarboppfolging.service.SisteEndringPaaOppfolgingBrukerService;
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.test.context.ActiveProfiles;
 
 import java.util.List;
 import java.util.Map;
@@ -107,7 +106,7 @@ public class ClientTestConfig {
 
             @Override
             public RegistrerIArenaResult registrerIkkeArbeidsoker(Fnr fnr) {
-                return new RegistrerIArenaSuccess(new RegistrerIkkeArbeidssokerDto("lol", ARENA_REGISTRERING_RESULTAT.OK_REGISTRERT_I_ARENA));
+                return new RegistrerIArenaSuccess(new RegistrerIkkeArbeidssokerDto("lol", ArenaRegistreringResultat.OK_REGISTRERT_I_ARENA));
             }
 
             @Override

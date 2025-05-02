@@ -71,7 +71,7 @@ class ReaktiveringServiceTest {
             RegistrerIArenaSuccess(
                 RegistrerIkkeArbeidssokerDto(
                     "Bruker reaktivert i Arena",
-                    ARENA_REGISTRERING_RESULTAT.OK_REGISTRERT_I_ARENA
+                    ArenaRegistreringResultat.OK_REGISTRERT_I_ARENA
                 )
             )
         )
@@ -83,7 +83,7 @@ class ReaktiveringServiceTest {
         val resultat = reaktiveringService.reaktiverBrukerIArena(FNR)
 
         Assert.assertTrue(resultat is ReaktiveringSuccess)
-        Assert.assertTrue((resultat as ReaktiveringSuccess).reaktiveringResponse.kode == REAKTIVERING_RESULTAT.OK_REGISTRERT_I_ARENA)
+        Assert.assertTrue((resultat as ReaktiveringSuccess).reaktiveringResponse.kode == ReaktiveringResultat.OK_REGISTRERT_I_ARENA)
         Assert.assertTrue((resultat).reaktiveringResponse.ok == true)
 
         val reaktiveringHistorikk = reaktiveringRepository.hentReaktiveringer(AKTOR_ID)
@@ -103,7 +103,7 @@ class ReaktiveringServiceTest {
         val resultat = reaktiveringService.reaktiverBrukerIArena(FNR)
 
         Assert.assertTrue(resultat is ReaktiveringSuccess)
-        Assert.assertTrue((resultat as ReaktiveringSuccess).reaktiveringResponse.kode == REAKTIVERING_RESULTAT.KAN_IKKE_REAKTIVERES)
+        Assert.assertTrue((resultat as ReaktiveringSuccess).reaktiveringResponse.kode == ReaktiveringResultat.KAN_IKKE_REAKTIVERES)
         Assert.assertTrue((resultat).reaktiveringResponse.ok == false)
 
         val reaktiveringHistorikk = reaktiveringRepository.hentReaktiveringer(AKTOR_ID)
