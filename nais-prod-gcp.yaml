@@ -166,6 +166,8 @@ spec:
         - application: veilarbdirigent
           namespace: pto
           cluster: prod-fss
+        - application: veilarbdirigent
+          namespace: dab
         - application: veilarbdialog
           namespace: dab
           cluster: prod-gcp
