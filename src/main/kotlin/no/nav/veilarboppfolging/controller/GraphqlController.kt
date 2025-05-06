@@ -144,10 +144,15 @@ class GraphqlController(
             arenaEnhet == null -> hentDefaultEnhetFraNorg(Fnr.of(oppfolgingsEnhet.fnr))
             else -> arenaEnhet to KildeDto.ARENA
         }?.let { (enhetsNr, kilde) ->
-            val enhet = norg2Client.hentEnhet(enhetsNr.get())
+            val enhet = runCatching {
+                norg2Client.hentEnhet(enhetsNr.get())
+            }.onFailure {
+                logger.error("Kunne ikke slå opp enhet i norg", it)
+            }.getOrNull()
+
             EnhetDto(
                 id = enhetsNr.get(),
-                navn = enhet.navn,
+                navn = enhet?.navn?: "Ukjent enhet",
                 kilde = kilde
             )
         }
