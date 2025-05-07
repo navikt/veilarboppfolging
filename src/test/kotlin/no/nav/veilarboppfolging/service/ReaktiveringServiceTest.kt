@@ -142,7 +142,9 @@ class ReaktiveringServiceTest {
             )
         )
 
-        assertThrows<ResponseStatusException> { reaktiveringService.reaktiverBrukerIArena(FNR) }
+        val resultat = reaktiveringService.reaktiverBrukerIArena(FNR)
+
+        assertInstanceOf<UkjentFeilUnderReaktiveringError>(resultat)
 
         val reaktiveringHistorikk = reaktiveringRepository.hentReaktiveringer(AKTOR_ID)
         Assert.assertTrue(reaktiveringHistorikk.isEmpty())
