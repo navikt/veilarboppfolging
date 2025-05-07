@@ -18,7 +18,7 @@ class ReaktiveringRepository(val db: NamedParameterJdbcTemplate) {
                 VALUES(:aktor_id, :oppfolgingsperiode, CURRENT_TIMESTAMP, :reaktivert_av)
             """.trimIndent(),
             mapOf(
-                "aktor_id" to reaktiverOppfolgingDto.aktorId,
+                "aktor_id" to reaktiverOppfolgingDto.aktorId.toString(),
                 "oppfolgingsperiode" to reaktiverOppfolgingDto.oppfolgingsperiode,
                 "reaktivert_av" to reaktiverOppfolgingDto.veilederIdent
             ),

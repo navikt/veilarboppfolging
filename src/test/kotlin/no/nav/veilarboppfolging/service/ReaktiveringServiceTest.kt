@@ -14,6 +14,7 @@ import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
+import org.junit.jupiter.api.assertInstanceOf
 import org.junit.jupiter.api.assertThrows
 import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.any
@@ -21,6 +22,7 @@ import org.mockito.Mockito
 import org.mockito.Mockito.doAnswer
 import org.mockito.Mockito.mock
 import org.mockito.junit.MockitoJUnitRunner
+import org.springframework.dao.IncorrectResultSizeDataAccessException
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.transaction.TransactionStatus
 import org.springframework.transaction.support.TransactionCallback
@@ -62,9 +64,9 @@ class ReaktiveringServiceTest {
         val FNR = Fnr.of("123")
         val AKTOR_ID = AktorId.of("123")
         Mockito.`when`(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID)
-        Mockito.`when`<Optional<OppfolgingEntity>?>(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID))
+        Mockito.`when`(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID))
             .thenReturn(
-                Optional.of<OppfolgingEntity>(OppfolgingEntity().setUnderOppfolging(true))
+                Optional.of(OppfolgingEntity().setUnderOppfolging(true))
             )
 
         Mockito.`when`(arenaOppfolgingService.registrerIkkeArbeidssoker(FNR)).thenReturn(
@@ -77,14 +79,13 @@ class ReaktiveringServiceTest {
         )
 
         Mockito.`when`(oppfolgingsPeriodeRepository.hentOppfolgingsperioder(AKTOR_ID)).thenReturn(
-            listOf<OppfolgingsperiodeEntity>(mockStartetOppfolgingsperiode(AKTOR_ID))
+            listOf(mockStartetOppfolgingsperiode(AKTOR_ID))
         )
 
         val resultat = reaktiveringService.reaktiverBrukerIArena(FNR)
 
         Assert.assertTrue(resultat is ReaktiveringSuccess)
-        Assert.assertTrue((resultat as ReaktiveringSuccess).reaktiveringResponse.kode == ReaktiveringResultat.OK_REGISTRERT_I_ARENA)
-        Assert.assertTrue((resultat).reaktiveringResponse.ok == true)
+        Assert.assertTrue((resultat as ReaktiveringSuccess).kode == ArenaRegistreringResultat.OK_REGISTRERT_I_ARENA)
 
         val reaktiveringHistorikk = reaktiveringRepository.hentReaktiveringer(AKTOR_ID)
         Assert.assertTrue(reaktiveringHistorikk.size == 1)
@@ -95,16 +96,30 @@ class ReaktiveringServiceTest {
         val FNR = Fnr.of("321")
         val AKTOR_ID = AktorId.of("321")
         Mockito.`when`(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID)
-        Mockito.`when`<Optional<OppfolgingEntity>?>(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID))
+        Mockito.`when`(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID))
             .thenReturn(
-                Optional.of<OppfolgingEntity>(OppfolgingEntity().setUnderOppfolging(false))
+                Optional.of(OppfolgingEntity().setUnderOppfolging(false))
             )
 
         val resultat = reaktiveringService.reaktiverBrukerIArena(FNR)
 
-        Assert.assertTrue(resultat is ReaktiveringSuccess)
-        Assert.assertTrue((resultat as ReaktiveringSuccess).reaktiveringResponse.kode == ReaktiveringResultat.KAN_IKKE_REAKTIVERES)
-        Assert.assertTrue((resultat).reaktiveringResponse.ok == false)
+        assertInstanceOf<AlleredeUnderoppfolgingError>(resultat)
+
+        val reaktiveringHistorikk = reaktiveringRepository.hentReaktiveringer(AKTOR_ID)
+        Assert.assertTrue(reaktiveringHistorikk.isEmpty())
+    }
+
+    @Test
+    fun `skal gi ukjent feil hvis noe ukjent feiler`() {
+        val FNR = Fnr.of("321")
+        val AKTOR_ID = AktorId.of("321")
+        Mockito.`when`(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID)
+        Mockito.`when`(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID))
+            .thenThrow(IncorrectResultSizeDataAccessException(4))
+
+        val resultat = reaktiveringService.reaktiverBrukerIArena(FNR)
+
+        assertInstanceOf<UkjentFeilUnderReaktiveringError>(resultat)
 
         val reaktiveringHistorikk = reaktiveringRepository.hentReaktiveringer(AKTOR_ID)
         Assert.assertTrue(reaktiveringHistorikk.isEmpty())
@@ -115,9 +130,9 @@ class ReaktiveringServiceTest {
         val FNR = Fnr.of("111")
         val AKTOR_ID = AktorId.of("111")
         Mockito.`when`(authService.getAktorIdOrThrow(FNR)).thenReturn(AKTOR_ID)
-        Mockito.`when`<Optional<OppfolgingEntity>?>(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID))
+        Mockito.`when`(oppfolgingsStatusRepository.hentOppfolging(AKTOR_ID))
             .thenReturn(
-                Optional.of<OppfolgingEntity>(OppfolgingEntity().setUnderOppfolging(true))
+                Optional.of(OppfolgingEntity().setUnderOppfolging(true))
             )
 
         Mockito.`when`(arenaOppfolgingService.registrerIkkeArbeidssoker(FNR)).thenReturn(

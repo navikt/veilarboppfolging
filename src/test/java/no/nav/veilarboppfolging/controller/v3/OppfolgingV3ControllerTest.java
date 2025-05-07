@@ -315,7 +315,7 @@ class OppfolgingV3ControllerTest {
     @Test
     void reaktiver_skal_returnere_ok() throws Exception {
         when(reaktiveringService.reaktiverBrukerIArena(TEST_FNR))
-                .thenReturn(new ReaktiveringSuccess(new ReaktiveringResponse( true, ReaktiveringResultat.OK_REGISTRERT_I_ARENA)));
+                .thenReturn(new ReaktiveringSuccess(ArenaRegistreringResultat.OK_REGISTRERT_I_ARENA));
         mockMvc.perform(post("/api/v3/oppfolging/reaktiver")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"fnr\":\"12345678900\"}")

@@ -169,26 +169,19 @@ class OppfolgingV3Controller(
 
 
     @PostMapping("/oppfolging/reaktiver")
-    fun reaktiverBrukerIArena(@RequestBody reaktiverRequestDto: ReaktiverRequestDto): ResponseEntity<ReaktiveringResponse> {
+    fun reaktiverBrukerIArena(@RequestBody reaktiverRequestDto: ReaktiverRequestDto): ResponseEntity<*> {
         authService.skalVereInternBruker()
         authService.sjekkAtApplikasjonErIAllowList(ALLOWLIST)
 
         val reaktiveringResult = reaktiveringService.reaktiverBrukerIArena(reaktiverRequestDto.fnr)
-        when (reaktiveringResult) {
-            is ReaktiveringSuccess -> {
-                when (reaktiveringResult.reaktiveringResponse.ok) {
-                    true ->
-                        return ResponseEntity(reaktiveringResult.reaktiveringResponse, HttpStatus.OK)
-
-                    false ->
-                        return ResponseEntity(reaktiveringResult.reaktiveringResponse, HttpStatus.CONFLICT)
-                }
+        return when (reaktiveringResult) {
+            is ReaktiveringSuccess -> ResponseEntity(ReaktiverDto(true, reaktiveringResult.kode), HttpStatus.OK)
+            is AlleredeUnderoppfolgingError -> ResponseEntity("Allerede under oppfolging", HttpStatus.CONFLICT)
+            is FeilFraArenaError -> ResponseEntity(reaktiveringResult.arenaResultat, HttpStatus.CONFLICT)
+            is UkjentFeilUnderReaktiveringError -> {
+                logger.error("Ukjent feil under reaktivering av bruker", reaktiveringResult.throwable)
+                ResponseEntity("Noe gikk veldig galt", HttpStatus.INTERNAL_SERVER_ERROR)
             }
-
-            is ReaktiveringError -> throw ResponseStatusException(
-                HttpStatus.INTERNAL_SERVER_ERROR,
-                "Uventet feil ved reaktivering"
-            )
         }
     }
 
@@ -260,3 +253,8 @@ enum class HenviserSystem {
     SYFO,
     AAP
 }
+
+data class ReaktiverDto(
+    val ok: Boolean,
+    val kode: ArenaRegistreringResultat,
+)
