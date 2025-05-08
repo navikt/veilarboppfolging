@@ -9,7 +9,6 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
-
 import static no.nav.common.json.JsonUtils.toJson;
 import static no.nav.common.rest.client.RestUtils.MEDIA_TYPE_JSON;
 import static no.nav.common.utils.AssertUtils.assertTrue;
@@ -179,7 +178,7 @@ public class VeilarbarenaClientImplTest {
 
         RegistrerIkkeArbeidssokerDto registrerIkkeArbeidsokerRespons = new RegistrerIkkeArbeidssokerDto(
                 "Ny bruker ble registrert ok som IARBS",
-                ARENA_REGISTRERING_RESULTAT.OK_REGISTRERT_I_ARENA);
+                ArenaRegistreringResultat.OK_REGISTRERT_I_ARENA);
         givenThat(post(urlEqualTo("/veilarbarena/api/v2/arena/registrer-i-arena")).withRequestBody(equalToJson("{\"fnr\":\""+MOCK_FNR+"\"}"))
                 .willReturn(aResponse().withStatus(200).withBody(toJson(registrerIkkeArbeidsokerRespons))));
 
@@ -195,7 +194,7 @@ public class VeilarbarenaClientImplTest {
         VeilarbarenaClientImpl veilarbarenaClient = new VeilarbarenaClientImpl(apiUrl, apiScope, authServiceMock);
 
         var registrerIkkeArbeidsokerRespons = new RegistrerIkkeArbeidssokerDto(
-                "Eksisterende bruker er ikke oppdatert da bruker kan reaktiveres forenklet som arbeidssøker", ARENA_REGISTRERING_RESULTAT.KAN_REAKTIVERES_FORENKLET);
+                "Eksisterende bruker er ikke oppdatert da bruker kan reaktiveres forenklet som arbeidssøker", ArenaRegistreringResultat.KAN_REAKTIVERES_FORENKLET);
         givenThat(post(urlEqualTo("/veilarbarena/api/v2/arena/registrer-i-arena"))
                 .withRequestBody(equalToJson("{\"fnr\":\""+MOCK_FNR+"\"}"))
                 .willReturn(aResponse().withStatus(422).withBody(toJson(registrerIkkeArbeidsokerRespons)))

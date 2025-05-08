@@ -2,7 +2,7 @@ package no.nav.veilarboppfolging.client.veilarbarena
 
 sealed class RegistrerIArenaResult
 
-enum class ARENA_REGISTRERING_RESULTAT {
+enum class ArenaRegistreringResultat {
     OK_REGISTRERT_I_ARENA,
     FNR_FINNES_IKKE,
     KAN_REAKTIVERES_FORENKLET,
@@ -13,7 +13,7 @@ enum class ARENA_REGISTRERING_RESULTAT {
 
 data class RegistrerIkkeArbeidssokerDto(
     val resultat: String,
-    var kode: ARENA_REGISTRERING_RESULTAT
+    var kode: ArenaRegistreringResultat
 )
 
 class RegistrerIArenaSuccess(val arenaResultat: RegistrerIkkeArbeidssokerDto): RegistrerIArenaResult()
