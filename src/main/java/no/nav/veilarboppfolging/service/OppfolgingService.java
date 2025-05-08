@@ -2,6 +2,7 @@ package no.nav.veilarboppfolging.service;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.client.aktorregister.IngenGjeldendeIdentException;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.Id;
@@ -40,13 +41,14 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 
+import static java.time.ZonedDateTime.now;
 import static java.util.Optional.empty;
 import static java.util.stream.Collectors.toList;
-import static no.nav.veilarboppfolging.config.ApplicationConfig.SYSTEM_USER_NAME;
 import static no.nav.veilarboppfolging.utils.ArenaUtils.erIserv;
 import static no.nav.veilarboppfolging.utils.ArenaUtils.kanSettesUnderOppfolging;
 import static no.nav.veilarboppfolging.utils.SecureLog.secureLog;
@@ -238,7 +240,7 @@ public class OppfolgingService {
                 .setVeilederId(oppfolgingEntity.getVeilederId())
                 .setUnderOppfolging(oppfolgingEntity.isUnderOppfolging());
 
-        Optional<KvpPeriodeEntity> maybeKvpPeriode= empty();
+        Optional<KvpPeriodeEntity> maybeKvpPeriode = empty();
 
         if (oppfolgingEntity.getGjeldendeKvpId() != 0) {
             maybeKvpPeriode = kvpRepository.hentKvpPeriode(oppfolgingEntity.getGjeldendeKvpId());
@@ -302,7 +304,7 @@ public class OppfolgingService {
             log.info("Oppfølgingsperiode startet for bruker - publiserer endringer på oppfølgingsperiode-topics.");
             kafkaProducerService.publiserOppfolgingsperiode(DtoMappers.tilOppfolgingsperiodeDTO(sistePeriode));
 
-            kafkaProducerService.publiserVisAoMinSideMicrofrontend(aktorId);
+            kafkaProducerService.publiserVisAoMinSideMicrofrontend(aktorId, fnr);
 
             Optional<Kvalifiseringsgruppe> kvalifiseringsgruppe = getKvalifiseringsGruppe(oppfolgingsbruker);
             bigQueryClient.loggStartOppfolgingsperiode(oppfolgingsbruker.getOppfolgingStartBegrunnelse(), sistePeriode.getUuid(), oppfolgingsbruker.getRegistrertAv().getType(), kvalifiseringsgruppe);
@@ -316,7 +318,7 @@ public class OppfolgingService {
     }
 
     private Optional<Kvalifiseringsgruppe> getKvalifiseringsGruppe(OppfolgingsRegistrering oppfolgingsbruker) {
-        if(oppfolgingsbruker instanceof ArenaSyncRegistrering arenasyncoppfolgingsbruker) {
+        if (oppfolgingsbruker instanceof ArenaSyncRegistrering arenasyncoppfolgingsbruker) {
             return Optional.ofNullable(arenasyncoppfolgingsbruker.getKvalifiseringsgruppe());
         } else {
             return Optional.empty();
@@ -336,7 +338,7 @@ public class OppfolgingService {
     }
 
     public void adminForceAvsluttOppfolgingForBruker(AktorId aktorId, String veilederId, String begrunnelse) {
-        avsluttOppfolgingForBruker(new AdminAvregistrering(aktorId, new VeilederRegistrant(new NavIdent(veilederId)), begrunnelse));
+        avsluttOppfolgingForBruker(new AdminAvregistrering(aktorId, new VeilederRegistrant(new NavIdent(veilederId)), begrunnelse, null));
     }
 
     private void avsluttOppfolgingForBruker(Avregistrering avregistrering) {
@@ -356,10 +358,57 @@ public class OppfolgingService {
             kafkaProducerService.publiserEndringPaNyForVeileder(aktorId, false);
             kafkaProducerService.publiserEndringPaManuellStatus(aktorId, false);
 
-            kafkaProducerService.publiserSkjulAoMinSideMicrofrontend(aktorId);
+            try{
+                Fnr fnr = authService.getFnrOrThrow(aktorId);
+                kafkaProducerService.publiserSkjulAoMinSideMicrofrontend(aktorId, fnr);
+            } catch(IngenGjeldendeIdentException e) {
+                log.error("Feil ved publiserSkjulAoMinSideMicrofrontend: {}", e.getMessage());
+            }
 
             bigQueryClient.loggAvsluttOppfolgingsperiode(sistePeriode.getUuid(), avregistrering.getAvregistreringsType());
         });
+    }
+
+    public void adminAvsluttSpesifikkOppfolgingsperiode(AktorId aktorId, String veilederId, String begrunnelse, String uuid) {
+        if (uuid == null) {
+            log.info("oppfolgingsperiodeUUID er null");
+            return;
+        }
+
+        try {
+            UUID oppfolgingsperiodeUUID = UUID.fromString(uuid);
+            avsluttValgtOppfolgingsperiode(new AdminAvregistrering(aktorId, new VeilederRegistrant(new NavIdent(veilederId)), begrunnelse, oppfolgingsperiodeUUID));
+        } catch (IllegalArgumentException e) {
+            log.warn("Invalid UUID format for oppfolgingsperiodeUUID: {}", uuid, e);
+        }
+    }
+
+    private void avsluttValgtOppfolgingsperiode(Avregistrering avregistrering) {
+        var oppfolgingsperiodeUUID = avregistrering.getOppfolgingsperiodeUUID();
+        var gjeldendePerioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(avregistrering.getAktorId()).stream().filter(p -> p.getSluttDato() == null).toList();
+        var sisteGjeldendePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(gjeldendePerioder);
+        var valgtGjeldendePeriode = gjeldendePerioder.stream().filter(p -> p.getUuid().equals(oppfolgingsperiodeUUID)).findFirst().orElse(null);
+
+        if (valgtGjeldendePeriode == null) {
+            log.warn("Fant ikke oppfølgingsperiode med UUID: {}. (eller den er allerede avsluttet)", oppfolgingsperiodeUUID);
+            return;
+        }
+
+        boolean erSisteGjeldendePeriode = valgtGjeldendePeriode.getUuid().equals(sisteGjeldendePeriode.getUuid());
+        boolean erEnesteGjeldendePeriode = gjeldendePerioder.size() == 1;
+
+        if (erSisteGjeldendePeriode && erEnesteGjeldendePeriode) {
+            log.info("Valgt oppfølgingsperiode er siste og eneste. Avslutter oppfølging.");
+            avsluttOppfolgingForBruker(avregistrering);
+            return;
+        }
+
+        var sluttDato = erSisteGjeldendePeriode ? now() : sisteGjeldendePeriode.getStartDato();
+        var avsluttetOppfolgingsperiode = oppfolgingsPeriodeRepository.avsluttOppfolgingsperiode(oppfolgingsperiodeUUID, avregistrering.getAvsluttetAv().getIdent(), avregistrering.getBegrunnelse(), sluttDato);
+
+        log.info("Oppfølgingsperiode med UUID: {} avsluttet for bruker - publiserer endringer på oppfølgingsperiode-topics.", oppfolgingsperiodeUUID);
+        kafkaProducerService.publiserValgtOppfolgingsperiode(DtoMappers.tilOppfolgingsperiodeDTO(avsluttetOppfolgingsperiode));
+        bigQueryClient.loggAvsluttOppfolgingsperiode(oppfolgingsperiodeUUID, avregistrering.getAvregistreringsType());
     }
 
     public boolean erUnderOppfolging(AktorId aktorId) {
@@ -392,7 +441,7 @@ public class OppfolgingService {
         Optional<VeilarbArenaOppfolgingsStatus> maybeArenaOppfolging = arenaOppfolgingService.hentArenaOppfolgingsStatus(fnr);
 
         boolean kanSettesUnderOppfolging = !oppfolging.isUnderOppfolging() && maybeArenaOppfolging
-                .map(s -> kanSettesUnderOppfolging(EnumUtils.valueOf(Formidlingsgruppe.class, s.getFormidlingsgruppe()), EnumUtils.valueOf(Kvalifiseringsgruppe.class, s.getServicegruppe()) ))
+                .map(s -> kanSettesUnderOppfolging(EnumUtils.valueOf(Formidlingsgruppe.class, s.getFormidlingsgruppe()), EnumUtils.valueOf(Kvalifiseringsgruppe.class, s.getServicegruppe())))
                 .orElse(false);
 
         long kvpId = kvpRepository.gjeldendeKvp(aktorId);
@@ -406,14 +455,14 @@ public class OppfolgingService {
         Boolean erInaktivIArena = maybeArenaOppfolging.map(ao -> erIserv(EnumUtils.valueOf(Formidlingsgruppe.class, ao.getFormidlingsgruppe()))).orElse(null);
 
         Optional<Boolean> maybeKanEnkeltReaktiveres = maybeArenaOppfolging
-                .flatMap( (it) -> Optional.ofNullable(it.getKanEnkeltReaktiveres()) );
+                .flatMap((it) -> Optional.ofNullable(it.getKanEnkeltReaktiveres()));
 
         Boolean kanReaktiveres = maybeKanEnkeltReaktiveres
                 .map(kr -> oppfolging.isUnderOppfolging() && kr)
                 .orElse(null);
 
         Boolean erSykmeldtMedArbeidsgiver = maybeArenaOppfolging
-                .map(ao -> ArenaUtils.erIARBSUtenOppfolging(EnumUtils.valueOf(Formidlingsgruppe.class, ao.getFormidlingsgruppe()) ,EnumUtils.valueOf(Kvalifiseringsgruppe.class,  ao.getServicegruppe())))
+                .map(ao -> ArenaUtils.erIARBSUtenOppfolging(EnumUtils.valueOf(Formidlingsgruppe.class, ao.getFormidlingsgruppe()), EnumUtils.valueOf(Kvalifiseringsgruppe.class, ao.getServicegruppe())))
                 .orElse(null);
 
         LocalDate inaktiveringsDato = maybeArenaOppfolging
@@ -455,7 +504,7 @@ public class OppfolgingService {
         boolean kanAvslutte = kanAvslutteOppfolging(aktorId, erUnderOppfolging(aktorId), erIserv, harAktiveTiltaksdeltakelser);
 
         boolean erUnderOppfolgingIArena = maybeArenaOppfolging
-                .map(status -> ArenaUtils.erUnderOppfolging(EnumUtils.valueOf(Formidlingsgruppe.class, status.getFormidlingsgruppe()) , EnumUtils.valueOf(Kvalifiseringsgruppe.class, status.getServicegruppe()) ))
+                .map(status -> ArenaUtils.erUnderOppfolging(EnumUtils.valueOf(Formidlingsgruppe.class, status.getFormidlingsgruppe()), EnumUtils.valueOf(Kvalifiseringsgruppe.class, status.getServicegruppe())))
                 .orElse(false);
 
         LocalDate inaktiveringsDato = maybeArenaOppfolging

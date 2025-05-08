@@ -1,6 +1,7 @@
 package no.nav.veilarboppfolging.repository;
 
 import no.nav.common.types.identer.AktorId;
+import no.nav.veilarboppfolging.domain.Oppfolging;
 import no.nav.veilarboppfolging.domain.StartetAvType;
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelse;
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering;
@@ -14,6 +15,8 @@ import org.springframework.transaction.support.TransactionTemplate;
 import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -43,10 +46,10 @@ public class OppfolgingsPeriodeRepository {
     public void start(OppfolgingsRegistrering oppfolgingsbruker) {
         transactor.executeWithoutResult((ignored) -> {
             insert(
-                oppfolgingsbruker.getAktorId(),
-                oppfolgingsbruker.getOppfolgingStartBegrunnelse(),
-                oppfolgingsbruker.getRegistrertAv().getIdent(),
-                oppfolgingsbruker.getRegistrertAv().getType());
+                    oppfolgingsbruker.getAktorId(),
+                    oppfolgingsbruker.getOppfolgingStartBegrunnelse(),
+                    oppfolgingsbruker.getRegistrertAv().getIdent(),
+                    oppfolgingsbruker.getRegistrertAv().getType());
             setActive(oppfolgingsbruker.getAktorId());
         });
     }
@@ -58,10 +61,31 @@ public class OppfolgingsPeriodeRepository {
         });
     }
 
+    public OppfolgingsperiodeEntity avsluttOppfolgingsperiode(UUID uuid, String veileder, String begrunnelse, ZonedDateTime sluttDato) {
+        return transactor.execute((ignored) -> {
+            Timestamp sluttTimestamp = Timestamp.from(sluttDato.toInstant());
+            return db.queryForObject(""" 
+                            UPDATE OPPFOLGINGSPERIODE
+                            SET avslutt_veileder = ?,
+                            avslutt_begrunnelse = ?,
+                            sluttDato = ?,
+                            oppdatert = CURRENT_TIMESTAMP
+                            WHERE uuid = ?
+                            AND sluttDato IS NULL
+                            RETURNING *
+                            """,
+                    OppfolgingsPeriodeRepository::mapTilOppfolgingsperiode,
+                    veileder,
+                    begrunnelse,
+                    sluttTimestamp,
+                    uuid.toString());
+        });
+    }
+
     public Optional<OppfolgingsperiodeEntity> hentOppfolgingsperiode(String uuid) {
         return queryForNullableObject(
                 () -> db.queryForObject(
-                hentOppfolingsperioderSQL + "WHERE UUID = ?",
+                        hentOppfolingsperioderSQL + "WHERE UUID = ?",
                         OppfolgingsPeriodeRepository::mapTilOppfolgingsperiode, uuid
                 )
         );
