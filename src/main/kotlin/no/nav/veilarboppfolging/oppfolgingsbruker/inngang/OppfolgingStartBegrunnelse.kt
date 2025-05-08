@@ -6,7 +6,8 @@ enum class OppfolgingStartBegrunnelse {
     ARBEIDSSOKER_REGISTRERING,
     ARENA_SYNC_ARBS,
     ARENA_SYNC_IARBS,
-    MANUELL_REGISTRERING_VEILEDER;
+    MANUELL_REGISTRERING_VEILEDER,
+    REAKTIVERT_OPPFØLGING;
 
     fun toStartetBegrunnelseDTO(): StartetBegrunnelseDTO {
         if (this == ARBEIDSSOKER_REGISTRERING || this == ARENA_SYNC_ARBS) {
