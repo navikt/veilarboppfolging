@@ -4,15 +4,15 @@ import lombok.RequiredArgsConstructor
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.veilarboppfolging.BadRequestException
-import no.nav.veilarboppfolging.client.veilarbarena.ARENA_REGISTRERING_RESULTAT
-import no.nav.veilarboppfolging.client.veilarbarena.RegistrerIArenaSuccess
-import no.nav.veilarboppfolging.client.veilarbarena.RegistrerIArenaError
-import no.nav.veilarboppfolging.client.veilarbarena.RegistrerIkkeArbeidssokerDto
+import no.nav.veilarboppfolging.client.veilarbarena.*
 import no.nav.veilarboppfolging.controller.response.*
 import no.nav.veilarboppfolging.controller.v2.response.UnderOppfolgingV2Response
-import no.nav.veilarboppfolging.controller.v3.request.*
-import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.AktiverBrukerService
+import no.nav.veilarboppfolging.controller.v3.request.KvpRequest
+import no.nav.veilarboppfolging.controller.v3.request.OppfolgingRequest
+import no.nav.veilarboppfolging.controller.v3.request.VeilederBegrunnelseRequest
+import no.nav.veilarboppfolging.controller.v3.request.VeilederRequest
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.AktiverBrukerService
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity
 import no.nav.veilarboppfolging.repository.enums.KodeverkBruker
 import no.nav.veilarboppfolging.service.*
@@ -34,6 +34,7 @@ class OppfolgingV3Controller(
     val kvpService: KvpService,
     val aktiverBrukerService: AktiverBrukerService,
     val arenaOppfolgingService: ArenaOppfolgingService,
+    val reaktiveringService: ReaktiveringService,
 ) {
     private val logger = LoggerFactory.getLogger(this::class.java)
 
@@ -92,8 +93,10 @@ class OppfolgingV3Controller(
 
     @PostMapping(value = ["/oppfolging/hent-perioder"])
     fun hentOppfolgingsperioder(@RequestBody oppfolgingRequest: OppfolgingRequest): List<OppfolgingPeriodeDTO> {
-        val allowlist = listOf(AllowListApplicationName.VEILARBVEDTAKSSTOTTE, AllowListApplicationName.AMT_PERSON_SERVICE,
-            AllowListApplicationName.VEILARBDIRIGENT)
+        val allowlist = listOf(
+            AllowListApplicationName.VEILARBVEDTAKSSTOTTE, AllowListApplicationName.AMT_PERSON_SERVICE,
+            AllowListApplicationName.VEILARBDIRIGENT
+        )
         authService.authorizeRequest(oppfolgingRequest.fnr, allowlist)
         val aktorId = authService.getAktorIdOrThrow(oppfolgingRequest.fnr)
         return hentOppfolgingsperioder(aktorId)
@@ -164,6 +167,24 @@ class OppfolgingV3Controller(
         return oppfolgingService.hentHarFlereAktorIderMedOppfolging(fodselsnummer)
     }
 
+
+    @PostMapping("/oppfolging/reaktiver")
+    fun reaktiverBrukerIArena(@RequestBody reaktiverRequestDto: ReaktiverRequestDto): ResponseEntity<*> {
+        authService.skalVereInternBruker()
+        authService.sjekkAtApplikasjonErIAllowList(ALLOWLIST)
+
+        val reaktiveringResult = reaktiveringService.reaktiverBrukerIArena(reaktiverRequestDto.fnr)
+        return when (reaktiveringResult) {
+            is ReaktiveringSuccess -> ResponseEntity(ReaktiverDto(true, reaktiveringResult.kode), HttpStatus.OK)
+            is AlleredeUnderoppfolgingError -> ResponseEntity("Allerede under oppfolging", HttpStatus.CONFLICT)
+            is FeilFraArenaError -> ResponseEntity(reaktiveringResult.arenaResultat, HttpStatus.CONFLICT)
+            is UkjentFeilUnderReaktiveringError -> {
+                logger.error("Ukjent feil under reaktivering av bruker", reaktiveringResult.throwable)
+                ResponseEntity("Noe gikk veldig galt", HttpStatus.INTERNAL_SERVER_ERROR)
+            }
+        }
+    }
+
     @PostMapping("/oppfolging/startOppfolgingsperiode")
     fun aktiverBruker(@RequestBody startOppfolging: StartOppfolgingDto): ResponseEntity<RegistrerIkkeArbeidssokerDto> {
         authService.skalVereInternBruker()
@@ -173,10 +194,11 @@ class OppfolgingV3Controller(
         when (arenaResponse) {
             is RegistrerIArenaSuccess -> {
                 when (arenaResponse.arenaResultat.kode) {
-                   ARENA_REGISTRERING_RESULTAT.FNR_FINNES_IKKE, ARENA_REGISTRERING_RESULTAT.KAN_REAKTIVERES_FORENKLET,  ARENA_REGISTRERING_RESULTAT.UKJENT_FEIL -> {
-                       logger.error("Feil ved registrering av bruker i Arena", arenaResponse.arenaResultat.resultat)
-                       return ResponseEntity(arenaResponse.arenaResultat, HttpStatus.CONFLICT)
+                    ArenaRegistreringResultat.FNR_FINNES_IKKE, ArenaRegistreringResultat.KAN_REAKTIVERES_FORENKLET, ArenaRegistreringResultat.UKJENT_FEIL -> {
+                        logger.error("Feil ved registrering av bruker i Arena", arenaResponse.arenaResultat.resultat)
+                        return ResponseEntity(arenaResponse.arenaResultat, HttpStatus.CONFLICT)
                     }
+
                     else -> {
                         logger.info("Bruker registrert i Arena med resultat: ${arenaResponse.arenaResultat.kode}")
                         aktiverBrukerService.aktiverBrukerManuelt(startOppfolging.fnr)
@@ -184,6 +206,7 @@ class OppfolgingV3Controller(
                     }
                 }
             }
+
             is RegistrerIArenaError -> {
                 logger.error("Feil ved registrering av bruker i Arena", arenaResponse.throwable)
                 throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, arenaResponse.message)
@@ -223,8 +246,15 @@ class StartOppfolgingDto(
     val henviserSystem: HenviserSystem,
 )
 
+data class ReaktiverRequestDto(val fnr: Fnr)
+
 enum class HenviserSystem {
     DEMO,
     SYFO,
     AAP
 }
+
+data class ReaktiverDto(
+    val ok: Boolean,
+    val kode: ArenaRegistreringResultat,
+)
