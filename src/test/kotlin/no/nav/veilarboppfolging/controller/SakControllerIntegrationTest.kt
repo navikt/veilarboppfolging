@@ -9,7 +9,7 @@ import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Test
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
-import java.util.UUID
+import java.util.*
 
 class SakControllerIntegrationTest: IntegrationTest() {
 
@@ -35,7 +35,7 @@ class SakControllerIntegrationTest: IntegrationTest() {
         assertThat(sak.sakId).isEqualTo(saker[0].id)
         assertThat(sak.oppfolgingsperiodeId).isEqualTo(saker[0].oppfølgingsperiodeUUID)
         assertThat(sak.fagsaksystem).isEqualTo("ARBEIDSOPPFOLGING")
-        assertThat(sak.tema).isEqualTo("OPP")
+        assertThat(sak.tema).isEqualTo("ADI")
     }
 
     @Test

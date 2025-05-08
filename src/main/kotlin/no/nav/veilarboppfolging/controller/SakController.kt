@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import java.util.UUID
+import java.util.*
 import kotlin.jvm.optionals.getOrElse
 
 @RestController
@@ -33,6 +33,6 @@ class SakController(
         val sakId: Long,
     ) {
         val fagsaksystem: String = "ARBEIDSOPPFOLGING"
-        val tema: String = "OPP"
+        val tema: String = "ADI"
     }
 }
