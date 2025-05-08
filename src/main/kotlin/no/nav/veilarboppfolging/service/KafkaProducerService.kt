@@ -37,9 +37,13 @@ class KafkaProducerService @Autowired constructor(
 ) {
     private val logger = LoggerFactory.getLogger(this::class.java)
 
+    fun publiserValgtOppfolgingsperiode(oppfolgingsperiode: OppfolgingsperiodeDTO) {
+        oppfolgingsperiode(oppfolgingsperiode)
+    }
+
     fun publiserOppfolgingsperiode(oppfolgingsperiode: OppfolgingsperiodeDTO) {
         sisteOppfolgingsPeriode(oppfolgingsperiode.toSisteOppfolgingsperiodeDTO())
-        oppfolingsperiode(oppfolgingsperiode)
+        oppfolgingsperiode(oppfolgingsperiode)
     }
 
     private fun sisteOppfolgingsPeriode(sisteOppfolgingsperiodeV1: SisteOppfolgingsperiodeV1) {
@@ -50,7 +54,7 @@ class KafkaProducerService @Autowired constructor(
         )
     }
 
-    private fun oppfolingsperiode(sisteOppfolgingsperiodeV1: OppfolgingsperiodeDTO) {
+    private fun oppfolgingsperiode(sisteOppfolgingsperiodeV1: OppfolgingsperiodeDTO) {
         store(
             kafkaProperties.oppfolgingsperiodeTopic,
             sisteOppfolgingsperiodeV1.aktorId,
@@ -126,9 +130,7 @@ class KafkaProducerService @Autowired constructor(
         store(kafkaProperties.endringPaMalAiven, aktorId.get(), recordValue)
     }
 
-    fun publiserVisAoMinSideMicrofrontend(aktorId: AktorId) {
-        val fnr = authService.getFnrOrThrow(aktorId)
-
+    fun publiserVisAoMinSideMicrofrontend(aktorId: AktorId, fnr: Fnr) {
         val startMelding = enable(
             fnr.get(),
             "ao-min-side-microfrontend",
@@ -139,9 +141,7 @@ class KafkaProducerService @Autowired constructor(
         store(kafkaProperties.minSideAapenMicrofrontendV1, aktorId.get(), startMelding)
     }
 
-    fun publiserSkjulAoMinSideMicrofrontend(aktorId: AktorId) {
-        val fnr = authService.getFnrOrThrow(aktorId)
-
+    fun publiserSkjulAoMinSideMicrofrontend(aktorId: AktorId, fnr: Fnr) {
         val stoppMelding = disable(
             fnr.get(),
             "ao-min-side-microfrontend",

@@ -1,6 +1,8 @@
 package no.nav.veilarboppfolging.controller
 
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/internal/navstatus")
@@ -11,13 +13,13 @@ class NavStatusController(
     fun okStatus(): NavStatusDto {
 
         return NavStatusDto(
-            NAV_STATUS.OK,
+            NavStatus.OK,
             description = "NAV OK")
     }
 
-    enum class NAV_STATUS {OK, ISSUE, DOWN}
+    enum class NavStatus {OK, ISSUE, DOWN}
     data class NavStatusDto(
-        val status: NAV_STATUS,
+        val status: NavStatus,
         val description: String,
         val logLink: String = "https://logs.adeo.no/app/r/s/ZU3Pq"
     ) {

@@ -59,6 +59,23 @@ class GraphqlControllerTest: IntegrationTest() {
     }
 
     @Test
+    fun `skal returnere ukjent oppfolgingsenhet hvis enhet mangler i norg`() {
+        val (fnr, _) = defaultBruker()
+        val kontor = "7414"
+        val skjermet = false
+        mockPdlGeografiskTilknytning(fnr, kontor)
+        mockPoaoTilgangTilgangsAttributter(kontor, skjermet)
+       // mockNorgEnhetsNavn(kontor, kontorNavn)
+
+        /* Query is hidden in test/resources/graphl-test :) */
+        val result = tester.documentName("getEnhetQuery").variable("fnr", fnr.get()).execute()
+        result.errors().verify()
+        result.path("oppfolgingsEnhet.enhet").matchesJson("""
+            { "id": "${kontor}", "kilde": "NORG", "navn": "Ukjent enhet" }
+        """.trimIndent())
+    }
+
+    @Test
     fun `skal returnere error på oppfolgingsEnhet når noe skjer`() {
         val (fnr, _) = defaultBruker()
         mockPoaoTilgangTilgangsAttributterFeiler()

@@ -7,8 +7,7 @@ val ptoSchemaVersion = "1.2025.01.13_12.58-3e81bd940198"
 val poaoTilgangVersion = "2025.02.06_13.37-958e35e7373d"
 val wiremockVersion = "3.0.0-beta-10"
 val schedlockVersion = "6.3.0"
-val googleCloudBigQueryVersion = "2.49.0"
-val googleCloudLibrariesBomVersion = "26.49.0"
+val googleCloudLibrariesBomVersion = "26.58.0"
 val springDoc = "2.8.5"
 val tmsMicrofrontendBuilder = "3.0.0"
 val tmsVarselBuilder = "2.1.1"
@@ -66,8 +65,8 @@ repositories {
 }
 
 dependencies {
-    annotationProcessor("org.projectlombok:lombok:1.18.36")
-    testAnnotationProcessor("org.projectlombok:lombok:1.18.36")
+    annotationProcessor("org.projectlombok:lombok:1.18.38")
+    testAnnotationProcessor("org.projectlombok:lombok:1.18.38")
 
     implementation("com.github.ben-manes.caffeine:caffeine")
     implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
@@ -81,7 +80,7 @@ dependencies {
     implementation("io.micrometer:micrometer-registry-prometheus-simpleclient")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:$springDoc")
     implementation("org.springframework.boot:spring-boot-devtools")
-    implementation("org.projectlombok:lombok:1.18.32")
+    implementation("org.projectlombok:lombok:1.18.38")
     implementation("org.springframework.boot:spring-boot-configuration-processor")
     implementation("no.nav.poao-tilgang:client:$poaoTilgangVersion")
     implementation("com.zaxxer:HikariCP")
@@ -107,8 +106,8 @@ dependencies {
     }
     implementation("no.nav.tms.mikrofrontend.selector:builder:$tmsMicrofrontendBuilder")
     implementation("no.nav.tms.varsel:kotlin-builder:$tmsVarselBuilder")
-    implementation("com.google.cloud:google-cloud-bigquery:$googleCloudBigQueryVersion")
     implementation(platform("com.google.cloud:libraries-bom:$googleCloudLibrariesBomVersion"))
+    implementation("com.google.cloud:google-cloud-bigquery")
 
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
