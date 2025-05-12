@@ -2,20 +2,28 @@ package no.nav.veilarboppfolging.client.digdir_krr;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
+import java.util.Optional;
 
 @Data
 @Accessors(chain = true)
+@Slf4j
 public class KrrPersonerResponseDto {
     Map<String, DigdirKontaktinfo> personer;
     Map<String, String> feil;
 
-    public KRRData assertSinglePersonToKrrData() {
-        if (feil != null) throw new RuntimeException(String.format("Kunne ikke hente kontaktinfo fra KRR, feil: %s" + feil));
-        if (personer == null || personer.size() != 1) throw new IllegalStateException("Fant ikke person i response fra KRR");
+    public Optional<KRRData> assertSinglePersonToKrrData() {
+        if (feil != null) {
+            log.warn("Kunne ikke hente kontaktinfo fra KRR, feil: {}", feil);
+            return Optional.empty();
+        }
+        if (personer == null || personer.size() != 1) {
+            log.warn("Fant ikke person i response fra KRR");
+            return Optional.empty();
+        }
         var key = personer.keySet().stream().findFirst();
-        if (key.isEmpty()) throw new IllegalStateException("Fant ingen keys (personidenter) i response fra KRR");
-        return personer.get(key.get()).toKrrData();
+        return Optional.of(personer.get(key.get()).toKrrData());
     }
 }
