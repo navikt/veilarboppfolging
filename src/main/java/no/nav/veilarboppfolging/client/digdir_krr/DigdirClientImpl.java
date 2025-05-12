@@ -2,17 +2,13 @@ package no.nav.veilarboppfolging.client.digdir_krr;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.health.HealthCheckResult;
-import no.nav.common.health.HealthCheckUtils;
+import no.nav.common.json.JsonUtils;
 import no.nav.common.rest.client.LogRequestInterceptor;
-import no.nav.common.rest.client.RestClient;
 import no.nav.common.rest.client.RestUtils;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.config.CacheConfig;
 import no.nav.veilarboppfolging.service.AuthService;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
+import okhttp3.*;
 import org.springframework.cache.annotation.Cacheable;
 
 import java.util.Optional;
@@ -52,21 +48,30 @@ public class DigdirClientImpl implements DigdirClient {
 				.build();
 	}
 
+	class KrrPersonerDto {
+		KrrPersonerDto(String fnr) {
+			this.personidenter = new String[]{fnr};
+		}
+		String[] personidenter;
+	}
+
 	@Cacheable(CacheConfig.DIGDIR_KONTAKTINFO_CACHE_NAME)
 	@SneakyThrows
 	@Override
 	public Optional<KRRData> hentKontaktInfo(Fnr fnr) {
+		var json = JsonUtils.toJson(new KrrPersonerDto(fnr.get()));
+		var body = RequestBody.create(json, MediaType.parse("application/json"));
 		Request request = new Request.Builder()
-				.url(joinPaths(digdirUrl, "/rest/v1/person?inkluderSikkerDigitalPost=false"))
+				.post(body)
+				.url(joinPaths(digdirUrl, "/rest/v1/personer"))
 				.header(ACCEPT, APPLICATION_JSON_VALUE)
 				.header(AUTHORIZATION, "Bearer " + getToken())
-				.header("Nav-Personident", fnr.get())
 				.build();
 
 		try (Response response = client.newCall(request).execute()) {
 			RestUtils.throwIfNotSuccessful(response);
-			return RestUtils.parseJsonResponse(response, DigdirKontaktinfo.class)
-					.map(DigdirKontaktinfo::toKrrData);
+			return RestUtils.parseJsonResponse(response, KrrPersoner.class)
+					.map(KrrPersoner::assertSinglePersonToKrrData);
 		} catch (Exception e) {
 			log.error("Feil under henting av data fra Digdir_KRR", e);
 			return empty();
