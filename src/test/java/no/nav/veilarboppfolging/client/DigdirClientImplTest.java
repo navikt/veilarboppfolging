@@ -33,10 +33,10 @@ public class DigdirClientImplTest {
 		when(authService.erInternBruker()).thenReturn(true);
 		DigdirClient digdirClient = new DigdirClientImpl(apiUrl, () -> "TOKEN", () -> "TOKEN", authService);
 
-		givenThat(get(anyUrl())
+		givenThat(post("/rest/v1/personer")
 				.withHeader("Authorization", equalTo("Bearer TOKEN"))
 				.withHeader(ACCEPT, equalTo("application/json"))
-				.withHeader("Nav-Personident", equalTo(TEST_FNR.get()))
+				.withRequestBody(equalToJson("{\"personidenter\": [\""+TEST_FNR+"\"]}"))
 				.willReturn(aResponse()
 						.withStatus(200)
 						.withBody(digdirJson))
@@ -55,10 +55,10 @@ public class DigdirClientImplTest {
 		when(authService.erInternBruker()).thenReturn(true);
 		DigdirClient digdirClient = new DigdirClientImpl(apiUrl, () -> "TOKEN", () -> "TOKEN", authService);
 
-		givenThat(get(anyUrl())
+		givenThat(post("/rest/v1/personer")
 				.withHeader("Authorization", equalTo("Bearer TOKEN"))
 				.withHeader(ACCEPT, equalTo("application/json"))
-				.withHeader("Nav-Personident", equalTo(TEST_FNR.get()))
+				.withRequestBody(equalToJson("{\"personidenter\": [\""+TEST_FNR+"\"]}"))
 				.willReturn(aResponse()
 						.withStatus(404)
 						.withBody(kodeverkJson))

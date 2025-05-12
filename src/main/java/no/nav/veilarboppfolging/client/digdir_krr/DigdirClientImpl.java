@@ -70,8 +70,8 @@ public class DigdirClientImpl implements DigdirClient {
 
 		try (Response response = client.newCall(request).execute()) {
 			RestUtils.throwIfNotSuccessful(response);
-			return RestUtils.parseJsonResponse(response, KrrPersoner.class)
-					.map(KrrPersoner::assertSinglePersonToKrrData);
+			return RestUtils.parseJsonResponse(response, KrrPersonerResponseDto.class)
+					.map(KrrPersonerResponseDto::assertSinglePersonToKrrData);
 		} catch (Exception e) {
 			log.error("Feil under henting av data fra Digdir_KRR", e);
 			return empty();
