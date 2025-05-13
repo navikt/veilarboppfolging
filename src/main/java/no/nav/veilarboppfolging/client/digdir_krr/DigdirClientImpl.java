@@ -6,6 +6,7 @@ import no.nav.common.json.JsonUtils;
 import no.nav.common.rest.client.LogRequestInterceptor;
 import no.nav.common.rest.client.RestUtils;
 import no.nav.common.types.identer.Fnr;
+import no.nav.veilarboppfolging.client.digdir_client.KrrPersonerResponseDto;
 import no.nav.veilarboppfolging.config.CacheConfig;
 import no.nav.veilarboppfolging.service.AuthService;
 import okhttp3.*;
