@@ -16,7 +16,8 @@ public class KrrPersonerResponseDto {
 
     public Optional<KRRData> assertSinglePersonToKrrData() {
         if (feil != null) {
-            log.warn("Kunne ikke hente kontaktinfo fra KRR, feil: {}", feil);
+            var personident = feil.keySet().stream().findFirst().get();
+            log.warn("Kunne ikke hente kontaktinfo fra KRR, feil: {}", feil.get(personident));
             return Optional.empty();
         }
         if (personer == null || personer.size() != 1) {
