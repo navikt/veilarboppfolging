@@ -5,6 +5,7 @@ import lombok.experimental.Accessors
 import lombok.extern.slf4j.Slf4j
 import no.nav.veilarboppfolging.client.digdir_krr.DigdirKontaktinfo
 import no.nav.veilarboppfolging.client.digdir_krr.KRRData
+import okio.Okio
 import org.slf4j.LoggerFactory
 import java.util.*
 
@@ -28,7 +29,8 @@ class KrrPersonerResponseDto {
             log.warn("Fant ikke person i response fra KRR")
             return Optional.empty()
         }
-        val key = personer!!.keys.stream().findFirst()
-        return Optional.of(personer!!.get(key.get())!!.toKrrData())
+        val key = personer?.keys?.firstOrNull()
+        return key?.let { personer?.get(it) }
+            ?.let { Optional.of(it.toKrrData()) } ?: Optional.empty()
     }
 }
