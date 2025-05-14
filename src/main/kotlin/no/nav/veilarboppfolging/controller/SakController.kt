@@ -33,6 +33,6 @@ class SakController(
         val sakId: Long,
     ) {
         val fagsaksystem: String = "ARBEIDSOPPFOLGING"
-        val tema: String = "ADI"
+        val tema: String = "AKT"
     }
 }
