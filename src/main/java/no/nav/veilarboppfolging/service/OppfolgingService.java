@@ -326,10 +326,8 @@ public class OppfolgingService {
     }
 
     private boolean kanAvslutteOppfolging(AktorId aktorId, boolean erUnderOppfolging, boolean erIservIArena, boolean harAktiveTiltaksdeltakelser, boolean underKvp) {
-        boolean ikkeUnderKvp = !kvpService.erUnderKvp(aktorId);
-
-        secureLog.info("Kan oppfolging avsluttes for aktorid {}?, oppfolging.isUnderOppfolging(): {}, erIservIArena(): {}, !erUnderKvp(): {}, harAktiveTiltaksdeltakelser(): {}",
-                aktorId, erUnderOppfolging, erIservIArena, ikkeUnderKvp, harAktiveTiltaksdeltakelser);
+        secureLog.info("Kan oppfolging avsluttes for aktorid {}?, oppfolging.isUnderOppfolging(): {}, erIservIArena(): {}, underKvp(): {}, harAktiveTiltaksdeltakelser(): {}",
+                aktorId, erUnderOppfolging, erIservIArena, underKvp, harAktiveTiltaksdeltakelser);
 
         return erUnderOppfolging
                 && erIservIArena
