@@ -44,7 +44,7 @@ public class IservServiceIntegrationTest {
         DbTestUtils.cleanupTestDb();
 
         when(oppfolgingService.erUnderOppfolging(any(AktorId.class))).thenReturn(true);
-        when(oppfolgingService.avsluttOppfolging(any(Avregistrering.class))).thenReturn(AvslutningStatusData.builder().underOppfolging(false).build());
+        when(oppfolgingService.avsluttOppfolging(any(Avregistrering.class))).thenReturn(AvslutningStatusData.builder().kanAvslutte(true).underOppfolging(false).build());
         when(authService.getFnrOrThrow(any())).thenReturn(FNR);
 
         utmeldingRepository = new UtmeldingRepository(db);
@@ -124,7 +124,7 @@ public class IservServiceIntegrationTest {
 
         assertTrue(utmeldingRepository.eksisterendeIservBruker(AKTOR_ID).isPresent());
 
-        utmeldingsService.avsluttOppfolgingOfFjernFraUtmeldingsTabell(AKTOR_ID);
+        utmeldingsService.avsluttOppfolgingOgFjernFraUtmeldingsTabell(AKTOR_ID);
 
         verify(oppfolgingService).avsluttOppfolging(new UtmeldtEtter28Dager(AKTOR_ID));
         assertTrue(utmeldingRepository.eksisterendeIservBruker(AKTOR_ID).isEmpty());

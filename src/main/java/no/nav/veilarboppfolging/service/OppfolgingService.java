@@ -159,8 +159,8 @@ public class OppfolgingService {
         boolean erIserv = erIserv(EnumUtils.valueOf(Formidlingsgruppe.class, arenaOppfolgingTilstand.getFormidlingsgruppe()));
 
         boolean harAktiveTiltaksdeltakelser = harAktiveTiltaksdeltakelser(fnr);
-
-        if (kanAvslutteOppfolging(aktorId, erUnderOppfolging(aktorId), erIserv, harAktiveTiltaksdeltakelser)) {
+        boolean underKvp = kvpService.erUnderKvp(aktorId);
+        if (kanAvslutteOppfolging(aktorId, erUnderOppfolging(aktorId), erIserv, harAktiveTiltaksdeltakelser, underKvp)) {
             var veilederId = avregistrering.getAvsluttetAv().getIdent();
             var begrunnelse = avregistrering.getBegrunnelse();
             secureLog.info("Avslutting av oppfølging utført av: {}, begrunnelse: {}, tilstand i Arena for aktorid {}: {}", veilederId, begrunnelse, aktorId, arenaOppfolgingTilstand);
@@ -291,7 +291,7 @@ public class OppfolgingService {
                 try {
                     oppfolgingsStatusRepository.opprettOppfolging(aktorId);
                 } catch (DuplicateKeyException e) {
-                    secureLog.warn("Race condition oppstod under oppretting av ny oppfølging for bruker: " + aktorId);
+                    secureLog.warn("Race condition oppstod under oppretting av ny oppfølging for bruker: {}", aktorId);
                     return;
                 }
             }
@@ -325,7 +325,7 @@ public class OppfolgingService {
         }
     }
 
-    private boolean kanAvslutteOppfolging(AktorId aktorId, boolean erUnderOppfolging, boolean erIservIArena, boolean harAktiveTiltaksdeltakelser) {
+    private boolean kanAvslutteOppfolging(AktorId aktorId, boolean erUnderOppfolging, boolean erIservIArena, boolean harAktiveTiltaksdeltakelser, boolean underKvp) {
         boolean ikkeUnderKvp = !kvpService.erUnderKvp(aktorId);
 
         secureLog.info("Kan oppfolging avsluttes for aktorid {}?, oppfolging.isUnderOppfolging(): {}, erIservIArena(): {}, !erUnderKvp(): {}, harAktiveTiltaksdeltakelser(): {}",
@@ -333,7 +333,7 @@ public class OppfolgingService {
 
         return erUnderOppfolging
                 && erIservIArena
-                && ikkeUnderKvp
+                && !underKvp
                 && !harAktiveTiltaksdeltakelser;
     }
 
@@ -500,8 +500,8 @@ public class OppfolgingService {
         boolean erIserv = maybeArenaOppfolging.map(ao -> erIserv(EnumUtils.valueOf(Formidlingsgruppe.class, ao.getFormidlingsgruppe()))).orElse(false);
 
         boolean harAktiveTiltaksdeltakelser = harAktiveTiltaksdeltakelser(fnr);
-
-        boolean kanAvslutte = kanAvslutteOppfolging(aktorId, erUnderOppfolging(aktorId), erIserv, harAktiveTiltaksdeltakelser);
+        boolean underKvp = kvpService.erUnderKvp(aktorId);
+        boolean kanAvslutte = kanAvslutteOppfolging(aktorId, erUnderOppfolging(aktorId), erIserv, harAktiveTiltaksdeltakelser, underKvp);
 
         boolean erUnderOppfolgingIArena = maybeArenaOppfolging
                 .map(status -> ArenaUtils.erUnderOppfolging(EnumUtils.valueOf(Formidlingsgruppe.class, status.getFormidlingsgruppe()), EnumUtils.valueOf(Kvalifiseringsgruppe.class, status.getServicegruppe())))

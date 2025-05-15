@@ -57,7 +57,7 @@ class UtmeldingsService(
         return utmeldingRepository.eksisterendeIservBruker(aktorId).isPresent
     }
 
-    fun avsluttOppfolgingOfFjernFraUtmeldingsTabell(aktorId: AktorId): AvslutteOppfolgingResultat {
+    fun avsluttOppfolgingOgFjernFraUtmeldingsTabell(aktorId: AktorId): AvslutteOppfolgingResultat {
         try {
             if (!oppfolgingService.erUnderOppfolging(aktorId)) {
                 secureLog.info(
@@ -67,17 +67,18 @@ class UtmeldingsService(
                 slettFraUtmeldingTabell(ScheduledJob_AlleredeUteAvOppfolging(aktorId))
                 return AvslutteOppfolgingResultat.IKKE_LENGER_UNDER_OPPFØLGING
             } else {
-                log.info("Utgang: Oppfølging avsluttet automatisk grunnet iserv i 28 dager")
+                log.info("Utgang: Forsøker å avslutte oppfølging automatisk grunnet iserv i 28 dager")
                 val avregistrering = UtmeldtEtter28Dager(aktorId)
                 val avslutningStatus = oppfolgingService.avsluttOppfolging(avregistrering)
-                // TODO litt i tvil om denne her. Attributtet sier om du per def er under oppfølging i arena, ikke om du er under oppfølging hos oss.
-                val oppfolgingAvsluttet = !avslutningStatus.underOppfolging
-                if (oppfolgingAvsluttet) {
+                // Hvis kanAvslutte er false, så betyr det at oppfølgingsperioden hos oss ikke ble avsluttet.
+                // Da beholder vi brukeren i utmeldingstabellen, og forsøker igjen senere
+                val oppfolgingFaktiskAvsluttet = avslutningStatus.kanAvslutte
+                if (oppfolgingFaktiskAvsluttet) {
                     slettFraUtmeldingTabell(ScheduledJob_UtAvOppfolgingPga28DagerIserv(aktorId))
                     metricsService.antallBrukereAvsluttetAutomatisk()
                 }
                 return when {
-                    oppfolgingAvsluttet -> AvslutteOppfolgingResultat.AVSLUTTET_OK
+                    oppfolgingFaktiskAvsluttet -> AvslutteOppfolgingResultat.AVSLUTTET_OK
                     else -> AvslutteOppfolgingResultat.IKKE_AVSLUTTET
                 }
             }
