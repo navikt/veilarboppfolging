@@ -57,7 +57,7 @@ class UtmeldEtter28Cron(
             val iservert28DagerBrukere = utmeldingsRepository.finnBrukereMedIservI28Dager()
             log.info("Fant {} brukere som har vært ISERV mer enn 28 dager", iservert28DagerBrukere.size)
             return iservert28DagerBrukere.map { utmeldingEntity ->
-                utmeldingService.avsluttOppfolgingOfFjernFraUtmeldingsTabell(AktorId.of(utmeldingEntity.aktor_Id))
+                utmeldingService.avsluttOppfolgingOgFjernFraUtmeldingsTabell(AktorId.of(utmeldingEntity.aktor_Id))
             }
         } catch (e: Exception) {
             SecureLog.secureLog.error("Feil ved automatisk avslutning av brukere", e)

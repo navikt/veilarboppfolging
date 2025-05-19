@@ -1,14 +1,13 @@
 val kotlinVersion = "2.1.20"
 val dependencyManagementVersion = "1.1.3"
 val jacocoVersion = "0.8.12"
-val flywayVersion = "10.15.2"
-val commonVersion = "3.2025.03.07_13.21-bb112c97720d"
+val flywayVersion = "11.8.2"
+val commonVersion = "3.2025.03.25_13.00-69496eec5820"
 val ptoSchemaVersion = "1.2025.01.13_12.58-3e81bd940198"
 val poaoTilgangVersion = "2025.03.17_10.46-e6359712fa6d"
-val wiremockVersion = "3.0.0-beta-10"
+val wiremockVersion = "3.0.1"
 val schedlockVersion = "6.3.0"
-val googleCloudBigQueryVersion = "2.49.0"
-val googleCloudLibrariesBomVersion = "26.49.0"
+val googleCloudLibrariesBomVersion = "26.60.0"
 val springDoc = "2.8.5"
 val tmsMicrofrontendBuilder = "3.0.0"
 val tmsVarselBuilder = "2.1.1"
@@ -19,7 +18,7 @@ plugins {
     kotlin("jvm") version "2.1.20"
     kotlin("plugin.spring") version "2.1.20"
     kotlin("plugin.lombok") version "2.1.20"
-    id("org.springframework.boot") version "3.4.4"
+    id("org.springframework.boot") version "3.4.5"
     id("io.spring.dependency-management") version "1.1.7"
     id("jacoco")
     id("org.sonarqube") version "6.0.1.5171"
@@ -66,8 +65,8 @@ repositories {
 }
 
 dependencies {
-    annotationProcessor("org.projectlombok:lombok:1.18.36")
-    testAnnotationProcessor("org.projectlombok:lombok:1.18.36")
+    annotationProcessor("org.projectlombok:lombok:1.18.38")
+    testAnnotationProcessor("org.projectlombok:lombok:1.18.38")
 
     implementation("com.github.ben-manes.caffeine:caffeine")
     implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
@@ -81,7 +80,7 @@ dependencies {
     implementation("io.micrometer:micrometer-registry-prometheus-simpleclient")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:$springDoc")
     implementation("org.springframework.boot:spring-boot-devtools")
-    implementation("org.projectlombok:lombok:1.18.32")
+    implementation("org.projectlombok:lombok:1.18.38")
     implementation("org.springframework.boot:spring-boot-configuration-processor")
     implementation("no.nav.poao-tilgang:client:$poaoTilgangVersion")
     implementation("com.zaxxer:HikariCP")
@@ -107,14 +106,14 @@ dependencies {
     }
     implementation("no.nav.tms.mikrofrontend.selector:builder:$tmsMicrofrontendBuilder")
     implementation("no.nav.tms.varsel:kotlin-builder:$tmsVarselBuilder")
-    implementation("com.google.cloud:google-cloud-bigquery:$googleCloudBigQueryVersion")
     implementation(platform("com.google.cloud:libraries-bom:$googleCloudLibrariesBomVersion"))
+    implementation("com.google.cloud:google-cloud-bigquery")
 
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
     testImplementation("no.nav.common:test:$commonVersion")
     testImplementation("org.springframework.graphql:spring-graphql-test:1.3.3")
-    testImplementation("io.zonky.test:embedded-database-spring-test:2.5.1")
+    testImplementation("io.zonky.test:embedded-database-spring-test:2.6.0")
     testImplementation("io.zonky.test:embedded-postgres:2.1.0")
     testImplementation("junit:junit")
     testImplementation("org.junit.vintage:junit-vintage-engine")

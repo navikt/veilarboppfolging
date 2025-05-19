@@ -2,16 +2,14 @@ package no.nav.veilarboppfolging.controller.v3;
 
 import no.nav.common.json.JsonUtils;
 import no.nav.common.types.identer.Fnr;
-import no.nav.veilarboppfolging.client.veilarbarena.ARENA_REGISTRERING_RESULTAT;
-import no.nav.veilarboppfolging.client.veilarbarena.RegistrerIArenaSuccess;
-import no.nav.veilarboppfolging.client.veilarbarena.RegistrerIkkeArbeidssokerDto;
+import no.nav.veilarboppfolging.client.veilarbarena.*;
 import no.nav.veilarboppfolging.controller.OppfolgingV3Controller;
 import no.nav.veilarboppfolging.controller.response.VeilederTilgang;
 import no.nav.veilarboppfolging.controller.v3.request.OppfolgingRequest;
 import no.nav.veilarboppfolging.domain.AvslutningStatusData;
 import no.nav.veilarboppfolging.domain.OppfolgingStatusData;
-import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.AktiverBrukerService;
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService;
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.AktiverBrukerService;
 import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
 import no.nav.veilarboppfolging.service.*;
@@ -59,6 +57,8 @@ class OppfolgingV3ControllerTest {
     private AktiverBrukerService aktiverBrukerService;
     @MockitoBean
     private ArenaOppfolgingService arenaOppfolgingService;
+    @MockitoBean
+    private ReaktiveringService reaktiveringService;
 
     @BeforeEach
     void setup() throws Exception {
@@ -292,7 +292,7 @@ class OppfolgingV3ControllerTest {
     @Test
     void startOppfolgingsperiode_skal_ikke_returnere_tom_respons() throws Exception {
         when(arenaOppfolgingService.registrerIkkeArbeidssoker(TEST_FNR))
-                .thenReturn(new RegistrerIArenaSuccess(new RegistrerIkkeArbeidssokerDto("Ny bruker ble registrert ok som IARBS", ARENA_REGISTRERING_RESULTAT.BRUKER_ALLEREDE_ARBS)));
+                .thenReturn(new RegistrerIArenaSuccess(new RegistrerIkkeArbeidssokerDto("Ny bruker ble registrert ok som IARBS", ArenaRegistreringResultat.BRUKER_ALLEREDE_ARBS)));
         mockMvc.perform(post("/api/v3/oppfolging/startOppfolgingsperiode")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"fnr\":\"12345678900\",\"henviserSystem\":\"AAP\"}")
@@ -304,11 +304,24 @@ class OppfolgingV3ControllerTest {
     @Test
     void startOppfolgingsperiode_skal_returnere_400_ved_manglende_fnr() throws Exception {
         when(arenaOppfolgingService.registrerIkkeArbeidssoker(TEST_FNR))
-                .thenReturn(new RegistrerIArenaSuccess(new RegistrerIkkeArbeidssokerDto("Ny bruker ble registrert ok som IARBS", ARENA_REGISTRERING_RESULTAT.BRUKER_ALLEREDE_ARBS)));
+                .thenReturn(new RegistrerIArenaSuccess(new RegistrerIkkeArbeidssokerDto("Ny bruker ble registrert ok som IARBS", ArenaRegistreringResultat.BRUKER_ALLEREDE_ARBS)));
         mockMvc.perform(post("/api/v3/oppfolging/startOppfolgingsperiode")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"henviserSystem\":\"AAP\"}")
                 )
                 .andExpect(status().is(400));
     }
+
+    @Test
+    void reaktiver_skal_returnere_ok() throws Exception {
+        when(reaktiveringService.reaktiverBrukerIArena(TEST_FNR))
+                .thenReturn(new ReaktiveringSuccess(ArenaRegistreringResultat.OK_REGISTRERT_I_ARENA));
+        mockMvc.perform(post("/api/v3/oppfolging/reaktiver")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"fnr\":\"12345678900\"}")
+                )
+                .andExpect(content().string("{\"ok\":true,\"kode\":\"OK_REGISTRERT_I_ARENA\"}"))
+                .andExpect(status().is(200));
+    }
+
 }
