@@ -2,7 +2,9 @@ package no.nav.veilarboppfolging.client.digdir_krr;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
-import org.checkerframework.checker.units.qual.K;
+
+import java.util.Map;
+
 
 @Data
 @Accessors(chain = true)
