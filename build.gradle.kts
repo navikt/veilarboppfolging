@@ -1,24 +1,24 @@
 val kotlinVersion = "2.1.20"
 val dependencyManagementVersion = "1.1.3"
 val jacocoVersion = "0.8.12"
-val flywayVersion = "10.15.2"
+val flywayVersion = "11.8.2"
 val commonVersion = "3.2025.03.25_13.00-69496eec5820"
 val ptoSchemaVersion = "1.2025.01.13_12.58-3e81bd940198"
-val poaoTilgangVersion = "2025.02.06_13.37-958e35e7373d"
+val poaoTilgangVersion = "2025.03.17_10.46-e6359712fa6d"
 val wiremockVersion = "3.0.1"
-val schedlockVersion = "6.3.0"
-val googleCloudLibrariesBomVersion = "26.58.0"
-val springDoc = "2.8.5"
+val schedlockVersion = "6.7.0"
+val googleCloudLibrariesBomVersion = "26.60.0"
+val springDoc = "2.8.8"
 val tmsMicrofrontendBuilder = "3.0.0"
 val tmsVarselBuilder = "2.1.1"
 val avroVersion = "1.12.0"
 val confluentKafkaAvroVersion = "7.9.0"
 
 plugins {
-    kotlin("jvm") version "2.1.20"
+    kotlin("jvm") version "2.1.21"
     kotlin("plugin.spring") version "2.1.20"
-    kotlin("plugin.lombok") version "2.1.20"
-    id("org.springframework.boot") version "3.4.5"
+    kotlin("plugin.lombok") version "2.1.21"
+    id("org.springframework.boot") version "3.5.0"
     id("io.spring.dependency-management") version "1.1.7"
     id("jacoco")
     id("org.sonarqube") version "6.0.1.5171"
@@ -112,7 +112,7 @@ dependencies {
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
     testImplementation("no.nav.common:test:$commonVersion")
-    testImplementation("org.springframework.graphql:spring-graphql-test:1.3.3")
+    testImplementation("org.springframework.graphql:spring-graphql-test:1.4.0")
     testImplementation("io.zonky.test:embedded-database-spring-test:2.6.0")
     testImplementation("io.zonky.test:embedded-postgres:2.1.0")
     testImplementation("junit:junit")
