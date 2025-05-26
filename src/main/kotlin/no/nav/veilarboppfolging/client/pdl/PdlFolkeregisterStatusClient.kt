@@ -16,6 +16,21 @@ enum class ForenkletFolkeregisterStatus {
     forsvunnet,
     doedIFolkeregisteret,
     opphoert,
+    /**
+    Midlertidig
+
+    Folkeregisterets personstatus for en person med d-nummer.Forenklet status er dNummer.
+
+    Personer som vil få personstatus midlertidig:
+    - Person som er tildelt d-nummer frem til gyldighetsperioden på 5 år utløper
+    - Personer med reaktivert d-nummer som følge av forespørsel fra rekvirent
+
+    Inaktiv
+
+    Folkeregisterets personstatus for en person med d-nummer. I forenklet status er inaktiv og midlertidig slått sammen. Begge disse statusene er for personer med d-nummer. Hvor gammelt d-nummeret er, eller om personen er registrert med aktivitet hos skatteetaten, har ingen kjent betydning for Nav.
+
+    Personstatusen inaktiv benyttes for personer som er tildelt d-nummer, og som er å regne som inaktive av Skatteetaten. Det vil si at det ikke er registrert noen aktivitet hos Skatteetaten mht. inntekt, eiendom osv. Eller at d-nummeret er over 5 år gammelt.
+    * */
     dNummer,
     ingen_status,
     ukjent
