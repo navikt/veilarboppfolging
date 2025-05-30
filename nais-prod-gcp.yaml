@@ -57,6 +57,9 @@ spec:
     autoInstrumentation:
       enabled: true
       runtime: java
+    logging:
+      destinations:
+        - id: elastic
   env:
     - name: POAO_TILGANG_URL
       value: http://poao-tilgang.poao
