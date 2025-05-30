@@ -271,4 +271,20 @@ class GraphqlControllerTest: IntegrationTest() {
             """.trimIndent())
         }
     }
+
+    @Test
+    fun `skal returnere oppfolgingsperiodene til bruker`() {
+        val veilederId = UUID.randomUUID()
+        val (fnr, aktorId) = defaultBruker()
+        mockInternBrukerAuthOk(veilederId, aktorId, fnr)
+        mockPoaoTilgangHarTilgangTilBruker(veilederId, fnr, Decision.Permit)
+        setBrukerUnderOppfolging(aktorId)
+
+        /* Query is hidden in test/resources/graphl-test :) */
+        val result = tester.documentName("getOppfolgingsperioder").variable("fnr", fnr.get()).execute()
+        result.errors().verify()
+        result.path("oppfolgingsPerioder").matchesJson("""
+            [ { sluttTidspunkt: null } ]
+        """.trimIndent())
+    }
 }

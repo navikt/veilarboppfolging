@@ -1,8 +1,9 @@
 type Query {
     oppfolgingsEnhet(fnr: String!): OppfolgingsEnhetsInfo
     oppfolging(fnr: String!): OppfolgingDto
+    oppfolgingsPerioder(fnr: String!): [Oppfolgingsperiode]
     veilederLeseTilgangModia(fnr: String!): VeilederTilgang
-    gjeldendeOppfolgingsperiode: GjeldendeOppfolgingsperiode
+    gjeldendeOppfolgingsperiode: Oppfolgingsperiode
 }
 
 type VeilederTilgang {
@@ -56,6 +57,8 @@ type OppfolgingDto {
     kanStarteOppfolging: KanStarteOppfolging
 }
 
-type GjeldendeOppfolgingsperiode {
-    startTidspunkt: String
+type Oppfolgingsperiode {
+    startTidspunkt: String!
+    sluttTidspunkt: String
+    id: String!
 }

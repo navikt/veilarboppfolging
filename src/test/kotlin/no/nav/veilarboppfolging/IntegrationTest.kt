@@ -2,6 +2,7 @@ package no.nav.veilarboppfolging
 
 import com.nimbusds.jwt.JWTClaimsSet
 import no.nav.common.auth.context.AuthContextHolder
+import no.nav.common.auth.context.UserRole
 import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.client.norg2.Enhet
 import no.nav.common.client.norg2.Norg2Client
@@ -206,7 +207,10 @@ open class IntegrationTest {
 
         `when`(authContextHolder.idTokenString).thenReturn(Optional.of(token))
 
+        `when`(authContextHolder.getRole()).thenReturn(Optional.of(UserRole.INTERN))
+//        `when`(authContextHolder).thenReturn(Optional.of(UserRole.INTERN))
         `when`(authContextHolder.erInternBruker()).thenReturn(true)
+        `when`(authContextHolder.erEksternBruker()).thenReturn(false)
         `when`(aktorOppslagClient.hentAktorId(fnr))
             .thenReturn(aktørId)
         `when`(aktorOppslagClient.hentFnr(aktørId))
