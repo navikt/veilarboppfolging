@@ -53,6 +53,9 @@ spec:
     autoInstrumentation:
       enabled: true
       runtime: java
+    logging:
+      destinations:
+        - id: elastic
   env:
     - name: POAO_TILGANG_URL
       value: http://poao-tilgang.poao
@@ -156,9 +159,6 @@ spec:
         - application: ditt-sykefravaer
           namespace: flex
           cluster: dev-gcp
-        - application: veilarbdirigent
-          namespace: pto
-          cluster: dev-fss
         - application: veilarbdirigent
           namespace: dab
         - application: veilarbdialog

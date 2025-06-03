@@ -52,6 +52,7 @@ jobs:
     name: Deploy application to dev
     needs: test-build-and-push
     runs-on: ubuntu-latest
+    environment: dev-gcp
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -67,6 +68,7 @@ jobs:
     name: Deploy application to prod
     needs: [test-build-and-push, deploy-dev]
     runs-on: ubuntu-latest
+    environment: prod-gcp
     steps:
       - name: Checkout
         uses: actions/checkout@v4
