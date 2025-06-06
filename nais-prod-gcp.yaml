@@ -60,6 +60,7 @@ spec:
     logging:
       destinations:
         - id: elastic
+        - id: loki
   env:
     - name: POAO_TILGANG_URL
       value: http://poao-tilgang.poao
