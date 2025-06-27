@@ -18,7 +18,7 @@ enum class OppfolgingStartBegrunnelse {
        eller at de får servicegruppe VURDU (sykemeldt uten arbeidsgiver)
        eller servicegruppe OPPFI (helserelatert arbeidsrettet oppfølging i Nav)
        */
-    REAKTIVERT_OPPFØLGING,
+    //REAKTIVERT_OPPFØLGING,
     MANUELL_REGISTRERING_VEILEDER;
     /* Oppfølging startet av veileder via registreringsløsningen inngar */
 
