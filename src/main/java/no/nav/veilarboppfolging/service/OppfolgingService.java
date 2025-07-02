@@ -9,7 +9,7 @@ import no.nav.common.types.identer.Id;
 import no.nav.common.types.identer.NavIdent;
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe;
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe;
-import no.nav.veilarboppfolging.client.amttiltak.AmtTiltakClient;
+import no.nav.veilarboppfolging.client.amtdeltaker.AmtDeltakerClient;
 import no.nav.veilarboppfolging.client.digdir_krr.KRRData;
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolgingTilstand;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsStatus;
@@ -41,7 +41,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.LocalDate;
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -65,7 +64,7 @@ public class OppfolgingService {
     private final OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
     private final ManuellStatusService manuellStatusService;
 
-    private final AmtTiltakClient amtTiltakClient;
+    private final AmtDeltakerClient amtDeltakerClient;
 
     private final KvpRepository kvpRepository;
     private final MaalRepository maalRepository;
@@ -85,7 +84,7 @@ public class OppfolgingService {
             OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository,
             // TODO: Når vi får splittet servicenen bedre så skal det ikke være behov for å bruke @Lazy
             @Lazy ManuellStatusService manuellStatusService,
-            AmtTiltakClient amtTiltakClient,
+            AmtDeltakerClient amtDeltakerClient,
             KvpRepository kvpRepository,
             MaalRepository maalRepository,
             BrukerOppslagFlereOppfolgingAktorRepository brukerOppslagFlereOppfolgingAktorRepository,
@@ -100,7 +99,7 @@ public class OppfolgingService {
         this.oppfolgingsStatusRepository = oppfolgingsStatusRepository;
         this.oppfolgingsPeriodeRepository = oppfolgingsPeriodeRepository;
         this.manuellStatusService = manuellStatusService;
-        this.amtTiltakClient = amtTiltakClient;
+        this.amtDeltakerClient = amtDeltakerClient;
         this.kvpRepository = kvpRepository;
         this.maalRepository = maalRepository;
         this.brukerOppslagFlereOppfolgingAktorRepository = brukerOppslagFlereOppfolgingAktorRepository;
@@ -416,7 +415,7 @@ public class OppfolgingService {
     }
 
     protected boolean harAktiveTiltaksdeltakelser(Fnr fnr) {
-        return amtTiltakClient.harAktiveTiltaksdeltakelser(fnr.get());
+        return amtDeltakerClient.harAktiveTiltaksdeltakelser(fnr.get());
     }
 
     private Optional<OppfolgingEntity> getOppfolgingStatus(Fnr fnr) {

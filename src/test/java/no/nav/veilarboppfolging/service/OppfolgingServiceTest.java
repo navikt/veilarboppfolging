@@ -10,7 +10,7 @@ import no.nav.common.types.identer.NavIdent;
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe;
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe;
 import no.nav.veilarboppfolging.ForbiddenException;
-import no.nav.veilarboppfolging.client.amttiltak.AmtTiltakClient;
+import no.nav.veilarboppfolging.client.amtdeltaker.AmtDeltakerClient;
 import no.nav.veilarboppfolging.client.digdir_krr.KRRData;
 import no.nav.veilarboppfolging.client.veilarbarena.ArenaOppfolgingTilstand;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsStatus;
@@ -70,7 +70,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     private KvpRepository kvpRepository = mock(KvpRepository.class);
     private MetricsService metricsService = mock(MetricsService.class);
     private ManuellStatusService manuellStatusService = mock(ManuellStatusService.class);
-    private AmtTiltakClient amtTiltakClient = mock(AmtTiltakClient.class);
+    private AmtDeltakerClient amtDeltakerClient = mock(AmtDeltakerClient.class);
     private OppfolgingsStatusRepository oppfolgingsStatusRepository;
     private OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
     private OppfolgingService oppfolgingService;
@@ -92,7 +92,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
                 oppfolgingsStatusRepository,
                 oppfolgingsPeriodeRepository,
                 manuellStatusService,
-                amtTiltakClient,
+                amtDeltakerClient,
                 kvpRepository,
                 null,
                 null,
@@ -111,7 +111,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         when(arenaOppfolgingService.hentArenaOppfolgingsStatus(FNR)).thenReturn(Optional.of(arenaOppfolgingStatus));
         when(arenaOppfolgingService.hentArenaOppfolgingsEnhetId(FNR)).thenReturn(EnhetId.of(ENHET));
         when(manuellStatusService.hentDigdirKontaktinfo(FNR)).thenReturn(new KRRData());
-        when(amtTiltakClient.harAktiveTiltaksdeltakelser(FNR.get())).thenReturn(false);
+        when(amtDeltakerClient.harAktiveTiltaksdeltakelser(FNR.get())).thenReturn(false);
     }
 
     @Test
@@ -323,7 +323,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
     @Test
     public void skal_ikke_avslutte_oppfolging_hvis_aktive_tiltaksdeltakelser() {
-        when(amtTiltakClient.harAktiveTiltaksdeltakelser(FNR.get())).thenReturn(true);
+        when(amtDeltakerClient.harAktiveTiltaksdeltakelser(FNR.get())).thenReturn(true);
         arenaOppfolgingTilstand.setFormidlingsgruppe("IARBS");
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
         oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.Companion.arbeidssokerRegistrering(AKTOR_ID, BrukerRegistrant.INSTANCE));
@@ -458,7 +458,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
 
     @Test
     public void kanIkkeAvslutteHvisManHarAktiveTiltaksdeltakelser() {
-        when(amtTiltakClient.harAktiveTiltaksdeltakelser(FNR.get())).thenReturn(true);
+        when(amtDeltakerClient.harAktiveTiltaksdeltakelser(FNR.get())).thenReturn(true);
         oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.Companion.arbeidssokerRegistrering(AKTOR_ID, new VeilederRegistrant(NAV_IDENT)));
         assertUnderOppfolgingLagret(AKTOR_ID);
 

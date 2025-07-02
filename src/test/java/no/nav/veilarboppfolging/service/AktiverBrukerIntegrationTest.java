@@ -4,7 +4,7 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.veilarboppfolging.IntegrationTest;
 import no.nav.veilarboppfolging.LocalDatabaseSingleton;
-import no.nav.veilarboppfolging.client.amttiltak.AmtTiltakClient;
+import no.nav.veilarboppfolging.client.amtdeltaker.AmtDeltakerClient;
 import no.nav.veilarboppfolging.client.digdir_krr.KRRData;
 import no.nav.veilarboppfolging.domain.Oppfolging;
 import no.nav.veilarboppfolging.eventsLogger.BigQueryClient;
@@ -51,7 +51,7 @@ public class AktiverBrukerIntegrationTest extends IntegrationTest {
                 oppfolgingsStatusRepository,
                 oppfolgingsPeriodeRepository,
                 manuellStatusService,
-                mock(AmtTiltakClient.class),
+                mock(AmtDeltakerClient.class),
                 new KvpRepository(jdbcTemplate, namedParameterJdbcTemplate, transactor),
                 new MaalRepository(jdbcTemplate, transactor),
                 mock(BrukerOppslagFlereOppfolgingAktorRepository.class),

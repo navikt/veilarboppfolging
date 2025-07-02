@@ -66,10 +66,10 @@ spec:
       value: http://digdir-krr-proxy.team-rocket
     - name: DIGDIR_KRR_PROXY_SCOPE
       value: api://dev-gcp.team-rocket.digdir-krr-proxy/.default
-    - name: AMTTILTAK_URL
-      value: http://amt-tiltak.amt
-    - name: AMTTILTAK_SCOPE
-      value: api://dev-gcp.amt.amt-tiltak/.default
+    - name: AMTDELTAKER_URL
+      value: http://amt-deltaker.amt
+    - name: AMTDELTAKER_SCOPE
+      value: api://dev-gcp.amt.amt-deltaker/.default
     - name: KAFKA_ENABLED
       value: "true"
     - name: VEILARBARENA_URL
@@ -109,7 +109,7 @@ spec:
         - application: digdir-krr-proxy
           namespace: team-rocket
         - application: poao-tilgang
-        - application: amt-tiltak
+        - application: amt-deltaker
           namespace: amt
         - application: norg2
           namespace: org

@@ -38,8 +38,8 @@ public class EnvironmentProperties {
 
 	private String digdirKrrProxyScope;
 
-    private String amtTiltakUrl;
+    private String amtDeltakerUrl;
 
-    private String amtTiltakScope;
+    private String amtDeltakerScope;
 
 }
