@@ -187,7 +187,7 @@ class OppfolgingV3Controller(
 
     @PostMapping("/oppfolging/startOppfolgingsperiode")
     fun aktiverBruker(@RequestBody startOppfolging: StartOppfolgingDto): ResponseEntity<RegistrerIkkeArbeidssokerDto> {
-        authService.skalVereInternBruker()
+        authService.skalVereInternEllerSystemBruker()
         authService.sjekkAtApplikasjonErIAllowList(ALLOWLIST)
 
         val arenaResponse = arenaOppfolgingService.registrerIkkeArbeidssoker(startOppfolging.fnr)
@@ -237,7 +237,7 @@ class OppfolgingV3Controller(
     }
 
     companion object {
-        private val ALLOWLIST = listOf(AllowListApplicationName.INNGAR)
+        private val ALLOWLIST = listOf(AllowListApplicationName.INNGAR, AllowListApplicationName.VEILARBVEDTAKSSTOTTE)
     }
 }
 
@@ -251,7 +251,8 @@ data class ReaktiverRequestDto(val fnr: Fnr)
 enum class HenviserSystem {
     DEMO,
     SYFO,
-    AAP
+    AAP,
+    VEILARBVEDTAKSSTOTTE
 }
 
 data class ReaktiverDto(
