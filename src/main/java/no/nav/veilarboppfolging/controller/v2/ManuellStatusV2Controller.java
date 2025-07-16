@@ -40,7 +40,7 @@ public class ManuellStatusV2Controller {
     public ManuellStatusV2Response hentManuellStatus(@RequestParam("fnr") Fnr fnr) {
         if (authService.erEksternBruker()) {
             authService.sjekkAtApplikasjonErIAllowList(ALLOWLIST);
-            authService.harEksternBrukerTilgang(fnr);
+            authService.sjekkLesetilgangMedFnr(fnr);
         } else if (authService.erSystemBrukerFraAzureAd()) {
             authService.sjekkAtApplikasjonErIAllowList(ALLOWLIST);
         } else  {
