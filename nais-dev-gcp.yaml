@@ -233,3 +233,6 @@ spec:
         - application: ao-min-side-microfrontend
           namespace: dab
           cluster: dev-gcp
+        - application: ida
+          namespace: traktor
+          cluster: prod-fss # Dette er med vilje
