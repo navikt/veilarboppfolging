@@ -86,6 +86,8 @@ spec:
       value: "B884"
     - name: NAV_NO_URL
       value: "https://www.ansatt.dev.nav.no"
+    - name: EXPOSE_GRAPHIQL
+      value: "true"
   secureLogs:
     enabled: true
   kafka:
@@ -231,3 +233,6 @@ spec:
         - application: ao-min-side-microfrontend
           namespace: dab
           cluster: dev-gcp
+        - application: ida
+          namespace: traktor
+          cluster: prod-fss # Dette er med vilje
