@@ -351,7 +351,7 @@ public class OppfolgingService {
             kafkaProducerService.publiserOppfolgingsperiode(DtoMappers.tilOppfolgingsperiodeDTO(sistePeriode));
 
             // Publiserer også endringer som resettes i oppfolgingsstatus-tabellen ved avslutting av oppfølging
-            kafkaProducerService.publiserVeilederTilordnet(aktorId, null);
+            kafkaProducerService.publiserVeilederTilordnet(aktorId, null, null);
             kafkaProducerService.publiserEndringPaNyForVeileder(aktorId, false);
             kafkaProducerService.publiserEndringPaManuellStatus(aktorId, false);
 

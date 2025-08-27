@@ -140,7 +140,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         oppfolgingService.avsluttOppfolging(new ManuellAvregistrering(AKTOR_ID, new VeilederRegistrant(new NavIdent(VEILEDER)), ""));
 
         verify(kafkaProducerService).publiserOppfolgingsperiode(any(OppfolgingsperiodeDTO.class));
-        verify(kafkaProducerService).publiserVeilederTilordnet(AKTOR_ID, null);
+        verify(kafkaProducerService).publiserVeilederTilordnet(AKTOR_ID, null, null);
         verify(kafkaProducerService).publiserEndringPaNyForVeileder(AKTOR_ID, false);
         verify(kafkaProducerService).publiserEndringPaManuellStatus(AKTOR_ID, false);
         verify(kafkaProducerService).publiserSkjulAoMinSideMicrofrontend(AKTOR_ID, FNR);
@@ -168,7 +168,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         UnderOppfolgingDTO underOppfolgingDTO2 = oppfolgingService.oppfolgingData(FNR);
         Assertions.assertThat(underOppfolgingDTO2.isUnderOppfolging()).isTrue();
         verify(kafkaProducerService).publiserValgtOppfolgingsperiode(any(OppfolgingsperiodeDTO.class));
-        verify(kafkaProducerService, never()).publiserVeilederTilordnet(AKTOR_ID, null);
+        verify(kafkaProducerService, never()).publiserVeilederTilordnet(AKTOR_ID, null, null);
         verify(kafkaProducerService, never()).publiserEndringPaNyForVeileder(AKTOR_ID, false);
         verify(kafkaProducerService, never()).publiserEndringPaManuellStatus(AKTOR_ID, false);
         verify(kafkaProducerService, never()).publiserSkjulAoMinSideMicrofrontend(AKTOR_ID, FNR);
@@ -244,7 +244,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         UnderOppfolgingDTO underOppfolgingDTO2 = oppfolgingService.oppfolgingData(FNR);
         Assertions.assertThat(underOppfolgingDTO2.isUnderOppfolging()).isTrue();
         verify(kafkaProducerService).publiserValgtOppfolgingsperiode(any(OppfolgingsperiodeDTO.class));
-        verify(kafkaProducerService, never()).publiserVeilederTilordnet(AKTOR_ID, null);
+        verify(kafkaProducerService, never()).publiserVeilederTilordnet(AKTOR_ID, null, null);
         verify(kafkaProducerService, never()).publiserEndringPaNyForVeileder(AKTOR_ID, false);
         verify(kafkaProducerService, never()).publiserEndringPaManuellStatus(AKTOR_ID, false);
         verify(kafkaProducerService, never()).publiserSkjulAoMinSideMicrofrontend(AKTOR_ID, FNR);
@@ -264,7 +264,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         UnderOppfolgingDTO underOppfolgingDTO2 = oppfolgingService.oppfolgingData(FNR);
         Assertions.assertThat(underOppfolgingDTO2.isUnderOppfolging()).isFalse();
         verify(kafkaProducerService).publiserOppfolgingsperiode(any(OppfolgingsperiodeDTO.class));
-        verify(kafkaProducerService).publiserVeilederTilordnet(AKTOR_ID, null);
+        verify(kafkaProducerService).publiserVeilederTilordnet(AKTOR_ID, null, null);
         verify(kafkaProducerService).publiserEndringPaNyForVeileder(AKTOR_ID, false);
         verify(kafkaProducerService).publiserEndringPaManuellStatus(AKTOR_ID, false);
         verify(kafkaProducerService).publiserSkjulAoMinSideMicrofrontend(AKTOR_ID, FNR);
@@ -287,7 +287,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         UnderOppfolgingDTO underOppfolgingDTO2 = oppfolgingService.oppfolgingData(FNR);
         Assertions.assertThat(underOppfolgingDTO2.isUnderOppfolging()).isFalse();
         verify(kafkaProducerService).publiserOppfolgingsperiode(any(OppfolgingsperiodeDTO.class));
-        verify(kafkaProducerService).publiserVeilederTilordnet(AKTOR_ID, null);
+        verify(kafkaProducerService).publiserVeilederTilordnet(AKTOR_ID, null, null);
         verify(kafkaProducerService).publiserEndringPaNyForVeileder(AKTOR_ID, false);
         verify(kafkaProducerService).publiserEndringPaManuellStatus(AKTOR_ID, false);
         verify(kafkaProducerService).publiserSkjulAoMinSideMicrofrontend(AKTOR_ID, FNR);
@@ -308,7 +308,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         UnderOppfolgingDTO underOppfolgingDTO2 = oppfolgingService.oppfolgingData(FNR);
         Assertions.assertThat(underOppfolgingDTO2.isUnderOppfolging()).isFalse();
         verify(kafkaProducerService).publiserOppfolgingsperiode(any(OppfolgingsperiodeDTO.class));
-        verify(kafkaProducerService).publiserVeilederTilordnet(AKTOR_ID, null);
+        verify(kafkaProducerService).publiserVeilederTilordnet(AKTOR_ID, null, null);
         verify(kafkaProducerService).publiserEndringPaNyForVeileder(AKTOR_ID, false);
         verify(kafkaProducerService).publiserEndringPaManuellStatus(AKTOR_ID, false);
     }

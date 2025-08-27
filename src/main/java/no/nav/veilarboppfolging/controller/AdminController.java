@@ -75,6 +75,7 @@ public class AdminController {
         return new Veilarbportefoljeinfo().setVeilederId(tilordningEntity.map(VeilederTilordningEntity::getVeilederId).map(NavIdent::of).orElse(null))
                 .setErUnderOppfolging(tilordningEntity.map(VeilederTilordningEntity::isOppfolging).orElse(false))
                 .setNyForVeileder(tilordningEntity.map(VeilederTilordningEntity::isNyForVeileder).orElse(false))
+                .setSistTilordnetDato(tilordningEntity.map(VeilederTilordningEntity::getSistTilordnet).orElse(null))
                 .setErManuell(erManuell)
                 .setStartDato(startDato);
     }

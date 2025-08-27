@@ -172,10 +172,11 @@ public class VeilederTilordningService {
             maybeTilordning.ifPresentOrElse(tilordning -> {
                 var dto = DtoMappers.tilSisteTilordnetVeilederKafkaDTO(tilordning);
                 kafkaProducerService.publiserSisteTilordnetVeileder(dto);
+                kafkaProducerService.publiserVeilederTilordnet(aktorId, veilederId, tilordning.getSistTilordnet() );
             }, () -> secureLog.error("Fant ikke tilordning til nylig tilordnet veileder. AktorId={} VeilederId={}", aktorId, veilederId));
 
             kafkaProducerService.publiserEndringPaNyForVeileder(aktorId, true);
-            kafkaProducerService.publiserVeilederTilordnet(aktorId, veilederId);
+
         });
     }
 

@@ -18,6 +18,7 @@ import no.nav.tms.microfrontend.Sensitivitet
 import no.nav.veilarboppfolging.config.KafkaProperties
 import no.nav.veilarboppfolging.kafka.KvpPeriode
 import no.nav.veilarboppfolging.kafka.dto.OppfolgingsperiodeDTO
+import no.nav.veilarboppfolging.kafka.dto.VeilederTilordnetDTO
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -76,8 +77,8 @@ class KafkaProducerService @Autowired constructor(
         store(kafkaProperties.endringPaNyForVeilederTopic, aktorId.get(), recordValue)
     }
 
-    fun publiserVeilederTilordnet(aktorId: AktorId, tildeltVeilederId: String?) {
-        val recordValue = VeilederTilordnetV1(aktorId.get(), tildeltVeilederId)
+    fun publiserVeilederTilordnet(aktorId: AktorId, tildeltVeilederId: String?, tilordnet: ZonedDateTime? ) {
+        val recordValue = VeilederTilordnetDTO(aktorId.get(), tildeltVeilederId, tilordnet)
         store(kafkaProperties.veilederTilordnetTopic, aktorId.get(), recordValue)
     }
 
