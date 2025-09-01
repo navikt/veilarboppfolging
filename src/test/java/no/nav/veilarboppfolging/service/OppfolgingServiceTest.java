@@ -21,9 +21,9 @@ import no.nav.veilarboppfolging.domain.OppfolgingStatusData;
 import no.nav.veilarboppfolging.eventsLogger.BigQueryClient;
 import no.nav.veilarboppfolging.kafka.dto.OppfolgingsperiodeDTO;
 import no.nav.veilarboppfolging.oppfolgingsbruker.BrukerRegistrant;
-import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering;
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant;
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService;
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering;
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ManuellAvregistrering;
 import no.nav.veilarboppfolging.repository.KvpRepository;
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
@@ -100,6 +100,16 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
                  transactor,
                 arenaYtelserService,
                 bigQueryClient,
+                "https://test.nav.no"
+                );
+
+        startOppfolgingService = new StartOppfolgingService(authService,
+                manuellStatusService,
+                oppfolgingsStatusRepository,
+                oppfolgingsPeriodeRepository,
+                kafkaProducerService,
+                bigQueryClient,
+                transactor,
                 "https://test.nav.no"
                 );
 

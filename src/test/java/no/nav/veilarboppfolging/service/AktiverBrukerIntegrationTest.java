@@ -21,7 +21,8 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class AktiverBrukerIntegrationTest extends IntegrationTest {
 
@@ -30,6 +31,10 @@ public class AktiverBrukerIntegrationTest extends IntegrationTest {
     private ManuellStatusService manuellStatusService;
     private final Fnr FNR = Fnr.of("1111");
     private final AktorId AKTOR_ID = AktorId.of("1234523423");
+//    @Autowired
+    private BigQueryClient bigQueryClient;
+//    @Autowired
+    private KafkaProducerService kafkaProducerService;
 
     @Before
     public void setup() {
@@ -40,11 +45,13 @@ public class AktiverBrukerIntegrationTest extends IntegrationTest {
         oppfolgingsPeriodeRepository = new OppfolgingsPeriodeRepository(jdbcTemplate, transactor);
 
         authService = mock(AuthService.class);
+        bigQueryClient = mock(BigQueryClient.class);
+        kafkaProducerService = mock(KafkaProducerService.class);
 
         manuellStatusService = mock(ManuellStatusService.class);
 
         oppfolgingService = new OppfolgingService(
-                mock(KafkaProducerService.class),
+                kafkaProducerService,
                 null,
                 null,
                 authService,
@@ -57,7 +64,17 @@ public class AktiverBrukerIntegrationTest extends IntegrationTest {
                 mock(BrukerOppslagFlereOppfolgingAktorRepository.class),
                 transactor,
                 mock(ArenaYtelserService.class),
-                mock(BigQueryClient.class),
+                bigQueryClient,
+                "https://test.nav.no"
+        );
+
+        startOppfolgingService = new StartOppfolgingService(authService,
+                manuellStatusService,
+                oppfolgingsStatusRepository,
+                oppfolgingsPeriodeRepository,
+                kafkaProducerService,
+                bigQueryClient,
+                transactor,
                 "https://test.nav.no"
         );
 
@@ -65,6 +82,7 @@ public class AktiverBrukerIntegrationTest extends IntegrationTest {
                 authService, startOppfolgingService,
                 DbTestUtils.createTransactor(jdbcTemplate)
         );
+
 
         DbTestUtils.cleanupTestDb();
         when(authService.getAktorIdOrThrow(any(Fnr.class))).thenReturn(AKTOR_ID);
