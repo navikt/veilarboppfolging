@@ -19,6 +19,7 @@ import no.nav.veilarboppfolging.repository.UtmeldingRepository
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity
 import no.nav.veilarboppfolging.service.KafkaConsumerService
 import no.nav.veilarboppfolging.service.OppfolgingService
+import no.nav.veilarboppfolging.service.StartOppfolgingService
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within
@@ -141,7 +142,7 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
     @Test
     fun `Dersom arbeidsrettet oppfølgingsperiode allerede eksisterer skal melding om ny arbeidssøkerperiode ikke endre noe`() {
         val oppfølgingsbruker = OppfolgingsRegistrering.arbeidssokerRegistrering(aktørId, BrukerRegistrant)
-        oppfølgingService.startOppfolgingHvisIkkeAlleredeStartet(oppfølgingsbruker)
+        startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(oppfølgingsbruker)
         val oppfølgingsdataFørMelding = oppfølgingService.hentOppfolgingsperioder(aktørId).first()
         val melding = ConsumerRecord("topic", 0, 0, "dummyKey", arbeidssøkerperiode(fnr))
 
@@ -154,7 +155,7 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
     @Test
     fun `Dersom arbeidsrettet oppfølgingsperiode allerede eksisterer for sykmeldt bruker skal melding om arbeidssøkerperiode ikke endre noe`() {
         val oppfølgingsbruker = OppfolgingsRegistrering.manueltRegistrertBruker(aktørId, VeilederRegistrant(NavIdent.of("G123123")))
-        oppfølgingService.startOppfolgingHvisIkkeAlleredeStartet(oppfølgingsbruker)
+        startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(oppfølgingsbruker)
         val oppfølgingsdataFørMelding = oppfølgingService.hentOppfolgingsperioder(aktørId).first()
         val melding = ConsumerRecord("topic", 0, 0, "dummyKey", arbeidssøkerperiode(fnr))
 
