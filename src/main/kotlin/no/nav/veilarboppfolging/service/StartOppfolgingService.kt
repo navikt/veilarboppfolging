@@ -21,7 +21,7 @@ import org.springframework.transaction.support.TransactionTemplate
 import java.util.*
 
 @Service
-class StartOppfolgingService(
+open class StartOppfolgingService(
     val authService: AuthService,
     val manuellStatusService: ManuellStatusService,
     val oppfolgingsStatusRepository: OppfolgingsStatusRepository,

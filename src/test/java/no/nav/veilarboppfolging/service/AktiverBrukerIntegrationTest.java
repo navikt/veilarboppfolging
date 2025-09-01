@@ -31,9 +31,7 @@ public class AktiverBrukerIntegrationTest extends IntegrationTest {
     private ManuellStatusService manuellStatusService;
     private final Fnr FNR = Fnr.of("1111");
     private final AktorId AKTOR_ID = AktorId.of("1234523423");
-//    @Autowired
     private BigQueryClient bigQueryClient;
-//    @Autowired
     private KafkaProducerService kafkaProducerService;
 
     @Before
@@ -45,9 +43,9 @@ public class AktiverBrukerIntegrationTest extends IntegrationTest {
         oppfolgingsPeriodeRepository = new OppfolgingsPeriodeRepository(jdbcTemplate, transactor);
 
         authService = mock(AuthService.class);
+        when(authService.getFnrOrThrow(AKTOR_ID)).thenReturn(FNR);
         bigQueryClient = mock(BigQueryClient.class);
         kafkaProducerService = mock(KafkaProducerService.class);
-
         manuellStatusService = mock(ManuellStatusService.class);
 
         oppfolgingService = new OppfolgingService(
