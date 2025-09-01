@@ -21,15 +21,13 @@ import org.mockito.Mockito
 import java.util.Optional
 
 class OppfolgingEndringServiceTest {
-    private val authService: AuthService = Mockito.mock<AuthService>(AuthService::class.java)
-    private val oppfolgingService: OppfolgingService = Mockito.mock<OppfolgingService>(OppfolgingService::class.java)
-    private val startOppfolgingService: StartOppfolgingService = Mockito.mock<StartOppfolgingService>(StartOppfolgingService::class.java)
-    private val arenaOppfolgingService: ArenaOppfolgingService =
-        Mockito.mock<ArenaOppfolgingService>(ArenaOppfolgingService::class.java)
-    private val kvpService: KvpService = Mockito.mock<KvpService>(KvpService::class.java)
-    private val metricsService: MetricsService? = Mockito.mock<MetricsService?>(MetricsService::class.java)
-    private val oppfolgingsStatusRepository: OppfolgingsStatusRepository =
-        Mockito.mock<OppfolgingsStatusRepository>(OppfolgingsStatusRepository::class.java)
+    private val authService: AuthService = Mockito.mock(AuthService::class.java)
+    private val oppfolgingService: OppfolgingService = Mockito.mock(OppfolgingService::class.java)
+    private val startOppfolgingService: StartOppfolgingService = Mockito.mock(StartOppfolgingService::class.java)
+    private val arenaOppfolgingService: ArenaOppfolgingService = Mockito.mock(ArenaOppfolgingService::class.java)
+    private val kvpService: KvpService = Mockito.mock(KvpService::class.java)
+    private val metricsService: MetricsService? = Mockito.mock(MetricsService::class.java)
+    private val oppfolgingsStatusRepository: OppfolgingsStatusRepository = Mockito.mock(OppfolgingsStatusRepository::class.java)
 
     private val oppfolgingEndringService = OppfolgingEndringService(
         oppfolgingService, startOppfolgingService, arenaOppfolgingService,
@@ -38,11 +36,9 @@ class OppfolgingEndringServiceTest {
 
     @Test
     fun oppdaterOppfolgingMedStatusFraArena__skal_ikke_oppdatere_hvis_bruker_ikke_under_oppfolging_i_veilarboppfolging_eller_arena() {
-        Mockito.`when`<AktorId?>(authService.getAktorIdOrThrow(TEST_FNR)).thenReturn(TEST_AKTOR_ID)
-        Mockito.`when`<Optional<OppfolgingEntity>?>(oppfolgingsStatusRepository.hentOppfolging(TEST_AKTOR_ID))
-            .thenReturn(
-                Optional.of<OppfolgingEntity>(OppfolgingEntity().setUnderOppfolging(false))
-            )
+        Mockito.`when`(authService.getAktorIdOrThrow(TEST_FNR)).thenReturn(TEST_AKTOR_ID)
+        Mockito.`when`(oppfolgingsStatusRepository.hentOppfolging(TEST_AKTOR_ID))
+            .thenReturn(Optional.of(OppfolgingEntity().setUnderOppfolging(false)))
 
         val brukverV2 = EndringPaaOppfolgingsBruker(
             aktorId =  TEST_AKTOR_ID,
@@ -53,20 +49,18 @@ class OppfolgingEndringServiceTest {
 
         oppfolgingEndringService.oppdaterOppfolgingMedStatusFraArena(brukverV2)
 
-        Mockito.verify<StartOppfolgingService?>(startOppfolgingService, Mockito.never()).startOppfolgingHvisIkkeAlleredeStartet(
-            ArgumentMatchers.any<OppfolgingsRegistrering?>(OppfolgingsRegistrering::class.java)
+        Mockito.verify(startOppfolgingService, Mockito.never()).startOppfolgingHvisIkkeAlleredeStartet(
+            ArgumentMatchers.any(OppfolgingsRegistrering::class.java)
         )
-        Mockito.verify<OppfolgingService?>(oppfolgingService, Mockito.never())
-            .avsluttOppfolging(ArgumentMatchers.any<Avregistrering?>())
+        Mockito.verify(oppfolgingService, Mockito.never())
+            .avsluttOppfolging(ArgumentMatchers.any())
     }
 
     @Test
     fun oppdaterOppfolgingMedStatusFraArena__skal_starte_oppfolging_pa_bruker_som_ikke_er_under_oppfolging_i_veilarboppfolging_men_under_oppfolging_i_arena() {
-        Mockito.`when`<AktorId?>(authService.getAktorIdOrThrow(TEST_FNR)).thenReturn(TEST_AKTOR_ID)
-        Mockito.`when`<Optional<OppfolgingEntity>?>(oppfolgingsStatusRepository.hentOppfolging(TEST_AKTOR_ID))
-            .thenReturn(
-                Optional.of<OppfolgingEntity>(OppfolgingEntity().setUnderOppfolging(false))
-            )
+        Mockito.`when`(authService.getAktorIdOrThrow(TEST_FNR)).thenReturn(TEST_AKTOR_ID)
+        Mockito.`when`(oppfolgingsStatusRepository.hentOppfolging(TEST_AKTOR_ID))
+            .thenReturn(Optional.of(OppfolgingEntity().setUnderOppfolging(false)))
 
         val brukverV2 = EndringPaaOppfolgingsBruker(
             aktorId =  TEST_AKTOR_ID,
@@ -85,24 +79,24 @@ class OppfolgingEndringServiceTest {
             )
         )
         Mockito.verify(oppfolgingService, Mockito.never())
-            .avsluttOppfolging(ArgumentMatchers.any<Avregistrering?>())
+            .avsluttOppfolging(ArgumentMatchers.any())
     }
 
     @Test
     fun oppdaterOppfolgingMedStatusFraArena__skal_avslutte_oppfolging_pa_bruker_som_er_under_oppfolging_i_veilarboppfolging_men_ikke_under_oppfolging_i_arena() {
-        Mockito.`when`<AktorId?>(authService.getAktorIdOrThrow(TEST_FNR)).thenReturn(TEST_AKTOR_ID)
-        Mockito.`when`<Optional<OppfolgingEntity>?>(oppfolgingsStatusRepository.hentOppfolging(TEST_AKTOR_ID))
+        Mockito.`when`(authService.getAktorIdOrThrow(TEST_FNR)).thenReturn(TEST_AKTOR_ID)
+        Mockito.`when`(oppfolgingsStatusRepository.hentOppfolging(TEST_AKTOR_ID))
             .thenReturn(
-                Optional.of<OppfolgingEntity>(
+                Optional.of(
                     OppfolgingEntity()
-                        .setLocalArenaOppfolging(Optional.empty<LocalArenaOppfolging?>())
+                        .setLocalArenaOppfolging(Optional.empty())
                         .setUnderOppfolging(true)
                 )
             )
-        Mockito.`when`<Optional<Boolean>?>(arenaOppfolgingService.kanEnkeltReaktiveres(TEST_FNR)).thenReturn(
+        Mockito.`when`(arenaOppfolgingService.kanEnkeltReaktiveres(TEST_FNR)).thenReturn(
             Optional.of<Boolean>(false)
         )
-        Mockito.`when`<Boolean?>(kvpService.erUnderKvp(TEST_AKTOR_ID)).thenReturn(false)
+        Mockito.`when`(kvpService.erUnderKvp(TEST_AKTOR_ID)).thenReturn(false)
 
         val brukverV2 = EndringPaaOppfolgingsBruker(
           aktorId = TEST_AKTOR_ID,
@@ -125,20 +119,20 @@ class OppfolgingEndringServiceTest {
 
     @Test
     fun oppdaterOppfolgingMedStatusFraArena__skal_ikke_avslutte_oppfolging_pa_bruker_som_kan_enkelt_reaktiveres() {
-        Mockito.`when`<AktorId?>(authService.getAktorIdOrThrow(TEST_FNR)).thenReturn(TEST_AKTOR_ID)
-        Mockito.`when`<Optional<OppfolgingEntity>?>(oppfolgingsStatusRepository.hentOppfolging(TEST_AKTOR_ID))
+        Mockito.`when`(authService.getAktorIdOrThrow(TEST_FNR)).thenReturn(TEST_AKTOR_ID)
+        Mockito.`when`(oppfolgingsStatusRepository.hentOppfolging(TEST_AKTOR_ID))
             .thenReturn(
-                Optional.of<OppfolgingEntity>(
+                Optional.of(
                     OppfolgingEntity()
-                        .setLocalArenaOppfolging(Optional.empty<LocalArenaOppfolging?>())
+                        .setLocalArenaOppfolging(Optional.empty())
                         .setUnderOppfolging(true)
                 )
             )
-        Mockito.`when`<Optional<Boolean>?>(arenaOppfolgingService.kanEnkeltReaktiveres(TEST_FNR)).thenReturn(
+        Mockito.`when`(arenaOppfolgingService.kanEnkeltReaktiveres(TEST_FNR)).thenReturn(
             Optional.of<Boolean>(true)
         )
-        Mockito.`when`<Boolean?>(kvpService.erUnderKvp(TEST_AKTOR_ID)).thenReturn(false)
-        Mockito.`when`<Boolean?>(oppfolgingService.harAktiveTiltaksdeltakelser(TEST_FNR)).thenReturn(false)
+        Mockito.`when`(kvpService.erUnderKvp(TEST_AKTOR_ID)).thenReturn(false)
+        Mockito.`when`(oppfolgingService.harAktiveTiltaksdeltakelser(TEST_FNR)).thenReturn(false)
 
         val brukverV2 = EndringPaaOppfolgingsBruker(
             aktorId = TEST_AKTOR_ID,
@@ -158,20 +152,20 @@ class OppfolgingEndringServiceTest {
 
     @Test
     fun oppdaterOppfolgingMedStatusFraArena__skal_ikke_avslutte_oppfolging_pa_bruker_som_er_under_kvp() {
-        Mockito.`when`<AktorId?>(authService.getAktorIdOrThrow(TEST_FNR)).thenReturn(TEST_AKTOR_ID)
-        Mockito.`when`<Optional<OppfolgingEntity>?>(oppfolgingsStatusRepository.hentOppfolging(TEST_AKTOR_ID))
+        Mockito.`when`(authService.getAktorIdOrThrow(TEST_FNR)).thenReturn(TEST_AKTOR_ID)
+        Mockito.`when`(oppfolgingsStatusRepository.hentOppfolging(TEST_AKTOR_ID))
             .thenReturn(
-                Optional.of<OppfolgingEntity>(
+                Optional.of(
                     OppfolgingEntity()
-                        .setLocalArenaOppfolging(Optional.empty<LocalArenaOppfolging?>())
+                        .setLocalArenaOppfolging(Optional.empty())
                         .setUnderOppfolging(true)
                 )
             )
-        Mockito.`when`<Optional<Boolean>?>(arenaOppfolgingService.kanEnkeltReaktiveres(TEST_FNR)).thenReturn(
+        Mockito.`when`(arenaOppfolgingService.kanEnkeltReaktiveres(TEST_FNR)).thenReturn(
             Optional.of<Boolean>(false)
         )
-        Mockito.`when`<Boolean?>(kvpService.erUnderKvp(TEST_AKTOR_ID)).thenReturn(true)
-        Mockito.`when`<Boolean?>(oppfolgingService.harAktiveTiltaksdeltakelser(TEST_FNR)).thenReturn(false)
+        Mockito.`when`(kvpService.erUnderKvp(TEST_AKTOR_ID)).thenReturn(true)
+        Mockito.`when`(oppfolgingService.harAktiveTiltaksdeltakelser(TEST_FNR)).thenReturn(false)
 
         val brukverV2 = EndringPaaOppfolgingsBruker(
             aktorId = TEST_AKTOR_ID,
@@ -191,20 +185,20 @@ class OppfolgingEndringServiceTest {
 
     @Test
     fun oppdaterOppfolgingMedStatusFraArena__skal_ikke_avslutte_oppfolging_pa_bruker_som_har_aktive_tiltaksdeltakelser() {
-        Mockito.`when`<AktorId?>(authService.getAktorIdOrThrow(TEST_FNR)).thenReturn(TEST_AKTOR_ID)
-        Mockito.`when`<Optional<OppfolgingEntity>?>(oppfolgingsStatusRepository.hentOppfolging(TEST_AKTOR_ID))
+        Mockito.`when`(authService.getAktorIdOrThrow(TEST_FNR)).thenReturn(TEST_AKTOR_ID)
+        Mockito.`when`(oppfolgingsStatusRepository.hentOppfolging(TEST_AKTOR_ID))
             .thenReturn(
-                Optional.of<OppfolgingEntity>(
+                Optional.of(
                     OppfolgingEntity()
-                        .setLocalArenaOppfolging(Optional.empty<LocalArenaOppfolging?>())
+                        .setLocalArenaOppfolging(Optional.empty())
                         .setUnderOppfolging(true)
                 )
             )
-        Mockito.`when`<Optional<Boolean>?>(arenaOppfolgingService.kanEnkeltReaktiveres(TEST_FNR)).thenReturn(
+        Mockito.`when`(arenaOppfolgingService.kanEnkeltReaktiveres(TEST_FNR)).thenReturn(
             Optional.of<Boolean>(false)
         )
-        Mockito.`when`<Boolean?>(kvpService.erUnderKvp(TEST_AKTOR_ID)).thenReturn(false)
-        Mockito.`when`<Boolean?>(oppfolgingService.harAktiveTiltaksdeltakelser(TEST_FNR)).thenReturn(true)
+        Mockito.`when`(kvpService.erUnderKvp(TEST_AKTOR_ID)).thenReturn(false)
+        Mockito.`when`(oppfolgingService.harAktiveTiltaksdeltakelser(TEST_FNR)).thenReturn(true)
 
         val brukverV2 = EndringPaaOppfolgingsBruker(
             aktorId = TEST_AKTOR_ID,
