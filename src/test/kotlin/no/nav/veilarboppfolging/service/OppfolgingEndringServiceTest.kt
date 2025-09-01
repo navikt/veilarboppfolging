@@ -23,6 +23,7 @@ import java.util.Optional
 class OppfolgingEndringServiceTest {
     private val authService: AuthService = Mockito.mock<AuthService>(AuthService::class.java)
     private val oppfolgingService: OppfolgingService = Mockito.mock<OppfolgingService>(OppfolgingService::class.java)
+    private val startOppfolgingService: StartOppfolgingService = Mockito.mock<StartOppfolgingService>(StartOppfolgingService::class.java)
     private val arenaOppfolgingService: ArenaOppfolgingService =
         Mockito.mock<ArenaOppfolgingService>(ArenaOppfolgingService::class.java)
     private val kvpService: KvpService = Mockito.mock<KvpService>(KvpService::class.java)
@@ -31,7 +32,7 @@ class OppfolgingEndringServiceTest {
         Mockito.mock<OppfolgingsStatusRepository>(OppfolgingsStatusRepository::class.java)
 
     private val oppfolgingEndringService = OppfolgingEndringService(
-        oppfolgingService, arenaOppfolgingService,
+        oppfolgingService, startOppfolgingService, arenaOppfolgingService,
         kvpService, metricsService, oppfolgingsStatusRepository
     )
 
@@ -52,7 +53,7 @@ class OppfolgingEndringServiceTest {
 
         oppfolgingEndringService.oppdaterOppfolgingMedStatusFraArena(brukverV2)
 
-        Mockito.verify<OppfolgingService?>(oppfolgingService, Mockito.never()).startOppfolgingHvisIkkeAlleredeStartet(
+        Mockito.verify<StartOppfolgingService?>(startOppfolgingService, Mockito.never()).startOppfolgingHvisIkkeAlleredeStartet(
             ArgumentMatchers.any<OppfolgingsRegistrering?>(OppfolgingsRegistrering::class.java)
         )
         Mockito.verify<OppfolgingService?>(oppfolgingService, Mockito.never())
@@ -76,14 +77,14 @@ class OppfolgingEndringServiceTest {
 
         oppfolgingEndringService.oppdaterOppfolgingMedStatusFraArena(brukverV2)
 
-        Mockito.verify<OppfolgingService?>(oppfolgingService, Mockito.times(1)).startOppfolgingHvisIkkeAlleredeStartet(
+        Mockito.verify(startOppfolgingService, Mockito.times(1)).startOppfolgingHvisIkkeAlleredeStartet(
             OppfolgingsRegistrering.Companion.arenaSyncOppfolgingBruker(
                 TEST_AKTOR_ID,
                 Formidlingsgruppe.ARBS,
                 brukverV2.kvalifiseringsgruppe
             )
         )
-        Mockito.verify<OppfolgingService?>(oppfolgingService, Mockito.never())
+        Mockito.verify(oppfolgingService, Mockito.never())
             .avsluttOppfolging(ArgumentMatchers.any<Avregistrering?>())
     }
 
@@ -112,10 +113,10 @@ class OppfolgingEndringServiceTest {
 
         oppfolgingEndringService.oppdaterOppfolgingMedStatusFraArena(brukverV2)
 
-        Mockito.verify<OppfolgingService?>(oppfolgingService, Mockito.never()).startOppfolgingHvisIkkeAlleredeStartet(
-            ArgumentMatchers.any<OppfolgingsRegistrering?>(OppfolgingsRegistrering::class.java)
+        Mockito.verify(startOppfolgingService, Mockito.never()).startOppfolgingHvisIkkeAlleredeStartet(
+            ArgumentMatchers.any(OppfolgingsRegistrering::class.java)
         )
-        Mockito.verify<OppfolgingService?>(oppfolgingService, Mockito.times(1))
+        Mockito.verify(oppfolgingService, Mockito.times(1))
             .avsluttOppfolging(ArenaIservKanIkkeReaktiveres(TestData.TEST_AKTOR_ID))
 
         Mockito.verify<MetricsService?>(metricsService, Mockito.times(1))
@@ -148,11 +149,11 @@ class OppfolgingEndringServiceTest {
 
         oppfolgingEndringService.oppdaterOppfolgingMedStatusFraArena(brukverV2)
 
-        Mockito.verify<OppfolgingService?>(oppfolgingService, Mockito.never()).startOppfolgingHvisIkkeAlleredeStartet(
-            ArgumentMatchers.any<OppfolgingsRegistrering?>(OppfolgingsRegistrering::class.java)
+        Mockito.verify(startOppfolgingService, Mockito.never()).startOppfolgingHvisIkkeAlleredeStartet(
+            ArgumentMatchers.any(OppfolgingsRegistrering::class.java)
         )
-        Mockito.verify<OppfolgingService?>(oppfolgingService, Mockito.never())
-            .avsluttOppfolging(ArgumentMatchers.any<Avregistrering?>())
+        Mockito.verify(oppfolgingService, Mockito.never())
+            .avsluttOppfolging(ArgumentMatchers.any())
     }
 
     @Test
@@ -181,11 +182,11 @@ class OppfolgingEndringServiceTest {
 
         oppfolgingEndringService.oppdaterOppfolgingMedStatusFraArena(brukverV2)
 
-        Mockito.verify<OppfolgingService?>(oppfolgingService, Mockito.never()).startOppfolgingHvisIkkeAlleredeStartet(
-            ArgumentMatchers.any<OppfolgingsRegistrering?>(OppfolgingsRegistrering::class.java)
+        Mockito.verify(startOppfolgingService, Mockito.never()).startOppfolgingHvisIkkeAlleredeStartet(
+            ArgumentMatchers.any(OppfolgingsRegistrering::class.java)
         )
-        Mockito.verify<OppfolgingService?>(oppfolgingService, Mockito.never())
-            .avsluttOppfolging(ArgumentMatchers.any<Avregistrering?>())
+        Mockito.verify(oppfolgingService, Mockito.never())
+            .avsluttOppfolging(ArgumentMatchers.any())
     }
 
     @Test
@@ -214,10 +215,10 @@ class OppfolgingEndringServiceTest {
 
         oppfolgingEndringService.oppdaterOppfolgingMedStatusFraArena(brukverV2)
 
-        Mockito.verify<OppfolgingService?>(oppfolgingService, Mockito.never()).startOppfolgingHvisIkkeAlleredeStartet(
-            ArgumentMatchers.any<OppfolgingsRegistrering?>(OppfolgingsRegistrering::class.java)
+        Mockito.verify(startOppfolgingService, Mockito.never()).startOppfolgingHvisIkkeAlleredeStartet(
+            ArgumentMatchers.any(OppfolgingsRegistrering::class.java)
         )
-        Mockito.verify<OppfolgingService?>(oppfolgingService, Mockito.never())
-            .avsluttOppfolging(ArgumentMatchers.any<Avregistrering?>())
+        Mockito.verify(oppfolgingService, Mockito.never())
+            .avsluttOppfolging(ArgumentMatchers.any())
     }
 }

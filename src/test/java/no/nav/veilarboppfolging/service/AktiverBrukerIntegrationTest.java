@@ -62,7 +62,7 @@ public class AktiverBrukerIntegrationTest extends IntegrationTest {
         );
 
         aktiverBrukerService = new AktiverBrukerService(
-                authService, oppfolgingService,
+                authService, startOppfolgingService,
                 DbTestUtils.createTransactor(jdbcTemplate)
         );
 
