@@ -10,7 +10,7 @@ import no.nav.veilarboppfolging.IntegrationTest
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsBruker
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient
 import no.nav.veilarboppfolging.domain.StartetAvType
-import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.AktiverBrukerService
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.AktiverBrukerManueltService
 import no.nav.veilarboppfolging.oppfolgingsbruker.BrukerRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelse
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering
@@ -19,7 +19,6 @@ import no.nav.veilarboppfolging.repository.UtmeldingRepository
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity
 import no.nav.veilarboppfolging.service.KafkaConsumerService
 import no.nav.veilarboppfolging.service.OppfolgingService
-import no.nav.veilarboppfolging.service.StartOppfolgingService
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within
@@ -51,7 +50,7 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
     private lateinit var oppfølgingService: OppfolgingService
 
     @Autowired
-    private lateinit var aktiverBrukerService: AktiverBrukerService
+    private lateinit var aktiverBrukerManueltService: AktiverBrukerManueltService
 
     private val fnr = "01010198765"
     private val aktørId = AktorId.of("123456789012")
@@ -173,7 +172,7 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
 
         `when`(authContextHolder.erInternBruker()).thenReturn(true)
         `when`(authContextHolder.getUid()).thenReturn(Optional.of("G123123"))
-        aktiverBrukerService.aktiverBrukerManuelt(Fnr.of(fnr))
+        aktiverBrukerManueltService.aktiverBrukerManuelt(Fnr.of(fnr))
 
         val oppfølgingsdataEtterSykmeldtRegistrering = oppfølgingService.hentOppfolgingsperioder(aktørId).first()
         assertThat(oppfølgingsdataFørSykmeldtRegistrering).isEqualTo(oppfølgingsdataEtterSykmeldtRegistrering)

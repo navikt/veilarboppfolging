@@ -1,6 +1,7 @@
 package no.nav.veilarboppfolging.oppfolgingsbruker.inngang
 
 import no.nav.common.types.identer.AktorId
+import no.nav.common.types.identer.EnhetId
 import no.nav.common.types.identer.Fnr
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe
@@ -21,8 +22,8 @@ sealed class OppfolgingsRegistrering(
         fun manueltRegistrertBruker(fnr: Fnr, aktorId: AktorId, veileder: VeilederRegistrant, kontorSattAvVeileder: String?): ManuellRegistrering {
             return ManuellRegistrering(fnr, aktorId, veileder, kontorSattAvVeileder)
         }
-        fun arenaSyncOppfolgingBruker(fnr: Fnr, aktorId: AktorId, formidlingsgruppe: Formidlingsgruppe, kvalifiseringsgruppe: Kvalifiseringsgruppe): ArenaSyncRegistrering {
-            return ArenaSyncRegistrering(fnr, aktorId, formidlingsgruppe, kvalifiseringsgruppe)
+        fun arenaSyncOppfolgingBruker(fnr: Fnr, aktorId: AktorId, formidlingsgruppe: Formidlingsgruppe, kvalifiseringsgruppe: Kvalifiseringsgruppe, enhet: EnhetId): ArenaSyncRegistrering {
+            return ArenaSyncRegistrering(fnr, aktorId, formidlingsgruppe, kvalifiseringsgruppe, enhet)
         }
     }
 }
@@ -45,6 +46,7 @@ data class ArenaSyncRegistrering(
     override val aktorId: AktorId,
     val formidlingsgruppe: Formidlingsgruppe,
     val kvalifiseringsgruppe: Kvalifiseringsgruppe,
+    val enhet: EnhetId
 ): OppfolgingsRegistrering(
     fnr,
     aktorId,

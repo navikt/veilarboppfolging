@@ -5,6 +5,7 @@ import no.nav.common.types.identer.Fnr
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe
 import no.nav.veilarboppfolging.client.digdir_krr.KRRData
 import no.nav.veilarboppfolging.eventsLogger.BigQueryClient
+import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ArenaSyncRegistrering
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ManuellRegistrering
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering
@@ -31,6 +32,7 @@ open class StartOppfolgingService(
     val kafkaProducerService: KafkaProducerService,
     val bigQueryClient: BigQueryClient,
     val transactor: TransactionTemplate,
+    val arenaOppfolgingService: ArenaOppfolgingService,
     @Value("\${app.env.nav-no-url}")
     val navNoUrl: String
 ) {
@@ -73,7 +75,7 @@ open class StartOppfolgingService(
             kafkaProducerService.publiserOppfolgingsperiode(DtoMappers.tilOppfolgingsperiodeDTO(sistePeriode))
             kafkaProducerService.publiserVisAoMinSideMicrofrontend(aktorId, fnr)
 
-            val arenaKontor = oppfolgingsStatusRepository
+            val arenaKontor = arenaOppfolgingService.hentArenaOppfolgingsEnhetId()
             kafkaProducerService.publiserOppfolgingsStartet(lagOppfolgingStartetHendelseDto(fnr, sistePeriode, "123", kontorSattAvVeileder))
             publiserMinSideBeskjedHvisIkkeReservert(kontaktinfo, aktorId, fnr)
 

@@ -8,7 +8,7 @@ import no.nav.veilarboppfolging.client.amtdeltaker.AmtDeltakerClient;
 import no.nav.veilarboppfolging.client.digdir_krr.KRRData;
 import no.nav.veilarboppfolging.domain.Oppfolging;
 import no.nav.veilarboppfolging.eventsLogger.BigQueryClient;
-import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.AktiverBrukerService;
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.AktiverBrukerManueltService;
 import no.nav.veilarboppfolging.repository.*;
 import no.nav.veilarboppfolging.test.DbTestUtils;
 import org.junit.Before;
@@ -27,7 +27,7 @@ import static org.mockito.Mockito.when;
 public class AktiverBrukerIntegrationTest extends IntegrationTest {
 
     private OppfolgingsStatusRepository oppfolgingsStatusRepository;
-    private AktiverBrukerService aktiverBrukerService;
+    private AktiverBrukerManueltService aktiverBrukerManueltService;
     private ManuellStatusService manuellStatusService;
     private final Fnr FNR = Fnr.of("1111");
     private final AktorId AKTOR_ID = AktorId.of("1234523423");
@@ -76,7 +76,7 @@ public class AktiverBrukerIntegrationTest extends IntegrationTest {
                 "https://test.nav.no"
         );
 
-        aktiverBrukerService = new AktiverBrukerService(
+        aktiverBrukerManueltService = new AktiverBrukerManueltService(
                 authService, startOppfolgingService,
                 DbTestUtils.createTransactor(jdbcTemplate)
         );
@@ -108,7 +108,7 @@ public class AktiverBrukerIntegrationTest extends IntegrationTest {
     public void aktiver_sykmeldt_skal_starte_oppfolging() {
         var oppfolgingFør = oppfolgingService.hentOppfolging(AKTOR_ID);
         assertThat(oppfolgingFør.isEmpty()).isTrue();
-        aktiverBrukerService.aktiverBrukerManuelt(FNR);
+        aktiverBrukerManueltService.aktiverBrukerManuelt(FNR);
         var oppfolging = oppfolgingService.hentOppfolging(AKTOR_ID);
         assertThat(oppfolging.get().isUnderOppfolging()).isTrue();
     }

@@ -27,7 +27,7 @@ import static no.nav.veilarboppfolging.utils.SecureLog.secureLog;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class OppfolgingEndringService {
+public class OppfolgingsbrukerEndretIArenaService {
 
     private final OppfolgingService oppfolgingService;
     private final StartOppfolgingService startOppfolgingService;
@@ -75,7 +75,14 @@ public class OppfolgingEndringService {
         if (skalOppfolges) {
             secureLog.info("Starter oppfølging på bruker som er under oppfølging i Arena, men ikke i veilarboppfolging. aktorId={}", bruker.getAktorId());
             startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(
-                    OppfolgingsRegistrering.Companion.arenaSyncOppfolgingBruker(fnr, bruker.getAktorId(), formidlingsgruppe, kvalifiseringsgruppe));
+                    OppfolgingsRegistrering.Companion.arenaSyncOppfolgingBruker(
+                            fnr,
+                            bruker.getAktorId(),
+                            formidlingsgruppe,
+                            kvalifiseringsgruppe,
+                            EnhetId.of(bruker.getOppfolgingsenhet())
+                    )
+            );
         } else if (erBrukerUnderOppfolgingLokalt && erInaktivIArena) {
             Optional<Boolean> kanEnkeltReaktiveresLokalt = kanEnkeltReaktiveresLokalt(currentLocalOppfolging, bruker);
             var maybeKanEnkeltReaktiveres = arenaOppfolgingService.kanEnkeltReaktiveres(fnr);
@@ -90,7 +97,7 @@ public class OppfolgingEndringService {
                             bruker.getIservFraDato(),
                             bruker.getKvalifiseringsgruppe(),
                             currentLocalOppfolging.get().getLocalArenaOppfolging().map(LocalArenaOppfolging::getFormidlingsgruppe).orElse(null)
-                        );
+                    );
                 }
             }
 
@@ -118,14 +125,14 @@ public class OppfolgingEndringService {
         }
     }
 
-    private  Optional<Boolean> kanEnkeltReaktiveresLokalt(Optional<OppfolgingEntity> maybeOppfolging, EndringPaaOppfolgingsBruker brukerV2) {
+    private Optional<Boolean> kanEnkeltReaktiveresLokalt(Optional<OppfolgingEntity> maybeOppfolging, EndringPaaOppfolgingsBruker brukerV2) {
         return maybeOppfolging
                 .flatMap(OppfolgingEntity::getLocalArenaOppfolging)
                 .map(forrigeArenaOppfolging ->
                         brukerV2.getFormidlingsgruppe() == Formidlingsgruppe.ISERV &&
-                        brukerV2.getIservFraDato().isAfter(LocalDate.now().minusDays(28)) &&
-                        forrigeArenaOppfolging.getFormidlingsgruppe() == Formidlingsgruppe.ARBS &&
-                        !List.of(Kvalifiseringsgruppe.BKART, Kvalifiseringsgruppe.IVURD).contains(brukerV2.getKvalifiseringsgruppe())
+                                brukerV2.getIservFraDato().isAfter(LocalDate.now().minusDays(28)) &&
+                                forrigeArenaOppfolging.getFormidlingsgruppe() == Formidlingsgruppe.ARBS &&
+                                !List.of(Kvalifiseringsgruppe.BKART, Kvalifiseringsgruppe.IVURD).contains(brukerV2.getKvalifiseringsgruppe())
                 );
     }
 }

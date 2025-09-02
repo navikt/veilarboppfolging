@@ -9,7 +9,7 @@ import no.nav.veilarboppfolging.controller.v3.request.OppfolgingRequest;
 import no.nav.veilarboppfolging.domain.AvslutningStatusData;
 import no.nav.veilarboppfolging.domain.OppfolgingStatusData;
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService;
-import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.AktiverBrukerService;
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.AktiverBrukerManueltService;
 import no.nav.veilarboppfolging.repository.entity.KvpPeriodeEntity;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
 import no.nav.veilarboppfolging.service.*;
@@ -54,7 +54,7 @@ class OppfolgingV3ControllerTest {
     @MockitoBean
     private KvpService kvpService;
     @MockitoBean
-    private AktiverBrukerService aktiverBrukerService;
+    private AktiverBrukerManueltService aktiverBrukerManueltService;
     @MockitoBean
     private ArenaOppfolgingService arenaOppfolgingService;
     @MockitoBean
