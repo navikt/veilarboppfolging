@@ -10,7 +10,7 @@ class OppfolgingStartetHendelseDto(
     val startetAv: String,
     val startetAvType: String,
     val startetBegrunnelse: String,
-    val arenaKontor: String,
+    val arenaKontor: String?,
     val arbeidsoppfolgingsKontorSattAvVeileder: String?,
     val fnr: String,
 ): OppfolgingsPeriodeHendelseDto(HendelseType.OPPFOLGING_STARTET)

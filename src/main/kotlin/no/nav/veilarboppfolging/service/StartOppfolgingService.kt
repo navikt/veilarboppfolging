@@ -1,11 +1,13 @@
 package no.nav.veilarboppfolging.service
 
 import no.nav.common.types.identer.AktorId
+import no.nav.common.types.identer.EnhetId
 import no.nav.common.types.identer.Fnr
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe
 import no.nav.veilarboppfolging.client.digdir_krr.KRRData
 import no.nav.veilarboppfolging.eventsLogger.BigQueryClient
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ArbeidsokerRegistrering
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ArenaSyncRegistrering
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ManuellRegistrering
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering
@@ -75,8 +77,11 @@ open class StartOppfolgingService(
             kafkaProducerService.publiserOppfolgingsperiode(DtoMappers.tilOppfolgingsperiodeDTO(sistePeriode))
             kafkaProducerService.publiserVisAoMinSideMicrofrontend(aktorId, fnr)
 
-//            val arenaKontor = when ()
-            kafkaProducerService.publiserOppfolgingsStartet(lagOppfolgingStartetHendelseDto(fnr, sistePeriode, "123", kontorSattAvVeileder))
+            val arenaKontor = when (oppfolgingsbruker) {
+                is ArbeidsokerRegistrering, is ManuellRegistrering -> arenaOppfolgingService.hentArenaOppfolgingsEnhetId(fnr)
+                is ArenaSyncRegistrering -> oppfolgingsbruker.enhet
+            }
+            kafkaProducerService.publiserOppfolgingsStartet(lagOppfolgingStartetHendelseDto(fnr, sistePeriode, arenaKontor, kontorSattAvVeileder))
             publiserMinSideBeskjedHvisIkkeReservert(kontaktinfo, aktorId, fnr)
 
             bigQueryClient.loggStartOppfolgingsperiode(
@@ -111,7 +116,7 @@ open class StartOppfolgingService(
     private fun lagOppfolgingStartetHendelseDto(
         fnr: Fnr,
         oppfølgingsperiode: OppfolgingsperiodeEntity,
-        arenaKontor: String,
+        arenaKontor: EnhetId?,
         arbeidsoppfolgingskontor: String?
     ): OppfolgingStartetHendelseDto {
         return OppfolgingStartetHendelseDto(
@@ -123,7 +128,7 @@ open class StartOppfolgingService(
                 ?: throw IllegalStateException("Dette skal aldri skje, alle nystartede oppfølgingsperioder har 'startetAvType'"),
             startetBegrunnelse = oppfølgingsperiode.startetBegrunnelse?.name
                 ?: throw IllegalStateException("Dette skal aldri skje, alle nystartede oppfølgingsperioder har 'startetBegrunnelse'"),
-            arenaKontor = arenaKontor,
+            arenaKontor = arenaKontor?.get(),
             arbeidsoppfolgingsKontorSattAvVeileder = arbeidsoppfolgingskontor,
             fnr = fnr.get()
         )
