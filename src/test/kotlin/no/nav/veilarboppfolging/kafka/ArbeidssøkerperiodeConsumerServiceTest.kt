@@ -27,6 +27,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.test.context.ActiveProfiles
 import java.sql.Timestamp
 import java.time.*
@@ -38,29 +39,31 @@ import no.nav.paw.arbeidssokerregisteret.api.v1.Metadata as MetaData
 
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
-
+class ArbeidssøkerperiodeConsumerServiceTest(
     @Autowired
-    private lateinit var arbeidssøkerperiodeConsumerService: ArbeidssøkerperiodeConsumerService
-
+    val arbeidssøkerperiodeConsumerService: ArbeidssøkerperiodeConsumerService,
     @Autowired
-    private lateinit var kafkaConsumerService: KafkaConsumerService
-
+    val kafkaConsumerService: KafkaConsumerService,
     @Autowired
-    private lateinit var oppfølgingService: OppfolgingService
-
+    val oppfølgingService: OppfolgingService,
     @Autowired
-    private lateinit var aktiverBrukerManueltService: AktiverBrukerManueltService
+    val aktiverBrukerManueltService: AktiverBrukerManueltService,
+    @Autowired
+    val utmeldingRepository: UtmeldingRepository,
+    @Autowired
+    val veilarbarenaClient: VeilarbarenaClient,
+    @Autowired
+    val template: NamedParameterJdbcTemplate,
+): IntegrationTest() {
+
+    fun getRecord() {
+        template.queryForList("""
+            SELECT * FROM kafka_producer_record; 
+        """.trimIndent())
+    }
 
     private val fnr = "01010198765"
     private val aktørId = AktorId.of("123456789012")
-
-    @Autowired
-    private lateinit var utmeldingRepository: UtmeldingRepository
-
-    @Autowired
-    lateinit var veilarbarenaClient: VeilarbarenaClient
-
 
     @BeforeEach
     fun setUp() {
