@@ -73,6 +73,7 @@ public class AktiverBrukerIntegrationTest extends IntegrationTest {
                 kafkaProducerService,
                 bigQueryClient,
                 transactor,
+                arenaOppfolgingService,
                 "https://test.nav.no"
         );
 
@@ -108,7 +109,7 @@ public class AktiverBrukerIntegrationTest extends IntegrationTest {
     public void aktiver_sykmeldt_skal_starte_oppfolging() {
         var oppfolgingFør = oppfolgingService.hentOppfolging(AKTOR_ID);
         assertThat(oppfolgingFør.isEmpty()).isTrue();
-        aktiverBrukerManueltService.aktiverBrukerManuelt(FNR);
+        aktiverBrukerManueltService.aktiverBrukerManuelt(FNR, "1234");
         var oppfolging = oppfolgingService.hentOppfolging(AKTOR_ID);
         assertThat(oppfolging.get().isUnderOppfolging()).isTrue();
     }

@@ -1,8 +1,8 @@
 package no.nav.veilarboppfolging.repository;
 
 import no.nav.common.types.identer.AktorId;
-import no.nav.veilarboppfolging.domain.Oppfolging;
 import no.nav.veilarboppfolging.domain.StartetAvType;
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ManuellRegistrering;
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelse;
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
@@ -45,11 +45,14 @@ public class OppfolgingsPeriodeRepository {
 
     public void start(OppfolgingsRegistrering oppfolgingsbruker) {
         transactor.executeWithoutResult((ignored) -> {
+            var kontorSattAvVeileder = oppfolgingsbruker instanceof ManuellRegistrering ? ((ManuellRegistrering) oppfolgingsbruker).getKontorSattAvVeileder() : null;
             insert(
                     oppfolgingsbruker.getAktorId(),
                     oppfolgingsbruker.getOppfolgingStartBegrunnelse(),
                     oppfolgingsbruker.getRegistrertAv().getIdent(),
-                    oppfolgingsbruker.getRegistrertAv().getType());
+                    oppfolgingsbruker.getRegistrertAv().getType(),
+                    kontorSattAvVeileder
+            );
             setActive(oppfolgingsbruker.getAktorId());
         });
     }

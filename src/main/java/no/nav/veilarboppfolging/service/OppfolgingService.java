@@ -20,12 +20,12 @@ import no.nav.veilarboppfolging.domain.Oppfolging;
 import no.nav.veilarboppfolging.domain.OppfolgingStatusData;
 import no.nav.veilarboppfolging.eventsLogger.BigQueryClient;
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant;
-import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ArenaSyncRegistrering;
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AdminAvregistrering;
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.Avregistrering;
-import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering;
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService;
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.LocalArenaOppfolging;
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ArenaSyncRegistrering;
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering;
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AdminAvregistrering;
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.Avregistrering;
 import no.nav.veilarboppfolging.repository.*;
 import no.nav.veilarboppfolging.repository.entity.*;
 import no.nav.veilarboppfolging.utils.ArenaUtils;
@@ -35,7 +35,6 @@ import no.nav.veilarboppfolging.utils.OppfolgingsperiodeUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -302,7 +301,7 @@ public class OppfolgingService {
 
             log.info("Oppfølgingsperiode avsluttet for bruker - publiserer endringer på oppfølgingsperiode-topics.");
             kafkaProducerService.publiserOppfolgingsperiode(DtoMappers.tilOppfolgingsperiodeDTO(sistePeriode));
-            kafkaProducerService.publiserOppfolgingsAvsluttet(avregistrering);
+//            kafkaProducerService.publiserOppfolgingsAvsluttet(avregistrering);
 
             // Publiserer også endringer som resettes i oppfolgingsstatus-tabellen ved avslutting av oppfølging
             kafkaProducerService.publiserVeilederTilordnet(aktorId, null);

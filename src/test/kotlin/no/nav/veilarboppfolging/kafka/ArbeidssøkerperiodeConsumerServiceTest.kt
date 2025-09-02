@@ -10,11 +10,11 @@ import no.nav.veilarboppfolging.IntegrationTest
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsBruker
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient
 import no.nav.veilarboppfolging.domain.StartetAvType
-import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.AktiverBrukerManueltService
 import no.nav.veilarboppfolging.oppfolgingsbruker.BrukerRegistrant
+import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.AktiverBrukerManueltService
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelse
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering
-import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant
 import no.nav.veilarboppfolging.repository.UtmeldingRepository
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity
 import no.nav.veilarboppfolging.service.KafkaConsumerService
@@ -153,7 +153,7 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
 
     @Test
     fun `Dersom arbeidsrettet oppfølgingsperiode allerede eksisterer for sykmeldt bruker skal melding om arbeidssøkerperiode ikke endre noe`() {
-        val oppfølgingsbruker = OppfolgingsRegistrering.manueltRegistrertBruker(Fnr.of(fnr), aktørId, VeilederRegistrant(NavIdent.of("G123123")))
+        val oppfølgingsbruker = OppfolgingsRegistrering.manueltRegistrertBruker(Fnr.of(fnr), aktørId, VeilederRegistrant(NavIdent.of("G123123")), "1234")
         startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(oppfølgingsbruker)
         val oppfølgingsdataFørMelding = oppfølgingService.hentOppfolgingsperioder(aktørId).first()
         val melding = ConsumerRecord("topic", 0, 0, "dummyKey", arbeidssøkerperiode(fnr))
@@ -172,7 +172,7 @@ class ArbeidssøkerperiodeConsumerServiceTest: IntegrationTest() {
 
         `when`(authContextHolder.erInternBruker()).thenReturn(true)
         `when`(authContextHolder.getUid()).thenReturn(Optional.of("G123123"))
-        aktiverBrukerManueltService.aktiverBrukerManuelt(Fnr.of(fnr))
+        aktiverBrukerManueltService.aktiverBrukerManuelt(Fnr.of(fnr), "1234")
 
         val oppfølgingsdataEtterSykmeldtRegistrering = oppfølgingService.hentOppfolgingsperioder(aktørId).first()
         assertThat(oppfølgingsdataFørSykmeldtRegistrering).isEqualTo(oppfølgingsdataEtterSykmeldtRegistrering)

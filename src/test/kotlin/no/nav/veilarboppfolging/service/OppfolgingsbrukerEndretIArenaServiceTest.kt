@@ -1,5 +1,6 @@
 package no.nav.veilarboppfolging.service
 
+import no.nav.common.types.identer.EnhetId
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
@@ -74,7 +75,8 @@ class OppfolgingsbrukerEndretIArenaServiceTest {
                 TEST_FNR,
                 TEST_AKTOR_ID,
                 Formidlingsgruppe.ARBS,
-                brukverV2.kvalifiseringsgruppe
+                brukverV2.kvalifiseringsgruppe,
+                EnhetId.of("1234")
             )
         )
         Mockito.verify(oppfolgingService, Mockito.never())
