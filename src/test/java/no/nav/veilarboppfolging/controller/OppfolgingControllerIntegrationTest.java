@@ -165,7 +165,7 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
 
     private List<OppfolgingPeriodeDTO> startOppfolging() {
         mockSystemBruker();
-        startOppfolgingSomArbeidsoker(AKTOR_ID);
+        startOppfolgingSomArbeidsoker(AKTOR_ID, FNR);
         var perioder = oppfolgingController.hentOppfolgingsperioder(FNR);
         mockAuthOk();
         return perioder;

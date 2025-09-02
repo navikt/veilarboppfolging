@@ -1,6 +1,7 @@
 package no.nav.veilarboppfolging.repository
 
 import no.nav.common.types.identer.AktorId
+import no.nav.common.types.identer.Fnr
 import no.nav.common.types.identer.NavIdent
 import no.nav.veilarboppfolging.LocalDatabaseSingleton
 import no.nav.veilarboppfolging.domain.StartetAvType
@@ -33,8 +34,9 @@ class OppfolgingsPeriodeRepositoryTest {
     @Test
     fun skal_hente_gjeldende_oppfolgingsperiode() {
         val aktorId = AktorId.of("4321")
+        val fnr = Fnr.of("1111119999")
         val oppfolgingsbruker =
-            OppfolgingsRegistrering.Companion.arbeidssokerRegistrering(aktorId, BrukerRegistrant)
+            OppfolgingsRegistrering.Companion.arbeidssokerRegistrering(fnr, aktorId, BrukerRegistrant)
         oppfolgingsStatusRepository.opprettOppfolging(aktorId)
 
         oppfolgingsPeriodeRepository.start(oppfolgingsbruker)
@@ -51,8 +53,9 @@ class OppfolgingsPeriodeRepositoryTest {
     @Test
     fun skal_returnere_empty_hvis_ingen_oppfolging() {
         val aktorId = AktorId.of("4321")
+        val fnr = Fnr.of("1111119999")
         val oppfolgingsbruker =
-            OppfolgingsRegistrering.Companion.arbeidssokerRegistrering(aktorId, BrukerRegistrant)
+            OppfolgingsRegistrering.Companion.arbeidssokerRegistrering(fnr, aktorId, BrukerRegistrant)
         val maybeOppfolgingsperiodeEntity1 = oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId)
         Assertions.assertTrue(maybeOppfolgingsperiodeEntity1.isEmpty())
         oppfolgingsStatusRepository.opprettOppfolging(aktorId)
@@ -67,7 +70,8 @@ class OppfolgingsPeriodeRepositoryTest {
     @Test
     fun `skal returnere startetAv og startetAvType`() {
         val aktorId = AktorId.of("4321")
-        val oppfolgingsbruker = OppfolgingsRegistrering.arbeidssokerRegistrering(aktorId, BrukerRegistrant)
+        val fnr = Fnr.of("1111119999")
+        val oppfolgingsbruker = OppfolgingsRegistrering.arbeidssokerRegistrering(fnr, aktorId, BrukerRegistrant)
         oppfolgingsStatusRepository.opprettOppfolging(aktorId)
         oppfolgingsPeriodeRepository.start(oppfolgingsbruker)
 
@@ -111,8 +115,9 @@ class OppfolgingsPeriodeRepositoryTest {
     @Test
     fun `skal returnere riktige felt på en avsluttet periode`() {
         val aktorId = AktorId.of("4321")
+        val fnr = Fnr.of("1111119999")
         val veilederIdent = NavIdent("Z999999")
-        val oppfolgingsbruker = OppfolgingsRegistrering.arbeidssokerRegistrering(aktorId, VeilederRegistrant(
+        val oppfolgingsbruker = OppfolgingsRegistrering.arbeidssokerRegistrering(fnr, aktorId, VeilederRegistrant(
             NavIdent("Z999999")))
         val avsluttetBegrunnelse = "derfor"
         oppfolgingsStatusRepository.opprettOppfolging(aktorId)

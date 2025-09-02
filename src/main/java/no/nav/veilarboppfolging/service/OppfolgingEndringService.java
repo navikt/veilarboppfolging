@@ -75,7 +75,7 @@ public class OppfolgingEndringService {
         if (skalOppfolges) {
             secureLog.info("Starter oppfølging på bruker som er under oppfølging i Arena, men ikke i veilarboppfolging. aktorId={}", bruker.getAktorId());
             startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(
-                    OppfolgingsRegistrering.Companion.arenaSyncOppfolgingBruker(bruker.getAktorId(), formidlingsgruppe, kvalifiseringsgruppe));
+                    OppfolgingsRegistrering.Companion.arenaSyncOppfolgingBruker(fnr, bruker.getAktorId(), formidlingsgruppe, kvalifiseringsgruppe));
         } else if (erBrukerUnderOppfolgingLokalt && erInaktivIArena) {
             Optional<Boolean> kanEnkeltReaktiveresLokalt = kanEnkeltReaktiveresLokalt(currentLocalOppfolging, bruker);
             var maybeKanEnkeltReaktiveres = arenaOppfolgingService.kanEnkeltReaktiveres(fnr);

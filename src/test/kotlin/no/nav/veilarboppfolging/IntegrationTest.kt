@@ -161,13 +161,13 @@ open class IntegrationTest {
         DbTestUtils.cleanupTestDb(jdbcTemplate)
     }
 
-    fun startOppfolgingSomArbeidsoker(aktørId: AktorId) {
-        val bruker = OppfolgingsRegistrering.arbeidssokerRegistrering(aktørId, BrukerRegistrant)
+    fun startOppfolgingSomArbeidsoker(aktørId: AktorId, fnr: Fnr) {
+        val bruker = OppfolgingsRegistrering.arbeidssokerRegistrering(fnr, aktørId, BrukerRegistrant)
         startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(bruker)
     }
 
-    fun setBrukerUnderOppfolging(aktorId: AktorId) {
-        val bruker = OppfolgingsRegistrering.arbeidssokerRegistrering(aktorId, BrukerRegistrant)
+    fun setBrukerUnderOppfolging(aktorId: AktorId, fnr: Fnr) {
+        val bruker = OppfolgingsRegistrering.arbeidssokerRegistrering(fnr, aktorId, BrukerRegistrant)
         oppfolgingsStatusRepository.opprettOppfolging(aktorId)
         oppfolgingsPeriodeRepository.start(bruker)
     }

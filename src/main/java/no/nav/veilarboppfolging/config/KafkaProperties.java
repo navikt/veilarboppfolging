@@ -23,4 +23,5 @@ public class KafkaProperties {
     String arbeidssokerperioderTopicAiven;
     String minSideAapenMicrofrontendV1;
     String minSideBrukerVarsel;
+    String oppfolgingsperiodehendelseV1;
 }

@@ -71,6 +71,7 @@ class OppfolgingEndringServiceTest {
 
         Mockito.verify(startOppfolgingService, Mockito.times(1)).startOppfolgingHvisIkkeAlleredeStartet(
             OppfolgingsRegistrering.Companion.arenaSyncOppfolgingBruker(
+                TEST_FNR,
                 TEST_AKTOR_ID,
                 Formidlingsgruppe.ARBS,
                 brukverV2.kvalifiseringsgruppe

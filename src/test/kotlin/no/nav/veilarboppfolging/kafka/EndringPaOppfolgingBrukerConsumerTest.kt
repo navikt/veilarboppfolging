@@ -184,7 +184,7 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
 
     @Test
     fun `skal håndtere brukere som har oppfølging men bare ikke fått status fra arena`() {
-        startOppfolgingSomArbeidsoker(aktorId)
+        startOppfolgingSomArbeidsoker(aktorId, fnr)
 
         val statusEtterEndring = oppfolgingsStatusRepository.hentOppfolging(aktorId)
         assertEquals(true, statusEtterEndring.get().isUnderOppfolging)

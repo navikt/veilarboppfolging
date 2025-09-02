@@ -18,6 +18,8 @@ import no.nav.tms.microfrontend.Sensitivitet
 import no.nav.veilarboppfolging.config.KafkaProperties
 import no.nav.veilarboppfolging.kafka.KvpPeriode
 import no.nav.veilarboppfolging.kafka.dto.OppfolgingsperiodeDTO
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.Avregistrering
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -44,6 +46,14 @@ class KafkaProducerService @Autowired constructor(
     fun publiserOppfolgingsperiode(oppfolgingsperiode: OppfolgingsperiodeDTO) {
         sisteOppfolgingsPeriode(oppfolgingsperiode.toSisteOppfolgingsperiodeDTO())
         oppfolgingsperiode(oppfolgingsperiode)
+    }
+
+    fun publiserOppfolgingsAvsluttet(avregistrering: Avregistrering, fnr: Fnr) {
+        store(kafkaProperties.oppfolgingsperiodehendelseV1, fnr.get(), value)
+    }
+
+    fun publiserOppfolgingsStartet(oppfolgingsperiodeStartet: OppfolgingsRegistrering, fnr: Fnr) {
+        store(kafkaProperties.oppfolgingsperiodehendelseV1, fnr.get(), value)
     }
 
     private fun sisteOppfolgingsPeriode(sisteOppfolgingsperiodeV1: SisteOppfolgingsperiodeV1) {
@@ -150,6 +160,7 @@ class KafkaProducerService @Autowired constructor(
 
         store(kafkaProperties.minSideAapenMicrofrontendV1, aktorId.get(), stoppMelding)
     }
+
     fun publiserMinSideBeskjed(fnr: Fnr, beskjed: String, lenke: String) {
         val generertVarselId = UUID.randomUUID().toString()
         val kafkaValueJson = VarselActionBuilder.opprett {

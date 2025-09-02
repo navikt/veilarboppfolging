@@ -68,7 +68,7 @@ open class ArbeidssøkerperiodeConsumerService(
             val navIdent = NavIdent.of(arbeidssøkerperiode.startet.utfoertAv.id.toString())
             val registrant =  startetAvType.toStartetAvType().toRegistrant(navIdent)
 
-            startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.arbeidssokerRegistrering(aktørId, registrant))
+            startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.arbeidssokerRegistrering(fnr, aktørId, registrant))
             utmeldHvisBrukerBleIservEtterArbeidssøkerRegistrering(fnr, arbeidssøkerperiodeStartet, aktørId)
         } else {
             logger.info("Melding om avsluttet arbeidssøkerperiode, gjør ingenting")

@@ -22,7 +22,6 @@ import java.util.*
 
 @Service
 open class StartOppfolgingService(
-    val authService: AuthService,
     val manuellStatusService: ManuellStatusService,
     val oppfolgingsStatusRepository: OppfolgingsStatusRepository,
     val oppfolgingsPeriodeRepository: OppfolgingsPeriodeRepository,
@@ -36,7 +35,7 @@ open class StartOppfolgingService(
 
     fun startOppfolgingHvisIkkeAlleredeStartet(oppfolgingsbruker: OppfolgingsRegistrering) {
         val aktorId = oppfolgingsbruker.aktorId
-        val fnr = authService.getFnrOrThrow(aktorId)
+        val fnr = oppfolgingsbruker.fnr
         val kontaktinfo = manuellStatusService.hentDigdirKontaktinfo(fnr)
 
         transactor.executeWithoutResult { _ ->
@@ -69,6 +68,7 @@ open class StartOppfolgingService(
             log.info("Oppfølgingsperiode startet for bruker - publiserer endringer på oppfølgingsperiode-topics.")
             kafkaProducerService.publiserOppfolgingsperiode(DtoMappers.tilOppfolgingsperiodeDTO(sistePeriode))
             kafkaProducerService.publiserVisAoMinSideMicrofrontend(aktorId, fnr)
+            kafkaProducerService.publiserOppfolgingsStartet(oppfolgingsbruker, fnr)
             publiserMinSideBeskjedHvisIkkeReservert(kontaktinfo, aktorId, fnr)
 
             bigQueryClient.loggStartOppfolgingsperiode(

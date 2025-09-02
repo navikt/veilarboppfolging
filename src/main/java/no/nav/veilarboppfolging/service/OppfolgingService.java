@@ -302,6 +302,7 @@ public class OppfolgingService {
 
             log.info("Oppfølgingsperiode avsluttet for bruker - publiserer endringer på oppfølgingsperiode-topics.");
             kafkaProducerService.publiserOppfolgingsperiode(DtoMappers.tilOppfolgingsperiodeDTO(sistePeriode));
+            kafkaProducerService.publiserOppfolgingsAvsluttet(avregistrering);
 
             // Publiserer også endringer som resettes i oppfolgingsstatus-tabellen ved avslutting av oppfølging
             kafkaProducerService.publiserVeilederTilordnet(aktorId, null);

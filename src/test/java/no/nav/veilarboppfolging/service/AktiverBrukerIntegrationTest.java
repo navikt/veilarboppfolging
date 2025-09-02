@@ -66,7 +66,7 @@ public class AktiverBrukerIntegrationTest extends IntegrationTest {
                 "https://test.nav.no"
         );
 
-        startOppfolgingService = new StartOppfolgingService(authService,
+        startOppfolgingService = new StartOppfolgingService(
                 manuellStatusService,
                 oppfolgingsStatusRepository,
                 oppfolgingsPeriodeRepository,
@@ -90,7 +90,7 @@ public class AktiverBrukerIntegrationTest extends IntegrationTest {
 
     @Test
     public void skalLagreIDatabaseDersomKallTilArenaErOK() {
-        startOppfolgingSomArbeidsoker(AKTOR_ID);
+        startOppfolgingSomArbeidsoker(AKTOR_ID, FNR);
         Optional<Oppfolging> oppfolging = oppfolgingService.hentOppfolging(AKTOR_ID);
         assertThat(oppfolging.isPresent()).isTrue();
     }
@@ -99,7 +99,7 @@ public class AktiverBrukerIntegrationTest extends IntegrationTest {
     public void skalHaandtereAtOppfolgingstatusAlleredeFinnes() {
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
         oppfolgingsPeriodeRepository.avslutt(AKTOR_ID, "veilederid", "begrunnelse");
-        startOppfolgingSomArbeidsoker(AKTOR_ID);
+        startOppfolgingSomArbeidsoker(AKTOR_ID, FNR);
         Optional<Oppfolging> oppfolging = oppfolgingService.hentOppfolging(AKTOR_ID);
         assertThat(oppfolging.get().isUnderOppfolging()).isTrue();
     }
