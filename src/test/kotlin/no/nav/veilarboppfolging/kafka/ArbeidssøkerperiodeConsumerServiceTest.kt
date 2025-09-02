@@ -56,8 +56,6 @@ class ArbeidssøkerperiodeConsumerServiceTest(
     val veilarbarenaClient: VeilarbarenaClient,
     @Autowired
     val template: NamedParameterJdbcTemplate,
-    @Autowired
-    val kafkaProperties: KafkaProperties
 ): IntegrationTest() {
 
     private val objectMapper = JsonUtils.getMapper().also {

@@ -27,6 +27,7 @@ import no.nav.veilarboppfolging.client.pdl.PdlFolkeregisterStatusClient
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsStatus
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient
 import no.nav.veilarboppfolging.config.EnvironmentProperties
+import no.nav.veilarboppfolging.config.KafkaProperties
 import no.nav.veilarboppfolging.controller.OppfolgingController
 import no.nav.veilarboppfolging.controller.SakController
 import no.nav.veilarboppfolging.oppfolgingsbruker.BrukerRegistrant
@@ -158,6 +159,9 @@ open class IntegrationTest {
 
     @Autowired
     lateinit var aktiverBrukerManueltService: AktiverBrukerManueltService
+
+    @Autowired
+    lateinit var kafkaProperties: KafkaProperties
 
     @BeforeEach
     fun beforeEach() {
