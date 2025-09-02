@@ -56,10 +56,11 @@ class ArbeidssøkerperiodeConsumerServiceTest(
     val template: NamedParameterJdbcTemplate,
 ): IntegrationTest() {
 
-    fun getRecord() {
+    fun getRecord(topic: String, fnr: Fnr) {
         template.queryForList("""
-            SELECT * FROM kafka_producer_record; 
-        """.trimIndent())
+            SELECT * FROM kafka_producer_record
+            where topic = ':topic' and key = ':fnr'
+        """.trimIndent(), emptyMap<>())
     }
 
     private val fnr = "01010198765"
