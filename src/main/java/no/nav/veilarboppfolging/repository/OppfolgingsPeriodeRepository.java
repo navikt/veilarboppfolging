@@ -120,14 +120,14 @@ public class OppfolgingsPeriodeRepository {
         );
     }
 
-    private void insert(AktorId aktorId, OppfolgingStartBegrunnelse getOppfolgingStartBegrunnelse, @Nullable String veileder, StartetAvType startetAvType, @Nullable String kontorSattAvVeileder) {
+    private void insert(AktorId aktorId, OppfolgingStartBegrunnelse getOppfolgingStartBegrunnelse, @Nullable String startetAvIdent, StartetAvType startetAvType, @Nullable String kontorSattAvVeileder) {
         db.update("" +
                         "INSERT INTO OPPFOLGINGSPERIODE(uuid, aktor_id, startDato, oppdatert, start_begrunnelse, startet_av, startet_av_type, kontor_satt_av_veileder) " +
                         "VALUES (?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?, ?, ?, ?)",
                 UUID.randomUUID().toString(),
                 aktorId.get(),
                 getOppfolgingStartBegrunnelse.name(),
-                veileder,
+                startetAvIdent,
                 startetAvType.name(),
                 kontorSattAvVeileder
         );
@@ -181,7 +181,7 @@ public class OppfolgingsPeriodeRepository {
                 .sluttDato(hentZonedDateTime(result, "sluttdato"))
                 .begrunnelse(result.getString("avslutt_begrunnelse"))
                 .startetAvType(startetAvType)
-                .startetAv(startetAvType == StartetAvType.VEILEDER ? result.getString("startet_av") : null)
+                .startetAv(result.getString("startet_av"))
                 .startetBegrunnelse(EnumUtils.valueOf(OppfolgingStartBegrunnelse.class, result.getString("start_begrunnelse")))
                 .build();
     }
