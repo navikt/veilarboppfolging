@@ -75,7 +75,7 @@ open class StartOppfolgingService(
             kafkaProducerService.publiserOppfolgingsperiode(DtoMappers.tilOppfolgingsperiodeDTO(sistePeriode))
             kafkaProducerService.publiserVisAoMinSideMicrofrontend(aktorId, fnr)
 
-            val arenaKontor = arenaOppfolgingService.hentArenaOppfolgingsEnhetId()
+//            val arenaKontor = when ()
             kafkaProducerService.publiserOppfolgingsStartet(lagOppfolgingStartetHendelseDto(fnr, sistePeriode, "123", kontorSattAvVeileder))
             publiserMinSideBeskjedHvisIkkeReservert(kontaktinfo, aktorId, fnr)
 

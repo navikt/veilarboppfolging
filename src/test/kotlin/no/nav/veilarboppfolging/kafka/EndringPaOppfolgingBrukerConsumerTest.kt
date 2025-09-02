@@ -128,6 +128,8 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
 
         val oppfolgingFørEndring = arenaOppfolgingService.hentArenaOppfolgingTilstand(fnr)
         assert(oppfolgingFørEndring.isEmpty) { "Ny bruker skal IKKE ha oppfølgingsstatus" }
+        val oppfolgingsperioder = oppfolgingService.hentOppfolgingsperioder(fnr)
+        assert(oppfolgingsperioder.isEmpty()) { "Bruker skal ikke ha oppfølgingsperioder" }
 
         meldingFraVeilarbArenaPåBrukerMedStatus(
             fnr = fnr,

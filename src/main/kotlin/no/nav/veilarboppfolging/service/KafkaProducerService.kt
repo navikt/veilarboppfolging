@@ -50,7 +50,7 @@ class KafkaProducerService @Autowired constructor(
     }
 
     fun publiserOppfolgingsAvsluttet(avregistrering: Avregistrering, fnr: Fnr) {
-        store(kafkaProperties.oppfolgingsperiodehendelseV1, fnr.get(), value)
+//        store(kafkaProperties.oppfolgingsperiodehendelseV1, fnr.get(), value)
     }
 
     fun publiserOppfolgingsStartet(oppfolgingsperiodeStartet: OppfolgingStartetHendelseDto) {
