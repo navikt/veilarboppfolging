@@ -18,12 +18,14 @@ class AktiverBrukerService(
     private val transactor: TransactionTemplate
 ) {
 
-    fun aktiverBrukerManuelt(fnr: Fnr) {
+    fun aktiverBrukerManuelt(fnr: Fnr, kontorSattAvVeileder: String?) {
         transactor.executeWithoutResult {
             val aktorId = authService.getAktorIdOrThrow(fnr)
             val navIdent = NavIdent.of(authService.innloggetVeilederIdent)
-            val oppfolgingsbruker = OppfolgingsRegistrering.manueltRegistrertBruker(fnr, aktorId,
-                VeilederRegistrant(navIdent)
+            val oppfolgingsbruker = OppfolgingsRegistrering.manueltRegistrertBruker(
+                fnr, aktorId,
+                VeilederRegistrant(navIdent),
+                kontorSattAvVeileder
             )
             startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(oppfolgingsbruker)
         }

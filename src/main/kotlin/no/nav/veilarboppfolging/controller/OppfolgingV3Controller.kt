@@ -201,7 +201,7 @@ class OppfolgingV3Controller(
 
                     else -> {
                         logger.info("Bruker registrert i Arena med resultat: ${arenaResponse.arenaResultat.kode}")
-                        aktiverBrukerService.aktiverBrukerManuelt(startOppfolging.fnr)
+                        aktiverBrukerService.aktiverBrukerManuelt(startOppfolging.fnr, startOppfolging.kontorSattAvVeileder)
                         return ResponseEntity(arenaResponse.arenaResultat, HttpStatus.OK)
                     }
                 }
@@ -244,6 +244,7 @@ class OppfolgingV3Controller(
 class StartOppfolgingDto(
     val fnr: Fnr,
     val henviserSystem: HenviserSystem,
+    val kontorSattAvVeileder: String?
 )
 
 data class ReaktiverRequestDto(val fnr: Fnr)
