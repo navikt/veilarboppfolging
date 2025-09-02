@@ -1,5 +1,7 @@
 package no.nav.veilarboppfolging.kafka
 
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import no.nav.common.json.JsonUtils
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.common.types.identer.NavIdent
@@ -9,12 +11,14 @@ import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2
 import no.nav.veilarboppfolging.IntegrationTest
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsBruker
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient
+import no.nav.veilarboppfolging.config.KafkaProperties
 import no.nav.veilarboppfolging.domain.StartetAvType
 import no.nav.veilarboppfolging.oppfolgingsbruker.BrukerRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.AktiverBrukerManueltService
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelse
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering
+import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.hendelser.OppfolgingStartetHendelseDto
 import no.nav.veilarboppfolging.repository.UtmeldingRepository
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity
 import no.nav.veilarboppfolging.service.KafkaConsumerService
@@ -33,6 +37,7 @@ import java.sql.Timestamp
 import java.time.*
 import java.time.temporal.ChronoUnit
 import java.util.*
+import kotlin.collections.mapOf
 import kotlin.jvm.optionals.getOrNull
 import no.nav.paw.arbeidssokerregisteret.api.v1.Metadata as MetaData
 
@@ -54,13 +59,22 @@ class ArbeidssøkerperiodeConsumerServiceTest(
     val veilarbarenaClient: VeilarbarenaClient,
     @Autowired
     val template: NamedParameterJdbcTemplate,
+    @Autowired
+    val kafkaProperties: KafkaProperties
 ): IntegrationTest() {
 
-    fun getRecord(topic: String, fnr: Fnr) {
-        template.queryForList("""
+    private val objectMapper = JsonUtils.getMapper().also {
+        it.registerKotlinModule()
+    }
+
+    private fun getSavedRecord(topic: String, fnr: String): List<OppfolgingStartetHendelseDto> {
+        return template.query("""
             SELECT * FROM kafka_producer_record
-            where topic = ':topic' and key = ':fnr'
-        """.trimIndent(), emptyMap<>())
+            where topic = :topic and key = :fnr
+        """.trimIndent(), mapOf("topic" to topic, "fnr" to fnr.toByteArray())) { resultSet, row ->
+             val json = resultSet.getBytes("value").toString(Charsets.UTF_8)
+             objectMapper.readValue(json, OppfolgingStartetHendelseDto::class.java)
+        }
     }
 
     private val fnr = "01010198765"
@@ -85,6 +99,17 @@ class ArbeidssøkerperiodeConsumerServiceTest(
         assertThat(oppfølgingsperiode.startDato).isCloseTo(ZonedDateTime.now(), within(1, ChronoUnit.SECONDS))
         assertThat(oppfølgingsperiode.sluttDato).isNull()
         assertThat(oppfølgingsperiode.startetBegrunnelse).isEqualTo(OppfolgingStartBegrunnelse.ARBEIDSSOKER_REGISTRERING)
+
+        val lagreteMeldingerIUtboks = getSavedRecord(kafkaProperties.oppfolgingsperiodehendelseV1, fnr)
+        assertThat(lagreteMeldingerIUtboks).hasSize(1)
+        assertThat(lagreteMeldingerIUtboks.first().fnr).isEqualTo(fnr)
+        assertThat(lagreteMeldingerIUtboks.first().startetBegrunnelse).isEqualTo("ARBEIDSSOKER_REGISTRERING")
+        assertThat(lagreteMeldingerIUtboks.first().arenaKontor).isNull()
+        assertThat(lagreteMeldingerIUtboks.first().startetAvType).isEqualTo(nyPeriode.startet.utfoertAv.type.name)
+        assertThat(lagreteMeldingerIUtboks.first().startetAv).isEqualTo(nyPeriode.startet.utfoertAv.id)
+        assertThat(lagreteMeldingerIUtboks.first().startetTidspunkt).isCloseTo(ZonedDateTime.now(), within(1, ChronoUnit.SECONDS))
+        assertThat(lagreteMeldingerIUtboks.first().arbeidsoppfolgingsKontorSattAvVeileder).isNull()
+        assertThat(lagreteMeldingerIUtboks.first().oppfolgingsPeriodeId).isEqualTo(oppfølgingsperiode.uuid)
     }
 
     @Test
