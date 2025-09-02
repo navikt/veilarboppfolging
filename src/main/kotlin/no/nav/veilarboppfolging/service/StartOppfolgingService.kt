@@ -73,7 +73,7 @@ open class StartOppfolgingService(
             kafkaProducerService.publiserOppfolgingsperiode(DtoMappers.tilOppfolgingsperiodeDTO(sistePeriode))
             kafkaProducerService.publiserVisAoMinSideMicrofrontend(aktorId, fnr)
 
-            // TODO: Lage instans av HendelseType + OppfolgingStartetHendelseDto
+            val arenaKontor = oppfolgingsStatusRepository
             kafkaProducerService.publiserOppfolgingsStartet(lagOppfolgingStartetHendelseDto(fnr, sistePeriode, "123", kontorSattAvVeileder))
             publiserMinSideBeskjedHvisIkkeReservert(kontaktinfo, aktorId, fnr)
 
@@ -110,9 +110,9 @@ open class StartOppfolgingService(
         fnr: Fnr,
         oppfølgingsperiode: OppfolgingsperiodeEntity,
         arenaKontor: String,
-        arbeidsoppfolgingskontor: String
+        arbeidsoppfolgingskontor: String?
     ): OppfolgingStartetHendelseDto {
-        OppfolgingStartetHendelseDto(
+        return OppfolgingStartetHendelseDto(
             oppfolgingsPeriodeId = oppfølgingsperiode.uuid,
             startetTidspunkt = oppfølgingsperiode.startDato,
             startetAv = oppfølgingsperiode.startetAv

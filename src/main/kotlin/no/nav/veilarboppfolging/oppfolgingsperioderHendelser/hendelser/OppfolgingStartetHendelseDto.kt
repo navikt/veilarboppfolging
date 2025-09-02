@@ -2,7 +2,7 @@ package no.nav.veilarboppfolging.oppfolgingsperioderHendelser.hendelser
 
 import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.OppfolgingsPeriodeHendelseDto
 import java.time.ZonedDateTime
-import java.util.UUID
+import java.util.*
 
 class OppfolgingStartetHendelseDto(
     val oppfolgingsPeriodeId: UUID,
@@ -11,6 +11,6 @@ class OppfolgingStartetHendelseDto(
     val startetAvType: String,
     val startetBegrunnelse: String,
     val arenaKontor: String,
-    val arbeidsoppfolgingsKontorSattAvVeileder: String,
+    val arbeidsoppfolgingsKontorSattAvVeileder: String?,
     val fnr: String,
 ): OppfolgingsPeriodeHendelseDto(HendelseType.OPPFOLGING_STARTET)
