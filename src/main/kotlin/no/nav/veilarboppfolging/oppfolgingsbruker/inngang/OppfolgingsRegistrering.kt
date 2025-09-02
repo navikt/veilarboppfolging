@@ -18,8 +18,8 @@ sealed class OppfolgingsRegistrering(
         fun arbeidssokerRegistrering(fnr: Fnr, aktorId: AktorId, registrant: Registrant): ArbeidsokerRegistrering {
             return ArbeidsokerRegistrering(fnr, aktorId, registrant)
         }
-        fun manueltRegistrertBruker(fnr: Fnr, aktorId: AktorId, veileder: VeilederRegistrant): ManuellRegistrering {
-            return ManuellRegistrering(fnr, aktorId, veileder)
+        fun manueltRegistrertBruker(fnr: Fnr, aktorId: AktorId, veileder: VeilederRegistrant, kontorSattAvVeileder: String?): ManuellRegistrering {
+            return ManuellRegistrering(fnr, aktorId, veileder, kontorSattAvVeileder)
         }
         fun arenaSyncOppfolgingBruker(fnr: Fnr, aktorId: AktorId, formidlingsgruppe: Formidlingsgruppe, kvalifiseringsgruppe: Kvalifiseringsgruppe): ArenaSyncRegistrering {
             return ArenaSyncRegistrering(fnr, aktorId, formidlingsgruppe, kvalifiseringsgruppe)
@@ -37,6 +37,7 @@ data class ManuellRegistrering(
     override val fnr: Fnr,
     override val aktorId: AktorId,
     override val registrertAv: Registrant,
+    val kontorSattAvVeileder: String?,
 ) : OppfolgingsRegistrering(fnr, aktorId, OppfolgingStartBegrunnelse.MANUELL_REGISTRERING_VEILEDER, registrertAv)
 
 data class ArenaSyncRegistrering(

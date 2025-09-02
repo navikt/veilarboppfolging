@@ -20,6 +20,7 @@ import no.nav.veilarboppfolging.kafka.KvpPeriode
 import no.nav.veilarboppfolging.kafka.dto.OppfolgingsperiodeDTO
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.Avregistrering
+import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.hendelser.OppfolgingStartetHendelseDto
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -52,8 +53,8 @@ class KafkaProducerService @Autowired constructor(
         store(kafkaProperties.oppfolgingsperiodehendelseV1, fnr.get(), value)
     }
 
-    fun publiserOppfolgingsStartet(oppfolgingsperiodeStartet: OppfolgingsRegistrering, fnr: Fnr) {
-        store(kafkaProperties.oppfolgingsperiodehendelseV1, fnr.get(), value)
+    fun publiserOppfolgingsStartet(oppfolgingsperiodeStartet: OppfolgingStartetHendelseDto) {
+        store(kafkaProperties.oppfolgingsperiodehendelseV1, oppfolgingsperiodeStartet.fnr, oppfolgingsperiodeStartet)
     }
 
     private fun sisteOppfolgingsPeriode(sisteOppfolgingsperiodeV1: SisteOppfolgingsperiodeV1) {
