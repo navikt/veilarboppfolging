@@ -338,7 +338,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         when(amtDeltakerClient.harAktiveTiltaksdeltakelser(FNR.get())).thenReturn(true);
         arenaOppfolgingTilstand.setFormidlingsgruppe("IARBS");
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID);
-        startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.Companion.arbeidssokerRegistrering(FNR, AKTOR_ID, BrukerRegistrant.INSTANCE));
+        startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.Companion.arbeidssokerRegistrering(FNR, AKTOR_ID, new BrukerRegistrant(FNR)));
 
         assertUnderOppfolgingLagret(AKTOR_ID);
 

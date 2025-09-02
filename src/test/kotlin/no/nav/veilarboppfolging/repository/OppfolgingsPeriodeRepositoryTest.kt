@@ -36,7 +36,7 @@ class OppfolgingsPeriodeRepositoryTest {
         val aktorId = AktorId.of("4321")
         val fnr = Fnr.of("1111119999")
         val oppfolgingsbruker =
-            OppfolgingsRegistrering.Companion.arbeidssokerRegistrering(fnr, aktorId, BrukerRegistrant)
+            OppfolgingsRegistrering.Companion.arbeidssokerRegistrering(fnr, aktorId, BrukerRegistrant(fnr))
         oppfolgingsStatusRepository.opprettOppfolging(aktorId)
 
         oppfolgingsPeriodeRepository.start(oppfolgingsbruker)
@@ -55,7 +55,7 @@ class OppfolgingsPeriodeRepositoryTest {
         val aktorId = AktorId.of("4321")
         val fnr = Fnr.of("1111119999")
         val oppfolgingsbruker =
-            OppfolgingsRegistrering.Companion.arbeidssokerRegistrering(fnr, aktorId, BrukerRegistrant)
+            OppfolgingsRegistrering.arbeidssokerRegistrering(fnr, aktorId, BrukerRegistrant(fnr))
         val maybeOppfolgingsperiodeEntity1 = oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId)
         Assertions.assertTrue(maybeOppfolgingsperiodeEntity1.isEmpty())
         oppfolgingsStatusRepository.opprettOppfolging(aktorId)
@@ -71,7 +71,7 @@ class OppfolgingsPeriodeRepositoryTest {
     fun `skal returnere startetAv og startetAvType`() {
         val aktorId = AktorId.of("4321")
         val fnr = Fnr.of("1111119999")
-        val oppfolgingsbruker = OppfolgingsRegistrering.arbeidssokerRegistrering(fnr, aktorId, BrukerRegistrant)
+        val oppfolgingsbruker = OppfolgingsRegistrering.arbeidssokerRegistrering(fnr, aktorId, BrukerRegistrant(fnr))
         oppfolgingsStatusRepository.opprettOppfolging(aktorId)
         oppfolgingsPeriodeRepository.start(oppfolgingsbruker)
 

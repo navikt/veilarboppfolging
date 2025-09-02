@@ -332,7 +332,7 @@ public class OppfolgingServiceTest2 extends IsolatedDatabaseTest {
         Oppfolging oppfolging = oppfolgingService.hentOppfolging(aktorId)
                 .orElseGet(() -> oppfolgingsStatusRepository.opprettOppfolging(aktorId));
 
-        startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.Companion.arbeidssokerRegistrering(fnr, aktorId, BrukerRegistrant.INSTANCE));
+        startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.Companion.arbeidssokerRegistrering(fnr, aktorId, new BrukerRegistrant(fnr)));
         oppfolging.setUnderOppfolging(true);
         return oppfolging;
     }

@@ -8,6 +8,7 @@ import no.nav.veilarboppfolging.client.amtdeltaker.AmtDeltakerClient;
 import no.nav.veilarboppfolging.client.digdir_krr.KRRData;
 import no.nav.veilarboppfolging.domain.Oppfolging;
 import no.nav.veilarboppfolging.eventsLogger.BigQueryClient;
+import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService;
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.AktiverBrukerManueltService;
 import no.nav.veilarboppfolging.repository.*;
 import no.nav.veilarboppfolging.test.DbTestUtils;
@@ -73,7 +74,7 @@ public class AktiverBrukerIntegrationTest extends IntegrationTest {
                 kafkaProducerService,
                 bigQueryClient,
                 transactor,
-                arenaOppfolgingService,
+                mock(ArenaOppfolgingService.class),
                 "https://test.nav.no"
         );
 
