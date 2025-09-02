@@ -1,7 +1,7 @@
 apiVersion: kafka.nais.io/v1
 kind: Topic
 metadata:
-  name: oppfolgingsperiodehendelse-v1
+  name: oppfolgingshendelse-v1
   namespace: poao
   labels:
     team: poao
