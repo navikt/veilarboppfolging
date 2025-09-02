@@ -7,8 +7,8 @@ import no.nav.paw.arbeidssokerregisteret.api.v1.BrukerType
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.veilarboppfolging.domain.StartetAvType
-import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering
 import no.nav.veilarboppfolging.oppfolgingsbruker.toRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.UtmeldingsService
 import no.nav.veilarboppfolging.service.AuthService
@@ -66,7 +66,7 @@ open class ArbeidssøkerperiodeConsumerService(
             logger.info("Fått melding om ny arbeidssøkerperiode, starter oppfølging hvis ikke allerede startet")
 
             val navIdent = NavIdent.of(arbeidssøkerperiode.startet.utfoertAv.id.toString())
-            val registrant =  startetAvType.toStartetAvType().toRegistrant(navIdent)
+            val registrant =  startetAvType.toStartetAvType().toRegistrant(navIdent, fnr)
 
             startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.arbeidssokerRegistrering(fnr, aktørId, registrant))
             utmeldHvisBrukerBleIservEtterArbeidssøkerRegistrering(fnr, arbeidssøkerperiodeStartet, aktørId)
