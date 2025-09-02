@@ -6,16 +6,16 @@ import no.nav.common.types.identer.NavIdent
 import no.nav.veilarboppfolging.LocalDatabaseSingleton
 import no.nav.veilarboppfolging.domain.StartetAvType
 import no.nav.veilarboppfolging.oppfolgingsbruker.BrukerRegistrant
+import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelse
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering
-import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant
 import no.nav.veilarboppfolging.test.DbTestUtils
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.transaction.support.TransactionTemplate
-import java.util.UUID
+import java.util.*
 import kotlin.test.assertEquals
 
 class OppfolgingsPeriodeRepositoryTest {
@@ -80,7 +80,7 @@ class OppfolgingsPeriodeRepositoryTest {
         assertEquals(perioder.size, 1)
         val periode = perioder[0]
         assertEquals(StartetAvType.BRUKER, periode.startetAvType)
-        assertEquals(null, periode.startetAv)
+        assertEquals(fnr.get(), periode.startetAv)
     }
 
     @Test

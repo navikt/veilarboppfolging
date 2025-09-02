@@ -64,6 +64,7 @@ class OppfolgingsbrukerEndretIArenaServiceTest {
         val brukverV2 = EndringPaaOppfolgingsBruker(
             aktorId =  TEST_AKTOR_ID,
             fodselsnummer = TEST_FNR.get(),
+            oppfolgingsenhet = "1234",
             formidlingsgruppe = Formidlingsgruppe.ARBS,
             kvalifiseringsgruppe = Kvalifiseringsgruppe.VURDI
         )
