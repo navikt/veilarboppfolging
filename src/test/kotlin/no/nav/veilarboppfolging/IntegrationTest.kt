@@ -32,6 +32,7 @@ import no.nav.veilarboppfolging.controller.SakController
 import no.nav.veilarboppfolging.oppfolgingsbruker.BrukerRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.AktiverBrukerManueltService
 import no.nav.veilarboppfolging.repository.EnhetRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
@@ -155,6 +156,8 @@ open class IntegrationTest {
     @Autowired
     lateinit var inorg: INorgTilhorighetClient
 
+    @Autowired
+    lateinit var aktiverBrukerManueltService: AktiverBrukerManueltService
 
     @BeforeEach
     fun beforeEach() {
@@ -198,7 +201,7 @@ open class IntegrationTest {
             .thenReturn(fnr)
     }
 
-    fun mockInternBrukerAuthOk(veilederIOD: UUID,aktørId: AktorId, fnr: Fnr) {
+    fun mockInternBrukerAuthOk(veilederIOD: UUID,aktørId: AktorId, fnr: Fnr, navIdent: String = "A123456") {
         val claims = JWTClaimsSet.Builder()
             .issuer("microsoftonline.com")
             .claim("azp_name", "cluster:team:veilarbregistrering")
@@ -219,6 +222,7 @@ open class IntegrationTest {
             .thenReturn(aktørId)
         `when`(aktorOppslagClient.hentFnr(aktørId))
             .thenReturn(fnr)
+        `when`(authContextHolder.uid).thenReturn(Optional.of(navIdent))
     }
 
     fun mockPdlGeografiskTilknytning(fnr: Fnr, enhetsNr: String, gtType: GTType = GTType.BYDEL) {

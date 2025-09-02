@@ -15,7 +15,6 @@ import no.nav.veilarboppfolging.config.KafkaProperties
 import no.nav.veilarboppfolging.domain.StartetAvType
 import no.nav.veilarboppfolging.oppfolgingsbruker.BrukerRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant
-import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.AktiverBrukerManueltService
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelse
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering
 import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.hendelser.OppfolgingStartetHendelseDto
@@ -51,8 +50,6 @@ class ArbeidssøkerperiodeConsumerServiceTest(
     val kafkaConsumerService: KafkaConsumerService,
     @Autowired
     val oppfølgingService: OppfolgingService,
-    @Autowired
-    val aktiverBrukerManueltService: AktiverBrukerManueltService,
     @Autowired
     val utmeldingRepository: UtmeldingRepository,
     @Autowired
