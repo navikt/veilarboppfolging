@@ -63,7 +63,7 @@ class AktiverBrukerIntegrationTest : IntegrationTest() {
 
         val oppfolging = oppfolgingService.hentOppfolging(AKTOR_ID)
         val nyPeriode = oppfolging.get().oppfolgingsperioder.toList().maxByOrNull { it.startDato }!!
-        val lagreteMeldingerIUtboks = getSavedRecord(kafkaProperties.oppfolgingsperiodehendelseV1, FNR.toString())
+        val lagreteMeldingerIUtboks = getRecordsStoredInKafkaOutbox(kafkaProperties.oppfolgingsperiodehendelseV1, FNR.toString())
         assertThat(lagreteMeldingerIUtboks).hasSize(1)
         val hendelse = lagreteMeldingerIUtboks.first() as OppfolgingStartetHendelseDto
         assertThat(hendelse.fnr).isEqualTo(FNR.toString())
@@ -85,7 +85,7 @@ class AktiverBrukerIntegrationTest : IntegrationTest() {
 
         startOppfolgingSomArbeidsoker(AKTOR_ID, FNR)
 
-        val lagreteMeldingerIUtboks = getSavedRecord(kafkaProperties.oppfolgingsperiodehendelseV1, FNR.toString())
+        val lagreteMeldingerIUtboks = getRecordsStoredInKafkaOutbox(kafkaProperties.oppfolgingsperiodehendelseV1, FNR.toString())
         assertThat(lagreteMeldingerIUtboks).hasSize(1)
         val hendelse = lagreteMeldingerIUtboks.first() as OppfolgingStartetHendelseDto
         assertThat(hendelse.startetBegrunnelse).isEqualTo("ARBEIDSSOKER_REGISTRERING")
@@ -98,19 +98,27 @@ class AktiverBrukerIntegrationTest : IntegrationTest() {
         val veilederIdent = "B654321"
         val veilederUUID = UUID.randomUUID()
         val enhetId = EnhetId.of("3333")
+        val avsluttBegrunnelse = "avslutt begrunnelse"
         mockInternBrukerAuthOk(veilederUUID, AKTOR_ID, FNR, veilederIdent)
         mockPoaoTilgangHarTilgangTilBruker(veilederUUID, FNR, Decision.Permit, TilgangType.SKRIVE)
         mockPoaoTilgangHarTilgangTilEnhet(veilederUUID, enhetId)
         mockVeilarbArenaOppfolgingsBruker(FNR, Formidlingsgruppe.ISERV, oppfolgingsEnhet = enhetId.get())
+
         startOppfolgingSomArbeidsoker(AKTOR_ID, FNR)
+        avsluttOppfolging(AKTOR_ID, veilederIdent, begrunnelse = avsluttBegrunnelse)
 
-        avsluttOppfolging(AKTOR_ID, veilederIdent)
-
-        val lagreteMeldingerIUtboks = getSavedRecord(kafkaProperties.oppfolgingsperiodehendelseV1, FNR.toString())
+        val lagreteMeldingerIUtboks = getRecordsStoredInKafkaOutbox(kafkaProperties.oppfolgingsperiodehendelseV1, FNR.toString())
         assertThat(lagreteMeldingerIUtboks).hasSize(2)
         val startHendelse = lagreteMeldingerIUtboks.first()
         assertInstanceOf<OppfolgingStartetHendelseDto>(startHendelse)
         val avsluttetHendelse = lagreteMeldingerIUtboks.last()
         assertInstanceOf<OppfolgingsAvsluttetHendelseDto>(avsluttetHendelse)
+        assertThat(avsluttetHendelse.fnr).isEqualTo(FNR.toString())
+        assertThat(avsluttetHendelse.avsluttetBegrunnelse).isEqualTo(avsluttBegrunnelse)
+        assertThat(avsluttetHendelse.avsluttetAv).isEqualTo(veilederIdent)
+        assertThat(avsluttetHendelse.avsluttetAvType).isEqualTo("VEILEDER")
+        assertThat(avsluttetHendelse.startetTidspunkt).isEqualTo(startHendelse.startetTidspunkt)
+        assertThat(avsluttetHendelse.avsluttetTidspunkt).isCloseTo(ZonedDateTime.now(), within(1, ChronoUnit.SECONDS))
+        assertThat(avsluttetHendelse.oppfolgingsPeriodeId).isEqualTo(startHendelse.oppfolgingsPeriodeId)
     }
 }

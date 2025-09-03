@@ -44,7 +44,6 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.AktiverBrukerManueltService
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ManuellAvregistrering
 import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.OppfolgingsPeriodeHendelseDto
-import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.hendelser.OppfolgingStartetHendelseDto
 import no.nav.veilarboppfolging.repository.EnhetRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
@@ -320,7 +319,7 @@ open class IntegrationTest {
         it.registerKotlinModule()
     }
     /* Kafka producer saves record to the kafka_producer_record table before publishing them to kafka */
-    fun getSavedRecord(topic: String, fnr: String): List<OppfolgingsPeriodeHendelseDto> {
+    fun getRecordsStoredInKafkaOutbox(topic: String, fnr: String): List<OppfolgingsPeriodeHendelseDto> {
         return template.query("""
             SELECT * FROM kafka_producer_record
             where topic = :topic and key = :fnr

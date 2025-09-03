@@ -1,7 +1,5 @@
 package no.nav.veilarboppfolging.kafka
 
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import no.nav.common.json.JsonUtils
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.common.types.identer.NavIdent
@@ -11,7 +9,6 @@ import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2
 import no.nav.veilarboppfolging.IntegrationTest
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsBruker
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient
-import no.nav.veilarboppfolging.config.KafkaProperties
 import no.nav.veilarboppfolging.domain.StartetAvType
 import no.nav.veilarboppfolging.oppfolgingsbruker.BrukerRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant
@@ -32,13 +29,11 @@ import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.assertInstanceOf
 import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.test.context.ActiveProfiles
 import java.sql.Timestamp
 import java.time.*
 import java.time.temporal.ChronoUnit
 import java.util.*
-import kotlin.collections.mapOf
 import kotlin.jvm.optionals.getOrNull
 import no.nav.paw.arbeidssokerregisteret.api.v1.Metadata as MetaData
 
@@ -81,7 +76,7 @@ class ArbeidssøkerperiodeConsumerServiceTest(
         assertThat(oppfølgingsperiode.sluttDato).isNull()
         assertThat(oppfølgingsperiode.startetBegrunnelse).isEqualTo(OppfolgingStartBegrunnelse.ARBEIDSSOKER_REGISTRERING)
 
-        val lagreteMeldingerIUtboks = getSavedRecord(kafkaProperties.oppfolgingsperiodehendelseV1, fnr)
+        val lagreteMeldingerIUtboks = getRecordsStoredInKafkaOutbox(kafkaProperties.oppfolgingsperiodehendelseV1, fnr)
         assertThat(lagreteMeldingerIUtboks).hasSize(1)
         assertInstanceOf<OppfolgingsPeriodeHendelseDto>(lagreteMeldingerIUtboks.first())
         val hendelse = lagreteMeldingerIUtboks.first() as OppfolgingStartetHendelseDto
