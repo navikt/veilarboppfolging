@@ -315,14 +315,9 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         var uuidSomSkalAvsluttes = perioder.getFirst().getUuid();
 
         when(authService.getFnrOrThrow(AKTOR_ID)).thenThrow(new IngenGjeldendeIdentException());
-        oppfolgingService.adminAvsluttSpesifikkOppfolgingsperiode(AKTOR_ID, VEILEDER, "en begrunnelse", uuidSomSkalAvsluttes.toString());
-
-        UnderOppfolgingDTO underOppfolgingDTO2 = oppfolgingService.oppfolgingData(FNR);
-        Assertions.assertThat(underOppfolgingDTO2.isUnderOppfolging()).isFalse();
-        verify(kafkaProducerService).publiserOppfolgingsperiode(any(OppfolgingsperiodeDTO.class));
-        verify(kafkaProducerService).publiserVeilederTilordnet(AKTOR_ID, null);
-        verify(kafkaProducerService).publiserEndringPaNyForVeileder(AKTOR_ID, false);
-        verify(kafkaProducerService).publiserEndringPaManuellStatus(AKTOR_ID, false);
+        assertThrows(IngenGjeldendeIdentException.class, () -> {
+            oppfolgingService.adminAvsluttSpesifikkOppfolgingsperiode(AKTOR_ID, VEILEDER, "en begrunnelse", uuidSomSkalAvsluttes.toString());
+        });
     }
 
     @Test(expected = ForbiddenException.class)
