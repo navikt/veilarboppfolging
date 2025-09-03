@@ -31,14 +31,14 @@ jobs:
 
       - name: Checkout with fork and member check PR
         if: ${{ github.event_name == 'pull_request_target' &&  (env.is_member == 'true' || github.actor == 'dependabot[bot]') }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
             ref: ${{ github.event.pull_request.head.sha }}
             fetch-depth: 0
 
       - name: Default checkout
         if: ${{ github.event_name != 'pull_request_target' || !(env.is_member == 'true' || github.actor == 'dependabot[bot]') }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -48,7 +48,7 @@ jobs:
           echo "PR is from a fork and the actor is not a member of the organization. Aborting."
           exit 1
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: 21
