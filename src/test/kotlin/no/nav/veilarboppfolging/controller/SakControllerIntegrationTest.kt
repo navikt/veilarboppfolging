@@ -97,7 +97,7 @@ class SakControllerIntegrationTest: IntegrationTest() {
         startOppfolgingSomArbeidsoker(aktørId, fnr)
         val perioder: List<OppfolgingPeriodeDTO> = hentOppfolgingsperioder(fnr)
         val oppfølgingsperiodeUUID = perioder[0].uuid
-        avsluttOppfolging(aktørId)
+        avsluttOppfolgingManueltSomVeileder(aktørId)
 
         val sak = sakController.opprettEllerHentSak(oppfølgingsperiodeUUID)
 

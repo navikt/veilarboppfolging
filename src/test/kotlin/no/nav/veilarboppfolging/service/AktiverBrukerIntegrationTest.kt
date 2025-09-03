@@ -105,13 +105,13 @@ class AktiverBrukerIntegrationTest : IntegrationTest() {
         mockVeilarbArenaOppfolgingsBruker(FNR, Formidlingsgruppe.ISERV, oppfolgingsEnhet = enhetId.get())
 
         startOppfolgingSomArbeidsoker(AKTOR_ID, FNR)
-        avsluttOppfolging(AKTOR_ID, veilederIdent, begrunnelse = avsluttBegrunnelse)
+        avsluttOppfolgingManueltSomVeileder(AKTOR_ID, veilederIdent, begrunnelse = avsluttBegrunnelse)
 
         val lagreteMeldingerIUtboks = getRecordsStoredInKafkaOutbox(kafkaProperties.oppfolgingsperiodehendelseV1, FNR.toString())
         assertThat(lagreteMeldingerIUtboks).hasSize(2)
         val startHendelse = lagreteMeldingerIUtboks.first()
-        assertInstanceOf<OppfolgingStartetHendelseDto>(startHendelse)
         val avsluttetHendelse = lagreteMeldingerIUtboks.last()
+        assertInstanceOf<OppfolgingStartetHendelseDto>(startHendelse)
         assertInstanceOf<OppfolgingsAvsluttetHendelseDto>(avsluttetHendelse)
         assertThat(avsluttetHendelse.fnr).isEqualTo(FNR.toString())
         assertThat(avsluttetHendelse.avsluttetBegrunnelse).isEqualTo(avsluttBegrunnelse)

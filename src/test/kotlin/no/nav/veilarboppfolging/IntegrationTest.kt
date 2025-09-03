@@ -195,7 +195,7 @@ open class IntegrationTest {
 
     fun hentOppfolgingsperioder(fnr: Fnr) = oppfolgingController.hentOppfolgingsperioder(fnr)
 
-    fun avsluttOppfolging(aktorId: AktorId, veileder: String = "veileder", begrunnelse: String = "Begrunnelse") {
+    fun avsluttOppfolgingManueltSomVeileder(aktorId: AktorId, veileder: String = "veileder", begrunnelse: String = "Begrunnelse") {
         oppfolgingService.avsluttOppfolging(
             ManuellAvregistrering(aktorId, VeilederRegistrant(NavIdent.of(veileder)), begrunnelse),
         )
