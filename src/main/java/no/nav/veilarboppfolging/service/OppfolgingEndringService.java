@@ -30,6 +30,7 @@ import static no.nav.veilarboppfolging.utils.SecureLog.secureLog;
 public class OppfolgingEndringService {
 
     private final OppfolgingService oppfolgingService;
+    private final StartOppfolgingService startOppfolgingService;
     private final ArenaOppfolgingService arenaOppfolgingService;
     private final KvpService kvpService;
     private final MetricsService metricsService;
@@ -73,7 +74,7 @@ public class OppfolgingEndringService {
 
         if (skalOppfolges) {
             secureLog.info("Starter oppfølging på bruker som er under oppfølging i Arena, men ikke i veilarboppfolging. aktorId={}", bruker.getAktorId());
-            oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(
+            startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(
                     OppfolgingsRegistrering.Companion.arenaSyncOppfolgingBruker(bruker.getAktorId(), formidlingsgruppe, kvalifiseringsgruppe));
         } else if (erBrukerUnderOppfolgingLokalt && erInaktivIArena) {
             Optional<Boolean> kanEnkeltReaktiveresLokalt = kanEnkeltReaktiveresLokalt(currentLocalOppfolging, bruker);
