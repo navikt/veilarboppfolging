@@ -269,53 +269,6 @@ public class OppfolgingService {
         return Optional.of(oppfolging);
     }
 
-    public void startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering oppfolgingsbruker) {
-        AktorId aktorId = oppfolgingsbruker.getAktorId();
-        Fnr fnr = authService.getFnrOrThrow(aktorId);
-        KRRData kontaktinfo = manuellStatusService.hentDigdirKontaktinfo(fnr);
-
-        transactor.executeWithoutResult((ignored) -> {
-            Optional<OppfolgingEntity> maybeOppfolging = oppfolgingsStatusRepository.hentOppfolging(aktorId);
-
-            boolean erUnderOppfolging = maybeOppfolging.map(OppfolgingEntity::isUnderOppfolging).orElse(false);
-
-            if (erUnderOppfolging) {
-                return;
-            }
-
-            if (maybeOppfolging.isEmpty()) {
-                // Siden det blir gjort mange kall samtidig til flere noder kan det oppstå en race condition
-                // hvor oppfølging har blitt insertet av en annen node etter at den har sjekket at oppfølging
-                // ikke ligger i databasen.
-                try {
-                    oppfolgingsStatusRepository.opprettOppfolging(aktorId);
-                } catch (DuplicateKeyException e) {
-                    secureLog.warn("Race condition oppstod under oppretting av ny oppfølging for bruker: {}", aktorId);
-                    return;
-                }
-            }
-
-            oppfolgingsPeriodeRepository.start(oppfolgingsbruker);
-
-            List<OppfolgingsperiodeEntity> perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId);
-            OppfolgingsperiodeEntity sistePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(perioder);
-
-            log.info("Oppfølgingsperiode startet for bruker - publiserer endringer på oppfølgingsperiode-topics.");
-            kafkaProducerService.publiserOppfolgingsperiode(DtoMappers.tilOppfolgingsperiodeDTO(sistePeriode));
-
-            kafkaProducerService.publiserVisAoMinSideMicrofrontend(aktorId, fnr);
-
-            Optional<Kvalifiseringsgruppe> kvalifiseringsgruppe = getKvalifiseringsGruppe(oppfolgingsbruker);
-            bigQueryClient.loggStartOppfolgingsperiode(oppfolgingsbruker.getOppfolgingStartBegrunnelse(), sistePeriode.getUuid(), oppfolgingsbruker.getRegistrertAv().getType(), kvalifiseringsgruppe);
-
-            if (kontaktinfo.isReservert()) {
-                manuellStatusService.settBrukerTilManuellGrunnetReservertIKRR(aktorId);
-            } else {
-                kafkaProducerService.publiserMinSideBeskjed(fnr, "Du er nå under arbeidsrettet oppfølging hos Nav. Se detaljer på MinSide.", String.format("%s/minside", navNoUrl));
-            }
-        });
-    }
-
     private Optional<Kvalifiseringsgruppe> getKvalifiseringsGruppe(OppfolgingsRegistrering oppfolgingsbruker) {
         if (oppfolgingsbruker instanceof ArenaSyncRegistrering arenasyncoppfolgingsbruker) {
             return Optional.ofNullable(arenasyncoppfolgingsbruker.getKvalifiseringsgruppe());

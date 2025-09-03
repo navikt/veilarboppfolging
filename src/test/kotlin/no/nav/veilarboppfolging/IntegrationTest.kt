@@ -39,6 +39,7 @@ import no.nav.veilarboppfolging.repository.SakRepository
 import no.nav.veilarboppfolging.service.AuthService
 import no.nav.veilarboppfolging.service.MetricsService
 import no.nav.veilarboppfolging.service.OppfolgingService
+import no.nav.veilarboppfolging.service.StartOppfolgingService
 import no.nav.veilarboppfolging.test.DbTestUtils
 import no.nav.veilarboppfolging.tokenClient.ErrorMappedAzureAdMachineToMachineTokenClient
 import no.nav.veilarboppfolging.tokenClient.ErrorMappedAzureAdOnBehalfOfTokenClient
@@ -119,6 +120,9 @@ open class IntegrationTest {
     lateinit var oppfolgingService: OppfolgingService
 
     @Autowired
+    lateinit var startOppfolgingService: StartOppfolgingService
+
+    @Autowired
     lateinit var oppfolgingsPeriodeRepository: OppfolgingsPeriodeRepository
 
     @Autowired
@@ -159,7 +163,7 @@ open class IntegrationTest {
 
     fun startOppfolgingSomArbeidsoker(aktørId: AktorId) {
         val bruker = OppfolgingsRegistrering.arbeidssokerRegistrering(aktørId, BrukerRegistrant)
-        oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(bruker)
+        startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(bruker)
     }
 
     fun setBrukerUnderOppfolging(aktorId: AktorId) {
