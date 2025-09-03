@@ -40,7 +40,7 @@ class OppfolgingsPeriodeRepositoryTest {
         oppfolgingsStatusRepository.opprettOppfolging(aktorId)
 
         oppfolgingsPeriodeRepository.start(oppfolgingsbruker)
-        oppfolgingsPeriodeRepository.avslutt(aktorId, "veileder", "derfor")
+        oppfolgingsPeriodeRepository.avsluttSistePeriodeOgAvsluttOppfolging(aktorId, "veileder", "derfor")
         oppfolgingsPeriodeRepository.start(oppfolgingsbruker)
         val maybeOppfolgingsperiodeEntity = oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId)
         Assertions.assertFalse(maybeOppfolgingsperiodeEntity.isEmpty())
@@ -61,7 +61,7 @@ class OppfolgingsPeriodeRepositoryTest {
         oppfolgingsStatusRepository.opprettOppfolging(aktorId)
 
         oppfolgingsPeriodeRepository.start(oppfolgingsbruker)
-        oppfolgingsPeriodeRepository.avslutt(aktorId, "veileder", "derfor")
+        oppfolgingsPeriodeRepository.avsluttSistePeriodeOgAvsluttOppfolging(aktorId, "veileder", "derfor")
 
         val maybeOppfolgingsperiodeEntity2 = oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId)
         Assertions.assertTrue(maybeOppfolgingsperiodeEntity2.isEmpty())
@@ -122,7 +122,7 @@ class OppfolgingsPeriodeRepositoryTest {
         val avsluttetBegrunnelse = "derfor"
         oppfolgingsStatusRepository.opprettOppfolging(aktorId)
         oppfolgingsPeriodeRepository.start(oppfolgingsbruker)
-        oppfolgingsPeriodeRepository.avslutt(aktorId, veilederIdent.get(), avsluttetBegrunnelse)
+        oppfolgingsPeriodeRepository.avsluttSistePeriodeOgAvsluttOppfolging(aktorId, veilederIdent.get(), avsluttetBegrunnelse)
 
         val perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId)
 

@@ -17,6 +17,7 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.BrukerRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelse
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering
+import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.OppfolgingsPeriodeHendelseDto
 import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.hendelser.OppfolgingStartetHendelseDto
 import no.nav.veilarboppfolging.repository.UtmeldingRepository
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity
@@ -28,6 +29,7 @@ import org.assertj.core.api.Assertions.within
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.api.assertInstanceOf
 import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
@@ -81,14 +83,16 @@ class ArbeidssøkerperiodeConsumerServiceTest(
 
         val lagreteMeldingerIUtboks = getSavedRecord(kafkaProperties.oppfolgingsperiodehendelseV1, fnr)
         assertThat(lagreteMeldingerIUtboks).hasSize(1)
-        assertThat(lagreteMeldingerIUtboks.first().fnr).isEqualTo(fnr)
-        assertThat(lagreteMeldingerIUtboks.first().startetBegrunnelse).isEqualTo("ARBEIDSSOKER_REGISTRERING")
-        assertThat(lagreteMeldingerIUtboks.first().arenaKontor).isNull()
-        assertThat(lagreteMeldingerIUtboks.first().startetAvType).isEqualTo(nyPeriode.startet.utfoertAv.type.name)
-        assertThat(lagreteMeldingerIUtboks.first().startetAv).isEqualTo(nyPeriode.startet.utfoertAv.id)
-        assertThat(lagreteMeldingerIUtboks.first().startetTidspunkt).isCloseTo(ZonedDateTime.now(), within(1, ChronoUnit.SECONDS))
-        assertThat(lagreteMeldingerIUtboks.first().arbeidsoppfolgingsKontorSattAvVeileder).isNull()
-        assertThat(lagreteMeldingerIUtboks.first().oppfolgingsPeriodeId).isEqualTo(oppfølgingsperiode.uuid)
+        assertInstanceOf<OppfolgingsPeriodeHendelseDto>(lagreteMeldingerIUtboks.first())
+        val hendelse = lagreteMeldingerIUtboks.first() as OppfolgingStartetHendelseDto
+        assertThat(hendelse.fnr).isEqualTo(fnr)
+        assertThat(hendelse.startetBegrunnelse).isEqualTo("ARBEIDSSOKER_REGISTRERING")
+        assertThat(hendelse.arenaKontor).isNull()
+        assertThat(hendelse.startetAvType).isEqualTo(nyPeriode.startet.utfoertAv.type.name)
+        assertThat(hendelse.startetAv).isEqualTo(nyPeriode.startet.utfoertAv.id)
+        assertThat(hendelse.startetTidspunkt).isCloseTo(ZonedDateTime.now(), within(1, ChronoUnit.SECONDS))
+        assertThat(hendelse.arbeidsoppfolgingsKontorSattAvVeileder).isNull()
+        assertThat(hendelse.oppfolgingsPeriodeId).isEqualTo(oppfølgingsperiode.uuid)
     }
 
     @Test

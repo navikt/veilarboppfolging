@@ -21,6 +21,7 @@ import no.nav.veilarboppfolging.kafka.dto.OppfolgingsperiodeDTO
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.Avregistrering
 import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.hendelser.OppfolgingStartetHendelseDto
+import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.hendelser.OppfolgingsAvsluttetHendelseDto
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -35,8 +36,7 @@ class KafkaProducerService @Autowired constructor(
     private val authContextHolder: AuthContextHolder,
     private val producerRecordStorage: KafkaProducerRecordStorage,
     private val kafkaProperties: KafkaProperties,
-    @param:Value("\${app.kafka.enabled}") private val kafkaEnabled: Boolean,
-    private val authService: AuthService,
+    @param:Value("\${app.kafka.enabled}") private val kafkaEnabled: Boolean
 ) {
     private val logger = LoggerFactory.getLogger(this::class.java)
 
@@ -49,8 +49,8 @@ class KafkaProducerService @Autowired constructor(
         oppfolgingsperiode(oppfolgingsperiode)
     }
 
-    fun publiserOppfolgingsAvsluttet(avregistrering: Avregistrering, fnr: Fnr) {
-//        store(kafkaProperties.oppfolgingsperiodehendelseV1, fnr.get(), value)
+    fun publiserOppfolgingsAvsluttet(avsluttetHendelse: OppfolgingsAvsluttetHendelseDto) {
+        store(kafkaProperties.oppfolgingsperiodehendelseV1, avsluttetHendelse.fnr, avsluttetHendelse)
     }
 
     fun publiserOppfolgingsStartet(oppfolgingsperiodeStartet: OppfolgingStartetHendelseDto) {

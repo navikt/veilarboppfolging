@@ -57,7 +57,7 @@ public class OppfolgingsPeriodeRepository {
         });
     }
 
-    public void avslutt(AktorId aktorId, String veileder, String begrunnelse) {
+    public void avsluttSistePeriodeOgAvsluttOppfolging(AktorId aktorId, String veileder, String begrunnelse) {
         transactor.executeWithoutResult((ignored) -> {
             endPeriode(aktorId, veileder, begrunnelse);
             avsluttOppfolging(aktorId);
