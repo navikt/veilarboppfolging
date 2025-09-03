@@ -4,7 +4,7 @@ on:
     branches:
       - main
     paths:
-      - "kafka-topics/oppfolgingshendelse-prod.yaml"
+      - "kafka-topics/privat-oppfolgingshendelse-prod.yaml"
   workflow_dispatch:
 
 jobs:
@@ -20,5 +20,5 @@ jobs:
         uses: nais/deploy/actions/deploy@v2
         env:
           CLUSTER: prod-gcp
-          RESOURCE: kafka-topics/oppfolgingshendelse-prod.yaml
+          RESOURCE: kafka-topics/privat-oppfolgingshendelse-prod.yaml
           PRINT_PAYLOAD: true
