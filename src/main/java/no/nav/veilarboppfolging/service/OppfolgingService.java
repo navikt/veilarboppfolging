@@ -71,7 +71,6 @@ public class OppfolgingService {
     private final TransactionTemplate transactor;
     private final ArenaYtelserService arenaYtelserService;
     private final BigQueryClient bigQueryClient;
-    private final String navNoUrl;
 
     @Autowired
     public OppfolgingService(
@@ -105,7 +104,6 @@ public class OppfolgingService {
         this.transactor = transactor;
         this.arenaYtelserService = arenaYtelserService;
         this.bigQueryClient = bigQueryClient;
-        this.navNoUrl = navNoUrl;
     }
 
     @Transactional // TODO: kan denne være read only?

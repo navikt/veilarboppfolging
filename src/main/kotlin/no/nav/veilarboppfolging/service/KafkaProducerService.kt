@@ -18,8 +18,6 @@ import no.nav.tms.microfrontend.Sensitivitet
 import no.nav.veilarboppfolging.config.KafkaProperties
 import no.nav.veilarboppfolging.kafka.KvpPeriode
 import no.nav.veilarboppfolging.kafka.dto.OppfolgingsperiodeDTO
-import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.Avregistrering
 import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.hendelser.OppfolgingStartetHendelseDto
 import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.hendelser.OppfolgingsAvsluttetHendelseDto
 import org.apache.kafka.clients.producer.ProducerRecord
