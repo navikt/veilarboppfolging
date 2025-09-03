@@ -43,7 +43,7 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrerin
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.AktiverBrukerManueltService
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.ManuellAvregistrering
-import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.OppfolgingsPeriodeHendelseDto
+import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.OppfolgingsHendelseDto
 import no.nav.veilarboppfolging.repository.EnhetRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
@@ -319,13 +319,13 @@ open class IntegrationTest {
         it.registerKotlinModule()
     }
     /* Kafka producer saves record to the kafka_producer_record table before publishing them to kafka */
-    fun getRecordsStoredInKafkaOutbox(topic: String, fnr: String): List<OppfolgingsPeriodeHendelseDto> {
+    fun getRecordsStoredInKafkaOutbox(topic: String, fnr: String): List<OppfolgingsHendelseDto> {
         return template.query("""
             SELECT * FROM kafka_producer_record
             where topic = :topic and key = :fnr
         """.trimIndent(), mapOf("topic" to topic, "fnr" to fnr.toByteArray())) { resultSet, row ->
             val json = resultSet.getBytes("value").toString(Charsets.UTF_8)
-            objectMapper.readValue(json, OppfolgingsPeriodeHendelseDto::class.java)
+            objectMapper.readValue(json, OppfolgingsHendelseDto::class.java)
         }
     }
 }

@@ -3,7 +3,7 @@ package no.nav.veilarboppfolging.oppfolgingsperioderHendelser.hendelser
 import no.nav.common.types.identer.Fnr
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.Avregistrering
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AvregistreringsType
-import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.OppfolgingsPeriodeHendelseDto
+import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.OppfolgingsHendelseDto
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity
 import java.time.ZonedDateTime
 import java.util.UUID
@@ -16,7 +16,7 @@ class OppfolgingsAvsluttetHendelseDto(
     val avsluttetAv: String,
     val avsluttetAvType: String,
     val avregistreringsType: AvregistreringsType
-): OppfolgingsPeriodeHendelseDto(HendelseType.OPPFOLGING_AVSLUTTET) {
+): OppfolgingsHendelseDto(HendelseType.OPPFOLGING_AVSLUTTET) {
     companion object {
         fun of(avregistrering: Avregistrering, periode: OppfolgingsperiodeEntity, fnr: Fnr): OppfolgingsAvsluttetHendelseDto {
             return OppfolgingsAvsluttetHendelseDto(

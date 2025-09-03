@@ -11,6 +11,6 @@ import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.hendelser.Oppfolgin
     JsonSubTypes.Type(value = OppfolgingStartetHendelseDto::class, name = "OPPFOLGING_STARTET"),
     JsonSubTypes.Type(value = OppfolgingsAvsluttetHendelseDto::class, name = "OPPFOLGING_AVSLUTTET")
 )
-abstract class OppfolgingsPeriodeHendelseDto(
-    open val hendelseType: HendelseType
+abstract class OppfolgingsHendelseDto(
+    val hendelseType: HendelseType,
 )

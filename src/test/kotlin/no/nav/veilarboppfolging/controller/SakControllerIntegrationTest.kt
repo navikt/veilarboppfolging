@@ -2,6 +2,7 @@ package no.nav.veilarboppfolging.controller
 
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
+import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.veilarboppfolging.BadRequestException
 import no.nav.veilarboppfolging.IntegrationTest
 import no.nav.veilarboppfolging.controller.response.OppfolgingPeriodeDTO
@@ -94,6 +95,7 @@ class SakControllerIntegrationTest: IntegrationTest() {
     @Test
     fun `Skal kunne hente sak for oppfølgingsperiode som er avsluttet`() {
         mockSytemBrukerAuthOk(aktørId, fnr)
+        mockVeilarbArenaOppfolgingsBruker(fnr, Formidlingsgruppe.ISERV)
         startOppfolgingSomArbeidsoker(aktørId, fnr)
         val perioder: List<OppfolgingPeriodeDTO> = hentOppfolgingsperioder(fnr)
         val oppfølgingsperiodeUUID = perioder[0].uuid

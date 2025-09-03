@@ -1,6 +1,6 @@
 package no.nav.veilarboppfolging.oppfolgingsperioderHendelser.hendelser
 
-import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.OppfolgingsPeriodeHendelseDto
+import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.OppfolgingsHendelseDto
 import java.time.ZonedDateTime
 import java.util.*
 
@@ -13,4 +13,4 @@ class OppfolgingStartetHendelseDto(
     val arenaKontor: String?,
     val arbeidsoppfolgingsKontorSattAvVeileder: String?,
     val fnr: String,
-): OppfolgingsPeriodeHendelseDto(HendelseType.OPPFOLGING_STARTET)
+): OppfolgingsHendelseDto(HendelseType.OPPFOLGING_STARTET)

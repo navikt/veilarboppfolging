@@ -14,7 +14,7 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.BrukerRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelse
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering
-import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.OppfolgingsPeriodeHendelseDto
+import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.OppfolgingsHendelseDto
 import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.hendelser.OppfolgingStartetHendelseDto
 import no.nav.veilarboppfolging.repository.UtmeldingRepository
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity
@@ -78,7 +78,7 @@ class ArbeidssøkerperiodeConsumerServiceTest(
 
         val lagreteMeldingerIUtboks = getRecordsStoredInKafkaOutbox(kafkaProperties.oppfolgingsperiodehendelseV1, fnr)
         assertThat(lagreteMeldingerIUtboks).hasSize(1)
-        assertInstanceOf<OppfolgingsPeriodeHendelseDto>(lagreteMeldingerIUtboks.first())
+        assertInstanceOf<OppfolgingsHendelseDto>(lagreteMeldingerIUtboks.first())
         val hendelse = lagreteMeldingerIUtboks.first() as OppfolgingStartetHendelseDto
         assertThat(hendelse.fnr).isEqualTo(fnr)
         assertThat(hendelse.startetBegrunnelse).isEqualTo("ARBEIDSSOKER_REGISTRERING")
