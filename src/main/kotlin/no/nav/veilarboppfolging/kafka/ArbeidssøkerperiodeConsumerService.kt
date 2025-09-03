@@ -13,6 +13,7 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.toRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.UtmeldingsService
 import no.nav.veilarboppfolging.service.AuthService
 import no.nav.veilarboppfolging.service.OppfolgingService
+import no.nav.veilarboppfolging.service.StartOppfolgingService
 import no.nav.veilarboppfolging.service.utmelding.IservTrigger
 import no.nav.veilarboppfolging.service.utmelding.KanskjeIservBruker
 import org.apache.kafka.clients.consumer.ConsumerRecord
@@ -31,7 +32,8 @@ val DA_VI_STARTET_KONSUMERING = LocalDateTime.of(2024, 8, 6, 0, 0)
         @Service
 open class ArbeidssøkerperiodeConsumerService(
             @Lazy
-    private val oppfolgingService: OppfolgingService,
+            private val oppfolgingService: OppfolgingService,
+            private val startOppfolgingService: StartOppfolgingService,
             private val authService: AuthService,
             private val arenaOppfolgingService: ArenaOppfolgingService,
             private val utmeldingService: UtmeldingsService,
@@ -66,7 +68,7 @@ open class ArbeidssøkerperiodeConsumerService(
             val navIdent = NavIdent.of(arbeidssøkerperiode.startet.utfoertAv.id.toString())
             val registrant =  startetAvType.toStartetAvType().toRegistrant(navIdent)
 
-            oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.arbeidssokerRegistrering(aktørId, registrant))
+            startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.arbeidssokerRegistrering(aktørId, registrant))
             utmeldHvisBrukerBleIservEtterArbeidssøkerRegistrering(fnr, arbeidssøkerperiodeStartet, aktørId)
         } else {
             logger.info("Melding om avsluttet arbeidssøkerperiode, gjør ingenting")
