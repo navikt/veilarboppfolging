@@ -1,11 +1,13 @@
 package no.nav.veilarboppfolging
 
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.nimbusds.jwt.JWTClaimsSet
 import no.nav.common.auth.context.AuthContextHolder
 import no.nav.common.auth.context.UserRole
 import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.client.norg2.Enhet
 import no.nav.common.client.norg2.Norg2Client
+import no.nav.common.json.JsonUtils
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.poao_tilgang.api.dto.response.Diskresjonskode
@@ -34,6 +36,7 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.BrukerRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.AktiverBrukerManueltService
+import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.hendelser.OppfolgingStartetHendelseDto
 import no.nav.veilarboppfolging.repository.EnhetRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
@@ -163,6 +166,9 @@ open class IntegrationTest {
     @Autowired
     lateinit var kafkaProperties: KafkaProperties
 
+    @Autowired
+    lateinit var template: NamedParameterJdbcTemplate
+
     @BeforeEach
     fun beforeEach() {
         DbTestUtils.cleanupTestDb(jdbcTemplate)
@@ -185,7 +191,7 @@ open class IntegrationTest {
         oppfolgingsPeriodeRepository.avslutt(aktorId, veileder, begrunnelse )
     }
 
-    fun mockAuthOk(aktørId: AktorId, fnr: Fnr) {
+    fun mockSytemBrukerAuthOk(aktørId: AktorId, fnr: Fnr) {
         val claims = JWTClaimsSet.Builder()
             .issuer("microsoftonline.com")
             .claim("azp_name", "cluster:team:veilarbregistrering")
@@ -282,5 +288,19 @@ open class IntegrationTest {
                     .setKanEnkeltReaktiveres(kanEnkeltReaktiveres)
                 )
             )
+    }
+
+    private val objectMapper = JsonUtils.getMapper().also {
+        it.registerKotlinModule()
+    }
+    /* Kafka producer saves record to the kafka_producer_record table before publishing them to kafka */
+    fun getSavedRecord(topic: String, fnr: String): List<OppfolgingStartetHendelseDto> {
+        return template.query("""
+            SELECT * FROM kafka_producer_record
+            where topic = :topic and key = :fnr
+        """.trimIndent(), mapOf("topic" to topic, "fnr" to fnr.toByteArray())) { resultSet, row ->
+            val json = resultSet.getBytes("value").toString(Charsets.UTF_8)
+            objectMapper.readValue(json, OppfolgingStartetHendelseDto::class.java)
+        }
     }
 }

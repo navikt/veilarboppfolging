@@ -1,11 +1,8 @@
 package no.nav.veilarboppfolging.service
 
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import no.nav.common.json.JsonUtils
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
 import no.nav.veilarboppfolging.IntegrationTest
-import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.hendelser.OppfolgingStartetHendelseDto
 import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within
@@ -20,8 +17,8 @@ class AktiverBrukerIntegrationTest : IntegrationTest() {
     private val AKTOR_ID: AktorId = AktorId.of("1234523423")
 
     @Test
-    fun skalLagreIDatabaseDersomKallTilArenaErOK() {
-        mockAuthOk(AKTOR_ID, FNR)
+    fun `skal lagre oppfolgingstatus på bruker når arbeidsoppfølging er startet`() {
+        mockSytemBrukerAuthOk(AKTOR_ID, FNR)
         startOppfolgingSomArbeidsoker(AKTOR_ID, FNR)
         val oppfolging = oppfolgingService.hentOppfolging(AKTOR_ID)
         Assertions.assertThat(oppfolging.isPresent()).isTrue()
@@ -29,7 +26,7 @@ class AktiverBrukerIntegrationTest : IntegrationTest() {
 
     @Test
     fun skalHaandtereAtOppfolgingstatusAlleredeFinnes() {
-        mockAuthOk(AKTOR_ID, FNR)
+        mockSytemBrukerAuthOk(AKTOR_ID, FNR)
         oppfolgingsStatusRepository.opprettOppfolging(AKTOR_ID)
         oppfolgingsPeriodeRepository.avslutt(AKTOR_ID, "veilederid", "begrunnelse")
         startOppfolgingSomArbeidsoker(AKTOR_ID, FNR)
@@ -71,17 +68,19 @@ class AktiverBrukerIntegrationTest : IntegrationTest() {
         assertThat(lagreteMeldingerIUtboks.first().oppfolgingsPeriodeId).isEqualTo(nyPeriode.uuid)
     }
 
-    private val objectMapper = JsonUtils.getMapper().also {
-        it.registerKotlinModule()
-    }
+    @Test
+    fun `Skal lagre OppfolgingStartetHendelse-melding i utboks når oppfølging av arbeidssøkerregistrering`() {
+        val veilederIdent = "B654321"
+        mockInternBrukerAuthOk(UUID.randomUUID(), AKTOR_ID, FNR, veilederIdent)
+        val oppfolgingFør = oppfolgingService.hentOppfolging(AKTOR_ID)
+        assertThat(oppfolgingFør.isEmpty).isTrue()
 
-    private fun getSavedRecord(topic: String, fnr: String): List<OppfolgingStartetHendelseDto> {
-        return namedParameterJdbcTemplate.query("""
-            SELECT * FROM kafka_producer_record
-            where topic = :topic and key = :fnr
-        """.trimIndent(), mapOf("topic" to topic, "fnr" to fnr.toByteArray())) { resultSet, row ->
-            val json = resultSet.getBytes("value").toString(Charsets.UTF_8)
-            objectMapper.readValue(json, OppfolgingStartetHendelseDto::class.java)
-        }
+        startOppfolgingSomArbeidsoker(AKTOR_ID, FNR)
+
+        val lagreteMeldingerIUtboks = getSavedRecord(kafkaProperties.oppfolgingsperiodehendelseV1, FNR.toString())
+        assertThat(lagreteMeldingerIUtboks).hasSize(1)
+        assertThat(lagreteMeldingerIUtboks.first().startetBegrunnelse).isEqualTo("ARBEIDSSOKER_REGISTRERING")
+        assertThat(lagreteMeldingerIUtboks.first().arenaKontor).isNull()
+        assertThat(lagreteMeldingerIUtboks.first().arbeidsoppfolgingsKontorSattAvVeileder).isNull()
     }
 }

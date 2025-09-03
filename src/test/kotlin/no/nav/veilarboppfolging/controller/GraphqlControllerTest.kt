@@ -35,7 +35,7 @@ class GraphqlControllerTest: IntegrationTest() {
     fun defaultBruker(): Pair<Fnr, AktorId> {
         val fnr = Fnr("12345678910")
         val aktorId = AktorId("22345678910")
-        mockAuthOk(aktorId, fnr)
+        mockSytemBrukerAuthOk(aktorId, fnr)
         mockPdlFolkeregisterStatus(fnr, FregStatusOgStatsborgerskap(ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven, norskStatsborgerskap))
         return fnr to aktorId
     }

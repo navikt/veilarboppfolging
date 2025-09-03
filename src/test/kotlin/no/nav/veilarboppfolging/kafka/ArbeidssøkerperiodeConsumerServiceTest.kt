@@ -54,23 +54,7 @@ class ArbeidssøkerperiodeConsumerServiceTest(
     val utmeldingRepository: UtmeldingRepository,
     @Autowired
     val veilarbarenaClient: VeilarbarenaClient,
-    @Autowired
-    val template: NamedParameterJdbcTemplate,
 ): IntegrationTest() {
-
-    private val objectMapper = JsonUtils.getMapper().also {
-        it.registerKotlinModule()
-    }
-
-    private fun getSavedRecord(topic: String, fnr: String): List<OppfolgingStartetHendelseDto> {
-        return template.query("""
-            SELECT * FROM kafka_producer_record
-            where topic = :topic and key = :fnr
-        """.trimIndent(), mapOf("topic" to topic, "fnr" to fnr.toByteArray())) { resultSet, row ->
-             val json = resultSet.getBytes("value").toString(Charsets.UTF_8)
-             objectMapper.readValue(json, OppfolgingStartetHendelseDto::class.java)
-        }
-    }
 
     private val fnr = "01010198765"
     private val aktørId = AktorId.of("123456789012")

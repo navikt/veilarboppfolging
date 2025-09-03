@@ -19,7 +19,7 @@ class SakControllerIntegrationTest: IntegrationTest() {
 
     @Test
     fun `når man henter sak for oppfølgsingsperiode uten sak skal sak opprettes`() {
-        mockAuthOk(aktørId, fnr)
+        mockSytemBrukerAuthOk(aktørId, fnr)
         startOppfolgingSomArbeidsoker(aktørId, fnr)
         val perioder: List<OppfolgingPeriodeDTO> = hentOppfolgingsperioder(fnr)
         val oppfølgingsperiodeUUID = perioder[0].uuid
@@ -40,7 +40,7 @@ class SakControllerIntegrationTest: IntegrationTest() {
 
     @Test
     fun `når man henter sak for oppfølgingsperiode med eksisterende sak skal ikke ny sak opprettes`() {
-        mockAuthOk(aktørId, fnr)
+        mockSytemBrukerAuthOk(aktørId, fnr)
         startOppfolgingSomArbeidsoker(aktørId, fnr)
         val perioder: List<OppfolgingPeriodeDTO> = hentOppfolgingsperioder(fnr)
         val oppfølgingsperiodeUUID = perioder[0].uuid
@@ -59,7 +59,7 @@ class SakControllerIntegrationTest: IntegrationTest() {
     @Test
     fun `når man henter sak for oppfølgsingsperiode uten sak skal sak opprettes selv om andre saker for andre perioder finnes`() {
         // Given
-        mockAuthOk(aktørId, fnr)
+        mockSytemBrukerAuthOk(aktørId, fnr)
         startOppfolgingSomArbeidsoker(aktørId, fnr)
         val oppfølgingsperiodeUuidMedSak = hentOppfolgingsperioder(fnr)[0].uuid
         sakRepository.opprettSak(oppfølgingsperiodeUuidMedSak)
@@ -67,7 +67,7 @@ class SakControllerIntegrationTest: IntegrationTest() {
 
         val annetFnr = Fnr.of("09876543210"    )
         val annenAktørId = AktorId.of("12345678901234")
-        mockAuthOk(annenAktørId, annetFnr)
+        mockSytemBrukerAuthOk(annenAktørId, annetFnr)
         startOppfolgingSomArbeidsoker(annenAktørId, annetFnr)
         val oppfølgingsperiodeUuidUtenSak = hentOppfolgingsperioder(annetFnr)[0].uuid
         assertThat(oppfølgingsperiodeUuidMedSak).isNotEqualTo(oppfølgingsperiodeUuidUtenSak)
@@ -93,7 +93,7 @@ class SakControllerIntegrationTest: IntegrationTest() {
 
     @Test
     fun `Skal kunne hente sak for oppfølgingsperiode som er avsluttet`() {
-        mockAuthOk(aktørId, fnr)
+        mockSytemBrukerAuthOk(aktørId, fnr)
         startOppfolgingSomArbeidsoker(aktørId, fnr)
         val perioder: List<OppfolgingPeriodeDTO> = hentOppfolgingsperioder(fnr)
         val oppfølgingsperiodeUUID = perioder[0].uuid
