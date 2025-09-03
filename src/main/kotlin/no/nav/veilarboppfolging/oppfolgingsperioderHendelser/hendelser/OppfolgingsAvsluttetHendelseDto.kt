@@ -15,7 +15,6 @@ class OppfolgingsAvsluttetHendelseDto(
     val avsluttetTidspunkt: ZonedDateTime,
     val avsluttetAv: String,
     val avsluttetAvType: String,
-    val avsluttetBegrunnelse: String,
     val avregistreringsType: AvregistreringsType
 ): OppfolgingsPeriodeHendelseDto(HendelseType.OPPFOLGING_AVSLUTTET) {
     companion object {
@@ -27,7 +26,6 @@ class OppfolgingsAvsluttetHendelseDto(
                 avsluttetTidspunkt = periode.sluttDato,
                 avsluttetAv = avregistrering.avsluttetAv.getIdent(),
                 avsluttetAvType = avregistrering.avsluttetAv.getType().name,
-                avsluttetBegrunnelse = avregistrering.begrunnelse,
                 avregistreringsType = avregistrering.getAvregistreringsType(),
             )
         }

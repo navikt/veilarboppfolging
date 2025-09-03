@@ -114,7 +114,6 @@ class AktiverBrukerIntegrationTest : IntegrationTest() {
         assertInstanceOf<OppfolgingStartetHendelseDto>(startHendelse)
         assertInstanceOf<OppfolgingsAvsluttetHendelseDto>(avsluttetHendelse)
         assertThat(avsluttetHendelse.fnr).isEqualTo(FNR.toString())
-        assertThat(avsluttetHendelse.avsluttetBegrunnelse).isEqualTo(avsluttBegrunnelse)
         assertThat(avsluttetHendelse.avsluttetAv).isEqualTo(veilederIdent)
         assertThat(avsluttetHendelse.avsluttetAvType).isEqualTo("VEILEDER")
         assertThat(avsluttetHendelse.startetTidspunkt).isEqualTo(startHendelse.startetTidspunkt)
