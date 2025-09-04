@@ -48,11 +48,11 @@ class KafkaProducerService @Autowired constructor(
     }
 
     fun publiserOppfolgingsAvsluttet(avsluttetHendelse: OppfolgingsAvsluttetHendelseDto) {
-        store(kafkaProperties.oppfolgingsperiodehendelseV1, avsluttetHendelse.fnr, avsluttetHendelse)
+        store(kafkaProperties.oppfolgingshendelseV1, avsluttetHendelse.fnr, avsluttetHendelse)
     }
 
     fun publiserOppfolgingsStartet(oppfolgingsperiodeStartet: OppfolgingStartetHendelseDto) {
-        store(kafkaProperties.oppfolgingsperiodehendelseV1, oppfolgingsperiodeStartet.fnr, oppfolgingsperiodeStartet)
+        store(kafkaProperties.oppfolgingshendelseV1, oppfolgingsperiodeStartet.fnr, oppfolgingsperiodeStartet)
     }
 
     private fun sisteOppfolgingsPeriode(sisteOppfolgingsperiodeV1: SisteOppfolgingsperiodeV1) {

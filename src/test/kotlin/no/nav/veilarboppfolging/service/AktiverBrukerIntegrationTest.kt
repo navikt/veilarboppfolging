@@ -63,7 +63,7 @@ class AktiverBrukerIntegrationTest : IntegrationTest() {
 
         val oppfolging = oppfolgingService.hentOppfolging(AKTOR_ID)
         val nyPeriode = oppfolging.get().oppfolgingsperioder.toList().maxByOrNull { it.startDato }!!
-        val lagreteMeldingerIUtboks = getRecordsStoredInKafkaOutbox(kafkaProperties.oppfolgingsperiodehendelseV1, FNR.toString())
+        val lagreteMeldingerIUtboks = getRecordsStoredInKafkaOutbox(kafkaProperties.oppfolgingshendelseV1, FNR.toString())
         assertThat(lagreteMeldingerIUtboks).hasSize(1)
         val hendelse = lagreteMeldingerIUtboks.first() as OppfolgingStartetHendelseDto
         assertThat(hendelse.fnr).isEqualTo(FNR.toString())
@@ -85,7 +85,7 @@ class AktiverBrukerIntegrationTest : IntegrationTest() {
 
         startOppfolgingSomArbeidsoker(AKTOR_ID, FNR)
 
-        val lagreteMeldingerIUtboks = getRecordsStoredInKafkaOutbox(kafkaProperties.oppfolgingsperiodehendelseV1, FNR.toString())
+        val lagreteMeldingerIUtboks = getRecordsStoredInKafkaOutbox(kafkaProperties.oppfolgingshendelseV1, FNR.toString())
         assertThat(lagreteMeldingerIUtboks).hasSize(1)
         val hendelse = lagreteMeldingerIUtboks.first() as OppfolgingStartetHendelseDto
         assertThat(hendelse.startetBegrunnelse).isEqualTo("ARBEIDSSOKER_REGISTRERING")
@@ -107,7 +107,7 @@ class AktiverBrukerIntegrationTest : IntegrationTest() {
         startOppfolgingSomArbeidsoker(AKTOR_ID, FNR)
         avsluttOppfolgingManueltSomVeileder(AKTOR_ID, veilederIdent, begrunnelse = avsluttBegrunnelse)
 
-        val lagreteMeldingerIUtboks = getRecordsStoredInKafkaOutbox(kafkaProperties.oppfolgingsperiodehendelseV1, FNR.toString())
+        val lagreteMeldingerIUtboks = getRecordsStoredInKafkaOutbox(kafkaProperties.oppfolgingshendelseV1, FNR.toString())
         assertThat(lagreteMeldingerIUtboks).hasSize(2)
         val startHendelse = lagreteMeldingerIUtboks.first()
         val avsluttetHendelse = lagreteMeldingerIUtboks.last()

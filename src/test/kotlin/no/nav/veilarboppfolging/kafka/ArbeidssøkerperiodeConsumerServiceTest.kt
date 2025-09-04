@@ -76,7 +76,7 @@ class ArbeidssøkerperiodeConsumerServiceTest(
         assertThat(oppfølgingsperiode.sluttDato).isNull()
         assertThat(oppfølgingsperiode.startetBegrunnelse).isEqualTo(OppfolgingStartBegrunnelse.ARBEIDSSOKER_REGISTRERING)
 
-        val lagreteMeldingerIUtboks = getRecordsStoredInKafkaOutbox(kafkaProperties.oppfolgingsperiodehendelseV1, fnr)
+        val lagreteMeldingerIUtboks = getRecordsStoredInKafkaOutbox(kafkaProperties.oppfolgingshendelseV1, fnr)
         assertThat(lagreteMeldingerIUtboks).hasSize(1)
         assertInstanceOf<OppfolgingsHendelseDto>(lagreteMeldingerIUtboks.first())
         val hendelse = lagreteMeldingerIUtboks.first() as OppfolgingStartetHendelseDto
