@@ -72,7 +72,7 @@ class OppfolgingsbrukerEndretIArenaServiceTest {
         oppfolgingsbrukerEndretIArenaService.oppdaterOppfolgingMedStatusFraArena(brukverV2)
 
         Mockito.verify(startOppfolgingService, Mockito.times(1)).startOppfolgingHvisIkkeAlleredeStartet(
-            OppfolgingsRegistrering.Companion.arenaSyncOppfolgingBruker(
+            OppfolgingsRegistrering.Companion.arenaSyncOppfolgingBrukerRegistrering(
                 TEST_FNR,
                 TEST_AKTOR_ID,
                 Formidlingsgruppe.ARBS,

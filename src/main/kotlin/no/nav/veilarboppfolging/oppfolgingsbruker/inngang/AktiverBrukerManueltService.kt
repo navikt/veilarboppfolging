@@ -21,7 +21,7 @@ class AktiverBrukerManueltService(
         transactor.executeWithoutResult {
             val aktorId = authService.getAktorIdOrThrow(fnr)
             val navIdent = NavIdent.of(authService.innloggetVeilederIdent)
-            val oppfolgingsbruker = OppfolgingsRegistrering.manueltRegistrertBruker(
+            val oppfolgingsbruker = OppfolgingsRegistrering.manuellRegistrering(
                 fnr, aktorId,
                 VeilederRegistrant(navIdent),
                 kontorSattAvVeileder

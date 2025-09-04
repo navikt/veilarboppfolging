@@ -19,10 +19,10 @@ sealed class OppfolgingsRegistrering(
         fun arbeidssokerRegistrering(fnr: Fnr, aktorId: AktorId, registrant: Registrant): ArbeidsokerRegistrering {
             return ArbeidsokerRegistrering(fnr, aktorId, registrant)
         }
-        fun manueltRegistrertBruker(fnr: Fnr, aktorId: AktorId, veileder: VeilederRegistrant, kontorSattAvVeileder: String? = null): ManuellRegistrering {
+        fun manuellRegistrering(fnr: Fnr, aktorId: AktorId, veileder: VeilederRegistrant, kontorSattAvVeileder: String? = null): ManuellRegistrering {
             return ManuellRegistrering(fnr, aktorId, veileder, kontorSattAvVeileder)
         }
-        fun arenaSyncOppfolgingBruker(fnr: Fnr, aktorId: AktorId, formidlingsgruppe: Formidlingsgruppe, kvalifiseringsgruppe: Kvalifiseringsgruppe, enhet: EnhetId): ArenaSyncRegistrering {
+        fun arenaSyncOppfolgingBrukerRegistrering(fnr: Fnr, aktorId: AktorId, formidlingsgruppe: Formidlingsgruppe, kvalifiseringsgruppe: Kvalifiseringsgruppe, enhet: EnhetId): ArenaSyncRegistrering {
             return ArenaSyncRegistrering(fnr, aktorId, formidlingsgruppe, kvalifiseringsgruppe, enhet)
         }
     }

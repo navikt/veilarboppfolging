@@ -75,7 +75,7 @@ public class OppfolgingsbrukerEndretIArenaService {
         if (skalOppfolges) {
             secureLog.info("Starter oppfølging på bruker som er under oppfølging i Arena, men ikke i veilarboppfolging. aktorId={}", bruker.getAktorId());
             startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(
-                    OppfolgingsRegistrering.Companion.arenaSyncOppfolgingBruker(
+                    OppfolgingsRegistrering.Companion.arenaSyncOppfolgingBrukerRegistrering(
                             fnr,
                             bruker.getAktorId(),
                             formidlingsgruppe,

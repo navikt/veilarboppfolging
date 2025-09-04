@@ -161,7 +161,7 @@ class ArbeidssøkerperiodeConsumerServiceTest(
 
     @Test
     fun `Dersom arbeidsrettet oppfølgingsperiode allerede eksisterer for sykmeldt bruker skal melding om arbeidssøkerperiode ikke endre noe`() {
-        val oppfølgingsbruker = OppfolgingsRegistrering.manueltRegistrertBruker(Fnr.of(fnr), aktørId, VeilederRegistrant(NavIdent.of("G123123")), "1234")
+        val oppfølgingsbruker = OppfolgingsRegistrering.manuellRegistrering(Fnr.of(fnr), aktørId, VeilederRegistrant(NavIdent.of("G123123")), "1234")
         startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(oppfølgingsbruker)
         val oppfølgingsdataFørMelding = oppfølgingService.hentOppfolgingsperioder(aktørId).first()
         val melding = ConsumerRecord("topic", 0, 0, "dummyKey", arbeidssøkerperiode(fnr))
