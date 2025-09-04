@@ -1,0 +1,23 @@
+apiVersion: kafka.nais.io/v1
+kind: Topic
+metadata:
+  name: privat-oppfolgingshendelse-v1
+  namespace: poao
+  labels:
+    team: poao
+  annotations:
+    kafka.nais.io/removeDataWhenResourceIsDeleted: "true"
+spec:
+  pool: nav-prod
+  config:
+    cleanupPolicy: delete # delete = ingen compaction
+    retentionHours: 336 # 2 uker
+    minimumInSyncReplicas: 1
+    partitions: 4
+  acl:
+    - team: dab
+      application: ao-oppfolgingskontor
+      access: read
+    - team: pto
+      application: pto-kafka-manager
+      access: read
