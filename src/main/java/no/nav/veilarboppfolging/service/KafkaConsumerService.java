@@ -29,7 +29,7 @@ public class KafkaConsumerService {
     private final KvpService kvpService;
     private final UtmeldingsService utmeldingsService;
     private final OppfolgingsenhetEndringService oppfolgingsenhetEndringService;
-    private final OppfolgingEndringService oppfolgingEndringService;
+    private final OppfolgingsbrukerEndretIArenaService oppfolgingsbrukerEndretIArenaService;
     private final AktorOppslagClient aktorOppslagClient;
     private final SisteEndringPaaOppfolgingBrukerService sisteEndringPaaOppfolgingBrukerService;
 
@@ -39,14 +39,14 @@ public class KafkaConsumerService {
             @Lazy KvpService kvpService,
             @Lazy UtmeldingsService utmeldingsService,
             OppfolgingsenhetEndringService oppfolgingsenhetEndringService,
-            @Lazy OppfolgingEndringService oppfolgingEndringService,
+            @Lazy OppfolgingsbrukerEndretIArenaService oppfolgingsbrukerEndretIArenaService,
             AktorOppslagClient aktorOppslagClient,
             SisteEndringPaaOppfolgingBrukerService sisteEndringPaaOppfolgingBrukerService) {
         this.authService = authService;
         this.kvpService = kvpService;
         this.utmeldingsService = utmeldingsService;
         this.oppfolgingsenhetEndringService = oppfolgingsenhetEndringService;
-        this.oppfolgingEndringService = oppfolgingEndringService;
+        this.oppfolgingsbrukerEndretIArenaService = oppfolgingsbrukerEndretIArenaService;
         this.aktorOppslagClient = aktorOppslagClient;
         this.sisteEndringPaaOppfolgingBrukerService = sisteEndringPaaOppfolgingBrukerService;
     }
@@ -74,7 +74,7 @@ public class KafkaConsumerService {
             kvpService.avsluttKvpVedEnhetBytte(endring);
             utmeldingsService.oppdaterUtmeldingsStatus(KanskjeIservBruker.Companion.of(endringPaBruker, aktorId));
             oppfolgingsenhetEndringService.behandleBrukerEndring(endring);
-            oppfolgingEndringService.oppdaterOppfolgingMedStatusFraArena(endring);
+            oppfolgingsbrukerEndretIArenaService.oppdaterOppfolgingMedStatusFraArena(endring);
             sisteEndringPaaOppfolgingBrukerService.lagreSisteEndring(brukerFnr, endringPaBruker.getSistEndretDato());
         } catch (IngenGjeldendeIdentException e) {
             log.warn("Fant ikke gjeldende ident ved behandling av endringPaOppfolgingBruker melding");

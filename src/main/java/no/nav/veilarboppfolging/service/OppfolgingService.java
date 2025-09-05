@@ -2,7 +2,6 @@ package no.nav.veilarboppfolging.service;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.client.aktorregister.IngenGjeldendeIdentException;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.Id;
@@ -20,12 +19,13 @@ import no.nav.veilarboppfolging.domain.Oppfolging;
 import no.nav.veilarboppfolging.domain.OppfolgingStatusData;
 import no.nav.veilarboppfolging.eventsLogger.BigQueryClient;
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant;
-import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ArenaSyncRegistrering;
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AdminAvregistrering;
-import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.Avregistrering;
-import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering;
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService;
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.LocalArenaOppfolging;
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ArenaSyncRegistrering;
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering;
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AdminAvregistrering;
+import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.Avregistrering;
+import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.hendelser.OppfolgingsAvsluttetHendelseDto;
 import no.nav.veilarboppfolging.repository.*;
 import no.nav.veilarboppfolging.repository.entity.*;
 import no.nav.veilarboppfolging.utils.ArenaUtils;
@@ -35,7 +35,6 @@ import no.nav.veilarboppfolging.utils.OppfolgingsperiodeUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -72,7 +71,6 @@ public class OppfolgingService {
     private final TransactionTemplate transactor;
     private final ArenaYtelserService arenaYtelserService;
     private final BigQueryClient bigQueryClient;
-    private final String navNoUrl;
 
     @Autowired
     public OppfolgingService(
@@ -106,7 +104,6 @@ public class OppfolgingService {
         this.transactor = transactor;
         this.arenaYtelserService = arenaYtelserService;
         this.bigQueryClient = bigQueryClient;
-        this.navNoUrl = navNoUrl;
     }
 
     @Transactional // TODO: kan denne være read only?
@@ -145,7 +142,7 @@ public class OppfolgingService {
         AktorId aktorId = avregistrering.getAktorId();
         Fnr fnr = authService.getFnrOrThrow(aktorId);
         ArenaOppfolgingTilstand arenaOppfolgingTilstand = arenaOppfolgingService.hentArenaOppfolgingTilstand(fnr)
-                .orElseThrow(() -> new RuntimeException("Feilet under henting av oppfølgingstilstand"));
+                .orElseThrow(() -> new RuntimeException("Feilet under henting av oppfolgingsstatus (db) med fallback til /oppfolgingsbruker"));
 
         if (authService.erInternBruker()) {
             authService.sjekkSkriveTilgangMedFnr(fnr);
@@ -292,28 +289,21 @@ public class OppfolgingService {
     }
 
     private void avsluttOppfolgingForBruker(Avregistrering avregistrering) {
+        var fnr = authService.getFnrOrThrow(avregistrering.getAktorId());
+        var aktorId = avregistrering.getAktorId();
         transactor.executeWithoutResult((ignored) -> {
+            oppfolgingsPeriodeRepository.avsluttSistePeriodeOgAvsluttOppfolging(aktorId, avregistrering.getAvsluttetAv().getIdent(), avregistrering.getBegrunnelse());
 
-            var aktorId = avregistrering.getAktorId();
-            oppfolgingsPeriodeRepository.avslutt(aktorId, avregistrering.getAvsluttetAv().getIdent(), avregistrering.getBegrunnelse());
-
-            List<OppfolgingsperiodeEntity> perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId);
-            OppfolgingsperiodeEntity sistePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(perioder);
+            var perioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId);
+            var sistePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(perioder);
 
             log.info("Oppfølgingsperiode avsluttet for bruker - publiserer endringer på oppfølgingsperiode-topics.");
             kafkaProducerService.publiserOppfolgingsperiode(DtoMappers.tilOppfolgingsperiodeDTO(sistePeriode));
-
-            // Publiserer også endringer som resettes i oppfolgingsstatus-tabellen ved avslutting av oppfølging
             kafkaProducerService.publiserVeilederTilordnet(aktorId, null);
             kafkaProducerService.publiserEndringPaNyForVeileder(aktorId, false);
             kafkaProducerService.publiserEndringPaManuellStatus(aktorId, false);
-
-            try{
-                Fnr fnr = authService.getFnrOrThrow(aktorId);
-                kafkaProducerService.publiserSkjulAoMinSideMicrofrontend(aktorId, fnr);
-            } catch(IngenGjeldendeIdentException e) {
-                log.error("Feil ved publiserSkjulAoMinSideMicrofrontend: {}", e.getMessage());
-            }
+            kafkaProducerService.publiserOppfolgingsAvsluttet(OppfolgingsAvsluttetHendelseDto.Companion.of(avregistrering, sistePeriode, fnr));
+            kafkaProducerService.publiserSkjulAoMinSideMicrofrontend(aktorId, fnr);
 
             bigQueryClient.loggAvsluttOppfolgingsperiode(sistePeriode.getUuid(), avregistrering.getAvregistreringsType());
         });
@@ -333,7 +323,7 @@ public class OppfolgingService {
         }
     }
 
-    private void avsluttValgtOppfolgingsperiode(Avregistrering avregistrering) {
+    private void avsluttValgtOppfolgingsperiode(AdminAvregistrering avregistrering) {
         var oppfolgingsperiodeUUID = avregistrering.getOppfolgingsperiodeUUID();
         var gjeldendePerioder = oppfolgingsPeriodeRepository.hentOppfolgingsperioder(avregistrering.getAktorId()).stream().filter(p -> p.getSluttDato() == null).toList();
         var sisteGjeldendePeriode = OppfolgingsperiodeUtils.hentSisteOppfolgingsperiode(gjeldendePerioder);

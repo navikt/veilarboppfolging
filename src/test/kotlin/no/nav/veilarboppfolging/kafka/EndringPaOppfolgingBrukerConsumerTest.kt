@@ -128,6 +128,8 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
 
         val oppfolgingFørEndring = arenaOppfolgingService.hentArenaOppfolgingTilstand(fnr)
         assert(oppfolgingFørEndring.isEmpty) { "Ny bruker skal IKKE ha oppfølgingsstatus" }
+        val oppfolgingsperioder = oppfolgingService.hentOppfolgingsperioder(fnr)
+        assert(oppfolgingsperioder.isEmpty()) { "Bruker skal ikke ha oppfølgingsperioder" }
 
         meldingFraVeilarbArenaPåBrukerMedStatus(
             fnr = fnr,
@@ -184,7 +186,7 @@ class EndringPaOppfolgingBrukerConsumerTest: IntegrationTest() {
 
     @Test
     fun `skal håndtere brukere som har oppfølging men bare ikke fått status fra arena`() {
-        startOppfolgingSomArbeidsoker(aktorId)
+        startOppfolgingSomArbeidsoker(aktorId, fnr)
 
         val statusEtterEndring = oppfolgingsStatusRepository.hentOppfolging(aktorId)
         assertEquals(true, statusEtterEndring.get().isUnderOppfolging)

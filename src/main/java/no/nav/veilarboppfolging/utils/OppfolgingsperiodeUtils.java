@@ -1,6 +1,5 @@
 package no.nav.veilarboppfolging.utils;
 
-import no.nav.common.types.identer.AktorId;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
 
 import java.time.ZonedDateTime;
