@@ -129,7 +129,7 @@ open class StartOppfolgingService(
             startetBegrunnelse = oppfølgingsperiode.startetBegrunnelse?.name
                 ?: throw IllegalStateException("Dette skal aldri skje, alle nystartede oppfølgingsperioder har 'startetBegrunnelse'"),
             arenaKontor = arenaKontor?.get(),
-            arbeidsoppfolgingsKontorSattAvVeileder = arbeidsoppfolgingskontor,
+            foretrukketArbeidsoppfolgingskontor = arbeidsoppfolgingskontor,
             fnr = fnr.get()
         )
     }

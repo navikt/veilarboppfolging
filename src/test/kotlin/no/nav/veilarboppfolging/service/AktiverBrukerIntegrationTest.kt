@@ -72,7 +72,7 @@ class AktiverBrukerIntegrationTest : IntegrationTest() {
         assertThat(hendelse.startetAvType).isEqualTo("VEILEDER")
         assertThat(hendelse.startetAv).isEqualTo(veilederIdent)
         assertThat(hendelse.startetTidspunkt).isCloseTo(ZonedDateTime.now(), within(1, ChronoUnit.SECONDS))
-        assertThat(hendelse.arbeidsoppfolgingsKontorSattAvVeileder).isEqualTo(kontorSattAvVeileder)
+        assertThat(hendelse.foretrukketArbeidsoppfolgingskontor).isEqualTo(kontorSattAvVeileder)
         assertThat(hendelse.oppfolgingsPeriodeId).isEqualTo(nyPeriode.uuid)
     }
 
@@ -90,7 +90,7 @@ class AktiverBrukerIntegrationTest : IntegrationTest() {
         val hendelse = lagreteMeldingerIUtboks.first() as OppfolgingStartetHendelseDto
         assertThat(hendelse.startetBegrunnelse).isEqualTo("ARBEIDSSOKER_REGISTRERING")
         assertThat(hendelse.arenaKontor).isNull()
-        assertThat(hendelse.arbeidsoppfolgingsKontorSattAvVeileder).isNull()
+        assertThat(hendelse.foretrukketArbeidsoppfolgingskontor).isNull()
     }
 
     @Test

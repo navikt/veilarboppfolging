@@ -86,7 +86,7 @@ class ArbeidssøkerperiodeConsumerServiceTest(
         assertThat(hendelse.startetAvType).isEqualTo(nyPeriode.startet.utfoertAv.type.name)
         assertThat(hendelse.startetAv).isEqualTo(nyPeriode.startet.utfoertAv.id)
         assertThat(hendelse.startetTidspunkt).isCloseTo(ZonedDateTime.now(), within(1, ChronoUnit.SECONDS))
-        assertThat(hendelse.arbeidsoppfolgingsKontorSattAvVeileder).isNull()
+        assertThat(hendelse.foretrukketArbeidsoppfolgingskontor).isNull()
         assertThat(hendelse.oppfolgingsPeriodeId).isEqualTo(oppfølgingsperiode.uuid)
     }
 
