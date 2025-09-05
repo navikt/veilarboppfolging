@@ -81,9 +81,9 @@ class ArbeidssøkerperiodeConsumerServiceTest(
         assertInstanceOf<OppfolgingsHendelseDto>(lagreteMeldingerIUtboks.first())
         val hendelse = lagreteMeldingerIUtboks.first() as OppfolgingStartetHendelseDto
         assertThat(hendelse.fnr).isEqualTo(fnr)
-        assertThat(hendelse.startetBegrunnelse).isEqualTo("ARBEIDSSOKER_REGISTRERING")
+        assertThat(hendelse.startetBegrunnelse).isEqualTo(OppfolgingStartBegrunnelse.ARBEIDSSOKER_REGISTRERING)
         assertThat(hendelse.arenaKontor).isNull()
-        assertThat(hendelse.startetAvType).isEqualTo(nyPeriode.startet.utfoertAv.type.name)
+        assertThat(hendelse.startetAvType).isEqualTo(nyPeriode.startet.utfoertAv.type.toStartetAvType())
         assertThat(hendelse.startetAv).isEqualTo(nyPeriode.startet.utfoertAv.id)
         assertThat(hendelse.startetTidspunkt).isCloseTo(ZonedDateTime.now(), within(1, ChronoUnit.SECONDS))
         assertThat(hendelse.foretrukketArbeidsoppfolgingskontor).isNull()

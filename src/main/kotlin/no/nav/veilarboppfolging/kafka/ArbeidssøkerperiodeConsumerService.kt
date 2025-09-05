@@ -75,16 +75,6 @@ open class ArbeidssøkerperiodeConsumerService(
         }
     }
 
-    private fun BrukerType.toStartetAvType(): StartetAvType {
-        return when (this) {
-            BrukerType.UKJENT_VERDI -> StartetAvType.SYSTEM
-            BrukerType.UDEFINERT -> StartetAvType.SYSTEM
-            BrukerType.VEILEDER -> StartetAvType.VEILEDER
-            BrukerType.SYSTEM -> StartetAvType.SYSTEM
-            BrukerType.SLUTTBRUKER -> StartetAvType.BRUKER
-        }
-    }
-
     fun utmeldHvisBrukerBleIservEtterArbeidssøkerRegistrering(fnr: Fnr, arbeidssøkerperiodeStartet: ZonedDateTime, aktorId: AktorId) {
         runCatching {
             val oppfolgingsbruker = arenaOppfolgingService.hentIservDatoOgFormidlingsGruppe(fnr) ?: throw IllegalStateException("Fant ikke bruker")
@@ -106,4 +96,14 @@ data class KanskjeIservBrukerMedPresisIservDato(
     val formidlingsgruppe: Formidlingsgruppe
 ) {
     fun toKanskjeIservBruker(): KanskjeIservBruker = KanskjeIservBruker(this.iservFraDato, this.aktorId, this.formidlingsgruppe, IservTrigger.ArbeidssøkerRegistreringSync)
+}
+
+fun BrukerType.toStartetAvType(): StartetAvType {
+    return when (this) {
+        BrukerType.UKJENT_VERDI -> StartetAvType.SYSTEM
+        BrukerType.UDEFINERT -> StartetAvType.SYSTEM
+        BrukerType.VEILEDER -> StartetAvType.VEILEDER
+        BrukerType.SYSTEM -> StartetAvType.SYSTEM
+        BrukerType.SLUTTBRUKER -> StartetAvType.BRUKER
+    }
 }

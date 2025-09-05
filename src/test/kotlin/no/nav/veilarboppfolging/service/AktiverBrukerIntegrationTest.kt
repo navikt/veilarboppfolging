@@ -7,6 +7,9 @@ import no.nav.poao_tilgang.client.Decision
 import no.nav.poao_tilgang.client.TilgangType
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.veilarboppfolging.IntegrationTest
+import no.nav.veilarboppfolging.oppfolgingsbruker.AvsluttetAvType
+import no.nav.veilarboppfolging.oppfolgingsbruker.StartetAvType
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelse
 import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.hendelser.OppfolgingStartetHendelseDto
 import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.hendelser.OppfolgingsAvsluttetHendelseDto
 import org.assertj.core.api.Assertions
@@ -67,9 +70,9 @@ class AktiverBrukerIntegrationTest : IntegrationTest() {
         assertThat(lagreteMeldingerIUtboks).hasSize(1)
         val hendelse = lagreteMeldingerIUtboks.first() as OppfolgingStartetHendelseDto
         assertThat(hendelse.fnr).isEqualTo(FNR.toString())
-        assertThat(hendelse.startetBegrunnelse).isEqualTo("MANUELL_REGISTRERING_VEILEDER")
+        assertThat(hendelse.startetBegrunnelse).isEqualTo(OppfolgingStartBegrunnelse.MANUELL_REGISTRERING_VEILEDER)
         assertThat(hendelse.arenaKontor).isNull()
-        assertThat(hendelse.startetAvType).isEqualTo("VEILEDER")
+        assertThat(hendelse.startetAvType).isEqualTo(StartetAvType.VEILEDER)
         assertThat(hendelse.startetAv).isEqualTo(veilederIdent)
         assertThat(hendelse.startetTidspunkt).isCloseTo(ZonedDateTime.now(), within(1, ChronoUnit.SECONDS))
         assertThat(hendelse.foretrukketArbeidsoppfolgingskontor).isEqualTo(kontorSattAvVeileder)
@@ -88,7 +91,7 @@ class AktiverBrukerIntegrationTest : IntegrationTest() {
         val lagreteMeldingerIUtboks = getRecordsStoredInKafkaOutbox(kafkaProperties.oppfolgingshendelseV1, FNR.toString())
         assertThat(lagreteMeldingerIUtboks).hasSize(1)
         val hendelse = lagreteMeldingerIUtboks.first() as OppfolgingStartetHendelseDto
-        assertThat(hendelse.startetBegrunnelse).isEqualTo("ARBEIDSSOKER_REGISTRERING")
+        assertThat(hendelse.startetBegrunnelse).isEqualTo(OppfolgingStartBegrunnelse.ARBEIDSSOKER_REGISTRERING)
         assertThat(hendelse.arenaKontor).isNull()
         assertThat(hendelse.foretrukketArbeidsoppfolgingskontor).isNull()
     }
@@ -115,7 +118,7 @@ class AktiverBrukerIntegrationTest : IntegrationTest() {
         assertInstanceOf<OppfolgingsAvsluttetHendelseDto>(avsluttetHendelse)
         assertThat(avsluttetHendelse.fnr).isEqualTo(FNR.toString())
         assertThat(avsluttetHendelse.avsluttetAv).isEqualTo(veilederIdent)
-        assertThat(avsluttetHendelse.avsluttetAvType).isEqualTo("VEILEDER")
+        assertThat(avsluttetHendelse.avsluttetAvType).isEqualTo(AvsluttetAvType.VEILEDER)
         assertThat(avsluttetHendelse.startetTidspunkt).isEqualTo(startHendelse.startetTidspunkt)
         assertThat(avsluttetHendelse.avsluttetTidspunkt).isCloseTo(ZonedDateTime.now(), within(1, ChronoUnit.SECONDS))
         assertThat(avsluttetHendelse.oppfolgingsPeriodeId).isEqualTo(startHendelse.oppfolgingsPeriodeId)
