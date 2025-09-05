@@ -301,14 +301,19 @@ open class IntegrationTest {
             )
     }
 
-    fun mockVeilarbArenaOppfolgingsBruker(fnr: Fnr, formidlingsgruppe: Formidlingsgruppe? = Formidlingsgruppe.ARBS, kvalifiseringsgruppe: Kvalifiseringsgruppe = Kvalifiseringsgruppe.BATT, oppfolgingsEnhet: String? = "1234") {
+    fun mockVeilarbArenaOppfolgingsBruker(
+        fnr: Fnr,
+        formidlingsgruppe: Formidlingsgruppe? = Formidlingsgruppe.ARBS,
+        kvalifiseringsgruppe: Kvalifiseringsgruppe = Kvalifiseringsgruppe.BATT,
+        oppfolgingsEnhet: String? = "1234",
+        iservFraDato: ZonedDateTime = ZonedDateTime.now()) {
         `when`(veilarbarenaClient.hentOppfolgingsbruker(fnr)).thenReturn(
             Optional.of(
                 VeilarbArenaOppfolgingsBruker()
                     .setFodselsnr(fnr.get())
                     .setFormidlingsgruppekode(formidlingsgruppe?.name)
                     .setHovedmaalkode("BEHOLDEA")
-                    .setIserv_fra_dato(ZonedDateTime.now())
+                    .setIserv_fra_dato(iservFraDato)
                     .setKvalifiseringsgruppekode(kvalifiseringsgruppe.name)
                     .setNav_kontor(oppfolgingsEnhet)
             )

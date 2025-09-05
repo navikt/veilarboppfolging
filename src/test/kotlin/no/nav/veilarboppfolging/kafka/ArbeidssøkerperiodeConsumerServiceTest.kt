@@ -7,8 +7,6 @@ import no.nav.paw.arbeidssokerregisteret.api.v1.*
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2
 import no.nav.veilarboppfolging.IntegrationTest
-import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsBruker
-import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient
 import no.nav.veilarboppfolging.oppfolgingsbruker.StartetAvType
 import no.nav.veilarboppfolging.oppfolgingsbruker.BrukerRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant
@@ -49,8 +47,6 @@ class ArbeidssøkerperiodeConsumerServiceTest(
     val oppfølgingService: OppfolgingService,
     @Autowired
     val utmeldingRepository: UtmeldingRepository,
-    @Autowired
-    val veilarbarenaClient: VeilarbarenaClient,
 ): IntegrationTest() {
 
     private val fnr = "01010198765"
@@ -190,11 +186,10 @@ class ArbeidssøkerperiodeConsumerServiceTest(
     fun `Skal putte person i utmelding tabell hvis ISERV i Arena og ISERV_FRA_DATO er etter arbeidssøkerregistreringen`() {
         val arbeidsøkerPeriodeStartet = LocalDateTime.of(2024, 10,1,23,59)
         val ISERV_FRA_DATO = LocalDate.of(2024, 10, 2)
-        `when`(veilarbarenaClient.hentOppfolgingsbruker(Fnr.of(fnr))).thenReturn(Optional.of(
-            VeilarbArenaOppfolgingsBruker()
-            .setFodselsnr(fnr)
-            .setFormidlingsgruppekode("ISERV")
-            .setIserv_fra_dato(ISERV_FRA_DATO.atStartOfDay(ZoneId.systemDefault())))
+        mockVeilarbArenaOppfolgingsBruker(
+            Fnr.of(fnr),
+            Formidlingsgruppe.ISERV,
+            iservFraDato = ISERV_FRA_DATO.atStartOfDay(ZoneId.systemDefault())
         )
         val nyPeriode = arbeidssøkerperiode(fnr, periodeStartet = arbeidsøkerPeriodeStartet.atZone(ZoneId.systemDefault()).toInstant())
         val oppfolginsBrukerEndretTilISERV = ConsumerRecord("topic", 0, 0, "key", oppfølgingsBrukerEndret(
@@ -217,12 +212,7 @@ class ArbeidssøkerperiodeConsumerServiceTest(
     fun `Skal ikke putte person i utmelding tabell hvis ISERV i Arena og ISERV_FRA_DATO er før arbeidssøkerregistreringen`() {
         val arbeidsøkerPeriodeStartet = LocalDateTime.of(2024, 10,1,1,1)
         val ISERV_FRA_DATO = arbeidsøkerPeriodeStartet // Samme tidspunkt
-        `when`(veilarbarenaClient.hentOppfolgingsbruker(Fnr.of(fnr))).thenReturn(Optional.of(
-            VeilarbArenaOppfolgingsBruker()
-            .setFodselsnr(fnr)
-            .setFormidlingsgruppekode("ISERV")
-            .setIserv_fra_dato(ISERV_FRA_DATO.atZone(ZoneId.systemDefault())))
-        )
+        mockVeilarbArenaOppfolgingsBruker(Fnr.of(fnr), Formidlingsgruppe.ISERV, iservFraDato = ISERV_FRA_DATO.atZone(ZoneId.systemDefault()))
         val nyPeriode = arbeidssøkerperiode(fnr, periodeStartet = arbeidsøkerPeriodeStartet.atZone(ZoneId.systemDefault()).toInstant())
         val oppfolginsBrukerEndretTilISERV = ConsumerRecord("topic", 0, 0, "key", oppfølgingsBrukerEndret(
             ISERV_FRA_DATO.toLocalDate(), formidlingsgruppe = Formidlingsgruppe.ISERV))
