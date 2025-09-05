@@ -124,9 +124,9 @@ open class StartOppfolgingService(
             startetTidspunkt = oppfølgingsperiode.startDato,
             startetAv = oppfølgingsperiode.startetAv
                 ?: throw IllegalStateException("Dette skal aldri skje, alle nystartede oppfølgingsperioder har 'startetAv'"),
-            startetAvType = oppfølgingsperiode.startetAvType?.name
+            startetAvType = oppfølgingsperiode.startetAvType
                 ?: throw IllegalStateException("Dette skal aldri skje, alle nystartede oppfølgingsperioder har 'startetAvType'"),
-            startetBegrunnelse = oppfølgingsperiode.startetBegrunnelse?.name
+            startetBegrunnelse = oppfølgingsperiode.startetBegrunnelse
                 ?: throw IllegalStateException("Dette skal aldri skje, alle nystartede oppfølgingsperioder har 'startetBegrunnelse'"),
             arenaKontor = arenaKontor?.get(),
             foretrukketArbeidsoppfolgingskontor = arbeidsoppfolgingskontor,

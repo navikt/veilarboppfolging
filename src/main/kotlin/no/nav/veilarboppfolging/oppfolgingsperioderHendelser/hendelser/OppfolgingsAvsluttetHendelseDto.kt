@@ -1,6 +1,7 @@
 package no.nav.veilarboppfolging.oppfolgingsperioderHendelser.hendelser
 
 import no.nav.common.types.identer.Fnr
+import no.nav.veilarboppfolging.oppfolgingsbruker.AvsluttetAvType
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.Avregistrering
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.AvregistreringsType
 import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.OppfolgingsHendelseDto
@@ -14,7 +15,7 @@ class OppfolgingsAvsluttetHendelseDto(
     val startetTidspunkt: ZonedDateTime,
     val avsluttetTidspunkt: ZonedDateTime,
     val avsluttetAv: String,
-    val avsluttetAvType: String,
+    val avsluttetAvType: AvsluttetAvType,
     val avregistreringsType: AvregistreringsType
 ): OppfolgingsHendelseDto(HendelseType.OPPFOLGING_AVSLUTTET) {
     companion object {
@@ -25,7 +26,7 @@ class OppfolgingsAvsluttetHendelseDto(
                 startetTidspunkt = periode.startDato,
                 avsluttetTidspunkt = periode.sluttDato,
                 avsluttetAv = avregistrering.avsluttetAv.getIdent(),
-                avsluttetAvType = avregistrering.avsluttetAv.getType().name,
+                avsluttetAvType = avregistrering.avsluttetAv.getType(),
                 avregistreringsType = avregistrering.getAvregistreringsType(),
             )
         }

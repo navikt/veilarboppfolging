@@ -3,7 +3,6 @@ package no.nav.veilarboppfolging.oppfolgingsbruker
 import no.nav.common.types.identer.Fnr
 import no.nav.common.types.identer.NavIdent
 import no.nav.veilarboppfolging.config.ApplicationConfig.SYSTEM_USER_NAME
-import no.nav.veilarboppfolging.domain.StartetAvType
 
 /* a person who registers something. */
 sealed class Registrant() {

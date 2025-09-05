@@ -1,7 +1,7 @@
 package no.nav.veilarboppfolging.repository;
 
 import no.nav.common.types.identer.AktorId;
-import no.nav.veilarboppfolging.domain.StartetAvType;
+import no.nav.veilarboppfolging.oppfolgingsbruker.StartetAvType;
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ManuellRegistrering;
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelse;
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering;

@@ -3,7 +3,7 @@ package no.nav.veilarboppfolging.repository.entity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Value;
-import no.nav.veilarboppfolging.domain.StartetAvType;
+import no.nav.veilarboppfolging.oppfolgingsbruker.StartetAvType;
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelse;
 
 import javax.annotation.Nullable;
