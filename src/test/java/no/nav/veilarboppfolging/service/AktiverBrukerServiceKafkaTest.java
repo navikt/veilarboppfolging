@@ -10,7 +10,7 @@ import no.nav.pto_schema.kafka.json.topic.SisteOppfolgingsperiodeV1;
 import no.nav.veilarboppfolging.IntegrationTest;
 import no.nav.veilarboppfolging.controller.request.AktiverArbeidssokerData;
 import no.nav.veilarboppfolging.controller.request.Innsatsgruppe;
-import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.AktiverBrukerService;
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.AktiverBrukerManueltService;
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -43,7 +43,7 @@ public class AktiverBrukerServiceKafkaTest extends IntegrationTest {
     DataSource dataSource;
 
     @Autowired
-    AktiverBrukerService aktiverBrukerService;
+    AktiverBrukerManueltService aktiverBrukerManueltService;
 
     @Autowired
     OppfolgingsPeriodeRepository oppfolgingsPeriodeRepository;
@@ -91,7 +91,7 @@ public class AktiverBrukerServiceKafkaTest extends IntegrationTest {
     public void skalPubliserePaaKafkaVedAktivering() {
         consumerClient.start();
 
-        startOppfolgingSomArbeidsoker(aktorId);
+        startOppfolgingSomArbeidsoker(aktorId, fnr);
         verifiserAsynkront(8, TimeUnit.SECONDS, () -> {
             assertEquals(1,
                     konsumerteSisteOppfolgingsperiodeMeldinger.get().values().size(),

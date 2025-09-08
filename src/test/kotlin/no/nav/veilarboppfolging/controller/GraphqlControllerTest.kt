@@ -35,7 +35,7 @@ class GraphqlControllerTest: IntegrationTest() {
     fun defaultBruker(): Pair<Fnr, AktorId> {
         val fnr = Fnr("12345678910")
         val aktorId = AktorId("22345678910")
-        mockAuthOk(aktorId, fnr)
+        mockSytemBrukerAuthOk(aktorId, fnr)
         mockPdlFolkeregisterStatus(fnr, FregStatusOgStatsborgerskap(ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven, norskStatsborgerskap))
         return fnr to aktorId
     }
@@ -92,7 +92,7 @@ class GraphqlControllerTest: IntegrationTest() {
     @Test
     fun `skal returnere erUnderOppfolging - true når bruker ER under oppfølging`() {
         val (fnr, aktorId) = defaultBruker()
-        setBrukerUnderOppfolging(aktorId)
+        setBrukerUnderOppfolging(aktorId, fnr)
 
         /* Query is hidden in test/resources/graphl-test :) */
         val result = tester.documentName("getUnderOppfolging").variable("fnr", fnr.get()).execute()
@@ -135,11 +135,11 @@ class GraphqlControllerTest: IntegrationTest() {
         val veilederUuid = UUID.randomUUID()
         val fnr = Fnr.of("12444678910")
         val aktorId = AktorId.of("12444678919")
-        setBrukerUnderOppfolging(aktorId)
+        setBrukerUnderOppfolging(aktorId, fnr)
         mockPoaoTilgangHarTilgangTilBruker(veilederUuid, fnr, Decision.Permit)
         mockPdlFolkeregisterStatus(fnr, FregStatusOgStatsborgerskap(ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven, norskStatsborgerskap))
         mockInternBrukerAuthOk(veilederUuid, aktorId, fnr)
-        mockVeilarbArenaClient(fnr= fnr, formidlingsgruppe = Formidlingsgruppe.ISERV, kanEnkeltReaktiveres = true)
+        mockVeilarbArenaOppfolgingsStatus(fnr= fnr, formidlingsgruppe = Formidlingsgruppe.ISERV, kanEnkeltReaktiveres = true)
         /* Query is hidden in test/resources/graphl-test :) */
         val result = tester.documentName("kanStarteOppfolging").variable("fnr", fnr.get()).execute()
         result.errors().verify()
@@ -154,7 +154,7 @@ class GraphqlControllerTest: IntegrationTest() {
         val veilederUuid = UUID.randomUUID()
         val fnr = Fnr.of("12444678910")
         val aktorId = AktorId.of("12444678919")
-        setBrukerUnderOppfolging(aktorId)
+        setBrukerUnderOppfolging(aktorId, fnr)
         mockPoaoTilgangHarTilgangTilBruker(veilederUuid, fnr, Decision.Permit)
         mockPdlFolkeregisterStatus(fnr, FregStatusOgStatsborgerskap(ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven, norskStatsborgerskap))
         mockInternBrukerAuthOk(veilederUuid, aktorId, fnr)
@@ -278,7 +278,7 @@ class GraphqlControllerTest: IntegrationTest() {
         val (fnr, aktorId) = defaultBruker()
         mockInternBrukerAuthOk(veilederId, aktorId, fnr)
         mockPoaoTilgangHarTilgangTilBruker(veilederId, fnr, Decision.Permit)
-        setBrukerUnderOppfolging(aktorId)
+        setBrukerUnderOppfolging(aktorId, fnr)
 
         /* Query is hidden in test/resources/graphl-test :) */
         val result = tester.documentName("getOppfolgingsperioder").variable("fnr", fnr.get()).execute()

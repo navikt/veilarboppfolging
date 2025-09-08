@@ -2,6 +2,7 @@ package no.nav.veilarboppfolging.controller
 
 import no.nav.common.types.identer.AktorId
 import no.nav.common.types.identer.Fnr
+import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.veilarboppfolging.BadRequestException
 import no.nav.veilarboppfolging.IntegrationTest
 import no.nav.veilarboppfolging.controller.response.OppfolgingPeriodeDTO
@@ -19,8 +20,8 @@ class SakControllerIntegrationTest: IntegrationTest() {
 
     @Test
     fun `når man henter sak for oppfølgsingsperiode uten sak skal sak opprettes`() {
-        mockAuthOk(aktørId, fnr)
-        startOppfolgingSomArbeidsoker(aktørId)
+        mockSytemBrukerAuthOk(aktørId, fnr)
+        startOppfolgingSomArbeidsoker(aktørId, fnr)
         val perioder: List<OppfolgingPeriodeDTO> = hentOppfolgingsperioder(fnr)
         val oppfølgingsperiodeUUID = perioder[0].uuid
 
@@ -40,8 +41,8 @@ class SakControllerIntegrationTest: IntegrationTest() {
 
     @Test
     fun `når man henter sak for oppfølgingsperiode med eksisterende sak skal ikke ny sak opprettes`() {
-        mockAuthOk(aktørId, fnr)
-        startOppfolgingSomArbeidsoker(aktørId)
+        mockSytemBrukerAuthOk(aktørId, fnr)
+        startOppfolgingSomArbeidsoker(aktørId, fnr)
         val perioder: List<OppfolgingPeriodeDTO> = hentOppfolgingsperioder(fnr)
         val oppfølgingsperiodeUUID = perioder[0].uuid
         sakRepository.opprettSak(oppfølgingsperiodeUUID)
@@ -59,16 +60,16 @@ class SakControllerIntegrationTest: IntegrationTest() {
     @Test
     fun `når man henter sak for oppfølgsingsperiode uten sak skal sak opprettes selv om andre saker for andre perioder finnes`() {
         // Given
-        mockAuthOk(aktørId, fnr)
-        startOppfolgingSomArbeidsoker(aktørId)
+        mockSytemBrukerAuthOk(aktørId, fnr)
+        startOppfolgingSomArbeidsoker(aktørId, fnr)
         val oppfølgingsperiodeUuidMedSak = hentOppfolgingsperioder(fnr)[0].uuid
         sakRepository.opprettSak(oppfølgingsperiodeUuidMedSak)
         assertThat(sakRepository.hentSaker(oppfølgingsperiodeUuidMedSak)).hasSize(1)
 
         val annetFnr = Fnr.of("09876543210"    )
         val annenAktørId = AktorId.of("12345678901234")
-        mockAuthOk(annenAktørId, annetFnr)
-        startOppfolgingSomArbeidsoker(annenAktørId)
+        mockSytemBrukerAuthOk(annenAktørId, annetFnr)
+        startOppfolgingSomArbeidsoker(annenAktørId, annetFnr)
         val oppfølgingsperiodeUuidUtenSak = hentOppfolgingsperioder(annetFnr)[0].uuid
         assertThat(oppfølgingsperiodeUuidMedSak).isNotEqualTo(oppfølgingsperiodeUuidUtenSak)
 
@@ -93,11 +94,12 @@ class SakControllerIntegrationTest: IntegrationTest() {
 
     @Test
     fun `Skal kunne hente sak for oppfølgingsperiode som er avsluttet`() {
-        mockAuthOk(aktørId, fnr)
-        startOppfolgingSomArbeidsoker(aktørId)
+        mockSytemBrukerAuthOk(aktørId, fnr)
+        mockVeilarbArenaOppfolgingsBruker(fnr, Formidlingsgruppe.ISERV)
+        startOppfolgingSomArbeidsoker(aktørId, fnr)
         val perioder: List<OppfolgingPeriodeDTO> = hentOppfolgingsperioder(fnr)
         val oppfølgingsperiodeUUID = perioder[0].uuid
-        avsluttOppfolging(aktørId)
+        avsluttOppfolgingManueltSomVeileder(aktørId)
 
         val sak = sakController.opprettEllerHentSak(oppfølgingsperiodeUUID)
 
