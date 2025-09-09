@@ -27,11 +27,11 @@ import java.util.*
 @Service
 class ArenaOppfolgingService @Autowired constructor (
     // Bruker AktorregisterClient istedenfor authService for å unngå sirkulær avhengighet
-    val aktorOppslagClient: AktorOppslagClient,
-    val veilarbarenaClient: VeilarbarenaClient,
-    val oppfolgingsStatusRepository: OppfolgingsStatusRepository,
-    val authService: AuthService,
-    val norg2Client: Norg2Client,
+    private val aktorOppslagClient: AktorOppslagClient,
+    private val veilarbarenaClient: VeilarbarenaClient,
+    private val oppfolgingsStatusRepository: OppfolgingsStatusRepository,
+    private val authService: AuthService,
+    private val norg2Client: Norg2Client,
 ) {
     private val log = LoggerFactory.getLogger(ArenaOppfolgingService::class.java)
 

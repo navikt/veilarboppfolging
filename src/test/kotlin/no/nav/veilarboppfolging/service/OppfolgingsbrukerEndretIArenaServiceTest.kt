@@ -1,5 +1,6 @@
 package no.nav.veilarboppfolging.service
 
+import no.nav.common.types.identer.EnhetId
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
 import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
@@ -16,7 +17,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import java.util.*
 
-class OppfolgingEndringServiceTest {
+class OppfolgingsbrukerEndretIArenaServiceTest {
     private val authService: AuthService = Mockito.mock(AuthService::class.java)
     private val oppfolgingService: OppfolgingService = Mockito.mock(OppfolgingService::class.java)
     private val startOppfolgingService: StartOppfolgingService = Mockito.mock(StartOppfolgingService::class.java)
@@ -27,7 +28,7 @@ class OppfolgingEndringServiceTest {
 
     private fun <T> any(type: Class<T>): T = Mockito.any<T>(type)
 
-    private val oppfolgingEndringService = OppfolgingEndringService(
+    private val oppfolgingsbrukerEndretIArenaService = OppfolgingsbrukerEndretIArenaService(
         oppfolgingService, startOppfolgingService, arenaOppfolgingService,
         kvpService, metricsService, oppfolgingsStatusRepository
     )
@@ -45,7 +46,7 @@ class OppfolgingEndringServiceTest {
             kvalifiseringsgruppe = Kvalifiseringsgruppe.VURDI
         )
 
-        oppfolgingEndringService.oppdaterOppfolgingMedStatusFraArena(brukverV2)
+        oppfolgingsbrukerEndretIArenaService.oppdaterOppfolgingMedStatusFraArena(brukverV2)
 
         Mockito.verify(startOppfolgingService, Mockito.never()).startOppfolgingHvisIkkeAlleredeStartet(
             any(OppfolgingsRegistrering::class.java)
@@ -63,17 +64,20 @@ class OppfolgingEndringServiceTest {
         val brukverV2 = EndringPaaOppfolgingsBruker(
             aktorId =  TEST_AKTOR_ID,
             fodselsnummer = TEST_FNR.get(),
+            oppfolgingsenhet = "1234",
             formidlingsgruppe = Formidlingsgruppe.ARBS,
             kvalifiseringsgruppe = Kvalifiseringsgruppe.VURDI
         )
 
-        oppfolgingEndringService.oppdaterOppfolgingMedStatusFraArena(brukverV2)
+        oppfolgingsbrukerEndretIArenaService.oppdaterOppfolgingMedStatusFraArena(brukverV2)
 
         Mockito.verify(startOppfolgingService, Mockito.times(1)).startOppfolgingHvisIkkeAlleredeStartet(
-            OppfolgingsRegistrering.Companion.arenaSyncOppfolgingBruker(
+            OppfolgingsRegistrering.Companion.arenaSyncOppfolgingBrukerRegistrering(
+                TEST_FNR,
                 TEST_AKTOR_ID,
                 Formidlingsgruppe.ARBS,
-                brukverV2.kvalifiseringsgruppe
+                brukverV2.kvalifiseringsgruppe,
+                EnhetId.of("1234")
             )
         )
         Mockito.verify(oppfolgingService, Mockito.never())
@@ -103,7 +107,7 @@ class OppfolgingEndringServiceTest {
             kvalifiseringsgruppe = Kvalifiseringsgruppe.VURDI
         )
 
-        oppfolgingEndringService.oppdaterOppfolgingMedStatusFraArena(brukverV2)
+        oppfolgingsbrukerEndretIArenaService.oppdaterOppfolgingMedStatusFraArena(brukverV2)
 
         Mockito.verify(startOppfolgingService, Mockito.never()).startOppfolgingHvisIkkeAlleredeStartet(
             any(OppfolgingsRegistrering::class.java)
@@ -139,7 +143,7 @@ class OppfolgingEndringServiceTest {
             kvalifiseringsgruppe = Kvalifiseringsgruppe.VURDI
         )
 
-        oppfolgingEndringService.oppdaterOppfolgingMedStatusFraArena(brukverV2)
+        oppfolgingsbrukerEndretIArenaService.oppdaterOppfolgingMedStatusFraArena(brukverV2)
 
         Mockito.verify(startOppfolgingService, Mockito.never()).startOppfolgingHvisIkkeAlleredeStartet(
             any(OppfolgingsRegistrering::class.java)
@@ -172,7 +176,7 @@ class OppfolgingEndringServiceTest {
             kvalifiseringsgruppe = Kvalifiseringsgruppe.VURDI
         )
 
-        oppfolgingEndringService.oppdaterOppfolgingMedStatusFraArena(brukverV2)
+        oppfolgingsbrukerEndretIArenaService.oppdaterOppfolgingMedStatusFraArena(brukverV2)
 
         Mockito.verify(startOppfolgingService, Mockito.never()).startOppfolgingHvisIkkeAlleredeStartet(
             any(OppfolgingsRegistrering::class.java)
@@ -205,7 +209,7 @@ class OppfolgingEndringServiceTest {
             kvalifiseringsgruppe = Kvalifiseringsgruppe.VURDI
         )
 
-        oppfolgingEndringService.oppdaterOppfolgingMedStatusFraArena(brukverV2)
+        oppfolgingsbrukerEndretIArenaService.oppdaterOppfolgingMedStatusFraArena(brukverV2)
 
         Mockito.verify(startOppfolgingService, Mockito.never()).startOppfolgingHvisIkkeAlleredeStartet(
             any(OppfolgingsRegistrering::class.java)

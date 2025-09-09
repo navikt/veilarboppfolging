@@ -17,7 +17,6 @@ sealed class Avregistrering(
     open val aktorId: AktorId,
     open val avsluttetAv: Registrant,
     open val begrunnelse: String,
-    open val oppfolgingsperiodeUUID: UUID? = null
 ) {
     abstract fun getAvregistreringsType(): AvregistreringsType
 }
@@ -54,7 +53,7 @@ data class AdminAvregistrering(
     override val aktorId: AktorId,
     val veileder: VeilederRegistrant,
     override val begrunnelse: String,
-    override val oppfolgingsperiodeUUID: UUID? = null
-) : Avregistrering(aktorId, veileder, begrunnelse, oppfolgingsperiodeUUID) {
+    val oppfolgingsperiodeUUID: UUID
+) : Avregistrering(aktorId, veileder, begrunnelse) {
     override fun getAvregistreringsType() = AvregistreringsType.AdminAvregistrering
 }
