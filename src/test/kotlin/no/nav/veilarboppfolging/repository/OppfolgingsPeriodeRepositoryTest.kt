@@ -9,14 +9,18 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.BrukerRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelse
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering.Companion.arbeidssokerRegistrering
 import no.nav.veilarboppfolging.test.DbTestUtils
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import org.springframework.dao.DuplicateKeyException
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.transaction.support.TransactionTemplate
 import java.util.*
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 
 class OppfolgingsPeriodeRepositoryTest {
     private val jdbcTemplate = LocalDatabaseSingleton.jdbcTemplate
@@ -36,7 +40,7 @@ class OppfolgingsPeriodeRepositoryTest {
         val aktorId = AktorId.of("4321")
         val fnr = Fnr.of("1111119999")
         val oppfolgingsbruker =
-            OppfolgingsRegistrering.Companion.arbeidssokerRegistrering(fnr, aktorId, BrukerRegistrant(fnr))
+            arbeidssokerRegistrering(fnr, aktorId, BrukerRegistrant(fnr))
         oppfolgingsStatusRepository.opprettOppfolging(aktorId)
 
         oppfolgingsPeriodeRepository.start(oppfolgingsbruker)
@@ -55,7 +59,7 @@ class OppfolgingsPeriodeRepositoryTest {
         val aktorId = AktorId.of("4321")
         val fnr = Fnr.of("1111119999")
         val oppfolgingsbruker =
-            OppfolgingsRegistrering.arbeidssokerRegistrering(fnr, aktorId, BrukerRegistrant(fnr))
+            arbeidssokerRegistrering(fnr, aktorId, BrukerRegistrant(fnr))
         val maybeOppfolgingsperiodeEntity1 = oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId)
         Assertions.assertTrue(maybeOppfolgingsperiodeEntity1.isEmpty())
         oppfolgingsStatusRepository.opprettOppfolging(aktorId)
@@ -71,7 +75,7 @@ class OppfolgingsPeriodeRepositoryTest {
     fun `skal returnere startetAv og startetAvType`() {
         val aktorId = AktorId.of("4321")
         val fnr = Fnr.of("1111119999")
-        val oppfolgingsbruker = OppfolgingsRegistrering.arbeidssokerRegistrering(fnr, aktorId, BrukerRegistrant(fnr))
+        val oppfolgingsbruker = arbeidssokerRegistrering(fnr, aktorId, BrukerRegistrant(fnr))
         oppfolgingsStatusRepository.opprettOppfolging(aktorId)
         oppfolgingsPeriodeRepository.start(oppfolgingsbruker)
 
@@ -117,7 +121,7 @@ class OppfolgingsPeriodeRepositoryTest {
         val aktorId = AktorId.of("4321")
         val fnr = Fnr.of("1111119999")
         val veilederIdent = NavIdent("Z999999")
-        val oppfolgingsbruker = OppfolgingsRegistrering.arbeidssokerRegistrering(fnr, aktorId, VeilederRegistrant(
+        val oppfolgingsbruker = arbeidssokerRegistrering(fnr, aktorId, VeilederRegistrant(
             NavIdent("Z999999")))
         val avsluttetBegrunnelse = "derfor"
         oppfolgingsStatusRepository.opprettOppfolging(aktorId)
@@ -134,5 +138,39 @@ class OppfolgingsPeriodeRepositoryTest {
         assertEquals(OppfolgingStartBegrunnelse.ARBEIDSSOKER_REGISTRERING, periode.startetBegrunnelse)
         assertEquals(avsluttetBegrunnelse, periode.begrunnelse) // Avsluttet begrunnelse (fritekst)
         assertEquals(veilederIdent.get(), periode.avsluttetAv) // Avsluttet veileder
+    }
+
+    @Test
+    fun `Skal ikke være mulig å lagre to gjeldende oppfølgingsperioder på samme person`() {
+        val aktorId = AktorId.of("4321")
+        val fnr = Fnr.of("1111119999")
+        val oppfolgingsbruker = arbeidssokerRegistrering(fnr, aktorId, VeilederRegistrant(
+            NavIdent("Z999999")))
+        oppfolgingsStatusRepository.opprettOppfolging(aktorId)
+        oppfolgingsPeriodeRepository.start(oppfolgingsbruker)
+
+        assertThrows<DuplicateKeyException> {
+            oppfolgingsPeriodeRepository.start(oppfolgingsbruker)
+        }
+    }
+
+    @Test
+    fun `Kan lagre to åpne oppfølgingsperioder på to forskjellige personer`() {
+        val aktorIdBruker1 = AktorId.of("4321")
+        val fnrBruker1 = Fnr.of("1111119999")
+        val oppfolgingsbruker1 = arbeidssokerRegistrering(fnrBruker1, aktorIdBruker1, VeilederRegistrant(
+            NavIdent("Z999999")))
+        oppfolgingsStatusRepository.opprettOppfolging(aktorIdBruker1)
+        val aktorIdBruker2 = AktorId.of("1234")
+        val fnrBruker2 = Fnr.of("2211119999")
+        val oppfolgingsbruker2 = arbeidssokerRegistrering(fnrBruker2, aktorIdBruker2, VeilederRegistrant(
+            NavIdent("Z999999")))
+        oppfolgingsStatusRepository.opprettOppfolging(aktorIdBruker2)
+
+        oppfolgingsPeriodeRepository.start(oppfolgingsbruker1)
+        oppfolgingsPeriodeRepository.start(oppfolgingsbruker2)
+
+        assertNotNull(oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorIdBruker1))
+        assertNotNull(oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorIdBruker2))
     }
 }
