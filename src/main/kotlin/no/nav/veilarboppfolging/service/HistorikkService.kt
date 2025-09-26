@@ -73,7 +73,7 @@ class HistorikkService(
     private fun tilDTO(reaktiverOppfolgingHendelseEntity: ReaktiverOppfolgingHendelseEntity): HistorikkHendelse {
         return HistorikkHendelse.builder()
             .type(HistorikkHendelse.Type.REAKTIVERT_OPPFOLGINGSPERIODE)
-            .begrunnelse(getStartetBegrunnelseTekst(OppfolgingStartBegrunnelse.REAKTIVERT_OPPFØLGING, null))
+            .begrunnelse("Bruker manuelt reaktivert i Arena av veileder")
             .dato(reaktiverOppfolgingHendelseEntity.reaktiveringTidspunkt)
             .opprettetAv(KodeverkBruker.NAV)
             .opprettetAvBrukerId(reaktiverOppfolgingHendelseEntity.reaktivertAv)
@@ -114,7 +114,6 @@ class HistorikkService(
             OppfolgingStartBegrunnelse.ARENA_SYNC_ARBS -> "Registrert som arbeidssøker i arena"
             OppfolgingStartBegrunnelse.ARENA_SYNC_IARBS -> "Registrert 14a vedtak i arena eller sykmeldt uten arbeidsgiver (VURDU)"
             OppfolgingStartBegrunnelse.MANUELL_REGISTRERING_VEILEDER -> "Veileder startet arbeidsrettet oppfølging på bruker"
-            OppfolgingStartBegrunnelse.REAKTIVERT_OPPFØLGING -> "Arbeidsrettet oppfølging ble reaktivert"
             else -> "Startet arbeidsrettet oppfølging på bruker"
         }
     }
