@@ -6,13 +6,14 @@ import no.nav.common.types.identer.NavIdent
 import no.nav.paw.arbeidssokerregisteret.api.v1.BrukerType
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.pto_schema.enums.arena.Formidlingsgruppe
-import no.nav.veilarboppfolging.domain.StartetAvType
-import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering
+import no.nav.veilarboppfolging.oppfolgingsbruker.StartetAvType
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering
 import no.nav.veilarboppfolging.oppfolgingsbruker.toRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.utgang.UtmeldingsService
 import no.nav.veilarboppfolging.service.AuthService
 import no.nav.veilarboppfolging.service.OppfolgingService
+import no.nav.veilarboppfolging.service.StartOppfolgingService
 import no.nav.veilarboppfolging.service.utmelding.IservTrigger
 import no.nav.veilarboppfolging.service.utmelding.KanskjeIservBruker
 import org.apache.kafka.clients.consumer.ConsumerRecord
@@ -31,7 +32,8 @@ val DA_VI_STARTET_KONSUMERING = LocalDateTime.of(2024, 8, 6, 0, 0)
         @Service
 open class ArbeidssøkerperiodeConsumerService(
             @Lazy
-    private val oppfolgingService: OppfolgingService,
+            private val oppfolgingService: OppfolgingService,
+            private val startOppfolgingService: StartOppfolgingService,
             private val authService: AuthService,
             private val arenaOppfolgingService: ArenaOppfolgingService,
             private val utmeldingService: UtmeldingsService,
@@ -64,22 +66,12 @@ open class ArbeidssøkerperiodeConsumerService(
             logger.info("Fått melding om ny arbeidssøkerperiode, starter oppfølging hvis ikke allerede startet")
 
             val navIdent = NavIdent.of(arbeidssøkerperiode.startet.utfoertAv.id.toString())
-            val registrant =  startetAvType.toStartetAvType().toRegistrant(navIdent)
+            val registrant =  startetAvType.toStartetAvType().toRegistrant(navIdent, fnr)
 
-            oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.arbeidssokerRegistrering(aktørId, registrant))
+            startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(OppfolgingsRegistrering.arbeidssokerRegistrering(fnr, aktørId, registrant))
             utmeldHvisBrukerBleIservEtterArbeidssøkerRegistrering(fnr, arbeidssøkerperiodeStartet, aktørId)
         } else {
             logger.info("Melding om avsluttet arbeidssøkerperiode, gjør ingenting")
-        }
-    }
-
-    private fun BrukerType.toStartetAvType(): StartetAvType {
-        return when (this) {
-            BrukerType.UKJENT_VERDI -> StartetAvType.SYSTEM
-            BrukerType.UDEFINERT -> StartetAvType.SYSTEM
-            BrukerType.VEILEDER -> StartetAvType.VEILEDER
-            BrukerType.SYSTEM -> StartetAvType.SYSTEM
-            BrukerType.SLUTTBRUKER -> StartetAvType.BRUKER
         }
     }
 
@@ -104,4 +96,14 @@ data class KanskjeIservBrukerMedPresisIservDato(
     val formidlingsgruppe: Formidlingsgruppe
 ) {
     fun toKanskjeIservBruker(): KanskjeIservBruker = KanskjeIservBruker(this.iservFraDato, this.aktorId, this.formidlingsgruppe, IservTrigger.ArbeidssøkerRegistreringSync)
+}
+
+fun BrukerType.toStartetAvType(): StartetAvType {
+    return when (this) {
+        BrukerType.UKJENT_VERDI -> StartetAvType.SYSTEM
+        BrukerType.UDEFINERT -> StartetAvType.SYSTEM
+        BrukerType.VEILEDER -> StartetAvType.VEILEDER
+        BrukerType.SYSTEM -> StartetAvType.SYSTEM
+        BrukerType.SLUTTBRUKER -> StartetAvType.BRUKER
+    }
 }
