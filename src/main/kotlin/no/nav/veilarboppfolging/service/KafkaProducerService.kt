@@ -20,7 +20,6 @@ import no.nav.veilarboppfolging.kafka.KvpPeriode
 import no.nav.veilarboppfolging.kafka.dto.OppfolgingsperiodeDTO
 import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.hendelser.OppfolgingStartetHendelseDto
 import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.hendelser.OppfolgingsAvsluttetHendelseDto
-import no.nav.veilarboppfolging.kafka.dto.VeilederTilordnetDTO
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -36,7 +35,6 @@ class KafkaProducerService @Autowired constructor(
     private val producerRecordStorage: KafkaProducerRecordStorage,
     private val kafkaProperties: KafkaProperties,
     @param:Value("\${app.kafka.enabled}") private val kafkaEnabled: Boolean,
-    private val authService: AuthService,
 ) {
     private val logger = LoggerFactory.getLogger(this::class.java)
 
@@ -87,8 +85,8 @@ class KafkaProducerService @Autowired constructor(
         store(kafkaProperties.endringPaNyForVeilederTopic, aktorId.get(), recordValue)
     }
 
-    fun publiserVeilederTilordnet(aktorId: AktorId, tildeltVeilederId: String?, tilordnet: ZonedDateTime? ) {
-        val recordValue = VeilederTilordnetDTO(aktorId.get(), tildeltVeilederId, tilordnet)
+    fun publiserVeilederTilordnet(aktorId: AktorId, tildeltVeilederId: String?, tilordnetTidspunkt: ZonedDateTime? ) {
+        val recordValue = VeilederTilordnetV2(aktorId.get(), tildeltVeilederId, tilordnetTidspunkt)
         store(kafkaProperties.veilederTilordnetTopic, aktorId.get(), recordValue)
     }
 
