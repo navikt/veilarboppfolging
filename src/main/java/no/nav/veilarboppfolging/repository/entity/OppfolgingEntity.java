@@ -4,6 +4,7 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.LocalArenaOppfolging;
 
+import java.time.ZonedDateTime;
 import java.util.Optional;
 
 /**
@@ -22,4 +23,5 @@ public class OppfolgingEntity {
     long gjeldendeMaalId;
     long gjeldendeKvpId;
     Optional<LocalArenaOppfolging> localArenaOppfolging;
+    ZonedDateTime oppdatert;
 }

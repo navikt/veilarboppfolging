@@ -7,6 +7,7 @@ import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe
 import no.nav.veilarboppfolging.client.digdir_krr.KRRData
 import no.nav.veilarboppfolging.eventsLogger.BigQueryClient
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
+import no.nav.veilarboppfolging.oppfolgingsbruker.arena.SisteOppfolgingsEnhet
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ArbeidsokerRegistrering
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ArenaSyncRegistrering
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ManuellRegistrering
@@ -78,8 +79,8 @@ open class StartOppfolgingService(
             kafkaProducerService.publiserVisAoMinSideMicrofrontend(aktorId, fnr)
 
             val arenaKontor = when (oppfolgingsbruker) {
-                is ArbeidsokerRegistrering, is ManuellRegistrering -> arenaOppfolgingService.hentArenaOppfolgingsEnhetId(fnr)
-                is ArenaSyncRegistrering -> oppfolgingsbruker.enhet
+                is ArbeidsokerRegistrering, is ManuellRegistrering -> arenaOppfolgingService.hentArenaOppfolgingsEnhetMedSistEndret(fnr)
+                is ArenaSyncRegistrering -> SisteOppfolgingsEnhet(oppfolgingsbruker.enhet, oppfolgingsbruker.sistEndretArena)
             }
             kafkaProducerService.publiserOppfolgingsStartet(lagOppfolgingStartetHendelseDto(fnr, sistePeriode, arenaKontor, kontorSattAvVeileder))
             publiserMinSideBeskjedHvisIkkeReservert(kontaktinfo, aktorId, fnr)
@@ -116,7 +117,7 @@ open class StartOppfolgingService(
     private fun lagOppfolgingStartetHendelseDto(
         fnr: Fnr,
         oppfølgingsperiode: OppfolgingsperiodeEntity,
-        arenaKontor: EnhetId?,
+        arenaKontor: SisteOppfolgingsEnhet?,
         arbeidsoppfolgingskontor: String?
     ): OppfolgingStartetHendelseDto {
         return OppfolgingStartetHendelseDto(
@@ -128,7 +129,8 @@ open class StartOppfolgingService(
                 ?: throw IllegalStateException("Dette skal aldri skje, alle nystartede oppfølgingsperioder har 'startetAvType'"),
             startetBegrunnelse = oppfølgingsperiode.startetBegrunnelse
                 ?: throw IllegalStateException("Dette skal aldri skje, alle nystartede oppfølgingsperioder har 'startetBegrunnelse'"),
-            arenaKontor = arenaKontor?.get(),
+            arenaKontor = arenaKontor?.enhet?.get(),
+            arenaKontorSistEndret = arenaKontor?.sistEndretArena,
             foretrukketArbeidsoppfolgingskontor = arbeidsoppfolgingskontor,
             fnr = fnr.get()
         )

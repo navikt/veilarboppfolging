@@ -80,7 +80,8 @@ public class OppfolgingsbrukerEndretIArenaService {
                             bruker.getAktorId(),
                             formidlingsgruppe,
                             kvalifiseringsgruppe,
-                            EnhetId.of(bruker.getOppfolgingsenhet())
+                            EnhetId.of(bruker.getOppfolgingsenhet()),
+                            bruker.getSistEndretDato()
                     )
             );
         } else if (erBrukerUnderOppfolgingLokalt && erInaktivIArena) {

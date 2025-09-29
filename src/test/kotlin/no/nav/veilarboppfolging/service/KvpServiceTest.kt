@@ -227,6 +227,7 @@ class KvpServiceTest{
             AKTOR_ID,
             FNR.get(),
             Formidlingsgruppe.IARBS,
+            ZonedDateTime.now(),
             annenEnhet
         )
 

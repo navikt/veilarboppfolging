@@ -13,12 +13,12 @@ data class EndringPaaOppfolgingsBruker(
     val aktorId: AktorId,
     val fodselsnummer: String,
     val formidlingsgruppe: Formidlingsgruppe,
+    val sistEndretDato: ZonedDateTime,
     val oppfolgingsenhet: String? = null,
     val iservFraDato: LocalDate? = null,
     val kvalifiseringsgruppe: Kvalifiseringsgruppe = Kvalifiseringsgruppe.IVURD,
     val rettighetsgruppe: Rettighetsgruppe? = null,
     val hovedmaal: Hovedmaal? = null,
-    val sistEndretDato: ZonedDateTime? = null
 ) {
     companion object {
         fun from(endringPaaOppfolgingsBruker: EndringPaaOppfoelgingsBrukerV2, aktorId: AktorId): EndringPaaOppfolgingsBruker {
@@ -26,12 +26,13 @@ data class EndringPaaOppfolgingsBruker(
                 aktorId,
                 endringPaaOppfolgingsBruker.fodselsnummer,
                 endringPaaOppfolgingsBruker.formidlingsgruppe,
+                endringPaaOppfolgingsBruker.sistEndretDato,
                 endringPaaOppfolgingsBruker.oppfolgingsenhet,
                 endringPaaOppfolgingsBruker.iservFraDato,
                 endringPaaOppfolgingsBruker.kvalifiseringsgruppe,
                 endringPaaOppfolgingsBruker.rettighetsgruppe,
                 endringPaaOppfolgingsBruker.hovedmaal,
-                endringPaaOppfolgingsBruker.sistEndretDato,
+
             )
         }
     }

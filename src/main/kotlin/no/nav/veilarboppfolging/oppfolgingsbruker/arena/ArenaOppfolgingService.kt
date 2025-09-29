@@ -21,6 +21,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import java.time.LocalDate
+import java.time.ZonedDateTime
 import java.util.*
 
 @Slf4j
@@ -82,16 +83,29 @@ class ArenaOppfolgingService @Autowired constructor (
 
     /* Bare enhetsId, den blir cached lokalt så man trenger ikke alltid hente den synkront */
     fun hentArenaOppfolgingsEnhetId(fnr: Fnr): EnhetId? {
+        return hentArenaOppfolgingsEnhetMedSistEndret(fnr)?.enhet
+    }
+
+    /* Bare enhetsId, den blir cached lokalt så man trenger ikke alltid hente den synkront */
+    fun hentArenaOppfolgingsEnhetMedSistEndret(fnr: Fnr): SisteOppfolgingsEnhet? {
         val aktorId = authService.getAktorIdOrThrow(fnr)
         return oppfolgingsStatusRepository.hentOppfolging(aktorId)
-            .flatMap { it.localArenaOppfolging.map { it.oppfolgingsenhet } }
+            .flatMap { oppfolging ->
+                val sistEndretArena = oppfolging.oppdatert
+                val enhet = oppfolging.localArenaOppfolging.flatMap { Optional.ofNullable(it.oppfolgingsenhet) }
+                enhet.map { SisteOppfolgingsEnhet(it, sistEndretArena) }
+            }
             .orElseGet { hentEnhetSynkrontFraVeilarbarena(fnr) }
     }
 
-    private fun hentEnhetSynkrontFraVeilarbarena(fnr: Fnr): EnhetId? {
+    private fun hentEnhetSynkrontFraVeilarbarena(fnr: Fnr): SisteOppfolgingsEnhet? {
         return veilarbarenaClient.hentOppfolgingsbruker(fnr)
             .map { it.nav_kontor }
-            .map { EnhetId(it) }.orElse(null)
+            /* Vi får ikke noe oppdatert-timestamp fra arena men siden vi nylig hentet
+            * datene vet vi at de er ferske og kan derfor sist endret til nå (minus litt
+            * slack i tilfelle arena enhet ble oppdatert fra vi gjorde requesten) */
+            .map { SisteOppfolgingsEnhet(EnhetId(it), ZonedDateTime.now().minusSeconds(5)) }
+            .orElse(null)
     }
 
     fun hentIservDatoOgFormidlingsGruppe(fnr: Fnr): IservDatoOgFormidlingsGruppe? {
@@ -171,4 +185,9 @@ data class OppfolgingsData(
 data class IservDatoOgFormidlingsGruppe(
     val iservDato: LocalDate?,
     val formidlingsGruppe: Formidlingsgruppe?
+)
+
+data class SisteOppfolgingsEnhet(
+    val enhet: EnhetId,
+    val sistEndretArena: ZonedDateTime,
 )

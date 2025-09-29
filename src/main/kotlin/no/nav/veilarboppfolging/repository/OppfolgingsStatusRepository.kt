@@ -23,13 +23,13 @@ class OppfolgingsStatusRepository(private val db: NamedParameterJdbcTemplate) {
     private val logger = LoggerFactory.getLogger(OppfolgingsStatusRepository::class.java)
 
     fun hentOppfolging(aktorId: AktorId): Optional<OppfolgingEntity> {
-        return DbUtils.queryForNullableObject<OppfolgingEntity?>(Supplier {
-            db.queryForObject<OppfolgingEntity>(
+        return DbUtils.queryForNullableObject {
+            db.queryForObject(
                 "SELECT * FROM OPPFOLGINGSTATUS WHERE aktor_id = :aktorId",
                 mapOf("aktorId" to aktorId.get()),
                 { rs, row -> map(rs) },
             )
-        })
+        }
     }
 
     fun oppdaterArenaOppfolgingStatus(aktorId: AktorId, skalOppretteOppfolgingForst: Boolean, arenaOppfolging: LocalArenaOppfolging) {
@@ -116,6 +116,7 @@ class OppfolgingsStatusRepository(private val db: NamedParameterJdbcTemplate) {
                 .setVeilederId(rs.getString(VEILEDER))
                 .setUnderOppfolging(rs.getBoolean(UNDER_OPPFOLGING))
                 .setLocalArenaOppfolging(Optional.ofNullable(localArenaOppfolging))
+                .setOppdatert(DbUtils.hentZonedDateTime(rs, OPPDATERT))
         }
     }
 }
