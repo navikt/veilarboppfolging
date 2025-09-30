@@ -158,7 +158,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         oppfolgingService.avsluttOppfolging(new ManuellAvregistrering(aktorId, new VeilederRegistrant(new NavIdent(VEILEDER)), ""));
 
         verify(kafkaProducerService).publiserOppfolgingsperiode(any(OppfolgingsperiodeDTO.class));
-        verify(kafkaProducerService).publiserVeilederTilordnet(aktorId, null);
+        verify(kafkaProducerService).publiserVeilederTilordnet(aktorId, null, null);
         verify(kafkaProducerService).publiserEndringPaNyForVeileder(aktorId, false);
         verify(kafkaProducerService).publiserEndringPaManuellStatus(aktorId, false);
         verify(kafkaProducerService).publiserSkjulAoMinSideMicrofrontend(aktorId, fnr);
@@ -220,7 +220,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         UnderOppfolgingDTO underOppfolgingDTO2 = oppfolgingService.oppfolgingData(fnr);
         Assertions.assertThat(underOppfolgingDTO2.isUnderOppfolging()).isFalse();
         verify(kafkaProducerService).publiserOppfolgingsperiode(any(OppfolgingsperiodeDTO.class));
-        verify(kafkaProducerService).publiserVeilederTilordnet(aktorId, null);
+        verify(kafkaProducerService).publiserVeilederTilordnet(aktorId, null, null);
         verify(kafkaProducerService).publiserEndringPaNyForVeileder(aktorId, false);
         verify(kafkaProducerService).publiserEndringPaManuellStatus(aktorId, false);
         verify(kafkaProducerService).publiserSkjulAoMinSideMicrofrontend(aktorId, fnr);
@@ -243,7 +243,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         UnderOppfolgingDTO underOppfolgingDTO2 = oppfolgingService.oppfolgingData(fnr);
         Assertions.assertThat(underOppfolgingDTO2.isUnderOppfolging()).isFalse();
         verify(kafkaProducerService).publiserOppfolgingsperiode(any(OppfolgingsperiodeDTO.class));
-        verify(kafkaProducerService).publiserVeilederTilordnet(aktorId, null);
+        verify(kafkaProducerService).publiserVeilederTilordnet(aktorId, null, null);
         verify(kafkaProducerService).publiserEndringPaNyForVeileder(aktorId, false);
         verify(kafkaProducerService).publiserEndringPaManuellStatus(aktorId, false);
         verify(kafkaProducerService).publiserSkjulAoMinSideMicrofrontend(aktorId, fnr);

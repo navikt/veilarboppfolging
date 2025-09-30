@@ -34,7 +34,7 @@ class KafkaProducerService @Autowired constructor(
     private val authContextHolder: AuthContextHolder,
     private val producerRecordStorage: KafkaProducerRecordStorage,
     private val kafkaProperties: KafkaProperties,
-    @param:Value("\${app.kafka.enabled}") private val kafkaEnabled: Boolean
+    @param:Value("\${app.kafka.enabled}") private val kafkaEnabled: Boolean,
 ) {
     private val logger = LoggerFactory.getLogger(this::class.java)
 
@@ -85,8 +85,8 @@ class KafkaProducerService @Autowired constructor(
         store(kafkaProperties.endringPaNyForVeilederTopic, aktorId.get(), recordValue)
     }
 
-    fun publiserVeilederTilordnet(aktorId: AktorId, tildeltVeilederId: String?) {
-        val recordValue = VeilederTilordnetV1(aktorId.get(), tildeltVeilederId)
+    fun publiserVeilederTilordnet(aktorId: AktorId, tildeltVeilederId: String?, tilordnetTidspunkt: ZonedDateTime? ) {
+        val recordValue = VeilederTilordnetV2(aktorId.get(), tildeltVeilederId, tilordnetTidspunkt)
         store(kafkaProperties.veilederTilordnetTopic, aktorId.get(), recordValue)
     }
 
