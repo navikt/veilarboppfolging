@@ -15,6 +15,7 @@ import no.nav.veilarboppfolging.test.TestData.TEST_AKTOR_ID
 import no.nav.veilarboppfolging.test.TestData.TEST_FNR
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
+import java.time.ZonedDateTime
 import java.util.*
 
 class OppfolgingsbrukerEndretIArenaServiceTest {
@@ -43,7 +44,8 @@ class OppfolgingsbrukerEndretIArenaServiceTest {
             aktorId =  TEST_AKTOR_ID,
             fodselsnummer = TEST_FNR.get(),
             formidlingsgruppe = Formidlingsgruppe.ISERV,
-            kvalifiseringsgruppe = Kvalifiseringsgruppe.VURDI
+            kvalifiseringsgruppe = Kvalifiseringsgruppe.VURDI,
+            sistEndretDato = ZonedDateTime.now()
         )
 
         oppfolgingsbrukerEndretIArenaService.oppdaterOppfolgingMedStatusFraArena(brukverV2)
@@ -60,24 +62,27 @@ class OppfolgingsbrukerEndretIArenaServiceTest {
         Mockito.`when`(authService.getAktorIdOrThrow(TEST_FNR)).thenReturn(TEST_AKTOR_ID)
         Mockito.`when`(oppfolgingsStatusRepository.hentOppfolging(TEST_AKTOR_ID))
             .thenReturn(Optional.of(OppfolgingEntity().setUnderOppfolging(false)))
+        val sistEndretDato = ZonedDateTime.now()
 
         val brukverV2 = EndringPaaOppfolgingsBruker(
             aktorId =  TEST_AKTOR_ID,
             fodselsnummer = TEST_FNR.get(),
             oppfolgingsenhet = "1234",
             formidlingsgruppe = Formidlingsgruppe.ARBS,
-            kvalifiseringsgruppe = Kvalifiseringsgruppe.VURDI
+            kvalifiseringsgruppe = Kvalifiseringsgruppe.VURDI,
+            sistEndretDato = sistEndretDato
         )
 
         oppfolgingsbrukerEndretIArenaService.oppdaterOppfolgingMedStatusFraArena(brukverV2)
 
         Mockito.verify(startOppfolgingService, Mockito.times(1)).startOppfolgingHvisIkkeAlleredeStartet(
-            OppfolgingsRegistrering.Companion.arenaSyncOppfolgingBrukerRegistrering(
+            OppfolgingsRegistrering.arenaSyncOppfolgingBrukerRegistrering(
                 TEST_FNR,
                 TEST_AKTOR_ID,
                 Formidlingsgruppe.ARBS,
                 brukverV2.kvalifiseringsgruppe,
-                EnhetId.of("1234")
+                EnhetId.of("1234"),
+                sistEndretArena = sistEndretDato
             )
         )
         Mockito.verify(oppfolgingService, Mockito.never())
@@ -104,7 +109,8 @@ class OppfolgingsbrukerEndretIArenaServiceTest {
           aktorId = TEST_AKTOR_ID,
             fodselsnummer = TEST_FNR.get(),
             formidlingsgruppe = Formidlingsgruppe.ISERV,
-            kvalifiseringsgruppe = Kvalifiseringsgruppe.VURDI
+            kvalifiseringsgruppe = Kvalifiseringsgruppe.VURDI,
+            sistEndretDato = ZonedDateTime.now()
         )
 
         oppfolgingsbrukerEndretIArenaService.oppdaterOppfolgingMedStatusFraArena(brukverV2)
@@ -140,7 +146,8 @@ class OppfolgingsbrukerEndretIArenaServiceTest {
             aktorId = TEST_AKTOR_ID,
             fodselsnummer = TEST_FNR.get(),
             formidlingsgruppe = Formidlingsgruppe.ISERV,
-            kvalifiseringsgruppe = Kvalifiseringsgruppe.VURDI
+            kvalifiseringsgruppe = Kvalifiseringsgruppe.VURDI,
+            sistEndretDato = ZonedDateTime.now()
         )
 
         oppfolgingsbrukerEndretIArenaService.oppdaterOppfolgingMedStatusFraArena(brukverV2)
@@ -173,7 +180,8 @@ class OppfolgingsbrukerEndretIArenaServiceTest {
             aktorId = TEST_AKTOR_ID,
             fodselsnummer = TEST_FNR.get(),
             formidlingsgruppe = Formidlingsgruppe.ISERV,
-            kvalifiseringsgruppe = Kvalifiseringsgruppe.VURDI
+            kvalifiseringsgruppe = Kvalifiseringsgruppe.VURDI,
+            sistEndretDato = ZonedDateTime.now()
         )
 
         oppfolgingsbrukerEndretIArenaService.oppdaterOppfolgingMedStatusFraArena(brukverV2)
@@ -206,7 +214,8 @@ class OppfolgingsbrukerEndretIArenaServiceTest {
             aktorId = TEST_AKTOR_ID,
             fodselsnummer = TEST_FNR.get(),
             formidlingsgruppe = Formidlingsgruppe.ISERV,
-            kvalifiseringsgruppe = Kvalifiseringsgruppe.VURDI
+            kvalifiseringsgruppe = Kvalifiseringsgruppe.VURDI,
+            sistEndretDato = ZonedDateTime.now()
         )
 
         oppfolgingsbrukerEndretIArenaService.oppdaterOppfolgingMedStatusFraArena(brukverV2)
