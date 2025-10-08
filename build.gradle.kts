@@ -144,6 +144,14 @@ tasks.jacocoTestReport {
     }
 }
 
+/* Disable Fat jar */
+tasks.bootJar {
+    enabled = false
+}
+tasks.jar {
+    enabled = true
+}
+
 sonarqube {
     properties {
         property("sonar.projectKey", "navikt_veilarboppfolging")
