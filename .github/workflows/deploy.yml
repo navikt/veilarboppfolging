@@ -1,85 +1,30 @@
-name: Build and deploy prod
+name: Deploy prod
 on:
-  push:
-    branches:
-      - main
+  workflow_call:
+    inputs:
+      image:
+        description: 'Deploy to ${{inputs.env}}'
+        required: true
+        type: string
+      env:
+        required: true
+        type: string
 
 env:
   PRINT_PAYLOAD: true
 
-permissions:
-  packages: write
-  id-token: write
-  
-concurrency:
-  group: deploy_prod
-  cancel-in-progress: true
-
 jobs:
-  test-build-and-push:
-    name: Test, build and push
+  deploy:
+    name: Deploy to ${{inputs.env}}
     runs-on: ubuntu-latest
-    outputs:
-      image: ${{ steps.docker-build-push.outputs.image }}
-    permissions:
-      id-token: write
+    environment: ${{ inputs.env }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v5
-
-      - name: Set up Java
-        uses: actions/setup-java@v5
-        with:
-          java-version: 21
-          distribution: 'temurin'
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: "8.13"
-          cache-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
-
-      - name: Build and test
-        run: ./gradlew build
-
-      - name: Build and push Docker image
-        uses: nais/docker-build-push@v0
-        id: docker-build-push
-        with:
-          team: poao # This is not app namespace but team which is admin in github
-
-  deploy-dev:
-    name: Deploy application to dev
-    needs: test-build-and-push
-    runs-on: ubuntu-latest
-    environment: dev-gcp
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v5
-
-      - name: Deploy application
-        uses: nais/deploy/actions/deploy@v2
+      - uses: actions/checkout@v5
+      - uses: nais/deploy/actions/deploy@v2
         env:
-          CLUSTER: dev-gcp
-          RESOURCE: nais-dev-gcp.yaml
-          VAR: image=${{ needs.test-build-and-push.outputs.image }}
-
-  deploy-prod:
-    name: Deploy application to prod
-    needs: [test-build-and-push, deploy-dev]
-    runs-on: ubuntu-latest
-    environment: prod-gcp
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v5
-
-      - name: Deploy application
-        uses: nais/deploy/actions/deploy@v2
-        env:
-          CLUSTER: prod-gcp
-          RESOURCE: nais-prod-gcp.yaml
-          VAR: image=${{ needs.test-build-and-push.outputs.image }}
-
+          CLUSTER: ${{ inputs.env }}-gcp
+          RESOURCE: nais/nais-${{ inputs.env }}-gcp.yaml
+          VAR: image=${{ inputs.image }}
       - name: Slack Notification (deploy failure)
         if: failure()
         uses: rtCamp/action-slack-notify@v2
@@ -87,6 +32,6 @@ jobs:
           SLACK_COLOR: danger
           SLACK_USERNAME: Github Actions
           SLACK_ICON: https://github.com/github.png?size=48
-          SLACK_TITLE: 'Veilarbaktivitet: deploy til prod feilet'
+          SLACK_TITLE: 'Veilarbaktivitet: deploy til ${{inputs.env}} feilet'
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_MESSAGE: 'Commit-message til feilende deploy: ${{ github.event.head_commit.message }}'
