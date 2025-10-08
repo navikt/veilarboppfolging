@@ -12,7 +12,7 @@ val springDoc = "2.8.9"
 val tmsMicrofrontendBuilder = "3.0.0"
 val tmsVarselBuilder = "2.1.1"
 val avroVersion = "1.12.0"
-val confluentKafkaAvroVersion = "8.0.0"
+val confluentKafkaAvroVersion = "8.0.1"
 
 plugins {
     kotlin("jvm") version "2.2.10"
