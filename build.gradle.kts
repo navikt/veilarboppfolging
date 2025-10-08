@@ -1,6 +1,6 @@
 val kotlinVersion = "2.2.10"
 val dependencyManagementVersion = "1.1.3"
-val jacocoVersion = "0.8.12"
+val jacocoVersion = "0.8.13"
 val flywayVersion = "11.12.0"
 val commonVersion = "3.2025.06.23_14.50-3af3985d8555"
 val ptoSchemaVersion = "1.2025.09.29_11.36-6e568fa24c23"
@@ -25,7 +25,7 @@ plugins {
 }
 
 group = "no.nav"
-java.sourceCompatibility = JavaVersion.VERSION_21
+java.sourceCompatibility = JavaVersion.VERSION_24
 
 java {
     toolchain {
@@ -47,6 +47,10 @@ tasks.jacocoTestReport {
 tasks.sonar {
     dependsOn(tasks.jacocoTestReport)
 }
+
+//tasks.shadowJar {
+//    enabled = false
+//}
 
 repositories {
     mavenCentral()

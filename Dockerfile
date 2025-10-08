@@ -1,17 +1,11 @@
-FROM busybox:1.36.1-uclibc as busybox
-
-FROM gcr.io/distroless/java21
-
-COPY --from=busybox /bin/sh /bin/sh
-COPY --from=busybox /bin/printenv /bin/printenv
-COPY --from=busybox /bin/mkdir /bin/mkdir
-COPY --from=busybox /bin/chown /bin/chown
+FROM europe-north1-docker.pkg.dev/cgr-nav/pull-through/nav.no/jre:openjdk-24
 
 ENV TZ="Europe/Oslo"
 WORKDIR /app
-COPY build/libs/veilarboppfolging.jar ./
+COPY build/install/*/lib /lib
 RUN /bin/mkdir /secure-logs
 RUN chown nonroot /secure-logs
 EXPOSE 8080
+
 USER nonroot
-CMD ["veilarboppfolging.jar"]
+ENTRYPOINT ["java", "-cp", "/lib/*", "no.nav.veilarboppfolging.Application"]
