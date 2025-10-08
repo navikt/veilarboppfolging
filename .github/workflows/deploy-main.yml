@@ -33,7 +33,7 @@ jobs:
 
   prod:
     name: Deploy to prod
-    needs: build
+    needs: [build, dev]
     uses: ./.github/workflows/deploy.yml
     secrets: inherit
     with:

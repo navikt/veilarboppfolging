@@ -23,7 +23,7 @@ jobs:
       - uses: nais/deploy/actions/deploy@v2
         env:
           CLUSTER: ${{ inputs.env }}-gcp
-          RESOURCE: nais/nais-${{ inputs.env }}-gcp.yaml
+          RESOURCE: nais-${{ inputs.env }}-gcp.yaml
           VAR: image=${{ inputs.image }}
       - name: Slack Notification (deploy failure)
         if: failure()
