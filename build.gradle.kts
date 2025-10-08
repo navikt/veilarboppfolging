@@ -1,6 +1,6 @@
 val kotlinVersion = "2.2.10"
 val dependencyManagementVersion = "1.1.3"
-val jacocoVersion = "0.8.12"
+val jacocoVersion = "0.8.13"
 val flywayVersion = "11.12.0"
 val commonVersion = "3.2025.06.23_14.50-3af3985d8555"
 val ptoSchemaVersion = "1.2025.09.29_11.36-6e568fa24c23"
@@ -22,19 +22,24 @@ plugins {
     id("io.spring.dependency-management") version "1.1.7"
     id("jacoco")
     id("org.sonarqube") version "6.2.0.5505"
+    id("application")
 }
 
 group = "no.nav"
-java.sourceCompatibility = JavaVersion.VERSION_21
+java.sourceCompatibility = JavaVersion.VERSION_24
+
+springBoot {
+    mainClass = "no.nav.veilarboppfolging.Application"
+}
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
+        languageVersion.set(JavaLanguageVersion.of(24))
     }
 }
 
 kotlin {
-    jvmToolchain(21)
+    jvmToolchain(24)
 }
 
 tasks.jacocoTestReport {
@@ -46,6 +51,10 @@ tasks.jacocoTestReport {
 
 tasks.sonar {
     dependsOn(tasks.jacocoTestReport)
+}
+
+tasks.build {
+    dependsOn(tasks.installDist)
 }
 
 repositories {
@@ -138,6 +147,14 @@ tasks.jacocoTestReport {
         xml.required.set(true)
         html.required.set(true)
     }
+}
+
+/* Disable Fat jar */
+tasks.bootJar {
+    enabled = false
+}
+tasks.jar {
+    enabled = true
 }
 
 sonarqube {
