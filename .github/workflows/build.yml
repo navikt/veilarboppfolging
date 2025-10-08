@@ -36,8 +36,18 @@ jobs:
       - name: Build and test
         run: ./gradlew build
 
+      - name: Generate and output SBOM
+        uses: anchore/sbom-action@v0
+        with:
+          path: 'build/libs'
+          format: 'cyclonedx-json'
+          artifact-name: 'bom.json'
+          output-file: 'build/reports/bom.json'
+          upload-artifact: 'true'
+
       - name: Build and push Docker image
         uses: nais/docker-build-push@v0
         id: docker-build-push
         with:
           team: poao # This is not app namespace but team which is admin in github
+          byosbom: 'build/reports/bom.json'
