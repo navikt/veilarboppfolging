@@ -1,17 +1,19 @@
-name: Deploy branch to dev
-run-name: Deploy feature branch ${{ github.ref_name }} by @${{ github.actor }}
+name: Build and deploy main branch to prod and dev
 on:
   workflow_dispatch:
-
-env:
-  PRINT_PAYLOAD: true
+  push:
+    branches:
+      - main
 
 permissions:
   packages: write
   id-token: write
 
+env:
+  PRINT_PAYLOAD: true
+
 concurrency:
-  group: deploy_feature_branch
+  group: deploy_main
   cancel-in-progress: true
 
 jobs:
@@ -27,4 +29,13 @@ jobs:
     secrets: inherit
     with:
       env: dev
+      image: ${{ needs.build.outputs.image }}
+
+  prod:
+    name: Deploy to prod
+    needs: build
+    uses: ./.github/workflows/deploy.yml
+    secrets: inherit
+    with:
+      env: prod
       image: ${{ needs.build.outputs.image }}
