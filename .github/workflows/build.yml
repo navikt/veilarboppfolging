@@ -7,7 +7,7 @@ on:
     outputs:
       image:
         description: "Image name pushed to GAR"
-        value: ${{ jobs.build.outputs.image }}
+        value: ${{ jobs.test-build-and-push.outputs.image }}
 
 jobs:
   test-build-and-push:
