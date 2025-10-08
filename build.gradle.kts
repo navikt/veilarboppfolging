@@ -29,12 +29,12 @@ java.sourceCompatibility = JavaVersion.VERSION_21
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
+        languageVersion.set(JavaLanguageVersion.of(24))
     }
 }
 
 kotlin {
-    jvmToolchain(21)
+    jvmToolchain(24)
 }
 
 tasks.jacocoTestReport {
