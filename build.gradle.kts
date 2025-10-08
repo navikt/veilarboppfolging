@@ -15,7 +15,7 @@ val avroVersion = "1.12.0"
 val confluentKafkaAvroVersion = "8.0.0"
 
 plugins {
-    kotlin("jvm") version "2.2.10"
+    kotlin("jvm") version "2.2.20"
     kotlin("plugin.spring") version "2.2.10"
     kotlin("plugin.lombok") version "2.2.10"
     id("org.springframework.boot") version "3.5.5"
