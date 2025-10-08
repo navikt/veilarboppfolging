@@ -3,7 +3,7 @@ on:
   workflow_call:
     inputs:
       image:
-        description: 'Deploy to ${{inputs.env}}'
+        description: 'Image name to deploy'
         required: true
         type: string
       env:
