@@ -1,4 +1,5 @@
-name: Deploy ${{inputs.env}}
+name: Deploy app
+run-name: Deploy ${{github.ref_name}} to dev or prod
 on:
   workflow_call:
     inputs:
