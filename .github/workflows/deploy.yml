@@ -1,5 +1,5 @@
 name: Deploy app
-run-name: Deploy ${{github.ref_name}} to dev or prod
+run-name: Deploy ${{github.ref_name}} to dev/prod
 on:
   workflow_call:
     inputs:
