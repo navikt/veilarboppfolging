@@ -1,4 +1,4 @@
-name: Deploy prod
+name: Deploy ${{inputs.env}}
 on:
   workflow_call:
     inputs:
