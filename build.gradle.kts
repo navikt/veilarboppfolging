@@ -22,10 +22,15 @@ plugins {
     id("io.spring.dependency-management") version "1.1.7"
     id("jacoco")
     id("org.sonarqube") version "6.2.0.5505"
+    id("application")
 }
 
 group = "no.nav"
 java.sourceCompatibility = JavaVersion.VERSION_24
+
+springBoot {
+    mainClass = "no.nav.veilarboppfolging.Application"
+}
 
 java {
     toolchain {
@@ -48,9 +53,9 @@ tasks.sonar {
     dependsOn(tasks.jacocoTestReport)
 }
 
-//tasks.shadowJar {
-//    enabled = false
-//}
+tasks.build {
+    dependsOn(tasks.installDist)
+}
 
 repositories {
     mavenCentral()
