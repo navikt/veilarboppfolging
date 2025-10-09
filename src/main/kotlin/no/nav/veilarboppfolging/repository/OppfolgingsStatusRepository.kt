@@ -11,7 +11,6 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.arena.LocalArenaOppfolging
 import no.nav.veilarboppfolging.repository.entity.OppfolgingEntity
 import no.nav.veilarboppfolging.utils.DbUtils
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Repository
 import java.sql.ResultSet
@@ -51,7 +50,8 @@ class OppfolgingsStatusRepository(private val db: NamedParameterJdbcTemplate) {
             kvalifiseringsgruppe = :kvalifiseringsgruppe, 
             hovedmaal = :hovedmaal, 
             oppfolgingsenhet = :oppfolgingsenhet,
-            iserv_fra_dato = :iserv_fra_dato
+            iserv_fra_dato = :iserv_fra_dato,
+            oppdatert = CURRENT_TIMESTAMP
             WHERE aktor_id = :aktorId
         """.trimIndent()
         val rows = db.update(sql, params)

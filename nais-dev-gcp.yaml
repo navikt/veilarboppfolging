@@ -53,6 +53,10 @@ spec:
     autoInstrumentation:
       enabled: true
       runtime: java
+    logging:
+      destinations:
+        - id: elastic
+        - id: loki
   env:
     - name: POAO_TILGANG_URL
       value: http://poao-tilgang.poao
@@ -62,10 +66,10 @@ spec:
       value: http://digdir-krr-proxy.team-rocket
     - name: DIGDIR_KRR_PROXY_SCOPE
       value: api://dev-gcp.team-rocket.digdir-krr-proxy/.default
-    - name: AMTTILTAK_URL
-      value: http://amt-tiltak.amt
-    - name: AMTTILTAK_SCOPE
-      value: api://dev-gcp.amt.amt-tiltak/.default
+    - name: AMTDELTAKER_URL
+      value: http://amt-deltaker.amt
+    - name: AMTDELTAKER_SCOPE
+      value: api://dev-gcp.amt.amt-deltaker/.default
     - name: KAFKA_ENABLED
       value: "true"
     - name: VEILARBARENA_URL
@@ -82,8 +86,8 @@ spec:
       value: "B884"
     - name: NAV_NO_URL
       value: "https://www.ansatt.dev.nav.no"
-  secureLogs:
-    enabled: true
+    - name: EXPOSE_GRAPHIQL
+      value: "true"
   kafka:
     pool: nav-dev
   azure:
@@ -105,10 +109,12 @@ spec:
         - application: digdir-krr-proxy
           namespace: team-rocket
         - application: poao-tilgang
-        - application: amt-tiltak
+        - application: amt-deltaker
           namespace: amt
         - application: norg2
           namespace: org
+        - application: logging
+          namespace: nais-system
       external:
         - host: veilarbarena.dev-fss-pub.nais.io
         - host: norg2.dev-fss-pub.nais.io
@@ -227,3 +233,6 @@ spec:
         - application: ao-min-side-microfrontend
           namespace: dab
           cluster: dev-gcp
+        - application: ida
+          namespace: traktor
+          cluster: prod-fss # Dette er med vilje

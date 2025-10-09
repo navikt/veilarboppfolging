@@ -1,5 +1,6 @@
 package no.nav.veilarboppfolging.controller
 
+import no.nav.common.auth.context.UserRole
 import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.common.client.norg2.Norg2Client
 import no.nav.common.types.identer.AktorId
@@ -10,6 +11,7 @@ import no.nav.poao_tilgang.client.NorskIdent
 import no.nav.poao_tilgang.client.PoaoTilgangClient
 import no.nav.poao_tilgang.client.TilgangType
 import no.nav.veilarboppfolging.client.pdl.PdlFolkeregisterStatusClient
+import no.nav.veilarboppfolging.kafka.dto.StartetBegrunnelseDTO
 import no.nav.veilarboppfolging.oppfolgingsbruker.arena.ArenaOppfolgingService
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ALLEREDE_UNDER_OPPFOLGING
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ALLEREDE_UNDER_OPPFOLGING.oppfolgingSjekk
@@ -17,10 +19,12 @@ import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ALLEREDE_UNDER_OPPFOLG
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.FregStatusSjekkResultat
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.KanStarteOppfolgingDto
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OPPFOLGING_OK
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelse
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.toKanStarteOppfolging
 import no.nav.veilarboppfolging.repository.EnhetRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
 import no.nav.veilarboppfolging.repository.OppfolgingsStatusRepository
+import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity
 import no.nav.veilarboppfolging.service.AuthService
 import org.slf4j.LoggerFactory
 import org.springframework.graphql.data.method.annotation.Argument
@@ -30,6 +34,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Controller
 import org.springframework.web.server.ResponseStatusException
 import java.time.format.DateTimeFormatter
+import kotlin.jvm.optionals.getOrNull
 
 data class OppfolgingsEnhetQueryDto(
     val enhet: EnhetDto?, // Nullable because graphql
@@ -68,8 +73,11 @@ data class OppfolgingDto(
     val norskIdent: NorskIdent? = null,
 )
 
-data class GjeldendeOppfolgingsperiodeDto(
+data class OppfolgingsperiodeDto(
     val startTidspunkt: String,
+    val sluttTidspunkt: String?,
+    val id: String,
+    val startetBegrunnelse: String?
 )
 
 @Controller
@@ -115,7 +123,7 @@ class GraphqlController(
         if (fnr == null || fnr.isEmpty()) throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Fnr er påkrevd")
         if (authService.erEksternBruker()) throw ResponseStatusException(HttpStatus.FORBIDDEN)
 
-        return evaluerTilgang(fnr)
+        return evaluerNavAnsattTilgangTilEksternBruker(fnr)
             .let {
                 VeilederTilgangDto(
                     harTilgang = it == TilgangResultat.HAR_TILGANG,
@@ -124,7 +132,7 @@ class GraphqlController(
             }
     }
 
-    private fun evaluerTilgang(fnr: String): TilgangResultat {
+    private fun evaluerNavAnsattTilgangTilEksternBruker(fnr: String): TilgangResultat {
         val decision = authService.evaluerNavAnsattTilagngTilBruker(Fnr.of(fnr), TilgangType.LESE)
         return when (decision) {
             is Decision.Deny -> decision.tryToFindDenyReason()
@@ -171,7 +179,7 @@ class GraphqlController(
                 OPPFOLGING_OK
             }
         }
-        val gyldigTilgang = lazy { evaluerTilgang(oppfolgingDto.norskIdent).toKanStarteOppfolging() }
+        val gyldigTilgang = lazy { evaluerNavAnsattTilgangTilEksternBruker(oppfolgingDto.norskIdent).toKanStarteOppfolging() }
         val gyldigFregStatus = lazy { kanStarteOppfolgingMtpFregStatus(Fnr.of(oppfolgingDto.norskIdent)) }
         return oppfolgingSjekk(gyldigOppfolging, gyldigTilgang, gyldigFregStatus)
     }
@@ -184,17 +192,43 @@ class GraphqlController(
     }
 
     @QueryMapping
-    fun gjeldendeOppfolgingsperiode(): GjeldendeOppfolgingsperiodeDto {
+    fun gjeldendeOppfolgingsperiode(): OppfolgingsperiodeDto? {
         if (!authService.erEksternBruker()) {
             throw ResponseStatusException(HttpStatus.FORBIDDEN)
         }
 
         val innloggetBrukerFnr = authService.innloggetBrukerIdent
         val aktorId = aktorOppslagClient.hentAktorId(Fnr.of(innloggetBrukerFnr))
-        val oppfolgingsperiode = oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId)
-        val startDato = oppfolgingsperiode.get().startDato.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+        return oppfolgingsPeriodeRepository.hentGjeldendeOppfolgingsperiode(aktorId)
+            .map { it.toOppfolgingsperiodeDto() }
+            .getOrNull()
+    }
 
-        return GjeldendeOppfolgingsperiodeDto(startDato.toString())
+    private fun sjekkLeseTilgang(fnr: String?): Fnr {
+        val userRole = authService.role.get()
+        return when (userRole) {
+            UserRole.EKSTERN -> {
+                Fnr.of(authService.innloggetBrukerIdent)
+            }
+            UserRole.INTERN -> {
+                fnr?.let { Fnr.of(it) }
+                    ?.also { authService.sjekkLesetilgangMedFnr(it) }
+                    ?: throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Fnr er påkrevd for systembruker")
+            }
+            UserRole.SYSTEM -> {
+                fnr?.let { Fnr.of(it) }
+                    ?.also { authService.sjekkLesetilgangMedFnr(it) }
+                    ?: throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Fnr er påkrevd for systembruker")
+            }
+        }
+    }
+
+    @QueryMapping
+    fun oppfolgingsPerioder(@Argument fnr: String?): List<OppfolgingsperiodeDto> {
+        val fnr = sjekkLeseTilgang(fnr)
+        val aktorId = aktorOppslagClient.hentAktorId(fnr)
+        return oppfolgingsPeriodeRepository.hentOppfolgingsperioder(aktorId)
+            .map { it.toOppfolgingsperiodeDto() }
     }
 }
 
@@ -218,4 +252,19 @@ object AdGruppeNavn {
     /* AKA modia generell tilgang, en av disse trengs for lese-tilgang */
     const val MODIA_OPPFOLGING = "0000-GA-Modia-Oppfolging"
     const val MODIA_GENERELL = "0000-GA-BD06_ModiaGenerellTilgang"
+}
+
+fun OppfolgingsperiodeEntity.toOppfolgingsperiodeDto(): OppfolgingsperiodeDto {
+    return OppfolgingsperiodeDto(
+        startTidspunkt = startDato.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME),
+        sluttTidspunkt = sluttDato?.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME),
+        id = uuid.toString(),
+        startetBegrunnelse?.let {
+            if (it == OppfolgingStartBegrunnelse.REAKTIVERT_OPPFØLGING) {
+                it.name.replace("ø", "o")
+            } else {
+                it.name
+            }
+        }
+    )
 }

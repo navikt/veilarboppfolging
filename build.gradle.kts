@@ -1,40 +1,45 @@
-val kotlinVersion = "2.1.20"
+val kotlinVersion = "2.2.10"
 val dependencyManagementVersion = "1.1.3"
-val jacocoVersion = "0.8.12"
-val flywayVersion = "11.8.2"
-val commonVersion = "3.2025.03.25_13.00-69496eec5820"
-val ptoSchemaVersion = "1.2025.01.13_12.58-3e81bd940198"
-val poaoTilgangVersion = "2025.03.17_10.46-e6359712fa6d"
+val jacocoVersion = "0.8.13"
+val flywayVersion = "11.12.0"
+val commonVersion = "3.2025.06.23_14.50-3af3985d8555"
+val ptoSchemaVersion = "1.2025.09.29_11.36-6e568fa24c23"
+val poaoTilgangVersion = "2025.07.04_08.56-814fa50f6740"
 val wiremockVersion = "3.0.1"
-val schedlockVersion = "6.7.0"
-val googleCloudLibrariesBomVersion = "26.60.0"
-val springDoc = "2.8.8"
+val schedlockVersion = "6.10.0"
+val googleCloudLibrariesBomVersion = "26.68.0"
+val springDoc = "2.8.9"
 val tmsMicrofrontendBuilder = "3.0.0"
 val tmsVarselBuilder = "2.1.1"
 val avroVersion = "1.12.0"
-val confluentKafkaAvroVersion = "7.9.0"
+val confluentKafkaAvroVersion = "8.0.0"
 
 plugins {
-    kotlin("jvm") version "2.1.21"
-    kotlin("plugin.spring") version "2.1.20"
-    kotlin("plugin.lombok") version "2.1.21"
-    id("org.springframework.boot") version "3.5.0"
+    kotlin("jvm") version "2.2.10"
+    kotlin("plugin.spring") version "2.2.10"
+    kotlin("plugin.lombok") version "2.2.10"
+    id("org.springframework.boot") version "3.5.5"
     id("io.spring.dependency-management") version "1.1.7"
     id("jacoco")
-    id("org.sonarqube") version "6.0.1.5171"
+    id("org.sonarqube") version "6.2.0.5505"
+    id("application")
 }
 
 group = "no.nav"
-java.sourceCompatibility = JavaVersion.VERSION_21
+java.sourceCompatibility = JavaVersion.VERSION_24
+
+springBoot {
+    mainClass = "no.nav.veilarboppfolging.Application"
+}
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
+        languageVersion.set(JavaLanguageVersion.of(24))
     }
 }
 
 kotlin {
-    jvmToolchain(21)
+    jvmToolchain(24)
 }
 
 tasks.jacocoTestReport {
@@ -46,6 +51,10 @@ tasks.jacocoTestReport {
 
 tasks.sonar {
     dependsOn(tasks.jacocoTestReport)
+}
+
+tasks.build {
+    dependsOn(tasks.installDist)
 }
 
 repositories {
@@ -112,7 +121,7 @@ dependencies {
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
     testImplementation("no.nav.common:test:$commonVersion")
-    testImplementation("org.springframework.graphql:spring-graphql-test:1.4.0")
+    testImplementation("org.springframework.graphql:spring-graphql-test:1.4.1")
     testImplementation("io.zonky.test:embedded-database-spring-test:2.6.0")
     testImplementation("io.zonky.test:embedded-postgres:2.1.0")
     testImplementation("junit:junit")
@@ -138,6 +147,14 @@ tasks.jacocoTestReport {
         xml.required.set(true)
         html.required.set(true)
     }
+}
+
+/* Disable Fat jar */
+tasks.bootJar {
+    enabled = false
+}
+tasks.jar {
+    enabled = true
 }
 
 sonarqube {

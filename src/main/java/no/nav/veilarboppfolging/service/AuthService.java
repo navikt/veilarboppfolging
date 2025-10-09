@@ -9,6 +9,7 @@ import no.nav.common.audit_log.cef.CefMessageEvent;
 import no.nav.common.audit_log.cef.CefMessageSeverity;
 import no.nav.common.audit_log.log.AuditLogger;
 import no.nav.common.auth.context.AuthContextHolder;
+import no.nav.common.auth.context.UserRole;
 import no.nav.common.auth.utils.IdentUtils;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.client.aktoroppslag.BrukerIdenter;
@@ -127,6 +128,10 @@ public class AuthService {
 
     public boolean erEksternBruker() {
         return authContextHolder.erEksternBruker();
+    }
+
+    public Optional<UserRole> getRole() {
+        return authContextHolder.getRole();
     }
 
     public boolean harTilgangTilEnhet(String enhetId) {

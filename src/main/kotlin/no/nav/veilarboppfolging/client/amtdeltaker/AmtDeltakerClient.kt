@@ -1,4 +1,4 @@
-package no.nav.veilarboppfolging.client.amttiltak
+package no.nav.veilarboppfolging.client.amtdeltaker
 
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -12,7 +12,7 @@ import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import java.util.function.Supplier
 
-class AmtTiltakClient(
+class AmtDeltakerClient(
     private val baseUrl: String,
     private val tokenProvider: Supplier<String>,
     private val httpClient: OkHttpClient,
@@ -28,17 +28,17 @@ class AmtTiltakClient(
 
     fun harAktiveTiltaksdeltakelser(personident: String): Boolean {
         val request = Request.Builder()
-            .url("$baseUrl/api/external/aktiv-deltaker")
+            .url("$baseUrl/external/aktiv-deltaker")
             .addHeader("Authorization", "Bearer ${tokenProvider.get()}")
             .post(objectMapper.writeValueAsString(HentDeltakelserRequest(personident)).toRequestBody(mediaTypeJson))
             .build()
 
         httpClient.newCall(request).execute().use { response ->
             if (!response.isSuccessful) {
-                throw RuntimeException("Klarte ikke å hente tiltaksdeltakelser fra amt-tiltak, status=${response.code}")
+                throw RuntimeException("Klarte ikke å hente tiltaksdeltakelser fra amt-deltaker, status=${response.code}")
             }
 
-            val body = response.body?.string() ?: throw RuntimeException("Body mangler i respons fra amt-tiltak")
+            val body = response.body?.string() ?: throw RuntimeException("Body mangler i respons fra amt-deltaker")
 
             return objectMapper.readValue<HarAktiveDeltakelserResponse>(body).harAktiveDeltakelser
         }

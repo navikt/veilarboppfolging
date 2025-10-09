@@ -12,7 +12,7 @@ import no.nav.poao_tilgang.client.TilgangType;
 import no.nav.poao_tilgang.client.api.ApiResult;
 import no.nav.veilarboppfolging.ForbiddenException;
 import no.nav.veilarboppfolging.IntegrationTest;
-import no.nav.veilarboppfolging.client.amttiltak.AmtTiltakClient;
+import no.nav.veilarboppfolging.client.amtdeltaker.AmtDeltakerClient;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsStatus;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbArenaOppfolgingsBruker;
 import no.nav.veilarboppfolging.client.veilarbarena.VeilarbarenaClient;
@@ -73,7 +73,7 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
     PoaoTilgangClient poaoTilgangClient;
 
     @Autowired
-    AmtTiltakClient amtTiltakClient;
+    AmtDeltakerClient amtDeltakerClient;
 
     @Test
     void hentOppfolgingsPeriode_brukerHarEnAktivOppfolgingsPeriode() throws EmptyResultDataAccessException {
@@ -124,7 +124,7 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
         when(veilarbarenaClient.getArenaOppfolgingsstatus(FNR)).thenReturn(Optional.of(new VeilarbArenaOppfolgingsStatus().setFormidlingsgruppe("ISERV")));
         when(veilarbarenaClient.hentOppfolgingsbruker(FNR)).thenReturn(Optional.of(new VeilarbArenaOppfolgingsBruker().setFormidlingsgruppekode("ISERV")));
         when(arenaYtelserService.harPagaendeYtelse(FNR)).thenReturn(false);
-        when(amtTiltakClient.harAktiveTiltaksdeltakelser(FNR.get())).thenReturn(false);
+        when(amtDeltakerClient.harAktiveTiltaksdeltakelser(FNR.get())).thenReturn(false);
 
         AvslutningStatus avslutningStatus = oppfolgingController.hentAvslutningStatus(FNR);
         assertTrue(avslutningStatus.kanAvslutte);
@@ -151,7 +151,7 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
         // ISERV i arena, ingen ytelser i arena, men aktive tiltak hos komet.
         when(veilarbarenaClient.hentOppfolgingsbruker(FNR)).thenReturn(Optional.of(new VeilarbArenaOppfolgingsBruker().setFormidlingsgruppekode("ISERV")));
         when(arenaYtelserService.harPagaendeYtelse(FNR)).thenReturn(false);
-        when(amtTiltakClient.harAktiveTiltaksdeltakelser(FNR.get())).thenReturn(true);
+        when(amtDeltakerClient.harAktiveTiltaksdeltakelser(FNR.get())).thenReturn(true);
 
         var dto = new AvsluttOppfolgingV2Request();
         dto.setBegrunnelse("Begrunnelse");
@@ -165,7 +165,7 @@ class OppfolgingControllerIntegrationTest extends IntegrationTest {
 
     private List<OppfolgingPeriodeDTO> startOppfolging() {
         mockSystemBruker();
-        startOppfolgingSomArbeidsoker(AKTOR_ID);
+        startOppfolgingSomArbeidsoker(AKTOR_ID, FNR);
         var perioder = oppfolgingController.hentOppfolgingsperioder(FNR);
         mockAuthOk();
         return perioder;

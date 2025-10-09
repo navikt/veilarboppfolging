@@ -1,8 +1,8 @@
 package no.nav.veilarboppfolging.repository;
 
 import no.nav.common.types.identer.AktorId;
-import no.nav.veilarboppfolging.domain.Oppfolging;
-import no.nav.veilarboppfolging.domain.StartetAvType;
+import no.nav.veilarboppfolging.oppfolgingsbruker.StartetAvType;
+import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.ManuellRegistrering;
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingStartBegrunnelse;
 import no.nav.veilarboppfolging.oppfolgingsbruker.inngang.OppfolgingsRegistrering;
 import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity;
@@ -45,16 +45,19 @@ public class OppfolgingsPeriodeRepository {
 
     public void start(OppfolgingsRegistrering oppfolgingsbruker) {
         transactor.executeWithoutResult((ignored) -> {
+            var kontorSattAvVeileder = oppfolgingsbruker instanceof ManuellRegistrering ? ((ManuellRegistrering) oppfolgingsbruker).getKontorSattAvVeileder() : null;
             insert(
                     oppfolgingsbruker.getAktorId(),
                     oppfolgingsbruker.getOppfolgingStartBegrunnelse(),
                     oppfolgingsbruker.getRegistrertAv().getIdent(),
-                    oppfolgingsbruker.getRegistrertAv().getType());
+                    oppfolgingsbruker.getRegistrertAv().getType(),
+                    kontorSattAvVeileder
+            );
             setActive(oppfolgingsbruker.getAktorId());
         });
     }
 
-    public void avslutt(AktorId aktorId, String veileder, String begrunnelse) {
+    public void avsluttSistePeriodeOgAvsluttOppfolging(AktorId aktorId, String veileder, String begrunnelse) {
         transactor.executeWithoutResult((ignored) -> {
             endPeriode(aktorId, veileder, begrunnelse);
             avsluttOppfolging(aktorId);
@@ -117,15 +120,17 @@ public class OppfolgingsPeriodeRepository {
         );
     }
 
-    private void insert(AktorId aktorId, OppfolgingStartBegrunnelse getOppfolgingStartBegrunnelse, @Nullable String veileder, StartetAvType startetAvType) {
+    private void insert(AktorId aktorId, OppfolgingStartBegrunnelse getOppfolgingStartBegrunnelse, @Nullable String startetAvIdent, StartetAvType startetAvType, @Nullable String kontorSattAvVeileder) {
         db.update("" +
-                        "INSERT INTO OPPFOLGINGSPERIODE(uuid, aktor_id, startDato, oppdatert, start_begrunnelse, startet_av, startet_av_type) " +
-                        "VALUES (?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?, ?, ?)",
+                        "INSERT INTO OPPFOLGINGSPERIODE(uuid, aktor_id, startDato, oppdatert, start_begrunnelse, startet_av, startet_av_type, kontor_satt_av_veileder) " +
+                        "VALUES (?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?, ?, ?, ?)",
                 UUID.randomUUID().toString(),
                 aktorId.get(),
                 getOppfolgingStartBegrunnelse.name(),
-                veileder,
-                startetAvType.name());
+                startetAvIdent,
+                startetAvType.name(),
+                kontorSattAvVeileder
+        );
     }
 
     private void setActive(AktorId aktorId) {
@@ -176,7 +181,7 @@ public class OppfolgingsPeriodeRepository {
                 .sluttDato(hentZonedDateTime(result, "sluttdato"))
                 .begrunnelse(result.getString("avslutt_begrunnelse"))
                 .startetAvType(startetAvType)
-                .startetAv(startetAvType == StartetAvType.VEILEDER ? result.getString("startet_av") : null)
+                .startetAv(result.getString("startet_av"))
                 .startetBegrunnelse(EnumUtils.valueOf(OppfolgingStartBegrunnelse.class, result.getString("start_begrunnelse")))
                 .build();
     }

@@ -18,6 +18,8 @@ import no.nav.tms.microfrontend.Sensitivitet
 import no.nav.veilarboppfolging.config.KafkaProperties
 import no.nav.veilarboppfolging.kafka.KvpPeriode
 import no.nav.veilarboppfolging.kafka.dto.OppfolgingsperiodeDTO
+import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.hendelser.OppfolgingStartetHendelseDto
+import no.nav.veilarboppfolging.oppfolgingsperioderHendelser.hendelser.OppfolgingsAvsluttetHendelseDto
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -33,7 +35,6 @@ class KafkaProducerService @Autowired constructor(
     private val producerRecordStorage: KafkaProducerRecordStorage,
     private val kafkaProperties: KafkaProperties,
     @param:Value("\${app.kafka.enabled}") private val kafkaEnabled: Boolean,
-    private val authService: AuthService,
 ) {
     private val logger = LoggerFactory.getLogger(this::class.java)
 
@@ -44,6 +45,14 @@ class KafkaProducerService @Autowired constructor(
     fun publiserOppfolgingsperiode(oppfolgingsperiode: OppfolgingsperiodeDTO) {
         sisteOppfolgingsPeriode(oppfolgingsperiode.toSisteOppfolgingsperiodeDTO())
         oppfolgingsperiode(oppfolgingsperiode)
+    }
+
+    fun publiserOppfolgingsAvsluttet(avsluttetHendelse: OppfolgingsAvsluttetHendelseDto) {
+        store(kafkaProperties.oppfolgingshendelseV1, avsluttetHendelse.fnr, avsluttetHendelse)
+    }
+
+    fun publiserOppfolgingsStartet(oppfolgingsperiodeStartet: OppfolgingStartetHendelseDto) {
+        store(kafkaProperties.oppfolgingshendelseV1, oppfolgingsperiodeStartet.fnr, oppfolgingsperiodeStartet)
     }
 
     private fun sisteOppfolgingsPeriode(sisteOppfolgingsperiodeV1: SisteOppfolgingsperiodeV1) {
@@ -76,8 +85,8 @@ class KafkaProducerService @Autowired constructor(
         store(kafkaProperties.endringPaNyForVeilederTopic, aktorId.get(), recordValue)
     }
 
-    fun publiserVeilederTilordnet(aktorId: AktorId, tildeltVeilederId: String?) {
-        val recordValue = VeilederTilordnetV1(aktorId.get(), tildeltVeilederId)
+    fun publiserVeilederTilordnet(aktorId: AktorId, tildeltVeilederId: String?, tilordnetTidspunkt: ZonedDateTime? ) {
+        val recordValue = VeilederTilordnetV2(aktorId.get(), tildeltVeilederId, tilordnetTidspunkt)
         store(kafkaProperties.veilederTilordnetTopic, aktorId.get(), recordValue)
     }
 
@@ -150,6 +159,7 @@ class KafkaProducerService @Autowired constructor(
 
         store(kafkaProperties.minSideAapenMicrofrontendV1, aktorId.get(), stoppMelding)
     }
+
     fun publiserMinSideBeskjed(fnr: Fnr, beskjed: String, lenke: String) {
         val generertVarselId = UUID.randomUUID().toString()
         val kafkaValueJson = VarselActionBuilder.opprett {

@@ -1,4 +1,4 @@
-package no.nav.veilarboppfolging.client.amttiltak
+package no.nav.veilarboppfolging.client.amtdeltaker
 
 data class HarAktiveDeltakelserResponse(
 	val harAktiveDeltakelser: Boolean

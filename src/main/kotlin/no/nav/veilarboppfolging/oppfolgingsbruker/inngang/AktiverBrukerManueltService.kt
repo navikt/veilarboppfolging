@@ -5,26 +5,28 @@ import no.nav.common.types.identer.Fnr
 import no.nav.common.types.identer.NavIdent
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant
 import no.nav.veilarboppfolging.service.AuthService
-import no.nav.veilarboppfolging.service.OppfolgingService
+import no.nav.veilarboppfolging.service.StartOppfolgingService
 import org.springframework.stereotype.Service
 import org.springframework.transaction.support.TransactionTemplate
 
 @Slf4j
 @Service
-class AktiverBrukerService(
+class AktiverBrukerManueltService(
     private val authService: AuthService,
-    private val oppfolgingService: OppfolgingService,
+    private val startOppfolgingService: StartOppfolgingService,
     private val transactor: TransactionTemplate
 ) {
 
-    fun aktiverBrukerManuelt(fnr: Fnr) {
+    fun aktiverBrukerManuelt(fnr: Fnr, kontorSattAvVeileder: String?) {
         transactor.executeWithoutResult {
             val aktorId = authService.getAktorIdOrThrow(fnr)
             val navIdent = NavIdent.of(authService.innloggetVeilederIdent)
-            val oppfolgingsbruker = OppfolgingsRegistrering.manueltRegistrertBruker(aktorId,
-                VeilederRegistrant(navIdent)
+            val oppfolgingsbruker = OppfolgingsRegistrering.manuellRegistrering(
+                fnr, aktorId,
+                VeilederRegistrant(navIdent),
+                kontorSattAvVeileder
             )
-            oppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(oppfolgingsbruker)
+            startOppfolgingService.startOppfolgingHvisIkkeAlleredeStartet(oppfolgingsbruker)
         }
     }
 }
