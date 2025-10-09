@@ -16,9 +16,9 @@ val confluentKafkaAvroVersion = "8.0.0"
 
 plugins {
     kotlin("jvm") version "2.2.10"
-    kotlin("plugin.spring") version "2.2.10"
-    kotlin("plugin.lombok") version "2.2.10"
-    id("org.springframework.boot") version "3.5.5"
+    kotlin("plugin.spring") version "2.2.20"
+    kotlin("plugin.lombok") version "2.2.20"
+    id("org.springframework.boot") version "3.5.6"
     id("io.spring.dependency-management") version "1.1.7"
     id("jacoco")
     id("org.sonarqube") version "6.2.0.5505"
