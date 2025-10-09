@@ -14,8 +14,11 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.graphql.execution.DefaultExecutionGraphQlService
 import org.springframework.graphql.execution.GraphQlSource
 import org.springframework.graphql.test.tester.ExecutionGraphQlServiceTester
+import org.springframework.http.HttpStatusCode
 import org.springframework.test.context.ActiveProfiles
+import org.springframework.web.client.RestClient
 import java.util.UUID
+import kotlin.test.assertEquals
 
 @ActiveProfiles("test")
 class GraphqlControllerTest: IntegrationTest() {
@@ -38,6 +41,44 @@ class GraphqlControllerTest: IntegrationTest() {
         mockSytemBrukerAuthOk(aktorId, fnr)
         mockPdlFolkeregisterStatus(fnr, FregStatusOgStatsborgerskap(ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven, norskStatsborgerskap))
         return fnr to aktorId
+    }
+
+    @Test
+    fun `graphql endepunkt skal finnes på veilarboppfolging api graphql`() {
+        val apiUrl = "http://localhost:${port}/veilarboppfolging/api/graphql"
+        val graphqlClient = RestClient.builder()
+            .baseUrl(apiUrl)
+            .defaultHeader("Content-Type", "application/json")
+            .defaultHeader("Accept", "application/json")
+            .defaultHeader("Nav-Call-Id", "test")
+            .build()
+
+        val pesos = '$'
+        val fnrparam = "${pesos}fnr"
+
+        val graphqlQuery = """
+            query testHentOppfolgingsEnhet(${fnrparam}: String!) {
+                gjeldendeOppfolgingsperiode(fnr: ${fnrparam}) {
+                    id
+                }
+            }
+        """.trimIndent().replace("\n", "")
+
+        val status = graphqlClient.post()
+            .uri(apiUrl)
+            .body("""{
+                "query": "$graphqlQuery",
+                "variables": {
+                    "fnr": "123123123"
+                }
+            }
+            """.trimIndent().replace("\n", ""))
+            .retrieve()
+            .toBodilessEntity()
+            .statusCode
+
+        assertEquals(HttpStatusCode.valueOf(200), status, "Fikk $status på /graphql istedetfor 200")
+//            .body(OppfolgingDto::class.java)
     }
 
     @Test
