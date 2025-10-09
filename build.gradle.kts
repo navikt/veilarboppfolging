@@ -1,26 +1,27 @@
-val kotlinVersion = "2.2.20"
+val kotlinVersion = "2.2.10"
+val dependencyManagementVersion = "1.1.3"
 val jacocoVersion = "0.8.13"
 val flywayVersion = "11.12.0"
-val commonVersion = "3.2025.09.03_08.33-728ff4acbfdb"
+val commonVersion = "3.2025.06.23_14.50-3af3985d8555"
 val ptoSchemaVersion = "1.2025.09.29_11.36-6e568fa24c23"
 val poaoTilgangVersion = "2025.07.04_08.56-814fa50f6740"
 val wiremockVersion = "3.0.1"
 val schedlockVersion = "6.10.0"
 val googleCloudLibrariesBomVersion = "26.68.0"
-val springDoc = "2.8.13"
+val springDoc = "2.8.9"
 val tmsMicrofrontendBuilder = "3.0.0"
 val tmsVarselBuilder = "2.1.1"
 val avroVersion = "1.12.0"
-val confluentKafkaAvroVersion = "8.0.1"
+val confluentKafkaAvroVersion = "8.0.0"
 
 plugins {
-    kotlin("jvm") version "2.2.20"
-    kotlin("plugin.spring") version "2.2.20"
-    kotlin("plugin.lombok") version "2.2.20"
+    kotlin("jvm") version "2.2.10"
+    kotlin("plugin.spring") version "2.2.10"
+    kotlin("plugin.lombok") version "2.2.10"
     id("org.springframework.boot") version "3.5.5"
     id("io.spring.dependency-management") version "1.1.7"
     id("jacoco")
-    id("org.sonarqube") version "6.3.1.5724"
+    id("org.sonarqube") version "6.2.0.5505"
     id("application")
 }
 
