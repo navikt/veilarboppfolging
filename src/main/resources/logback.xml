@@ -15,5 +15,6 @@
     <logger name="SecureLog" level="${SECURE_LOG_LEVEL:-INFO}" additivity="false">
         <appender-ref ref="team-logs"/>
     </logger>
+    <logger name="org.springframework.graphql" level="DEBUG"/>
 
 </configuration>
