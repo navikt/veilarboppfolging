@@ -13,6 +13,7 @@ class OppfolgingStartetHendelseDto(
     val startetAvType: StartetAvType,
     val startetBegrunnelse: OppfolgingStartBegrunnelse,
     val arenaKontor: String?,
+    val arenaKontorSistEndret: ZonedDateTime?,
     val foretrukketArbeidsoppfolgingskontor: String?,
     val fnr: String,
 ): OppfolgingsHendelseDto(HendelseType.OPPFOLGING_STARTET)
