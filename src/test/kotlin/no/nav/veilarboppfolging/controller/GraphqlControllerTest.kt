@@ -269,7 +269,7 @@ class GraphqlControllerTest: IntegrationTest() {
             ForenkletFolkeregisterStatus.dNummer to KanStarteOppfolgingDto.JA,
             ForenkletFolkeregisterStatus.doedIFolkeregisteret to KanStarteOppfolgingDto.DOD,
             ForenkletFolkeregisterStatus.forsvunnet to KanStarteOppfolgingDto.IKKE_LOVLIG_OPPHOLD,
-            ForenkletFolkeregisterStatus.ikkeBosatt to KanStarteOppfolgingDto.JA_MED_MANUELL_GODKJENNING,
+            ForenkletFolkeregisterStatus.ikkeBosatt to KanStarteOppfolgingDto.JA_MED_MANUELL_GODKJENNING_PGA_IKKE_BOSATT,
             ForenkletFolkeregisterStatus.opphoert to KanStarteOppfolgingDto.IKKE_LOVLIG_OPPHOLD,
             ForenkletFolkeregisterStatus.ukjent to KanStarteOppfolgingDto.UKJENT_STATUS_FOLKEREGISTERET,
             ForenkletFolkeregisterStatus.ingen_status to KanStarteOppfolgingDto.INGEN_STATUS_FOLKEREGISTERET,
@@ -295,10 +295,10 @@ class GraphqlControllerTest: IntegrationTest() {
 
         listOf(
             ForenkletFolkeregisterStatus.bosattEtterFolkeregisterloven to KanStarteOppfolgingDto.JA,
-            ForenkletFolkeregisterStatus.dNummer to KanStarteOppfolgingDto.JA_MED_MANUELL_GODKJENNING,
+            ForenkletFolkeregisterStatus.dNummer to KanStarteOppfolgingDto.JA_MED_MANUELL_GODKJENNING_PGA_DNUMMER_IKKE_EOS_GBR,
             ForenkletFolkeregisterStatus.doedIFolkeregisteret to KanStarteOppfolgingDto.DOD,
             ForenkletFolkeregisterStatus.forsvunnet to KanStarteOppfolgingDto.IKKE_LOVLIG_OPPHOLD,
-            ForenkletFolkeregisterStatus.ikkeBosatt to KanStarteOppfolgingDto.JA_MED_MANUELL_GODKJENNING,
+            ForenkletFolkeregisterStatus.ikkeBosatt to KanStarteOppfolgingDto.JA_MED_MANUELL_GODKJENNING_PGA_IKKE_BOSATT,
             ForenkletFolkeregisterStatus.opphoert to KanStarteOppfolgingDto.IKKE_LOVLIG_OPPHOLD,
             ForenkletFolkeregisterStatus.ukjent to KanStarteOppfolgingDto.UKJENT_STATUS_FOLKEREGISTERET,
             ForenkletFolkeregisterStatus.ingen_status to KanStarteOppfolgingDto.INGEN_STATUS_FOLKEREGISTERET,
