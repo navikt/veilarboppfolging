@@ -90,6 +90,8 @@ spec:
       value: "B884"
     - name: NAV_NO_URL
       value: "https://www.nav.no"
+  secureLogs:
+    enabled: true
   kafka:
     pool: nav-prod
   azure:
@@ -116,8 +118,6 @@ spec:
           namespace: amt
         - application: norg2
           namespace: org
-        - application: logging
-          namespace: nais-system
       external:
         - host: veilarbarena.prod-fss-pub.nais.io
         - host: pdl-api.prod-fss-pub.nais.io

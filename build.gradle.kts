@@ -1,37 +1,31 @@
 val kotlinVersion = "2.2.10"
 val dependencyManagementVersion = "1.1.3"
-val jacocoVersion = "0.8.13"
+val jacocoVersion = "0.8.12"
 val flywayVersion = "11.12.0"
-val commonVersion = "3.2025.09.03_08.33-728ff4acbfdb"
+val commonVersion = "3.2025.10.10_08.21-bb7c7830d93c"
 val ptoSchemaVersion = "1.2025.09.29_11.36-6e568fa24c23"
 val poaoTilgangVersion = "2025.07.04_08.56-814fa50f6740"
 val wiremockVersion = "3.0.1"
 val schedlockVersion = "6.10.0"
 val googleCloudLibrariesBomVersion = "26.68.0"
-val springDoc = "2.8.13"
+val springDoc = "2.8.9"
 val tmsMicrofrontendBuilder = "3.0.0"
 val tmsVarselBuilder = "2.1.1"
 val avroVersion = "1.12.0"
-val confluentKafkaAvroVersion = "8.0.1"
-val springBootVersion = "3.5.6"
+val confluentKafkaAvroVersion = "8.0.0"
 
 plugins {
-    kotlin("jvm") version "2.2.20"
-    kotlin("plugin.spring") version "2.2.20"
-    kotlin("plugin.lombok") version "2.2.20"
-    id("org.springframework.boot") version "3.5.6"
+    kotlin("jvm") version "2.2.10"
+    kotlin("plugin.spring") version "2.2.10"
+    kotlin("plugin.lombok") version "2.2.10"
+    id("org.springframework.boot") version "3.5.5"
     id("io.spring.dependency-management") version "1.1.7"
     id("jacoco")
-    id("org.sonarqube") version "6.3.1.5724"
-    id("application")
+    id("org.sonarqube") version "6.2.0.5505"
 }
 
 group = "no.nav"
 java.sourceCompatibility = JavaVersion.VERSION_21
-
-springBoot {
-    mainClass = "no.nav.veilarboppfolging.Application"
-}
 
 java {
     toolchain {
@@ -54,10 +48,6 @@ tasks.sonar {
     dependsOn(tasks.jacocoTestReport)
 }
 
-tasks.build {
-    dependsOn(tasks.installDist)
-}
-
 repositories {
     mavenCentral()
     maven {
@@ -77,34 +67,28 @@ repositories {
 dependencies {
     annotationProcessor("org.projectlombok:lombok:1.18.38")
     testAnnotationProcessor("org.projectlombok:lombok:1.18.38")
-    implementation("org.projectlombok:lombok:1.18.38")
 
     implementation("com.github.ben-manes.caffeine:caffeine")
     implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
-
-    implementation("org.springframework.boot:spring-boot-starter-cache:${springBootVersion}")
-    implementation("org.springframework.boot:spring-boot-starter-actuator:${springBootVersion}")
-    implementation("org.springframework.boot:spring-boot-starter-web:${springBootVersion}")
-    implementation("org.springframework.boot:spring-boot-starter-graphql:${springBootVersion}")
-    implementation("org.springframework.boot:spring-boot-starter-logging:${springBootVersion}")
-    implementation("org.springframework.boot:spring-boot-starter-data-jdbc:${springBootVersion}")
-    implementation("org.springframework.boot:spring-boot-devtools:${springBootVersion}")
-    implementation("org.springframework.boot:spring-boot-configuration-processor:${springBootVersion}")
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:$springDoc")
-
+    implementation("org.springframework.boot:spring-boot-starter-cache")
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-graphql")
+    implementation("org.springframework.boot:spring-boot-starter-logging")
+    implementation("org.springframework.boot:spring-boot-starter-data-jdbc")
     implementation("com.squareup.okhttp3:okhttp")
     implementation("io.micrometer:micrometer-registry-prometheus-simpleclient")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:$springDoc")
+    implementation("org.springframework.boot:spring-boot-devtools")
+    implementation("org.projectlombok:lombok:1.18.38")
+    implementation("org.springframework.boot:spring-boot-configuration-processor")
     implementation("no.nav.poao-tilgang:client:$poaoTilgangVersion")
-
     implementation("com.zaxxer:HikariCP")
     implementation("org.flywaydb:flyway-core:$flywayVersion")
     implementation("org.flywaydb:flyway-database-postgresql:$flywayVersion")
     implementation("org.postgresql:postgresql")
     implementation("net.javacrumbs.shedlock:shedlock-provider-jdbc-template:$schedlockVersion")
-
     implementation("no.nav:pto-schema:$ptoSchemaVersion")
-    implementation("org.apache.avro:avro:${avroVersion}")
-
     implementation("no.nav.common:job:$commonVersion")
     implementation("no.nav.common:util:$commonVersion")
     implementation("no.nav.common:types:$commonVersion")
@@ -116,7 +100,7 @@ dependencies {
     implementation("no.nav.common:health:$commonVersion")
     implementation("no.nav.common:metrics:$commonVersion")
     implementation("no.nav.common:kafka:$commonVersion")
-
+    implementation("org.apache.avro:avro:$avroVersion")
     implementation("io.confluent:kafka-avro-serializer:$confluentKafkaAvroVersion") {
         exclude(group = "io.swagger.core.v3")
     }
@@ -125,10 +109,10 @@ dependencies {
     implementation(platform("com.google.cloud:libraries-bom:$googleCloudLibrariesBomVersion"))
     implementation("com.google.cloud:google-cloud-bigquery")
 
-    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor:${springBootVersion}")
+    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
     testImplementation("no.nav.common:test:$commonVersion")
-    testImplementation("org.springframework.graphql:spring-graphql-test:1.4.2")
+    testImplementation("org.springframework.graphql:spring-graphql-test:1.4.1")
     testImplementation("io.zonky.test:embedded-database-spring-test:2.6.0")
     testImplementation("io.zonky.test:embedded-postgres:2.1.0")
     testImplementation("junit:junit")
@@ -154,14 +138,6 @@ tasks.jacocoTestReport {
         xml.required.set(true)
         html.required.set(true)
     }
-}
-
-/* Disable Fat jar */
-tasks.bootJar {
-    enabled = false
-}
-tasks.jar {
-    enabled = true
 }
 
 sonarqube {
