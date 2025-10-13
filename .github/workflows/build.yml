@@ -1,0 +1,53 @@
+name: build.yml
+on:
+  workflow_call:
+    secrets:
+      SLACK_WEBHOOK:
+        required: true
+    outputs:
+      image:
+        description: "Image name pushed to GAR"
+        value: ${{ jobs.test-build-and-push.outputs.image }}
+
+jobs:
+  test-build-and-push:
+    name: Test, build and push
+    runs-on: ubuntu-latest
+    outputs:
+      image: ${{ steps.docker-build-push.outputs.image }}
+    permissions:
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          java-version: 21
+          distribution: 'temurin'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v5
+        with:
+          gradle-version: "9.1.0"
+          cache-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
+
+      - name: Build and test
+        run: ./gradlew build
+
+      - name: Generate and output SBOM
+        uses: anchore/sbom-action@v0
+        with:
+          path: 'build/libs'
+          format: 'cyclonedx-json'
+          artifact-name: 'bom.json'
+          output-file: 'build/reports/bom.json'
+          upload-artifact: 'true'
+
+      - name: Build and push Docker image
+        uses: nais/docker-build-push@v0
+        id: docker-build-push
+        with:
+          team: poao # This is not app namespace but team which is admin in github
+          byosbom: 'build/reports/bom.json'

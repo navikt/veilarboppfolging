@@ -1,0 +1,41 @@
+name: Build and deploy main branch to prod and dev
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+permissions:
+  packages: write
+  id-token: write
+
+env:
+  PRINT_PAYLOAD: true
+
+concurrency:
+  group: deploy_main
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build, test and upload to GAR
+    uses: ./.github/workflows/build.yml
+    secrets: inherit
+
+  dev:
+    name: Deploy to dev
+    needs: build
+    uses: ./.github/workflows/deploy.yml
+    secrets: inherit
+    with:
+      env: dev
+      image: ${{ needs.build.outputs.image }}
+
+  prod:
+    name: Deploy to prod
+    needs: [build]
+    uses: ./.github/workflows/deploy.yml
+    secrets: inherit
+    with:
+      env: prod
+      image: ${{ needs.build.outputs.image }}
