@@ -27,7 +27,7 @@ plugins {
 }
 
 group = "no.nav"
-java.sourceCompatibility = JavaVersion.VERSION_25
+java.sourceCompatibility = JavaVersion.VERSION_21
 
 springBoot {
     mainClass = "no.nav.veilarboppfolging.Application"
@@ -35,12 +35,12 @@ springBoot {
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(25))
+        languageVersion.set(JavaLanguageVersion.of(21))
     }
 }
 
 kotlin {
-    jvmToolchain(25)
+    jvmToolchain(21)
 }
 
 tasks.jacocoTestReport {
