@@ -1,4 +1,4 @@
-val kotlinVersion = "2.2.10"
+val kotlinVersion = "2.2.20"
 val dependencyManagementVersion = "1.1.3"
 val jacocoVersion = "0.8.13"
 val flywayVersion = "11.12.0"
