@@ -1,5 +1,7 @@
 package no.nav.veilarboppfolging.service;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.AktorId;
@@ -156,13 +158,14 @@ public class OppfolgingService {
 
         boolean harAktiveTiltaksdeltakelser = harAktiveTiltaksdeltakelser(fnr);
         boolean underKvp = kvpService.erUnderKvp(aktorId);
-        if (kanAvslutteOppfolging(aktorId, erUnderOppfolging(aktorId), erIserv, harAktiveTiltaksdeltakelser, underKvp)) {
+        KanAvslutteMedBegrunnelse kanAvslutte = kanAvslutteOppfolging(aktorId, erUnderOppfolging(aktorId), erIserv, harAktiveTiltaksdeltakelser, underKvp);
+        if (kanAvslutte.kanAvslutte) {
             var veilederId = avregistrering.getAvsluttetAv().getIdent();
             var begrunnelse = avregistrering.getBegrunnelse();
             secureLog.info("Avslutting av oppfølging utført av: {}, begrunnelse: {}, tilstand i Arena for aktorid {}: {}", veilederId, begrunnelse, aktorId, arenaOppfolgingTilstand);
             avsluttOppfolgingForBruker(avregistrering);
         } else {
-            log.warn("Oppfølging ble ikke avsluttet likevel");
+            log.warn("Oppfølging ble ikke avsluttet likevel, avregistreringstype {}: begrunnelse {}",avregistrering.getAvregistreringsType() , kanAvslutte.begrunnelse);
         }
 
         return getAvslutningStatus(fnr);
@@ -274,14 +277,22 @@ public class OppfolgingService {
         }
     }
 
-    private boolean kanAvslutteOppfolging(AktorId aktorId, boolean erUnderOppfolging, boolean erIservIArena, boolean harAktiveTiltaksdeltakelser, boolean underKvp) {
+    @Data
+    @AllArgsConstructor
+    class KanAvslutteMedBegrunnelse {
+        boolean kanAvslutte;
+        String begrunnelse;
+    }
+    private KanAvslutteMedBegrunnelse kanAvslutteOppfolging(AktorId aktorId, boolean erUnderOppfolging, boolean erIservIArena, boolean harAktiveTiltaksdeltakelser, boolean underKvp) {
         secureLog.info("Kan oppfolging avsluttes for aktorid {}?, oppfolging.isUnderOppfolging(): {}, erIservIArena(): {}, underKvp(): {}, harAktiveTiltaksdeltakelser(): {}",
                 aktorId, erUnderOppfolging, erIservIArena, underKvp, harAktiveTiltaksdeltakelser);
 
-        return erUnderOppfolging
-                && erIservIArena
-                && !underKvp
-                && !harAktiveTiltaksdeltakelser;
+        if (!erUnderOppfolging) return new KanAvslutteMedBegrunnelse(false, "bruker var ikke under oppfølging");
+        if (!erIservIArena) return new KanAvslutteMedBegrunnelse(false, "bruker var ikke inaktivert i Arena");
+        if (underKvp) return new KanAvslutteMedBegrunnelse(false, "bruker var under kvp");
+        if (harAktiveTiltaksdeltakelser) return new KanAvslutteMedBegrunnelse(false, "bruker hadde aktive tiltaksdeltakelser");
+
+        return new KanAvslutteMedBegrunnelse(true, null);
     }
 
     public void adminForceAvsluttOppfolgingForBruker(AktorId aktorId, String veilederId, String begrunnelse) {
@@ -441,7 +452,7 @@ public class OppfolgingService {
 
         boolean harAktiveTiltaksdeltakelser = harAktiveTiltaksdeltakelser(fnr);
         boolean underKvp = kvpService.erUnderKvp(aktorId);
-        boolean kanAvslutte = kanAvslutteOppfolging(aktorId, erUnderOppfolging(aktorId), erIserv, harAktiveTiltaksdeltakelser, underKvp);
+        boolean kanAvslutte = kanAvslutteOppfolging(aktorId, erUnderOppfolging(aktorId), erIserv, harAktiveTiltaksdeltakelser, underKvp).kanAvslutte;
 
         boolean erUnderOppfolgingIArena = maybeArenaOppfolging
                 .map(status -> ArenaUtils.erUnderOppfolging(EnumUtils.valueOf(Formidlingsgruppe.class, status.getFormidlingsgruppe()), EnumUtils.valueOf(Kvalifiseringsgruppe.class, status.getServicegruppe())))

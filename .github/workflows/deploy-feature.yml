@@ -15,50 +15,16 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test-build-and-push:
-    name: Test, build and push
-    runs-on: ubuntu-latest
-    outputs:
-      image: ${{ steps.docker-build-push.outputs.image }}
-    permissions:
-      id-token: write
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v5
+  build:
+    name: Build, test and upload to GAR
+    uses: ./.github/workflows/build.yml
+    secrets: inherit
 
-      - name: Set up Java
-        uses: actions/setup-java@v5
-        with:
-          java-version: 21
-          distribution: 'temurin'
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: "8.13"
-          cache-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
-
-      - name: Build
-        run: ./gradlew build
-
-      - name: Build and push Docker image
-        uses: nais/docker-build-push@v0
-        id: docker-build-push
-        with:
-          team: poao # This is not app namespace but team which is admin in github
-
-  deploy-dev:
-    name: Deploy application to dev
-    needs: test-build-and-push
-    runs-on: ubuntu-latest
-    environment: dev-gcp
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v5
-
-      - name: Deploy application
-        uses: nais/deploy/actions/deploy@v2
-        env:
-          CLUSTER: dev-gcp
-          RESOURCE: nais-dev-gcp.yaml
-          VAR: image=${{ needs.test-build-and-push.outputs.image }}
+  dev:
+    name: Deploy to dev
+    needs: build
+    uses: ./.github/workflows/deploy.yml
+    secrets: inherit
+    with:
+      env: dev
+      image: ${{ needs.build.outputs.image }}
