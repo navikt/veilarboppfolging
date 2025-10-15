@@ -8,6 +8,7 @@ import no.nav.pto_schema.enums.arena.Kvalifiseringsgruppe
 import no.nav.veilarboppfolging.oppfolgingsbruker.Registrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.SystemRegistrant
 import no.nav.veilarboppfolging.oppfolgingsbruker.VeilederRegistrant
+import java.time.ZonedDateTime
 
 sealed class OppfolgingsRegistrering(
     open val fnr: Fnr,
@@ -22,8 +23,14 @@ sealed class OppfolgingsRegistrering(
         fun manuellRegistrering(fnr: Fnr, aktorId: AktorId, veileder: VeilederRegistrant, kontorSattAvVeileder: String? = null): ManuellRegistrering {
             return ManuellRegistrering(fnr, aktorId, veileder, kontorSattAvVeileder)
         }
-        fun arenaSyncOppfolgingBrukerRegistrering(fnr: Fnr, aktorId: AktorId, formidlingsgruppe: Formidlingsgruppe, kvalifiseringsgruppe: Kvalifiseringsgruppe, enhet: EnhetId): ArenaSyncRegistrering {
-            return ArenaSyncRegistrering(fnr, aktorId, formidlingsgruppe, kvalifiseringsgruppe, enhet)
+        fun arenaSyncOppfolgingBrukerRegistrering(
+            fnr: Fnr,
+            aktorId: AktorId,
+            formidlingsgruppe: Formidlingsgruppe,
+            kvalifiseringsgruppe: Kvalifiseringsgruppe,
+            enhet: EnhetId,
+            sistEndretArena: ZonedDateTime): ArenaSyncRegistrering {
+            return ArenaSyncRegistrering(fnr, aktorId, formidlingsgruppe, kvalifiseringsgruppe, enhet, sistEndretArena)
         }
     }
 }
@@ -46,7 +53,8 @@ data class ArenaSyncRegistrering(
     override val aktorId: AktorId,
     val formidlingsgruppe: Formidlingsgruppe,
     val kvalifiseringsgruppe: Kvalifiseringsgruppe,
-    val enhet: EnhetId
+    val enhet: EnhetId,
+    val sistEndretArena: ZonedDateTime,
 ): OppfolgingsRegistrering(
     fnr,
     aktorId,
