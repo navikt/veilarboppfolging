@@ -1,6 +1,5 @@
 package no.nav.veilarboppfolging.kafka
 
-import no.nav.veilarboppfolging.service.OppfolgingskontorMelding
 import no.nav.veilarboppfolging.service.OppfolgingsperiodeEndretService
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.LoggerFactory

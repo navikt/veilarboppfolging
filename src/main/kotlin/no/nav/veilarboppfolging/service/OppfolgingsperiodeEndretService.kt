@@ -18,6 +18,8 @@ class OppfolgingsperiodeEndretService(
     val kafkaProducerService: KafkaProducerService
 ) {
 
+    // TODO: Funksjon som skal kalles på når oppfølgingsperiode avsluttes
+
     fun håndterOppfolgingskontorMelding(melding: OppfolgingskontorMelding) {
         val periodeMedStartDato =
             oppfolgingsPeriodeRepository.hentOppfolgingsperiode(melding.oppfolgingsperiodeId.toString())
