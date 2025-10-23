@@ -83,20 +83,20 @@ open class KafkaConsumerConfig(
                             )
                         }
                     ),
-                KafkaConsumerClientBuilder.TopicConfig<String, OppfolgingskontorMelding?>()
-                    .withLogging()
-                    .withMetrics(meterRegistry)
-                    .withStoreOnFailure(consumerRepository)
-                    .withConsumerConfig(
-                        kafkaProperties.arbeidsoppfolgingskontortilordningTopic,
-                        Deserializers.stringDeserializer(),
-                        Deserializers.jsonDeserializer(
-                            OppfolgingskontorMelding::class.java
-                        ),
-                        Consumer { kafkaMelding: ConsumerRecord<String, OppfolgingskontorMelding?> ->
-                            arbeidsoppfolgingskontortilordningConsumerService.consumeKontortilordning(kafkaMelding)
-                        }
-                    )
+//                KafkaConsumerClientBuilder.TopicConfig<String, OppfolgingskontorMelding?>()
+//                    .withLogging()
+//                    .withMetrics(meterRegistry)
+//                    .withStoreOnFailure(consumerRepository)
+//                    .withConsumerConfig(
+//                        kafkaProperties.arbeidsoppfolgingskontortilordningTopic,
+//                        Deserializers.stringDeserializer(),
+//                        Deserializers.jsonDeserializer(
+//                            OppfolgingskontorMelding::class.java
+//                        ),
+//                        Consumer { kafkaMelding: ConsumerRecord<String, OppfolgingskontorMelding?> ->
+//                            arbeidsoppfolgingskontortilordningConsumerService.consumeKontortilordning(kafkaMelding)
+//                        }
+//                    )
             )
 
             val aivenConsumerProperties = KafkaPropertiesBuilder.consumerBuilder()
