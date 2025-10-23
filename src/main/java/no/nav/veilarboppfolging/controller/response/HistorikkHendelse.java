@@ -18,6 +18,7 @@ public class HistorikkHendelse {
     String opprettetAvBrukerId;
     Long dialogId;
     String enhet;
+    String veileder;
 
     public enum Type {
         SATT_TIL_MANUELL,
