@@ -2,8 +2,10 @@ package no.nav.veilarboppfolging.kafka
 
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.LoggerFactory
+import org.springframework.stereotype.Service
 import java.util.*
 
+@Service
 class ArbeidsoppfolgingskontortilordningConsumerService {
 
     private val logger = LoggerFactory.getLogger(this::class.java)
