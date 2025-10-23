@@ -15,6 +15,7 @@ import no.nav.common.kafka.util.KafkaPropertiesBuilder
 import no.nav.common.utils.EnvironmentUtils
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2
+import no.nav.veilarboppfolging.kafka.ArbeidsoppfolgingskontortilordningConsumerService
 import no.nav.veilarboppfolging.kafka.ArbeidssøkerperiodeConsumerService
 import no.nav.veilarboppfolging.kafka.OppfolgingskontorMelding
 import no.nav.veilarboppfolging.service.KafkaConsumerService
@@ -38,6 +39,7 @@ open class KafkaConsumerConfig(
     kafkaProperties: KafkaProperties,
     private val kafkaConsumerService: KafkaConsumerService,
     private val arbeidssøkerperiodeConsumerService: ArbeidssøkerperiodeConsumerService,
+    private val arbeidsoppfolgingskontortilordningConsumerService: ArbeidsoppfolgingskontortilordningConsumerService,
     lockProvider: LockProvider,
     @Value("\${app.kafka.enabled}") val kafkaEnabled: Boolean
 ) {
@@ -86,13 +88,13 @@ open class KafkaConsumerConfig(
                     .withMetrics(meterRegistry)
                     .withStoreOnFailure(consumerRepository)
                     .withConsumerConfig(
-                        kafkaProperties.oppfolgingsperiodeTopic(),
+                        kafkaProperties.arbeidsoppfolgingskontortilordningTopic,
                         Deserializers.stringDeserializer(),
-                        getPeriodeAvroDeserializer(),
-                        Consumer<ConsumerRecord<String, Periode>> { kafkaMelding: ConsumerRecord<String, Periode> ->
-                            arbeidssøkerperiodeConsumerService.consumeArbeidssøkerperiode(
-                                kafkaMelding
-                            )
+                        Deserializers.jsonDeserializer(
+                            OppfolgingskontorMelding::class.java
+                        ),
+                        Consumer { kafkaMelding: ConsumerRecord<String, OppfolgingskontorMelding?> ->
+                            arbeidsoppfolgingskontortilordningConsumerService.consumeKontortilordning(kafkaMelding)
                         }
                     )
             )
