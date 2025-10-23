@@ -21,21 +21,21 @@ class OppfolgingsperiodeEndretService(
     // TODO: Funksjon som skal kalles på når oppfølgingsperiode avsluttes
 
     fun håndterOppfolgingskontorMelding(melding: OppfolgingskontorMelding) {
-        val periodeMedStartDato =
-            oppfolgingsPeriodeRepository.hentOppfolgingsperiode(melding.oppfolgingsperiodeId.toString())
-                .getOrElse { throw RuntimeException("Ugyldig oppfølgingsperiodeId, noe gikk veldig galt, dette skal aldri skje") }
-
-        val gjeldendeOppfolgingsperiode = GjeldendeOppfolgingsperiode(
-            oppfolgingsperiodeId = periodeMedStartDato.uuid,
-            startTidspunkt = periodeMedStartDato.startDato,
-            kontorId = melding.kontorId,
-            kontorNavn = melding.kontorNavn,
-            aktorId = melding.aktorId,
-            ident = melding.ident,
-            sisteEndringsType = SisteEndringsType.fromTilordningstype(melding.tilordningstype),
-        )
-
-        kafkaProducerService.publiserOppfolgingsperiodeMedKontor(gjeldendeOppfolgingsperiode)
+//        val periodeMedStartDato =
+//            oppfolgingsPeriodeRepository.hentOppfolgingsperiode(melding.oppfolgingsperiodeId.toString())
+//                .getOrElse { throw RuntimeException("Ugyldig oppfølgingsperiodeId, noe gikk veldig galt, dette skal aldri skje") }
+//
+//        val gjeldendeOppfolgingsperiode = GjeldendeOppfolgingsperiode(
+//            oppfolgingsperiodeId = periodeMedStartDato.uuid,
+//            startTidspunkt = periodeMedStartDato.startDato,
+//            kontorId = melding.kontorId,
+//            kontorNavn = melding.kontorNavn,
+//            aktorId = melding.aktorId,
+//            ident = melding.ident,
+//            sisteEndringsType = SisteEndringsType.fromTilordningstype(melding.tilordningstype),
+//        )
+//
+//        kafkaProducerService.publiserOppfolgingsperiodeMedKontor(gjeldendeOppfolgingsperiode)
     }
 
 }
