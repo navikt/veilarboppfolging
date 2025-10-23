@@ -24,4 +24,5 @@ public class KafkaProperties {
     String minSideAapenMicrofrontendV1;
     String minSideBrukerVarsel;
     String oppfolgingshendelseV1;
+    String oppfolgingskontorTopic;
 }
