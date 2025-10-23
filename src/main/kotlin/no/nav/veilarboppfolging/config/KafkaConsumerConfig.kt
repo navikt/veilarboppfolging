@@ -16,6 +16,7 @@ import no.nav.common.utils.EnvironmentUtils
 import no.nav.paw.arbeidssokerregisteret.api.v1.Periode
 import no.nav.pto_schema.kafka.json.topic.onprem.EndringPaaOppfoelgingsBrukerV2
 import no.nav.veilarboppfolging.kafka.ArbeidssøkerperiodeConsumerService
+import no.nav.veilarboppfolging.kafka.OppfolgingskontorMelding
 import no.nav.veilarboppfolging.service.KafkaConsumerService
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.common.serialization.ByteArrayDeserializer
@@ -72,6 +73,20 @@ open class KafkaConsumerConfig(
                     .withStoreOnFailure(consumerRepository)
                     .withConsumerConfig(
                         kafkaProperties.getArbeidssokerperioderTopicAiven(),
+                        Deserializers.stringDeserializer(),
+                        getPeriodeAvroDeserializer(),
+                        Consumer<ConsumerRecord<String, Periode>> { kafkaMelding: ConsumerRecord<String, Periode> ->
+                            arbeidssøkerperiodeConsumerService.consumeArbeidssøkerperiode(
+                                kafkaMelding
+                            )
+                        }
+                    ),
+                KafkaConsumerClientBuilder.TopicConfig<String, OppfolgingskontorMelding?>()
+                    .withLogging()
+                    .withMetrics(meterRegistry)
+                    .withStoreOnFailure(consumerRepository)
+                    .withConsumerConfig(
+                        kafkaProperties.oppfolgingsperiodeTopic(),
                         Deserializers.stringDeserializer(),
                         getPeriodeAvroDeserializer(),
                         Consumer<ConsumerRecord<String, Periode>> { kafkaMelding: ConsumerRecord<String, Periode> ->
