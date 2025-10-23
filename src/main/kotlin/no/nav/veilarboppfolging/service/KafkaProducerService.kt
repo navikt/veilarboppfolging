@@ -42,8 +42,8 @@ class KafkaProducerService @Autowired constructor(
         oppfolgingsperiode(oppfolgingsperiode)
     }
 
-    fun publiserOppfolgingsperiodeMedKontor(oppfolgingsperiode: OppfolgingsperiodeDTO) {
-        oppfolgingsperiodeMedKontor(oppfolgingsperiode)
+    fun publiserOppfolgingsperiodeMedKontor(gjeldendeOppfolgingsperiode: SisteOppfolgingsperiodeDto) {
+        oppfolgingsperiodeMedKontor(gjeldendeOppfolgingsperiode)
     }
 
     fun publiserOppfolgingsperiode(oppfolgingsperiode: OppfolgingsperiodeDTO) {
@@ -75,11 +75,11 @@ class KafkaProducerService @Autowired constructor(
         )
     }
 
-    private fun oppfolgingsperiodeMedKontor(sisteOppfolgingsperiodeV2: OppfolgingsperiodeDTO) {
+    private fun oppfolgingsperiodeMedKontor(sisteOppfolgingsperiode: SisteOppfolgingsperiodeDto) {
         store(
             kafkaProperties.sisteOppfolgingsperiodeTopicV2,
-            sisteOppfolgingsperiodeV2.aktorId,
-            sisteOppfolgingsperiodeV2
+            sisteOppfolgingsperiode.oppfolgingsperiodeUuid.toString(),
+            sisteOppfolgingsperiode
         )
     }
 
