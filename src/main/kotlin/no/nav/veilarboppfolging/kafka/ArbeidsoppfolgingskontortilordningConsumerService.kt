@@ -17,8 +17,7 @@ class ArbeidsoppfolgingskontortilordningConsumerService(
         // Hvis tombStone -> ignorer fordi vi har sendt avslutttetMelding når perioden ble avslutta
         val value = kafkaMelding.value() ?: return
         // Hvis ikke tombStone -> publiser melding med oppføgingsperiodeStart
-
-//        oppfolgingsperiodeEndretService.håndterOppfolgingskontorMelding(value)
+        oppfolgingsperiodeEndretService.håndterOppfolgingskontorMelding(value)
     }
 }
 
@@ -28,7 +27,7 @@ data class OppfolgingskontorMelding(
     val oppfolgingsperiodeId: UUID,
     val aktorId: String,
     val ident: String,
-    val tilordningstype: Tilordningstype?
+    val tilordningstype: Tilordningstype
 )
 
 enum class Tilordningstype {

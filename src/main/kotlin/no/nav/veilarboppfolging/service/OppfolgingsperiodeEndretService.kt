@@ -2,11 +2,14 @@ package no.nav.veilarboppfolging.service
 
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
+import no.nav.common.client.aktoroppslag.AktorOppslagClient
+import no.nav.common.types.identer.AktorId
 import no.nav.veilarboppfolging.kafka.OppfolgingskontorMelding
 import no.nav.veilarboppfolging.kafka.Tilordningstype
 import no.nav.veilarboppfolging.kafka.Tilordningstype.ENDRET_KONTOR
 import no.nav.veilarboppfolging.kafka.Tilordningstype.KONTOR_VED_OPPFOLGINGSPERIODE_START
 import no.nav.veilarboppfolging.repository.OppfolgingsPeriodeRepository
+import no.nav.veilarboppfolging.repository.entity.OppfolgingsperiodeEntity
 import org.springframework.stereotype.Service
 import java.time.ZonedDateTime
 import java.util.UUID
@@ -15,27 +18,39 @@ import kotlin.jvm.optionals.getOrElse
 @Service
 class OppfolgingsperiodeEndretService(
     val oppfolgingsPeriodeRepository: OppfolgingsPeriodeRepository,
-    val kafkaProducerService: KafkaProducerService
+    val kafkaProducerService: KafkaProducerService,
+    val aktorOppslagClient: AktorOppslagClient
 ) {
 
-    // TODO: Funksjon som skal kalles på når oppfølgingsperiode avsluttes
+    fun håndterOppfolgingAvsluttet(oppfolgingsperiode: OppfolgingsperiodeEntity) {
+        val ident = aktorOppslagClient.hentFnr(AktorId.of(oppfolgingsperiode.aktorId))
+        val gjeldendeOppfolgingsperiode = AvsluttetOppfolgingsperiode(
+            oppfolgingsperiodeId = oppfolgingsperiode.uuid,
+            startTidspunkt = oppfolgingsperiode.startDato,
+            sluttTidspunkt = oppfolgingsperiode.sluttDato,
+            aktorId = oppfolgingsperiode.aktorId,
+            ident = ident.get(),
+        )
+
+        kafkaProducerService.publiserOppfolgingsperiodeMedKontor(gjeldendeOppfolgingsperiode)
+    }
 
     fun håndterOppfolgingskontorMelding(melding: OppfolgingskontorMelding) {
-//        val periodeMedStartDato =
-//            oppfolgingsPeriodeRepository.hentOppfolgingsperiode(melding.oppfolgingsperiodeId.toString())
-//                .getOrElse { throw RuntimeException("Ugyldig oppfølgingsperiodeId, noe gikk veldig galt, dette skal aldri skje") }
-//
-//        val gjeldendeOppfolgingsperiode = GjeldendeOppfolgingsperiode(
-//            oppfolgingsperiodeId = periodeMedStartDato.uuid,
-//            startTidspunkt = periodeMedStartDato.startDato,
-//            kontorId = melding.kontorId,
-//            kontorNavn = melding.kontorNavn,
-//            aktorId = melding.aktorId,
-//            ident = melding.ident,
-//            sisteEndringsType = SisteEndringsType.fromTilordningstype(melding.tilordningstype),
-//        )
-//
-//        kafkaProducerService.publiserOppfolgingsperiodeMedKontor(gjeldendeOppfolgingsperiode)
+        val periodeMedStartDato =
+            oppfolgingsPeriodeRepository.hentOppfolgingsperiode(melding.oppfolgingsperiodeId.toString())
+                .getOrElse { throw RuntimeException("Ugyldig oppfølgingsperiodeId, noe gikk veldig galt, dette skal aldri skje") }
+
+        val gjeldendeOppfolgingsperiode = GjeldendeOppfolgingsperiode(
+            oppfolgingsperiodeId = periodeMedStartDato.uuid,
+            startTidspunkt = periodeMedStartDato.startDato,
+            kontorId = melding.kontorId,
+            kontorNavn = melding.kontorNavn,
+            aktorId = melding.aktorId,
+            ident = melding.ident,
+            sisteEndringsType = SisteEndringsType.fromTilordningstype(melding.tilordningstype),
+        )
+
+        kafkaProducerService.publiserOppfolgingsperiodeMedKontor(gjeldendeOppfolgingsperiode)
     }
 
 }
