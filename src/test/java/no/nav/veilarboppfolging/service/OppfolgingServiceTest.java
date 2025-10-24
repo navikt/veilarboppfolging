@@ -164,6 +164,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
         verify(kafkaProducerService).publiserEndringPaNyForVeileder(aktorId, false);
         verify(kafkaProducerService).publiserEndringPaManuellStatus(aktorId, false);
         verify(kafkaProducerService).publiserSkjulAoMinSideMicrofrontend(aktorId, fnr);
+        verify(oppfolgingsperiodeEndretService).håndterOppfolgingAvsluttet(any(OppfolgingsperiodeEntity.class));
     }
 
     @Test
