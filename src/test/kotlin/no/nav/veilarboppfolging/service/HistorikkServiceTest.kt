@@ -129,6 +129,7 @@ class HistorikkServiceTest {
             begrunnelse = "Veileder startet arbeidsrettet oppfølging på bruker",
             opprettetAvType = KodeverkBruker.NAV,
             opprettetAv = startetAvVeilder,
+            tildeltVeilederId = null,
         ))
 
         Assertions.assertThat(periodeAvsluttetEvent).isEqualTo(historikkHendelse(
@@ -137,6 +138,7 @@ class HistorikkServiceTest {
             begrunnelse = avsluttetBegrunnelse,
             opprettetAvType = KodeverkBruker.NAV,
             opprettetAv = avsluttetAvVeileder,
+            tildeltVeilederId = null,
         ))
     }
 
@@ -169,6 +171,7 @@ class HistorikkServiceTest {
             begrunnelse = "Bruker ble registrert som arbeidssøker av veileder",
             opprettetAvType = KodeverkBruker.NAV,
             opprettetAv = startetAvVeilder,
+            tildeltVeilederId = null,
         ))
 
         Assertions.assertThat(periodeAvsluttetEvent).isEqualTo(historikkHendelse(
@@ -177,6 +180,7 @@ class HistorikkServiceTest {
             begrunnelse = avsluttetBegrunnelse,
             opprettetAvType = KodeverkBruker.NAV,
             opprettetAv = avsluttetAvVeileder,
+            tildeltVeilederId = null,
         ))
     }
 
@@ -208,6 +212,7 @@ class HistorikkServiceTest {
             begrunnelse = "Registrert som arbeidssøker i arena",
             opprettetAvType = KodeverkBruker.SYSTEM,
             opprettetAv = null,
+            tildeltVeilederId = null,
         ))
 
         Assertions.assertThat(periodeAvsluttetEvent).isEqualTo(historikkHendelse(
@@ -216,6 +221,7 @@ class HistorikkServiceTest {
             begrunnelse = avsluttetBegrunnelse,
             opprettetAvType = KodeverkBruker.SYSTEM,
             opprettetAv = null,
+            tildeltVeilederId = null,
         ))
     }
 
@@ -247,6 +253,7 @@ class HistorikkServiceTest {
             begrunnelse = "Bruker registrerte seg som arbeidssøker",
             opprettetAvType = KodeverkBruker.EKSTERN,
             opprettetAv = null,
+            tildeltVeilederId = null,
         ))
 
         Assertions.assertThat(periodeAvsluttetEvent).isEqualTo(historikkHendelse(
@@ -255,6 +262,7 @@ class HistorikkServiceTest {
             begrunnelse = avsluttetBegrunnelse,
             opprettetAvType = KodeverkBruker.SYSTEM,
             opprettetAv = null,
+            tildeltVeilederId = null,
         ))
     }
 
@@ -286,6 +294,7 @@ class HistorikkServiceTest {
             begrunnelse = "Startet arbeidsrettet oppfølging på bruker",
             opprettetAvType = null,
             opprettetAv = null,
+            tildeltVeilederId = null,
         ))
 
         Assertions.assertThat(periodeAvsluttetEvent).isEqualTo(historikkHendelse(
@@ -294,6 +303,7 @@ class HistorikkServiceTest {
             begrunnelse = avsluttetBegrunnelse,
             opprettetAvType = KodeverkBruker.SYSTEM,
             opprettetAv = null,
+            tildeltVeilederId = null,
         ))
     }
 
@@ -316,6 +326,7 @@ class HistorikkServiceTest {
             begrunnelse = "Startet arbeidsrettet oppfølging på bruker",
             opprettetAvType = KodeverkBruker.NAV,
             opprettetAv = "defaultVeileder",
+            tildeltVeilederId = null,
         ))
 
         Assertions.assertThat(periodeReaktivertEvent).isEqualTo(historikkHendelse(
@@ -324,6 +335,7 @@ class HistorikkServiceTest {
             begrunnelse = "Arbeidsrettet oppfølging ble reaktivert",
             opprettetAvType = KodeverkBruker.NAV,
             opprettetAv = "veileder som reaktiverte",
+            tildeltVeilederId = null,
         ))
     }
 
@@ -471,7 +483,8 @@ class HistorikkServiceTest {
         tidspunkt: ZonedDateTime,
         begrunnelse: String,
         opprettetAvType: KodeverkBruker?,
-        opprettetAv: String?
+        opprettetAv: String?,
+        tildeltVeilederId: String?
     ): HistorikkHendelse {
         return HistorikkHendelse(
             type,
@@ -480,7 +493,8 @@ class HistorikkServiceTest {
             opprettetAvType,
             opprettetAv,
             null,
-            null
+            null,
+            tildeltVeilederId,
         )
     }
 
