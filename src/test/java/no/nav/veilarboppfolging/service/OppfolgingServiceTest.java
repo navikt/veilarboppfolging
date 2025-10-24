@@ -80,6 +80,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
     private OppfolgingService oppfolgingService;
     private StartOppfolgingService startOppfolgingService;
     private BigQueryClient bigQueryClient = mock(BigQueryClient.class);
+    private OppfolgingsperiodeEndretService oppfolgingsperiodeEndretService = mock(OppfolgingsperiodeEndretService.class);
 
     @Before
     public void setup() {
@@ -106,6 +107,7 @@ public class OppfolgingServiceTest extends IsolatedDatabaseTest {
                  transactor,
                 arenaYtelserService,
                 bigQueryClient,
+                oppfolgingsperiodeEndretService,
                 "https://test.nav.no"
                 );
 
