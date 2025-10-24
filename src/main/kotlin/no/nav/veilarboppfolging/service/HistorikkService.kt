@@ -43,10 +43,10 @@ class HistorikkService(
         return HistorikkHendelse.builder()
             .type(HistorikkHendelse.Type.VEILEDER_TILORDNET)
             .begrunnelse("Brukeren er tildelt veileder " + veilederTilordningHistorikk.veileder)
-            .veileder(veilederTilordningHistorikk.veileder)
             .dato(veilederTilordningHistorikk.sistTilordnet)
             .opprettetAv(KodeverkBruker.NAV)
             .opprettetAvBrukerId(veilederTilordningHistorikk.tilordnetAvVeileder)
+            .tildeltVeilederId(veilederTilordningHistorikk.veileder)
             .build()
     }
 
