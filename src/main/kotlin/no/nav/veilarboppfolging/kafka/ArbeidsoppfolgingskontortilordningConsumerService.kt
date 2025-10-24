@@ -10,14 +10,8 @@ import java.util.UUID
 class ArbeidsoppfolgingskontortilordningConsumerService(
     val oppfolgingsperiodeEndretService: OppfolgingsperiodeEndretService
 ) {
-
-    private val logger = LoggerFactory.getLogger(this::class.java)
-
     fun consumeKontortilordning(kafkaMelding: ConsumerRecord<String, OppfolgingskontorMelding?>) {
-        // Hvis tombStone -> ignorer fordi vi har sendt avslutttetMelding når perioden ble avslutta
-        val value = kafkaMelding.value() ?: return
-        // Hvis ikke tombStone -> publiser melding med oppføgingsperiodeStart
-        oppfolgingsperiodeEndretService.håndterOppfolgingskontorMelding(value)
+        oppfolgingsperiodeEndretService.håndterOppfolgingskontorMelding(kafkaMelding.value())
     }
 }
 

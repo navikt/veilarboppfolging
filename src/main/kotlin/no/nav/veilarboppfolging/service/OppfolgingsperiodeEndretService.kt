@@ -35,7 +35,10 @@ class OppfolgingsperiodeEndretService(
         kafkaProducerService.publiserOppfolgingsperiodeMedKontor(gjeldendeOppfolgingsperiode)
     }
 
-    fun håndterOppfolgingskontorMelding(melding: OppfolgingskontorMelding) {
+    fun håndterOppfolgingskontorMelding(melding: OppfolgingskontorMelding?) {
+        val erMeldingSomKanIgnoreres = melding == null
+        if (erMeldingSomKanIgnoreres) return
+
         val periodeMedStartDato =
             oppfolgingsPeriodeRepository.hentOppfolgingsperiode(melding.oppfolgingsperiodeId.toString())
                 .getOrElse { throw RuntimeException("Ugyldig oppfølgingsperiodeId, noe gikk veldig galt, dette skal aldri skje") }
